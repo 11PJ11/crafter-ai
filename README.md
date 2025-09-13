@@ -26,7 +26,7 @@ technical  technology    ∅      production refactoring
 stakeholder selector             validator  agents
 ```
 
-### Agent Organization (33+ Specialized Agents)
+### Agent Organization (41+ Specialized Agents)
 
 #### 🟦 **Requirements Analysis** (5 agents)
 - **Business Analyst** 🔵💼 - Business requirements and acceptance criteria
@@ -59,6 +59,18 @@ stakeholder selector             validator  agents
 #### 🔵 **Refactoring** (2 agents)
 - **Systematic Refactorer** 💙🔄 - Level 1-6 progressive refactoring
 - **Mikado Refactoring Specialist** 🟦🌳 - Complex architectural refactoring
+
+#### 📊 **Observability** (4 agents) - DevOps Second Way
+- **Telemetry Collector** 📈📊 - Comprehensive metrics, logs, and traces collection
+- **Observability Analyzer** 📉🔍 - System health insights and proactive recommendations
+- **User Feedback Aggregator** 👥📝 - Customer insights and satisfaction analysis
+- **Performance Monitor** ⚡📊 - Real-time monitoring and capacity planning
+
+#### 🧪 **Experimentation** (4 agents) - DevOps Third Way
+- **Experiment Designer** 🧪🎯 - A/B testing and hypothesis-driven experiments
+- **Hypothesis Validator** 📊✅ - Statistical analysis and validation
+- **Learning Synthesizer** 🧠📚 - Organizational learning and knowledge management
+- **Priority Optimizer** 🎯📈 - Data-driven strategic prioritization
 
 #### ⚫ **Coordination** (11 agents)
 - **ATDD Cycle Coordinator** ⚫🎭 - Five-stage workflow orchestration
@@ -122,33 +134,64 @@ cai/atdd --status
 - **Resumable Workflows**: Can restart from any completed wave
 - **Systematic Progress**: Methodical advancement through development stages
 
+## 🌊 DevOps Three Ways Integration
+
+AI-Craft implements Gene Kim's **Three Ways of DevOps** from "The Phoenix Project":
+
+### First Way: Systems Thinking & Flow
+- **ATDD Wave Progression**: Systematic flow from DISCUSS → ARCHITECT → DISTILL → DEVELOP → DEMO
+- **Continuous Integration**: Automated pipeline coordination and state management
+- **Value Stream Optimization**: Eliminate bottlenecks and optimize delivery flow
+
+### Second Way: Amplify Feedback Loops
+- **📊 Observability Agents**: Real-time telemetry collection (metrics, logs, traces)
+- **🔍 Performance Monitoring**: Continuous system health assessment
+- **👥 User Feedback Integration**: Customer satisfaction and insights analysis
+- **⚡ Rapid Response**: Shortened feedback cycles for faster corrective action
+
+### Third Way: Culture of Learning & Experimentation
+- **🧪 Experiment-Driven Development**: A/B testing and hypothesis validation
+- **📊 Data-Driven Decisions**: Statistical analysis for prioritization
+- **🧠 Organizational Learning**: Knowledge synthesis and application
+- **🎯 Continuous Optimization**: Strategic priority adjustment based on learning
+
 ## 📁 Project Structure
 
 ```
 ai-craft/
 ├── .claude/
-│   ├── agents/                    # Agent specifications (33+ agents)
-│   │   ├── constants.md          # Centralized configuration
-│   │   ├── requirements-analysis/ # Business and technical analysis
-│   │   ├── architecture-design/  # System design agents
-│   │   ├── test-design/          # Acceptance test creation
-│   │   ├── development/          # Implementation agents
-│   │   ├── quality-validation/   # Quality assurance agents
-│   │   ├── refactoring/          # Code improvement agents
-│   │   ├── coordination/         # Workflow orchestration
-│   │   └── legacy-agents/        # Deprecated multi-responsibility agents
+│   ├── agents/
+│   │   └── cai/                  # AI-Craft agent specifications (41+ agents)
+│   │       ├── constants.md      # Centralized configuration
+│   │       ├── requirements-analysis/ # Business and technical analysis (5 agents)
+│   │       ├── architecture-design/  # System design agents (3 agents)
+│   │       ├── test-design/      # Acceptance test creation (1 agent)
+│   │       ├── development/      # Implementation agents (1 agent)
+│   │       ├── quality-validation/ # Quality assurance agents (8 agents)
+│   │       ├── refactoring/      # Code improvement agents (2 agents)
+│   │       ├── observability/    # DevOps Second Way agents (4 agents)
+│   │       ├── experimentation/  # DevOps Third Way agents (4 agents)
+│   │       ├── coordination/     # Workflow orchestration (11 agents)
+│   │       └── legacy-agents/    # Deprecated multi-responsibility agents
 │   └── commands/
 │       └── cai/
 │           ├── atdd.md          # Command integration specification
 │           └── root-why.md      # Root cause analysis command
-└── docs/
-    └── craft-ai/                 # Pipeline working files
-        ├── PROGRESS.md           # Project progress tracking
-        ├── requirements.md       # Business requirements
-        ├── architecture.md       # Architectural design
-        ├── acceptance-tests.md   # Test scenarios
-        ├── implementation-status.md # Development progress
-        └── quality-report.md     # Quality validation results
+├── docs/
+│   └── craft-ai/                # Pipeline working files
+│       ├── PROGRESS.md          # Project progress tracking
+│       ├── requirements.md      # Business requirements
+│       ├── architecture.md      # Architectural design
+│       ├── acceptance-tests.md  # Test scenarios
+│       ├── implementation-status.md # Development progress
+│       └── quality-report.md    # Quality validation results
+├── install-ai-craft.bat        # Windows installation
+├── install-ai-craft.ps1        # PowerShell installation
+├── install-ai-craft.sh         # Linux/Mac installation
+├── uninstall-ai-craft.bat      # Windows uninstallation
+├── uninstall-ai-craft.ps1      # PowerShell uninstallation
+├── uninstall-ai-craft.sh       # Linux/Mac uninstallation
+└── UNINSTALL.md                # Uninstallation guide
 ```
 
 ## 🔧 Configuration System
@@ -201,18 +244,23 @@ All agents reference shared constants for maintainability:
 
 ## 🏆 Success Metrics
 
-- **Single Responsibility**: 33+ focused agents vs previous 4 complex agents
+- **Single Responsibility**: 41+ focused agents vs previous 4 complex agents
+- **DevOps Integration**: Complete Three Ways implementation (Flow + Feedback + Learning)
 - **Quality Gates**: 8-step validation cycle with evidence collection
 - **Context Efficiency**: Clean isolation prevents context pollution
 - **Workflow Flexibility**: Resume at any stage, conditional activation
 - **Code Quality**: Level 1-6 progressive refactoring system
 - **Production Ready**: Quality-assured rapid deployment capabilities
+- **Observability**: Comprehensive telemetry collection and analysis
+- **Experimentation**: Data-driven learning and optimization
 
 ## 📚 Documentation
 
-- **Agent Specifications**: Detailed role definitions in `.claude/agents/`
-- **Command Reference**: Integration patterns in `.claude/commands/`
+- **Agent Specifications**: Detailed role definitions in `.claude/agents/cai/`
+- **Command Reference**: Integration patterns in `.claude/commands/cai/`
 - **Workflow Documentation**: Process guides in `docs/craft-ai/`
+- **Installation Guide**: Complete setup instructions in `INSTALL.md`
+- **Uninstallation Guide**: Comprehensive removal guide in `UNINSTALL.md`
 - **Progress Tracking**: Comprehensive history in `PROGRESS.md`
 
 ## 🎨 Visual Organization
@@ -223,6 +271,8 @@ Each agent category has distinctive colors and emojis for easy identification:
 - ❤️ **Bright Red Family**: Test Design & Quality Validation
 - 🟢 **Dark Green Family**: Development
 - 🔵 **Light Blue Family**: Refactoring
+- 📊 **Chart/Graph Family**: Observability (DevOps Second Way)
+- 🧪 **Lab/Science Family**: Experimentation (DevOps Third Way)
 - ⚫ **Gray/Brown Family**: Coordination
 - ⚙️ **Configuration**: System Configuration
 

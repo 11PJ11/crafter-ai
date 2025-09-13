@@ -15,13 +15,15 @@ AI-Craft implements a sophisticated ATDD (Acceptance Test Driven Development) pi
 
 ### Agent Network Structure
 ```
-AI-Craft Agent Network (33+ Agents)
+AI-Craft Agent Network (41+ Agents)
 ├── Requirements Analysis (5) - Blue Family 🟦
 ├── Architecture Design (3) - Orange Family 🟧
 ├── Test Design (1) - Bright Red Family ❤️
 ├── Development (1) - Dark Green Family 🟢
 ├── Quality Validation (8) - Bright Red Family ❤️
 ├── Refactoring (2) - Light Blue Family 🔵
+├── Observability (4) - Chart/Graph Family 📊 (DevOps Second Way)
+├── Experimentation (4) - Lab/Science Family 🧪 (DevOps Third Way)
 ├── Coordination (11) - Gray/Brown Family ⚫
 └── Configuration (1) - System Configuration ⚙️
 ```
@@ -164,7 +166,7 @@ Final Output (Completed feature with documentation)
 ### ADR-001: Single Responsibility Principle for Agents
 - **Decision**: Split complex agents into focused, single-responsibility agents
 - **Context**: Original 4 agents had multiple responsibilities causing complexity
-- **Consequences**: 33+ agents with clear boundaries, better maintainability
+- **Consequences**: 41+ agents with clear boundaries, better maintainability
 - **Status**: Implemented
 
 ### ADR-002: Wave Processing with Clean Context Isolation

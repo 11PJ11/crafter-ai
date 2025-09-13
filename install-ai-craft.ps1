@@ -44,7 +44,7 @@ AI-Craft Framework Installation Script for PowerShell
 
 DESCRIPTION:
     Installs the AI-Craft ATDD agent framework to your global Claude config directory.
-    This makes all 33+ specialized agents and the cai/atdd command available across all projects.
+    This makes all 41+ specialized agents and the cai/atdd command available across all projects.
 
 USAGE:
     .\install-ai-craft.ps1 [OPTIONS]
@@ -60,11 +60,13 @@ EXAMPLES:
     .\install-ai-craft.ps1 -Restore       # Restore from latest backup
 
 WHAT GETS INSTALLED:
-    - 33+ specialized AI agents in 7 categories
+    - 41+ specialized AI agents in 9 categories
     - cai/atdd command interface with intelligent project analysis
     - Centralized configuration system (constants.md)
     - Wave processing architecture for clean ATDD workflows
     - Quality validation network with Level 1-6 refactoring
+    - Second Way DevOps: Observability agents (metrics, logs, traces, performance)
+    - Third Way DevOps: Experimentation agents (A/B testing, hypothesis validation, learning synthesis)
 
 INSTALLATION LOCATION:
     $env:USERPROFILE\.claude\agents\       # All agent specifications
@@ -89,20 +91,20 @@ function Test-SourceFramework {
         return $false
     }
     
-    $constantsFile = Join-Path $FrameworkSource "agents\constants.md"
+    $constantsFile = Join-Path $FrameworkSource "agents\cai\constants.md"
     if (!(Test-Path $constantsFile)) {
         Write-Error "Framework appears incomplete - constants.md not found"
         return $false
     }
     
-    $agentFiles = Get-ChildItem -Path (Join-Path $FrameworkSource "agents") -Filter "*.md" -Recurse | 
+    $agentFiles = Get-ChildItem -Path (Join-Path $FrameworkSource "agents\cai") -Filter "*.md" -Recurse | 
                   Where-Object { $_.Name -ne "README.md" }
     $agentCount = $agentFiles.Count
     
     Write-Info "Found framework with $agentCount agent files"
     
-    if ($agentCount -lt 30) {
-        Write-Warn "Expected 30+ agents, found only $agentCount. Continuing anyway..."
+    if ($agentCount -lt 40) {
+        Write-Warn "Expected 40+ agents, found only $agentCount. Continuing anyway..."
     }
     
     return $true
@@ -198,25 +200,27 @@ function Install-Framework {
     
     # Install agents (excluding README.md)
     Write-Info "Installing agents..."
-    $sourceAgentsDir = Join-Path $FrameworkSource "agents"
+    $sourceCaiDir = Join-Path $FrameworkSource "agents\cai"
     $targetAgentsDir = Join-Path $ClaudeConfigDir "agents"
+    $targetCaiDir = Join-Path $targetAgentsDir "cai"
     
-    if (Test-Path $sourceAgentsDir) {
+    if (Test-Path $sourceCaiDir) {
         New-Item -ItemType Directory -Path $targetAgentsDir -Force | Out-Null
+        New-Item -ItemType Directory -Path $targetCaiDir -Force | Out-Null
         
-        $agentFiles = Get-ChildItem -Path $sourceAgentsDir -Filter "*.md" -Recurse | 
+        $agentFiles = Get-ChildItem -Path $sourceCaiDir -Filter "*.md" -Recurse | 
                       Where-Object { $_.Name -ne "README.md" }
         
         foreach ($file in $agentFiles) {
-            $relativePath = $file.FullName.Substring($sourceAgentsDir.Length + 1)
-            $targetFile = Join-Path $targetAgentsDir $relativePath
+            $relativePath = $file.FullName.Substring($sourceCaiDir.Length + 1)
+            $targetFile = Join-Path $targetCaiDir $relativePath
             $targetDir = Split-Path $targetFile -Parent
             
             New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
             Copy-Item -Path $file.FullName -Destination $targetFile -Force
         }
         
-        $copiedAgents = (Get-ChildItem -Path $targetAgentsDir -Filter "*.md" -Recurse).Count
+        $copiedAgents = (Get-ChildItem -Path $targetCaiDir -Filter "*.md" -Recurse).Count
         Write-Info "Installed $copiedAgents agent files"
     }
     
@@ -241,7 +245,7 @@ function Test-Installation {
     $errors = 0
     
     # Check constants.md exists
-    $constantsFile = Join-Path $ClaudeConfigDir "agents\constants.md"
+    $constantsFile = Join-Path $ClaudeConfigDir "agents\cai\constants.md"
     if (!(Test-Path $constantsFile)) {
         Write-Error "Missing constants.md - core configuration file"
         $errors++
@@ -255,11 +259,11 @@ function Test-Installation {
     }
     
     # Count installed files
-    $agentsDir = Join-Path $ClaudeConfigDir "agents"
+    $agentsCaiDir = Join-Path $ClaudeConfigDir "agents\cai"
     $commandsDir = Join-Path $ClaudeConfigDir "commands"
     
-    $totalAgents = if (Test-Path $agentsDir) { 
-        (Get-ChildItem -Path $agentsDir -Filter "*.md" -Recurse).Count 
+    $totalAgents = if (Test-Path $agentsCaiDir) { 
+        (Get-ChildItem -Path $agentsCaiDir -Filter "*.md" -Recurse).Count 
     } else { 0 }
     
     $totalCommands = if (Test-Path $commandsDir) { 
@@ -273,10 +277,11 @@ function Test-Installation {
     
     # Check agent categories
     $categories = @("requirements-analysis", "architecture-design", "test-design", 
-                    "development", "quality-validation", "refactoring", "coordination")
+                    "development", "quality-validation", "refactoring", "coordination",
+                    "observability", "experimentation")
     
     foreach ($category in $categories) {
-        $categoryDir = Join-Path $agentsDir $category
+        $categoryDir = Join-Path $agentsCaiDir $category
         if (Test-Path $categoryDir) {
             $count = (Get-ChildItem -Path $categoryDir -Filter "*.md").Count
             Write-Info "  - $category`: $count agents"
@@ -285,8 +290,8 @@ function Test-Installation {
         }
     }
     
-    if ($totalAgents -lt 30) {
-        Write-Warn "Expected 30+ agents, found $totalAgents"
+    if ($totalAgents -lt 40) {
+        Write-Warn "Expected 40+ agents, found $totalAgents"
     }
     
     if ($errors -eq 0) {
@@ -327,11 +332,13 @@ Installation Summary:
 - Backup directory: $BackupDir
 
 Framework Components:
-- 33+ specialized AI agents with Single Responsibility Principle
+- 41+ specialized AI agents with Single Responsibility Principle
 - Wave processing architecture with clean context isolation
 - cai/atdd command interface with intelligent project analysis
 - Centralized configuration system (constants.md)
 - Quality validation network with Level 1-6 refactoring
+- Second Way DevOps: Observability agents (metrics, logs, traces, performance)
+- Third Way DevOps: Experimentation agents (A/B testing, hypothesis validation, learning synthesis)
 
 Usage:
 - Use 'cai/atdd "feature description"' in any project
@@ -384,7 +391,7 @@ function Main {
         Write-Info "Next steps:"
         Write-Info "1. Navigate to any project directory"
         Write-Info "2. Use: cai/atdd `"your feature description`""
-        Write-Info "3. Access 33+ specialized agents globally"
+        Write-Info "3. Access 41+ specialized agents globally"
         Write-Host ""
         Write-Info "For help: cai/atdd --help"
         Write-Info "Documentation: https://github.com/11PJ11/crafter-ai"

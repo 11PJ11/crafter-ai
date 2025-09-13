@@ -15,7 +15,12 @@
       "Bash(for file in development/*.md)",
       "Bash(for file in quality-validation/*.md)",
       "Bash(for file in refactoring/*.md)",
-      "Bash(for:*)"
+      "Bash(for:*)",
+      "Read(//c/Users/alexd/.claude/**)",
+      "Bash(do mv \"$dir\" cai/)",
+      "Bash(chmod:*)",
+      "Bash(powershell.exe:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

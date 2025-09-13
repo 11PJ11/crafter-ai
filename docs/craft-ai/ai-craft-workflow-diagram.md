@@ -397,4 +397,4 @@ All agent decisions backed by measurable criteria
 
 ---
 
-This diagram shows how 33+ specialized agents work together in a coordinated ATDD workflow, ensuring comprehensive feature delivery with quality validation at every stage.
+This diagram shows how 41+ specialized agents work together in a coordinated ATDD workflow, ensuring comprehensive feature delivery with quality validation at every stage.

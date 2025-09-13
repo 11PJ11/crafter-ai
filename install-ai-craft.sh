@@ -40,7 +40,7 @@ AI-Craft Framework Installation Script
 
 DESCRIPTION:
     Installs the AI-Craft ATDD agent framework to your global Claude config directory.
-    This makes all 33+ specialized agents and the cai/atdd command available across all projects.
+    This makes all 41+ specialized agents and the cai/atdd command available across all projects.
 
 USAGE:
     $0 [OPTIONS]
@@ -56,11 +56,13 @@ EXAMPLES:
     $0 --restore           # Restore from latest backup
 
 WHAT GETS INSTALLED:
-    - 33+ specialized AI agents in 7 categories
+    - 41+ specialized AI agents in 9 categories
     - cai/atdd command interface with intelligent project analysis
     - Centralized configuration system (constants.md)
     - Wave processing architecture for clean ATDD workflows
     - Quality validation network with Level 1-6 refactoring
+    - Second Way DevOps: Observability agents (metrics, logs, traces, performance)
+    - Third Way DevOps: Experimentation agents (A/B testing, hypothesis validation, learning synthesis)
 
 INSTALLATION LOCATION:
     ~/.claude/agents/       # All agent specifications
@@ -85,16 +87,16 @@ check_source() {
         exit 1
     fi
     
-    if [[ ! -f "$FRAMEWORK_SOURCE/agents/constants.md" ]]; then
+    if [[ ! -f "$FRAMEWORK_SOURCE/agents/cai/constants.md" ]]; then
         error "Framework appears incomplete - constants.md not found"
         exit 1
     fi
     
-    local agent_count=$(find "$FRAMEWORK_SOURCE/agents" -name "*.md" ! -name "README.md" | wc -l)
+    local agent_count=$(find "$FRAMEWORK_SOURCE/agents/cai" -name "*.md" ! -name "README.md" | wc -l)
     info "Found framework with $agent_count agent files"
     
-    if [[ $agent_count -lt 30 ]]; then
-        warn "Expected 30+ agents, found only $agent_count. Continuing anyway..."
+    if [[ $agent_count -lt 40 ]]; then
+        warn "Expected 40+ agents, found only $agent_count. Continuing anyway..."
     fi
 }
 
@@ -173,21 +175,21 @@ install_framework() {
     
     # Copy agents directory (excluding README.md)
     info "Installing agents..."
-    if [[ -d "$FRAMEWORK_SOURCE/agents" ]]; then
+    if [[ -d "$FRAMEWORK_SOURCE/agents/cai" ]]; then
         # Create target structure
-        mkdir -p "$CLAUDE_CONFIG_DIR/agents"
+        mkdir -p "$CLAUDE_CONFIG_DIR/agents/cai"
         
         # Copy all agent files except README.md
-        find "$FRAMEWORK_SOURCE/agents" -name "*.md" ! -name "README.md" | while read -r file; do
-            local relative_path="${file#$FRAMEWORK_SOURCE/agents/}"
-            local target_file="$CLAUDE_CONFIG_DIR/agents/$relative_path"
+        find "$FRAMEWORK_SOURCE/agents/cai" -name "*.md" ! -name "README.md" | while read -r file; do
+            local relative_path="${file#$FRAMEWORK_SOURCE/agents/cai/}"
+            local target_file="$CLAUDE_CONFIG_DIR/agents/cai/$relative_path"
             local target_dir=$(dirname "$target_file")
             
             mkdir -p "$target_dir"
             cp "$file" "$target_file"
         done
         
-        local copied_agents=$(find "$CLAUDE_CONFIG_DIR/agents" -name "*.md" | wc -l)
+        local copied_agents=$(find "$CLAUDE_CONFIG_DIR/agents/cai" -name "*.md" | wc -l)
         info "Installed $copied_agents agent files"
     fi
     
@@ -209,7 +211,7 @@ validate_installation() {
     local errors=0
     
     # Check constants.md exists
-    if [[ ! -f "$CLAUDE_CONFIG_DIR/agents/constants.md" ]]; then
+    if [[ ! -f "$CLAUDE_CONFIG_DIR/agents/cai/constants.md" ]]; then
         error "Missing constants.md - core configuration file"
         ((errors++))
     fi
@@ -221,7 +223,7 @@ validate_installation() {
     fi
     
     # Count installed files
-    local total_agents=$(find "$CLAUDE_CONFIG_DIR/agents" -name "*.md" 2>/dev/null | wc -l)
+    local total_agents=$(find "$CLAUDE_CONFIG_DIR/agents/cai" -name "*.md" 2>/dev/null | wc -l)
     local total_commands=$(find "$CLAUDE_CONFIG_DIR/commands" -name "*.md" 2>/dev/null | wc -l)
     
     info "Installation summary:"
@@ -230,18 +232,18 @@ validate_installation() {
     info "  - Installation directory: $CLAUDE_CONFIG_DIR"
     
     # Check agent categories
-    local categories=("requirements-analysis" "architecture-design" "test-design" "development" "quality-validation" "refactoring" "coordination")
+    local categories=("requirements-analysis" "architecture-design" "test-design" "development" "quality-validation" "refactoring" "coordination" "observability" "experimentation")
     for category in "${categories[@]}"; do
-        if [[ -d "$CLAUDE_CONFIG_DIR/agents/$category" ]]; then
-            local count=$(find "$CLAUDE_CONFIG_DIR/agents/$category" -name "*.md" | wc -l)
+        if [[ -d "$CLAUDE_CONFIG_DIR/agents/cai/$category" ]]; then
+            local count=$(find "$CLAUDE_CONFIG_DIR/agents/cai/$category" -name "*.md" | wc -l)
             info "  - $category: $count agents"
         else
             warn "  - $category: directory not found"
         fi
     done
     
-    if [[ $total_agents -lt 30 ]]; then
-        warn "Expected 30+ agents, found $total_agents"
+    if [[ $total_agents -lt 40 ]]; then
+        warn "Expected 40+ agents, found $total_agents"
     fi
     
     if [[ $errors -eq 0 ]]; then
@@ -271,14 +273,16 @@ Installation Summary:
 - Backup directory: $BACKUP_DIR
 
 Framework Components:
-- 33+ specialized AI agents with Single Responsibility Principle
+- 41+ specialized AI agents with Single Responsibility Principle
 - Wave processing architecture with clean context isolation
 - cai/atdd command interface with intelligent project analysis
 - Centralized configuration system (constants.md)
 - Quality validation network with Level 1-6 refactoring
+- Second Way DevOps: Observability agents (metrics, logs, traces, performance)
+- Third Way DevOps: Experimentation agents (A/B testing, hypothesis validation, learning synthesis)
 
 Agent Categories:
-$(for category in requirements-analysis architecture-design test-design development quality-validation refactoring coordination; do
+$(for category in requirements-analysis architecture-design test-design development quality-validation refactoring coordination observability experimentation; do
     if [[ -d "$CLAUDE_CONFIG_DIR/agents/$category" ]]; then
         count=$(find "$CLAUDE_CONFIG_DIR/agents/$category" -name "*.md" | wc -l)
         echo "- $category: $count agents"
@@ -341,7 +345,7 @@ main() {
         info "Next steps:"
         info "1. Navigate to any project directory"
         info "2. Use: ${BLUE}cai/atdd \"your feature description\"${NC}"
-        info "3. Access 33+ specialized agents globally"
+        info "3. Access 41+ specialized agents globally"
         info ""
         info "For help: cai/atdd --help"
         info "Documentation: https://github.com/11PJ11/crafter-ai"

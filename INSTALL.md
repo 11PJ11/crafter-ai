@@ -1,6 +1,6 @@
 # AI-Craft Framework Installation Guide
 
-This guide helps you install the AI-Craft ATDD framework to your global Claude config directory, making all 33+ specialized agents and the `cai/atdd` command available across all your projects.
+This guide helps you install the AI-Craft ATDD framework to your global Claude config directory, making all 41+ specialized agents and the `cai/atdd` command available across all your projects.
 
 ## Quick Start
 
@@ -26,11 +26,13 @@ chmod +x install-ai-craft.sh
 ## What Gets Installed
 
 ### Framework Components
-- **33+ Specialized AI Agents** organized in 7 color-coded categories
+- **41+ Specialized AI Agents** organized in 9 color-coded categories
 - **cai/atdd Command Interface** with intelligent project analysis
 - **Wave Processing Architecture** with clean context isolation
 - **Centralized Configuration System** (constants.md)
 - **Quality Validation Network** with Level 1-6 refactoring
+- **Second Way DevOps**: Observability agents (metrics, logs, traces, performance)
+- **Third Way DevOps**: Experimentation agents (A/B testing, hypothesis validation, learning synthesis)
 
 ### Agent Categories
 - 🟦 **Requirements Analysis** (5 agents) - Business requirements, UX, Security, Legal
@@ -40,20 +42,25 @@ chmod +x install-ai-craft.sh
 - ❤️ **Quality Validation** (8 agents) - Comprehensive quality assurance
 - 🔵 **Refactoring** (2 agents) - Systematic code improvement
 - ⚫ **Coordination** (11 agents) - Workflow orchestration
+- 📊 **Observability** (4 agents) - Second Way DevOps monitoring and feedback
+- 🧪 **Experimentation** (4 agents) - Third Way DevOps learning and optimization
 
 ### Installation Location
 ```
 ~/.claude/                           # Global Claude config directory
-├── agents/                          # All agent specifications
-│   ├── constants.md                # Centralized configuration
-│   ├── requirements-analysis/      # Blue family agents
-│   ├── architecture-design/        # Orange family agents
-│   ├── test-design/               # Test design agents
-│   ├── development/               # Development agents
-│   ├── quality-validation/        # Quality validation agents
-│   ├── refactoring/               # Refactoring agents
-│   ├── coordination/              # Coordination agents
-│   └── legacy-agents/             # Deprecated agents
+├── agents/
+│   └── cai/                        # AI-Craft agent specifications
+│       ├── constants.md            # Centralized configuration
+│       ├── requirements-analysis/  # Blue family agents (5)
+│       ├── architecture-design/    # Orange family agents (3)
+│       ├── test-design/           # Test design agents (1)
+│       ├── development/           # Development agents (1)
+│       ├── quality-validation/    # Quality validation agents (8)
+│       ├── refactoring/           # Refactoring agents (2)
+│       ├── coordination/          # Coordination agents (11)
+│       ├── observability/         # Second Way DevOps agents (4)
+│       ├── experimentation/       # Third Way DevOps agents (4)
+│       └── legacy-agents/         # Deprecated agents
 └── commands/                       # Command integrations
     └── cai/
         ├── atdd.md               # Main ATDD workflow command
@@ -98,7 +105,7 @@ install-ai-craft.bat --help              # Windows Command Prompt
 
 The installation script **excludes** project-specific files:
 - `README.md` (main project documentation)
-- `.claude/agents/README.md` (agent overview documentation)
+- `.claude/agents/cai/README.md` (agent overview documentation)
 - `docs/craft-ai/` directory (project working files)
 - Git configuration and project metadata
 
@@ -154,11 +161,13 @@ cai/atdd --help
 ```
 
 ### Global Agent Access
-All 33+ agents are available globally:
-- Access specialized expertise (UX, Security, Legal) when needed
+All 41+ agents are available globally:
+- Access specialized expertise (UX, Security, Legal, DevOps) when needed
 - Use centralized configuration across all projects
 - Benefit from wave processing architecture
 - Apply systematic quality validation
+- Leverage Second Way observability and monitoring
+- Enable Third Way experimentation and continuous learning
 
 ## Troubleshooting
 
