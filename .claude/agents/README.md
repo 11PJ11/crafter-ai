@@ -5,10 +5,13 @@ This directory contains all AI-Craft pipeline agents organized by their primary 
 ## 📁 Agent Categories
 
 ### 🔍 **requirements-analysis/**
-Agents responsible for gathering, analyzing, and validating business and technical requirements.
+Agents responsible for gathering, analyzing, and validating business and technical requirements with specialist expertise.
 
 - **`business-analyst.md`** - Collaborates with users to gather business requirements and acceptance criteria
 - **`technical-stakeholder.md`** - Validates technical feasibility and provides technical constraint analysis
+- **`user-experience-designer.md`** - ⭐ **NEW** - User journey mapping and UX-focused acceptance criteria (conditionally activated)
+- **`security-expert.md`** - ⭐ **NEW** - Security threat modeling and compliance requirements (conditionally activated)
+- **`legal-compliance-advisor.md`** - ⭐ **NEW** - Legal and regulatory compliance analysis (conditionally activated)
 
 ### 🏗️ **architecture-design/**
 Agents responsible for system architecture design, technology selection, and architectural documentation.
@@ -115,7 +118,21 @@ This organization makes the agent system more:
 The transformation from multi-responsibility to single-responsibility agents:
 
 - **Before**: 4 complex agents with multiple responsibilities
-- **After**: 18 focused agents with clear, single responsibilities
-- **Result**: Better separation of concerns, improved maintainability, enhanced modularity
+- **After**: 21 focused agents with clear, single responsibilities (18 core + 3 specialist)
+- **Specialists**: 3 conditionally-activated specialist agents for enhanced domain expertise
+- **Result**: Better separation of concerns, improved maintainability, enhanced modularity, specialized expertise integration
+
+## 🎯 Specialist Agent Activation
+
+### Conditional Activation Criteria
+**User Experience Designer**: Activated for projects with user-facing interfaces, UX-critical functionality, or accessibility requirements
+**Security Expert**: Activated for projects handling sensitive data, requiring security compliance, or operating in security-critical environments  
+**Legal Compliance Advisor**: Activated for projects in regulated industries, handling personal data, or with specific legal/regulatory requirements
+
+### Specialist Integration Benefits
+- **Enhanced Requirements**: Specialists add domain expertise to core requirements analysis
+- **Improved Acceptance Criteria**: Tests include UX, security, and legal validation scenarios  
+- **Collaborative Validation**: Multiple specialist perspectives ensure comprehensive coverage
+- **Maintained SRP**: Each specialist has focused responsibility while collaborating seamlessly
 
 This structure supports the AI-Craft vision of systematic, high-quality software development through focused, specialized AI agents working together in a coordinated pipeline.

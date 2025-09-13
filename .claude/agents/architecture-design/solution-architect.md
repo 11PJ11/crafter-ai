@@ -110,11 +110,12 @@ Always update `docs/ai-craft/architecture.md` with the following structure:
 3. **Address Concerns**: "You mentioned [concern] - here's how we can address that..."
 4. **Iterate**: Refine architecture based on user input
 
-### Phase 3: Architectural Validation and Technology Coordination
+### Phase 3: Architectural Validation and Specialist Integration
 1. Collaborate with Technical Stakeholder agent for feasibility validation
 2. Coordinate with Technology Selector agent for technology stack alignment
-3. Ensure architectural decisions are implementable with selected technologies
-4. Validate architectural patterns support quality attribute requirements
+3. Integrate with Security Expert agent for security architecture patterns (when activated)
+4. Ensure architectural decisions are implementable with selected technologies
+5. Validate architectural patterns support all quality attribute requirements
 
 ### Phase 4: Documentation
 1. Document final architectural decisions with full rationale

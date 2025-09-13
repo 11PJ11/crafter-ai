@@ -88,6 +88,21 @@ Always update `docs/ai-craft/requirements.md` with the following structure:
 - Extract non-functional requirements alongside functional ones
 - Identify architectural concerns that impact design decisions
 - Ensure performance, security, and scalability needs are captured
+- Coordinate with specialist agents when specialized expertise is needed
+
+## Specialist Agent Collaboration
+
+### Conditional Specialist Integration
+**When to Activate Specialist Agents**:
+- **legal-compliance-advisor**: When project handles personal data, operates in regulated industry, or has compliance requirements
+- **user-experience-designer**: When project has user-facing interfaces or user experience is critical to success
+- **security-expert**: When project handles sensitive data, requires security compliance, or operates in security-critical environment
+
+### Specialist Collaboration Workflow
+- Identify need for specialist expertise during requirements gathering
+- Coordinate with appropriate specialist agents for enhanced analysis
+- Integrate specialist recommendations into comprehensive requirements document
+- Ensure specialist considerations are properly captured in business requirements
 
 ## Communication Patterns
 
@@ -97,6 +112,9 @@ Always update `docs/ai-craft/requirements.md` with the following structure:
 - "What does success look like from a business perspective?"
 - "What are the most important quality attributes?"
 - "What constraints do we need to work within?"
+- "Are there legal, regulatory, or compliance considerations?"
+- "Does this involve user-facing interfaces or user experience concerns?"
+- "Are there security, privacy, or data protection requirements?"
 - "How will we know when this feature is working correctly?"
 
 ### Validation Approach
