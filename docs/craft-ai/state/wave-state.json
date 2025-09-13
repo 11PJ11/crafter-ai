@@ -1,0 +1,203 @@
+{
+  "$schema": "wave-state-schema",
+  "version": "1.0",
+  "metadata": {
+    "created": "2025-09-13T16:45:00Z",
+    "last_updated": "2025-09-13T16:45:00Z",
+    "feature_name": "",
+    "session_id": ""
+  },
+  "current_wave": {
+    "wave_number": 1,
+    "wave_name": "DISCUSS",
+    "wave_status": "NOT_STARTED",
+    "started_at": null,
+    "completed_at": null,
+    "estimated_completion": null,
+    "progress_percentage": 0
+  },
+  "wave_definitions": [
+    {
+      "wave_number": 1,
+      "wave_name": "DISCUSS",
+      "description": "Requirements Analysis - Gather and validate business and technical requirements",
+      "primary_agent": "business-analyst",
+      "specialist_agents": [
+        "technical-stakeholder",
+        "user-experience-designer", 
+        "security-expert",
+        "legal-compliance-advisor"
+      ],
+      "input_files": [],
+      "output_files": [
+        "${DOCS_PATH}/${REQUIREMENTS_FILE}",
+        "${DOCS_PATH}/stakeholder-analysis.md",
+        "${DOCS_PATH}/business-constraints.md"
+      ],
+      "completion_criteria": [
+        "Complete requirements documented",
+        "Stakeholder analysis identified", 
+        "Business goals and acceptance criteria defined"
+      ]
+    },
+    {
+      "wave_number": 2,
+      "wave_name": "ARCHITECT", 
+      "description": "System Design - Design system architecture and select technology stack",
+      "primary_agent": "solution-architect",
+      "specialist_agents": [
+        "technology-selector",
+        "architecture-diagram-manager"
+      ],
+      "input_files": [
+        "${DOCS_PATH}/${REQUIREMENTS_FILE}",
+        "${DOCS_PATH}/business-constraints.md"
+      ],
+      "output_files": [
+        "${DOCS_PATH}/${ARCHITECTURE_FILE}",
+        "${DOCS_PATH}/technology-decisions.md",
+        "${DOCS_PATH}/${ARCHITECTURE_DIAGRAMS_FILE}"
+      ],
+      "completion_criteria": [
+        "Architecture design documented",
+        "Technology stack selected and justified",
+        "Architecture diagrams created and validated"
+      ]
+    },
+    {
+      "wave_number": 3,
+      "wave_name": "DISTILL",
+      "description": "Test Design - Create comprehensive acceptance test scenarios", 
+      "primary_agent": "acceptance-designer",
+      "specialist_agents": [],
+      "input_files": [
+        "${DOCS_PATH}/${REQUIREMENTS_FILE}",
+        "${DOCS_PATH}/${ARCHITECTURE_FILE}"
+      ],
+      "output_files": [
+        "${DOCS_PATH}/${ACCEPTANCE_TESTS_FILE}",
+        "${DOCS_PATH}/test-scenarios.md",
+        "${DOCS_PATH}/validation-criteria.md"
+      ],
+      "completion_criteria": [
+        "Acceptance tests defined",
+        "Test scenarios comprehensive and traceable",
+        "Validation criteria clear and measurable"
+      ]
+    },
+    {
+      "wave_number": 4,
+      "wave_name": "DEVELOP",
+      "description": "Implementation - Implement features using outside-in TDD with continuous validation",
+      "primary_agent": "test-first-developer",
+      "specialist_agents": [
+        "test-execution-validator",
+        "code-quality-validator", 
+        "security-performance-validator",
+        "architecture-compliance-validator"
+      ],
+      "input_files": [
+        "${DOCS_PATH}/${ACCEPTANCE_TESTS_FILE}",
+        "${DOCS_PATH}/${ARCHITECTURE_FILE}",
+        "${DOCS_PATH}/validation-criteria.md"
+      ],
+      "output_files": [
+        "${DOCS_PATH}/${IMPLEMENTATION_STATUS_FILE}",
+        "${DOCS_PATH}/development-log.md",
+        "${DOCS_PATH}/${QUALITY_REPORT_FILE}"
+      ],
+      "completion_criteria": [
+        "Implementation completed with passing tests",
+        "Quality standards met across all validators",
+        "Architecture compliance validated"
+      ]
+    },
+    {
+      "wave_number": 5,
+      "wave_name": "DEMO",
+      "description": "Validation & Completion - Validate feature completion and prepare for production",
+      "primary_agent": "feature-completion-coordinator",
+      "specialist_agents": [
+        "mutation-testing-coordinator",
+        "systematic-refactorer",
+        "production-readiness-helper",
+        "commit-readiness-coordinator"
+      ],
+      "input_files": [
+        "${DOCS_PATH}/${IMPLEMENTATION_STATUS_FILE}",
+        "${DOCS_PATH}/${QUALITY_REPORT_FILE}",
+        "${DOCS_PATH}/${ACCEPTANCE_TESTS_FILE}"
+      ],
+      "output_files": [
+        "${DOCS_PATH}/demo-report.md",
+        "${DOCS_PATH}/completion-summary.md",
+        "${DOCS_PATH}/${PROGRESS_FILE}"
+      ],
+      "completion_criteria": [
+        "Feature demonstrates meeting acceptance criteria",
+        "All quality gates passed",
+        "Documentation complete and handoff ready"
+      ]
+    }
+  ],
+  "wave_history": [],
+  "agent_execution": {
+    "current_agent": null,
+    "execution_queue": [],
+    "completed_agents": [],
+    "failed_agents": [],
+    "agent_context": {}
+  },
+  "context_isolation": {
+    "current_wave_context": {},
+    "shared_context": {},
+    "next_wave_context": {}
+  },
+  "quality_gates": {
+    "wave_1_gates": {
+      "requirements_complete": false,
+      "stakeholder_analysis_done": false,
+      "business_goals_defined": false
+    },
+    "wave_2_gates": {
+      "architecture_documented": false,
+      "technology_selected": false,
+      "diagrams_created": false
+    },
+    "wave_3_gates": {
+      "acceptance_tests_defined": false,
+      "test_scenarios_complete": false,
+      "validation_criteria_clear": false
+    },
+    "wave_4_gates": {
+      "implementation_complete": false,
+      "quality_standards_met": false,
+      "architecture_compliant": false
+    },
+    "wave_5_gates": {
+      "feature_demonstrates_criteria": false,
+      "quality_gates_passed": false,
+      "documentation_complete": false
+    }
+  },
+  "file_tracking": {
+    "created_files": [],
+    "modified_files": [],
+    "validated_files": [],
+    "file_dependencies": {}
+  },
+  "interruption_recovery": {
+    "last_safe_checkpoint": null,
+    "interruption_point": null,
+    "recovery_context": {},
+    "can_resume": true
+  },
+  "progress_metrics": {
+    "total_waves": 5,
+    "completed_waves": 0,
+    "current_wave_progress": 0,
+    "overall_progress": 0,
+    "estimated_completion_time": null,
+    "development_velocity": null
+  }
+}
