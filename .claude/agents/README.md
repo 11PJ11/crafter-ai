@@ -73,6 +73,7 @@ Agents responsible for systematic code improvement and refactoring activities.
 Agents responsible for workflow coordination, state management, and pipeline orchestration.
 
 - **`atdd-cycle-coordinator.md`** - ⚫ **Black** 🎭 - Five-stage ATDD workflow orchestration (Discuss→Architect→Distill→Develop→Demo)
+- **`atdd-wave-coordinator.md`** - ⚪ **White** 🌊 - ⭐ **NEW** - Fixed ATDD workflow with wave processing and clean context isolation
 - **`feature-completion-coordinator.md`** - 🔘 **Gray** 🏁 - End-to-end feature completion workflow management
 - **`feature-completion-manager.md`** - ⚪ **Light Gray** ✔️ - Feature completion detection and cleanup
 - **`pipeline-state-manager.md`** - 🔵 **Dark Gray** 💾 - Pipeline state persistence and resumption logic
@@ -141,7 +142,7 @@ This organization makes the agent system more:
 The transformation from multi-responsibility to single-responsibility agents:
 
 - **Before**: 4 complex agents with multiple responsibilities
-- **After**: 23 focused agents with clear, single responsibilities (18 core + 3 specialist + 2 helper)
+- **After**: 24 focused agents with clear, single responsibilities (19 core + 3 specialist + 2 helper)
 - **Specialists**: 3 conditionally-activated specialist agents for enhanced domain expertise
 - **Helpers**: 2 project acceleration helpers for new and existing projects
 - **Result**: Better separation of concerns, improved maintainability, enhanced modularity, specialized expertise integration, project acceleration support
