@@ -349,6 +349,49 @@ code_analysis_patterns:
     build: ["package.json", "requirements.txt", "pom.xml", "*.csproj"]
 ```
 
+## Pipeline Integration
+
+### Input Sources
+**Required Files**:
+- None (entry point agent - processes command line input)
+
+**Context Information**:
+- `cai:atdd` command with feature description and flags
+- Existing project documentation (if available)
+- Project directory structure and source code
+- Existing test files and patterns
+- Configuration files and build settings
+
+### Output Files
+**Primary Deliverable**:
+- `${STATE_PATH}/${WAVE_STATE_FILE}` - Initialized workflow state with entry point determination
+
+**Supporting Files**:
+- `${STATE_PATH}/${WAVE_CHECKPOINT_FILE}` - Initial checkpoint with command analysis
+- `${STATE_PATH}/${AGENT_EXECUTION_LOG_FILE}` - Command processing log entry
+- `${DOCS_PATH}/${PROGRESS_FILE}` - Project progress initialization (if new)
+
+### Integration Points
+**Wave Position**: Pre-Wave Initialization (Command Entry Point)
+
+**Handoff To**:
+- **atdd-wave-coordinator** - Orchestrates determined workflow entry point
+- **business-analyst** (Wave 1) - If starting from DISCUSS stage
+- **solution-architect** (Wave 2) - If starting from ARCHITECT stage
+- **acceptance-designer** (Wave 3) - If starting from DISTILL stage
+- **test-first-developer** (Wave 4) - If starting from DEVELOP stage
+
+**Handoff Criteria**:
+- ✅ Command validated and parsed successfully
+- ✅ Project context analyzed and documented
+- ✅ Optimal entry point determined with rationale
+- ✅ Workflow state initialized with proper configuration
+
+**State Tracking**:
+- Initialize `${STATE_PATH}/${WAVE_STATE_FILE}` with command context and entry point
+- Log command processing in `${STATE_PATH}/${AGENT_EXECUTION_LOG_FILE}`
+- Create initial checkpoint in `${STATE_PATH}/${WAVE_CHECKPOINT_FILE}`
+
 ## Command Response Formats
 
 ### Successful Workflow Initiation

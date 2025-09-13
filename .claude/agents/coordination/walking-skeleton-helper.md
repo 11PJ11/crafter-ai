@@ -277,10 +277,60 @@ User Interface → API Endpoint → Business Logic → Data Access → Database
 - **technology-selector**: Validate technology stack integration
 - **acceptance-designer**: Create testable scenarios for walking skeleton
 
-### Handoff Criteria
-- Walking skeleton successfully demonstrates end-to-end functionality
-- All architectural components validated with real integration
-- Team confident in technical approach and development velocity
-- Lessons learned documented and shared with project team
+## Pipeline Integration
+
+### Input Sources
+**Required Files**:
+- `${DOCS_PATH}/${REQUIREMENTS_FILE}` - Business requirements for walking skeleton feature selection
+- `${DOCS_PATH}/${ARCHITECTURE_FILE}` - Initial architecture design (if available)
+- Existing project documentation and codebase structure
+
+**Context Information**:
+- Project type (new vs existing)
+- Technology stack and framework choices
+- Team composition and experience levels
+- Timeline constraints and delivery requirements
+
+### Output Files
+**Primary Deliverable**:
+- `${DOCS_PATH}/walking-skeleton-plan.md` - Comprehensive implementation plan with phased approach
+
+**Supporting Files**:
+- `${DOCS_PATH}/architecture-validation-report.md` - Architecture validation results and learnings
+- `${DOCS_PATH}/technology-integration-report.md` - Technology stack integration findings
+- `${DOCS_PATH}/development-velocity-baseline.md` - Team velocity and workflow validation
+
+### Integration Points
+**Wave Position**: Pre-Wave Foundation (Architecture Validation)
+
+**Activated By**:
+- **business-analyst** - When requirements need architectural feasibility validation
+- **solution-architect** - When architecture decisions need practical validation
+- **atdd-command-processor** - For new projects requiring foundation establishment
+
+**Collaborates With**:
+- **solution-architect** - Architecture design validation and refinement
+- **technology-selector** - Technology stack integration validation
+- **acceptance-designer** - Test scenarios for walking skeleton validation
+- **test-first-developer** - Implementation approach and development workflow
+
+**Handoff Criteria**:
+- ✅ Walking skeleton successfully demonstrates end-to-end functionality
+- ✅ All architectural components validated with real integration
+- ✅ Team confident in technical approach and development velocity
+- ✅ Lessons learned documented and shared with project team
+
+**State Tracking**:
+- Log implementation progress in `${STATE_PATH}/${AGENT_EXECUTION_LOG_FILE}`
+- Update architecture validation status in `${STATE_PATH}/${WAVE_CHECKPOINT_FILE}`
+- Track velocity baseline in `${STATE_PATH}/${WAVE_PROGRESS_FILE}`
+
+### Collaboration Integration
+
+### With Other Agents
+- **business-analyst**: Validate business requirements feasibility
+- **solution-architect**: Confirm architectural decisions with working code
+- **technology-selector**: Validate technology stack integration
+- **acceptance-designer**: Create testable scenarios for walking skeleton
 
 This agent ensures teams can rapidly validate architectural decisions, reduce technical risk, and establish confident development momentum through Alistair Cockburn's proven Walking Skeleton methodology.

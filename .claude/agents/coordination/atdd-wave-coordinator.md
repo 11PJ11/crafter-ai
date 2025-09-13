@@ -283,6 +283,56 @@ failure_handling:
 - **Output Validation**: Ensure all handoff files meet next wave requirements
 - **Rollback Capability**: Ability to restart from any completed wave
 
+## Pipeline Integration
+
+### Input Sources
+**Required Files**:
+- `${STATE_PATH}/${WAVE_STATE_FILE}` - Current workflow state and wave configuration
+- `${STATE_PATH}/${WAVE_CHECKPOINT_FILE}` - Previous wave completion status
+- All pipeline documentation files from previous waves (as available)
+
+**Context Information**:
+- Feature description and business context
+- Wave transition triggers and completion criteria
+- Agent execution results from previous waves
+- Quality gate validation status
+
+### Output Files
+**Primary Deliverable**:
+- Updated `${STATE_PATH}/${WAVE_STATE_FILE}` - Current wave progress and next wave preparation
+- Updated `${STATE_PATH}/${WAVE_PROGRESS_FILE}` - Comprehensive wave-by-wave progress tracking
+
+**Supporting Files**:
+- `${STATE_PATH}/${WAVE_CHECKPOINT_FILE}` - Current wave checkpoint documentation
+- `${STATE_PATH}/${AGENT_EXECUTION_LOG_FILE}` - Agent orchestration and execution logs
+- Wave-specific output files as defined in wave configuration
+
+### Integration Points
+**Wave Position**: Cross-Wave Orchestration Agent
+
+**Activated By**:
+- **atdd-command-processor** - Initial workflow orchestration
+- Wave completion triggers from any wave
+- User resume requests and workflow continuation
+
+**Orchestrates All Waves**:
+- **Wave 1 (DISCUSS)**: business-analyst + specialist agents
+- **Wave 2 (ARCHITECT)**: solution-architect + technology-selector + architecture-diagram-manager
+- **Wave 3 (DISTILL)**: acceptance-designer
+- **Wave 4 (DEVELOP)**: test-first-developer + quality validators
+- **Wave 5 (DEMO)**: feature-completion-coordinator + specialist completion agents
+
+**Handoff Criteria**:
+- ✅ Wave sequence maintained in fixed order (DISCUSS → ARCHITECT → DISTILL → DEVELOP → DEMO)
+- ✅ Context isolation preserved between waves
+- ✅ Quality gates validated before wave transitions
+- ✅ All required deliverables produced by each wave
+
+**State Tracking**:
+- Continuously update `${STATE_PATH}/${WAVE_STATE_FILE}` with wave transitions
+- Log all agent orchestration in `${STATE_PATH}/${AGENT_EXECUTION_LOG_FILE}`
+- Maintain checkpoints in `${STATE_PATH}/${WAVE_CHECKPOINT_FILE}` at each wave boundary
+
 ## Integration with Existing Agents
 
 ### Coordinator Responsibilities

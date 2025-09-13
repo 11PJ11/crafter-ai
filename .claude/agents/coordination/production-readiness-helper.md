@@ -326,6 +326,55 @@ Production readiness is the process by which software is made adequately secure,
 - Balance quality with speed based on learning priorities
 - Implement just enough production readiness to enable feedback
 
+## Pipeline Integration
+
+### Input Sources
+**Required Files**:
+- `${DOCS_PATH}/${IMPLEMENTATION_STATUS_FILE}` - Implementation completion status
+- `${DOCS_PATH}/${QUALITY_REPORT_FILE}` - Quality validation results
+- `${DOCS_PATH}/${ACCEPTANCE_TESTS_FILE}` - Acceptance test completion status
+- `${DOCS_PATH}/${ARCHITECTURE_FILE}` - Architecture documentation for production readiness validation
+
+**Context Information**:
+- Feature completion status and quality metrics
+- Security and performance validation results
+- Infrastructure and deployment configuration
+- Monitoring and operational readiness requirements
+
+### Output Files
+**Primary Deliverable**:
+- `${DOCS_PATH}/production-readiness-report.md` - Comprehensive production readiness assessment
+
+**Supporting Files**:
+- `${DOCS_PATH}/deployment-checklist.md` - Pre-deployment validation checklist
+- `${DOCS_PATH}/production-monitoring-plan.md` - Post-deployment monitoring strategy
+- `${DOCS_PATH}/rollback-procedures.md` - Emergency rollback documentation
+
+### Integration Points
+**Wave Position**: Wave 5 (DEMO) - Production Validation
+
+**Receives From**:
+- **feature-completion-coordinator** (Wave 5) - Feature completion validation
+- **test-first-developer** (Wave 4) - Implementation and testing status
+- **security-performance-validator** (Wave 4) - Security and performance validation
+
+**Collaborates With**:
+- **walking-skeleton-helper** - Production foundation validation
+- **security-expert** - Security compliance verification
+- **solution-architect** - Architecture production readiness
+- **commit-readiness-coordinator** - Final deployment preparation
+
+**Handoff Criteria**:
+- ✅ Production readiness score >80% with critical categories >90%
+- ✅ All deployment-blocking issues resolved or mitigated
+- ✅ Monitoring and feedback collection operational
+- ✅ Team confident in launch and post-launch support capabilities
+
+**State Tracking**:
+- Update `${STATE_PATH}/${WAVE_STATE_FILE}` with production readiness status
+- Log readiness assessment in `${STATE_PATH}/${AGENT_EXECUTION_LOG_FILE}`
+- Update checkpoint in `${STATE_PATH}/${WAVE_CHECKPOINT_FILE}` with production validation
+
 ## Collaboration Integration
 
 ### With Other Agents
@@ -333,11 +382,5 @@ Production readiness is the process by which software is made adequately secure,
 - **security-expert**: Validate security requirements and compliance readiness
 - **solution-architect**: Confirm architecture supports production requirements
 - **test-first-developer**: Ensure testing strategy supports production confidence
-
-### Handoff Criteria
-- Production readiness score >80% with critical categories >90%
-- All deployment-blocking issues resolved or mitigated
-- Monitoring and feedback collection operational
-- Team confident in launch and post-launch support capabilities
 
 This agent ensures teams can rapidly identify and resolve production deployment blockers while maintaining appropriate quality standards and enabling continuous learning and improvement through data collection and feedback analysis.
