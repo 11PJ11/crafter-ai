@@ -7,15 +7,18 @@ Shared constants and configuration values used across all AI-Craft pipeline agen
 ### Documentation Paths
 ```yaml
 DOCS_PATH: "docs/craft-ai"
+STATE_PATH: "docs/craft-ai/state"
 ```
 
-**Usage**: All agents should reference `${DOCS_PATH}` instead of hardcoding documentation paths.
+**Usage**: All agents should reference `${DOCS_PATH}` instead of hardcoding documentation paths. Use `${STATE_PATH}` for all wave state tracking files.
 
 **Examples**:
 - Requirements file: `${DOCS_PATH}/requirements.md`
 - Architecture file: `${DOCS_PATH}/architecture.md` 
 - Acceptance tests: `${DOCS_PATH}/acceptance-tests.md`
 - Progress tracking: `${DOCS_PATH}/PROGRESS.md`
+- Wave state: `${STATE_PATH}/wave-state.json`
+- Wave checkpoint: `${STATE_PATH}/wave-checkpoint.md`
 
 ## File Name Constants
 
@@ -34,6 +37,10 @@ ARCHITECTURE_DIAGRAMS_FILE: "architecture-diagrams.md"
 REFACTORING_NOTES_FILE: "refactoring-notes.md"
 COMPREHENSIVE_REFACTORING_REPORT_FILE: "comprehensive-refactoring-report.md"
 PIPELINE_STATUS_FILE: "pipeline-status.md"
+WAVE_STATE_FILE: "wave-state.json"
+WAVE_CHECKPOINT_FILE: "wave-checkpoint.md"
+WAVE_PROGRESS_FILE: "wave-progress-tracker.md"
+AGENT_EXECUTION_LOG_FILE: "agent-execution-log.md"
 ```
 
 ## Agent Interaction Constants
