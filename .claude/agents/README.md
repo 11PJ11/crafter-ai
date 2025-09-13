@@ -1,0 +1,121 @@
+# AI-Craft Agent Organization
+
+This directory contains all AI-Craft pipeline agents organized by their primary responsibility category. Each agent follows the Single Responsibility Principle and has a clear, focused purpose.
+
+## 📁 Agent Categories
+
+### 🔍 **requirements-analysis/**
+Agents responsible for gathering, analyzing, and validating business and technical requirements.
+
+- **`business-analyst.md`** - Collaborates with users to gather business requirements and acceptance criteria
+- **`technical-stakeholder.md`** - Validates technical feasibility and provides technical constraint analysis
+
+### 🏗️ **architecture-design/**
+Agents responsible for system architecture design, technology selection, and architectural documentation.
+
+- **`solution-architect.md`** - Collaborative architectural design with user input and ADR creation
+- **`technology-selector.md`** - Technology stack evaluation and selection with trade-off analysis
+- **`architecture-diagram-manager.md`** - Visual architecture documentation and diagram management
+
+### 🧪 **test-design/**
+Agents responsible for acceptance test design and scenario creation.
+
+- **`acceptance-designer.md`** - Creates acceptance test scenarios aligned with requirements and architecture
+
+### 💻 **development/**
+Agents responsible for implementation and development activities.
+
+- **`test-first-developer.md`** - Outside-in TDD implementation with production service integration
+
+### ✅ **quality-validation/**
+Agents responsible for various aspects of quality validation and compliance checking.
+
+- **`test-execution-validator.md`** - Test suite validation and ATDD compliance
+- **`code-quality-validator.md`** - Static analysis, formatting, and complexity metrics
+- **`architecture-compliance-validator.md`** - Component boundaries and architectural patterns
+- **`security-performance-validator.md`** - Security standards and performance benchmarks
+- **`production-service-integrator.md`** - Production service integration validation
+- **`hexagonal-architecture-enforcer.md`** - Hexagonal architecture boundary validation
+- **`commit-readiness-coordinator.md`** - Overall commit orchestration and final validation
+
+### 🔄 **refactoring/**
+Agents responsible for systematic code improvement and refactoring activities.
+
+- **`mutation-testing-coordinator.md`** - Mutation testing validation and test enhancement
+- **`systematic-refactorer.md`** - Level 1-6 progressive refactoring execution
+- **`mikado-refactoring-specialist.md`** - Complex architectural refactoring using Mikado Method
+
+### 🎯 **coordination/**
+Agents responsible for workflow coordination, state management, and pipeline orchestration.
+
+- **`atdd-cycle-coordinator.md`** - Five-stage ATDD workflow orchestration (Discuss→Architect→Distill→Develop→Demo)
+- **`feature-completion-coordinator.md`** - End-to-end feature completion workflow management
+- **`feature-completion-manager.md`** - Feature completion detection and cleanup
+- **`pipeline-state-manager.md`** - Pipeline state persistence and resumption logic
+- **`ci-cd-integration-manager.md`** - CI/CD pipeline monitoring and failure recovery
+- **`technical-debt-tracker.md`** - Technical debt registry and management
+- **`root-cause-analyzer.md`** - Toyota 5 Whys systematic root cause analysis
+
+### 🗂️ **legacy-agents/**
+Deprecated agents that violated Single Responsibility Principle. These have been split into focused agents above.
+
+- **`comprehensive-refactoring-specialist.md`** - ❌ DEPRECATED - Split into 5 refactoring agents
+- **`quality-gates.md`** - ❌ DEPRECATED - Split into 5 quality validation agents
+- **`atdd-orchestrator.md`** - ❌ DEPRECATED - Split into 3 coordination agents
+- **`production-validator.md`** - ❌ DEPRECATED - Split into 2 validation agents
+
+## 🔄 ATDD Pipeline Flow
+
+The agents work together in the five-stage ATDD cycle:
+
+```
+DISCUSS → ARCHITECT → DISTILL → DEVELOP → DEMO
+   ↓         ↓         ↓         ↓        ↓
+business   solution  acceptance test-first feature
+analyst    architect  designer  developer completion
+   +         +         +         +        +
+technical  technology    ∅      production refactoring
+stakeholder selector             validator  agents
+```
+
+### Agent Flow by Phase:
+
+1. **DISCUSS**: `business-analyst` + `technical-stakeholder`
+2. **ARCHITECT**: `solution-architect` + `technology-selector` + `architecture-diagram-manager`  
+3. **DISTILL**: `acceptance-designer`
+4. **DEVELOP**: `test-first-developer` + quality validation agents
+5. **DEMO**: refactoring agents + `feature-completion-manager`
+
+### Quality Gates Integration:
+- **Continuous**: All quality-validation agents run throughout development
+- **Coordination**: `atdd-cycle-coordinator` orchestrates the full workflow
+- **State Management**: `pipeline-state-manager` handles interruption/resumption
+
+## 🎯 Single Responsibility Principle
+
+Each agent now has a single, clear responsibility:
+
+- **Analysis agents** → Gather and analyze requirements
+- **Design agents** → Create architectural designs and select technologies  
+- **Test agents** → Design acceptance scenarios
+- **Development agents** → Implement features using TDD
+- **Validation agents** → Validate different aspects of quality
+- **Refactoring agents** → Improve code systematically
+- **Coordination agents** → Orchestrate workflows and manage state
+
+This organization makes the agent system more:
+- **Maintainable** - Each agent is focused and easy to understand
+- **Testable** - Clear boundaries and responsibilities  
+- **Scalable** - New agents can be added to specific categories
+- **Modular** - Agents can be used independently or in combination
+- **Reliable** - Single responsibility reduces complexity and bugs
+
+## 📈 Agent Evolution
+
+The transformation from multi-responsibility to single-responsibility agents:
+
+- **Before**: 4 complex agents with multiple responsibilities
+- **After**: 18 focused agents with clear, single responsibilities
+- **Result**: Better separation of concerns, improved maintainability, enhanced modularity
+
+This structure supports the AI-Craft vision of systematic, high-quality software development through focused, specialized AI agents working together in a coordinated pipeline.
