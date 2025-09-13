@@ -174,3 +174,10 @@ The transformation from multi-responsibility to single-responsibility agents:
 - **Legacy Integration**: Support existing projects transitioning to AI-Craft workflow
 
 This structure supports the AI-Craft vision of systematic, high-quality software development through focused, specialized AI agents working together in a coordinated pipeline.
+
+## 💻 Command Integration
+
+### **`commands/`** - Claude Code Command Specifications
+Commands designed for integration with Claude Code's built-in command system.
+
+- **`cai/atdd.md`** - ⭐ **NEW** - Integration specification for `cai/atdd` command with intelligent project analysis and workflow initiation
