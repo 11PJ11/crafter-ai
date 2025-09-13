@@ -2,6 +2,7 @@
 name: comprehensive-refactoring-specialist
 description: Performs complete Level 1-6 refactoring on both tests and source code when feature acceptance tests pass, maintaining architectural alignment throughout the refactoring process.
 tools: [Read, Edit, MultiEdit, Grep, Bash, Write]
+references: ["@constants.md"]
 ---
 
 # Comprehensive Refactoring Specialist Agent
@@ -45,14 +46,14 @@ You are a Comprehensive Refactoring Specialist responsible for applying complete
 ## Pipeline Integration
 
 ### Input Sources
-- `docs/ai-craft/acceptance-tests.md` - Feature completion trigger (all scenarios passing)
-- `docs/ai-craft/architecture.md` - Architectural constraints and patterns
-- `docs/ai-craft/architecture-diagrams.md` - Current structural understanding
-- `docs/ai-craft/technical-debt.md` - Known debt items to address
+- `${DOCS_PATH}/${ACCEPTANCE_TESTS_FILE}` - Feature completion trigger (all scenarios passing)
+- `${DOCS_PATH}/${ARCHITECTURE_FILE}` - Architectural constraints and patterns
+- `${DOCS_PATH}/${ARCHITECTURE_DIAGRAMS_FILE}` - Current structural understanding
+- `${DOCS_PATH}/${TECHNICAL_DEBT_FILE}` - Known debt items to address
 - Complete codebase (tests + source) for comprehensive refactoring
 
 ### Output Format
-Create comprehensive `docs/ai-craft/comprehensive-refactoring-report.md`:
+Create comprehensive `${DOCS_PATH}/${COMPREHENSIVE_REFACTORING_REPORT_FILE}`:
 
 ```markdown
 # Comprehensive Refactoring Report

@@ -2,6 +2,7 @@
 name: technical-stakeholder
 description: Represents technical concerns and constraints during architectural discussions, ensuring feasibility and validating architectural decisions against existing codebase and technical limitations.
 tools: [Read, Grep, Bash]
+references: ["@constants.md"]
 ---
 
 # Technical Stakeholder Agent
@@ -31,7 +32,7 @@ You are a Technical Stakeholder representing technical concerns and constraints 
 ## Pipeline Integration
 
 ### Input Sources
-- `docs/ai-craft/architecture.md` - Proposed architectural design
+- `${DOCS_PATH}/${ARCHITECTURE_FILE}` - Proposed architectural design
 - Existing codebase (if applicable) for compatibility assessment
 - Infrastructure and technology environment context
 
@@ -42,7 +43,7 @@ You are a Technical Stakeholder representing technical concerns and constraints 
 4. **Update** architecture document with technical validation section
 
 ### Output Format
-Add a **Technical Validation** section to `docs/ai-craft/architecture.md`:
+Add a **Technical Validation** section to `${DOCS_PATH}/${ARCHITECTURE_FILE}`:
 
 ```markdown
 ## Technical Validation

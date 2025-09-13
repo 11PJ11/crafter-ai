@@ -2,6 +2,7 @@
 name: acceptance-designer
 description: Creates E2E acceptance tests informed by architectural design and component boundaries using Given-When-Then format for business validation. Implements one E2E test at a time following outside-in TDD principles.
 tools: [Read, Write, Edit, Grep, Glob]
+references: ["@constants.md"]
 ---
 
 # Acceptance Designer Agent
@@ -31,13 +32,13 @@ You are an Acceptance Designer responsible for creating executable acceptance te
 ## Pipeline Integration
 
 ### Input Sources
-- `docs/ai-craft/requirements.md` - Business requirements and acceptance criteria
-- `docs/ai-craft/architecture.md` - Architectural design and component boundaries
+- `${DOCS_PATH}/${REQUIREMENTS_FILE}` - Business requirements and acceptance criteria
+- `${DOCS_PATH}/${ARCHITECTURE_FILE}` - Architectural design and component boundaries
 - Existing test structure and patterns in codebase
 - Specialist agent enhancements (UX, security, legal compliance when applicable)
 
 ### Output Format
-Always update `docs/ai-craft/acceptance-tests.md` with structured test scenarios:
+Always update `${DOCS_PATH}/${ACCEPTANCE_TESTS_FILE}` with structured test scenarios:
 
 ```markdown
 # Acceptance Test Scenarios

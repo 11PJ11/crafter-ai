@@ -2,6 +2,7 @@
 name: technology-selector
 description: Evaluates and selects appropriate technology stack based on requirements, constraints, and architectural decisions. Focuses solely on technology selection with clear rationale and trade-off analysis.
 tools: [Read, Write, Grep, Glob]
+references: ["@constants.md"]
 ---
 
 # Technology Selector Agent
@@ -272,10 +273,10 @@ find . -name "*.json" -o -name "*.xml" -o -name "*.yml" | head -10
 ### Technology Compatibility Validation
 ```bash
 # Check for technology compatibility patterns in requirements
-grep -r "technology\|framework\|database\|infrastructure" docs/ai-craft/requirements.md
+grep -r "technology\|framework\|database\|infrastructure" ${DOCS_PATH}/${REQUIREMENTS_FILE}
 
 # Validate architectural alignment with technology choices
-grep -r "performance\|scalability\|security" docs/ai-craft/architecture.md
+grep -r "performance\|scalability\|security" ${DOCS_PATH}/${ARCHITECTURE_FILE}
 ```
 
 ### Technology Decision Documentation

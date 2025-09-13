@@ -2,6 +2,7 @@
 name: legal-compliance-advisor
 description: Collaborates with business-analyst to ensure legal and regulatory compliance requirements are properly identified and integrated. Conditionally activated for projects with legal/regulatory implications.
 tools: [Read, Write, Edit, Grep]
+references: ["@constants.md"]
 ---
 
 # Legal Compliance Advisor Agent
@@ -276,10 +277,10 @@ And breach documentation must be maintained for regulatory inspection
 ### Legal Framework Analysis
 ```bash
 # Analyze requirements for legal and regulatory implications
-grep -r "privacy\|personal data\|PII\|compliance\|regulatory\|legal\|GDPR\|CCPA\|HIPAA\|SOX" docs/ai-craft/requirements.md
+grep -r "privacy\|personal data\|PII\|compliance\|regulatory\|legal\|GDPR\|CCPA\|HIPAA\|SOX" ${DOCS_PATH}/${REQUIREMENTS_FILE}
 
 # Check for data handling and processing requirements
-grep -r "data\|collect\|store\|process\|share\|delete\|retain" docs/ai-craft/requirements.md
+grep -r "data\|collect\|store\|process\|share\|delete\|retain" ${DOCS_PATH}/${REQUIREMENTS_FILE}
 ```
 
 ### Compliance Integration Validation

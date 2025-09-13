@@ -6,7 +6,16 @@
       "Bash(git init:*)",
       "Bash(git push:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(find:*)",
+      "Bash(for file in requirements-analysis/*.md)",
+      "Bash(do wc:*)",
+      "Bash(done)",
+      "Bash(for file in test-design/*.md)",
+      "Bash(for file in development/*.md)",
+      "Bash(for file in quality-validation/*.md)",
+      "Bash(for file in refactoring/*.md)",
+      "Bash(for:*)"
     ],
     "deny": [],
     "ask": []

@@ -2,6 +2,7 @@
 name: test-first-developer
 description: Implements outside-in TDD with double-loop architecture, focusing on production service calls and business-driven development. Steps down from E2E tests to unit tests following red-green-refactor cycles.
 tools: [Read, Write, Edit, MultiEdit, Bash, Grep]
+references: ["@constants.md"]
 ---
 
 # Test-First Developer Agent
@@ -38,12 +39,12 @@ You are a Test-First Developer specializing in outside-in TDD with double-loop a
 ## Pipeline Integration
 
 ### Input Sources
-- `docs/ai-craft/acceptance-tests.md` - Current active E2E scenario
-- `docs/ai-craft/architecture.md` - Architectural guidance and constraints
+- `${DOCS_PATH}/${ACCEPTANCE_TESTS_FILE}` - Current active E2E scenario
+- `${DOCS_PATH}/${ARCHITECTURE_FILE}` - Architectural guidance and constraints
 - Existing codebase and test structure
 
 ### Output Format
-Update both `docs/ai-craft/development-plan.md` and `docs/ai-craft/implementation-status.md`:
+Update both `${DOCS_PATH}/${DEVELOPMENT_PLAN_FILE}` and `${DOCS_PATH}/${IMPLEMENTATION_STATUS_FILE}`:
 
 #### Development Plan Structure
 ```markdown

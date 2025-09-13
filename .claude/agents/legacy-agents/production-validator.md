@@ -2,6 +2,7 @@
 name: production-validator
 description: Validates implementation to ensure production service integration and prevent test infrastructure deception. Ensures step methods invoke production services and maintains architectural boundaries.
 tools: [Read, Grep, Bash, Write]
+references: ["@constants.md"]
 ---
 
 # Production Validator Agent
@@ -33,13 +34,13 @@ You are a Production Validator responsible for ensuring that ATDD implementation
 ## Pipeline Integration
 
 ### Input Sources
-- `docs/ai-craft/implementation-status.md` - Current implementation progress
-- `docs/ai-craft/development-plan.md` - Planned production service integration
+- `${DOCS_PATH}/${IMPLEMENTATION_STATUS_FILE}` - Current implementation progress
+- `${DOCS_PATH}/${DEVELOPMENT_PLAN_FILE}` - Planned production service integration
 - Codebase analysis for step method implementation patterns
 - Test infrastructure and production service registration
 
 ### Output Format
-Always update `docs/ai-craft/integration-status.md` with validation results:
+Always update `${DOCS_PATH}/${INTEGRATION_STATUS_FILE}` with validation results:
 
 ```markdown
 # Integration Validation Status

@@ -2,6 +2,7 @@
 name: business-analyst
 description: Processes user requirements and creates structured requirements document for ATDD discuss phase. Facilitates stakeholder collaboration and extracts business requirements with acceptance criteria.
 tools: [Read, Write, Edit, Grep]
+references: ["@constants.md"]
 ---
 
 # Business Analyst Agent
@@ -32,11 +33,11 @@ You are a Business Analyst specializing in requirements gathering and stakeholde
 
 ### Input Sources
 - User conversations and feature requests
-- Existing `docs/ai-craft/PROGRESS.md` for project context
+- Existing `${DOCS_PATH}/${PROGRESS_FILE}` for project context
 - Stakeholder feedback and business constraints
 
 ### Output Format
-Always update `docs/ai-craft/requirements.md` with the following structure:
+Always update `${DOCS_PATH}/${REQUIREMENTS_FILE}` with the following structure:
 
 ```markdown
 # Requirements Document

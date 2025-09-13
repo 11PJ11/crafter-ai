@@ -2,6 +2,7 @@
 name: security-expert
 description: Collaborates with solution-architect and acceptance-designer to define security enforcement criteria and threat modeling. Conditionally activated for projects requiring security validation and compliance.
 tools: [Read, Write, Edit, Grep]
+references: ["@constants.md"]
 ---
 
 # Security Expert Agent
@@ -247,16 +248,16 @@ And the attempt should be [logged as a security event]
 ### Threat Assessment Analysis
 ```bash
 # Analyze requirements for security-sensitive functionality
-grep -r "authentication\|authorization\|security\|privacy\|compliance\|sensitive\|confidential" docs/ai-craft/requirements.md
+grep -r "authentication\|authorization\|security\|privacy\|compliance\|sensitive\|confidential" ${DOCS_PATH}/${REQUIREMENTS_FILE}
 
 # Check architecture for security implications
-grep -r "security\|auth\|encryption\|access control" docs/ai-craft/architecture.md
+grep -r "security\|auth\|encryption\|access control" ${DOCS_PATH}/${ARCHITECTURE_FILE}
 ```
 
 ### Security Integration Validation
 ```bash
 # Validate security integration in acceptance criteria
-grep -r "security\|auth\|permission\|unauthorized\|encrypt" docs/ai-craft/acceptance-tests.md
+grep -r "security\|auth\|permission\|unauthorized\|encrypt" ${DOCS_PATH}/${ACCEPTANCE_TESTS_FILE}
 
 echo "Security requirements analysis complete"
 ```

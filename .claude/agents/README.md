@@ -2,6 +2,13 @@
 
 This directory contains all AI-Craft pipeline agents organized by their primary responsibility category. Each agent follows the Single Responsibility Principle and has a clear, focused purpose.
 
+## 🔧 **Configuration**
+
+### **`constants.md`** - Shared Constants and Configuration
+- **Purpose**: Centralized configuration for all agents including paths, file names, and common constants
+- **Usage**: All agents reference `@constants.md` to use shared constants like `${DOCS_PATH}` instead of hardcoded paths
+- **Benefit**: Easy maintenance - change paths once in constants.md and all agents automatically use new values
+
 ## 📁 Agent Categories
 
 ### 🔍 **requirements-analysis/**
@@ -58,6 +65,8 @@ Agents responsible for workflow coordination, state management, and pipeline orc
 - **`ci-cd-integration-manager.md`** - CI/CD pipeline monitoring and failure recovery
 - **`technical-debt-tracker.md`** - Technical debt registry and management
 - **`root-cause-analyzer.md`** - Toyota 5 Whys systematic root cause analysis
+- **`walking-skeleton-helper.md`** - ⭐ **NEW** - Minimal end-to-end implementation guide (Alistair Cockburn methodology)
+- **`production-readiness-helper.md`** - ⭐ **NEW** - Rapid go-live acceleration with quality safeguards
 
 ### 🗂️ **legacy-agents/**
 Deprecated agents that violated Single Responsibility Principle. These have been split into focused agents above.
@@ -118,9 +127,10 @@ This organization makes the agent system more:
 The transformation from multi-responsibility to single-responsibility agents:
 
 - **Before**: 4 complex agents with multiple responsibilities
-- **After**: 21 focused agents with clear, single responsibilities (18 core + 3 specialist)
+- **After**: 23 focused agents with clear, single responsibilities (18 core + 3 specialist + 2 helper)
 - **Specialists**: 3 conditionally-activated specialist agents for enhanced domain expertise
-- **Result**: Better separation of concerns, improved maintainability, enhanced modularity, specialized expertise integration
+- **Helpers**: 2 project acceleration helpers for new and existing projects
+- **Result**: Better separation of concerns, improved maintainability, enhanced modularity, specialized expertise integration, project acceleration support
 
 ## 🎯 Specialist Agent Activation
 
@@ -134,5 +144,17 @@ The transformation from multi-responsibility to single-responsibility agents:
 - **Improved Acceptance Criteria**: Tests include UX, security, and legal validation scenarios  
 - **Collaborative Validation**: Multiple specialist perspectives ensure comprehensive coverage
 - **Maintained SRP**: Each specialist has focused responsibility while collaborating seamlessly
+
+## 🚀 Helper Agent Activation
+
+### Project Acceleration Helpers
+**Walking Skeleton Helper**: Activated for new projects or existing projects adopting AI-Craft workflow - creates minimal end-to-end implementations using Alistair Cockburn's methodology to validate architecture and reduce risk
+**Production Readiness Helper**: Activated when rapid production deployment is needed - identifies and resolves deployment blockers while gathering feedback data and balancing speed with quality
+
+### Helper Integration Benefits
+- **Risk Reduction**: Early validation of architectural decisions and production readiness
+- **Speed Optimization**: Accelerate time-to-market while maintaining quality safeguards
+- **Learning Acceleration**: Enable rapid feedback loops and data-driven iteration
+- **Legacy Integration**: Support existing projects transitioning to AI-Craft workflow
 
 This structure supports the AI-Craft vision of systematic, high-quality software development through focused, specialized AI agents working together in a coordinated pipeline.

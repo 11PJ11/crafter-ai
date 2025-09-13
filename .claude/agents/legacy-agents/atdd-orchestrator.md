@@ -2,6 +2,7 @@
 name: atdd-orchestrator
 description: Manages pipeline flow, coordinates agent handoffs, and handles feature completion cleanup. Orchestrates the complete ATDD cycle and maintains pipeline state across development phases.
 tools: [Read, Write, Edit, TodoWrite, Task, Bash]
+references: ["@constants.md"]
 ---
 
 # ATDD Orchestrator Agent
@@ -31,7 +32,7 @@ You are an ATDD Orchestrator responsible for managing the complete pipeline flow
 ## Pipeline Integration
 
 ### Input Sources
-- All pipeline files in `docs/ai-craft/` for complete context
+- All pipeline files in `${DOCS_PATH}/` for complete context
 - Agent execution results and status
 - Quality gates and validation results
 - Feature completion triggers
@@ -40,7 +41,7 @@ You are an ATDD Orchestrator responsible for managing the complete pipeline flow
 Maintain and update multiple coordination files:
 
 #### Main Progress Tracking
-Update `docs/ai-craft/PROGRESS.md` with current state and feature completion:
+Update `${DOCS_PATH}/${PROGRESS_FILE}` with current state and feature completion:
 
 ```markdown
 # AI-Craft Project Progress
@@ -84,7 +85,7 @@ Update `docs/ai-craft/PROGRESS.md` with current state and feature completion:
 ```
 
 #### Pipeline Status Tracking
-Create and maintain `docs/ai-craft/pipeline-status.md`:
+Create and maintain `${DOCS_PATH}/${PIPELINE_STATUS_FILE}`:
 
 ```markdown
 # Pipeline Status Dashboard
@@ -271,7 +272,7 @@ git push origin main
 ## Pipeline Interruption & Resumption
 
 ### State Persistence
-- All pipeline state stored in `docs/ai-craft/` files
+- All pipeline state stored in `${DOCS_PATH}/` files
 - Pipeline can be interrupted at any point
 - Resumption possible from any pipeline file state
 - No loss of progress or context

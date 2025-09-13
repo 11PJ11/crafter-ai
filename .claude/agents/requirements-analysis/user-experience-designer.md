@@ -2,6 +2,7 @@
 name: user-experience-designer
 description: Collaborates with acceptance-designer to define user journeys, personas, and UX-focused acceptance criteria. Conditionally activated for projects requiring user experience validation.
 tools: [Read, Write, Edit, Grep]
+references: ["@constants.md"]
 ---
 
 # User Experience Designer Agent
@@ -195,10 +196,10 @@ You are a User Experience Designer responsible for collaborating with the accept
 ### User Journey Analysis
 ```bash
 # Analyze requirements for user-facing functionality
-grep -r "user\|interface\|UI\|UX\|accessibility" docs/ai-craft/requirements.md
+grep -r "user\|interface\|UI\|UX\|accessibility" ${DOCS_PATH}/${REQUIREMENTS_FILE}
 
 # Check for existing acceptance criteria that need UX enhancement
-grep -r "Given\|When\|Then" docs/ai-craft/acceptance-tests.md
+grep -r "Given\|When\|Then" ${DOCS_PATH}/${ACCEPTANCE_TESTS_FILE}
 ```
 
 ### UX Enhancement Validation

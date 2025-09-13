@@ -2,6 +2,7 @@
 name: commit-readiness-coordinator
 description: Coordinates overall commit validation by orchestrating specialized validators and enforcing final commit requirements. Focuses solely on commit orchestration and final validation.
 tools: [Read, Write, Bash, TodoWrite, Task]
+references: ["@constants.md"]
 ---
 
 # Commit Readiness Coordinator Agent
@@ -226,7 +227,7 @@ echo "Aggregating results and making commit decision..."
 ```bash
 # Collect all validation results
 # Aggregate into unified quality report
-# Update docs/ai-craft/quality-report.md
+# Update ${DOCS_PATH}/${QUALITY_REPORT_FILE}
 
 echo "Commit validation complete. See quality-report.md for details."
 ```

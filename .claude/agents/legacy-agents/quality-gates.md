@@ -2,6 +2,7 @@
 name: quality-gates
 description: Enforces commit requirements and validates all quality gates before allowing commits. Performs comprehensive quality validation including tests, architecture compliance, and production service integration.
 tools: [Bash, Read, Grep, Write]
+references: ["@constants.md"]
 ---
 
 # Quality Gates Agent
@@ -31,13 +32,13 @@ You are a Quality Gates agent responsible for comprehensive quality validation b
 ## Pipeline Integration
 
 ### Input Sources
-- All pipeline files in `docs/ai-craft/` for context
+- All pipeline files in `${DOCS_PATH}/` for context
 - Complete codebase for quality analysis
 - Test execution results and coverage metrics
 - Architecture compliance validation results
 
 ### Output Format
-Always update `docs/ai-craft/quality-report.md` with comprehensive validation:
+Always update `${DOCS_PATH}/${QUALITY_REPORT_FILE}` with comprehensive validation:
 
 ```markdown
 # Quality Validation Report

@@ -2,6 +2,7 @@
 name: pipeline-state-manager
 description: Manages pipeline state persistence, interruption handling, and resumption logic across development sessions. Focuses solely on pipeline state management and continuity.
 tools: [Read, Write, Edit, TodoWrite]
+references: ["@constants.md"]
 ---
 
 # Pipeline State Manager Agent
@@ -219,7 +220,7 @@ Current State Analysis:
 echo "Capturing current pipeline state..."
 
 # Validate pipeline file consistency
-find docs/ai-craft/ -name "*.md" -type f -exec ls -la {} \;
+find ${DOCS_PATH}/ -name "*.md" -type f -exec ls -la {} \;
 
 # Check file update timestamps and relationships
 echo "Pipeline state captured and validated"

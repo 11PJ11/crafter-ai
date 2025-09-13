@@ -2,6 +2,7 @@
 name: technical-debt-tracker
 description: Identifies, prioritizes, and tracks technical debt items with impact assessment and improvement recommendations. Manages debt accumulation and resolution tracking.
 tools: [Read, Write, Edit, Grep, Bash]
+references: ["@constants.md"]
 ---
 
 # Technical Debt Tracker Agent
@@ -32,12 +33,12 @@ You are a Technical Debt Tracker responsible for identifying, prioritizing, and 
 
 ### Input Sources
 - Codebase analysis through static analysis and pattern detection
-- `docs/ai-craft/refactoring-notes.md` - Debt items addressed or introduced
-- `docs/ai-craft/architecture.md` - Architectural constraints and decisions
-- `docs/ai-craft/comprehensive-refactoring-report.md` - Feature completion debt analysis
+- `${DOCS_PATH}/${REFACTORING_NOTES_FILE}` - Debt items addressed or introduced
+- `${DOCS_PATH}/${ARCHITECTURE_FILE}` - Architectural constraints and decisions
+- `${DOCS_PATH}/${COMPREHENSIVE_REFACTORING_REPORT_FILE}` - Feature completion debt analysis
 
 ### Output Format
-Always update `docs/ai-craft/technical-debt.md` with current debt registry:
+Always update `${DOCS_PATH}/${TECHNICAL_DEBT_FILE}` with current debt registry:
 
 ```markdown
 # Technical Debt Registry
