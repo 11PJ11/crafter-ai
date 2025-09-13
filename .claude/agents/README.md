@@ -15,11 +15,11 @@ Each agent category has a distinctive color family to make visual identification
 
 - ⚙️ **Configuration** - System Configuration (constants, shared configuration)
 - 🟦 **Blue Family** - Requirements Analysis (business requirements, stakeholder input)
-- 🟨 **Yellow Family** - Architecture Design (system design, technology selection)
+- 🟧 **Orange Family** - Architecture Design (system design, technology selection)
 - 🟩 **Green Family** - Test Design (acceptance test creation)
-- 🟧 **Orange Family** - Development (implementation and coding)
-- 🟣 **Purple Family** - Quality Validation (testing, compliance, validation)
-- 🔴 **Red Family** - Refactoring (code improvement and enhancement)
+- 🟢 **Dark Green Family** - Development (implementation and coding)
+- 🔴 **Red Family** - Quality Validation (testing, compliance, validation)
+- 🔵 **Light Blue Family** - Refactoring (code improvement and enhancement)
 - ⚫ **Gray/Brown Family** - Coordination (workflow orchestration, project management)
 - ❌ **No Colors** - Legacy/Deprecated agents
 
@@ -34,40 +34,40 @@ Agents responsible for gathering, analyzing, and validating business and technic
 - **`security-expert.md`** - 🔹 **Navy Blue** 🛡️ - ⭐ **NEW** - Security threat modeling and compliance requirements (conditionally activated)
 - **`legal-compliance-advisor.md`** - 💙 **Sky Blue** ⚖️ - ⭐ **NEW** - Legal and regulatory compliance analysis (conditionally activated)
 
-### 🏗️ **architecture-design/** 🟨 **Yellow Family**
+### 🏗️ **architecture-design/** 🟧 **Orange Family**
 Agents responsible for system architecture design, technology selection, and architectural documentation.
 
-- **`solution-architect.md`** - 🟨 **Yellow** 🏗️ - Collaborative architectural design with user input and ADR creation
-- **`technology-selector.md`** - 🟡 **Gold** 🔧 - Technology stack evaluation and selection with trade-off analysis
-- **`architecture-diagram-manager.md`** - 🌟 **Light Yellow** 📐 - Visual architecture documentation and diagram management
+- **`solution-architect.md`** - 🟠 **Orange** 🏗️ - Collaborative architectural design with user input and ADR creation
+- **`technology-selector.md`** - 🟧 **Dark Orange** 🔧 - Technology stack evaluation and selection with trade-off analysis
+- **`architecture-diagram-manager.md`** - 🔶 **Light Orange** 📐 - Visual architecture documentation and diagram management
 
 ### 🧪 **test-design/** 🟩 **Green Family**
 Agents responsible for acceptance test design and scenario creation.
 
 - **`acceptance-designer.md`** - 🟢 **Green** 🧪 - Creates acceptance test scenarios aligned with requirements and architecture
 
-### 💻 **development/** 🟧 **Orange Family**
+### 💻 **development/** 🟢 **Dark Green Family**
 Agents responsible for implementation and development activities.
 
-- **`test-first-developer.md`** - 🟠 **Orange** 💻 - Outside-in TDD implementation with production service integration
+- **`test-first-developer.md`** - 🌿 **Dark Green** 💻 - Outside-in TDD implementation with production service integration
 
-### ✅ **quality-validation/** 🟣 **Purple Family**
+### ✅ **quality-validation/** 🔴 **Red Family**
 Agents responsible for various aspects of quality validation and compliance checking.
 
-- **`test-execution-validator.md`** - 🟣 **Purple** ✅ - Test suite validation and ATDD compliance
-- **`code-quality-validator.md`** - 🟪 **Light Purple** 🔍 - Static analysis, formatting, and complexity metrics
-- **`architecture-compliance-validator.md`** - 💜 **Violet** 🏛️ - Component boundaries and architectural patterns
-- **`security-performance-validator.md`** - 🔮 **Magenta** 🚀 - Security standards and performance benchmarks
-- **`production-service-integrator.md`** - 🔮 **Dark Purple** 🔗 - Production service integration validation
-- **`hexagonal-architecture-enforcer.md`** - 🟣 **Purple Blue** ⬢ - Hexagonal architecture boundary validation
-- **`commit-readiness-coordinator.md`** - 💜 **Lavender** 🎯 - Overall commit orchestration and final validation
+- **`test-execution-validator.md`** - 🔴 **Red** ✅ - Test suite validation and ATDD compliance
+- **`code-quality-validator.md`** - 🟥 **Dark Red** 🔍 - Static analysis, formatting, and complexity metrics
+- **`architecture-compliance-validator.md`** - ❤️ **Bright Red** 🏛️ - Component boundaries and architectural patterns
+- **`security-performance-validator.md`** - 🔺 **Light Red** 🚀 - Security standards and performance benchmarks
+- **`production-service-integrator.md`** - 🔸 **Red Diamond** 🔗 - Production service integration validation
+- **`hexagonal-architecture-enforcer.md`** - 🔻 **Dark Red Triangle** ⬢ - Hexagonal architecture boundary validation
+- **`commit-readiness-coordinator.md`** - 💯 **Crimson** 🎯 - Overall commit orchestration and final validation
 
-### 🔄 **refactoring/** 🔴 **Red Family**
+### 🔄 **refactoring/** 🔵 **Light Blue Family**
 Agents responsible for systematic code improvement and refactoring activities.
 
-- **`mutation-testing-coordinator.md`** - 🔴 **Red** 🧬 - Mutation testing validation and test enhancement
-- **`systematic-refactorer.md`** - ❤️ **Bright Red** 🔄 - Level 1-6 progressive refactoring execution
-- **`mikado-refactoring-specialist.md`** - 🟥 **Dark Red** 🌳 - Complex architectural refactoring using Mikado Method
+- **`mutation-testing-coordinator.md`** - 🔵 **Blue** 🧬 - Mutation testing validation and test enhancement
+- **`systematic-refactorer.md`** - 💙 **Light Blue** 🔄 - Level 1-6 progressive refactoring execution
+- **`mikado-refactoring-specialist.md`** - 🟦 **Dark Blue** 🌳 - Complex architectural refactoring using Mikado Method
 
 ### 🎯 **coordination/** ⚫ **Gray Family**
 Agents responsible for workflow coordination, state management, and pipeline orchestration.
