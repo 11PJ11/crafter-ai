@@ -2,79 +2,93 @@
 
 This directory contains all AI-Craft pipeline agents organized by their primary responsibility category. Each agent follows the Single Responsibility Principle and has a clear, focused purpose.
 
-## 🔧 **Configuration**
+## 🔧 **Configuration** ⚙️ **Configuration Family**
 
-### **`constants.md`** - Shared Constants and Configuration
+### **`constants.md`** - ⚙️ **Configuration** 🔧 - Shared Constants and Configuration
 - **Purpose**: Centralized configuration for all agents including paths, file names, and common constants
 - **Usage**: All agents reference `@constants.md` to use shared constants like `${DOCS_PATH}` instead of hardcoded paths
 - **Benefit**: Easy maintenance - change paths once in constants.md and all agents automatically use new values
 
+## 🎨 Agent Color Scheme
+
+Each agent category has a distinctive color family to make visual identification easier:
+
+- ⚙️ **Configuration** - System Configuration (constants, shared configuration)
+- 🟦 **Blue Family** - Requirements Analysis (business requirements, stakeholder input)
+- 🟨 **Yellow Family** - Architecture Design (system design, technology selection)
+- 🟩 **Green Family** - Test Design (acceptance test creation)
+- 🟧 **Orange Family** - Development (implementation and coding)
+- 🟣 **Purple Family** - Quality Validation (testing, compliance, validation)
+- 🔴 **Red Family** - Refactoring (code improvement and enhancement)
+- ⚫ **Gray/Brown Family** - Coordination (workflow orchestration, project management)
+- ❌ **No Colors** - Legacy/Deprecated agents
+
 ## 📁 Agent Categories
 
-### 🔍 **requirements-analysis/**
+### 🔍 **requirements-analysis/** 🟦 **Blue Family**
 Agents responsible for gathering, analyzing, and validating business and technical requirements with specialist expertise.
 
-- **`business-analyst.md`** - Collaborates with users to gather business requirements and acceptance criteria
-- **`technical-stakeholder.md`** - Validates technical feasibility and provides technical constraint analysis
-- **`user-experience-designer.md`** - ⭐ **NEW** - User journey mapping and UX-focused acceptance criteria (conditionally activated)
-- **`security-expert.md`** - ⭐ **NEW** - Security threat modeling and compliance requirements (conditionally activated)
-- **`legal-compliance-advisor.md`** - ⭐ **NEW** - Legal and regulatory compliance analysis (conditionally activated)
+- **`business-analyst.md`** - 🔵 **Blue** 💼 - Collaborates with users to gather business requirements and acceptance criteria
+- **`technical-stakeholder.md`** - 🔷 **Light Blue** ⚡ - Validates technical feasibility and provides technical constraint analysis
+- **`user-experience-designer.md`** - 🟦 **Medium Blue** 🎨 - ⭐ **NEW** - User journey mapping and UX-focused acceptance criteria (conditionally activated)
+- **`security-expert.md`** - 🔹 **Navy Blue** 🛡️ - ⭐ **NEW** - Security threat modeling and compliance requirements (conditionally activated)
+- **`legal-compliance-advisor.md`** - 💙 **Sky Blue** ⚖️ - ⭐ **NEW** - Legal and regulatory compliance analysis (conditionally activated)
 
-### 🏗️ **architecture-design/**
+### 🏗️ **architecture-design/** 🟨 **Yellow Family**
 Agents responsible for system architecture design, technology selection, and architectural documentation.
 
-- **`solution-architect.md`** - Collaborative architectural design with user input and ADR creation
-- **`technology-selector.md`** - Technology stack evaluation and selection with trade-off analysis
-- **`architecture-diagram-manager.md`** - Visual architecture documentation and diagram management
+- **`solution-architect.md`** - 🟨 **Yellow** 🏗️ - Collaborative architectural design with user input and ADR creation
+- **`technology-selector.md`** - 🟡 **Gold** 🔧 - Technology stack evaluation and selection with trade-off analysis
+- **`architecture-diagram-manager.md`** - 🌟 **Light Yellow** 📐 - Visual architecture documentation and diagram management
 
-### 🧪 **test-design/**
+### 🧪 **test-design/** 🟩 **Green Family**
 Agents responsible for acceptance test design and scenario creation.
 
-- **`acceptance-designer.md`** - Creates acceptance test scenarios aligned with requirements and architecture
+- **`acceptance-designer.md`** - 🟢 **Green** 🧪 - Creates acceptance test scenarios aligned with requirements and architecture
 
-### 💻 **development/**
+### 💻 **development/** 🟧 **Orange Family**
 Agents responsible for implementation and development activities.
 
-- **`test-first-developer.md`** - Outside-in TDD implementation with production service integration
+- **`test-first-developer.md`** - 🟠 **Orange** 💻 - Outside-in TDD implementation with production service integration
 
-### ✅ **quality-validation/**
+### ✅ **quality-validation/** 🟣 **Purple Family**
 Agents responsible for various aspects of quality validation and compliance checking.
 
-- **`test-execution-validator.md`** - Test suite validation and ATDD compliance
-- **`code-quality-validator.md`** - Static analysis, formatting, and complexity metrics
-- **`architecture-compliance-validator.md`** - Component boundaries and architectural patterns
-- **`security-performance-validator.md`** - Security standards and performance benchmarks
-- **`production-service-integrator.md`** - Production service integration validation
-- **`hexagonal-architecture-enforcer.md`** - Hexagonal architecture boundary validation
-- **`commit-readiness-coordinator.md`** - Overall commit orchestration and final validation
+- **`test-execution-validator.md`** - 🟣 **Purple** ✅ - Test suite validation and ATDD compliance
+- **`code-quality-validator.md`** - 🟪 **Light Purple** 🔍 - Static analysis, formatting, and complexity metrics
+- **`architecture-compliance-validator.md`** - 💜 **Violet** 🏛️ - Component boundaries and architectural patterns
+- **`security-performance-validator.md`** - 🔮 **Magenta** 🚀 - Security standards and performance benchmarks
+- **`production-service-integrator.md`** - 🔮 **Dark Purple** 🔗 - Production service integration validation
+- **`hexagonal-architecture-enforcer.md`** - 🟣 **Purple Blue** ⬢ - Hexagonal architecture boundary validation
+- **`commit-readiness-coordinator.md`** - 💜 **Lavender** 🎯 - Overall commit orchestration and final validation
 
-### 🔄 **refactoring/**
+### 🔄 **refactoring/** 🔴 **Red Family**
 Agents responsible for systematic code improvement and refactoring activities.
 
-- **`mutation-testing-coordinator.md`** - Mutation testing validation and test enhancement
-- **`systematic-refactorer.md`** - Level 1-6 progressive refactoring execution
-- **`mikado-refactoring-specialist.md`** - Complex architectural refactoring using Mikado Method
+- **`mutation-testing-coordinator.md`** - 🔴 **Red** 🧬 - Mutation testing validation and test enhancement
+- **`systematic-refactorer.md`** - ❤️ **Bright Red** 🔄 - Level 1-6 progressive refactoring execution
+- **`mikado-refactoring-specialist.md`** - 🟥 **Dark Red** 🌳 - Complex architectural refactoring using Mikado Method
 
-### 🎯 **coordination/**
+### 🎯 **coordination/** ⚫ **Gray Family**
 Agents responsible for workflow coordination, state management, and pipeline orchestration.
 
-- **`atdd-cycle-coordinator.md`** - Five-stage ATDD workflow orchestration (Discuss→Architect→Distill→Develop→Demo)
-- **`feature-completion-coordinator.md`** - End-to-end feature completion workflow management
-- **`feature-completion-manager.md`** - Feature completion detection and cleanup
-- **`pipeline-state-manager.md`** - Pipeline state persistence and resumption logic
-- **`ci-cd-integration-manager.md`** - CI/CD pipeline monitoring and failure recovery
-- **`technical-debt-tracker.md`** - Technical debt registry and management
-- **`root-cause-analyzer.md`** - Toyota 5 Whys systematic root cause analysis
-- **`walking-skeleton-helper.md`** - ⭐ **NEW** - Minimal end-to-end implementation guide (Alistair Cockburn methodology)
-- **`production-readiness-helper.md`** - ⭐ **NEW** - Rapid go-live acceleration with quality safeguards
+- **`atdd-cycle-coordinator.md`** - ⚫ **Black** 🎭 - Five-stage ATDD workflow orchestration (Discuss→Architect→Distill→Develop→Demo)
+- **`feature-completion-coordinator.md`** - 🔘 **Gray** 🏁 - End-to-end feature completion workflow management
+- **`feature-completion-manager.md`** - ⚪ **Light Gray** ✔️ - Feature completion detection and cleanup
+- **`pipeline-state-manager.md`** - 🔵 **Dark Gray** 💾 - Pipeline state persistence and resumption logic
+- **`ci-cd-integration-manager.md`** - 🔴 **Steel Gray** ⚙️ - CI/CD pipeline monitoring and failure recovery
+- **`technical-debt-tracker.md`** - 🟫 **Charcoal** 📊 - Technical debt registry and management
+- **`root-cause-analyzer.md`** - 🔲 **Silver** 🔍 - Toyota 5 Whys systematic root cause analysis
+- **`walking-skeleton-helper.md`** - 🟤 **Brown** 🚶 - ⭐ **NEW** - Minimal end-to-end implementation guide (Alistair Cockburn methodology)
+- **`production-readiness-helper.md`** - 🤎 **Dark Brown** 🚀 - ⭐ **NEW** - Rapid go-live acceleration with quality safeguards
 
-### 🗂️ **legacy-agents/**
+### 🗂️ **legacy-agents/** ⚫ **Deprecated (No Colors)**
 Deprecated agents that violated Single Responsibility Principle. These have been split into focused agents above.
 
-- **`comprehensive-refactoring-specialist.md`** - ❌ DEPRECATED - Split into 5 refactoring agents
-- **`quality-gates.md`** - ❌ DEPRECATED - Split into 5 quality validation agents
-- **`atdd-orchestrator.md`** - ❌ DEPRECATED - Split into 3 coordination agents
-- **`production-validator.md`** - ❌ DEPRECATED - Split into 2 validation agents
+- **`comprehensive-refactoring-specialist.md`** - ❌ **DEPRECATED** 🗃️ - Split into 5 refactoring agents
+- **`quality-gates.md`** - ❌ **DEPRECATED** 🗃️ - Split into 5 quality validation agents
+- **`atdd-orchestrator.md`** - ❌ **DEPRECATED** 🗃️ - Split into 3 coordination agents
+- **`production-validator.md`** - ❌ **DEPRECATED** 🗃️ - Split into 2 validation agents
 
 ## 🔄 ATDD Pipeline Flow
 
