@@ -16,9 +16,9 @@ Each agent category has a distinctive color family to make visual identification
 - ⚙️ **Configuration** - System Configuration (constants, shared configuration)
 - 🟦 **Blue Family** - Requirements Analysis (business requirements, stakeholder input)
 - 🟧 **Orange Family** - Architecture Design (system design, technology selection)
-- 🟩 **Green Family** - Test Design (acceptance test creation)
+- ❤️ **Bright Red Family** - Test Design (acceptance test creation)
 - 🟢 **Dark Green Family** - Development (implementation and coding)
-- 🔴 **Red Family** - Quality Validation (testing, compliance, validation)
+- ❤️ **Bright Red Family** - Quality Validation (testing, compliance, validation)
 - 🔵 **Light Blue Family** - Refactoring (code improvement and enhancement)
 - ⚫ **Gray/Brown Family** - Coordination (workflow orchestration, project management)
 - ❌ **No Colors** - Legacy/Deprecated agents
@@ -41,31 +41,31 @@ Agents responsible for system architecture design, technology selection, and arc
 - **`technology-selector.md`** - 🟧 **Dark Orange** 🔧 - Technology stack evaluation and selection with trade-off analysis
 - **`architecture-diagram-manager.md`** - 🔶 **Light Orange** 📐 - Visual architecture documentation and diagram management
 
-### 🧪 **test-design/** 🟩 **Green Family**
+### 🧪 **test-design/** ❤️ **Bright Red Family**
 Agents responsible for acceptance test design and scenario creation.
 
-- **`acceptance-designer.md`** - 🟢 **Green** 🧪 - Creates acceptance test scenarios aligned with requirements and architecture
+- **`acceptance-designer.md`** - ❤️ **Bright Red** 🧪 - Creates acceptance test scenarios aligned with requirements and architecture
 
 ### 💻 **development/** 🟢 **Dark Green Family**
 Agents responsible for implementation and development activities.
 
 - **`test-first-developer.md`** - 🌿 **Dark Green** 💻 - Outside-in TDD implementation with production service integration
 
-### ✅ **quality-validation/** 🔴 **Red Family**
+### ✅ **quality-validation/** ❤️ **Bright Red Family**
 Agents responsible for various aspects of quality validation and compliance checking.
 
-- **`test-execution-validator.md`** - 🔴 **Red** ✅ - Test suite validation and ATDD compliance
-- **`code-quality-validator.md`** - 🟥 **Dark Red** 🔍 - Static analysis, formatting, and complexity metrics
-- **`architecture-compliance-validator.md`** - ❤️ **Bright Red** 🏛️ - Component boundaries and architectural patterns
-- **`security-performance-validator.md`** - 🔺 **Light Red** 🚀 - Security standards and performance benchmarks
-- **`production-service-integrator.md`** - 🔸 **Red Diamond** 🔗 - Production service integration validation
-- **`hexagonal-architecture-enforcer.md`** - 🔻 **Dark Red Triangle** ⬢ - Hexagonal architecture boundary validation
-- **`commit-readiness-coordinator.md`** - 💯 **Crimson** 🎯 - Overall commit orchestration and final validation
+- **`test-execution-validator.md`** - ❤️ **Bright Red** ✅ - Test suite validation and ATDD compliance
+- **`mutation-testing-coordinator.md`** - 🧬 **DNA Red** 🧬 - Mutation testing validation and test effectiveness enhancement
+- **`code-quality-validator.md`** - 💖 **Pink Red** 🔍 - Static analysis, formatting, and complexity metrics
+- **`architecture-compliance-validator.md`** - 💕 **Light Pink** 🏛️ - Component boundaries and architectural patterns
+- **`security-performance-validator.md`** - 💗 **Bright Pink** 🚀 - Security standards and performance benchmarks
+- **`production-service-integrator.md`** - 💓 **Beating Heart** 🔗 - Production service integration validation
+- **`hexagonal-architecture-enforcer.md`** - 💘 **Heart Arrow** ⬢ - Hexagonal architecture boundary validation
+- **`commit-readiness-coordinator.md`** - 💝 **Heart Gift** 🎯 - Overall commit orchestration and final validation
 
 ### 🔄 **refactoring/** 🔵 **Light Blue Family**
 Agents responsible for systematic code improvement and refactoring activities.
 
-- **`mutation-testing-coordinator.md`** - 🔵 **Blue** 🧬 - Mutation testing validation and test enhancement
 - **`systematic-refactorer.md`** - 💙 **Light Blue** 🔄 - Level 1-6 progressive refactoring execution
 - **`mikado-refactoring-specialist.md`** - 🟦 **Dark Blue** 🌳 - Complex architectural refactoring using Mikado Method
 
