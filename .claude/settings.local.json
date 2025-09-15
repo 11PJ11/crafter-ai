@@ -20,7 +20,21 @@
       "Bash(do mv \"$dir\" cai/)",
       "Bash(chmod:*)",
       "Bash(powershell.exe:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(where sc)",
+      "Bash(sc:*)",
+      "Bash(if [ -d \"$HOME/.claude\" ])",
+      "Bash(else echo \"No .claude directory found\")",
+      "Bash(fi)",
+      "Bash(dir \"C:\\Repositories\\Projects\\executive-flash-news\")",
+      "Read(//c/Repositories/Projects/executive-flash-news/**)",
+      "Bash(dir:*)",
+      "Read(//c/Repositories/Projects/**)",
+      "Bash(bash:*)",
+      "Bash(./uninstall-ai-craft.sh:*)",
+      "Bash(./install-ai-craft.sh:*)",
+      "Bash(cat:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

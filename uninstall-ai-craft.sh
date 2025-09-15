@@ -49,7 +49,7 @@ ${BLUE}EXAMPLES:${NC}
 
 ${BLUE}WHAT GETS REMOVED:${NC}
     - All AI-Craft agents in agents/cai/ directory
-    - All AI-Craft commands in commands/cai/ directory
+    - All CAI commands in commands/cai/ directory (10 essential commands)
     - AI-Craft configuration files (constants.md, manifest)
     - AI-Craft installation logs and backup directories
     - AI-Craft project state files
@@ -153,8 +153,9 @@ confirm_removal() {
     echo ""
     echo -e "${YELLOW}The following will be removed:${NC}"
     echo -e "${YELLOW}  - All AI-Craft agents (41+ specialized agents)${NC}"
-    echo -e "${YELLOW}  - All AI-Craft commands (cai/atdd and related commands)${NC}"
+    echo -e "${YELLOW}  - All CAI commands (10 essential commands: brown-analyze, refactor, start, etc.)${NC}"
     echo -e "${YELLOW}  - Configuration files (constants.md, manifest)${NC}"
+    echo -e "${YELLOW}  - Claude Code workflow hooks for CAI agents${NC}"
     echo -e "${YELLOW}  - Installation logs and backup directories${NC}"
     echo -e "${YELLOW}  - Any customizations or local changes${NC}"
     echo ""
@@ -200,12 +201,25 @@ create_backup() {
         info "Backed up commands directory"
     fi
     
+    # Backup hooks directory if it exists
+    if [[ -d "$CLAUDE_CONFIG_DIR/hooks/cai" ]]; then
+        mkdir -p "$BACKUP_DIR/hooks"
+        cp -r "$CLAUDE_CONFIG_DIR/hooks/cai" "$BACKUP_DIR/hooks/"
+        info "Backed up CAI hooks directory"
+    fi
+
+    # Backup current settings.local.json
+    if [[ -f "$CLAUDE_CONFIG_DIR/settings.local.json" ]]; then
+        cp "$CLAUDE_CONFIG_DIR/settings.local.json" "$BACKUP_DIR/settings.local.json.backup"
+        info "Backed up settings.local.json"
+    fi
+
     # Backup configuration files
     if [[ -f "$CLAUDE_CONFIG_DIR/ai-craft-manifest.txt" ]]; then
         cp "$CLAUDE_CONFIG_DIR/ai-craft-manifest.txt" "$BACKUP_DIR/"
         info "Backed up manifest file"
     fi
-    
+
     if [[ -f "$CLAUDE_CONFIG_DIR/ai-craft-install.log" ]]; then
         cp "$CLAUDE_CONFIG_DIR/ai-craft-install.log" "$BACKUP_DIR/"
         info "Backed up installation log"
@@ -264,14 +278,107 @@ remove_commands() {
     fi
 }
 
+remove_craft_ai_hooks() {
+    info "Removing Craft-AI workflow hooks..."
+
+    # Remove CAI hooks directory (preserve other hooks)
+    if [[ -d "$CLAUDE_CONFIG_DIR/hooks/cai" ]]; then
+        rm -rf "$CLAUDE_CONFIG_DIR/hooks/cai"
+        info "Removed CAI hooks directory"
+    fi
+
+    # Remove hooks directory if it's empty and only contained cai
+    if [[ -d "$CLAUDE_CONFIG_DIR/hooks" ]]; then
+        if [[ -z "$(ls -A "$CLAUDE_CONFIG_DIR/hooks" 2>/dev/null)" ]]; then
+            rmdir "$CLAUDE_CONFIG_DIR/hooks" 2>/dev/null
+            info "Removed empty hooks directory"
+        else
+            info "Kept hooks directory (contains other files)"
+        fi
+    fi
+
+    # Surgically remove CAI hooks from settings.local.json
+    clean_hook_settings
+}
+
+clean_hook_settings() {
+    local settings_file="$CLAUDE_CONFIG_DIR/settings.local.json"
+
+    if [[ ! -f "$settings_file" ]]; then
+        return 0
+    fi
+
+    # Backup before modification
+    cp "$settings_file" "$settings_file.pre-uninstall-backup"
+    info "Created backup: $settings_file.pre-uninstall-backup"
+
+    # Use Python to surgically remove only CAI hooks
+    if command -v python3 >/dev/null 2>&1; then
+        python3 << 'PYTHON_SCRIPT'
+import json
+import os
+import sys
+
+settings_file = os.path.expanduser("~/.claude/settings.local.json")
+
+try:
+    with open(settings_file, 'r') as f:
+        settings = json.load(f)
+except Exception as e:
+    print(f"Error reading settings: {e}")
+    sys.exit(1)
+
+# Remove CAI-specific hooks by ID
+if 'hooks' in settings:
+    for event in list(settings['hooks'].keys()):
+        # Filter out CAI hooks by ID
+        settings['hooks'][event] = [
+            hook for hook in settings['hooks'][event]
+            if not any(
+                h.get('id', '').startswith('cai-')
+                for h in hook.get('hooks', [])
+            )
+        ]
+
+        # Remove empty hook arrays
+        if not settings['hooks'][event]:
+            del settings['hooks'][event]
+
+# Remove CAI-specific permissions
+if 'permissions' in settings and 'allow' in settings['permissions']:
+    settings['permissions']['allow'] = [
+        perm for perm in settings['permissions']['allow']
+        if not ('hooks/cai' in perm or 'craft-ai' in perm)
+    ]
+
+# Save cleaned settings
+try:
+    with open(settings_file, 'w') as f:
+        json.dump(settings, f, indent=2)
+    print("Successfully removed Craft-AI hooks from settings")
+except Exception as e:
+    print(f"Error saving settings: {e}")
+    sys.exit(1)
+PYTHON_SCRIPT
+
+        if [[ $? -eq 0 ]]; then
+            info "Successfully cleaned CAI hooks from settings.local.json"
+        else
+            warn "Failed to clean hooks configuration - manual cleanup may be required"
+        fi
+    else
+        warn "Python3 not available - hooks configuration not cleaned"
+    fi
+}
+
 remove_config_files() {
     info "Removing AI-Craft configuration files..."
-    
+
     if [[ -f "$CLAUDE_CONFIG_DIR/ai-craft-manifest.txt" ]]; then
         rm -f "$CLAUDE_CONFIG_DIR/ai-craft-manifest.txt"
         info "Removed ai-craft-manifest.txt"
     fi
-    
+
     if [[ -f "$CLAUDE_CONFIG_DIR/ai-craft-install.log" ]]; then
         rm -f "$CLAUDE_CONFIG_DIR/ai-craft-install.log"
         info "Removed ai-craft-install.log"
@@ -327,7 +434,20 @@ validate_removal() {
         error "AI-Craft commands directory still exists"
         ((errors++))
     fi
-    
+
+    # Check that hooks are removed
+    if [[ -d "$CLAUDE_CONFIG_DIR/hooks/cai" ]]; then
+        error "AI-Craft hooks directory still exists"
+        ((errors++))
+    fi
+
+    # Check that CAI hooks are removed from settings
+    if [[ -f "$CLAUDE_CONFIG_DIR/settings.local.json" ]]; then
+        if grep -q '"cai-' "$CLAUDE_CONFIG_DIR/settings.local.json" 2>/dev/null; then
+            warn "CAI hooks may still be configured in settings.local.json"
+        fi
+    fi
+
     # Check that config files are removed
     if [[ -f "$CLAUDE_CONFIG_DIR/ai-craft-manifest.txt" ]]; then
         error "AI-Craft manifest file still exists"
@@ -370,7 +490,7 @@ User: $(whoami)
 
 Uninstall Summary:
 - AI-Craft agents removed from: $CLAUDE_CONFIG_DIR/agents/cai
-- AI-Craft commands removed from: $CLAUDE_CONFIG_DIR/commands/cai
+- CAI commands removed from: $CLAUDE_CONFIG_DIR/commands/cai (10 essential commands)
 - Configuration files removed
 - Installation logs removed
 - Backup directories cleaned
@@ -429,6 +549,7 @@ main() {
     # Remove components
     remove_agents
     remove_commands
+    remove_craft_ai_hooks
     remove_config_files
     remove_backups
     remove_project_files
@@ -448,7 +569,8 @@ main() {
     echo ""
     info "Summary:"
     info "- All AI-Craft agents removed"
-    info "- All AI-Craft commands removed"
+    info "- All CAI commands removed (10 essential commands)"
+    info "- Claude Code workflow hooks removed"
     info "- Configuration files cleaned"
     info "- Backup directories removed"
     

@@ -146,7 +146,7 @@ SECOND_WAY_FEEDBACK: "Observability agents providing real-time feedback loops"
 THIRD_WAY_LEARNING: "Experimentation agents driving continuous learning and improvement"
 ```
 
-## Configuration Constants
+## Enhanced Configuration Constants
 
 ### Quality Thresholds
 ```yaml
@@ -154,6 +154,104 @@ TEST_COVERAGE_THRESHOLD: 80
 PERFORMANCE_SLA_THRESHOLD: 95
 ERROR_RATE_THRESHOLD: 0.01
 UPTIME_TARGET: 99.9
+STORY_CONTEXT_COMPLETENESS_THRESHOLD: 95
+WAVE_TRANSITION_VALIDATION_THRESHOLD: 90
+```
+
+### Wave Adaptation Rules
+```yaml
+# Dynamic Wave Configuration Rules (Inspired by BMAD-METHOD patterns)
+WAVE_ADAPTATION_RULES:
+  # Agent Embodiment Configuration
+  AGENT_TRANSFORMATION_MATRIX:
+    business-analyst: ["requirements_conflicts", "stakeholder_alignment", "business_process_mapping"]
+    solution-architect: ["architecture_decisions", "technology_conflicts", "design_validation"]
+    acceptance-designer: ["test_scenario_conflicts", "validation_criteria_issues", "coverage_gaps"]
+    test-first-developer: ["implementation_blocking", "tdd_guidance_needed", "quality_validation"]
+    feature-completion-coordinator: ["completion_validation", "demo_preparation", "handoff_issues"]
+
+  # Context Compression Templates
+  CONTEXT_COMPRESSION_TEMPLATES:
+    wave_1_to_2: "{{business_requirements}} + {{stakeholder_constraints}} → {{architectural_context}}"
+    wave_2_to_3: "{{architecture_overview}} + {{technology_decisions}} → {{test_design_context}}"
+    wave_3_to_4: "{{test_scenarios}} + {{validation_criteria}} → {{implementation_context}}"
+    wave_4_to_5: "{{implementation_status}} + {{quality_metrics}} → {{completion_context}}"
+
+  # Interactive Guidance Configuration
+  INTERACTIVE_GUIDANCE_RULES:
+    decision_confidence_threshold: 85
+    fuzzy_matching_threshold: 75
+    option_selection_format: "numbered_list"
+    max_options_per_decision: 5
+
+  # Workflow Adaptation Patterns
+  WORKFLOW_ADAPTATION_PATTERNS:
+    greenfield_full_stack:
+      waves: ["DISCUSS", "ARCHITECT", "DISTILL", "DEVELOP", "DEMO"]
+      complexity: "comprehensive"
+      duration_estimate: "2-4 weeks"
+
+    brownfield_enhancement:
+      waves: ["DISCUSS_MODIFIED", "ARCHITECT_INTEGRATION", "DISTILL", "DEVELOP", "DEMO"]
+      complexity: "moderate"
+      duration_estimate: "1-2 weeks"
+
+    rapid_prototype:
+      waves: ["DISCUSS_BRIEF", "ARCHITECT_MINIMAL", "DEVELOP", "DEMO"]
+      complexity: "simple"
+      duration_estimate: "2-5 days"
+```
+
+### Story Context Embedding Rules
+```yaml
+# Story Context Management Configuration
+STORY_CONTEXT_RULES:
+  # Context Embedding Templates
+  CONTEXT_EMBEDDING_TEMPLATES:
+    business_context: "{{project_goals}}, {{stakeholder_needs}}, {{business_constraints}}"
+    technical_context: "{{architecture_summary}}, {{technology_decisions}}, {{quality_requirements}}"
+    implementation_context: "{{acceptance_criteria}}, {{test_scenarios}}, {{development_guidance}}"
+
+  # Hyper-Detailed Story Requirements
+  STORY_COMPLETENESS_CRITERIA:
+    business_context_required: true
+    architectural_context_embedded: true
+    implementation_guidance_provided: true
+    acceptance_criteria_detailed: true
+    validation_requirements_specified: true
+    error_prevention_guidance_included: true
+
+  # Context Preservation Rules
+  CONTEXT_PRESERVATION_RULES:
+    cross_reference_integrity: "maintain_epic_to_story_links"
+    architectural_consistency: "embed_relevant_architecture_context"
+    acceptance_criteria_integration: "inline_validation_requirements"
+    implementation_guidance_depth: "include_specific_technical_approach"
+```
+
+### Phase Transition Configuration
+```yaml
+# Phase Transition Management Rules
+PHASE_TRANSITION_RULES:
+  # Planning Completeness Validation
+  PLANNING_VALIDATION_CRITERIA:
+    requirements_completeness: 95
+    architecture_completeness: 90
+    acceptance_criteria_coverage: 85
+    stakeholder_approval_required: true
+
+  # Document Sharding Configuration
+  DOCUMENT_SHARDING_RULES:
+    epic_level_sharding: "group_related_stories_by_business_value"
+    story_level_context_embedding: "include_full_architectural_and_business_context"
+    architecture_component_separation: "organize_by_system_components_and_integration"
+    cross_reference_maintenance: "preserve_all_document_relationships"
+
+  # Transition State Management
+  TRANSITION_STATE_TRACKING:
+    transition_phases: ["planning_validation", "document_sharding", "transition_validation", "execution_handoff"]
+    rollback_points: ["pre_sharding_documents", "post_sharding_validation", "pre_execution_handoff"]
+    state_persistence_file: "${STATE_PATH}/phase-transition-state.json"
 ```
 
 ### Observability Configuration

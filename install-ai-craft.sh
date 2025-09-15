@@ -198,9 +198,180 @@ install_framework() {
     if [[ -d "$FRAMEWORK_SOURCE/commands" ]]; then
         mkdir -p "$CLAUDE_CONFIG_DIR/commands"
         cp -r "$FRAMEWORK_SOURCE/commands/"* "$CLAUDE_CONFIG_DIR/commands/"
-        
+
         local copied_commands=$(find "$CLAUDE_CONFIG_DIR/commands" -name "*.md" | wc -l)
         info "Installed $copied_commands command files"
+
+        # List installed CAI commands for verification
+        if [[ -d "$CLAUDE_CONFIG_DIR/commands/cai" ]]; then
+            local cai_commands=$(find "$CLAUDE_CONFIG_DIR/commands/cai" -name "*.md" | wc -l)
+            info "  - CAI commands: $cai_commands essential commands"
+        fi
+    fi
+
+    # Install hooks
+    install_craft_ai_hooks
+}
+
+# Install Craft-AI specific hooks (surgical approach)
+install_craft_ai_hooks() {
+    info "Installing Craft-AI workflow hooks..."
+
+    # Create CAI-specific hooks directory
+    mkdir -p "$CLAUDE_CONFIG_DIR/hooks/cai"
+
+    # Copy ONLY CAI hooks (preserve other hooks)
+    if [[ -d "$FRAMEWORK_SOURCE/hooks" ]]; then
+        cp -r "$FRAMEWORK_SOURCE/hooks/"* "$CLAUDE_CONFIG_DIR/hooks/cai/"
+
+        # Make scripts executable
+        find "$CLAUDE_CONFIG_DIR/hooks/cai" -name "*.sh" -exec chmod +x {} \;
+        find "$CLAUDE_CONFIG_DIR/hooks/cai" -name "*.py" -exec chmod +x {} \;
+
+        local hook_files=$(find "$CLAUDE_CONFIG_DIR/hooks/cai" -type f | wc -l)
+        info "Installed $hook_files Craft-AI hook files to hooks/cai/"
+    fi
+
+    # Merge hooks into settings (preserve existing)
+    merge_hook_settings
+}
+
+# Surgically merge hook settings without overwriting existing
+merge_hook_settings() {
+    local settings_file="$CLAUDE_CONFIG_DIR/settings.local.json"
+    local hooks_config="$CLAUDE_CONFIG_DIR/hooks/cai/config/hooks-config.json"
+
+    # Create backup of current settings
+    if [[ -f "$settings_file" ]]; then
+        cp "$settings_file" "$settings_file.pre-cai-backup"
+        info "Created backup: $settings_file.pre-cai-backup"
+    fi
+
+    # Use Python to surgically merge CAI hooks
+    if [[ -f "$hooks_config" ]] && command -v python3 >/dev/null 2>&1; then
+        python3 << 'PYTHON_SCRIPT'
+import json
+import os
+import sys
+
+settings_file = os.path.expanduser("~/.claude/settings.local.json")
+hooks_config = os.path.expanduser("~/.claude/hooks/cai/config/hooks-config.json")
+
+# Load CAI hooks configuration
+try:
+    with open(hooks_config, 'r') as f:
+        cai_config = json.load(f)
+except Exception as e:
+    print(f"Error loading hooks config: {e}")
+    sys.exit(1)
+
+# Load existing settings or create new
+settings = {}
+if os.path.exists(settings_file):
+    try:
+        with open(settings_file, 'r') as f:
+            settings = json.load(f)
+    except Exception:
+        settings = {}
+
+# Initialize hooks if not present
+if 'hooks' not in settings:
+    settings['hooks'] = {}
+
+# Merge CAI hooks without removing existing ones
+cai_hooks = cai_config.get('hooks', {})
+for event, new_hooks_list in cai_hooks.items():
+    if event not in settings['hooks']:
+        settings['hooks'][event] = []
+
+    # Add new CAI hooks without duplicating
+    for new_hook in new_hooks_list:
+        # Check if this CAI hook already exists (by id)
+        hook_id = new_hook.get('hooks', [{}])[0].get('id', '')
+        exists = any(
+            h.get('hooks', [{}])[0].get('id') == hook_id
+            for h in settings['hooks'][event]
+            if 'hooks' in h and h['hooks'] and hook_id
+        )
+        if not exists and hook_id:
+            # Update command path to use actual home directory
+            for hook in new_hook.get('hooks', []):
+                if 'command' in hook and '$HOME' in hook['command']:
+                    hook['command'] = hook['command'].replace('$HOME', os.path.expanduser('~'))
+            settings['hooks'][event].append(new_hook)
+
+# Initialize permissions if not present
+if 'permissions' not in settings:
+    settings['permissions'] = {'allow': [], 'deny': [], 'ask': []}
+
+# Add CAI-specific permissions without duplicating
+cai_permissions = cai_config.get('permissions', {}).get('allow', [])
+for perm in cai_permissions:
+    # Replace $HOME with actual path
+    perm = perm.replace('$HOME', os.path.expanduser('~'))
+    if perm not in settings['permissions']['allow']:
+        settings['permissions']['allow'].append(perm)
+
+# Save merged settings
+try:
+    with open(settings_file, 'w') as f:
+        json.dump(settings, f, indent=2)
+    print("Successfully merged Craft-AI hooks into settings")
+except Exception as e:
+    print(f"Error saving settings: {e}")
+    sys.exit(1)
+PYTHON_SCRIPT
+
+        if [[ $? -eq 0 ]]; then
+            info "Successfully merged CAI hooks into settings.local.json"
+        else
+            warn "Failed to merge hooks configuration - manual setup may be required"
+        fi
+    else
+        warn "Python3 not available or hooks config missing - hooks not configured"
+    fi
+}
+
+# Validate hook installation
+validate_hooks() {
+    info "Validating hook installation..."
+
+    local errors=0
+
+    # Check hook files exist
+    local required_hooks=("state-initializer.sh" "context-isolator.py" "input-validator.sh" "output-monitor.py" "stage-transition.sh")
+    for hook in "${required_hooks[@]}"; do
+        if [[ ! -f "$CLAUDE_CONFIG_DIR/hooks/cai/workflow/$hook" ]]; then
+            error "Missing hook: $hook"
+            ((errors++))
+        fi
+    done
+
+    # Check hook permissions
+    for hook in "$CLAUDE_CONFIG_DIR/hooks/cai/"**/*.{sh,py}; do
+        if [[ -f "$hook" ]] && [[ ! -x "$hook" ]]; then
+            warn "Hook not executable: $hook"
+            chmod +x "$hook" 2>/dev/null || true
+        fi
+    done
+
+    # Check settings integration
+    if [[ -f "$CLAUDE_CONFIG_DIR/settings.local.json" ]]; then
+        if grep -q '"cai-' "$CLAUDE_CONFIG_DIR/settings.local.json" 2>/dev/null; then
+            info "CAI hooks configured in settings.local.json"
+        else
+            warn "CAI hooks may not be properly configured in settings"
+        fi
+    else
+        warn "settings.local.json not found"
+    fi
+
+    if [[ $errors -eq 0 ]]; then
+        info "Hook validation: ${GREEN}PASSED${NC}"
+        return 0
+    else
+        error "Hook validation: ${RED}FAILED${NC} ($errors errors)"
+        return 1
     fi
 }
 
@@ -216,11 +387,14 @@ validate_installation() {
         ((errors++))
     fi
     
-    # Check cai/atdd command exists
-    if [[ ! -f "$CLAUDE_CONFIG_DIR/commands/cai/atdd.md" ]]; then
-        error "Missing cai/atdd command file"
-        ((errors++))
-    fi
+    # Check essential CAI commands exist
+    local essential_commands=("brown-analyze" "refactor" "start" "discuss" "architect" "develop" "transition" "validate" "complete" "help")
+    for cmd in "${essential_commands[@]}"; do
+        if [[ ! -f "$CLAUDE_CONFIG_DIR/commands/cai/$cmd.md" ]]; then
+            error "Missing essential CAI command: $cmd.md"
+            ((errors++))
+        fi
+    done
     
     # Count installed files
     local total_agents=$(find "$CLAUDE_CONFIG_DIR/agents/cai" -name "*.md" 2>/dev/null | wc -l)
@@ -275,7 +449,7 @@ Installation Summary:
 Framework Components:
 - 41+ specialized AI agents with Single Responsibility Principle
 - Wave processing architecture with clean context isolation
-- cai/atdd command interface with intelligent project analysis
+- 10 essential CAI commands: brown-analyze, refactor, start, discuss, architect, develop, transition, validate, complete, help
 - Centralized configuration system (constants.md)
 - Quality validation network with Level 1-6 refactoring
 - Second Way DevOps: Observability agents (metrics, logs, traces, performance)
@@ -290,7 +464,8 @@ $(for category in requirements-analysis architecture-design test-design developm
 done)
 
 Usage:
-- Use 'cai/atdd "feature description"' in any project
+- Use CAI commands: 'cai:brown-analyze', 'cai:refactor', 'cai:start', etc.
+- Use 'cai:start "feature description"' to initialize ATDD workflow
 - All agents available globally across projects
 - Centralized constants work project-wide
 
@@ -337,17 +512,28 @@ main() {
     create_backup
     install_framework
     
-    if validate_installation; then
+    if validate_installation && validate_hooks; then
         create_manifest
         info ""
         info "${GREEN}✅ AI-Craft Framework installed successfully!${NC}"
         info ""
+        info "Framework Components Installed:"
+        info "- 41+ specialized AI agents"
+        info "- 10 essential CAI commands (brown-analyze, refactor, start, etc.)"
+        info "- Claude Code workflow hooks"
+        info "- Quality validation network"
+        info ""
         info "Next steps:"
         info "1. Navigate to any project directory"
-        info "2. Use: ${BLUE}cai/atdd \"your feature description\"${NC}"
-        info "3. Access 41+ specialized agents globally"
+        info "2. Use: ${BLUE}cai:start \"your feature description\"${NC} to initialize ATDD workflow"
+        info "3. Use: ${BLUE}cai:brown-analyze${NC} for existing codebase analysis"
+        info "4. Use: ${BLUE}cai:help${NC} for interactive guidance and command reference"
+        info "5. Agents will automatically follow ATDD workflow"
         info ""
-        info "For help: cai/atdd --help"
+        info "Command examples:"
+        info "- ${BLUE}cai:brown-analyze --legacy \"my-project\"${NC}"
+        info "- ${BLUE}cai:refactor \"module\" --level 3${NC}"
+        info "- ${BLUE}cai:start \"new feature\" --interactive${NC}"
         info "Documentation: https://github.com/11PJ11/crafter-ai"
     else
         error "Installation failed validation"

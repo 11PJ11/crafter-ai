@@ -1,0 +1,58 @@
+{
+  "hooks": {
+    "SessionStart": [{
+      "hooks": [{
+        "type": "command",
+        "command": "$HOME/.claude/hooks/cai/workflow/state-initializer.sh",
+        "id": "cai-state-initializer"
+      }]
+    }],
+    "UserPromptSubmit": [{
+      "matcher": "cai/atdd|acceptance-designer|test-first-developer|solution-architect|business-analyst|user-experience-designer|technical-stakeholder|security-expert|legal-compliance-advisor|atdd-orchestrator",
+      "hooks": [{
+        "type": "command",
+        "command": "$HOME/.claude/hooks/cai/workflow/context-isolator.py",
+        "id": "cai-context-isolator"
+      }]
+    }],
+    "PreToolUse": [{
+      "matcher": "Read",
+      "condition": "cai-workflow-active",
+      "hooks": [{
+        "type": "command",
+        "command": "$HOME/.claude/hooks/cai/workflow/input-validator.sh",
+        "id": "cai-input-validator"
+      }]
+    }],
+    "PostToolUse": [{
+      "matcher": "Write|Edit",
+      "condition": "cai-workflow-active",
+      "hooks": [{
+        "type": "command",
+        "command": "$HOME/.claude/hooks/cai/workflow/output-monitor.py",
+        "id": "cai-output-monitor"
+      }]
+    }, {
+      "matcher": "Write",
+      "condition": "cai-workflow-active",
+      "hooks": [{
+        "type": "command",
+        "command": "$HOME/.claude/hooks/cai/workflow/stage-transition.sh",
+        "id": "cai-stage-transition"
+      }]
+    }]
+  },
+  "permissions": {
+    "allow": [
+      "Bash($HOME/.claude/hooks/cai/**)",
+      "Read(docs/craft-ai/**)",
+      "Write(docs/craft-ai/**)",
+      "Edit(docs/craft-ai/**)",
+      "Read(state/craft-ai/**)",
+      "Write(state/craft-ai/**)",
+      "Read(.claude/agents/cai/**)",
+      "Write(state/craft-ai/*.log)",
+      "Write(state/craft-ai/*.json)"
+    ]
+  }
+}
