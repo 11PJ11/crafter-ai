@@ -76,19 +76,56 @@ systematic-refactorer:
 
 ### TDD Methodology Control
 - `--outside-in`: Enforce Outside-In TDD methodology (default)
+  - Start with E2E acceptance tests representing user-facing features
+  - Step down to unit tests when E2E tests fail (proper inner loop)
+  - Focus on business behavior rather than technical implementation details
+  - Ensure natural test progression from acceptance to unit level
 - `--double-loop`: Explicit double-loop TDD architecture
+  - Outer loop: ATDD/E2E tests for customer validation and business outcomes
+  - Inner loop: Unit TDD for developer implementation and technical details
+  - Systematic progression between loops with clear boundaries and responsibilities
+  - Maintains business focus while enabling detailed technical implementation
 - `--one-scenario`: Implement one E2E scenario at a time (recommended)
+  - Prevents overwhelming NotImplementedException cascades during development
+  - Enables clean commits with working implementation at each step
+  - Maintains focus and reduces cognitive load for complex features
+  - Follows proper Outside-In TDD scope management principles
 - `--real-system`: Ensure step methods call production services
+  - Prevents test infrastructure deception where tests pass without real implementation
+  - Validates that step methods invoke actual production services via dependency injection
+  - Ensures production code paths are exercised rather than test doubles
+  - Critical for authentic ATDD implementation and production readiness
 
 ### Development Approach
-- `--tdd-mode strict`: Strict RED→GREEN→REFACTOR cycles
-- `--tdd-mode guided`: Guided TDD with scaffolding support
-- `--tdd-mode natural`: Natural test progression without forcing failures
+- `--tdd-mode strict`: Strict RED→GREEN→REFACTOR cycles with no shortcuts
+  - Rigorous TDD with no production code without failing tests first
+  - Enforces proper cycle discipline and prevents implementation shortcuts
+  - Maximum learning and design benefits from TDD methodology
+- `--tdd-mode guided`: Guided TDD with scaffolding support and education
+  - Provides TDD mentoring and educational guidance throughout development
+  - Includes explanations of TDD decisions and methodology benefits
+  - Suitable for teams learning TDD or complex domain modeling
+- `--tdd-mode natural`: Natural test progression without forcing artificial failures
+  - Allows natural progression when tests would naturally fail
+  - Balances TDD benefits with pragmatic development efficiency
+  - Suitable for experienced TDD practitioners and well-understood domains
 
 ### Quality Control
-- `--validate`: Add comprehensive validation steps
-- `--mutation-testing`: Include mutation testing validation
-- `--coverage [threshold]`: Set test coverage requirements
+- `--validate`: Add comprehensive validation steps throughout development
+  - Validates step methods call production services not test infrastructure
+  - Ensures architectural compliance and hexagonal boundaries
+  - Applies quality gates at each development phase with rollback capability
+  - Includes continuous validation of test quality and effectiveness
+- `--mutation-testing`: Include mutation testing validation for test effectiveness
+  - Validates test quality by introducing code mutations and checking test failures
+  - Ensures tests actually validate business logic rather than implementation details
+  - Achieves target kill rates (≥75-80%) before considering development complete
+  - Identifies weak tests and missing edge case coverage
+- `--coverage [threshold]`: Set test coverage requirements with business focus
+  - Sets minimum code coverage thresholds (default: 80% line, 90% branch)
+  - Focuses on meaningful coverage of business logic paths
+  - Excludes infrastructure and framework code from coverage requirements
+  - Combines with mutation testing for comprehensive test quality assessment
 - `--refactor-level [1-3]`: Specify refactoring intensity during development
 
 ## Outside-In TDD Process
@@ -237,4 +274,156 @@ one_scenario_rule:
 /cai:develop --epic "USER-MANAGEMENT" --one-scenario --tdd-mode strict
 ```
 
-ARGUMENTS: create the commands under the @.claude\commands\cai\ folder so we can install them together with the rest
+## Comprehensive Usage Examples
+
+### Basic TDD Development
+```bash
+# Simple story development with Outside-In TDD
+/cai:develop "STORY-LOGIN-001" --outside-in
+
+# Strict TDD with comprehensive validation
+/cai:develop "STORY-AUTH-002" --tdd-mode strict --validate
+
+# Real system integration with one scenario focus
+/cai:develop "STORY-PAYMENT-003" --real-system --one-scenario
+```
+
+### Advanced TDD Configurations
+```bash
+# Double-loop TDD with learning mode and comprehensive validation
+/cai:develop "STORY-USER-REG" --double-loop --tdd-mode guided --validate --real-system
+
+# Outside-In with mutation testing and high coverage requirements
+/cai:develop "STORY-ORDER-PROCESS" --outside-in --mutation-testing --coverage 95 --one-scenario
+
+# Natural TDD with real system integration and refactoring
+/cai:develop "STORY-SEARCH" --tdd-mode natural --real-system --refactor-level 3 --validate
+```
+
+### Epic and Feature Development
+```bash
+# Epic-level development with systematic approach
+/cai:develop --epic "USER-MANAGEMENT" --outside-in --one-scenario --tdd-mode strict --validate
+
+# Feature development with comprehensive quality gates
+/cai:develop --feature "SHOPPING-CART" --double-loop --validate --real-system --mutation-testing
+
+# Component development with guided TDD and learning focus
+/cai:develop --component "PAYMENT-PROCESSOR" --tdd-mode guided --validate --coverage 90
+```
+
+### Quality-Focused Development
+```bash
+# Maximum validation and quality assurance
+/cai:develop "STORY-SECURITY-AUTH" --validate --real-system --mutation-testing --one-scenario --tdd-mode strict
+
+# Learning-focused development with comprehensive guidance
+/cai:develop "STORY-API-DESIGN" --tdd-mode guided --double-loop --validate --real-system --coverage 85
+
+# Production-ready development with all quality gates
+/cai:develop "STORY-CRITICAL-FEATURE" --outside-in --real-system --validate --mutation-testing --refactor-level 3
+```
+
+### Specialized Development Scenarios
+```bash
+# Legacy integration with careful validation
+/cai:develop "STORY-LEGACY-INTEGRATION" --tdd-mode natural --real-system --validate --one-scenario
+
+# High-risk feature with maximum quality controls
+/cai:develop "STORY-FINANCIAL-CALC" --tdd-mode strict --mutation-testing --coverage 98 --validate --real-system
+
+# UI component with behavior-driven focus
+/cai:develop "STORY-USER-DASHBOARD" --outside-in --refactor-level 2 --validate --coverage 85
+```
+
+### Integration Workflow Examples
+```bash
+# Requirements-driven development workflow
+/cai:discuss "user authentication requirements" --focus security --stories
+/cai:develop "STORY-AUTH-001" --outside-in --real-system --validate --one-scenario
+
+# Architecture-informed development
+/cai:architect "authentication system" --focus security --validation
+/cai:develop "STORY-AUTH-IMPL" --double-loop --real-system --tdd-mode strict --validate
+
+# Refactoring-supported development cycle
+/cai:develop "STORY-LEGACY-MOD" --outside-in --validate --one-scenario --tdd-mode natural
+/cai:refactor "auth-module" --level 3 --validate --parallel-change
+
+# Complete ATDD workflow integration
+/cai:start "user notification system" --methodology atdd --interactive
+/cai:discuss "notification requirements" --focus ux --interactive
+/cai:architect "notification architecture" --style event-driven
+/cai:develop "STORY-NOTIFY-001" --outside-in --real-system --validate --one-scenario
+```
+
+### Team Learning and Development
+```bash
+# TDD learning with comprehensive guidance
+/cai:develop "STORY-LEARNING-001" --tdd-mode guided --double-loop --validate --coverage 80
+
+# Pair programming simulation with validation
+/cai:develop "STORY-COMPLEX-LOGIC" --tdd-mode guided --mutation-testing --validate --real-system
+
+# Code review preparation with quality focus
+/cai:develop "STORY-REVIEW-READY" --outside-in --validate --mutation-testing --refactor-level 2 --coverage 90
+```
+
+## Command Execution Pattern
+
+### Activation Instructions
+When this command is invoked:
+1. Parse story context and development requirements
+2. Invoke test-first-developer agent for Outside-In TDD implementation
+3. Chain to systematic-refactorer agent for continuous refactoring
+4. Apply double-loop TDD with real system integration
+5. Return working implementation with comprehensive test coverage
+
+### Agent Invocation Workflow
+```yaml
+execution-flow:
+  step1-development:
+    agent: test-first-developer
+    task: |
+      Implement feature using Outside-In TDD methodology:
+      - Story ID: {parsed_story_id}
+      - TDD Mode: {tdd_mode_if_specified}
+      - Real System Integration: {real_system_flag_status}
+
+      Execute Outside-In TDD including:
+      - Create E2E acceptance test first (outer loop)
+      - Step down to unit tests (inner TDD loop)
+      - Implement production code to pass tests
+      - One E2E test at a time to prevent commit blocks
+
+  step2-refactoring:
+    agent: systematic-refactorer
+    task: |
+      Apply continuous refactoring throughout development:
+      - Review implementation from test-first-developer
+      - Apply Level 1-3 refactoring during development cycles
+      - Maintain clean code throughout TDD cycles
+      - Ensure code reveals business intent through naming
+
+  step3-validation:
+    agent: production-validator
+    task: |
+      Validate production service integration:
+      - Ensure step methods invoke production services
+      - Prevent test infrastructure deception
+      - Validate real system integration paths
+      - Confirm production code path coverage
+```
+
+### Arguments Processing
+- Parse `[story-id]` or story context for implementation scope
+- Apply `--outside-in`, `--double-loop`, `--tdd-mode` flags to methodology
+- Process `--real-system`, `--validate` flags for integration validation
+- Enable `--one-scenario` mode for focused E2E test progression
+
+### Output Generation
+Return working implementation including:
+- Passing E2E acceptance tests with business validation
+- Comprehensive unit test coverage with behavior focus
+- Production code with systematic refactoring applied
+- Real system integration with production service calls

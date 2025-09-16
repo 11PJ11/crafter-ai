@@ -29,32 +29,136 @@ Following the pattern of existing commands like `/sc:analyze`, the `cai/atdd` co
 cai/atdd [feature-description] [flags]
 ```
 
-### Command Examples
+## Usage Examples
+
+### Basic ATDD Workflow Initiation
 ```bash
-# Basic usage
+# Start complete ATDD workflow for new feature
 cai/atdd "implement user authentication system"
+# Result: Initiates 5-stage ATDD workflow (Discuss → Architect → Distill → Develop → Demo)
 
-# With analysis flag
-cai/atdd "add payment processing" --analyze-existing
-
-# Stage specification
-cai/atdd "OAuth2 integration" --from-stage=architect
-
-# Resume workflow
-cai/atdd --resume auth-feature-2024-01
-
-# Status check
+# Quick status check of current workflow
 cai/atdd --status
+# Result: Shows current stage progress and pending tasks
+
+# Get comprehensive help and usage guidance
+cai/atdd --help
+# Result: Displays all available flags and integration examples
+```
+
+### Project Context Analysis
+```bash
+# Analyze existing codebase before starting ATDD workflow
+cai/atdd "add payment processing" --analyze-existing
+# Result: Comprehensive project analysis with ATDD workflow recommendations
+
+# Deep project scan with technical debt assessment
+cai/atdd "implement search functionality" --project-scan
+# Result: Thorough project structure analysis and baseline establishment
+
+# Combined analysis with specific stage entry
+cai/atdd "OAuth2 integration" --analyze-existing --from-stage=architect
+# Result: Project analysis followed by entry at architect stage
+```
+
+### Workflow Stage Management
+```bash
+# Start from specific ATDD stage (skipping earlier stages)
+cai/atdd "add notifications" --from-stage=distill
+# Result: Enters workflow at distill stage with proper context validation
+
+# Resume previously interrupted workflow
+cai/atdd --resume auth-feature-2024-01
+# Result: Restores complete workflow state and continues from last checkpoint
+
+# Check status with detailed progress report
+cai/atdd --status --project-scan
+# Result: Current workflow status with project context analysis
+```
+
+### Advanced Flag Combinations
+```bash
+# Comprehensive ATDD initiation with full analysis
+cai/atdd "implement user dashboard" --analyze-existing --project-scan
+# Result: Complete project analysis followed by optimized ATDD workflow
+
+# Resume workflow with context refresh
+cai/atdd --resume dashboard-feature-2024 --analyze-existing
+# Result: Workflow resumption with updated project context analysis
+
+# Stage-specific entry with analysis
+cai/atdd "add real-time features" --from-stage=develop --project-scan
+# Result: Direct entry to develop stage with comprehensive project baseline
+```
+
+### Integration with Other CAI Commands
+```bash
+# ATDD workflow followed by targeted development
+cai/atdd "implement API endpoints" --from-stage=distill
+# Then: /cai:develop --outside-in --tdd-mode double-loop
+
+# Project analysis before ATDD initiation
+# First: /cai:brownfield --comprehensive --technical-debt
+# Then: cai/atdd "modernize authentication" --analyze-existing
+
+# ATDD workflow with systematic refactoring
+cai/atdd "refactor user management" --project-scan
+# Then: /cai:refactor --level 4 --mikado --validate
+```
+
+### Workflow Monitoring and Management
+```bash
+# Continuous status monitoring during development
+cai/atdd --status
+# Result: Real-time workflow progress with stage completion indicators
+
+# Resume with status verification
+cai/atdd --resume payment-system-2024 --status
+# Result: Workflow resumption with comprehensive progress summary
+
+# Help with troubleshooting guidance
+cai/atdd --help --status
+# Result: Combined help documentation with current workflow diagnostics
 ```
 
 ### Flag Integration
 Following Claude Code flag patterns:
+
 - `--analyze-existing` - Analyze current project context
+  - Performs comprehensive analysis of existing codebase and project structure
+  - Identifies current implementation patterns and architectural decisions
+  - Assesses test coverage and quality gates to inform ATDD workflow starting point
+  - Generates project context summary for informed workflow planning
+
 - `--from-stage=[stage]` - Start from specific ATDD stage
-- `--project-scan` - Deep project context analysis  
+  - Allows entry into ATDD workflow at any stage (discuss, architect, distill, develop, demo)
+  - Validates prerequisites and context requirements for the specified starting stage
+  - Preserves workflow integrity by ensuring proper stage transitions and dependencies
+  - Useful for resuming interrupted workflows or joining mid-process collaboration
+
+- `--project-scan` - Deep project context analysis
+  - Executes thorough scan of project structure, dependencies, and development patterns
+  - Analyzes technical debt levels and identifies refactoring opportunities
+  - Evaluates test coverage and quality metrics to establish baseline
+  - Provides detailed recommendations for ATDD workflow optimization
+
 - `--resume [id]` - Resume existing workflow
+  - Restores previously paused or interrupted ATDD workflow session
+  - Maintains context continuity and preserves all workflow state and progress
+  - Validates current project state against saved workflow context
+  - Provides seamless continuation with progress summary and next steps
+
 - `--status` - Show workflow status
+  - Displays current ATDD workflow stage and completion progress
+  - Shows active quality gates and validation requirements
+  - Provides summary of completed stages and pending tasks
+  - Includes estimated time to completion and resource requirements
+
 - `--help` - Show command help and usage
+  - Displays comprehensive command reference with all flags and options
+  - Provides usage examples for common ATDD workflow scenarios
+  - Includes integration guidance with other CAI commands
+  - Shows troubleshooting tips for common workflow issues
 
 ## Claude Code Integration Points
 
@@ -382,3 +486,62 @@ function notifyATDDCompletion(workflowId, result) {
 - [ ] Error handling test coverage
 
 This integration specification provides the blueprint for making `cai/atdd` a first-class Claude Code command that leverages the existing AI-Craft agent infrastructure.
+
+## Command Execution Pattern
+
+### Activation Instructions
+When this command is invoked:
+1. Parse feature description and ATDD workflow requirements
+2. Invoke atdd-command-processor agent for intelligent workflow startup
+3. Chain through project context analysis and optimal entry point
+4. Initialize appropriate ATDD workflow stage
+5. Return ATDD workflow startup with context-aware preparation
+
+### Agent Invocation Workflow
+```yaml
+execution-flow:
+  step1-command-processing:
+    agent: atdd-command-processor
+    task: |
+      Process ATDD command and analyze project context:
+      - Feature Description: {parsed_feature_description}
+      - Existing Analysis: {analyze_existing_flag}
+      - From Stage: {from_stage_if_specified}
+
+      Execute ATDD command processing including:
+      - Analyze existing project context from documentation and tests
+      - Extract relevant context and determine optimal workflow entry
+      - Parse command flags and workflow customization options
+      - Prepare intelligent context for ATDD workflow initialization
+
+  step2-context-analysis:
+    agent: atdd-command-processor
+    task: |
+      Discover and analyze existing project documentation:
+      - Scan primary documentation locations (docs/, README.md, ARCHITECTURE.md)
+      - Analyze source code patterns and existing test coverage
+      - Extract business context and architectural decisions
+      - Assess current testing approach and integration points
+
+  step3-workflow-initialization:
+    agent: atdd-wave-coordinator
+    task: |
+      Initialize ATDD workflow from optimal entry point:
+      - Review context analysis from command processor
+      - Start from appropriate stage (discuss/architect/distill/develop/demo)
+      - Initialize 5-stage ATDD cycle with context preparation
+      - Setup wave processing with clean context isolation
+```
+
+### Arguments Processing
+- Parse `[feature-description]` argument for ATDD scope
+- Apply `--analyze-existing`, `--project-scan` flags for context analysis
+- Process `--from-stage`, `--resume` flags for workflow positioning
+- Enable intelligent project context discovery and workflow entry
+
+### Output Generation
+Return ATDD workflow initialization including:
+- Intelligent workflow entry point with context preparation
+- Project context analysis and existing documentation integration
+- ATDD stage setup with appropriate agent coordination
+- Context-aware feature development roadmap

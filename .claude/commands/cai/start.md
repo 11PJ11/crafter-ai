@@ -77,8 +77,44 @@ atdd-wave-coordinator:
 
 ### Interaction Control
 - `--interactive`: Enable numbered option selection and guided setup
-- `--guided`: Step-by-step workflow configuration
+  - Provides intelligent workflow recommendations based on project analysis
+  - Shows detailed pros/cons for each workflow option with rationale
+  - Allows customization of workflow phases and agent coordination
+  - Enables iterative refinement of workflow configuration
+- `--guided`: Step-by-step workflow configuration with detailed explanations
+  - Walks through each workflow phase with comprehensive guidance
+  - Configures agent coordination and tool orchestration settings
+  - Sets up quality gates and validation checkpoints systematically
+  - Provides educational context for workflow decisions
 - `--assessment`: Detailed project assessment before workflow selection
+  - Analyzes existing codebase and documentation for context
+  - Estimates resource requirements and timeline projections
+  - Identifies potential risks and mitigation strategies
+  - Evaluates team capabilities and tooling requirements
+
+### Workflow Customization
+- `--methodology <type>`: Select development methodology approach
+  - `atdd`: Full ATDD with 5-wave progression (discuss→architect→distill→develop→demo)
+  - `tdd`: Test-driven development focused workflow
+  - `bdd`: Behavior-driven development with stakeholder emphasis
+  - `lean`: Lean development with waste elimination focus
+- `--scope <level>`: Define project scope and boundaries
+  - `feature`: Single feature development workflow
+  - `epic`: Multi-feature epic coordination with dependency management
+  - `system`: System-wide development orchestration
+  - `component`: Component-focused development cycle
+
+### Quality and Process Control
+- `--validation`: Enable comprehensive workflow validation
+  - Validates workflow selection against project requirements
+  - Ensures proper agent coordination and tool availability
+  - Verifies quality gates and success criteria alignment
+  - Checks resource availability and capability requirements
+- `--checkpoint`: Set up workflow checkpoints and review gates
+  - Creates milestone reviews and validation points
+  - Sets up automated quality and progress monitoring
+  - Enables workflow course correction and adaptation
+  - Provides stakeholder review and approval mechanisms
 
 ## Workflow Patterns
 
@@ -227,4 +263,147 @@ output_files:
 /cai:start "payment processing microservice" --workflow api --assessment
 ```
 
-ARGUMENTS: create the commands under the @.claude\commands\cai\ folder so we can install them together with the rest
+## Comprehensive Usage Examples
+
+### Quick Start Scenarios
+```bash
+# Simple feature development startup
+/cai:start "user notification system"
+
+# Interactive workflow selection with guidance
+/cai:start "shopping cart checkout" --interactive
+
+# Brownfield enhancement with assessment
+/cai:start "add OAuth to existing auth" --workflow brownfield --assessment
+```
+
+### Methodology-Specific Workflows
+```bash
+# Full ATDD workflow with interactive configuration
+/cai:start "real-time messaging" --methodology atdd --interactive --guided
+
+# TDD-focused development with validation
+/cai:start "payment validation service" --methodology tdd --validation --checkpoint
+
+# BDD with stakeholder collaboration emphasis
+/cai:start "user dashboard redesign" --methodology bdd --guided --interactive
+
+# Lean development with waste elimination focus
+/cai:start "API performance optimization" --methodology lean --assessment
+```
+
+### Scope-Specific Initialization
+```bash
+# Feature-level development with comprehensive setup
+/cai:start "user authentication system" --scope feature --validation --checkpoint
+
+# Epic-level coordination with dependency management
+/cai:start "e-commerce platform modernization" --scope epic --interactive --assessment
+
+# System-wide development orchestration
+/cai:start "microservices migration" --scope system --methodology atdd --guided
+
+# Component-focused development cycle
+/cai:start "payment processing component" --scope component --validation
+```
+
+### Advanced Configuration Examples
+```bash
+# Comprehensive project startup with all validations
+/cai:start "enterprise CRM system" --interactive --guided --assessment --validation --checkpoint
+
+# Greenfield development with methodology selection
+/cai:start "new mobile banking app" --workflow greenfield --methodology atdd --scope system --interactive
+
+# Legacy modernization with detailed assessment
+/cai:start "modernize monolithic application" --workflow brownfield --assessment --guided --checkpoint
+
+# Rapid prototyping with lean methodology
+/cai:start "AI-powered recommendation engine" --workflow rapid-prototype --methodology lean --interactive
+```
+
+### Team and Process Integration
+```bash
+# Multi-team coordination setup
+/cai:start "distributed team collaboration platform" --scope epic --checkpoint --validation --guided
+
+# Quality-focused development with comprehensive gates
+/cai:start "financial transaction processing" --validation --checkpoint --assessment --methodology atdd
+
+# Agile integration with continuous validation
+/cai:start "customer feedback platform" --methodology bdd --interactive --checkpoint --validation
+```
+
+### Integration Workflow Examples
+```bash
+# Analysis-driven development startup
+/cai:brownfield "legacy-system" --focus architecture --roadmap
+/cai:start "modernize legacy architecture" --workflow brownfield --assessment --guided
+
+# Architecture-first development workflow
+/cai:start "event-driven microservices" --methodology atdd --guided
+/cai:architect "event-driven system" --style microservices --interactive
+
+# Requirements-driven BDD workflow
+/cai:start "customer portal redesign" --methodology bdd --interactive
+/cai:discuss "enhanced customer experience requirements" --focus ux --interactive
+```
+
+## Command Execution Pattern
+
+### Activation Instructions
+When this command is invoked:
+1. Parse project description and workflow requirements
+2. Invoke workflow-guidance-agent for intelligent workflow selection
+3. Chain to atdd-wave-coordinator for workflow initialization
+4. Configure ATDD workflow with appropriate settings
+5. Return workflow startup confirmation and next steps
+
+### Agent Invocation Workflow
+```yaml
+execution-flow:
+  step1-guidance:
+    agent: workflow-guidance-agent
+    task: |
+      Assess project and recommend optimal workflow:
+      - Project Description: {parsed_project_description}
+      - Workflow Type: {workflow_type_if_specified}
+      - Scope: {scope_level_if_specified}
+
+      Execute workflow assessment including:
+      - Project complexity and type analysis
+      - Recommend workflow: greenfield/brownfield/rapid-prototype
+      - Provide numbered workflow options with rationale
+      - Assess resource and timeline requirements
+
+  step2-coordination:
+    agent: atdd-wave-coordinator
+    task: |
+      Initialize selected ATDD workflow:
+      - Review workflow recommendation from workflow-guidance-agent
+      - Initialize selected workflow with 5-wave progression
+      - Setup DISCUSS→ARCHITECT→DISTILL→DEVELOP→DEMO phases
+      - Configure wave-specific agents and coordination patterns
+
+  step3-setup:
+    agent: pipeline-state-manager
+    task: |
+      Configure project pipeline state:
+      - Create project state tracking and persistence
+      - Setup cross-session continuity mechanisms
+      - Initialize context preservation for wave transitions
+      - Prepare for resumable workflow execution
+```
+
+### Arguments Processing
+- Parse `[project-description]` argument for project scope
+- Apply `--workflow`, `--scope`, `--methodology` flags to workflow selection
+- Process `--interactive`, `--guided` flags for user interaction
+- Enable `--assessment` mode for complexity evaluation
+
+### Output Generation
+Return workflow initialization confirmation including:
+- Selected workflow type with rationale
+- Initialized 5-wave ATDD progression setup
+- Next steps and first wave preparation
+- Project state tracking configuration

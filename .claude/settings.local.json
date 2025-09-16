@@ -34,7 +34,9 @@
       "Bash(./uninstall-ai-craft.sh:*)",
       "Bash(./install-ai-craft.sh:*)",
       "Bash(cat:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(head:*)",
+      "Bash(while read file)"
     ],
     "deny": [],
     "ask": []

@@ -1,13 +1,13 @@
 # AI-Craft Agent Command Definitions
 
-## Essential 10 Commands for Complete ATDD Workflow
+## Essential 11 Commands for Complete ATDD Workflow
 
-These commands provide comprehensive coverage of the AI-Craft ATDD framework, from brownfield analysis through refactoring and deployment.
+These commands provide comprehensive coverage of the AI-Craft ATDD framework, from brownfield analysis through production deployment.
 
-### 1. `cai:analyze [scope]`
+### 1. `cai:brownfield [scope]`
 **Purpose**: Brownfield Project Analyzer - Understand existing codebase structure and technical debt
 **Triggers**: technical-debt-tracker → technical-stakeholder → solution-architect
-**Example**: `cai:analyze --legacy "payment-system"`
+**Example**: `cai:brownfield --legacy "payment-system"`
 **Flow**:
 ```yaml
 technical-debt-tracker:
@@ -153,7 +153,27 @@ production-readiness-helper:
   - Prepares go-live checklist
 ```
 
-### 10. `cai:help [agent-name]`
+### 10. `cai:skeleton [target-environment]`
+**Purpose**: Walking Skeleton Production Readiness - Minimal E2E implementation with automated pipeline
+**Triggers**: walking-skeleton-helper → production-readiness-helper → test-first-developer
+**Example**: `cai:skeleton production --feature "user-auth" --timeline "2-weeks"`
+**Flow**:
+```yaml
+walking-skeleton-helper:
+  - Creates thinnest E2E implementation touching all architectural layers
+  - Selects minimal feature with maximum architectural coverage
+  - Designs simplest integration path through all system components
+production-readiness-helper:
+  - Identifies immediate production deployment blockers
+  - Scores readiness across 9 categories with 36 questions framework
+  - Generates gap analysis and prioritized remediation plan
+test-first-developer:
+  - Coordinates Outside-In TDD implementation of walking skeleton
+  - Ensures real functionality delivery with proper integration testing
+  - Guides CI/CD pipeline setup and automated testing implementation
+```
+
+### 11. `cai:help [agent-name]`
 **Purpose**: Interactive guidance and agent transformation
 **Triggers**: atdd-wave-coordinator (transformation) or interactive-wave-elicitation
 **Example**: `cai:help architect` or `cai:help --interactive`
@@ -197,18 +217,27 @@ interactive_mode:
 - `--outside-in`: Use Outside-In TDD methodology
 - `--deploy-ready`: Include production readiness validation
 
+### Production & Deployment Control
+- `--assessment-only`: Production readiness analysis without implementation
+- `--feature [name]`: Specify walking skeleton feature (e.g., "user-auth", "basic-crud")
+- `--timeline [duration]`: Implementation timeline ("1-week", "2-weeks", "1-month")
+- `--minimal`: Ultra-minimal implementation (happy path only)
+- `--comprehensive`: Full implementation with error handling and edge cases
+- `--pipeline [type]`: CI/CD pipeline type (github-actions, gitlab, jenkins, azure-devops)
+- `--monitoring [level]`: Monitoring depth (basic, standard, comprehensive)
+
 ## Usage Examples
 
 ### Brownfield Project Analysis
 ```bash
 # Analyze existing legacy system
-cai:analyze --legacy "monolithic-ecommerce-app"
+cai:brownfield --legacy "monolithic-ecommerce-app"
 
 # Focused technical debt assessment
-cai:analyze "payment-module" --scope module
+cai:brownfield "payment-module" --scope module
 
 # Full system architecture analysis
-cai:analyze --full --interactive
+cai:brownfield --full --interactive
 ```
 
 ### Systematic Refactoring Workflows
@@ -232,16 +261,35 @@ cai:architect "event-driven notification system"
 cai:transition --validate
 cai:develop "STORY-NOTIFY-001" --outside-in
 cai:validate --full
+cai:skeleton production --assessment-only
 cai:complete "notifications-feature" --deploy-ready
+```
+
+### Walking Skeleton Production Readiness Workflow
+```bash
+# Assess production readiness and identify blockers
+cai:skeleton production --assessment-only --format report
+
+# Implement minimal E2E feature with automated pipeline
+cai:skeleton development --feature "user-auth" --minimal --pipeline github-actions
+
+# Full production deployment with comprehensive monitoring
+cai:skeleton production --feature "checkout-flow" --comprehensive --monitoring comprehensive --timeline "2-weeks"
+
+# Quick MVP validation with basic observability
+cai:skeleton staging --minimal --monitoring basic --pipeline gitlab
 ```
 
 ### Brownfield Enhancement Workflow
 ```bash
 # Analyze existing system first
-cai:analyze --legacy "user-management-module"
+cai:brownfield --legacy "user-management-module"
 
 # Plan enhancement based on analysis
 cai:start "add OAuth2 to existing auth" --brownfield
+
+# Assess production readiness before enhancement
+cai:skeleton staging --assessment-only --feature "oauth2-integration"
 
 # Refactor before adding new functionality
 cai:refactor "auth-module" --level 3 --validate
@@ -274,7 +322,7 @@ cai:help --interactive
 
 | Command | Primary Wave | Brownfield | Greenfield | Refactoring | Validation |
 |---------|--------------|------------|------------|-------------|------------|
-| `cai:analyze` | Pre-planning | ✅ Essential | Optional | Planning | Analysis |
+| `cai:brownfield` | Pre-planning | ✅ Essential | Optional | Planning | Analysis |
 | `cai:refactor` | Any | ✅ Critical | ✅ Continuous | ✅ Core | Quality |
 | `cai:start` | Wave 0 | ✅ Planning | ✅ Planning | Planning | Setup |
 | `cai:discuss` | Wave 1 | ✅ Requirements | ✅ Requirements | Context | Business |
@@ -283,6 +331,7 @@ cai:help --interactive
 | `cai:transition` | Wave 2→3 | ✅ Context | ✅ Context | Planning | Validation |
 | `cai:validate` | Any | ✅ Quality | ✅ Quality | ✅ Quality | ✅ Core |
 | `cai:complete` | Wave 5 | ✅ Delivery | ✅ Delivery | Final | Production |
+| `cai:skeleton` | Pre-production | ✅ Modernization | ✅ MVP | Pipeline | Production |
 | `cai:help` | Any | ✅ Guidance | ✅ Guidance | ✅ Guidance | ✅ Support |
 
 ## Error Handling & Smart Defaults

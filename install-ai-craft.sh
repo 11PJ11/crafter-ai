@@ -388,7 +388,7 @@ validate_installation() {
     fi
     
     # Check essential CAI commands exist
-    local essential_commands=("brown-analyze" "refactor" "start" "discuss" "architect" "develop" "transition" "validate" "complete" "help")
+    local essential_commands=("brownfield" "refactor" "start" "discuss" "architect" "develop" "transition" "validate" "complete" "skeleton" "help")
     for cmd in "${essential_commands[@]}"; do
         if [[ ! -f "$CLAUDE_CONFIG_DIR/commands/cai/$cmd.md" ]]; then
             error "Missing essential CAI command: $cmd.md"
@@ -449,7 +449,7 @@ Installation Summary:
 Framework Components:
 - 41+ specialized AI agents with Single Responsibility Principle
 - Wave processing architecture with clean context isolation
-- 10 essential CAI commands: brown-analyze, refactor, start, discuss, architect, develop, transition, validate, complete, help
+- 11 essential CAI commands: brownfield, refactor, start, discuss, architect, develop, transition, validate, complete, skeleton, help
 - Centralized configuration system (constants.md)
 - Quality validation network with Level 1-6 refactoring
 - Second Way DevOps: Observability agents (metrics, logs, traces, performance)
@@ -464,7 +464,7 @@ $(for category in requirements-analysis architecture-design test-design developm
 done)
 
 Usage:
-- Use CAI commands: 'cai:brown-analyze', 'cai:refactor', 'cai:start', etc.
+- Use CAI commands: 'cai:brownfield', 'cai:refactor', 'cai:start', etc.
 - Use 'cai:start "feature description"' to initialize ATDD workflow
 - All agents available globally across projects
 - Centralized constants work project-wide
@@ -519,19 +519,19 @@ main() {
         info ""
         info "Framework Components Installed:"
         info "- 41+ specialized AI agents"
-        info "- 10 essential CAI commands (brown-analyze, refactor, start, etc.)"
+        info "- 11 essential CAI commands (brownfield, refactor, start, skeleton, etc.)"
         info "- Claude Code workflow hooks"
         info "- Quality validation network"
         info ""
         info "Next steps:"
         info "1. Navigate to any project directory"
         info "2. Use: ${BLUE}cai:start \"your feature description\"${NC} to initialize ATDD workflow"
-        info "3. Use: ${BLUE}cai:brown-analyze${NC} for existing codebase analysis"
+        info "3. Use: ${BLUE}cai:brownfield${NC} for existing codebase analysis"
         info "4. Use: ${BLUE}cai:help${NC} for interactive guidance and command reference"
         info "5. Agents will automatically follow ATDD workflow"
         info ""
         info "Command examples:"
-        info "- ${BLUE}cai:brown-analyze --legacy \"my-project\"${NC}"
+        info "- ${BLUE}cai:brownfield --legacy \"my-project\"${NC}"
         info "- ${BLUE}cai:refactor \"module\" --level 3${NC}"
         info "- ${BLUE}cai:start \"new feature\" --interactive${NC}"
         info "Documentation: https://github.com/11PJ11/crafter-ai"

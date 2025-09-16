@@ -73,19 +73,60 @@ interactive_mode:
 
 ### Agent Transformation
 - `[agent-name]`: Specific agent to transform into (e.g., "architect", "business-analyst")
-- Available agents: `business-analyst`, `solution-architect`, `acceptance-designer`, `test-first-developer`, `systematic-refactorer`, etc.
+  - Transforms the ATDD wave coordinator into specialized domain expert
+  - Provides agent-specific command reference and capabilities
+  - Maintains agent context for subsequent workflow interactions
+  - Available agents: business-analyst, solution-architect, acceptance-designer, test-first-developer, systematic-refactorer
 
 ### Guidance Control
 - `--interactive`: Enable interactive elicitation mode with numbered options
+  - Launches interactive workflow selection with clear numbered choices
+  - Provides step-by-step guidance through complex decision-making processes
+  - Adapts recommendations based on user responses and project context
+  - Maintains conversational flow with contextual follow-up questions
+
 - `--workflow-guidance`: Focus on workflow selection and navigation guidance
+  - Provides comprehensive workflow pattern recommendations
+  - Analyzes project characteristics to suggest optimal ATDD approaches
+  - Includes timeline estimates and resource requirements for each workflow
+  - Offers customization options for adapting workflows to specific needs
+
 - `--command-reference`: Provide comprehensive command reference and examples
+  - Displays complete catalog of available CAI commands with descriptions
+  - Includes detailed flag explanations and usage patterns
+  - Provides practical examples for common development scenarios
+  - Organizes commands by category and complexity level
+
 - `--troubleshooting`: Focus on problem-solving and troubleshooting guidance
+  - Identifies common ATDD workflow issues and resolution strategies
+  - Provides step-by-step debugging guidance for test failures
+  - Offers escalation paths for complex technical problems
+  - Includes preventive measures for avoiding common pitfalls
 
 ### Context Analysis
 - `--context-analysis`: Analyze current project state and provide recommendations
+  - Performs comprehensive analysis of current project phase and progress
+  - Evaluates technical debt levels and architectural alignment
+  - Assesses test coverage and quality gate compliance
+  - Generates actionable recommendations based on project health metrics
+
 - `--next-steps`: Recommend optimal next steps based on project context
+  - Prioritizes recommendations based on project phase and business goals
+  - Considers team capacity and timeline constraints in suggestions
+  - Provides clear success criteria and validation checkpoints
+  - Includes resource allocation and skill requirement assessments
+
 - `--wave-status`: Analyze current wave progress and provide wave-specific guidance
+  - Evaluates progress within current ATDD wave (Discuss, Architect, Distill, Develop, Demo)
+  - Identifies completion criteria and remaining tasks for current wave
+  - Provides wave transition guidance and context preservation strategies
+  - Assesses quality gates and validation requirements for wave completion
+
 - `--recommendations`: Generate personalized recommendations based on project analysis
+  - Combines project context analysis with user experience level assessment
+  - Provides learning opportunities and skill development suggestions
+  - Prioritizes recommendations based on impact and implementation difficulty
+  - Includes success metrics and progress tracking mechanisms
 
 ## Help System Framework
 
@@ -250,47 +291,157 @@ project_health_assessment:
 - **Progression**: Clear progression through guidance and decision-making processes
 - **Satisfaction**: User satisfaction with guidance quality and effectiveness
 
-## Examples
+## Usage Examples
 
-### General Help and Command Reference
+### Basic Help and Command Discovery
 ```bash
+# Display complete command catalog and workflow guidance
 /cai:help
-```
 
-### Agent Transformation Examples
-```bash
-# Transform into solution architect
-/cai:help architect
-
-# Transform into business analyst with interactive mode
-/cai:help business-analyst --interactive
-
-# Transform into test-first developer
-/cai:help test-first-developer
-```
-
-### Context-Aware Guidance
-```bash
-# Get recommendations based on current project state
-/cai:help --context-analysis --recommendations
-
-# Interactive workflow guidance
-/cai:help --workflow-guidance --interactive
-
-# Troubleshooting assistance
-/cai:help --troubleshooting --next-steps
-```
-
-### Specialized Guidance
-```bash
-# Focus on command reference
+# Show comprehensive command reference with detailed flag descriptions
 /cai:help --command-reference
 
-# Wave-specific guidance
-/cai:help --wave-status --next-steps
-
-# Interactive project guidance
-/cai:help --interactive --context-analysis
+# Get troubleshooting guidance for common ATDD workflow issues
+/cai:help --troubleshooting
 ```
 
-ARGUMENTS: create the commands under the @.claude\commands\cai\ folder so we can install them together with the rest
+### Agent Transformation Workflows
+```bash
+# Transform into solution architect for system design
+/cai:help architect
+# Result: Provides architect-specific commands (design, decisions, patterns, technology)
+
+# Transform into business analyst with interactive stakeholder workshop
+/cai:help business-analyst --interactive
+# Result: Launches numbered option selection for requirements elicitation
+
+# Transform into test-first developer for Outside-In TDD implementation
+/cai:help test-first-developer
+# Result: Provides TDD commands (tdd, scaffold, implement, validate)
+
+# Transform with full context analysis and recommendations
+/cai:help architect --interactive --context-analysis --recommendations
+# Result: Combines agent transformation with project-specific guidance
+```
+
+### Interactive Workflow Guidance
+```bash
+# Launch interactive workflow selection with numbered options
+/cai:help --workflow-guidance --interactive
+# Result: Presents workflow options (greenfield, brownfield, rapid prototype)
+
+# Get comprehensive project analysis with actionable recommendations
+/cai:help --context-analysis --recommendations
+# Result: Analyzes technical debt, test coverage, architectural alignment
+
+# Interactive project guidance with full context awareness
+/cai:help --interactive --context-analysis
+# Result: Combines interactive selection with deep project analysis
+```
+
+### Wave-Specific and Troubleshooting Guidance
+```bash
+# Analyze current wave progress and get next steps
+/cai:help --wave-status --next-steps
+# Result: Shows current wave completion status and optimal next actions
+
+# Troubleshooting with step-by-step problem resolution
+/cai:help --troubleshooting --next-steps
+# Result: Identifies blockers and provides numbered resolution options
+
+# Combined wave analysis with troubleshooting support
+/cai:help --wave-status --troubleshooting --recommendations
+# Result: Comprehensive wave assessment with problem resolution guidance
+```
+
+### Advanced Flag Combinations
+```bash
+# Comprehensive guidance with all analysis flags
+/cai:help --context-analysis --wave-status --recommendations --next-steps
+# Result: Full project health assessment with prioritized action plan
+
+# Interactive agent transformation with complete context
+/cai:help solution-architect --interactive --workflow-guidance --context-analysis
+# Result: Architect transformation with interactive workflow selection and project analysis
+
+# Troubleshooting-focused interactive session
+/cai:help --troubleshooting --interactive --command-reference
+# Result: Interactive problem-solving with comprehensive command reference
+```
+
+### Integration with Other CAI Commands
+```bash
+# Help followed by workflow initiation
+/cai:help --workflow-guidance
+# Then: /cai:start --workflow greenfield_full_stack
+
+# Agent transformation followed by specialized work
+/cai:help architect
+# Then: /cai:architect --style hexagonal --focus scalability
+
+# Context analysis followed by targeted improvement
+/cai:help --context-analysis --recommendations
+# Then: /cai:refactor --level 3 --mikado
+```
+
+## Command Execution Pattern
+
+### Activation Instructions
+When this command is invoked:
+1. Parse help context and agent transformation requirements
+2. Invoke workflow-guidance-agent for interactive guidance
+3. Chain to atdd-wave-coordinator for agent transformation
+4. Provide contextual help and command reference
+5. Return interactive guidance with numbered options
+
+### Agent Invocation Workflow
+```yaml
+execution-flow:
+  step1-guidance:
+    agent: workflow-guidance-agent
+    task: |
+      Provide interactive workflow guidance:
+      - Agent Name: {agent_name_if_specified}
+      - Interactive Mode: {interactive_flag_status}
+      - Context: {current_project_context}
+
+      Execute guidance including:
+      - Show complete command catalog with descriptions
+      - Offer workflow guidance based on project context
+      - Provide agent directory with specializations
+      - Enable numbered option selection interface
+
+  step2-transformation:
+    agent: atdd-wave-coordinator
+    condition: agent_name_specified
+    task: |
+      Transform into specified agent:
+      - Review agent transformation request
+      - Transform wave coordinator into specified agent
+      - Provide agent-specific command reference
+      - Enable agent-focused interactive mode
+
+  step3-interactive-elicitation:
+    agent: workflow-guidance-agent
+    condition: interactive_mode_requested
+    task: |
+      Launch interactive workflow elicitation:
+      - Provide contextual guidance for current wave/phase
+      - Offer numbered workflow options with descriptions
+      - Guide user through optimal workflow selection
+      - Facilitate smooth workflow progression
+```
+
+### Arguments Processing
+- Parse `[agent-name]` argument for agent transformation
+- Apply `--interactive` flag for numbered option selection
+- Process context flags for comprehensive project analysis
+- Enable agent-specific help and transformation capabilities
+- Combine multiple flags for enhanced guidance experiences
+
+### Output Generation
+Return interactive guidance including:
+- Complete command catalog with descriptions and usage
+- Agent-specific command reference (if agent specified)
+- Interactive numbered options for workflow selection
+- Contextual guidance based on current project phase
