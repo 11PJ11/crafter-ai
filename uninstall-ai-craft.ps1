@@ -48,8 +48,9 @@ EXAMPLES:
 
 WHAT GETS REMOVED:
     - All AI-Craft agents in agents/cai/ directory
-    - All AI-Craft commands in commands/cai/ directory  
+    - All CAI commands in commands/cai/ directory (10 essential commands)
     - AI-Craft configuration files (constants.md, manifest)
+    - Claude Code workflow hooks for CAI agents
     - AI-Craft installation logs and backup directories
     - AI-Craft project state files
 
@@ -139,6 +140,13 @@ function Test-AiCraftInstallation {
         Write-Info "Found AI-Craft installation logs"
     }
     
+    # Check for hooks directory
+    $HooksCaiDir = Join-Path $ClaudeConfigDir "hooks\cai"
+    if (Test-Path $HooksCaiDir) {
+        $InstallationFound = $true
+        Write-Info "Found AI-Craft hooks in: $HooksCaiDir"
+    }
+
     # Check for backup directories
     $BackupsDir = Join-Path $ClaudeConfigDir "backups"
     if (Test-Path $BackupsDir) {
@@ -170,8 +178,9 @@ function Confirm-Removal {
     Write-Host ""
     Write-Host "The following will be removed:" -ForegroundColor $Yellow
     Write-Host "  - All AI-Craft agents (41+ specialized agents)" -ForegroundColor $Yellow
-    Write-Host "  - All AI-Craft commands (cai/atdd and related commands)" -ForegroundColor $Yellow
+    Write-Host "  - All CAI commands (10 essential commands: brown-analyze, refactor, start, etc.)" -ForegroundColor $Yellow
     Write-Host "  - Configuration files (constants.md, manifest)" -ForegroundColor $Yellow
+    Write-Host "  - Claude Code workflow hooks for CAI agents" -ForegroundColor $Yellow
     Write-Host "  - Installation logs and backup directories" -ForegroundColor $Yellow
     Write-Host "  - Any customizations or local changes" -ForegroundColor $Yellow
     Write-Host ""
@@ -216,6 +225,23 @@ function New-UninstallBackup {
             New-Item -ItemType Directory -Path (Split-Path $BackupCommandsDir -Parent) -Force | Out-Null
             Copy-Item -Path $CommandsCaiDir -Destination $BackupCommandsDir -Recurse -Force
             Write-Info "Backed up commands directory"
+        }
+
+        # Backup hooks directory if it exists
+        $HooksCaiDir = Join-Path $ClaudeConfigDir "hooks\cai"
+        if (Test-Path $HooksCaiDir) {
+            $BackupHooksDir = Join-Path $BackupDir "hooks\cai"
+            New-Item -ItemType Directory -Path (Split-Path $BackupHooksDir -Parent) -Force | Out-Null
+            Copy-Item -Path $HooksCaiDir -Destination $BackupHooksDir -Recurse -Force
+            Write-Info "Backed up CAI hooks directory"
+        }
+
+        # Backup current settings.local.json
+        $SettingsFile = Join-Path $ClaudeConfigDir "settings.local.json"
+        if (Test-Path $SettingsFile) {
+            $BackupSettingsFile = Join-Path $BackupDir "settings.local.json.backup"
+            Copy-Item -Path $SettingsFile -Destination $BackupSettingsFile -Force
+            Write-Info "Backed up settings.local.json"
         }
         
         # Backup configuration files
@@ -278,13 +304,13 @@ function Remove-AiCraftAgents {
 
 function Remove-AiCraftCommands {
     Write-Info "Removing AI-Craft commands..."
-    
+
     $CommandsCaiDir = Join-Path $ClaudeConfigDir "commands\cai"
     if (Test-Path $CommandsCaiDir) {
         Remove-Item -Path $CommandsCaiDir -Recurse -Force -ErrorAction SilentlyContinue
         Write-Info "Removed commands/cai directory"
     }
-    
+
     # Remove commands directory if it's empty and only contained cai
     $CommandsDir = Join-Path $ClaudeConfigDir "commands"
     if (Test-Path $CommandsDir) {
@@ -294,6 +320,103 @@ function Remove-AiCraftCommands {
             Write-Info "Removed empty commands directory"
         } else {
             Write-Info "Kept commands directory (contains other files)"
+        }
+    }
+}
+
+function Remove-CraftAiHooks {
+    Write-Info "Removing Craft-AI workflow hooks..."
+
+    # Remove CAI hooks directory (preserve other hooks)
+    $HooksCaiDir = Join-Path $ClaudeConfigDir "hooks\cai"
+    if (Test-Path $HooksCaiDir) {
+        Remove-Item -Path $HooksCaiDir -Recurse -Force -ErrorAction SilentlyContinue
+        Write-Info "Removed CAI hooks directory"
+    }
+
+    # Remove hooks directory if it's empty and only contained cai
+    $HooksDir = Join-Path $ClaudeConfigDir "hooks"
+    if (Test-Path $HooksDir) {
+        $RemainingItems = Get-ChildItem -Path $HooksDir -ErrorAction SilentlyContinue
+        if ($RemainingItems.Count -eq 0) {
+            Remove-Item -Path $HooksDir -Force -ErrorAction SilentlyContinue
+            Write-Info "Removed empty hooks directory"
+        } else {
+            Write-Info "Kept hooks directory (contains other files)"
+        }
+    }
+
+    # Surgically remove CAI hooks from settings.local.json
+    Clean-HookSettings
+}
+
+function Clean-HookSettings {
+    $SettingsFile = Join-Path $ClaudeConfigDir "settings.local.json"
+
+    if (-not (Test-Path $SettingsFile)) {
+        return
+    }
+
+    # Backup before modification
+    $BackupFile = "$SettingsFile.pre-uninstall-backup"
+    Copy-Item -Path $SettingsFile -Destination $BackupFile -Force
+    Write-Info "Created backup: $BackupFile"
+
+    try {
+        # Read and parse JSON settings
+        $JsonContent = Get-Content -Path $SettingsFile -Raw -Encoding UTF8
+        $Settings = ConvertFrom-Json $JsonContent
+
+        # Remove CAI-specific hooks by ID
+        if ($Settings.hooks) {
+            $HookEvents = $Settings.hooks | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name
+
+            foreach ($Event in $HookEvents) {
+                if ($Settings.hooks.$Event) {
+                    # Filter out CAI hooks by checking hook IDs
+                    $FilteredHooks = @()
+                    foreach ($HookGroup in $Settings.hooks.$Event) {
+                        $KeepHookGroup = $true
+                        if ($HookGroup.hooks) {
+                            foreach ($Hook in $HookGroup.hooks) {
+                                if ($Hook.id -and $Hook.id.StartsWith("cai-")) {
+                                    $KeepHookGroup = $false
+                                    break
+                                }
+                            }
+                        }
+                        if ($KeepHookGroup) {
+                            $FilteredHooks += $HookGroup
+                        }
+                    }
+
+                    if ($FilteredHooks.Count -eq 0) {
+                        $Settings.hooks.PSObject.Properties.Remove($Event)
+                    } else {
+                        $Settings.hooks.$Event = $FilteredHooks
+                    }
+                }
+            }
+        }
+
+        # Remove CAI-specific permissions
+        if ($Settings.permissions -and $Settings.permissions.allow) {
+            $Settings.permissions.allow = @($Settings.permissions.allow | Where-Object {
+                $_ -notlike "*hooks/cai*" -and $_ -notlike "*craft-ai*"
+            })
+        }
+
+        # Save cleaned settings
+        $CleanedJson = ConvertTo-Json $Settings -Depth 10
+        Set-Content -Path $SettingsFile -Value $CleanedJson -Encoding UTF8
+        Write-Info "Successfully cleaned CAI hooks from settings.local.json"
+
+    } catch {
+        Write-Warn "Failed to clean hooks configuration - manual cleanup may be required: $($_.Exception.Message)"
+        # Restore backup on failure
+        if (Test-Path $BackupFile) {
+            Copy-Item -Path $BackupFile -Destination $SettingsFile -Force
+            Write-Info "Restored original settings from backup"
         }
     }
 }
@@ -367,6 +490,26 @@ function Test-RemovalComplete {
         Write-Error "AI-Craft commands directory still exists"
         $Errors++
     }
+
+    # Check that hooks are removed
+    $HooksCaiDir = Join-Path $ClaudeConfigDir "hooks\cai"
+    if (Test-Path $HooksCaiDir) {
+        Write-Error "AI-Craft hooks directory still exists"
+        $Errors++
+    }
+
+    # Check that CAI hooks are removed from settings
+    $SettingsFile = Join-Path $ClaudeConfigDir "settings.local.json"
+    if (Test-Path $SettingsFile) {
+        try {
+            $SettingsContent = Get-Content -Path $SettingsFile -Raw
+            if ($SettingsContent -match '"cai-') {
+                Write-Warn "CAI hooks may still be configured in settings.local.json"
+            }
+        } catch {
+            # Ignore read errors during validation
+        }
+    }
     
     # Check that config files are removed
     $ManifestFile = Join-Path $ClaudeConfigDir "ai-craft-manifest.txt"
@@ -412,7 +555,8 @@ User: $env:USERNAME
 
 Uninstall Summary:
 - AI-Craft agents removed from: $ClaudeConfigDir\agents\cai
-- AI-Craft commands removed from: $ClaudeConfigDir\commands\cai
+- CAI commands removed from: $ClaudeConfigDir\commands\cai (10 essential commands)
+- Claude Code workflow hooks removed
 - Configuration files removed
 - Installation logs removed
 - Backup directories cleaned
@@ -460,6 +604,7 @@ function Main {
         # Remove components
         Remove-AiCraftAgents
         Remove-AiCraftCommands
+        Remove-CraftAiHooks
         Remove-AiCraftConfigFiles
         Remove-AiCraftBackups
         Remove-AiCraftProjectFiles
@@ -479,7 +624,8 @@ function Main {
         Write-Host ""
         Write-Info "Summary:"
         Write-Info "- All AI-Craft agents removed"
-        Write-Info "- All AI-Craft commands removed"
+        Write-Info "- All CAI commands removed (10 essential commands)"
+        Write-Info "- Claude Code workflow hooks removed"
         Write-Info "- Configuration files cleaned"
         Write-Info "- Backup directories removed"
         

@@ -58,8 +58,9 @@ echo     %~nx0 --force              # Uninstall without confirmation prompts
 echo.
 echo WHAT GETS REMOVED:
 echo     - All AI-Craft agents in agents/cai/ directory
-echo     - All AI-Craft commands in commands/cai/ directory
+echo     - All CAI commands in commands/cai/ directory (10 essential commands)
 echo     - AI-Craft configuration files (constants.md, manifest)
+echo     - Claude Code workflow hooks for CAI agents
 echo     - AI-Craft installation logs and backup directories
 echo     - AI-Craft project state files
 echo.
@@ -123,6 +124,12 @@ if exist "%CLAUDE_CONFIG_DIR%\ai-craft-install.log" (
     call :info "Found AI-Craft installation logs"
 )
 
+REM Check for hooks directory
+if exist "%CLAUDE_CONFIG_DIR%\hooks\cai" (
+    set INSTALLATION_FOUND=true
+    call :info "Found AI-Craft hooks in: %CLAUDE_CONFIG_DIR%\hooks\cai"
+)
+
 REM Check for backup directories
 for /d %%D in ("%CLAUDE_CONFIG_DIR%\backups\ai-craft-*") do (
     set INSTALLATION_FOUND=true
@@ -149,8 +156,9 @@ echo WARNING: This will completely remove the AI-Craft framework from your syste
 echo.
 echo The following will be removed:
 echo   - All AI-Craft agents (41+ specialized agents)
-echo   - All AI-Craft commands (cai/atdd and related commands)
+echo   - All CAI commands (10 essential commands: brown-analyze, refactor, start, etc.)
 echo   - Configuration files (constants.md, manifest)
+echo   - Claude Code workflow hooks for CAI agents
 echo   - Installation logs and backup directories
 echo   - Any customizations or local changes
 echo.
@@ -193,6 +201,19 @@ if exist "%CLAUDE_CONFIG_DIR%\commands\cai" (
     mkdir "%BACKUP_DIR%\commands" 2>nul
     xcopy "%CLAUDE_CONFIG_DIR%\commands\cai" "%BACKUP_DIR%\commands\cai\" /E /I /Q >nul
     call :info "Backed up commands directory"
+)
+
+REM Backup hooks directory if it exists
+if exist "%CLAUDE_CONFIG_DIR%\hooks\cai" (
+    mkdir "%BACKUP_DIR%\hooks" 2>nul
+    xcopy "%CLAUDE_CONFIG_DIR%\hooks\cai" "%BACKUP_DIR%\hooks\cai\" /E /I /Q >nul
+    call :info "Backed up CAI hooks directory"
+)
+
+REM Backup current settings.local.json
+if exist "%CLAUDE_CONFIG_DIR%\settings.local.json" (
+    copy "%CLAUDE_CONFIG_DIR%\settings.local.json" "%BACKUP_DIR%\settings.local.json.backup" >nul
+    call :info "Backed up settings.local.json"
 )
 
 REM Backup configuration files
@@ -261,6 +282,50 @@ if exist "%CLAUDE_CONFIG_DIR%\commands" (
 
 goto :eof
 
+:remove_craft_ai_hooks
+call :info "Removing Craft-AI workflow hooks..."
+
+REM Remove CAI hooks directory (preserve other hooks)
+if exist "%CLAUDE_CONFIG_DIR%\hooks\cai" (
+    rmdir /s /q "%CLAUDE_CONFIG_DIR%\hooks\cai" 2>nul
+    call :info "Removed CAI hooks directory"
+)
+
+REM Remove hooks directory if it's empty and only contained cai
+if exist "%CLAUDE_CONFIG_DIR%\hooks" (
+    rmdir "%CLAUDE_CONFIG_DIR%\hooks" 2>nul
+    if errorlevel 1 (
+        call :info "Kept hooks directory (contains other files)"
+    ) else (
+        call :info "Removed empty hooks directory"
+    )
+)
+
+REM Surgically remove CAI hooks from settings.local.json
+call :clean_hook_settings
+
+goto :eof
+
+:clean_hook_settings
+set "settings_file=%CLAUDE_CONFIG_DIR%\settings.local.json"
+
+if not exist "%settings_file%" goto :eof
+
+REM Backup before modification
+copy "%settings_file%" "%settings_file%.pre-uninstall-backup" >nul
+call :info "Created backup: %settings_file%.pre-uninstall-backup"
+
+REM Note: Batch file JSON manipulation is complex and error-prone
+REM We'll use PowerShell for safe JSON manipulation if available
+powershell -Command "try { $settings = Get-Content '%settings_file%' | ConvertFrom-Json; if ($settings.hooks) { foreach ($event in ($settings.hooks | Get-Member -MemberType NoteProperty).Name) { $settings.hooks.$event = @($settings.hooks.$event | Where-Object { -not ($_.hooks | Where-Object { $_.id -like 'cai-*' }) }); if (-not $settings.hooks.$event) { $settings.hooks.PSObject.Properties.Remove($event) } } }; if ($settings.permissions.allow) { $settings.permissions.allow = @($settings.permissions.allow | Where-Object { $_ -notlike '*hooks/cai*' -and $_ -notlike '*craft-ai*' }) }; $settings | ConvertTo-Json -Depth 10 | Set-Content '%settings_file%'; Write-Host 'Successfully cleaned CAI hooks from settings.local.json' } catch { Write-Host 'Failed to clean hooks configuration - manual cleanup may be required'; Copy-Item '%settings_file%.pre-uninstall-backup' '%settings_file%' -Force }" 2>nul
+
+if errorlevel 1 (
+    call :warn "PowerShell not available or failed - hooks configuration not cleaned"
+    call :warn "Manual cleanup of settings.local.json may be required"
+)
+
+goto :eof
+
 :remove_config_files
 call :info "Removing AI-Craft configuration files..."
 
@@ -315,10 +380,24 @@ if exist "%CLAUDE_CONFIG_DIR%\agents\cai" (
     set /a errors+=1
 )
 
-REM Check that commands are removed  
+REM Check that commands are removed
 if exist "%CLAUDE_CONFIG_DIR%\commands\cai" (
     call :error_msg "AI-Craft commands directory still exists"
     set /a errors+=1
+)
+
+REM Check that hooks are removed
+if exist "%CLAUDE_CONFIG_DIR%\hooks\cai" (
+    call :error_msg "AI-Craft hooks directory still exists"
+    set /a errors+=1
+)
+
+REM Check that CAI hooks are removed from settings
+if exist "%CLAUDE_CONFIG_DIR%\settings.local.json" (
+    findstr /C:"\"cai-" "%CLAUDE_CONFIG_DIR%\settings.local.json" >nul 2>nul
+    if not errorlevel 1 (
+        call :warn "CAI hooks may still be configured in settings.local.json"
+    )
 )
 
 REM Check that config files are removed
@@ -358,7 +437,8 @@ echo User: %USERNAME%
 echo.
 echo Uninstall Summary:
 echo - AI-Craft agents removed from: %CLAUDE_CONFIG_DIR%\agents\cai
-echo - AI-Craft commands removed from: %CLAUDE_CONFIG_DIR%\commands\cai
+echo - CAI commands removed from: %CLAUDE_CONFIG_DIR%\commands\cai (10 essential commands)
+echo - Claude Code workflow hooks removed
 echo - Configuration files removed
 echo - Installation logs removed
 echo - Backup directories cleaned
@@ -389,7 +469,8 @@ if errorlevel 1 exit /b 1
 call :create_backup
 
 call :remove_agents
-call :remove_commands  
+call :remove_commands
+call :remove_craft_ai_hooks
 call :remove_config_files
 call :remove_backups
 call :remove_project_files
@@ -407,7 +488,8 @@ call :info "✅ AI-Craft Framework uninstalled successfully!"
 echo.
 call :info "Summary:"
 call :info "- All AI-Craft agents removed"
-call :info "- All AI-Craft commands removed" 
+call :info "- All CAI commands removed (10 essential commands)"
+call :info "- Claude Code workflow hooks removed"
 call :info "- Configuration files cleaned"
 call :info "- Backup directories removed"
 
