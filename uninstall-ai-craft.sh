@@ -49,7 +49,8 @@ ${BLUE}EXAMPLES:${NC}
 
 ${BLUE}WHAT GETS REMOVED:${NC}
     - All AI-Craft agents in agents/cai/ directory
-    - All CAI commands in commands/cai/ directory (10 essential commands)
+    - All CAI commands in commands/cai/ directory (14 essential commands)
+    - Manual system documentation in manuals/cai/ directory
     - AI-Craft configuration files (constants.md, manifest)
     - AI-Craft installation logs and backup directories
     - AI-Craft project state files
@@ -105,6 +106,12 @@ check_installation() {
         installation_found=true
         info "Found AI-Craft commands in: $CLAUDE_CONFIG_DIR/commands/cai"
     fi
+
+    # Check for manuals directory
+    if [[ -d "$CLAUDE_CONFIG_DIR/manuals/cai" ]]; then
+        installation_found=true
+        info "Found AI-Craft manuals in: $CLAUDE_CONFIG_DIR/manuals/cai"
+    fi
     
     # Check for configuration files
     if [[ -f "$CLAUDE_CONFIG_DIR/agents/cai/constants.md" ]]; then
@@ -153,7 +160,8 @@ confirm_removal() {
     echo ""
     echo -e "${YELLOW}The following will be removed:${NC}"
     echo -e "${YELLOW}  - All AI-Craft agents (41+ specialized agents)${NC}"
-    echo -e "${YELLOW}  - All CAI commands (10 essential commands: brown-analyze, refactor, start, etc.)${NC}"
+    echo -e "${YELLOW}  - All CAI commands (14 essential commands)${NC}"
+    echo -e "${YELLOW}  - Manual system documentation${NC}"
     echo -e "${YELLOW}  - Configuration files (constants.md, manifest)${NC}"
     echo -e "${YELLOW}  - Claude Code workflow hooks for CAI agents${NC}"
     echo -e "${YELLOW}  - Installation logs and backup directories${NC}"
@@ -200,6 +208,13 @@ create_backup() {
         cp -r "$CLAUDE_CONFIG_DIR/commands/cai" "$BACKUP_DIR/commands/"
         info "Backed up commands directory"
     fi
+
+    # Backup manuals directory if it exists
+    if [[ -d "$CLAUDE_CONFIG_DIR/manuals/cai" ]]; then
+        mkdir -p "$BACKUP_DIR/manuals"
+        cp -r "$CLAUDE_CONFIG_DIR/manuals/cai" "$BACKUP_DIR/manuals/"
+        info "Backed up manuals directory"
+    fi
     
     # Backup hooks directory if it exists
     if [[ -d "$CLAUDE_CONFIG_DIR/hooks/cai" ]]; then
@@ -232,7 +247,7 @@ Created: $(date)
 Source: $(hostname):$CLAUDE_CONFIG_DIR
 Backup Type: Pre-uninstall backup
 Backup contents:
-  - AI-Craft agents and commands
+  - AI-Craft agents, commands, and manual system
   - Configuration files and logs
   - Complete framework state before removal
 EOF
@@ -261,12 +276,12 @@ remove_agents() {
 
 remove_commands() {
     info "Removing AI-Craft commands..."
-    
+
     if [[ -d "$CLAUDE_CONFIG_DIR/commands/cai" ]]; then
         rm -rf "$CLAUDE_CONFIG_DIR/commands/cai"
         info "Removed commands/cai directory"
     fi
-    
+
     # Remove commands directory if it's empty and only contained cai
     if [[ -d "$CLAUDE_CONFIG_DIR/commands" ]]; then
         if [[ -z "$(ls -A "$CLAUDE_CONFIG_DIR/commands" 2>/dev/null)" ]]; then
@@ -274,6 +289,25 @@ remove_commands() {
             info "Removed empty commands directory"
         else
             info "Kept commands directory (contains other files)"
+        fi
+    fi
+}
+
+remove_manuals() {
+    info "Removing AI-Craft manual system..."
+
+    if [[ -d "$CLAUDE_CONFIG_DIR/manuals/cai" ]]; then
+        rm -rf "$CLAUDE_CONFIG_DIR/manuals/cai"
+        info "Removed manuals/cai directory"
+    fi
+
+    # Remove manuals directory if it's empty and only contained cai
+    if [[ -d "$CLAUDE_CONFIG_DIR/manuals" ]]; then
+        if [[ -z "$(ls -A "$CLAUDE_CONFIG_DIR/manuals" 2>/dev/null)" ]]; then
+            rmdir "$CLAUDE_CONFIG_DIR/manuals" 2>/dev/null
+            info "Removed empty manuals directory"
+        else
+            info "Kept manuals directory (contains other files)"
         fi
     fi
 }
@@ -435,6 +469,12 @@ validate_removal() {
         ((errors++))
     fi
 
+    # Check that manuals are removed
+    if [[ -d "$CLAUDE_CONFIG_DIR/manuals/cai" ]]; then
+        error "AI-Craft manuals directory still exists"
+        ((errors++))
+    fi
+
     # Check that hooks are removed
     if [[ -d "$CLAUDE_CONFIG_DIR/hooks/cai" ]]; then
         error "AI-Craft hooks directory still exists"
@@ -490,7 +530,8 @@ User: $(whoami)
 
 Uninstall Summary:
 - AI-Craft agents removed from: $CLAUDE_CONFIG_DIR/agents/cai
-- CAI commands removed from: $CLAUDE_CONFIG_DIR/commands/cai (10 essential commands)
+- CAI commands removed from: $CLAUDE_CONFIG_DIR/commands/cai (14 essential commands)
+- Manual system removed from: $CLAUDE_CONFIG_DIR/manuals/cai
 - Configuration files removed
 - Installation logs removed
 - Backup directories cleaned
@@ -549,6 +590,7 @@ main() {
     # Remove components
     remove_agents
     remove_commands
+    remove_manuals
     remove_craft_ai_hooks
     remove_config_files
     remove_backups
@@ -569,7 +611,8 @@ main() {
     echo ""
     info "Summary:"
     info "- All AI-Craft agents removed"
-    info "- All CAI commands removed (10 essential commands)"
+    info "- All CAI commands removed (14 essential commands)"
+    info "- AI-Craft manual system removed"
     info "- Claude Code workflow hooks removed"
     info "- Configuration files cleaned"
     info "- Backup directories removed"

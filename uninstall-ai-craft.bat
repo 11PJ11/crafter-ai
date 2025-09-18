@@ -58,7 +58,8 @@ echo     %~nx0 --force              # Uninstall without confirmation prompts
 echo.
 echo WHAT GETS REMOVED:
 echo     - All AI-Craft agents in agents/cai/ directory
-echo     - All CAI commands in commands/cai/ directory (10 essential commands)
+echo     - All CAI commands in commands/cai/ directory (14 essential commands)
+echo     - Manual system documentation in manuals/cai/ directory
 echo     - AI-Craft configuration files (constants.md, manifest)
 echo     - Claude Code workflow hooks for CAI agents
 echo     - AI-Craft installation logs and backup directories
@@ -104,6 +105,12 @@ REM Check for commands directory
 if exist "%CLAUDE_CONFIG_DIR%\commands\cai" (
     set INSTALLATION_FOUND=true
     call :info "Found AI-Craft commands in: %CLAUDE_CONFIG_DIR%\commands\cai"
+)
+
+REM Check for manuals directory
+if exist "%CLAUDE_CONFIG_DIR%\manuals\cai" (
+    set INSTALLATION_FOUND=true
+    call :info "Found AI-Craft manuals in: %CLAUDE_CONFIG_DIR%\manuals\cai"
 )
 
 REM Check for configuration files
@@ -156,7 +163,8 @@ echo WARNING: This will completely remove the AI-Craft framework from your syste
 echo.
 echo The following will be removed:
 echo   - All AI-Craft agents (41+ specialized agents)
-echo   - All CAI commands (10 essential commands: brown-analyze, refactor, start, etc.)
+echo   - All CAI commands (14 essential commands)
+echo   - Manual system documentation
 echo   - Configuration files (constants.md, manifest)
 echo   - Claude Code workflow hooks for CAI agents
 echo   - Installation logs and backup directories
@@ -203,6 +211,13 @@ if exist "%CLAUDE_CONFIG_DIR%\commands\cai" (
     call :info "Backed up commands directory"
 )
 
+REM Backup manuals directory if it exists
+if exist "%CLAUDE_CONFIG_DIR%\manuals\cai" (
+    mkdir "%BACKUP_DIR%\manuals" 2>nul
+    xcopy "%CLAUDE_CONFIG_DIR%\manuals\cai" "%BACKUP_DIR%\manuals\cai\" /E /I /Q >nul
+    call :info "Backed up manuals directory"
+)
+
 REM Backup hooks directory if it exists
 if exist "%CLAUDE_CONFIG_DIR%\hooks\cai" (
     mkdir "%BACKUP_DIR%\hooks" 2>nul
@@ -234,7 +249,7 @@ echo Created: %date% %time%
 echo Source: %COMPUTERNAME%:%CLAUDE_CONFIG_DIR%
 echo Backup Type: Pre-uninstall backup
 echo Backup contents:
-echo   - AI-Craft agents and commands
+echo   - AI-Craft agents, commands, and manual system
 echo   - Configuration files and logs
 echo   - Complete framework state before removal
 ) > "%BACKUP_DIR%\uninstall-backup-manifest.txt"
@@ -277,6 +292,26 @@ if exist "%CLAUDE_CONFIG_DIR%\commands" (
         call :info "Kept commands directory (contains other files)"
     ) else (
         call :info "Removed empty commands directory"
+    )
+)
+
+goto :eof
+
+:remove_manuals
+call :info "Removing AI-Craft manual system..."
+
+if exist "%CLAUDE_CONFIG_DIR%\manuals\cai" (
+    rmdir /s /q "%CLAUDE_CONFIG_DIR%\manuals\cai" 2>nul
+    call :info "Removed manuals/cai directory"
+)
+
+REM Remove manuals directory if it's empty and only contained cai
+if exist "%CLAUDE_CONFIG_DIR%\manuals" (
+    rmdir "%CLAUDE_CONFIG_DIR%\manuals" 2>nul
+    if errorlevel 1 (
+        call :info "Kept manuals directory (contains other files)"
+    ) else (
+        call :info "Removed empty manuals directory"
     )
 )
 
@@ -386,6 +421,12 @@ if exist "%CLAUDE_CONFIG_DIR%\commands\cai" (
     set /a errors+=1
 )
 
+REM Check that manuals are removed
+if exist "%CLAUDE_CONFIG_DIR%\manuals\cai" (
+    call :error_msg "AI-Craft manuals directory still exists"
+    set /a errors+=1
+)
+
 REM Check that hooks are removed
 if exist "%CLAUDE_CONFIG_DIR%\hooks\cai" (
     call :error_msg "AI-Craft hooks directory still exists"
@@ -437,7 +478,8 @@ echo User: %USERNAME%
 echo.
 echo Uninstall Summary:
 echo - AI-Craft agents removed from: %CLAUDE_CONFIG_DIR%\agents\cai
-echo - CAI commands removed from: %CLAUDE_CONFIG_DIR%\commands\cai (10 essential commands)
+echo - CAI commands removed from: %CLAUDE_CONFIG_DIR%\commands\cai (14 essential commands)
+echo - Manual system removed from: %CLAUDE_CONFIG_DIR%\manuals\cai
 echo - Claude Code workflow hooks removed
 echo - Configuration files removed
 echo - Installation logs removed
@@ -470,6 +512,7 @@ call :create_backup
 
 call :remove_agents
 call :remove_commands
+call :remove_manuals
 call :remove_craft_ai_hooks
 call :remove_config_files
 call :remove_backups
@@ -488,7 +531,8 @@ call :info "✅ AI-Craft Framework uninstalled successfully!"
 echo.
 call :info "Summary:"
 call :info "- All AI-Craft agents removed"
-call :info "- All CAI commands removed (10 essential commands)"
+call :info "- All CAI commands removed (14 essential commands)"
+call :info "- AI-Craft manual system removed"
 call :info "- Claude Code workflow hooks removed"
 call :info "- Configuration files cleaned"
 call :info "- Backup directories removed"

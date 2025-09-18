@@ -48,7 +48,8 @@ EXAMPLES:
 
 WHAT GETS REMOVED:
     - All AI-Craft agents in agents/cai/ directory
-    - All CAI commands in commands/cai/ directory (10 essential commands)
+    - All CAI commands in commands/cai/ directory (14 essential commands)
+    - Manual system documentation in manuals/cai/ directory
     - AI-Craft configuration files (constants.md, manifest)
     - Claude Code workflow hooks for CAI agents
     - AI-Craft installation logs and backup directories
@@ -118,6 +119,13 @@ function Test-AiCraftInstallation {
         $InstallationFound = $true
         Write-Info "Found AI-Craft commands in: $CommandsCaiDir"
     }
+
+    # Check for manuals directory
+    $ManualsCaiDir = Join-Path $ClaudeConfigDir "manuals\cai"
+    if (Test-Path $ManualsCaiDir) {
+        $InstallationFound = $true
+        Write-Info "Found AI-Craft manuals in: $ManualsCaiDir"
+    }
     
     # Check for configuration files
     $ConstantsFile = Join-Path $ClaudeConfigDir "agents\cai\constants.md"
@@ -178,7 +186,8 @@ function Confirm-Removal {
     Write-Host ""
     Write-Host "The following will be removed:" -ForegroundColor $Yellow
     Write-Host "  - All AI-Craft agents (41+ specialized agents)" -ForegroundColor $Yellow
-    Write-Host "  - All CAI commands (10 essential commands: brown-analyze, refactor, start, etc.)" -ForegroundColor $Yellow
+    Write-Host "  - All CAI commands (14 essential commands)" -ForegroundColor $Yellow
+    Write-Host "  - Manual system documentation" -ForegroundColor $Yellow
     Write-Host "  - Configuration files (constants.md, manifest)" -ForegroundColor $Yellow
     Write-Host "  - Claude Code workflow hooks for CAI agents" -ForegroundColor $Yellow
     Write-Host "  - Installation logs and backup directories" -ForegroundColor $Yellow
@@ -227,6 +236,15 @@ function New-UninstallBackup {
             Write-Info "Backed up commands directory"
         }
 
+        # Backup manuals directory if it exists
+        $ManualsCaiDir = Join-Path $ClaudeConfigDir "manuals\cai"
+        if (Test-Path $ManualsCaiDir) {
+            $BackupManualsDir = Join-Path $BackupDir "manuals\cai"
+            New-Item -ItemType Directory -Path (Split-Path $BackupManualsDir -Parent) -Force | Out-Null
+            Copy-Item -Path $ManualsCaiDir -Destination $BackupManualsDir -Recurse -Force
+            Write-Info "Backed up manuals directory"
+        }
+
         # Backup hooks directory if it exists
         $HooksCaiDir = Join-Path $ClaudeConfigDir "hooks\cai"
         if (Test-Path $HooksCaiDir) {
@@ -264,7 +282,7 @@ Created: $(Get-Date)
 Source: $env:COMPUTERNAME`:$ClaudeConfigDir
 Backup Type: Pre-uninstall backup
 Backup contents:
-  - AI-Craft agents and commands
+  - AI-Craft agents, commands, and manual system
   - Configuration files and logs
   - Complete framework state before removal
 "@
@@ -320,6 +338,28 @@ function Remove-AiCraftCommands {
             Write-Info "Removed empty commands directory"
         } else {
             Write-Info "Kept commands directory (contains other files)"
+        }
+    }
+}
+
+function Remove-AiCraftManuals {
+    Write-Info "Removing AI-Craft manual system..."
+
+    $ManualsCaiDir = Join-Path $ClaudeConfigDir "manuals\cai"
+    if (Test-Path $ManualsCaiDir) {
+        Remove-Item -Path $ManualsCaiDir -Recurse -Force -ErrorAction SilentlyContinue
+        Write-Info "Removed manuals/cai directory"
+    }
+
+    # Remove manuals directory if it's empty and only contained cai
+    $ManualsDir = Join-Path $ClaudeConfigDir "manuals"
+    if (Test-Path $ManualsDir) {
+        $RemainingItems = Get-ChildItem -Path $ManualsDir -ErrorAction SilentlyContinue
+        if ($RemainingItems.Count -eq 0) {
+            Remove-Item -Path $ManualsDir -Force -ErrorAction SilentlyContinue
+            Write-Info "Removed empty manuals directory"
+        } else {
+            Write-Info "Kept manuals directory (contains other files)"
         }
     }
 }
@@ -491,6 +531,13 @@ function Test-RemovalComplete {
         $Errors++
     }
 
+    # Check that manuals are removed
+    $ManualsCaiDir = Join-Path $ClaudeConfigDir "manuals\cai"
+    if (Test-Path $ManualsCaiDir) {
+        Write-Error "AI-Craft manuals directory still exists"
+        $Errors++
+    }
+
     # Check that hooks are removed
     $HooksCaiDir = Join-Path $ClaudeConfigDir "hooks\cai"
     if (Test-Path $HooksCaiDir) {
@@ -555,7 +602,8 @@ User: $env:USERNAME
 
 Uninstall Summary:
 - AI-Craft agents removed from: $ClaudeConfigDir\agents\cai
-- CAI commands removed from: $ClaudeConfigDir\commands\cai (10 essential commands)
+- CAI commands removed from: $ClaudeConfigDir\commands\cai (14 essential commands)
+- Manual system removed from: $ClaudeConfigDir\manuals\cai
 - Claude Code workflow hooks removed
 - Configuration files removed
 - Installation logs removed
@@ -604,6 +652,7 @@ function Main {
         # Remove components
         Remove-AiCraftAgents
         Remove-AiCraftCommands
+        Remove-AiCraftManuals
         Remove-CraftAiHooks
         Remove-AiCraftConfigFiles
         Remove-AiCraftBackups
@@ -624,7 +673,8 @@ function Main {
         Write-Host ""
         Write-Info "Summary:"
         Write-Info "- All AI-Craft agents removed"
-        Write-Info "- All CAI commands removed (10 essential commands)"
+        Write-Info "- All CAI commands removed (14 essential commands)"
+        Write-Info "- AI-Craft manual system removed"
         Write-Info "- Claude Code workflow hooks removed"
         Write-Info "- Configuration files cleaned"
         Write-Info "- Backup directories removed"
