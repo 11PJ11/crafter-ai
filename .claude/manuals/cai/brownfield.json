@@ -1,0 +1,63 @@
+{
+  "command": "/cai:brownfield",
+  "category": "Legacy Analysis",
+  "purpose": "Brownfield project analysis and technical debt assessment",
+  "synopsis": "/cai:brownfield [target] --focus debt --assessment --roadmap --prioritize",
+  "display": "Legacy analysis & modernization | /cai:brownfield [target] --focus debt --roadmap",
+  "description": "Brownfield project analysis and technical debt assessment system for existing codebases. Provides comprehensive analysis of legacy systems, identifies technical debt, and creates modernization roadmaps with systematic improvement strategies.",
+  "arguments": {
+    "target": {
+      "description": "Target system or codebase for analysis",
+      "required": false,
+      "type": "string",
+      "examples": ["legacy-system", "@src/legacy", "monolithic-app"]
+    }
+  },
+  "flags": {
+    "--focus": {
+      "description": "Analysis focus area",
+      "type": "string",
+      "values": ["architecture", "debt", "security", "performance", "maintainability"],
+      "details": {
+        "architecture": "Architectural analysis and modernization opportunities",
+        "debt": "Technical debt identification and prioritization",
+        "security": "Security vulnerabilities and compliance gaps",
+        "performance": "Performance bottlenecks and optimization opportunities",
+        "maintainability": "Code quality and maintainability assessment"
+      }
+    },
+    "--roadmap": {
+      "description": "Generate modernization roadmap",
+      "type": "boolean",
+      "details": "Creates systematic modernization plan with prioritized improvements"
+    },
+    "--assessment": {
+      "description": "Comprehensive system assessment",
+      "type": "boolean",
+      "details": "Performs thorough analysis of system health and improvement opportunities"
+    },
+    "--prioritize": {
+      "description": "Prioritize findings by impact and effort",
+      "type": "boolean",
+      "details": "Ranks improvement opportunities by business impact and implementation effort"
+    }
+  },
+  "examples": [
+    {
+      "command": "/cai:brownfield legacy-system --focus debt --roadmap",
+      "description": "Technical debt analysis with modernization roadmap",
+      "context": "When planning systematic legacy system improvements"
+    },
+    {
+      "command": "/cai:brownfield @src/legacy --assessment --prioritize",
+      "description": "Comprehensive assessment with prioritized recommendations",
+      "context": "When conducting thorough legacy system analysis"
+    },
+    {
+      "command": "/cai:brownfield monolith --focus architecture --roadmap",
+      "description": "Architectural analysis for monolithic system modernization",
+      "context": "When planning architectural modernization of legacy systems"
+    }
+  ],
+  "see_also": ["refactor", "architect", "validate", "technical-debt-tracker"]
+}

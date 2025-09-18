@@ -1,0 +1,168 @@
+{
+  "command": "/cai:architect",
+  "category": "Architecture & Design",
+  "purpose": "System architecture design and technology decisions",
+  "synopsis": "/cai:architect [system-context] --style microservices --focus scalability --workshop",
+  "display": "System architecture design | /cai:architect [system-context] --style <type> --focus <domain>",
+  "description": "Comprehensive system architecture design and technology decision-making for ATDD Wave 2 (ARCHITECT phase). Creates architectural design documents, evaluates technology stacks, and establishes architectural patterns with visual documentation.",
+  "arguments": {
+    "system-context": {
+      "description": "Natural language description of the system being architected",
+      "required": false,
+      "type": "string",
+      "examples": ["microservices with event sourcing", "monolithic web application", "serverless data processing pipeline"]
+    }
+  },
+  "flags": {
+    "--style": {
+      "description": "Architectural style/pattern to apply",
+      "type": "string",
+      "values": ["microservices", "monolithic", "serverless", "event-driven", "layered", "hexagonal"],
+      "details": {
+        "microservices": "Distributed systems with loose coupling and independent deployability",
+        "monolithic": "Unified applications with single deployment unit",
+        "serverless": "Function-based systems with auto-scaling and pay-per-use",
+        "event-driven": "Reactive systems based on event production and consumption",
+        "layered": "Hierarchical systems with clear separation of concerns",
+        "hexagonal": "Ports and adapters systems with business logic isolation"
+      }
+    },
+    "--focus": {
+      "description": "Primary architectural quality attribute focus",
+      "type": "string",
+      "values": ["scalability", "performance", "security", "maintainability", "availability", "resilience"],
+      "details": {
+        "scalability": "System ability to handle growing workload and user base",
+        "performance": "System responsiveness and throughput optimization",
+        "security": "System protection against threats and vulnerabilities",
+        "maintainability": "System ease of modification and evolution",
+        "availability": "System uptime and fault tolerance",
+        "resilience": "System ability to recover from failures gracefully"
+      }
+    },
+    "--interactive": {
+      "description": "Enable interactive architectural session with stakeholder collaboration",
+      "type": "boolean",
+      "details": "Provides guided architectural decision-making with trade-off analysis"
+    },
+    "--validation": {
+      "description": "Enable architectural validation and compliance checking",
+      "type": "boolean",
+      "details": "Validates architectural decisions against requirements and constraints"
+    },
+    "--diagrams": {
+      "description": "Generate comprehensive architectural diagrams",
+      "type": "boolean",
+      "details": "Creates visual architecture representations and documentation"
+    },
+    "--technology": {
+      "description": "Include detailed technology selection and evaluation",
+      "type": "boolean",
+      "details": "Evaluates technology stack options with trade-off analysis"
+    },
+    "--constraints": {
+      "description": "Apply specific architectural constraints or requirements",
+      "type": "string",
+      "details": "Defines limitations, requirements, or compliance standards to consider"
+    }
+  },
+  "architectural_styles": {
+    "microservices": {
+      "description": "Design distributed systems with loose coupling and independent deployability",
+      "focus": ["service boundaries", "API contracts", "autonomous team ownership"],
+      "optimizes_for": ["scalability", "technology diversity", "independent development cycles"],
+      "includes": ["container orchestration", "service mesh", "distributed data management"]
+    },
+    "serverless": {
+      "description": "Design function-based systems with auto-scaling and pay-per-use model",
+      "focus": ["event-driven processing", "stateless functions", "managed services"],
+      "optimizes_for": ["cost efficiency", "automatic scaling", "reduced operational overhead"],
+      "includes": ["Function-as-a-Service (FaaS)", "Backend-as-a-Service (BaaS)"]
+    },
+    "event-driven": {
+      "description": "Design reactive systems based on event production, detection, and consumption",
+      "focus": ["loose coupling", "asynchronous processing", "temporal decoupling"],
+      "optimizes_for": ["responsiveness", "resilience", "system integration capabilities"],
+      "includes": ["event sourcing", "CQRS", "message streaming architectures"]
+    },
+    "hexagonal": {
+      "description": "Design ports and adapters systems with business logic isolation",
+      "focus": ["business logic isolation", "external dependency abstraction", "testability"],
+      "optimizes_for": ["maintainability", "testability", "technology independence"],
+      "includes": ["ports", "adapters", "dependency inversion"]
+    }
+  },
+  "examples": [
+    {
+      "command": "/cai:architect \"e-commerce platform\" --style microservices --focus scalability",
+      "description": "Design scalable microservices architecture for e-commerce",
+      "context": "When designing distributed systems requiring high scalability"
+    },
+    {
+      "command": "/cai:architect \"payment processing system\" --style hexagonal --focus security --validation",
+      "description": "Design secure hexagonal architecture with validation",
+      "context": "When building security-critical systems requiring clean architecture"
+    },
+    {
+      "command": "/cai:architect \"real-time analytics\" --style event-driven --interactive --diagrams",
+      "description": "Interactive event-driven architecture design with visual documentation",
+      "context": "When designing reactive systems with stakeholder collaboration"
+    },
+    {
+      "command": "/cai:architect \"content management\" --style monolithic --focus maintainability --technology",
+      "description": "Monolithic architecture with technology evaluation",
+      "context": "When building maintainable single-deployment systems"
+    },
+    {
+      "command": "/cai:architect \"data processing pipeline\" --style serverless --focus performance",
+      "description": "Serverless architecture optimized for performance",
+      "context": "When building cost-effective auto-scaling data processing systems"
+    }
+  ],
+  "sections": {
+    "design_process": {
+      "architectural_session": [
+        "Requirements Analysis: Functional and non-functional requirements",
+        "Quality Attributes: Performance, scalability, security, maintainability",
+        "Technology Evaluation: Stack selection with trade-off analysis",
+        "Pattern Selection: Architectural styles and design patterns",
+        "Documentation: ADRs, diagrams, and design decisions"
+      ],
+      "stakeholder_collaboration": [
+        "Technical Stakeholder: Technical constraints and feasibility",
+        "Business Stakeholder: Business requirements and priorities",
+        "Security Expert: Security architecture and threat modeling",
+        "Performance Expert: Performance requirements and optimization"
+      ]
+    },
+    "output_artifacts": {
+      "architecture_documentation": [
+        "Architectural Design Document: Comprehensive system design",
+        "Architecture Decision Records: Key decisions with rationale",
+        "System Context Diagram: High-level system overview",
+        "Component Diagrams: Detailed component interactions"
+      ],
+      "technology_documentation": [
+        "Technology Stack Evaluation: Technology choices with trade-offs",
+        "Implementation Guidance: Development approach and patterns",
+        "Integration Architecture: External system integrations",
+        "Deployment Architecture: Infrastructure and deployment strategy"
+      ]
+    },
+    "quality_gates": {
+      "architectural_validation": [
+        "Requirements Alignment: Architecture meets functional requirements",
+        "Quality Attributes: Non-functional requirements satisfaction",
+        "Constraint Compliance: Adherence to architectural constraints",
+        "Pattern Consistency: Proper application of architectural patterns"
+      ],
+      "stakeholder_approval": [
+        "Technical Review: Architecture feasibility and implementation",
+        "Business Alignment: Architecture supports business objectives",
+        "Security Review: Security architecture and threat mitigation",
+        "Performance Validation: Architecture meets performance requirements"
+      ]
+    }
+  },
+  "see_also": ["start", "discuss", "develop", "validate", "skeleton"]
+}

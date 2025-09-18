@@ -37,7 +37,8 @@
       "Bash(ls:*)",
       "Bash(head:*)",
       "Bash(while read file)",
-      "WebFetch(domain:docs.claude.com)"
+      "WebFetch(domain:docs.claude.com)",
+      "WebFetch(domain:www.builder.io)"
     ],
     "deny": [],
     "ask": []

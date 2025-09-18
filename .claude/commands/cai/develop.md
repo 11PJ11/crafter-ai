@@ -5,6 +5,7 @@
 command: "/cai:develop"
 category: "Development & Implementation"
 purpose: "Outside-In TDD implementation of user stories"
+argument-hint: "[story-id] --outside-in --real-system --validate"
 wave-enabled: true
 performance-profile: "standard"
 ---

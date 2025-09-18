@@ -57,7 +57,10 @@ EXAMPLES:
 
 WHAT GETS INSTALLED:
     - 41+ specialized AI agents in 9 categories
-    - cai/atdd command interface with intelligent project analysis
+    - 14+ CAI command interface with intelligent project analysis
+    - Manual system with Linux-style documentation for all commands
+    - /cai:man command for comprehensive documentation access
+    - Enhanced argument hints for improved command visibility
     - Centralized configuration system (constants.md)
     - Wave processing architecture for clean ATDD workflows
     - Quality validation network with Level 1-6 refactoring
@@ -68,6 +71,7 @@ WHAT GETS INSTALLED:
 INSTALLATION LOCATION:
     ~/.claude/agents/       # All agent specifications
     ~/.claude/commands/     # Command integrations
+    ~/.claude/manuals/      # Manual system documentation
 
 FILES EXCLUDED:
     - README.md files (project-specific documentation)
@@ -123,6 +127,12 @@ create_backup() {
         cp -r "$CLAUDE_CONFIG_DIR/commands" "$BACKUP_DIR/"
         info "Backed up commands directory"
     fi
+
+    # Backup existing manuals directory
+    if [[ -d "$CLAUDE_CONFIG_DIR/manuals" ]]; then
+        cp -r "$CLAUDE_CONFIG_DIR/manuals" "$BACKUP_DIR/"
+        info "Backed up manuals directory"
+    fi
     
     # Create backup manifest
     cat > "$BACKUP_DIR/backup-manifest.txt" << EOF
@@ -151,17 +161,22 @@ restore_backup() {
     info "Restoring from backup: $latest_backup"
     
     # Remove current installation
-    rm -rf "$CLAUDE_CONFIG_DIR/agents" "$CLAUDE_CONFIG_DIR/commands/cai" 2>/dev/null || true
-    
+    rm -rf "$CLAUDE_CONFIG_DIR/agents" "$CLAUDE_CONFIG_DIR/commands/cai" "$CLAUDE_CONFIG_DIR/manuals" 2>/dev/null || true
+
     # Restore from backup
     if [[ -d "$latest_backup/agents" ]]; then
         cp -r "$latest_backup/agents" "$CLAUDE_CONFIG_DIR/"
         info "Restored agents directory"
     fi
-    
+
     if [[ -d "$latest_backup/commands" ]]; then
         cp -r "$latest_backup/commands" "$CLAUDE_CONFIG_DIR/"
         info "Restored commands directory"
+    fi
+
+    if [[ -d "$latest_backup/manuals" ]]; then
+        cp -r "$latest_backup/manuals" "$CLAUDE_CONFIG_DIR/"
+        info "Restored manuals directory"
     fi
     
     info "Restoration complete from backup: $latest_backup"
@@ -207,6 +222,21 @@ install_framework() {
         if [[ -d "$CLAUDE_CONFIG_DIR/commands/cai" ]]; then
             local cai_commands=$(find "$CLAUDE_CONFIG_DIR/commands/cai" -name "*.md" | wc -l)
             info "  - CAI commands: $cai_commands essential commands"
+        fi
+    fi
+
+    # Install manual system
+    info "Installing manual system..."
+    if [[ -d "$FRAMEWORK_SOURCE/manuals" ]]; then
+        mkdir -p "$CLAUDE_CONFIG_DIR/manuals/cai"
+        cp -r "$FRAMEWORK_SOURCE/manuals/cai/"*.json "$CLAUDE_CONFIG_DIR/manuals/cai/"
+
+        local copied_manuals=$(find "$CLAUDE_CONFIG_DIR/manuals/cai" -name "*.json" 2>/dev/null | wc -l)
+        info "Installed $copied_manuals manual files"
+
+        # Verify essential manual files
+        if [[ -f "$CLAUDE_CONFIG_DIR/manuals/cai/index.json" ]]; then
+            info "  - Manual system index: installed"
         fi
     fi
 
@@ -389,21 +419,34 @@ validate_installation() {
     fi
     
     # Check essential CAI commands exist
-    local essential_commands=("brownfield" "refactor" "start" "discuss" "architect" "develop" "transition" "validate" "complete" "skeleton" "help")
+    local essential_commands=("brownfield" "refactor" "start" "discuss" "architect" "develop" "transition" "validate" "complete" "skeleton" "help" "man")
     for cmd in "${essential_commands[@]}"; do
         if [[ ! -f "$CLAUDE_CONFIG_DIR/commands/cai/$cmd.md" ]]; then
             error "Missing essential CAI command: $cmd.md"
             ((errors++))
         fi
     done
+
+    # Check manual system files
+    if [[ ! -f "$CLAUDE_CONFIG_DIR/manuals/cai/index.json" ]]; then
+        error "Missing manual system index file"
+        ((errors++))
+    fi
+
+    local manual_files=$(find "$CLAUDE_CONFIG_DIR/manuals/cai" -name "*.json" 2>/dev/null | wc -l)
+    if [[ $manual_files -lt 14 ]]; then
+        warn "Expected 14+ manual files, found $manual_files"
+    fi
     
     # Count installed files
     local total_agents=$(find "$CLAUDE_CONFIG_DIR/agents/cai" -name "*.md" 2>/dev/null | wc -l)
     local total_commands=$(find "$CLAUDE_CONFIG_DIR/commands" -name "*.md" 2>/dev/null | wc -l)
-    
+    local total_manuals=$(find "$CLAUDE_CONFIG_DIR/manuals/cai" -name "*.json" 2>/dev/null | wc -l)
+
     info "Installation summary:"
     info "  - Agents installed: $total_agents"
     info "  - Commands installed: $total_commands"
+    info "  - Manuals installed: $total_manuals"
     info "  - Installation directory: $CLAUDE_CONFIG_DIR"
     
     # Check agent categories

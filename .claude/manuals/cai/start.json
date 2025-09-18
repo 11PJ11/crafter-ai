@@ -1,0 +1,199 @@
+{
+  "command": "/cai:start",
+  "category": "Planning & Orchestration",
+  "purpose": "Initialize ATDD workflow with intelligent workflow selection",
+  "synopsis": "/cai:start [project-description] --methodology atdd --interactive --workflow <type>",
+  "display": "ATDD workflow initialization | /cai:start [project-description] --methodology atdd --interactive",
+  "description": "Comprehensive ATDD workflow initialization with intelligent workflow pattern selection and project setup. Provides guided workflow selection, project assessment, and systematic ATDD wave configuration for optimal development process orchestration.",
+  "arguments": {
+    "project-description": {
+      "description": "Natural language description of the project or feature",
+      "required": false,
+      "type": "string",
+      "examples": ["e-commerce checkout feature", "user authentication system", "real-time chat application"]
+    }
+  },
+  "flags": {
+    "--workflow": {
+      "description": "Select specific workflow type",
+      "type": "string",
+      "values": ["greenfield", "brownfield", "prototype", "api", "ui", "integration"],
+      "details": {
+        "greenfield": "New project from scratch (2-4 weeks)",
+        "brownfield": "Existing system enhancement (1-2 weeks)",
+        "prototype": "Rapid validation and MVP (2-5 days)",
+        "api": "Backend service development (1-3 weeks)",
+        "ui": "UI component development (1-2 weeks)",
+        "integration": "System integration (2-6 weeks)"
+      }
+    },
+    "--scope": {
+      "description": "Define project scope and boundaries",
+      "type": "string",
+      "values": ["feature", "module", "system", "epic"],
+      "details": {
+        "feature": "Single feature implementation",
+        "module": "Module-level development",
+        "system": "System-wide implementation",
+        "epic": "Epic-level planning"
+      }
+    },
+    "--methodology": {
+      "description": "Select development methodology approach",
+      "type": "string",
+      "values": ["atdd", "tdd", "bdd", "lean"],
+      "details": {
+        "atdd": "Full ATDD with 5-wave progression (discuss→architect→distill→develop→demo)",
+        "tdd": "Test-driven development focused workflow",
+        "bdd": "Behavior-driven development with stakeholder emphasis",
+        "lean": "Lean development with waste elimination focus"
+      }
+    },
+    "--interactive": {
+      "description": "Enable numbered option selection and guided setup",
+      "type": "boolean",
+      "details": "Provides intelligent workflow recommendations based on project analysis with detailed pros/cons"
+    },
+    "--guided": {
+      "description": "Step-by-step workflow configuration with detailed explanations",
+      "type": "boolean",
+      "details": "Walks through each workflow phase with comprehensive guidance and educational context"
+    },
+    "--assessment": {
+      "description": "Detailed project assessment before workflow selection",
+      "type": "boolean",
+      "details": "Analyzes existing codebase, estimates resources, identifies risks, and evaluates capabilities"
+    },
+    "--validation": {
+      "description": "Enable comprehensive workflow validation",
+      "type": "boolean",
+      "details": "Validates workflow selection against requirements and ensures proper agent coordination"
+    },
+    "--checkpoint": {
+      "description": "Set up workflow checkpoints and review gates",
+      "type": "boolean",
+      "details": "Creates milestone reviews and automated quality monitoring"
+    }
+  },
+  "workflow_patterns": {
+    "greenfield": {
+      "duration": "2-4 weeks",
+      "complexity": "comprehensive",
+      "waves": ["DISCUSS", "ARCHITECT", "DISTILL", "DEVELOP", "DEMO"],
+      "best_for": ["new projects", "full-stack applications", "comprehensive planning needed"],
+      "agents": ["business-analyst", "solution-architect", "acceptance-designer", "test-first-developer"]
+    },
+    "brownfield": {
+      "duration": "1-2 weeks",
+      "complexity": "moderate",
+      "waves": ["DISCUSS (modified)", "ARCHITECT (integration)", "DISTILL", "DEVELOP", "DEMO"],
+      "best_for": ["existing projects", "feature additions", "system extensions"],
+      "agents": ["technical-stakeholder", "solution-architect", "story-context-manager", "test-first-developer"]
+    },
+    "prototype": {
+      "duration": "2-5 days",
+      "complexity": "simple",
+      "waves": ["DISCUSS (brief)", "ARCHITECT (minimal)", "DEVELOP", "DEMO"],
+      "best_for": ["proof of concept", "rapid validation", "MVP development"],
+      "agents": ["business-analyst", "test-first-developer", "walking-skeleton-helper"]
+    },
+    "api": {
+      "duration": "1-3 weeks",
+      "complexity": "moderate",
+      "waves": ["DISCUSS", "ARCHITECT (service focus)", "DISTILL", "DEVELOP", "DEMO"],
+      "best_for": ["backend services", "API development", "microservices"],
+      "agents": ["business-analyst", "solution-architect", "acceptance-designer", "test-first-developer"]
+    }
+  },
+  "examples": [
+    {
+      "command": "/cai:start \"user authentication with OAuth2 and MFA\" --interactive",
+      "description": "New feature initialization with interactive workflow selection",
+      "context": "When starting a new feature and want guided workflow selection"
+    },
+    {
+      "command": "/cai:start \"add real-time notifications to existing app\" --workflow brownfield",
+      "description": "Brownfield enhancement with specific workflow",
+      "context": "When enhancing existing system with known workflow pattern"
+    },
+    {
+      "command": "/cai:start \"AI-powered recommendation engine POC\" --workflow prototype --scope feature",
+      "description": "Rapid prototype development",
+      "context": "When building proof of concept or MVP quickly"
+    },
+    {
+      "command": "/cai:start \"multi-tenant SaaS platform\" --workflow greenfield --guided --scope system",
+      "description": "Complex system development with guidance",
+      "context": "When starting complex new system requiring comprehensive planning"
+    },
+    {
+      "command": "/cai:start \"payment processing microservice\" --workflow api --assessment",
+      "description": "API development with project assessment",
+      "context": "When building backend service with thorough upfront analysis"
+    },
+    {
+      "command": "/cai:start \"enterprise CRM system\" --interactive --guided --assessment --validation --checkpoint",
+      "description": "Comprehensive project startup with all validations",
+      "context": "When starting enterprise-level project requiring maximum oversight"
+    }
+  ],
+  "sections": {
+    "wave_configuration": {
+      "standard_process": [
+        "DISCUSS: Requirements clarification and stakeholder collaboration",
+        "ARCHITECT: System design and technology decisions",
+        "DISTILL: Acceptance criteria and detailed story creation",
+        "DEVELOP: Outside-In TDD implementation",
+        "DEMO: Stakeholder validation and production preparation"
+      ],
+      "customization_options": [
+        "Skip Waves: Remove unnecessary waves for simple projects",
+        "Merge Waves: Combine waves for streamlined workflows",
+        "Specialized Focus: Add security, performance, or integration emphasis",
+        "Parallel Execution: Enable parallel wave processing where appropriate"
+      ]
+    },
+    "interactive_selection": {
+      "assessment_questions": [
+        "Project type: New, existing enhancement, prototype, or integration",
+        "Technical focus: Full-stack, backend, frontend, integration, or mobile",
+        "Complexity: Simple, moderate, complex, or highly complex enterprise-level"
+      ],
+      "intelligent_matching": [
+        "Fuzzy Matching: ≥85% confidence threshold for direct recommendations",
+        "Context Analysis: Project keywords, scope, and complexity assessment",
+        "Historical Patterns: Success rate analysis for similar projects",
+        "Risk Assessment: Complexity vs. timeline evaluation"
+      ]
+    },
+    "project_setup": {
+      "configuration_files": [
+        "${DOCS_PATH}/workflow-selection.md: Selected workflow with reasoning",
+        "${DOCS_PATH}/project-context.md: Project description and requirements",
+        "${STATE_PATH}/workflow-config.json: Machine-readable configuration",
+        "${STATE_PATH}/wave-progress.json: Wave progression tracking"
+      ],
+      "context_initialization": [
+        "Project Context: Description, scope, and objectives",
+        "Stakeholder Context: Key stakeholders and communication preferences",
+        "Technical Context: Technology stack and architectural constraints",
+        "Quality Context: Quality requirements and acceptance criteria"
+      ]
+    },
+    "quality_gates": {
+      "workflow_selection_validation": [
+        "Appropriateness: Selected workflow matches project characteristics",
+        "Feasibility: Timeline and resource requirements are realistic",
+        "Completeness: All necessary waves and agents identified",
+        "Stakeholder Alignment: Workflow matches stakeholder expectations"
+      ],
+      "project_setup_validation": [
+        "Context Completeness: All required context information captured",
+        "Configuration Accuracy: Workflow configuration matches selection",
+        "Agent Readiness: All required agents available and configured",
+        "Handoff Preparation: Wave transition mechanisms established"
+      ]
+    }
+  },
+  "see_also": ["atdd", "discuss", "architect", "develop", "help"]
+}

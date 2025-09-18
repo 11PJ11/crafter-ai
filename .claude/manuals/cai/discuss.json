@@ -1,0 +1,63 @@
+{
+  "command": "/cai:discuss",
+  "category": "Requirements Analysis",
+  "purpose": "Requirements gathering and stakeholder collaboration",
+  "synopsis": "/cai:discuss [requirements] --interactive --stakeholders business,technical --stories",
+  "display": "Requirements gathering | /cai:discuss [requirements] --interactive --stakeholders <list>",
+  "description": "Requirements gathering and stakeholder collaboration system for ATDD Wave 1 (DISCUSS phase). Facilitates business analysis, user experience design, security requirements, and stakeholder alignment through structured collaborative sessions.",
+  "arguments": {
+    "topic": {
+      "description": "Discussion topic or requirements area",
+      "required": false,
+      "type": "string",
+      "examples": ["user authentication requirements", "payment processing workflow", "dashboard redesign needs"]
+    }
+  },
+  "flags": {
+    "--focus": {
+      "description": "Focus area for discussion",
+      "type": "string",
+      "values": ["business", "ux", "security", "integration", "performance"],
+      "details": {
+        "business": "Business requirements and process analysis",
+        "ux": "User experience and interface requirements",
+        "security": "Security requirements and compliance",
+        "integration": "System integration and API requirements",
+        "performance": "Performance and scalability requirements"
+      }
+    },
+    "--interactive": {
+      "description": "Enable interactive stakeholder session",
+      "type": "boolean",
+      "details": "Facilitates collaborative requirement gathering with stakeholders"
+    },
+    "--stories": {
+      "description": "Generate user stories and acceptance criteria",
+      "type": "boolean",
+      "details": "Creates detailed user stories with embedded architectural context"
+    },
+    "--validation": {
+      "description": "Validate requirements completeness and consistency",
+      "type": "boolean",
+      "details": "Ensures requirements are complete, consistent, and testable"
+    }
+  },
+  "examples": [
+    {
+      "command": "/cai:discuss \"user authentication system\" --focus security --interactive",
+      "description": "Interactive security-focused authentication requirements",
+      "context": "When gathering security requirements for authentication systems"
+    },
+    {
+      "command": "/cai:discuss \"payment workflow\" --focus business --stories --validation",
+      "description": "Business analysis with story generation and validation",
+      "context": "When defining business processes and generating user stories"
+    },
+    {
+      "command": "/cai:discuss \"mobile app redesign\" --focus ux --interactive",
+      "description": "UX-focused requirements for mobile application",
+      "context": "When gathering user experience requirements for interface design"
+    }
+  ],
+  "see_also": ["start", "architect", "develop", "business-analyst"]
+}

@@ -54,6 +54,7 @@ echo.
 echo WHAT GETS INSTALLED:
 echo     - 41+ specialized AI agents in 9 categories
 echo     - cai/atdd command interface with intelligent project analysis
+echo     - cai/man manual system for comprehensive command documentation
 echo     - Centralized configuration system (constants.md)
 echo     - Wave processing architecture for clean ATDD workflows
 echo     - Quality validation network with Level 1-6 refactoring
@@ -64,6 +65,7 @@ echo.
 echo INSTALLATION LOCATION:
 echo     %USERPROFILE%\.claude\agents\       # All agent specifications
 echo     %USERPROFILE%\.claude\commands\     # Command integrations
+echo     %USERPROFILE%\.claude\manuals\      # Manual system documentation
 echo.
 echo FILES EXCLUDED:
 echo     - README.md files (project-specific documentation)
@@ -144,6 +146,12 @@ if exist "%CLAUDE_CONFIG_DIR%\commands" (
     call :info "Backed up commands directory"
 )
 
+REM Backup existing manuals directory
+if exist "%CLAUDE_CONFIG_DIR%\manuals" (
+    xcopy "%CLAUDE_CONFIG_DIR%\manuals" "%BACKUP_DIR%\manuals\" /E /I /Q >nul
+    call :info "Backed up manuals directory"
+)
+
 REM Create backup manifest
 (
 echo AI-Craft Framework Backup
@@ -174,6 +182,7 @@ call :info "Restoring from backup: !latest_backup!"
 REM Remove current installation
 rmdir /s /q "%CLAUDE_CONFIG_DIR%\agents" 2>nul
 rmdir /s /q "%CLAUDE_CONFIG_DIR%\commands\cai" 2>nul
+rmdir /s /q "%CLAUDE_CONFIG_DIR%\manuals" 2>nul
 
 REM Restore from backup
 if exist "!latest_backup!\agents" (
@@ -184,6 +193,11 @@ if exist "!latest_backup!\agents" (
 if exist "!latest_backup!\commands" (
     xcopy "!latest_backup!\commands" "%CLAUDE_CONFIG_DIR%\commands\" /E /I /Q >nul
     call :info "Restored commands directory"
+)
+
+if exist "!latest_backup!\manuals" (
+    xcopy "!latest_backup!\manuals" "%CLAUDE_CONFIG_DIR%\manuals\" /E /I /Q >nul
+    call :info "Restored manuals directory"
 )
 
 call :info "Restoration complete from backup: !latest_backup!"
@@ -238,6 +252,9 @@ if exist "%FRAMEWORK_SOURCE%\commands" (
     for /r "%CLAUDE_CONFIG_DIR%\commands" %%f in (*.md) do set /a copied_commands+=1
     call :info "Installed !copied_commands! command files"
 )
+
+REM Install manuals
+call :install_manual_system
 
 REM Install hooks
 call :install_craft_ai_hooks
@@ -326,6 +343,26 @@ if exist "%hooks_config%" (
 )
 goto :eof
 
+:install_manual_system
+call :info "Installing CAI manual system..."
+
+REM Create manuals directory
+mkdir "%CLAUDE_CONFIG_DIR%\manuals" 2>nul
+mkdir "%CLAUDE_CONFIG_DIR%\manuals\cai" 2>nul
+
+REM Copy manual files
+if exist "%FRAMEWORK_SOURCE%\manuals" (
+    xcopy "%FRAMEWORK_SOURCE%\manuals" "%CLAUDE_CONFIG_DIR%\manuals\" /E /I /Q >nul
+
+    REM Count manual files
+    set /a manual_files=0
+    for /r "%CLAUDE_CONFIG_DIR%\manuals\cai" %%f in (*.json) do set /a manual_files+=1
+    call :info "Installed !manual_files! manual files to manuals/cai/"
+) else (
+    call :warn "Manual system not found - skipping manual installation"
+)
+goto :eof
+
 :validate_installation
 call :info "Validating installation..."
 
@@ -343,15 +380,30 @@ if not exist "%CLAUDE_CONFIG_DIR%\commands\cai\atdd.md" (
     set /a errors+=1
 )
 
+REM Check cai/man command exists
+if not exist "%CLAUDE_CONFIG_DIR%\commands\cai\man.md" (
+    call :error_msg "Missing cai/man command file"
+    set /a errors+=1
+)
+
+REM Check manual system exists
+if not exist "%CLAUDE_CONFIG_DIR%\manuals\cai\index.json" (
+    call :error_msg "Missing manual system index file"
+    set /a errors+=1
+)
+
 REM Count installed files
 set /a total_agents=0
 set /a total_commands=0
+set /a total_manuals=0
 for /r "%CLAUDE_CONFIG_DIR%\agents\cai" %%f in (*.md) do set /a total_agents+=1
 for /r "%CLAUDE_CONFIG_DIR%\commands" %%f in (*.md) do set /a total_commands+=1
+for /r "%CLAUDE_CONFIG_DIR%\manuals\cai" %%f in (*.json) do set /a total_manuals+=1
 
 call :info "Installation summary:"
 call :info "  - Agents installed: %total_agents%"
 call :info "  - Commands installed: %total_commands%"
+call :info "  - Manual files installed: %total_manuals%"
 call :info "  - Installation directory: %CLAUDE_CONFIG_DIR%"
 
 REM Check agent categories

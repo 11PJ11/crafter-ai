@@ -1,0 +1,202 @@
+{
+  "command": "/cai:develop",
+  "category": "Development & Implementation",
+  "purpose": "Outside-In TDD implementation of user stories",
+  "synopsis": "/cai:develop [story-id] --outside-in --real-system --validate",
+  "display": "Outside-In TDD implementation | /cai:develop [story-id] --outside-in --real-system",
+  "description": "Comprehensive Outside-In Test-Driven Development implementation following the double-loop TDD architecture for ATDD Wave 4 (DEVELOP phase). Focuses on business behavior validation through E2E acceptance tests and systematic unit test implementation with continuous refactoring.",
+  "arguments": {
+    "story-id": {
+      "description": "Specific story identifier or path to story file",
+      "required": false,
+      "type": "string",
+      "examples": ["STORY-AUTH-001", "@story-path", "USER-REGISTRATION"]
+    }
+  },
+  "flags": {
+    "--outside-in": {
+      "description": "Enforce Outside-In TDD methodology (default)",
+      "type": "boolean",
+      "details": "Start with E2E acceptance tests, step down to unit tests, focus on business behavior"
+    },
+    "--double-loop": {
+      "description": "Explicit double-loop TDD architecture",
+      "type": "boolean",
+      "details": "Outer loop (ATDD/E2E) for customer validation, inner loop (Unit TDD) for technical implementation"
+    },
+    "--one-scenario": {
+      "description": "Implement one E2E scenario at a time (recommended)",
+      "type": "boolean",
+      "details": "Prevents overwhelming NotImplementedException cascades, enables clean commits"
+    },
+    "--real-system": {
+      "description": "Ensure step methods call production services",
+      "type": "boolean",
+      "details": "Prevents test infrastructure deception, validates production code paths"
+    },
+    "--tdd-mode": {
+      "description": "TDD implementation approach",
+      "type": "string",
+      "values": ["strict", "guided", "natural"],
+      "details": {
+        "strict": "Rigorous RED→GREEN→REFACTOR cycles with no shortcuts",
+        "guided": "TDD with scaffolding support and educational guidance",
+        "natural": "Natural test progression without forcing artificial failures"
+      }
+    },
+    "--validate": {
+      "description": "Add comprehensive validation steps throughout development",
+      "type": "boolean",
+      "details": "Validates step methods call production services, ensures architectural compliance"
+    },
+    "--mutation-testing": {
+      "description": "Include mutation testing validation for test effectiveness",
+      "type": "boolean",
+      "details": "Validates test quality by introducing mutations, targets ≥75-80% kill rate"
+    },
+    "--coverage": {
+      "description": "Set test coverage requirements",
+      "type": "number",
+      "default": 80,
+      "details": "Minimum code coverage threshold (default: 80% line, 90% branch)"
+    },
+    "--refactor-level": {
+      "description": "Specify refactoring intensity during development",
+      "type": "string",
+      "values": ["1", "2", "3"],
+      "details": {
+        "1": "Basic readability and naming improvements",
+        "2": "Method extraction and complexity reduction",
+        "3": "Class organization and responsibility clarity"
+      }
+    },
+    "--epic": {
+      "description": "Develop all stories within an epic",
+      "type": "string",
+      "details": "Epic identifier for multi-story development coordination"
+    }
+  },
+  "tdd_process": {
+    "double_loop_architecture": {
+      "outer_loop_atdd": {
+        "description": "Customer perspective - business behavior validation",
+        "cycle": "E2E Test (RED) → Implementation → E2E Test (GREEN)",
+        "focus": "Business outcomes and user workflows",
+        "language": "Business-focused Given-When-Then scenarios"
+      },
+      "inner_loop_utdd": {
+        "description": "Developer perspective - technical implementation",
+        "cycle": "Unit Test (RED) → Code (GREEN) → Refactor",
+        "focus": "Technical implementation and design",
+        "language": "Technical behavior specification"
+      }
+    },
+    "implementation_sequence": [
+      "🔴 Failing E2E Acceptance Test (Outer Loop Start)",
+      "🔄 Inner Unit Test Loop (Inner Loop)",
+      "✅ E2E Test Passes (Outer Loop Complete)"
+    ]
+  },
+  "examples": [
+    {
+      "command": "/cai:develop \"STORY-AUTH-001\" --outside-in --one-scenario",
+      "description": "Standard story implementation with Outside-In TDD",
+      "context": "When implementing a user story with proper TDD methodology"
+    },
+    {
+      "command": "/cai:develop \"STORY-PAYMENT-005\" --validate --mutation-testing --coverage 90",
+      "description": "High-quality implementation with comprehensive validation",
+      "context": "When implementing critical business logic requiring maximum quality"
+    },
+    {
+      "command": "/cai:develop \"STORY-DASHBOARD-003\" --outside-in --refactor-level 2",
+      "description": "UI component implementation with refactoring",
+      "context": "When building user interface components with clean code focus"
+    },
+    {
+      "command": "/cai:develop \"STORY-INTEGRATION-007\" --real-system --double-loop --validate",
+      "description": "Complex integration story with system validation",
+      "context": "When integrating with external systems requiring thorough testing"
+    },
+    {
+      "command": "/cai:develop --epic \"USER-MANAGEMENT\" --one-scenario --tdd-mode strict",
+      "description": "Epic-level development with strict TDD discipline",
+      "context": "When implementing multiple related stories as coordinated epic"
+    },
+    {
+      "command": "/cai:develop \"STORY-SECURITY-AUTH\" --validate --real-system --mutation-testing --one-scenario --tdd-mode strict",
+      "description": "Maximum validation and quality assurance",
+      "context": "When implementing security-critical features requiring highest quality standards"
+    }
+  ],
+  "sections": {
+    "atdd_quality_gates": {
+      "e2e_test_requirements": [
+        "Must call actual production services via dependency injection",
+        "Must avoid test infrastructure deception",
+        "Must use business language in test scenarios",
+        "Must validate real system behavior, not mocks"
+      ],
+      "step_method_requirements": [
+        "Must invoke production services: _serviceProvider.GetRequiredService<T>()",
+        "Must avoid direct test infrastructure calls for business logic",
+        "Must demonstrate production code path coverage",
+        "Must use NotImplementedException for unimplemented collaborators"
+      ],
+      "scaffolding_patterns": [
+        "Use NotImplementedException with clear descriptions",
+        "Apply \"Write the Code You Wish You Had\" pattern",
+        "Create natural interfaces during test writing",
+        "Maintain implementation pressure through proper failures"
+      ]
+    },
+    "test_strategy": {
+      "e2e_test_management": {
+        "one_scenario_rule": "Enable ONE E2E test at a time to prevent commit blocks",
+        "implementation": "Use [Ignore] attribute for unimplemented scenarios",
+        "rationale": "Maintains clean development workflow and prevents overwhelming failures",
+        "commit_safety": "Ensures commits always have passing tests"
+      },
+      "test_quality_validation": [
+        "Mutation Testing: ≥75-80% kill rate for test effectiveness",
+        "Coverage Requirements: ≥90% unit test coverage, ≥70% integration coverage",
+        "Business Validation: Tests validate business outcomes, not implementation details",
+        "Refactoring Safety: Tests survive refactoring without modification"
+      ]
+    },
+    "quality_gates": {
+      "development_quality": [
+        "TDD Compliance: Proper RED→GREEN→REFACTOR cycles followed",
+        "Test Quality: Comprehensive test coverage with high mutation kill rate",
+        "Code Quality: Clean, readable code with domain-driven naming",
+        "Architectural Alignment: Code follows architectural patterns and constraints"
+      ],
+      "production_integration": [
+        "Real System Calls: Step methods invoke actual production services",
+        "Service Integration: Proper dependency injection and service layer usage",
+        "Infrastructure Avoidance: No business logic in test infrastructure",
+        "Production Readiness: Implementation works in production environment"
+      ],
+      "atdd_compliance": [
+        "Customer Collaboration: Business stakeholder feedback incorporated",
+        "Executable Specification: Tests serve as living documentation",
+        "Business Language: Tests use ubiquitous domain language",
+        "Natural Progression: Tests pass naturally through sufficient implementation"
+      ]
+    },
+    "output_artifacts": {
+      "implementation_code": [
+        "Production Code: Business logic implementation following TDD",
+        "Test Code: Comprehensive test suite with E2E and unit tests",
+        "Integration Code: Service integrations and external system connections"
+      ],
+      "development_documentation": [
+        "Implementation Notes: Key decisions and trade-offs during development",
+        "Test Results: Test execution results and coverage reports",
+        "Refactoring Log: Continuous refactoring improvements applied",
+        "Quality Metrics: Code quality, complexity, and maintainability metrics"
+      ]
+    }
+  },
+  "see_also": ["validate", "refactor", "start", "architect", "complete"]
+}

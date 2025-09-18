@@ -1,0 +1,51 @@
+{
+  "command": "/cai:skeleton",
+  "category": "Architecture Validation",
+  "purpose": "Walking Skeleton implementation for architecture validation",
+  "synopsis": "/cai:skeleton [system-description] --minimal --risk-reduction --validation",
+  "display": "Walking Skeleton architecture validation | /cai:skeleton [system-description] --minimal --validation",
+  "description": "Walking Skeleton implementation for architecture validation based on Alistair Cockburn's methodology. Creates minimal end-to-end implementations to validate architecture and reduce risk early in projects through systematic risk reduction and architectural validation.",
+  "arguments": {
+    "system-description": {
+      "description": "Description of the system for walking skeleton implementation",
+      "required": false,
+      "type": "string",
+      "examples": ["payment processing system", "user authentication flow", "order management pipeline"]
+    }
+  },
+  "flags": {
+    "--minimal": {
+      "description": "Create minimal viable implementation",
+      "type": "boolean",
+      "details": "Implements smallest possible end-to-end functionality for architecture validation"
+    },
+    "--risk-reduction": {
+      "description": "Focus on architectural risk reduction",
+      "type": "boolean",
+      "details": "Identifies and mitigates highest architectural risks through implementation"
+    },
+    "--validation": {
+      "description": "Enable architecture validation and feedback",
+      "type": "boolean",
+      "details": "Validates architectural decisions through working implementation"
+    },
+    "--iterative": {
+      "description": "Enable iterative skeleton development",
+      "type": "boolean",
+      "details": "Develops skeleton incrementally with stakeholder feedback"
+    }
+  },
+  "examples": [
+    {
+      "command": "/cai:skeleton \"payment processing system\" --minimal --validation",
+      "description": "Minimal payment processing skeleton with architecture validation",
+      "context": "When validating payment system architecture early in development"
+    },
+    {
+      "command": "/cai:skeleton \"user authentication\" --risk-reduction --iterative",
+      "description": "Authentication skeleton focused on risk reduction",
+      "context": "When reducing architectural risks in authentication systems"
+    }
+  ],
+  "see_also": ["architect", "start", "develop", "walking-skeleton-helper"]
+}

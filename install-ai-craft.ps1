@@ -61,7 +61,10 @@ EXAMPLES:
 
 WHAT GETS INSTALLED:
     - 41+ specialized AI agents in 9 categories
-    - cai/atdd command interface with intelligent project analysis
+    - 14+ CAI command interface with intelligent project analysis
+    - Manual system with Linux-style documentation for all commands
+    - /cai:man command for comprehensive documentation access
+    - Enhanced argument hints for improved command visibility
     - Centralized configuration system (constants.md)
     - Wave processing architecture for clean ATDD workflows
     - Quality validation network with Level 1-6 refactoring
@@ -71,6 +74,7 @@ WHAT GETS INSTALLED:
 INSTALLATION LOCATION:
     $env:USERPROFILE\.claude\agents\       # All agent specifications
     $env:USERPROFILE\.claude\commands\     # Command integrations
+    $env:USERPROFILE\.claude\manuals\      # Manual system documentation
 
 FILES EXCLUDED:
     - README.md files (project-specific documentation)
@@ -134,6 +138,13 @@ function New-Backup {
     if (Test-Path $commandsDir) {
         Copy-Item -Path $commandsDir -Destination $BackupDir -Recurse -Force
         Write-Info "Backed up commands directory"
+    }
+
+    # Backup existing manuals directory
+    $manualsDir = Join-Path $ClaudeConfigDir "manuals"
+    if (Test-Path $manualsDir) {
+        Copy-Item -Path $manualsDir -Destination $BackupDir -Recurse -Force
+        Write-Info "Backed up manuals directory"
     }
     
     # Create backup manifest
@@ -236,6 +247,25 @@ function Install-Framework {
         $copiedCommands = (Get-ChildItem -Path $targetCommandsDir -Filter "*.md" -Recurse).Count
         Write-Info "Installed $copiedCommands command files"
     }
+
+    # Install manual system
+    Write-Info "Installing manual system..."
+    $sourceManualsDir = Join-Path $FrameworkSource "manuals\cai"
+    $targetManualsDir = Join-Path $ClaudeConfigDir "manuals\cai"
+
+    if (Test-Path $sourceManualsDir) {
+        New-Item -ItemType Directory -Path $targetManualsDir -Force | Out-Null
+        Copy-Item -Path "$sourceManualsDir\*.json" -Destination $targetManualsDir -Force
+
+        $copiedManuals = (Get-ChildItem -Path $targetManualsDir -Filter "*.json").Count
+        Write-Info "Installed $copiedManuals manual files"
+
+        # Verify essential manual files
+        $indexFile = Join-Path $targetManualsDir "index.json"
+        if (Test-Path $indexFile) {
+            Write-Info "  - Manual system index: installed"
+        }
+    }
 }
 
 # Validate installation
@@ -257,6 +287,20 @@ function Test-Installation {
         Write-Error "Missing cai/atdd command file"
         $errors++
     }
+
+    # Check /cai:man command exists
+    $manCommandFile = Join-Path $ClaudeConfigDir "commands\cai\man.md"
+    if (!(Test-Path $manCommandFile)) {
+        Write-Error "Missing /cai:man command file"
+        $errors++
+    }
+
+    # Check manual system index
+    $manualIndexFile = Join-Path $ClaudeConfigDir "manuals\cai\index.json"
+    if (!(Test-Path $manualIndexFile)) {
+        Write-Error "Missing manual system index file"
+        $errors++
+    }
     
     # Count installed files
     $agentsCaiDir = Join-Path $ClaudeConfigDir "agents\cai"
@@ -266,13 +310,19 @@ function Test-Installation {
         (Get-ChildItem -Path $agentsCaiDir -Filter "*.md" -Recurse).Count 
     } else { 0 }
     
-    $totalCommands = if (Test-Path $commandsDir) { 
-        (Get-ChildItem -Path $commandsDir -Filter "*.md" -Recurse).Count 
+    $totalCommands = if (Test-Path $commandsDir) {
+        (Get-ChildItem -Path $commandsDir -Filter "*.md" -Recurse).Count
     } else { 0 }
-    
+
+    $manualsDir = Join-Path $ClaudeConfigDir "manuals\cai"
+    $totalManuals = if (Test-Path $manualsDir) {
+        (Get-ChildItem -Path $manualsDir -Filter "*.json").Count
+    } else { 0 }
+
     Write-Info "Installation summary:"
     Write-Info "  - Agents installed: $totalAgents"
     Write-Info "  - Commands installed: $totalCommands"
+    Write-Info "  - Manuals installed: $totalManuals"
     Write-Info "  - Installation directory: $ClaudeConfigDir"
     
     # Check agent categories
