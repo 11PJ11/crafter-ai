@@ -31,6 +31,7 @@ chmod +x install-ai-craft.sh
 - **Wave Processing Architecture** with clean context isolation
 - **Centralized Configuration System** (constants.md)
 - **Quality Validation Network** with Level 1-6 refactoring
+- **Auto-Lint and Format Hooks** for code quality (Python, JavaScript, JSON, etc.)
 - **Second Way DevOps**: Observability agents (metrics, logs, traces, performance)
 - **Third Way DevOps**: Experimentation agents (A/B testing, hypothesis validation, learning synthesis)
 

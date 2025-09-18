@@ -61,6 +61,7 @@ WHAT GETS INSTALLED:
     - Centralized configuration system (constants.md)
     - Wave processing architecture for clean ATDD workflows
     - Quality validation network with Level 1-6 refactoring
+    - Auto-lint and format hooks for code quality (Python, JavaScript, JSON, etc.)
     - Second Way DevOps: Observability agents (metrics, logs, traces, performance)
     - Third Way DevOps: Experimentation agents (A/B testing, hypothesis validation, learning synthesis)
 
@@ -452,6 +453,7 @@ Framework Components:
 - 11 essential CAI commands: brownfield, refactor, start, discuss, architect, develop, transition, validate, complete, skeleton, help
 - Centralized configuration system (constants.md)
 - Quality validation network with Level 1-6 refactoring
+- Auto-lint and format hooks for code quality (Python, JavaScript, JSON, etc.)
 - Second Way DevOps: Observability agents (metrics, logs, traces, performance)
 - Third Way DevOps: Experimentation agents (A/B testing, hypothesis validation, learning synthesis)
 
@@ -521,6 +523,7 @@ main() {
         info "- 41+ specialized AI agents"
         info "- 11 essential CAI commands (brownfield, refactor, start, skeleton, etc.)"
         info "- Claude Code workflow hooks"
+        info "- Auto-lint and format hooks for code quality"
         info "- Quality validation network"
         info ""
         info "Next steps:"

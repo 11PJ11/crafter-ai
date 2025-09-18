@@ -57,6 +57,7 @@ echo     - cai/atdd command interface with intelligent project analysis
 echo     - Centralized configuration system (constants.md)
 echo     - Wave processing architecture for clean ATDD workflows
 echo     - Quality validation network with Level 1-6 refactoring
+echo     - Auto-lint and format hooks for code quality (Python, JavaScript, JSON, etc.)
 echo     - Second Way DevOps: Observability agents (metrics, logs, traces, performance)
 echo     - Third Way DevOps: Experimentation agents (A/B testing, hypothesis validation, learning synthesis)
 echo.
@@ -231,11 +232,97 @@ REM Copy commands directory
 call :info "Installing commands..."
 if exist "%FRAMEWORK_SOURCE%\commands" (
     xcopy "%FRAMEWORK_SOURCE%\commands" "%CLAUDE_CONFIG_DIR%\commands\" /E /I /Q >nul
-    
+
     REM Count copied commands
     set /a copied_commands=0
     for /r "%CLAUDE_CONFIG_DIR%\commands" %%f in (*.md) do set /a copied_commands+=1
     call :info "Installed !copied_commands! command files"
+)
+
+REM Install hooks
+call :install_craft_ai_hooks
+goto :eof
+
+:install_craft_ai_hooks
+call :info "Installing Craft-AI workflow hooks..."
+
+REM Create CAI-specific hooks directory
+mkdir "%CLAUDE_CONFIG_DIR%\hooks" 2>nul
+mkdir "%CLAUDE_CONFIG_DIR%\hooks\cai" 2>nul
+
+REM Copy hooks (preserve other hooks)
+if exist "%FRAMEWORK_SOURCE%\hooks" (
+    xcopy "%FRAMEWORK_SOURCE%\hooks" "%CLAUDE_CONFIG_DIR%\hooks\cai\" /E /I /Q >nul
+
+    REM Count hook files
+    set /a hook_files=0
+    for /r "%CLAUDE_CONFIG_DIR%\hooks\cai" %%f in (*.*) do set /a hook_files+=1
+    call :info "Installed !hook_files! Craft-AI hook files to hooks/cai/"
+)
+
+REM Merge hooks into settings (preserve existing)
+call :merge_hook_settings
+goto :eof
+
+:merge_hook_settings
+set "settings_file=%CLAUDE_CONFIG_DIR%\settings.local.json"
+set "hooks_config=%CLAUDE_CONFIG_DIR%\hooks\cai\config\hooks-config-windows.json"
+
+REM Create backup of current settings
+if exist "%settings_file%" (
+    copy "%settings_file%" "%settings_file%.pre-cai-backup" >nul
+    call :info "Created backup: %settings_file%.pre-cai-backup"
+)
+
+REM Use PowerShell to surgically merge CAI hooks
+if exist "%hooks_config%" (
+    powershell -NoProfile -Command ^
+    "$settingsFile = '%settings_file%'; ^
+    $hooksConfig = '%hooks_config%'; ^
+    try { ^
+        $caiConfig = Get-Content $hooksConfig | ConvertFrom-Json; ^
+        if (Test-Path $settingsFile) { ^
+            $settings = Get-Content $settingsFile | ConvertFrom-Json ^
+        } else { ^
+            $settings = @{} ^
+        }; ^
+        if (-not $settings.hooks) { $settings | Add-Member -Type NoteProperty -Name hooks -Value @{} }; ^
+        foreach ($event in $caiConfig.hooks.PSObject.Properties.Name) { ^
+            if (-not $settings.hooks.$event) { $settings.hooks | Add-Member -Type NoteProperty -Name $event -Value @() }; ^
+            foreach ($newHook in $caiConfig.hooks.$event) { ^
+                $hookId = $newHook.hooks[0].id; ^
+                $exists = $settings.hooks.$event | Where-Object { $_.hooks[0].id -eq $hookId }; ^
+                if (-not $exists -and $hookId) { ^
+                    foreach ($hook in $newHook.hooks) { ^
+                        if ($hook.command -and $hook.command.Contains('%%USERPROFILE%%')) { ^
+                            $hook.command = $hook.command.Replace('%%USERPROFILE%%', $env:USERPROFILE) ^
+                        } ^
+                    }; ^
+                    $settings.hooks.$event += $newHook ^
+                } ^
+            } ^
+        }; ^
+        if (-not $settings.permissions) { $settings | Add-Member -Type NoteProperty -Name permissions -Value @{allow=@(); deny=@(); ask=@()} }; ^
+        foreach ($perm in $caiConfig.permissions.allow) { ^
+            $perm = $perm.Replace('%%USERPROFILE%%', $env:USERPROFILE); ^
+            if ($settings.permissions.allow -notcontains $perm) { ^
+                $settings.permissions.allow += $perm ^
+            } ^
+        }; ^
+        $settings | ConvertTo-Json -Depth 10 | Set-Content $settingsFile; ^
+        Write-Host 'Successfully merged Craft-AI hooks into settings' ^
+    } catch { ^
+        Write-Host 'Error merging hooks:' $_.Exception.Message; ^
+        exit 1 ^
+    }"
+
+    if !errorlevel! equ 0 (
+        call :info "Successfully merged CAI hooks into settings.local.json"
+    ) else (
+        call :warn "Failed to merge hooks configuration - manual setup may be required"
+    )
+) else (
+    call :warn "Hooks config missing - hooks not configured"
 )
 goto :eof
 
@@ -311,6 +398,7 @@ echo - Wave processing architecture with clean context isolation
 echo - cai/atdd command interface with intelligent project analysis
 echo - Centralized configuration system ^(constants.md^)
 echo - Quality validation network with Level 1-6 refactoring
+echo - Auto-lint and format hooks for code quality ^(Python, JavaScript, JSON, etc.^)
 echo - Second Way DevOps: Observability agents ^(metrics, logs, traces, performance^)
 echo - Third Way DevOps: Experimentation agents ^(A/B testing, hypothesis validation, learning synthesis^)
 echo.
