@@ -4,26 +4,28 @@ JSON utilities for Craft-AI hooks
 Replaces jq commands for cross-platform compatibility
 """
 
-import sys
 import json
 import os
+import sys
 from datetime import datetime
-from pathlib import Path
+
 
 def load_json_safe(file_path, default=None):
     """Load JSON file safely, return default if file doesn't exist or invalid"""
     try:
         if os.path.exists(file_path):
-            with open(file_path, 'r') as f:
+            with open(file_path, "r") as f:
                 return json.load(f)
     except Exception:
         pass
     return default or {}
 
+
 def get_json_field(file_path, field, default=""):
     """Get a field value from JSON file"""
     data = load_json_safe(file_path, {})
     return data.get(field, default)
+
 
 def update_json_file(file_path, updates):
     """Update JSON file with new values"""
@@ -39,8 +41,9 @@ def update_json_file(file_path, updates):
     data.update(updates)
 
     # Write back to file
-    with open(file_path, 'w') as f:
+    with open(file_path, "w") as f:
         json.dump(data, f, indent=2)
+
 
 def update_pipeline_state(stage, agent):
     """Update pipeline state with new stage and agent"""
@@ -49,21 +52,23 @@ def update_pipeline_state(stage, agent):
         "stage": stage,
         "agent": agent,
         "last_transition": datetime.now().isoformat(),
-        "status": "active"
+        "status": "active",
     }
     update_json_file(state_file, updates)
+
 
 def update_wave_progress(stage, agent):
     """Update wave progress if file exists"""
     wave_file = "state/craft-ai/wave-progress.json"
     if os.path.exists(wave_file):
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         updates = {
             "current_stage": stage,
             "current_agent": agent,
-            "last_transition": timestamp
+            "last_transition": timestamp,
         }
         update_json_file(wave_file, updates)
+
 
 def main():
     """Command line interface for JSON operations"""
@@ -108,6 +113,7 @@ def main():
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

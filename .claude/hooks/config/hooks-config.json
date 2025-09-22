@@ -3,7 +3,7 @@
     "SessionStart": [{
       "hooks": [{
         "type": "command",
-        "command": "$HOME/.claude/hooks/cai/workflow/state-initializer.sh",
+        "command": "$HOME/.claude/hooks/workflow/state-initializer.sh",
         "id": "cai-state-initializer"
       }]
     }],
@@ -11,7 +11,7 @@
       "matcher": "cai/atdd|acceptance-designer|test-first-developer|solution-architect|business-analyst|user-experience-designer|technical-stakeholder|security-expert|legal-compliance-advisor|atdd-orchestrator",
       "hooks": [{
         "type": "command",
-        "command": "$HOME/.claude/hooks/cai/workflow/context-isolator.py",
+        "command": "$HOME/.claude/hooks/workflow/context-isolator.py",
         "id": "cai-context-isolator"
       }]
     }],
@@ -20,7 +20,7 @@
       "condition": "cai-workflow-active",
       "hooks": [{
         "type": "command",
-        "command": "$HOME/.claude/hooks/cai/workflow/input-validator.sh",
+        "command": "$HOME/.claude/hooks/workflow/input-validator.sh",
         "id": "cai-input-validator"
       }]
     }],
@@ -29,7 +29,7 @@
       "condition": "cai-workflow-active",
       "hooks": [{
         "type": "command",
-        "command": "$HOME/.claude/hooks/cai/workflow/output-monitor.py",
+        "command": "$HOME/.claude/hooks/workflow/output-monitor.py",
         "id": "cai-output-monitor"
       }]
     }, {
@@ -37,14 +37,14 @@
       "condition": "cai-workflow-active",
       "hooks": [{
         "type": "command",
-        "command": "$HOME/.claude/hooks/cai/workflow/stage-transition.sh",
+        "command": "$HOME/.claude/hooks/workflow/stage-transition.sh",
         "id": "cai-stage-transition"
       }]
     }, {
       "matcher": "Write|Edit|MultiEdit",
       "hooks": [{
         "type": "command",
-        "command": "$HOME/.claude/hooks/cai/code-quality/lint-format.sh",
+        "command": "$HOME/.claude/hooks/code-quality/lint-format.sh",
         "id": "cai-auto-lint-format",
         "description": "Auto-lint and format source files based on language"
       }]
@@ -52,7 +52,7 @@
   },
   "permissions": {
     "allow": [
-      "Bash($HOME/.claude/hooks/cai/**)",
+      "Bash($HOME/.claude/hooks/**)",
       "Read(docs/craft-ai/**)",
       "Write(docs/craft-ai/**)",
       "Edit(docs/craft-ai/**)",
