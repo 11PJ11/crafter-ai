@@ -8,7 +8,7 @@ set -euo pipefail
 
 # Script configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CLAUDE_CONFIG_DIR="$HOME/.claude"
+CLAUDE_CONFIG_DIR="/mnt/c/Users/alexd/.claude"
 UNINSTALL_LOG="$CLAUDE_CONFIG_DIR/ai-craft-uninstall.log"
 
 # Backup configuration
@@ -361,7 +361,7 @@ import json
 import os
 import sys
 
-settings_file = os.path.expanduser("~/.claude/settings.local.json")
+settings_file = "/mnt/c/Users/alexd/.claude/settings.local.json"
 
 try:
     with open(settings_file, 'r') as f:

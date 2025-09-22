@@ -8,7 +8,7 @@ set -e  # Exit on any error
 
 # Script configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CLAUDE_CONFIG_DIR="$HOME/.claude"
+CLAUDE_CONFIG_DIR="/mnt/c/Users/alexd/.claude"
 BACKUP_DIR="$CLAUDE_CONFIG_DIR/backups/ai-craft-$(date +%Y%m%d-%H%M%S)"
 FRAMEWORK_SOURCE="$SCRIPT_DIR/.claude"
 INSTALL_LOG="$CLAUDE_CONFIG_DIR/ai-craft-install.log"
@@ -288,8 +288,8 @@ import json
 import os
 import sys
 
-settings_file = os.path.expanduser("~/.claude/settings.local.json")
-hooks_config = os.path.expanduser("~/.claude/hooks/config/hooks-config.json")
+settings_file = "/mnt/c/Users/alexd/.claude/settings.local.json"
+hooks_config = "/mnt/c/Users/alexd/.claude/hooks/config/hooks-config.json"
 
 # Load CAI hooks configuration
 try:
@@ -331,7 +331,7 @@ for event, new_hooks_list in cai_hooks.items():
             # Update command path to use actual home directory
             for hook in new_hook.get('hooks', []):
                 if 'command' in hook and '$HOME' in hook['command']:
-                    hook['command'] = hook['command'].replace('$HOME', os.path.expanduser('~'))
+                    hook['command'] = hook['command'].replace('$HOME', '/mnt/c/Users/alexd')
             settings['hooks'][event].append(new_hook)
 
 # Initialize permissions if not present
@@ -342,7 +342,7 @@ if 'permissions' not in settings:
 cai_permissions = cai_config.get('permissions', {}).get('allow', [])
 for perm in cai_permissions:
     # Replace $HOME with actual path
-    perm = perm.replace('$HOME', os.path.expanduser('~'))
+    perm = perm.replace('$HOME', '/mnt/c/Users/alexd')
     if perm not in settings['permissions']['allow']:
         settings['permissions']['allow'].append(perm)
 
