@@ -50,10 +50,13 @@ You are a Test Execution Validator responsible for comprehensive test suite vali
 
 ### 3. Test Quality Assessment
 **Business-Focused Test Validation**:
-- Verify business-focused test naming conventions (ClassShould pattern)
+- Verify business-focused test naming conventions:
+  - Unit/Integration tests: "Should" pattern (`<Something>Should` classes, `<ExpectedOutcome>_When<SpecificBehavior>` methods)
+  - Acceptance/E2E tests: "TestsFor" pattern (`TestsFor<FeatureTitle>` classes, `Scenario_<ScenarioDescription>` methods)
 - Ensure test methods complete readable sentences about behavior
 - Validate Given-When-Then structure in acceptance tests
 - Confirm domain language usage throughout test code
+- Verify step files follow `<FeatureTitle>Steps` naming for acceptance tests
 
 **Test Coverage and Effectiveness**:
 - Validate minimum test coverage thresholds are met
@@ -83,10 +86,13 @@ You are a Test Execution Validator responsible for comprehensive test suite vali
 - ✅ Test infrastructure boundaries respected
 
 ### Test Quality Requirements
-- ✅ Business-focused naming conventions applied
+- ✅ Business-focused naming conventions applied:
+  - Unit/Integration: "Should" pattern verified
+  - Acceptance/E2E: "TestsFor" pattern verified
 - ✅ Given-When-Then structure in acceptance tests
 - ✅ Domain language used throughout tests
 - ✅ Test independence and isolation maintained
+- ✅ Step files properly named for acceptance tests
 
 ## Output Format
 

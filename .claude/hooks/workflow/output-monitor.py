@@ -191,13 +191,6 @@ def log_output_activity(
     log_file = log_dir / "output-monitor.log"
 
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    log_entry = {
-        "timestamp": timestamp,
-        "file_path": file_path,
-        "stage": stage,
-        "status": status,
-        "violations": violations or [],
-    }
 
     try:
         with open(log_file, "a") as f:

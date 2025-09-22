@@ -248,20 +248,20 @@ install_framework() {
 install_craft_ai_hooks() {
     info "Installing Craft-AI workflow hooks..."
 
-    # Create CAI-specific hooks directory
-    mkdir -p "$CLAUDE_CONFIG_DIR/hooks/cai"
+    # Create hooks directory structure (no cai subdirectory)
+    mkdir -p "$CLAUDE_CONFIG_DIR/hooks"
 
-    # Copy ONLY CAI hooks (preserve other hooks) - use refactored modular structure
+    # Copy hooks directly to the hooks directory (preserve other hooks)
     if [[ -d "$FRAMEWORK_SOURCE/hooks" ]]; then
-        # Copy the entire modular hook structure
-        cp -r "$FRAMEWORK_SOURCE/hooks/"* "$CLAUDE_CONFIG_DIR/hooks/cai/"
+        # Copy the entire modular hook structure directly
+        cp -r "$FRAMEWORK_SOURCE/hooks/"* "$CLAUDE_CONFIG_DIR/hooks/"
 
         # Make scripts executable
-        find "$CLAUDE_CONFIG_DIR/hooks/cai" -name "*.sh" -exec chmod +x {} \;
-        find "$CLAUDE_CONFIG_DIR/hooks/cai" -name "*.py" -exec chmod +x {} \;
+        find "$CLAUDE_CONFIG_DIR/hooks" -name "*.sh" -exec chmod +x {} \;
+        find "$CLAUDE_CONFIG_DIR/hooks" -name "*.py" -exec chmod +x {} \;
 
-        local hook_files=$(find "$CLAUDE_CONFIG_DIR/hooks/cai" -type f | wc -l)
-        info "Installed $hook_files Craft-AI hook files to hooks/cai/"
+        local hook_files=$(find "$CLAUDE_CONFIG_DIR/hooks" -type f -name "*.sh" -o -name "*.py" | wc -l)
+        info "Installed $hook_files Craft-AI hook files to hooks/"
     else
         warn "Hook source directory not found: $FRAMEWORK_SOURCE/hooks"
     fi
@@ -273,7 +273,7 @@ install_craft_ai_hooks() {
 # Surgically merge hook settings without overwriting existing
 merge_hook_settings() {
     local settings_file="$CLAUDE_CONFIG_DIR/settings.local.json"
-    local hooks_config="$CLAUDE_CONFIG_DIR/hooks/cai/config/hooks-config.json"
+    local hooks_config="$CLAUDE_CONFIG_DIR/hooks/config/hooks-config.json"
 
     # Create backup of current settings
     if [[ -f "$settings_file" ]]; then
@@ -289,7 +289,7 @@ import os
 import sys
 
 settings_file = os.path.expanduser("~/.claude/settings.local.json")
-hooks_config = os.path.expanduser("~/.claude/hooks/cai/config/hooks-config.json")
+hooks_config = os.path.expanduser("~/.claude/hooks/config/hooks-config.json")
 
 # Load CAI hooks configuration
 try:
@@ -377,27 +377,27 @@ validate_hooks() {
     local required_quality_hooks=("lint-format.sh")
 
     for hook in "${required_workflow_hooks[@]}"; do
-        if [[ ! -f "$CLAUDE_CONFIG_DIR/hooks/cai/workflow/$hook" ]]; then
+        if [[ ! -f "$CLAUDE_CONFIG_DIR/hooks/workflow/$hook" ]]; then
             error "Missing workflow hook: $hook"
             ((errors++))
         fi
     done
 
     for hook in "${required_quality_hooks[@]}"; do
-        if [[ ! -f "$CLAUDE_CONFIG_DIR/hooks/cai/code-quality/$hook" ]]; then
+        if [[ ! -f "$CLAUDE_CONFIG_DIR/hooks/code-quality/$hook" ]]; then
             error "Missing quality hook: $hook"
             ((errors++))
         fi
     done
 
     # Check core library exists
-    if [[ ! -f "$CLAUDE_CONFIG_DIR/hooks/cai/lib/HookManager.sh" ]]; then
+    if [[ ! -f "$CLAUDE_CONFIG_DIR/hooks/lib/HookManager.sh" ]]; then
         error "Missing core hook library: HookManager.sh"
         ((errors++))
     fi
 
     # Check hook permissions
-    for hook in "$CLAUDE_CONFIG_DIR/hooks/cai/"**/*.{sh,py}; do
+    for hook in "$CLAUDE_CONFIG_DIR/hooks/"**/*.{sh,py}; do
         if [[ -f "$hook" ]] && [[ ! -x "$hook" ]]; then
             warn "Hook not executable: $hook"
             chmod +x "$hook" 2>/dev/null || true
@@ -597,7 +597,7 @@ main() {
         info "${YELLOW}Hook System Logging Configuration:${NC}"
         info "- Default: Silent operation (HOOK_LOG_LEVEL=0)"
         info "- Enable logging: ${BLUE}echo 'export HOOK_LOG_LEVEL=2' >> ~/.bashrc${NC}"
-        info "- Test logging: ${BLUE}env HOOK_LOG_LEVEL=3 ~/.claude/hooks/cai/code-quality/lint-format.sh test.py${NC}"
+        info "- Test logging: ${BLUE}env HOOK_LOG_LEVEL=3 ~/.claude/hooks/code-quality/lint-format.sh test.py${NC}"
         info "- Full guide: ${BLUE}LOGGING_CONFIGURATION.md${NC}"
         info ""
         info "Command examples:"

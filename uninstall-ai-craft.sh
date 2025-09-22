@@ -217,10 +217,10 @@ create_backup() {
     fi
     
     # Backup hooks directory if it exists
-    if [[ -d "$CLAUDE_CONFIG_DIR/hooks/cai" ]]; then
+    if [[ -d "$CLAUDE_CONFIG_DIR/hooks" ]]; then
         mkdir -p "$BACKUP_DIR/hooks"
-        cp -r "$CLAUDE_CONFIG_DIR/hooks/cai" "$BACKUP_DIR/hooks/"
-        info "Backed up CAI hooks directory"
+        cp -r "$CLAUDE_CONFIG_DIR/hooks/"* "$BACKUP_DIR/hooks/" 2>/dev/null || true
+        info "Backed up hooks directory"
     fi
 
     # Backup current settings.local.json
@@ -315,13 +315,21 @@ remove_manuals() {
 remove_craft_ai_hooks() {
     info "Removing Craft-AI workflow hooks..."
 
-    # Remove CAI hooks directory (preserve other hooks)
-    if [[ -d "$CLAUDE_CONFIG_DIR/hooks/cai" ]]; then
-        rm -rf "$CLAUDE_CONFIG_DIR/hooks/cai"
-        info "Removed CAI hooks directory"
+    # Remove CAI-specific hook files (preserve other hooks)
+    if [[ -d "$CLAUDE_CONFIG_DIR/hooks" ]]; then
+        # Remove CAI-specific directories
+        rm -rf "$CLAUDE_CONFIG_DIR/hooks/workflow" 2>/dev/null || true
+        rm -rf "$CLAUDE_CONFIG_DIR/hooks/code-quality" 2>/dev/null || true
+        rm -rf "$CLAUDE_CONFIG_DIR/hooks/lib" 2>/dev/null || true
+        rm -rf "$CLAUDE_CONFIG_DIR/hooks/config" 2>/dev/null || true
+        rm -rf "$CLAUDE_CONFIG_DIR/hooks/formatters" 2>/dev/null || true
+        rm -rf "$CLAUDE_CONFIG_DIR/hooks/legacy" 2>/dev/null || true
+        rm -f "$CLAUDE_CONFIG_DIR/hooks/verify-installation.sh" 2>/dev/null || true
+        rm -f "$CLAUDE_CONFIG_DIR/hooks/test_"*.sh 2>/dev/null || true
+        info "Removed CAI hook files"
     fi
 
-    # Remove hooks directory if it's empty and only contained cai
+    # Remove hooks directory if it's empty after CAI removal
     if [[ -d "$CLAUDE_CONFIG_DIR/hooks" ]]; then
         if [[ -z "$(ls -A "$CLAUDE_CONFIG_DIR/hooks" 2>/dev/null)" ]]; then
             rmdir "$CLAUDE_CONFIG_DIR/hooks" 2>/dev/null
@@ -382,7 +390,7 @@ if 'hooks' in settings:
 if 'permissions' in settings and 'allow' in settings['permissions']:
     settings['permissions']['allow'] = [
         perm for perm in settings['permissions']['allow']
-        if not ('hooks/cai' in perm or 'craft-ai' in perm)
+        if not ('hooks/**' in perm or 'craft-ai' in perm)
     ]
 
 # Save cleaned settings
@@ -475,9 +483,9 @@ validate_removal() {
         ((errors++))
     fi
 
-    # Check that hooks are removed
-    if [[ -d "$CLAUDE_CONFIG_DIR/hooks/cai" ]]; then
-        error "AI-Craft hooks directory still exists"
+    # Check that CAI hooks are removed
+    if [[ -d "$CLAUDE_CONFIG_DIR/hooks/workflow" ]] || [[ -d "$CLAUDE_CONFIG_DIR/hooks/code-quality" ]]; then
+        error "AI-Craft hook directories still exist"
         ((errors++))
     fi
 

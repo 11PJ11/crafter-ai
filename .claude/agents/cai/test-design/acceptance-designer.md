@@ -339,13 +339,370 @@ public async Task ThenOrderShouldBeCreatedSuccessfully()
 }
 ```
 
+### Acceptance and E2E Test Naming Conventions
+
+**CRITICAL**: These naming conventions apply ONLY to acceptance and E2E tests. For unit/integration tests, see test-first-developer agent which uses "Should" conventions.
+
+#### Language-Specific Naming Patterns
+
+##### C# Convention
+```csharp
+// File naming: TestsFor<FeatureTitle>.cs
+// Class naming: TestsFor<FeatureTitle>
+// Test method naming: Scenario_<ScenarioDescription>
+// Steps file naming: <FeatureTitle>Steps.cs
+
+public class TestsForUserRegistration
+{
+    [Test]
+    public async Task Scenario_SuccessfulUserRegistration()
+    {
+        await Given(user_provides_valid_registration_data)
+            .And(email_address_is_not_already_taken)
+            .When(user_submits_registration_form)
+            .Then(user_account_is_created_successfully)
+            .And(welcome_email_is_sent_to_user);
+    }
+
+    [Test]
+    public async Task Scenario_DuplicateEmailRegistration()
+    {
+        await Given(existing_user_account_exists)
+            .And(new_user_provides_existing_email)
+            .When(user_submits_registration_form)
+            .Then(registration_is_rejected)
+            .And(appropriate_error_message_is_displayed);
+    }
+
+    [Test]
+    public async Task Scenario_InvalidEmailFormatRegistration()
+    {
+        await Given(user_provides_invalid_email_format)
+            .When(user_submits_registration_form)
+            .Then(validation_error_is_shown)
+            .And(registration_form_remains_on_screen);
+    }
+}
+
+// Steps file: UserRegistrationSteps.cs
+public class UserRegistrationSteps
+{
+    private readonly IServiceProvider _serviceProvider;
+    private readonly TestContext _context;
+
+    public UserRegistrationSteps(IServiceProvider serviceProvider, TestContext context)
+    {
+        _serviceProvider = serviceProvider;
+        _context = context;
+    }
+
+    public Task user_provides_valid_registration_data()
+    {
+        _context.UserData = new UserRegistrationData
+        {
+            Email = "newuser@example.com",
+            FirstName = "John",
+            LastName = "Doe",
+            Password = "SecurePassword123!"
+        };
+        return Task.CompletedTask;
+    }
+
+    public async Task user_submits_registration_form()
+    {
+        var userService = _serviceProvider.GetRequiredService<IUserService>();
+        _context.RegistrationResult = await userService.RegisterAsync(_context.UserData);
+    }
+
+    public Task user_account_is_created_successfully()
+    {
+        _context.RegistrationResult.IsSuccess.Should().BeTrue();
+        _context.RegistrationResult.UserId.Should().NotBeEmpty();
+        return Task.CompletedTask;
+    }
+}
+```
+
+##### Python Convention
+```python
+# File naming: tests_for_<feature_title>.py
+# Class naming: TestsFor<FeatureTitle>
+# Test method naming: scenario_<scenario_description>
+# Steps file naming: <feature_title>_steps.py
+
+class TestsForUserRegistration:
+    async def scenario_successful_user_registration(self):
+        await (Given(self.user_provides_valid_registration_data)
+               .And(self.email_address_is_not_already_taken)
+               .When(self.user_submits_registration_form)
+               .Then(self.user_account_is_created_successfully)
+               .And(self.welcome_email_is_sent_to_user))
+
+    async def scenario_duplicate_email_registration(self):
+        await (Given(self.existing_user_account_exists)
+               .And(self.new_user_provides_existing_email)
+               .When(self.user_submits_registration_form)
+               .Then(self.registration_is_rejected)
+               .And(self.appropriate_error_message_is_displayed))
+
+# Steps file: user_registration_steps.py
+class UserRegistrationSteps:
+    def __init__(self, service_provider, test_context):
+        self.service_provider = service_provider
+        self.context = test_context
+
+    async def user_provides_valid_registration_data(self):
+        self.context.user_data = UserRegistrationData(
+            email="newuser@example.com",
+            first_name="John",
+            last_name="Doe",
+            password="SecurePassword123!"
+        )
+
+    async def user_submits_registration_form(self):
+        user_service = self.service_provider.get_required_service(IUserService)
+        self.context.registration_result = await user_service.register_async(self.context.user_data)
+
+    async def user_account_is_created_successfully(self):
+        assert self.context.registration_result.is_success == True
+        assert self.context.registration_result.user_id is not None
+```
+
+##### Java Convention
+```java
+// File naming: TestsFor<FeatureTitle>.java
+// Class naming: TestsFor<FeatureTitle>
+// Test method naming: scenario_<scenarioDescription>
+// Steps file naming: <FeatureTitle>Steps.java
+
+public class TestsForUserRegistration {
+
+    @Test
+    public CompletableFuture<Void> scenario_successfulUserRegistration() {
+        return Given(this::userProvidesValidRegistrationData)
+            .and(this::emailAddressIsNotAlreadyTaken)
+            .when(this::userSubmitsRegistrationForm)
+            .then(this::userAccountIsCreatedSuccessfully)
+            .and(this::welcomeEmailIsSentToUser);
+    }
+
+    @Test
+    public CompletableFuture<Void> scenario_duplicateEmailRegistration() {
+        return Given(this::existingUserAccountExists)
+            .and(this::newUserProvidesExistingEmail)
+            .when(this::userSubmitsRegistrationForm)
+            .then(this::registrationIsRejected)
+            .and(this::appropriateErrorMessageIsDisplayed);
+    }
+}
+
+// Steps file: UserRegistrationSteps.java
+public class UserRegistrationSteps {
+    private final ServiceProvider serviceProvider;
+    private final TestContext context;
+
+    public UserRegistrationSteps(ServiceProvider serviceProvider, TestContext context) {
+        this.serviceProvider = serviceProvider;
+        this.context = context;
+    }
+
+    public CompletableFuture<Void> userProvidesValidRegistrationData() {
+        context.setUserData(UserRegistrationData.builder()
+            .email("newuser@example.com")
+            .firstName("John")
+            .lastName("Doe")
+            .password("SecurePassword123!")
+            .build());
+        return CompletableFuture.completedFuture(null);
+    }
+
+    public CompletableFuture<Void> userSubmitsRegistrationForm() {
+        UserService userService = serviceProvider.getRequiredService(UserService.class);
+        return userService.registerAsync(context.getUserData())
+            .thenAccept(result -> context.setRegistrationResult(result));
+    }
+}
+```
+
+##### JavaScript/TypeScript Convention
+```typescript
+// File naming: testsFor<FeatureTitle>.spec.ts
+// Class/describe naming: TestsFor<FeatureTitle>
+// Test naming: scenario_<scenarioDescription>
+// Steps file naming: <featureTitle>Steps.ts
+
+describe('TestsForUserRegistration', () => {
+
+    it('scenario_successfulUserRegistration', async () => {
+        await Given(userProvidesValidRegistrationData)
+            .and(emailAddressIsNotAlreadyTaken)
+            .when(userSubmitsRegistrationForm)
+            .then(userAccountIsCreatedSuccessfully)
+            .and(welcomeEmailIsSentToUser);
+    });
+
+    it('scenario_duplicateEmailRegistration', async () => {
+        await Given(existingUserAccountExists)
+            .and(newUserProvidesExistingEmail)
+            .when(userSubmitsRegistrationForm)
+            .then(registrationIsRejected)
+            .and(appropriateErrorMessageIsDisplayed);
+    });
+});
+
+// Steps file: userRegistrationSteps.ts
+export class UserRegistrationSteps {
+    constructor(
+        private serviceProvider: ServiceProvider,
+        private context: TestContext
+    ) {}
+
+    async userProvidesValidRegistrationData(): Promise<void> {
+        this.context.userData = {
+            email: 'newuser@example.com',
+            firstName: 'John',
+            lastName: 'Doe',
+            password: 'SecurePassword123!'
+        };
+    }
+
+    async userSubmitsRegistrationForm(): Promise<void> {
+        const userService = this.serviceProvider.getRequiredService<UserService>('UserService');
+        this.context.registrationResult = await userService.registerAsync(this.context.userData);
+    }
+
+    async userAccountIsCreatedSuccessfully(): Promise<void> {
+        expect(this.context.registrationResult.isSuccess).toBe(true);
+        expect(this.context.registrationResult.userId).toBeDefined();
+    }
+}
+```
+
+#### Fluent API Implementation Pattern
+
+The Given().And().When().Then().And() pattern uses lambda expressions that accept step methods as parameters:
+
+##### C# Fluent API Implementation
+```csharp
+public static class AcceptanceTestDsl
+{
+    public static TestBuilder Given(Func<Task> stepMethod) => new TestBuilder().Given(stepMethod);
+}
+
+public class TestBuilder
+{
+    private readonly List<Func<Task>> _steps = new();
+
+    public TestBuilder Given(Func<Task> stepMethod)
+    {
+        _steps.Add(stepMethod);
+        return this;
+    }
+
+    public TestBuilder And(Func<Task> stepMethod)
+    {
+        _steps.Add(stepMethod);
+        return this;
+    }
+
+    public TestBuilder When(Func<Task> stepMethod)
+    {
+        _steps.Add(stepMethod);
+        return this;
+    }
+
+    public TestBuilder Then(Func<Task> stepMethod)
+    {
+        _steps.Add(stepMethod);
+        return this;
+    }
+
+    public async Task Execute()
+    {
+        foreach (var step in _steps)
+        {
+            await step();
+        }
+    }
+
+    public static implicit operator Task(TestBuilder builder)
+    {
+        return builder.Execute();
+    }
+}
+```
+
+##### Python Fluent API Implementation
+```python
+class AcceptanceTestDsl:
+    def __init__(self):
+        self.steps = []
+
+    async def execute(self):
+        for step in self.steps:
+            await step()
+
+    def __await__(self):
+        return self.execute().__await__()
+
+def Given(step_method):
+    dsl = AcceptanceTestDsl()
+    return dsl.Given(step_method)
+
+class TestBuilder:
+    def __init__(self):
+        self.steps = []
+
+    def Given(self, step_method):
+        self.steps.append(step_method)
+        return self
+
+    def And(self, step_method):
+        self.steps.append(step_method)
+        return self
+
+    def When(self, step_method):
+        self.steps.append(step_method)
+        return self
+
+    def Then(self, step_method):
+        self.steps.append(step_method)
+        return self
+```
+
+#### Step Method Naming Guidelines
+
+##### Core Principles for Step Methods
+1. **Business Language**: Use terminology that business stakeholders understand
+2. **Action-Oriented**: Step names should describe actions or validations from user perspective
+3. **Present Tense**: Use present tense for current state, past tense for completed actions
+4. **Specific**: Avoid generic names like "do_action" or "check_result"
+
+##### Good vs Poor Step Method Examples
+
+```csharp
+// ✅ GOOD: Business-focused step method names
+public async Task user_provides_valid_payment_information()
+public async Task order_is_submitted_for_processing()
+public async Task payment_is_processed_successfully()
+public async Task order_confirmation_is_sent_to_customer()
+public async Task inventory_is_reduced_appropriately()
+
+// ❌ POOR: Technical implementation focused
+public async Task set_payment_data()
+public async Task call_order_api()
+public async Task verify_payment_response()
+public async Task check_email_sent()
+public async Task update_inventory_count()
+```
+
 #### Black Box Testing Through Public API
 ```csharp
 // ✅ CORRECT: Test behavior through public interfaces only
-public class OrderFulfillmentShould
+public class TestsForOrderFulfillment
 {
     [Test]
-    public async Task CompleteSuccessfully_When_AllItemsAreAvailable()
+    public async Task Scenario_SuccessfulOrderFulfillmentWithAvailableItems()
     {
         // Arrange - only through public interfaces
         var orderService = _serviceProvider.GetRequiredService<IOrderService>();
@@ -558,5 +915,10 @@ tracking_requirements:
 - ✅ **CONFIRM** tests follow Given-When-Then format and focus on business outcomes
 - ✅ **ENSURE** progress was updated for resumability
 - ✅ **VALIDATE** one E2E test active with others properly marked [Ignore]
+- ✅ **VALIDATE** acceptance/E2E tests follow "TestsFor" naming conventions per language
+- ✅ **CONFIRM** test classes named as `TestsFor<FeatureTitle>` (or language equivalent)
+- ✅ **VERIFY** test methods follow `Scenario_<ScenarioDescription>` pattern
+- ✅ **ENSURE** step files named as `<FeatureTitle>Steps` with appropriate language extension
+- ✅ **VALIDATE** Given().And().When().Then().And() fluent API pattern used with step method lambdas
 
 Focus on creating acceptance tests that serve as both executable specifications and architectural validation while driving outside-in development through clear business-focused scenarios.

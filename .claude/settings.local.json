@@ -56,7 +56,10 @@
       "Bash(do if [ -f \"/home/alexd/.claude/hooks/$path\" ])",
       "Bash(then echo \"✅ $path\")",
       "Bash(else echo \"❌ $path MISSING\")",
-      "Bash(./.claude/hooks/verify-installation.sh:*)"
+      "Bash(./.claude/hooks/verify-installation.sh:*)",
+      "Bash(/home/alexd/.claude/hooks/workflow/state-initializer.sh:*)",
+      "Bash(CAI_WORKFLOW_ACTIVE=true CLAUDE_WRITE_FILE=\"docs/craft-ai/invalid-file.md\" /home/alexd/.claude/hooks/workflow/output-monitor.py)",
+      "Bash(env:*)"
     ],
     "deny": [],
     "ask": []

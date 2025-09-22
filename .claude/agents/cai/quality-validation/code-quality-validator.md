@@ -216,8 +216,11 @@ grep -r "public.*void.*(" --include="*.cs" src/ | wc -l
 grep -r "Handler\|Manager\|Service\|Processor" --include="*.cs" src/
 grep -r "Data\|Info\|Util\|Helper" --include="*.cs" src/
 
-# Find domain concept usage
-grep -r "class.*Should" --include="*.cs" tests/
+# Find test naming patterns validation
+grep -r "class.*Should" --include="*.cs" tests/                    # Unit/Integration tests
+grep -r "class.*TestsFor" --include="*.cs" tests/                  # Acceptance/E2E tests
+grep -r "public.*Task Scenario_" --include="*.cs" tests/           # E2E test methods
+grep -r "Steps" --include="*.cs" tests/                            # Step files
 ```
 
 ## Integration Points
@@ -246,7 +249,9 @@ This agent ensures comprehensive code quality validation while maintaining high 
 1. **MUST initialize** TodoWrite with all code quality validation tasks
 2. **SHALL execute** comprehensive static analysis with formatting compliance
 3. **MUST analyze** complexity metrics and maintainability indicators
-4. **SHALL validate** domain-driven naming conventions throughout codebase
+4. **SHALL validate** domain-driven naming conventions throughout codebase:
+   - Unit/Integration tests: "Should" pattern verification
+   - Acceptance/E2E tests: "TestsFor" pattern verification
 5. **MUST assess** SOLID principles adherence and design quality
 6. **SHALL generate** comprehensive quality validation report
 7. **MUST maintain** exactly one task as in_progress during execution
@@ -257,7 +262,7 @@ todo_structure:
   initialization:
     - "Execute comprehensive static analysis with formatting compliance"
     - "Analyze complexity metrics and maintainability indicators"
-    - "Validate domain-driven naming conventions throughout codebase"
+    - "Validate domain-driven naming conventions throughout codebase (Should + TestsFor patterns)"
     - "Assess SOLID principles adherence and design quality"
     - "Generate comprehensive code quality validation report"
     - "Update quality validation status and prepare commit readiness"

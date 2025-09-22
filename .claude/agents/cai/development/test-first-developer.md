@@ -1159,19 +1159,286 @@ internal sealed class OrderApplicationService
 - Minimize cognitive distance from business to solution
 ```
 
-### Test Naming Conventions
+### Unit and Integration Test Naming Conventions
+
+**CRITICAL**: These naming conventions apply ONLY to unit and integration tests. For acceptance/E2E tests, see acceptance-designer agent which uses "TestsFor" conventions.
+
+#### Language-Specific Naming Patterns
+
+##### Python Convention
+```python
+# File naming: test_that_<something>_should.py
+# Example: test_that_bank_account_should.py
+
+class TestThatBankAccountShould:
+    def have_balance_zero_when_opened_from_scratch(self):
+        # Arrange
+        account = BankAccount()
+
+        # Act & Assert
+        assert account.balance == 0
+
+    def increase_balance_when_deposit_made_given_sufficient_funds(self):
+        # Arrange
+        account = BankAccount()
+
+        # Act
+        account.deposit(100)
+
+        # Assert
+        assert account.balance == 100
+
+    def reject_withdrawal_when_insufficient_funds_given_empty_account(self):
+        # Arrange
+        account = BankAccount()
+
+        # Act & Assert
+        with pytest.raises(InsufficientFundsException):
+            account.withdraw(50)
+```
+
+##### C# Convention
 ```csharp
-// Business behavior focus
+// Class naming: <Something>Should
+// Method naming: <ExpectedOutcome>_When<SpecificBehavior>[_GivenPreconditions]
+
+public class BankAccountShould
+{
+    [Test]
+    public void HaveBalanceZero_WhenOpenedFromScratch()
+    {
+        // Arrange
+        var account = new BankAccount();
+
+        // Act & Assert
+        account.Balance.Should().Be(0);
+    }
+
+    [Test]
+    public void IncreaseBalance_WhenDepositMade_GivenSufficientFunds()
+    {
+        // Arrange
+        var account = new BankAccount();
+
+        // Act
+        account.Deposit(100m);
+
+        // Assert
+        account.Balance.Should().Be(100m);
+    }
+
+    [Test]
+    public void RejectWithdrawal_WhenInsufficientFunds_GivenEmptyAccount()
+    {
+        // Arrange
+        var account = new BankAccount();
+
+        // Act & Assert
+        account.Invoking(a => a.Withdraw(50m))
+            .Should().Throw<InsufficientFundsException>();
+    }
+}
+```
+
+##### Java Convention
+```java
+// Class naming: <Something>Should (PascalCase)
+// Method naming: <expectedOutcome>_when<SpecificBehavior>[_given<Preconditions>] (camelCase with underscores)
+
+public class BankAccountShould {
+
+    @Test
+    public void haveBalanceZero_whenOpenedFromScratch() {
+        // Arrange
+        BankAccount account = new BankAccount();
+
+        // Act & Assert
+        assertThat(account.getBalance()).isEqualTo(BigDecimal.ZERO);
+    }
+
+    @Test
+    public void increaseBalance_whenDepositMade_givenSufficientFunds() {
+        // Arrange
+        BankAccount account = new BankAccount();
+
+        // Act
+        account.deposit(new BigDecimal("100"));
+
+        // Assert
+        assertThat(account.getBalance()).isEqualTo(new BigDecimal("100"));
+    }
+
+    @Test
+    public void rejectWithdrawal_whenInsufficientFunds_givenEmptyAccount() {
+        // Arrange
+        BankAccount account = new BankAccount();
+
+        // Act & Assert
+        assertThrows(InsufficientFundsException.class,
+            () -> account.withdraw(new BigDecimal("50")));
+    }
+}
+```
+
+##### JavaScript/TypeScript Convention
+```typescript
+// Class/describe naming: <Something>Should
+// Test naming: <expectedOutcome>_when<SpecificBehavior>[_given<Preconditions>]
+
+describe('BankAccountShould', () => {
+
+    it('haveBalanceZero_whenOpenedFromScratch', () => {
+        // Arrange
+        const account = new BankAccount();
+
+        // Act & Assert
+        expect(account.balance).toBe(0);
+    });
+
+    it('increaseBalance_whenDepositMade_givenSufficientFunds', () => {
+        // Arrange
+        const account = new BankAccount();
+
+        // Act
+        account.deposit(100);
+
+        // Assert
+        expect(account.balance).toBe(100);
+    });
+
+    it('rejectWithdrawal_whenInsufficientFunds_givenEmptyAccount', () => {
+        // Arrange
+        const account = new BankAccount();
+
+        // Act & Assert
+        expect(() => account.withdraw(50))
+            .toThrow(InsufficientFundsException);
+    });
+});
+```
+
+##### Go Convention
+```go
+// File naming: <something>_should_test.go
+// Function naming: Test<Something>Should_<ExpectedOutcome>_When<SpecificBehavior>[_Given<Preconditions>]
+
+func TestBankAccountShould_HaveBalanceZero_WhenOpenedFromScratch(t *testing.T) {
+    // Arrange
+    account := NewBankAccount()
+
+    // Act & Assert
+    assert.Equal(t, 0.0, account.Balance())
+}
+
+func TestBankAccountShould_IncreaseBalance_WhenDepositMade_GivenSufficientFunds(t *testing.T) {
+    // Arrange
+    account := NewBankAccount()
+
+    // Act
+    account.Deposit(100.0)
+
+    // Assert
+    assert.Equal(t, 100.0, account.Balance())
+}
+
+func TestBankAccountShould_RejectWithdrawal_WhenInsufficientFunds_GivenEmptyAccount(t *testing.T) {
+    // Arrange
+    account := NewBankAccount()
+
+    // Act & Assert
+    err := account.Withdraw(50.0)
+    assert.Error(t, err)
+    assert.IsType(t, &InsufficientFundsError{}, err)
+}
+```
+
+##### Rust Convention
+```rust
+// Module naming: <something>_should (snake_case)
+// Function naming: <expected_outcome>_when_<specific_behavior>[_given_<preconditions>]
+
+mod bank_account_should {
+    use super::*;
+
+    #[test]
+    fn have_balance_zero_when_opened_from_scratch() {
+        // Arrange
+        let account = BankAccount::new();
+
+        // Act & Assert
+        assert_eq!(account.balance(), 0.0);
+    }
+
+    #[test]
+    fn increase_balance_when_deposit_made_given_sufficient_funds() {
+        // Arrange
+        let mut account = BankAccount::new();
+
+        // Act
+        account.deposit(100.0).unwrap();
+
+        // Assert
+        assert_eq!(account.balance(), 100.0);
+    }
+
+    #[test]
+    fn reject_withdrawal_when_insufficient_funds_given_empty_account() {
+        // Arrange
+        let mut account = BankAccount::new();
+
+        // Act & Assert
+        let result = account.withdraw(50.0);
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), BankError::InsufficientFunds));
+    }
+}
+```
+
+#### Business-Focused Naming Guidelines
+
+##### Core Principles
+1. **Focus on Business Behavior**: Test names should describe what the system does for users, not how it does it
+2. **Use Domain Language**: Employ terminology from business experts and stakeholders
+3. **Behavior Over Structure**: Test behaviors, not code structure or implementation details
+4. **Living Documentation**: Test names should read like specifications
+
+##### Naming Pattern Structure
+```
+<ExpectedOutcome>_When<SpecificBehavior>[_Given<Preconditions>]
+
+Where:
+- ExpectedOutcome: What should happen from business perspective
+- SpecificBehavior: The action or condition that triggers the outcome
+- Preconditions: Optional context or setup conditions
+```
+
+##### Examples of Good vs Poor Naming
+
+```csharp
+// ✅ GOOD: Business-focused, behavior-driven
 public class OrderFulfillmentServiceShould
 {
     [Test]
-    public void ReserveInventory_When_ProcessingValidOrder()
-    
-    [Test] 
-    public void RejectOrder_When_InsufficientInventoryAvailable()
-    
+    public void ReserveInventory_WhenProcessingValidOrder()
+
     [Test]
-    public void NotifyCustomer_When_OrderCannotBeFulfilled()
+    public void RejectOrder_WhenInsufficientInventoryAvailable()
+
+    [Test]
+    public void NotifyCustomer_WhenOrderCannotBeFulfilled_GivenInventoryConstraints()
+}
+
+// ❌ POOR: Technical focus, implementation details
+public class OrderFulfillmentServiceTests
+{
+    [Test]
+    public void TestProcessOrder()
+
+    [Test]
+    public void TestCheckInventory()
+
+    [Test]
+    public void TestSendEmail()
 }
 ```
 
@@ -1268,5 +1535,9 @@ tracking_requirements:
 - ✅ **CONFIRM** step methods use GetRequiredService pattern for business logic
 - ✅ **ENSURE** progress was updated for resumability
 - ✅ **VALIDATE** implementation follows architectural patterns and business naming
+- ✅ **VALIDATE** unit/integration tests follow "Should" naming conventions per language
+- ✅ **CONFIRM** test classes named as `<Something>Should` (or language equivalent)
+- ✅ **VERIFY** test methods follow `<ExpectedOutcome>_When<SpecificBehavior>[_GivenPreconditions]` pattern
+- ✅ **ENSURE** test names use business domain language, not technical implementation details
 
 Focus on driving production code development through outside-in TDD while maintaining clear business focus and ensuring proper production service integration throughout the development process.
