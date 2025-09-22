@@ -341,6 +341,9 @@ remove_craft_ai_hooks() {
 
     # Surgically remove CAI hooks from settings.local.json
     clean_hook_settings
+
+    # Clean global settings.json as well
+    clean_global_settings
 }
 
 clean_hook_settings() {
@@ -410,6 +413,74 @@ PYTHON_SCRIPT
         fi
     else
         warn "Python3 not available - hooks configuration not cleaned"
+    fi
+}
+
+# Clean global settings.json (remove only AI-Craft hooks, keep everything else)
+clean_global_settings() {
+    local global_settings="$CLAUDE_CONFIG_DIR/settings.json"
+
+    if [[ ! -f "$global_settings" ]]; then
+        info "Global settings.json not found, skipping cleanup"
+        return 0
+    fi
+
+    # Backup before modification
+    cp "$global_settings" "$global_settings.pre-uninstall-backup"
+    info "Created backup: $global_settings.pre-uninstall-backup"
+
+    # Use Python to surgically remove only AI-Craft hooks
+    if command -v python3 >/dev/null 2>&1; then
+        python3 << 'PYTHON_SCRIPT'
+import json
+import os
+import sys
+
+global_settings_file = "/mnt/c/Users/alexd/.claude/settings.json"
+
+try:
+    with open(global_settings_file, 'r') as f:
+        settings = json.load(f)
+except Exception as e:
+    print(f"Error reading global settings: {e}")
+    sys.exit(1)
+
+# Remove AI-Craft hooks from PostToolUse while keeping other hooks
+if 'hooks' in settings and 'PostToolUse' in settings['hooks']:
+    # Filter out AI-Craft hooks (lint-format.sh and hooks-dispatcher.sh references)
+    settings['hooks']['PostToolUse'] = [
+        hook for hook in settings['hooks']['PostToolUse']
+        if not any(
+            'lint-format.sh' in h.get('command', '') or 'hooks-dispatcher.sh' in h.get('command', '')
+            for h in hook.get('hooks', [])
+        )
+    ]
+
+    # Remove PostToolUse section if it's empty
+    if not settings['hooks']['PostToolUse']:
+        del settings['hooks']['PostToolUse']
+
+    # Remove hooks section if it's empty
+    if not settings['hooks']:
+        del settings['hooks']
+
+# Save cleaned settings
+try:
+    with open(global_settings_file, 'w') as f:
+        json.dump(settings, f, indent=2)
+    print("Successfully removed AI-Craft hooks from global settings")
+except Exception as e:
+    print(f"Error saving global settings: {e}")
+    sys.exit(1)
+PYTHON_SCRIPT
+
+        if [[ $? -eq 0 ]]; then
+            info "Successfully cleaned AI-Craft hooks from settings.json"
+        else
+            warn "Failed to clean global settings - manual cleanup may be required"
+        fi
+    else
+        warn "Python3 not available - global settings not cleaned"
     fi
 }
 

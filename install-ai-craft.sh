@@ -268,6 +268,9 @@ install_craft_ai_hooks() {
 
     # Merge hooks into settings (preserve existing)
     merge_hook_settings
+
+    # Merge global settings.json for direct hook calls
+    merge_global_settings
 }
 
 # Surgically merge hook settings without overwriting existing
@@ -363,6 +366,84 @@ PYTHON_SCRIPT
         fi
     else
         warn "Python3 not available or hooks config missing - hooks not configured"
+    fi
+}
+
+# Merge global settings.json for direct hook calls (no dispatcher)
+merge_global_settings() {
+    local global_settings="$CLAUDE_CONFIG_DIR/settings.json"
+
+    # Create backup if file exists
+    if [[ -f "$global_settings" ]]; then
+        cp "$global_settings" "$global_settings.pre-cai-backup"
+        info "Created backup: $global_settings.pre-cai-backup"
+    fi
+
+    # Use Python to manage global settings.json
+    if command -v python3 >/dev/null 2>&1; then
+        python3 << 'PYTHON_SCRIPT'
+import json
+import os
+import sys
+
+global_settings_file = "/mnt/c/Users/alexd/.claude/settings.json"
+
+# Load existing global settings or create new structure
+settings = {}
+if os.path.exists(global_settings_file):
+    try:
+        with open(global_settings_file, 'r') as f:
+            settings = json.load(f)
+    except Exception:
+        settings = {}
+
+# Initialize hooks section if not present
+if 'hooks' not in settings:
+    settings['hooks'] = {}
+
+# Add AI-Craft PostToolUse hook for code quality (direct script call)
+if 'PostToolUse' not in settings['hooks']:
+    settings['hooks']['PostToolUse'] = []
+
+# Remove any existing AI-Craft hooks to avoid duplicates
+settings['hooks']['PostToolUse'] = [
+    hook for hook in settings['hooks']['PostToolUse']
+    if not any(
+        'lint-format.sh' in h.get('command', '') or 'hooks-dispatcher.sh' in h.get('command', '')
+        for h in hook.get('hooks', [])
+    )
+]
+
+# Add our direct script hook
+ai_craft_hook = {
+    "matcher": "Write|Edit|MultiEdit|NotebookEdit",
+    "hooks": [
+        {
+            "type": "command",
+            "command": "bash /mnt/c/Users/alexd/.claude/hooks/code-quality/lint-format.sh"
+        }
+    ]
+}
+
+settings['hooks']['PostToolUse'].append(ai_craft_hook)
+
+# Save updated settings
+try:
+    with open(global_settings_file, 'w') as f:
+        json.dump(settings, f, indent=2)
+    print("Successfully configured AI-Craft hooks in global settings")
+except Exception as e:
+    print(f"Error saving global settings: {e}")
+    sys.exit(1)
+PYTHON_SCRIPT
+
+        if [[ $? -eq 0 ]]; then
+            info "Successfully configured AI-Craft hooks in settings.json"
+        else
+            warn "Failed to configure global settings - manual setup may be required"
+        fi
+    else
+        warn "Python3 not available - global settings not configured"
     fi
 }
 
