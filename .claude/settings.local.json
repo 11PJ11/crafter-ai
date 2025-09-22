@@ -48,7 +48,8 @@
       "Bash(./workflow/state-initializer.sh:*)",
       "Bash(echo:*)",
       "Bash(source:*)",
-      "Bash(init_hook_system)"
+      "Bash(init_hook_system)",
+      "Bash(git config:*)"
     ],
     "deny": [],
     "ask": []
