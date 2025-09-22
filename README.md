@@ -208,6 +208,50 @@ All agents reference shared constants for maintainability:
 - **Consistency**: All agents use standardized file locations
 - **Flexibility**: Simple reconfiguration for different projects
 
+### Hook System Logging Configuration
+
+The AI-Craft framework includes a sophisticated modular hook system with configurable logging for troubleshooting and monitoring.
+
+#### **Logging Levels**
+```bash
+export HOOK_LOG_LEVEL=0  # ERROR only (default/silent)
+export HOOK_LOG_LEVEL=1  # WARN and above
+export HOOK_LOG_LEVEL=2  # INFO and above (recommended)
+export HOOK_LOG_LEVEL=3  # DEBUG (verbose, all messages)
+```
+
+#### **Quick Setup**
+```bash
+# Enable INFO level logging (recommended)
+echo 'export HOOK_LOG_LEVEL=2  # AI-Craft hooks logging' >> ~/.bashrc
+source ~/.bashrc
+
+# Test logging
+env HOOK_LOG_LEVEL=3 ~/.claude/hooks/cai/code-quality/lint-format.sh test.py
+```
+
+#### **Components That Log**
+- **HookManager**: System initialization and configuration loading
+- **ToolManager**: Tool path setup and availability checking
+- **FormatterRegistry**: Language detection and formatter dispatching
+- **LanguageDetector**: Project language analysis
+- **BaseFormatter**: File pattern matching and tool validation
+- **PythonFormatter/JavaScriptFormatter**: Language-specific formatting logic
+
+#### **Sample Output (DEBUG Level)**
+```
+2025-09-22 16:06:50 [HookManager] Initializing modular hook system v1.0.0
+2025-09-22 16:06:50 [ToolManager] Setting up tool paths
+2025-09-22 16:06:50 [FormatterRegistry] Initializing formatter registry
+2025-09-22 16:07:16 [LanguageDetector] Detection complete. Found: shell json python markdown
+```
+
+#### **Troubleshooting**
+- **No Output**: Check `HOOK_LOG_LEVEL` is set and ≥ 2
+- **Permission Errors**: Ensure hooks are executable: `chmod +x ~/.claude/hooks/cai/**/*.sh`
+- **Tool Missing**: Install required tools (black, isort, ruff for Python; prettier for JSON/JS)
+- **Hook Not Running**: Verify settings in `~/.claude/settings.local.json`
+
 ## 🎯 Key Features
 
 ### Intelligent Project Analysis
@@ -256,12 +300,25 @@ All agents reference shared constants for maintainability:
 
 ## 📚 Documentation
 
+### Core Documentation
 - **Agent Specifications**: Detailed role definitions in `.claude/agents/cai/`
 - **Command Reference**: Integration patterns in `.claude/commands/cai/`
+- **Manual System**: Interactive help documentation in `.claude/manuals/cai/`
+
+### System Architecture
+- **Hook System Architecture**: `HOOK_SYSTEM.md` - Complete modular hook system documentation
+- **Logging Configuration**: `LOGGING_CONFIGURATION.md` - Comprehensive logging setup and troubleshooting
+- **Troubleshooting Guide**: `TROUBLESHOOTING.md` - Common issues and diagnostic procedures
+
+### Installation & Maintenance
+- **Installation Script**: `install-ai-craft.sh` - Automated installation with logging configuration
+- **Uninstallation Script**: `uninstall-ai-craft.sh` - Complete removal with backup options
+- **Configuration Management**: Centralized constants and modular configuration system
+
+### Development Resources
 - **Workflow Documentation**: Process guides in `docs/craft-ai/`
-- **Installation Guide**: Complete setup instructions in `INSTALL.md`
-- **Uninstallation Guide**: Comprehensive removal guide in `UNINSTALL.md`
-- **Progress Tracking**: Comprehensive history in `PROGRESS.md`
+- **Progress Tracking**: Development history and milestone documentation
+- **Testing Scripts**: Validation and testing utilities in `.claude/hooks/cai/`
 
 ## 🎨 Visual Organization
 

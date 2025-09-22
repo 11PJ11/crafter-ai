@@ -49,7 +49,9 @@
       "Bash(echo:*)",
       "Bash(source:*)",
       "Bash(init_hook_system)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Read(//home/alexd/.claude/**)",
+      "Read(//home/alexd/**)"
     ],
     "deny": [],
     "ask": []
