@@ -38,7 +38,17 @@
       "Bash(head:*)",
       "Bash(while read file)",
       "WebFetch(domain:docs.claude.com)",
-      "WebFetch(domain:www.builder.io)"
+      "WebFetch(domain:www.builder.io)",
+      "Read(//mnt/c/Users/alexd/.claude/**)",
+      "Bash(CAI_WORKFLOW_ACTIVE=true CLAUDE_READ_FILE=\"docs/craft-ai/invalid-file.md\" ./.claude/hooks/workflow/input-validator.sh)",
+      "Bash(echo \"Exit code: $?\")",
+      "Bash(CAI_WORKFLOW_ACTIVE=true CLAUDE_WRITE_FILE=\"docs/craft-ai/requirements.md\" ./.claude/hooks/workflow/stage-transition.sh)",
+      "Bash(CAI_WORKFLOW_ACTIVE=true CLAUDE_WRITE_FILE=\"docs/craft-ai/architecture.md\" ./.claude/hooks/workflow/stage-transition-v2.sh)",
+      "Bash(./.claude/hooks/workflow/state-initializer-v2.sh:*)",
+      "Bash(./workflow/state-initializer.sh:*)",
+      "Bash(echo:*)",
+      "Bash(source:*)",
+      "Bash(init_hook_system)"
     ],
     "deny": [],
     "ask": []

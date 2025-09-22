@@ -4,7 +4,10 @@
 ---
 command: "/cai:root-why"
 category: "Analysis & Investigation"
-purpose: "Toyota 5 Whys multi-causal root cause analysis"
+purpose: "Toyota 5 Whys multi-causal root cause analysis 
+/cai:man root-why                    # Full manual with methodology details
+/cai:man root-why --examples         # Investigation examples only
+/cai:man root-why --flags           # All flags and options"
 wave-enabled: false
 performance-profile: "complex"
 ---

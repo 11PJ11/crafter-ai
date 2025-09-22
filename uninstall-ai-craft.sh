@@ -1,7 +1,7 @@
 #!/bin/bash
-# AI-Craft Framework Uninstallation Script for Linux/Mac
+# AI-Craft Framework Uninstallation Script for Linux/WSL
 # Completely removes AI-Craft framework from global Claude config directory
-# 
+#
 # Usage: ./uninstall-ai-craft.sh [--backup] [--force] [--help]
 
 set -euo pipefail
@@ -28,7 +28,7 @@ readonly NC='\033[0m' # No Color
 
 show_help() {
     cat << EOF
-${BLUE}AI-Craft Framework Uninstallation Script for Linux/Mac${NC}
+${BLUE}AI-Craft Framework Uninstallation Script for Linux/WSL${NC}
 
 ${BLUE}DESCRIPTION:${NC}
     Completely removes the AI-Craft ATDD agent framework from your global Claude config directory.

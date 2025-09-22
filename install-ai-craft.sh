@@ -1,7 +1,7 @@
 #!/bin/bash
-# AI-Craft Framework Installation Script
+# AI-Craft Framework Installation Script for Linux/WSL
 # Installs the AI-Craft ATDD agent framework to global Claude config directory
-# 
+#
 # Usage: ./install-ai-craft.sh [--backup-only] [--restore] [--help]
 
 set -e  # Exit on any error
@@ -36,7 +36,7 @@ error() { log "${RED}ERROR${NC}" "$@"; }
 # Help function
 show_help() {
     cat << EOF
-AI-Craft Framework Installation Script
+AI-Craft Framework Installation Script for Linux/WSL
 
 DESCRIPTION:
     Installs the AI-Craft ATDD agent framework to your global Claude config directory.
@@ -251,8 +251,9 @@ install_craft_ai_hooks() {
     # Create CAI-specific hooks directory
     mkdir -p "$CLAUDE_CONFIG_DIR/hooks/cai"
 
-    # Copy ONLY CAI hooks (preserve other hooks)
+    # Copy ONLY CAI hooks (preserve other hooks) - use refactored modular structure
     if [[ -d "$FRAMEWORK_SOURCE/hooks" ]]; then
+        # Copy the entire modular hook structure
         cp -r "$FRAMEWORK_SOURCE/hooks/"* "$CLAUDE_CONFIG_DIR/hooks/cai/"
 
         # Make scripts executable
@@ -261,6 +262,8 @@ install_craft_ai_hooks() {
 
         local hook_files=$(find "$CLAUDE_CONFIG_DIR/hooks/cai" -type f | wc -l)
         info "Installed $hook_files Craft-AI hook files to hooks/cai/"
+    else
+        warn "Hook source directory not found: $FRAMEWORK_SOURCE/hooks"
     fi
 
     # Merge hooks into settings (preserve existing)
@@ -369,14 +372,29 @@ validate_hooks() {
 
     local errors=0
 
-    # Check hook files exist
-    local required_hooks=("state-initializer.sh" "context-isolator.py" "input-validator.sh" "output-monitor.py" "stage-transition.sh")
-    for hook in "${required_hooks[@]}"; do
+    # Check hook files exist - updated for refactored modular structure
+    local required_workflow_hooks=("state-initializer.sh" "input-validator.sh" "stage-transition.sh")
+    local required_quality_hooks=("lint-format.sh")
+
+    for hook in "${required_workflow_hooks[@]}"; do
         if [[ ! -f "$CLAUDE_CONFIG_DIR/hooks/cai/workflow/$hook" ]]; then
-            error "Missing hook: $hook"
+            error "Missing workflow hook: $hook"
             ((errors++))
         fi
     done
+
+    for hook in "${required_quality_hooks[@]}"; do
+        if [[ ! -f "$CLAUDE_CONFIG_DIR/hooks/cai/code-quality/$hook" ]]; then
+            error "Missing quality hook: $hook"
+            ((errors++))
+        fi
+    done
+
+    # Check core library exists
+    if [[ ! -f "$CLAUDE_CONFIG_DIR/hooks/cai/lib/HookManager.sh" ]]; then
+        error "Missing core hook library: HookManager.sh"
+        ((errors++))
+    fi
 
     # Check hook permissions
     for hook in "$CLAUDE_CONFIG_DIR/hooks/cai/"**/*.{sh,py}; do

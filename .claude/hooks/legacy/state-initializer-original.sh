@@ -1,24 +1,12 @@
 #!/bin/bash
-# Craft-AI State Initializer Hook - Modular Version
-# Uses new modular hook architecture
+# Craft-AI State Initializer Hook
 # Only initializes state for CAI/ATDD workflows
+# Preserves other framework states
 
 set -euo pipefail
 
-# Source modular hook system
-HOOK_DIR="$(dirname "${BASH_SOURCE[0]}")/.."
-source "${HOOK_DIR}/lib/HookManager.sh"
-
-# Initialize hook system
-if ! init_hook_system; then
-    hook_log "$LOG_LEVEL_ERROR" "StateInitializer" "Failed to initialize hook system"
-    exit 1
-fi
-
 # Check if this is a CAI workflow
 is_cai_workflow() {
-    hook_log "$LOG_LEVEL_DEBUG" "StateInitializer" "Checking for CAI workflow indicators"
-
     # Check for CAI indicators
     [[ -f "state/craft-ai/pipeline-state.json" ]] || \
     [[ "${CLAUDE_AGENT:-}" =~ ^cai- ]] || \
@@ -30,11 +18,8 @@ is_cai_workflow() {
 
 # Only proceed if this is a CAI workflow
 if ! is_cai_workflow "$@"; then
-    hook_log "$LOG_LEVEL_DEBUG" "StateInitializer" "Non-CAI workflow detected, skipping"
     exit 0  # Skip for non-CAI workflows
 fi
-
-hook_log "$LOG_LEVEL_INFO" "StateInitializer" "CAI workflow detected, initializing state"
 
 # Initialize CAI-specific state
 STATE_DIR="state/craft-ai"
@@ -43,11 +28,9 @@ WAVE_STATE_FILE="$STATE_DIR/wave-state.json"
 
 # Create state directory if it doesn't exist
 mkdir -p "$STATE_DIR"
-hook_log "$LOG_LEVEL_DEBUG" "StateInitializer" "State directory created: $STATE_DIR"
 
 # Initialize pipeline state if not present
 if [[ ! -f "$PIPELINE_STATE_FILE" ]]; then
-    hook_log "$LOG_LEVEL_INFO" "StateInitializer" "Creating pipeline state file"
     cat > "$PIPELINE_STATE_FILE" << 'EOF'
 {
   "stage": "DISCUSS",
@@ -67,7 +50,6 @@ fi
 
 # Initialize wave state if not present
 if [[ ! -f "$WAVE_STATE_FILE" ]]; then
-    hook_log "$LOG_LEVEL_INFO" "StateInitializer" "Creating wave state file"
     cat > "$WAVE_STATE_FILE" << 'EOF'
 {
   "wave_id": "",
@@ -81,28 +63,14 @@ EOF
 fi
 
 # Set environment variables for CAI session
-# Note: Using new config system for paths
-json_utils_path="$(resolve_hook_path "cai/workflow/json-utils.py")"
-if [[ -f "$json_utils_path" ]]; then
-    export ATDD_STAGE=$(python3 "$json_utils_path" get "$PIPELINE_STATE_FILE" "stage" "DISCUSS")
-    export ACTIVE_AGENT=$(python3 "$json_utils_path" get "$PIPELINE_STATE_FILE" "agent" "business-analyst")
-else
-    # Fallback for compatibility
-    export ATDD_STAGE="DISCUSS"
-    export ACTIVE_AGENT="business-analyst"
-    hook_log "$LOG_LEVEL_WARN" "StateInitializer" "json-utils.py not found, using defaults"
-fi
-
+export ATDD_STAGE=$(python3 "$HOME/.claude/hooks/cai/workflow/json-utils.py" get "$PIPELINE_STATE_FILE" "stage" "DISCUSS")
+export ACTIVE_AGENT=$(python3 "$HOME/.claude/hooks/cai/workflow/json-utils.py" get "$PIPELINE_STATE_FILE" "agent" "business-analyst")
 export CAI_STATE_DIR="$STATE_DIR"
 export CAI_WORKFLOW_ACTIVE="true"
 
-# Log state initialization using new logging system
-hook_log "$LOG_LEVEL_INFO" "StateInitializer" "CAI state initialized: stage=$ATDD_STAGE, agent=$ACTIVE_AGENT"
-
-# Also log to session.log for backward compatibility
+# Log state initialization
 if [[ -w "$STATE_DIR" ]]; then
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] CAI state initialized: stage=$ATDD_STAGE, agent=$ACTIVE_AGENT" >> "$STATE_DIR/session.log"
 fi
 
-hook_log "$LOG_LEVEL_INFO" "StateInitializer" "State initialization completed successfully"
 exit 0
