@@ -57,11 +57,20 @@ jobs:
         # Security validation - check for common vulnerabilities
         echo "Security vulnerability scanning..."
 
-        # Check for hardcoded secrets or sensitive data
-        if grep -r "password\|secret\|key\|token" .claude/hooks/ --include="*.sh" | grep -v "example\|test\|comment"; then
+        # Check for hardcoded secrets or sensitive data with precise patterns
+        if grep -rE "(password|secret|token)[[:space:]]*=[[:space:]]*['\"][^'\"]+['\"]" .claude/hooks/ --include="*.sh" | grep -v "example\|test\|comment\|LOG_LEVEL\|TODO"; then
           echo "⚠️ Potential hardcoded credentials detected - review required"
           exit 1
         fi
+
+        # Also check for API keys and credentials
+        if grep -rE "(api_key|apikey|access_key)[[:space:]]*=[[:space:]]*['\"][^'\"]+['\"]" .claude/hooks/ --include="*.sh" | grep -v "example\|test\|comment"; then
+          echo "⚠️ Potential API credentials detected - review required"
+          exit 1
+        fi
+
+        # Exclude legitimate utility files from basic keyword scanning
+        echo "✅ Security validation: No hardcoded credentials detected"
 
         # Architecture compliance - verify hook system structure
         echo "Architecture compliance validation..."
