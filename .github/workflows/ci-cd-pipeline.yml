@@ -191,6 +191,9 @@ jobs:
       run: |
         echo "::group::Level 7-8: Documentation and Integration Validation"
 
+        # Make hook scripts executable
+        find .claude/hooks -name "*.sh" -type f -exec chmod +x {} \;
+
         # Documentation completeness validation
         echo "Validating documentation completeness..."
 
