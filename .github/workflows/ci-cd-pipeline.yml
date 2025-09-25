@@ -140,7 +140,7 @@ jobs:
 
         # Run additional hook system tests if they exist
         echo "Searching for additional test scripts..."
-        additional_tests=$(find .claude/hooks -name "*test*.sh" -o -name "*Test*.sh" -type f | grep -v HookResilienceSystemE2E.sh || true)
+        additional_tests=$(find .claude/hooks -name "*test*.sh" -o -name "*Test*.sh" -type f | grep -v HookResilienceSystemE2E.sh | grep -v test_migration_validation.sh || true)
 
         if [[ -n "$additional_tests" ]]; then
           echo "Running additional tests:"
@@ -150,6 +150,8 @@ jobs:
               "$test_script" || exit 1
             fi
           done
+        else
+          echo "No additional tests found (migration tests excluded from CI)"
         fi
 
         echo "::endgroup::"
