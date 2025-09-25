@@ -10,6 +10,16 @@ source "${HOOK_LIB_DIR}/config/HookConfig.sh"
 source "${HOOK_LIB_DIR}/logging/LogManager.sh"
 source "${HOOK_LIB_DIR}/formatters/BaseFormatter.sh"
 
+# Source resilience components if available
+if [[ -f "${HOOK_LIB_DIR}/resilience/FileSystemCoordinator.sh" ]]; then
+    source "${HOOK_LIB_DIR}/resilience/FileSystemCoordinator.sh"
+    RESILIENCE_AVAILABLE=true
+    hook_log "$LOG_LEVEL_DEBUG" "FormatterRegistry" "File system coordination available"
+else
+    RESILIENCE_AVAILABLE=false
+    hook_log "$LOG_LEVEL_DEBUG" "FormatterRegistry" "File system coordination not available - using standard processing"
+fi
+
 # Available formatters
 declare -A FORMATTER_REGISTRY=(
     ["python"]="PythonFormatter"
@@ -49,13 +59,49 @@ get_formatter_for_language() {
     fi
 }
 
-# Dispatch formatting for language
+# Dispatch formatting for language with resilience
 dispatch_formatter() {
     local language="$1"
 
     hook_log "$LOG_LEVEL_INFO" "FormatterRegistry" "Dispatching formatter for language: $language"
 
-    # Direct dispatch to language-specific functions
+    # Use coordinated formatting if resilience components are available
+    if [[ "$RESILIENCE_AVAILABLE" = true ]]; then
+        local files_to_format
+        files_to_format=$(find_files_for_language_dispatch "$language")
+
+        if [[ -n "$files_to_format" ]]; then
+            hook_log "$LOG_LEVEL_DEBUG" "FormatterRegistry" "Using coordinated formatting for $language"
+
+            case "$language" in
+                "python")
+                    if coordinate_concurrent_formatting "$language" "."; then
+                        hook_log "$LOG_LEVEL_INFO" "FormatterRegistry" "Coordinated Python formatting completed"
+                        return 0
+                    else
+                        hook_log "$LOG_LEVEL_WARN" "FormatterRegistry" "Coordinated Python formatting failed - falling back to standard"
+                    fi
+                    ;;
+                "javascript"|"typescript")
+                    if coordinate_concurrent_formatting "$language" "."; then
+                        hook_log "$LOG_LEVEL_INFO" "FormatterRegistry" "Coordinated JavaScript/TypeScript formatting completed"
+                        return 0
+                    else
+                        hook_log "$LOG_LEVEL_WARN" "FormatterRegistry" "Coordinated JavaScript/TypeScript formatting failed - falling back to standard"
+                    fi
+                    ;;
+                *)
+                    # For other languages, fall through to standard processing
+                    hook_log "$LOG_LEVEL_DEBUG" "FormatterRegistry" "No coordinated processing for $language - using standard"
+                    ;;
+            esac
+        else
+            hook_log "$LOG_LEVEL_DEBUG" "FormatterRegistry" "No files found for coordinated $language formatting"
+            return 0
+        fi
+    fi
+
+    # Standard dispatch (original implementation or fallback)
     case "$language" in
         "python")
             format_python_language
@@ -95,6 +141,32 @@ dispatch_formatter() {
             return 0
             ;;
     esac
+}
+
+# Helper function to find files for language dispatch
+find_files_for_language_dispatch() {
+    local language="$1"
+    local patterns
+
+    case "$language" in
+        "python")
+            patterns="*.py"
+            ;;
+        "javascript")
+            patterns="*.js,*.jsx"
+            ;;
+        "typescript")
+            patterns="*.ts,*.tsx"
+            ;;
+        "shell")
+            patterns="*.sh,*.bash"
+            ;;
+        *)
+            patterns="*.$language"
+            ;;
+    esac
+
+    find_files_to_format "$patterns" | head -10 | tr '\n' ' '
 }
 
 # Language-specific formatter functions that source the appropriate modules

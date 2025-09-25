@@ -103,50 +103,95 @@ execute_formatter() {
     fi
 }
 
-# Ensure required tools are available
+# Ensure required tools are available with circuit breaker protection
 ensure_formatter_tools() {
     local required_tools="$1"
-    local all_available=true
 
     if [[ -z "$required_tools" ]]; then
         hook_log "$LOG_LEVEL_DEBUG" "BaseFormatter" "No tools required"
         return 0
     fi
 
-    hook_log "$LOG_LEVEL_DEBUG" "BaseFormatter" "Checking required tools: $required_tools"
+    hook_log "$LOG_LEVEL_DEBUG" "BaseFormatter" "Checking required tools with circuit breaker protection: $required_tools"
+
+    # Check if resilience components are available
+    local resilience_available=false
+    if [[ -f "${HOOK_LIB_DIR}/resilience/ToolCapabilityService.sh" ]]; then
+        source "${HOOK_LIB_DIR}/resilience/ToolCapabilityService.sh"
+        resilience_available=true
+        hook_log "$LOG_LEVEL_DEBUG" "BaseFormatter" "Resilience components available"
+    fi
 
     local tools_array
     read -ra tools_array <<< "$required_tools"
+    local all_available=true
+    local degraded_count=0
 
     for tool_spec in "${tools_array[@]}"; do
         local tool_name install_method package_name
         IFS=':' read -r tool_name install_method package_name <<< "$tool_spec"
         package_name="${package_name:-$tool_name}"
 
-        if ! command -v "$tool_name" >/dev/null 2>&1; then
-            hook_log "$LOG_LEVEL_WARN" "BaseFormatter" "Tool not found: $tool_name"
+        if [[ "$resilience_available" = true ]]; then
+            # Use resilience components for enhanced tool management
+            local capability_result
+            capability_result=$(assess_tool_capability "$tool_name" "$install_method" "$package_name")
+            local state
+            state=$(echo "$capability_result" | cut -d':' -f1)
 
-            # Try to install if not in CI
-            if [[ "${CI:-false}" != "true" ]] && [[ -t 1 ]]; then
-                if check_and_install_tool "$tool_name" "$install_method" "$package_name"; then
-                    hook_log "$LOG_LEVEL_INFO" "BaseFormatter" "Successfully installed $tool_name"
+            case $state in
+                $TOOL_STATE_HEALTHY)
+                    hook_log "$LOG_LEVEL_DEBUG" "BaseFormatter" "Tool healthy: $tool_name"
+                    ;;
+                $TOOL_STATE_DEGRADED)
+                    hook_log "$LOG_LEVEL_WARN" "BaseFormatter" "Tool degraded: $tool_name"
+                    degraded_count=$((degraded_count + 1))
+
+                    # Attempt remediation
+                    if attempt_tool_remediation "$tool_name" "$install_method" "$package_name"; then
+                        hook_log "$LOG_LEVEL_INFO" "BaseFormatter" "Tool remediated: $tool_name"
+                    else
+                        hook_log "$LOG_LEVEL_WARN" "BaseFormatter" "Tool remediation failed: $tool_name"
+                    fi
+                    ;;
+                $TOOL_STATE_UNAVAILABLE)
+                    hook_log "$LOG_LEVEL_WARN" "BaseFormatter" "Tool unavailable: $tool_name"
+                    all_available=false
+                    ;;
+            esac
+        else
+            # Fallback to original implementation when resilience components unavailable
+            if ! command -v "$tool_name" >/dev/null 2>&1; then
+                hook_log "$LOG_LEVEL_WARN" "BaseFormatter" "Tool not found: $tool_name"
+
+                # Try to install if not in CI
+                if [[ "${CI:-false}" != "true" ]] && [[ -t 1 ]]; then
+                    if check_and_install_tool "$tool_name" "$install_method" "$package_name"; then
+                        hook_log "$LOG_LEVEL_INFO" "BaseFormatter" "Successfully installed $tool_name"
+                    else
+                        hook_log "$LOG_LEVEL_ERROR" "BaseFormatter" "Failed to install $tool_name"
+                        all_available=false
+                    fi
                 else
-                    hook_log "$LOG_LEVEL_ERROR" "BaseFormatter" "Failed to install $tool_name"
                     all_available=false
                 fi
             else
-                all_available=false
+                hook_log "$LOG_LEVEL_DEBUG" "BaseFormatter" "Tool available: $tool_name"
             fi
-        else
-            hook_log "$LOG_LEVEL_DEBUG" "BaseFormatter" "Tool available: $tool_name"
         fi
     done
 
+    # Determine return status with graceful degradation support
     if [[ "$all_available" = true ]]; then
-        hook_log "$LOG_LEVEL_DEBUG" "BaseFormatter" "All required tools available"
-        return 0
+        if [[ $degraded_count -eq 0 ]]; then
+            hook_log "$LOG_LEVEL_DEBUG" "BaseFormatter" "All required tools available and healthy"
+            return 0
+        else
+            hook_log "$LOG_LEVEL_WARN" "BaseFormatter" "All tools available but $degraded_count tools are degraded"
+            return 2  # Degraded but functional
+        fi
     else
-        hook_log "$LOG_LEVEL_WARN" "BaseFormatter" "Some required tools missing"
-        return 1
+        hook_log "$LOG_LEVEL_WARN" "BaseFormatter" "Some required tools missing - enabling graceful degradation"
+        return 1  # Some tools missing
     fi
 }
