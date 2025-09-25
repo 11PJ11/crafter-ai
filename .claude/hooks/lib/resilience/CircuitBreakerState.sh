@@ -72,8 +72,9 @@ record_circuit_breaker_failure() {
     echo "$(date): Failure recorded for tool: $tool_name (count: $current_failures)" >> "$CIRCUIT_BREAKER_LOG_FILE"
     hook_log "$LOG_LEVEL_DEBUG" "CircuitBreakerState" "Recorded failure for $tool_name (count: $current_failures)"
 
-    # Check if circuit should be opened
-    if [[ $current_failures -ge $CIRCUIT_BREAKER_FAILURE_THRESHOLD ]]; then
+    # Check if circuit should be opened - ensure threshold is available
+    local threshold=${CIRCUIT_BREAKER_FAILURE_THRESHOLD:-3}
+    if [[ $current_failures -ge $threshold ]]; then
         set_circuit_breaker_state "$tool_name" "$CIRCUIT_BREAKER_STATE_OPEN"
         hook_log "$LOG_LEVEL_WARN" "CircuitBreakerState" "Circuit breaker OPEN for $tool_name - failure threshold exceeded"
         echo "$(date): Circuit breaker OPEN for tool: $tool_name - threshold exceeded" >> "$CIRCUIT_BREAKER_LOG_FILE"
@@ -102,7 +103,8 @@ record_circuit_breaker_success() {
     # Close circuit if success threshold met in half-open state
     local current_state
     current_state=$(get_circuit_breaker_state "$tool_name")
-    if [[ $current_state -eq $CIRCUIT_BREAKER_STATE_HALF_OPEN ]] && [[ $current_successes -ge $CIRCUIT_BREAKER_SUCCESS_THRESHOLD ]]; then
+    local success_threshold=${CIRCUIT_BREAKER_SUCCESS_THRESHOLD:-2}
+    if [[ $current_state -eq $CIRCUIT_BREAKER_STATE_HALF_OPEN ]] && [[ $current_successes -ge $success_threshold ]]; then
         set_circuit_breaker_state "$tool_name" "$CIRCUIT_BREAKER_STATE_CLOSED"
         hook_log "$LOG_LEVEL_INFO" "CircuitBreakerState" "Circuit breaker CLOSED for $tool_name - service recovered"
         echo "$(date): Circuit breaker CLOSED for tool: $tool_name - service recovered" >> "$CIRCUIT_BREAKER_LOG_FILE"
@@ -125,7 +127,8 @@ should_circuit_breaker_attempt_reset() {
     local time_diff
     time_diff=$((current_time - last_change))
 
-    [[ $time_diff -ge $CIRCUIT_BREAKER_TIMEOUT_SECONDS ]]
+    local timeout_seconds=${CIRCUIT_BREAKER_TIMEOUT_SECONDS:-300}
+    [[ $time_diff -ge $timeout_seconds ]]
 }
 
 # Reset circuit breaker state for a tool (for testing/maintenance)
