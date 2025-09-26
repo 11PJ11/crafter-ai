@@ -123,7 +123,7 @@ jobs:
         echo "Running Hook Resilience System E2E Tests..."
 
         if [[ -x ".claude/hooks/tests/HookResilienceSystemE2E.sh" ]]; then
-          ./.claude/hooks/tests/HookResilienceSystemE2E.sh
+          ./tests/hooks/HookResilienceSystemE2E.sh
           test_exit_code=$?
 
           if [[ $test_exit_code -eq 0 ]]; then

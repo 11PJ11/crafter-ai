@@ -16,11 +16,12 @@ declare -A LANGUAGE_PATTERNS=(
     ["typescript"]="*.ts,*.tsx"
     ["csharp"]="*.cs,*.csproj"
     ["java"]="*.java,pom.xml,build.gradle"
+    ["kotlin"]="*.kt,*.kts"
     ["go"]="*.go,go.mod"
     ["rust"]="*.rs,Cargo.toml"
     ["ruby"]="*.rb,Gemfile"
     ["php"]="*.php,composer.json"
-    ["cpp"]="*.cpp,*.hpp,*.c,*.h,CMakeLists.txt"
+    ["cpp"]="*.cpp,*.cxx,*.hpp,*.hxx,*.c,*.h,*.cc,CMakeLists.txt,meson.build"
     ["json"]="*.json"
     ["yaml"]="*.yml,*.yaml"
     ["markdown"]="*.md"
@@ -35,11 +36,12 @@ declare -A PACKAGE_PATTERNS=(
     ["typescript"]="tsconfig.json,package.json"
     ["csharp"]="*.csproj,*.sln,global.json"
     ["java"]="pom.xml,build.gradle,gradle.properties"
+    ["kotlin"]="build.gradle.kts,settings.gradle.kts"
     ["go"]="go.mod,go.sum"
     ["rust"]="Cargo.toml,Cargo.lock"
     ["ruby"]="Gemfile,Gemfile.lock,.ruby-version"
     ["php"]="composer.json,composer.lock"
-    ["cpp"]="CMakeLists.txt,Makefile,configure.ac"
+    ["cpp"]="CMakeLists.txt,meson.build,Makefile,configure.ac,conanfile.txt"
 )
 
 # Detect languages in current project

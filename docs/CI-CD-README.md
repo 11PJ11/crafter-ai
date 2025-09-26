@@ -16,14 +16,14 @@ Run the complete CI/CD validation locally:
 
 ```bash
 # Complete CI/CD validation pipeline
-./.claude/hooks/scripts/ci-cd-integration.sh full
+./dev-tools/ci-cd-integration.sh full
 
 # Run specific components
-./.claude/hooks/scripts/ci-cd-integration.sh test resilience  # Just resilience tests
-./.claude/hooks/scripts/ci-cd-integration.sh validate         # Architecture validation
-./.claude/hooks/scripts/ci-cd-integration.sh security         # Security scan
-./.claude/hooks/scripts/ci-cd-integration.sh benchmark        # Performance tests
-./.claude/hooks/scripts/ci-cd-integration.sh report           # Generate report
+./dev-tools/ci-cd-integration.sh test resilience  # Just resilience tests
+./dev-tools/ci-cd-integration.sh validate         # Architecture validation
+./dev-tools/ci-cd-integration.sh security         # Security scan
+./dev-tools/ci-cd-integration.sh benchmark        # Performance tests
+./dev-tools/ci-cd-integration.sh report           # Generate report
 ```
 
 ## 🛡️ Quality Gates
@@ -115,7 +115,7 @@ The system can be integrated with Git pre-commit hooks:
 ```bash
 # Add to .git/hooks/pre-commit
 #!/bin/bash
-./.claude/hooks/scripts/ci-cd-integration.sh full
+./dev-tools/ci-cd-integration.sh full
 ```
 
 ### Continuous Integration
