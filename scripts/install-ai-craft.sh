@@ -8,9 +8,10 @@ set -e  # Exit on any error
 
 # Script configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CLAUDE_CONFIG_DIR="/mnt/c/Users/alexd/.claude"
 BACKUP_DIR="$CLAUDE_CONFIG_DIR/backups/ai-craft-$(date +%Y%m%d-%H%M%S)"
-FRAMEWORK_SOURCE="$SCRIPT_DIR/.claude"
+FRAMEWORK_SOURCE="$PROJECT_ROOT/.claude"
 INSTALL_LOG="$CLAUDE_CONFIG_DIR/ai-craft-install.log"
 
 # Color codes for output
