@@ -73,7 +73,19 @@
       "Bash(./dev-tools/verify-installation.sh:*)",
       "Bash(tree:*)",
       "Bash(/mnt/c/Users/alexd/.claude/hooks/code-quality/lint-format.sh:*)",
-      "Bash(pip3 install:*)"
+      "Bash(pip3 install:*)",
+      "Bash(do if find /mnt/c/Users/alexd/.claude/hooks -name \"$file\")",
+      "Bash(then echo \"❌ FOUND: $file (should not be here)\")",
+      "Bash(else echo \"✅ VERIFIED: $file not in target installation\")",
+      "Bash(clang-format:*)",
+      "Bash(format_csharp_files:*)",
+      "Bash(detect_primary_language:*)",
+      "Bash(get_detected_languages .)",
+      "Bash(dispatch_formatter:*)",
+      "Bash(is_language_supported csharp)",
+      "Bash(validate_formatter_setup)",
+      "Bash(detect_project_languages:*)",
+      "Bash(get_supported_languages)"
     ],
     "deny": [],
     "ask": []

@@ -19,11 +19,13 @@ echo "Permissions: $(find ~/.claude/hooks/cai/ -name "*.sh" -executable 2>/dev/n
 ### Framework Not Found
 
 **Symptoms**:
+
 - Commands like `cai:start` not recognized
 - No agents directory found
 - Missing framework files
 
 **Solutions**:
+
 ```bash
 # Check installation
 ls ~/.claude/agents/cai/ ~/.claude/commands/cai/ ~/.claude/hooks/cai/
@@ -38,11 +40,13 @@ ls .claude/agents/cai/constants.md
 ### Installation Fails
 
 **Common Causes**:
+
 1. **Missing source files**
 2. **Permission issues**
 3. **Python not available for settings merge**
 
 **Debug Steps**:
+
 ```bash
 # Check source framework
 ls .claude/agents/cai/constants.md
@@ -60,11 +64,13 @@ python3 --version
 ### Partial Installation
 
 **Symptoms**:
+
 - Some components missing
 - Validation errors during install
 - Incomplete functionality
 
 **Solutions**:
+
 ```bash
 # Uninstall and reinstall
 ./uninstall-ai-craft.sh --backup --force
@@ -79,11 +85,13 @@ cat ~/.claude/ai-craft-install.log
 ### Hooks Not Executing
 
 **Symptoms**:
+
 - No automatic formatting
 - Workflow hooks not triggering
 - Silent operation with no feedback
 
 **Diagnostic Steps**:
+
 ```bash
 # Check hook registration
 grep -A 10 "cai-" ~/.claude/settings.local.json
@@ -97,6 +105,7 @@ env HOOK_LOG_LEVEL=3 ~/.claude/hooks/cai/code-quality/lint-format.sh test.py
 ```
 
 **Solutions**:
+
 ```bash
 # Fix permissions
 chmod +x ~/.claude/hooks/cai/**/*.sh
@@ -112,6 +121,7 @@ export HOOK_LOG_LEVEL=3
 ### Hook Errors
 
 **Symptoms**:
+
 - Error messages during hook execution
 - Hooks exit with non-zero status
 - Partial functionality
@@ -119,6 +129,7 @@ export HOOK_LOG_LEVEL=3
 **Common Errors and Solutions**:
 
 #### "Tool not found" Errors
+
 ```bash
 # Install Python tools
 pip install black isort ruff
@@ -136,6 +147,7 @@ brew install shellcheck      # macOS
 ```
 
 #### "Permission denied" Errors
+
 ```bash
 # Fix hook permissions
 find ~/.claude/hooks/cai/ -name "*.sh" -exec chmod +x {} \;
@@ -146,6 +158,7 @@ ls -la ~/.claude/hooks/cai/
 ```
 
 #### "Configuration file not found" Errors
+
 ```bash
 # Check hook configuration
 ls ~/.claude/hooks/cai/lib/config/
@@ -157,6 +170,7 @@ ls ~/.claude/hooks/cai/lib/config/
 ### Logging Issues
 
 **No Log Output**:
+
 ```bash
 # Set logging level
 export HOOK_LOG_LEVEL=2
@@ -170,6 +184,7 @@ source ~/.bashrc
 ```
 
 **Too Verbose Logging**:
+
 ```bash
 # Reduce to INFO level
 export HOOK_LOG_LEVEL=2
@@ -183,11 +198,13 @@ export HOOK_LOG_LEVEL=0
 ### CAI Commands Not Found
 
 **Symptoms**:
+
 - `cai:start` command not recognized
 - Commands not available in Claude Code
 - Command completion not working
 
 **Solutions**:
+
 ```bash
 # Check command installation
 ls ~/.claude/commands/cai/
@@ -202,6 +219,7 @@ cat ~/.claude/commands/cai/help.md
 ### Command Execution Errors
 
 **Debug Steps**:
+
 ```bash
 # Check command files
 ls -la ~/.claude/commands/cai/
@@ -218,11 +236,13 @@ head -20 ~/.claude/commands/cai/help.md
 ### Agents Not Responding
 
 **Symptoms**:
+
 - Agent selection not working
 - No agent-specific behavior
 - Generic responses only
 
 **Solutions**:
+
 ```bash
 # Check agent installation
 ls ~/.claude/agents/cai/
@@ -238,6 +258,7 @@ head -20 ~/.claude/agents/cai/constants.md
 ### Agent Context Issues
 
 **Debug Steps**:
+
 ```bash
 # Check agent specifications
 ls ~/.claude/agents/cai/coordination/
@@ -252,11 +273,13 @@ find ~/.claude/agents/cai/ -name "*.md" | grep -v README | wc -l
 ### Slow Hook Execution
 
 **Symptoms**:
+
 - Long delays during file operations
 - Timeouts during formatting
 - Slow startup times
 
 **Diagnostic**:
+
 ```bash
 # Time hook execution
 time env HOOK_LOG_LEVEL=3 ~/.claude/hooks/cai/code-quality/lint-format.sh test.py
@@ -266,6 +289,7 @@ which black isort ruff prettier shellcheck
 ```
 
 **Optimizations**:
+
 ```bash
 # Install tools with pipx for better performance
 pipx install black
@@ -279,11 +303,13 @@ npm install --save-dev prettier eslint
 ### Memory Issues
 
 **Symptoms**:
+
 - Out of memory errors
 - System slowdown during hook execution
 - Large log files
 
 **Solutions**:
+
 ```bash
 # Reduce logging level
 export HOOK_LOG_LEVEL=1
@@ -300,11 +326,13 @@ ps aux | grep -E "(black|isort|ruff|prettier)"
 ### WSL/Linux Issues
 
 **Common Problems**:
+
 - Path issues between Windows and WSL
 - Permission mismatches
 - Tool installation conflicts
 
 **Solutions**:
+
 ```bash
 # Check environment
 echo $PATH
@@ -320,11 +348,13 @@ pip3 install --user black isort ruff
 ### macOS Issues
 
 **Common Problems**:
+
 - Homebrew tool conflicts
 - Python version issues
 - Permission restrictions
 
 **Solutions**:
+
 ```bash
 # Use Homebrew for tools
 brew install black isort ruff
@@ -342,6 +372,7 @@ chmod +x ~/.claude/hooks/cai/**/*.sh
 **Note**: Windows BAT/PS1 files have been removed. Use WSL for Windows environments.
 
 **Setup WSL**:
+
 ```bash
 # Enable WSL in Windows
 wsl --install
@@ -442,6 +473,7 @@ echo "Support information collected in: ai-craft-support-$(date +%Y%m%d-%H%M%S).
 ### Reporting Issues
 
 Include this information:
+
 1. **Output of quick diagnostic**
 2. **Complete error messages with logging enabled**
 3. **Steps to reproduce the issue**

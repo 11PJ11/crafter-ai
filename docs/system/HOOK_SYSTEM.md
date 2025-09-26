@@ -46,11 +46,13 @@ The AI-Craft framework includes a sophisticated modular hook system that provide
 **Purpose**: Main facade for the modular hook system providing unified initialization and configuration.
 
 **Key Functions**:
+
 ```bash
 init_hook_system()    # Initialize hook system with configuration validation
 ```
 
 **Dependencies**:
+
 - `HookConfig.sh` - Configuration management
 - `LogManager.sh` - Logging framework
 - `ToolDetector.sh` - Tool availability checking
@@ -62,6 +64,7 @@ init_hook_system()    # Initialize hook system with configuration validation
 **Purpose**: Provides consistent logging across all hook components with configurable verbosity.
 
 **Log Levels**:
+
 ```bash
 LOG_LEVEL_ERROR=0   # Critical errors only (default)
 LOG_LEVEL_WARN=1    # Warnings and errors
@@ -70,11 +73,13 @@ LOG_LEVEL_DEBUG=3   # Verbose debugging
 ```
 
 **Configuration**:
+
 ```bash
 export HOOK_LOG_LEVEL=2  # Set desired log level
 ```
 
 **Usage Pattern**:
+
 ```bash
 source "${HOOK_LIB_DIR}/logging/LogManager.sh"
 hook_log "$LOG_LEVEL_INFO" "ComponentName" "Message text"
@@ -85,11 +90,13 @@ hook_log "$LOG_LEVEL_INFO" "ComponentName" "Message text"
 **Purpose**: Manages tool detection, path configuration, and availability checking for formatters.
 
 **Key Functions**:
+
 - Tool availability detection (black, isort, ruff, prettier, shellcheck)
 - Tool path configuration and caching
 - Installation method detection (pipx, npm, system packages)
 
 **Supported Tools**:
+
 - **Python**: black, isort, ruff
 - **JavaScript/JSON**: prettier, eslint
 - **Shell**: shellcheck
@@ -100,11 +107,13 @@ hook_log "$LOG_LEVEL_INFO" "ComponentName" "Message text"
 **Purpose**: Coordinates language detection and formatter dispatching using Strategy pattern.
 
 **Architecture**:
+
 - **Strategy Pattern**: Different formatters for different languages
 - **Factory Pattern**: Dynamic formatter creation based on language detection
 - **Registry Pattern**: Centralized formatter management
 
 **Workflow**:
+
 1. Language detection via `LanguageDetector.sh`
 2. Formatter selection based on detected languages
 3. Strategy pattern dispatch to appropriate formatter
@@ -113,9 +122,11 @@ hook_log "$LOG_LEVEL_INFO" "ComponentName" "Message text"
 ### Language-Specific Formatters
 
 #### PythonFormatter.sh
+
 **Purpose**: Python code formatting using black, isort, and ruff.
 
 **Tools Required**:
+
 ```bash
 black    # Code formatting
 isort    # Import sorting
@@ -125,9 +136,11 @@ ruff     # Linting and additional formatting
 **File Patterns**: `*.py`
 
 #### JavaScriptFormatter.sh
+
 **Purpose**: JavaScript/TypeScript formatting using prettier and eslint.
 
 **Tools Required**:
+
 ```bash
 prettier  # Code formatting
 eslint    # Linting (optional)
@@ -143,6 +156,7 @@ eslint    # Linting (optional)
 
 **Trigger**: `UserPromptInit` event
 **Function**:
+
 - Initialize workflow state files
 - Set up environment variables
 - Prepare workspace for ATDD workflow
@@ -153,6 +167,7 @@ eslint    # Linting (optional)
 
 **Trigger**: `PreToolUse` with `Read` tool and `cai-workflow-active` condition
 **Function**:
+
 - Validate file access permissions
 - Check CAI workflow compliance
 - Ensure proper agent context
@@ -163,6 +178,7 @@ eslint    # Linting (optional)
 
 **Trigger**: `PostToolUse` with `Write` tool and `cai-workflow-active` condition
 **Function**:
+
 - Monitor stage completion criteria
 - Trigger appropriate stage transitions
 - Update workflow state documentation
@@ -173,6 +189,7 @@ eslint    # Linting (optional)
 
 **Trigger**: `PostToolUse` with `Write|Edit|MultiEdit` tools
 **Function**:
+
 - Detect project languages
 - Apply appropriate formatters
 - Report formatting results
@@ -247,18 +264,22 @@ export CAI_WORKFLOW_ACTIVE=true      # Enable CAI workflow hooks
 ### Test Scripts
 
 #### test_modular_system.sh
+
 **Purpose**: Validate modular hook system functionality.
 
 **Tests**:
+
 - HookManager initialization
 - Component loading and integration
 - Configuration validation
 - Basic functionality verification
 
 #### test_migration_validation.sh
+
 **Purpose**: Validate migration from legacy to modular system.
 
 **Tests**:
+
 - Backward compatibility
 - Feature equivalence
 - Performance comparison
@@ -267,6 +288,7 @@ export CAI_WORKFLOW_ACTIVE=true      # Enable CAI workflow hooks
 ### Manual Testing
 
 #### Basic Functionality Test
+
 ```bash
 # Test hook initialization
 cd ~/.claude/hooks/cai
@@ -282,6 +304,7 @@ env HOOK_LOG_LEVEL=3 ./code-quality/lint-format.sh test.py
 ```
 
 #### Integration Testing
+
 ```bash
 # Create test project
 mkdir -p /tmp/ai-craft-test
@@ -304,17 +327,20 @@ cd - && rm -rf /tmp/ai-craft-test
 ### Common Issues
 
 #### Hook Not Executing
+
 1. **Check Registration**: Verify hook is registered in `settings.local.json`
 2. **Check Permissions**: Ensure hook scripts are executable (`chmod +x`)
 3. **Check Conditions**: Verify trigger conditions are met
 4. **Check Logging**: Enable debug logging (`HOOK_LOG_LEVEL=3`)
 
 #### Tools Not Found
+
 1. **Python Tools**: Install with `pip install black isort ruff` or `pipx install black isort ruff`
 2. **JavaScript Tools**: Install with `npm install -g prettier eslint`
 3. **Shell Tools**: Install with package manager (`apt install shellcheck`)
 
 #### Logging Not Working
+
 1. **Check Environment**: `echo $HOOK_LOG_LEVEL`
 2. **Set Level**: `export HOOK_LOG_LEVEL=2`
 3. **Test Directly**: `env HOOK_LOG_LEVEL=3 ./hook-script.sh`
@@ -322,6 +348,7 @@ cd - && rm -rf /tmp/ai-craft-test
 ### Debug Information
 
 #### Environment Check
+
 ```bash
 echo "HOOK_LOG_LEVEL: ${HOOK_LOG_LEVEL:-not set}"
 echo "CAI_WORKFLOW_ACTIVE: ${CAI_WORKFLOW_ACTIVE:-not set}"
@@ -329,6 +356,7 @@ ls -la ~/.claude/hooks/cai/
 ```
 
 #### Hook Execution Test
+
 ```bash
 env HOOK_LOG_LEVEL=3 bash -c '
   cd ~/.claude/hooks/cai &&

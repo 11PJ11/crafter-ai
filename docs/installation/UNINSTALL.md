@@ -18,16 +18,19 @@ The AI-Craft framework consists of 41+ specialized AI agents, commands, configur
 For immediate removal without backup:
 
 ### Windows (PowerShell)
+
 ```powershell
 .\uninstall-ai-craft.ps1 -Force
 ```
 
 ### Windows (Command Prompt)
+
 ```cmd
 uninstall-ai-craft.bat --force
 ```
 
 ### Linux/Mac
+
 ```bash
 ./uninstall-ai-craft.sh --force
 ```
@@ -37,16 +40,19 @@ uninstall-ai-craft.bat --force
 Recommended approach that creates a backup before removal:
 
 ### Windows (PowerShell)
+
 ```powershell
 .\uninstall-ai-craft.ps1 -Backup
 ```
 
 ### Windows (Command Prompt)
+
 ```cmd
 uninstall-ai-craft.bat --backup
 ```
 
 ### Linux/Mac
+
 ```bash
 ./uninstall-ai-craft.sh --backup
 ```
@@ -56,10 +62,11 @@ uninstall-ai-craft.bat --backup
 The uninstall scripts remove all AI-Craft components:
 
 ### Agent Files
+
 - **Location**: `~/.claude/agents/cai/`
 - **Contents**: All 41+ specialized agents across 9 categories:
   - Requirements Analysis (5 agents)
-  - Architecture Design (3 agents) 
+  - Architecture Design (3 agents)
   - Test Design (1 agent)
   - Development (1 agent)
   - Quality Validation (8 agents)
@@ -70,22 +77,26 @@ The uninstall scripts remove all AI-Craft components:
   - Configuration (1 constants.md file)
 
 ### Command Files
+
 - **Location**: `~/.claude/commands/cai/`
 - **Contents**: All AI-Craft commands including:
   - `cai/atdd` - Main ATDD workflow command
   - Supporting command infrastructure (20 command files)
 
 ### Configuration Files
+
 - **ai-craft-manifest.txt** - Installation manifest and metadata
 - **ai-craft-install.log** - Installation history and logs
 - **constants.md** - Framework configuration (if not in cai subdirectory)
 
 ### Backup Directories
+
 - **Location**: `~/.claude/backups/ai-craft-*`
 - **Contents**: All previous AI-Craft installation backups
 - **Note**: Current uninstall backup (if created) is preserved
 
 ### Project State Files
+
 - **Location**: `~/.claude/projects/*ai-craft*`
 - **Contents**: AI-Craft related project state and metadata
 
@@ -108,6 +119,7 @@ uninstall-ai-craft.bat --help
 ```
 
 **Features**:
+
 - Interactive confirmation prompts
 - Optional backup creation
 - Comprehensive validation
@@ -121,7 +133,7 @@ uninstall-ai-craft.bat --help
 # Interactive uninstall with confirmation
 .\uninstall-ai-craft.ps1
 
-# Create backup before removal  
+# Create backup before removal
 .\uninstall-ai-craft.ps1 -Backup
 
 # Force removal without prompts
@@ -132,6 +144,7 @@ uninstall-ai-craft.bat --help
 ```
 
 **Features**:
+
 - PowerShell native parameter handling
 - Rich console formatting
 - Comprehensive error handling
@@ -148,7 +161,7 @@ uninstall-ai-craft.bat --help
 # Create backup before removal
 ./uninstall-ai-craft.sh --backup
 
-# Force removal without prompts  
+# Force removal without prompts
 ./uninstall-ai-craft.sh --force
 
 # Show help information
@@ -156,6 +169,7 @@ uninstall-ai-craft.bat --help
 ```
 
 **Features**:
+
 - POSIX compliance
 - Color-coded terminal output
 - Signal handling
@@ -168,11 +182,13 @@ uninstall-ai-craft.bat --help
 ### Backup Creation
 
 When using the `--backup` option, a complete backup is created at:
+
 ```
 ~/.claude/backups/ai-craft-uninstall-YYYYMMDD-HHMMSS/
 ```
 
 **Backup Contents**:
+
 - Complete agents/cai directory structure
 - Complete commands/cai directory structure
 - Configuration files (manifest, logs)
@@ -183,16 +199,19 @@ When using the `--backup` option, a complete backup is created at:
 To restore from an uninstall backup:
 
 1. **Locate Backup Directory**:
+
    ```bash
    ls ~/.claude/backups/ai-craft-uninstall-*
    ```
 
 2. **Restore Agents**:
+
    ```bash
    cp -r ~/.claude/backups/ai-craft-uninstall-*/agents/cai ~/.claude/agents/
    ```
 
 3. **Restore Commands**:
+
    ```bash
    cp -r ~/.claude/backups/ai-craft-uninstall-*/commands/cai ~/.claude/commands/
    ```
@@ -226,6 +245,7 @@ cp "$HOME/.claude/ai-craft-install.log" "$BACKUP_DIR/" 2>/dev/null || true
 If scripts are not available, manual removal steps:
 
 ### 1. Remove Agent Files
+
 ```bash
 # Remove AI-Craft agents
 rm -rf ~/.claude/agents/cai
@@ -235,6 +255,7 @@ rmdir ~/.claude/agents 2>/dev/null || true
 ```
 
 ### 2. Remove Command Files
+
 ```bash
 # Remove AI-Craft commands
 rm -rf ~/.claude/commands/cai
@@ -244,6 +265,7 @@ rmdir ~/.claude/commands 2>/dev/null || true
 ```
 
 ### 3. Remove Configuration Files
+
 ```bash
 # Remove configuration and log files
 rm -f ~/.claude/ai-craft-manifest.txt
@@ -251,12 +273,14 @@ rm -f ~/.claude/ai-craft-install.log
 ```
 
 ### 4. Remove Backup Directories
+
 ```bash
 # Remove all AI-Craft backups
 rm -rf ~/.claude/backups/ai-craft-*
 ```
 
 ### 5. Remove Project Files
+
 ```bash
 # Remove AI-Craft project state files
 rm -rf ~/.claude/projects/*ai-craft*
@@ -278,6 +302,7 @@ Expected result: No output (complete removal) or only uninstall-related files.
 ### Common Remaining Files
 
 These files are **expected** after uninstall:
+
 - `ai-craft-uninstall.log` - Uninstall process log
 - `ai-craft-uninstall-report.txt` - Uninstall completion report
 - `backups/ai-craft-uninstall-*` - Uninstall backup (if created)
@@ -289,12 +314,14 @@ These files are **expected** after uninstall:
 If you encounter permission errors:
 
 #### Windows
+
 ```cmd
 # Run as Administrator
 Right-click Command Prompt/PowerShell → "Run as administrator"
 ```
 
 #### Linux/Mac
+
 ```bash
 # Add execute permissions
 chmod +x uninstall-ai-craft.sh
@@ -385,13 +412,14 @@ To reinstall AI-Craft after removal:
 
 ## Quick Reference
 
-| Platform | Script | Interactive | With Backup | Force |
-|----------|--------|-------------|-------------|--------|
-| Windows CMD | `uninstall-ai-craft.bat` | Default | `--backup` | `--force` |
-| PowerShell | `uninstall-ai-craft.ps1` | Default | `-Backup` | `-Force` |
-| Linux/Mac | `uninstall-ai-craft.sh` | Default | `--backup` | `--force` |
+| Platform    | Script                   | Interactive | With Backup | Force     |
+| ----------- | ------------------------ | ----------- | ----------- | --------- |
+| Windows CMD | `uninstall-ai-craft.bat` | Default     | `--backup`  | `--force` |
+| PowerShell  | `uninstall-ai-craft.ps1` | Default     | `-Backup`   | `-Force`  |
+| Linux/Mac   | `uninstall-ai-craft.sh`  | Default     | `--backup`  | `--force` |
 
 **Safety Checklist**:
+
 - ✅ Backup important customizations
 - ✅ Close all Claude Code instances
 - ✅ Verify backup creation (if using --backup)

@@ -11,16 +11,20 @@ The AI-Craft framework includes a sophisticated modular hook system with configu
 The logging system is built on a modular architecture with the following components:
 
 #### **LogManager.sh** (`~/.claude/hooks/cai/lib/logging/LogManager.sh`)
+
 - **Purpose**: Unified logging framework for all hook components
 - **Features**: Configurable log levels, timestamp formatting, component identification
 - **Configuration**: Uses `HOOK_LOG_LEVEL` environment variable
 
 #### **HookManager.sh** (`~/.claude/hooks/cai/lib/HookManager.sh`)
+
 - **Purpose**: Central facade for hook system initialization
 - **Logs**: System initialization, configuration loading, module coordination
 
 #### **Component Loggers**
+
 All hook components implement standardized logging:
+
 - **ToolManager**: Tool detection and path configuration
 - **FormatterRegistry**: Language detection and formatter coordination
 - **LanguageDetector**: Project language analysis
@@ -86,6 +90,7 @@ echo "Current HOOK_LOG_LEVEL: ${HOOK_LOG_LEVEL:-not set}"
 ### INFO Level (HOOK_LOG_LEVEL=2)
 
 Minimal informational output:
+
 ```
 2025-09-22 16:06:50 [LintFormat] 🔧 Auto-formatting
 2025-09-22 16:07:16 [LanguageDetector] Detection complete. Found: shell json python markdown
@@ -95,6 +100,7 @@ Minimal informational output:
 ### DEBUG Level (HOOK_LOG_LEVEL=3)
 
 Comprehensive debugging output:
+
 ```
 2025-09-22 16:06:50 [HookManager] Initializing modular hook system v1.0.0
 2025-09-22 16:06:50 [HookManager] Configuration file found
@@ -162,6 +168,7 @@ rm -rf /tmp/ai-craft-test
 ### Common Issues
 
 #### **No Log Output**
+
 ```bash
 # Check environment variable
 echo $HOOK_LOG_LEVEL
@@ -174,6 +181,7 @@ env HOOK_LOG_LEVEL=3 ~/.claude/hooks/cai/lib/HookManager.sh
 ```
 
 #### **Permission Denied**
+
 ```bash
 # Make hooks executable
 chmod +x ~/.claude/hooks/cai/**/*.sh
@@ -185,6 +193,7 @@ ls -la ~/.claude/hooks/cai/code-quality/
 ```
 
 #### **Hook Not Found**
+
 ```bash
 # Verify installation
 ls -la ~/.claude/hooks/cai/
@@ -198,6 +207,7 @@ ls -la ~/.claude/hooks/cai/code-quality/
 #### **Tool Missing Warnings**
 
 For Python formatting:
+
 ```bash
 # Install Python formatting tools
 pip install black isort ruff
@@ -208,12 +218,14 @@ pipx install ruff
 ```
 
 For JavaScript/JSON formatting:
+
 ```bash
 # Install prettier
 npm install -g prettier
 ```
 
 For shell script validation:
+
 ```bash
 # Install shellcheck
 sudo apt install shellcheck  # Ubuntu/Debian
@@ -223,6 +235,7 @@ brew install shellcheck      # macOS
 ### Debug Information Collection
 
 #### **Environment Check**
+
 ```bash
 echo "=== AI-Craft Logging Debug Info ==="
 echo "HOOK_LOG_LEVEL: ${HOOK_LOG_LEVEL:-not set}"
@@ -240,6 +253,7 @@ bash -c 'cd ~/.claude/hooks/cai 2>/dev/null && source lib/HookManager.sh && echo
 ```
 
 #### **Full Diagnostic**
+
 ```bash
 # Save to file for support
 {
@@ -264,24 +278,28 @@ echo "Debug report saved to: ai-craft-debug-$(date +%Y%m%d-%H%M%S).log"
 ## 📋 Configuration Checklist
 
 ### Initial Setup
+
 - [ ] Set `HOOK_LOG_LEVEL` in shell profile
 - [ ] Source shell profile: `source ~/.bashrc`
 - [ ] Verify setting: `echo $HOOK_LOG_LEVEL`
 - [ ] Test basic logging: `env HOOK_LOG_LEVEL=3 ~/.claude/hooks/cai/lib/HookManager.sh`
 
 ### Development Environment
+
 - [ ] Set to INFO level: `export HOOK_LOG_LEVEL=2`
 - [ ] Install formatting tools (black, isort, ruff, prettier)
 - [ ] Test hook execution with sample files
 - [ ] Verify logs appear in stderr
 
 ### Production Environment
+
 - [ ] Set to ERROR level: `export HOOK_LOG_LEVEL=0`
 - [ ] Verify silent operation
 - [ ] Monitor for error logs only
 - [ ] Document any recurring issues
 
 ### CI/CD Environment
+
 - [ ] Set to WARN level: `export HOOK_LOG_LEVEL=1`
 - [ ] Capture logs in build artifacts
 - [ ] Set up log analysis for warnings
@@ -297,12 +315,14 @@ echo "Debug report saved to: ai-craft-debug-$(date +%Y%m%d-%H%M%S).log"
 ## 🔄 Maintenance
 
 ### Regular Checks
+
 - Verify log level is appropriate for environment
 - Monitor for new warning patterns
 - Update tool installations as needed
 - Review and clean old debug logs
 
 ### Updates
+
 - When updating AI-Craft, verify logging still works
 - Check for new logging components in updates
 - Update this documentation with new features
