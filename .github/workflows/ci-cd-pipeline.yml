@@ -122,7 +122,7 @@ jobs:
         # Run Hook Resilience System E2E Tests
         echo "Running Hook Resilience System E2E Tests..."
 
-        if [[ -x ".claude/hooks/tests/HookResilienceSystemE2E.sh" ]]; then
+        if [[ -x "./tests/hooks/HookResilienceSystemE2E.sh" ]]; then
           ./tests/hooks/HookResilienceSystemE2E.sh
           test_exit_code=$?
 
@@ -215,7 +215,7 @@ jobs:
         echo "Integration validation: Hook system initialization..."
 
         # Test hook system components exist and are executable
-        if [[ -x ".claude/hooks/lib/resilience/CircuitBreaker.sh" && -x ".claude/hooks/tests/HookResilienceSystemE2E.sh" ]]; then
+        if [[ -x ".claude/hooks/lib/resilience/CircuitBreaker.sh" && -x "./tests/hooks/HookResilienceSystemE2E.sh" ]]; then
           echo "✅ Hook resilience system integration: PASSED"
         else
           echo "❌ Hook resilience system integration: FAILED - missing executables"
