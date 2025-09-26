@@ -25,10 +25,14 @@ declare -A FORMATTER_REGISTRY=(
     ["python"]="PythonFormatter"
     ["javascript"]="JavaScriptFormatter"
     ["typescript"]="JavaScriptFormatter"
+    ["cpp"]="CppFormatter"
     ["csharp"]="CSharpFormatter"
     ["java"]="JavaFormatter"
+    ["kotlin"]="KotlinFormatter"
     ["go"]="GoFormatter"
     ["rust"]="RustFormatter"
+    ["ruby"]="RubyFormatter"
+    ["php"]="PhpFormatter"
     ["css"]="CssFormatter"
     ["json"]="JsonFormatter"
     ["yaml"]="YamlFormatter"
@@ -109,20 +113,32 @@ dispatch_formatter() {
         "javascript"|"typescript")
             format_javascript_language "$language"
             ;;
+        "cpp")
+            format_cpp_language
+            ;;
         "csharp")
-            format_csharp_files
+            format_csharp_language
             ;;
         "java")
-            format_java_files
+            format_java_language
+            ;;
+        "kotlin")
+            format_kotlin_language
             ;;
         "go")
-            format_go_files
+            format_go_language
             ;;
         "rust")
-            format_rust_files
+            format_rust_language
+            ;;
+        "ruby")
+            format_ruby_language
+            ;;
+        "php")
+            format_php_language
             ;;
         "css")
-            format_css_files
+            format_css_language
             ;;
         "json")
             format_json_files
@@ -134,7 +150,7 @@ dispatch_formatter() {
             format_markdown_files
             ;;
         "shell")
-            format_shell_files
+            format_shell_language
             ;;
         *)
             hook_log "$LOG_LEVEL_WARN" "FormatterRegistry" "Unsupported language: $language"
@@ -188,6 +204,86 @@ format_javascript_language() {
     )
 }
 
+format_cpp_language() {
+    # Source C++ formatter in subshell to avoid function conflicts
+    (
+        source "${HOOK_LIB_DIR}/formatters/CppFormatter.sh"
+        format_files "cpp"
+    )
+}
+
+format_csharp_language() {
+    # Source C# formatter in subshell to avoid function conflicts
+    (
+        source "${HOOK_LIB_DIR}/formatters/CSharpFormatter.sh"
+        format_files "csharp"
+    )
+}
+
+format_shell_language() {
+    # Source Shell formatter in subshell to avoid function conflicts
+    (
+        source "${HOOK_LIB_DIR}/formatters/ShellFormatter.sh"
+        format_files "shell"
+    )
+}
+
+format_css_language() {
+    # Source CSS formatter in subshell to avoid function conflicts
+    (
+        source "${HOOK_LIB_DIR}/formatters/CssFormatter.sh"
+        format_files "css"
+    )
+}
+
+format_java_language() {
+    # Source Java formatter in subshell to avoid function conflicts
+    (
+        source "${HOOK_LIB_DIR}/formatters/JavaFormatter.sh"
+        format_files "java"
+    )
+}
+
+format_rust_language() {
+    # Source Rust formatter in subshell to avoid function conflicts
+    (
+        source "${HOOK_LIB_DIR}/formatters/RustFormatter.sh"
+        format_files "rust"
+    )
+}
+
+format_go_language() {
+    # Source Go formatter in subshell to avoid function conflicts
+    (
+        source "${HOOK_LIB_DIR}/formatters/GoFormatter.sh"
+        format_files "go"
+    )
+}
+
+format_kotlin_language() {
+    # Source Kotlin formatter in subshell to avoid function conflicts
+    (
+        source "${HOOK_LIB_DIR}/formatters/KotlinFormatter.sh"
+        format_files "kotlin"
+    )
+}
+
+format_ruby_language() {
+    # Source Ruby formatter in subshell to avoid function conflicts
+    (
+        source "${HOOK_LIB_DIR}/formatters/RubyFormatter.sh"
+        format_files "ruby"
+    )
+}
+
+format_php_language() {
+    # Source PHP formatter in subshell to avoid function conflicts
+    (
+        source "${HOOK_LIB_DIR}/formatters/PhpFormatter.sh"
+        format_files "php"
+    )
+}
+
 # Get all supported languages
 get_supported_languages() {
     printf '%s\n' "${!FORMATTER_REGISTRY[@]}" | sort
@@ -201,85 +297,9 @@ is_language_supported() {
 
 # Placeholder formatters for languages not yet implemented
 
-format_csharp_files() {
-    hook_log "$LOG_LEVEL_INFO" "FormatterRegistry" "Formatting C# files"
 
-    if ! has_files_for_patterns "*.cs"; then
-        hook_log "$LOG_LEVEL_DEBUG" "FormatterRegistry" "No C# files found"
-        return 0
-    fi
 
-    if command -v dotnet >/dev/null 2>&1; then
-        execute_formatter "dotnet format" "dotnet format --verbosity quiet" "csharp"
-    else
-        hook_log "$LOG_LEVEL_WARN" "FormatterRegistry" "dotnet CLI not found, skipping C# formatting"
-        return 1
-    fi
-}
 
-format_java_files() {
-    hook_log "$LOG_LEVEL_INFO" "FormatterRegistry" "Formatting Java files"
-
-    if ! has_files_for_patterns "*.java"; then
-        hook_log "$LOG_LEVEL_DEBUG" "FormatterRegistry" "No Java files found"
-        return 0
-    fi
-
-    if command -v google-java-format >/dev/null 2>&1; then
-        execute_formatter "google-java-format" "find . -name '*.java' -exec google-java-format --replace {} +" "java"
-    else
-        hook_log "$LOG_LEVEL_WARN" "FormatterRegistry" "google-java-format not found, skipping Java formatting"
-        return 1
-    fi
-}
-
-format_go_files() {
-    hook_log "$LOG_LEVEL_INFO" "FormatterRegistry" "Formatting Go files"
-
-    if ! has_files_for_patterns "*.go"; then
-        hook_log "$LOG_LEVEL_DEBUG" "FormatterRegistry" "No Go files found"
-        return 0
-    fi
-
-    if command -v gofmt >/dev/null 2>&1; then
-        execute_formatter "gofmt" "gofmt -w ." "go"
-    else
-        hook_log "$LOG_LEVEL_WARN" "FormatterRegistry" "gofmt not found, skipping Go formatting"
-        return 1
-    fi
-}
-
-format_rust_files() {
-    hook_log "$LOG_LEVEL_INFO" "FormatterRegistry" "Formatting Rust files"
-
-    if ! has_files_for_patterns "*.rs"; then
-        hook_log "$LOG_LEVEL_DEBUG" "FormatterRegistry" "No Rust files found"
-        return 0
-    fi
-
-    if command -v rustfmt >/dev/null 2>&1; then
-        execute_formatter "rustfmt" "find . -name '*.rs' -exec rustfmt {} +" "rust"
-    else
-        hook_log "$LOG_LEVEL_WARN" "FormatterRegistry" "rustfmt not found, skipping Rust formatting"
-        return 1
-    fi
-}
-
-format_css_files() {
-    hook_log "$LOG_LEVEL_INFO" "FormatterRegistry" "Formatting CSS files"
-
-    if ! has_files_for_patterns "*.css,*.scss,*.sass"; then
-        hook_log "$LOG_LEVEL_DEBUG" "FormatterRegistry" "No CSS files found"
-        return 0
-    fi
-
-    if command -v prettier >/dev/null 2>&1; then
-        execute_formatter "prettier" "prettier --write '*.css' '*.scss' '*.sass'" "css"
-    else
-        hook_log "$LOG_LEVEL_WARN" "FormatterRegistry" "prettier not found, skipping CSS formatting"
-        return 1
-    fi
-}
 
 format_json_files() {
     hook_log "$LOG_LEVEL_INFO" "FormatterRegistry" "Formatting JSON files"
@@ -331,18 +351,3 @@ format_markdown_files() {
     fi
 }
 
-format_shell_files() {
-    hook_log "$LOG_LEVEL_INFO" "FormatterRegistry" "Checking shell files"
-
-    if ! has_files_for_patterns "*.sh,*.bash"; then
-        hook_log "$LOG_LEVEL_DEBUG" "FormatterRegistry" "No shell files found"
-        return 0
-    fi
-
-    if command -v shellcheck >/dev/null 2>&1; then
-        execute_formatter "shellcheck" "find . -name '*.sh' -o -name '*.bash' | xargs shellcheck" "shell"
-    else
-        hook_log "$LOG_LEVEL_WARN" "FormatterRegistry" "shellcheck not found, skipping shell file checks"
-        return 1
-    fi
-}
