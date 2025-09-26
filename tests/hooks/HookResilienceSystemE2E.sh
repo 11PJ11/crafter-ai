@@ -7,7 +7,8 @@ set -euo pipefail
 
 # Test framework setup
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-HOOK_DIR="$(dirname "$SCRIPT_DIR")"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+HOOK_DIR="$PROJECT_ROOT/.claude/hooks"
 
 # Source test framework and dependencies
 source "${HOOK_DIR}/lib/logging/LogManager.sh"
