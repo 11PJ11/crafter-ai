@@ -68,11 +68,20 @@ DISCOVERY_COMMIT_REQUIREMENTS:
 **YOU MUST Continue Exploration Until NO New Dependencies Emerge**:
 
 **REQUIRED Exploration Exhaustion Process**:
-1. **YOU SHALL attempt naive implementation of stated goal**
-2. **YOU MUST capture ALL compilation and test failures immediately**
-3. **YOU WILL create concrete prerequisite nodes with exact specifications**
-4. **YOU SHALL commit discovery with mandatory format**
-5. **YOU MUST revert ALL changes to maintain clean state**
+
+**CORRECTED ALGORITHM SEQUENCE (CRITICAL PRODUCTION FIX)**:
+```
+EXPERIMENT → LEARN → GRAPH → COMMIT GRAPH → REVERT
+```
+
+**Previously INCORRECT sequence**: `EXPERIMENT → LEARN → REVERT → GRAPH` (caused premature reverts losing discovery progress)
+
+**ALGORITHM IMPLEMENTATION**:
+1. **EXPERIMENT**: **YOU SHALL attempt naive implementation of stated goal**
+2. **LEARN**: **YOU MUST capture ALL compilation and test failures immediately**
+3. **GRAPH**: **YOU WILL create concrete prerequisite nodes with exact specifications**
+4. **COMMIT GRAPH**: **YOU SHALL commit discovery with mandatory format**
+5. **REVERT**: **YOU MUST revert ALL changes to maintain clean state**
 6. **YOU WILL attempt EVERY apparent leaf to discover hidden dependencies**
 7. **YOU SHALL repeat until NO new dependencies discovered across ALL leaves**
 8. **YOU MUST distinguish false leaves from true leaves through systematic testing**
