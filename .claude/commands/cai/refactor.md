@@ -47,6 +47,13 @@ mikado-refactoring-specialist:
   complex_changes: "Multi-class architectural refactorings"
   parallel_change: "Breaking change management"
   dependency_management: "Systematic prerequisite handling"
+
+mikado-refactoring-specialist-enhanced:
+  discovery_tracking: "Commits after every dependency discovery"
+  exhaustive_exploration: "Continues until no new dependencies emerge"
+  concrete_specification: "Method-level specific nodes with file locations"
+  audit_trail: "Complete exploration history for stakeholder communication"
+  interrupt_resume: "Can stop and restart at any discovery point"
 ```
 
 ## Arguments
@@ -59,6 +66,7 @@ mikado-refactoring-specialist:
 ### Advanced Usage
 ```bash
 /cai:refactor [target] --level <1-6> --mikado --parallel-change --validate
+/cai:refactor [target] --mikado-enhanced --validate
 ```
 
 ### Target Specification
@@ -106,6 +114,13 @@ mikado-refactoring-specialist:
   - Enables parallel change patterns to manage breaking changes safely
   - Uses baby steps protocol to minimize risk during large architectural changes
   - Provides rollback capabilities and incremental progress tracking
+- `--mikado-enhanced`: Use Enhanced Mikado Method with discovery-tracking commits
+  - **Revolutionary approach**: Commits after every dependency discovery for complete audit trail
+  - **Exhaustive exploration**: Continues until NO new dependencies emerge (not just first apparent leaves)
+  - **Concrete specifications**: Method-level specific nodes with file locations and exact requirements
+  - **Stakeholder communication**: Git history provides real-time complexity visualization
+  - **Interrupt/resume capability**: Can stop and restart exploration at any discovery point
+  - **Complete safety**: Full exploration before execution prevents mid-implementation surprises
 - `--parallel-change`: Apply parallel change pattern for breaking changes
   - Uses Expand-Migrate-Contract pattern to minimize disruption
   - Maintains both old and new implementations during transition period
@@ -280,6 +295,11 @@ techniques:
 ### Safe Complex Refactoring
 ```bash
 /cai:refactor "legacy-module" --mikado --baby-steps --rollback
+```
+
+### Enhanced Mikado with Discovery Tracking
+```bash
+/cai:refactor "authentication-system" --mikado-enhanced --validate
 ```
 
 ## Comprehensive Usage Examples
@@ -486,14 +506,21 @@ execution-flow:
       - Level 5-6: Patterns and SOLID principles
 
   step2-complex-refactoring:
-    agent: mikado-refactoring-specialist
-    condition: complex_architectural_changes || mikado_flag
+    agent: mikado-refactoring-specialist || mikado-refactoring-specialist-enhanced
+    condition: complex_architectural_changes || mikado_flag || mikado_enhanced_flag
     task: |
       Handle complex architectural refactoring:
       - Review systematic refactoring results
-      - Apply Mikado Method for complex changes
-      - Use parallel change patterns for breaking changes
-      - Execute multi-class structural improvements
+      - Apply Mikado Method (original) or Enhanced Mikado Method (discovery-tracking)
+      - Use parallel change patterns (original) or exhaustive exploration (enhanced)
+      - Execute multi-class structural improvements with appropriate methodology
+
+      Enhanced Mode Additional Tasks (when --mikado-enhanced flag detected):
+      - Execute discovery-tracking commits after every dependency discovery
+      - Continue exhaustive exploration until NO new dependencies emerge
+      - Create concrete method-level specifications with file locations
+      - Build complete audit trail for stakeholder communication
+      - Enable interrupt/resume capability at any discovery point
 
   step3-validation:
     agent: mutation-testing-coordinator
@@ -507,9 +534,10 @@ execution-flow:
 
 ### Arguments Processing
 - Parse `[target]` argument for refactoring scope
-- Apply `--level`, `--mikado`, `--parallel-change` flags to methodology
+- Apply `--level`, `--mikado`, `--mikado-enhanced`, `--parallel-change` flags to methodology
 - Process `--validate`, `--safe-mode` flags for quality assurance
 - Enable systematic progression through refactoring levels
+- Route to enhanced agent when `--mikado-enhanced` flag detected
 
 ### Output Generation
 Return systematically refactored code including:

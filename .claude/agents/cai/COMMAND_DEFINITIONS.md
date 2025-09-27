@@ -25,8 +25,8 @@ solution-architect:
 
 ### 2. `cai:refactor [target] [level]`
 **Purpose**: Systematic Refactoring - Execute Level 1-6 refactoring or complex Mikado Method
-**Triggers**: systematic-refactorer → mikado-refactoring-specialist (if complex)
-**Example**: `cai:refactor "auth-module" --level 3` or `cai:refactor "architecture" --mikado`
+**Triggers**: systematic-refactorer → mikado-refactoring-specialist (if complex) → mikado-refactoring-specialist-enhanced (if --mikado-enhanced)
+**Example**: `cai:refactor "auth-module" --level 3` or `cai:refactor "architecture" --mikado` or `cai:refactor "legacy-system" --mikado-enhanced`
 **Flow**:
 ```yaml
 systematic-refactorer:
@@ -40,6 +40,11 @@ mikado-refactoring-specialist:
   - Complex architectural refactorings
   - Parallel change patterns
   - Multi-class structural changes
+mikado-refactoring-specialist-enhanced:
+  - Discovery-tracking commits after every dependency discovery
+  - Exhaustive exploration until no new dependencies emerge
+  - Concrete method-level node specifications
+  - Imperative directive compliance with mandatory requirements
 ```
 
 ### 3. `cai:start [project-description]`
@@ -209,6 +214,7 @@ interactive_mode:
 ### Refactoring Control
 - `--level [1-6]`: Specify refactoring level (1=readability, 6=SOLID principles)
 - `--mikado`: Use Mikado Method for complex architectural refactoring
+- `--mikado-enhanced`: Use enhanced Mikado Method with discovery-tracking commits and exhaustive exploration
 - `--parallel-change`: Apply parallel change pattern for breaking changes
 
 ### Quality Control
@@ -247,6 +253,9 @@ cai:refactor "user-service" --level 2
 
 # Complex architectural refactoring
 cai:refactor "authentication-system" --mikado --parallel-change
+
+# Enhanced Mikado with discovery tracking and exhaustive exploration
+cai:refactor "legacy-system" --mikado-enhanced --validate
 
 # Progressive refactoring with validation
 cai:refactor "core-domain" --level 4 --validate
