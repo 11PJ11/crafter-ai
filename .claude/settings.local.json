@@ -85,7 +85,10 @@
       "Bash(is_language_supported csharp)",
       "Bash(validate_formatter_setup)",
       "Bash(detect_project_languages:*)",
-      "Bash(get_supported_languages)"
+      "Bash(get_supported_languages)",
+      "WebFetch(domain:refactoring.guru)",
+      "Read(//mnt/c/Repositories/alcor-academy/**)",
+      "WebFetch(domain:refactoring.com)"
     ],
     "deny": [],
     "ask": []
