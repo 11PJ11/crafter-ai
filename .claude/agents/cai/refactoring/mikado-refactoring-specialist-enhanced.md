@@ -90,31 +90,37 @@ DISCOVERY_COMMIT_REQUIREMENTS:
 - ❌ YOU SHALL NOT transition to execution until exhaustive exploration complete
 - ❌ YOU SHALL NOT rely on analysis over systematic experimentation
 
-### MANDATORY Concrete Tree Node Specification
+### MANDATORY Concrete Tree Node Specification with Refactoring Mechanics Integration
 
-**YOU MUST Write Method-Level Specific Nodes**:
+**YOU MUST Write Method-Level Specific Nodes with Refactoring Technique References**:
 
-**REQUIRED Node Specificity Standards**:
+**REQUIRED Node Specificity Standards with Refactoring Mechanics**:
 - **Method Signatures**: `ClassName.MethodName(parameter types) → ReturnType`
 - **File Locations**: `src/Services/UserService.cs, line 45`
 - **Access Modifiers**: `public`, `private`, `internal`, `protected`
 - **Exact Parameters**: Parameter names, types, and constraints
 - **Return Types**: Specific return types with nullability annotations
 - **Dependencies**: Constructor parameters, interface contracts, service lifetimes
+- **Refactoring Technique**: Reference to specific technique (e.g., "Extract Method", "Move Method", "Replace Conditional with Polymorphism")
+- **Atomic Transformation**: Specify core transformation type (Rename, Extract, Inline, Move, Safe Delete)
+- **Code Smell Target**: Identify specific code smell being addressed (e.g., "Long Method", "Feature Envy", "Switch Statements")
 
-**Concrete Node Examples (MANDATORY PATTERNS)**:
+**Concrete Node Examples with Refactoring Mechanics (MANDATORY PATTERNS)**:
 ```
-✅ CORRECT - Concrete and Actionable:
-"Create UserService.HashPassword(string password) method returning string in src/Services/UserService.cs"
-"Add IOrderRepository.GetOrderById(int orderId) method signature returning Order? in src/Repositories/IOrderRepository.cs"
-"Implement SqlOrderRepository constructor with IDbContext context parameter in src/Infrastructure/SqlOrderRepository.cs"
-"Register services.AddScoped<IOrderRepository, SqlOrderRepository>() in Startup.cs ConfigureServices method line 45"
+✅ CORRECT - Concrete with Refactoring Mechanics:
+"Create UserService.HashPassword(string password) method returning string in src/Services/UserService.cs [Extract Method | Extract | Long Method]"
+"Add IOrderRepository.GetOrderById(int orderId) method signature returning Order? in src/Repositories/IOrderRepository.cs [Extract Interface | Extract | Data Class]"
+"Implement SqlOrderRepository constructor with IDbContext context parameter in src/Infrastructure/SqlOrderRepository.cs [Move Method | Move | Feature Envy]"
+"Register services.AddScoped<IOrderRepository, SqlOrderRepository>() in Startup.cs ConfigureServices method line 45 [Introduce Parameter Object | Extract | Primitive Obsession]"
+"Replace PaymentProcessor.ProcessPayment switch with Strategy pattern in src/Services/PaymentProcessor.cs [Replace Conditional with Polymorphism | Extract+Move | Switch Statements]"
 
 ❌ FORBIDDEN - Abstract and Unhelpful:
 "Refactor authentication system"
 "Fix dependencies"
 "Update interfaces"
 "Clean up code"
+
+✅ ENHANCED FORMAT: [RefactoringTechnique | AtomicTransformation | CodeSmellTarget]
 ```
 
 **MANDATORY Dependency Nesting with Unlimited Depth**:
@@ -152,6 +158,55 @@ Goal: Replace direct database calls in OrderController with repository pattern
 └── Update GetOrder method implementation
     └── Replace context.Orders.FirstOrDefault(o => o.Id == id) with await _repository.GetOrderById(id)
 ```
+
+### MANDATORY Systematic Refactorer Collaboration Protocol
+
+**YOU MUST Integrate with Systematic Refactorer for Execution Phase**:
+
+**COLLABORATION REFERENCE**: For complete collaboration details, workflow examples, and dependency patterns, refer to:
+`@.claude/agents/cai/refactoring/MIKADO_SYSTEMATIC_COLLABORATION.md`
+
+**COLLABORATION WORKFLOW (REQUIRED SEQUENCE)**:
+1. **Mikado Exploration Phase**: YOU complete exhaustive dependency discovery with refactoring mechanics annotations
+2. **Tree Handoff**: YOU transfer concrete tree with [RefactoringTechnique | AtomicTransformation | CodeSmellTarget] specifications
+3. **Systematic Execution**: systematic-refactorer agent executes leaves using embedded refactoring knowledge base
+4. **Progress Synchronization**: Both agents maintain shared progress tracking and validation
+5. **Quality Assurance**: Both agents enforce test-driven safety protocols throughout execution
+
+**TREE NODE COLLABORATION FORMAT**:
+```yaml
+MIKADO_NODE:
+  description: "Create UserService.HashPassword(string password) method in src/Services/UserService.cs"
+  refactoring_technique: "Extract Method"
+  atomic_transformation: "Extract"
+  code_smell_target: "Long Method"
+  file_location: "src/Services/UserService.cs:45"
+  prerequisites: []  # True leaf ready for execution
+  systematic_refactorer_ready: true
+```
+
+**HANDOFF TRIGGERS**:
+- ✅ **Exploration Complete**: No new dependencies discovered across all apparent leaves
+- ✅ **True Leaves Identified**: Nodes with zero confirmed prerequisites ready for implementation
+- ✅ **Refactoring Mechanics Annotated**: All nodes include [RefactoringTechnique | AtomicTransformation | CodeSmellTarget]
+- ✅ **Test Safety Confirmed**: All tests green before handoff to execution
+
+**COLLABORATION COMMANDS**:
+```bash
+# Mikado agent completes exploration and hands off to systematic refactorer
+/cai:refactor --mikado-complete --handoff-systematic --tree-ready
+
+# Systematic refactorer receives Mikado tree and executes with embedded knowledge
+/cai:refactor --mikado-guided --execute-tree --mechanics-embedded
+```
+
+**WHEN TO CONSULT COLLABORATION FILE**:
+- Creating dependency trees with proper nesting structure
+- Annotating nodes with refactoring mechanics format `[RefactoringTechnique | AtomicTransformation | CodeSmellTarget]`
+- Identifying true leaves vs blocked nodes
+- Handoff protocols and tree validation
+- Wave-based execution coordination
+- Progress synchronization patterns
 
 ### MANDATORY Two-Mode Operation Protocol
 
