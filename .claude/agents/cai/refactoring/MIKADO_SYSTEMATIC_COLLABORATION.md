@@ -261,4 +261,116 @@ Update Original Class to use New Class
 └── Remove Duplicate Methods from Original Class
 ```
 
+## Enhanced Collaboration Protocols (v2.0)
+
+Based on production findings, the following protocols have been implemented to ensure robust collaboration:
+
+### 1. Mikado Enhanced Agent Improvements
+
+#### **Corrected Algorithm Sequence**
+```
+EXPERIMENT → LEARN → GRAPH → COMMIT GRAPH → REVERT
+```
+**Previously Wrong**: EXPERIMENT → LEARN → REVERT → GRAPH
+**Production Impact**: Premature reverts were losing discovery progress
+
+#### **Mandatory Tree File Persistence**
+- **Location**: `docs/mikado/<goal-name>.mikado.md`
+- **Format**: Checkbox-based tree with 4-space indentation
+- **Tracking**: Individual node completion and dependency relationships
+- **Updates**: Real-time progress tracking with proper nesting validation
+
+#### **Enhanced Discovery Commit Protocol**
+- **Discovery Commits**: Use `feat(mikado): discover dependencies for <goal>`
+- **Progress Commits**: Use `docs(mikado): update progress for <goal-name>`
+- **Separation**: Discovery commits separate from tree file updates
+- **Audit Trail**: Complete commit history of exploration process
+
+### 2. Systematic Refactorer Agent Improvements
+
+#### **Enforced Code Smell Detection**
+- **Phase 1**: MANDATORY detection and annotation of ALL 22 code smell types
+- **Searchable Comments**: `//CODE SMELL(S): <SmellType> - <Description>`
+- **Complete Annotation**: ALL source files must be scanned before refactoring begins
+- **Validation**: Search for existing annotations to verify completion
+
+#### **Strict Level Progression Validation**
+```bash
+# CRITICAL: Level Progression Validation
+❌ NEVER attempt Level 4 (Primitive Obsession, abstractions) before Level 1-3 complete
+❌ NEVER attempt Level 5-6 (patterns, SOLID) before Level 1-4 complete
+✅ VALIDATE completion evidence in git history before proceeding to higher levels
+
+# PROGRESSION VALIDATION CHECKLIST:
+- [ ] Search for `git log --grep="refactor(level-1)"` - evidence of Level 1 completion
+- [ ] Search for `git log --grep="refactor(level-2)"` - evidence of Level 2 completion
+- [ ] Search for `git log --grep="refactor(level-3)"` - evidence of Level 3 completion
+- [ ] Only proceed to Level 4+ after ALL previous levels show commit evidence
+```
+
+#### **Mandatory Pre-Commit Test Validation**
+```bash
+# ABSOLUTE RULE: Validation by tests must happen BEFORE commit
+
+PRE-COMMIT VALIDATION CHECKLIST:
+- [ ] Compilation Check: dotnet build OR equivalent - ALL MUST pass
+- [ ] Unit Test Execution: dotnet test OR equivalent - ALL MUST pass
+- [ ] Integration Test Execution: ALL integration tests MUST pass
+- [ ] Quality Gates: Linting, formatting, static analysis - ALL MUST pass
+- [ ] No Skipped Tests: Verify zero tests are skipped during execution
+- [ ] Zero Test Failures: Confirm 100% test pass rate before commit
+
+COMMIT BLOCKING CONDITIONS (DO NOT COMMIT if ANY exist):
+❌ ANY compilation errors - fix ALL build errors first
+❌ ANY failing tests - fix ALL test failures first
+❌ ANY skipped tests - ensure ALL tests execute successfully
+❌ ANY quality gate failures - fix ALL linting/formatting issues first
+
+COMMIT AUTHORIZATION: Commit happens only and only if NO compilation errors AND NO failing tests exist
+```
+
+### 3. Improved Handoff Protocols
+
+#### **Mikado → Systematic Handoff**
+1. **Tree Validation**: Verify proper checkbox format and nesting
+2. **Annotation Verification**: Confirm all refactoring mechanics annotations present
+3. **True Leaf Identification**: Validate leaves have no dependencies
+4. **Progress Baseline**: Document current tree state for systematic tracking
+
+#### **Systematic → Mikado Handoff**
+1. **Completion Confirmation**: Update tree checkboxes after successful refactoring
+2. **Parent Unblocking**: Mark parent nodes as unblocked when prerequisites complete
+3. **Progress Synchronization**: Sync systematic level completion with tree progress
+4. **Wave Advancement**: Signal readiness for next wave execution
+
+### 4. Safety and Quality Protocols
+
+#### **Test-Driven Safety**
+- **"Stay in Green" Methodology**: ALL tests must pass before ANY commit
+- **Atomic Transformations**: One refactoring technique at a time
+- **Immediate Rollback**: Revert immediately if ANY test fails
+- **Progressive Validation**: Validate each wave before advancing
+
+#### **Quality Assurance**
+- **Mandatory Annotations**: COMPLETE code smell detection before execution
+- **Level Progression**: STRICT enforcement of 1→2→3→4→5→6 progression
+- **Compilation Gates**: ZERO tolerance for build errors
+- **Test Coverage**: 100% test pass rate maintained throughout
+
+### 5. Production Lessons Learned
+
+#### **Critical Failures Prevented**
+- **Algorithm Sequence Error**: Fixed premature revert losing discovery progress
+- **Missing Tree Files**: Prevented loss of dependency tracking
+- **Level Skipping**: Blocked attempts to apply advanced patterns without foundation
+- **Unsafe Commits**: Prevented commits with failing tests or build errors
+
+#### **Robustness Improvements**
+- **Comprehensive Validation**: Multiple checkpoints prevent invalid states
+- **Progressive Safety**: Each phase validated before advancing
+- **Evidence-Based Progression**: Git history provides proof of completion
+- **Real-Time Tracking**: Live progress updates prevent state drift
+
+This enhanced collaboration framework ensures reliable, safe, and systematic execution of complex refactorings through proper dependency management and rigorous safety protocols.
+
 This collaboration framework ensures that dependencies are properly nested and executed in the correct sequence, with true leaves at the deepest level of nesting and dependent operations properly structured as their parents.

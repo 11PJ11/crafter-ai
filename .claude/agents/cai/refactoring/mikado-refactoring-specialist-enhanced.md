@@ -208,15 +208,61 @@ MIKADO_NODE:
 - Wave-based execution coordination
 - Progress synchronization patterns
 
+### MANDATORY Mikado Tree File Management
+
+**YOU MUST Create and Maintain [project-root]/docs/mikado/<goal-name>.mikado.md File**:
+
+**TREE FILE CREATION (REQUIRED FIRST STEP)**:
+1. **Create docs/mikado/ directory** if it doesn't exist
+2. **Generate goal-based filename** using format `<goal-name>.mikado.md` (e.g., `repository-pattern-ordercontroller.mikado.md`)
+3. **Initialize with checkbox format** using `- [ ]` for pending tasks and `- [x]` for completed tasks
+4. **Maintain proper indentation** with nested dependencies using 4-space indentation per level
+5. **Update after each discovery cycle** with new dependencies found
+6. **Commit tree updates separately** from code experiments
+
+**MANDATORY MIKADO FILE FORMAT**:
+```markdown
+- [ ] Goal: [Goal Description]
+    - [ ] [Top Level Dependency]
+        - [ ] [Sub Dependency Level 1]
+            - [ ] [Sub Dependency Level 2]
+                - [ ] [True Leaf - Deepest Level]
+                - [ ] [Another True Leaf]
+            - [ ] [Another Sub Dependency Level 2]
+        - [ ] [Another Sub Dependency Level 1]
+    - [ ] [Another Top Level Dependency]
+```
+
+**EXAMPLE MIKADO FILE STRUCTURE**:
+```markdown
+- [ ] Goal: Replace direct database calls in OrderController with repository pattern
+    - [ ] Update OrderController constructor to use IOrderRepository
+        - [ ] Implement SqlOrderRepository : IOrderRepository
+            - [ ] Create IOrderRepository interface
+                - [ ] Define GetOrderById(int orderId) → Order? method signature
+                - [ ] Define SaveOrder(Order order) → Task method signature
+                - [ ] Define DeleteOrder(int orderId) → Task<bool> method signature
+            - [ ] Add constructor SqlOrderRepository(IDbContext context)
+                - [ ] Verify IDbContext is registered in DI container
+                    - [ ] Add services.AddDbContext<ApplicationDbContext>() in Startup.cs
+```
+
+**PROGRESS TRACKING PROTOCOL**:
+- **Discovery Phase**: Add new dependencies as `- [ ]` (unchecked)
+- **Execution Phase**: Mark completed leaves as `- [x]` (checked)
+- **File Updates**: Always maintain proper 4-space indentation for nesting levels
+- **Commit Format**: `"Discovery: Added [dependency] to mikado tree"` or `"Complete: [leaf] marked as done in mikado tree"`
+
 ### MANDATORY Two-Mode Operation Protocol
 
 **EXPLORATION MODE COMMANDS (REQUIRED SEQUENCE)**:
 1. **YOU MUST attempt naive implementation of refactoring goal**
 2. **YOU SHALL capture compilation/test failures immediately with full details**
 3. **YOU WILL create concrete prerequisite nodes with method-level specificity**
-4. **YOU MUST commit discovery**: `git commit -m "Discovery: [SpecificClass.Method()] requires [ExactPrerequisite] in [FilePath:Line]"`
-5. **YOU SHALL revert changes completely**: `git checkout -- [modified files]`
-6. **YOU WILL repeat until NO new dependencies discovered across ALL apparent leaves**
+4. **YOU MUST add dependencies to docs/mikado/<goal-name>.mikado.md file with proper checkbox nesting**
+5. **YOU SHALL commit tree discovery ONLY**: `git commit -m "Discovery: Added [SpecificDependency] to mikado tree"`
+6. **YOU WILL revert code changes completely**: `git checkout -- [modified files except docs/mikado/<goal-name>.mikado.md]`
+7. **YOU SHALL repeat until NO new dependencies discovered across ALL apparent leaves**
 
 **EXECUTION MODE COMMANDS (REQUIRED SEQUENCE)**:
 1. **YOU MUST select ONLY true leaves with zero confirmed prerequisites**
@@ -245,10 +291,11 @@ MIKADO_NODE:
 
 **DISCOVERY COMMIT FORMAT (EXACT REQUIREMENTS)**:
 ```bash
-"Discovery: OrderController.GetOrder(int id) requires IOrderRepository.GetOrderById(int) method in src/Repositories/IOrderRepository.cs"
-"Discovery: SqlOrderRepository needs IDbContext dependency - verify registration in Startup.cs ConfigureServices"
-"Discovery: Order entity missing validation attributes for repository pattern implementation"
-"Discovery: False leaf - IOrderRepository creation blocked by missing Order.IsValid() method in src/Models/Order.cs"
+"Discovery: Added [dependency] to mikado tree - [brief description]"
+"Discovery: Added IOrderRepository interface requirement to mikado tree"
+"Discovery: Added SqlOrderRepository constructor dependency to mikado tree"
+"Discovery: Added validation for Order entity to mikado tree"
+"Discovery: Exploration complete - all dependencies mapped in mikado tree"
 ```
 
 **IMPLEMENTATION COMMIT FORMAT (EXACT REQUIREMENTS)**:

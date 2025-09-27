@@ -81,6 +81,12 @@ SYSTEMATIC_EXECUTION:
 
 **MANDATORY FIRST STEP**: You MUST detect and annotate ALL code smells before any refactoring. DO NOT proceed without completing this step.
 
+**VALIDATION CHECKPOINT**: Before proceeding to Phase 2, you MUST verify:
+- [ ] ALL source files scanned for code smells
+- [ ] ALL detected smells annotated with `//CODE SMELL(S):` comments
+- [ ] Execution plan created and committed
+- [ ] Search for existing `//CODE SMELL(S):` comments to verify completion
+
 #### Code Smell Detection Process - EXECUTE IN ORDER
 1. **SCAN ALL FILES**: Search every source and test file for ALL 22 code smells. DO NOT skip any files.
 2. **ANNOTATE EVERY SMELL**: Add this exact comment format above each detected smell:
@@ -138,9 +144,23 @@ public double getSpeed(String birdType) {
 **80-20 Rule Application**: You MUST focus 80% of effort on readability improvements (Levels 1-2). DO NOT skip to advanced levels.
 
 #### MANDATORY Execution Sequence - FOLLOW THIS ORDER
+
+**CRITICAL: Level Progression Validation**:
+- ❌ **NEVER attempt Level 4 (Primitive Obsession, abstractions) before Level 1-3 complete**
+- ❌ **NEVER attempt Level 5-6 (patterns, SOLID) before Level 1-4 complete**
+- ✅ **VALIDATE completion evidence in git history before proceeding to higher levels**
+
+**PROGRESSION VALIDATION CHECKLIST**:
+- [ ] Search for `git log --grep="refactor(level-1)"` - evidence of Level 1 completion
+- [ ] Search for `git log --grep="refactor(level-2)"` - evidence of Level 2 completion
+- [ ] Search for `git log --grep="refactor(level-3)"` - evidence of Level 3 completion
+- [ ] Only proceed to Level 4+ after ALL previous levels show commit evidence
+
 1. **EXECUTE Level 1-2 FIRST**: Foundation & Simplification - maximum value. COMPLETE before proceeding.
-2. **EXECUTE Level 3-4 NEXT**: Organization & Abstraction - structural improvements. COMPLETE before proceeding.
-3. **EXECUTE Level 5-6 LAST**: Patterns & SOLID++ - advanced principles. COMPLETE all levels.
+2. **EXECUTE Level 3 NEXT**: Organization - structural improvements. COMPLETE before proceeding.
+3. **VALIDATE COMPLETION**: Check git history for evidence before attempting Level 4+
+4. **EXECUTE Level 4 ONLY AFTER 1-3**: Abstraction refinement requires solid foundation
+5. **EXECUTE Level 5-6 LAST**: Patterns & SOLID++ - advanced principles. COMPLETE all levels.
 
 ## Six-Level Progressive Refactoring
 
@@ -308,6 +328,25 @@ All refactoring operations decompose into five atomic transformations:
 - **Integration Tests**: ALL MUST pass. DO NOT proceed if any fail.
 - **End-to-End Tests**: ALL MUST pass. DO NOT proceed if any fail.
 - **Build Validation**: Code MUST compile without errors or warnings. FIX immediately if compilation fails.
+
+#### MANDATORY: Pre-Commit Test Validation - CRITICAL PRODUCTION REQUIREMENT
+**ABSOLUTE RULE**: Validation by tests must happen BEFORE commit. NO EXCEPTIONS.
+
+**PRE-COMMIT VALIDATION CHECKLIST**:
+- [ ] **Compilation Check**: `dotnet build` OR equivalent build command for project type
+- [ ] **Unit Test Execution**: `dotnet test` OR equivalent test command - ALL tests MUST pass
+- [ ] **Integration Test Execution**: Run all integration tests - ALL MUST pass
+- [ ] **Quality Gates**: Linting, formatting, static analysis - ALL MUST pass
+- [ ] **No Skipped Tests**: Verify zero tests are skipped or ignored during execution
+- [ ] **Zero Test Failures**: Confirm 100% test pass rate before any commit
+
+**COMMIT BLOCKING CONDITIONS** (DO NOT COMMIT if ANY of these exist):
+- ❌ **ANY compilation errors** - fix ALL build errors first
+- ❌ **ANY failing tests** - fix ALL test failures first
+- ❌ **ANY skipped tests** - ensure ALL tests execute successfully
+- ❌ **ANY quality gate failures** - fix ALL linting/formatting issues first
+
+**COMMIT AUTHORIZATION**: Commit happens only and only if NO compilation errors AND NO failing tests exist.
 
 #### Commit Message Format
 ```
