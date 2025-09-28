@@ -88,9 +88,15 @@
       "Bash(get_supported_languages)",
       "WebFetch(domain:refactoring.guru)",
       "Read(//mnt/c/Repositories/alcor-academy/**)",
-      "WebFetch(domain:refactoring.com)"
+      "WebFetch(domain:refactoring.com)",
+      "WebFetch(domain:python.plainenglish.io)",
+      "WebFetch(domain:buildmode.dev)",
+      "WebFetch(domain:medium.com)"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enabledMcpjsonServers": [
+    "sequential-thinking"
+  ]
 }

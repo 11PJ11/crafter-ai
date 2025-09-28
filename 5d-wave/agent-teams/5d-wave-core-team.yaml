@@ -1,0 +1,165 @@
+---
+name: "5D-Wave Core Team"
+description: "Essential DISCUSS→DESIGN→DISTILL→DEVELOP→DEMO methodology team with ATDD foundation"
+version: "1.0.0"
+author: "BMAD-METHOD"
+category: "core-methodology"
+icon: "🌊"
+
+team:
+  type: "sequential-waves"
+  methodology: "5D-WAVE"
+  focus: "ATDD methodology with visual architecture lifecycle"
+
+  agents:
+    discuss_wave:
+      business_analyst:
+        role: "Riley"
+        wave_priority: 1
+        responsibilities:
+          - "ATDD foundation establishment"
+          - "Customer-developer-tester collaboration initiation"
+          - "Requirements gathering with business validation"
+          - "Stakeholder consensus building"
+
+    design_wave:
+      solution_architect:
+        role: "Morgan"
+        wave_priority: 1
+        responsibilities:
+          - "Hexagonal architecture design"
+          - "Technology selection with ATDD integration"
+          - "Component boundaries with production service patterns"
+          - "Quality attributes and architectural constraints"
+
+      architecture_diagram_manager:
+        role: "Archer"
+        wave_priority: 1
+        responsibilities:
+          - "Visual architecture lifecycle management"
+          - "Stakeholder-specific diagram generation"
+          - "Implementation reality synchronization"
+          - "Evolution tracking and compliance validation"
+
+    distill_wave:
+      acceptance_designer:
+        role: "Quinn"
+        wave_priority: 1
+        responsibilities:
+          - "Given-When-Then acceptance test creation"
+          - "Production service integration pattern design"
+          - "Business validation criteria establishment"
+          - "One-E2E-at-a-time strategy implementation"
+
+    develop_wave:
+      test_first_developer:
+        role: "Devon"
+        wave_priority: 1
+        responsibilities:
+          - "Outside-In TDD with double-loop architecture"
+          - "Production service integration in step methods"
+          - "NotImplementedException scaffolding patterns"
+          - "Business-driven naming and real system integration"
+
+      systematic_refactorer:
+        role: "Raphael"
+        wave_priority: 2
+        responsibilities:
+          - "Progressive Level 1-6 refactoring execution"
+          - "Code smell detection and transformation"
+          - "Test-driven refactoring safety"
+          - "Quality metrics improvement"
+
+    demo_wave:
+      feature_completion_coordinator:
+        role: "Dakota"
+        wave_priority: 1
+        responsibilities:
+          - "Production readiness validation"
+          - "Stakeholder demonstration coordination"
+          - "Business value measurement and validation"
+          - "Operational knowledge transfer"
+
+collaboration_patterns:
+  cross_wave_coordination:
+    - agent: "architecture_diagram_manager"
+      scope: "ALL_WAVES"
+      purpose: "Visual architecture lifecycle throughout methodology"
+
+    - agent: "systematic_refactorer"
+      scope: "DEVELOP_WAVE"
+      purpose: "Quality improvement collaboration with test-first-developer"
+
+  atdd_workflow:
+    discuss_to_distill:
+      pattern: "Requirements flow from business-analyst to acceptance-designer"
+      validation: "Customer collaboration and business validation"
+
+    distill_to_develop:
+      pattern: "Acceptance tests drive outside-in TDD implementation"
+      validation: "Production service integration and real system validation"
+
+    develop_to_demo:
+      pattern: "Working implementation enables stakeholder demonstration"
+      validation: "Business value delivery and operational readiness"
+
+quality_gates:
+  wave_completion:
+    discuss_complete:
+      - "Stakeholder consensus achieved"
+      - "ATDD foundation established"
+      - "Business requirements validated"
+
+    design_complete:
+      - "Architecture design with visual representation complete"
+      - "Technology selection with ATDD integration documented"
+      - "Component boundaries with hexagonal architecture defined"
+
+    distill_complete:
+      - "Acceptance tests covering all user stories created"
+      - "Production service integration patterns established"
+      - "Business validation criteria defined and measurable"
+
+    develop_complete:
+      - "Outside-In TDD implementation with passing tests complete"
+      - "Systematic refactoring applied through six-level hierarchy"
+      - "Production service integration validated and operational"
+
+    demo_complete:
+      - "Production deployment with monitoring complete"
+      - "Stakeholder demonstrations with business value validation successful"
+      - "Operational knowledge transfer and support procedures complete"
+
+team_capabilities:
+  methodology_strengths:
+    - "Complete 5D-Wave methodology execution"
+    - "ATDD customer-developer-tester collaboration"
+    - "Visual architecture lifecycle management"
+    - "Outside-In TDD with production service integration"
+    - "Systematic quality improvement through refactoring"
+
+  project_suitability:
+    - "Greenfield projects requiring complete methodology"
+    - "Projects with strong stakeholder collaboration requirements"
+    - "Systems requiring visual architecture communication"
+    - "Teams adopting ATDD and Outside-In TDD practices"
+    - "Projects prioritizing production readiness and business value"
+
+usage_guidelines:
+  when_to_use:
+    - "Standard 5D-Wave methodology implementation"
+    - "Projects with balanced complexity and stakeholder needs"
+    - "Teams familiar with ATDD and TDD practices"
+    - "Systems requiring visual architecture documentation"
+
+  team_coordination:
+    - "Sequential wave execution with overlap allowed"
+    - "Cross-wave collaboration through architecture-diagram-manager"
+    - "Quality gates must pass before wave transitions"
+    - "Continuous stakeholder feedback integration"
+
+  success_metrics:
+    - "Business stakeholder satisfaction with delivered value"
+    - "Production system operational excellence"
+    - "Visual architecture accuracy and stakeholder comprehension"
+    - "ATDD methodology compliance and team adoption"

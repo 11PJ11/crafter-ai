@@ -1,0 +1,338 @@
+2025-09-28 22:34:10,449 - INFO - Cleaned output directory: ../dist/ide
+2025-09-28 22:34:10,470 - INFO - Loaded configuration from: ../5d-wave/config.yaml
+2025-09-28 22:34:10,470 - INFO - Starting 5D-WAVE IDE bundle build at 2025-09-28 22:34:10.470939
+2025-09-28 22:34:10,471 - INFO - Validating source directory: ../5d-wave
+2025-09-28 22:34:10,483 - INFO - Source validation completed successfully
+2025-09-28 22:34:10,499 - INFO - Processing agents...
+2025-09-28 22:34:10,504 - INFO - Found 10 agent files
+2025-09-28 22:34:10,505 - INFO - Processing agent: acceptance-designer
+2025-09-28 22:34:10,560 - WARNING - Could not resolve dependency: tasks/acceptance-test-design.md
+2025-09-28 22:34:10,561 - WARNING - Could not resolve dependency: tasks/acceptance-test-design.md
+2025-09-28 22:34:10,574 - WARNING - Could not resolve dependency: tasks/scenario-creation.md
+2025-09-28 22:34:10,574 - WARNING - Could not resolve dependency: tasks/scenario-creation.md
+2025-09-28 22:34:10,586 - WARNING - Could not resolve dependency: tasks/step-definition-implementation.md
+2025-09-28 22:34:10,586 - WARNING - Could not resolve dependency: tasks/step-definition-implementation.md
+2025-09-28 22:34:10,597 - WARNING - Could not resolve dependency: tasks/business-validation-design.md
+2025-09-28 22:34:10,597 - WARNING - Could not resolve dependency: tasks/business-validation-design.md
+2025-09-28 22:34:10,603 - WARNING - Could not resolve dependency: tasks/test-data-management.md
+2025-09-28 22:34:10,603 - WARNING - Could not resolve dependency: tasks/test-data-management.md
+2025-09-28 22:34:10,616 - WARNING - Could not resolve dependency: templates/acceptance-test-tmpl.yaml
+2025-09-28 22:34:10,616 - WARNING - Could not resolve dependency: templates/acceptance-test-tmpl.yaml
+2025-09-28 22:34:10,628 - WARNING - Could not resolve dependency: templates/test-scenario-tmpl.yaml
+2025-09-28 22:34:10,628 - WARNING - Could not resolve dependency: templates/test-scenario-tmpl.yaml
+2025-09-28 22:34:10,642 - WARNING - Could not resolve dependency: templates/step-definition-tmpl.yaml
+2025-09-28 22:34:10,642 - WARNING - Could not resolve dependency: templates/step-definition-tmpl.yaml
+2025-09-28 22:34:10,654 - WARNING - Could not resolve dependency: templates/test-data-tmpl.yaml
+2025-09-28 22:34:10,654 - WARNING - Could not resolve dependency: templates/test-data-tmpl.yaml
+2025-09-28 22:34:10,670 - WARNING - Could not resolve dependency: checklists/acceptance-test-quality-checklist.md
+2025-09-28 22:34:10,671 - WARNING - Could not resolve dependency: checklists/acceptance-test-quality-checklist.md
+2025-09-28 22:34:10,687 - WARNING - Could not resolve dependency: checklists/atdd-readiness-checklist.md
+2025-09-28 22:34:10,687 - WARNING - Could not resolve dependency: checklists/atdd-readiness-checklist.md
+2025-09-28 22:34:10,702 - WARNING - Could not resolve dependency: checklists/business-validation-checklist.md
+2025-09-28 22:34:10,703 - WARNING - Could not resolve dependency: checklists/business-validation-checklist.md
+2025-09-28 22:34:10,713 - WARNING - Could not resolve dependency: data/atdd-methodology.md
+2025-09-28 22:34:10,713 - WARNING - Could not resolve dependency: data/atdd-methodology.md
+2025-09-28 22:34:10,725 - WARNING - Could not resolve dependency: data/given-when-then-patterns.md
+2025-09-28 22:34:10,726 - WARNING - Could not resolve dependency: data/given-when-then-patterns.md
+2025-09-28 22:34:10,736 - WARNING - Could not resolve dependency: data/business-test-language.md
+2025-09-28 22:34:10,737 - WARNING - Could not resolve dependency: data/business-test-language.md
+2025-09-28 22:34:10,757 - INFO - Processing agent: architecture-diagram-manager
+2025-09-28 22:34:10,801 - WARNING - Could not resolve dependency: tasks/visual-architecture-lifecycle.md
+2025-09-28 22:34:10,801 - WARNING - Could not resolve dependency: tasks/visual-architecture-lifecycle.md
+2025-09-28 22:34:10,808 - WARNING - Could not resolve dependency: tasks/diagram-generation.md
+2025-09-28 22:34:10,808 - WARNING - Could not resolve dependency: tasks/diagram-generation.md
+2025-09-28 22:34:10,815 - WARNING - Could not resolve dependency: tasks/architecture-synchronization.md
+2025-09-28 22:34:10,815 - WARNING - Could not resolve dependency: tasks/architecture-synchronization.md
+2025-09-28 22:34:10,822 - WARNING - Could not resolve dependency: tasks/evolution-tracking.md
+2025-09-28 22:34:10,822 - WARNING - Could not resolve dependency: tasks/evolution-tracking.md
+2025-09-28 22:34:10,829 - WARNING - Could not resolve dependency: tasks/stakeholder-visualization.md
+2025-09-28 22:34:10,829 - WARNING - Could not resolve dependency: tasks/stakeholder-visualization.md
+2025-09-28 22:34:10,841 - WARNING - Could not resolve dependency: templates/architecture-diagram-tmpl.yaml
+2025-09-28 22:34:10,842 - WARNING - Could not resolve dependency: templates/architecture-diagram-tmpl.yaml
+2025-09-28 22:34:10,854 - WARNING - Could not resolve dependency: templates/component-diagram-tmpl.yaml
+2025-09-28 22:34:10,855 - WARNING - Could not resolve dependency: templates/component-diagram-tmpl.yaml
+2025-09-28 22:34:10,867 - WARNING - Could not resolve dependency: templates/sequence-diagram-tmpl.yaml
+2025-09-28 22:34:10,867 - WARNING - Could not resolve dependency: templates/sequence-diagram-tmpl.yaml
+2025-09-28 22:34:10,880 - WARNING - Could not resolve dependency: templates/deployment-diagram-tmpl.yaml
+2025-09-28 22:34:10,881 - WARNING - Could not resolve dependency: templates/deployment-diagram-tmpl.yaml
+2025-09-28 22:34:10,907 - WARNING - Could not resolve dependency: checklists/diagram-quality-checklist.md
+2025-09-28 22:34:10,908 - WARNING - Could not resolve dependency: checklists/diagram-quality-checklist.md
+2025-09-28 22:34:10,927 - WARNING - Could not resolve dependency: checklists/synchronization-checklist.md
+2025-09-28 22:34:10,928 - WARNING - Could not resolve dependency: checklists/synchronization-checklist.md
+2025-09-28 22:34:10,941 - WARNING - Could not resolve dependency: data/diagram-types.md
+2025-09-28 22:34:10,942 - WARNING - Could not resolve dependency: data/diagram-types.md
+2025-09-28 22:34:10,953 - WARNING - Could not resolve dependency: data/visualization-patterns.md
+2025-09-28 22:34:10,954 - WARNING - Could not resolve dependency: data/visualization-patterns.md
+2025-09-28 22:34:10,967 - WARNING - Could not resolve dependency: data/architectural-views.md
+2025-09-28 22:34:10,967 - WARNING - Could not resolve dependency: data/architectural-views.md
+2025-09-28 22:34:10,992 - INFO - Processing agent: business-analyst
+2025-09-28 22:34:11,026 - WARNING - Could not resolve dependency: tasks/requirements-gathering.md
+2025-09-28 22:34:11,026 - WARNING - Could not resolve dependency: tasks/requirements-gathering.md
+2025-09-28 22:34:11,033 - WARNING - Could not resolve dependency: tasks/stakeholder-facilitation.md
+2025-09-28 22:34:11,034 - WARNING - Could not resolve dependency: tasks/stakeholder-facilitation.md
+2025-09-28 22:34:11,039 - WARNING - Could not resolve dependency: tasks/user-story-creation.md
+2025-09-28 22:34:11,040 - WARNING - Could not resolve dependency: tasks/user-story-creation.md
+2025-09-28 22:34:11,047 - WARNING - Could not resolve dependency: tasks/acceptance-criteria-definition.md
+2025-09-28 22:34:11,047 - WARNING - Could not resolve dependency: tasks/acceptance-criteria-definition.md
+2025-09-28 22:34:11,054 - WARNING - Could not resolve dependency: tasks/business-value-analysis.md
+2025-09-28 22:34:11,054 - WARNING - Could not resolve dependency: tasks/business-value-analysis.md
+2025-09-28 22:34:11,066 - WARNING - Could not resolve dependency: templates/requirements-document-tmpl.yaml
+2025-09-28 22:34:11,066 - WARNING - Could not resolve dependency: templates/requirements-document-tmpl.yaml
+2025-09-28 22:34:11,079 - WARNING - Could not resolve dependency: templates/user-story-tmpl.yaml
+2025-09-28 22:34:11,080 - WARNING - Could not resolve dependency: templates/user-story-tmpl.yaml
+2025-09-28 22:34:11,093 - WARNING - Could not resolve dependency: templates/stakeholder-analysis-tmpl.yaml
+2025-09-28 22:34:11,094 - WARNING - Could not resolve dependency: templates/stakeholder-analysis-tmpl.yaml
+2025-09-28 22:34:11,106 - WARNING - Could not resolve dependency: templates/project-brief-tmpl.yaml
+2025-09-28 22:34:11,106 - WARNING - Could not resolve dependency: templates/project-brief-tmpl.yaml
+2025-09-28 22:34:11,121 - WARNING - Could not resolve dependency: checklists/requirements-completeness-checklist.md
+2025-09-28 22:34:11,121 - WARNING - Could not resolve dependency: checklists/requirements-completeness-checklist.md
+2025-09-28 22:34:11,138 - WARNING - Could not resolve dependency: checklists/stakeholder-engagement-checklist.md
+2025-09-28 22:34:11,138 - WARNING - Could not resolve dependency: checklists/stakeholder-engagement-checklist.md
+2025-09-28 22:34:11,155 - WARNING - Could not resolve dependency: checklists/atdd-readiness-checklist.md
+2025-09-28 22:34:11,155 - WARNING - Could not resolve dependency: checklists/atdd-readiness-checklist.md
+2025-09-28 22:34:11,169 - WARNING - Could not resolve dependency: data/requirements-elicitation-techniques.md
+2025-09-28 22:34:11,170 - WARNING - Could not resolve dependency: data/requirements-elicitation-techniques.md
+2025-09-28 22:34:11,185 - WARNING - Could not resolve dependency: data/stakeholder-engagement-patterns.md
+2025-09-28 22:34:11,185 - WARNING - Could not resolve dependency: data/stakeholder-engagement-patterns.md
+2025-09-28 22:34:11,198 - WARNING - Could not resolve dependency: data/business-analysis-framework.md
+2025-09-28 22:34:11,198 - WARNING - Could not resolve dependency: data/business-analysis-framework.md
+2025-09-28 22:34:11,218 - INFO - Processing agent: feature-completion-coordinator
+2025-09-28 22:34:11,254 - WARNING - Could not resolve dependency: tasks/feature-completion-validation.md
+2025-09-28 22:34:11,255 - WARNING - Could not resolve dependency: tasks/feature-completion-validation.md
+2025-09-28 22:34:11,262 - WARNING - Could not resolve dependency: tasks/production-deployment-orchestration.md
+2025-09-28 22:34:11,262 - WARNING - Could not resolve dependency: tasks/production-deployment-orchestration.md
+2025-09-28 22:34:11,269 - WARNING - Could not resolve dependency: tasks/stakeholder-demonstration.md
+2025-09-28 22:34:11,269 - WARNING - Could not resolve dependency: tasks/stakeholder-demonstration.md
+2025-09-28 22:34:11,275 - WARNING - Could not resolve dependency: tasks/business-outcome-measurement.md
+2025-09-28 22:34:11,275 - WARNING - Could not resolve dependency: tasks/business-outcome-measurement.md
+2025-09-28 22:34:11,281 - WARNING - Could not resolve dependency: tasks/operational-readiness-validation.md
+2025-09-28 22:34:11,282 - WARNING - Could not resolve dependency: tasks/operational-readiness-validation.md
+2025-09-28 22:34:11,294 - WARNING - Could not resolve dependency: templates/completion-checklist-tmpl.yaml
+2025-09-28 22:34:11,294 - WARNING - Could not resolve dependency: templates/completion-checklist-tmpl.yaml
+2025-09-28 22:34:11,307 - WARNING - Could not resolve dependency: templates/deployment-plan-tmpl.yaml
+2025-09-28 22:34:11,308 - WARNING - Could not resolve dependency: templates/deployment-plan-tmpl.yaml
+2025-09-28 22:34:11,320 - WARNING - Could not resolve dependency: templates/demonstration-script-tmpl.yaml
+2025-09-28 22:34:11,320 - WARNING - Could not resolve dependency: templates/demonstration-script-tmpl.yaml
+2025-09-28 22:34:11,332 - WARNING - Could not resolve dependency: templates/outcome-measurement-tmpl.yaml
+2025-09-28 22:34:11,332 - WARNING - Could not resolve dependency: templates/outcome-measurement-tmpl.yaml
+2025-09-28 22:34:11,349 - WARNING - Could not resolve dependency: checklists/production-readiness-checklist.md
+2025-09-28 22:34:11,349 - WARNING - Could not resolve dependency: checklists/production-readiness-checklist.md
+2025-09-28 22:34:11,364 - WARNING - Could not resolve dependency: checklists/deployment-validation-checklist.md
+2025-09-28 22:34:11,364 - WARNING - Could not resolve dependency: checklists/deployment-validation-checklist.md
+2025-09-28 22:34:11,379 - WARNING - Could not resolve dependency: checklists/stakeholder-demo-checklist.md
+2025-09-28 22:34:11,380 - WARNING - Could not resolve dependency: checklists/stakeholder-demo-checklist.md
+2025-09-28 22:34:11,392 - WARNING - Could not resolve dependency: data/completion-criteria.md
+2025-09-28 22:34:11,392 - WARNING - Could not resolve dependency: data/completion-criteria.md
+2025-09-28 22:34:11,403 - WARNING - Could not resolve dependency: data/quality-gates.md
+2025-09-28 22:34:11,403 - WARNING - Could not resolve dependency: data/quality-gates.md
+2025-09-28 22:34:11,414 - WARNING - Could not resolve dependency: data/operational-standards.md
+2025-09-28 22:34:11,414 - WARNING - Could not resolve dependency: data/operational-standards.md
+2025-09-28 22:34:11,434 - INFO - Processing agent: mikado-refactoring-specialist-enhanced
+2025-09-28 22:34:11,465 - WARNING - Could not resolve dependency: tasks/enhanced-mikado-workflow.md
+2025-09-28 22:34:11,466 - WARNING - Could not resolve dependency: tasks/enhanced-mikado-workflow.md
+2025-09-28 22:34:11,472 - WARNING - Could not resolve dependency: tasks/exhaustive-exploration.md
+2025-09-28 22:34:11,472 - WARNING - Could not resolve dependency: tasks/exhaustive-exploration.md
+2025-09-28 22:34:11,479 - WARNING - Could not resolve dependency: tasks/discovery-tracking.md
+2025-09-28 22:34:11,480 - WARNING - Could not resolve dependency: tasks/discovery-tracking.md
+2025-09-28 22:34:11,485 - WARNING - Could not resolve dependency: tasks/tree-file-management.md
+2025-09-28 22:34:11,486 - WARNING - Could not resolve dependency: tasks/tree-file-management.md
+2025-09-28 22:34:11,492 - WARNING - Could not resolve dependency: tasks/systematic-collaboration.md
+2025-09-28 22:34:11,492 - WARNING - Could not resolve dependency: tasks/systematic-collaboration.md
+2025-09-28 22:34:11,504 - WARNING - Could not resolve dependency: templates/mikado-report-tmpl.yaml
+2025-09-28 22:34:11,505 - WARNING - Could not resolve dependency: templates/mikado-report-tmpl.yaml
+2025-09-28 22:34:11,518 - WARNING - Could not resolve dependency: templates/tree-file-tmpl.yaml
+2025-09-28 22:34:11,518 - WARNING - Could not resolve dependency: templates/tree-file-tmpl.yaml
+2025-09-28 22:34:11,531 - WARNING - Could not resolve dependency: templates/discovery-commit-tmpl.yaml
+2025-09-28 22:34:11,531 - WARNING - Could not resolve dependency: templates/discovery-commit-tmpl.yaml
+2025-09-28 22:34:11,547 - WARNING - Could not resolve dependency: checklists/enhanced-mikado-checklist.md
+2025-09-28 22:34:11,548 - WARNING - Could not resolve dependency: checklists/enhanced-mikado-checklist.md
+2025-09-28 22:34:11,564 - WARNING - Could not resolve dependency: checklists/discovery-tracking-checklist.md
+2025-09-28 22:34:11,564 - WARNING - Could not resolve dependency: checklists/discovery-tracking-checklist.md
+2025-09-28 22:34:11,581 - WARNING - Could not resolve dependency: checklists/systematic-handoff-checklist.md
+2025-09-28 22:34:11,581 - WARNING - Could not resolve dependency: checklists/systematic-handoff-checklist.md
+2025-09-28 22:34:11,593 - WARNING - Could not resolve dependency: data/mikado-methodology.md
+2025-09-28 22:34:11,593 - WARNING - Could not resolve dependency: data/mikado-methodology.md
+2025-09-28 22:34:11,605 - WARNING - Could not resolve dependency: data/refactoring-mechanics-integration.md
+2025-09-28 22:34:11,605 - WARNING - Could not resolve dependency: data/refactoring-mechanics-integration.md
+2025-09-28 22:34:11,617 - WARNING - Could not resolve dependency: data/stakeholder-communication.md
+2025-09-28 22:34:11,617 - WARNING - Could not resolve dependency: data/stakeholder-communication.md
+2025-09-28 22:34:11,636 - INFO - Processing agent: root-cause-analyzer
+2025-09-28 22:34:11,674 - WARNING - Could not resolve dependency: tasks/toyota-5-whys-investigation.md
+2025-09-28 22:34:11,674 - WARNING - Could not resolve dependency: tasks/toyota-5-whys-investigation.md
+2025-09-28 22:34:11,681 - WARNING - Could not resolve dependency: tasks/multi-causal-analysis.md
+2025-09-28 22:34:11,681 - WARNING - Could not resolve dependency: tasks/multi-causal-analysis.md
+2025-09-28 22:34:11,688 - WARNING - Could not resolve dependency: tasks/evidence-collection.md
+2025-09-28 22:34:11,688 - WARNING - Could not resolve dependency: tasks/evidence-collection.md
+2025-09-28 22:34:11,694 - WARNING - Could not resolve dependency: tasks/system-failure-analysis.md
+2025-09-28 22:34:11,695 - WARNING - Could not resolve dependency: tasks/system-failure-analysis.md
+2025-09-28 22:34:11,701 - WARNING - Could not resolve dependency: tasks/post-mortem-analysis.md
+2025-09-28 22:34:11,702 - WARNING - Could not resolve dependency: tasks/post-mortem-analysis.md
+2025-09-28 22:34:11,713 - WARNING - Could not resolve dependency: templates/root-cause-analysis-tmpl.yaml
+2025-09-28 22:34:11,713 - WARNING - Could not resolve dependency: templates/root-cause-analysis-tmpl.yaml
+2025-09-28 22:34:11,725 - WARNING - Could not resolve dependency: templates/investigation-report-tmpl.yaml
+2025-09-28 22:34:11,725 - WARNING - Could not resolve dependency: templates/investigation-report-tmpl.yaml
+2025-09-28 22:34:11,738 - WARNING - Could not resolve dependency: templates/post-mortem-tmpl.yaml
+2025-09-28 22:34:11,738 - WARNING - Could not resolve dependency: templates/post-mortem-tmpl.yaml
+2025-09-28 22:34:11,752 - WARNING - Could not resolve dependency: templates/prevention-strategy-tmpl.yaml
+2025-09-28 22:34:11,752 - WARNING - Could not resolve dependency: templates/prevention-strategy-tmpl.yaml
+2025-09-28 22:34:11,768 - WARNING - Could not resolve dependency: checklists/investigation-completeness-checklist.md
+2025-09-28 22:34:11,768 - WARNING - Could not resolve dependency: checklists/investigation-completeness-checklist.md
+2025-09-28 22:34:11,785 - WARNING - Could not resolve dependency: checklists/evidence-validation-checklist.md
+2025-09-28 22:34:11,785 - WARNING - Could not resolve dependency: checklists/evidence-validation-checklist.md
+2025-09-28 22:34:11,802 - WARNING - Could not resolve dependency: checklists/root-cause-verification-checklist.md
+2025-09-28 22:34:11,802 - WARNING - Could not resolve dependency: checklists/root-cause-verification-checklist.md
+2025-09-28 22:34:11,815 - WARNING - Could not resolve dependency: data/toyota-methodology.md
+2025-09-28 22:34:11,815 - WARNING - Could not resolve dependency: data/toyota-methodology.md
+2025-09-28 22:34:11,825 - WARNING - Could not resolve dependency: data/investigation-techniques.md
+2025-09-28 22:34:11,826 - WARNING - Could not resolve dependency: data/investigation-techniques.md
+2025-09-28 22:34:11,838 - WARNING - Could not resolve dependency: data/problem-taxonomy.md
+2025-09-28 22:34:11,838 - WARNING - Could not resolve dependency: data/problem-taxonomy.md
+2025-09-28 22:34:11,859 - INFO - Processing agent: solution-architect
+2025-09-28 22:34:11,927 - WARNING - Could not resolve dependency: tasks/architecture-design.md
+2025-09-28 22:34:11,927 - WARNING - Could not resolve dependency: tasks/architecture-design.md
+2025-09-28 22:34:11,934 - WARNING - Could not resolve dependency: tasks/technology-selection.md
+2025-09-28 22:34:11,934 - WARNING - Could not resolve dependency: tasks/technology-selection.md
+2025-09-28 22:34:11,943 - WARNING - Could not resolve dependency: tasks/component-boundary-definition.md
+2025-09-28 22:34:11,943 - WARNING - Could not resolve dependency: tasks/component-boundary-definition.md
+2025-09-28 22:34:11,950 - WARNING - Could not resolve dependency: tasks/integration-pattern-design.md
+2025-09-28 22:34:11,950 - WARNING - Could not resolve dependency: tasks/integration-pattern-design.md
+2025-09-28 22:34:11,957 - WARNING - Could not resolve dependency: tasks/architectural-risk-assessment.md
+2025-09-28 22:34:11,957 - WARNING - Could not resolve dependency: tasks/architectural-risk-assessment.md
+2025-09-28 22:34:11,969 - WARNING - Could not resolve dependency: templates/architecture-design-tmpl.yaml
+2025-09-28 22:34:11,970 - WARNING - Could not resolve dependency: templates/architecture-design-tmpl.yaml
+2025-09-28 22:34:11,986 - WARNING - Could not resolve dependency: templates/technology-stack-tmpl.yaml
+2025-09-28 22:34:11,986 - WARNING - Could not resolve dependency: templates/technology-stack-tmpl.yaml
+2025-09-28 22:34:11,999 - WARNING - Could not resolve dependency: templates/component-boundary-tmpl.yaml
+2025-09-28 22:34:12,000 - WARNING - Could not resolve dependency: templates/component-boundary-tmpl.yaml
+2025-09-28 22:34:12,012 - WARNING - Could not resolve dependency: templates/integration-design-tmpl.yaml
+2025-09-28 22:34:12,012 - WARNING - Could not resolve dependency: templates/integration-design-tmpl.yaml
+2025-09-28 22:34:12,028 - WARNING - Could not resolve dependency: checklists/architecture-quality-checklist.md
+2025-09-28 22:34:12,028 - WARNING - Could not resolve dependency: checklists/architecture-quality-checklist.md
+2025-09-28 22:34:12,045 - WARNING - Could not resolve dependency: checklists/technology-selection-checklist.md
+2025-09-28 22:34:12,045 - WARNING - Could not resolve dependency: checklists/technology-selection-checklist.md
+2025-09-28 22:34:12,061 - WARNING - Could not resolve dependency: checklists/integration-design-checklist.md
+2025-09-28 22:34:12,061 - WARNING - Could not resolve dependency: checklists/integration-design-checklist.md
+2025-09-28 22:34:12,073 - WARNING - Could not resolve dependency: data/architectural-patterns.md
+2025-09-28 22:34:12,073 - WARNING - Could not resolve dependency: data/architectural-patterns.md
+2025-09-28 22:34:12,085 - WARNING - Could not resolve dependency: data/technology-decision-framework.md
+2025-09-28 22:34:12,085 - WARNING - Could not resolve dependency: data/technology-decision-framework.md
+2025-09-28 22:34:12,096 - WARNING - Could not resolve dependency: data/quality-attribute-catalog.md
+2025-09-28 22:34:12,096 - WARNING - Could not resolve dependency: data/quality-attribute-catalog.md
+2025-09-28 22:34:12,120 - INFO - Processing agent: systematic-refactorer
+2025-09-28 22:34:12,164 - WARNING - Could not resolve dependency: tasks/progressive-refactoring.md
+2025-09-28 22:34:12,164 - WARNING - Could not resolve dependency: tasks/progressive-refactoring.md
+2025-09-28 22:34:12,172 - WARNING - Could not resolve dependency: tasks/code-smell-detection.md
+2025-09-28 22:34:12,172 - WARNING - Could not resolve dependency: tasks/code-smell-detection.md
+2025-09-28 22:34:12,179 - WARNING - Could not resolve dependency: tasks/atomic-transformation.md
+2025-09-28 22:34:12,180 - WARNING - Could not resolve dependency: tasks/atomic-transformation.md
+2025-09-28 22:34:12,188 - WARNING - Could not resolve dependency: tasks/test-driven-refactoring.md
+2025-09-28 22:34:12,188 - WARNING - Could not resolve dependency: tasks/test-driven-refactoring.md
+2025-09-28 22:34:12,195 - WARNING - Could not resolve dependency: tasks/quality-metrics-validation.md
+2025-09-28 22:34:12,195 - WARNING - Could not resolve dependency: tasks/quality-metrics-validation.md
+2025-09-28 22:34:12,210 - WARNING - Could not resolve dependency: templates/refactoring-report-tmpl.yaml
+2025-09-28 22:34:12,210 - WARNING - Could not resolve dependency: templates/refactoring-report-tmpl.yaml
+2025-09-28 22:34:12,224 - WARNING - Could not resolve dependency: templates/code-smell-annotation-tmpl.yaml
+2025-09-28 22:34:12,224 - WARNING - Could not resolve dependency: templates/code-smell-annotation-tmpl.yaml
+2025-09-28 22:34:12,241 - WARNING - Could not resolve dependency: templates/quality-metrics-tmpl.yaml
+2025-09-28 22:34:12,242 - WARNING - Could not resolve dependency: templates/quality-metrics-tmpl.yaml
+2025-09-28 22:34:12,264 - WARNING - Could not resolve dependency: checklists/progressive-refactoring-checklist.md
+2025-09-28 22:34:12,264 - WARNING - Could not resolve dependency: checklists/progressive-refactoring-checklist.md
+2025-09-28 22:34:12,282 - WARNING - Could not resolve dependency: checklists/atomic-transformation-checklist.md
+2025-09-28 22:34:12,282 - WARNING - Could not resolve dependency: checklists/atomic-transformation-checklist.md
+2025-09-28 22:34:12,300 - WARNING - Could not resolve dependency: checklists/test-driven-safety-checklist.md
+2025-09-28 22:34:12,301 - WARNING - Could not resolve dependency: checklists/test-driven-safety-checklist.md
+2025-09-28 22:34:12,314 - WARNING - Could not resolve dependency: data/code-smell-catalog.md
+2025-09-28 22:34:12,314 - WARNING - Could not resolve dependency: data/code-smell-catalog.md
+2025-09-28 22:34:12,326 - WARNING - Could not resolve dependency: data/refactoring-techniques.md
+2025-09-28 22:34:12,326 - WARNING - Could not resolve dependency: data/refactoring-techniques.md
+2025-09-28 22:34:12,339 - WARNING - Could not resolve dependency: data/atomic-transformations.md
+2025-09-28 22:34:12,339 - WARNING - Could not resolve dependency: data/atomic-transformations.md
+2025-09-28 22:34:12,366 - INFO - Processing agent: test-first-developer
+2025-09-28 22:34:12,396 - WARNING - Could not resolve dependency: tasks/dw-develop.md
+2025-09-28 22:34:12,396 - WARNING - Could not resolve dependency: tasks/dw-develop.md
+2025-09-28 22:34:12,403 - WARNING - Could not resolve dependency: tasks/outside-in-tdd-workflow.md
+2025-09-28 22:34:12,403 - WARNING - Could not resolve dependency: tasks/outside-in-tdd-workflow.md
+2025-09-28 22:34:12,411 - WARNING - Could not resolve dependency: tasks/production-service-validation.md
+2025-09-28 22:34:12,411 - WARNING - Could not resolve dependency: tasks/production-service-validation.md
+2025-09-28 22:34:12,419 - WARNING - Could not resolve dependency: tasks/progressive-refactoring.md
+2025-09-28 22:34:12,419 - WARNING - Could not resolve dependency: tasks/progressive-refactoring.md
+2025-09-28 22:34:12,427 - WARNING - Could not resolve dependency: tasks/quality-gate-validation.md
+2025-09-28 22:34:12,427 - WARNING - Could not resolve dependency: tasks/quality-gate-validation.md
+2025-09-28 22:34:12,440 - WARNING - Could not resolve dependency: templates/development-plan-tmpl.yaml
+2025-09-28 22:34:12,440 - WARNING - Could not resolve dependency: templates/development-plan-tmpl.yaml
+2025-09-28 22:34:12,454 - WARNING - Could not resolve dependency: templates/implementation-status-tmpl.yaml
+2025-09-28 22:34:12,454 - WARNING - Could not resolve dependency: templates/implementation-status-tmpl.yaml
+2025-09-28 22:34:12,468 - WARNING - Could not resolve dependency: templates/e2e-test-tmpl.yaml
+2025-09-28 22:34:12,468 - WARNING - Could not resolve dependency: templates/e2e-test-tmpl.yaml
+2025-09-28 22:34:12,482 - WARNING - Could not resolve dependency: templates/unit-test-tmpl.yaml
+2025-09-28 22:34:12,482 - WARNING - Could not resolve dependency: templates/unit-test-tmpl.yaml
+2025-09-28 22:34:12,504 - WARNING - Could not resolve dependency: checklists/atdd-implementation-checklist.md
+2025-09-28 22:34:12,504 - WARNING - Could not resolve dependency: checklists/atdd-implementation-checklist.md
+2025-09-28 22:34:12,527 - WARNING - Could not resolve dependency: checklists/production-service-checklist.md
+2025-09-28 22:34:12,528 - WARNING - Could not resolve dependency: checklists/production-service-checklist.md
+2025-09-28 22:34:12,547 - WARNING - Could not resolve dependency: checklists/commit-readiness-checklist.md
+2025-09-28 22:34:12,547 - WARNING - Could not resolve dependency: checklists/commit-readiness-checklist.md
+2025-09-28 22:34:12,562 - WARNING - Could not resolve dependency: data/tdd-methodology.md
+2025-09-28 22:34:12,562 - WARNING - Could not resolve dependency: data/tdd-methodology.md
+2025-09-28 22:34:12,577 - WARNING - Could not resolve dependency: data/hexagonal-architecture-patterns.md
+2025-09-28 22:34:12,578 - WARNING - Could not resolve dependency: data/hexagonal-architecture-patterns.md
+2025-09-28 22:34:12,591 - WARNING - Could not resolve dependency: data/business-naming-conventions.md
+2025-09-28 22:34:12,591 - WARNING - Could not resolve dependency: data/business-naming-conventions.md
+2025-09-28 22:34:12,611 - INFO - Processing agent: walking-skeleton-helper
+2025-09-28 22:34:12,653 - WARNING - Could not resolve dependency: tasks/walking-skeleton-design.md
+2025-09-28 22:34:12,653 - WARNING - Could not resolve dependency: tasks/walking-skeleton-design.md
+2025-09-28 22:34:12,662 - WARNING - Could not resolve dependency: tasks/minimal-e2e-implementation.md
+2025-09-28 22:34:12,662 - WARNING - Could not resolve dependency: tasks/minimal-e2e-implementation.md
+2025-09-28 22:34:12,670 - WARNING - Could not resolve dependency: tasks/architecture-validation.md
+2025-09-28 22:34:12,670 - WARNING - Could not resolve dependency: tasks/architecture-validation.md
+2025-09-28 22:34:12,677 - WARNING - Could not resolve dependency: tasks/devops-pipeline-setup.md
+2025-09-28 22:34:12,677 - WARNING - Could not resolve dependency: tasks/devops-pipeline-setup.md
+2025-09-28 22:34:12,686 - WARNING - Could not resolve dependency: tasks/skeleton-iteration.md
+2025-09-28 22:34:12,686 - WARNING - Could not resolve dependency: tasks/skeleton-iteration.md
+2025-09-28 22:34:12,702 - WARNING - Could not resolve dependency: templates/walking-skeleton-tmpl.yaml
+2025-09-28 22:34:12,703 - WARNING - Could not resolve dependency: templates/walking-skeleton-tmpl.yaml
+2025-09-28 22:34:12,717 - WARNING - Could not resolve dependency: templates/deployment-pipeline-tmpl.yaml
+2025-09-28 22:34:12,717 - WARNING - Could not resolve dependency: templates/deployment-pipeline-tmpl.yaml
+2025-09-28 22:34:12,733 - WARNING - Could not resolve dependency: templates/architecture-validation-tmpl.yaml
+2025-09-28 22:34:12,733 - WARNING - Could not resolve dependency: templates/architecture-validation-tmpl.yaml
+2025-09-28 22:34:12,748 - WARNING - Could not resolve dependency: templates/iteration-plan-tmpl.yaml
+2025-09-28 22:34:12,748 - WARNING - Could not resolve dependency: templates/iteration-plan-tmpl.yaml
+2025-09-28 22:34:12,767 - WARNING - Could not resolve dependency: checklists/walking-skeleton-checklist.md
+2025-09-28 22:34:12,767 - WARNING - Could not resolve dependency: checklists/walking-skeleton-checklist.md
+2025-09-28 22:34:12,789 - WARNING - Could not resolve dependency: checklists/architecture-validation-checklist.md
+2025-09-28 22:34:12,789 - WARNING - Could not resolve dependency: checklists/architecture-validation-checklist.md
+2025-09-28 22:34:12,812 - WARNING - Could not resolve dependency: checklists/devops-pipeline-checklist.md
+2025-09-28 22:34:12,812 - WARNING - Could not resolve dependency: checklists/devops-pipeline-checklist.md
+2025-09-28 22:34:12,827 - WARNING - Could not resolve dependency: data/walking-skeleton-methodology.md
+2025-09-28 22:34:12,828 - WARNING - Could not resolve dependency: data/walking-skeleton-methodology.md
+2025-09-28 22:34:12,841 - WARNING - Could not resolve dependency: data/cockburn-patterns.md
+2025-09-28 22:34:12,842 - WARNING - Could not resolve dependency: data/cockburn-patterns.md
+2025-09-28 22:34:12,855 - WARNING - Could not resolve dependency: data/architecture-risk-catalog.md
+2025-09-28 22:34:12,855 - WARNING - Could not resolve dependency: data/architecture-risk-catalog.md
+2025-09-28 22:34:12,878 - INFO - Processing commands...
+2025-09-28 22:34:12,884 - INFO - Found 10 task files
+2025-09-28 22:34:12,884 - INFO - Processing command: demo
+2025-09-28 22:34:12,915 - INFO - Processing command: design
+2025-09-28 22:34:12,942 - INFO - Processing command: develop
+2025-09-28 22:34:12,977 - INFO - Processing command: diagram
+2025-09-28 22:34:13,005 - INFO - Processing command: discuss
+2025-09-28 22:34:13,034 - INFO - Processing command: distill
+2025-09-28 22:34:13,063 - INFO - Processing command: mikado
+2025-09-28 22:34:13,091 - INFO - Processing command: root-why
+2025-09-28 22:34:13,118 - INFO - Processing command: skeleton
+2025-09-28 22:34:13,148 - INFO - Processing command: start
+2025-09-28 22:34:13,178 - INFO - Processing teams...
+2025-09-28 22:34:13,186 - INFO - Found 3 team files
+2025-09-28 22:34:13,186 - INFO - Processing team: 5d-wave-brownfield-team
+2025-09-28 22:34:13,300 - INFO - Processing team: 5d-wave-core-team
+2025-09-28 22:34:13,376 - INFO - Processing team: 5d-wave-greenfield-team
+2025-09-28 22:34:13,458 - INFO - Processing workflows...
+2025-09-28 22:34:13,461 - INFO - Found 3 workflow files
+2025-09-28 22:34:13,462 - INFO - Processing workflow: 5d-wave-complete
+2025-09-28 22:34:13,481 - ERROR - Error generating orchestrator content for ../5d-wave/workflows/5d-wave-complete.yaml: unhashable type: 'dict'
+2025-09-28 22:34:13,481 - ERROR - Error processing workflow ../5d-wave/workflows/5d-wave-complete.yaml: unhashable type: 'dict'
+2025-09-28 22:34:13,482 - INFO - Processing workflow: atdd-focused
+2025-09-28 22:34:13,516 - INFO - Processing workflow: visual-architecture
+2025-09-28 22:34:13,551 - INFO - Generating IDE configuration...
+2025-09-28 22:34:13,555 - INFO - Generated IDE config: ../dist/ide/agents/dw/config.json
+2025-09-28 22:34:13,556 - INFO - Build completed in 3.09 seconds

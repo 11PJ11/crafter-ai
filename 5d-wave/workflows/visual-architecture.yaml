@@ -1,0 +1,330 @@
+---
+name: "Visual Architecture Lifecycle Workflow"
+description: "Comprehensive visual architecture management throughout 5D-Wave methodology"
+version: "1.0.0"
+author: "BMAD-METHOD"
+category: "visual-architecture"
+
+workflow:
+  type: "continuous"
+  focus: "visual_architecture_lifecycle"
+
+  lifecycle_phases:
+    - name: "ARCHITECTURE_DISCOVERY"
+      description: "Visual exploration and initial architecture understanding"
+      triggers: ["project_start", "requirements_gathering"]
+
+    - name: "DESIGN_VISUALIZATION"
+      description: "Architecture design with comprehensive visual representation"
+      triggers: ["design_phase", "architecture_decisions"]
+
+    - name: "IMPLEMENTATION_TRACKING"
+      description: "Visual synchronization with implementation progress"
+      triggers: ["development_start", "code_changes"]
+
+    - name: "EVOLUTION_MANAGEMENT"
+      description: "Continuous architecture evolution and change tracking"
+      triggers: ["architectural_changes", "refactoring_activities"]
+
+    - name: "STAKEHOLDER_COMMUNICATION"
+      description: "Stakeholder-specific visualization and presentation"
+      triggers: ["stakeholder_reviews", "decision_points"]
+
+agents:
+  visual_architecture_team:
+    architecture_diagram_manager:
+      role: "Archer"
+      responsibilities:
+        - "Comprehensive visual architecture lifecycle management"
+        - "Multi-stakeholder diagram generation and customization"
+        - "Implementation reality synchronization and validation"
+        - "Evolution tracking and architectural compliance monitoring"
+
+    solution_architect:
+      role: "Morgan"
+      collaboration_with_archer:
+        - "Architecture design to visual representation translation"
+        - "Technical decision documentation and rationale visualization"
+        - "Component boundary definition and interaction mapping"
+        - "Technology choice visualization and communication"
+
+    business_analyst:
+      role: "Riley"
+      collaboration_with_archer:
+        - "Business requirement to visual mapping and validation"
+        - "Stakeholder communication and presentation coordination"
+        - "Business process visualization and workflow documentation"
+        - "Value stream mapping and business capability visualization"
+
+visual_architecture_principles:
+  stakeholder_driven_visualization:
+    principle: "Different stakeholders need different visual perspectives"
+    implementation:
+      - "Executive dashboards with high-level strategic views"
+      - "Technical documentation with detailed component interactions"
+      - "Operational runbooks with deployment and infrastructure focus"
+      - "Business process maps with workflow and capability focus"
+
+  implementation_reality_sync:
+    principle: "Visual architecture must reflect actual implementation"
+    implementation:
+      - "Automated synchronization with code and configuration"
+      - "Continuous validation of diagram accuracy"
+      - "Divergence detection and correction workflows"
+      - "Real-time updates with system changes"
+
+  evolution_transparency:
+    principle: "Architectural changes must be visually tracked and communicated"
+    implementation:
+      - "Version-controlled diagram evolution"
+      - "Change impact visualization and communication"
+      - "Historical analysis and trend identification"
+      - "Decision traceability and rationale documentation"
+
+  collaborative_visualization:
+    principle: "Visual architecture enables effective collaboration"
+    implementation:
+      - "Multi-stakeholder annotation and feedback systems"
+      - "Interactive exploration and drill-down capabilities"
+      - "Real-time collaboration and review processes"
+      - "Accessibility and inclusive design practices"
+
+diagram_types_by_stakeholder:
+  executive_stakeholders:
+    primary_diagrams:
+      - "System Context Diagram - Business value and strategic alignment"
+      - "Technology Investment Dashboard - Resource allocation and ROI"
+      - "Risk and Compliance Heat Map - Risk mitigation and governance"
+      - "Strategic Roadmap Visualization - Timeline and milestone tracking"
+
+    presentation_characteristics:
+      - "High-level abstraction with business terminology"
+      - "Strategic focus with investment and risk visualization"
+      - "Executive summary format with key metrics"
+      - "Decision support with clear recommendations"
+
+  technical_stakeholders:
+    primary_diagrams:
+      - "Component Architecture Diagram - Detailed system structure"
+      - "Sequence Diagrams - Interaction flows and protocols"
+      - "Deployment Architecture - Infrastructure and topology"
+      - "API Documentation Visualization - Interface specifications"
+
+    presentation_characteristics:
+      - "Technical detail with implementation guidance"
+      - "Interactive documentation with drill-down capability"
+      - "Code-to-diagram traceability and navigation"
+      - "Technical decision rationale and alternatives"
+
+  business_stakeholders:
+    primary_diagrams:
+      - "Business Process Flow - Workflow and procedure visualization"
+      - "Customer Journey Map - User experience and touchpoints"
+      - "Feature Delivery Timeline - Capability and release planning"
+      - "Value Stream Map - Business value creation flow"
+
+    presentation_characteristics:
+      - "Business language and process focus"
+      - "User experience and customer journey emphasis"
+      - "Feature delivery and business capability mapping"
+      - "Value creation and impact measurement"
+
+  operational_stakeholders:
+    primary_diagrams:
+      - "Infrastructure Topology - Deployment and operational view"
+      - "Monitoring Architecture - Observability and alerting"
+      - "Disaster Recovery Flow - Business continuity procedures"
+      - "Security Controls Map - Security implementation and compliance"
+
+    presentation_characteristics:
+      - "Operational procedures and runbook integration"
+      - "Infrastructure as code visualization"
+      - "Monitoring and alerting dashboard architecture"
+      - "Incident response and recovery workflow"
+
+automated_generation_pipeline:
+  source_analysis:
+    code_parsing:
+      - "Extract component structure and dependencies from source code"
+      - "Identify design patterns and architectural styles"
+      - "Map business logic to architectural components"
+      - "Generate interface documentation from code annotations"
+
+    configuration_extraction:
+      - "Parse deployment manifests and infrastructure definitions"
+      - "Extract service registration and discovery patterns"
+      - "Identify environment-specific configurations"
+      - "Map network topology and security configurations"
+
+    documentation_integration:
+      - "Parse architectural decision records (ADRs)"
+      - "Extract design rationale and context documentation"
+      - "Integrate business requirements and user stories"
+      - "Map compliance and governance requirements"
+
+  diagram_synthesis:
+    multi_view_generation:
+      - "Generate stakeholder-specific views from unified model"
+      - "Apply presentation templates based on audience"
+      - "Customize detail level and information filtering"
+      - "Ensure consistency across different diagram types"
+
+    interactive_features:
+      - "Generate interactive diagrams with navigation capability"
+      - "Implement drill-down from high-level to detailed views"
+      - "Create cross-reference linking between related diagrams"
+      - "Enable real-time collaboration and annotation"
+
+evolution_tracking:
+  change_detection:
+    automated_monitoring:
+      - "Monitor code repository changes affecting architecture"
+      - "Track configuration and deployment manifest updates"
+      - "Detect new components and service introductions"
+      - "Identify deprecated components and sunset patterns"
+
+    impact_analysis:
+      - "Analyze change impact on existing diagrams"
+      - "Identify affected stakeholders and communication needs"
+      - "Assess compliance with architectural principles"
+      - "Evaluate security and performance implications"
+
+  version_management:
+    diagram_versioning:
+      - "Semantic versioning for all architectural diagrams"
+      - "Tag diagrams with release and milestone information"
+      - "Maintain historical versions for reference and rollback"
+      - "Generate changelog documentation for evolution"
+
+    baseline_tracking:
+      - "Establish architectural baselines at major milestones"
+      - "Track deviations from approved baseline architectures"
+      - "Validate changes against architectural governance"
+      - "Maintain approved reference architecture library"
+
+quality_assurance:
+  accuracy_validation:
+    implementation_sync:
+      - "Continuous validation of diagram accuracy with implementation"
+      - "Automated detection of diagram-reality divergence"
+      - "Correction workflows for maintaining synchronization"
+      - "Quality metrics for diagram accuracy and currency"
+
+    stakeholder_feedback:
+      - "Regular stakeholder review and feedback collection"
+      - "Comprehension testing with target audiences"
+      - "Usability assessment and improvement processes"
+      - "Accessibility compliance and inclusive design validation"
+
+  consistency_management:
+    cross_diagram_validation:
+      - "Consistency checking across multiple diagram types"
+      - "Validation of information consistency between views"
+      - "Cross-reference integrity and link validation"
+      - "Terminology and naming consistency enforcement"
+
+    standard_compliance:
+      - "Architectural pattern and principle compliance checking"
+      - "Industry standard and best practice validation"
+      - "Security and compliance requirement verification"
+      - "Performance and scalability guideline adherence"
+
+integration_with_5d_wave:
+  discuss_phase_integration:
+    visual_requirements:
+      - "System context visualization for stakeholder alignment"
+      - "Business process mapping and workflow documentation"
+      - "Stakeholder ecosystem and communication flow visualization"
+      - "Requirements traceability and impact visualization"
+
+  design_phase_integration:
+    architecture_visualization:
+      - "Component architecture and interaction documentation"
+      - "Technology choice visualization and rationale"
+      - "Integration pattern and protocol documentation"
+      - "Security architecture and control visualization"
+
+  distill_phase_integration:
+    test_visualization:
+      - "Acceptance test scenario and workflow visualization"
+      - "Business validation and success criteria mapping"
+      - "Test coverage and component interaction validation"
+      - "Production service integration pattern documentation"
+
+  develop_phase_integration:
+    implementation_tracking:
+      - "Real-time implementation progress visualization"
+      - "Code structure and component realization mapping"
+      - "Refactoring impact and improvement tracking"
+      - "Technical debt and quality metric visualization"
+
+  demo_phase_integration:
+    stakeholder_presentation:
+      - "Production architecture and deployment visualization"
+      - "Business value delivery and impact demonstration"
+      - "Operational procedures and support documentation"
+      - "Success metrics and achievement visualization"
+
+deliverables:
+  visual_architecture_suite:
+    executive_package:
+      - "EXECUTIVE_DASHBOARD.html - Strategic architecture overview"
+      - "INVESTMENT_ANALYSIS.svg - Technology investment and ROI"
+      - "RISK_COMPLIANCE_MAP.svg - Risk and governance visualization"
+      - "STRATEGIC_ROADMAP.svg - Timeline and milestone tracking"
+
+    technical_package:
+      - "COMPONENT_ARCHITECTURE.svg - Detailed system structure"
+      - "SEQUENCE_DIAGRAMS.svg - Interaction and protocol flows"
+      - "DEPLOYMENT_ARCHITECTURE.svg - Infrastructure and topology"
+      - "API_DOCUMENTATION.html - Interactive interface specifications"
+
+    business_package:
+      - "BUSINESS_PROCESS_MAPS.svg - Workflow and procedure visualization"
+      - "CUSTOMER_JOURNEY_MAPS.svg - User experience and touchpoints"
+      - "VALUE_STREAM_MAPS.svg - Business value creation flow"
+      - "FEATURE_DELIVERY_TIMELINE.svg - Capability and release planning"
+
+    operational_package:
+      - "INFRASTRUCTURE_TOPOLOGY.svg - Deployment and operational view"
+      - "MONITORING_ARCHITECTURE.svg - Observability and alerting"
+      - "SECURITY_CONTROLS_MAP.svg - Security implementation overview"
+      - "OPERATIONAL_RUNBOOKS.html - Procedures and workflow guides"
+
+  management_artifacts:
+    - "VISUAL_ARCHITECTURE_STRATEGY.md - Overall visualization approach"
+    - "EVOLUTION_TRACKING.md - Change management and versioning"
+    - "STAKEHOLDER_COMMUNICATION.md - Audience-specific presentation"
+    - "QUALITY_ASSURANCE.md - Accuracy and consistency validation"
+
+success_criteria:
+  stakeholder_satisfaction:
+    - "Stakeholder comprehension and engagement with visual architecture"
+    - "Effective decision-making support through visual information"
+    - "Improved communication and collaboration across teams"
+    - "Reduced misunderstandings and architectural conflicts"
+
+  accuracy_and_currency:
+    - "Visual architecture accurately reflects implementation reality"
+    - "Continuous synchronization maintained with minimal manual effort"
+    - "Evolution tracking provides complete change history"
+    - "Quality metrics demonstrate consistent accuracy"
+
+  organizational_impact:
+    - "Improved architectural governance and compliance"
+    - "Enhanced knowledge sharing and onboarding"
+    - "Accelerated decision-making and problem resolution"
+    - "Increased architectural awareness and understanding"
+
+continuous_improvement:
+  feedback_integration:
+    - "Regular stakeholder feedback collection and integration"
+    - "Visualization technique refinement and optimization"
+    - "Tool and process improvement based on usage patterns"
+    - "Accessibility and usability enhancement"
+
+  methodology_evolution:
+    - "Visual architecture practice maturity development"
+    - "Integration improvement with development workflows"
+    - "Automation enhancement and manual effort reduction"
+    - "Organizational capability building and skill development"

@@ -1,0 +1,211 @@
+---
+name: "5D-Wave Greenfield Team"
+description: "Complete new project team with walking skeleton validation and comprehensive ATDD establishment"
+version: "1.0.0"
+author: "BMAD-METHOD"
+category: "greenfield-development"
+icon: "🌱"
+
+team:
+  type: "enhanced-sequential"
+  methodology: "5D-WAVE-GREENFIELD"
+  focus: "New project establishment with early architecture validation and ATDD foundation"
+
+  agents:
+    discuss_wave:
+      business_analyst:
+        role: "Riley"
+        wave_priority: 1
+        greenfield_focus:
+          - "Greenfield ATDD methodology establishment"
+          - "New project stakeholder ecosystem definition"
+          - "Business domain discovery and ubiquitous language creation"
+          - "Customer collaboration patterns establishment"
+
+    design_wave:
+      solution_architect:
+        role: "Morgan"
+        wave_priority: 1
+        greenfield_focus:
+          - "Clean architecture design from ground up"
+          - "Technology stack selection with ATDD compatibility"
+          - "Hexagonal architecture foundation establishment"
+          - "Scalability and maintainability architecture decisions"
+
+      architecture_diagram_manager:
+        role: "Archer"
+        wave_priority: 1
+        greenfield_focus:
+          - "Initial visual architecture documentation"
+          - "Stakeholder communication baseline establishment"
+          - "Architecture evolution tracking system setup"
+          - "Multi-audience diagram strategy definition"
+
+    distill_wave:
+      acceptance_designer:
+        role: "Quinn"
+        wave_priority: 1
+        greenfield_focus:
+          - "Initial acceptance test suite creation"
+          - "Production service integration pattern definition"
+          - "Business validation framework establishment"
+          - "Test automation strategy for new system"
+
+      walking_skeleton_helper:
+        role: "Scout"
+        wave_priority: 2
+        greenfield_focus:
+          - "Minimal end-to-end implementation validation"
+          - "Complete system architecture risk reduction"
+          - "Early deployment pipeline establishment"
+          - "E2E automation framework setup"
+
+    develop_wave:
+      test_first_developer:
+        role: "Devon"
+        wave_priority: 1
+        greenfield_focus:
+          - "Clean Outside-In TDD implementation from scratch"
+          - "Production service architecture implementation"
+          - "NotImplementedException scaffolding for new system"
+          - "Business naming conventions establishment"
+
+      systematic_refactorer:
+        role: "Raphael"
+        wave_priority: 2
+        greenfield_focus:
+          - "Quality standards establishment"
+          - "Code organization patterns implementation"
+          - "Technical debt prevention strategies"
+          - "Refactoring practice integration"
+
+    demo_wave:
+      feature_completion_coordinator:
+        role: "Dakota"
+        wave_priority: 1
+        greenfield_focus:
+          - "Initial production deployment establishment"
+          - "Operational procedures and monitoring setup"
+          - "Stakeholder feedback collection systems"
+          - "Business value measurement framework establishment"
+
+specialized_capabilities:
+  walking_skeleton_integration:
+    purpose: "Early architecture validation and risk reduction"
+    responsibilities:
+      - "Minimal viable system implementation"
+      - "Complete deployment pipeline validation"
+      - "End-to-end system architecture proof"
+      - "Early feedback and iteration enablement"
+
+    collaboration_with_core:
+      solution_architect:
+        pattern: "Architecture design guides walking skeleton implementation"
+        validation: "Skeleton validates architectural decisions"
+
+      test_first_developer:
+        pattern: "Walking skeleton provides implementation scaffold"
+        validation: "TDD implementation builds on validated architecture"
+
+      acceptance_designer:
+        pattern: "Skeleton enables early acceptance test validation"
+        validation: "Production integration patterns proven early"
+
+greenfield_methodology:
+  phase_enhancement:
+    discuss_plus:
+      activities:
+        - "Domain discovery workshops"
+        - "Stakeholder ecosystem mapping"
+        - "Business capability identification"
+        - "ATDD collaboration pattern establishment"
+
+    design_plus:
+      activities:
+        - "Clean architecture foundation design"
+        - "Technology evaluation and selection"
+        - "Visual architecture baseline creation"
+        - "Scalability and performance architecture"
+
+    distill_plus:
+      activities:
+        - "Acceptance test framework establishment"
+        - "Walking skeleton scenario definition"
+        - "Production integration pattern design"
+        - "Business validation criteria framework"
+
+    develop_plus:
+      activities:
+        - "Walking skeleton implementation"
+        - "Outside-In TDD with clean architecture"
+        - "Production service foundation implementation"
+        - "Quality standards and practices establishment"
+
+    demo_plus:
+      activities:
+        - "Production deployment pipeline establishment"
+        - "Monitoring and observability setup"
+        - "Stakeholder feedback system implementation"
+        - "Business value measurement framework"
+
+quality_gates:
+  greenfield_specific:
+    architecture_validation:
+      - "Walking skeleton successfully validates end-to-end architecture"
+      - "Technology stack proves compatible with ATDD methodology"
+      - "Deployment pipeline operational from project start"
+      - "Visual architecture accurately represents implemented system"
+
+    methodology_establishment:
+      - "ATDD collaboration patterns operational with stakeholders"
+      - "Outside-In TDD practices established and team-adopted"
+      - "Production service integration patterns proven and documented"
+      - "Quality gates and refactoring practices integrated into workflow"
+
+    business_foundation:
+      - "Stakeholder collaboration and feedback systems operational"
+      - "Business value measurement and tracking implemented"
+      - "Domain knowledge and ubiquitous language established"
+      - "Customer validation and iteration cycles functional"
+
+team_advantages:
+  greenfield_benefits:
+    - "Clean architecture foundation without legacy constraints"
+    - "ATDD methodology establishment from project inception"
+    - "Early architecture validation through walking skeleton"
+    - "Production readiness built into development process"
+    - "Visual architecture documentation from day one"
+
+  risk_mitigation:
+    - "Walking skeleton reduces architectural uncertainty early"
+    - "ATDD ensures customer needs drive development"
+    - "Visual architecture enables stakeholder communication"
+    - "Production service patterns prevent integration issues"
+    - "Systematic quality practices prevent technical debt accumulation"
+
+usage_scenarios:
+  ideal_projects:
+    - "New product development with stakeholder collaboration"
+    - "Greenfield applications requiring production readiness"
+    - "Projects where architecture uncertainty is high"
+    - "Teams adopting ATDD methodology for first time"
+    - "Systems requiring comprehensive visual documentation"
+
+  team_readiness:
+    - "Team commitment to ATDD methodology adoption"
+    - "Stakeholder availability for collaboration and feedback"
+    - "Technology stack flexibility for walking skeleton approach"
+    - "Production deployment capability from early stages"
+
+success_indicators:
+  methodology_adoption:
+    - "Team consistently applies ATDD practices"
+    - "Stakeholders actively participate in collaboration"
+    - "Walking skeleton approach validates architecture decisions"
+    - "Visual architecture communication proves effective"
+
+  business_outcomes:
+    - "Stakeholder satisfaction with development progress"
+    - "Production system meets business requirements"
+    - "Architecture enables scalability and maintainability"
+    - "Team velocity and quality metrics show positive trends"

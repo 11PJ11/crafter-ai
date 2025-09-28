@@ -1,0 +1,238 @@
+---
+name: "5D-Wave Brownfield Team"
+description: "Legacy system enhancement team with advanced refactoring specialists and root cause analysis"
+version: "1.0.0"
+author: "BMAD-METHOD"
+category: "brownfield-enhancement"
+icon: "🏗️"
+
+team:
+  type: "enhanced-systematic"
+  methodology: "5D-WAVE-BROWNFIELD"
+  focus: "Legacy system improvement with complex refactoring coordination and systematic problem resolution"
+
+  agents:
+    discuss_wave:
+      business_analyst:
+        role: "Riley"
+        wave_priority: 1
+        brownfield_focus:
+          - "Legacy system business requirement analysis"
+          - "Existing stakeholder ecosystem assessment"
+          - "Current system capability gap identification"
+          - "Brownfield ATDD methodology adaptation"
+
+    design_wave:
+      solution_architect:
+        role: "Morgan"
+        wave_priority: 1
+        brownfield_focus:
+          - "Legacy architecture assessment and improvement design"
+          - "Technology migration and modernization strategy"
+          - "Hexagonal architecture introduction to existing systems"
+          - "Integration strategy with existing components"
+
+      architecture_diagram_manager:
+        role: "Archer"
+        wave_priority: 1
+        brownfield_focus:
+          - "Current state architecture documentation"
+          - "Future state architecture visualization"
+          - "Migration and evolution path illustration"
+          - "Legacy system stakeholder communication"
+
+    distill_wave:
+      acceptance_designer:
+        role: "Quinn"
+        wave_priority: 1
+        brownfield_focus:
+          - "Legacy system behavior acceptance test creation"
+          - "Existing functionality preservation validation"
+          - "New feature integration testing design"
+          - "Brownfield production service integration patterns"
+
+    develop_wave:
+      test_first_developer:
+        role: "Devon"
+        wave_priority: 1
+        brownfield_focus:
+          - "Legacy code Outside-In TDD integration"
+          - "Existing system production service integration"
+          - "Brownfield NotImplementedException scaffolding"
+          - "Legacy business naming convention improvement"
+
+      systematic_refactorer:
+        role: "Raphael"
+        wave_priority: 2
+        brownfield_focus:
+          - "Legacy code systematic quality improvement"
+          - "Technical debt identification and prioritization"
+          - "Progressive refactoring execution on existing codebase"
+          - "Legacy system code smell detection and resolution"
+
+      mikado_refactoring_specialist_enhanced:
+        role: "Mikado"
+        wave_priority: 2
+        brownfield_focus:
+          - "Complex legacy system refactoring roadmaps"
+          - "Dependency discovery and parallel change coordination"
+          - "Stakeholder communication for large-scale changes"
+          - "Discovery-tracking commits for complexity understanding"
+
+    demo_wave:
+      feature_completion_coordinator:
+        role: "Dakota"
+        wave_priority: 1
+        brownfield_focus:
+          - "Legacy system production deployment enhancement"
+          - "Existing stakeholder demonstration coordination"
+          - "Business value measurement in brownfield context"
+          - "Operational improvement documentation"
+
+    cross_wave_specialists:
+      root_cause_analyzer:
+        role: "Sage"
+        wave_priority: 3
+        brownfield_focus:
+          - "Legacy system issue investigation"
+          - "Multi-causal problem analysis using Toyota 5 Whys"
+          - "Historical problem pattern identification"
+          - "Systematic problem resolution for complex legacy issues"
+
+specialized_brownfield_capabilities:
+  mikado_refactoring_coordination:
+    purpose: "Complex architectural refactoring with systematic dependency management"
+    responsibilities:
+      - "Legacy system dependency discovery and mapping"
+      - "Parallel change pattern implementation for safe refactoring"
+      - "Stakeholder communication for large-scale architectural changes"
+      - "Discovery-tracking commits for audit trail and progress visibility"
+
+    collaboration_with_systematic_refactorer:
+      pattern: "Mikado handles complex architectural changes, systematic-refactorer handles progressive quality improvement"
+      coordination: "Mikado creates refactoring roadmap, systematic-refactorer executes Level 1-6 improvements"
+      handoff: "Complex dependencies → Mikado planning → Systematic execution → Quality validation"
+
+  root_cause_analysis_integration:
+    purpose: "Systematic investigation of legacy system problems"
+    responsibilities:
+      - "Complex legacy issue multi-causal investigation"
+      - "Toyota 5 Whys methodology for deep problem understanding"
+      - "Historical pattern analysis and prevention strategies"
+      - "Evidence-based problem resolution with organizational learning"
+
+    collaboration_patterns:
+      with_solution_architect:
+        pattern: "Root cause analysis informs architecture improvement decisions"
+        validation: "Architectural changes address identified root causes"
+
+      with_mikado_specialist:
+        pattern: "Root cause analysis guides refactoring priorities"
+        validation: "Refactoring roadmaps address systemic issues"
+
+brownfield_methodology_adaptations:
+  discuss_wave_brownfield:
+    activities:
+      - "Legacy system current state analysis"
+      - "Existing stakeholder relationship assessment"
+      - "Business capability gap identification"
+      - "ATDD methodology adaptation for existing systems"
+
+    challenges:
+      - "Existing technical debt and constraints"
+      - "Established stakeholder expectations"
+      - "Legacy system integration complexity"
+      - "Existing team process integration"
+
+  design_wave_brownfield:
+    activities:
+      - "Current architecture assessment and documentation"
+      - "Future state architecture design with migration strategy"
+      - "Legacy component integration planning"
+      - "Technology modernization roadmap"
+
+    considerations:
+      - "Existing system constraints and dependencies"
+      - "Migration risk assessment and mitigation"
+      - "Stakeholder impact and communication requirements"
+      - "Technical feasibility and resource constraints"
+
+  develop_wave_brownfield:
+    activities:
+      - "Mikado method complex refactoring execution"
+      - "Systematic refactoring of existing codebase"
+      - "Legacy system Outside-In TDD integration"
+      - "Root cause analysis and problem resolution"
+
+    coordination:
+      - "Mikado specialist leads complex architectural changes"
+      - "Systematic refactorer handles progressive quality improvement"
+      - "Test-first developer integrates TDD with legacy code"
+      - "Root cause analyzer investigates and resolves systemic issues"
+
+quality_gates:
+  brownfield_specific:
+    legacy_system_preservation:
+      - "Existing functionality preserved and validated"
+      - "Legacy system integration maintains operational stability"
+      - "Migration strategy risk assessment complete"
+      - "Stakeholder impact analysis and communication complete"
+
+    refactoring_coordination:
+      - "Mikado method roadmap complete with dependency mapping"
+      - "Systematic refactoring execution shows measurable quality improvement"
+      - "Complex architectural changes successfully coordinated"
+      - "Discovery-tracking commits provide complete audit trail"
+
+    problem_resolution:
+      - "Root cause analysis identifies and addresses systemic issues"
+      - "Toyota 5 Whys methodology applied to complex legacy problems"
+      - "Historical problem patterns documented and prevention strategies implemented"
+      - "Organizational learning captured and applied"
+
+team_advantages:
+  brownfield_expertise:
+    - "Specialized legacy system refactoring capability"
+    - "Complex dependency management and coordination"
+    - "Systematic problem investigation and resolution"
+    - "Stakeholder communication for large-scale changes"
+    - "Risk mitigation for legacy system modifications"
+
+  coordination_patterns:
+    - "Mikado specialist coordinates with architect for architectural changes"
+    - "Systematic refactorer collaborates with developer for quality improvement"
+    - "Root cause analyzer supports all agents with problem investigation"
+    - "Architecture diagram manager visualizes legacy and future states"
+
+usage_scenarios:
+  ideal_brownfield_projects:
+    - "Legacy system modernization with significant architectural changes"
+    - "Complex technical debt resolution requiring systematic approach"
+    - "Legacy systems with recurring problems requiring root cause analysis"
+    - "Brownfield projects requiring stakeholder communication for major changes"
+    - "Existing systems needing ATDD methodology integration"
+
+  team_readiness_requirements:
+    - "Team experience with legacy system complexity"
+    - "Stakeholder commitment to systematic improvement approach"
+    - "Technical capability for advanced refactoring techniques"
+    - "Organizational support for methodical problem resolution"
+
+success_indicators:
+  technical_improvements:
+    - "Measurable code quality improvement through systematic refactoring"
+    - "Successful execution of complex architectural changes via Mikado method"
+    - "Resolution of recurring legacy system problems"
+    - "Integration of ATDD methodology with existing systems"
+
+  business_outcomes:
+    - "Stakeholder satisfaction with legacy system improvements"
+    - "Reduced operational issues and improved system reliability"
+    - "Successful migration and modernization achievements"
+    - "Enhanced team capability for ongoing legacy system maintenance"
+
+  organizational_learning:
+    - "Root cause analysis results in systematic improvements"
+    - "Team adoption of advanced refactoring and problem-solving techniques"
+    - "Improved stakeholder communication for complex technical changes"
+    - "Documented patterns and practices for future brownfield projects"

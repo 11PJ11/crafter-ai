@@ -1,0 +1,318 @@
+name: "BMAD 5D-WAVE"
+version: "1.0.0"
+description: "Comprehensive DISCUSS→DESIGN→DISTILL→DEVELOP→DEMO methodology with visual architecture lifecycle management"
+author: "BMAD-METHOD Team"
+license: "MIT"
+documentation_url: "https://github.com/your-org/bmad-method/expansion-packs/bmad-5d-wave"
+
+# Core methodology implementation
+methodology: "5D-WAVE"
+wave_phases:
+  - "DISCUSS"
+  - "DESIGN"
+  - "DISTILL"
+  - "DEVELOP"
+  - "DEMO"
+
+# Agent registry with wave assignments
+agents:
+  # 5D-Wave Core Agents
+  business_analyst:
+    wave: "DISCUSS"
+    priority: 1
+    role: "requirements_gathering"
+
+  solution_architect:
+    wave: "DESIGN"
+    priority: 1
+    role: "architecture_design"
+
+  acceptance_designer:
+    wave: "DISTILL"
+    priority: 1
+    role: "test_scenarios"
+
+  test_first_developer:
+    wave: "DEVELOP"
+    priority: 1
+    role: "outside_in_tdd"
+    knowledge_preservation: "COMPLETE"
+
+  feature_completion_coordinator:
+    wave: "DEMO"
+    priority: 1
+    role: "production_readiness"
+
+  systematic_refactorer:
+    wave: "DEVELOP"
+    priority: 2
+    role: "code_quality"
+    knowledge_preservation: "COMPLETE"
+
+  # Specialist Agents (Cross-Wave)
+  mikado_refactoring_specialist_enhanced:
+    wave: "CROSS_WAVE"
+    priority: 1
+    role: "complex_refactoring"
+    knowledge_preservation: "COMPLETE"
+    collaboration_mode: "STANDALONE_AND_COLLABORATIVE"
+
+  walking_skeleton_helper:
+    wave: "CROSS_WAVE"
+    priority: 2
+    role: "e2e_validation"
+    methodology: "ALISTAIR_COCKBURN"
+
+  root_cause_analyzer:
+    wave: "CROSS_WAVE"
+    priority: 3
+    role: "problem_investigation"
+    methodology: "TOYOTA_5_WHYS"
+
+  architecture_diagram_manager:
+    wave: "DESIGN"
+    priority: 1
+    role: "visual_architecture"
+    collaboration_scope: "ALL_WAVES"
+
+# Command mappings
+commands:
+  # 5D-Wave Core Commands
+  dw_start:
+    description: "Initialize 5D-Wave workflow"
+    agents: ["business_analyst"]
+    outputs: ["project_brief", "requirements_outline"]
+
+  dw_discuss:
+    description: "Requirements gathering and business analysis"
+    agents: ["business_analyst"]
+    wave: "DISCUSS"
+    outputs: ["requirements_document", "user_stories"]
+
+  dw_design:
+    description: "Architecture design with visual representation"
+    agents: ["solution_architect", "architecture_diagram_manager"]
+    wave: "DESIGN"
+    outputs: ["architecture_document", "architecture_diagrams"]
+
+  dw_distill:
+    description: "Acceptance test creation and business validation"
+    agents: ["acceptance_designer"]
+    wave: "DISTILL"
+    outputs: ["acceptance_tests", "test_scenarios"]
+
+  dw_develop:
+    description: "Outside-In TDD implementation with refactoring"
+    agents: ["test_first_developer", "systematic_refactorer"]
+    wave: "DEVELOP"
+    outputs: ["working_code", "refactored_implementation"]
+
+  dw_demo:
+    description: "Production readiness validation"
+    agents: ["feature_completion_coordinator"]
+    wave: "DEMO"
+    outputs: ["production_deployment", "stakeholder_demo"]
+
+  # Specialist Commands
+  mikado:
+    description: "Complex refactoring roadmaps with visual tracking"
+    agents: ["mikado_refactoring_specialist_enhanced", "architecture_diagram_manager"]
+    outputs: ["refactoring_roadmap", "dependency_diagrams"]
+
+  skeleton:
+    description: "Walking skeleton E2E automation"
+    agents: ["walking_skeleton_helper", "architecture_diagram_manager"]
+    outputs: ["minimal_e2e_implementation", "skeleton_architecture"]
+
+  root_why:
+    description: "Root cause analysis and debugging"
+    agents: ["root_cause_analyzer"]
+    outputs: ["root_cause_analysis", "investigation_report"]
+
+  diagram:
+    description: "Architecture diagram management"
+    agents: ["architecture_diagram_manager"]
+    outputs: ["updated_diagrams", "visual_architecture"]
+
+# Workflow configurations
+workflows:
+  greenfield:
+    name: "5d-wave-greenfield"
+    description: "Complete greenfield development with visual architecture"
+    phases: ["DISCUSS", "DESIGN", "DISTILL", "DEVELOP", "DEMO"]
+
+  brownfield:
+    name: "5d-wave-brownfield"
+    description: "Legacy system enhancement with visual refactoring"
+    phases: ["DISCUSS", "DESIGN", "DISTILL", "DEVELOP", "DEMO"]
+    special_agents: ["mikado_refactoring_specialist_enhanced", "walking_skeleton_helper"]
+
+  rapid_prototype:
+    name: "5d-rapid-prototype"
+    description: "Streamlined validation with essential visual architecture"
+    phases: ["DISCUSS", "DESIGN", "DEVELOP", "DEMO"]
+
+# Quality gates and validation
+quality_gates:
+  knowledge_preservation:
+    test_first_developer: "925_lines_methodology"
+    systematic_refactorer: "complete_refactoring_mechanics"
+    mikado_specialist: "enhanced_methodology_full"
+
+  visual_architecture:
+    diagram_synchronization: true
+    evolution_tracking: true
+    validation_integration: true
+
+  methodology_compliance:
+    atdd_integration: true
+    outside_in_tdd: true
+    toyota_5_whys: true
+    alistair_cockburn_skeleton: true
+
+# Team configurations
+agent_teams:
+  5d_wave_core_team:
+    file: "agent-teams/5d-wave-core-team.yaml"
+    description: "Essential DISCUSS→DESIGN→DISTILL→DEVELOP→DEMO methodology team"
+    scope: "standard_projects"
+    methodology_focus: "complete_5d_wave"
+
+  5d_wave_greenfield_team:
+    file: "agent-teams/5d-wave-greenfield-team.yaml"
+    description: "Complete new project team with walking skeleton validation"
+    scope: "new_projects"
+    methodology_focus: "clean_architecture_establishment"
+
+  5d_wave_brownfield_team:
+    file: "agent-teams/5d-wave-brownfield-team.yaml"
+    description: "Legacy system enhancement with advanced refactoring specialists"
+    scope: "legacy_projects"
+    methodology_focus: "systematic_modernization"
+
+# Quality validation checklists
+checklists:
+  wave_specific:
+    discuss_wave:
+      file: "checklists/discuss-wave-checklist.md"
+      description: "DISCUSS wave validation with ATDD foundation"
+      complexity_levels: ["basic", "intermediate", "advanced"]
+
+    design_wave:
+      file: "checklists/design-wave-checklist.md"
+      description: "Architecture design with visual representation"
+      focus: "hexagonal_architecture_stakeholder_communication"
+
+    distill_wave:
+      file: "checklists/distill-wave-checklist.md"
+      description: "Acceptance test creation with production service integration"
+      validation: "given_when_then_real_services"
+
+    develop_wave:
+      file: "checklists/develop-wave-checklist.md"
+      description: "Outside-In TDD with systematic refactoring"
+      integration: "production_service_business_naming"
+
+    demo_wave:
+      file: "checklists/demo-wave-checklist.md"
+      description: "Production readiness and stakeholder demonstration"
+      coverage: "deployment_monitoring_business_value"
+
+  methodology_specific:
+    atdd_compliance:
+      file: "checklists/atdd-compliance-checklist.md"
+      description: "ATDD methodology compliance across all phases"
+      validation: "customer_developer_tester_collaboration"
+
+    visual_architecture:
+      file: "checklists/visual-architecture-checklist.md"
+      description: "Visual architecture lifecycle management"
+      focus: "stakeholder_communication_implementation_sync"
+
+    production_service_integration:
+      file: "checklists/production-service-integration-checklist.md"
+      description: "Critical validation preventing test infrastructure deception"
+      requirement: "step_methods_call_production_services"
+
+    methodology_master:
+      file: "checklists/5d-wave-methodology-checklist.md"
+      description: "Complete 5D-Wave methodology execution validation"
+      scope: "cross_wave_integration_business_value"
+
+# Knowledge base and reference materials
+knowledge_base:
+  methodology_guide:
+    file: "data/bmad-kb.md"
+    description: "Comprehensive 5D-Wave methodology knowledge base"
+    content: "atdd_patterns_technology_integration_best_practices"
+
+  atdd_patterns:
+    file: "data/atdd-patterns.md"
+    description: "ATDD implementation patterns and anti-patterns"
+    focus: "production_service_integration_troubleshooting"
+
+  outside_in_tdd:
+    file: "data/outside-in-tdd-reference.md"
+    description: "Outside-In TDD with double-loop architecture guide"
+    methodology: "four_stage_atdd_technology_examples"
+
+  visual_architecture:
+    file: "data/visual-architecture-principles.md"
+    description: "Stakeholder communication and implementation synchronization"
+    approach: "multi_audience_visualization_automation"
+
+  systematic_refactoring:
+    file: "data/systematic-refactoring-guide.md"
+    description: "Six-level refactoring hierarchy with progressive implementation"
+    integration: "tdd_cycles_technology_examples"
+
+# Interactive workflow templates
+templates:
+  wave_templates:
+    discuss_interactive:
+      file: "templates/discuss-requirements-interactive.yaml"
+      description: "Highly interactive requirements elicitation for DISCUSS wave"
+      interactivity: "high"
+      framework: "stakeholder_collaboration_three_amigos"
+
+    design_interactive:
+      file: "templates/design-architecture-interactive.yaml"
+      description: "Highly interactive architectural design for DESIGN wave"
+      interactivity: "high"
+      focus: "hexagonal_architecture_visual_stakeholder_communication"
+
+    distill_moderate:
+      file: "templates/distill-acceptance-tests.yaml"
+      description: "Moderately interactive acceptance test creation for DISTILL wave"
+      interactivity: "moderate"
+      patterns: "production_service_integration_given_when_then"
+
+    develop_simple:
+      file: "templates/develop-outside-in-tdd.yaml"
+      description: "Simple implementation-focused template for DEVELOP wave"
+      interactivity: "simple"
+      methodology: "outside_in_tdd_systematic_refactoring"
+
+    demo_moderate:
+      file: "templates/demo-production-readiness.yaml"
+      description: "Moderately interactive production readiness for DEMO wave"
+      interactivity: "moderate"
+      validation: "deployment_business_value_measurement"
+
+  comprehensive_template:
+    complete_methodology:
+      file: "templates/5d-wave-complete-methodology.yaml"
+      description: "Comprehensive orchestration for complete 5D-Wave methodology"
+      interactivity: "high"
+      scope: "end_to_end_methodology_execution"
+
+# Integration settings
+integration:
+  bmad_core_compatibility: true
+  agent_collaboration_patterns: true
+  visual_architecture_lifecycle: true
+  cross_wave_coordination: true
+  team_configuration_support: true
+  checklist_validation_integration: true
+  knowledge_base_accessibility: true
+  template_orchestration_support: true
