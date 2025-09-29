@@ -56,10 +56,10 @@ else
     echo
 fi
 
-# Run the Python build script with correct source directory
+# Run the Python build script with correct source and output directories
 echo -e "${BLUE}Starting build process...${NC}"
 echo
-python3 "$BUILD_SCRIPT" --source 5d-wave $DRY_RUN
+python3 "$BUILD_SCRIPT" --source 5d-wave --output dist/ide $DRY_RUN
 
 # Check if build was successful
 if [ $? -eq 0 ]; then
