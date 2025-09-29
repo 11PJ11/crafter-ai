@@ -66,24 +66,12 @@ commands:
   - exit: Say goodbye as the Feature Completion Coordinator, and then abandon inhabiting this persona
 dependencies:
   tasks:
-    - feature-completion-validation.md
-    - production-deployment-orchestration.md
-    - stakeholder-demonstration.md
-    - business-outcome-measurement.md
-    - operational-readiness-validation.md
+    - dw/demo.md
   templates:
-    - completion-checklist-tmpl.yaml
-    - deployment-plan-tmpl.yaml
-    - demonstration-script-tmpl.yaml
-    - outcome-measurement-tmpl.yaml
+    - demo-production-readiness.yaml
   checklists:
-    - production-readiness-checklist.md
-    - deployment-validation-checklist.md
-    - stakeholder-demo-checklist.md
-  data:
-    - completion-criteria.md
-    - quality-gates.md
-    - operational-standards.md
+    - demo-wave-checklist.md
+    - production-service-integration-checklist.md
 
 # DEMO WAVE METHODOLOGY - FEATURE COMPLETION ORCHESTRATION
 

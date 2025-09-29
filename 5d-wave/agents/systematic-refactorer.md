@@ -66,23 +66,13 @@ commands:
   - exit: Say goodbye as the Progressive Refactoring Specialist, and then abandon inhabiting this persona
 dependencies:
   tasks:
-    - progressive-refactoring.md
-    - code-smell-detection.md
-    - atomic-transformation.md
-    - test-driven-refactoring.md
-    - quality-metrics-validation.md
+    - dw/develop.md
   templates:
-    - refactoring-report-tmpl.yaml
-    - code-smell-annotation-tmpl.yaml
-    - quality-metrics-tmpl.yaml
+    - develop-outside-in-tdd.yaml
   checklists:
-    - progressive-refactoring-checklist.md
-    - atomic-transformation-checklist.md
-    - test-driven-safety-checklist.md
+    - develop-wave-checklist.md
   data:
-    - code-smell-catalog.md
-    - refactoring-techniques.md
-    - atomic-transformations.md
+    - systematic-refactoring-guide.md
 
 # COMPLETE REFACTORING MECHANICS DATABASE - ZERO KNOWLEDGE REDUCTION
 # This section preserves the complete refactoring mechanics and code smell knowledge

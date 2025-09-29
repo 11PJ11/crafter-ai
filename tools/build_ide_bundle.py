@@ -19,6 +19,7 @@ Options:
 import argparse
 import logging
 import sys
+import shutil
 from pathlib import Path
 from typing import Dict, List, Optional
 import yaml
@@ -58,6 +59,7 @@ class IDEBundleBuilder:
             'commands_processed': 0,
             'teams_processed': 0,
             'workflows_processed': 0,
+            'hooks_copied': 0,
             'errors': 0,
             'warnings': 0
         }
@@ -92,7 +94,8 @@ class IDEBundleBuilder:
         """Create the output directory structure."""
         output_dirs = [
             self.output_dir / "agents" / "dw",
-            self.output_dir / "commands" / "dw"
+            self.output_dir / "commands" / "dw",
+            self.output_dir / "hooks"
         ]
 
         for dir_path in output_dirs:
@@ -183,6 +186,36 @@ class IDEBundleBuilder:
                 logging.error(f"Error processing workflow {workflow_file.name}: {e}")
                 self.stats['errors'] += 1
 
+    def process_hooks(self) -> None:
+        """Copy hooks directory to output."""
+        logging.info("Processing hooks...")
+        hooks_source_dir = self.source_dir / "hooks"
+        hooks_output_dir = self.output_dir / "hooks"
+
+        if not hooks_source_dir.exists():
+            logging.warning(f"Hooks directory not found: {hooks_source_dir}")
+            return
+
+        try:
+            if not self.dry_run:
+                if hooks_output_dir.exists():
+                    shutil.rmtree(hooks_output_dir)
+                shutil.copytree(hooks_source_dir, hooks_output_dir)
+                logging.info(f"Copied hooks directory from {hooks_source_dir} to {hooks_output_dir}")
+            else:
+                logging.info(f"[DRY RUN] Would copy hooks directory from {hooks_source_dir} to {hooks_output_dir}")
+
+            # Count the number of files copied for statistics
+            if hooks_source_dir.exists():
+                hooks_files = list(hooks_source_dir.rglob("*"))
+                hooks_file_count = len([f for f in hooks_files if f.is_file()])
+                self.stats['hooks_copied'] = hooks_file_count
+                logging.info(f"Hooks processing complete: {hooks_file_count} files")
+
+        except Exception as e:
+            logging.error(f"Error processing hooks: {e}")
+            self.stats['errors'] += 1
+
     def generate_config(self) -> None:
         """Generate the IDE configuration file."""
         logging.info("Generating IDE configuration...")
@@ -212,6 +245,7 @@ class IDEBundleBuilder:
         print(f"Commands processed:  {self.stats['commands_processed']}")
         print(f"Teams processed:     {self.stats['teams_processed']}")
         print(f"Workflows processed: {self.stats['workflows_processed']}")
+        print(f"Hooks copied:        {self.stats['hooks_copied']}")
         print(f"Warnings:            {self.stats['warnings']}")
         print(f"Errors:              {self.stats['errors']}")
         print(f"Output directory:    {self.output_dir}")
@@ -245,6 +279,7 @@ class IDEBundleBuilder:
             self.process_commands()
             self.process_teams()
             self.process_workflows()
+            self.process_hooks()
 
             # Configuration
             self.generate_config()

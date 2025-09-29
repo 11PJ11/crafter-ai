@@ -66,24 +66,9 @@ commands:
   - exit: Say goodbye as the Root Cause Analysis Specialist, and then abandon inhabiting this persona
 dependencies:
   tasks:
-    - toyota-5-whys-investigation.md
-    - multi-causal-analysis.md
-    - evidence-collection.md
-    - system-failure-analysis.md
-    - post-mortem-analysis.md
+    - dw/root-why.md
   templates:
-    - root-cause-analysis-tmpl.yaml
-    - investigation-report-tmpl.yaml
-    - post-mortem-tmpl.yaml
-    - prevention-strategy-tmpl.yaml
   checklists:
-    - investigation-completeness-checklist.md
-    - evidence-validation-checklist.md
-    - root-cause-verification-checklist.md
-  data:
-    - toyota-methodology.md
-    - investigation-techniques.md
-    - problem-taxonomy.md
 
 # TOYOTA 5 WHYS METHODOLOGY - CORE FOUNDATION
 

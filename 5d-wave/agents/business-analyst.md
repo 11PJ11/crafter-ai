@@ -66,24 +66,12 @@ commands:
   - exit: Say goodbye as the Requirements Analyst, and then abandon inhabiting this persona
 dependencies:
   tasks:
-    - requirements-gathering.md
-    - stakeholder-facilitation.md
-    - user-story-creation.md
-    - acceptance-criteria-definition.md
-    - business-value-analysis.md
+    - dw/discuss.md
   templates:
-    - requirements-document-tmpl.yaml
-    - user-story-tmpl.yaml
-    - stakeholder-analysis-tmpl.yaml
-    - project-brief-tmpl.yaml
+    - discuss-requirements-interactive.yaml
   checklists:
-    - requirements-completeness-checklist.md
-    - stakeholder-engagement-checklist.md
-    - atdd-readiness-checklist.md
-  data:
-    - requirements-elicitation-techniques.md
-    - stakeholder-engagement-patterns.md
-    - business-analysis-framework.md
+    - discuss-wave-checklist.md
+    - atdd-compliance-checklist.md
 
 # DISCUSS WAVE METHODOLOGY - ATDD REQUIREMENTS FOUNDATION
 

@@ -66,23 +66,13 @@ commands:
   - exit: Say goodbye as the Enhanced Mikado Method Specialist, and then abandon inhabiting this persona
 dependencies:
   tasks:
-    - enhanced-mikado-workflow.md
-    - exhaustive-exploration.md
-    - discovery-tracking.md
-    - tree-file-management.md
-    - systematic-collaboration.md
+    - dw/mikado.md
   templates:
-    - mikado-report-tmpl.yaml
-    - tree-file-tmpl.yaml
-    - discovery-commit-tmpl.yaml
+    - 5d-wave-complete-methodology.yaml
   checklists:
-    - enhanced-mikado-checklist.md
-    - discovery-tracking-checklist.md
-    - systematic-handoff-checklist.md
+    - 5d-wave-methodology-checklist.md
   data:
-    - mikado-methodology.md
-    - refactoring-mechanics-integration.md
-    - stakeholder-communication.md
+    - systematic-refactoring-guide.md
 
 # ENHANCED MIKADO METHOD FRAMEWORK - COMPLETE KNOWLEDGE PRESERVATION
 # This section preserves the complete enhanced Mikado Method with all revolutionary improvements

@@ -138,13 +138,42 @@ class WorkflowProcessor:
         ]
 
         for i, phase in enumerate(phases, 1):
-            guidance_parts.extend([
-                f"### {i}. {phase} Wave",
-                ""
-            ])
+            # Handle both string and dictionary phase definitions
+            if isinstance(phase, dict):
+                phase_name = phase.get('name', 'Unknown Phase')
+                phase_wave = phase.get('wave', phase_name)
+                phase_description = phase.get('description', '')
+                phase_duration = phase.get('duration', '')
 
-            # Add phase-specific guidance
-            phase_guidance = self.get_phase_specific_guidance(phase, main_config)
+                guidance_parts.extend([
+                    f"### {i}. {phase_name} Wave",
+                    ""
+                ])
+
+                if phase_description:
+                    guidance_parts.extend([
+                        f"**Description**: {phase_description}",
+                        ""
+                    ])
+
+                if phase_duration:
+                    guidance_parts.extend([
+                        f"**Duration**: {phase_duration}",
+                        ""
+                    ])
+
+                # Use the wave name for phase-specific guidance
+                phase_guidance = self.get_phase_specific_guidance(phase_wave, main_config)
+            else:
+                # Handle simple string phases (backward compatibility)
+                phase_name = str(phase)
+                guidance_parts.extend([
+                    f"### {i}. {phase_name} Wave",
+                    ""
+                ])
+
+                phase_guidance = self.get_phase_specific_guidance(phase_name, main_config)
+
             guidance_parts.extend(phase_guidance)
             guidance_parts.append("")
 
@@ -227,12 +256,19 @@ class WorkflowProcessor:
             str: Workflow definition content
         """
         try:
-            yaml_content = yaml.dump(workflow_config, default_flow_style=False, sort_keys=False)
+            # Try to serialize the workflow config to YAML
+            yaml_content = yaml.dump(workflow_config, default_flow_style=False)
             return f"## Workflow Definition\n\n```yaml\n{yaml_content}```\n"
 
+        except (TypeError, ValueError, yaml.YAMLError) as e:
+            logging.warning(f"Complex workflow structure cannot be serialized to YAML: {e}")
+            # Provide basic workflow information as fallback
+            workflow_name = workflow_config.get('name', 'Unknown Workflow')
+            workflow_desc = workflow_config.get('description', 'Complex workflow definition')
+            return f"## Workflow Definition\n\n**Name**: {workflow_name}\n**Description**: {workflow_desc}\n\n*Complex nested workflow structure - see source YAML file for full definition*\n"
         except Exception as e:
-            logging.error(f"Failed to generate workflow YAML: {e}")
-            return "## Workflow Definition\n\nWorkflow definition unavailable.\n"
+            logging.error(f"Unexpected error generating workflow YAML: {e}")
+            return "## Workflow Definition\n\n*Workflow definition temporarily unavailable*\n"
 
     def generate_agent_coordination(self, workflow_config: Dict[str, Any], main_config: Dict[str, Any]) -> str:
         """
@@ -276,7 +312,19 @@ class WorkflowProcessor:
                 ""
             ])
 
-            for agent in sorted(wave_agent_list, key=lambda x: x['priority']):
+            # Sort agents with safe priority handling
+            def safe_priority_sort(agent_dict):
+                priority = agent_dict.get('priority', 'Normal')
+                # Convert to consistent type for sorting
+                if isinstance(priority, str):
+                    priority_map = {'High': 1, 'Normal': 2, 'Low': 3}
+                    return priority_map.get(priority, 2)  # Default to Normal
+                elif isinstance(priority, int):
+                    return priority
+                else:
+                    return 2  # Default to Normal priority
+
+            for agent in sorted(wave_agent_list, key=safe_priority_sort):
                 coordination_parts.append(f"- **{agent['name']}**: {agent['role']}")
 
             coordination_parts.append("")
@@ -302,24 +350,40 @@ class WorkflowProcessor:
 
             workflow_name = workflow_file.name
 
-            # Generate content sections
+            # Generate content sections with individual error handling
             content_parts = []
 
-            # Header
-            header = self.generate_orchestrator_header(workflow_name, workflow_config, config)
-            content_parts.append(header)
+            try:
+                # Header
+                header = self.generate_orchestrator_header(workflow_name, workflow_config, config)
+                content_parts.append(header)
+            except Exception as e:
+                logging.error(f"Error in generate_orchestrator_header for {workflow_file}: {e}")
+                raise
 
-            # Phase guidance
-            phase_guidance = self.generate_phase_guidance(workflow_config, config)
-            content_parts.append(phase_guidance)
+            try:
+                # Phase guidance
+                phase_guidance = self.generate_phase_guidance(workflow_config, config)
+                content_parts.append(phase_guidance)
+            except Exception as e:
+                logging.error(f"Error in generate_phase_guidance for {workflow_file}: {e}")
+                raise
 
-            # Agent coordination
-            agent_coordination = self.generate_agent_coordination(workflow_config, config)
-            content_parts.append(agent_coordination)
+            try:
+                # Agent coordination
+                agent_coordination = self.generate_agent_coordination(workflow_config, config)
+                content_parts.append(agent_coordination)
+            except Exception as e:
+                logging.error(f"Error in generate_agent_coordination for {workflow_file}: {e}")
+                raise
 
-            # Workflow definition
-            workflow_def = self.generate_workflow_definition(workflow_config)
-            content_parts.append(workflow_def)
+            try:
+                # Workflow definition
+                workflow_def = self.generate_workflow_definition(workflow_config)
+                content_parts.append(workflow_def)
+            except Exception as e:
+                logging.error(f"Error in generate_workflow_definition for {workflow_file}: {e}")
+                raise
 
             return "\n".join(content_parts)
 

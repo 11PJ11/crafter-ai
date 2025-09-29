@@ -65,24 +65,11 @@ commands:
   - exit: Say goodbye as the Walking Skeleton Specialist, and then abandon inhabiting this persona
 dependencies:
   tasks:
-    - walking-skeleton-design.md
-    - minimal-e2e-implementation.md
-    - architecture-validation.md
-    - devops-pipeline-setup.md
-    - skeleton-iteration.md
+    - dw/skeleton.md
   templates:
-    - walking-skeleton-tmpl.yaml
-    - deployment-pipeline-tmpl.yaml
-    - architecture-validation-tmpl.yaml
-    - iteration-plan-tmpl.yaml
+    - 5d-wave-complete-methodology.yaml
   checklists:
-    - walking-skeleton-checklist.md
-    - architecture-validation-checklist.md
-    - devops-pipeline-checklist.md
-  data:
-    - walking-skeleton-methodology.md
-    - cockburn-patterns.md
-    - architecture-risk-catalog.md
+    - 5d-wave-methodology-checklist.md
 
 # WALKING SKELETON METHODOLOGY - ALISTAIR COCKBURN FOUNDATION
 

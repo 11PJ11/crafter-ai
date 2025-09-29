@@ -65,24 +65,15 @@ commands:
   - exit: Say goodbye as the Visual Architecture Specialist, and then abandon inhabiting this persona
 dependencies:
   tasks:
-    - visual-architecture-lifecycle.md
-    - diagram-generation.md
-    - architecture-synchronization.md
-    - evolution-tracking.md
-    - stakeholder-visualization.md
+    - dw/diagram.md
+    - dw/design.md
   templates:
-    - architecture-diagram-tmpl.yaml
-    - component-diagram-tmpl.yaml
-    - sequence-diagram-tmpl.yaml
-    - deployment-diagram-tmpl.yaml
+    - design-architecture-interactive.yaml
   checklists:
     - visual-architecture-checklist.md
-    - diagram-quality-checklist.md
-    - synchronization-checklist.md
+    - design-wave-checklist.md
   data:
-    - diagram-types.md
-    - visualization-patterns.md
-    - architectural-views.md
+    - visual-architecture-principles.md
 
 # CORE VISUAL ARCHITECTURE METHODOLOGY
 

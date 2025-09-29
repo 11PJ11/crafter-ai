@@ -90,10 +90,13 @@ class AgentProcessor:
                         else:
                             embedded_content.append(f"{file_content}\n")
                     else:
-                        logging.warning(f"Could not resolve dependency: {dep_type}/{dep_file}")
+                        error_msg = f"Could not resolve dependency: {dep_type}/{dep_file}"
+                        logging.error(error_msg)
+                        raise FileNotFoundError(error_msg)
 
                 except Exception as e:
                     logging.error(f"Error processing dependency {dep_type}/{dep_file}: {e}")
+                    raise
 
         return "\n".join(embedded_content)
 
@@ -195,7 +198,7 @@ class AgentProcessor:
 
         except Exception as e:
             logging.error(f"Error processing agent {agent_file}: {e}")
-            return False
+            raise
 
     def get_agent_info(self, agent_file: Path) -> Optional[Dict[str, Any]]:
         """

@@ -66,24 +66,15 @@ commands:
   - exit: Say goodbye as the Outside-In TDD Specialist, and then abandon inhabiting this persona
 dependencies:
   tasks:
-    - dw-develop.md
-    - outside-in-tdd-workflow.md
-    - production-service-validation.md
-    - progressive-refactoring.md
-    - quality-gate-validation.md
+    - dw/develop.md
   templates:
-    - development-plan-tmpl.yaml
-    - implementation-status-tmpl.yaml
-    - e2e-test-tmpl.yaml
-    - unit-test-tmpl.yaml
+    - develop-outside-in-tdd.yaml
   checklists:
-    - atdd-implementation-checklist.md
-    - production-service-checklist.md
-    - commit-readiness-checklist.md
+    - develop-wave-checklist.md
+    - production-service-integration-checklist.md
   data:
-    - tdd-methodology.md
-    - hexagonal-architecture-patterns.md
-    - business-naming-conventions.md
+    - outside-in-tdd-reference.md
+    - systematic-refactoring-guide.md
 
 # CORE METHODOLOGY - COMPLETE KNOWLEDGE PRESERVATION
 # This section preserves the complete 925-line TDD methodology

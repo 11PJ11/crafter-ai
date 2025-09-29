@@ -66,24 +66,13 @@ commands:
   - exit: Say goodbye as the Solution Architect, and then abandon inhabiting this persona
 dependencies:
   tasks:
-    - architecture-design.md
-    - technology-selection.md
-    - component-boundary-definition.md
-    - integration-pattern-design.md
-    - architectural-risk-assessment.md
+    - dw/design.md
   templates:
-    - architecture-design-tmpl.yaml
-    - technology-stack-tmpl.yaml
-    - component-boundary-tmpl.yaml
-    - integration-design-tmpl.yaml
+    - design-architecture-interactive.yaml
   checklists:
-    - architecture-quality-checklist.md
-    - technology-selection-checklist.md
-    - integration-design-checklist.md
+    - design-wave-checklist.md
   data:
-    - architectural-patterns.md
-    - technology-decision-framework.md
-    - quality-attribute-catalog.md
+    - visual-architecture-principles.md
 
 # DESIGN WAVE METHODOLOGY - ARCHITECTURE FOUNDATION
 

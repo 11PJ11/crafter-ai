@@ -66,24 +66,15 @@ commands:
   - exit: Say goodbye as the Acceptance Test Designer, and then abandon inhabiting this persona
 dependencies:
   tasks:
-    - acceptance-test-design.md
-    - scenario-creation.md
-    - step-definition-implementation.md
-    - business-validation-design.md
-    - test-data-management.md
+    - dw/distill.md
   templates:
-    - acceptance-test-tmpl.yaml
-    - test-scenario-tmpl.yaml
-    - step-definition-tmpl.yaml
-    - test-data-tmpl.yaml
+    - distill-acceptance-tests.yaml
   checklists:
-    - acceptance-test-quality-checklist.md
-    - atdd-readiness-checklist.md
-    - business-validation-checklist.md
+    - atdd-compliance-checklist.md
+    - distill-wave-checklist.md
   data:
-    - atdd-methodology.md
-    - given-when-then-patterns.md
-    - business-test-language.md
+    - atdd-patterns.md
+    - outside-in-tdd-reference.md
 
 # DISTILL WAVE METHODOLOGY - ACCEPTANCE TEST FOUNDATION
 
