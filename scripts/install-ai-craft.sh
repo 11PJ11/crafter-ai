@@ -11,7 +11,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CLAUDE_CONFIG_DIR="/mnt/c/Users/alexd/.claude"
 BACKUP_DIR="$CLAUDE_CONFIG_DIR/backups/ai-craft-$(date +%Y%m%d-%H%M%S)"
-FRAMEWORK_SOURCE="$PROJECT_ROOT/.claude"
+FRAMEWORK_SOURCE="$PROJECT_ROOT/dist/ide"
 INSTALL_LOG="$CLAUDE_CONFIG_DIR/ai-craft-install.log"
 
 # Color codes for output
@@ -40,8 +40,8 @@ show_help() {
 AI-Craft Framework Installation Script for Linux/WSL
 
 DESCRIPTION:
-    Installs the AI-Craft ATDD agent framework to your global Claude config directory.
-    This makes all 41+ specialized agents and the cai/atdd command available across all projects.
+    Installs the 5D-WAVE methodology framework to your global Claude config directory.
+    This makes all specialized agents, commands, and hooks available across all projects.
 
 USAGE:
     $0 [OPTIONS]
@@ -52,32 +52,32 @@ OPTIONS:
     --help           Show this help message
 
 EXAMPLES:
-    $0                      # Install AI-Craft framework
+    $0                      # Install 5D-WAVE framework
     $0 --backup-only        # Create backup only
     $0 --restore           # Restore from latest backup
 
 WHAT GETS INSTALLED:
-    - 41+ specialized AI agents in 9 categories
-    - 14+ CAI command interface with intelligent project analysis
-    - Manual system with Linux-style documentation for all commands
-    - /cai:man command for comprehensive documentation access
-    - Enhanced argument hints for improved command visibility
-    - Centralized configuration system (constants.md)
-    - Wave processing architecture for clean ATDD workflows
+    - 5D-WAVE specialized agents (DISCUSS→DESIGN→DISTILL→DEVELOP→DEMO methodology)
+    - 5D-WAVE command interface for workflow orchestration
+    - Comprehensive hook system for code quality and workflow automation
+    - Visual architecture lifecycle management
+    - ATDD (Acceptance Test Driven Development) integration
+    - Outside-In TDD with double-loop architecture
     - Quality validation network with Level 1-6 refactoring
     - Auto-lint and format hooks for code quality (Python, JavaScript, JSON, etc.)
     - Second Way DevOps: Observability agents (metrics, logs, traces, performance)
     - Third Way DevOps: Experimentation agents (A/B testing, hypothesis validation, learning synthesis)
 
 INSTALLATION LOCATION:
-    ~/.claude/agents/       # All agent specifications
-    ~/.claude/commands/     # Command integrations
-    ~/.claude/manuals/      # Manual system documentation
+    ~/.claude/agents/dw/    # 5D-WAVE agent specifications
+    ~/.claude/commands/dw/  # 5D-WAVE command integrations
+    ~/.claude/hooks/        # Hook system for workflow automation
 
-FILES EXCLUDED:
-    - README.md files (project-specific documentation)
-    - docs/ directory (project working files)
-    - Git configuration and project metadata
+FILES INCLUDED:
+    - All built 5D-WAVE agents and commands from dist/ide/
+    - Complete hook system with code quality automation
+    - Visual architecture lifecycle management tools
+    - ATDD and Outside-In TDD integration components
 
 For more information: https://github.com/11PJ11/crafter-ai
 EOF
@@ -93,16 +93,33 @@ check_source() {
         exit 1
     fi
     
-    if [[ ! -f "$FRAMEWORK_SOURCE/agents/cai/constants.md" ]]; then
-        error "Framework appears incomplete - constants.md not found"
+    # Check for the built IDE distribution structure
+    if [[ ! -d "$FRAMEWORK_SOURCE/agents/dw" ]]; then
+        error "Framework appears incomplete - agents/dw directory not found"
+        error "Please build the framework first: cd tools && python3 build_ide_bundle.py"
         exit 1
     fi
-    
-    local agent_count=$(find "$FRAMEWORK_SOURCE/agents/cai" -name "*.md" ! -name "README.md" | wc -l)
-    info "Found framework with $agent_count agent files"
-    
-    if [[ $agent_count -lt 40 ]]; then
-        warn "Expected 40+ agents, found only $agent_count. Continuing anyway..."
+
+    if [[ ! -d "$FRAMEWORK_SOURCE/commands/dw" ]]; then
+        error "Framework appears incomplete - commands/dw directory not found"
+        error "Please build the framework first: cd tools && python3 build_ide_bundle.py"
+        exit 1
+    fi
+
+    if [[ ! -d "$FRAMEWORK_SOURCE/hooks" ]]; then
+        error "Framework appears incomplete - hooks directory not found"
+        error "Please build the framework first: cd tools && python3 build_ide_bundle.py"
+        exit 1
+    fi
+
+    local agent_count=$(find "$FRAMEWORK_SOURCE/agents/dw" -name "*.md" ! -name "README.md" | wc -l)
+    local command_count=$(find "$FRAMEWORK_SOURCE/commands/dw" -name "*.md" ! -name "README.md" | wc -l)
+    local hook_count=$(find "$FRAMEWORK_SOURCE/hooks" -type f \( -name "*.sh" -o -name "*.py" \) | wc -l)
+
+    info "Found framework with $agent_count agent files, $command_count commands, and $hook_count hook files"
+
+    if [[ $agent_count -lt 10 ]]; then
+        warn "Expected 10+ agents, found only $agent_count. Continuing anyway..."
     fi
 }
 
@@ -134,6 +151,12 @@ create_backup() {
         cp -r "$CLAUDE_CONFIG_DIR/manuals" "$BACKUP_DIR/"
         info "Backed up manuals directory"
     fi
+
+    # Backup existing hooks directory
+    if [[ -d "$CLAUDE_CONFIG_DIR/hooks" ]]; then
+        cp -r "$CLAUDE_CONFIG_DIR/hooks" "$BACKUP_DIR/"
+        info "Backed up hooks directory"
+    fi
     
     # Create backup manifest
     cat > "$BACKUP_DIR/backup-manifest.txt" << EOF
@@ -162,7 +185,7 @@ restore_backup() {
     info "Restoring from backup: $latest_backup"
     
     # Remove current installation
-    rm -rf "$CLAUDE_CONFIG_DIR/agents" "$CLAUDE_CONFIG_DIR/commands/cai" "$CLAUDE_CONFIG_DIR/manuals" 2>/dev/null || true
+    rm -rf "$CLAUDE_CONFIG_DIR/agents" "$CLAUDE_CONFIG_DIR/commands" "$CLAUDE_CONFIG_DIR/manuals" 2>/dev/null || true
 
     # Restore from backup
     if [[ -d "$latest_backup/agents" ]]; then
@@ -192,52 +215,37 @@ install_framework() {
     
     # Copy agents directory (excluding README.md)
     info "Installing agents..."
-    if [[ -d "$FRAMEWORK_SOURCE/agents/cai" ]]; then
+    if [[ -d "$FRAMEWORK_SOURCE/agents/dw" ]]; then
         # Create target structure
-        mkdir -p "$CLAUDE_CONFIG_DIR/agents/cai"
-        
+        mkdir -p "$CLAUDE_CONFIG_DIR/agents/dw"
+
         # Copy all agent files except README.md
-        find "$FRAMEWORK_SOURCE/agents/cai" -name "*.md" ! -name "README.md" | while read -r file; do
-            local relative_path="${file#$FRAMEWORK_SOURCE/agents/cai/}"
-            local target_file="$CLAUDE_CONFIG_DIR/agents/cai/$relative_path"
+        find "$FRAMEWORK_SOURCE/agents/dw" -name "*.md" ! -name "README.md" | while read -r file; do
+            local relative_path="${file#$FRAMEWORK_SOURCE/agents/dw/}"
+            local target_file="$CLAUDE_CONFIG_DIR/agents/dw/$relative_path"
             local target_dir=$(dirname "$target_file")
-            
+
             mkdir -p "$target_dir"
             cp "$file" "$target_file"
         done
-        
-        local copied_agents=$(find "$CLAUDE_CONFIG_DIR/agents/cai" -name "*.md" | wc -l)
+
+        local copied_agents=$(find "$CLAUDE_CONFIG_DIR/agents/dw" -name "*.md" | wc -l)
         info "Installed $copied_agents agent files"
     fi
     
     # Copy commands directory
     info "Installing commands..."
-    if [[ -d "$FRAMEWORK_SOURCE/commands" ]]; then
+    if [[ -d "$FRAMEWORK_SOURCE/commands/dw" ]]; then
         mkdir -p "$CLAUDE_CONFIG_DIR/commands"
         cp -r "$FRAMEWORK_SOURCE/commands/"* "$CLAUDE_CONFIG_DIR/commands/"
 
         local copied_commands=$(find "$CLAUDE_CONFIG_DIR/commands" -name "*.md" | wc -l)
         info "Installed $copied_commands command files"
 
-        # List installed CAI commands for verification
-        if [[ -d "$CLAUDE_CONFIG_DIR/commands/cai" ]]; then
-            local cai_commands=$(find "$CLAUDE_CONFIG_DIR/commands/cai" -name "*.md" | wc -l)
-            info "  - CAI commands: $cai_commands essential commands"
-        fi
-    fi
-
-    # Install manual system
-    info "Installing manual system..."
-    if [[ -d "$FRAMEWORK_SOURCE/manuals" ]]; then
-        mkdir -p "$CLAUDE_CONFIG_DIR/manuals/cai"
-        cp -r "$FRAMEWORK_SOURCE/manuals/cai/"*.json "$CLAUDE_CONFIG_DIR/manuals/cai/"
-
-        local copied_manuals=$(find "$CLAUDE_CONFIG_DIR/manuals/cai" -name "*.json" 2>/dev/null | wc -l)
-        info "Installed $copied_manuals manual files"
-
-        # Verify essential manual files
-        if [[ -f "$CLAUDE_CONFIG_DIR/manuals/cai/index.json" ]]; then
-            info "  - Manual system index: installed"
+        # List installed DW commands for verification
+        if [[ -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
+            local dw_commands=$(find "$CLAUDE_CONFIG_DIR/commands/dw" -name "*.md" | wc -l)
+            info "  - DW commands: $dw_commands essential commands"
         fi
     fi
 
@@ -249,7 +257,7 @@ install_framework() {
 install_craft_ai_hooks() {
     info "Installing Craft-AI workflow hooks..."
 
-    # Create hooks directory structure (no cai subdirectory)
+    # Create hooks directory structure
     mkdir -p "$CLAUDE_CONFIG_DIR/hooks"
 
     # Copy hooks directly to the hooks directory (preserve other hooks)
@@ -281,11 +289,11 @@ merge_hook_settings() {
 
     # Create backup of current settings
     if [[ -f "$settings_file" ]]; then
-        cp "$settings_file" "$settings_file.pre-cai-backup"
-        info "Created backup: $settings_file.pre-cai-backup"
+        cp "$settings_file" "$settings_file.pre-5d-wave-backup"
+        info "Created backup: $settings_file.pre-5d-wave-backup"
     fi
 
-    # Use Python to surgically merge CAI hooks
+    # Use Python to surgically merge 5D-WAVE hooks
     if [[ -f "$hooks_config" ]] && command -v python3 >/dev/null 2>&1; then
         python3 << 'PYTHON_SCRIPT'
 import json
@@ -295,10 +303,10 @@ import sys
 settings_file = "/mnt/c/Users/alexd/.claude/settings.local.json"
 hooks_config = "/mnt/c/Users/alexd/.claude/hooks/config/hooks-config.json"
 
-# Load CAI hooks configuration
+# Load 5D-WAVE hooks configuration
 try:
     with open(hooks_config, 'r') as f:
-        cai_config = json.load(f)
+        hooks_config = json.load(f)
 except Exception as e:
     print(f"Error loading hooks config: {e}")
     sys.exit(1)
@@ -316,15 +324,15 @@ if os.path.exists(settings_file):
 if 'hooks' not in settings:
     settings['hooks'] = {}
 
-# Merge CAI hooks without removing existing ones
-cai_hooks = cai_config.get('hooks', {})
-for event, new_hooks_list in cai_hooks.items():
+# Merge 5D-WAVE hooks without removing existing ones
+framework_hooks = hooks_config.get('hooks', {})
+for event, new_hooks_list in framework_hooks.items():
     if event not in settings['hooks']:
         settings['hooks'][event] = []
 
-    # Add new CAI hooks without duplicating
+    # Add new 5D-WAVE hooks without duplicating
     for new_hook in new_hooks_list:
-        # Check if this CAI hook already exists (by id)
+        # Check if this hook already exists (by id)
         hook_id = new_hook.get('hooks', [{}])[0].get('id', '')
         exists = any(
             h.get('hooks', [{}])[0].get('id') == hook_id
@@ -342,9 +350,9 @@ for event, new_hooks_list in cai_hooks.items():
 if 'permissions' not in settings:
     settings['permissions'] = {'allow': [], 'deny': [], 'ask': []}
 
-# Add CAI-specific permissions without duplicating
-cai_permissions = cai_config.get('permissions', {}).get('allow', [])
-for perm in cai_permissions:
+# Add 5D-WAVE-specific permissions without duplicating
+framework_permissions = hooks_config.get('permissions', {}).get('allow', [])
+for perm in framework_permissions:
     # Replace $HOME with actual path
     perm = perm.replace('$HOME', '/mnt/c/Users/alexd')
     if perm not in settings['permissions']['allow']:
@@ -354,14 +362,14 @@ for perm in cai_permissions:
 try:
     with open(settings_file, 'w') as f:
         json.dump(settings, f, indent=2)
-    print("Successfully merged Craft-AI hooks into settings")
+    print("Successfully merged 5D-WAVE hooks into settings")
 except Exception as e:
     print(f"Error saving settings: {e}")
     sys.exit(1)
 PYTHON_SCRIPT
 
         if [[ $? -eq 0 ]]; then
-            info "Successfully merged CAI hooks into settings.local.json"
+            info "Successfully merged 5D-WAVE hooks into settings.local.json"
         else
             warn "Failed to merge hooks configuration - manual setup may be required"
         fi
@@ -376,8 +384,8 @@ merge_global_settings() {
 
     # Create backup if file exists
     if [[ -f "$global_settings" ]]; then
-        cp "$global_settings" "$global_settings.pre-cai-backup"
-        info "Created backup: $global_settings.pre-cai-backup"
+        cp "$global_settings" "$global_settings.pre-5d-wave-backup"
+        info "Created backup: $global_settings.pre-5d-wave-backup"
     fi
 
     # Use Python to manage global settings.json
@@ -432,14 +440,14 @@ settings['hooks']['PostToolUse'].append(ai_craft_hook)
 try:
     with open(global_settings_file, 'w') as f:
         json.dump(settings, f, indent=2)
-    print("Successfully configured AI-Craft hooks in global settings")
+    print("Successfully configured 5D-WAVE hooks in global settings")
 except Exception as e:
     print(f"Error saving global settings: {e}")
     sys.exit(1)
 PYTHON_SCRIPT
 
         if [[ $? -eq 0 ]]; then
-            info "Successfully configured AI-Craft hooks in settings.json"
+            info "Successfully configured 5D-WAVE hooks in settings.json"
         else
             warn "Failed to configure global settings - manual setup may be required"
         fi
@@ -488,10 +496,10 @@ validate_hooks() {
 
     # Check settings integration
     if [[ -f "$CLAUDE_CONFIG_DIR/settings.local.json" ]]; then
-        if grep -q '"cai-' "$CLAUDE_CONFIG_DIR/settings.local.json" 2>/dev/null; then
-            info "CAI hooks configured in settings.local.json"
+        if grep -q '"dw-' "$CLAUDE_CONFIG_DIR/settings.local.json" 2>/dev/null; then
+            info "5D-WAVE hooks configured in settings.local.json"
         else
-            warn "CAI hooks may not be properly configured in settings"
+            warn "5D-WAVE hooks may not be properly configured in settings"
         fi
     else
         warn "settings.local.json not found"
@@ -512,56 +520,59 @@ validate_installation() {
     
     local errors=0
     
-    # Check constants.md exists
-    if [[ ! -f "$CLAUDE_CONFIG_DIR/agents/cai/constants.md" ]]; then
-        error "Missing constants.md - core configuration file"
+    # Check that agents are installed
+    if [[ ! -d "$CLAUDE_CONFIG_DIR/agents/dw" ]]; then
+        error "Missing DW agents directory"
         ((errors++))
     fi
-    
-    # Check essential CAI commands exist
-    local essential_commands=("brownfield" "refactor" "start" "discuss" "architect" "develop" "transition" "validate" "complete" "skeleton" "help" "man")
+
+    # Check that commands are installed
+    if [[ ! -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
+        error "Missing DW commands directory"
+        ((errors++))
+    fi
+
+    # Check that hooks are installed
+    if [[ ! -d "$CLAUDE_CONFIG_DIR/hooks" ]]; then
+        error "Missing hooks directory"
+        ((errors++))
+    fi
+
+    # Check essential DW commands exist
+    local essential_commands=("discuss" "design" "distill" "develop" "demo")
     for cmd in "${essential_commands[@]}"; do
-        if [[ ! -f "$CLAUDE_CONFIG_DIR/commands/cai/$cmd.md" ]]; then
-            error "Missing essential CAI command: $cmd.md"
+        if [[ ! -f "$CLAUDE_CONFIG_DIR/commands/dw/$cmd.md" ]]; then
+            error "Missing essential DW command: $cmd.md"
             ((errors++))
         fi
     done
-
-    # Check manual system files
-    if [[ ! -f "$CLAUDE_CONFIG_DIR/manuals/cai/index.json" ]]; then
-        error "Missing manual system index file"
-        ((errors++))
-    fi
-
-    local manual_files=$(find "$CLAUDE_CONFIG_DIR/manuals/cai" -name "*.json" 2>/dev/null | wc -l)
-    if [[ $manual_files -lt 14 ]]; then
-        warn "Expected 14+ manual files, found $manual_files"
-    fi
     
     # Count installed files
-    local total_agents=$(find "$CLAUDE_CONFIG_DIR/agents/cai" -name "*.md" 2>/dev/null | wc -l)
+    local total_agents=$(find "$CLAUDE_CONFIG_DIR/agents/dw" -name "*.md" 2>/dev/null | wc -l)
     local total_commands=$(find "$CLAUDE_CONFIG_DIR/commands" -name "*.md" 2>/dev/null | wc -l)
-    local total_manuals=$(find "$CLAUDE_CONFIG_DIR/manuals/cai" -name "*.json" 2>/dev/null | wc -l)
+    local total_hooks=$(find "$CLAUDE_CONFIG_DIR/hooks" -type f \( -name "*.sh" -o -name "*.py" \) 2>/dev/null | wc -l)
 
     info "Installation summary:"
     info "  - Agents installed: $total_agents"
     info "  - Commands installed: $total_commands"
-    info "  - Manuals installed: $total_manuals"
+    info "  - Hook files installed: $total_hooks"
     info "  - Installation directory: $CLAUDE_CONFIG_DIR"
-    
-    # Check agent categories
-    local categories=("requirements-analysis" "architecture-design" "test-design" "development" "quality-validation" "refactoring" "coordination" "observability" "experimentation")
-    for category in "${categories[@]}"; do
-        if [[ -d "$CLAUDE_CONFIG_DIR/agents/cai/$category" ]]; then
-            local count=$(find "$CLAUDE_CONFIG_DIR/agents/cai/$category" -name "*.md" | wc -l)
-            info "  - $category: $count agents"
-        else
-            warn "  - $category: directory not found"
-        fi
-    done
-    
-    if [[ $total_agents -lt 40 ]]; then
-        warn "Expected 40+ agents, found $total_agents"
+
+    # Check for 5D-WAVE components
+    if [[ -d "$CLAUDE_CONFIG_DIR/agents/dw" ]]; then
+        info "  - 5D-WAVE agents: Available"
+    fi
+
+    if [[ -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
+        info "  - 5D-WAVE commands: Available"
+    fi
+
+    if [[ -d "$CLAUDE_CONFIG_DIR/hooks" ]]; then
+        info "  - 5D-WAVE hooks: Available"
+    fi
+
+    if [[ $total_agents -lt 10 ]]; then
+        warn "Expected 10+ agents, found $total_agents"
     fi
     
     if [[ $errors -eq 0 ]]; then
@@ -609,8 +620,8 @@ $(for category in requirements-analysis architecture-design test-design developm
 done)
 
 Usage:
-- Use CAI commands: 'cai:brownfield', 'cai:refactor', 'cai:start', etc.
-- Use 'cai:start "feature description"' to initialize ATDD workflow
+- Use 5D-WAVE commands: 'dw-discuss', 'dw-design', 'dw-distill', 'dw-develop', 'dw-demo'
+- Use 'dw-start "feature description"' to initialize 5D-WAVE workflow
 - All agents available globally across projects
 - Centralized constants work project-wide
 
@@ -660,21 +671,21 @@ main() {
     if validate_installation && validate_hooks; then
         create_manifest
         info ""
-        info "${GREEN}✅ AI-Craft Framework installed successfully!${NC}"
+        info "${GREEN}✅ 5D-WAVE Framework installed successfully!${NC}"
         info ""
         info "Framework Components Installed:"
-        info "- 41+ specialized AI agents"
-        info "- 11 essential CAI commands (brownfield, refactor, start, skeleton, etc.)"
-        info "- Claude Code workflow hooks"
-        info "- Auto-lint and format hooks for code quality"
-        info "- Quality validation network"
+        info "- 5D-WAVE specialized agents (DISCUSS→DESIGN→DISTILL→DEVELOP→DEMO)"
+        info "- 5D-WAVE command interface for workflow orchestration"
+        info "- Comprehensive hook system for code quality and workflow automation"
+        info "- Visual architecture lifecycle management"
+        info "- ATDD and Outside-In TDD integration"
         info ""
         info "Next steps:"
         info "1. Navigate to any project directory"
-        info "2. Use: ${BLUE}cai:start \"your feature description\"${NC} to initialize ATDD workflow"
-        info "3. Use: ${BLUE}cai:brownfield${NC} for existing codebase analysis"
-        info "4. Use: ${BLUE}cai:help${NC} for interactive guidance and command reference"
-        info "5. Agents will automatically follow ATDD workflow"
+        info "2. Use 5D-WAVE commands to orchestrate development workflow"
+        info "3. Access agents through the dw category in Claude Code"
+        info "4. Hook system will automatically validate code quality"
+        info "5. Visual architecture diagrams will be maintained automatically"
         info ""
         info "${YELLOW}Hook System Logging Configuration:${NC}"
         info "- Default: Silent operation (HOOK_LOG_LEVEL=0)"
@@ -682,10 +693,12 @@ main() {
         info "- Test logging: ${BLUE}env HOOK_LOG_LEVEL=3 ~/.claude/hooks/code-quality/lint-format.sh test.py${NC}"
         info "- Full guide: ${BLUE}LOGGING_CONFIGURATION.md${NC}"
         info ""
-        info "Command examples:"
-        info "- ${BLUE}cai:brownfield --legacy \"my-project\"${NC}"
-        info "- ${BLUE}cai:refactor \"module\" --level 3${NC}"
-        info "- ${BLUE}cai:start \"new feature\" --interactive${NC}"
+        info "5D-WAVE methodology available:"
+        info "- ${BLUE}dw-discuss${NC} - Requirements gathering and business analysis"
+        info "- ${BLUE}dw-design${NC} - Architecture design with visual representation"
+        info "- ${BLUE}dw-distill${NC} - Acceptance test creation and business validation"
+        info "- ${BLUE}dw-develop${NC} - Outside-In TDD implementation with refactoring"
+        info "- ${BLUE}dw-demo${NC} - Production readiness validation"
         info "Documentation: https://github.com/11PJ11/crafter-ai"
     else
         error "Installation failed validation"

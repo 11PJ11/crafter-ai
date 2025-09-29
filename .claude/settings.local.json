@@ -91,7 +91,11 @@
       "WebFetch(domain:refactoring.com)",
       "WebFetch(domain:python.plainenglish.io)",
       "WebFetch(domain:buildmode.dev)",
-      "WebFetch(domain:medium.com)"
+      "WebFetch(domain:medium.com)",
+      "Read(//mnt/c/Repositories/Projects/dist/ide/commands/dw/**)",
+      "Bash(./scripts/build-ide-bundle.sh:*)",
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []

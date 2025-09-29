@@ -48,9 +48,8 @@ ${BLUE}EXAMPLES:${NC}
     $0 --force              # Uninstall without confirmation prompts
 
 ${BLUE}WHAT GETS REMOVED:${NC}
-    - All AI-Craft agents in agents/cai/ directory
-    - All CAI commands in commands/cai/ directory (14 essential commands)
-    - Manual system documentation in manuals/cai/ directory
+    - All 5D-WAVE agents in agents/dw/ directory
+    - All DW commands in commands/dw/ directory
     - AI-Craft configuration files (constants.md, manifest)
     - AI-Craft installation logs and backup directories
     - AI-Craft project state files
@@ -95,28 +94,23 @@ check_installation() {
     
     local installation_found=false
     
-    # Check for agents directory
-    if [[ -d "$CLAUDE_CONFIG_DIR/agents/cai" ]]; then
+    # Check for 5D-WAVE agents directory
+    if [[ -d "$CLAUDE_CONFIG_DIR/agents/dw" ]]; then
         installation_found=true
-        info "Found AI-Craft agents in: $CLAUDE_CONFIG_DIR/agents/cai"
-    fi
-    
-    # Check for commands directory
-    if [[ -d "$CLAUDE_CONFIG_DIR/commands/cai" ]]; then
-        installation_found=true
-        info "Found AI-Craft commands in: $CLAUDE_CONFIG_DIR/commands/cai"
+        info "Found 5D-WAVE agents in: $CLAUDE_CONFIG_DIR/agents/dw"
     fi
 
-    # Check for manuals directory
-    if [[ -d "$CLAUDE_CONFIG_DIR/manuals/cai" ]]; then
+    # Check for 5D-WAVE commands directory
+    if [[ -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
         installation_found=true
-        info "Found AI-Craft manuals in: $CLAUDE_CONFIG_DIR/manuals/cai"
+        info "Found 5D-WAVE commands in: $CLAUDE_CONFIG_DIR/commands/dw"
     fi
+
     
     # Check for configuration files
-    if [[ -f "$CLAUDE_CONFIG_DIR/agents/cai/constants.md" ]]; then
+    if [[ -f "$CLAUDE_CONFIG_DIR/agents/dw/config.json" ]]; then
         installation_found=true
-        info "Found AI-Craft configuration files"
+        info "Found 5D-WAVE configuration files"
     fi
     
     # Check for manifest
@@ -156,14 +150,13 @@ confirm_removal() {
     fi
     
     echo ""
-    echo -e "${RED}WARNING: This will completely remove the AI-Craft framework from your system.${NC}"
+    echo -e "${RED}WARNING: This will completely remove the framework installation from your system.${NC}"
     echo ""
     echo -e "${YELLOW}The following will be removed:${NC}"
-    echo -e "${YELLOW}  - All AI-Craft agents (41+ specialized agents)${NC}"
-    echo -e "${YELLOW}  - All CAI commands (14 essential commands)${NC}"
-    echo -e "${YELLOW}  - Manual system documentation${NC}"
-    echo -e "${YELLOW}  - Configuration files (constants.md, manifest)${NC}"
-    echo -e "${YELLOW}  - Claude Code workflow hooks for CAI agents${NC}"
+    echo -e "${YELLOW}  - All 5D-WAVE agents${NC}"
+    echo -e "${YELLOW}  - All 5D-WAVE commands${NC}"
+    echo -e "${YELLOW}  - Configuration files and manifest${NC}"
+    echo -e "${YELLOW}  - Claude Code workflow hooks${NC}"
     echo -e "${YELLOW}  - Installation logs and backup directories${NC}"
     echo -e "${YELLOW}  - Any customizations or local changes${NC}"
     echo ""
@@ -196,25 +189,19 @@ create_backup() {
     mkdir -p "$BACKUP_DIR"
     
     # Backup agents directory if it exists
-    if [[ -d "$CLAUDE_CONFIG_DIR/agents/cai" ]]; then
+    if [[ -d "$CLAUDE_CONFIG_DIR/agents/dw" ]]; then
         mkdir -p "$BACKUP_DIR/agents"
-        cp -r "$CLAUDE_CONFIG_DIR/agents/cai" "$BACKUP_DIR/agents/"
-        info "Backed up agents directory"
+        cp -r "$CLAUDE_CONFIG_DIR/agents/dw" "$BACKUP_DIR/agents/"
+        info "Backed up agents/dw directory"
     fi
     
     # Backup commands directory if it exists
-    if [[ -d "$CLAUDE_CONFIG_DIR/commands/cai" ]]; then
+    if [[ -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
         mkdir -p "$BACKUP_DIR/commands"
-        cp -r "$CLAUDE_CONFIG_DIR/commands/cai" "$BACKUP_DIR/commands/"
-        info "Backed up commands directory"
+        cp -r "$CLAUDE_CONFIG_DIR/commands/dw" "$BACKUP_DIR/commands/"
+        info "Backed up commands/dw directory"
     fi
 
-    # Backup manuals directory if it exists
-    if [[ -d "$CLAUDE_CONFIG_DIR/manuals/cai" ]]; then
-        mkdir -p "$BACKUP_DIR/manuals"
-        cp -r "$CLAUDE_CONFIG_DIR/manuals/cai" "$BACKUP_DIR/manuals/"
-        info "Backed up manuals directory"
-    fi
     
     # Backup hooks directory if it exists
     if [[ -d "$CLAUDE_CONFIG_DIR/hooks" ]]; then
@@ -242,12 +229,12 @@ create_backup() {
     
     # Create backup manifest
     cat > "$BACKUP_DIR/uninstall-backup-manifest.txt" << EOF
-AI-Craft Framework Uninstall Backup
+Framework Uninstall Backup
 Created: $(date)
 Source: $(hostname):$CLAUDE_CONFIG_DIR
 Backup Type: Pre-uninstall backup
 Backup contents:
-  - AI-Craft agents, commands, and manual system
+  - 5D-WAVE agents and commands
   - Configuration files and logs
   - Complete framework state before removal
 EOF
@@ -256,14 +243,15 @@ EOF
 }
 
 remove_agents() {
-    info "Removing AI-Craft agents..."
-    
-    if [[ -d "$CLAUDE_CONFIG_DIR/agents/cai" ]]; then
-        rm -rf "$CLAUDE_CONFIG_DIR/agents/cai"
-        info "Removed agents/cai directory"
+    info "Removing 5D-WAVE agents..."
+
+    # Remove 5D-WAVE structure
+    if [[ -d "$CLAUDE_CONFIG_DIR/agents/dw" ]]; then
+        rm -rf "$CLAUDE_CONFIG_DIR/agents/dw"
+        info "Removed agents/dw directory"
     fi
-    
-    # Remove agents directory if it's empty and only contained cai
+
+    # Remove agents directory if it's empty and only contained framework files
     if [[ -d "$CLAUDE_CONFIG_DIR/agents" ]]; then
         if [[ -z "$(ls -A "$CLAUDE_CONFIG_DIR/agents" 2>/dev/null)" ]]; then
             rmdir "$CLAUDE_CONFIG_DIR/agents" 2>/dev/null
@@ -275,14 +263,15 @@ remove_agents() {
 }
 
 remove_commands() {
-    info "Removing AI-Craft commands..."
+    info "Removing 5D-WAVE commands..."
 
-    if [[ -d "$CLAUDE_CONFIG_DIR/commands/cai" ]]; then
-        rm -rf "$CLAUDE_CONFIG_DIR/commands/cai"
-        info "Removed commands/cai directory"
+    # Remove 5D-WAVE structure
+    if [[ -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
+        rm -rf "$CLAUDE_CONFIG_DIR/commands/dw"
+        info "Removed commands/dw directory"
     fi
 
-    # Remove commands directory if it's empty and only contained cai
+    # Remove commands directory if it's empty and only contained framework files
     if [[ -d "$CLAUDE_CONFIG_DIR/commands" ]]; then
         if [[ -z "$(ls -A "$CLAUDE_CONFIG_DIR/commands" 2>/dev/null)" ]]; then
             rmdir "$CLAUDE_CONFIG_DIR/commands" 2>/dev/null
@@ -293,31 +282,13 @@ remove_commands() {
     fi
 }
 
-remove_manuals() {
-    info "Removing AI-Craft manual system..."
 
-    if [[ -d "$CLAUDE_CONFIG_DIR/manuals/cai" ]]; then
-        rm -rf "$CLAUDE_CONFIG_DIR/manuals/cai"
-        info "Removed manuals/cai directory"
-    fi
+remove_framework_hooks() {
+    info "Removing 5D-WAVE workflow hooks..."
 
-    # Remove manuals directory if it's empty and only contained cai
-    if [[ -d "$CLAUDE_CONFIG_DIR/manuals" ]]; then
-        if [[ -z "$(ls -A "$CLAUDE_CONFIG_DIR/manuals" 2>/dev/null)" ]]; then
-            rmdir "$CLAUDE_CONFIG_DIR/manuals" 2>/dev/null
-            info "Removed empty manuals directory"
-        else
-            info "Kept manuals directory (contains other files)"
-        fi
-    fi
-}
-
-remove_craft_ai_hooks() {
-    info "Removing Craft-AI workflow hooks..."
-
-    # Remove CAI-specific hook files (preserve other hooks)
+    # Remove framework-specific hook files (preserve other hooks)
     if [[ -d "$CLAUDE_CONFIG_DIR/hooks" ]]; then
-        # Remove CAI-specific directories
+        # Remove framework-specific directories
         rm -rf "$CLAUDE_CONFIG_DIR/hooks/workflow" 2>/dev/null || true
         rm -rf "$CLAUDE_CONFIG_DIR/hooks/code-quality" 2>/dev/null || true
         rm -rf "$CLAUDE_CONFIG_DIR/hooks/lib" 2>/dev/null || true
@@ -326,10 +297,10 @@ remove_craft_ai_hooks() {
         rm -rf "$CLAUDE_CONFIG_DIR/hooks/legacy" 2>/dev/null || true
         rm -f "$CLAUDE_CONFIG_DIR/hooks/verify-installation.sh" 2>/dev/null || true
         rm -f "$CLAUDE_CONFIG_DIR/hooks/test_"*.sh 2>/dev/null || true
-        info "Removed CAI hook files"
+        info "Removed framework hook files"
     fi
 
-    # Remove hooks directory if it's empty after CAI removal
+    # Remove hooks directory if it's empty after framework removal
     if [[ -d "$CLAUDE_CONFIG_DIR/hooks" ]]; then
         if [[ -z "$(ls -A "$CLAUDE_CONFIG_DIR/hooks" 2>/dev/null)" ]]; then
             rmdir "$CLAUDE_CONFIG_DIR/hooks" 2>/dev/null
@@ -373,14 +344,14 @@ except Exception as e:
     print(f"Error reading settings: {e}")
     sys.exit(1)
 
-# Remove CAI-specific hooks by ID
+# Remove framework-specific hooks by ID
 if 'hooks' in settings:
     for event in list(settings['hooks'].keys()):
-        # Filter out CAI hooks by ID
+        # Filter out framework hooks by ID
         settings['hooks'][event] = [
             hook for hook in settings['hooks'][event]
             if not any(
-                h.get('id', '').startswith('cai-')
+                h.get('id', '').startswith('dw-')
                 for h in hook.get('hooks', [])
             )
         ]
@@ -533,37 +504,31 @@ remove_project_files() {
 
 validate_removal() {
     info "Validating complete removal..."
-    
+
     local errors=0
-    
+
     # Check that agents are removed
-    if [[ -d "$CLAUDE_CONFIG_DIR/agents/cai" ]]; then
-        error "AI-Craft agents directory still exists"
+    if [[ -d "$CLAUDE_CONFIG_DIR/agents/dw" ]]; then
+        error "5D-WAVE agents directory still exists"
         ((errors++))
     fi
-    
+
     # Check that commands are removed
-    if [[ -d "$CLAUDE_CONFIG_DIR/commands/cai" ]]; then
-        error "AI-Craft commands directory still exists"
+    if [[ -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
+        error "5D-WAVE commands directory still exists"
         ((errors++))
     fi
 
-    # Check that manuals are removed
-    if [[ -d "$CLAUDE_CONFIG_DIR/manuals/cai" ]]; then
-        error "AI-Craft manuals directory still exists"
-        ((errors++))
-    fi
-
-    # Check that CAI hooks are removed
+    # Check that framework hooks are removed
     if [[ -d "$CLAUDE_CONFIG_DIR/hooks/workflow" ]] || [[ -d "$CLAUDE_CONFIG_DIR/hooks/code-quality" ]]; then
-        error "AI-Craft hook directories still exist"
+        error "Framework hook directories still exist"
         ((errors++))
     fi
 
-    # Check that CAI hooks are removed from settings
+    # Check that framework hooks are removed from settings
     if [[ -f "$CLAUDE_CONFIG_DIR/settings.local.json" ]]; then
-        if grep -q '"cai-' "$CLAUDE_CONFIG_DIR/settings.local.json" 2>/dev/null; then
-            warn "CAI hooks may still be configured in settings.local.json"
+        if grep -q '"dw-' "$CLAUDE_CONFIG_DIR/settings.local.json" 2>/dev/null; then
+            warn "5D-WAVE hooks may still be configured in settings.local.json"
         fi
     fi
 
@@ -598,19 +563,18 @@ validate_removal() {
 }
 
 create_uninstall_report() {
-    local report_file="$CLAUDE_CONFIG_DIR/ai-craft-uninstall-report.txt"
-    
+    local report_file="$CLAUDE_CONFIG_DIR/framework-uninstall-report.txt"
+
     cat > "$report_file" << EOF
-AI-Craft Framework Uninstallation Report
-========================================
+Framework Uninstallation Report
+===============================
 Uninstalled: $(date)
 Computer: $(hostname)
 User: $(whoami)
 
 Uninstall Summary:
-- AI-Craft agents removed from: $CLAUDE_CONFIG_DIR/agents/cai
-- CAI commands removed from: $CLAUDE_CONFIG_DIR/commands/cai (14 essential commands)
-- Manual system removed from: $CLAUDE_CONFIG_DIR/manuals/cai
+- 5D-WAVE agents removed from: $CLAUDE_CONFIG_DIR/agents/dw/
+- 5D-WAVE commands removed from: $CLAUDE_CONFIG_DIR/commands/dw/
 - Configuration files removed
 - Installation logs removed
 - Backup directories cleaned
@@ -625,7 +589,7 @@ BACKUP_INFO
 fi)Uninstallation completed successfully.
 Framework completely removed from system.
 EOF
-    
+
     info "Uninstallation report created: $report_file"
 }
 
@@ -654,8 +618,8 @@ done
 
 # Main execution
 main() {
-    info "AI-Craft Framework Uninstallation Script"
-    info "======================================="
+    info "Framework Uninstallation Script"
+    info "==============================="
     
     # Check for installation
     check_installation
@@ -669,8 +633,7 @@ main() {
     # Remove components
     remove_agents
     remove_commands
-    remove_manuals
-    remove_craft_ai_hooks
+    remove_framework_hooks
     remove_config_files
     remove_backups
     remove_project_files
@@ -686,12 +649,11 @@ main() {
     
     # Success message
     echo ""
-    info "✅ AI-Craft Framework uninstalled successfully!"
+    info "✅ Framework uninstalled successfully!"
     echo ""
     info "Summary:"
-    info "- All AI-Craft agents removed"
-    info "- All CAI commands removed (14 essential commands)"
-    info "- AI-Craft manual system removed"
+    info "- All 5D-WAVE agents removed"
+    info "- All 5D-WAVE commands removed"
     info "- Claude Code workflow hooks removed"
     info "- Configuration files cleaned"
     info "- Backup directories removed"
@@ -704,7 +666,7 @@ main() {
     fi
     
     echo ""
-    info "The AI-Craft framework has been completely removed from your system."
+    info "The framework has been completely removed from your system."
 }
 
 # Execute main function
