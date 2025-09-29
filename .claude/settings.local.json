@@ -95,7 +95,10 @@
       "Read(//mnt/c/Repositories/Projects/dist/ide/commands/dw/**)",
       "Bash(./scripts/build-ide-bundle.sh:*)",
       "mcp__sequential-thinking__sequentialthinking",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(git --version)",
+      "Read(//mnt/c/Repositories/Projects/**)",
+      "Bash(./scripts/update-ai-craft.sh:*)"
     ],
     "deny": [],
     "ask": []
