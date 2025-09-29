@@ -16,7 +16,7 @@ dw-refactor --apply=docs/dw/refactoring/mikado-graph.md --parallel-change=true
 
 ## Mandatory Pre-Execution Steps
 1. **Codebase Analysis**: Validate target codebase and establish baseline metrics
-2. **Agent Activation**: Activate systematic-refactorer and mikado-refactoring-specialist-enhanced
+2. **Agent Activation**: Activate software-crafter (Crafty) with complete refactoring methodology
 3. **Backup Creation**: Create git backup and establish rollback strategy
 4. **Documentation Structure**: Ensure docs/dw/refactoring/ directory exists
 
@@ -40,8 +40,8 @@ dw-refactor --apply=docs/dw/refactoring/mikado-graph.md --parallel-change=true
 ## Execution Flow
 
 ### Phase 1: Codebase Analysis and Quality Assessment
-**Primary Agent**: systematic-refactorer
-**Command**: `*analyze-codebase`
+**Primary Agent**: software-crafter (Crafty)
+**Command**: `*detect-smells`
 
 **Six-Level Refactoring Assessment**:
 ```
@@ -117,7 +117,8 @@ analysis_results:
 ```
 
 ### Phase 2: Refactoring Strategy Planning
-**Agent Command**: `*plan-refactoring-strategy`
+**Agent**: software-crafter (Crafty)
+**Command**: `*progressive`
 
 **Planning Decision Matrix**:
 ```yaml
@@ -139,9 +140,9 @@ refactoring_strategy_selection:
 ```
 
 ### Phase 3: Mikado Method Integration (for Complex Refactorings)
-**Primary Agent**: mikado-refactoring-specialist-enhanced
+**Primary Agent**: software-crafter (Crafty)
 **Secondary Agent**: architecture-diagram-manager (Archer)
-**Command**: `*execute-mikado-refactoring`
+**Command**: `*mikado`
 
 **Enhanced Mikado Refactoring Process**:
 ```yaml
@@ -164,7 +165,8 @@ mikado_refactoring_execution:
 ```
 
 ### Phase 4: Systematic Refactoring Execution
-**Agent Command**: `*execute-refactoring`
+**Agent**: software-crafter (Crafty)
+**Command**: `*refactor`
 
 **Execution Strategy Based on Complexity**:
 
@@ -198,7 +200,8 @@ staged_execution:
 ```
 
 ### Phase 5: Quality Validation and Metrics
-**Agent Command**: `*validate-improvements`
+**Agent**: software-crafter (Crafty)
+**Command**: `*quality-metrics`
 
 **Validation Framework**:
 ```yaml

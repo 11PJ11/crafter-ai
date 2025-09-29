@@ -325,7 +325,7 @@ boundary_testing_strategy:
 ## Handoff to DEVELOP Wave
 
 ### Handoff Package Preparation
-**Content for test-first-developer (Devon)**:
+**Content for software-crafter (Crafty)**:
 ```yaml
 acceptance_test_package:
   complete_test_suite: "ACCEPTANCE_TESTS.feature with all scenarios"
@@ -376,5 +376,5 @@ If DISTILL wave fails:
 
 ## Next Command
 **Command**: `*dw-develop`
-**Agent**: test-first-developer (Devon) + systematic-refactorer
+**Agent**: software-crafter (Crafty)
 **Wave**: DEVELOP

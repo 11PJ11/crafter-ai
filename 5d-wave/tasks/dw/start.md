@@ -80,9 +80,9 @@ methodology_configuration:
     discuss: "business-analyst"
     design: "solution-architect + architecture-diagram-manager"
     distill: "acceptance-designer"
-    develop: "test-first-developer + systematic-refactorer"
+    develop: "software-crafter"
     demo: "feature-completion-coordinator"
-  specialist_agents: ["mikado-refactoring-specialist-enhanced", "walking-skeleton-helper", "root-cause-analyzer"]
+  specialist_agents: ["software-crafter", "walking-skeleton-helper", "root-cause-analyzer"]
 ```
 
 ### Phase 4: Next Wave Preparation

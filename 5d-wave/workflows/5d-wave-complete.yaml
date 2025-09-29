@@ -43,12 +43,10 @@ agents:
     business_analyst: "Riley"
     solution_architect: "Morgan"
     acceptance_designer: "Quinn"
-    test_first_developer: "Devon"
+    software_crafter: "Crafty"
     feature_completion_coordinator: "Dakota"
 
   supporting_specialists:
-    systematic_refactorer: "Specialist"
-    mikado_refactoring_specialist_enhanced: "Specialist"
     architecture_diagram_manager: "Archer"
     walking_skeleton_helper: "Scout"
     root_cause_analyzer: "Sage"

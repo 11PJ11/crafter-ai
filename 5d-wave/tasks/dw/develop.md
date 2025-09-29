@@ -5,13 +5,13 @@ Execute DEVELOP wave of 5D-Wave methodology through Outside-In TDD implementatio
 
 ## Mandatory Pre-Execution Steps
 1. **DISTILL Wave Completion**: Validate acceptance test suite and production service patterns
-2. **Agent Coordination**: Activate test-first-developer (Devon) and systematic-refactorer
+2. **Agent Coordination**: Activate software-crafter (Crafty) for unified TDD and refactoring
 3. **Implementation Foundation**: Ensure test infrastructure and service registration complete
 
 ## Execution Flow
 
 ### Phase 1: Outside-In TDD Foundation
-**Primary Agent**: test-first-developer (Devon)
+**Primary Agent**: software-crafter (Crafty)
 **Command**: `*develop`
 
 **Double-Loop TDD Architecture**:
@@ -112,7 +112,7 @@ public void UserService_Should_AuthenticateUser_WhenCredentialsValid()
 - [ ] **Pre-commit hooks must pass completely**
 
 ### Phase 4: Systematic Refactoring Integration
-**Secondary Agent**: systematic-refactorer
+**Agent**: software-crafter (Crafty)
 **Command**: `*refactor`
 
 **Six-Level Refactoring Hierarchy** - Applied during GREEN phases:

@@ -4,15 +4,15 @@
 Execute complex refactoring operations using enhanced Mikado Method with discovery-tracking commits, exhaustive exploration, and visual architecture coordination.
 
 ## Mandatory Pre-Execution Steps
-1. **Mikado Agent Activation**: Activate mikado-refactoring-specialist-enhanced with complete methodology
+1. **Mikado Agent Activation**: Activate software-crafter (Crafty) with complete Mikado Method methodology
 2. **Architecture Integration**: Coordinate with architecture-diagram-manager for visual tracking
 3. **Baseline Establishment**: Create pre-refactoring baseline and commit current state
 
 ## Execution Flow
 
 ### Phase 1: Enhanced Mikado Method Activation
-**Primary Agent**: mikado-refactoring-specialist-enhanced
-**Command**: `*plan-mikado-refactoring`
+**Primary Agent**: software-crafter (Crafty)
+**Command**: `*mikado`
 
 **Enhanced Mikado Methodology**:
 ```
@@ -60,9 +60,9 @@ discovery_tracking_methodology:
 ```
 
 ### Phase 2: Mikado Graph Construction with Visual Integration
-**Primary Agent**: mikado-refactoring-specialist-enhanced
+**Primary Agent**: software-crafter (Crafty)
 **Secondary Agent**: architecture-diagram-manager (Archer)
-**Command**: `*visualize-mikado-graph`
+**Command**: `*create-tree`
 
 **Mikado Graph Visualization**:
 ```yaml
@@ -99,7 +99,8 @@ visual_integration:
 ```
 
 ### Phase 3: Parallel Change Implementation
-**Agent Command**: `*implement-parallel-change`
+**Agent**: software-crafter (Crafty)
+**Command**: `*execute-leaves`
 
 **Parallel Change Strategy**:
 ```yaml
@@ -133,7 +134,8 @@ parallel_change_execution:
 ```
 
 ### Phase 4: Discovery-Tracking Commit Strategy
-**Agent Command**: `*execute-discovery-commits`
+**Agent**: software-crafter (Crafty)
+**Command**: `*track-discovery`
 
 **Enhanced Commit Strategy**:
 ```bash
@@ -159,9 +161,9 @@ git commit -m "🎯 Milestone: User management refactoring 40% complete
 - Risk Status: Green - no blockers identified"
 ```
 
-### Phase 5: Systematic Refactorer Integration
-**Collaboration with**: systematic-refactorer
-**Command**: `*integrate-systematic-refactoring`
+### Phase 5: Progressive Refactoring Integration
+**Agent**: software-crafter (Crafty)
+**Command**: `*progressive`
 
 **Mikado + Systematic Refactoring Integration**:
 ```yaml

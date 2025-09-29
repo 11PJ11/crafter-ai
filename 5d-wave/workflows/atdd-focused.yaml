@@ -60,13 +60,15 @@ agents:
         - "Business validation criteria establishment"
         - "Test scenario prioritization and sequencing"
 
-    test_first_developer:
-      role: "Devon"
+    software_crafter:
+      role: "Crafty"
       responsibilities:
         - "Outside-In TDD implementation with double-loop"
         - "Production service integration in step methods"
         - "Unit test creation driving implementation"
         - "Systematic refactoring through six levels"
+        - "Complex refactoring roadmaps with Mikado Method"
+        - "Progressive Level 1-6 code quality improvement"
 
     feature_completion_coordinator:
       role: "Dakota"

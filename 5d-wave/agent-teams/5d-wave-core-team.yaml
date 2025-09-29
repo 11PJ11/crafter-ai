@@ -86,9 +86,9 @@ collaboration_patterns:
       scope: "ALL_WAVES"
       purpose: "Visual architecture lifecycle throughout methodology"
 
-    - agent: "systematic_refactorer"
+    - agent: "software_crafter"
       scope: "DEVELOP_WAVE"
-      purpose: "Quality improvement collaboration with test-first-developer"
+      purpose: "Unified TDD, Mikado Method, and systematic refactoring"
 
   atdd_workflow:
     discuss_to_distill:

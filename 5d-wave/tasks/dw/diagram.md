@@ -1,3 +1,22 @@
+# /diagram Command
+
+**Wave**: DESIGN
+**Description**: Execute architecture visualization through specialized agent team
+
+## Auto-Agent Team Activation
+
+This command automatically activates ALL required agents for comprehensive architecture visualization while keeping the main instance context-free.
+
+**Primary Agents**:
+- `architecture-diagram-manager` (Archer) - Visual architecture creation and management
+- `visual-architecture-orchestrator` - Lifecycle diagram coordination
+- `solution-architect` (Morgan) - Architecture validation and refinement
+
+**Task Tool Integration**: Automatic multi-agent coordination with visual design workflows
+**Main Instance**: Remains context-free, delegates all work to specialized agent team
+**Agent Coordination**: Agents collaborate on comprehensive visual architecture representation
+
+## Implementation
 # DIAGRAM: Visual Architecture Lifecycle Management and Evolution Tracking
 
 ## Overview

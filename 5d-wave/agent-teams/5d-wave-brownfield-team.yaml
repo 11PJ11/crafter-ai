@@ -52,29 +52,19 @@ team:
           - "Brownfield production service integration patterns"
 
     develop_wave:
-      test_first_developer:
-        role: "Devon"
+      software_crafter:
+        role: "Crafty"
         wave_priority: 1
         brownfield_focus:
           - "Legacy code Outside-In TDD integration"
           - "Existing system production service integration"
           - "Brownfield NotImplementedException scaffolding"
           - "Legacy business naming convention improvement"
-
-      systematic_refactorer:
-        role: "Raphael"
-        wave_priority: 2
-        brownfield_focus:
+          - "Complex legacy system refactoring roadmaps with Mikado Method"
           - "Legacy code systematic quality improvement"
           - "Technical debt identification and prioritization"
           - "Progressive refactoring execution on existing codebase"
           - "Legacy system code smell detection and resolution"
-
-      mikado_refactoring_specialist_enhanced:
-        role: "Mikado"
-        wave_priority: 2
-        brownfield_focus:
-          - "Complex legacy system refactoring roadmaps"
           - "Dependency discovery and parallel change coordination"
           - "Stakeholder communication for large-scale changes"
           - "Discovery-tracking commits for complexity understanding"
@@ -100,18 +90,20 @@ team:
           - "Systematic problem resolution for complex legacy issues"
 
 specialized_brownfield_capabilities:
-  mikado_refactoring_coordination:
-    purpose: "Complex architectural refactoring with systematic dependency management"
+  unified_refactoring_coordination:
+    purpose: "Complex architectural refactoring with systematic dependency management through unified software-crafter agent"
     responsibilities:
-      - "Legacy system dependency discovery and mapping"
+      - "Legacy system dependency discovery and mapping via Mikado Method"
       - "Parallel change pattern implementation for safe refactoring"
       - "Stakeholder communication for large-scale architectural changes"
       - "Discovery-tracking commits for audit trail and progress visibility"
+      - "Progressive Level 1-6 refactoring execution"
+      - "Outside-In TDD integration with legacy systems"
 
-    collaboration_with_systematic_refactorer:
-      pattern: "Mikado handles complex architectural changes, systematic-refactorer handles progressive quality improvement"
-      coordination: "Mikado creates refactoring roadmap, systematic-refactorer executes Level 1-6 improvements"
-      handoff: "Complex dependencies → Mikado planning → Systematic execution → Quality validation"
+    unified_approach:
+      pattern: "Single agent handles both Mikado planning and systematic execution seamlessly"
+      coordination: "Mikado Method creates refactoring roadmap, progressive refactoring executes Level 1-6 improvements, TDD ensures quality"
+      workflow: "Complex dependencies → Mikado planning → TDD-driven execution → Systematic refactoring → Quality validation"
 
   root_cause_analysis_integration:
     purpose: "Systematic investigation of legacy system problems"
@@ -126,7 +118,7 @@ specialized_brownfield_capabilities:
         pattern: "Root cause analysis informs architecture improvement decisions"
         validation: "Architectural changes address identified root causes"
 
-      with_mikado_specialist:
+      with_software_crafter:
         pattern: "Root cause analysis guides refactoring priorities"
         validation: "Refactoring roadmaps address systemic issues"
 
@@ -159,16 +151,15 @@ brownfield_methodology_adaptations:
 
   develop_wave_brownfield:
     activities:
-      - "Mikado method complex refactoring execution"
+      - "Unified Mikado method complex refactoring execution"
       - "Systematic refactoring of existing codebase"
       - "Legacy system Outside-In TDD integration"
       - "Root cause analysis and problem resolution"
 
     coordination:
-      - "Mikado specialist leads complex architectural changes"
-      - "Systematic refactorer handles progressive quality improvement"
-      - "Test-first developer integrates TDD with legacy code"
+      - "Software crafter leads all development activities (TDD, Mikado, refactoring)"
       - "Root cause analyzer investigates and resolves systemic issues"
+      - "Architecture diagram manager provides visual tracking"
 
 quality_gates:
   brownfield_specific:
@@ -179,9 +170,9 @@ quality_gates:
       - "Stakeholder impact analysis and communication complete"
 
     refactoring_coordination:
-      - "Mikado method roadmap complete with dependency mapping"
+      - "Mikado method roadmap complete with dependency mapping via software-crafter"
       - "Systematic refactoring execution shows measurable quality improvement"
-      - "Complex architectural changes successfully coordinated"
+      - "Complex architectural changes successfully coordinated through unified approach"
       - "Discovery-tracking commits provide complete audit trail"
 
     problem_resolution:
@@ -199,8 +190,8 @@ team_advantages:
     - "Risk mitigation for legacy system modifications"
 
   coordination_patterns:
-    - "Mikado specialist coordinates with architect for architectural changes"
-    - "Systematic refactorer collaborates with developer for quality improvement"
+    - "Software crafter coordinates with architect for architectural changes"
+    - "Software crafter seamlessly integrates TDD, Mikado, and refactoring workflows"
     - "Root cause analyzer supports all agents with problem investigation"
     - "Architecture diagram manager visualizes legacy and future states"
 
@@ -233,6 +224,6 @@ success_indicators:
 
   organizational_learning:
     - "Root cause analysis results in systematic improvements"
-    - "Team adoption of advanced refactoring and problem-solving techniques"
+    - "Team adoption of unified craftsmanship approach (TDD, Mikado, refactoring)"
     - "Improved stakeholder communication for complex technical changes"
     - "Documented patterns and practices for future brownfield projects"
