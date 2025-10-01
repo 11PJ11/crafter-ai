@@ -78,37 +78,43 @@ agents:
 # Command mappings
 commands:
   # 5D-Wave Core Commands
-  dw_start:
+  start:
     description: "Initialize 5D-Wave workflow"
+    argument_hint: "[project-name] - Optional: --template=[greenfield|brownfield] --scope=[small|medium|large]"
     agents: ["business_analyst"]
     outputs: ["project_brief", "requirements_outline"]
 
-  dw_discuss:
+  discuss:
     description: "Requirements gathering and business analysis"
+    argument_hint: "[feature-name] - Optional: --interactive=[high|moderate] --output-format=[md|yaml]"
     agents: ["business_analyst"]
     wave: "DISCUSS"
     outputs: ["requirements_document", "user_stories"]
 
-  dw_design:
+  design:
     description: "Architecture design with visual representation"
+    argument_hint: "[component-name] - Optional: --architecture=[hexagonal|layered|microservices] --diagram-format=[mermaid|plantuml]"
     agents: ["solution_architect", "architecture_diagram_manager"]
     wave: "DESIGN"
     outputs: ["architecture_document", "architecture_diagrams"]
 
-  dw_distill:
+  distill:
     description: "Acceptance test creation and business validation"
+    argument_hint: "[story-id] - Optional: --test-framework=[cucumber|specflow|pytest-bdd] --integration=[real-services|mocks]"
     agents: ["acceptance_designer"]
     wave: "DISTILL"
     outputs: ["acceptance_tests", "test_scenarios"]
 
-  dw_develop:
+  develop:
     description: "Outside-In TDD implementation with refactoring"
+    argument_hint: "[feature-name] - Optional: --tdd-mode=[strict|pragmatic] --refactor-level=[1-6]"
     agents: ["test_first_developer", "systematic_refactorer"]
     wave: "DEVELOP"
     outputs: ["working_code", "refactored_implementation"]
 
-  dw_demo:
+  demo:
     description: "Production readiness validation"
+    argument_hint: "[deployment-target] - Optional: --environment=[staging|production] --validation=[full|smoke]"
     agents: ["feature_completion_coordinator"]
     wave: "DEMO"
     outputs: ["production_deployment", "stakeholder_demo"]
@@ -116,23 +122,38 @@ commands:
   # Specialist Commands
   mikado:
     description: "Complex refactoring roadmaps with visual tracking"
+    argument_hint: "[refactoring-goal] - Optional: --complexity=[simple|moderate|complex] --visualization=[tree|graph]"
     agents: ["mikado_refactoring_specialist_enhanced", "architecture_diagram_manager"]
     outputs: ["refactoring_roadmap", "dependency_diagrams"]
 
   skeleton:
     description: "Walking skeleton E2E automation"
+    argument_hint: "[feature-name] - Optional: --depth=[minimal|standard|comprehensive] --validation=[quick|thorough]"
     agents: ["walking_skeleton_helper", "architecture_diagram_manager"]
     outputs: ["minimal_e2e_implementation", "skeleton_architecture"]
 
   root_why:
     description: "Root cause analysis and debugging"
+    argument_hint: "[problem-description] - Optional: --depth=[3|5|7-whys] --output=[text|diagram|report]"
     agents: ["root_cause_analyzer"]
     outputs: ["root_cause_analysis", "investigation_report"]
 
   diagram:
     description: "Architecture diagram management"
+    argument_hint: "[diagram-type] - Optional: --format=[mermaid|plantuml|c4] --level=[context|container|component]"
     agents: ["architecture_diagram_manager"]
     outputs: ["updated_diagrams", "visual_architecture"]
+
+  git:
+    description: "Git workflow operations"
+    argument_hint: "[operation] - Options: commit, push, status, branch, merge - Optional: --message='commit msg'"
+    outputs: ["git_status", "commit_history"]
+
+  refactor:
+    description: "Systematic refactoring with Mikado Method"
+    argument_hint: "[target-class-or-module] - Optional: --level=[1-6] --method=[extract|inline|rename|move] --scope=[method|class|module]"
+    agents: ["systematic_refactorer"]
+    outputs: ["refactored_code", "refactoring_log"]
 
 # Workflow configurations
 workflows:

@@ -8,6 +8,7 @@ with wave assignments and embedded dependencies.
 import logging
 from pathlib import Path
 from typing import Dict, List, Optional, Any
+import yaml
 
 import sys
 from pathlib import Path
@@ -79,6 +80,45 @@ class CommandProcessor:
             }
         return {'name': wave_name, 'index': -1, 'total_phases': len(wave_phases)}
 
+    def generate_command_frontmatter(self, task_name: str, command_info: Dict[str, Any]) -> str:
+        """
+        Generate Claude Code compatible YAML frontmatter for slash commands.
+
+        Args:
+            task_name: Name of the task/command
+            command_info: Command information from config
+
+        Returns:
+            str: Formatted YAML frontmatter
+        """
+        task_base = Path(task_name).stem
+
+        # Get base description from config
+        description = command_info.get('description', f'Execute {task_base} command')
+
+        # Get argument hint from config (preferred) or use fallback
+        argument_hint = command_info.get('argument_hint', '')
+
+        # Append argument hint to description for better UI visibility
+        if argument_hint:
+            description = f"{description} {argument_hint}"
+
+        # Build frontmatter dictionary
+        frontmatter = {
+            'description': description
+        }
+
+        # Also add separate argument-hint field for Claude Code
+        if argument_hint:
+            frontmatter['argument-hint'] = argument_hint
+
+        try:
+            yaml_content = yaml.dump(frontmatter, default_flow_style=False, sort_keys=False)
+            return f"---\n{yaml_content}---\n\n"
+        except Exception as e:
+            logging.error(f"Failed to generate command frontmatter: {e}")
+            return ""
+
     def generate_command_header(self, task_name: str, command_info: Dict[str, Any], wave_info: Dict[str, Any]) -> str:
         """
         Generate command header with metadata.
@@ -141,14 +181,14 @@ class CommandProcessor:
 
     def generate_command_content(self, task_file: Path, config: Dict[str, Any]) -> str:
         """
-        Generate complete command content.
+        Generate complete command content with Claude Code compatible YAML frontmatter.
 
         Args:
             task_file: Path to source task file
             config: Configuration dictionary
 
         Returns:
-            str: Complete command content
+            str: Complete command content with frontmatter
         """
         try:
             # Read source task file
@@ -161,14 +201,17 @@ class CommandProcessor:
             command_info = self.get_command_info_from_config(task_name, config)
             wave_info = self.get_wave_info(command_info.get('wave', 'UNKNOWN'), config)
 
+            # CRITICAL: Generate Claude Code compatible YAML frontmatter FIRST
+            frontmatter = self.generate_command_frontmatter(task_name, command_info)
+
             # Generate command header
             header = self.generate_command_header(task_name, command_info, wave_info)
 
             # Process task content
             processed_content = self.process_task_dependencies(task_content)
 
-            # Combine header and content
-            return f"{header}{processed_content}"
+            # Combine frontmatter, header and content
+            return f"{frontmatter}{header}{processed_content}"
 
         except Exception as e:
             logging.error(f"Error generating command content for {task_file}: {e}")

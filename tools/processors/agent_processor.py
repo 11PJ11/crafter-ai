@@ -100,6 +100,47 @@ class AgentProcessor:
 
         return "\n".join(embedded_content)
 
+    def generate_frontmatter(self, agent_file: Path, yaml_config: Dict[str, Any]) -> str:
+        """
+        Generate Claude Code compatible YAML frontmatter.
+
+        Args:
+            agent_file: Path to agent file (for extracting agent name)
+            yaml_config: Agent YAML configuration
+
+        Returns:
+            str: Formatted YAML frontmatter
+        """
+        if not yaml_config:
+            logging.warning("No YAML config available for frontmatter generation")
+            return ""
+
+        # Extract agent metadata
+        agent_name = agent_file.stem
+        agent_info = yaml_config.get('agent', {})
+
+        # Get description from multiple possible sources
+        description = (
+            agent_info.get('whenToUse') or
+            agent_info.get('description') or
+            agent_info.get('title') or
+            f'{agent_name} specialized agent'
+        )
+
+        # Build frontmatter dictionary
+        frontmatter = {
+            'name': agent_name,
+            'description': description,
+            'model': yaml_config.get('model', 'inherit')
+        }
+
+        try:
+            yaml_content = yaml.dump(frontmatter, default_flow_style=False, sort_keys=False)
+            return f"---\n{yaml_content}---\n\n"
+        except Exception as e:
+            logging.error(f"Failed to generate frontmatter: {e}")
+            return ""
+
     def rebuild_yaml_block(self, yaml_config: Dict[str, Any]) -> str:
         """
         Rebuild the YAML configuration block with resolved paths.
@@ -131,7 +172,7 @@ class AgentProcessor:
             agent_file: Path to source agent file
 
         Returns:
-            str: Complete agent content
+            str: Complete agent content with Claude Code compatible YAML frontmatter
         """
         try:
             # Read source file
@@ -144,6 +185,14 @@ class AgentProcessor:
 
             # Build output content
             output_parts = []
+
+            # CRITICAL: Generate Claude Code compatible YAML frontmatter FIRST
+            if yaml_config:
+                frontmatter = self.generate_frontmatter(agent_file, yaml_config)
+                if frontmatter:
+                    output_parts.append(frontmatter.rstrip())  # Remove trailing newlines, we'll add them consistently
+                else:
+                    logging.warning(f"Failed to generate frontmatter for {agent_file.name}, agent may not be recognized by Claude Code")
 
             # Add the main content (everything except the YAML block)
             output_parts.append(remaining_content.strip())
