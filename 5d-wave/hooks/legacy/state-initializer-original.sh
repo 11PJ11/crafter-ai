@@ -1,4 +1,6 @@
 #!/bin/bash
+# AI-Craft Framework - Managed File
+# Part of Claude Code SuperClaude modular hook system
 # Craft-AI State Initializer Hook
 # Only initializes state for CAI/ATDD workflows
 # Preserves other framework states

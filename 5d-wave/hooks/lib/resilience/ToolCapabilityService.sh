@@ -1,4 +1,6 @@
 #!/bin/bash
+# AI-Craft Framework - Managed File
+# Part of Claude Code SuperClaude modular hook system
 # ToolCapabilityService - Tool detection and health assessment
 # Part of Claude Code SuperClaude hook system resilience components
 

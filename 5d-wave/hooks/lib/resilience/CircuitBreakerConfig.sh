@@ -1,4 +1,6 @@
 #!/bin/bash
+# AI-Craft Framework - Managed File
+# Part of Claude Code SuperClaude modular hook system
 # CircuitBreakerConfig - Parameter object for circuit breaker configuration
 # Part of Claude Code SuperClaude hook system resilience components
 

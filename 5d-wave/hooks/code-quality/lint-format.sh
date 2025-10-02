@@ -1,4 +1,6 @@
 #!/bin/bash
+# AI-Craft Framework - Managed File
+# Part of Claude Code SuperClaude modular hook system
 # Enhanced Format and Lint Hook - Modular Version
 # Part of Claude Code SuperClaude modular hook system
 # Uses new modular architecture with Strategy pattern for formatters

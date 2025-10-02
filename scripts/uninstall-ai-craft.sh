@@ -18,6 +18,7 @@ BACKUP_DIR="$CLAUDE_CONFIG_DIR/backups/ai-craft-uninstall-$BACKUP_TIMESTAMP"
 # Default options
 BACKUP_BEFORE_REMOVAL=false
 FORCE_REMOVAL=false
+DRY_RUN=false
 
 # Color constants
 readonly RED='\033[0;31m'
@@ -40,10 +41,12 @@ ${BLUE}USAGE:${NC}
 ${BLUE}OPTIONS:${NC}
     --backup         Create backup before removal (recommended)
     --force          Skip confirmation prompts
+    --dry-run        Show what would be removed without making any changes
     --help           Show this help message
 
 ${BLUE}EXAMPLES:${NC}
     $0                      # Interactive uninstall with confirmation
+    $0 --dry-run            # Show what would be removed (no changes made)
     $0 --backup             # Create backup before removal
     $0 --force              # Uninstall without confirmation prompts
 
@@ -183,18 +186,50 @@ create_backup() {
     if [[ "$BACKUP_BEFORE_REMOVAL" == "false" ]]; then
         return 0
     fi
-    
+
+    if [[ "$DRY_RUN" == "true" ]]; then
+        info "${YELLOW}[DRY RUN]${NC} Would create backup before removal..."
+        info "${YELLOW}[DRY RUN]${NC} Would create backup directory: $BACKUP_DIR"
+
+        if [[ -d "$CLAUDE_CONFIG_DIR/agents/dw" ]]; then
+            info "${YELLOW}[DRY RUN]${NC} Would backup agents/dw directory"
+        fi
+
+        if [[ -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
+            info "${YELLOW}[DRY RUN]${NC} Would backup commands/dw directory"
+        fi
+
+        if [[ -d "$CLAUDE_CONFIG_DIR/hooks" ]]; then
+            info "${YELLOW}[DRY RUN]${NC} Would backup hooks directory"
+        fi
+
+        if [[ -f "$CLAUDE_CONFIG_DIR/settings.local.json" ]]; then
+            info "${YELLOW}[DRY RUN]${NC} Would backup settings.local.json"
+        fi
+
+        if [[ -f "$CLAUDE_CONFIG_DIR/ai-craft-manifest.txt" ]]; then
+            info "${YELLOW}[DRY RUN]${NC} Would backup manifest file"
+        fi
+
+        if [[ -f "$CLAUDE_CONFIG_DIR/ai-craft-install.log" ]]; then
+            info "${YELLOW}[DRY RUN]${NC} Would backup installation log"
+        fi
+
+        info "${YELLOW}[DRY RUN]${NC} Would create backup manifest: $BACKUP_DIR/uninstall-backup-manifest.txt"
+        return 0
+    fi
+
     info "Creating backup before removal..."
-    
+
     mkdir -p "$BACKUP_DIR"
-    
+
     # Backup agents directory if it exists
     if [[ -d "$CLAUDE_CONFIG_DIR/agents/dw" ]]; then
         mkdir -p "$BACKUP_DIR/agents"
         cp -r "$CLAUDE_CONFIG_DIR/agents/dw" "$BACKUP_DIR/agents/"
         info "Backed up agents/dw directory"
     fi
-    
+
     # Backup commands directory if it exists
     if [[ -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
         mkdir -p "$BACKUP_DIR/commands"
@@ -202,7 +237,6 @@ create_backup() {
         info "Backed up commands/dw directory"
     fi
 
-    
     # Backup hooks directory if it exists
     if [[ -d "$CLAUDE_CONFIG_DIR/hooks" ]]; then
         mkdir -p "$BACKUP_DIR/hooks"
@@ -226,7 +260,7 @@ create_backup() {
         cp "$CLAUDE_CONFIG_DIR/ai-craft-install.log" "$BACKUP_DIR/"
         info "Backed up installation log"
     fi
-    
+
     # Create backup manifest
     cat > "$BACKUP_DIR/uninstall-backup-manifest.txt" << EOF
 Framework Uninstall Backup
@@ -238,11 +272,28 @@ Backup contents:
   - Configuration files and logs
   - Complete framework state before removal
 EOF
-    
+
     info "Backup created successfully at: $BACKUP_DIR"
 }
 
 remove_agents() {
+    if [[ "$DRY_RUN" == "true" ]]; then
+        info "${YELLOW}[DRY RUN]${NC} Would remove 5D-WAVE agents..."
+
+        if [[ -d "$CLAUDE_CONFIG_DIR/agents/dw" ]]; then
+            info "${YELLOW}[DRY RUN]${NC} Would remove agents/dw directory"
+        fi
+
+        if [[ -d "$CLAUDE_CONFIG_DIR/agents" ]]; then
+            if [[ -z "$(ls -A "$CLAUDE_CONFIG_DIR/agents" 2>/dev/null)" ]]; then
+                info "${YELLOW}[DRY RUN]${NC} Would remove empty agents directory"
+            else
+                info "${YELLOW}[DRY RUN]${NC} Would keep agents directory (contains other files)"
+            fi
+        fi
+        return 0
+    fi
+
     info "Removing 5D-WAVE agents..."
 
     # Remove 5D-WAVE structure
@@ -263,6 +314,23 @@ remove_agents() {
 }
 
 remove_commands() {
+    if [[ "$DRY_RUN" == "true" ]]; then
+        info "${YELLOW}[DRY RUN]${NC} Would remove 5D-WAVE commands..."
+
+        if [[ -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
+            info "${YELLOW}[DRY RUN]${NC} Would remove commands/dw directory"
+        fi
+
+        if [[ -d "$CLAUDE_CONFIG_DIR/commands" ]]; then
+            if [[ -z "$(ls -A "$CLAUDE_CONFIG_DIR/commands" 2>/dev/null)" ]]; then
+                info "${YELLOW}[DRY RUN]${NC} Would remove empty commands directory"
+            else
+                info "${YELLOW}[DRY RUN]${NC} Would keep commands directory (contains other files)"
+            fi
+        fi
+        return 0
+    fi
+
     info "Removing 5D-WAVE commands..."
 
     # Remove 5D-WAVE structure
@@ -284,21 +352,122 @@ remove_commands() {
 
 
 remove_framework_hooks() {
-    info "Removing 5D-WAVE workflow hooks..."
+    if [[ "$DRY_RUN" == "true" ]]; then
+        info "${YELLOW}[DRY RUN]${NC} Would remove 5D-WAVE workflow hooks safely..."
 
-    # Remove framework-specific hook files (preserve other hooks)
-    if [[ -d "$CLAUDE_CONFIG_DIR/hooks" ]]; then
-        # Remove framework-specific directories
-        rm -rf "$CLAUDE_CONFIG_DIR/hooks/workflow" 2>/dev/null || true
-        rm -rf "$CLAUDE_CONFIG_DIR/hooks/code-quality" 2>/dev/null || true
-        rm -rf "$CLAUDE_CONFIG_DIR/hooks/lib" 2>/dev/null || true
-        rm -rf "$CLAUDE_CONFIG_DIR/hooks/config" 2>/dev/null || true
-        rm -rf "$CLAUDE_CONFIG_DIR/hooks/formatters" 2>/dev/null || true
-        rm -rf "$CLAUDE_CONFIG_DIR/hooks/legacy" 2>/dev/null || true
-        rm -f "$CLAUDE_CONFIG_DIR/hooks/verify-installation.sh" 2>/dev/null || true
-        rm -f "$CLAUDE_CONFIG_DIR/hooks/test_"*.sh 2>/dev/null || true
-        info "Removed framework hook files"
+        if [[ ! -d "$CLAUDE_CONFIG_DIR/hooks" ]]; then
+            info "${YELLOW}[DRY RUN]${NC} No hooks directory found, would skip hook removal"
+            return 0
+        fi
+
+        local managed_dirs=("workflow" "code-quality" "lib" "config" "formatters" "legacy")
+        local total_would_remove=0
+        local total_would_preserve=0
+
+        for dir in "${managed_dirs[@]}"; do
+            if [[ -d "$CLAUDE_CONFIG_DIR/hooks/$dir" ]]; then
+                local would_remove=0
+                local would_preserve=0
+
+                while IFS= read -r -d '' file; do
+                    if grep -q "# Part of Claude Code SuperClaude\|# AI-Craft Framework" "$file" 2>/dev/null; then
+                        ((would_remove++))
+                        ((total_would_remove++))
+                    else
+                        ((would_preserve++))
+                        ((total_would_preserve++))
+                    fi
+                done < <(find "$CLAUDE_CONFIG_DIR/hooks/$dir" -type f -print0 2>/dev/null)
+
+                if [[ $would_remove -gt 0 ]]; then
+                    info "${YELLOW}[DRY RUN]${NC} Would remove $would_remove AI-Craft file(s) from hooks/$dir"
+                fi
+
+                if [[ $would_preserve -gt 0 ]]; then
+                    warn "${YELLOW}[DRY RUN]${NC} Would preserve $would_preserve custom file(s) in hooks/$dir"
+                fi
+
+                if [[ $would_preserve -eq 0 ]] && [[ $would_remove -gt 0 ]]; then
+                    info "${YELLOW}[DRY RUN]${NC} Would remove empty hooks/$dir directory"
+                else
+                    info "${YELLOW}[DRY RUN]${NC} Would keep hooks/$dir directory (contains custom files)"
+                fi
+            fi
+        done
+
+        info "${YELLOW}[DRY RUN]${NC} Summary: Would remove $total_would_remove AI-Craft files, preserve $total_would_preserve custom files"
+        info "${YELLOW}[DRY RUN]${NC} Would clean hook settings from settings.local.json"
+        info "${YELLOW}[DRY RUN]${NC} Would clean global settings from settings.json"
+        return 0
     fi
+
+    info "Removing 5D-WAVE workflow hooks safely..."
+
+    if [[ ! -d "$CLAUDE_CONFIG_DIR/hooks" ]]; then
+        info "No hooks directory found, skipping hook removal"
+        return 0
+    fi
+
+    # Define AI-Craft managed directories
+    local managed_dirs=("workflow" "code-quality" "lib" "config" "formatters" "legacy")
+
+    local total_removed=0
+    local total_preserved=0
+
+    # Remove only AI-Craft files (identified by marker comment), preserve custom files
+    for dir in "${managed_dirs[@]}"; do
+        if [[ -d "$CLAUDE_CONFIG_DIR/hooks/$dir" ]]; then
+            info "Processing hooks/$dir directory..."
+
+            local removed_count=0
+            local preserved_count=0
+
+            # Process each file in the directory
+            while IFS= read -r -d '' file; do
+                # Check if file has AI-Craft marker comment
+                if grep -q "# Part of Claude Code SuperClaude\|# AI-Craft Framework" "$file" 2>/dev/null; then
+                    rm -f "$file"
+                    ((removed_count++))
+                    ((total_removed++))
+                else
+                    warn "Preserving custom file: ${file#$CLAUDE_CONFIG_DIR/hooks/}"
+                    ((preserved_count++))
+                    ((total_preserved++))
+                fi
+            done < <(find "$CLAUDE_CONFIG_DIR/hooks/$dir" -type f -print0 2>/dev/null)
+
+            if [[ $removed_count -gt 0 ]]; then
+                info "Removed $removed_count AI-Craft file(s) from hooks/$dir"
+            fi
+
+            if [[ $preserved_count -gt 0 ]]; then
+                warn "Preserved $preserved_count custom file(s) in hooks/$dir"
+            fi
+
+            # Only remove directory if it's empty
+            if [[ -z "$(ls -A "$CLAUDE_CONFIG_DIR/hooks/$dir" 2>/dev/null)" ]]; then
+                rmdir "$CLAUDE_CONFIG_DIR/hooks/$dir" 2>/dev/null && \
+                    info "Removed empty hooks/$dir directory"
+            else
+                info "Kept hooks/$dir directory (contains ${preserved_count} custom file(s))"
+            fi
+        fi
+    done
+
+    # Remove standalone framework files
+    if [[ -f "$CLAUDE_CONFIG_DIR/hooks/verify-installation.sh" ]]; then
+        rm -f "$CLAUDE_CONFIG_DIR/hooks/verify-installation.sh"
+        ((total_removed++))
+    fi
+
+    # Remove test files
+    local test_file_count=$(find "$CLAUDE_CONFIG_DIR/hooks" -maxdepth 1 -name "test_*.sh" 2>/dev/null | wc -l)
+    if [[ $test_file_count -gt 0 ]]; then
+        find "$CLAUDE_CONFIG_DIR/hooks" -maxdepth 1 -name "test_*.sh" -delete 2>/dev/null || true
+        total_removed=$((total_removed + test_file_count))
+    fi
+
+    info "Hook removal summary: $total_removed AI-Craft files removed, $total_preserved custom files preserved"
 
     # Remove hooks directory if it's empty after framework removal
     if [[ -d "$CLAUDE_CONFIG_DIR/hooks" ]]; then
@@ -306,7 +475,7 @@ remove_framework_hooks() {
             rmdir "$CLAUDE_CONFIG_DIR/hooks" 2>/dev/null
             info "Removed empty hooks directory"
         else
-            info "Kept hooks directory (contains other files)"
+            info "Kept hooks directory (contains $total_preserved custom file(s))"
         fi
     fi
 
@@ -321,6 +490,12 @@ clean_hook_settings() {
     local settings_file="$CLAUDE_CONFIG_DIR/settings.local.json"
 
     if [[ ! -f "$settings_file" ]]; then
+        return 0
+    fi
+
+    if [[ "$DRY_RUN" == "true" ]]; then
+        info "${YELLOW}[DRY RUN]${NC} Would clean CAI hooks from settings.local.json"
+        info "${YELLOW}[DRY RUN]${NC} Would create backup: $settings_file.pre-uninstall-backup"
         return 0
     fi
 
@@ -392,7 +567,17 @@ clean_global_settings() {
     local global_settings="$CLAUDE_CONFIG_DIR/settings.json"
 
     if [[ ! -f "$global_settings" ]]; then
-        info "Global settings.json not found, skipping cleanup"
+        if [[ "$DRY_RUN" == "true" ]]; then
+            info "${YELLOW}[DRY RUN]${NC} Global settings.json not found, would skip cleanup"
+        else
+            info "Global settings.json not found, skipping cleanup"
+        fi
+        return 0
+    fi
+
+    if [[ "$DRY_RUN" == "true" ]]; then
+        info "${YELLOW}[DRY RUN]${NC} Would clean AI-Craft hooks from settings.json"
+        info "${YELLOW}[DRY RUN]${NC} Would create backup: $global_settings.pre-uninstall-backup"
         return 0
     fi
 
@@ -418,11 +603,17 @@ except Exception as e:
 
 # Remove AI-Craft hooks from PostToolUse while keeping other hooks
 if 'hooks' in settings and 'PostToolUse' in settings['hooks']:
-    # Filter out AI-Craft hooks (lint-format.sh and hooks-dispatcher.sh references)
+    # Remove only AI-Craft hooks by exact path match (safer than substring matching)
+    ai_craft_hook_paths = [
+        '/mnt/c/Users/alexd/.claude/hooks/code-quality/lint-format.sh',
+        '/mnt/c/Users/alexd/.claude/hooks/workflow/hooks-dispatcher.sh'
+    ]
+
+    # Filter out only hooks with exact AI-Craft paths
     settings['hooks']['PostToolUse'] = [
         hook for hook in settings['hooks']['PostToolUse']
         if not any(
-            'lint-format.sh' in h.get('command', '') or 'hooks-dispatcher.sh' in h.get('command', '')
+            any(path in h.get('command', '') for path in ai_craft_hook_paths)
             for h in hook.get('hooks', [])
         )
     ]
@@ -456,6 +647,19 @@ PYTHON_SCRIPT
 }
 
 remove_config_files() {
+    if [[ "$DRY_RUN" == "true" ]]; then
+        info "${YELLOW}[DRY RUN]${NC} Would remove AI-Craft configuration files..."
+
+        if [[ -f "$CLAUDE_CONFIG_DIR/ai-craft-manifest.txt" ]]; then
+            info "${YELLOW}[DRY RUN]${NC} Would remove ai-craft-manifest.txt"
+        fi
+
+        if [[ -f "$CLAUDE_CONFIG_DIR/ai-craft-install.log" ]]; then
+            info "${YELLOW}[DRY RUN]${NC} Would remove ai-craft-install.log"
+        fi
+        return 0
+    fi
+
     info "Removing AI-Craft configuration files..."
 
     if [[ -f "$CLAUDE_CONFIG_DIR/ai-craft-manifest.txt" ]]; then
@@ -470,8 +674,28 @@ remove_config_files() {
 }
 
 remove_backups() {
+    if [[ "$DRY_RUN" == "true" ]]; then
+        info "${YELLOW}[DRY RUN]${NC} Would remove AI-Craft backup directories..."
+
+        local backup_count=0
+        if [[ -d "$CLAUDE_CONFIG_DIR/backups" ]]; then
+            for backup_dir in "$CLAUDE_CONFIG_DIR/backups"/ai-craft-*; do
+                if [[ -d "$backup_dir" ]]; then
+                    ((backup_count++))
+                fi
+            done
+        fi
+
+        if [[ $backup_count -gt 0 ]]; then
+            info "${YELLOW}[DRY RUN]${NC} Would remove $backup_count AI-Craft backup directories"
+        else
+            info "${YELLOW}[DRY RUN]${NC} No AI-Craft backup directories found"
+        fi
+        return 0
+    fi
+
     info "Removing AI-Craft backup directories..."
-    
+
     local backup_count=0
     if [[ -d "$CLAUDE_CONFIG_DIR/backups" ]]; then
         for backup_dir in "$CLAUDE_CONFIG_DIR/backups"/ai-craft-*; do
@@ -481,7 +705,7 @@ remove_backups() {
             fi
         done
     fi
-    
+
     if [[ $backup_count -gt 0 ]]; then
         info "Removed $backup_count AI-Craft backup directories"
     else
@@ -490,8 +714,21 @@ remove_backups() {
 }
 
 remove_project_files() {
+    if [[ "$DRY_RUN" == "true" ]]; then
+        info "${YELLOW}[DRY RUN]${NC} Would remove AI-Craft project files..."
+
+        if [[ -d "$CLAUDE_CONFIG_DIR/projects" ]]; then
+            for project_dir in "$CLAUDE_CONFIG_DIR/projects"/*ai-craft*; do
+                if [[ -d "$project_dir" ]]; then
+                    info "${YELLOW}[DRY RUN]${NC} Would remove project directory: $(basename "$project_dir")"
+                fi
+            done
+        fi
+        return 0
+    fi
+
     info "Removing AI-Craft project files..."
-    
+
     if [[ -d "$CLAUDE_CONFIG_DIR/projects" ]]; then
         for project_dir in "$CLAUDE_CONFIG_DIR/projects"/*ai-craft*; do
             if [[ -d "$project_dir" ]]; then
@@ -602,6 +839,11 @@ while [[ $# -gt 0 ]]; do
             ;;
         --force)
             FORCE_REMOVAL=true
+            shift
+            ;;
+        --dry-run)
+            DRY_RUN=true
+            info "${YELLOW}DRY RUN MODE${NC} - No changes will be made"
             shift
             ;;
         --help|-h)

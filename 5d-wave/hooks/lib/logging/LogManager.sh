@@ -1,4 +1,6 @@
 #!/bin/bash
+# AI-Craft Framework - Managed File
+# Part of Claude Code SuperClaude modular hook system
 # LogManager - Unified Logging Framework
 # Part of Claude Code SuperClaude modular hook system
 

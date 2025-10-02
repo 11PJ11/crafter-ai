@@ -1,4 +1,6 @@
 #!/bin/bash
+# AI-Craft Framework - Managed File
+# Part of Claude Code SuperClaude modular hook system
 # CircuitBreaker - Tool availability management with graceful degradation
 # Part of Claude Code SuperClaude hook system resilience components
 

@@ -1,4 +1,6 @@
 #!/bin/bash
+# AI-Craft Framework - Managed File
+# Part of Claude Code SuperClaude modular hook system
 # CssFormatter - CSS/SCSS/Sass formatter strategy
 # Part of Claude Code SuperClaude modular hook system
 

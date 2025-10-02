@@ -1,4 +1,6 @@
 #!/bin/bash
+# AI-Craft Framework - Managed File
+# Part of Claude Code SuperClaude modular hook system
 # FormatterRegistry - Formatter strategy registry and dispatcher
 # Part of Claude Code SuperClaude modular hook system
 

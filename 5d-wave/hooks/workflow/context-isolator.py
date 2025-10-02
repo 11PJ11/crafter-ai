@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# AI-Craft Framework - Managed File
+# Part of Claude Code SuperClaude modular hook system
 """
 Craft-AI Context Isolator Hook
 Provides clean context isolation for CAI agents only

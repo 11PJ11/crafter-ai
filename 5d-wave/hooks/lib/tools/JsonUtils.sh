@@ -1,4 +1,6 @@
 #!/bin/bash
+# AI-Craft Framework - Managed File
+# Part of Claude Code SuperClaude modular hook system
 # JsonUtils - JSON parsing utilities module
 # Part of Claude Code SuperClaude modular hook system
 

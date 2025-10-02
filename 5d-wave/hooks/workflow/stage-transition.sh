@@ -1,4 +1,6 @@
 #!/bin/bash
+# AI-Craft Framework - Managed File
+# Part of Claude Code SuperClaude modular hook system
 # Craft-AI Stage Transition Hook - Modular Architecture
 # Handles automatic stage transitions in ATDD workflow
 # Only processes CAI workflows

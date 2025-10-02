@@ -1,4 +1,6 @@
 #!/bin/bash
+# AI-Craft Framework - Managed File
+# Part of Claude Code SuperClaude modular hook system
 # Craft-AI Input Validator Hook - Modular Architecture
 # Validates agent file access for CAI workflows only
 # Ensures agents read from correct input files

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# AI-Craft Framework - Managed File
+# Part of Claude Code SuperClaude modular hook system
 """
 JSON utilities for Craft-AI hooks
 Replaces jq commands for cross-platform compatibility

@@ -13,6 +13,7 @@ CLAUDE_CONFIG_DIR="/mnt/c/Users/alexd/.claude"
 BACKUP_DIR="$CLAUDE_CONFIG_DIR/backups/ai-craft-$(date +%Y%m%d-%H%M%S)"
 FRAMEWORK_SOURCE="$PROJECT_ROOT/dist/ide"
 INSTALL_LOG="$CLAUDE_CONFIG_DIR/ai-craft-install.log"
+DRY_RUN=false
 
 # Color codes for output
 RED='\033[0;31m'
@@ -49,10 +50,12 @@ USAGE:
 OPTIONS:
     --backup-only    Create backup of existing AI-Craft installation without installing
     --restore        Restore from the most recent backup
+    --dry-run        Show what would be installed without making any changes
     --help           Show this help message
 
 EXAMPLES:
     $0                      # Install 5D-WAVE framework
+    $0 --dry-run            # Show what would be installed (no changes made)
     $0 --backup-only        # Create backup only
     $0 --restore           # Restore from latest backup
 
@@ -125,21 +128,52 @@ check_source() {
 
 # Create backup of existing installation
 create_backup() {
+    if [[ "$DRY_RUN" == "true" ]]; then
+        info "${YELLOW}[DRY RUN]${NC} Would create backup of existing AI-Craft installation..."
+
+        if [[ ! -d "$CLAUDE_CONFIG_DIR/agents" ]] && [[ ! -d "$CLAUDE_CONFIG_DIR/commands" ]]; then
+            info "${YELLOW}[DRY RUN]${NC} No existing AI-Craft installation found, would skip backup"
+            return 0
+        fi
+
+        info "${YELLOW}[DRY RUN]${NC} Would create backup directory: $BACKUP_DIR"
+
+        # Show what would be backed up
+        if [[ -d "$CLAUDE_CONFIG_DIR/agents" ]]; then
+            info "${YELLOW}[DRY RUN]${NC} Would backup agents directory"
+        fi
+
+        if [[ -d "$CLAUDE_CONFIG_DIR/commands" ]]; then
+            info "${YELLOW}[DRY RUN]${NC} Would backup commands directory"
+        fi
+
+        if [[ -d "$CLAUDE_CONFIG_DIR/manuals" ]]; then
+            info "${YELLOW}[DRY RUN]${NC} Would backup manuals directory"
+        fi
+
+        if [[ -d "$CLAUDE_CONFIG_DIR/hooks" ]]; then
+            info "${YELLOW}[DRY RUN]${NC} Would backup hooks directory"
+        fi
+
+        info "${YELLOW}[DRY RUN]${NC} Would create backup manifest at: $BACKUP_DIR/backup-manifest.txt"
+        return 0
+    fi
+
     info "Creating backup of existing AI-Craft installation..."
-    
+
     if [[ ! -d "$CLAUDE_CONFIG_DIR/agents" ]] && [[ ! -d "$CLAUDE_CONFIG_DIR/commands" ]]; then
         info "No existing AI-Craft installation found, skipping backup"
         return 0
     fi
-    
+
     mkdir -p "$BACKUP_DIR"
-    
+
     # Backup existing agents directory
     if [[ -d "$CLAUDE_CONFIG_DIR/agents" ]]; then
         cp -r "$CLAUDE_CONFIG_DIR/agents" "$BACKUP_DIR/"
         info "Backed up agents directory"
     fi
-    
+
     # Backup existing commands directory
     if [[ -d "$CLAUDE_CONFIG_DIR/commands" ]]; then
         cp -r "$CLAUDE_CONFIG_DIR/commands" "$BACKUP_DIR/"
@@ -157,7 +191,7 @@ create_backup() {
         cp -r "$CLAUDE_CONFIG_DIR/hooks" "$BACKUP_DIR/"
         info "Backed up hooks directory"
     fi
-    
+
     # Create backup manifest
     cat > "$BACKUP_DIR/backup-manifest.txt" << EOF
 AI-Craft Framework Backup
@@ -166,7 +200,7 @@ Source: $(hostname):$CLAUDE_CONFIG_DIR
 Backup contents:
 $(find "$BACKUP_DIR" -type f -name "*.md" | wc -l) framework files
 EOF
-    
+
     info "Backup created at: $BACKUP_DIR"
     return 0
 }
@@ -208,11 +242,38 @@ restore_backup() {
 
 # Install framework files
 install_framework() {
+    if [[ "$DRY_RUN" == "true" ]]; then
+        info "${YELLOW}[DRY RUN]${NC} Would install AI-Craft framework to: $CLAUDE_CONFIG_DIR"
+
+        # Show what would be created
+        info "${YELLOW}[DRY RUN]${NC} Would create target directory: $CLAUDE_CONFIG_DIR"
+
+        # Show agents that would be installed
+        info "${YELLOW}[DRY RUN]${NC} Would install agents..."
+        if [[ -d "$FRAMEWORK_SOURCE/agents/dw" ]]; then
+            local agent_count=$(find "$FRAMEWORK_SOURCE/agents/dw" -name "*.md" ! -name "README.md" | wc -l)
+            info "${YELLOW}[DRY RUN]${NC} Would create: $CLAUDE_CONFIG_DIR/agents/dw"
+            info "${YELLOW}[DRY RUN]${NC} Would install $agent_count agent files"
+        fi
+
+        # Show commands that would be installed
+        info "${YELLOW}[DRY RUN]${NC} Would install commands..."
+        if [[ -d "$FRAMEWORK_SOURCE/commands/dw" ]]; then
+            local command_count=$(find "$FRAMEWORK_SOURCE/commands/dw" -name "*.md" ! -name "README.md" | wc -l)
+            info "${YELLOW}[DRY RUN]${NC} Would create: $CLAUDE_CONFIG_DIR/commands"
+            info "${YELLOW}[DRY RUN]${NC} Would install $command_count command files"
+        fi
+
+        # Show hooks that would be installed
+        install_craft_ai_hooks
+        return 0
+    fi
+
     info "Installing AI-Craft framework to: $CLAUDE_CONFIG_DIR"
-    
+
     # Create target directories
     mkdir -p "$CLAUDE_CONFIG_DIR"
-    
+
     # Copy agents directory (excluding README.md)
     info "Installing agents..."
     if [[ -d "$FRAMEWORK_SOURCE/agents/dw" ]]; then
@@ -232,7 +293,7 @@ install_framework() {
         local copied_agents=$(find "$CLAUDE_CONFIG_DIR/agents/dw" -name "*.md" | wc -l)
         info "Installed $copied_agents agent files"
     fi
-    
+
     # Copy commands directory
     info "Installing commands..."
     if [[ -d "$FRAMEWORK_SOURCE/commands/dw" ]]; then
@@ -253,27 +314,97 @@ install_framework() {
     install_craft_ai_hooks
 }
 
-# Install Craft-AI specific hooks (surgical approach)
+# Install Craft-AI specific hooks (surgical approach - safe for existing hooks)
 install_craft_ai_hooks() {
-    info "Installing Craft-AI workflow hooks..."
+    if [[ "$DRY_RUN" == "true" ]]; then
+        info "${YELLOW}[DRY RUN]${NC} Would install Craft-AI workflow hooks safely..."
+
+        if [[ ! -d "$FRAMEWORK_SOURCE/hooks" ]]; then
+            warn "${YELLOW}[DRY RUN]${NC} Hook source directory not found: $FRAMEWORK_SOURCE/hooks"
+            return 1
+        fi
+
+        info "${YELLOW}[DRY RUN]${NC} Would create hooks directory: $CLAUDE_CONFIG_DIR/hooks"
+
+        local hook_count=$(find "$FRAMEWORK_SOURCE/hooks" -type f \( -name "*.sh" -o -name "*.py" \) 2>/dev/null | wc -l)
+        info "${YELLOW}[DRY RUN]${NC} Would install $hook_count hook files"
+
+        # Check for custom files that would be backed up
+        local managed_dirs=("workflow" "code-quality" "lib" "config" "formatters" "legacy")
+        for dir in "${managed_dirs[@]}"; do
+            if [[ -d "$CLAUDE_CONFIG_DIR/hooks/$dir" ]]; then
+                local custom_count=0
+                while IFS= read -r -d '' file; do
+                    if ! grep -q "# Part of Claude Code SuperClaude\|# AI-Craft Framework" "$file" 2>/dev/null; then
+                        ((custom_count++))
+                    fi
+                done < <(find "$CLAUDE_CONFIG_DIR/hooks/$dir" -type f -print0 2>/dev/null)
+
+                if [[ $custom_count -gt 0 ]]; then
+                    warn "${YELLOW}[DRY RUN]${NC} Would backup $custom_count custom file(s) in hooks/$dir"
+                fi
+            fi
+        done
+
+        info "${YELLOW}[DRY RUN]${NC} Would merge hook settings to settings.local.json"
+        info "${YELLOW}[DRY RUN]${NC} Would merge global settings to settings.json"
+        return 0
+    fi
+
+    info "Installing Craft-AI workflow hooks safely..."
 
     # Create hooks directory structure
     mkdir -p "$CLAUDE_CONFIG_DIR/hooks"
 
-    # Copy hooks directly to the hooks directory (preserve other hooks)
-    if [[ -d "$FRAMEWORK_SOURCE/hooks" ]]; then
-        # Copy the entire modular hook structure directly
-        cp -r "$FRAMEWORK_SOURCE/hooks/"* "$CLAUDE_CONFIG_DIR/hooks/"
-
-        # Make scripts executable
-        find "$CLAUDE_CONFIG_DIR/hooks" -name "*.sh" -exec chmod +x {} \;
-        find "$CLAUDE_CONFIG_DIR/hooks" -name "*.py" -exec chmod +x {} \;
-
-        local hook_files=$(find "$CLAUDE_CONFIG_DIR/hooks" -type f -name "*.sh" -o -name "*.py" | wc -l)
-        info "Installed $hook_files Craft-AI hook files to hooks/"
-    else
+    if [[ ! -d "$FRAMEWORK_SOURCE/hooks" ]]; then
         warn "Hook source directory not found: $FRAMEWORK_SOURCE/hooks"
+        return 1
     fi
+
+    # Define AI-Craft managed directories (will be fully managed by framework)
+    local managed_dirs=("workflow" "code-quality" "lib" "config" "formatters" "legacy")
+
+    # Check for and backup any custom files in managed directories
+    for dir in "${managed_dirs[@]}"; do
+        if [[ -d "$CLAUDE_CONFIG_DIR/hooks/$dir" ]]; then
+            info "Checking hooks/$dir for custom files..."
+
+            local has_custom_files=false
+            local custom_file_count=0
+
+            # Check each file for AI-Craft marker
+            while IFS= read -r -d '' file; do
+                # Check if file has AI-Craft marker comment
+                if ! grep -q "# Part of Claude Code SuperClaude\|# AI-Craft Framework" "$file" 2>/dev/null; then
+                    has_custom_files=true
+                    warn "Found custom file: ${file#$CLAUDE_CONFIG_DIR/hooks/}"
+                    ((custom_file_count++))
+                fi
+            done < <(find "$CLAUDE_CONFIG_DIR/hooks/$dir" -type f -print0 2>/dev/null)
+
+            if [[ "$has_custom_files" = true ]]; then
+                warn "Directory hooks/$dir contains $custom_file_count custom file(s)"
+                warn "Creating backup before installing AI-Craft hooks"
+
+                # Backup custom files with timestamp
+                local custom_backup_dir="$BACKUP_DIR/custom-hooks/$dir"
+                mkdir -p "$custom_backup_dir"
+                cp -r "$CLAUDE_CONFIG_DIR/hooks/$dir/"* "$custom_backup_dir/" 2>/dev/null || true
+                info "Backed up custom files to: $custom_backup_dir"
+            fi
+        fi
+    done
+
+    # Install AI-Craft hooks (will overwrite AI-Craft files, but custom files are backed up)
+    info "Installing AI-Craft hook files..."
+    cp -r "$FRAMEWORK_SOURCE/hooks/"* "$CLAUDE_CONFIG_DIR/hooks/" 2>/dev/null || true
+
+    # Make scripts executable
+    find "$CLAUDE_CONFIG_DIR/hooks" -name "*.sh" -exec chmod +x {} \; 2>/dev/null || true
+    find "$CLAUDE_CONFIG_DIR/hooks" -name "*.py" -exec chmod +x {} \; 2>/dev/null || true
+
+    local hook_files=$(find "$CLAUDE_CONFIG_DIR/hooks" -type f \( -name "*.sh" -o -name "*.py" \) 2>/dev/null | wc -l)
+    info "Installed $hook_files Craft-AI hook files to hooks/"
 
     # Merge hooks into settings (preserve existing)
     merge_hook_settings
@@ -414,11 +545,17 @@ if 'hooks' not in settings:
 if 'PostToolUse' not in settings['hooks']:
     settings['hooks']['PostToolUse'] = []
 
-# Remove any existing AI-Craft hooks to avoid duplicates
+# Remove only AI-Craft hooks by exact path match (safer than substring matching)
+ai_craft_hook_paths = [
+    '/mnt/c/Users/alexd/.claude/hooks/code-quality/lint-format.sh',
+    '/mnt/c/Users/alexd/.claude/hooks/workflow/hooks-dispatcher.sh'
+]
+
+# Filter out only hooks with exact AI-Craft paths
 settings['hooks']['PostToolUse'] = [
     hook for hook in settings['hooks']['PostToolUse']
     if not any(
-        'lint-format.sh' in h.get('command', '') or 'hooks-dispatcher.sh' in h.get('command', '')
+        any(path in h.get('command', '') for path in ai_craft_hook_paths)
         for h in hook.get('hooks', [])
     )
 ]
@@ -429,7 +566,8 @@ ai_craft_hook = {
     "hooks": [
         {
             "type": "command",
-            "command": "bash /mnt/c/Users/alexd/.claude/hooks/code-quality/lint-format.sh"
+            "command": "bash /mnt/c/Users/alexd/.claude/hooks/code-quality/lint-format.sh",
+            "id": "ai-craft-lint-format"
         }
     ]
 }
@@ -641,6 +779,10 @@ main() {
         --help|-h)
             show_help
             exit 0
+            ;;
+        --dry-run)
+            DRY_RUN=true
+            info "${YELLOW}DRY RUN MODE${NC} - No changes will be made"
             ;;
         --backup-only)
             check_source

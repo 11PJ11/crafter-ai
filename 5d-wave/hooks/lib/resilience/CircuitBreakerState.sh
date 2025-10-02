@@ -1,4 +1,6 @@
 #!/bin/bash
+# AI-Craft Framework - Managed File
+# Part of Claude Code SuperClaude modular hook system
 # CircuitBreakerState - Specialized state management for circuit breaker pattern
 # Part of Claude Code SuperClaude hook system resilience components
 

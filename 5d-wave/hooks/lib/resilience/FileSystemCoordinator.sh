@@ -1,4 +1,6 @@
 #!/bin/bash
+# AI-Craft Framework - Managed File
+# Part of Claude Code SuperClaude modular hook system
 # FileSystemCoordinator - Resource coordination and conflict prevention
 # Part of Claude Code SuperClaude hook system resilience components
 

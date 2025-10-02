@@ -1,4 +1,6 @@
 #!/bin/bash
+# AI-Craft Framework - Managed File
+# Part of Claude Code SuperClaude modular hook system
 # HookManager - Main facade for modular hook system
 # Part of Claude Code SuperClaude modular hook system
 
