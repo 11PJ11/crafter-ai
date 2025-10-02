@@ -21,84 +21,100 @@ This is the comprehensive reference guide for Outside-In Test Driven Development
 ## Four-Stage ATDD Integration Cycle
 
 ### Stage 1: DISCUSS - Requirements Clarification
+
 **Purpose**: Establish customer-developer-tester collaboration and business understanding
 
 **Activities**:
+
 - **Three Amigos Sessions**: Regular collaboration between business stakeholders, developers, and testers
 - **Example Mapping**: Concrete examples drive understanding and validation
 - **Ubiquitous Language Development**: Domain terminology maintained from requirements through implementation
 - **Acceptance Criteria Definition**: Clear, testable criteria in Given-When-Then format
 
 **Outputs**:
+
 - Business requirements with stakeholder consensus
 - Domain model with ubiquitous language
 - User stories with acceptance criteria
 - Risk assessment and mitigation strategies
 
 **Quality Gates**:
+
 - ✅ Stakeholder alignment achieved
 - ✅ Business requirements clear and testable
 - ✅ Domain language established
 - ✅ ATDD foundation operational
 
 ### Stage 2: DISTILL - Acceptance Test Creation
+
 **Purpose**: Create executable specifications from business requirements
 
 **Activities**:
+
 - **Given-When-Then Scenarios**: Business-focused acceptance test creation
 - **Production Service Integration Planning**: Design real system integration patterns
 - **One-E2E-at-a-Time Strategy**: Sequential test implementation to prevent commit blocks
 - **Business Validation Criteria**: Measurable success criteria and KPI integration
 
 **Outputs**:
+
 - Executable acceptance tests
 - Production service integration patterns
 - Test environment configuration
 - Business validation framework
 
 **Quality Gates**:
+
 - ✅ Acceptance tests created covering all business requirements
 - ✅ Production service integration patterns established
 - ✅ One-E2E-at-a-time strategy implemented
 - ✅ Test scenarios suitable for Outside-In TDD implementation
 
 ### Stage 3: DEVELOP - Outside-In TDD Implementation
+
 **Purpose**: Implement features through double-loop TDD architecture
 
 **Activities**:
+
 - **Double-Loop TDD Execution**: ATDD outer loop driving UTDD inner loop
 - **Production Service Integration**: Step methods calling real production services
 - **Systematic Refactoring**: Progressive improvement using six-level hierarchy
 - **Business-Driven Naming**: Domain language preservation throughout implementation
 
 **Outputs**:
+
 - Working software with business value
 - Comprehensive test suite (acceptance + unit)
 - Clean, maintainable codebase
 - Production-ready architecture
 
 **Quality Gates**:
+
 - ✅ All acceptance tests passing
 - ✅ Production service integration operational
 - ✅ Systematic refactoring applied
 - ✅ Business naming preserves domain intent
 
 ### Stage 4: DEMO - Production Readiness and Validation
+
 **Purpose**: Validate business value delivery with stakeholder feedback
 
 **Activities**:
+
 - **Production Deployment**: Operational system with monitoring and support
 - **Stakeholder Demonstration**: Business value validation with customer feedback
 - **Operational Knowledge Transfer**: Support team training and maintenance procedures
 - **Business Impact Measurement**: ROI validation and success metric achievement
 
 **Outputs**:
+
 - Production-deployed system
 - Stakeholder satisfaction validation
 - Operational procedures and documentation
 - Business value metrics and ROI analysis
 
 **Quality Gates**:
+
 - ✅ Production deployment successful
 - ✅ Business value delivery demonstrated
 - ✅ Stakeholder satisfaction achieved
@@ -109,12 +125,14 @@ This is the comprehensive reference guide for Outside-In Test Driven Development
 ### 1. Start with Failing E2E Test (OUTER LOOP)
 
 **Process**:
+
 1. **Write E2E test** representing complete user-facing feature
 2. **Use business language** in test names and assertions
 3. **Test MUST fail initially** (RED state) - acts as executable specification
 4. **Focus on business outcomes**, not implementation details
 
 **Example Pattern**:
+
 ```csharp
 [Test]
 public async Task UserRegistersNewAccount_Successfully()
@@ -139,11 +157,13 @@ public async Task UserRegistersNewAccount_Successfully()
 ### 2. Step Down to Unit Tests (INNER LOOP)
 
 **When to Step Down**:
+
 - E2E test fails due to missing implementation
 - Need to drive internal component behavior
 - Complex business logic requires detailed testing
 
 **Unit Test Process**:
+
 1. **Write failing unit test** for smallest behavior
 2. **Use business-focused naming** that reveals intent
 3. **Implement minimal code** to make test pass (GREEN)
@@ -151,6 +171,7 @@ public async Task UserRegistersNewAccount_Successfully()
 5. **Return to E2E test** and verify progress
 
 **Example Pattern**:
+
 ```csharp
 public class UserRegistrationServiceShould
 {
@@ -190,6 +211,7 @@ public class UserRegistrationServiceShould
 **Purpose**: Maintains proper TDD failure cycles during scaffolding phase
 
 **Pattern**:
+
 ```csharp
 // Step method calls desired production service interface
 [When("I submit the registration form")]
@@ -211,6 +233,7 @@ public class UserService : IUserService
 ```
 
 **Benefits**:
+
 - Creates implementation pressure while designing natural interfaces
 - Maintains TDD RED state until real implementation exists
 - Enables "Write the Code You Wish You Had" design approach
@@ -221,6 +244,7 @@ public class UserService : IUserService
 **MANDATORY Pattern**: Step methods must call production services via dependency injection
 
 **Correct Implementation**:
+
 ```csharp
 [Given("I am a new user with valid registration information")]
 public void GivenNewUserWithValidInformation()
@@ -250,6 +274,7 @@ public async Task ThenShouldReceiveConfirmationEmail()
 ```
 
 **Anti-Patterns to Avoid**:
+
 ```csharp
 // ❌ FORBIDDEN - Test infrastructure business logic
 [When("I submit the registration form")]
@@ -272,6 +297,7 @@ public async Task SystemWorksCorrectly()
 **Purpose**: Prevents commit blocks and maintains focused development
 
 **Implementation**:
+
 ```csharp
 [Test]
 public async Task UserRegistersNewAccount_Successfully()
@@ -298,6 +324,7 @@ public async Task UserResetPassword_Successfully()
 ```
 
 **Workflow**:
+
 1. **Enable ONE E2E test** - Remove [Ignore] attribute
 2. **Implement through Outside-In TDD** - Complete double-loop cycles
 3. **Commit working implementation** - All tests passing
@@ -309,6 +336,7 @@ public async Task UserResetPassword_Successfully()
 ### .NET/C# Implementation
 
 **Dependency Injection Setup**:
+
 ```csharp
 // Program.cs - Production service registration
 services.AddScoped<IUserService, UserService>();
@@ -322,6 +350,7 @@ services.AddScoped<IEmailService, TestEmailService>(); // Only external boundari
 ```
 
 **Hexagonal Architecture Implementation**:
+
 ```csharp
 // Business logic (hexagon center)
 public class UserService : IUserService
@@ -377,6 +406,7 @@ public class SqlUserRepository : IUserRepository
 ### React/TypeScript Implementation
 
 **Component Architecture for ATDD**:
+
 ```typescript
 // Business-focused component with testable patterns
 export const UserRegistrationForm: FC<Props> = ({ onSubmit }) => {
@@ -440,26 +470,29 @@ export const UserRegistrationContainer: FC = () => {
 ```
 
 **E2E Test with Playwright**:
+
 ```typescript
 // E2E test calling production services
-test('User registers new account successfully', async ({ page }) => {
+test("User registers new account successfully", async ({ page }) => {
   // Given: Navigate to registration page
-  await page.goto('/register');
+  await page.goto("/register");
 
   // When: Fill and submit registration form
-  await page.fill('[data-testid="email-input"]', 'john@example.com');
-  await page.fill('[data-testid="password-input"]', 'SecurePass123');
+  await page.fill('[data-testid="email-input"]', "john@example.com");
+  await page.fill('[data-testid="password-input"]', "SecurePass123");
   await page.click('[data-testid="submit-button"]');
 
   // Then: Verify successful registration
   await expect(page.locator('[data-testid="success-message"]')).toBeVisible();
-  await expect(page.locator('[data-testid="success-message"]')).toContainText('Account created successfully');
+  await expect(page.locator('[data-testid="success-message"]')).toContainText(
+    "Account created successfully",
+  );
 
   // Verify backend state through API
-  const response = await page.request.get('/api/users/john@example.com');
+  const response = await page.request.get("/api/users/john@example.com");
   expect(response.status()).toBe(200);
   const user = await response.json();
-  expect(user.email).toBe('john@example.com');
+  expect(user.email).toBe("john@example.com");
   expect(user.isActive).toBe(true);
 });
 ```
@@ -467,6 +500,7 @@ test('User registers new account successfully', async ({ page }) => {
 ### Node.js/Express Implementation
 
 **Service Architecture for ATDD**:
+
 ```javascript
 // Business service layer
 class UserService {
@@ -480,14 +514,14 @@ class UserService {
     // Business logic without infrastructure dependencies
     const existingUser = await this.userRepository.findByEmail(userData.email);
     if (existingUser) {
-      throw new BusinessError('Email already exists');
+      throw new BusinessError("Email already exists");
     }
 
     const user = await this.userRepository.create({
       email: userData.email,
       passwordHash: await this.hashPassword(userData.password),
       isActive: true,
-      createdAt: new Date()
+      createdAt: new Date(),
     });
 
     await this.eventPublisher.publish(new UserRegistered(user));
@@ -509,16 +543,20 @@ class UserRegistrationSteps {
   }
 
   async userRegistersWithValidData() {
-    const userService = this.serviceProvider.get('UserService');
-    this.registrationResult = await userService.registerUser(this.currentUserData);
+    const userService = this.serviceProvider.get("UserService");
+    this.registrationResult = await userService.registerUser(
+      this.currentUserData,
+    );
   }
 
   async userShouldReceiveConfirmationEmail() {
-    const emailService = this.serviceProvider.get('EmailService');
-    const sentEmails = await emailService.getSentEmails(this.currentUserData.email);
+    const emailService = this.serviceProvider.get("EmailService");
+    const sentEmails = await emailService.getSentEmails(
+      this.currentUserData.email,
+    );
 
     expect(sentEmails).toHaveLength(1);
-    expect(sentEmails[0].subject).toContain('Welcome');
+    expect(sentEmails[0].subject).toContain("Welcome");
   }
 }
 ```
@@ -528,12 +566,14 @@ class UserRegistrationSteps {
 ### Continuous Refactoring During TDD Cycles
 
 **After Each GREEN State**:
+
 1. **Level 1-2 Refactoring** (Always): Readability and complexity
 2. **Domain-Driven Naming**: Ensure business intent is clear
 3. **Compose Method Pattern**: Eliminate how-comments
 4. **Duplication Elimination**: Extract common functionality
 
 **Example Refactoring Progression**:
+
 ```csharp
 // Initial GREEN implementation
 public async Task<RegistrationResult> RegisterUserAsync(User user)
@@ -592,6 +632,7 @@ private async Task SendWelcomeNotification(User user)
 ### Sprint Boundary Refactoring (Level 3-4)
 
 **Class Responsibilities and Abstractions**:
+
 ```csharp
 // After Level 3-4 Refactoring
 public class UserRegistrationService : IUserRegistrationService
@@ -649,7 +690,7 @@ public class UserRegistrationService : IUserRegistrationService
    - Separate business logic from infrastructure concerns
 
 2. **Test Integration**:
-   - Call production services through _serviceProvider.GetRequiredService<T>()
+   - Call production services through \_serviceProvider.GetRequiredService<T>()
    - Avoid business logic in test infrastructure
    - Use minimal mocking limited to external system boundaries
    - Validate end-to-end business workflows through real services
@@ -664,7 +705,7 @@ public class UserRegistrationService : IUserRegistrationService
 
 1. **Test Infrastructure Deception**:
    - ❌ **Problem**: Step methods call test infrastructure instead of production services
-   - ✅ **Solution**: Always use _serviceProvider.GetRequiredService<T>() pattern
+   - ✅ **Solution**: Always use \_serviceProvider.GetRequiredService<T>() pattern
    - ✅ **Validation**: Verify step methods contain production service calls
 
 2. **Mock Overuse**:

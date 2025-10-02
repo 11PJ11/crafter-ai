@@ -107,7 +107,13 @@ acceptance_test_framework:
         - "Identify key decision points and system interactions"
         - "Define success criteria and business value delivery"
         - "Establish workflow boundaries and scope"
-      outputs: ["User workflow maps", "Interaction points", "Success criteria", "Scope definitions"]
+      outputs:
+        [
+          "User workflow maps",
+          "Interaction points",
+          "Success criteria",
+          "Scope definitions",
+        ]
 
     business_rule_extraction:
       purpose: "Transform business rules into testable scenarios"
@@ -116,7 +122,12 @@ acceptance_test_framework:
         - "Create positive and negative test scenarios"
         - "Define edge cases and boundary conditions"
         - "Establish rule precedence and conflict resolution"
-      outputs: ["Business rule scenarios", "Edge case definitions", "Rule interaction tests"]
+      outputs:
+        [
+          "Business rule scenarios",
+          "Edge case definitions",
+          "Rule interaction tests",
+        ]
 
     value_proposition_validation:
       purpose: "Ensure tests validate actual business value delivery"
@@ -125,7 +136,12 @@ acceptance_test_framework:
         - "Define measurable outcomes and success criteria"
         - "Establish value delivery validation methods"
         - "Create business stakeholder feedback mechanisms"
-      outputs: ["Value validation scenarios", "Success metrics", "Stakeholder feedback loops"]
+      outputs:
+        [
+          "Value validation scenarios",
+          "Success metrics",
+          "Stakeholder feedback loops",
+        ]
 
   given_when_then_methodology:
     scenario_structure:
@@ -209,7 +225,12 @@ architectural_test_alignment:
         - "Identify cross-boundary interactions in tests"
         - "Validate component interface contracts"
         - "Ensure proper separation of concerns in tests"
-      outputs: ["Component test mapping", "Boundary interaction tests", "Interface validations"]
+      outputs:
+        [
+          "Component test mapping",
+          "Boundary interaction tests",
+          "Interface validations",
+        ]
 
     integration_point_validation:
       purpose: "Test architectural integration patterns and contracts"
@@ -218,7 +239,8 @@ architectural_test_alignment:
         - "Validate API contracts and data formats"
         - "Test error handling and timeout scenarios"
         - "Verify integration pattern implementation"
-      outputs: ["Integration tests", "Contract validations", "Error handling tests"]
+      outputs:
+        ["Integration tests", "Contract validations", "Error handling tests"]
 
   hexagonal_architecture_testing:
     port_validation:
@@ -241,11 +263,23 @@ architectural_test_alignment:
     adapter_testing_strategy:
       primary_adapters:
         description: "Test inbound adapters for protocol compliance"
-        focus_areas: ["Request handling", "Response formatting", "Error handling", "Security implementation"]
+        focus_areas:
+          [
+            "Request handling",
+            "Response formatting",
+            "Error handling",
+            "Security implementation",
+          ]
 
       secondary_adapters:
         description: "Test outbound adapters for external integration"
-        focus_areas: ["External service calls", "Data transformation", "Error handling", "Performance characteristics"]
+        focus_areas:
+          [
+            "External service calls",
+            "Data transformation",
+            "Error handling",
+            "Performance characteristics",
+          ]
 
 # PRODUCTION SERVICE INTEGRATION
 
@@ -383,18 +417,43 @@ test_data_framework:
     data_generation_approaches:
       synthetic_data:
         description: "Generated data following business rules and patterns"
-        benefits: ["Privacy compliance", "Scalable generation", "Controlled characteristics"]
-        use_cases: ["Large volume testing", "Privacy-sensitive scenarios", "Consistent test conditions"]
+        benefits:
+          [
+            "Privacy compliance",
+            "Scalable generation",
+            "Controlled characteristics",
+          ]
+        use_cases:
+          [
+            "Large volume testing",
+            "Privacy-sensitive scenarios",
+            "Consistent test conditions",
+          ]
 
       anonymized_production_data:
         description: "Production data with sensitive information removed"
-        benefits: ["Realistic scenarios", "Real data relationships", "Production-like complexity"]
-        use_cases: ["Integration testing", "Performance validation", "Complex business scenarios"]
+        benefits:
+          [
+            "Realistic scenarios",
+            "Real data relationships",
+            "Production-like complexity",
+          ]
+        use_cases:
+          [
+            "Integration testing",
+            "Performance validation",
+            "Complex business scenarios",
+          ]
 
       hand_crafted_data:
         description: "Manually created data for specific test scenarios"
         benefits: ["Precise control", "Scenario-specific", "Edge case coverage"]
-        use_cases: ["Boundary testing", "Error scenarios", "Specific business rule validation"]
+        use_cases:
+          [
+            "Boundary testing",
+            "Error scenarios",
+            "Specific business rule validation",
+          ]
 
   data_lifecycle_management:
     data_setup:

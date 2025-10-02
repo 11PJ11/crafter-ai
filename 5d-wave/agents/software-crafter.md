@@ -252,7 +252,8 @@ core_tdd_methodology:
         - "Adapters implement infrastructure details"
         - "Domain depends only on ports"
       example_ports: ["IUserRepository", "IEmailService", "IPaymentGateway"]
-      example_adapters: ["DatabaseUserRepository", "SmtpEmailService", "StripePaymentGateway"]
+      example_adapters:
+        ["DatabaseUserRepository", "SmtpEmailService", "StripePaymentGateway"]
 
   business_focused_testing:
     unit_test_naming:
@@ -496,7 +497,12 @@ code_smell_taxonomy:
       treatment: "Extract Method, Compose Method, Replace Method with Method Object"
       refactoring_level: "Level 2 (Complexity Reduction)"
       priority: "Critical"
-      detection_patterns: ["Method length >20 lines", "Multiple responsibilities", "Complex logic"]
+      detection_patterns:
+        [
+          "Method length >20 lines",
+          "Multiple responsibilities",
+          "Complex logic",
+        ]
 
     large_class:
       description: "Class trying to do too much, has too many instance variables/methods"
@@ -504,7 +510,12 @@ code_smell_taxonomy:
       treatment: "Extract Class, Extract Subclass, Extract Interface"
       refactoring_level: "Level 3 (Responsibility Organization)"
       priority: "High"
-      detection_patterns: ["Class length >300 lines", "Too many fields", "Multiple responsibilities"]
+      detection_patterns:
+        [
+          "Class length >300 lines",
+          "Too many fields",
+          "Multiple responsibilities",
+        ]
 
     primitive_obsession:
       description: "Using primitives instead of small objects for simple tasks"
@@ -512,7 +523,12 @@ code_smell_taxonomy:
       treatment: "Replace Data Value with Object, Introduce Parameter Object"
       refactoring_level: "Level 4 (Abstraction Refinement)"
       priority: "Critical"
-      detection_patterns: ["Raw strings for domain concepts", "Multiple primitive parameters", "Magic numbers"]
+      detection_patterns:
+        [
+          "Raw strings for domain concepts",
+          "Multiple primitive parameters",
+          "Magic numbers",
+        ]
 
     long_parameter_list:
       description: "Method has four or more parameters"
@@ -520,7 +536,8 @@ code_smell_taxonomy:
       treatment: "Replace Parameter with Method Call, Preserve Whole Object, Introduce Parameter Object"
       refactoring_level: "Level 4 (Abstraction Refinement)"
       priority: "High"
-      detection_patterns: ["Parameter count >=4", "Related parameters", "Complex signatures"]
+      detection_patterns:
+        ["Parameter count >=4", "Related parameters", "Complex signatures"]
 
     data_clumps:
       description: "Same group of variables found in different parts of code"
@@ -528,7 +545,12 @@ code_smell_taxonomy:
       treatment: "Extract Class, Introduce Parameter Object, Preserve Whole Object"
       refactoring_level: "Level 4 (Abstraction Refinement)"
       priority: "Medium"
-      detection_patterns: ["Repeated parameter groups", "Similar field clusters", "Data dependencies"]
+      detection_patterns:
+        [
+          "Repeated parameter groups",
+          "Similar field clusters",
+          "Data dependencies",
+        ]
 
   object_orientation_abusers:
     switch_statements:
@@ -537,7 +559,8 @@ code_smell_taxonomy:
       treatment: "Replace Conditional with Polymorphism, Strategy Pattern"
       refactoring_level: "Level 5 (Design Pattern Application)"
       priority: "Critical"
-      detection_patterns: ["Switch on type", "Complex if-else chains", "Repeated conditionals"]
+      detection_patterns:
+        ["Switch on type", "Complex if-else chains", "Repeated conditionals"]
 
     temporary_field:
       description: "Instance variables set only under certain circumstances"
@@ -545,7 +568,12 @@ code_smell_taxonomy:
       treatment: "Extract Class, Introduce Null Object"
       refactoring_level: "Level 3 (Responsibility Organization)"
       priority: "Medium"
-      detection_patterns: ["Conditionally used fields", "Null field assignments", "State-dependent fields"]
+      detection_patterns:
+        [
+          "Conditionally used fields",
+          "Null field assignments",
+          "State-dependent fields",
+        ]
 
     refused_bequest:
       description: "Subclass uses only some methods/properties inherited from parent"
@@ -553,7 +581,12 @@ code_smell_taxonomy:
       treatment: "Push Down Method, Push Down Field, Replace Inheritance with Delegation"
       refactoring_level: "Level 6 (SOLID++ Principles)"
       priority: "Medium"
-      detection_patterns: ["Empty method overrides", "Unused inherited methods", "Interface violations"]
+      detection_patterns:
+        [
+          "Empty method overrides",
+          "Unused inherited methods",
+          "Interface violations",
+        ]
 
     alternative_classes_different_interfaces:
       description: "Two classes perform identical functions but have different method names"
@@ -561,7 +594,12 @@ code_smell_taxonomy:
       treatment: "Rename Method, Move Method, Extract Superclass"
       refactoring_level: "Level 3 (Responsibility Organization)"
       priority: "Medium"
-      detection_patterns: ["Similar responsibilities", "Different method names", "Duplicate logic"]
+      detection_patterns:
+        [
+          "Similar responsibilities",
+          "Different method names",
+          "Duplicate logic",
+        ]
 
   change_preventers:
     divergent_change:
@@ -570,7 +608,12 @@ code_smell_taxonomy:
       treatment: "Extract Class"
       refactoring_level: "Level 3 (Responsibility Organization)"
       priority: "Critical"
-      detection_patterns: ["Multiple change reasons", "Unrelated method modifications", "Feature coupling"]
+      detection_patterns:
+        [
+          "Multiple change reasons",
+          "Unrelated method modifications",
+          "Feature coupling",
+        ]
 
     shotgun_surgery:
       description: "Change requires making many small changes to many classes"
@@ -578,7 +621,12 @@ code_smell_taxonomy:
       treatment: "Move Method, Move Field, Inline Class"
       refactoring_level: "Level 3 (Responsibility Organization)"
       priority: "Critical"
-      detection_patterns: ["Scattered changes", "Multiple class modifications", "Feature distribution"]
+      detection_patterns:
+        [
+          "Scattered changes",
+          "Multiple class modifications",
+          "Feature distribution",
+        ]
 
     parallel_inheritance_hierarchies:
       description: "Creating subclass for one class requires creating subclass for another"
@@ -586,7 +634,8 @@ code_smell_taxonomy:
       treatment: "Move Method, Move Field"
       refactoring_level: "Level 6 (SOLID++ Principles)"
       priority: "Medium"
-      detection_patterns: ["Parallel class names", "Mirrored hierarchies", "Coordinated changes"]
+      detection_patterns:
+        ["Parallel class names", "Mirrored hierarchies", "Coordinated changes"]
 
   dispensables:
     comments:
@@ -595,7 +644,8 @@ code_smell_taxonomy:
       treatment: "Extract Method, Rename Method, Introduce Assertion"
       refactoring_level: "Level 1 (Foundation Refactoring)"
       priority: "Low"
-      detection_patterns: ["How-comments", "Complex explanations", "Implementation details"]
+      detection_patterns:
+        ["How-comments", "Complex explanations", "Implementation details"]
 
     duplicate_code:
       description: "Code fragments that look almost identical"
@@ -603,7 +653,12 @@ code_smell_taxonomy:
       treatment: "Extract Method, Pull Up Method, Form Template Method"
       refactoring_level: "Level 2 (Complexity Reduction)"
       priority: "Critical"
-      detection_patterns: ["Identical code blocks", "Similar logic patterns", "Repeated structures"]
+      detection_patterns:
+        [
+          "Identical code blocks",
+          "Similar logic patterns",
+          "Repeated structures",
+        ]
 
     lazy_class:
       description: "Class doesn't do enough to earn its keep"
@@ -611,7 +666,8 @@ code_smell_taxonomy:
       treatment: "Inline Class, Collapse Hierarchy"
       refactoring_level: "Level 1 (Foundation Refactoring)"
       priority: "Low"
-      detection_patterns: ["Minimal methods", "Little functionality", "Underutilized classes"]
+      detection_patterns:
+        ["Minimal methods", "Little functionality", "Underutilized classes"]
 
     data_class:
       description: "Class contains only fields and crude methods for accessing them"
@@ -619,7 +675,8 @@ code_smell_taxonomy:
       treatment: "Move Method, Encapsulate Field, Encapsulate Collection"
       refactoring_level: "Level 3 (Responsibility Organization)"
       priority: "Medium"
-      detection_patterns: ["Only getters/setters", "No business logic", "Anemic model"]
+      detection_patterns:
+        ["Only getters/setters", "No business logic", "Anemic model"]
 
     dead_code:
       description: "Variable, parameter, field, method, or class no longer used"
@@ -627,7 +684,8 @@ code_smell_taxonomy:
       treatment: "Delete unused code"
       refactoring_level: "Level 1 (Foundation Refactoring)"
       priority: "Low"
-      detection_patterns: ["Unused methods", "Unreferenced variables", "Unreachable code"]
+      detection_patterns:
+        ["Unused methods", "Unreferenced variables", "Unreachable code"]
 
     speculative_generality:
       description: "Code created to support anticipated future features that never come"
@@ -635,7 +693,8 @@ code_smell_taxonomy:
       treatment: "Collapse Hierarchy, Inline Class, Remove Parameter"
       refactoring_level: "Level 1 (Foundation Refactoring)"
       priority: "Low"
-      detection_patterns: ["Unused abstractions", "Single implementations", "Over-engineering"]
+      detection_patterns:
+        ["Unused abstractions", "Single implementations", "Over-engineering"]
 
   couplers:
     feature_envy:
@@ -644,7 +703,12 @@ code_smell_taxonomy:
       treatment: "Move Method, Extract Method"
       refactoring_level: "Level 3 (Responsibility Organization)"
       priority: "High"
-      detection_patterns: ["External data access", "Cross-class method calls", "Responsibility misplacement"]
+      detection_patterns:
+        [
+          "External data access",
+          "Cross-class method calls",
+          "Responsibility misplacement",
+        ]
 
     inappropriate_intimacy:
       description: "Classes know too much about each other's private details"
@@ -652,7 +716,8 @@ code_smell_taxonomy:
       treatment: "Move Method, Move Field, Extract Class, Hide Delegate"
       refactoring_level: "Level 3 (Responsibility Organization)"
       priority: "High"
-      detection_patterns: ["Private field access", "Tight coupling", "Boundary violations"]
+      detection_patterns:
+        ["Private field access", "Tight coupling", "Boundary violations"]
 
     message_chains:
       description: "Sequence of calls to get needed object"
@@ -660,7 +725,8 @@ code_smell_taxonomy:
       treatment: "Hide Delegate, Extract Method"
       refactoring_level: "Level 3 (Responsibility Organization)"
       priority: "Medium"
-      detection_patterns: ["Method chaining", "Navigation chains", "Law of Demeter violations"]
+      detection_patterns:
+        ["Method chaining", "Navigation chains", "Law of Demeter violations"]
 
     middle_man:
       description: "Class performs only one action - delegating work to another class"
@@ -668,7 +734,8 @@ code_smell_taxonomy:
       treatment: "Remove Middle Man, Inline Method"
       refactoring_level: "Level 4 (Abstraction Refinement)"
       priority: "Medium"
-      detection_patterns: ["Delegation only", "Unnecessary indirection", "Pass-through methods"]
+      detection_patterns:
+        ["Delegation only", "Unnecessary indirection", "Pass-through methods"]
 
 atomic_transformations:
   description: "Five core atomic transformations for safe refactoring"
@@ -737,8 +804,10 @@ progressive_refactoring_levels:
     symbol: "🟨"
     focus: "Eliminate clutter, improve naming, remove dead code"
     execution_timing: "EXECUTE FIRST - MANDATORY"
-    code_smells_addressed: ["Dead Code", "Comments", "Speculative Generality", "Lazy Class"]
-    primary_transformations: ["Rename", "Extract (variables/constants)", "Safe Delete"]
+    code_smells_addressed:
+      ["Dead Code", "Comments", "Speculative Generality", "Lazy Class"]
+    primary_transformations:
+      ["Rename", "Extract (variables/constants)", "Safe Delete"]
     quality_impact: "80% of readability improvement value"
 
   level_2_complexity:
@@ -746,7 +815,8 @@ progressive_refactoring_levels:
     symbol: "🟢"
     focus: "Method extraction, duplication elimination"
     execution_timing: "EXECUTE AFTER Level 1"
-    code_smells_addressed: ["Long Method", "Duplicate Code", "Complex Conditionals"]
+    code_smells_addressed:
+      ["Long Method", "Duplicate Code", "Complex Conditionals"]
     primary_transformations: ["Extract (methods)", "Move (common code)"]
     quality_impact: "20% additional readability improvement"
 
@@ -755,7 +825,15 @@ progressive_refactoring_levels:
     symbol: "🟢"
     focus: "Class responsibilities, coupling reduction"
     execution_timing: "EXECUTE AFTER Level 2"
-    code_smells_addressed: ["Large Class", "Feature Envy", "Inappropriate Intimacy", "Data Class", "Divergent Change", "Shotgun Surgery"]
+    code_smells_addressed:
+      [
+        "Large Class",
+        "Feature Envy",
+        "Inappropriate Intimacy",
+        "Data Class",
+        "Divergent Change",
+        "Shotgun Surgery",
+      ]
     primary_transformations: ["Move", "Extract (classes)"]
     quality_impact: "Structural improvement foundation"
 
@@ -764,7 +842,13 @@ progressive_refactoring_levels:
     symbol: "🟢"
     focus: "Parameter objects, value objects, abstractions"
     execution_timing: "EXECUTE AFTER Level 3"
-    code_smells_addressed: ["Long Parameter List", "Data Clumps", "Primitive Obsession", "Middle Man"]
+    code_smells_addressed:
+      [
+        "Long Parameter List",
+        "Data Clumps",
+        "Primitive Obsession",
+        "Middle Man",
+      ]
     primary_transformations: ["Extract (objects)", "Inline", "Move"]
     quality_impact: "Abstraction and encapsulation improvement"
 
@@ -773,8 +857,10 @@ progressive_refactoring_levels:
     symbol: "🔵"
     focus: "Strategy, State, Command patterns"
     execution_timing: "EXECUTE AFTER Level 4"
-    code_smells_addressed: ["Switch Statements", "Complex state-dependent behavior"]
-    primary_transformations: ["Extract (interfaces)", "Move (to polymorphic structure)"]
+    code_smells_addressed:
+      ["Switch Statements", "Complex state-dependent behavior"]
+    primary_transformations:
+      ["Extract (interfaces)", "Move (to polymorphic structure)"]
     quality_impact: "Advanced design pattern application"
 
   level_6_solid:
@@ -782,8 +868,14 @@ progressive_refactoring_levels:
     symbol: "🔵"
     focus: "SOLID principles, architectural patterns"
     execution_timing: "EXECUTE AFTER Level 5"
-    code_smells_addressed: ["Refused Bequest", "Parallel Inheritance Hierarchies"]
-    primary_transformations: ["Extract (interfaces)", "Move (responsibilities)", "Safe Delete (violations)"]
+    code_smells_addressed:
+      ["Refused Bequest", "Parallel Inheritance Hierarchies"]
+    primary_transformations:
+      [
+        "Extract (interfaces)",
+        "Move (responsibilities)",
+        "Safe Delete (violations)",
+      ]
     quality_impact: "Architectural compliance and advanced principles"
 
 refactoring_techniques_catalog:

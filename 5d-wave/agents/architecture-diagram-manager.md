@@ -113,52 +113,86 @@ diagram_types:
     component_diagram:
       purpose: "Show system components and their relationships"
       notation: "UML Component Diagram with dependency relationships"
-      generation_triggers: ["solution-architect design", "major refactoring", "new component introduction"]
-      update_triggers: ["component creation/removal", "interface changes", "dependency modifications"]
+      generation_triggers:
+        [
+          "solution-architect design",
+          "major refactoring",
+          "new component introduction",
+        ]
+      update_triggers:
+        [
+          "component creation/removal",
+          "interface changes",
+          "dependency modifications",
+        ]
       stakeholders: ["architects", "developers", "technical leads"]
 
     deployment_diagram:
       purpose: "Visualize system deployment and infrastructure"
       notation: "UML Deployment Diagram with infrastructure nodes"
-      generation_triggers: ["infrastructure decisions", "deployment strategy", "scaling considerations"]
-      update_triggers: ["infrastructure changes", "deployment modifications", "scaling implementations"]
+      generation_triggers:
+        [
+          "infrastructure decisions",
+          "deployment strategy",
+          "scaling considerations",
+        ]
+      update_triggers:
+        [
+          "infrastructure changes",
+          "deployment modifications",
+          "scaling implementations",
+        ]
       stakeholders: ["devops", "architects", "operations teams"]
 
     class_diagram:
       purpose: "Detail class structure and object relationships"
       notation: "UML Class Diagram with domain modeling"
-      generation_triggers: ["domain modeling", "detailed design", "refactoring planning"]
-      update_triggers: ["class modifications", "relationship changes", "domain model evolution"]
+      generation_triggers:
+        ["domain modeling", "detailed design", "refactoring planning"]
+      update_triggers:
+        [
+          "class modifications",
+          "relationship changes",
+          "domain model evolution",
+        ]
       stakeholders: ["developers", "domain experts", "architects"]
 
   behavioral_diagrams:
     sequence_diagram:
       purpose: "Show interaction flows and message passing"
       notation: "UML Sequence Diagram with lifelines and activations"
-      generation_triggers: ["workflow design", "API documentation", "integration planning"]
-      update_triggers: ["workflow changes", "API modifications", "integration updates"]
+      generation_triggers:
+        ["workflow design", "API documentation", "integration planning"]
+      update_triggers:
+        ["workflow changes", "API modifications", "integration updates"]
       stakeholders: ["developers", "integration teams", "API consumers"]
 
     activity_diagram:
       purpose: "Visualize business processes and workflows"
       notation: "UML Activity Diagram with swim lanes"
-      generation_triggers: ["business process modeling", "workflow design", "user journey mapping"]
-      update_triggers: ["process changes", "workflow modifications", "business rule updates"]
+      generation_triggers:
+        ["business process modeling", "workflow design", "user journey mapping"]
+      update_triggers:
+        ["process changes", "workflow modifications", "business rule updates"]
       stakeholders: ["business analysts", "process owners", "developers"]
 
     state_diagram:
       purpose: "Model system states and transitions"
       notation: "UML State Machine Diagram"
-      generation_triggers: ["state modeling", "complex business rules", "workflow states"]
-      update_triggers: ["state additions", "transition changes", "business rule modifications"]
+      generation_triggers:
+        ["state modeling", "complex business rules", "workflow states"]
+      update_triggers:
+        ["state additions", "transition changes", "business rule modifications"]
       stakeholders: ["developers", "business analysts", "domain experts"]
 
   custom_5d_wave_diagrams:
     wave_flow_diagram:
       purpose: "Visualize 5D-Wave methodology progression"
       notation: "Custom flow diagram with wave stages and handoffs"
-      generation_triggers: ["5D-Wave workflow initiation", "methodology documentation"]
-      update_triggers: ["wave progression", "handoff completion", "methodology adaptation"]
+      generation_triggers:
+        ["5D-Wave workflow initiation", "methodology documentation"]
+      update_triggers:
+        ["wave progression", "handoff completion", "methodology adaptation"]
       stakeholders: ["project teams", "stakeholders", "methodology coaches"]
 
     agent_collaboration_diagram:
@@ -171,8 +205,14 @@ diagram_types:
     architecture_evolution_timeline:
       purpose: "Track architectural changes over time"
       notation: "Custom timeline with architectural milestones"
-      generation_triggers: ["project initiation", "major architectural decisions"]
-      update_triggers: ["architectural changes", "refactoring completion", "milestone achievements"]
+      generation_triggers:
+        ["project initiation", "major architectural decisions"]
+      update_triggers:
+        [
+          "architectural changes",
+          "refactoring completion",
+          "milestone achievements",
+        ]
       stakeholders: ["architects", "stakeholders", "development teams"]
 
 # VISUAL ARCHITECTURE LIFECYCLE MANAGEMENT
@@ -180,7 +220,12 @@ diagram_types:
 lifecycle_stages:
   stage_1_initial_creation:
     description: "Create initial architecture diagrams from solution-architect design"
-    inputs: ["architectural decisions", "component boundaries", "technology selections"]
+    inputs:
+      [
+        "architectural decisions",
+        "component boundaries",
+        "technology selections",
+      ]
     processes:
       - "Parse architectural design documents"
       - "Identify key components and relationships"
@@ -188,7 +233,12 @@ lifecycle_stages:
       - "Create sequence diagrams for critical workflows"
       - "Establish baseline for evolution tracking"
     outputs: ["initial diagram set", "diagram registry", "update triggers"]
-    quality_gates: ["architectural completeness", "stakeholder comprehension", "technical accuracy"]
+    quality_gates:
+      [
+        "architectural completeness",
+        "stakeholder comprehension",
+        "technical accuracy",
+      ]
 
   stage_2_synchronization_tracking:
     description: "Monitor code changes and update diagrams accordingly"
@@ -199,24 +249,34 @@ lifecycle_stages:
       - "Update affected diagrams automatically where possible"
       - "Flag manual update requirements"
       - "Maintain change history and reasoning"
-    outputs: ["synchronized diagrams", "change impact analysis", "update recommendations"]
-    quality_gates: ["synchronization accuracy", "change completeness", "visual clarity"]
+    outputs:
+      [
+        "synchronized diagrams",
+        "change impact analysis",
+        "update recommendations",
+      ]
+    quality_gates:
+      ["synchronization accuracy", "change completeness", "visual clarity"]
 
   stage_3_evolution_documentation:
     description: "Document architectural evolution and decision rationale"
-    inputs: ["diagram changes", "architectural decisions", "implementation feedback"]
+    inputs:
+      ["diagram changes", "architectural decisions", "implementation feedback"]
     processes:
       - "Capture architectural decision records (ADRs)"
       - "Create evolution timeline visualizations"
       - "Document change rationale and impact"
       - "Generate architectural diff visualizations"
       - "Update stakeholder communication materials"
-    outputs: ["evolution documentation", "decision records", "stakeholder updates"]
-    quality_gates: ["decision traceability", "evolution clarity", "stakeholder alignment"]
+    outputs:
+      ["evolution documentation", "decision records", "stakeholder updates"]
+    quality_gates:
+      ["decision traceability", "evolution clarity", "stakeholder alignment"]
 
   stage_4_validation_feedback:
     description: "Validate diagrams against implementation and gather feedback"
-    inputs: ["implementation reality", "stakeholder feedback", "quality metrics"]
+    inputs:
+      ["implementation reality", "stakeholder feedback", "quality metrics"]
     processes:
       - "Compare diagrams with actual implementation"
       - "Identify architectural drift and gaps"
@@ -224,7 +284,8 @@ lifecycle_stages:
       - "Analyze diagram usage patterns and effectiveness"
       - "Generate improvement recommendations"
     outputs: ["validation reports", "gap analysis", "improvement plans"]
-    quality_gates: ["implementation accuracy", "stakeholder satisfaction", "diagram utility"]
+    quality_gates:
+      ["implementation accuracy", "stakeholder satisfaction", "diagram utility"]
 
 # DIAGRAM GENERATION ENGINE
 
@@ -243,19 +304,22 @@ generation_engine:
 
     configuration_analysis:
       description: "Generate deployment diagrams from configuration files"
-      supported_configs: ["Docker Compose", "Kubernetes", "Terraform", "Ansible"]
+      supported_configs:
+        ["Docker Compose", "Kubernetes", "Terraform", "Ansible"]
       analysis_capabilities:
         - "Infrastructure component identification"
         - "Network topology mapping"
         - "Service dependency extraction"
         - "Resource allocation visualization"
         - "Security boundary identification"
-      output_formats: ["PlantUML", "Mermaid", "Network diagrams", "Infrastructure maps"]
+      output_formats:
+        ["PlantUML", "Mermaid", "Network diagrams", "Infrastructure maps"]
 
   manual_generation:
     template_based:
       description: "Generate diagrams from architectural templates"
-      template_types: ["Component templates", "Sequence templates", "Deployment templates"]
+      template_types:
+        ["Component templates", "Sequence templates", "Deployment templates"]
       customization_options:
         - "Stakeholder-specific views"
         - "Detail level adjustment"
@@ -300,19 +364,54 @@ synchronization_engine:
   update_orchestration:
     automatic_updates:
       description: "Updates that can be performed without human intervention"
-      scope: ["Component addition/removal", "Dependency changes", "Interface modifications"]
-      constraints: ["Low-risk changes only", "Preserve manual annotations", "Maintain diagram layout"]
-      validation: ["Syntax checking", "Semantic validation", "Stakeholder notification"]
+      scope:
+        [
+          "Component addition/removal",
+          "Dependency changes",
+          "Interface modifications",
+        ]
+      constraints:
+        [
+          "Low-risk changes only",
+          "Preserve manual annotations",
+          "Maintain diagram layout",
+        ]
+      validation:
+        ["Syntax checking", "Semantic validation", "Stakeholder notification"]
 
     semi_automatic_updates:
       description: "Updates requiring human review and approval"
-      scope: ["Architectural pattern changes", "Major refactoring impacts", "Cross-cutting concerns"]
-      workflow: ["Change detection", "Impact analysis", "Update proposal", "Human review", "Approval", "Implementation"]
+      scope:
+        [
+          "Architectural pattern changes",
+          "Major refactoring impacts",
+          "Cross-cutting concerns",
+        ]
+      workflow:
+        [
+          "Change detection",
+          "Impact analysis",
+          "Update proposal",
+          "Human review",
+          "Approval",
+          "Implementation",
+        ]
 
     manual_updates:
       description: "Complex changes requiring expert architectural input"
-      scope: ["Fundamental architecture changes", "New architectural patterns", "Strategic technology decisions"]
-      support: ["Change impact visualization", "Template suggestions", "Historical context", "Stakeholder input"]
+      scope:
+        [
+          "Fundamental architecture changes",
+          "New architectural patterns",
+          "Strategic technology decisions",
+        ]
+      support:
+        [
+          "Change impact visualization",
+          "Template suggestions",
+          "Historical context",
+          "Stakeholder input",
+        ]
 
 # COLLABORATION PATTERNS WITH 5D-WAVE AGENTS
 
@@ -410,29 +509,67 @@ quality_framework:
   diagram_quality_metrics:
     visual_clarity:
       description: "Diagrams must be easily readable and understandable"
-      metrics: ["Cognitive load assessment", "Information density analysis", "Visual hierarchy effectiveness"]
-      validation: ["Stakeholder comprehension testing", "Visual design review", "Accessibility compliance"]
+      metrics:
+        [
+          "Cognitive load assessment",
+          "Information density analysis",
+          "Visual hierarchy effectiveness",
+        ]
+      validation:
+        [
+          "Stakeholder comprehension testing",
+          "Visual design review",
+          "Accessibility compliance",
+        ]
 
     technical_accuracy:
       description: "Diagrams must accurately represent system reality"
-      metrics: ["Implementation-diagram consistency", "Architectural decision alignment", "Change synchronization rate"]
-      validation: ["Code-diagram comparison", "Architecture review", "Implementation verification"]
+      metrics:
+        [
+          "Implementation-diagram consistency",
+          "Architectural decision alignment",
+          "Change synchronization rate",
+        ]
+      validation:
+        [
+          "Code-diagram comparison",
+          "Architecture review",
+          "Implementation verification",
+        ]
 
     stakeholder_utility:
       description: "Diagrams must provide value to their intended audiences"
-      metrics: ["Usage frequency", "Decision support effectiveness", "Communication improvement"]
-      validation: ["Stakeholder feedback", "Usage analytics", "Decision outcome tracking"]
+      metrics:
+        [
+          "Usage frequency",
+          "Decision support effectiveness",
+          "Communication improvement",
+        ]
+      validation:
+        ["Stakeholder feedback", "Usage analytics", "Decision outcome tracking"]
 
   synchronization_quality:
     change_detection_accuracy:
       description: "Ensure all relevant changes are detected and processed"
-      metrics: ["Detection completeness", "False positive rate", "Change classification accuracy"]
-      validation: ["Manual audit", "Stakeholder verification", "Implementation review"]
+      metrics:
+        [
+          "Detection completeness",
+          "False positive rate",
+          "Change classification accuracy",
+        ]
+      validation:
+        ["Manual audit", "Stakeholder verification", "Implementation review"]
 
     update_timeliness:
       description: "Diagrams updated within acceptable timeframes"
-      metrics: ["Update latency", "Change-to-update time", "Stakeholder notification timing"]
-      validation: ["Performance monitoring", "SLA compliance", "Stakeholder satisfaction"]
+      metrics:
+        [
+          "Update latency",
+          "Change-to-update time",
+          "Stakeholder notification timing",
+        ]
+      validation:
+        ["Performance monitoring", "SLA compliance", "Stakeholder satisfaction"]
 
 # STAKEHOLDER COMMUNICATION AND PRESENTATION
 
@@ -440,36 +577,66 @@ communication_framework:
   audience_specific_views:
     executive_stakeholders:
       focus: "Business value, strategic alignment, investment justification"
-      diagram_types: ["High-level system overview", "Value stream mapping", "ROI visualization"]
+      diagram_types:
+        [
+          "High-level system overview",
+          "Value stream mapping",
+          "ROI visualization",
+        ]
       presentation_style: "Business-focused language, clear value propositions, executive summary format"
 
     technical_leadership:
       focus: "Architectural decisions, technical risk, implementation strategy"
-      diagram_types: ["Detailed component architecture", "Technical decision trees", "Risk assessment maps"]
+      diagram_types:
+        [
+          "Detailed component architecture",
+          "Technical decision trees",
+          "Risk assessment maps",
+        ]
       presentation_style: "Technical accuracy, decision rationale, implementation implications"
 
     development_teams:
       focus: "Implementation guidance, dependency management, development workflow"
-      diagram_types: ["Component interaction", "API specifications", "Development workflow"]
+      diagram_types:
+        ["Component interaction", "API specifications", "Development workflow"]
       presentation_style: "Implementation-focused, detailed specifications, actionable guidance"
 
     operations_teams:
       focus: "Deployment architecture, monitoring, troubleshooting support"
-      diagram_types: ["Deployment diagrams", "Network topology", "Monitoring visualization"]
+      diagram_types:
+        ["Deployment diagrams", "Network topology", "Monitoring visualization"]
       presentation_style: "Operational focus, troubleshooting support, monitoring integration"
 
   presentation_capabilities:
     interactive_presentations:
       description: "Dynamic presentations with drill-down capabilities"
-      features: ["Zoom and pan", "Layer visibility control", "Interactive annotations", "Real-time updates"]
+      features:
+        [
+          "Zoom and pan",
+          "Layer visibility control",
+          "Interactive annotations",
+          "Real-time updates",
+        ]
 
     static_documentation:
       description: "Exportable documentation for offline consumption"
-      formats: ["PDF reports", "PNG/SVG images", "HTML documentation", "Wiki integration"]
+      formats:
+        [
+          "PDF reports",
+          "PNG/SVG images",
+          "HTML documentation",
+          "Wiki integration",
+        ]
 
     collaborative_sessions:
       description: "Real-time collaborative diagram review and editing"
-      features: ["Multi-user editing", "Comment and annotation", "Version control", "Decision recording"]
+      features:
+        [
+          "Multi-user editing",
+          "Comment and annotation",
+          "Version control",
+          "Decision recording",
+        ]
 
 # TOOL INTEGRATION AND FORMAT SUPPORT
 
@@ -477,7 +644,12 @@ tool_ecosystem:
   diagram_generation_tools:
     plantuml:
       description: "Text-based UML diagram generation"
-      strengths: ["Version control friendly", "Automated generation", "Consistent styling"]
+      strengths:
+        [
+          "Version control friendly",
+          "Automated generation",
+          "Consistent styling",
+        ]
       use_cases: ["Component diagrams", "Sequence diagrams", "Class diagrams"]
 
     mermaid:
@@ -487,8 +659,14 @@ tool_ecosystem:
 
     graphviz:
       description: "Graph visualization and layout"
-      strengths: ["Complex graph layouts", "Automated positioning", "High-quality output"]
-      use_cases: ["Dependency graphs", "Network diagrams", "Hierarchical structures"]
+      strengths:
+        [
+          "Complex graph layouts",
+          "Automated positioning",
+          "High-quality output",
+        ]
+      use_cases:
+        ["Dependency graphs", "Network diagrams", "Hierarchical structures"]
 
   export_formats:
     vector_formats: ["SVG", "PDF", "EPS", "PostScript"]
@@ -499,15 +677,22 @@ tool_ecosystem:
   integration_apis:
     version_control:
       description: "Git integration for diagram versioning"
-      capabilities: ["Automatic commits", "Branch synchronization", "Merge conflict resolution"]
+      capabilities:
+        [
+          "Automatic commits",
+          "Branch synchronization",
+          "Merge conflict resolution",
+        ]
 
     project_management:
       description: "Integration with project management tools"
-      capabilities: ["Work item linking", "Progress tracking", "Milestone visualization"]
+      capabilities:
+        ["Work item linking", "Progress tracking", "Milestone visualization"]
 
     documentation_platforms:
       description: "Integration with documentation systems"
-      capabilities: ["Wiki updates", "Documentation generation", "Search integration"]
+      capabilities:
+        ["Wiki updates", "Documentation generation", "Search integration"]
 
 # PERFORMANCE AND SCALABILITY
 
@@ -529,15 +714,18 @@ performance_framework:
   resource_management:
     memory_optimization:
       description: "Efficient memory usage for large diagram processing"
-      techniques: ["Streaming processing", "Memory pooling", "Garbage collection tuning"]
+      techniques:
+        ["Streaming processing", "Memory pooling", "Garbage collection tuning"]
 
     storage_optimization:
       description: "Efficient storage of diagram data and history"
-      techniques: ["Compression algorithms", "Delta storage", "Archive management"]
+      techniques:
+        ["Compression algorithms", "Delta storage", "Archive management"]
 
     network_optimization:
       description: "Efficient diagram transmission and synchronization"
-      techniques: ["Progressive loading", "Differential updates", "Bandwidth adaptation"]
+      techniques:
+        ["Progressive loading", "Differential updates", "Bandwidth adaptation"]
 
 # FUTURE EVOLUTION AND EXTENSIBILITY
 
@@ -553,13 +741,28 @@ extensibility_framework:
   ai_enhancement_roadmap:
     automated_layout_optimization:
       description: "AI-driven diagram layout and visual optimization"
-      capabilities: ["Aesthetic improvement", "Cognitive load reduction", "Stakeholder preference learning"]
+      capabilities:
+        [
+          "Aesthetic improvement",
+          "Cognitive load reduction",
+          "Stakeholder preference learning",
+        ]
 
     intelligent_update_suggestions:
       description: "AI-powered recommendations for diagram improvements"
-      capabilities: ["Update necessity prediction", "Content optimization", "Stakeholder need anticipation"]
+      capabilities:
+        [
+          "Update necessity prediction",
+          "Content optimization",
+          "Stakeholder need anticipation",
+        ]
 
     natural_language_diagram_generation:
       description: "Generate diagrams from natural language descriptions"
-      capabilities: ["Requirements parsing", "Architectural intent extraction", "Diagram type selection"]
+      capabilities:
+        [
+          "Requirements parsing",
+          "Architectural intent extraction",
+          "Diagram type selection",
+        ]
 ```

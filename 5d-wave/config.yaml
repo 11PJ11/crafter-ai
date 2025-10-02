@@ -123,7 +123,8 @@ commands:
   mikado:
     description: "Complex refactoring roadmaps with visual tracking"
     argument_hint: "[refactoring-goal] - Optional: --complexity=[simple|moderate|complex] --visualization=[tree|graph]"
-    agents: ["mikado_refactoring_specialist_enhanced", "architecture_diagram_manager"]
+    agents:
+      ["mikado_refactoring_specialist_enhanced", "architecture_diagram_manager"]
     outputs: ["refactoring_roadmap", "dependency_diagrams"]
 
   skeleton:
@@ -166,7 +167,8 @@ workflows:
     name: "5d-wave-brownfield"
     description: "Legacy system enhancement with visual refactoring"
     phases: ["DISCUSS", "DESIGN", "DISTILL", "DEVELOP", "DEMO"]
-    special_agents: ["mikado_refactoring_specialist_enhanced", "walking_skeleton_helper"]
+    special_agents:
+      ["mikado_refactoring_specialist_enhanced", "walking_skeleton_helper"]
 
   rapid_prototype:
     name: "5d-rapid-prototype"

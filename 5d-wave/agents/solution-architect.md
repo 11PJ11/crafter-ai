@@ -104,7 +104,13 @@ architecture_design_framework:
         - "Define service boundaries and component responsibilities"
         - "Design API contracts and integration points"
         - "Establish data flow and processing patterns"
-      outputs: ["Component architecture", "Service definitions", "API specifications", "Data models"]
+      outputs:
+        [
+          "Component architecture",
+          "Service definitions",
+          "API specifications",
+          "Data models",
+        ]
 
     non_functional_architecture:
       purpose: "Design architecture to meet quality attribute requirements"
@@ -122,14 +128,22 @@ architecture_design_framework:
   architectural_pattern_selection:
     layered_architecture:
       description: "Organize code into horizontal layers with defined dependencies"
-      use_cases: ["Traditional enterprise applications", "Clear separation of concerns"]
-      benefits: ["Familiar structure", "Team specialization", "Technology isolation"]
+      use_cases:
+        ["Traditional enterprise applications", "Clear separation of concerns"]
+      benefits:
+        ["Familiar structure", "Team specialization", "Technology isolation"]
       constraints: ["Potential performance overhead", "Coupling between layers"]
 
     hexagonal_architecture:
       description: "Isolate core business logic from external concerns through ports and adapters"
-      use_cases: ["Domain-driven applications", "Testing-focused development", "External integration"]
-      benefits: ["Testability", "Technology independence", "Business logic protection"]
+      use_cases:
+        [
+          "Domain-driven applications",
+          "Testing-focused development",
+          "External integration",
+        ]
+      benefits:
+        ["Testability", "Technology independence", "Business logic protection"]
       constraints: ["Initial complexity", "Adapter development overhead"]
 
     microservices_architecture:
@@ -140,7 +154,12 @@ architecture_design_framework:
 
     event_driven_architecture:
       description: "Loosely coupled components communicating through events"
-      use_cases: ["Real-time systems", "Complex business processes", "Integration scenarios"]
+      use_cases:
+        [
+          "Real-time systems",
+          "Complex business processes",
+          "Integration scenarios",
+        ]
       benefits: ["Loose coupling", "Scalability", "Real-time processing"]
       constraints: ["Event ordering complexity", "Debugging challenges"]
 
@@ -226,7 +245,12 @@ component_design_framework:
         - "Define ubiquitous language for each bounded context"
         - "Establish context boundaries and integration points"
         - "Design anti-corruption layers for context integration"
-      outcomes: ["Clear component responsibilities", "Minimal coupling", "High cohesion"]
+      outcomes:
+        [
+          "Clear component responsibilities",
+          "Minimal coupling",
+          "High cohesion",
+        ]
 
     data_driven_boundaries:
       purpose: "Define boundaries based on data ownership and access patterns"
@@ -235,7 +259,8 @@ component_design_framework:
         - "Group related entities with similar access patterns"
         - "Define data ownership and stewardship responsibilities"
         - "Design data sharing and integration mechanisms"
-      outcomes: ["Data consistency", "Performance optimization", "Clear ownership"]
+      outcomes:
+        ["Data consistency", "Performance optimization", "Clear ownership"]
 
     team_driven_boundaries:
       purpose: "Align component boundaries with team structure and capabilities"
@@ -244,30 +269,59 @@ component_design_framework:
         - "Identify natural team interfaces and handoff points"
         - "Define component ownership and maintenance responsibilities"
         - "Establish team communication and coordination protocols"
-      outcomes: ["Team autonomy", "Clear responsibilities", "Efficient coordination"]
+      outcomes:
+        ["Team autonomy", "Clear responsibilities", "Efficient coordination"]
 
   integration_pattern_design:
     synchronous_integration:
       rest_apis:
         description: "HTTP-based APIs for request-response communication"
-        use_cases: ["User-facing operations", "Real-time data access", "Simple integrations"]
-        design_principles: ["Resource-based URLs", "HTTP verb semantics", "Stateless design"]
+        use_cases:
+          [
+            "User-facing operations",
+            "Real-time data access",
+            "Simple integrations",
+          ]
+        design_principles:
+          ["Resource-based URLs", "HTTP verb semantics", "Stateless design"]
 
       graphql_apis:
         description: "Query language for APIs with flexible data fetching"
-        use_cases: ["Complex data requirements", "Mobile applications", "Rapid frontend development"]
-        design_principles: ["Schema-first design", "Single endpoint", "Client-driven queries"]
+        use_cases:
+          [
+            "Complex data requirements",
+            "Mobile applications",
+            "Rapid frontend development",
+          ]
+        design_principles:
+          ["Schema-first design", "Single endpoint", "Client-driven queries"]
 
     asynchronous_integration:
       message_queues:
         description: "Asynchronous communication through message brokers"
-        use_cases: ["Background processing", "System decoupling", "Event-driven workflows"]
-        design_principles: ["Message durability", "Delivery guarantees", "Poison message handling"]
+        use_cases:
+          [
+            "Background processing",
+            "System decoupling",
+            "Event-driven workflows",
+          ]
+        design_principles:
+          [
+            "Message durability",
+            "Delivery guarantees",
+            "Poison message handling",
+          ]
 
       event_streaming:
         description: "Real-time event processing and distribution"
-        use_cases: ["Real-time analytics", "Complex event processing", "System integration"]
-        design_principles: ["Event sourcing", "Stream processing", "Temporal decoupling"]
+        use_cases:
+          [
+            "Real-time analytics",
+            "Complex event processing",
+            "System integration",
+          ]
+        design_principles:
+          ["Event sourcing", "Stream processing", "Temporal decoupling"]
 
 # HEXAGONAL ARCHITECTURE IMPLEMENTATION
 
@@ -284,45 +338,109 @@ hexagonal_architecture_framework:
     ports_definition:
       primary_ports:
         description: "Interfaces for driving the application (inbound)"
-        examples: ["REST controllers", "GraphQL resolvers", "Message handlers", "CLI interfaces"]
-        design_principles: ["Business-focused operations", "Technology-agnostic", "Testable interfaces"]
+        examples:
+          [
+            "REST controllers",
+            "GraphQL resolvers",
+            "Message handlers",
+            "CLI interfaces",
+          ]
+        design_principles:
+          [
+            "Business-focused operations",
+            "Technology-agnostic",
+            "Testable interfaces",
+          ]
 
       secondary_ports:
         description: "Interfaces for driven adapters (outbound)"
-        examples: ["Database repositories", "External service clients", "File system access", "Email services"]
-        design_principles: ["Dependency inversion", "Technology abstraction", "Mockable for testing"]
+        examples:
+          [
+            "Database repositories",
+            "External service clients",
+            "File system access",
+            "Email services",
+          ]
+        design_principles:
+          [
+            "Dependency inversion",
+            "Technology abstraction",
+            "Mockable for testing",
+          ]
 
     adapter_implementation:
       primary_adapters:
         description: "Concrete implementations of inbound interfaces"
-        responsibilities: ["Request/response translation", "Protocol handling", "Input validation"]
-        examples: ["Spring REST controllers", "GraphQL resolvers", "Kafka message consumers"]
+        responsibilities:
+          [
+            "Request/response translation",
+            "Protocol handling",
+            "Input validation",
+          ]
+        examples:
+          [
+            "Spring REST controllers",
+            "GraphQL resolvers",
+            "Kafka message consumers",
+          ]
 
       secondary_adapters:
         description: "Concrete implementations of outbound interfaces"
-        responsibilities: ["External system integration", "Data persistence", "Infrastructure services"]
-        examples: ["JPA repositories", "HTTP clients", "File system implementations"]
+        responsibilities:
+          [
+            "External system integration",
+            "Data persistence",
+            "Infrastructure services",
+          ]
+        examples:
+          ["JPA repositories", "HTTP clients", "File system implementations"]
 
   testing_strategy:
     unit_testing:
       description: "Test business logic in isolation without external dependencies"
-      approach: ["Mock secondary ports", "Test core business rules", "Verify business invariants"]
+      approach:
+        [
+          "Mock secondary ports",
+          "Test core business rules",
+          "Verify business invariants",
+        ]
 
     integration_testing:
       description: "Test adapter implementations with real external systems"
-      approach: ["Test database adapters", "Test external service integration", "Verify protocol compliance"]
+      approach:
+        [
+          "Test database adapters",
+          "Test external service integration",
+          "Verify protocol compliance",
+        ]
 
     acceptance_testing:
       description: "Test complete user scenarios through primary ports"
-      approach: ["End-to-end user workflows", "Business scenario validation", "Cross-component integration"]
+      approach:
+        [
+          "End-to-end user workflows",
+          "Business scenario validation",
+          "Cross-component integration",
+        ]
 
 # QUALITY ATTRIBUTE DESIGN
 
 quality_attribute_framework:
   performance_design:
     response_time_optimization:
-      strategies: ["Efficient algorithms", "Database query optimization", "Caching strategies", "Asynchronous processing"]
-      measurement: ["Response time percentiles", "Throughput metrics", "Resource utilization"]
+      strategies:
+        [
+          "Efficient algorithms",
+          "Database query optimization",
+          "Caching strategies",
+          "Asynchronous processing",
+        ]
+      measurement:
+        [
+          "Response time percentiles",
+          "Throughput metrics",
+          "Resource utilization",
+        ]
 
     scalability_design:
       horizontal_scaling: "Design for stateless, distributed deployment"
@@ -331,25 +449,62 @@ quality_attribute_framework:
 
   security_design:
     authentication_design:
-      strategies: ["Multi-factor authentication", "Single sign-on integration", "Token-based authentication"]
-      implementation: ["OAuth 2.0/OpenID Connect", "JWT token management", "Session management"]
+      strategies:
+        [
+          "Multi-factor authentication",
+          "Single sign-on integration",
+          "Token-based authentication",
+        ]
+      implementation:
+        [
+          "OAuth 2.0/OpenID Connect",
+          "JWT token management",
+          "Session management",
+        ]
 
     authorization_design:
-      strategies: ["Role-based access control", "Attribute-based access control", "Dynamic permissions"]
-      implementation: ["Policy engines", "Permission frameworks", "Resource-based security"]
+      strategies:
+        [
+          "Role-based access control",
+          "Attribute-based access control",
+          "Dynamic permissions",
+        ]
+      implementation:
+        ["Policy engines", "Permission frameworks", "Resource-based security"]
 
     data_protection:
-      strategies: ["Encryption at rest", "Encryption in transit", "Data anonymization", "Secure key management"]
-      implementation: ["TLS/SSL protocols", "Database encryption", "Key management services"]
+      strategies:
+        [
+          "Encryption at rest",
+          "Encryption in transit",
+          "Data anonymization",
+          "Secure key management",
+        ]
+      implementation:
+        ["TLS/SSL protocols", "Database encryption", "Key management services"]
 
   reliability_design:
     fault_tolerance:
-      strategies: ["Circuit breaker pattern", "Retry mechanisms", "Bulkhead isolation", "Graceful degradation"]
-      implementation: ["Resilience libraries", "Health checks", "Monitoring and alerting"]
+      strategies:
+        [
+          "Circuit breaker pattern",
+          "Retry mechanisms",
+          "Bulkhead isolation",
+          "Graceful degradation",
+        ]
+      implementation:
+        ["Resilience libraries", "Health checks", "Monitoring and alerting"]
 
     availability_design:
-      strategies: ["Redundancy and replication", "Load balancing", "Disaster recovery", "Blue-green deployments"]
-      implementation: ["Multi-region deployment", "Database replication", "Backup strategies"]
+      strategies:
+        [
+          "Redundancy and replication",
+          "Load balancing",
+          "Disaster recovery",
+          "Blue-green deployments",
+        ]
+      implementation:
+        ["Multi-region deployment", "Database replication", "Backup strategies"]
 
 # RISK ASSESSMENT AND MITIGATION
 
@@ -390,19 +545,39 @@ architectural_risk_framework:
   mitigation_strategies:
     risk_avoidance:
       description: "Eliminate risk through architectural choices"
-      examples: ["Choose proven technologies", "Avoid complex integrations", "Simplify architectural patterns"]
+      examples:
+        [
+          "Choose proven technologies",
+          "Avoid complex integrations",
+          "Simplify architectural patterns",
+        ]
 
     risk_mitigation:
       description: "Reduce risk probability or impact"
-      examples: ["Implement redundancy", "Create fallback mechanisms", "Establish monitoring and alerting"]
+      examples:
+        [
+          "Implement redundancy",
+          "Create fallback mechanisms",
+          "Establish monitoring and alerting",
+        ]
 
     risk_transfer:
       description: "Transfer risk to third parties"
-      examples: ["Cloud service providers", "Managed services", "Insurance and contracts"]
+      examples:
+        [
+          "Cloud service providers",
+          "Managed services",
+          "Insurance and contracts",
+        ]
 
     risk_acceptance:
       description: "Accept risk with contingency planning"
-      examples: ["Monitor risk indicators", "Prepare response plans", "Allocate contingency resources"]
+      examples:
+        [
+          "Monitor risk indicators",
+          "Prepare response plans",
+          "Allocate contingency resources",
+        ]
 
 # COLLABORATION WITH 5D-WAVE AGENTS
 
@@ -485,54 +660,155 @@ adr_framework:
 validation_framework:
   architecture_review_process:
     design_review:
-      participants: ["Solution architect", "Technical leads", "Security specialist", "Operations representative"]
-      focus_areas: ["Requirement alignment", "Quality attribute support", "Technology selection", "Risk assessment"]
-      deliverables: ["Review findings", "Approval decisions", "Action items", "Updated architecture"]
+      participants:
+        [
+          "Solution architect",
+          "Technical leads",
+          "Security specialist",
+          "Operations representative",
+        ]
+      focus_areas:
+        [
+          "Requirement alignment",
+          "Quality attribute support",
+          "Technology selection",
+          "Risk assessment",
+        ]
+      deliverables:
+        [
+          "Review findings",
+          "Approval decisions",
+          "Action items",
+          "Updated architecture",
+        ]
 
     implementation_review:
-      participants: ["Architect", "Development teams", "Quality assurance", "Operations teams"]
-      focus_areas: ["Architecture compliance", "Code quality", "Performance validation", "Security implementation"]
-      deliverables: ["Compliance assessment", "Quality metrics", "Improvement recommendations"]
+      participants:
+        [
+          "Architect",
+          "Development teams",
+          "Quality assurance",
+          "Operations teams",
+        ]
+      focus_areas:
+        [
+          "Architecture compliance",
+          "Code quality",
+          "Performance validation",
+          "Security implementation",
+        ]
+      deliverables:
+        [
+          "Compliance assessment",
+          "Quality metrics",
+          "Improvement recommendations",
+        ]
 
   governance_mechanisms:
     architectural_standards:
       description: "Establish organization-wide architectural principles and patterns"
-      components: ["Design principles", "Technology standards", "Security requirements", "Quality gates"]
+      components:
+        [
+          "Design principles",
+          "Technology standards",
+          "Security requirements",
+          "Quality gates",
+        ]
 
     compliance_monitoring:
       description: "Continuous monitoring of architecture implementation against design"
-      mechanisms: ["Code analysis tools", "Architecture testing", "Quality metrics", "Review checkpoints"]
+      mechanisms:
+        [
+          "Code analysis tools",
+          "Architecture testing",
+          "Quality metrics",
+          "Review checkpoints",
+        ]
 
     evolution_management:
       description: "Manage architectural changes and evolution over time"
-      processes: ["Change impact assessment", "Migration planning", "Version management", "Stakeholder communication"]
+      processes:
+        [
+          "Change impact assessment",
+          "Migration planning",
+          "Version management",
+          "Stakeholder communication",
+        ]
 
 # CONTINUOUS ARCHITECTURE IMPROVEMENT
 
 improvement_framework:
   feedback_collection:
     development_feedback:
-      sources: ["Developer experience surveys", "Implementation complexity metrics", "Development velocity tracking"]
-      insights: ["Architecture usability", "Technology effectiveness", "Development obstacles"]
+      sources:
+        [
+          "Developer experience surveys",
+          "Implementation complexity metrics",
+          "Development velocity tracking",
+        ]
+      insights:
+        [
+          "Architecture usability",
+          "Technology effectiveness",
+          "Development obstacles",
+        ]
 
     operational_feedback:
-      sources: ["System performance metrics", "Incident analysis", "Operational overhead assessment"]
-      insights: ["Architecture reliability", "Scalability effectiveness", "Operational efficiency"]
+      sources:
+        [
+          "System performance metrics",
+          "Incident analysis",
+          "Operational overhead assessment",
+        ]
+      insights:
+        [
+          "Architecture reliability",
+          "Scalability effectiveness",
+          "Operational efficiency",
+        ]
 
     business_feedback:
-      sources: ["Business value delivery metrics", "Time-to-market measurements", "Stakeholder satisfaction"]
-      insights: ["Business alignment", "Value delivery speed", "Stakeholder needs satisfaction"]
+      sources:
+        [
+          "Business value delivery metrics",
+          "Time-to-market measurements",
+          "Stakeholder satisfaction",
+        ]
+      insights:
+        [
+          "Business alignment",
+          "Value delivery speed",
+          "Stakeholder needs satisfaction",
+        ]
 
   architecture_evolution:
     continuous_improvement:
       description: "Regular assessment and incremental improvement of architecture"
-      activities: ["Performance optimization", "Technology updates", "Pattern refinement", "Process enhancement"]
+      activities:
+        [
+          "Performance optimization",
+          "Technology updates",
+          "Pattern refinement",
+          "Process enhancement",
+        ]
 
     major_evolution:
       description: "Significant architectural changes driven by business or technology shifts"
-      activities: ["Architecture modernization", "Technology migration", "Pattern transformation", "Platform evolution"]
+      activities:
+        [
+          "Architecture modernization",
+          "Technology migration",
+          "Pattern transformation",
+          "Platform evolution",
+        ]
 
     knowledge_management:
       description: "Capture and share architectural knowledge and lessons learned"
-      activities: ["Pattern documentation", "Decision rationale capture", "Best practice sharing", "Training development"]
+      activities:
+        [
+          "Pattern documentation",
+          "Decision rationale capture",
+          "Best practice sharing",
+          "Training development",
+        ]
 ```

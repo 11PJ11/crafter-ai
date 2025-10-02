@@ -17,6 +17,7 @@ The 5D-WAVE methodology implements a systematic approach to software development
 ## Core Agents (10 Total)
 
 ### 🌊 5D-Wave Core Agents
+
 1. **business-analyst** → DISCUSS wave (requirements gathering)
 2. **solution-architect** → DESIGN wave (architecture & technology)
 3. **acceptance-designer** → DISTILL wave (test scenarios)
@@ -25,6 +26,7 @@ The 5D-WAVE methodology implements a systematic approach to software development
 6. **systematic-refactorer** → Essential for Level 1-6 refactoring
 
 ### 🔧 Specialist Agents (Standalone & Collaborative)
+
 7. **mikado-refactoring-specialist-enhanced** → Complex refactoring roadmaps
 8. **walking-skeleton-helper** → Thinnest E2E slice + DevOps automation
 9. **root-cause-analyzer** → Debugging, post-mortem, problem research
@@ -33,6 +35,7 @@ The 5D-WAVE methodology implements a systematic approach to software development
 ## Command Structure
 
 ### 5D-Wave Core Commands (DW Prefix)
+
 - `*dw-start [project-description]` - Initialize 5D-Wave workflow
 - `*dw-discuss [requirements]` - Wave 1: Business analysis
 - `*dw-design [system-context]` - Wave 2: Architecture design
@@ -41,6 +44,7 @@ The 5D-WAVE methodology implements a systematic approach to software development
 - `*dw-demo [feature-name]` - Wave 5: Production readiness
 
 ### Specialist Commands
+
 - `*mikado [target] [options]` - Complex refactoring roadmaps
 - `*skeleton [environment] [feature]` - Walking skeleton E2E automation
 - `*root-why [problem-description]` - Root cause analysis & debugging
@@ -57,12 +61,15 @@ This expansion pack implements **ZERO KNOWLEDGE REDUCTION** for the three critic
 ## Workflow Templates
 
 ### Greenfield Development
+
 Complete greenfield project development with full visual architecture lifecycle.
 
 ### Brownfield Integration
+
 Legacy system enhancement with visual refactoring roadmaps and systematic improvement.
 
 ### Rapid Prototyping
+
 Streamlined validation workflow with essential visual architecture and accelerated feedback.
 
 ## Architecture Diagram Integration
@@ -77,6 +84,7 @@ The architecture-diagram-manager provides complete visual architecture lifecycle
 ## Installation
 
 1. Place this expansion pack in your BMAD-METHOD installation:
+
    ```
    bmad-method/expansion-packs/bmad-5d-wave/
    ```
@@ -88,11 +96,13 @@ The architecture-diagram-manager provides complete visual architecture lifecycle
 ## Usage Examples
 
 ### Start a New Greenfield Project
+
 ```
 *dw-start "User authentication system with microservices architecture"
 ```
 
 ### Execute Full 5D-Wave Cycle
+
 ```
 *dw-discuss "User registration and login requirements"
 *dw-design "Microservices with JWT authentication"
@@ -102,12 +112,14 @@ The architecture-diagram-manager provides complete visual architecture lifecycle
 ```
 
 ### Complex Refactoring with Visual Tracking
+
 ```
 *mikado "legacy-auth-modernization" --with-diagrams
 *diagram mikado-tree "auth-refactoring" --visualize-dependencies
 ```
 
 ### Walking Skeleton with Architecture Validation
+
 ```
 *skeleton "production" "user-auth-flow"
 *diagram skeleton "user-auth" --minimal-slice

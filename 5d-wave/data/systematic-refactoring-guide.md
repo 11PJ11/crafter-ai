@@ -9,6 +9,7 @@ This comprehensive guide implements the systematic six-level refactoring hierarc
 **Core Principle**: "Simplicity first, maintainability always, performance when measured"
 
 **Progressive Enhancement Approach**:
+
 - **Bottom-Up Progression**: Start with foundational improvements before advanced patterns
 - **Continuous Application**: Refactoring is part of every TDD cycle, not a separate phase
 - **Evidence-Based Decisions**: All refactoring supported by measurable quality improvements
@@ -25,6 +26,7 @@ This comprehensive guide implements the systematic six-level refactoring hierarc
 **Core Techniques**:
 
 #### Clean Comments
+
 ```csharp
 // ❌ Before: How-comments that explain implementation
 public async Task<User> GetUserAsync(int id)
@@ -54,6 +56,7 @@ public async Task<User> GetUserAsync(int id)
 ```
 
 #### Dead Code Removal
+
 ```typescript
 // ❌ Before: Unused imports, variables, and methods
 import { useState, useEffect, useCallback, useMemo } from 'react'; // useMemo unused
@@ -113,6 +116,7 @@ export const UserProfile: FC<Props> = ({ userId }) => {
 ```
 
 #### Magic Strings/Numbers Extraction
+
 ```python
 # ❌ Before: Magic numbers and strings scattered throughout
 def calculate_discount(customer_type, order_amount):
@@ -152,6 +156,7 @@ def calculate_discount(customer_type, order_amount):
 ```
 
 #### Scope Optimization
+
 ```java
 // ❌ Before: Variables with unnecessarily wide scope
 public class OrderProcessor {
@@ -200,6 +205,7 @@ public class OrderProcessor {
 **When to Apply**: After every GREEN test, when cyclomatic complexity >10, during code review
 
 #### Long Method Extraction
+
 ```csharp
 // ❌ Before: Long method with multiple responsibilities
 public async Task<OrderResult> ProcessOrderAsync(Order order)
@@ -320,69 +326,70 @@ private async Task<InventoryResult> CheckInventoryAvailabilityAsync(IEnumerable<
 ```
 
 #### Duplicated Code Elimination
+
 ```javascript
 // ❌ Before: Duplicated validation logic
 function validateUserRegistration(userData) {
-    if (!userData.email || userData.email.trim() === '') {
-        throw new Error('Email is required');
-    }
-    if (!/\S+@\S+\.\S+/.test(userData.email)) {
-        throw new Error('Email format is invalid');
-    }
-    if (!userData.password || userData.password.length < 8) {
-        throw new Error('Password must be at least 8 characters');
-    }
-    if (!/(?=.*[A-Z])(?=.*[a-z])(?=.*\d)/.test(userData.password)) {
-        throw new Error('Password must contain uppercase, lowercase, and number');
-    }
+  if (!userData.email || userData.email.trim() === "") {
+    throw new Error("Email is required");
+  }
+  if (!/\S+@\S+\.\S+/.test(userData.email)) {
+    throw new Error("Email format is invalid");
+  }
+  if (!userData.password || userData.password.length < 8) {
+    throw new Error("Password must be at least 8 characters");
+  }
+  if (!/(?=.*[A-Z])(?=.*[a-z])(?=.*\d)/.test(userData.password)) {
+    throw new Error("Password must contain uppercase, lowercase, and number");
+  }
 }
 
 function validateUserProfileUpdate(userData) {
-    if (!userData.email || userData.email.trim() === '') {
-        throw new Error('Email is required');
-    }
-    if (!/\S+@\S+\.\S+/.test(userData.email)) {
-        throw new Error('Email format is invalid');
-    }
-    // Different password rules for updates
-    if (userData.password && userData.password.length < 6) {
-        throw new Error('Password must be at least 6 characters');
-    }
+  if (!userData.email || userData.email.trim() === "") {
+    throw new Error("Email is required");
+  }
+  if (!/\S+@\S+\.\S+/.test(userData.email)) {
+    throw new Error("Email format is invalid");
+  }
+  // Different password rules for updates
+  if (userData.password && userData.password.length < 6) {
+    throw new Error("Password must be at least 6 characters");
+  }
 }
 
 // ✅ After: Extracted common validation logic
 function validateEmail(email) {
-    if (!email || email.trim() === '') {
-        throw new Error('Email is required');
-    }
-    if (!/\S+@\S+\.\S+/.test(email)) {
-        throw new Error('Email format is invalid');
-    }
+  if (!email || email.trim() === "") {
+    throw new Error("Email is required");
+  }
+  if (!/\S+@\S+\.\S+/.test(email)) {
+    throw new Error("Email format is invalid");
+  }
 }
 
 function validateNewPassword(password) {
-    if (!password || password.length < 8) {
-        throw new Error('Password must be at least 8 characters');
-    }
-    if (!/(?=.*[A-Z])(?=.*[a-z])(?=.*\d)/.test(password)) {
-        throw new Error('Password must contain uppercase, lowercase, and number');
-    }
+  if (!password || password.length < 8) {
+    throw new Error("Password must be at least 8 characters");
+  }
+  if (!/(?=.*[A-Z])(?=.*[a-z])(?=.*\d)/.test(password)) {
+    throw new Error("Password must contain uppercase, lowercase, and number");
+  }
 }
 
 function validateUpdatePassword(password) {
-    if (password && password.length < 6) {
-        throw new Error('Password must be at least 6 characters');
-    }
+  if (password && password.length < 6) {
+    throw new Error("Password must be at least 6 characters");
+  }
 }
 
 function validateUserRegistration(userData) {
-    validateEmail(userData.email);
-    validateNewPassword(userData.password);
+  validateEmail(userData.email);
+  validateNewPassword(userData.password);
 }
 
 function validateUserProfileUpdate(userData) {
-    validateEmail(userData.email);
-    validateUpdatePassword(userData.password);
+  validateEmail(userData.email);
+  validateUpdatePassword(userData.password);
 }
 ```
 
@@ -393,6 +400,7 @@ function validateUserProfileUpdate(userData) {
 **When to Apply**: Sprint boundaries, when class >200 lines, when cohesion is low
 
 #### Long Class Breakdown
+
 ```csharp
 // ❌ Before: God class with multiple responsibilities
 public class UserService
@@ -506,6 +514,7 @@ public class UserPaymentService
 ```
 
 #### Feature Envy Resolution
+
 ```python
 # ❌ Before: Method in wrong class, envies data from another class
 class Order:
@@ -569,6 +578,7 @@ class OrderProcessor:
 **When to Apply**: Sprint boundaries, when parameter lists >3, when data clumps appear
 
 #### Long Parameter List Reduction
+
 ```java
 // ❌ Before: Long parameter list with related data scattered
 public class ReportGenerator {
@@ -657,6 +667,7 @@ public class ReportGenerator {
 ```
 
 #### Data Clumps Elimination
+
 ```typescript
 // ❌ Before: Address data scattered throughout codebase
 interface User {
@@ -690,7 +701,7 @@ function calculateShippingCost(
   state: string,
   zipCode: string,
   country: string,
-  weight: number
+  weight: number,
 ): number {
   // Shipping calculation logic using address components...
 }
@@ -702,15 +713,16 @@ class Address {
     public readonly city: string,
     public readonly state: string,
     public readonly zipCode: string,
-    public readonly country: string
+    public readonly country: string,
   ) {
     this.validateAddress();
   }
 
   private validateAddress(): void {
-    if (!this.streetAddress.trim()) throw new Error('Street address is required');
-    if (!this.city.trim()) throw new Error('City is required');
-    if (!this.zipCode.trim()) throw new Error('ZIP code is required');
+    if (!this.streetAddress.trim())
+      throw new Error("Street address is required");
+    if (!this.city.trim()) throw new Error("City is required");
+    if (!this.zipCode.trim()) throw new Error("ZIP code is required");
   }
 
   format(): string {
@@ -718,13 +730,13 @@ class Address {
   }
 
   isInternational(): boolean {
-    return this.country.toLowerCase() !== 'usa';
+    return this.country.toLowerCase() !== "usa";
   }
 
   getShippingZone(): string {
     // Business logic for determining shipping zone
-    if (this.isInternational()) return 'international';
-    return ['CA', 'NY', 'NJ'].includes(this.state) ? 'northeast' : 'domestic';
+    if (this.isInternational()) return "international";
+    return ["CA", "NY", "NJ"].includes(this.state) ? "northeast" : "domestic";
   }
 }
 
@@ -751,6 +763,7 @@ function calculateShippingCost(address: Address, weight: number): number {
 ```
 
 #### Primitive Obsession Resolution
+
 ```csharp
 // ❌ Before: Primitive obsession with string-based identifiers
 public class OrderService
@@ -848,6 +861,7 @@ public class OrderService
 **When to Apply**: Release preparation, when switch statements appear, when behavior varies by type
 
 #### Switch Statements to Strategy Pattern
+
 ```python
 # ❌ Before: Switch statement handling different payment types
 class PaymentProcessor:
@@ -1017,52 +1031,65 @@ class PaymentProcessor:
 ```
 
 #### State Pattern for Complex State Behavior
+
 ```javascript
 // ❌ Before: Complex state-dependent behavior with conditionals
 class OrderManager {
   constructor() {
-    this.status = 'pending';
+    this.status = "pending";
   }
 
   processPayment() {
-    if (this.status === 'pending') {
-      console.log('Processing payment for pending order');
-      this.status = 'paid';
-      return { success: true, message: 'Payment processed' };
-    } else if (this.status === 'paid') {
-      return { success: false, message: 'Order already paid' };
-    } else if (this.status === 'shipped') {
-      return { success: false, message: 'Cannot process payment for shipped order' };
-    } else if (this.status === 'delivered') {
-      return { success: false, message: 'Cannot process payment for delivered order' };
-    } else if (this.status === 'cancelled') {
-      return { success: false, message: 'Cannot process payment for cancelled order' };
+    if (this.status === "pending") {
+      console.log("Processing payment for pending order");
+      this.status = "paid";
+      return { success: true, message: "Payment processed" };
+    } else if (this.status === "paid") {
+      return { success: false, message: "Order already paid" };
+    } else if (this.status === "shipped") {
+      return {
+        success: false,
+        message: "Cannot process payment for shipped order",
+      };
+    } else if (this.status === "delivered") {
+      return {
+        success: false,
+        message: "Cannot process payment for delivered order",
+      };
+    } else if (this.status === "cancelled") {
+      return {
+        success: false,
+        message: "Cannot process payment for cancelled order",
+      };
     }
   }
 
   ship() {
-    if (this.status === 'paid') {
-      console.log('Shipping order');
-      this.status = 'shipped';
-      return { success: true, message: 'Order shipped' };
-    } else if (this.status === 'pending') {
-      return { success: false, message: 'Cannot ship unpaid order' };
-    } else if (this.status === 'shipped') {
-      return { success: false, message: 'Order already shipped' };
-    } else if (this.status === 'delivered') {
-      return { success: false, message: 'Order already delivered' };
-    } else if (this.status === 'cancelled') {
-      return { success: false, message: 'Cannot ship cancelled order' };
+    if (this.status === "paid") {
+      console.log("Shipping order");
+      this.status = "shipped";
+      return { success: true, message: "Order shipped" };
+    } else if (this.status === "pending") {
+      return { success: false, message: "Cannot ship unpaid order" };
+    } else if (this.status === "shipped") {
+      return { success: false, message: "Order already shipped" };
+    } else if (this.status === "delivered") {
+      return { success: false, message: "Order already delivered" };
+    } else if (this.status === "cancelled") {
+      return { success: false, message: "Cannot ship cancelled order" };
     }
   }
 
   cancel() {
-    if (this.status === 'pending' || this.status === 'paid') {
-      console.log('Cancelling order');
-      this.status = 'cancelled';
-      return { success: true, message: 'Order cancelled' };
+    if (this.status === "pending" || this.status === "paid") {
+      console.log("Cancelling order");
+      this.status = "cancelled";
+      return { success: true, message: "Order cancelled" };
     } else {
-      return { success: false, message: 'Cannot cancel order in current state' };
+      return {
+        success: false,
+        message: "Cannot cancel order in current state",
+      };
     }
   }
 }
@@ -1070,81 +1097,81 @@ class OrderManager {
 // ✅ After: State pattern with polymorphic state behavior
 class OrderState {
   processPayment(order) {
-    return { success: false, message: 'Invalid operation for current state' };
+    return { success: false, message: "Invalid operation for current state" };
   }
 
   ship(order) {
-    return { success: false, message: 'Invalid operation for current state' };
+    return { success: false, message: "Invalid operation for current state" };
   }
 
   cancel(order) {
-    return { success: false, message: 'Invalid operation for current state' };
+    return { success: false, message: "Invalid operation for current state" };
   }
 
   getStatusName() {
-    return 'unknown';
+    return "unknown";
   }
 }
 
 class PendingOrderState extends OrderState {
   processPayment(order) {
-    console.log('Processing payment for pending order');
+    console.log("Processing payment for pending order");
     order.setState(new PaidOrderState());
-    return { success: true, message: 'Payment processed' };
+    return { success: true, message: "Payment processed" };
   }
 
   cancel(order) {
-    console.log('Cancelling pending order');
+    console.log("Cancelling pending order");
     order.setState(new CancelledOrderState());
-    return { success: true, message: 'Order cancelled' };
+    return { success: true, message: "Order cancelled" };
   }
 
   getStatusName() {
-    return 'pending';
+    return "pending";
   }
 }
 
 class PaidOrderState extends OrderState {
   ship(order) {
-    console.log('Shipping paid order');
+    console.log("Shipping paid order");
     order.setState(new ShippedOrderState());
-    return { success: true, message: 'Order shipped' };
+    return { success: true, message: "Order shipped" };
   }
 
   cancel(order) {
-    console.log('Cancelling paid order (refund required)');
+    console.log("Cancelling paid order (refund required)");
     order.setState(new CancelledOrderState());
     // Trigger refund process
     order.processRefund();
-    return { success: true, message: 'Order cancelled, refund initiated' };
+    return { success: true, message: "Order cancelled, refund initiated" };
   }
 
   getStatusName() {
-    return 'paid';
+    return "paid";
   }
 }
 
 class ShippedOrderState extends OrderState {
   deliver(order) {
-    console.log('Marking order as delivered');
+    console.log("Marking order as delivered");
     order.setState(new DeliveredOrderState());
-    return { success: true, message: 'Order delivered' };
+    return { success: true, message: "Order delivered" };
   }
 
   getStatusName() {
-    return 'shipped';
+    return "shipped";
   }
 }
 
 class DeliveredOrderState extends OrderState {
   getStatusName() {
-    return 'delivered';
+    return "delivered";
   }
 }
 
 class CancelledOrderState extends OrderState {
   getStatusName() {
-    return 'cancelled';
+    return "cancelled";
   }
 }
 
@@ -1175,7 +1202,7 @@ class OrderManager {
 
   processRefund() {
     // Refund logic here
-    console.log('Processing refund');
+    console.log("Processing refund");
   }
 }
 ```
@@ -1187,6 +1214,7 @@ class OrderManager {
 **When to Apply**: Release preparation, major architectural changes, when SOLID violations detected
 
 #### Single Responsibility Principle Resolution
+
 ```java
 // ❌ Before: Class with multiple responsibilities (Divergent Change smell)
 public class UserManager {
@@ -1696,6 +1724,7 @@ export const UserDashboard: FC = () => {
 ### TDD Cycle Integration
 
 **GREEN State Refactoring** (Every Cycle):
+
 ```
 🔴 RED (Write failing test)
       ↓
@@ -1707,11 +1736,13 @@ Commit → Next RED test
 ```
 
 **Sprint Boundary Refactoring**:
+
 - **Level 3-4**: Responsibilities and Abstractions
 - **Quality Review**: Code review focusing on architectural patterns
 - **Architecture Validation**: Ensure design principles compliance
 
 **Release Preparation Refactoring**:
+
 - **Level 5-6**: Design Patterns and SOLID principles
 - **Comprehensive Quality Assessment**: Full codebase analysis
 - **Performance Validation**: Ensure refactoring hasn't degraded performance
@@ -1719,6 +1750,7 @@ Commit → Next RED test
 ### Parallel Change Integration
 
 **EXPAND Phase** (Level 5-6 Application):
+
 ```csharp
 // Create new implementation alongside existing
 public class ModernPaymentProcessor : IPaymentProcessor
@@ -1734,6 +1766,7 @@ public class LegacyPaymentProcessor : IPaymentProcessor
 ```
 
 **MIGRATE Phase** (Level 3-4 Application):
+
 ```csharp
 // Gradually switch consumers
 public class OrderService
@@ -1747,6 +1780,7 @@ public class OrderService
 ```
 
 **CONTRACT Phase** (Level 1-2 Cleanup):
+
 ```csharp
 // Remove old implementation
 // Clean up unused code and dependencies

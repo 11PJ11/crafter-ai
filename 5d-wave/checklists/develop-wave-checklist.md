@@ -1,6 +1,7 @@
 # DEVELOP Wave Quality Checklist
 
 ## Overview
+
 Validation checklist for DEVELOP wave completion focusing on Outside-In TDD with double-loop architecture, systematic refactoring, and production service integration with progressive complexity levels.
 
 ---
@@ -8,6 +9,7 @@ Validation checklist for DEVELOP wave completion focusing on Outside-In TDD with
 ## 🟢 **BASIC Level - Essential DEVELOP Wave Requirements**
 
 ### Outside-In TDD Foundation
+
 - [ ] **Double-loop TDD architecture implemented**
   - Outer loop (E2E/Acceptance tests) driving development
   - Inner loop (Unit tests) implementing business logic
@@ -19,8 +21,9 @@ Validation checklist for DEVELOP wave completion focusing on Outside-In TDD with
   - Complete implementation before enabling next E2E test
 
 ### Production Service Integration
+
 - [ ] **Step methods call production services**
-  - All step methods use _serviceProvider.GetRequiredService<T>() pattern
+  - All step methods use \_serviceProvider.GetRequiredService<T>() pattern
   - No business logic in step methods - delegation to production services only
   - Real system integration throughout acceptance test execution
 
@@ -30,6 +33,7 @@ Validation checklist for DEVELOP wave completion focusing on Outside-In TDD with
   - "Write the Code You Wish You Had" pattern applied
 
 ### Test-Driven Implementation
+
 - [ ] **Red-Green-Refactor cycles followed**
   - Failing tests written before implementation
   - Minimal implementation to make tests pass
@@ -45,6 +49,7 @@ Validation checklist for DEVELOP wave completion focusing on Outside-In TDD with
 ## 🟡 **INTERMEDIATE Level - Enhanced DEVELOP Wave Quality**
 
 ### Advanced Outside-In TDD
+
 - [ ] **Natural test progression achieved**
   - Acceptance tests pass automatically as implementation completes
   - No modification of acceptance tests to make them pass
@@ -56,6 +61,7 @@ Validation checklist for DEVELOP wave completion focusing on Outside-In TDD with
   - Dependency injection properly configured for production services
 
 ### Systematic Refactoring Integration
+
 - [ ] **Level 1-2 refactoring applied continuously**
   - Comments cleaned up - only why/what, no how comments
   - Dead code removed and magic strings/numbers extracted
@@ -68,6 +74,7 @@ Validation checklist for DEVELOP wave completion focusing on Outside-In TDD with
   - Progressive improvement through refactoring hierarchy
 
 ### Quality Validation
+
 - [ ] **Comprehensive test coverage**
   - Unit tests for all business logic with ≥80% coverage
   - Integration tests for service interactions
@@ -79,6 +86,7 @@ Validation checklist for DEVELOP wave completion focusing on Outside-In TDD with
   - External service integration patterns operational
 
 ### Business Language Preservation
+
 - [ ] **Domain-driven naming applied**
   - Classes, methods, and variables use business terminology
   - Technical implementation details not exposed in business layer names
@@ -94,6 +102,7 @@ Validation checklist for DEVELOP wave completion focusing on Outside-In TDD with
 ## 🔴 **ADVANCED Level - Comprehensive DEVELOP Wave Excellence**
 
 ### Advanced TDD Patterns
+
 - [ ] **Mutation testing validation**
   - Mutation testing achieving ≥75-80% kill rate
   - Test effectiveness validated through mutation analysis
@@ -105,6 +114,7 @@ Validation checklist for DEVELOP wave completion focusing on Outside-In TDD with
   - Refactoring possible without breaking tests
 
 ### Sophisticated Refactoring
+
 - [ ] **Level 3-4 refactoring applied at boundaries**
   - Class responsibilities reorganized (Single Responsibility Principle)
   - Feature envy and inappropriate intimacy resolved
@@ -118,6 +128,7 @@ Validation checklist for DEVELOP wave completion focusing on Outside-In TDD with
   - Advanced architectural patterns applied appropriately
 
 ### Advanced Production Integration
+
 - [ ] **Complex production service orchestration**
   - Multi-service transactions properly handled
   - Error handling and compensation patterns implemented
@@ -129,6 +140,7 @@ Validation checklist for DEVELOP wave completion focusing on Outside-In TDD with
   - Performance regression prevention through monitoring
 
 ### Enterprise Quality Standards
+
 - [ ] **Security implementation validation**
   - Authentication and authorization properly implemented
   - Data protection and privacy measures operational
@@ -140,6 +152,7 @@ Validation checklist for DEVELOP wave completion focusing on Outside-In TDD with
   - Debugging and troubleshooting capabilities integrated
 
 ### Advanced Architecture Implementation
+
 - [ ] **Hexagonal architecture compliance**
   - Clear separation between business logic and infrastructure
   - Ports and adapters properly implemented
@@ -155,12 +168,14 @@ Validation checklist for DEVELOP wave completion focusing on Outside-In TDD with
 ## 🎯 **DEVELOP Wave Completion Criteria**
 
 ### Mandatory Completion Requirements
+
 - [ ] **All BASIC level requirements completed**
 - [ ] **At least 85% of INTERMEDIATE level requirements completed**
 - [ ] **All enabled acceptance tests passing**
 - [ ] **All unit and integration tests passing**
 
 ### Production Service Integration Validation
+
 - [ ] **Step method production service compliance**
   - 100% of step methods call production services via dependency injection
   - No business logic in test infrastructure
@@ -172,6 +187,7 @@ Validation checklist for DEVELOP wave completion focusing on Outside-In TDD with
   - Service interfaces support both production and test usage
 
 ### Quality Gates Validation
+
 - [ ] **Test effectiveness validated**
   - Mutation testing targets achieved (≥75% kill rate)
   - Comprehensive test coverage (≥80% unit, ≥70% integration)
@@ -187,12 +203,14 @@ Validation checklist for DEVELOP wave completion focusing on Outside-In TDD with
 ## 📊 **Success Metrics**
 
 ### Quantitative Measures
+
 - **Test Coverage**: ≥80% unit test coverage, ≥70% integration test coverage
 - **Acceptance Test Success**: 100% enabled acceptance tests passing
 - **Production Service Integration**: 100% step methods call production services
 - **Mutation Testing**: ≥75% mutation kill rate achieved
 
 ### Qualitative Measures
+
 - **Business Language Preservation**: Consistent use of domain terminology
 - **Code Quality**: Clean, maintainable code following SOLID principles
 - **Architecture Compliance**: Hexagonal architecture properly implemented
@@ -216,6 +234,7 @@ Validation checklist for DEVELOP wave completion focusing on Outside-In TDD with
 ## 🧪 **Outside-In TDD Quality Gates**
 
 ### Double-Loop Architecture Validation
+
 - [ ] **Outer loop (ATDD) compliance**
   - Acceptance tests drive feature implementation
   - Tests written from customer perspective using business language
@@ -227,8 +246,9 @@ Validation checklist for DEVELOP wave completion focusing on Outside-In TDD with
   - Business naming preserved in technical implementation
 
 ### Production Service Integration Compliance
+
 - [ ] **Step method pattern validation**
-  - Step methods contain _serviceProvider.GetRequiredService<T>() calls
+  - Step methods contain \_serviceProvider.GetRequiredService<T>() calls
   - Step methods delegate all business operations to production services
   - No business logic in test infrastructure classes
 
@@ -238,6 +258,7 @@ Validation checklist for DEVELOP wave completion focusing on Outside-In TDD with
   - Service integration tested with actual implementations
 
 ### Natural Test Progression Validation
+
 - [ ] **Test modification prevention**
   - Acceptance tests never modified to make them pass
   - Tests pass naturally as implementation becomes complete
@@ -253,6 +274,7 @@ Validation checklist for DEVELOP wave completion focusing on Outside-In TDD with
 ## 🔄 **Systematic Refactoring Quality Gates**
 
 ### Progressive Level Application
+
 - [ ] **Level 1-2 (Foundation) - Applied Continuously**
   - Dead code removal and comment cleanup
   - Magic string/number extraction and scope optimization
@@ -269,6 +291,7 @@ Validation checklist for DEVELOP wave completion focusing on Outside-In TDD with
   - Advanced refactoring for maintainability and extensibility
 
 ### Code Quality Validation
+
 - [ ] **Code smell resolution**
   - Systematic detection and resolution of all 22 code smell types
   - Appropriate refactoring techniques applied
@@ -284,21 +307,25 @@ Validation checklist for DEVELOP wave completion focusing on Outside-In TDD with
 ## 📋 **Checklist Usage Guidelines**
 
 ### For Test-First Developers (Devon)
+
 - Use this checklist to ensure comprehensive Outside-In TDD implementation
 - Focus on production service integration and business naming throughout
 - Apply systematic refactoring continuously during development
 
 ### For Systematic Refactorers (Raphael)
+
 - Collaborate with test-first developer on progressive refactoring
 - Apply appropriate refactoring levels based on development phase
 - Ensure code quality improvement through systematic approach
 
 ### For Teams
+
 - Review checklist during DEVELOP wave execution and retrospectives
 - Use as quality gate for DEMO wave transition
 - Adapt ADVANCED level items based on system complexity and requirements
 
 ### For Quality Assurance
+
 - Validate Outside-In TDD methodology compliance
 - Ensure production service integration prevents test infrastructure deception
 - Verify systematic refactoring application and code quality improvement

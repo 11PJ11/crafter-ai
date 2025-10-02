@@ -98,23 +98,44 @@ skeleton_design_framework:
     system_layers:
       presentation_layer:
         components: ["User interface", "API endpoints", "Authentication"]
-        validation_goals: ["UI framework functionality", "API communication", "Security integration"]
-        minimal_implementation: ["Single page/screen", "One API endpoint", "Basic authentication"]
+        validation_goals:
+          [
+            "UI framework functionality",
+            "API communication",
+            "Security integration",
+          ]
+        minimal_implementation:
+          ["Single page/screen", "One API endpoint", "Basic authentication"]
 
       business_logic_layer:
-        components: ["Domain services", "Business rules", "Workflow orchestration"]
-        validation_goals: ["Business logic processing", "Domain model validation", "Service integration"]
-        minimal_implementation: ["Single business operation", "Basic domain model", "Simple workflow"]
+        components:
+          ["Domain services", "Business rules", "Workflow orchestration"]
+        validation_goals:
+          [
+            "Business logic processing",
+            "Domain model validation",
+            "Service integration",
+          ]
+        minimal_implementation:
+          ["Single business operation", "Basic domain model", "Simple workflow"]
 
       data_layer:
         components: ["Database", "Data access", "External integrations"]
-        validation_goals: ["Data persistence", "Query performance", "Integration reliability"]
-        minimal_implementation: ["Single entity", "Basic CRUD", "One external service"]
+        validation_goals:
+          ["Data persistence", "Query performance", "Integration reliability"]
+        minimal_implementation:
+          ["Single entity", "Basic CRUD", "One external service"]
 
       infrastructure_layer:
         components: ["Hosting", "Monitoring", "Security", "Networking"]
-        validation_goals: ["Deployment automation", "Operational monitoring", "Security controls"]
-        minimal_implementation: ["Basic hosting", "Health checks", "Essential security"]
+        validation_goals:
+          [
+            "Deployment automation",
+            "Operational monitoring",
+            "Security controls",
+          ]
+        minimal_implementation:
+          ["Basic hosting", "Health checks", "Essential security"]
 
     integration_points:
       internal_integrations:
@@ -153,23 +174,37 @@ iterative_development_framework:
     risk_prioritized_iterations:
       iteration_1_foundation:
         goal: "Establish basic end-to-end connectivity"
-        scope: ["Simple UI", "Basic API", "Minimal database", "Basic deployment"]
-        validation: ["Component connectivity", "Deployment pipeline", "Basic functionality"]
+        scope:
+          ["Simple UI", "Basic API", "Minimal database", "Basic deployment"]
+        validation:
+          [
+            "Component connectivity",
+            "Deployment pipeline",
+            "Basic functionality",
+          ]
 
       iteration_2_integration:
         goal: "Validate critical integrations and data flow"
-        scope: ["External service integration", "Data persistence", "Error handling"]
-        validation: ["Integration reliability", "Data consistency", "Error recovery"]
+        scope:
+          ["External service integration", "Data persistence", "Error handling"]
+        validation:
+          ["Integration reliability", "Data consistency", "Error recovery"]
 
       iteration_3_operations:
         goal: "Establish operational monitoring and support"
         scope: ["Monitoring systems", "Logging", "Health checks", "Alerting"]
-        validation: ["Operational visibility", "Issue detection", "Support procedures"]
+        validation:
+          ["Operational visibility", "Issue detection", "Support procedures"]
 
       iteration_4_performance:
         goal: "Validate performance and scalability architecture"
         scope: ["Load testing", "Performance monitoring", "Scaling mechanisms"]
-        validation: ["Performance benchmarks", "Scalability patterns", "Resource efficiency"]
+        validation:
+          [
+            "Performance benchmarks",
+            "Scalability patterns",
+            "Resource efficiency",
+          ]
 
     iteration_success_criteria:
       technical_criteria:
@@ -222,30 +257,60 @@ devops_automation_framework:
       environment_management:
         development_environment:
           purpose: "Rapid development and testing"
-          characteristics: ["Fast feedback", "Flexible configuration", "Debug capabilities"]
-          automation: ["Automated deployment", "Test data management", "Environment reset"]
+          characteristics:
+            ["Fast feedback", "Flexible configuration", "Debug capabilities"]
+          automation:
+            [
+              "Automated deployment",
+              "Test data management",
+              "Environment reset",
+            ]
 
         staging_environment:
           purpose: "Production-like validation"
-          characteristics: ["Production parity", "Performance validation", "Integration testing"]
-          automation: ["Automated deployment", "Smoke testing", "Performance validation"]
+          characteristics:
+            [
+              "Production parity",
+              "Performance validation",
+              "Integration testing",
+            ]
+          automation:
+            ["Automated deployment", "Smoke testing", "Performance validation"]
 
         production_environment:
           purpose: "Live system operation"
-          characteristics: ["High availability", "Monitoring", "Security", "Scalability"]
-          automation: ["Blue-green deployment", "Health monitoring", "Rollback procedures"]
+          characteristics:
+            ["High availability", "Monitoring", "Security", "Scalability"]
+          automation:
+            [
+              "Blue-green deployment",
+              "Health monitoring",
+              "Rollback procedures",
+            ]
 
   infrastructure_as_code:
     infrastructure_automation:
       containerization:
         description: "Containerize all components for consistent deployment"
-        technologies: ["Docker containers", "Container orchestration", "Service mesh"]
-        benefits: ["Environment consistency", "Scaling flexibility", "Resource efficiency"]
+        technologies:
+          ["Docker containers", "Container orchestration", "Service mesh"]
+        benefits:
+          [
+            "Environment consistency",
+            "Scaling flexibility",
+            "Resource efficiency",
+          ]
 
       infrastructure_provisioning:
         description: "Automate infrastructure provisioning and configuration"
-        technologies: ["Infrastructure as Code", "Configuration management", "Cloud services"]
-        benefits: ["Reproducible environments", "Version control", "Disaster recovery"]
+        technologies:
+          [
+            "Infrastructure as Code",
+            "Configuration management",
+            "Cloud services",
+          ]
+        benefits:
+          ["Reproducible environments", "Version control", "Disaster recovery"]
 
     monitoring_and_observability:
       application_monitoring:

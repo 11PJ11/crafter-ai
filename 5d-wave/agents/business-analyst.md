@@ -112,7 +112,12 @@ requirements_gathering_framework:
         - "Conduct structured interviews with active listening"
         - "Document requirements with context and rationale"
         - "Validate understanding through confirmation and examples"
-      outputs: ["Stakeholder requirement sets", "Business context documentation", "Domain terminology"]
+      outputs:
+        [
+          "Stakeholder requirement sets",
+          "Business context documentation",
+          "Domain terminology",
+        ]
 
     collaborative_workshops:
       purpose: "Facilitate group consensus building and requirement prioritization"
@@ -121,7 +126,12 @@ requirements_gathering_framework:
         - "Facilitate discussion with structured techniques"
         - "Manage conflicts and drive toward consensus"
         - "Document decisions and action items"
-      outputs: ["Prioritized requirement lists", "Consensus decisions", "Workshop artifacts"]
+      outputs:
+        [
+          "Prioritized requirement lists",
+          "Consensus decisions",
+          "Workshop artifacts",
+        ]
 
     user_story_mapping:
       purpose: "Visualize user journey and identify feature requirements"
@@ -130,7 +140,12 @@ requirements_gathering_framework:
         - "Identify touchpoints and system interactions"
         - "Break down workflow into manageable user stories"
         - "Prioritize stories based on business value and user impact"
-      outputs: ["User story maps", "Prioritized backlogs", "Release planning foundation"]
+      outputs:
+        [
+          "User story maps",
+          "Prioritized backlogs",
+          "Release planning foundation",
+        ]
 
     domain_modeling:
       purpose: "Establish shared understanding of business domain"
@@ -139,7 +154,12 @@ requirements_gathering_framework:
         - "Define ubiquitous language with stakeholders"
         - "Create domain model with business rules"
         - "Validate model with domain experts"
-      outputs: ["Domain models", "Ubiquitous language glossary", "Business rule documentation"]
+      outputs:
+        [
+          "Domain models",
+          "Ubiquitous language glossary",
+          "Business rule documentation",
+        ]
 
   requirement_types:
     functional_requirements:
@@ -239,7 +259,8 @@ stakeholder_framework:
 
     key_stakeholders:
       description: "Decision makers and project sponsors"
-      examples: ["Executive sponsors", "Budget holders", "Regulatory authorities"]
+      examples:
+        ["Executive sponsors", "Budget holders", "Regulatory authorities"]
       engagement_level: "Critical - approval and strategic direction"
 
   engagement_strategies:
@@ -378,19 +399,39 @@ quality_framework:
   requirements_quality_criteria:
     completeness:
       description: "All necessary requirements identified and documented"
-      validation: ["Stakeholder review", "Domain expert confirmation", "Use case coverage analysis"]
+      validation:
+        [
+          "Stakeholder review",
+          "Domain expert confirmation",
+          "Use case coverage analysis",
+        ]
 
     consistency:
       description: "Requirements align with each other and business objectives"
-      validation: ["Cross-reference analysis", "Conflict identification", "Business rule validation"]
+      validation:
+        [
+          "Cross-reference analysis",
+          "Conflict identification",
+          "Business rule validation",
+        ]
 
     clarity:
       description: "Requirements are unambiguous and understandable"
-      validation: ["Stakeholder comprehension testing", "Technical review", "Acceptance criteria validation"]
+      validation:
+        [
+          "Stakeholder comprehension testing",
+          "Technical review",
+          "Acceptance criteria validation",
+        ]
 
     testability:
       description: "Requirements can be validated through testing"
-      validation: ["Acceptance criteria review", "Test scenario development", "Measurement criteria definition"]
+      validation:
+        [
+          "Acceptance criteria review",
+          "Test scenario development",
+          "Measurement criteria definition",
+        ]
 
   stakeholder_satisfaction_metrics:
     engagement_indicators:

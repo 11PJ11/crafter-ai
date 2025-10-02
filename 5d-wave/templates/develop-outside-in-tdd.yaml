@@ -820,27 +820,26 @@ implementation_guidance:
         - "Test coverage drops → Add missing tests"
         - "Business language drift → Rename to domain terminology"
 
----
+usage_documentation: |
+  # Template Usage Instructions
 
-# Template Usage Instructions
+  This simple implementation-focused template supports Outside-In TDD development with systematic refactoring for the DEVELOP wave of the 5D-Wave methodology.
 
-This simple implementation-focused template supports Outside-In TDD development with systematic refactoring for the DEVELOP wave of the 5D-Wave methodology.
+  ## Implementation Approach
 
-## Implementation Approach
+  1. **Start with failing E2E test** and use double-loop TDD to drive implementation
+  2. **Implement production services** with business language and domain concepts
+  3. **Apply systematic refactoring** progressively according to timing guidelines
+  4. **Maintain production service integration** throughout development process
 
-1. **Start with failing E2E test** and use double-loop TDD to drive implementation
-2. **Implement production services** with business language and domain concepts
-3. **Apply systematic refactoring** progressively according to timing guidelines
-4. **Maintain production service integration** throughout development process
+  ## Success Indicators
 
-## Success Indicators
+  - ✅ Outside-In TDD process followed with double-loop architecture
+  - ✅ Production services implemented with dependency injection
+  - ✅ Systematic refactoring applied at appropriate timing
+  - ✅ Business language preserved throughout implementation
+  - ✅ All acceptance tests passing with real system integration
 
-- ✅ Outside-In TDD process followed with double-loop architecture
-- ✅ Production services implemented with dependency injection
-- ✅ Systematic refactoring applied at appropriate timing
-- ✅ Business language preserved throughout implementation
-- ✅ All acceptance tests passing with real system integration
+  ## Next Wave Preparation
 
-## Next Wave Preparation
-
-Prepare working software increment with comprehensive documentation for stakeholder demonstration and production deployment validation in the DEMO wave.
+  Prepare working software increment with comprehensive documentation for stakeholder demonstration and production deployment validation in the DEMO wave.

@@ -8,6 +8,7 @@
 This command automatically activates ALL required agents for comprehensive architecture visualization while keeping the main instance context-free.
 
 **Primary Agents**:
+
 - `architecture-diagram-manager` (Archer) - Visual architecture creation and management
 - `visual-architecture-orchestrator` - Lifecycle diagram coordination
 - `solution-architect` (Morgan) - Architecture validation and refinement
@@ -17,12 +18,15 @@ This command automatically activates ALL required agents for comprehensive archi
 **Agent Coordination**: Agents collaborate on comprehensive visual architecture representation
 
 ## Implementation
+
 # DIAGRAM: Visual Architecture Lifecycle Management and Evolution Tracking
 
 ## Overview
+
 Execute comprehensive visual architecture lifecycle management through dynamic diagram generation, evolution tracking, and stakeholder communication using architecture-diagram-manager integration.
 
 ## Mandatory Pre-Execution Steps
+
 1. **Architecture Context Establishment**: Complete architecture design and component identification
 2. **Architecture Diagram Manager Activation**: Activate architecture-diagram-manager (Archer)
 3. **Visual Lifecycle Infrastructure**: Establish diagram generation and evolution tracking systems
@@ -30,10 +34,12 @@ Execute comprehensive visual architecture lifecycle management through dynamic d
 ## Execution Flow
 
 ### Phase 1: Visual Architecture Foundation
+
 **Primary Agent**: architecture-diagram-manager (Archer)
 **Command**: `*create-diagrams`
 
 **Visual Architecture Lifecycle Management**:
+
 ```
 📊 DIAGRAM WAVE - VISUAL ARCHITECTURE LIFECYCLE
 
@@ -48,6 +54,7 @@ Visual architecture enables understanding and communication at all levels.
 ```
 
 **Core Visual Architecture Principles**:
+
 ```yaml
 visual_architecture_principles:
   stakeholder_communication:
@@ -72,9 +79,11 @@ visual_architecture_principles:
 ```
 
 ### Phase 2: Comprehensive Diagram Generation
+
 **Agent Command**: `*generate-architecture-views`
 
 **Multi-View Architecture Visualization**:
+
 ```yaml
 diagram_categories:
   system_context_diagrams:
@@ -124,9 +133,11 @@ diagram_categories:
 ```
 
 ### Phase 3: Dynamic Diagram Generation
+
 **Agent Command**: `*implement-dynamic-generation`
 
 **Automated Diagram Generation Pipeline**:
+
 ```yaml
 generation_pipeline:
   source_analysis:
@@ -169,9 +180,11 @@ generation_pipeline:
 ```
 
 ### Phase 4: Evolution Tracking and Version Control
+
 **Agent Command**: `*track-evolution`
 
 **Architecture Evolution Management**:
+
 ```yaml
 evolution_tracking:
   change_detection:
@@ -215,9 +228,11 @@ evolution_tracking:
 ```
 
 ### Phase 5: Stakeholder Communication and Validation
+
 **Agent Command**: `*facilitate-communication`
 
 **Stakeholder-Specific Communication Strategy**:
+
 ```yaml
 communication_strategy:
   executive_communication:
@@ -274,9 +289,11 @@ communication_strategy:
 ```
 
 ### Phase 6: Implementation Reality Synchronization
+
 **Agent Command**: `*synchronize-reality`
 
 **Continuous Synchronization Framework**:
+
 ```yaml
 synchronization_framework:
   automated_discovery:
@@ -322,6 +339,7 @@ synchronization_framework:
 ## Advanced Visual Architecture Patterns
 
 ### Interactive Diagram Systems
+
 ```yaml
 interactive_capabilities:
   drill_down_navigation:
@@ -358,6 +376,7 @@ interactive_capabilities:
 ```
 
 ### Architecture Compliance Validation
+
 ```yaml
 compliance_validation:
   pattern_enforcement:
@@ -390,6 +409,7 @@ compliance_validation:
 ## Output Artifacts
 
 ### Visual Architecture Documentation
+
 1. **SYSTEM_CONTEXT.svg** - High-level system boundaries and external interactions
 2. **COMPONENT_ARCHITECTURE.svg** - Detailed component structure and relationships
 3. **DEPLOYMENT_ARCHITECTURE.svg** - Infrastructure topology and deployment patterns
@@ -397,6 +417,7 @@ compliance_validation:
 5. **DATA_ARCHITECTURE.svg** - Data models, flows, and persistence patterns
 
 ### Evolution and Tracking
+
 1. **ARCHITECTURE_EVOLUTION.md** - Historical changes and evolution analysis
 2. **VERSION_HISTORY.md** - Diagram versioning and change tracking
 3. **COMPLIANCE_REPORT.md** - Architectural compliance validation results
@@ -404,12 +425,14 @@ compliance_validation:
 5. **DECISION_TRACEABILITY.md** - Architectural decisions to implementation mapping
 
 ### Stakeholder Communication
+
 1. **EXECUTIVE_DASHBOARD.html** - Executive-level architecture visualization
 2. **TECHNICAL_DOCUMENTATION.html** - Interactive technical documentation
 3. **OPERATIONAL_RUNBOOKS.html** - Operations-focused visual guides
 4. **BUSINESS_PROCESS_MAPS.html** - Business capability and process visualization
 
 ### Integration and Automation
+
 1. **GENERATION_PIPELINE.yaml** - Automated diagram generation configuration
 2. **SYNCHRONIZATION_CONFIG.yaml** - Reality synchronization settings
 3. **COMPLIANCE_RULES.yaml** - Architectural compliance validation rules
@@ -418,6 +441,7 @@ compliance_validation:
 ## Quality Gates
 
 ### Visual Architecture Quality Validation
+
 - [ ] **Stakeholder Comprehension**: Diagrams accessible and understandable by target audiences
 - [ ] **Implementation Accuracy**: Visual representation matches actual implementation
 - [ ] **Evolution Tracking**: Changes properly tracked and documented over time
@@ -425,6 +449,7 @@ compliance_validation:
 - [ ] **Cross-Reference Integrity**: Consistent representation across multiple diagram types
 
 ### Communication Effectiveness Validation
+
 - [ ] **Audience Alignment**: Diagrams appropriately tailored for specific stakeholder groups
 - [ ] **Decision Support**: Visual information effectively supports architectural decisions
 - [ ] **Change Communication**: Evolution and changes clearly communicated to stakeholders
@@ -432,6 +457,7 @@ compliance_validation:
 - [ ] **Accessibility Compliance**: Universal design principles applied for inclusive access
 
 ### Technical Integration Validation
+
 - [ ] **Automated Generation**: Reliable automated diagram generation from source artifacts
 - [ ] **Synchronization Accuracy**: Continuous synchronization with implementation reality
 - [ ] **Version Control**: Proper versioning and historical tracking implementation
@@ -451,6 +477,7 @@ compliance_validation:
 ## Failure Recovery
 
 If visual architecture lifecycle management fails:
+
 1. **Generation Issues**: Simplify diagram complexity and improve source parsing
 2. **Synchronization Problems**: Strengthen integration with source systems and validation
 3. **Stakeholder Communication**: Refine audience analysis and diagram customization
@@ -460,6 +487,7 @@ If visual architecture lifecycle management fails:
 ## Integration with 5D-Wave Methodology
 
 ### Visual Lifecycle Integration
+
 ```yaml
 discuss_integration:
   stakeholder_alignment: "Visual requirements gathering and stakeholder communication"
@@ -483,6 +511,7 @@ demo_integration:
 ```
 
 ### Cross-Agent Collaboration
+
 ```yaml
 agent_collaboration:
   solution_architect_integration:

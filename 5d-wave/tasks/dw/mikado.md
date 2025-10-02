@@ -1,9 +1,11 @@
 # MIKADO: Complex Refactoring Roadmaps with Visual Tracking
 
 ## Overview
+
 Execute complex refactoring operations using enhanced Mikado Method with discovery-tracking commits, exhaustive exploration, and visual architecture coordination.
 
 ## Mandatory Pre-Execution Steps
+
 1. **Mikado Agent Activation**: Activate software-crafter (Crafty) with complete Mikado Method methodology
 2. **Architecture Integration**: Coordinate with architecture-diagram-manager for visual tracking
 3. **Baseline Establishment**: Create pre-refactoring baseline and commit current state
@@ -11,10 +13,12 @@ Execute complex refactoring operations using enhanced Mikado Method with discove
 ## Execution Flow
 
 ### Phase 1: Enhanced Mikado Method Activation
+
 **Primary Agent**: software-crafter (Crafty)
 **Command**: `*mikado`
 
 **Enhanced Mikado Methodology**:
+
 ```
 🌳 MIKADO METHOD - SYSTEMATIC COMPLEX REFACTORING
 
@@ -32,6 +36,7 @@ Mikado Method handles complex architectural refactorings that span multiple clas
 ```
 
 **Enhanced Discovery Process**:
+
 ```yaml
 discovery_tracking_methodology:
   exploration_commit_pattern:
@@ -60,11 +65,13 @@ discovery_tracking_methodology:
 ```
 
 ### Phase 2: Mikado Graph Construction with Visual Integration
+
 **Primary Agent**: software-crafter (Crafty)
 **Secondary Agent**: architecture-diagram-manager (Archer)
 **Command**: `*create-tree`
 
 **Mikado Graph Visualization**:
+
 ```yaml
 mikado_graph_structure:
   goal_node:
@@ -99,10 +106,12 @@ visual_integration:
 ```
 
 ### Phase 3: Parallel Change Implementation
+
 **Agent**: software-crafter (Crafty)
 **Command**: `*execute-leaves`
 
 **Parallel Change Strategy**:
+
 ```yaml
 parallel_change_execution:
   expand_phase:
@@ -134,10 +143,12 @@ parallel_change_execution:
 ```
 
 ### Phase 4: Discovery-Tracking Commit Strategy
+
 **Agent**: software-crafter (Crafty)
 **Command**: `*track-discovery`
 
 **Enhanced Commit Strategy**:
+
 ```bash
 # DISCOVERY COMMITS - Track every exploration attempt
 git commit -m "🔍 Explore: Extract IPaymentService interface
@@ -162,10 +173,12 @@ git commit -m "🎯 Milestone: User management refactoring 40% complete
 ```
 
 ### Phase 5: Progressive Refactoring Integration
+
 **Agent**: software-crafter (Crafty)
 **Command**: `*progressive`
 
 **Mikado + Systematic Refactoring Integration**:
+
 ```yaml
 collaboration_patterns:
   mikado_leads_strategy:
@@ -196,6 +209,7 @@ refactoring_level_integration:
 ## Advanced Mikado Method Features
 
 ### Exhaustive Exploration Protocol
+
 ```yaml
 exploration_methodology:
   systematic_investigation:
@@ -224,6 +238,7 @@ exploration_methodology:
 ```
 
 ### Stakeholder Communication Framework
+
 ```yaml
 stakeholder_communication:
   business_stakeholder_updates:
@@ -245,6 +260,7 @@ stakeholder_communication:
 ## Risk Management and Safety Protocols
 
 ### Mikado Method Risk Mitigation
+
 ```yaml
 risk_mitigation_strategies:
   discovery_risk_management:
@@ -266,6 +282,7 @@ risk_mitigation_strategies:
 ## Output Artifacts
 
 ### Mikado Method Deliverables
+
 1. **MIKADO_GRAPH.svg** - Visual representation of refactoring dependencies
 2. **DISCOVERY_LOG.md** - Complete exploration history with commit references
 3. **REFACTORING_ROADMAP.md** - Prioritized sequence of refactoring nodes
@@ -273,6 +290,7 @@ risk_mitigation_strategies:
 5. **STAKEHOLDER_UPDATES.md** - Communication history and progress tracking
 
 ### Integration Documentation
+
 1. **ARCHITECTURE_EVOLUTION.md** - Before/after architecture comparison
 2. **QUALITY_IMPROVEMENTS.md** - Code quality metrics and improvements
 3. **RISK_ASSESSMENT.md** - Risk analysis and mitigation strategies
@@ -282,6 +300,7 @@ risk_mitigation_strategies:
 ## Quality Gates
 
 ### Mikado Method Validation
+
 - [ ] **Complete Exploration**: All dependencies identified through exhaustive exploration
 - [ ] **Concrete Specifications**: All nodes have imperative, actionable directives
 - [ ] **Discovery Tracking**: All exploration attempts documented with commits
@@ -289,6 +308,7 @@ risk_mitigation_strategies:
 - [ ] **Safety Protocol**: Parallel change pattern implemented for all nodes
 
 ### Integration Quality Validation
+
 - [ ] **Systematic Refactoring**: Six-level hierarchy applied during node implementation
 - [ ] **Architecture Compliance**: Refactoring aligns with architectural design
 - [ ] **Test Coverage**: All refactoring validated through comprehensive testing
@@ -296,6 +316,7 @@ risk_mitigation_strategies:
 - [ ] **Stakeholder Communication**: Regular updates and alignment maintained
 
 ## Success Criteria
+
 - Complex refactoring completed using enhanced Mikado Method
 - All dependencies identified through exhaustive exploration
 - Discovery commits provide complete audit trail and learning
@@ -305,7 +326,9 @@ risk_mitigation_strategies:
 - Organizational learning captured and preserved
 
 ## Failure Recovery
+
 If Mikado refactoring fails:
+
 1. **Exploration Incomplete**: Continue exhaustive exploration to identify missed dependencies
 2. **Implementation Blocked**: Use discovery commits to understand blockers and adjust plan
 3. **System Instability**: Leverage parallel change rollback to restore stability
@@ -315,6 +338,7 @@ If Mikado refactoring fails:
 ## Integration with Other Agents
 
 ### Cross-Agent Collaboration
+
 ```yaml
 agent_integration:
   walking_skeleton_helper:
@@ -331,4 +355,5 @@ agent_integration:
 ```
 
 ## Methodology Completion
+
 **Enhanced Mikado Method successfully executed with complete organizational learning, stakeholder communication, and architectural improvement.**

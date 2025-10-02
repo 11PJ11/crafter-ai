@@ -1,9 +1,11 @@
 # ROOT-WHY: Toyota 5 Whys Multi-Causal Root Cause Analysis
 
 ## Overview
+
 Execute systematic root cause analysis using Toyota's enhanced 5 Whys technique with multi-causal investigation and evidence-based validation for complex system failures and architectural decisions.
 
 ## Mandatory Pre-Execution Steps
+
 1. **Problem Definition**: Clear problem statement with observable symptoms
 2. **Root Cause Analyzer Activation**: Activate root-cause-analyzer (Sage) with Toyota methodology
 3. **Evidence Collection Setup**: Establish data collection and validation procedures
@@ -11,10 +13,12 @@ Execute systematic root cause analysis using Toyota's enhanced 5 Whys technique 
 ## Execution Flow
 
 ### Phase 1: Enhanced 5 Whys Foundation
+
 **Primary Agent**: root-cause-analyzer (Sage)
 **Command**: `*investigate-root-cause`
 
 **Toyota 5 Whys Enhanced Methodology**:
+
 ```
 🔍 ROOT-WHY INVESTIGATION - MULTI-CAUSAL ANALYSIS
 
@@ -32,6 +36,7 @@ Toyota methodology enhanced for complex software systems.
 ```
 
 **Multi-Causal Investigation Framework**:
+
 ```yaml
 enhanced_5_whys_methodology:
   multi_causal_approach:
@@ -60,11 +65,13 @@ enhanced_5_whys_methodology:
 ```
 
 ### Phase 2: Systematic Problem Investigation
+
 **Agent Command**: `*analyze-symptoms`
 
 **Multi-Causal Investigation Process**:
 
 #### WHY Level 1: Direct Symptom Investigation
+
 ```yaml
 why_level_1_symptoms:
   investigation_approach:
@@ -99,6 +106,7 @@ multi_causal_example_level_1:
 ```
 
 #### WHY Level 2: Context Analysis
+
 ```yaml
 why_level_2_context:
   investigation_approach:
@@ -125,6 +133,7 @@ multi_causal_example_level_2:
 ```
 
 #### WHY Level 3: System Analysis
+
 ```yaml
 why_level_3_system:
   investigation_approach:
@@ -151,6 +160,7 @@ multi_causal_example_level_3:
 ```
 
 #### WHY Level 4: Design Analysis
+
 ```yaml
 why_level_4_design:
   investigation_approach:
@@ -177,6 +187,7 @@ multi_causal_example_level_4:
 ```
 
 #### WHY Level 5: Root Cause Analysis
+
 ```yaml
 why_level_5_root_causes:
   investigation_approach:
@@ -205,9 +216,11 @@ multi_causal_example_level_5:
 ```
 
 ### Phase 3: Evidence-Based Validation
+
 **Agent Command**: `*validate-evidence`
 
 **Evidence Collection and Validation**:
+
 ```yaml
 evidence_framework:
   quantitative_evidence:
@@ -251,9 +264,11 @@ evidence_framework:
 ```
 
 ### Phase 4: Comprehensive Solution Development
+
 **Agent Command**: `*develop-solutions`
 
 **Multi-Root-Cause Solution Strategy**:
+
 ```yaml
 solution_development:
   comprehensive_approach:
@@ -316,9 +331,11 @@ comprehensive_solution_example:
 ```
 
 ### Phase 5: Prevention Strategy Implementation
+
 **Agent Command**: `*implement-prevention`
 
 **Kaizen Integration and Continuous Improvement**:
+
 ```yaml
 kaizen_integration:
   problem_prevention:
@@ -359,6 +376,7 @@ kaizen_integration:
 ## Advanced Root Cause Analysis Techniques
 
 ### Cross-Validation Methods
+
 ```yaml
 cross_validation_techniques:
   multiple_investigator_validation:
@@ -383,6 +401,7 @@ cross_validation_techniques:
 ```
 
 ### Complex System Analysis Patterns
+
 ```yaml
 complex_system_patterns:
   emergent_behavior_analysis:
@@ -409,6 +428,7 @@ complex_system_patterns:
 ## Output Artifacts
 
 ### Investigation Documentation
+
 1. **ROOT_CAUSE_ANALYSIS.md** - Complete 5 Whys investigation with evidence
 2. **EVIDENCE_COLLECTION.md** - All supporting data and validation methods
 3. **CAUSAL_ANALYSIS.md** - Multi-causal investigation findings
@@ -416,12 +436,14 @@ complex_system_patterns:
 5. **PREVENTION_PLAN.md** - Prevention strategy and implementation roadmap
 
 ### Organizational Learning
+
 1. **LESSONS_LEARNED.md** - Key insights and organizational knowledge
 2. **METHODOLOGY_GUIDE.md** - Enhanced 5 Whys methodology documentation
 3. **PATTERN_LIBRARY.md** - Problem patterns and solution templates
 4. **TRAINING_MATERIALS.md** - Educational resources for team development
 
 ### Process Improvement
+
 1. **PROCESS_IMPROVEMENTS.md** - Organizational process enhancements
 2. **MONITORING_STRATEGY.md** - Early warning and detection systems
 3. **VALIDATION_FRAMEWORK.md** - Solution effectiveness measurement
@@ -430,6 +452,7 @@ complex_system_patterns:
 ## Quality Gates
 
 ### Investigation Quality Validation
+
 - [ ] **Multi-Causal Analysis**: All contributing causes identified and validated
 - [ ] **Evidence-Based Reasoning**: Each WHY level supported by verifiable evidence
 - [ ] **Backwards Chain Validation**: Complete causal chains from root causes to symptoms
@@ -437,6 +460,7 @@ complex_system_patterns:
 - [ ] **Completeness Check**: All observed symptoms explained by identified root causes
 
 ### Solution Quality Validation
+
 - [ ] **Comprehensive Coverage**: Solutions address ALL identified root causes
 - [ ] **Implementation Feasibility**: Solutions are practical and achievable
 - [ ] **Effectiveness Validation**: Solution success metrics defined and measurable
@@ -444,6 +468,7 @@ complex_system_patterns:
 - [ ] **Organizational Learning**: Findings integrated into organizational knowledge base
 
 ### Toyota Methodology Compliance
+
 - [ ] **Systematic Approach**: Structured investigation methodology followed
 - [ ] **Evidence-Based**: All conclusions supported by concrete data
 - [ ] **Kaizen Integration**: Findings used for continuous improvement
@@ -463,6 +488,7 @@ complex_system_patterns:
 ## Failure Recovery
 
 If root cause analysis fails:
+
 1. **Incomplete Investigation**: Continue evidence collection and analysis
 2. **Contradictory Evidence**: Re-examine assumptions and validate data sources
 3. **Solution Ineffectiveness**: Reassess root causes and develop alternative solutions
@@ -472,6 +498,7 @@ If root cause analysis fails:
 ## Integration with 5D-Wave Methodology
 
 ### Root Cause Analysis Applications
+
 ```yaml
 discuss_integration:
   requirements_analysis: "Root cause analysis of requirements gaps and conflicts"

@@ -1,9 +1,11 @@
 # DW-DESIGN: Architecture Design with Visual Representation
 
 ## Overview
+
 Execute DESIGN wave of 5D-Wave methodology through comprehensive architecture design, technology selection, and visual representation creation.
 
 ## Mandatory Pre-Execution Steps
+
 1. **DISCUSS Wave Completion**: Validate requirements documentation and stakeholder consensus
 2. **Architecture Context Loading**: Ensure complete requirements package from business-analyst
 3. **Agent Coordination**: Activate solution-architect (Morgan) and architecture-diagram-manager (Archer)
@@ -11,10 +13,12 @@ Execute DESIGN wave of 5D-Wave methodology through comprehensive architecture de
 ## Execution Flow
 
 ### Phase 1: Architecture Foundation Design
+
 **Primary Agent**: solution-architect (Morgan)
 **Command**: `*design-architecture`
 
 **Architecture Design Process**:
+
 ```
 🏛️ DESIGN WAVE - ARCHITECTURE FOUNDATION
 
@@ -28,6 +32,7 @@ Architecture serves business objectives while enabling quality attributes.
 ```
 
 **Design Inputs from DISCUSS Wave**:
+
 - Structured requirements document with business context
 - User stories with detailed acceptance criteria
 - Domain model and ubiquitous language
@@ -36,9 +41,11 @@ Architecture serves business objectives while enabling quality attributes.
 - Quality attribute requirements
 
 ### Phase 2: Technology Stack Selection
+
 **Agent Command**: `*select-technology`
 
 **Evaluation Framework**:
+
 ```yaml
 technology_selection_criteria:
   business_alignment:
@@ -67,9 +74,11 @@ technology_selection_criteria:
 ```
 
 ### Phase 3: Component Boundary Definition
+
 **Agent Command**: `*define-boundaries`
 
 **Hexagonal Architecture Implementation**:
+
 ```yaml
 hexagonal_architecture_design:
   core_business_logic:
@@ -79,33 +88,45 @@ hexagonal_architecture_design:
   primary_ports:
     description: "Interfaces for driving the application (inbound)"
     examples: ["REST controllers", "GraphQL resolvers", "Message handlers"]
-    design_principles: ["Business-focused operations", "Technology-agnostic", "Testable interfaces"]
+    design_principles:
+      [
+        "Business-focused operations",
+        "Technology-agnostic",
+        "Testable interfaces",
+      ]
 
   secondary_ports:
     description: "Interfaces for driven adapters (outbound)"
-    examples: ["Database repositories", "External service clients", "Email services"]
-    design_principles: ["Dependency inversion", "Technology abstraction", "Mockable for testing"]
+    examples:
+      ["Database repositories", "External service clients", "Email services"]
+    design_principles:
+      ["Dependency inversion", "Technology abstraction", "Mockable for testing"]
 
   adapters:
     primary_adapters: "Concrete implementations of inbound interfaces"
     secondary_adapters: "Concrete implementations of outbound interfaces"
-    responsibilities: ["Protocol handling", "Data transformation", "External integration"]
+    responsibilities:
+      ["Protocol handling", "Data transformation", "External integration"]
 ```
 
 ### Phase 4: Integration Pattern Design
+
 **Agent Command**: `*design-integration`
 
 **Integration Architecture**:
+
 - Synchronous integration patterns (REST APIs, GraphQL)
 - Asynchronous integration patterns (Message queues, Event streaming)
 - Data integration and consistency strategies
 - Error handling and resilience patterns
 
 ### Phase 5: Visual Architecture Creation
+
 **Secondary Agent**: architecture-diagram-manager (Archer)
 **Command**: `*create-diagrams`
 
 **Diagram Generation Process**:
+
 ```yaml
 architecture_visualization:
   component_diagrams:
@@ -132,21 +153,27 @@ architecture_visualization:
 ## Architecture Quality Attribute Design
 
 ### Performance Architecture
+
 **Design Strategies**:
+
 - Response time optimization through efficient algorithms and caching
 - Scalability design with horizontal and vertical scaling patterns
 - Database optimization and query performance
 - Resource utilization and capacity planning
 
 ### Security Architecture
+
 **Security by Design**:
+
 - Authentication and authorization patterns
 - Data protection and encryption strategies
 - Security boundary enforcement
 - Threat modeling and vulnerability assessment
 
 ### Reliability Architecture
+
 **Fault Tolerance Design**:
+
 - Circuit breaker and retry mechanisms
 - Graceful degradation and failover strategies
 - Health checks and monitoring integration
@@ -155,6 +182,7 @@ architecture_visualization:
 ## Architectural Decision Records (ADR)
 
 ### Decision Documentation Framework
+
 ```yaml
 adr_structure:
   title: "Short noun phrase describing the architectural decision"
@@ -173,13 +201,16 @@ decision_categories:
 ## Risk Assessment and Mitigation
 
 ### Architectural Risk Analysis
+
 **Risk Categories**:
+
 1. **Technical Risks** - Technology selection, performance, security
 2. **Integration Risks** - External dependencies, API compatibility
 3. **Operational Risks** - Deployment complexity, monitoring gaps
 4. **Business Risks** - Time-to-market, cost, stakeholder alignment
 
 **Risk Mitigation Strategies**:
+
 - Risk avoidance through architectural choices
 - Risk mitigation through redundancy and fallbacks
 - Risk transfer through managed services and SLAs
@@ -188,6 +219,7 @@ decision_categories:
 ## Output Artifacts
 
 ### Primary Architecture Deliverables
+
 1. **ARCHITECTURE_DESIGN.md** - Comprehensive system architecture
 2. **TECHNOLOGY_STACK.md** - Complete technology selection with rationale
 3. **COMPONENT_BOUNDARIES.md** - Detailed component and service boundaries
@@ -195,6 +227,7 @@ decision_categories:
 5. **ARCHITECTURAL_DECISIONS.md** - Complete ADR documentation
 
 ### Visual Architecture Documentation
+
 1. **COMPONENT_ARCHITECTURE.svg** - System component diagrams
 2. **DEPLOYMENT_ARCHITECTURE.svg** - Infrastructure and deployment diagrams
 3. **SEQUENCE_DIAGRAMS.svg** - Critical workflow interaction diagrams
@@ -202,6 +235,7 @@ decision_categories:
 5. **5D_WAVE_FLOW.svg** - Methodology progression visualization
 
 ### Quality Attribute Documentation
+
 1. **PERFORMANCE_ARCHITECTURE.md** - Performance design and benchmarks
 2. **SECURITY_ARCHITECTURE.md** - Security design and threat model
 3. **RELIABILITY_ARCHITECTURE.md** - Fault tolerance and recovery design
@@ -210,6 +244,7 @@ decision_categories:
 ## Quality Gates
 
 ### Architecture Quality Validation
+
 - [ ] **Business Alignment**: Architecture supports all business requirements
 - [ ] **Quality Attributes**: Performance, security, reliability requirements addressed
 - [ ] **Technology Selection**: Appropriate technology choices with clear rationale
@@ -217,12 +252,14 @@ decision_categories:
 - [ ] **Integration Design**: Robust integration patterns and error handling
 
 ### Visual Architecture Validation
+
 - [ ] **Diagram Completeness**: All critical architectural views documented
 - [ ] **Stakeholder Comprehension**: Diagrams accessible to intended audiences
 - [ ] **Technical Accuracy**: Diagrams accurately represent design decisions
 - [ ] **Evolution Readiness**: Diagrams prepared for implementation tracking
 
 ### ATDD Design Foundation
+
 - [ ] **Testability**: Architecture supports comprehensive testing strategies
 - [ ] **Hexagonal Boundaries**: Clear ports and adapters for test isolation
 - [ ] **Production Service Integration**: Architecture enables real service testing
@@ -231,15 +268,19 @@ decision_categories:
 ## Architecture Review and Validation
 
 ### Design Review Process
+
 **Participants**: Solution architect, Technical leads, Security specialist, Operations representative
 **Focus Areas**:
+
 - Requirement alignment and business capability support
 - Quality attribute satisfaction and trade-off analysis
 - Technology selection rationale and risk assessment
 - Implementation feasibility and team readiness
 
 ### Architecture Compliance Framework
+
 **Validation Mechanisms**:
+
 - Architecture testing and compliance monitoring
 - Code analysis for boundary adherence
 - Integration testing for pattern validation
@@ -248,7 +289,9 @@ decision_categories:
 ## Handoff to DISTILL Wave
 
 ### Handoff Package Preparation
+
 **Content for acceptance-designer (Quinn)**:
+
 ```yaml
 architecture_package:
   architecture_design: "ARCHITECTURE_DESIGN.md with component specifications"
@@ -278,13 +321,16 @@ atdd_preparation:
 ```
 
 ### Architecture-Informed Test Design
+
 **Test Architecture Guidance**:
+
 - Component boundary testing strategies
 - Integration point validation approaches
 - Quality attribute testing scenarios
 - Production service integration patterns
 
 ## Success Criteria
+
 - Comprehensive architecture design addressing all requirements
 - Technology stack selected with clear rationale and risk assessment
 - Component boundaries defined with hexagonal architecture principles
@@ -295,13 +341,16 @@ atdd_preparation:
 - Clear handoff package prepared for DISTILL wave
 
 ## Failure Recovery
+
 If DESIGN wave fails:
+
 1. **Requirements Gaps**: Return to DISCUSS wave for clarification
 2. **Technology Risks**: Reassess technology choices and alternatives
 3. **Architecture Complexity**: Simplify design while maintaining requirements
 4. **Stakeholder Concerns**: Facilitate architecture review and consensus
 
 ## Next Command
+
 **Command**: `*dw-distill`
 **Agent**: acceptance-designer (Quinn)
 **Wave**: DISTILL

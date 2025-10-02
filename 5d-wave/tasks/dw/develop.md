@@ -1,9 +1,11 @@
 # DW-DEVELOP: Outside-In TDD Implementation with Systematic Refactoring
 
 ## Overview
+
 Execute DEVELOP wave of 5D-Wave methodology through Outside-In TDD implementation with double-loop architecture, production service integration, and systematic refactoring.
 
 ## Mandatory Pre-Execution Steps
+
 1. **DISTILL Wave Completion**: Validate acceptance test suite and production service patterns
 2. **Agent Coordination**: Activate software-crafter (Crafty) for unified TDD and refactoring
 3. **Implementation Foundation**: Ensure test infrastructure and service registration complete
@@ -11,10 +13,12 @@ Execute DEVELOP wave of 5D-Wave methodology through Outside-In TDD implementatio
 ## Execution Flow
 
 ### Phase 1: Outside-In TDD Foundation
+
 **Primary Agent**: software-crafter (Crafty)
 **Command**: `*develop`
 
 **Double-Loop TDD Architecture**:
+
 ```
 🧪 DEVELOP WAVE - OUTSIDE-IN TDD IMPLEMENTATION
 
@@ -37,6 +41,7 @@ Outside-In Implementation Workflow:
 ```
 
 **Implementation Strategy**:
+
 - Start with failing E2E test representing user-facing feature
 - Step down to unit tests when E2E test fails
 - Write minimal code to make unit tests pass
@@ -44,9 +49,11 @@ Outside-In Implementation Workflow:
 - Repeat until acceptance test passes naturally
 
 ### Phase 2: Production Service Integration Validation
+
 **Agent Command**: `*validate-production`
 
 **Mandatory Production Integration Patterns**:
+
 ```csharp
 // STEP METHOD PRODUCTION SERVICE INTEGRATION
 [When("user performs business action")]
@@ -67,6 +74,7 @@ services.AddScoped<IRepository, ProductionRepository>();
 ```
 
 **Production Integration Validation Checkpoints**:
+
 - [ ] Every step method contains `GetRequiredService<T>()` calls
 - [ ] Production interfaces exist before step implementation
 - [ ] Test infrastructure delegates to production services
@@ -74,7 +82,9 @@ services.AddScoped<IRepository, ProductionRepository>();
 - [ ] Real system integration, not mocked components
 
 ### Phase 3: One E2E Test at a Time Implementation
+
 **Implementation Workflow**:
+
 ```csharp
 // PHASE 3A: Single E2E Test Active
 [Test]
@@ -105,6 +115,7 @@ public void UserService_Should_AuthenticateUser_WhenCredentialsValid()
 ```
 
 **Commit Requirements - NO EXCEPTIONS**:
+
 - [ ] **Active E2E test must pass** (not ignored)
 - [ ] **All other tests must pass**
 - [ ] **All quality gates must pass**
@@ -112,10 +123,12 @@ public void UserService_Should_AuthenticateUser_WhenCredentialsValid()
 - [ ] **Pre-commit hooks must pass completely**
 
 ### Phase 4: Systematic Refactoring Integration
+
 **Agent**: software-crafter (Crafty)
 **Command**: `*refactor`
 
 **Six-Level Refactoring Hierarchy** - Applied during GREEN phases:
+
 ```yaml
 level_1_readability:
   timing: "After each GREEN phase"
@@ -171,9 +184,11 @@ level_6_solid:
 ```
 
 ### Phase 5: Hexagonal Architecture Implementation
+
 **Agent Command**: `*implement-story`
 
 **Hexagonal Architecture Patterns**:
+
 ```csharp
 // CORE DOMAIN (Business Logic - Technology Independent)
 public class OrderService : IOrderService
@@ -232,9 +247,11 @@ public class SqlOrderRepository : IOrderRepository
 ```
 
 ### Phase 6: Continuous Quality Gates
+
 **Agent Command**: `*check-quality-gates`
 
 **Mandatory Quality Validation**:
+
 ```yaml
 quality_gates:
   technical_validation:
@@ -262,7 +279,9 @@ quality_gates:
 ## Advanced Implementation Patterns
 
 ### NotImplementedException Scaffolding
+
 **Research-Validated Pattern**:
+
 ```csharp
 // SCAFFOLDING PATTERN - "Write the Code You Wish You Had"
 public async Task<PaymentResult> ProcessPaymentAsync(decimal amount)
@@ -287,7 +306,9 @@ public async void PaymentService_Should_ProcessPayment_WhenAmountValid()
 ```
 
 ### Natural Test Progression
+
 **Correct E2E Test Evolution**:
+
 1. **Initial State**: E2E test fails with NotImplementedException
 2. **Unit Development**: Inner TDD loops implement production services
 3. **Integration**: Services integrated through dependency injection
@@ -297,7 +318,9 @@ public async void PaymentService_Should_ProcessPayment_WhenAmountValid()
 ## Environment-Adaptive Testing Strategy
 
 ### Local Development Environment
+
 **Configuration**: In-memory components for fast feedback (~100ms)
+
 ```csharp
 // LOCAL DEVELOPMENT - Fast feedback with in-memory components
 services.AddDbContext<ApplicationDbContext>(options =>
@@ -307,7 +330,9 @@ services.AddScoped<IEmailService, InMemoryEmailService>();
 ```
 
 ### CI/CD Pipeline Environment
+
 **Configuration**: Production-like infrastructure (~2-5s)
+
 ```csharp
 // CI/CD PIPELINE - Production-like validation
 services.AddDbContext<ApplicationDbContext>(options =>
@@ -319,7 +344,9 @@ services.AddScoped<IEmailService, TestEmailService>();
 ## Build and Test Protocol
 
 ### Mandatory Build/Test Cycle
+
 **After every RED-GREEN-REFACTOR cycle**:
+
 ```bash
 # 1. BUILD: Exercise most recent logic
 dotnet build --configuration Release --no-restore
@@ -333,6 +360,7 @@ dotnet test --configuration Release --no-build --verbosity minimal
 ## Output Artifacts
 
 ### Primary Implementation Deliverables
+
 1. **PRODUCTION_CODE/** - Complete production implementation with hexagonal architecture
 2. **ACCEPTANCE_TESTS/** - All acceptance tests passing with production service integration
 3. **UNIT_TESTS/** - Comprehensive unit test suite with behavior-driven design
@@ -340,6 +368,7 @@ dotnet test --configuration Release --no-build --verbosity minimal
 5. **REFACTORED_CODEBASE** - Code quality improvements through six-level hierarchy
 
 ### Quality Assurance Documentation
+
 1. **IMPLEMENTATION_STATUS.md** - Current implementation progress and quality metrics
 2. **REFACTORING_LOG.md** - Systematic refactoring improvements and rationale
 3. **QUALITY_METRICS.md** - Test coverage, code quality, and performance metrics
@@ -347,6 +376,7 @@ dotnet test --configuration Release --no-build --verbosity minimal
 5. **PRODUCTION_INTEGRATION_REPORT.md** - Service integration verification
 
 ### Technical Documentation
+
 1. **API_DOCUMENTATION.md** - Complete API contracts and integration guides
 2. **DOMAIN_MODEL.md** - Final domain model with business rules
 3. **DEPLOYMENT_GUIDE.md** - Production deployment procedures and requirements
@@ -355,6 +385,7 @@ dotnet test --configuration Release --no-build --verbosity minimal
 ## Quality Gates
 
 ### Implementation Quality Validation
+
 - [ ] **Acceptance Test Coverage**: All user stories have passing acceptance tests
 - [ ] **Production Service Integration**: All step methods call real production services
 - [ ] **Unit Test Coverage**: ≥80% coverage for business logic with behavior focus
@@ -362,6 +393,7 @@ dotnet test --configuration Release --no-build --verbosity minimal
 - [ ] **Architecture Compliance**: Hexagonal architecture patterns implemented
 
 ### Code Quality Validation
+
 - [ ] **Refactoring Levels Applied**: Progressive refactoring through six-level hierarchy
 - [ ] **Business Naming**: Domain language used throughout implementation
 - [ ] **Clean Code Standards**: No how-comments, clear intent, minimal complexity
@@ -369,6 +401,7 @@ dotnet test --configuration Release --no-build --verbosity minimal
 - [ ] **Technical Debt Management**: Systematic debt elimination
 
 ### ATDD Compliance Validation
+
 - [ ] **Outside-In Implementation**: E2E tests drive development through inner loops
 - [ ] **One E2E at a Time**: Sequential implementation preventing commit blocks
 - [ ] **Natural Progression**: Tests pass through implementation, not modification
@@ -378,7 +411,9 @@ dotnet test --configuration Release --no-build --verbosity minimal
 ## Handoff to DEMO Wave
 
 ### Handoff Package Preparation
+
 **Content for feature-completion-coordinator (Dakota)**:
+
 ```yaml
 implementation_package:
   working_implementation: "Complete production codebase with hexagonal architecture"
@@ -403,7 +438,9 @@ business_value_evidence:
 ```
 
 ### Production Readiness Preparation
+
 **Ready for DEMO Wave**:
+
 - Working implementation with production service integration
 - Complete test coverage validating business outcomes
 - Architecture compliance and quality metrics verified
@@ -411,6 +448,7 @@ business_value_evidence:
 - Business value demonstrable through working software
 
 ## Success Criteria
+
 - Complete implementation through Outside-In TDD methodology
 - All acceptance tests passing with production service integration
 - Systematic refactoring applied through six-level hierarchy
@@ -421,7 +459,9 @@ business_value_evidence:
 - Clear handoff package prepared for DEMO wave
 
 ## Failure Recovery
+
 If DEVELOP wave fails:
+
 1. **Test Failures**: Rollback to last green state and resume TDD cycle
 2. **Integration Issues**: Validate service registration and dependency injection
 3. **Architecture Violations**: Refactor to restore hexagonal boundaries
@@ -429,6 +469,7 @@ If DEVELOP wave fails:
 5. **Production Integration Problems**: Validate service interfaces and implementations
 
 ## Next Command
+
 **Command**: `*dw-demo`
 **Agent**: feature-completion-coordinator (Dakota)
 **Wave**: DEMO

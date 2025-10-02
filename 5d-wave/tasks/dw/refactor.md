@@ -1,9 +1,11 @@
 # DW-REFACTOR: Systematic Code Analysis and Refactoring Execution
 
 ## Overview
+
 Execute systematic refactoring of existing codebases through progressive code quality improvement, Mikado Method planning, and six-level refactoring hierarchy implementation.
 
 ## Command Syntax
+
 ```bash
 # Analysis and planning
 dw-refactor --levels=1,2,3 --plan=true --mikado=true [target]
@@ -15,6 +17,7 @@ dw-refactor --apply=docs/dw/refactoring/mikado-graph.md --parallel-change=true
 ```
 
 ## Mandatory Pre-Execution Steps
+
 1. **Codebase Analysis**: Validate target codebase and establish baseline metrics
 2. **Agent Activation**: Activate software-crafter (Crafty) with complete refactoring methodology
 3. **Backup Creation**: Create git backup and establish rollback strategy
@@ -23,6 +26,7 @@ dw-refactor --apply=docs/dw/refactoring/mikado-graph.md --parallel-change=true
 ## Command Parameters
 
 ### Analysis Parameters
+
 - `--levels=N,N,N`: Target refactoring levels (1-6, comma-separated)
 - `--scope=TARGET`: Analysis scope (file, module, project, system)
 - `--plan=BOOL`: Generate refactoring plan (default: false)
@@ -31,6 +35,7 @@ dw-refactor --apply=docs/dw/refactoring/mikado-graph.md --parallel-change=true
 - `--output=FILE`: Output analysis results to docs/dw/refactoring/ (default: docs/dw/refactoring/analysis.md)
 
 ### Execution Parameters
+
 - `--execute=FILE`: Execute refactoring plan from docs/dw/refactoring/ file
 - `--apply=FILE`: Apply Mikado refactoring graph from docs/dw/refactoring/ file
 - `--parallel-change=BOOL`: Use parallel change pattern for safety (default: true)
@@ -40,10 +45,12 @@ dw-refactor --apply=docs/dw/refactoring/mikado-graph.md --parallel-change=true
 ## Execution Flow
 
 ### Phase 1: Codebase Analysis and Quality Assessment
+
 **Primary Agent**: software-crafter (Crafty)
 **Command**: `*detect-smells`
 
 **Six-Level Refactoring Assessment**:
+
 ```
 🔍 REFACTOR WAVE - SYSTEMATIC CODE QUALITY IMPROVEMENT
 
@@ -75,6 +82,7 @@ Level 6: 🔵 SOLID++ Principles (Advanced)
 ```
 
 **Analysis Output Structure**:
+
 ```yaml
 analysis_results:
   scope_assessment:
@@ -117,10 +125,12 @@ analysis_results:
 ```
 
 ### Phase 2: Refactoring Strategy Planning
+
 **Agent**: software-crafter (Crafty)
 **Command**: `*progressive`
 
 **Planning Decision Matrix**:
+
 ```yaml
 refactoring_strategy_selection:
   simple_refactoring:
@@ -140,11 +150,13 @@ refactoring_strategy_selection:
 ```
 
 ### Phase 3: Mikado Method Integration (for Complex Refactorings)
+
 **Primary Agent**: software-crafter (Crafty)
 **Secondary Agent**: architecture-diagram-manager (Archer)
 **Command**: `*mikado`
 
 **Enhanced Mikado Refactoring Process**:
+
 ```yaml
 mikado_refactoring_execution:
   discovery_phase:
@@ -165,12 +177,14 @@ mikado_refactoring_execution:
 ```
 
 ### Phase 4: Systematic Refactoring Execution
+
 **Agent**: software-crafter (Crafty)
 **Command**: `*refactor`
 
 **Execution Strategy Based on Complexity**:
 
 **For Simple Refactorings (Levels 1-2)**:
+
 ```yaml
 immediate_execution:
   approach: "Direct application with real-time validation"
@@ -186,6 +200,7 @@ immediate_execution:
 ```
 
 **For Complex Refactorings (Levels 3-6)**:
+
 ```yaml
 staged_execution:
   approach: "Parallel change pattern with staged migration"
@@ -200,10 +215,12 @@ staged_execution:
 ```
 
 ### Phase 5: Quality Validation and Metrics
+
 **Agent**: software-crafter (Crafty)
 **Command**: `*quality-metrics`
 
 **Validation Framework**:
+
 ```yaml
 quality_validation:
   metrics_comparison:
@@ -227,18 +244,21 @@ quality_validation:
 All output files are created in `docs/dw/refactoring/` directory:
 
 ### Analysis Phase Deliverables
+
 1. **docs/dw/refactoring/analysis.md** - Comprehensive code quality assessment
 2. **docs/dw/refactoring/quality-metrics.md** - Before/after metrics and improvement tracking
 3. **docs/dw/refactoring/plan.md** - Detailed execution plan with priorities
 4. **docs/dw/refactoring/technical-debt-assessment.md** - Debt quantification and payoff strategy
 
 ### Planning Phase Deliverables
+
 1. **docs/dw/refactoring/mikado-graph.md** - Visual refactoring dependency graph (if --mikado=true)
 2. **docs/dw/refactoring/roadmap.md** - Strategic refactoring sequence
 3. **docs/dw/refactoring/risk-assessment.md** - Refactoring risks and mitigation strategies
 4. **docs/dw/refactoring/parallel-change-plan.md** - Safe transformation strategy
 
 ### Execution Phase Deliverables
+
 1. **docs/dw/refactoring/execution-log.md** - Detailed execution log with outcomes
 2. **docs/dw/refactoring/quality-improvement-report.md** - Metrics-based improvement validation
 3. **docs/dw/refactoring/regression-test-results.md** - Comprehensive testing validation
@@ -247,18 +267,21 @@ All output files are created in `docs/dw/refactoring/` directory:
 ## Quality Gates
 
 ### Pre-Execution Validation
+
 - [ ] **Baseline Established**: Current state committed and metrics captured
 - [ ] **Test Suite Complete**: Comprehensive test coverage for refactoring scope
 - [ ] **Backup Strategy**: Git-based rollback strategy confirmed
 - [ ] **Stakeholder Buy-in**: Refactoring objectives and timeline approved
 
 ### Execution Validation
+
 - [ ] **No Regression**: All existing tests continue to pass
 - [ ] **Quality Improvement**: Measurable code quality metrics improvement
 - [ ] **Design Compliance**: Adherence to design principles and patterns
 - [ ] **Documentation Updated**: Code documentation reflects refactoring changes
 
 ### Completion Validation
+
 - [ ] **Objectives Met**: All specified refactoring levels successfully applied
 - [ ] **Performance Maintained**: No performance regression introduced
 - [ ] **Maintainability Improved**: Demonstrable maintainability enhancement
@@ -267,6 +290,7 @@ All output files are created in `docs/dw/refactoring/` directory:
 ## Example Usage Scenarios
 
 ### Basic Analysis and Simple Refactoring
+
 ```bash
 # Analyze file-level code quality issues
 dw-refactor --analyze --scope=file --levels=1,2 --output=docs/dw/refactoring/user-service-analysis.md src/UserService.cs
@@ -276,6 +300,7 @@ dw-refactor --execute=docs/dw/refactoring/user-service-analysis.md
 ```
 
 ### Complex Architectural Refactoring
+
 ```bash
 # Plan complex refactoring with Mikado Method
 dw-refactor --scope=module --levels=3,4,5,6 --plan=true --mikado=true src/
@@ -285,6 +310,7 @@ dw-refactor --apply=docs/dw/refactoring/mikado-graph.md --parallel-change=true -
 ```
 
 ### Progressive Quality Improvement
+
 ```bash
 # Start with foundation levels across project
 dw-refactor --scope=project --levels=1,2 --plan=true
@@ -294,6 +320,7 @@ dw-refactor --scope=project --levels=3,4 --mikado=true --output=docs/dw/refactor
 ```
 
 ## Success Criteria
+
 - Code quality metrics demonstrably improved across targeted levels
 - All existing functionality preserved (no regression)
 - Technical debt reduced with quantifiable measurements
@@ -301,7 +328,9 @@ dw-refactor --scope=project --levels=3,4 --mikado=true --output=docs/dw/refactor
 - Stakeholder satisfaction with improved codebase maintainability
 
 ## Failure Recovery
+
 If refactoring fails:
+
 1. **Git Rollback**: Return to pre-refactoring baseline state
 2. **Analysis Review**: Re-examine analysis for missed dependencies
 3. **Strategy Adjustment**: Modify approach based on failure learnings
@@ -310,26 +339,32 @@ If refactoring fails:
 ## Integration with 5D-WAVE Methodology
 
 ### DISCUSS Integration
+
 - Stakeholder alignment on refactoring objectives and priorities
 - Business impact assessment of technical debt reduction
 
 ### DESIGN Integration
+
 - Architecture improvement planning and pattern application
 - Design principle compliance validation
 
 ### DISTILL Integration
+
 - Test-driven refactoring validation and acceptance criteria
 - Quality gate definition for refactoring success
 
 ### DEVELOP Integration
+
 - Implementation of refactoring changes with TDD approach
 - Production service integration validation
 
 ### DEMO Integration
+
 - Stakeholder demonstration of improved code quality
 - Business value realization from technical debt reduction
 
 ## Next Command Options
+
 **Continue Development**: `dw-develop` for implementing new features on improved codebase
 **Architecture Review**: `dw-design` for architectural validation post-refactoring
 **Quality Demo**: `dw-demo` for stakeholder presentation of improvements

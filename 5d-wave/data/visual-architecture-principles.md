@@ -9,6 +9,7 @@ This guide provides comprehensive principles for visual architecture lifecycle m
 **Primary Directive**: "Visual architecture enables effective stakeholder communication while maintaining implementation reality synchronization"
 
 **Visual Architecture Lifecycle Principles**:
+
 - **Stakeholder-Specific Communication**: Tailored views for different audiences and expertise levels
 - **Implementation Reality Synchronization**: Continuous alignment between visual documentation and actual implementation
 - **Evolution Tracking**: Systematic documentation of architectural changes and decision rationale
@@ -21,18 +22,21 @@ This guide provides comprehensive principles for visual architecture lifecycle m
 **Purpose**: Strategic decision support and investment analysis
 
 **Content Focus**:
+
 - **System Context**: Business value and strategic alignment visualization
 - **Investment Analysis**: Technology ROI and resource allocation presentation
 - **Risk Heat Map**: Risk mitigation status and compliance overview
 - **Strategic Roadmap**: Timeline visualization with milestone tracking
 
 **Visual Design Principles**:
+
 - **High-Level Abstraction**: Focus on business capabilities rather than technical details
 - **Business Language**: Use domain terminology and avoid technical jargon
 - **Strategic Metrics**: Include KPIs, ROI projections, and business value indicators
 - **Executive Dashboard Format**: Summary views with drill-down capabilities
 
 **Example Executive View Components**:
+
 ```yaml
 executive_system_context:
   business_capabilities:
@@ -56,18 +60,21 @@ executive_system_context:
 **Purpose**: Implementation guidance and architectural decision documentation
 
 **Content Focus**:
+
 - **Component Architecture**: Detailed system structure with technology choices
 - **Sequence Diagrams**: Interaction flows and API specifications
 - **Deployment Architecture**: Infrastructure topology and configuration
 - **Integration Patterns**: Service integration and data flow documentation
 
 **Visual Design Principles**:
+
 - **Implementation Detail**: Sufficient technical detail for development teams
 - **Technology Specificity**: Clear technology choices and integration patterns
 - **Architectural Patterns**: Document design patterns and architectural decisions
 - **Code-Level Mapping**: Connection between visual architecture and actual implementation
 
 **Example Technical View Components**:
+
 ```yaml
 component_architecture:
   presentation_layer:
@@ -90,18 +97,21 @@ component_architecture:
 **Purpose**: Deployment, monitoring, and maintenance guidance
 
 **Content Focus**:
+
 - **Infrastructure Topology**: Deployment environment visualization
 - **Monitoring Architecture**: Observability and alerting systems
 - **Security Controls**: Security implementation and compliance measures
 - **Support Procedures**: Incident response and maintenance workflows
 
 **Visual Design Principles**:
+
 - **Operational Focus**: Emphasize runtime behavior and operational concerns
 - **Monitoring Integration**: Show observability and alerting integration points
 - **Procedure Documentation**: Clear operational procedures and runbooks
 - **Security Visibility**: Highlight security controls and compliance requirements
 
 **Example Operational View Components**:
+
 ```yaml
 deployment_topology:
   production_environment:
@@ -121,18 +131,21 @@ deployment_topology:
 **Purpose**: Business process understanding and capability mapping
 
 **Content Focus**:
+
 - **Process Workflows**: Business process visualization with system touchpoints
 - **Capability Mapping**: Business capability to system component mapping
 - **Customer Journey**: User experience flows through system interactions
 - **Value Stream**: End-to-end value delivery visualization
 
 **Visual Design Principles**:
+
 - **Business Process Focus**: Show how technology supports business processes
 - **User-Centric View**: Emphasize customer and user experience
 - **Value Delivery**: Highlight business value creation and delivery
 - **Process Integration**: Show integration between business processes and system capabilities
 
 **Example Business View Components**:
+
 ```yaml
 customer_journey_mapping:
   discovery_phase:
@@ -153,6 +166,7 @@ customer_journey_mapping:
 ### Automated Generation Patterns
 
 **Code-to-Diagram Generation**:
+
 ```yaml
 generation_pipeline:
   source_analysis:
@@ -169,6 +183,7 @@ generation_pipeline:
 ```
 
 **Configuration-to-Diagram Automation**:
+
 ```yaml
 infrastructure_analysis:
   deployment_parsing:
@@ -185,6 +200,7 @@ infrastructure_analysis:
 ### Continuous Validation Framework
 
 **Reality Synchronization Validation**:
+
 ```yaml
 validation_pipeline:
   accuracy_checking:
@@ -206,6 +222,7 @@ validation_pipeline:
 ### Change Impact Visualization
 
 **Architectural Change Communication**:
+
 ```yaml
 change_visualization:
   impact_analysis:
@@ -225,18 +242,21 @@ change_visualization:
 ### Clarity and Readability Principles
 
 **Visual Hierarchy**:
+
 - **Primary Elements**: Key components and relationships highlighted prominently
 - **Secondary Elements**: Supporting information with reduced visual weight
 - **Tertiary Elements**: Detailed annotations and supplementary information
 - **Consistent Spacing**: Adequate whitespace for clarity and comprehension
 
 **Information Architecture**:
+
 - **Logical Grouping**: Related components grouped visually and spatially
 - **Clear Relationships**: Explicit visualization of dependencies and interactions
 - **Appropriate Detail Level**: Right amount of detail for target audience
 - **Progressive Disclosure**: Hierarchical navigation from overview to detail
 
 **Typography and Labeling**:
+
 - **Readable Fonts**: Sans-serif fonts at appropriate sizes for target medium
 - **Consistent Labeling**: Standardized naming conventions across all diagrams
 - **Business Language**: Domain terminology appropriate for stakeholder audience
@@ -245,6 +265,7 @@ change_visualization:
 ### Professional Presentation Quality
 
 **Visual Design Standards**:
+
 ```yaml
 design_standards:
   color_palette:
@@ -264,6 +285,7 @@ design_standards:
 ```
 
 **Output Format Standards**:
+
 - **Print Quality**: High-resolution formats suitable for printing and presentations
 - **Digital Formats**: Interactive formats for web and mobile viewing
 - **Presentation Ready**: Formats optimized for executive presentations and meetings
@@ -272,6 +294,7 @@ design_standards:
 ### Accessibility and Inclusion
 
 **Universal Design Principles**:
+
 ```yaml
 accessibility_requirements:
   visual_accessibility:
@@ -291,6 +314,7 @@ accessibility_requirements:
 ```
 
 **Cultural and Linguistic Considerations**:
+
 - **International Audiences**: Diagrams appropriate for global stakeholder groups
 - **Cultural Sensitivity**: Visual metaphors and design elements appropriate for target cultures
 - **Multilingual Support**: Text elements that support multiple languages when needed
@@ -301,6 +325,7 @@ accessibility_requirements:
 ### Change Management Integration
 
 **Architectural Change Workflow**:
+
 ```yaml
 change_management:
   proposal_process:
@@ -322,6 +347,7 @@ change_management:
 ### Baseline and Milestone Management
 
 **Architectural Baselines**:
+
 ```yaml
 baseline_management:
   baseline_establishment:
@@ -343,6 +369,7 @@ baseline_management:
 ### Trend Analysis and Planning
 
 **Evolution Pattern Recognition**:
+
 ```yaml
 trend_analysis:
   pattern_identification:
@@ -366,6 +393,7 @@ trend_analysis:
 ### .NET/C# Visual Architecture
 
 **Component Visualization Patterns**:
+
 ```yaml
 dotnet_visualization:
   solution_architecture:
@@ -382,6 +410,7 @@ dotnet_visualization:
 ### React/TypeScript Visual Architecture
 
 **Frontend Architecture Visualization**:
+
 ```yaml
 react_visualization:
   component_hierarchy:
@@ -398,6 +427,7 @@ react_visualization:
 ### Microservices Visual Architecture
 
 **Distributed System Visualization**:
+
 ```yaml
 microservices_visualization:
   service_landscape:

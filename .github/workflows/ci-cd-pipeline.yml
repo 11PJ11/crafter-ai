@@ -2,9 +2,9 @@ name: AI-Craft CI/CD Pipeline
 
 on:
   push:
-    branches: [ master, main, develop ]
+    branches: [master, main, develop]
   pull_request:
-    branches: [ master, main ]
+    branches: [master, main]
 
 env:
   # AI-Craft Configuration
@@ -17,82 +17,82 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Set up Environment
-      run: |
-        # Create resilience state directory
-        mkdir -p /tmp/claude
-        chmod 755 /tmp/claude
+      - name: Set up Environment
+        run: |
+          # Create resilience state directory
+          mkdir -p /tmp/claude
+          chmod 755 /tmp/claude
 
-        # Make hook scripts executable
-        find .claude/hooks -name "*.sh" -type f -exec chmod +x {} \;
+          # Make hook scripts executable
+          find .claude/hooks -name "*.sh" -type f -exec chmod +x {} \;
 
-    - name: Level 1-2 Quality Gates (Syntax & Linting)
-      run: |
-        echo "::group::Level 1-2: Syntax and Linting Validation"
+      - name: Level 1-2 Quality Gates (Syntax & Linting)
+        run: |
+          echo "::group::Level 1-2: Syntax and Linting Validation"
 
-        # Shell script syntax validation
-        echo "Validating shell script syntax..."
-        find .claude/hooks -name "*.sh" -type f | while read -r script; do
-          echo "Checking: $script"
-          bash -n "$script" || exit 1
-        done
+          # Shell script syntax validation
+          echo "Validating shell script syntax..."
+          find .claude/hooks -name "*.sh" -type f | while read -r script; do
+            echo "Checking: $script"
+            bash -n "$script" || exit 1
+          done
 
-        # Linting with shellcheck if available
-        if command -v shellcheck >/dev/null 2>&1; then
-          echo "Running shellcheck analysis..."
-          find .claude/hooks -name "*.sh" -type f | xargs shellcheck -x || true
-        else
-          echo "Shellcheck not available - using basic syntax validation only"
-        fi
+          # Linting with shellcheck if available
+          if command -v shellcheck >/dev/null 2>&1; then
+            echo "Running shellcheck analysis..."
+            find .claude/hooks -name "*.sh" -type f | xargs shellcheck -x || true
+          else
+            echo "Shellcheck not available - using basic syntax validation only"
+          fi
 
-        echo "::endgroup::"
+          echo "::endgroup::"
 
-    - name: Level 3-4 Quality Gates (Security & Architecture)
-      run: |
-        echo "::group::Level 3-4: Security and Architecture Validation"
+      - name: Level 3-4 Quality Gates (Security & Architecture)
+        run: |
+          echo "::group::Level 3-4: Security and Architecture Validation"
 
-        # Security validation - check for common vulnerabilities
-        echo "Security vulnerability scanning..."
+          # Security validation - check for common vulnerabilities
+          echo "Security vulnerability scanning..."
 
-        # Check for hardcoded secrets or sensitive data with precise patterns
-        if grep -rE "(password|secret|token)[[:space:]]*=[[:space:]]*['\"][^'\"]+['\"]" .claude/hooks/ --include="*.sh" | grep -v "example\|test\|comment\|LOG_LEVEL\|TODO"; then
-          echo "⚠️ Potential hardcoded credentials detected - review required"
-          exit 1
-        fi
-
-        # Also check for API keys and credentials
-        if grep -rE "(api_key|apikey|access_key)[[:space:]]*=[[:space:]]*['\"][^'\"]+['\"]" .claude/hooks/ --include="*.sh" | grep -v "example\|test\|comment"; then
-          echo "⚠️ Potential API credentials detected - review required"
-          exit 1
-        fi
-
-        # Exclude legitimate utility files from basic keyword scanning
-        echo "✅ Security validation: No hardcoded credentials detected"
-
-        # Architecture compliance - verify hook system structure
-        echo "Architecture compliance validation..."
-
-        # Verify essential hook system components exist
-        required_files=(
-          ".claude/hooks/lib/resilience/CircuitBreaker.sh"
-          ".claude/hooks/lib/resilience/ResilienceConfiguration.sh"
-          ".claude/hooks/lib/resilience/CircuitBreakerState.sh"
-          ".claude/hooks/lib/config/HookConfig.sh"
-          ".claude/hooks/lib/logging/LogManager.sh"
-        )
-
-        for file in "${required_files[@]}"; do
-          if [[ ! -f "$file" ]]; then
-            echo "❌ Missing required component: $file"
+          # Check for hardcoded secrets or sensitive data with precise patterns
+          if grep -rE "(password|secret|token)[[:space:]]*=[[:space:]]*['\"][^'\"]+['\"]" .claude/hooks/ --include="*.sh" | grep -v "example\|test\|comment\|LOG_LEVEL\|TODO"; then
+            echo "⚠️ Potential hardcoded credentials detected - review required"
             exit 1
           fi
-          echo "✅ Found: $file"
-        done
 
-        echo "::endgroup::"
+          # Also check for API keys and credentials
+          if grep -rE "(api_key|apikey|access_key)[[:space:]]*=[[:space:]]*['\"][^'\"]+['\"]" .claude/hooks/ --include="*.sh" | grep -v "example\|test\|comment"; then
+            echo "⚠️ Potential API credentials detected - review required"
+            exit 1
+          fi
+
+          # Exclude legitimate utility files from basic keyword scanning
+          echo "✅ Security validation: No hardcoded credentials detected"
+
+          # Architecture compliance - verify hook system structure
+          echo "Architecture compliance validation..."
+
+          # Verify essential hook system components exist
+          required_files=(
+            ".claude/hooks/lib/resilience/CircuitBreaker.sh"
+            ".claude/hooks/lib/resilience/ResilienceConfiguration.sh"
+            ".claude/hooks/lib/resilience/CircuitBreakerState.sh"
+            ".claude/hooks/lib/config/HookConfig.sh"
+            ".claude/hooks/lib/logging/LogManager.sh"
+          )
+
+          for file in "${required_files[@]}"; do
+            if [[ ! -f "$file" ]]; then
+              echo "❌ Missing required component: $file"
+              exit 1
+            fi
+            echo "✅ Found: $file"
+          done
+
+          echo "::endgroup::"
 
   hook-resilience-tests:
     name: Hook Resilience E2E Tests
@@ -100,83 +100,83 @@ jobs:
     needs: quality-gates
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Set up Test Environment
-      run: |
-        # Create resilience state directory
-        mkdir -p /tmp/claude
-        chmod 755 /tmp/claude
+      - name: Set up Test Environment
+        run: |
+          # Create resilience state directory
+          mkdir -p /tmp/claude
+          chmod 755 /tmp/claude
 
-        # Make all hook scripts executable
-        find .claude/hooks -name "*.sh" -type f -exec chmod +x {} \;
+          # Make all hook scripts executable
+          find .claude/hooks -name "*.sh" -type f -exec chmod +x {} \;
 
-        # Set up logging directory
-        mkdir -p .claude/hooks/logs
+          # Set up logging directory
+          mkdir -p .claude/hooks/logs
 
-    - name: Level 5 Quality Gate (Test Execution)
-      run: |
-        echo "::group::Level 5: Comprehensive Test Execution"
+      - name: Level 5 Quality Gate (Test Execution)
+        run: |
+          echo "::group::Level 5: Comprehensive Test Execution"
 
-        # Run Hook Resilience System E2E Tests
-        echo "Running Hook Resilience System E2E Tests..."
+          # Run Hook Resilience System E2E Tests
+          echo "Running Hook Resilience System E2E Tests..."
 
-        if [[ -x "./tests/hooks/HookResilienceSystemE2E.sh" ]]; then
-          ./tests/hooks/HookResilienceSystemE2E.sh
-          test_exit_code=$?
+          if [[ -x "./tests/hooks/HookResilienceSystemE2E.sh" ]]; then
+            ./tests/hooks/HookResilienceSystemE2E.sh
+            test_exit_code=$?
 
-          if [[ $test_exit_code -eq 0 ]]; then
-            echo "✅ Hook Resilience E2E Tests: PASSED"
-          else
-            echo "❌ Hook Resilience E2E Tests: FAILED (exit code: $test_exit_code)"
-            exit 1
-          fi
-        else
-          echo "⚠️ Hook Resilience E2E test not found or not executable"
-          echo "Available tests:"
-          find .claude/hooks -name "*test*.sh" -o -name "*Test*.sh" -type f || true
-        fi
-
-        # Run additional hook system tests if they exist
-        echo "Searching for additional test scripts..."
-        additional_tests=$(find .claude/hooks -name "*test*.sh" -o -name "*Test*.sh" -type f | grep -v HookResilienceSystemE2E.sh | grep -v test_migration_validation.sh || true)
-
-        if [[ -n "$additional_tests" ]]; then
-          echo "Running additional tests:"
-          echo "$additional_tests" | while read -r test_script; do
-            if [[ -x "$test_script" ]]; then
-              echo "Executing: $test_script"
-              "$test_script" || exit 1
+            if [[ $test_exit_code -eq 0 ]]; then
+              echo "✅ Hook Resilience E2E Tests: PASSED"
+            else
+              echo "❌ Hook Resilience E2E Tests: FAILED (exit code: $test_exit_code)"
+              exit 1
             fi
-          done
-        else
-          echo "No additional tests found (migration tests excluded from CI)"
-        fi
+          else
+            echo "⚠️ Hook Resilience E2E test not found or not executable"
+            echo "Available tests:"
+            find .claude/hooks -name "*test*.sh" -o -name "*Test*.sh" -type f || true
+          fi
 
-        echo "::endgroup::"
+          # Run additional hook system tests if they exist
+          echo "Searching for additional test scripts..."
+          additional_tests=$(find .claude/hooks -name "*test*.sh" -o -name "*Test*.sh" -type f | grep -v HookResilienceSystemE2E.sh | grep -v test_migration_validation.sh || true)
 
-    - name: Level 6 Quality Gate (Performance Validation)
-      run: |
-        echo "::group::Level 6: Performance and Benchmarking"
+          if [[ -n "$additional_tests" ]]; then
+            echo "Running additional tests:"
+            echo "$additional_tests" | while read -r test_script; do
+              if [[ -x "$test_script" ]]; then
+                echo "Executing: $test_script"
+                "$test_script" || exit 1
+              fi
+            done
+          else
+            echo "No additional tests found (migration tests excluded from CI)"
+          fi
 
-        # Performance validation for circuit breaker operations
-        echo "Performance testing circuit breaker operations..."
+          echo "::endgroup::"
 
-        start_time=$(date +%s%3N)
-        ./.claude/hooks/lib/resilience/CircuitBreaker.sh status black >/dev/null 2>&1 || true
-        end_time=$(date +%s%3N)
+      - name: Level 6 Quality Gate (Performance Validation)
+        run: |
+          echo "::group::Level 6: Performance and Benchmarking"
 
-        duration=$((end_time - start_time))
-        echo "Circuit breaker status check took: ${duration}ms"
+          # Performance validation for circuit breaker operations
+          echo "Performance testing circuit breaker operations..."
 
-        if [[ $duration -gt 1000 ]]; then
-          echo "⚠️ Circuit breaker operation took longer than expected (${duration}ms > 1000ms)"
-        else
-          echo "✅ Circuit breaker performance acceptable (${duration}ms)"
-        fi
+          start_time=$(date +%s%3N)
+          ./.claude/hooks/lib/resilience/CircuitBreaker.sh status black >/dev/null 2>&1 || true
+          end_time=$(date +%s%3N)
 
-        echo "::endgroup::"
+          duration=$((end_time - start_time))
+          echo "Circuit breaker status check took: ${duration}ms"
+
+          if [[ $duration -gt 1000 ]]; then
+            echo "⚠️ Circuit breaker operation took longer than expected (${duration}ms > 1000ms)"
+          else
+            echo "✅ Circuit breaker performance acceptable (${duration}ms)"
+          fi
+
+          echo "::endgroup::"
 
   integration-validation:
     name: Integration & Deployment Validation
@@ -184,71 +184,71 @@ jobs:
     needs: [quality-gates, hook-resilience-tests]
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Level 7-8 Quality Gates (Documentation & Integration)
-      run: |
-        echo "::group::Level 7-8: Documentation and Integration Validation"
+      - name: Level 7-8 Quality Gates (Documentation & Integration)
+        run: |
+          echo "::group::Level 7-8: Documentation and Integration Validation"
 
-        # Make hook scripts executable
-        find .claude/hooks -name "*.sh" -type f -exec chmod +x {} \;
+          # Make hook scripts executable
+          find .claude/hooks -name "*.sh" -type f -exec chmod +x {} \;
 
-        # Documentation completeness validation
-        echo "Validating documentation completeness..."
+          # Documentation completeness validation
+          echo "Validating documentation completeness..."
 
-        # Check for essential documentation files
-        documentation_files=(
-          "README.md"
-          ".claude/hooks/README.md"
-        )
+          # Check for essential documentation files
+          documentation_files=(
+            "README.md"
+            ".claude/hooks/README.md"
+          )
 
-        for doc_file in "${documentation_files[@]}"; do
-          if [[ -f "$doc_file" ]]; then
-            echo "✅ Found: $doc_file"
+          for doc_file in "${documentation_files[@]}"; do
+            if [[ -f "$doc_file" ]]; then
+              echo "✅ Found: $doc_file"
+            else
+              echo "⚠️ Missing documentation: $doc_file"
+            fi
+          done
+
+          # Integration testing - verify hook system initialization
+          echo "Integration validation: Hook system initialization..."
+
+          # Test hook system components exist and are executable
+          if [[ -x ".claude/hooks/lib/resilience/CircuitBreaker.sh" && -x "./tests/hooks/HookResilienceSystemE2E.sh" ]]; then
+            echo "✅ Hook resilience system integration: PASSED"
           else
-            echo "⚠️ Missing documentation: $doc_file"
+            echo "❌ Hook resilience system integration: FAILED - missing executables"
+            exit 1
           fi
-        done
 
-        # Integration testing - verify hook system initialization
-        echo "Integration validation: Hook system initialization..."
+          echo "::endgroup::"
 
-        # Test hook system components exist and are executable
-        if [[ -x ".claude/hooks/lib/resilience/CircuitBreaker.sh" && -x "./tests/hooks/HookResilienceSystemE2E.sh" ]]; then
-          echo "✅ Hook resilience system integration: PASSED"
-        else
-          echo "❌ Hook resilience system integration: FAILED - missing executables"
-          exit 1
-        fi
+      - name: Deployment Readiness Check
+        run: |
+          echo "::group::Deployment Readiness Validation"
 
-        echo "::endgroup::"
+          # Final deployment readiness check
+          echo "Performing final deployment readiness validation..."
 
-    - name: Deployment Readiness Check
-      run: |
-        echo "::group::Deployment Readiness Validation"
+          # Verify all quality gates passed
+          echo "✅ Quality Gates: All levels completed successfully"
+          echo "✅ Hook Resilience Tests: E2E validation passed"
+          echo "✅ Performance: Circuit breaker operations validated"
+          echo "✅ Integration: Hook system initialization confirmed"
 
-        # Final deployment readiness check
-        echo "Performing final deployment readiness validation..."
+          # Generate deployment summary
+          echo "🚀 AI-Craft system ready for deployment"
+          echo "📊 Pipeline execution summary:"
+          echo "  - Syntax validation: ✅"
+          echo "  - Security scanning: ✅"
+          echo "  - Architecture compliance: ✅"
+          echo "  - E2E tests: ✅"
+          echo "  - Performance validation: ✅"
+          echo "  - Integration validation: ✅"
+          echo "  - Documentation check: ✅"
 
-        # Verify all quality gates passed
-        echo "✅ Quality Gates: All levels completed successfully"
-        echo "✅ Hook Resilience Tests: E2E validation passed"
-        echo "✅ Performance: Circuit breaker operations validated"
-        echo "✅ Integration: Hook system initialization confirmed"
-
-        # Generate deployment summary
-        echo "🚀 AI-Craft system ready for deployment"
-        echo "📊 Pipeline execution summary:"
-        echo "  - Syntax validation: ✅"
-        echo "  - Security scanning: ✅"
-        echo "  - Architecture compliance: ✅"
-        echo "  - E2E tests: ✅"
-        echo "  - Performance validation: ✅"
-        echo "  - Integration validation: ✅"
-        echo "  - Documentation check: ✅"
-
-        echo "::endgroup::"
+          echo "::endgroup::"
 
   pipeline-completion:
     name: Pipeline Completion
@@ -257,37 +257,37 @@ jobs:
     if: always()
 
     steps:
-    - name: Pipeline Summary
-      run: |
-        echo "::group::AI-Craft CI/CD Pipeline Summary"
+      - name: Pipeline Summary
+        run: |
+          echo "::group::AI-Craft CI/CD Pipeline Summary"
 
-        # Check if all jobs succeeded
-        if [[ "${{ needs.quality-gates.result }}" == "success" &&
-              "${{ needs.hook-resilience-tests.result }}" == "success" &&
-              "${{ needs.integration-validation.result }}" == "success" ]]; then
+          # Check if all jobs succeeded
+          if [[ "${{ needs.quality-gates.result }}" == "success" &&
+                "${{ needs.hook-resilience-tests.result }}" == "success" &&
+                "${{ needs.integration-validation.result }}" == "success" ]]; then
 
-          echo "🎉 AI-Craft CI/CD Pipeline: SUCCESS"
-          echo "✅ All quality gates passed successfully"
-          echo "✅ Hook resilience system validated"
-          echo "✅ Integration and deployment checks completed"
-          echo ""
-          echo "📈 Quality Metrics:"
-          echo "  - 8-level quality gate validation: PASSED"
-          echo "  - E2E test execution: PASSED"
-          echo "  - Security and architecture compliance: PASSED"
-          echo "  - Performance benchmarks: PASSED"
-          echo ""
-          echo "🚀 System ready for production deployment"
+            echo "🎉 AI-Craft CI/CD Pipeline: SUCCESS"
+            echo "✅ All quality gates passed successfully"
+            echo "✅ Hook resilience system validated"
+            echo "✅ Integration and deployment checks completed"
+            echo ""
+            echo "📈 Quality Metrics:"
+            echo "  - 8-level quality gate validation: PASSED"
+            echo "  - E2E test execution: PASSED"
+            echo "  - Security and architecture compliance: PASSED"
+            echo "  - Performance benchmarks: PASSED"
+            echo ""
+            echo "🚀 System ready for production deployment"
 
-        else
-          echo "❌ AI-Craft CI/CD Pipeline: FAILED"
-          echo "Quality gate results:"
-          echo "  - Quality Gates: ${{ needs.quality-gates.result }}"
-          echo "  - Hook Tests: ${{ needs.hook-resilience-tests.result }}"
-          echo "  - Integration: ${{ needs.integration-validation.result }}"
-          echo ""
-          echo "🔧 Review failed stages and address issues before deployment"
-          exit 1
-        fi
+          else
+            echo "❌ AI-Craft CI/CD Pipeline: FAILED"
+            echo "Quality gate results:"
+            echo "  - Quality Gates: ${{ needs.quality-gates.result }}"
+            echo "  - Hook Tests: ${{ needs.hook-resilience-tests.result }}"
+            echo "  - Integration: ${{ needs.integration-validation.result }}"
+            echo ""
+            echo "🔧 Review failed stages and address issues before deployment"
+            exit 1
+          fi
 
-        echo "::endgroup::"
+          echo "::endgroup::"

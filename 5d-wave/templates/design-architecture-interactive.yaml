@@ -311,15 +311,33 @@ technology_selection_framework:
           - "Performance and scalability characteristics"
         recommended_options:
           - technology: "ASP.NET Core"
-            strengths: ["Built-in DI", "Excellent testing support", "Performance", "Cloud integration"]
+            strengths:
+              [
+                "Built-in DI",
+                "Excellent testing support",
+                "Performance",
+                "Cloud integration",
+              ]
             atdd_fit: "Excellent - native DI and testing framework support"
 
           - technology: "Spring Boot"
-            strengths: ["Mature DI framework", "Comprehensive testing", "Enterprise features", "Community"]
+            strengths:
+              [
+                "Mature DI framework",
+                "Comprehensive testing",
+                "Enterprise features",
+                "Community",
+              ]
             atdd_fit: "Excellent - comprehensive testing and dependency injection"
 
           - technology: "Node.js with NestJS"
-            strengths: ["TypeScript support", "Decorator-based DI", "Modern patterns", "Performance"]
+            strengths:
+              [
+                "TypeScript support",
+                "Decorator-based DI",
+                "Modern patterns",
+                "Performance",
+              ]
             atdd_fit: "Good - modern testing frameworks and DI support"
 
       database_and_persistence:
@@ -448,12 +466,23 @@ automated_architecture_management:
 
         - step: "Architecture Pattern Recognition"
           description: "Identify architectural patterns and design decisions"
-          patterns: ["Hexagonal Architecture", "CQRS", "Event Sourcing", "Repository Pattern"]
+          patterns:
+            [
+              "Hexagonal Architecture",
+              "CQRS",
+              "Event Sourcing",
+              "Repository Pattern",
+            ]
           output: "Pattern implementation documentation and compliance report"
 
         - step: "Business Logic Mapping"
           description: "Map technical components to business capabilities"
-          analysis: ["Service interface analysis", "Domain model extraction", "Business workflow identification"]
+          analysis:
+            [
+              "Service interface analysis",
+              "Domain model extraction",
+              "Business workflow identification",
+            ]
           output: "Business capability to technical component mapping"
 
     automated_diagram_generation:
@@ -566,7 +595,8 @@ design_wave_deliverables:
         - "Port interface definitions and contracts"
         - "Adapter implementation specifications and integration patterns"
         - "Dependency injection configuration and service registration"
-      stakeholder_approval: ["Solution Architect", "Technical Lead", "Development Team"]
+      stakeholder_approval:
+        ["Solution Architect", "Technical Lead", "Development Team"]
 
     - deliverable: "Visual Architecture Documentation"
       description: "Stakeholder-specific visual architecture representations"
@@ -584,7 +614,8 @@ design_wave_deliverables:
         - "Database and persistence technology choices"
         - "Testing framework and automation tool selection"
         - "Development and deployment tool specifications"
-      stakeholder_approval: ["Technical Lead", "DevOps Lead", "Quality Assurance"]
+      stakeholder_approval:
+        ["Technical Lead", "DevOps Lead", "Quality Assurance"]
 
     - deliverable: "ATDD Integration Architecture"
       description: "Architecture designed for acceptance test driven development"
@@ -593,7 +624,8 @@ design_wave_deliverables:
         - "Dependency injection configuration for testing"
         - "Test environment architecture and data management"
         - "Production service integration patterns for acceptance tests"
-      stakeholder_approval: ["QA Lead", "Test Automation Specialist", "Development Team"]
+      stakeholder_approval:
+        ["QA Lead", "Test Automation Specialist", "Development Team"]
 
   transition_criteria:
     ready_for_distill_wave:
@@ -682,27 +714,26 @@ interactive_guidance:
         - "✓ Visual documentation supports decision-making and communication"
         - "✓ Architecture evolution can be tracked and communicated"
 
----
+usage_documentation: |
+  # Template Usage Instructions
 
-# Template Usage Instructions
+  This highly interactive template supports comprehensive architectural design and visual communication for the DESIGN wave of the 5D-Wave methodology.
 
-This highly interactive template supports comprehensive architectural design and visual communication for the DESIGN wave of the 5D-Wave methodology.
+  ## Customization Guidelines
 
-## Customization Guidelines
+  1. **Adapt architectural patterns** to match your technology choices and constraints
+  2. **Customize visual representations** for your stakeholder groups and communication needs
+  3. **Select technologies** that support both your business requirements and ATDD methodology
+  4. **Design service interfaces** using business language and domain terminology
 
-1. **Adapt architectural patterns** to match your technology choices and constraints
-2. **Customize visual representations** for your stakeholder groups and communication needs
-3. **Select technologies** that support both your business requirements and ATDD methodology
-4. **Design service interfaces** using business language and domain terminology
+  ## Success Indicators
 
-## Success Indicators
+  - ✅ Hexagonal architecture designed with clear business logic isolation
+  - ✅ Visual architecture documentation approved by all stakeholder groups
+  - ✅ Technology stack selected and validated for ATDD compatibility
+  - ✅ Service layer designed for acceptance test integration
+  - ✅ Architecture supports automated diagram generation and synchronization
 
-- ✅ Hexagonal architecture designed with clear business logic isolation
-- ✅ Visual architecture documentation approved by all stakeholder groups
-- ✅ Technology stack selected and validated for ATDD compatibility
-- ✅ Service layer designed for acceptance test integration
-- ✅ Architecture supports automated diagram generation and synchronization
+  ## Next Wave Preparation
 
-## Next Wave Preparation
-
-Use the architectural design and technology specifications from this template as foundation for acceptance test creation in the DISTILL wave, ensuring seamless transition from design to test-driven implementation.
+  Use the architectural design and technology specifications from this template as foundation for acceptance test creation in the DISTILL wave, ensuring seamless transition from design to test-driven implementation.

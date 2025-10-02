@@ -285,27 +285,49 @@ test_implementation_strategy:
     implementation_workflow:
       - step: "Select Single E2E Scenario"
         description: "Choose one high-value business scenario for implementation"
-        criteria: ["Business value impact", "Risk reduction", "Learning opportunity"]
+        criteria:
+          ["Business value impact", "Risk reduction", "Learning opportunity"]
         deliverable: "Single selected E2E test scenario"
 
       - step: "Implement Through Outside-In TDD"
         description: "Complete E2E scenario using double-loop TDD approach"
-        process: ["Write failing E2E test", "Step down to unit tests", "Implement production code", "Return to E2E validation"]
+        process:
+          [
+            "Write failing E2E test",
+            "Step down to unit tests",
+            "Implement production code",
+            "Return to E2E validation",
+          ]
         deliverable: "Working E2E test with supporting unit tests"
 
       - step: "Validate Production Integration"
         description: "Ensure E2E test calls production services and validates real behavior"
-        validation: ["Service call verification", "Business logic validation", "Real system integration"]
+        validation:
+          [
+            "Service call verification",
+            "Business logic validation",
+            "Real system integration",
+          ]
         deliverable: "Validated E2E test with production service integration"
 
       - step: "Commit Working Implementation"
         description: "Commit complete working implementation before next E2E test"
-        requirements: ["All tests passing", "Code quality standards met", "Production service integration validated"]
+        requirements:
+          [
+            "All tests passing",
+            "Code quality standards met",
+            "Production service integration validated",
+          ]
         deliverable: "Committed working increment"
 
       - step: "Enable Next E2E Scenario"
         description: "Remove [Ignore] attribute from next E2E test and repeat process"
-        transition_criteria: ["Previous E2E test stable", "Implementation complete", "Quality gates passed"]
+        transition_criteria:
+          [
+            "Previous E2E test stable",
+            "Implementation complete",
+            "Quality gates passed",
+          ]
         deliverable: "Next E2E test ready for implementation"
 
   test_management_patterns:
@@ -453,7 +475,12 @@ test_automation_setup:
         evaluation: "Native support for Gherkin syntax and business language"
 
       - requirement: "Dependency Injection Integration"
-        frameworks: ["SpecFlow with DI", "Cucumber with Spring", "Behave with DI containers"]
+        frameworks:
+          [
+            "SpecFlow with DI",
+            "Cucumber with Spring",
+            "Behave with DI containers",
+          ]
         evaluation: "Seamless integration with production service DI configuration"
 
       - requirement: "Production Service Access"
@@ -743,27 +770,26 @@ interactive_guidance:
         - target: "100% business outcome validation"
         - validation: "Test review and business value assessment"
 
----
+usage_documentation: |
+  # Template Usage Instructions
 
-# Template Usage Instructions
+  This moderately interactive template supports comprehensive acceptance test creation and production service integration for the DISTILL wave of the 5D-Wave methodology.
 
-This moderately interactive template supports comprehensive acceptance test creation and production service integration for the DISTILL wave of the 5D-Wave methodology.
+  ## Customization Guidelines
 
-## Customization Guidelines
+  1. **Adapt scenario templates** to match your business domain and terminology
+  2. **Configure production service integration** based on your technology stack and architecture
+  3. **Customize test automation framework** to align with your development and deployment pipeline
+  4. **Implement business validation patterns** appropriate for your business metrics and KPIs
 
-1. **Adapt scenario templates** to match your business domain and terminology
-2. **Configure production service integration** based on your technology stack and architecture
-3. **Customize test automation framework** to align with your development and deployment pipeline
-4. **Implement business validation patterns** appropriate for your business metrics and KPIs
+  ## Success Indicators
 
-## Success Indicators
+  - ✅ Acceptance tests written in business language understandable by stakeholders
+  - ✅ All step methods call production services via dependency injection
+  - ✅ One-E2E-at-a-time strategy implemented and operational
+  - ✅ Business outcomes validated through real system integration
+  - ✅ Test automation framework configured and executing successfully
 
-- ✅ Acceptance tests written in business language understandable by stakeholders
-- ✅ All step methods call production services via dependency injection
-- ✅ One-E2E-at-a-time strategy implemented and operational
-- ✅ Business outcomes validated through real system integration
-- ✅ Test automation framework configured and executing successfully
+  ## Next Wave Preparation
 
-## Next Wave Preparation
-
-Use the acceptance tests and production service integration framework from this template as the driving force for Outside-In TDD implementation in the DEVELOP wave, ensuring test-driven development with real business validation.
+  Use the acceptance tests and production service integration framework from this template as the driving force for Outside-In TDD implementation in the DEVELOP wave, ensuring test-driven development with real business validation.

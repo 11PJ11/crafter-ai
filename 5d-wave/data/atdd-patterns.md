@@ -3,6 +3,7 @@
 ## Quick Reference Guide
 
 ### Essential ATDD Patterns
+
 - **Three Amigos Collaboration**: Customer, Developer, Tester working together
 - **Given-When-Then Format**: Business-focused acceptance criteria structure
 - **Specification by Example**: Concrete examples drive understanding
@@ -10,6 +11,7 @@
 - **Living Documentation**: Tests serve as current system documentation
 
 ### Anti-Patterns to Avoid
+
 - **Test Infrastructure Business Logic**: Business logic in test support code
 - **Customer Disconnection**: Development without regular customer feedback
 - **Technical Language Creep**: Technical jargon replacing business language
@@ -22,6 +24,7 @@
 ### Customer-Developer-Tester Collaboration Patterns
 
 #### Three Amigos Workshop Structure
+
 ```yaml
 workshop_format:
   preparation:
@@ -49,6 +52,7 @@ workshop_format:
 ```
 
 #### Example Mapping Technique
+
 ```
 User Story: Customer Registration
 
@@ -77,6 +81,7 @@ Scenarios to Explore (Yellow):
 ### Specification by Example Patterns
 
 #### Business-Focused Given-When-Then Structure
+
 ```gherkin
 # ✅ GOOD: Business language and customer perspective
 Scenario: Customer completes purchase with stored payment method
@@ -98,6 +103,7 @@ Scenario: Payment service processes transaction successfully
 ```
 
 #### Concrete Example Patterns for Complex Business Rules
+
 ```gherkin
 # Complex business rule with multiple examples
 Rule: Loyalty discount calculation based on customer tier and order value
@@ -130,6 +136,7 @@ Example: New customer with first order
 ### Production Service Integration Patterns
 
 #### Mandatory Step Method Production Service Pattern
+
 ```csharp
 public class CustomerRegistrationSteps
 {
@@ -176,6 +183,7 @@ public class CustomerRegistrationSteps
 ```
 
 #### Anti-Pattern: Test Infrastructure Business Logic
+
 ```csharp
 // ❌ FORBIDDEN: Business logic in step methods
 [When("she submits the registration form")]
@@ -211,6 +219,7 @@ public async Task WhenSubmitsRegistrationForm_ANTIPATTERN()
 ### Living Documentation Patterns
 
 #### Test-Generated Documentation Structure
+
 ```yaml
 living_documentation_components:
   feature_overview:
@@ -235,6 +244,7 @@ living_documentation_components:
 ```
 
 #### Automated Documentation Generation
+
 ```csharp
 // Documentation metadata in test attributes
 [Feature("Customer Account Management")]
@@ -257,6 +267,7 @@ public class CustomerAccountFeatures
 ### Advanced ATDD Integration Patterns
 
 #### Business Process Workflow Testing
+
 ```gherkin
 Feature: E-commerce Purchase Workflow
   As a customer
@@ -294,6 +305,7 @@ Scenario: Purchase workflow with loyalty program benefits
 ```
 
 #### Multi-Service Integration Testing
+
 ```csharp
 [Scenario("Cross-service order fulfillment")]
 public async Task CrossServiceOrderFulfillment()
@@ -337,6 +349,7 @@ public async Task CrossServiceOrderFulfillment()
 ### Business Metrics Integration
 
 #### KPI Validation Through Acceptance Tests
+
 ```csharp
 [Then("the customer satisfaction metrics should improve")]
 public async Task ThenCustomerSatisfactionMetricsShouldImprove()
@@ -380,6 +393,7 @@ public async Task ThenSystemPerformanceMetricsShouldMeetSLA()
 ### Regulatory and Compliance Integration
 
 #### GDPR Compliance Testing
+
 ```gherkin
 Feature: GDPR Compliance for Customer Data
   As a data subject
@@ -408,6 +422,7 @@ Scenario: Customer withdraws consent for marketing communications
 ```
 
 #### SOX Compliance Audit Trail Testing
+
 ```csharp
 [Then("all financial transactions should have complete audit trails")]
 public async Task ThenFinancialTransactionsShouldHaveCompleteAuditTrails()
@@ -453,6 +468,7 @@ public async Task ThenFinancialTransactionsShouldHaveCompleteAuditTrails()
 ### Optimizing ATDD Test Execution
 
 #### Test Data Management Strategies
+
 ```csharp
 public class PerformantTestDataBuilder
 {
@@ -483,6 +499,7 @@ public class PerformantTestDataBuilder
 ```
 
 #### Parallel Test Execution Patterns
+
 ```csharp
 [Collection("CustomerRegistration")] // Sequential execution for data integrity
 public class CustomerRegistrationTests : IAsyncLifetime
@@ -519,6 +536,7 @@ public class ProductCatalogTests : IAsyncLifetime
 **Problem**: Acceptance tests pass but business functionality is incomplete
 **Root Cause**: Test infrastructure implementing business logic instead of production services
 **Solution**:
+
 ```csharp
 // ❌ Problem: Test passes with incomplete production implementation
 [When("customer places order")]
@@ -548,6 +566,7 @@ public async Task WhenCustomerPlacesOrder()
 **Problem**: Tests written in technical language that business stakeholders can't validate
 **Root Cause**: Developer-centric test writing without business perspective
 **Solution**:
+
 ```gherkin
 # ❌ Problem: Technical language
 Scenario: PaymentService processes CreditCardTransaction successfully
@@ -571,6 +590,7 @@ Scenario: Customer completes purchase with credit card
 **Problem**: ATDD tests running too slowly for effective feedback
 **Root Cause**: Inefficient test data setup or unnecessary external dependencies
 **Solution**:
+
 ```csharp
 // ❌ Problem: Slow setup with external calls
 [Given("customer has purchase history")]

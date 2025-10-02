@@ -15,26 +15,31 @@ This document defines the algorithm for generating IDE-compatible distributions 
 ## Core Processing Components
 
 ### 1. Agents (Primary Output)
+
 - **Input**: `5d-wave/agents/{agent}.md`
 - **Output**: Individual `.md` files with all dependencies embedded
 - **Purpose**: Self-contained agent files ready for IDE integration
 
 ### 2. Commands (Secondary Output)
+
 - **Input**: `5d-wave/tasks/{task}.md`
 - **Output**: Command files with embedded dependencies
 - **Purpose**: Direct task execution through IDE commands
 
 ### 3. Orchestrator Agents (Workflow-Based)
+
 - **Input**: `5d-wave/workflows/{workflow}.yaml`
 - **Output**: Agent files that guide multi-phase processes
 - **Purpose**: Coordinate complex multi-wave processes
 
 ### 4. Agent Teams (Collaborative Configurations)
+
 - **Input**: `5d-wave/agent-teams/{team}.yaml`
 - **Output**: Team configuration files for collaborative development
 - **Purpose**: Enable coordinated multi-agent workflows
 
 ### 5. Configuration Processing
+
 - **Input**: `5d-wave/config.yaml`
 - **Output**: IDE-compatible configuration with agent mappings
 - **Purpose**: Central configuration for methodology execution
@@ -56,6 +61,7 @@ FOR each agent_file in 5d-wave/agents/*.md:
 ```
 
 **Example Input Dependencies**:
+
 ```yaml
 dependencies:
   tasks:
@@ -71,7 +77,8 @@ dependencies:
 ```
 
 **Example Output Structure**:
-```markdown
+
+````markdown
 # business-analyst
 
 [Original agent content...]
@@ -79,19 +86,24 @@ dependencies:
 ## Embedded Tasks
 
 ### requirements-gathering.md
+
 [Full task content embedded here...]
 
 ### stakeholder-facilitation.md
+
 [Full task content embedded here...]
 
 ## Embedded Templates
 
 ### requirements-document-tmpl.yaml
+
 ```yaml
 [Full YAML template content...]
 ```
+````
 
 ### user-story-tmpl.yaml
+
 ```yaml
 [Full YAML template content...]
 ```
@@ -99,13 +111,16 @@ dependencies:
 ## Embedded Checklists
 
 ### requirements-completeness-checklist.md
+
 [Full checklist content...]
 
 ## Embedded Data
 
 ### methodology-guide.md
+
 [Full data content...]
-```
+
+````
 
 ### Step 2: Command Processing
 
@@ -118,16 +133,19 @@ FOR each task_file in 5d-wave/tasks/*.md:
         b. Maintain content type formatting
     4. Add command header wrapper with wave assignment from config.yaml
     5. Generate output file: dist/5d-wave/ide/commands/{task-id}.md
-```
+````
 
 **Command Header Template**:
+
 ```markdown
 # /{task-id} Command
 
 ## Command Description
+
 [Task description and usage...]
 
 ## Implementation
+
 [Original task content with embedded dependencies...]
 ```
 
@@ -144,23 +162,30 @@ FOR each workflow_file in expansion-packs/{pack}/workflows/*.yaml:
 ```
 
 **Orchestrator Agent Template**:
-```markdown
+
+````markdown
 # {workflow-name}-orchestrator
 
 ## Agent Identity
+
 You are a workflow orchestrator for the {workflow-name} methodology...
 
 ## Workflow Definition
+
 ```yaml
 [Embedded workflow YAML...]
 ```
+````
 
 ## Phase Guidance
+
 [Generated guidance for each workflow phase...]
 
 ## Available Agents
+
 [List of agents involved in this workflow...]
-```
+
+`````
 
 ## Content Embedding Rules
 
@@ -189,7 +214,7 @@ You are a workflow orchestrator for the {workflow-name} methodology...
 
 ## Embedded Data
 [All data dependencies...]
-```
+`````
 
 ## Output Directory Structure
 
@@ -217,30 +242,33 @@ dist/expansion-packs/{pack-name}/ide/
 
 ## Key Differences from Web Builder
 
-| Aspect | Web Builder | IDE Builder |
-|--------|-------------|-------------|
-| **Output Format** | Monolithic `.txt` bundles | Individual `.md` files |
-| **Teams** | Aggregated team bundles | Discarded concept |
-| **Workflows** | Embedded resources | Converted to orchestrator agents |
-| **Dependencies** | Section separators | Clean markdown embedding |
-| **Resolution** | Runtime via separators | Build-time embedding |
-| **File Access** | Bundle sections | File system access |
+| Aspect            | Web Builder               | IDE Builder                      |
+| ----------------- | ------------------------- | -------------------------------- |
+| **Output Format** | Monolithic `.txt` bundles | Individual `.md` files           |
+| **Teams**         | Aggregated team bundles   | Discarded concept                |
+| **Workflows**     | Embedded resources        | Converted to orchestrator agents |
+| **Dependencies**  | Section separators        | Clean markdown embedding         |
+| **Resolution**    | Runtime via separators    | Build-time embedding             |
+| **File Access**   | Bundle sections           | File system access               |
 
 ## Implementation Requirements
 
 ### Language-Agnostic Dependencies
+
 - **YAML Parser**: For parsing agent configurations and workflow definitions
 - **File System Operations**: For reading source files and writing output
 - **Text Processing**: For content manipulation and template generation
 - **Markdown Generation**: For creating well-formatted output files
 
 ### Core Algorithm Components
+
 1. **Dependency Resolver**: Parse YAML dependencies and locate files
 2. **Content Embedder**: Embed referenced content with proper formatting
 3. **Path Resolver**: Replace placeholders with appropriate paths
 4. **File Generator**: Create output files with proper structure
 
 ### Error Handling
+
 - **Missing Dependencies**: Log warnings for missing referenced files
 - **Invalid YAML**: Handle malformed agent configurations gracefully
 - **File Access**: Handle permission and path issues
@@ -249,12 +277,14 @@ dist/expansion-packs/{pack-name}/ide/
 ## Validation and Testing
 
 ### Output Validation
+
 - **File Structure**: Verify correct directory structure creation
 - **Content Integrity**: Ensure all dependencies are properly embedded
 - **Format Compliance**: Validate markdown and YAML formatting
 - **Path Resolution**: Confirm all {root} placeholders are resolved
 
 ### Integration Testing
+
 - **IDE Compatibility**: Test with Claude Code and similar IDEs
 - **Agent Functionality**: Verify agents work with embedded dependencies
 - **Command Execution**: Ensure commands execute properly in IDE context
@@ -263,16 +293,19 @@ dist/expansion-packs/{pack-name}/ide/
 ## Future Considerations
 
 ### Extensibility
+
 - **Custom Dependency Types**: Support for additional dependency categories
 - **Template Customization**: Configurable output templates
 - **Format Variants**: Support for different IDE-specific formats
 
 ### Optimization
+
 - **Incremental Builds**: Only process changed files
 - **Parallel Processing**: Process agents and commands concurrently
 - **Caching**: Cache resolved dependencies for faster rebuilds
 
 ### Monitoring
+
 - **Build Metrics**: Track processing time and output sizes
 - **Dependency Analysis**: Report on dependency usage patterns
 - **Quality Metrics**: Measure embedding success rates

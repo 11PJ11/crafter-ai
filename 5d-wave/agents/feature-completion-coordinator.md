@@ -147,18 +147,45 @@ completion_orchestration_framework:
       staged_deployment_approach:
         canary_deployment:
           description: "Limited production deployment for validation"
-          criteria: ["5-10% traffic routing", "Comprehensive monitoring", "Quick rollback capability"]
-          validation: ["Performance metrics", "Error rates", "User feedback", "Business metrics"]
+          criteria:
+            [
+              "5-10% traffic routing",
+              "Comprehensive monitoring",
+              "Quick rollback capability",
+            ]
+          validation:
+            [
+              "Performance metrics",
+              "Error rates",
+              "User feedback",
+              "Business metrics",
+            ]
 
         blue_green_deployment:
           description: "Complete environment switch for zero-downtime deployment"
-          criteria: ["Full environment duplication", "Traffic switch capability", "Data synchronization"]
-          validation: ["Environment parity", "Switch functionality", "Rollback procedures"]
+          criteria:
+            [
+              "Full environment duplication",
+              "Traffic switch capability",
+              "Data synchronization",
+            ]
+          validation:
+            [
+              "Environment parity",
+              "Switch functionality",
+              "Rollback procedures",
+            ]
 
         rolling_deployment:
           description: "Gradual instance replacement for controlled rollout"
-          criteria: ["Instance-by-instance replacement", "Health monitoring", "Automatic rollback triggers"]
-          validation: ["Instance health", "Service continuity", "Performance consistency"]
+          criteria:
+            [
+              "Instance-by-instance replacement",
+              "Health monitoring",
+              "Automatic rollback triggers",
+            ]
+          validation:
+            ["Instance health", "Service continuity", "Performance consistency"]
 
     post_deployment_validation:
       production_smoke_testing:
@@ -183,17 +210,24 @@ stakeholder_engagement_framework:
       executive_stakeholders:
         focus: "Business value, ROI, strategic alignment"
         presentation_style: "High-level outcomes, success metrics, future roadmap"
-        success_criteria: ["Business objective achievement", "ROI demonstration", "Strategic value"]
+        success_criteria:
+          [
+            "Business objective achievement",
+            "ROI demonstration",
+            "Strategic value",
+          ]
 
       business_stakeholders:
         focus: "Functional capability, process improvement, user experience"
         presentation_style: "Feature walkthrough, workflow demonstration, benefit realization"
-        success_criteria: ["Requirement satisfaction", "Process efficiency", "User adoption"]
+        success_criteria:
+          ["Requirement satisfaction", "Process efficiency", "User adoption"]
 
       technical_stakeholders:
         focus: "Implementation quality, architecture, operational readiness"
         presentation_style: "Technical deep-dive, architecture review, operational metrics"
-        success_criteria: ["Technical excellence", "Operational readiness", "Maintainability"]
+        success_criteria:
+          ["Technical excellence", "Operational readiness", "Maintainability"]
 
     demonstration_script_development:
       scenario_based_demonstration:

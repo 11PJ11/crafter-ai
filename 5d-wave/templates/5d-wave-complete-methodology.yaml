@@ -9,10 +9,17 @@ description: "Comprehensive orchestration template for complete 5D-Wave methodol
 
 metadata:
   purpose: "End-to-end methodology orchestration for complex projects requiring full 5D-Wave approach"
-  target_audience: ["Solution Architect", "Technical Lead", "Agile Coach", "Product Owner"]
-  prerequisites: ["Team formation", "Stakeholder identification", "Project scope definition"]
+  target_audience:
+    ["Solution Architect", "Technical Lead", "Agile Coach", "Product Owner"]
+  prerequisites:
+    ["Team formation", "Stakeholder identification", "Project scope definition"]
   duration: "2-12 weeks depending on project complexity"
-  deliverables: ["Production-ready feature", "Comprehensive documentation", "Quality validation"]
+  deliverables:
+    [
+      "Production-ready feature",
+      "Comprehensive documentation",
+      "Quality validation",
+    ]
 
 methodology_overview:
   description: "Complete 5D-Wave execution from initial requirements through production deployment"
@@ -65,12 +72,12 @@ team_composition:
       purpose: "Progressive six-level refactoring implementation"
 
 interactive_sections:
-
   project_initialization:
     interactive_elements:
       - type: "project_scope_workshop"
         description: "Collaborative project definition session"
-        participants: ["Product Owner", "Solution Architect", "Key Stakeholders"]
+        participants:
+          ["Product Owner", "Solution Architect", "Key Stakeholders"]
         duration: "2-4 hours"
         deliverables: ["Project charter", "Success criteria", "Risk assessment"]
 
@@ -78,7 +85,8 @@ interactive_sections:
         description: "5D-Wave team composition and role definition"
         participants: ["Solution Architect", "Team Members", "Agile Coach"]
         duration: "1-2 hours"
-        deliverables: ["Team structure", "Communication protocols", "Quality standards"]
+        deliverables:
+          ["Team structure", "Communication protocols", "Quality standards"]
 
   wave_orchestration:
     interactive_elements:
@@ -143,7 +151,8 @@ interactive_sections:
     interactive_elements:
       - type: "architecture_review_session"
         description: "Visual architecture validation with stakeholders"
-        participants: ["Solution Architect", "Visual Architecture Manager", "Stakeholders"]
+        participants:
+          ["Solution Architect", "Visual Architecture Manager", "Stakeholders"]
         frequency: "DESIGN wave and implementation milestones"
         template: |
           ## Architecture Review Session
@@ -262,7 +271,6 @@ methodology_compliance:
       validation: "Synchronization validation reports"
 
 execution_templates:
-
   wave_execution_template: |
     # {Wave Name} Execution Plan
 
@@ -320,15 +328,30 @@ execution_templates:
 complexity_adaptation:
   basic:
     focus: "Core methodology execution with essential quality gates"
-    simplifications: ["Reduced documentation", "Essential stakeholder sessions", "Core quality validation"]
+    simplifications:
+      [
+        "Reduced documentation",
+        "Essential stakeholder sessions",
+        "Core quality validation",
+      ]
 
   intermediate:
     focus: "Enhanced methodology with comprehensive stakeholder collaboration"
-    enhancements: ["Extended quality gates", "Additional specialist integration", "Enhanced visual communication"]
+    enhancements:
+      [
+        "Extended quality gates",
+        "Additional specialist integration",
+        "Enhanced visual communication",
+      ]
 
   advanced:
     focus: "Full methodology with enterprise integration and governance"
-    extensions: ["Complete governance integration", "Advanced quality metrics", "Comprehensive stakeholder management"]
+    extensions:
+      [
+        "Complete governance integration",
+        "Advanced quality metrics",
+        "Comprehensive stakeholder management",
+      ]
 
 success_patterns:
   effective_collaboration:

@@ -121,7 +121,8 @@ requirements_elicitation_sessions:
           - "Business glossary"
           - "Business rules specification"
           - "Process flow documentation"
-        participants: ["Domain Expert", "Business Analyst", "Architect", "Developer"]
+        participants:
+          ["Domain Expert", "Business Analyst", "Architect", "Developer"]
 
       - name: "User Journey Mapping"
         objectives:
@@ -324,11 +325,13 @@ domain_modeling_framework:
     language_capture_process:
       - step: "Domain Expert Interviews"
         description: "Systematic interviews with business domain experts"
-        deliverables: ["Domain terminology list", "Business concept definitions"]
+        deliverables:
+          ["Domain terminology list", "Business concept definitions"]
 
       - step: "Terminology Validation"
         description: "Cross-validation with multiple domain experts"
-        deliverables: ["Validated glossary", "Conflict resolution documentation"]
+        deliverables:
+          ["Validated glossary", "Conflict resolution documentation"]
 
       - step: "Development Team Integration"
         description: "Integration of domain language into technical vocabulary"
@@ -588,29 +591,43 @@ interactive_guidance:
     organization_adaptation:
       - customization: "Stakeholder Roles"
         instruction: "Adapt stakeholder roles to match your organization structure"
-        considerations: ["Organizational hierarchy", "Decision-making authority", "Communication patterns"]
+        considerations:
+          [
+            "Organizational hierarchy",
+            "Decision-making authority",
+            "Communication patterns",
+          ]
 
       - customization: "Collaboration Techniques"
         instruction: "Select techniques that match your team's experience and culture"
-        considerations: ["Team size", "Geographic distribution", "Experience level"]
+        considerations:
+          ["Team size", "Geographic distribution", "Experience level"]
 
       - customization: "Requirements Documentation"
         instruction: "Adjust documentation level to match project complexity"
-        considerations: ["Project size", "Regulatory requirements", "Team expertise"]
+        considerations:
+          ["Project size", "Regulatory requirements", "Team expertise"]
 
   facilitation_guidance:
     session_facilitation_tips:
       - tip: "Three Amigos Sessions"
         guidance: "Keep sessions focused on one user story at a time"
-        common_pitfalls: ["Scope creep", "Technical rabbit holes", "Decision paralysis"]
+        common_pitfalls:
+          ["Scope creep", "Technical rabbit holes", "Decision paralysis"]
 
       - tip: "Requirements Workshops"
         guidance: "Prepare visual aids and examples to support discussion"
-        common_pitfalls: ["Abstract discussions", "Stakeholder disengagement", "Unclear outcomes"]
+        common_pitfalls:
+          [
+            "Abstract discussions",
+            "Stakeholder disengagement",
+            "Unclear outcomes",
+          ]
 
       - tip: "Risk Assessment"
         guidance: "Focus on actionable risks with clear mitigation strategies"
-        common_pitfalls: ["Over-analysis", "Risk paralysis", "Vague mitigation plans"]
+        common_pitfalls:
+          ["Over-analysis", "Risk paralysis", "Vague mitigation plans"]
 
   quality_checkpoints:
     self_assessment_questions:
@@ -629,27 +646,26 @@ interactive_guidance:
         - "Do acceptance criteria follow Given-When-Then format consistently?"
         - "Is the domain model understood and validated by business experts?"
 
----
+usage_documentation: |
+  # Template Usage Instructions
 
-# Template Usage Instructions
+  This highly interactive template supports comprehensive requirements elicitation and stakeholder collaboration for the DISCUSS wave of the 5D-Wave methodology.
 
-This highly interactive template supports comprehensive requirements elicitation and stakeholder collaboration for the DISCUSS wave of the 5D-Wave methodology.
+  ## Customization Guidelines
 
-## Customization Guidelines
+  1. **Adapt stakeholder roles** to match your organizational structure
+  2. **Select collaboration techniques** appropriate for your team size and distribution
+  3. **Adjust documentation depth** based on project complexity and regulatory requirements
+  4. **Customize quality gates** to align with your quality standards and practices
 
-1. **Adapt stakeholder roles** to match your organizational structure
-2. **Select collaboration techniques** appropriate for your team size and distribution
-3. **Adjust documentation depth** based on project complexity and regulatory requirements
-4. **Customize quality gates** to align with your quality standards and practices
+  ## Success Indicators
 
-## Success Indicators
+  - ✅ All stakeholders actively engaged in requirements sessions
+  - ✅ Business requirements documented with testable acceptance criteria
+  - ✅ Domain model validated by business experts
+  - ✅ ATDD collaboration framework operational
+  - ✅ Risk assessment completed with mitigation strategies
 
-- ✅ All stakeholders actively engaged in requirements sessions
-- ✅ Business requirements documented with testable acceptance criteria
-- ✅ Domain model validated by business experts
-- ✅ ATDD collaboration framework operational
-- ✅ Risk assessment completed with mitigation strategies
+  ## Next Wave Preparation
 
-## Next Wave Preparation
-
-Use the deliverables from this template as input for the DESIGN wave, ensuring smooth transition to architectural design with comprehensive business understanding and stakeholder alignment.
+  Use the deliverables from this template as input for the DESIGN wave, ensuring smooth transition to architectural design with comprehensive business understanding and stakeholder alignment.
