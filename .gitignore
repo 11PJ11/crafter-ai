@@ -32,3 +32,6 @@ node_modules/
 dist/
 build/
 target/
+# Build logs
+build.log
+build-test.log
