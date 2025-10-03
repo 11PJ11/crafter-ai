@@ -1,9 +1,9 @@
-name: "BMAD 5D-WAVE"
+name: "AI-Craft 5D-WAVE"
 version: "1.0.0"
 description: "Comprehensive DISCUSS→DESIGN→DISTILL→DEVELOP→DEMO methodology with visual architecture lifecycle management"
-author: "BMAD-METHOD Team"
+author: "AI-Craft Team"
 license: "MIT"
-documentation_url: "https://github.com/your-org/bmad-method/expansion-packs/bmad-5d-wave"
+documentation_url: "https://github.com/your-org/ai-craft/5d-wave"
 
 # Core methodology implementation
 methodology: "5D-WAVE"
@@ -331,7 +331,6 @@ templates:
 
 # Integration settings
 integration:
-  bmad_core_compatibility: true
   agent_collaboration_patterns: true
   visual_architecture_lifecycle: true
   cross_wave_coordination: true

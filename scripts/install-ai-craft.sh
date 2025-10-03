@@ -338,7 +338,7 @@ install_craft_ai_hooks() {
                     if ! grep -q "# Part of Claude Code SuperClaude\|# AI-Craft Framework" "$file" 2>/dev/null; then
                         ((custom_count++))
                     fi
-                done < <(find "$CLAUDE_CONFIG_DIR/hooks/$dir" -type f -print0 2>/dev/null)
+                done < <(find "$CLAUDE_CONFIG_DIR/hooks/$dir" -type f -not -path "*/__pycache__/*" -print0 2>/dev/null)
 
                 if [[ $custom_count -gt 0 ]]; then
                     warn "${YELLOW}[DRY RUN]${NC} Would backup $custom_count custom file(s) in hooks/$dir"
@@ -364,34 +364,14 @@ install_craft_ai_hooks() {
     # Define AI-Craft managed directories (will be fully managed by framework)
     local managed_dirs=("workflow" "code-quality" "lib" "config" "formatters" "legacy")
 
-    # Check for and backup any custom files in managed directories
+    # Backup all existing hooks as a precaution (custom file detection has WSL filesystem issues)
+    info "Backing up all existing hooks before installation..."
     for dir in "${managed_dirs[@]}"; do
         if [[ -d "$CLAUDE_CONFIG_DIR/hooks/$dir" ]]; then
-            info "Checking hooks/$dir for custom files..."
-
-            local has_custom_files=false
-            local custom_file_count=0
-
-            # Check each file for AI-Craft marker
-            while IFS= read -r -d '' file; do
-                # Check if file has AI-Craft marker comment
-                if ! grep -q "# Part of Claude Code SuperClaude\|# AI-Craft Framework" "$file" 2>/dev/null; then
-                    has_custom_files=true
-                    warn "Found custom file: ${file#$CLAUDE_CONFIG_DIR/hooks/}"
-                    ((custom_file_count++))
-                fi
-            done < <(find "$CLAUDE_CONFIG_DIR/hooks/$dir" -type f -print0 2>/dev/null)
-
-            if [[ "$has_custom_files" = true ]]; then
-                warn "Directory hooks/$dir contains $custom_file_count custom file(s)"
-                warn "Creating backup before installing AI-Craft hooks"
-
-                # Backup custom files with timestamp
-                local custom_backup_dir="$BACKUP_DIR/custom-hooks/$dir"
-                mkdir -p "$custom_backup_dir"
-                cp -r "$CLAUDE_CONFIG_DIR/hooks/$dir/"* "$custom_backup_dir/" 2>/dev/null || true
-                info "Backed up custom files to: $custom_backup_dir"
-            fi
+            local custom_backup_dir="$BACKUP_DIR/existing-hooks/$dir"
+            mkdir -p "$custom_backup_dir"
+            cp -r "$CLAUDE_CONFIG_DIR/hooks/$dir/"* "$custom_backup_dir/" 2>/dev/null || true
+            info "Backed up hooks/$dir to: $custom_backup_dir"
         fi
     done
 

@@ -1,4 +1,3 @@
-<!-- Powered by BMAD™ Core -->
 
 # acceptance-designer
 

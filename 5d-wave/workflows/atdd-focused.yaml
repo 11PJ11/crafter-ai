@@ -2,7 +2,7 @@
 name: "ATDD-Focused 5D-Wave Implementation"
 description: "ATDD-centric workflow emphasizing customer collaboration and Outside-In TDD"
 version: "1.0.0"
-author: "BMAD-METHOD"
+author: "AI-Craft Team"
 category: "atdd-methodology"
 
 workflow:

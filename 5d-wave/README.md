@@ -1,8 +1,8 @@
-# BMAD 5D-WAVE Expansion Pack
+# AI-Craft 5D-WAVE Framework
 
 ## Overview
 
-The 5D-WAVE expansion pack implements the comprehensive DISCUSS→DESIGN→DISTILL→DEVELOP→DEMO methodology within the BMAD-METHOD framework. This expansion pack converts the proven CAI ATDD framework into a streamlined, integrated BMAD workflow with complete knowledge preservation for critical technical execution agents.
+The 5D-WAVE framework implements the comprehensive DISCUSS→DESIGN→DISTILL→DEVELOP→DEMO methodology. This framework converts the proven CAI ATDD framework into a streamlined, integrated workflow with complete knowledge preservation for critical technical execution agents.
 
 ## 5D-Wave Methodology
 
@@ -83,15 +83,15 @@ The architecture-diagram-manager provides complete visual architecture lifecycle
 
 ## Installation
 
-1. Place this expansion pack in your BMAD-METHOD installation:
+1. Place this framework in your AI-Craft installation:
 
    ```
-   bmad-method/expansion-packs/bmad-5d-wave/
+   ai-craft/5d-wave/
    ```
 
-2. Update your BMAD configuration to include the 5D-WAVE expansion pack.
+2. Update your configuration to include the 5D-WAVE framework.
 
-3. Agents will be available via the standard BMAD `@agent` syntax.
+3. Agents will be available via the standard agent syntax.
 
 ## Usage Examples
 
@@ -130,8 +130,8 @@ The architecture-diagram-manager provides complete visual architecture lifecycle
 - Complete knowledge preservation for technical execution agents
 - Zero-risk refactoring with comprehensive safety protocols
 - Visual architecture validation throughout development lifecycle
-- Full integration with BMAD-METHOD core functionality
+- Full integration with AI-Craft core functionality
 
 ## Support
 
-This expansion pack maintains compatibility with all BMAD-METHOD core features while extending functionality through the proven 5D-Wave methodology with complete visual architecture integration.
+This framework provides complete functionality through the proven 5D-Wave methodology with comprehensive visual architecture integration.
