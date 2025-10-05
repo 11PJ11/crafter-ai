@@ -1,3 +1,22 @@
+---
+agent-activation:
+  required: true
+  agent-id: walking-skeleton-helper
+  agent-name: "Skelly"
+  agent-command: "*help"
+  auto-activate: true
+---
+
+**⚠️ AGENT ACTIVATION REQUIRED**
+
+This task requires the **Skelly** agent (walking-skeleton-helper) for execution.
+
+**To activate**: Type `@walking-skeleton-helper` in the conversation.
+
+Once activated, use the agent's `*help` command to see available operations.
+
+---
+
 # SKELETON: Walking Skeleton Implementation with E2E Automation
 
 ## Overview

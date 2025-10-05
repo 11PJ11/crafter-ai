@@ -31,7 +31,8 @@
       "WebFetch(domain:flink.apache.org)",
       "WebFetch(domain:cheatsheetseries.owasp.org)",
       "WebFetch(domain:cassandra.apache.org)",
-      "WebFetch(domain:neo4j.com)"
+      "WebFetch(domain:neo4j.com)",
+      "Read(//home/alexd/.claude/commands/dw/**)"
     ],
     "deny": [],
     "ask": []

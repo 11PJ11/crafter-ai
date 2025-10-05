@@ -1,6 +1,23 @@
-# DW-DEMO: Production Readiness Validation and Stakeholder
+---
+agent-activation:
+  required: true
+  agent-id: feature-completion-coordinator
+  agent-name: "Dakota"
+  agent-command: "*validate-production-readiness"
+  auto-activate: true
+---
 
-Demonstration
+**⚠️ AGENT ACTIVATION REQUIRED**
+
+This task requires the **Dakota** agent (feature-completion-coordinator) for execution.
+
+**To activate**: Type `@feature-completion-coordinator` in the conversation.
+
+Once activated, use the agent's `*help` command to see available operations.
+
+---
+
+# DW-DEMO: Production Readiness Validation and Stakeholder Demonstration
 
 ## Overview
 

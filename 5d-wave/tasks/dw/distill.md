@@ -1,3 +1,22 @@
+---
+agent-activation:
+  required: true
+  agent-id: acceptance-designer
+  agent-name: "Quinn"
+  agent-command: "*create-acceptance-tests"
+  auto-activate: true
+---
+
+**⚠️ AGENT ACTIVATION REQUIRED**
+
+This task requires the **Quinn** agent (acceptance-designer) for execution.
+
+**To activate**: Type `@acceptance-designer` in the conversation.
+
+Once activated, use the agent's `*help` command to see available operations.
+
+---
+
 # DW-DISTILL: Acceptance Test Creation and Business Validation
 
 ## Overview

@@ -1,3 +1,22 @@
+---
+agent-activation:
+  required: true
+  agent-id: business-analyst
+  agent-name: "Riley"
+  agent-command: "*gather-requirements"
+  auto-activate: true
+---
+
+**⚠️ AGENT ACTIVATION REQUIRED**
+
+This task requires the **Riley** agent (business-analyst) for execution.
+
+**To activate**: Type `@business-analyst` in the conversation.
+
+Once activated, use the agent's `*help` command to see available operations.
+
+---
+
 # DW-START: Initialize 5D-Wave Workflow
 
 ## Overview

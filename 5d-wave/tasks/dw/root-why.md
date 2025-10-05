@@ -1,3 +1,22 @@
+---
+agent-activation:
+  required: true
+  agent-id: root-cause-analyzer
+  agent-name: "Sage"
+  agent-command: "*investigate-root-cause"
+  auto-activate: true
+---
+
+**⚠️ AGENT ACTIVATION REQUIRED**
+
+This task requires the **Sage** agent (root-cause-analyzer) for execution.
+
+**To activate**: Type `@root-cause-analyzer` in the conversation.
+
+Once activated, use the agent's `*help` command to see available operations.
+
+---
+
 # ROOT-WHY: Toyota 5 Whys Multi-Causal Root Cause Analysis
 
 ## Overview

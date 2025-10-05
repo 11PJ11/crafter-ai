@@ -1,3 +1,22 @@
+---
+agent-activation:
+  required: true
+  agent-id: solution-architect
+  agent-name: "Morgan"
+  agent-command: "*design-architecture"
+  auto-activate: true
+---
+
+**⚠️ AGENT ACTIVATION REQUIRED**
+
+This task requires the **Morgan** agent (solution-architect) for execution.
+
+**To activate**: Type `@solution-architect` in the conversation.
+
+Once activated, use the agent's `*help` command to see available operations.
+
+---
+
 # DW-DESIGN: Architecture Design with Visual Representation
 
 ## Overview

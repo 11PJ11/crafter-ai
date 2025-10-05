@@ -1,3 +1,22 @@
+---
+agent-activation:
+  required: true
+  agent-id: knowledge-researcher
+  agent-name: "Nova"
+  agent-command: "*research"
+  auto-activate: true
+---
+
+**⚠️ AGENT ACTIVATION REQUIRED**
+
+This task requires the **Nova** agent (knowledge-researcher) for execution.
+
+**To activate**: Type `@knowledge-researcher` in the conversation.
+
+Once activated, use the agent's `*help` command to see available operations.
+
+---
+
 # DW-RESEARCH: Evidence-Driven Knowledge Research
 
 ## Overview

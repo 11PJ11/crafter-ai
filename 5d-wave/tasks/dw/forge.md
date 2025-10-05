@@ -1,3 +1,22 @@
+---
+agent-activation:
+  required: true
+  agent-id: agent-forger
+  agent-name: "Sage"
+  agent-command: "*forge"
+  auto-activate: true
+---
+
+**⚠️ AGENT ACTIVATION REQUIRED**
+
+This task requires the **Sage** agent (agent-forger) for execution.
+
+**To activate**: Type `@agent-forger` in the conversation.
+
+Once activated, use the agent's `*help` command to see available operations.
+
+---
+
 # DW-FORGE: Agent Creation with Research-Validated Patterns
 
 ## Overview

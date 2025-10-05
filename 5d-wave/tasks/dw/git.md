@@ -1,3 +1,22 @@
+---
+agent-activation:
+  required: true
+  agent-id: feature-completion-coordinator
+  agent-name: "Dakota"
+  agent-command: "*help"
+  auto-activate: true
+---
+
+**⚠️ AGENT ACTIVATION REQUIRED**
+
+This task requires the **Dakota** agent (feature-completion-coordinator) for execution.
+
+**To activate**: Type `@feature-completion-coordinator` in the conversation.
+
+Once activated, use the agent's `*help` command to see available operations.
+
+---
+
 # /git - Git Workflow Assistant Command
 
 ```yaml

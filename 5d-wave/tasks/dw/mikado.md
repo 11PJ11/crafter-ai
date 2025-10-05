@@ -1,3 +1,22 @@
+---
+agent-activation:
+  required: true
+  agent-id: software-crafter
+  agent-name: "Crafty"
+  agent-command: "*mikado"
+  auto-activate: true
+---
+
+**⚠️ AGENT ACTIVATION REQUIRED**
+
+This task requires the **Crafty** agent (software-crafter) for execution.
+
+**To activate**: Type `@software-crafter` in the conversation.
+
+Once activated, use the agent's `*help` command to see available operations.
+
+---
+
 # MIKADO: Complex Refactoring Roadmaps with Visual Tracking
 
 ## Overview
