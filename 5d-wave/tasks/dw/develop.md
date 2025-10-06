@@ -427,7 +427,24 @@ dotnet test --configuration Release --no-build --verbosity minimal
 - [ ] **Production Reality**: Real system integration, minimal test doubles
 - [ ] **Customer-Developer-Tester**: Continuous collaboration maintained
 
+### Layer 4 Peer Review
+
+- [ ] **Reviewer Approval**: software-crafter-reviewer approval obtained
+- [ ] **Over-Engineering Removed**: YAGNI principle enforced, no premature optimization
+- [ ] **Test Quality Validated**: Tests isolated, behavior-driven, real components used
+- [ ] **Review Documented**: Peer review feedback and revisions tracked for audit
+
+**Note**: Layer 4 peer review is automatically invoked by software-crafter during `*handoff-demo` command. The agent will not proceed with handoff until reviewer approval is obtained.
+
 ## Handoff to DEMO Wave
+
+### Prerequisites for Handoff
+
+- [ ] All quality gates passed (including Layer 4 Peer Review)
+- [ ] software-crafter-reviewer approval obtained
+- [ ] All tests passing (100% required)
+- [ ] Production code complete and refactored
+- [ ] No critical code quality issues remaining
 
 ### Handoff Package Preparation
 

@@ -858,6 +858,42 @@ testing_framework:
         - quality_issues_resolved: true
         - reviewer_approval_obtained: true
 
+    invocation_instructions:
+      trigger: "Invoke during agent validation or deployment workflow"
+
+      implementation: |
+        When validating new agent before deployment:
+
+        STEP 1: Invoke peer review using Task tool
+
+        Use the Task tool with the following prompt:
+
+        "You are the agent-forger-reviewer agent (Inspector persona).
+
+        Read your complete specification from:
+        ~/.claude/agents/dw/agent-forger-reviewer.md
+
+        Review the agent specification at:
+        [path-to-agent-file].md
+
+        Conduct comprehensive peer review for:
+        1. Template compliance (YAML frontmatter, agent structure, production frameworks)
+        2. Framework completeness (all 5 production frameworks implemented)
+        3. Design pattern quality (commands, dependencies, Layer 1-4 testing)
+        4. Production readiness (observability, error recovery, safety)
+
+        Provide structured YAML feedback with:
+        - strengths
+        - issues_identified (severity: critical/high/medium/low)
+        - recommendations
+        - approval_status (approved/rejected_pending_revisions/conditionally_approved)"
+
+        STEP 2-6: Follow standard review workflow (analyze, revise, re-submit, escalate, handoff)
+
+      quality_gate_enforcement:
+        handoff_blocked_until: "reviewer_approval_obtained == true"
+        escalation_after: "2 iterations without approval"
+
 
 # ============================================================================
 # PRODUCTION FRAMEWORK 4: OBSERVABILITY FRAMEWORK

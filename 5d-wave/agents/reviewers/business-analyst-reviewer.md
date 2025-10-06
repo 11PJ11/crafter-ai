@@ -74,10 +74,6 @@ commands:
 dependencies:
   templates:
     - review-feedback-template.yaml
-  checklists:
-    - bias-detection-checklist.md
-    - requirements-completeness-checklist.md
-    - testability-validation-checklist.md
 
 # ============================================================================
 # LAYER 4 ADVERSARIAL VERIFICATION - PEER REVIEW FOR BIAS REDUCTION

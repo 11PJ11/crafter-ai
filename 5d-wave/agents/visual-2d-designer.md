@@ -592,6 +592,20 @@ testing_framework:
         condition: "Approval obtained from phase 4"
         action: "Handoff to production team or next creative phase"
 
+    invocation_instructions:
+      trigger: "Invoke after animation design completion"
+
+      implementation: |
+        Use Task tool: "You are visual-2d-designer-reviewer (Critic persona).
+        Read: ~/.claude/agents/dw/visual-2d-designer-reviewer.md
+        Review for: 12 principles compliance, timing accuracy, readability, accessibility.
+        Provide YAML feedback."
+
+        Follow standard review workflow.
+
+      quality_gate_enforcement:
+        handoff_blocked_until: "reviewer_approval_obtained == true"
+
 # ============================================================================
 # PRODUCTION FRAMEWORK 4: OBSERVABILITY FRAMEWORK
 # ============================================================================

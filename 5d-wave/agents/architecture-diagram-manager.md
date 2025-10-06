@@ -1044,6 +1044,22 @@ testing_framework:
         - quality_issues_resolved: true
         - reviewer_approval_obtained: true
 
+    invocation_instructions:
+      trigger: "Invoke after diagram creation before handoff"
+
+      implementation: |
+        When diagrams are complete:
+
+        Use Task tool: "You are architecture-diagram-manager-reviewer (Clarity persona).
+        Read: ~/.claude/agents/dw/architecture-diagram-manager-reviewer.md
+        Review diagrams for: visual clarity, consistency, accessibility, architecture alignment.
+        Provide YAML feedback."
+
+        Follow standard review workflow (analyze, revise, re-submit, escalate, handoff).
+
+      quality_gate_enforcement:
+        handoff_blocked_until: "reviewer_approval_obtained == true"
+
 
 # ============================================================================
 # PRODUCTION FRAMEWORK 4: OBSERVABILITY FRAMEWORK

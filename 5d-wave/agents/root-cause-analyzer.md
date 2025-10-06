@@ -865,6 +865,20 @@ testing_framework:
         - quality_issues_resolved: true
         - reviewer_approval_obtained: true
 
+    invocation_instructions:
+      trigger: "Invoke after root cause analysis completion"
+
+      implementation: |
+        Use Task tool: "You are root-cause-analyzer-reviewer (Logician persona).
+        Read: ~/.claude/agents/dw/root-cause-analyzer-reviewer.md
+        Review for: causality logic, evidence quality, alternative hypotheses, 5-why depth.
+        Provide YAML feedback."
+
+        Follow standard review workflow.
+
+      quality_gate_enforcement:
+        handoff_blocked_until: "reviewer_approval_obtained == true"
+
 
 # ============================================================================
 # PRODUCTION FRAMEWORK 4: OBSERVABILITY FRAMEWORK

@@ -215,7 +215,24 @@ tester_role:
 - [ ] **Acceptance Criteria**: Clear, testable acceptance criteria defined
 - [ ] **Example Scenarios**: Concrete examples and scenarios documented
 
+### Layer 4 Peer Review
+
+- [ ] **Reviewer Approval**: business-analyst-reviewer approval obtained
+- [ ] **Critical Issues Resolved**: All critical bias and completeness issues addressed
+- [ ] **High Issues Addressed**: All high severity issues resolved or accepted
+- [ ] **Review Documented**: Peer review feedback and revisions tracked for audit
+
+**Note**: Layer 4 peer review is automatically invoked by business-analyst during `*handoff-design` command. The agent will not proceed with handoff until reviewer approval is obtained.
+
 ## Handoff to DESIGN Wave
+
+### Prerequisites for Handoff
+
+- [ ] All quality gates passed (including Layer 4 Peer Review)
+- [ ] business-analyst-reviewer approval obtained
+- [ ] Requirements document complete and validated
+- [ ] Stakeholder consensus documented
+- [ ] Business rules and domain model finalized
 
 ### Handoff Package Preparation
 

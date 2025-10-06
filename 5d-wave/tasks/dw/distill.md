@@ -364,6 +364,15 @@ boundary_testing_strategy:
 - [ ] **Environment Configuration**: Test and production-like environments
 - [ ] **Quality Attribute Testing**: Performance, security, reliability tests
 
+### Layer 4 Peer Review
+
+- [ ] **Reviewer Approval**: acceptance-designer-reviewer approval obtained
+- [ ] **Happy Path Bias Addressed**: Error scenarios at least 40% of total tests
+- [ ] **GWT Compliance**: Business language only, no technical terms
+- [ ] **Review Documented**: Peer review feedback and revisions tracked for audit
+
+**Note**: Layer 4 peer review is automatically invoked by acceptance-designer during `*handoff-develop` command. The agent will not proceed with handoff until reviewer approval is obtained.
+
 ## Stakeholder Validation and Feedback
 
 ### Collaborative Test Review
@@ -383,6 +392,14 @@ boundary_testing_strategy:
 - Enhance test data strategies for realistic validation
 
 ## Handoff to DEVELOP Wave
+
+### Prerequisites for Handoff
+
+- [ ] All quality gates passed (including Layer 4 Peer Review)
+- [ ] acceptance-designer-reviewer approval obtained
+- [ ] Acceptance tests complete and executable
+- [ ] Step definitions implemented with production service calls
+- [ ] Test infrastructure validated
 
 ### Handoff Package Preparation
 

@@ -859,6 +859,20 @@ testing_framework:
         - quality_issues_resolved: true
         - reviewer_approval_obtained: true
 
+    invocation_instructions:
+      trigger: "Invoke after skeleton implementation validation"
+
+      implementation: |
+        Use Task tool: "You are walking-skeleton-helper-reviewer (Minimalist persona).
+        Read: ~/.claude/agents/dw/walking-skeleton-helper-reviewer.md
+        Review for: minimal scope verification, E2E completeness, deployment viability.
+        Provide YAML feedback."
+
+        Follow standard review workflow.
+
+      quality_gate_enforcement:
+        handoff_blocked_until: "reviewer_approval_obtained == true"
+
 
 # ============================================================================
 # PRODUCTION FRAMEWORK 4: OBSERVABILITY FRAMEWORK

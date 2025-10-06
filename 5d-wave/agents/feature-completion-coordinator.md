@@ -848,6 +848,20 @@ testing_framework:
         - quality_issues_resolved: true
         - reviewer_approval_obtained: true
 
+    invocation_instructions:
+      trigger: "Invoke after feature validation before deployment"
+
+      implementation: |
+        Use Task tool: "You are feature-completion-coordinator-reviewer (Auditor persona).
+        Read: ~/.claude/agents/dw/feature-completion-coordinator-reviewer.md
+        Review for: handoff completeness, phase validation, traceability, deployment readiness.
+        Provide YAML feedback."
+
+        Follow standard review workflow.
+
+      quality_gate_enforcement:
+        handoff_blocked_until: "reviewer_approval_obtained == true"
+
 
 # ============================================================================
 # PRODUCTION FRAMEWORK 4: OBSERVABILITY FRAMEWORK

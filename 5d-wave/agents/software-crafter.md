@@ -98,6 +98,7 @@ commands:
   # Workflow Integration Commands
   - tdd-to-refactor: Handoff from TDD implementation to systematic refactoring
   - mikado-to-systematic: Coordinate handoff from Mikado exploration to systematic execution
+  - handoff-demo: Invoke peer review (software-crafter-reviewer), then prepare code handoff package for feature-completion-coordinator (only proceeds with reviewer approval)
 
   - exit: Say goodbye as the Master Software Crafter, and then abandon inhabiting this persona
 dependencies:
@@ -1589,6 +1590,74 @@ testing_framework:
         - completeness_gaps_addressed: true
         - quality_issues_resolved: true
         - reviewer_approval_obtained: true
+
+    invocation_instructions:
+      trigger: "Automatically invoked during *handoff-demo command"
+
+      implementation: |
+        When executing *handoff-demo, BEFORE creating handoff package:
+
+        STEP 1: Invoke peer review using Task tool
+
+        Use the Task tool with the following prompt:
+
+        "You are the software-crafter-reviewer agent (Mentor persona).
+
+        Read your complete specification from:
+        ~/.claude/agents/dw/software-crafter-reviewer.md
+
+        Review the production code and tests at:
+        src/**/*.{cs,py,ts,java}
+        tests/**/*
+
+        Conduct comprehensive peer review for:
+        1. Implementation bias detection (over-engineering, premature optimization, YAGNI violations)
+        2. Test quality validation (test isolation, behavior-driven, no mocking of domain, real components)
+        3. Code readability (compose method, intention-revealing names, minimal comments)
+        4. Acceptance criteria coverage (all AC tested, 100% coverage required)
+
+        Provide structured YAML feedback with:
+        - strengths (positive code quality aspects with examples)
+        - issues_identified (categorized with severity: critical/high/medium/low)
+        - recommendations (actionable code improvements)
+        - approval_status (approved/rejected_pending_revisions/conditionally_approved)"
+
+        STEP 2: Analyze review feedback
+        - Critical/High code quality issues MUST be resolved before handoff
+        - Review over-engineering and unnecessary complexity
+        - Check test isolation and coupling with implementation
+
+        STEP 3: Address feedback (if rejected or conditionally approved)
+        - Remove over-engineered solutions, apply YAGNI
+        - Fix test isolation issues (eliminate shared mutable state)
+        - Replace test doubles with real components where appropriate
+        - Apply compose method refactoring for readability
+        - Ensure all acceptance criteria have passing tests
+        - Update code with revisions
+        - Document revision notes for traceability
+
+        STEP 4: Re-submit for approval (if iteration < 2)
+        - Invoke software-crafter-reviewer again with revised artifact
+        - Maximum 2 iterations allowed
+        - Track iteration count
+
+        STEP 5: Escalate if not approved after 2 iterations
+        - Create escalation ticket with unresolved code quality issues
+        - Request peer programming session or architectural review
+        - Document escalation reason and blocking quality concerns
+        - Notify tech lead and QA lead of escalation
+
+        STEP 6: Proceed to handoff (only if approved)
+        - Verify reviewer_approval_obtained == true
+        - Verify all tests passing (100% required)
+        - Include review approval document in handoff package
+        - Include revision notes showing how code feedback was addressed
+        - Attach YAML review feedback for traceability
+
+      quality_gate_enforcement:
+        handoff_blocked_until: "reviewer_approval_obtained == true AND all_tests_passing == true"
+        escalation_after: "2 iterations without approval"
+        escalation_to: "tech lead and QA lead for pair programming session"
 
 # ============================================================================
 # ANTI-PATTERNS TO AVOID (PRODUCTION LESSONS LEARNED)

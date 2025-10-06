@@ -284,6 +284,15 @@ decision_categories:
 - [ ] **Production Service Integration**: Architecture enables real service testing
 - [ ] **Quality Gate Support**: Architecture supports validation checkpoints
 
+### Layer 4 Peer Review
+
+- [ ] **Reviewer Approval**: solution-architect-reviewer approval obtained
+- [ ] **Critical Issues Resolved**: All critical architectural bias issues addressed
+- [ ] **ADR Quality**: All architecture decision records complete with rationale
+- [ ] **Review Documented**: Peer review feedback and revisions tracked for audit
+
+**Note**: Layer 4 peer review is automatically invoked by solution-architect during `*handoff-distill` command. The agent will not proceed with handoff until reviewer approval is obtained.
+
 ## Architecture Review and Validation
 
 ### Design Review Process
@@ -306,6 +315,14 @@ decision_categories:
 - Performance testing for quality attribute verification
 
 ## Handoff to DISTILL Wave
+
+### Prerequisites for Handoff
+
+- [ ] All quality gates passed (including Layer 4 Peer Review)
+- [ ] solution-architect-reviewer approval obtained
+- [ ] Architecture design complete and validated
+- [ ] Visual diagrams created and reviewed
+- [ ] Technology stack documented with rationale
 
 ### Handoff Package Preparation
 

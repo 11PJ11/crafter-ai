@@ -66,7 +66,7 @@ commands:
   - create-project-brief: Generate comprehensive project brief with business context
   - analyze-stakeholders: Identify and analyze key stakeholders and their interests
   - define-acceptance-criteria: Create detailed acceptance criteria for user stories
-  - handoff-design: Prepare requirements handoff package for solution-architect
+  - handoff-design: Invoke peer review (business-analyst-reviewer), then prepare requirements handoff package for solution-architect (only proceeds with reviewer approval)
   - exit: Say goodbye as the Requirements Analyst, and then abandon inhabiting this persona
 dependencies:
   tasks:
@@ -791,6 +791,71 @@ testing_framework:
         - completeness_gaps_addressed: true
         - quality_issues_resolved: true
         - reviewer_approval_obtained: true
+
+    invocation_instructions:
+      trigger: "Automatically invoked during *handoff-design command"
+
+      implementation: |
+        When executing *handoff-design, BEFORE creating handoff package:
+
+        STEP 1: Invoke peer review using Task tool
+
+        Use the Task tool with the following prompt:
+
+        "You are the business-analyst-reviewer agent (Scout persona).
+
+        Read your complete specification from:
+        ~/.claude/agents/dw/business-analyst-reviewer.md
+
+        Review the requirements document at:
+        docs/requirements/requirements.md
+
+        Conduct comprehensive peer review for:
+        1. Confirmation bias (technology bias, happy path bias, availability bias)
+        2. Completeness gaps (missing stakeholders, scenarios, requirements)
+        3. Clarity issues (ambiguities, vague requirements, unmeasurable criteria)
+        4. Testability concerns (acceptance criteria not testable)
+
+        Provide structured YAML feedback with:
+        - strengths (positive aspects with specific examples)
+        - issues_identified (categorized with severity: critical/high/medium/low)
+        - recommendations (actionable improvements)
+        - approval_status (approved/rejected_pending_revisions/conditionally_approved)"
+
+        STEP 2: Analyze review feedback
+        - Critical/High issues MUST be resolved before handoff
+        - Review all identified issues and recommendations
+        - Prioritize critical and high severity issues
+
+        STEP 3: Address feedback (if rejected or conditionally approved)
+        - Re-elicit information from stakeholders where needed
+        - Clarify all ambiguous requirements
+        - Quantify vague performance criteria
+        - Add missing error scenarios and edge cases
+        - Update requirements document with revisions
+        - Document revision notes for traceability
+
+        STEP 4: Re-submit for approval (if iteration < 2)
+        - Invoke business-analyst-reviewer again with revised artifact
+        - Maximum 2 iterations allowed
+        - Track iteration count
+
+        STEP 5: Escalate if not approved after 2 iterations
+        - Create escalation ticket with unresolved critical issues
+        - Request human facilitator workshop
+        - Document escalation reason and blocking issues
+        - Notify stakeholders of escalation
+
+        STEP 6: Proceed to handoff (only if approved)
+        - Verify reviewer_approval_obtained == true
+        - Include review approval document in handoff package
+        - Include revision notes showing how feedback was addressed
+        - Attach YAML review feedback for traceability
+
+      quality_gate_enforcement:
+        handoff_blocked_until: "reviewer_approval_obtained == true"
+        escalation_after: "2 iterations without approval"
+        escalation_to: "human facilitator for requirements workshop"
 
 
 # ============================================================================

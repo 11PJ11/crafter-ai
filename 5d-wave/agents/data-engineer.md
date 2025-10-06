@@ -854,6 +854,20 @@ testing_framework:
         - quality_issues_resolved: true
         - reviewer_approval_obtained: true
 
+    invocation_instructions:
+      trigger: "Invoke after data pipeline/architecture design"
+
+      implementation: |
+        Use Task tool: "You are data-engineer-reviewer (Validator persona).
+        Read: ~/.claude/agents/dw/data-engineer-reviewer.md
+        Review for: performance claims validation, query optimization, security patterns.
+        Provide YAML feedback."
+
+        Follow standard review workflow.
+
+      quality_gate_enforcement:
+        handoff_blocked_until: "reviewer_approval_obtained == true"
+
 
 # ============================================================================
 # PRODUCTION FRAMEWORK 4: OBSERVABILITY FRAMEWORK

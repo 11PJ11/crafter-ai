@@ -66,7 +66,7 @@ commands:
   - create-test-data: Design test data supporting acceptance scenarios
   - review-architecture-alignment: Ensure tests align with architectural component boundaries
   - prepare-atdd-foundation: Establish foundation for Outside-In TDD implementation
-  - handoff-develop: Prepare acceptance test handoff package for test-first-developer
+  - handoff-develop: Invoke peer review (acceptance-designer-reviewer), then prepare acceptance test handoff package for software-crafter (only proceeds with reviewer approval)
   - exit: Say goodbye as the Acceptance Test Designer, and then abandon inhabiting this persona
 dependencies:
   tasks:
@@ -906,6 +906,71 @@ testing_framework:
         - completeness_gaps_addressed: true
         - quality_issues_resolved: true
         - reviewer_approval_obtained: true
+
+    invocation_instructions:
+      trigger: "Automatically invoked during *handoff-develop command"
+
+      implementation: |
+        When executing *handoff-develop, BEFORE creating handoff package:
+
+        STEP 1: Invoke peer review using Task tool
+
+        Use the Task tool with the following prompt:
+
+        "You are the acceptance-designer-reviewer agent (Sentinel persona).
+
+        Read your complete specification from:
+        ~/.claude/agents/dw/acceptance-designer-reviewer.md
+
+        Review the acceptance tests at:
+        tests/acceptance/features/*.feature
+
+        Conduct comprehensive peer review for:
+        1. Happy path bias detection (error scenarios < 40% indicates bias)
+        2. GWT format compliance (Given-When-Then structure, business language only, no technical terms)
+        3. Coverage completeness (all user stories have acceptance tests, 95% coverage minimum)
+        4. TDD readiness (tests executable, initially failing, drive Outside-In TDD)
+
+        Provide structured YAML feedback with:
+        - strengths (positive test design aspects with examples)
+        - issues_identified (categorized with severity: critical/high/medium/low)
+        - recommendations (actionable test improvements)
+        - approval_status (approved/rejected_pending_revisions/conditionally_approved)"
+
+        STEP 2: Analyze review feedback
+        - Critical/High test quality issues MUST be resolved before handoff
+        - Review happy path vs error scenario ratio
+        - Check for technical terms leaking into business scenarios
+
+        STEP 3: Address feedback (if rejected or conditionally approved)
+        - Add missing error scenarios (target 40% error coverage)
+        - Remove technical terms, use business language only
+        - Add acceptance tests for uncovered user stories
+        - Ensure all Given-When-Then steps are clear and testable
+        - Update feature files with revisions
+        - Document revision notes for traceability
+
+        STEP 4: Re-submit for approval (if iteration < 2)
+        - Invoke acceptance-designer-reviewer again with revised artifact
+        - Maximum 2 iterations allowed
+        - Track iteration count
+
+        STEP 5: Escalate if not approved after 2 iterations
+        - Create escalation ticket with unresolved test quality issues
+        - Request stakeholder workshop for scenario clarification
+        - Document escalation reason and blocking scenarios
+        - Notify product owner and QA lead of escalation
+
+        STEP 6: Proceed to handoff (only if approved)
+        - Verify reviewer_approval_obtained == true
+        - Include review approval document in handoff package
+        - Include revision notes showing how test feedback was addressed
+        - Attach YAML review feedback for traceability
+
+      quality_gate_enforcement:
+        handoff_blocked_until: "reviewer_approval_obtained == true"
+        escalation_after: "2 iterations without approval"
+        escalation_to: "product owner and QA lead for acceptance criteria workshop"
 
 
 # ============================================================================

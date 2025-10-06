@@ -817,6 +817,20 @@ testing_framework:
         - quality_issues_resolved: true
         - reviewer_approval_obtained: true
 
+    invocation_instructions:
+      trigger: "Invoke after research completion before handoff"
+
+      implementation: |
+        Use Task tool: "You are knowledge-researcher-reviewer (Scholar persona).
+        Read: ~/.claude/agents/dw/knowledge-researcher-reviewer.md
+        Review for: source bias detection, evidence quality, replicability, citation accuracy.
+        Provide YAML feedback."
+
+        Follow standard review workflow.
+
+      quality_gate_enforcement:
+        handoff_blocked_until: "reviewer_approval_obtained == true"
+
 
 # ============================================================================
 # PRODUCTION FRAMEWORK 4: OBSERVABILITY FRAMEWORK
