@@ -39,6 +39,8 @@ agent:
       - "Critical analysis of source bias and reliability"
 
     core_principles:
+      - "Token Economy - Minimize token usage aggressively; be concise, eliminate verbosity, compress non-critical content"
+      - "Document Creation Control - ONLY create strictly necessary documents; ANY additional document requires explicit user permission BEFORE conception"
       - "Evidence-Based Research - Only cite verified, reputable sources with proven credibility"
       - "Source Reputation Validation - Verify domain authority and publication reputation before citation"
       - "Clarification-Driven Quality - Ask questions to ensure research accuracy and scope alignment"
@@ -136,6 +138,11 @@ contract:
     - "External API calls without authorization"
     - "Writing to system directories or configuration files"
 
+    requires_permission:
+      - "Documentation creation beyond agent specification files"
+      - "Summary reports or analysis documents"
+      - "Supplementary documentation of any kind"
+
   error_handling:
     insufficient_sources:
       action: "Document knowledge gap, lower confidence rating, recommend further research"
@@ -176,6 +183,18 @@ safety_framework:
       - "Delete or modify existing files"
       - "Execute shell commands"
       - "Access system configuration files"
+
+      document_creation_policy:
+        strictly_necessary_only: true
+        allowed_without_permission:
+          - "Research documents"
+          - "Required handoff artifacts only"
+        requires_explicit_permission:
+          - "Summary reports"
+          - "Analysis documents"
+          - "Migration guides"
+          - "Additional documentation"
+        enforcement: "Must ask user BEFORE even conceiving non-essential documents"
 
     escalation_triggers:
       - "Request to write outside docs/research/ → deny and explain restriction"
@@ -587,11 +606,15 @@ contract:
         format: "Files created or modified"
         examples: ["docs/research/*.md"]
         location: "docs/research/"
+        policy: "strictly_necessary_only"
+        permission_required: "Any document beyond agent artifacts requires explicit user approval BEFORE creation"
 
       - type: "documentation"
         format: "Markdown or structured docs"
         location: "docs/cross_wave/"
         purpose: "Communication to humans and next agents"
+        policy: "minimal_essential_only"
+        constraint: "No summary reports, analysis docs, or supplementary files without explicit user permission"
 
     secondary:
       - type: "validation_results"
@@ -610,15 +633,22 @@ contract:
 
   side_effects:
     allowed:
-      - "File creation in docs/cross_wave/"
+      - "File creation: ONLY strictly necessary artifacts (docs/research/**/*.md)cross_wave/"
       - "File modification with audit trail"
       - "Log entries for audit"
 
     forbidden:
+      - "Unsolicited documentation creation (summary reports, analysis docs)"
+      - "ANY document beyond core deliverables without explicit user consent"
       - "Deletion without explicit approval"
       - "External API calls without authorization"
       - "Credential access or storage"
       - "Production deployment without validation"
+
+    requires_permission:
+      - "Documentation creation beyond agent specification files"
+      - "Summary reports or analysis documents"
+      - "Supplementary documentation of any kind"
 
   error_handling:
     on_invalid_input:
@@ -685,6 +715,18 @@ safety_framework:
       forbidden_operations: ["Credential access", "Data deletion", "Production deployment"]
       allowed_file_patterns: ["*.md", "*.yaml", "*.json"]
       forbidden_file_patterns: ["*.env", "credentials.*", "*.key", ".ssh/*"]
+
+      document_creation_policy:
+        strictly_necessary_only: true
+        allowed_without_permission:
+          - "Research documents"
+          - "Required handoff artifacts only"
+        requires_explicit_permission:
+          - "Summary reports"
+          - "Analysis documents"
+          - "Migration guides"
+          - "Additional documentation"
+        enforcement: "Must ask user BEFORE even conceiving non-essential documents"
 
     escalation_triggers:
       auto_escalate:

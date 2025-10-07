@@ -1,0 +1,181 @@
+# ============================================================================
+# 5D-WAVE COMMAND/TASK TEMPLATE
+# ============================================================================
+# Version: 1.0 (2025-10-07)
+# Purpose: Minimal task template for optimal agent handoff (50-60 lines target)
+# Source: Claude Code Subagent Activation Best Practices Research
+#
+# CRITICAL DESIGN PRINCIPLE:
+# Tasks are DELEGATION files, NOT workflow duplication files.
+# Workflows belong in agent specifications (5d-wave/agents/{agent-name}.md).
+# Tasks provide: context bundling, agent invocation, handoff coordination.
+# ============================================================================
+
+---
+# ============================================================================
+# AGENT ACTIVATION METADATA (YAML Frontmatter)
+# ============================================================================
+# Declares which agent executes this task and auto-activation behavior
+
+agent-activation:
+  required: true
+  agent-id: {agent-id}              # e.g., business-analyst, solution-architect
+  agent-name: "{PersonaName}"       # e.g., Riley, Quinn, Crafty, Dakota
+  agent-command: "*{command-name}"  # e.g., *gather-requirements, *design-architecture
+  auto-activate: true               # Claude auto-invokes agent when task loaded
+---
+
+# ============================================================================
+# TASK HEADER
+# ============================================================================
+
+# DW-{WAVE}: {Task Title}
+
+**Wave**: {DISCUSS|DESIGN|DISTILL|DEVELOP|DEMO|CROSS_WAVE}
+**Agent**: {PersonaName} ({agent-id})
+**Command**: `*{command-name}`
+
+## Overview
+
+{2-3 paragraph description of:
+ - What this wave/task accomplishes
+ - Its role in 5D-Wave methodology (or cross-wave support)
+ - Key outcomes and value delivered}
+
+# ============================================================================
+# CONTEXT FILES SECTION (CRITICAL FOR PERFORMANCE)
+# ============================================================================
+# Pre-discovered file paths provided to agent (40% token reduction vs agent search)
+
+## Context Files Required
+
+- {file-path-1} - {purpose/description}
+- {file-path-2} - {purpose/description}
+- {file-path-3} - {purpose/description}
+
+# Examples:
+# - docs/project-brief.md - Project context and objectives
+# - docs/stakeholders.yaml - Stakeholder identification and roles
+# - docs/architecture/constraints.md - Technical and business constraints
+
+# ============================================================================
+# PREVIOUS ARTIFACTS SECTION (Wave Handoff)
+# ============================================================================
+# Outputs from previous wave that this wave consumes
+
+## Previous Artifacts (Wave Handoff)
+
+- {artifact-path-from-previous-wave} - (from {PREVIOUS_WAVE} wave)
+- {artifact-path-2} - (from {PREVIOUS_WAVE} wave)
+
+# Examples:
+# - docs/requirements/requirements.md - (from DISCUSS wave)
+# - docs/architecture/system-design.md - (from DESIGN wave)
+# - None (if this is the first wave - DISCUSS)
+
+# ============================================================================
+# AGENT INVOCATION (Explicit Context Handoff)
+# ============================================================================
+# Treat agent as function with explicit inputs (Agent-as-Function pattern)
+
+## Agent Invocation
+
+@{agent-id}
+
+Execute *{command-name} for {feature-name}.
+
+**Context Files:**
+- {file-path-1}
+- {file-path-2}
+- {file-path-3}
+
+**Previous Artifacts:**
+- {artifact-from-previous-wave}
+
+**Configuration:**
+- {config-key}: {config-value}              # e.g., interactive: high
+- {config-key-2}: {config-value-2}          # e.g., output_format: markdown
+- {config-key-3}: {config-value-3}          # e.g., elicitation_depth: comprehensive
+
+# ============================================================================
+# SUCCESS CRITERIA (Reference to Agent's Quality Gates)
+# ============================================================================
+# Do NOT duplicate full quality gates here - reference agent specification
+
+## Success Criteria
+
+Refer to {PersonaName} agent's quality gates in 5d-wave/agents/{agent-id}.md.
+
+**Key Validations:**
+- [ ] {critical-validation-1}               # e.g., Requirements completeness > 0.95
+- [ ] {critical-validation-2}               # e.g., Stakeholder consensus achieved
+- [ ] {critical-validation-3}               # e.g., Handoff accepted by next agent
+
+# ============================================================================
+# NEXT WAVE HANDOFF
+# ============================================================================
+# Coordination with next wave agent
+
+## Next Wave
+
+**Handoff To**: {next-agent-id}             # e.g., solution-architect (DESIGN wave)
+**Deliverables**: See {agent-name} agent's handoff package specification
+
+# Expected outputs (reference only - details in agent spec):
+# - {deliverable-1}.md
+# - {deliverable-2}.md
+
+# ============================================================================
+# TEMPLATE USAGE NOTES
+# ============================================================================
+#
+# VARIABLE SUBSTITUTION GUIDE:
+#
+# Wave Variables:
+#   {WAVE} → DISCUSS | DESIGN | DISTILL | DEVELOP | DEMO | CROSS_WAVE
+#   {PREVIOUS_WAVE} → Previous wave in sequence (or "None" for DISCUSS)
+#
+# Agent Variables:
+#   {agent-id} → Kebab-case agent identifier (e.g., business-analyst)
+#   {PersonaName} → Friendly agent name (e.g., Riley, Quinn, Crafty)
+#   {command-name} → Primary agent command (e.g., gather-requirements)
+#
+# Context Variables:
+#   {file-path-N} → Absolute or relative file paths
+#   {artifact-path} → Output file paths from previous waves
+#   {feature-name} → Feature or capability being implemented
+#
+# Configuration Variables:
+#   {config-key} → Configuration parameter name
+#   {config-value} → Configuration parameter value
+#
+# BEST PRACTICES:
+#
+# 1. **Minimize Duplication**: Workflow instructions belong in agent files only
+# 2. **Context Bundling**: Pre-discover files before agent invocation (40% token savings)
+# 3. **Explicit Handoff**: Provide context files, previous artifacts, configuration
+# 4. **Reference Quality Gates**: Link to agent spec, don't duplicate full checklists
+# 5. **Target Size**: 50-60 lines (excluding comments and template notes)
+#
+# PERFORMANCE OPTIMIZATION:
+#
+# WITHOUT explicit context → Agent spends 5-10 tool calls searching (1500 tokens)
+# WITH explicit context → Agent starts immediately (650 tokens, 40% reduction)
+#
+# MIGRATION FROM CURRENT TASKS:
+#
+# Current tasks: 500-2000 lines (95% workflow duplication)
+# New tasks: 50-60 lines (100% delegation, 0% duplication)
+# Reduction: 90-97% code elimination, workflows moved to agent files
+#
+# RELATED TEMPLATES:
+#
+# - AGENT_TEMPLATE.yaml: Complete agent specification structure
+# - context-bundles.yaml: Pre-defined file sets per wave (if created)
+# - wave-configs.yaml: Wave-specific configuration templates (if created)
+#
+# RESEARCH SOURCE:
+#
+# docs/research/claude-code-subagent-activation-best-practices.md
+#
+# ============================================================================

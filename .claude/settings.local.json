@@ -32,7 +32,11 @@
       "WebFetch(domain:cheatsheetseries.owasp.org)",
       "WebFetch(domain:cassandra.apache.org)",
       "WebFetch(domain:neo4j.com)",
-      "Read(//home/alexd/.claude/commands/dw/**)"
+      "Read(//home/alexd/.claude/commands/dw/**)",
+      "Bash(chmod:*)",
+      "Bash(cat:*)",
+      "Bash(tree:*)",
+      "Bash(./scripts/update-ai-craft.sh:*)"
     ],
     "deny": [],
     "ask": []
