@@ -86,12 +86,17 @@ dependencies:
     - visual-architecture-principles.md
   embed_knowledge:
     - 5d-wave/data/embed/solution-architect/comprehensive-architecture-patterns-and-methodologies.md
+    - 5d-wave/data/embed/solution-architect/residuality-theory-methodology.md
 
 # ============================================================================
 # EMBEDDED KNOWLEDGE (injected at build time from embed/)
 # ============================================================================
 <!-- BUILD:INJECT:START:5d-wave/data/embed/solution-architect/comprehensive-architecture-patterns-and-methodologies.md -->
 <!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
+
+<!-- BUILD:INJECT:START:5d-wave/data/embed/solution-architect/residuality-theory-methodology.md -->
+<!-- Residuality Theory methodology will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 
 # DESIGN WAVE METHODOLOGY - ARCHITECTURE FOUNDATION
