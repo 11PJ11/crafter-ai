@@ -1,7 +1,7 @@
 # Research: Outside-In TDD Methodology
 
 **Date**: 2025-10-09T00:00:00Z
-**Researcher**: knowledge-researcher (Nova)
+**Researcher**: researcher (Nova)
 **Overall Confidence**: High
 **Sources Consulted**: 15+
 

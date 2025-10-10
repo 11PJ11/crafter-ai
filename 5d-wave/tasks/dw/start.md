@@ -1,7 +1,7 @@
 ---
 agent-activation:
   required: true
-  agent-id: business-analyst
+  agent-id: product-owner
   agent-name: "Riley"
   agent-command: "*gather-requirements"
   auto-activate: true
@@ -10,7 +10,7 @@ agent-activation:
 # DW-START: Initialize 5D-Wave Workflow
 
 **Wave**: CROSS_WAVE (project initialization)
-**Agent**: Riley (business-analyst)
+**Agent**: Riley (product-owner)
 **Command**: `*gather-requirements`
 
 ## Overview
@@ -29,23 +29,26 @@ Establishes project foundation through context gathering, stakeholder identifica
 
 ## Agent Invocation
 
-@business-analyst
+@product-owner
 
-Execute *gather-requirements for project initialization.
+Execute \*gather-requirements for project initialization.
 
 **Context Files:**
+
 - (none - will be created)
 
 **Configuration:**
-- template: greenfield  # greenfield/brownfield
-- scope: small  # small/medium/large
+
+- template: greenfield # greenfield/brownfield
+- scope: small # small/medium/large
 - output_directory: docs/
 
 ## Success Criteria
 
-Refer to Riley's quality gates in 5d-wave/agents/business-analyst.md (Project Initialization section).
+Refer to Riley's quality gates in 5d-wave/agents/product-owner.md (Project Initialization section).
 
 **Key Validations:**
+
 - [ ] Project brief created and validated
 - [ ] Stakeholders identified and roles defined
 - [ ] Success criteria established
@@ -58,6 +61,9 @@ Refer to Riley's quality gates in 5d-wave/agents/business-analyst.md (Project In
 **Deliverables**: Project brief and workspace foundation
 
 # Expected outputs (reference only):
+
 # - docs/project-brief.md
+
 # - docs/stakeholders.yaml
+
 # - docs/architecture/constraints.md

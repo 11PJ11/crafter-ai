@@ -1,5 +1,5 @@
 # Agent Quality Critique Dimensions
-# For agent-forger self-review mode
+# For agent-builder self-review mode
 
 ## Review Mode Activation
 
@@ -64,7 +64,7 @@
 
 ```yaml
 review_id: "agent_rev_{timestamp}"
-reviewer: "agent-forger (review mode)"
+reviewer: "agent-builder (review mode)"
 
 issues_identified:
   template_compliance:

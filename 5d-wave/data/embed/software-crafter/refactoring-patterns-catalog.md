@@ -1,7 +1,7 @@
 # Research: Refactoring Patterns and Techniques
 
 **Date**: 2025-10-09T00:00:00Z
-**Researcher**: knowledge-researcher (Nova)
+**Researcher**: researcher (Nova)
 **Overall Confidence**: High
 **Sources Consulted**: 10+
 

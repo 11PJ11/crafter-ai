@@ -35,19 +35,22 @@ Architecture serves business objectives while enabling quality attributes (perfo
 
 @solution-architect
 
-Execute *design-architecture for {feature-name}.
+Execute \*design-architecture for {feature-name}.
 
 **Context Files:**
+
 - docs/requirements/requirements.md
 - docs/requirements/user-stories.md
 - docs/architecture/constraints.md
 
 **Previous Artifacts:**
+
 - docs/requirements/requirements.md
 - docs/requirements/user-stories.md
 - docs/requirements/domain-model.md
 
 **Configuration:**
+
 - interactive: moderate
 - output_format: markdown
 - diagram_format: c4
@@ -58,6 +61,7 @@ Execute *design-architecture for {feature-name}.
 Refer to Morgan's quality gates in 5d-wave/agents/solution-architect.md.
 
 **Key Validations:**
+
 - [ ] Architecture supports all business requirements
 - [ ] Technology stack selected with clear rationale
 - [ ] Component boundaries defined (hexagonal architecture)
@@ -71,7 +75,11 @@ Refer to Morgan's quality gates in 5d-wave/agents/solution-architect.md.
 **Deliverables**: See Morgan's handoff package specification in agent file
 
 # Expected outputs (reference only):
+
 # - docs/architecture/architecture-design.md
+
 # - docs/architecture/technology-stack.md
+
 # - docs/architecture/component-boundaries.md
-# - docs/architecture/diagrams/*.svg
+
+# - docs/architecture/diagrams/\*.svg

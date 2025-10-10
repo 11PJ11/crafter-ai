@@ -1,7 +1,7 @@
 # Research: NoSQL Querying Patterns, Best Practices, and Industry Examples
 
 **Date**: 2025-10-03T17:48:27Z
-**Researcher**: knowledge-researcher (Nova)
+**Researcher**: researcher (Nova)
 **Overall Confidence**: High
 **Sources Consulted**: 47
 

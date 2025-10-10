@@ -1,67 +1,71 @@
 ---
 agent-activation:
   required: true
-  agent-id: feature-completion-coordinator
+  agent-id: devop
   agent-name: "Dakota"
   agent-command: "*validate-production-readiness"
   auto-activate: true
 ---
 
-# DW-DEMO: Production Readiness Validation and Stakeholder Demonstration
+# DW-DELIVER: Production Readiness Validation and Stakeholder Demonstration
 
-**Wave**: DEMO
-**Agent**: Dakota (feature-completion-coordinator)
+**Wave**: DELIVER
+**Agent**: Dakota (devop)
 **Command**: `*validate-production-readiness`
 
 ## Overview
 
-Execute DEMO wave of 5D-Wave methodology through comprehensive feature completion validation, production deployment, and stakeholder demonstration of business value delivery.
+Execute DELIVER wave of 5D-Wave methodology through comprehensive feature completion validation, production deployment, and stakeholder demonstration of business value delivery.
 
 Validates actual business value delivery, not just technical completion: functional completeness, operational excellence, performance validation, security compliance, disaster recovery.
 
 ## Context Files Required
 
-- src/* - (from DEVELOP wave)
-- tests/acceptance/* - (from DISTILL wave, validated in DEVELOP)
-- tests/unit/* - (from DEVELOP wave)
+- src/\* - (from DEVELOP wave)
+- tests/acceptance/\* - (from DISTILL wave, validated in DEVELOP)
+- tests/unit/\* - (from DEVELOP wave)
 - docs/architecture/architecture-design.md - (from DESIGN wave)
 
 ## Previous Artifacts (Wave Handoff)
 
-- src/* - (from DEVELOP wave)
-- tests/acceptance/* - (from DEVELOP wave, all passing)
-- tests/unit/* - (from DEVELOP wave)
+- src/\* - (from DEVELOP wave)
+- tests/acceptance/\* - (from DEVELOP wave, all passing)
+- tests/unit/\* - (from DEVELOP wave)
 - docs/implementation/implementation-status.md - (from DEVELOP wave)
 
 ## Agent Invocation
 
-@feature-completion-coordinator
+@devop
 
-Execute *validate-production-readiness for {feature-name}.
+Execute \*validate-production-readiness for {feature-name}.
 
 **Context Files:**
-- src/*
-- tests/acceptance/*
-- tests/unit/*
+
+- src/\*
+- tests/acceptance/\*
+- tests/unit/\*
 - docs/architecture/architecture-design.md
 
 **Previous Artifacts:**
-- src/* (complete implementation)
-- tests/acceptance/* (all passing)
-- tests/unit/*
+
+- src/\* (complete implementation)
+- tests/acceptance/\* (all passing)
+- tests/unit/\*
 - docs/implementation/implementation-status.md
 
 **Configuration:**
-- deployment_target: staging  # or production
+
+- deployment_target: staging # or production
 - environment: production-like
 - monitoring_enabled: true
 - stakeholder_demo: required
 
 ## Success Criteria
 
-Refer to Dakota's quality gates in 5d-wave/agents/feature-completion-coordinator.md.
+Refer to Dakota's quality gates in 5d-wave/agents/devop.md.
 
 **Key Validations:**
+
 - [ ] All acceptance tests passing in production-like environment
 - [ ] Production deployment completed successfully
 - [ ] Stakeholder demonstrations successful
@@ -76,6 +80,9 @@ Refer to Dakota's quality gates in 5d-wave/agents/feature-completion-coordinator
 **Deliverables**: See Dakota's handoff package specification in agent file
 
 # Expected outputs (reference only):
+
 # - docs/demo/production-deployment.md
+
 # - docs/demo/stakeholder-feedback.md
+
 # - docs/demo/business-impact-report.md

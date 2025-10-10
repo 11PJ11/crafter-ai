@@ -1,5 +1,5 @@
 # Architecture Diagram Quality Critique Dimensions
-# For architecture-diagram-manager self-review mode
+# For visual-architect self-review mode
 
 ## Review Mode Activation
 
@@ -64,7 +64,7 @@
 
 ```yaml
 review_id: "diagram_rev_{timestamp}"
-reviewer: "architecture-diagram-manager (review mode)"
+reviewer: "visual-architect (review mode)"
 
 issues_identified:
   visual_clarity:

@@ -21,7 +21,7 @@ Progressive refactoring hierarchy: Readability (L1-2) → Structure (L3-4) → D
 
 ## Context Files Required
 
-- src/* - Codebase to analyze and refactor
+- src/\* - Codebase to analyze and refactor
 
 ## Previous Artifacts (Wave Handoff)
 
@@ -31,22 +31,25 @@ Progressive refactoring hierarchy: Readability (L1-2) → Structure (L3-4) → D
 
 @software-crafter
 
-Execute *refactor for {target-class-or-module}.
+Execute \*refactor for {target-class-or-module}.
 
 **Context Files:**
-- src/*
+
+- src/\*
 
 **Configuration:**
-- level: 3  # Refactoring levels 1-6 (1=readability, 6=SOLID++)
-- scope: module  # file/module/project
-- method: extract  # extract/inline/rename/move
-- mikado_planning: false  # Use Mikado Method for complex refactorings
+
+- level: 3 # Refactoring levels 1-6 (1=readability, 6=SOLID++)
+- scope: module # file/module/project
+- method: extract # extract/inline/rename/move
+- mikado_planning: false # Use Mikado Method for complex refactorings
 
 ## Success Criteria
 
 Refer to Crafty's quality gates in 5d-wave/agents/software-crafter.md (Refactoring section).
 
 **Key Validations:**
+
 - [ ] Code quality metrics improved
 - [ ] All tests passing after refactoring
 - [ ] Refactoring levels applied systematically
@@ -59,6 +62,9 @@ Refer to Crafty's quality gates in 5d-wave/agents/software-crafter.md (Refactori
 **Deliverables**: Refactored codebase with quality improvements
 
 # Expected outputs (reference only):
-# - src/* (refactored implementation)
+
+# - src/\* (refactored implementation)
+
 # - docs/refactoring/refactoring-log.md
+
 # - docs/refactoring/quality-metrics.md

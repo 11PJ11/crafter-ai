@@ -1,6 +1,6 @@
 # BDD for Business Analyst: Collaborative Discovery & Requirements Patterns
 
-**Agent**: business-analyst
+**Agent**: product-owner
 **Purpose**: Practical guidance for requirements discovery and collaborative specification using BDD
 **Research Date**: 2025-10-09
 **Sources**: Cucumber.io, Dan North, Liz Keogh, Gojko Adzic, Example Mapping

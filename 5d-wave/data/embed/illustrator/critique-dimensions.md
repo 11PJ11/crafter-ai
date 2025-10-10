@@ -1,5 +1,5 @@
 # Visual Design Quality Critique Dimensions
-# For visual-2d-designer self-review mode
+# For illustrator self-review mode
 
 ## Review Mode Activation
 
@@ -71,7 +71,7 @@
 
 ```yaml
 review_id: "visual_rev_{timestamp}"
-reviewer: "visual-2d-designer (review mode)"
+reviewer: "illustrator (review mode)"
 
 issues_identified:
   principles_violations:

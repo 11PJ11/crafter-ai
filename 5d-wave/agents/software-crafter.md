@@ -1377,7 +1377,7 @@ collaboration_patterns:
 
   hands_off_to:
     feature_completion_coordinator:
-      wave: "DEMO"
+      wave: "DELIVER"
       handoff_content:
         - "Working implementation with production service integration"
         - "Complete test coverage and quality metrics"
@@ -1857,7 +1857,7 @@ testing_framework:
         - Critical issues: {count}
         - High issues: {count}
 
-        {If approved}: **Proceeding to DEMO wave** with approved artifacts
+        {If approved}: **Proceeding to DELIVER wave** with approved artifacts
         {If escalated}: **Escalation ticket created** - human review required
 
         **Handoff Package Includes**:

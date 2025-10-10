@@ -1,7 +1,7 @@
 ---
 agent-activation:
   required: true
-  agent-id: knowledge-researcher
+  agent-id: researcher
   agent-name: "Nova"
   agent-command: "*research"
   auto-activate: true
@@ -10,7 +10,7 @@ agent-activation:
 # DW-RESEARCH: Evidence-Driven Knowledge Research
 
 **Wave**: CROSS_WAVE
-**Agent**: Nova (knowledge-researcher)
+**Agent**: Nova (researcher)
 **Command**: `*research`
 
 ## Overview
@@ -29,22 +29,25 @@ Cross-wave support capability providing evidence-driven insights for any 5D-Wave
 
 ## Agent Invocation
 
-@knowledge-researcher
+@researcher
 
-Execute *research on {topic} [--embed-for={agent-name}].
+Execute \*research on {topic} [--embed-for={agent-name}].
 
 **Context Files:**
+
 - 5d-wave/data/trusted-source-domains.yaml
 
 **Configuration:**
-- research_depth: detailed  # overview/detailed/comprehensive/deep-dive
+
+- research_depth: detailed # overview/detailed/comprehensive/deep-dive
 - source_preferences: ["academic", "official", "technical_docs"]
 - quality_threshold: high
 - output_directory: docs/research/
-- embed_for: {agent-name}  # Optional: Creates distilled embed for specified agent
+- embed_for: {agent-name} # Optional: Creates distilled embed for specified agent
 - embed_output_directory: 5d-wave/data/embed/{agent-name}/
 
 **Workflow:**
+
 1. **Research Phase**: Create comprehensive research in data/research/
 2. **Distillation Phase** (if --embed-for specified):
    - Distill research into practitioner-focused embed
@@ -54,9 +57,10 @@ Execute *research on {topic} [--embed-for={agent-name}].
 
 ## Success Criteria
 
-Refer to Nova's quality gates in 5d-wave/agents/knowledge-researcher.md.
+Refer to Nova's quality gates in 5d-wave/agents/researcher.md.
 
 **Research Phase Validations:**
+
 - [ ] All sources from trusted-source-domains.yaml
 - [ ] Cross-reference performed (≥3 sources per major claim)
 - [ ] Comprehensive research file created in data/research/
@@ -64,6 +68,7 @@ Refer to Nova's quality gates in 5d-wave/agents/knowledge-researcher.md.
 - [ ] Average source reputation ≥ 0.80
 
 **Distillation Phase Validations** (if --embed-for specified):
+
 - [ ] Distilled embed file created in 5d-wave/data/embed/{agent-name}/
 - [ ] 100% of essential concepts preserved (NO compression)
 - [ ] Practitioner-focused transformation (academic → actionable)
@@ -75,18 +80,30 @@ Refer to Nova's quality gates in 5d-wave/agents/knowledge-researcher.md.
 
 **Handoff To**: {invoking-agent-returns-to-workflow}
 **Deliverables**:
+
 - Comprehensive research in data/research/
 - Distilled embed in 5d-wave/data/embed/{agent}/ (if --embed-for specified)
 
 # Expected outputs (reference only):
+
 # Research only:
+
 # - data/research/{category}/{topic}-comprehensive-research.md
+
 #
+
 # Research + Embed (with --embed-for={agent}):
+
 # - data/research/{category}/{topic}-comprehensive-research.md
+
 # - 5d-wave/data/embed/{agent}/{topic}-methodology.md
+
 #
+
 # Examples:
+
 # /dw:research "Residuality Theory" --embed-for=solution-architect
+
 # → data/research/architecture-patterns/residuality-theory-comprehensive-research.md
+
 # → 5d-wave/data/embed/solution-architect/residuality-theory-methodology.md

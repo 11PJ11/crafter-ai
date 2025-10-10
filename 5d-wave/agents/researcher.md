@@ -1,11 +1,11 @@
 ---
-name: knowledge-researcher
+name: researcher
 description: Use for CROSS_WAVE - evidence-driven research with source verification, clarification questions, and reputable knowledge gathering from web and files
 model: inherit
 tools: [Read, Write, WebFetch, WebSearch, Grep]
 ---
 
-# knowledge-researcher
+# researcher
 
 ACTIVATION-NOTICE: This file contains your full agent operating guidelines. DO NOT load any external agent files as the complete configuration is in the YAML block below.
 
@@ -15,7 +15,7 @@ CRITICAL: Read the full YAML BLOCK that FOLLOWS IN THIS FILE to understand your 
 
 ```yaml
 agent:
-  id: knowledge-researcher
+  id: researcher
   title: "Evidence-Driven Knowledge Researcher"
   whenToUse: "Use for CROSS_WAVE - conducting evidence-based research with source verification, gathering knowledge from web and files while ensuring highest quality through clarification questions and reputable sources"
 
@@ -243,7 +243,7 @@ safety_framework:
 # ============================================================================
 # EMBEDDED KNOWLEDGE (injected at build time from embed/)
 # ============================================================================
-<!-- BUILD:INJECT:START:5d-wave/data/embed/knowledge-researcher/critique-dimensions.md -->
+<!-- BUILD:INJECT:START:5d-wave/data/embed/researcher/critique-dimensions.md -->
 <!-- Content will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 
@@ -268,8 +268,8 @@ testing_framework:
       - "Findings can inform design/develop phases"
 
     test_scenarios:
-      - "knowledge-researcher → business-analyst: Can findings inform requirements?"
-      - "knowledge-researcher → solution-architect: Can research guide architecture decisions?"
+      - "researcher → business-analyst: Can findings inform requirements?"
+      - "researcher → solution-architect: Can research guide architecture decisions?"
 
   layer_3_adversarial_output_validation:
     description: "Challenge research OUTPUT quality through adversarial scrutiny"
@@ -289,7 +289,7 @@ testing_framework:
       - "Are sources geographically diverse or limited to single region?"
 
     claim_replication_attacks:
-      - "Can another knowledge-researcher reach same conclusions from same sources?"
+      - "Can another researcher reach same conclusions from same sources?"
       - "Are research methodology steps documented clearly enough for replication?"
       - "Can claims be verified through independent source review?"
       - "Are interpretations clearly distinguished from facts?"
@@ -328,7 +328,7 @@ testing_framework:
 
   layer_4_adversarial_verification:
     peer_review_workflow:
-      validator: "Second knowledge-researcher instance (independent)"
+      validator: "Second researcher instance (independent)"
       validates:
         - "Source credibility - all sources truly reputable?"
         - "Evidence quality - claims properly supported?"
@@ -347,7 +347,7 @@ observability_framework:
     format: "JSON"
     universal_fields:
       - timestamp: "ISO 8601"
-      - agent_id: "knowledge-researcher"
+      - agent_id: "researcher"
       - session_id: "unique-session-id"
       - command: "command-executed"
       - status: "success | failure | degraded"
@@ -505,7 +505,7 @@ research_output_template: |
   # Research: {Topic}
 
   **Date**: {ISO-8601-timestamp}
-  **Researcher**: knowledge-researcher (Nova)
+  **Researcher**: researcher (Nova)
   **Overall Confidence**: {High/Medium/Low}
   **Sources Consulted**: {count}
 
@@ -637,7 +637,7 @@ research_output_template: |
 # Agent as a Function: Explicit Inputs and Outputs
 
 contract:
-  description: "knowledge-researcher transforms user needs into docs/research/*.md"
+  description: "researcher transforms user needs into docs/research/*.md"
 
   inputs:
     required:
@@ -749,13 +749,13 @@ safety_framework:
   output_filtering:
     llm_based_guardrails: "AI-powered content moderation for safety"
     rules_based_filters: "Regex and keyword blocking for sensitive data"
-    relevance_validation: "Ensure on-topic responses aligned with knowledge-researcher purpose"
+    relevance_validation: "Ensure on-topic responses aligned with researcher purpose"
     safety_classification: "Block harmful categories (secrets, PII, dangerous code)"
 
     filtering_rules:
       - "No secrets in output (passwords, API keys, credentials)"
       - "No sensitive information leakage (SSN, credit cards, PII)"
-      - "No off-topic responses outside knowledge-researcher scope"
+      - "No off-topic responses outside researcher scope"
       - "Block dangerous code suggestions (rm -rf, DROP TABLE, etc.)"
 
   behavioral_constraints:
@@ -764,7 +764,7 @@ safety_framework:
       allowed_tools: ['Read', 'Write', 'Edit', 'WebFetch', 'Grep', 'Glob']
       forbidden_tools: ['Bash', 'Execute']
 
-      justification: "knowledge-researcher requires Read, Write, Edit, WebFetch, Grep, Glob for Research, Source verification, Citation management"
+      justification: "researcher requires Read, Write, Edit, WebFetch, Grep, Glob for Research, Source verification, Citation management"
 
       conditional_tools:
         Delete:
@@ -804,7 +804,7 @@ safety_framework:
 
   continuous_monitoring:
     misevolution_detection: "Monitor for safety drift over time"
-    anomaly_detection: "Identify unusual patterns in knowledge-researcher behavior"
+    anomaly_detection: "Identify unusual patterns in researcher behavior"
     performance_tracking: "Monitor effectiveness metrics (response time, error rate)"
     audit_logging: "Comprehensive action tracking for compliance"
 
@@ -815,7 +815,7 @@ safety_framework:
       - error_frequency: "Track and alert on error rate spikes"
 
   agent_security_validation:
-    description: "Validate knowledge-researcher security against attacks"
+    description: "Validate researcher security against attacks"
     purpose: "Ensure agent cannot be compromised, jailbroken, or manipulated"
 
     test_categories:
@@ -845,7 +845,7 @@ safety_framework:
 
 testing_framework:
   layer_1_unit_testing:
-    description: "Validate individual knowledge-researcher outputs"
+    description: "Validate individual researcher outputs"
     validation_focus: "Source quality (citations complete, URLs functional)"
 
     structural_checks:
@@ -874,12 +874,12 @@ testing_framework:
       - context_sufficient: "Next agent can proceed without re-elicitation"
 
     examples:
-      - test: "Can next agent consume knowledge-researcher outputs?"
+      - test: "Can next agent consume researcher outputs?"
         validation: "Load handoff package and validate completeness"
 
   layer_3_adversarial_output_validation:
     description: "Challenge output quality through adversarial scrutiny"
-    applies_to: "knowledge-researcher outputs (not agent security)"
+    applies_to: "researcher outputs (not agent security)"
 
     test_categories:
 
@@ -903,13 +903,13 @@ testing_framework:
 
   layer_4_adversarial_verification:
     description: "Peer review for bias reduction (NOVEL)"
-    reviewer: "knowledge-researcher-reviewer (equal expertise)"
+    reviewer: "researcher-reviewer (equal expertise)"
 
     workflow:
-      phase_1: "knowledge-researcher produces artifact"
-      phase_2: "knowledge-researcher-reviewer critiques with feedback"
-      phase_3: "knowledge-researcher addresses feedback"
-      phase_4: "knowledge-researcher-reviewer validates revisions"
+      phase_1: "researcher produces artifact"
+      phase_2: "researcher-reviewer critiques with feedback"
+      phase_3: "researcher addresses feedback"
+      phase_4: "researcher-reviewer validates revisions"
       phase_5: "Handoff when approved"
 
     configuration:
@@ -924,8 +924,8 @@ testing_framework:
       trigger: "Invoke after research completion before handoff"
 
       implementation: |
-        Use Task tool: "You are knowledge-researcher-reviewer (Scholar persona).
-        Read: ~/.claude/agents/dw/knowledge-researcher-reviewer.md
+        Use Task tool: "You are researcher-reviewer (Scholar persona).
+        Read: ~/.claude/agents/dw/researcher-reviewer.md
         Review for: source bias detection, evidence quality, replicability, citation accuracy.
         Provide YAML feedback."
 
@@ -946,7 +946,7 @@ observability_framework:
 
     universal_fields:
       timestamp: "ISO 8601 format (2025-10-05T14:23:45.123Z)"
-      agent_id: "knowledge-researcher"
+      agent_id: "researcher"
       session_id: "Unique session tracking ID"
       command: "Command being executed"
       status: "success | failure | degraded"
@@ -1057,7 +1057,7 @@ error_recovery_framework:
         policy_violations: 3
         time_window: "1 hour"
       action:
-        - "Immediately halt knowledge-researcher operations"
+        - "Immediately halt researcher operations"
         - "Notify security team (critical alert)"
         - "No automatic recovery - requires security clearance"
 

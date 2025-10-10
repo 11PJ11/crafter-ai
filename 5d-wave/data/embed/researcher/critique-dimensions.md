@@ -1,5 +1,5 @@
 # Research Quality Critique Dimensions
-# For knowledge-researcher self-review mode
+# For researcher self-review mode
 
 ## Review Mode Activation
 
@@ -62,7 +62,7 @@
 
 ```yaml
 review_id: "research_rev_{timestamp}"
-reviewer: "knowledge-researcher (review mode)"
+reviewer: "researcher (review mode)"
 
 issues_identified:
   source_bias:

@@ -657,7 +657,7 @@ validate_installation() {
     fi
 
     # Check essential DW commands exist
-    local essential_commands=("discuss" "design" "distill" "develop" "demo")
+    local essential_commands=("discuss" "design" "distill" "develop" "deliver")
     for cmd in "${essential_commands[@]}"; do
         if [[ ! -f "$CLAUDE_CONFIG_DIR/commands/dw/$cmd.md" ]]; then
             error "Missing essential DW command: $cmd.md"

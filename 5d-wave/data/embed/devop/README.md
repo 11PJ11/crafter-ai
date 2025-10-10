@@ -1,6 +1,6 @@
 # Feature Coordination Research
 
-This directory contains evidence-based research for the **feature-completion-coordinator** agent.
+This directory contains evidence-based research for the **devop** agent.
 
 ## Research Documents
 
@@ -44,7 +44,7 @@ This directory contains evidence-based research for the **feature-completion-coo
 ## Usage Guidelines
 
 **For Agent Development**:
-This research informs the feature-completion-coordinator agent's:
+This research informs the devop agent's:
 - Validation criteria for feature completion
 - Coordination workflows with stakeholders
 - Deployment readiness assessment frameworks
@@ -70,7 +70,7 @@ Use this research to:
 ## Maintenance Notes
 
 **Last Updated**: 2025-10-09
-**Next Review**: When feature-completion-coordinator agent requirements evolve
+**Next Review**: When devop agent requirements evolve
 **Update Triggers**:
 - New DORA research publications
 - Major DevOps platform framework updates

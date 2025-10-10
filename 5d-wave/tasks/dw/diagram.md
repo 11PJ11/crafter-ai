@@ -1,7 +1,7 @@
 ---
 agent-activation:
   required: true
-  agent-id: architecture-diagram-manager
+  agent-id: visual-architect
   agent-name: "Archer"
   agent-command: "*create-diagrams"
   auto-activate: true
@@ -10,7 +10,7 @@ agent-activation:
 # DW-DIAGRAM: Visual Architecture Lifecycle Management
 
 **Wave**: CROSS_WAVE (primarily DESIGN integration)
-**Agent**: Archer (architecture-diagram-manager)
+**Agent**: Archer (visual-architect)
 **Command**: `*create-diagrams`
 
 ## Overview
@@ -33,26 +33,29 @@ Provides visual understanding and communication at all levels: system context, c
 
 ## Agent Invocation
 
-@architecture-diagram-manager
+@visual-architect
 
-Execute *create-diagrams for {architecture-component}.
+Execute \*create-diagrams for {architecture-component}.
 
 **Context Files:**
+
 - docs/architecture/architecture-design.md
 - docs/architecture/component-boundaries.md
 - docs/architecture/technology-stack.md
 
 **Configuration:**
-- diagram_type: component  # component/deployment/sequence/data/context
-- format: mermaid  # mermaid/plantuml/c4
-- level: container  # context/container/component
+
+- diagram_type: component # component/deployment/sequence/data/context
+- format: mermaid # mermaid/plantuml/c4
+- level: container # context/container/component
 - output_directory: docs/architecture/diagrams/
 
 ## Success Criteria
 
-Refer to Archer's quality gates in 5d-wave/agents/architecture-diagram-manager.md.
+Refer to Archer's quality gates in 5d-wave/agents/visual-architect.md.
 
 **Key Validations:**
+
 - [ ] Diagrams accessible to target audiences
 - [ ] Visual representation matches implementation
 - [ ] Evolution tracking properly configured
@@ -65,6 +68,9 @@ Refer to Archer's quality gates in 5d-wave/agents/architecture-diagram-manager.m
 **Deliverables**: Visual architecture documentation
 
 # Expected outputs (reference only):
+
 # - docs/architecture/diagrams/system-context.svg
+
 # - docs/architecture/diagrams/component-architecture.svg
+
 # - docs/architecture/diagrams/deployment-architecture.svg

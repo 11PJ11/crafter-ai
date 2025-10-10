@@ -1,7 +1,7 @@
 ---
 agent-activation:
   required: true
-  agent-id: business-analyst
+  agent-id: product-owner
   agent-name: "Riley"
   agent-command: "*gather-requirements"
   auto-activate: true
@@ -10,7 +10,7 @@ agent-activation:
 # DW-DISCUSS: Requirements Gathering and Business Analysis
 
 **Wave**: DISCUSS
-**Agent**: Riley (business-analyst)
+**Agent**: Riley (product-owner)
 **Command**: `*gather-requirements`
 
 ## Overview
@@ -31,25 +31,28 @@ The DISCUSS wave creates shared understanding between stakeholders, developers, 
 
 ## Agent Invocation
 
-@business-analyst
+@product-owner
 
-Execute *gather-requirements for {feature-name}.
+Execute \*gather-requirements for {feature-name}.
 
 **Context Files:**
+
 - docs/project-brief.md
 - docs/stakeholders.yaml
 - docs/architecture/constraints.md
 
 **Configuration:**
+
 - interactive: high
 - output_format: markdown
 - elicitation_depth: comprehensive
 
 ## Success Criteria
 
-Refer to Riley's quality gates in 5d-wave/agents/business-analyst.md.
+Refer to Riley's quality gates in 5d-wave/agents/product-owner.md.
 
 **Key Validations:**
+
 - [ ] Requirements completeness score > 0.95
 - [ ] Stakeholder consensus achieved
 - [ ] All acceptance criteria testable
@@ -62,6 +65,9 @@ Refer to Riley's quality gates in 5d-wave/agents/business-analyst.md.
 **Deliverables**: See Riley's handoff package specification in agent file
 
 # Expected outputs (reference only):
+
 # - docs/requirements/requirements.md
+
 # - docs/requirements/user-stories.md
+
 # - docs/requirements/acceptance-criteria.md

@@ -1,5 +1,5 @@
 # Walking Skeleton Quality Critique Dimensions
-# For walking-skeleton-helper self-review mode
+# For skeleton-builder self-review mode
 
 ## Review Mode Activation
 
@@ -70,7 +70,7 @@
 
 ```yaml
 review_id: "skeleton_rev_{timestamp}"
-reviewer: "walking-skeleton-helper (review mode)"
+reviewer: "skeleton-builder (review mode)"
 
 issues_identified:
   scope_creep:

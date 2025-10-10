@@ -1,5 +1,5 @@
 # Root Cause Analysis Quality Critique Dimensions
-# For root-cause-analyzer self-review mode
+# For troubleshooter self-review mode
 
 ## Review Mode Activation
 
@@ -60,7 +60,7 @@
 
 ```yaml
 review_id: "rca_rev_{timestamp}"
-reviewer: "root-cause-analyzer (review mode)"
+reviewer: "troubleshooter (review mode)"
 
 issues_identified:
   causality_logic:

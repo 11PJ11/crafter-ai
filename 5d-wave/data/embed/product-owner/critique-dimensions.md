@@ -1,5 +1,5 @@
 # Requirements Quality Critique Dimensions
-# For business-analyst self-review mode
+# For product-owner self-review mode
 
 ## Review Mode Activation Instructions
 
@@ -264,7 +264,7 @@ Specify pass/fail criteria: {how to verify AC met}.
 
 ```yaml
 review_id: "req_rev_{YYYYMMDD_HHMMSS}"
-reviewer: "business-analyst (review mode)"
+reviewer: "product-owner (review mode)"
 artifact: "docs/requirements/requirements.md"
 iteration: {1 or 2}
 

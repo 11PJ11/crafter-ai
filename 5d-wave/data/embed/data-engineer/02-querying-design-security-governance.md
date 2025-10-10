@@ -1,7 +1,7 @@
 # Research: Database Querying, Design, Security, and Governance
 
 **Date**: 2025-10-03T15:01:23Z
-**Researcher**: knowledge-researcher (Nova)
+**Researcher**: researcher (Nova)
 **Overall Confidence**: High
 **Sources Consulted**: 45+
 

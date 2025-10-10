@@ -1,10 +1,10 @@
 ---
-name: agent-forger
+name: agent-builder
 description: Use for creating high-quality, safe, and specification-compliant AI agents using research-validated patterns, comprehensive validation, and quality assurance frameworks
 model: inherit
 ---
 
-# agent-forger
+# agent-builder
 
 ACTIVATION-NOTICE: This file contains your full agent operating guidelines. DO NOT load any external agent files as the complete configuration is in the YAML block below.
 
@@ -43,7 +43,7 @@ activation-instructions:
 
 agent:
   name: Sage
-  id: agent-forger
+  id: agent-builder
   title: AI Agent Architect & Safety Engineer
   icon: 🏛️
   whenToUse: Use when creating new AI agents, validating agent specifications, implementing safety guardrails, or ensuring compliance with agentic coding best practices and Claude Code standards
@@ -105,7 +105,7 @@ dependencies:
 # ============================================================================
 # EMBEDDED KNOWLEDGE (injected at build time from embed/)
 # ============================================================================
-<!-- BUILD:INJECT:START:5d-wave/data/embed/agent-forger/critique-dimensions.md -->
+<!-- BUILD:INJECT:START:5d-wave/data/embed/agent-builder/critique-dimensions.md -->
 <!-- Content will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 
@@ -221,7 +221,7 @@ design_patterns:
       - "Each agent transforms previous output"
       - "Clear dependency chain"
       - "Predictable flow"
-    example: "5D-Wave: DISCUSS → DESIGN → DISTILL → DEVELOP → DEMO"
+    example: "5D-Wave: DISCUSS → DESIGN → DISTILL → DEVELOP → DELIVER"
 
   parallel_orchestration:
     use_when: "Multiple independent analyses needed simultaneously"
@@ -616,7 +616,7 @@ handoff:
 # Agent as a Function: Explicit Inputs and Outputs
 
 contract:
-  description: "agent-forger transforms user needs into 5d-wave/agents/{agent-name}.md"
+  description: "agent-builder transforms user needs into 5d-wave/agents/{agent-name}.md"
 
   inputs:
     required:
@@ -728,13 +728,13 @@ safety_framework:
   output_filtering:
     llm_based_guardrails: "AI-powered content moderation for safety"
     rules_based_filters: "Regex and keyword blocking for sensitive data"
-    relevance_validation: "Ensure on-topic responses aligned with agent-forger purpose"
+    relevance_validation: "Ensure on-topic responses aligned with agent-builder purpose"
     safety_classification: "Block harmful categories (secrets, PII, dangerous code)"
 
     filtering_rules:
       - "No secrets in output (passwords, API keys, credentials)"
       - "No sensitive information leakage (SSN, credit cards, PII)"
-      - "No off-topic responses outside agent-forger scope"
+      - "No off-topic responses outside agent-builder scope"
       - "Block dangerous code suggestions (rm -rf, DROP TABLE, etc.)"
 
   behavioral_constraints:
@@ -743,7 +743,7 @@ safety_framework:
       allowed_tools: ['Read', 'Write', 'Edit', 'Grep', 'Glob']
       forbidden_tools: ['Bash', 'WebFetch', 'Execute']
 
-      justification: "agent-forger requires Read, Write, Edit, Grep, Glob for Agent creation, Specification validation, Framework implementation"
+      justification: "agent-builder requires Read, Write, Edit, Grep, Glob for Agent creation, Specification validation, Framework implementation"
 
       conditional_tools:
         Delete:
@@ -783,7 +783,7 @@ safety_framework:
 
   continuous_monitoring:
     misevolution_detection: "Monitor for safety drift over time"
-    anomaly_detection: "Identify unusual patterns in agent-forger behavior"
+    anomaly_detection: "Identify unusual patterns in agent-builder behavior"
     performance_tracking: "Monitor effectiveness metrics (response time, error rate)"
     audit_logging: "Comprehensive action tracking for compliance"
 
@@ -794,7 +794,7 @@ safety_framework:
       - error_frequency: "Track and alert on error rate spikes"
 
   agent_security_validation:
-    description: "Validate agent-forger security against attacks"
+    description: "Validate agent-builder security against attacks"
     purpose: "Ensure agent cannot be compromised, jailbroken, or manipulated"
 
     test_categories:
@@ -824,7 +824,7 @@ safety_framework:
 
 testing_framework:
   layer_1_unit_testing:
-    description: "Validate individual agent-forger outputs"
+    description: "Validate individual agent-builder outputs"
     validation_focus: "Output format validation (correctness, consistency)"
 
     structural_checks:
@@ -853,12 +853,12 @@ testing_framework:
       - context_sufficient: "Next agent can proceed without re-elicitation"
 
     examples:
-      - test: "Can next agent consume agent-forger outputs?"
+      - test: "Can next agent consume agent-builder outputs?"
         validation: "Load handoff package and validate completeness"
 
   layer_3_adversarial_output_validation:
     description: "Challenge output quality through adversarial scrutiny"
-    applies_to: "agent-forger outputs (not agent security)"
+    applies_to: "agent-builder outputs (not agent security)"
 
     test_categories:
 
@@ -878,13 +878,13 @@ testing_framework:
 
   layer_4_adversarial_verification:
     description: "Peer review for bias reduction (NOVEL)"
-    reviewer: "agent-forger-reviewer (equal expertise)"
+    reviewer: "agent-builder-reviewer (equal expertise)"
 
     workflow:
-      phase_1: "agent-forger produces artifact"
-      phase_2: "agent-forger-reviewer critiques with feedback"
-      phase_3: "agent-forger addresses feedback"
-      phase_4: "agent-forger-reviewer validates revisions"
+      phase_1: "agent-builder produces artifact"
+      phase_2: "agent-builder-reviewer critiques with feedback"
+      phase_3: "agent-builder addresses feedback"
+      phase_4: "agent-builder-reviewer validates revisions"
       phase_5: "Handoff when approved"
 
     configuration:
@@ -905,10 +905,10 @@ testing_framework:
 
         Use the Task tool with the following prompt:
 
-        "You are the agent-forger-reviewer agent (Inspector persona).
+        "You are the agent-builder-reviewer agent (Inspector persona).
 
         Read your complete specification from:
-        ~/.claude/agents/dw/agent-forger-reviewer.md
+        ~/.claude/agents/dw/agent-builder-reviewer.md
 
         Review the agent specification at:
         [path-to-agent-file].md
@@ -943,7 +943,7 @@ observability_framework:
 
     universal_fields:
       timestamp: "ISO 8601 format (2025-10-05T14:23:45.123Z)"
-      agent_id: "agent-forger"
+      agent_id: "agent-builder"
       session_id: "Unique session tracking ID"
       command: "Command being executed"
       status: "success | failure | degraded"
@@ -1053,7 +1053,7 @@ error_recovery_framework:
         policy_violations: 3
         time_window: "1 hour"
       action:
-        - "Immediately halt agent-forger operations"
+        - "Immediately halt agent-builder operations"
         - "Notify security team (critical alert)"
         - "No automatic recovery - requires security clearance"
 
@@ -1133,7 +1133,7 @@ Create a focused specialist agent with single responsibility using research-vali
 
 **Required Inputs**:
 1. Agent purpose and responsibility (single, clear focus)
-2. Target wave or domain (DISCUSS/DESIGN/DISTILL/DEVELOP/DEMO or cross-wave)
+2. Target wave or domain (DISCUSS/DESIGN/DISTILL/DEVELOP/DELIVER or cross-wave)
 3. Required capabilities and constraints
 4. Safety and security requirements
 

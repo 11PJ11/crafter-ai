@@ -1,7 +1,7 @@
 # TDD and Refactoring Research Collection
 
 **Research Date**: 2025-10-09
-**Researcher**: knowledge-researcher (Nova)
+**Researcher**: researcher (Nova)
 **Total Token Count**: ~28,000 tokens across 4 documents
 **Overall Confidence**: High
 
@@ -315,7 +315,7 @@ To extend this research:
 ## Contact and Support
 
 For questions about this research or to suggest additions:
-- Follow the agent specification for knowledge-researcher
+- Follow the agent specification for researcher
 - Maintain evidence-based standards (3+ sources per claim)
 - Document all sources with URLs and access dates
 - Note confidence levels and knowledge gaps explicitly

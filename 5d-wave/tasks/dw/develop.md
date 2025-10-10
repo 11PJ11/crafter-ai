@@ -36,23 +36,26 @@ Research-validated double-loop TDD drives implementation: outer loop (ATDD - cus
 
 @software-crafter
 
-Execute *develop for {feature-name}.
+Execute \*develop for {feature-name}.
 
 **Context Files:**
+
 - tests/acceptance/acceptance-tests.feature
 - tests/acceptance/step-definitions.cs
 - docs/architecture/architecture-design.md
 - docs/architecture/component-boundaries.md
 
 **Previous Artifacts:**
+
 - tests/acceptance/acceptance-tests.feature
 - tests/acceptance/step-definitions.cs
 - docs/testing/test-scenarios.md
 
 **Configuration:**
+
 - tdd_mode: strict
-- refactor_level: 3  # Levels 1-6
-- test_framework: nunit  # or pytest/jest
+- refactor_level: 3 # Levels 1-6
+- test_framework: nunit # or pytest/jest
 - architecture_pattern: hexagonal
 
 ## Success Criteria
@@ -60,6 +63,7 @@ Execute *develop for {feature-name}.
 Refer to Crafty's quality gates in 5d-wave/agents/software-crafter.md.
 
 **Key Validations:**
+
 - [ ] All acceptance tests passing (100% required)
 - [ ] Unit test coverage ≥80% for business logic
 - [ ] Hexagonal architecture patterns implemented
@@ -73,6 +77,9 @@ Refer to Crafty's quality gates in 5d-wave/agents/software-crafter.md.
 **Deliverables**: See Crafty's handoff package specification in agent file
 
 # Expected outputs (reference only):
-# - src/* (complete production implementation)
-# - tests/unit/* (comprehensive unit tests)
-# - tests/integration/* (integration tests)
+
+# - src/\* (complete production implementation)
+
+# - tests/unit/\* (comprehensive unit tests)
+
+# - tests/integration/\* (integration tests)

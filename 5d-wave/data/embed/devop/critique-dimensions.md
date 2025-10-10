@@ -1,5 +1,5 @@
 # Feature Completion Quality Critique Dimensions
-# For feature-completion-coordinator self-review mode
+# For devop self-review mode
 
 ## Review Mode Activation
 
@@ -64,7 +64,7 @@
 
 ```yaml
 review_id: "completion_rev_{timestamp}"
-reviewer: "feature-completion-coordinator (review mode)"
+reviewer: "devop (review mode)"
 
 issues_identified:
   handoff_completeness:

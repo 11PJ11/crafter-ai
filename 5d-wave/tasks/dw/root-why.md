@@ -1,7 +1,7 @@
 ---
 agent-activation:
   required: true
-  agent-id: root-cause-analyzer
+  agent-id: troubleshooter
   agent-name: "Sage"
   agent-command: "*investigate-root-cause"
   auto-activate: true
@@ -10,7 +10,7 @@ agent-activation:
 # DW-ROOT-WHY: Toyota 5 Whys Multi-Causal Analysis
 
 **Wave**: CROSS_WAVE
-**Agent**: Sage (root-cause-analyzer)
+**Agent**: Sage (troubleshooter)
 **Command**: `*investigate-root-cause`
 
 ## Overview
@@ -29,23 +29,26 @@ Philosophy: "By repeating why five times, the nature of the problem as well as i
 
 ## Agent Invocation
 
-@root-cause-analyzer
+@troubleshooter
 
-Execute *investigate-root-cause for {problem-statement}.
+Execute \*investigate-root-cause for {problem-statement}.
 
 **Context Files:**
+
 - (problem-domain-specific files)
 
 **Configuration:**
-- investigation_depth: 5  # WHY levels (typically 5)
-- multi_causal: true  # Investigate multiple causes at each level
-- evidence_required: true  # Require evidence for each causal claim
+
+- investigation_depth: 5 # WHY levels (typically 5)
+- multi_causal: true # Investigate multiple causes at each level
+- evidence_required: true # Require evidence for each causal claim
 
 ## Success Criteria
 
-Refer to Sage's quality gates in 5d-wave/agents/root-cause-analyzer.md.
+Refer to Sage's quality gates in 5d-wave/agents/troubleshooter.md.
 
 **Key Validations:**
+
 - [ ] All 5 WHY levels investigated with evidence
 - [ ] Multi-causal branches explored at each level
 - [ ] Root causes identified and validated
@@ -58,4 +61,5 @@ Refer to Sage's quality gates in 5d-wave/agents/root-cause-analyzer.md.
 **Deliverables**: Root cause analysis report with solutions
 
 # Expected outputs (reference only):
+
 # - docs/analysis/root-cause-analysis-{problem}.md

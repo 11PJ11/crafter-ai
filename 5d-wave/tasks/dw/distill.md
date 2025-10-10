@@ -36,23 +36,26 @@ Creates executable specifications that bridge business requirements and technica
 
 @acceptance-designer
 
-Execute *create-acceptance-tests for {feature-name}.
+Execute \*create-acceptance-tests for {feature-name}.
 
 **Context Files:**
+
 - docs/requirements/requirements.md
 - docs/requirements/user-stories.md
 - docs/architecture/architecture-design.md
 - docs/architecture/component-boundaries.md
 
 **Previous Artifacts:**
+
 - docs/architecture/architecture-design.md
 - docs/architecture/technology-stack.md
 - docs/architecture/component-boundaries.md
 
 **Configuration:**
+
 - interactive: moderate
 - output_format: gherkin
-- test_framework: specflow  # or cucumber/pytest-bdd
+- test_framework: specflow # or cucumber/pytest-bdd
 - production_integration: mandatory
 
 ## Success Criteria
@@ -60,6 +63,7 @@ Execute *create-acceptance-tests for {feature-name}.
 Refer to Quinn's quality gates in 5d-wave/agents/acceptance-designer.md.
 
 **Key Validations:**
+
 - [ ] All user stories have acceptance tests
 - [ ] Step methods call real production services
 - [ ] One-at-a-time implementation strategy established
@@ -73,6 +77,9 @@ Refer to Quinn's quality gates in 5d-wave/agents/acceptance-designer.md.
 **Deliverables**: See Quinn's handoff package specification in agent file
 
 # Expected outputs (reference only):
+
 # - tests/acceptance/acceptance-tests.feature
+
 # - tests/acceptance/step-definitions.cs
+
 # - docs/testing/test-scenarios.md

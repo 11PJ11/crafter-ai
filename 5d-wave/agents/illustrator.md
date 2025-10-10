@@ -1,5 +1,5 @@
 ---
-name: visual-2d-designer
+name: illustrator
 description: Creates visual 2D diagrams and design artifacts for architecture, workflows, and system documentation using text-based diagram formats
 model: inherit
 ---
@@ -67,7 +67,7 @@ utils: - naming-convention.md - deliverables-folders.md
 # ============================================================================
 # EMBEDDED KNOWLEDGE (injected at build time from embed/)
 # ============================================================================
-<!-- BUILD:INJECT:START:5d-wave/data/embed/visual-2d-designer/critique-dimensions.md -->
+<!-- BUILD:INJECT:START:5d-wave/data/embed/illustrator/critique-dimensions.md -->
 <!-- Content will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 
@@ -134,7 +134,7 @@ deliverables: - "Style brief" - "Boards & animatic (with audio)" - "X-sheet & ti
 # ============================================================================
 
 contract:
-  description: "visual-2d-designer transforms creative requirements into production-ready 2D animation assets (storyboards, animatics, timing charts, exports)"
+  description: "illustrator transforms creative requirements into production-ready 2D animation assets (storyboards, animatics, timing charts, exports)"
 
   inputs:
     required:
@@ -576,7 +576,7 @@ testing_framework:
 
   layer_4_adversarial_verification:
     description: "Peer review by equal creative agent to reduce bias and improve quality"
-    validator: "visual-2d-designer-reviewer (same expertise, different instance)"
+    validator: "illustrator-reviewer (same expertise, different instance)"
     validates: "Creative bias, completeness, quality, assumptions, production readiness"
 
     critique_dimensions:
@@ -605,21 +605,21 @@ testing_framework:
 
     workflow_integration:
       phase_1_production:
-        agent: "visual-2d-designer (Luma)"
+        agent: "illustrator (Luma)"
         output: "Initial creative artifacts (storyboard, animatic, timing charts)"
 
       phase_2_peer_review:
-        agent: "visual-2d-designer-reviewer"
+        agent: "illustrator-reviewer"
         input: "Initial artifacts from phase 1"
         output: "Structured critique (strengths, issues, recommendations)"
 
       phase_3_revision:
-        agent: "visual-2d-designer (Luma)"
+        agent: "illustrator (Luma)"
         input: "Critique from phase 2"
         output: "Revised artifacts addressing feedback"
 
       phase_4_approval:
-        agent: "visual-2d-designer-reviewer"
+        agent: "illustrator-reviewer"
         validation: "All critical issues resolved?"
         output: "Approval or second iteration"
 
@@ -631,8 +631,8 @@ testing_framework:
       trigger: "Invoke after animation design completion"
 
       implementation: |
-        Use Task tool: "You are visual-2d-designer-reviewer (Critic persona).
-        Read: ~/.claude/agents/dw/visual-2d-designer-reviewer.md
+        Use Task tool: "You are illustrator-reviewer (Critic persona).
+        Read: ~/.claude/agents/dw/illustrator-reviewer.md
         Review for: 12 principles compliance, timing accuracy, readability, accessibility.
         Provide YAML feedback."
 
@@ -656,7 +656,7 @@ observability_framework:
 
     universal_fields:
       timestamp: "ISO 8601 format (2025-10-05T14:23:45.123Z)"
-      agent_id: "visual-2d-designer"
+      agent_id: "illustrator"
       session_id: "Unique session tracking ID"
       command: "Command being executed (*storyboard, *animatic, *design-motion, etc.)"
       status: "success | failure | degraded"
@@ -675,7 +675,7 @@ observability_framework:
 
       example_log:
         timestamp: "2025-10-05T14:23:45.123Z"
-        agent_id: "visual-2d-designer"
+        agent_id: "illustrator"
         session_id: "sess_abc123"
         command: "*animatic"
         status: "success"
@@ -718,7 +718,7 @@ observability_framework:
 
     tool_agent_specific_metrics:
       creative_quality_score:
-        agent: "visual-2d-designer"
+        agent: "illustrator"
         calculation: "count(principles_applied) / 12 (Disney's 12 Principles)"
         target: "> 0.90 (11/12 principles)"
         alert: "< 0.75 (9/12 principles)"
@@ -918,7 +918,7 @@ error_recovery_framework:
   circuit_breaker_patterns:
     incomplete_style_brief_breaker:
       description: "Prevent infinite style elicitation loops"
-      applies_to: "visual-2d-designer"
+      applies_to: "illustrator"
 
       threshold:
         consecutive_vague_style_responses: 5
@@ -934,7 +934,7 @@ error_recovery_framework:
 
     render_failure_breaker:
       description: "Prevent repeated export failures"
-      applies_to: "visual-2d-designer"
+      applies_to: "illustrator"
 
       threshold:
         consecutive_export_failures: 3
@@ -951,7 +951,7 @@ error_recovery_framework:
 
     quality_drift_breaker:
       description: "Detect creative quality degradation over time"
-      applies_to: "visual-2d-designer"
+      applies_to: "illustrator"
 
       threshold:
         creative_quality_score_below_threshold: 0.75
@@ -1111,6 +1111,6 @@ production_readiness:
 
   next_steps:
     - "Implement automated adversarial testing suite (creative quality challenges, technical compliance)"
-    - "Set up adversarial verification workflow (peer review by visual-2d-designer-reviewer)"
+    - "Set up adversarial verification workflow (peer review by illustrator-reviewer)"
     - "Configure observability infrastructure (creative quality dashboards, render performance monitoring)"
     - "Execute production deployment with monitoring"

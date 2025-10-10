@@ -1,7 +1,7 @@
 # Comprehensive Root Cause Analysis Methodologies Research
 
 **Date**: 2025-10-09
-**Researcher**: knowledge-researcher (Nova)
+**Researcher**: researcher (Nova)
 **Overall Confidence**: High
 **Sources Consulted**: 45+
 

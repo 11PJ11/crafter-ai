@@ -1,7 +1,7 @@
 # Research: Data Engineering Foundations - Comprehensive Knowledge Base
 
 **Date**: 2025-10-03T14:45:00Z
-**Researcher**: knowledge-researcher (Nova)
+**Researcher**: researcher (Nova)
 **Overall Confidence**: High
 **Sources Consulted**: 18
 

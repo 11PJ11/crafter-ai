@@ -21,7 +21,7 @@ Revolutionary implementation captures every exploration attempt through commits,
 
 ## Context Files Required
 
-- src/* - Codebase to refactor
+- src/\* - Codebase to refactor
 - docs/architecture/architecture-design.md - Target architecture (if available)
 
 ## Previous Artifacts (Wave Handoff)
@@ -32,15 +32,17 @@ Revolutionary implementation captures every exploration attempt through commits,
 
 @software-crafter
 
-Execute *mikado for {refactoring-goal}.
+Execute \*mikado for {refactoring-goal}.
 
 **Context Files:**
-- src/*
+
+- src/\*
 - docs/architecture/architecture-design.md
 
 **Configuration:**
+
 - refactoring_goal: "Replace legacy UserManager with hexagonal architecture"
-- complexity: complex  # simple/moderate/complex
+- complexity: complex # simple/moderate/complex
 - parallel_change: true
 - visual_tracking: true
 
@@ -49,6 +51,7 @@ Execute *mikado for {refactoring-goal}.
 Refer to Crafty's quality gates in 5d-wave/agents/software-crafter.md (Mikado section).
 
 **Key Validations:**
+
 - [ ] Mikado graph complete with all dependencies
 - [ ] Discovery commits capture all exploration attempts
 - [ ] Leaf nodes implemented successfully
@@ -61,5 +64,7 @@ Refer to Crafty's quality gates in 5d-wave/agents/software-crafter.md (Mikado se
 **Deliverables**: Refactored codebase with Mikado documentation
 
 # Expected outputs (reference only):
+
 # - docs/refactoring/mikado-graph.md
-# - src/* (refactored implementation)
+
+# - src/\* (refactored implementation)

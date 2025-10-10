@@ -1,7 +1,7 @@
 ---
 agent-activation:
   required: true
-  agent-id: agent-forger
+  agent-id: agent-builder
   agent-name: "Sage"
   agent-command: "*forge"
   auto-activate: true
@@ -10,7 +10,7 @@ agent-activation:
 # DW-FORGE: Agent Creation with Research-Validated Patterns
 
 **Wave**: CROSS_WAVE
-**Agent**: Sage (agent-forger)
+**Agent**: Sage (agent-builder)
 **Command**: `*forge`
 
 ## Overview
@@ -29,24 +29,27 @@ Creates production-ready agents using 7 research-validated design patterns, 14 e
 
 ## Agent Invocation
 
-@agent-forger
+@agent-builder
 
-Execute *forge to create {agent-name} agent.
+Execute \*forge to create {agent-name} agent.
 
 **Context Files:**
+
 - 5d-wave/templates/AGENT_TEMPLATE.yaml
 
 **Configuration:**
-- agent_type: specialist  # specialist/orchestrator/team/tool
-- design_pattern: react  # react/reflection/router/planning/orchestration
-- wave_domain: DISCUSS  # or DESIGN/DISTILL/DEVELOP/DEMO/CROSS_WAVE
+
+- agent_type: specialist # specialist/orchestrator/team/tool
+- design_pattern: react # react/reflection/router/planning/orchestration
+- wave_domain: DISCUSS # or DESIGN/DISTILL/DEVELOP/DEMO/CROSS_WAVE
 - safety_level: high
 
 ## Success Criteria
 
-Refer to Sage's quality gates in 5d-wave/agents/agent-forger.md.
+Refer to Sage's quality gates in 5d-wave/agents/agent-builder.md.
 
 **Key Validations:**
+
 - [ ] AGENT_TEMPLATE.yaml compliance verified
 - [ ] Design pattern from template's 7 validated patterns
 - [ ] Safety framework complete (4 validation + 7 security layers)
@@ -60,4 +63,5 @@ Refer to Sage's quality gates in 5d-wave/agents/agent-forger.md.
 **Deliverables**: Complete agent specification file
 
 # Expected outputs (reference only):
+
 # - 5d-wave/agents/{agent-name}.md

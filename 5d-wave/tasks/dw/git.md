@@ -21,7 +21,7 @@ Supports commit, branch, merge, status operations with intelligent automation an
 
 ## Context Files Required
 
-- .git/* - Git repository metadata
+- .git/\* - Git repository metadata
 
 ## Previous Artifacts (Wave Handoff)
 
@@ -31,21 +31,24 @@ Supports commit, branch, merge, status operations with intelligent automation an
 
 @feature-completion-coordinator
 
-Execute *git-workflow with {operation}.
+Execute \*git-workflow with {operation}.
 
 **Context Files:**
-- .git/*
+
+- .git/\*
 
 **Configuration:**
-- operation: commit  # commit/branch/merge/status/push
-- auto_message: true  # Generate commit message automatically
-- quality_gates: true  # Run quality checks before commit
+
+- operation: commit # commit/branch/merge/status/push
+- auto_message: true # Generate commit message automatically
+- quality_gates: true # Run quality checks before commit
 
 ## Success Criteria
 
 Refer to Dakota's quality gates in 5d-wave/agents/feature-completion-coordinator.md (Git section).
 
 **Key Validations:**
+
 - [ ] Git operation completed successfully
 - [ ] Commit message follows conventions
 - [ ] Quality gates passed (if commit operation)
@@ -57,4 +60,5 @@ Refer to Dakota's quality gates in 5d-wave/agents/feature-completion-coordinator
 **Deliverables**: Git operation completed
 
 # Expected outputs (reference only):
+
 # - Git commits, branches, or merges as requested

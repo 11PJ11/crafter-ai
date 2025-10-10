@@ -1,7 +1,7 @@
 # Research: Databases and Data Engineering - Comprehensive Knowledge Base
 
 **Date**: 2025-10-03T14:34:24Z
-**Researcher**: knowledge-researcher (Nova)
+**Researcher**: researcher (Nova)
 **Overall Confidence**: High
 **Sources Consulted**: 35+
 **Average Source Reputation**: 0.91
@@ -1026,7 +1026,7 @@ This section documents the adversarial validation performed on the research outp
 - Cross-verification with 2+ additional independent sources
 - Analysis section explaining synthesis
 
-**Replication Assessment**: A second knowledge-researcher agent could independently replicate this research by:
+**Replication Assessment**: A second researcher agent could independently replicate this research by:
 1. Following documented search strategy across same source categories
 2. Applying same source validation rules (trusted-source-domains.yaml)
 3. Verifying claims against cited URLs

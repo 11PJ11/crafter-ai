@@ -1,7 +1,7 @@
 ---
 agent-activation:
   required: true
-  agent-id: walking-skeleton-helper
+  agent-id: skeleton-builder
   agent-name: "Skelly"
   agent-command: "*create-skeleton"
   auto-activate: true
@@ -10,7 +10,7 @@ agent-activation:
 # DW-SKELETON: Walking Skeleton E2E Automation
 
 **Wave**: CROSS_WAVE (early DESIGN or DISTILL integration)
-**Agent**: Skelly (walking-skeleton-helper)
+**Agent**: Skelly (skeleton-builder)
 **Command**: `*create-skeleton`
 
 ## Overview
@@ -32,25 +32,28 @@ Implements thinnest possible slice through entire system to validate architectur
 
 ## Agent Invocation
 
-@walking-skeleton-helper
+@skeleton-builder
 
-Execute *create-skeleton for {feature-name}.
+Execute \*create-skeleton for {feature-name}.
 
 **Context Files:**
+
 - docs/architecture/architecture-design.md
 - docs/architecture/component-boundaries.md
 - docs/requirements/user-stories.md
 
 **Configuration:**
-- depth: minimal  # minimal/standard/comprehensive
+
+- depth: minimal # minimal/standard/comprehensive
 - automated_deployment: true
 - monitoring_integration: true
 
 ## Success Criteria
 
-Refer to Skelly's quality gates in 5d-wave/agents/walking-skeleton-helper.md.
+Refer to Skelly's quality gates in 5d-wave/agents/skeleton-builder.md.
 
 **Key Validations:**
+
 - [ ] End-to-end connectivity through all architectural layers
 - [ ] Automated deployment pipeline operational
 - [ ] Minimal business logic implemented (happy path only)
@@ -63,6 +66,9 @@ Refer to Skelly's quality gates in 5d-wave/agents/walking-skeleton-helper.md.
 **Deliverables**: Minimal working system with deployment automation
 
 # Expected outputs (reference only):
-# - src/* (minimal skeleton implementation)
-# - .github/workflows/* (CI/CD pipeline)
+
+# - src/\* (minimal skeleton implementation)
+
+# - .github/workflows/\* (CI/CD pipeline)
+
 # - docs/skeleton/implementation-report.md
