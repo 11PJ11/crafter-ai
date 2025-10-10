@@ -77,8 +77,8 @@ class AgentProcessor:
         def replace_marker(match):
             embed_path = match.group(1).strip()
 
-            # Resolve path relative to project root (parent of source_dir which is 5d-wave/agents)
-            project_root = self.source_dir.parent.parent
+            # Resolve path relative to project root (parent of source_dir which is 5d-wave)
+            project_root = self.source_dir.parent
             embed_full_path = project_root / embed_path
 
             try:
