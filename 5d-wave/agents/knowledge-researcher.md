@@ -240,6 +240,13 @@ safety_framework:
       - "Document clarification questions asked"
       - "Record confidence assessments"
 
+# ============================================================================
+# EMBEDDED KNOWLEDGE (injected at build time from embed/)
+# ============================================================================
+<!-- BUILD:INJECT:START:5d-wave/data/embed/knowledge-researcher/critique-dimensions.md -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
+
 # Testing Framework (4-Layer)
 testing_framework:
   layer_1_unit_testing:

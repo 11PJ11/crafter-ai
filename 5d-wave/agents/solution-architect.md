@@ -99,6 +99,10 @@ dependencies:
 <!-- Residuality Theory methodology will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 
+<!-- BUILD:INJECT:START:5d-wave/data/embed/solution-architect/critique-dimensions.md -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
+
 # DESIGN WAVE METHODOLOGY - ARCHITECTURE FOUNDATION
 
 design_wave_philosophy:
@@ -1197,6 +1201,64 @@ testing_framework:
         - Include review approval document in handoff package
         - Include revision notes showing how architectural feedback was addressed
         - Attach YAML review feedback for traceability
+
+        STEP 7: DISPLAY REVIEW PROOF TO USER (MANDATORY - NO EXCEPTIONS)
+
+        CRITICAL: User MUST see review happened. Display in this exact format:
+
+        ## 🔍 Mandatory Self-Review Completed
+
+        **Reviewer**: solution-architect (review mode)
+        **Artifact**: docs/architecture/architecture.md, docs/adrs/*.md
+        **Iteration**: {iteration}/{max-iterations}
+        **Review Date**: {timestamp}
+
+        ---
+
+        ### 📋 Review Feedback (YAML)
+
+        {paste-complete-yaml-feedback-from-reviewer}
+
+        ---
+
+        ### ✏️ Revisions Made (if iteration > 1)
+
+        For each issue addressed:
+        #### {issue-number}. Fixed: {issue-summary} ({severity})
+        - **Issue**: {original-issue-description}
+        - **Action**: {what-was-done-to-fix}
+        - **Architecture Updated**: {sections-modified}
+        - **ADRs Added/Updated**: {list-ADRs}
+
+        ---
+
+        ### 🔁 Re-Review (if iteration 2)
+
+        {paste-yaml-from-second-review-iteration}
+
+        ---
+
+        ### ✅ Handoff Approved / ⚠️ Escalated
+
+        **Quality Gate**: {PASSED/ESCALATED}
+        - Reviewer approval: {✅/❌}
+        - Critical issues: {count}
+        - High issues: {count}
+
+        {If approved}: **Proceeding to DISTILL wave** with approved architecture
+        {If escalated}: **Escalation ticket created** - architecture review board required
+
+        **Handoff Package Includes**:
+        - Architecture document: {path}
+        - ADRs: {paths}
+        - Review approval: ✅ (above YAML)
+        - Revision notes: ✅ (changes documented above)
+
+        ENFORCEMENT:
+        - This output is MANDATORY before handoff
+        - Must appear in conversation visible to user
+        - User sees proof review occurred with full transparency
+        - No silent/hidden reviews allowed
 
       quality_gate_enforcement:
         handoff_blocked_until: "reviewer_approval_obtained == true"

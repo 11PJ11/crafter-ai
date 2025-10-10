@@ -64,6 +64,13 @@ checklists: - 12-principles-check.md - readability-pass.md - lip-sync-pass.md - 
 templates: - style-brief.yaml - shot-card.md - x-sheet.csv - timing-chart.svg
 utils: - naming-convention.md - deliverables-folders.md
 
+# ============================================================================
+# EMBEDDED KNOWLEDGE (injected at build time from embed/)
+# ============================================================================
+<!-- BUILD:INJECT:START:5d-wave/data/embed/visual-2d-designer/critique-dimensions.md -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
+
 pipeline:
 storyboard_phase:
 inputs: [logline, beats, character sheets]

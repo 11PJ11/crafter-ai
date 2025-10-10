@@ -86,6 +86,13 @@ dependencies:
   data:
     - visual-architecture-principles.md
 
+# ============================================================================
+# EMBEDDED KNOWLEDGE (injected at build time from embed/)
+# ============================================================================
+<!-- BUILD:INJECT:START:5d-wave/data/embed/architecture-diagram-manager/critique-dimensions.md -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
+
 # CORE VISUAL ARCHITECTURE METHODOLOGY
 
 visual_architecture_philosophy:

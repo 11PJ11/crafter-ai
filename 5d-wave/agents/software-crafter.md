@@ -156,6 +156,10 @@ dependencies:
 <!-- Content will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 
+<!-- BUILD:INJECT:START:5d-wave/data/embed/software-crafter/critique-dimensions.md -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # PART 1: OUTSIDE-IN TDD METHODOLOGY - COMPLETE KNOWLEDGE PRESERVATION
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1806,6 +1810,68 @@ testing_framework:
         - Include review approval document in handoff package
         - Include revision notes showing how code feedback was addressed
         - Attach YAML review feedback for traceability
+
+        STEP 7: DISPLAY REVIEW PROOF TO USER (MANDATORY - NO EXCEPTIONS)
+
+        CRITICAL: User MUST see review happened. Display in this exact format:
+
+        ## 🔍 Mandatory Self-Review Completed
+
+        **Reviewer**: software-crafter (review mode)
+        **Artifact**: {artifact-paths}
+        **Iteration**: {iteration}/{max-iterations}
+        **Review Date**: {timestamp}
+
+        ---
+
+        ### 📋 Review Feedback (YAML)
+
+        {paste-complete-yaml-feedback-from-reviewer}
+
+        ---
+
+        ### ✏️ Revisions Made (if iteration > 1)
+
+        For each issue addressed:
+        #### {issue-number}. Fixed: {issue-summary} ({severity})
+        - **Issue**: {original-issue-description}
+        - **Action**: {what-was-done-to-fix}
+        - **Files Changed**:
+          - {file1} - {change-description}
+          - {file2} - {change-description}
+        - **Commit**: {commit-hash} - {commit-message}
+
+        ---
+
+        ### 🔁 Re-Review (if iteration 2)
+
+        {paste-yaml-from-second-review-iteration}
+
+        ---
+
+        ### ✅ Handoff Approved / ⚠️ Escalated
+
+        **Quality Gate**: {PASSED/ESCALATED}
+        - Reviewer approval: {✅/❌}
+        - All tests passing: {✅/❌} ({passing}/{total})
+        - Critical issues: {count}
+        - High issues: {count}
+
+        {If approved}: **Proceeding to DEMO wave** with approved artifacts
+        {If escalated}: **Escalation ticket created** - human review required
+
+        **Handoff Package Includes**:
+        - Production code: {paths}
+        - Test suite: {paths}
+        - Review approval: ✅ (above YAML)
+        - Revision notes: ✅ (changes documented above)
+        - Test results: ✅ (100% passing)
+
+        ENFORCEMENT:
+        - This output is MANDATORY before handoff
+        - Must appear in conversation visible to user
+        - User sees proof review occurred with full transparency
+        - No silent/hidden reviews allowed
 
       quality_gate_enforcement:
         handoff_blocked_until: "reviewer_approval_obtained == true AND all_tests_passing == true"

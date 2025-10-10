@@ -103,7 +103,7 @@ class IDEBundleBuilder:
             logging.debug(f"Created output directory: {dir_path}")
 
     def process_agents(self) -> None:
-        """Process all agent files including reviewers."""
+        """Process all agent files (reviewers now embedded via critique-dimensions.md)."""
         logging.info("Processing agents...")
         agents_dir = self.source_dir / "agents"
 
@@ -111,21 +111,11 @@ class IDEBundleBuilder:
             logging.warning(f"Agents directory not found: {agents_dir}")
             return
 
-        # Process main agents
+        # Process agent files
         agent_files = list(agents_dir.glob("*.md"))
-        logging.info(f"Found {len(agent_files)} main agent files")
+        logging.info(f"Found {len(agent_files)} agent files")
 
-        # Process reviewer agents (Layer 4 Adversarial Verification)
-        reviewers_dir = agents_dir / "reviewers"
-        reviewer_files = []
-        if reviewers_dir.exists():
-            reviewer_files = list(reviewers_dir.glob("*.md"))
-            logging.info(f"Found {len(reviewer_files)} reviewer agent files")
-
-        # Combine all agent files for processing
-        all_agent_files = agent_files + reviewer_files
-
-        for agent_file in all_agent_files:
+        for agent_file in agent_files:
             try:
                 logging.info(f"Processing agent: {agent_file.stem}")
                 self.agent_processor.process_agent(agent_file)

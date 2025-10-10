@@ -90,6 +90,10 @@ dependencies:
 <!-- Content will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 
+<!-- BUILD:INJECT:START:5d-wave/data/embed/root-cause-analyzer/critique-dimensions.md -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
+
 # TOYOTA 5 WHYS METHODOLOGY - CORE FOUNDATION
 
 toyota_methodology_framework:

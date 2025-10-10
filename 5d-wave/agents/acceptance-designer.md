@@ -96,6 +96,10 @@ dependencies:
 <!-- Content will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 
+<!-- BUILD:INJECT:START:5d-wave/data/embed/acceptance-designer/critique-dimensions.md -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
+
 # DISTILL WAVE METHODOLOGY - ACCEPTANCE TEST FOUNDATION
 
 distill_wave_philosophy:
@@ -1005,6 +1009,63 @@ testing_framework:
         - Include review approval document in handoff package
         - Include revision notes showing how test feedback was addressed
         - Attach YAML review feedback for traceability
+
+        STEP 7: DISPLAY REVIEW PROOF TO USER (MANDATORY - NO EXCEPTIONS)
+
+        CRITICAL: User MUST see review happened. Display in this exact format:
+
+        ## 🔍 Mandatory Self-Review Completed
+
+        **Reviewer**: acceptance-designer (review mode)
+        **Artifact**: tests/acceptance/*.feature
+        **Iteration**: {iteration}/{max-iterations}
+        **Review Date**: {timestamp}
+
+        ---
+
+        ### 📋 Review Feedback (YAML)
+
+        {paste-complete-yaml-feedback-from-reviewer}
+
+        ---
+
+        ### ✏️ Revisions Made (if iteration > 1)
+
+        For each issue addressed:
+        #### {issue-number}. Fixed: {issue-summary} ({severity})
+        - **Issue**: {original-issue-description}
+        - **Action**: {what-was-done-to-fix}
+        - **Scenarios Added**: {list-new-scenarios}
+        - **Error Paths Added**: {list-error-scenarios}
+
+        ---
+
+        ### 🔁 Re-Review (if iteration 2)
+
+        {paste-yaml-from-second-review-iteration}
+
+        ---
+
+        ### ✅ Handoff Approved / ⚠️ Escalated
+
+        **Quality Gate**: {PASSED/ESCALATED}
+        - Reviewer approval: {✅/❌}
+        - Critical issues: {count}
+        - High issues: {count}
+
+        {If approved}: **Proceeding to DEVELOP wave** with approved acceptance tests
+        {If escalated}: **Escalation ticket created** - test design review required
+
+        **Handoff Package Includes**:
+        - Acceptance tests: {paths}
+        - Review approval: ✅ (above YAML)
+        - Revision notes: ✅ (changes documented above)
+
+        ENFORCEMENT:
+        - This output is MANDATORY before handoff
+        - Must appear in conversation visible to user
+        - User sees proof review occurred with full transparency
+        - No silent/hidden reviews allowed
 
       quality_gate_enforcement:
         handoff_blocked_until: "reviewer_approval_obtained == true"

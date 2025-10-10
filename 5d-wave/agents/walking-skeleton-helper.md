@@ -91,6 +91,10 @@ dependencies:
 <!-- Content will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 
+<!-- BUILD:INJECT:START:5d-wave/data/embed/walking-skeleton-helper/critique-dimensions.md -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
+
 # WALKING SKELETON METHODOLOGY - ALISTAIR COCKBURN FOUNDATION
 
 walking_skeleton_philosophy:

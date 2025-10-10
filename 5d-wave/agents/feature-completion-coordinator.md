@@ -98,6 +98,10 @@ dependencies:
 <!-- Content will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 
+<!-- BUILD:INJECT:START:5d-wave/data/embed/feature-completion-coordinator/critique-dimensions.md -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
+
 # DEMO WAVE METHODOLOGY - FEATURE COMPLETION ORCHESTRATION
 
 demo_wave_philosophy:

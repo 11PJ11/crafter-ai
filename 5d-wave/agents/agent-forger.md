@@ -102,6 +102,13 @@ dependencies:
     - agents_reference/AGENT_QUICK_REFERENCE.md
     - agents_reference/P1_IMPROVEMENTS_DESIGN.md
 
+# ============================================================================
+# EMBEDDED KNOWLEDGE (injected at build time from embed/)
+# ============================================================================
+<!-- BUILD:INJECT:START:5d-wave/data/embed/agent-forger/critique-dimensions.md -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
+
 pipeline:
   requirements_analysis:
     inputs: [user_requirements, use_case_description, constraints]
