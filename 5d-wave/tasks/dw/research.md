@@ -31,7 +31,7 @@ Cross-wave support capability providing evidence-driven insights for any 5D-Wave
 
 @knowledge-researcher
 
-Execute *research on {topic}.
+Execute *research on {topic} [--embed-for={agent-name}].
 
 **Context Files:**
 - 5d-wave/data/trusted-source-domains.yaml
@@ -41,22 +41,52 @@ Execute *research on {topic}.
 - source_preferences: ["academic", "official", "technical_docs"]
 - quality_threshold: high
 - output_directory: docs/research/
+- embed_for: {agent-name}  # Optional: Creates distilled embed for specified agent
+- embed_output_directory: 5d-wave/data/embed/{agent-name}/
+
+**Workflow:**
+1. **Research Phase**: Create comprehensive research in data/research/
+2. **Distillation Phase** (if --embed-for specified):
+   - Distill research into practitioner-focused embed
+   - Save to 5d-wave/data/embed/{agent-name}/
+   - Validate distillation quality (100% essential concepts preserved)
+   - Invoke @agent-forger for peer review if requested
 
 ## Success Criteria
 
 Refer to Nova's quality gates in 5d-wave/agents/knowledge-researcher.md.
 
-**Key Validations:**
+**Research Phase Validations:**
 - [ ] All sources from trusted-source-domains.yaml
 - [ ] Cross-reference performed (≥3 sources per major claim)
-- [ ] Output file created in docs/research/ only
+- [ ] Comprehensive research file created in data/research/
 - [ ] Citation coverage > 95%
 - [ ] Average source reputation ≥ 0.80
+
+**Distillation Phase Validations** (if --embed-for specified):
+- [ ] Distilled embed file created in 5d-wave/data/embed/{agent-name}/
+- [ ] 100% of essential concepts preserved (NO compression)
+- [ ] Practitioner-focused transformation (academic → actionable)
+- [ ] Self-contained (no external file references)
+- [ ] Token budget respected (<5000 tokens per embed file recommended)
+- [ ] agent-forger peer review approval (optional but recommended)
 
 ## Next Wave
 
 **Handoff To**: {invoking-agent-returns-to-workflow}
-**Deliverables**: Research document in docs/research/
+**Deliverables**:
+- Comprehensive research in data/research/
+- Distilled embed in 5d-wave/data/embed/{agent}/ (if --embed-for specified)
 
 # Expected outputs (reference only):
-# - docs/research/{topic}-{timestamp}.md
+# Research only:
+# - data/research/{category}/{topic}-comprehensive-research.md
+#
+# Research + Embed (with --embed-for={agent}):
+# - data/research/{category}/{topic}-comprehensive-research.md
+# - 5d-wave/data/embed/{agent}/{topic}-methodology.md
+#
+# Examples:
+# /dw:research "Residuality Theory" --embed-for=solution-architect
+# → data/research/architecture-patterns/residuality-theory-comprehensive-research.md
+# → 5d-wave/data/embed/solution-architect/residuality-theory-methodology.md

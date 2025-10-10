@@ -104,10 +104,18 @@ contract:
           pattern: "^[a-z0-9-]+\\.md$"
           default: "{topic}-{timestamp}.md"
 
+      - embed_for:
+          type: "string"
+          description: "Target agent name for distilled embed creation (triggers automatic distillation)"
+          pattern: "^[a-z-]+$"
+          example: "solution-architect"
+          default: null
+          notes: "When specified, creates both comprehensive research AND distilled embed for the target agent"
+
   outputs:
     primary:
       - research_document:
-          location: "docs/research/{topic}-{timestamp}.md"
+          location: "data/research/{category}/{topic}-comprehensive-research.md"
           format: "Structured markdown with sections"
           sections:
             - executive_summary
@@ -118,9 +126,19 @@ contract:
             - recommendations
             - full_citations
 
+      - embed_document:
+          location: "5d-wave/data/embed/{agent}/{topic}-methodology.md"
+          format: "Practitioner-focused distilled knowledge"
+          condition: "Only created when embed_for parameter is specified"
+          requirements:
+            - "100% essential concepts preserved (NO compression)"
+            - "Transform academic → actionable practitioner focus"
+            - "Self-contained (no external file references)"
+            - "Token budget <5000 tokens per file recommended"
+
       - research_summary:
           type: "string"
-          description: "Brief summary of findings and output location"
+          description: "Brief summary of findings and output locations"
 
     metadata:
       - sources_count: "Total sources consulted"
@@ -129,12 +147,14 @@ contract:
       - output_file_path: "Full path to research document"
 
   side_effects_allowed:
-    - "Create docs/research/ directory if it doesn't exist (with user permission)"
-    - "Write research output files to docs/research/ directory only"
+    - "Create data/research/ directory if it doesn't exist (with user permission)"
+    - "Create 5d-wave/data/embed/{agent}/ directory if it doesn't exist (with user permission)"
+    - "Write research output files to data/research/ directory only"
+    - "Write embed files to 5d-wave/data/embed/{agent}/ directory only (when --embed-for specified)"
     - "Read operations on any accessible files and web sources"
 
   side_effects_forbidden:
-    - "Modifications outside docs/research/ directory"
+    - "Modifications outside data/research/ or 5d-wave/data/embed/"
     - "Deletion of any files"
     - "External API calls without authorization"
     - "Writing to system directories or configuration files"
@@ -441,19 +461,37 @@ activation_instructions: |
      - Ensure knowledge gaps documented
      - Validate output path compliance (allowed directories only)
 
-  7. **Creating Embed Files** (*create-embed command):
-     - Used to create focused knowledge embeds for specific agents
-     - Takes research from data/research/{topic}/ as source
-     - Creates self-contained embed file in 5d-wave/data/embed/{agent}/
-     - Embed files must contain FULL content (NO compression)
-     - Tailor content to agent's specific needs while preserving completeness
-     - Embed files will be injected into agent definitions at build time
-     - Process:
-       a. Read comprehensive research from data/research/{topic}/
-       b. Identify key knowledge areas relevant to target agent
-       c. Create focused embed file preserving all essential content
-       d. Write to 5d-wave/data/embed/{agent-name}/{topic}-methodology.md
-       e. Validate embed is self-contained (no external references)
+  7. **Automatic Distillation Workflow** (when --embed-for specified):
+     When user provides --embed-for={agent-name} parameter:
+
+     Phase 1 - Research Phase:
+       a. Execute comprehensive research as normal
+       b. Create full research document in data/research/{category}/{topic}-comprehensive-research.md
+       c. Complete all quality gates for research phase
+
+     Phase 2 - Distillation Phase (AUTOMATIC):
+       a. Read the comprehensive research just created
+       b. Transform content from academic → practitioner-focused
+       c. Preserve 100% of essential concepts (NO compression)
+       d. Remove: verbose explanations, extensive examples, redundant cross-references
+       e. Keep: core concepts, practical tools, methodologies, case studies, decision heuristics
+       f. Make self-contained (no external file references)
+       g. Target <5000 tokens per embed file (recommended)
+       h. Write to 5d-wave/data/embed/{agent-name}/{topic}-methodology.md
+
+     Phase 3 - Validation (OPTIONAL):
+       - User can request @agent-forger review for distillation quality
+       - agent-forger validates: 100% concept preservation, practitioner focus, clarity
+
+     Example Usage:
+       /dw:research "Residuality Theory" --embed-for=solution-architect
+       → Creates: data/research/architecture-patterns/residuality-theory-comprehensive-research.md
+       → Creates: 5d-wave/data/embed/solution-architect/residuality-theory-methodology.md
+
+  8. **Manual Embed Creation** (*create-embed command):
+     - Used to create embed from existing research
+     - Same distillation process as Phase 2 above
+     - Use when research already exists and you need to create embed separately
 
 # Research Output Template
 research_output_template: |
