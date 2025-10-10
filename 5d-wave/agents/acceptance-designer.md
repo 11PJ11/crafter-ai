@@ -86,6 +86,15 @@ dependencies:
   data:
     - atdd-patterns.md
     - outside-in-tdd-reference.md
+  embed_knowledge:
+    - "5d-wave/data/embed/acceptance-designer/bdd-methodology.md"
+
+# ============================================================================
+# EMBEDDED BDD KNOWLEDGE (injected at build time from embed/)
+# ============================================================================
+<!-- BUILD:INJECT:START:5d-wave/data/embed/acceptance-designer/bdd-methodology.md -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
 
 # DISTILL WAVE METHODOLOGY - ACCEPTANCE TEST FOUNDATION
 

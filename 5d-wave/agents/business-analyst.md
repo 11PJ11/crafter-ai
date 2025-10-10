@@ -83,6 +83,15 @@ dependencies:
   checklists:
     - discuss-wave-checklist.md
     - atdd-compliance-checklist.md
+  embed_knowledge:
+    - "5d-wave/data/embed/business-analyst/bdd-methodology.md"
+
+# ============================================================================
+# EMBEDDED BDD KNOWLEDGE (injected at build time from embed/)
+# ============================================================================
+<!-- BUILD:INJECT:START:5d-wave/data/embed/business-analyst/bdd-methodology.md -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
 
 # DISCUSS WAVE METHODOLOGY - ATDD REQUIREMENTS FOUNDATION
 

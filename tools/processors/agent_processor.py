@@ -52,6 +52,61 @@ class AgentProcessor:
             logging.error(f"Failed to parse YAML configuration: {e}")
             return None, content
 
+    def process_embed_injections(self, content: str) -> str:
+        """
+        Process BUILD:INJECT markers and replace with embed file content.
+
+        Finds markers in format:
+        <!-- BUILD:INJECT:START:path/to/file.md -->
+        <!-- Content will be injected here at build time -->
+        <!-- BUILD:INJECT:END -->
+
+        And replaces the entire marker region with the actual file content.
+
+        Args:
+            content: Content containing injection markers
+
+        Returns:
+            str: Content with markers replaced by actual embed file content
+        """
+        marker_pattern = re.compile(
+            r'<!-- BUILD:INJECT:START:(.+?) -->\n.*?<!-- BUILD:INJECT:END -->',
+            re.DOTALL
+        )
+
+        def replace_marker(match):
+            embed_path = match.group(1).strip()
+
+            # Resolve path relative to project root (parent of source_dir which is 5d-wave/agents)
+            project_root = self.source_dir.parent.parent
+            embed_full_path = project_root / embed_path
+
+            try:
+                embed_content = self.file_manager.read_file(embed_full_path)
+                if not embed_content:
+                    error_msg = f"Could not read embed file: {embed_path}"
+                    logging.error(error_msg)
+                    raise FileNotFoundError(error_msg)
+
+                logging.info(f"Injecting embed content from: {embed_path}")
+
+                # Keep the markers for documentation purposes
+                return f"<!-- BUILD:INJECT:START:{embed_path} -->\n{embed_content.strip()}\n<!-- BUILD:INJECT:END -->"
+
+            except Exception as e:
+                logging.error(f"Error processing embed injection for {embed_path}: {e}")
+                raise
+
+        # Find all markers and replace them
+        result = marker_pattern.sub(replace_marker, content)
+
+        # Log summary of injections
+        matches = marker_pattern.findall(content)
+        if matches:
+            logging.info(f"Processed {len(matches)} embed injection(s)")
+
+        return result
+
     def process_dependencies(self, yaml_config: Dict[str, Any]) -> str:
         """
         Process and embed dependencies based on agent configuration.
@@ -166,7 +221,7 @@ class AgentProcessor:
 
     def generate_agent_content(self, agent_file: Path) -> str:
         """
-        Generate complete agent content with embedded dependencies.
+        Generate complete agent content with embedded dependencies and embed injections.
 
         Args:
             agent_file: Path to source agent file
@@ -183,6 +238,9 @@ class AgentProcessor:
             # Extract YAML configuration
             yaml_config, remaining_content = self.extract_yaml_block(source_content)
 
+            # Process embed injection markers in the main content
+            processed_content = self.process_embed_injections(remaining_content)
+
             # Build output content
             output_parts = []
 
@@ -194,8 +252,8 @@ class AgentProcessor:
                 else:
                     logging.warning(f"Failed to generate frontmatter for {agent_file.name}, agent may not be recognized by Claude Code")
 
-            # Add the main content (everything except the YAML block)
-            output_parts.append(remaining_content.strip())
+            # Add the main content (with embed injections processed)
+            output_parts.append(processed_content.strip())
 
             # Process and embed dependencies
             if yaml_config:

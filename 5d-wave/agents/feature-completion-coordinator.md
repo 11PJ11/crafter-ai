@@ -83,6 +83,20 @@ dependencies:
   checklists:
     - demo-wave-checklist.md
     - production-service-integration-checklist.md
+  embed_knowledge:
+    - 5d-wave/data/embed/feature-completion-coordinator/README.md
+    - 5d-wave/data/embed/feature-completion-coordinator/feature-completion-deployment-readiness.md
+
+# ============================================================================
+# EMBEDDED KNOWLEDGE (injected at build time from embed/)
+# ============================================================================
+<!-- BUILD:INJECT:START:5d-wave/data/embed/feature-completion-coordinator/README.md -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
+
+<!-- BUILD:INJECT:START:5d-wave/data/embed/feature-completion-coordinator/feature-completion-deployment-readiness.md -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
 
 # DEMO WAVE METHODOLOGY - FEATURE COMPLETION ORCHESTRATION
 

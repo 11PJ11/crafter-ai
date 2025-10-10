@@ -80,6 +80,15 @@ dependencies:
     - dw/root-why.md
   templates:
   checklists:
+  embed_knowledge:
+    - 5d-wave/data/embed/root-cause-analyzer/comprehensive-rca-methodologies.md
+
+# ============================================================================
+# EMBEDDED KNOWLEDGE (injected at build time from embed/)
+# ============================================================================
+<!-- BUILD:INJECT:START:5d-wave/data/embed/root-cause-analyzer/comprehensive-rca-methodologies.md -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
 
 # TOYOTA 5 WHYS METHODOLOGY - CORE FOUNDATION
 

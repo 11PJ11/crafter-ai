@@ -36,7 +36,22 @@
       "Bash(chmod:*)",
       "Bash(cat:*)",
       "Bash(tree:*)",
-      "Bash(./scripts/update-ai-craft.sh:*)"
+      "Bash(./scripts/update-ai-craft.sh:*)",
+      "WebFetch(domain:cucumber.io)",
+      "WebFetch(domain:specflow.org)",
+      "WebFetch(domain:dannorth.net)",
+      "WebFetch(domain:lizkeogh.com)",
+      "WebFetch(domain:pytest-bdd.readthedocs.io)",
+      "WebFetch(domain:gojko.net)",
+      "WebFetch(domain:serenity-bdd.github.io)",
+      "WebFetch(domain:sammancoaching.org)",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:gasparnagy.com)",
+      "WebFetch(domain:fsharpforfunandprofit.com)",
+      "Bash(do echo \"=== $agent ===\")",
+      "WebFetch(domain:blog.avanscoperta.it)",
+      "WebFetch(domain:www.cutter.com)",
+      "WebFetch(domain:ericnormand.substack.com)"
     ],
     "deny": [],
     "ask": []

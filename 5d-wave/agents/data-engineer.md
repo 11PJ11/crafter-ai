@@ -572,6 +572,12 @@ dependencies:
     - research/nosql-querying-20251003-174827.md
     - research/sql-querying-practical-examples-20251003-165818.md
 
+  embed_knowledge:
+    - embed/data-engineer/01-databases-fundamentals.md
+    - embed/data-engineer/02-querying-design-security-governance.md
+    - embed/data-engineer/03-nosql-querying.md
+    - embed/data-engineer/04-comprehensive-overview.md
+
 quality_gates:
   - All recommendations cite specific research findings
   - Security addressed in all database designs
@@ -599,6 +605,26 @@ handoff:
     - Security comprehensively addressed
     - Performance characteristics documented
     - Compliance requirements noted
+
+
+# ============================================================================
+# EMBEDDED DATA ENGINEERING KNOWLEDGE (injected at build time from embed/)
+# ============================================================================
+<!-- BUILD:INJECT:START:5d-wave/data/embed/data-engineer/01-databases-fundamentals.md -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
+
+<!-- BUILD:INJECT:START:5d-wave/data/embed/data-engineer/02-querying-design-security-governance.md -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
+
+<!-- BUILD:INJECT:START:5d-wave/data/embed/data-engineer/03-nosql-querying.md -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
+
+<!-- BUILD:INJECT:START:5d-wave/data/embed/data-engineer/04-comprehensive-overview.md -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
 
 
 # ============================================================================

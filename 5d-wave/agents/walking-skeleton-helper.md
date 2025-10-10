@@ -81,6 +81,15 @@ dependencies:
     - 5d-wave-complete-methodology.yaml
   checklists:
     - 5d-wave-methodology-checklist.md
+  embed_knowledge:
+    - 5d-wave/data/embed/walking-skeleton-helper/comprehensive-walking-skeleton-research.md
+
+# ============================================================================
+# EMBEDDED KNOWLEDGE (injected at build time from embed/)
+# ============================================================================
+<!-- BUILD:INJECT:START:5d-wave/data/embed/walking-skeleton-helper/comprehensive-walking-skeleton-research.md -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
 
 # WALKING SKELETON METHODOLOGY - ALISTAIR COCKBURN FOUNDATION
 
