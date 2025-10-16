@@ -50,11 +50,98 @@ TODO → IN_PROGRESS → DONE
 - Step file (JSON) with complete task specification
 - Any files referenced in step's `relevant_files` field
 
-## Agent Invocation
+## CRITICAL: Agent Invocation Protocol
 
-@{specified-agent}
+**YOU ARE THE COORDINATOR** - Do NOT execute the task yourself. Your role is to dispatch to the appropriate agent.
 
-Execute task from: {step-file-path}
+### STEP 1: Extract Agent Parameter
+
+Parse the first argument to extract the agent name:
+- User provides: `/dw:execute @researcher "steps/01-01.json"`
+- Extract agent name: `researcher` (remove @ prefix)
+- Validate agent name is one of: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
+
+### STEP 2: Extract Step File Path
+
+Extract the second argument (step file path):
+- Example: `"docs/workflow/auth-upgrade/steps/01-01.json"`
+- Ensure path is absolute or resolve relative to working directory
+
+### STEP 3: Invoke Agent Using Task Tool
+
+**MANDATORY**: Use the Task tool to invoke the specified agent. Do NOT attempt to execute the task yourself.
+
+Invoke the Task tool with this exact pattern:
+
+```
+Task: "You are the {agent-name} agent.
+
+Read and execute the atomic task specified in: {step-file-path}
+
+The step file is a complete JSON specification containing:
+- self_contained_context: All background and context needed
+- task_specification: What to do and acceptance criteria
+- dependencies: Prerequisites (must already be complete)
+- state: Current task state
+
+Your responsibilities:
+1. Load the step file and validate it
+2. Update state to IN_PROGRESS
+3. Execute the task following the detailed_instructions
+4. Validate all acceptance_criteria are met
+5. Update state to DONE with execution_result
+6. Update the step file with your results
+
+If you encounter issues:
+- Update state to FAILED with failure_reason
+- Include recovery_suggestions in execution_result
+- Set can_retry appropriately
+
+Commit the updated step file after execution."
+```
+
+**Parameter Substitution**:
+- Replace `{agent-name}` with the extracted agent name (e.g., "researcher")
+- Replace `{step-file-path}` with the absolute path to the step file
+
+### Example Invocations
+
+**For researcher agent**:
+```
+Task: "You are the researcher agent.
+
+Read and execute the atomic task specified in: /mnt/c/Repositories/Projects/ai-craft/docs/workflow/auth-upgrade/steps/01-01.json
+
+[... rest of instructions ...]"
+```
+
+**For software-crafter agent**:
+```
+Task: "You are the software-crafter agent.
+
+Read and execute the atomic task specified in: /mnt/c/Repositories/Projects/ai-craft/docs/workflow/auth-upgrade/steps/02-01.json
+
+[... rest of instructions ...]"
+```
+
+### Error Handling
+
+**Invalid Agent Name**:
+- If agent name is not in the valid list, respond with error:
+  "Invalid agent name: {name}. Must be one of: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop"
+
+**Missing Step File**:
+- If step file path is not provided or file doesn't exist, respond with error:
+  "Step file not found: {path}. Please provide valid path to step JSON file."
+
+**Dependency Not Met**:
+- If the invoked agent reports dependency failures, explain the blocking tasks to the user
+
+---
+
+## Agent Invocation (Reference Documentation)
+
+The following section documents what the invoked agent will do. **You (the coordinator) do not execute this - the agent does.**
 
 ### Primary Task Instructions
 

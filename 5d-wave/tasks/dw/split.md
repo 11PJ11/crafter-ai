@@ -45,11 +45,116 @@ Each generated task file contains all information needed for completion, enablin
 - docs/workflow/{project-id}/roadmap.yaml - Master roadmap document
 - Must be created by DW-ROADMAP command first
 
-## Agent Invocation
+## CRITICAL: Agent Invocation Protocol
 
-@{specified-agent}
+**YOU ARE THE COORDINATOR** - Do NOT generate task files yourself. Your role is to dispatch to the appropriate agent.
 
-Generate atomic task files from roadmap for project: {project-id}
+### STEP 1: Extract Agent Parameter
+
+Parse the first argument to extract the agent name:
+- User provides: `/dw:split @devop "auth-upgrade"`
+- Extract agent name: `devop` (remove @ prefix)
+- Validate agent name is one of: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
+
+### STEP 2: Extract Project ID
+
+Extract the second argument (project ID):
+- Example: `"auth-upgrade"`
+- This should match the project-id in the roadmap
+
+### STEP 3: Invoke Agent Using Task Tool
+
+**MANDATORY**: Use the Task tool to invoke the specified agent. Do NOT attempt to generate task files yourself.
+
+Invoke the Task tool with this exact pattern:
+
+```
+Task: "You are the {agent-name} agent responsible for task decomposition.
+
+Generate atomic, self-contained task files from the roadmap for project: {project-id}
+
+Your responsibilities:
+1. Read the roadmap from: docs/workflow/{project-id}/roadmap.yaml
+2. Transform each step into a complete, atomic task file
+3. Enrich each task with full context so it's self-contained
+4. Ensure no task requires prior context or external knowledge
+5. Map all dependencies between tasks
+6. Generate JSON files for each task
+
+⚠️ CRITICAL: DO NOT COMMIT FILES - REQUEST USER APPROVAL FIRST
+
+Input: docs/workflow/{project-id}/roadmap.yaml
+Output: docs/workflow/{project-id}/steps/*.json (one file per step)
+
+Task File Schema (JSON):
+- task_id: Phase-step number (e.g., '01-01')
+- project_id: From roadmap
+- execution_agent: Agent best suited for this task
+- self_contained_context: Complete background, prerequisites, relevant files, technical context
+- task_specification: Name, description, motivation, detailed_instructions, acceptance_criteria, estimated_hours
+- dependencies: requires (task-ids), blocking (task-ids)
+- state: status='TODO', assigned_to=null, timestamps
+
+Folder Structure:
+docs/workflow/{project-id}/steps/
+├── 01-01.json  (Phase 1, Step 1)
+├── 01-02.json  (Phase 1, Step 2)
+├── 02-01.json  (Phase 2, Step 1)
+└── ...
+
+Key Principles:
+- Each file MUST be completely self-contained
+- Include ALL context needed for execution
+- No forward references to other steps
+- Explicit dependency mapping
+- Agent auto-selection based on task type
+
+After generating files, show the user a summary and request approval before committing."
+```
+
+**Parameter Substitution**:
+- Replace `{agent-name}` with the extracted agent name (e.g., "devop")
+- Replace `{project-id}` with the project ID
+
+### Example Invocations
+
+**For devop splitting auth-upgrade roadmap**:
+```
+Task: "You are the devop agent responsible for task decomposition.
+
+Generate atomic, self-contained task files from the roadmap for project: auth-upgrade
+
+[... rest of instructions ...]"
+```
+
+**For solution-architect splitting microservices roadmap**:
+```
+Task: "You are the solution-architect agent responsible for task decomposition.
+
+Generate atomic, self-contained task files from the roadmap for project: microservices-migration
+
+[... rest of instructions ...]"
+```
+
+### Error Handling
+
+**Invalid Agent Name**:
+- If agent name is not in the valid list, respond with error:
+  "Invalid agent name: {name}. Must be one of: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop"
+
+**Missing Project ID**:
+- If project ID is not provided, respond with error:
+  "Project ID is required. Usage: /dw:split @agent 'project-id'"
+
+**Roadmap Not Found**:
+- If roadmap file doesn't exist at expected path, respond with error:
+  "Roadmap not found: docs/workflow/{project-id}/roadmap.yaml. Please run /dw:roadmap first."
+
+---
+
+## Agent Invocation (Reference Documentation)
+
+The following section documents what the invoked agent will do. **You (the coordinator) do not execute this - the agent does.**
 
 ### Primary Task Instructions
 

@@ -35,11 +35,133 @@ Creates permanent record in docs/evolution/ and removes temporary workflow artif
 - docs/workflow/{project-id}/roadmap.yaml - Original roadmap
 - docs/workflow/{project-id}/steps/*.json - All step tracking files
 
-## Agent Invocation
+## CRITICAL: Agent Invocation Protocol
 
-@{specified-agent}
+**YOU ARE THE COORDINATOR** - Do NOT finalize the project yourself. Your role is to dispatch to the appropriate agent.
 
-Finalize and archive project: {project-id}
+### STEP 1: Extract Agent Parameter
+
+Parse the first argument to extract the agent name:
+- User provides: `/dw:finalize @devop "auth-upgrade"`
+- Extract agent name: `devop` (remove @ prefix)
+- Validate agent name is one of: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
+
+### STEP 2: Extract Project ID
+
+Extract the second argument (project ID):
+- Example: `"auth-upgrade"`
+- This should match the project-id in the workflow directory
+
+### STEP 3: Invoke Agent Using Task Tool
+
+**MANDATORY**: Use the Task tool to invoke the specified agent. Do NOT attempt to finalize the project yourself.
+
+Invoke the Task tool with this exact pattern:
+
+```
+Task: "You are the {agent-name} agent responsible for project finalization and archival.
+
+Finalize and archive the completed workflow project: {project-id}
+
+Your responsibilities:
+1. Load project data from docs/workflow/{project-id}/
+2. Read roadmap.yaml and all step JSON files
+3. Analyze execution history and completion metrics
+4. Create comprehensive summary document
+5. Archive to docs/evolution/ with timestamp
+6. Clean up temporary workflow files after user approval
+
+⚠️ CRITICAL: DO NOT COMMIT OR DELETE FILES - REQUEST APPROVAL FIRST
+
+Processing Steps:
+
+PHASE 1 - GATHER:
+- Read docs/workflow/{project-id}/roadmap.yaml
+- Read all docs/workflow/{project-id}/steps/*.json files
+- Collect completion metrics, execution times, review feedback
+- Identify key achievements and decisions
+
+PHASE 2 - ANALYZE:
+- Calculate completion statistics
+- Extract execution times and token usage
+- Document critical decisions made
+- Summarize review outcomes
+- Note deviations from plan
+
+PHASE 3 - SUMMARIZE:
+Create comprehensive markdown document with:
+- Executive summary
+- Original goal and achievement
+- Phase-by-phase breakdown with outcomes
+- Key achievements with evidence
+- Critical decisions table
+- Quality metrics (steps completed, reviews, execution time)
+- Challenges and solutions
+- Deliverables and documentation
+- Recommendations for future work
+- Lessons learned
+
+PHASE 4 - ARCHIVE:
+- Ensure docs/evolution/ directory exists
+- Save summary as: docs/evolution/{project-id}-{YYYYMMDD-HHMMSS}.md
+- Show user the archive location
+
+PHASE 5 - CLEANUP (only after user approval):
+- Delete docs/workflow/{project-id}/steps/*.json
+- Delete docs/workflow/{project-id}/roadmap.yaml
+- Delete docs/workflow/{project-id}/ directory if empty
+- Preserve the evolution archive and all deliverables
+
+Show user a summary of what will be archived and deleted, then REQUEST APPROVAL before proceeding with cleanup."
+```
+
+**Parameter Substitution**:
+- Replace `{agent-name}` with the extracted agent name (e.g., "devop")
+- Replace `{project-id}` with the project ID
+
+### Example Invocations
+
+**For devop finalizing auth-upgrade project**:
+```
+Task: "You are the devop agent responsible for project finalization and archival.
+
+Finalize and archive the completed workflow project: auth-upgrade
+
+[... rest of instructions ...]"
+```
+
+**For solution-architect finalizing microservices project**:
+```
+Task: "You are the solution-architect agent responsible for project finalization and archival.
+
+Finalize and archive the completed workflow project: microservices-migration
+
+[... rest of instructions ...]"
+```
+
+### Error Handling
+
+**Invalid Agent Name**:
+- If agent name is not in the valid list, respond with error:
+  "Invalid agent name: {name}. Must be one of: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop"
+
+**Missing Project ID**:
+- If project ID is not provided, respond with error:
+  "Project ID is required. Usage: /dw:finalize @agent 'project-id'"
+
+**Project Not Found**:
+- If project directory doesn't exist, respond with error:
+  "Project not found: docs/workflow/{project-id}/. Please verify project ID."
+
+**Project Not Complete**:
+- If project has incomplete tasks, warn user:
+  "Warning: Project has {count} incomplete tasks. Are you sure you want to finalize?"
+
+---
+
+## Agent Invocation (Reference Documentation)
+
+The following section documents what the invoked agent will do. **You (the coordinator) do not execute this - the agent does.**
 
 ### Primary Task Instructions
 

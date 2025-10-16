@@ -44,11 +44,108 @@ Supports three review modes:
 - **For task review**: The specific task JSON file
 - **For implementation review**: Task file + implementation outputs
 
-## Agent Invocation
+## CRITICAL: Agent Invocation Protocol
 
-@{specified-agent}
+**YOU ARE THE COORDINATOR** - Do NOT perform the review yourself. Your role is to dispatch to the appropriate expert agent.
 
-Perform {artifact-type} review of: {artifact-path}
+### STEP 1: Extract Agent Parameter
+
+Parse the first argument to extract the agent name:
+- User provides: `/dw:review @software-crafter task "steps/01-01.json"`
+- Extract agent name: `software-crafter` (remove @ prefix)
+- Validate agent name is one of: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
+
+### STEP 2: Extract Artifact Type
+
+Extract the second argument (artifact type):
+- Valid types: `roadmap`, `task`, `implementation`
+- Example: `task`
+
+### STEP 3: Extract Artifact Path
+
+Extract the third argument (artifact path):
+- Example: `"docs/workflow/auth-upgrade/steps/01-01.json"`
+- Ensure path is absolute or resolve relative to working directory
+
+### STEP 4: Invoke Agent Using Task Tool
+
+**MANDATORY**: Use the Task tool to invoke the specified expert agent. Do NOT attempt to perform the review yourself.
+
+Invoke the Task tool with this exact pattern:
+
+```
+Task: "You are the {agent-name} agent acting as an expert reviewer.
+
+Perform a comprehensive {artifact-type} review of: {artifact-path}
+
+Review Types:
+- roadmap: Review comprehensive planning document for completeness, sequencing, and feasibility
+- task: Review atomic task file before execution for clarity, context, and achievability
+- implementation: Review completed work against task specification and acceptance criteria
+
+Your responsibilities:
+1. Read and understand the artifact thoroughly
+2. Apply domain expertise to identify issues and risks
+3. Provide structured feedback with severity levels (HIGH/MEDIUM/LOW)
+4. Make specific, actionable recommendations
+5. Update the original artifact file with review metadata
+6. Assign overall approval status: APPROVED, NEEDS_REVISION, or REJECTED
+
+Review Guidelines:
+- Be specific and actionable in critiques
+- Include positive feedback where appropriate
+- Focus on preventing downstream issues
+- Consider domain-specific best practices
+- For HIGH severity issues, mark ready_for_execution: false
+
+Output Format:
+Update the artifact file by appending or updating the reviews section with your structured feedback."
+```
+
+**Parameter Substitution**:
+- Replace `{agent-name}` with the extracted agent name (e.g., "software-crafter")
+- Replace `{artifact-type}` with the artifact type (e.g., "task")
+- Replace `{artifact-path}` with the absolute path to the artifact file
+
+### Example Invocations
+
+**For software-crafter reviewing task**:
+```
+Task: "You are the software-crafter agent acting as an expert reviewer.
+
+Perform a comprehensive task review of: /mnt/c/Repositories/Projects/ai-craft/docs/workflow/auth-upgrade/steps/02-01.json
+
+[... rest of instructions ...]"
+```
+
+**For solution-architect reviewing roadmap**:
+```
+Task: "You are the solution-architect agent acting as an expert reviewer.
+
+Perform a comprehensive roadmap review of: /mnt/c/Repositories/Projects/ai-craft/docs/workflow/auth-upgrade/roadmap.yaml
+
+[... rest of instructions ...]"
+```
+
+### Error Handling
+
+**Invalid Agent Name**:
+- If agent name is not in the valid list, respond with error:
+  "Invalid agent name: {name}. Must be one of: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop"
+
+**Invalid Artifact Type**:
+- If artifact type is not roadmap, task, or implementation, respond with error:
+  "Invalid artifact type: {type}. Must be one of: roadmap, task, implementation"
+
+**Missing Artifact File**:
+- If artifact file path is not provided or file doesn't exist, respond with error:
+  "Artifact file not found: {path}. Please provide valid path to artifact file."
+
+---
+
+## Agent Invocation (Reference Documentation)
+
+The following section documents what the invoked agent will do. **You (the coordinator) do not execute this - the expert agent does.**
 
 ### Primary Task Instructions
 
