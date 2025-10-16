@@ -156,6 +156,31 @@ commands:
     agents: ["systematic_refactorer"]
     outputs: ["refactored_code", "refactoring_log"]
 
+  roadmap:
+    description: "Create comprehensive planning document [agent] [goal-description]"
+    argument_hint: "[agent] [goal-description] - Example: @solution-architect \"Migrate to microservices\""
+    outputs: ["roadmap_yaml"]
+
+  split:
+    description: "Generate atomic task files from roadmap [agent] [project-id]"
+    argument_hint: "[agent] [project-id] - Example: @devop \"auth-upgrade\""
+    outputs: ["task_files"]
+
+  review:
+    description: "Expert critique and quality review [agent] [artifact-type] [path] - Types: roadmap, task, implementation"
+    argument_hint: "[agent] [artifact-type] [artifact-path] - Example: @software-crafter task \"steps/01-01.json\""
+    outputs: ["review_report"]
+
+  execute:
+    description: "Execute atomic task with state tracking [agent] [step-file-path]"
+    argument_hint: "[agent] [step-file-path] - Example: @researcher \"steps/01-01.json\""
+    outputs: ["task_results"]
+
+  finalize:
+    description: "Summarize achievements, archive to docs/evolution, and clean up workflow files [agent] [project-id]"
+    argument_hint: "[agent] [project-id] - Example: @devop \"auth-upgrade\""
+    outputs: ["evolution_document"]
+
 # Workflow configurations
 workflows:
   greenfield:
