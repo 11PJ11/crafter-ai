@@ -18,6 +18,8 @@ agent-activation:
 Parse the first argument to extract the agent name:
 - User provides: `/dw:review @software-crafter task "steps/01-01.json"`
 - Extract agent name: `software-crafter` (remove @ prefix)
+- **AUTO-APPEND**: Append `-reviewer` suffix to use Haiku-powered reviewer agents
+- Result: `software-crafter-reviewer` (optimized for cost-efficient reviews)
 - Validate agent name is one of: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
 
 ### STEP 2: Verify Agent Availability
@@ -27,7 +29,9 @@ Before proceeding to Task tool invocation:
 - Check agent is not at maximum concurrency
 - Confirm agent type is compatible with this command
 
-Valid agents: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
+Valid base agents (will auto-append -reviewer): researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop, agent-builder, data-engineer, illustrator, skeleton-builder, troubleshooter, visual-architect
+
+Note: All agents are automatically invoked as their reviewer variants (e.g., software-crafter → software-crafter-reviewer) using Haiku model for cost efficiency
 
 If agent unavailable:
 - Return error: "Agent '{agent-name}' is not currently available. Available agents: {list}"
@@ -81,10 +85,12 @@ If any check fails, return specific error and stop.
 
 **MANDATORY**: Use the Task tool to invoke the specified expert agent. Do NOT attempt to perform the review yourself.
 
+**IMPORTANT**: Always use the reviewer variant by appending `-reviewer` to the agent name.
+
 Invoke the Task tool with this exact pattern:
 
 ```
-Task: "You are the {agent-name} agent acting as an expert reviewer.
+Task: "You are the {agent-name}-reviewer agent acting as an expert reviewer.
 
 Your specific role for this command: Provide expert critique and quality assurance for workflow artifacts
 
@@ -117,29 +123,41 @@ Update the artifact file by appending or updating the reviews section with your 
 ```
 
 **Parameter Substitution**:
-- Replace `{agent-name}` with the extracted agent name (e.g., "software-crafter")
+- Replace `{agent-name}-reviewer` with the extracted agent name + `-reviewer` suffix (e.g., "software-crafter-reviewer")
 - Replace `{artifact-type}` with the artifact type (e.g., "task")
 - Replace `{artifact-path}` with the absolute path to the artifact file
 
+Note: The `-reviewer` suffix is automatically appended to route to Haiku-powered reviewer agents for cost efficiency
+
 ### Agent Registry
 
-Valid agents are: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
+Valid base agents (automatically invoked as reviewer variants):
+- researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
+- agent-builder, data-engineer, illustrator, skeleton-builder, troubleshooter, visual-architect
 
-Note: This list is maintained in sync with the agent registry at `~/.claude/agents/dw/`. If you encounter "agent not found" errors, verify the agent is registered in that location.
+Note: This list is maintained in sync with the agent registry at `~/.claude/agents/dw/`. All review commands automatically invoke the `-reviewer` variant using Haiku model for cost efficiency.
 
-Each agent has specific capabilities:
-- **researcher**: Information gathering, analysis, documentation
-- **software-crafter**: Implementation, testing, refactoring, code quality
-- **solution-architect**: System design, architecture decisions, planning
-- **product-owner**: Requirements, business analysis, stakeholder alignment
-- **acceptance-designer**: Test definition, acceptance criteria, BDD
-- **devop**: Deployment, operations, infrastructure, lifecycle management
+Each agent has specific review capabilities:
+- **researcher-reviewer**: Research quality, evidence validation, citation review
+- **software-crafter-reviewer**: Code quality, implementation patterns, test coverage review
+- **solution-architect-reviewer**: Architecture design, patterns, scalability review
+- **product-owner-reviewer**: Requirements clarity, business alignment, acceptance criteria review
+- **acceptance-designer-reviewer**: BDD scenarios, test completeness, acceptance criteria review
+- **devop-reviewer**: Deployment readiness, operations concerns, infrastructure review
+- **agent-builder-reviewer**: Agent design, quality standards, safety review
+- **data-engineer-reviewer**: Data architecture, pipeline design, query optimization review
+- **illustrator-reviewer**: Diagram accuracy, visual clarity, documentation review
+- **skeleton-builder-reviewer**: E2E completeness, walking skeleton validation review
+- **troubleshooter-reviewer**: Risk assessment, failure mode analysis, mitigation review
+- **visual-architect-reviewer**: Architecture diagram accuracy, consistency review
+
+All reviewer agents use **Haiku model** for ~50% cost reduction on review operations
 
 ### Example Invocations
 
-**For software-crafter reviewing task**:
+**For software-crafter reviewing task** (automatically invokes software-crafter-reviewer):
 ```
-Task: "You are the software-crafter agent acting as an expert reviewer.
+Task: "You are the software-crafter-reviewer agent acting as an expert reviewer.
 
 Your specific role for this command: Provide expert critique and quality assurance for workflow artifacts
 
@@ -150,9 +168,9 @@ Perform a comprehensive task review of: /mnt/c/Repositories/Projects/ai-craft/do
 [... rest of instructions ...]"
 ```
 
-**For solution-architect reviewing roadmap**:
+**For solution-architect reviewing roadmap** (automatically invokes solution-architect-reviewer):
 ```
-Task: "You are the solution-architect agent acting as an expert reviewer.
+Task: "You are the solution-architect-reviewer agent acting as an expert reviewer.
 
 Your specific role for this command: Provide expert critique and quality assurance for workflow artifacts
 
@@ -166,8 +184,9 @@ Perform a comprehensive roadmap review of: /mnt/c/Repositories/Projects/ai-craft
 ### Error Handling
 
 **Invalid Agent Name**:
-- If agent name is not in the valid list, respond with error:
-  "Invalid agent name: {name}. Must be one of: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop"
+- If base agent name (before adding -reviewer) is not in the valid list, respond with error:
+  "Invalid agent name: {name}. Must be one of: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop, agent-builder, data-engineer, illustrator, skeleton-builder, troubleshooter, visual-architect"
+- Note: The -reviewer suffix is added automatically after validation
 
 **Invalid Artifact Type**:
 - If artifact type is not roadmap, task, or implementation, respond with error:

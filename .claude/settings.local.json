@@ -51,7 +51,8 @@
       "Bash(do echo \"=== $agent ===\")",
       "WebFetch(domain:blog.avanscoperta.it)",
       "WebFetch(domain:www.cutter.com)",
-      "WebFetch(domain:ericnormand.substack.com)"
+      "WebFetch(domain:ericnormand.substack.com)",
+      "Bash(wc:*)"
     ],
     "deny": [],
     "ask": []
