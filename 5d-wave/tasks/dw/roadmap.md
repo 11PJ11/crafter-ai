@@ -9,38 +9,6 @@ agent-activation:
 
 # DW-ROADMAP: Comprehensive Goal Planning Document
 
-**Type**: Ad-hoc Planning Tool
-**Agent**: Specified as parameter
-**Command**: `/dw:roadmap [agent] [goal-description]`
-
-## Overview
-
-Invokes an expert agent to create a comprehensive, structured roadmap document that defines all phases and steps required to achieve a specific goal. The agent parameter allows selection of the most appropriate expert for the domain.
-
-Produces a token-efficient master plan designed to be split into self-contained, atomic task files that prevent context degradation during implementation.
-
-## Usage Examples
-
-```bash
-# Software architecture roadmap
-/dw:roadmap @solution-architect "Migrate monolith to microservices"
-
-# Data engineering roadmap
-/dw:roadmap @data-engineer "Build real-time analytics pipeline"
-
-# Complex refactoring with Mikado
-/dw:roadmap @software-crafter "Replace legacy authentication system"
-
-# Product feature roadmap
-/dw:roadmap @product-owner "Implement multi-tenant support"
-```
-
-## Context Files Required
-
-- Goal description or requirements
-- Relevant existing documentation
-- docs/refactoring/mikado-graph.md - If using Mikado Method
-
 ## CRITICAL: Agent Invocation Protocol
 
 **YOU ARE THE COORDINATOR** - Do NOT create the roadmap yourself. Your role is to dispatch to the appropriate expert agent.
@@ -52,20 +20,68 @@ Parse the first argument to extract the agent name:
 - Extract agent name: `solution-architect` (remove @ prefix)
 - Validate agent name is one of: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
 
-### STEP 2: Extract Goal Description
+### STEP 2: Verify Agent Availability
+
+Before proceeding to Task tool invocation:
+- Verify the extracted agent name matches an available agent in the system
+- Check agent is not at maximum concurrency
+- Confirm agent type is compatible with this command
+
+Valid agents: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
+
+If agent unavailable:
+- Return error: "Agent '{agent-name}' is not currently available. Available agents: {list}"
+- Suggest alternative agents if applicable
+
+### STEP 3: Extract Goal Description
 
 Extract the second argument (goal description):
 - Example: `"Migrate monolith to microservices"`
 - This is the high-level objective the roadmap will plan for
 
-### STEP 3: Invoke Agent Using Task Tool
+### Parameter Parsing Rules
+
+Apply these rules to ALL extracted parameters:
+1. Strip leading and trailing whitespace
+2. Remove surrounding quotes (single or double) if present
+3. Validate parameter is non-empty after stripping
+4. Reject if extra parameters provided beyond expected count
+
+Example for roadmap.md:
+- Input: `/dw:roadmap  @solution-architect  "Migrate to microservices"`
+- After parsing:
+  - agent_name = "solution-architect" (whitespace trimmed)
+  - goal_description = "Migrate to microservices" (quotes removed)
+- Input: `/dw:roadmap @solution-architect "Migrate to microservices" extra`
+- Error: "Too many parameters. Expected 2, got 3"
+
+### STEP 4: Pre-Invocation Validation Checklist
+
+Before invoking Task tool, verify ALL items:
+- [ ] Agent name extracted and validated (not empty)
+- [ ] Agent name in valid agent list
+- [ ] Agent availability confirmed
+- [ ] Goal description extracted and non-empty
+- [ ] Goal description within reasonable bounds (< 500 chars)
+- [ ] Parameters contain no secrets or credentials
+- [ ] No user input still has surrounding quotes
+
+**ONLY proceed to Task tool invocation if ALL items above are checked.**
+
+If any check fails, return specific error and stop.
+
+### STEP 5: Invoke Agent Using Task Tool
 
 **MANDATORY**: Use the Task tool to invoke the specified expert agent. Do NOT attempt to create the roadmap yourself.
 
 Invoke the Task tool with this exact pattern:
 
 ```
-Task: "You are the {agent-name} agent acting as a planning expert.
+Task: "You are the {agent-name} agent.
+
+Your specific role for this command: Create comprehensive planning documents that enable atomic task execution
+
+Task type: roadmap
 
 Create a comprehensive roadmap for achieving this goal: {goal-description}
 
@@ -101,11 +117,29 @@ Save the roadmap to docs/workflow/{project-id}/roadmap.yaml where project-id is 
 - Replace `{agent-name}` with the extracted agent name (e.g., "solution-architect")
 - Replace `{goal-description}` with the goal text
 
+### Agent Registry
+
+Valid agents are: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
+
+Note: This list is maintained in sync with the agent registry at `~/.claude/agents/dw/`. If you encounter "agent not found" errors, verify the agent is registered in that location.
+
+Each agent has specific capabilities:
+- **researcher**: Information gathering, analysis, documentation
+- **software-crafter**: Implementation, testing, refactoring, code quality
+- **solution-architect**: System design, architecture decisions, planning
+- **product-owner**: Requirements, business analysis, stakeholder alignment
+- **acceptance-designer**: Test definition, acceptance criteria, BDD
+- **devop**: Deployment, operations, infrastructure, lifecycle management
+
 ### Example Invocations
 
 **For solution-architect planning microservices migration**:
 ```
-Task: "You are the solution-architect agent acting as a planning expert.
+Task: "You are the solution-architect agent.
+
+Your specific role for this command: Create comprehensive planning documents that enable atomic task execution
+
+Task type: roadmap
 
 Create a comprehensive roadmap for achieving this goal: Migrate monolith to microservices
 
@@ -114,7 +148,11 @@ Create a comprehensive roadmap for achieving this goal: Migrate monolith to micr
 
 **For software-crafter planning authentication refactor**:
 ```
-Task: "You are the software-crafter agent acting as a planning expert.
+Task: "You are the software-crafter agent.
+
+Your specific role for this command: Create comprehensive planning documents that enable atomic task execution
+
+Task type: roadmap
 
 Create a comprehensive roadmap for achieving this goal: Replace legacy authentication system
 
@@ -130,6 +168,88 @@ Create a comprehensive roadmap for achieving this goal: Replace legacy authentic
 **Missing Goal Description**:
 - If goal description is not provided, respond with error:
   "Goal description is required. Usage: /dw:roadmap @agent 'goal description'"
+
+---
+
+## Overview
+
+Invokes an expert agent to create a comprehensive, structured roadmap document that defines all phases and steps required to achieve a specific goal. The agent parameter allows selection of the most appropriate expert for the domain.
+
+Produces a token-efficient master plan designed to be split into self-contained, atomic task files that prevent context degradation during implementation.
+
+## Usage Examples
+
+```bash
+# Software architecture roadmap
+/dw:roadmap @solution-architect "Migrate monolith to microservices"
+
+# Data engineering roadmap
+/dw:roadmap @data-engineer "Build real-time analytics pipeline"
+
+# Complex refactoring with Mikado
+/dw:roadmap @software-crafter "Replace legacy authentication system"
+
+# Product feature roadmap
+/dw:roadmap @product-owner "Implement multi-tenant support"
+```
+
+## Complete Workflow Integration
+
+These commands work together to form a complete workflow:
+
+```bash
+# Step 1: Create comprehensive plan
+/dw:roadmap @solution-architect "Migrate authentication system"
+
+# Step 2: Decompose into atomic tasks
+/dw:split @solution-architect "auth-migration"
+
+# Step 3: Execute first research task
+/dw:execute @researcher "docs/workflow/auth-migration/steps/01-01.json"
+
+# Step 4: Review before implementation
+/dw:review @software-crafter task "docs/workflow/auth-migration/steps/02-01.json"
+
+# Step 5: Execute implementation
+/dw:execute @software-crafter "docs/workflow/auth-migration/steps/02-01.json"
+
+# Step 6: Finalize when all tasks complete
+/dw:finalize @devop "auth-migration"
+```
+
+For details on each command, see respective sections.
+
+## Context Files Required
+
+- Goal description or requirements
+- Relevant existing documentation
+- docs/refactoring/mikado-graph.md - If using Mikado Method
+
+---
+
+## Coordinator Success Criteria
+
+Verify the coordinator performed these tasks:
+- [ ] Agent name extracted from parameters correctly
+- [ ] Agent name validated against known agents
+- [ ] Goal description extracted and validated
+- [ ] Pre-invocation validation checklist passed
+- [ ] Task tool invocation prepared with correct parameters
+- [ ] Task tool returned success status
+- [ ] User received confirmation of agent invocation
+
+## Agent Execution Success Criteria
+
+The invoked agent must accomplish (Reference Only):
+- [ ] Valid YAML syntax
+- [ ] Unique project ID in kebab-case
+- [ ] All phases numbered sequentially
+- [ ] Each step contains enough information to be self-contained
+- [ ] Acceptance criteria are specific and measurable
+- [ ] Dependencies properly mapped between steps
+- [ ] Time estimates provided for planning
+- [ ] File saved as `docs/workflow/{project-id}/roadmap.yaml`
+- [ ] Mikado integration included if applicable
 
 ---
 
@@ -267,19 +387,6 @@ phases:
           - "Provider comparison documented"
           - "Cost analysis complete"
 ```
-
-## Success Criteria
-
-**Validation Checklist:**
-- [ ] Valid YAML syntax
-- [ ] Unique project ID in kebab-case
-- [ ] All phases numbered sequentially
-- [ ] Each step contains enough information to be self-contained
-- [ ] Acceptance criteria are specific and measurable
-- [ ] Dependencies properly mapped between steps
-- [ ] Time estimates provided for planning
-- [ ] File saved as `docs/workflow/{project-id}/roadmap.yaml`
-- [ ] Mikado integration included if applicable
 
 ## Next Steps
 

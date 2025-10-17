@@ -1,4 +1,6 @@
 ---
+description: 'Summarize achievements, archive to docs/evolution, clean up workflow [agent] [project-id] - Example: @devop "auth-upgrade"'
+argument-hint: '[agent] [project-id] - Example: @devop "auth-upgrade"'
 agent-activation:
   required: false
   agent-parameter: true
@@ -6,34 +8,6 @@ agent-activation:
 ---
 
 # DW-FINALIZE: Project Completion and Archive
-
-**Type**: Workflow Completion Tool
-**Agent**: Specified as parameter
-**Command**: `/dw:finalize [agent] [project-id]`
-
-## Overview
-
-Invokes an agent to create a comprehensive summary of completed workflow, archive it for historical tracking, and clean up all intermediary working files. Maintains project evolution history while keeping the repository clean.
-
-Creates permanent record in docs/evolution/ and removes temporary workflow artifacts.
-
-## Usage Examples
-
-```bash
-# Finalize completed authentication upgrade project
-/dw:finalize @devop "auth-upgrade"
-
-# Finalize microservices migration with architect summary
-/dw:finalize @solution-architect "microservices-migration"
-
-# Finalize data pipeline project
-/dw:finalize @data-engineer "analytics-pipeline"
-```
-
-## Context Files Required
-
-- docs/workflow/{project-id}/roadmap.yaml - Original roadmap
-- docs/workflow/{project-id}/steps/*.json - All step tracking files
 
 ## CRITICAL: Agent Invocation Protocol
 
@@ -46,20 +20,69 @@ Parse the first argument to extract the agent name:
 - Extract agent name: `devop` (remove @ prefix)
 - Validate agent name is one of: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
 
-### STEP 2: Extract Project ID
+### STEP 2: Verify Agent Availability
+
+Before proceeding to Task tool invocation:
+- Verify the extracted agent name matches an available agent in the system
+- Check agent is not at maximum concurrency
+- Confirm agent type is compatible with this command
+
+Valid agents: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
+
+If agent unavailable:
+- Return error: "Agent '{agent-name}' is not currently available. Available agents: {list}"
+- Suggest alternative agents if applicable
+
+### STEP 3: Extract Project ID
 
 Extract the second argument (project ID):
 - Example: `"auth-upgrade"`
 - This should match the project-id in the workflow directory
 
-### STEP 3: Invoke Agent Using Task Tool
+### Parameter Parsing Rules
+
+Apply these rules to ALL extracted parameters:
+1. Strip leading and trailing whitespace
+2. Remove surrounding quotes (single or double) if present
+3. Validate parameter is non-empty after stripping
+4. Reject if extra parameters provided beyond expected count
+
+Example for finalize.md:
+- Input: `/dw:finalize  @devop  "auth-upgrade"`
+- After parsing:
+  - agent_name = "devop" (whitespace trimmed)
+  - project_id = "auth-upgrade" (quotes removed)
+- Input: `/dw:finalize @devop "auth-upgrade" extra`
+- Error: "Too many parameters. Expected 2, got 3"
+
+### STEP 4: Pre-Invocation Validation Checklist
+
+Before invoking Task tool, verify ALL items:
+- [ ] Agent name extracted and validated (not empty)
+- [ ] Agent name in valid agent list
+- [ ] Agent availability confirmed
+- [ ] Project ID extracted and non-empty
+- [ ] Project ID in valid kebab-case format
+- [ ] Parameters contain no secrets or credentials
+- [ ] Parameters within reasonable bounds (e.g., < 500 chars)
+- [ ] No user input still has surrounding quotes
+
+**ONLY proceed to Task tool invocation if ALL items above are checked.**
+
+If any check fails, return specific error and stop.
+
+### STEP 5: Invoke Agent Using Task Tool
 
 **MANDATORY**: Use the Task tool to invoke the specified agent. Do NOT attempt to finalize the project yourself.
 
 Invoke the Task tool with this exact pattern:
 
 ```
-Task: "You are the {agent-name} agent responsible for project finalization and archival.
+Task: "You are the {agent-name} agent.
+
+Your specific role for this command: Summarize achievements, archive project evolution, and perform cleanup
+
+Task type: finalize
 
 Finalize and archive the completed workflow project: {project-id}
 
@@ -71,7 +94,7 @@ Your responsibilities:
 5. Archive to docs/evolution/ with timestamp
 6. Clean up temporary workflow files after user approval
 
-⚠️ CRITICAL: DO NOT COMMIT OR DELETE FILES - REQUEST APPROVAL FIRST
+CRITICAL: DO NOT COMMIT OR DELETE FILES - REQUEST APPROVAL FIRST
 
 Processing Steps:
 
@@ -89,17 +112,7 @@ PHASE 2 - ANALYZE:
 - Note deviations from plan
 
 PHASE 3 - SUMMARIZE:
-Create comprehensive markdown document with:
-- Executive summary
-- Original goal and achievement
-- Phase-by-phase breakdown with outcomes
-- Key achievements with evidence
-- Critical decisions table
-- Quality metrics (steps completed, reviews, execution time)
-- Challenges and solutions
-- Deliverables and documentation
-- Recommendations for future work
-- Lessons learned
+Create comprehensive markdown document with executive summary, original goal, phase-by-phase breakdown, key achievements, critical decisions table, quality metrics, challenges and solutions, deliverables and documentation, recommendations for future work, and lessons learned.
 
 PHASE 4 - ARCHIVE:
 - Ensure docs/evolution/ directory exists
@@ -119,11 +132,29 @@ Show user a summary of what will be archived and deleted, then REQUEST APPROVAL 
 - Replace `{agent-name}` with the extracted agent name (e.g., "devop")
 - Replace `{project-id}` with the project ID
 
+### Agent Registry
+
+Valid agents are: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
+
+Note: This list is maintained in sync with the agent registry at `~/.claude/agents/dw/`. If you encounter "agent not found" errors, verify the agent is registered in that location.
+
+Each agent has specific capabilities:
+- **researcher**: Information gathering, analysis, documentation
+- **software-crafter**: Implementation, testing, refactoring, code quality
+- **solution-architect**: System design, architecture decisions, planning
+- **product-owner**: Requirements, business analysis, stakeholder alignment
+- **acceptance-designer**: Test definition, acceptance criteria, BDD
+- **devop**: Deployment, operations, infrastructure, lifecycle management
+
 ### Example Invocations
 
 **For devop finalizing auth-upgrade project**:
 ```
-Task: "You are the devop agent responsible for project finalization and archival.
+Task: "You are the devop agent.
+
+Your specific role for this command: Summarize achievements, archive project evolution, and perform cleanup
+
+Task type: finalize
 
 Finalize and archive the completed workflow project: auth-upgrade
 
@@ -132,7 +163,11 @@ Finalize and archive the completed workflow project: auth-upgrade
 
 **For solution-architect finalizing microservices project**:
 ```
-Task: "You are the solution-architect agent responsible for project finalization and archival.
+Task: "You are the solution-architect agent.
+
+Your specific role for this command: Summarize achievements, archive project evolution, and perform cleanup
+
+Task type: finalize
 
 Finalize and archive the completed workflow project: microservices-migration
 
@@ -159,13 +194,91 @@ Finalize and archive the completed workflow project: microservices-migration
 
 ---
 
+## Overview
+
+Invokes an agent to create a comprehensive summary of completed workflow, archive it for historical tracking, and clean up all intermediary working files. Maintains project evolution history while keeping the repository clean.
+
+Creates permanent record in docs/evolution/ and removes temporary workflow artifacts.
+
+## Usage Examples
+
+```bash
+# Finalize completed authentication upgrade project
+/dw:finalize @devop "auth-upgrade"
+
+# Finalize microservices migration with architect summary
+/dw:finalize @solution-architect "microservices-migration"
+
+# Finalize data pipeline project
+/dw:finalize @data-engineer "analytics-pipeline"
+```
+
+## Complete Workflow Integration
+
+These commands work together to form a complete workflow:
+
+```bash
+# Step 1: Create comprehensive plan
+/dw:roadmap @solution-architect "Migrate authentication system"
+
+# Step 2: Decompose into atomic tasks
+/dw:split @solution-architect "auth-migration"
+
+# Step 3: Execute first research task
+/dw:execute @researcher "docs/workflow/auth-migration/steps/01-01.json"
+
+# Step 4: Review before implementation
+/dw:review @software-crafter task "docs/workflow/auth-migration/steps/02-01.json"
+
+# Step 5: Execute implementation
+/dw:execute @software-crafter "docs/workflow/auth-migration/steps/02-01.json"
+
+# Step 6: Finalize when all tasks complete
+/dw:finalize @devop "auth-migration"
+```
+
+For details on each command, see respective sections.
+
+## Context Files Required
+
+- docs/workflow/{project-id}/roadmap.yaml - Original roadmap
+- docs/workflow/{project-id}/steps/*.json - All step tracking files
+
+---
+
+## Coordinator Success Criteria
+
+Verify the coordinator performed these tasks:
+- [ ] Agent name extracted from parameters correctly
+- [ ] Agent name validated against known agents
+- [ ] Project ID extracted and validated
+- [ ] Pre-invocation validation checklist passed
+- [ ] Task tool invocation prepared with correct parameters
+- [ ] Task tool returned success status
+- [ ] User received confirmation of agent invocation
+
+## Agent Execution Success Criteria
+
+The invoked agent must accomplish (Reference Only):
+- [ ] All step files successfully read
+- [ ] Roadmap file successfully parsed
+- [ ] Comprehensive summary generated
+- [ ] Evolution document created in docs/evolution/
+- [ ] User approved summary content
+- [ ] Workflow directory cleaned up
+- [ ] Step files removed
+- [ ] Roadmap file removed
+- [ ] Project folder removed (if empty)
+
+---
+
 ## Agent Invocation (Reference Documentation)
 
 The following section documents what the invoked agent will do. **You (the coordinator) do not execute this - the agent does.**
 
 ### Primary Task Instructions
 
-**⚠️ CRITICAL: DO NOT COMMIT FILES - REQUEST APPROVAL FIRST**
+**CRITICAL: DO NOT COMMIT FILES - REQUEST APPROVAL FIRST**
 
 **Task**: Summarize achievements, archive history, and clean up workflow files
 
@@ -349,7 +462,7 @@ Start: {date}
 
 ---
 
-**Project Status**: COMPLETED ✅
+**Project Status**: COMPLETED
 **Archived By**: {agent-name}
 **Archive Date**: {timestamp}
 ```
@@ -366,7 +479,7 @@ Start: {date}
 
 #### 5. CLEANUP PHASE
 
-**⚠️ IMPORTANT: Only proceed after user confirms summary is acceptable**
+**IMPORTANT: Only proceed after user confirms summary is acceptable**
 
 **Remove Workflow Artifacts**:
 ```python
@@ -396,19 +509,6 @@ docs/
 │   └── microservices-20240201-165500.md
 └── workflow/                     # Empty or removed
 ```
-
-## Success Criteria
-
-**Validation Checklist**:
-- [ ] All step files successfully read
-- [ ] Roadmap file successfully parsed
-- [ ] Comprehensive summary generated
-- [ ] Evolution document created in docs/evolution/
-- [ ] User approved summary content
-- [ ] Workflow directory cleaned up
-- [ ] Step files removed
-- [ ] Roadmap file removed
-- [ ] Project folder removed (if empty)
 
 ## Output Artifacts
 

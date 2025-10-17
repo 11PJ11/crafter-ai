@@ -9,42 +9,6 @@ agent-activation:
 
 # DW-SPLIT: Atomic Task Generation from Roadmap
 
-**Type**: Task Decomposition Tool
-**Agent**: Specified as parameter
-**Command**: `/dw:split [agent] [project-id]`
-
-## Overview
-
-Invokes an agent to parse a comprehensive roadmap and generate self-contained, atomic task files that sub-agents can execute independently without context degradation.
-
-Each generated task file contains all information needed for completion, enabling parallel execution and preventing the accumulation of context that degrades LLM performance over long conversations.
-
-## Usage Examples
-
-```bash
-# Split architecture roadmap into tasks
-/dw:split @devop "microservices-migration"
-
-# Split data pipeline roadmap
-/dw:split @data-engineer "analytics-pipeline"
-
-# Split refactoring roadmap
-/dw:split @software-crafter "auth-refactor"
-```
-
-## Key Benefits
-
-- **Context Preservation**: Each task is self-contained with all required information
-- **Parallel Execution**: Sub-agents can work on tasks independently
-- **Progress Tracking**: Individual task state management
-- **Quality Consistency**: Each task starts from clean context
-- **Scalability**: Handle complex projects without context overflow
-
-## Context Files Required
-
-- docs/workflow/{project-id}/roadmap.yaml - Master roadmap document
-- Must be created by DW-ROADMAP command first
-
 ## CRITICAL: Agent Invocation Protocol
 
 **YOU ARE THE COORDINATOR** - Do NOT generate task files yourself. Your role is to dispatch to the appropriate agent.
@@ -56,20 +20,69 @@ Parse the first argument to extract the agent name:
 - Extract agent name: `devop` (remove @ prefix)
 - Validate agent name is one of: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
 
-### STEP 2: Extract Project ID
+### STEP 2: Verify Agent Availability
+
+Before proceeding to Task tool invocation:
+- Verify the extracted agent name matches an available agent in the system
+- Check agent is not at maximum concurrency
+- Confirm agent type is compatible with this command
+
+Valid agents: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
+
+If agent unavailable:
+- Return error: "Agent '{agent-name}' is not currently available. Available agents: {list}"
+- Suggest alternative agents if applicable
+
+### STEP 3: Extract Project ID
 
 Extract the second argument (project ID):
 - Example: `"auth-upgrade"`
 - This should match the project-id in the roadmap
 
-### STEP 3: Invoke Agent Using Task Tool
+### Parameter Parsing Rules
+
+Apply these rules to ALL extracted parameters:
+1. Strip leading and trailing whitespace
+2. Remove surrounding quotes (single or double) if present
+3. Validate parameter is non-empty after stripping
+4. Reject if extra parameters provided beyond expected count
+
+Example for split.md:
+- Input: `/dw:split  @devop  "auth-upgrade"`
+- After parsing:
+  - agent_name = "devop" (whitespace trimmed)
+  - project_id = "auth-upgrade" (quotes removed)
+- Input: `/dw:split @devop "auth-upgrade" extra`
+- Error: "Too many parameters. Expected 2, got 3"
+
+### STEP 4: Pre-Invocation Validation Checklist
+
+Before invoking Task tool, verify ALL items:
+- [ ] Agent name extracted and validated (not empty)
+- [ ] Agent name in valid agent list
+- [ ] Agent availability confirmed
+- [ ] Project ID extracted and non-empty
+- [ ] Project ID in valid kebab-case format
+- [ ] Parameters contain no secrets or credentials
+- [ ] Parameters within reasonable bounds (e.g., < 500 chars)
+- [ ] No user input still has surrounding quotes
+
+**ONLY proceed to Task tool invocation if ALL items above are checked.**
+
+If any check fails, return specific error and stop.
+
+### STEP 5: Invoke Agent Using Task Tool
 
 **MANDATORY**: Use the Task tool to invoke the specified agent. Do NOT attempt to generate task files yourself.
 
 Invoke the Task tool with this exact pattern:
 
 ```
-Task: "You are the {agent-name} agent responsible for task decomposition.
+Task: "You are the {agent-name} agent.
+
+Your specific role for this command: Decompose roadmaps into self-contained atomic task files
+
+Task type: split
 
 Generate atomic, self-contained task files from the roadmap for project: {project-id}
 
@@ -81,10 +94,10 @@ Your responsibilities:
 5. Map all dependencies between tasks
 6. Generate JSON files for each task
 
-⚠️ CRITICAL: DO NOT COMMIT FILES - REQUEST USER APPROVAL FIRST
+WarningCRITICAL: DO NOT COMMIT FILES - REQUEST USER APPROVAL FIRST
 
 Input: docs/workflow/{project-id}/roadmap.yaml
-Output: docs/workflow/{project-id}/steps/*.json (one file per step)
+Output: docs/workflow/{project-id}/steps/*.json
 
 Task File Schema (JSON):
 - task_id: Phase-step number (e.g., '01-01')
@@ -116,11 +129,29 @@ After generating files, show the user a summary and request approval before comm
 - Replace `{agent-name}` with the extracted agent name (e.g., "devop")
 - Replace `{project-id}` with the project ID
 
+### Agent Registry
+
+Valid agents are: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
+
+Note: This list is maintained in sync with the agent registry at `~/.claude/agents/dw/`. If you encounter "agent not found" errors, verify the agent is registered in that location.
+
+Each agent has specific capabilities:
+- **researcher**: Information gathering, analysis, documentation
+- **software-crafter**: Implementation, testing, refactoring, code quality
+- **solution-architect**: System design, architecture decisions, planning
+- **product-owner**: Requirements, business analysis, stakeholder alignment
+- **acceptance-designer**: Test definition, acceptance criteria, BDD
+- **devop**: Deployment, operations, infrastructure, lifecycle management
+
 ### Example Invocations
 
 **For devop splitting auth-upgrade roadmap**:
 ```
-Task: "You are the devop agent responsible for task decomposition.
+Task: "You are the devop agent.
+
+Your specific role for this command: Decompose roadmaps into self-contained atomic task files
+
+Task type: split
 
 Generate atomic, self-contained task files from the roadmap for project: auth-upgrade
 
@@ -129,7 +160,11 @@ Generate atomic, self-contained task files from the roadmap for project: auth-up
 
 **For solution-architect splitting microservices roadmap**:
 ```
-Task: "You are the solution-architect agent responsible for task decomposition.
+Task: "You are the solution-architect agent.
+
+Your specific role for this command: Decompose roadmaps into self-contained atomic task files
+
+Task type: split
 
 Generate atomic, self-contained task files from the roadmap for project: microservices-migration
 
@@ -152,13 +187,99 @@ Generate atomic, self-contained task files from the roadmap for project: microse
 
 ---
 
+## Overview
+
+Invokes an agent to parse a comprehensive roadmap and generate self-contained, atomic task files that sub-agents can execute independently without context degradation.
+
+Each generated task file contains all information needed for completion, enabling parallel execution and preventing the accumulation of context that degrades LLM performance over long conversations.
+
+## Usage Examples
+
+```bash
+# Split architecture roadmap into tasks
+/dw:split @devop "microservices-migration"
+
+# Split data pipeline roadmap
+/dw:split @data-engineer "analytics-pipeline"
+
+# Split refactoring roadmap
+/dw:split @software-crafter "auth-refactor"
+```
+
+## Key Benefits
+
+- **Context Preservation**: Each task is self-contained with all required information
+- **Parallel Execution**: Sub-agents can work on tasks independently
+- **Progress Tracking**: Individual task state management
+- **Quality Consistency**: Each task starts from clean context
+- **Scalability**: Handle complex projects without context overflow
+
+## Complete Workflow Integration
+
+These commands work together to form a complete workflow:
+
+```bash
+# Step 1: Create comprehensive plan
+/dw:roadmap @solution-architect "Migrate authentication system"
+
+# Step 2: Decompose into atomic tasks
+/dw:split @solution-architect "auth-migration"
+
+# Step 3: Execute first research task
+/dw:execute @researcher "docs/workflow/auth-migration/steps/01-01.json"
+
+# Step 4: Review before implementation
+/dw:review @software-crafter task "docs/workflow/auth-migration/steps/02-01.json"
+
+# Step 5: Execute implementation
+/dw:execute @software-crafter "docs/workflow/auth-migration/steps/02-01.json"
+
+# Step 6: Finalize when all tasks complete
+/dw:finalize @devop "auth-migration"
+```
+
+For details on each command, see respective sections.
+
+## Context Files Required
+
+- docs/workflow/{project-id}/roadmap.yaml - Master roadmap document
+- Must be created by DW-ROADMAP command first
+
+---
+
+## Coordinator Success Criteria
+
+Verify the coordinator performed these tasks:
+- [ ] Agent name extracted from parameters correctly
+- [ ] Agent name validated against known agents
+- [ ] Project ID extracted and validated
+- [ ] Pre-invocation validation checklist passed
+- [ ] Task tool invocation prepared with correct parameters
+- [ ] Task tool returned success status
+- [ ] User received confirmation of agent invocation
+
+## Agent Execution Success Criteria
+
+The invoked agent must accomplish (Reference Only):
+- [ ] Roadmap.yaml successfully parsed
+- [ ] Project folder structure created: `docs/workflow/{project-id}/steps/`
+- [ ] All JSON files are syntactically valid
+- [ ] File names follow {phase:02d}-{step:02d}.json format
+- [ ] All fields from roadmap preserved in JSON files
+- [ ] Dependencies correctly mapped from roadmap
+- [ ] ISO 8601 datetime format for timestamps
+- [ ] Each file contains project_id reference
+- [ ] No files committed without user approval
+
+---
+
 ## Agent Invocation (Reference Documentation)
 
 The following section documents what the invoked agent will do. **You (the coordinator) do not execute this - the agent does.**
 
 ### Primary Task Instructions
 
-**⚠️ CRITICAL: DO NOT COMMIT FILES - REQUEST APPROVAL FIRST**
+**CRITICAL: DO NOT COMMIT FILES - REQUEST APPROVAL FIRST**
 
 **Task**: Transform roadmap into self-contained atomic task files
 
@@ -211,39 +332,6 @@ Each file (`{phase:02d}-{step:02d}.json`) is a complete, executable unit:
 }
 ```
 
-**Optional Fields (add only when needed):**
-- `token_limit`: number (default: 0 = unlimited)
-- `examples`: Array of code examples
-  ```json
-  [{
-    "id": 1,
-    "language": "python",
-    "code": "actual code here",
-    "tags": ["best_practice"]
-  }]
-  ```
-- `state_history`: Track state transitions
-  ```json
-  [{
-    "status": "TODO",
-    "result": "Initial creation",
-    "updated": "2024-01-01T00:00:00Z"
-  }]
-  ```
-- `critiques`: Review feedback
-  ```json
-  [{
-    "id": 1,
-    "reviewer": "user",
-    "description": "Feedback text",
-    "created": "2024-01-01T00:00:00Z"
-  }]
-  ```
-
-**Valid Enumerations:**
-- Status: `TODO`, `IN_PROGRESS`, `DONE`, `FAILED`, `WAITING`
-- Tags: `error`, `warning`, `best_practice`, `antipattern`
-
 ### Folder Structure Created:
 ```
 docs/workflow/
@@ -254,49 +342,6 @@ docs/workflow/
 │       ├── 01-02.json        # Phase 1, Step 2
 │       ├── 02-01.json        # Phase 2, Step 1
 │       └── ...
-```
-
-### Example Self-Contained Task (auth-upgrade/steps/01-01.json):
-
-A complete, atomic task ready for sub-agent execution:
-
-```json
-{
-  "task_id": "01-01",
-  "project_id": "auth-upgrade",
-  "execution_agent": "@researcher",
-  "self_contained_context": {
-    "background": "Current system uses basic auth with username/password stored in PostgreSQL. Company policy requires OAuth2 compliance by Q2. Budget allocated: $5000/year for provider costs.",
-    "prerequisites_completed": [],
-    "relevant_files": ["docs/current-auth-architecture.md", "requirements/security-policy.md"],
-    "technical_context": "Stack: Node.js/Express backend, React frontend, PostgreSQL database. Current user base: 10,000 active users. Peak load: 500 concurrent sessions."
-  },
-  "task_specification": {
-    "name": "OAuth2 Provider Selection",
-    "description": "Research, evaluate and recommend OAuth2 provider for authentication system upgrade",
-    "motivation": "Provider choice determines integration complexity, costs, and feature availability for entire authentication rewrite",
-    "detailed_instructions": "1. Research OAuth2 providers supporting our tech stack (Auth0, Okta, AWS Cognito, Firebase Auth, Keycloak)\n2. Create comparison matrix: features, pricing, integration effort, documentation quality\n3. Evaluate against requirements: SSO support, MFA, user migration tools, API rate limits\n4. Perform cost analysis for 10K users with 20% yearly growth\n5. Document recommendation with justification in docs/workflow/auth-upgrade/provider-selection.md",
-    "acceptance_criteria": [
-      "Comparison matrix includes at least 5 providers",
-      "Cost projections for 3 years included",
-      "Integration complexity assessed for our stack",
-      "Clear recommendation with pros/cons",
-      "Decision document created"
-    ],
-    "estimated_hours": 4
-  },
-  "dependencies": {
-    "requires": [],
-    "blocking": ["01-02", "02-01"]
-  },
-  "state": {
-    "status": "TODO",
-    "assigned_to": null,
-    "started_at": null,
-    "completed_at": null,
-    "updated": "2024-01-15T10:30:00Z"
-  }
-}
 ```
 
 ### Processing Logic:
@@ -328,23 +373,8 @@ A complete, atomic task ready for sub-agent execution:
    - Ensure complete self-containment
    - No references requiring external context
 
-## Success Criteria
+## Output Artifacts
 
-**Validation Checklist:**
-- [ ] Roadmap.yaml successfully parsed
-- [ ] Project folder structure created: `docs/workflow/{project-id}/steps/`
-- [ ] All JSON files are syntactically valid
-- [ ] File names follow {phase:02d}-{step:02d}.json format
-- [ ] All fields from roadmap preserved in JSON files
-- [ ] Dependencies correctly mapped from roadmap
-- [ ] ISO 8601 datetime format for timestamps
-- [ ] Each file contains project_id reference
-- [ ] No files committed without user approval
-
-## Next Wave
-
-**Handoff To**: Implementation teams working on individual steps
-**Deliverables**:
 - Individual JSON tracking files in `docs/workflow/{project-id}/steps/`
 - Each file ready for state tracking and updates
 - Consistent structure across all project steps

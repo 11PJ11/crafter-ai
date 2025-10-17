@@ -9,41 +9,6 @@ agent-activation:
 
 # DW-REVIEW: Expert Critique and Quality Assurance
 
-**Type**: Quality Review Tool
-**Agent**: Specified as parameter
-**Command**: `/dw:review [agent] [artifact-type] [artifact-path]`
-
-## Overview
-
-Invokes an expert agent to critique and review workflow artifacts at any stage. Provides comprehensive feedback on roadmaps, atomic task files, or implementations to ensure quality and prevent issues before they propagate.
-
-Supports three review modes:
-- **roadmap**: Review comprehensive planning document
-- **task**: Review atomic task file before execution
-- **implementation**: Review completed work against task specification
-
-## Usage Examples
-
-```bash
-# Review a roadmap before splitting into tasks
-/dw:review @solution-architect roadmap "docs/workflow/auth-upgrade/roadmap.yaml"
-
-# Review a task file before sub-agent execution
-/dw:review @software-crafter task "docs/workflow/auth-upgrade/steps/02-01.json"
-
-# Review implementation against requirements
-/dw:review @devop implementation "docs/workflow/auth-upgrade/steps/01-01.json"
-
-# Security review of authentication roadmap
-/dw:review @security-expert roadmap "docs/workflow/auth-upgrade/roadmap.yaml"
-```
-
-## Context Files Required
-
-- **For roadmap review**: The roadmap.yaml file
-- **For task review**: The specific task JSON file
-- **For implementation review**: Task file + implementation outputs
-
 ## CRITICAL: Agent Invocation Protocol
 
 **YOU ARE THE COORDINATOR** - Do NOT perform the review yourself. Your role is to dispatch to the appropriate expert agent.
@@ -55,19 +20,64 @@ Parse the first argument to extract the agent name:
 - Extract agent name: `software-crafter` (remove @ prefix)
 - Validate agent name is one of: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
 
-### STEP 2: Extract Artifact Type
+### STEP 2: Verify Agent Availability
+
+Before proceeding to Task tool invocation:
+- Verify the extracted agent name matches an available agent in the system
+- Check agent is not at maximum concurrency
+- Confirm agent type is compatible with this command
+
+Valid agents: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
+
+If agent unavailable:
+- Return error: "Agent '{agent-name}' is not currently available. Available agents: {list}"
+- Suggest alternative agents if applicable
+
+### STEP 3: Extract Artifact Type and Path
 
 Extract the second argument (artifact type):
 - Valid types: `roadmap`, `task`, `implementation`
 - Example: `task`
 
-### STEP 3: Extract Artifact Path
-
 Extract the third argument (artifact path):
 - Example: `"docs/workflow/auth-upgrade/steps/01-01.json"`
 - Ensure path is absolute or resolve relative to working directory
 
-### STEP 4: Invoke Agent Using Task Tool
+### Parameter Parsing Rules
+
+Apply these rules to ALL extracted parameters:
+1. Strip leading and trailing whitespace
+2. Remove surrounding quotes (single or double) if present
+3. Validate parameter is non-empty after stripping
+4. Reject if extra parameters provided beyond expected count
+
+Example for review.md:
+- Input: `/dw:review  @software-crafter  task  "steps/01-01.json"`
+- After parsing:
+  - agent_name = "software-crafter" (whitespace trimmed)
+  - artifact_type = "task" (valid value)
+  - artifact_path = "steps/01-01.json" (quotes removed)
+- Input: `/dw:review @software-crafter task "steps/01-01.json" extra`
+- Error: "Too many parameters. Expected 3, got 4"
+
+### STEP 4: Pre-Invocation Validation Checklist
+
+Before invoking Task tool, verify ALL items:
+- [ ] Agent name extracted and validated (not empty)
+- [ ] Agent name in valid agent list
+- [ ] Agent availability confirmed
+- [ ] Artifact type is one of: roadmap, task, implementation
+- [ ] All file paths are absolute (resolve relative paths to absolute)
+- [ ] Referenced files exist and are readable
+- [ ] Parameters contain no secrets or credentials
+- [ ] Parameters within reasonable bounds (e.g., paths < 500 chars)
+- [ ] No user input still has surrounding quotes
+
+**ONLY proceed to Task tool invocation if ALL items above are checked.**
+
+If any check fails, return specific error and stop.
+
+### STEP 5: Invoke Agent Using Task Tool
 
 **MANDATORY**: Use the Task tool to invoke the specified expert agent. Do NOT attempt to perform the review yourself.
 
@@ -75,6 +85,10 @@ Invoke the Task tool with this exact pattern:
 
 ```
 Task: "You are the {agent-name} agent acting as an expert reviewer.
+
+Your specific role for this command: Provide expert critique and quality assurance for workflow artifacts
+
+Task type: review
 
 Perform a comprehensive {artifact-type} review of: {artifact-path}
 
@@ -107,11 +121,29 @@ Update the artifact file by appending or updating the reviews section with your 
 - Replace `{artifact-type}` with the artifact type (e.g., "task")
 - Replace `{artifact-path}` with the absolute path to the artifact file
 
+### Agent Registry
+
+Valid agents are: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
+
+Note: This list is maintained in sync with the agent registry at `~/.claude/agents/dw/`. If you encounter "agent not found" errors, verify the agent is registered in that location.
+
+Each agent has specific capabilities:
+- **researcher**: Information gathering, analysis, documentation
+- **software-crafter**: Implementation, testing, refactoring, code quality
+- **solution-architect**: System design, architecture decisions, planning
+- **product-owner**: Requirements, business analysis, stakeholder alignment
+- **acceptance-designer**: Test definition, acceptance criteria, BDD
+- **devop**: Deployment, operations, infrastructure, lifecycle management
+
 ### Example Invocations
 
 **For software-crafter reviewing task**:
 ```
 Task: "You are the software-crafter agent acting as an expert reviewer.
+
+Your specific role for this command: Provide expert critique and quality assurance for workflow artifacts
+
+Task type: review
 
 Perform a comprehensive task review of: /mnt/c/Repositories/Projects/ai-craft/docs/workflow/auth-upgrade/steps/02-01.json
 
@@ -121,6 +153,10 @@ Perform a comprehensive task review of: /mnt/c/Repositories/Projects/ai-craft/do
 **For solution-architect reviewing roadmap**:
 ```
 Task: "You are the solution-architect agent acting as an expert reviewer.
+
+Your specific role for this command: Provide expert critique and quality assurance for workflow artifacts
+
+Task type: review
 
 Perform a comprehensive roadmap review of: /mnt/c/Repositories/Projects/ai-craft/docs/workflow/auth-upgrade/roadmap.yaml
 
@@ -140,6 +176,90 @@ Perform a comprehensive roadmap review of: /mnt/c/Repositories/Projects/ai-craft
 **Missing Artifact File**:
 - If artifact file path is not provided or file doesn't exist, respond with error:
   "Artifact file not found: {path}. Please provide valid path to artifact file."
+
+---
+
+## Overview
+
+Invokes an expert agent to critique and review workflow artifacts at any stage. Provides comprehensive feedback on roadmaps, atomic task files, or implementations to ensure quality and prevent issues before they propagate.
+
+Supports three review modes:
+- **roadmap**: Review comprehensive planning document
+- **task**: Review atomic task file before execution
+- **implementation**: Review completed work against task specification
+
+## Usage Examples
+
+```bash
+# Review a roadmap before splitting into tasks
+/dw:review @solution-architect roadmap "docs/workflow/auth-upgrade/roadmap.yaml"
+
+# Review a task file before sub-agent execution
+/dw:review @software-crafter task "docs/workflow/auth-upgrade/steps/02-01.json"
+
+# Review implementation against requirements
+/dw:review @devop implementation "docs/workflow/auth-upgrade/steps/01-01.json"
+
+# Security review of authentication roadmap
+/dw:review @security-expert roadmap "docs/workflow/auth-upgrade/roadmap.yaml"
+```
+
+## Complete Workflow Integration
+
+These commands work together to form a complete workflow:
+
+```bash
+# Step 1: Create comprehensive plan
+/dw:roadmap @solution-architect "Migrate authentication system"
+
+# Step 2: Decompose into atomic tasks
+/dw:split @solution-architect "auth-migration"
+
+# Step 3: Execute first research task
+/dw:execute @researcher "docs/workflow/auth-migration/steps/01-01.json"
+
+# Step 4: Review before implementation
+/dw:review @software-crafter task "docs/workflow/auth-migration/steps/02-01.json"
+
+# Step 5: Execute implementation
+/dw:execute @software-crafter "docs/workflow/auth-migration/steps/02-01.json"
+
+# Step 6: Finalize when all tasks complete
+/dw:finalize @devop "auth-migration"
+```
+
+For details on each command, see respective sections.
+
+## Context Files Required
+
+- **For roadmap review**: The roadmap.yaml file
+- **For task review**: The specific task JSON file
+- **For implementation review**: Task file + implementation outputs
+
+---
+
+## Coordinator Success Criteria
+
+Verify the coordinator performed these tasks:
+- [ ] Agent name extracted from parameters correctly
+- [ ] Agent name validated against known agents
+- [ ] Artifact type extracted and validated (roadmap|task|implementation)
+- [ ] File path(s) extracted and validated
+- [ ] Absolute path constructed correctly
+- [ ] Pre-invocation validation checklist passed
+- [ ] Task tool invocation prepared with correct parameters
+- [ ] Task tool returned success status
+- [ ] User received confirmation of agent invocation
+
+## Agent Execution Success Criteria
+
+The invoked agent must accomplish (Reference Only):
+- [ ] Review covers all required focus areas
+- [ ] Critiques are specific and actionable
+- [ ] Severity levels assigned appropriately
+- [ ] Recommendations provided for all issues
+- [ ] Original file updated with review metadata
+- [ ] Clear approval/revision decision made
 
 ---
 
@@ -339,16 +459,6 @@ Choose reviewer based on domain expertise:
 6. **Create Report**: Generate summary for stakeholders
 
 **IMPORTANT**: The review command ALWAYS updates the original artifact file (roadmap.yaml or step JSON) by appending the review data. This ensures critiques travel with the artifact and are available to all subsequent agents.
-
-## Success Criteria
-
-**Validation Checklist**:
-- [ ] Review covers all required focus areas
-- [ ] Critiques are specific and actionable
-- [ ] Severity levels assigned appropriately
-- [ ] Recommendations provided for all issues
-- [ ] Original file updated with review metadata
-- [ ] Clear approval/revision decision made
 
 ## Output Artifacts
 

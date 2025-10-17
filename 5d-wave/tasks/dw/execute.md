@@ -9,47 +9,6 @@ agent-activation:
 
 # DW-EXECUTE: Atomic Task Execution Engine
 
-**Type**: Task Execution Tool
-**Agent**: Specified as parameter
-**Command**: `/dw:execute [agent] [step-file-path]`
-
-## Overview
-
-Executes a self-contained atomic task by invoking the specified agent with complete context from the step file. Manages state transitions, tracks execution progress, and updates the step file with results.
-
-Designed to work with clean context, ensuring consistent quality by giving each agent a fresh start with all necessary information contained in the step file.
-
-## Usage Examples
-
-```bash
-# Execute a research task
-/dw:execute @researcher "docs/workflow/auth-upgrade/steps/01-01.json"
-
-# Execute implementation task
-/dw:execute @software-crafter "docs/workflow/auth-upgrade/steps/02-01.json"
-
-# Execute testing task
-/dw:execute @devop "docs/workflow/auth-upgrade/steps/04-01.json"
-
-# Override the suggested agent
-/dw:execute @solution-architect "docs/workflow/auth-upgrade/steps/01-02.json"
-```
-
-## State Transitions
-
-```
-TODO → IN_PROGRESS → DONE
-         ↓      ↓
-      FAILED  IN_REVIEW
-         ↓      ↓
-      RETRY   REWORK
-```
-
-## Context Files Required
-
-- Step file (JSON) with complete task specification
-- Any files referenced in step's `relevant_files` field
-
 ## CRITICAL: Agent Invocation Protocol
 
 **YOU ARE THE COORDINATOR** - Do NOT execute the task yourself. Your role is to dispatch to the appropriate agent.
@@ -61,13 +20,58 @@ Parse the first argument to extract the agent name:
 - Extract agent name: `researcher` (remove @ prefix)
 - Validate agent name is one of: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
 
-### STEP 2: Extract Step File Path
+### STEP 2: Verify Agent Availability
+
+Before proceeding to Task tool invocation:
+- Verify the extracted agent name matches an available agent in the system
+- Check agent is not at maximum concurrency
+- Confirm agent type is compatible with this command
+
+Valid agents: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
+
+If agent unavailable:
+- Return error: "Agent '{agent-name}' is not currently available. Available agents: {list}"
+- Suggest alternative agents if applicable
+
+### STEP 3: Extract Step File Path
 
 Extract the second argument (step file path):
 - Example: `"docs/workflow/auth-upgrade/steps/01-01.json"`
 - Ensure path is absolute or resolve relative to working directory
 
-### STEP 3: Invoke Agent Using Task Tool
+### Parameter Parsing Rules
+
+Apply these rules to ALL extracted parameters:
+1. Strip leading and trailing whitespace
+2. Remove surrounding quotes (single or double) if present
+3. Validate parameter is non-empty after stripping
+4. Reject if extra parameters provided beyond expected count
+
+Example for execute.md:
+- Input: `/dw:execute  @researcher   "steps/01-01.json"`
+- After parsing:
+  - agent_name = "researcher" (whitespace trimmed)
+  - step_file_path = "steps/01-01.json" (quotes removed)
+- Input: `/dw:execute @researcher "steps/01-01.json" extra`
+- Error: "Too many parameters. Expected 2, got 3"
+
+### STEP 4: Pre-Invocation Validation Checklist
+
+Before invoking Task tool, verify ALL items:
+- [ ] Agent name extracted and validated (not empty)
+- [ ] Agent name in valid agent list
+- [ ] Agent availability confirmed
+- [ ] All file paths are absolute (resolve relative paths to absolute)
+- [ ] Referenced files exist and are readable
+- [ ] Parameters contain no secrets or credentials
+- [ ] Parameters within reasonable bounds (e.g., paths < 500 chars)
+- [ ] No user input still has surrounding quotes
+
+**ONLY proceed to Task tool invocation if ALL items above are checked.**
+
+If any check fails, return specific error and stop.
+
+### STEP 5: Invoke Agent Using Task Tool
 
 **MANDATORY**: Use the Task tool to invoke the specified agent. Do NOT attempt to execute the task yourself.
 
@@ -75,6 +79,10 @@ Invoke the Task tool with this exact pattern:
 
 ```
 Task: "You are the {agent-name} agent.
+
+Your specific role for this command: Execute atomic tasks with complete state tracking and result capture
+
+Task type: execute
 
 Read and execute the atomic task specified in: {step-file-path}
 
@@ -104,11 +112,29 @@ Commit the updated step file after execution."
 - Replace `{agent-name}` with the extracted agent name (e.g., "researcher")
 - Replace `{step-file-path}` with the absolute path to the step file
 
+### Agent Registry
+
+Valid agents are: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
+
+Note: This list is maintained in sync with the agent registry at `~/.claude/agents/dw/`. If you encounter "agent not found" errors, verify the agent is registered in that location.
+
+Each agent has specific capabilities:
+- **researcher**: Information gathering, analysis, documentation
+- **software-crafter**: Implementation, testing, refactoring, code quality
+- **solution-architect**: System design, architecture decisions, planning
+- **product-owner**: Requirements, business analysis, stakeholder alignment
+- **acceptance-designer**: Test definition, acceptance criteria, BDD
+- **devop**: Deployment, operations, infrastructure, lifecycle management
+
 ### Example Invocations
 
 **For researcher agent**:
 ```
 Task: "You are the researcher agent.
+
+Your specific role for this command: Execute atomic tasks with complete state tracking and result capture
+
+Task type: execute
 
 Read and execute the atomic task specified in: /mnt/c/Repositories/Projects/ai-craft/docs/workflow/auth-upgrade/steps/01-01.json
 
@@ -118,6 +144,10 @@ Read and execute the atomic task specified in: /mnt/c/Repositories/Projects/ai-c
 **For software-crafter agent**:
 ```
 Task: "You are the software-crafter agent.
+
+Your specific role for this command: Execute atomic tasks with complete state tracking and result capture
+
+Task type: execute
 
 Read and execute the atomic task specified in: /mnt/c/Repositories/Projects/ai-craft/docs/workflow/auth-upgrade/steps/02-01.json
 
@@ -136,6 +166,97 @@ Read and execute the atomic task specified in: /mnt/c/Repositories/Projects/ai-c
 
 **Dependency Not Met**:
 - If the invoked agent reports dependency failures, explain the blocking tasks to the user
+
+---
+
+## Overview
+
+Executes a self-contained atomic task by invoking the specified agent with complete context from the step file. Manages state transitions, tracks execution progress, and updates the step file with results.
+
+Designed to work with clean context, ensuring consistent quality by giving each agent a fresh start with all necessary information contained in the step file.
+
+## Usage Examples
+
+```bash
+# Execute a research task
+/dw:execute @researcher "docs/workflow/auth-upgrade/steps/01-01.json"
+
+# Execute implementation task
+/dw:execute @software-crafter "docs/workflow/auth-upgrade/steps/02-01.json"
+
+# Execute testing task
+/dw:execute @devop "docs/workflow/auth-upgrade/steps/04-01.json"
+
+# Override the suggested agent
+/dw:execute @solution-architect "docs/workflow/auth-upgrade/steps/01-02.json"
+```
+
+## Complete Workflow Integration
+
+These commands work together to form a complete workflow:
+
+```bash
+# Step 1: Create comprehensive plan
+/dw:roadmap @solution-architect "Migrate authentication system"
+
+# Step 2: Decompose into atomic tasks
+/dw:split @solution-architect "auth-migration"
+
+# Step 3: Execute first research task
+/dw:execute @researcher "docs/workflow/auth-migration/steps/01-01.json"
+
+# Step 4: Review before implementation
+/dw:review @software-crafter task "docs/workflow/auth-migration/steps/02-01.json"
+
+# Step 5: Execute implementation
+/dw:execute @software-crafter "docs/workflow/auth-migration/steps/02-01.json"
+
+# Step 6: Finalize when all tasks complete
+/dw:finalize @devop "auth-migration"
+```
+
+For details on each command, see respective sections.
+
+## State Transitions
+
+```
+TODO → IN_PROGRESS → DONE
+         ↓      ↓
+      FAILED  IN_REVIEW
+         ↓      ↓
+      RETRY   REWORK
+```
+
+## Context Files Required
+
+- Step file (JSON) with complete task specification
+- Any files referenced in step's `relevant_files` field
+
+---
+
+## Coordinator Success Criteria
+
+Verify the coordinator performed these tasks:
+- [ ] Agent name extracted from parameters correctly
+- [ ] Agent name validated against known agents
+- [ ] File path(s) extracted and validated
+- [ ] Absolute path constructed correctly
+- [ ] Pre-invocation validation checklist passed
+- [ ] Task tool invocation prepared with correct parameters
+- [ ] Task tool returned success status
+- [ ] User received confirmation of agent invocation
+
+## Agent Execution Success Criteria
+
+The invoked agent must accomplish (Reference Only):
+- [ ] Step file loaded successfully
+- [ ] Dependencies verified as complete
+- [ ] Agent invoked with full context
+- [ ] State transitions properly recorded
+- [ ] Execution results captured
+- [ ] Step file updated with results
+- [ ] State history maintained
+- [ ] Metrics tracked for analysis
 
 ---
 
@@ -408,18 +529,6 @@ If `ready_for_execution` is false, execution is blocked until issues are resolve
 # Update context and retry
 /dw:execute @data-engineer "steps/03-01.json" --retry
 ```
-
-## Success Criteria
-
-**Validation Checklist**:
-- [ ] Step file loaded successfully
-- [ ] Dependencies verified as complete
-- [ ] Agent invoked with full context
-- [ ] State transitions properly recorded
-- [ ] Execution results captured
-- [ ] Step file updated with results
-- [ ] State history maintained
-- [ ] Metrics tracked for analysis
 
 ## Output Artifacts
 

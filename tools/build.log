@@ -1,65 +1,110 @@
-2025-10-10 15:03:38,411 - INFO - Loaded configuration from: ../5d-wave/config.yaml
-2025-10-10 15:03:38,411 - INFO - Starting 5D-WAVE IDE bundle build at 2025-10-10 15:03:38.411814
-2025-10-10 15:03:38,412 - INFO - Validating source directory: ../5d-wave
-2025-10-10 15:03:38,419 - INFO - Source validation completed successfully
-2025-10-10 15:03:38,432 - INFO - Processing agents...
-2025-10-10 15:03:38,436 - INFO - Found 12 agent files
-2025-10-10 15:03:38,436 - INFO - Processing agent: acceptance-designer
-2025-10-10 15:03:38,436 - INFO - Processing agent: acceptance-designer
-2025-10-10 15:03:38,444 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
+2025-10-16 19:13:29,750 - INFO - Loaded configuration from: ../5d-wave/config.yaml
+2025-10-16 19:13:29,750 - DEBUG - Configuration sections: ['name', 'version', 'description', 'author', 'license', 'documentation_url', 'methodology', 'wave_phases', 'agents', 'commands', 'workflows', 'quality_gates', 'agent_teams', 'checklists', 'knowledge_base', 'templates', 'integration']
+2025-10-16 19:13:29,751 - INFO - Starting 5D-WAVE IDE bundle build at 2025-10-16 19:13:29.751178
+2025-10-16 19:13:29,751 - INFO - Validating source directory: ../5d-wave
+2025-10-16 19:13:29,753 - DEBUG - ✓ Found directory: agents
+2025-10-16 19:13:29,754 - DEBUG - ✓ Found directory: tasks
+2025-10-16 19:13:29,756 - DEBUG - ✓ Found directory: workflows
+2025-10-16 19:13:29,757 - DEBUG - ✓ Found directory: agent-teams
+2025-10-16 19:13:29,758 - DEBUG - ✓ Found directory: templates
+2025-10-16 19:13:29,760 - DEBUG - ✓ Found directory: checklists
+2025-10-16 19:13:29,761 - DEBUG - ✓ Found directory: data
+2025-10-16 19:13:29,762 - DEBUG - ✓ Found file: config.yaml
+2025-10-16 19:13:29,763 - INFO - Source validation completed successfully
+2025-10-16 19:13:29,767 - DEBUG - Created output directory: ../dist/ide/agents/dw
+2025-10-16 19:13:29,771 - DEBUG - Created output directory: ../dist/ide/commands/dw
+2025-10-16 19:13:29,775 - DEBUG - Created output directory: ../dist/ide/hooks
+2025-10-16 19:13:29,775 - INFO - Processing agents...
+2025-10-16 19:13:29,779 - INFO - Found 12 agent files
+2025-10-16 19:13:29,780 - INFO - Processing agent: acceptance-designer
+2025-10-16 19:13:29,780 - INFO - Processing agent: acceptance-designer
+2025-10-16 19:13:29,785 - DEBUG - Read file: ../5d-wave/agents/acceptance-designer.md (52020 chars)
+2025-10-16 19:13:29,788 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 11, column 29:
           * Minimize token usage: Be concise, eliminate verbosit ... 
                                 ^
-2025-10-10 15:03:38,452 - INFO - Injecting embed content from: 5d-wave/data/embed/acceptance-designer/bdd-methodology.md
-2025-10-10 15:03:38,459 - INFO - Injecting embed content from: 5d-wave/data/embed/acceptance-designer/critique-dimensions.md
-2025-10-10 15:03:38,460 - INFO - Processed 2 embed injection(s)
-2025-10-10 15:03:38,468 - INFO - Processing agent: agent-builder
-2025-10-10 15:03:38,468 - INFO - Processing agent: agent-builder
-2025-10-10 15:03:38,475 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
+2025-10-16 19:13:29,795 - DEBUG - Read file: ../5d-wave/data/embed/acceptance-designer/bdd-methodology.md (30224 chars)
+2025-10-16 19:13:29,796 - INFO - Injecting embed content from: 5d-wave/data/embed/acceptance-designer/bdd-methodology.md
+2025-10-16 19:13:29,802 - DEBUG - Read file: ../5d-wave/data/embed/acceptance-designer/critique-dimensions.md (3686 chars)
+2025-10-16 19:13:29,803 - INFO - Injecting embed content from: 5d-wave/data/embed/acceptance-designer/critique-dimensions.md
+2025-10-16 19:13:29,803 - INFO - Processed 2 embed injection(s)
+2025-10-16 19:13:29,811 - DEBUG - Wrote file: ../dist/ide/agents/dw/acceptance-designer.md (85823 chars)
+2025-10-16 19:13:29,811 - DEBUG - Generated agent: ../dist/ide/agents/dw/acceptance-designer.md
+2025-10-16 19:13:29,812 - INFO - Processing agent: agent-builder
+2025-10-16 19:13:29,812 - INFO - Processing agent: agent-builder
+2025-10-16 19:13:29,818 - DEBUG - Read file: ../5d-wave/agents/agent-builder.md (75344 chars)
+2025-10-16 19:13:29,819 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 13, column 29:
           * Minimize token usage: Be concise, eliminate verbosit ... 
                                 ^
-2025-10-10 15:03:38,483 - INFO - Injecting embed content from: 5d-wave/data/embed/agent-builder/critique-dimensions.md
-2025-10-10 15:03:38,484 - INFO - Processed 1 embed injection(s)
-2025-10-10 15:03:38,491 - INFO - Processing agent: data-engineer
-2025-10-10 15:03:38,491 - INFO - Processing agent: data-engineer
-2025-10-10 15:03:38,498 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
+2025-10-16 19:13:29,827 - DEBUG - Read file: ../5d-wave/data/embed/agent-builder/critique-dimensions.md (2430 chars)
+2025-10-16 19:13:29,827 - INFO - Injecting embed content from: 5d-wave/data/embed/agent-builder/critique-dimensions.md
+2025-10-16 19:13:29,827 - INFO - Processed 1 embed injection(s)
+2025-10-16 19:13:29,833 - DEBUG - Wrote file: ../dist/ide/agents/dw/agent-builder.md (77720 chars)
+2025-10-16 19:13:29,834 - DEBUG - Generated agent: ../dist/ide/agents/dw/agent-builder.md
+2025-10-16 19:13:29,834 - INFO - Processing agent: data-engineer
+2025-10-16 19:13:29,834 - INFO - Processing agent: data-engineer
+2025-10-16 19:13:29,841 - DEBUG - Read file: ../5d-wave/agents/data-engineer.md (90519 chars)
+2025-10-16 19:13:29,843 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 13, column 29:
           * Minimize token usage: Be concise, eliminate verbosit ... 
                                 ^
-2025-10-10 15:03:38,507 - INFO - Injecting embed content from: 5d-wave/data/embed/data-engineer/01-databases-fundamentals.md
-2025-10-10 15:03:38,514 - INFO - Injecting embed content from: 5d-wave/data/embed/data-engineer/02-querying-design-security-governance.md
-2025-10-10 15:03:38,522 - INFO - Injecting embed content from: 5d-wave/data/embed/data-engineer/03-nosql-querying.md
-2025-10-10 15:03:38,530 - INFO - Injecting embed content from: 5d-wave/data/embed/data-engineer/04-comprehensive-overview.md
-2025-10-10 15:03:38,537 - INFO - Injecting embed content from: 5d-wave/data/embed/data-engineer/critique-dimensions.md
-2025-10-10 15:03:38,537 - INFO - Processed 5 embed injection(s)
-2025-10-10 15:03:38,548 - INFO - Processing agent: devop
-2025-10-10 15:03:38,548 - INFO - Processing agent: devop
-2025-10-10 15:03:38,555 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
+2025-10-16 19:13:29,851 - DEBUG - Read file: ../5d-wave/data/embed/data-engineer/01-databases-fundamentals.md (83369 chars)
+2025-10-16 19:13:29,851 - INFO - Injecting embed content from: 5d-wave/data/embed/data-engineer/01-databases-fundamentals.md
+2025-10-16 19:13:29,859 - DEBUG - Read file: ../5d-wave/data/embed/data-engineer/02-querying-design-security-governance.md (96520 chars)
+2025-10-16 19:13:29,859 - INFO - Injecting embed content from: 5d-wave/data/embed/data-engineer/02-querying-design-security-governance.md
+2025-10-16 19:13:29,867 - DEBUG - Read file: ../5d-wave/data/embed/data-engineer/03-nosql-querying.md (92223 chars)
+2025-10-16 19:13:29,867 - INFO - Injecting embed content from: 5d-wave/data/embed/data-engineer/03-nosql-querying.md
+2025-10-16 19:13:29,874 - DEBUG - Read file: ../5d-wave/data/embed/data-engineer/04-comprehensive-overview.md (57801 chars)
+2025-10-16 19:13:29,874 - INFO - Injecting embed content from: 5d-wave/data/embed/data-engineer/04-comprehensive-overview.md
+2025-10-16 19:13:29,881 - DEBUG - Read file: ../5d-wave/data/embed/data-engineer/critique-dimensions.md (3193 chars)
+2025-10-16 19:13:29,881 - INFO - Injecting embed content from: 5d-wave/data/embed/data-engineer/critique-dimensions.md
+2025-10-16 19:13:29,882 - INFO - Processed 5 embed injection(s)
+2025-10-16 19:13:29,891 - DEBUG - Wrote file: ../dist/ide/agents/dw/data-engineer.md (423359 chars)
+2025-10-16 19:13:29,891 - DEBUG - Generated agent: ../dist/ide/agents/dw/data-engineer.md
+2025-10-16 19:13:29,891 - INFO - Processing agent: devop
+2025-10-16 19:13:29,892 - INFO - Processing agent: devop
+2025-10-16 19:13:29,898 - DEBUG - Read file: ../5d-wave/agents/devop.md (51216 chars)
+2025-10-16 19:13:29,899 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 11, column 29:
           * Minimize token usage: Be concise, eliminate verbosit ... 
                                 ^
-2025-10-10 15:03:38,563 - INFO - Injecting embed content from: 5d-wave/data/embed/devop/README.md
-2025-10-10 15:03:38,570 - INFO - Injecting embed content from: 5d-wave/data/embed/devop/feature-completion-deployment-readiness.md
-2025-10-10 15:03:38,577 - INFO - Injecting embed content from: 5d-wave/data/embed/devop/critique-dimensions.md
-2025-10-10 15:03:38,577 - INFO - Processed 3 embed injection(s)
-2025-10-10 15:03:38,587 - INFO - Processing agent: illustrator
-2025-10-10 15:03:38,587 - INFO - Processing agent: illustrator
-2025-10-10 15:03:38,593 - WARNING - No YAML configuration block found in agent file
-2025-10-10 15:03:38,602 - INFO - Injecting embed content from: 5d-wave/data/embed/illustrator/critique-dimensions.md
-2025-10-10 15:03:38,602 - INFO - Processed 1 embed injection(s)
-2025-10-10 15:03:38,609 - INFO - Processing agent: product-owner
-2025-10-10 15:03:38,609 - INFO - Processing agent: product-owner
-2025-10-10 15:03:38,616 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
+2025-10-16 19:13:29,907 - DEBUG - Read file: ../5d-wave/data/embed/devop/README.md (3041 chars)
+2025-10-16 19:13:29,907 - INFO - Injecting embed content from: 5d-wave/data/embed/devop/README.md
+2025-10-16 19:13:29,915 - DEBUG - Read file: ../5d-wave/data/embed/devop/feature-completion-deployment-readiness.md (32745 chars)
+2025-10-16 19:13:29,915 - INFO - Injecting embed content from: 5d-wave/data/embed/devop/feature-completion-deployment-readiness.md
+2025-10-16 19:13:29,922 - DEBUG - Read file: ../5d-wave/data/embed/devop/critique-dimensions.md (2569 chars)
+2025-10-16 19:13:29,922 - INFO - Injecting embed content from: 5d-wave/data/embed/devop/critique-dimensions.md
+2025-10-16 19:13:29,922 - INFO - Processed 3 embed injection(s)
+2025-10-16 19:13:29,929 - DEBUG - Wrote file: ../dist/ide/agents/dw/devop.md (89411 chars)
+2025-10-16 19:13:29,929 - DEBUG - Generated agent: ../dist/ide/agents/dw/devop.md
+2025-10-16 19:13:29,929 - INFO - Processing agent: illustrator
+2025-10-16 19:13:29,929 - INFO - Processing agent: illustrator
+2025-10-16 19:13:29,934 - DEBUG - Read file: ../5d-wave/agents/illustrator.md (51444 chars)
+2025-10-16 19:13:29,935 - WARNING - No YAML configuration block found in agent file
+2025-10-16 19:13:29,942 - DEBUG - Read file: ../5d-wave/data/embed/illustrator/critique-dimensions.md (2314 chars)
+2025-10-16 19:13:29,942 - INFO - Injecting embed content from: 5d-wave/data/embed/illustrator/critique-dimensions.md
+2025-10-16 19:13:29,942 - INFO - Processed 1 embed injection(s)
+2025-10-16 19:13:29,949 - DEBUG - Wrote file: ../dist/ide/agents/dw/illustrator.md (53704 chars)
+2025-10-16 19:13:29,949 - DEBUG - Generated agent: ../dist/ide/agents/dw/illustrator.md
+2025-10-16 19:13:29,949 - INFO - Processing agent: product-owner
+2025-10-16 19:13:29,949 - INFO - Processing agent: product-owner
+2025-10-16 19:13:29,955 - DEBUG - Read file: ../5d-wave/agents/product-owner.md (47200 chars)
+2025-10-16 19:13:29,956 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 11, column 29:
           * Minimize token usage: Be concise, eliminate verbosit ... 
                                 ^
-2025-10-10 15:03:38,624 - INFO - Injecting embed content from: 5d-wave/data/embed/product-owner/bdd-methodology.md
-2025-10-10 15:03:38,632 - INFO - Injecting embed content from: 5d-wave/data/embed/product-owner/critique-dimensions.md
-2025-10-10 15:03:38,632 - INFO - Processed 2 embed injection(s)
-2025-10-10 15:03:38,639 - INFO - Processing agent: researcher
-2025-10-10 15:03:38,639 - INFO - Processing agent: researcher
-2025-10-10 15:03:38,651 - ERROR - Failed to parse YAML configuration: while parsing a block collection
+2025-10-16 19:13:29,964 - DEBUG - Read file: ../5d-wave/data/embed/product-owner/bdd-methodology.md (36911 chars)
+2025-10-16 19:13:29,964 - INFO - Injecting embed content from: 5d-wave/data/embed/product-owner/bdd-methodology.md
+2025-10-16 19:13:29,970 - DEBUG - Read file: ../5d-wave/data/embed/product-owner/critique-dimensions.md (10283 chars)
+2025-10-16 19:13:29,970 - INFO - Injecting embed content from: 5d-wave/data/embed/product-owner/critique-dimensions.md
+2025-10-16 19:13:29,970 - INFO - Processed 2 embed injection(s)
+2025-10-16 19:13:29,976 - DEBUG - Wrote file: ../dist/ide/agents/dw/product-owner.md (94287 chars)
+2025-10-16 19:13:29,976 - DEBUG - Generated agent: ../dist/ide/agents/dw/product-owner.md
+2025-10-16 19:13:29,976 - INFO - Processing agent: researcher
+2025-10-16 19:13:29,976 - INFO - Processing agent: researcher
+2025-10-16 19:13:29,983 - DEBUG - Read file: ../5d-wave/agents/researcher.md (43012 chars)
+2025-10-16 19:13:29,990 - ERROR - Failed to parse YAML configuration: while parsing a block collection
   in "<unicode string>", line 141, column 5:
         - "Modifications outside data/re ... 
         ^
@@ -67,100 +112,230 @@ expected <block end>, but found '?'
   in "<unicode string>", line 146, column 5:
         requires_permission:
         ^
-2025-10-10 15:03:38,658 - INFO - Injecting embed content from: 5d-wave/data/embed/researcher/critique-dimensions.md
-2025-10-10 15:03:38,659 - INFO - Processed 1 embed injection(s)
-2025-10-10 15:03:38,666 - INFO - Processing agent: skeleton-builder
-2025-10-10 15:03:38,666 - INFO - Processing agent: skeleton-builder
-2025-10-10 15:03:38,674 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
+2025-10-16 19:13:29,998 - DEBUG - Read file: ../5d-wave/data/embed/researcher/critique-dimensions.md (2418 chars)
+2025-10-16 19:13:29,998 - INFO - Injecting embed content from: 5d-wave/data/embed/researcher/critique-dimensions.md
+2025-10-16 19:13:29,999 - INFO - Processed 1 embed injection(s)
+2025-10-16 19:13:30,004 - DEBUG - Wrote file: ../dist/ide/agents/dw/researcher.md (45376 chars)
+2025-10-16 19:13:30,005 - DEBUG - Generated agent: ../dist/ide/agents/dw/researcher.md
+2025-10-16 19:13:30,005 - INFO - Processing agent: skeleton-builder
+2025-10-16 19:13:30,005 - INFO - Processing agent: skeleton-builder
+2025-10-16 19:13:30,012 - DEBUG - Read file: ../5d-wave/agents/skeleton-builder.md (45542 chars)
+2025-10-16 19:13:30,014 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 11, column 29:
           * Minimize token usage: Be concise, eliminate verbosit ... 
                                 ^
-2025-10-10 15:03:38,682 - INFO - Injecting embed content from: 5d-wave/data/embed/skeleton-builder/comprehensive-walking-skeleton-research.md
-2025-10-10 15:03:38,690 - INFO - Injecting embed content from: 5d-wave/data/embed/skeleton-builder/critique-dimensions.md
-2025-10-10 15:03:38,690 - INFO - Processed 2 embed injection(s)
-2025-10-10 15:03:38,699 - INFO - Processing agent: software-crafter
-2025-10-10 15:03:38,699 - INFO - Processing agent: software-crafter
-2025-10-10 15:03:38,708 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
+2025-10-16 19:13:30,021 - DEBUG - Read file: ../5d-wave/data/embed/skeleton-builder/comprehensive-walking-skeleton-research.md (44990 chars)
+2025-10-16 19:13:30,021 - INFO - Injecting embed content from: 5d-wave/data/embed/skeleton-builder/comprehensive-walking-skeleton-research.md
+2025-10-16 19:13:30,029 - DEBUG - Read file: ../5d-wave/data/embed/skeleton-builder/critique-dimensions.md (2582 chars)
+2025-10-16 19:13:30,029 - INFO - Injecting embed content from: 5d-wave/data/embed/skeleton-builder/critique-dimensions.md
+2025-10-16 19:13:30,030 - INFO - Processed 2 embed injection(s)
+2025-10-16 19:13:30,036 - DEBUG - Wrote file: ../dist/ide/agents/dw/skeleton-builder.md (93007 chars)
+2025-10-16 19:13:30,036 - DEBUG - Generated agent: ../dist/ide/agents/dw/skeleton-builder.md
+2025-10-16 19:13:30,036 - INFO - Processing agent: software-crafter
+2025-10-16 19:13:30,036 - INFO - Processing agent: software-crafter
+2025-10-16 19:13:30,042 - DEBUG - Read file: ../5d-wave/agents/software-crafter.md (101184 chars)
+2025-10-16 19:13:30,044 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 11, column 29:
           * Minimize token usage: Be concise, eliminate verbosit ... 
                                 ^
-2025-10-10 15:03:38,716 - INFO - Injecting embed content from: 5d-wave/data/embed/software-crafter/README.md
-2025-10-10 15:03:38,724 - INFO - Injecting embed content from: 5d-wave/data/embed/software-crafter/mikado-method-progressive-refactoring.md
-2025-10-10 15:03:38,733 - INFO - Injecting embed content from: 5d-wave/data/embed/software-crafter/outside-in-tdd-methodology.md
-2025-10-10 15:03:38,742 - INFO - Injecting embed content from: 5d-wave/data/embed/software-crafter/property-based-mutation-testing.md
-2025-10-10 15:03:38,749 - INFO - Injecting embed content from: 5d-wave/data/embed/software-crafter/refactoring-patterns-catalog.md
-2025-10-10 15:03:38,757 - INFO - Injecting embed content from: 5d-wave/data/embed/software-crafter/critique-dimensions.md
-2025-10-10 15:03:38,758 - INFO - Processed 6 embed injection(s)
-2025-10-10 15:03:38,767 - INFO - Processing agent: solution-architect
-2025-10-10 15:03:38,767 - INFO - Processing agent: solution-architect
-2025-10-10 15:03:38,774 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
+2025-10-16 19:13:30,051 - DEBUG - Read file: ../5d-wave/data/embed/software-crafter/README.md (13688 chars)
+2025-10-16 19:13:30,051 - INFO - Injecting embed content from: 5d-wave/data/embed/software-crafter/README.md
+2025-10-16 19:13:30,059 - DEBUG - Read file: ../5d-wave/data/embed/software-crafter/mikado-method-progressive-refactoring.md (32178 chars)
+2025-10-16 19:13:30,059 - INFO - Injecting embed content from: 5d-wave/data/embed/software-crafter/mikado-method-progressive-refactoring.md
+2025-10-16 19:13:30,066 - DEBUG - Read file: ../5d-wave/data/embed/software-crafter/outside-in-tdd-methodology.md (31710 chars)
+2025-10-16 19:13:30,066 - INFO - Injecting embed content from: 5d-wave/data/embed/software-crafter/outside-in-tdd-methodology.md
+2025-10-16 19:13:30,072 - DEBUG - Read file: ../5d-wave/data/embed/software-crafter/property-based-mutation-testing.md (30715 chars)
+2025-10-16 19:13:30,073 - INFO - Injecting embed content from: 5d-wave/data/embed/software-crafter/property-based-mutation-testing.md
+2025-10-16 19:13:30,079 - DEBUG - Read file: ../5d-wave/data/embed/software-crafter/refactoring-patterns-catalog.md (25927 chars)
+2025-10-16 19:13:30,079 - INFO - Injecting embed content from: 5d-wave/data/embed/software-crafter/refactoring-patterns-catalog.md
+2025-10-16 19:13:30,085 - DEBUG - Read file: ../5d-wave/data/embed/software-crafter/critique-dimensions.md (12365 chars)
+2025-10-16 19:13:30,085 - INFO - Injecting embed content from: 5d-wave/data/embed/software-crafter/critique-dimensions.md
+2025-10-16 19:13:30,086 - INFO - Processed 6 embed injection(s)
+2025-10-16 19:13:30,094 - DEBUG - Wrote file: ../dist/ide/agents/dw/software-crafter.md (247448 chars)
+2025-10-16 19:13:30,094 - DEBUG - Generated agent: ../dist/ide/agents/dw/software-crafter.md
+2025-10-16 19:13:30,095 - INFO - Processing agent: solution-architect
+2025-10-16 19:13:30,095 - INFO - Processing agent: solution-architect
+2025-10-16 19:13:30,100 - DEBUG - Read file: ../5d-wave/agents/solution-architect.md (55664 chars)
+2025-10-16 19:13:30,102 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 11, column 29:
           * Minimize token usage: Be concise, eliminate verbosit ... 
                                 ^
-2025-10-10 15:03:38,781 - INFO - Injecting embed content from: 5d-wave/data/embed/solution-architect/comprehensive-architecture-patterns-and-methodologies.md
-2025-10-10 15:03:38,789 - INFO - Injecting embed content from: 5d-wave/data/embed/solution-architect/residuality-theory-methodology.md
-2025-10-10 15:03:38,796 - INFO - Injecting embed content from: 5d-wave/data/embed/solution-architect/critique-dimensions.md
-2025-10-10 15:03:38,796 - INFO - Processed 3 embed injection(s)
-2025-10-10 15:03:38,803 - INFO - Processing agent: troubleshooter
-2025-10-10 15:03:38,803 - INFO - Processing agent: troubleshooter
-2025-10-10 15:03:38,810 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
+2025-10-16 19:13:30,110 - DEBUG - Read file: ../5d-wave/data/embed/solution-architect/comprehensive-architecture-patterns-and-methodologies.md (57513 chars)
+2025-10-16 19:13:30,110 - INFO - Injecting embed content from: 5d-wave/data/embed/solution-architect/comprehensive-architecture-patterns-and-methodologies.md
+2025-10-16 19:13:30,116 - DEBUG - Read file: ../5d-wave/data/embed/solution-architect/residuality-theory-methodology.md (35921 chars)
+2025-10-16 19:13:30,116 - INFO - Injecting embed content from: 5d-wave/data/embed/solution-architect/residuality-theory-methodology.md
+2025-10-16 19:13:30,122 - DEBUG - Read file: ../5d-wave/data/embed/solution-architect/critique-dimensions.md (10860 chars)
+2025-10-16 19:13:30,122 - INFO - Injecting embed content from: 5d-wave/data/embed/solution-architect/critique-dimensions.md
+2025-10-16 19:13:30,123 - INFO - Processed 3 embed injection(s)
+2025-10-16 19:13:30,129 - DEBUG - Wrote file: ../dist/ide/agents/dw/solution-architect.md (159775 chars)
+2025-10-16 19:13:30,129 - DEBUG - Generated agent: ../dist/ide/agents/dw/solution-architect.md
+2025-10-16 19:13:30,130 - INFO - Processing agent: troubleshooter
+2025-10-16 19:13:30,130 - INFO - Processing agent: troubleshooter
+2025-10-16 19:13:30,135 - DEBUG - Read file: ../5d-wave/agents/troubleshooter.md (47194 chars)
+2025-10-16 19:13:30,136 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 11, column 29:
           * Minimize token usage: Be concise, eliminate verbosit ... 
                                 ^
-2025-10-10 15:03:38,818 - INFO - Injecting embed content from: 5d-wave/data/embed/troubleshooter/comprehensive-rca-methodologies.md
-2025-10-10 15:03:38,824 - INFO - Injecting embed content from: 5d-wave/data/embed/troubleshooter/critique-dimensions.md
-2025-10-10 15:03:38,825 - INFO - Processed 2 embed injection(s)
-2025-10-10 15:03:38,832 - INFO - Processing agent: visual-architect
-2025-10-10 15:03:38,832 - INFO - Processing agent: visual-architect
-2025-10-10 15:03:38,839 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
+2025-10-16 19:13:30,144 - DEBUG - Read file: ../5d-wave/data/embed/troubleshooter/comprehensive-rca-methodologies.md (67888 chars)
+2025-10-16 19:13:30,144 - INFO - Injecting embed content from: 5d-wave/data/embed/troubleshooter/comprehensive-rca-methodologies.md
+2025-10-16 19:13:30,149 - DEBUG - Read file: ../5d-wave/data/embed/troubleshooter/critique-dimensions.md (2423 chars)
+2025-10-16 19:13:30,149 - INFO - Injecting embed content from: 5d-wave/data/embed/troubleshooter/critique-dimensions.md
+2025-10-16 19:13:30,150 - INFO - Processed 2 embed injection(s)
+2025-10-16 19:13:30,156 - DEBUG - Wrote file: ../dist/ide/agents/dw/troubleshooter.md (117398 chars)
+2025-10-16 19:13:30,157 - DEBUG - Generated agent: ../dist/ide/agents/dw/troubleshooter.md
+2025-10-16 19:13:30,157 - INFO - Processing agent: visual-architect
+2025-10-16 19:13:30,157 - INFO - Processing agent: visual-architect
+2025-10-16 19:13:30,162 - DEBUG - Read file: ../5d-wave/agents/visual-architect.md (49147 chars)
+2025-10-16 19:13:30,163 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 11, column 29:
           * Minimize token usage: Be concise, eliminate verbosit ... 
                                 ^
-2025-10-10 15:03:38,847 - INFO - Injecting embed content from: 5d-wave/data/embed/visual-architect/critique-dimensions.md
-2025-10-10 15:03:38,847 - INFO - Processed 1 embed injection(s)
-2025-10-10 15:03:38,855 - INFO - Processing commands...
-2025-10-10 15:03:38,862 - INFO - Found 14 task files
-2025-10-10 15:03:38,862 - INFO - Processing command: deliver
-2025-10-10 15:03:38,877 - INFO - Processing command: design
-2025-10-10 15:03:38,890 - INFO - Processing command: develop
-2025-10-10 15:03:38,905 - INFO - Processing command: diagram
-2025-10-10 15:03:38,919 - INFO - Processing command: discuss
-2025-10-10 15:03:38,934 - INFO - Processing command: distill
-2025-10-10 15:03:38,948 - INFO - Processing command: forge
-2025-10-10 15:03:38,961 - INFO - Processing command: git
-2025-10-10 15:03:38,975 - INFO - Processing command: mikado
-2025-10-10 15:03:38,988 - INFO - Processing command: refactor
-2025-10-10 15:03:39,002 - INFO - Processing command: research
-2025-10-10 15:03:39,015 - INFO - Processing command: root-why
-2025-10-10 15:03:39,028 - INFO - Processing command: skeleton
-2025-10-10 15:03:39,041 - INFO - Processing command: start
-2025-10-10 15:03:39,056 - INFO - Processing teams...
-2025-10-10 15:03:39,060 - INFO - Found 3 team files
-2025-10-10 15:03:39,061 - INFO - Processing team: 5d-wave-brownfield-team
-2025-10-10 15:03:39,110 - INFO - Processing team: 5d-wave-core-team
-2025-10-10 15:03:39,147 - INFO - Processing team: 5d-wave-greenfield-team
-2025-10-10 15:03:39,191 - INFO - Processing workflows...
-2025-10-10 15:03:39,196 - INFO - Found 3 workflow files
-2025-10-10 15:03:39,196 - INFO - Processing workflow: 5d-wave-complete
-2025-10-10 15:03:39,224 - INFO - Processing workflow: atdd-focused
-2025-10-10 15:03:39,253 - INFO - Processing workflow: visual-architecture
-2025-10-10 15:03:39,288 - INFO - Processing hooks...
-2025-10-10 15:03:40,418 - INFO - Copied hooks directory from ../5d-wave/hooks to ../dist/ide/hooks
-2025-10-10 15:03:40,584 - INFO - Hooks processing complete: 45 files
-2025-10-10 15:03:40,585 - INFO - Generating IDE configuration...
-2025-10-10 15:03:40,589 - INFO - Generated IDE config: ../dist/ide/agents/dw/config.json
-2025-10-10 15:03:40,589 - INFO - Build completed in 2.18 seconds
-
-============================================================
-5D-WAVE IDE Bundle Build Summary
-============================================================
-Agents processed:    12
-Commands processed:  14
-Teams processed:     3
-Workflows processed: 3
-Hooks copied:        45
-Warnings:            0
-Errors:              0
-Output directory:    ../dist/ide
-
-✅ Build completed successfully!
+2025-10-16 19:13:30,171 - DEBUG - Read file: ../5d-wave/data/embed/visual-architect/critique-dimensions.md (2394 chars)
+2025-10-16 19:13:30,171 - INFO - Injecting embed content from: 5d-wave/data/embed/visual-architect/critique-dimensions.md
+2025-10-16 19:13:30,171 - INFO - Processed 1 embed injection(s)
+2025-10-16 19:13:30,177 - DEBUG - Wrote file: ../dist/ide/agents/dw/visual-architect.md (51487 chars)
+2025-10-16 19:13:30,177 - DEBUG - Generated agent: ../dist/ide/agents/dw/visual-architect.md
+2025-10-16 19:13:30,177 - INFO - Processing commands...
+2025-10-16 19:13:30,181 - INFO - Found 19 task files
+2025-10-16 19:13:30,182 - DEBUG - Processing task: deliver.md
+2025-10-16 19:13:30,182 - INFO - Processing command: deliver
+2025-10-16 19:13:30,188 - DEBUG - Read file: ../5d-wave/tasks/dw/deliver.md (2417 chars)
+2025-10-16 19:13:30,194 - DEBUG - Wrote file: ../dist/ide/commands/dw/deliver.md (2556 chars)
+2025-10-16 19:13:30,194 - DEBUG - Generated command: ../dist/ide/commands/dw/deliver.md
+2025-10-16 19:13:30,194 - DEBUG - Processing task: design.md
+2025-10-16 19:13:30,194 - INFO - Processing command: design
+2025-10-16 19:13:30,201 - DEBUG - Read file: ../5d-wave/tasks/dw/design.md (2409 chars)
+2025-10-16 19:13:30,208 - DEBUG - Wrote file: ../dist/ide/commands/dw/design.md (3008 chars)
+2025-10-16 19:13:30,208 - DEBUG - Generated command: ../dist/ide/commands/dw/design.md
+2025-10-16 19:13:30,208 - DEBUG - Processing task: develop.md
+2025-10-16 19:13:30,208 - INFO - Processing command: develop
+2025-10-16 19:13:30,215 - DEBUG - Read file: ../5d-wave/tasks/dw/develop.md (2497 chars)
+2025-10-16 19:13:30,221 - DEBUG - Wrote file: ../dist/ide/commands/dw/develop.md (3018 chars)
+2025-10-16 19:13:30,222 - DEBUG - Generated command: ../dist/ide/commands/dw/develop.md
+2025-10-16 19:13:30,222 - DEBUG - Processing task: diagram.md
+2025-10-16 19:13:30,222 - INFO - Processing command: diagram
+2025-10-16 19:13:30,228 - DEBUG - Read file: ../5d-wave/tasks/dw/diagram.md (2284 chars)
+2025-10-16 19:13:30,233 - DEBUG - Wrote file: ../dist/ide/commands/dw/diagram.md (2767 chars)
+2025-10-16 19:13:30,234 - DEBUG - Generated command: ../dist/ide/commands/dw/diagram.md
+2025-10-16 19:13:30,234 - DEBUG - Processing task: discuss.md
+2025-10-16 19:13:30,234 - INFO - Processing command: discuss
+2025-10-16 19:13:30,240 - DEBUG - Read file: ../5d-wave/tasks/dw/discuss.md (1986 chars)
+2025-10-16 19:13:30,246 - DEBUG - Wrote file: ../dist/ide/commands/dw/discuss.md (2478 chars)
+2025-10-16 19:13:30,247 - DEBUG - Generated command: ../dist/ide/commands/dw/discuss.md
+2025-10-16 19:13:30,247 - DEBUG - Processing task: distill.md
+2025-10-16 19:13:30,247 - INFO - Processing command: distill
+2025-10-16 19:13:30,253 - DEBUG - Read file: ../5d-wave/tasks/dw/distill.md (2520 chars)
+2025-10-16 19:13:30,259 - DEBUG - Wrote file: ../dist/ide/commands/dw/distill.md (3070 chars)
+2025-10-16 19:13:30,260 - DEBUG - Generated command: ../dist/ide/commands/dw/distill.md
+2025-10-16 19:13:30,260 - DEBUG - Processing task: execute.md
+2025-10-16 19:13:30,260 - INFO - Processing command: execute
+2025-10-16 19:13:30,265 - DEBUG - Read file: ../5d-wave/tasks/dw/execute.md (12437 chars)
+2025-10-16 19:13:30,272 - DEBUG - Wrote file: ../dist/ide/commands/dw/execute.md (12854 chars)
+2025-10-16 19:13:30,272 - DEBUG - Generated command: ../dist/ide/commands/dw/execute.md
+2025-10-16 19:13:30,272 - DEBUG - Processing task: finalize.md
+2025-10-16 19:13:30,272 - INFO - Processing command: finalize
+2025-10-16 19:13:30,278 - DEBUG - Read file: ../5d-wave/tasks/dw/finalize.md (12999 chars)
+2025-10-16 19:13:30,284 - DEBUG - Wrote file: ../dist/ide/commands/dw/finalize.md (13467 chars)
+2025-10-16 19:13:30,285 - DEBUG - Generated command: ../dist/ide/commands/dw/finalize.md
+2025-10-16 19:13:30,285 - DEBUG - Processing task: forge.md
+2025-10-16 19:13:30,285 - INFO - Processing command: forge
+2025-10-16 19:13:30,291 - DEBUG - Read file: ../5d-wave/tasks/dw/forge.md (1917 chars)
+2025-10-16 19:13:30,299 - DEBUG - Wrote file: ../dist/ide/commands/dw/forge.md (2050 chars)
+2025-10-16 19:13:30,299 - DEBUG - Generated command: ../dist/ide/commands/dw/forge.md
+2025-10-16 19:13:30,299 - DEBUG - Processing task: git.md
+2025-10-16 19:13:30,299 - INFO - Processing command: git
+2025-10-16 19:13:30,306 - DEBUG - Read file: ../5d-wave/tasks/dw/git.md (1607 chars)
+2025-10-16 19:13:30,315 - DEBUG - Wrote file: ../dist/ide/commands/dw/git.md (2012 chars)
+2025-10-16 19:13:30,315 - DEBUG - Generated command: ../dist/ide/commands/dw/git.md
+2025-10-16 19:13:30,316 - DEBUG - Processing task: mikado.md
+2025-10-16 19:13:30,316 - INFO - Processing command: mikado
+2025-10-16 19:13:30,321 - DEBUG - Read file: ../5d-wave/tasks/dw/mikado.md (1896 chars)
+2025-10-16 19:13:30,329 - DEBUG - Wrote file: ../dist/ide/commands/dw/mikado.md (2465 chars)
+2025-10-16 19:13:30,330 - DEBUG - Generated command: ../dist/ide/commands/dw/mikado.md
+2025-10-16 19:13:30,330 - DEBUG - Processing task: refactor.md
+2025-10-16 19:13:30,330 - INFO - Processing command: refactor
+2025-10-16 19:13:30,337 - DEBUG - Read file: ../5d-wave/tasks/dw/refactor.md (1837 chars)
+2025-10-16 19:13:30,343 - DEBUG - Wrote file: ../dist/ide/commands/dw/refactor.md (2377 chars)
+2025-10-16 19:13:30,344 - DEBUG - Generated command: ../dist/ide/commands/dw/refactor.md
+2025-10-16 19:13:30,344 - DEBUG - Processing task: research.md
+2025-10-16 19:13:30,344 - INFO - Processing command: research
+2025-10-16 19:13:30,349 - DEBUG - Read file: ../5d-wave/tasks/dw/research.md (3293 chars)
+2025-10-16 19:13:30,356 - DEBUG - Wrote file: ../dist/ide/commands/dw/research.md (3435 chars)
+2025-10-16 19:13:30,356 - DEBUG - Generated command: ../dist/ide/commands/dw/research.md
+2025-10-16 19:13:30,356 - DEBUG - Processing task: review.md
+2025-10-16 19:13:30,356 - INFO - Processing command: review
+2025-10-16 19:13:30,362 - DEBUG - Read file: ../5d-wave/tasks/dw/review.md (12500 chars)
+2025-10-16 19:13:30,368 - DEBUG - Wrote file: ../dist/ide/commands/dw/review.md (13053 chars)
+2025-10-16 19:13:30,369 - DEBUG - Generated command: ../dist/ide/commands/dw/review.md
+2025-10-16 19:13:30,369 - DEBUG - Processing task: roadmap.md
+2025-10-16 19:13:30,369 - INFO - Processing command: roadmap
+2025-10-16 19:13:30,374 - DEBUG - Read file: ../5d-wave/tasks/dw/roadmap.md (10904 chars)
+2025-10-16 19:13:30,382 - DEBUG - Wrote file: ../dist/ide/commands/dw/roadmap.md (11361 chars)
+2025-10-16 19:13:30,382 - DEBUG - Generated command: ../dist/ide/commands/dw/roadmap.md
+2025-10-16 19:13:30,382 - DEBUG - Processing task: root-why.md
+2025-10-16 19:13:30,382 - INFO - Processing command: root-why
+2025-10-16 19:13:30,389 - DEBUG - Read file: ../5d-wave/tasks/dw/root-why.md (1760 chars)
+2025-10-16 19:13:30,397 - DEBUG - Wrote file: ../dist/ide/commands/dw/root-why.md (1902 chars)
+2025-10-16 19:13:30,397 - DEBUG - Generated command: ../dist/ide/commands/dw/root-why.md
+2025-10-16 19:13:30,397 - DEBUG - Processing task: skeleton.md
+2025-10-16 19:13:30,398 - INFO - Processing command: skeleton
+2025-10-16 19:13:30,404 - DEBUG - Read file: ../5d-wave/tasks/dw/skeleton.md (2174 chars)
+2025-10-16 19:13:30,410 - DEBUG - Wrote file: ../dist/ide/commands/dw/skeleton.md (2701 chars)
+2025-10-16 19:13:30,410 - DEBUG - Generated command: ../dist/ide/commands/dw/skeleton.md
+2025-10-16 19:13:30,410 - DEBUG - Processing task: split.md
+2025-10-16 19:13:30,411 - INFO - Processing command: split
+2025-10-16 19:13:30,417 - DEBUG - Read file: ../5d-wave/tasks/dw/split.md (13407 chars)
+2025-10-16 19:13:30,424 - DEBUG - Wrote file: ../dist/ide/commands/dw/split.md (13786 chars)
+2025-10-16 19:13:30,424 - DEBUG - Generated command: ../dist/ide/commands/dw/split.md
+2025-10-16 19:13:30,424 - DEBUG - Processing task: start.md
+2025-10-16 19:13:30,424 - INFO - Processing command: start
+2025-10-16 19:13:30,430 - DEBUG - Read file: ../5d-wave/tasks/dw/start.md (1680 chars)
+2025-10-16 19:13:30,437 - DEBUG - Wrote file: ../dist/ide/commands/dw/start.md (2129 chars)
+2025-10-16 19:13:30,437 - DEBUG - Generated command: ../dist/ide/commands/dw/start.md
+2025-10-16 19:13:30,438 - INFO - Processing teams...
+2025-10-16 19:13:30,442 - INFO - Found 3 team files
+2025-10-16 19:13:30,442 - DEBUG - Processing team: 5d-wave-brownfield-team.yaml
+2025-10-16 19:13:30,442 - INFO - Processing team: 5d-wave-brownfield-team
+2025-10-16 19:13:30,447 - DEBUG - Read file: ../5d-wave/agent-teams/5d-wave-brownfield-team.yaml (9999 chars)
+2025-10-16 19:13:30,462 - DEBUG - Read file: ../5d-wave/agents/solution-architect.md (55664 chars)
+2025-10-16 19:13:30,469 - DEBUG - Read file: ../5d-wave/agents/acceptance-designer.md (52020 chars)
+2025-10-16 19:13:30,476 - DEBUG - Read file: ../5d-wave/agents/software-crafter.md (101184 chars)
+2025-10-16 19:13:30,488 - DEBUG - Wrote file: ../dist/ide/agents/dw/5d-wave-brownfield-team-team.md (230574 chars)
+2025-10-16 19:13:30,489 - DEBUG - Generated team agent: ../dist/ide/agents/dw/5d-wave-brownfield-team-team.md
+2025-10-16 19:13:30,489 - DEBUG - Processing team: 5d-wave-core-team.yaml
+2025-10-16 19:13:30,489 - INFO - Processing team: 5d-wave-core-team
+2025-10-16 19:13:30,494 - DEBUG - Read file: ../5d-wave/agent-teams/5d-wave-core-team.yaml (6030 chars)
+2025-10-16 19:13:30,507 - DEBUG - Read file: ../5d-wave/agents/solution-architect.md (55664 chars)
+2025-10-16 19:13:30,513 - DEBUG - Read file: ../5d-wave/agents/acceptance-designer.md (52020 chars)
+2025-10-16 19:13:30,524 - DEBUG - Wrote file: ../dist/ide/agents/dw/5d-wave-core-team-team.md (122559 chars)
+2025-10-16 19:13:30,524 - DEBUG - Generated team agent: ../dist/ide/agents/dw/5d-wave-core-team-team.md
+2025-10-16 19:13:30,524 - DEBUG - Processing team: 5d-wave-greenfield-team.yaml
+2025-10-16 19:13:30,524 - INFO - Processing team: 5d-wave-greenfield-team
+2025-10-16 19:13:30,529 - DEBUG - Read file: ../5d-wave/agent-teams/5d-wave-greenfield-team.yaml (8041 chars)
+2025-10-16 19:13:30,543 - DEBUG - Read file: ../5d-wave/agents/solution-architect.md (55664 chars)
+2025-10-16 19:13:30,549 - DEBUG - Read file: ../5d-wave/agents/acceptance-designer.md (52020 chars)
+2025-10-16 19:13:30,561 - DEBUG - Wrote file: ../dist/ide/agents/dw/5d-wave-greenfield-team-team.md (121839 chars)
+2025-10-16 19:13:30,561 - DEBUG - Generated team agent: ../dist/ide/agents/dw/5d-wave-greenfield-team-team.md
+2025-10-16 19:13:30,561 - INFO - Processing workflows...
+2025-10-16 19:13:30,564 - INFO - Found 3 workflow files
+2025-10-16 19:13:30,565 - DEBUG - Processing workflow: 5d-wave-complete.yaml
+2025-10-16 19:13:30,565 - INFO - Processing workflow: 5d-wave-complete
+2025-10-16 19:13:30,569 - DEBUG - Read file: ../5d-wave/workflows/5d-wave-complete.yaml (9044 chars)
+2025-10-16 19:13:30,587 - DEBUG - Wrote file: ../dist/ide/agents/dw/5d-wave-complete-orchestrator.md (12274 chars)
+2025-10-16 19:13:30,588 - DEBUG - Generated orchestrator: ../dist/ide/agents/dw/5d-wave-complete-orchestrator.md
+2025-10-16 19:13:30,588 - DEBUG - Processing workflow: atdd-focused.yaml
+2025-10-16 19:13:30,588 - INFO - Processing workflow: atdd-focused
+2025-10-16 19:13:30,593 - DEBUG - Read file: ../5d-wave/workflows/atdd-focused.yaml (11466 chars)
+2025-10-16 19:13:30,614 - DEBUG - Wrote file: ../dist/ide/agents/dw/atdd-focused-orchestrator.md (13729 chars)
+2025-10-16 19:13:30,614 - DEBUG - Generated orchestrator: ../dist/ide/agents/dw/atdd-focused-orchestrator.md
+2025-10-16 19:13:30,614 - DEBUG - Processing workflow: visual-architecture.yaml
+2025-10-16 19:13:30,614 - INFO - Processing workflow: visual-architecture
+2025-10-16 19:13:30,620 - DEBUG - Read file: ../5d-wave/workflows/visual-architecture.yaml (14250 chars)
+2025-10-16 19:13:30,644 - DEBUG - Wrote file: ../dist/ide/agents/dw/visual-architecture-orchestrator.md (16483 chars)
+2025-10-16 19:13:30,645 - DEBUG - Generated orchestrator: ../dist/ide/agents/dw/visual-architecture-orchestrator.md
+2025-10-16 19:13:30,645 - INFO - Processing hooks...
+2025-10-16 19:13:31,761 - INFO - Copied hooks directory from ../5d-wave/hooks to ../dist/ide/hooks
+2025-10-16 19:13:31,922 - INFO - Hooks processing complete: 45 files
+2025-10-16 19:13:31,922 - INFO - Generating IDE configuration...
+2025-10-16 19:13:31,927 - INFO - Generated IDE config: ../dist/ide/agents/dw/config.json
+2025-10-16 19:13:31,927 - INFO - Build completed in 2.18 seconds
