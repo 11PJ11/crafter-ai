@@ -371,11 +371,11 @@ remove_framework_hooks() {
 
                 while IFS= read -r -d '' file; do
                     if grep -q "# Part of Claude Code SuperClaude\|# AI-Craft Framework" "$file" 2>/dev/null; then
-                        ((would_remove++))
-                        ((total_would_remove++))
+                        ((would_remove++)) || true
+                        ((total_would_remove++)) || true
                     else
-                        ((would_preserve++))
-                        ((total_would_preserve++))
+                        ((would_preserve++)) || true
+                        ((total_would_preserve++)) || true
                     fi
                 done < <(find "$CLAUDE_CONFIG_DIR/hooks/$dir" -type f -print0 2>/dev/null)
 
@@ -427,12 +427,12 @@ remove_framework_hooks() {
                 # Check if file has AI-Craft marker comment
                 if grep -q "# Part of Claude Code SuperClaude\|# AI-Craft Framework" "$file" 2>/dev/null; then
                     rm -f "$file"
-                    ((removed_count++))
-                    ((total_removed++))
+                    ((removed_count++)) || true
+                    ((total_removed++)) || true || true
                 else
                     warn "Preserving custom file: ${file#$CLAUDE_CONFIG_DIR/hooks/}"
-                    ((preserved_count++))
-                    ((total_preserved++))
+                    ((preserved_count++)) || true
+                    ((total_preserved++)) || true
                 fi
             done < <(find "$CLAUDE_CONFIG_DIR/hooks/$dir" -type f -print0 2>/dev/null)
 
@@ -457,7 +457,7 @@ remove_framework_hooks() {
     # Remove standalone framework files
     if [[ -f "$CLAUDE_CONFIG_DIR/hooks/verify-installation.sh" ]]; then
         rm -f "$CLAUDE_CONFIG_DIR/hooks/verify-installation.sh"
-        ((total_removed++))
+        ((total_removed++)) || true
     fi
 
     # Remove test files
@@ -683,7 +683,7 @@ remove_backups() {
         if [[ -d "$CLAUDE_CONFIG_DIR/backups" ]]; then
             for backup_dir in "$CLAUDE_CONFIG_DIR/backups"/ai-craft-*; do
                 if [[ -d "$backup_dir" ]]; then
-                    ((backup_count++))
+                    ((backup_count++)) || true
                 fi
             done
         fi
@@ -703,7 +703,7 @@ remove_backups() {
         for backup_dir in "$CLAUDE_CONFIG_DIR/backups"/ai-craft-*; do
             if [[ -d "$backup_dir" ]]; then
                 rm -rf "$backup_dir"
-                ((backup_count++))
+                ((backup_count++)) || true
             fi
         done
     fi
@@ -749,19 +749,19 @@ validate_removal() {
     # Check that agents are removed
     if [[ -d "$CLAUDE_CONFIG_DIR/agents/dw" ]]; then
         error "5D-WAVE agents directory still exists"
-        ((errors++))
+        ((errors++)) || true
     fi
 
     # Check that commands are removed
     if [[ -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
         error "5D-WAVE commands directory still exists"
-        ((errors++))
+        ((errors++)) || true
     fi
 
     # Check that framework hooks are removed
     if [[ -d "$CLAUDE_CONFIG_DIR/hooks/workflow" ]] || [[ -d "$CLAUDE_CONFIG_DIR/hooks/code-quality" ]]; then
         error "Framework hook directories still exist"
-        ((errors++))
+        ((errors++)) || true
     fi
 
     # Check that framework hooks are removed from settings
@@ -774,12 +774,12 @@ validate_removal() {
     # Check that config files are removed
     if [[ -f "$CLAUDE_CONFIG_DIR/ai-craft-manifest.txt" ]]; then
         error "AI-Craft manifest file still exists"
-        ((errors++))
+        ((errors++)) || true
     fi
     
     if [[ -f "$CLAUDE_CONFIG_DIR/ai-craft-install.log" ]]; then
         error "AI-Craft installation log still exists"
-        ((errors++))
+        ((errors++)) || true
     fi
     
     # Check for remaining backup directories
@@ -787,7 +787,7 @@ validate_removal() {
         for backup_dir in "$CLAUDE_CONFIG_DIR/backups"/ai-craft-*; do
             if [[ -d "$backup_dir" ]]; then
                 error "AI-Craft backup directory still exists: $(basename "$backup_dir")"
-                ((errors++))
+                ((errors++)) || true
             fi
         done
     fi

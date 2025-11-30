@@ -336,7 +336,7 @@ install_craft_ai_hooks() {
                 local custom_count=0
                 while IFS= read -r -d '' file; do
                     if ! grep -q "# Part of Claude Code SuperClaude\|# AI-Craft Framework" "$file" 2>/dev/null; then
-                        ((custom_count++))
+                        ((custom_count++)) || true
                     fi
                 done < <(find "$CLAUDE_CONFIG_DIR/hooks/$dir" -type f -not -path "*/__pycache__/*" -print0 2>/dev/null)
 
@@ -590,21 +590,21 @@ validate_hooks() {
     for hook in "${required_workflow_hooks[@]}"; do
         if [[ ! -f "$CLAUDE_CONFIG_DIR/hooks/workflow/$hook" ]]; then
             error "Missing workflow hook: $hook"
-            ((errors++))
+            ((errors++)) || true
         fi
     done
 
     for hook in "${required_quality_hooks[@]}"; do
         if [[ ! -f "$CLAUDE_CONFIG_DIR/hooks/code-quality/$hook" ]]; then
             error "Missing quality hook: $hook"
-            ((errors++))
+            ((errors++)) || true
         fi
     done
 
     # Check core library exists
     if [[ ! -f "$CLAUDE_CONFIG_DIR/hooks/lib/HookManager.sh" ]]; then
         error "Missing core hook library: HookManager.sh"
-        ((errors++))
+        ((errors++)) || true
     fi
 
     # Check hook permissions
@@ -644,19 +644,19 @@ validate_installation() {
     # Check that agents are installed
     if [[ ! -d "$CLAUDE_CONFIG_DIR/agents/dw" ]]; then
         error "Missing DW agents directory"
-        ((errors++))
+        ((errors++)) || true
     fi
 
     # Check that commands are installed
     if [[ ! -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
         error "Missing DW commands directory"
-        ((errors++))
+        ((errors++)) || true
     fi
 
     # Check that hooks are installed
     if [[ ! -d "$CLAUDE_CONFIG_DIR/hooks" ]]; then
         error "Missing hooks directory"
-        ((errors++))
+        ((errors++)) || true
     fi
 
     # Check essential DW commands exist
@@ -664,7 +664,7 @@ validate_installation() {
     for cmd in "${essential_commands[@]}"; do
         if [[ ! -f "$CLAUDE_CONFIG_DIR/commands/dw/$cmd.md" ]]; then
             error "Missing essential DW command: $cmd.md"
-            ((errors++))
+            ((errors++)) || true
         fi
     done
     

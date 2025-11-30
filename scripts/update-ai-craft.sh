@@ -307,23 +307,23 @@ validate_update() {
     # Check that new installation exists
     if [[ ! -d "$CLAUDE_CONFIG_DIR/agents/dw" ]]; then
         error "Agents directory missing after update"
-        ((validation_errors++))
+        ((validation_errors++)) || true
     fi
 
     if [[ ! -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
         error "Commands directory missing after update"
-        ((validation_errors++))
+        ((validation_errors++)) || true
     fi
 
     if [[ ! -d "$CLAUDE_CONFIG_DIR/hooks" ]]; then
         error "Hooks directory missing after update"
-        ((validation_errors++))
+        ((validation_errors++)) || true
     fi
 
     # Check manifest
     if [[ ! -f "$CLAUDE_CONFIG_DIR/ai-craft-manifest.txt" ]]; then
         warn "Installation manifest missing"
-        ((validation_errors++))
+        ((validation_errors++)) || true
     fi
 
     # Count installed components
