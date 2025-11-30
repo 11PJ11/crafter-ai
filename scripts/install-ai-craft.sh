@@ -42,7 +42,7 @@ AI-Craft Framework Installation Script for Linux/WSL
 
 DESCRIPTION:
     Installs the 5D-WAVE methodology framework to your global Claude config directory.
-    This makes all specialized agents, commands, and hooks available across all projects.
+    This makes all specialized agents and commands available across all projects.
 
 USAGE:
     $0 [OPTIONS]
@@ -60,27 +60,18 @@ EXAMPLES:
     $0 --restore           # Restore from latest backup
 
 WHAT GETS INSTALLED:
-    - 5D-WAVE specialized agents (DISCUSS→DESIGN→DISTILL→DEVELOP→DEMO methodology)
+    - 5D-WAVE specialized agents (DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER methodology)
     - 5D-WAVE command interface for workflow orchestration
-    - Comprehensive hook system for code quality and workflow automation
-    - Visual architecture lifecycle management
     - ATDD (Acceptance Test Driven Development) integration
     - Outside-In TDD with double-loop architecture
     - Quality validation network with Level 1-6 refactoring
-    - Auto-lint and format hooks for code quality (Python, JavaScript, JSON, etc.)
-    - Second Way DevOps: Observability agents (metrics, logs, traces, performance)
-    - Third Way DevOps: Experimentation agents (A/B testing, hypothesis validation, learning synthesis)
 
 INSTALLATION LOCATION:
     ~/.claude/agents/dw/    # 5D-WAVE agent specifications
     ~/.claude/commands/dw/  # 5D-WAVE command integrations
-    ~/.claude/hooks/        # Hook system for workflow automation
 
 FILES INCLUDED:
     - All built 5D-WAVE agents and commands from dist/ide/
-    - Complete hook system with code quality automation
-    - Visual architecture lifecycle management tools
-    - ATDD and Outside-In TDD integration components
 
 For more information: https://github.com/11PJ11/crafter-ai
 EOF
@@ -89,13 +80,13 @@ EOF
 # Check if source framework exists
 check_source() {
     info "Checking source framework..."
-    
+
     if [[ ! -d "$FRAMEWORK_SOURCE" ]]; then
         error "AI-Craft framework source not found at: $FRAMEWORK_SOURCE"
         error "Please run this script from the ai-craft project directory."
         exit 1
     fi
-    
+
     # Check for the built IDE distribution structure
     if [[ ! -d "$FRAMEWORK_SOURCE/agents/dw" ]]; then
         error "Framework appears incomplete - agents/dw directory not found"
@@ -109,17 +100,10 @@ check_source() {
         exit 1
     fi
 
-    if [[ ! -d "$FRAMEWORK_SOURCE/hooks" ]]; then
-        error "Framework appears incomplete - hooks directory not found"
-        error "Please build the framework first: cd tools && python3 build_ide_bundle.py"
-        exit 1
-    fi
-
     local agent_count=$(find "$FRAMEWORK_SOURCE/agents/dw" -name "*.md" ! -name "README.md" | wc -l)
     local command_count=$(find "$FRAMEWORK_SOURCE/commands/dw" -name "*.md" ! -name "README.md" | wc -l)
-    local hook_count=$(find "$FRAMEWORK_SOURCE/hooks" -type f \( -name "*.sh" -o -name "*.py" \) | wc -l)
 
-    info "Found framework with $agent_count agent files, $command_count commands, and $hook_count hook files"
+    info "Found framework with $agent_count agent files and $command_count commands"
 
     if [[ $agent_count -lt 10 ]]; then
         warn "Expected 10+ agents, found only $agent_count. Continuing anyway..."
@@ -138,21 +122,12 @@ create_backup() {
 
         info "${YELLOW}[DRY RUN]${NC} Would create backup directory: $BACKUP_DIR"
 
-        # Show what would be backed up
         if [[ -d "$CLAUDE_CONFIG_DIR/agents" ]]; then
             info "${YELLOW}[DRY RUN]${NC} Would backup agents directory"
         fi
 
         if [[ -d "$CLAUDE_CONFIG_DIR/commands" ]]; then
             info "${YELLOW}[DRY RUN]${NC} Would backup commands directory"
-        fi
-
-        if [[ -d "$CLAUDE_CONFIG_DIR/manuals" ]]; then
-            info "${YELLOW}[DRY RUN]${NC} Would backup manuals directory"
-        fi
-
-        if [[ -d "$CLAUDE_CONFIG_DIR/hooks" ]]; then
-            info "${YELLOW}[DRY RUN]${NC} Would backup hooks directory"
         fi
 
         info "${YELLOW}[DRY RUN]${NC} Would create backup manifest at: $BACKUP_DIR/backup-manifest.txt"
@@ -180,18 +155,6 @@ create_backup() {
         info "Backed up commands directory"
     fi
 
-    # Backup existing manuals directory
-    if [[ -d "$CLAUDE_CONFIG_DIR/manuals" ]]; then
-        cp -r "$CLAUDE_CONFIG_DIR/manuals" "$BACKUP_DIR/"
-        info "Backed up manuals directory"
-    fi
-
-    # Backup existing hooks directory
-    if [[ -d "$CLAUDE_CONFIG_DIR/hooks" ]]; then
-        cp -r "$CLAUDE_CONFIG_DIR/hooks" "$BACKUP_DIR/"
-        info "Backed up hooks directory"
-    fi
-
     # Create backup manifest
     cat > "$BACKUP_DIR/backup-manifest.txt" << EOF
 AI-Craft Framework Backup
@@ -208,18 +171,18 @@ EOF
 # Restore from backup
 restore_backup() {
     info "Looking for backups to restore..."
-    
+
     local latest_backup=$(find "$CLAUDE_CONFIG_DIR/backups" -name "ai-craft-*" -type d 2>/dev/null | sort | tail -1)
-    
+
     if [[ -z "$latest_backup" ]]; then
         error "No backups found in $CLAUDE_CONFIG_DIR/backups"
         exit 1
     fi
-    
+
     info "Restoring from backup: $latest_backup"
-    
+
     # Remove current installation
-    rm -rf "$CLAUDE_CONFIG_DIR/agents" "$CLAUDE_CONFIG_DIR/commands" "$CLAUDE_CONFIG_DIR/manuals" 2>/dev/null || true
+    rm -rf "$CLAUDE_CONFIG_DIR/agents" "$CLAUDE_CONFIG_DIR/commands" 2>/dev/null || true
 
     # Restore from backup
     if [[ -d "$latest_backup/agents" ]]; then
@@ -232,11 +195,6 @@ restore_backup() {
         info "Restored commands directory"
     fi
 
-    if [[ -d "$latest_backup/manuals" ]]; then
-        cp -r "$latest_backup/manuals" "$CLAUDE_CONFIG_DIR/"
-        info "Restored manuals directory"
-    fi
-    
     info "Restoration complete from backup: $latest_backup"
 }
 
@@ -245,7 +203,6 @@ install_framework() {
     if [[ "$DRY_RUN" == "true" ]]; then
         info "${YELLOW}[DRY RUN]${NC} Would install AI-Craft framework to: $CLAUDE_CONFIG_DIR"
 
-        # Show what would be created
         info "${YELLOW}[DRY RUN]${NC} Would create target directory: $CLAUDE_CONFIG_DIR"
 
         # Show agents that would be installed
@@ -264,8 +221,6 @@ install_framework() {
             info "${YELLOW}[DRY RUN]${NC} Would install $command_count command files"
         fi
 
-        # Show hooks that would be installed
-        install_craft_ai_hooks
         return 0
     fi
 
@@ -277,10 +232,8 @@ install_framework() {
     # Copy agents directory (excluding README.md)
     info "Installing agents..."
     if [[ -d "$FRAMEWORK_SOURCE/agents/dw" ]]; then
-        # Create target structure
         mkdir -p "$CLAUDE_CONFIG_DIR/agents/dw"
 
-        # Copy all agent files except README.md
         find "$FRAMEWORK_SOURCE/agents/dw" -name "*.md" ! -name "README.md" | while read -r file; do
             local relative_path="${file#$FRAMEWORK_SOURCE/agents/dw/}"
             local target_file="$CLAUDE_CONFIG_DIR/agents/dw/$relative_path"
@@ -303,344 +256,19 @@ install_framework() {
         local copied_commands=$(find "$CLAUDE_CONFIG_DIR/commands" -name "*.md" | wc -l)
         info "Installed $copied_commands command files"
 
-        # List installed DW commands for verification
         if [[ -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
             local dw_commands=$(find "$CLAUDE_CONFIG_DIR/commands/dw" -name "*.md" | wc -l)
             info "  - DW commands: $dw_commands essential commands"
         fi
-    fi
-
-    # Install hooks
-    install_craft_ai_hooks
-}
-
-# Install Craft-AI specific hooks (surgical approach - safe for existing hooks)
-install_craft_ai_hooks() {
-    if [[ "$DRY_RUN" == "true" ]]; then
-        info "${YELLOW}[DRY RUN]${NC} Would install Craft-AI workflow hooks safely..."
-
-        if [[ ! -d "$FRAMEWORK_SOURCE/hooks" ]]; then
-            warn "${YELLOW}[DRY RUN]${NC} Hook source directory not found: $FRAMEWORK_SOURCE/hooks"
-            return 1
-        fi
-
-        info "${YELLOW}[DRY RUN]${NC} Would create hooks directory: $CLAUDE_CONFIG_DIR/hooks"
-
-        local hook_count=$(find "$FRAMEWORK_SOURCE/hooks" -type f \( -name "*.sh" -o -name "*.py" \) 2>/dev/null | wc -l)
-        info "${YELLOW}[DRY RUN]${NC} Would install $hook_count hook files"
-
-        # Check for custom files that would be backed up
-        local managed_dirs=("workflow" "code-quality" "lib" "config" "formatters" "legacy")
-        for dir in "${managed_dirs[@]}"; do
-            if [[ -d "$CLAUDE_CONFIG_DIR/hooks/$dir" ]]; then
-                local custom_count=0
-                while IFS= read -r -d '' file; do
-                    if ! grep -q "# Part of Claude Code SuperClaude\|# AI-Craft Framework" "$file" 2>/dev/null; then
-                        ((custom_count++)) || true
-                    fi
-                done < <(find "$CLAUDE_CONFIG_DIR/hooks/$dir" -type f -not -path "*/__pycache__/*" -print0 2>/dev/null)
-
-                if [[ $custom_count -gt 0 ]]; then
-                    warn "${YELLOW}[DRY RUN]${NC} Would backup $custom_count custom file(s) in hooks/$dir"
-                fi
-            fi
-        done
-
-        info "${YELLOW}[DRY RUN]${NC} Would merge hook settings to settings.local.json"
-        info "${YELLOW}[DRY RUN]${NC} Would merge global settings to settings.json"
-        return 0
-    fi
-
-    info "Installing Craft-AI workflow hooks safely..."
-
-    # Create hooks directory structure
-    mkdir -p "$CLAUDE_CONFIG_DIR/hooks"
-
-    if [[ ! -d "$FRAMEWORK_SOURCE/hooks" ]]; then
-        warn "Hook source directory not found: $FRAMEWORK_SOURCE/hooks"
-        return 1
-    fi
-
-    # Define AI-Craft managed directories (will be fully managed by framework)
-    local managed_dirs=("workflow" "code-quality" "lib" "config" "formatters" "legacy")
-
-    # Backup all existing hooks as a precaution (custom file detection has WSL filesystem issues)
-    info "Backing up all existing hooks before installation..."
-    for dir in "${managed_dirs[@]}"; do
-        if [[ -d "$CLAUDE_CONFIG_DIR/hooks/$dir" ]]; then
-            local custom_backup_dir="$BACKUP_DIR/existing-hooks/$dir"
-            mkdir -p "$custom_backup_dir"
-            cp -r "$CLAUDE_CONFIG_DIR/hooks/$dir/"* "$custom_backup_dir/" 2>/dev/null || true
-            info "Backed up hooks/$dir to: $custom_backup_dir"
-        fi
-    done
-
-    # Install AI-Craft hooks (will overwrite AI-Craft files, but custom files are backed up)
-    info "Installing AI-Craft hook files..."
-    cp -r "$FRAMEWORK_SOURCE/hooks/"* "$CLAUDE_CONFIG_DIR/hooks/" 2>/dev/null || true
-
-    # Make scripts executable
-    find "$CLAUDE_CONFIG_DIR/hooks" -name "*.sh" -exec chmod +x {} \; 2>/dev/null || true
-    find "$CLAUDE_CONFIG_DIR/hooks" -name "*.py" -exec chmod +x {} \; 2>/dev/null || true
-
-    local hook_files=$(find "$CLAUDE_CONFIG_DIR/hooks" -type f \( -name "*.sh" -o -name "*.py" \) 2>/dev/null | wc -l)
-    info "Installed $hook_files Craft-AI hook files to hooks/"
-
-    # Merge hooks into settings (preserve existing)
-    merge_hook_settings
-
-    # Merge global settings.json for direct hook calls
-    merge_global_settings
-}
-
-# Surgically merge hook settings without overwriting existing
-merge_hook_settings() {
-    local settings_file="$CLAUDE_CONFIG_DIR/settings.local.json"
-    local hooks_config="$CLAUDE_CONFIG_DIR/hooks/config/hooks-config.json"
-
-    # Create backup of current settings
-    if [[ -f "$settings_file" ]]; then
-        cp "$settings_file" "$settings_file.pre-5d-wave-backup"
-        info "Created backup: $settings_file.pre-5d-wave-backup"
-    fi
-
-    # Use Python to surgically merge 5D-WAVE hooks
-    if [[ -f "$hooks_config" ]] && command -v python3 >/dev/null 2>&1; then
-        CLAUDE_CONFIG_DIR="$CLAUDE_CONFIG_DIR" python3 << 'PYTHON_SCRIPT'
-import json
-import os
-import sys
-
-claude_config_dir = os.environ.get('CLAUDE_CONFIG_DIR', os.path.expanduser('~/.claude'))
-settings_file = f"{claude_config_dir}/settings.local.json"
-hooks_config = f"{claude_config_dir}/hooks/config/hooks-config.json"
-
-# Load 5D-WAVE hooks configuration
-try:
-    with open(hooks_config, 'r') as f:
-        hooks_config = json.load(f)
-except Exception as e:
-    print(f"Error loading hooks config: {e}")
-    sys.exit(1)
-
-# Load existing settings or create new
-settings = {}
-if os.path.exists(settings_file):
-    try:
-        with open(settings_file, 'r') as f:
-            settings = json.load(f)
-    except Exception:
-        settings = {}
-
-# Initialize hooks if not present
-if 'hooks' not in settings:
-    settings['hooks'] = {}
-
-# Merge 5D-WAVE hooks without removing existing ones
-framework_hooks = hooks_config.get('hooks', {})
-for event, new_hooks_list in framework_hooks.items():
-    if event not in settings['hooks']:
-        settings['hooks'][event] = []
-
-    # Add new 5D-WAVE hooks without duplicating
-    for new_hook in new_hooks_list:
-        # Check if this hook already exists (by id)
-        hook_id = new_hook.get('hooks', [{}])[0].get('id', '')
-        exists = any(
-            h.get('hooks', [{}])[0].get('id') == hook_id
-            for h in settings['hooks'][event]
-            if 'hooks' in h and h['hooks'] and hook_id
-        )
-        if not exists and hook_id:
-            # Update command path to use actual home directory
-            for hook in new_hook.get('hooks', []):
-                if 'command' in hook and '$HOME' in hook['command']:
-                    hook['command'] = hook['command'].replace('$HOME', claude_config_dir.rsplit('/.claude', 1)[0])
-            settings['hooks'][event].append(new_hook)
-
-# Initialize permissions if not present
-if 'permissions' not in settings:
-    settings['permissions'] = {'allow': [], 'deny': [], 'ask': []}
-
-# Add 5D-WAVE-specific permissions without duplicating
-framework_permissions = hooks_config.get('permissions', {}).get('allow', [])
-home_dir = claude_config_dir.rsplit('/.claude', 1)[0]
-for perm in framework_permissions:
-    # Replace $HOME with actual path
-    perm = perm.replace('$HOME', home_dir)
-    if perm not in settings['permissions']['allow']:
-        settings['permissions']['allow'].append(perm)
-
-# Save merged settings
-try:
-    with open(settings_file, 'w') as f:
-        json.dump(settings, f, indent=2)
-    print("Successfully merged 5D-WAVE hooks into settings")
-except Exception as e:
-    print(f"Error saving settings: {e}")
-    sys.exit(1)
-PYTHON_SCRIPT
-
-        if [[ $? -eq 0 ]]; then
-            info "Successfully merged 5D-WAVE hooks into settings.local.json"
-        else
-            warn "Failed to merge hooks configuration - manual setup may be required"
-        fi
-    else
-        warn "Python3 not available or hooks config missing - hooks not configured"
-    fi
-}
-
-# Merge global settings.json for direct hook calls (no dispatcher)
-merge_global_settings() {
-    local global_settings="$CLAUDE_CONFIG_DIR/settings.json"
-
-    # Create backup if file exists
-    if [[ -f "$global_settings" ]]; then
-        cp "$global_settings" "$global_settings.pre-5d-wave-backup"
-        info "Created backup: $global_settings.pre-5d-wave-backup"
-    fi
-
-    # Use Python to manage global settings.json
-    if command -v python3 >/dev/null 2>&1; then
-        CLAUDE_CONFIG_DIR="$CLAUDE_CONFIG_DIR" python3 << 'PYTHON_SCRIPT'
-import json
-import os
-import sys
-
-claude_config_dir = os.environ.get('CLAUDE_CONFIG_DIR', os.path.expanduser('~/.claude'))
-global_settings_file = f"{claude_config_dir}/settings.json"
-
-# Load existing global settings or create new structure
-settings = {}
-if os.path.exists(global_settings_file):
-    try:
-        with open(global_settings_file, 'r') as f:
-            settings = json.load(f)
-    except Exception:
-        settings = {}
-
-# Initialize hooks section if not present
-if 'hooks' not in settings:
-    settings['hooks'] = {}
-
-# Add AI-Craft PostToolUse hook for code quality (direct script call)
-if 'PostToolUse' not in settings['hooks']:
-    settings['hooks']['PostToolUse'] = []
-
-# Remove only AI-Craft hooks by exact path match (safer than substring matching)
-ai_craft_hook_paths = [
-    f'{claude_config_dir}/hooks/code-quality/lint-format.sh',
-    f'{claude_config_dir}/hooks/workflow/hooks-dispatcher.sh'
-]
-
-# Filter out only hooks with exact AI-Craft paths
-settings['hooks']['PostToolUse'] = [
-    hook for hook in settings['hooks']['PostToolUse']
-    if not any(
-        any(path in h.get('command', '') for path in ai_craft_hook_paths)
-        for h in hook.get('hooks', [])
-    )
-]
-
-# Add our direct script hook
-ai_craft_hook = {
-    "matcher": "Write|Edit|MultiEdit|NotebookEdit",
-    "hooks": [
-        {
-            "type": "command",
-            "command": f"bash {claude_config_dir}/hooks/code-quality/lint-format.sh",
-            "id": "ai-craft-lint-format"
-        }
-    ]
-}
-
-settings['hooks']['PostToolUse'].append(ai_craft_hook)
-
-# Save updated settings
-try:
-    with open(global_settings_file, 'w') as f:
-        json.dump(settings, f, indent=2)
-    print("Successfully configured 5D-WAVE hooks in global settings")
-except Exception as e:
-    print(f"Error saving global settings: {e}")
-    sys.exit(1)
-PYTHON_SCRIPT
-
-        if [[ $? -eq 0 ]]; then
-            info "Successfully configured 5D-WAVE hooks in settings.json"
-        else
-            warn "Failed to configure global settings - manual setup may be required"
-        fi
-    else
-        warn "Python3 not available - global settings not configured"
-    fi
-}
-
-# Validate hook installation
-validate_hooks() {
-    info "Validating hook installation..."
-
-    local errors=0
-
-    # Check hook files exist - updated for refactored modular structure
-    local required_workflow_hooks=("state-initializer.sh" "input-validator.sh" "stage-transition.sh")
-    local required_quality_hooks=("lint-format.sh")
-
-    for hook in "${required_workflow_hooks[@]}"; do
-        if [[ ! -f "$CLAUDE_CONFIG_DIR/hooks/workflow/$hook" ]]; then
-            error "Missing workflow hook: $hook"
-            ((errors++)) || true
-        fi
-    done
-
-    for hook in "${required_quality_hooks[@]}"; do
-        if [[ ! -f "$CLAUDE_CONFIG_DIR/hooks/code-quality/$hook" ]]; then
-            error "Missing quality hook: $hook"
-            ((errors++)) || true
-        fi
-    done
-
-    # Check core library exists
-    if [[ ! -f "$CLAUDE_CONFIG_DIR/hooks/lib/HookManager.sh" ]]; then
-        error "Missing core hook library: HookManager.sh"
-        ((errors++)) || true
-    fi
-
-    # Check hook permissions
-    for hook in "$CLAUDE_CONFIG_DIR/hooks/"**/*.{sh,py}; do
-        if [[ -f "$hook" ]] && [[ ! -x "$hook" ]]; then
-            warn "Hook not executable: $hook"
-            chmod +x "$hook" 2>/dev/null || true
-        fi
-    done
-
-    # Check settings integration
-    if [[ -f "$CLAUDE_CONFIG_DIR/settings.local.json" ]]; then
-        if grep -q '"dw-' "$CLAUDE_CONFIG_DIR/settings.local.json" 2>/dev/null; then
-            info "5D-WAVE hooks configured in settings.local.json"
-        else
-            warn "5D-WAVE hooks may not be properly configured in settings"
-        fi
-    else
-        warn "settings.local.json not found"
-    fi
-
-    if [[ $errors -eq 0 ]]; then
-        info "Hook validation: ${GREEN}PASSED${NC}"
-        return 0
-    else
-        error "Hook validation: ${RED}FAILED${NC} ($errors errors)"
-        return 1
     fi
 }
 
 # Validate installation
 validate_installation() {
     info "Validating installation..."
-    
+
     local errors=0
-    
+
     # Check that agents are installed
     if [[ ! -d "$CLAUDE_CONFIG_DIR/agents/dw" ]]; then
         error "Missing DW agents directory"
@@ -653,12 +281,6 @@ validate_installation() {
         ((errors++)) || true
     fi
 
-    # Check that hooks are installed
-    if [[ ! -d "$CLAUDE_CONFIG_DIR/hooks" ]]; then
-        error "Missing hooks directory"
-        ((errors++)) || true
-    fi
-
     # Check essential DW commands exist
     local essential_commands=("discuss" "design" "distill" "develop" "deliver")
     for cmd in "${essential_commands[@]}"; do
@@ -667,19 +289,16 @@ validate_installation() {
             ((errors++)) || true
         fi
     done
-    
+
     # Count installed files
     local total_agents=$(find "$CLAUDE_CONFIG_DIR/agents/dw" -name "*.md" 2>/dev/null | wc -l)
     local total_commands=$(find "$CLAUDE_CONFIG_DIR/commands" -name "*.md" 2>/dev/null | wc -l)
-    local total_hooks=$(find "$CLAUDE_CONFIG_DIR/hooks" -type f \( -name "*.sh" -o -name "*.py" \) 2>/dev/null | wc -l)
 
     info "Installation summary:"
     info "  - Agents installed: $total_agents"
     info "  - Commands installed: $total_commands"
-    info "  - Hook files installed: $total_hooks"
     info "  - Installation directory: $CLAUDE_CONFIG_DIR"
 
-    # Check for 5D-WAVE components
     if [[ -d "$CLAUDE_CONFIG_DIR/agents/dw" ]]; then
         info "  - 5D-WAVE agents: Available"
     fi
@@ -688,14 +307,10 @@ validate_installation() {
         info "  - 5D-WAVE commands: Available"
     fi
 
-    if [[ -d "$CLAUDE_CONFIG_DIR/hooks" ]]; then
-        info "  - 5D-WAVE hooks: Available"
-    fi
-
     if [[ $total_agents -lt 10 ]]; then
         warn "Expected 10+ agents, found $total_agents"
     fi
-    
+
     if [[ $errors -eq 0 ]]; then
         info "Installation validation: ${GREEN}PASSED${NC}"
         return 0
@@ -707,14 +322,19 @@ validate_installation() {
 
 # Create installation manifest
 create_manifest() {
+    if [[ "$DRY_RUN" == "true" ]]; then
+        info "${YELLOW}[DRY RUN]${NC} Would create installation manifest"
+        return 0
+    fi
+
     local manifest_file="$CLAUDE_CONFIG_DIR/ai-craft-manifest.txt"
-    
+
     cat > "$manifest_file" << EOF
 AI-Craft Framework Installation Manifest
 ========================================
 Installed: $(date)
 Source: $SCRIPT_DIR
-Version: Production Ready (2025-01-13)
+Version: Production Ready
 
 Installation Summary:
 - Total agents: $(find "$CLAUDE_CONFIG_DIR/agents" -name "*.md" | wc -l)
@@ -725,30 +345,17 @@ Installation Summary:
 Framework Components:
 - 41+ specialized AI agents with Single Responsibility Principle
 - Wave processing architecture with clean context isolation
-- 11 essential CAI commands: brownfield, refactor, start, discuss, architect, develop, transition, validate, complete, skeleton, help
-- Centralized configuration system (constants.md)
+- Essential DW commands: discuss, design, distill, develop, deliver
 - Quality validation network with Level 1-6 refactoring
-- Auto-lint and format hooks for code quality (Python, JavaScript, JSON, etc.)
-- Second Way DevOps: Observability agents (metrics, logs, traces, performance)
-- Third Way DevOps: Experimentation agents (A/B testing, hypothesis validation, learning synthesis)
-
-Agent Categories:
-$(for category in requirements-analysis architecture-design test-design development quality-validation refactoring coordination observability experimentation; do
-    if [[ -d "$CLAUDE_CONFIG_DIR/agents/$category" ]]; then
-        count=$(find "$CLAUDE_CONFIG_DIR/agents/$category" -name "*.md" | wc -l)
-        echo "- $category: $count agents"
-    fi
-done)
 
 Usage:
-- Use 5D-WAVE commands: 'dw-discuss', 'dw-design', 'dw-distill', 'dw-develop', 'dw-demo'
-- Use 'dw-start "feature description"' to initialize 5D-WAVE workflow
+- Use 5D-WAVE commands: '/dw:discuss', '/dw:design', '/dw:distill', '/dw:develop', '/dw:deliver'
+- Use '/dw:start "feature description"' to initialize 5D-WAVE workflow
 - All agents available globally across projects
-- Centralized constants work project-wide
 
 For help: https://github.com/11PJ11/crafter-ai
 EOF
-    
+
     info "Installation manifest created: $manifest_file"
 }
 
@@ -756,7 +363,7 @@ EOF
 main() {
     info "AI-Craft Framework Installation Script"
     info "======================================"
-    
+
     # Parse command line arguments
     case "${1:-}" in
         --help|-h)
@@ -787,43 +394,34 @@ main() {
             exit 1
             ;;
     esac
-    
+
     # Normal installation process
     check_source
     create_backup
     install_framework
-    
-    if validate_installation && validate_hooks; then
+
+    if validate_installation; then
         create_manifest
         info ""
         info "${GREEN}✅ 5D-WAVE Framework installed successfully!${NC}"
         info ""
         info "Framework Components Installed:"
-        info "- 5D-WAVE specialized agents (DISCUSS→DESIGN→DISTILL→DEVELOP→DEMO)"
+        info "- 5D-WAVE specialized agents (DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER)"
         info "- 5D-WAVE command interface for workflow orchestration"
-        info "- Comprehensive hook system for code quality and workflow automation"
-        info "- Visual architecture lifecycle management"
         info "- ATDD and Outside-In TDD integration"
         info ""
         info "Next steps:"
         info "1. Navigate to any project directory"
         info "2. Use 5D-WAVE commands to orchestrate development workflow"
         info "3. Access agents through the dw category in Claude Code"
-        info "4. Hook system will automatically validate code quality"
-        info "5. Visual architecture diagrams will be maintained automatically"
-        info ""
-        info "${YELLOW}Hook System Logging Configuration:${NC}"
-        info "- Default: Silent operation (HOOK_LOG_LEVEL=0)"
-        info "- Enable logging: ${BLUE}echo 'export HOOK_LOG_LEVEL=2' >> ~/.bashrc${NC}"
-        info "- Test logging: ${BLUE}env HOOK_LOG_LEVEL=3 ~/.claude/hooks/code-quality/lint-format.sh test.py${NC}"
-        info "- Full guide: ${BLUE}LOGGING_CONFIGURATION.md${NC}"
         info ""
         info "5D-WAVE methodology available:"
-        info "- ${BLUE}dw-discuss${NC} - Requirements gathering and business analysis"
-        info "- ${BLUE}dw-design${NC} - Architecture design with visual representation"
-        info "- ${BLUE}dw-distill${NC} - Acceptance test creation and business validation"
-        info "- ${BLUE}dw-develop${NC} - Outside-In TDD implementation with refactoring"
-        info "- ${BLUE}dw-demo${NC} - Production readiness validation"
+        info "- ${BLUE}/dw:discuss${NC} - Requirements gathering and business analysis"
+        info "- ${BLUE}/dw:design${NC} - Architecture design with visual representation"
+        info "- ${BLUE}/dw:distill${NC} - Acceptance test creation and business validation"
+        info "- ${BLUE}/dw:develop${NC} - Outside-In TDD implementation with refactoring"
+        info "- ${BLUE}/dw:deliver${NC} - Production readiness validation"
+        info ""
         info "Documentation: https://github.com/11PJ11/crafter-ai"
     else
         error "Installation failed validation"
