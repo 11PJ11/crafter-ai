@@ -196,8 +196,8 @@ settings['hooks']['PostToolUse'] = [
 ```python
 # NEW: Uses exact path matching - only removes AI-Craft hooks
 ai_craft_hook_paths = [
-    '/mnt/c/Users/alexd/.claude/hooks/code-quality/lint-format.sh',
-    '/mnt/c/Users/alexd/.claude/hooks/workflow/hooks-dispatcher.sh'
+    f'{claude_config_dir}/hooks/code-quality/lint-format.sh',
+    f'{claude_config_dir}/hooks/workflow/hooks-dispatcher.sh'
 ]
 
 settings['hooks']['PostToolUse'] = [
@@ -281,8 +281,8 @@ The following will be removed:
 ```python
 # Only these exact paths are removed:
 ai_craft_hook_paths = [
-    '/mnt/c/Users/alexd/.claude/hooks/code-quality/lint-format.sh',  # AI-Craft hook
-    '/mnt/c/Users/alexd/.claude/hooks/workflow/hooks-dispatcher.sh'  # AI-Craft hook
+    f'{claude_config_dir}/hooks/code-quality/lint-format.sh',  # AI-Craft hook
+    f'{claude_config_dir}/hooks/workflow/hooks-dispatcher.sh'  # AI-Craft hook
 ]
 
 # User's "my-custom-lint-format.sh" has different path:

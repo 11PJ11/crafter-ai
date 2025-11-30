@@ -9,7 +9,7 @@ set -e  # Exit on any error
 # Script configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-CLAUDE_CONFIG_DIR="/mnt/c/Users/alexd/.claude"
+CLAUDE_CONFIG_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
 BACKUP_DIR="$CLAUDE_CONFIG_DIR/backups/ai-craft-$(date +%Y%m%d-%H%M%S)"
 FRAMEWORK_SOURCE="$PROJECT_ROOT/dist/ide"
 INSTALL_LOG="$CLAUDE_CONFIG_DIR/ai-craft-install.log"
@@ -406,13 +406,14 @@ merge_hook_settings() {
 
     # Use Python to surgically merge 5D-WAVE hooks
     if [[ -f "$hooks_config" ]] && command -v python3 >/dev/null 2>&1; then
-        python3 << 'PYTHON_SCRIPT'
+        CLAUDE_CONFIG_DIR="$CLAUDE_CONFIG_DIR" python3 << 'PYTHON_SCRIPT'
 import json
 import os
 import sys
 
-settings_file = "/mnt/c/Users/alexd/.claude/settings.local.json"
-hooks_config = "/mnt/c/Users/alexd/.claude/hooks/config/hooks-config.json"
+claude_config_dir = os.environ.get('CLAUDE_CONFIG_DIR', os.path.expanduser('~/.claude'))
+settings_file = f"{claude_config_dir}/settings.local.json"
+hooks_config = f"{claude_config_dir}/hooks/config/hooks-config.json"
 
 # Load 5D-WAVE hooks configuration
 try:
@@ -454,7 +455,7 @@ for event, new_hooks_list in framework_hooks.items():
             # Update command path to use actual home directory
             for hook in new_hook.get('hooks', []):
                 if 'command' in hook and '$HOME' in hook['command']:
-                    hook['command'] = hook['command'].replace('$HOME', '/mnt/c/Users/alexd')
+                    hook['command'] = hook['command'].replace('$HOME', claude_config_dir.rsplit('/.claude', 1)[0])
             settings['hooks'][event].append(new_hook)
 
 # Initialize permissions if not present
@@ -463,9 +464,10 @@ if 'permissions' not in settings:
 
 # Add 5D-WAVE-specific permissions without duplicating
 framework_permissions = hooks_config.get('permissions', {}).get('allow', [])
+home_dir = claude_config_dir.rsplit('/.claude', 1)[0]
 for perm in framework_permissions:
     # Replace $HOME with actual path
-    perm = perm.replace('$HOME', '/mnt/c/Users/alexd')
+    perm = perm.replace('$HOME', home_dir)
     if perm not in settings['permissions']['allow']:
         settings['permissions']['allow'].append(perm)
 
@@ -501,12 +503,13 @@ merge_global_settings() {
 
     # Use Python to manage global settings.json
     if command -v python3 >/dev/null 2>&1; then
-        python3 << 'PYTHON_SCRIPT'
+        CLAUDE_CONFIG_DIR="$CLAUDE_CONFIG_DIR" python3 << 'PYTHON_SCRIPT'
 import json
 import os
 import sys
 
-global_settings_file = "/mnt/c/Users/alexd/.claude/settings.json"
+claude_config_dir = os.environ.get('CLAUDE_CONFIG_DIR', os.path.expanduser('~/.claude'))
+global_settings_file = f"{claude_config_dir}/settings.json"
 
 # Load existing global settings or create new structure
 settings = {}
@@ -527,8 +530,8 @@ if 'PostToolUse' not in settings['hooks']:
 
 # Remove only AI-Craft hooks by exact path match (safer than substring matching)
 ai_craft_hook_paths = [
-    '/mnt/c/Users/alexd/.claude/hooks/code-quality/lint-format.sh',
-    '/mnt/c/Users/alexd/.claude/hooks/workflow/hooks-dispatcher.sh'
+    f'{claude_config_dir}/hooks/code-quality/lint-format.sh',
+    f'{claude_config_dir}/hooks/workflow/hooks-dispatcher.sh'
 ]
 
 # Filter out only hooks with exact AI-Craft paths
@@ -546,7 +549,7 @@ ai_craft_hook = {
     "hooks": [
         {
             "type": "command",
-            "command": "bash /mnt/c/Users/alexd/.claude/hooks/code-quality/lint-format.sh",
+            "command": f"bash {claude_config_dir}/hooks/code-quality/lint-format.sh",
             "id": "ai-craft-lint-format"
         }
     ]

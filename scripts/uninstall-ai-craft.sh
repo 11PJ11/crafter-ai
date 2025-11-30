@@ -8,7 +8,7 @@ set -euo pipefail
 
 # Script configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CLAUDE_CONFIG_DIR="/mnt/c/Users/alexd/.claude"
+CLAUDE_CONFIG_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
 UNINSTALL_LOG="$CLAUDE_CONFIG_DIR/ai-craft-uninstall.log"
 
 # Backup configuration
@@ -505,12 +505,13 @@ clean_hook_settings() {
 
     # Use Python to surgically remove only CAI hooks
     if command -v python3 >/dev/null 2>&1; then
-        python3 << 'PYTHON_SCRIPT'
+        CLAUDE_CONFIG_DIR="$CLAUDE_CONFIG_DIR" python3 << 'PYTHON_SCRIPT'
 import json
 import os
 import sys
 
-settings_file = "/mnt/c/Users/alexd/.claude/settings.local.json"
+claude_config_dir = os.environ.get('CLAUDE_CONFIG_DIR', os.path.expanduser('~/.claude'))
+settings_file = f"{claude_config_dir}/settings.local.json"
 
 try:
     with open(settings_file, 'r') as f:
@@ -587,12 +588,13 @@ clean_global_settings() {
 
     # Use Python to surgically remove only AI-Craft hooks
     if command -v python3 >/dev/null 2>&1; then
-        python3 << 'PYTHON_SCRIPT'
+        CLAUDE_CONFIG_DIR="$CLAUDE_CONFIG_DIR" python3 << 'PYTHON_SCRIPT'
 import json
 import os
 import sys
 
-global_settings_file = "/mnt/c/Users/alexd/.claude/settings.json"
+claude_config_dir = os.environ.get('CLAUDE_CONFIG_DIR', os.path.expanduser('~/.claude'))
+global_settings_file = f"{claude_config_dir}/settings.json"
 
 try:
     with open(global_settings_file, 'r') as f:
@@ -605,8 +607,8 @@ except Exception as e:
 if 'hooks' in settings and 'PostToolUse' in settings['hooks']:
     # Remove only AI-Craft hooks by exact path match (safer than substring matching)
     ai_craft_hook_paths = [
-        '/mnt/c/Users/alexd/.claude/hooks/code-quality/lint-format.sh',
-        '/mnt/c/Users/alexd/.claude/hooks/workflow/hooks-dispatcher.sh'
+        f'{claude_config_dir}/hooks/code-quality/lint-format.sh',
+        f'{claude_config_dir}/hooks/workflow/hooks-dispatcher.sh'
     ]
 
     # Filter out only hooks with exact AI-Craft paths

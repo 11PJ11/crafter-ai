@@ -81,7 +81,7 @@ $ ls 5d-wave/agents/reviewers/ | wc -l
 12
 
 # Installation does NOT have reviewers
-$ ls /mnt/c/Users/alexd/.claude/agents/dw/ | grep reviewer | wc -l
+$ ls ~/.claude/agents/dw/ | grep reviewer | wc -l
 0
 ```
 
@@ -429,7 +429,7 @@ def process_agents(self) -> None:
 ./scripts/update-ai-craft.sh --backup --force
 
 # Verify installation
-ls /mnt/c/Users/alexd/.claude/agents/dw/ | grep reviewer
+ls ~/.claude/agents/dw/ | grep reviewer
 # Should show 12 reviewer agents
 ```
 

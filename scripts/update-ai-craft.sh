@@ -9,7 +9,7 @@ set -euo pipefail
 # Script configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-CLAUDE_CONFIG_DIR="/mnt/c/Users/alexd/.claude"
+CLAUDE_CONFIG_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
 UPDATE_LOG="$CLAUDE_CONFIG_DIR/ai-craft-update.log"
 
 # Update configuration
