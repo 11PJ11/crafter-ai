@@ -52,7 +52,18 @@
       "WebFetch(domain:blog.avanscoperta.it)",
       "WebFetch(domain:www.cutter.com)",
       "WebFetch(domain:ericnormand.substack.com)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "WebFetch(domain:www.normattiva.it)",
+      "WebFetch(domain:www.gazzettaufficiale.it)",
+      "WebFetch(domain:www.agcom.it)",
+      "WebFetch(domain:www.garanteprivacy.it)",
+      "WebFetch(domain:eur-lex.europa.eu)",
+      "WebFetch(domain:www.altalex.com)",
+      "WebFetch(domain:www.dirittoegiustizia.it)",
+      "WebFetch(domain:www.studiocataldi.it)",
+      "WebFetch(domain:www.iusinitinere.it)",
+      "WebFetch(domain:www.brocardi.it)",
+      "WebFetch(domain:www.wipo.int)"
     ],
     "deny": [],
     "ask": []
