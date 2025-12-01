@@ -31,16 +31,16 @@ cd ai-craft
 
 ```bash
 # Start ATDD workflow
-/cai:start "Build user authentication system"
+/dw:start "Build user authentication system"
 
 # Or process requirements
-/cai:discuss @requirements.txt
+/dw:discuss @requirements.txt
 ```
 
 ## 🏗️ ATDD Five-Stage Workflow
 
 ```
-DISCUSS → ARCHITECT → DISTILL → DEVELOP → DEMO
+DISCUSS → DESIGN → DISTILL → DEVELOP → DELIVER
    ↓         ↓         ↓         ↓        ↓
 business   solution  acceptance test-first feature
 analyst    architect  designer  developer completion
@@ -55,11 +55,6 @@ The system orchestrates 41+ specialized AI agents across five stages, ensuring c
 - **[Installation Guide](docs/installation/INSTALL.md)** - Detailed installation instructions for all platforms
 - **[Uninstallation Guide](docs/installation/UNINSTALL.md)** - Complete removal instructions
 
-### 🛠️ System Documentation
-
-- **[Hook System](docs/system/HOOK_SYSTEM.md)** - Modular hook system architecture and configuration
-- **[Logging Configuration](docs/system/LOGGING_CONFIGURATION.md)** - Comprehensive logging setup and troubleshooting
-
 ### 🔧 Troubleshooting
 
 - **[Troubleshooting Guide](docs/troubleshooting/TROUBLESHOOTING.md)** - Common issues and solutions
@@ -71,7 +66,7 @@ The system orchestrates 41+ specialized AI agents across five stages, ensuring c
 
 ## 🔧 Configuration
 
-All agents reference shared constants for maintainability through the centralized configuration system. The framework includes a sophisticated modular hook system with configurable logging levels from ERROR-only to DEBUG verbosity.
+All agents reference shared constants for maintainability through the centralized configuration system.
 
 ## 🏢 Architecture
 
@@ -88,14 +83,15 @@ All agents reference shared constants for maintainability through the centralize
 
 ```
 ai-craft/
-├── .claude/                  # SuperClaude configuration and agents
+├── 5d-wave/                  # ATDD workflow agents and commands
+│   ├── agents/               # Specialized agent definitions
+│   ├── commands/             # Slash command definitions
+│   └── data/                 # Reference data and research
 ├── docs/                     # All project documentation
 │   ├── installation/         # Setup and installation guides
-│   ├── system/              # System architecture and configuration
-│   └── troubleshooting/     # Issue resolution guides
-├── scripts/                 # Installation and utility scripts
-├── tests/                   # Test files and validation
-└── README.md               # This file
+│   └── troubleshooting/      # Issue resolution guides
+├── scripts/                  # Installation and utility scripts
+└── README.md                 # This file
 ```
 
 ## 🤝 Contributing

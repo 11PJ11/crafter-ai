@@ -181,14 +181,8 @@ create_update_backup() {
             info "Backed up commands/dw directory"
         fi
 
-        if [[ -d "$CLAUDE_CONFIG_DIR/hooks" ]]; then
-            mkdir -p "$UPDATE_BACKUP_DIR/hooks"
-            cp -r "$CLAUDE_CONFIG_DIR/hooks/"* "$UPDATE_BACKUP_DIR/hooks/" 2>/dev/null || true
-            info "Backed up hooks directory"
-        fi
-
         # Backup configuration files
-        for config_file in "ai-craft-manifest.txt" "ai-craft-install.log" "settings.local.json" "settings.json" "hooks-config.json"; do
+        for config_file in "ai-craft-manifest.txt" "ai-craft-install.log"; do
             if [[ -f "$CLAUDE_CONFIG_DIR/$config_file" ]]; then
                 cp "$CLAUDE_CONFIG_DIR/$config_file" "$UPDATE_BACKUP_DIR/"
                 info "Backed up $config_file"
@@ -206,15 +200,13 @@ Update Process: Build → Uninstall → Install
 Backup Contents:
   - Complete AI-Craft installation state
   - Configuration files and settings
-  - Hook system and customizations
   - Installation logs and manifests
 
 Restoration Command:
   # To restore if update fails:
   cp -r $UPDATE_BACKUP_DIR/agents/dw $CLAUDE_CONFIG_DIR/agents/ 2>/dev/null || true
   cp -r $UPDATE_BACKUP_DIR/commands/dw $CLAUDE_CONFIG_DIR/commands/ 2>/dev/null || true
-  cp -r $UPDATE_BACKUP_DIR/hooks/* $CLAUDE_CONFIG_DIR/hooks/ 2>/dev/null || true
-  cp $UPDATE_BACKUP_DIR/*.txt $UPDATE_BACKUP_DIR/*.json $CLAUDE_CONFIG_DIR/ 2>/dev/null || true
+  cp $UPDATE_BACKUP_DIR/*.txt $CLAUDE_CONFIG_DIR/ 2>/dev/null || true
 EOF
 
     info "✅ Comprehensive backup created: $UPDATE_BACKUP_DIR"
@@ -239,9 +231,8 @@ build_framework() {
         if [[ -d "$PROJECT_ROOT/dist/ide" ]]; then
             local agent_count=$(find "$PROJECT_ROOT/dist/ide/agents" -name "*.md" 2>/dev/null | wc -l || echo "0")
             local command_count=$(find "$PROJECT_ROOT/dist/ide/commands" -name "*.md" 2>/dev/null | wc -l || echo "0")
-            local hook_count=$(find "$PROJECT_ROOT/dist/ide/hooks" -type f 2>/dev/null | wc -l || echo "0")
 
-            info "Build verification - Agents: $agent_count, Commands: $command_count, Hooks: $hook_count"
+            info "Build verification - Agents: $agent_count, Commands: $command_count"
         else
             error "Build output directory not found: $PROJECT_ROOT/dist/ide"
             exit 1
@@ -307,31 +298,25 @@ validate_update() {
     # Check that new installation exists
     if [[ ! -d "$CLAUDE_CONFIG_DIR/agents/dw" ]]; then
         error "Agents directory missing after update"
-        ((validation_errors++))
+        ((validation_errors++)) || true
     fi
 
     if [[ ! -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
         error "Commands directory missing after update"
-        ((validation_errors++))
-    fi
-
-    if [[ ! -d "$CLAUDE_CONFIG_DIR/hooks" ]]; then
-        error "Hooks directory missing after update"
-        ((validation_errors++))
+        ((validation_errors++)) || true
     fi
 
     # Check manifest
     if [[ ! -f "$CLAUDE_CONFIG_DIR/ai-craft-manifest.txt" ]]; then
         warn "Installation manifest missing"
-        ((validation_errors++))
+        ((validation_errors++)) || true
     fi
 
     # Count installed components
     local agent_count=$(find "$CLAUDE_CONFIG_DIR/agents/dw" -name "*.md" 2>/dev/null | wc -l || echo "0")
     local command_count=$(find "$CLAUDE_CONFIG_DIR/commands/dw" -name "*.md" 2>/dev/null | wc -l || echo "0")
-    local hook_count=$(find "$CLAUDE_CONFIG_DIR/hooks" -type f 2>/dev/null | wc -l || echo "0")
 
-    info "Installation verification - Agents: $agent_count, Commands: $command_count, Hooks: $hook_count"
+    info "Installation verification - Agents: $agent_count, Commands: $command_count"
 
     if [[ $validation_errors -eq 0 ]]; then
         info "✅ Update validation successful"
@@ -375,6 +360,11 @@ confirm_update() {
 }
 
 create_update_report() {
+    if [[ "$DRY_RUN" == "true" ]]; then
+        info "[DRY RUN] Would create update report"
+        return 0
+    fi
+
     local report_file="$CLAUDE_CONFIG_DIR/ai-craft-update-report.txt"
 
     cat > "$report_file" << EOF
@@ -405,7 +395,6 @@ BACKUP_INFO
 fi)Final Installation Status:
 - Agents: $(find "$CLAUDE_CONFIG_DIR/agents/dw" -name "*.md" 2>/dev/null | wc -l || echo "0") installed
 - Commands: $(find "$CLAUDE_CONFIG_DIR/commands/dw" -name "*.md" 2>/dev/null | wc -l || echo "0") installed
-- Hooks: $(find "$CLAUDE_CONFIG_DIR/hooks" -type f 2>/dev/null | wc -l || echo "0") installed
 
 Update completed successfully. Framework ready for use.
 EOF
@@ -482,7 +471,7 @@ main() {
 
         echo ""
         info "🚀 Updated AI-Craft framework ready for use!"
-        info "   Try: dw-discuss, dw-design, dw-develop, dw-demo commands"
+        info "   Try: /dw:discuss, /dw:design, /dw:develop, /dw:deliver commands"
 
     else
         error "Update validation failed"
