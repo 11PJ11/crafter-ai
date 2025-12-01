@@ -2,8 +2,6 @@
   "permissions": {
     "allow": [
       "Bash(prettier:*)",
-      "Read(//mnt/c/Users/alexd/.claude/hooks/lib/formatters/**)",
-      "Read(//mnt/c/Users/alexd/.claude/hooks/code-quality/**)",
       "Bash(bash:*)",
       "Bash(while read f)",
       "Bash(do if grep -q \"^# Template Usage Instructions\" \"$f\")",
@@ -16,7 +14,7 @@
       "Bash(python3:*)",
       "Bash(git add:*)",
       "Read(//tmp/**)",
-      "Read(//mnt/c/Users/alexd/.claude/**)",
+      "Read($HOME/.claude/**)",
       "Bash(timeout:*)",
       "Bash(tee:*)",
       "WebSearch",
@@ -32,7 +30,7 @@
       "WebFetch(domain:cheatsheetseries.owasp.org)",
       "WebFetch(domain:cassandra.apache.org)",
       "WebFetch(domain:neo4j.com)",
-      "Read(//home/alexd/.claude/commands/dw/**)",
+      "Read($HOME/.claude/commands/dw/**)",
       "Bash(chmod:*)",
       "Bash(cat:*)",
       "Bash(tree:*)",
