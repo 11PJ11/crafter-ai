@@ -76,6 +76,30 @@ Refer to Nova's quality gates in 5d-wave/agents/researcher.md.
 - [ ] Token budget respected (<5000 tokens per embed file recommended)
 - [ ] agent-forger peer review approval (optional but recommended)
 
+**Quantitative Research Validations (for performance-related research):**
+
+- [ ] Timing data collected (not just categorization)
+- [ ] Impact ranking by quantitative measure (time, count, frequency)
+- [ ] Quick win opportunities identified with effort/impact analysis
+- [ ] Largest bottleneck explicitly stated with evidence
+- [ ] Research includes "Impact Summary" with percentages
+
+**Research Output Should Include:**
+
+```markdown
+## Impact Summary
+
+| Component | Metric | Impact | Priority |
+|-----------|--------|--------|----------|
+| {comp}    | {time/count} | {%} | {1/2/3} |
+
+### Largest Bottleneck
+{Component X} accounts for {Y}% of {metric}
+
+### Quick Wins
+1. {Action}: {impact} for {effort}
+```
+
 ## Next Wave
 
 **Handoff To**: {invoking-agent-returns-to-workflow}

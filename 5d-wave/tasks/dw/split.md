@@ -271,6 +271,23 @@ The invoked agent must accomplish (Reference Only):
 - [ ] Each file contains project_id reference
 - [ ] No files committed without user approval
 
+**Measurement Data Validation (REQUIRED):**
+
+Before splitting, verify the source roadmap contains:
+- [ ] Baseline metrics in measurement_gate section (or documented exception)
+- [ ] Constraint impact analysis (if constraints mentioned)
+- [ ] Rejected simple alternatives (if >3 phases)
+
+**If validation fails:**
+- DO NOT split the roadmap
+- Return error: "Roadmap lacks measurement data. Run /dw:roadmap with --validate or add measurement_gate section."
+- Suggest user complete Pre-Planning Measurement Gate
+
+**Exception for process improvements:**
+- If roadmap.measurement_gate.gate_type = "process_improvement"
+- AND qualitative justification is provided
+- Proceed with split (measurement gate not required for non-performance work)
+
 ---
 
 ## Agent Invocation (Reference Documentation)

@@ -353,6 +353,37 @@ quality_gates:
     - Troubleshooting guide provided
     - Examples included
 
+  prioritization_safeguards:
+    description: "Ensure new agents include measurement and prioritization gates"
+    applies_to: "All agents that create roadmaps or multi-step plans"
+
+    required_for_planning_agents:
+      - "core_principles must include 'Measure Before Plan' or equivalent"
+      - "quality_gates must include 'simplest_solution_check' or equivalent"
+      - "pipeline must include constraint_analysis stage (if handling constraints)"
+
+    validation_checklist:
+      - "Does agent have mechanism to request measurement data before planning?"
+      - "Does agent document rejected simple alternatives?"
+      - "Does agent quantify constraint impact before solution design?"
+      - "Does agent's reviewer have Priority Validation dimension?"
+
+    new_agent_template_additions:
+      when_creating_planning_agent: |
+        MANDATORY: Add these elements to planning agents:
+
+        1. In core_principles:
+           - "Measure Before Plan - NEVER create plans without quantitative data"
+
+        2. In quality_gates:
+           - simplest_solution_check (documented alternatives)
+
+        3. In pipeline (if applicable):
+           - constraint_analysis stage with impact quantification
+
+        4. In corresponding reviewer:
+           - Priority Validation critique dimension
+
 testing_framework:
   layer_1_unit_testing:
     purpose: "Validate individual agent outputs meet structural and quality standards"

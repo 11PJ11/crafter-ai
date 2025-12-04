@@ -39,6 +39,115 @@ Extract the second argument (goal description):
 - Example: `"Migrate monolith to microservices"`
 - This is the high-level objective the roadmap will plan for
 
+### STEP 3.5: Baseline File Validation Gate (BLOCKING)
+
+**This gate BLOCKS roadmap creation until baseline measurement file exists.**
+
+#### 3.5.1: Derive Project ID
+
+Convert goal description to kebab-case project ID:
+- "Optimize test execution time" -> "optimize-test-execution-time"
+- "Migrate to microservices" -> "migrate-to-microservices"
+
+Rules:
+- Lowercase all characters
+- Replace spaces with hyphens
+- Remove special characters except hyphens
+- Collapse multiple hyphens to single hyphen
+
+#### 3.5.2: Check Baseline File Existence
+
+Expected path: `docs/workflow/{project-id}/baseline.yaml`
+
+Use the Read tool to check if file exists:
+- If file exists AND is valid YAML: Proceed to 3.5.3
+- If file exists but invalid YAML: Return syntax error
+- If file NOT found: Return blocking error (3.5.4)
+
+#### 3.5.3: Validate Baseline Structure
+
+Check required fields based on baseline type:
+
+For `performance_optimization`:
+- [ ] `baseline.measurements.baseline_metric.value` is a number
+- [ ] `baseline.measurements.breakdown` has >= 2 categories
+- [ ] `baseline.measurements.bottleneck_ranking` is present
+- [ ] `baseline.target.evidence_achievable` is non-empty
+- [ ] No placeholder values detected
+
+For `process_improvement`:
+- [ ] At least one evidence section present (incident_references OR failure_modes OR stakeholder_input)
+- [ ] `simplest_alternatives_considered` has >= 1 alternative
+
+For `feature_development`:
+- [ ] `current_state.description` is non-empty
+- [ ] `simplest_alternatives_considered` has >= 1 alternative
+
+If validation fails, return specific error:
+```
+BASELINE VALIDATION FAILED
+
+File: docs/workflow/{project-id}/baseline.yaml
+Issue: {specific validation failure}
+
+Please fix the baseline file and retry.
+```
+
+#### 3.5.4: Blocking Error (File Not Found)
+
+If baseline file does not exist, return this error and STOP:
+
+```
+================================================================================
+ROADMAP BLOCKED: Baseline measurement file not found
+================================================================================
+
+Expected location: docs/workflow/{project-id}/baseline.yaml
+
+WHAT TO DO:
+
+Option 1: Create baseline using command (RECOMMENDED)
+  /dw:baseline "{goal-description}"
+
+Option 2: Create baseline.yaml manually
+  See baseline specification at: 5d-wave/templates/baseline-template.yaml
+
+WHY IS THIS REQUIRED?
+
+  Roadmaps created without measurement data often address the wrong problem.
+  This gate ensures:
+  - The problem is quantified BEFORE solution design
+  - The LARGEST bottleneck is identified
+  - Quick wins are considered BEFORE complex solutions
+
+  Reference: Incident ROADMAP-2025-12-03-001
+
+FOR PROCESS IMPROVEMENTS (non-performance):
+  Create baseline with type: "process_improvement"
+  Include incident references or failure mode evidence
+  Timing metrics are NOT required for process improvements
+
+================================================================================
+```
+
+#### 3.5.5: Pass Baseline Data to Agent
+
+If baseline validation passes, extract key data for agent:
+
+```
+Baseline Summary (from docs/workflow/{project-id}/baseline.yaml):
+- Type: {baseline.type}
+- Problem: {baseline.problem_statement.summary}
+- Largest Bottleneck: {baseline.measurements.bottleneck_ranking[0].component} ({baseline.measurements.bottleneck_ranking[0].impact})
+- Quick Win Identified: {baseline.quick_wins[0].action} (Effort: {effort}, Impact: {expected_impact})
+- Target: {baseline.target.current} -> {baseline.target.proposed} ({baseline.target.improvement_factor} improvement)
+
+The roadmap MUST address the largest bottleneck first.
+Quick wins should be Phase 1 before complex solutions.
+```
+
+Include this summary in the Task tool prompt after "Task type: roadmap".
+
 ### Parameter Parsing Rules
 
 Apply these rules to ALL extracted parameters:
@@ -83,6 +192,45 @@ Your specific role for this command: Create comprehensive planning documents tha
 
 Task type: roadmap
 
+## Pre-Planning Measurement Gate (MANDATORY - BLOCKING)
+
+**This gate BLOCKS roadmap creation until baseline data is provided.**
+
+Before creating this roadmap, the user MUST provide:
+
+### Baseline Metrics (REQUIRED)
+- [ ] Current total execution time: ___ seconds
+- [ ] Execution time breakdown by component:
+  | Component | Time | % of Total |
+  |-----------|------|------------|
+  | ... | ... | ... |
+- [ ] Largest bottleneck identified: ___
+- [ ] Second largest bottleneck: ___
+
+### Target Validation (REQUIRED)
+- [ ] Proposed target: ___ seconds
+- [ ] Theoretical speedup with approach: ___x
+- [ ] Evidence showing target is achievable: ___
+
+### Quick Win Analysis (REQUIRED)
+- [ ] Simplest possible change identified: ___
+- [ ] Expected impact of simple change: ___
+- [ ] Why simple change is insufficient (if proposing complex solution): ___
+
+### Gate Status
+- [ ] **PASSED**: All measurements complete, proceed with roadmap
+- [ ] **BLOCKED**: Missing measurements, CANNOT proceed
+
+**If BLOCKED:**
+- DO NOT create a roadmap
+- Request measurement data from user
+- Offer to help gather metrics with /dw:research or profiling
+
+**For process improvements (non-performance):**
+- Document that this is a process improvement, not performance optimization
+- Provide qualitative evidence of the problem being solved
+- Still require "simplest alternatives considered" analysis
+
 Create a comprehensive roadmap for achieving this goal: {goal-description}
 
 Your responsibilities:
@@ -107,6 +255,58 @@ Key Principles:
 - Make dependencies explicit rather than implicit
 - Design for parallel execution where possible
 - Use YAML format for token efficiency
+
+Research Phase Requirements (MANDATORY for performance roadmaps):
+
+The research phase MUST produce QUANTITATIVE outputs, not just categorization.
+
+### Required Research Outputs
+
+**1. Timing Analysis (REQUIRED)**
+```yaml
+timing_breakdown:
+  format: |
+    | Category | Count | Total Time | % of Total | Quick Win? |
+    |----------|-------|------------|------------|------------|
+    | {cat1}   | N     | Xm Ys      | XX%        | YES/NO     |
+  requirement: "MUST measure time, not just count or categorize"
+```
+
+**2. Impact Ranking (REQUIRED)**
+```yaml
+impact_ranking:
+  format: |
+    1. {category}: {time} ({percentage}%) - {parallelizable?}
+    2. {category}: {time} ({percentage}%) - {parallelizable?}
+  requirement: "MUST rank by TIME IMPACT, not by type"
+```
+
+**3. Quick Win Identification (REQUIRED)**
+```yaml
+quick_wins:
+  format: |
+    | Change | Effort | Expected Impact | Impact/Effort |
+    |--------|--------|-----------------|---------------|
+    | {change} | LOW/MED/HIGH | {time saved} | {ratio} |
+  requirement: "MUST identify before architecture design"
+```
+
+### Research Anti-Patterns to Avoid
+
+- DO NOT categorize only by type (SISTER/non-SISTER) - include timing
+- DO NOT assume most-mentioned constraint is most important
+- DO NOT skip timing analysis for "obvious" problems
+- DO NOT design architecture before completing research
+
+### Research Validation Gate
+
+Before proceeding to architecture design, verify:
+- [ ] Timing breakdown includes ALL categories
+- [ ] Categories ranked by time impact (not alphabetically or by type)
+- [ ] Quick wins identified with impact/effort ratio
+- [ ] Largest bottleneck explicitly identified
+
+If research is qualitative-only (no timing), STOP and gather metrics.
 
 For complex refactoring projects, set methodology: 'mikado' and include mikado_integration section referencing the Mikado graph.
 
