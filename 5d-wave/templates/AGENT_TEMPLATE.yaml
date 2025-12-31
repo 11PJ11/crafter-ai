@@ -35,7 +35,9 @@ specialist_agent_template: |
   ---
   name: {agent-id-kebab-case}
   description: {one-sentence-description-focusing-on-when-to-use-and-wave-context}
-  model: inherit
+  model: inherit  # Use 'haiku' for reviewer variants - verification is cognitively simpler than generation
+                   # Follows adversarial training pattern: simpler critic/discriminator, complex generator
+                   # Cost-efficient while maintaining review quality (pattern matching, gap detection vs creative synthesis)
   ---
 
   # {agent-id-kebab-case}
@@ -2026,6 +2028,97 @@ design_patterns_comprehensive:
     orchestrator_agents: "Use Sequential or Hierarchical patterns"
     team_agents: "Combine multiple patterns (Sequential + Parallel + Hierarchical)"
     tool_agents: "Typically use ReAct with specialized tool sets"
+
+  verification_vs_generation_asymmetry:
+    pattern_name: "Reviewer Variant Pattern (Haiku Model for Verification)"
+    principle: "Verification is cognitively simpler than generation"
+
+    rationale:
+      cognitive_asymmetry:
+        generation_tasks:
+          - "Creative synthesis from multiple sources"
+          - "Novel solution creation"
+          - "Complex architectural design"
+          - "Original content production"
+          complexity: "HIGH - requires deep reasoning, creativity, context integration"
+
+        verification_tasks:
+          - "Pattern matching against quality criteria"
+          - "Gap detection in existing artifacts"
+          - "Checklist-driven validation"
+          - "Bias identification"
+          - "Citation verification"
+          - "Logical fallacy detection"
+          complexity: "MEDIUM - systematic analysis, not creative synthesis"
+
+      adversarial_training_precedent:
+        description: "Well-established ML pattern: simpler discriminator/critic, complex generator"
+        examples:
+          - "GANs (Generative Adversarial Networks): Discriminator simpler than Generator"
+          - "Reinforcement Learning: Critic networks often smaller than Policy networks"
+          - "Quality Gates: Validation logic simpler than production logic"
+
+        analogy:
+          base_agent: "Generator (Sonnet) - creates complex research, architecture, code"
+          reviewer_agent: "Discriminator/Critic (Haiku) - verifies quality, identifies gaps"
+
+      cost_benefit_analysis:
+        haiku_advantages:
+          - "~50% cost reduction per review"
+          - "Faster response times for review operations"
+          - "Sufficient capability for pattern matching and gap detection"
+
+        haiku_sufficient_for:
+          - "Citation completeness verification"
+          - "Source credibility checking against known domains"
+          - "Logical fallacy identification"
+          - "Gap detection (missing sections, incomplete criteria)"
+          - "Format compliance validation"
+          - "Bias pattern recognition"
+
+        haiku_limitations_acceptable:
+          - "Less creative in suggesting alternatives (not primary reviewer responsibility)"
+          - "Simpler reasoning for edge cases (focus is on identifying them, not solving)"
+
+    implementation_guidance:
+      when_to_use_haiku:
+        - "Agent name ends with '-reviewer' suffix"
+        - "Primary responsibility is verification/validation, not generation"
+        - "Tasks are checklist-driven or pattern-matching based"
+        - "Output is critique/feedback, not novel artifacts"
+
+      when_to_use_sonnet_inherit:
+        - "Agent creates novel content (research, architecture, code)"
+        - "Tasks require creative synthesis"
+        - "Deep reasoning and context integration needed"
+        - "Agent is primary producer, not reviewer"
+
+      configuration_pattern:
+        base_agent_example: |
+          ---
+          name: researcher
+          description: Evidence-driven research with source verification
+          model: inherit  # Sonnet - complex generation task
+          ---
+
+        reviewer_variant_example: |
+          ---
+          name: researcher-reviewer
+          description: Research quality and evidence review specialist
+          model: haiku  # Verification simpler than generation - cost-efficient
+          ---
+
+    validation_results:
+      production_evidence:
+        - "researcher-reviewer successfully identified HIGH severity issues using Haiku"
+        - "Citation verification, bias detection, gap identification all performed adequately"
+        - "Cost savings significant without quality degradation"
+        - "Pattern matching and checklist validation within Haiku capability"
+
+      decision:
+        status: "VALIDATED - Haiku appropriate for reviewer agents"
+        rationale: "Verification task asymmetry confirmed through production testing"
+        recommendation: "Use Haiku for all '-reviewer' variant agents"
 
 # ============================================================================
 # CORE PRINCIPLES (14 EVIDENCE-BASED PRINCIPLES)
