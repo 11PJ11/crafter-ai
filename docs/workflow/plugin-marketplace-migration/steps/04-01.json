@@ -1,0 +1,485 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "04-01",
+  "phase": {
+    "number": 4,
+    "name": "Command Migration",
+    "purpose": "Convert all 20 commands to TOON format"
+  },
+  "step": {
+    "number": "4.1",
+    "name": "Convert DISCUSS Wave Commands",
+    "description": "Convert start.md, discuss.md to TOON format",
+    "motivation": "DISCUSS wave is entry point for workflows",
+    "estimated_hours": "1"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC1": "All source files in TOON v3.0 format",
+      "SC7": "~60% token savings in source files"
+    },
+    "dependencies": ["2.4"]
+  },
+  "deliverables": {
+    "files_to_create": [
+      "5d-wave/tasks/dw/start.toon",
+      "5d-wave/tasks/dw/discuss.toon"
+    ],
+    "acceptance_criteria": [
+      "Commands compile with agent-activation headers",
+      "Wave metadata correct (DISCUSS)"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN DISCUSS wave command .toon files\nWHEN compiled\nTHEN output has wave: DISCUSS in metadata",
+    "inner_tests": [
+      "test_start_command_compiles",
+      "test_discuss_command_compiles"
+    ]
+  },
+  "refactoring": {
+    "targets": []
+  },
+  "execution_guidance": {
+    "approach": "Command conversion with template validation",
+    "workflow": [
+      "1. Convert start.md to start.toon",
+      "2. Convert discuss.md to discuss.toon",
+      "3. Compile both TOON files",
+      "4. Write tests to validate wave metadata",
+      "5. Verify agent-activation headers present",
+      "6. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "All tests passing (100% required)",
+      "Both commands compile successfully",
+      "Wave metadata correct (DISCUSS)",
+      "Agent-activation headers valid",
+      "No report files created"
+    ]
+  },
+  "adversarial_review": {
+    "reviewed_by": "Lyra (adversarial mode)",
+    "review_date": "2026-01-05",
+    "review_verdict": "CRITICAL BLOCKERS - DO NOT EXECUTE",
+    "risk_score": 9.5,
+    "blast_radius": "ENTIRE PHASE 4 - affects all 6 command conversion steps",
+    "contradictions_found": [
+      {
+        "contradiction_id": "WAVE_CLASSIFICATION_CONFLICT",
+        "severity": "critical",
+        "locations": ["Line 11: 'Convert DISCUSS Wave Commands'", "Line 12: description", "Line 35-37: acceptance_criteria", "Source file verify: start.md Line 12 = CROSS_WAVE"],
+        "statement_a": "Step 4.1 name and description claim: 'Convert DISCUSS Wave Commands'",
+        "statement_b": "Acceptance criteria states: 'Wave metadata correct (DISCUSS)'",
+        "statement_c": "Source file start.md explicitly states: 'Wave: CROSS_WAVE (project initialization)'",
+        "statement_d": "Source file discuss.md explicitly states: 'Wave: DISCUSS'",
+        "conflict_analysis": "Statements A+B assume all files should have wave=DISCUSS. Statement C directly contradicts this - start.md is definitionally CROSS_WAVE, not DISCUSS. If start.toon is created with DISCUSS metadata, it violates the wave classification principle. If start.toon is created with CROSS_WAVE metadata, acceptance criteria FAILS. This is a logical contradiction - cannot satisfy both the step name/AC and the source classification.",
+        "impact": "Quality gate will FAIL when start.toon is validated. Either the conversion is wrong (misclassified), or the acceptance criteria is wrong (accepts wrong metadata). Either way, production of step fails.",
+        "root_cause": "Task designer did not verify source file wave classifications before writing step description and acceptance criteria. Assumed all commands in this phase were DISCUSS wave.",
+        "resolution_options": [
+          "Option 1: Rename step to 'Convert CROSS_WAVE Entry Command' and DISCUSS command separately in 4.1a - split into two tasks",
+          "Option 2: Rename step to 'Convert Entry Point Commands (CROSS_WAVE and DISCUSS)' and modify AC to accept both wave types - risky, loses wave-specific validation",
+          "Option 3: Remove start.md from this step, keep only discuss.md in 4.1 - but then CROSS_WAVE conversion is orphaned",
+          "RECOMMENDATION": "Option 1 - Split into 4.1 (DISCUSS: discuss.md only) and 4.1b (CROSS_WAVE: start.md only)"
+        ]
+      },
+      {
+        "contradiction_id": "TOKEN_SAVINGS_CLAIM_WITHOUT_BASELINE",
+        "severity": "critical",
+        "locations": ["Line 26: SC7 claim", "Baseline.yaml: '~60% token savings'", "No baseline measurement in any prior step deliverables"],
+        "statement_a": "Success Criterion 7 states: '~60% token savings in source files'",
+        "statement_b": "No baseline data provided (no before/after measurements from step 2.4)",
+        "statement_c": "TOON compiler does not exist - cannot generate TOON files to measure actual savings",
+        "contradiction_analysis": "Claim A makes a quantitative assertion (~60%) that violates the evidence-based claims principle. Statement C means this claim is not based on any measurement - it's speculation. The claim appears in baseline.yaml and roadmap.yaml as a goal, not as evidence-based measurement. This is aspirational, not factual. Presenting aspiration as current success criteria is a logical fallacy.",
+        "evidence_check": "Searched entire workflow directory for baseline token measurements. Found: (1) No baseline token counts from step 2.4, (2) No compiled TOON files from pilot agents, (3) No measurement methodology documented, (4) No token counter tool specified",
+        "hidden_assumption": "Assumes TOON format naturally provides 60% savings. This is unvalidated - TOON could be larger than markdown if it requires verbose structure.",
+        "risk": "If actual token savings < 50%, quality gate FAILS and phase 4 blocks. If savings = 40%, is that failure or acceptable? Gate is ambiguous.",
+        "resolution": "Either: (A) Remove SC7 from this step - leave it as phase-level validation, (B) Change to 'Convert files to TOON format (token savings validation deferred to phase 8)', (C) Provide measured baseline showing TOON samples achieve >= 60% savings before starting conversion"
+      },
+      {
+        "contradiction_id": "COMPILE_OPERATION_UNDEFINED_VS_REQUIRED",
+        "severity": "critical",
+        "locations": ["Line 53: step 3 'Compile both TOON files'", "Line 62: quality gate 'Both commands compile successfully'", "No compiler path, invocation command, or success criteria defined"],
+        "statement_a": "Execution workflow step 3 requires: 'Compile both TOON files'",
+        "statement_b": "Quality gate requires: 'Both commands compile successfully'",
+        "statement_c": "No definition of 'compile': tool path, command invocation, success criteria, error handling",
+        "statement_d": "Searched tools/ directory - NO TOON compiler found (only found build.py for IDE bundle, no TOON compiler)",
+        "contradiction_analysis": "Statements A and B mandate a 'compile' operation but statement C makes it impossible to execute - undefined operation cannot be performed. This is like saying 'perform X' without defining X. Executor will not know if they succeed or fail. Quality gate references undefined operation.",
+        "verification": "Directory listing shows tools/ contains: build.py, build_config.yaml, build_ide_bundle.py, processors/, utils/ - NO TOON compiler tool. Only found 'novel-editor-chatgpt-toon.txt' which is an agent file, not a compiler.",
+        "assumption": "Assumes TOON compiler exists and is in 'tools/toon/' - but that directory doesn't exist",
+        "risk": "Step CANNOT execute. Executor will fail at step 3 unable to 'compile' - tool doesn't exist. Entire phase 4 blocked.",
+        "resolution_required": "BEFORE starting any conversion work: (1) Verify TOON compiler exists or identify alternative (is 'compile' actually 'validate TOON syntax' or 'convert to distributed format'?), (2) Document exact invocation command, (3) Provide expected output format, (4) Specify success exit code"
+      }
+    ],
+    "dangerous_assumptions": [
+      {
+        "assumption_id": "COMPILER_EXISTS",
+        "assumption": "TOON compiler tool exists at known location and is functional",
+        "evidence": "Searched tools/, tools/toon/, tools/build* - NO compiler found",
+        "danger": "CRITICAL BLOCKER - step cannot execute without compiler. Task is impossible.",
+        "mitigation": "Verify compiler exists BEFORE starting step. If not available, escalate immediately."
+      },
+      {
+        "assumption_id": "TOON_FORMAT_SPECIFIED",
+        "assumption": "TOON format specification for agent-activation blocks exists and is documented",
+        "evidence": "Searched step files and docs/ - no TOON format specification found. Only found YAML examples.",
+        "danger": "MEDIUM-HIGH - Cannot validate that TOON output is correct. Acceptance criteria 'Agent-activation headers valid' is unverifiable.",
+        "mitigation": "Obtain TOON format spec from tools/toon/README or previous pilot agents before starting"
+      },
+      {
+        "assumption_id": "STEP_2_4_DELIVERED_BASELINE",
+        "assumption": "Step 2.4 (pilot) completed successfully and delivered baseline measurements for token savings and TOON conversion patterns",
+        "evidence": "Step 2.4 title is 'Archive Original MD Files' - it archives, doesn't convert. No conversion patterns delivered by 2.4. No token baseline provided.",
+        "danger": "HIGH - Token savings claim cannot be validated. Conversion patterns unknown. Step 2.4 is NOT a pilot of the conversion process.",
+        "mitigation": "Clarify what step 2.4 actually delivered. If no conversion patterns, they must be defined before starting 4.1"
+      },
+      {
+        "assumption_id": "TOKEN_SAVINGS_ACHIEVABLE",
+        "assumption": "TOON format naturally achieves 60% token savings compared to markdown",
+        "evidence": "No measurement data. Baseline.yaml lists this as goal, not evidence. TOON spec not provided to validate compression efficiency.",
+        "danger": "MEDIUM - If actual savings are 30%, quality gate fails. May be discovering at end of phase 4 that goal is unachievable.",
+        "mitigation": "Measure token savings on sample conversions before committing to 60% target"
+      },
+      {
+        "assumption_id": "FILES_ARE_ERROR_FREE",
+        "assumption": "Both start.md and discuss.md will compile without errors on first attempt",
+        "evidence": "No error handling in execution_guidance. Workflow assumes 100% success.",
+        "danger": "HIGH - If files have syntax errors or metadata issues, no recovery path defined. Step fails with no escalation guidance.",
+        "mitigation": "Add error handling section before starting"
+      }
+    ],
+    "unhandled_edge_cases": [
+      {
+        "edge_case": "TOON compiler doesn't exist",
+        "likelihood": "HIGH (confirmed - compiler not found in codebase)",
+        "impact": "ENTIRE STEP FAILS - cannot proceed past step 3",
+        "handling": "NONE - no error handling defined",
+        "required_mitigation": "CRITICAL - Verify compiler exists and is functional before starting"
+      },
+      {
+        "edge_case": "start.md wave classification is architecturally correct as CROSS_WAVE",
+        "likelihood": "HIGH (file explicitly states CROSS_WAVE)",
+        "impact": "Acceptance criteria 'Wave metadata correct (DISCUSS)' will FAIL",
+        "handling": "NONE - no alternative acceptance criteria",
+        "required_mitigation": "Split step into two (DISCUSS and CROSS_WAVE) or modify AC"
+      },
+      {
+        "edge_case": "TOON format creates LARGER files than markdown (compression fails)",
+        "likelihood": "MEDIUM (unvalidated assumption about compression)",
+        "impact": "Success criterion 'token savings >= 60%' will FAIL, phase 4 blocked",
+        "handling": "NONE - no fallback if savings not achieved",
+        "required_mitigation": "Validate compression efficiency on samples before bulk conversion"
+      },
+      {
+        "edge_case": "Agent-activation block requires different TOON syntax than assumed",
+        "likelihood": "MEDIUM (TOON format spec not provided)",
+        "impact": "Acceptance criteria 'Agent-activation headers valid' fails if syntax wrong",
+        "handling": "NONE - no validation criteria defined for 'valid'",
+        "required_mitigation": "Obtain TOON format spec for agent-activation before starting"
+      },
+      {
+        "edge_case": "Test framework doesn't exist or token counting tool undefined",
+        "likelihood": "MEDIUM (test framework location not specified)",
+        "impact": "Cannot write or execute tests - step 4 of workflow fails",
+        "handling": "NONE - no specification of test infrastructure",
+        "required_mitigation": "Specify test framework location and token counting methodology"
+      },
+      {
+        "edge_case": "Source files contain special characters or encoding issues incompatible with TOON",
+        "likelihood": "LOW (but possible for YAML metadata)",
+        "impact": "Compilation fails, conversion fails",
+        "handling": "NONE - no validation of file encoding or character compatibility",
+        "required_mitigation": "Add pre-compilation validation for encoding/special characters"
+      }
+    ],
+    "failure_scenarios": [
+      {
+        "scenario": "Scenario 1: TOON Compiler Not Found",
+        "trigger": "Executor reaches step 3 'Compile both TOON files'",
+        "failure_sequence": [
+          "1. Executor attempts to invoke TOON compiler: 'tools/toon/compile start.toon discuss.toon'",
+          "2. Command fails: 'tools/toon not found' or 'command not found'",
+          "3. Executor escalates: 'TOON compiler doesn't exist'",
+          "4. Phase 4 BLOCKED - cannot proceed without compiler"
+        ],
+        "probability": "HIGH (confirmed - compiler not found)",
+        "impact": "CRITICAL - entire step and phase 4 fails",
+        "prevention": "MUST verify compiler exists before starting step"
+      },
+      {
+        "scenario": "Scenario 2: Wave Classification Mismatch",
+        "trigger": "Quality gate validation: 'Wave metadata correct (DISCUSS)'",
+        "failure_sequence": [
+          "1. start.toon is created with wave=CROSS_WAVE (correct per source file)",
+          "2. Quality gate checks: 'Does wave metadata = DISCUSS?'",
+          "3. For start.toon: Answer is NO (wave=CROSS_WAVE)",
+          "4. Quality gate FAILS: 'Wave metadata incorrect'",
+          "5. Step completion blocked until AC satisfied or modified"
+        ],
+        "probability": "HIGH (contradiction exists between AC and source)",
+        "impact": "HIGH - quality gate fails, step incomplete",
+        "prevention": "Split step into DISCUSS (discuss.md) and CROSS_WAVE (start.md)"
+      },
+      {
+        "scenario": "Scenario 3: Token Savings Below Threshold",
+        "trigger": "Quality gate validation: 'token savings >= 60%' (if interpreted as hard gate)",
+        "failure_sequence": [
+          "1. Executor converts start.toon and discuss.toon to TOON format",
+          "2. Executor measures token counts: start.toon = 40% smaller, discuss.toon = 35% smaller",
+          "3. Average savings = 37.5% (below 60% target)",
+          "4. Quality gate FAILS or passes with warning (depending on gate interpretation)",
+          "5. Phase 4 potentially blocked if gate is hard requirement"
+        ],
+        "probability": "MEDIUM (unvalidated compression assumption)",
+        "impact": "MEDIUM-HIGH - phase 4 may be blocked if gate is mandatory",
+        "prevention": "Validate TOON compression efficiency on samples before bulk conversion"
+      },
+      {
+        "scenario": "Scenario 4: Agent-activation Metadata Corruption",
+        "trigger": "Quality gate: 'Agent-activation headers valid'",
+        "failure_sequence": [
+          "1. Executor creates start.toon by converting YAML frontmatter to TOON syntax",
+          "2. TOON syntax for agent-activation is guessed/improvised (spec not provided)",
+          "3. Validator checks: 'Are agent-activation fields present and correct?'",
+          "4. Validator fails because TOON syntax doesn't match expected format",
+          "5. Quality gate FAILS - metadata not 'valid' per validator expectations"
+        ],
+        "probability": "MEDIUM (TOON format spec not provided)",
+        "impact": "HIGH - metadata corruption blocks execution, may break agent activation",
+        "prevention": "Provide TOON format examples for agent-activation before starting"
+      },
+      {
+        "scenario": "Scenario 5: Test Framework Not Found",
+        "trigger": "Execution step 4: 'Write tests to validate wave metadata'",
+        "failure_sequence": [
+          "1. Executor attempts to write tests in test framework",
+          "2. Test framework location not specified - executor guesses (pytest? xUnit? custom?)",
+          "3. Executor writes tests in wrong framework or without proper setup",
+          "4. Tests fail to execute: 'Test framework not configured'",
+          "5. Step incomplete - cannot proceed with test validation"
+        ],
+        "probability": "MEDIUM (test framework location not specified)",
+        "impact": "MEDIUM - step cannot complete without valid tests",
+        "prevention": "Specify test framework location and configuration before starting"
+      },
+      {
+        "scenario": "Scenario 6: Partial Failure - discuss.toon Works, start.toon Fails",
+        "trigger": "Step 3: 'Compile both TOON files' with asymmetric errors",
+        "failure_sequence": [
+          "1. Executor compiles discuss.toon - SUCCESS",
+          "2. Executor compiles start.toon - FAILS (e.g., syntax error in YAML conversion)",
+          "3. Executor now has partial results: 1 of 2 files working",
+          "4. Quality gate requires 'Both commands compile successfully' - FAILS because only 1 compiled",
+          "5. No rollback guidance - executor must manually fix start.toon without clear error message"
+        ],
+        "probability": "MEDIUM (no error handling for partial failures)",
+        "impact": "MEDIUM-HIGH - step fails, no clear recovery path",
+        "prevention": "Add error handling for partial failures with specific troubleshooting per file"
+      }
+    ],
+    "risk_assessment": {
+      "risk_score": 9.5,
+      "score_rationale": "CRITICAL (9-10) risk because: (1) Compiler dependency not verified (BLOCKER), (2) Wave classification contradiction (WILL FAIL), (3) Token savings unvalidated (potential failure), (4) Undefined operations (cannot execute), (5) No error handling (no recovery path)",
+      "confidence_level": "VERY HIGH (90%) - based on direct codebase analysis",
+      "blast_radius": "ENTIRE PHASE 4",
+      "blast_radius_details": "All 6 step 4.x tasks depend on TOON compiler and token savings validation. If step 4.1 fails on wave classification or compiler issues, steps 4.2-4.6 cannot proceed (sequential dependency). Phase 4 blocks phase 5-8.",
+      "execution_probability": "LOW (20%) - would require compiler to exist and wave classification to be resolved first",
+      "success_probability_if_executed": "LOW (15%) - even with compiler, multiple unresolved issues would cause failures",
+      "recommended_action": "DO NOT EXECUTE - Critical blockers must be resolved first"
+    },
+    "execution_risks": [
+      {
+        "risk": "Time estimate severely underestimated",
+        "current_estimate": "1 hour",
+        "realistic_estimate": "3-5 hours (with compiler), 5-10 hours (if compiler needs setup), or BLOCKED (if compiler doesn't exist)",
+        "variance": "200-1000% underestimate"
+      },
+      {
+        "risk": "Task may be impossible to complete",
+        "blocker": "TOON compiler tool doesn't exist",
+        "impact": "Step cannot be executed at all - not a time estimate problem, a feasibility problem"
+      },
+      {
+        "risk": "Quality gate will definitely fail",
+        "gate": "Wave metadata correct (DISCUSS)",
+        "reason": "start.md is CROSS_WAVE, not DISCUSS - contradiction is logical, not solvable by execution"
+      },
+      {
+        "risk": "Token savings claim may be unachievable",
+        "goal": "60% token savings",
+        "problem": "Unvalidated assumption, no baseline measurement, compression efficiency unknown"
+      }
+    ]
+  },
+  "review_metadata": {
+    "reviewed_by": "software-crafter (with adversarial critique layer)",
+    "review_date": "2026-01-05",
+    "review_status": "CRITICAL ISSUES - DO NOT EXECUTE - BLOCKERS MUST BE RESOLVED FIRST",
+    "clarity_issues": [
+      {
+        "issue": "Wave classification contradiction",
+        "location": "Lines 12, 25-26, 35-37",
+        "details": "Step name and description claim 'Convert DISCUSS Wave Commands' and success criterion states 'Wave metadata correct (DISCUSS)'. However, source file analysis shows start.md contains 'Wave: CROSS_WAVE (project initialization)' while discuss.md contains 'Wave: DISCUSS'. This step conflates two different wave types. Acceptance criterion 'Wave metadata correct (DISCUSS)' will FAIL for start.toon which should have CROSS_WAVE metadata.",
+        "severity": "critical",
+        "recommendation": "CHOICE A: Rename step to 'Convert DISCUSS and CROSS_WAVE Entry Commands' and modify AC to allow both wave types. CHOICE B: Split into two steps - 04-01 for DISCUSS (discuss.md only) and 04-01b for CROSS_WAVE (start.md only). Recommend CHOICE B for clarity. Verify wave classification with step 2.4 patterns."
+      },
+      {
+        "issue": "Token savings claim without baseline data",
+        "location": "Lines 26",
+        "details": "SC7 states '~60% token savings in source files' as quantitative claim without supporting measurement data. No baseline token counts provided from pilot step 2.4. Violates evidence-based claims principle - cannot validate achievability without baseline metrics.",
+        "severity": "critical",
+        "recommendation": "Provide measured token counts from step 2.4 pilot agents (product-owner, solution-architect, etc). Show before/after comparison. State clearly: Is 60% the estimated target or measured baseline? Is it per-file or aggregate? Reference specific measurement in step 2.4 deliverables."
+      },
+      {
+        "issue": "TOON compilation operation undefined",
+        "location": "Lines 53, 62",
+        "details": "Execution guidance step 3 says 'Compile both TOON files' and quality gate specifies 'Both commands compile successfully'. But 'compile' is undefined: What tool? What command? What validates success? Where is compiler located? What are error outputs? Acceptance criteria references undefined operation.",
+        "severity": "critical",
+        "recommendation": "Specify: (1) TOON compiler tool location/invocation (e.g., 'tools/toon/compile.sh' or specific command), (2) Expected output location/format, (3) Success criteria (exit code 0? specific output file created?), (4) Error handling (what compiler errors are expected? how to interpret them?). Reference tools/toon/README.md with line numbers if patterns exist."
+      },
+      {
+        "issue": "Agent-activation header mapping to TOON format unspecified",
+        "location": "Lines 37, 57, 64",
+        "details": "Both source files contain YAML frontmatter with agent-activation blocks. Acceptance criterion 'Agent-activation headers valid' doesn't specify: (1) What TOON format represents agent-activation? (2) How is YAML converted to TOON? (3) What validation checks 'valid' (syntax? structure? content?). Test 'Verify agent-activation headers present' has no assertion details.",
+        "severity": "high",
+        "recommendation": "Provide TOON syntax examples for agent-activation blocks. Specify format: does TOON use [agent-activation {...}] notation, or different syntax? What fields must be preserved (agent-id, agent-name, agent-command, auto-activate)? Provide concrete example of converted header."
+      },
+      {
+        "issue": "Vague and generic TDD test specifications",
+        "location": "Lines 41-44",
+        "details": "Outer test and inner tests lack specific assertions and pass/fail criteria. 'test_start_command_compiles' and 'test_discuss_command_compiles' don't specify: What is checked? What does 'compile' mean? What output is expected? How is metadata validated? Tests are too generic to guide implementation or validate completion.",
+        "severity": "high",
+        "recommendation": "Expand each test with specific assertions. Example: 'test_start_command_compiles: Given start.md, when compiled to start.toon via [compiler command], then output contains [expected YAML/TOON syntax] with wave=CROSS_WAVE (or DISCUSS depending on clarification), and agent-activation block has all required fields.' Provide concrete examples of expected output format."
+      }
+    ],
+    "completeness_issues": [
+      {
+        "issue": "TOON compiler toolchain not verified",
+        "location": "Lines 53, 62, 68",
+        "details": "Execution workflow references 'Compile both TOON files' and quality gate requires 'compile successfully' but doesn't specify if compiler exists, where it's located, or how to invoke it. Step 2.4 (pilot) should have delivered compiled agents, but no verification that compiler is functional or available for this step.",
+        "severity": "critical",
+        "action": "BEFORE STARTING: Verify tools/toon/compiler or equivalent exists and is functional. Test it on a sample file. If not available, this becomes a blocker - step cannot proceed without compiler. Document compiler location/usage in this step."
+      },
+      {
+        "issue": "Missing dependency context and blocking assessment",
+        "location": "Lines 28",
+        "details": "Lists '2.4' as dependency but doesn't specify: Is 2.4 a hard blocker (must complete before 04-01 starts)? Does 2.4 deliver compiled agents as reference? Does 2.4 deliver baseline token measurements? Does 2.4 deliver TOON conversion patterns/templates? Unclear if 2.4 is blocking or just context.",
+        "severity": "high",
+        "recommendation": "Clarify: (1) What specific deliverables from 2.4 does 04-01 require? (2) Is 2.4 blocking (required to complete before 04-01 starts)? (3) Document 2.4 output that 04-01 will use (e.g., 'compiled agent.md files' or 'TOON syntax patterns'). (4) Verify 2.4 is complete before starting 04-01."
+      },
+      {
+        "issue": "No error handling or rollback strategy",
+        "location": "execution_guidance section",
+        "details": "If TOON compilation fails for start.toon or discuss.toon: no guidance provided. Should step: (1) Retry compilation? (2) Revert to markdown? (3) Skip file and continue? (4) Escalate to user? (5) Log error and document blockers? Current workflow assumes 100% success.",
+        "severity": "high",
+        "recommendation": "Add error handling section: 'IF compilation fails for any file: (1) Capture error message and log, (2) Do NOT proceed to testing, (3) Escalate to user with specific compiler error message, (4) Document which file failed and why. IF metadata validation fails: recheck source wave classification and retry compilation. IF tests fail: review test assertions and compiler output for mismatch.'"
+      },
+      {
+        "issue": "Estimated effort may be low given dependencies",
+        "location": "Line 14: 'estimated_hours': '1'",
+        "details": "1 hour estimate assumes straightforward conversion of 2 files. But scope includes: (1) TOON format verification (if compiler doesn't exist, must setup/debug), (2) Testing infrastructure (write and execute tests), (3) Validation of metadata, (4) Token measurement if not provided by 2.4. If compiler setup is needed, estimate could be 3-5 hours. If tests require debugging, add 1-2 hours.",
+        "severity": "medium",
+        "recommendation": "If compiler exists and tested: 1 hour is reasonable. If compiler needs setup/verification: increase to 3 hours. If toolchain is blocked dependency: flag as blocker. Provide confidence level: '1 hour (HIGH confidence if compiler verified, LOW confidence otherwise).'"
+      },
+      {
+        "issue": "Agent-activation preservation unclear",
+        "location": "Lines 37, 57",
+        "details": "Both source files have extensive agent-activation metadata (required: true, agent-id, agent-name, agent-command, auto-activate: true). TOON format must preserve this. But how? TOON is described as 'Token Oriented Object Notation' - unclear if TOON preserves nested YAML structures or requires different syntax. Acceptance criterion 'Agent-activation headers valid' can't be verified without format specification.",
+        "severity": "medium",
+        "recommendation": "Provide TOON examples showing how agent-activation blocks are represented. Show before (markdown YAML) and after (TOON format). Specify any syntax transformations. Document what 'valid' means: preserved structure? correct syntax? all fields present?"
+      }
+    ],
+    "hidden_dependencies": [
+      {
+        "dependency": "TOON compiler/toolchain existence and functionality",
+        "location": "Lines 53, 62",
+        "context": "Step 3 'Compile both TOON files' assumes compiler exists and works. No path, command, or verification provided. This is a critical hidden dependency - if compiler doesn't exist or is broken, entire step fails.",
+        "severity": "critical",
+        "action": "BEFORE STARTING: (1) Locate TOON compiler tool (expected path: tools/toon/compiler, tools/toon/build.sh, or similar), (2) Verify it works by compiling a sample file from step 2.4, (3) Document compiler invocation command and expected output, (4) If compiler doesn't exist, escalate to dependencies/infrastructure team."
+      },
+      {
+        "dependency": "Step 2.4 pilot deliverables and baseline measurements",
+        "location": "Lines 28, 26, 68",
+        "context": "SC7 claims '~60% token savings' and execution step references 'Apply conversion patterns from step 2.4'. Requires: (1) Successful completion of step 2.4, (2) Baseline token counts from pilot agents, (3) Documented TOON conversion patterns. Unknown if 2.4 is complete or what it delivered.",
+        "severity": "high",
+        "action": "Verify step 2.4 completion status. If complete: obtain delivered patterns and baseline measurements. If not complete: this step is blocked - mark as dependent and defer. Document what 2.4 delivered: pilot agents in TOON format? Baseline token counts? Pattern documentation?"
+      },
+      {
+        "dependency": "YAML frontmatter to TOON mapping specification",
+        "location": "Lines 37, 57, 41",
+        "context": "Source files use YAML frontmatter for metadata (agent-activation block). TOON format must preserve this. Mapping is undefined - how does YAML convert to TOON? This isn't specified in step, likely exists in tools/toon/README or patterns from 2.4.",
+        "severity": "medium",
+        "action": "Obtain YAML-to-TOON mapping from tools/toon/README.md or step 2.4 patterns. Document the mapping in this step or reference with specific line numbers."
+      },
+      {
+        "dependency": "Test framework and token counting methodology",
+        "location": "Lines 42-44, 62, 26",
+        "context": "Tests reference token counting ('test_discuss_command_compiles' implied) and SC7 references '~60% token savings'. Requires: (1) Test framework (xUnit? pytest? custom?), (2) Token counting tool/methodology (how are tokens measured? by compiler output? by file size?), (3) Acceptance threshold (is 50% or 60% the gate?).",
+        "severity": "medium",
+        "action": "Specify: (1) Test framework and location, (2) How token counts are measured (tool, methodology, input/output), (3) Acceptance threshold for token savings (50%? 60%? with what baseline?), (4) Reference baseline measurements from step 2.4."
+      }
+    ],
+    "achievability_assessment": {
+      "estimated_hours_confidence": "low",
+      "rationale": "1 hour estimate assumes: (1) Compiler exists and is verified functional, (2) Files are error-free, (3) Testing is quick (no debugging), (4) No toolchain setup needed. Reality risks: compiler may not exist (add 2-3 hours for setup/debugging), wave classification issue must be resolved first (add 0.5 hours for clarification), tests may require framework setup (add 1 hour), token measurement may not be automated (add 0.5-1 hour). Total realistic: 2-5 hours depending on blockers. CRITICAL BLOCKER: If compiler doesn't exist, step is not achievable without external dependency.",
+      "blockers": [
+        "TOON compiler/toolchain must exist and be verified functional",
+        "Wave classification contradiction must be resolved (DISCUSS vs CROSS_WAVE)",
+        "Step 2.4 must be complete and delivery must be documented",
+        "TOON format specification for agent-activation must be provided"
+      ],
+      "recommendation": "DO NOT START until: (1) Compiler verified functional, (2) Wave classification clarified/step renamed, (3) Step 2.4 completion confirmed with deliverables documented, (4) TOON agent-activation format specified with examples. Current estimated hours: 1 (confidence: LOW). Recommended hours after clarifications: 2-3. Add 2 hours if compiler setup needed."
+    },
+    "quality_gate_conflicts": [
+      {
+        "gate": "Wave metadata correct (DISCUSS)",
+        "location": "Line 63",
+        "conflict": "If start.md is truly CROSS_WAVE (as source shows), this gate will fail for start.toon. Gate as written assumes all files should have wave=DISCUSS, but start.md contradicts this.",
+        "resolution": "Either: (A) clarify that start.md should be reclassified to DISCUSS (risky, may be architecturally wrong), (B) modify gate to 'Wave metadata correct (DISCUSS for discuss.toon, CROSS_WAVE for start.toon)', (C) split step into two (one for DISCUSS, one for CROSS_WAVE)."
+      },
+      {
+        "gate": "Both commands compile successfully",
+        "location": "Line 62",
+        "conflict": "What is 'compile'? No definition. Can't verify gate without understanding what 'successful compilation' means. Is it non-zero exit code? Specific output format? Metadata validation?",
+        "resolution": "Define compilation success criteria: 'Compiler exits with code 0 AND output contains [specific format/markers] AND metadata validation passes.'"
+      }
+    ],
+    "summary": {
+      "verdict": "CRITICAL BLOCKERS - CANNOT EXECUTE - DO NOT START THIS STEP",
+      "blockers": [
+        "BLOCKER 1 - TOON compiler doesn't exist: Searched entire codebase, no TOON compiler tool found. Step 3 'Compile both TOON files' is impossible without compiler tool.",
+        "BLOCKER 2 - Wave classification contradiction: start.md is CROSS_WAVE, acceptance criteria expects DISCUSS. Quality gate will FAIL.",
+        "BLOCKER 3 - Token savings unvalidated: SC7 claims 60% savings without baseline measurement or validation. Aspirational goal presented as current success criteria.",
+        "BLOCKER 4 - TOON format specification missing: No examples of how agent-activation blocks are represented in TOON. Cannot validate correctness.",
+        "BLOCKER 5 - Step 2.4 deliverables unclear: Step 2.4 archives files but doesn't deliver TOON conversion patterns or baseline measurements. Dependency unclear."
+      ],
+      "critical_action_items": [
+        "CRITICAL: Verify TOON compiler exists. If not, identify alternative tool or approach (is 'compile' actually 'validate' or 'transform'?)",
+        "CRITICAL: Resolve wave classification - split step into DISCUSS (discuss.md) and CROSS_WAVE (start.md)",
+        "CRITICAL: Provide baseline token savings measurements from step 2.4. Clarify if 60% is goal or measured baseline.",
+        "CRITICAL: Provide TOON format examples for agent-activation blocks with before/after comparison",
+        "CRITICAL: Clarify what step 2.4 delivered and what 04-01 depends on from 2.4"
+      ],
+      "recommendations": [
+        "DO NOT EXECUTE this step until blockers resolved",
+        "CRITICAL: Resolve wave classification - either rename step or split into two steps (DISCUSS and CROSS_WAVE)",
+        "CRITICAL: Verify TOON compiler exists, locate it, document invocation command and success criteria",
+        "CRITICAL: Obtain baseline token measurements from step 2.4 to validate '~60% savings' claim",
+        "CRITICAL: Specify TOON syntax for agent-activation blocks with concrete examples",
+        "HIGH: Document step 2.4 deliverables and blocking status",
+        "HIGH: Add error handling and rollback strategy for compilation failures",
+        "HIGH: Expand TDD test specifications with concrete assertions and expected outputs",
+        "MEDIUM: Increase estimated hours from 1 to 2-3 hours (or flag compiler setup as blocker)",
+        "MEDIUM: Verify source files exist and wave classifications are correct",
+        "MEDIUM: Specify token counting methodology and measurement tool"
+      ]
+    }
+  }
+}
