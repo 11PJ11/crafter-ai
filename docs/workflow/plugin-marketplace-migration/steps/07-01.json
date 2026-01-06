@@ -1,0 +1,746 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "07-01",
+  "phase": {
+    "number": 7,
+    "name": "Plugin Structure",
+    "purpose": "Create Claude Code plugin packaging for marketplace distribution"
+  },
+  "step": {
+    "number": "7.1",
+    "name": "Create plugin.json",
+    "description": "Create .claude-plugin/plugin.json with:\n- Plugin metadata (name, version, description)\n- Agent references organized by wave\n- Command references organized by wave\n- Skill references\n- Tool restrictions (none - D2 decision)\n- Thinking budget configuration (differentiated - D3 decision)",
+    "motivation": "plugin.json is required for Claude Code plugin installation",
+    "estimated_hours": "2"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC3": "Plugin installable via /plugin install"
+    },
+    "dependencies": ["3.3", "4.6", "5.4"]
+  },
+  "deliverables": {
+    "files_to_create": [
+      ".claude-plugin/plugin.json"
+    ],
+    "acceptance_criteria": [
+      "JSON validates against Claude Code plugin schema",
+      "All 26 agents referenced (actual count: novel-editor and novel-editor-reviewer excluded from build)",
+      "All 20 commands referenced",
+      "All 3 skills referenced",
+      "Wave organization maintained"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN plugin.json created with all agent, command, and skill references\nWHEN validated against Claude Code plugin schema\nTHEN validation passes with no errors AND all 26 agents + 20 commands + 3 skills are discoverable",
+    "inner_tests": [
+      "test_plugin_json_valid_schema",
+      "test_all_agents_referenced",
+      "test_all_commands_referenced",
+      "test_all_skills_referenced",
+      "test_wave_organization_preserved",
+      "test_agent_list_completeness",
+      "test_command_list_completeness"
+    ]
+  },
+  "refactoring": {
+    "targets": [
+      {
+        "level": 1,
+        "focus": "JSON structure organization and naming consistency"
+      }
+    ]
+  },
+  "execution_guidance": {
+    "approach": "Plugin manifest creation with comprehensive validation",
+    "workflow": [
+      "1. Create .claude-plugin/plugin.json structure with metadata",
+      "2. Add all 26 agent references organized by wave (DISCUSS, DESIGN, DISTILL, DEVELOP, DEMO) - excludes novel-editor and novel-editor-reviewer not in build",
+      "3. Add all 20 command references organized by wave (dw/tasks hierarchy)",
+      "4. Add all 3 skill references (dw:baseline, dw:develop, dw:mikado)",
+      "5. Configure tool restrictions (none - per D2 decision)",
+      "6. Configure thinking budgets differentiated by agent (per D3 decision)",
+      "7. Write tests to validate schema compliance and completeness",
+      "8. Apply refactoring level 1 for JSON organization",
+      "9. Verify no agent/command/skill list is incomplete",
+      "10. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "All tests passing (100% required)",
+      "Plugin.json validates against Claude Code plugin schema",
+      "All 26 agents referenced (verify count and names) - NOTE: novel-editor and novel-editor-reviewer excluded from build system",
+      "All 20 commands referenced (verify count and wave organization)",
+      "All 3 skills referenced (baseline, develop, mikado)",
+      "Wave organization correct and complete",
+      "Thinking budget configuration matches agent complexity",
+      "Tool restrictions applied as per D2 decision",
+      "Refactoring applied (level 1)",
+      "No report files created"
+    ]
+  },
+  "review_metadata": {
+    "reviewed_by": "Lyra",
+    "review_date": "2026-01-05",
+    "review_status": "CLEAR_WITH_CRITICAL_PREREQUISITE",
+    "clarity_assessment": "CLEAR - Well-structured task with explicit agent, command, and skill counts",
+    "completeness_assessment": "COMPLETE - Acceptance criteria explicitly validates all required elements",
+    "achievability_assessment": "ACHIEVABLE - 2-hour estimate is reasonable, but depends on prerequisite steps completing successfully",
+    "severity_summary": {
+      "critical": 1,
+      "high": 2,
+      "medium": 1
+    },
+    "severity_issues": [
+      {
+        "severity": "CRITICAL",
+        "category": "Blocking Prerequisite Completion Unknown",
+        "issue": "Steps 3.3, 4.6, and 5.4 completion status not verified before starting 7.1",
+        "details": "Task depends on: (1) Step 3.3 - complete 26 agents migrated to .toon format (novel-editor and novel-editor-reviewer excluded from build system), (2) Step 4.6 - complete 20 commands migrated to .toon format, (3) Step 5.4 - complete 3 skills validated for auto-invocation. If ANY of these predecessor steps failed or completed incompletely, step 7.1 will reference incorrect or missing agent/command/skill lists.",
+        "impact": "CRITICAL - plugin.json will be invalid if agents, commands, or skills are incomplete or missing. Installation will fail.",
+        "recommendation": "VERIFY BEFORE STARTING: (1) Confirm 'find 5d-wave/agents -name \"*.toon\" | wc -l' == 28, (2) Confirm 'find 5d-wave/tasks/dw -name \"*.toon\" | wc -l' == 20, (3) Confirm step 5.4 skills are created and validated. If counts don't match, do NOT proceed - predecessor steps need completion/fixing."
+      },
+      {
+        "severity": "HIGH",
+        "category": "Thinking Budget Differentiation Not Specified",
+        "issue": "Task references 'differentiated thinking budgets (D3 decision)' but doesn't specify which agents get which budgets",
+        "details": "Line 14 mentions 'Thinking budget configuration (differentiated - D3 decision)'. D3 decision suggests different agents should have different thinking budgets based on complexity. Task workflow (line 7) says 'Configure thinking budgets per agent' but doesn't specify the differentiation strategy. Which agents are 'heavy' vs 'light'? What are the actual budget values?",
+        "impact": "HIGH - Executor must guess differentiation strategy, may apply inappropriate budgets. Heavy cognitive agents (software-crafter, agent-builder) might be under-budgeted; light administrative agents might be over-budgeted.",
+        "recommendation": "CLARIFY: Provide explicit differentiation matrix: List agents by complexity (high/medium/low) and assign corresponding thinking budgets. Example: 'Heavy (20K): software-crafter, software-crafter-reviewer, agent-builder; Medium (10K): most others; Light (5K): simple agents like git, research'. Reference D3 decision documentation."
+      },
+      {
+        "severity": "HIGH",
+        "category": "Skill References May Be Incomplete",
+        "issue": "Task claims '3 skills referenced' but doesn't verify these are the ONLY skills or that all are included",
+        "details": "Line 37 states 'All 3 skills referenced' but task doesn't enumerate them. From step 5.1-5.4 context, the 3 skills appear to be related to dw/baseline, dw/develop, and dw/mikado. But are there others? Does each skill need additional configuration (trigger patterns, auto-invocation settings)? Acceptance criteria just say 'All 3 skill references' without specifying names.",
+        "impact": "HIGH - Executor may include wrong skills or miss required skill configuration. If step 5.4 produced skills with different names than expected, plugin.json will reference incorrect skill names.",
+        "recommendation": "CLARIFY: Explicitly list the 3 skills to reference: '(1) dw:baseline, (2) dw:develop, (3) dw:mikado' (or correct names if different). For each skill, verify: (a) Skill exists in codebase, (b) Trigger patterns are documented, (c) Auto-invocation configuration is understood."
+      },
+      {
+        "severity": "MEDIUM",
+        "category": "Test Implementation Completeness Undefined",
+        "issue": "Inner tests are named but not specified - what exactly do they validate?",
+        "details": "Lines 44-48 name 5 inner tests (test_plugin_json_valid, test_all_agents_referenced, etc.) but don't specify what each test does. For example: Does test_all_agents_referenced validate (a) schema contains 'agents' key, (b) agents array has 28 elements, (c) each agent has required fields (name, type, description), or (d) all agent names match files in 5d-wave/agents/? Different interpretations lead to different test implementations.",
+        "impact": "MEDIUM - Tests may be incomplete or validate wrong things. If test only checks 'agents key exists' but not 'exactly 26 agents', executor could create invalid plugin.json with wrong count and tests would pass.",
+        "recommendation": "SPECIFY: For each inner test, provide assertion examples. Example: 'test_all_agents_referenced: Assert len(plugin_json[\"agents\"]) == 28 AND all names match files in 5d-wave/agents/ AND each agent has fields: name, wave, type'."
+      }
+    ],
+    "missing_context": [
+      {
+        "category": "Thinking Budget Differentiation Strategy",
+        "gap": "D3 decision referenced but not documented in task. No agent-budget mapping provided.",
+        "impact": "CRITICAL - Cannot implement budget configuration without understanding differentiation criteria"
+      },
+      {
+        "category": "Skill List and Configuration",
+        "gap": "Claims 3 skills but doesn't enumerate them or reference step 5.4 outputs explicitly",
+        "impact": "HIGH - May reference incorrect skill names or configurations"
+      },
+      {
+        "category": "Plugin Schema Reference",
+        "gap": "Accepts criteria reference 'Claude Code plugin schema' but doesn't provide schema location or format examples",
+        "impact": "HIGH - Executor may validate against wrong schema or incomplete understanding"
+      },
+      {
+        "category": "Agent/Command Metadata Requirements",
+        "gap": "Task doesn't specify what fields each agent/command entry must have (name, description, wave, type, etc.)",
+        "impact": "MEDIUM - plugin.json structure may be incomplete or non-compliant with actual Claude Code plugin format"
+      }
+    ],
+    "hidden_dependencies": [
+      {
+        "dependency": "Step 3.3 completion - all 26 agents must be migrated and named consistently (novel-editor and novel-editor-reviewer excluded)",
+        "reason": "plugin.json references these agents by name. If step 3.3 incomplete or uses different naming, plugin.json references will be broken.",
+        "status": "UNKNOWN - Step 3.3 has CRITICAL ISSUES from prior review (TOON toolchain missing)",
+        "mitigation": "Verify: 'ls 5d-wave/agents/*.toon | wc -l' == 28 before referencing agents"
+      },
+      {
+        "dependency": "Step 4.6 completion - all 20 commands must be migrated and wave-organized",
+        "reason": "plugin.json includes command references organized by wave. If step 4.6 incomplete, command list will be missing entries.",
+        "status": "UNKNOWN - Prior review (04-06.json) showed completion is achievable but not yet verified executed",
+        "mitigation": "Verify: 'ls 5d-wave/tasks/dw/*.toon | wc -l' == 20 before referencing commands"
+      },
+      {
+        "dependency": "Step 5.4 completion - all 3 skills must be created and validated",
+        "reason": "plugin.json includes skill definitions. If step 5.4 incomplete, skills won't function.",
+        "status": "UNKNOWN - Step 5.4 is relatively straightforward but completion unverified",
+        "mitigation": "Verify step 5.4 created 3 skill definitions with correct trigger patterns before step 7.1"
+      },
+      {
+        "dependency": "Claude Code plugin schema specification must be available",
+        "reason": "Acceptance criteria require validation against plugin schema. Without schema, validation is impossible.",
+        "status": "ASSUMED - Assumed to exist in Claude Code documentation",
+        "mitigation": "Locate and reference official Claude Code plugin format documentation (version/date)"
+      },
+      {
+        "dependency": "D2 and D3 decision documentation must be accessible",
+        "reason": "Task references 'D2 decision (no tool restrictions)' and 'D3 decision (differentiated budgets)' but doesn't provide context or documentation",
+        "status": "MISSING - No reference to where D2/D3 decisions are documented",
+        "mitigation": "Document or reference where D2/D3 decisions are recorded. Executor needs to understand rationale behind decisions."
+      }
+    ],
+    "recommendations": [
+      {
+        "priority": "CRITICAL",
+        "action": "Verify all 26 agents (not 28 - excludes novel-editor, novel-editor-reviewer), 20 commands, 3 skills are complete before starting",
+        "detail": "Run verification commands: (1) 'ls 5d-wave/agents/*.toon 2>/dev/null | wc -l' must == 28, (2) 'ls 5d-wave/tasks/dw/*.toon 2>/dev/null | wc -l' must == 20, (3) Verify step 5.4 completed successfully. If ANY count is wrong, previous steps must complete first.",
+        "effort": "5 minutes - verification commands only"
+      },
+      {
+        "priority": "CRITICAL",
+        "action": "Document D2 and D3 decisions and their implementation",
+        "detail": "Provide explicit documentation: 'D2 Decision (tool restrictions): No tool restrictions in plugin.json because [reason]. Implementation: Set tools=[] or omit tools field. D3 Decision (thinking budgets): [Complexity-based differentiation strategy]. Implementation: Map agents to budget tiers: Heavy=[list], Medium=[list], Light=[list].'",
+        "effort": "15 minutes - decision documentation"
+      },
+      {
+        "priority": "HIGH",
+        "action": "Specify thinking budget values and agent classification",
+        "detail": "Create explicit mapping: 'High-complexity agents (budget: Xk tokens): software-crafter, agent-builder, software-crafter-reviewer, [others]. Medium-complexity (budget: Yk): [list]. Light-complexity (budget: Zk): [list]. Rationale: [briefly explain complexity metric].'",
+        "effort": "20 minutes - classification and mapping"
+      },
+      {
+        "priority": "HIGH",
+        "action": "Enumerate and validate all 3 skills",
+        "detail": "List explicitly: 'Skills to include in plugin.json: (1) [skill-name] - description, trigger patterns, agent bindings. (2) [skill-name] - ... (3) [skill-name] - ...' Verify each skill exists in codebase and step 5.4 validation completed.",
+        "effort": "10 minutes - skill enumeration and verification"
+      },
+      {
+        "priority": "HIGH",
+        "action": "Specify plugin.json schema and required fields",
+        "detail": "Document expected structure: 'plugin.json must contain: { metadata: { name, version, description }, agents: [{ name, wave, type, ... }], commands: [{ name, wave, ... }], skills: [...], toolRestrictions: [], thinkingBudgets: {...} }'. Reference official Claude Code plugin schema documentation.",
+        "effort": "20 minutes - schema documentation"
+      },
+      {
+        "priority": "HIGH",
+        "action": "Update inner tests with specific assertions",
+        "detail": "Provide test implementations: 'test_all_agents_referenced: Assert len(agents) == 28, all names match 5d-wave/agents/*.toon files, all agents have [required fields]. test_all_commands_referenced: Assert len(commands) == 20, all commands match 5d-wave/tasks/dw/*.toon files, all commands have correct wave labels.'",
+        "effort": "25 minutes - test specification"
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Document success measurement criteria",
+        "detail": "Specify how to verify success: 'After plugin.json created: (1) Run plugin validation tool: [command] - must exit code 0. (2) Verify installation: /plugin install <path-to-plugin.json> - must succeed. (3) Run compliance tests: [test-command] - must show 26 agents, 20 commands, 3 skills available.'",
+        "effort": "15 minutes - validation procedure documentation"
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Clarify Wave organization structure in plugin.json",
+        "detail": "Document expected wave organization: 'Agents organized by wave: DISCUSS: [2 agents], DESIGN: [4 agents], DISTILL: [4 agents], DEVELOP: [10 agents], DEMO: [8 agents]. Verify this structure matches what was created in phases 1-4.'",
+        "effort": "10 minutes - wave organization documentation"
+      }
+    ],
+    "questions_for_user": [
+      {
+        "question": "Have steps 3.3, 4.6, and 5.4 completed successfully? Can you verify agent count (26 - excludes novel-editor, novel-editor-reviewer), command count (20), and skills validation?",
+        "context": "Step 7.1 depends on these completing. If any are incomplete, plugin.json will reference missing components."
+      },
+      {
+        "question": "Where is the D2 decision documented (tool restrictions policy) and D3 decision (thinking budget differentiation)?",
+        "context": "Task references these decisions but doesn't provide context or implementation details. Need to understand rationale."
+      },
+      {
+        "question": "What is the specific thinking budget differentiation strategy? Which agents should have higher budgets and why?",
+        "context": "Task says 'differentiated budgets' but doesn't specify the differentiation criteria or actual budget values."
+      },
+      {
+        "question": "What are the exact names of the 3 skills that step 5.4 created? (e.g., dw:baseline, dw:develop, dw:mikado, or different names?)",
+        "context": "Need exact skill names for plugin.json references. Assumption may be wrong."
+      },
+      {
+        "question": "What is the official Claude Code plugin.json schema format? Where is it documented?",
+        "context": "Task validates against 'Claude Code plugin schema' but doesn't reference the actual schema specification."
+      },
+      {
+        "question": "Should tool restrictions be completely absent (omit tools field) or explicitly empty (tools: [])? What does Claude Code expect?",
+        "context": "Task says 'no tool restrictions' but doesn't specify the implementation detail."
+      }
+    ],
+    "effort_estimate": {
+      "current_estimate_hours": "2",
+      "estimated_actual_hours": "3-4 with recommended clarifications",
+      "rationale": "Base task (2 hours) for creating plugin.json, writing tests, and refactoring is reasonable. However, CRITICAL prerequisite verification (5 min) + HIGH priority clarifications (thinking budgets: 20 min, skill enumeration: 10 min, schema specification: 20 min, test implementation: 25 min) add 1.5-2 hours. Total: 3-4 hours recommended. If prerequisites fail, may need troubleshooting time."
+    }
+  },
+  "adversarial_review": {
+    "review_date": "2026-01-05",
+    "reviewer": "adversarial-software-crafter-reviewer",
+    "review_mode": "RUTHLESS - Seeking contradictions, blockers, and failure modes",
+    "risk_score": 8.5,
+    "blast_radius": "MULTIPLE_PHASES",
+    "overall_verdict": "DO NOT EXECUTE - Multiple critical dependencies BLOCKED. Step will fail catastrophically if prerequisites are incomplete.",
+    "contradictions_found": [
+      {
+        "id": "CONTRADICTION_1",
+        "description": "Task references 26 agents in plugin.json but Phase 3 (agent migration to TOON) is BLOCKED",
+        "location": ["line 35", "line 36", "dependencies line 27"],
+        "contradiction": "Step 7.1 expects: 'All 26 agents referenced' in plugin.json (novel-editor and novel-editor-reviewer excluded from build). But dependency 3.3 review shows Phase 3 is BLOCKED due to missing TOON toolchain (tools/toon/README.md doesn't exist). Agents may still be .md format, not migrated to .toon. What agent format does plugin.json expect?",
+        "failure_scenario": "If agents are still .md format (not migrated), plugin.json may reference non-existent .toon files or use wrong metadata format. Installation fails.",
+        "impact": "CRITICAL - Task assumes Phase 3 complete, but Phase 3 is BLOCKED. Either wait for Phase 3, or clarify if plugin.json uses .md agents.",
+        "evidence": "Step 3.3 review (2026-01-05) status: BLOCKED_CRITICAL_DEPENDENCIES. TOON toolchain missing."
+      },
+      {
+        "id": "CONTRADICTION_2",
+        "description": "Task claims '20 commands organized by wave' but no verification commands exist in 5d-wave/tasks/dw/",
+        "location": ["line 36", "line 66"],
+        "contradiction": "Acceptance criteria: 'All 20 commands referenced'. Execution guidance (line 66): 'Add all 20 command references organized by wave'. But what commands? Where are they? Do they exist in .toon format or .md?",
+        "failure_scenario": "Executor counts .md files in dw/ directory, finds 14 files (not 20). Tries to reference non-existent 20 commands. plugin.json validation fails.",
+        "impact": "CRITICAL - Unclear which 20 commands should be referenced or if they even exist",
+        "evidence": "Running 'ls 5d-wave/tasks/dw/' shows 14 files, not 20. Task says 'All 20 commands' but real count is unclear."
+      },
+      {
+        "id": "CONTRADICTION_3",
+        "description": "Task references '3 skills' but Step 5.4 (skill validation) is BLOCKED - skills don't exist yet",
+        "location": ["line 37", "line 67", "dependencies line 27"],
+        "contradiction": "Acceptance criteria: 'All 3 skills referenced'. But dependency 5.4 review shows Step 5.4 is BLOCKED: 'Cannot proceed until dependencies complete. Steps 5.1-5.3 have CONDITIONAL_APPROVAL - not yet completed.' If 5.1-5.3 skills don't exist, what 3 skills should plugin.json reference?",
+        "failure_scenario": "Executor tries to reference skills before they're created. Names, trigger patterns, agent bindings are unknown. plugin.json validation fails or references undefined skills.",
+        "impact": "CRITICAL - Depends on Step 5.4 which is blocked by Steps 5.1-5.3. These steps have no 'APPROVED' status, just 'CONDITIONAL_APPROVAL'.",
+        "evidence": "Step 5.4 review (2026-01-05): 'BLOCKED - Cannot proceed until dependencies complete. Steps 5.1-5.3 have CONDITIONAL_APPROVAL'."
+      },
+      {
+        "id": "CONTRADICTION_4",
+        "description": "Thinking budget differentiation (D3 decision) is referenced but not documented - executor must guess implementation",
+        "location": ["line 14 description", "line 69 workflow"],
+        "contradiction": "Line 14 mentions 'Thinking budget configuration (differentiated - D3 decision)'. Line 69 says 'Configure thinking budgets differentiated by agent'. But where is D3 decision documented? What's the differentiation strategy? Which agents get high budgets, which get low?",
+        "failure_scenario": "Executor creates plugin.json with thinking budgets but applies them arbitrarily (all agents same budget, or incorrect assignments). If D3 decision says 'software-crafter gets 20K, others get 5K', but executor gives all agents 10K, plugin.json is non-compliant.",
+        "impact": "HIGH - Cannot validate plugin.json compliance without knowing D3 decision. Tests may pass but result is wrong.",
+        "evidence": "Task references 'D3 decision' with no documentation link or explanation. D3 decision is unknown/inaccessible."
+      },
+      {
+        "id": "CONTRADICTION_5",
+        "description": "Tool restrictions policy (D2 decision) is referenced but rationale not documented",
+        "location": ["line 18 constraints", "line 68 workflow"],
+        "contradiction": "Line 18 mentions 'Tool restrictions (none - D2 decision)'. But why no restrictions? What was considered and rejected? If D2 says 'no restrictions', should plugin.json omit 'tools' field entirely, set tools=[], or something else?",
+        "failure_scenario": "Executor implements 'no tool restrictions' differently than intended. If D2 decision says 'omit tools field' but executor creates tools=[], or vice versa, validation fails.",
+        "impact": "MEDIUM - Ambiguous implementation detail for a critical security decision",
+        "evidence": "Task references D2 decision but doesn't provide context, rationale, or implementation specification."
+      },
+      {
+        "id": "CONTRADICTION_6",
+        "description": "Test definitions are incomplete - what exactly do inner tests validate?",
+        "location": ["lines 44-50"],
+        "contradiction": "Inner tests are named but not specified: test_plugin_json_valid_schema, test_all_agents_referenced, test_all_commands_referenced, test_all_skills_referenced, test_wave_organization_preserved, test_agent_list_completeness, test_command_list_completeness. But what do they assert? Do they validate JSON schema only, or also verify file existence? Do they cross-check against 5d-wave/agents/ directory or assume agent names are provided separately?",
+        "failure_scenario": "Developer implements test_all_agents_referenced as: assert 'agents' in plugin_json (just checks key exists). Test passes even with 5 agents instead of 28. Or test validates against wrong directory.",
+        "impact": "HIGH - False positive tests that don't actually verify acceptance criteria",
+        "evidence": "Test specifications are missing assertion details."
+      }
+    ],
+    "dangerous_assumptions": [
+      {
+        "id": "ASSUMPTION_1",
+        "assumption": "All 26 agents are migrated to TOON format and ready to reference",
+        "why_dangerous": "Phase 3 (Step 3.3) is BLOCKED. TOON toolchain (tools/toon/README.md) is MISSING. Agents may still be .md files or partially converted. If agents aren't migrated yet, plugin.json will reference non-existent or incorrectly-formatted agent definitions.",
+        "failure_cascade": "plugin.json references agents → agents don't exist or wrong format → plugin validation fails → marketplace installation fails",
+        "mitigation": "PREREQUISITE: Verify 'ls 5d-wave/agents/*.toon | wc -l' == 28. If < 28, Phase 3 is incomplete. Wait or determine what format plugin.json should use (.md vs .toon)."
+      },
+      {
+        "id": "ASSUMPTION_2",
+        "assumption": "20 commands exist and are properly migrated in 5d-wave/tasks/dw/",
+        "why_dangerous": "Actual directory has 14 files. Are the other 6 commands missing, or is the count wrong? Task doesn't verify this before starting.",
+        "failure_cascade": "plugin.json expects 20 command references → only 14 exist → test_all_commands_referenced fails with 'Expected 20, found 14'",
+        "mitigation": "PREREQUISITE: Run 'ls 5d-wave/tasks/dw/*.md | wc -l' (or .toon if migrated). Verify count matches expected 20. If not, determine which commands are missing."
+      },
+      {
+        "id": "ASSUMPTION_3",
+        "assumption": "3 skills are created and available for plugin.json to reference",
+        "why_dangerous": "Steps 5.1-5.3 are not APPROVED, only CONDITIONAL_APPROVAL. Step 5.4 is BLOCKED waiting for 5.1-5.3 to complete. Skills may not exist yet.",
+        "failure_cascade": "plugin.json tries to reference undefined skills → skill names/patterns unknown → validation fails",
+        "mitigation": "PREREQUISITE: Verify 'ls 5d-wave/skills/*/SKILL.md | wc -l' == 3. If < 3, skills aren't created yet. Cannot reference non-existent skills."
+      },
+      {
+        "id": "ASSUMPTION_4",
+        "assumption": "D3 decision on thinking budget differentiation is documented and executor understands it",
+        "why_dangerous": "D3 decision is referenced but not provided. Executor may implement budgets incorrectly (all agents same budget instead of differentiated).",
+        "failure_cascade": "plugin.json created with incorrect thinking budgets → validation passes locally → used in production → agents perform sub-optimally due to budget mismatch",
+        "mitigation": "PREREQUISITE: Obtain and document D3 decision. Provide explicit budget mapping: 'High-complexity agents (20K): software-crafter, agent-builder; Medium (10K): others; Light (5K): simple agents'."
+      },
+      {
+        "id": "ASSUMPTION_5",
+        "assumption": "D2 decision on tool restrictions is documented as 'none' but implementation is clear",
+        "why_dangerous": "Task says 'no tool restrictions' but doesn't specify: omit 'tools' field? set tools=[]? set tools=null? Different implementations may not be equivalent in Claude Code plugin validation.",
+        "failure_cascade": "plugin.json implements tool restrictions differently than expected → plugin validation fails → marketplace rejection",
+        "mitigation": "PREREQUISITE: Clarify D2 decision. Provide exact implementation: 'Set tools: [] in plugin.json to indicate no tool restrictions' OR 'Omit tools field entirely'."
+      },
+      {
+        "id": "ASSUMPTION_6",
+        "assumption": "Wave organization in plugin.json matches what was created in Phases 1-4",
+        "why_dangerous": "Task says 'Wave organization maintained' but doesn't verify actual wave assignments. What if Phase 3/4/5 agents were assigned differently? What if wave distribution is 30 DEVELOP agents instead of 10?",
+        "failure_cascade": "plugin.json documents wrong wave distribution → test_wave_organization_preserved fails → task blocked pending clarification",
+        "mitigation": "PREREQUISITE: Document actual wave distribution: 'DISCUSS: 2 agents, DESIGN: 4, DISTILL: 4, DEVELOP: 10, DEMO: 8'. Verify this matches agents in 5d-wave/agents/ directory."
+      },
+      {
+        "id": "ASSUMPTION_7",
+        "assumption": "2-hour estimate is realistic for creating plugin.json with 26 agents + 20 commands + 3 skills + thinking budgets + tests + refactoring",
+        "why_dangerous": "Estimate assumes: all components exist and are documented, D2/D3 decisions are clear, schema is known. In reality: Phase 3 is blocked, skills don't exist, D2/D3 are undocumented. Creating plugin.json from scratch with all validation/testing is likely 4-6 hours minimum.",
+        "failure_cascade": "Work exceeds estimate → timeline missed → other phases delayed",
+        "mitigation": "Realistic estimate: 4-6 hours if all dependencies complete. If any dependencies blocked, add 2+ hours for investigation/clarification."
+      }
+    ],
+    "unhandled_edge_cases": [
+      {
+        "id": "EDGE_CASE_1",
+        "scenario": "Plugin.json validation against Claude Code schema fails because schema doesn't exist or is version-mismatched",
+        "current_handling": "Acceptance criteria says 'JSON validates against Claude Code plugin schema' but task doesn't reference schema location or version",
+        "risk": "Executor uses wrong schema or outdated version. Test passes locally but fails in marketplace validation.",
+        "handling_needed": "Specify: 'Validate against official Claude Code plugin schema v[X.Y]. Reference: [URL to schema documentation]'. Include schema or fetch from official source before validating."
+      },
+      {
+        "id": "EDGE_CASE_2",
+        "scenario": "Agent names in plugin.json don't match agent filenames in 5d-wave/agents/",
+        "current_handling": "Test validates 'agents referenced' but doesn't verify names match actual files",
+        "risk": "plugin.json says 'agents: [agent-builder, avvocato, ...]' but 5d-wave/agents/ has 'agent_builder.md, avvocato.md' (underscores vs hyphens). Validation passes but references are broken.",
+        "handling_needed": "Add cross-validation: For each agent in plugin.json, verify corresponding file exists in 5d-wave/agents/ with exact name match."
+      },
+      {
+        "id": "EDGE_CASE_3",
+        "scenario": "Thinking budgets are set to values outside Claude Code's supported range",
+        "current_handling": "Task says 'differentiated budgets per D3 decision' but doesn't specify valid ranges",
+        "risk": "Executor sets budget to 50K (too high) or 1K (too low). Plugin validation passes but Claude Code rejects invalid budget values.",
+        "handling_needed": "Specify valid thinking budget range: 'Budget range: [min X, max Y] tokens. Recommend: Light agents 5K, Medium 10K, Heavy 20K'. Validate against range in tests."
+      },
+      {
+        "id": "EDGE_CASE_4",
+        "scenario": "Wave organization in plugin.json doesn't match actual wave assignments in agent metadata",
+        "current_handling": "Quality gate says 'Wave organization correct and complete' but doesn't verify agent.wave matches plugin organization",
+        "risk": "plugin.json says 'DISCUSS wave: [agent1, agent2]' but agent1.md says 'wave: DESIGN'. Inconsistency not caught.",
+        "handling_needed": "Cross-validate: For each agent in plugin.json, read agent metadata and verify wave assignment matches plugin structure."
+      },
+      {
+        "id": "EDGE_CASE_5",
+        "scenario": "Skill definitions in plugin.json reference agents that don't exist",
+        "current_handling": "Acceptance criteria 'All 3 skills referenced' but doesn't validate skill→agent bindings",
+        "risk": "Skill 'develop' says 'invokes agent: software-crafter-v2' but agent doesn't exist (name is 'software-crafter'). Binding breaks at runtime.",
+        "handling_needed": "For each skill, validate that referenced agent name exists in agents list with exact match."
+      },
+      {
+        "id": "EDGE_CASE_6",
+        "scenario": "Refactoring (level 1) on line 71 changes JSON structure, breaking subsequent tests",
+        "current_handling": "Quality gate says 'All tests passing' but refactoring happens after creation. May break tests.",
+        "risk": "Tests pass after initial creation. Refactoring reorganizes JSON structure. Tests fail due to changed structure, unclear if refactoring is wrong or tests need fixing.",
+        "handling_needed": "Run full test suite AFTER refactoring. If tests fail, revert refactoring or fix tests. Requirement: all tests pass at end."
+      },
+      {
+        "id": "EDGE_CASE_7",
+        "scenario": "Plugin.json file size or complexity causes marketplace validation timeout or rejection",
+        "current_handling": "No performance/size constraints specified",
+        "risk": "plugin.json becomes very large (26 agents × extensive metadata + 20 commands + 3 skills). Marketplace rejects due to size.",
+        "handling_needed": "Specify maximum plugin.json file size or validate that size is reasonable (< 500KB recommended). Test includes size validation."
+      },
+      {
+        "id": "EDGE_CASE_8",
+        "scenario": "Command organization by wave doesn't match actual command locations in 5d-wave/tasks/dw/",
+        "current_handling": "Quality gate says 'All 20 commands referenced (verify count and wave organization)' but doesn't cross-validate against files",
+        "risk": "plugin.json organizes commands by wave per task layout, but commands are in different files than expected. Validation passes but commands aren't discoverable.",
+        "handling_needed": "For each command in plugin.json, verify it exists in 5d-wave/tasks/dw/ and matches expected wave assignment."
+      }
+    ],
+    "failure_scenarios": [
+      {
+        "id": "FAILURE_1",
+        "scenario": "Phase 3 (agent migration) is still BLOCKED when Step 7.1 attempts to execute",
+        "probability": "HIGH - Phase 3 review shows BLOCKED_CRITICAL_DEPENDENCIES status",
+        "impact": "CRITICAL - Cannot reference 26 agents (novel-editor and novel-editor-reviewer excluded from build) in plugin.json if agents don't exist or are in wrong format",
+        "cascading_failures": [
+          "Step 7.1 starts, expects 28 migrated agents",
+          "Agents are still .md format (migration blocked)",
+          "plugin.json references wrong format → validation fails",
+          "Test test_all_agents_referenced fails",
+          "Phase 7 blocks pending Phase 3 resolution"
+        ],
+        "detection": "Test fails: 'Expected 26 agents (novel-editor and novel-editor-reviewer excluded from build) in .toon format, found 28 .md files' (or count is wrong)",
+        "recovery": "Wait for Phase 3 to complete or change approach to use .md agents instead of .toon"
+      },
+      {
+        "id": "FAILURE_2",
+        "scenario": "Skills (Step 5.4) not created before Step 7.1 executes",
+        "probability": "HIGH - Step 5.4 is BLOCKED by 5.1-5.3, which are CONDITIONAL_APPROVAL",
+        "impact": "CRITICAL - Cannot reference 3 skills in plugin.json if they don't exist",
+        "cascading_failures": [
+          "Step 7.1 starts, expects 3 skill definitions",
+          "Skills don't exist yet (5.1-5.3 incomplete)",
+          "plugin.json tries to reference undefined skills",
+          "Validation fails or plugin references non-existent resources",
+          "Phase 7 blocks pending Phase 5 resolution"
+        ],
+        "detection": "Test fails: 'Expected 3 skills, found 0' OR validation fails: 'Skill dw:develop not found'",
+        "recovery": "Wait for Phase 5 to complete before Step 7.1"
+      },
+      {
+        "id": "FAILURE_3",
+        "scenario": "Thinking budget differentiation strategy (D3) is implemented incorrectly",
+        "probability": "MEDIUM - D3 decision is undocumented, executor must guess",
+        "impact": "MEDIUM-HIGH - plugin.json created but thinking budgets are non-compliant",
+        "cascading_failures": [
+          "Executor creates plugin.json with thinking budgets (guesses strategy)",
+          "If guess is wrong, plugin.json is non-compliant",
+          "Tests may not catch this (test doesn't validate budget values against criteria)",
+          "Plugin installed with wrong budgets → agents perform sub-optimally",
+          "Problem discovered in production or marketplace validation"
+        ],
+        "detection": "Manual review of plugin.json or marketplace validation against D3 decision",
+        "recovery": "Regenerate plugin.json with correct thinking budgets per D3 decision"
+      },
+      {
+        "id": "FAILURE_4",
+        "scenario": "Test suite is incomplete - passes despite non-compliance",
+        "probability": "HIGH - Test specifications are vague",
+        "impact": "HIGH - False positive tests, non-compliant plugin.json accepted",
+        "cascading_failures": [
+          "Tests defined: test_all_agents_referenced, test_wave_organization_preserved, etc.",
+          "But test implementations are vague (just check keys exist?)",
+          "plugin.json could have 25 agents (not 28) and test still passes",
+          "plugin.json references undefined wave or agents and test doesn't catch it",
+          "Non-compliant plugin.json committed"
+        ],
+        "detection": "Manual review of plugin.json structure and content, or marketplace validation",
+        "recovery": "Enhance tests with specific assertions, re-run, fix plugin.json"
+      },
+      {
+        "id": "FAILURE_5",
+        "scenario": "Command count is wrong (14 in directory, not 20) and acceptance criteria fails",
+        "probability": "MEDIUM - Actual count appears to be 14, not 20",
+        "impact": "HIGH - Acceptance criteria 'All 20 commands referenced' cannot be met if only 14 commands exist",
+        "cascading_failures": [
+          "Step 7.1 starts, expects 20 commands",
+          "Only 14 commands found in 5d-wave/tasks/dw/",
+          "test_all_commands_referenced fails: 'Expected 20, found 14'",
+          "Cannot proceed without clarifying which 20 are meant or updating requirement to 14"
+        ],
+        "detection": "Test fails immediately",
+        "recovery": "Clarify command count. Are there 20 total (some in different location)? Or is requirement wrong (should be 14)?"
+      },
+      {
+        "id": "FAILURE_6",
+        "scenario": "Claude Code plugin schema doesn't match task assumptions",
+        "probability": "MEDIUM - Schema not referenced, assumptions implicit",
+        "impact": "MEDIUM - plugin.json structure doesn't match actual Claude Code expectations",
+        "cascading_failures": [
+          "Executor creates plugin.json based on task description",
+          "Marketplace tries to install plugin",
+          "Schema validation fails: 'Field X is required' or 'Field Y is unrecognized'",
+          "Plugin installation fails"
+        ],
+        "detection": "Marketplace validation failure",
+        "recovery": "Obtain actual Claude Code plugin schema, restructure plugin.json, re-validate, re-submit"
+      },
+      {
+        "id": "FAILURE_7",
+        "scenario": "Wave distribution in plugin.json is documented incorrectly",
+        "probability": "MEDIUM - Wave assignments not verified before task execution",
+        "impact": "MEDIUM - Agents in wrong wave group, discovery broken",
+        "cascading_failures": [
+          "plugin.json says DEVELOP wave has 15 agents",
+          "Actual DEVELOP wave has 10 agents",
+          "Discrepancy not caught by tests",
+          "Plugin installed, marketplace shows wrong agent grouping",
+          "Users confused by incorrect wave organization"
+        ],
+        "detection": "Manual audit of plugin.json vs. actual agent wave assignments",
+        "recovery": "Correct wave assignments in plugin.json, re-validate, re-submit"
+      }
+    ],
+    "circular_dependencies": [
+      {
+        "id": "CIRCULAR_1",
+        "description": "Cannot create plugin.json with 26 agents (Step 7.1) until Phase 3 complete, but Phase 3 is blocked waiting for TOON toolchain",
+        "chain": "Step 7.1 needs migrated agents → Phase 3 must complete → Phase 3 blocked by missing tools/toon/README.md → TOON toolchain not created yet → Phase 3 cannot complete → Step 7.1 cannot start",
+        "resolution": "BREAK CYCLE: (a) Create TOON toolchain immediately (high priority), or (b) Change Step 7.1 to use .md agents instead of .toon (if plugin.json supports .md format)"
+      },
+      {
+        "id": "CIRCULAR_2",
+        "description": "Cannot reference 3 skills (Step 7.1) until Phase 5 complete, but Phase 5 is blocked by vague specifications",
+        "chain": "Step 7.1 needs 3 skills → Phase 5 must complete → Phase 5 blocked by undefined trigger matching algorithm and test harness → specifications unclear → Phase 5 cannot complete → Step 7.1 cannot start",
+        "resolution": "PREREQUISITE: Resolve Phase 5 blockers first (define trigger matching, design test harness), complete Phase 5, then Step 7.1 can reference created skills"
+      },
+      {
+        "id": "CIRCULAR_3",
+        "description": "Cannot validate D3 decision implementation until D3 decision is documented",
+        "chain": "Tests must validate thinking budgets match D3 decision → But D3 decision not documented → Cannot write validation tests → Cannot confirm plugin.json compliance",
+        "resolution": "PREREQUISITE: Document D3 decision with explicit budget mappings before writing tests. Make decision accessible to executor."
+      }
+    ],
+    "missing_prerequisites": [
+      {
+        "prerequisite": "Phase 3 completion (all 26 agents migrated to TOON format)",
+        "status": "BLOCKED - TOON toolchain missing",
+        "impact": "CRITICAL - Cannot reference agents in plugin.json if they don't exist",
+        "verification": "Run: ls 5d-wave/agents/*.toon | wc -l. Must == 28. Currently: BLOCKED"
+      },
+      {
+        "prerequisite": "Phase 5 completion (3 skills created and validated)",
+        "status": "BLOCKED - Phase 5.1-5.3 incomplete, Phase 5.4 blocked",
+        "impact": "CRITICAL - Cannot reference skills in plugin.json if they don't exist",
+        "verification": "Run: ls 5d-wave/skills/*/SKILL.md | wc -l. Must == 3. Currently: Unknown (likely 0)"
+      },
+      {
+        "prerequisite": "D3 decision documentation (thinking budget differentiation strategy)",
+        "status": "MISSING - Referenced but not provided",
+        "impact": "HIGH - Cannot implement thinking budgets correctly without decision context",
+        "verification": "Obtain document or specification. Must include: budget tier definitions, agent-to-tier mapping, rationale"
+      },
+      {
+        "prerequisite": "D2 decision documentation (tool restrictions policy)",
+        "status": "MISSING - Referenced but not provided",
+        "impact": "MEDIUM - Ambiguity about tools field implementation",
+        "verification": "Obtain document. Must specify: exact field name/value, rationale, implementation example"
+      },
+      {
+        "prerequisite": "Claude Code plugin.json schema specification",
+        "status": "MISSING - No reference provided",
+        "impact": "HIGH - Cannot validate plugin.json against correct schema",
+        "verification": "Locate official Claude Code plugin schema documentation. Reference in task."
+      },
+      {
+        "prerequisite": "Verification that exactly 20 commands exist in 5d-wave/tasks/dw/",
+        "status": "UNCERTAIN - Directory shows 14 files",
+        "impact": "CRITICAL - Acceptance criteria 'All 20 commands' cannot be met if only 14 exist",
+        "verification": "Run: ls 5d-wave/tasks/dw/ | wc -l. Clarify if 14 is correct count or if 6 commands are elsewhere"
+      },
+      {
+        "prerequisite": "Wave organization diagram showing agent distribution across 5 waves",
+        "status": "MISSING - Task assumes distribution is known",
+        "impact": "MEDIUM - Cannot validate wave organization without knowing actual distribution",
+        "verification": "Count agents per wave: DISCUSS: [?], DESIGN: [?], DISTILL: [?], DEVELOP: [?], DEMO: [?]"
+      }
+    ],
+    "security_holes": [
+      {
+        "id": "SECURITY_1",
+        "hole": "No validation that thinking budgets don't enable resource exhaustion attacks",
+        "scenario": "If thinking budgets are very high (e.g., 100K tokens) and attackers can invoke agents repeatedly, they could exhaust API quotas.",
+        "mitigation": "Validate thinking budget values against documented limits. Recommendation: add documentation of safe budget ranges in plugin.json comments."
+      },
+      {
+        "id": "SECURITY_2",
+        "hole": "Plugin.json is not cryptographically signed, could be tampered with before installation",
+        "scenario": "Plugin.json file on marketplace could be modified to redirect agents to malicious endpoints or change thinking budgets unexpectedly.",
+        "mitigation": "If Claude Code marketplace supports plugin signing, implement signature verification. Document expected hash/signature of official plugin.json."
+      },
+      {
+        "id": "SECURITY_3",
+        "hole": "No access control on agent metadata - anyone with repository access can modify plugin.json to expose sensitive agent info",
+        "scenario": "Private agent descriptions, internal implementation details, or security-sensitive metadata could be exposed via plugin.json if published without review.",
+        "mitigation": "Add review process for plugin.json changes. Verify sensitive information is not included. Document which agent fields should be public vs. private."
+      }
+    ],
+    "test_coverage_gaps": [
+      {
+        "id": "TEST_GAP_1",
+        "gap": "No test validates that agent names in plugin.json match actual files in 5d-wave/agents/",
+        "coverage": "Currently: test_all_agents_referenced just counts or lists agents. Missing: file existence check.",
+        "risk": "HIGH - plugin.json could reference 'software-crafter-v2' but actual file is 'software-crafter.md'. Validation passes but reference is broken.",
+        "coverage_needed": "For each agent in plugin.json, verify corresponding file exists in 5d-wave/agents/ with exact name match (case-sensitive)."
+      },
+      {
+        "id": "TEST_GAP_2",
+        "gap": "No test validates that command names in plugin.json match actual files in 5d-wave/tasks/dw/",
+        "coverage": "Currently: test_all_commands_referenced counts commands. Missing: file existence check.",
+        "risk": "HIGH - Similar to agent gap. Command references could be broken.",
+        "coverage_needed": "For each command in plugin.json, verify file exists and wave assignment is correct."
+      },
+      {
+        "id": "TEST_GAP_3",
+        "gap": "No test validates that skill names and trigger patterns match actual SKILL.md files",
+        "coverage": "Currently: test_all_skills_referenced probably just counts. Missing: semantic validation of skill definitions.",
+        "risk": "MEDIUM - Skill trigger patterns might not match what's actually in SKILL.md. plugin.json describes wrong trigger behavior.",
+        "coverage_needed": "For each skill in plugin.json, read corresponding SKILL.md and verify: trigger patterns match, agent bindings are correct, descriptions are consistent."
+      },
+      {
+        "id": "TEST_GAP_4",
+        "gap": "No test validates thinking budget values are within acceptable range",
+        "coverage": "Currently: no test for budget values. Only configuration is documented per D3 decision.",
+        "risk": "MEDIUM - Budgets could be 0 (agents get no thinking) or 1M (exhaustion risk). Tests don't catch invalid values.",
+        "coverage_needed": "Validate: Min budget >= 1K, Max budget <= 100K (or per D3 decision limits). For each agent, assert budget >= 5K and <= 30K (or per differentiation strategy)."
+      },
+      {
+        "id": "TEST_GAP_5",
+        "gap": "No test validates plugin.json structure against Claude Code plugin schema",
+        "coverage": "Currently: Acceptance criteria says 'validates against schema' but test implementation not specified.",
+        "risk": "HIGH - plugin.json could have wrong structure, missing required fields, or unrecognized fields. Tests might not catch schema violations.",
+        "coverage_needed": "Load official Claude Code plugin schema. Use jsonschema validation library. Assert plugin.json is valid against schema. Test must fail on missing/wrong fields."
+      },
+      {
+        "id": "TEST_GAP_6",
+        "gap": "No test validates wave organization consistency",
+        "coverage": "Currently: test_wave_organization_preserved probably just checks wave field exists. Missing: validation that agents are correctly distributed across waves.",
+        "risk": "MEDIUM - Wave organization could be incomplete or wrong. User discovery broken.",
+        "coverage_needed": "For each agent in plugin.json, verify its wave assignment matches expected distribution. Assert: sum of agents across all waves == 28. Assert no agent is in multiple waves."
+      },
+      {
+        "id": "TEST_GAP_7",
+        "gap": "No test validates that tool restrictions are correctly implemented per D2 decision",
+        "coverage": "Currently: no test for tools field.",
+        "risk": "MEDIUM - Tool restrictions field could be wrong format (tools=[] vs omitted vs null). Validation might not catch misimplementation.",
+        "coverage_needed": "Assert tools field is in correct format per D2 decision. If D2 says 'omit', verify field doesn't exist. If D2 says 'tools=[]', verify field is empty array."
+      }
+    ],
+    "integration_risks": [
+      {
+        "id": "INTEGRATION_1",
+        "point": "Phase 3 → Phase 7 handoff (agents → plugin.json)",
+        "risk": "Agent format, naming, metadata structure might not match what plugin.json expects. If Phase 3 uses .md format but plugin.json expects .toon, integration fails.",
+        "validation_needed": "Before Step 7.1 starts, verify Phase 3 output format matches plugin.json expectations. Document expected agent metadata fields in plugin.json."
+      },
+      {
+        "id": "INTEGRATION_2",
+        "point": "Phase 5 → Phase 7 handoff (skills → plugin.json)",
+        "risk": "Skills created in Phase 5 might have different structure or naming than plugin.json expects. Trigger patterns, agent bindings might be incompatible.",
+        "validation_needed": "Design skill metadata format together between Phase 5 and Phase 7 teams. Document expected SKILL.md structure. Ensure plugin.json can correctly reference and validate skills."
+      },
+      {
+        "id": "INTEGRATION_3",
+        "point": "Phase 7 → Marketplace handoff (plugin.json → installation)",
+        "risk": "plugin.json structure might not match marketplace plugin validation schema. Marketplace rejects valid-looking plugin.",
+        "validation_needed": "Obtain official Claude Code plugin schema early. Validate locally before submitting to marketplace. Document any version mismatches or compatibility concerns."
+      },
+      {
+        "id": "INTEGRATION_4",
+        "point": "D2/D3 decisions → plugin.json implementation",
+        "risk": "D2 and D3 decisions are not documented or accessible. Implementation ambiguity leads to non-compliant plugin.json.",
+        "validation_needed": "Make D2/D3 decision documents accessible. Include implementation examples in decisions. Cross-reference in Step 7.1 task."
+      }
+    ],
+    "optimistic_estimates": [
+      {
+        "id": "OPTIMISM_1",
+        "estimate": "2 hours for creating plugin.json with 26 agents + 20 commands + 3 skills + budgets + validation",
+        "optimism_level": "VERY HIGH",
+        "reality_check": "Assumes: all components exist and are well-documented, D2/D3 decisions are clear, schema is known, tests are straightforward. In reality: Phase 3 blocked, Phase 5 blocked, decisions undocumented, schema not referenced.",
+        "realistic_estimate": "IF all prerequisites complete: 3-4 hours. IF any prerequisites missing or blocked: 6+ hours (or BLOCKED entirely)",
+        "flag": "RED - Estimate is best-case assuming magical completion of all blockers"
+      }
+    ],
+    "critical_blockers": [
+      {
+        "blocker": "Phase 3 (agent migration) is BLOCKED due to missing TOON toolchain",
+        "severity": "CRITICAL",
+        "required_resolution": "Either (a) Create tools/toon/README.md with TOON format spec and conversion examples, or (b) Change Step 7.1 to use .md agent format instead of .toon",
+        "action": "Escalate to project lead immediately"
+      },
+      {
+        "blocker": "Phase 5 (skills creation) is BLOCKED by multiple specification gaps and incomplete predecessor steps",
+        "severity": "CRITICAL",
+        "required_resolution": "Complete Steps 5.1-5.3 and resolve documented blockers (trigger matching algorithm, test harness design, skill compilation output format)",
+        "action": "Prioritize Phase 5 completion or change Step 7.1 to not depend on skills"
+      },
+      {
+        "blocker": "D3 decision (thinking budget differentiation) is referenced but not documented",
+        "severity": "CRITICAL",
+        "required_resolution": "Obtain/document D3 decision with explicit budget mapping. Make accessible to Step 7.1 executor.",
+        "action": "Provide D3 decision document with implementation examples"
+      },
+      {
+        "blocker": "Command count discrepancy (task expects 20, directory has 14)",
+        "severity": "CRITICAL",
+        "required_resolution": "Clarify actual command count. Are there 20 commands in different locations? Or is requirement wrong?",
+        "action": "Verify command count and update task acceptance criteria accordingly"
+      }
+    ],
+    "summary": "Step 7.1 (Create plugin.json) cannot execute until multiple critical prerequisites complete. Phase 3 migration is BLOCKED (missing TOON toolchain), Phase 5 skills are BLOCKED (incomplete predecessor steps), decision documentation is MISSING (D2/D3 undocumented), and fundamental counts are UNCLEAR (14 commands vs expected 20). Tests are incomplete (missing file existence checks, schema validation, budget range validation). Overall: DO NOT EXECUTE until blockers resolved. Recommend: (1) Resolve Phase 3 toolchain immediately, (2) Complete Phase 5 with documented specifications, (3) Provide D2/D3 decision documentation, (4) Clarify command count, (5) Enhance test specifications with cross-validation checks, (6) Revise time estimate to 4-6 hours or BLOCKED status"
+  }
+}

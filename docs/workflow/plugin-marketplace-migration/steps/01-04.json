@@ -1,0 +1,814 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "01-04",
+  "phase": {
+    "number": 1,
+    "name": "TOON Infrastructure",
+    "purpose": "Create parser and compiler toolchain that transforms TOON source into Claude Code compliant output"
+  },
+  "step": {
+    "number": "1.4",
+    "name": "Create Skill Jinja2 Template",
+    "description": "Create Jinja2 template for SKILL.md files with skill metadata, trigger patterns, and workflow integration.\n\nPREREQUISITE: Skill data structure MUST be defined before implementation.\nSkills are workflow automation capabilities bound to agents.\n\nRequired skill fields: name, triggers (regex patterns), agent_association, workflow_integration.",
+    "motivation": "Skill template enables new capability not in current system",
+    "estimated_hours": "4-6"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC2": "Build produces Claude Code compliant output"
+    },
+    "dependencies": [
+      "1.1"
+    ],
+    "skill_definition": {
+      "description": "Skills are workflow automation capabilities that trigger based on context patterns",
+      "required_fields": {
+        "name": "str - Skill identifier (e.g., 'develop', 'refactor')",
+        "triggers": "list[str] - Regex patterns for activation (e.g., ['implement.*', 'TDD'])",
+        "agent_association": "str or list[str] - Bound agent IDs",
+        "workflow_integration": "dict - Integration metadata with wave and phase"
+      },
+      "example": {
+        "name": "develop",
+        "triggers": [
+          "implement.*",
+          "TDD",
+          "outside-in"
+        ],
+        "agent_association": "software-crafter",
+        "workflow_integration": {
+          "wave": "DEVELOP",
+          "phase": 3
+        }
+      }
+    }
+  },
+  "deliverables": {
+    "files_to_create": [
+      "tools/toon/templates/skill.md.j2",
+      "tests/tools/toon/test_skill_template.py"
+    ],
+    "acceptance_criteria": [
+      "Template produces skill YAML frontmatter with name and metadata",
+      "Template renders trigger patterns as regex strings (one per line)",
+      "Template includes agent association with validation",
+      "Template renders workflow integration section with wave and phase"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN parsed skill data with name='develop', triggers=['implementa', 'TDD']\nWHEN I render skill.md.j2 template\nTHEN output has skill metadata and trigger patterns listed",
+    "inner_tests": [
+      "test_template_skill_frontmatter",
+      "test_template_trigger_patterns",
+      "test_template_agent_binding"
+    ]
+  },
+  "refactoring": {
+    "targets": [
+      {
+        "level": 1,
+        "focus": "Trigger pattern formatting"
+      }
+    ]
+  },
+  "execution_guidance": {
+    "approach": "Outside-In TDD with double-loop",
+    "workflow": [
+      "0. PREREQUISITE CHECK: Verify tools/toon/ exists. If not: HALT - refer to BLOCKER_001 resolution",
+      "1. Write failing E2E test (outer_test)",
+      "2. Implement via inner TDD loop (inner_tests)",
+      "3. Apply refactoring level 1",
+      "4. Validate all acceptance criteria met",
+      "5. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "All tests passing (100% required)",
+      "All acceptance criteria validated",
+      "Refactoring applied (level 1)",
+      "No report files created"
+    ]
+  },
+  "review_metadata": {
+    "review_date": "2026-01-05",
+    "reviewer": "lyra",
+    "clarity_score": 8,
+    "completeness_score": 7,
+    "achievability_score": 8,
+    "findings": {
+      "strengths": [
+        "Clear dependency on 1.1 (parser) is explicit and correct",
+        "Well-defined acceptance criteria with specific output validation",
+        "TDD outer/inner loop structure is concrete and actionable",
+        "Motivation is clear: skill template enables new capability",
+        "Estimated hours (2) is reasonable and achievable"
+      ],
+      "clarity_issues": [
+        {
+          "issue": "Skill structure undefined - task assumes prior knowledge",
+          "impact": "medium",
+          "context": "No documentation of what 'skill YAML frontmatter' should contain",
+          "suggestion": "Add example skill data structure to outer_test context or reference documentation"
+        },
+        {
+          "issue": "Trigger patterns terminology needs specificity",
+          "impact": "medium",
+          "context": "outer_test shows triggers=['implementa', 'TDD'] but unclear what 'trigger context patterns' means",
+          "suggestion": "Define: are these regex patterns, string matches, or structured objects? What do they match against?"
+        },
+        {
+          "issue": "'Workflow integration section' is vague",
+          "impact": "medium",
+          "context": "AC4 says template includes workflow integration section but no detail on content",
+          "suggestion": "Specify: what workflow data should be present? How is it derived from parsed skill data?"
+        }
+      ],
+      "completeness_issues": [
+        {
+          "issue": "Missing skill data schema reference",
+          "impact": "medium",
+          "context": "Template implementation depends on knowing parsed skill structure",
+          "suggestion": "Reference step 1.1 parser output schema or add skill data structure to task"
+        },
+        {
+          "issue": "No agent association detail",
+          "impact": "medium",
+          "context": "AC3 'Template renders agent association' but unclear what association means",
+          "suggestion": "Clarify: does skill reference agent by id? Are there metadata fields defining this?"
+        },
+        {
+          "issue": "Test isolation not explicit",
+          "impact": "low",
+          "context": "No guidance on test fixtures or data setup for template testing",
+          "suggestion": "Consider: should tests use mock parser output or real parsed skill objects?"
+        }
+      ],
+      "achievability_issues": [
+        {
+          "issue": "Blocker: Parser output schema must exist",
+          "impact": "high",
+          "context": "Step 1.4 depends on 1.1 producing structured data for skills",
+          "suggestion": "Ensure 1.1 completion includes skill data structure definition",
+          "resolution": "Verify parser.parse() returns skill metadata with documented fields"
+        },
+        {
+          "issue": "Jinja2 skill template has no reference implementation",
+          "impact": "medium",
+          "context": "Unlike agent/command templates, there may be no existing skill.md file to match",
+          "suggestion": "Confirm: is skill.md a new output format or existing format to reverse-engineer?"
+        },
+        {
+          "issue": "Trigger pattern matching logic location unclear",
+          "impact": "medium",
+          "context": "Are trigger patterns template logic or parser responsibility?",
+          "suggestion": "Clarify: template renders patterns from parsed data, or template defines matching behavior?"
+        }
+      ],
+      "hidden_dependencies": [
+        {
+          "dependency": "Skill data structure definition",
+          "from": "step 1.1 parser",
+          "critical": true,
+          "note": "Parser must output skill objects with at least: name, triggers, agent_association"
+        },
+        {
+          "dependency": "Skill markdown format specification",
+          "from": "external (TOON spec or Claude Code framework)",
+          "critical": true,
+          "note": "Template cannot be written without knowing expected output format"
+        },
+        {
+          "dependency": "Understanding of trigger context patterns",
+          "from": "framework knowledge",
+          "critical": true,
+          "note": "Task assumes 'trigger context patterns' has specific meaning in AI-Craft ecosystem"
+        }
+      ],
+      "context_gaps": [
+        "No example of parsed skill data to guide implementation",
+        "No example of expected skill.md output",
+        "No reference to existing skill files in codebase (searched: none found)",
+        "Unclear relationship between skills and commands (both are templates in Phase 1)"
+      ],
+      "recommendations": [
+        {
+          "priority": "critical",
+          "action": "Define skill data structure before starting task",
+          "detail": "Ensure step 1.1 completion includes documented skill object schema with required fields"
+        },
+        {
+          "priority": "high",
+          "action": "Add skill format example to task",
+          "detail": "Include: example parsed skill input and expected template output"
+        },
+        {
+          "priority": "high",
+          "action": "Clarify trigger pattern semantics",
+          "detail": "Define: are triggers strings, regex, structured objects? What do they match?"
+        },
+        {
+          "priority": "medium",
+          "action": "Align skill/command/agent template relationship",
+          "detail": "Document: how are these three template types related? Why 3 separate templates?"
+        },
+        {
+          "priority": "medium",
+          "action": "Add test data fixtures",
+          "detail": "Provide example skill data for test_skill_template.py to use"
+        }
+      ],
+      "execution_readiness": {
+        "status": "conditional_ready",
+        "blockers": [
+          "Step 1.1 completion must include skill data structure definition"
+        ],
+        "assumptions_to_verify": [
+          "Skill markdown format is defined somewhere in project",
+          "Trigger patterns have specific meaning in AI-Craft framework",
+          "Skills are distinct from commands (different use case)"
+        ],
+        "success_probability": "medium_high",
+        "estimated_effort_confidence": "medium"
+      }
+    }
+  },
+  "adversarial_review": {
+    "review_mode": "RUTHLESS - Focus on what WILL go wrong",
+    "risk_score": 7.5,
+    "blast_radius": "high",
+    "overall_verdict": "LIKELY TO FAIL - Critical undefined dependencies will cause implementation paralysis",
+    "contradictions_found": [
+      {
+        "contradiction": "Dependency cycle risk masked by linear dependency",
+        "detail": "Task depends on 1.1 (parser), but parser step 1.1 may depend on understanding what 'skill' is, which is being defined HERE in 1.4. Who defines skill first?",
+        "impact": "circular_dependency",
+        "severity": "critical",
+        "evidence": "No skill type definition exists in codebase; task doesn't reference one; 1.1 task doesn't document skill structure output"
+      },
+      {
+        "contradiction": "TDD workflow assumes data structure exists before writing tests",
+        "detail": "outer_test assumes 'parsed skill data with name, triggers' but no schema. Writing failing test requires knowing structure. Can't write test without data definition.",
+        "impact": "implementation_blocker",
+        "severity": "critical",
+        "evidence": "outer_test string shows triggers=['implementa', 'TDD'] but these are hardcoded values, not actual parsed structure"
+      },
+      {
+        "contradiction": "2-hour estimate assumes all dependencies resolved",
+        "detail": "Estimate is 2 hours but task blocks on: skill schema definition, skill.md format spec, trigger pattern semantics, agent association model. Any one missing = restart.",
+        "impact": "schedule_risk",
+        "severity": "high",
+        "evidence": "5 critical unknowns identified in findings; 2-hour estimate makes no contingency"
+      },
+      {
+        "contradiction": "Template content undefined but acceptance criteria expects specific output",
+        "detail": "AC1-4 validate template output but there's no specification of what constitutes 'correct' YAML frontmatter, trigger patterns, agent binding, or workflow section.",
+        "impact": "acceptance_criteria_unmeasurable",
+        "severity": "critical",
+        "evidence": "Each AC is subjective (what IS 'agent association'?); no objective validation possible"
+      },
+      {
+        "contradiction": "Quality gate requires 100% passing tests but tests can't be written",
+        "detail": "Quality gates say 'All tests passing (100% required)' but tests require skill data structure that doesn't exist. Tests will be stubs/guesses.",
+        "impact": "false_quality_assurance",
+        "severity": "high",
+        "evidence": "No actual test data fixture provided; tests would have to hardcode expected values"
+      }
+    ],
+    "dangerous_assumptions": [
+      {
+        "assumption": "Skill data structure is defined in step 1.1 parser completion",
+        "why_dangerous": "Parser might output generic object structure without skill-specific schema. Assumption provides no verification mechanism.",
+        "failure_mode": "Implementation begins, discovers parser output structure incompatible with template expectations, rework required",
+        "probability": "high",
+        "mitigation": "BEFORE starting: Review 1.1 parser code, verify skill data structure exists and is documented"
+      },
+      {
+        "assumption": "Skill markdown format exists somewhere in project",
+        "why_dangerous": "No evidence of existing skill.md files. Task assumes format to reverse-engineer. Format may not exist at all.",
+        "failure_mode": "Create template, discover there's no canonical skill.md format. Template is untestable against reality.",
+        "probability": "medium_high",
+        "mitigation": "Search codebase for existing skill.md; if none found, define format specification BEFORE templating"
+      },
+      {
+        "assumption": "Trigger patterns are simple string/regex matching",
+        "why_dangerous": "Triggers might be complex rule objects, context-aware patterns, or workflow directives. Simple assumption will miss complexity.",
+        "failure_mode": "Template renders simplified trigger output; later integration discovers patterns need context evaluation that template can't provide",
+        "probability": "medium",
+        "mitigation": "Define trigger data structure and matching semantics before writing template"
+      },
+      {
+        "assumption": "Agent association is a simple field reference",
+        "why_dangerous": "Could be: agent_id, agent_name, full agent object, permission model, multi-agent binding, or dynamic resolution. Assumption picks wrong model.",
+        "failure_mode": "Template associates skill to single agent; system discovers skills bind to multiple agents or require permission checks",
+        "probability": "medium_high",
+        "mitigation": "Document agent association model before template implementation"
+      },
+      {
+        "assumption": "Workflow integration section is optional/decorative",
+        "why_dangerous": "Could be critical data for runtime behavior. Template might generate incomplete or incorrect workflow binding.",
+        "failure_mode": "Skill template generates output; skills don't integrate into workflows because required fields missing",
+        "probability": "medium",
+        "mitigation": "Define what 'workflow integration' means and what fields are required vs optional"
+      },
+      {
+        "assumption": "Test isolation is achievable with Jinja2 template testing",
+        "why_dangerous": "Template testing requires either: mocking parser output (loses validation) or using real parser (creates hidden dependency on 1.1 completion)",
+        "failure_mode": "Tests mock parser; later discover real parser output format differs; tests pass but template fails in integration",
+        "probability": "high",
+        "mitigation": "Use real parser output or document exact mock structure that will match real data"
+      },
+      {
+        "assumption": "2-hour estimate accounts for template debugging and test iteration",
+        "why_dangerous": "Jinja2 template bugs can be subtle (whitespace, indentation, filter chains). No iteration buffer for debugging.",
+        "failure_mode": "Template implementation finishes; tests reveal formatting issues (off-by-one indentation, missing newlines); rework required",
+        "probability": "high",
+        "mitigation": "Add 50% buffer to estimate (3 hours); plan for template debugging iteration"
+      }
+    ],
+    "unhandled_edge_cases": [
+      {
+        "edge_case": "Skill with zero triggers",
+        "current_handling": "No guidance; acceptance criteria assume triggers exist",
+        "failure_mode": "Template crashes or generates invalid output for triggerless skill",
+        "severity": "medium",
+        "mitigation": "Define how template handles missing/empty triggers field"
+      },
+      {
+        "edge_case": "Skill with no agent association",
+        "current_handling": "AC3 assumes agent binding exists",
+        "failure_mode": "Template generates invalid skill metadata if agent_association field missing",
+        "severity": "medium",
+        "mitigation": "Clarify: is agent association required? What's default if missing?"
+      },
+      {
+        "edge_case": "Trigger with special characters (regex, quotes, newlines)",
+        "current_handling": "No escaping guidance in template spec",
+        "failure_mode": "Template renders malformed YAML; frontmatter parsing fails",
+        "severity": "medium",
+        "mitigation": "Document trigger character restrictions and escaping rules"
+      },
+      {
+        "edge_case": "Skill with extremely long name or description",
+        "current_handling": "No length limits specified",
+        "failure_mode": "Template renders unreadable or structurally invalid output",
+        "severity": "low",
+        "mitigation": "Define length constraints for skill fields"
+      },
+      {
+        "edge_case": "Multiple skills with identical names (namespace collision)",
+        "current_handling": "No uniqueness constraints mentioned",
+        "failure_mode": "Template doesn't validate uniqueness; duplicate skills created",
+        "severity": "medium",
+        "mitigation": "Clarify: should template enforce name uniqueness or is it parser responsibility?"
+      },
+      {
+        "edge_case": "Skill data arrives with extra/unknown fields",
+        "current_handling": "No schema validation specified",
+        "failure_mode": "Template either ignores extra fields (data loss) or crashes on unexpected field",
+        "severity": "low",
+        "mitigation": "Define: should template pass-through unknown fields or error on them?"
+      },
+      {
+        "edge_case": "Workflow integration data incomplete or malformed",
+        "current_handling": "AC4 doesn't specify validation",
+        "failure_mode": "Template renders invalid workflow section; integration fails silently",
+        "severity": "high",
+        "mitigation": "Define workflow integration schema and validation requirements"
+      },
+      {
+        "edge_case": "Skill references non-existent agent ID",
+        "current_handling": "No referential integrity validation",
+        "failure_mode": "Template generates skill file pointing to invalid agent; runtime error",
+        "severity": "medium",
+        "mitigation": "Should template validate agent_association or defer to parser/runtime?"
+      }
+    ],
+    "failure_scenarios": [
+      {
+        "scenario_id": "F1",
+        "title": "Parser completes without skill structure definition",
+        "trigger": "Step 1.1 completes but doesn't include skill data structure documentation",
+        "sequence": [
+          "1. Task 1.4 begins",
+          "2. Attempt to write outer_test: discover don't know shape of parsed skill data",
+          "3. Guess structure based on AC mentions: name, triggers, agent_association",
+          "4. Write test with guessed structure",
+          "5. Implement template",
+          "6. Discover real parser outputs different structure (e.g., includes skill_id, metadata, permissions)",
+          "7. Template breaks; tests need rewrite",
+          "8. Task duration: 2 hours + 2+ hours rework = 4+ hours actual"
+        ],
+        "probability": "high",
+        "impact": "schedule_miss",
+        "detection": "Parser step 1.1 doesn't document skill_output_schema"
+      },
+      {
+        "scenario_id": "F2",
+        "title": "Skill markdown format doesn't exist",
+        "trigger": "No existing skill.md files in codebase to reverse-engineer format from",
+        "sequence": [
+          "1. Task begins; assume skill.md format similar to agent.md or command.md",
+          "2. Write template based on assumption",
+          "3. Complete tests; all passing",
+          "4. Later integration: discover skill.md has different structure requirement",
+          "5. Template generates wrong format; integration tests fail",
+          "6. Must redesign template and test structure"
+        ],
+        "probability": "medium_high",
+        "impact": "integration_failure",
+        "detection": "No skill.md files found in codebase; format not documented"
+      },
+      {
+        "scenario_id": "F3",
+        "title": "Test fixtures use wrong skill data structure",
+        "trigger": "Tests mock parser output that doesn't match real parser schema",
+        "sequence": [
+          "1. Write test with mocked skill data: {name: 'develop', triggers: ['TDD']}",
+          "2. Template renders correctly with mocked data; tests pass",
+          "3. Integration: real parser returns skill data with extra fields",
+          "4. Template fails to render some AC fields because real data has different shape",
+          "5. Tests lied: they passed but template broken in real scenario"
+        ],
+        "probability": "high",
+        "impact": "false_positive_test_pass",
+        "detection": "Tests mock parser output without reference to actual parser schema"
+      },
+      {
+        "scenario_id": "F4",
+        "title": "Acceptance criteria become unmeasurable at validation time",
+        "trigger": "AC subjective; no way to verify 'correct' YAML frontmatter",
+        "sequence": [
+          "1. Complete template implementation",
+          "2. At validation: 'Template produces skill YAML frontmatter' - but what IS correct?",
+          "3. Generate sample output; compare to... nothing (no spec exists)",
+          "4. Assume it's correct; move on",
+          "5. Later: discover frontmatter format invalid or missing required fields",
+          "6. Can't tell if template wrong or AC was always undefined"
+        ],
+        "probability": "high",
+        "impact": "unmeasurable_quality",
+        "detection": "No reference skill.md or frontmatter specification provided"
+      },
+      {
+        "scenario_id": "F5",
+        "title": "Trigger pattern rendering logic conflicts with parser intent",
+        "trigger": "Unclear if template renders or defines trigger pattern behavior",
+        "sequence": [
+          "1. Implement template to render trigger patterns as-is from parser",
+          "2. Tests pass; template outputs trigger lists",
+          "3. Integration: discover trigger patterns should be EVALUATED at runtime, not just rendered",
+          "4. Template generates static pattern strings; runtime logic missing",
+          "5. Skills don't trigger correctly despite valid markdown"
+        ],
+        "probability": "medium",
+        "impact": "feature_missing",
+        "detection": "Task doesn't clarify if template renders patterns or defines matching logic"
+      },
+      {
+        "scenario_id": "F6",
+        "title": "Agent association model misunderstood",
+        "trigger": "AC3 assumes simple agent binding; reality is complex",
+        "sequence": [
+          "1. Implement template assuming skill.agent_id = single agent reference",
+          "2. Tests pass with single-agent skill data",
+          "3. Real world: skill needs to bind to multiple agents (e.g., skill available to agent-1 AND agent-2)",
+          "4. Template can't represent multi-agent binding",
+          "5. Feature broken; template redesign needed"
+        ],
+        "probability": "medium",
+        "impact": "feature_missing",
+        "detection": "No documentation of agent association cardinality (1:1, 1:N, N:M)"
+      },
+      {
+        "scenario_id": "F7",
+        "title": "Workflow integration section content undefined",
+        "trigger": "AC4 'includes workflow integration section' but no definition of content",
+        "sequence": [
+          "1. Implement template with empty or placeholder workflow section",
+          "2. Tests pass (no spec to validate against)",
+          "3. Integration: workflow system expects specific fields in skill metadata",
+          "4. Template doesn't generate required fields",
+          "5. Skills don't integrate into workflows; feature broken"
+        ],
+        "probability": "high",
+        "impact": "integration_failure",
+        "detection": "No specification of workflow integration requirements"
+      },
+      {
+        "scenario_id": "F8",
+        "title": "Jinja2 template rendering bugs cause silent data loss",
+        "trigger": "Complex template logic with subtle whitespace/indentation issues",
+        "sequence": [
+          "1. Implement template with nested conditionals for optional fields",
+          "2. Test with basic skill data; all pass",
+          "3. Real world: skill with empty description field",
+          "4. Jinja2 whitespace handling causes malformed YAML output",
+          "5. YAML parsing succeeds (no error) but data structure incomplete",
+          "6. Silent data loss: field omitted from skill metadata"
+        ],
+        "probability": "medium",
+        "impact": "data_loss",
+        "detection": "No YAML validation in test suite; tests don't verify output is valid YAML"
+      }
+    ],
+    "integration_point_risks": [
+      {
+        "integration_point": "Step 1.1 parser -> Step 1.4 template input",
+        "risk": "Schema mismatch between parser output and template expectations",
+        "severity": "critical",
+        "current_mitigation": "none",
+        "evidence": "Task mentions 'parsed skill data' but no schema defined in either task"
+      },
+      {
+        "integration_point": "Step 1.4 template -> Step 1.3 command/agent templates (Phase 1 output)",
+        "risk": "Three template types (command, agent, skill) with undefined relationships",
+        "severity": "high",
+        "current_mitigation": "none",
+        "evidence": "Task doesn't document how skill templates relate to command/agent templates"
+      },
+      {
+        "integration_point": "Template output -> Workflow execution system",
+        "risk": "Generated skill metadata incompatible with workflow system expectations",
+        "severity": "high",
+        "current_mitigation": "none",
+        "evidence": "AC4 'workflow integration section' but no workflow system specification provided"
+      },
+      {
+        "integration_point": "Template output -> Agent assignment logic",
+        "risk": "Agent association in template output incompatible with agent selection mechanism",
+        "severity": "high",
+        "current_mitigation": "none",
+        "evidence": "AC3 doesn't define agent association model or structure"
+      }
+    ],
+    "data_loss_risks": [
+      {
+        "risk": "Skill fields not covered by template are silently dropped",
+        "scenario": "Parser outputs skill with 'metadata' field; template doesn't render it",
+        "impact": "Data loss; later integration discovers metadata missing",
+        "mitigation": "Define complete skill data structure; template must render ALL fields or explicitly document which are dropped"
+      },
+      {
+        "risk": "Trigger patterns with special characters rendered as corrupted YAML",
+        "scenario": "Trigger contains regex pattern with braces; Jinja2 escaping insufficient",
+        "impact": "Data loss; trigger patterns become unparseable",
+        "mitigation": "Test template with full range of trigger pattern characters; document escaping rules"
+      },
+      {
+        "risk": "Workflow integration data truncated due to unspecified length limits",
+        "scenario": "Workflow section exceeds reasonable YAML size; template truncates silently",
+        "impact": "Data loss; workflow integration incomplete",
+        "mitigation": "Define workflow data size constraints; add validation to template"
+      }
+    ],
+    "test_coverage_gaps": [
+      {
+        "gap": "No test for skill data validation",
+        "impact": "Invalid skill data renders without error; garbage in, garbage out",
+        "evidence": "inner_tests list doesn't include validation test"
+      },
+      {
+        "gap": "No test for YAML output validity",
+        "impact": "Template renders syntactically invalid YAML; parsing fails at runtime",
+        "evidence": "Tests validate 'trigger patterns listed' but not 'output is valid YAML'"
+      },
+      {
+        "gap": "No test for edge cases (empty triggers, missing fields, special characters)",
+        "impact": "Template fails on real-world skill data variations",
+        "evidence": "No edge case test specifications provided"
+      },
+      {
+        "gap": "No integration test with real parser output",
+        "impact": "Tests pass with mocked data; real parser output breaks template",
+        "evidence": "Tests don't depend on or import actual parser module"
+      },
+      {
+        "gap": "No test for skill uniqueness or namespace collisions",
+        "impact": "Duplicate skills created; system behavior undefined",
+        "evidence": "Acceptance criteria don't mention uniqueness"
+      },
+      {
+        "gap": "No test for workflow integration completeness",
+        "impact": "Generated workflow section incomplete; integration fails",
+        "evidence": "AC4 doesn't specify what constitutes 'complete' workflow integration"
+      },
+      {
+        "gap": "No cross-template consistency test",
+        "impact": "Skill template format incompatible with command/agent templates",
+        "evidence": "No test validating skill.md consistency with command.md, agent.md"
+      }
+    ],
+    "security_and_validation_gaps": [
+      {
+        "gap": "No input validation on trigger patterns",
+        "risk": "Trigger patterns could contain injection payloads (code, script)",
+        "impact": "Template renders unsanitized trigger data; code injection possible",
+        "evidence": "Task doesn't mention input sanitization or validation"
+      },
+      {
+        "gap": "No output validation that generated YAML is safe",
+        "risk": "YAML injection attacks through unescaped user data",
+        "impact": "Malicious skill data breaks YAML parsing or injects commands",
+        "evidence": "Acceptance criteria don't mention YAML safety or escaping"
+      },
+      {
+        "gap": "No access control on skill/agent association",
+        "risk": "Skill could bind to unauthorized agents",
+        "impact": "Security boundary violation; unauthorized skill access",
+        "evidence": "AC3 doesn't specify agent association validation"
+      },
+      {
+        "gap": "No versioning or schema evolution plan",
+        "risk": "Skill format changes break existing templates",
+        "impact": "Backwards compatibility issues when skill schema evolves",
+        "evidence": "No version field in skill metadata spec"
+      }
+    ],
+    "estimate_confidence": {
+      "stated_estimate": "2 hours",
+      "confidence": "low",
+      "reasoning": [
+        "Estimate assumes all dependencies resolved (skill schema known, format defined, semantics clear)",
+        "No buffer for debugging template rendering issues",
+        "No buffer for test fixture creation",
+        "No buffer for integration point discovery",
+        "Assumes first attempt correct; Jinja2 template bugs common in iteration"
+      ],
+      "realistic_estimate": "4-6 hours if dependencies ready; 8+ hours if not",
+      "risk_distribution": {
+        "best_case": "2 hours (all assumptions correct, no iteration)",
+        "most_likely": "5 hours (1-2 dependency clarification iterations, template debugging)",
+        "worst_case": "12+ hours (major schema mismatch, redesign required)"
+      }
+    },
+    "critical_blockers": [
+      {
+        "blocker": "Skill data structure undefined",
+        "blocking": [
+          "Writing outer_test",
+          "Template implementation",
+          "Test fixtures"
+        ],
+        "required_before_start": "Step 1.1 must document skill object schema with all fields"
+      },
+      {
+        "blocker": "Skill markdown format unspecified",
+        "blocking": [
+          "Template implementation",
+          "Test validation"
+        ],
+        "required_before_start": "Define skill.md format or reference existing examples"
+      },
+      {
+        "blocker": "Trigger pattern semantics unclear",
+        "blocking": [
+          "AC2 validation",
+          "Template logic"
+        ],
+        "required_before_start": "Document trigger data structure and matching rules"
+      },
+      {
+        "blocker": "Agent association model undefined",
+        "blocking": [
+          "AC3 validation",
+          "Template implementation"
+        ],
+        "required_before_start": "Clarify agent binding cardinality and model"
+      },
+      {
+        "blocker": "Workflow integration requirements undefined",
+        "blocking": [
+          "AC4 validation",
+          "Template implementation"
+        ],
+        "required_before_start": "Specify workflow integration fields and requirements"
+      }
+    ],
+    "hidden_failure_modes": [
+      {
+        "failure_mode": "Tests validate AC but AC are subjective",
+        "manifestation": "All tests pass; later integration discovers template output wrong",
+        "root_cause": "Acceptance criteria unmeasurable without specification",
+        "impact": "False sense of completion; real work deferred to later phase"
+      },
+      {
+        "failure_mode": "Template works with mocked data but fails with real parser output",
+        "manifestation": "Tests 100% passing; integration failure",
+        "root_cause": "Mock data structure diverges from real parser schema",
+        "impact": "Two-phase rework: testing phase + integration phase"
+      },
+      {
+        "failure_mode": "YAML rendering appears correct but has subtle format errors",
+        "manifestation": "Manual inspection looks good; parsing fails downstream",
+        "root_cause": "YAML whitespace/indentation errors not caught by tests",
+        "impact": "Silent failures in downstream workflow processing"
+      },
+      {
+        "failure_mode": "Task completes but doesn't integrate into larger system",
+        "manifestation": "Skill files generated but skills don't execute",
+        "root_cause": "Workflow integration section incomplete or incompatible",
+        "impact": "Complete feature failure despite passing tests"
+      }
+    ],
+    "recommended_actions_before_execution": [
+      {
+        "priority": "CRITICAL",
+        "action": "Verify Step 1.1 parser completion includes skill data structure",
+        "detail": "Review parser.py or parser task output; confirm skill object schema documented with: required fields, optional fields, data types, constraints",
+        "effort": "15 minutes",
+        "block_task_if_missing": true
+      },
+      {
+        "priority": "CRITICAL",
+        "action": "Define or locate skill markdown format specification",
+        "detail": "Search codebase for existing skill.md examples OR create skill format spec document before starting template",
+        "effort": "30 minutes",
+        "block_task_if_missing": true
+      },
+      {
+        "priority": "CRITICAL",
+        "action": "Define trigger pattern data structure and semantics",
+        "detail": "Document: are triggers strings, regex, objects? How are they evaluated? What characters allowed? Example: triggers=['implement.*', 'TDD'] or triggers=[{pattern: 'implement.*', type: 'regex'}]?",
+        "effort": "20 minutes",
+        "block_task_if_missing": true
+      },
+      {
+        "priority": "CRITICAL",
+        "action": "Clarify agent association model",
+        "detail": "Document: is it 1:1, 1:N? Is it skill.agent_id or skill.agents[]? Can skill run under multiple agents? Can agent have permission constraints?",
+        "effort": "15 minutes",
+        "block_task_if_missing": true
+      },
+      {
+        "priority": "CRITICAL",
+        "action": "Define workflow integration requirements",
+        "detail": "Document: what fields must be present in workflow section? What data comes from parser vs what is derived? Example: {workflow_id: X, context: Y, triggers: Z}?",
+        "effort": "20 minutes",
+        "block_task_if_missing": true
+      },
+      {
+        "priority": "HIGH",
+        "action": "Create test data fixture from real parser output or spec",
+        "detail": "Don't use arbitrary mocked data. Use actual parser output or documented schema. Reduces mock-reality gap.",
+        "effort": "30 minutes",
+        "block_task_if_missing": true
+      },
+      {
+        "priority": "HIGH",
+        "action": "Add YAML validation to test suite",
+        "detail": "Tests should verify output is valid YAML, not just check string contains expected words",
+        "effort": "20 minutes",
+        "block_task_if_missing": false
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Revise time estimate with contingency",
+        "detail": "Add 50% buffer minimum (increase from 2 to 3 hours) to account for dependency clarification and template debugging",
+        "effort": "5 minutes",
+        "block_task_if_missing": false
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Plan integration test beyond unit tests",
+        "detail": "Unit tests validate template in isolation. Need integration test with real or semi-real parser output to catch schema mismatches.",
+        "effort": "planning only",
+        "block_task_if_missing": false
+      }
+    ],
+    "final_verdict": {
+      "execution_approval": "DO NOT PROCEED - UNRESOLVED CRITICAL DEPENDENCIES",
+      "reason": "Five critical unknowns block execution: skill schema, format spec, trigger semantics, agent model, workflow integration requirements. Proceeding will result in: incorrect test structure, unmeasurable acceptance criteria, false-positive test passing, integration failures.",
+      "path_forward": "Complete 5 critical clarifications (2 hours) BEFORE starting task. Then task becomes achievable in 2-3 hours with 80% confidence.",
+      "total_work_estimate_if_blocked": "2 hours clarification + 5 hours implementation + 3 hours debugging/integration = 10 hours worst case. Current plan underestimates by 5x.",
+      "escalation_required": true,
+      "escalation_reason": "Task depends on unresolved architecture decisions outside scope of this step"
+    }
+  },
+  "prerequisites": {
+    "blocking": [
+      "tools/toon/ directory MUST exist with README.md",
+      "TOON format specification v3.0 must be accessible",
+      "Parser output schema must be defined before template implementation"
+    ],
+    "validation": "Run: ls tools/toon/README.md. Must exist. If not: BLOCKER_001"
+  },
+  "critical_blocker_status": {
+    "BLOCKER_001": {
+      "title": "TOON Toolchain Missing",
+      "status": "UNRESOLVED",
+      "evidence": "tools/toon/ directory does not exist",
+      "impact": "Cannot parse TOON files, blocks all Phase 1 steps",
+      "resolution_options": [
+        "A: Implement TOON toolchain (16-20h estimated)",
+        "B: Pivot to Markdown templates (8-10h, loses TOON benefits)",
+        "C: Block until external TOON library available"
+      ]
+    }
+  }
+}

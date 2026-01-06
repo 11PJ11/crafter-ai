@@ -1,0 +1,611 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "07-02",
+  "phase": {
+    "number": 7,
+    "name": "Plugin Structure",
+    "purpose": "Create Claude Code plugin packaging for marketplace distribution"
+  },
+  "step": {
+    "number": "7.2",
+    "name": "Create marketplace.json",
+    "description": "Create marketplace.json for GitHub marketplace distribution:\n- Plugin discovery metadata\n- Installation requirements\n- Version information\n- Author and license",
+    "motivation": "marketplace.json enables plugin discovery (D4 decision)",
+    "estimated_hours": "1"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC3": "Plugin installable via /plugin install"
+    },
+    "dependencies": ["7.1"]
+  },
+  "deliverables": {
+    "files_to_create": [
+      "marketplace.json"
+    ],
+    "acceptance_criteria": [
+      "JSON includes required marketplace fields",
+      "Version matches plugin.json",
+      "License specified (MIT assumed)"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN marketplace.json created\nWHEN parsed\nTHEN contains name, version, description, author, license",
+    "inner_tests": [
+      "test_marketplace_required_fields",
+      "test_version_matches_plugin"
+    ]
+  },
+  "refactoring": {
+    "targets": []
+  },
+  "execution_guidance": {
+    "approach": "Marketplace manifest creation with validation",
+    "workflow": [
+      "1. Create marketplace.json with required fields",
+      "2. Add plugin discovery metadata",
+      "3. Match version with plugin.json",
+      "4. Specify author and license (MIT)",
+      "5. Write tests to validate required fields",
+      "6. Validate version consistency",
+      "7. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "All tests passing (100% required)",
+      "All required fields present",
+      "Version matches plugin.json",
+      "License specified",
+      "No report files created"
+    ]
+  },
+  "review_metadata": {
+    "review_date": "2026-01-05",
+    "reviewer": "lyra",
+    "status": "CLEAR_WITH_CLARIFICATIONS",
+    "clarity_assessment": {
+      "score": 7,
+      "findings": [
+        "Task name and purpose clearly stated",
+        "Acceptance criteria concrete and testable",
+        "Missing: Reference to GitHub Marketplace API specification",
+        "Missing: Clear definition of 'plugin discovery metadata'",
+        "Workflow steps are sequential and actionable"
+      ]
+    },
+    "completeness_assessment": {
+      "score": 6,
+      "findings": [
+        "File structure defined (marketplace.json location not specified)",
+        "Version synchronization with plugin.json identified",
+        "Missing: Author field population strategy (who is 'author'?)",
+        "Missing: Repository URL requirement (typically in marketplace.json)",
+        "Missing: Category/tags for plugin discovery",
+        "Missing: Homepage/documentation URL specification",
+        "Acceptance criteria do not reference test file location"
+      ]
+    },
+    "achievability_assessment": {
+      "score": 8,
+      "findings": [
+        "1-hour estimate is reasonable for manifest creation + basic tests",
+        "Depends on plugin.json being complete (step 7.1)",
+        "No blocking external dependencies identified",
+        "Schema validation approach is feasible",
+        "Risk: Author/maintainer information must be resolved before execution"
+      ]
+    },
+    "hidden_dependencies": {
+      "identified": [
+        {
+          "dependency": "Step 7.1 (plugin.json) must be COMPLETE",
+          "risk": "If version in plugin.json undefined, marketplace.json cannot synchronize",
+          "mitigation": "Verify step 7.1 outputs before starting 7.2"
+        },
+        {
+          "dependency": "GitHub Marketplace specification/requirements",
+          "risk": "marketplace.json format must comply with GitHub Marketplace API",
+          "mitigation": "Reference https://docs.github.com/en/marketplace/listing-on-github-marketplace or equivalent Claude Code plugin marketplace spec"
+        },
+        {
+          "dependency": "Author/maintainer metadata decisions",
+          "risk": "Need to define who 'author' is (project maintainer? organization?)",
+          "mitigation": "Decision required: Hard-code AI-Craft team, variable placeholder, or derived from plugin.json?"
+        },
+        {
+          "dependency": "Plugin installation location",
+          "risk": "marketplace.json location not specified (.claude-plugin/ assumed but not confirmed)",
+          "mitigation": "Clarify: Should marketplace.json be in repository root or .claude-plugin/?"
+        }
+      ],
+      "context_links": [
+        "Step 7.1 outputs (.claude-plugin/plugin.json)",
+        "Migration plan: Phase 7 (Plugin Structure)"
+      ]
+    },
+    "missing_context": {
+      "critical": [
+        "GitHub Marketplace API schema - what fields are required/optional?",
+        "Installation metadata - how does marketplace.json integrate with `/plugin install`?",
+        "Author field resolution - should this be hard-coded, inherited from package.json, or configurable?"
+      ],
+      "important": [
+        "Test file location convention (tests/ subdirectory? inline with marketplace.json?)",
+        "Version synchronization mechanism - how is version kept in sync during updates?",
+        "Homepage/documentation URL - where should this point?",
+        "Category/tags for plugin discovery - how are these classified?"
+      ]
+    },
+    "recommendations": [
+      {
+        "priority": "CRITICAL",
+        "issue": "Missing GitHub Marketplace API specification reference",
+        "action": "Add acceptance criterion: 'marketplace.json complies with GitHub Marketplace API schema (reference link required)'"
+      },
+      {
+        "priority": "CRITICAL",
+        "issue": "Author field population strategy undefined",
+        "action": "Clarify in acceptance criteria: How should 'author' field be populated? (Hard-coded value? Team reference? Decision needed before execution)"
+      },
+      {
+        "priority": "HIGH",
+        "issue": "File location not specified",
+        "action": "Add to execution guidance: 'Location: {root}/marketplace.json or {root}/.claude-plugin/marketplace.json?' (alignment with plugin.json location)"
+      },
+      {
+        "priority": "HIGH",
+        "issue": "Plugin discovery metadata under-specified",
+        "action": "Define clearly: What constitutes 'plugin discovery metadata'? (Tags? Categories? Search keywords?)"
+      },
+      {
+        "priority": "MEDIUM",
+        "issue": "Test acceptance criteria too generic",
+        "action": "Add specific field assertions: 'Test validates fields: name, version, description, author, license, repository (if required)'"
+      },
+      {
+        "priority": "MEDIUM",
+        "issue": "No rollback strategy if version mismatch detected",
+        "action": "Add quality gate check: 'If version mismatch with plugin.json detected, halt and escalate to user'"
+      }
+    ],
+    "dependencies_chain": "Step 7.1 → Step 7.2 (current) → Step 7.3 (marketplace distribution)",
+    "notes": "Task is well-structured but requires clarification on GitHub Marketplace API compliance and author field strategy before execution. Estimated 1 hour is achievable if clarifications are pre-made."
+  },
+  "adversarial_review": {
+    "review_date": "2026-01-06",
+    "reviewer": "adversarial-software-crafter-reviewer",
+    "review_mode": "RUTHLESS - Finding what WILL go wrong, not what MIGHT work",
+    "contradictions_found": [
+      {
+        "issue": "Version synchronization claim conflicts with no mechanism for enforcing it",
+        "description": "Step specifies 'Version matches plugin.json' as acceptance criterion, but provides zero mechanism for how this matching is maintained or validated. No tooling, no CI check, no documentation update process specified.",
+        "impact": "Version mismatch WILL occur during maintenance. When plugin.json is bumped, marketplace.json is forgotten. Tests pass (both files exist), but they're out of sync in production.",
+        "likelihood": "VERY_HIGH",
+        "trigger": "Second or third version bump of the plugin"
+      },
+      {
+        "issue": "Acceptance criteria references fields not mentioned in execution workflow",
+        "description": "AC says 'Plugin installable via /plugin install' (SC3) but workflow contains zero steps for verifying this. How does marketplace.json enable installation? This is completely missing from the implementation guidance.",
+        "impact": "Created file will be non-functional. Installation feature will fail when tested against actual marketplace/installer system. Circular dependency: can't test AC3 without knowing how marketplace.json is consumed by installer.",
+        "likelihood": "CERTAIN",
+        "trigger": "Any attempt to execute SC3 validation"
+      },
+      {
+        "issue": "Test claims are impossible to verify against unstated schema",
+        "description": "Inner test 'test_version_matches_plugin' - compares against what version? plugin.json file? A constant? What if plugin.json version is also undefined at step 7.1 completion?",
+        "impact": "Test will either fail arbitrarily or test nothing meaningful. Cannot distinguish between 'correct implementation' and 'lucky accident'.",
+        "likelihood": "VERY_HIGH",
+        "trigger": "When test is actually written"
+      }
+    ],
+    "dangerous_assumptions": [
+      {
+        "assumption": "Step 7.1 (plugin.json) produces complete, valid output",
+        "why_dangerous": "No verification step in 7.2 to confirm 7.1 outputs before using them. If 7.1 is incomplete (missing version field), 7.2 will create broken marketplace.json that passes acceptance criteria (file exists) but fails in production.",
+        "failure_trigger": "If step 7.1 skips version field, or leaves it as placeholder/undefined",
+        "blast_radius": "ENTIRE_PROJECT (broken marketplace.json blocks plugin distribution)"
+      },
+      {
+        "assumption": "marketplace.json format is implicitly known/standard",
+        "why_dangerous": "No schema provided. 'marketplace.json' name is ambiguous - GitHub has its own marketplace.json format, but Claude Code plugin marketplace may require different format entirely. Implementation might create wrong file format.",
+        "failure_trigger": "Claude Code plugin installer expects different field names/structure than assumed",
+        "blast_radius": "ENTIRE_PROJECT (wrong file format breaks plugin installation completely)"
+      },
+      {
+        "assumption": "License field value 'MIT' is always correct assumption",
+        "why_dangerous": "Specification says 'License specified (MIT assumed)' - this is dangerous. What if AI-Craft project doesn't use MIT license? What if license changes? Hardcoding assumption into code creates technical debt and potential legal/licensing issues.",
+        "failure_trigger": "Project license is actually Apache-2.0, GPL, or proprietary. Developer ships wrong license in marketplace.",
+        "blast_radius": "LEGAL_LIABILITY (distributing under wrong license)"
+      },
+      {
+        "assumption": "marketplace.json location co-locates with plugin.json automatically",
+        "why_dangerous": "No explicit statement where marketplace.json goes. If plugin.json is in .claude-plugin/ and marketplace.json is in root (or vice versa), plugin discovery will fail. Installer searches one location, file is in another.",
+        "failure_trigger": "If plugin.json location from 7.1 differs from assumed location in 7.2",
+        "blast_radius": "PHASE_7_ONLY (but blocks plugin distribution entirely)"
+      },
+      {
+        "assumption": "Author field can be determined by context without user input",
+        "why_dangerous": "No strategy for populating author field. Execution guidance lists 'Specify author and license (MIT)' but doesn't say HOW to determine author. Hard-coded value? From package.json? Will implement something, pass tests, then fail when actual author metadata is wrong in marketplace.",
+        "failure_trigger": "Marketplace requires specific author format/structure different from implementation",
+        "blast_radius": "PHASE_7_ONLY (marketplace listing won't display correctly)"
+      },
+      {
+        "assumption": "Test suite adequately validates actual marketplace requirements",
+        "why_dangerous": "Tests specified are structural (file exists, fields present) not functional. No test validates that marketplace.json actually works with Claude Code plugin installer. Passing tests guarantee file structure, not functionality.",
+        "failure_trigger": "Installer rejects file due to missing required fields, wrong schema, invalid values",
+        "blast_radius": "ENTIRE_PROJECT (plugin distribution broken)"
+      }
+    ],
+    "unhandled_edge_cases": [
+      {
+        "edge_case": "plugin.json is incomplete at 7.2 start (7.1 not actually complete)",
+        "current_handling": "No validation. Step 7.2 proceeds blindly.",
+        "failure_mode": "marketplace.json references undefined fields. Tests pass (file exists). Installation fails.",
+        "mitigation_required": "Pre-step 7.2 validation: Verify plugin.json has COMPLETE required fields before proceeding"
+      },
+      {
+        "edge_case": "Version in plugin.json uses semver pre-release (e.g., '1.0.0-beta.1')",
+        "current_handling": "No specification. Probably just copied as-is.",
+        "failure_mode": "Marketplace rejects pre-release version format. Or accepts it but breaks update logic (pre-releases sort differently).",
+        "mitigation_required": "Acceptance criterion: 'Version must be valid marketplace version format (semver or equivalent)'"
+      },
+      {
+        "edge_case": "Author field contains special characters, unicode, or very long string",
+        "current_handling": "No validation. Probably just copied from source.",
+        "failure_mode": "Marketplace rejects malformed author field. Or accepts but breaks display/sorting.",
+        "mitigation_required": "Test: author field must be within length limit and match expected format"
+      },
+      {
+        "edge_case": "Multiple versions of this plugin exist (e.g., forks, legacy branches)",
+        "current_handling": "No handling. Each version gets marketplace.json with same author/license.",
+        "failure_mode": "Marketplace shows multiple listings for same author (confusing), or considers them duplicates (one fails).",
+        "mitigation_required": "Specification: How are multiple plugin versions handled in marketplace? Only latest? All?"
+      },
+      {
+        "edge_case": "marketplace.json file gets manually edited after creation",
+        "current_handling": "No version control strategy specified. File is committed, but no process for keeping it in sync if hand-edited.",
+        "failure_mode": "marketplace.json diverges from plugin.json over time. Developers edit one, forget to edit other.",
+        "mitigation_required": "Specification: Is marketplace.json generated from plugin.json? Or independent? If independent, how to maintain consistency?"
+      },
+      {
+        "edge_case": "Installation fails due to marketplace.json format error, but user doesn't know why",
+        "current_handling": "No error messaging strategy. Tests don't validate installer integration.",
+        "failure_mode": "Silent installation failure. User debugging time: 2+ hours. No clear error from marketplace.json schema.",
+        "mitigation_required": "Acceptance criterion: 'Installer provides clear error message if marketplace.json is malformed'"
+      },
+      {
+        "edge_case": "Repository URL is missing from marketplace.json (GitHub marketplace requires it)",
+        "current_handling": "Not mentioned in AC. Probably omitted.",
+        "failure_mode": "Marketplace listing rejected/incomplete. Plugin can't be published.",
+        "mitigation_required": "Test: marketplace.json includes repository URL (if required by marketplace spec)"
+      },
+      {
+        "edge_case": "Estimated 1-hour time is underestimated (research, schema discovery, testing)",
+        "current_handling": "1-hour estimate assumes schema is known and trivial.",
+        "failure_mode": "Developer goes into execution, discovers schema unknowns, spends 3+ hours researching, exceeds estimate by 200%.",
+        "mitigation_required": "Realistic estimate: 2-3 hours (including schema discovery, validation testing, troubleshooting)"
+      }
+    ],
+    "failure_scenarios": [
+      {
+        "scenario": "Scenario 1: Plugin installer doesn't recognize marketplace.json format",
+        "precondition": "Step 7.2 creates marketplace.json based on assumed schema",
+        "trigger": "User/CI attempts to install plugin using /plugin install",
+        "failure_sequence": [
+          "Installer reads marketplace.json",
+          "Installer expects different schema (e.g., different field names)",
+          "Installer rejects file as invalid/missing required fields",
+          "Plugin installation fails with unclear error message",
+          "User has no way to know what's wrong in marketplace.json"
+        ],
+        "blast_radius": "ENTIRE_PROJECT (plugin distribution blocked)",
+        "detection_difficulty": "VERY_HIGH (requires actual installer integration testing)",
+        "recovery_effort": "2-4 hours (schema research, file reformat, re-testing)"
+      },
+      {
+        "scenario": "Scenario 2: Version mismatch goes undetected in production",
+        "precondition": "Step 7.2 creates marketplace.json with version from plugin.json",
+        "trigger": "Developer updates plugin version in plugin.json during maintenance (phase 8+)",
+        "failure_sequence": [
+          "Developer edits plugin.json, bumps version to 1.2.0",
+          "Developer forgets to update marketplace.json (left at 1.1.0)",
+          "Tests still pass (both files exist, content checks are minimal)",
+          "CI/CD does not catch mismatch (no cross-file validation)",
+          "Plugin is distributed to marketplace with wrong version metadata",
+          "Users see marketplace listing for v1.2.0 but actual plugin code is v1.1.0",
+          "Confusion, support requests, potential downgrade issues"
+        ],
+        "blast_radius": "ENTIRE_PROJECT (marketplace distribution corrupted)",
+        "likelihood": "VERY_HIGH (human forgetfulness in maintenance)",
+        "detection_difficulty": "HIGH (requires manual comparison or CI rule)",
+        "recovery_effort": "1-2 hours per occurrence (find discrepancy, fix, re-upload to marketplace)"
+      },
+      {
+        "scenario": "Scenario 3: Author field is hardcoded, becomes incorrect after team changes",
+        "precondition": "Step 7.2 hardcodes author as 'Alex D' or similar",
+        "trigger": "Project maintainer changes, original author leaves team",
+        "failure_sequence": [
+          "marketplace.json lists original author",
+          "Users contact old author for support (wrong person)",
+          "Marketplace listing shows incorrect maintainer",
+          "Legal/liability issue: wrong person attributed to code"
+        ],
+        "blast_radius": "ENTIRE_PROJECT (marketplace listing has wrong metadata)",
+        "likelihood": "HIGH (inevitable team changes over time)",
+        "detection_difficulty": "MEDIUM (requires manual review of marketplace listing)",
+        "recovery_effort": "1-2 hours (identify correct author, update file, re-upload)"
+      },
+      {
+        "scenario": "Scenario 4: Acceptance criteria are satisfied but plugin doesn't work",
+        "precondition": "All tests pass: file exists, fields present, version matches",
+        "trigger": "User attempts actual plugin installation",
+        "failure_sequence": [
+          "marketplace.json exists and has required fields (test passes)",
+          "File structure matches acceptance criteria",
+          "But installer integration fails (wrong field names, missing schema compliance)",
+          "Plugin installation fails despite passing all specified tests",
+          "Root cause: tests validate structure, not functionality"
+        ],
+        "blast_radius": "ENTIRE_PROJECT (functional tests don't exist, only structural)",
+        "likelihood": "VERY_HIGH (functional testing gap is explicit)",
+        "detection_difficulty": "HIGH (requires integration with actual installer)",
+        "recovery_effort": "2-4 hours (diagnose marketplace.json schema mismatch, fix, re-test)"
+      },
+      {
+        "scenario": "Scenario 5: MIT license assumption is legally incorrect",
+        "precondition": "Step 7.2 hardcodes 'license': 'MIT' in marketplace.json",
+        "trigger": "Project uses different license (Apache-2.0, proprietary, GPL)",
+        "failure_sequence": [
+          "marketplace.json claims MIT license",
+          "Users assume MIT terms apply (permissive, commercial use allowed)",
+          "Actual project license is Apache-2.0 (patent indemnity required) or proprietary (commercial restricted)",
+          "User uses code under wrong license assumption",
+          "Potential legal liability"
+        ],
+        "blast_radius": "ENTIRE_PROJECT (legal/licensing issue)",
+        "likelihood": "MEDIUM (depends on actual project license)",
+        "detection_difficulty": "HIGH (requires human review of license compliance)",
+        "recovery_effort": "1-2 hours (identify correct license, update marketplace.json and listing)"
+      },
+      {
+        "scenario": "Scenario 6: File location mismatch causes plugin discovery failure",
+        "precondition": "Step 7.2 creates marketplace.json in root; installer looks in .claude-plugin/",
+        "trigger": "Plugin installer searches for marketplace.json",
+        "failure_sequence": [
+          "marketplace.json created in repository root",
+          "Installer looks for marketplace.json in .claude-plugin/ directory",
+          "File not found (installer looks wrong location)",
+          "Plugin discovery fails",
+          "Installation fails with 'plugin not found' error"
+        ],
+        "blast_radius": "ENTIRE_PROJECT (plugin can't be discovered/installed)",
+        "likelihood": "MEDIUM (ambiguous file location specification)",
+        "detection_difficulty": "MEDIUM (requires understanding installer file search paths)",
+        "recovery_effort": "1-2 hours (move file to correct location, verify installer finds it)"
+      },
+      {
+        "scenario": "Scenario 7: Step 7.1 (plugin.json) is BLOCKED, making Step 7.2 impossible",
+        "precondition": "Step 7.1 review identified CRITICAL blockers: Phase 3 blocked, Phase 5 blocked, D2/D3 undocumented",
+        "trigger": "Attempt to execute Step 7.2 while Step 7.1 is still blocked",
+        "failure_sequence": [
+          "Step 7.1 has version mismatch (plugin.json undefined/incomplete)",
+          "Step 7.2 tries to reference plugin.json version",
+          "marketplace.json version is undefined or wrong",
+          "Tests fail or tests pass with meaningless results",
+          "Cannot proceed without Step 7.1 success"
+        ],
+        "blast_radius": "ENTIRE_PHASE_7 (plugin structure phase completely blocked)",
+        "likelihood": "VERY_HIGH (7.1 is currently BLOCKED)",
+        "detection_difficulty": "LOW (immediate - prerequisite check fails)",
+        "recovery_effort": "Requires resolution of 7.1 blockers (4-6 hours minimum, potentially more)"
+      }
+    ],
+    "risk_score": 8.2,
+    "risk_score_justification": "Multiple critical failure modes with high likelihood. Core contradiction: step claims to enable SC3 (installable via /plugin install) but has zero functional validation that marketplace.json actually works with installer. Tests validate file structure only. Version mismatch failure mode will occur with near-certainty during maintenance. File location ambiguity creates discovery failure risk. License assumption is legally risky. Estimated 1-hour execution time is unrealistic given schema unknowns. ADDITIONALLY: Step 7.1 (prerequisite) is BLOCKED - this makes Step 7.2 impossible to execute until 7.1 is resolved.",
+    "blast_radius": "ENTIRE_PROJECT",
+    "blast_radius_justification": "Failed marketplace.json blocks entire plugin distribution to marketplace. Without working marketplace.json, SC3 (installable via /plugin install) cannot be satisfied. This blocks phase 7 completion and release of plugin marketplace feature. Additionally, Step 7.1 blocker cascades to Step 7.2 - cannot create marketplace.json that references undefined/incomplete plugin.json.",
+    "critical_failures": [
+      {
+        "failure": "Step 7.1 (prerequisite plugin.json) is BLOCKED due to missing Phase 3/5 components and undocumented D2/D3 decisions",
+        "why_critical": "Step 7.2 depends on plugin.json version field existing and being valid. If 7.1 is blocked, 7.2 cannot proceed.",
+        "must_resolve_before": "Execution of Step 7.2 MUST wait for Step 7.1 completion"
+      },
+      {
+        "failure": "Marketplace.json schema unknown - implementation proceeds on assumptions",
+        "why_critical": "If schema is wrong, file is rejected by installer/marketplace. Tests pass (structure exists) but functionality fails.",
+        "must_resolve_before": "Execution"
+      },
+      {
+        "failure": "No functional validation that marketplace.json enables installation",
+        "why_critical": "Step claims to satisfy SC3 but has zero tests/validation that plugin actually installs. Structural tests (file exists) are insufficient.",
+        "must_resolve_before": "Execution"
+      },
+      {
+        "failure": "Version synchronization has no enforcement mechanism",
+        "why_critical": "Version mismatch WILL occur during maintenance. No CI check, no tooling, no process. Maintenance will scatter versions across files.",
+        "must_resolve_before": "Execution or must add version sync mechanism"
+      },
+      {
+        "failure": "File location is ambiguous",
+        "why_critical": "If installer looks in wrong location, marketplace.json is effectively invisible. Plugin discovery fails.",
+        "must_resolve_before": "Execution"
+      }
+    ],
+    "integration_failures": [
+      {
+        "integration_point": "Step 7.1 → Step 7.2 (plugin.json → marketplace.json version synchronization)",
+        "assumption": "plugin.json is complete and has valid version field",
+        "verification": "NONE (Step 7.1 is BLOCKED - plugin.json may not exist or may be incomplete)",
+        "likely_failure": "marketplace.json cannot reference valid version from plugin.json if 7.1 is incomplete",
+        "detection": "Only discovered when Step 7.2 attempts to read plugin.json version field and finds it undefined/invalid"
+      },
+      {
+        "integration_point": "marketplace.json → Claude Code plugin installer",
+        "assumption": "Installer understands marketplace.json format",
+        "verification": "NONE (no integration test exists)",
+        "likely_failure": "Installer rejects file due to schema mismatch or missing required fields",
+        "detection": "Only discovered during user testing or actual marketplace integration"
+      },
+      {
+        "integration_point": "marketplace.json version field → plugin.json version field",
+        "assumption": "Versions are kept in sync",
+        "verification": "NONE (no cross-file validation test exists)",
+        "likely_failure": "Version mismatch during maintenance (plugin.json updated, marketplace.json forgotten)",
+        "detection": "Manual inspection or during marketplace submission"
+      },
+      {
+        "integration_point": "Step 7.2 → Step 7.3 (marketplace distribution)",
+        "assumption": "marketplace.json produced by 7.2 is ready for distribution",
+        "verification": "NONE (7.3 may discover 7.2 output is malformed)",
+        "likely_failure": "7.3 cannot proceed because marketplace.json is invalid/incomplete",
+        "detection": "During phase 7.3 execution"
+      }
+    ],
+    "data_loss_risks": [
+      {
+        "risk": "If marketplace.json is accidentally deleted, version history is lost",
+        "mitigation": "marketplace.json should be version-controlled in git (it should be - no special risk)",
+        "severity": "LOW (normal git recovery applies)"
+      }
+    ],
+    "security_holes": [
+      {
+        "hole": "No validation that author field matches actual project maintainer",
+        "attack_vector": "Malicious actor forks project, creates marketplace.json with false author, publishes to marketplace under assumed identity",
+        "impact": "User confusion, potential supply chain spoofing",
+        "mitigation": "Marketplace should validate author field against GitHub account (not this step's responsibility, but step should acknowledge)"
+      },
+      {
+        "hole": "License field has no validation",
+        "attack_vector": "Malicious actor could claim GPL while shipping proprietary code, or vice versa",
+        "impact": "Legal liability, compliance violations",
+        "mitigation": "License field should be validated/audited (not this step's responsibility, but step should acknowledge)"
+      }
+    ],
+    "test_coverage_gaps": [
+      {
+        "gap": "No test validates marketplace.json schema compliance",
+        "consequence": "File could be completely wrong format and tests still pass",
+        "required_test": "test_marketplace_json_schema_valid (validates against actual marketplace schema)"
+      },
+      {
+        "gap": "No test validates that marketplace.json enables actual plugin installation",
+        "consequence": "Functional requirement (SC3 = installable) is untested",
+        "required_test": "test_plugin_installable_with_marketplace_json (integration test with actual installer if possible)"
+      },
+      {
+        "gap": "No test validates repository URL presence/format (if required)",
+        "consequence": "Marketplace listing may be incomplete or rejected",
+        "required_test": "test_repository_url_valid (if required by marketplace spec)"
+      },
+      {
+        "gap": "No test validates cross-file consistency over time",
+        "consequence": "Version mismatch goes undetected during maintenance",
+        "required_test": "CI rule: check marketplace.json version matches plugin.json version on every commit"
+      }
+    ],
+    "missing_prerequisites": [
+      {
+        "prerequisite": "Step 7.1 (plugin.json) must be COMPLETE with all required fields",
+        "validation_needed": "Pre-step validation that plugin.json has: name, version, description, author",
+        "current_status": "BLOCKED - Step 7.1 has CRITICAL issues"
+      },
+      {
+        "prerequisite": "GitHub Marketplace (or Claude Code plugin marketplace) schema must be documented",
+        "validation_needed": "Reference document listing required/optional fields for marketplace.json",
+        "current_status": "NOT AVAILABLE"
+      },
+      {
+        "prerequisite": "Author metadata decision must be made",
+        "validation_needed": "Decision: hardcode, derive from package.json, or user input?",
+        "current_status": "UNRESOLVED"
+      },
+      {
+        "prerequisite": "License value must be confirmed",
+        "validation_needed": "Verify actual project license (not assume MIT)",
+        "current_status": "UNRESOLVED (assumes MIT)"
+      },
+      {
+        "prerequisite": "File location must be explicitly specified",
+        "validation_needed": "Is marketplace.json in repo root or .claude-plugin/?",
+        "current_status": "AMBIGUOUS"
+      }
+    ],
+    "ambiguous_acceptance_criteria": [
+      {
+        "criterion": "Version matches plugin.json",
+        "ambiguity": "What does 'matches' mean? Exact string equality? Semantic version equivalence? How is match verified?",
+        "consequence": "Test could pass with version mismatches that appear equal but aren't"
+      },
+      {
+        "criterion": "JSON includes required marketplace fields",
+        "ambiguity": "What are 'required' fields? Not specified. Which fields are actually required by marketplace spec?",
+        "consequence": "Test validates wrong fields. Implementation creates incomplete marketplace.json."
+      },
+      {
+        "criterion": "License specified (MIT assumed)",
+        "ambiguity": "Is license REQUIRED to be MIT, or is 'MIT assumed' just a fallback? Can other licenses be used?",
+        "consequence": "Implementation hardcodes MIT; if actual license differs, file is wrong"
+      },
+      {
+        "criterion": "Plugin installable via /plugin install",
+        "ambiguity": "How is this verified? Via what installer? No functional test specified. This is vague hope, not a clear criterion.",
+        "consequence": "No actual test of installability. Step claims to satisfy criterion but has zero proof"
+      }
+    ],
+    "optimism_bias_warnings": [
+      {
+        "optimistic_statement": "1-hour estimate",
+        "reality_check": "This assumes schema is known, no research needed, no troubleshooting. Realistic estimate: 2-4 hours (includes schema discovery, validation, testing, troubleshooting). OR: BLOCKED if Step 7.1 is not complete.",
+        "consequence": "Timeline slip: developer goes into execution expecting 1 hour, discovers unknowns, takes 3+ hours OR discovers 7.1 is blocked and cannot proceed"
+      },
+      {
+        "optimistic_statement": "Tests will validate correctness",
+        "reality_check": "Tests validate structure only (file exists, fields present). No functional validation that marketplace.json actually enables installation.",
+        "consequence": "Passing tests provide false confidence. Real failure only discovered in integration/marketplace"
+      },
+      {
+        "optimistic_statement": "Version will stay in sync automatically",
+        "reality_check": "There is zero mechanism for automatic sync. Developer must manually edit both files. Version mismatch will occur.",
+        "consequence": "Maintenance failure: versions drift, and developers don't notice until marketplace breaks"
+      },
+      {
+        "optimistic_statement": "Workflow steps are straightforward and sequential",
+        "reality_check": "Workflow steps are vague. 'Add plugin discovery metadata' - what does this mean? No details provided.",
+        "consequence": "Developer must interpret vague guidance, making assumptions that may be wrong"
+      },
+      {
+        "optimistic_statement": "Step 7.1 is complete and provides valid plugin.json",
+        "reality_check": "Step 7.1 review identified CRITICAL blockers. Phase 3 migration BLOCKED, Phase 5 skills BLOCKED, D2/D3 decisions MISSING. Step 7.1 status: DO NOT EXECUTE.",
+        "consequence": "Step 7.2 cannot execute until 7.1 is resolved. Entire Phase 7 is blocked."
+      }
+    ],
+    "summary": {
+      "overall_assessment": "CRITICAL ISSUES PRESENT - CANNOT EXECUTE DUE TO PREREQUISITE BLOCKER",
+      "key_problems": [
+        "1. BLOCKING: Step 7.1 prerequisite is BLOCKED - cannot create marketplace.json without valid plugin.json",
+        "2. Core functional requirement (SC3 = installable) has zero functional validation",
+        "3. Marketplace.json schema is unknown - implementation proceeds on assumptions",
+        "4. Version mismatch will occur during maintenance - no enforcement mechanism",
+        "5. File location is ambiguous - could break plugin discovery",
+        "6. License assumption is legally risky without verification",
+        "7. Estimated 1 hour is unrealistic - likely 2-4 hours with research (if 7.1 unblocks)"
+      ],
+      "blocking_issues": [
+        "CRITICAL: Step 7.1 (plugin.json) must complete first. Currently BLOCKED by missing Phase 3/Phase 5 components and undocumented D2/D3 decisions",
+        "Must resolve: Marketplace.json schema specification (what fields, what format?)",
+        "Must resolve: File location (root or .claude-plugin/?)",
+        "Must resolve: Author field strategy (hardcode, derive, or input?)",
+        "Must resolve: Verify actual project license (not assume MIT)",
+        "Must resolve: Add functional integration test for SC3 (actually verify installability)"
+      ],
+      "recommended_action": "DO NOT EXECUTE. Step 7.2 depends on Step 7.1 completion. Step 7.1 is currently BLOCKED with CRITICAL issues. Recommended sequence: (1) Resolve Step 7.1 blockers (estimate: 4-6 hours minimum across Phases 3, 5, and decision documentation), (2) Verify Step 7.1 produces valid complete plugin.json, (3) THEN attempt Step 7.2 with clarified schema and implementation strategy. Escalate Step 7.1 blocker to project lead immediately."
+    }
+  }
+}

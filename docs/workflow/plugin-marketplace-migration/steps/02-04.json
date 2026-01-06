@@ -1,0 +1,218 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "02-04",
+  "phase": {
+    "number": 2,
+    "name": "Pilot Migration",
+    "purpose": "Validate toolchain with real complex agent before batch migration"
+  },
+  "step": {
+    "number": "2.4",
+    "name": "Archive Original MD Files",
+    "description": "Create archive of all original .md agent/command files before batch migration. This enables rollback if migration partially fails.\n\nCRITICAL SOURCE DIRECTORIES:\n- Agents: 5d-wave/agents/*.md (28 files - source files being migrated)\n- Commands: dist/ide/commands/dw/*.md (20 files - command definitions)\n\nArchive structure:\n- archive/pre-toon-migration/agents/*.md (28 files from 5d-wave/agents/)\n- archive/pre-toon-migration/commands/*.md (20 files from dist/ide/commands/dw/)\n\nIMPORTANT: Do NOT archive dist/ide/agents/dw/ - those are compiled outputs that will be regenerated.\n\nDo NOT delete originals until Phase 8 validation passes.",
+    "motivation": "Rollback capability prevents data loss during batch migration. Archive serves as baseline for Phase 8 validation.",
+    "estimated_hours": "0.5-1"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC1": "All source files in TOON v3.0 format",
+      "SC8": "Rollback capability exists (archive enables restoration)"
+    },
+    "dependencies": ["2.3"]
+  },
+  "deliverables": {
+    "files_to_create": [
+      "archive/pre-toon-migration/agents/ (directory with 28 .md files)",
+      "archive/pre-toon-migration/commands/ (directory with 20 .md files)",
+      "archive/pre-toon-migration/MANIFEST.txt"
+    ],
+    "acceptance_criteria": [
+      "Exactly 28 agent .md files copied from 5d-wave/agents/ to archive/pre-toon-migration/agents/",
+      "Exactly 20 command .md files copied from dist/ide/commands/dw/ to archive/pre-toon-migration/commands/",
+      "MANIFEST.txt lists all 48 archived files with SHA256 checksums",
+      "Archive committed to git separately from other changes",
+      "Original files remain in place (no deletion)",
+      "SHA256 checksums verify byte-for-byte integrity"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN all agent and command .md files\nWHEN I run archive script\nTHEN archive/pre-toon-migration/ contains exact copies of all 48 files\nAND MANIFEST.txt verifies integrity\nAND originals are unchanged",
+    "inner_tests": [
+      "test_archive_agents_count_equals_28",
+      "test_archive_commands_count_equals_20",
+      "test_archive_preserves_content_via_checksum",
+      "test_manifest_lists_all_files_with_checksums",
+      "test_originals_remain_unchanged"
+    ]
+  },
+  "refactoring": {
+    "targets": []
+  },
+  "execution_guidance": {
+    "approach": "Archive creation with SHA256 verification and manifest",
+    "workflow": [
+      "1. Create archive directory structure:",
+      "   mkdir -p archive/pre-toon-migration/agents",
+      "   mkdir -p archive/pre-toon-migration/commands",
+      "2. Copy all 28 agent .md files from SOURCE:",
+      "   SOURCE: 5d-wave/agents/*.md",
+      "   DEST: archive/pre-toon-migration/agents/",
+      "   Command: cp -p 5d-wave/agents/*.md archive/pre-toon-migration/agents/",
+      "   Verify count: find archive/pre-toon-migration/agents/ -name '*.md' | wc -l (expect 28)",
+      "3. Copy all 20 command .md files from SOURCE:",
+      "   SOURCE: dist/ide/commands/dw/*.md",
+      "   DEST: archive/pre-toon-migration/commands/",
+      "   Command: cp -p dist/ide/commands/dw/*.md archive/pre-toon-migration/commands/",
+      "   Verify count: find archive/pre-toon-migration/commands/ -name '*.md' | wc -l (expect 20)",
+      "4. Generate MANIFEST.txt with SHA256 checksums:",
+      "   cd archive/pre-toon-migration",
+      "   find . -name '*.md' -type f -exec sha256sum {} \\; > MANIFEST.txt",
+      "   Format:",
+      "   <sha256-hash>  ./agents/<filename>.md",
+      "   <sha256-hash>  ./commands/<filename>.md",
+      "5. Write tests to validate archive completeness:",
+      "   a. test_archive_agents_count_equals_28:",
+      "      count = len(glob('archive/pre-toon-migration/agents/*.md'))",
+      "      assert count == 28",
+      "   b. test_archive_commands_count_equals_20:",
+      "      count = len(glob('archive/pre-toon-migration/commands/*.md'))",
+      "      assert count == 20",
+      "   c. test_archive_preserves_content_via_checksum:",
+      "      For each file in archive, compute SHA256",
+      "      Compare against original file SHA256",
+      "      All must match exactly (byte-for-byte identity)",
+      "   d. test_manifest_lists_all_files_with_checksums:",
+      "      Load MANIFEST.txt",
+      "      Verify 48 entries (28 agents + 20 commands)",
+      "      Verify each entry has valid SHA256 hash",
+      "   e. test_originals_remain_unchanged:",
+      "      Verify 5d-wave/agents/ still contains 28 .md files",
+      "      Verify dist/ide/commands/dw/ still contains 20 .md files",
+      "6. Run all tests - must pass 100%",
+      "7. Commit archive ONLY (separate commit):",
+      "   git add archive/",
+      "   git commit -m \"chore(archive): backup original .md files before TOON migration",
+      "   ",
+      "   Archive structure:",
+      "   - 28 agent files from 5d-wave/agents/",
+      "   - 20 command files from dist/ide/commands/dw/",
+      "   - MANIFEST.txt with SHA256 checksums",
+      "   ",
+      "   Purpose: Rollback capability for Phase 8 validation.\"",
+      "8. DO NOT COMMIT any other files yet",
+      "9. DO NOT delete originals - they remain for comparison"
+    ],
+    "quality_gates": [
+      "All tests passing (100% required)",
+      "Exactly 48 files archived (28 agents + 20 commands)",
+      "All SHA256 checksums match originals (byte-for-byte integrity)",
+      "MANIFEST.txt generated with all file hashes",
+      "Archive committed separately to git",
+      "Originals preserved (no deletion)",
+      "No report files created"
+    ],
+    "source_directory_specification": {
+      "agents_source": {
+        "path": "5d-wave/agents/",
+        "file_pattern": "*.md",
+        "expected_count": 28,
+        "rationale": "Source files being migrated to TOON format",
+        "do_not_archive": "dist/ide/agents/dw/ (compiled output, will be regenerated)"
+      },
+      "commands_source": {
+        "path": "dist/ide/commands/dw/",
+        "file_pattern": "*.md",
+        "expected_count": 20,
+        "rationale": "Command definitions"
+      },
+      "total_expected": 48
+    },
+    "manifest_specification": {
+      "purpose": "Verify archive integrity and enable Phase 8 validation",
+      "format": "SHA256 checksum followed by relative file path",
+      "generation_command": "find . -name '*.md' -type f -exec sha256sum {} \\; > MANIFEST.txt",
+      "validation": "Each archived file must have corresponding entry in MANIFEST.txt",
+      "phase_8_usage": "Phase 8 will use MANIFEST.txt to verify archived files unchanged, then compare against post-migration files"
+    },
+    "checksum_verification_specification": {
+      "algorithm": "SHA256",
+      "purpose": "Ensure byte-for-byte copy integrity, prevent silent corruption",
+      "validation_method": "For each file: sha256(archive/file) == sha256(original/file)",
+      "line_ending_handling": "Git line ending conversion (autocrlf) may cause checksum differences on Windows. Normalize before comparison or disable autocrlf for archive commit.",
+      "failure_handling": "If any checksum mismatch, abort archive and investigate corruption"
+    }
+  },
+  "phase_8_integration": {
+    "purpose": "Archive serves as rollback baseline for Phase 8 validation",
+    "phase_8_workflow": [
+      "1. Phase 8 compares post-migration compiled output against this archive",
+      "2. If migration produces semantic differences, restore from archive",
+      "3. Archive checksums ensure originals haven't changed since archival",
+      "4. MANIFEST.txt provides file inventory and integrity validation"
+    ],
+    "restoration_procedure": {
+      "trigger": "Phase 8 validation fails or migration abort requested",
+      "steps": [
+        "1. Verify archive integrity using MANIFEST.txt checksums",
+        "2. Remove post-migration files from 5d-wave/agents/ and dist/ide/commands/dw/",
+        "3. Copy files from archive back to original locations",
+        "4. Verify restoration success using checksum comparison",
+        "5. Remove .toon files created during migration",
+        "6. System restored to pre-migration state"
+      ]
+    }
+  },
+  "adversarial_review_remediations": [
+    {
+      "issue_id": "C1-SOURCE-AMBIGUITY",
+      "remediation": "Explicitly specified source directories: 5d-wave/agents/ (28 files) for agents, dist/ide/commands/dw/ (20 files) for commands. Documented why dist/ide/agents/dw/ is NOT archived (compiled output)."
+    },
+    {
+      "issue_id": "H1-INCOMPLETE-CRITERIA",
+      "remediation": "Added explicit file verification: 'Exactly 28 agent .md files' and 'Exactly 20 command .md files'. Added MANIFEST.txt with SHA256 checksums to verify correct files archived."
+    },
+    {
+      "issue_id": "H2-MISSING-VALIDATION",
+      "remediation": "Added checksum verification specification using SHA256. Test test_archive_preserves_content_via_checksum validates byte-for-byte integrity."
+    },
+    {
+      "issue_id": "M1-PHASE-8-REFERENCE",
+      "remediation": "Added phase_8_integration section documenting how archive is used for validation and restoration. Specified rollback procedure."
+    },
+    {
+      "issue_id": "M2-COMMIT-TIMING",
+      "remediation": "Clarified commit workflow: archive committed separately with specific message. Other files explicitly excluded from commit."
+    },
+    {
+      "issue_id": "GITKEEP-CONTRADICTION",
+      "remediation": "Removed .gitkeep from deliverables. Directory will contain 48 actual .md files, making .gitkeep unnecessary."
+    },
+    {
+      "issue_id": "ASSUMPTION-FILE-COPY",
+      "remediation": "Added error handling specification: if any checksum mismatch, abort archive and investigate. Test validates all checksums match."
+    },
+    {
+      "issue_id": "ASSUMPTION-EXECUTOR-KNOWS",
+      "remediation": "Added MANIFEST.txt containing all archived file paths with checksums. Explicit file inventory validation."
+    },
+    {
+      "issue_id": "EDGE-CASE-LINE-ENDINGS",
+      "remediation": "Added line ending handling note in checksum_verification_specification. Documented autocrlf consideration for Windows."
+    },
+    {
+      "issue_id": "EDGE-CASE-DIRECTORY-EXISTS",
+      "remediation": "Workflow includes explicit mkdir -p commands creating directory structure. Tests verify final state, not incremental creation."
+    },
+    {
+      "issue_id": "EDGE-CASE-PERMISSIONS",
+      "remediation": "Using cp -p flag to preserve permissions. Not explicitly tested, but standard practice for file archival."
+    }
+  ]
+}

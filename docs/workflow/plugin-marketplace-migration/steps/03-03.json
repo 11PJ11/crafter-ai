@@ -1,0 +1,272 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "03-03",
+  "phase": {
+    "number": 3,
+    "name": "Agent Batch Migration",
+    "purpose": "Convert remaining 27 agents to TOON format (28 total including pilot)"
+  },
+  "step": {
+    "number": "3.3",
+    "name": "Convert Remaining Agents",
+    "description": "Convert 6 remaining agents: agent-builder, avvocato, cv-optimizer, novel-editor, novel-editor-reviewer, researcher-reviewer",
+    "motivation": "Complete agent migration to reach 28 total agents in TOON format",
+    "estimated_hours": "5-8"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC1": "All source files in TOON v3.0 format",
+      "SC7": "Target 50-60% token savings (to be validated - measurement only, not hard gate)"
+    },
+    "dependencies": ["2.4", "3.1", "3.2"],
+    "prerequisite_checks": [
+      {
+        "check": "TOON toolchain exists and is functional",
+        "validation": "Verify tools/toon/README.md exists with conversion patterns and compiler is operational",
+        "blocking": true,
+        "resolution_if_missing": "Complete Phase 1 infrastructure (estimated 16-19 hours)"
+      },
+      {
+        "check": "Phase 2.4 archive is complete",
+        "validation": "ls archive/pre-toon-migration/agents/ | wc -l should equal 28",
+        "blocking": true,
+        "resolution_if_missing": "Complete step 2.4 archive creation (estimated 0.5 hours)"
+      },
+      {
+        "check": "Steps 3.1 and 3.2 complete",
+        "validation": "Verify 10 primary agents (3.1) and 11 reviewer agents (3.2) are converted and validated",
+        "blocking": true,
+        "resolution_if_missing": "Complete steps 3.1 and/or 3.2 first (estimated 20-30 hours combined)"
+      },
+      {
+        "check": "Archive contains exactly 28 agents",
+        "validation": "Verify total agent count: ls archive/pre-toon-migration/agents/*.md | wc -l == 28",
+        "blocking": true,
+        "resolution_if_missing": "Reconcile agent count discrepancy (estimated 1-2 hours investigation)"
+      }
+    ]
+  },
+  "deliverables": {
+    "files_to_create": [
+      "5d-wave/agents/agent-builder.toon",
+      "5d-wave/agents/avvocato.toon",
+      "5d-wave/agents/cv-optimizer.toon",
+      "5d-wave/agents/novel-editor.toon",
+      "5d-wave/agents/novel-editor-reviewer.toon",
+      "5d-wave/agents/researcher-reviewer.toon"
+    ],
+    "acceptance_criteria": [
+      "All 6 TOON files compile without errors using tools/toon compiler",
+      "Total count: 28 agent.toon files exist in 5d-wave/agents/ (1 pilot + 10 primary + 11 reviewers + 6 remaining)",
+      "All 28 compiled outputs have valid Claude Code format",
+      "Total count: 0 agent.md source files remain in 5d-wave/agents/ (all archived)",
+      "Token savings measured and documented for all 28 agents",
+      "Round-trip validation passes for all 6 remaining agents"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN all 28 agent .toon files in 5d-wave/agents/\nWHEN I count .toon files AND .md files\nTHEN .toon count == 28 AND .md count == 0 (all archived)",
+    "inner_tests": [
+      "test_all_6_remaining_agents_compile",
+      "test_total_agent_toon_count_equals_28",
+      "test_no_orphan_md_files_in_agents_directory",
+      "test_archive_integrity_28_agents",
+      "test_token_savings_documented_all_28",
+      "test_round_trip_validation_all_6_remaining"
+    ]
+  },
+  "refactoring": {
+    "targets": [
+      {
+        "level": 1,
+        "focus": "Final naming consistency pass across all 28 agents",
+        "example": "Standardize TOON notation, section markers, and abbreviations across entire agent set"
+      }
+    ]
+  },
+  "execution_guidance": {
+    "approach": "Final batch conversion with comprehensive validation",
+    "workflow": [
+      "0. PREREQUISITE VALIDATION: Run all prerequisite checks before starting any conversion",
+      "1. Verify remaining agent list is correct: agent-builder, avvocato, cv-optimizer, novel-editor, novel-editor-reviewer, researcher-reviewer",
+      "2. Apply conversion patterns from tools/toon/README.md",
+      "3. Convert each remaining agent.md to agent.toon following documented patterns",
+      "4. Compile each TOON file immediately after conversion to validate syntax",
+      "5. For each agent: compare compiled output with archived original using round-trip validator",
+      "6. Write tests to validate completion: 28 total agents, 0 orphan MD files, all compile successfully",
+      "7. Verify no orphan .md files remain in 5d-wave/agents/ directory",
+      "8. Measure token savings for all 28 agents: compare total TOON source size with total archived MD baseline",
+      "9. Apply refactoring level 1 for final consistency pass across all 28 agents",
+      "10. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "All prerequisite checks pass (TOON toolchain exists, archive complete, steps 3.1 and 3.2 complete)",
+      "All tests passing (100% required)",
+      "Exactly 28 agent.toon files exist in 5d-wave/agents/",
+      "All 28 agents compile successfully with zero errors",
+      "Exactly 0 agent.md files remain in 5d-wave/agents/ (all archived in archive/pre-toon-migration/agents/)",
+      "Round-trip validation passes for all 6 remaining agents (semantic equivalence >= 95%)",
+      "Token savings measured and documented for all 28 agents (aggregate and per-agent)",
+      "Refactoring applied (level 1) for final consistency",
+      "No report files created"
+    ],
+    "error_handling": [
+      {
+        "scenario": "TOON toolchain missing",
+        "action": "HALT execution, escalate to complete Phase 1 first",
+        "estimated_resolution": "16-19 hours"
+      },
+      {
+        "scenario": "Archive incomplete or agent count mismatch",
+        "action": "HALT execution, investigate and reconcile agent count, verify/re-run step 2.4",
+        "estimated_resolution": "1-3 hours"
+      },
+      {
+        "scenario": "Steps 3.1 or 3.2 not complete",
+        "action": "HALT execution, complete prerequisite steps first",
+        "estimated_resolution": "20-30 hours combined"
+      },
+      {
+        "scenario": "Agent compilation fails",
+        "action": "Log error with details, fix TOON syntax, recompile, continue with remaining agents",
+        "estimated_resolution": "15-60 minutes per agent"
+      },
+      {
+        "scenario": "Round-trip validation fails",
+        "action": "Review differences, determine if acceptable or critical, fix if critical",
+        "estimated_resolution": "30-90 minutes per agent"
+      },
+      {
+        "scenario": "Orphan .md files found after conversion",
+        "action": "Identify orphan files, verify they are properly archived, remove from source directory",
+        "estimated_resolution": "30-60 minutes"
+      },
+      {
+        "scenario": "Total agent count not 28",
+        "action": "Investigate discrepancy, verify which agents are missing or duplicated, reconcile",
+        "estimated_resolution": "1-2 hours"
+      }
+    ],
+    "completion_verification": [
+      "Run: find 5d-wave/agents/ -name '*.toon' | wc -l (expect: 28)",
+      "Run: find 5d-wave/agents/ -name '*.md' | wc -l (expect: 0)",
+      "Run: ls archive/pre-toon-migration/agents/ | wc -l (expect: 28)",
+      "Verify all 28 agents compile: for each .toon file, run compiler and verify exit code 0",
+      "Generate token savings report: total bytes TOON source vs total bytes archived MD baseline"
+    ]
+  },
+  "adversarial_review_mitigations": {
+    "critical_blockers_addressed": [
+      {
+        "blocker": "TOON toolchain (tools/toon/README.md) is missing",
+        "mitigation": "Added prerequisite check with blocking validation before any conversion work begins",
+        "estimated_resolution": "16-19 hours if missing (complete Phase 1)"
+      },
+      {
+        "blocker": "Step 2.4 archive completeness not verified",
+        "mitigation": "Added prerequisite check with explicit validation command (ls archive/pre-toon-migration/agents/ | wc -l == 28)",
+        "estimated_resolution": "0.5-2 hours if missing (complete/verify step 2.4)"
+      },
+      {
+        "blocker": "Agent count inconsistency (27 vs 28 vs 29)",
+        "mitigation": "Clarified: Phase 3 converts 27 remaining agents + 1 pilot = 28 total. Added explicit count validation in prerequisite checks.",
+        "estimated_resolution": "Addressed in clarification"
+      },
+      {
+        "blocker": "Compilation validation method undefined",
+        "mitigation": "Added explicit compilation validation step with exit code checking, specified compiler tool usage",
+        "estimated_resolution": "Addressed in workflow"
+      }
+    ],
+    "dangerous_assumptions_mitigated": [
+      {
+        "assumption": "These exact 6 agents are the REMAINING unconverted agents",
+        "mitigation": "Added prerequisite check to verify steps 3.1 and 3.2 are complete before starting 3.3",
+        "action": "List all .md files in 5d-wave/agents/ BEFORE starting to confirm these 6 are actually remaining"
+      },
+      {
+        "assumption": "Phase 2.4 archive is complete with exactly 28 agents",
+        "mitigation": "Added explicit archive count validation in prerequisite checks",
+        "action": "Verify archive completeness before any conversion work"
+      },
+      {
+        "assumption": "Conversion is straightforward mechanical process",
+        "mitigation": "Added round-trip validation and semantic equivalence checking to workflow",
+        "action": "Validate each converted agent preserves critical information"
+      }
+    ],
+    "unhandled_edge_cases_addressed": [
+      {
+        "edge_case": "Agent count mismatch discovered during execution",
+        "handling": "Added completion verification section with explicit count commands and expected values",
+        "action": "Verify counts at multiple checkpoints during execution"
+      },
+      {
+        "edge_case": "Orphan .md files remain in source directory",
+        "handling": "Added error handling scenario with specific action to identify and remove orphans",
+        "action": "Scan for orphan files, verify archival, clean up source directory"
+      },
+      {
+        "edge_case": "Archive from step 2.4 is incomplete",
+        "handling": "Added prerequisite check that blocks execution if archive count != 28",
+        "action": "Halt and fix archive before proceeding"
+      }
+    ],
+    "test_coverage_gaps_addressed": [
+      {
+        "gap": "No test validates negative case (.md removal)",
+        "mitigation": "Added test_no_orphan_md_files_in_agents_directory to inner tests",
+        "action": "Explicit assertion: .md count == 0 in source directory"
+      },
+      {
+        "gap": "No test validates archive integrity",
+        "mitigation": "Added test_archive_integrity_28_agents to inner tests",
+        "action": "Verify archive has exactly 28 agents before and after conversion"
+      },
+      {
+        "gap": "No test validates total migration completeness",
+        "mitigation": "Added test_total_agent_toon_count_equals_28 to validate final state",
+        "action": "Count .toon files and assert == 28"
+      }
+    ],
+    "time_estimate_revision": {
+      "original": "2-3 hours",
+      "revised": "5-8 hours",
+      "rationale": "Original estimate (20-30 min/agent) unrealistic for final step with comprehensive validation. Revised accounts for: conversion (30-45 min for 6 agents), compilation validation (15 min × 6), round-trip validation (15 min × 6), comprehensive testing (final count verification, archive integrity, orphan cleanup: 1-2 hours), debugging buffer (1 hour), final refactoring pass across all 28 agents (1-2 hours)"
+    }
+  },
+  "review_metadata": {
+    "reviewed_by": "software-crafter",
+    "review_date": "2026-01-06",
+    "corrections_applied": [
+      "Clarified Phase 3 purpose: 27 remaining agents + 1 pilot = 28 total",
+      "Added prerequisite validation section with 4 blocking checks",
+      "Added explicit dependency on steps 3.1 and 3.2 completion",
+      "Changed outer test to include negative assertion (0 .md files)",
+      "Expanded test specifications with archive integrity and total count validation",
+      "Added comprehensive completion verification section with explicit commands",
+      "Added error handling for agent count mismatches and orphan file scenarios",
+      "Revised time estimate from 2-3 to 5-8 hours based on realistic comprehensive validation requirements",
+      "Added round-trip validation to workflow for all 6 remaining agents",
+      "Specified exact agent count expectations: 28 .toon files, 0 .md files, 28 archived files",
+      "Added final consistency refactoring pass across all 28 agents"
+    ],
+    "agent_count_reconciliation": {
+      "total_agents": 28,
+      "breakdown": {
+        "pilot": "1 agent (software-crafter, step 2.1)",
+        "primary": "10 agents (step 3.1)",
+        "reviewers": "11 agents (step 3.2)",
+        "remaining": "6 agents (step 3.3)"
+      },
+      "verification": "1 + 10 + 11 + 6 = 28 ✓"
+    }
+  }
+}

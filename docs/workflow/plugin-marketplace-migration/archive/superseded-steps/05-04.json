@@ -1,0 +1,556 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "05-04",
+  "phase": {
+    "number": 5,
+    "name": "Skills Creation",
+    "purpose": "Create 3 skill definitions for auto-invocation capability"
+  },
+  "step": {
+    "number": "5.4",
+    "name": "Validate Skill Auto-Invocation",
+    "description": "Create test harness to validate skills trigger correctly. Test each trigger pattern produces expected skill activation.",
+    "motivation": "Validate SC4 - skills auto-invoked correctly",
+    "estimated_hours": "1"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC4": "Skills auto-invoked correctly"
+    },
+    "dependencies": ["5.1", "5.2", "5.3"]
+  },
+  "deliverables": {
+    "files_to_create": [
+      "tests/skills/test_skill_triggers.py"
+    ],
+    "acceptance_criteria": [
+      "Each skill triggers on documented patterns",
+      "No false positives on unrelated input",
+      "Skills chain correctly to agents"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN all 3 skills compiled and loaded\nWHEN I input each trigger pattern\nTHEN correct skill activates",
+    "inner_tests": [
+      "test_develop_triggers_on_implement",
+      "test_refactor_triggers_on_refactoring",
+      "test_mikado_triggers_on_complex",
+      "test_no_false_positives"
+    ]
+  },
+  "refactoring": {
+    "targets": []
+  },
+  "execution_guidance": {
+    "approach": "Test-driven validation of skill triggering",
+    "workflow": [
+      "1. Write E2E test for skill auto-invocation",
+      "2. Implement test harness for trigger pattern validation",
+      "3. Test each trigger pattern (develop, refactor, mikado)",
+      "4. Test for false positives on unrelated input",
+      "5. Validate skills chain to correct agents",
+      "6. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "All tests passing (100% required)",
+      "All trigger patterns validated",
+      "No false positives detected",
+      "Agent chaining verified",
+      "No report files created"
+    ]
+  },
+  "review_metadata": {
+    "reviewed_at": "2026-01-05T15:30:00Z",
+    "reviewer": "software-crafter",
+    "review_status": "conditional_approval_with_critical_blockers",
+    "critical_gaps": [
+      {
+        "issue": "Dependency steps (5.1-5.3) not yet completed - no skills exist to test",
+        "severity": "CRITICAL",
+        "impact": "Task 5.4 validates skill auto-invocation but skills haven't been created yet. Step 5.1 has blocking knowledge gaps documented in its review_metadata: SKILL.toon format undefined, skill invocation mechanism not documented, constraint embedding unclear. This step cannot proceed until at least one skill is implemented.",
+        "resolution": "Wait for 5.1-5.3 to be completed. They have CONDITIONAL_APPROVAL status in review_metadata. After skills are created, then validate triggers. Currently, this step depends on blockers from dependency steps."
+      },
+      {
+        "issue": "Test harness implementation details missing",
+        "severity": "CRITICAL",
+        "impact": "Step mentions 'Implement test harness for trigger pattern validation' but doesn't specify: (1) What framework to use for testing skill triggering? (2) Is this Python unit tests or integration tests? (3) How to simulate user input triggering skills? (4) Mock object scope - which skills mocked vs real?",
+        "resolution": "Clarify test harness requirements: (1) What testing framework (pytest, unittest, custom simulator)? (2) Are we testing trigger pattern matching algorithm or actual Claude Code skill invocation? (3) How does test simulate 'user says \"implementa\"'? (4) Do we need to mock skill execution or validate full invocation chain?"
+      },
+      {
+        "issue": "Trigger pattern matching logic not defined",
+        "severity": "HIGH",
+        "impact": "Acceptance criteria requires 'Each skill triggers on documented patterns' and 'No false positives on unrelated input' but the trigger matching algorithm is undefined. What constitutes a match? Exact string? Substring? Fuzzy matching? Language detection for Italian vs English?",
+        "resolution": "Define trigger matching algorithm: (1) Is it exact match or contains-substring? (2) How are Italian and English patterns disambiguated? (3) What prevents 'implement' from triggering 'implementa' patterns incorrectly? (4) Are there reserved keywords or conflict resolution rules? Provide matching algorithm specification."
+      },
+      {
+        "issue": "False positive test cases ill-defined",
+        "severity": "HIGH",
+        "impact": "Test 'test_no_false_positives' lists unrelated input to avoid false triggers but doesn't specify: (1) What counts as 'unrelated'? (2) Are there specific test cases documented? (3) How many unrelated inputs to test? (4) How aggressively should pattern matching avoid false positives (trade-off with sensitivity)?",
+        "resolution": "Define concrete false positive test cases: (1) Example: user says 'implement database schema' - should NOT trigger develop skill if not a programming request (or SHOULD it?). (2) Example: 'refactor my schedule' should NOT trigger refactor skill. (3) Specify minimum N unrelated inputs for robust testing. (4) Define acceptable false positive rate (e.g., < 5%)."
+      },
+      {
+        "issue": "Agent chaining validation mechanism undefined",
+        "severity": "HIGH",
+        "impact": "Acceptance criteria includes 'Skills chain correctly to agents' and inner test 'skills chain to correct agents' but it's unclear: (1) What does 'chain' mean? Sequential? Parallel? (2) How to validate a skill correctly invokes software-crafter? (3) Is this testing skill-to-agent binding or full workflow execution? (4) How to detect if wrong agent invoked?",
+        "resolution": "Clarify agent chaining semantics: (1) Define what 'chain correctly to agents' means. (2) For each skill (develop, refactor, mikado), specify expected agent invocation. (3) Specify what test validates: Does it check agent binding in SKILL.md? Does it mock agent invocation? Does it validate agent receives correct parameters? (4) Define test assertion: How to detect 'wrong agent invoked'?"
+      }
+    ],
+    "hidden_dependencies": [
+      {
+        "dependency": "Skill definitions from steps 5.1-5.3",
+        "location": "5d-wave/skills/{develop,refactor,mikado}/SKILL.toon (not yet created)",
+        "impact": "CRITICAL - cannot validate skill triggering without skills to test",
+        "blocking": true,
+        "status": "BLOCKED by 5.1-5.3 implementation"
+      },
+      {
+        "dependency": "Trigger matching algorithm",
+        "location": "Not documented - may be in 5d-wave/skills/trigger_matcher.py or similar",
+        "impact": "CRITICAL - test harness needs to validate trigger matching",
+        "blocking": true,
+        "status": "Unknown - may not exist yet"
+      },
+      {
+        "dependency": "Skill invocation mechanism",
+        "location": "Not documented - likely in skill framework or Claude Code integration",
+        "impact": "CRITICAL - E2E test needs to simulate/validate skill invocation",
+        "blocking": true,
+        "status": "Documented in 5.1 review as external to project"
+      },
+      {
+        "dependency": "Test environment/simulator for skill triggering",
+        "location": "Not found in tests/skills/ or documented",
+        "impact": "HIGH - need test fixture to simulate user input and skill execution",
+        "blocking": true,
+        "status": "Likely needs to be created as part of this step"
+      },
+      {
+        "dependency": "Skill execution mocking/validation",
+        "location": "Unclear - test harness role not defined",
+        "impact": "HIGH - need way to validate skill actually executes (not just matches pattern)",
+        "blocking": true,
+        "status": "Implementation approach undefined"
+      }
+    ],
+    "context_gaps": [
+      {
+        "gap": "Trigger pattern specification from steps 5.1-5.3 not referenced",
+        "details": "Step 5.1 defines develop skill patterns, 5.2 defines refactor patterns, 5.3 defines mikado patterns, but this step doesn't reference them. Should execution guidance say 'Test patterns documented in 5.1: [list], 5.2: [list], 5.3: [list]'?",
+        "impact": "Tester may not know which patterns to validate"
+      },
+      {
+        "gap": "Test environment setup not documented",
+        "details": "E2E test assumes 'all 3 skills compiled and loaded' but unclear: (1) Where are compiled SKILL.md files? (2) How are they loaded into test environment? (3) Do tests need to compile SKILL.toon files first? (4) Are there setup/teardown steps?",
+        "impact": "Cannot implement test without understanding setup"
+      },
+      {
+        "gap": "False positive test set is vague",
+        "details": "Acceptance criteria says 'No false positives on unrelated input' but doesn't specify what 'unrelated' means. Does this mean: (1) Non-programming input? (2) Non-English/Italian input? (3) Valid programming but different domain (data analysis vs TDD)? (4) Random strings?",
+        "impact": "Test completeness unclear - could test too narrowly or too broadly"
+      },
+      {
+        "gap": "Relationship between 5.4 and skill compilation (5.1-5.3) unclear",
+        "details": "Are steps 5.1-5.3 expected to fully complete before 5.4 starts? Or does 5.4 validate as skills are being built? Dependency list shows 5.1, 5.2, 5.3 but unclear if ALL must complete first or sequential testing is acceptable.",
+        "impact": "Unclear when this step can start"
+      }
+    ],
+    "achievability_assessment": {
+      "feasibility": "BLOCKED - Cannot proceed until dependencies complete",
+      "confidence": "LOW (30%)",
+      "blockers": [
+        "Steps 5.1-5.3 have CONDITIONAL_APPROVAL - not yet completed",
+        "Trigger matching algorithm not documented",
+        "Test environment/simulator for skill triggering not defined",
+        "Test harness implementation approach undefined",
+        "Skill invocation validation mechanism unclear"
+      ],
+      "assumptions_requiring_validation": [
+        "Steps 5.1-5.3 will complete before this step executes",
+        "Trigger matching uses simple substring/contains logic (not fuzzy)",
+        "Skill invocation can be validated by checking if agent is called with correct parameters",
+        "Test harness can mock skill execution or at least detect invocation",
+        "False positives acceptable at some threshold (< 5%?)"
+      ]
+    },
+    "time_estimate_validation": {
+      "estimate": "1 hour",
+      "assessment": "UNREALISTIC",
+      "rationale": "Estimate assumes: (1) skills already created and working, (2) trigger matching algorithm exists and is documented, (3) test environment is set up, (4) test harness code structure already known. In reality: (1) dependencies not complete, (2) algorithm undefined, (3) environment doesn't exist, (4) test approach undefined. Actual work: understanding requirements (1h), creating test simulator (2h), implementing tests (2h), debugging trigger matching issues (1h) = 6-8 hours.",
+      "revised_estimate": "6-8 hours (after blockers resolved)"
+    },
+    "sequencing_analysis": {
+      "current_position": "Step 5.4 in phase 5 (Skills Creation)",
+      "predecessor_steps": [
+        {
+          "step": "5.1",
+          "name": "Create develop Skill",
+          "status": "CONDITIONAL_APPROVAL - not completed",
+          "blocking": true
+        },
+        {
+          "step": "5.2",
+          "name": "Create refactor Skill",
+          "status": "NO_REVIEW_METADATA - not assessed",
+          "blocking": true
+        },
+        {
+          "step": "5.3",
+          "name": "Create mikado Skill",
+          "status": "NO_REVIEW_METADATA - not assessed",
+          "blocking": true
+        }
+      ],
+      "recommended_execution_order": [
+        "1. Resolve blockers in step 5.1 (TOON syntax, invocation mechanism, constraint format)",
+        "2. Complete and validate step 5.1 implementation",
+        "3. Complete steps 5.2-5.3 (same blocking context)",
+        "4. Review 5.1-5.3 outputs - identify trigger patterns, agent bindings",
+        "5. Design test harness architecture for skill validation",
+        "6. Create trigger matching algorithm specification",
+        "7. Set up test environment/simulator",
+        "8. Implement tests (5.4) with clear understanding of skills"
+      ]
+    },
+    "quality_gates_analysis": [
+      {
+        "gate": "All tests passing (100% required)",
+        "assessment": "ACHIEVABLE - standard quality bar",
+        "note": "Testable once implementation clarified"
+      },
+      {
+        "gate": "All trigger patterns validated",
+        "assessment": "DEPENDENT - requires pattern list from 5.1-5.3",
+        "note": "Need to extract pattern lists: develop={list}, refactor={list}, mikado={list}"
+      },
+      {
+        "gate": "No false positives detected",
+        "assessment": "VAGUE - definition of 'false positive' needed",
+        "note": "Needs concrete test cases of unrelated input"
+      },
+      {
+        "gate": "Agent chaining verified",
+        "assessment": "UNCLEAR - mechanism for validation undefined",
+        "note": "What does 'verified' mean? Mock invocation? Full execution? Parameter validation?"
+      },
+      {
+        "gate": "No report files created",
+        "assessment": "ACHIEVABLE - enforced by constraint",
+        "note": "Clear constraint, easy to validate"
+      }
+    ],
+    "missing_specifications": [
+      {
+        "specification": "Trigger Pattern Matching Algorithm",
+        "needed_for": "Implementing trigger validation logic",
+        "specification_should_include": "(1) Pattern syntax (regex? substring? fuzzy?), (2) Language detection (Italian vs English), (3) Conflict resolution (overlapping patterns), (4) Performance characteristics, (5) Example: 'implementa' should match 'implementare' (suffix?) or only exact 'implementa'?"
+      },
+      {
+        "specification": "Test Harness Architecture",
+        "needed_for": "Implementing test_skill_triggers.py",
+        "specification_should_include": "(1) Framework (pytest?), (2) Test fixtures (mock skills, test input), (3) Skill simulator or invocation mock, (4) Assertion patterns (how to verify skill invoked), (5) Setup/teardown for test environment"
+      },
+      {
+        "specification": "False Positive Test Set",
+        "needed_for": "test_no_false_positives",
+        "specification_should_include": "(1) Concrete test cases (minimum 5-10), (2) Categorization (non-programming, other domains, random), (3) Expected outcomes, (4) Acceptable false positive rate threshold"
+      },
+      {
+        "specification": "Agent Chaining Validation",
+        "needed_for": "Verifying skills invoke correct agents",
+        "specification_should_include": "(1) What constitutes valid agent invocation, (2) How to detect wrong agent, (3) Parameter validation (does agent receive correct skill-specific params?), (4) Integration level (are we validating binding in SKILL.md or actual execution?)"
+      },
+      {
+        "specification": "Skill Compilation Output Format",
+        "needed_for": "Understanding compiled SKILL.md structure",
+        "specification_should_include": "(1) File location/naming for compiled skills, (2) Required fields in SKILL.md, (3) Trigger pattern representation, (4) Agent binding format, (5) Example SKILL.md from actual compilation"
+      }
+    ],
+    "recommendations": [
+      {
+        "priority": "CRITICAL",
+        "action": "DO NOT START - Wait for steps 5.1-5.3 completion and validation",
+        "details": "Step 5.1 has documented blockers. Do not attempt 5.4 until: (1) TOON skill syntax is documented, (2) Skill invocation mechanism is explained, (3) At least one skill (develop) is actually created and compiles to SKILL.md, (4) Trigger patterns are documented.",
+        "owner": "Project coordinator",
+        "verification": "Steps 5.1-5.3 have APPROVED status in review_metadata"
+      },
+      {
+        "priority": "CRITICAL",
+        "action": "Define trigger matching algorithm before implementing tests",
+        "details": "Create specification: (1) Pattern format (regex, contains, fuzzy-match), (2) Language detection rules, (3) Example: Given patterns develop=['implementa', 'TDD', 'implement'], what inputs trigger? ('implementa feature', 'need TDD setup', 'implement database'?), (4) What inputs do NOT trigger? ('implementing' vs 'implement'? partial matches?)",
+        "owner": "Task author or framework owner",
+        "verification": "Specification document or inline comments in trigger_matcher.py"
+      },
+      {
+        "priority": "HIGH",
+        "action": "Clarify false positive test scope with concrete examples",
+        "details": "Provide minimum 5-10 test inputs that should NOT trigger any skill: (1) 'I want to redesign my kitchen' (non-programming), (2) 'Analyze the market trends' (programming domain but different focus), (3) 'Fix the HVAC system' (non-code), (4) Random: 'xyzabc 123456', (5) Domain-specific: 'machine learning optimization' (might not trigger develop/refactor/mikado)",
+        "owner": "Task author",
+        "verification": "test_no_false_positives includes specific test cases"
+      },
+      {
+        "priority": "HIGH",
+        "action": "Design test harness architecture document",
+        "details": "Before implementing tests, document: (1) Testing framework (pytest), (2) Mock/simulation approach (how to simulate skill loading, trigger matching, agent invocation), (3) Test structure (fixtures, parametrization), (4) How to validate agent chaining (mock agent, verify call?), (5) Example: test_develop_triggers_on_implement - what does assertion look like?",
+        "owner": "Implementation team",
+        "verification": "Test harness design doc in docs/workflow/ or inline in test file comments"
+      },
+      {
+        "priority": "HIGH",
+        "action": "Extract trigger patterns from completed skills (5.1-5.3) into test data",
+        "details": "Once skills are created, extract pattern lists: develop_patterns=['implementa', 'implement', 'TDD', ...], refactor_patterns=['refactoring', 'migliora codice', ...], mikado_patterns=['refactoring complesso', ...]. Use these lists in test parameterization for @pytest.mark.parametrize decoration.",
+        "owner": "Implementation team",
+        "verification": "Test file uses actual pattern lists from SKILL.md files"
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Validate skill compilation before running trigger tests",
+        "details": "Add setup step to 5.4: verify that SKILL.toon files from 5.1-5.3 compile correctly to SKILL.md. This prevents test failures due to upstream issues. Example: 'pytest --co' to collect tests, but before running, verify 'all SKILL.toon files in 5d-wave/skills compile without errors'.",
+        "owner": "Implementation team",
+        "verification": "Execution guidance includes 'Verify skill compilation' as first step"
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Document what 'agent chaining' means in acceptance criteria",
+        "details": "AC says 'Skills chain correctly to agents' - clarify what this validates: (a) Static validation: SKILL.md contains correct agent binding? (b) Mock invocation: skill triggering simulates agent call? (c) Full integration: actual agent executes? Choose one and implement accordingly. Current wording suggests full integration but may not be feasible in unit test.",
+        "owner": "Task author",
+        "verification": "Acceptance criteria updated with specific validation approach"
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Revise time estimate to 6-8 hours after blockers resolved",
+        "details": "Current 1-hour estimate is unrealistic given unknowns. After clarifications (blockers resolved, specs documented), re-validate. Likely: 2h understanding + 2h test setup + 2h test implementation + 1-2h debugging = 6-8h total.",
+        "owner": "Project coordinator",
+        "verification": "Updated estimate in task metadata"
+      }
+    ],
+    "approval_decision": "CONDITIONAL APPROVAL - Task is logically sound (validation after creation is correct sequence) but BLOCKED by incomplete predecessor steps (5.1-5.3). Also has HIGH-severity specification gaps (trigger matching algorithm, test harness architecture, agent chaining validation) that must be resolved before implementation. Do not proceed until: (1) Steps 5.1-5.3 completed, (2) Trigger matching algorithm documented, (3) Test harness architecture designed, (4) False positive test cases defined.",
+    "implementation_can_start_when": [
+      "Steps 5.1-5.3 are APPROVED and implemented (skills exist in 5d-wave/skills/)",
+      "Trigger matching algorithm is documented with examples",
+      "Test harness architecture is designed and documented",
+      "False positive test set (minimum 5-10 concrete examples) is defined",
+      "Skill compilation outputs (SKILL.md) are available for analysis",
+      "Agent chaining validation approach is clarified (mock? integration? static?)"
+    ],
+    "notes": "This step has good TDD structure but depends critically on successful completion of 5.1-5.3. Step 5.1 review identified CRITICAL blockers (TOON syntax, invocation mechanism) that will cascade to this step if not resolved. Recommend: (1) Resolve 5.1 blockers immediately, (2) Complete 5.1-5.3, (3) THEN design test harness for 5.4, (4) Implement validation tests. Current sequencing is correct but upstream dependencies are at risk."
+  },
+
+  "adversarial_review": {
+    "review_date": "2026-01-05T22:30:00Z",
+    "reviewer": "adversarial-software-crafter-reviewer (ruthless mode)",
+    "risk_score": 9.2,
+    "blast_radius": "ENTIRE_PHASE_5_AND_BEYOND",
+    "verdict": "DO_NOT_EXECUTE - Validation test for non-existent artifacts (CRITICAL)",
+    "execution_recommendation": "BLOCKED - Step 5.4 cannot execute until all of steps 5.1, 5.2, 5.3 are NOT JUST COMPLETE but PROVEN TO WORK. Currently, all three predecessor steps have unresolved CRITICAL blockers documented in their review_metadata.",
+
+    "contradictions_found": [
+      {
+        "id": "CONTRA-CASCADE-1",
+        "title": "CIRCULAR DEPENDENCY: 5.4 validates skills that 5.1-5.3 haven't created",
+        "contradiction": "Step 5.4 description: 'Create test harness to validate skills trigger correctly... Test each trigger pattern produces expected skill activation.' But skills don't exist yet. Step 5.1 review_metadata documents CRITICAL blockers: 'SKILL.toon format assumed but not specified anywhere in project'. If 5.1 can't be executed, what will 5.4 test? Non-existent files don't trigger patterns.",
+        "severity": "CRITICAL",
+        "impact": "5.4 task description assumes 5.1-5.3 will complete successfully. But if 5.1 hits the documented blockers (TOON syntax undefined, skill compiler missing, invocation mechanism not documented), 5.4 inherits complete failure.",
+        "failure_mode": "Execution timeline: (1) 5.4 starts, (2) attempts to load skills from 5d-wave/skills/{develop,refactor,mikado}/SKILL.md, (3) files don't exist because 5.1-5.3 failed/blocked, (4) test harness E2E test fails immediately, (5) entire validation step fails."
+      },
+      {
+        "id": "CONTRA-CASCADE-2",
+        "title": "Estimated 1 hour assumes perfect upstream success with zero rework",
+        "contradiction": "Step 5.4 time estimate: 1 hour. This assumes: (1) All 3 skills created and compiling, (2) Test environment ready, (3) Trigger patterns defined, (4) All tests passing upstream. But 5.1-5.3 reviews document that MULTIPLE critical unknowns will cause rework: TOON format discovery, compilation debugging, trigger pattern validation, constraint embedding validation. If upstream takes 6-8 hours of rework instead of 2 hours, 5.4 doesn't START for days.",
+        "severity": "HIGH",
+        "impact": "Schedule assumes linear progression. If any of 5.1-5.3 encounters documented blockers, 5.4 is delayed indefinitely.",
+        "failure_mode": "5.4 scheduled for hour 11 of development. But at hour 4, 5.1 discovers SKILL compiler doesn't support skill format. Must pivot to extend compiler (2-4 hours). 5.4 now scheduled for hour 15. At hour 9, 5.2 discovers trigger pattern collision detection missing. 5.4 pushed to hour 18. Test starts running but depends on all upstream fixes. Cascading rework delays final validation by 50-75%."
+      },
+      {
+        "id": "CONTRA-CASCADE-3",
+        "title": "Acceptance criteria assume skills have trigger patterns, but pattern validation rules don't exist",
+        "contradiction": "AC: 'Each skill triggers on documented patterns' and 'No false positives on unrelated input'. But 5.1 review documents: 'Trigger pattern validation rules don't exist'. 5.2 review adds: 'Trigger patterns for refactoring are minimal and overlap risk'. 5.3 review confirms: 'Trigger pattern validation undefined'. So 5.4 will test skills against pattern rules that haven't been defined. How can validation test pass if success criteria itself is undefined?",
+        "severity": "CRITICAL",
+        "impact": "AC references 'documented patterns' from 5.1-5.3. But if those steps don't document pattern rules, 5.4 has no specification to validate against.",
+        "failure_mode": "Test: 'test_no_false_positives' attempts to verify skill doesn't trigger on unrelated input. But without defined rules for what 'unrelated' means, test will either: (a) be too strict (false failures), (b) be too loose (false passes), (c) fail to run due to undefined assertion criteria."
+      },
+      {
+        "id": "CONTRA-CASCADE-4",
+        "title": "Agent chaining acceptance criteria assumes agent binding works, but agent may not be ready",
+        "contradiction": "5.4 AC: 'Skills chain correctly to agents'. But step 5.1 notes 'Agent binding to software-crafter' and step 5.1 review_metadata flags: 'software-crafter agent interface may change during concurrent development' and 'If software-crafter is being built concurrently, its interface may be incomplete.' So 5.4 tests skill-to-agent binding, but agent may not be stable.",
+        "severity": "HIGH",
+        "impact": "Test validates skill invokes correct agent. But if agent interface changes between when skills are created (5.1-5.3) and when they're tested (5.4), bindings become stale.",
+        "failure_mode": "Skill created with binding to 'software-crafter@v1'. By time test runs (hour 12), agent has evolved to v2. Test tries to invoke v1 commands. Agent doesn't have them. Test fails. But failure is not in skill triggering, it's in upstream agent changes."
+      },
+      {
+        "id": "CONTRA-CASCADE-5",
+        "title": "Test harness implementation completely undefined - step assumes it will exist",
+        "contradiction": "5.4 step description: 'Implement test harness for trigger pattern validation' and 'Implement test harness' is listed in workflow step 2. But test harness is never defined in 5.1-5.3. What is the test harness? Where does it run? How does it simulate 'user says implementa'? The test harness is a critical piece of infrastructure that 5.4 assumes exists or will be built as part of the step. But it's not in any predecessor step.",
+        "severity": "CRITICAL",
+        "impact": "5.4 workflow assumes test harness already exists. But if it doesn't, implementer must build it as part of this step (scope creep). Actual work: 40% test harness construction, 30% understanding skill structure, 30% writing trigger validation tests.",
+        "failure_mode": "Implementer reads 5.4 and starts writing tests/skills/test_skill_triggers.py. Immediately realizes: 'How do I simulate user input in test environment?' Discovers test harness doesn't exist. Must either: (a) create it (out of scope for 5.4), (b) use untested invocation mechanism, (c) mock the triggering (defeats purpose of validation)."
+      },
+      {
+        "id": "CONTRA-CASCADE-6",
+        "title": "Trigger pattern collision detection not addressed - step assumes no conflicts",
+        "contradiction": "5.4 accepts 3 skills with trigger patterns: develop=['implementa', 'TDD', ...], refactor=['refactoring', 'migliora codice', ...], mikado=['refactoring complesso', 'dipendenze', ...]. Notice: 'refactoring' appears in refactor skill. 'refactoring complesso' appears in mikado skill. What if user says 'refactoring complesso'? Does it trigger refactor (contains 'refactoring') or mikado (exact 'refactoring complesso')? No conflict resolution rules defined. Test 'test_no_false_positives' won't catch this - it tests unrelated input, not pattern overlap.",
+        "severity": "CRITICAL",
+        "impact": "Multiple skills may trigger for same user input. System behavior undefined.",
+        "failure_mode": "User says 'refactoring complesso with dependencies'. System matches against all trigger patterns: (a) refactor skill matches 'refactoring', (b) mikado skill matches 'refactoring complesso'. Both trigger. System fails with 'ambiguous skill activation' error or unpredictable behavior."
+      }
+    ],
+
+    "dangerous_assumptions": [
+      {
+        "id": "ASSUME-CASCADE-1",
+        "assumption": "Steps 5.1, 5.2, 5.3 will complete before 5.4 starts",
+        "why_dangerous": "All three predecessor steps have CRITICAL blockers documented in their review_metadata. Step 5.1 blocks on TOON syntax specification, skill compiler capability, invocation mechanism. If blockers aren't resolved, 5.1-5.3 won't complete. 5.4 has no fallback plan if predecessors fail.",
+        "likelihood": "VERY_HIGH (95%)",
+        "consequence": "5.4 starts with missing skills, test harness fails on first run, step marked failed immediately."
+      },
+      {
+        "id": "ASSUME-CASCADE-2",
+        "assumption": "Skill trigger patterns from 5.1-5.3 are available and documented in 5.4",
+        "why_dangerous": "5.4 inner test 'test_develop_triggers_on_implement' assumes pattern list from step 5.1. But if 5.1 doesn't extract trigger patterns into consumable format for 5.4, test won't know what to test. 5.4 review_metadata notes: 'Tester may not know which patterns to validate' - this suggests pattern list is NOT being passed from 5.1 to 5.4.",
+        "likelihood": "HIGH (75%)",
+        "consequence": "Test must hardcode trigger patterns or 5.1 output must be parsed. Either way, brittleness and manual coupling between steps."
+      },
+      {
+        "id": "ASSUME-CASCADE-3",
+        "assumption": "Skill invocation mechanism in Claude Code exists and can be tested in unit test environment",
+        "why_dangerous": "5.4 E2E test describes 'GIVEN all 3 skills compiled and loaded WHEN I input each trigger pattern THEN correct skill activates.' This assumes: (1) Claude Code skill invocation exists, (2) it can be tested in test environment, (3) test framework can simulate 'user input'. But 5.1 review flags: 'Skill invocation mechanism undefined - E2E test is untestable without working invocation'. Assumption is high-risk.",
+        "likelihood": "VERY_HIGH (90%)",
+        "consequence": "E2E test fails with 'skill invocation not implemented' or 'test environment doesn't support skill triggering'. Entire test phase blocked."
+      },
+      {
+        "id": "ASSUME-CASCADE-4",
+        "assumption": "Trigger pattern matching is deterministic and can be validated exhaustively",
+        "why_dangerous": "Test assumes patterns produce 'expected skill activation'. But if matching is fuzzy or language-dependent, determining 'expected' outcome is ambiguous. No specification of matching algorithm exists. Is 'implementa' a substring match? A regex? Fuzzy match? Different assumptions lead to different test outcomes.",
+        "likelihood": "MEDIUM (70%)",
+        "consequence": "Test written with assumption X. Matching algorithm uses Y. Test fails on edge cases, requires rework."
+      },
+      {
+        "id": "ASSUME-CASCADE-5",
+        "assumption": "All 3 skills can be loaded simultaneously into single test environment without conflicts",
+        "why_dangerous": "Test loads develop, refactor, mikado skills all at once. If skill invocation mechanism has global state, or pattern matching is stateful, loading all 3 might cause conflicts. Not addressed in test design.",
+        "likelihood": "MEDIUM (60%)",
+        "consequence": "Test works with single skill but fails with all three loaded. Reveals environmental issues not caught by isolated testing."
+      }
+    ],
+
+    "unhandled_edge_cases": [
+      {
+        "id": "EDGE-CASCADE-1",
+        "case": "Skills 5.1-5.3 don't compile at all (syntax errors, missing compiler)",
+        "consequence": "5.4 test harness tries to load SKILL.md files. Files don't exist. E2E test fails immediately. Entire step fails.",
+        "severity": "CRITICAL",
+        "likelihood": "HIGH - 5.1 review identifies this exact blocker"
+      },
+      {
+        "id": "EDGE-CASCADE-2",
+        "case": "Skills compile but agent binding references don't exist (typo or agent not loaded)",
+        "consequence": "Skill.md has 'agent_binding: software-craftr' (typo). Test tries to invoke software-crafter. Binding fails. Test fails.",
+        "severity": "HIGH",
+        "likelihood": "MEDIUM - No validation of agent binding in 5.1-5.3"
+      },
+      {
+        "id": "EDGE-CASCADE-3",
+        "case": "Trigger patterns overlap between skills (e.g., 'refactoring' matches both refactor and mikado)",
+        "consequence": "User input 'refactoring complesso' triggers both skills. System behavior undefined. Test expects one skill to trigger.",
+        "severity": "CRITICAL",
+        "likelihood": "HIGH - Pattern collision detection not defined"
+      },
+      {
+        "id": "EDGE-CASCADE-4",
+        "case": "Test harness can't simulate 'user says X' without actual Claude Code integration",
+        "consequence": "E2E test has no way to trigger skills. Test environment incomplete.",
+        "severity": "CRITICAL",
+        "likelihood": "VERY_HIGH - 5.1 review flags invocation mechanism as external/undefined"
+      },
+      {
+        "id": "EDGE-CASCADE-5",
+        "case": "Constraints embedded in skills (from 5.1) aren't enforced by invocation handler",
+        "consequence": "Skill constraint 'no auto-commit' in SKILL.md. Software-crafter called without respecting constraint. Auto-commit happens anyway.",
+        "severity": "HIGH",
+        "likelihood": "MEDIUM - Constraint enforcement mechanism not defined"
+      },
+      {
+        "id": "EDGE-CASCADE-6",
+        "case": "Workflow steps in skills reference non-existent agent commands",
+        "consequence": "Skill defines workflow 'implement->review->refactor'. Agent doesn't have 'refactor' command. Workflow fails at runtime.",
+        "severity": "HIGH",
+        "likelihood": "MEDIUM - No validation of workflow step references"
+      }
+    ],
+
+    "failure_scenarios": [
+      {
+        "id": "FAIL-IMMEDIATE-1",
+        "scenario": "Skills from 5.1-5.3 don't exist or don't compile",
+        "trigger": "Implementer runs 5.4, attempts to load 5d-wave/skills/{develop,refactor,mikado}/SKILL.md. Files not found or unparseable.",
+        "consequence": "E2E test fails immediately: 'No compiled skills found'. Entire validation step fails before any trigger pattern testing occurs.",
+        "detection_time": "Immediately (first test run)",
+        "recovery_difficulty": "EXTREME - Requires completing and fixing all of 5.1-5.3 first"
+      },
+      {
+        "id": "FAIL-IMMEDIATE-2",
+        "scenario": "Test harness doesn't exist or can't simulate skill triggering",
+        "trigger": "Implementer tries to run E2E test. Framework doesn't have mechanism to simulate 'user says implementa'.",
+        "consequence": "Test fails with 'unsupported operation' or 'skill invocation not implemented'. Cannot validate trigger patterns.",
+        "detection_time": "Immediately (first test run)",
+        "recovery_difficulty": "EXTREME - Requires building skill invocation infrastructure"
+      },
+      {
+        "id": "FAIL-PATTERN-1",
+        "scenario": "Trigger pattern collision causes multiple skills to trigger",
+        "trigger": "User says 'refactoring complesso'. Both refactor ('refactoring' pattern) and mikado ('refactoring complesso' pattern) match.",
+        "consequence": "System behavior undefined. Test fails with ambiguous activation error or crashes with unhandled multiple-trigger case.",
+        "detection_time": "During test_no_false_positives or integration testing",
+        "recovery_difficulty": "HIGH - Requires pattern conflict resolution strategy"
+      },
+      {
+        "id": "FAIL-EDGE-1",
+        "scenario": "Skill workflow steps reference agent commands that don't exist",
+        "trigger": "5.1 skill references workflow step 'refactor' but software-crafter agent doesn't have 'refactor' command.",
+        "consequence": "Skill compiles. Test validation passes (test doesn't check command existence). Runtime: workflow fails when skill tries to invoke non-existent command.",
+        "detection_time": "Late - during actual skill usage, not during 5.4 validation",
+        "recovery_difficulty": "HIGH - Requires workflow validation in test"
+      },
+      {
+        "id": "FAIL-ASYNC-1",
+        "scenario": "Software-crafter agent interface changes during 5.4 execution",
+        "trigger": "While 5.4 is running, concurrent development updates software-crafter agent. Skills from 5.1-5.3 reference old interface.",
+        "consequence": "Test validates skills trigger. But trigger invokes old agent interface. Runtime fails when skill tries to call non-existent command.",
+        "detection_time": "Late - after test completes but before skills used in practice",
+        "recovery_difficulty": "HIGH - Requires agent versioning or skill versioning strategy"
+      },
+      {
+        "id": "FAIL-VALIDATION-1",
+        "scenario": "Test 'test_no_false_positives' uses vague definition of false positive",
+        "trigger": "Test attempts to validate 'no false positives on unrelated input'. But what is 'unrelated'? Test case 'I want to redesign my kitchen' - should trigger? Not trigger?",
+        "consequence": "Test outcome ambiguous. May pass with incorrect logic or fail with correct logic depending on assertion criteria.",
+        "detection_time": "During test implementation (when writing assertions)",
+        "recovery_difficulty": "MEDIUM - Requires clearer false positive definition from 5.1-5.3"
+      }
+    ],
+
+    "cascading_impact_chain": {
+      "chain": [
+        "5.1 CRITICAL blocker (SKILL.toon format undefined)",
+        "  -> 5.1 cannot complete",
+        "  -> 5.2 and 5.3 inherit same blocker",
+        "  -> 5.1, 5.2, 5.3 cannot complete",
+        "  -> 5.4 has no skills to validate",
+        "  -> 5.4 test fails with 'no compiled skills found'",
+        "  -> Phase 5 (Skills Creation) fails",
+        "  -> Phase 6-8 depend on working skills",
+        "  -> Entire project blocked"
+      ],
+      "probability": "VERY_HIGH (95%)",
+      "timeline_impact": "Current estimate phase 5 = 5.5 hours. Actual with blockers = 2-3 days of investigation + rework"
+    },
+
+    "root_cause": "5.4 assumes prerequisites (5.1-5.3) complete successfully, but prerequisites have unresolved CRITICAL blockers documented in their review_metadata. Test harness and trigger validation infrastructure not designed upfront. Skill invocation mechanism assumed external."
+  }
+}

@@ -1,0 +1,610 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "01-06",
+  "phase": {
+    "number": 1,
+    "name": "TOON Infrastructure",
+    "purpose": "Create parser and compiler toolchain that transforms TOON source into Claude Code compliant output"
+  },
+  "step": {
+    "number": "1.6",
+    "name": "Infrastructure Integration Tests",
+    "description": "Create end-to-end integration tests for the complete TOON toolchain.\n\nCRITICAL BLOCKER: TOON version mismatch MUST be resolved first.\n- Test fixture (agents/novel-editor-chatgpt-toon.txt) uses TOON v1.0\n- Parser may expect TOON v3.0\n- DECISION REQUIRED: Convert fixture OR update parser to support v1.0\n\nIntegration tests validate: parse → template selection → rendering → output validation.",
+    "motivation": "Integration tests validate all components work together",
+    "estimated_hours": "3-4"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC2": "Build produces Claude Code compliant output"
+    },
+    "dependencies": [
+      "1.5"
+    ]
+  },
+  "deliverables": {
+    "files_to_create": [
+      "tests/tools/toon/test_integration.py"
+    ],
+    "acceptance_criteria": [
+      "Integration test compiles novel-editor TOON file successfully (after version compatibility resolved)",
+      "Integration test validates output structure against type-specific schemas",
+      "Integration test verifies error propagation from parser → compiler → output",
+      "Test uses real TOON file (agents/novel-editor-chatgpt-toon.txt) with NO mocks"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN the existing novel-editor TOON file\nWHEN I compile it through the full pipeline\nTHEN output is valid Claude Code agent.md",
+    "inner_tests": [
+      "test_integration_full_pipeline",
+      "test_integration_error_propagation",
+      "test_integration_output_validation"
+    ]
+  },
+  "refactoring": {
+    "targets": [
+      {
+        "level": 1,
+        "focus": "Test helper naming"
+      }
+    ]
+  },
+  "execution_guidance": {
+    "approach": "Outside-In TDD with double-loop",
+    "workflow": [
+      "0. PREREQUISITE CHECK: Verify tools/toon/ exists. If not: HALT - refer to BLOCKER_001 resolution",
+      "1. Write failing E2E test (outer_test)",
+      "2. Implement via inner TDD loop (inner_tests)",
+      "3. Apply refactoring level 1",
+      "4. Validate all acceptance criteria met",
+      "5. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "All tests passing (100% required)",
+      "All acceptance criteria validated",
+      "Refactoring applied (level 1)",
+      "No report files created"
+    ],
+    "test_scope": {
+      "mocking_policy": "NO MOCKS - Integration test uses real implementations",
+      "components_tested": "Parser (01-01), Templates (01-02/01-03/01-04), Compiler (01-05)",
+      "validation_depth": "End-to-end: TOON file input → valid agent.md output with all required sections"
+    }
+  },
+  "adversarial_review": {
+    "review_date": "2026-01-05",
+    "reviewer_mode": "adversarial_seeking_failure_modes",
+    "risk_score": 8,
+    "blast_radius": "CRITICAL - Integration test failure blocks entire phase completion, may invalidate 5 prior implementations",
+    "contradictions_found": [
+      {
+        "contradiction": "TOON format version mismatch (CRITICAL BLOCKER)",
+        "statement_1": "Parser implementation (step 1.1) expects TOON v3.0 format per spec",
+        "statement_2": "Test fixture (novel-editor-chatgpt-toon.txt) uses TOON v1.0 format",
+        "statement_3": "No parser version-compatibility mode documented",
+        "impact": "Test WILL FAIL on first run. Parser either rejects v1.0 or accepts incorrectly. If accepts, validates wrong format.",
+        "failure_scenario": "Parser silently succeeds on v1.0 but missing v3.0 features. Integration test passes. Code ships. Production fails when v3.0 features needed.",
+        "severity": "CATASTROPHIC"
+      },
+      {
+        "contradiction": "Acceptance criteria circular dependency",
+        "statement_1": "AC: 'Integration test validates output structure'",
+        "statement_2": "Output structure specification does not exist in task or referenced tasks",
+        "statement_3": "No way to validate structure without specification",
+        "impact": "Test cannot be written. Implementation will guess. Acceptance criteria cannot be verified.",
+        "severity": "CRITICAL"
+      },
+      {
+        "contradiction": "Test scope ambiguity creates validation false-positives",
+        "statement_1": "Outer test claims to validate 'full pipeline end-to-end'",
+        "statement_2": "If components are mocked, it's not end-to-end",
+        "statement_3": "If components are real, test depends on all 5 prior implementations being correct",
+        "statement_4": "No specification of which failures should propagate vs be caught",
+        "impact": "Green test results could hide failures in 4/5 prior components. False confidence.",
+        "severity": "HIGH"
+      },
+      {
+        "contradiction": "Time estimate vs knowledge requirements",
+        "statement_1": "2 hours estimated for integration test creation",
+        "statement_2": "Requires understanding: TOON v1.0 AND v3.0, parser output format, template rendering, markdown structure, all error types from 5 components",
+        "statement_3": "2 hours insufficient for learning all prerequisites + implementation + debugging",
+        "impact": "Will either create incomplete test or exceed estimate by 100%+. Pressure to cut corners.",
+        "severity": "HIGH"
+      }
+    ],
+    "dangerous_assumptions": [
+      {
+        "assumption": "Test fixture (novel-editor-chatgpt-toon.txt) is in correct location and accessible",
+        "danger": "Path not documented. If wrong location, test setup fails. May fail silently if path check missing.",
+        "exposure": "HIGH"
+      },
+      {
+        "assumption": "Parser from step 1.1 is complete and working",
+        "danger": "If step 1.1 incomplete or has bugs, integration test fails non-deterministically. Can't distinguish parser bug from integration bug.",
+        "exposure": "HIGH"
+      },
+      {
+        "assumption": "Template system (steps 1.2-1.4) outputs deterministic, validatable structure",
+        "danger": "If template rendering is non-deterministic or inconsistent, output validation fails. No specification to validate against.",
+        "exposure": "CRITICAL"
+      },
+      {
+        "assumption": "Error propagation is simple and well-defined",
+        "danger": "Real systems have error translation layers, wrapping, logging. Error from component A might be caught, logged, and re-raised as different type. Test assumes direct propagation.",
+        "exposure": "MEDIUM"
+      },
+      {
+        "assumption": "'Valid Claude Code agent.md' is self-evident",
+        "danger": "Different implementations may produce valid but structurally different outputs. Test may be too strict (rejects valid) or too loose (accepts invalid).",
+        "exposure": "HIGH"
+      },
+      {
+        "assumption": "Prior steps (1.1-1.5) completed and integrated correctly",
+        "danger": "No integration point validation. Steps may have incomplete interfaces, version mismatches, missing exports.",
+        "exposure": "CRITICAL"
+      }
+    ],
+    "unhandled_edge_cases": [
+      {
+        "edge_case": "Malformed TOON input in test fixture",
+        "scenario": "novel-editor-chatgpt-toon.txt has syntax errors",
+        "expected_behavior": "Parser should report error clearly",
+        "actual_behavior": "Unknown - no error handling test defined",
+        "coverage": "MISSING"
+      },
+      {
+        "edge_case": "Missing template files referenced in TOON",
+        "scenario": "TOON file references template that doesn't exist",
+        "expected_behavior": "Compiler should fail with clear error",
+        "actual_behavior": "Unknown - template error handling not tested",
+        "coverage": "MISSING"
+      },
+      {
+        "edge_case": "Large input file performance",
+        "scenario": "TOON file is 10+ MB (future scaling)",
+        "expected_behavior": "Parser handles efficiently",
+        "actual_behavior": "Unknown - no performance assertion",
+        "coverage": "MISSING"
+      },
+      {
+        "edge_case": "Output file write failures",
+        "scenario": "Disk full when writing compiler output",
+        "expected_behavior": "Graceful failure with actionable error",
+        "actual_behavior": "Unknown - I/O error handling not specified",
+        "coverage": "MISSING"
+      },
+      {
+        "edge_case": "Unicode/encoding in TOON file",
+        "scenario": "TOON contains non-ASCII characters",
+        "expected_behavior": "Parser preserves encoding correctly",
+        "actual_behavior": "Unknown - no encoding test",
+        "coverage": "MISSING"
+      },
+      {
+        "edge_case": "Circular template references",
+        "scenario": "Template A includes Template B includes Template A",
+        "expected_behavior": "Compiler detects cycle and fails",
+        "actual_behavior": "Unknown - infinite recursion possible",
+        "coverage": "MISSING"
+      },
+      {
+        "edge_case": "Empty or null test fixture",
+        "scenario": "novel-editor-chatgpt-toon.txt is empty or missing",
+        "expected_behavior": "Test fails clearly",
+        "actual_behavior": "Test might hang or throw cryptic error",
+        "coverage": "MISSING"
+      }
+    ],
+    "failure_scenarios": [
+      {
+        "scenario": "TOON v1.0 vs v3.0 incompatibility",
+        "likelihood": "VERY HIGH - contradictory specs confirm incompatibility",
+        "detection": "Parser fails on first line of test fixture",
+        "impact": "Integration test cannot run. Step 1.6 blocked. Phase 1 incomplete.",
+        "recovery": "Must convert fixture or update parser. Rework time: 2-4 hours",
+        "cascading": true,
+        "downstream_impact": "Delays phase 2 testing, entire plugin-marketplace-migration schedule slips"
+      },
+      {
+        "scenario": "Output validation test is meaningless",
+        "likelihood": "HIGH - no output specification provided",
+        "detection": "Acceptance criteria 'validates output structure' implemented as stub check",
+        "impact": "Test passes without validating anything. Gives false confidence.",
+        "recovery": "Must define output specification and rewrite assertions",
+        "cascading": true,
+        "downstream_impact": "Real output structure issues discovered in phase 2, expensive fixes"
+      },
+      {
+        "scenario": "Error propagation test passes but doesn't test anything",
+        "likelihood": "MEDIUM-HIGH - no concrete error scenarios defined",
+        "detection": "Test succeeds but never triggers error conditions",
+        "impact": "Error handling logic untested. Production errors unpredictable.",
+        "recovery": "Enumerate specific error scenarios, add exception assertions",
+        "cascading": true,
+        "downstream_impact": "Error handling bugs found by users in production"
+      },
+      {
+        "scenario": "Parser bug hidden by integration test scope",
+        "likelihood": "MEDIUM - if mocks used, parser bugs won't surface",
+        "detection": "Integration test passes but phase 2 execution fails on real inputs",
+        "impact": "Bug discovery delayed. More expensive fix in phase 2.",
+        "recovery": "Trace bug to step 1.1, reopen implementation",
+        "cascading": true,
+        "downstream_impact": "Phase 2 blocked until parser bugs fixed"
+      },
+      {
+        "scenario": "Test fixture path is wrong",
+        "likelihood": "MEDIUM - path not documented in task",
+        "detection": "Test fails on FileNotFound exception",
+        "impact": "Integration test never runs. Step 1.6 fails immediately.",
+        "recovery": "Locate fixture, update path, verify permissions",
+        "cascading": false,
+        "downstream_impact": "Quick fix but wastes time"
+      },
+      {
+        "scenario": "Time estimate exceeded, corners cut",
+        "likelihood": "HIGH - 2 hours insufficient for scope",
+        "detection": "Implementation completes in 4+ hours or test coverage is minimal",
+        "impact": "Either schedule slips or test quality suffers",
+        "recovery": "Accept schedule slip or accept weaker test",
+        "cascading": true,
+        "downstream_impact": "Phase 1 schedule impact, downstream phases affected"
+      },
+      {
+        "scenario": "Non-deterministic test due to template rendering",
+        "likelihood": "MEDIUM - template output not specified",
+        "detection": "Test passes intermittently. Same input produces different output.",
+        "impact": "Flaky test. CI/CD unreliable. Hard to debug.",
+        "recovery": "Identify randomness source, make rendering deterministic",
+        "cascading": false,
+        "downstream_impact": "Trust in test suite eroded"
+      }
+    ],
+    "circular_dependencies": [
+      {
+        "cycle": "Output specification → Integration test → Output specification validation",
+        "description": "Task says test should 'validate output structure', but output structure is undefined. Test implementation will define the structure, then test validates its own implementation.",
+        "impact": "Circular reasoning. Test is not independent validation.",
+        "severity": "CRITICAL"
+      },
+      {
+        "cycle": "Step 1.5 compiler readiness → Integration test prerequisites → Prior step completion",
+        "description": "Integration test requires step 1.5 compiler to be done and working. But step 1.5 might not be complete. If incomplete, integration test is meaningless (testing incomplete implementation).",
+        "impact": "Can't validate integration until all steps done. Integration test becomes final verification, not intermediate check.",
+        "severity": "HIGH"
+      }
+    ],
+    "optimistic_estimates": [
+      {
+        "estimate": "2 hours total time",
+        "breakdown": {
+          "understanding_prerequisites": "1 hour minimum (parser, templates, compiler, error handling)",
+          "writing_assertions": "30 mins minimum (define structure, write validation logic)",
+          "implementing_test": "30 mins minimum (setup, fixtures, invocation)",
+          "debugging_failures": "1 hour minimum (first run almost certainly has issues)",
+          "realistic_total": "3-4 hours minimum"
+        },
+        "danger": "Estimate optimism creates schedule pressure. 50% overrun likely.",
+        "severity": "MEDIUM"
+      },
+      {
+        "estimate": "Test fixture 'already exists' so test setup is simple",
+        "breakdown": {
+          "loading_fixture": "5 mins",
+          "verifying_fixture_format": "15 mins (is it valid TOON v1.0? v3.0? both?)",
+          "handling_fixture_loading_errors": "30 mins (no error handling specified)"
+        },
+        "danger": "Fixture might be in wrong format or missing. Setup isn't simple.",
+        "severity": "MEDIUM"
+      }
+    ],
+    "integration_points_at_risk": [
+      {
+        "point": "Parser → Compiler interface",
+        "risk": "Parser output format must match compiler input expectations. No interface specification provided.",
+        "danger": "Parser produces structure A, compiler expects structure B. Silent mismatch.",
+        "unmitigated": true
+      },
+      {
+        "point": "Compiler → Template system interface",
+        "risk": "Templates must be located and rendered. Compiler must know where to find templates.",
+        "danger": "Hardcoded paths? Environment variables? Template registry? Undefined.",
+        "unmitigated": true
+      },
+      {
+        "point": "Template system → Output validation interface",
+        "risk": "Rendered template must produce validatable markdown structure.",
+        "danger": "No output specification. Validation logic will be guessed.",
+        "unmitigated": true
+      },
+      {
+        "point": "Error propagation across all components",
+        "risk": "Errors from parser, templates, compiler, renderer must propagate correctly.",
+        "danger": "Error types, messages, handling strategy undefined. Integration test can't validate.",
+        "unmitigated": true
+      }
+    ],
+    "data_loss_risks": [
+      {
+        "risk": "Test fixture overwrite",
+        "scenario": "Integration test writes output to same location as input fixture",
+        "impact": "Overwrites novel-editor-chatgpt-toon.txt with compiler output",
+        "mitigation_status": "Not documented. Likely missing.",
+        "severity": "MEDIUM"
+      },
+      {
+        "risk": "Incomplete output file",
+        "scenario": "Process crashes mid-write. Output file is partial/corrupt.",
+        "impact": "Next test run uses corrupt file as fixture",
+        "mitigation_status": "Not documented. Likely missing.",
+        "severity": "MEDIUM"
+      }
+    ],
+    "security_holes": [
+      {
+        "hole": "TOON file injection via test fixture",
+        "scenario": "Adversary modifies novel-editor-chatgpt-toon.txt to contain arbitrary code",
+        "impact": "Parser might execute code embedded in TOON",
+        "mitigation": "Not documented. Input validation not specified.",
+        "severity": "MEDIUM"
+      },
+      {
+        "hole": "Template path traversal",
+        "scenario": "TOON file references template with path like '../../etc/passwd'",
+        "impact": "Compiler might read/render arbitrary files",
+        "mitigation": "Not documented. Template path validation not specified.",
+        "severity": "MEDIUM"
+      },
+      {
+        "hole": "Unbounded output file size",
+        "scenario": "TOON file causes infinite template expansion",
+        "impact": "Compiler produces multi-GB output, fills disk",
+        "mitigation": "Not documented. No resource limits specified.",
+        "severity": "MEDIUM"
+      }
+    ],
+    "test_coverage_gaps": [
+      {
+        "gap": "No happy-path example output provided",
+        "impact": "Test writer doesn't know what success looks like",
+        "coverage": "0%"
+      },
+      {
+        "gap": "No error scenario examples",
+        "impact": "Error handling untested",
+        "coverage": "0%"
+      },
+      {
+        "gap": "No boundary conditions defined",
+        "impact": "Large files, empty files, special characters - all untested",
+        "coverage": "0%"
+      },
+      {
+        "gap": "No regression scenarios from prior steps",
+        "impact": "Known issues from 1.1-1.5 not tested in integration context",
+        "coverage": "0%"
+      },
+      {
+        "gap": "No performance assertions",
+        "impact": "Compiler could be slow but test passes",
+        "coverage": "0%"
+      }
+    ],
+    "hidden_assumptions_about_dependencies": [
+      {
+        "assumption": "Step 1.1 (Parser) fully implemented and debugged",
+        "actual_status": "Unknown - no dependency validation in task",
+        "risk": "If parser incomplete, integration test is invalid"
+      },
+      {
+        "assumption": "Step 1.2 (Template A) fully implemented and stable",
+        "actual_status": "Unknown - no dependency validation in task",
+        "risk": "If template system incomplete, integration test fails"
+      },
+      {
+        "assumption": "Step 1.3 (Template B) fully implemented and integrated",
+        "actual_status": "Unknown - no dependency validation in task",
+        "risk": "If template system incomplete, integration test fails"
+      },
+      {
+        "assumption": "Step 1.4 (Template C) fully implemented and integrated",
+        "actual_status": "Unknown - no dependency validation in task",
+        "risk": "If template system incomplete, integration test fails"
+      },
+      {
+        "assumption": "Step 1.5 (Compiler) fully implemented and working",
+        "actual_status": "Unknown - no dependency validation in task",
+        "risk": "If compiler incomplete or buggy, integration test cannot pass"
+      }
+    ],
+    "execution_warning_flags": [
+      {
+        "flag": "INCOMPLETE_SPECIFICATION",
+        "message": "Integration test cannot be implemented without resolving output specification contradiction"
+      },
+      {
+        "flag": "BLOCKING_DEPENDENCY",
+        "message": "TOON v1.0 vs v3.0 format incompatibility must be resolved before test can run"
+      },
+      {
+        "flag": "TIME_PRESSURE",
+        "message": "2-hour estimate creates schedule pressure to cut test quality corners"
+      },
+      {
+        "flag": "NO_ERROR_SCENARIOS",
+        "message": "Error propagation test cannot be written - no error scenarios specified"
+      },
+      {
+        "flag": "VALIDATION_CRITERIA_VAGUE",
+        "message": "'Validates output structure' undefined - implementation will guess"
+      },
+      {
+        "flag": "FIXTURE_PATH_UNDOCUMENTED",
+        "message": "Test setup will fail if fixture path is wrong"
+      },
+      {
+        "flag": "SCOPE_AMBIGUITY",
+        "message": "Unclear if mocks are allowed - affects what test actually validates"
+      }
+    ],
+    "what_will_happen": {
+      "most_likely_outcome": "Integration test implementation stalls on output specification. Author spends 30+ mins trying to figure out 'what am I validating?' Implements weak validation checks that pass everything. Test gives false confidence. Real issues discovered later.",
+      "second_most_likely": "Parser fails on first test run due to TOON v1.0 vs v3.0 mismatch. Test blocked. Must investigate and fix parser compatibility. Schedule slips 1-2 days.",
+      "third_most_likely": "Test passes but doesn't test anything meaningful because (a) output structure not validated, (b) errors not actually propagated through test, (c) no error scenarios triggered. False confidence. Real bugs found in phase 2."
+    },
+    "final_verdict": "DO NOT EXECUTE AS WRITTEN. Task will fail or produce meaningless test. Critical blockers exist: TOON format incompatibility, output specification missing, error scenarios undefined. Likelihood of meaningful integration test: 15%. Recommend resolving all critical gaps before implementation."
+  },
+  "review_metadata": {
+    "reviewed_at": "2026-01-05T00:00:00Z",
+    "reviewer": "software-crafter",
+    "review_status": "conditional_approval_with_clarifications",
+    "critical_gaps": [
+      {
+        "issue": "Outer test lacks specificity on 'valid Claude Code agent.md'",
+        "severity": "HIGH",
+        "impact": "Test acceptance criteria too vague - implementation will struggle to know when test passes",
+        "resolution": "Define what 'valid Claude Code agent.md' means: file structure, required metadata sections, markdown format validation rules. Reference output specifications from steps 1.2-1.4 (templates)."
+      },
+      {
+        "issue": "Test fixture path not documented",
+        "severity": "MEDIUM",
+        "impact": "Test setup unclear - where should test load novel-editor TOON file from?",
+        "resolution": "Document: agents/novel-editor-chatgpt-toon.txt is the fixture. Note: file uses TOON v1.0 format, verify this is compatible with parser from step 1.1 (which expects TOON v3.0 per spec)"
+      },
+      {
+        "issue": "No specification of expected compiler output structure",
+        "severity": "HIGH",
+        "impact": "Acceptance criteria 'validates output structure' cannot be implemented without knowing what to validate",
+        "resolution": "Define the output structure: What markdown sections? What metadata format? What validation rules? Cross-reference with templates from steps 1.2-1.4."
+      },
+      {
+        "issue": "Error propagation test lacks concrete examples",
+        "severity": "MEDIUM",
+        "impact": "test_integration_error_propagation is ambiguous - which errors from which components?",
+        "resolution": "Enumerate error scenarios: (1) Parser errors (invalid TOON syntax), (2) Template errors (template not found), (3) File I/O errors (missing input file). Define expected error behavior for each."
+      },
+      {
+        "issue": "Integration test scope undefined",
+        "severity": "MEDIUM",
+        "impact": "Unclear if test should mock components or test end-to-end with real parser/templates",
+        "resolution": "Clarify: Integration tests use real implementations of parser, template, and renderer (no mocks). Test validates wiring between components works correctly, not internal component logic."
+      },
+      {
+        "issue": "Time estimate may be optimistic",
+        "severity": "LOW",
+        "impact": "2 hours estimated, but requires understanding 5 prior implementations and creating meaningful integration assertions",
+        "resolution": "Consider 3 hours for (1) reading implementations, (2) understanding output format, (3) designing test assertions, (4) implementing and debugging."
+      }
+    ],
+    "dependency_concerns": [
+      {
+        "concern": "TOON format compatibility",
+        "details": "Parser spec (step 1.1) references TOON v3.0 format, but test fixture (novel-editor-chatgpt-toon.txt) uses TOON v1.0 format. Verify parser supports v1.0 or will need fixture conversion.",
+        "blocking": true
+      },
+      {
+        "concern": "Template output specifications missing",
+        "details": "Tasks 1.2-1.4 create templates but don't document their output format. Integration test needs this to validate compiler output.",
+        "blocking": true
+      },
+      {
+        "concern": "Prior steps must be complete",
+        "details": "Depends on 1.5 (compiler). If compiler implementation incomplete or untested, integration test cannot be meaningful.",
+        "blocking": true
+      }
+    ],
+    "recommendations": [
+      {
+        "priority": "CRITICAL",
+        "action": "Before implementing: Verify TOON v1.0 vs v3.0 compatibility. If incompatible, either update test fixture or adjust parser spec.",
+        "owner": "Implementation team",
+        "verification": "Run parser against novel-editor-chatgpt-toon.txt and confirm structured output"
+      },
+      {
+        "priority": "CRITICAL",
+        "action": "Document expected compiler output format by cross-referencing completed templates from 1.2-1.4",
+        "owner": "Task author",
+        "verification": "Output specification document added to task context"
+      },
+      {
+        "priority": "HIGH",
+        "action": "Enumerate error propagation scenarios with concrete examples (which exceptions should propagate from which components)",
+        "owner": "Task author",
+        "verification": "test_integration_error_propagation can be implemented unambiguously"
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Clarify scope: full end-to-end test (no mocks) vs component integration test (some mocks)",
+        "owner": "Task author",
+        "verification": "Execution guidance specifies mock/no-mock policy"
+      }
+    ],
+    "approval_decision": "CONDITIONAL - Approve execution with critical clarifications. Task is logically sound but lacks specificity needed for clear implementation. Recommend addressing critical gaps before full implementation begins.",
+    "notes": "Task structure follows good TDD patterns and fits logical phase progression. However, integration tests require clear specifications of what they're integrating - templates, output format, error handling - which are not documented in task. Consider creating a small 'Integration Test Specification' document that details expected compiler output structure and error scenarios before implementation."
+  },
+  "prerequisites": {
+    "critical_blocker": {
+      "issue": "TOON version mismatch between parser and test fixture",
+      "status": "MUST RESOLVE BEFORE IMPLEMENTATION",
+      "resolution_options": [
+        "A) Convert agents/novel-editor-chatgpt-toon.txt from v1.0 to v3.0",
+        "B) Update parser (01-01) to support TOON v1.0",
+        "C) Implement version detection in parser (supports both v1.0 and v3.0)"
+      ],
+      "recommended": "Option C (version detection) - Most flexible, no fixture changes needed",
+      "validation": "Run parser against test fixture before writing integration test. Parser MUST succeed."
+    },
+    "output_specifications": {
+      "description": "Integration test MUST know what valid output looks like",
+      "agent_output_structure": {
+        "required_sections": [
+          "YAML frontmatter with name/description/model",
+          "Activation notice",
+          "Agent YAML block with commands"
+        ],
+        "validation_method": "Parse output as YAML, verify required keys present"
+      },
+      "command_output_structure": {
+        "required_sections": [
+          "Command metadata",
+          "Execution context",
+          "Success criteria checklist"
+        ],
+        "validation_method": "Check markdown headers present with expected content"
+      },
+      "skill_output_structure": {
+        "required_sections": [
+          "Skill YAML frontmatter",
+          "Trigger patterns list",
+          "Workflow integration"
+        ],
+        "validation_method": "Parse YAML, validate triggers list and workflow fields"
+      }
+    },
+    "blocking": [
+      "tools/toon/ directory MUST exist with README.md",
+      "TOON format specification v3.0 must be accessible",
+      "Parser output schema must be defined before template implementation"
+    ],
+    "validation": "Run: ls tools/toon/README.md. Must exist. If not: BLOCKER_001"
+  },
+  "critical_blocker_status": {
+    "BLOCKER_001": {
+      "title": "TOON Toolchain Missing",
+      "status": "UNRESOLVED",
+      "evidence": "tools/toon/ directory does not exist",
+      "impact": "Cannot parse TOON files, blocks all Phase 1 steps",
+      "resolution_options": [
+        "A: Implement TOON toolchain (16-20h estimated)",
+        "B: Pivot to Markdown templates (8-10h, loses TOON benefits)",
+        "C: Block until external TOON library available"
+      ]
+    }
+  }
+}

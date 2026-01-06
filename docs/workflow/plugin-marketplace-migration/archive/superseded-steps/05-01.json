@@ -1,0 +1,704 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "05-01",
+  "phase": {
+    "number": 5,
+    "name": "Skills Creation",
+    "purpose": "Create 3 skill definitions for auto-invocation capability"
+  },
+  "step": {
+    "number": "5.1",
+    "name": "Create develop Skill",
+    "description": "Create develop skill with:\n- Trigger patterns: \"implementa\", \"scrivi codice\", \"TDD\", \"implement\", \"write code\"\n- Agent binding: software-crafter\n- Full workflow integration (implement->review->fix->refactor)\n- Default constraints embedded (no auto-report, no auto-commit)",
+    "motivation": "develop skill is the primary inner loop automation",
+    "estimated_hours": "2"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC4": "Skills auto-invoked correctly",
+      "SC5": "Full workflow (implement->review->fix->refactor) functional",
+      "SC6": "Default constraints integrated (no auto-report, no auto-commit)"
+    },
+    "dependencies": ["1.6"]
+  },
+  "deliverables": {
+    "files_to_create": [
+      "5d-wave/skills/develop/SKILL.toon"
+    ],
+    "acceptance_criteria": [
+      "Skill compiles to valid SKILL.md",
+      "Trigger patterns include Italian and English",
+      "Agent binding to software-crafter correct",
+      "Workflow steps defined (implement, review, fix, refactor)",
+      "Default constraints embedded in skill"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN develop SKILL.toon compiled\nWHEN user says \"implementa questa feature\"\nTHEN skill should trigger software-crafter with develop workflow",
+    "inner_tests": [
+      "test_skill_compiles",
+      "test_trigger_patterns_multilingual",
+      "test_agent_binding",
+      "test_workflow_steps_present",
+      "test_constraints_embedded"
+    ]
+  },
+  "refactoring": {
+    "targets": [
+      {
+        "level": 2,
+        "focus": "Workflow step extraction"
+      }
+    ]
+  },
+  "execution_guidance": {
+    "approach": "Outside-In TDD for skill definition",
+    "workflow": [
+      "1. Write failing E2E test for skill triggering",
+      "2. Create SKILL.toon with trigger patterns",
+      "3. Define workflow steps (implement->review->fix->refactor)",
+      "4. Embed default constraints",
+      "5. Compile and validate output",
+      "6. Apply refactoring level 2",
+      "7. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "All tests passing (100% required)",
+      "Skill compiles to valid SKILL.md",
+      "Trigger patterns validated",
+      "Workflow steps complete",
+      "Constraints embedded",
+      "Refactoring applied (level 2)",
+      "No report files created"
+    ]
+  },
+  "adversarial_review": {
+    "review_mode": "RUTHLESS_ADVERSARIAL",
+    "review_date": "2026-01-05",
+    "reviewed_by": "Lyra (adversarial-code-review-mode)",
+    "risk_score": 7,
+    "blast_radius": "CRITICAL - Skills are foundational to the entire skill-discovery system. Broken skills block all downstream automation.",
+    "execution_recommendation": "DO NOT EXECUTE - Circular dependencies and fundamental format uncertainty require resolution.",
+    "contradictions_found": [
+      {
+        "id": "CONTRA-1",
+        "title": "SKILL.toon format assumed but not specified anywhere in project",
+        "contradiction": "Task says 'Create develop skill with' and 'Skill compiles to valid SKILL.md' but NOWHERE in the project (phases 1-5 so far) is there any specification of what TOON syntax looks like for SKILLS. Phase 4 created 20 COMMANDS in TOON but the file 5d-wave/skills/ does not exist and no SKILL template is documented.",
+        "severity": "CRITICAL",
+        "impact": "Implementer cannot write SKILL.toon without understanding the syntax. Will either guess (incompatible with compiler) or discover mid-implementation that TOON command syntax /= TOON skill syntax.",
+        "failure_mode": "Implementer creates SKILL.toon that looks like COMMAND.toon. Compiler rejects. Hours wasted discovering format mismatch."
+      },
+      {
+        "id": "CONTRA-2",
+        "title": "Circular dependency: Skills depend on phase 1, but phase 1 only documented COMMAND infrastructure",
+        "contradiction": "Step depends on '1.6' (Integration Tests) but 1.6 tests COMMAND compilation. No evidence phase 1 created SKILL compilation infrastructure. If phase 1 only built COMMAND compiler, where does the SKILL compiler come from?",
+        "severity": "CRITICAL",
+        "impact": "Task references compiling SKILL.toon but may not have necessary compiler. May try to use COMMAND compiler on skill files (syntax incompatibility).",
+        "failure_mode": "Step discovers TOON compiler doesn't have SKILL compilation capability. Blocks entire phase."
+      },
+      {
+        "id": "CONTRA-3",
+        "title": "Acceptance criteria claims 'Agent binding to software-crafter correct' but software-crafter agent may not be finalized yet",
+        "contradiction": "Step 5.1 requires agent binding to 'software-crafter' but we're IN phase 5, which is when agents are created. If software-crafter is being built concurrently, its interface may be incomplete. How can skill 'bind' to unfinalized agent?",
+        "severity": "HIGH",
+        "impact": "Skill references agent before agent stabilizes. If agent interface changes (commands added/removed), skill becomes stale.",
+        "failure_mode": "Skill compiled, references software-crafter with command list X. Later, software-crafter updates to command list Y. Skill triggers wrong commands or fails."
+      },
+      {
+        "id": "CONTRA-4",
+        "title": "E2E test assumes skill invocation mechanism that's never tested",
+        "contradiction": "Test says 'WHEN user says \"implementa questa feature\" THEN skill should trigger software-crafter'. But this test is written BEFORE any skill invocation infrastructure is built. How does the test environment detect user input 'implementa' and match it to skill trigger patterns?",
+        "severity": "CRITICAL",
+        "impact": "E2E test is untestable without working skill invocation system (which doesn't exist yet). Test will always fail until infrastructure builds later.",
+        "failure_mode": "Test framework doesn't support skill triggering E2E. Test fails with 'environment not set up'. Task blocked."
+      },
+      {
+        "id": "CONTRA-5",
+        "title": "Workflow steps semantics undefined - 'implement->review->fix->refactor' unclear",
+        "contradiction": "Acceptance criteria: 'Workflow steps defined (implement, review, fix, refactor)' but these are vague. Are they: (a) strings in YAML?, (b) references to commands?, (c) metadata about what the skill DOES?, (d) definitions of how the skill ORCHESTRATES? The task doesn't say.",
+        "severity": "HIGH",
+        "impact": "Implementer will guess. May create skill with workflow steps that don't match what 'workflow orchestration' actually means in the system.",
+        "failure_mode": "Skill defines workflow but has no semantic meaning. Trigger fires but does nothing coherent."
+      },
+      {
+        "id": "CONTRA-6",
+        "title": "Trigger pattern validation rules don't exist",
+        "contradiction": "Acceptance criteria: 'Trigger patterns include Italian and English' and test checks 'test_trigger_patterns_multilingual'. But what makes a valid trigger pattern? Do patterns overlap? Can 'implementa' and 'impl' both trigger? What about conflicts between 3 skills (develop, refactor, mikado)?",
+        "severity": "HIGH",
+        "impact": "Implementer creates patterns that compile but cause runtime collision. Multiple skills trigger for same user input.",
+        "failure_mode": "User says 'implementa'. Both 'develop' and 'refactor' skills trigger. System fails with ambiguity error."
+      },
+      {
+        "id": "CONTRA-7",
+        "title": "Estimated 2 hours ignores Jinja2 template design, compilation, testing infrastructure needs",
+        "contradiction": "Time estimate: 2 hours for creating SKILL definition, defining triggers, embedding constraints, writing E2E test, creating compilation test. But: (1) no SKILL template exists yet, (2) TOON compiler may not support SKILL target, (3) skill invocation mechanism untested.",
+        "severity": "HIGH",
+        "impact": "Schedule slippage. Implementer discovers missing dependencies mid-work. 2 hours -> 4-5 hours.",
+        "failure_mode": "Task starts, discovers SKILL compiler doesn't exist, pivots to create it (scope creep). Estimate blown by 200%."
+      },
+      {
+        "id": "CONTRA-8",
+        "title": "Default constraints 'embedded in skill' has unclear meaning",
+        "contradiction": "Acceptance criteria: 'Default constraints embedded in skill' references project baseline constraints (no auto-report, no auto-commit, etc.). But HOW are these embedded? Are they: (a) part of SKILL.md output?, (b) metadata in TOON?, (c) enforced by invocation handler?, (d) Just documentation?",
+        "severity": "HIGH",
+        "impact": "Implementer creates skill with constraints documented as comments. Later, skill invocation handler doesn't read comments. Constraints aren't enforced.",
+        "failure_mode": "Skill skill compiles cleanly. At runtime, software-crafter ignores embedded constraints and creates report files anyway."
+      }
+    ],
+    "dangerous_assumptions": [
+      {
+        "id": "ASSUME-1",
+        "assumption": "TOON compiler supports SKILL output format (not just COMMAND format)",
+        "why_dangerous": "Phase 4 built 20 commands. No evidence SKILL compilation was added. May only have COMMAND compiler.",
+        "likelihood": "HIGH (70%)",
+        "consequence": "Task discovers compiler lacks SKILL support. Must extend compiler (out of scope). Blocks phase."
+      },
+      {
+        "id": "ASSUME-2",
+        "assumption": "Skill invocation mechanism exists in Claude Code",
+        "why_dangerous": "E2E test assumes 'user says \"implementa\"' triggers skill. But this depends on Claude Code having auto-invocation logic. If not implemented, test fails.",
+        "likelihood": "HIGH (60%)",
+        "consequence": "E2E test always fails until Claude Code integration layer built."
+      },
+      {
+        "id": "ASSUME-3",
+        "assumption": "software-crafter agent interface is stable/final for skill binding",
+        "why_dangerous": "Agent is being built in parallel. Interface may change. Skill bindings become stale.",
+        "likelihood": "HIGH (80%)",
+        "consequence": "Skill references agent version X. Agent evolves to version Y. Mismatch at runtime."
+      },
+      {
+        "id": "ASSUME-4",
+        "assumption": "Trigger patterns can be validated without collision detection rules",
+        "why_dangerous": "No specification of how pattern matching works. Are patterns regexes? Substrings? When 3 skills exist, how does system disambiguate?",
+        "likelihood": "MEDIUM (70%)",
+        "consequence": "Skill uses pattern 'impl'. Another skill uses 'implement'. System can't decide which triggers."
+      },
+      {
+        "id": "ASSUME-5",
+        "assumption": "Constraints can be 'embedded' in SKILL.md and will be enforced at runtime",
+        "why_dangerous": "No specification of constraint enforcement mechanism. Are they parsed from SKILL.md? Checked at invocation time? Task assumes they 'work' but provides no mechanism.",
+        "likelihood": "MEDIUM (65%)",
+        "consequence": "Skill defines constraint 'no auto-commit' in SKILL.md. Invocation handler has no code to read/enforce it. Constraint ignored."
+      }
+    ],
+    "unhandled_edge_cases": [
+      {
+        "id": "EDGE-1",
+        "case": "Skill triggered but agent not available / not loaded",
+        "consequence": "Skill binding references software-crafter. If agent fails to load, what happens? Skill executes anyway? Fails gracefully?",
+        "severity": "HIGH"
+      },
+      {
+        "id": "EDGE-2",
+        "case": "Multiple skills triggered simultaneously (user input matches multiple patterns)",
+        "consequence": "User says 'implement refactoring'. Both 'develop' and 'refactor' skills trigger. System behavior undefined.",
+        "severity": "CRITICAL"
+      },
+      {
+        "id": "EDGE-3",
+        "case": "Trigger pattern contains reserved keywords",
+        "consequence": "User defines trigger 'help' but that's a Claude Code command. Conflict.",
+        "severity": "HIGH"
+      },
+      {
+        "id": "EDGE-4",
+        "case": "Agent binding references non-existent agent",
+        "consequence": "SKILL.toon specifies agent 'nonexistent-agent'. Compiler accepts (no validation). Runtime fails.",
+        "severity": "HIGH"
+      },
+      {
+        "id": "EDGE-5",
+        "case": "Workflow step references non-existent command",
+        "consequence": "Step defines workflow 'implement->review->execute'. Command 'execute' doesn't exist in agent. Workflow fails.",
+        "severity": "HIGH"
+      },
+      {
+        "id": "EDGE-6",
+        "case": "Constraint conflicts with agent configuration",
+        "consequence": "Skill constraint: 'no auto-commit'. Agent default: 'auto-commit: true'. Which wins?",
+        "severity": "MEDIUM"
+      },
+      {
+        "id": "EDGE-7",
+        "case": "Skill regenerated with updated trigger patterns",
+        "consequence": "Skill v1 has patterns [implementa, impl]. Skill v2 has patterns [write, code]. Old activations reference v1 patterns. Stale trigger references.",
+        "severity": "MEDIUM"
+      }
+    ],
+    "failure_scenarios": [
+      {
+        "id": "FAIL-1",
+        "scenario": "TOON compiler rejects SKILL.toon - unexpected syntax",
+        "trigger": "Implementer creates SKILL.toon using syntax inferred from COMMAND.toon. Compiler fails: 'unknown format'",
+        "consequence": "Task blocked. Requires TOON v3.0 skill syntax specification.",
+        "detection_time": "During step execution (too late)",
+        "recovery_difficulty": "EXTREME - Requires understanding SKILL syntax, redesigning SKILL.toon"
+      },
+      {
+        "id": "FAIL-2",
+        "scenario": "Skill compiles but E2E test fails - invocation mechanism doesn't exist",
+        "trigger": "Test tries to trigger skill via 'user says implementa'. Test framework has no skill invocation capability.",
+        "consequence": "E2E test fails. Cannot validate skill works until invocation infrastructure built.",
+        "detection_time": "During step execution",
+        "recovery_difficulty": "VERY HIGH - Requires building skill invocation layer"
+      },
+      {
+        "id": "FAIL-3",
+        "scenario": "Skill bound to unstable agent interface",
+        "trigger": "Skill written for software-crafter v1. Agent evolves to v2 (different commands). Skill references stale interface.",
+        "consequence": "Skill triggers but agent doesn't have expected commands. Workflow fails.",
+        "detection_time": "Runtime (when skill actually triggered)",
+        "recovery_difficulty": "HIGH - Requires skill update + agent versioning strategy"
+      },
+      {
+        "id": "FAIL-4",
+        "scenario": "Trigger pattern collision between skills",
+        "trigger": "3 skills defined with overlapping trigger patterns (e.g., 'impl' matches both 'implement' and 'implementa')",
+        "consequence": "User input triggers wrong skill or multiple skills simultaneously.",
+        "detection_time": "Runtime (when user tries to use skills)",
+        "recovery_difficulty": "HIGH - Requires pattern conflict detection and resolution strategy"
+      },
+      {
+        "id": "FAIL-5",
+        "scenario": "Constraints embedded but not enforced",
+        "trigger": "Skill defines 'no auto-commit' in SKILL.md. Invocation handler has no code to read/enforce constraints.",
+        "consequence": "Skill triggers software-crafter, which auto-commits anyway (constraint ignored).",
+        "detection_time": "User-facing (when auto-commit happens unexpectedly)",
+        "recovery_difficulty": "HIGH - Requires constraint enforcement mechanism"
+      },
+      {
+        "id": "FAIL-6",
+        "scenario": "Skill defines workflow steps that don't compile",
+        "trigger": "Step 5.1 creates skill with workflow 'implement->review->fix->refactor'. But refactor command doesn't exist in software-crafter.",
+        "consequence": "Skill compiles cleanly but workflow is broken. User tries to use skill, workflow fails.",
+        "detection_time": "Runtime (when workflow executed)",
+        "recovery_difficulty": "HIGH - Requires validating workflow step references against agent"
+      }
+    ],
+    "integration_points_at_risk": [
+      {
+        "id": "INTEG-1",
+        "point": "SKILL.toon -> TOON Compiler -> SKILL.md",
+        "risk": "CRITICAL - If SKILL compilation not supported by compiler, entire step fails",
+        "mitigation": "Verify TOON compiler supports SKILL output target BEFORE starting step"
+      },
+      {
+        "id": "INTEG-2",
+        "point": "Skill trigger patterns -> Claude Code auto-invocation",
+        "risk": "CRITICAL - E2E test cannot validate without working invocation mechanism",
+        "mitigation": "Define and test skill invocation mechanism independently"
+      },
+      {
+        "id": "INTEG-3",
+        "point": "Skill agent binding -> software-crafter agent",
+        "risk": "HIGH - Agent may change during concurrent development",
+        "mitigation": "Pin agent version in skill binding OR require agent interface stability"
+      },
+      {
+        "id": "INTEG-4",
+        "point": "Skill trigger patterns -> Pattern collision detection",
+        "risk": "HIGH - No mechanism to detect/prevent overlapping patterns",
+        "mitigation": "Create pattern conflict validator before skill compilation"
+      },
+      {
+        "id": "INTEG-5",
+        "point": "Skill constraints -> Invocation handler enforcement",
+        "risk": "HIGH - Constraints may be documented but not enforced",
+        "mitigation": "Define constraint enforcement mechanism explicitly"
+      },
+      {
+        "id": "INTEG-6",
+        "point": "Workflow steps -> Referenced agent commands",
+        "risk": "HIGH - Workflow may reference non-existent commands",
+        "mitigation": "Add validation: workflow step references must exist in agent"
+      }
+    ],
+    "test_coverage_gaps": [
+      {
+        "id": "GAP-1",
+        "coverage": "No test for SKILL.toon syntax validity",
+        "risk": "CRITICAL",
+        "scenario": "SKILL.toon compiles but with syntax issues that only surface at runtime"
+      },
+      {
+        "id": "GAP-2",
+        "coverage": "No test for trigger pattern collision detection",
+        "risk": "CRITICAL",
+        "scenario": "Two skills with overlapping trigger patterns; system doesn't detect conflict"
+      },
+      {
+        "id": "GAP-3",
+        "coverage": "No E2E test for skill invocation in actual Claude Code",
+        "risk": "CRITICAL",
+        "scenario": "Skill defined but invocation mechanism doesn't actually trigger it"
+      },
+      {
+        "id": "GAP-4",
+        "coverage": "No test for agent binding validity",
+        "risk": "HIGH",
+        "scenario": "Skill binds to agent that doesn't exist or has changed interface"
+      },
+      {
+        "id": "GAP-5",
+        "coverage": "No test for workflow step validation",
+        "risk": "HIGH",
+        "scenario": "Workflow references commands not in agent"
+      },
+      {
+        "id": "GAP-6",
+        "coverage": "No test for constraint enforcement",
+        "risk": "HIGH",
+        "scenario": "Constraint defined in SKILL.md but not checked at runtime"
+      },
+      {
+        "id": "GAP-7",
+        "coverage": "No test for multilingual trigger matching",
+        "risk": "MEDIUM",
+        "scenario": "Italian and English patterns both present but language detection fails"
+      }
+    ],
+    "data_loss_risks": [
+      {
+        "id": "DATA-1",
+        "risk": "Agent binding becomes stale if agent interface changes",
+        "example": "Skill compiled for software-crafter with [develop, review] commands. Agent updated to [implement, refactor]. Skill references stale interface.",
+        "consequence": "Skill invokes non-existent commands"
+      },
+      {
+        "id": "DATA-2",
+        "risk": "Workflow steps silently lost if compiler doesn't validate references",
+        "example": "Workflow step 'review' doesn't exist in agent. Compiler accepts anyway. Workflow fails at runtime.",
+        "consequence": "Workflow is broken but test passes (if test doesn't validate execution)"
+      },
+      {
+        "id": "DATA-3",
+        "risk": "Constraints not preserved if enforcement layer not implemented",
+        "example": "Skill constraint 'no auto-commit' in SKILL.md. Invocation handler doesn't read/enforce.",
+        "consequence": "Constraints disappear; skill behavior not controlled"
+      }
+    ],
+    "security_concerns": [
+      {
+        "id": "SEC-1",
+        "concern": "Trigger patterns as security boundary - malicious pattern could hijack user input",
+        "example": "Skill trigger pattern: '*' (matches everything). Skill always triggered, preempts user intent.",
+        "mitigation": "Validate trigger patterns don't use wildcards or overly broad patterns"
+      },
+      {
+        "id": "SEC-2",
+        "concern": "Agent binding vulnerability - skill could bind to wrong agent",
+        "example": "Skill intended to bind to 'software-crafter' typos as 'software-craftr'. No validation.",
+        "mitigation": "Validate agent binding references actual agent"
+      },
+      {
+        "id": "SEC-3",
+        "concern": "Constraint evasion - constraints defined but not enforced",
+        "example": "Skill constraint: 'no auto-commit'. But enforcement missing.",
+        "mitigation": "Implement constraint enforcement in invocation handler"
+      }
+    ],
+    "schedule_risks": [
+      {
+        "id": "SCHED-1",
+        "risk": "Estimate 2 hours is unrealistic for full implementation + testing",
+        "actual_complexity": "Format discovery + SKILL syntax learning + template creation + test environment setup + E2E testing = 4-6 hours minimum",
+        "probability": "90% chance overrun"
+      },
+      {
+        "id": "SCHED-2",
+        "risk": "Blocked waiting for TOON SKILL compiler capability confirmation",
+        "consequence": "Cannot verify SKILL.toon compiles without compiler"
+      },
+      {
+        "id": "SCHED-3",
+        "risk": "Blocked waiting for skill invocation infrastructure in Claude Code",
+        "consequence": "E2E test cannot run until invocation layer implemented"
+      },
+      {
+        "id": "SCHED-4",
+        "risk": "Rework if agent interface changes during concurrent development",
+        "probability": "50% chance agent modification needed"
+      }
+    ],
+    "contradictions_summary": "Task assumes skill definition system exists (TOON SKILL syntax, SKILL compiler, skill invocation mechanism, pattern collision detection, constraint enforcement) but none of these are verified to exist or be complete. Implementer will discover mid-work that foundational infrastructure is missing. Task is 30% 'create SKILL' and 70% 'figure out how skill system works'.",
+    "overall_assessment": {
+      "current_state": "NOT READY FOR EXECUTION",
+      "root_cause": "Skill system infrastructure largely undefined. No SKILL.toon syntax spec, no compiler validation, no invocation mechanism verification, no pattern conflict strategy.",
+      "risk_level": 7,
+      "confidence_in_success": "20% - Multiple critical unknowns will derail implementation"
+    },
+    "required_clarifications_before_execution": [
+      {
+        "priority": "CRITICAL",
+        "clarification": "Confirm TOON compiler supports SKILL output format",
+        "format": "Provide TOON v3.0 specification or compiler code showing SKILL target support"
+      },
+      {
+        "priority": "CRITICAL",
+        "clarification": "Provide SKILL.toon syntax specification with examples",
+        "format": "Show example SKILL.toon source and corresponding SKILL.md output for a reference skill"
+      },
+      {
+        "priority": "CRITICAL",
+        "clarification": "Document how skills are invoked in Claude Code",
+        "format": "Explain trigger pattern matching algorithm, explain test environment for E2E skill testing"
+      },
+      {
+        "priority": "CRITICAL",
+        "clarification": "Define workflow step semantics",
+        "format": "Explain what 'implement->review->fix->refactor' means in skill context and how steps are validated"
+      },
+      {
+        "priority": "CRITICAL",
+        "clarification": "Specify constraint embedding and enforcement mechanism",
+        "format": "Show how constraints appear in SKILL.md and how they're enforced at runtime"
+      },
+      {
+        "priority": "HIGH",
+        "clarification": "Define trigger pattern validation rules and collision detection",
+        "format": "Specify valid pattern syntax, overlapping pattern detection, conflict resolution strategy"
+      },
+      {
+        "priority": "HIGH",
+        "clarification": "Confirm software-crafter agent interface is stable/final",
+        "format": "Lock agent version or document expected interface for skill binding"
+      },
+      {
+        "priority": "HIGH",
+        "clarification": "Revise time estimate to 4-6 hours",
+        "format": "Account for format discovery, syntax learning, compiler validation, E2E test infrastructure"
+      }
+    ]
+  },
+  "review_metadata": {
+    "reviewed_at": "2026-01-05T00:00:00Z",
+    "reviewer": "software-crafter",
+    "review_status": "conditional_approval_with_clarifications",
+    "critical_gaps": [
+      {
+        "issue": "SKILL.toon output format undefined",
+        "severity": "CRITICAL",
+        "impact": "Cannot implement skill definition without understanding target format. What is the TOON syntax for skill definitions? How are trigger patterns, agent bindings, and workflow steps expressed in TOON v3.0?",
+        "resolution": "Reference TOON v3.0 format specification from phase 1 (steps 1.1-1.2). Document or provide example of what a compiled SKILL.md should look like for a skill definition. Is there a SKILL_TEMPLATE.toon in the project?"
+      },
+      {
+        "issue": "Skill triggering mechanism not documented",
+        "severity": "HIGH",
+        "impact": "E2E test 'WHEN user says \"implementa questa feature\" THEN skill should trigger' is untestable without understanding HOW Claude Code invokes skills. Is this tested in simulator? In actual Claude Code IDE? Via MCP protocol?",
+        "resolution": "Clarify: (1) What is the test environment? (2) How does skill triggering work in Claude Code? (3) What test fixture/simulator is needed? Reference phase 1 testing framework or step 1.6 integration tests."
+      },
+      {
+        "issue": "Workflow step semantics unclear",
+        "severity": "HIGH",
+        "impact": "Skill should define 'workflow steps (implement->review->fix->refactor)' but the semantics are vague. Does this mean: (a) Sequential step definitions in TOON? (b) References to existing commands? (c) Control flow logic? (d) Step metadata only?",
+        "resolution": "Define exactly what 'workflow steps' means in skill context. Cross-reference with step 05-04 (if it defines orchestration) or provide concrete example. How does a skill 'define workflow' vs just 'trigger an agent'?"
+      },
+      {
+        "issue": "Default constraints embedding mechanism unclear",
+        "severity": "HIGH",
+        "impact": "Acceptance criteria requires 'Default constraints embedded in skill' but unclear how this works. Are constraints: (a) Part of TOON syntax? (b) Metadata in compiled SKILL.md? (c) Enforced by skill invocation handler? (d) Documentation in the skill output?",
+        "resolution": "Define how constraints are represented in SKILL.md. Show example. Reference the constraint list from project baseline (tokens minimization, document creation control, etc.) and how each constraint appears in final skill output."
+      },
+      {
+        "issue": "Refactoring level 2 scope ill-defined",
+        "severity": "MEDIUM",
+        "impact": "Step requires 'Apply refactoring level 2' but unclear what this means for a skill definition file. Is this: (a) Complexity reduction of workflow definitions? (b) Method extraction in generated markdown? (c) Template simplification?",
+        "resolution": "Clarify what refactoring level 2 means for skill definitions. If SKILL.toon compiles to SKILL.md, what complexity reduction is being applied? Provide concrete example showing before/after refactoring."
+      },
+      {
+        "issue": "Trigger pattern validation test undefined",
+        "severity": "MEDIUM",
+        "impact": "Inner test 'test_trigger_patterns_multilingual' is listed but acceptance criteria don't specify what constitutes valid trigger patterns. Are there rules? Format? Coverage requirements?",
+        "resolution": "Define trigger pattern validation rules: (1) Minimum patterns required? (2) Language support requirements (Italian + English)? (3) Pattern overlap rules (conflicts)? (4) Reserved keywords to avoid? Provide validator algorithm or reference existing pattern validator."
+      },
+      {
+        "issue": "Dependency on step 1.6 may be insufficient",
+        "severity": "MEDIUM",
+        "impact": "Step depends on 1.6 (Integration Tests) but needs understanding of TOON compiler behavior. If step 1.6 only tests command compilation, not skill compilation, there's a gap.",
+        "resolution": "Verify step 1.6 covers skill definition compilation OR identify which step documents SKILL.toon format. Create explicit dependency chain: Parser (1.1) → Template (1.2) → Skill Template (?) → Compiler (1.5) → Integration Tests (1.6) → Skill Creation (5.1)"
+      }
+    ],
+    "hidden_dependencies": [
+      {
+        "dependency": "SKILL template or specification",
+        "location": "Not found in 5d-wave/templates/ or documented in baseline",
+        "impact": "Critical - cannot implement skill definition without understanding TOON syntax for skills",
+        "blocking": true
+      },
+      {
+        "dependency": "Skill invocation mechanism in Claude Code",
+        "location": "Not documented in project - external to AI-Craft project",
+        "impact": "Critical - E2E test cannot validate triggering without understanding how Claude Code invokes skills",
+        "blocking": true
+      },
+      {
+        "dependency": "Workflow orchestration specification",
+        "location": "Possibly in step 05-04 or baseline - needs verification",
+        "impact": "High - 'workflow steps (implement->review->fix->refactor)' requires understanding workflow structure",
+        "blocking": false
+      },
+      {
+        "dependency": "Constraint representation format",
+        "location": "Not documented - inferred from project requirements",
+        "impact": "High - cannot embed constraints without knowing format",
+        "blocking": true
+      }
+    ],
+    "context_gaps": [
+      {
+        "gap": "TOON v3.0 skill syntax example missing",
+        "details": "Phase description says 'create skill definitions' but no TOON syntax examples provided. Step 1.2 creates TOON templates but no example shows what SKILL.toon looks like.",
+        "impact": "Implementation will require reverse-engineering from compiler or guessing format"
+      },
+      {
+        "gap": "Skill vs Command distinction unclear",
+        "details": "Project has 20 commands in TOON format (phase 4) and now creating 3 skills in TOON. What's the structural difference? Same syntax? Different template?",
+        "impact": "May duplicate work or create inconsistent skill definitions"
+      },
+      {
+        "gap": "Multi-skill orchestration not addressed",
+        "details": "Phase creates 3 skills (develop, refactor, mikado) but unclear how they coexist. Can user trigger multiple? Is there priority/conflict logic?",
+        "impact": "Step may be incomplete if orchestration logic needed across skills"
+      },
+      {
+        "gap": "Test environment for skill triggering",
+        "details": "E2E test talks about 'user says \"implementa\"' but unclear: Is this a simulator? CLI? IDE plugin? Real Claude Code?",
+        "impact": "Cannot implement E2E test without knowing test environment setup"
+      }
+    ],
+    "achievability_assessment": {
+      "feasibility": "CONDITIONAL - Achievable with clarifications",
+      "confidence": "LOW (50%)",
+      "blockers": [
+        "SKILL.toon format specification missing",
+        "Skill invocation mechanism undefined",
+        "Constraint embedding format undefined",
+        "No example of compiled SKILL.md for reference"
+      ],
+      "assumptions_requiring_validation": [
+        "SKILL.toon uses same TOON v3.0 syntax as commands",
+        "Skills are invoked via Claude Code's auto-invocation mechanism (not manually)",
+        "Constraints can be embedded as metadata in SKILL.md",
+        "Refactoring level 2 applies to skill definition complexity",
+        "trigger_patterns are validated against some rule set"
+      ]
+    },
+    "time_estimate_validation": {
+      "estimate": "2 hours",
+      "assessment": "OPTIMISTIC",
+      "rationale": "Estimate assumes complete knowledge of: (1) TOON skill syntax, (2) compilation target format, (3) test environment, (4) constraint representation. If clarifications needed, likely 3-4 hours for (1) understanding requirements, (2) finding/creating examples, (3) implementation, (4) testing.",
+      "revised_estimate": "3-4 hours"
+    },
+    "checklist_for_implementation": [
+      {
+        "item": "Obtain TOON v3.0 skill syntax specification",
+        "status": "BLOCKING",
+        "owner": "Task author",
+        "verification": "Written specification or example of SKILL.toon and compiled SKILL.md"
+      },
+      {
+        "item": "Document how skills are invoked in Claude Code",
+        "status": "BLOCKING",
+        "owner": "Task author",
+        "verification": "Explanation of auto-invocation mechanism, test environment, trigger matching algorithm"
+      },
+      {
+        "item": "Define how constraints are represented in SKILL.md",
+        "status": "BLOCKING",
+        "owner": "Task author",
+        "verification": "Example SKILL.md showing constraint representation"
+      },
+      {
+        "item": "Create SKILL_TEMPLATE.toon if not present",
+        "status": "BLOCKING",
+        "owner": "Implementation team",
+        "verification": "Template file exists in 5d-wave/templates/"
+      },
+      {
+        "item": "Clarify workflow step semantics",
+        "status": "BLOCKING",
+        "owner": "Task author",
+        "verification": "Definition of what 'workflow steps' means and how they're expressed in SKILL.md"
+      },
+      {
+        "item": "Define trigger pattern validation rules",
+        "status": "HIGH",
+        "owner": "Task author",
+        "verification": "Specification of valid patterns, conflicts, multilingual requirements"
+      },
+      {
+        "item": "Set up test environment for skill triggering",
+        "status": "HIGH",
+        "owner": "Implementation team",
+        "verification": "E2E test can run in documented environment"
+      },
+      {
+        "item": "Document refactoring level 2 for skills",
+        "status": "MEDIUM",
+        "owner": "Task author",
+        "verification": "Example showing complexity reduction applied to skill definition"
+      }
+    ],
+    "recommendations": [
+      {
+        "priority": "CRITICAL",
+        "action": "Create TOON v3.0 skill syntax specification document before implementation",
+        "details": "Include: (1) Complete TOON syntax for skill definitions, (2) Example SKILL.toon source file, (3) Example compiled SKILL.md output, (4) How constraints are represented, (5) How workflow steps are encoded",
+        "owner": "Task author (Step 1.2 author?)",
+        "verification": "Specification document added to project docs"
+      },
+      {
+        "priority": "CRITICAL",
+        "action": "Document skill invocation mechanism in Claude Code",
+        "details": "Clarify: (1) How does Claude Code detect and trigger skills? (2) Is it via MCP protocol? (3) How are trigger patterns matched? (4) What is the test environment for E2E testing?",
+        "owner": "Integration team or baseline research",
+        "verification": "Documentation in project baseline or step 1.6"
+      },
+      {
+        "priority": "HIGH",
+        "action": "Create SKILL_TEMPLATE.toon as reference implementation",
+        "details": "Template should demonstrate: (1) Trigger patterns in Italian and English, (2) Agent binding syntax, (3) Workflow step definition, (4) Constraint embedding, (5) Valid TOON structure that compiles to valid SKILL.md",
+        "owner": "Implementation team",
+        "verification": "Template file exists and compiles successfully"
+      },
+      {
+        "priority": "HIGH",
+        "action": "Cross-reference workflow orchestration specification",
+        "details": "Identify which step (possibly 5.4 or later) defines how skills work together. Understand what 'workflow steps' means in that context. Ensure this step is properly sequenced.",
+        "owner": "Project coordinator",
+        "verification": "Dependency mapping shows clear progression: skill definitions (5.1-5.3) → orchestration (5.4?) → integration validation"
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Revise time estimate to 3-4 hours after clarifications",
+        "details": "Current 2-hour estimate assumes complete pre-existing knowledge. After clarifications obtained, re-validate estimate.",
+        "owner": "Project coordinator",
+        "verification": "Updated estimate in task metadata"
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Add explicit test environment setup to execution guidance",
+        "details": "Specify: (1) How to set up test environment for skill triggering, (2) How E2E test runs, (3) What constitutes successful trigger",
+        "owner": "Task author",
+        "verification": "Execution guidance includes setup steps"
+      }
+    ],
+    "approval_decision": "CONDITIONAL APPROVAL - Task is logically sound and fits project progression, but has critical knowledge gaps that must be resolved before implementation can proceed. Do not proceed without addressing blocking items in checklist.",
+    "implementation_can_start_when": [
+      "TOON v3.0 skill syntax specification document is available",
+      "Skill invocation mechanism is documented",
+      "SKILL_TEMPLATE.toon exists and is accessible",
+      "Constraint representation format is defined",
+      "Test environment for E2E skill triggering is set up"
+    ],
+    "notes": "Task structure follows good patterns from phase 4 (command migration) but skills appear to be a more complex construct. Need to understand: (1) Do skills use same TOON syntax as commands or different? (2) How do workflow orchestration and skill coordination work? Recommend creating integration document explaining skill architecture and invocation model before full rollout to steps 5.2-5.3."
+  }
+}

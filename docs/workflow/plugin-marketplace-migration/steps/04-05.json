@@ -1,0 +1,353 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "04-05",
+  "phase": {
+    "number": 4,
+    "name": "Command Migration",
+    "purpose": "Convert all 20 commands to TOON format"
+  },
+  "step": {
+    "number": "4.5",
+    "name": "Convert DEMO Wave Commands",
+    "description": "Convert deliver.md, finalize.md to TOON format",
+    "motivation": "DEMO wave handles deployment and closure",
+    "estimated_hours": "3-4"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC1": "All source files in TOON v3.0 format",
+      "SC7": "~60% token savings in source files"
+    },
+    "dependencies": [
+      "2.4"
+    ]
+  },
+  "deliverables": {
+    "files_to_create": [
+      "5d-wave/tasks/dw/deliver.toon",
+      "5d-wave/tasks/dw/finalize.toon"
+    ],
+    "acceptance_criteria": [
+      "Commands compile with agent-activation headers",
+      "Wave metadata correct (DEMO)"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN DEMO wave command .toon files\nWHEN compiled\nTHEN output has wave: DEMO in metadata",
+    "inner_tests": [
+      "test_deliver_command_compiles",
+      "test_finalize_command_compiles"
+    ]
+  },
+  "refactoring": {
+    "targets": []
+  },
+  "execution_guidance": {
+    "approach": "Command conversion with template validation",
+    "workflow": [
+      "1. Convert deliver.md to deliver.toon",
+      "2. Convert finalize.md to finalize.toon",
+      "3. Compile both TOON files",
+      "4. Write tests to validate wave metadata",
+      "5. Verify agent-activation headers present",
+      "6. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "All tests passing (100% required)",
+      "Both commands compile successfully",
+      "Wave metadata correct (DEMO)",
+      "Agent-activation headers valid",
+      "No report files created"
+    ]
+  },
+  "review_metadata": {
+    "review_date": "2026-01-05",
+    "reviewed_by": "Lyra (code-review-mode)",
+    "status": "PASS_WITH_CLARIFICATIONS",
+    "severity_summary": {
+      "critical": 0,
+      "high": 2,
+      "medium": 2,
+      "low": 1
+    },
+    "critical_issues": [],
+    "high_issues": [
+      {
+        "id": "H1",
+        "title": "Ambiguous DEMO wave command binding requirements",
+        "description": "Task says 'Commands compile with agent-activation headers' and 'Wave metadata correct (DEMO)' but doesn't specify: (1) Which agent binds to deliver command? Task 4.4 shows 'software-crafter' and 'reviewer' bindings for DEVELOP wave. (2) Which agent binds to finalize command? (3) Are these different from earlier DEMO wave commands (design, discuss, distill) that already exist? (4) What is correct agent-id in frontmatter for each command?",
+        "impact": "Implementation may produce incorrect agent bindings. Tests may validate wrong metadata. If deliverables reference wrong agents, commands won't invoke properly",
+        "blocking": false,
+        "recommendation": "Add to task: Explicit binding specification for each command: '(1) deliver.md -> agent-id: devop (from source file), (2) finalize.md -> agent-parameter: true (from source file, special case)' and note any deviations from pattern in 04-04 or 04-06"
+      },
+      {
+        "id": "H2",
+        "title": "Test specification incomplete for finalize command complexity",
+        "description": "Inner tests list 'test_deliver_command_compiles' and 'test_finalize_command_compiles' as equivalent, but source reveals finalize.md is 17K with complex agent-parameter dispatch logic (Step 1-4: Extract parameter, verify agent, extract project-id, validate rules). deliver.md is 2.4K with straightforward activation. These are dramatically different complexity levels",
+        "impact": "Single generic test 'test_finalize_command_compiles' insufficient to validate finalize.toon correctness. May pass compilation but fail runtime dispatch logic",
+        "blocking": false,
+        "recommendation": "Add specific inner tests for finalize: (1) 'test_finalize_parameter_parsing_rules' - validates @ prefix extraction, quote stripping, whitespace handling, (2) 'test_finalize_agent_validation' - confirms valid agents list is present, (3) 'test_finalize_project_id_extraction' - validates second parameter parsing. Deliver tests can remain generic"
+      }
+    ],
+    "medium_issues": [
+      {
+        "id": "M1",
+        "title": "Time estimate may underestimate finalize conversion",
+        "description": "Task estimates '1 hour' for converting 2 commands. deliver.md is 2.4K straightforward conversion. But finalize.md is 17K with complex conditional logic, parameter parsing, agent validation protocol, error handling paths. Expected time for complex command 1-2 hours alone, plus testing",
+        "impact": "Executor may run out of time before completing thorough testing and refactoring. Quality may degrade under time pressure",
+        "blocking": false,
+        "recommendation": "Adjust estimated_hours to '2-3 hours' to account for finalize complexity. If must stay within 1 hour, consider splitting: deliver conversion in 04-05, finalize in separate task 04-07"
+      },
+      {
+        "id": "M2",
+        "title": "Refactoring targets absent - no guidance on code organization",
+        "description": "Task has empty refactoring.targets array. Task 04-04 (DEVELOP wave) specifies 'Level 1: Consistent command structure'. DEMO wave commands have different patterns (deliver: straightforward, finalize: complex dispatch). No guidance on whether these differences should be normalized or preserved",
+        "impact": "Refactoring step becomes optional or guesswork. May miss opportunity to align DEMO command structure with DEVELOP patterns",
+        "blocking": false,
+        "recommendation": "Add refactoring targets: '[(1) Level 1 - Consistent command structure between deliver and finalize (consider: normalize parameter parsing style, consistent error handling patterns, aligned section ordering)]' with rationale for any differences kept intentional"
+      }
+    ],
+    "low_issues": [
+      {
+        "id": "L1",
+        "title": "Success criteria mapping incomplete for DEMO wave completeness",
+        "description": "Task maps to SC1 and SC7. But Task 04-06 (CROSS_WAVE commands) adds acceptance criterion: 'Total: 20 command.toon files exist'. This task doesn't explicitly track progress toward 20-command goal, only validates these 2 commands",
+        "impact": "Implementer may not realize this task is part of cumulative 20-command target. No clear visibility into overall migration progress",
+        "blocking": false,
+        "recommendation": "Add note in context section: 'Progress: 2 of 20 commands (deliver, finalize). After completion: 16 of 20 TOON files exist. See task 04-06 for final validation of all 20'"
+      }
+    ],
+    "missing_context": [
+      "Explicit agent binding for deliver.md - which agent-id should output have?",
+      "Explicit agent binding for finalize.md - special agent-parameter: true case, how should this be represented in TOON format?",
+      "Clarification: Are deliver and finalize the only remaining DEMO wave commands, or are there others (design, discuss, distill already converted in prior steps)?",
+      "Test framework assumed (pytest?) - should be documented for consistency with 04-04 tests",
+      "TOON compiler behavior with complex parameter parsing and dispatch logic - any known limitations or special handling needed for finalize?",
+      "Refactoring scope - should complex parameter parsing in finalize be extracted into utilities or kept together?"
+    ],
+    "hidden_dependencies": [
+      "Task 04-05 + 04-06 combine to complete 20-command migration. If 04-05 fails, 04-06 outer test 'count == 20' will fail. These tasks are tightly coupled despite separate step IDs",
+      "Task 04-06 depends on 04-05 completing successfully: 2 commands (deliver, finalize) must be in 5d-wave/tasks/dw/ directory before 04-06 validation",
+      "Finalize command parameter parsing logic depends on understanding agent registry/availability - implicit dependency on system state (which agents are available/loaded)",
+      "Test framework and imports: If tests use same patterns as 04-04, they depend on test utilities/fixtures established in earlier steps"
+    ],
+    "achievability_concerns": [
+      {
+        "concern": "Finalize command dispatch logic complexity",
+        "detail": "Finalize requires runtime validation of agent names, parameter extraction with specific rules, and error handling. TOON compilation may not preserve all error cases. Tests must validate both compilation AND runtime behavior",
+        "mitigation": "Write inner tests that compile finalize.toon, instantiate result, then validate parameter parsing and agent validation work at runtime with sample inputs"
+      },
+      {
+        "concern": "Agent-parameter flag may not be understood in TOON context",
+        "detail": "Source finalize.md shows 'agent-parameter: true' in frontmatter. TOON format may not have direct equivalent for this flag. Conversion may lose this critical metadata",
+        "mitigation": "Verify TOON spec supports agent-parameter metadata and conversion preserves it. If not, document translation strategy in task or escalate as blocker"
+      },
+      {
+        "concern": "1-hour time estimate aggressive for 2 complex files",
+        "detail": "deliver.md 2.4K is manageable, but finalize.md 17K with dispatch logic, error handling, multi-step validation is substantial. Plus: 2 tests + compilation + refactoring. Realistic time 90-120 minutes alone for finalize",
+        "mitigation": "Set clear priority: if time runs short, deliver conversion can be completed fully, finalize conversion may need second task. Avoid incomplete finalize implementation"
+      }
+    ],
+    "deliverables_analysis": {
+      "deliverables_realism": "HIGH",
+      "detail": "Both files exist and are well-formed. Conversion is straightforward mechanical transformation. Deliverables are achievable",
+      "specific_notes": {
+        "deliver.toon": "2.4K source, straightforward agent-activation header with devop binding. Low risk conversion",
+        "finalize.toon": "17K source with complex parameter dispatch protocol. Higher risk - must carefully preserve logic and error handling. Conversion requires careful line-by-line attention to conditional blocks"
+      }
+    },
+    "acceptance_criteria_analysis": [
+      {
+        "criterion": "Commands compile with agent-activation headers",
+        "clarity": "CLEAR",
+        "testability": "TESTABLE",
+        "note": "Compilation and header validation are objective. Test can verify headers present and parseable"
+      },
+      {
+        "criterion": "Wave metadata correct (DEMO)",
+        "clarity": "CLEAR",
+        "testability": "TESTABLE",
+        "note": "Can verify wave: DEMO in compiled output. Specific agent bindings (devop for deliver, agent-parameter for finalize) should be documented"
+      }
+    ],
+    "dependencies_analysis": {
+      "declared_dependency": "2.4",
+      "status": "UNCLEAR_REFERENCE",
+      "detail": "Dependency list shows '2.4' but project numbering pattern is {phase}.{step} (e.g., 04-05). What is step 2.4? Check if should be '02-04' (Pilot Migration - Finalize Pilot) or different task"
+    },
+    "overall_assessment": {
+      "clarity": "GOOD - task is understandable, though some agent binding details should be explicit",
+      "completeness": "ACCEPTABLE - deliverables and acceptance criteria are defined, though refactoring targets are missing",
+      "achievability": "HIGH - both files are straightforward conversions with achievable timeline if extended slightly",
+      "blocking_issues": "NONE - no critical blockers, can proceed with clarifications addressed during implementation",
+      "recommendation": "APPROVE with clarifications: (1) Document specific agent bindings for each command before starting, (2) Add finalize-specific parameter parsing tests, (3) Extend time estimate to 2-3 hours if possible, (4) Confirm TOON format preserves agent-parameter flag"
+    },
+    "test_coverage_assessment": {
+      "outer_test_specification": "ADEQUATE - tests compilation and wave metadata. Could be more specific about agent bindings",
+      "inner_test_count": "MINIMAL - 2 tests for 2 commands is bare minimum. Finalize deserves 3-4 tests given parameter parsing complexity",
+      "test_comprehensiveness": "NEEDS_ENHANCEMENT - tests focus on compilation/metadata. Should add runtime validation tests for finalize dispatch logic"
+    },
+    "risk_assessment": {
+      "technical_risk": "LOW",
+      "timeline_risk": "MEDIUM - 1 hour estimate aggressive for finalize.md (17K) complexity",
+      "quality_risk": "MEDIUM - minimal test coverage for finalize dispatch logic may miss runtime bugs",
+      "mitigation_recommendations": [
+        "Extend timeline to 2-3 hours",
+        "Add 3-4 inner tests specific to finalize parameter parsing",
+        "Include runtime validation tests, not just compilation tests",
+        "Verify TOON format supports agent-parameter metadata before starting conversion"
+      ]
+    }
+  },
+  "prerequisite_checks": {
+    "phase_1_toon_infrastructure": {
+      "requirement": "TOON parser and compiler from Phase 1 must be complete",
+      "verification": "Confirm tools/toon/compiler.py exists and test_toon_parser passes",
+      "blocking": true,
+      "escalation": "If Phase 1 incomplete, STOP - escalate to project manager for decision on Option B (Markdown) or Option C (Block)"
+    },
+    "toon_format_specification": {
+      "requirement": "TOON v3.0 format specification must be available",
+      "verification": "Obtain from tools/toon/TOON-v3.0-SPEC.md or reference implementation",
+      "blocking": true,
+      "escalation": "If spec unavailable, create from reverse-engineering agents/novel-editor-chatgpt-toon.txt"
+    },
+    "baseline_measurements": {
+      "requirement": "Baseline measurements from Phase 0 must be complete",
+      "verification": "Confirm docs/workflow/plugin-marketplace-migration/baseline.yaml exists with command metrics",
+      "blocking": true,
+      "escalation": "If baseline missing, execute Phase 0 baseline measurement first"
+    }
+  },
+  "toon_compiler": {
+    "tool_location": "tools/toon/compiler.py (from Phase 1)",
+    "purpose": "Transforms TOON source to Claude Code compliant output",
+    "input": "5d-wave/tasks/dw/*.toon (TOON format)",
+    "output": "dist/commands/dw/*.md (Markdown format)",
+    "invocation": "python tools/toon/compiler.py <input.toon> --validate --output <output.md>",
+    "success_criteria": [
+      "Exit code = 0 (no errors)",
+      "No errors in stderr",
+      "Output file size > 1000 bytes (non-trivial content)",
+      "Metadata validates against TOON v3.0 schema",
+      "Output markdown is Claude Code compliant"
+    ],
+    "validation": "pytest tests/tools/toon/test_compiler.py"
+  },
+  "error_handling": {
+    "scenario_1_compiler_not_found": {
+      "error": "TOON compiler not found at tools/toon/compiler.py",
+      "handling": "Log error with clear message: 'Phase 1 TOON infrastructure required. Run Phase 1.1-1.5 first or choose Option B (Markdown).'",
+      "recovery": "STOP execution, escalate to user for decision",
+      "test": "test_error_compiler_not_found"
+    },
+    "scenario_2_compilation_failure": {
+      "error": "TOON compiler exits with non-zero code",
+      "handling": "Log compilation error with file path and stderr output. Skip failed file, continue with others. Generate error report.",
+      "recovery": "Review TOON syntax, fix errors, retry compilation",
+      "test": "test_error_compilation_failure_graceful"
+    },
+    "scenario_3_metadata_validation_failure": {
+      "error": "Compiled output fails metadata validation (missing required fields)",
+      "handling": "Log validation errors with specific missing fields. Mark file as failed. Continue processing other files.",
+      "recovery": "Add missing metadata to source TOON file, recompile",
+      "test": "test_error_metadata_validation_failure"
+    },
+    "scenario_4_partial_batch_failure": {
+      "error": "Some files in batch succeed, others fail",
+      "handling": "Complete all processable files. Generate summary report: X succeeded, Y failed. List failed files with error reasons.",
+      "recovery": "Fix failed files individually, rerun batch",
+      "test": "test_error_partial_batch_failure_reporting"
+    }
+  },
+  "test_specifications": {
+    "unit_tests": [
+      {
+        "name": "test_toon_parser_valid_command_input",
+        "purpose": "Verify parser handles valid TOON command syntax correctly",
+        "input": "Sample TOON command file with all required fields (name, description, parameters)",
+        "expected": "Parsed dict with command metadata: {name, description, parameters, dependencies}"
+      },
+      {
+        "name": "test_template_rendering_with_parsed_command",
+        "purpose": "Verify Jinja2 template renders command.md from parsed data",
+        "input": "Parsed command dict from parser output",
+        "expected": "Valid Markdown output with command syntax section, parameters table, usage examples"
+      },
+      {
+        "name": "test_output_validation_against_claude_code_spec",
+        "purpose": "Verify compiled output meets Claude Code command specification",
+        "input": "Generated command.md file",
+        "expected": "Validation passes: Has frontmatter, execution context, success criteria sections"
+      }
+    ],
+    "integration_tests": [
+      {
+        "name": "test_e2e_command_migration_pipeline",
+        "purpose": "Verify complete migration: TOON → Parse → Template → Validate → Output",
+        "input": "Real TOON command file from 5d-wave/tasks/dw/",
+        "steps": "Parse TOON → Apply command template → Validate output → Write to dist/",
+        "expected": "Valid command.md in dist/commands/dw/ matching Claude Code spec"
+      },
+      {
+        "name": "test_batch_migration_all_commands",
+        "purpose": "Verify batch processing of all command files",
+        "input": "All TOON command files (8 dw: commands)",
+        "expected": "All 8 commands migrated successfully with validation report"
+      }
+    ],
+    "error_scenario_tests": [
+      {
+        "name": "test_compiler_not_found_error_handling",
+        "purpose": "Verify graceful failure when compiler missing",
+        "setup": "Remove or rename tools/toon/compiler.py",
+        "expected": "Clear error message, execution stops, no partial output"
+      },
+      {
+        "name": "test_malformed_toon_syntax_error_handling",
+        "purpose": "Verify parser reports syntax errors clearly",
+        "input": "TOON file with missing ## section header",
+        "expected": "Parser error with line number, specific syntax issue description"
+      },
+      {
+        "name": "test_validation_failure_error_handling",
+        "purpose": "Verify validation errors reported clearly",
+        "input": "TOON file missing required 'description' field",
+        "expected": "Validation error: 'Missing required field: description' with file path"
+      }
+    ],
+    "finalize_complexity_tests": [
+      {
+        "name": "test_finalize_parameter_parsing",
+        "purpose": "Verify finalize command parses all parameters correctly",
+        "input": "Command with multiple parameters (--project, --phase, --output)",
+        "expected": "All parameters parsed, validated, and accessible"
+      },
+      {
+        "name": "test_finalize_agent_validation",
+        "purpose": "Verify finalize validates agent bindings completeness",
+        "input": "Command bindings for 8 dw: commands",
+        "expected": "Validation passes: All commands have agent bindings"
+      },
+      {
+        "name": "test_finalize_error_handling",
+        "purpose": "Verify finalize handles missing dependencies gracefully",
+        "input": "Finalize attempt with missing prerequisite (baseline.yaml)",
+        "expected": "Clear error: 'Missing prerequisite: baseline.yaml'"
+      },
+      {
+        "name": "test_finalize_metadata_preservation",
+        "purpose": "Verify finalize preserves all command metadata during processing",
+        "input": "Command with rich metadata (tags, dependencies, examples)",
+        "expected": "Output preserves all metadata fields without loss"
+      }
+    ]
+  }
+}

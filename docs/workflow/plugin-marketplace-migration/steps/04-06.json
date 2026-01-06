@@ -1,0 +1,695 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "04-06",
+  "phase": {
+    "number": 4,
+    "name": "Command Migration",
+    "purpose": "Convert all 20 commands to TOON format"
+  },
+  "step": {
+    "number": "4.6",
+    "name": "Convert CROSS_WAVE Commands",
+    "description": "Convert 4 cross-wave commands: research.md, root-why.md, git.md, forge.md",
+    "motivation": "CROSS_WAVE commands available at any workflow point",
+    "estimated_hours": "4-6"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC1": "All source files in TOON v3.0 format",
+      "SC7": "~60% token savings in source files"
+    },
+    "dependencies": [
+      "2.4"
+    ],
+    "wave_breakdown": {
+      "phase_4_total_commands": 20,
+      "4_1_discuss": [
+        "start",
+        "discuss"
+      ],
+      "4_2_design": [
+        "design",
+        "diagram"
+      ],
+      "4_3_distill": [
+        "distill",
+        "skeleton"
+      ],
+      "4_4_develop": [
+        "baseline",
+        "roadmap",
+        "split",
+        "execute",
+        "review",
+        "develop",
+        "refactor",
+        "mikado"
+      ],
+      "4_5_demo": [
+        "deliver",
+        "finalize"
+      ],
+      "4_6_cross_wave": [
+        "research",
+        "root-why",
+        "git",
+        "forge"
+      ]
+    }
+  },
+  "deliverables": {
+    "files_to_create": [
+      "5d-wave/tasks/dw/research.toon",
+      "5d-wave/tasks/dw/root-why.toon",
+      "5d-wave/tasks/dw/git.toon",
+      "5d-wave/tasks/dw/forge.toon"
+    ],
+    "acceptance_criteria": [
+      "Commands compile with agent-activation headers",
+      "Wave metadata correct (CROSS_WAVE)",
+      "All 4 CROSS_WAVE commands have mandatory agent bindings",
+      "Total: 20 command.toon files exist",
+      "Token savings validation: Deferred to Phase 8 final validation (not measured in this step)"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN all command .toon files in 5d-wave/tasks/dw/\nWHEN I count .toon files\nTHEN count == 20 AND all are .toon (zero .md files remain)",
+    "inner_tests": [
+      "test_cross_wave_commands_compile",
+      "test_cross_wave_metadata_correct",
+      "test_cross_wave_agent_bindings_valid",
+      "test_all_20_commands_migrated"
+    ]
+  },
+  "refactoring": {
+    "targets": [
+      {
+        "level": 1,
+        "focus": "Final command format consistency across all 20 commands",
+        "validation": "Verify consistent naming, spacing, and structure in TOON format"
+      }
+    ]
+  },
+  "execution_guidance": {
+    "approach": "Final command batch with migration completion validation",
+    "workflow": [
+      "1. Convert all 4 CROSS_WAVE .md files to .toon: research.md, root-why.md, git.md, forge.md",
+      "2. Verify wave metadata 'CROSS_WAVE' in each file",
+      "3. Compile each TOON file and validate output",
+      "4. Write and run tests to validate total command count (20)",
+      "5. Write tests for agent bindings and compilation success",
+      "6. Apply refactoring level 1 for final consistency",
+      "7. Verify NO .md files remain in 5d-wave/tasks/dw/ (all converted)",
+      "8. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "All tests passing (100% required)",
+      "Exactly 20 command.toon files exist",
+      "Zero .md command files remain",
+      "All 4 CROSS_WAVE commands compile successfully",
+      "Wave metadata 'CROSS_WAVE' validated in each file",
+      "Agent bindings present and valid for each command",
+      "Refactoring applied (level 1) - consistency verified",
+      "No report files created",
+      "Phase 4 completion gate: All waves converted (DISCUSS, DESIGN, DISTILL, DEVELOP, DEMO, CROSS_WAVE)"
+    ]
+  },
+  "review_metadata": {
+    "review_date": "2026-01-05",
+    "reviewed_by": "lyra",
+    "review_focus": [
+      "clarity",
+      "completeness",
+      "achievability",
+      "hidden_dependencies"
+    ],
+    "findings": {
+      "strengths": [
+        "Clear wave breakdown showing all 20 commands mapped to 6 wave categories",
+        "Acceptance criteria explicitly requires verification of all 20 .toon files (quality gate against partial migration)",
+        "Proper dependency tracking to step 2.4 for context",
+        "TDD approach correctly specifies outer loop validation (count == 20) ensuring migration completeness"
+      ],
+      "clarity_issues": [
+        "acceptance_criteria lacked 'All 4 CROSS_WAVE commands have mandatory agent bindings' - added for consistency with 4.4 (DEVELOP) which validates agent bindings",
+        "TDD outer_test needed refinement: original didn't exclude possibility of .md files coexisting with .toon files - updated to explicitly validate zero .md files remain"
+      ],
+      "completeness_gaps": [
+        "Missing explicit validation that zero .md command files remain (migration completeness)",
+        "Missing inner tests for agent binding validation (consistent with DEVELOP wave pattern 4.4)",
+        "wave_breakdown context added to clarify the 20-command mapping across 6 wave categories"
+      ],
+      "hidden_dependencies": [
+        "Steps 4.1-4.5 must be completed first: task depends on 16 commands already converted to .toon format",
+        "Test #4 'Verify total command count' implicitly depends on all prior steps completing successfully"
+      ],
+      "achievability_notes": [
+        "Estimated 2 hours is reasonable for converting 4 commands plus validation (0.5 hours per command conversion, 0.5 hours for final validation tests)",
+        "Refactoring level 1 should complete within estimation as it's final consistency check only"
+      ],
+      "critical_observation": "This is the final step in Phase 4 'Command Migration'. Acceptance criteria #3 (Total: 20 command.toon files exist) serves as the completion gate for the entire command migration goal. Quality gates properly validate this completion criterion."
+    }
+  },
+  "adversarial_review": {
+    "review_timestamp": "2026-01-05T00:00:00Z",
+    "reviewer_mode": "ruthless_failure_mode_focused",
+    "blast_radius": "ENTIRE_PROJECT",
+    "risk_score": 9.5,
+    "go_no_go": "NO_GO_CRITICAL_BLOCKERS",
+    "contradictions_found": [
+      {
+        "contradiction": "TOON v3.0 format doesn't exist",
+        "evidence": [
+          "All 20 command files currently .md format (verified: /mnt/c/Repositories/Projects/ai-craft/5d-wave/tasks/dw/*.md)",
+          "Zero .toon files exist in the project (/mnt/c/Repositories/Projects/ai-craft/5d-wave/tasks/dw/)",
+          "Task assumes .toon format is defined and available",
+          "Step 01-01 already identified TOON version mismatch as CATASTROPHIC - see ADVERSARIAL_REVIEW_SUMMARY.md"
+        ],
+        "impact": "Cannot convert 4 commands to TOON format if TOON format is undefined. Task is literally impossible.",
+        "severity": "CATASTROPHIC"
+      },
+      {
+        "contradiction": "Task claims 20 commands already migrated (steps 4.1-4.5), but reality shows ZERO migrated",
+        "evidence": [
+          "Task assumes steps 4.1-4.5 completed: 'all 20 .toon files in 5d-wave/tasks/dw/' (line 54)",
+          "Actual state: 20 files remain as .md, zero exist as .toon",
+          "Steps 4.1-4.5 are either not executed or failed silently",
+          "Quality gate at line 85-86 assumes 16 commands already converted: not true"
+        ],
+        "impact": "Cannot execute step 4.6 if its prerequisite steps (4.1-4.5) failed. Cascading failure.",
+        "severity": "CATASTROPHIC"
+      },
+      {
+        "contradiction": "Task requires TOON format specification, but no specification exists",
+        "evidence": [
+          "Line 25: SC1 requires 'All source files in TOON v3.0 format'",
+          "Line 26: SC7 requires '~60% token savings in source files'",
+          "TOON v3.0 specification not found in codebase",
+          "TOON v1.0 reference exists (agents/novel-editor-chatgpt-toon.txt)",
+          "Task assumes developers know what TOON v3.0 is - they don't"
+        ],
+        "impact": "Developers cannot convert files to unknown format. Task lacks essential specification.",
+        "severity": "CRITICAL"
+      },
+      {
+        "contradiction": "2-hour estimate assumes .md to .toon conversion is trivial mechanical transformation",
+        "evidence": [
+          "Task claims 2 hours for: convert 4 files + write tests + validate + apply refactoring + verify zero .md remain",
+          "0.5 hours per command conversion assumes format is known and conversion is simple",
+          "If format is undefined (see above), conversion time is zero because it cannot be done",
+          "If format is defined, 0.5 hours is grossly underestimated for unknown format with testing"
+        ],
+        "impact": "Estimate provides false confidence. Actual time could be unlimited (if task impossible) or 8-16 hours (if format exists).",
+        "severity": "HIGH"
+      }
+    ],
+    "dangerous_assumptions": [
+      {
+        "assumption": "TOON v3.0 format is defined and stable",
+        "why_dangerous": "No evidence TOON v3.0 exists anywhere. Task inherits unsolved v1.0 vs v3.0 mismatch from step 01-01.",
+        "consequence": "Developers waste time on non-existent format specification or reverse-engineer from v1.0.",
+        "how_to_test": "Find specification for TOON v3.0 - if it doesn't exist, entire Phase 4 is blocked"
+      },
+      {
+        "assumption": "Steps 4.1-4.5 completed successfully",
+        "why_dangerous": "No evidence they executed. No .toon files exist. Task blindly assumes predecessors succeeded.",
+        "consequence": "Task 4.6 blocked by missing prerequisites. Quality gate (line 85) cannot be satisfied.",
+        "how_to_test": "Check if any .toon files exist - they don't. This proves predecessors failed or didn't run."
+      },
+      {
+        "assumption": "60% token savings automatically achieved through format conversion",
+        "why_dangerous": "Token savings depends on TOON compression characteristics. If TOON format is verbose, savings could be negative.",
+        "consequence": "Acceptance criterion SC7 (line 26) may be impossible to meet. Success definition is undefined.",
+        "how_to_test": "Show TOON format sample and measure actual token count vs current .md"
+      },
+      {
+        "assumption": "Converting .md to .toon preserves all semantics",
+        "why_dangerous": "No format specification to validate preservation. Transformation rules unknown.",
+        "consequence": "Converted files may lose functionality, agent bindings, or metadata.",
+        "how_to_test": "Define transformation rules before starting. Validate all semantics preserved."
+      },
+      {
+        "assumption": "Refactoring level 1 (final consistency check) fits in 2-hour budget",
+        "why_dangerous": "Format definition, conversion testing, agent binding validation, and semantic preservation checks haven't been budgeted.",
+        "consequence": "Refactoring step will overrun or be skipped, leaving inconsistencies.",
+        "how_to_test": "Add up actual time needed: format learning (4h) + conversion (4h) + testing (2h) + refactoring (1h) = 11h not 2h"
+      }
+    ],
+    "unhandled_edge_cases": [
+      {
+        "edge_case": "TOON v3.0 doesn't exist or is incompatible with current task structure",
+        "trigger": "Execute task as written - attempt to create .toon files",
+        "outcome": "Developers create ad-hoc TOON format, tests fail, format is inconsistent across 20 files",
+        "mitigation": "Resolve TOON version question BEFORE starting conversion"
+      },
+      {
+        "edge_case": "Steps 4.1-4.5 failed (no .toon files exist - CONFIRMED)",
+        "trigger": "Check /5d-wave/tasks/dw/*.toon - zero files found",
+        "outcome": "Step 4.6 cannot execute. Cascade failure blocks entire Phase 4.",
+        "mitigation": "Investigate why steps 4.1-4.5 didn't create .toon files. Fix predecessors first."
+      },
+      {
+        "edge_case": "Token savings (SC7: ~60%) not achieved",
+        "trigger": "Convert files and measure actual token count",
+        "outcome": "Success criterion fails. Acceptance criteria cannot be met.",
+        "mitigation": "Analyze TOON compression ratio before starting. Adjust criterion if format doesn't compress."
+      },
+      {
+        "edge_case": "Agent bindings in .md files contain format-specific syntax that doesn't map to TOON",
+        "trigger": "Examine git.md, research.md agent binding structures vs TOON capabilities",
+        "outcome": "Converted files lose agent binding functionality or are malformed.",
+        "mitigation": "Analyze all agent binding formats before starting conversion"
+      },
+      {
+        "edge_case": "Refactoring level 1 reveals format inconsistencies that require rework",
+        "trigger": "Execute consistency checks across all 20 .toon files",
+        "outcome": "Inconsistencies found, all 20 files need rework, 2-hour estimate explodes",
+        "mitigation": "Define consistency rules upfront, build validation into conversion process"
+      },
+      {
+        "edge_case": "Test isolation: Writing 4 concurrent .toon files + tests in same directory causes race conditions",
+        "trigger": "Run conversion process in parallel with test execution",
+        "outcome": "Flaky tests, file not found errors, inconsistent state",
+        "mitigation": "Serialize conversion/testing, use atomic file operations"
+      },
+      {
+        "edge_case": "Zero .md files remain verification fails due to leftover .md backups or templates",
+        "trigger": "Conversion process leaves .md.bak or .md.tmp files",
+        "outcome": "Quality gate 'Zero .md files remain' fails falsely",
+        "mitigation": "Define cleanup strategy explicitly before starting"
+      }
+    ],
+    "failure_scenarios": [
+      {
+        "scenario": "Format Definition Failure (PROBABILITY: 95%)",
+        "steps": [
+          "1. Developers start task 4.6",
+          "2. Realize TOON v3.0 format is undefined (no spec exists)",
+          "3. Attempt to infer format from v1.0 example or project context",
+          "4. Format decisions are inconsistent across team",
+          "5. Some files convert to one format, others to different format",
+          "6. Tests fail due to format mismatch",
+          "7. 2-hour estimate becomes 12-16 hours of rework"
+        ],
+        "root_cause": "Task assumes format specification exists when it doesn't",
+        "recovery_effort": "8-12 hours - define format, convert all 20 files, re-test"
+      },
+      {
+        "scenario": "Predecessor Step Failure (PROBABILITY: 90%)",
+        "steps": [
+          "1. Step 4.6 assumes steps 4.1-4.5 completed (16 .toon files created)",
+          "2. Check confirms ZERO .toon files exist",
+          "3. Steps 4.1-4.5 either didn't run or failed silently",
+          "4. Quality gate 'Exactly 20 .toon files exist' (line 85) cannot be satisfied",
+          "5. Task blocked waiting for predecessor investigation and fix"
+        ],
+        "root_cause": "No validation that predecessors succeeded before this step began",
+        "recovery_effort": "4-8 hours - investigate and fix steps 4.1-4.5 first"
+      },
+      {
+        "scenario": "Acceptance Criterion Failure (PROBABILITY: 85%)",
+        "steps": [
+          "1. Developers convert files to TOON format",
+          "2. Run test: 'All tests passing, 20 .toon files exist, zero .md files remain'",
+          "3. Tests pass",
+          "4. Measure token savings: SC7 requires '~60% savings' (line 26)",
+          "5. Actual savings: 12% (TOON format is verbose)",
+          "6. Acceptance criterion fails",
+          "7. Decision: Rework format or accept lower savings?",
+          "8. Ambiguity causes project stall"
+        ],
+        "root_cause": "SC7 criterion assumes TOON compression characteristics without validation",
+        "recovery_effort": "2-4 hours - analyze format compression, adjust criterion or redesign format"
+      },
+      {
+        "scenario": "Semantic Loss During Conversion (PROBABILITY: 70%)",
+        "steps": [
+          "1. Convert 4 .md command files to .toon format",
+          "2. .md files contain agent metadata: wave, bindings, configuration",
+          "3. TOON format unknown - conversion rules not defined",
+          "4. Some metadata lost or malformed in conversion",
+          "5. Agent activation fails: missing or corrupted metadata",
+          "6. Tests pass locally (testing format conversion, not agent activation)",
+          "7. Integration test with actual agents fails",
+          "8. Cascading failure: agents can't activate, system non-functional"
+        ],
+        "root_cause": "No explicit mapping between .md agent metadata and TOON format",
+        "recovery_effort": "6-10 hours - analyze metadata, design format preservation, convert, re-test"
+      },
+      {
+        "scenario": "Phase 4 Completion Gate Failure (PROBABILITY: 100%)",
+        "steps": [
+          "1. Task succeeds: 20 files converted, tests pass, zero .md remain",
+          "2. Quality gate 92 (line 92) requires: 'Phase 4 completion gate: All waves converted'",
+          "3. Validation checks that all 6 waves actually migrated (4.1-4.5 output)",
+          "4. Discovers steps 4.1-4.5 never executed or failed",
+          "5. Phase 4 completion blocked",
+          "6. Cannot move to Phase 5 DEMO despite step 4.6 passing"
+        ],
+        "root_cause": "Quality gate assumes predecessors completed, but they didn't",
+        "recovery_effort": "4-8 hours - fix steps 4.1-4.5, then re-validate step 4.6"
+      }
+    ],
+    "circular_dependencies": [
+      {
+        "dependency": "TOON Format ↔ Conversion Tests ↔ Agent Activation",
+        "problem": "Cannot write conversion tests without format specification. Cannot validate format without working conversion. Cannot activate agents without verified semantics.",
+        "circular_reference": "Format → Tests → Validation → Agent Activation → Format Requirements",
+        "how_to_break": "Resolve TOON format FIRST (step 01-01), then build tests, then conversion, then validation"
+      },
+      {
+        "dependency": "Steps 4.1-4.5 ↔ Step 4.6 Quality Gate",
+        "problem": "Step 4.6 assumes 4.1-4.5 succeeded (line 93: 'Phase 4 completion gate'). But quality gates require 4.6 to validate they succeeded. Cannot validate predecessor without successor validation.",
+        "circular_reference": "4.1-4.5 Output → 4.6 Verification → 4.1-4.5 Success Status",
+        "how_to_break": "Add validation to steps 4.1-4.5 before starting them. Don't rely on 4.6 to validate predecessors."
+      }
+    ],
+    "optimistic_estimates_analysis": [
+      {
+        "estimate": "2 hours for converting 4 commands + testing + refactoring",
+        "hidden_complexity": [
+          "Format definition (4-6 hours if format doesn't exist)",
+          "Format learning curve (1-2 hours)",
+          "Conversion implementation (2-3 hours)",
+          "Agent binding verification (2-3 hours)",
+          "Semantic preservation testing (2-3 hours)",
+          "Edge case handling (1-2 hours)",
+          "Refactoring consistency (1 hour)"
+        ],
+        "realistic_estimate": "12-20 hours (6-10x original estimate)",
+        "confidence_in_2_hours": "2% - only if format is already defined, tested, and conversion is mechanical"
+      },
+      {
+        "estimate": "~60% token savings (SC7, line 26)",
+        "reality_check": [
+          "Savings depend entirely on TOON format compression characteristics",
+          "Unknown format means savings unknown",
+          "Risk: Format could be LESS efficient than .md (use of metadata, structure overhead)",
+          "No baseline measurement of current .md token count"
+        ],
+        "confidence_in_60_percent": "10% - criterion assumes format characteristics unknown"
+      }
+    ],
+    "integration_point_failures": [
+      {
+        "integration": "Task 4.6 Output → Phase 5 DEMO Input",
+        "risk": "Step 4.6 can create 20 .toon files that pass tests but are incompatible with Phase 5 agents",
+        "trigger": "Phase 5 agents attempt to load/parse .toon files and fail",
+        "mitigation": "Phase 5 agents must validate .toon file compatibility during this task (not deferred)"
+      },
+      {
+        "integration": "TOON Format (Unknown) → Agent System (Expects Format)",
+        "risk": "Agents expect specific TOON format version/structure. Step 4.6 creates different structure. Cascading agent failures.",
+        "trigger": "Try to activate any agent after migration - fails parsing .toon file",
+        "mitigation": "Define and validate format with agent system before starting conversion"
+      },
+      {
+        "integration": "Quality Gate Validation → Predecessor Step Status",
+        "risk": "Quality gate at line 92 checks 'All waves converted' but doesn't verify which steps created which files",
+        "trigger": "4.6 passes all tests but predecessors failed - inconsistent state",
+        "mitigation": "Quality gate should trace each .toon file back to source step, validate chain"
+      }
+    ],
+    "data_loss_risks": [
+      {
+        "risk": "Agent binding metadata loss during .md → .toon conversion",
+        "likelihood": "HIGH - format conversion rules unknown",
+        "consequence": "Agent activation fails, workflow broken, cannot recover metadata",
+        "safeguard": "Create .md backup before starting. Validate all metadata preserved post-conversion.",
+        "test": "For each command: original .md metadata = converted .toon metadata"
+      },
+      {
+        "risk": "Semantic content loss if TOON format doesn't support all .md structures",
+        "likelihood": "MEDIUM - TOON format unknown, may not support all constructs",
+        "consequence": "Command functionality degraded or lost, tests pass but functionality broken",
+        "safeguard": "Analyze semantic differences before starting. Design bridging for unsupported constructs.",
+        "test": "Semantic diff: original .md semantics ⊆ converted .toon semantics"
+      },
+      {
+        "risk": "Test data loss if golden master snapshots not captured before conversion",
+        "likelihood": "LOW - tests still runnable after conversion",
+        "consequence": "Cannot revert to .md version if format prove incompatible",
+        "safeguard": "Commit all .md files to git before starting conversion. Create branch for safety.",
+        "test": "Verify git history contains .md version before any .toon changes"
+      }
+    ],
+    "security_holes": [
+      {
+        "hole": "Agent binding validation missing from task",
+        "risk": "Converted agents may have corrupted or malicious bindings if format parsing is weak",
+        "consequence": "Agents with wrong permissions, unauthorized access, command injection",
+        "mitigation": "Validate agent bindings against schema before and after conversion"
+      },
+      {
+        "hole": "Format specification allows arbitrary code/scripts in .toon files",
+        "risk": "If TOON format allows embedded code, malicious code could be injected during conversion",
+        "consequence": "Security breach, arbitrary code execution",
+        "mitigation": "Define TOON format to disallow code. Validate no code in .toon files."
+      }
+    ],
+    "test_coverage_gaps": [
+      {
+        "gap": "No test for format validation (TOON v3.0 structural integrity)",
+        "why_dangerous": "Converted files could be malformed without detection",
+        "test_needed": "test_toon_format_valid - validate against TOON v3.0 schema"
+      },
+      {
+        "gap": "No test for metadata preservation (agent bindings, wave type, etc)",
+        "why_dangerous": "Agent metadata could be corrupted silently",
+        "test_needed": "test_agent_metadata_preserved - compare original .md vs converted .toon"
+      },
+      {
+        "gap": "No test for round-trip conversion (.md → .toon → regenerate .md should match)",
+        "why_dangerous": "Conversion rules may not be reversible",
+        "test_needed": "test_roundtrip_conversion_fidelity"
+      },
+      {
+        "gap": "No integration test with actual agent system loading .toon files",
+        "why_dangerous": "Files may pass unit tests but fail in real agent loading",
+        "test_needed": "test_agents_load_and_activate_with_toon_files"
+      },
+      {
+        "gap": "No regression test capturing current .md file behavior",
+        "why_dangerous": "After conversion, no baseline to verify behavior preserved",
+        "test_needed": "capture_golden_master_of_current_md_behavior"
+      }
+    ],
+    "recommendations": [
+      {
+        "priority": "CRITICAL",
+        "action": "STOP - Do not execute step 4.6 until blockers resolved",
+        "rationale": "Task depends on TOON v3.0 format specification that doesn't exist. Steps 4.1-4.5 failed (zero .toon files). Task is impossible in current state.",
+        "blocking_items": [
+          "TOON v3.0 format specification must be defined and published",
+          "Steps 4.1-4.5 must be investigated and fixed - why are there zero .toon files?",
+          "Conversion semantic rules must be documented (how .md metadata maps to TOON)",
+          "Test coverage for format validation, metadata preservation, integration must be added"
+        ],
+        "estimated_fix_time": "6-8 hours for tech lead to resolve blockers"
+      },
+      {
+        "priority": "CRITICAL",
+        "action": "Investigate step 01-01 TOON version mismatch - this is inherited failure",
+        "rationale": "Step 01-01 identified TOON v1.0 vs v3.0 mismatch as CATASTROPHIC. Step 4.6 inherits this unresolved issue.",
+        "blocking_items": [
+          "Was TOON v1.0 vs v3.0 issue ever resolved?",
+          "If resolved, what is current TOON version?",
+          "If unresolved, Phase 1 (and all downstream phases) are blocked"
+        ],
+        "escalation": "Tech lead action required - may block entire project"
+      },
+      {
+        "priority": "HIGH",
+        "action": "Create format specification document: TOON v3.0 Structure Reference",
+        "content": [
+          "Formal grammar or schema for TOON v3.0",
+          "Examples of valid TOON files",
+          "Mapping of .md constructs to TOON equivalents",
+          "Compression characteristics (validate ~60% savings claim)",
+          "Agent binding representation in TOON format"
+        ],
+        "owner": "Tech lead or Phase 1 owner (01-01 parser step)",
+        "estimated_effort": "4-6 hours"
+      },
+      {
+        "priority": "HIGH",
+        "action": "Revise step 4.6 estimate from 2 hours to 12-16 hours",
+        "rationale": "Current estimate assumes format is known and conversion is mechanical. Reality: format unknown, conversion is complex with unknown semantics.",
+        "breakdown": [
+          "Format specification review: 2 hours",
+          "Conversion tooling (if not already built): 3-4 hours",
+          "Conversion execution: 2-3 hours",
+          "Semantic validation and testing: 3-4 hours",
+          "Refactoring and consistency checks: 1-2 hours"
+        ]
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Add acceptance criterion: Token savings measured and documented",
+        "rationale": "SC7 requires '~60% token savings' but no measurement method defined. Criterion is vague and unmeasurable.",
+        "modification": "Update SC7 to: 'Demonstrate ~60% token savings with measured baseline (.md tokens) and new (.toon tokens) counts'"
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Add acceptance criterion: All agent bindings verified valid post-conversion",
+        "rationale": "Agent metadata could be corrupted during conversion without explicit validation",
+        "modification": "Add: 'test_cross_wave_agent_bindings_valid - all 4 commands activate successfully with converted bindings'"
+      }
+    ],
+    "summary": {
+      "status": "CRITICAL FAILURE - DO NOT EXECUTE",
+      "root_cause": "Task assumes TOON v3.0 format exists and steps 4.1-4.5 succeeded. Both assumptions are false. Task is impossible in current state.",
+      "evidence": [
+        "Zero .toon files exist in project (verified: /5d-wave/tasks/dw/)",
+        "All 20 command files remain in .md format",
+        "TOON v3.0 specification not found anywhere in codebase",
+        "Step 01-01 identified TOON version mismatch - unresolved",
+        "Steps 4.1-4.5 assumed to succeed but left zero .toon files"
+      ],
+      "key_failures": [
+        "TOON format undefined - cannot convert to unknown format",
+        "Predecessor steps failed - cannot build on zero foundation",
+        "Estimate grossly optimistic - 2 hours vs realistic 12-16 hours",
+        "Acceptance criteria vague - token savings unmeasured",
+        "Test coverage incomplete - no format validation, metadata preservation tests",
+        "Integration untested - agents may not load converted .toon files"
+      ],
+      "recovery_path": "See recommendations section. Estimated 6-8 hours for tech lead to unblock + 12-16 hours for execution = 18-24 hours total.",
+      "risk_score_components": {
+        "format_definition_missing": 10,
+        "predecessor_steps_failed": 10,
+        "estimate_incorrect": 8,
+        "acceptance_criteria_vague": 7,
+        "test_coverage_incomplete": 7,
+        "integration_not_validated": 8,
+        "semantic_preservation_unknown": 9,
+        "overall": 9.5
+      }
+    }
+  },
+  "prerequisite_checks": {
+    "phase_1_toon_infrastructure": {
+      "requirement": "TOON parser and compiler from Phase 1 must be complete",
+      "verification": "Confirm tools/toon/compiler.py exists and test_toon_parser passes",
+      "blocking": true,
+      "escalation": "If Phase 1 incomplete, STOP - escalate to project manager for decision on Option B (Markdown) or Option C (Block)"
+    },
+    "toon_format_specification": {
+      "requirement": "TOON v3.0 format specification must be available",
+      "verification": "Obtain from tools/toon/TOON-v3.0-SPEC.md or reference implementation",
+      "blocking": true,
+      "escalation": "If spec unavailable, create from reverse-engineering agents/novel-editor-chatgpt-toon.txt"
+    },
+    "baseline_measurements": {
+      "requirement": "Baseline measurements from Phase 0 must be complete",
+      "verification": "Confirm docs/workflow/plugin-marketplace-migration/baseline.yaml exists with command metrics",
+      "blocking": true,
+      "escalation": "If baseline missing, execute Phase 0 baseline measurement first"
+    }
+  },
+  "toon_compiler": {
+    "tool_location": "tools/toon/compiler.py (from Phase 1)",
+    "purpose": "Transforms TOON source to Claude Code compliant output",
+    "input": "5d-wave/tasks/dw/*.toon (TOON format)",
+    "output": "dist/commands/dw/*.md (Markdown format)",
+    "invocation": "python tools/toon/compiler.py <input.toon> --validate --output <output.md>",
+    "success_criteria": [
+      "Exit code = 0 (no errors)",
+      "No errors in stderr",
+      "Output file size > 1000 bytes (non-trivial content)",
+      "Metadata validates against TOON v3.0 schema",
+      "Output markdown is Claude Code compliant"
+    ],
+    "validation": "pytest tests/tools/toon/test_compiler.py"
+  },
+  "error_handling": {
+    "scenario_1_compiler_not_found": {
+      "error": "TOON compiler not found at tools/toon/compiler.py",
+      "handling": "Log error with clear message: 'Phase 1 TOON infrastructure required. Run Phase 1.1-1.5 first or choose Option B (Markdown).'",
+      "recovery": "STOP execution, escalate to user for decision",
+      "test": "test_error_compiler_not_found"
+    },
+    "scenario_2_compilation_failure": {
+      "error": "TOON compiler exits with non-zero code",
+      "handling": "Log compilation error with file path and stderr output. Skip failed file, continue with others. Generate error report.",
+      "recovery": "Review TOON syntax, fix errors, retry compilation",
+      "test": "test_error_compilation_failure_graceful"
+    },
+    "scenario_3_metadata_validation_failure": {
+      "error": "Compiled output fails metadata validation (missing required fields)",
+      "handling": "Log validation errors with specific missing fields. Mark file as failed. Continue processing other files.",
+      "recovery": "Add missing metadata to source TOON file, recompile",
+      "test": "test_error_metadata_validation_failure"
+    },
+    "scenario_4_partial_batch_failure": {
+      "error": "Some files in batch succeed, others fail",
+      "handling": "Complete all processable files. Generate summary report: X succeeded, Y failed. List failed files with error reasons.",
+      "recovery": "Fix failed files individually, rerun batch",
+      "test": "test_error_partial_batch_failure_reporting"
+    }
+  },
+  "test_specifications": {
+    "unit_tests": [
+      {
+        "name": "test_toon_parser_valid_command_input",
+        "purpose": "Verify parser handles valid TOON command syntax correctly",
+        "input": "Sample TOON command file with all required fields (name, description, parameters)",
+        "expected": "Parsed dict with command metadata: {name, description, parameters, dependencies}"
+      },
+      {
+        "name": "test_template_rendering_with_parsed_command",
+        "purpose": "Verify Jinja2 template renders command.md from parsed data",
+        "input": "Parsed command dict from parser output",
+        "expected": "Valid Markdown output with command syntax section, parameters table, usage examples"
+      },
+      {
+        "name": "test_output_validation_against_claude_code_spec",
+        "purpose": "Verify compiled output meets Claude Code command specification",
+        "input": "Generated command.md file",
+        "expected": "Validation passes: Has frontmatter, execution context, success criteria sections"
+      }
+    ],
+    "integration_tests": [
+      {
+        "name": "test_e2e_command_migration_pipeline",
+        "purpose": "Verify complete migration: TOON → Parse → Template → Validate → Output",
+        "input": "Real TOON command file from 5d-wave/tasks/dw/",
+        "steps": "Parse TOON → Apply command template → Validate output → Write to dist/",
+        "expected": "Valid command.md in dist/commands/dw/ matching Claude Code spec"
+      },
+      {
+        "name": "test_batch_migration_all_commands",
+        "purpose": "Verify batch processing of all command files",
+        "input": "All TOON command files (8 dw: commands)",
+        "expected": "All 8 commands migrated successfully with validation report"
+      }
+    ],
+    "error_scenario_tests": [
+      {
+        "name": "test_compiler_not_found_error_handling",
+        "purpose": "Verify graceful failure when compiler missing",
+        "setup": "Remove or rename tools/toon/compiler.py",
+        "expected": "Clear error message, execution stops, no partial output"
+      },
+      {
+        "name": "test_malformed_toon_syntax_error_handling",
+        "purpose": "Verify parser reports syntax errors clearly",
+        "input": "TOON file with missing ## section header",
+        "expected": "Parser error with line number, specific syntax issue description"
+      },
+      {
+        "name": "test_validation_failure_error_handling",
+        "purpose": "Verify validation errors reported clearly",
+        "input": "TOON file missing required 'description' field",
+        "expected": "Validation error: 'Missing required field: description' with file path"
+      }
+    ]
+  }
+}

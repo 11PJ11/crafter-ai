@@ -1,0 +1,163 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "05-04",
+  "correction_version": "2.0-circular-dependency-fix",
+  "correction_date": "2026-01-06",
+  "correction_rationale": "Original step attempts to validate skills with CONDITIONAL_APPROVAL status, creating circular dependency. Fix: 05-04 validation can ONLY start after 05-01/05-02/05-03 are FULLY COMPLETE and PROVEN WORKING (not conditional). This breaks the circular dependency.",
+
+  "phase": {
+    "number": 5,
+    "name": "Skills Creation",
+    "purpose": "Create 3 skill definitions for auto-invocation capability"
+  },
+
+  "step": {
+    "number": "5.4",
+    "name": "Validate Skill Auto-Invocation (AFTER All Skills Complete)",
+    "description": "Create test harness to validate ALL THREE skills trigger correctly. Test each trigger pattern produces expected skill activation. CRITICAL: This step validates PROVEN artifacts, not conditional/in-progress work.\n\nPrerequisites:\n- 05-01 Phase A+B fully complete (develop skill exists and compiles)\n- 05-02 fully complete (refactor skill exists and compiles)\n- 05-03 fully complete (mikado skill exists and compiles)\n- All trigger pattern conflict matrices reviewed and approved\n- Test environment from 05-01 Phase A available and functional",
+    "motivation": "Validate SC4 - skills auto-invoked correctly. CANNOT validate before skills exist and work.",
+    "estimated_hours": "3-4 (increased from 1h because requires comprehensive integration testing)"
+  },
+
+  "context": {
+    "constraints": [
+      "BLOCKING: DO NOT START UNTIL 05-01, 05-02, 05-03 ALL COMPLETE",
+      "VERIFY: All three SKILL.md files exist and compile successfully",
+      "VERIFY: Trigger pattern conflict matrices show no overlaps",
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC4": "Skills auto-invoked correctly (validation of implemented skills)"
+    },
+    "dependencies": [
+      "05-01 (FULL COMPLETION - both Phase A and Phase B)",
+      "05-02 (FULL COMPLETION - skill created and compiles)",
+      "05-03 (FULL COMPLETION - skill created and compiles)"
+    ],
+    "prerequisite_verification_checklist": [
+      "[ ] 05-01 Phase A deliverables exist (5 documents)",
+      "[ ] 05-01 Phase B deliverables exist (develop SKILL.toon + SKILL.md)",
+      "[ ] 05-02 deliverables exist (refactor SKILL.toon + SKILL.md)",
+      "[ ] 05-03 deliverables exist (mikado SKILL.toon + SKILL.md)",
+      "[ ] All three skills compile without errors",
+      "[ ] Trigger pattern conflict matrices reviewed (no overlaps detected)",
+      "[ ] Test environment from 05-01 Phase A is functional"
+    ]
+  },
+
+  "deliverables": {
+    "files_to_create": [
+      "tests/skills/test_skill_triggers.py",
+      "tests/skills/test_trigger_pattern_conflicts.py",
+      "tests/skills/test_agent_chaining.py",
+      "docs/skills/validation-report.md (test results summary)"
+    ],
+    "acceptance_criteria": [
+      "Each skill triggers on documented patterns (develop, refactor, mikado)",
+      "No false positives on unrelated input (minimum 10 test cases)",
+      "No trigger pattern collisions detected (cross-skill validation)",
+      "Skills chain correctly to software-crafter agent (binding validation)",
+      "All 3 skills can be loaded simultaneously without conflicts",
+      "Test environment accurately simulates production Claude Code behavior"
+    ]
+  },
+
+  "tdd_approach": {
+    "outer_test": "GIVEN all 3 skills compiled and loaded AND test environment functional\nWHEN I input each trigger pattern for each skill\nTHEN correct skill activates with no collisions",
+    "inner_tests": [
+      "test_develop_triggers_on_implement",
+      "test_refactor_triggers_on_refactor_level_N",
+      "test_mikado_triggers_on_complex_refactoring",
+      "test_no_false_positives_on_unrelated_input",
+      "test_no_collision_between_skills",
+      "test_agent_chaining_to_software_crafter",
+      "test_multilingual_trigger_matching",
+      "test_constraint_enforcement"
+    ]
+  },
+
+  "refactoring": {
+    "targets": []
+  },
+
+  "execution_guidance": {
+    "approach": "Comprehensive Integration Testing of Complete Skills",
+    "prerequisite_verification": [
+      "1. Verify all prerequisite deliverables exist (checklist above)",
+      "2. Load and parse all three SKILL.md files",
+      "3. Extract trigger pattern lists from each skill",
+      "4. Verify test environment from 05-01 Phase A is operational",
+      "5. ABORT if any prerequisite missing or non-functional"
+    ],
+    "workflow": [
+      "1. Create test harness using 05-01 test environment",
+      "2. Implement trigger pattern validation for develop skill",
+      "3. Implement trigger pattern validation for refactor skill",
+      "4. Implement trigger pattern validation for mikado skill",
+      "5. Create cross-skill collision detection tests",
+      "6. Implement false positive tests (minimum 10 unrelated inputs)",
+      "7. Implement agent chaining validation tests",
+      "8. Run comprehensive test suite",
+      "9. Generate validation report with test results",
+      "10. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "Prerequisite verification passed (all skills exist and compile)",
+      "All tests passing (100% required)",
+      "All trigger patterns validated (develop, refactor, mikado)",
+      "No false positives detected (10+ unrelated inputs tested)",
+      "No trigger pattern collisions detected",
+      "Agent chaining verified (all skills bind to software-crafter)",
+      "Validation report generated",
+      "No report files created (except validation report as deliverable)"
+    ],
+    "false_positive_test_cases": [
+      "I want to redesign my kitchen (non-programming)",
+      "Analyze the market trends (business domain, not code)",
+      "Fix the HVAC system (non-software)",
+      "Machine learning model optimization (ML focus, not TDD)",
+      "Database schema migration (data focus, not refactoring)",
+      "Write documentation for API (documentation, not implementation)",
+      "Review pull request changes (review, not active development)",
+      "Deploy application to production (deployment, not development)",
+      "Configure CI/CD pipeline (infrastructure, not code quality)",
+      "Troubleshoot network connectivity issue (network, not code)",
+      "Random string: xyzabc123456 (nonsense input)"
+    ]
+  },
+
+  "approval_status": {
+    "status": "CORRECTED_PENDING_REVIEW",
+    "changes_from_original": [
+      "Added explicit prerequisite verification checklist",
+      "Time estimate revised from 1h to 3-4h (comprehensive testing)",
+      "Added multiple test files (trigger tests, conflict tests, chaining tests)",
+      "Added validation report as deliverable",
+      "Defined 11 concrete false positive test cases",
+      "Added abort condition if prerequisites missing",
+      "Added cross-skill collision detection requirement",
+      "Expanded inner tests from 4 to 8 categories"
+    ],
+    "circular_dependency_resolution": "CRITICAL FIX: Original 05-04 tried to validate skills with CONDITIONAL_APPROVAL status. Corrected version explicitly requires 05-01/05-02/05-03 FULL COMPLETION. Prerequisite verification checklist ensures all artifacts exist before validation starts. This breaks circular dependency: validation cannot occur until implementation is proven complete.",
+    "execution_order_fixed": "05-01 Phase A -> 05-01 Phase B -> [05-02 || 05-03] (parallel) -> 05-04 validation. Each arrow represents PROVEN COMPLETION, not conditional approval.",
+    "validation_confidence": "HIGH - Validates against REAL artifacts with KNOWN formats (from 05-01 specifications)"
+  },
+
+  "adversarial_review_addressed": {
+    "original_risk_score": 9.2,
+    "corrected_risk_score": 4.5,
+    "risk_reduction": "CRITICAL circular dependency eliminated. Validation now occurs AFTER proven artifacts exist, not BEFORE. Prerequisites explicitly checked. Test environment guaranteed functional. False positives explicitly defined.",
+    "blast_radius_reduction": "FROM: ENTIRE_PROJECT | TO: PHASE_5_ONLY (if skills fail validation, can rework skills without blocking earlier phases)",
+    "blocking_issues_resolved": [
+      "RESOLVED: Circular dependency (05-04 validates before 05-01/05-02/05-03 complete)",
+      "RESOLVED: Undefined test harness (uses 05-01 Phase A test environment)",
+      "RESOLVED: Vague false positive criteria (11 concrete test cases defined)",
+      "RESOLVED: Unclear agent chaining validation (explicit binding verification)",
+      "RESOLVED: Missing prerequisite verification (7-item checklist)"
+    ]
+  }
+}

@@ -1,0 +1,158 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "08-01",
+  "phase": {
+    "number": 8,
+    "name": "Integration & Validation",
+    "purpose": "End-to-end validation of complete plugin migration"
+  },
+  "step": {
+    "number": "8.1",
+    "name": "Update Build System",
+    "description": "Integrate TOON compiler into build_ide_bundle.py:\n- Add TOON compilation step before distribution\n- Replace MD-to-MD processing with TOON-to-MD\n- Maintain backward compatibility during transition",
+    "motivation": "Build system must use new toolchain",
+    "estimated_hours": "4"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC1": "All source files in TOON v3.0 format",
+      "SC2": "Build produces Claude Code compliant output",
+      "SC3": "Plugin installable via /plugin install (or alternative mechanism)"
+    },
+    "dependencies": ["7.3"],
+    "prerequisites": [
+      {
+        "prerequisite": "TOON compiler maturity validation REQUIRED",
+        "description": "CRITICAL: TOON compiler must be tested end-to-end with actual sources before integration",
+        "validation_method": "Run TOON compiler on sample agent/command TOON files, verify output is valid Markdown with correct YAML frontmatter",
+        "blocker_if_missing": true,
+        "mitigation": "If compiler untested: Create test suite for TOON compiler first (add 2-4 hours), validate with real sources, fix bugs before build integration"
+      },
+      {
+        "prerequisite": "Step 7.3 completion audit - all sources migrated to TOON v3.0",
+        "description": "CRITICAL: Verify 100% of agent and command sources are in TOON format before build integration",
+        "validation_method": "Count .toon files in 5d-wave/agents/ and 5d-wave/commands/, verify counts match expected (26 agents, 20 commands based on actual build)",
+        "blocker_if_missing": true,
+        "mitigation": "If migration incomplete: Complete Phase 7 first, do not proceed with 08-01 until all sources migrated"
+      },
+      {
+        "prerequisite": "Token savings calculation methodology defined",
+        "description": "Define how token savings will be calculated and reported in build output",
+        "validation_method": "Specification document exists defining: (1) baseline source (original MD byte counts), (2) calculation formula, (3) output format",
+        "blocker_if_missing": false,
+        "mitigation": "If undefined: Use simple byte count comparison (compiled .md size vs original .md size), log to stdout as 'Token savings: X bytes (Y%)', defer detailed reporting to 08-04"
+      },
+      {
+        "prerequisite": "Backward compatibility approach documented",
+        "description": "Define strategy for maintaining backward compatibility during MD-to-TOON transition",
+        "validation_method": "Document specifies: parallel processing (both MD and TOON), sequential cutover, or deprecation path",
+        "blocker_if_missing": false,
+        "mitigation": "RECOMMENDED: Cutover approach - build processes ONLY TOON sources (no backward compatibility). If MD files remain, build fails with clear error message directing to Phase 7 completion"
+      }
+    ]
+  },
+  "deliverables": {
+    "files_to_modify": [
+      "tools/build_ide_bundle.py"
+    ],
+    "acceptance_criteria": [
+      "Build script compiles all TOON sources (26 agents + 20 commands minimum)",
+      "Build produces valid Claude Code plugin structure (verified by schema or manifest check)",
+      "Build completes without errors (exit code 0, all sources compiled successfully)",
+      "Build reports token savings achieved (logged to stdout, format: 'Token savings: X bytes (Y%)')"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN all TOON sources in 5d-wave/\nWHEN I run python build_ide_bundle.py\nTHEN dist/ide/ contains complete Claude Code plugin with all agents/commands compiled",
+    "inner_tests": [
+      "test_build_compiles_all_agents (expects >=26 agents compiled)",
+      "test_build_compiles_all_commands (expects >=20 commands compiled)",
+      "test_build_creates_plugin_structure (validates dist/ide/plugin.json exists and is valid)",
+      "test_build_reports_token_savings (validates stdout contains 'Token savings:' with percentage)",
+      "test_toon_compiler_functional (PREREQUISITE: validates TOON compiler works before build integration)",
+      "test_build_handles_missing_sources_gracefully (validates clear error if sources missing)"
+    ]
+  },
+  "refactoring": {
+    "targets": [
+      {
+        "level": 2,
+        "focus": "Extract TOON compilation into separate module (tools/toon_compiler_integration.py)",
+        "rationale": "Complexity reduction - separate compilation logic from build orchestration"
+      },
+      {
+        "level": 3,
+        "focus": "Separate build phases (compile, package, validate) into distinct functions",
+        "rationale": "Responsibility organization - each function handles one build phase"
+      }
+    ]
+  },
+  "execution_guidance": {
+    "approach": "Build system integration with validation",
+    "workflow": [
+      "1. PREREQUISITE VALIDATION (30 min): Verify TOON compiler works, sources migrated, token calculation method defined",
+      "2. Modify build_ide_bundle.py to import/invoke TOON compiler (30 min)",
+      "3. Add TOON compilation step before distribution - iterate all .toon files in 5d-wave/, compile to .md (60 min)",
+      "4. Configure output directory structure - ensure dist/ide/agents/dw/ receives compiled agents (30 min)",
+      "5. Add token savings reporting - compare TOON source bytes to compiled MD bytes, log to stdout (30 min)",
+      "6. Write tests to validate build output (60 min)",
+      "7. Run full build to validate (15 min)",
+      "8. Apply refactoring levels 2-3 (30 min)",
+      "9. Final validation: all tests pass, build completes, plugin structure valid (15 min)",
+      "10. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "All tests passing (100% required)",
+      "Build completes successfully (exit code 0)",
+      "All TOON sources compiled (>=26 agents + >=20 commands)",
+      "Plugin structure valid (plugin.json exists, agents/commands directories populated)",
+      "Token savings reported (stdout contains percentage)",
+      "Refactoring applied (levels 2-3 - extraction and separation complete)",
+      "No report files created (honors constraint)",
+      "TOON compiler prerequisite validated (compiler tested before integration)"
+    ]
+  },
+  "blockers_addressed": {
+    "blocker_toon_compiler_maturity": {
+      "original_risk": "TOON compiler maturity unknown - integration could fail if compiler untested",
+      "mitigation": "Added prerequisite: TOON compiler must be validated with actual sources BEFORE step execution. Validation includes: parse TOON file, render Markdown, verify YAML frontmatter, check output validity.",
+      "fallback": "If compiler has bugs: Create compiler test suite first, fix bugs, THEN proceed with 08-01. Add 2-4 hours to estimate for compiler stabilization."
+    },
+    "blocker_step_7_3_completion": {
+      "original_risk": "Step 7.3 dependency assumed complete but not verified - build could fail with missing sources",
+      "mitigation": "Added prerequisite: Audit step 7.3 completion by counting .toon files. Build expects >=26 agents and >=20 commands (based on actual dist/ide/agents/dw/config.json showing 26 agents processed).",
+      "fallback": "If migration incomplete: Stop execution, complete Phase 7 migration first, return to 08-01 when all sources are TOON format."
+    },
+    "blocker_token_savings_undefined": {
+      "original_risk": "Token savings calculation method not specified - implementation would guess",
+      "mitigation": "Added prerequisite: Token calculation methodology defined. Simple approach: byte count comparison (TOON sources vs compiled MD outputs), reported as percentage.",
+      "fallback": "If methodology undefined: Use byte count comparison as default, log to stdout, defer detailed analysis to 08-04 where SC7 is validated comprehensively."
+    },
+    "blocker_backward_compatibility_vague": {
+      "original_risk": "Backward compatibility strategy unclear - could produce invalid output or unexpected behavior",
+      "mitigation": "RECOMMENDED APPROACH: Cutover (no backward compatibility). Build processes ONLY TOON sources. If MD files remain, build fails with clear error: 'Migration incomplete - complete Phase 7 before build'.",
+      "fallback": "If parallel processing required: Document explicit mechanism - process both MD and TOON, with TOON taking precedence where duplicates exist. Add 1-2 hours for parallel processing logic."
+    }
+  },
+  "estimate_revision": {
+    "original_estimate_hours": 2,
+    "revised_estimate_hours": 4,
+    "revision_rationale": "Original 2-hour estimate underestimated scope: (1) TOON compiler prerequisite validation (30 min), (2) Integration work complexity (90 min), (3) Token reporting logic (30 min), (4) Comprehensive test writing (60 min), (5) Refactoring levels 2-3 (30 min), (6) Full build validation (15 min), (7) Buffer for prerequisite gaps (15 min). Total: 4 hours realistic minimum.",
+    "breakdown": {
+      "prerequisite_validation": "0.5h",
+      "build_integration": "1.5h",
+      "token_reporting": "0.5h",
+      "test_writing": "1h",
+      "refactoring": "0.5h",
+      "validation": "0.25h",
+      "buffer": "0.25h"
+    }
+  }
+}

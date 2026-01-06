@@ -1,0 +1,495 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "05-02",
+  "phase": {
+    "number": 5,
+    "name": "Skills Creation",
+    "purpose": "Create 3 skill definitions for auto-invocation capability"
+  },
+  "step": {
+    "number": "5.2",
+    "name": "Create refactor Skill",
+    "description": "Create refactor skill with:\n- Trigger patterns: \"refactoring\", \"migliora codice\", \"pulisci\", \"improve code\"\n- Agent binding: software-crafter\n- Progressive refactoring levels (1-6)",
+    "motivation": "refactor skill enables code quality improvements",
+    "estimated_hours": "1.5"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC4": "Skills auto-invoked correctly",
+      "SC5": "Full workflow functional"
+    },
+    "dependencies": ["1.6"]
+  },
+  "deliverables": {
+    "files_to_create": [
+      "5d-wave/skills/refactor/SKILL.toon"
+    ],
+    "acceptance_criteria": [
+      "Skill compiles to valid SKILL.md",
+      "Trigger patterns for refactoring terminology",
+      "References progressive refactoring methodology"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN refactor SKILL.toon compiled\nWHEN user says \"refactoring del codice\"\nTHEN skill should trigger software-crafter with refactor workflow",
+    "inner_tests": [
+      "test_skill_compiles",
+      "test_refactor_triggers",
+      "test_refactor_levels_referenced"
+    ]
+  },
+  "refactoring": {
+    "targets": []
+  },
+  "execution_guidance": {
+    "approach": "Skill definition with methodology reference",
+    "workflow": [
+      "1. Write failing E2E test for skill triggering",
+      "2. Create SKILL.toon with refactor trigger patterns",
+      "3. Reference progressive refactoring levels (1-6)",
+      "4. Compile and validate output",
+      "5. Validate trigger patterns",
+      "6. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "All tests passing (100% required)",
+      "Skill compiles to valid SKILL.md",
+      "Trigger patterns validated",
+      "Refactoring levels referenced",
+      "No report files created"
+    ]
+  },
+  "adversarial_review": {
+    "review_date": "2026-01-06",
+    "reviewer": "software-crafter-adversarial-mode",
+    "review_mode": "RUTHLESS_ADVERSARIAL",
+    "risk_score": 8.5,
+    "blast_radius": "PHASES_5_6_7_8",
+    "contradictions_found": [
+      {
+        "issue": "Trigger pattern 'improve code' directly conflicts with develop skill patterns",
+        "description": "Step 05-02 defines trigger pattern 'improve code' but develop skill (05-01) also targets code improvement via workflow. No conflict resolution documented. Which skill fires? Both? First-match? Result: undefined behavior.",
+        "evidence": "Line 12: trigger pattern 'improve code'. Roadmap.yaml step 5.1 develop skill: 'Full workflow integration (implement->review->fix->refactor)' implies improvement. No conflict detection in roadmap or step specifications.",
+        "impact": "CRITICAL - User invokes wrong skill, workflow breaks, or both skills activate simultaneously causing session conflicts",
+        "probability_wrong": "VERY_HIGH (95%)"
+      },
+      {
+        "issue": "Methodology scope contradiction - what exactly to 'reference'?",
+        "description": "Step says 'References progressive refactoring methodology' but lacks specificity. Does SKILL.md include: (a) just level names (1-6)?, (b) all 22 code smells?, (c) full 8500-line embedded methodology?, (d) links to external docs?. Acceptance criteria accepts all implicitly but test 'test_refactor_levels_referenced' cannot validate correctness without definition.",
+        "evidence": "Line 37 AC: 'References progressive refactoring methodology' (vague). Line 45: test_refactor_levels_referenced (name suggests checking level reference but test definition is missing acceptance criteria specificity). Software-crafter agent spec contains 8500+ lines of methodology but step doesn't reference scope.",
+        "impact": "HIGH - Test passes trivially, SKILL.md could reference levels incorrectly or incompletely, but quality gate shows green",
+        "probability_wrong": "HIGH (85%)"
+      },
+      {
+        "issue": "E2E test assumes skill invocation mechanism that's unverified",
+        "description": "Line 41 test 'WHEN user says \"refactoring del codice\" THEN skill should trigger' assumes Claude Code has mechanism to match user input to skill patterns. But no documentation exists on how this matching works, whether it's case-sensitive, handles accents, uses NLP intent, etc. Test cannot be validated without this specification.",
+        "evidence": "Line 41 test definition. Step 05-01 review (lines 116-120) explicitly states: 'untestable without understanding HOW Claude Code invokes skills'. Same issue not resolved for 05-02.",
+        "impact": "CRITICAL - E2E test will either (a) pass trivially via stub, (b) fail because invocation infrastructure doesn't exist, or (c) pass but actual skill doesn't trigger in production",
+        "probability_wrong": "VERY_HIGH (90%)"
+      },
+      {
+        "issue": "Time estimate contradicts its own review metadata",
+        "description": "Line 14 claims 1.5 hours but internal review metadata (if existed) would identify 6+ blocking dependencies from 05-01 still unresolved. Step cannot actually start until 05-01 gaps resolved, which aren't accounted for in timeline.",
+        "evidence": "Line 14: estimated_hours 1.5. But from 05-01 review: 'Resolve 05-01 gaps BEFORE starting 05-02 implementation' (line 242-245). Gaps include: SKILL.toon format undefined, invocation mechanism undefined, constraint embedding undefined. These take hours to resolve.",
+        "impact": "HIGH - Schedule misalignment. Step appears achievable in 1.5 hours but blockers not in critical path timeline",
+        "probability_wrong": "HIGH (80%)"
+      },
+      {
+        "issue": "Circularity: Refactor skill depends on completed refactoring methodology but methodology may not be finalized",
+        "description": "Acceptance criteria requires 'References progressive refactoring methodology' but software-crafter agent (which defines this methodology) is being built concurrently in Phase 3. If agent's refactoring section changes/improves, compiled SKILL.md becomes stale immediately.",
+        "evidence": "Step 05-02 depends on 1.6 (toolchain only). Agent migration (Phase 3) runs in parallel. No synchronization point between agent finalization and skill definition.",
+        "impact": "MEDIUM - Skill created with v1 methodology. Agent improves to v2 methodology. Skill references outdated guidance.",
+        "probability_wrong": "MEDIUM (70%)"
+      },
+      {
+        "issue": "Relationship to 'dw:refactor' command is undefined",
+        "description": "Step assumes skill 'refactor' triggers 'software-crafter with refactor workflow' but software-crafter already has *refactor command. Confusion: does skill wrap the command? Duplicate it? Call it? Relationship undocumented.",
+        "evidence": "Line 12: 'Agent binding: software-crafter'. But software-crafter has multiple workflows: *develop, *refactor, *mikado. Which workflow does skill_trigger invoke? Skill definition doesn't specify.",
+        "impact": "HIGH - Potential code duplication, unclear user experience (user has both skill and command for same action)",
+        "probability_wrong": "HIGH (75%)"
+      },
+      {
+        "issue": "Step doesn't inherit 05-01 clarifications but should",
+        "description": "Step 05-01 review identified critical gaps (TOON syntax, invocation mechanism, constraint embedding). Step 05-02 review metadata doesn't reference these as resolved blockers, meaning 05-02 starts under same uncertainty as 05-01.",
+        "evidence": "05-01 review metadata (lines 263-294) lists CRITICAL gaps. Step 05-02 metadata doesn't reference resolution. Both steps are scheduled 'in parallel' (roadmap.yaml line 666) but dependencies are sequential.",
+        "impact": "CRITICAL - 05-02 inherits all 05-01 blockers. Can't proceed without 05-01 resolution.",
+        "probability_wrong": "VERY_HIGH (98%)"
+      }
+    ],
+    "dangerous_assumptions": [
+      {
+        "assumption": "TOON compiler supports SKILL output format (proven in 05-01? Or assumed?)",
+        "why_dangerous": "Phase 1 created parser and compiler for AGENTS and COMMANDS. No evidence SKILL compilation was added. If compiler only handles AGENT/COMMAND targets, SKILL.toon won't compile.",
+        "probability_of_failure": "HIGH (75%)",
+        "consequence": "SKILL.toon created but compilation fails. Step blocked. Requires compiler extension (out of scope)."
+      },
+      {
+        "assumption": "Trigger pattern 'improve code' is distinct from develop skill patterns",
+        "why_dangerous": "Develop skill (05-01) also targets code quality/improvement. Pattern 'improve code' likely overlaps. No conflict resolution specified. Two skills will trigger on same input.",
+        "probability_of_failure": "VERY_HIGH (90%)",
+        "consequence": "User says 'improve code' -> both develop and refactor skills activate -> session conflict -> broken workflow"
+      },
+      {
+        "assumption": "Progressive refactoring levels can be 'referenced' in SKILL.md without full methodology context",
+        "why_dangerous": "Levels 1-6 are interdependent. Level selection depends on understanding code smells, responsibilities, etc. Listing just level names in SKILL.md leaves users confused about when to use refactor vs develop vs mikado.",
+        "probability_of_failure": "MEDIUM (65%)",
+        "consequence": "Skill references levels but provides no guidance. Users don't understand when to invoke skill or which level to choose."
+      },
+      {
+        "assumption": "Software-crafter agent interface is stable and won't change during skill development",
+        "why_dangerous": "Agent is being migrated to TOON format (Phase 3) in parallel with skill creation (Phase 5). If agent's refactor command changes, skill binding becomes stale.",
+        "probability_of_failure": "MEDIUM (60%)",
+        "consequence": "Skill compiled with reference to agent v1. Agent updated to v2. Skill triggers non-existent commands."
+      },
+      {
+        "assumption": "Test framework supports skill triggering E2E testing",
+        "why_dangerous": "E2E test assumes test environment can detect 'user says X' and validate skill triggers. No test framework for skill invocation documented anywhere in project.",
+        "probability_of_failure": "HIGH (80%)",
+        "consequence": "E2E test can't run. Step fails at quality gate 'All tests passing'."
+      }
+    ],
+    "unhandled_edge_cases": [
+      {
+        "scenario": "User input contains both 'refactor' and 'improve' keywords simultaneously: 'refactor and improve this code'",
+        "impact": "Does skill trigger once or multiple times? How are overlapping patterns handled?",
+        "likelihood": "HIGH",
+        "missing_handling": "No specification of pattern matching algorithm or multiple-match behavior"
+      },
+      {
+        "scenario": "User mentions 'refactoring' in documentation/comment, not as command: 'This section needs refactoring'",
+        "impact": "Skill triggers unintentionally. User wanted information, not code action.",
+        "likelihood": "HIGH",
+        "missing_handling": "No intent analysis. Patterns are literal substring matches."
+      },
+      {
+        "scenario": "Skill compiles successfully but software-crafter agent fails to load at runtime",
+        "impact": "Skill triggers but agent not available. Workflow fails.",
+        "likelihood": "MEDIUM",
+        "missing_handling": "No error recovery, no fallback guidance, no timeout handling"
+      },
+      {
+        "scenario": "User tries to use refactor skill on code that doesn't need Levels 1-6 refactoring (already clean)",
+        "impact": "Skill executes but has nothing to do. User confusion.",
+        "likelihood": "MEDIUM",
+        "missing_handling": "No pre-check validation. Skill assumes code is refactorable."
+      },
+      {
+        "scenario": "Trigger pattern case sensitivity: User says 'Refactoring' (capitalized) but pattern is 'refactoring' (lowercase)",
+        "impact": "Skill doesn't trigger. User thinks it's broken.",
+        "likelihood": "HIGH",
+        "missing_handling": "No specification of pattern matching algorithm (exact, case-insensitive, regex)"
+      },
+      {
+        "scenario": "SKILL.md compiled with Italian patterns but user is English speaker using Portuguese keyboard",
+        "impact": "Pattern doesn't match special characters (é, ç). Skill doesn't trigger.",
+        "likelihood": "MEDIUM",
+        "missing_handling": "No internationalization handling specified"
+      },
+      {
+        "scenario": "Methodology reference in SKILL.md becomes outdated when progressive refactoring methodology evolves",
+        "impact": "SKILL.md embeds methodology snapshot. When agent improves methodology, skill references stale version.",
+        "likelihood": "MEDIUM",
+        "missing_handling": "No versioning mechanism. No deprecation strategy."
+      },
+      {
+        "scenario": "Refactor skill invoked on code with unresolved merge conflicts or syntax errors",
+        "impact": "Refactoring cannot start. Workflow breaks with unclear error message.",
+        "likelihood": "MEDIUM",
+        "missing_handling": "No pre-condition validation (code compiles, no conflicts)"
+      }
+    ],
+    "failure_scenarios": [
+      {
+        "scenario": "SKILL.toon file created but compiler rejects it - unexpected syntax",
+        "trigger": "Implementer infers SKILL.toon syntax from COMMAND.toon (similar construct) but TOON v3.0 has different syntax for skills. Compiler fails.",
+        "cascading_impact": "(1) Step 05-02 fails at quality gate 'Skill compiles to valid SKILL.md'. (2) Entire Phase 5 skill infrastructure jammed. (3) Phase 5.3 (mikado) inherits same blocker. (4) Phase 5.4 (validation) can't proceed. (5) Phase 6-8 blocked waiting for Phase 5.",
+        "recovery_missing": "No specification means no recovery path. Requires understanding SKILL syntax from scratch. Likely 2-4 hours of investigation per skill step (05-01, 05-02, 05-03).",
+        "probability": "HIGH (80%)"
+      },
+      {
+        "scenario": "SKILL.md compiles successfully, but when deployed to Claude Code, skill never triggers",
+        "trigger": "(1) Trigger patterns require exact match but Claude Code does case-insensitive matching. (2) Pattern validation at compile-time passes but runtime behavior differs. (3) Skill registered but invocation mechanism has bug.",
+        "cascading_impact": "(1) Step 05-02 passes all tests (quality gates show green). (2) Phase 5.4 (validation) thinks skills work (false positive). (3) Feature marked 'complete' and handed off to Phase 6. (4) User reports skill non-functional in production. (5) Phase 6 (delivery) must rollback and debug.",
+        "recovery_missing": "No logging in skill triggering. No way to debug why pattern didn't match. Failure is silent.",
+        "probability": "VERY_HIGH (85%)"
+      },
+      {
+        "scenario": "Trigger pattern 'improve code' fires both develop skill (05-01) and refactor skill (05-02) simultaneously",
+        "trigger": "Overlapping trigger patterns with no conflict resolution mechanism",
+        "cascading_impact": "(1) Both skills' agents load in same session. (2) Conflicting state management (both trying to control refactoring workflow). (3) System behavior non-deterministic (either skill completes, both interfere, or one throws). (4) Success criteria 'Skills auto-invoked correctly' violated. (5) Phase 5 marked failed or requires re-arbitration.",
+        "recovery_missing": "No conflict detection at compile time. No runtime conflict resolution. No documentation of disambiguation.",
+        "probability": "VERY_HIGH (92%)"
+      },
+      {
+        "scenario": "Test 'test_refactor_levels_referenced' passes but SKILL.md references levels without semantic meaning",
+        "trigger": "Test definition is vague (just checks names exist). SKILL.md could list '1 2 3 4 5 6' or 'Level 1: Foundation' and test passes either way.",
+        "cascading_impact": "(1) Step 05-02 passes all quality gates. (2) Skill considered complete. (3) User invokes skill, finds levels listed but no guidance. (4) Skill is functionally incomplete but test doesn't catch it. (5) Phase 5 completion metrics misleading.",
+        "recovery_missing": "Acceptance criteria don't specify semantic correctness. Test cannot detect incomplete reference.",
+        "probability": "HIGH (75%)"
+      },
+      {
+        "scenario": "Refactor skill references outdated progressive refactoring methodology when agent improves later",
+        "trigger": "SKILL.md compiled with current methodology snapshot. Agent's refactoring methodology enhanced (new smells, new levels, better guidance). Skill stale.",
+        "cascading_impact": "(1) User follows skill guidance based on v1 methodology. (2) Agent has v2 methodology with better practices. (3) User confusion (which version is correct?). (4) Skill becomes technical debt. (5) Requires skill regeneration to sync with agent.",
+        "recovery_missing": "No versioning strategy. No deprecation mechanism. Embedded methodology creates brittleness.",
+        "probability": "MEDIUM (60%)"
+      },
+      {
+        "scenario": "E2E test passes in controlled environment but skill doesn't work in actual Claude Code",
+        "trigger": "(1) E2E test runs in simulator with mocked invocation. (2) Actual Claude Code invocation mechanism works differently. (3) Test environment doesn't match production.",
+        "cascading_impact": "(1) Step 05-02 passes all tests. (2) Phase 5.4 shows 'Skills auto-invoked correctly' (false positive). (3) Feature released in Phase 6. (4) Users report skill doesn't trigger. (5) Production incident. (6) Rollback or emergency hotfix needed.",
+        "recovery_missing": "Test environment not specified. No validation that test matches production behavior.",
+        "probability": "HIGH (70%)"
+      }
+    ],
+    "critical_findings": [
+      {
+        "finding": "BLOCKER: Step 05-02 inherits all unresolved blockers from 05-01",
+        "evidence": "Step 05-01 review (lines 263-294) lists 5 CRITICAL gaps. Step 05-02 doesn't reference these as resolved. Both scheduled in parallel (roadmap line 666) but 05-02 depends on 05-01 completion.",
+        "action_required": "Do NOT start 05-02 until 05-01 gaps are resolved: (1) SKILL.toon format specified, (2) invocation mechanism documented, (3) constraint embedding defined, (4) test environment set up."
+      },
+      {
+        "finding": "BLOCKER: TOON skill syntax undefined - cannot implement without specification",
+        "evidence": "Phase 1 documented COMMAND syntax but no SKILL syntax. Step 05-02 assumes SKILL.toon compiles but compiler capability unverified.",
+        "action_required": "Obtain TOON v3.0 specification or compiler code showing SKILL support. Provide example SKILL.toon source and target SKILL.md output."
+      },
+      {
+        "finding": "DANGER: Trigger pattern 'improve code' creates skill collision risk",
+        "evidence": "Pattern list (line 12) includes 'improve code'. Develop skill (05-01) also targets improvement. No conflict detection mechanism documented.",
+        "action_required": "Change trigger patterns to refactor-specific: 'refactor-class', 'refactor-method', 'progressive-refactoring', 'cleanup-code', 'structure-improvement'. Remove generic 'improve code'."
+      },
+      {
+        "finding": "UNTESTABLE: E2E test assumes invocation mechanism not yet validated",
+        "evidence": "Line 41 test assumes skill triggering works. Same issue flagged in 05-01 review (line 116-120). No resolution documented.",
+        "action_required": "Mark E2E test as placeholder (skip in CI) until invocation mechanism documented. Create separate integration test for invocation layer."
+      },
+      {
+        "finding": "VAGUE ACCEPTANCE: Methodology reference scope undefined",
+        "evidence": "Line 37 AC: 'References progressive refactoring methodology' (ambiguous). Could mean level names only or full embedded methodology. Test can't validate correctness.",
+        "action_required": "Define specific scope: 'SKILL.md includes: (a) all 6 level names, (b) brief description of each level, (c) decision tree for choosing refactor vs develop vs mikado' or similar concrete spec."
+      },
+      {
+        "finding": "OPTIMISTIC ESTIMATE: 1.5 hours ignores hidden dependencies from 05-01",
+        "evidence": "Line 14: 1.5 hours. But requires resolution of 05-01 blockers first (2-4 hours). Plus TOON syntax discovery, template creation, testing.",
+        "action_required": "Revise estimate to 2.5-3 hours minimum, plus blocking dependency resolution time from 05-01."
+      }
+    ],
+    "red_flags_summary": [
+      "BLOCKER: Depends on 05-01 resolution which is incomplete",
+      "BLOCKER: TOON skill syntax undefined",
+      "BLOCKER: Skill invocation mechanism unverified",
+      "BLOCKER: Test infrastructure for skill triggering doesn't exist",
+      "CONTRADICTION: Trigger pattern 'improve code' conflicts with develop skill",
+      "CONTRADICTION: Methodology scope ambiguous - test will false-positive",
+      "CONTRADICTION: Estimate 1.5 hours ignores 05-01 blockers",
+      "DANGER: Pattern collision will cause dual-skill firing",
+      "DANGER: Methodology embedding creates brittleness/decay",
+      "DANGER: No conflict resolution for overlapping patterns",
+      "DANGER: Agent interface instability risk",
+      "AMBIGUITY: Workflow 'implement->review->fix->refactor' semantics unclear",
+      "AMBIGUITY: Relationship to dw:refactor command undefined",
+      "AMBIGUITY: Constraint embedding format unclear",
+      "FALSE_POSITIVE: Quality gates will pass even with incomplete implementation",
+      "PRODUCTION_RISK: Tests pass but skill non-functional in Claude Code",
+      "DECAY_RISK: Embedded methodology becomes outdated",
+      "PARALLEL_RISK: Agent concurrently evolving, skill bindings may stale",
+      "VALIDATION_RISK: Test environment doesn't match production",
+      "SILENT_FAILURE: Pattern matching doesn't trigger but no error reported"
+    ],
+    "failure_probability_summary": {
+      "compiler_rejects_skill_toon": "80% probability",
+      "trigger_pattern_collision": "92% probability",
+      "methodology_scope_ambiguous": "85% probability",
+      "e2e_test_fails_no_invocation": "80% probability",
+      "skill_nonfunctional_in_production": "85% probability",
+      "estimate_blown": "90% probability",
+      "inherited_05_01_blockers": "100% probability"
+    }
+  },
+  "review_metadata": {
+    "reviewed_at": "2026-01-06T00:00:00Z",
+    "reviewer": "software-crafter-adversarial",
+    "review_status": "REJECTED_CRITICAL_BLOCKERS",
+    "critical_gaps": [
+      {
+        "issue": "SKILL.toon syntax specification missing - identical to 05-01",
+        "severity": "CRITICAL",
+        "impact": "Cannot implement without understanding TOON skill syntax. Will guess wrong format.",
+        "resolution": "Obtain TOON v3.0 specification showing skill syntax. Provide example SKILL.toon with compiled SKILL.md output."
+      },
+      {
+        "issue": "Trigger pattern conflict resolution undefined",
+        "severity": "CRITICAL",
+        "impact": "Pattern 'improve code' will fire both develop and refactor skills. No mechanism to detect/prevent.",
+        "resolution": "Define conflict detection rules at compile time. Validate: no pattern substring-overlaps across all skills."
+      },
+      {
+        "issue": "Methodology reference scope undefined",
+        "severity": "CRITICAL",
+        "impact": "Test 'test_refactor_levels_referenced' is vacuous. Accepts any reference including 'Just numbers 1-6'.",
+        "resolution": "Define specific scope: 'SKILL.md MUST include: (1) all 6 level names, (2) sentence description of each, (3) decision guidance for choosing levels'. Make test enforce these requirements."
+      },
+      {
+        "issue": "Skill invocation mechanism unverified - inherited from 05-01",
+        "severity": "CRITICAL",
+        "impact": "E2E test untestable. Will pass in stub environment but fail in production.",
+        "resolution": "Document skill invocation algorithm. Specify test environment. Verify implementation in 05-01 before proceeding."
+      },
+      {
+        "issue": "Relationship between skill 'refactor' and command '*refactor' undefined",
+        "severity": "HIGH",
+        "impact": "Potential code duplication or confusion. User has two ways to invoke same action.",
+        "resolution": "Clarify: does skill wrap command? Call command? Provide different workflow? Document user-facing distinction."
+      },
+      {
+        "issue": "Agent interface stability risk during concurrent Phase 3 migration",
+        "severity": "HIGH",
+        "impact": "Skill bound to software-crafter v1. Agent migrates to v2. Binding becomes stale.",
+        "resolution": "Coordinate Phase 3 (agent migration) completion before Phase 5 skill creation. Or pin agent version in skill binding."
+      },
+      {
+        "issue": "Time estimate ignores 05-01 dependency resolution",
+        "severity": "HIGH",
+        "impact": "1.5 hour estimate unrealistic if 05-01 blockers must resolve first (2-4 hours additional).",
+        "resolution": "Revise estimate: 2.5-3 hours for skill creation + X hours for 05-01 blockers = total 5-7 hours for Phase 5 to start."
+      }
+    ],
+    "blocking_dependencies": [
+      {
+        "dependency": "TOON v3.0 skill syntax specification from 05-01 resolution",
+        "location": "Not documented in project",
+        "impact": "CRITICAL - Cannot implement without syntax knowledge",
+        "blocking": true,
+        "status": "UNRESOLVED"
+      },
+      {
+        "dependency": "Skill invocation mechanism documentation from 05-01 resolution",
+        "location": "Not documented in project",
+        "impact": "CRITICAL - E2E test cannot run without mechanism",
+        "blocking": true,
+        "status": "UNRESOLVED"
+      },
+      {
+        "dependency": "Trigger pattern conflict detection rules",
+        "location": "Not documented in project",
+        "impact": "CRITICAL - Will cause skill collisions",
+        "blocking": true,
+        "status": "UNRESOLVED"
+      },
+      {
+        "dependency": "Methodology reference specification",
+        "location": "Not documented in project",
+        "impact": "CRITICAL - Test will false-positive",
+        "blocking": true,
+        "status": "UNRESOLVED"
+      },
+      {
+        "dependency": "Software-crafter agent interface finalization or versioning",
+        "location": "Phase 3 concurrent development",
+        "impact": "HIGH - Skill bindings may stale",
+        "blocking": false,
+        "status": "AT_RISK"
+      }
+    ],
+    "achievability_assessment": {
+      "feasibility": "NOT_FEASIBLE_WITHOUT_BLOCKERS",
+      "confidence": "15%",
+      "blockers": [
+        "TOON skill syntax specification missing (shared with 05-01)",
+        "Skill invocation mechanism undefined (shared with 05-01)",
+        "Trigger pattern conflict resolution rules missing",
+        "Methodology reference scope undefined",
+        "Test infrastructure for skill triggering doesn't exist"
+      ],
+      "critical_path_impact": "PHASE_5_BLOCKED - All three skill steps (05-01, 05-02, 05-03) depend on same unresolved infrastructure"
+    },
+    "time_estimate_validation": {
+      "original_estimate": "1.5 hours",
+      "assessment": "EXTREMELY_OPTIMISTIC",
+      "rationale": "Estimate assumes: (1) TOON skill syntax known and documented, (2) SKILL compiler functional, (3) test environment available, (4) no conflicts with other skills, (5) methodology reference scope defined. None of these are true.",
+      "hidden_blockers": [
+        "05-01 resolution (2-4 hours) - must complete first",
+        "TOON syntax discovery and understanding (1-2 hours)",
+        "Trigger pattern conflict detection implementation (1-2 hours)",
+        "Test environment setup for skill triggering (1-2 hours)",
+        "Conflict resolution design for overlapping patterns (1 hour)"
+      ],
+      "revised_estimate_lower_bound": "5-7 hours minimum (including 05-01 blockers)",
+      "revised_estimate_realistic": "8-12 hours (with unknowns and discovery)"
+    },
+    "recommendations": [
+      {
+        "priority": "CRITICAL",
+        "action": "HALT step 05-02 - resolve 05-01 blockers first",
+        "details": "Both steps share identical infrastructure gaps. Attempting 05-02 in parallel will cause wasted effort and rework. Complete 05-01 resolution (TOON syntax, invocation mechanism, constraint embedding, test environment) BEFORE starting 05-02.",
+        "owner": "Project coordinator + phase author"
+      },
+      {
+        "priority": "CRITICAL",
+        "action": "Change trigger pattern 'improve code' to refactor-specific patterns",
+        "details": "Remove 'improve code'. Add: 'refactor-level-N', 'progressive-refactoring', 'code-structure-improvement', 'cleanup-codebase'. Verify no overlap with develop skill patterns ['implementa', 'scrivi codice', 'TDD', 'implement', 'write code'].",
+        "owner": "Step implementation team"
+      },
+      {
+        "priority": "CRITICAL",
+        "action": "Define methodology reference specification with concrete examples",
+        "details": "Specify exactly what 'References progressive refactoring methodology' means. Example: 'SKILL.md MUST include: (1) level names 1-6 with one-sentence description each, (2) decision matrix showing when to use refactor vs develop vs mikado, (3) link to full methodology documentation'. Provide before/after SKILL.md example.",
+        "owner": "Task author"
+      },
+      {
+        "priority": "CRITICAL",
+        "action": "Create trigger pattern conflict detection validator",
+        "details": "Build tool that scans all three skills' trigger patterns and detects overlaps. Example: if 'impl' and 'implement' both present, flag as conflict. Run validator at compile time to prevent deployment of conflicting skill set.",
+        "owner": "TOON compiler enhancement team"
+      },
+      {
+        "priority": "HIGH",
+        "action": "Clarify relationship between skill 'refactor' and command '*refactor'",
+        "details": "Document: (1) Are they equivalent? (2) Does skill call command? (3) Does command call skill? (4) What's the user-facing difference? (5) Can user invoke both? Or is skill the 'easy way' and command the 'advanced way'? Update step execution guidance accordingly.",
+        "owner": "Architecture/design team"
+      },
+      {
+        "priority": "HIGH",
+        "action": "Establish agent interface stability or versioning strategy",
+        "details": "Either: (a) freeze software-crafter interface during Phase 5 skill creation (pin version), OR (b) implement skill agent-binding versioning (skill references software-crafter@1.0, will update to @1.1 if backward-compatible). Prevent silent staling of bindings.",
+        "owner": "Project coordinator"
+      },
+      {
+        "priority": "HIGH",
+        "action": "Revise time estimate and critical path",
+        "details": "Change: (1) 05-02 estimate from 1.5 to 2.5-3 hours (for implementation only), (2) Add 05-01 dependency as blocking predecessor, (3) Mark Phase 5 as blocked until 05-01 resolution complete. Realistic timeline: complete 05-01 (4-6 hours) THEN start 05-01, 05-02, 05-03 in parallel (2.5-3 hours each).",
+        "owner": "Project coordinator"
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Create SKILL_REFACTOR_EXAMPLE.toon as reference implementation",
+        "details": "Provide concrete example showing: (1) refactor-specific trigger patterns, (2) agent binding to software-crafter, (3) progressive refactoring levels 1-6 reference with brief descriptions, (4) valid TOON structure that compiles to valid SKILL.md.",
+        "owner": "Implementation team"
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Split E2E test into placeholder + integration test",
+        "details": "Keep current E2E test as placeholder (skip in CI until invocation mechanism verified). Create separate integration test for skill invocation layer once infrastructure ready. Prevents false positive quality gates.",
+        "owner": "Task author"
+      }
+    ],
+    "approval_decision": "REJECT - Step 05-02 cannot proceed. Critical blockers from 05-01 unresolved. Proceeding will result in rework, schedule overruns, and failed quality gates. Execute 05-01 first, resolve all blockers, then re-evaluate 05-02 with fresh adversarial review.",
+    "implementation_can_start_when": [
+      "Step 05-01 blockers FULLY RESOLVED (TOON syntax, invocation mechanism, constraint embedding, test environment)",
+      "Trigger pattern conflict detection rules documented and validator created",
+      "Methodology reference specification defined with concrete examples",
+      "Software-crafter agent interface stabilized or versioning strategy implemented",
+      "SKILL compiler capability verified to support skill output format",
+      "Example SKILL.toon and compiled SKILL.md provided as reference",
+      "Time estimates revised to reflect actual complexity"
+    ],
+    "notes": "Step 05-02 is logically sound in isolation but operationally impossible without 05-01 completion. Roadmap shows 05-02 can run in parallel with 05-01 (line 666) but step dependencies prove this is false - they share infrastructure dependencies. Recommend: (1) Treat Phase 5 steps 05-01, 05-02, 05-03 as a single integrated feature, not three parallel steps. (2) Complete infrastructure work (TOON syntax, invocation mechanism, conflict detection) once, then apply to all three skills. (3) This reduces rework and ensures consistency across develop, refactor, mikado skills."
+  }
+}

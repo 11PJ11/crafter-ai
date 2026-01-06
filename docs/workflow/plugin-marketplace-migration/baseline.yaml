@@ -1,0 +1,408 @@
+# Plugin Marketplace Migration - Baseline Document
+# Project: plugin-marketplace-migration
+# Created: 2026-01-02
+# Researcher: Nova (Evidence-Driven Knowledge Researcher)
+
+baseline:
+  project_id: plugin-marketplace-migration
+  baseline_type: feature_development
+  goal: "Migrate AI-Craft framework to Claude Code distributable plugin using TOON v3.0 format"
+  created_at: "2026-01-02T00:00:00Z"
+  status: READY_FOR_ROADMAP
+
+# =============================================================================
+# SECTION 1: CURRENT STATE ANALYSIS
+# =============================================================================
+current_state:
+  description: |
+    The AI-Craft framework is a mature 5D-Wave methodology implementation with 28 specialized
+    agents, 20 commands, and comprehensive workflow orchestration. It currently uses a custom
+    Markdown-with-embedded-YAML format and a Python-based build system that generates
+    IDE-compatible bundles installed via shell scripts to ~/.claude/ directories.
+
+    The framework is FUNCTIONAL but NOT MARKETPLACE-DISTRIBUTABLE in its current form.
+
+  architecture:
+    format: "Markdown with embedded YAML blocks"
+    source_files:
+      agents:
+        location: "5d-wave/agents/*.md"
+        count: 28
+        evidence: "Glob pattern returned 28 files including software-crafter.md, researcher.md, etc."
+      commands:
+        location: "5d-wave/tasks/dw/*.md"
+        count: 20
+        evidence: "Glob pattern returned 20 files: develop.md, refactor.md, baseline.md, etc."
+      templates:
+        location: "5d-wave/templates/*.yaml"
+        count: 10
+        evidence: "Glob pattern returned 10 files including AGENT_TEMPLATE.yaml, COMMAND_TEMPLATE.yaml"
+
+    build_system:
+      tool: "tools/build_ide_bundle.py"
+      processors:
+        - "processors/agent_processor.py"
+        - "processors/command_processor.py"
+        - "processors/team_processor.py"
+        - "processors/workflow_processor.py"
+      output_directory: "dist/ide/"
+      output_structure:
+        - "dist/ide/agents/dw/*.md"
+        - "dist/ide/commands/dw/*.md"
+
+    installation:
+      mechanism: "Shell script (scripts/install-ai-craft.sh)"
+      target: "~/.claude/ (user's global Claude config)"
+      method: "File copy from dist/ide/ to ~/.claude/"
+      evidence: "install-ai-craft.sh line 14: FRAMEWORK_SOURCE=\"$PROJECT_ROOT/dist/ide\""
+
+  capabilities:
+    workflow_phases:
+      - name: "DISCUSS"
+        commands: ["start", "discuss"]
+        agents: ["product-owner"]
+        description: "Discovery phase for requirements gathering"
+
+      - name: "DESIGN"
+        commands: ["design", "diagram"]
+        agents: ["solution-architect", "visual-architect"]
+        description: "Architecture and design decisions"
+
+      - name: "DISTILL"
+        commands: ["distill", "skeleton"]
+        agents: ["acceptance-designer", "skeleton-builder"]
+        description: "Acceptance criteria and test skeletons"
+
+      - name: "DEVELOP"
+        commands: ["baseline", "roadmap", "split", "execute", "review", "develop", "refactor", "mikado"]
+        agents: ["researcher", "software-crafter"]
+        description: "Implementation with TDD and refactoring"
+
+      - name: "DEMO"
+        commands: ["deliver", "finalize"]
+        agents: ["devop"]
+        description: "Deployment and closure"
+
+      - name: "CROSS_WAVE"
+        commands: ["research", "root-why", "diagram", "git", "forge"]
+        agents: ["researcher", "troubleshooter", "visual-architect", "devop", "agent-builder"]
+        description: "Utilities available at any time"
+
+    quality_features:
+      - "Outside-In TDD with double-loop architecture"
+      - "Hexagonal architecture patterns"
+      - "Progressive refactoring (Levels 1-6)"
+      - "Mikado Method for complex refactoring"
+      - "Peer review workflow (agent-reviewer pattern)"
+      - "Embedded knowledge injection at build time"
+
+    evidence_sources:
+      - file: "docs/workflow/plugin-migration/migration-plan.md"
+        content: "Complete workflow diagram and command categorization (lines 12-66)"
+      - file: "5d-wave/agents/software-crafter.md"
+        content: "Agent structure with YAML frontmatter, commands, dependencies (lines 1-160+)"
+      - file: "5d-wave/tasks/dw/develop.md"
+        content: "Command structure with agent-activation header (lines 1-85)"
+
+  limitations:
+    distribution:
+      issue: "No marketplace-compatible plugin structure"
+      evidence: "Glob for .claude-plugin/**/* returned 'No files found'"
+      impact: "Cannot be distributed via Claude Code plugin marketplace"
+
+    token_efficiency:
+      issue: "Current MD+YAML format is verbose"
+      evidence: "Agent files contain extensive documentation embedded in YAML (software-crafter.md 160+ lines before core methodology)"
+      impact: "Higher token consumption, larger context windows required"
+
+    installation_friction:
+      issue: "Requires manual shell script execution"
+      evidence: "scripts/install-ai-craft.sh requires user to: build first, then run script"
+      impact: "Not one-click installable like marketplace plugins"
+
+    skills_support:
+      issue: "No Claude Code 'skills' implementation (auto-invokable capabilities)"
+      evidence: "Glob for 5d-wave/skills/**/* returned 'No files found'"
+      impact: "Cannot leverage Claude Code skill auto-invocation"
+
+    toon_infrastructure:
+      issue: "No TOON compiler/parser exists"
+      evidence: "Glob for tools/toon/**/* returned 'No files found' and **/*.toon returned 'No files found'"
+      impact: "Migration plan Phase 1 infrastructure doesn't exist yet"
+
+# =============================================================================
+# SECTION 2: REQUIREMENTS SOURCE
+# =============================================================================
+requirements_source:
+  origin: "docs/workflow/plugin-migration/migration-plan.md"
+  methodology: "Jobs-To-Be-Done analysis with user collaboration"
+  decision_timestamp: "Pre-baseline (documented before this baseline)"
+
+  confirmed_decisions:
+    # Evidence from migration-plan.md lines 228-241
+    - id: D1
+      decision: "Inner Loop: Hybrid (develop + sub-skills)"
+      rationale: "Combines manual command invocation with auto-skill support"
+
+    - id: D2
+      decision: "Tool Restrictions: None"
+      rationale: "Full tool access for all agents"
+
+    - id: D3
+      decision: "Thinking Budget: Differentiated per agent"
+      rationale: "Complex agents get more thinking budget"
+
+    - id: D4
+      decision: "Distribution: GitHub marketplace"
+      rationale: "Standard Claude Code plugin distribution"
+
+    - id: D5
+      decision: "Source Format: TOON v3.0 Strict"
+      rationale: "30-60% token savings vs JSON (per TOON spec)"
+
+    - id: D6
+      decision: "Output Format: MD + YAML frontmatter"
+      rationale: "Claude Code specification compliance"
+
+    - id: D7
+      decision: "Parser: python-toon + Jinja2"
+      rationale: "TOON parsing with template-based output generation"
+
+    - id: D8
+      decision: "Quality Principles: SOLID, Hexagonal, TDD embedded"
+      rationale: "Default constraints integrated into skills"
+
+    - id: D9
+      decision: "Default Constraints: No report extra, no auto-commit"
+      rationale: "Prevent unwanted side effects"
+
+    - id: D10
+      decision: "Workflow Files: TOON internal format"
+      rationale: "baseline, roadmap, steps all in TOON for consistency"
+
+  specific_requirements:
+    functional:
+      - id: FR1
+        requirement: "Convert 28 agent .md files to .toon format"
+        source: "migration-plan.md Phase 2 (lines 261-270)"
+
+      - id: FR2
+        requirement: "Convert 20 command .md files to .toon format"
+        source: "migration-plan.md Phase 3 (lines 271-278)"
+
+      - id: FR3
+        requirement: "Create 3 skill definitions (develop, refactor, mikado)"
+        source: "migration-plan.md Phase 4 (lines 279-289)"
+
+      - id: FR4
+        requirement: "Create TOON parser/compiler toolchain"
+        source: "migration-plan.md Phase 1 (lines 247-260)"
+
+      - id: FR5
+        requirement: "Create .claude-plugin/plugin.json structure"
+        source: "migration-plan.md Phase 7 (lines 308-317)"
+
+      - id: FR6
+        requirement: "Create marketplace.json for distribution"
+        source: "migration-plan.md Phase 7 (lines 308-317)"
+
+      - id: FR7
+        requirement: "Build system outputs Claude Code compliant MD files"
+        source: "migration-plan.md lines 188-211"
+
+    non_functional:
+      - id: NFR1
+        requirement: "~60% token savings in source files vs current format"
+        source: "migration-plan.md line 182: 'Token savings: 30-60% vs JSON (confirmed)'"
+
+      - id: NFR2
+        requirement: "Plugin installable via /plugin install"
+        source: "migration-plan.md Success Criteria #3 (line 350)"
+
+      - id: NFR3
+        requirement: "Skills auto-invoked correctly"
+        source: "migration-plan.md Success Criteria #4 (line 351)"
+
+# =============================================================================
+# SECTION 3: SIMPLEST ALTERNATIVES ANALYSIS
+# =============================================================================
+alternatives_considered:
+  - id: ALT1
+    alternative: "Distribute current MD format without TOON migration"
+    why_insufficient:
+      - "Current format not marketplace-compliant (no plugin.json, no skills)"
+      - "Token inefficiency would persist (30-60% higher costs)"
+      - "No skill auto-invocation support"
+      - "Evidence: migration-plan.md established TOON as source format (D5)"
+    verdict: REJECTED
+
+  - id: ALT2
+    alternative: "Use JSON/YAML only without TOON"
+    why_insufficient:
+      - "TOON provides 30-60% token savings over JSON"
+      - "TOON is already a formal standard (v3.0, MIT license, multi-language implementations)"
+      - "Evidence: migration-plan.md lines 173-182 documents TOON spec details"
+      - "Evidence: Example TOON file exists (agents/novel-editor-chatgpt-toon.txt)"
+    verdict: REJECTED
+
+  - id: ALT3
+    alternative: "Keep current shell script installation"
+    why_insufficient:
+      - "Marketplace distribution is explicit goal (D4)"
+      - "Shell scripts require manual execution and build step"
+      - "Cannot leverage Claude Code plugin discovery/updates"
+      - "Higher friction = lower adoption"
+    verdict: REJECTED
+
+  - id: ALT4
+    alternative: "Migrate agents only, skip skills implementation"
+    why_insufficient:
+      - "Skills enable auto-invocation (critical for UX)"
+      - "Inner loop workflow (develop->review->fix->refactor) requires skill integration"
+      - "Evidence: migration-plan.md Phase 4 explicitly creates skills (lines 279-289)"
+    verdict: REJECTED
+
+  conclusion: |
+    All simpler alternatives are insufficient because:
+    1. Marketplace distribution requires specific plugin structure (plugin.json, marketplace.json)
+    2. Token efficiency gains from TOON are substantial (30-60%) and worth the migration
+    3. Skills enable the critical auto-invocation workflow documented in the inner loop
+    4. The migration plan was created collaboratively with explicit user decisions
+
+    The planned approach (TOON source -> Claude Code output via compiler) is the MINIMUM
+    viable path to achieve marketplace distribution with token optimization.
+
+# =============================================================================
+# SECTION 4: SUCCESS CRITERIA (from migration plan)
+# =============================================================================
+success_criteria:
+  # Evidence: migration-plan.md lines 346-354
+  - id: SC1
+    criterion: "All source files in TOON v3.0 format"
+    measurable: true
+    metric: "0 .md files in 5d-wave/agents/, 28 .toon files present"
+
+  - id: SC2
+    criterion: "Build produces Claude Code compliant output"
+    measurable: true
+    metric: "All output files have valid YAML frontmatter"
+
+  - id: SC3
+    criterion: "Plugin installable via /plugin install"
+    measurable: true
+    metric: "Plugin installs without error in fresh Claude Code instance"
+
+  - id: SC4
+    criterion: "Skills auto-invoked correctly"
+    measurable: true
+    metric: "develop/refactor/mikado skills trigger on appropriate prompts"
+
+  - id: SC5
+    criterion: "Full workflow functional"
+    measurable: true
+    metric: "implement->review->fix->refactor loop completes successfully"
+
+  - id: SC6
+    criterion: "Default constraints integrated"
+    measurable: true
+    metric: "No report creation, no auto-commit without user permission"
+
+  - id: SC7
+    criterion: "~60% token savings"
+    measurable: true
+    metric: "Compare TOON source bytes vs equivalent JSON"
+
+# =============================================================================
+# SECTION 5: RISK ASSESSMENT
+# =============================================================================
+risks:
+  - id: R1
+    risk: "TOON parser implementation complexity"
+    likelihood: MEDIUM
+    impact: HIGH
+    mitigation: "python-toon library exists; fallback to custom parser if needed"
+    evidence: "migration-plan.md references python-toon implementation"
+
+  - id: R2
+    risk: "Claude Code plugin spec changes"
+    likelihood: LOW
+    impact: HIGH
+    mitigation: "Track Claude Code changelog; design for adaptability"
+
+  - id: R3
+    risk: "Skill auto-invocation behavior unclear"
+    likelihood: MEDIUM
+    impact: MEDIUM
+    mitigation: "Create minimal skill POC first to validate behavior"
+
+  - id: R4
+    risk: "Migration regression (broken functionality)"
+    likelihood: MEDIUM
+    impact: HIGH
+    mitigation: "Round-trip validation: TOON->MD->compare with original"
+    evidence: "migration-plan.md Phase 2 step 3: 'Validate round-trip'"
+
+# =============================================================================
+# SECTION 6: QUANTITATIVE BASELINE METRICS
+# =============================================================================
+baseline_metrics:
+  current_file_counts:
+    agents: 28
+    commands: 20
+    templates: 10
+    skills: 0
+    toon_files: 0
+    plugin_files: 0
+
+  files_to_create:
+    toon_parser: 1
+    toon_compiler: 1
+    jinja_templates: 3
+    plugin_json: 1
+    marketplace_json: 1
+    skill_definitions: 3
+    toon_agents: 28
+    toon_commands: 20
+    total_new_files: 58
+
+  files_to_modify:
+    build_script: 1
+    install_script: 1
+
+  estimated_phases: 8
+  evidence: "migration-plan.md defines 8 implementation phases (lines 247-327)"
+
+# =============================================================================
+# SECTION 7: VALIDATION
+# =============================================================================
+validation:
+  current_state_complete: true
+  requirements_source_documented: true
+  alternatives_analyzed: true
+  success_criteria_measurable: true
+  baseline_ready_for_roadmap: true
+
+  evidence_quality:
+    sources_cited: 8
+    direct_file_references: true
+    line_numbers_provided: true
+    no_assumptions_without_evidence: true
+
+# =============================================================================
+# SECTION 8: NEXT STEPS
+# =============================================================================
+next_steps:
+  immediate:
+    - action: "Review this baseline with user"
+      rationale: "Ensure alignment before roadmap creation"
+
+  upon_approval:
+    - action: "Create roadmap with task breakdown"
+      command: "/dw:roadmap"
+      input: "This baseline document"
+
+    - action: "Split into executable steps"
+      command: "/dw:split"
+
+    - action: "Begin Phase 1: TOON infrastructure"
+      first_task: "Create tools/toon/parser.py"

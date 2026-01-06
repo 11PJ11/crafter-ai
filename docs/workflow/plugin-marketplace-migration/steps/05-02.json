@@ -1,0 +1,119 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "05-02",
+  "correction_version": "2.0-circular-dependency-fix",
+  "correction_date": "2026-01-06",
+  "correction_rationale": "Original step has REJECTED status due to blocking dependencies from 05-01. Circular dependency fix: 05-02 can only start AFTER 05-01 Phase A+B complete. Changed trigger patterns to avoid collision with develop skill.",
+
+  "phase": {
+    "number": 5,
+    "name": "Skills Creation",
+    "purpose": "Create 3 skill definitions for auto-invocation capability"
+  },
+
+  "step": {
+    "number": "5.2",
+    "name": "Create refactor Skill (Sequential after 05-01)",
+    "description": "Create refactor skill with:\n- Trigger patterns: \"refactor-level-N\", \"progressive-refactoring\", \"code-structure-improvement\", \"cleanup-codebase\", \"refactoring sistematico\" (Italian)\n- REMOVED: \"improve code\" (conflicts with develop skill 05-01)\n- Agent binding: software-crafter\n- Progressive refactoring levels (1-6) reference with decision guidance",
+    "motivation": "refactor skill enables code quality improvements. CRITICAL: Must use TOON knowledge from 05-01 Phase A. Cannot start until 05-01 fully complete.",
+    "estimated_hours": "2.5-3 (reduced from 1.5 because prerequisites already resolved in 05-01)"
+  },
+
+  "context": {
+    "constraints": [
+      "BLOCKING: DO NOT START UNTIL 05-01 PHASE A+B COMPLETE",
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC4": "Skills auto-invoked correctly",
+      "SC5": "Full workflow functional"
+    },
+    "dependencies": ["05-01 (FULL COMPLETION - Phase A + Phase B)"],
+    "prerequisite_artifacts_from_05_01": [
+      "docs/toon-v3-skill-syntax-specification.md (from 05-01 Phase A)",
+      "5d-wave/templates/SKILL_TEMPLATE.toon (from 05-01 Phase A)",
+      "5d-wave/skills/develop/SKILL.md (compiled example from 05-01 Phase B)",
+      "tests/skills/skill_test_environment_setup.md (from 05-01 Phase A)"
+    ]
+  },
+
+  "deliverables": {
+    "files_to_create": [
+      "5d-wave/skills/refactor/SKILL.toon",
+      "5d-wave/skills/refactor/SKILL.md (compiled output)"
+    ],
+    "acceptance_criteria": [
+      "Skill compiles to valid SKILL.md using 05-01 TOON syntax",
+      "Trigger patterns for refactoring terminology (NO OVERLAP with develop skill)",
+      "Trigger pattern conflict matrix updated with refactor patterns",
+      "References progressive refactoring methodology: (1) All 6 level names, (2) One-sentence description per level, (3) Decision guidance for choosing refactor vs develop vs mikado",
+      "Methodology reference validated against software-crafter agent specification",
+      "No pattern collisions with develop skill (verified via conflict matrix)"
+    ]
+  },
+
+  "tdd_approach": {
+    "outer_test": "GIVEN refactor SKILL.toon compiled\nWHEN user says \"refactoring sistematico livello 2\"\nTHEN skill should trigger software-crafter with refactor workflow",
+    "inner_tests": [
+      "test_skill_compiles_with_05_01_syntax",
+      "test_refactor_triggers_with_specific_patterns",
+      "test_refactor_levels_referenced_with_guidance",
+      "test_no_collision_with_develop_skill_patterns",
+      "test_methodology_scope_complete"
+    ]
+  },
+
+  "refactoring": {
+    "targets": []
+  },
+
+  "execution_guidance": {
+    "approach": "Template-Based Skill Creation (using 05-01 learnings)",
+    "workflow": [
+      "0. PREREQUISITE CHECK: Verify 05-01 Phase A+B deliverables exist",
+      "1. Copy SKILL_TEMPLATE.toon from 05-01 to 5d-wave/skills/refactor/",
+      "2. Define refactor-specific trigger patterns (NO 'improve code')",
+      "3. Reference progressive refactoring levels 1-6 using format from 05-01",
+      "4. Add decision guidance: When to use refactor vs develop vs mikado",
+      "5. Compile and validate output SKILL.md",
+      "6. Update trigger pattern conflict matrix (verify no overlaps)",
+      "7. Write E2E test for skill triggering using 05-01 test environment",
+      "8. Validate methodology reference completeness",
+      "9. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "Prerequisite check passed (05-01 artifacts exist)",
+      "All tests passing (100% required)",
+      "Skill compiles to valid SKILL.md",
+      "Trigger patterns validated (no collisions)",
+      "Refactoring levels referenced with decision guidance",
+      "Methodology scope complete (6 levels + descriptions + guidance)",
+      "No report files created"
+    ],
+    "trigger_pattern_conflict_resolution": {
+      "develop_patterns": ["implementa", "scrivi codice", "TDD", "implement", "write code"],
+      "refactor_patterns": ["refactor-level-1", "refactor-level-2", "refactor-level-3", "refactor-level-4", "refactor-level-5", "refactor-level-6", "progressive-refactoring", "code-structure-improvement", "cleanup-codebase", "refactoring sistematico"],
+      "collision_check": "NO OVERLAPS DETECTED",
+      "conflict_resolution_rule": "Refactor patterns are SPECIFIC (level-based). Develop patterns are GENERIC (implementation). No substring matches."
+    }
+  },
+
+  "approval_status": {
+    "status": "CORRECTED_PENDING_REVIEW",
+    "changes_from_original": [
+      "Changed trigger patterns to avoid 'improve code' collision",
+      "Added explicit dependency on 05-01 FULL COMPLETION",
+      "Time estimate revised from 1.5h to 2.5-3h",
+      "Added trigger pattern conflict matrix requirement",
+      "Defined methodology reference scope precisely (6 levels + descriptions + guidance)",
+      "Added prerequisite check step",
+      "Added conflict resolution rule"
+    ],
+    "blocking_dependency_resolution": "05-02 CANNOT START until 05-01 Phase A (prerequisites) AND Phase B (implementation) both complete. This ensures: (1) TOON syntax known, (2) Template available, (3) Test environment ready, (4) Example skill exists for reference.",
+    "circular_dependency_fix": "Original plan had 05-02 parallel with 05-01, but 05-02 needs 05-01 outputs. Now sequential: 05-01 -> 05-02."
+  }
+}

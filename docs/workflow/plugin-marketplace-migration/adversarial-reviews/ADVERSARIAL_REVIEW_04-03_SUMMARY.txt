@@ -1,0 +1,211 @@
+================================================================================
+                    ADVERSARIAL REVIEW SUMMARY
+                          Task 04-03
+              Convert DISTILL Wave Commands to TOON Format
+================================================================================
+
+OVERALL RISK SCORE: 8/10 (HIGH RISK - DO NOT PROCEED)
+BLAST RADIUS: CRITICAL (Affects Phase 4 & Phase 5)
+EXECUTION STATUS: BLOCKED - Critical gaps must be resolved
+
+================================================================================
+                        CONTRADICTIONS FOUND: 4
+================================================================================
+
+CONT-1: Phase Numbering Contradiction
+  - Assumes step 2.4 complete with NO VERIFICATION
+  - Waterfall thinking in iterative model
+  - RISK: Phase 4 built on unverified phase 2 assumptions
+
+CONT-2: Specification Sandwich
+  - "Convert to TOON v3.0 format" assumes format is self-evident
+  - Format specification is EXTERNAL (GitHub repo not provided)
+  - RISK: Entire Phase 4 blocked if external spec unavailable
+
+CONT-3: TDD Claim vs Reality
+  - Acceptance criteria PRE-DEFINED before tests written
+  - This is test-last, NOT test-driven development
+  - RISK: Tests become post-hoc validation instead of driving design
+
+CONT-4: Effort Estimate Assumes Equivalence
+  - 1-hour estimate for FIRST task (4.1) = SAME as subsequent tasks
+  - Learning curve not accounted for
+  - RISK: Schedule slip 2-3 hours across Phase 4
+
+================================================================================
+                   DANGEROUS ASSUMPTIONS: 6
+================================================================================
+
+1. Phase 1 TOON infrastructure is complete and working
+   -> NO VERIFICATION. If compiler broken, entire Phase 4 fails
+
+2. TOON v3.0 format specification is stable and accessible
+   -> EXTERNAL DEPENDENCY. GitHub repo could be deleted/private
+
+3. agent-activation headers can be preserved in .toon format
+   -> SOURCE FILES NOT PROVIDED. Assumption based on inference
+
+4. 1-hour time estimate is realistic
+   -> LEARNING CURVE NOT ACCOUNTED FOR. Should be 3-4 hours
+
+5. Test framework (pytest) is self-evident
+   -> NO FRAMEWORK SPECIFIED. Developer must guess
+
+6. "Compile both TOON files" is well-defined operation
+   -> NO ERROR HANDLING DOCUMENTED. Failure paths undefined
+
+================================================================================
+                    UNHANDLED EDGE CASES: 8
+================================================================================
+
+CASE 1: TOON format breaking changes                   PROB: Medium
+        Handler: NONE - fails silently
+
+CASE 2: Phase 1 compiler output different than expected PROB: Medium
+        Handler: NONE - validation detects but no remediation
+
+CASE 3: Source files cannot convert to .toon syntax     PROB: HIGH
+        Handler: NONE - format conversion undefined
+
+CASE 4: Compilation succeeds but output is wrong        PROB: Medium
+        Handler: PARTIAL - tests compilation, not semantics
+
+CASE 5: Wave metadata validation passes but data invalid PROB: HIGH
+        Handler: NONE - metadata schema not defined
+
+CASE 6: Agent-activation headers lost in compilation    PROB: HIGH
+        Handler: NONE - preservation method undefined
+
+CASE 7: Compilation takes >5 minutes per file          PROB: Low
+        Handler: NONE - no timeout or retry logic
+
+CASE 8: Test framework dependencies not installed       PROB: HIGH
+        Handler: NONE - environment setup undefined
+
+================================================================================
+                     FAILURE SCENARIOS: 6
+================================================================================
+
+FS-1: Phase 1 Compiler Not Ready                        RISK: 9/10
+      CONSEQUENCE: Task blocks completely
+      DETECTION: "compiler not found" error
+      RECOVERY: NO DOCUMENTED FALLBACK
+      IMPACT: CRITICAL - Phase 4 completely blocked
+
+FS-2: Format Conversion Ambiguity                       RISK: 8/10
+      CONSEQUENCE: Developer guesses format, creates invalid .toon
+      DETECTION: Compilation fails/succeeds spuriously
+      RECOVERY: Must reverse-engineer format from errors
+      IMPACT: HIGH - Cascading failures in 4.2-4.6
+
+FS-3: Metadata Validation Misinterpretation             RISK: 7/10
+      CONSEQUENCE: Invalid metadata passes tests
+      DETECTION: Late (Phase 4.4+ or Phase 5)
+      RECOVERY: Rework 4.1-4.3 with correct format
+      IMPACT: HIGH - Discovered late in phase
+
+FS-4: Test Framework Mismatch                          RISK: 6/10
+      CONSEQUENCE: Tests don't run in CI/CD pipeline
+      DETECTION: Tests pass locally, fail in pipeline
+      RECOVERY: Rewrite tests (1-2 hours)
+      IMPACT: MEDIUM - Moderate recovery effort
+
+FS-5: Phase 4.1 Fails, But 4.2-4.6 Continue            RISK: 9/10
+      CONSEQUENCE: Cascading failures across all conversions
+      DETECTION: Late (Phase 4 or Phase 5)
+      RECOVERY: Identify root cause, replay all conversions
+      IMPACT: CRITICAL - System-level failure
+
+FS-6: Time Estimate Leads to Schedule Slip              RISK: 7/10
+      CONSEQUENCE: 2-3 hour overrun, Phase 5 delayed 2+ days
+      DETECTION: Mid-task when 1 hour insufficient
+      RECOVERY: Negotiate extension or reduce scope
+      IMPACT: HIGH - Project-level schedule impact
+
+================================================================================
+                   TIME ESTIMATE ANALYSIS
+================================================================================
+
+CLAIMED:         1 hour for format conversion + testing + validation
+REALISTIC:       3-4 hours for first task (4.1), 1-2 hours subsequent
+OPTIMISM FACTOR: 3-4x too optimistic
+
+BREAKDOWN (Not Provided):
+  - Format learning:      30-45 min (MISSING FROM ESTIMATE)
+  - File conversion:      30-45 min per file (MINIMIZED)
+  - Test implementation:  30-45 min (MISSING)
+  - Validation:          30-45 min (MISSING)
+  - Compiler debugging:   30-60 min (MISSING)
+                          ========================
+  TOTAL:                  3-4 hours (vs 1 hour claimed)
+
+================================================================================
+                     TEST COVERAGE GAPS: 6
+================================================================================
+
+1. No test for content preservation (Markdown -> .toon)
+2. No test for field preservation (agent-id, agent-name, etc.)
+3. No test for compiler error handling
+4. No test for .toon file readability/debuggability
+5. No test for wave metadata SEMANTIC correctness
+6. No test for round-trip conversion (lossy conversion undetected)
+
+CONSEQUENCE: Invalid .toon files may pass tests
+
+================================================================================
+                   BLOCKING CONDITIONS (8)
+================================================================================
+
+MUST RESOLVE BEFORE EXECUTION:
+
+1. CRITICAL: Verify Phase 1 TOON infrastructure complete
+             -> Deliver: Compiler executable, tests (100%), documentation
+
+2. CRITICAL: Provide TOON v3.0 format specification
+             -> Embed in task OR reference Phase 1 deliverables
+
+3. CRITICAL: Document agent-activation header format
+             -> Specify: How YAML frontmatter converts to .toon
+
+4. CRITICAL: Document compiler invocation
+             -> Who runs it? How? Success/failure criteria?
+
+5. HIGH: Provide test implementation template
+         -> Framework choice, file locations, example tests
+
+6. HIGH: Define metadata schema
+         -> Exact structure for "wave metadata correct (DISTILL)"
+
+7. HIGH: Revise time estimate
+         -> 3-4 hours first task, 1-2 hours subsequent, WITH BREAKDOWN
+
+8. MEDIUM: Define fallback if Phase 1 incomplete
+           -> Contingency: manual .toon creation, temp compilation bypass
+
+================================================================================
+                        FINAL VERDICT
+================================================================================
+
+RISK SCORE:              8/10 (HIGH)
+BLAST RADIUS:            CRITICAL (Phase 4 & Phase 5)
+PROBABILITY OF FAILURE:  6-7/10 (HIGH)
+IMPACT OF FAILURE:       CRITICAL (cascading)
+
+EXECUTION RECOMMENDATION: DO NOT PROCEED
+
+REASON: Task assumes Phase 1 infrastructure exists (unverified), references
+        undefined TOON format (external dependency), has ambiguous acceptance
+        criteria, and unrealistic time estimates. Multiple failure scenarios
+        with no recovery paths. If Phase 4.1 fails, cascading rework of 4.2-4.6.
+
+ESTIMATED TIME TO RESOLVE: 2-3 hours
+EXPECTED OUTCOME: Task moves from HIGH RISK to MEDIUM RISK
+
+================================================================================
+
+Review Completed: 2026-01-05
+Reviewer: Lyra (Ruthless Adversarial Mode)
+Methodology: Maximum contradiction detection, edge case exploration, failure
+             scenario analysis, risk scoring
+
+This review STOPS task execution. Address blocking conditions before proceeding.

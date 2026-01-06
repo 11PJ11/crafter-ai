@@ -1,0 +1,687 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "04-03",
+  "phase": {
+    "number": 4,
+    "name": "Command Migration",
+    "purpose": "Convert all 20 commands to TOON format"
+  },
+  "step": {
+    "number": "4.3",
+    "name": "Convert DISTILL Wave Commands",
+    "description": "Convert distill.md, skeleton.md to TOON format",
+    "motivation": "DISTILL wave creates acceptance tests",
+    "estimated_hours": "3-4"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC1": "All source files in TOON v3.0 format",
+      "SC7": "~60% token savings in source files"
+    },
+    "dependencies": [
+      "2.4"
+    ]
+  },
+  "deliverables": {
+    "files_to_create": [
+      "5d-wave/tasks/dw/distill.toon",
+      "5d-wave/tasks/dw/skeleton.toon"
+    ],
+    "acceptance_criteria": [
+      "Commands compile with agent-activation headers",
+      "Wave metadata correct (DISTILL)"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN DISTILL wave command .toon files\nWHEN compiled\nTHEN output has wave: DISTILL in metadata",
+    "inner_tests": [
+      "test_distill_command_compiles",
+      "test_skeleton_command_compiles"
+    ]
+  },
+  "refactoring": {
+    "targets": []
+  },
+  "review_metadata": {
+    "review_date": "2026-01-05",
+    "reviewer": "Lyra (Quality Review)",
+    "completeness_score": "7/10",
+    "achievability_score": "5/10",
+    "clarity_score": "6/10",
+    "critical_issues_count": 4,
+    "high_issues_count": 3,
+    "medium_issues_count": 2
+  },
+  "adversarial_review": {
+    "review_timestamp": "2026-01-05T00:00:00Z",
+    "review_depth": "RUTHLESS - Maximum contradiction and failure mode analysis",
+    "contradictions_found": [
+      {
+        "id": "CONT-1",
+        "title": "Phase Numbering Contradiction",
+        "description": "Task is Phase 4, Step 4.3 but references dependency on step 2.4. If step 2.4 is in phase 2, and phase 2 precedes phase 4, then step 4.3 claims to depend on completed work. However, NO VERIFICATION that step 2.4 is actually complete. Task assumes downstream work (phase 4) can only proceed after ALL PRIOR PHASES complete perfectly. This is waterfall thinking in a supposedly iterative model.",
+        "logical_fallacy": "Appeal to sequence - assumes Phase 2 completion implies Phase 1-2 are bug-free, tested, and properly documented",
+        "risk": "If step 2.4 is incomplete or incorrect, step 4.3 proceeds on false assumptions",
+        "blast_radius": "Phase 4 entire phase built on phase 2 assumptions, but no validation mechanism"
+      },
+      {
+        "id": "CONT-2",
+        "title": "Specification Sandwich - Spec Assumed to Exist But Hidden",
+        "description": "Task states 'Convert to TOON v3.0 format' (line 12) and 'Commands compile with agent-activation headers' (line 36) as if TOON v3.0 is self-evident. But step 1.1 only promises to CREATE parser/compiler (not the format spec itself). The task assumes EXTERNAL specification exists at 'github.com/toon-format/spec v3.0' (referenced in hidden_dependencies). This is EXTERNAL to project control and may be unavailable, outdated, or incompatible.",
+        "logical_fallacy": "Begging the question - assumes TOON v3.0 spec exists and is accessible",
+        "risk": "External dependency (GitHub repo) could be deleted, archived, or private",
+        "blast_radius": "Entire command migration (Phase 4) depends on external spec availability"
+      },
+      {
+        "id": "CONT-3",
+        "title": "Test-Driven Development Claim vs Reality",
+        "description": "Section 'tdd_approach' outlines 'outer_test' and 'inner_tests', claiming TDD methodology. But acceptance criteria (lines 35-38) are already fixed BEFORE tests are written. This is backwards from TDD (test-first). Task says 'Write failing outer test', but outer test success criteria pre-defined as 'wave: DISTILL in metadata'. This is test-last, not test-first.",
+        "logical_fallacy": "Begging the question - TDD claimed but tests defined post-hoc from requirements",
+        "risk": "Tests become validation of requirements rather than driving design",
+        "blast_radius": "TDD methodology completely inverted - tests should fail first, then code makes them pass"
+      },
+      {
+        "id": "CONT-4",
+        "title": "Effort Estimate Assumptions vs Reality",
+        "description": "Line 14: 'estimated_hours': '1' claims 1 hour for: (1) Learn TOON format, (2) Convert 2 files, (3) Implement 2 tests, (4) Compile and validate, (5) Review output. But Phase 4.1 (first command conversion) is ALSO 1 hour, suggesting this is not learning curve task but PRODUCTION conversion. However, if this is production, 1 hour is impossible without full automation.",
+        "logical_fallacy": "False equivalence - assumes all 6 command conversion tasks take identical time despite increasing familiarity",
+        "risk": "Schedule will be exceeded, but no contingency",
+        "blast_radius": "All Phase 4 estimates (4.1-4.6 all 1-hour) are potentially optimistic by 3-4x"
+      }
+    ],
+    "dangerous_assumptions": [
+      {
+        "assumption": "Phase 1 TOON infrastructure is complete and working",
+        "danger": "No verification mechanism. If parser/compiler has bugs, entire Phase 4 built on broken foundation",
+        "test": "Phase 1 deliverables should include: (1) Compiler executable, (2) Test suite with 100% pass rate, (3) Example conversions, (4) Error documentation",
+        "current_status": "Not provided in this task"
+      },
+      {
+        "assumption": "TOON v3.0 format specification is stable and accessible",
+        "danger": "External GitHub dependency could be deleted, versioned differently, or incompatible",
+        "test": "Task should verify: (1) Spec is accessible, (2) Version matches 'v3.0', (3) Format is documented",
+        "current_status": "Only mentioned in hidden_dependencies, not verified"
+      },
+      {
+        "assumption": "agent-activation headers exist in source files and can be preserved/reformatted",
+        "danger": "Source files (distill.md, skeleton.md) are not provided in this task. Assumption based on inference only.",
+        "test": "Task should include actual source files or explicit format specification",
+        "current_status": "Source files not provided - assumption based on external knowledge"
+      },
+      {
+        "assumption": "'1 hour' time estimate is realistic for 2-person team with no prior TOON experience",
+        "danger": "Learning curve not accounted for. First TOON conversion (4.1) should be 3-4 hours, subsequent ones 1-2 hours",
+        "test": "Provide time breakdown: (1) format study, (2) conversion per file, (3) test implementation, (4) validation",
+        "current_status": "No breakdown provided"
+      },
+      {
+        "assumption": "Test framework (pytest/unittest) is self-evident",
+        "danger": "No specification which framework, version, or conventions to use",
+        "test": "Task should specify: (1) Framework choice and rationale, (2) Test file locations, (3) Assertion patterns",
+        "current_status": "Only test names listed, no implementation guidance"
+      },
+      {
+        "assumption": "'Compile both TOON files' is a single, well-defined operation",
+        "danger": "No error handling specified. What happens if compilation fails? Are there compiler error codes to handle?",
+        "test": "Compilation workflow should include: (1) Success criteria, (2) Failure modes, (3) Error interpretation",
+        "current_status": "Workflow step 3 is vague: '3. Compile both TOON files'"
+      }
+    ],
+    "unhandled_edge_cases": [
+      {
+        "edge_case": "TOON format has breaking changes between Phase 1 spec and Phase 4 usage",
+        "probability": "Medium - external spec changes frequently",
+        "handler_status": "NO HANDLER - task would fail silently or produce invalid output"
+      },
+      {
+        "edge_case": "Phase 1 compiler produces output in different format than expected",
+        "probability": "Medium - spec ambiguity could lead to misinterpretation",
+        "handler_status": "NO HANDLER - validation would detect but no remediation path"
+      },
+      {
+        "edge_case": "Source files (distill.md, skeleton.md) contain agent-activation headers that cannot be converted to .toon format",
+        "probability": "High - format mismatch between Markdown YAML and .toon syntax",
+        "handler_status": "NO HANDLER - specification for conversion not provided"
+      },
+      {
+        "edge_case": "Compilation succeeds but output is semantically incorrect (compiler bug)",
+        "probability": "Medium - complex transformation, Phase 1 may have defects",
+        "handler_status": "PARTIAL - test_distill_command_compiles validates compilation, not semantic correctness"
+      },
+      {
+        "edge_case": "Wave metadata validation test passes but metadata is incomplete or malformed",
+        "probability": "High - acceptance criteria 'Wave metadata correct (DISTILL)' is subjective",
+        "handler_status": "NO HANDLER - no schema definition for 'correct' metadata"
+      },
+      {
+        "edge_case": "Agent-activation headers exist in source but cannot be extracted from compiled .toon",
+        "probability": "High - .toon format may not preserve headers in readable form",
+        "handler_status": "NO HANDLER - preservation method undefined"
+      },
+      {
+        "edge_case": "Compilation takes >5 minutes per file (slow computer or large files)",
+        "probability": "Low - but 1-hour estimate has no buffer",
+        "handler_status": "NO HANDLER - no timeout or retry logic"
+      },
+      {
+        "edge_case": "Test framework (pytest) requires dependencies not installed (e.g., specific Python version)",
+        "probability": "High - test environment not specified",
+        "handler_status": "NO HANDLER - no environment setup documentation"
+      }
+    ],
+    "failure_scenarios": [
+      {
+        "scenario": "Phase 1 Compiler Not Ready",
+        "trigger": "Task 4.3 starts, but step 1.1-1.6 are still in progress or have blocking bugs",
+        "consequence": "Developer attempts compilation with non-existent or broken compiler. Task blocks completely. 1-hour estimate is exceeded by 3+ hours waiting for infrastructure.",
+        "detection": "Step 3 'Compile both TOON files' fails with 'compiler not found' or 'compilation error'",
+        "recovery": "NO DOCUMENTED FALLBACK. Task specifies 'DO NOT COMMIT' but doesn't say what to do instead",
+        "risk_score": "9/10 - Critical blocking failure"
+      },
+      {
+        "scenario": "Format Conversion Ambiguity",
+        "trigger": "Developer reads distill.md and doesn't know how to convert Markdown + YAML frontmatter to .toon binary/text format",
+        "consequence": "Developer guesses format, creates invalid .toon files. Compilation succeeds spuriously (compiler doesn't catch syntax errors) or fails mysteriously",
+        "detection": "Test_distill_command_compiles passes/fails inconsistently. Tests don't validate semantic correctness",
+        "recovery": "Developer must reverse-engineer TOON format from error messages or compiler source code (if available)",
+        "risk_score": "8/10 - High probability, significant effort to recover"
+      },
+      {
+        "scenario": "Metadata Validation Misinterpretation",
+        "trigger": "Test 'wave metadata correct (DISTILL)' written without specification. Developer asserts for presence of 'wave' field but doesn't validate value is exactly 'DISTILL'",
+        "consequence": "Invalid .toon files pass tests. Later phase (4.4+) discovers metadata is wrong, cascading failures",
+        "detection": "Tests pass but metadata is incorrect. Detected in later phases (Phase 4.4-4.6) when consuming the converted commands",
+        "recovery": "Rework step 4.3 with correct metadata format. Cascading rework of steps 4.1-4.3",
+        "risk_score": "7/10 - High probability, significant downstream impact"
+      },
+      {
+        "scenario": "Test Framework Mismatch",
+        "trigger": "Developer assumes pytest, creates tests in pytest format. But project uses unittest or Nose. Tests don't integrate",
+        "consequence": "Tests written but don't execute in CI/CD pipeline. Task appears complete but fails in review",
+        "detection": "Tests run locally but fail in CI/CD. Reviewer asks 'why aren't tests running in pipeline?'",
+        "recovery": "Rewrite tests in correct framework. 1-2 hour rework",
+        "risk_score": "6/10 - Moderate probability, moderate recovery effort"
+      },
+      {
+        "scenario": "Phase 4.1 Fails, But Phase 4.2-4.6 Continue",
+        "trigger": "Step 4.1 (DISCUSS conversion) fails due to TOON format issue. But workflow doesn't stop - developers continue with 4.2, 4.3, etc., each compounding the error",
+        "consequence": "Cascading failures across Phase 4. All 6 command conversions incorrect. Entire phase must be reworked",
+        "detection": "Late in Phase 4 (or in Phase 5), when integration testing occurs",
+        "recovery": "Identify root cause in phase 4.1, fix format, replay all conversions 4.1-4.6",
+        "risk_score": "9/10 - Critical system-level failure"
+      },
+      {
+        "scenario": "Time Estimate Leads to Schedule Slip",
+        "trigger": "1-hour estimate is inaccurate. Actual task takes 3-4 hours (format learning, conversion, testing, validation)",
+        "consequence": "Developer goes 2-3 hours over estimate. Schedule slip accumulates across all Phase 4 tasks (4.1-4.6). Phase 5 delayed by 2+ days",
+        "detection": "Mid-task when developer realizes 1 hour is insufficient",
+        "recovery": "Negotiate schedule extension or reduce scope (skip some conversions)",
+        "risk_score": "7/10 - High probability, significant project impact"
+      }
+    ],
+    "circular_dependencies": [
+      {
+        "dependency_chain": "Phase 4 depends on Phase 1 TOON infrastructure → Phase 1 may depend on Phase 2 infrastructure (e.g., agent frameworks) → Phase 2 may reference Phase 4 for testing",
+        "circularity": "Task 4.3 references 'step 2.4' as dependency (line 28), suggesting phase 2 should be prior. But if phase 2 depends on phase 1 infrastructure that needs phase 4 testing, circularity exists",
+        "impact": "If circularity exists, only option is to break dependency temporarily (use incomplete infrastructure, create mocks, etc.)",
+        "detection": "Not currently detectable - dependencies not fully mapped"
+      }
+    ],
+    "optimistic_estimates": [
+      {
+        "estimate": "1 hour for format conversion + testing + validation",
+        "optimism_factor": "3-4x",
+        "justification": "No learning curve accounted for. Assumes TOON format is trivial to convert to, testing framework is obvious, validation is automatic. Reality: each of these requires 30-45 min",
+        "realistic_range": "3-4 hours for first command (4.1), 1-2 hours for subsequent commands (4.2-4.6) as familiarity increases"
+      },
+      {
+        "estimate": "All 6 Phase 4 command conversions are equivalent effort",
+        "optimism_factor": "2x for early tasks",
+        "justification": "First task (4.1 DISCUSS) requires learning TOON format. Subsequent tasks (4.2-4.6) leverage that learning",
+        "realistic_range": "4.1: 3-4 hours, 4.2-4.6: 1-2 hours each"
+      },
+      {
+        "estimate": "Compilation is automated and error-free",
+        "optimism_factor": "2x",
+        "justification": "Assumes Phase 1 compiler is robust. Reality: new tooling often has edge cases, error handling gaps",
+        "realistic_range": "Add 30-60 min for compiler debugging and error handling"
+      }
+    ],
+    "integration_points_at_risk": [
+      {
+        "integration": "Phase 1 (TOON parser/compiler) → Phase 4 (command conversion)",
+        "risk": "If Phase 1 is incomplete or documented poorly, Phase 4 cannot proceed",
+        "mitigation_status": "NO MITIGATION - task assumes Phase 1 is done but doesn't verify"
+      },
+      {
+        "integration": "Phase 4 output (.toon files) → Phase 5 (agent migration)",
+        "risk": "If .toon files are malformed, entire agent migration fails",
+        "mitigation_status": "PARTIAL - tests validate compilation but not semantic correctness"
+      },
+      {
+        "integration": "Test framework (undefined) → CI/CD pipeline",
+        "risk": "Tests may not execute in pipeline if framework is mismatched",
+        "mitigation_status": "NO MITIGATION - test framework not specified"
+      }
+    ],
+    "data_loss_risks": [
+      {
+        "risk": "Converting distill.md → distill.toon may lose YAML frontmatter fields",
+        "description": "Source files have agent-id, agent-name, agent-command, auto-activate fields. If .toon format doesn't preserve these, data is lost",
+        "detection": "Test should validate: original fields → converted fields → preservation check",
+        "current_status": "NO TEST for field preservation"
+      },
+      {
+        "risk": "Comments or annotations in Markdown may be lost in .toon conversion",
+        "description": "Markdown supports inline comments. .toon format may not",
+        "detection": "Manual inspection of .toon files for missing content",
+        "current_status": "NO TEST for content preservation"
+      }
+    ],
+    "security_holes": [
+      {
+        "hole": "External dependency on GitHub spec (github.com/toon-format/spec)",
+        "exposure": "If GitHub repository is compromised, malicious TOON format spec could be used",
+        "mitigation": "Task should specify version control (git hash or tag) for TOON spec. No mitigation in task",
+        "severity": "MEDIUM"
+      },
+      {
+        "hole": "Compiler input validation undefined",
+        "exposure": "If .toon compiler doesn't validate input, malicious .toon files could be created",
+        "mitigation": "Phase 1 should document compiler security features. No reference in this task",
+        "severity": "MEDIUM"
+      },
+      {
+        "hole": "Test framework dependencies not specified",
+        "exposure": "If pytest or test dependencies have vulnerabilities, task could use vulnerable code",
+        "mitigation": "Task should specify versions. No version pinning mentioned",
+        "severity": "LOW-MEDIUM"
+      }
+    ],
+    "test_coverage_gaps": [
+      {
+        "gap": "No test for content preservation during Markdown → .toon conversion",
+        "impact": "Data loss undetected"
+      },
+      {
+        "gap": "No test for field preservation (agent-id, agent-name, etc.)",
+        "impact": "Agent metadata loss undetected"
+      },
+      {
+        "gap": "No test for compiler error handling",
+        "impact": "Compiler failures masked or misinterpreted"
+      },
+      {
+        "gap": "No test for .toon file readability/debuggability",
+        "impact": "Invalid .toon files may compile but be unreadable to humans"
+      },
+      {
+        "gap": "No test for wave metadata semantic correctness (not just syntax)",
+        "impact": "Invalid metadata passes tests"
+      },
+      {
+        "gap": "No test for round-trip conversion (distill.md → distill.toon → distill.md verification)",
+        "impact": "Lossy conversion undetected"
+      }
+    ],
+    "risk_score": 8,
+    "risk_score_rationale": "Task is blocked on Phase 1 infrastructure (not verified complete), references undefined TOON format, has ambiguous acceptance criteria, and unrealistic time estimates. Multiple critical failure scenarios with no documented recovery. Probability of task failure is HIGH (6-7/10), and impact would be CRITICAL (cascading failures through Phase 4)",
+    "blast_radius": "HIGH - Failure in task 4.3 blocks entire Phase 4 (6 command conversions), which blocks Phase 5 (agent migration). Project-level impact if Phase 1 infrastructure is incomplete",
+    "execution_recommendation": "DO NOT PROCEED until: (1) Phase 1 TOON infrastructure is VERIFIED complete, (2) TOON v3.0 format specification is PROVIDED or REFERENCED, (3) Compiler usage is DOCUMENTED, (4) Time estimate is revised to 3-4 hours"
+  },
+  "review_findings": {
+    "critical_issues": [
+      {
+        "id": "C1",
+        "category": "Missing Specification",
+        "title": "TOON v3.0 Format Not Specified",
+        "description": "Task references 'TOON v3.0 format' and 'compile both TOON files' but no format specification is provided. Source files (distill.md, skeleton.md) are Markdown with YAML frontmatter. How should they be converted to .toon format? What is the target TOON syntax?",
+        "impact": "Execution impossible without understanding target format. Developer must reverse-engineer TOON format from context clues or external sources.",
+        "evidence": "QG: 'Both commands compile successfully' assumes .toon is compilable format, but no compiler toolchain documented in this step. Phase 1 (TOON Infrastructure) creates parser/compiler, but this step assumes it exists.",
+        "blocking": true,
+        "dependency": "Step 1.1 (TOON Parser Core) must complete before step 4.3 can proceed",
+        "required_action": "Link to TOON v3.0 format specification OR reference completed step 1.1+ deliverables"
+      },
+      {
+        "id": "C2",
+        "category": "Undefined Dependencies",
+        "title": "Compilation Target Not Documented",
+        "description": "Quality gate states 'Both commands compile successfully' but compilation workflow is undefined. What tool compiles .toon files? Who provides it? Where is the compiler installed?",
+        "impact": "Step 4.3 cannot execute independently. Blocking upstream dependency on Phase 1 (TOON infrastructure) is implicit and unstated.",
+        "evidence": "Phase 1 creates parser/compiler toolchain (steps 1.1-1.6), but step 4.3 workflow (line 55: '3. Compile both TOON files') provides no instructions for using that toolchain.",
+        "blocking": true,
+        "missing_context": [
+          "Compiler invocation syntax",
+          "Environment setup (Python version, dependencies, etc.)",
+          "Error handling for compilation failures",
+          "Validation that compiled output is correct"
+        ],
+        "required_action": "Document compiler usage or reference Phase 1 deliverables explicitly"
+      },
+      {
+        "id": "C3",
+        "category": "Acceptance Criteria Ambiguity",
+        "title": "Agent-Activation Headers Definition Missing",
+        "description": "AC states 'Agent-activation headers valid' but source files (distill.md, skeleton.md) already contain agent-activation blocks in YAML frontmatter. Are these being preserved unchanged in .toon format? Are they being reformatted? The task doesn't specify.",
+        "impact": "Test writer cannot create passing tests without understanding expected format. Acceptance criteria is subjective (what constitutes 'valid'?).",
+        "evidence": "Source files show YAML frontmatter (lines 1-8 of distill.md): agent-id, agent-name, agent-command, auto-activate fields. No specification of how these should appear in .toon output.",
+        "blocking": true,
+        "required_action": "Define exact expected format for agent-activation in .toon output OR reference format spec"
+      },
+      {
+        "id": "C4",
+        "category": "Contingency Risk",
+        "title": "No Fallback If Phase 1 Incomplete",
+        "description": "Step 4.3 assumes TOON parser/compiler completed in Phase 1 (steps 1.1-1.6, ~40+ hours estimated). If Phase 1 is incomplete or behind schedule, step 4.3 is completely blocked with no contingency.",
+        "impact": "High schedule risk. No alternative approach documented if infrastructure unavailable.",
+        "evidence": "Dependency declared: ['2.4'] (step 2.4), but missing dependency on Phase 1 completion. Step 1.1 has ~4-6 hours, steps 1.2-1.6 add more. If infrastructure has issues, entire Phase 4 is blocked.",
+        "blocking": true,
+        "required_action": "Declare explicit dependency on Phase 1 completion OR document fallback approach (manual .toon creation, placeholder compilation, etc.)"
+      }
+    ],
+    "high_issues": [
+      {
+        "id": "H1",
+        "category": "Test Isolation",
+        "title": "Test Methods Undefined",
+        "description": "Inner tests list test names (test_distill_command_compiles, test_skeleton_command_compiles) but test implementation is completely undefined. What framework? pytest? unittest? Where do tests run? What assertions?",
+        "impact": "TDD workflow cannot start. Test writer must invent test framework and structure.",
+        "evidence": "tdd_approach.inner_tests: two test names, no implementation guidance, no framework specified, no setup/teardown documented",
+        "required_action": "Provide test template or reference testing framework documentation"
+      },
+      {
+        "id": "H2",
+        "category": "Output Validation",
+        "title": "Wave Metadata Validation Unclear",
+        "description": "Success criterion 'Wave metadata correct (DISTILL)' assumes compiled .toon output contains verifiable metadata. But how is metadata embedded in .toon format? How is it validated by tests?",
+        "impact": "Test implementation requires guessing metadata format and validation approach.",
+        "evidence": "AC: 'Wave metadata correct (DISTILL)' - no specification of metadata structure, no test assertion examples, no validation method",
+        "required_action": "Define metadata schema and validation method OR reference TOON format spec"
+      },
+      {
+        "id": "H3",
+        "category": "Estimated Effort Mismatch",
+        "title": "1-Hour Estimate Unrealistic",
+        "description": "Task estimated at 1 hour (line 14). But step requires: format conversion (2 files), test implementation, compilation validation, wave metadata validation. Realistic estimate is 3-4 hours minimum, assuming Phase 1 infrastructure complete and documented.",
+        "impact": "Schedule planning unreliable. Risk of task spillover into next time block.",
+        "evidence": "Phase 4.1 (similar task) has identical 1-hour estimate. Phase 4.2-4.6 all 1-hour. But each requires: understanding format, converting file, implementing tests, validating output. Even with templates, 3-4 hours minimum.",
+        "required_action": "Revise time estimate to 3-4 hours OR provide tooling/templates that reduce effort"
+      }
+    ],
+    "medium_issues": [
+      {
+        "id": "M1",
+        "category": "Constraint Enforcement",
+        "title": "Test Constraint Ambiguous",
+        "description": "Constraint states 'Tests use business language and domain concepts' but DISTILL and SKELETON commands are framework-level (acceptance testing and E2E automation infrastructure), not business domain. What business language applies?",
+        "impact": "Test naming and structure unclear. Developer must guess what 'business language' means in infrastructure context.",
+        "evidence": "Command purposes: 'Create E2E acceptance tests', 'Walking Skeleton E2E automation' - these are engineering practices, not business features. Constraint seems copied from business feature tasks.",
+        "required_action": "Clarify constraint application OR replace with domain-appropriate constraint (e.g., 'Compilation must validate wave metadata')"
+      },
+      {
+        "id": "M2",
+        "category": "Success Criteria Vagueness",
+        "title": "SC7 Token Savings Not Validated in This Step",
+        "description": "Success criterion SC7 (~60% token savings) is mapped to this step but no validation method is defined. How are tokens counted? Before/after what? Is validation part of this step or a later quality gate?",
+        "impact": "Acceptance criterion is stated but not testable in this step. Defers validation to unspecified later point.",
+        "evidence": "success_criteria_mapping: SC1 and SC7 mapped to step 4.3, but only SC1 has testable acceptance criteria. SC7 requires token counting across all source files, not just these two.",
+        "required_action": "Either remove SC7 from this step OR define token-counting validation method"
+      }
+    ],
+    "completeness_gaps": [
+      "TOON v3.0 format specification (critical)",
+      "Compiler/toolchain usage instructions (critical)",
+      "Agent-activation header format in .toon (critical)",
+      "Dependency on Phase 1 completion (critical)",
+      "Test framework selection and setup (high)",
+      "Metadata schema definition (high)",
+      "Test implementation template or examples (high)",
+      "Fallback/contingency if Phase 1 incomplete (high)",
+      "Realistic time estimate with justification (medium)"
+    ],
+    "achievability_assessment": "LOW without upstream Phase 1 completion. If Phase 1 infrastructure delivered and documented, achievability increases to MEDIUM. Current state: task references non-existent compiler, undefined format, and missing specifications.",
+    "hidden_dependencies": [
+      {
+        "dependency": "Phase 1 TOON Infrastructure (steps 1.1-1.6)",
+        "status": "Not declared, implicit risk",
+        "impact": "Critical - task cannot execute without parser/compiler",
+        "evidence": "Workflow line 55: 'Compile both TOON files' assumes toolchain exists"
+      },
+      {
+        "dependency": "Phase 1 deliverables documentation",
+        "status": "Not declared",
+        "impact": "High - compiler usage not documented in this task",
+        "evidence": "No reference to how to invoke compiler, where to find it, what environments it requires"
+      },
+      {
+        "dependency": "TOON v3.0 format specification",
+        "status": "External reference missing",
+        "impact": "Critical - format conversion cannot proceed without spec",
+        "evidence": "Only reference: 'github.com/toon-format/spec v3.0' from step 1.1, not provided here"
+      },
+      {
+        "dependency": "Step 2.4 completion",
+        "status": "Declared but unclear",
+        "impact": "Medium - unclear what step 2.4 provides to step 4.3",
+        "evidence": "dependencies: ['2.4'] listed but no explanation of deliverables used"
+      }
+    ],
+    "clarity_issues": [
+      {
+        "issue": "Terminology inconsistency - 'compile', 'format', 'convert'",
+        "description": "Terms used inconsistently: 'Convert to TOON format' (line 12), 'compile both TOON files' (line 55), 'compile with agent-activation headers' (line 36). Are 'compile' and 'convert' the same operation?",
+        "impact": "Workflow interpretation unclear"
+      },
+      {
+        "issue": "Agent invocation unclear",
+        "description": "Task is for converting task files (distill.md, skeleton.md), not for invoking DISTILL/SKELETON wave agents. Title could mislead into thinking actual agent execution is required.",
+        "impact": "Purpose clarity medium"
+      },
+      {
+        "issue": "Acceptance criteria vs acceptance tests",
+        "description": "Two sections reference acceptance testing: 'acceptance_criteria' (lines 35-38) and 'tdd_approach.outer_test' (line 41). How do they relate? Are outer_test assertions the same as acceptance_criteria?",
+        "impact": "TDD structure unclear"
+      }
+    ],
+    "recommendations": [
+      {
+        "priority": "CRITICAL",
+        "recommendation": "Block execution until Phase 1 TOON infrastructure complete and documented",
+        "rationale": "Task cannot execute without parser/compiler. Verify Phase 1 steps 1.1-1.6 completed, deliverables available, and usage documented."
+      },
+      {
+        "priority": "CRITICAL",
+        "recommendation": "Reference or embed TOON v3.0 format specification",
+        "rationale": "Cannot convert Markdown to .toon without understanding target format. Either provide format spec or reference Phase 1 deliverables that define it."
+      },
+      {
+        "priority": "CRITICAL",
+        "recommendation": "Define exact agent-activation header format in .toon output",
+        "rationale": "Source files have YAML frontmatter headers. Specify whether preserved unchanged, reformatted, or embedded differently in .toon."
+      },
+      {
+        "priority": "CRITICAL",
+        "recommendation": "Document compiler/toolchain invocation",
+        "rationale": "Workflow line 55 states 'Compile both TOON files' with no instructions. Who runs compiler? How? What are success/failure criteria?"
+      },
+      {
+        "priority": "HIGH",
+        "recommendation": "Provide test implementation template",
+        "rationale": "Inner tests listed but not implemented. Either provide pytest/unittest template or reference testing framework documentation."
+      },
+      {
+        "priority": "HIGH",
+        "recommendation": "Define metadata schema and validation",
+        "rationale": "AC requires wave metadata validation but schema undefined. Specify exact metadata structure and test assertions."
+      },
+      {
+        "priority": "HIGH",
+        "recommendation": "Revise time estimate to 3-4 hours",
+        "rationale": "1 hour unrealistic for format conversion + test implementation + validation. Increase estimate with justification or provide automation tooling."
+      },
+      {
+        "priority": "MEDIUM",
+        "recommendation": "Clarify business language constraint",
+        "rationale": "Constraint assumes business domain, but task is framework infrastructure. Either adapt constraint or remove as inapplicable."
+      },
+      {
+        "priority": "MEDIUM",
+        "recommendation": "Define fallback if Phase 1 incomplete",
+        "rationale": "Step 4.3 completely blocked if Phase 1 not finished. Document contingency (manual .toon creation, temporary compilation bypass, etc.)."
+      },
+      {
+        "priority": "MEDIUM",
+        "recommendation": "Clarify SC7 token savings validation",
+        "rationale": "SC7 mapped to step 4.3 but validation method undefined. Either move to later quality gate or define token-counting validation."
+      }
+    ],
+    "summary": {
+      "overall_status": "BLOCKED - Critical information missing",
+      "risk_level": "HIGH",
+      "recommendation": "Do not proceed without addressing CRITICAL issues. Phase 1 TOON infrastructure must be complete and documented. Format specification and compiler usage must be explicitly provided or referenced."
+    }
+  },
+  "execution_guidance": {
+    "approach": "Command conversion with template validation",
+    "workflow": [
+      "1. Convert distill.md to distill.toon",
+      "2. Convert skeleton.md to skeleton.toon",
+      "3. Compile both TOON files",
+      "4. Write tests to validate wave metadata",
+      "5. Verify agent-activation headers present",
+      "6. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "All tests passing (100% required)",
+      "Both commands compile successfully",
+      "Wave metadata correct (DISTILL)",
+      "Agent-activation headers valid",
+      "No report files created"
+    ]
+  },
+  "prerequisite_checks": {
+    "phase_1_toon_infrastructure": {
+      "requirement": "TOON parser and compiler from Phase 1 must be complete",
+      "verification": "Confirm tools/toon/compiler.py exists and test_toon_parser passes",
+      "blocking": true,
+      "escalation": "If Phase 1 incomplete, STOP - escalate to project manager for decision on Option B (Markdown) or Option C (Block)"
+    },
+    "toon_format_specification": {
+      "requirement": "TOON v3.0 format specification must be available",
+      "verification": "Obtain from tools/toon/TOON-v3.0-SPEC.md or reference implementation",
+      "blocking": true,
+      "escalation": "If spec unavailable, create from reverse-engineering agents/novel-editor-chatgpt-toon.txt"
+    },
+    "baseline_measurements": {
+      "requirement": "Baseline measurements from Phase 0 must be complete",
+      "verification": "Confirm docs/workflow/plugin-marketplace-migration/baseline.yaml exists with command metrics",
+      "blocking": true,
+      "escalation": "If baseline missing, execute Phase 0 baseline measurement first"
+    }
+  },
+  "toon_compiler": {
+    "tool_location": "tools/toon/compiler.py (from Phase 1)",
+    "purpose": "Transforms TOON source to Claude Code compliant output",
+    "input": "5d-wave/tasks/dw/*.toon (TOON format)",
+    "output": "dist/commands/dw/*.md (Markdown format)",
+    "invocation": "python tools/toon/compiler.py <input.toon> --validate --output <output.md>",
+    "success_criteria": [
+      "Exit code = 0 (no errors)",
+      "No errors in stderr",
+      "Output file size > 1000 bytes (non-trivial content)",
+      "Metadata validates against TOON v3.0 schema",
+      "Output markdown is Claude Code compliant"
+    ],
+    "validation": "pytest tests/tools/toon/test_compiler.py"
+  },
+  "error_handling": {
+    "scenario_1_compiler_not_found": {
+      "error": "TOON compiler not found at tools/toon/compiler.py",
+      "handling": "Log error with clear message: 'Phase 1 TOON infrastructure required. Run Phase 1.1-1.5 first or choose Option B (Markdown).'",
+      "recovery": "STOP execution, escalate to user for decision",
+      "test": "test_error_compiler_not_found"
+    },
+    "scenario_2_compilation_failure": {
+      "error": "TOON compiler exits with non-zero code",
+      "handling": "Log compilation error with file path and stderr output. Skip failed file, continue with others. Generate error report.",
+      "recovery": "Review TOON syntax, fix errors, retry compilation",
+      "test": "test_error_compilation_failure_graceful"
+    },
+    "scenario_3_metadata_validation_failure": {
+      "error": "Compiled output fails metadata validation (missing required fields)",
+      "handling": "Log validation errors with specific missing fields. Mark file as failed. Continue processing other files.",
+      "recovery": "Add missing metadata to source TOON file, recompile",
+      "test": "test_error_metadata_validation_failure"
+    },
+    "scenario_4_partial_batch_failure": {
+      "error": "Some files in batch succeed, others fail",
+      "handling": "Complete all processable files. Generate summary report: X succeeded, Y failed. List failed files with error reasons.",
+      "recovery": "Fix failed files individually, rerun batch",
+      "test": "test_error_partial_batch_failure_reporting"
+    }
+  },
+  "test_specifications": {
+    "unit_tests": [
+      {
+        "name": "test_toon_parser_valid_command_input",
+        "purpose": "Verify parser handles valid TOON command syntax correctly",
+        "input": "Sample TOON command file with all required fields (name, description, parameters)",
+        "expected": "Parsed dict with command metadata: {name, description, parameters, dependencies}"
+      },
+      {
+        "name": "test_template_rendering_with_parsed_command",
+        "purpose": "Verify Jinja2 template renders command.md from parsed data",
+        "input": "Parsed command dict from parser output",
+        "expected": "Valid Markdown output with command syntax section, parameters table, usage examples"
+      },
+      {
+        "name": "test_output_validation_against_claude_code_spec",
+        "purpose": "Verify compiled output meets Claude Code command specification",
+        "input": "Generated command.md file",
+        "expected": "Validation passes: Has frontmatter, execution context, success criteria sections"
+      }
+    ],
+    "integration_tests": [
+      {
+        "name": "test_e2e_command_migration_pipeline",
+        "purpose": "Verify complete migration: TOON → Parse → Template → Validate → Output",
+        "input": "Real TOON command file from 5d-wave/tasks/dw/",
+        "steps": "Parse TOON → Apply command template → Validate output → Write to dist/",
+        "expected": "Valid command.md in dist/commands/dw/ matching Claude Code spec"
+      },
+      {
+        "name": "test_batch_migration_all_commands",
+        "purpose": "Verify batch processing of all command files",
+        "input": "All TOON command files (8 dw: commands)",
+        "expected": "All 8 commands migrated successfully with validation report"
+      }
+    ],
+    "error_scenario_tests": [
+      {
+        "name": "test_compiler_not_found_error_handling",
+        "purpose": "Verify graceful failure when compiler missing",
+        "setup": "Remove or rename tools/toon/compiler.py",
+        "expected": "Clear error message, execution stops, no partial output"
+      },
+      {
+        "name": "test_malformed_toon_syntax_error_handling",
+        "purpose": "Verify parser reports syntax errors clearly",
+        "input": "TOON file with missing ## section header",
+        "expected": "Parser error with line number, specific syntax issue description"
+      },
+      {
+        "name": "test_validation_failure_error_handling",
+        "purpose": "Verify validation errors reported clearly",
+        "input": "TOON file missing required 'description' field",
+        "expected": "Validation error: 'Missing required field: description' with file path"
+      }
+    ]
+  }
+}

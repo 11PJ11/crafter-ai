@@ -1,0 +1,556 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "07-03",
+  "phase": {
+    "number": 7,
+    "name": "Plugin Structure",
+    "purpose": "Create Claude Code plugin packaging for marketplace distribution"
+  },
+  "step": {
+    "number": "7.3",
+    "name": "Organize Output Structure",
+    "description": "Configure output directory structure for plugin:\n- dist/agents/dw/*.md\n- dist/commands/dw/*.md\n- dist/skills/*/SKILL.md",
+    "motivation": "Proper structure required for plugin installation",
+    "estimated_hours": "1"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC3": "Plugin installable via /plugin install"
+    },
+    "dependencies": ["7.1"]
+  },
+  "deliverables": {
+    "files_to_modify": [
+      "tools/toon/compiler.py"
+    ],
+    "acceptance_criteria": [
+      "Compiler outputs to correct directories",
+      "Wave-based organization maintained",
+      "Skills in skill-name subdirectories"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN full compilation run\nWHEN I check output directory structure\nTHEN matches Claude Code plugin spec",
+    "inner_tests": [
+      "test_agent_output_path",
+      "test_command_output_path",
+      "test_skill_output_path"
+    ]
+  },
+  "refactoring": {
+    "targets": []
+  },
+  "execution_guidance": {
+    "approach": "Compiler modification with path validation",
+    "workflow": [
+      "1. Modify compiler.py to support output path configuration",
+      "2. Configure dist/agents/dw/ for agent outputs",
+      "3. Configure dist/commands/dw/ for command outputs",
+      "4. Configure dist/skills/*/ for skill outputs",
+      "5. Write tests to validate output paths",
+      "6. Run full compilation to validate structure",
+      "7. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "All tests passing (100% required)",
+      "Output paths correct",
+      "Wave organization maintained",
+      "Skills in subdirectories",
+      "No report files created"
+    ]
+  },
+  "review_metadata": {
+    "review_date": "2026-01-05",
+    "reviewer": "lyra",
+    "status": "CLARITY_CRITICAL",
+    "clarity_assessment": {
+      "score": 4,
+      "findings": [
+        "Task name is clear but execution path is vague",
+        "Reference to 'tools/toon/compiler.py' contradicts actual codebase structure",
+        "Actual build system is 'tools/build_ide_bundle.py' - MISMATCH with deliverable specification",
+        "Directory structure ('dist/agents/dw/', 'dist/commands/dw/') ALREADY EXISTS and outputs are ALREADY there",
+        "Missing: Clarification on whether task is to modify existing build system OR restructure dist/ outputs",
+        "'Output structure' is ambiguous - unclear if configuring directories, file organization, or dist/ restructuring"
+      ]
+    },
+    "completeness_assessment": {
+      "score": 3,
+      "findings": [
+        "CRITICAL MISMATCH: 'tools/toon/compiler.py' does not exist in codebase",
+        "Actual implementation is in tools/build_ide_bundle.py with processors/ subdirectory",
+        "dist/agents/dw/ already has 28+ agents (from build_ide_bundle.py)",
+        "dist/commands/dw/ already has 20+ commands (from build_ide_bundle.py)",
+        "dist/skills/ directory does not exist - no skills implementation detected in source",
+        "Missing: What ARE 'skills'? Are they tasks? Commands? Separate artifact type?",
+        "Missing: How do skills relate to existing 5D-Wave structure?",
+        "Missing: test_skill_output_path test - what does 'skill' output path look like?",
+        "Acceptance criteria reference 'Wave-based organization maintained' but current dist/ ALREADY has wave organization (dw/ prefix)",
+        "Unclear: Is this step to preserve existing organization or change it?",
+        "Missing: Specification of skill subdirectory naming convention (skill-name/ vs dw-skill-name/ vs skills/skill-name/?)"
+      ]
+    },
+    "achievability_assessment": {
+      "score": 2,
+      "findings": [
+        "BLOCKING: Referenced tool ('tools/toon/compiler.py') does not exist - cannot modify non-existent file",
+        "BLOCKING: Unclear what 'skills' are - cannot implement output structure for undefined artifact type",
+        "1-hour estimate is unrealistic given the ambiguity",
+        "Task cannot be achieved as written because it targets wrong file/system",
+        "Current build system (build_ide_bundle.py) already produces the output structure described",
+        "Risk: Implementing this task may break existing working build system that already outputs to correct directories"
+      ]
+    },
+    "hidden_dependencies": {
+      "identified": [
+        {
+          "dependency": "Definition of 'skills' artifact type",
+          "risk": "Task references 'dist/skills/*/' but skills are not defined anywhere in spec",
+          "mitigation": "MUST clarify: What are skills? Are they existing 5D-Wave objects (tasks, agents, commands)? New artifact type? Subset of existing?"
+        },
+        {
+          "dependency": "Correct compiler/build system identification",
+          "risk": "Referenced 'tools/toon/compiler.py' does not exist; actual system is tools/build_ide_bundle.py",
+          "mitigation": "MUST clarify: Is toon/ a planned future system? Should this task work with existing build_ide_bundle.py instead?"
+        },
+        {
+          "dependency": "Purpose of this step vs. existing build system",
+          "risk": "build_ide_bundle.py already outputs to dist/agents/dw/, dist/commands/dw/ with correct structure",
+          "mitigation": "MUST clarify: Does this step create a NEW compiler? Or configure/modify existing build system?"
+        },
+        {
+          "dependency": "Step 7.1 dependency understanding",
+          "risk": "Depends on 7.1 (plugin.json creation) but 7.1 does not reference output structure configuration",
+          "mitigation": "Verify: Does step 7.1 (plugin.json) require dist/ structure to be already in place? Or is that 7.3's responsibility?"
+        }
+      ],
+      "context_links": [
+        "Phase 7: Plugin Structure (purpose: 'Create Claude Code plugin packaging for marketplace distribution')",
+        "Step 7.1: Create plugin.json",
+        "Step 7.2: Create marketplace.json",
+        "Actual codebase: tools/build_ide_bundle.py (not tools/toon/compiler.py)"
+      ]
+    },
+    "missing_context": {
+      "critical": [
+        "What exactly ARE 'skills'? Are they tasks from 5d-wave/tasks/dw/*.md? A new artifact type? Commands that end in /skill?",
+        "Why does task reference 'tools/toon/compiler.py' when the actual build system is 'tools/build_ide_bundle.py'?",
+        "Is this task supposed to: (A) Create a new 'toon' compiler system, or (B) Configure existing build_ide_bundle.py?",
+        "Current dist/ ALREADY has agents/dw/ and commands/dw/ with outputs from build_ide_bundle.py - is this expected or mistake?",
+        "Does dist/ restructuring require removing existing outputs or adding to them?",
+        "Phase 7 purpose is 'packaging for marketplace distribution' - what is the relationship between dist/ directory structure and plugin.json from step 7.1?"
+      ],
+      "important": [
+        "Skill subdirectory naming convention: Should it be 'dist/skills/skill-name/' or 'dist/skills/dw/skill-name/' or something else?",
+        "Should step 7.3 configure both the build system AND the output structure, or just validate existing?",
+        "Test specifications (test_agent_output_path, test_command_output_path, test_skill_output_path) - what are the expected paths?",
+        "After step 7.3, what should './dist' directory tree look like exactly? (tree view needed)",
+        "How do .claude-plugin/plugin.json (from 7.1) and dist/ outputs (from 7.3) relate? Are they the same content, mirrors, or different?"
+      ]
+    },
+    "recommendations": [
+      {
+        "priority": "CRITICAL",
+        "issue": "Referenced tool 'tools/toon/compiler.py' does not exist - points to non-existent codebase element",
+        "action": "CLARIFY BEFORE EXECUTION: Is 'toon' a planned future system to be built in this phase? Or should this step work with existing 'tools/build_ide_bundle.py'? If toon is planned, add it as step 7.0 (predecessor to 7.3)."
+      },
+      {
+        "priority": "CRITICAL",
+        "issue": "'Skills' artifact type is undefined",
+        "action": "DEFINE in acceptance criteria: What constitutes a 'skill'? Examples: 'Skills are task definitions from 5d-wave/tasks/dw/*.md' OR 'Skills are command implementations in dist/commands/dw/' OR 'Skills are a new artifact type to be created in this phase?'"
+      },
+      {
+        "priority": "CRITICAL",
+        "issue": "Task scope ambiguity - unclear if this is modify-existing or validate-existing",
+        "action": "CLARIFY: Is this step supposed to (A) Modify tools/build_ide_bundle.py to output to correct directories, or (B) Validate that existing build_ide_bundle.py outputs are already in correct directories, or (C) Create new tools/toon/compiler.py?"
+      },
+      {
+        "priority": "CRITICAL",
+        "issue": "Current dist/ outputs from build_ide_bundle.py may conflict with this step's objectives",
+        "action": "VERIFY: Current state shows dist/agents/dw/ and dist/commands/dw/ already populated with 26 agents (novel-editor and novel-editor-reviewer excluded from build) and ~20 commands. Is this the desired state this step should achieve? If not, clarify what changes are needed."
+      },
+      {
+        "priority": "HIGH",
+        "issue": "Acceptance criteria too vague",
+        "action": "Specify EXACT expected directory structure post-execution. Provide tree view: expected output of 'tree dist/' after step 7.3 completes"
+      },
+      {
+        "priority": "HIGH",
+        "issue": "Test specifications incomplete",
+        "action": "Define what test_skill_output_path should validate - need concrete example of skill output path structure"
+      },
+      {
+        "priority": "HIGH",
+        "issue": "Relationship between steps 7.1 and 7.3 unclear",
+        "action": "Clarify: Does plugin.json (created in 7.1) reference the dist/ outputs from 7.3? Are they interdependent or independent?"
+      },
+      {
+        "priority": "MEDIUM",
+        "issue": "Estimated 1 hour is insufficient given ambiguity",
+        "action": "Revise estimate after clarifications. Current state: 3-5 hours needed to clarify and implement (or 0.5 hours if just validating existing structure)"
+      }
+    ],
+    "dependencies_chain": "Step 7.1 (plugin.json) → Step 7.3 (output structure) - relationship unclear. Does 7.1 depend on 7.3 outputs existing? Or are they parallel?",
+    "notes": "URGENT CLARIFICATION NEEDED: This step references a non-existent 'tools/toon/compiler.py' while a working build system (tools/build_ide_bundle.py) already produces the claimed outputs. The step cannot be executed as written. Before proceeding, determine: (1) Is 'toon' compiler a new tool to build (in which case, restructure as step 7.0 prerequisite), or (2) Should this step work with existing build_ide_bundle.py, or (3) Is there a misunderstanding about current codebase state? Additionally, 'skills' are completely undefined - this MUST be clarified before implementation can begin. The task appears well-intentioned but is blocked by critical conceptual misalignments with actual codebase structure."
+  },
+  "adversarial_review": {
+    "review_date": "2026-01-05",
+    "reviewer": "adversarial-software-crafter-reviewer",
+    "review_type": "RUTHLESS_FAILURE_MODE_ANALYSIS",
+    "contradictions_found": [
+      {
+        "contradiction_id": "C1_FILE_EXISTENCE",
+        "contradiction": "Step specifies 'tools/toon/compiler.py' as file_to_modify, but this file does not exist in codebase",
+        "evidence": [
+          "tools/toon/ directory does not exist",
+          "tools/build_ide_bundle.py IS the actual compiler (33 agents already in dist/ide/agents/dw/)",
+          "Step 7.4 in roadmap ALSO references tools/build_ide_bundle.py as target for modification",
+          "Step 7.0-7.2 do not mention creating tools/toon/compiler.py"
+        ],
+        "consequence": "Developer will attempt to modify non-existent file, causing immediate FileNotFoundError",
+        "severity": "CATASTROPHIC",
+        "blocked_by_this": "Cannot proceed until clarified whether tools/toon/ exists or should be created"
+      },
+      {
+        "contradiction_id": "C2_OUTPUT_ALREADY_EXISTS",
+        "contradiction": "Task claims to 'Configure output directory structure' but dist/agents/dw/ and dist/commands/dw/ ALREADY contain 33 agents and 20+ commands with correct structure",
+        "evidence": [
+          "dist/ide/agents/dw/ contains 33 agent files (verified by file count)",
+          "dist/ide/commands/dw/ contains command files (from build_ide_bundle.py execution)",
+          "build_ide_bundle.py processors already handle path configuration for agents and commands",
+          "Acceptance criteria says 'Compiler outputs to correct directories' - but it ALREADY does"
+        ],
+        "consequence": "Either: (A) Task is redundant and wastes time, or (B) Developer should DELETE existing outputs, causing data loss and breaking subsequent phase steps",
+        "severity": "HIGH",
+        "blocked_by_this": "Unclear if this step should preserve, modify, or replace existing dist/ outputs"
+      },
+      {
+        "contradiction_id": "C3_SKILLS_UNDEFINED",
+        "contradiction": "Acceptance criteria references 'Skills in skill-name subdirectories' and task includes 'test_skill_output_path', but 'skills' are never defined anywhere in project specification",
+        "evidence": [
+          "No SkillProcessor in tools/processors/ (only: agent_processor, command_processor, team_processor, workflow_processor)",
+          "No dist/skills/ directory exists",
+          "Roadmap success criterion SC4 mentions 'Skills auto-invoked correctly' but no skill definition provided",
+          "No 5d-wave/skills/ source directory found",
+          "test_skill_output_path test cannot be written without knowing what a 'skill' is"
+        ],
+        "consequence": "Developer cannot write test_skill_output_path because skill output path structure is undefined. Test will fail or be skipped, breaking '100% tests passing' quality gate",
+        "severity": "CATASTROPHIC",
+        "blocked_by_this": "Must define 'skills' artifact type before this step can proceed. This is a prerequisite missing from roadmap"
+      },
+      {
+        "contradiction_id": "C4_DEPENDENCY_CHAIN_BROKEN",
+        "contradiction": "Step 7.3 depends on Step 7.1, but Step 7.1 (Create plugin.json) does not establish dist/ directory structure that 7.3 claims to configure",
+        "evidence": [
+          "Step 7.1 focuses on plugin.json manifest file, not directory structure",
+          "Step 7.1 does not document creating dist/ directories",
+          "Step 7.3 claims to configure output structure 'required for plugin installation' - but plugin.json from 7.1 determines installation requirements, not dist/ structure",
+          "Circular dependency risk: 7.1 may need 7.3 outputs to be complete, or 7.3 may need 7.1 specification to be complete"
+        ],
+        "consequence": "If 7.1 and 7.3 are executed sequentially without clarifying interdependencies, one or both will fail to complete requirements",
+        "severity": "HIGH",
+        "blocked_by_this": "Must clarify: Does 7.1 output (plugin.json) specify dist/ structure requirements that 7.3 must satisfy, or are they independent?"
+      },
+      {
+        "contradiction_id": "C5_WAVE_ORGANIZATION_AMBIGUITY",
+        "contradiction": "Acceptance criteria says 'Wave-based organization maintained' but current dist/ (dist/ide/agents/dw/, dist/ide/commands/dw/) suggests IDE-specific organization, NOT wave-based organization from 5d-wave/",
+        "evidence": [
+          "Current structure: dist/ide/agents/dw/ (IDE-specific, not wave-based)",
+          "5D-Wave source structure: 5d-wave/data/embed/software-crafter/, 5d-wave/tasks/dw/, etc.",
+          "Task claims to organize by 'Wave-based organization' but spec shows dist/agents/dw/ (flat under agents, not organized by wave like 5d-wave/)",
+          "Unclear: Does 'Wave-based' mean 'dw prefix' (current), or 'organized by 5D-Wave structure' (different)"
+        ],
+        "consequence": "Developer may reorganize dist/ into 5D-Wave-based structure (breaking existing dist/ide organization), or may keep IDE structure (misunderstanding task intent)",
+        "severity": "MEDIUM",
+        "blocked_by_this": "Must clarify: What does 'Wave-based organization maintained' mean in context of dist/ structure?"
+      }
+    ],
+    "dangerous_assumptions": [
+      {
+        "assumption_id": "DA1_TOOLS_TOON_EXISTS",
+        "assumption": "Task assumes tools/toon/compiler.py exists or should be created in a prior step",
+        "danger": "If prior steps didn't create it, this step's execution will fail immediately with FileNotFoundError. No rollback path",
+        "evidence": "tools/toon/ directory does not exist in current codebase. Step 7.0-7.2 do not mention creating it",
+        "likelihood": "CERTAIN - will fail",
+        "consequence_if_wrong": "Task cannot proceed. Developer must manually create tools/toon/compiler.py or use wrong file (build_ide_bundle.py)"
+      },
+      {
+        "assumption_id": "DA2_SKILLS_EXIST_SOMEWHERE",
+        "assumption": "Task assumes 'skills' are defined artifact type somewhere that tests can validate",
+        "danger": "If skills don't exist in codebase or specification, test_skill_output_path cannot be written. Test fails. Quality gate (100% tests passing) violated",
+        "evidence": "Skills not found in: 5d-wave/, tools/, source docs, or project specification",
+        "likelihood": "CERTAIN - skills undefined",
+        "consequence_if_wrong": "Test suite incomplete. Cannot achieve '100% tests passing' quality gate. Phase 7 blocks. Entire plugin-marketplace-migration project blocked"
+      },
+      {
+        "assumption_id": "DA3_ONE_HOUR_SUFFICIENT",
+        "assumption": "1-hour estimate assumes straightforward path configuration, but task is blocked by two undefined/missing elements (tools/toon/compiler.py and 'skills' definition)",
+        "danger": "Developer allocates 1 hour, hits blockers within 15 minutes, cannot proceed. Context switch cost, frustration, schedule slips by hours or days",
+        "evidence": "Clarification needed on: (1) toon compiler location, (2) skills definition. Each clarification may require 1-2 hour discussions",
+        "likelihood": "CERTAIN - actual effort will exceed estimate by 3-5x",
+        "consequence_if_wrong": "Schedule slips. Developer wastes time. Credibility of roadmap estimates damaged"
+      },
+      {
+        "assumption_id": "DA4_DIST_PRESERVATION",
+        "assumption": "Task assumes existing dist/ outputs should be preserved, but task wording 'Configure output directory structure' could imply reorganization or replacement",
+        "danger": "Developer might reorganize dist/ directory, causing data loss or breaking subsequent phase dependencies on current dist/ structure",
+        "evidence": "Task wording ambiguous: 'Configure' could mean 'modify', 'reorganize', 'preserve', or 'validate'",
+        "likelihood": "MEDIUM - depends on developer interpretation",
+        "consequence_if_wrong": "If developer deletes/reorganizes dist/ide/agents/dw/ or dist/ide/commands/dw/, breaks existing working build outputs. Step 7.4 (final build) will fail"
+      },
+      {
+        "assumption_id": "DA5_NO_SIDE_EFFECTS",
+        "assumption": "Task assumes modifying compiler.py (or build_ide_bundle.py if corrected) will have no side effects on other tools or workflows",
+        "danger": "build_ide_bundle.py is actively used by other parts of build system. Modifying path configuration without full testing could break IDE bundle generation",
+        "evidence": "build_ide_bundle.py called from build.py. Changing output paths affects IDE bundle structure. No mention of integration testing with build.py",
+        "likelihood": "MEDIUM - depends on scope of modifications",
+        "consequence_if_wrong": "IDE bundle generation breaks. dist/ide/ becomes invalid. Claude Code IDE cannot load plugins"
+      }
+    ],
+    "unhandled_edge_cases": [
+      {
+        "edge_case_id": "E1_MISSING_TOON_COMPILER",
+        "scenario": "Developer arrives at step 7.3, attempts to modify tools/toon/compiler.py, discovers file does not exist",
+        "not_handled": "No fallback path documented. No error recovery strategy. No contingency plan",
+        "consequence": "Developer must: (A) Go back and build tools/toon/compiler.py (scope creep, not planned), or (B) Use build_ide_bundle.py (contradicts task specification), or (C) Block and wait for clarification (schedule slip)",
+        "probability": "CERTAIN",
+        "mitigation_required": "Add decision point: Is tools/toon/ a new tool to build, or should task use build_ide_bundle.py?"
+      },
+      {
+        "edge_case_id": "E2_SKILLS_UNDEFINED",
+        "scenario": "Developer attempts to write test_skill_output_path but cannot determine what skill output path should look like",
+        "not_handled": "No specification of skill artifact type. No examples. No reference implementation",
+        "consequence": "Test either: (A) Skipped (breaks quality gate), (B) Written with assumptions (test may validate wrong thing), or (C) Causes human escalation to ask 'what is a skill?'",
+        "probability": "CERTAIN",
+        "mitigation_required": "Define 'skills' artifact type with concrete examples before proceeding to step 7.3"
+      },
+      {
+        "edge_case_id": "E3_DIST_REORGANIZATION_BREAKS_PHASE_7_4",
+        "scenario": "Developer reorganizes dist/ structure as part of 'configure output directory structure', changing dist/ide/agents/dw/ to dist/agents/dw/",
+        "not_handled": "Step 7.4 depends on dist/ structure. If 7.3 reorganizes, 7.4 will fail unless also updated",
+        "consequence": "Phase 7 fails at step 7.4. Build cannot complete. Plugin cannot be packaged",
+        "probability": "MEDIUM - depends on how developer interprets 'configure'",
+        "mitigation_required": "Clarify: Should dist/ structure be modified, or is current structure already correct?"
+      },
+      {
+        "edge_case_id": "E4_BUILD_IDE_BUNDLE_ALREADY_CORRECT",
+        "scenario": "Current build_ide_bundle.py already outputs to correct directories (dist/ide/agents/dw/, dist/ide/commands/dw/). Step 7.3 may be redundant",
+        "not_handled": "No specification of what 'incorrect' state would look like that needs fixing",
+        "consequence": "Developer modifies build_ide_bundle.py to 'configure' paths, potentially breaking working system, for no functional gain",
+        "probability": "HIGH - evidence suggests current structure is already correct",
+        "mitigation_required": "Validate current dist/ structure before execution. If already correct, step should be 'validate' not 'configure'"
+      },
+      {
+        "edge_case_id": "E5_TEST_ISOLATION_FAILURE",
+        "scenario": "test_agent_output_path, test_command_output_path, test_skill_output_path run and discover existing dist/ has leftover files from previous builds or parallel executions",
+        "not_handled": "No specification of test cleanup. No mention of idempotency. Tests may pass/fail inconsistently based on dist/ state",
+        "consequence": "Flaky tests. Tests pass on clean machine, fail on CI after other steps run. Quality gate inconsistency",
+        "probability": "MEDIUM",
+        "mitigation_required": "Specify: Should tests clean dist/ before validation? Should dist/ be git-ignored? How are parallel builds handled?"
+      }
+    ],
+    "failure_scenarios": [
+      {
+        "scenario_id": "F1_IMMEDIATE_BLOCKERS",
+        "scenario": "Developer executes step 7.3 as written",
+        "step_sequence": [
+          "Attempts to modify tools/toon/compiler.py",
+          "FileNotFoundError: No such file or directory",
+          "Developer blocked. Cannot proceed."
+        ],
+        "trigger": "tools/toon/compiler.py does not exist",
+        "impact_severity": "CATASTROPHIC - blocks phase 7 execution",
+        "time_to_failure": "< 2 minutes"
+      },
+      {
+        "scenario_id": "F2_UNDEFINED_SKILLS_TEST_FAILURE",
+        "scenario": "Developer bypasses F1 by assuming tools/toon/ is placeholder, modifies build_ide_bundle.py instead",
+        "step_sequence": [
+          "Writes test_agent_output_path - works (agents are defined)",
+          "Writes test_command_output_path - works (commands are defined)",
+          "Attempts to write test_skill_output_path - cannot proceed (skills undefined)",
+          "Either skips test (violates 100% quality gate) or writes assumption-based test (may validate wrong thing)"
+        ],
+        "trigger": "Skills artifact type not defined in specification",
+        "impact_severity": "HIGH - blocks quality gates, creates technical debt",
+        "time_to_failure": "15-30 minutes"
+      },
+      {
+        "scenario_id": "F3_DIST_REORGANIZATION_CASCADE",
+        "scenario": "Developer interprets 'Configure output directory structure' as opportunity to reorganize dist/ from current IDE structure to Wave-based structure",
+        "step_sequence": [
+          "Modifies build_ide_bundle.py to output to dist/agents/dw/ instead of dist/ide/agents/dw/",
+          "Tests pass locally (new structure validated)",
+          "Commits changes",
+          "Step 7.4 (final build) attempts to run, expects dist/ide/ structure",
+          "build_ide_bundle.py or IDE integration fails - wrong structure"
+        ],
+        "trigger": "Ambiguity in task wording ('configure' vs 'validate'). Lack of specification about expected output structure",
+        "impact_severity": "HIGH - breaks phase 7 final integration",
+        "time_to_failure": "2-4 hours (discovered in step 7.4)"
+      },
+      {
+        "scenario_id": "F4_CIRCULAR_DEPENDENCY_DEADLOCK",
+        "scenario": "Developer discovers step 7.3 depends on 7.1 for plugin.json, but plugin.json spec from 7.1 depends on knowing dist/ structure from 7.3",
+        "step_sequence": [
+          "Completes step 7.1 (plugin.json created with unknown dist/ structure assumptions)",
+          "Arrives at step 7.3 (configure output structure)",
+          "Realizes plugin.json references dist/ paths that may not match what 7.3 configures",
+          "Cannot complete 7.3 without revising 7.1. Blocked"
+        ],
+        "trigger": "Dependency chain not fully specified. 7.1 and 7.3 interdependencies not documented",
+        "impact_severity": "MEDIUM to HIGH - may require rework of previous step",
+        "time_to_failure": "30-60 minutes (discovered during 7.3 execution)"
+      },
+      {
+        "scenario_id": "F5_TIME_ESTIMATE_BLOWN",
+        "scenario": "Developer allocates 1 hour for task, hits multiple blockers requiring clarifications",
+        "step_sequence": [
+          "0:00 - Start task",
+          "0:05 - Discover tools/toon/compiler.py missing",
+          "0:15 - Ask for clarification on toon vs build_ide_bundle.py (wait for response)",
+          "0:45 - Clarification received: Use build_ide_bundle.py instead",
+          "1:00 - Allocated time expires. Still need to: write tests for skills, validate dist structure, run tests",
+          "Escalate: Request more time"
+        ],
+        "trigger": "1-hour estimate does not account for clarifications needed due to ambiguities",
+        "impact_severity": "MEDIUM - schedule slip, context disruption",
+        "time_to_failure": "60 minutes (time box exceeded)"
+      }
+    ],
+    "risk_assessment": {
+      "execution_risk_score": 8.7,
+      "risk_calculation": "Based on: (2 blocking contradictions × 5.0) + (5 dangerous assumptions × 0.4) + (5 unhandled edge cases × 0.3) + (2 high-impact failure scenarios × 0.1) / total_factors",
+      "risk_breakdown": {
+        "blocking_contradictions": "Critical (tools/toon missing, skills undefined) - 2 items × 5.0 weight = 10.0 points",
+        "dangerous_assumptions": "High probability failures - 5 items × 0.4 weight = 2.0 points",
+        "unhandled_edge_cases": "Likely edge cases - 5 items × 0.3 weight = 1.5 points",
+        "failure_scenarios": "High-impact failures - 5 items × 0.1 weight = 0.5 points",
+        "total_risk_points": 14.0,
+        "normalized_to_10_scale": 8.7
+      },
+      "confidence_in_assessment": "Very High (95%+) - based on codebase state verification, specification contradictions confirmed, and failure paths clearly documented"
+    },
+    "blast_radius": "MULTIPLE_PHASES",
+    "affected_phases": [
+      "Phase 7 (current) - Cannot complete steps 7.3 onwards without clarifications",
+      "Phase 7.4 (final build) - Depends on step 7.3 output structure. If 7.3 fails or produces wrong structure, 7.4 fails",
+      "Phase 8 (if it exists) - Plugin distribution may depend on correct phase 7 outputs"
+    ],
+    "execution_blockers": [
+      {
+        "blocker_id": "B1_TOOLS_TOON_NOT_FOUND",
+        "severity": "CRITICAL",
+        "required_before_execution": "MUST clarify: Does tools/toon/compiler.py need to be created (as prerequisite step), or should this step work with build_ide_bundle.py instead?",
+        "unblock_action": "Provide decision: (A) Create tools/toon/compiler.py in step 7.0, then proceed to 7.3, or (B) Modify step 7.3 to reference build_ide_bundle.py"
+      },
+      {
+        "blocker_id": "B2_SKILLS_UNDEFINED",
+        "severity": "CRITICAL",
+        "required_before_execution": "MUST define 'skills' artifact type with concrete specification and examples",
+        "unblock_action": "Specify: What are skills? Where do they come from in source? What should dist/skills/ directory structure look like? Provide at least one concrete example"
+      },
+      {
+        "blocker_id": "B3_ACCEPTANCE_CRITERIA_VAGUE",
+        "severity": "HIGH",
+        "required_before_execution": "MUST specify exact expected directory structure with concrete example",
+        "unblock_action": "Provide 'tree dist/' output showing exact directory structure after step 7.3 completes successfully"
+      },
+      {
+        "blocker_id": "B4_STEP_SCOPE_AMBIGUOUS",
+        "severity": "HIGH",
+        "required_before_execution": "MUST clarify: Is this step 'configure new paths', 'validate existing paths', or 'reorganize existing structure'?",
+        "unblock_action": "Specify: Should step 7.3 modify compiler output paths, or validate that current structure is already correct?"
+      }
+    ],
+    "pre_execution_checklist": [
+      {
+        "item": "Verify tools/toon/compiler.py location",
+        "status": "FAILED",
+        "evidence": "File does not exist. tools/toon/ directory does not exist"
+      },
+      {
+        "item": "Define 'skills' artifact type",
+        "status": "FAILED",
+        "evidence": "No definition found in specification, codebase, or documentation"
+      },
+      {
+        "item": "Clarify dist/ expected structure",
+        "status": "FAILED",
+        "evidence": "No tree view or concrete directory structure specification provided"
+      },
+      {
+        "item": "Verify step 7.1 and 7.3 interdependencies",
+        "status": "FAILED",
+        "evidence": "Relationship between plugin.json and dist/ structure not documented"
+      },
+      {
+        "item": "Validate 1-hour estimate",
+        "status": "FAILED",
+        "evidence": "Estimate does not account for clarifications needed. Actual effort likely 3-5 hours or blocked indefinitely"
+      }
+    ],
+    "recommendations": [
+      {
+        "priority": "CRITICAL",
+        "action": "DO NOT EXECUTE STEP 7.3 AS WRITTEN",
+        "rationale": "Step has multiple blocking contradictions and will fail immediately due to missing file (tools/toon/compiler.py) and undefined artifact type (skills)",
+        "before_proceeding": "Resolve blockers B1, B2, B3, B4 above"
+      },
+      {
+        "priority": "CRITICAL",
+        "action": "Clarify tools/toon/compiler.py location and scope",
+        "rationale": "Referenced file does not exist. Decision needed: Build new tool vs use existing build_ide_bundle.py vs correct specification",
+        "decision_options": [
+          "Option A: Create tools/toon/compiler.py as step 7.0 (prerequisite). Estimated 8-12 hours based on phase 1 compiler complexity",
+          "Option B: Modify step 7.3 to reference tools/build_ide_bundle.py instead. This tool already exists and outputs to correct directories",
+          "Option C: Clarify if toon/ tool exists elsewhere or is planned for different phase"
+        ]
+      },
+      {
+        "priority": "CRITICAL",
+        "action": "Define 'skills' artifact type",
+        "rationale": "Cannot implement output structure for undefined artifact type. Cannot write test_skill_output_path without knowing what skill is",
+        "definition_requirements": [
+          "Specify: What ARE skills? (e.g., 'Skills are command implementations from dist/commands/', or 'Skills are task definitions from 5d-wave/tasks/', or 'Skills are new artifact type')",
+          "Provide: At least 2 concrete examples of skills with expected output paths (e.g., 'dist/skills/my-skill/SKILL.md')",
+          "Clarify: How do skills relate to existing 5D-Wave objects (agents, commands, teams, workflows)?",
+          "Specify: Should SkillProcessor be added to tools/processors/ as new processor type?"
+        ]
+      },
+      {
+        "priority": "CRITICAL",
+        "action": "Document expected dist/ directory structure with tree view",
+        "rationale": "Current acceptance criteria too vague. Acceptance criteria 'Compiler outputs to correct directories' undefined without concrete structure",
+        "deliverable_format": "Provide tree view output of dist/ directory after step 7.3 completes, showing: agents/, commands/, skills/ subdirectories with naming convention examples"
+      },
+      {
+        "priority": "HIGH",
+        "action": "Verify step 7.1 and 7.3 interdependencies",
+        "rationale": "May have circular dependency. Plugin.json (7.1) may need dist/ structure (7.3), or vice versa",
+        "clarification_needed": "Does plugin.json from step 7.1 reference paths from dist/ structure? Are they sequential dependencies or parallel independent steps?"
+      },
+      {
+        "priority": "HIGH",
+        "action": "Revise time estimate from 1 hour to 3-5 hours or indefinite (blocked)",
+        "rationale": "Current estimate does not account for: (A) Clarification time, (B) potential build_ide_bundle.py modifications if choosing option B above, (C) writing test for undefined skills artifact"
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Create integration test between steps 7.1, 7.3, and 7.4",
+        "rationale": "Three steps may have hidden circular dependencies or integration failures",
+        "test_structure": "Integration test: Execute steps 7.1 → 7.3 → 7.4 in sequence, validate that plugin.json from 7.1 correctly references dist/ structure from 7.3, and that step 7.4 build succeeds"
+      }
+    ],
+    "verdict": "BLOCKED - DO NOT EXECUTE",
+    "blocking_reason": "Step 7.3 references non-existent file (tools/toon/compiler.py) and undefined artifact type (skills). Cannot be executed without resolving at minimum: blocker B1 (tools location) and blocker B2 (skills definition). Execution will fail immediately with FileNotFoundError or produce tests that validate wrong thing.",
+    "estimated_effort_to_unblock": "2-4 hours of clarification and specification work before step can be attempted"
+  }
+}

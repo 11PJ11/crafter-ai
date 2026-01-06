@@ -1,0 +1,500 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "01-01",
+  "phase": {
+    "number": 1,
+    "name": "TOON Infrastructure",
+    "purpose": "Create parser and compiler toolchain that transforms TOON source into Claude Code compliant output"
+  },
+  "step": {
+    "number": "1.1",
+    "name": "Create TOON Parser Core",
+    "description": "Implement TOON parser that reads .toon files and produces structured data.\n\nCRITICAL PREREQUISITE: Resolve TOON version strategy BEFORE implementation.\n- Test fixture (agents/novel-editor-chatgpt-toon.txt) uses TOON v1.0\n- Original spec references TOON v3.0\n- DECISION REQUIRED: Support v1.0, v3.0, or both\n\nLIBRARY EVALUATION: Validate python-toon availability via 'pip index versions python-toon'\n- If available with API docs: Use library (4-6 hours)\n- If unavailable: Custom parser (14-18 hours including lexer, symbol handling, validation)\n\nParser must handle: sections (##), key-value pairs, nested structures, TOON symbols (\u2192, \u27f7, \u2260, \u2713, \u2717, \u26a0\ufe0f).",
+    "motivation": "Parser is foundation for all migration - nothing works without it",
+    "estimated_hours": "16-20"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC2": "Build produces Claude Code compliant output"
+    },
+    "dependencies": [],
+    "toon_symbols_enumerated": [
+      "\u2192 (implies)",
+      "\u27f7 (alternates)",
+      "\u2260 (not equal)",
+      "\u2713 (correct)",
+      "\u2717 (wrong)",
+      "\u26a0\ufe0f (warning)"
+    ],
+    "test_data_reference": "agents/novel-editor-chatgpt-toon.txt (TOON v1.0 example - 259 lines)"
+  },
+  "deliverables": {
+    "files_to_create": [
+      "tools/toon/__init__.py",
+      "tools/toon/parser.py",
+      "tools/toon/schema/parser_output.json",
+      "tests/tools/toon/test_parser.py",
+      "tools/toon/parser_schema.py"
+    ],
+    "acceptance_criteria": [
+      "Parser reads TOON v3.0 syntax without errors",
+      "Parser produces structured dict/object from TOON content",
+      "Parser handles all TOON symbols (arrows, pipes, checkmarks)",
+      "Parser extracts metadata section correctly",
+      "Parser handles nested hierarchies",
+      "Parser output schema documented (TypedDict or dataclass) with example",
+      "Parser handles TOON version detection (v1.0 and v3.0 support)"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN a valid .toon file with agent definition\nWHEN I call parser.parse(toon_content)\nTHEN I get a structured dict with id, role, commands, dependencies",
+    "inner_tests": [
+      "test_parse_empty_file_returns_empty_dict",
+      "test_parse_section_headers_extracted",
+      "test_parse_key_value_pairs",
+      "test_parse_nested_lists",
+      "test_parse_toon_symbols_converted",
+      "test_parse_multiline_content",
+      "test_parse_inline_comments_stripped"
+    ]
+  },
+  "refactoring": {
+    "targets": [
+      {
+        "level": 1,
+        "focus": "Clear naming for parse methods"
+      },
+      {
+        "level": 2,
+        "focus": "Extract section parsers from monolithic parse function"
+      },
+      {
+        "level": 3,
+        "focus": "Separate lexer from parser responsibility"
+      }
+    ]
+  },
+  "execution_guidance": {
+    "approach": "Outside-In TDD with double-loop",
+    "workflow": [
+      "1. Write failing E2E test (outer_test)",
+      "2. Implement via inner TDD loop (inner_tests)",
+      "3. Apply refactoring levels 1-3 progressively",
+      "4. Validate all acceptance criteria met",
+      "5. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "All tests passing (100% required)",
+      "All acceptance criteria validated",
+      "Refactoring applied (levels 1-3)",
+      "No report files created"
+    ]
+  },
+  "review_metadata": {
+    "review_date": "2026-01-05",
+    "reviewer": "Lyra (software-crafter review mode)",
+    "review_type": "task_clarity_completeness_achievability",
+    "status": "findings_identified_action_required",
+    "severity_distribution": {
+      "critical": 4,
+      "high": 3,
+      "medium": 3,
+      "low": 3
+    }
+  },
+  "review_findings": {
+    "blocking_issues": [
+      {
+        "severity": "critical",
+        "issue": "Library dependency not pre-validated",
+        "description": "Task assumes python-toon library availability but provides no verification. Task description states 'Use python-toon library if available, otherwise implement custom parser' with 8-hour contingency, but this should be a PRE-EXECUTION go/no-go decision, not a contingency.",
+        "impact": "If python-toon is unavailable, entire estimate (4-6 hours) is wrong. Custom parser adds ~8 hours. This must be validated before starting work.",
+        "evidence": "Description line: 'Use python-toon library if available, otherwise implement custom parser. Parser must handle... CONTINGENCY: If python-toon unavailable or incompatible, custom parser adds ~8 additional hours. Evaluate library availability first.'",
+        "action_required": true,
+        "blocking_execution": true
+      },
+      {
+        "severity": "critical",
+        "issue": "Parser output schema undefined",
+        "description": "Acceptance criteria states 'Parser produces structured dict/object from TOON content' but no schema is specified. What keys should the output dict have? What types for nested values? This is undefined.",
+        "impact": "Step 1.2 (Create Agent Jinja2 Template) depends on knowing parser output structure to design templates. Currently that dependency is implicit and risky. Downstream template work (steps 1.2-1.6) all depend on parser output format.",
+        "evidence": "AC line 2: 'Parser produces structured dict/object from TOON content' - no schema. Example TOON file shows sections (##), key-value pairs, nested content, but target structure undefined.",
+        "action_required": true,
+        "blocking_execution": true
+      },
+      {
+        "severity": "critical",
+        "issue": "TOON symbols list incomplete/vague",
+        "description": "AC states 'Parser handles all TOON symbols (arrows, pipes, checkmarks)' but doesn't list which symbols. Looking at example TOON file (agents/novel-editor-chatgpt-toon.txt), I count: \u2192, \u27f7, \u2260, \u2713, \u2717, \u26a0\ufe0f. The acceptance criteria is too vague - which symbols are 'all'?",
+        "impact": "Tests cannot be properly written without knowing exact symbol set. Implementation may miss symbols or overcomplicate with unnecessary ones.",
+        "evidence": "Novel-editor TOON file uses: \u2192 (implies), \u27f7 (alternates), \u2260 (not equal), \u2713 (correct), \u2717 (wrong), \u26a0\ufe0f (warning). AC only mentions 'arrows, pipes, checkmarks' without enumeration.",
+        "action_required": true,
+        "blocking_execution": false
+      },
+      {
+        "severity": "critical",
+        "issue": "No test data reference in task",
+        "description": "Task requires writing tests but provides no reference to test fixtures. However, agents/novel-editor-chatgpt-toon.txt exists and demonstrates real TOON v3.0 syntax. This should be explicitly referenced as test data source.",
+        "impact": "Test implementation will either reinvent test data or create synthetic examples that may not match real TOON complexity.",
+        "evidence": "Example file exists: /mnt/c/Repositories/Projects/ai-craft/agents/novel-editor-chatgpt-toon.txt (259 lines, real TOON v3.0 format with 28 findings, metadata, sections, nested structures).",
+        "action_required": true,
+        "blocking_execution": false
+      }
+    ],
+    "clarity_gaps": [
+      {
+        "severity": "medium",
+        "issue": "TOON spec reference only external URL",
+        "description": "Task references 'github.com/toon-format/spec v3.0' but this is external web URL, not accessible in offline task context. No local reference or spec excerpt provided.",
+        "impact": "If github.com is unavailable, developer cannot access spec during implementation.",
+        "recommendation": "Add local reference: baseline.yaml lines X-Y contain TOON structure, or reference agents/novel-editor-chatgpt-toon.txt as concrete example."
+      },
+      {
+        "severity": "medium",
+        "issue": "Python version not specified",
+        "description": "Task files specify tools/toon/__init__.py (Python 3.x), but no Python version requirement stated. Is this 3.8+? 3.10+? 3.12?",
+        "impact": "Library compatibility and syntax features depend on Python version. Unclear minimum version.",
+        "recommendation": "Add constraint: 'Minimum Python 3.9 (for dict | union syntax in type hints)' or similar."
+      },
+      {
+        "severity": "medium",
+        "issue": "Output type system not specified",
+        "description": "AC says 'structured dict/object' - is this a plain dict()? dataclass? NamedTuple? TypedDict? Affects code quality and downstream template consumption.",
+        "impact": "Type safety and IDE support depends on this choice. Plain dict loses static typing benefits.",
+        "recommendation": "Specify: 'Use TypedDict for parser output schema with keys: {id, role, commands, dependencies, ...}' or 'Use dataclass Agent with fields: ...'"
+      }
+    ],
+    "dependency_concerns": [
+      {
+        "severity": "high",
+        "issue": "Implicit dependency on step 1.2 (Jinja2 template)",
+        "description": "Parser output format must be known before step 1.2 (Create Agent Jinja2 Template) can be designed. Currently parser output is undefined, making 1.2 estimation and design impossible.",
+        "impact": "Step 1.2 depends on 1.1, but dependencies only list '[]'. This creates sequential coupling that should be explicit.",
+        "recommendation": "Add to context.dependencies: ['1.1'] (already shown in 01-02.json, confirm here too). Define parser output schema in this step."
+      },
+      {
+        "severity": "high",
+        "issue": "No Python environment setup mentioned",
+        "description": "Task creates files and tests but doesn't mention how dependencies are installed. Are we using venv? poetry? pip? How is requirements.txt or pyproject.toml updated?",
+        "impact": "Test execution may fail if python-toon library isn't installed or requirements not managed.",
+        "recommendation": "Add to deliverables or execution_guidance: 'Update pyproject.toml or requirements.txt with python-toon dependency (if using library).'"
+      },
+      {
+        "severity": "high",
+        "issue": "No pytest configuration or test runner specified",
+        "description": "Task mentions test files (tests/tools/toon/test_parser.py) but doesn't specify: pytest? unittest? test discovery? fixture setup?",
+        "impact": "Tests may not run as expected without clear test runner and discovery configuration.",
+        "recommendation": "Clarify: 'Tests use pytest framework with conftest.py in tests/ root.'"
+      }
+    ],
+    "estimation_risks": [
+      {
+        "severity": "high",
+        "issue": "Estimate assumes library availability without verification",
+        "description": "4-6 hour estimate assumes python-toon library is available and has straightforward API. If library is unavailable or has complex API, actual effort is 8+ hours (per contingency).",
+        "impact": "Estimate may be off by 2x if library validation step determines custom implementation is needed.",
+        "recommendation": "Make library validation a PRE-EXECUTION step with clear go/no-go decision criteria. Estimated time: 30 minutes (pip search + quick test)."
+      }
+    ],
+    "missing_context": [
+      {
+        "item": "TOON v3.0 specification excerpt",
+        "evidence": "Only external URL provided (github.com/toon-format/spec). No local spec details.",
+        "where_to_find": "baseline.yaml TOON Infrastructure section, or agents/novel-editor-chatgpt-toon.txt examples"
+      },
+      {
+        "item": "Complete TOON symbols enumeration",
+        "evidence": "Only 'arrows, pipes, checkmarks' mentioned. Example file shows 6 symbol types.",
+        "where_to_find": "Novel-editor TOON file TOON_NOTES section (lines 251-260): \u2192 \u27f7 \u2260 \u2713 \u2717 \u26a0\ufe0f"
+      },
+      {
+        "item": "Example TOON file for test data",
+        "evidence": "agents/novel-editor-chatgpt-toon.txt exists but not referenced.",
+        "where_to_find": "agents/novel-editor-chatgpt-toon.txt (confirmed to exist)"
+      },
+      {
+        "item": "Parser output schema/structure",
+        "evidence": "AC says 'dict/object' but no schema specified.",
+        "where_to_find": "Should be defined in this step, referencing sample TOON input and expected parsed output"
+      },
+      {
+        "item": "Python version requirement",
+        "evidence": "No version constraint stated.",
+        "where_to_find": "Should be added to context.constraints"
+      }
+    ],
+    "hidden_assumptions": [
+      {
+        "assumption": "python-toon library exists and is installable via pip",
+        "risk": "Library may not exist, be outdated, or have incompatible API",
+        "validation": "RUN FIRST: pip search python-toon OR check PyPI before starting"
+      },
+      {
+        "assumption": "Parser output is plain Python dict (not type-safe)",
+        "risk": "Reduces IDE support and type checking benefits. Downstream templates may expect specific structure.",
+        "validation": "Define schema explicitly (TypedDict or dataclass)"
+      },
+      {
+        "assumption": "TOON symbols are limited to example file symbols",
+        "risk": "TOON spec may support additional symbols not shown in example.",
+        "validation": "Reference actual TOON v3.0 spec or enumerate complete symbol set"
+      },
+      {
+        "assumption": "pytest will automatically discover and run tests",
+        "risk": "Test discovery may fail without proper conftest.py or __init__.py files",
+        "validation": "Clarify test runner and discovery configuration"
+      }
+    ]
+  },
+  "blocking_prerequisite_check": {
+    "required_before_execution": [
+      {
+        "name": "Create tools/toon/ directory infrastructure",
+        "description": "Directory must exist before creating parser files",
+        "command": "mkdir -p /mnt/c/Repositories/Projects/ai-craft/tools/toon && touch /mnt/c/Repositories/Projects/ai-craft/tools/toon/__init__.py",
+        "estimated_time_minutes": 5,
+        "go_no_go_criteria": "Directory exists and writable \u2192 GO. Cannot create \u2192 NO-GO, resolve permissions."
+      },
+      {
+        "name": "Validate python-toon library availability",
+        "description": "Check if python-toon library exists on PyPI and has usable API",
+        "command": "pip index versions python-toon 2>&1 || (pip show python-toon 2>&1 || echo 'LIBRARY NOT FOUND')",
+        "estimated_time_minutes": 10,
+        "steps": [
+          "Run: pip index versions python-toon",
+          "If found: Review documentation at https://pypi.org/project/python-toon/",
+          "Check: Last update date, download count, API documentation quality",
+          "DECISION: Library with clear API \u2192 GO (use library). No library or unclear API \u2192 GO (custom parser, add 10-14 hours)"
+        ],
+        "go_no_go_criteria": "Library available with API documentation \u2192 LIBRARY PATH. Library unavailable \u2192 CUSTOM PARSER PATH (revise estimate to 14-18 hours)"
+      },
+      {
+        "name": "Resolve TOON version compatibility",
+        "description": "Determine if parser supports v1.0, v3.0, or both",
+        "estimated_time_minutes": 60,
+        "steps": [
+          "Check agents/novel-editor-chatgpt-toon.txt header (currently: TOON v1.0)",
+          "Review TOON v3.0 spec at github.com/toon-format/spec (if accessible)",
+          "DECISION OPTIONS:",
+          "  A) Implement v1.0 parser only (simpler, supports existing fixture)",
+          "  B) Implement v3.0 parser + convert fixture to v3.0 (future-proof but requires fixture update)",
+          "  C) Implement version detection + support both (most flexible, +3 hours)",
+          "Document chosen strategy and rationale"
+        ],
+        "recommended_decision": "Option C (version detection) - Most flexible, supports existing content and future v3.0 adoption",
+        "go_no_go_criteria": "Version strategy documented and approved \u2192 GO. No decision \u2192 NO-GO, cannot proceed."
+      },
+      {
+        "name": "Define parser output schema",
+        "description": "Specify exact structure of parsed output to unblock template design (steps 01-02 through 01-04)",
+        "estimated_time_minutes": 120,
+        "deliverable": "parser_output_schema.json or parser_schema.py with TypedDict",
+        "example_schema": {
+          "type": "TypedDict",
+          "required_fields": {
+            "id": "str - Unique identifier",
+            "type": "Literal['agent', 'command', 'skill'] - Content type for template selection",
+            "metadata": "dict[str, Any] - Frontmatter/header information",
+            "sections": "dict[str, Any] - Parsed content sections"
+          },
+          "example_output": {
+            "id": "software-crafter",
+            "type": "agent",
+            "metadata": {
+              "name": "Crafty",
+              "version": "1.0",
+              "model": "claude-sonnet-4.5"
+            },
+            "sections": {
+              "commands": [
+                "develop",
+                "refactor",
+                "mikado"
+              ],
+              "dependencies": [
+                "tools/toon/parser"
+              ],
+              "persona": {
+                "role": "Master Software Crafter"
+              }
+            }
+          }
+        },
+        "rationale": "Templates (01-02, 01-03, 01-04) cannot be designed without knowing parser output structure. Defining schema breaks circular dependency.",
+        "go_no_go_criteria": "Schema defined with example \u2192 GO. No schema \u2192 NO-GO, templates blocked."
+      }
+    ]
+  },
+  "recommended_actions": [
+    {
+      "action": "PREREQUISITE: Run library validation before starting implementation",
+      "priority": "critical",
+      "assigned_to": "developer",
+      "estimated_time": "30 minutes"
+    },
+    {
+      "action": "Define parser output schema (TypedDict or dataclass) with example",
+      "priority": "critical",
+      "blocks": [
+        "01-02 (Jinja2 template design)"
+      ],
+      "estimated_time": "30 minutes"
+    },
+    {
+      "action": "Enumerate complete TOON symbol set with reference to TOON v3.0 spec",
+      "priority": "high",
+      "affects": "AC clarity and test completeness",
+      "estimated_time": "15 minutes"
+    },
+    {
+      "action": "Add agents/novel-editor-chatgpt-toon.txt as explicit test data reference",
+      "priority": "high",
+      "affects": "Test implementation",
+      "estimated_time": "5 minutes (documentation only)"
+    },
+    {
+      "action": "Add Python version requirement to context.constraints (e.g., >=3.9)",
+      "priority": "medium",
+      "estimated_time": "5 minutes"
+    },
+    {
+      "action": "Clarify test runner (pytest), discovery mechanism, and fixture setup",
+      "priority": "medium",
+      "estimated_time": "10 minutes"
+    },
+    {
+      "action": "Add parser output schema to deliverables (separate .py file or documented in acceptance_criteria)",
+      "priority": "medium",
+      "estimated_time": "15 minutes"
+    }
+  ],
+  "adversarial_metareview": {
+    "status": "embedded_review_incomplete",
+    "severity": "high",
+    "description": "The embedded review_findings (lines 99-323) identified critical gaps but missed several meta-level failure modes",
+    "critical_meta_issues": [
+      {
+        "issue": "TOON spec version mismatch - example file is v1.0, task requires v3.0",
+        "evidence": "agents/novel-editor-chatgpt-toon.txt line 1 states '# NOVEL EDITOR AGENT (TOON v1.0)' but step 1.1 description requires 'TOON v3.0' parser",
+        "impact": "CATASTROPHIC - if example file is v1.0 and parser expects v3.0, test data is invalid. Parser will fail against provided test file.",
+        "blast_radius": "Steps 1.1 through 1.6 all depend on parser working against real TOON files. Using v1.0 test data for v3.0 parser = all tests fail.",
+        "failure_mode": "Unit tests pass with v3.0-compliant synthetic data. Integration with real agents/novel-editor-chatgpt-toon.txt fails silently in later steps.",
+        "remediation": "STOP - Determine if TOON v3.0 exists or if task should use v1.0. Check github.com/toon-format/spec or baseline.yaml for actual TOON version in use."
+      },
+      {
+        "issue": "Library availability validation is optimistic - assumes pip search works",
+        "evidence": "blocking_prerequisite_check line 250 suggests 'pip search python-toon' but pip search was deprecated in 2021",
+        "impact": "MEDIUM - Command will fail, blocking evaluation. Developer will get confusing 'pip search' error instead of actionable guidance.",
+        "remediation": "Update prerequisite: use 'pip index versions python-toon' OR check PyPI REST API OR install and test: 'pip install python-toon && python -c \"import toon; print(toon.__version__)\"'"
+      },
+      {
+        "issue": "Custom parser fallback is underestimated at ~8 hours",
+        "evidence": "Contingency states '~8 additional hours' for custom parser, but task specifies parsing: sections, key-value pairs, nested structures, TOON symbols, multiline content, comments. That's a lexer + parser + semantic validator.",
+        "impact": "HIGH - Actual custom parser implementation is likely 12-16 hours, not 8. This creates a hidden 50% budget overrun.",
+        "failure_mode": "Developer chooses custom parser path, estimates 4-6 + 8 = 12-14 hours. Actual time: 16+ hours. Late discovery of schedule slip.",
+        "risk_score": "7/10",
+        "remediation": "Reevaluate contingency estimate: 'If custom parser: ~12-16 hours including lexer, parser, and symbol handling. Requires expertise in parsing/compiler theory.'"
+      },
+      {
+        "issue": "No rollback plan if parser design is fundamentally wrong",
+        "evidence": "No execution_guidance mentions what happens if parser output schema is incompatible with step 1.2 Jinja2 template expectations",
+        "impact": "HIGH - If 1.1 completes with wrong schema, step 1.2 fails. Cost: rework parser + rework template = 4-6 + 2-3 hours wasted.",
+        "failure_mode": "Step 1.1 completes successfully. Step 1.2 attempt shows parser output doesn't have required fields. Redesign required. Blocked handoff.",
+        "remediation": "Add validation gate: 'After step 1.1 completion, schema review by 01-02 owner before committing. If schema incompatible, 1.1 rework required before 1.2 starts.'"
+      },
+      {
+        "issue": "Test isolation risk - multiline content test may have state leakage",
+        "evidence": "test_parse_multiline_content in inner_tests (line 51) parses multiline strings. Risk: if parser uses global state or mutable fixtures, tests may pass individually but fail in parallel pytest execution.",
+        "impact": "MEDIUM - Tests pass locally (sequential) but fail in CI (parallel). Late discovery during CI integration.",
+        "failure_mode": "Developer's local pytest run: all tests pass. CI pytest -n (parallel): 2-3 tests randomly fail. Flaky test suite.",
+        "remediation": "Add to TDD approach: 'Run tests with pytest -n (parallel mode) to validate isolation. Use per-test fixtures, not class-level state.'"
+      },
+      {
+        "issue": "Missing edge case: TOON file with mixed v1.0 and v3.0 syntax",
+        "evidence": "Novel-editor file is v1.0 (confirmed). If third-party agents use v3.0, parser must handle both or reject v1.0 gracefully.",
+        "impact": "MEDIUM - Parser succeeds on v3.0, fails silently or throws cryptic error on v1.0. Late discovery when processing real agent files.",
+        "failure_mode": "Phase 1 completes with v3.0 parser. Phase 2 tries to process novel-editor-*.txt (v1.0). Parser fails. Manual remediation needed.",
+        "remediation": "Add AC: 'Parser detects version mismatch and provides clear error message (e.g., \"TOON v1.0 detected, expected v3.0\")' AND Add test: test_parse_detects_version_mismatch"
+      },
+      {
+        "issue": "No coverage measurement - acceptance criteria don't require measured coverage",
+        "evidence": "Acceptance criteria (lines 35-41) specify what parser does, not code quality metrics. No mention of coverage target (70%? 85%? 95%?)",
+        "impact": "LOW-MEDIUM - Parser may work but have untested code paths. Later bugs emerge from uncovered branches.",
+        "remediation": "Add AC: 'Unit tests achieve \u226585% code coverage (measured via pytest-cov). Critical parsing logic (symbol handling, nested structures) \u226595% covered.'"
+      },
+      {
+        "issue": "requirements.txt doesn't list python-toon dependency",
+        "evidence": "tools/requirements.txt (lines 1-17) doesn't include 'python-toon' - whether using library or custom implementation, this must be tracked.",
+        "impact": "LOW - If library chosen, dependency management is incomplete. Downstream steps won't have library available.",
+        "remediation": "Add conditional: 'If python-toon library chosen: add 'python-toon>=X.Y' to tools/requirements.txt. If custom: skip. Document decision in commit message.'"
+      },
+      {
+        "issue": "No error handling specification for malformed TOON files",
+        "evidence": "AC doesn't specify parser behavior on invalid TOON (missing sections, malformed symbols, syntax errors). Does parser raise? Return None? Return partial dict?",
+        "impact": "MEDIUM - Parser behavior on invalid input is undefined. Step 1.2 may assume clean input, but real files may be malformed.",
+        "failure_mode": "Parser silently returns partial dict for malformed file. Template renders incomplete agent config. Silent data loss.",
+        "remediation": "Add AC: 'Parser raises ToonParseError with clear message on malformed TOON. Errors include: line number, specific syntax issue, suggested fix.'"
+      },
+      {
+        "issue": "Circular documentation risk - parser schema depends on Jinja2 template requirements",
+        "evidence": "blocking_prerequisite_check (line 259) says 'Define parser output schema' but that schema should be driven by what 1.2 (Jinja2 template) needs. 1.2 hasn't been designed yet.",
+        "impact": "MEDIUM - Schema designed without knowing template expectations. Template design may require different structure, forcing schema rework.",
+        "failure_mode": "1.1 completes with schema {id, role, commands}. 1.2 starts, realizes it needs {id, role, commands, metadata, sections, dependencies}. 1.1 rework.",
+        "remediation": "Dependency resolution: 1.2 owner provides template requirements doc (even as sketch) before 1.1 schema is finalized."
+      },
+      {
+        "issue": "TOON symbol encoding risk - Unicode handling not specified",
+        "evidence": "Symbols are Unicode (\u2192, \u27f7, \u2260, \u2713, \u2717, \u26a0\ufe0f). No AC specifies: UTF-8 encoding assumed? File encoding validated? Parser robustness on non-UTF-8?",
+        "impact": "LOW-MEDIUM - On Windows or with mixed encodings, parser may fail with cryptic decode errors.",
+        "failure_mode": "Agent file saved with Windows-1252 encoding (accidental). Parser fails: 'UnicodeDecodeError: 'utf-8' codec can't decode...'. Silent failure until late integration.",
+        "remediation": "Add AC: 'Parser assumes UTF-8 encoding. Raises clear error if file uses other encoding.' AND Add test: test_parse_detects_encoding_mismatch"
+      }
+    ],
+    "embedded_review_quality": {
+      "strengths": "Excellent identification of blocking issues (library validation, schema definition, symbol enumeration). Clear remediation steps provided.",
+      "gaps": "Missed TOON v1.0 vs v3.0 version conflict. Underestimated custom parser effort. No rollback planning. No circular dependency analysis with 1.2.",
+      "risk_score_overall": "8/10 (HIGH RISK)",
+      "blast_radius_summary": "Step 1.1 failure cascades to 1.2-1.6 (template rendering, compilation, artifact generation). Critical path blockage.",
+      "estimated_rework_hours_if_not_addressed": "12-20 (complete parser redesign + schema rework + template rework)"
+    },
+    "go_no_go_decision": {
+      "current_status": "NO-GO",
+      "blocking_items": [
+        "TOON version mismatch (v1.0 test data vs v3.0 spec) must be resolved",
+        "Library availability validation must use correct command (pip index or direct install test)",
+        "Custom parser contingency estimate must be revised to 12-16 hours",
+        "Schema design must be coordinated with 1.2 owner to prevent rework",
+        "Error handling for malformed TOON must be specified"
+      ],
+      "estimated_prerequisite_resolution_time": "2-3 hours total"
+    }
+  },
+  "critical_blocker_status": {
+    "BLOCKER_001": {
+      "title": "TOON Toolchain Missing",
+      "status": "UNRESOLVED",
+      "evidence": "tools/toon/ directory does not exist",
+      "impact": "Cannot parse TOON files, blocks all Phase 1 steps",
+      "resolution_options": [
+        "A: Implement TOON toolchain (16-20h estimated)",
+        "B: Pivot to Markdown templates (8-10h, loses TOON benefits)",
+        "C: Block until external TOON library available"
+      ]
+    }
+  },
+  "prerequisites": {
+    "blocking": [
+      "tools/toon/ directory MUST exist with README.md",
+      "TOON format specification v3.0 must be accessible",
+      "Parser output schema must be defined before template implementation"
+    ],
+    "validation": "Run: ls tools/toon/README.md. Must exist. If not: BLOCKER_001"
+  }
+}

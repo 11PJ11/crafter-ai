@@ -1,0 +1,183 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "08-02",
+  "phase": {
+    "number": 8,
+    "name": "Integration & Validation",
+    "purpose": "End-to-end validation of complete plugin migration"
+  },
+  "step": {
+    "number": "8.2",
+    "name": "Plugin Installation Test",
+    "description": "Test plugin installation via available mechanism:\n- PREFERRED: Use /plugin install command if available\n- FALLBACK: Manual installation to ~/.claude/plugins/ directory\n- ALTERNATIVE: Claude Code marketplace installation mechanism\n- Validate all files installed correctly\n- Validate agents/commands/skills accessible",
+    "motivation": "Validate SC3 - plugin installable",
+    "estimated_hours": "3"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC3": "Plugin installable via available mechanism (/plugin install OR manual installation OR marketplace)"
+    },
+    "dependencies": ["8.1"],
+    "prerequisites": [
+      {
+        "prerequisite": "CRITICAL: Identify available installation mechanism",
+        "description": "/plugin install command may not exist - verify installation method BEFORE writing tests",
+        "validation_method": "Check if /plugin install command exists: (1) grep codebase for 'plugin install', (2) test command invocation, (3) if not found, use manual installation fallback",
+        "blocker_if_missing": true,
+        "mitigation": "FALLBACK INSTALLATION METHODS (in priority order):\n1. Manual: Copy dist/ide/ to ~/.claude/plugins/ai-craft-plugin/\n2. Marketplace: Use Claude Code's plugin marketplace installation if available\n3. Script: Create install.sh script that automates manual installation"
+      },
+      {
+        "prerequisite": "Plugin structure specification from step 8.1",
+        "description": "Document what dist/ide/ directory structure should contain for successful installation",
+        "validation_method": "Specification lists: plugin.json location, agents/ directory structure, commands/ directory structure, expected file counts",
+        "blocker_if_missing": true,
+        "mitigation": "If structure undefined: Inspect dist/ide/ from 08-01 build output, document actual structure, use as installation validation baseline"
+      },
+      {
+        "prerequisite": "Component accessibility definition",
+        "description": "Define operationally what 'agents/commands/skills accessible after install' means",
+        "validation_method": "Specification states: accessible = (import-able Python module) OR (listed in Claude Code help) OR (invocable via /dw:* command) OR (registered in plugin registry)",
+        "blocker_if_missing": false,
+        "mitigation": "DEFAULT DEFINITION: Accessible = files exist in correct directories AND plugin.json references them correctly. Advanced validation (import/invocation) deferred to 08-03."
+      },
+      {
+        "prerequisite": "Installation target directory specification",
+        "description": "Document where plugins should be installed (e.g., ~/.claude/plugins/)",
+        "validation_method": "Directory path documented, tested for write permissions, cleanup strategy defined",
+        "blocker_if_missing": true,
+        "mitigation": "DEFAULT LOCATION: ~/.claude/plugins/ai-craft-plugin/ (create if not exists). Tests use temporary directory for isolation: /tmp/test-plugin-install-{timestamp}/"
+      }
+    ]
+  },
+  "deliverables": {
+    "files_to_create": [
+      "tests/plugin/test_installation.py",
+      "tools/install_plugin.sh (OPTIONAL - only if /plugin install unavailable)"
+    ],
+    "acceptance_criteria": [
+      "Plugin installs without errors (via ANY of: /plugin install, manual copy, or install script)",
+      "All 26 agents accessible after install (files exist in plugin directory, referenced in plugin.json)",
+      "All 20 commands accessible after install (files exist, referenced in plugin.json)",
+      "All 3 skills accessible after install (files exist, referenced in plugin.json)",
+      "Installation is repeatable (test can run multiple times without conflicts)"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN built plugin package from step 8.1\nWHEN I install plugin via available mechanism\nTHEN installation succeeds and all components accessible",
+    "inner_tests": [
+      "test_installation_mechanism_available (validates /plugin install exists OR fallback method defined)",
+      "test_plugin_installs_without_errors (validates installation completes successfully)",
+      "test_agents_accessible (validates 26 agent files exist in installed location)",
+      "test_commands_accessible (validates 20 command files exist in installed location)",
+      "test_skills_accessible (validates 3 skill files exist in installed location)",
+      "test_plugin_json_valid (validates installed plugin.json has correct structure)",
+      "test_installation_cleanup (validates test environment cleanup between runs)"
+    ]
+  },
+  "refactoring": {
+    "targets": []
+  },
+  "execution_guidance": {
+    "approach": "Installation testing with fallback mechanisms",
+    "workflow": [
+      "1. PREREQUISITE: Identify installation mechanism (30 min):\n   - Check if /plugin install command exists\n   - If not: create install_plugin.sh script for manual installation\n   - Document installation target directory",
+      "2. Create test script for plugin installation (30 min)",
+      "3. Write test_installation_mechanism_available (15 min)",
+      "4. Write test_plugin_installs_without_errors using identified mechanism (30 min)",
+      "5. Write test_agents_accessible - verify 26 agents installed (20 min)",
+      "6. Write test_commands_accessible - verify 20 commands installed (20 min)",
+      "7. Write test_skills_accessible - verify 3 skills installed (20 min)",
+      "8. Write test_plugin_json_valid - validate manifest structure (15 min)",
+      "9. Write test_installation_cleanup - ensure test isolation (20 min)",
+      "10. Run full installation test suite (15 min)",
+      "11. Validate tests are repeatable (run suite 3 times, all pass) (15 min)",
+      "12. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "All tests passing (100% required)",
+      "Plugin installs successfully (via ANY available mechanism)",
+      "All 26 agents accessible (corrected from 28 - actual count per build output)",
+      "All 20 commands accessible",
+      "All 3 skills accessible",
+      "Tests are repeatable (no test pollution, cleanup works)",
+      "No report files created"
+    ]
+  },
+  "critical_blocker_addressed": {
+    "blocker_id": "BLOCKER_3",
+    "blocker_title": "/plugin install command doesn't exist",
+    "severity": "CRITICAL - EXECUTION IMPOSSIBLE AS WRITTEN",
+    "original_issue": "Step 08-02 description assumes '/plugin install' command exists. Adversarial review found NO implementation of this command in codebase. Step cannot execute without installation mechanism.",
+    "evidence": "grep search found no /plugin install implementation. build_ide_bundle.py generates dist/ide distribution but has no installation mechanism.",
+    "impact": "Step 08-02 is completely unexecutable - attempting to run '/plugin install' returns 'command not found'",
+    "resolution_applied": {
+      "strategy": "FALLBACK INSTALLATION MECHANISM with priority order",
+      "implementation": [
+        "1. PRIMARY: Check if /plugin install exists - use if available",
+        "2. FALLBACK: Manual installation - copy dist/ide/ to ~/.claude/plugins/ai-craft-plugin/",
+        "3. ALTERNATIVE: Create install_plugin.sh script automating manual installation",
+        "4. TESTS: Validate installation success regardless of mechanism used"
+      ],
+      "acceptance_criteria_update": "Changed 'Plugin installable via /plugin install' to 'Plugin installable via available mechanism (any of: /plugin install, manual copy, install script)'",
+      "estimated_hours_update": "Increased from 1 hour to 3 hours to account for: (1) mechanism identification (30 min), (2) fallback script creation if needed (30 min), (3) additional test complexity (60 min), (4) validation of multiple installation paths (30 min)"
+    }
+  },
+  "component_count_correction": {
+    "original_hardcoded_counts": {
+      "agents": 28,
+      "commands": 20,
+      "skills": 3
+    },
+    "corrected_counts": {
+      "agents": 26,
+      "commands": 20,
+      "skills": 3,
+      "evidence": "dist/ide/agents/dw/config.json shows 'agents_processed': 26, not 28",
+      "rationale": "Hardcoded count of 28 agents was incorrect - actual build processes 26 agents. Tests expecting 28 would fail immediately."
+    },
+    "test_implementation_guidance": "Use dynamic count validation from plugin.json manifest rather than hardcoded numbers. Tests should: (1) Load plugin.json, (2) Count agents/commands/skills referenced, (3) Verify files exist for each reference. This prevents brittleness when plugin evolves."
+  },
+  "test_isolation_strategy": {
+    "problem": "Plugin installation is system-level operation - tests interfere if run multiple times or in parallel",
+    "solution": "Temporary installation directory per test run",
+    "implementation": [
+      "1. Test setup: Create /tmp/test-plugin-install-{timestamp}/ directory",
+      "2. Install plugin to temporary directory (not ~/.claude/plugins/)",
+      "3. Validate installation in temporary directory",
+      "4. Test teardown: Remove temporary directory completely",
+      "5. Parallel execution: Each test gets unique timestamp directory - no conflicts"
+    ],
+    "validation": "Run test suite 3 times consecutively - all runs must pass without interference"
+  },
+  "installation_verification_approach": {
+    "accessibility_definition": "Component is accessible if: (1) file exists in installed plugin directory, AND (2) plugin.json references component correctly",
+    "validation_method": [
+      "1. Parse installed plugin.json",
+      "2. Extract list of agents/commands/skills from manifest",
+      "3. For each component: verify file exists at path specified in manifest",
+      "4. Count components: assert agent_count == 26, command_count == 20, skill_count == 3",
+      "5. Advanced validation (import, invocation) deferred to step 08-03 workflow testing"
+    ],
+    "rationale": "Step 08-02 validates installation mechanics (files copied correctly). Step 08-03 validates runtime functionality (commands actually work). Separation of concerns prevents test overlap."
+  },
+  "estimate_revision": {
+    "original_estimate_hours": 1,
+    "revised_estimate_hours": 3,
+    "revision_rationale": "Original 1-hour estimate assumed /plugin install existed and worked. Actual scope includes: (1) Installation mechanism identification (30 min), (2) Fallback installation implementation if /plugin install missing (30 min), (3) Test infrastructure for multiple installation paths (30 min), (4) Component count verification with dynamic manifest parsing (30 min), (5) Test isolation design and implementation (30 min), (6) Comprehensive validation across installation mechanisms (30 min). Total: 3 hours minimum.",
+    "breakdown": {
+      "mechanism_identification": "0.5h",
+      "fallback_implementation": "0.5h",
+      "test_infrastructure": "0.5h",
+      "component_validation": "0.5h",
+      "test_isolation": "0.5h",
+      "validation_and_debugging": "0.5h"
+    }
+  }
+}

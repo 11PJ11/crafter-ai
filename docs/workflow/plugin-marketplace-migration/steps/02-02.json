@@ -1,0 +1,246 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "02-02",
+  "phase": {
+    "number": 2,
+    "name": "Pilot Migration",
+    "purpose": "Validate toolchain with real complex agent before batch migration"
+  },
+  "step": {
+    "number": "2.2",
+    "name": "Round-Trip Validation",
+    "description": "Compile software-crafter.toon to .md and validate semantic equivalence. Create validation script that checks for missing content and enumerates discovered patterns/edge cases.\n\nCRITICAL: This step must produce explicit enumeration of patterns and edge cases for step 2.3 documentation.\n\nCompiler invocation: python tools/toon/compiler.py 5d-wave/agents/software-crafter.toon --output compiled-output.md --validate",
+    "motivation": "Round-trip proves conversion is lossless for critical content AND discovers patterns for batch migration",
+    "estimated_hours": "2-3"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC1": "All source files in TOON v3.0 format",
+      "SC2": "Build produces Claude Code compliant output"
+    },
+    "dependencies": ["2.1"],
+    "blocking_conditions": [
+      "Step 2.1 MUST be complete: 5d-wave/agents/software-crafter.toon exists",
+      "Token baseline MUST exist: baseline/token-measurements/02-01-pre-conversion.json",
+      "Compiler MUST be functional and versioned"
+    ]
+  },
+  "deliverables": {
+    "files_to_create": [
+      "tools/toon/validate_roundtrip.py",
+      "tests/tools/toon/test_roundtrip_validation.py",
+      "baseline/patterns/02-02-discovered-patterns.json"
+    ],
+    "acceptance_criteria": [
+      "Compiled output has identical command list (exact match)",
+      "Compiled output has identical dependency list (exact match, order-independent)",
+      "Compiled output has valid YAML frontmatter (schema-validated)",
+      "No critical sections missing from output",
+      "Embedded knowledge markers preserved in compilation",
+      "Patterns and edge cases enumerated in baseline/patterns/02-02-discovered-patterns.json"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN original .md and compiled .md from TOON\nWHEN I run validation script\nTHEN semantic equivalence score >= 95%\nAND patterns/edge cases enumerated for step 2.3",
+    "inner_tests": [
+      "test_command_list_identical",
+      "test_dependency_list_identical",
+      "test_frontmatter_valid_and_complete",
+      "test_no_critical_sections_missing",
+      "test_embedded_knowledge_markers_preserved",
+      "test_patterns_enumerated_for_documentation"
+    ]
+  },
+  "refactoring": {
+    "targets": [
+      {
+        "level": 2,
+        "focus": "Extract comparison functions into tools/toon/validators/ module"
+      }
+    ]
+  },
+  "execution_guidance": {
+    "approach": "Outside-In TDD with double-loop and pattern discovery",
+    "workflow": [
+      "0. PRE-FLIGHT VALIDATION:",
+      "   a. Verify 5d-wave/agents/software-crafter.toon exists (from step 2.1)",
+      "   b. Verify baseline/token-measurements/02-01-pre-conversion.json exists",
+      "   c. Verify compiler available: python tools/toon/compiler.py --version",
+      "1. Compile TOON to MD:",
+      "   python tools/toon/compiler.py 5d-wave/agents/software-crafter.toon --output compiled-software-crafter.md --validate",
+      "2. Write failing E2E test (outer_test) - validates >=95% equivalence",
+      "3. Implement validation script via inner TDD loop:",
+      "   a. Create tools/toon/validate_roundtrip.py with function:",
+      "      validate_roundtrip(original_md_path: str, compiled_md_path: str) -> dict",
+      "   b. Return schema:",
+      "      {",
+      "        'equivalence_score': float,  # 0-100",
+      "        'commands_match': bool,",
+      "        'dependencies_match': bool,",
+      "        'frontmatter_valid': bool,",
+      "        'critical_sections_present': bool,",
+      "        'embedded_knowledge_preserved': bool,",
+      "        'differences': [list of specific differences],",
+      "        'patterns_discovered': [list of conversion patterns],",
+      "        'edge_cases_found': [list of edge cases]",
+      "      }",
+      "   c. Equivalence score calculation:",
+      "      score = (commands_match * 0.30) + (dependencies_match * 0.30) + ",
+      "              (frontmatter_valid * 0.20) + (critical_sections * 0.10) + ",
+      "              (embedded_knowledge * 0.10)",
+      "4. Define critical sections explicitly:",
+      "   - commands: list of all agent commands",
+      "   - dependencies: dict of all dependency paths",
+      "   - agent_metadata: name, id, title, icon, whenToUse, customization",
+      "   - persona_definition: persona section content",
+      "   - embed_knowledge_paths: BUILD:INJECT section references",
+      "5. Implement comparison validators (extract as separate functions):",
+      "   - command_list_validator(original, compiled) -> bool",
+      "   - dependency_list_validator(original, compiled) -> bool",
+      "   - metadata_validator(original, compiled) -> bool",
+      "   - section_presence_validator(compiled) -> bool",
+      "   - embedded_knowledge_validator(compiled) -> bool",
+      "6. Apply refactoring level 2: Extract validators into tools/toon/validators/",
+      "7. Run validation on software-crafter conversion",
+      "8. ENUMERATE patterns and edge cases:",
+      "   Create baseline/patterns/02-02-discovered-patterns.json:",
+      "   {",
+      "     'step_id': '02-02',",
+      "     'agent_converted': 'software-crafter',",
+      "     'discovery_date': '<ISO-8601>',",
+      "     'patterns_discovered': [",
+      "       {",
+      "         'pattern_id': 'PATTERN-001',",
+      "         'description': 'Agent metadata blocks map to TOON @metadata directives',",
+      "         'before_example': '...',",
+      "         'after_example': '...',",
+      "         'applies_to': 'all agents with metadata'",
+      "       }",
+      "     ],",
+      "     'edge_cases_found': [",
+      "       {",
+      "         'edge_case_id': 'EDGE-001',",
+      "         'description': 'Embedded knowledge with nested YAML',",
+      "         'handling_strategy': '...'",
+      "       }",
+      "     ]",
+      "   }",
+      "9. Validate all acceptance criteria met",
+      "10. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "Pre-flight checks pass (software-crafter.toon exists, compiler ready)",
+      "All tests passing (100% required)",
+      "All acceptance criteria validated",
+      "Semantic equivalence >= 95%",
+      "Refactoring applied (level 2 - validators extracted)",
+      "Patterns and edge cases enumerated (minimum 5 patterns, 3 edge cases)",
+      "No report files created"
+    ],
+    "validation_specification": {
+      "function_signature": "validate_roundtrip(original_md_path: str, compiled_md_path: str) -> dict",
+      "semantic_equivalence_formula": {
+        "commands_match": "30%",
+        "dependencies_match": "30%",
+        "frontmatter_valid": "20%",
+        "critical_sections_present": "10%",
+        "embedded_knowledge_preserved": "10%",
+        "total": "100%",
+        "pass_threshold": ">=95%"
+      },
+      "critical_sections_definition": [
+        "commands (list of all agent commands)",
+        "dependencies (dict of all dependency paths)",
+        "agent_metadata (name, id, title, icon, whenToUse, customization)",
+        "persona_definition (persona section content)",
+        "embed_knowledge_paths (BUILD:INJECT section references)"
+      ],
+      "acceptable_differences": [
+        "Whitespace variations (spaces, tabs, newlines)",
+        "Comment formatting differences",
+        "YAML key ordering (if semantically equivalent)"
+      ],
+      "unacceptable_differences": [
+        "Missing commands",
+        "Missing dependencies",
+        "Missing metadata fields",
+        "Missing embedded knowledge references",
+        "Structural changes to critical sections"
+      ]
+    },
+    "pattern_discovery_specification": {
+      "purpose": "Enumerate patterns and edge cases for step 2.3 documentation",
+      "minimum_patterns": 5,
+      "minimum_edge_cases": 3,
+      "pattern_schema": {
+        "pattern_id": "PATTERN-XXX",
+        "description": "Brief description of conversion pattern",
+        "before_example": "MD format example",
+        "after_example": "TOON format example",
+        "applies_to": "Scope of applicability"
+      },
+      "edge_case_schema": {
+        "edge_case_id": "EDGE-XXX",
+        "description": "Description of edge case",
+        "handling_strategy": "How to handle in conversion"
+      }
+    }
+  },
+  "adversarial_review_remediations": [
+    {
+      "issue_id": "CONTRA-1",
+      "remediation": "Added blocking_conditions requiring step 2.1 complete and compiler functional"
+    },
+    {
+      "issue_id": "CONTRA-2",
+      "remediation": "Defined exact validation criteria: commands/dependencies must be identical (exact match). Frontmatter must pass schema validation."
+    },
+    {
+      "issue_id": "CONTRA-3",
+      "remediation": "Defined semantic equivalence formula with weighted scoring. Specified acceptable vs unacceptable differences."
+    },
+    {
+      "issue_id": "CONTRA-4",
+      "remediation": "Added embedded knowledge preservation as explicit acceptance criterion and test. Defined critical sections including embed_knowledge_paths."
+    },
+    {
+      "issue_id": "C1",
+      "remediation": "Added complete validation script specification with function signature, input/output schema, and sample output structure"
+    },
+    {
+      "issue_id": "C2",
+      "remediation": "Documented compiler invocation: python tools/toon/compiler.py 5d-wave/agents/software-crafter.toon --output compiled-software-crafter.md --validate"
+    },
+    {
+      "issue_id": "C3",
+      "remediation": "Defined critical sections explicitly with 5 categories: commands, dependencies, agent_metadata, persona_definition, embed_knowledge_paths"
+    },
+    {
+      "issue_id": "H1",
+      "remediation": "Defined semantic equivalence scoring formula with weights and threshold (>=95%)"
+    },
+    {
+      "issue_id": "H2",
+      "remediation": "Specified TOON compiler usage in workflow with exact command-line invocation"
+    },
+    {
+      "issue_id": "M1",
+      "remediation": "Revised estimated hours from 1-2 to 2-3 to account for validator complexity and pattern enumeration"
+    },
+    {
+      "issue_id": "M2",
+      "remediation": "Specified refactoring target: Extract comparison logic into tools/toon/validators/ package with 5 specific validator functions"
+    },
+    {
+      "issue_id": "MISSING_CONTEXT",
+      "remediation": "Added pattern_discovery_specification requiring enumeration of minimum 5 patterns and 3 edge cases for step 2.3 input"
+    }
+  ]
+}

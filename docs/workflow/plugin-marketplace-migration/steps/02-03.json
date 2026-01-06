@@ -1,0 +1,244 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "02-03",
+  "phase": {
+    "number": 2,
+    "name": "Pilot Migration",
+    "purpose": "Validate toolchain with real complex agent before batch migration"
+  },
+  "step": {
+    "number": "2.3",
+    "name": "Document Conversion Patterns",
+    "description": "Document patterns discovered during pilot conversion for batch use. Update tools/toon/README.md with conversion guide based on enumerated patterns from step 2.2.\n\nIMPORTANT: This documentation becomes the blueprint for 100+ agent conversions in Phase 3. Accuracy is critical.\n\nInput: baseline/patterns/02-02-discovered-patterns.json (from step 2.2)\nOutput: tools/toon/README.md with structured conversion guide",
+    "motivation": "Patterns enable efficient batch migration and prevent inconsistent conversions across 100+ agents",
+    "estimated_hours": "1.5-2"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC1": "All source files in TOON v3.0 format"
+    },
+    "dependencies": ["2.2"],
+    "blocking_conditions": [
+      "Step 2.2 MUST be complete with patterns enumerated",
+      "File MUST exist: baseline/patterns/02-02-discovered-patterns.json",
+      "Patterns MUST include minimum 5 conversion patterns and 3 edge cases"
+    ]
+  },
+  "deliverables": {
+    "files_to_create": [
+      "tools/toon/README.md"
+    ],
+    "acceptance_criteria": [
+      "README documents >= 10 TOON syntax features with before/after examples",
+      "README includes >= 10 conversion examples from actual software-crafter.toon",
+      "README lists >= 5 edge cases with resolution strategies (from step 2.2)",
+      "README includes decision tree for ambiguous conversions",
+      "All examples use generic agent placeholders (not software-crafter-specific)",
+      "Examples are valid TOON v3.0 syntax (validated by tests)"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN tools/toon/README.md\nWHEN Phase 3 executor uses it as conversion guide\nTHEN all patterns from baseline/patterns/02-02-discovered-patterns.json are documented\nAND examples are portable to other agents\nAND TOON syntax is valid",
+    "inner_tests": [
+      "test_readme_contains_all_discovered_patterns",
+      "test_readme_examples_are_valid_toon_syntax",
+      "test_readme_examples_use_generic_placeholders",
+      "test_readme_edge_cases_match_step_2_2_findings"
+    ]
+  },
+  "refactoring": {
+    "targets": []
+  },
+  "execution_guidance": {
+    "approach": "Documentation with validation and genericization",
+    "workflow": [
+      "0. PRE-FLIGHT VALIDATION:",
+      "   a. Verify baseline/patterns/02-02-discovered-patterns.json exists",
+      "   b. Load and validate patterns file has required structure",
+      "   c. Verify minimum 5 patterns and 3 edge cases present",
+      "1. Load patterns from baseline/patterns/02-02-discovered-patterns.json",
+      "2. Extract TOON syntax features from software-crafter.toon:",
+      "   - Metadata directives",
+      "   - Command definitions",
+      "   - Dependency declarations",
+      "   - Embedded knowledge markers",
+      "   - YAML structure mappings",
+      "3. Create tools/toon/README.md with structure:",
+      "   ## TOON v3.0 Conversion Guide",
+      "   ",
+      "   ### Overview",
+      "   This guide documents conversion patterns discovered during software-crafter pilot migration.",
+      "   Use this as reference for Phase 3 batch conversions.",
+      "   ",
+      "   ### TOON Syntax Quick Reference",
+      "   [Document >= 10 syntax features with examples]",
+      "   ",
+      "   ### Common Conversion Patterns",
+      "   [Document patterns from baseline/patterns/02-02-discovered-patterns.json]",
+      "   Format:",
+      "   #### Pattern: <pattern_id> - <description>",
+      "   **Applies to**: <scope>",
+      "   **Before (MD)**:",
+      "   ```markdown",
+      "   <genericized before example>",
+      "   ```",
+      "   **After (TOON)**:",
+      "   ```toon",
+      "   <genericized after example>",
+      "   ```",
+      "   ",
+      "   ### Edge Cases and Handling Strategies",
+      "   [Document edge cases from step 2.2]",
+      "   Format:",
+      "   #### Edge Case: <edge_case_id> - <description>",
+      "   **Scenario**: <when this occurs>",
+      "   **Handling**: <resolution strategy>",
+      "   **Example**: <code example>",
+      "   ",
+      "   ### Decision Tree for Ambiguous Conversions",
+      "   [Create flowchart for decision points]",
+      "   ",
+      "   ### Validation Checklist",
+      "   - [ ] All commands converted",
+      "   - [ ] All dependencies converted",
+      "   - [ ] Metadata complete",
+      "   - [ ] Embedded knowledge markers preserved",
+      "   - [ ] TOON syntax valid (compiler accepts)",
+      "4. Genericize all examples:",
+      "   - Replace 'software-crafter' with '<agent-name>'",
+      "   - Replace specific paths with '<path-to-X>'",
+      "   - Replace specific commands with '<command-name>'",
+      "   - Ensure examples are portable to any agent",
+      "5. Write tests to validate README:",
+      "   a. Extract TOON code blocks from README",
+      "   b. Validate each against TOON compiler syntax check",
+      "   c. Verify all patterns from step 2.2 are documented",
+      "   d. Verify all edge cases from step 2.2 are listed",
+      "6. Run validation tests - all must pass",
+      "7. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "Pre-flight checks pass (patterns file exists with minimum content)",
+      "All acceptance criteria validated",
+      "Examples are clear and accurate (validated by tests)",
+      "All patterns from step 2.2 documented",
+      "All edge cases from step 2.2 listed",
+      "Examples use generic placeholders (no software-crafter-specific)",
+      "TOON syntax examples validated by compiler",
+      "No report files created"
+    ],
+    "readme_structure_specification": {
+      "required_sections": [
+        "Overview (purpose and scope)",
+        "TOON Syntax Quick Reference (>= 10 features)",
+        "Common Conversion Patterns (>= 10 patterns)",
+        "Edge Cases and Handling Strategies (>= 5 edge cases)",
+        "Decision Tree for Ambiguous Conversions",
+        "Validation Checklist"
+      ],
+      "pattern_format": {
+        "pattern_id": "Reference to baseline/patterns/02-02-discovered-patterns.json",
+        "description": "Clear description of what converts to what",
+        "applies_to": "Scope (all agents, agents with X, etc.)",
+        "before_example": "MD format (genericized)",
+        "after_example": "TOON format (genericized)",
+        "notes": "Optional clarifications"
+      },
+      "edge_case_format": {
+        "edge_case_id": "Reference to baseline/patterns/02-02-discovered-patterns.json",
+        "description": "When this situation occurs",
+        "scenario": "Specific triggering conditions",
+        "handling": "Resolution strategy",
+        "example": "Code example demonstrating handling"
+      },
+      "genericization_rules": [
+        "Replace agent names with <agent-name>",
+        "Replace file paths with <path-to-X>",
+        "Replace command names with <command-name>",
+        "Replace specific values with <value> or <description>",
+        "Ensure examples work for any agent, not just software-crafter"
+      ]
+    },
+    "validation_tests_specification": {
+      "test_1": {
+        "name": "test_readme_contains_all_discovered_patterns",
+        "validates": "Every pattern in baseline/patterns/02-02-discovered-patterns.json appears in README",
+        "method": "Load patterns JSON, search README for each pattern_id"
+      },
+      "test_2": {
+        "name": "test_readme_examples_are_valid_toon_syntax",
+        "validates": "All TOON code blocks in README pass compiler syntax validation",
+        "method": "Extract ```toon blocks, write to temp files, run compiler --validate on each"
+      },
+      "test_3": {
+        "name": "test_readme_examples_use_generic_placeholders",
+        "validates": "No software-crafter-specific references in examples",
+        "method": "Search README for 'software-crafter', 'software_crafter' - count must be 0 in examples"
+      },
+      "test_4": {
+        "name": "test_readme_edge_cases_match_step_2_2_findings",
+        "validates": "Every edge case from step 2.2 is documented in README",
+        "method": "Load edge cases from JSON, verify each edge_case_id appears in README"
+      }
+    }
+  },
+  "adversarial_review_remediations": [
+    {
+      "issue_id": "CONTRADICTION-1",
+      "remediation": "Added blocking_conditions requiring baseline/patterns/02-02-discovered-patterns.json exists with minimum 5 patterns and 3 edge cases. Input explicitly referenced."
+    },
+    {
+      "issue_id": "CONTRADICTION-2",
+      "remediation": "Added requirement for TOON v3.0 spec accessibility. Added validation tests that check TOON syntax validity using compiler."
+    },
+    {
+      "issue_id": "CONTRADICTION-3",
+      "remediation": "Added measurable acceptance criteria: >= 10 syntax features, >= 10 examples, >= 5 edge cases. Quality gate requires minimum thresholds met."
+    },
+    {
+      "issue_id": "ASSUMPTION-2",
+      "remediation": "Referenced TOON v3.0 spec in blocking conditions. Examples validated against compiler to ensure correctness."
+    },
+    {
+      "issue_id": "ASSUMPTION-3",
+      "remediation": "Revised estimated hours from 0.5 to 1.5-2 to account for thorough documentation, example creation, genericization, and validation."
+    },
+    {
+      "issue_id": "ASSUMPTION-5",
+      "remediation": "Added validation tests that extract TOON code blocks and validate syntax using compiler. Examples proven valid, not assumed."
+    },
+    {
+      "issue_id": "EDGE-CASE-5",
+      "remediation": "Added genericization rules requiring examples use placeholders (<agent-name>, <path-to-X>). Test validates no software-crafter-specific references remain."
+    },
+    {
+      "issue_id": "BLOCKING-ISSUE-1",
+      "remediation": "Added blocking condition that baseline/patterns/02-02-discovered-patterns.json must exist with minimum content before step can start"
+    },
+    {
+      "issue_id": "BLOCKING-ISSUE-2",
+      "remediation": "Added validation tests that check TOON syntax using compiler --validate flag"
+    },
+    {
+      "issue_id": "BLOCKING-ISSUE-3",
+      "remediation": "Revised time estimate to realistic 1.5-2 hours accounting for all documentation activities"
+    },
+    {
+      "issue_id": "BLOCKING-ISSUE-4",
+      "remediation": "Added measurable acceptance criteria with specific numeric thresholds for features, examples, and edge cases"
+    }
+  ],
+  "phase_3_integration": {
+    "purpose": "This README serves as primary reference for Phase 3 batch conversions",
+    "usage": "Phase 3 executors will reference this guide for all 100+ agent conversions",
+    "update_mechanism": "If Phase 3 discovers new patterns not in this README, create addendum with version tracking",
+    "quality_impact": "Errors in this documentation amplify across entire batch migration - accuracy critical"
+  }
+}

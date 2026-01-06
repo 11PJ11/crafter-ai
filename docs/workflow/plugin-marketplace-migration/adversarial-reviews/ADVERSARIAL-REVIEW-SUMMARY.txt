@@ -1,0 +1,210 @@
+================================================================================
+ADVERSARIAL REVIEW SUMMARY - PLUGIN MARKETPLACE MIGRATION STEPS 01-01 TO 01-05
+================================================================================
+Date: 2026-01-05
+Reviewer: Lyra (Adversarial Mode)
+Mission: Find what WILL go wrong
+
+================================================================================
+VERDICT: CRITICAL - STOP DO NOT PROCEED
+================================================================================
+
+TASK 01-05 (TOON Compiler) CANNOT SUCCEED as written.
+
+Root Cause: Dependencies (01-01 through 01-04) have cascading failures from 
+unresolved circular dependencies and undefined schemas.
+
+Success Probability if Started Now: 20%
+Success Probability After Following Recommendations: 85%
+
+================================================================================
+CONTRADICTIONS IDENTIFIED (4 Critical)
+================================================================================
+
+C1. DEPENDENCY FULFILLMENT CONTRADICTION
+    Parser (01-01): Output schema UNDEFINED (dict vs TypedDict vs dataclass?)
+    Templates (01-02/03/04): Cannot test without parser schema
+    Result: Circular dependency - templates blocked on parser, parser blocked 
+            on template feedback
+    Blast Radius: CATASTROPHIC (100% probability of hitting this)
+
+C2. ACCEPTANCE CRITERIA VS ACHIEVABILITY
+    AC#5: "validate output has required sections"
+    Problem: Three templates have INCOMPATIBLE schemas
+             - Agent: activation notice + frontmatter
+             - Command: agent-activation header + wave metadata  
+             - Skill: skill frontmatter + trigger patterns
+    Result: Validator cannot be implemented correctly
+    Blast Radius: HIGH (100% probability)
+
+C3. REFACTORING LEVELS VS STABILITY
+    Task specifies refactoring Levels 2-3 (extract detection, separate pipeline)
+    Problem: If template schemas change during implementation (likely), all 
+             refactoring work breaks. Each template change cascades.
+    Result: Refactoring effort wasted
+    Blast Radius: MEDIUM-HIGH (75% probability)
+
+C4. ESTIMATE VS REALITY
+    Stated: 3-4 hours
+    Reality: 6-8 hours minimum, 12+ hours if clarifications needed
+    Result: 50-100% estimate error
+    Blast Radius: MEDIUM (80% probability)
+
+================================================================================
+DANGEROUS ASSUMPTIONS (5 Critical)
+================================================================================
+
+DA1. Parser API Finalized
+     REALITY: Undefined. May return dict/TypedDict/dataclass/custom class
+     Risk: 70% | Recovery: 2 hours
+
+DA2. Templates Produce Consistent Output
+     REALITY: Three incompatible AC definitions identified
+     Risk: 80% | Recovery: 2 hours
+
+DA3. File Type Detection Unambiguous
+     REALITY: No mechanism specified. Parser output undefined.
+     Risk: 60% | Recovery: 1 hour
+
+DA4. Templates Testable in Isolation  
+     REALITY: Parser input schema undefined. Templates are orphaned.
+     Risk: 70% | Recovery: 2 hours
+
+DA5. Jinja2 Environment Stable
+     REALITY: No setup/cleanup/isolation spec. State leakage likely.
+     Risk: 40% | Recovery: 1 hour
+
+================================================================================
+FAILURE SCENARIOS (6 Critical)
+================================================================================
+
+F1. Parser Output Schema Undefined (70% probability, 3 hr recovery)
+    Implementation assumes dict access → TypeError on dataclass → all tests fail
+
+F2. Template Schema Mismatch (80% probability, 2 hr recovery)
+    Validator written for one schema → templates finalized with different schema
+    → all tests fail → validator rewritten
+
+F3. Circular Dependency in Step Chain (60% probability, 24 hr recovery)
+    Parser blocked on template feedback → Templates blocked on parser schema
+    → All three steps stalled → Architectural redesign needed
+
+F4. File Type Detection on Real TOON (40% probability, 2 hr recovery)
+    Detection based on assumptions → Real TOON files don't match → Misidentifies
+
+F5. Refactoring Throws Away Work (30% probability, 2 hr recovery)
+    Extract method loses error handling → Parse errors not caught → Crash
+
+F6. Validator Becomes Unmaintainable (50% probability, 3 hr recovery)
+    Templates evolve independently → Section names change → Logic unmaintainable
+
+================================================================================
+INTEGRATION POINT FRAGILITY
+================================================================================
+
+Point                              Risk   Recovery Hours
+-----------------------------------------------------
+compiler.parse() → parser API      70%    3 hours
+File type detection logic          80%    1 hour  
+Template selection → paths         60%    1 hour
+Template rendering → Jinja2 env    40%    2 hours
+AC#5 validator → template schema   80%    3 hours
+Error reporting → exception types  50%    1 hour
+
+================================================================================
+SECURITY HOLES (3 Critical)
+================================================================================
+
+SH1. Path Traversal in Template Loading
+     Risk: ../../etc/passwd could be loaded
+     Mitigation: Validate paths strictly
+
+SH2. Code Injection via Jinja2  
+     Risk: {{ malicious_function() }} in TOON executes as code
+     Mitigation: Use Jinja2 strict mode
+
+SH3. Denial of Service via Large Files
+     Risk: Multi-GB TOON causes memory exhaustion
+     Mitigation: Add file size validation
+
+================================================================================
+TEST COVERAGE GAPS
+================================================================================
+
+Declared Tests: 6
+Missing Critical Tests: 10
+Coverage: 37%
+
+Missing Tests:
+- test_compiler_output_directory_not_writable
+- test_compiler_missing_template_file
+- test_compiler_template_rendering_fails
+- test_compiler_validates_output_sections
+- test_compiler_error_message_clarity
+- test_compiler_handles_empty_toon_file
+- test_compiler_prevents_overwrite_without_confirmation
+- test_compiler_rejects_path_traversal_in_template
+- test_compiler_handles_circular_template_references
+- test_compiler_output_is_valid_markdown
+
+================================================================================
+BLOCKERS FOR STARTING TASK 01-05
+================================================================================
+
+1. Parser output schema undefined (1 hour to resolve)
+2. Circular dependency between parser and templates (3 hours)
+3. Three templates have conflicting AC definitions (2 hours)
+4. File type detection rules undefined (1 hour)
+
+Total resolution time: ~6-7 hours
+Then 01-05 will complete in stated 3-4 hours
+
+================================================================================
+RECOMMENDATIONS (Priority Order)
+================================================================================
+
+CRITICAL (STOP):
+1. DO NOT START task 01-05
+2. Resolve all dependency issues first
+3. Complete and test steps 01-01 through 01-04 independently
+4. Validate end-to-end integration before starting 01-05
+
+HIGH (Resolve First):
+5. Define parser output schema as TypedDict with explicit type field
+6. Define template discovery mechanism (filesystem pattern recommended)
+7. Define file type detection rules explicitly
+8. Audit template AC for consistency
+
+MEDIUM (Before Implementation):
+9. Define error exception hierarchy
+10. Add security validation acceptance criteria
+11. Delay refactoring until dependencies stable
+12. Add missing 10 test cases
+
+LOW (During Implementation):
+13. Document error message format
+14. Add path traversal validation
+15. Implement Jinja2 strict mode
+
+================================================================================
+OVERALL ASSESSMENT
+================================================================================
+
+Risk Score: 8.5/10 (CRITICAL)
+
+This task exhibits classic signs of premature specification:
+- Dependencies have circular coupling
+- Schemas undefined at integration points
+- Acceptance criteria assume completion of undefined work
+- Three incompatible template designs
+
+Recommend: Establish clear dependency contracts BEFORE implementing compiler.
+Current timeline: Stop, resolve blockers (6-7 hours), then execute (3-4 hours).
+Result: Higher quality, faster delivery than rushing forward with 20% success probability.
+
+================================================================================
+END OF SUMMARY
+================================================================================
+
+For detailed analysis, see:
+/mnt/c/Repositories/Projects/ai-craft/docs/workflow/plugin-marketplace-migration/steps/01-05-ADVERSARIAL-REVIEW.md

@@ -1,0 +1,204 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "03-02",
+  "phase": {
+    "number": 3,
+    "name": "Agent Batch Migration",
+    "purpose": "Convert remaining 27 agents to TOON format (28 total including pilot)"
+  },
+  "step": {
+    "number": "3.2",
+    "name": "Convert Reviewer Agents",
+    "description": "Convert 11 reviewer agents (pattern: {agent}-reviewer): acceptance-designer-reviewer, agent-builder-reviewer, data-engineer-reviewer, devop-reviewer, illustrator-reviewer, product-owner-reviewer, skeleton-builder-reviewer, software-crafter-reviewer, solution-architect-reviewer, troubleshooter-reviewer, visual-architect-reviewer",
+    "motivation": "Reviewer agents are critical for quality gate workflow",
+    "estimated_hours": "10-15"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC1": "All source files in TOON v3.0 format",
+      "SC7": "Target 50-60% token savings (to be validated - measurement only, not hard gate)"
+    },
+    "dependencies": ["2.4"],
+    "prerequisite_checks": [
+      {
+        "check": "TOON toolchain exists and is functional",
+        "validation": "Verify tools/toon/README.md exists with conversion patterns and compiler is operational",
+        "blocking": true,
+        "resolution_if_missing": "Complete Phase 1 infrastructure (estimated 16-19 hours)"
+      },
+      {
+        "check": "Phase 2.4 archive is complete",
+        "validation": "ls archive/pre-toon-migration/agents/ | wc -l should equal 28",
+        "blocking": true,
+        "resolution_if_missing": "Complete step 2.4 archive creation (estimated 0.5 hours)"
+      },
+      {
+        "check": "Conversion patterns documented",
+        "validation": "Verify tools/toon/README.md contains reviewer-specific patterns and critique dimension handling",
+        "blocking": true,
+        "resolution_if_missing": "Document reviewer conversion patterns (estimated 1 hour)"
+      },
+      {
+        "check": "Critique dimensions specification available",
+        "validation": "Verify documentation of critique dimensions structure for reviewer agents",
+        "blocking": false,
+        "resolution_if_missing": "Extract critique dimensions from existing reviewer agents (estimated 1 hour)"
+      }
+    ]
+  },
+  "deliverables": {
+    "files_to_create": [
+      "5d-wave/agents/acceptance-designer-reviewer.toon",
+      "5d-wave/agents/agent-builder-reviewer.toon",
+      "5d-wave/agents/data-engineer-reviewer.toon",
+      "5d-wave/agents/devop-reviewer.toon",
+      "5d-wave/agents/illustrator-reviewer.toon",
+      "5d-wave/agents/product-owner-reviewer.toon",
+      "5d-wave/agents/skeleton-builder-reviewer.toon",
+      "5d-wave/agents/software-crafter-reviewer.toon",
+      "5d-wave/agents/solution-architect-reviewer.toon",
+      "5d-wave/agents/troubleshooter-reviewer.toon",
+      "5d-wave/agents/visual-architect-reviewer.toon"
+    ],
+    "acceptance_criteria": [
+      "All 11 reviewer TOON files compile without errors using tools/toon compiler",
+      "Reviewer agents maintain critique dimensions from original (validated via comparison)",
+      "All compiled outputs have valid Claude Code format with reviewer-specific structure",
+      "Token savings measured and documented (baseline from archive vs TOON source)",
+      "No critical information lost during conversion (validated via round-trip comparison)"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN all 11 reviewer .toon files\nWHEN I compile each through toolchain\nTHEN all produce valid reviewer agent.md with critique dimensions preserved",
+    "inner_tests": [
+      "test_each_reviewer_compiles_successfully",
+      "test_critique_dimensions_preserved_per_reviewer",
+      "test_reviewer_commands_match_original",
+      "test_reviewer_dependencies_match_original",
+      "test_token_count_per_reviewer_vs_baseline",
+      "test_compiled_output_valid_yaml_frontmatter",
+      "test_reviewer_specific_sections_present"
+    ]
+  },
+  "refactoring": {
+    "targets": [
+      {
+        "level": 1,
+        "focus": "Reviewer-specific abbreviations and structure consistency",
+        "example": "Standardize critique dimension sections using consistent TOON notation across all reviewer agents"
+      }
+    ]
+  },
+  "execution_guidance": {
+    "approach": "Batch conversion with reviewer-specific validation",
+    "workflow": [
+      "0. PREREQUISITE VALIDATION: Run all prerequisite checks before starting any conversion",
+      "1. Apply reviewer-specific conversion patterns from tools/toon/README.md",
+      "2. Convert each reviewer.md to reviewer.toon, paying special attention to critique dimensions",
+      "3. Compile each TOON file immediately after conversion to validate syntax",
+      "4. For each reviewer: verify critique dimensions are intact using comparison validator",
+      "5. Write tests to validate all 11 reviewers (compilation, critique dimensions, structure)",
+      "6. Verify critique dimensions preserved: compare compiled output with archived original",
+      "7. Measure token savings: compare TOON source size with archived MD baseline",
+      "8. Apply refactoring level 1 for reviewer-specific consistency",
+      "9. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "All prerequisite checks pass (TOON toolchain exists, archive complete, patterns documented)",
+      "All tests passing (100% required)",
+      "All 11 reviewers compile successfully with zero errors",
+      "Critique dimensions intact for all reviewers (validated via comparison)",
+      "Round-trip validation passes for all reviewers (semantic equivalence >= 95%)",
+      "Token savings measured and documented (no hard threshold - measurement only)",
+      "Refactoring applied (level 1) for reviewer-specific consistency",
+      "No report files created"
+    ],
+    "error_handling": [
+      {
+        "scenario": "TOON toolchain missing",
+        "action": "HALT execution, escalate to complete Phase 1 first",
+        "estimated_resolution": "16-19 hours"
+      },
+      {
+        "scenario": "Archive incomplete or from wrong source",
+        "action": "HALT execution, verify and re-run step 2.4",
+        "estimated_resolution": "1-2 hours"
+      },
+      {
+        "scenario": "Reviewer compilation fails",
+        "action": "Log error with details, fix TOON syntax, recompile, continue with remaining reviewers",
+        "estimated_resolution": "15-60 minutes per reviewer"
+      },
+      {
+        "scenario": "Critique dimensions missing or malformed after compilation",
+        "action": "Review conversion, fix TOON structure to preserve dimensions, recompile",
+        "estimated_resolution": "30-90 minutes per reviewer"
+      },
+      {
+        "scenario": "Round-trip validation fails",
+        "action": "Review differences, determine if acceptable or critical, fix if critical",
+        "estimated_resolution": "30-90 minutes per reviewer"
+      }
+    ],
+    "reviewer_specific_notes": [
+      "Critique dimensions are the critical differentiator for reviewer agents",
+      "Each reviewer has domain-specific dimensions (e.g., software-crafter-reviewer has code quality dimensions)",
+      "Conversion must preserve dimension structure, not just content",
+      "Test framework must validate dimension presence and structure, not just compilation"
+    ]
+  },
+  "adversarial_review_mitigations": {
+    "critical_blockers_addressed": [
+      {
+        "blocker": "TOON toolchain not available in repo",
+        "mitigation": "Added prerequisite check for tools/toon/README.md with blocking validation",
+        "estimated_resolution": "16-19 hours if missing (complete Phase 1)"
+      },
+      {
+        "blocker": "Token savings measurement methodology undefined",
+        "mitigation": "Changed from hard threshold (>=50%) to measurement documentation, added comparison methodology (TOON source bytes vs archived MD bytes)",
+        "estimated_resolution": "Addressed in acceptance criteria"
+      },
+      {
+        "blocker": "Dependency on step 2.4 requires clarification",
+        "mitigation": "Added explicit prerequisite check for archive completion with validation command",
+        "estimated_resolution": "0.5 hours if missing (complete step 2.4)"
+      },
+      {
+        "blocker": "Critique dimensions definition unclear",
+        "mitigation": "Added prerequisite check for critique dimensions documentation, added reviewer-specific validation tests",
+        "estimated_resolution": "1 hour if missing (document critique dimensions)"
+      }
+    ],
+    "time_estimate_revision": {
+      "original": "5 hours",
+      "revised": "10-15 hours",
+      "rationale": "Original estimate (27 min/reviewer) unrealistic. Revised accounts for: conversion (30-45 min/reviewer), compilation validation (15 min/reviewer), critique dimension validation (20 min/reviewer), round-trip validation (15 min/reviewer), debugging (30-60 min buffer per reviewer), test framework setup (1-2 hours), refactoring pass (1 hour)"
+    },
+    "scope_clarification": {
+      "reviewers_in_scope": 11,
+      "note": "Step 3.2 covers 11 reviewer agents. novel-editor-reviewer and researcher-reviewer are handled in step 3.3 as part of remaining agents."
+    }
+  },
+  "review_metadata": {
+    "reviewed_by": "software-crafter",
+    "review_date": "2026-01-06",
+    "corrections_applied": [
+      "Added prerequisite validation section with blocking and non-blocking checks",
+      "Changed token savings from hard threshold to measurement documentation",
+      "Expanded test specifications with reviewer-specific assertions (critique dimensions)",
+      "Added comprehensive error handling procedures including critique dimension validation",
+      "Revised time estimate from 5 to 10-15 hours based on realistic reviewer-specific task breakdown",
+      "Added round-trip validation to workflow and acceptance criteria",
+      "Clarified Phase 3 purpose: 27 remaining agents (28 total including pilot)",
+      "Added reviewer-specific notes about critique dimensions preservation"
+    ]
+  }
+}

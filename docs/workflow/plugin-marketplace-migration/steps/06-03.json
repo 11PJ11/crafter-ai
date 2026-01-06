@@ -1,0 +1,304 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "06-03",
+  "phase": {
+    "number": 6,
+    "name": "Template Migration",
+    "purpose": "Convert reference templates to TOON for consistency"
+  },
+  "step": {
+    "number": "6.3",
+    "name": "Create SKILL_TEMPLATE",
+    "description": "Create new SKILL_TEMPLATE.toon for skill creation reference",
+    "motivation": "New template for new capability",
+    "estimated_hours": "1-3 OR 20-30 if TOON toolchain prerequisite needed",
+    "prerequisite_verification_required": true
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable",
+      "CRITICAL: Verify TOON toolchain prerequisite OR use fallback approach",
+      "CRITICAL: Verify Phase 5 (Skills) completion before creating template"
+    ],
+    "success_criteria_mapping": {
+      "SC1": "All source files in TOON v3.0 format OR Markdown format (if toolchain unavailable)"
+    },
+    "dependencies": ["5.4", "PHASE_1_TOOLCHAIN_OR_FALLBACK"],
+    "critical_blocker_status": {
+      "blocker_id": "BLOCKER_001",
+      "title": "Phase 1 TOON Toolchain Missing",
+      "severity": "CRITICAL",
+      "evidence": "tools/toon/ directory does not exist (verified 2026-01-05)",
+      "impact": "Cannot execute TOON conversion workflow without parser/compiler",
+      "affects_steps": ["06-01", "06-02", "06-03", "07-01", "07-02", "07-03"],
+      "resolution_options": [
+        {
+          "option": "A",
+          "name": "Implement Phase 1 TOON Toolchain First",
+          "description": "Complete Phase 1.1-1.3 to create tools/toon/ directory with parser.py and compiler.py",
+          "effort_estimate": "20-30 hours",
+          "prerequisites": [
+            "TOON v3.0 format specification documented",
+            "Parser output schema defined",
+            "Compiler validation mechanism designed",
+            "Test infrastructure for toolchain created"
+          ],
+          "timeline": "3-4 days before Phase 6 can start"
+        },
+        {
+          "option": "B",
+          "name": "Pivot to Markdown Skill Template",
+          "description": "Create skill template in Markdown format instead of TOON",
+          "effort_estimate": "1-2 hours",
+          "prerequisites": [
+            "Update success criteria from 'TOON v3.0 format' to 'Markdown format'",
+            "Define Markdown skill template structure",
+            "Extract skill structure from Phase 5 completed skills",
+            "Create validation tests for Markdown output"
+          ],
+          "timeline": "Can start after Phase 5.4 completes"
+        },
+        {
+          "option": "C",
+          "name": "Block Phase 6.3 Until Toolchain Available",
+          "description": "Mark step as BLOCKED, wait for Phase 1 completion",
+          "effort_estimate": "0 hours (waiting)",
+          "prerequisites": [
+            "Phase 1 team commits to delivery timeline",
+            "Dependencies updated in all Phase 6-8 steps",
+            "Project timeline adjusted for Phase 1 completion"
+          ],
+          "timeline": "Unknown - depends on Phase 1 completion"
+        }
+      ]
+    },
+    "phase_5_dependency_status": {
+      "blocker_id": "BLOCKER_002",
+      "title": "Phase 5 Skills Not Complete",
+      "severity": "CRITICAL",
+      "evidence": "Step 5.4 review metadata states: 'BLOCKED - Cannot proceed until dependencies complete'",
+      "impact": "Cannot create SKILL_TEMPLATE without understanding actual skill structure from Phase 5.1-5.3 implementations",
+      "affects_steps": ["06-03"],
+      "resolution": "Wait for Phase 5.1-5.3 completion, then extract skill structure specification, THEN create template"
+    }
+  },
+  "deliverables": {
+    "files_to_create": [
+      "5d-wave/templates/SKILL_TEMPLATE.toon (Option A) OR 5d-wave/templates/SKILL_TEMPLATE.md (Option B)"
+    ],
+    "acceptance_criteria": [
+      "PREREQUISITE CHECK PASSED: Phase 5.4 complete AND (TOON toolchain exists OR fallback approach approved)",
+      "Template includes skill structure reference (extracted from completed Phase 5 skills)",
+      "Template documents trigger pattern format (from Phase 5 validation)",
+      "Template compiles to valid reference (Option A) OR Template is valid Markdown (Option B)"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN SKILL_TEMPLATE source\nWHEN processed\nTHEN produces valid skill template reference",
+    "inner_tests": [
+      "test_prerequisite_phase5_complete",
+      "test_prerequisite_toolchain_available (Option A)",
+      "test_skill_template_complete",
+      "test_fallback_markdown_valid (Option B)"
+    ]
+  },
+  "refactoring": {
+    "targets": []
+  },
+  "execution_guidance": {
+    "approach": "Prerequisite-driven template creation with fallback",
+    "mandatory_prerequisite_check": {
+      "step_0": "MANDATORY FIRST STEP - Verify Prerequisites",
+      "checks": [
+        {
+          "check_id": "PRE-01",
+          "description": "Verify Phase 5.1-5.3 complete (actual skill implementations exist)",
+          "validation_command": "ls -la 5d-wave/skills/{develop,refactor,mikado}/*.toon OR ls -la 5d-wave/skills/{develop,refactor,mikado}/*.md",
+          "success_criteria": "At least 3 skill files exist (one per type: develop, refactor, mikado)",
+          "failure_action": "STOP - Cannot create template without actual skills to reference. Wait for Phase 5 completion."
+        },
+        {
+          "check_id": "PRE-02",
+          "description": "Verify Phase 5.4 complete (skill validation passed)",
+          "validation_command": "grep 'status.*complete' steps/05-04.json OR check step 5.4 review status",
+          "success_criteria": "Step 5.4 marked as complete with validation tests passing",
+          "failure_action": "STOP - Cannot create template before skill structure validated. Wait for 5.4 completion."
+        },
+        {
+          "check_id": "PRE-03",
+          "description": "Extract skill structure specification from Phase 5",
+          "validation_method": "Analyze completed skill files to identify common fields, trigger patterns, agent bindings",
+          "success_criteria": "Skill structure documented with: required fields, trigger pattern format, agent binding mechanism",
+          "failure_action": "STOP - Cannot create template without understanding structure"
+        },
+        {
+          "check_id": "PRE-04",
+          "description": "Verify TOON toolchain exists (Option A only)",
+          "validation_command": "ls -la /path/to/tools/toon/ && python -c 'from tools.toon import compile; print(compile.__doc__)'",
+          "success_criteria": "Directory exists AND compile function importable",
+          "failure_action": "Choose Option B (Markdown) or Option C (Block)"
+        },
+        {
+          "check_id": "PRE-05",
+          "description": "Get user approval for approach",
+          "validation_method": "Interactive - ask user to choose Option A, B, or C",
+          "success_criteria": "User explicitly approves approach",
+          "failure_action": "STOP - Cannot proceed without user decision"
+        }
+      ]
+    },
+    "workflow_option_a": [
+      "0. RUN PREREQUISITE CHECKS (PRE-01 through PRE-05)",
+      "1. Analyze completed skills from Phase 5 to extract common structure",
+      "2. Create SKILL_TEMPLATE.toon using extracted structure and TOON format spec",
+      "3. Document trigger pattern format from Phase 5 validation",
+      "4. Compile to validate structure using tools/toon/compiler.py",
+      "5. Write test to verify template completeness",
+      "6. Document template creation methodology in commit message",
+      "7. DO NOT COMMIT - wait for user approval"
+    ],
+    "workflow_option_b": [
+      "0. RUN PREREQUISITE CHECKS (PRE-01, PRE-02, PRE-03, PRE-05)",
+      "1. Analyze completed skills from Phase 5 to extract common structure",
+      "2. Create SKILL_TEMPLATE.md using extracted structure in Markdown format",
+      "3. Document trigger pattern format from Phase 5 validation",
+      "4. Validate Markdown syntax and structure",
+      "5. Write test to verify template completeness",
+      "6. Document template creation approach in commit message",
+      "7. DO NOT COMMIT - wait for user approval"
+    ],
+    "workflow_option_c": [
+      "0. RUN PREREQUISITE CHECKS (PRE-01, PRE-02, PRE-04 fail)",
+      "1. Mark step as BLOCKED in status",
+      "2. Document blocking reasons: Phase 5 incomplete OR Phase 1 toolchain missing",
+      "3. Notify user of block and estimated wait time",
+      "4. Wait for Phase 5 and/or Phase 1 completion notification"
+    ],
+    "quality_gates": [
+      "MANDATORY: Phase 5.1-5.3 complete with actual skill implementations",
+      "MANDATORY: Phase 5.4 validation complete with trigger patterns documented",
+      "MANDATORY: Prerequisite checks completed and passed OR fallback approved",
+      "All tests passing (100% required)",
+      "Template validates successfully (compile OR Markdown lint)",
+      "Skill structure documented",
+      "Trigger pattern format documented",
+      "No report files created",
+      "Approach documented in execution notes"
+    ]
+  },
+  "adversarial_review": {
+    "review_date": "2026-01-05",
+    "reviewer": "adversarial-software-crafter-reviewer",
+    "UPDATED_AFTER_CORRECTION": {
+      "correction_date": "2026-01-06",
+      "correction_summary": "Added explicit Phase 5 and Phase 1 prerequisite verification, fallback options, and blocking status tracking",
+      "remaining_risks": [
+        "User may skip prerequisite checks (mitigated by MANDATORY step 0)",
+        "Template created before Phase 5 complete may not match actual skill structure (mitigated by PRE-01, PRE-02, PRE-03 checks)",
+        "Option A chosen without understanding 20-30h Phase 1 effort (mitigated by effort estimates)"
+      ]
+    },
+    "contradictions_found": [
+      {
+        "contradiction_id": "CONTRA-001",
+        "title": "Dependency Exists But Dependency Is BLOCKED",
+        "severity": "CRITICAL",
+        "description": "Step 06-03 lists dependency on 5.4. However, step 5.4 review metadata explicitly states: 'BLOCKED by 5.1-5.3 implementation' and 'Cannot proceed until dependencies complete.' Worse: step 5.1 (which 5.4 depends on) has CONDITIONAL_APPROVAL status with documented blockers: TOON skill syntax undefined, skill invocation mechanism not documented.",
+        "impact": "Step 06-03 cannot start until 5.4 completes, but 5.4 cannot start until 5.1-5.3 complete. Step 5.1 has unresolved blockers. This creates a circular wait: you cannot create SKILL_TEMPLATE until skills are validated, but skills cannot be created/validated until foundational work (5.1) is done. Timeline will cascade.",
+        "failure_trigger": "User attempts to execute 06-03 while 5.1-5.3 are incomplete. Will immediately fail because: (1) No actual skill files exist to reference, (2) Trigger patterns undefined, (3) Agent chaining semantics unclear, (4) TOON skill structure not documented.",
+        "detection": "Check step 5.4 status: 'BLOCKED - Cannot proceed until dependencies complete'. This step depends on blocked step.",
+        "MITIGATION_ADDED": "PRE-01, PRE-02, PRE-03 checks validate Phase 5 completion and extract actual skill structure before template creation. Option C blocks step if Phase 5 incomplete."
+      },
+      {
+        "contradiction_id": "CONTRA-002",
+        "title": "Acceptance Criteria References Non-Existent Specifications",
+        "severity": "CRITICAL",
+        "description": "AC-1: 'Template includes skill structure reference' - but what structure? AC-2: 'Template documents trigger pattern format' - but trigger format is not defined anywhere. Step 5.4 review notes that 'Trigger matching algorithm not documented' and 'Test harness implementation details missing'. These specs must exist before SKILL_TEMPLATE can be created.",
+        "impact": "Developer will attempt to create template without understanding what 'skill structure reference' means. Will guess at structure, create incomplete template, tests fail, have to iterate blindly. Estimated 1 hour becomes 4-6 hours of rework.",
+        "failure_trigger": "Try to write acceptance test: 'test_skill_template_complete' - what assertions validate completeness? Unknown. Without skill structure spec from 5.1-5.3, impossible to validate.",
+        "detection": "Run test suite: test_skill_template_complete fails with vague assertion error about 'structure'",
+        "MITIGATION_ADDED": "PRE-03 check requires extraction of skill structure from actual Phase 5 implementations. Template cannot be created without concrete specification."
+      }
+    ],
+    "dangerous_assumptions": [
+      {
+        "assumption_id": "ASSUME-001",
+        "title": "SKILL Structure Is Obvious/Well-Known",
+        "severity": "CRITICAL",
+        "assumption": "Workflow assumes developer knows what fields/methods a SKILL should have and can write SKILL_TEMPLATE.toon without explicit specification.",
+        "why_dangerous": "Each step in 5.1-5.3 creates different skill types (develop, refactor, mikado) with possibly different structure. Template must abstract common structure. Without seeing actual implementations, you're guessing.",
+        "reality": "Step 5.1 review states: 'TOON skill syntax is undefined'. No canonical skill structure exists. Developer will create template, then find it's wrong after 5.1-5.3 complete, have to rewrite.",
+        "consequence": "Template created in 06-03 becomes obsolete once real skills are complete. Rework required.",
+        "MITIGATION_ADDED": "PRE-01 and PRE-03 checks enforce that actual skill implementations exist and structure is extracted BEFORE template creation. No guessing allowed."
+      }
+    ],
+    "risk_score": 8.2,
+    "risk_breakdown": {
+      "dependency_chain_risk": 9.0,
+      "specification_completeness_risk": 8.5,
+      "validation_mechanism_risk": 8.0,
+      "time_estimate_accuracy_risk": 7.5,
+      "test_completeness_risk": 7.5,
+      "premature_commitment_risk": 6.0
+    },
+    "blast_radius": "MULTIPLE_PHASES",
+    "blast_radius_details": "Step 06-03 unblocks phases 6.4+ (other template migrations) if it succeeds. But step's failure blocks entire template migration phase. More critically: template created in 06-03 is used by users in phase 7-8 to create their own skills. If template is incomplete/wrong, ALL user-created skills from phase 7-8 onwards will be non-compliant. Blast radius is Phase 6 directly + phases 7-8 via downstream template usage.",
+    "critical_blocking_issues": [
+      {
+        "issue": "CRITICAL BLOCKER #1: Step 5.4 is BLOCKED",
+        "details": "Step 06-03 depends on step 5.4. Step 5.4 review metadata states: 'BLOCKED - Cannot proceed until dependencies complete.' Step 5.1 (which 5.4 depends on) has unresolved blockers: 'TOON skill syntax undefined', 'Skill invocation mechanism not documented'",
+        "resolution": "CANNOT START 06-03 until 5.1-5.3 complete. This is not a soft dependency - this is hard blocking.",
+        "escalation": "Resolve step 5.1 blockers immediately or re-sequence project",
+        "MITIGATION_ADDED": "PRE-01 and PRE-02 checks enforce Phase 5 completion before step execution."
+      },
+      {
+        "issue": "CRITICAL BLOCKER #2: Skill Structure Specification Missing",
+        "details": "AC-1 requires 'Template includes skill structure reference' but skill structure is not defined. Step 5.1 has not completed. Cannot write template without knowing structure.",
+        "resolution": "Wait for 5.1-5.3 to complete, then extract skill structure from actual implementations, then create template.",
+        "escalation": "Do not attempt to create template based on guesses",
+        "MITIGATION_ADDED": "PRE-03 check requires extraction of structure from actual implementations. No guessing."
+      },
+      {
+        "issue": "CRITICAL BLOCKER #3: Trigger Pattern Specification Missing",
+        "details": "AC-2 requires documenting 'trigger pattern format' but trigger matching algorithm is undefined (per step 5.4 review). Cannot document pattern format without understanding pattern matching.",
+        "resolution": "Obtain trigger pattern specification from step 5.1-5.3 or design decision document",
+        "escalation": "Escalate to architect: Define trigger pattern specification before 06-03",
+        "MITIGATION_ADDED": "PRE-02 checks Phase 5.4 validation completion. PRE-03 extracts trigger patterns from validated skills."
+      },
+      {
+        "issue": "CRITICAL BLOCKER #4: Validation Mechanism Undefined",
+        "details": "Quality gate 'Template compiles successfully' requires validation, but validation mechanism does not exist. TOON compiler may not include skill structure validation.",
+        "resolution": "Either: (a) Implement skill structure validator, OR (b) Change quality gate to remove compilation validation",
+        "escalation": "Clarify what 'validation' means before implementing tests",
+        "MITIGATION_ADDED": "PRE-04 check validates TOON toolchain for Option A. Option B provides Markdown fallback without compiler dependency."
+      }
+    ],
+    "summary": "Step 06-03 is BLOCKED by cascading dependencies that are themselves incomplete. Critical failures will occur if attempted now: (1) dependency chain deadlock (5.4 blocked by 5.1-5.3), (2) skill structure specification missing (cannot create template), (3) trigger pattern specification missing (cannot document format), (4) validation mechanism undefined (cannot verify template). Time estimate (1h) is unrealistic given these blockers. Risk score 8.2/10. Recommendation: DO NOT START. Wait for 5.1-5.3 completion + 5.4 validation + explicit skill/trigger specifications. Re-sequence as prerequisite phase before beginning 06-03. MITIGATION: Prerequisite checks now enforce proper sequencing and prevent premature execution."
+  },
+  "review_metadata": {
+    "reviewed_by": "lyra-reviewer",
+    "review_date": "2026-01-05",
+    "corrected_date": "2026-01-06",
+    "review_findings": {
+      "clarity": "NOW CLEAR - Prerequisite verification mandatory",
+      "completeness": "NOW COMPLETE - Phase 5 and Phase 1 dependencies explicit",
+      "achievability": "NOW ACHIEVABLE - With prerequisite checks and fallback",
+      "severity": "MEDIUM (after correction)"
+    },
+    "issues": [
+      {
+        "id": "R1",
+        "category": "Hidden Dependency",
+        "severity": "HIGH",
+        "description": "Step 5.4 dependency not explained. What must be completed in 5.4 before this step? Implicit coupling creates risk.",
+        "context": "AC criteria references 'TOON v3.0 format' but step file doesn't specify required TOON v3.0 skill structure syntax/conventions",
+        "recommendation": "Add explicit requirement: 'Step 5.4 must define TOON v3.0 skill structure specification before SKILL_TEMPLATE creation'",
+        "STATUS": "RESOLVED - PRE-01, PRE-02, PRE-03 checks added"
+      }
+    ]
+  }
+}

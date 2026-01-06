@@ -1,17 +1,17 @@
 {
   "project_id": "plugin-marketplace-migration",
-  "step_id": "04-01",
+  "step_id": "04-02",
   "phase": {
     "number": 4,
     "name": "Command Migration",
     "purpose": "Convert all 20 commands to TOON format"
   },
   "step": {
-    "number": "4.1",
-    "name": "Convert DISCUSS Command",
-    "description": "Convert discuss.md to TOON format (DISCUSS wave only)",
-    "motivation": "DISCUSS wave is entry point for requirements gathering workflows",
-    "estimated_hours": "4-6"
+    "number": "4.2",
+    "name": "Convert DESIGN Wave Commands",
+    "description": "Convert design.md, diagram.md to TOON format",
+    "motivation": "DESIGN wave defines architecture and visual representations",
+    "estimated_hours": "3-4"
   },
   "context": {
     "constraints": [
@@ -26,6 +26,8 @@
       "NOTE_SC7": "Token savings validation deferred to Phase 8"
     },
     "dependencies": [
+      "04-01",
+      "04-01b",
       "01-01",
       "01-02",
       "01-03",
@@ -45,30 +47,37 @@
       "blocking": true,
       "escalation": "If spec unavailable, create from reverse-engineering agents/novel-editor-chatgpt-toon.txt"
     },
+    "previous_step_patterns": {
+      "requirement": "Steps 04-01 and 04-01b must be complete",
+      "verification": "Confirm discuss.toon and start.toon exist and compile",
+      "blocking": true,
+      "escalation": "Complete 04-01 and 04-01b first to establish conversion patterns"
+    },
     "baseline_measurements": {
       "requirement": "Baseline measurements from Phase 0 must be complete",
       "verification": "Confirm docs/workflow/plugin-marketplace-migration/baseline.yaml exists with command metrics",
       "blocking": true,
-      "note": "Token savings validation deferred to Phase 8 if unavailable",
       "escalation": "If baseline missing, execute Phase 0 baseline measurement first"
     }
   },
   "deliverables": {
     "files_to_create": [
-      "5d-wave/tasks/dw/discuss.toon"
+      "5d-wave/tasks/dw/design.toon",
+      "5d-wave/tasks/dw/diagram.toon"
     ],
     "acceptance_criteria": [
-      "discuss.toon compiles with valid TOON v3.0 format",
-      "Wave metadata correct (DISCUSS)",
-      "Agent-activation header preserved from discuss.md"
+      "Both commands compile with valid TOON v3.0 format",
+      "Wave metadata correct (DESIGN)",
+      "Agent-activation headers preserved from source .md files"
     ]
   },
   "tdd_approach": {
-    "outer_test": "GIVEN discuss.md converted to discuss.toon\nWHEN compiled via toon-compiler\nTHEN output has wave: DISCUSS in metadata\nAND agent-activation block preserved",
+    "outer_test": "GIVEN DESIGN wave command .toon files\nWHEN compiled via toon-compiler\nTHEN output has wave: DESIGN in metadata\nAND agent-activation blocks preserved",
     "inner_tests": [
-      "test_discuss_command_compiles",
-      "test_discuss_wave_metadata",
-      "test_discuss_agent_activation_preserved"
+      "test_design_command_compiles",
+      "test_diagram_command_compiles",
+      "test_design_wave_metadata",
+      "test_diagram_wave_metadata"
     ]
   },
   "refactoring": {
@@ -87,7 +96,7 @@
     "error_handling": {
       "compilation_failure": "Log error, do NOT proceed, escalate with error message",
       "metadata_invalid": "Review source file wave classification, retry compilation",
-      "partial_failure": "Rollback all conversions, fix issue, restart batch"
+      "partial_failure": "Rollback ALL conversions, fix issue, restart batch"
     },
     "purpose": "Transforms TOON source to Claude Code compliant output",
     "input": "5d-wave/tasks/dw/*.toon (TOON format)",
@@ -95,29 +104,40 @@
     "validation": "pytest tests/tools/toon/test_compiler.py"
   },
   "test_specifications": {
-    "test_discuss_command_compiles": {
+    "test_design_command_compiles": {
       "framework": "pytest",
-      "test_code_skeleton": "def test_discuss_command_compiles():\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/discuss.toon')\n    assert toon_file.metadata['wave'] == 'DISCUSS'\n    assert toon_file.compilation_errors == []",
+      "test_code_skeleton": "def test_design_command_compiles():\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/design.toon')\n    assert toon_file.metadata['wave'] == 'DESIGN'\n    assert toon_file.metadata['agent-id'] == 'solution-architect'\n    assert toon_file.compilation_errors == []",
       "assertions": [
         "File parses without errors",
-        "Wave metadata == DISCUSS",
+        "Wave metadata == DESIGN",
+        "Agent-id preserved from design.md",
         "All required metadata fields present"
       ]
     },
-    "test_discuss_wave_metadata": {
+    "test_diagram_command_compiles": {
       "framework": "pytest",
-      "test_code_skeleton": "def test_discuss_wave_metadata():\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/discuss.toon')\n    assert toon_file.metadata['wave'] == 'DISCUSS'\n    assert 'agent-id' in toon_file.metadata",
+      "test_code_skeleton": "def test_diagram_command_compiles():\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/diagram.toon')\n    assert toon_file.metadata['wave'] == 'DESIGN'\n    assert toon_file.metadata['agent-id'] == 'architecture-diagram-manager'\n    assert toon_file.compilation_errors == []",
       "assertions": [
-        "Wave field exists and equals DISCUSS",
-        "Agent-id field present"
+        "File parses without errors",
+        "Wave metadata == DESIGN",
+        "Agent-id preserved from diagram.md",
+        "All required metadata fields present"
       ]
     },
-    "test_discuss_agent_activation_preserved": {
+    "test_design_wave_metadata": {
       "framework": "pytest",
-      "test_code_skeleton": "def test_discuss_agent_activation_preserved():\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/discuss.toon')\n    assert toon_file.metadata['agent-id'] == 'requirements-analyst'\n    assert toon_file.metadata['agent-command'] == 'discuss'",
+      "test_code_skeleton": "def test_design_wave_metadata():\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/design.toon')\n    assert toon_file.metadata['wave'] == 'DESIGN'\n    assert 'agent-command' in toon_file.metadata",
       "assertions": [
-        "Agent-id preserved from discuss.md",
-        "Agent-command preserved"
+        "Wave field exists and equals DESIGN",
+        "Agent-command field present"
+      ]
+    },
+    "test_diagram_wave_metadata": {
+      "framework": "pytest",
+      "test_code_skeleton": "def test_diagram_wave_metadata():\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/diagram.toon')\n    assert toon_file.metadata['wave'] == 'DESIGN'\n    assert 'agent-command' in toon_file.metadata",
+      "assertions": [
+        "Wave field exists and equals DESIGN",
+        "Agent-command field present"
       ]
     },
     "unit_tests": [
@@ -178,19 +198,24 @@
   },
   "error_handling": {
     "compiler_not_found": {
-      "detection": "Step 3 'Compile TOON files' fails with 'command not found'",
+      "detection": "Step 2 'Compile TOON files' fails with 'command not found'",
       "action": "STOP immediately, escalate: Phase 1 incomplete",
       "recovery": "Wait for Phase 1 completion, do NOT proceed"
     },
     "compilation_failure": {
       "detection": "Compiler exits with code != 0",
-      "action": "Capture error message, log to docs/errors/step-04-01-errors.log",
+      "action": "Capture error message, log to docs/errors/step-04-02-errors.log",
       "recovery": "Review source file, fix metadata/syntax, retry compilation"
     },
     "metadata_validation_failure": {
       "detection": "Test fails on wave metadata assertion",
       "action": "Review source file wave classification, verify correctness",
       "recovery": "If classification wrong: fix source. If test wrong: fix assertion."
+    },
+    "partial_batch_failure": {
+      "detection": "One file compiles, other fails",
+      "action": "Rollback ALL conversions (delete both .toon files)",
+      "recovery": "Fix failing file, re-run entire batch to ensure consistency"
     },
     "scenario_1_compiler_not_found": {
       "error": "TOON compiler not found at tools/toon/compiler.py",
@@ -218,61 +243,76 @@
     }
   },
   "execution_guidance": {
-    "approach": "Command conversion with template validation",
+    "approach": "Command conversion with template validation, following patterns from 04-01/04-01b",
     "workflow": [
       "STEP 0: VERIFY PREREQUISITES",
+      "  - Confirm step 04-01 and 04-01b complete",
       "  - Confirm tools/toon/compiler exists",
+      "  - Review discuss.toon and start.toon as conversion templates",
       "  - Confirm TOON v3.0 spec available",
-      "  - If either missing: STOP and escalate",
-      "STEP 1: Convert discuss.md to discuss.toon",
+      "  - If prerequisites missing: STOP and escalate",
+      "STEP 1: Convert design.md to design.toon",
       "  - Use TOON v3.0 format specification",
       "  - Preserve agent-activation header from YAML frontmatter",
-      "  - Set wave metadata to DISCUSS",
-      "STEP 2: Compile TOON file",
-      "  - Run: toon-compiler 5d-wave/tasks/dw/discuss.toon --validate",
-      "  - Verify exit code = 0",
-      "  - If compilation fails: capture error, escalate (see error_handling)",
-      "STEP 3: Write tests to validate conversion",
-      "  - Implement test_discuss_command_compiles",
-      "  - Implement test_discuss_wave_metadata",
-      "  - Implement test_discuss_agent_activation_preserved",
-      "STEP 4: Run test suite",
-      "  - Execute: pytest tests/test_discuss_conversion.py",
+      "  - Set wave metadata to DESIGN",
+      "  - Verify agent-id: solution-architect",
+      "STEP 2: Convert diagram.md to diagram.toon",
+      "  - Use TOON v3.0 format specification",
+      "  - Preserve agent-activation header from YAML frontmatter",
+      "  - Set wave metadata to DESIGN",
+      "  - Verify agent-id: architecture-diagram-manager",
+      "STEP 3: Compile both TOON files",
+      "  - Run: toon-compiler 5d-wave/tasks/dw/design.toon --validate",
+      "  - Run: toon-compiler 5d-wave/tasks/dw/diagram.toon --validate",
+      "  - Verify exit code = 0 for BOTH",
+      "  - If either fails: rollback both, fix issue, restart (see error_handling)",
+      "STEP 4: Write tests to validate conversions",
+      "  - Implement test_design_command_compiles",
+      "  - Implement test_diagram_command_compiles",
+      "  - Implement test_design_wave_metadata",
+      "  - Implement test_diagram_wave_metadata",
+      "STEP 5: Run test suite",
+      "  - Execute: pytest tests/test_design_conversion.py",
       "  - All tests MUST pass (100% required)",
-      "STEP 5: Verify quality gates",
+      "STEP 6: Verify quality gates",
       "  - Check all acceptance criteria satisfied",
-      "STEP 6: DO NOT COMMIT - wait for user approval"
+      "STEP 7: DO NOT COMMIT - wait for user approval"
     ],
     "quality_gates": [
       "All tests passing (100% required)",
-      "discuss.toon compiles successfully with exit code 0",
-      "Wave metadata correct (DISCUSS)",
-      "Agent-activation headers valid and preserved",
+      "Both commands compile successfully with exit code 0",
+      "Wave metadata correct (DESIGN) for both files",
+      "Agent-activation headers valid and preserved for both files",
       "No report files created"
     ]
   },
+  "agent_bindings": {
+    "design": "solution-architect",
+    "diagram": "architecture-diagram-manager"
+  },
   "adversarial_review_summary": {
-    "original_risk_score": 9.5,
-    "corrected_risk_score": 4.0,
+    "original_risk_score": 7.5,
+    "corrected_risk_score": 3.5,
     "major_corrections_applied": [
-      "Split step into 04-01 (DISCUSS) and 04-01b (CROSS_WAVE)",
-      "Added prerequisite checks for Phase 1 infrastructure",
+      "Added prerequisite checks for Phase 1 infrastructure and TOON spec",
+      "Added dependency on 04-01/04-01b completion",
       "Added TOON compiler specification with invocation details",
-      "Updated time estimate from 1h to 4-6h (first conversion)",
-      "Added comprehensive error handling",
+      "Updated time estimate from 1h to 3-4h",
+      "Added comprehensive error handling including partial batch failure",
       "Added detailed test specifications with pytest examples",
+      "Added agent bindings table for design and diagram commands",
       "Removed unvalidated token savings claim (SC7) from step-level"
     ],
     "remaining_risks": [
-      "Learning curve for first TOON conversion (mitigated by documentation)",
-      "Phase 1 infrastructure dependency (mitigated by prerequisite checks)"
+      "TOON format specification availability (mitigated by prerequisite checks)",
+      "Dependency on Phase 1 infrastructure (mitigated by verification)"
     ]
   },
   "review_metadata": {
     "reviewed_by": "Lyra (corrected after adversarial review)",
     "review_date": "2026-01-06",
     "review_status": "CORRECTED - Ready for execution after prerequisite verification",
-    "corrections_applied": "Wave classification fixed, prerequisites added, time estimate corrected, error handling added",
-    "estimated_hours_justification": "4-6 hours includes: 1h TOON format study, 1-2h conversion, 1-2h test implementation, 1h compilation/validation, buffer for learning curve"
+    "corrections_applied": "Prerequisites added, TOON format clarification addressed, time estimate corrected, error handling added, agent bindings specified",
+    "estimated_hours_justification": "3-4 hours includes: 0.5h review previous patterns, 1-1.5h conversion of 2 files, 1h test implementation, 0.5-1h compilation/validation"
   }
 }

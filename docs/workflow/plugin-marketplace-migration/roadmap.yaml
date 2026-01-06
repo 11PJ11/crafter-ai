@@ -1,0 +1,1132 @@
+# Plugin Marketplace Migration - Roadmap
+# Project: plugin-marketplace-migration
+# Created: 2026-01-02
+# Methodology: Outside-In ATDD with Progressive Refactoring
+
+project:
+  id: plugin-marketplace-migration
+  name: "Plugin Marketplace Migration"
+  goal: "Migrate AI-Craft framework to Claude Code distributable plugin using TOON v3.0 format with target 50-60% token savings (to be validated)"
+  methodology: outside_in_atdd
+  created: "2026-01-02"
+  baseline_ref: "docs/workflow/plugin-marketplace-migration/baseline.yaml"
+
+  # Embedded constraints (apply to ALL steps)
+  constraints:
+    - "DO NOT CREATE NEW REPORT FILES"
+    - "DO NOT COMMIT BEFORE USER APPROVAL"
+    - "FOCUS ON DELIVERABLES ONLY"
+    - "Tests use business language and domain concepts"
+    - "Type system makes wrong state non-representable"
+
+  success_criteria_mapping:
+    SC1: "All source files in TOON v3.0 format"
+    SC2: "Build produces Claude Code compliant output"
+    SC3: "Plugin installable via /plugin install"
+    SC4: "Skills auto-invoked correctly"
+    SC5: "Full workflow (implement->review->fix->refactor) functional"
+    SC6: "Default constraints integrated (no auto-report, no auto-commit)"
+    SC7: "~60% token savings in source files"
+
+  estimated_total_hours: 55-70
+
+# =============================================================================
+# PHASE 1: TOON INFRASTRUCTURE
+# =============================================================================
+phases:
+  - number: 1
+    name: "TOON Infrastructure"
+    purpose: "Create parser and compiler toolchain that transforms TOON source into Claude Code compliant output"
+    success_criteria: ["SC2"]
+    estimated_hours: 16-19
+    parallel_opportunities: "Steps 1.2, 1.3, 1.4 can run in parallel after 1.1"
+
+    steps:
+      - number: 1.1
+        name: "Create TOON Parser Core"
+        description: |
+          Implement TOON v3.0 parser that reads .toon files and produces structured data.
+          Use python-toon library if available, otherwise implement custom parser.
+          Parser must handle: sections (##), key-value pairs, nested structures,
+          TOON abbreviations (arrows, pipes, symbols).
+
+          Reference: github.com/toon-format/spec v3.0
+
+          CONTINGENCY: If python-toon unavailable or incompatible, custom parser
+          adds ~8 additional hours. Evaluate library availability first.
+        motivation: "Parser is foundation for all migration - nothing works without it"
+        estimated_hours: 4-6
+        dependencies: []
+        files_to_create:
+          - "tools/toon/__init__.py"
+          - "tools/toon/parser.py"
+          - "tests/tools/toon/test_parser.py"
+        acceptance_criteria:
+          - "Parser reads TOON v3.0 syntax without errors"
+          - "Parser produces structured dict/object from TOON content"
+          - "Parser handles all TOON symbols (arrows, pipes, checkmarks)"
+          - "Parser extracts metadata section correctly"
+          - "Parser handles nested hierarchies"
+        tdd_approach:
+          outer_test: |
+            GIVEN a valid .toon file with agent definition
+            WHEN I call parser.parse(toon_content)
+            THEN I get a structured dict with id, role, commands, dependencies
+          inner_tests:
+            - "test_parse_empty_file_returns_empty_dict"
+            - "test_parse_section_headers_extracted"
+            - "test_parse_key_value_pairs"
+            - "test_parse_nested_lists"
+            - "test_parse_toon_symbols_converted"
+            - "test_parse_multiline_content"
+            - "test_parse_inline_comments_stripped"
+        refactoring_targets:
+          - level: 1
+            focus: "Clear naming for parse methods"
+          - level: 2
+            focus: "Extract section parsers from monolithic parse function"
+          - level: 3
+            focus: "Separate lexer from parser responsibility"
+
+      - number: 1.2
+        name: "Create Agent Jinja2 Template"
+        description: |
+          Create Jinja2 template that transforms parsed agent data into
+          Claude Code compliant agent.md format with YAML frontmatter.
+          Template must produce output matching existing agent structure.
+        motivation: "Agent template defines output format for 28 agent files"
+        estimated_hours: 2-3
+        dependencies: ["1.1"]
+        files_to_create:
+          - "tools/toon/templates/agent.md.j2"
+          - "tests/tools/toon/test_agent_template.py"
+        acceptance_criteria:
+          - "Template produces valid YAML frontmatter (name, description, model)"
+          - "Template includes activation notice section"
+          - "Template renders YAML block with agent configuration"
+          - "Template handles embedded knowledge injection markers"
+          - "Output validates against Claude Code agent spec"
+        tdd_approach:
+          outer_test: |
+            GIVEN parsed agent data with id='software-crafter', commands=['develop', 'refactor']
+            WHEN I render agent.md.j2 template
+            THEN output has valid frontmatter AND includes all commands
+          inner_tests:
+            - "test_template_frontmatter_valid_yaml"
+            - "test_template_activation_notice_present"
+            - "test_template_commands_list_rendered"
+            - "test_template_dependencies_rendered"
+            - "test_template_embed_markers_preserved"
+        refactoring_targets:
+          - level: 1
+            focus: "Template macro naming"
+          - level: 2
+            focus: "Extract reusable template blocks"
+
+      - number: 1.3
+        name: "Create Command Jinja2 Template"
+        description: |
+          Create Jinja2 template for command.md files with agent-activation
+          header and structured content sections.
+        motivation: "Command template defines output for 20 command files"
+        estimated_hours: 2
+        dependencies: ["1.1"]
+        files_to_create:
+          - "tools/toon/templates/command.md.j2"
+          - "tests/tools/toon/test_command_template.py"
+        acceptance_criteria:
+          - "Template produces agent-activation YAML header"
+          - "Template includes wave, agent, command metadata"
+          - "Template renders context files and previous artifacts sections"
+          - "Template includes success criteria as checklist"
+        tdd_approach:
+          outer_test: |
+            GIVEN parsed command data with wave='DEVELOP', agent='software-crafter'
+            WHEN I render command.md.j2 template
+            THEN output has agent-activation header with correct agent-id
+          inner_tests:
+            - "test_template_agent_activation_header"
+            - "test_template_wave_metadata"
+            - "test_template_context_files_section"
+            - "test_template_success_criteria_checklist"
+        refactoring_targets:
+          - level: 1
+            focus: "Section naming consistency"
+
+      - number: 1.4
+        name: "Create Skill Jinja2 Template"
+        description: |
+          Create Jinja2 template for SKILL.md files with skill metadata,
+          trigger patterns, and workflow integration.
+        motivation: "Skill template enables new capability not in current system"
+        estimated_hours: 2
+        dependencies: ["1.1"]
+        files_to_create:
+          - "tools/toon/templates/skill.md.j2"
+          - "tests/tools/toon/test_skill_template.py"
+        acceptance_criteria:
+          - "Template produces skill YAML frontmatter"
+          - "Template includes trigger context patterns"
+          - "Template renders agent association"
+          - "Template includes workflow integration section"
+        tdd_approach:
+          outer_test: |
+            GIVEN parsed skill data with name='develop', triggers=['implementa', 'TDD']
+            WHEN I render skill.md.j2 template
+            THEN output has skill metadata and trigger patterns listed
+          inner_tests:
+            - "test_template_skill_frontmatter"
+            - "test_template_trigger_patterns"
+            - "test_template_agent_binding"
+        refactoring_targets:
+          - level: 1
+            focus: "Trigger pattern formatting"
+
+      - number: 1.5
+        name: "Create TOON Compiler"
+        description: |
+          Implement compiler that orchestrates: read .toon file -> parse ->
+          select template -> render -> write output .md file.
+          Compiler determines template based on file type (agent/command/skill).
+        motivation: "Compiler is the build tool that produces all distributable files"
+        estimated_hours: 3-4
+        dependencies: ["1.1", "1.2", "1.3", "1.4"]
+        files_to_create:
+          - "tools/toon/compiler.py"
+          - "tests/tools/toon/test_compiler.py"
+        acceptance_criteria:
+          - "Compiler reads .toon file from path"
+          - "Compiler selects correct template based on file type"
+          - "Compiler writes output to specified directory"
+          - "Compiler reports errors clearly on parse/template failures"
+          - "Compiler validates output has required sections"
+        tdd_approach:
+          outer_test: |
+            GIVEN a valid agent.toon file at input_path
+            WHEN I call compiler.compile(input_path, output_dir)
+            THEN output_dir contains agent.md with valid Claude Code format
+          inner_tests:
+            - "test_compiler_detects_file_type_agent"
+            - "test_compiler_detects_file_type_command"
+            - "test_compiler_detects_file_type_skill"
+            - "test_compiler_handles_parse_error"
+            - "test_compiler_handles_template_error"
+            - "test_compiler_creates_output_directory"
+        refactoring_targets:
+          - level: 2
+            focus: "Extract file type detection strategy"
+          - level: 3
+            focus: "Separate compilation steps into pipeline"
+
+      - number: 1.6
+        name: "Infrastructure Integration Tests"
+        description: |
+          Create end-to-end integration tests for the complete TOON toolchain.
+          Use existing novel-editor-chatgpt-toon.txt as test fixture.
+        motivation: "Integration tests validate all components work together"
+        estimated_hours: 2
+        dependencies: ["1.5"]
+        files_to_create:
+          - "tests/tools/toon/test_integration.py"
+        acceptance_criteria:
+          - "Integration test compiles existing TOON example successfully"
+          - "Integration test validates output structure"
+          - "Integration test catches regressions in toolchain"
+          - "Test uses real TOON file (novel-editor-chatgpt-toon.txt)"
+        tdd_approach:
+          outer_test: |
+            GIVEN the existing novel-editor TOON file
+            WHEN I compile it through the full pipeline
+            THEN output is valid Claude Code agent.md
+          inner_tests:
+            - "test_integration_full_pipeline"
+            - "test_integration_error_propagation"
+            - "test_integration_output_validation"
+        refactoring_targets:
+          - level: 1
+            focus: "Test helper naming"
+
+# =============================================================================
+# PHASE 2: PILOT MIGRATION
+# =============================================================================
+  - number: 2
+    name: "Pilot Migration"
+    purpose: "Validate toolchain with real complex agent before batch migration"
+    success_criteria: ["SC1", "SC2"]
+    estimated_hours: 4-6
+    parallel_opportunities: "None - sequential validation required"
+    risk_mitigation: "R4 (regression) - round-trip validation proves approach"
+
+    steps:
+      - number: 2.1
+        name: "Convert software-crafter.md to TOON"
+        description: |
+          Manually convert software-crafter.md to software-crafter.toon format.
+          Document conversion patterns and decisions.
+          This agent is largest/most complex - good stress test.
+        motivation: "Software-crafter is most complex agent - if this works, all work"
+        estimated_hours: 3-4
+        dependencies: ["1.6"]
+        files_to_create:
+          - "5d-wave/agents/software-crafter.toon"
+        files_to_keep:
+          - "5d-wave/agents/software-crafter.md"  # Keep for comparison until validated
+        acceptance_criteria:
+          - "TOON file contains all agent metadata"
+          - "TOON file contains all commands"
+          - "TOON file contains all dependencies"
+          - "TOON file contains embedded knowledge markers"
+          - "TOON file follows v3.0 syntax"
+          - "Target 50-60% smaller than original MD (to be validated)"
+        tdd_approach:
+          outer_test: |
+            GIVEN software-crafter.toon compiled to .md
+            WHEN I compare with original software-crafter.md
+            THEN all commands, dependencies, and capabilities present
+          inner_tests:
+            - "test_toon_has_all_commands"
+            - "test_toon_has_all_dependencies"
+            - "test_toon_metadata_complete"
+            - "test_toon_token_savings_achieved"
+        refactoring_targets:
+          - level: 1
+            focus: "TOON abbreviation consistency"
+
+      - number: 2.2
+        name: "Round-Trip Validation"
+        description: |
+          Compile software-crafter.toon to .md and validate semantic equivalence.
+          Create validation script that checks for missing content.
+          Document any differences and their acceptability.
+        motivation: "Round-trip proves conversion is lossless for critical content"
+        estimated_hours: 1-2
+        dependencies: ["2.1"]
+        files_to_create:
+          - "tools/toon/validate_roundtrip.py"
+          - "tests/tools/toon/test_roundtrip_validation.py"
+        acceptance_criteria:
+          - "Compiled output has identical command list"
+          - "Compiled output has identical dependency list"
+          - "Compiled output has valid YAML frontmatter"
+          - "No critical sections missing from output"
+        tdd_approach:
+          outer_test: |
+            GIVEN original .md and compiled .md from TOON
+            WHEN I run validation script
+            THEN semantic equivalence score >= 95%
+          inner_tests:
+            - "test_command_list_identical"
+            - "test_dependency_list_identical"
+            - "test_frontmatter_valid"
+            - "test_no_critical_sections_missing"
+        refactoring_targets:
+          - level: 2
+            focus: "Extract comparison functions"
+
+      - number: 2.3
+        name: "Document Conversion Patterns"
+        description: |
+          Document patterns discovered during pilot conversion for batch use.
+          Update tools/toon/README.md with conversion guide.
+        motivation: "Patterns enable efficient batch migration"
+        estimated_hours: 0.5
+        dependencies: ["2.2"]
+        files_to_create:
+          - "tools/toon/README.md"
+        acceptance_criteria:
+          - "README documents TOON syntax used"
+          - "README includes conversion examples"
+          - "README lists known edge cases"
+        tdd_approach:
+          outer_test: "N/A - documentation step"
+          inner_tests: []
+        refactoring_targets: []
+
+      - number: 2.4
+        name: "Archive Original MD Files"
+        description: |
+          Create archive of all original .md agent/command files before batch migration.
+          This enables rollback if migration partially fails.
+
+          Archive structure:
+          - archive/pre-toon-migration/agents/*.md
+          - archive/pre-toon-migration/commands/*.md
+
+          CRITICAL: Do NOT delete originals until Phase 8 validation passes.
+        motivation: "Rollback capability prevents data loss during batch migration"
+        estimated_hours: 0.5
+        dependencies: ["2.3"]
+        files_to_create:
+          - "archive/pre-toon-migration/.gitkeep"
+        acceptance_criteria:
+          - "All 28 agent .md files copied to archive"
+          - "All 20 command .md files copied to archive"
+          - "Archive directory committed to git"
+          - "Original files remain in place until Phase 8"
+        tdd_approach:
+          outer_test: |
+            GIVEN all agent and command .md files
+            WHEN I run archive script
+            THEN archive/pre-toon-migration/ contains copies of all 48 files
+          inner_tests:
+            - "test_archive_agents_count"
+            - "test_archive_commands_count"
+            - "test_archive_preserves_content"
+        refactoring_targets: []
+
+# =============================================================================
+# PHASE 3: AGENT BATCH MIGRATION
+# =============================================================================
+  - number: 3
+    name: "Agent Batch Migration"
+    purpose: "Convert remaining 27 agents to TOON format"
+    success_criteria: ["SC1", "SC7"]
+    estimated_hours: 12-16
+    parallel_opportunities: "All steps can run in parallel (independent files)"
+
+    steps:
+      - number: 3.1
+        name: "Convert Primary Agents"
+        description: |
+          Convert 10 primary agents following patterns from pilot:
+          product-owner, solution-architect, acceptance-designer, skeleton-builder,
+          researcher, devop, troubleshooter, visual-architect, illustrator, data-engineer
+        motivation: "Primary agents are the core workflow executors"
+        estimated_hours: 5
+        dependencies: ["2.4"]  # Requires archive before batch migration
+        files_to_create:
+          - "5d-wave/agents/product-owner.toon"
+          - "5d-wave/agents/solution-architect.toon"
+          - "5d-wave/agents/acceptance-designer.toon"
+          - "5d-wave/agents/skeleton-builder.toon"
+          - "5d-wave/agents/researcher.toon"
+          - "5d-wave/agents/devop.toon"
+          - "5d-wave/agents/troubleshooter.toon"
+          - "5d-wave/agents/visual-architect.toon"
+          - "5d-wave/agents/illustrator.toon"
+          - "5d-wave/agents/data-engineer.toon"
+        acceptance_criteria:
+          - "All 10 TOON files compile without errors"
+          - "All compiled outputs have valid Claude Code format"
+          - "Token savings >= 50% per file"
+        tdd_approach:
+          outer_test: |
+            GIVEN all 10 .toon files
+            WHEN I compile each through toolchain
+            THEN all produce valid agent.md with no errors
+          inner_tests:
+            - "test_each_agent_compiles"
+            - "test_each_agent_has_commands"
+            - "test_token_savings_per_agent"
+        refactoring_targets:
+          - level: 1
+            focus: "Consistent TOON abbreviations across agents"
+
+      - number: 3.2
+        name: "Convert Reviewer Agents"
+        description: |
+          Convert 11 reviewer agents (pattern: {agent}-reviewer):
+          acceptance-designer-reviewer, agent-builder-reviewer, data-engineer-reviewer,
+          devop-reviewer, illustrator-reviewer, product-owner-reviewer,
+          skeleton-builder-reviewer, software-crafter-reviewer, solution-architect-reviewer,
+          troubleshooter-reviewer, visual-architect-reviewer
+        motivation: "Reviewer agents are critical for quality gate workflow"
+        estimated_hours: 5
+        dependencies: ["2.4"]  # Requires archive before batch migration
+        files_to_create:
+          - "5d-wave/agents/acceptance-designer-reviewer.toon"
+          - "5d-wave/agents/agent-builder-reviewer.toon"
+          - "5d-wave/agents/data-engineer-reviewer.toon"
+          - "5d-wave/agents/devop-reviewer.toon"
+          - "5d-wave/agents/illustrator-reviewer.toon"
+          - "5d-wave/agents/product-owner-reviewer.toon"
+          - "5d-wave/agents/skeleton-builder-reviewer.toon"
+          - "5d-wave/agents/software-crafter-reviewer.toon"
+          - "5d-wave/agents/solution-architect-reviewer.toon"
+          - "5d-wave/agents/troubleshooter-reviewer.toon"
+          - "5d-wave/agents/visual-architect-reviewer.toon"
+        acceptance_criteria:
+          - "All 11 reviewer TOON files compile without errors"
+          - "Reviewer agents maintain critique dimensions"
+          - "Token savings >= 50% per file"
+        tdd_approach:
+          outer_test: |
+            GIVEN all reviewer .toon files
+            WHEN I compile each through toolchain
+            THEN all produce valid reviewer agent.md
+          inner_tests:
+            - "test_each_reviewer_compiles"
+            - "test_critique_dimensions_preserved"
+        refactoring_targets:
+          - level: 1
+            focus: "Reviewer-specific abbreviations"
+
+      - number: 3.3
+        name: "Convert Remaining Agents"
+        description: |
+          Convert 6 remaining agents:
+          agent-builder, avvocato, cv-optimizer, novel-editor, novel-editor-reviewer, researcher-reviewer
+        motivation: "Complete agent migration"
+        estimated_hours: 2-3
+        dependencies: ["2.4"]  # Requires archive before batch migration
+        files_to_create:
+          - "5d-wave/agents/agent-builder.toon"
+          - "5d-wave/agents/avvocato.toon"
+          - "5d-wave/agents/cv-optimizer.toon"
+          - "5d-wave/agents/novel-editor.toon"
+          - "5d-wave/agents/novel-editor-reviewer.toon"
+          - "5d-wave/agents/researcher-reviewer.toon"
+        acceptance_criteria:
+          - "All 6 TOON files compile without errors"
+          - "Total: 28 agent.toon files exist"
+          - "Total: 0 agent.md source files remain (moved to archive)"
+        tdd_approach:
+          outer_test: |
+            GIVEN all agent .toon files in 5d-wave/agents/
+            WHEN I count .toon files
+            THEN count == 28
+          inner_tests:
+            - "test_all_agents_migrated"
+            - "test_no_orphan_md_files"
+        refactoring_targets:
+          - level: 1
+            focus: "Final naming consistency pass"
+
+# =============================================================================
+# PHASE 4: COMMAND MIGRATION
+# =============================================================================
+  - number: 4
+    name: "Command Migration"
+    purpose: "Convert all 20 commands to TOON format"
+    success_criteria: ["SC1", "SC7"]
+    estimated_hours: 8-10
+    parallel_opportunities: "All steps can run in parallel after Phase 2"
+
+    steps:
+      - number: 4.1
+        name: "Convert DISCUSS Wave Commands"
+        description: "Convert start.md, discuss.md to TOON format"
+        motivation: "DISCUSS wave is entry point for workflows"
+        estimated_hours: 1
+        dependencies: ["2.4"]  # Requires archive before batch migration
+        files_to_create:
+          - "5d-wave/tasks/dw/start.toon"
+          - "5d-wave/tasks/dw/discuss.toon"
+        acceptance_criteria:
+          - "Commands compile with agent-activation headers"
+          - "Wave metadata correct (DISCUSS)"
+        tdd_approach:
+          outer_test: |
+            GIVEN DISCUSS wave command .toon files
+            WHEN compiled
+            THEN output has wave: DISCUSS in metadata
+          inner_tests:
+            - "test_start_command_compiles"
+            - "test_discuss_command_compiles"
+        refactoring_targets: []
+
+      - number: 4.2
+        name: "Convert DESIGN Wave Commands"
+        description: "Convert design.md, diagram.md to TOON format"
+        motivation: "DESIGN wave defines architecture"
+        estimated_hours: 1
+        dependencies: ["2.4"]  # Requires archive before batch migration
+        files_to_create:
+          - "5d-wave/tasks/dw/design.toon"
+          - "5d-wave/tasks/dw/diagram.toon"
+        acceptance_criteria:
+          - "Commands compile with agent-activation headers"
+          - "Wave metadata correct (DESIGN)"
+        tdd_approach:
+          outer_test: |
+            GIVEN DESIGN wave command .toon files
+            WHEN compiled
+            THEN output has wave: DESIGN in metadata
+          inner_tests:
+            - "test_design_command_compiles"
+            - "test_diagram_command_compiles"
+        refactoring_targets: []
+
+      - number: 4.3
+        name: "Convert DISTILL Wave Commands"
+        description: "Convert distill.md, skeleton.md to TOON format"
+        motivation: "DISTILL wave creates acceptance tests"
+        estimated_hours: 1
+        dependencies: ["2.4"]  # Requires archive before batch migration
+        files_to_create:
+          - "5d-wave/tasks/dw/distill.toon"
+          - "5d-wave/tasks/dw/skeleton.toon"
+        acceptance_criteria:
+          - "Commands compile with agent-activation headers"
+          - "Wave metadata correct (DISTILL)"
+        tdd_approach:
+          outer_test: |
+            GIVEN DISTILL wave command .toon files
+            WHEN compiled
+            THEN output has wave: DISTILL in metadata
+          inner_tests:
+            - "test_distill_command_compiles"
+            - "test_skeleton_command_compiles"
+        refactoring_targets: []
+
+      - number: 4.4
+        name: "Convert DEVELOP Wave Commands"
+        description: |
+          Convert 8 DEVELOP wave commands:
+          baseline.md, roadmap.md, split.md, execute.md,
+          review.md, develop.md, refactor.md, mikado.md
+        motivation: "DEVELOP wave is the core implementation phase"
+        estimated_hours: 4
+        dependencies: ["2.4"]  # Requires archive before batch migration
+        files_to_create:
+          - "5d-wave/tasks/dw/baseline.toon"
+          - "5d-wave/tasks/dw/roadmap.toon"
+          - "5d-wave/tasks/dw/split.toon"
+          - "5d-wave/tasks/dw/execute.toon"
+          - "5d-wave/tasks/dw/review.toon"
+          - "5d-wave/tasks/dw/develop.toon"
+          - "5d-wave/tasks/dw/refactor.toon"
+          - "5d-wave/tasks/dw/mikado.toon"
+        acceptance_criteria:
+          - "All 8 commands compile with agent-activation headers"
+          - "Wave metadata correct (DEVELOP)"
+          - "Agent bindings correct for each command"
+        tdd_approach:
+          outer_test: |
+            GIVEN all DEVELOP wave command .toon files
+            WHEN compiled
+            THEN all 8 have wave: DEVELOP and correct agent binding
+          inner_tests:
+            - "test_each_develop_command_compiles"
+            - "test_develop_command_binds_software_crafter"
+            - "test_review_command_binds_reviewer"
+        refactoring_targets:
+          - level: 1
+            focus: "Consistent command structure"
+
+      - number: 4.5
+        name: "Convert DEMO Wave Commands"
+        description: "Convert deliver.md, finalize.md to TOON format"
+        motivation: "DEMO wave handles deployment and closure"
+        estimated_hours: 1
+        dependencies: ["2.4"]  # Requires archive before batch migration
+        files_to_create:
+          - "5d-wave/tasks/dw/deliver.toon"
+          - "5d-wave/tasks/dw/finalize.toon"
+        acceptance_criteria:
+          - "Commands compile with agent-activation headers"
+          - "Wave metadata correct (DEMO)"
+        tdd_approach:
+          outer_test: |
+            GIVEN DEMO wave command .toon files
+            WHEN compiled
+            THEN output has wave: DEMO in metadata
+          inner_tests:
+            - "test_deliver_command_compiles"
+            - "test_finalize_command_compiles"
+        refactoring_targets: []
+
+      - number: 4.6
+        name: "Convert CROSS_WAVE Commands"
+        description: |
+          Convert 4 cross-wave commands:
+          research.md, root-why.md, git.md, forge.md
+        motivation: "CROSS_WAVE commands available at any workflow point"
+        estimated_hours: 2
+        dependencies: ["2.4"]  # Requires archive before batch migration
+        files_to_create:
+          - "5d-wave/tasks/dw/research.toon"
+          - "5d-wave/tasks/dw/root-why.toon"
+          - "5d-wave/tasks/dw/git.toon"
+          - "5d-wave/tasks/dw/forge.toon"
+        acceptance_criteria:
+          - "Commands compile with agent-activation headers"
+          - "Wave metadata correct (CROSS_WAVE)"
+          - "Total: 20 command.toon files exist"
+        tdd_approach:
+          outer_test: |
+            GIVEN all command .toon files
+            WHEN I count .toon files in 5d-wave/tasks/dw/
+            THEN count == 20
+          inner_tests:
+            - "test_all_commands_migrated"
+            - "test_cross_wave_commands_compile"
+        refactoring_targets:
+          - level: 1
+            focus: "Final command format consistency"
+
+# =============================================================================
+# PHASE 5: SKILLS CREATION
+# =============================================================================
+  - number: 5
+    name: "Skills Creation"
+    purpose: "Create 3 skill definitions for auto-invocation capability"
+    success_criteria: ["SC4", "SC5", "SC6"]
+    estimated_hours: 4-6
+    parallel_opportunities: "Steps 5.1-5.3 can run in parallel"
+    risk_mitigation: "R3 (skill auto-invocation) - POC validation in step 5.4"
+
+    steps:
+      - number: 5.1
+        name: "Create develop Skill"
+        description: |
+          Create develop skill with:
+          - Trigger patterns: "implementa", "scrivi codice", "TDD", "implement", "write code"
+          - Agent binding: software-crafter
+          - Full workflow integration (implement->review->fix->refactor)
+          - Default constraints embedded (no auto-report, no auto-commit)
+        motivation: "develop skill is the primary inner loop automation"
+        estimated_hours: 2
+        dependencies: ["1.6"]  # Requires full toolchain validated
+        files_to_create:
+          - "5d-wave/skills/develop/SKILL.toon"
+        acceptance_criteria:
+          - "Skill compiles to valid SKILL.md"
+          - "Trigger patterns include Italian and English"
+          - "Agent binding to software-crafter correct"
+          - "Workflow steps defined (implement, review, fix, refactor)"
+          - "Default constraints embedded in skill"
+        tdd_approach:
+          outer_test: |
+            GIVEN develop SKILL.toon compiled
+            WHEN user says "implementa questa feature"
+            THEN skill should trigger software-crafter with develop workflow
+          inner_tests:
+            - "test_skill_compiles"
+            - "test_trigger_patterns_multilingual"
+            - "test_agent_binding"
+            - "test_workflow_steps_present"
+            - "test_constraints_embedded"
+        refactoring_targets:
+          - level: 2
+            focus: "Workflow step extraction"
+
+      - number: 5.2
+        name: "Create refactor Skill"
+        description: |
+          Create refactor skill with:
+          - Trigger patterns: "refactoring", "migliora codice", "pulisci", "improve code"
+          - Agent binding: software-crafter
+          - Progressive refactoring levels (1-6)
+        motivation: "refactor skill enables code quality improvements"
+        estimated_hours: 1.5
+        dependencies: ["1.6"]  # Requires full toolchain validated
+        files_to_create:
+          - "5d-wave/skills/refactor/SKILL.toon"
+        acceptance_criteria:
+          - "Skill compiles to valid SKILL.md"
+          - "Trigger patterns for refactoring terminology"
+          - "References progressive refactoring methodology"
+        tdd_approach:
+          outer_test: |
+            GIVEN refactor SKILL.toon compiled
+            WHEN user says "refactoring del codice"
+            THEN skill should trigger software-crafter with refactor workflow
+          inner_tests:
+            - "test_skill_compiles"
+            - "test_refactor_triggers"
+            - "test_refactor_levels_referenced"
+        refactoring_targets: []
+
+      - number: 5.3
+        name: "Create mikado Skill"
+        description: |
+          Create mikado skill with:
+          - Trigger patterns: "refactoring complesso", "dipendenze", "mikado", "complex refactoring"
+          - Agent binding: software-crafter
+          - Mikado method workflow reference
+        motivation: "mikado skill for complex dependency-driven refactoring"
+        estimated_hours: 1.5
+        dependencies: ["1.6"]  # Requires full toolchain validated
+        files_to_create:
+          - "5d-wave/skills/mikado/SKILL.toon"
+        acceptance_criteria:
+          - "Skill compiles to valid SKILL.md"
+          - "Trigger patterns for complex refactoring"
+          - "References Mikado method workflow"
+        tdd_approach:
+          outer_test: |
+            GIVEN mikado SKILL.toon compiled
+            WHEN user says "refactoring complesso con dipendenze"
+            THEN skill should trigger software-crafter with mikado workflow
+          inner_tests:
+            - "test_skill_compiles"
+            - "test_mikado_triggers"
+            - "test_mikado_method_referenced"
+        refactoring_targets: []
+
+      - number: 5.4
+        name: "Validate Skill Auto-Invocation"
+        description: |
+          Create test harness to validate skills trigger correctly.
+          Test each trigger pattern produces expected skill activation.
+        motivation: "Validate SC4 - skills auto-invoked correctly"
+        estimated_hours: 1
+        dependencies: ["5.1", "5.2", "5.3"]
+        files_to_create:
+          - "tests/skills/test_skill_triggers.py"
+        acceptance_criteria:
+          - "Each skill triggers on documented patterns"
+          - "No false positives on unrelated input"
+          - "Skills chain correctly to agents"
+        tdd_approach:
+          outer_test: |
+            GIVEN all 3 skills compiled and loaded
+            WHEN I input each trigger pattern
+            THEN correct skill activates
+          inner_tests:
+            - "test_develop_triggers_on_implement"
+            - "test_refactor_triggers_on_refactoring"
+            - "test_mikado_triggers_on_complex"
+            - "test_no_false_positives"
+        refactoring_targets: []
+
+# =============================================================================
+# PHASE 6: TEMPLATE MIGRATION
+# =============================================================================
+  - number: 6
+    name: "Template Migration"
+    purpose: "Convert reference templates to TOON for consistency"
+    success_criteria: ["SC1"]
+    estimated_hours: 2-3
+    parallel_opportunities: "All steps can run in parallel"
+
+    steps:
+      - number: 6.1
+        name: "Convert AGENT_TEMPLATE"
+        description: "Convert AGENT_TEMPLATE.yaml to AGENT_TEMPLATE.toon"
+        motivation: "Template consistency with new source format"
+        estimated_hours: 1
+        dependencies: ["2.4"]  # Requires archive and patterns documented
+        files_to_create:
+          - "5d-wave/templates/AGENT_TEMPLATE.toon"
+        acceptance_criteria:
+          - "Template compiles to valid reference MD"
+          - "Includes all agent structure elements"
+        tdd_approach:
+          outer_test: |
+            GIVEN AGENT_TEMPLATE.toon
+            WHEN compiled
+            THEN produces valid agent template reference
+          inner_tests:
+            - "test_template_structure_complete"
+        refactoring_targets: []
+
+      - number: 6.2
+        name: "Convert COMMAND_TEMPLATE"
+        description: "Convert COMMAND_TEMPLATE.yaml to COMMAND_TEMPLATE.toon"
+        motivation: "Template consistency with new source format"
+        estimated_hours: 1
+        dependencies: ["2.4"]  # Requires archive and patterns documented
+        files_to_create:
+          - "5d-wave/templates/COMMAND_TEMPLATE.toon"
+        acceptance_criteria:
+          - "Template compiles to valid reference MD"
+          - "Includes all command structure elements"
+        tdd_approach:
+          outer_test: |
+            GIVEN COMMAND_TEMPLATE.toon
+            WHEN compiled
+            THEN produces valid command template reference
+          inner_tests:
+            - "test_template_structure_complete"
+        refactoring_targets: []
+
+      - number: 6.3
+        name: "Create SKILL_TEMPLATE"
+        description: "Create new SKILL_TEMPLATE.toon for skill creation reference"
+        motivation: "New template for new capability"
+        estimated_hours: 1
+        dependencies: ["5.4"]
+        files_to_create:
+          - "5d-wave/templates/SKILL_TEMPLATE.toon"
+        acceptance_criteria:
+          - "Template includes skill structure reference"
+          - "Template documents trigger pattern format"
+        tdd_approach:
+          outer_test: |
+            GIVEN SKILL_TEMPLATE.toon
+            WHEN compiled
+            THEN produces valid skill template reference
+          inner_tests:
+            - "test_skill_template_complete"
+        refactoring_targets: []
+
+# =============================================================================
+# PHASE 7: PLUGIN STRUCTURE
+# =============================================================================
+  - number: 7
+    name: "Plugin Structure"
+    purpose: "Create Claude Code plugin packaging for marketplace distribution"
+    success_criteria: ["SC3"]
+    estimated_hours: 3-4
+    parallel_opportunities: "Steps 7.1 and 7.2 can run in parallel"
+
+    steps:
+      - number: 7.1
+        name: "Create plugin.json"
+        description: |
+          Create .claude-plugin/plugin.json with:
+          - Plugin metadata (name, version, description)
+          - Agent references organized by wave
+          - Command references organized by wave
+          - Skill references
+          - Tool restrictions (none - D2 decision)
+          - Thinking budget configuration (differentiated - D3 decision)
+        motivation: "plugin.json is required for Claude Code plugin installation"
+        estimated_hours: 2
+        dependencies: ["3.3", "4.6", "5.4"]
+        files_to_create:
+          - ".claude-plugin/plugin.json"
+        acceptance_criteria:
+          - "JSON validates against Claude Code plugin schema"
+          - "All 28 agents referenced"
+          - "All 20 commands referenced"
+          - "All 3 skills referenced"
+          - "Wave organization maintained"
+        tdd_approach:
+          outer_test: |
+            GIVEN plugin.json created
+            WHEN validated against Claude Code plugin schema
+            THEN validation passes with no errors
+          inner_tests:
+            - "test_plugin_json_valid"
+            - "test_all_agents_referenced"
+            - "test_all_commands_referenced"
+            - "test_all_skills_referenced"
+            - "test_wave_organization"
+        refactoring_targets:
+          - level: 1
+            focus: "JSON structure organization"
+
+      - number: 7.2
+        name: "Create marketplace.json"
+        description: |
+          Create marketplace.json for GitHub marketplace distribution:
+          - Plugin discovery metadata
+          - Installation requirements
+          - Version information
+          - Author and license
+        motivation: "marketplace.json enables plugin discovery (D4 decision)"
+        estimated_hours: 1
+        dependencies: ["7.1"]
+        files_to_create:
+          - "marketplace.json"
+        acceptance_criteria:
+          - "JSON includes required marketplace fields"
+          - "Version matches plugin.json"
+          - "License specified (MIT assumed)"
+        tdd_approach:
+          outer_test: |
+            GIVEN marketplace.json created
+            WHEN parsed
+            THEN contains name, version, description, author, license
+          inner_tests:
+            - "test_marketplace_required_fields"
+            - "test_version_matches_plugin"
+        refactoring_targets: []
+
+      - number: 7.3
+        name: "Organize Output Structure"
+        description: |
+          Configure output directory structure for plugin:
+          - dist/agents/dw/*.md
+          - dist/commands/dw/*.md
+          - dist/skills/*/SKILL.md
+        motivation: "Proper structure required for plugin installation"
+        estimated_hours: 1
+        dependencies: ["7.1"]
+        files_to_create: []
+        files_to_modify:
+          - "tools/toon/compiler.py"  # Add output path configuration
+        acceptance_criteria:
+          - "Compiler outputs to correct directories"
+          - "Wave-based organization maintained"
+          - "Skills in skill-name subdirectories"
+        tdd_approach:
+          outer_test: |
+            GIVEN full compilation run
+            WHEN I check output directory structure
+            THEN matches Claude Code plugin spec
+          inner_tests:
+            - "test_agent_output_path"
+            - "test_command_output_path"
+            - "test_skill_output_path"
+        refactoring_targets: []
+
+# =============================================================================
+# PHASE 8: INTEGRATION & VALIDATION
+# =============================================================================
+  - number: 8
+    name: "Integration & Validation"
+    purpose: "End-to-end validation of complete plugin migration"
+    success_criteria: ["SC1", "SC2", "SC3", "SC4", "SC5", "SC6", "SC7"]
+    estimated_hours: 4-6
+    parallel_opportunities: "None - sequential validation"
+
+    steps:
+      - number: 8.1
+        name: "Update Build System"
+        description: |
+          Integrate TOON compiler into build_ide_bundle.py:
+          - Add TOON compilation step before distribution
+          - Replace MD-to-MD processing with TOON-to-MD
+          - Maintain backward compatibility during transition
+        motivation: "Build system must use new toolchain"
+        estimated_hours: 2
+        dependencies: ["7.3"]
+        files_to_modify:
+          - "tools/build_ide_bundle.py"
+        acceptance_criteria:
+          - "Build script compiles all TOON sources"
+          - "Build produces valid Claude Code plugin structure"
+          - "Build completes without errors"
+          - "Build reports token savings achieved"
+        tdd_approach:
+          outer_test: |
+            GIVEN all TOON sources in place
+            WHEN I run python build_ide_bundle.py
+            THEN dist/ contains complete Claude Code plugin
+          inner_tests:
+            - "test_build_compiles_all_agents"
+            - "test_build_compiles_all_commands"
+            - "test_build_compiles_all_skills"
+            - "test_build_creates_plugin_structure"
+        refactoring_targets:
+          - level: 2
+            focus: "Extract TOON compilation into separate module"
+          - level: 3
+            focus: "Separate build phases (compile, package, validate)"
+
+      - number: 8.2
+        name: "Plugin Installation Test"
+        description: |
+          Test plugin installation via /plugin install:
+          - Create test script that simulates installation
+          - Validate all files installed correctly
+          - Validate agents/commands/skills accessible
+        motivation: "Validate SC3 - plugin installable"
+        estimated_hours: 1
+        dependencies: ["8.1"]
+        files_to_create:
+          - "tests/plugin/test_installation.py"
+        acceptance_criteria:
+          - "Plugin installs without errors"
+          - "All agents accessible after install"
+          - "All commands accessible after install"
+          - "All skills accessible after install"
+        tdd_approach:
+          outer_test: |
+            GIVEN built plugin package
+            WHEN I run /plugin install
+            THEN installation succeeds and all components accessible
+          inner_tests:
+            - "test_plugin_installs"
+            - "test_agents_accessible"
+            - "test_commands_accessible"
+            - "test_skills_accessible"
+        refactoring_targets: []
+
+      - number: 8.3
+        name: "Full Workflow Validation"
+        description: |
+          Test complete 5D-Wave workflow through plugin:
+          - Test DISCUSS -> DESIGN -> DISTILL -> DEVELOP -> DEMO flow
+          - Test inner loop (implement->review->fix->refactor)
+          - Validate default constraints enforced
+        motivation: "Validate SC5 - full workflow functional and SC6 - constraints"
+        estimated_hours: 2
+        dependencies: ["8.2"]
+        files_to_create:
+          - "tests/plugin/test_full_workflow.py"
+        acceptance_criteria:
+          - "5D-Wave phases execute correctly"
+          - "Inner loop completes successfully"
+          - "No auto-report files created (SC6)"
+          - "No auto-commits made (SC6)"
+        tdd_approach:
+          outer_test: |
+            GIVEN installed plugin
+            WHEN I execute /dw:start -> /dw:develop -> /dw:finalize
+            THEN workflow completes with constraints enforced
+          inner_tests:
+            - "test_wave_progression"
+            - "test_inner_loop"
+            - "test_no_auto_reports"
+            - "test_no_auto_commits"
+        refactoring_targets: []
+
+      - number: 8.4
+        name: "Success Criteria Validation"
+        description: |
+          Final validation of all 7 success criteria:
+          - SC1: Count TOON files (28 agents + 20 commands)
+          - SC2: Validate Claude Code compliance
+          - SC3: Confirm /plugin install works
+          - SC4: Test skill auto-invocation
+          - SC5: Run workflow test
+          - SC6: Verify constraints
+          - SC7: Measure token savings
+        motivation: "Final gate before migration complete"
+        estimated_hours: 1
+        dependencies: ["8.3"]
+        files_to_create:
+          - "tests/plugin/test_success_criteria.py"
+        acceptance_criteria:
+          - "All 7 success criteria pass"
+          - "Token savings >= 50% measured"
+          - "Validation results logged to stdout (no file generated - honors constraints)"
+        tdd_approach:
+          outer_test: |
+            GIVEN complete plugin build
+            WHEN I run success criteria validation
+            THEN all 7 criteria pass
+          inner_tests:
+            - "test_sc1_all_toon_sources"
+            - "test_sc2_claude_code_compliant"
+            - "test_sc3_plugin_installable"
+            - "test_sc4_skills_auto_invoke"
+            - "test_sc5_workflow_functional"
+            - "test_sc6_constraints_enforced"
+            - "test_sc7_token_savings"
+        refactoring_targets: []
+
+# =============================================================================
+# SUMMARY
+# =============================================================================
+summary:
+  total_phases: 8
+  total_steps: 28  # Includes 2.4 archive step for rollback capability
+  estimated_hours_range: "56-71"  # +1 hour for archive step
+
+  files_to_create:
+    infrastructure: 11
+    agents_toon: 28
+    commands_toon: 20
+    skills: 3
+    templates: 3
+    plugin: 2
+    tests: 12
+    total: 79
+
+  parallel_opportunities:
+    - "Phase 1: Steps 1.2-1.4 after 1.1"
+    - "Phase 3: All steps (independent agents)"
+    - "Phase 4: All steps (independent commands)"
+    - "Phase 5: Steps 5.1-5.3 (independent skills)"
+    - "Phase 6: All steps (independent templates)"
+    - "Phase 7: Steps 7.1-7.2"
+
+  critical_path:
+    - "Phase 1.1 (Parser) - foundation"
+    - "Phase 1.5 (Compiler) - enables all migration"
+    - "Phase 2 (Pilot) - validates approach"
+    - "Phase 7.1 (plugin.json) - enables distribution"
+    - "Phase 8.4 (Validation) - final gate"
+
+  risk_mitigations:
+    R1_parser_complexity: "Phase 1 uses python-toon or custom parser"
+    R3_skill_invocation: "Phase 5.4 POC validation"
+    R4_regression: "Phase 2 round-trip validation"
+
+  next_action: "Split roadmap into executable steps via /dw:split"

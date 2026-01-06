@@ -1,0 +1,305 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "04-04",
+  "phase": {
+    "number": 4,
+    "name": "Command Migration",
+    "purpose": "Convert all 20 commands to TOON format"
+  },
+  "step": {
+    "number": "4.4",
+    "name": "Convert DEVELOP Wave Commands",
+    "description": "Convert 8 DEVELOP wave commands: baseline.md, roadmap.md, split.md, execute.md, review.md, develop.md, refactor.md, mikado.md",
+    "motivation": "DEVELOP wave is the core implementation phase",
+    "estimated_hours": "8-12"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC1": "All source files in TOON v3.0 format",
+      "SC7": "~60% token savings in source files"
+    },
+    "dependencies": [
+      "2.4"
+    ]
+  },
+  "deliverables": {
+    "files_to_create": [
+      "5d-wave/tasks/dw/baseline.toon",
+      "5d-wave/tasks/dw/roadmap.toon",
+      "5d-wave/tasks/dw/split.toon",
+      "5d-wave/tasks/dw/execute.toon",
+      "5d-wave/tasks/dw/review.toon",
+      "5d-wave/tasks/dw/develop.toon",
+      "5d-wave/tasks/dw/refactor.toon",
+      "5d-wave/tasks/dw/mikado.toon"
+    ],
+    "acceptance_criteria": [
+      "All 8 commands compile with agent-activation headers",
+      "Wave metadata correct (DEVELOP)",
+      "Agent bindings correct for each command"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN all DEVELOP wave command .toon files\nWHEN compiled\nTHEN all 8 have wave: DEVELOP and correct agent binding",
+    "inner_tests": [
+      "test_each_develop_command_compiles",
+      "test_develop_command_binds_software_crafter",
+      "test_review_command_binds_reviewer"
+    ]
+  },
+  "refactoring": {
+    "targets": [
+      {
+        "level": 1,
+        "focus": "Consistent command structure"
+      }
+    ]
+  },
+  "execution_guidance": {
+    "approach": "Batch command conversion with validation",
+    "workflow": [
+      "1. Convert all 8 DEVELOP wave .md files to .toon",
+      "2. Compile each TOON file",
+      "3. Write tests to validate wave metadata and agent bindings",
+      "4. Verify all agent-activation headers present",
+      "5. Apply refactoring level 1 for consistency",
+      "6. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "All tests passing (100% required)",
+      "All 8 commands compile successfully",
+      "Wave metadata correct (DEVELOP)",
+      "Agent bindings validated",
+      "Refactoring applied (level 1)",
+      "No report files created"
+    ]
+  },
+  "review_metadata": {
+    "reviewed_at": "2026-01-05T00:00:00Z",
+    "reviewer": "Lyra (code-review-mode)",
+    "review_status": "APPROVED_WITH_RECOMMENDATIONS",
+    "clarity_score": 8.5,
+    "completeness_score": 8.0,
+    "achievability_score": 8.5,
+    "issues_found": 5,
+    "critical_issues": 2,
+    "medium_issues": 1,
+    "low_issues": 2,
+    "findings": {
+      "critical_1": {
+        "category": "Specification Clarity",
+        "title": "Refactoring Target Justification Missing",
+        "severity": "medium",
+        "description": "Refactoring targets level 1 'Consistent command structure' but no clear definition of what consistency rule applies. Previous DEVELOP wave tasks (04-01 through 04-03) have empty refactoring targets.",
+        "impact": "Ambiguity about post-conversion refactoring scope",
+        "recommendation": "Either remove refactoring target to match pattern, or explicitly define the consistency rule being applied (e.g., 'Ensure all agent-activation headers follow identical structure')"
+      },
+      "critical_2": {
+        "category": "Acceptance Criteria",
+        "title": "Agent Binding Specification Incomplete",
+        "severity": "medium",
+        "description": "Inner test 'test_review_command_binds_reviewer' assumes specific agent binding but acceptance criteria lacks explicit mapping (which agent should 'review' bind to?)",
+        "impact": "Test may fail if agent binding rules differ from assumption",
+        "recommendation": "Document agent binding rule: specify if review→software-crafter or review→software-crafter-reviewer, apply consistently across all 8 commands"
+      },
+      "medium_3": {
+        "category": "Implicit Dependencies",
+        "title": "TOON v3.0 Format Specification Not Linked",
+        "severity": "low",
+        "description": "Task references 'TOON v3.0 format' but provides no specification link or format definition. Converter needs to know exact syntax requirements.",
+        "impact": "Converter may guess at format; test validation may be incomplete",
+        "recommendation": "Add specification link or embed TOON v3.0 schema in task context (format: headers, field names, data types expected)"
+      },
+      "low_4": {
+        "category": "Ambiguity",
+        "title": "Compilation Tool Not Specified",
+        "severity": "low",
+        "description": "Step 2 'Compile each TOON file' lacks specifics: compiler name, command syntax, output location, success criteria",
+        "impact": "Minor - but executor needs to know which tool to run",
+        "recommendation": "Specify: 'Run [compiler-name] on each .toon file. Expected: no errors. Output: [location or stdout validation].'"
+      },
+      "low_5": {
+        "category": "Test Framework",
+        "title": "Test Framework Not Specified",
+        "severity": "low",
+        "description": "Inner tests reference validation logic but no test framework specified (NUnit? pytest? Jest? Custom?)",
+        "impact": "Executor must infer test framework from codebase context",
+        "recommendation": "Specify test framework: 'Use [NUnit/pytest/Jest] to write inner tests for metadata validation'"
+      }
+    },
+    "hidden_dependencies": [
+      "All 8 source .md files must exist at 5d-wave/tasks/dw/ (VERIFIED: all present)",
+      "Sequential dependency on steps 04-01, 04-02, 04-03 completion",
+      "TOON compiler availability (not verified in review)",
+      "Test framework must be configured and available"
+    ],
+    "missing_context": [
+      "TOON v3.0 format specification (link or embedded schema needed)",
+      "Agent binding mapping rules (which command binds to which agent)",
+      "Wave metadata field name/format specification (e.g., 'wave: DEVELOP' vs 'wave_name: DEVELOP')",
+      "Test framework specification (which framework to use for inner tests)"
+    ],
+    "strengths": [
+      "Clear wave focus with proper motivation (DEVELOP = 'core implementation phase')",
+      "Consistent structure following established pattern from 04-01/02/03",
+      "Explicit TDD approach with separated outer/inner tests",
+      "Well-defined quality gates with measurable criteria (100% pass rate requirement)",
+      "Realistic time estimate (4 hours for 8 commands = ~30 min per command)"
+    ],
+    "overall_assessment": {
+      "status": "APPROVED_WITH_RECOMMENDATIONS",
+      "achievable": true,
+      "risks": [
+        "Agent binding assumptions may not match actual binding rules",
+        "Refactoring scope ambiguity could lead to incomplete refactoring",
+        "TOON format misinterpretation possible without specification"
+      ],
+      "mitigations": [
+        "Review and document agent binding rules before execution",
+        "Clarify refactoring targets (add to acceptance criteria if applied)",
+        "Embed or link TOON v3.0 format specification in task context",
+        "Validate TOON compiler is available before starting conversion"
+      ],
+      "confidence": 0.85
+    }
+  },
+  "prerequisite_checks": {
+    "phase_1_toon_infrastructure": {
+      "requirement": "TOON parser and compiler from Phase 1 must be complete",
+      "verification": "Confirm tools/toon/compiler.py exists and test_toon_parser passes",
+      "blocking": true,
+      "escalation": "If Phase 1 incomplete, STOP - escalate to project manager for decision on Option B (Markdown) or Option C (Block)"
+    },
+    "toon_format_specification": {
+      "requirement": "TOON v3.0 format specification must be available",
+      "verification": "Obtain from tools/toon/TOON-v3.0-SPEC.md or reference implementation",
+      "blocking": true,
+      "escalation": "If spec unavailable, create from reverse-engineering agents/novel-editor-chatgpt-toon.txt"
+    },
+    "baseline_measurements": {
+      "requirement": "Baseline measurements from Phase 0 must be complete",
+      "verification": "Confirm docs/workflow/plugin-marketplace-migration/baseline.yaml exists with command metrics",
+      "blocking": true,
+      "escalation": "If baseline missing, execute Phase 0 baseline measurement first"
+    }
+  },
+  "toon_compiler": {
+    "tool_location": "tools/toon/compiler.py (from Phase 1)",
+    "purpose": "Transforms TOON source to Claude Code compliant output",
+    "input": "5d-wave/tasks/dw/*.toon (TOON format)",
+    "output": "dist/commands/dw/*.md (Markdown format)",
+    "invocation": "python tools/toon/compiler.py <input.toon> --validate --output <output.md>",
+    "success_criteria": [
+      "Exit code = 0 (no errors)",
+      "No errors in stderr",
+      "Output file size > 1000 bytes (non-trivial content)",
+      "Metadata validates against TOON v3.0 schema",
+      "Output markdown is Claude Code compliant"
+    ],
+    "validation": "pytest tests/tools/toon/test_compiler.py"
+  },
+  "error_handling": {
+    "scenario_1_compiler_not_found": {
+      "error": "TOON compiler not found at tools/toon/compiler.py",
+      "handling": "Log error with clear message: 'Phase 1 TOON infrastructure required. Run Phase 1.1-1.5 first or choose Option B (Markdown).'",
+      "recovery": "STOP execution, escalate to user for decision",
+      "test": "test_error_compiler_not_found"
+    },
+    "scenario_2_compilation_failure": {
+      "error": "TOON compiler exits with non-zero code",
+      "handling": "Log compilation error with file path and stderr output. Skip failed file, continue with others. Generate error report.",
+      "recovery": "Review TOON syntax, fix errors, retry compilation",
+      "test": "test_error_compilation_failure_graceful"
+    },
+    "scenario_3_metadata_validation_failure": {
+      "error": "Compiled output fails metadata validation (missing required fields)",
+      "handling": "Log validation errors with specific missing fields. Mark file as failed. Continue processing other files.",
+      "recovery": "Add missing metadata to source TOON file, recompile",
+      "test": "test_error_metadata_validation_failure"
+    },
+    "scenario_4_partial_batch_failure": {
+      "error": "Some files in batch succeed, others fail",
+      "handling": "Complete all processable files. Generate summary report: X succeeded, Y failed. List failed files with error reasons.",
+      "recovery": "Fix failed files individually, rerun batch",
+      "test": "test_error_partial_batch_failure_reporting"
+    }
+  },
+  "test_specifications": {
+    "unit_tests": [
+      {
+        "name": "test_toon_parser_valid_command_input",
+        "purpose": "Verify parser handles valid TOON command syntax correctly",
+        "input": "Sample TOON command file with all required fields (name, description, parameters)",
+        "expected": "Parsed dict with command metadata: {name, description, parameters, dependencies}"
+      },
+      {
+        "name": "test_template_rendering_with_parsed_command",
+        "purpose": "Verify Jinja2 template renders command.md from parsed data",
+        "input": "Parsed command dict from parser output",
+        "expected": "Valid Markdown output with command syntax section, parameters table, usage examples"
+      },
+      {
+        "name": "test_output_validation_against_claude_code_spec",
+        "purpose": "Verify compiled output meets Claude Code command specification",
+        "input": "Generated command.md file",
+        "expected": "Validation passes: Has frontmatter, execution context, success criteria sections"
+      }
+    ],
+    "integration_tests": [
+      {
+        "name": "test_e2e_command_migration_pipeline",
+        "purpose": "Verify complete migration: TOON → Parse → Template → Validate → Output",
+        "input": "Real TOON command file from 5d-wave/tasks/dw/",
+        "steps": "Parse TOON → Apply command template → Validate output → Write to dist/",
+        "expected": "Valid command.md in dist/commands/dw/ matching Claude Code spec"
+      },
+      {
+        "name": "test_batch_migration_all_commands",
+        "purpose": "Verify batch processing of all command files",
+        "input": "All TOON command files (8 dw: commands)",
+        "expected": "All 8 commands migrated successfully with validation report"
+      }
+    ],
+    "error_scenario_tests": [
+      {
+        "name": "test_compiler_not_found_error_handling",
+        "purpose": "Verify graceful failure when compiler missing",
+        "setup": "Remove or rename tools/toon/compiler.py",
+        "expected": "Clear error message, execution stops, no partial output"
+      },
+      {
+        "name": "test_malformed_toon_syntax_error_handling",
+        "purpose": "Verify parser reports syntax errors clearly",
+        "input": "TOON file with missing ## section header",
+        "expected": "Parser error with line number, specific syntax issue description"
+      },
+      {
+        "name": "test_validation_failure_error_handling",
+        "purpose": "Verify validation errors reported clearly",
+        "input": "TOON file missing required 'description' field",
+        "expected": "Validation error: 'Missing required field: description' with file path"
+      }
+    ]
+  },
+  "agent_bindings": {
+    "description": "Maps each DEVELOP wave command to its primary agent",
+    "bindings": {
+      "dw:baseline": "software-crafter",
+      "dw:roadmap": "software-crafter",
+      "dw:split": "software-crafter",
+      "dw:execute": "software-crafter",
+      "dw:review": "software-crafter-reviewer",
+      "dw:develop": "software-crafter",
+      "dw:refactor": "software-crafter",
+      "dw:mikado": "software-crafter"
+    },
+    "validation": "Each binding MUST have test validating command invokes correct agent"
+  }
+}

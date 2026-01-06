@@ -1,0 +1,583 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "01-02",
+  "phase": {
+    "number": 1,
+    "name": "TOON Infrastructure",
+    "purpose": "Create parser and compiler toolchain that transforms TOON source into Claude Code compliant output"
+  },
+  "step": {
+    "number": "1.2",
+    "name": "Create Agent Jinja2 Template",
+    "description": "Create Jinja2 template that transforms parsed agent data into Claude Code compliant agent.md format.\n\nPREREQUISITE: Step 01-01 MUST complete with parser_output_schema definition.\nTemplate receives structured dict from parser and renders YAML frontmatter + agent configuration.\n\nCRITICAL: YAML special character escaping required (colons, quotes, newlines in descriptions).\nReference existing agents in ~/.claude/agents/*.md for output format validation.",
+    "motivation": "Agent template defines output format for 26 agent files (excluding novel-editor and novel-editor-reviewer from build)",
+    "estimated_hours": "4-5"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC2": "Build produces Claude Code compliant output"
+    },
+    "dependencies": [
+      "1.1"
+    ]
+  },
+  "deliverables": {
+    "files_to_create": [
+      "tools/toon/templates/agent.md.j2",
+      "tests/tools/toon/test_agent_template.py"
+    ],
+    "acceptance_criteria": [
+      "Template produces valid YAML frontmatter (name, description, model)",
+      "Template includes activation notice section",
+      "Template renders YAML block with agent configuration",
+      "Template handles embedded knowledge injection markers",
+      "Output validates against Claude Code agent spec"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN parsed agent data with id='software-crafter', commands=['develop', 'refactor']\nWHEN I render agent.md.j2 template\nTHEN output has valid frontmatter AND includes all commands",
+    "inner_tests": [
+      "test_template_frontmatter_valid_yaml",
+      "test_template_frontmatter_escapes_yaml_special_chars",
+      "test_template_handles_multiline_strings",
+      "test_template_activation_notice_present",
+      "test_template_commands_list_rendered",
+      "test_template_dependencies_rendered",
+      "test_template_embed_markers_preserved"
+    ]
+  },
+  "refactoring": {
+    "targets": [
+      {
+        "level": 1,
+        "focus": "Template macro naming"
+      },
+      {
+        "level": 2,
+        "focus": "Extract reusable template blocks"
+      }
+    ]
+  },
+  "execution_guidance": {
+    "approach": "Outside-In TDD with double-loop",
+    "workflow": [
+      "1. Write failing E2E test (outer_test)",
+      "2. Implement via inner TDD loop (inner_tests)",
+      "3. Apply refactoring levels 1-2 progressively",
+      "4. Validate all acceptance criteria met",
+      "5. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "All tests passing (100% required)",
+      "All acceptance criteria validated",
+      "Refactoring applied (levels 1-2)",
+      "No report files created"
+    ]
+  },
+  "adversarial_review": {
+    "review_mode": "RUTHLESS_ADVERSARIAL",
+    "review_date": "2026-01-05",
+    "reviewed_by": "Lyra (adversarial-code-review-mode)",
+    "risk_score": 8,
+    "blast_radius": "CRITICAL - Affects all 28 downstream agent template outputs",
+    "execution_recommendation": "DO NOT EXECUTE - Multiple critical blockers require resolution first",
+    "contradictions_found": [
+      {
+        "id": "CONTRA-1",
+        "title": "Circular dependency: Step 1.2 depends on step 1.1 output, but step 1.1 undefined",
+        "contradiction": "Task states 'dependencies': ['1.1'] but no step 1.1 exists in workflow yet. Implementer cannot start without seeing what parser produces.",
+        "severity": "CRITICAL",
+        "impact": "Cannot create template without knowing input format. This is a hard blocker.",
+        "failure_mode": "Implementer guesses input structure, creates template incompatible with actual parser output. Discovers mismatch only at integration testing. Massive rework required."
+      },
+      {
+        "id": "CONTRA-2",
+        "title": "Acceptance criteria assumes what 'Claude Code compliant' means without definition",
+        "contradiction": "AC#5 states 'Output validates against Claude Code agent spec' - but the spec is embedded in agent-builder.md (120+ lines of YAML). Task provides zero reference to this spec.",
+        "severity": "CRITICAL",
+        "impact": "Implementer doesn't know what valid output looks like. Tests will be written against incorrect assumptions.",
+        "failure_mode": "Template renders syntactically valid YAML but missing required fields (e.g., missing 'activation-instructions', incorrect command syntax). Tests pass locally but agents fail at runtime."
+      },
+      {
+        "id": "CONTRA-3",
+        "title": "TDD outer test specification is incomplete - missing assertion details",
+        "contradiction": "Outer test says 'output has valid frontmatter AND includes all commands' - but doesn't define: (1) what makes frontmatter valid YAML, (2) which commands must be included (all? some?), (3) command format requirements.",
+        "severity": "CRITICAL",
+        "impact": "Test will pass with incorrect output. E.g., could produce incomplete command definitions that lack descriptions, still passing the vague 'includes all commands' assertion.",
+        "failure_mode": "Template produces agent.md with commands list but no descriptions. Test passes. Later, agent fails because activate requires command descriptions."
+      },
+      {
+        "id": "CONTRA-4",
+        "title": "Embedded knowledge markers handling contradicts existing agent structure",
+        "contradiction": "Task requires template to 'handle embedded knowledge injection markers' (AC#4) and mentions '<!-- BUILD:INJECT:START:path -->' but the reference agent-builder.md shows markers embedded within YAML blocks (line 15+), not standalone sections. Template must preserve existing YAML-escaped content while inserting markers.",
+        "severity": "HIGH",
+        "impact": "Template logic for marker placement may corrupt YAML structure. Markers placed incorrectly break YAML parsing.",
+        "failure_mode": "Template inserts markers inside YAML strings, breaking YAML syntax. Agent file becomes unparseable. Build fails."
+      },
+      {
+        "id": "CONTRA-5",
+        "title": "Estimated 2-3 hours contradicts actual complexity",
+        "contradiction": "Estimate assumes straightforward template rendering, but actual requirements include: YAML frontmatter with proper escaping, complex nested command definitions, multiline string handling, marker preservation logic, special character escaping, error handling.",
+        "severity": "HIGH",
+        "impact": "Schedule slippage. Team commits to 2-3 hours, discovers 4-5 hours needed mid-task.",
+        "failure_mode": "Implementer cuts corners, produces template with edge case failures (escaping bugs, marker placement issues). Tests incomplete. Code quality suffers."
+      }
+    ],
+    "dangerous_assumptions": [
+      {
+        "id": "ASSUME-1",
+        "assumption": "Parser output format (step 1.1) will be well-documented",
+        "why_dangerous": "Parser is being created in same phase. May not be documented yet. Template implementer will wait or guess.",
+        "likelihood": "HIGH",
+        "consequence": "Template written against guessed schema. Incompatible with actual parser output."
+      },
+      {
+        "id": "ASSUME-2",
+        "assumption": "Jinja2 has built-in YAML escaping filters",
+        "why_dangerous": "Jinja2 does NOT have native YAML escaping. Implementer must write custom filters or use PyYAML. Task provides zero guidance.",
+        "likelihood": "HIGH",
+        "consequence": "YAML special characters in agent descriptions break output formatting. Frontmatter becomes unparseable."
+      },
+      {
+        "id": "ASSUME-3",
+        "assumption": "Embedded knowledge sections stay unchanged during template rendering",
+        "why_dangerous": "Task requires markers to be 'preserved' but doesn't specify: (1) should content inside markers be replaced?, (2) should markers be re-created or kept as-is?, (3) what if content is malformed?",
+        "likelihood": "MEDIUM",
+        "consequence": "Markers disappear or corrupt. Build system can't inject knowledge. Agent templates missing core functionality."
+      },
+      {
+        "id": "ASSUME-4",
+        "assumption": "All parsed agents have identical structure (same keys, command formats)",
+        "why_dangerous": "28 agents will vary - some may have optional sections, different command counts, specialized configuration. Template assumes homogeneous input.",
+        "likelihood": "HIGH",
+        "consequence": "Template produces output for 'standard' agents but fails on edge cases (agents with 3 commands, agents with 50 commands, agents with specialized fields)."
+      },
+      {
+        "id": "ASSUME-5",
+        "assumption": "Markdown formatting in agent descriptions doesn't conflict with YAML frontmatter",
+        "why_dangerous": "Agent descriptions contain markdown (bold, italics, code blocks). YAML frontmatter uses characters that conflict with markdown. No specification of how to handle.",
+        "likelihood": "MEDIUM",
+        "consequence": "Agent descriptions with code examples or special formatting corrupt YAML. Frontmatter parsing fails."
+      }
+    ],
+    "unhandled_edge_cases": [
+      {
+        "id": "EDGE-1",
+        "case": "Agent with no commands",
+        "consequence": "Template renders empty commands list. Is this valid? Tests don't specify.",
+        "severity": "MEDIUM"
+      },
+      {
+        "id": "EDGE-2",
+        "case": "Agent with null/missing 'model' field",
+        "consequence": "YAML frontmatter incomplete. Agent fails at runtime. Template should raise error but doesn't specify error handling.",
+        "severity": "HIGH"
+      },
+      {
+        "id": "EDGE-3",
+        "case": "Command description containing YAML special characters (colons, quotes, newlines)",
+        "consequence": "Unescaped characters break YAML syntax. No test covers this.",
+        "severity": "CRITICAL"
+      },
+      {
+        "id": "EDGE-4",
+        "case": "Embedded knowledge section with existing '<!-- BUILD:INJECT:START:' text",
+        "consequence": "Template can't distinguish real markers from content. May corrupt sections.",
+        "severity": "HIGH"
+      },
+      {
+        "id": "EDGE-5",
+        "case": "Parser produces data with extra fields not in template schema",
+        "consequence": "Template ignores extra fields. Silent data loss. No warning to user.",
+        "severity": "MEDIUM"
+      },
+      {
+        "id": "EDGE-6",
+        "case": "Command list with duplicate command names",
+        "consequence": "Template renders duplicates. Validation doesn't catch this. Agents load with conflicting command definitions.",
+        "severity": "HIGH"
+      },
+      {
+        "id": "EDGE-7",
+        "case": "Multi-line agent description",
+        "consequence": "YAML requires proper indentation and escaping. Template may produce malformed output with simple string substitution.",
+        "severity": "HIGH"
+      },
+      {
+        "id": "EDGE-8",
+        "case": "Agent ID containing special characters (hyphens, underscores, dots)",
+        "consequence": "Template doesn't validate ID format. Produces agent files with invalid naming.",
+        "severity": "MEDIUM"
+      }
+    ],
+    "failure_scenarios": [
+      {
+        "id": "FAIL-1",
+        "scenario": "Integration failure: Template and parser mismatch",
+        "trigger": "Step 1.2 completes successfully, step 1.1 completes with different output schema than template expects",
+        "consequence": "Template-rendered agents missing required sections or with malformed structure. Build fails on all 28 agents.",
+        "detection_time": "Phase 2 (too late to fix in Phase 1)",
+        "recovery_difficulty": "EXTREME - Requires re-implementation of template or parser"
+      },
+      {
+        "id": "FAIL-2",
+        "scenario": "YAML parsing failure in production agents",
+        "trigger": "Agent descriptions with special characters (e.g., 'Uses: X > Y ratio') rendered without escaping",
+        "consequence": "Generated agent.md files are syntactically invalid YAML. Agents fail to load at runtime. Users report broken agents.",
+        "detection_time": "Runtime (when users try to use agents)",
+        "recovery_difficulty": "HIGH - Requires regenerating all 28 agents and republishing"
+      },
+      {
+        "id": "FAIL-3",
+        "scenario": "Embedded knowledge markers corrupted or missing",
+        "trigger": "Template logic incorrectly handles marker placement inside YAML blocks",
+        "consequence": "Build system can't inject knowledge sections. Agents missing core functionality documentation.",
+        "detection_time": "Post-deployment (when build tries to inject knowledge)",
+        "recovery_difficulty": "HIGH - Requires template fix + regeneration"
+      },
+      {
+        "id": "FAIL-4",
+        "scenario": "Silent data loss - optional fields ignored",
+        "trigger": "Parser produces 'customization' or 'whenToUse' field, template doesn't include it in output",
+        "consequence": "Agents lose configuration. Agents use defaults instead of specified customization.",
+        "detection_time": "Runtime behavior (subtle - may not be noticed)",
+        "recovery_difficulty": "VERY HIGH - Data already lost, recovery requires source regeneration"
+      },
+      {
+        "id": "FAIL-5",
+        "scenario": "Command definitions incomplete or malformed",
+        "trigger": "Template renders command names only, missing required fields (description, syntax)",
+        "consequence": "Agents load but help system fails. Users can't understand commands.",
+        "detection_time": "User-facing (when agents used)",
+        "recovery_difficulty": "HIGH - Requires template fix + regeneration"
+      }
+    ],
+    "integration_points_at_risk": [
+      {
+        "id": "INTEG-1",
+        "point": "Step 1.1 parser -> Step 1.2 template",
+        "risk": "CRITICAL - No contract between parser output and template input. Format mismatch blocks entire phase.",
+        "mitigation": "Define and validate parser output schema BEFORE starting template"
+      },
+      {
+        "id": "INTEG-2",
+        "point": "Template output -> Claude Code agent spec validation",
+        "risk": "HIGH - No automated validation. Manual inspection needed.",
+        "mitigation": "Create validator that checks output against agent-builder.md spec"
+      },
+      {
+        "id": "INTEG-3",
+        "point": "Embedded knowledge injection -> Template markers",
+        "risk": "HIGH - Build system must parse markers correctly from template output",
+        "mitigation": "Specify exact marker format and placement rules upfront"
+      },
+      {
+        "id": "INTEG-4",
+        "point": "Generated agents -> Agent activation",
+        "risk": "CRITICAL - Agents must be activatable without errors",
+        "mitigation": "Add test: activate each generated agent and verify no errors"
+      }
+    ],
+    "test_coverage_gaps": [
+      {
+        "id": "GAP-1",
+        "coverage": "No test for YAML special character escaping",
+        "risk": "HIGH",
+        "scenario": "Agent description: 'Ratio: 3:1' renders as '3:1' in YAML, breaking syntax"
+      },
+      {
+        "id": "GAP-2",
+        "coverage": "No test for multiline strings",
+        "risk": "MEDIUM",
+        "scenario": "Agent description spans multiple lines, YAML indentation incorrect"
+      },
+      {
+        "id": "GAP-3",
+        "coverage": "No test for embedded marker preservation when markers already present",
+        "risk": "HIGH",
+        "scenario": "Regenerating agent.md corrupts existing markers"
+      },
+      {
+        "id": "GAP-4",
+        "coverage": "No test for missing required fields in parser output",
+        "risk": "MEDIUM",
+        "scenario": "Parser omits 'model' field, template produces incomplete frontmatter"
+      },
+      {
+        "id": "GAP-5",
+        "coverage": "No test for command definition format validation",
+        "risk": "HIGH",
+        "scenario": "Commands render without descriptions, agents fail at runtime"
+      },
+      {
+        "id": "GAP-6",
+        "coverage": "No test for agent ID validation (naming conflicts, special chars)",
+        "risk": "MEDIUM",
+        "scenario": "Two agents render with same ID, causing file overwrite"
+      },
+      {
+        "id": "GAP-7",
+        "coverage": "No integration test: activate generated agent",
+        "risk": "CRITICAL",
+        "scenario": "Template produces syntactically valid YAML but agents fail activation"
+      }
+    ],
+    "data_loss_risks": [
+      {
+        "id": "DATA-1",
+        "risk": "Parser fields not in template schema silently ignored",
+        "example": "Parser produces 'whenToUse' but template has no mapping for it",
+        "consequence": "Data from parser lost in generated output"
+      },
+      {
+        "id": "DATA-2",
+        "risk": "Embedded knowledge content between markers overwritten",
+        "example": "Regenerating agents overwrites existing knowledge sections",
+        "consequence": "Documentation or configuration lost without warning"
+      },
+      {
+        "id": "DATA-3",
+        "risk": "Command parameters or complex command definitions flattened or truncated",
+        "example": "Commands with nested config become simple strings",
+        "consequence": "Agent capability metadata lost"
+      }
+    ],
+    "security_concerns": [
+      {
+        "id": "SEC-1",
+        "concern": "Template injection vulnerability if parser data not sanitized",
+        "example": "Agent description: '{{ malicious_code }}' rendered as executable Jinja2",
+        "mitigation": "Use Jinja2 autoescape or explicit escaping in template"
+      },
+      {
+        "id": "SEC-2",
+        "concern": "Path traversal if agent ID used as filename without validation",
+        "example": "Parser produces agent ID: '../../../etc/passwd', creates file in wrong location",
+        "mitigation": "Validate agent IDs match safe pattern (alphanumeric + hyphens only)"
+      },
+      {
+        "id": "SEC-3",
+        "concern": "YAML deserialization attacks if generated agents consumed by unsafe deserializer",
+        "example": "Agent file contains YAML deserialization gadget chain",
+        "mitigation": "Generate safe YAML (no Python object references), validate output with safe deserializer"
+      }
+    ],
+    "schedule_risks": [
+      {
+        "id": "SCHED-1",
+        "risk": "Estimate 2-3 hours is optimistic",
+        "actual_complexity": "Jinja2 template design + YAML escaping + special character handling + marker logic + error handling = 4-5 hours minimum",
+        "probability": "85% chance overrun"
+      },
+      {
+        "id": "SCHED-2",
+        "risk": "Blocked waiting for step 1.1 parser specification",
+        "consequence": "Cannot start template until parser interface defined"
+      },
+      {
+        "id": "SCHED-3",
+        "risk": "Rework if parser output schema differs from assumptions",
+        "probability": "60% chance significant rework required"
+      }
+    ],
+    "contradictions_summary": "Task specification is fundamentally incomplete. It describes a template that transforms undefined input (parser output) into output validated against undefined spec (Claude Code agent spec). Implementer faces guesswork at every step. Template will likely be incompatible with parser when it exists, or produce invalid agents when validated against actual spec.",
+    "overall_assessment": {
+      "current_state": "NOT READY FOR EXECUTION",
+      "root_cause": "Missing critical interface contracts: parser output schema and agent spec reference",
+      "risk_level": 8,
+      "confidence_in_success": "15% - Without clarifications, very likely to fail at integration"
+    },
+    "required_clarifications_before_execution": [
+      {
+        "priority": "CRITICAL",
+        "clarification": "Define parser output schema (step 1.1 specification)",
+        "format": "Example JSON/YAML showing all fields that step 1.1 will produce"
+      },
+      {
+        "priority": "CRITICAL",
+        "clarification": "Reference Claude Code agent specification",
+        "format": "Link to or include agent.md structure definition with mandatory fields"
+      },
+      {
+        "priority": "CRITICAL",
+        "clarification": "Specify embedded knowledge marker format and handling",
+        "format": "Exact marker syntax, placement rules, preservation logic"
+      },
+      {
+        "priority": "CRITICAL",
+        "clarification": "Define YAML escaping requirements",
+        "format": "Specify which special characters require escaping in YAML frontmatter"
+      },
+      {
+        "priority": "HIGH",
+        "clarification": "Revise estimate based on actual complexity",
+        "format": "2-3 hours too optimistic; revise to 4-5 hours with justification"
+      },
+      {
+        "priority": "HIGH",
+        "clarification": "Add integration test: agent activation",
+        "format": "Test that activates each generated agent and verifies no runtime errors"
+      },
+      {
+        "priority": "HIGH",
+        "clarification": "Add error handling specification",
+        "format": "What should template do if parser output missing required fields?"
+      }
+    ]
+  },
+  "review_metadata": {
+    "review_date": "2026-01-05",
+    "reviewed_by": "Lyra (code-review-mode)",
+    "status": "FLAGGED_FOR_CLARIFICATION",
+    "severity_summary": {
+      "critical": 4,
+      "high": 2,
+      "medium": 2,
+      "low": 1
+    },
+    "critical_issues": [
+      {
+        "id": "C1",
+        "title": "Incomplete reference to expected output structure",
+        "description": "Task describes producing 'Claude Code compliant agent.md format' but provides no example showing YAML frontmatter keys, activation notice structure, or sample agent configuration block",
+        "impact": "Implementer cannot determine what compliant output looks like without reverse-engineering from actual agents",
+        "blocking": true,
+        "recommendation": "Add to acceptance criteria: Example showing complete YAML frontmatter structure with mandatory keys (name, description, model), sample activation notice, one complete command definition, and example of embedded knowledge injection markers"
+      },
+      {
+        "id": "C2",
+        "title": "Vague acceptance criterion #5: 'Output validates against Claude Code agent spec'",
+        "description": "This criterion is not testable without knowing what the spec validation rules are",
+        "impact": "Test will be ambiguous; unclear what constitutes valid output",
+        "blocking": true,
+        "recommendation": "Replace with specific criteria: 'Output contains mandatory frontmatter keys: name, description, model', 'Agent definition has required top-level keys: agent, persona, commands, dependencies', 'All embedded knowledge markers use correct comment format: <!-- BUILD:INJECT:START:path -->'"
+      },
+      {
+        "id": "C3",
+        "title": "No example of parsed agent data structure",
+        "description": "Template receives 'parsed agent data' from step 1.1 but input data shape is completely undefined",
+        "impact": "Template cannot be designed without knowing what the parser produces as output",
+        "blocking": true,
+        "recommendation": "Add to execution guidance: Example showing sample parsed data structure (e.g., keys for id, name, description, commands list, dependencies dict)"
+      },
+      {
+        "id": "C4",
+        "title": "Embedded knowledge injection specification is incomplete",
+        "description": "Acceptance criterion mentions handling markers but exact format, placement, and behavior undefined",
+        "impact": "Template may produce incorrect marker syntax or placement relative to content",
+        "blocking": true,
+        "recommendation": "Add explicit specification: marker format (<!-- BUILD:INJECT:START:path --> / <!-- BUILD:INJECT:END -->), placement rules, whether existing content between markers should be preserved or replaced"
+      }
+    ],
+    "high_issues": [
+      {
+        "id": "H1",
+        "title": "Missing test for YAML special character escaping",
+        "description": "Agent descriptions contain colons, dashes, quotes which require YAML escaping",
+        "impact": "Generated frontmatter YAML may be malformed if special characters not properly escaped",
+        "recommendation": "Add inner test: 'test_template_frontmatter_escapes_special_characters' with test data containing colons, dashes, and quotes"
+      },
+      {
+        "id": "H2",
+        "title": "Estimated hours may underestimate complexity",
+        "description": "2-3 hours tight for Jinja2 template design, YAML formatting/escaping, edge case handling",
+        "impact": "May lead to schedule slippage if unforeseen complexity discovered",
+        "recommendation": "Clarify if estimate includes Jinja2 filter research, YAML escaping testing, and multi-line string handling"
+      }
+    ],
+    "medium_issues": [
+      {
+        "id": "M1",
+        "title": "Missing error handling specification",
+        "description": "No guidance on what template should do if parsed data missing required fields",
+        "recommendation": "Add to execution guidance: error handling approach (raise exception, use defaults, skip sections)"
+      },
+      {
+        "id": "M2",
+        "title": "Missing technical constraints",
+        "description": "No specification of Python/Jinja2 version requirements or YAML library choice",
+        "recommendation": "Add to context: 'Uses Jinja2 X.X+, PyYAML X.X+, Python 3.X+'"
+      }
+    ],
+    "low_issues": [
+      {
+        "id": "L1",
+        "title": "No link to TOON v3.0 spec in task",
+        "description": "While step 1.1 references github.com/toon-format/spec v3.0, this step should also reference it for understanding parsed data format",
+        "recommendation": "Add reference or link to expected parser output documentation"
+      }
+    ],
+    "achievability_assessment": {
+      "current_risk": "MEDIUM",
+      "root_causes": [
+        "Implementer must infer expected output from reverse-engineering existing agents",
+        "Parsed data structure undefined",
+        "Acceptance criteria ambiguous on YAML compliance"
+      ],
+      "risk_mitigation": [
+        "Add concrete example output showing YAML frontmatter + sample sections",
+        "Document parser output schema (what step 1.1 produces)",
+        "Provide 2-3 complete agent.md examples (existing agents can serve as reference)"
+      ],
+      "will_be_achievable_after_clarification": true
+    },
+    "clarity_score": "6/10 - Requires significant clarification on input/output formats",
+    "completeness_score": "5/10 - Missing critical context about expected structures",
+    "ready_for_execution": false,
+    "next_steps": [
+      "Implement step 1.1 parser first (dependency)",
+      "Create example showing: sample parsed data -> template rendering -> expected agent.md output",
+      "Update acceptance criteria C2 with specific YAML structure requirements",
+      "Add embedded knowledge marker specification to execution guidance",
+      "Link to parser output documentation"
+    ]
+  },
+  "prerequisites": {
+    "blocking": [
+      "Step 01-01 parser_output_schema MUST be defined with example",
+      "Parser output structure documented (what fields are available for template rendering)",
+      "Example showing: TOON input \u2192 parsed output \u2192 expected template output"
+    ],
+    "reference_specifications": [
+      {
+        "name": "Claude Code Agent Structure",
+        "location": "~/.claude/agents/*.md (existing agents as examples)",
+        "required_sections": [
+          "YAML frontmatter with name/description/model",
+          "Activation notice",
+          "Agent YAML configuration block with commands/dependencies/persona"
+        ]
+      }
+    ]
+  },
+  "critical_blocker_status": {
+    "BLOCKER_001": {
+      "title": "TOON Toolchain Missing",
+      "status": "UNRESOLVED",
+      "evidence": "tools/toon/ directory does not exist",
+      "impact": "Cannot parse TOON files, blocks all Phase 1 steps",
+      "resolution_options": [
+        "A: Implement TOON toolchain (16-20h estimated)",
+        "B: Pivot to Markdown templates (8-10h, loses TOON benefits)",
+        "C: Block until external TOON library available"
+      ]
+    }
+  },
+  "prerequisites": {
+    "blocking": [
+      "tools/toon/ directory MUST exist with README.md",
+      "TOON format specification v3.0 must be accessible",
+      "Step 01-01 parser_output_schema MUST be defined with example",
+      "Parser output structure documented (what fields are available for template rendering)",
+      "Example showing: TOON input → parsed output → expected template output"
+    ],
+    "validation": "Run: ls tools/toon/README.md. Must exist. If not: BLOCKER_001"
+  }
+}

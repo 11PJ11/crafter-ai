@@ -1,0 +1,179 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "02-01",
+  "phase": {
+    "number": 2,
+    "name": "Pilot Migration",
+    "purpose": "Validate toolchain with real complex agent before batch migration"
+  },
+  "step": {
+    "number": "2.1",
+    "name": "Convert software-crafter.md to TOON",
+    "description": "Manually convert software-crafter.md to software-crafter.toon format. Document conversion patterns and decisions. This agent is largest/most complex - good stress test.\n\nCRITICAL PRE-FLIGHT CHECKS:\n1. Verify Phase 1 complete: tools/toon/compiler.py exists and passes all tests\n2. Capture token baseline BEFORE conversion (needed for Phase 8 SC7 validation)\n3. Verify TOON v3.0 specification is accessible\n4. Confirm compiler version: python tools/toon/compiler.py --version returns v3.0+",
+    "motivation": "Software-crafter is most complex agent - if this works, all work. Token baseline critical for Phase 8 measurement.",
+    "estimated_hours": "5-6"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC1": "All source files in TOON v3.0 format",
+      "SC2": "Build produces Claude Code compliant output",
+      "SC7": "Token count improvements measured and documented (baseline captured here)"
+    },
+    "dependencies": ["1.6"],
+    "blocking_conditions": [
+      "Phase 1 (steps 1.1-1.6) MUST be complete and tested",
+      "TOON compiler MUST exist: tools/toon/compiler.py",
+      "Compiler MUST pass all tests: pytest tests/tools/toon/ -v",
+      "TOON v3.0 specification MUST be accessible"
+    ]
+  },
+  "deliverables": {
+    "files_to_create": [
+      "5d-wave/agents/software-crafter.toon",
+      "baseline/token-measurements/02-01-pre-conversion.json"
+    ],
+    "files_to_keep": [
+      "5d-wave/agents/software-crafter.md (Keep for comparison until Phase 8 validates)"
+    ],
+    "acceptance_criteria": [
+      "TOON file contains all agent metadata",
+      "TOON file contains all commands with descriptions",
+      "TOON file contains all dependencies with paths",
+      "TOON file contains embedded knowledge markers (BUILD:INJECT sections)",
+      "TOON file follows v3.0 syntax (validated by compiler)",
+      "Token baseline captured: original .md file token count using tiktoken cl100k_base",
+      "Baseline includes: total_tokens, file_size_bytes, line_count, timestamp"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN software-crafter.toon compiled to .md\nWHEN I compare with original software-crafter.md\nTHEN all commands, dependencies, and capabilities present\nAND embedded knowledge markers preserved\nAND token baseline captured for Phase 8 validation",
+    "inner_tests": [
+      "test_toon_has_all_commands",
+      "test_toon_has_all_dependencies",
+      "test_toon_metadata_complete",
+      "test_toon_preserves_embedded_knowledge_markers",
+      "test_token_baseline_captured_with_required_fields",
+      "test_compiler_accepts_toon_syntax"
+    ]
+  },
+  "refactoring": {
+    "targets": [
+      {
+        "level": 1,
+        "focus": "TOON abbreviation consistency"
+      }
+    ]
+  },
+  "execution_guidance": {
+    "approach": "Manual conversion with test validation and token baseline capture",
+    "workflow": [
+      "0. PRE-FLIGHT VALIDATION (BLOCKING):",
+      "   a. Verify tools/toon/compiler.py exists",
+      "   b. Run: pytest tests/tools/toon/ -v (all must pass)",
+      "   c. Run: python tools/toon/compiler.py --version (expect v3.0+)",
+      "   d. Verify TOON v3.0 spec accessible (baseline.yaml reference or docs/)",
+      "1. CAPTURE TOKEN BASELINE (CRITICAL FOR PHASE 8):",
+      "   a. Install tiktoken: pip install tiktoken",
+      "   b. Run: python -c \"import tiktoken; enc = tiktoken.get_encoding('cl100k_base'); print(len(enc.encode(open('5d-wave/agents/software-crafter.md').read())))\"",
+      "   c. Create baseline/token-measurements/02-01-pre-conversion.json:",
+      "      {",
+      "        \"step_id\": \"02-01\",",
+      "        \"file_path\": \"5d-wave/agents/software-crafter.md\",",
+      "        \"measurement_date\": \"<ISO-8601-timestamp>\",",
+      "        \"tokenizer\": \"tiktoken/cl100k_base\",",
+      "        \"total_tokens\": <measured-value>,",
+      "        \"file_size_bytes\": <stat-value>,",
+      "        \"line_count\": <wc-l-value>",
+      "      }",
+      "2. Read software-crafter.md completely",
+      "3. Create software-crafter.toon using TOON v3.0 syntax:",
+      "   - Preserve all metadata (agent name, id, title, icon, whenToUse, customization)",
+      "   - Convert all commands to TOON command syntax",
+      "   - Preserve all dependency paths",
+      "   - CRITICAL: Preserve embedded knowledge markers (BUILD:INJECT sections)",
+      "4. Write tests to validate conversion completeness:",
+      "   - All commands present",
+      "   - All dependencies present",
+      "   - Metadata complete",
+      "   - Embedded knowledge markers preserved",
+      "   - Token baseline captured with required fields",
+      "5. Run compiler to validate TOON syntax:",
+      "   python tools/toon/compiler.py 5d-wave/agents/software-crafter.toon --validate",
+      "6. Compare compiler output against original for semantic equivalence",
+      "7. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "Pre-flight checks pass (Phase 1 complete, compiler ready)",
+      "Token baseline captured with all required fields",
+      "All tests passing (100% required)",
+      "All acceptance criteria validated",
+      "Compiler accepts TOON syntax without errors",
+      "Embedded knowledge markers preserved (verify BUILD:INJECT sections)",
+      "No report files created"
+    ],
+    "token_baseline_specification": {
+      "purpose": "Capture pre-conversion token count for Phase 8 SC7 validation",
+      "measurement_method": "tiktoken library with cl100k_base encoding (GPT-4 tokenizer)",
+      "required_fields": [
+        "step_id",
+        "file_path",
+        "measurement_date (ISO-8601)",
+        "tokenizer (tiktoken/cl100k_base)",
+        "total_tokens",
+        "file_size_bytes",
+        "line_count"
+      ],
+      "storage_location": "baseline/token-measurements/02-01-pre-conversion.json",
+      "phase_8_usage": "Compare against post-migration token count to validate SC7 (token count improvements)"
+    }
+  },
+  "adversarial_review_remediations": [
+    {
+      "issue_id": "CONT-01",
+      "remediation": "Added blocking_conditions section requiring Phase 1 complete with explicit validation steps in pre-flight checks"
+    },
+    {
+      "issue_id": "CONT-02",
+      "remediation": "Added token baseline capture as explicit deliverable and workflow step. Defined measurement methodology (tiktoken/cl100k_base). Created baseline storage structure for Phase 8 validation."
+    },
+    {
+      "issue_id": "CONT-03",
+      "remediation": "Separated test validation from commit constraint. Tests validate conversion correctness. Commit gate remains for user approval only."
+    },
+    {
+      "issue_id": "ASS-01",
+      "remediation": "Added pre-flight validation requiring compiler existence and test passage"
+    },
+    {
+      "issue_id": "ASS-02",
+      "remediation": "Added requirement for TOON v3.0 spec accessibility in blocking conditions"
+    },
+    {
+      "issue_id": "ASS-03",
+      "remediation": "Revised estimated hours from 3-4 to 5-6 based on realistic breakdown"
+    },
+    {
+      "issue_id": "ASS-04",
+      "remediation": "Added embedded knowledge marker preservation as explicit acceptance criterion and test"
+    },
+    {
+      "issue_id": "EDGE-03",
+      "remediation": "Added test for embedded knowledge marker preservation"
+    },
+    {
+      "issue_id": "TEST-GAP-04",
+      "remediation": "Removed token savings test from this step. Token baseline captured here, savings calculated in Phase 8."
+    },
+    {
+      "issue_id": "TEST-GAP-05",
+      "remediation": "Added test_toon_preserves_embedded_knowledge_markers"
+    }
+  ]
+}

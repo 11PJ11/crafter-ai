@@ -1,0 +1,517 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "01-05",
+  "phase": {
+    "number": 1,
+    "name": "TOON Infrastructure",
+    "purpose": "Create parser and compiler toolchain that transforms TOON source into Claude Code compliant output"
+  },
+  "step": {
+    "number": "1.5",
+    "name": "Create TOON Compiler",
+    "description": "Implement compiler that orchestrates the complete TOON toolchain pipeline.\n\nPipeline: read .toon file → parse (01-01) → detect file type → select template (01-02/01-03/01-04) → render → write output .md\n\nCRITICAL: All dependencies (01-01 through 01-04) MUST be complete and stable before starting.\nCompiler requires: parser API contract, template input schemas, file type detection strategy.",
+    "motivation": "Compiler is the build tool that produces all distributable files",
+    "estimated_hours": "6-8"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC2": "Build produces Claude Code compliant output"
+    },
+    "dependencies": [
+      "1.1",
+      "1.2",
+      "1.3",
+      "1.4"
+    ]
+  },
+  "deliverables": {
+    "files_to_create": [
+      "tools/toon/compiler.py",
+      "tests/tools/toon/test_compiler.py"
+    ],
+    "acceptance_criteria": [
+      "Compiler reads .toon file from path",
+      "Compiler selects correct template based on file type",
+      "Compiler writes output to specified directory",
+      "Compiler reports errors clearly on parse/template failures",
+      "Compiler validates output against type-specific schema (see deliverables.output_validation_schemas)"
+    ],
+    "file_type_detection": {
+      "strategy": "Parser output includes 'type' field (Literal['agent', 'command', 'skill'])",
+      "implementation": "Compiler reads parsed_data['type'] to select appropriate template",
+      "template_mapping": {
+        "agent": "tools/toon/templates/agent.md.j2",
+        "command": "tools/toon/templates/command.md.j2",
+        "skill": "tools/toon/templates/skill.md.j2"
+      },
+      "fallback": "If type field missing, infer from filename pattern (agent.toon, command.toon, skill.toon) or raise error"
+    },
+    "output_validation_schemas": {
+      "agent": {
+        "required_sections": [
+          "YAML frontmatter",
+          "Activation notice",
+          "Agent YAML block"
+        ],
+        "validation": "Parse as YAML and check required keys: name, description, model, commands"
+      },
+      "command": {
+        "required_sections": [
+          "Command metadata",
+          "Execution context",
+          "Success criteria"
+        ],
+        "validation": "Check markdown headers present: ## Execution Context, ## Success Criteria"
+      },
+      "skill": {
+        "required_sections": [
+          "Skill frontmatter",
+          "Trigger patterns",
+          "Workflow integration"
+        ],
+        "validation": "Parse YAML frontmatter and validate trigger list is non-empty"
+      }
+    }
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN a valid agent.toon file at input_path\nWHEN I call compiler.compile(input_path, output_dir)\nTHEN output_dir contains agent.md with valid Claude Code format",
+    "inner_tests": [
+      "test_compiler_detects_file_type_agent",
+      "test_compiler_detects_file_type_command",
+      "test_compiler_detects_file_type_skill",
+      "test_compiler_handles_parse_error",
+      "test_compiler_handles_template_error",
+      "test_compiler_creates_output_directory"
+    ]
+  },
+  "refactoring": {
+    "targets": [
+      {
+        "level": 2,
+        "focus": "Extract file type detection strategy"
+      },
+      {
+        "level": 3,
+        "focus": "Separate compilation steps into pipeline"
+      }
+    ]
+  },
+  "execution_guidance": {
+    "approach": "Outside-In TDD with double-loop",
+    "workflow": [
+      "0. PREREQUISITE CHECK: Verify tools/toon/ exists. If not: HALT - refer to BLOCKER_001 resolution",
+      "1. Write failing E2E test (outer_test)",
+      "2. Implement via inner TDD loop (inner_tests)",
+      "3. Apply refactoring levels 2-3 progressively",
+      "4. Validate all acceptance criteria met",
+      "5. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "All tests passing (100% required)",
+      "All acceptance criteria validated",
+      "Refactoring applied (levels 2-3)",
+      "No report files created"
+    ]
+  },
+  "review_metadata": {
+    "reviewed_at": "2026-01-05T00:00:00Z",
+    "reviewer": "Lyra (AI Code Review)",
+    "status": "BLOCKED_CRITICAL_DEPENDENCIES",
+    "review_findings": {
+      "clarity": {
+        "score": "HIGH",
+        "notes": "Task is well-articulated with clear orchestration steps and dependencies"
+      },
+      "completeness": {
+        "score": "GOOD_WITH_CAVEATS",
+        "notes": "Core task complete. Missing: explicit template resolution logic, error schema definition, integration point with Jinja2 environment"
+      },
+      "achievability": {
+        "score": "NOT_ACHIEVABLE_AS_WRITTEN",
+        "notes": "3-4 hour estimate is WRONG. Depends on steps 1.1-1.4 which are fundamentally incomplete. Estimate assumes stable schemas that don't exist. Actual blocker: dependencies have unresolved circular conflicts."
+      },
+      "dependencies": {
+        "status": "VALIDATION_FAILED",
+        "blocked_on": [
+          "1.1 (parser core - schema undefined)",
+          "1.2 (agent template - input/output vague)",
+          "1.3 (command template - AC misaligned)",
+          "1.4 (skill template - trigger semantics undefined)"
+        ],
+        "critical_assumption": "All dependencies must define clear public API contracts (return types, exceptions, method signatures). CURRENT STATE: None of them do."
+      }
+    },
+    "hidden_dependencies": [
+      "Jinja2 environment configuration and loader setup (not mentioned in templates 1.2-1.4)",
+      "Template discovery mechanism (how compiler finds template files)",
+      "Output validation schema (acceptance criterion 5 requires validator implementation or definition)",
+      "File type detection algorithm (needs explicit mapping of file extensions/names to template types)",
+      "CIRCULAR DEPENDENCY: templates depend on parser schema, parser completion blocked on template feedback"
+    ],
+    "execution_guidance": {
+      "implementation_sequence": [
+        "1. Define file type detection strategy (before implementation)",
+        "2. Set up Jinja2 environment with template loader",
+        "3. Implement parse() integration - call parser from step 1.1",
+        "4. Implement template selection logic with fallback handling",
+        "5. Implement render() pipeline with error propagation",
+        "6. Add output validation (acceptance criterion 5)",
+        "7. Refactor levels 2-3 as specified"
+      ],
+      "template_resolution_clarification": "Recommend storing templates in tools/toon/templates/ with naming pattern: {type}.md.j2 (agent.md.j2, command.md.j2, skill.md.j2). Compiler should use filename pattern matching for discovery.",
+      "error_handling_specificity": "Define specific exception hierarchy: ParseError, TemplateNotFoundError, RenderError, ValidationError. Each should include context (file path, line number if applicable).",
+      "acceptance_criterion_5_note": "Output validation requires validation schema. Options: (1) Validate YAML frontmatter structure, (2) Check for required markdown sections, (3) Both. Current criterion is vague - recommend clarification with acceptance criteria author."
+    },
+    "potential_issues": [
+      {
+        "issue": "AC criterion 5 'validates output has required sections' is untestable without section definition",
+        "severity": "CRITICAL",
+        "recommendation": "Define required sections for each file type (agent.md, command.md, skill.md) before implementation. Three templates have INCOMPATIBLE AC definitions."
+      },
+      {
+        "issue": "No explicit contract between parser (1.1) and compiler on return type/exceptions",
+        "severity": "CRITICAL",
+        "recommendation": "Step 1.1 has undefined output schema (dict vs TypedDict vs dataclass). This breaks compiler. Compiler cannot be implemented without parser schema."
+      },
+      {
+        "issue": "Templates (1.2-1.4) have conflicting/vague acceptance criteria",
+        "severity": "CRITICAL",
+        "recommendation": "Step 1.2: output format undefined. Step 1.3: input/output vague. Step 1.4: trigger semantics undefined. Templates cannot be tested without schema."
+      },
+      {
+        "issue": "Circular dependency: templates need parser schema, parser blocked on template feedback",
+        "severity": "CRITICAL",
+        "recommendation": "Redesign: define parser output schema BEFORE implementing templates. Break circular dependency."
+      },
+      {
+        "issue": "File type detection logic undefined - how does compiler know if input is agent/command/skill?",
+        "severity": "HIGH",
+        "recommendation": "Add explicit file type field to parser output, or define content-based detection rules with examples."
+      },
+      {
+        "issue": "Refactoring targets (Levels 2-3) will be thrown away if dependencies change during implementation",
+        "severity": "MEDIUM",
+        "recommendation": "Delay refactoring until dependencies stabilize. Refactoring unstable code wastes effort."
+      },
+      {
+        "issue": "Error reporting acceptance criterion lacks specificity on 'clearly'",
+        "severity": "LOW",
+        "recommendation": "Define clear error format: Include file path, error type, human-readable message, and suggested fix when applicable."
+      }
+    ],
+    "coherence_with_phase": {
+      "phase_goal": "Create parser and compiler toolchain",
+      "this_step_role": "Compiler orchestration - brings together parser and templates",
+      "fit": "EXCELLENT IN THEORY - natural culmination of steps 1.1-1.4. IN PRACTICE: BROKEN because 1.1-1.4 have circular dependencies",
+      "validation": "All dependencies are prerequisites; nothing in phase 1 depends on step 1.5. BUT: dependencies are incomplete."
+    }
+  },
+  "adversarial_review": {
+    "review_date": "2026-01-05T00:00:00Z",
+    "reviewer": "Lyra (Adversarial Mode - Find What WILL Go Wrong)",
+    "mission_verdict": "THIS TASK CANNOT SUCCEED AS WRITTEN. Dependencies have cascading failures.",
+    "overall_risk_score": 8.5,
+    "risk_level": "CRITICAL",
+    "success_probability_if_started_now": "20%",
+    "success_probability_after_recommendations": "85%",
+    "contradictions_found": [
+      {
+        "id": "C1",
+        "title": "Dependency Fulfillment Status Contradiction",
+        "description": "Task declares dependencies [1.1, 1.2, 1.3, 1.4] but all have fundamental unresolved issues. Step 1.1 has undefined output schema. Steps 1.2/1.3/1.4 cannot be tested without parser schema. This creates circular dependency: templates need parser output schema, parser output blocked pending template feedback.",
+        "impact": "CASCADING FAILURE - Templates and parser are mutually blocked",
+        "blast_radius": "CATASTROPHIC",
+        "probability": "100%"
+      },
+      {
+        "id": "C2",
+        "title": "Acceptance Criteria vs Achievability Contradiction",
+        "description": "AC#5 'validates output has required sections' assumes knowing what sections each template produces. But templates have conflicting AC definitions (agent template: activation notice + frontmatter; command template: agent-activation header + wave metadata; skill template: skill frontmatter + trigger patterns). AC#5 validator cannot validate three incompatible schemas.",
+        "impact": "AC#5 is impossible to implement correctly",
+        "blast_radius": "HIGH",
+        "probability": "100%"
+      },
+      {
+        "id": "C3",
+        "title": "Refactoring Levels vs Arrival State Contradiction",
+        "description": "Task specifies refactoring Levels 2-3 (extract detection strategy, separate compilation pipeline). But if templates change format during implementation (due to schema clarifications), all refactoring work breaks. Each template change cascades: compiler's file type detection breaks, rendering pipeline breaks, refactoring is wasted.",
+        "impact": "Refactoring effort will be thrown away",
+        "blast_radius": "MEDIUM-HIGH",
+        "probability": "75%"
+      },
+      {
+        "id": "C4",
+        "title": "Estimated Hours vs Reality Contradiction",
+        "description": "Stated estimate: 3-4 hours. Realistic estimate accounting for undefined dependencies: 6-8 hours minimum, 12+ hours if clarifications needed during implementation. Estimate assumes all dependencies are stable and documented.",
+        "impact": "50-100% estimate error",
+        "blast_radius": "MEDIUM",
+        "probability": "80%"
+      }
+    ],
+    "dangerous_assumptions": [
+      {
+        "id": "DA1",
+        "assumption": "Parser API is finalized and documented",
+        "reality": "Parser (1.1) has undefined output schema. May return dict, TypedDict, dataclass, or custom class. API completely undocumented.",
+        "risk_probability": "70%",
+        "recovery_hours": 2
+      },
+      {
+        "id": "DA2",
+        "assumption": "Templates produce consistent output format",
+        "reality": "Three templates have incompatible AC definitions. Agent template AC mentions 'activation notice', command template mentions 'agent-activation header' (different), skill template mentions neither. Output schemas are fundamentally misaligned.",
+        "risk_probability": "80%",
+        "recovery_hours": 2
+      },
+      {
+        "id": "DA3",
+        "assumption": "File type detection is unambiguous",
+        "reality": "No mechanism specified for determining if TOON file is agent/command/skill. Parser output schema undefined, so no field available for detection. Content-based detection would be brittle.",
+        "risk_probability": "60%",
+        "recovery_hours": 1
+      },
+      {
+        "id": "DA4",
+        "assumption": "Templates are testable in isolation",
+        "reality": "Templates receive parsed data as input. Parser input schema undefined. Templates cannot be tested without knowing input contract. Tests are orphaned.",
+        "risk_probability": "70%",
+        "recovery_hours": 2
+      },
+      {
+        "id": "DA5",
+        "assumption": "Jinja2 environment is stable across renders",
+        "reality": "No specification for environment setup, loader configuration, filter isolation, or context cleanup. State leakage between renders likely.",
+        "risk_probability": "40%",
+        "recovery_hours": 1
+      }
+    ],
+    "unhandled_edge_cases": [
+      {
+        "case": "Empty or minimal TOON files",
+        "impact": "File type detection fails; parser returns empty dict; template rendering receives no context; output may be invalid"
+      },
+      {
+        "case": "Parser raises unexpected exception",
+        "impact": "Exception type not defined; error reporting undefined; exception handling ad-hoc"
+      },
+      {
+        "case": "Template file missing at runtime",
+        "impact": "Jinja2 TemplateNotFound exception; no graceful handling; unclear error message"
+      },
+      {
+        "case": "Output directory missing or not writable",
+        "impact": "Create directory? Fail? Behavior undefined; silent failure possible"
+      },
+      {
+        "case": "File type ambiguous (hybrid command-skill)",
+        "impact": "Multiple valid templates; tests conflict; no disambiguation rules"
+      },
+      {
+        "case": "Circular template references",
+        "impact": "Jinja2 renders in loops; memory exhaustion; deadlock possible"
+      }
+    ],
+    "failure_scenarios": [
+      {
+        "id": "F1",
+        "title": "Parser Output Schema Undefined",
+        "scenario": "Implement compiler assuming parser returns dict. Parser step 1.1 actually returns dataclass Agent with different field names.",
+        "cascade": [
+          "Compiler tries dict access on object",
+          "TypeError raised",
+          "All tests fail",
+          "Compiler rewritten"
+        ],
+        "probability": "70%",
+        "recovery_hours": 3
+      },
+      {
+        "id": "F2",
+        "title": "Template Schema Mismatch",
+        "scenario": "Implement validator for AC#5 assuming sections [metadata, commands, dependencies]. Templates finalized with [frontmatter, capabilities, links].",
+        "cascade": [
+          "Validator fails on real output",
+          "All tests fail",
+          "Validator rewritten"
+        ],
+        "probability": "80%",
+        "recovery_hours": 2
+      },
+      {
+        "id": "F3",
+        "title": "Circular Dependency in Step Chain",
+        "scenario": "Parser blocked waiting for template feedback. Templates blocked waiting for parser schema. Compiler blocked on both.",
+        "cascade": [
+          "All three steps stalled",
+          "Architectural redesign needed"
+        ],
+        "probability": "60%",
+        "recovery_hours": 24
+      },
+      {
+        "id": "F4",
+        "title": "File Type Detection Fails on Real TOON",
+        "scenario": "File type detection based on assumed structure. Real TOON files (agents/novel-editor-chatgpt-toon.txt) have different structure.",
+        "cascade": [
+          "Misidentifies file types",
+          "Wrong template selected",
+          "Invalid output",
+          "Tests pass on synthetic data but fail on real"
+        ],
+        "probability": "40%",
+        "recovery_hours": 2
+      },
+      {
+        "id": "F5",
+        "title": "Refactoring Throws Away All Work",
+        "scenario": "Extract detection strategy into class. Refactoring accidentally loses error handling.",
+        "cascade": [
+          "Parse errors no longer caught",
+          "Compiler crashes",
+          "Must rollback"
+        ],
+        "probability": "30%",
+        "recovery_hours": 2
+      },
+      {
+        "id": "F6",
+        "title": "Validator Becomes Unmaintainable",
+        "scenario": "Templates evolve independently. Each changes section names. Validator logic becomes tangled with type-specific exceptions.",
+        "cascade": [
+          "Conflicting expectations",
+          "Logic unmaintainable",
+          "Redesign needed"
+        ],
+        "probability": "50%",
+        "recovery_hours": 3
+      }
+    ],
+    "integration_points_fragility": [
+      {
+        "point": "compiler.parse() → parser API",
+        "dependency": "Step 1.1 schema",
+        "risk": "70%",
+        "recovery_hours": 3
+      },
+      {
+        "point": "File type detection logic",
+        "dependency": "Parser output structure",
+        "risk": "80%",
+        "recovery_hours": 1
+      },
+      {
+        "point": "Template selection → template paths",
+        "dependency": "Template discovery mechanism",
+        "risk": "60%",
+        "recovery_hours": 1
+      },
+      {
+        "point": "Template rendering → Jinja2 env",
+        "dependency": "Environment setup/teardown",
+        "risk": "40%",
+        "recovery_hours": 2
+      },
+      {
+        "point": "AC#5 validator → template schema",
+        "dependency": "Three incompatible schemas",
+        "risk": "80%",
+        "recovery_hours": 3
+      },
+      {
+        "point": "Error reporting → exception taxonomy",
+        "dependency": "Exception types defined",
+        "risk": "50%",
+        "recovery_hours": 1
+      }
+    ],
+    "security_holes": [
+      {
+        "hole": "Path traversal in template loading",
+        "risk": "Attacker specifies ../../etc/passwd; Jinja2 loads arbitrary files",
+        "mitigation": "Validate template paths; only allow tools/toon/templates/ directory"
+      },
+      {
+        "hole": "Code injection via Jinja2",
+        "risk": "TOON content contains {{ malicious_function() }}; executes as code",
+        "mitigation": "Use Jinja2 strict mode; disable all functions/variables"
+      },
+      {
+        "hole": "Denial of service via large files",
+        "risk": "Attacker provides multi-GB TOON; memory exhaustion",
+        "mitigation": "Add file size validation; reject > N MB"
+      }
+    ],
+    "test_coverage_gaps": {
+      "declared_tests": 6,
+      "missing_critical_tests": 10,
+      "coverage_percentage": "37%",
+      "missing_tests": [
+        "test_compiler_output_directory_not_writable",
+        "test_compiler_missing_template_file",
+        "test_compiler_template_rendering_fails",
+        "test_compiler_validates_output_sections",
+        "test_compiler_error_message_clarity",
+        "test_compiler_handles_empty_toon_file",
+        "test_compiler_prevents_overwrite_without_confirmation",
+        "test_compiler_rejects_path_traversal_in_template",
+        "test_compiler_handles_circular_template_references",
+        "test_compiler_output_is_valid_markdown"
+      ]
+    },
+    "blockers_for_starting": [
+      {
+        "blocker": "Parser output schema undefined",
+        "blocking_dependency": "Step 1.1",
+        "must_resolve_before": "01-05 implementation",
+        "estimated_resolution_time_hours": 1
+      },
+      {
+        "blocker": "Circular dependency between parser and templates",
+        "blocking_dependency": "Steps 1.1-1.4 design",
+        "must_resolve_before": "01-05 implementation",
+        "estimated_resolution_time_hours": 3
+      },
+      {
+        "blocker": "Three templates have conflicting AC definitions",
+        "blocking_dependency": "Steps 1.2-1.4",
+        "must_resolve_before": "01-05 implementation",
+        "estimated_resolution_time_hours": 2
+      },
+      {
+        "blocker": "File type detection rules undefined",
+        "blocking_dependency": "Parser schema + template definitions",
+        "must_resolve_before": "01-05 implementation",
+        "estimated_resolution_time_hours": 1
+      }
+    ],
+    "recommendation": "DO NOT START THIS TASK. Resolve dependencies first. Total time to resolve blockers: ~6-7 hours. Then step 01-05 will complete in stated 3-4 hours."
+  },
+  "prerequisites": {
+    "blocking": [
+      "tools/toon/ directory MUST exist with README.md",
+      "TOON format specification v3.0 must be accessible",
+      "Parser output schema must be defined before template implementation"
+    ],
+    "validation": "Run: ls tools/toon/README.md. Must exist. If not: BLOCKER_001"
+  },
+  "critical_blocker_status": {
+    "BLOCKER_001": {
+      "title": "TOON Toolchain Missing",
+      "status": "UNRESOLVED",
+      "evidence": "tools/toon/ directory does not exist",
+      "impact": "Cannot parse TOON files, blocks all Phase 1 steps",
+      "resolution_options": [
+        "A: Implement TOON toolchain (16-20h estimated)",
+        "B: Pivot to Markdown templates (8-10h, loses TOON benefits)",
+        "C: Block until external TOON library available"
+      ]
+    }
+  }
+}

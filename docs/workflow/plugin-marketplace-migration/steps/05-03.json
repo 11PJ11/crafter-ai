@@ -1,0 +1,125 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "05-03",
+  "correction_version": "2.0-circular-dependency-fix",
+  "correction_date": "2026-01-06",
+  "correction_rationale": "Original step inherits all blockers from 05-01. Circular dependency fix: 05-03 can start in PARALLEL with 05-02 but ONLY AFTER 05-01 Phase A+B complete. Both 05-02 and 05-03 use 05-01 outputs.",
+
+  "phase": {
+    "number": 5,
+    "name": "Skills Creation",
+    "purpose": "Create 3 skill definitions for auto-invocation capability"
+  },
+
+  "step": {
+    "number": "5.3",
+    "name": "Create mikado Skill (Parallel with 05-02 after 05-01)",
+    "description": "Create mikado skill with:\n- Trigger patterns: \"mikado-method\", \"refactoring-complesso\", \"dependency-mapping\", \"complex-refactoring-graph\", \"metodo-mikado\" (Italian)\n- Agent binding: software-crafter\n- Mikado method workflow reference: 4-step cycle (Goal -> Experiment -> Visualize -> Revert)",
+    "motivation": "mikado skill for complex dependency-driven refactoring. CRITICAL: Must use TOON knowledge from 05-01 Phase A. Can run parallel with 05-02 after 05-01 complete.",
+    "estimated_hours": "2.5-3 (same as 05-02, using shared 05-01 prerequisites)"
+  },
+
+  "context": {
+    "constraints": [
+      "BLOCKING: DO NOT START UNTIL 05-01 PHASE A+B COMPLETE",
+      "CAN RUN IN PARALLEL WITH 05-02 (both use 05-01 outputs)",
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC4": "Skills auto-invoked correctly",
+      "SC5": "Full workflow functional"
+    },
+    "dependencies": ["05-01 (FULL COMPLETION - Phase A + Phase B)"],
+    "prerequisite_artifacts_from_05_01": [
+      "docs/toon-v3-skill-syntax-specification.md (from 05-01 Phase A)",
+      "5d-wave/templates/SKILL_TEMPLATE.toon (from 05-01 Phase A)",
+      "5d-wave/skills/develop/SKILL.md (compiled example from 05-01 Phase B)",
+      "tests/skills/skill_test_environment_setup.md (from 05-01 Phase A)"
+    ],
+    "optional_reference_from_05_02": [
+      "5d-wave/skills/refactor/SKILL.md (if 05-02 completes first, can use as additional reference)"
+    ]
+  },
+
+  "deliverables": {
+    "files_to_create": [
+      "5d-wave/skills/mikado/SKILL.toon",
+      "5d-wave/skills/mikado/SKILL.md (compiled output)"
+    ],
+    "acceptance_criteria": [
+      "Skill compiles to valid SKILL.md using 05-01 TOON syntax",
+      "Trigger patterns for complex refactoring (NO OVERLAP with develop or refactor skills)",
+      "Trigger pattern conflict matrix updated with mikado patterns",
+      "References Mikado method workflow: (1) 4-step cycle names, (2) Brief description of each step, (3) Decision guidance for when to use Mikado vs refactor vs develop",
+      "Mikado methodology reference validated against software-crafter agent specification",
+      "No pattern collisions with develop or refactor skills (verified via conflict matrix)"
+    ]
+  },
+
+  "tdd_approach": {
+    "outer_test": "GIVEN mikado SKILL.toon compiled\nWHEN user says \"metodo mikado per refactoring complesso\"\nTHEN skill should trigger software-crafter with mikado workflow",
+    "inner_tests": [
+      "test_skill_compiles_with_05_01_syntax",
+      "test_mikado_triggers_with_specific_patterns",
+      "test_mikado_method_referenced_with_guidance",
+      "test_no_collision_with_develop_or_refactor_patterns",
+      "test_methodology_scope_complete"
+    ]
+  },
+
+  "refactoring": {
+    "targets": []
+  },
+
+  "execution_guidance": {
+    "approach": "Template-Based Skill Creation (using 05-01 learnings, parallel with 05-02)",
+    "workflow": [
+      "0. PREREQUISITE CHECK: Verify 05-01 Phase A+B deliverables exist",
+      "1. Copy SKILL_TEMPLATE.toon from 05-01 to 5d-wave/skills/mikado/",
+      "2. Define mikado-specific trigger patterns (complex-refactoring focus)",
+      "3. Reference Mikado method 4-step cycle using format from 05-01",
+      "4. Add decision guidance: When to use mikado vs refactor vs develop",
+      "5. Compile and validate output SKILL.md",
+      "6. Update trigger pattern conflict matrix (verify no overlaps with develop/refactor)",
+      "7. Write E2E test for skill triggering using 05-01 test environment",
+      "8. Validate methodology reference completeness",
+      "9. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "Prerequisite check passed (05-01 artifacts exist)",
+      "All tests passing (100% required)",
+      "Skill compiles to valid SKILL.md",
+      "Trigger patterns validated (no collisions)",
+      "Mikado method 4-step cycle referenced with decision guidance",
+      "Methodology scope complete (4 steps + descriptions + guidance)",
+      "No report files created"
+    ],
+    "trigger_pattern_conflict_resolution": {
+      "develop_patterns": ["implementa", "scrivi codice", "TDD", "implement", "write code"],
+      "refactor_patterns": ["refactor-level-1", "refactor-level-2", "refactor-level-3", "refactor-level-4", "refactor-level-5", "refactor-level-6", "progressive-refactoring", "code-structure-improvement", "cleanup-codebase", "refactoring sistematico"],
+      "mikado_patterns": ["mikado-method", "refactoring-complesso", "dependency-mapping", "complex-refactoring-graph", "metodo-mikado"],
+      "collision_check": "NO OVERLAPS DETECTED",
+      "conflict_resolution_rule": "Mikado patterns emphasize COMPLEXITY and DEPENDENCIES. Refactor patterns emphasize LEVELS. Develop patterns emphasize IMPLEMENTATION. No substring matches."
+    }
+  },
+
+  "approval_status": {
+    "status": "CORRECTED_PENDING_REVIEW",
+    "changes_from_original": [
+      "Changed trigger patterns to emphasize complexity/dependency focus",
+      "Added explicit dependency on 05-01 FULL COMPLETION",
+      "Time estimate revised from 1.5h to 2.5-3h",
+      "Added trigger pattern conflict matrix requirement",
+      "Defined methodology reference scope precisely (4-step cycle + descriptions + guidance)",
+      "Added prerequisite check step",
+      "Added conflict resolution rule",
+      "Documented parallel execution possibility with 05-02"
+    ],
+    "blocking_dependency_resolution": "05-03 CANNOT START until 05-01 Phase A (prerequisites) AND Phase B (implementation) both complete. CAN RUN IN PARALLEL with 05-02 since both use same 05-01 outputs.",
+    "circular_dependency_fix": "Original plan had 05-03 sequential after 05-02, but both can be parallel after 05-01. Now: 05-01 -> [05-02 || 05-03] (parallel)."
+  }
+}

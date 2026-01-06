@@ -1,0 +1,239 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "06-02",
+  "phase": {
+    "number": 6,
+    "name": "Template Migration",
+    "purpose": "Convert reference templates to TOON for consistency"
+  },
+  "step": {
+    "number": "6.2",
+    "name": "Convert COMMAND_TEMPLATE",
+    "description": "Convert COMMAND_TEMPLATE.yaml to COMMAND_TEMPLATE.toon",
+    "motivation": "Template consistency with new source format",
+    "estimated_hours": "1-3 OR 20-30 if TOON toolchain prerequisite needed",
+    "prerequisite_verification_required": true
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable",
+      "CRITICAL: Verify TOON toolchain prerequisite OR use fallback approach"
+    ],
+    "success_criteria_mapping": {
+      "SC1": "All source files in TOON v3.0 format OR Markdown format (if toolchain unavailable)"
+    },
+    "dependencies": ["2.4", "PHASE_1_TOOLCHAIN_OR_FALLBACK"],
+    "critical_blocker_status": {
+      "blocker_id": "BLOCKER_001",
+      "title": "Phase 1 TOON Toolchain Missing",
+      "severity": "CRITICAL",
+      "evidence": "tools/toon/ directory does not exist (verified 2026-01-05)",
+      "impact": "Cannot execute TOON conversion workflow without parser/compiler",
+      "affects_steps": ["06-01", "06-02", "06-03", "07-01", "07-02", "07-03"],
+      "resolution_options": [
+        {
+          "option": "A",
+          "name": "Implement Phase 1 TOON Toolchain First",
+          "description": "Complete Phase 1.1-1.3 to create tools/toon/ directory with parser.py and compiler.py",
+          "effort_estimate": "20-30 hours",
+          "prerequisites": [
+            "TOON v3.0 format specification documented",
+            "Parser output schema defined",
+            "Compiler validation mechanism designed",
+            "Test infrastructure for toolchain created"
+          ],
+          "timeline": "3-4 days before Phase 6 can start"
+        },
+        {
+          "option": "B",
+          "name": "Pivot to Markdown Optimization (Skip TOON Format)",
+          "description": "Optimize existing .md files instead of converting to .toon format",
+          "effort_estimate": "1-2 hours per template",
+          "prerequisites": [
+            "Update success criteria from 'TOON v3.0 format' to 'Optimized Markdown format'",
+            "Define Markdown optimization criteria (readability, consistency, embedding)",
+            "Create validation tests for Markdown output"
+          ],
+          "timeline": "Can start immediately"
+        },
+        {
+          "option": "C",
+          "name": "Block Phase 6 Until Toolchain Available",
+          "description": "Mark steps as BLOCKED, wait for Phase 1 completion",
+          "effort_estimate": "0 hours (waiting)",
+          "prerequisites": [
+            "Phase 1 team commits to delivery timeline",
+            "Dependencies updated in all Phase 6-8 steps",
+            "Project timeline adjusted for Phase 1 completion"
+          ],
+          "timeline": "Unknown - depends on Phase 1 completion"
+        }
+      ]
+    }
+  },
+  "deliverables": {
+    "files_to_create": [
+      "5d-wave/templates/COMMAND_TEMPLATE.toon (Option A) OR 5d-wave/templates/COMMAND_TEMPLATE.md (Option B)"
+    ],
+    "acceptance_criteria": [
+      "PREREQUISITE CHECK PASSED: TOON toolchain exists OR fallback approach approved",
+      "Template compiles to valid reference MD (Option A) OR Template is valid optimized MD (Option B)",
+      "Includes all command structure elements",
+      "Conversion methodology documented in execution notes"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN COMMAND_TEMPLATE source\nWHEN processed\nTHEN produces valid command template reference",
+    "inner_tests": [
+      "test_prerequisite_toolchain_available (Option A)",
+      "test_template_structure_complete",
+      "test_fallback_markdown_valid (Option B)"
+    ]
+  },
+  "refactoring": {
+    "targets": []
+  },
+  "execution_guidance": {
+    "approach": "Prerequisite-driven template conversion with fallback",
+    "mandatory_prerequisite_check": {
+      "step_0": "MANDATORY FIRST STEP - Verify Prerequisites",
+      "checks": [
+        {
+          "check_id": "PRE-01",
+          "description": "Verify TOON toolchain exists",
+          "validation_command": "ls -la /path/to/tools/toon/ && python -c 'from tools.toon import compile; print(compile.__doc__)'",
+          "success_criteria": "Directory exists AND compile function importable",
+          "failure_action": "STOP - Choose Option B (Markdown) or Option C (Block)"
+        },
+        {
+          "check_id": "PRE-02",
+          "description": "Verify TOON format specification available",
+          "validation_command": "ls -la /path/to/docs/toon-v3.0-spec.md OR grep -r 'TOON v3.0' /path/to/docs/",
+          "success_criteria": "Specification document exists with syntax examples",
+          "failure_action": "STOP - Cannot convert without format specification"
+        },
+        {
+          "check_id": "PRE-03",
+          "description": "Get user approval for approach",
+          "validation_method": "Interactive - ask user to choose Option A, B, or C",
+          "success_criteria": "User explicitly approves approach",
+          "failure_action": "STOP - Cannot proceed without user decision"
+        }
+      ]
+    },
+    "workflow_option_a": [
+      "0. RUN PREREQUISITE CHECKS (PRE-01, PRE-02, PRE-03)",
+      "1. Convert COMMAND_TEMPLATE.yaml to COMMAND_TEMPLATE.toon using TOON format spec",
+      "2. Compile to validate structure using tools/toon/compiler.py",
+      "3. Write test to verify template completeness",
+      "4. Validate all command structure elements present",
+      "5. Document conversion methodology in commit message",
+      "6. DO NOT COMMIT - wait for user approval"
+    ],
+    "workflow_option_b": [
+      "0. RUN PREREQUISITE CHECKS (PRE-03 only - get fallback approval)",
+      "1. Optimize COMMAND_TEMPLATE.yaml as Markdown (readability, consistency)",
+      "2. Validate Markdown syntax and structure",
+      "3. Write test to verify template completeness",
+      "4. Validate all command structure elements present",
+      "5. Document optimization approach in commit message",
+      "6. DO NOT COMMIT - wait for user approval"
+    ],
+    "workflow_option_c": [
+      "0. RUN PREREQUISITE CHECKS (PRE-01 fails)",
+      "1. Mark step as BLOCKED in status",
+      "2. Document blocking reason and Phase 1 dependency",
+      "3. Notify user of block and estimated wait time",
+      "4. Wait for Phase 1 completion notification"
+    ],
+    "quality_gates": [
+      "MANDATORY: Prerequisite checks completed and passed OR fallback approved",
+      "All tests passing (100% required)",
+      "Template validates successfully (compile OR Markdown lint)",
+      "All structure elements present",
+      "No report files created",
+      "Approach documented in execution notes"
+    ]
+  },
+  "adversarial_review": {
+    "review_date": "2026-01-05",
+    "reviewer": "adversarial-software-crafter-reviewer",
+    "verdict": "CRITICAL BLOCKER - STEP CANNOT EXECUTE (CORRECTED WITH PREREQUISITE CHECKS)",
+    "UPDATED_AFTER_CORRECTION": {
+      "correction_date": "2026-01-06",
+      "correction_summary": "Added explicit prerequisite verification, fallback options, and blocking status tracking",
+      "remaining_risks": [
+        "User may skip prerequisite checks (mitigated by MANDATORY step 0)",
+        "Option A chosen without understanding 20-30h Phase 1 effort (mitigated by effort estimates)",
+        "Option B chosen without updating success criteria SC1 (mitigated by acceptance criteria update)"
+      ]
+    },
+    "contradictions_found": [
+      {
+        "contradiction": "Step 6.2 depends on Phase 1 deliverables that do not exist",
+        "evidence": "Phase 1.1-1.3 were supposed to create tools/toon/ directory with parser.py and compiler.py. Directory does not exist (verified: ls tools/toon/ returns 'No such file or directory')",
+        "impact": "BLOCKING - Without TOON parser and compiler, conversion cannot happen. Executor will discover missing tools and be blocked",
+        "blast_radius": "ENTIRE_PROJECT - All Phase 6, 7, 8 template/batch migrations depend on Phase 1 toolchain",
+        "MITIGATION_ADDED": "Mandatory prerequisite check (step 0) with ls command verification. Three fallback options documented."
+      },
+      {
+        "contradiction": "Step claims to 'compile to validate structure' but compilation tool undefined and non-existent",
+        "evidence": "Execution workflow Step 2: 'Compile to validate structure' - but no compiler specified, no invocation command provided, tools/toon/compiler.py doesn't exist",
+        "impact": "BLOCKING - Cannot execute workflow. Executor will fail at Step 2 of execution_guidance",
+        "blast_radius": "PHASE_6 AND DOWNSTREAM - All template migration (6.1, 6.2, 6.3) will fail due to missing compiler",
+        "MITIGATION_ADDED": "PRE-01 check validates compile function importability. Option B provides non-compiler fallback."
+      }
+    ],
+    "dangerous_assumptions": [
+      {
+        "assumption_id": "ASSUME-001",
+        "title": "TOON parser and compiler exist and are available",
+        "severity": "CRITICAL",
+        "assumption": "They don't exist. Phase 1 was never executed (or was executed but failed silently, or was planned but not yet started). Executor will encounter 'ModuleNotFoundError: No module named toon'",
+        "danger": "They don't exist. Phase 1 was never executed (or was executed but failed silently, or was planned but not yet started). Executor will encounter 'ModuleNotFoundError: No module named toon'",
+        "mitigation_required": "CRITICAL - Verify Phase 1 completion before attempting Phase 6",
+        "MITIGATION_ADDED": "Explicit verification in PRE-01 check. Three resolution paths (A, B, C) provide alternatives."
+      }
+    ],
+    "risk_score": 9.2,
+    "risk_score_justification": "Step depends entirely on Phase 1 deliverables that don't exist (verified). Format is undefined. Conversion rules undefined. Test criteria undefined. Validation approach undefined. Step cannot execute in current form. This is a critical blocker affecting entire Phase 6+ timeline. Single most dangerous assumption is that TOON toolchain exists - it demonstrably doesn't",
+    "blast_radius": "MULTIPLE_PHASES",
+    "impact_analysis": {
+      "phase_6_impact": "BLOCKED - All template migration (6.1, 6.2, 6.3) blocked until Phase 1 complete",
+      "phase_7_impact": "BLOCKED - Batch agent migration (7.1-7.3) blocked until Phase 6 templates complete",
+      "phase_8_impact": "BLOCKED - Validation (8.1-8.4) cannot validate without completed migrations from 6-7",
+      "timeline_impact": "Minimum 8-15 hours Phase 1 rework + re-execution of Phase 6 = 3-4 day delay minimum",
+      "MITIGATION_EFFECTIVENESS": "Prerequisite checks prevent wasted execution time. Option B allows immediate progress without Phase 1 dependency."
+    },
+    "critical_blockers": [
+      {
+        "blocker": "TOON toolchain non-existent",
+        "must_resolve_before": "Phase 6.2 execution",
+        "resolution_effort": "Requires Phase 1 completion (1.1: 4-6h parser, 1.2: 4-6h compiler, 1.3: 2-4h testing) = 10-16 hours",
+        "verification": "Confirm: (1) tools/toon/__init__.py exists, (2) tools/toon/parser.py exists, (3) tools/toon/compiler.py exists, (4) toon.compile() callable and functional",
+        "MITIGATION_ADDED": "PRE-01 check automates verification. Three resolution options (A, B, C) documented."
+      }
+    ],
+    "summary": "Step 6.2 is blocked on non-existent Phase 1 TOON toolchain. Format and conversion rules undefined. Test criteria vague. This step cannot execute in current form and will fail immediately when executor attempts to import TOON compiler. Recommend: (1) Verify/complete Phase 1, (2) Add TOON format specification, (3) Document conversion rules and examples, (4) Specify concrete AC and validation approach. Without these, Phase 6 and all downstream work is blocked. MITIGATION: Prerequisite checks and fallback options now prevent blind execution."
+  },
+  "review_metadata": {
+    "reviewed_by": "Lyra",
+    "review_date": "2026-01-05",
+    "corrected_date": "2026-01-06",
+    "review_type": "task_clarity_completeness_achievability",
+    "review_status": "CORRECTED - Prerequisite checks and fallback options added",
+    "severity_summary": {
+      "critical": 2,
+      "high": 2,
+      "medium": 2,
+      "low": 1
+    },
+    "clarity_assessment": "NOW CLEAR - Prerequisite verification mandatory, three resolution paths documented",
+    "completeness_assessment": "NOW COMPLETE - Blocking scenario addressed with concrete options",
+    "achievability_assessment": "NOW ACHIEVABLE - With prerequisite checks and fallback strategies"
+  }
+}

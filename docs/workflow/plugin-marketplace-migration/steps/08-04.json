@@ -1,0 +1,236 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "08-04",
+  "phase": {
+    "number": 8,
+    "name": "Integration & Validation",
+    "purpose": "End-to-end validation of complete plugin migration"
+  },
+  "step": {
+    "number": "8.4",
+    "name": "Success Criteria Validation",
+    "description": "Final validation of all 7 success criteria:\n- SC1: Count TOON files (26 agents + 20 commands)\n- SC2: Validate Claude Code compliance\n- SC3: Confirm plugin installation works (any mechanism)\n- SC4: Test skill auto-invocation\n- SC5: Run workflow test (uses results from 08-03)\n- SC6: Verify constraints (uses results from 08-03)\n- SC7: Measure token savings (REQUIRES Phase 2 baseline OR capture now)",
+    "motivation": "Final gate before migration complete",
+    "estimated_hours": "3"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC1": "All source files in TOON v3.0 format (26 agents + 20 commands)",
+      "SC2": "Build produces Claude Code compliant output",
+      "SC3": "Plugin installable via available mechanism",
+      "SC4": "Skills auto-invoked correctly",
+      "SC5": "Full workflow (implement->review->fix->refactor) functional",
+      "SC6": "Default constraints integrated (no auto-report, no auto-commit)",
+      "SC7": "~60% token savings in source files (measured against baseline)"
+    },
+    "dependencies": ["8.3"],
+    "prerequisites": [
+      {
+        "prerequisite": "CRITICAL: Token savings baseline from Phase 2 OR capture now",
+        "description": "SC7 requires comparing TOON file sizes to original MD file sizes. Phase 2.4 (Archive Original MD Files) should have captured baseline, but this step may not exist in roadmap.",
+        "validation_method": "Check if archive/original_md_byte_counts.json exists with baseline measurements. If not, capture baseline now from current MD files (if any remain) or estimate from build output.",
+        "blocker_if_missing": true,
+        "mitigation": "FALLBACK BASELINE CAPTURE:\n1. IF original MD files archived: Load archive/original_md_byte_counts.json\n2. IF MD files still present in 5d-wave/: Count bytes now, use as baseline\n3. IF no MD files available: Use build output sizes as proxy baseline (less accurate)\n4. Document baseline source in test output for transparency"
+      },
+      {
+        "prerequisite": "Token savings calculation methodology defined",
+        "description": "Define exact formula for token savings calculation",
+        "validation_method": "Specification exists defining: (1) baseline source (original MD bytes), (2) current source (TOON bytes OR compiled MD bytes), (3) formula: savings = (baseline - current) / baseline * 100",
+        "blocker_if_missing": false,
+        "mitigation": "DEFAULT METHODOLOGY:\n- Baseline: Original MD file bytes (from archive or current state)\n- Current: TOON source file bytes (5d-wave/**/*.toon)\n- Formula: token_savings_pct = (baseline_bytes - toon_bytes) / baseline_bytes * 100\n- Acceptance threshold: >= 50% savings required for SC7 pass"
+      },
+      {
+        "prerequisite": "Steps 08-01, 08-02, 08-03 completed successfully",
+        "description": "All prerequisite validation steps must pass before final success criteria validation",
+        "validation_method": "Verify: (1) Build system integrated (08-01), (2) Plugin installed (08-02), (3) Workflow tested (08-03)",
+        "blocker_if_missing": true,
+        "mitigation": "If any prerequisite step incomplete: DO NOT proceed with 08-04. Resolve blockers in 08-01/08-02/08-03 first. SC validation is final gate - all upstream work must be stable."
+      }
+    ]
+  },
+  "deliverables": {
+    "files_to_create": [
+      "tests/plugin/test_success_criteria.py",
+      "archive/token_baseline.json (OPTIONAL - only if baseline doesn't exist and needs capture)"
+    ],
+    "acceptance_criteria": [
+      "All 7 success criteria pass validation",
+      "SC1: 26 TOON agents + 20 TOON commands counted and format-validated",
+      "SC2: Build output validated as Claude Code compliant (plugin.json valid, structure correct)",
+      "SC3: Plugin installation validated (test from 08-02 confirms installability)",
+      "SC4: Skills auto-invocation validated (test demonstrates skill triggers correctly)",
+      "SC5: Workflow validated as functional (test from 08-03 confirms 5D-Wave flow works)",
+      "SC6: Constraints validated as enforced (test from 08-03 confirms no auto-reports/commits)",
+      "SC7: Token savings >= 50% measured and documented",
+      "Validation results logged to stdout (no file generated - honors constraints)"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN complete plugin build and prerequisites validated\nWHEN I run success criteria validation\nTHEN all 7 criteria pass with measurements logged to stdout",
+    "inner_tests": [
+      "test_sc1_all_toon_sources (counts .toon files, validates format compliance)",
+      "test_sc2_claude_code_compliant (validates build output structure and plugin.json)",
+      "test_sc3_plugin_installable (re-runs installation test from 08-02 or validates result)",
+      "test_sc4_skills_auto_invoke (validates skill triggering mechanism works)",
+      "test_sc5_workflow_functional (validates 08-03 workflow test passed)",
+      "test_sc6_constraints_enforced (validates 08-03 constraint test passed)",
+      "test_sc7_token_savings (measures TOON bytes vs baseline, calculates percentage)",
+      "test_token_baseline_exists (validates baseline available for SC7 measurement)"
+    ]
+  },
+  "refactoring": {
+    "targets": []
+  },
+  "execution_guidance": {
+    "approach": "Comprehensive success criteria validation with baseline fallback",
+    "workflow": [
+      "1. PREREQUISITE: Verify token baseline exists or capture now (30 min):\n   - Check archive/original_md_byte_counts.json\n   - If missing: capture from current MD files OR build output\n   - Document baseline source",
+      "2. PREREQUISITE: Verify steps 08-01, 08-02, 08-03 passed (15 min)",
+      "3. Create comprehensive validation test script test_success_criteria.py (30 min)",
+      "4. Write test_token_baseline_exists - validate baseline available (15 min)",
+      "5. Write test_sc1_all_toon_sources - count and validate TOON files (30 min):\n   - Count .toon files in 5d-wave/\n   - Validate TOON v3.0 format compliance (parse each file)\n   - Assert count >= 46 (26 agents + 20 commands)",
+      "6. Write test_sc2_claude_code_compliant - validate build output (20 min):\n   - Validate dist/ide/plugin.json exists and is valid JSON\n   - Validate plugin directory structure matches expected format",
+      "7. Write test_sc3_plugin_installable - reference 08-02 result (10 min)",
+      "8. Write test_sc4_skills_auto_invoke - validate skill triggering (15 min)",
+      "9. Write test_sc5_workflow_functional - reference 08-03 result (10 min)",
+      "10. Write test_sc6_constraints_enforced - reference 08-03 result (10 min)",
+      "11. Write test_sc7_token_savings - measure and calculate (30 min):\n   - Load baseline from archive or fallback source\n   - Count TOON source bytes\n   - Calculate: (baseline - toon) / baseline * 100\n   - Assert savings >= 50%",
+      "12. Run full validation suite (15 min)",
+      "13. Log results to stdout with clear pass/fail summary (10 min)",
+      "14. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "All tests passing (100% required)",
+      "All 7 success criteria validated",
+      "SC1: 26+ TOON agents and 20+ TOON commands counted, format-valid",
+      "SC2: Build output Claude Code compliant (plugin.json valid)",
+      "SC3: Plugin installable (08-02 test passed)",
+      "SC4: Skills auto-invoke correctly",
+      "SC5: Workflow functional (08-03 test passed)",
+      "SC6: Constraints enforced (08-03 test passed)",
+      "SC7: Token savings >= 50% measured with documented baseline",
+      "Results logged to stdout only (no files created)",
+      "No report files created (honors constraint)"
+    ]
+  },
+  "critical_blocker_addressed": {
+    "blocker_id": "BLOCKER_5",
+    "blocker_title": "Token savings baseline missing - Phase 2.4 not defined",
+    "severity": "CRITICAL - PROJECT COMPLETION BLOCKED",
+    "original_issue": "SC7 requires measuring token savings by comparing TOON files to original MD files. Baseline should come from Phase 2.4 'Archive Original MD Files', but this step doesn't exist in roadmap. Without baseline, SC7 cannot be validated.",
+    "evidence": "No step 02-04.json found. baseline.yaml mentions 'Archive Original MD Files' but roadmap.yaml doesn't define Phase 2 structure. No archive/original_md_byte_counts.json file exists.",
+    "impact": "Cannot validate SC7 (token savings) - final success criteria validation blocked, project cannot complete",
+    "resolution_applied": {
+      "strategy": "FALLBACK BASELINE CAPTURE with multiple sources",
+      "implementation": [
+        "1. PRIMARY: Check if archive/original_md_byte_counts.json exists (Phase 2.4 executed)",
+        "2. FALLBACK 1: If original MD files still present in 5d-wave/, count bytes now and use as baseline",
+        "3. FALLBACK 2: If no MD files available, estimate baseline from build output metadata (less accurate)",
+        "4. CAPTURE NOW: If no baseline exists anywhere, create archive/token_baseline.json with current measurements",
+        "5. DOCUMENT: Log baseline source in test output for transparency (archived vs captured vs estimated)"
+      ],
+      "baseline_capture_specification": {
+        "format": "JSON file with structure: {source_type: 'archived|current|estimated', baseline_date: 'ISO8601', agent_bytes: {agent_name: byte_count}, command_bytes: {command_name: byte_count}, total_bytes: sum}",
+        "location": "archive/token_baseline.json",
+        "fallback_calculation": "If estimating from build: use compiled .md output sizes from dist/ide/ as proxy baseline (note: less accurate than original MD source)"
+      },
+      "acceptance_criteria_update": "SC7 now specifies: 'Token savings >= 50% measured against baseline (archived baseline preferred, fallback capture acceptable with documentation)'",
+      "estimated_hours_update": "Increased from 1 hour to 3 hours to account for: (1) Baseline discovery/capture (30 min), (2) Additional test complexity for multiple baseline sources (30 min), (3) Validation logic for baseline quality (20 min), (4) Documentation of baseline provenance (10 min)"
+    }
+  },
+  "sc1_format_validation_enhancement": {
+    "original_issue": "test_sc1_all_toon_sources naive file count - doesn't validate TOON v3.0 format compliance",
+    "risk": "Files named .toon but with invalid content would pass count check but fail compilation",
+    "resolution": {
+      "approach": "Enhanced validation - count AND parse each TOON file",
+      "implementation": [
+        "1. Find all .toon files in 5d-wave/",
+        "2. For each file: attempt to parse as TOON v3.0 (validate syntax, required sections)",
+        "3. Count only files that parse successfully as valid TOON",
+        "4. Assert: valid_toon_count >= 46 (26 agents + 20 commands)",
+        "5. Log any files that exist but fail parsing (format errors)"
+      ],
+      "validation_depth": "Syntax validation only - semantic validation (correct content, complete metadata) deferred to build step 08-01"
+    }
+  },
+  "sc5_sc6_test_reuse": {
+    "approach": "Reference results from step 08-03 instead of re-testing",
+    "rationale": "Step 08-03 already validated workflow (SC5) and constraints (SC6). Re-running identical tests wastes time and risks different results (non-deterministic behavior).",
+    "implementation": {
+      "test_sc5_workflow_functional": "Load test results from tests/plugin/test_full_workflow.py execution in 08-03. Assert: all workflow tests passed. If 08-03 not run or tests failed, BLOCK 08-04 and require 08-03 completion first.",
+      "test_sc6_constraints_enforced": "Load test results from tests/plugin/test_full_workflow.py (constraint validation tests) in 08-03. Assert: no auto-reports created, no auto-commits made. If 08-03 not run, BLOCK 08-04."
+    },
+    "fallback": "If 08-03 results unavailable: re-run subset of workflow tests specifically for SC5/SC6 validation (add 60 min to estimate)"
+  },
+  "token_savings_measurement_methodology": {
+    "baseline_calculation": {
+      "source": "Original MD files from 5d-wave/ before migration (archived in Phase 2.4 OR captured in 08-04 if missing)",
+      "method": "Sum byte counts of all .md files (agents + commands)",
+      "units": "bytes (not tokens, but bytes are proxy for token count)"
+    },
+    "current_calculation": {
+      "source": "TOON source files in 5d-wave/ after migration",
+      "method": "Sum byte counts of all .toon files (agents + commands)",
+      "units": "bytes"
+    },
+    "savings_formula": {
+      "calculation": "token_savings_pct = ((baseline_bytes - toon_bytes) / baseline_bytes) * 100",
+      "example": "If baseline = 100KB and TOON = 40KB, savings = ((100-40)/100)*100 = 60%",
+      "acceptance_threshold": ">= 50% savings required for SC7 pass"
+    },
+    "output_format": {
+      "stdout_log": "SC7 Token Savings: {savings_pct}% (Baseline: {baseline_bytes} bytes, Current: {toon_bytes} bytes, Source: {baseline_source})",
+      "baseline_source_values": ["archived (Phase 2.4)", "captured (current MD files)", "estimated (build output proxy)"]
+    }
+  },
+  "estimate_revision": {
+    "original_estimate_hours": 1,
+    "revised_estimate_hours": 3,
+    "revision_rationale": "Original 1-hour estimate assumed all prerequisites complete and baseline exists. Actual scope includes: (1) Token baseline discovery/capture/validation (30 min), (2) Enhanced TOON format validation for SC1 (30 min), (3) Test creation for all 7 criteria with proper assertions (60 min), (4) Integration with 08-03 results for SC5/SC6 (20 min), (5) Token savings measurement with multiple baseline sources (30 min), (6) Test execution and result logging (20 min), (7) Buffer for prerequisite gaps (10 min). Total: 3 hours minimum.",
+    "breakdown": {
+      "baseline_handling": "0.5h",
+      "enhanced_sc1_validation": "0.5h",
+      "test_creation": "1h",
+      "sc5_sc6_integration": "0.33h",
+      "token_savings_measurement": "0.5h",
+      "execution_and_logging": "0.33h",
+      "buffer": "0.17h"
+    }
+  },
+  "component_count_correction": {
+    "original_hardcoded_counts": {
+      "total_toon_files": 48,
+      "agents": 28,
+      "commands": 20
+    },
+    "corrected_counts": {
+      "total_toon_files": 46,
+      "agents": 26,
+      "commands": 20,
+      "evidence": "dist/ide/agents/dw/config.json shows 'agents_processed': 26. Actual count is 26 agents + 20 commands = 46 total.",
+      "test_assertion": "assert toon_file_count >= 46 (use >= to allow for future growth without test brittleness)"
+    }
+  },
+  "prerequisites_dependency_validation": {
+    "step_8_1_completion": {
+      "required_artifacts": ["Build system updated with TOON compiler integration", "dist/ide/ directory populated with plugin files", "Token savings reported in build output (stdout)"],
+      "validation": "Verify build completes without errors, dist/ide/plugin.json exists"
+    },
+    "step_8_2_completion": {
+      "required_artifacts": ["Plugin installation mechanism validated", "All 26 agents accessible after installation", "Installation tests passing"],
+      "validation": "Verify tests/plugin/test_installation.py executed and all tests passed"
+    },
+    "step_8_3_completion": {
+      "required_artifacts": ["Workflow tests passing (SC5 validated)", "Constraint tests passing (SC6 validated)", "Mock reviewer integration successful"],
+      "validation": "Verify tests/plugin/test_full_workflow.py executed and all tests passed"
+    },
+    "blocking_condition": "If ANY prerequisite step (08-01, 08-02, 08-03) has failing tests or incomplete execution, DO NOT proceed with 08-04. Success criteria validation requires ALL upstream work stable and verified."
+  }
+}

@@ -1,0 +1,385 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "01-03",
+  "phase": {
+    "number": 1,
+    "name": "TOON Infrastructure",
+    "purpose": "Create parser and compiler toolchain that transforms TOON source into Claude Code compliant output"
+  },
+  "step": {
+    "number": "1.3",
+    "name": "Create Command Jinja2 Template",
+    "description": "Create Jinja2 template for command.md files with command-specific metadata and execution context.\n\nCRITICAL FIX: Commands are NOT agents. Use command-specific terminology, not agent terminology.\nTemplate renders: command metadata header, wave reference, execution context, success criteria checklist.\n\nDEPENDENCY: Review 01-02 agent template for Jinja2 patterns before implementing.",
+    "motivation": "Command template defines output for 20 command files",
+    "estimated_hours": "3-4"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC2": "Build produces Claude Code compliant output"
+    },
+    "dependencies": [
+      "1.1",
+      "1.2"
+    ]
+  },
+  "deliverables": {
+    "files_to_create": [
+      "tools/toon/templates/command.md.j2",
+      "tests/tools/toon/test_command_template.py"
+    ],
+    "acceptance_criteria": [
+      "Template produces command metadata header (wave, agent-reference, command-specific fields)",
+      "Template includes execution context and prerequisites",
+      "Template renders success criteria as markdown checklist",
+      "Template handles command-specific sections (not agent sections)"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN parsed command data with wave='DEVELOP', command_name='implement-feature'\nWHEN I render command.md.j2 template\nTHEN output has command metadata header with wave and agent reference",
+    "inner_tests": [
+      "test_template_agent_activation_header",
+      "test_template_wave_metadata",
+      "test_template_context_files_section",
+      "test_template_success_criteria_checklist"
+    ]
+  },
+  "refactoring": {
+    "targets": [
+      {
+        "level": 1,
+        "focus": "Section naming consistency"
+      }
+    ]
+  },
+  "execution_guidance": {
+    "approach": "Outside-In TDD with double-loop",
+    "workflow": [
+      "0. PREREQUISITE CHECK: Verify tools/toon/ exists. If not: HALT - refer to BLOCKER_001 resolution",
+      "1. Write failing E2E test (outer_test)",
+      "2. Implement via inner TDD loop (inner_tests)",
+      "3. Apply refactoring level 1",
+      "4. Validate all acceptance criteria met",
+      "5. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "All tests passing (100% required)",
+      "All acceptance criteria validated",
+      "Refactoring applied (level 1)",
+      "No report files created"
+    ]
+  },
+  "review_metadata": {
+    "review_date": "2026-01-05",
+    "reviewer": "lyra",
+    "clarity_score": 7,
+    "completeness_score": 6,
+    "achievability_score": 7,
+    "overall_score": 6.7,
+    "critical_issues": [
+      {
+        "type": "missing_reference",
+        "severity": "high",
+        "description": "No reference to existing command.md files for validation. Unlike 01-02 (agent template), this step provides no structure to validate against. Do command files exist in codebase?",
+        "impact": "Implementation will be speculative without concrete template target",
+        "remediation": "Provide link to example command.md file OR specify exact expected format in acceptance criteria"
+      },
+      {
+        "type": "unclear_acceptance_criteria",
+        "severity": "high",
+        "description": "AC#1 'agent-activation header' is agent-specific language. Commands have different metadata. AC#3 'context files and previous artifacts' may not apply to commands.",
+        "impact": "Test implementation cannot be verified against clear requirements",
+        "remediation": "Rewrite AC using command-specific terminology. Clarify what 'context files' means for commands vs agents"
+      },
+      {
+        "type": "missing_data_structure",
+        "severity": "high",
+        "description": "No specification of input data structure for template. Parser (01-01) outputs structured data, but command data format is undefined.",
+        "impact": "Cannot write accurate inner tests without knowing template input schema",
+        "remediation": "Document input schema: what fields must be present in parsed command data?"
+      }
+    ],
+    "medium_issues": [
+      {
+        "type": "incomplete_outer_test",
+        "severity": "medium",
+        "description": "Outer test uses 'agent-id' which doesn't apply to commands. Commands identify their agent through reference, not have own agent-id.",
+        "impact": "Test is unaligned with domain model",
+        "remediation": "Rewrite outer_test with command-appropriate data and assertions"
+      },
+      {
+        "type": "missing_dependency",
+        "severity": "medium",
+        "description": "Should depend on 1.2 (agent template) for consistency patterns, not just 1.1 (parser). Both create templates.",
+        "impact": "Inconsistent template structure between agent and command templates possible",
+        "remediation": "Add 1.2 to dependencies or add 'reference 1.2 for macro/structure patterns' note"
+      },
+      {
+        "type": "vague_acceptance_criteria",
+        "severity": "medium",
+        "description": "AC#4 'success criteria as checklist' - format not specified (markdown checkboxes vs YAML list vs something else?)",
+        "impact": "Test implementation will guess at format",
+        "remediation": "Specify exact format expected in output template"
+      }
+    ],
+    "low_issues": [
+      {
+        "type": "estimated_time",
+        "severity": "low",
+        "description": "2 hours estimated. Reasonable if template structure is known, but could extend if heavy iteration needed.",
+        "impact": "Minor - affects scheduling only",
+        "remediation": "Consider 3-4 hour estimate if command format needs clarification"
+      }
+    ],
+    "missing_context": [
+      "Link to example command.md file in codebase",
+      "Command data structure specification (what fields from parser?)",
+      "Whether command template extends or parallels agent template",
+      "Exact format for success criteria checklist section"
+    ],
+    "recommendations": [
+      "BEFORE STARTING: Review existing command.md files (if any) to understand target format",
+      "CLARIFY AC: Rewrite acceptance criteria 1 & 3 with command-specific language",
+      "ADD DEPENDENCY: Reference 1.2 or add note to use agent template patterns as guide",
+      "SPECIFY INPUT: Document what fields parser must provide for command data",
+      "TIGHTEN TEST: Rewrite outer_test with realistic command data structure"
+    ]
+  },
+  "adversarial_review": {
+    "review_date": "2026-01-05",
+    "reviewer": "lyra (adversarial mode)",
+    "mission": "Find what WILL go wrong, not what might work",
+    "status": "BLOCKED - CRITICAL DEPENDENCIES UNRESOLVED",
+    "risk_score": 9,
+    "risk_score_scale": "1-10 (catastrophic)",
+    "blast_radius": "Blocks steps 1.4-1.6 (all command file generation)",
+    "contradictions_found": [
+      {
+        "contradiction": "Template input schema undefined",
+        "severity": "BLOCKING",
+        "evidence": "Parser (01-01) produces 'structured dict/object' with no schema specification. This step assumes parser output has fields like agent_id, wave, command_name - all unvalidated assumptions.",
+        "failure_scenario": "Template tries to render {{ command.wave }} but parsed data doesn't have wave field. Renders blank.",
+        "probability_of_correct_guess": "20-30%"
+      },
+      {
+        "contradiction": "Commands treated as agents in acceptance criteria",
+        "severity": "HIGH",
+        "evidence": "AC#1 says 'agent-activation YAML header' - agents have activation headers. Commands don't. AC#2 says 'wave, agent, command metadata' - wave applies to agents, not commands. AC#3 assumes 'context files' same as agents - wrong domain model.",
+        "failure_scenario": "Developer realizes mid-implementation that commands have different metadata structure. Complete template redesign needed.",
+        "discovery_timing": "Step 1.4 when first 20 commands generated - too late"
+      },
+      {
+        "contradiction": "Agent template (01-02) not yet specified but assumed to work",
+        "severity": "BLOCKING",
+        "evidence": "Step 01-02 is flagged 'ready_for_execution: false' with critical issues C1-C4 unresolved. This step assumes 01-02 completed and patterns available.",
+        "failure_scenario": "Developer starts this step, discovers 01-02 blocked, cannot proceed. Or proceeds with guessed patterns that don't match final 01-02.",
+        "probability_of_sequential_execution": "<10%"
+      },
+      {
+        "contradiction": "Success criteria don't map to system success criteria",
+        "severity": "MEDIUM",
+        "evidence": "AC#1-4 describe what template does (produces header, includes metadata, renders sections, includes checklist). But SC2 is 'Build produces Claude Code compliant output'. No test validates actual compliance.",
+        "failure_scenario": "Tests pass (ACs satisfied), but generated command.md files don't match Claude Code spec. Discovered in step 1.4+, cascades failure."
+      }
+    ],
+    "dangerous_assumptions": [
+      {
+        "assumption": "Commands and agents have similar structure",
+        "confidence_correct": "5%",
+        "when_breaks": "When generated command.md doesn't match Claude Code spec",
+        "impact": "Requires template redesign"
+      },
+      {
+        "assumption": "Single parser can produce schema suitable for both agent and command templates",
+        "confidence_correct": "40%",
+        "when_breaks": "When template receives nested data that doesn't unpack into expected fields",
+        "example": "Parser produces {agent: {}, commands: {}}, template expects flat fields"
+      },
+      {
+        "assumption": "Context files section works same for commands as agents",
+        "confidence_correct": "30%",
+        "when_breaks": "Template renders empty context_files for all commands because structure doesn't exist",
+        "impact": "Command documentation incomplete"
+      },
+      {
+        "assumption": "Jinja2 templates sufficient for task",
+        "confidence_correct": "60%",
+        "when_breaks": "First batch of commands fail on YAML escaping, special character handling, multi-line strings",
+        "example": "Description with colon: 'Validate: configuration' becomes invalid YAML"
+      }
+    ],
+    "unhandled_edge_cases": [
+      {
+        "edge_case": "Null/missing fields in command data",
+        "test_status": "NOT TESTED",
+        "failure": "Template produces malformed YAML or blank sections"
+      },
+      {
+        "edge_case": "Special characters in command description",
+        "test_status": "NOT TESTED",
+        "failure": "YAML parsing fails on colons, dashes, quotes"
+      },
+      {
+        "edge_case": "Commands with same name in different waves",
+        "test_status": "NOT TESTED",
+        "failure": "Namespace collision, files overwrite each other"
+      },
+      {
+        "edge_case": "Embedded knowledge injection markers",
+        "test_status": "NOT TESTED",
+        "failure": "Markers corrupted or content lost"
+      },
+      {
+        "edge_case": "Multi-line command documentation",
+        "test_status": "NOT TESTED",
+        "failure": "YAML indentation or formatting errors"
+      }
+    ],
+    "failure_scenarios": [
+      {
+        "scenario_id": "F1",
+        "title": "Parser schema definition slips",
+        "probability": "90%",
+        "timeline": "Dev starts step -> realizes schema undefined -> waits for 01-01 -> implements based on assumptions -> 01-01 produces different schema -> template breaks -> rework 4-6 hours"
+      },
+      {
+        "scenario_id": "F2",
+        "title": "Command structure doesn't match agent assumptions",
+        "probability": "85%",
+        "timeline": "Template assumes {{ command.wave }} -> parser doesn't include wave in command -> template renders blank -> discovered step 1.4 -> redesign required"
+      },
+      {
+        "scenario_id": "F3",
+        "title": "YAML formatting breaks on first batch",
+        "probability": "70%",
+        "timeline": "First 5 commands work -> command #6 has special characters -> YAML malformed -> debugging YAML escaping -> +2-3 hours"
+      },
+      {
+        "scenario_id": "F4",
+        "title": "Acceptance criteria don't validate real output",
+        "probability": "60%",
+        "timeline": "Tests pass (AC#1-4 satisfied) -> step 1.4 generates commands -> output doesn't match spec -> feature-completion-coordinator rejects -> rework"
+      }
+    ],
+    "data_loss_risks": [
+      {
+        "risk": "Command metadata corruption",
+        "scenario": "Parser includes nested data, template flattens incorrectly. Prerequisites lost in output.",
+        "impact": "Command documentation incomplete"
+      },
+      {
+        "risk": "Embedded knowledge markers corrupted",
+        "scenario": "Existing markers not preserved in re-render. Content between markers replaced.",
+        "impact": "Embedded knowledge lost or inaccessible"
+      }
+    ],
+    "test_coverage_gaps": [
+      "NULL field handling",
+      "YAML escaping (colons, dashes, quotes)",
+      "Special character handling",
+      "Multiple commands with same name",
+      "Missing prerequisite structure",
+      "Embedded marker preservation",
+      "Command vs agent field differences",
+      "Parser schema validation"
+    ],
+    "critical_dependencies": [
+      {
+        "dependency": "Step 01-01 (Parser)",
+        "status": "BLOCKED",
+        "blocking_reason": "Schema undefined, output structure unspecified",
+        "impact_if_wrong": "All downstream work invalid"
+      },
+      {
+        "dependency": "Step 01-02 (Agent Template)",
+        "status": "BLOCKED",
+        "blocking_reason": "Critical issues C1-C4 unresolved",
+        "impact_if_wrong": "This step will copy wrong patterns"
+      }
+    ],
+    "realistic_time_estimate": {
+      "stated_hours": 2,
+      "adjusted_hours": 11.5,
+      "multiplier": "5.75x",
+      "breakdown": {
+        "clarify_input_schema": 1,
+        "review_agent_patterns": 1,
+        "design_command_structure": 1,
+        "write_e2e_test": 1,
+        "implement_template": 2.5,
+        "write_inner_tests": 2,
+        "refactoring": 1,
+        "validation_and_fixes": 2
+      },
+      "note": "2 hours is 18% of likely actual time"
+    },
+    "blockers_before_starting": [
+      {
+        "blocker": "Define parser output schema with examples",
+        "priority": "CRITICAL",
+        "blocks": [
+          "Template design",
+          "Test writing",
+          "Acceptance criteria clarity"
+        ]
+      },
+      {
+        "blocker": "Define command vs agent structural differences",
+        "priority": "CRITICAL",
+        "blocks": [
+          "Acceptance criteria accuracy",
+          "Test correctness"
+        ]
+      },
+      {
+        "blocker": "Resolve step 01-02 critical issues C1-C4",
+        "priority": "CRITICAL",
+        "blocks": [
+          "Pattern reference availability"
+        ]
+      },
+      {
+        "blocker": "Provide example parsed command data",
+        "priority": "HIGH",
+        "blocks": [
+          "E2E test implementation"
+        ]
+      },
+      {
+        "blocker": "Specify YAML edge case handling",
+        "priority": "HIGH",
+        "blocks": [
+          "Test completeness"
+        ]
+      }
+    ],
+    "conclusion": "This task WILL FAIL if started now. Not might fail - WILL fail. Root cause: attempting to create template without knowing input schema or how commands differ from agents. Cannot proceed until 01-01 and 01-02 both unblocked with clear specifications."
+  },
+  "critical_blocker_status": {
+    "BLOCKER_001": {
+      "title": "TOON Toolchain Missing",
+      "status": "UNRESOLVED",
+      "evidence": "tools/toon/ directory does not exist",
+      "impact": "Cannot parse TOON files, blocks all Phase 1 steps",
+      "resolution_options": [
+        "A: Implement TOON toolchain (16-20h estimated)",
+        "B: Pivot to Markdown templates (8-10h, loses TOON benefits)",
+        "C: Block until external TOON library available"
+      ]
+    }
+  },
+  "prerequisites": {
+    "blocking": [
+      "tools/toon/ directory MUST exist with README.md",
+      "TOON format specification v3.0 must be accessible",
+      "Parser output schema must be defined before template implementation"
+    ],
+    "validation": "Run: ls tools/toon/README.md. Must exist. If not: BLOCKER_001"
+  }
+}

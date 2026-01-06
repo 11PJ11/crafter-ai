@@ -1,0 +1,193 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "03-01",
+  "phase": {
+    "number": 3,
+    "name": "Agent Batch Migration",
+    "purpose": "Convert remaining 27 agents to TOON format (28 total including pilot)"
+  },
+  "step": {
+    "number": "3.1",
+    "name": "Convert Primary Agents",
+    "description": "Convert 10 primary agents following patterns from pilot: product-owner, solution-architect, acceptance-designer, skeleton-builder, researcher, devop, troubleshooter, visual-architect, illustrator, data-engineer",
+    "motivation": "Primary agents are the core workflow executors",
+    "estimated_hours": "10-15"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC1": "All source files in TOON v3.0 format",
+      "SC7": "Target 50-60% token savings (to be validated - no baseline measurements exist yet)"
+    },
+    "dependencies": ["2.4"],
+    "prerequisite_checks": [
+      {
+        "check": "TOON toolchain exists and is functional",
+        "validation": "Verify tools/toon/README.md exists with conversion patterns",
+        "blocking": true,
+        "resolution_if_missing": "Complete Phase 1 infrastructure (estimated 16-19 hours)"
+      },
+      {
+        "check": "Phase 2.4 archive is complete",
+        "validation": "ls archive/pre-toon-migration/agents/ | wc -l should equal 28",
+        "blocking": true,
+        "resolution_if_missing": "Complete step 2.4 archive creation (estimated 0.5 hours)"
+      },
+      {
+        "check": "Pilot conversion successful",
+        "validation": "Verify software-crafter.toon exists and compiles",
+        "blocking": true,
+        "resolution_if_missing": "Complete step 2.1-2.2 (estimated 4-6 hours)"
+      },
+      {
+        "check": "Conversion patterns documented",
+        "validation": "Verify tools/toon/README.md contains examples and guidelines",
+        "blocking": true,
+        "resolution_if_missing": "Complete step 2.3 pattern documentation (estimated 0.5 hours)"
+      }
+    ]
+  },
+  "deliverables": {
+    "files_to_create": [
+      "5d-wave/agents/product-owner.toon",
+      "5d-wave/agents/solution-architect.toon",
+      "5d-wave/agents/acceptance-designer.toon",
+      "5d-wave/agents/skeleton-builder.toon",
+      "5d-wave/agents/researcher.toon",
+      "5d-wave/agents/devop.toon",
+      "5d-wave/agents/troubleshooter.toon",
+      "5d-wave/agents/visual-architect.toon",
+      "5d-wave/agents/illustrator.toon",
+      "5d-wave/agents/data-engineer.toon"
+    ],
+    "acceptance_criteria": [
+      "All 10 TOON files compile without errors using tools/toon compiler",
+      "All compiled outputs have valid Claude Code format (YAML frontmatter + agent structure)",
+      "Token savings measured and documented (baseline from archive vs TOON source)",
+      "No critical information lost during conversion (validated via round-trip comparison)"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN all 10 .toon files\nWHEN I compile each through toolchain\nTHEN all produce valid agent.md with no errors AND round-trip validation shows semantic equivalence",
+    "inner_tests": [
+      "test_each_agent_compiles_successfully",
+      "test_each_agent_has_all_commands_from_original",
+      "test_each_agent_has_all_dependencies_from_original",
+      "test_token_count_per_agent_vs_baseline",
+      "test_compiled_output_valid_yaml_frontmatter",
+      "test_no_critical_sections_missing"
+    ]
+  },
+  "refactoring": {
+    "targets": [
+      {
+        "level": 1,
+        "focus": "Consistent TOON abbreviations across agents",
+        "example": "Standardize all agent definitions to use consistent arrow notation (→) and section markers (##)"
+      }
+    ]
+  },
+  "execution_guidance": {
+    "approach": "Batch conversion with pattern reuse and continuous validation",
+    "workflow": [
+      "0. PREREQUISITE VALIDATION: Run all prerequisite checks before starting any conversion",
+      "1. Apply conversion patterns from tools/toon/README.md",
+      "2. Convert each agent.md to agent.toon following documented patterns",
+      "3. Compile each TOON file immediately after conversion to validate syntax",
+      "4. For each agent: compare compiled output with archived original using round-trip validator",
+      "5. Write tests to validate all 10 agents (compilation, commands, dependencies, token counts)",
+      "6. Measure token savings: compare TOON source size with archived MD baseline",
+      "7. Apply refactoring level 1 for consistency across all converted agents",
+      "8. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "All prerequisite checks pass (TOON toolchain exists, archive complete, patterns documented)",
+      "All tests passing (100% required)",
+      "All 10 agents compile successfully with zero errors",
+      "Round-trip validation passes for all agents (semantic equivalence >= 95%)",
+      "Token savings measured and documented (no hard threshold - measurement only)",
+      "Refactoring applied (level 1) for consistency",
+      "No report files created"
+    ],
+    "error_handling": [
+      {
+        "scenario": "TOON toolchain missing",
+        "action": "HALT execution, escalate to complete Phase 1 first",
+        "estimated_resolution": "16-19 hours"
+      },
+      {
+        "scenario": "Archive incomplete or from wrong source",
+        "action": "HALT execution, verify and re-run step 2.4",
+        "estimated_resolution": "1-2 hours"
+      },
+      {
+        "scenario": "Agent compilation fails",
+        "action": "Log error with details, fix TOON syntax, recompile, continue with remaining agents",
+        "estimated_resolution": "15-60 minutes per agent"
+      },
+      {
+        "scenario": "Round-trip validation fails (semantic differences)",
+        "action": "Review differences, determine if acceptable or critical, fix if critical",
+        "estimated_resolution": "30-90 minutes per agent"
+      },
+      {
+        "scenario": "Token savings below expectations",
+        "action": "Document actual savings, no blocking - this is measurement not hard gate",
+        "estimated_resolution": "No action required"
+      }
+    ]
+  },
+  "adversarial_review_mitigations": {
+    "critical_blockers_addressed": [
+      {
+        "blocker": "TOON v3.0 Specification Missing",
+        "mitigation": "Added prerequisite check for tools/toon/README.md with blocking validation",
+        "estimated_resolution": "4 hours if missing (complete Phase 1.1 validation)"
+      },
+      {
+        "blocker": "Compiler Tool Unvalidated",
+        "mitigation": "Added prerequisite check for functional TOON compiler",
+        "estimated_resolution": "6 hours if missing (complete Phase 1.2 compiler validation)"
+      },
+      {
+        "blocker": "Baseline Token Measurements Missing",
+        "mitigation": "Added prerequisite check for Phase 2.4 archive completion, changed acceptance criteria from hard threshold to measurement documentation",
+        "estimated_resolution": "2 hours if missing (verify/complete Phase 2.4)"
+      },
+      {
+        "blocker": "Reference Patterns Undefined",
+        "mitigation": "Added prerequisite check for tools/toon/README.md with conversion examples",
+        "estimated_resolution": "3 hours if missing (document patterns from Phase 2.2)"
+      },
+      {
+        "blocker": "Test Specifications Too Vague",
+        "mitigation": "Expanded test specifications with concrete assertions (commands, dependencies, token counts, YAML validation)",
+        "estimated_resolution": "Addressed in updated test specifications"
+      }
+    ],
+    "time_estimate_revision": {
+      "original": "5 hours",
+      "revised": "10-15 hours",
+      "rationale": "Original estimate (30 min/agent) unrealistic. Revised accounts for: conversion (30-45 min/agent), compilation validation (15 min/agent), round-trip validation (15 min/agent), debugging (30-60 min buffer per agent), test framework setup (1-2 hours), refactoring pass (1 hour)"
+    }
+  },
+  "review_metadata": {
+    "reviewed_by": "software-crafter",
+    "review_date": "2026-01-06",
+    "corrections_applied": [
+      "Added prerequisite validation section with blocking checks",
+      "Changed token savings from hard threshold to measurement documentation",
+      "Expanded test specifications with concrete assertions",
+      "Added comprehensive error handling procedures",
+      "Revised time estimate from 5 to 10-15 hours based on realistic task breakdown",
+      "Added round-trip validation to workflow and acceptance criteria",
+      "Clarified Phase 3 purpose: 27 remaining agents (28 total including pilot)"
+    ]
+  }
+}

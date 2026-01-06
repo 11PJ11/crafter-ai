@@ -1,0 +1,521 @@
+{
+  "project_id": "plugin-marketplace-migration",
+  "step_id": "05-03",
+  "phase": {
+    "number": 5,
+    "name": "Skills Creation",
+    "purpose": "Create 3 skill definitions for auto-invocation capability"
+  },
+  "step": {
+    "number": "5.3",
+    "name": "Create mikado Skill",
+    "description": "Create mikado skill with:\n- Trigger patterns: \"refactoring complesso\", \"dipendenze\", \"mikado\", \"complex refactoring\"\n- Agent binding: software-crafter\n- Mikado method workflow reference",
+    "motivation": "mikado skill for complex dependency-driven refactoring",
+    "estimated_hours": "1.5"
+  },
+  "context": {
+    "constraints": [
+      "DO NOT CREATE NEW REPORT FILES",
+      "DO NOT COMMIT BEFORE USER APPROVAL",
+      "FOCUS ON DELIVERABLES ONLY",
+      "Tests use business language and domain concepts",
+      "Type system makes wrong state non-representable"
+    ],
+    "success_criteria_mapping": {
+      "SC4": "Skills auto-invoked correctly",
+      "SC5": "Full workflow functional"
+    },
+    "dependencies": ["1.6"]
+  },
+  "deliverables": {
+    "files_to_create": [
+      "5d-wave/skills/mikado/SKILL.toon"
+    ],
+    "acceptance_criteria": [
+      "Skill compiles to valid SKILL.md",
+      "Trigger patterns for complex refactoring",
+      "References Mikado method workflow"
+    ]
+  },
+  "tdd_approach": {
+    "outer_test": "GIVEN mikado SKILL.toon compiled\nWHEN user says \"refactoring complesso con dipendenze\"\nTHEN skill should trigger software-crafter with mikado workflow",
+    "inner_tests": [
+      "test_skill_compiles",
+      "test_mikado_triggers",
+      "test_mikado_method_referenced"
+    ]
+  },
+  "refactoring": {
+    "targets": []
+  },
+  "execution_guidance": {
+    "approach": "Skill definition with Mikado method reference",
+    "workflow": [
+      "1. Write failing E2E test for skill triggering",
+      "2. Create SKILL.toon with mikado trigger patterns",
+      "3. Reference Mikado method workflow",
+      "4. Compile and validate output",
+      "5. Validate trigger patterns",
+      "6. DO NOT COMMIT - wait for user approval"
+    ],
+    "quality_gates": [
+      "All tests passing (100% required)",
+      "Skill compiles to valid SKILL.md",
+      "Trigger patterns validated",
+      "Mikado method referenced",
+      "No report files created"
+    ]
+  },
+  "review_metadata": {
+    "reviewed_at": "2026-01-05T21:15:00Z",
+    "reviewer": "software-crafter",
+    "review_status": "conditional_approval_with_clarifications",
+    "critical_gaps": [
+      {
+        "issue": "SKILL.toon format specification missing",
+        "severity": "CRITICAL",
+        "impact": "Cannot implement skill definition without understanding target TOON syntax. 05-01 review documented this gap extensively. Step 05-03 inherits same blocker.",
+        "resolution": "BLOCKING: Obtain TOON v3.0 skill syntax specification from step 05-01 review or project baseline. Cannot proceed without this."
+      },
+      {
+        "issue": "Dependency on clarifications from step 05-01",
+        "severity": "CRITICAL",
+        "impact": "Step 05-03 (mikado skill) depends on resolving all blocking items from 05-01 (develop skill) review. If 05-01 blocks on TOON syntax, 05-03 is blocked identically.",
+        "resolution": "BLOCKING: Step 05-01 must provide or reference TOON skill format before 05-03 can be implemented. Sequential dependency is implicit but not documented."
+      },
+      {
+        "issue": "Trigger pattern validation undefined",
+        "severity": "HIGH",
+        "impact": "Acceptance criteria requires 'Trigger patterns for complex refactoring' but no validation rules specified. Are there rules for pattern overlap (e.g., 'mikado' might match both mikado and other patterns)? Reserved keywords?",
+        "resolution": "Define trigger pattern validation: (1) Minimum patterns required? (2) Language support (Italian 'refactoring complesso', English 'complex refactoring')? (3) Conflict detection? Reference 05-01 review if patterns rules defined there."
+      },
+      {
+        "issue": "Mikado method reference scope unclear",
+        "severity": "HIGH",
+        "impact": "Acceptance criteria states 'References Mikado method workflow' but unclear what this means: (a) Link to documentation? (b) Embedded methodology in SKILL.md? (c) Trigger to specific Mikado workflow steps? (d) Agent binding that includes Mikado context?",
+        "resolution": "Define exactly how Mikado methodology is 'referenced' in SKILL.md. Compare with how 'progressive refactoring levels (1-6)' is referenced in 05-02 - are these approaches consistent?"
+      },
+      {
+        "issue": "Inner test semantics undefined",
+        "severity": "MEDIUM",
+        "impact": "Inner tests list 'test_mikado_method_referenced' but acceptance criteria don't clarify what constitutes valid reference. How does test validate 'referenced'?",
+        "resolution": "Define test validation logic: (1) Regex search for 'Mikado' in output? (2) Presence of methodology section? (3) Linked documentation? (4) Agent context metadata?"
+      }
+    ],
+    "hidden_dependencies": [
+      {
+        "dependency": "Step 05-01 blocking items resolution",
+        "location": "docs/workflow/plugin-marketplace-migration/steps/05-01.json review_metadata",
+        "impact": "CRITICAL - All blocking items from 05-01 apply here: SKILL.toon format, compilation semantics, test environment",
+        "blocking": true,
+        "cross_reference": "05-01.json:review_metadata:blockers"
+      },
+      {
+        "dependency": "Mikado methodology documentation",
+        "location": "Assumed in agent specification (software-crafter persona includes Mikado expertise)",
+        "impact": "HIGH - Need to understand what 'Mikado method workflow reference' means in SKILL context",
+        "blocking": false
+      },
+      {
+        "dependency": "Consistency with step 05-02 refactoring methodology reference",
+        "location": "Step 05-02 references 'progressive refactoring methodology'",
+        "impact": "HIGH - How are methodologies referenced should be consistent across 05-02 and 05-03",
+        "blocking": false
+      }
+    ],
+    "context_gaps": [
+      {
+        "gap": "Mikado trigger pattern examples missing",
+        "details": "Step specifies Italian 'refactoring complesso', 'dipendenze' and English 'complex refactoring' but no guidance on pattern semantics. Do these map to specific Mikado workflow states or just trigger skill activation?",
+        "impact": "Trigger patterns may not effectively distinguish Mikado work from general refactoring"
+      },
+      {
+        "gap": "Skill-specific vs. generic workflow steps",
+        "details": "Step 05-01 defined workflow as 'implement->review->fix->refactor'. For Mikado skill, is workflow different? Does Mikado have specific orchestration steps?",
+        "impact": "May need to understand how Mikado-specific workflow differs from general develop workflow"
+      },
+      {
+        "gap": "Sequential execution flow across phase 5 skills",
+        "details": "Three skills created (develop, refactor, mikado) in 05-01/05-02/05-03, then validated in 05-04. But unclear: Can user invoke multiple skills in sequence? Are they mutually exclusive? Can mikado be triggered during a develop session?",
+        "impact": "Test in 05-04 may reveal orchestration requirements not documented in individual skill steps"
+      }
+    ],
+    "comparison_with_05_02": {
+      "similarity": "Both 05-02 and 05-03 follow identical pattern: Create skill with trigger patterns + methodology reference",
+      "difference": "05-02 references 'progressive refactoring levels (1-6)', 05-03 references 'Mikado method workflow'",
+      "consistency": "CONCERN - How are 'methodology references' expressed identically in both skills? Is the format consistent? Both should compile to SKILL.md using same TOON syntax.",
+      "recommendation": "Use 05-02 as immediate predecessor template. If 05-02 succeeds first, use its SKILL.toon structure as reference for 05-03."
+    },
+    "sequential_dependency_mapping": {
+      "logical_sequence": "05-01 (develop) -> 05-02 (refactor) -> 05-03 (mikado) -> 05-04 (validation)",
+      "blocking_sequence": "05-01 blocks 05-02, 05-02 blocks 05-03 due to shared TOON syntax uncertainty",
+      "recommendation": "Execute 05-01 first to completion, obtain all TOON format clarifications, then 05-02 and 05-03 can proceed in parallel using 05-01 learnings"
+    },
+    "achievability_assessment": {
+      "feasibility": "CONDITIONAL - Achievable once 05-01 blocking items resolved",
+      "confidence": "MEDIUM (55% - slightly higher than 05-01 due to follow-on status)",
+      "blockers": [
+        "SKILL.toon format specification (inherited from 05-01)",
+        "Skill invocation mechanism (inherited from 05-01)",
+        "How methodology references are encoded in SKILL.md"
+      ],
+      "assumptions_requiring_validation": [
+        "SKILL.toon syntax for Mikado methodology reference is same as for refactoring reference (05-02)",
+        "Trigger patterns 'refactoring complesso' and 'dipendenze' effectively distinguish Mikado from general refactoring",
+        "Mikado workflow is embedded in skill or linked from skill",
+        "Test environment from 05-01 setup is reused for 05-03"
+      ],
+      "additional_complexity": "Slightly more complex than 05-02 if Mikado requires specific workflow state handling"
+    },
+    "time_estimate_validation": {
+      "estimate": "1.5 hours",
+      "assessment": "DEPENDENT ON 05-01",
+      "rationale": "If 05-01 resolves format questions, 05-03 is straightforward (30 min implementation). But if 05-01 uncovers complexity in methodology encoding, could extend to 2-3 hours.",
+      "revised_estimate": "1.5-2.5 hours (sequential after 05-01 clarification)"
+    },
+    "checklist_for_implementation": [
+      {
+        "item": "Step 05-01 blocking items must be resolved first",
+        "status": "CRITICAL_BLOCKER",
+        "owner": "Project coordinator",
+        "verification": "05-01 review_metadata shows approved status (not conditional)"
+      },
+      {
+        "item": "Obtain TOON v3.0 skill syntax from 05-01 learnings",
+        "status": "BLOCKING",
+        "owner": "Implementation team",
+        "verification": "SKILL.toon template available with Mikado example"
+      },
+      {
+        "item": "Define how Mikado methodology is referenced in SKILL.md",
+        "status": "BLOCKING",
+        "owner": "Task author",
+        "verification": "Example showing Mikado reference in compiled output"
+      },
+      {
+        "item": "Validate trigger pattern consistency with 05-02",
+        "status": "HIGH",
+        "owner": "Implementation team",
+        "verification": "Both skills use consistent pattern validation rules"
+      },
+      {
+        "item": "Clarify Mikado-specific workflow vs. generic workflow",
+        "status": "HIGH",
+        "owner": "Task author",
+        "verification": "Documentation of whether Mikado workflow differs from develop workflow"
+      },
+      {
+        "item": "Test Mikado skill triggering in validation phase (05-04)",
+        "status": "HIGH",
+        "owner": "QA",
+        "verification": "05-04 includes explicit test_mikado_triggers test"
+      }
+    ],
+    "recommendations": [
+      {
+        "priority": "CRITICAL",
+        "action": "Do not start 05-03 until 05-01 provides TOON syntax specification",
+        "details": "05-03 is blocked by identical issues as 05-01. Starting work without 05-01 resolution will duplicate effort.",
+        "owner": "Project coordinator",
+        "verification": "05-01 review_metadata indicates format clarifications obtained"
+      },
+      {
+        "priority": "HIGH",
+        "action": "Use 05-02 (refactor skill) as immediate template for 05-03",
+        "details": "Both skills reference methodologies in similar ways. If 05-02 succeeds, its SKILL.toon structure becomes reference implementation for 05-03.",
+        "owner": "Implementation team",
+        "verification": "05-03 skill demonstrates similar structure and methodology reference style as 05-02"
+      },
+      {
+        "priority": "HIGH",
+        "action": "Document Mikado-specific trigger pattern semantics",
+        "details": "Patterns like 'refactoring complesso con dipendenze' are Mikado-specific. Clarify: (1) When should this be triggered vs. generic refactor? (2) How does system distinguish Mikado-level complexity? (3) Are there heuristics or is it user intent?",
+        "owner": "Task author",
+        "verification": "Trigger pattern documentation includes Mikado context and use cases"
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Consider merging 05-02 and 05-03 execution",
+        "details": "Both skills use identical approach and depend on same TOON format knowledge. Could execute in parallel after 05-01 completes.",
+        "owner": "Project coordinator",
+        "verification": "Project schedule reflects parallel execution opportunity"
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Validate trigger pattern consistency across all three skills",
+        "details": "By step 05-04, validate that all trigger patterns (develop, refactor, mikado) use consistent matching rules and don't have unintended overlaps.",
+        "owner": "QA",
+        "verification": "05-04 test includes test_no_false_positives across all skill patterns"
+      }
+    ],
+    "approval_decision": "CONDITIONAL APPROVAL - Task structure is sound and Mikado methodology relevance is clear. However, step is blocked by identical TOON format specification gap from 05-01. Do not proceed with implementation until 05-01 blocking items are resolved AND 05-02 (refactor skill) completes successfully as reference implementation.",
+    "implementation_prerequisites": [
+      "CRITICAL: Step 05-01 review must show resolved blocking items (TOON syntax specification obtained)",
+      "CRITICAL: Step 05-02 must complete successfully (refactor skill compiles and works)",
+      "HIGH: Mikado methodology reference format must be documented (how is it encoded in SKILL.md?)",
+      "HIGH: Trigger pattern validation rules must be defined"
+    ],
+    "sequential_readiness": {
+      "can_start_in_parallel_with": ["05-02 if 05-01 blocking items resolved"],
+      "must_complete_before": ["05-04 validation step"],
+      "depends_on": ["05-01 for TOON format knowledge", "05-02 for reference implementation pattern"]
+    },
+    "risk_assessment": {
+      "risk_level": "MEDIUM",
+      "primary_risk": "Blocking dependency on 05-01 resolution",
+      "mitigation": "Execute 05-01 first. Once TOON format is understood, 05-03 becomes straightforward.",
+      "secondary_risk": "Mikado methodology complexity may require specific workflow encoding",
+      "mitigation": "Clarify methodology reference format before starting implementation"
+    },
+    "notes": "Step 05-03 is well-structured but inherits blocking dependencies from 05-01. The Mikado skill is logically justified (complex refactoring with dependency mapping is Mikado's domain). Key uncertainty: How are methodologies 'referenced' in SKILL.md format? Step 05-02 execution will answer this. Recommend executing 05-01 (blocking resolution) -> 05-02 (refactor skill, provides template) -> 05-03 (mikado skill, can use 05-02 template) in sequence, not parallel, to minimize rework."
+  },
+  "adversarial_review": {
+    "review_date": "2026-01-05",
+    "reviewer": "adversarial-software-crafter-reviewer",
+    "contradictions_found": [
+      {
+        "type": "CONTRADICTION_SKILL_DISPATCH_LOGIC",
+        "severity": "CRITICAL",
+        "issue": "Step definition claims 'trigger patterns for complex refactoring' but trigger patterns themselves are semantically ambiguous language fragments",
+        "detail": "Patterns listed: 'refactoring complesso', 'dipendenze', 'mikado', 'complex refactoring'. The ambiguity: How does skill dispatcher distinguish WHEN to invoke mikado vs. invoking software-crafter with DIFFERENT behavior?",
+        "example_failure": "User says: 'I need help refactoring this complex code with dependencies'. Does this trigger: (a) generic 'develop' skill? (b) 'refactor' skill? (c) 'mikado' skill? All patterns match partially.",
+        "blocking": true,
+        "root_cause": "No skill orchestration rules exist. File assumes skills are mutually exclusive, but trigger patterns overlap."
+      },
+      {
+        "type": "CONTRADICTION_WORKFLOW_VS_SKILL",
+        "severity": "CRITICAL",
+        "issue": "Step claims to 'Reference Mikado method workflow' but never specifies what workflow means in skill context",
+        "detail": "Mikado method is: Goal -> Experiment -> Visualize -> Revert (4-step cycle). But skill is: Listen for trigger -> Invoke agent -> Return result. These are different execution models.",
+        "example_failure": "When skill triggers, does it execute full 4-step Mikado cycle? Or just invoke software-crafter in 'Mikado mode'? Current spec is silent. If full cycle, then skill execution takes hours (estimate is 1.5 hours but Mikado phases are multi-hour).",
+        "blocking": true,
+        "root_cause": "Confusion between methodology (Mikado) and mechanism (skill invocation). They're not the same thing."
+      },
+      {
+        "type": "CONTRADICTION_ESTIMATED_TIME_VS_ACTUAL_SCOPE",
+        "severity": "HIGH",
+        "issue": "Estimated time is 1.5 hours for creating Mikado skill, but this assumes one-shot implementation with no discovery",
+        "detail": "Step 05-01 review noted same TOON format is still unknown. Even if 05-02 provides template, applying methodology reference (Mikado) to skill definition has never been done in this codebase. Learning curve + implementation = realistic 3-4 hours minimum.",
+        "evidence": "Similar skill (05-02 refactor) probably also underestimated. If 05-02 takes 3 hours to figure out methodology reference format, 05-03 will take 2 hours minimum to apply same pattern.",
+        "root_cause": "Estimate assumes straightforward templating. Reality: novel format, no precedent."
+      },
+      {
+        "type": "CONTRADICTION_ACCEPTANCE_CRITERIA_VAGUENESS",
+        "severity": "HIGH",
+        "issue": "AC#2 'References Mikado method workflow' is not testable as written",
+        "detail": "How does test verify 'references'? (a) String match for 'Mikado'? (b) Structured metadata? (c) Link to documentation? Each interpretation leads to different implementation.",
+        "example_failure": "Implementer writes SKILL.toon with comment '# Mikado method workflow: <link to docs>'. Test does: assert 'Mikado' in output. Test passes. But actual workflow reference doesn't exist - just a comment.",
+        "blocking": true,
+        "root_cause": "AC uses business language ('references') but lacks technical definition."
+      }
+    ],
+    "dangerous_assumptions": [
+      {
+        "assumption": "Trigger patterns are globally unique and non-overlapping",
+        "why_dangerous": "Patterns like 'mikado', 'refactoring', 'complex' are substrings that could match user intent in multiple ways. No collision detection mechanism defined.",
+        "failure_scenario": "User: 'Help me understand the mikado method for this refactoring'. All three skills trigger simultaneously (develop, refactor, mikado). System doesn't know which to invoke.",
+        "impact": "CRITICAL - Skill orchestration system fails"
+      },
+      {
+        "assumption": "SKILL.toon format supports methodology references identically to how 05-02 does",
+        "why_dangerous": "Format details of SKILL.toon are still unknown (from 05-01 review). Assuming consistency without evidence.",
+        "failure_scenario": "SKILL.toon syntax for embedding Mikado methodology is different from refactoring (e.g., Mikado requires state machine definition, refactoring doesn't). Implementation blindly copies 05-02 structure and fails.",
+        "impact": "HIGH - Rework required after 05-02 completes"
+      },
+      {
+        "assumption": "Trigger patterns in Italian and English are correctly spelled and meaningful to system",
+        "why_dangerous": "No locale support or fuzzy matching rules defined. Typos or variations will silently fail.",
+        "failure_scenario": "User says 'refactoring complessi' (plural) instead of 'refactoring complesso' (singular). Pattern doesn't match. Skill never triggers.",
+        "impact": "MEDIUM - User experience failure, skill appears broken"
+      },
+      {
+        "assumption": "software-crafter agent knows what 'Mikado mode' means and will activate it when skill invokes",
+        "why_dangerous": "No documentation of Mikado mode in agent binding. Agent may not understand intent from skill invocation.",
+        "failure_scenario": "Skill invokes 'software-crafter with Mikado workflow' but agent has no 'Mikado mode' command or context. Agent executes generic refactoring instead of Mikado-specific behavior.",
+        "impact": "HIGH - Skill compiles and runs but doesn't produce Mikado behavior"
+      },
+      {
+        "assumption": "Test environment and execution context from 05-01 applies unchanged to 05-03",
+        "why_dangerous": "Mikado is more complex than generic develop/refactor. Test environment may need Mikado-specific setup (tree visualization, dependency tracking, etc.)",
+        "failure_scenario": "Tests written in 05-01 generic test framework. Mikado skill needs to validate tree structure, dependency relationships, revert semantics. Generic tests don't cover these.",
+        "impact": "HIGH - Tests pass but Mikado-specific validations missing"
+      }
+    ],
+    "unhandled_edge_cases": [
+      {
+        "edge_case": "User invokes Mikado skill but provides incomplete refactoring goal",
+        "expected_behavior": "Undefined - skill spec doesn't cover what happens",
+        "failure_mode": "Agent may hang, ask clarifying questions indefinitely, or execute partial Mikado discovery with ambiguous goal",
+        "coverage": "NO TEST for this"
+      },
+      {
+        "edge_case": "Trigger pattern matches multiple skills simultaneously (e.g., 'I need to do complex refactoring with mikado')",
+        "expected_behavior": "Undefined - which skill wins? Priority ordering not defined",
+        "failure_mode": "Non-deterministic skill invocation. Sometimes mikado skill triggers, sometimes refactor skill, depending on dispatcher implementation order",
+        "coverage": "NO TEST for skill collision detection"
+      },
+      {
+        "edge_case": "Mikado skill invoked but software-crafter agent is busy with another task",
+        "expected_behavior": "Undefined - should skill queue? Fail? Block?",
+        "failure_mode": "Race condition. Multiple concurrent Mikado workflows interfere with each other",
+        "coverage": "NO TEST for concurrency safety"
+      },
+      {
+        "edge_case": "Skill trigger pattern contains user's own domain-specific language (DSL) that coincidentally matches 'mikado'",
+        "expected_behavior": "Skill should NOT trigger (false positive prevention)",
+        "failure_mode": "Skill triggers unintentionally during unrelated user work",
+        "coverage": "NO TEST for false positive prevention"
+      },
+      {
+        "edge_case": "SKILL.toon compilation succeeds but methodology reference is malformed (incomplete link, broken syntax)",
+        "expected_behavior": "Compilation should fail or warn",
+        "failure_mode": "SKILL.md compiles successfully with broken reference. Test only checks 'Mikado' string presence, not validity of reference format",
+        "coverage": "NO TEST for reference format validation"
+      },
+      {
+        "edge_case": "Mikado skill references Mikado method documentation that doesn't exist or has moved",
+        "expected_behavior": "Documentation reference should be validated",
+        "failure_mode": "SKILL.md contains dead link. Users follow broken reference, frustration",
+        "coverage": "NO TEST for documentation link validity"
+      },
+      {
+        "edge_case": "User language preference is set to Italian, system locale is English. Which trigger pattern matches?",
+        "expected_behavior": "System should prefer user locale",
+        "failure_mode": "Undefined - no locale-aware matching rules specified",
+        "coverage": "NO TEST for locale handling"
+      }
+    ],
+    "failure_scenarios": [
+      {
+        "scenario": "SCENARIO_1_FORMAT_DISCOVERY_FAILS",
+        "trigger": "Step 05-01 completes but cannot provide TOON format specification (stakeholder unavailable, format undefined)",
+        "cascade": [
+          "05-02 blocked (refactor skill cannot be implemented)",
+          "05-03 blocked (Mikado skill cannot be implemented)",
+          "05-04 blocked (no skills to validate)",
+          "Phase 5 timeline slips by 3-5 days minimum"
+        ],
+        "probability": "MEDIUM (40%) - Format discovery is known blocker in 05-01 review",
+        "blast_radius": "PHASE_5"
+      },
+      {
+        "scenario": "SCENARIO_2_TRIGGER_COLLISION",
+        "trigger": "05-03 skill compiles successfully, but trigger pattern 'complex refactoring' overlaps with 05-02 refactor skill trigger pattern",
+        "cascade": [
+          "User invokes Mikado skill by saying 'help with complex refactoring with dependencies'",
+          "Both refactor AND mikado skills match. Dispatcher invokes first match only.",
+          "If mikado invoked: correct. If refactor invoked: wrong (user wanted Mikado)",
+          "Non-deterministic behavior based on dispatcher implementation order",
+          "05-04 validation may not catch this if test doesn't explicitly test collision"
+        ],
+        "probability": "HIGH (70%) - Pattern collision is structural issue, not tested in individual skill",
+        "blast_radius": "MULTIPLE_PHASES (affects 05-02, 05-03, 05-04)"
+      },
+      {
+        "scenario": "SCENARIO_3_METHODOLOGY_REFERENCE_MISMATCH",
+        "trigger": "05-02 (refactor skill) implements methodology reference as embedded documentation section. 05-03 tries to replicate but Mikado method is much more complex (4-step cycle vs. 1-6 refactoring levels).",
+        "cascade": [
+          "Attempting to embed full Mikado methodology in SKILL.md creates bloated, unreadable output",
+          "Or, implementer creates minimal reference that doesn't fully document Mikado",
+          "Test passes (references 'Mikado') but actual methodology documentation is incomplete",
+          "Users invoke skill but don't understand Mikado workflow",
+          "Quality issue discovered post-deployment"
+        ],
+        "probability": "HIGH (65%) - Mikado complexity not addressed in step specification",
+        "blast_radius": "MULTIPLE_PHASES (affects user experience, 05-04 validation)"
+      },
+      {
+        "scenario": "SCENARIO_4_AGENT_BINDING_SILENT_FAILURE",
+        "trigger": "Agent binding specifies 'software-crafter' as handler, but no 'Mikado mode' context provided. Agent defaults to generic refactoring behavior.",
+        "cascade": [
+          "Skill compiles successfully, trigger patterns work, tests pass",
+          "But when invoked, agent doesn't execute Mikado-specific workflow",
+          "Tree visualization, revert semantics, dependency tracking missing",
+          "User experiences 'broken' skill (works technically, wrong behavior)",
+          "Bug discovered during user acceptance testing (Phase 6+)"
+        ],
+        "probability": "HIGH (60%) - Agent context mapping is not detailed in step spec",
+        "blast_radius": "MULTIPLE_PHASES (affects downstream user experience)"
+      },
+      {
+        "scenario": "SCENARIO_5_TEST_COVERAGE_GAPS",
+        "trigger": "Tests pass (test_mikado_triggers, test_mikado_method_referenced) but only check shallow conditions.",
+        "examples": [
+          "test_mikado_triggers: Checks if user input 'mikado' invokes skill (passes). But doesn't test 'complex refactoring with dependencies' phrase (fails)",
+          "test_mikado_method_referenced: Checks if 'Mikado' appears in SKILL.md (passes). But doesn't validate methodology is complete or accurate",
+          "No test for skill collision with 05-02",
+          "No test for Italian pattern matching",
+          "No test for agent behavior (only skill invocation)"
+        ],
+        "cascade": [
+          "Integration testing in 05-04 reveals test gaps",
+          "Step 05-03 considered 'complete' but actually incomplete",
+          "Rework required to add missing test coverage"
+        ],
+        "probability": "VERY_HIGH (85%) - Test spec is deliberately shallow",
+        "blast_radius": "PHASE_5"
+      },
+      {
+        "scenario": "SCENARIO_6_TIME_ESTIMATE_SLIPPAGE",
+        "trigger": "Implementation starts with 1.5-hour estimate but discovers TOON format during execution (not from 05-01)",
+        "cascade": [
+          "Learning TOON syntax: +1 hour",
+          "Understanding methodology reference pattern from 05-02: +1 hour",
+          "Implementing skill: +1 hour",
+          "Testing and debugging: +1 hour",
+          "Actual time: 4-5 hours vs. 1.5 estimated",
+          "Phase 5 timeline slips by 2.5-3.5 hours per skill"
+        ],
+        "probability": "VERY_HIGH (80%) - Estimate assumes knowledge that doesn't exist",
+        "blast_radius": "PHASE_5"
+      }
+    ],
+    "risk_score": 8.2,
+    "risk_score_justification": "Step is blocked by unknown TOON format (inherited from 05-01). Trigger pattern collision with 05-02 is structural risk. Methodology reference complexity for Mikado (much more intricate than refactoring levels) likely to cause implementation rework. Time estimate is optimistic by 2-3x. If 05-01 blocks, this step becomes immediately stalled.",
+    "blast_radius": "ENTIRE_PROJECT",
+    "blast_radius_justification": "Phase 5 (skills validation) is critical checkpoint. If 05-03 fails or is delayed, 05-04 validation cannot proceed. This blocks handoff to Phase 6 (delivery). One blocked skill can block entire skill orchestration system if trigger collision or orchestration logic is broken.",
+    "critical_blocker_status": "YES - Explicitly blocked by 05-01 TOON format specification",
+    "critical_issues": [
+      {
+        "issue_id": "ISSUE_001",
+        "title": "Skill trigger collision not prevented",
+        "severity": "CRITICAL",
+        "description": "Trigger patterns for mikado skill ('mikado', 'complex refactoring', 'dipendenze') likely overlap with refactor skill patterns (05-02). No collision detection rules defined. Dispatcher will invoke first matching skill non-deterministically.",
+        "evidence": "05-02 also has 'complex' pattern. No uniqueness validation in step specs.",
+        "fix_required": "Define non-overlapping trigger pattern sets or implement priority-based dispatcher with collision avoidance"
+      },
+      {
+        "issue_id": "ISSUE_002",
+        "title": "Methodology reference format undefined",
+        "severity": "CRITICAL",
+        "description": "AC requires 'References Mikado method workflow' but no specification of what this means technically. Is it embedded docs? Linked reference? Metadata tag? Without format definition, implementation is guesswork.",
+        "evidence": "Step 05-01 review identified same gap. 05-03 doesn't resolve it, just inherits it.",
+        "fix_required": "Define exact format for methodology references in SKILL.md output. Provide template or example from 05-02 execution"
+      },
+      {
+        "issue_id": "ISSUE_003",
+        "title": "Agent binding context 'Mikado mode' not defined",
+        "severity": "CRITICAL",
+        "description": "Step assumes software-crafter agent will understand 'Mikado workflow' context when invoked. But agent specification doesn't define how to activate or configure Mikado mode. Agent may execute generic refactoring instead.",
+        "evidence": "Agent binding is just 'software-crafter' with no context/parameters specification",
+        "fix_required": "Define agent context protocol: How does skill pass 'Mikado mode' intent to agent? What parameters/config needed?"
+      },
+      {
+        "issue_id": "ISSUE_004",
+        "title": "Test coverage insufficient for skill validation",
+        "severity": "HIGH",
+        "description": "Inner tests (test_skill_compiles, test_mikado_triggers, test_mikado_method_referenced) are shallow. No tests for: trigger collision, false positives, locale handling, agent behavior, methodology completeness.",
+        "evidence": "Test list is 3 items. Real skill validation requires 15+ test cases minimum.",
+        "fix_required": "Expand test specification in step 05-03. Coordinate with 05-04 to ensure integration tests catch collision and orchestration issues"
+      },
+      {
+        "issue_id": "ISSUE_005",
+        "title": "Time estimate is optimistic by 2-3x",
+        "severity": "HIGH",
+        "description": "Estimated 1.5 hours assumes TOON format is known and methodology reference is straightforward. Reality: novel format, complex methodology, learning curve. Realistic estimate 3.5-4.5 hours.",
+        "evidence": "Similar task (05-02) likely also underestimated. No precedent for methodology-embedded skills in codebase.",
+        "fix_required": "Revise estimate to 3.5-4 hours. Allocate time for: TOON format discovery, methodology reference design, testing, debugging"
+      }
+    ]
+  }
+}
