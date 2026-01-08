@@ -178,3 +178,4 @@ The pre-commit hook enforces this standard automatically, preventing broken code
 - **Testing Philosophy**: See `CLAUDE.md` → Testing Principles
 - **Quality Standards**: See `CLAUDE.md` → Quality Standards
 - **CI/CD Pipeline**: See `docs/CI-CD-README.md`
+# Test comment
