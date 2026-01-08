@@ -9,8 +9,8 @@
   "step": {
     "number": "1.4",
     "name": "Create Skill Jinja2 Template",
-    "description": "Create Jinja2 template for SKILL.md files with skill metadata, trigger patterns, and workflow integration.\n\nPREREQUISITE: Skill data structure MUST be defined before implementation.\nSkills are workflow automation capabilities bound to agents.\n\nRequired skill fields: name, triggers (regex patterns), agent_association, workflow_integration.",
-    "motivation": "Skill template enables new capability not in current system",
+    "description": "Create Jinja2 template for SKILL.md files with skill metadata, trigger patterns as regex strings, and workflow integration.\n\nCRITICAL PREREQUISITE: Skill data structure MUST be defined in step 1.1 parser output schema before implementation.\n\nSkills are workflow automation capabilities that trigger based on context patterns and are bound to agents.\n\nRequired skill fields:\n- name: str - Skill identifier (e.g., 'develop', 'refactor')\n- triggers: list[str] - Regex patterns for activation (e.g., ['implement.*', 'TDD'])\n- agent_association: str or list[str] - Bound agent IDs\n- workflow_integration: dict - Integration metadata with wave and phase",
+    "motivation": "Skill template enables new workflow automation capability not in current system - skills provide context-aware command activation",
     "estimated_hours": "4-6"
   },
   "context": {
@@ -57,17 +57,19 @@
     ],
     "acceptance_criteria": [
       "Template produces skill YAML frontmatter with name and metadata",
-      "Template renders trigger patterns as regex strings (one per line)",
-      "Template includes agent association with validation",
-      "Template renders workflow integration section with wave and phase"
+      "Template renders trigger patterns as regex strings (one per line, properly escaped for YAML)",
+      "Template includes agent association with cardinality validation (1:1, 1:N, or N:M)",
+      "Template renders workflow integration section with required fields: wave and phase"
     ]
   },
   "tdd_approach": {
-    "outer_test": "GIVEN parsed skill data with name='develop', triggers=['implementa', 'TDD']\nWHEN I render skill.md.j2 template\nTHEN output has skill metadata and trigger patterns listed",
+    "outer_test": "GIVEN parsed skill data with name='develop', triggers=['implement.*', 'TDD'], agent_association='software-crafter', workflow_integration={'wave': 'DEVELOP', 'phase': 3}\nWHEN I render skill.md.j2 template\nTHEN output has valid YAML frontmatter with skill metadata, trigger patterns as regex strings (one per line), agent binding, and workflow integration with wave and phase",
     "inner_tests": [
-      "test_template_skill_frontmatter",
-      "test_template_trigger_patterns",
-      "test_template_agent_binding"
+      "test_template_skill_frontmatter_valid_yaml",
+      "test_template_trigger_patterns_as_regex_strings",
+      "test_template_agent_binding_with_cardinality",
+      "test_template_workflow_integration_required_fields",
+      "test_template_escapes_yaml_special_chars_in_triggers"
     ]
   },
   "refactoring": {
@@ -794,9 +796,13 @@
     "blocking": [
       "tools/toon/ directory MUST exist with README.md",
       "TOON format specification v3.0 must be accessible",
-      "Parser output schema must be defined before template implementation"
+      "Step 1.1 parser output schema MUST be defined with skill data structure",
+      "Skill data structure MUST include all required fields: name, triggers, agent_association, workflow_integration",
+      "Trigger pattern semantics MUST be clarified: regex strings with escaping rules",
+      "Agent association cardinality MUST be defined: 1:1, 1:N, or N:M",
+      "Workflow integration required fields MUST be specified: wave (str), phase (int)"
     ],
-    "validation": "Run: ls tools/toon/README.md. Must exist. If not: BLOCKER_001"
+    "validation": "Run: ls tools/toon/README.md. Must exist. If not: BLOCKER_001. Verify parser schema includes skill structure with documented fields."
   },
   "critical_blocker_status": {
     "BLOCKER_001": {

@@ -11,26 +11,37 @@
     "name": "Convert DISCUSS Command",
     "description": "Convert discuss.md to TOON format (DISCUSS wave only)",
     "motivation": "DISCUSS wave is entry point for requirements gathering workflows",
-    "estimated_hours": "4-6"
+    "estimated_hours": "4-6",
+    "estimated_hours_justification": "First TOON conversion includes learning curve: 1h TOON format study, 1-2h conversion, 1-2h test implementation, 1h compilation/validation, buffer for unfamiliarity"
   },
   "context": {
     "constraints": [
       "DO NOT CREATE NEW REPORT FILES",
       "DO NOT COMMIT BEFORE USER APPROVAL",
       "FOCUS ON DELIVERABLES ONLY",
+      "DISCUSS wave ONLY (start.md deferred to separate step)",
       "Tests use business language and domain concepts",
       "Type system makes wrong state non-representable"
     ],
     "success_criteria_mapping": {
       "SC1": "All source files in TOON v3.0 format",
-      "NOTE_SC7": "Token savings validation deferred to Phase 8"
+      "NOTE_SC7": "Token savings validation deferred to Phase 8 - no baseline data available for step-level validation"
     },
     "dependencies": [
       "01-01",
       "01-02",
       "01-03",
       "02-04"
-    ]
+    ],
+    "scope_clarification": {
+      "included": [
+        "discuss.md (DISCUSS wave)"
+      ],
+      "excluded": [
+        "start.md (CROSS_WAVE - moved to separate step 04-01b)"
+      ],
+      "rationale": "Wave classification conflict resolved by splitting DISCUSS and CROSS_WAVE into separate steps"
+    }
   },
   "prerequisite_checks": {
     "phase_1_toon_infrastructure": {
@@ -48,27 +59,36 @@
     "baseline_measurements": {
       "requirement": "Baseline measurements from Phase 0 must be complete",
       "verification": "Confirm docs/workflow/plugin-marketplace-migration/baseline.yaml exists with command metrics",
-      "blocking": true,
+      "blocking": false,
       "note": "Token savings validation deferred to Phase 8 if unavailable",
-      "escalation": "If baseline missing, execute Phase 0 baseline measurement first"
+      "escalation": "If baseline missing, execute Phase 0 baseline measurement first OR defer SC7 validation to Phase 8"
     }
   },
   "deliverables": {
     "files_to_create": [
       "5d-wave/tasks/dw/discuss.toon"
     ],
+    "files_excluded": [
+      "5d-wave/tasks/dw/start.toon (deferred to step 04-01b)"
+    ],
     "acceptance_criteria": [
       "discuss.toon compiles with valid TOON v3.0 format",
       "Wave metadata correct (DISCUSS)",
-      "Agent-activation header preserved from discuss.md"
+      "Agent-activation header preserved from discuss.md",
+      "All tests passing (100% required)",
+      "No report files created"
+    ],
+    "acceptance_criteria_removed": [
+      "Token savings >= 60% (SC7) - deferred to Phase 8 due to missing baseline data"
     ]
   },
   "tdd_approach": {
-    "outer_test": "GIVEN discuss.md converted to discuss.toon\nWHEN compiled via toon-compiler\nTHEN output has wave: DISCUSS in metadata\nAND agent-activation block preserved",
+    "outer_test": "GIVEN discuss.md converted to discuss.toon\nWHEN compiled via toon-compiler\nTHEN output has wave: DISCUSS in metadata\nAND agent-activation block preserved\nAND compilation succeeds with exit code 0",
     "inner_tests": [
       "test_discuss_command_compiles",
       "test_discuss_wave_metadata",
-      "test_discuss_agent_activation_preserved"
+      "test_discuss_agent_activation_preserved",
+      "test_discuss_compilation_output_valid"
     ]
   },
   "refactoring": {
@@ -85,6 +105,7 @@
       "Output markdown is Claude Code compliant"
     ],
     "error_handling": {
+      "compiler_not_found": "STOP immediately, escalate: Phase 1 incomplete",
       "compilation_failure": "Log error, do NOT proceed, escalate with error message",
       "metadata_invalid": "Review source file wave classification, retry compilation",
       "partial_failure": "Rollback all conversions, fix issue, restart batch"
@@ -97,27 +118,40 @@
   "test_specifications": {
     "test_discuss_command_compiles": {
       "framework": "pytest",
-      "test_code_skeleton": "def test_discuss_command_compiles():\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/discuss.toon')\n    assert toon_file.metadata['wave'] == 'DISCUSS'\n    assert toon_file.compilation_errors == []",
+      "test_code_skeleton": "def test_discuss_command_compiles():\n    \"\"\"Verify discuss.toon compiles without errors.\"\"\"\n    result = subprocess.run(\n        ['python', 'tools/toon/compiler.py', '5d-wave/tasks/dw/discuss.toon', '--validate'],\n        capture_output=True,\n        text=True\n    )\n    assert result.returncode == 0, f\"Compilation failed: {result.stderr}\"\n    assert len(result.stderr) == 0, \"Stderr should be empty on success\"\n    assert 'ERROR' not in result.stdout",
       "assertions": [
-        "File parses without errors",
-        "Wave metadata == DISCUSS",
-        "All required metadata fields present"
+        "Exit code == 0",
+        "Stderr is empty",
+        "No ERROR messages in stdout"
       ]
     },
     "test_discuss_wave_metadata": {
       "framework": "pytest",
-      "test_code_skeleton": "def test_discuss_wave_metadata():\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/discuss.toon')\n    assert toon_file.metadata['wave'] == 'DISCUSS'\n    assert 'agent-id' in toon_file.metadata",
+      "test_code_skeleton": "def test_discuss_wave_metadata():\n    \"\"\"Verify wave metadata is correctly set to DISCUSS.\"\"\"\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/discuss.toon')\n    assert 'wave' in toon_file.metadata, \"Wave metadata missing\"\n    assert toon_file.metadata['wave'] == 'DISCUSS', f\"Expected DISCUSS, got {toon_file.metadata['wave']}\"\n    assert 'agent-id' in toon_file.metadata, \"Agent-id metadata missing\"",
       "assertions": [
-        "Wave field exists and equals DISCUSS",
+        "Wave field exists",
+        "Wave value == 'DISCUSS'",
         "Agent-id field present"
       ]
     },
     "test_discuss_agent_activation_preserved": {
       "framework": "pytest",
-      "test_code_skeleton": "def test_discuss_agent_activation_preserved():\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/discuss.toon')\n    assert toon_file.metadata['agent-id'] == 'requirements-analyst'\n    assert toon_file.metadata['agent-command'] == 'discuss'",
+      "test_code_skeleton": "def test_discuss_agent_activation_preserved():\n    \"\"\"Verify agent-activation headers preserved from discuss.md.\"\"\"\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/discuss.toon')\n    assert toon_file.metadata['agent-id'] == 'requirements-analyst', \"Agent-id not preserved\"\n    assert toon_file.metadata['agent-command'] == 'discuss', \"Agent-command not preserved\"\n    # Verify activation instructions present\n    assert 'activation-instructions' in toon_file.sections, \"Activation instructions missing\"",
       "assertions": [
-        "Agent-id preserved from discuss.md",
-        "Agent-command preserved"
+        "Agent-id == 'requirements-analyst'",
+        "Agent-command == 'discuss'",
+        "Activation instructions section exists"
+      ]
+    },
+    "test_discuss_compilation_output_valid": {
+      "framework": "pytest",
+      "test_code_skeleton": "def test_discuss_compilation_output_valid():\n    \"\"\"Verify compiled output is valid Claude Code markdown.\"\"\"\n    result = subprocess.run(\n        ['python', 'tools/toon/compiler.py', '5d-wave/tasks/dw/discuss.toon', '--output', '/tmp/discuss-output.md'],\n        capture_output=True\n    )\n    assert result.returncode == 0\n    \n    # Verify output file exists and has content\n    output_path = Path('/tmp/discuss-output.md')\n    assert output_path.exists(), \"Output file not created\"\n    assert output_path.stat().st_size > 1000, \"Output file too small (< 1000 bytes)\"\n    \n    # Verify Claude Code compliance (basic checks)\n    content = output_path.read_text()\n    assert '# ' in content, \"No markdown headers found\"\n    assert 'agent' in content.lower(), \"Agent metadata missing\"",
+      "assertions": [
+        "Compilation succeeds",
+        "Output file created",
+        "Output size > 1000 bytes",
+        "Contains markdown headers",
+        "Contains agent metadata"
       ]
     },
     "unit_tests": [
@@ -142,17 +176,11 @@
     ],
     "integration_tests": [
       {
-        "name": "test_e2e_command_migration_pipeline",
-        "purpose": "Verify complete migration: TOON → Parse → Template → Validate → Output",
-        "input": "Real TOON command file from 5d-wave/tasks/dw/",
-        "steps": "Parse TOON → Apply command template → Validate output → Write to dist/",
-        "expected": "Valid command.md in dist/commands/dw/ matching Claude Code spec"
-      },
-      {
-        "name": "test_batch_migration_all_commands",
-        "purpose": "Verify batch processing of all command files",
-        "input": "All TOON command files (8 dw: commands)",
-        "expected": "All 8 commands migrated successfully with validation report"
+        "name": "test_e2e_discuss_command_migration",
+        "purpose": "Verify complete migration: discuss.md → discuss.toon → compiled output",
+        "input": "5d-wave/tasks/dw/discuss.md",
+        "steps": "Convert to TOON → Parse TOON → Compile → Validate output",
+        "expected": "Valid discuss.md in dist/commands/dw/ matching Claude Code spec with DISCUSS wave metadata"
       }
     ],
     "error_scenario_tests": [
@@ -160,7 +188,7 @@
         "name": "test_compiler_not_found_error_handling",
         "purpose": "Verify graceful failure when compiler missing",
         "setup": "Remove or rename tools/toon/compiler.py",
-        "expected": "Clear error message, execution stops, no partial output"
+        "expected": "Clear error message: 'TOON compiler not found at tools/toon/compiler.py', execution stops, no partial output"
       },
       {
         "name": "test_malformed_toon_syntax_error_handling",
@@ -171,108 +199,150 @@
       {
         "name": "test_validation_failure_error_handling",
         "purpose": "Verify validation errors reported clearly",
-        "input": "TOON file missing required 'description' field",
-        "expected": "Validation error: 'Missing required field: description' with file path"
+        "input": "TOON file missing required 'wave' field",
+        "expected": "Validation error: 'Missing required field: wave' with file path"
+      },
+      {
+        "name": "test_metadata_validation_failure",
+        "purpose": "Verify metadata validation catches incorrect wave classification",
+        "input": "TOON file with wave=INVALID",
+        "expected": "Validation error: 'Invalid wave type: INVALID. Expected one of: DISCUSS, DESIGN, DISTILL, DEVELOP, DELIVER, CROSS_WAVE'"
       }
     ]
   },
   "error_handling": {
     "compiler_not_found": {
-      "detection": "Step 3 'Compile TOON files' fails with 'command not found'",
+      "detection": "Prerequisite check fails: tools/toon/compiler.py does not exist",
       "action": "STOP immediately, escalate: Phase 1 incomplete",
-      "recovery": "Wait for Phase 1 completion, do NOT proceed"
+      "recovery": "Wait for Phase 1 completion OR choose Option B (Markdown migration)",
+      "error_message": "CRITICAL: TOON compiler not found at tools/toon/compiler.py. Phase 1 TOON infrastructure required. Options: (A) Complete Phase 1.1-1.5 first, (B) Choose Markdown migration (Option B), (C) Block and escalate."
     },
     "compilation_failure": {
       "detection": "Compiler exits with code != 0",
       "action": "Capture error message, log to docs/errors/step-04-01-errors.log",
-      "recovery": "Review source file, fix metadata/syntax, retry compilation"
+      "recovery": "Review source file syntax, fix errors based on stderr output, retry compilation"
     },
     "metadata_validation_failure": {
       "detection": "Test fails on wave metadata assertion",
-      "action": "Review source file wave classification, verify correctness",
-      "recovery": "If classification wrong: fix source. If test wrong: fix assertion."
+      "action": "Review source file wave classification, verify correctness against discuss.md",
+      "recovery": "If classification wrong: fix source TOON file. If test wrong: fix assertion. Re-run tests."
     },
     "scenario_1_compiler_not_found": {
       "error": "TOON compiler not found at tools/toon/compiler.py",
       "handling": "Log error with clear message: 'Phase 1 TOON infrastructure required. Run Phase 1.1-1.5 first or choose Option B (Markdown).'",
       "recovery": "STOP execution, escalate to user for decision",
-      "test": "test_error_compiler_not_found"
+      "test": "test_compiler_not_found_error_handling"
     },
     "scenario_2_compilation_failure": {
       "error": "TOON compiler exits with non-zero code",
-      "handling": "Log compilation error with file path and stderr output. Skip failed file, continue with others. Generate error report.",
-      "recovery": "Review TOON syntax, fix errors, retry compilation",
-      "test": "test_error_compilation_failure_graceful"
+      "handling": "Log compilation error with file path and stderr output. Do NOT proceed to next step. Generate error report with exact error message.",
+      "recovery": "Review TOON syntax against TOON v3.0 spec, fix errors, retry compilation. If errors persist after 2 attempts, escalate.",
+      "test": "test_malformed_toon_syntax_error_handling"
     },
     "scenario_3_metadata_validation_failure": {
-      "error": "Compiled output fails metadata validation (missing required fields)",
-      "handling": "Log validation errors with specific missing fields. Mark file as failed. Continue processing other files.",
-      "recovery": "Add missing metadata to source TOON file, recompile",
-      "test": "test_error_metadata_validation_failure"
+      "error": "Compiled output fails metadata validation (missing required fields or incorrect wave)",
+      "handling": "Log validation errors with specific missing/incorrect fields. Mark file as failed. Do NOT proceed.",
+      "recovery": "Add missing metadata to source TOON file OR correct wave field, recompile, re-run validation",
+      "test": "test_metadata_validation_failure"
     },
-    "scenario_4_partial_batch_failure": {
-      "error": "Some files in batch succeed, others fail",
-      "handling": "Complete all processable files. Generate summary report: X succeeded, Y failed. List failed files with error reasons.",
-      "recovery": "Fix failed files individually, rerun batch",
-      "test": "test_error_partial_batch_failure_reporting"
+    "scenario_4_toon_format_specification_missing": {
+      "error": "TOON v3.0 specification not found at tools/toon/TOON-v3.0-SPEC.md",
+      "handling": "Log error: 'TOON format specification required for conversion validation. Attempting reverse-engineering from reference implementation.'",
+      "recovery": "Extract TOON format patterns from agents/novel-editor-chatgpt-toon.txt, document format, proceed with conversion",
+      "test": "test_toon_spec_missing_fallback"
     }
   },
   "execution_guidance": {
-    "approach": "Command conversion with template validation",
+    "approach": "Single command conversion with comprehensive validation",
     "workflow": [
-      "STEP 0: VERIFY PREREQUISITES",
-      "  - Confirm tools/toon/compiler exists",
-      "  - Confirm TOON v3.0 spec available",
-      "  - If either missing: STOP and escalate",
+      "STEP 0: VERIFY PREREQUISITES (CRITICAL - DO NOT SKIP)",
+      "  - Confirm tools/toon/compiler.py exists",
+      "  - If missing: STOP and escalate (see error_handling.compiler_not_found)",
+      "  - Confirm TOON v3.0 spec available (tools/toon/TOON-v3.0-SPEC.md)",
+      "  - If missing: Extract from reference implementation or escalate",
+      "  - Confirm baseline.yaml exists (optional - defer SC7 if missing)",
+      "",
       "STEP 1: Convert discuss.md to discuss.toon",
-      "  - Use TOON v3.0 format specification",
+      "  - Study TOON v3.0 format specification (1 hour learning curve expected)",
+      "  - Use TOON v3.0 format specification as conversion guide",
       "  - Preserve agent-activation header from YAML frontmatter",
-      "  - Set wave metadata to DISCUSS",
+      "  - Set wave metadata to DISCUSS (verified from source file)",
+      "  - Create file: 5d-wave/tasks/dw/discuss.toon",
+      "",
       "STEP 2: Compile TOON file",
-      "  - Run: toon-compiler 5d-wave/tasks/dw/discuss.toon --validate",
+      "  - Run: python tools/toon/compiler.py 5d-wave/tasks/dw/discuss.toon --validate",
       "  - Verify exit code = 0",
-      "  - If compilation fails: capture error, escalate (see error_handling)",
+      "  - Capture stderr and stdout",
+      "  - If compilation fails: DO NOT PROCEED - see error_handling.compilation_failure",
+      "",
       "STEP 3: Write tests to validate conversion",
-      "  - Implement test_discuss_command_compiles",
-      "  - Implement test_discuss_wave_metadata",
-      "  - Implement test_discuss_agent_activation_preserved",
+      "  - Implement test_discuss_command_compiles (compilation success)",
+      "  - Implement test_discuss_wave_metadata (wave == DISCUSS)",
+      "  - Implement test_discuss_agent_activation_preserved (metadata preserved)",
+      "  - Implement test_discuss_compilation_output_valid (output quality)",
+      "  - Test files location: tests/tools/toon/test_discuss_migration.py",
+      "",
       "STEP 4: Run test suite",
-      "  - Execute: pytest tests/test_discuss_conversion.py",
+      "  - Execute: pytest tests/tools/toon/test_discuss_migration.py -v",
       "  - All tests MUST pass (100% required)",
+      "  - If any test fails: review error, fix issue, re-run tests",
+      "  - No test skipping allowed",
+      "",
       "STEP 5: Verify quality gates",
       "  - Check all acceptance criteria satisfied",
-      "STEP 6: DO NOT COMMIT - wait for user approval"
+      "  - Verify no report files created",
+      "  - Confirm discuss.toon compiles successfully",
+      "  - Confirm wave metadata correct (DISCUSS)",
+      "  - Confirm agent-activation preserved",
+      "",
+      "STEP 6: DO NOT COMMIT - wait for user approval",
+      "  - Present completed work to user",
+      "  - Request approval before commit",
+      "  - If approved: commit with message 'feat(toon): Convert discuss.md to TOON format'"
     ],
     "quality_gates": [
       "All tests passing (100% required)",
       "discuss.toon compiles successfully with exit code 0",
       "Wave metadata correct (DISCUSS)",
       "Agent-activation headers valid and preserved",
-      "No report files created"
+      "No report files created",
+      "Compilation output > 1000 bytes (non-trivial)",
+      "No errors in stderr during compilation"
     ]
   },
   "adversarial_review_summary": {
     "original_risk_score": 9.5,
     "corrected_risk_score": 4.0,
+    "review_date": "2026-01-05",
+    "reviewer": "Lyra (Adversarial Mode)",
     "major_corrections_applied": [
-      "Split step into 04-01 (DISCUSS) and 04-01b (CROSS_WAVE)",
-      "Added prerequisite checks for Phase 1 infrastructure",
-      "Added TOON compiler specification with invocation details",
-      "Updated time estimate from 1h to 4-6h (first conversion)",
-      "Added comprehensive error handling",
-      "Added detailed test specifications with pytest examples",
-      "Removed unvalidated token savings claim (SC7) from step-level"
+      "Split step into 04-01 (DISCUSS only) and 04-01b (CROSS_WAVE) to resolve wave classification conflict",
+      "Added prerequisite checks for Phase 1 infrastructure (TOON compiler)",
+      "Added TOON compiler specification with detailed invocation and success criteria",
+      "Updated time estimate from 1h to 4-6h (realistic for first conversion with learning curve)",
+      "Added comprehensive error handling for 4 failure scenarios",
+      "Added detailed test specifications with pytest examples and assertions",
+      "Removed unvalidated token savings claim (SC7) from step-level acceptance criteria - deferred to Phase 8",
+      "Added TOON format specification prerequisite check",
+      "Clarified scope: discuss.md only (start.md excluded)"
     ],
     "remaining_risks": [
-      "Learning curve for first TOON conversion (mitigated by documentation)",
-      "Phase 1 infrastructure dependency (mitigated by prerequisite checks)"
+      "Learning curve for first TOON conversion (mitigated by 4-6h time estimate and documentation study)",
+      "Phase 1 infrastructure dependency (mitigated by prerequisite checks and escalation paths)"
+    ],
+    "critical_blockers_resolved": [
+      "BLOCKER 1: Compiler existence - Added prerequisite check with escalation path",
+      "BLOCKER 2: Wave classification - Resolved by splitting DISCUSS and CROSS_WAVE steps",
+      "BLOCKER 3: Token savings claim - Removed from step-level, deferred to Phase 8",
+      "BLOCKER 4: Undefined compilation - Added detailed compiler specification",
+      "BLOCKER 5: Missing error handling - Added 4 comprehensive error scenarios"
     ]
   },
   "review_metadata": {
-    "reviewed_by": "Lyra (corrected after adversarial review)",
-    "review_date": "2026-01-06",
+    "reviewed_by": "Lyra (Adversarial Mode)",
+    "review_date": "2026-01-05",
     "review_status": "CORRECTED - Ready for execution after prerequisite verification",
-    "corrections_applied": "Wave classification fixed, prerequisites added, time estimate corrected, error handling added",
-    "estimated_hours_justification": "4-6 hours includes: 1h TOON format study, 1-2h conversion, 1-2h test implementation, 1h compilation/validation, buffer for learning curve"
+    "corrections_applied": "Wave classification split, prerequisites added, time estimate corrected (1h → 4-6h), error handling added, token savings claim removed from step-level",
+    "estimated_hours_justification": "4-6 hours includes: 1h TOON format study, 1-2h conversion, 1-2h test implementation, 1h compilation/validation, buffer for learning curve on first TOON conversion"
   }
 }

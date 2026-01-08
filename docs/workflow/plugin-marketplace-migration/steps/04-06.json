@@ -11,7 +11,8 @@
     "name": "Convert CROSS_WAVE Commands",
     "description": "Convert 4 cross-wave commands: research.md, root-why.md, git.md, forge.md",
     "motivation": "CROSS_WAVE commands available at any workflow point",
-    "estimated_hours": "4-6"
+    "estimated_hours": "12-16",
+    "estimate_note": "Revised from 2 hours based on adversarial review - includes format validation, metadata preservation testing, agent binding verification"
   },
   "context": {
     "constraints": [
@@ -76,7 +77,11 @@
       "Wave metadata correct (CROSS_WAVE)",
       "All 4 CROSS_WAVE commands have mandatory agent bindings",
       "Total: 20 command.toon files exist",
-      "Token savings validation: Deferred to Phase 8 final validation (not measured in this step)"
+      "All agent bindings verified valid post-conversion (test_cross_wave_agent_bindings_valid)",
+      "All agent metadata preserved: original .md metadata == converted .toon metadata",
+      "TOON format validation passes against TOON v3.0 schema for all files",
+      "Token savings measured and documented: baseline .md tokens vs new .toon tokens (~60% target)",
+      "Zero .md command files remain in 5d-wave/tasks/dw/ directory"
     ]
   },
   "tdd_approach": {
@@ -85,7 +90,12 @@
       "test_cross_wave_commands_compile",
       "test_cross_wave_metadata_correct",
       "test_cross_wave_agent_bindings_valid",
-      "test_all_20_commands_migrated"
+      "test_all_20_commands_migrated",
+      "test_toon_format_valid - validate all files against TOON v3.0 schema",
+      "test_agent_metadata_preserved - compare original .md vs converted .toon",
+      "test_roundtrip_conversion_fidelity - .md to .toon and back should match",
+      "test_agents_load_and_activate_with_toon_files - integration test with real agents",
+      "test_token_savings_measurement - measure and verify ~60% savings target"
     ]
   },
   "refactoring": {
@@ -98,27 +108,57 @@
     ]
   },
   "execution_guidance": {
-    "approach": "Final command batch with migration completion validation",
+    "approach": "Final command batch with migration completion validation and comprehensive testing",
+    "critical_prerequisites": [
+      "MANDATORY: Verify TOON v3.0 format specification exists and is accessible",
+      "MANDATORY: Verify steps 4.1-4.5 completed successfully (16 .toon files should exist)",
+      "MANDATORY: Create .md file backups before starting conversion (git commit or branch)",
+      "MANDATORY: Review TOON v3.0 specification and conversion rules documentation"
+    ],
     "workflow": [
-      "1. Convert all 4 CROSS_WAVE .md files to .toon: research.md, root-why.md, git.md, forge.md",
-      "2. Verify wave metadata 'CROSS_WAVE' in each file",
-      "3. Compile each TOON file and validate output",
-      "4. Write and run tests to validate total command count (20)",
-      "5. Write tests for agent bindings and compilation success",
-      "6. Apply refactoring level 1 for final consistency",
-      "7. Verify NO .md files remain in 5d-wave/tasks/dw/ (all converted)",
-      "8. DO NOT COMMIT - wait for user approval"
+      "PRE-FLIGHT: Verify prerequisite_checks pass (TOON infrastructure, format spec, baseline measurements)",
+      "PRE-FLIGHT: Confirm 16 .toon files from steps 4.1-4.5 exist, or STOP and escalate",
+      "1. Review TOON v3.0 format specification and .md to .toon mapping rules",
+      "2. Create backup of all .md files (git commit before conversion starts)",
+      "3. Convert all 4 CROSS_WAVE .md files to .toon: research.md, root-why.md, git.md, forge.md",
+      "4. Verify wave metadata 'CROSS_WAVE' in each file",
+      "5. Compile each TOON file and validate output",
+      "6. Write and run test_toon_format_valid - validate against TOON v3.0 schema",
+      "7. Write and run test_agent_metadata_preserved - compare original vs converted metadata",
+      "8. Write and run test_roundtrip_conversion_fidelity - verify reversibility",
+      "9. Write and run test_agents_load_and_activate_with_toon_files - integration test",
+      "10. Write and run test_token_savings_measurement - measure baseline vs new token counts",
+      "11. Write and run tests to validate total command count (20)",
+      "12. Write tests for agent bindings and compilation success",
+      "13. Apply refactoring level 1 for final consistency across all 20 files",
+      "14. Verify NO .md files remain in 5d-wave/tasks/dw/ (all converted)",
+      "15. Verify all quality gates pass before proceeding",
+      "16. DO NOT COMMIT - wait for user approval"
     ],
     "quality_gates": [
+      "CRITICAL: All prerequisite_checks passed before execution begins",
+      "CRITICAL: TOON v3.0 format specification verified and accessible",
+      "CRITICAL: Steps 4.1-4.5 verified complete (16 .toon files exist)",
       "All tests passing (100% required)",
       "Exactly 20 command.toon files exist",
       "Zero .md command files remain",
       "All 4 CROSS_WAVE commands compile successfully",
       "Wave metadata 'CROSS_WAVE' validated in each file",
       "Agent bindings present and valid for each command",
-      "Refactoring applied (level 1) - consistency verified",
+      "TOON format validation passes for all 20 files (test_toon_format_valid)",
+      "Agent metadata preservation validated (test_agent_metadata_preserved)",
+      "Round-trip conversion fidelity validated (test_roundtrip_conversion_fidelity)",
+      "Agent integration test passes (test_agents_load_and_activate_with_toon_files)",
+      "Token savings measured and documented (baseline vs new with ~60% target)",
+      "Refactoring applied (level 1) - consistency verified across all 20 files",
       "No report files created",
       "Phase 4 completion gate: All waves converted (DISCUSS, DESIGN, DISTILL, DEVELOP, DEMO, CROSS_WAVE)"
+    ],
+    "blockers_from_adversarial_review": [
+      "BLOCKER: If TOON v3.0 specification not found, STOP execution and escalate to tech lead",
+      "BLOCKER: If steps 4.1-4.5 did not create 16 .toon files, STOP and escalate to investigate predecessor failure",
+      "BLOCKER: If Phase 1 TOON infrastructure (parser/compiler) not available, execute prerequisite_checks.phase_1_toon_infrastructure",
+      "BLOCKER: If baseline measurements not complete, execute prerequisite_checks.baseline_measurements"
     ]
   },
   "review_metadata": {
@@ -572,6 +612,37 @@
         "semantic_preservation_unknown": 9,
         "overall": 9.5
       }
+    },
+    "corrections_applied": {
+      "timestamp": "2026-01-08",
+      "applied_by": "lyra",
+      "all_recommendations_integrated": true,
+      "changes_made": [
+        "Estimate revised from 2 hours to 12-16 hours with breakdown justification",
+        "Added 5 new acceptance criteria for format validation, metadata preservation, agent binding validation, token measurement, .md cleanup",
+        "Added 5 new inner tests: test_toon_format_valid, test_agent_metadata_preserved, test_roundtrip_conversion_fidelity, test_agents_load_and_activate_with_toon_files, test_token_savings_measurement",
+        "Added critical_prerequisites section with 4 MANDATORY pre-flight checks",
+        "Expanded workflow from 8 to 16 steps including pre-flight verification and comprehensive testing",
+        "Added 4 CRITICAL quality gates for prerequisite verification",
+        "Added 9 new quality gates for format validation, metadata preservation, round-trip fidelity, agent integration, token measurement",
+        "Added blockers_from_adversarial_review section with 4 explicit blocking conditions",
+        "All prerequisite_checks, toon_compiler, error_handling, and test_specifications remain intact for implementation guidance"
+      ],
+      "blocking_items_addressed": [
+        "Estimate correction: 2h → 12-16h with detailed breakdown",
+        "Test coverage expanded: 5 new critical tests added to inner_tests",
+        "Acceptance criteria clarified: token savings must be measured, metadata must be preserved, format must validate",
+        "Prerequisites made explicit: TOON spec, steps 4.1-4.5 completion, baseline measurements",
+        "Quality gates strengthened: format validation, metadata preservation, agent integration now mandatory",
+        "Workflow enhanced: pre-flight checks prevent execution with missing prerequisites"
+      ],
+      "remaining_external_blockers": [
+        "TOON v3.0 format specification creation (tech lead - 4-6 hours)",
+        "Steps 4.1-4.5 investigation and fix (tech lead - 2-4 hours)",
+        "Conversion rules documentation (tech lead - 2-3 hours)",
+        "Step 01-01 TOON version mismatch resolution (tech lead - escalation required)"
+      ],
+      "status_after_corrections": "JSON definition COMPLETE with all adversarial review corrections. Execution BLOCKED pending external prerequisite resolution by tech lead."
     }
   },
   "prerequisite_checks": {

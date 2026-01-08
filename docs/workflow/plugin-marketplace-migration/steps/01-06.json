@@ -9,8 +9,8 @@
   "step": {
     "number": "1.6",
     "name": "Infrastructure Integration Tests",
-    "description": "Create end-to-end integration tests for the complete TOON toolchain.\n\nCRITICAL BLOCKER: TOON version mismatch MUST be resolved first.\n- Test fixture (agents/novel-editor-chatgpt-toon.txt) uses TOON v1.0\n- Parser may expect TOON v3.0\n- DECISION REQUIRED: Convert fixture OR update parser to support v1.0\n\nIntegration tests validate: parse → template selection → rendering → output validation.",
-    "motivation": "Integration tests validate all components work together",
+    "description": "Create end-to-end integration tests for the complete TOON toolchain.\n\nCRITICAL BLOCKER: TOON version mismatch MUST be resolved first.\n- Test fixture (agents/novel-editor-chatgpt-toon.txt) uses TOON v1.0\n- Parser may expect TOON v3.0\n- DECISION REQUIRED: Convert fixture OR update parser to support v1.0 OR implement version detection\n\nCORRECTION APPLIED: Time estimate increased from 2h to 3-4h to account for:\n- TOON version compatibility validation\n- Output specification implementation\n- Type-specific schema validation logic\n- NO MOCKS policy enforcement\n\nIntegration tests validate: parse → template selection → rendering → output validation.",
+    "motivation": "Integration tests validate all components work together correctly with real implementations (NO MOCKS)",
     "estimated_hours": "3-4"
   },
   "context": {
@@ -33,18 +33,33 @@
       "tests/tools/toon/test_integration.py"
     ],
     "acceptance_criteria": [
-      "Integration test compiles novel-editor TOON file successfully (after version compatibility resolved)",
-      "Integration test validates output structure against type-specific schemas",
-      "Integration test verifies error propagation from parser → compiler → output",
-      "Test uses real TOON file (agents/novel-editor-chatgpt-toon.txt) with NO mocks"
+      "PREREQUISITE: TOON version compatibility MUST be resolved before test implementation (v1.0 fixture vs v3.0 parser spec)",
+      "Integration test compiles novel-editor TOON file successfully using resolved version strategy",
+      "Integration test validates output structure against type-specific schemas (agent: frontmatter+commands, command: metadata+execution, skill: triggers+workflow)",
+      "Integration test verifies error propagation from parser → compiler → output with concrete error scenarios",
+      "Test uses real TOON file (agents/novel-editor-chatgpt-toon.txt) with real implementations (NO MOCKS policy enforced)",
+      "Test validates output matches Claude Code compliant structure with required sections per type"
     ]
   },
   "tdd_approach": {
-    "outer_test": "GIVEN the existing novel-editor TOON file\nWHEN I compile it through the full pipeline\nTHEN output is valid Claude Code agent.md",
+    "prerequisite_validation": {
+      "action": "Verify test fixture compatibility BEFORE writing integration test",
+      "steps": [
+        "1. Confirm agents/novel-editor-chatgpt-toon.txt version (currently v1.0)",
+        "2. DECISION: Support v1.0 OR convert to v3.0 OR implement version detection",
+        "3. Validate parser succeeds against test fixture",
+        "4. Document resolved version strategy in execution_guidance"
+      ],
+      "blocking": "Test implementation cannot begin until version compatibility resolved"
+    },
+    "outer_test": "GIVEN the existing novel-editor TOON file (version compatibility resolved)\nWHEN I compile it through the full pipeline (parser → compiler → renderer)\nTHEN output is valid Claude Code agent.md with:\n- YAML frontmatter (name, description, model)\n- Activation notice\n- Agent YAML block (commands, dependencies)\n- All required sections per type-specific schema",
     "inner_tests": [
       "test_integration_full_pipeline",
-      "test_integration_error_propagation",
-      "test_integration_output_validation"
+      "test_integration_error_propagation_parser_errors",
+      "test_integration_error_propagation_template_errors",
+      "test_integration_output_validation_agent_schema",
+      "test_integration_output_validation_command_schema",
+      "test_integration_output_validation_skill_schema"
     ]
   },
   "refactoring": {
@@ -58,23 +73,64 @@
   "execution_guidance": {
     "approach": "Outside-In TDD with double-loop",
     "workflow": [
-      "0. PREREQUISITE CHECK: Verify tools/toon/ exists. If not: HALT - refer to BLOCKER_001 resolution",
-      "1. Write failing E2E test (outer_test)",
-      "2. Implement via inner TDD loop (inner_tests)",
-      "3. Apply refactoring level 1",
-      "4. Validate all acceptance criteria met",
-      "5. DO NOT COMMIT - wait for user approval"
+      "0. CRITICAL PREREQUISITE CHECK: TOON version compatibility MUST be resolved",
+      "   - Run parser against agents/novel-editor-chatgpt-toon.txt",
+      "   - If parser fails: HALT - resolve version mismatch before continuing",
+      "   - Document which version strategy was selected (v1.0 only, v3.0 only, or both)",
+      "1. PREREQUISITE CHECK: Verify tools/toon/ exists. If not: HALT - refer to BLOCKER_001 resolution",
+      "2. PREREQUISITE CHECK: Verify output specifications from 01-02 through 01-04 are accessible",
+      "3. Write failing E2E test (outer_test) with type-specific output validation",
+      "4. Implement via inner TDD loop (inner_tests) including error scenarios",
+      "5. Apply refactoring level 1",
+      "6. Validate all acceptance criteria met (including NO MOCKS policy)",
+      "7. DO NOT COMMIT - wait for user approval"
     ],
     "quality_gates": [
       "All tests passing (100% required)",
-      "All acceptance criteria validated",
+      "All acceptance criteria validated (including version compatibility prerequisite)",
+      "NO MOCKS policy enforced (all components are real implementations)",
+      "Type-specific schema validation implemented for agent/command/skill outputs",
+      "Error propagation tested with concrete error scenarios",
       "Refactoring applied (level 1)",
       "No report files created"
     ],
     "test_scope": {
-      "mocking_policy": "NO MOCKS - Integration test uses real implementations",
-      "components_tested": "Parser (01-01), Templates (01-02/01-03/01-04), Compiler (01-05)",
-      "validation_depth": "End-to-end: TOON file input → valid agent.md output with all required sections"
+      "mocking_policy": "NO MOCKS - Integration test uses ONLY real implementations (parser, templates, compiler)",
+      "components_tested": "Real Parser (01-01), Real Templates (01-02/01-03/01-04), Real Compiler (01-05)",
+      "validation_depth": "End-to-end: TOON file input → valid agent.md output with type-specific schema validation",
+      "test_fixture": "agents/novel-editor-chatgpt-toon.txt (TOON v1.0 - version compatibility MUST be resolved)",
+      "error_scenarios": [
+        "Parser errors: Invalid TOON syntax",
+        "Template errors: Missing template file",
+        "File I/O errors: Missing input file",
+        "Validation errors: Output missing required sections"
+      ]
+    },
+    "output_validation_specification": {
+      "agent_output": {
+        "required_sections": [
+          "YAML frontmatter with name/description/model",
+          "Activation notice",
+          "Agent YAML block with commands and dependencies"
+        ],
+        "validation_method": "Parse output as YAML, verify required keys exist with correct types"
+      },
+      "command_output": {
+        "required_sections": [
+          "Command metadata header (wave, agent-reference, command-specific fields)",
+          "Execution context and prerequisites",
+          "Success criteria as markdown checklist"
+        ],
+        "validation_method": "Check markdown headers present with expected content structure"
+      },
+      "skill_output": {
+        "required_sections": [
+          "Skill YAML frontmatter",
+          "Trigger patterns list (regex strings)",
+          "Workflow integration with wave and phase fields"
+        ],
+        "validation_method": "Parse YAML frontmatter, validate triggers list exists and workflow has required fields"
+      }
     }
   },
   "adversarial_review": {
@@ -550,49 +606,82 @@
   },
   "prerequisites": {
     "critical_blocker": {
+      "id": "TOON_VERSION_MISMATCH",
       "issue": "TOON version mismatch between parser and test fixture",
       "status": "MUST RESOLVE BEFORE IMPLEMENTATION",
+      "evidence": "Test fixture (agents/novel-editor-chatgpt-toon.txt) uses TOON v1.0 format, parser spec references TOON v3.0",
+      "impact": "Integration test will fail immediately if parser expects v3.0 but receives v1.0 input",
       "resolution_options": [
-        "A) Convert agents/novel-editor-chatgpt-toon.txt from v1.0 to v3.0",
-        "B) Update parser (01-01) to support TOON v1.0",
-        "C) Implement version detection in parser (supports both v1.0 and v3.0)"
+        {
+          "option": "A) Convert agents/novel-editor-chatgpt-toon.txt from v1.0 to v3.0",
+          "pros": "Parser stays simple (v3.0 only)",
+          "cons": "Requires TOON v3.0 spec availability, modifies working test fixture",
+          "estimated_effort": "2 hours"
+        },
+        {
+          "option": "B) Update parser (01-01) to support TOON v1.0 only",
+          "pros": "Works with existing fixture immediately",
+          "cons": "Abandons v3.0 spec, may need migration later",
+          "estimated_effort": "0 hours (parser already targets v1.0)"
+        },
+        {
+          "option": "C) Implement version detection in parser (supports both v1.0 and v3.0)",
+          "pros": "Most flexible, supports existing content and future migrations, no fixture changes",
+          "cons": "Parser complexity increases, requires v3.0 spec for implementation",
+          "estimated_effort": "3-4 hours additional parser work"
+        }
       ],
-      "recommended": "Option C (version detection) - Most flexible, no fixture changes needed",
-      "validation": "Run parser against test fixture before writing integration test. Parser MUST succeed."
+      "recommended": "Option C (version detection) - Most flexible for long-term maintenance, supports existing and future content",
+      "validation_steps": [
+        "1. Run parser against agents/novel-editor-chatgpt-toon.txt",
+        "2. Parser MUST succeed and produce valid structured output",
+        "3. Document which version was detected (v1.0 or v3.0)",
+        "4. Proceed to integration test implementation only after validation passes"
+      ]
     },
     "output_specifications": {
-      "description": "Integration test MUST know what valid output looks like",
+      "description": "Integration test MUST know what valid output looks like for each type",
+      "source": "Specifications from steps 01-02 (agent), 01-03 (command), 01-04 (skill)",
       "agent_output_structure": {
         "required_sections": [
           "YAML frontmatter with name/description/model",
           "Activation notice",
-          "Agent YAML block with commands"
+          "Agent YAML block with commands and dependencies"
         ],
-        "validation_method": "Parse output as YAML, verify required keys present"
+        "validation_method": "Parse output as YAML, verify required keys present with correct types",
+        "example_validation": "assert 'name' in parsed_yaml and isinstance(parsed_yaml['commands'], list)"
       },
       "command_output_structure": {
         "required_sections": [
-          "Command metadata",
-          "Execution context",
-          "Success criteria checklist"
+          "Command metadata header (wave, agent-reference, command-specific fields)",
+          "Execution context and prerequisites",
+          "Success criteria as markdown checklist"
         ],
-        "validation_method": "Check markdown headers present with expected content"
+        "validation_method": "Check markdown headers present with expected content structure",
+        "example_validation": "assert '## Command Metadata' in output and '## Success Criteria' in output"
       },
       "skill_output_structure": {
         "required_sections": [
           "Skill YAML frontmatter",
-          "Trigger patterns list",
-          "Workflow integration"
+          "Trigger patterns list (regex strings)",
+          "Workflow integration with wave and phase fields"
         ],
-        "validation_method": "Parse YAML, validate triggers list and workflow fields"
+        "validation_method": "Parse YAML frontmatter, validate triggers list exists and workflow has required fields",
+        "example_validation": "assert 'triggers' in parsed_yaml and 'workflow' in parsed_yaml and 'wave' in parsed_yaml['workflow']"
       }
     },
     "blocking": [
-      "tools/toon/ directory MUST exist with README.md",
-      "TOON format specification v3.0 must be accessible",
-      "Parser output schema must be defined before template implementation"
+      "CRITICAL: TOON version compatibility MUST be resolved (parser succeeds against test fixture)",
+      "CRITICAL: tools/toon/ directory MUST exist with parser, templates, and compiler implementations",
+      "HIGH: Parser output schema from 01-01 MUST be accessible to validate parser-to-compiler interface",
+      "HIGH: Template output specifications from 01-02 through 01-04 MUST be documented for output validation",
+      "MEDIUM: Test fixture path (agents/novel-editor-chatgpt-toon.txt) MUST be verified accessible"
     ],
-    "validation": "Run: ls tools/toon/README.md. Must exist. If not: BLOCKER_001"
+    "validation_commands": [
+      "ls tools/toon/README.md  # Must exist. If not: BLOCKER_001",
+      "python -c 'from tools.toon import parser; parser.parse(\"agents/novel-editor-chatgpt-toon.txt\")'  # Must succeed",
+      "ls agents/novel-editor-chatgpt-toon.txt  # Must exist"
+    ]
   },
   "critical_blocker_status": {
     "BLOCKER_001": {
@@ -605,6 +694,113 @@
         "B: Pivot to Markdown templates (8-10h, loses TOON benefits)",
         "C: Block until external TOON library available"
       ]
+    }
+  },
+  "phase_1_corrections_applied": {
+    "correction_date": "2026-01-06",
+    "source_documents": [
+      "docs/workflow/plugin-marketplace-migration/adversarial-reviews/PHASE_1_CRITICAL_CORRECTIONS.md",
+      "docs/workflow/plugin-marketplace-migration/adversarial-reviews/CORRECTIONS_SUMMARY.md"
+    ],
+    "corrections_summary": {
+      "1_toon_version_resolution": {
+        "issue": "TOON v1.0 test fixture vs v3.0 parser spec mismatch",
+        "correction": "Added TOON version resolution as CRITICAL BLOCKER prerequisite",
+        "location": "prerequisites.critical_blocker with 3 resolution options",
+        "recommended_option": "Option C - Implement version detection (supports both v1.0 and v3.0)"
+      },
+      "2_time_estimate_revision": {
+        "issue": "Original 2h estimate insufficient for scope",
+        "correction": "Updated estimated_hours from 2h to 3-4h",
+        "rationale": "Accounts for TOON version validation, output specification implementation, type-specific schema validation, NO MOCKS enforcement"
+      },
+      "3_output_specification_prerequisites": {
+        "issue": "Integration test cannot validate output without knowing valid structure",
+        "correction": "Added detailed output_validation_specification to execution_guidance",
+        "includes": "Type-specific schemas for agent/command/skill with validation methods and examples"
+      },
+      "4_enhanced_acceptance_criteria": {
+        "issue": "Original AC lacked specificity on version compatibility and validation",
+        "correction": "Updated acceptance_criteria with 6 specific, testable criteria",
+        "additions": [
+          "PREREQUISITE: Version compatibility resolved",
+          "Type-specific schema validation (agent/command/skill)",
+          "Concrete error scenario testing",
+          "NO MOCKS policy enforcement",
+          "Claude Code compliance validation"
+        ]
+      },
+      "5_explicit_test_scope": {
+        "issue": "Ambiguity about mocking policy and component testing approach",
+        "correction": "Enhanced test_scope with explicit policies and error scenarios",
+        "clarifications": [
+          "NO MOCKS - all components use real implementations",
+          "Test fixture version documented (TOON v1.0)",
+          "4 concrete error scenarios enumerated",
+          "Validation depth specified (end-to-end with type-specific schemas)"
+        ]
+      },
+      "6_prerequisite_validation_workflow": {
+        "issue": "No structured approach to prerequisite validation",
+        "correction": "Added tdd_approach.prerequisite_validation with 4-step process",
+        "enforces": "Test implementation cannot begin until version compatibility resolved"
+      },
+      "7_expanded_inner_tests": {
+        "issue": "Generic inner tests didn't cover type-specific validation",
+        "correction": "Expanded from 3 to 6 inner tests",
+        "additions": [
+          "test_integration_error_propagation_parser_errors",
+          "test_integration_error_propagation_template_errors",
+          "test_integration_output_validation_agent_schema",
+          "test_integration_output_validation_command_schema",
+          "test_integration_output_validation_skill_schema"
+        ]
+      },
+      "8_enhanced_quality_gates": {
+        "issue": "Quality gates didn't verify critical prerequisites",
+        "correction": "Added 3 new quality gates",
+        "additions": [
+          "Version compatibility prerequisite validated",
+          "NO MOCKS policy enforced",
+          "Type-specific schema validation implemented",
+          "Error propagation tested with concrete scenarios"
+        ]
+      },
+      "9_structured_prerequisites": {
+        "issue": "Prerequisites lacked structure and actionable validation",
+        "correction": "Restructured prerequisites with critical_blocker details",
+        "improvements": [
+          "Added resolution options with pros/cons/effort estimates",
+          "Added validation_steps for prerequisite checking",
+          "Added validation_commands for automated checks",
+          "Prioritized blocking items (CRITICAL/HIGH/MEDIUM)"
+        ]
+      }
+    },
+    "risk_mitigation": {
+      "original_risk_score": "8/10 (HIGH)",
+      "mitigated_risks": [
+        "TOON version catastrophic failure - Prerequisite check blocks invalid execution",
+        "Output validation meaningless - Type-specific schemas enforce real validation",
+        "Test scope ambiguity - NO MOCKS policy and component list explicit",
+        "Time pressure corners cut - Realistic 3-4h estimate prevents rushing"
+      ],
+      "remaining_risks": [
+        "Parser implementation quality (depends on 01-01 execution)",
+        "Template implementation consistency (depends on 01-02 through 01-04)",
+        "Test fixture accessibility (documented but not pre-validated)"
+      ]
+    },
+    "estimated_effort_breakdown": {
+      "original_estimate": "2 hours",
+      "corrected_estimate": "3-4 hours",
+      "breakdown": {
+        "prerequisite_validation": "30 minutes (TOON version check, tools/toon/ verification)",
+        "outer_test_implementation": "45 minutes (E2E test with type-specific validation)",
+        "inner_tests_implementation": "90-120 minutes (6 inner tests with error scenarios)",
+        "refactoring": "15 minutes (level 1 - test helper naming)",
+        "validation": "30 minutes (all AC verified, quality gates passed)"
+      }
     }
   }
 }

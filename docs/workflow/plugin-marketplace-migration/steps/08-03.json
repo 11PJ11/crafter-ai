@@ -11,7 +11,225 @@
     "name": "Full Workflow Validation",
     "description": "Test complete 5D-Wave workflow through plugin:\n- Test DISCUSS -> DESIGN -> DISTILL -> DEVELOP -> DEMO flow\n- Test inner loop with MOCK reviewer (implement->review->fix->refactor)\n- Validate default constraints enforced\n- NOTE: Uses mock software-crafter-reviewer agent (full agent installed in step 08-04)",
     "motivation": "Validate SC5 - full workflow functional and SC6 - constraints",
-    "estimated_hours": "6"
+    "estimated_hours": "6-8"
+  },
+  "adversarial_review": {
+    "review_date": "2026-01-05",
+    "reviewer": "Lyra (Adversarial Software Crafter Mode)",
+    "risk_score": "8.2/10 (HIGH - CRITICAL)",
+    "blast_radius": "MULTIPLE_PHASES",
+    "verdict": "FLAGGED_FOR_CLARIFICATION - Do not start until blockers resolved",
+    "critical_findings": [
+      {
+        "finding": "CIRCULAR DEPENDENCY: Reviewer Agent Not Yet Installed",
+        "severity": "CRITICAL",
+        "probability": "85%",
+        "description": "Inner loop testing requires /dw:review command which depends on software-crafter-reviewer agent. Agent is created in step 8.4 (AFTER this step). Test will fail when invoking reviewer.",
+        "resolution": "Create mock_reviewer.py stub implementation that returns fixed 'approved' response. Allows testing workflow mechanics without dependency on real reviewer agent.",
+        "time_cost_if_ignored": "2-4 days when discovered mid-execution"
+      },
+      {
+        "finding": "UPSTREAM DEPENDENCIES UNSTABLE",
+        "severity": "CRITICAL",
+        "probability": "70%",
+        "description": "Step 8.2 (immediate prerequisite) is marked NEEDS_CLARIFICATION with 9 blocking questions. Plugin installation mechanism unspecified, component accessibility verification undefined, test environment isolation missing.",
+        "resolution": "Step 8.2 must be completed and verified working before starting 8.3. All 9 blocking questions must be resolved.",
+        "time_cost_if_ignored": "2-4 days debugging installation issues"
+      },
+      {
+        "finding": "CONSTRAINT ENFORCEMENT COMPLETELY UNDEFINED",
+        "severity": "HIGH",
+        "probability": "60%",
+        "description": "Acceptance criteria require validating 'no auto-report files' and 'no auto-commits', but HOW plugin enforces these constraints is completely unspecified. Test could pass without actually validating constraint enforcement.",
+        "resolution": "Document constraint enforcement mechanism: which settings.local.json flags, where in code constraints checked, what happens when violated.",
+        "time_cost_if_ignored": "1-2 days to implement actual enforcement after discovering test was wrong"
+      },
+      {
+        "finding": "EXPECTED OUTPUT STRUCTURE UNDEFINED FOR ALL 5 WAVES",
+        "severity": "HIGH",
+        "probability": "75%",
+        "description": "Test needs to validate what each wave produces (DISCUSS → ?, DESIGN → ?, etc.) but these outputs are not specified. Test will either skip assertions or make wrong assumptions.",
+        "resolution": "Create specification document listing expected artifacts for each phase with format and validation criteria.",
+        "time_cost_if_ignored": "1-2 days defining structure and adding real assertions"
+      },
+      {
+        "finding": "TIME ESTIMATE WILDLY OPTIMISTIC",
+        "severity": "HIGH",
+        "probability": "90%",
+        "description": "Stated 2 hours, realistic 6-8 hours (3-4x multiplier). Hidden complexity includes: test fixture setup (1.5h), wave execution tests (2h), constraint validation (1.5h), git state inspection (1h), inner loop testing (1h), test isolation (1h).",
+        "resolution": "Revise estimate from 2h to 6-8h minimum. Budget reflects realistic implementation time.",
+        "time_cost_if_ignored": "Schedule slip and developer frustration"
+      }
+    ],
+    "dangerous_assumptions": [
+      {
+        "assumption": "Step 8.2 produces working installation",
+        "confidence": "25%",
+        "risk": "Plugin installation mechanism itself undefined (9 blocking questions)"
+      },
+      {
+        "assumption": "All 5D-Wave commands stable and functional",
+        "confidence": "10%",
+        "risk": "Commands being implemented throughout phases, likely still evolving"
+      },
+      {
+        "assumption": "Plugin enforces constraints from settings.local.json",
+        "confidence": "15%",
+        "risk": "Constraint enforcement mechanism not implemented or tested"
+      },
+      {
+        "assumption": "Git state inspection is simple",
+        "confidence": "40%",
+        "risk": "Requires distinguishing auto-commits from user commits - non-trivial"
+      },
+      {
+        "assumption": "Waves can be tested without defined output structure",
+        "confidence": "5%",
+        "risk": "Cannot write assertions without knowing what success looks like"
+      },
+      {
+        "assumption": "Test fixture setup is straightforward",
+        "confidence": "20%",
+        "risk": "Fresh install or post-8.2 state completely undefined"
+      },
+      {
+        "assumption": "No duplicate wave testing needed",
+        "confidence": "30%",
+        "risk": "Steps 8.1/8.2 don't explicitly test wave execution"
+      },
+      {
+        "assumption": "Reviewer agent will exist by step 8.3",
+        "confidence": "5%",
+        "risk": "Agent created in step 8.4, after this step"
+      }
+    ],
+    "unhandled_edge_cases": [
+      {
+        "case": "E1: DISCUSS Produces No Artifacts",
+        "description": "If DISCUSS is purely user discussion with no output artifacts, test assumes output exists",
+        "failure_mode": "False failure when DISCUSS legitimately produces no files"
+      },
+      {
+        "case": "E2: DESIGN Incomplete",
+        "description": "DESIGN produces visualization but no actionable design",
+        "failure_mode": "Test checks 'DESIGN ran' but doesn't validate completeness, downstream DISTILL fails"
+      },
+      {
+        "case": "E3: Inner Loop Infrastructure Missing",
+        "description": "/dw:develop fails because analyzer tool not installed",
+        "failure_mode": "Test fails but root cause is missing infrastructure, not workflow logic"
+      },
+      {
+        "case": "E4: Constraint Conflicts With Legitimate Behavior",
+        "description": "no_auto_report_files constraint prevents agents from legitimately creating documentation",
+        "failure_mode": "Workflow cannot complete, but test reports constraint enforcement success"
+      },
+      {
+        "case": "E5: Git State False Positives",
+        "description": "Git hooks or CI/CD make commits that test detects as auto-commits",
+        "failure_mode": "False negative test failure when commits are legitimate infrastructure"
+      },
+      {
+        "case": "E6: Settings Not Loaded",
+        "description": "Plugin runs with hardcoded defaults, never reads settings.local.json",
+        "failure_mode": "Constraint enforcement test passes but constraints not actually enforced"
+      },
+      {
+        "case": "E7: Non-Deterministic DEMO Output",
+        "description": "DEMO output depends on user interaction or stakeholder feedback",
+        "failure_mode": "Test expectations incorrect or test results non-deterministic"
+      },
+      {
+        "case": "E8: Test Pollution",
+        "description": "Test 1 creates artifacts, Test 2 runs with leftover artifacts from test 1",
+        "failure_mode": "False failure due to test pollution between test runs"
+      }
+    ],
+    "test_coverage_gaps": [
+      "No test for DISCUSS completeness - Missing artifacts not detected",
+      "No test for DESIGN quality - Incomplete designs pass as 'executed correctly'",
+      "No test for YAML/artifact format - Malformed output not caught",
+      "No test for constraint validation - Test doesn't verify constraints actually prevent behaviors",
+      "No test for loop termination - What prevents infinite loop if /dw:refactor keeps finding code smells?",
+      "No test for state flow - Do waves share state correctly? Does DESIGN output flow into DISTILL input?",
+      "No test for error handling - What if wave fails mid-execution? Does workflow gracefully degrade?",
+      "No test for settings loading - Test assumes settings work, doesn't verify plugin reads configuration"
+    ],
+    "critical_blockers": [
+      {
+        "blocker": "BLOCKER 1: Step 8.2 Must Be Verified Complete",
+        "what": "Step 8.2 must resolve all 9 blocking questions",
+        "why": "This step depends on plugin installation working",
+        "action": "Complete step 8.2 unblocking questions, verify /plugin install is fully functional",
+        "time": "3-4 hours (not in this step's scope)"
+      },
+      {
+        "blocker": "BLOCKER 2: Reviewer Agent Must Exist",
+        "what": "software-crafter-reviewer agent must be callable via /dw:review command",
+        "why": "Inner loop testing requires this command",
+        "action": "Either (a) complete step 8.4 first, OR (b) create mock reviewer stub for testing",
+        "time": "Mock approach: 1-2 hours"
+      },
+      {
+        "blocker": "BLOCKER 3: Expected Output Specified",
+        "what": "Document what each 5D-Wave phase produces as artifacts",
+        "why": "Cannot test success without knowing what success looks like",
+        "action": "Create specification listing expected outputs per phase (DISCUSS → ?, DESIGN → ?, etc.)",
+        "time": "2-3 hours"
+      },
+      {
+        "blocker": "BLOCKER 4: Constraint Enforcement Mechanism Specified",
+        "what": "Document which constraints exist, what each prevents, how enforcement works",
+        "why": "Acceptance criteria require validating constraint enforcement",
+        "action": "Create constraint specification listing constraint names, behaviors, enforcement mechanism",
+        "time": "2-3 hours"
+      }
+    ],
+    "recommendations": {
+      "do_not_start": "This step WILL FAIL if started before blockers are resolved (85%+ probability)",
+      "preparation_phases": [
+        {
+          "phase": "Phase 1: Unblock Step 8.2",
+          "time": "3-4 hours",
+          "actions": [
+            "Complete all 9 blocking questions for step 8.2",
+            "Verify /plugin install mechanism is implemented and working",
+            "Specify component accessibility verification approach",
+            "Implement test environment isolation"
+          ]
+        },
+        {
+          "phase": "Phase 2: Clarify Step 8.3 Prerequisites",
+          "time": "2-3 hours",
+          "actions": [
+            "Define expected output artifacts for each 5D-Wave phase",
+            "Specify constraint enforcement mechanism (which constraints, how enforced)",
+            "List constraint names from settings.local.json with enforcement details",
+            "Create example showing wave input/output data flow"
+          ]
+        },
+        {
+          "phase": "Phase 3: Create Mock Reviewer OR Reorder Steps",
+          "time": "1-2 hours (mock) OR 0 hours (reorder)",
+          "actions": [
+            "Option A: Create stub software-crafter-reviewer agent for testing",
+            "Option B: Reorder to complete step 8.4 before 8.3 (tests can then use real agent)"
+          ]
+        },
+        {
+          "phase": "Phase 4: Revise Step 8.3",
+          "time": "1-2 hours",
+          "actions": [
+            "Update estimated hours from 2 to 6-8",
+            "Add test coverage for output structure validation",
+            "Specify constraint enforcement verification approach",
+            "Add test isolation and cleanup procedures"
+          ]
+        }
+      ],
+      "total_preparation_work": "7-11 hours",
+      "time_saved": "3-5 days of debugging when failures discovered mid-step"
+    }
   },
   "context": {
     "constraints": [
@@ -19,96 +237,177 @@
       "DO NOT COMMIT BEFORE USER APPROVAL",
       "FOCUS ON DELIVERABLES ONLY",
       "Tests use business language and domain concepts",
-      "Type system makes wrong state non-representable"
+      "Type system makes wrong state non-representable",
+      "CRITICAL: Step 8.2 must be complete and verified before starting this step",
+      "CRITICAL: Mock reviewer must be created before testing inner loop",
+      "CRITICAL: Expected output specification must exist before writing assertions",
+      "CRITICAL: Constraint enforcement mechanism must be documented before testing constraints"
     ],
     "success_criteria_mapping": {
       "SC5": "Full workflow (implement->review->fix->refactor) functional",
       "SC6": "Default constraints integrated (no auto-report, no auto-commit)"
     },
     "dependencies": ["8.2"],
+    "dependencies_notes": "Step 8.2 must be fully complete with all 9 blocking questions resolved and /plugin install mechanism verified working. Starting this step before 8.2 completion will result in cascading failures.",
     "prerequisites": [
       {
         "prerequisite": "CRITICAL: Mock software-crafter-reviewer agent for inner loop testing",
         "description": "Inner loop requires /dw:review command which depends on software-crafter-reviewer agent. Full agent is installed in step 08-04 (AFTER this step). Create mock reviewer for testing.",
         "validation_method": "Mock reviewer implementation exists: stub agent that returns 'APPROVED' for all reviews, enables inner loop testing without full reviewer",
         "blocker_if_missing": true,
-        "mitigation": "Create tests/mocks/mock_reviewer.py with stub implementation:\n- Accepts review request\n- Returns fixed response: {approval_status: 'approved', issues: []}\n- Allows inner loop to complete without real reviewer\n- Tests validate workflow mechanics, not review quality"
+        "mitigation": "Create tests/mocks/mock_reviewer.py with stub implementation:\n- Accepts review request\n- Returns fixed response: {approval_status: 'approved', issues: []}\n- Allows inner loop to complete without real reviewer\n- Tests validate workflow mechanics, not review quality",
+        "implementation_time": "1-2 hours"
       },
       {
-        "prerequisite": "Expected output structure for each 5D-Wave phase documented",
-        "description": "Define what artifacts/files each wave (DISCUSS, DESIGN, DISTILL, DEVELOP, DEMO) should produce",
-        "validation_method": "Specification document lists for each phase: output files, format, validation criteria",
+        "prerequisite": "CRITICAL: Expected output structure for each 5D-Wave phase documented",
+        "description": "Define what artifacts/files each wave (DISCUSS, DESIGN, DISTILL, DEVELOP, DEMO) should produce. Cannot write test assertions without knowing what success looks like.",
+        "validation_method": "Specification document lists for each phase: output files, format, validation criteria with examples",
         "blocker_if_missing": true,
-        "mitigation": "DEFAULT EXPECTED OUTPUTS:\n- DISCUSS: docs/discuss/{feature}.md with requirements\n- DESIGN: docs/design/{feature}.md with architecture\n- DISTILL: tests/acceptance/test_{feature}.py with acceptance tests\n- DEVELOP: src/{feature}/ with implementation + tests passing\n- DEMO: No new files (demo is interactive with stakeholder)"
+        "mitigation": "Create docs/workflow/plugin-marketplace-migration/5d-wave-expected-outputs.md:\n- DISCUSS: docs/discuss/{feature}.md with requirements\n- DESIGN: docs/design/{feature}.md with architecture\n- DISTILL: tests/acceptance/test_{feature}.py with acceptance tests\n- DEVELOP: src/{feature}/ with implementation + tests passing\n- DEMO: No new files (demo is interactive with stakeholder)\n- Include format specifications and validation criteria for each",
+        "implementation_time": "2-3 hours"
       },
       {
-        "prerequisite": "Constraint enforcement mechanism specification",
-        "description": "Document HOW constraints (no auto-reports, no auto-commits) are enforced in plugin",
-        "validation_method": "Specification states: (1) which settings.local.json flags control constraints, (2) where in code constraints are checked, (3) what happens when constraint violated (error throw, log warning, silent skip)",
-        "blocker_if_missing": false,
-        "mitigation": "DEFAULT ENFORCEMENT MECHANISM:\n- Constraints in settings.local.json: no_auto_report_files=true, no_auto_commit=true\n- Tests validate: (1) no files created in docs/ during workflow, (2) git log unchanged during workflow\n- Advanced constraint validation deferred to manual review (test can't detect all scenarios)"
+        "prerequisite": "CRITICAL: Constraint enforcement mechanism specification",
+        "description": "Document HOW constraints (no auto-reports, no auto-commits) are enforced in plugin. Need to know: which settings.local.json flags, where in code constraints checked, what happens when violated.",
+        "validation_method": "Specification document states: (1) settings.local.json constraint flags with exact names, (2) code locations where constraints enforced, (3) enforcement behavior (error throw, log warning, silent skip)",
+        "blocker_if_missing": true,
+        "mitigation": "Create docs/workflow/plugin-marketplace-migration/constraint-enforcement-spec.md:\n- List all constraint flags in settings.local.json (no_auto_report_files, no_auto_commit, etc.)\n- Document enforcement points in codebase\n- Specify enforcement behavior for each constraint\n- Provide examples of constraint violations and handling",
+        "implementation_time": "2-3 hours"
       },
       {
         "prerequisite": "Test fixture setup for workflow execution",
         "description": "Define starting state for workflow tests (clean git repo, empty docs/, known source files)",
         "validation_method": "Test setup creates: (1) temporary git repository, (2) sample feature specification, (3) clean docs/ directory, (4) installed plugin from step 08-02",
         "blocker_if_missing": true,
-        "mitigation": "Test fixture implementation:\n1. Create /tmp/test-workflow-{timestamp}/ directory\n2. Initialize git repository\n3. Install plugin to temporary location\n4. Create sample feature spec: tests/fixtures/sample_feature.md\n5. Run workflow against sample feature\n6. Teardown: delete temporary directory"
+        "mitigation": "Test fixture implementation:\n1. Create /tmp/test-workflow-{timestamp}/ directory\n2. Initialize git repository\n3. Install plugin to temporary location\n4. Create sample feature spec: tests/fixtures/sample_feature.md\n5. Run workflow against sample feature\n6. Teardown: delete temporary directory after test completion",
+        "implementation_time": "1-1.5 hours"
+      },
+      {
+        "prerequisite": "Step 8.2 completion and verification",
+        "description": "Step 8.2 must be fully complete with all blocking questions resolved and /plugin install verified working",
+        "validation_method": "Run step 8.2 tests and verify all pass. Verify plugin installation mechanism exists and works. Verify all 26 agents accessible.",
+        "blocker_if_missing": true,
+        "mitigation": "Complete step 8.2 before starting this step. Resolve all 9 blocking questions. Implement and test /plugin install mechanism.",
+        "implementation_time": "3-4 hours (not in this step's scope)"
       }
     ]
   },
   "deliverables": {
     "files_to_create": [
-      "tests/plugin/test_full_workflow.py",
-      "tests/mocks/mock_reviewer.py (stub software-crafter-reviewer for inner loop testing)"
+      "tests/plugin/test_full_workflow.py (main workflow test suite)",
+      "tests/mocks/mock_reviewer.py (stub software-crafter-reviewer for inner loop testing)",
+      "docs/workflow/plugin-marketplace-migration/5d-wave-expected-outputs.md (specification of expected artifacts per phase)",
+      "docs/workflow/plugin-marketplace-migration/constraint-enforcement-spec.md (specification of constraint enforcement mechanism)"
     ],
     "acceptance_criteria": [
       "5D-Wave phases execute correctly (DISCUSS -> DESIGN -> DISTILL -> DEVELOP -> DEMO progression)",
       "Inner loop completes successfully (implement -> mock-review -> fix -> refactor cycle)",
       "No auto-report files created in docs/ during workflow (SC6 validated)",
       "No auto-commits made during workflow (git log unchanged) (SC6 validated)",
-      "Mock reviewer integration successful (tests use stub, not real reviewer agent)"
+      "Mock reviewer integration successful (tests use stub, not real reviewer agent)",
+      "Expected output artifacts created for each phase (per specification document)",
+      "Constraint enforcement verified (tests confirm constraints actually prevent behaviors)",
+      "Test isolation verified (no test pollution between test runs)",
+      "Settings loading verified (plugin reads settings.local.json correctly)",
+      "Error handling verified (workflow fails gracefully when wave encounters error)",
+      "State flow verified (wave outputs flow correctly to next wave inputs)",
+      "Output format validation (YAML/artifact format validated against specification)"
     ]
   },
   "tdd_approach": {
-    "outer_test": "GIVEN installed plugin with mock reviewer\nWHEN I execute /dw:start -> /dw:develop -> /dw:finalize\nTHEN workflow completes with constraints enforced and no errors",
+    "outer_test": "GIVEN installed plugin with mock reviewer and expected output specification\nWHEN I execute /dw:start -> /dw:develop -> /dw:finalize\nTHEN workflow completes with constraints enforced, expected artifacts created, and no errors",
     "inner_tests": [
       "test_wave_progression (validates DISCUSS -> DESIGN -> DISTILL -> DEVELOP -> DEMO sequence)",
       "test_inner_loop_with_mock_reviewer (validates implement -> review -> fix -> refactor using mock)",
-      "test_no_auto_reports (validates docs/ directory unchanged after workflow)",
-      "test_no_auto_commits (validates git log unchanged after workflow)",
+      "test_no_auto_reports (validates docs/ directory contains only expected artifacts, no auto-generated reports)",
+      "test_no_auto_commits (validates git log unchanged after workflow - no automation commits)",
       "test_mock_reviewer_integration (validates mock reviewer responds correctly to /dw:review)",
-      "test_workflow_error_handling (validates workflow fails gracefully on errors)",
-      "test_expected_artifacts_created (validates each phase produces expected output files)"
+      "test_workflow_error_handling (validates workflow fails gracefully on errors with clear messages)",
+      "test_expected_artifacts_created (validates each phase produces artifacts per specification)",
+      "test_discuss_completeness (validates DISCUSS produces requirements document with expected content)",
+      "test_design_quality (validates DESIGN produces architecture with actionable details)",
+      "test_distill_acceptance_tests (validates DISTILL produces pytest-compatible acceptance tests)",
+      "test_develop_implementation (validates DEVELOP produces working code with passing tests)",
+      "test_demo_completion (validates DEMO completes without creating artifacts)",
+      "test_constraint_enforcement (validates constraints actually prevent behaviors, not just test passing)",
+      "test_settings_loading (validates plugin reads and applies settings.local.json)",
+      "test_state_flow_between_waves (validates wave outputs flow correctly to next wave inputs)",
+      "test_output_format_validation (validates YAML and artifact formats match specification)",
+      "test_test_isolation (validates tests don't pollute each other with leftover artifacts)"
     ]
   },
   "refactoring": {
     "targets": []
   },
   "execution_guidance": {
-    "approach": "End-to-end workflow testing with mock reviewer",
+    "approach": "End-to-end workflow testing with mock reviewer and comprehensive validation",
     "workflow": [
-      "1. PREREQUISITE: Create mock_reviewer.py stub implementation (30 min)",
-      "2. PREREQUISITE: Document expected output for each 5D-Wave phase (30 min)",
-      "3. Create test fixture for workflow execution (60 min):\n   - Temporary git repo\n   - Sample feature specification\n   - Clean test environment",
-      "4. Create test script test_full_workflow.py (30 min)",
-      "5. Write test_wave_progression - validate phase sequence (60 min)",
-      "6. Write test_inner_loop_with_mock_reviewer (60 min):\n   - Execute /dw:develop command\n   - Verify mock reviewer called\n   - Verify refactor step executes\n   - Verify cycle completes",
-      "7. Write test_no_auto_reports - check docs/ unchanged (30 min)",
-      "8. Write test_no_auto_commits - check git log unchanged (30 min)",
-      "9. Write test_mock_reviewer_integration (30 min)",
-      "10. Write test_expected_artifacts_created (30 min)",
-      "11. Run full workflow test (30 min)",
-      "12. Debug and fix failures (60 min buffer)",
-      "13. DO NOT COMMIT - wait for user approval"
+      "PREREQUISITE PHASE (5-6 hours):",
+      "1. Create docs/workflow/plugin-marketplace-migration/5d-wave-expected-outputs.md (2-3h):",
+      "   - Document expected artifacts for each wave",
+      "   - Include format specifications",
+      "   - Provide validation criteria",
+      "   - Add examples of correct output",
+      "2. Create docs/workflow/plugin-marketplace-migration/constraint-enforcement-spec.md (2-3h):",
+      "   - List all constraint flags in settings.local.json",
+      "   - Document enforcement points in code",
+      "   - Specify enforcement behavior",
+      "   - Provide violation examples",
+      "3. Create mock_reviewer.py stub implementation (1-2h):",
+      "   - Implement stub agent interface",
+      "   - Return fixed 'approved' response",
+      "   - Enable inner loop testing without real reviewer",
+      "",
+      "IMPLEMENTATION PHASE (6-8 hours):",
+      "4. Create test fixture for workflow execution (1.5h):",
+      "   - Temporary git repo setup",
+      "   - Sample feature specification",
+      "   - Clean test environment",
+      "   - Plugin installation verification",
+      "5. Create test_full_workflow.py base structure (30min)",
+      "6. Write test_wave_progression (1h):",
+      "   - Validate phase sequence",
+      "   - Check expected artifacts per specification",
+      "   - Verify state flow between waves",
+      "7. Write test_inner_loop_with_mock_reviewer (1h):",
+      "   - Execute /dw:develop command",
+      "   - Verify mock reviewer called",
+      "   - Verify refactor step executes",
+      "   - Verify cycle completes",
+      "8. Write constraint validation tests (1.5h):",
+      "   - test_no_auto_reports (check only expected artifacts exist)",
+      "   - test_no_auto_commits (check git log unchanged)",
+      "   - test_constraint_enforcement (verify constraints actually prevent behaviors)",
+      "9. Write completeness validation tests (1h):",
+      "   - test_discuss_completeness",
+      "   - test_design_quality",
+      "   - test_distill_acceptance_tests",
+      "   - test_develop_implementation",
+      "10. Write infrastructure tests (1h):",
+      "    - test_mock_reviewer_integration",
+      "    - test_settings_loading",
+      "    - test_test_isolation",
+      "11. Write error handling and format tests (30min):",
+      "    - test_workflow_error_handling",
+      "    - test_output_format_validation",
+      "12. Run full workflow test suite (30min)",
+      "13. Debug and fix failures (1h buffer)",
+      "14. DO NOT COMMIT - wait for user approval"
     ],
     "quality_gates": [
       "All tests passing (100% required)",
       "All waves execute correctly (5 phases complete without errors)",
       "Inner loop completes with mock reviewer (no dependency on real reviewer agent)",
-      "No auto-reports created (docs/ directory unchanged or only expected artifacts)",
+      "No auto-reports created (docs/ contains only expected artifacts per specification)",
       "No auto-commits made (git log shows only test setup commits)",
       "Mock reviewer successfully integrated (test validates stub behavior)",
+      "Expected artifacts created (per 5d-wave-expected-outputs.md specification)",
+      "Constraint enforcement verified (constraints actually prevent behaviors)",
+      "Settings loading verified (plugin reads settings.local.json)",
+      "Test isolation verified (no test pollution)",
+      "Output format validation passes (YAML/artifacts match specification)",
+      "Error handling verified (graceful failure with clear messages)",
+      "State flow verified (wave outputs flow to next wave inputs)",
       "No report files created (honors constraint)"
     ]
   },
@@ -116,7 +415,8 @@
     "dependency_problem": {
       "description": "Inner loop requires /dw:review command -> requires software-crafter-reviewer agent -> agent installed in step 08-04 -> which is AFTER step 08-03",
       "severity": "CRITICAL",
-      "impact": "Cannot test inner loop without reviewer agent, but reviewer agent not yet installed when 08-03 executes"
+      "impact": "Cannot test inner loop without reviewer agent, but reviewer agent not yet installed when 08-03 executes",
+      "probability_of_blocking": "85%"
     },
     "resolution_strategy": {
       "approach": "Use MOCK reviewer for step 08-03, real reviewer validated in step 08-04",
@@ -132,73 +432,137 @@
         "output": "Fixed response: {approval_status: 'approved', critical_issues: 0, high_issues: 0, medium_issues: 0, low_issues: 0, recommendations: []}",
         "behavior": "Always approves - allows inner loop to complete without blocking",
         "limitations": "Does NOT validate actual review quality - only validates workflow mechanics"
-      }
+      },
+      "validation": "Mock reviewer tested separately to ensure it satisfies reviewer interface contract"
     }
   },
   "constraint_validation_approach": {
     "sc6_no_auto_reports": {
-      "test_method": "Capture docs/ directory state before workflow, after workflow. Assert: no new files created OR only expected artifacts (DISCUSS.md, DESIGN.md, etc.) created.",
-      "validation_logic": "before_files = os.listdir('docs/'); run_workflow(); after_files = os.listdir('docs/'); assert after_files in [before_files, before_files + expected_artifacts]",
+      "test_method": "Capture docs/ directory state before workflow, after workflow. Assert: only expected artifacts exist (per 5d-wave-expected-outputs.md specification).",
+      "validation_logic": "before_files = get_docs_files(); run_workflow(); after_files = get_docs_files(); expected = load_expected_artifacts_spec(); assert after_files == before_files + expected OR after_files == expected",
       "edge_cases_handled": [
-        "Workflow legitimately creates documentation (DISCUSS, DESIGN phases) - these are EXPECTED artifacts, not auto-reports",
-        "Auto-reports would be: summary.md, progress-report.md, metrics.md - these should NOT exist"
-      ]
+        "Workflow legitimately creates documentation (DISCUSS, DESIGN phases) - these are EXPECTED artifacts per specification, not auto-reports",
+        "Auto-reports would be: summary.md, progress-report.md, metrics.md - these should NOT exist",
+        "Test distinguishes expected artifacts (per spec) from forbidden auto-reports"
+      ],
+      "constraint_enforcement_verification": "Test that constraints actually prevent file creation, not just that files don't exist (could be luck)"
     },
     "sc6_no_auto_commits": {
-      "test_method": "Capture git log before workflow, after workflow. Assert: no new commits made by automation.",
-      "validation_logic": "before_log = subprocess.run(['git', 'log', '--oneline']).stdout; run_workflow(); after_log = subprocess.run(['git', 'log', '--oneline']).stdout; assert before_log == after_log",
+      "test_method": "Capture git log before workflow, after workflow. Assert: no new commits made by automation (excluding test setup commits).",
+      "validation_logic": "before_log = get_git_log(); run_workflow(); after_log = get_git_log(); assert len(after_log) == len(before_log) AND after_log == before_log",
       "edge_cases_handled": [
-        "User manually commits during workflow - test should run in isolated environment where no user interaction occurs",
-        "Pre-commit hooks triggered - test runs in environment without git hooks installed"
-      ]
+        "User manually commits during workflow - test runs in isolated environment where no user interaction occurs",
+        "Pre-commit hooks triggered - test runs in environment without git hooks installed",
+        "CI/CD automation commits - test distinguishes automation commits from legitimate infrastructure commits"
+      ],
+      "constraint_enforcement_verification": "Test that constraints actually prevent commits, not just that no commits happened"
     }
   },
   "expected_workflow_output_specification": {
+    "note": "Detailed specification in docs/workflow/plugin-marketplace-migration/5d-wave-expected-outputs.md",
     "discuss_phase": {
       "expected_files": ["docs/discuss/{feature}.md"],
-      "validation": "File exists, contains requirements section, markdown format valid"
+      "validation": "File exists, contains requirements section with user needs and acceptance criteria, markdown format valid, minimum content threshold met"
     },
     "design_phase": {
       "expected_files": ["docs/design/{feature}.md"],
-      "validation": "File exists, contains architecture diagram or description, references components"
+      "validation": "File exists, contains architecture diagram or description with components and interactions, references specific technologies, actionable design decisions documented"
     },
     "distill_phase": {
       "expected_files": ["tests/acceptance/test_{feature}.py"],
-      "validation": "File exists, contains Given-When-Then test cases, pytest-compatible"
+      "validation": "File exists, contains Given-When-Then test cases in pytest-compatible format, acceptance criteria from DISCUSS phase covered, tests executable"
     },
     "develop_phase": {
       "expected_files": ["src/{feature}/", "tests/unit/test_{feature}.py"],
-      "validation": "Implementation files exist, tests pass (pytest src/ tests/ --tb=short)"
+      "validation": "Implementation files exist with working code, unit tests exist and pass (pytest src/ tests/ --tb=short returns 0 exit code), acceptance tests from DISTILL pass"
     },
     "demo_phase": {
       "expected_files": [],
-      "validation": "No files created (demo is interactive), process completes without error"
+      "validation": "No files created (demo is interactive with stakeholder), process completes without error, demo_complete flag set to true"
     }
   },
   "estimate_revision": {
     "original_estimate_hours": 2,
-    "revised_estimate_hours": 6,
-    "revision_rationale": "Original 2-hour estimate severely underestimated scope. Actual work includes: (1) Mock reviewer creation (30 min), (2) Expected output specification (30 min), (3) Test fixture setup (60 min), (4) Wave progression test (60 min), (5) Inner loop with mock reviewer (60 min), (6) Constraint validation tests (60 min), (7) Expected artifacts validation (30 min), (8) Test execution and debugging (60 min buffer). Total: 6 hours minimum.",
+    "revised_estimate_hours": "6-8",
+    "revision_rationale": "Adversarial review identified 3-4x underestimation. Original 2-hour estimate severely underestimated scope. Realistic breakdown: (1) Prerequisites (5-6h: expected outputs spec, constraint enforcement spec, mock reviewer), (2) Implementation (6-8h: test fixtures, wave tests, constraint tests, completeness tests, infrastructure tests). Total: 11-14 hours including prerequisites, 6-8 hours for implementation phase only.",
     "breakdown": {
-      "mock_reviewer_creation": "0.5h",
-      "expected_output_spec": "0.5h",
-      "test_fixture_setup": "1h",
-      "wave_progression_test": "1h",
-      "inner_loop_testing": "1h",
-      "constraint_validation": "1h",
-      "artifact_validation": "0.5h",
-      "execution_and_debugging": "1h"
-    }
+      "prerequisite_phase": {
+        "expected_output_specification": "2-3h",
+        "constraint_enforcement_specification": "2-3h",
+        "mock_reviewer_creation": "1-2h",
+        "subtotal": "5-6h"
+      },
+      "implementation_phase": {
+        "test_fixture_setup": "1.5h",
+        "wave_progression_test": "1h",
+        "inner_loop_testing": "1h",
+        "constraint_validation": "1.5h",
+        "completeness_validation": "1h",
+        "infrastructure_tests": "1h",
+        "error_handling_and_format": "0.5h",
+        "execution_and_debugging": "1h",
+        "subtotal": "6-8h"
+      }
+    },
+    "note": "This step estimate (6-8h) covers implementation phase only. Prerequisites (5-6h) may be partially complete from earlier work or may need to be done before starting this step."
   },
   "prerequisites_dependency_update": {
     "step_8_2_completion": {
       "required_artifacts": [
-        "Plugin successfully installed (via any mechanism from 08-02)",
+        "Plugin successfully installed (via verified mechanism from 08-02)",
         "All 26 agents accessible in installed location",
         "All 20 commands accessible in installed location",
-        "plugin.json validated and parseable"
+        "plugin.json validated and parseable",
+        "All 9 blocking questions from step 8.2 resolved",
+        "/plugin install mechanism implemented and tested"
       ],
-      "validation_before_08_03": "Run step 08-02 tests and verify all pass before starting 08-03. If 08-02 incomplete or failing, resolve blockers first."
+      "validation_before_08_03": "Run step 08-02 tests and verify all pass before starting 08-03. If 08-02 incomplete or failing, resolve blockers first. DO NOT START 08-03 until 08-02 fully verified."
+    }
+  },
+  "test_coverage_improvements": {
+    "added_tests": [
+      "test_discuss_completeness - Validates DISCUSS produces complete requirements (addresses coverage gap 1)",
+      "test_design_quality - Validates DESIGN produces actionable architecture (addresses coverage gap 2)",
+      "test_output_format_validation - Validates YAML/artifact format matches specification (addresses coverage gap 3)",
+      "test_constraint_enforcement - Validates constraints actually prevent behaviors (addresses coverage gap 4)",
+      "test_workflow_error_handling - Validates graceful degradation on errors (addresses coverage gap 7)",
+      "test_settings_loading - Validates plugin reads configuration (addresses coverage gap 8)",
+      "test_state_flow_between_waves - Validates state flow between phases (addresses coverage gap 6)"
+    ],
+    "remaining_gap": "Loop termination testing deferred - requires understanding of /dw:refactor termination logic (coverage gap 5)"
+  },
+  "edge_case_handling": {
+    "e1_discuss_no_artifacts": {
+      "case": "DISCUSS produces no artifacts",
+      "handling": "Expected outputs specification documents whether DISCUSS MUST produce artifacts or MAY be artifact-free. Test validates against specification, not assumption."
+    },
+    "e2_design_incomplete": {
+      "case": "DESIGN produces visualization but no actionable design",
+      "handling": "test_design_quality validates completeness by checking for specific required elements (components, interactions, technology references)"
+    },
+    "e3_infrastructure_missing": {
+      "case": "Inner loop fails due to missing analyzer tool",
+      "handling": "test_workflow_error_handling validates graceful failure with clear error message identifying missing dependency"
+    },
+    "e4_constraint_conflicts": {
+      "case": "Constraint prevents legitimate documentation creation",
+      "handling": "Expected outputs specification distinguishes expected artifacts (allowed) from auto-reports (forbidden). Constraints only block auto-reports."
+    },
+    "e5_git_false_positives": {
+      "case": "Git hooks make commits detected as auto-commits",
+      "handling": "Test runs in environment without git hooks. Test setup documents this requirement."
+    },
+    "e6_settings_not_loaded": {
+      "case": "Plugin uses hardcoded defaults, ignores settings.local.json",
+      "handling": "test_settings_loading explicitly verifies plugin reads and applies configuration"
+    },
+    "e7_demo_non_deterministic": {
+      "case": "DEMO output depends on user interaction",
+      "handling": "Expected outputs specification documents DEMO produces no artifacts. Test validates completion without artifact validation."
+    },
+    "e8_test_pollution": {
+      "case": "Tests share artifacts causing pollution",
+      "handling": "test_test_isolation verifies cleanup between tests. Each test uses separate temporary directory."
     }
   }
 }

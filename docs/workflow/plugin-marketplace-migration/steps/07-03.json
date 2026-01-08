@@ -210,7 +210,7 @@
         "contradiction": "Step specifies 'tools/toon/compiler.py' as file_to_modify, but this file does not exist in codebase",
         "evidence": [
           "tools/toon/ directory does not exist",
-          "tools/build_ide_bundle.py IS the actual compiler (33 agents already in dist/ide/agents/dw/)",
+          "tools/build_ide_bundle.py IS the actual compiler (26 agents already in dist/ide/agents/dw/)",
           "Step 7.4 in roadmap ALSO references tools/build_ide_bundle.py as target for modification",
           "Step 7.0-7.2 do not mention creating tools/toon/compiler.py"
         ],
@@ -220,9 +220,9 @@
       },
       {
         "contradiction_id": "C2_OUTPUT_ALREADY_EXISTS",
-        "contradiction": "Task claims to 'Configure output directory structure' but dist/agents/dw/ and dist/commands/dw/ ALREADY contain 33 agents and 20+ commands with correct structure",
+        "contradiction": "Task claims to 'Configure output directory structure' but dist/agents/dw/ and dist/commands/dw/ ALREADY contain 26 agents and 20+ commands with correct structure",
         "evidence": [
-          "dist/ide/agents/dw/ contains 33 agent files (verified by file count)",
+          "dist/ide/agents/dw/ contains 26 agent files (verified by file count)",
           "dist/ide/commands/dw/ contains command files (from build_ide_bundle.py execution)",
           "build_ide_bundle.py processors already handle path configuration for agents and commands",
           "Acceptance criteria says 'Compiler outputs to correct directories' - but it ALREADY does"

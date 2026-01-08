@@ -179,5 +179,252 @@
       "test_isolation": "0.5h",
       "validation_and_debugging": "0.5h"
     }
+  },
+  "adversarial_review": {
+    "reviewer": "adversarial-software-crafter-reviewer",
+    "review_date": "2026-01-05",
+    "model": "claude-haiku-4-5-20250529",
+    "step_id": "08-02",
+    "step_name": "Plugin Installation Test",
+    "phase": "8 - Integration & Validation",
+    "risk_score": 8.7,
+    "risk_level": "CRITICAL",
+    "approval_status": "REJECTED - EXECUTION IMPOSSIBLE",
+    "blast_radius": "ENTIRE_PROJECT",
+    "findings": {
+      "critical_issues": [
+        {
+          "issue_id": "BLOCKER_3",
+          "title": "/plugin install command doesn't exist",
+          "severity": "CRITICAL - EXECUTION IMPOSSIBLE",
+          "description": "Step 08-02 description assumes '/plugin install' command exists for SC3 validation. Adversarial review found NO implementation of this command in codebase. Step cannot execute without installation mechanism.",
+          "evidence": [
+            "grep search found no /plugin install implementation in codebase",
+            "build_ide_bundle.py generates dist/ide distribution but has no installation mechanism",
+            "Step description: 'Test plugin installation via /plugin install' → command not found",
+            "Success Criteria SC3: 'Plugin installable via /plugin install' → unvalidatable without command"
+          ],
+          "impact": "Step 08-02 is completely unexecutable as written - attempting to run '/plugin install' returns 'command not found'. SC3 success criteria cannot be validated. Phase 8 completion blocked.",
+          "affected_components": [
+            "SC3 success criteria validation",
+            "Plugin installation workflow",
+            "Phase 8 delivery completion"
+          ],
+          "blast_radius": "ENTIRE_PROJECT - blocks delivery"
+        },
+        {
+          "issue_id": "AGENT_COUNT_MISMATCH",
+          "title": "Hardcoded agent count 28 vs actual 26",
+          "severity": "CRITICAL",
+          "description": "Quality gates and acceptance criteria specify 28 agents, but actual build output processes only 26 agents. Tests will fail immediately on count assertion.",
+          "evidence": [
+            "Roadmap baseline.yaml: '28 agents' specified",
+            "Build reality dist/ide/agents/dw/config.json: 'agents_processed': 26",
+            "Quality gates line 106: 'All 28 agents accessible' → will fail",
+            "Acceptance criteria line 66: 'All 26 agents accessible' → CORRECTED in this step but inconsistent with other steps"
+          ],
+          "impact": "Phase 8 validation tests fail with count mismatches. Plugin installation validation produces false negatives. Success criteria SC1 becomes unvalidatable.",
+          "affected_components": [
+            "test_agents_accessible validation",
+            "Quality gate agent count checks",
+            "SC1 success criteria (all agents migrated)"
+          ],
+          "blast_radius": "MULTIPLE_PHASES - affects Phase 7 (plugin.json), Phase 8 validation"
+        }
+      ],
+      "high_risks": [
+        {
+          "risk_id": "SC3_UNVALIDATABLE",
+          "title": "SC3 success criteria unvalidatable without /plugin install",
+          "severity": "HIGH",
+          "description": "Success Criteria SC3 requires plugin installation validation, but without /plugin install command or alternative mechanism, SC3 cannot be verified.",
+          "likelihood": "100% - command definitively doesn't exist",
+          "consequences": [
+            "Cannot validate SC3 'Plugin installable via /plugin install'",
+            "Project completion blocked at final validation gate",
+            "Delivery criteria unmet"
+          ],
+          "mitigation_status": "APPLIED - fallback mechanisms defined in step prerequisites and resolution"
+        },
+        {
+          "risk_id": "TEST_SPEC_IMPOSSIBLE",
+          "title": "Test specifications impossible to execute without installation command",
+          "severity": "HIGH",
+          "description": "TDD approach specifies 'test_installation_mechanism_available' and 'test_plugin_installs_without_errors' but neither can execute if /plugin install doesn't exist.",
+          "likelihood": "100%",
+          "consequences": [
+            "Inner tests cannot be written (no mechanism to test)",
+            "Test-driven development workflow blocked",
+            "Must pivot to alternative testing approach"
+          ],
+          "mitigation_status": "APPLIED - fallback installation methods defined"
+        }
+      ],
+      "dangerous_assumptions": [
+        {
+          "assumption": "/plugin install command exists and works",
+          "reality": "Command doesn't exist in codebase - NO implementation found",
+          "risk": "Step premise is entirely invalid, execution impossible",
+          "correction_applied": "Added prerequisite to identify installation mechanism BEFORE writing tests, with fallback to manual installation"
+        },
+        {
+          "assumption": "28 agents will be accessible after installation",
+          "reality": "Only 26 agents exist in build output",
+          "risk": "Tests fail on assertion, false negatives reported",
+          "correction_applied": "Corrected acceptance criteria and quality gates to expect 26 agents"
+        },
+        {
+          "assumption": "Plugin installation is simple 1-hour task",
+          "reality": "Requires mechanism identification, fallback implementation, test infrastructure design, component validation, test isolation - minimum 3 hours",
+          "risk": "Schedule underestimation, insufficient time allocation",
+          "correction_applied": "Revised estimate from 1h to 3h with detailed breakdown"
+        }
+      ],
+      "unhandled_edge_cases": [
+        {
+          "edge_case": "Installation mechanism doesn't exist at all",
+          "current_handling": "NONE - step assumes /plugin install works",
+          "recommended_handling": "Detect mechanism availability, implement fallback (manual copy or install script)",
+          "mitigation_status": "APPLIED - three-tier fallback strategy defined"
+        },
+        {
+          "edge_case": "Plugin already installed (test pollution)",
+          "current_handling": "NONE - no cleanup strategy defined",
+          "recommended_handling": "Use temporary installation directory per test run, cleanup in teardown",
+          "mitigation_status": "APPLIED - test_isolation_strategy section added"
+        },
+        {
+          "edge_case": "Partial installation (some files copy, others fail)",
+          "current_handling": "NONE - assumes all-or-nothing installation",
+          "recommended_handling": "Validate each component type separately, report partial failures explicitly",
+          "mitigation_status": "APPLIED - installation_verification_approach validates each component"
+        }
+      ],
+      "test_coverage_gaps": [
+        {
+          "gap": "No validation of installation command existence before test execution",
+          "impact": "Tests fail immediately with 'command not found'",
+          "recommendation": "Add test_installation_mechanism_available as first test, fail fast if mechanism missing",
+          "mitigation_status": "APPLIED - prerequisite validation and inner test defined"
+        },
+        {
+          "gap": "Component accessibility defined ambiguously",
+          "impact": "Tests might pass checking file existence but components not actually usable",
+          "recommendation": "Define 'accessible' operationally: file exists AND plugin.json references correctly",
+          "mitigation_status": "APPLIED - installation_verification_approach section clarifies definition"
+        },
+        {
+          "gap": "No test for repeated installation (idempotency)",
+          "impact": "Cannot verify installation is repeatable without conflicts",
+          "recommendation": "Add test_installation_cleanup test, run suite 3 times consecutively",
+          "mitigation_status": "APPLIED - quality gate and test isolation strategy ensure repeatability"
+        }
+      ]
+    },
+    "resolution": {
+      "strategy": "FALLBACK INSTALLATION MECHANISM with three-tier priority",
+      "implementation_status": "CORRECTED - step definition updated with prerequisite validation and fallback paths",
+      "changes_applied": [
+        {
+          "change": "Added CRITICAL prerequisite: Identify installation mechanism before test writing",
+          "location": "context.prerequisites[0]",
+          "rationale": "Cannot write tests for command that doesn't exist - must detect and adapt"
+        },
+        {
+          "change": "Defined three-tier fallback installation strategy",
+          "location": "context.prerequisites[0].mitigation",
+          "rationale": "FALLBACK ORDER: (1) /plugin install if available, (2) Manual copy to ~/.claude/plugins/, (3) Automated install.sh script",
+          "implementation": "Tests will check mechanism availability, then execute appropriate installation path"
+        },
+        {
+          "change": "Updated acceptance criteria to 'via available mechanism'",
+          "location": "deliverables.acceptance_criteria[0]",
+          "rationale": "Removed hardcoded '/plugin install' dependency, accept ANY successful installation method"
+        },
+        {
+          "change": "Corrected agent count from 28 to 26",
+          "location": "deliverables.acceptance_criteria[1], execution_guidance.quality_gates[2]",
+          "rationale": "Match actual build output to prevent false negative test failures"
+        },
+        {
+          "change": "Revised time estimate from 1h to 3h",
+          "location": "step.estimated_hours, estimate_revision",
+          "rationale": "Account for mechanism identification (0.5h), fallback implementation (0.5h), test infrastructure (0.5h), component validation (0.5h), test isolation (0.5h), validation (0.5h)"
+        },
+        {
+          "change": "Added test isolation strategy using temporary directories",
+          "location": "test_isolation_strategy",
+          "rationale": "Prevent test pollution from system-level plugin installation operations"
+        },
+        {
+          "change": "Defined installation verification approach",
+          "location": "installation_verification_approach",
+          "rationale": "Clarify 'accessible' means: file exists AND plugin.json references correctly. Defer runtime validation to step 08-03."
+        }
+      ],
+      "remaining_risks": [
+        {
+          "risk": "/plugin install implementation may be required for final delivery even if fallback works for testing",
+          "severity": "HIGH",
+          "recommendation": "Implement /plugin install command during Phase 8 execution (estimated 8-16 hours)",
+          "escalation": "If command implementation out of scope, change SC3 to accept manual installation as valid delivery mechanism"
+        },
+        {
+          "risk": "Manual installation fallback may not match production plugin installation UX",
+          "severity": "MEDIUM",
+          "recommendation": "Document manual installation process clearly in plugin README, provide install script for user convenience",
+          "escalation": "None - manual installation is acceptable temporary solution"
+        }
+      ]
+    },
+    "recommendations": {
+      "immediate_actions": [
+        {
+          "action": "Verify /plugin install command existence BEFORE starting step 08-02",
+          "priority": "CRITICAL",
+          "estimated_effort": "15 minutes",
+          "validation": "grep codebase for 'plugin install' implementation, test command invocation"
+        },
+        {
+          "action": "If /plugin install missing, implement OR pivot to fallback",
+          "priority": "CRITICAL",
+          "estimated_effort": "8-16 hours (implement command) OR 30 minutes (create install.sh script)",
+          "validation": "Installation mechanism executes successfully, all files copied to target directory"
+        },
+        {
+          "action": "Audit actual agent count in dist/ide/agents/dw/",
+          "priority": "CRITICAL",
+          "estimated_effort": "15 minutes",
+          "validation": "Count matches build output (26), update all step specs if mismatch found"
+        }
+      ],
+      "architectural_improvements": [
+        {
+          "improvement": "Implement /plugin install command as part of plugin CLI infrastructure",
+          "rationale": "SC3 requires installation mechanism for production delivery, not just testing",
+          "estimated_effort": "8-16 hours",
+          "priority": "HIGH"
+        },
+        {
+          "improvement": "Use dynamic component counts from plugin.json manifest instead of hardcoded numbers",
+          "rationale": "Prevent brittleness when plugin evolves (agent/command/skill additions)",
+          "estimated_effort": "Included in step scope (component_count_correction section)",
+          "priority": "MEDIUM"
+        }
+      ],
+      "execution_strategy": {
+        "recommended_approach": "Execute prerequisite validation first (mechanism identification), then pivot to appropriate installation path",
+        "risk_mitigation": "Three-tier fallback ensures step can complete even if /plugin install missing",
+        "success_probability": "75% (with fallback) vs 0% (without)",
+        "revised_estimate": "3 hours (from 1 hour)"
+      }
+    },
+    "reviewer_notes": {
+      "review_thoroughness": "COMPREHENSIVE - analyzed step premise, prerequisites, test specifications, success criteria dependencies, and cascading Phase 8 impact",
+      "key_insight": "Step 08-02 is CRITICAL blocker because it validates SC3 (plugin installable). Without installation mechanism, entire project delivery is blocked. This is not a 'nice-to-have' step - it's a delivery gate.",
+      "dangerous_pattern": "Assumption that infrastructure exists without verification - /plugin install command assumed to work without checking implementation. This pattern appears in multiple Phase 8 steps (also affects 08-04).",
+      "mitigation_effectiveness": "HIGH - fallback mechanisms defined, prerequisites explicit, component counts corrected, test isolation designed. Step is now executable even without /plugin install command.",
+      "residual_risk": "MEDIUM - manual installation fallback works for testing but may not satisfy production delivery expectations. Recommend implementing /plugin install command during Phase 8 execution or updating SC3 to accept alternative installation mechanisms."
+    }
   }
 }

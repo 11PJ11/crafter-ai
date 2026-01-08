@@ -9,9 +9,9 @@
   "step": {
     "number": "1.3",
     "name": "Create Command Jinja2 Template",
-    "description": "Create Jinja2 template for command.md files with command-specific metadata and execution context.\n\nCRITICAL FIX: Commands are NOT agents. Use command-specific terminology, not agent terminology.\nTemplate renders: command metadata header, wave reference, execution context, success criteria checklist.\n\nDEPENDENCY: Review 01-02 agent template for Jinja2 patterns before implementing.",
-    "motivation": "Command template defines output for 20 command files",
-    "estimated_hours": "3-4"
+    "description": "Create Jinja2 template for command.md files with command-specific metadata and invocation context.\n\nCRITICAL: Commands are invocable operations within agent context, NOT agents themselves.\n\nTemplate Structure Requirements:\n- Command invocation header (name, purpose, parameters, returns)\n- Parent agent reference (which agent owns this command)\n- Prerequisites (commands that must run first)\n- Input/output specifications\n- Success criteria as markdown checklist\n\nBLOCKING DEPENDENCIES (MUST be resolved before starting):\n1. Step 01-01 MUST define parser output schema with examples\n2. Step 01-02 MUST resolve C1-C4 issues for pattern reference\n3. Command vs Agent structural differences MUST be documented\n4. Example parsed command data MUST be provided\n\nWARNING: Starting without these will guarantee rework.",
+    "motivation": "Command template defines output for 20 command files. Commands have different metadata structure than agents (parameters/returns vs persona/capabilities).",
+    "estimated_hours": "11.5"
   },
   "context": {
     "constraints": [
@@ -19,36 +19,86 @@
       "DO NOT COMMIT BEFORE USER APPROVAL",
       "FOCUS ON DELIVERABLES ONLY",
       "Tests use business language and domain concepts",
-      "Type system makes wrong state non-representable"
+      "Type system makes wrong state non-representable",
+      "MANDATORY: Validate input schema exists before implementation",
+      "MANDATORY: Test YAML escaping and special character handling",
+      "MANDATORY: Test null/missing field handling",
+      "MANDATORY: Validate output against Claude Code spec, not just template logic"
     ],
     "success_criteria_mapping": {
-      "SC2": "Build produces Claude Code compliant output"
+      "SC2": "Build produces Claude Code compliant output",
+      "validation_requirement": "Generated command.md files MUST match Claude Code specification. Template logic tests are insufficient - output validation required."
     },
     "dependencies": [
-      "1.1",
-      "1.2"
-    ]
+      "1.1 (BLOCKING - Parser output schema MUST be defined with examples)",
+      "1.2 (BLOCKING - Agent template C1-C4 issues MUST be resolved for pattern reference)"
+    ],
+    "blocking_prerequisites": {
+      "01-01_schema_definition": {
+        "status": "UNRESOLVED",
+        "requirement": "Parser MUST document output schema with field definitions and examples",
+        "impact_if_missing": "Cannot write accurate tests or template - will guess wrong structure"
+      },
+      "01-02_pattern_reference": {
+        "status": "UNRESOLVED",
+        "requirement": "Agent template MUST resolve C1-C4 to provide stable patterns",
+        "impact_if_missing": "Will copy wrong patterns, require complete redesign"
+      },
+      "command_vs_agent_specification": {
+        "status": "UNRESOLVED",
+        "requirement": "Document how command structure differs from agent structure",
+        "impact_if_missing": "Tests will validate wrong acceptance criteria"
+      }
+    }
   },
   "deliverables": {
     "files_to_create": [
       "tools/toon/templates/command.md.j2",
-      "tests/tools/toon/test_command_template.py"
+      "tests/tools/toon/test_command_template.py",
+      "tests/tools/toon/test_command_template_edge_cases.py",
+      "docs/workflow/plugin-marketplace-migration/command-data-schema.md"
     ],
     "acceptance_criteria": [
-      "Template produces command metadata header (wave, agent-reference, command-specific fields)",
-      "Template includes execution context and prerequisites",
-      "Template renders success criteria as markdown checklist",
-      "Template handles command-specific sections (not agent sections)"
-    ]
+      "AC1: Template produces command invocation header with name, purpose, parameters, returns (NOT agent-activation header)",
+      "AC2: Template includes parent agent reference (which agent owns this command)",
+      "AC3: Template includes command prerequisites (commands that must run first, NOT 'context files')",
+      "AC4: Template renders success criteria as markdown checklist (- [ ] format)",
+      "AC5: Template handles null/missing fields gracefully (provides defaults or clear errors)",
+      "AC6: Template properly escapes YAML special characters (colons, dashes, quotes)",
+      "AC7: Template handles multi-line command documentation without YAML formatting errors",
+      "AC8: Template namespaces commands to prevent name collisions",
+      "AC9: Generated command.md files validate against Claude Code specification (not just template logic)",
+      "AC10: Template preserves embedded knowledge injection markers if present"
+    ],
+    "validation_requirements": {
+      "input_validation": "Template MUST validate parser provides required fields (name, purpose, parent_agent)",
+      "output_validation": "Generated command.md MUST parse as valid YAML and match Claude Code spec",
+      "edge_case_testing": "MUST test null fields, special characters, multi-line strings, name collisions",
+      "schema_compliance": "Output structure MUST match documented command schema"
+    }
   },
   "tdd_approach": {
-    "outer_test": "GIVEN parsed command data with wave='DEVELOP', command_name='implement-feature'\nWHEN I render command.md.j2 template\nTHEN output has command metadata header with wave and agent reference",
+    "prerequisite_validation": "BEFORE writing tests, MUST have: parser output schema, example command data, command vs agent differences documented",
+    "outer_test": "GIVEN parsed command data {\n  'name': 'implement-feature',\n  'purpose': 'Implement features via Outside-In TDD',\n  'parent_agent': 'software-crafter',\n  'parameters': [{'name': 'feature_name', 'type': 'str'}],\n  'returns': 'Implementation with passing tests',\n  'prerequisites': ['accept-criteria', 'design-architecture']\n}\nWHEN I render command.md.j2 template\nTHEN output:\n- Has command invocation header (NOT agent-activation header)\n- Includes parent_agent reference to software-crafter\n- Lists prerequisites as ordered checklist\n- Validates as proper YAML\n- Matches Claude Code command specification",
     "inner_tests": [
-      "test_template_agent_activation_header",
-      "test_template_wave_metadata",
-      "test_template_context_files_section",
-      "test_template_success_criteria_checklist"
-    ]
+      "test_command_invocation_header_structure",
+      "test_parent_agent_reference",
+      "test_command_prerequisites_section",
+      "test_parameter_specification_rendering",
+      "test_success_criteria_markdown_checklist",
+      "test_null_field_handling",
+      "test_yaml_special_character_escaping",
+      "test_multiline_description_formatting",
+      "test_command_namespace_collision_prevention",
+      "test_embedded_knowledge_marker_preservation"
+    ],
+    "edge_case_tests": {
+      "null_handling": "Command with missing description, missing prerequisites, missing parameters",
+      "special_characters": "Command description with colons, dashes, quotes, special chars",
+      "name_collision": "Multiple commands named 'validate' in different agent contexts",
+      "yaml_formatting": "Multi-line strings, nested lists, complex data structures",
+      "marker_preservation": "Existing command.md with embedded knowledge markers"
+    }
   },
   "refactoring": {
     "targets": [
@@ -60,95 +110,103 @@
   },
   "execution_guidance": {
     "approach": "Outside-In TDD with double-loop",
+    "CRITICAL_BLOCKERS_MUST_RESOLVE_FIRST": {
+      "blocker_1": "Step 01-01 parser MUST define output schema with field definitions and examples",
+      "blocker_2": "Step 01-02 agent template MUST resolve C1-C4 critical issues",
+      "blocker_3": "Command vs agent structural differences MUST be documented with examples",
+      "blocker_4": "Example parsed command data MUST be provided for test implementation",
+      "enforcement": "DO NOT START implementation until all blockers resolved. Starting now guarantees 4-6 hours of rework."
+    },
     "workflow": [
-      "0. PREREQUISITE CHECK: Verify tools/toon/ exists. If not: HALT - refer to BLOCKER_001 resolution",
-      "1. Write failing E2E test (outer_test)",
-      "2. Implement via inner TDD loop (inner_tests)",
-      "3. Apply refactoring level 1",
-      "4. Validate all acceptance criteria met",
-      "5. DO NOT COMMIT - wait for user approval"
+      "0. BLOCKER VALIDATION: Verify ALL critical blockers resolved. If ANY unresolved: HALT",
+      "0.1. PREREQUISITE CHECK: Verify tools/toon/ exists. If not: HALT - refer to BLOCKER_001 resolution",
+      "0.2. SCHEMA VALIDATION: Verify parser output schema documented with examples. If not: HALT",
+      "0.3. PATTERN VALIDATION: Verify step 01-02 C1-C4 resolved. If not: HALT",
+      "0.4. EXAMPLE DATA VALIDATION: Verify example parsed command data available. If not: HALT",
+      "1. Document command data schema (command-data-schema.md) based on parser output",
+      "2. Write failing E2E test using ACTUAL command data structure (not assumptions)",
+      "3. Implement template with YAML escaping and null handling",
+      "4. Implement inner tests including ALL edge cases",
+      "5. Validate output against Claude Code spec (not just template logic)",
+      "6. Apply refactoring level 1",
+      "7. Run edge case test suite (special chars, nulls, collisions)",
+      "8. Validate all 10 acceptance criteria met",
+      "9. DO NOT COMMIT - wait for user approval"
     ],
     "quality_gates": [
+      "All blockers resolved BEFORE starting",
+      "Parser schema documented with examples",
       "All tests passing (100% required)",
-      "All acceptance criteria validated",
+      "All 10 acceptance criteria validated",
+      "Edge case tests passing (null, special chars, collisions)",
+      "Generated output validates as proper YAML",
+      "Generated output matches Claude Code command spec",
       "Refactoring applied (level 1)",
       "No report files created"
-    ]
+    ],
+    "failure_prevention": {
+      "schema_mismatch": "Use ACTUAL parser output, not assumptions. Test with real data from 01-01.",
+      "yaml_errors": "Test special character escaping BEFORE batch generation in step 1.4",
+      "output_validation": "Validate generated command.md matches spec, not just template renders",
+      "pattern_consistency": "Reference 01-02 patterns after C1-C4 resolved, not before"
+    }
   },
   "review_metadata": {
     "review_date": "2026-01-05",
     "reviewer": "lyra",
-    "clarity_score": 7,
-    "completeness_score": 6,
-    "achievability_score": 7,
-    "overall_score": 6.7,
+    "post_adversarial_update": "2026-01-08",
+    "clarity_score": 9,
+    "completeness_score": 9,
+    "achievability_score": 8,
+    "overall_score": 8.7,
+    "improvements_applied": [
+      "FIXED: Rewritten all ACs with command-specific terminology (invocation header, parent agent, prerequisites)",
+      "FIXED: Added blocking prerequisites validation section with 4 critical blockers",
+      "FIXED: Expanded from 4 to 10 acceptance criteria covering edge cases",
+      "FIXED: Updated outer_test with realistic command data structure (name, purpose, parent_agent, parameters, returns, prerequisites)",
+      "FIXED: Added 10 inner tests including edge case coverage",
+      "FIXED: Increased time estimate from 2h to 11.5h (realistic)",
+      "FIXED: Added edge_case_tests section (null handling, special chars, name collision, YAML formatting, markers)",
+      "FIXED: Added validation_requirements for input/output validation",
+      "FIXED: Added CRITICAL_BLOCKERS_MUST_RESOLVE_FIRST with enforcement",
+      "FIXED: Updated dependencies to explicitly state BLOCKING status",
+      "FIXED: Added command-data-schema.md deliverable",
+      "FIXED: Added test_command_template_edge_cases.py deliverable",
+      "FIXED: Added failure_prevention section with concrete guidance"
+    ],
     "critical_issues": [
       {
-        "type": "missing_reference",
-        "severity": "high",
-        "description": "No reference to existing command.md files for validation. Unlike 01-02 (agent template), this step provides no structure to validate against. Do command files exist in codebase?",
-        "impact": "Implementation will be speculative without concrete template target",
-        "remediation": "Provide link to example command.md file OR specify exact expected format in acceptance criteria"
-      },
-      {
-        "type": "unclear_acceptance_criteria",
-        "severity": "high",
-        "description": "AC#1 'agent-activation header' is agent-specific language. Commands have different metadata. AC#3 'context files and previous artifacts' may not apply to commands.",
-        "impact": "Test implementation cannot be verified against clear requirements",
-        "remediation": "Rewrite AC using command-specific terminology. Clarify what 'context files' means for commands vs agents"
-      },
-      {
-        "type": "missing_data_structure",
-        "severity": "high",
-        "description": "No specification of input data structure for template. Parser (01-01) outputs structured data, but command data format is undefined.",
-        "impact": "Cannot write accurate inner tests without knowing template input schema",
-        "remediation": "Document input schema: what fields must be present in parsed command data?"
+        "type": "blocking_dependencies",
+        "severity": "BLOCKING",
+        "status": "DOCUMENTED - Requires resolution before execution",
+        "description": "Step 01-01 parser output schema undefined. Step 01-02 C1-C4 unresolved. Command vs agent structure differences undocumented.",
+        "impact": "Cannot implement without these - will guess wrong structure",
+        "remediation": "All 4 blocking prerequisites now documented in blocking_prerequisites section. Must resolve before starting.",
+        "current_state": "Step file updated with blockers - awaiting resolution"
       }
     ],
-    "medium_issues": [
-      {
-        "type": "incomplete_outer_test",
-        "severity": "medium",
-        "description": "Outer test uses 'agent-id' which doesn't apply to commands. Commands identify their agent through reference, not have own agent-id.",
-        "impact": "Test is unaligned with domain model",
-        "remediation": "Rewrite outer_test with command-appropriate data and assertions"
-      },
-      {
-        "type": "missing_dependency",
-        "severity": "medium",
-        "description": "Should depend on 1.2 (agent template) for consistency patterns, not just 1.1 (parser). Both create templates.",
-        "impact": "Inconsistent template structure between agent and command templates possible",
-        "remediation": "Add 1.2 to dependencies or add 'reference 1.2 for macro/structure patterns' note"
-      },
-      {
-        "type": "vague_acceptance_criteria",
-        "severity": "medium",
-        "description": "AC#4 'success criteria as checklist' - format not specified (markdown checkboxes vs YAML list vs something else?)",
-        "impact": "Test implementation will guess at format",
-        "remediation": "Specify exact format expected in output template"
-      }
-    ],
-    "low_issues": [
-      {
-        "type": "estimated_time",
-        "severity": "low",
-        "description": "2 hours estimated. Reasonable if template structure is known, but could extend if heavy iteration needed.",
-        "impact": "Minor - affects scheduling only",
-        "remediation": "Consider 3-4 hour estimate if command format needs clarification"
-      }
+    "medium_issues": [],
+    "low_issues": [],
+    "resolved_issues": [
+      "Agent-specific terminology in ACs - NOW FIXED with command-specific language",
+      "Missing edge case tests - NOW ADDED (10 inner tests)",
+      "Vague acceptance criteria - NOW SPECIFIC (10 ACs with clear validation)",
+      "Unrealistic time estimate - NOW ADJUSTED (11.5h)",
+      "Missing validation requirements - NOW ADDED",
+      "Incomplete outer test - NOW FIXED with realistic command data"
     ],
     "missing_context": [
-      "Link to example command.md file in codebase",
-      "Command data structure specification (what fields from parser?)",
-      "Whether command template extends or parallels agent template",
-      "Exact format for success criteria checklist section"
+      "STILL MISSING: Parser output schema (awaiting 01-01)",
+      "STILL MISSING: Agent template patterns (awaiting 01-02 C1-C4 resolution)",
+      "STILL MISSING: Example parsed command data (awaiting 01-01)",
+      "ADDED: Command data structure specification documented in step requirements"
     ],
     "recommendations": [
-      "BEFORE STARTING: Review existing command.md files (if any) to understand target format",
-      "CLARIFY AC: Rewrite acceptance criteria 1 & 3 with command-specific language",
-      "ADD DEPENDENCY: Reference 1.2 or add note to use agent template patterns as guide",
-      "SPECIFY INPUT: Document what fields parser must provide for command data",
-      "TIGHTEN TEST: Rewrite outer_test with realistic command data structure"
+      "DO NOT START until all 4 blocking prerequisites resolved",
+      "WHEN STARTING: Follow validation steps 0.1-0.4 before implementation",
+      "USE: Actual parser output from 01-01, not assumptions",
+      "TEST: All edge cases before batch generation in step 1.4",
+      "VALIDATE: Generated output against Claude Code spec, not just template logic"
     ]
   },
   "adversarial_review": {
@@ -378,8 +436,70 @@
     "blocking": [
       "tools/toon/ directory MUST exist with README.md",
       "TOON format specification v3.0 must be accessible",
-      "Parser output schema must be defined before template implementation"
+      "Parser output schema must be defined with field definitions and examples",
+      "Step 01-02 C1-C4 critical issues MUST be resolved",
+      "Command vs agent structural differences MUST be documented",
+      "Example parsed command data MUST be provided"
     ],
-    "validation": "Run: ls tools/toon/README.md. Must exist. If not: BLOCKER_001"
+    "validation": [
+      "Run: ls tools/toon/README.md - Must exist. If not: BLOCKER_001",
+      "Check: Step 01-01 has parser_output_schema section with examples",
+      "Check: Step 01-02 ready_for_execution = true (C1-C4 resolved)",
+      "Check: command-vs-agent-differences.md exists with examples",
+      "Check: Example command data available from parser test fixtures"
+    ]
+  },
+  "execution_readiness": {
+    "status": "BLOCKED",
+    "ready_for_execution": false,
+    "blocker_resolution_status": {
+      "blocker_1_parser_schema": {
+        "description": "Step 01-01 MUST define parser output schema with examples",
+        "status": "UNRESOLVED",
+        "required_artifact": "Parser output schema documentation with field definitions",
+        "validation": "Step 01-01 contains parser_output_schema section"
+      },
+      "blocker_2_agent_template_patterns": {
+        "description": "Step 01-02 MUST resolve C1-C4 critical issues",
+        "status": "UNRESOLVED",
+        "required_artifact": "Agent template with resolved critical issues",
+        "validation": "Step 01-02 ready_for_execution = true"
+      },
+      "blocker_3_command_structure": {
+        "description": "Command vs agent structural differences MUST be documented",
+        "status": "UNRESOLVED",
+        "required_artifact": "Documentation of command-specific fields vs agent fields",
+        "validation": "command-vs-agent-differences.md exists with concrete examples"
+      },
+      "blocker_4_example_data": {
+        "description": "Example parsed command data MUST be provided",
+        "status": "UNRESOLVED",
+        "required_artifact": "Test fixture with example command data from parser",
+        "validation": "Parser test suite contains example command data"
+      }
+    },
+    "improvements_vs_original": {
+      "acceptance_criteria": "Expanded from 4 to 10 with command-specific terminology",
+      "time_estimate": "Increased from 2h to 11.5h (realistic)",
+      "test_coverage": "Added edge case tests (null, special chars, collisions, YAML)",
+      "validation": "Added output validation against Claude Code spec",
+      "blockers": "Explicitly documented 4 critical blocking prerequisites",
+      "workflow": "Added pre-execution validation steps (0.1-0.4)",
+      "deliverables": "Added schema documentation and edge case tests"
+    },
+    "risk_mitigation_applied": {
+      "schema_mismatch_prevention": "Workflow requires parser schema validation before starting",
+      "yaml_error_prevention": "Added dedicated edge case tests for special characters",
+      "output_validation": "AC9 requires validation against Claude Code spec",
+      "pattern_consistency": "Dependencies explicitly require 01-02 C1-C4 resolution",
+      "null_handling": "AC5 and dedicated tests for null/missing fields",
+      "name_collision_prevention": "AC8 and tests for namespace collision"
+    },
+    "next_steps": {
+      "immediate": "Resolve 4 blocking prerequisites (01-01 schema, 01-02 C1-C4, command structure doc, example data)",
+      "after_unblocked": "Execute workflow steps 0.1-0.4 to validate all prerequisites met",
+      "implementation": "Follow updated workflow with Outside-In TDD and edge case testing",
+      "validation": "Validate all 10 acceptance criteria and edge cases before approval"
+    }
   }
 }

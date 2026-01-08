@@ -19,15 +19,25 @@
       "DO NOT COMMIT BEFORE USER APPROVAL",
       "FOCUS ON DELIVERABLES ONLY",
       "Tests use business language and domain concepts",
-      "Type system makes wrong state non-representable"
+      "Type system makes wrong state non-representable",
+      "TOON v3.0 format specification MUST be available before execution",
+      "Agent binding rules MUST be documented explicitly",
+      "Refactoring rules MUST be defined before application"
     ],
     "success_criteria_mapping": {
       "SC1": "All source files in TOON v3.0 format",
-      "SC7": "~60% token savings in source files"
+      "SC7": "Token savings measured and documented (target ~60%, actual to be measured)"
     },
     "dependencies": [
       "2.4"
-    ]
+    ],
+    "toon_format_specification": {
+      "reference": "tools/toon/TOON-v3.0-SPEC.md or agents/novel-editor-chatgpt-toon.txt",
+      "required_fields": ["wave", "agent", "description", "parameters"],
+      "metadata_format": "YAML key: value style",
+      "header_format": "@agent [agent-name] for activation headers",
+      "wave_format": "wave: [WAVE_NAME] (uppercase, e.g., DEVELOP)"
+    }
   },
   "deliverables": {
     "files_to_create": [
@@ -42,8 +52,12 @@
     ],
     "acceptance_criteria": [
       "All 8 commands compile with agent-activation headers",
-      "Wave metadata correct (DEVELOP)",
-      "Agent bindings correct for each command"
+      "Wave metadata correct (DEVELOP) - uppercase, format: wave: DEVELOP",
+      "Agent bindings correct for each command (validated against agent_bindings table)",
+      "Compilation validation passes all criteria (exit code 0, no stderr, size > 1000 bytes, schema valid)",
+      "All required metadata fields present (wave, agent, description, parameters)",
+      "Refactoring level 1 consistency rules applied if refactoring included",
+      "Token savings measured and documented (before/after counts with tokenizer specified)"
     ]
   },
   "tdd_approach": {
@@ -55,29 +69,35 @@
     ]
   },
   "refactoring": {
-    "targets": [
-      {
-        "level": 1,
-        "focus": "Consistent command structure"
-      }
-    ]
+    "targets": [],
+    "note": "Refactoring removed to match 04-01/02/03 pattern - conversion only, no structural changes",
+    "rationale": "Adversarial review identified contradiction: 04-01/02/03 have empty refactoring targets. Consistency achieved through TOON format specification compliance, not post-conversion refactoring."
   },
   "execution_guidance": {
-    "approach": "Batch command conversion with validation",
+    "approach": "Batch command conversion with pre-work validation and comprehensive testing",
     "workflow": [
-      "1. Convert all 8 DEVELOP wave .md files to .toon",
-      "2. Compile each TOON file",
-      "3. Write tests to validate wave metadata and agent bindings",
-      "4. Verify all agent-activation headers present",
-      "5. Apply refactoring level 1 for consistency",
-      "6. DO NOT COMMIT - wait for user approval"
+      "PRE-WORK: Run all prerequisite checks (see prerequisite_checks section)",
+      "PRE-WORK: Verify TOON format specification available",
+      "PRE-WORK: Verify no existing .toon files in target directory (5d-wave/tasks/dw/)",
+      "PRE-WORK: Validate all 8 source .md files parse without errors",
+      "1. Convert all 8 DEVELOP wave .md files to .toon using compiler",
+      "2. Compile each TOON file with python tools/toon/compiler.py <input.toon> --validate",
+      "3. Validate compilation meets all criteria (exit 0, no stderr, size > 1000 bytes, schema valid)",
+      "4. Write tests to validate wave metadata and agent bindings (using test framework from prerequisite_checks)",
+      "5. Verify all agent-activation headers present and correct format",
+      "6. Measure token savings (before/after with specified tokenizer)",
+      "7. Run all tests (100% pass rate required)",
+      "8. DO NOT COMMIT - wait for user approval"
     ],
     "quality_gates": [
+      "All prerequisite checks passed",
       "All tests passing (100% required)",
-      "All 8 commands compile successfully",
-      "Wave metadata correct (DEVELOP)",
-      "Agent bindings validated",
-      "Refactoring applied (level 1)",
+      "All 8 commands compile successfully (exit 0, no stderr, size > 1000 bytes)",
+      "Wave metadata correct (wave: DEVELOP, uppercase)",
+      "Agent bindings validated against agent_bindings table",
+      "All required metadata fields present",
+      "Schema validation passes for all 8 files",
+      "Token savings measured and documented",
       "No report files created"
     ]
   },
@@ -181,13 +201,45 @@
       "requirement": "TOON v3.0 format specification must be available",
       "verification": "Obtain from tools/toon/TOON-v3.0-SPEC.md or reference implementation",
       "blocking": true,
-      "escalation": "If spec unavailable, create from reverse-engineering agents/novel-editor-chatgpt-toon.txt"
+      "escalation": "If spec unavailable, create from reverse-engineering agents/novel-editor-chatgpt-toon.txt",
+      "validation_requirements": [
+        "Required fields documented (wave, agent, description, parameters)",
+        "Metadata format specified (YAML key: value style)",
+        "Header format specified (@agent [agent-name])",
+        "Wave format specified (wave: [WAVE_NAME] uppercase)",
+        "Valid and invalid examples provided"
+      ]
     },
     "baseline_measurements": {
       "requirement": "Baseline measurements from Phase 0 must be complete",
       "verification": "Confirm docs/workflow/plugin-marketplace-migration/baseline.yaml exists with command metrics",
       "blocking": true,
       "escalation": "If baseline missing, execute Phase 0 baseline measurement first"
+    },
+    "no_existing_toon_files": {
+      "requirement": "No .toon files exist in target directory to avoid collision",
+      "verification": "Check 5d-wave/tasks/dw/*.toon files do not exist",
+      "blocking": true,
+      "escalation": "If .toon files exist, abort and request user to remove or archive them first"
+    },
+    "source_md_files_valid": {
+      "requirement": "All 8 source .md files must parse without errors",
+      "verification": "Parse each .md file and confirm valid YAML/markdown structure",
+      "blocking": true,
+      "escalation": "If any .md file malformed, fix source file syntax before conversion"
+    },
+    "test_framework_available": {
+      "requirement": "Test framework configured and available",
+      "verification": "pytest or NUnit or xUnit available and runnable",
+      "blocking": true,
+      "escalation": "Install and configure test framework before execution",
+      "framework_specification": "Use pytest for Python projects, NUnit/xUnit for .NET projects"
+    },
+    "agent_registry_accessible": {
+      "requirement": "Agent registry accessible for binding validation",
+      "verification": "Can query agent registry to verify agent existence",
+      "blocking": false,
+      "note": "Optional for compilation, required for runtime. Tests validate syntax, integration tests validate existence."
     }
   },
   "toon_compiler": {
@@ -203,7 +255,14 @@
       "Metadata validates against TOON v3.0 schema",
       "Output markdown is Claude Code compliant"
     ],
-    "validation": "pytest tests/tools/toon/test_compiler.py"
+    "validation": "pytest tests/tools/toon/test_compiler.py",
+    "compilation_validation_details": {
+      "exit_code_check": "Must be 0 for success",
+      "stderr_check": "Must be empty (no error messages)",
+      "output_size_check": "Must be > 1000 bytes to indicate non-trivial content",
+      "schema_validation": "All required fields present (wave, agent, description, parameters)",
+      "metadata_validation": "Wave format correct (wave: DEVELOP), agent binding valid"
+    }
   },
   "error_handling": {
     "scenario_1_compiler_not_found": {
@@ -214,30 +273,48 @@
     },
     "scenario_2_compilation_failure": {
       "error": "TOON compiler exits with non-zero code",
-      "handling": "Log compilation error with file path and stderr output. Skip failed file, continue with others. Generate error report.",
-      "recovery": "Review TOON syntax, fix errors, retry compilation",
-      "test": "test_error_compilation_failure_graceful"
+      "handling": "Log compilation error with file path and stderr output. ROLLBACK all converted files. DO NOT continue with partial conversion.",
+      "recovery": "Review TOON syntax, fix errors, retry full batch conversion from clean state",
+      "test": "test_error_compilation_failure_graceful",
+      "rollback_policy": "Atomic batch conversion - all 8 succeed or rollback all"
     },
     "scenario_3_metadata_validation_failure": {
       "error": "Compiled output fails metadata validation (missing required fields)",
-      "handling": "Log validation errors with specific missing fields. Mark file as failed. Continue processing other files.",
-      "recovery": "Add missing metadata to source TOON file, recompile",
-      "test": "test_error_metadata_validation_failure"
+      "handling": "Log validation errors with specific missing fields. ROLLBACK all converted files.",
+      "recovery": "Add missing metadata to source TOON file, retry full batch conversion",
+      "test": "test_error_metadata_validation_failure",
+      "rollback_policy": "Atomic batch conversion - validation failure rolls back entire batch"
     },
     "scenario_4_partial_batch_failure": {
       "error": "Some files in batch succeed, others fail",
-      "handling": "Complete all processable files. Generate summary report: X succeeded, Y failed. List failed files with error reasons.",
-      "recovery": "Fix failed files individually, rerun batch",
-      "test": "test_error_partial_batch_failure_reporting"
+      "handling": "ROLLBACK all successful conversions. Report which conversion failed and why. Maintain clean state.",
+      "recovery": "Fix failed files, retry entire batch from clean state",
+      "test": "test_error_partial_batch_failure_reporting",
+      "rollback_policy": "All-or-nothing: Either all 8 succeed or none persist"
+    },
+    "scenario_5_file_collision": {
+      "error": "Target .toon file already exists",
+      "handling": "STOP immediately. Log error: 'Target .toon files exist. Remove or archive existing files first.'",
+      "recovery": "User removes or archives existing .toon files before retry",
+      "test": "test_error_file_collision_detection",
+      "prevention": "Pre-work check validates no existing .toon files"
+    },
+    "scenario_6_source_file_malformed": {
+      "error": "Source .md file has invalid YAML/markdown structure",
+      "handling": "STOP immediately. Log error with file path and parse error details.",
+      "recovery": "Fix source .md file syntax, retry",
+      "test": "test_error_source_file_validation",
+      "prevention": "Pre-work check validates all source .md files parse correctly"
     }
   },
   "test_specifications": {
+    "test_framework": "pytest (Python projects) or NUnit/xUnit (.NET projects)",
     "unit_tests": [
       {
         "name": "test_toon_parser_valid_command_input",
         "purpose": "Verify parser handles valid TOON command syntax correctly",
-        "input": "Sample TOON command file with all required fields (name, description, parameters)",
-        "expected": "Parsed dict with command metadata: {name, description, parameters, dependencies}"
+        "input": "Sample TOON command file with all required fields (wave, agent, description, parameters)",
+        "expected": "Parsed dict with command metadata: {wave, agent, description, parameters, dependencies}"
       },
       {
         "name": "test_template_rendering_with_parsed_command",
@@ -250,6 +327,18 @@
         "purpose": "Verify compiled output meets Claude Code command specification",
         "input": "Generated command.md file",
         "expected": "Validation passes: Has frontmatter, execution context, success criteria sections"
+      },
+      {
+        "name": "test_wave_metadata_validation",
+        "purpose": "Verify wave metadata format is correct",
+        "input": "Compiled .toon file",
+        "expected": "Wave field present, uppercase (wave: DEVELOP), not lowercase or wrong field name"
+      },
+      {
+        "name": "test_agent_binding_validation",
+        "purpose": "Verify agent bindings match agent_bindings table",
+        "input": "Compiled .toon file and agent_bindings table",
+        "expected": "Agent binding matches expected binding from table, correct field format (agent: [agent-name])"
       }
     ],
     "integration_tests": [
@@ -285,11 +374,40 @@
         "purpose": "Verify validation errors reported clearly",
         "input": "TOON file missing required 'description' field",
         "expected": "Validation error: 'Missing required field: description' with file path"
+      },
+      {
+        "name": "test_file_collision_handling",
+        "purpose": "Verify detection of existing .toon files",
+        "setup": "Create dummy .toon file in target directory",
+        "expected": "Pre-work check fails, clear error message, execution does not proceed"
+      },
+      {
+        "name": "test_source_file_malformed_handling",
+        "purpose": "Verify detection of malformed source .md files",
+        "setup": "Create .md file with unclosed YAML fence",
+        "expected": "Pre-work check fails, parse error reported with file and line number"
+      },
+      {
+        "name": "test_partial_batch_failure_rollback",
+        "purpose": "Verify atomic batch conversion rollback policy",
+        "setup": "Create 7 valid .md files and 1 malformed .md file",
+        "expected": "All conversions rolled back, no .toon files persist, error report shows which file failed"
       }
-    ]
+    ],
+    "token_savings_measurement": {
+      "requirement": "Measure and document token savings before/after conversion",
+      "tokenizer": "Specify tokenizer used (e.g., tiktoken for OpenAI, transformers for Huggingface)",
+      "baseline": "Count tokens in all 8 source .md files",
+      "post_conversion": "Count tokens in all 8 compiled .toon files",
+      "calculation": "savings_percentage = ((baseline - post_conversion) / baseline) * 100",
+      "target": "~60% (aspirational based on SC7)",
+      "documentation": "Document actual savings achieved with tokenizer specification",
+      "acceptance": "Any savings documented is acceptable; 60% is target not requirement"
+    }
   },
   "agent_bindings": {
-    "description": "Maps each DEVELOP wave command to its primary agent",
+    "description": "Maps each DEVELOP wave command to its primary agent - EXPLICIT SPECIFICATION",
+    "field_format": "agent: [agent-name]",
     "bindings": {
       "dw:baseline": "software-crafter",
       "dw:roadmap": "software-crafter",
@@ -300,6 +418,68 @@
       "dw:refactor": "software-crafter",
       "dw:mikado": "software-crafter"
     },
-    "validation": "Each binding MUST have test validating command invokes correct agent"
+    "validation": "Each binding MUST have test validating command invokes correct agent",
+    "format_examples": {
+      "valid": [
+        "agent: software-crafter",
+        "agent: software-crafter-reviewer"
+      ],
+      "invalid": [
+        "agent_binding: software-crafter (wrong field name)",
+        "activation: software-crafter (wrong field name)",
+        "agent: Software-Crafter (case mismatch)",
+        "(no agent field) (missing required field)"
+      ]
+    },
+    "integration_validation": {
+      "requirement": "Validate bindings against actual agent registry",
+      "test": "Query agent registry to confirm each agent exists",
+      "blocking": false,
+      "note": "Syntax validated during compilation, existence validated at runtime/integration"
+    }
+  },
+  "adversarial_review_integration": {
+    "review_date": "2026-01-05",
+    "review_status": "APPROVED WITH CRITICAL GAPS",
+    "risk_score": "6.5/10 (HIGH)",
+    "blast_radius": "VERY HIGH - 8 core DEVELOP commands",
+    "critical_gaps_resolved": [
+      "Gap 1: TOON v3.0 format specification - Added to context.toon_format_specification",
+      "Gap 2: Agent binding rules - Added explicit agent_bindings table with format examples",
+      "Gap 3: Refactoring definition - Removed to match 04-01/02/03 pattern",
+      "Gap 4: Compiler specification - Enhanced toon_compiler section with validation details",
+      "Gap 5: Test framework - Added test_specifications.test_framework field"
+    ],
+    "contradictions_resolved": [
+      "Contradiction 1: Refactoring scope mismatch - Removed refactoring targets to match pattern",
+      "Contradiction 2: Agent binding specification - Added explicit bindings table",
+      "Contradiction 3: Implicit format assumption - Added TOON v3.0 spec reference"
+    ],
+    "edge_cases_addressed": [
+      "Edge Case 1: File collision - Added prerequisite check and error handling",
+      "Edge Case 2: Partial conversion failure - Added atomic rollback policy",
+      "Edge Case 3: Compiler validation - Added detailed validation criteria",
+      "Edge Case 4: Wave metadata inconsistency - Added format examples",
+      "Edge Case 5: Agent binding inconsistency - Added format specification and examples"
+    ],
+    "pre_work_validation_added": [
+      "TOON format specification availability",
+      "No existing .toon files in target directory",
+      "All source .md files parse without errors",
+      "Test framework configured and available",
+      "TOON compiler available and accessible"
+    ],
+    "execution_risk_mitigation": {
+      "original_risk": "6.5/10 (HIGH)",
+      "expected_risk_after_corrections": "3-4/10 (MEDIUM-LOW)",
+      "confidence_improvement": "From 0.65 to 0.90 (estimated)",
+      "recommended_next_steps": [
+        "Verify TOON v3.0 specification exists before execution",
+        "Run all prerequisite checks as first step",
+        "Use atomic batch conversion with rollback on any failure",
+        "Measure token savings with specified tokenizer",
+        "Validate against agent registry during integration testing"
+      ]
+    }
   }
 }

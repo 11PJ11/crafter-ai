@@ -9,8 +9,8 @@
   "step": {
     "number": "2.3",
     "name": "Document Conversion Patterns",
-    "description": "Document patterns discovered during pilot conversion for batch use. Update tools/toon/README.md with conversion guide based on enumerated patterns from step 2.2.\n\nIMPORTANT: This documentation becomes the blueprint for 100+ agent conversions in Phase 3. Accuracy is critical.\n\nInput: baseline/patterns/02-02-discovered-patterns.json (from step 2.2)\nOutput: tools/toon/README.md with structured conversion guide",
-    "motivation": "Patterns enable efficient batch migration and prevent inconsistent conversions across 100+ agents",
+    "description": "Document patterns discovered during pilot conversion for batch use. Update tools/toon/README.md with conversion guide based on enumerated patterns from step 2.2.\n\nIMPORTANT: This documentation becomes the blueprint for 100+ agent conversions in Phase 3. Accuracy is critical.\n\nInput: baseline/patterns/02-02-discovered-patterns.json (from step 2.2 - must contain enumerated patterns and edge cases)\nOutput: tools/toon/README.md with structured conversion guide validated for TOON v3.0 syntax correctness",
+    "motivation": "Patterns enable efficient batch migration and prevent inconsistent conversions across 100+ agents. Documentation errors amplify across entire batch - validation is critical.",
     "estimated_hours": "1.5-2"
   },
   "context": {
@@ -26,9 +26,12 @@
     },
     "dependencies": ["2.2"],
     "blocking_conditions": [
-      "Step 2.2 MUST be complete with patterns enumerated",
+      "Step 2.2 MUST be complete with patterns enumerated (not just pass/fail)",
       "File MUST exist: baseline/patterns/02-02-discovered-patterns.json",
-      "Patterns MUST include minimum 5 conversion patterns and 3 edge cases"
+      "Patterns file MUST contain enumerated patterns (not just validation result)",
+      "Patterns MUST include minimum 5 conversion patterns and 3 edge cases with descriptions",
+      "TOON v3.0 specification MUST be accessible (formal spec or reference implementation)",
+      "TOON compiler MUST support --validate flag for syntax validation"
     ]
   },
   "deliverables": {
@@ -36,21 +39,27 @@
       "tools/toon/README.md"
     ],
     "acceptance_criteria": [
-      "README documents >= 10 TOON syntax features with before/after examples",
-      "README includes >= 10 conversion examples from actual software-crafter.toon",
-      "README lists >= 5 edge cases with resolution strategies (from step 2.2)",
-      "README includes decision tree for ambiguous conversions",
-      "All examples use generic agent placeholders (not software-crafter-specific)",
-      "Examples are valid TOON v3.0 syntax (validated by tests)"
+      "AC1: README documents >= 15 TOON syntax features with before/after examples (measurable)",
+      "AC2: README includes >= 10 conversion examples from actual software-crafter.toon (measurable)",
+      "AC3: README lists >= 5 edge cases with resolution strategies (from step 2.2 patterns file) (measurable)",
+      "AC4: README includes decision tree for ambiguous conversions",
+      "AC5: All examples use generic agent placeholders (not software-crafter-specific) - validated by test",
+      "AC6: All TOON code examples are valid TOON v3.0 syntax (validated by compiler --validate)",
+      "AC7: Every pattern from baseline/patterns/02-02-discovered-patterns.json is documented in README",
+      "AC8: Every edge case from baseline/patterns/02-02-discovered-patterns.json is documented in README",
+      "AC9: Examples are genericized and portable to any agent (not software-crafter-specific paths/commands)",
+      "AC10: README includes version tracking mechanism for Phase 3 discoveries"
     ]
   },
   "tdd_approach": {
     "outer_test": "GIVEN tools/toon/README.md\nWHEN Phase 3 executor uses it as conversion guide\nTHEN all patterns from baseline/patterns/02-02-discovered-patterns.json are documented\nAND examples are portable to other agents\nAND TOON syntax is valid",
     "inner_tests": [
-      "test_readme_contains_all_discovered_patterns",
-      "test_readme_examples_are_valid_toon_syntax",
-      "test_readme_examples_use_generic_placeholders",
-      "test_readme_edge_cases_match_step_2_2_findings"
+      "test_readme_contains_all_discovered_patterns - validates AC7",
+      "test_readme_examples_are_valid_toon_syntax - validates AC6 using compiler",
+      "test_readme_examples_use_generic_placeholders - validates AC5 and AC9",
+      "test_readme_edge_cases_match_step_2_2_findings - validates AC8",
+      "test_readme_meets_minimum_thresholds - validates AC1, AC2, AC3 (measurable counts)",
+      "test_toon_spec_accessibility - validates TOON v3.0 spec is available"
     ]
   },
   "refactoring": {
@@ -59,10 +68,14 @@
   "execution_guidance": {
     "approach": "Documentation with validation and genericization",
     "workflow": [
-      "0. PRE-FLIGHT VALIDATION:",
-      "   a. Verify baseline/patterns/02-02-discovered-patterns.json exists",
-      "   b. Load and validate patterns file has required structure",
-      "   c. Verify minimum 5 patterns and 3 edge cases present",
+      "0. PRE-FLIGHT VALIDATION (CRITICAL - MUST PASS BEFORE PROCEEDING):",
+      "   a. Verify baseline/patterns/02-02-discovered-patterns.json exists (file not found = BLOCK)",
+      "   b. Load and validate patterns file contains enumerated patterns (not just pass/fail result)",
+      "   c. Verify minimum 5 conversion patterns with descriptions present",
+      "   d. Verify minimum 3 edge cases with resolution strategies present",
+      "   e. Verify TOON v3.0 specification is accessible (formal spec or reference)",
+      "   f. Verify TOON compiler supports --validate flag for syntax validation",
+      "   g. If ANY pre-flight check fails, STOP and escalate to user - do not proceed",
       "1. Load patterns from baseline/patterns/02-02-discovered-patterns.json",
       "2. Extract TOON syntax features from software-crafter.toon:",
       "   - Metadata directives",
@@ -72,167 +85,313 @@
       "   - YAML structure mappings",
       "3. Create tools/toon/README.md with structure:",
       "   ## TOON v3.0 Conversion Guide",
+      "   **Version**: 1.0 (from Phase 2 pilot - software-crafter)",
+      "   **Date**: <current-date>",
+      "   **Status**: Baseline (subject to Phase 3 updates)",
       "   ",
       "   ### Overview",
       "   This guide documents conversion patterns discovered during software-crafter pilot migration.",
       "   Use this as reference for Phase 3 batch conversions.",
       "   ",
+      "   **Important**: This documentation is based on ONE pilot conversion. Phase 3 may discover",
+      "   additional patterns not documented here. See Version Tracking section for update process.",
+      "   ",
       "   ### TOON Syntax Quick Reference",
-      "   [Document >= 10 syntax features with examples]",
+      "   [Document >= 15 syntax features with examples - AC1]",
       "   ",
       "   ### Common Conversion Patterns",
-      "   [Document patterns from baseline/patterns/02-02-discovered-patterns.json]",
+      "   [Document ALL patterns from baseline/patterns/02-02-discovered-patterns.json - AC7]",
+      "   [Include >= 10 conversion examples - AC2]",
       "   Format:",
       "   #### Pattern: <pattern_id> - <description>",
       "   **Applies to**: <scope>",
+      "   **Source**: baseline/patterns/02-02-discovered-patterns.json",
       "   **Before (MD)**:",
       "   ```markdown",
-      "   <genericized before example>",
+      "   <genericized before example - use <agent-name>, <path-to-X>, <command-name>>",
       "   ```",
       "   **After (TOON)**:",
       "   ```toon",
-      "   <genericized after example>",
+      "   <genericized after example - validated by compiler --validate>",
       "   ```",
+      "   **Validation**: Syntax validated ✓",
       "   ",
       "   ### Edge Cases and Handling Strategies",
-      "   [Document edge cases from step 2.2]",
+      "   [Document ALL edge cases from baseline/patterns/02-02-discovered-patterns.json - AC8]",
+      "   [Include >= 5 edge cases with resolution strategies - AC3]",
       "   Format:",
       "   #### Edge Case: <edge_case_id> - <description>",
+      "   **Source**: baseline/patterns/02-02-discovered-patterns.json",
       "   **Scenario**: <when this occurs>",
-      "   **Handling**: <resolution strategy>",
-      "   **Example**: <code example>",
+      "   **Handling**: <resolution strategy with decision logic>",
+      "   **Example**: <genericized code example>",
       "   ",
       "   ### Decision Tree for Ambiguous Conversions",
-      "   [Create flowchart for decision points]",
+      "   [Create decision tree addressing ambiguities discovered in pilot - AC4]",
+      "   ",
+      "   **Example Decision Points**:",
+      "   - When YAML maps to multiple TOON constructs",
+      "   - When agent-specific customizations exist",
+      "   - When embedded knowledge has complex structure",
       "   ",
       "   ### Validation Checklist",
-      "   - [ ] All commands converted",
-      "   - [ ] All dependencies converted",
-      "   - [ ] Metadata complete",
+      "   Use this checklist when converting any agent:",
+      "   - [ ] All commands converted to TOON format",
+      "   - [ ] All dependencies converted and validated",
+      "   - [ ] Metadata complete and accurate",
       "   - [ ] Embedded knowledge markers preserved",
-      "   - [ ] TOON syntax valid (compiler accepts)",
-      "4. Genericize all examples:",
-      "   - Replace 'software-crafter' with '<agent-name>'",
-      "   - Replace specific paths with '<path-to-X>'",
-      "   - Replace specific commands with '<command-name>'",
-      "   - Ensure examples are portable to any agent",
-      "5. Write tests to validate README:",
-      "   a. Extract TOON code blocks from README",
-      "   b. Validate each against TOON compiler syntax check",
-      "   c. Verify all patterns from step 2.2 are documented",
-      "   d. Verify all edge cases from step 2.2 are listed",
-      "6. Run validation tests - all must pass",
-      "7. DO NOT COMMIT - wait for user approval"
+      "   - [ ] TOON syntax valid (run: toon --validate <file>)",
+      "   - [ ] Examples genericized (no agent-specific paths/names)",
+      "   - [ ] Round-trip test passes (TOON → MD → TOON)",
+      "   ",
+      "   ### Version Tracking and Updates",
+      "   **Current Version**: 1.0 (Phase 2 pilot baseline)",
+      "   ",
+      "   **Phase 3 Update Process**:",
+      "   If Phase 3 batch conversions discover new patterns:",
+      "   1. Document new pattern in addendum section below",
+      "   2. Increment version (e.g., 1.1, 1.2)",
+      "   3. Reference discovering agent and date",
+      "   4. Update this README with new pattern",
+      "   ",
+      "   **Addendum - Phase 3 Discoveries**:",
+      "   [New patterns discovered during Phase 3 batch migration]",
+      "4. Genericize all examples (CRITICAL for portability - AC5, AC9):",
+      "   - Replace 'software-crafter' with '<agent-name>' in all examples",
+      "   - Replace specific paths like 'dw/develop.md' with '<path-to-task>'",
+      "   - Replace specific commands like '*develop' with '<command-name>'",
+      "   - Replace specific values with '<value>' or descriptive placeholders",
+      "   - Ensure examples work for ANY agent, not just software-crafter",
+      "   - Document genericization rules in README for Phase 3 reference",
+      "5. Write validation tests to ensure README quality:",
+      "   a. test_readme_meets_minimum_thresholds:",
+      "      - Count syntax features (must be >= 15)",
+      "      - Count conversion examples (must be >= 10)",
+      "      - Count edge cases (must be >= 5)",
+      "   b. test_readme_contains_all_discovered_patterns:",
+      "      - Load baseline/patterns/02-02-discovered-patterns.json",
+      "      - For each pattern_id, verify it appears in README",
+      "      - FAIL if any pattern missing",
+      "   c. test_readme_examples_are_valid_toon_syntax:",
+      "      - Extract all ```toon code blocks from README",
+      "      - Write each to temp file",
+      "      - Run: toon --validate <temp-file> for each",
+      "      - FAIL if any syntax validation fails",
+      "   d. test_readme_examples_use_generic_placeholders:",
+      "      - Search README for 'software-crafter', 'software_crafter'",
+      "      - Count occurrences in example sections",
+      "      - FAIL if count > 0 (examples must be genericized)",
+      "   e. test_readme_edge_cases_match_step_2_2_findings:",
+      "      - Load edge cases from baseline/patterns/02-02-discovered-patterns.json",
+      "      - For each edge_case_id, verify it appears in README",
+      "      - FAIL if any edge case missing",
+      "   f. test_toon_spec_accessibility:",
+      "      - Verify TOON v3.0 spec is accessible (file or reference)",
+      "      - FAIL if spec not available (cannot validate examples)",
+      "6. Run ALL validation tests - 100% must pass before proceeding",
+      "7. Generate test report showing validation results",
+      "8. DO NOT COMMIT - wait for user approval with test results"
     ],
     "quality_gates": [
-      "Pre-flight checks pass (patterns file exists with minimum content)",
-      "All acceptance criteria validated",
-      "Examples are clear and accurate (validated by tests)",
-      "All patterns from step 2.2 documented",
-      "All edge cases from step 2.2 listed",
-      "Examples use generic placeholders (no software-crafter-specific)",
-      "TOON syntax examples validated by compiler",
-      "No report files created"
+      "GATE 1: Pre-flight checks ALL pass (file exists, patterns enumerated, TOON spec accessible)",
+      "GATE 2: Minimum thresholds met (>= 15 features, >= 10 examples, >= 5 edge cases)",
+      "GATE 3: All patterns from baseline/patterns/02-02-discovered-patterns.json documented (AC7)",
+      "GATE 4: All edge cases from baseline/patterns/02-02-discovered-patterns.json documented (AC8)",
+      "GATE 5: All TOON examples validated by compiler --validate (AC6)",
+      "GATE 6: Examples use generic placeholders - zero software-crafter references (AC5, AC9)",
+      "GATE 7: Decision tree for ambiguous conversions included (AC4)",
+      "GATE 8: Version tracking mechanism documented (AC10)",
+      "GATE 9: All validation tests pass (100% pass rate required)",
+      "GATE 10: No report files created (only README.md deliverable)",
+      "GATE 11: Examples are portable and work for any agent (validated by genericization test)"
     ],
     "readme_structure_specification": {
       "required_sections": [
-        "Overview (purpose and scope)",
-        "TOON Syntax Quick Reference (>= 10 features)",
-        "Common Conversion Patterns (>= 10 patterns)",
-        "Edge Cases and Handling Strategies (>= 5 edge cases)",
-        "Decision Tree for Ambiguous Conversions",
-        "Validation Checklist"
+        "Overview (purpose, scope, and Phase 2 pilot context)",
+        "TOON Syntax Quick Reference (>= 15 features with examples) - AC1",
+        "Common Conversion Patterns (>= 10 examples, ALL from patterns file) - AC2, AC7",
+        "Edge Cases and Handling Strategies (>= 5 edge cases, ALL from patterns file) - AC3, AC8",
+        "Decision Tree for Ambiguous Conversions - AC4",
+        "Validation Checklist (for Phase 3 executors)",
+        "Version Tracking and Updates (Phase 3 update process) - AC10"
       ],
       "pattern_format": {
-        "pattern_id": "Reference to baseline/patterns/02-02-discovered-patterns.json",
+        "pattern_id": "Reference to baseline/patterns/02-02-discovered-patterns.json (must match)",
         "description": "Clear description of what converts to what",
         "applies_to": "Scope (all agents, agents with X, etc.)",
-        "before_example": "MD format (genericized)",
-        "after_example": "TOON format (genericized)",
-        "notes": "Optional clarifications"
+        "source": "baseline/patterns/02-02-discovered-patterns.json (explicit reference)",
+        "before_example": "MD format (genericized with placeholders)",
+        "after_example": "TOON format (genericized and validated by compiler)",
+        "validation_status": "Syntax validated ✓ (compiler --validate passed)",
+        "notes": "Optional clarifications or decision rationale"
       },
       "edge_case_format": {
-        "edge_case_id": "Reference to baseline/patterns/02-02-discovered-patterns.json",
+        "edge_case_id": "Reference to baseline/patterns/02-02-discovered-patterns.json (must match)",
         "description": "When this situation occurs",
-        "scenario": "Specific triggering conditions",
-        "handling": "Resolution strategy",
-        "example": "Code example demonstrating handling"
+        "source": "baseline/patterns/02-02-discovered-patterns.json (explicit reference)",
+        "scenario": "Specific triggering conditions (when Phase 3 executor encounters this)",
+        "handling": "Resolution strategy with decision logic (step-by-step)",
+        "example": "Genericized code example demonstrating handling",
+        "decision_tree_reference": "Reference to decision tree section if applicable"
       },
       "genericization_rules": [
-        "Replace agent names with <agent-name>",
-        "Replace file paths with <path-to-X>",
-        "Replace command names with <command-name>",
-        "Replace specific values with <value> or <description>",
-        "Ensure examples work for any agent, not just software-crafter"
+        "Replace agent names: 'software-crafter' → '<agent-name>'",
+        "Replace file paths: 'dw/develop.md' → '<path-to-task>'",
+        "Replace command names: '*develop' → '<command-name>'",
+        "Replace specific values with descriptive placeholders: '0.5 hours' → '<estimated-hours>'",
+        "Ensure examples work for any agent, not just software-crafter",
+        "Document these rules in README for Phase 3 reference",
+        "Test: search for 'software-crafter' in examples - must find zero occurrences"
       ]
     },
     "validation_tests_specification": {
       "test_1": {
         "name": "test_readme_contains_all_discovered_patterns",
-        "validates": "Every pattern in baseline/patterns/02-02-discovered-patterns.json appears in README",
-        "method": "Load patterns JSON, search README for each pattern_id"
+        "validates": "AC7: Every pattern in baseline/patterns/02-02-discovered-patterns.json appears in README",
+        "method": "Load patterns JSON, search README for each pattern_id, FAIL if any missing",
+        "pass_criteria": "100% of patterns documented"
       },
       "test_2": {
         "name": "test_readme_examples_are_valid_toon_syntax",
-        "validates": "All TOON code blocks in README pass compiler syntax validation",
-        "method": "Extract ```toon blocks, write to temp files, run compiler --validate on each"
+        "validates": "AC6: All TOON code blocks in README pass compiler syntax validation",
+        "method": "Extract ```toon blocks, write to temp files, run: toon --validate <file> on each",
+        "pass_criteria": "100% of TOON examples validate successfully",
+        "failure_action": "Report which examples failed validation, provide compiler error messages"
       },
       "test_3": {
         "name": "test_readme_examples_use_generic_placeholders",
-        "validates": "No software-crafter-specific references in examples",
-        "method": "Search README for 'software-crafter', 'software_crafter' - count must be 0 in examples"
+        "validates": "AC5, AC9: No software-crafter-specific references in examples",
+        "method": "Search README for 'software-crafter', 'software_crafter' - count must be 0 in example sections",
+        "pass_criteria": "Zero occurrences of agent-specific references in examples",
+        "exclusions": "Overview section may mention software-crafter as pilot - only examples must be generic"
       },
       "test_4": {
         "name": "test_readme_edge_cases_match_step_2_2_findings",
-        "validates": "Every edge case from step 2.2 is documented in README",
-        "method": "Load edge cases from JSON, verify each edge_case_id appears in README"
+        "validates": "AC8: Every edge case from step 2.2 is documented in README",
+        "method": "Load edge cases from baseline/patterns/02-02-discovered-patterns.json, verify each edge_case_id appears in README",
+        "pass_criteria": "100% of edge cases documented with resolution strategies"
+      },
+      "test_5": {
+        "name": "test_readme_meets_minimum_thresholds",
+        "validates": "AC1, AC2, AC3: Measurable minimum thresholds met",
+        "method": "Count features (>= 15), examples (>= 10), edge cases (>= 5) in README",
+        "pass_criteria": "All minimum thresholds exceeded",
+        "failure_action": "Report which thresholds not met and current counts"
+      },
+      "test_6": {
+        "name": "test_toon_spec_accessibility",
+        "validates": "Blocking condition: TOON v3.0 specification accessible",
+        "method": "Check for TOON spec file or reference documentation",
+        "pass_criteria": "TOON spec is available for validation",
+        "failure_action": "BLOCK step execution - cannot validate examples without spec"
       }
     }
   },
   "adversarial_review_remediations": [
     {
       "issue_id": "CONTRADICTION-1",
-      "remediation": "Added blocking_conditions requiring baseline/patterns/02-02-discovered-patterns.json exists with minimum 5 patterns and 3 edge cases. Input explicitly referenced."
+      "issue": "Documentation without reference implementation",
+      "remediation": "Added explicit blocking conditions: patterns file must exist with enumerated patterns (not just pass/fail), minimum 5 patterns and 3 edge cases with descriptions required. Pre-flight validation step added to verify patterns file structure before proceeding."
     },
     {
       "issue_id": "CONTRADICTION-2",
-      "remediation": "Added requirement for TOON v3.0 spec accessibility. Added validation tests that check TOON syntax validity using compiler."
+      "issue": "Pattern extraction without pattern schema",
+      "remediation": "Added blocking condition requiring TOON v3.0 specification accessibility (formal spec or reference). Added test_toon_spec_accessibility validation test. All TOON examples must be validated by compiler --validate flag (AC6)."
     },
     {
       "issue_id": "CONTRADICTION-3",
-      "remediation": "Added measurable acceptance criteria: >= 10 syntax features, >= 10 examples, >= 5 edge cases. Quality gate requires minimum thresholds met."
+      "issue": "Quality gate cannot be passed",
+      "remediation": "Updated AC3 to require >= 5 edge cases from step 2.2 patterns file (measurable). Added AC8 requiring every edge case from patterns file documented in README. Added validation test to verify 100% edge case coverage."
+    },
+    {
+      "issue_id": "CONTRADICTION-4",
+      "issue": "Approval gate happens too early",
+      "remediation": "Added AC10 for version tracking mechanism. README includes Phase 3 update process for patterns discovered during batch migration. Addendum section added for Phase 3 discoveries with version tracking."
+    },
+    {
+      "issue_id": "ASSUMPTION-1",
+      "issue": "Step 2.2 output is clear and enumerated",
+      "remediation": "Added blocking condition: 'Step 2.2 MUST be complete with patterns enumerated (not just pass/fail)'. Pre-flight validation verifies patterns file contains enumerated patterns, not just validation result."
     },
     {
       "issue_id": "ASSUMPTION-2",
-      "remediation": "Referenced TOON v3.0 spec in blocking conditions. Examples validated against compiler to ensure correctness."
+      "issue": "You know TOON v3.0 well enough to document it",
+      "remediation": "Added blocking condition requiring TOON v3.0 specification accessible before step starts. Added validation test to check spec accessibility. Cannot proceed without TOON spec reference."
     },
     {
       "issue_id": "ASSUMPTION-3",
-      "remediation": "Revised estimated hours from 0.5 to 1.5-2 to account for thorough documentation, example creation, genericization, and validation."
+      "issue": "0.5 hours is sufficient",
+      "remediation": "Revised estimated hours from 0.5 to 1.5-2 hours. Accounts for: pattern extraction, documentation, example creation, genericization, validation test writing, test execution, and quality gates."
+    },
+    {
+      "issue_id": "ASSUMPTION-4",
+      "issue": "Patterns from one agent generalize to 100+ agents",
+      "remediation": "Added version tracking section (AC10). README explicitly states it's based on ONE pilot conversion. Phase 3 update process documented for new patterns. Addendum section for Phase 3 discoveries with version increments."
     },
     {
       "issue_id": "ASSUMPTION-5",
-      "remediation": "Added validation tests that extract TOON code blocks and validate syntax using compiler. Examples proven valid, not assumed."
+      "issue": "Documentation is self-validating",
+      "remediation": "Added comprehensive validation tests: test_readme_examples_are_valid_toon_syntax extracts all TOON code blocks and validates with compiler --validate. Quality gate requires 100% validation pass rate before proceeding."
+    },
+    {
+      "issue_id": "EDGE-CASE-1",
+      "issue": "Step 2.2 validation fails",
+      "remediation": "Added explicit blocking conditions with pre-flight validation. Step 0g: 'If ANY pre-flight check fails, STOP and escalate to user - do not proceed.' File existence, pattern enumeration, minimum counts all validated."
+    },
+    {
+      "issue_id": "EDGE-CASE-2",
+      "issue": "TOON features not yet documented",
+      "remediation": "README overview includes disclaimer: 'This documentation is based on ONE pilot conversion. Phase 3 may discover additional patterns not documented here.' Version tracking enables Phase 3 updates."
+    },
+    {
+      "issue_id": "EDGE-CASE-3",
+      "issue": "Ambiguities in YAML→TOON mapping",
+      "remediation": "Added AC4 requiring decision tree for ambiguous conversions. Decision tree section includes example decision points. Edge case format includes decision_tree_reference field linking to decision tree."
+    },
+    {
+      "issue_id": "EDGE-CASE-4",
+      "issue": "Phase 3 discovers new patterns",
+      "remediation": "Added AC10 version tracking mechanism. README includes 'Version Tracking and Updates' section with Phase 3 update process: document new pattern, increment version, reference discovering agent, update README. Addendum section for Phase 3 discoveries."
     },
     {
       "issue_id": "EDGE-CASE-5",
-      "remediation": "Added genericization rules requiring examples use placeholders (<agent-name>, <path-to-X>). Test validates no software-crafter-specific references remain."
+      "issue": "README examples are software-crafter-specific",
+      "remediation": "Added AC5 and AC9 requiring generic placeholders. Genericization rules documented: 'software-crafter' → '<agent-name>', paths → '<path-to-X>', commands → '<command-name>'. Validation test searches for 'software-crafter' in examples - must find zero occurrences."
+    },
+    {
+      "issue_id": "EDGE-CASE-6",
+      "issue": "Multiple executors interpret patterns differently",
+      "remediation": "Added AC4 requiring decision tree. Edge case format includes step-by-step resolution strategy. Pattern format includes validation_status showing compiler validation passed. Decision tree provides disambiguation logic."
     },
     {
       "issue_id": "BLOCKING-ISSUE-1",
-      "remediation": "Added blocking condition that baseline/patterns/02-02-discovered-patterns.json must exist with minimum content before step can start"
+      "issue": "Define patterns explicitly",
+      "remediation": "Patterns defined explicitly: must come from baseline/patterns/02-02-discovered-patterns.json. Blocking condition requires patterns file contains enumerated patterns with descriptions. AC7 requires every pattern documented. Test validates 100% pattern coverage."
     },
     {
       "issue_id": "BLOCKING-ISSUE-2",
-      "remediation": "Added validation tests that check TOON syntax using compiler --validate flag"
+      "issue": "Validate Step 2.2 output",
+      "remediation": "Pre-flight validation added (step 0): verify patterns file exists, contains enumerated patterns (not just pass/fail), has minimum 5 patterns with descriptions and 3 edge cases with resolution strategies. BLOCK if any check fails."
     },
     {
       "issue_id": "BLOCKING-ISSUE-3",
-      "remediation": "Revised time estimate to realistic 1.5-2 hours accounting for all documentation activities"
+      "issue": "Formalize TOON v3.0",
+      "remediation": "Blocking condition added: 'TOON v3.0 specification MUST be accessible (formal spec or reference implementation)'. Pre-flight check verifies TOON spec accessibility. test_toon_spec_accessibility validates spec available."
     },
     {
       "issue_id": "BLOCKING-ISSUE-4",
-      "remediation": "Added measurable acceptance criteria with specific numeric thresholds for features, examples, and edge cases"
+      "issue": "Create validation mechanism",
+      "remediation": "Added 6 validation tests: pattern coverage, TOON syntax validity (compiler --validate), genericization, edge case coverage, minimum thresholds, spec accessibility. Quality gate requires 100% test pass rate. Step 7 generates test report."
+    },
+    {
+      "issue_id": "BLOCKING-ISSUE-5",
+      "issue": "Update time estimate",
+      "remediation": "Time estimate updated from 0.5 hours to 1.5-2 hours. Accounts for pattern extraction, documentation, example creation, genericization, comprehensive validation test writing and execution."
+    },
+    {
+      "issue_id": "BLOCKING-ISSUE-6",
+      "issue": "Make acceptance criteria measurable",
+      "remediation": "Updated all ACs with measurable thresholds: AC1 (>= 15 features), AC2 (>= 10 examples), AC3 (>= 5 edge cases), AC5/AC9 (zero software-crafter references), AC6 (100% compiler validation), AC7 (100% pattern coverage), AC8 (100% edge case coverage)."
     }
   ],
   "phase_3_integration": {

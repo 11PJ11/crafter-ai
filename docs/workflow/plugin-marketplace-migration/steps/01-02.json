@@ -34,23 +34,30 @@
       "tests/tools/toon/test_agent_template.py"
     ],
     "acceptance_criteria": [
-      "Template produces valid YAML frontmatter (name, description, model)",
-      "Template includes activation notice section",
-      "Template renders YAML block with agent configuration",
-      "Template handles embedded knowledge injection markers",
-      "Output validates against Claude Code agent spec"
+      "Template produces valid YAML frontmatter with mandatory keys: name, description, model",
+      "Template includes activation notice section with proper formatting",
+      "Template renders YAML block with agent configuration (commands, dependencies, persona)",
+      "Template handles embedded knowledge injection markers with format: <!-- BUILD:INJECT:START:path -->",
+      "Template escapes YAML special characters in descriptions (colons, quotes, newlines)",
+      "Template handles multiline strings with proper YAML indentation",
+      "Output validates against Claude Code agent spec (frontmatter + activation notice + agent YAML block)"
     ]
   },
   "tdd_approach": {
-    "outer_test": "GIVEN parsed agent data with id='software-crafter', commands=['develop', 'refactor']\nWHEN I render agent.md.j2 template\nTHEN output has valid frontmatter AND includes all commands",
+    "outer_test": "GIVEN parsed agent data with id='software-crafter', name='Crafty', description='Software craftsmanship expert', model='claude-sonnet-4-5', commands=[{'name': 'develop', 'description': 'Execute TDD workflow'}, {'name': 'refactor', 'description': 'Apply systematic refactoring'}]\nWHEN I render agent.md.j2 template\nTHEN output has valid YAML frontmatter with all mandatory keys AND activation notice AND agent YAML block with complete command definitions (name + description)",
     "inner_tests": [
       "test_template_frontmatter_valid_yaml",
       "test_template_frontmatter_escapes_yaml_special_chars",
       "test_template_handles_multiline_strings",
       "test_template_activation_notice_present",
-      "test_template_commands_list_rendered",
+      "test_template_commands_list_rendered_with_descriptions",
       "test_template_dependencies_rendered",
-      "test_template_embed_markers_preserved"
+      "test_template_embed_markers_preserved",
+      "test_template_handles_colons_in_descriptions",
+      "test_template_handles_quotes_in_descriptions",
+      "test_template_handles_newlines_in_descriptions",
+      "test_template_validates_missing_required_fields",
+      "test_template_command_definitions_complete"
     ]
   },
   "refactoring": {
@@ -67,17 +74,30 @@
   },
   "execution_guidance": {
     "approach": "Outside-In TDD with double-loop",
+    "prerequisite_validation": {
+      "action": "MUST verify parser output schema exists before starting",
+      "steps": [
+        "Verify tools/toon/parser_schema.py exists (from step 01-01)",
+        "Review parser output example to understand template input structure",
+        "Review ~/.claude/agents/*.md for Claude Code agent format reference",
+        "Confirm YAML special character requirements understood"
+      ]
+    },
     "workflow": [
-      "1. Write failing E2E test (outer_test)",
-      "2. Implement via inner TDD loop (inner_tests)",
-      "3. Apply refactoring levels 1-2 progressively",
-      "4. Validate all acceptance criteria met",
-      "5. DO NOT COMMIT - wait for user approval"
+      "1. Validate prerequisites satisfied (parser schema exists, reference agents reviewed)",
+      "2. Write failing E2E test (outer_test) with realistic parsed data structure",
+      "3. Implement via inner TDD loop (inner_tests) with focus on YAML escaping",
+      "4. Apply refactoring levels 1-2 progressively",
+      "5. Validate all acceptance criteria met including Claude Code agent spec compliance",
+      "6. Test against existing agent examples for format validation",
+      "7. DO NOT COMMIT - wait for user approval"
     ],
     "quality_gates": [
+      "Parser output schema from step 01-01 exists and reviewed",
       "All tests passing (100% required)",
-      "All acceptance criteria validated",
+      "All acceptance criteria validated including YAML escaping",
       "Refactoring applied (levels 1-2)",
+      "Output format matches existing Claude Code agents",
       "No report files created"
     ]
   },
@@ -559,25 +579,53 @@
   },
   "critical_blocker_status": {
     "BLOCKER_001": {
-      "title": "TOON Toolchain Missing",
-      "status": "UNRESOLVED",
-      "evidence": "tools/toon/ directory does not exist",
-      "impact": "Cannot parse TOON files, blocks all Phase 1 steps",
-      "resolution_options": [
-        "A: Implement TOON toolchain (16-20h estimated)",
-        "B: Pivot to Markdown templates (8-10h, loses TOON benefits)",
-        "C: Block until external TOON library available"
-      ]
+      "title": "Parser Output Schema Dependency",
+      "status": "BLOCKING - MUST COMPLETE 01-01 FIRST",
+      "evidence": "Template cannot be designed without knowing parser output structure from step 01-01",
+      "impact": "Cannot create template without parser schema definition, blocks template implementation",
+      "resolution": "Step 01-01 MUST complete with parser_output_schema definition (tools/toon/parser_schema.py) before starting 01-02",
+      "validation_command": "ls tools/toon/parser_schema.py"
+    },
+    "BLOCKER_002": {
+      "title": "Claude Code Agent Spec Reference Missing",
+      "status": "INFORMATIONAL - Reference exists but must be reviewed",
+      "evidence": "Existing agents in ~/.claude/agents/*.md provide specification",
+      "impact": "Must review existing agents to understand required output format",
+      "resolution": "Review ~/.claude/agents/software-crafter.md and other agents before implementation",
+      "validation_command": "ls ~/.claude/agents/software-crafter.md"
     }
   },
   "prerequisites": {
     "blocking": [
-      "tools/toon/ directory MUST exist with README.md",
-      "TOON format specification v3.0 must be accessible",
-      "Step 01-01 parser_output_schema MUST be defined with example",
-      "Parser output structure documented (what fields are available for template rendering)",
-      "Example showing: TOON input → parsed output → expected template output"
+      "tools/toon/ directory MUST exist with README.md (from 01-01 prerequisite)",
+      "Step 01-01 parser_output_schema MUST be defined with example showing all output fields",
+      "Parser output structure documented with TypedDict or dataclass showing field names and types",
+      "Example showing: TOON input → parsed output → expected template output (end-to-end)",
+      "Claude Code agent spec reference reviewed (existing agents in ~/.claude/agents/*.md)",
+      "YAML special character escaping requirements understood (colons, quotes, newlines)"
     ],
-    "validation": "Run: ls tools/toon/README.md. Must exist. If not: BLOCKER_001"
+    "reference_specifications": [
+      {
+        "name": "Claude Code Agent Structure",
+        "location": "~/.claude/agents/*.md (existing agents as examples: software-crafter.md, etc.)",
+        "required_sections": [
+          "YAML frontmatter with mandatory keys: name, description, model",
+          "Activation notice section with proper formatting",
+          "Agent YAML configuration block with commands/dependencies/persona",
+          "Embedded knowledge injection markers: <!-- BUILD:INJECT:START:path -->"
+        ]
+      },
+      {
+        "name": "Parser Output Schema",
+        "location": "tools/toon/parser_schema.py (from step 01-01)",
+        "required_fields": [
+          "id: str (agent identifier)",
+          "type: Literal['agent', 'command', 'skill']",
+          "metadata: dict (name, description, model, etc.)",
+          "sections: dict[str, Any] (commands, dependencies, persona, etc.)"
+        ]
+      }
+    ],
+    "validation": "Run: ls tools/toon/parser_schema.py && ls ~/.claude/agents/software-crafter.md. Both must exist."
   }
 }

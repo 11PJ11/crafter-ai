@@ -1,9 +1,9 @@
 {
   "project_id": "plugin-marketplace-migration",
   "step_id": "05-02",
-  "correction_version": "2.0-circular-dependency-fix",
-  "correction_date": "2026-01-06",
-  "correction_rationale": "Original step has REJECTED status due to blocking dependencies from 05-01. Circular dependency fix: 05-02 can only start AFTER 05-01 Phase A+B complete. Changed trigger patterns to avoid collision with develop skill.",
+  "correction_version": "3.0-adversarial-review-corrections",
+  "correction_date": "2026-01-08",
+  "correction_rationale": "Integrated all corrections from adversarial review (Risk Score 8.2/10): removed trigger pattern conflicts ('improve code'), defined methodology embedding scope precisely, added trigger pattern conflict matrix, updated time estimates, clarified test definitions, added blockers resolution tracking.",
 
   "phase": {
     "number": 5,
@@ -14,56 +14,92 @@
   "step": {
     "number": "5.2",
     "name": "Create refactor Skill (Sequential after 05-01)",
-    "description": "Create refactor skill with:\n- Trigger patterns: \"refactor-level-N\", \"progressive-refactoring\", \"code-structure-improvement\", \"cleanup-codebase\", \"refactoring sistematico\" (Italian)\n- REMOVED: \"improve code\" (conflicts with develop skill 05-01)\n- Agent binding: software-crafter\n- Progressive refactoring levels (1-6) reference with decision guidance",
-    "motivation": "refactor skill enables code quality improvements. CRITICAL: Must use TOON knowledge from 05-01 Phase A. Cannot start until 05-01 fully complete.",
-    "estimated_hours": "2.5-3 (reduced from 1.5 because prerequisites already resolved in 05-01)"
+    "description": "Create refactor skill with:\n- Trigger patterns: \"refactor-level-1\" through \"refactor-level-6\", \"progressive-refactoring\", \"code-structure-improvement\", \"cleanup-codebase\", \"refactoring sistematico\" (Italian), \"pulisci il codice\" (Italian)\n- EXPLICITLY REMOVED: \"improve code\", \"refactor\" (generic), \"code improvement\" - all conflict with develop skill 05-01\n- Agent binding: software-crafter\n- Progressive refactoring methodology reference: (1) All 6 level names, (2) One-sentence description per level, (3) Decision guidance for refactor vs develop vs mikado\n- TOON skill syntax from 05-01 Phase A specification",
+    "motivation": "refactor skill enables code quality improvements through progressive levels 1-6. BLOCKING DEPENDENCIES: Cannot start until 05-01 Phase A (TOON syntax spec, test environment) AND Phase B (develop skill example, compilation verification) are FULLY COMPLETE.",
+    "estimated_hours": "2.5-3.5 (increased from 1.5h based on adversarial review analysis; assumes 05-01 blockers resolved)"
   },
 
   "context": {
     "constraints": [
-      "BLOCKING: DO NOT START UNTIL 05-01 PHASE A+B COMPLETE",
+      "BLOCKING: DO NOT START UNTIL 05-01 PHASE A+B COMPLETE (TOON syntax spec, invocation mechanism, test environment, develop skill example)",
       "DO NOT CREATE NEW REPORT FILES",
       "DO NOT COMMIT BEFORE USER APPROVAL",
       "FOCUS ON DELIVERABLES ONLY",
       "Tests use business language and domain concepts",
-      "Type system makes wrong state non-representable"
+      "Type system makes wrong state non-representable",
+      "Trigger patterns MUST NOT overlap with develop skill (05-01) or mikado skill (05-03)",
+      "Methodology reference MUST be specific: 6 levels + descriptions + decision guidance (not full 8500+ line spec)",
+      "All quality gates must have concrete validation logic (no false positives)",
+      "Test environment parity with production Claude Code environment required"
     ],
     "success_criteria_mapping": {
-      "SC4": "Skills auto-invoked correctly",
-      "SC5": "Full workflow functional"
+      "SC4": "Skills auto-invoked correctly (no dual-skill firing, no silent failures)",
+      "SC5": "Full workflow functional (tested in production-equivalent environment)"
     },
     "dependencies": ["05-01 (FULL COMPLETION - Phase A + Phase B)"],
     "prerequisite_artifacts_from_05_01": [
-      "docs/toon-v3-skill-syntax-specification.md (from 05-01 Phase A)",
-      "5d-wave/templates/SKILL_TEMPLATE.toon (from 05-01 Phase A)",
-      "5d-wave/skills/develop/SKILL.md (compiled example from 05-01 Phase B)",
-      "tests/skills/skill_test_environment_setup.md (from 05-01 Phase A)"
+      "docs/toon-v3-skill-syntax-specification.md (REQUIRED - from 05-01 Phase A)",
+      "docs/skill-invocation-mechanism.md (REQUIRED - from 05-01 Phase A)",
+      "5d-wave/templates/SKILL_TEMPLATE.toon (REQUIRED - from 05-01 Phase A)",
+      "5d-wave/skills/develop/SKILL.md (REQUIRED - compiled example from 05-01 Phase B)",
+      "tests/skills/skill_test_environment_setup.md (REQUIRED - from 05-01 Phase A)",
+      "docs/trigger-pattern-conflict-matrix.md (REQUIRED - from 05-01 Phase B or created in 05-02)"
+    ],
+    "blockers_from_adversarial_review": [
+      "BLOCKER-1: TOON v3.0 skill syntax undefined - cannot implement without specification (from 05-01)",
+      "BLOCKER-2: Skill invocation mechanism undefined - cannot test E2E behavior (from 05-01)",
+      "BLOCKER-3: Test environment specification missing - cannot validate production parity (from 05-01)",
+      "DANGER-1: Trigger pattern 'improve code' conflicts with develop skill - REMOVED from patterns",
+      "DANGER-2: Methodology reference scope undefined - NOW DEFINED: 6 levels + descriptions + guidance only",
+      "FALSE-POSITIVE-1: Quality gates lack validation logic - NOW SPECIFIED in quality_gates section"
     ]
   },
 
   "deliverables": {
     "files_to_create": [
       "5d-wave/skills/refactor/SKILL.toon",
-      "5d-wave/skills/refactor/SKILL.md (compiled output)"
+      "5d-wave/skills/refactor/SKILL.md (compiled output)",
+      "docs/trigger-pattern-conflict-matrix.md (if not created in 05-01)"
     ],
     "acceptance_criteria": [
-      "Skill compiles to valid SKILL.md using 05-01 TOON syntax",
-      "Trigger patterns for refactoring terminology (NO OVERLAP with develop skill)",
-      "Trigger pattern conflict matrix updated with refactor patterns",
-      "References progressive refactoring methodology: (1) All 6 level names, (2) One-sentence description per level, (3) Decision guidance for choosing refactor vs develop vs mikado",
-      "Methodology reference validated against software-crafter agent specification",
-      "No pattern collisions with develop skill (verified via conflict matrix)"
+      "AC1: Skill compiles to valid SKILL.md using 05-01 TOON v3.0 syntax specification (verified by comparing against SKILL_TEMPLATE.toon structure)",
+      "AC2: Trigger patterns are refactor-specific and conflict-free: 'refactor-level-1' through 'refactor-level-6', 'progressive-refactoring', 'code-structure-improvement', 'cleanup-codebase', 'refactoring sistematico', 'pulisci il codice'",
+      "AC3: EXPLICITLY EXCLUDED patterns (to avoid conflicts): 'improve code', 'refactor' (generic), 'code improvement', 'better code'",
+      "AC4: Trigger pattern conflict matrix documents ALL patterns from 05-01 (develop), 05-02 (refactor), 05-03 (mikado) with conflict resolution rules",
+      "AC5: Progressive refactoring methodology reference contains EXACTLY: (1) All 6 level names with symbols, (2) One-sentence description per level, (3) Decision guidance table: when to use refactor vs develop vs mikado",
+      "AC6: Methodology reference scope is LIMITED (not full 8500+ line spec): Level names, descriptions, decision guidance ONLY - links to full spec in agent",
+      "AC7: Methodology reference validated against software-crafter agent specification (version match, level names match, descriptions accurate)",
+      "AC8: No pattern collisions detected via automated conflict matrix validation (substring matching, case-insensitive, accent-insensitive)",
+      "AC9: Skill invocation mechanism tested in production-equivalent environment (not just simulation)",
+      "AC10: Error recovery behavior documented: what happens if software-crafter agent fails to load after skill trigger"
     ]
   },
 
   "tdd_approach": {
-    "outer_test": "GIVEN refactor SKILL.toon compiled\nWHEN user says \"refactoring sistematico livello 2\"\nTHEN skill should trigger software-crafter with refactor workflow",
+    "outer_test": "GIVEN refactor SKILL.toon compiled AND deployed to production-equivalent Claude Code environment\nWHEN user says 'refactoring sistematico livello 2'\nTHEN skill should trigger software-crafter agent with refactor workflow AND no other skills trigger (no dual-skill firing)\nAND skill provides level 2 guidance from methodology reference",
     "inner_tests": [
-      "test_skill_compiles_with_05_01_syntax",
-      "test_refactor_triggers_with_specific_patterns",
-      "test_refactor_levels_referenced_with_guidance",
-      "test_no_collision_with_develop_skill_patterns",
-      "test_methodology_scope_complete"
+      "test_skill_compiles_with_toon_v3_syntax: Validates SKILL.toon against docs/toon-v3-skill-syntax-specification.md structure",
+      "test_refactor_triggers_with_all_specific_patterns: Tests each pattern individually (refactor-level-1 through 6, progressive-refactoring, code-structure-improvement, cleanup-codebase, refactoring sistematico, pulisci il codice)",
+      "test_excluded_patterns_do_not_trigger: Validates 'improve code', 'refactor' (generic), 'code improvement' do NOT trigger refactor skill (should trigger develop or nothing)",
+      "test_trigger_pattern_conflict_matrix_complete: Validates matrix contains all 05-01, 05-02, 05-03 patterns with resolution rules",
+      "test_methodology_reference_structure: Asserts SKILL.md contains exactly 6 levels (names + symbols), 6 one-sentence descriptions, 1 decision guidance table",
+      "test_methodology_reference_not_full_spec: Asserts SKILL.md size < 500 lines (not 8500+ line full spec), contains links to software-crafter agent for details",
+      "test_methodology_version_match: Validates level names and descriptions match software-crafter agent spec version",
+      "test_no_substring_collision_with_develop: Automated check for substring matches between refactor and develop patterns (case-insensitive, accent-insensitive)",
+      "test_case_insensitive_pattern_matching: Validates 'Refactor', 'REFACTOR', 'refactor' all trigger correctly",
+      "test_multilingual_mixed_input: Tests 'refactor questa classe, pulisci il codice' triggers refactor skill once (not multiple times)",
+      "test_unintended_trigger_prevention: Validates 'Tell me about refactoring best practices' does NOT trigger skill (informational query, not command)",
+      "test_agent_failure_recovery: Tests behavior when software-crafter agent fails to load after skill trigger (timeout, error message, fallback)",
+      "test_production_environment_parity: Validates test environment matches production Claude Code skill invocation mechanism"
+    ],
+    "edge_case_tests_from_adversarial_review": [
+      "test_multilingual_mixed_input_edge_case: 'refactor questa classe, pulisci il codice' -> triggers refactor skill ONCE, no duplicate triggers",
+      "test_unintended_information_query: 'Tell me about refactoring best practices' -> does NOT trigger skill (intent detection)",
+      "test_case_sensitivity: 'Refactor', 'REFACTOR', 'rEfAcToR' -> all trigger correctly",
+      "test_accent_insensitivity: 'refactoring sistematico', 'refactoring sistemático' (with accent) -> both trigger",
+      "test_wrong_level_order: User requests 'refactor-level-5' without levels 1-2 -> skill triggers but provides guidance to start with level 1",
+      "test_agent_failure_timeout: software-crafter takes >30s to load -> timeout error with clear message",
+      "test_methodology_staleness_detection: If agent spec updates to v2.0 but SKILL.md has v1.0 -> version mismatch warning"
     ]
   },
 
@@ -72,48 +108,190 @@
   },
 
   "execution_guidance": {
-    "approach": "Template-Based Skill Creation (using 05-01 learnings)",
+    "approach": "Template-Based Skill Creation with Adversarial Review Corrections Applied",
     "workflow": [
-      "0. PREREQUISITE CHECK: Verify 05-01 Phase A+B deliverables exist",
-      "1. Copy SKILL_TEMPLATE.toon from 05-01 to 5d-wave/skills/refactor/",
-      "2. Define refactor-specific trigger patterns (NO 'improve code')",
-      "3. Reference progressive refactoring levels 1-6 using format from 05-01",
-      "4. Add decision guidance: When to use refactor vs develop vs mikado",
-      "5. Compile and validate output SKILL.md",
-      "6. Update trigger pattern conflict matrix (verify no overlaps)",
-      "7. Write E2E test for skill triggering using 05-01 test environment",
-      "8. Validate methodology reference completeness",
-      "9. DO NOT COMMIT - wait for user approval"
+      "0. BLOCKER VERIFICATION: Confirm ALL 05-01 Phase A+B deliverables exist (TOON syntax spec, invocation mechanism, template, develop skill example, test environment, conflict matrix)",
+      "1. Blocker Check: Read docs/toon-v3-skill-syntax-specification.md and docs/skill-invocation-mechanism.md - if missing, STOP and escalate to 05-01",
+      "2. Copy SKILL_TEMPLATE.toon from 05-01 to 5d-wave/skills/refactor/SKILL.toon",
+      "3. Define refactor-specific trigger patterns: 'refactor-level-1' through 'refactor-level-6', 'progressive-refactoring', 'code-structure-improvement', 'cleanup-codebase', 'refactoring sistematico', 'pulisci il codice'",
+      "4. CRITICAL: EXCLUDE conflicting patterns: 'improve code', 'refactor' (generic), 'code improvement', 'better code'",
+      "5. Reference progressive refactoring methodology with LIMITED scope: (a) All 6 level names with symbols (🟨🟢🟢🟢🔵🔵), (b) One-sentence description per level, (c) Decision guidance table (refactor vs develop vs mikado)",
+      "6. Add link to full methodology in software-crafter agent (do NOT embed 8500+ lines)",
+      "7. Add error recovery specification: timeout (30s), error message format, fallback behavior if agent fails to load",
+      "8. Compile SKILL.toon to SKILL.md using compilation mechanism from 05-01",
+      "9. Validate SKILL.md structure: size < 500 lines, contains 6 levels + descriptions + table, links present",
+      "10. Update/create docs/trigger-pattern-conflict-matrix.md with all refactor patterns and conflict resolution rules",
+      "11. Run automated conflict detection: substring matching (case-insensitive, accent-insensitive) against develop patterns from 05-01",
+      "12. Write E2E test using production-equivalent environment from 05-01 test setup",
+      "13. Write all inner tests including edge cases from adversarial review (multilingual, case sensitivity, intent detection, agent failure)",
+      "14. Validate test coverage: all 10 acceptance criteria have corresponding tests",
+      "15. Run full test suite - MUST achieve 100% pass rate",
+      "16. Validate methodology reference against software-crafter agent spec (version match, level names accurate)",
+      "17. DO NOT COMMIT - wait for user approval"
     ],
     "quality_gates": [
-      "Prerequisite check passed (05-01 artifacts exist)",
-      "All tests passing (100% required)",
-      "Skill compiles to valid SKILL.md",
-      "Trigger patterns validated (no collisions)",
-      "Refactoring levels referenced with decision guidance",
-      "Methodology scope complete (6 levels + descriptions + guidance)",
-      "No report files created"
+      "GATE-1: Prerequisite check PASSED - all 6 required artifacts from 05-01 exist and are readable",
+      "GATE-2: TOON syntax validation PASSED - SKILL.toon structure matches specification from docs/toon-v3-skill-syntax-specification.md",
+      "GATE-3: Compilation PASSED - SKILL.md generated without errors",
+      "GATE-4: Size validation PASSED - SKILL.md is < 500 lines (not full spec embedded)",
+      "GATE-5: Methodology structure PASSED - contains exactly 6 levels + 6 descriptions + 1 decision table + links to full spec",
+      "GATE-6: Trigger pattern validation PASSED - automated conflict detection shows ZERO overlaps with develop skill patterns (substring, case-insensitive, accent-insensitive)",
+      "GATE-7: Excluded patterns VERIFIED - 'improve code', 'refactor' (generic), 'code improvement' NOT present in SKILL.toon",
+      "GATE-8: Conflict matrix COMPLETE - documents all patterns from 05-01, 05-02, 05-03 with resolution rules",
+      "GATE-9: All tests PASSING (100% required) - includes inner tests + edge case tests from adversarial review",
+      "GATE-10: Production parity VERIFIED - test environment matches actual Claude Code skill invocation mechanism (not simulation)",
+      "GATE-11: Error recovery DOCUMENTED - timeout, fallback, error messages specified in SKILL.md",
+      "GATE-12: No report files created (deliverables only)",
+      "GATE-13: Version match VERIFIED - methodology reference matches software-crafter agent spec version"
     ],
     "trigger_pattern_conflict_resolution": {
-      "develop_patterns": ["implementa", "scrivi codice", "TDD", "implement", "write code"],
-      "refactor_patterns": ["refactor-level-1", "refactor-level-2", "refactor-level-3", "refactor-level-4", "refactor-level-5", "refactor-level-6", "progressive-refactoring", "code-structure-improvement", "cleanup-codebase", "refactoring sistematico"],
-      "collision_check": "NO OVERLAPS DETECTED",
-      "conflict_resolution_rule": "Refactor patterns are SPECIFIC (level-based). Develop patterns are GENERIC (implementation). No substring matches."
+      "develop_patterns_from_05_01": [
+        "implementa",
+        "scrivi codice",
+        "TDD",
+        "implement",
+        "write code",
+        "develop feature",
+        "create feature",
+        "build feature",
+        "outside-in TDD",
+        "acceptance test"
+      ],
+      "refactor_patterns_05_02": [
+        "refactor-level-1",
+        "refactor-level-2",
+        "refactor-level-3",
+        "refactor-level-4",
+        "refactor-level-5",
+        "refactor-level-6",
+        "progressive-refactoring",
+        "code-structure-improvement",
+        "cleanup-codebase",
+        "refactoring sistematico",
+        "pulisci il codice"
+      ],
+      "explicitly_excluded_patterns": [
+        "improve code",
+        "refactor",
+        "code improvement",
+        "better code"
+      ],
+      "excluded_reason": "These generic patterns conflict with develop skill (05-01) which also targets code improvement. Refactor skill uses SPECIFIC level-based patterns.",
+      "collision_check_method": "Automated substring matching: case-insensitive, accent-insensitive, checks all patterns against each other",
+      "collision_check_result": "ZERO overlaps detected between refactor_patterns_05_02 and develop_patterns_from_05_01",
+      "conflict_resolution_rule": "Refactor patterns are SPECIFIC (level-1 through 6, 'progressive-refactoring', etc.). Develop patterns are GENERIC (implement, write code). Mikado patterns are ARCHITECTURAL (complex refactoring roadmap). No substring matches across all three skills.",
+      "precedence_rule": "If pattern could match multiple skills (hypothetically), most specific pattern wins: Level-based refactor > Generic develop > Architectural mikado",
+      "validation_frequency": "Conflict matrix validated on EVERY skill creation/update in Phase 5"
+    },
+    "methodology_reference_specification": {
+      "description": "Defines EXACTLY what methodology content appears in SKILL.md",
+      "required_content": [
+        "6 level names with symbols: Level 1 (🟨), Level 2 (🟢), Level 3 (🟢), Level 4 (🟢), Level 5 (🔵), Level 6 (🔵)",
+        "6 one-sentence descriptions: e.g., 'Level 1 🟨 Foundation Refactoring: Eliminate clutter, improve naming, remove dead code'",
+        "1 decision guidance table with 3 columns: (When to use) | (Refactor skill) | (Develop skill) | (Mikado skill)",
+        "Links to full methodology: Reference to software-crafter agent specification for detailed mechanics"
+      ],
+      "forbidden_content": [
+        "Full 8500+ line progressive refactoring specification (unmaintainable)",
+        "Complete code smell taxonomy (22 types) - summary only",
+        "Detailed refactoring techniques catalog - links only",
+        "Atomic transformations mechanics - reference only"
+      ],
+      "size_limit": "< 500 lines total for SKILL.md",
+      "example_decision_table": "| Need new feature | develop | refactor (after) | mikado (if complex) |\n| Improve existing code quality | refactor | - | mikado (if large) |\n| Complex architectural change | mikado | refactor (leaves) | develop (after) |",
+      "validation_method": "Assert SKILL.md line count < 500, contains 6 level headers, contains decision table markdown, contains external links"
+    },
+    "error_recovery_specification": {
+      "timeout_duration": "30 seconds",
+      "timeout_behavior": "Display error message: 'Refactor skill timed out loading software-crafter agent. Please try again or use *refactor command directly.'",
+      "agent_load_failure": "Display error message: 'Failed to load software-crafter agent. Error: {error_details}. Fallback: Use *refactor command manually.'",
+      "methodology_version_mismatch": "Display warning: 'Refactor skill methodology (v{skill_version}) differs from agent spec (v{agent_version}). Skill may provide outdated guidance.'",
+      "logging": "All errors logged to skill invocation log for debugging"
     }
   },
 
   "approval_status": {
-    "status": "CORRECTED_PENDING_REVIEW",
-    "changes_from_original": [
-      "Changed trigger patterns to avoid 'improve code' collision",
-      "Added explicit dependency on 05-01 FULL COMPLETION",
-      "Time estimate revised from 1.5h to 2.5-3h",
-      "Added trigger pattern conflict matrix requirement",
-      "Defined methodology reference scope precisely (6 levels + descriptions + guidance)",
-      "Added prerequisite check step",
-      "Added conflict resolution rule"
+    "status": "ADVERSARIAL_REVIEW_CORRECTIONS_APPLIED",
+    "adversarial_review_metadata": {
+      "review_date": "2026-01-05",
+      "reviewer": "adversarial-software-crafter-reviewer",
+      "risk_score": "8.2/10 (HIGH RISK)",
+      "blast_radius": "MULTIPLE_PHASES",
+      "critical_blockers_identified": 3,
+      "dangerous_contradictions_identified": 4,
+      "unhandled_edge_cases_identified": 6,
+      "failure_scenarios_identified": 6,
+      "false_positive_quality_gates_identified": 5
+    },
+    "changes_from_v2_0": [
+      "BLOCKER RESOLUTION: Added explicit verification that all 05-01 deliverables exist before starting (6 required artifacts documented)",
+      "BLOCKER TRACKING: Added blockers_from_adversarial_review section documenting 3 blockers + 2 dangers + 1 false positive",
+      "TRIGGER PATTERNS: Removed 'improve code', 'refactor' (generic), 'code improvement', 'better code' - explicitly excluded to prevent conflicts",
+      "TRIGGER PATTERNS: Added 'pulisci il codice' (Italian cleanup) as valid refactor pattern",
+      "METHODOLOGY SCOPE: Defined EXACTLY what goes in SKILL.md - 6 levels + descriptions + decision table, NOT full 8500+ line spec",
+      "METHODOLOGY SCOPE: Added size limit < 500 lines with validation",
+      "ACCEPTANCE CRITERIA: Expanded from 6 to 10 criteria with specific validation logic for each",
+      "ACCEPTANCE CRITERIA: Added AC9 (production environment parity) and AC10 (error recovery documentation)",
+      "TEST DEFINITIONS: Expanded from 5 generic tests to 13 specific inner tests with concrete assertions",
+      "TEST DEFINITIONS: Added 7 edge case tests from adversarial review (multilingual, case sensitivity, intent detection, agent failure, version mismatch)",
+      "QUALITY GATES: Expanded from 7 to 13 gates with concrete pass criteria (no false positives)",
+      "QUALITY GATES: Added automated validation logic for trigger pattern conflicts (substring, case-insensitive, accent-insensitive)",
+      "QUALITY GATES: Added production parity verification (not simulation)",
+      "TIME ESTIMATE: Revised from 2.5-3h to 2.5-3.5h based on adversarial review complexity analysis",
+      "CONFLICT MATRIX: Expanded develop patterns from 5 to 10 to cover all 05-01 triggers",
+      "CONFLICT MATRIX: Added precedence rule for conflict resolution (most specific wins)",
+      "CONFLICT MATRIX: Added validation frequency (every skill creation/update)",
+      "ERROR RECOVERY: Added complete specification for timeout, agent failure, version mismatch",
+      "WORKFLOW: Expanded from 9 to 17 steps with blocker verification, automated conflict detection, test coverage validation",
+      "CONSTRAINTS: Added 4 new constraints from review - trigger overlap prevention, methodology scope limit, quality gate validation logic, production parity"
     ],
-    "blocking_dependency_resolution": "05-02 CANNOT START until 05-01 Phase A (prerequisites) AND Phase B (implementation) both complete. This ensures: (1) TOON syntax known, (2) Template available, (3) Test environment ready, (4) Example skill exists for reference.",
-    "circular_dependency_fix": "Original plan had 05-02 parallel with 05-01, but 05-02 needs 05-01 outputs. Now sequential: 05-01 -> 05-02."
+    "critical_blockers_addressed": [
+      "BLOCKER-1 (TOON syntax undefined): Documented as prerequisite from 05-01 Phase A - cannot start without docs/toon-v3-skill-syntax-specification.md",
+      "BLOCKER-2 (Invocation mechanism undefined): Documented as prerequisite from 05-01 Phase A - cannot start without docs/skill-invocation-mechanism.md",
+      "BLOCKER-3 (Test environment missing): Documented as prerequisite from 05-01 Phase A - cannot start without tests/skills/skill_test_environment_setup.md"
+    ],
+    "dangerous_contradictions_resolved": [
+      "CONTRADICTION-1 (Time estimate conflict): Updated to 2.5-3.5h reflecting blocker resolution overhead",
+      "CONTRADICTION-2 (Trigger pattern overlap): Removed 'improve code' and all generic patterns, added exclusion list with rationale",
+      "CONTRADICTION-3 (Methodology scope ambiguity): Defined exact content - 6 levels + descriptions + table, size < 500 lines, validation method specified",
+      "CONTRADICTION-4 (Skill vs command confusion): Added decision guidance table showing when to use skill vs *refactor command"
+    ],
+    "edge_cases_handled": [
+      "EDGE-1 (Multilingual mixed input): Test added for 'refactor questa classe, pulisci il codice' triggering once",
+      "EDGE-2 (Unintended trigger): Test added for 'Tell me about refactoring' NOT triggering (intent detection)",
+      "EDGE-3 (Case sensitivity): Test added for 'Refactor', 'REFACTOR', 'refactor' all triggering",
+      "EDGE-4 (Agent failure): Error recovery spec added - 30s timeout, error messages, fallback to *refactor command",
+      "EDGE-5 (Wrong level order): Test added for level-5 request providing guidance to start with level-1",
+      "EDGE-6 (Methodology staleness): Version mismatch detection added with warning message"
+    ],
+    "false_positive_gates_fixed": [
+      "GATE-2: TOON syntax validation now compares against docs/toon-v3-skill-syntax-specification.md structure (not just compilation success)",
+      "GATE-4: Size validation added - SKILL.md must be < 500 lines (prevents full spec embedding)",
+      "GATE-6: Trigger pattern validation now automated substring matching (case/accent-insensitive) showing ZERO overlaps",
+      "GATE-7: Excluded patterns explicitly verified absent from SKILL.toon",
+      "GATE-10: Production parity verification added (not simulation) using actual Claude Code environment"
+    ],
+    "remaining_dependencies": {
+      "from_05_01_phase_a": [
+        "docs/toon-v3-skill-syntax-specification.md",
+        "docs/skill-invocation-mechanism.md",
+        "5d-wave/templates/SKILL_TEMPLATE.toon",
+        "tests/skills/skill_test_environment_setup.md"
+      ],
+      "from_05_01_phase_b": [
+        "5d-wave/skills/develop/SKILL.md (example)",
+        "docs/trigger-pattern-conflict-matrix.md (or created in 05-02)"
+      ],
+      "blocking_condition": "If ANY of these 6 artifacts missing, step 05-02 CANNOT START - must escalate to 05-01"
+    },
+    "approval_prerequisites": [
+      "User verifies all corrections from adversarial review are integrated",
+      "User confirms 05-01 blockers are resolved before 05-02 implementation",
+      "User approves updated time estimate (2.5-3.5h)",
+      "User approves 10 acceptance criteria with validation logic",
+      "User approves 13 quality gates with concrete pass criteria"
+    ],
+    "blocking_dependency_resolution": "05-02 CANNOT START until 05-01 Phase A (TOON syntax, invocation mechanism, template, test environment) AND Phase B (develop skill example, conflict matrix) are FULLY COMPLETE with all 6 artifacts verified readable.",
+    "circular_dependency_fix": "Original plan had 05-02 parallel with 05-01, but adversarial review confirmed 05-02 needs 05-01 outputs. Sequential execution enforced with blocker verification gate."
   }
 }

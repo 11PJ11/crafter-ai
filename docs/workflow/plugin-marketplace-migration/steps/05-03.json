@@ -121,5 +121,250 @@
     ],
     "blocking_dependency_resolution": "05-03 CANNOT START until 05-01 Phase A (prerequisites) AND Phase B (implementation) both complete. CAN RUN IN PARALLEL with 05-02 since both use same 05-01 outputs.",
     "circular_dependency_fix": "Original plan had 05-03 sequential after 05-02, but both can be parallel after 05-01. Now: 05-01 -> [05-02 || 05-03] (parallel)."
+  },
+
+  "adversarial_review": {
+    "review_date": "2026-01-05",
+    "reviewer": "adversarial-software-crafter-reviewer (Haiku model)",
+    "iteration": 1,
+    "risk_score": "8.9/10",
+    "severity": "CRITICAL",
+    "blast_radius": "MULTIPLE_PHASES",
+
+    "critical_findings": [
+      {
+        "issue": "CATASTROPHIC version mismatch - TOON v3.0 specification required but v1.0 test data",
+        "impact": "Skill compilation will FAIL immediately - v1.0 parser cannot handle v3.0 syntax",
+        "evidence": "Step references 'TOON v3.0 specification' from 05-01 Phase A, but test environment setup likely uses v1.0 format",
+        "severity": "CRITICAL",
+        "recommendation": "Verify 05-01 Phase A creates TOON v3.0 parser/compiler before starting 05-03"
+      },
+      {
+        "issue": "Circular dependency with 05-01 Phase B completion",
+        "impact": "Cannot start 05-03 until develop skill PROVEN to work, not just specified",
+        "evidence": "Prerequisites list 'develop skill compiled example from 05-01 Phase B' - this is implementation output, not specification",
+        "severity": "CRITICAL",
+        "recommendation": "05-03 BLOCKED until 05-01 Phase B completes and develop skill compiles successfully"
+      },
+      {
+        "issue": "Sequential execution dependency misrepresented as parallel",
+        "impact": "Step claims 'parallel with 05-02' but both depend on IDENTICAL 05-01 outputs including Phase B",
+        "evidence": "Both 05-02 and 05-03 list '05-01 Phase B' as prerequisite - cannot be parallel if both wait for same completion",
+        "severity": "HIGH",
+        "recommendation": "Clarify: 05-03 can start in parallel with 05-02 ONLY AFTER 05-01 Phase A+B fully complete"
+      },
+      {
+        "issue": "Time estimate underestimated without buffer for TOON v3.0 unknowns",
+        "impact": "2.5-3h estimate doesn't account for v3.0 specification complexity, parsing errors, or methodology validation",
+        "evidence": "Comparable develop skill (05-01 Phase B) took 3h WITH existing template. Mikado has additional complexity (Mikado method integration, decision guidance)",
+        "severity": "MEDIUM",
+        "recommendation": "Revise to 3.5-4h to account for: (1) v3.0 syntax learning curve, (2) Mikado methodology research, (3) trigger pattern validation, (4) Decision guidance creation"
+      }
+    ],
+
+    "dangerous_assumptions": [
+      {
+        "assumption": "TOON v3.0 specification exists and is complete in 05-01 Phase A",
+        "reality_check": "05-01 Phase A creates specification - completeness unknown until execution",
+        "risk": "If v3.0 spec is incomplete, 05-03 blocks on specification work (out of scope)",
+        "mitigation": "Add prerequisite check: verify v3.0 spec has 'skill definition syntax' section before starting"
+      },
+      {
+        "assumption": "Trigger patterns won't collide with develop or refactor",
+        "reality_check": "'complex-refactoring-graph' could match refactor patterns if not careful",
+        "risk": "Pattern collision causes skill routing errors - user says 'complex refactoring' and gets wrong skill",
+        "mitigation": "Conflict matrix validation MANDATORY in quality gates - test with actual user phrases"
+      },
+      {
+        "assumption": "Mikado method workflow reference is straightforward",
+        "reality_check": "Mikado method has 4-step cycle + decision guidance + vs-refactor comparison = significant research required",
+        "risk": "Underestimated complexity leads to incomplete methodology reference",
+        "mitigation": "Allocate 1h specifically for Mikado method research and decision tree creation"
+      },
+      {
+        "assumption": "Test environment from 05-01 Phase A is ready for v3.0 testing",
+        "reality_check": "Test environment might target v1.0 format - needs upgrade for v3.0",
+        "risk": "Tests fail due to environment mismatch, not skill bugs",
+        "mitigation": "Verify test environment supports v3.0 BEFORE writing skill tests"
+      }
+    ],
+
+    "unhandled_edge_cases": [
+      {
+        "edge_case": "TOON v3.0 parser errors with unhelpful messages",
+        "likelihood": "HIGH",
+        "impact": "Debugging becomes trial-and-error without clear error messages",
+        "recommendation": "Budget 30min for parser error interpretation and syntax correction"
+      },
+      {
+        "edge_case": "Trigger pattern substring matches cause collisions",
+        "likelihood": "MEDIUM",
+        "impact": "'mikado' substring in 'mikado-method' could match other patterns",
+        "recommendation": "Use exact phrase matching in trigger pattern tests, not substring matching"
+      },
+      {
+        "edge_case": "Decision guidance conflicts with software-crafter agent specification",
+        "likelihood": "MEDIUM",
+        "impact": "Skill provides guidance that contradicts agent's embedded knowledge",
+        "recommendation": "Cross-reference decision guidance with software-crafter agent spec during validation"
+      },
+      {
+        "edge_case": "Italian trigger pattern 'metodo-mikado' has special character encoding issues",
+        "likelihood": "LOW",
+        "impact": "UTF-8 encoding problems prevent pattern matching",
+        "recommendation": "Test Italian patterns explicitly with UTF-8 validation"
+      }
+    ],
+
+    "test_coverage_gaps": [
+      {
+        "gap": "No test for TOON v3.0 syntax validation",
+        "risk": "Skill compiles with v1.0 but fails with v3.0 parser",
+        "recommendation": "Add test: test_skill_uses_v3_syntax_features"
+      },
+      {
+        "gap": "No test for Mikado method 4-step cycle completeness",
+        "risk": "Methodology reference incomplete - missing steps or descriptions",
+        "recommendation": "Add test: test_mikado_four_steps_all_present_with_descriptions"
+      },
+      {
+        "gap": "No test for decision guidance accuracy",
+        "risk": "When-to-use guidance is wrong or contradictory",
+        "recommendation": "Add test: test_decision_guidance_vs_refactor_vs_develop"
+      },
+      {
+        "gap": "No integration test with software-crafter agent",
+        "risk": "Skill triggers but agent doesn't receive correct workflow context",
+        "recommendation": "Add test: test_mikado_skill_triggers_software_crafter_with_workflow"
+      }
+    ],
+
+    "blockers": [
+      {
+        "blocker_id": "TOON_V3_SPECIFICATION_DEPENDENCY",
+        "description": "05-03 requires TOON v3.0 specification from 05-01 Phase A",
+        "blocking_step": "05-01 Phase A",
+        "unblock_condition": "docs/toon-v3-skill-syntax-specification.md exists with complete skill definition syntax",
+        "estimated_delay": "0h if 05-01 Phase A complete, BLOCKING if not"
+      },
+      {
+        "blocker_id": "DEVELOP_SKILL_EXAMPLE_DEPENDENCY",
+        "description": "05-03 uses develop skill as template/reference from 05-01 Phase B",
+        "blocking_step": "05-01 Phase B",
+        "unblock_condition": "5d-wave/skills/develop/SKILL.md compiles successfully with 05-01 Phase B",
+        "estimated_delay": "0h if 05-01 Phase B complete, 3h if not (sequential wait)"
+      },
+      {
+        "blocker_id": "TRIGGER_PATTERN_CONFLICT_MATRIX",
+        "description": "Must verify no collisions with develop/refactor patterns",
+        "blocking_step": "None (internal to 05-03)",
+        "unblock_condition": "Conflict matrix updated and validated - no overlaps detected",
+        "estimated_delay": "Included in 2.5-3h estimate"
+      }
+    ],
+
+    "corrections_applied": [
+      {
+        "correction": "Explicit TOON v3.0 specification requirement",
+        "before": "Step assumed v3.0 spec would be available",
+        "after": "Prerequisites explicitly list v3.0 spec from 05-01 Phase A with completeness check",
+        "impact": "Prevents starting 05-03 without required specification"
+      },
+      {
+        "correction": "Sequential dependency on 05-01 Phase B clarified",
+        "before": "Step claimed 'parallel with 05-02' without qualification",
+        "after": "Parallel execution ONLY AFTER 05-01 Phase A+B both complete",
+        "impact": "Eliminates circular dependency - both 05-02 and 05-03 wait for same completion event"
+      },
+      {
+        "correction": "Trigger pattern definitions made explicit and non-overlapping",
+        "before": "'complex-refactoring' pattern was vague",
+        "after": "'mikado-method', 'refactoring-complesso', 'dependency-mapping', 'complex-refactoring-graph', 'metodo-mikado'",
+        "impact": "Clear pattern boundaries prevent collisions with develop/refactor skills"
+      },
+      {
+        "correction": "Methodology reference scope defined precisely",
+        "before": "Reference Mikado method workflow",
+        "after": "4-step cycle names + descriptions + decision guidance (when to use vs refactor vs develop)",
+        "impact": "Clear deliverable prevents incomplete methodology reference"
+      },
+      {
+        "correction": "Time estimate revised upward with buffer",
+        "before": "1.5h (original)",
+        "after": "2.5-3h (corrected) - should be 3.5-4h with v3.0 unknowns",
+        "impact": "More realistic timeline but still potentially underestimated"
+      }
+    ],
+
+    "mitigations": [
+      {
+        "risk": "TOON v3.0 version mismatch",
+        "mitigation": "Prerequisite check step (step 0) verifies v3.0 artifacts exist before starting",
+        "effectiveness": "HIGH - prevents starting with wrong version"
+      },
+      {
+        "risk": "Trigger pattern collisions",
+        "mitigation": "Conflict matrix validation in quality gates with exact phrase testing",
+        "effectiveness": "HIGH - catches collisions before deployment"
+      },
+      {
+        "risk": "Incomplete Mikado methodology reference",
+        "mitigation": "Acceptance criterion specifies 4 steps + descriptions + guidance explicitly",
+        "effectiveness": "MEDIUM - prevents omissions but doesn't guarantee quality"
+      },
+      {
+        "risk": "Circular dependency with 05-01",
+        "mitigation": "05-03 blocks until 05-01 Phase A+B BOTH complete - no partial execution",
+        "effectiveness": "HIGH - eliminates circular dependency entirely"
+      }
+    ],
+
+    "revised_estimates": {
+      "original_estimate": "1.5h",
+      "corrected_estimate": "2.5-3h",
+      "recommended_estimate": "3.5-4h",
+      "breakdown": {
+        "prerequisite_verification": "15min",
+        "mikado_method_research": "1h",
+        "skill_template_customization": "45min",
+        "trigger_pattern_definition": "30min",
+        "decision_guidance_creation": "45min",
+        "compilation_and_testing": "45min",
+        "conflict_matrix_validation": "20min",
+        "buffer_for_unknowns": "30min"
+      },
+      "confidence": "MEDIUM (v3.0 unknowns remain)"
+    },
+
+    "recommendations": {
+      "immediate": [
+        "DO NOT START until 05-01 Phase A+B FULLY COMPLETE and validated",
+        "Verify TOON v3.0 specification completeness before skill creation",
+        "Allocate 3.5-4h instead of 2.5-3h to account for methodology research",
+        "Test trigger patterns with actual user phrases, not just pattern strings"
+      ],
+      "during_execution": [
+        "Cross-reference decision guidance with software-crafter agent spec continuously",
+        "Validate Mikado 4-step cycle completeness against source material",
+        "Update conflict matrix immediately if new patterns discovered",
+        "Test compilation with v3.0 parser early - don't wait until end"
+      ],
+      "quality_gates": [
+        "Prerequisite check: all 05-01 Phase A+B artifacts exist",
+        "v3.0 syntax validation: skill uses v3.0 features correctly",
+        "Trigger pattern validation: NO collisions detected in conflict matrix",
+        "Methodology completeness: 4 steps + descriptions + guidance all present",
+        "Integration test: skill triggers software-crafter with correct workflow context"
+      ]
+    },
+
+    "approval_recommendation": "CONDITIONAL_APPROVAL",
+    "conditions": [
+      "Execute ONLY AFTER 05-01 Phase A+B both complete",
+      "Verify TOON v3.0 specification includes skill definition syntax",
+      "Allocate 3.5-4h realistic time (not 2.5-3h)",
+      "Add v3.0 syntax validation test before starting",
+      "Test trigger patterns with exact phrase matching"
+    ]
   }
 }

@@ -9,30 +9,50 @@
   "step": {
     "number": "4.1b",
     "name": "Convert CROSS_WAVE Entry Command",
-    "description": "Convert start.md to TOON format (CROSS_WAVE initialization)",
-    "motivation": "start command initializes the 5D-Wave workflow - CROSS_WAVE classification",
-    "estimated_hours": "2-3"
+    "description": "Convert start.md to TOON format (CROSS_WAVE only)",
+    "motivation": "CROSS_WAVE entry command initializes projects spanning all 5D waves - separated from DISCUSS due to wave classification difference",
+    "estimated_hours": "2-3",
+    "estimated_hours_justification": "Reduced from 04-01 due to established patterns: 0.5h TOON format review (already studied), 1h conversion, 0.5-1h test implementation, 0.5h compilation/validation"
   },
   "context": {
     "constraints": [
       "DO NOT CREATE NEW REPORT FILES",
       "DO NOT COMMIT BEFORE USER APPROVAL",
       "FOCUS ON DELIVERABLES ONLY",
+      "CROSS_WAVE only (start.md)",
+      "Wave classification distinct from DISCUSS (04-01)",
       "Tests use business language and domain concepts",
       "Type system makes wrong state non-representable"
     ],
     "success_criteria_mapping": {
       "SC1": "All source files in TOON v3.0 format",
-      "NOTE_SC7": "Token savings validation deferred to Phase 8"
+      "NOTE_SC7": "Token savings validation deferred to Phase 8 - no baseline data available for step-level validation"
     },
     "dependencies": [
-      "04-01",
       "01-01",
       "01-02",
       "01-03",
-      "02-04"
+      "02-04",
+      "04-01"
     ],
-    "note": "This step split from original 04-01 to correct wave classification contradiction"
+    "wave_classification_rationale": {
+      "command": "start",
+      "wave": "CROSS_WAVE",
+      "reason": "Project initialization command spans all 5D waves (DISCUSS → DESIGN → DISTILL → DEVELOP → DELIVER)",
+      "contrast_with_discuss": "DISCUSS commands are scoped to requirements gathering phase only. start.md initializes entire workflow lifecycle across all waves.",
+      "validation": "Tests must verify wave: CROSS_WAVE (not DISCUSS, not any single wave)",
+      "source_evidence": "start.md includes: project initialization, wave orchestration, cross-wave configuration, end-to-end workflow setup"
+    },
+    "scope_clarification": {
+      "included": [
+        "start.md (CROSS_WAVE)"
+      ],
+      "excluded": [
+        "discuss.md (DISCUSS - handled in step 04-01)",
+        "Other CROSS_WAVE commands (deferred to step 04-06)"
+      ],
+      "rationale": "Resolves wave classification conflict from original 04-01: DISCUSS and CROSS_WAVE cannot be in same batch claiming uniform wave type"
+    }
   },
   "prerequisite_checks": {
     "phase_1_toon_infrastructure": {
@@ -47,35 +67,47 @@
       "blocking": true,
       "escalation": "If spec unavailable, create from reverse-engineering agents/novel-editor-chatgpt-toon.txt"
     },
-    "step_04_01_complete": {
-      "requirement": "Step 04-01 (discuss.md conversion) must be complete",
-      "verification": "Confirm discuss.toon exists and compiles successfully",
-      "blocking": true,
-      "escalation": "Complete step 04-01 first to establish TOON conversion patterns"
-    },
     "baseline_measurements": {
       "requirement": "Baseline measurements from Phase 0 must be complete",
       "verification": "Confirm docs/workflow/plugin-marketplace-migration/baseline.yaml exists with command metrics",
+      "blocking": false,
+      "note": "Token savings validation deferred to Phase 8 if unavailable",
+      "escalation": "If baseline missing, execute Phase 0 baseline measurement first OR defer SC7 validation to Phase 8"
+    },
+    "step_04_01_completion": {
+      "requirement": "Step 04-01 (discuss.md DISCUSS conversion) must be complete and validated",
+      "verification": "Confirm discuss.toon exists, compiles, and all tests passing",
       "blocking": true,
-      "escalation": "If baseline missing, execute Phase 0 baseline measurement first"
+      "escalation": "If 04-01 incomplete, STOP - complete discuss.md conversion first to establish TOON conversion patterns"
     }
   },
   "deliverables": {
     "files_to_create": [
       "5d-wave/tasks/dw/start.toon"
     ],
+    "files_excluded": [
+      "5d-wave/tasks/dw/discuss.toon (already created in step 04-01)"
+    ],
     "acceptance_criteria": [
       "start.toon compiles with valid TOON v3.0 format",
       "Wave metadata correct (CROSS_WAVE)",
-      "Agent-activation header preserved from start.md"
+      "Agent-activation header preserved from start.md",
+      "Cross-wave initialization metadata preserved",
+      "All tests passing (100% required)",
+      "No report files created"
+    ],
+    "acceptance_criteria_removed": [
+      "Token savings >= 60% (SC7) - deferred to Phase 8 due to missing baseline data"
     ]
   },
   "tdd_approach": {
-    "outer_test": "GIVEN start.md converted to start.toon\nWHEN compiled via toon-compiler\nTHEN output has wave: CROSS_WAVE in metadata\nAND agent-activation block preserved",
+    "outer_test": "GIVEN start.md converted to start.toon\nWHEN compiled via toon-compiler\nTHEN output has wave: CROSS_WAVE in metadata\nAND agent-activation block preserved\nAND cross-wave orchestration metadata present\nAND compilation succeeds with exit code 0",
     "inner_tests": [
       "test_start_command_compiles",
       "test_start_wave_metadata_cross_wave",
-      "test_start_agent_activation_preserved"
+      "test_start_agent_activation_preserved",
+      "test_start_cross_wave_orchestration_preserved",
+      "test_start_compilation_output_valid"
     ]
   },
   "refactoring": {
@@ -89,78 +121,98 @@
       "No errors in stderr",
       "Output file size > 1000 bytes (non-trivial content)",
       "Metadata validates against TOON v3.0 schema",
+      "Wave field == 'CROSS_WAVE' (critical validation)",
       "Output markdown is Claude Code compliant"
     ],
     "error_handling": {
+      "compiler_not_found": "STOP immediately, escalate: Phase 1 incomplete",
       "compilation_failure": "Log error, do NOT proceed, escalate with error message",
-      "metadata_invalid": "Review source file wave classification - should be CROSS_WAVE",
+      "metadata_invalid": "Review source file wave classification (must be CROSS_WAVE), retry compilation",
+      "wave_classification_error": "If wave != CROSS_WAVE, STOP - source file wave classification incorrect",
       "partial_failure": "Rollback all conversions, fix issue, restart batch"
     },
-    "purpose": "Transforms TOON source to Claude Code compliant output",
-    "input": "5d-wave/tasks/dw/*.toon (TOON format)",
-    "output": "dist/commands/dw/*.md (Markdown format)",
-    "validation": "pytest tests/tools/toon/test_compiler.py"
+    "purpose": "Transforms TOON source to Claude Code compliant output with CROSS_WAVE metadata",
+    "input": "5d-wave/tasks/dw/start.toon (TOON format)",
+    "output": "dist/commands/dw/start.md (Markdown format)",
+    "validation": "pytest tests/tools/toon/test_start_migration.py"
   },
   "test_specifications": {
     "test_start_command_compiles": {
       "framework": "pytest",
-      "test_code_skeleton": "def test_start_command_compiles():\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/start.toon')\n    assert toon_file.metadata['wave'] == 'CROSS_WAVE'\n    assert toon_file.compilation_errors == []",
+      "test_code_skeleton": "def test_start_command_compiles():\n    \"\"\"Verify start.toon compiles without errors.\"\"\"\n    result = subprocess.run(\n        ['python', 'tools/toon/compiler.py', '5d-wave/tasks/dw/start.toon', '--validate'],\n        capture_output=True,\n        text=True\n    )\n    assert result.returncode == 0, f\"Compilation failed: {result.stderr}\"\n    assert len(result.stderr) == 0, \"Stderr should be empty on success\"\n    assert 'ERROR' not in result.stdout",
       "assertions": [
-        "File parses without errors",
-        "Wave metadata == CROSS_WAVE (NOT DISCUSS)",
-        "All required metadata fields present"
+        "Exit code == 0",
+        "Stderr is empty",
+        "No ERROR messages in stdout"
       ]
     },
     "test_start_wave_metadata_cross_wave": {
       "framework": "pytest",
-      "test_code_skeleton": "def test_start_wave_metadata_cross_wave():\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/start.toon')\n    assert toon_file.metadata['wave'] == 'CROSS_WAVE'\n    assert 'agent-id' in toon_file.metadata\n    assert toon_file.metadata['agent-id'] == 'project-initializer'",
+      "test_code_skeleton": "def test_start_wave_metadata_cross_wave():\n    \"\"\"Verify wave metadata is correctly set to CROSS_WAVE (not DISCUSS).\"\"\"\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/start.toon')\n    assert 'wave' in toon_file.metadata, \"Wave metadata missing\"\n    assert toon_file.metadata['wave'] == 'CROSS_WAVE', f\"Expected CROSS_WAVE, got {toon_file.metadata['wave']}. start.md is NOT a DISCUSS command.\"\n    assert 'agent-id' in toon_file.metadata, \"Agent-id metadata missing\"\n    # Validate cross-wave orchestration fields\n    assert 'cross-wave-scope' in toon_file.metadata or 'orchestration' in str(toon_file.sections), \"Cross-wave orchestration metadata missing\"",
       "assertions": [
-        "Wave field exists and equals CROSS_WAVE",
-        "Agent-id field present and correct",
-        "start.md is architecturally CROSS_WAVE for project initialization"
+        "Wave field exists",
+        "Wave value == 'CROSS_WAVE' (CRITICAL - not DISCUSS)",
+        "Agent-id field present",
+        "Cross-wave orchestration indicators present"
       ]
     },
     "test_start_agent_activation_preserved": {
       "framework": "pytest",
-      "test_code_skeleton": "def test_start_agent_activation_preserved():\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/start.toon')\n    assert toon_file.metadata['agent-id'] == 'project-initializer'\n    assert toon_file.metadata['agent-command'] == 'start'",
+      "test_code_skeleton": "def test_start_agent_activation_preserved():\n    \"\"\"Verify agent-activation headers preserved from start.md.\"\"\"\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/start.toon')\n    # start.md may have project-initializer or orchestrator agent\n    assert 'agent-id' in toon_file.metadata, \"Agent-id not preserved\"\n    assert 'agent-command' in toon_file.metadata, \"Agent-command not preserved\"\n    assert toon_file.metadata['agent-command'] == 'start', \"Agent-command should be 'start'\"\n    # Verify activation instructions present\n    assert 'activation-instructions' in toon_file.sections or 'ACTIVATION' in str(toon_file.sections).upper(), \"Activation instructions missing\"",
       "assertions": [
-        "Agent-id preserved from start.md",
-        "Agent-command preserved"
+        "Agent-id field present",
+        "Agent-command == 'start'",
+        "Activation instructions section exists"
+      ]
+    },
+    "test_start_cross_wave_orchestration_preserved": {
+      "framework": "pytest",
+      "test_code_skeleton": "def test_start_cross_wave_orchestration_preserved():\n    \"\"\"Verify cross-wave orchestration metadata preserved from start.md.\"\"\"\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/start.toon')\n    # start.md includes project initialization spanning all 5 waves\n    content = str(toon_file.sections)\n    # Check for wave orchestration indicators\n    wave_indicators = ['DISCUSS', 'DESIGN', 'DISTILL', 'DEVELOP', 'DELIVER']\n    waves_mentioned = sum(1 for wave in wave_indicators if wave in content)\n    assert waves_mentioned >= 3, f\"Expected cross-wave orchestration (3+ waves mentioned), found {waves_mentioned}. start.md should reference multiple waves.\"\n    # Verify initialization metadata\n    assert 'project' in content.lower() or 'initialization' in content.lower(), \"Project initialization content missing\"",
+      "assertions": [
+        "Multiple 5D waves referenced (3+)",
+        "Project initialization content present",
+        "Cross-wave orchestration context preserved"
+      ]
+    },
+    "test_start_compilation_output_valid": {
+      "framework": "pytest",
+      "test_code_skeleton": "def test_start_compilation_output_valid():\n    \"\"\"Verify compiled output is valid Claude Code markdown with CROSS_WAVE metadata.\"\"\"\n    result = subprocess.run(\n        ['python', 'tools/toon/compiler.py', '5d-wave/tasks/dw/start.toon', '--output', '/tmp/start-output.md'],\n        capture_output=True\n    )\n    assert result.returncode == 0\n    \n    # Verify output file exists and has content\n    output_path = Path('/tmp/start-output.md')\n    assert output_path.exists(), \"Output file not created\"\n    assert output_path.stat().st_size > 1000, \"Output file too small (< 1000 bytes)\"\n    \n    # Verify Claude Code compliance and CROSS_WAVE metadata\n    content = output_path.read_text()\n    assert '# ' in content, \"No markdown headers found\"\n    assert 'agent' in content.lower(), \"Agent metadata missing\"\n    assert 'CROSS_WAVE' in content or 'cross-wave' in content.lower(), \"CROSS_WAVE metadata missing in output\"\n    assert 'wave' in content.lower(), \"Wave classification missing\"",
+      "assertions": [
+        "Compilation succeeds",
+        "Output file created",
+        "Output size > 1000 bytes",
+        "Contains markdown headers",
+        "Contains agent metadata",
+        "Contains CROSS_WAVE classification"
       ]
     },
     "unit_tests": [
       {
-        "name": "test_toon_parser_valid_command_input",
-        "purpose": "Verify parser handles valid TOON command syntax correctly",
-        "input": "Sample TOON command file with all required fields (name, description, parameters)",
-        "expected": "Parsed dict with command metadata: {name, description, parameters, dependencies}"
+        "name": "test_toon_parser_cross_wave_metadata",
+        "purpose": "Verify parser correctly handles CROSS_WAVE metadata (distinct from DISCUSS)",
+        "input": "Sample TOON command file with wave: CROSS_WAVE",
+        "expected": "Parsed dict with wave='CROSS_WAVE', cross-wave orchestration fields preserved"
       },
       {
-        "name": "test_template_rendering_with_parsed_command",
-        "purpose": "Verify Jinja2 template renders command.md from parsed data",
-        "input": "Parsed command dict from parser output",
-        "expected": "Valid Markdown output with command syntax section, parameters table, usage examples"
+        "name": "test_template_rendering_cross_wave_command",
+        "purpose": "Verify Jinja2 template renders start.md with CROSS_WAVE metadata",
+        "input": "Parsed start command dict with CROSS_WAVE classification",
+        "expected": "Valid Markdown output with CROSS_WAVE metadata, orchestration sections, wave references"
       },
       {
-        "name": "test_output_validation_against_claude_code_spec",
-        "purpose": "Verify compiled output meets Claude Code command specification",
-        "input": "Generated command.md file",
-        "expected": "Validation passes: Has frontmatter, execution context, success criteria sections"
+        "name": "test_wave_validation_rejects_wrong_classification",
+        "purpose": "Verify validation catches incorrect wave classification for start.md",
+        "input": "start.toon with wave=DISCUSS (incorrect)",
+        "expected": "Validation error: 'start.md requires wave=CROSS_WAVE, not DISCUSS'"
       }
     ],
     "integration_tests": [
       {
-        "name": "test_e2e_command_migration_pipeline",
-        "purpose": "Verify complete migration: TOON → Parse → Template → Validate → Output",
-        "input": "Real TOON command file from 5d-wave/tasks/dw/",
-        "steps": "Parse TOON → Apply command template → Validate output → Write to dist/",
-        "expected": "Valid command.md in dist/commands/dw/ matching Claude Code spec"
-      },
-      {
-        "name": "test_batch_migration_all_commands",
-        "purpose": "Verify batch processing of all command files",
-        "input": "All TOON command files (8 dw: commands)",
-        "expected": "All 8 commands migrated successfully with validation report"
+        "name": "test_e2e_start_command_migration",
+        "purpose": "Verify complete migration: start.md → start.toon → compiled output with CROSS_WAVE",
+        "input": "5d-wave/tasks/dw/start.md",
+        "steps": "Convert to TOON → Parse TOON → Compile → Validate output",
+        "expected": "Valid start.md in dist/commands/dw/ matching Claude Code spec with CROSS_WAVE wave metadata (not DISCUSS)"
       }
     ],
     "error_scenario_tests": [
@@ -168,7 +220,7 @@
         "name": "test_compiler_not_found_error_handling",
         "purpose": "Verify graceful failure when compiler missing",
         "setup": "Remove or rename tools/toon/compiler.py",
-        "expected": "Clear error message, execution stops, no partial output"
+        "expected": "Clear error message: 'TOON compiler not found at tools/toon/compiler.py', execution stops, no partial output"
       },
       {
         "name": "test_malformed_toon_syntax_error_handling",
@@ -177,117 +229,172 @@
         "expected": "Parser error with line number, specific syntax issue description"
       },
       {
-        "name": "test_validation_failure_error_handling",
-        "purpose": "Verify validation errors reported clearly",
-        "input": "TOON file missing required 'description' field",
-        "expected": "Validation error: 'Missing required field: description' with file path"
+        "name": "test_cross_wave_validation_failure",
+        "purpose": "Verify validation catches incorrect wave classification",
+        "input": "start.toon with wave=DISCUSS (should be CROSS_WAVE)",
+        "expected": "Validation error: 'start.md requires wave=CROSS_WAVE. Found: DISCUSS. Wave classification mismatch.'"
+      },
+      {
+        "name": "test_metadata_validation_failure",
+        "purpose": "Verify metadata validation catches missing CROSS_WAVE fields",
+        "input": "TOON file missing 'wave' field or cross-wave orchestration metadata",
+        "expected": "Validation error: 'Missing required field: wave' OR 'CROSS_WAVE commands require orchestration metadata'"
       }
     ]
   },
   "error_handling": {
     "compiler_not_found": {
-      "detection": "Step 2 'Compile TOON file' fails with 'command not found'",
+      "detection": "Prerequisite check fails: tools/toon/compiler.py does not exist",
       "action": "STOP immediately, escalate: Phase 1 incomplete",
-      "recovery": "Wait for Phase 1 completion, do NOT proceed"
+      "recovery": "Wait for Phase 1 completion OR choose Option B (Markdown migration)",
+      "error_message": "CRITICAL: TOON compiler not found at tools/toon/compiler.py. Phase 1 TOON infrastructure required. Options: (A) Complete Phase 1.1-1.5 first, (B) Choose Markdown migration (Option B), (C) Block and escalate."
     },
     "compilation_failure": {
       "detection": "Compiler exits with code != 0",
       "action": "Capture error message, log to docs/errors/step-04-01b-errors.log",
-      "recovery": "Review source file, fix metadata/syntax, retry compilation"
+      "recovery": "Review source file syntax, fix errors based on stderr output, retry compilation"
     },
     "wave_classification_error": {
-      "detection": "Test expects CROSS_WAVE but metadata shows different wave",
-      "action": "Verify start.md source file has wave: CROSS_WAVE",
-      "recovery": "If source is CROSS_WAVE: fix conversion. If source different: escalate architectural review"
+      "detection": "Compiled output has wave != CROSS_WAVE OR test assertion fails",
+      "action": "STOP - wave classification incorrect for start.md",
+      "recovery": "Verify source TOON file has wave: CROSS_WAVE (not DISCUSS, not any other wave). Fix metadata, recompile, re-run tests.",
+      "error_message": "CRITICAL: start.md MUST be classified as CROSS_WAVE (project initialization spanning all waves). Found different classification. Fix wave field in source TOON file."
+    },
+    "metadata_validation_failure": {
+      "detection": "Test fails on wave metadata assertion OR cross-wave orchestration missing",
+      "action": "Review source file wave classification and orchestration metadata",
+      "recovery": "If classification wrong: fix source TOON file. If orchestration metadata missing: add cross-wave scope fields. Re-run tests."
+    },
+    "prerequisite_04_01_incomplete": {
+      "detection": "Step 04-01 verification fails: discuss.toon missing or tests failing",
+      "action": "STOP - prerequisite step incomplete",
+      "recovery": "Complete step 04-01 (discuss.md DISCUSS conversion) first to establish TOON patterns before proceeding",
+      "error_message": "PREREQUISITE FAILURE: Step 04-01 (discuss.md) must be complete before 04-01b. Verify discuss.toon exists and all tests passing."
     },
     "scenario_1_compiler_not_found": {
       "error": "TOON compiler not found at tools/toon/compiler.py",
       "handling": "Log error with clear message: 'Phase 1 TOON infrastructure required. Run Phase 1.1-1.5 first or choose Option B (Markdown).'",
       "recovery": "STOP execution, escalate to user for decision",
-      "test": "test_error_compiler_not_found"
+      "test": "test_compiler_not_found_error_handling"
     },
     "scenario_2_compilation_failure": {
       "error": "TOON compiler exits with non-zero code",
-      "handling": "Log compilation error with file path and stderr output. Skip failed file, continue with others. Generate error report.",
-      "recovery": "Review TOON syntax, fix errors, retry compilation",
-      "test": "test_error_compilation_failure_graceful"
+      "handling": "Log compilation error with file path and stderr output. Do NOT proceed to next step. Generate error report with exact error message.",
+      "recovery": "Review TOON syntax against TOON v3.0 spec, fix errors, retry compilation. If errors persist after 2 attempts, escalate.",
+      "test": "test_malformed_toon_syntax_error_handling"
     },
-    "scenario_3_metadata_validation_failure": {
-      "error": "Compiled output fails metadata validation (missing required fields)",
-      "handling": "Log validation errors with specific missing fields. Mark file as failed. Continue processing other files.",
-      "recovery": "Add missing metadata to source TOON file, recompile",
-      "test": "test_error_metadata_validation_failure"
+    "scenario_3_wave_classification_failure": {
+      "error": "Compiled output has wave=DISCUSS (or other incorrect wave) instead of CROSS_WAVE",
+      "handling": "Log validation error: 'Wave classification incorrect for start.md. Expected: CROSS_WAVE. Found: [actual]. start.md is project initialization command spanning all 5D waves, not single-wave command.'",
+      "recovery": "Fix wave field in source TOON file to CROSS_WAVE, recompile, re-run validation tests",
+      "test": "test_cross_wave_validation_failure"
     },
-    "scenario_4_partial_batch_failure": {
-      "error": "Some files in batch succeed, others fail",
-      "handling": "Complete all processable files. Generate summary report: X succeeded, Y failed. List failed files with error reasons.",
-      "recovery": "Fix failed files individually, rerun batch",
-      "test": "test_error_partial_batch_failure_reporting"
+    "scenario_4_prerequisite_step_incomplete": {
+      "error": "Step 04-01 (discuss.md) not complete or tests failing",
+      "handling": "Log error: 'Prerequisite step 04-01 incomplete. discuss.toon must be created and validated before starting 04-01b.'",
+      "recovery": "STOP execution, complete step 04-01 first, verify all tests passing, then resume 04-01b",
+      "test": "test_prerequisite_04_01_validation"
     }
   },
   "execution_guidance": {
-    "approach": "Command conversion following established pattern from 04-01",
+    "approach": "Single CROSS_WAVE command conversion leveraging patterns from 04-01",
     "workflow": [
-      "STEP 0: VERIFY PREREQUISITES",
-      "  - Confirm step 04-01 complete (discuss.toon exists)",
-      "  - Confirm tools/toon/compiler exists",
-      "  - Review discuss.toon as conversion template",
-      "  - If prerequisites missing: STOP and escalate",
+      "STEP 0: VERIFY PREREQUISITES (CRITICAL - DO NOT SKIP)",
+      "  - Confirm tools/toon/compiler.py exists",
+      "  - If missing: STOP and escalate (see error_handling.compiler_not_found)",
+      "  - Confirm TOON v3.0 spec available (tools/toon/TOON-v3.0-SPEC.md)",
+      "  - If missing: Extract from reference implementation or escalate",
+      "  - Confirm step 04-01 complete: discuss.toon exists and all tests passing",
+      "  - If 04-01 incomplete: STOP and complete discuss.md conversion first",
+      "",
       "STEP 1: Convert start.md to start.toon",
-      "  - Use TOON v3.0 format specification",
+      "  - Review TOON v3.0 format specification (brief review, already studied in 04-01)",
+      "  - Use patterns from discuss.toon as conversion reference",
       "  - Preserve agent-activation header from YAML frontmatter",
-      "  - Set wave metadata to CROSS_WAVE (NOT DISCUSS)",
-      "  - Note: start.md is project initialization, thus CROSS_WAVE",
+      "  - Set wave metadata to CROSS_WAVE (CRITICAL - not DISCUSS)",
+      "  - Preserve cross-wave orchestration metadata (project initialization, wave references)",
+      "  - Create file: 5d-wave/tasks/dw/start.toon",
+      "",
       "STEP 2: Compile TOON file",
-      "  - Run: toon-compiler 5d-wave/tasks/dw/start.toon --validate",
+      "  - Run: python tools/toon/compiler.py 5d-wave/tasks/dw/start.toon --validate",
       "  - Verify exit code = 0",
-      "  - If compilation fails: capture error, escalate (see error_handling)",
+      "  - Capture stderr and stdout",
+      "  - If compilation fails: DO NOT PROCEED - see error_handling.compilation_failure",
+      "  - Verify wave field in output == CROSS_WAVE (critical validation)",
+      "",
       "STEP 3: Write tests to validate conversion",
-      "  - Implement test_start_command_compiles",
-      "  - Implement test_start_wave_metadata_cross_wave (verify CROSS_WAVE)",
-      "  - Implement test_start_agent_activation_preserved",
+      "  - Implement test_start_command_compiles (compilation success)",
+      "  - Implement test_start_wave_metadata_cross_wave (wave == CROSS_WAVE, not DISCUSS)",
+      "  - Implement test_start_agent_activation_preserved (metadata preserved)",
+      "  - Implement test_start_cross_wave_orchestration_preserved (cross-wave context)",
+      "  - Implement test_start_compilation_output_valid (output quality + CROSS_WAVE metadata)",
+      "  - Test files location: tests/tools/toon/test_start_migration.py",
+      "",
       "STEP 4: Run test suite",
-      "  - Execute: pytest tests/test_start_conversion.py",
+      "  - Execute: pytest tests/tools/toon/test_start_migration.py -v",
       "  - All tests MUST pass (100% required)",
+      "  - If wave metadata test fails: STOP - verify wave=CROSS_WAVE in source file",
+      "  - If any other test fails: review error, fix issue, re-run tests",
+      "  - No test skipping allowed",
+      "",
       "STEP 5: Verify quality gates",
       "  - Check all acceptance criteria satisfied",
-      "  - Specifically verify wave == CROSS_WAVE",
-      "STEP 6: DO NOT COMMIT - wait for user approval"
+      "  - Verify no report files created",
+      "  - Confirm start.toon compiles successfully",
+      "  - Confirm wave metadata correct (CROSS_WAVE - not DISCUSS)",
+      "  - Confirm agent-activation preserved",
+      "  - Confirm cross-wave orchestration metadata preserved",
+      "",
+      "STEP 6: DO NOT COMMIT - wait for user approval",
+      "  - Present completed work to user",
+      "  - Request approval before commit",
+      "  - If approved: commit with message 'feat(toon): Convert start.md to TOON format (CROSS_WAVE)'"
     ],
     "quality_gates": [
       "All tests passing (100% required)",
       "start.toon compiles successfully with exit code 0",
-      "Wave metadata correct (CROSS_WAVE - critical distinction)",
+      "Wave metadata correct (CROSS_WAVE - CRITICAL validation)",
       "Agent-activation headers valid and preserved",
-      "No report files created"
+      "Cross-wave orchestration metadata preserved",
+      "No report files created",
+      "Compilation output > 1000 bytes (non-trivial)",
+      "No errors in stderr during compilation",
+      "Step 04-01 (discuss.md) prerequisite verified complete"
     ]
   },
-  "wave_classification_rationale": {
-    "why_cross_wave": "start.md initializes 5D-Wave workflow, which spans ALL waves (DISCUSS, DESIGN, DISTILL, DEVELOP, DEMO). It is not confined to DISCUSS phase, thus classified as CROSS_WAVE.",
-    "original_contradiction": "Original step 04-01 claimed 'Convert DISCUSS Wave Commands' but included start.md which is architecturally CROSS_WAVE. This created impossible acceptance criteria.",
-    "resolution": "Split into two steps: 04-01 for DISCUSS (discuss.md), 04-01b for CROSS_WAVE (start.md)"
-  },
   "adversarial_review_summary": {
-    "original_issue": "Wave classification contradiction in original step 04-01",
-    "resolution": "New step 04-01b created to handle CROSS_WAVE command separately",
-    "risk_score": 3.0,
+    "original_risk_score": "N/A (new step created from 04-01 split)",
+    "corrected_risk_score": 3.0,
+    "review_date": "2026-01-06",
+    "reviewer": "Lyra (Adversarial Mode)",
+    "creation_rationale": "Created to resolve wave classification contradiction in original 04-01. start.md is CROSS_WAVE (project initialization spanning all waves), not DISCUSS (single wave). Separation ensures correct metadata validation.",
     "major_corrections_applied": [
-      "Created separate step for CROSS_WAVE command",
-      "Correct wave metadata validation (CROSS_WAVE not DISCUSS)",
-      "Added dependency on 04-01 to leverage learning from first conversion",
-      "Reduced time estimate to 2-3h (learning curve from 04-01 reduces effort)",
-      "Added wave classification rationale section"
+      "Created as separate step to fix wave classification conflict (start.md = CROSS_WAVE, discuss.md = DISCUSS)",
+      "Added prerequisite check for step 04-01 completion (leverage established TOON patterns)",
+      "Reduced time estimate to 2-3h (vs 04-01's 4-6h) due to learning curve already complete",
+      "Added wave_classification_rationale section explaining CROSS_WAVE vs DISCUSS distinction",
+      "Added cross-wave orchestration validation in tests (verify multi-wave context)",
+      "Added wave_classification_error to error handling (specific to CROSS_WAVE validation)",
+      "Included CROSS_WAVE metadata validation in all test specifications",
+      "Added prerequisite test (test_prerequisite_04_01_validation) to verify 04-01 complete"
     ],
     "remaining_risks": [
-      "Dependency on step 04-01 completion",
-      "Architectural validation that start.md is indeed CROSS_WAVE"
+      "Wave classification understanding (mitigated by detailed rationale section and explicit CROSS_WAVE validation in all tests)",
+      "Cross-wave orchestration metadata preservation (mitigated by dedicated test validating multi-wave references)",
+      "Dependency on 04-01 completion (mitigated by prerequisite check with clear escalation)"
+    ],
+    "critical_blockers_resolved": [
+      "BLOCKER 1: Wave classification contradiction - Resolved by creating separate step for CROSS_WAVE",
+      "BLOCKER 2: Pattern establishment dependency - Mitigated by prerequisite check on 04-01 completion",
+      "BLOCKER 3: CROSS_WAVE metadata validation - Added explicit wave validation in all tests",
+      "BLOCKER 4: Cross-wave orchestration - Added dedicated test for multi-wave context preservation"
     ]
   },
   "review_metadata": {
-    "reviewed_by": "Lyra (corrected after adversarial review)",
+    "reviewed_by": "Lyra (Adversarial Mode)",
     "review_date": "2026-01-06",
-    "review_status": "CORRECTED - Ready for execution after step 04-01 complete",
-    "corrections_applied": "Wave classification corrected to CROSS_WAVE, separated from DISCUSS, prerequisites include 04-01 dependency",
-    "estimated_hours_justification": "2-3 hours includes: 0.5h review 04-01 pattern, 1h conversion following template, 0.5-1h test implementation, 0.5h validation. Reduced from 04-01 due to established pattern."
+    "review_status": "CORRECTED - Ready for execution after 04-01 completion",
+    "corrections_applied": "New step created to resolve wave classification conflict, CROSS_WAVE validation added, prerequisite on 04-01 completion, reduced time estimate (2-3h) due to established patterns",
+    "estimated_hours_justification": "2-3 hours includes: 0.5h TOON format review (already studied in 04-01), 1h conversion using established patterns, 0.5-1h test implementation (following 04-01 test structure), 0.5h compilation/validation. Reduced from 04-01's 4-6h due to eliminated learning curve."
   }
 }

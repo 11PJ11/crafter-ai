@@ -154,5 +154,359 @@
       "validation": "0.25h",
       "buffer": "0.25h"
     }
+  },
+  "adversarial_review": {
+    "reviewer": "adversarial-software-crafter-reviewer",
+    "review_date": "2026-01-05",
+    "model": "claude-haiku-4-20250604",
+    "iteration": 1,
+    "risk_score": 8.2,
+    "risk_level": "HIGH",
+    "approval_status": "CONDITIONAL_APPROVAL",
+    "blocking_issues_count": 2,
+    "findings": {
+      "critical_blockers": [
+        {
+          "blocker_id": "08-01-B1",
+          "severity": "CRITICAL",
+          "category": "Missing Infrastructure",
+          "title": "TOON Compiler Maturity Unknown - Phase 1 Toolchain Missing",
+          "description": "Step assumes TOON compiler exists and is production-ready, but tools/toon/ directory and TOON compiler infrastructure don't exist in current codebase. Build integration impossible without functional compiler.",
+          "evidence": [
+            "Baseline review (line 129): 'No TOON compiler/parser exists'",
+            "Step 06-01 adversarial review: 'Glob for tools/toon/**/* returned No files found'",
+            "Master summary BLOCKER #1: Phase 1 toolchain missing affects 6+ steps",
+            "No validation of TOON compiler functionality before build integration"
+          ],
+          "impact": "EXECUTION_IMPOSSIBLE - Cannot integrate non-existent compiler into build system. Step 08-01 fails immediately on tools/toon/ import. Cascading failure to 08-02, 08-03, 08-04.",
+          "blast_radius": "MULTIPLE_PHASES - Affects Phase 6 (template conversion), Phase 7 (source compilation), Phase 8 (validation)",
+          "probability_of_occurrence": "100% - Toolchain confirmed missing",
+          "mitigation_applied": {
+            "action": "Added prerequisite: TOON compiler maturity validation REQUIRED before step execution",
+            "validation_method": "Run TOON compiler on sample .toon files, verify Markdown output with valid YAML frontmatter",
+            "fallback": "If compiler missing or buggy: Create compiler test suite first (add 2-4 hours), fix bugs, validate end-to-end, THEN proceed with 08-01"
+          },
+          "resolution_required": [
+            "Option A: Implement Phase 1 TOON infrastructure (20-30 hours) before executing 08-01",
+            "Option B: Pivot to MD/YAML optimization approach without TOON format (5-10 hours redesign)",
+            "Option C: Defer Phase 8 until separate TOON infrastructure project completes",
+            "RECOMMENDED: Option A with incremental validation gates after Phase 1 completion"
+          ]
+        },
+        {
+          "blocker_id": "08-01-B2",
+          "severity": "CRITICAL",
+          "category": "Prerequisite Validation Gap",
+          "title": "Step 7.3 Completion Audit Missing - Source Migration Unverified",
+          "description": "Build system integration assumes all 28 agents and 20 commands are converted to TOON format, but no validation gate confirms Phase 7.3 completion before 08-01 execution. Actual agent count is 26, not 28.",
+          "evidence": [
+            "Step dependency: 7.3 (Phase 7 completion assumed)",
+            "Master summary BLOCKER #2: Agent count mismatch - 28 roadmap vs 26 actual (dist/ide/agents/dw/config.json)",
+            "No file count validation before build integration",
+            "Quality gate expects >=26 agents + >=20 commands but doesn't verify TOON format compliance"
+          ],
+          "impact": "BUILD_FAILURE - Build system imports TOON compiler, attempts to compile .toon files that don't exist or are incomplete. Partial migration causes runtime errors. Success criteria SC1 unvalidatable.",
+          "blast_radius": "PHASE_ONLY - Affects Phase 8 steps only, but blocks project completion",
+          "probability_of_occurrence": "75% - No validation gate ensures prerequisite completion",
+          "mitigation_applied": {
+            "action": "Added prerequisite: Step 7.3 completion audit - verify 100% sources migrated to TOON v3.0",
+            "validation_method": "Count .toon files in 5d-wave/agents/ and 5d-wave/commands/, verify counts match expected (26 agents actual, 20 commands baseline)",
+            "fallback": "If migration incomplete: Stop execution, complete Phase 7 first, return to 08-01 when all sources migrated"
+          },
+          "resolution_required": [
+            "Update agent count throughout roadmap from 28 to 26 (reflects actual build reality)",
+            "Add validation step after Phase 7 completion (pre-08-01 gate)",
+            "Implement file count + format validation script (validates .toon syntax compliance)",
+            "CRITICAL: Fix agent count mismatch in baseline.yaml, roadmap.yaml, and all quality gates"
+          ]
+        }
+      ],
+      "high_risk_issues": [
+        {
+          "issue_id": "08-01-H1",
+          "severity": "HIGH",
+          "category": "Complexity Underestimation",
+          "title": "Build System Integration Complexity Underestimated",
+          "description": "Original 2-hour estimate doesn't account for realistic integration complexity: TOON compiler API learning curve, error handling for compilation failures, build pipeline debugging, dependency resolution.",
+          "evidence": [
+            "Original estimate: 2 hours",
+            "Adversarial analysis: 4-6 hours realistic minimum",
+            "Step 08-03 shows consistent 2-4x underestimation pattern",
+            "No buffer for compiler bugs or API changes"
+          ],
+          "impact": "SCHEDULE_RISK - Implementation takes 2-3x longer than estimated. Developer frustration, missed deadlines, cascading delays to 08-02/08-03/08-04.",
+          "mitigation_applied": {
+            "action": "Revised estimate from 2h to 4h (realistic minimum with buffer)",
+            "breakdown": "Prerequisite validation (0.5h) + Build integration (1.5h) + Token reporting (0.5h) + Test writing (1h) + Refactoring (0.5h) + Validation (0.25h) + Buffer (0.25h)",
+            "contingency": "If TOON compiler has bugs or undocumented behavior: add 2h for compiler fixes before build integration"
+          }
+        },
+        {
+          "issue_id": "08-01-H2",
+          "severity": "HIGH",
+          "category": "Upstream Dependency Cascade",
+          "title": "All Upstream Phases (1-7) Must Complete Before 08-01",
+          "description": "Step 08-01 is final integration step with dependencies on: Phase 1 (TOON infrastructure), Phase 2 (templates), Phase 3 (agents), Phase 4 (commands), Phase 5 (skills), Phase 6 (template conversion), Phase 7 (metadata). Any upstream failure blocks 08-01.",
+          "evidence": [
+            "Direct dependency: Step 7.3",
+            "Transitive dependencies: All of Phases 1-7",
+            "Master summary: 5 critical blockers in upstream phases",
+            "No incremental validation gates between phases"
+          ],
+          "impact": "EXECUTION_RISK - Upstream failures detected late (Phase 8) instead of early (Phases 1-7). Rework required if Phase 1-7 issues discovered during 08-01 execution.",
+          "mitigation_applied": {
+            "action": "Document explicit prerequisite chain: Phase 1 → 2 → 3/4 → 5 → 6 → 7 → 8",
+            "validation_gate": "Before 08-01 execution: verify Phase 1 toolchain exists, Phase 2-6 templates valid, Phase 7 sources migrated",
+            "recommendation": "Add incremental validation steps after Phase 4, Phase 5, Phase 6 (don't wait until Phase 8 to discover failures)"
+          }
+        },
+        {
+          "issue_id": "08-01-H3",
+          "severity": "HIGH",
+          "category": "Error Handling Gap",
+          "title": "Compiler Failure Error Handling Undefined",
+          "description": "Build system integration spec doesn't define behavior when TOON compiler fails: partial compilation, syntax errors, invalid output. Build could produce corrupted plugin or fail silently.",
+          "evidence": [
+            "Acceptance criteria: 'Build completes without errors' but no error handling spec",
+            "Inner test: 'test_build_handles_missing_sources_gracefully' addresses missing files but not compiler errors",
+            "No specification for: syntax errors, semantic errors, invalid Markdown output, YAML frontmatter validation"
+          ],
+          "impact": "QUALITY_RISK - Build produces invalid output, passes quality gates, but plugin installation fails in 08-02. Silent failures mask TOON compiler bugs.",
+          "mitigation_applied": {
+            "action": "Add inner test: test_toon_compiler_error_handling (validates build fails gracefully with clear error messages)",
+            "error_categories": [
+              "TOON syntax errors → build fails, reports file + line number",
+              "Markdown rendering errors → build fails, reports rendering issue",
+              "YAML frontmatter invalid → build fails, reports validation error",
+              "Partial compilation → build fails, reports incomplete file list"
+            ],
+            "quality_gate": "Build must fail fast with actionable error messages, never produce partially-compiled output"
+          }
+        }
+      ],
+      "moderate_risk_issues": [
+        {
+          "issue_id": "08-01-M1",
+          "severity": "MEDIUM",
+          "category": "Token Savings Calculation",
+          "title": "Token Savings Methodology Undefined",
+          "description": "Step requires reporting token savings but calculation method not specified. Baseline missing (no original MD file sizes archived).",
+          "evidence": [
+            "Acceptance criteria: 'Build reports token savings achieved'",
+            "Master summary BLOCKER #5: Token baseline missing → SC7 unvalidatable",
+            "Prerequisite added but methodology still simple byte count comparison"
+          ],
+          "impact": "MEASUREMENT_RISK - Token savings claims unverifiable without baseline. Success criteria SC7 cannot be validated.",
+          "mitigation_applied": {
+            "action": "Added prerequisite: Token calculation methodology defined (byte count comparison: compiled .md vs original .md)",
+            "fallback": "If methodology undefined: Use byte count as default, log to stdout as 'Token savings: X bytes (Y%)', defer detailed analysis to 08-04",
+            "recommendation": "Create Phase 2.4 step to measure and archive current MD file sizes BEFORE conversion begins"
+          }
+        },
+        {
+          "issue_id": "08-01-M2",
+          "severity": "MEDIUM",
+          "category": "Backward Compatibility",
+          "title": "MD-to-TOON Transition Strategy Unclear",
+          "description": "Specification doesn't clearly define how build handles mixed MD/TOON sources during migration. Parallel processing or cutover?",
+          "evidence": [
+            "Step description: 'Maintain backward compatibility during transition'",
+            "Prerequisite added: 'Backward compatibility approach documented'",
+            "Recommended approach: Cutover (no backward compatibility) but not enforced"
+          ],
+          "impact": "BEHAVIOR_UNCERTAINTY - Build behavior undefined for partial migration states. Could process wrong files or produce unexpected output.",
+          "mitigation_applied": {
+            "action": "RECOMMENDED: Cutover approach - build processes ONLY TOON sources",
+            "enforcement": "If MD files remain, build fails with error: 'Migration incomplete - complete Phase 7 before build'",
+            "alternative": "If parallel processing required: add 1-2 hours for dual-format logic (process both MD and TOON, TOON takes precedence)"
+          }
+        }
+      ],
+      "unhandled_edge_cases": [
+        {
+          "edge_case": "TOON compiler produces valid Markdown but semantically incorrect output",
+          "probability": "30% - New compiler, bugs likely",
+          "impact": "Plugin installs but agents/commands behave incorrectly",
+          "detection": "Manual inspection or runtime errors in 08-02/08-03",
+          "mitigation": "Add semantic validation: parse compiled Markdown, verify YAML frontmatter fields match TOON source metadata"
+        },
+        {
+          "edge_case": "Build system compiles subset of files (partial success)",
+          "probability": "40% - Common in new toolchains",
+          "impact": "Plugin appears valid but missing components",
+          "detection": "File count validation in 08-02 quality gates",
+          "mitigation": "Build must be atomic: all-or-nothing compilation, fail if any .toon file fails to compile"
+        },
+        {
+          "edge_case": "TOON compiler performance degrades with large file counts",
+          "probability": "25% - Unoptimized compiler",
+          "impact": "Build time exceeds acceptable limits (>5 minutes)",
+          "detection": "Build timeout or developer complaints",
+          "mitigation": "Add build time measurement, alert if compilation >30 seconds per file, investigate compiler performance"
+        },
+        {
+          "edge_case": "Agent count mismatch (26 actual vs 28 expected) causes test failures",
+          "probability": "100% - Confirmed in master summary",
+          "impact": "Quality gates fail with count assertion errors",
+          "detection": "test_build_compiles_all_agents fails (expects >=28, gets 26)",
+          "mitigation": "CRITICAL: Update quality gate to expect 26 agents (not 28), fix baseline.yaml and roadmap.yaml"
+        }
+      ],
+      "test_coverage_gaps": [
+        {
+          "gap": "No validation of TOON format compliance (only file existence)",
+          "test_missing": "test_all_sources_valid_toon_v3_syntax",
+          "impact": "Build could attempt to compile invalid TOON files",
+          "recommendation": "Add pre-build validation: parse all .toon files with TOON parser, fail early if syntax errors detected"
+        },
+        {
+          "gap": "No validation of compiled Markdown structure",
+          "test_missing": "test_compiled_markdown_has_valid_yaml_frontmatter",
+          "impact": "Claude Code plugin rejects compiled files if YAML frontmatter invalid",
+          "recommendation": "Add post-compile validation: parse compiled .md files, verify YAML frontmatter exists and is well-formed"
+        },
+        {
+          "gap": "No incremental validation between phases",
+          "test_missing": "test_phase_7_completion_before_phase_8_start",
+          "impact": "Phase 8 discovers Phase 1-7 failures late",
+          "recommendation": "Add validation gate: before 08-01, verify Phase 1 toolchain exists, Phase 7 sources migrated"
+        }
+      ],
+      "dangerous_assumptions": [
+        {
+          "assumption": "TOON compiler exists and is production-ready",
+          "reality": "tools/toon/ directory missing, compiler doesn't exist",
+          "risk": "Step fails immediately on import",
+          "correction": "Add prerequisite: TOON compiler maturity validation REQUIRED (test with real sources before integration)"
+        },
+        {
+          "assumption": "All 28 agents converted to TOON format",
+          "reality": "Actual agent count is 26, not 28",
+          "risk": "Quality gates fail with count mismatches",
+          "correction": "Update agent count to 26 throughout roadmap, fix baseline.yaml and all step specs"
+        },
+        {
+          "assumption": "Build integration takes 2 hours",
+          "reality": "4-6 hours realistic with compiler learning curve and debugging",
+          "risk": "Schedule overrun, developer frustration",
+          "correction": "Revised estimate to 4h minimum, add 2h contingency buffer for compiler issues"
+        },
+        {
+          "assumption": "Phase 7.3 completion guarantees all sources migrated",
+          "reality": "No validation gate between Phase 7 and Phase 8",
+          "risk": "Partial migration causes build failures",
+          "correction": "Add prerequisite: Step 7.3 completion audit (count .toon files, verify format compliance)"
+        }
+      ]
+    },
+    "corrections_applied": [
+      {
+        "correction_id": "C1",
+        "area": "Prerequisites",
+        "change": "Added TOON compiler maturity validation as CRITICAL prerequisite",
+        "justification": "Master summary BLOCKER #1 - Phase 1 toolchain missing affects 6+ steps",
+        "impact": "Blocks step execution until compiler validated end-to-end"
+      },
+      {
+        "correction_id": "C2",
+        "area": "Prerequisites",
+        "change": "Added Step 7.3 completion audit as CRITICAL prerequisite",
+        "justification": "Master summary finding - No validation gate ensures prerequisite completion",
+        "impact": "Ensures all sources migrated before build integration"
+      },
+      {
+        "correction_id": "C3",
+        "area": "Time Estimate",
+        "change": "Revised estimate from 2h to 4h (2x increase)",
+        "justification": "Adversarial analysis shows realistic complexity 2-4x higher than original estimate",
+        "impact": "More accurate schedule planning, reduces overrun risk"
+      },
+      {
+        "correction_id": "C4",
+        "area": "Quality Gates",
+        "change": "Updated agent count expectation from >=28 to >=26",
+        "justification": "Master summary BLOCKER #2 - Actual build processes 26 agents, not 28",
+        "impact": "Quality gates now match reality (prevents false failures)"
+      },
+      {
+        "correction_id": "C5",
+        "area": "Inner Tests",
+        "change": "Added test_toon_compiler_functional as PREREQUISITE test",
+        "justification": "Validate TOON compiler works before build integration",
+        "impact": "Catches compiler bugs early, before build system integration"
+      },
+      {
+        "correction_id": "C6",
+        "area": "Error Handling",
+        "change": "Added specification for compiler failure handling",
+        "justification": "Original spec didn't define behavior for TOON syntax errors or compilation failures",
+        "impact": "Build fails gracefully with actionable error messages"
+      },
+      {
+        "correction_id": "C7",
+        "area": "Backward Compatibility",
+        "change": "Recommended cutover approach (no backward compatibility)",
+        "justification": "Simplifies implementation, forces Phase 7 completion before Phase 8",
+        "impact": "Clearer build behavior, reduces complexity"
+      }
+    ],
+    "recommendations": {
+      "immediate_actions": [
+        "DO NOT PROCEED with 08-01 until Phase 1 TOON infrastructure exists (BLOCKER #1)",
+        "Fix agent count mismatch: update baseline.yaml, roadmap.yaml from 28 to 26 agents",
+        "Validate TOON compiler end-to-end with sample .toon files before build integration",
+        "Audit Step 7.3 completion: count .toon files in 5d-wave/agents/ and 5d-wave/commands/",
+        "Create Phase 2.4 step: measure and archive current MD file sizes for token baseline"
+      ],
+      "before_execution": [
+        "Verify tools/toon/ directory exists with functional compiler",
+        "Confirm 26 agents + 20 commands converted to TOON v3.0 format",
+        "Define token savings calculation methodology (byte count comparison documented)",
+        "Run TOON compiler on sample files, validate Markdown output quality",
+        "Document error handling strategy for compiler failures"
+      ],
+      "architectural_improvements": [
+        "Add validation gate after Phase 7 completion (before Phase 8 starts)",
+        "Implement incremental validation: don't wait until Phase 8 to discover Phase 1-7 failures",
+        "Create TOON compiler test suite (unit + integration tests for compiler)",
+        "Add semantic validation: verify compiled Markdown matches TOON source semantics",
+        "Build atomic compilation: all-or-nothing (fail if any .toon file fails)"
+      ],
+      "long_term": [
+        "Develop TOON compiler performance benchmarks (track compilation time per file)",
+        "Create comprehensive error catalog (all compiler error types documented with examples)",
+        "Build compiler regression test suite (prevent bugs during compiler evolution)",
+        "Add TOON format linter (validate syntax before compilation)"
+      ]
+    },
+    "execution_readiness": {
+      "can_proceed": false,
+      "blockers_preventing_execution": [
+        "BLOCKER #1: Phase 1 TOON toolchain missing (tools/toon/ doesn't exist)",
+        "BLOCKER #2: Agent count mismatch (26 actual vs 28 expected) - quality gates will fail"
+      ],
+      "prerequisites_status": {
+        "toon_compiler_exists": "MISSING - tools/toon/ directory not found",
+        "step_7_3_complete": "UNKNOWN - no validation performed",
+        "token_methodology_defined": "PARTIAL - byte count comparison documented but baseline missing",
+        "backward_compatibility_documented": "DOCUMENTED - cutover approach recommended"
+      },
+      "estimated_resolution_time": "20-30 hours (implement Phase 1 TOON infrastructure) OR 5-10 hours (pivot to MD optimization)",
+      "recommended_path": "Option A: Implement Phase 1 TOON infrastructure with incremental validation gates, THEN proceed with 08-01"
+    },
+    "reviewer_notes": {
+      "review_methodology": "Cross-referenced step spec against: (1) Master summary blockers, (2) Upstream step adversarial reviews, (3) Codebase reality checks (glob tools/toon/*, check dist/ide/agents/dw/config.json), (4) Phase dependency analysis",
+      "confidence_level": "HIGH - Multiple evidence sources confirm TOON toolchain missing and agent count mismatch",
+      "assumptions_made": [
+        "Phase 1 TOON infrastructure implementation will take 20-30 hours (based on compiler complexity)",
+        "Agent count mismatch can be fixed in 2-4 hours (simple spec update)",
+        "TOON compiler will have bugs requiring 2-4 hours stabilization before production use"
+      ],
+      "areas_of_uncertainty": [
+        "TOON compiler API design (not yet implemented, integration complexity unknown)",
+        "Actual time to implement Phase 1 infrastructure (20-30h estimate could be 40-50h if complex)",
+        "Whether 2 missing agents exist and need implementation or if 26 is correct count"
+      ]
+    }
   }
 }

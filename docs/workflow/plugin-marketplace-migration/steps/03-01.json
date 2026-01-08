@@ -11,7 +11,12 @@
     "name": "Convert Primary Agents",
     "description": "Convert 10 primary agents following patterns from pilot: product-owner, solution-architect, acceptance-designer, skeleton-builder, researcher, devop, troubleshooter, visual-architect, illustrator, data-engineer",
     "motivation": "Primary agents are the core workflow executors",
-    "estimated_hours": "10-15"
+    "estimated_hours": "10-15",
+    "time_estimate_revision": {
+      "original_estimate": "5 hours",
+      "revised_estimate": "10-15 hours",
+      "rationale": "Original 5-hour estimate (30 min/agent) was unrealistic. Revised accounts for: conversion (30-45 min/agent), compilation validation (15 min/agent), round-trip validation (15 min/agent), debugging buffer (30-60 min/agent), test framework setup (1-2 hours), refactoring pass (1 hour)"
+    }
   },
   "context": {
     "constraints": [
@@ -19,37 +24,71 @@
       "DO NOT COMMIT BEFORE USER APPROVAL",
       "FOCUS ON DELIVERABLES ONLY",
       "Tests use business language and domain concepts",
-      "Type system makes wrong state non-representable"
+      "Type system makes wrong state non-representable",
+      "CRITICAL: All prerequisite checks MUST pass before starting conversion",
+      "CRITICAL: Token measurements must use documented methodology consistently"
     ],
     "success_criteria_mapping": {
-      "SC1": "All source files in TOON v3.0 format",
-      "SC7": "Target 50-60% token savings (to be validated - no baseline measurements exist yet)"
+      "SC1": "All source files in TOON v3.0 format (specification must be validated first)",
+      "SC7": "Token savings measured and documented (baseline from Phase 2.4 archive vs TOON source)"
     },
     "dependencies": ["2.4"],
     "prerequisite_checks": [
       {
-        "check": "TOON toolchain exists and is functional",
-        "validation": "Verify tools/toon/README.md exists with conversion patterns",
+        "check": "TOON v3.0 specification exists and is documented",
+        "validation": "Verify tools/toon/README.md contains TOON v3.0 format specification with examples",
         "blocking": true,
-        "resolution_if_missing": "Complete Phase 1 infrastructure (estimated 16-19 hours)"
+        "severity": "CRITICAL",
+        "risk_if_missing": "Without specification, developer will guess format leading to incompatible outputs",
+        "resolution_if_missing": "Complete Phase 1.6 (TOON validation) to produce validated v3.0 schema (estimated 4 hours)"
       },
       {
-        "check": "Phase 2.4 archive is complete",
-        "validation": "ls archive/pre-toon-migration/agents/ | wc -l should equal 28",
+        "check": "TOON compiler exists and is functional",
+        "validation": "Verify compiler tool exists (e.g., tools/toon_compiler.py) and can compile .toon → .md",
         "blocking": true,
-        "resolution_if_missing": "Complete step 2.4 archive creation (estimated 0.5 hours)"
+        "severity": "CRITICAL",
+        "risk_if_missing": "Acceptance criteria requires compilation - unachievable without working compiler",
+        "resolution_if_missing": "Complete Phase 1.2 (Jinja2 Template compiler) and validate on test agent (estimated 6-8 hours)"
       },
       {
-        "check": "Pilot conversion successful",
-        "validation": "Verify software-crafter.toon exists and compiles",
+        "check": "Phase 2.4 archive complete with baseline measurements",
+        "validation": "ls archive/pre-toon-migration/agents/ | wc -l should equal 28 AND baseline token counts documented",
         "blocking": true,
-        "resolution_if_missing": "Complete step 2.1-2.2 (estimated 4-6 hours)"
+        "severity": "CRITICAL",
+        "risk_if_missing": "Cannot measure token savings without baseline - acceptance criteria validation impossible",
+        "resolution_if_missing": "Complete step 2.4 archive creation AND measure baseline token counts for all 28 agents (estimated 2 hours)"
       },
       {
-        "check": "Conversion patterns documented",
-        "validation": "Verify tools/toon/README.md contains examples and guidelines",
+        "check": "Pilot conversion successful with measured savings",
+        "validation": "Verify pilot agent (e.g., software-crafter.toon) exists, compiles, and has documented token savings percentage",
         "blocking": true,
-        "resolution_if_missing": "Complete step 2.3 pattern documentation (estimated 0.5 hours)"
+        "severity": "CRITICAL",
+        "risk_if_missing": "No reference pattern for batch conversion - developer blindfolded",
+        "resolution_if_missing": "Complete Phase 2.1-2.3 (pilot conversion) with token measurement (estimated 4-6 hours)"
+      },
+      {
+        "check": "Conversion patterns documented with examples",
+        "validation": "Verify tools/toon/README.md contains concrete conversion examples from pilot agent",
+        "blocking": true,
+        "severity": "CRITICAL",
+        "risk_if_missing": "Developer lacks reference patterns - inconsistent conversions across 10 agents",
+        "resolution_if_missing": "Complete step 2.3 pattern documentation with pilot examples (estimated 3 hours)"
+      },
+      {
+        "check": "Token counting methodology defined",
+        "validation": "Verify documented methodology specifies: tool (e.g., Anthropic API), scope (source only vs compiled output), units (bytes/tokens)",
+        "blocking": true,
+        "severity": "HIGH",
+        "risk_if_missing": "Inconsistent measurements across agents - acceptance criteria ambiguous",
+        "resolution_if_missing": "Document token counting methodology in tools/toon/README.md (estimated 1 hour)"
+      },
+      {
+        "check": "Phase 2.4 source path verified correct",
+        "validation": "Verify archive/pre-toon-migration/agents/ contains SOURCE files from 5d-wave/agents/ NOT compiled dist/ide/agents/",
+        "blocking": true,
+        "severity": "HIGH",
+        "risk_if_missing": "Baseline comparison uses wrong files - all token measurements invalid",
+        "resolution_if_missing": "Re-run Phase 2.4 with correct source path 5d-wave/agents/ (estimated 1-2 hours)"
       }
     ]
   },
@@ -67,21 +106,127 @@
       "5d-wave/agents/data-engineer.toon"
     ],
     "acceptance_criteria": [
-      "All 10 TOON files compile without errors using tools/toon compiler",
-      "All compiled outputs have valid Claude Code format (YAML frontmatter + agent structure)",
-      "Token savings measured and documented (baseline from archive vs TOON source)",
-      "No critical information lost during conversion (validated via round-trip comparison)"
+      {
+        "criterion": "All 10 TOON files compile without errors",
+        "validation_method": "Run compiler on each .toon file and verify exit code 0",
+        "pass_condition": "All 10 agents compile successfully with zero compilation errors",
+        "measurement": "Compilation error count per agent (must be 0 for all)"
+      },
+      {
+        "criterion": "All compiled outputs have valid Claude Code format",
+        "validation_method": "Parse compiled .md files and verify structure",
+        "pass_condition": "Each agent.md must have: (1) Valid YAML frontmatter with required fields (agent_id, commands, dependencies), (2) Valid markdown body, (3) UTF-8 encoding, (4) No compilation error markers",
+        "measurement": "YAML validation pass/fail per agent + markdown validation pass/fail"
+      },
+      {
+        "criterion": "Token savings measured and documented",
+        "validation_method": "Compare baseline token counts from Phase 2.4 archive with TOON source using documented methodology",
+        "pass_condition": "Token savings documented for all 10 agents (no hard threshold - measurement only)",
+        "measurement": "Per-agent savings percentage: (baseline_tokens - toon_tokens) / baseline_tokens * 100%",
+        "note": "Hard 50% threshold removed - this is measurement/documentation requirement only"
+      },
+      {
+        "criterion": "No critical information lost during conversion",
+        "validation_method": "Round-trip comparison - verify all commands, dependencies, and core sections present in compiled output",
+        "pass_condition": "For each agent: (1) All original commands present in compiled .md, (2) All original dependencies present, (3) Semantic equivalence >= 95% (core functionality preserved)",
+        "measurement": "Semantic equivalence score per agent (commands match + dependencies match + core sections match)"
+      },
+      {
+        "criterion": "All tests passing",
+        "validation_method": "Run test suite from tdd_approach.inner_tests",
+        "pass_condition": "100% test pass rate (no failures, no skips)",
+        "measurement": "Test pass count / total test count (must equal 1.0)"
+      }
     ]
   },
   "tdd_approach": {
-    "outer_test": "GIVEN all 10 .toon files\nWHEN I compile each through toolchain\nTHEN all produce valid agent.md with no errors AND round-trip validation shows semantic equivalence",
+    "outer_test": "GIVEN all 10 .toon files\nWHEN I compile each through toolchain\nTHEN all produce valid agent.md with no errors AND round-trip validation shows semantic equivalence >= 95%",
     "inner_tests": [
-      "test_each_agent_compiles_successfully",
-      "test_each_agent_has_all_commands_from_original",
-      "test_each_agent_has_all_dependencies_from_original",
-      "test_token_count_per_agent_vs_baseline",
-      "test_compiled_output_valid_yaml_frontmatter",
-      "test_no_critical_sections_missing"
+      {
+        "test_name": "test_each_agent_compiles_successfully",
+        "description": "Verify all 10 .toon files compile without errors",
+        "assertions": [
+          "For each agent in [product-owner, solution-architect, acceptance-designer, skeleton-builder, researcher, devop, troubleshooter, visual-architect, illustrator, data-engineer]:",
+          "  compiled = compile_toon(f'5d-wave/agents/{agent}.toon')",
+          "  assert compiled.exit_code == 0, f'{agent}: Compilation failed with exit code {compiled.exit_code}'",
+          "  assert compiled.output_file_exists, f'{agent}: No output file created'",
+          "  assert 'ERROR' not in compiled.stderr, f'{agent}: Compilation errors in stderr'"
+        ]
+      },
+      {
+        "test_name": "test_each_agent_has_all_commands_from_original",
+        "description": "Verify compiled agents preserve all commands from original",
+        "assertions": [
+          "For each agent:",
+          "  original = load_from_archive(f'archive/pre-toon-migration/agents/{agent}.md')",
+          "  compiled = load_compiled(f'5d-wave/agents/{agent}.md')",
+          "  original_commands = extract_commands(original)",
+          "  compiled_commands = extract_commands(compiled)",
+          "  assert set(original_commands) == set(compiled_commands), f'{agent}: Command mismatch. Missing: {set(original_commands) - set(compiled_commands)}'"
+        ]
+      },
+      {
+        "test_name": "test_each_agent_has_all_dependencies_from_original",
+        "description": "Verify compiled agents preserve all dependencies from original",
+        "assertions": [
+          "For each agent:",
+          "  original = load_from_archive(f'archive/pre-toon-migration/agents/{agent}.md')",
+          "  compiled = load_compiled(f'5d-wave/agents/{agent}.md')",
+          "  original_deps = extract_dependencies(original)",
+          "  compiled_deps = extract_dependencies(compiled)",
+          "  assert set(original_deps) == set(compiled_deps), f'{agent}: Dependency mismatch. Missing: {set(original_deps) - set(compiled_deps)}'"
+        ]
+      },
+      {
+        "test_name": "test_token_count_per_agent_vs_baseline",
+        "description": "Measure and document token savings for each agent",
+        "methodology": "Use documented token counting methodology from tools/toon/README.md",
+        "assertions": [
+          "For each agent:",
+          "  baseline_tokens = count_tokens_from_archive(f'archive/pre-toon-migration/agents/{agent}.md')",
+          "  toon_tokens = count_tokens(f'5d-wave/agents/{agent}.toon')",
+          "  savings_percentage = ((baseline_tokens - toon_tokens) / baseline_tokens) * 100",
+          "  document_savings(agent, baseline_tokens, toon_tokens, savings_percentage)",
+          "  # NOTE: No hard threshold - documentation only"
+        ]
+      },
+      {
+        "test_name": "test_compiled_output_valid_yaml_frontmatter",
+        "description": "Verify all compiled outputs have valid YAML frontmatter with required fields",
+        "assertions": [
+          "For each agent:",
+          "  compiled = load_compiled(f'5d-wave/agents/{agent}.md')",
+          "  assert compiled.has_yaml_frontmatter, f'{agent}: No YAML frontmatter found'",
+          "  assert 'agent_id' in compiled.metadata, f'{agent}: Missing agent_id in frontmatter'",
+          "  assert 'commands' in compiled.metadata, f'{agent}: Missing commands in frontmatter'",
+          "  assert 'dependencies' in compiled.metadata, f'{agent}: Missing dependencies in frontmatter'",
+          "  assert is_valid_yaml(compiled.frontmatter), f'{agent}: Invalid YAML syntax in frontmatter'"
+        ]
+      },
+      {
+        "test_name": "test_no_critical_sections_missing",
+        "description": "Verify core agent sections present in compiled output (persona, commands, workflows)",
+        "assertions": [
+          "For each agent:",
+          "  original = load_from_archive(f'archive/pre-toon-migration/agents/{agent}.md')",
+          "  compiled = load_compiled(f'5d-wave/agents/{agent}.md')",
+          "  critical_sections = ['persona', 'commands', 'dependencies']",
+          "  for section in critical_sections:",
+          "    assert section in compiled.sections, f'{agent}: Missing critical section {section}'",
+          "  semantic_score = calculate_semantic_equivalence(original, compiled)",
+          "  assert semantic_score >= 0.95, f'{agent}: Semantic equivalence {semantic_score:.1%} below 95% threshold'"
+        ]
+      },
+      {
+        "test_name": "test_compiler_invocation_documented",
+        "description": "Verify compiler tool location and invocation syntax is documented",
+        "assertions": [
+          "compiler_doc = load('tools/toon/README.md')",
+          "assert 'compiler invocation' in compiler_doc.lower(), 'Compiler invocation not documented'",
+          "assert compiler_tool_exists(), 'Compiler tool not found at documented path'",
+          "assert compiler_can_execute_dry_run(), 'Compiler failed dry-run test'"
+        ]
+      }
     ]
   },
   "refactoring": {
@@ -95,99 +240,392 @@
   },
   "execution_guidance": {
     "approach": "Batch conversion with pattern reuse and continuous validation",
+    "critical_start_requirement": "DO NOT START until all 7 prerequisite checks PASS. Validate prerequisites first, document results, then proceed.",
     "workflow": [
-      "0. PREREQUISITE VALIDATION: Run all prerequisite checks before starting any conversion",
-      "1. Apply conversion patterns from tools/toon/README.md",
-      "2. Convert each agent.md to agent.toon following documented patterns",
-      "3. Compile each TOON file immediately after conversion to validate syntax",
-      "4. For each agent: compare compiled output with archived original using round-trip validator",
-      "5. Write tests to validate all 10 agents (compilation, commands, dependencies, token counts)",
-      "6. Measure token savings: compare TOON source size with archived MD baseline",
-      "7. Apply refactoring level 1 for consistency across all converted agents",
-      "8. DO NOT COMMIT - wait for user approval"
+      "0. PREREQUISITE VALIDATION (CRITICAL - BLOCKING):",
+      "   a. Run all 7 prerequisite checks from context.prerequisite_checks",
+      "   b. Document results: which checks passed, which failed, blocking issues",
+      "   c. HALT if any CRITICAL severity check fails - escalate with estimated remediation time",
+      "   d. Verify tools/toon/README.md contains: TOON v3.0 spec, compiler location/syntax, token counting methodology, conversion examples",
+      "   e. Verify archive/pre-toon-migration/agents/ has 28 files from correct source (5d-wave/agents/)",
+      "   f. Verify baseline token measurements exist and are documented",
+      "   g. Only proceed when all checks PASS",
+      "1. BASELINE VERIFICATION:",
+      "   a. Load baseline token counts from Phase 2.4 documentation",
+      "   b. Verify methodology documented (tool, scope, units)",
+      "   c. Calculate expected token count ranges per agent",
+      "2. PATTERN APPLICATION:",
+      "   a. Review conversion patterns from tools/toon/README.md",
+      "   b. Study pilot agent example (software-crafter.toon if exists)",
+      "   c. Identify common patterns for commands, dependencies, persona sections",
+      "3. AGENT CONVERSION (Iterative, one at a time):",
+      "   For each agent in priority order:",
+      "   a. Convert agent.md to agent.toon following documented patterns",
+      "   b. IMMEDIATELY compile TOON file to validate syntax (fail-fast)",
+      "   c. Run round-trip comparison with archived original",
+      "   d. Verify all commands, dependencies, critical sections present",
+      "   e. Measure token count and calculate savings percentage",
+      "   f. Document results before proceeding to next agent",
+      "   g. If compilation fails: log detailed error, fix TOON syntax, retry (max 3 attempts)",
+      "   h. If semantic equivalence < 95%: review differences, fix critical issues",
+      "4. TEST SUITE EXECUTION:",
+      "   a. Write test framework if not exists (test_03_01.py)",
+      "   b. Implement all 7 inner tests from tdd_approach with explicit assertions",
+      "   c. Run full test suite on all 10 converted agents",
+      "   d. Verify 100% test pass rate (no failures, no skips)",
+      "   e. Fix any test failures before proceeding",
+      "5. TOKEN SAVINGS ANALYSIS:",
+      "   a. Compile token savings data for all 10 agents",
+      "   b. Calculate statistics: mean, median, min, max savings percentages",
+      "   c. Document results (no blocking on hard threshold)",
+      "   d. Flag any agents with unexpectedly low savings for review",
+      "6. REFACTORING PASS:",
+      "   a. Apply level 1 refactoring for consistency across all 10 agents",
+      "   b. Standardize arrow notation (→), section markers (##), formatting",
+      "   c. Re-compile all agents after refactoring to verify no breakage",
+      "   d. Re-run test suite to verify 100% pass rate maintained",
+      "7. FINAL VALIDATION:",
+      "   a. Verify all quality gates pass",
+      "   b. Generate summary of conversions (agents converted, token savings, test results)",
+      "   c. DO NOT COMMIT - present results to user for approval",
+      "8. ROLLBACK PROCEDURE (if critical failure):",
+      "   a. Identify failure point (which agent, which step)",
+      "   b. Document failure details (error messages, context)",
+      "   c. Revert failed agent to .md (do not delete .toon - preserve for debugging)",
+      "   d. Escalate with: agent name, failure scenario, attempted fixes, remediation estimate"
     ],
     "quality_gates": [
-      "All prerequisite checks pass (TOON toolchain exists, archive complete, patterns documented)",
-      "All tests passing (100% required)",
-      "All 10 agents compile successfully with zero errors",
-      "Round-trip validation passes for all agents (semantic equivalence >= 95%)",
-      "Token savings measured and documented (no hard threshold - measurement only)",
-      "Refactoring applied (level 1) for consistency",
-      "No report files created"
+      {
+        "gate": "All prerequisite checks pass",
+        "severity": "CRITICAL",
+        "validation": "7/7 prerequisite checks from context.prerequisite_checks return PASS",
+        "blocking": true
+      },
+      {
+        "gate": "All tests passing",
+        "severity": "CRITICAL",
+        "validation": "100% test pass rate from tdd_approach.inner_tests (0 failures, 0 skips)",
+        "blocking": true
+      },
+      {
+        "gate": "All 10 agents compile successfully",
+        "severity": "CRITICAL",
+        "validation": "Compilation error count = 0 for all 10 agents",
+        "blocking": true
+      },
+      {
+        "gate": "Round-trip validation passes",
+        "severity": "CRITICAL",
+        "validation": "Semantic equivalence >= 95% for all 10 agents",
+        "blocking": true
+      },
+      {
+        "gate": "Token savings measured and documented",
+        "severity": "HIGH",
+        "validation": "Token savings percentage calculated and documented for all 10 agents",
+        "blocking": false,
+        "note": "Measurement requirement only - no hard threshold"
+      },
+      {
+        "gate": "Refactoring applied",
+        "severity": "MEDIUM",
+        "validation": "Level 1 refactoring applied to all 10 agents for consistency",
+        "blocking": false
+      },
+      {
+        "gate": "No report files created",
+        "severity": "HIGH",
+        "validation": "No files created in docs/ except required deliverables",
+        "blocking": true
+      }
     ],
     "error_handling": [
       {
-        "scenario": "TOON toolchain missing",
-        "action": "HALT execution, escalate to complete Phase 1 first",
-        "estimated_resolution": "16-19 hours"
+        "scenario": "TOON v3.0 specification missing",
+        "severity": "CRITICAL",
+        "detection": "Prerequisite check #1 fails: tools/toon/README.md missing or lacks v3.0 spec",
+        "action": "HALT execution immediately, do not attempt conversion",
+        "escalation": "Complete Phase 1.6 (TOON Validation) to produce validated v3.0 schema",
+        "estimated_resolution": "4 hours",
+        "rationale": "Without specification, developer will guess format leading to incompatible outputs"
       },
       {
-        "scenario": "Archive incomplete or from wrong source",
-        "action": "HALT execution, verify and re-run step 2.4",
-        "estimated_resolution": "1-2 hours"
+        "scenario": "TOON compiler missing or non-functional",
+        "severity": "CRITICAL",
+        "detection": "Prerequisite check #2 fails: compiler tool not found or dry-run fails",
+        "action": "HALT execution immediately, do not attempt conversion",
+        "escalation": "Complete Phase 1.2 (Jinja2 Template compiler) and validate on test agent",
+        "estimated_resolution": "6-8 hours",
+        "rationale": "Acceptance criteria requires compilation - unachievable without working compiler"
       },
       {
-        "scenario": "Agent compilation fails",
-        "action": "Log error with details, fix TOON syntax, recompile, continue with remaining agents",
+        "scenario": "Baseline measurements missing",
+        "severity": "CRITICAL",
+        "detection": "Prerequisite check #3 fails: archive incomplete or no baseline token counts",
+        "action": "HALT execution immediately",
+        "escalation": "Complete Phase 2.4 archive creation AND measure baseline token counts for all 28 agents",
+        "estimated_resolution": "2 hours",
+        "rationale": "Cannot measure token savings without baseline - acceptance criteria validation impossible"
+      },
+      {
+        "scenario": "Pilot conversion not completed",
+        "severity": "CRITICAL",
+        "detection": "Prerequisite check #4 fails: no pilot .toon file or no documented savings",
+        "action": "HALT execution immediately",
+        "escalation": "Complete Phase 2.1-2.3 (pilot conversion) with token measurement",
+        "estimated_resolution": "4-6 hours",
+        "rationale": "No reference pattern for batch conversion - developer blindfolded"
+      },
+      {
+        "scenario": "Conversion patterns undocumented",
+        "severity": "CRITICAL",
+        "detection": "Prerequisite check #5 fails: tools/toon/README.md lacks conversion examples",
+        "action": "HALT execution immediately",
+        "escalation": "Complete Phase 2.3 pattern documentation with pilot examples",
+        "estimated_resolution": "3 hours",
+        "rationale": "Developer lacks reference patterns - inconsistent conversions across 10 agents"
+      },
+      {
+        "scenario": "Token counting methodology undefined",
+        "severity": "HIGH",
+        "detection": "Prerequisite check #6 fails: methodology not documented",
+        "action": "Document methodology before proceeding (tool, scope, units)",
+        "escalation": "Add token counting methodology to tools/toon/README.md",
+        "estimated_resolution": "1 hour",
+        "rationale": "Inconsistent measurements across agents - acceptance criteria ambiguous"
+      },
+      {
+        "scenario": "Archive from wrong source path",
+        "severity": "HIGH",
+        "detection": "Prerequisite check #7 fails: archive contains dist/ files instead of 5d-wave/agents/",
+        "action": "HALT execution, verify source correctness",
+        "escalation": "Re-run Phase 2.4 with correct source path 5d-wave/agents/",
+        "estimated_resolution": "1-2 hours",
+        "rationale": "Baseline comparison uses wrong files - all token measurements invalid"
+      },
+      {
+        "scenario": "Agent compilation fails (syntax errors)",
+        "severity": "HIGH",
+        "detection": "Compiler exits with non-zero code or ERROR markers in output",
+        "action": "Log detailed error (agent name, line number, error message), fix TOON syntax, recompile",
+        "retry_limit": "3 attempts per agent",
+        "escalation_if_unresolved": "Skip agent, document as failed, continue with remaining agents, escalate at end",
         "estimated_resolution": "15-60 minutes per agent"
       },
       {
         "scenario": "Round-trip validation fails (semantic differences)",
-        "action": "Review differences, determine if acceptable or critical, fix if critical",
+        "severity": "HIGH",
+        "detection": "Semantic equivalence score < 95%",
+        "action": "Review differences in commands, dependencies, critical sections. Fix if critical information lost.",
+        "acceptable_differences": "Formatting changes, comment differences, non-functional whitespace",
+        "unacceptable_differences": "Missing commands, missing dependencies, missing core functionality",
         "estimated_resolution": "30-90 minutes per agent"
       },
       {
-        "scenario": "Token savings below expectations",
+        "scenario": "Token savings lower than expected",
+        "severity": "LOW",
+        "detection": "Savings percentage < 50% for one or more agents",
         "action": "Document actual savings, no blocking - this is measurement not hard gate",
-        "estimated_resolution": "No action required"
+        "investigation": "Review agent for optimization opportunities, but do not block on this",
+        "estimated_resolution": "No action required - documentation only"
+      },
+      {
+        "scenario": "Test failures after conversion",
+        "severity": "CRITICAL",
+        "detection": "Test suite pass rate < 100%",
+        "action": "Analyze failing tests, fix root cause (TOON syntax, missing sections, compilation issues), re-run tests",
+        "blocking": true,
+        "estimated_resolution": "30 minutes - 2 hours depending on failure type"
+      },
+      {
+        "scenario": "Multiple agents fail conversion",
+        "severity": "CRITICAL",
+        "detection": "3 or more agents fail compilation or validation",
+        "action": "HALT batch conversion, analyze pattern of failures",
+        "investigation": "Common failure mode suggests systematic issue (wrong patterns, spec mismatch, compiler bug)",
+        "escalation": "Review TOON specification and patterns, potentially revert to Phase 2 for pattern refinement",
+        "estimated_resolution": "4-8 hours for systematic issue resolution"
       }
     ]
   },
   "adversarial_review_mitigations": {
+    "review_summary": {
+      "review_date": "2026-01-05",
+      "reviewer": "Lyra (adversarial review mode)",
+      "original_risk_score": "9/10 (CRITICAL)",
+      "original_status": "NO-GO - Multiple catastrophic blockers",
+      "blockers_identified": 7,
+      "blockers_addressed": 7,
+      "current_status": "CONDITIONAL-GO - All critical blockers mitigated with prerequisite validation"
+    },
     "critical_blockers_addressed": [
       {
+        "blocker_id": 1,
         "blocker": "TOON v3.0 Specification Missing",
-        "mitigation": "Added prerequisite check for tools/toon/README.md with blocking validation",
-        "estimated_resolution": "4 hours if missing (complete Phase 1.1 validation)"
+        "original_severity": "CRITICAL (10/10)",
+        "original_risk": "Without specification, developer will guess format leading to incompatible outputs",
+        "mitigation": "Added CRITICAL prerequisite check #1: Verify tools/toon/README.md contains TOON v3.0 format specification with examples",
+        "mitigation_type": "Blocking prerequisite validation",
+        "validation_method": "Check existence and content of TOON v3.0 spec in tools/toon/README.md before starting conversion",
+        "estimated_resolution_if_missing": "4 hours (Complete Phase 1.6 TOON Validation)",
+        "blast_radius_prevented": "All 10 agent conversions producing wrong format, cascading to Phases 4-8"
       },
       {
+        "blocker_id": 2,
         "blocker": "Compiler Tool Unvalidated",
-        "mitigation": "Added prerequisite check for functional TOON compiler",
-        "estimated_resolution": "6 hours if missing (complete Phase 1.2 compiler validation)"
+        "original_severity": "CRITICAL (10/10)",
+        "original_risk": "Acceptance criteria requires compilation - unachievable without working compiler",
+        "mitigation": "Added CRITICAL prerequisite check #2: Verify compiler tool exists (e.g., tools/toon_compiler.py) and can compile .toon → .md",
+        "mitigation_type": "Blocking prerequisite validation with dry-run test",
+        "validation_method": "Check compiler existence, verify invocation syntax documented, execute dry-run compilation test",
+        "estimated_resolution_if_missing": "6-8 hours (Complete Phase 1.2 Jinja2 Template compiler)",
+        "blast_radius_prevented": "All acceptance criteria unachievable, step fails immediately on first compilation attempt"
       },
       {
+        "blocker_id": 3,
         "blocker": "Baseline Token Measurements Missing",
-        "mitigation": "Added prerequisite check for Phase 2.4 archive completion, changed acceptance criteria from hard threshold to measurement documentation",
-        "estimated_resolution": "2 hours if missing (verify/complete Phase 2.4)"
+        "original_severity": "CRITICAL (8/10)",
+        "original_risk": "Cannot measure token savings without baseline - acceptance criteria validation impossible",
+        "mitigation": "Added CRITICAL prerequisite check #3: Verify Phase 2.4 archive complete AND baseline token counts documented. Changed acceptance criteria from hard 50% threshold to measurement/documentation requirement.",
+        "mitigation_type": "Blocking prerequisite validation + relaxed acceptance criteria",
+        "validation_method": "Check archive/pre-toon-migration/agents/ has 28 files AND baseline measurements exist",
+        "estimated_resolution_if_missing": "2 hours (Complete Phase 2.4 + measure baselines)",
+        "blast_radius_prevented": "Invalid token savings claims, inability to validate SC7 success criterion"
       },
       {
+        "blocker_id": 4,
         "blocker": "Reference Patterns Undefined",
-        "mitigation": "Added prerequisite check for tools/toon/README.md with conversion examples",
-        "estimated_resolution": "3 hours if missing (document patterns from Phase 2.2)"
+        "original_severity": "CRITICAL (7/10)",
+        "original_risk": "Developer lacks reference patterns - inconsistent conversions across 10 agents",
+        "mitigation": "Added CRITICAL prerequisite check #5: Verify tools/toon/README.md contains concrete conversion examples from pilot agent",
+        "mitigation_type": "Blocking prerequisite validation",
+        "validation_method": "Check tools/toon/README.md for documented conversion patterns with pilot examples",
+        "estimated_resolution_if_missing": "3 hours (Complete Phase 2.3 pattern documentation)",
+        "blast_radius_prevented": "Inconsistent conversions, each agent formatted differently, downstream validation failures"
       },
       {
+        "blocker_id": 5,
         "blocker": "Test Specifications Too Vague",
-        "mitigation": "Expanded test specifications with concrete assertions (commands, dependencies, token counts, YAML validation)",
-        "estimated_resolution": "Addressed in updated test specifications"
+        "original_severity": "CRITICAL (7/10)",
+        "original_risk": "Ambiguous tests pass for wrong reasons, integration failures downstream",
+        "mitigation": "Completely rewrote tdd_approach.inner_tests with explicit assertions, validation methods, pass conditions, and measurements for all 7 tests",
+        "mitigation_type": "Detailed test specification with executable pseudo-code",
+        "test_improvements": [
+          "test_each_agent_compiles_successfully: Added exit code, output file, stderr validation",
+          "test_each_agent_has_all_commands_from_original: Added set comparison with missing command detection",
+          "test_each_agent_has_all_dependencies_from_original: Added set comparison with missing dependency detection",
+          "test_token_count_per_agent_vs_baseline: Added methodology reference, removed hard threshold",
+          "test_compiled_output_valid_yaml_frontmatter: Added specific required fields (agent_id, commands, dependencies)",
+          "test_no_critical_sections_missing: Added semantic equivalence >= 95% threshold",
+          "test_compiler_invocation_documented: NEW - Validates compiler documentation and functionality"
+        ],
+        "blast_radius_prevented": "Tests passing with invalid outputs, silent failures in compilation/validation"
+      },
+      {
+        "blocker_id": 6,
+        "blocker": "Token Counting Methodology Undefined",
+        "original_severity": "HIGH (8/10)",
+        "original_risk": "Inconsistent measurements across agents - acceptance criteria ambiguous",
+        "mitigation": "Added HIGH prerequisite check #6: Verify documented methodology specifies tool, scope, units. Updated test_token_count_per_agent_vs_baseline to reference methodology.",
+        "mitigation_type": "Prerequisite validation + standardized methodology requirement",
+        "validation_method": "Check tools/toon/README.md documents: token counting tool (e.g., Anthropic API), scope (source only vs compiled), units (bytes/tokens)",
+        "estimated_resolution_if_missing": "1 hour (Document methodology in tools/toon/README.md)",
+        "blast_radius_prevented": "Inconsistent token measurements, inability to compare agents meaningfully"
+      },
+      {
+        "blocker_id": 7,
+        "blocker": "Dependency Chain Broken (Phase 2.4 Source Path Ambiguity)",
+        "original_severity": "HIGH (7/10)",
+        "original_risk": "Baseline comparison uses wrong files - all token measurements invalid",
+        "mitigation": "Added HIGH prerequisite check #7: Verify archive/pre-toon-migration/agents/ contains SOURCE files from 5d-wave/agents/ NOT compiled dist/ide/agents/",
+        "mitigation_type": "Prerequisite validation with explicit source path verification",
+        "validation_method": "Verify archive contains files from correct source directory (5d-wave/agents/)",
+        "estimated_resolution_if_missing": "1-2 hours (Re-run Phase 2.4 with correct path)",
+        "blast_radius_prevented": "All token savings measurements based on wrong baseline, invalid success criteria validation"
       }
     ],
-    "time_estimate_revision": {
-      "original": "5 hours",
-      "revised": "10-15 hours",
-      "rationale": "Original estimate (30 min/agent) unrealistic. Revised accounts for: conversion (30-45 min/agent), compilation validation (15 min/agent), round-trip validation (15 min/agent), debugging (30-60 min buffer per agent), test framework setup (1-2 hours), refactoring pass (1 hour)"
+    "additional_improvements": [
+      {
+        "improvement": "Time Estimate Revision",
+        "original": "5 hours",
+        "revised": "10-15 hours",
+        "rationale": "Original estimate (30 min/agent) unrealistic. Revised accounts for: conversion (30-45 min/agent), compilation validation (15 min/agent), round-trip validation (15 min/agent), debugging buffer (30-60 min/agent), test framework setup (1-2 hours), refactoring pass (1 hour)"
+      },
+      {
+        "improvement": "Comprehensive Error Handling",
+        "changes": "Expanded error_handling from 5 scenarios to 12 scenarios with severity classification, detection methods, escalation paths, and estimated resolution times"
+      },
+      {
+        "improvement": "Structured Quality Gates",
+        "changes": "Converted quality_gates from simple list to structured objects with severity, validation criteria, blocking status, and notes"
+      },
+      {
+        "improvement": "Detailed Workflow Guidance",
+        "changes": "Expanded workflow from 8 steps to detailed sub-steps with specific validation requirements, fail-fast mechanisms, and rollback procedures"
+      },
+      {
+        "improvement": "Acceptance Criteria Specification",
+        "changes": "Converted acceptance_criteria from simple strings to structured objects with validation_method, pass_condition, measurement, and notes"
+      },
+      {
+        "improvement": "Token Savings Threshold Removal",
+        "rationale": "Removed hard 50% threshold. Changed to measurement/documentation requirement only. Prevents arbitrary failure if TOON format achieves 48% savings (still valuable).",
+        "impact": "Reduces risk of false failures while maintaining measurement accountability"
+      }
+    ],
+    "risk_reduction_analysis": {
+      "original_risk_score": "9/10 (CRITICAL)",
+      "mitigated_risk_score": "3/10 (MEDIUM-LOW)",
+      "risk_reduction": "67% reduction in execution risk",
+      "remaining_risks": [
+        {
+          "risk": "Phase 1-2 may not be complete when Step 3.1 starts",
+          "severity": "MEDIUM",
+          "mitigation": "Prerequisite validation HALTS execution if dependencies missing, provides remediation estimates"
+        },
+        {
+          "risk": "TOON format may not achieve expected token savings",
+          "severity": "LOW",
+          "mitigation": "Removed hard threshold - savings are measured and documented, not a blocking gate"
+        },
+        {
+          "risk": "Individual agent conversion complexity may vary",
+          "severity": "LOW",
+          "mitigation": "Error handling includes per-agent retry logic, escalation after 3 attempts, documentation of failures"
+        }
+      ],
+      "confidence_level": "HIGH - All critical blockers addressed with blocking validations"
     }
   },
   "review_metadata": {
-    "reviewed_by": "software-crafter",
-    "review_date": "2026-01-06",
-    "corrections_applied": [
-      "Added prerequisite validation section with blocking checks",
-      "Changed token savings from hard threshold to measurement documentation",
-      "Expanded test specifications with concrete assertions",
-      "Added comprehensive error handling procedures",
-      "Revised time estimate from 5 to 10-15 hours based on realistic task breakdown",
-      "Added round-trip validation to workflow and acceptance criteria",
-      "Clarified Phase 3 purpose: 27 remaining agents (28 total including pilot)"
-    ]
+    "adversarial_review_date": "2026-01-05",
+    "adversarial_reviewer": "Lyra (adversarial review mode - ruthless analysis)",
+    "corrections_applied_date": "2026-01-08",
+    "corrections_applied_by": "Lyra",
+    "review_document": "docs/workflow/plugin-marketplace-migration/adversarial-reviews/ADVERSARIAL_REVIEW_03-01.md",
+    "corrections_summary": [
+      "Added 7 CRITICAL/HIGH severity prerequisite checks with blocking validation",
+      "Rewrote all 7 inner tests with explicit assertions and validation logic",
+      "Expanded error handling from 5 to 12 scenarios with full escalation procedures",
+      "Restructured acceptance criteria with validation methods and measurements",
+      "Removed hard 50% token savings threshold - changed to measurement requirement",
+      "Added detailed workflow with fail-fast validation and rollback procedures",
+      "Revised time estimate from 5 to 10-15 hours with realistic breakdown",
+      "Added comprehensive risk reduction analysis and mitigation tracking",
+      "Structured quality gates with severity classification and blocking status",
+      "Added critical_start_requirement: DO NOT START until all 7 prerequisite checks PASS"
+    ],
+    "all_critical_blockers_addressed": true,
+    "blocker_resolution_status": {
+      "blocker_1_toon_spec_missing": "MITIGATED - Prerequisite check #1 added",
+      "blocker_2_compiler_unvalidated": "MITIGATED - Prerequisite check #2 added",
+      "blocker_3_baseline_missing": "MITIGATED - Prerequisite check #3 added + threshold removed",
+      "blocker_4_patterns_undefined": "MITIGATED - Prerequisite check #5 added",
+      "blocker_5_tests_vague": "MITIGATED - Complete test rewrite with explicit assertions",
+      "blocker_6_methodology_undefined": "MITIGATED - Prerequisite check #6 added",
+      "blocker_7_dependency_broken": "MITIGATED - Prerequisite check #7 added"
+    },
+    "step_status_after_corrections": "CONDITIONAL-GO - Safe to execute IF all 7 prerequisite checks PASS. HALT immediately if any CRITICAL check fails.",
+    "estimated_total_remediation_if_all_missing": "21-28 hours (sum of all prerequisite resolution estimates)"
   }
 }

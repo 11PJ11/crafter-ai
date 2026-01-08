@@ -232,5 +232,277 @@
       "validation": "Verify tests/plugin/test_full_workflow.py executed and all tests passed"
     },
     "blocking_condition": "If ANY prerequisite step (08-01, 08-02, 08-03) has failing tests or incomplete execution, DO NOT proceed with 08-04. Success criteria validation requires ALL upstream work stable and verified."
+  },
+  "adversarial_review": {
+    "review_date": "2026-01-05",
+    "reviewer": "adversarial-software-crafter-reviewer (Haiku model)",
+    "iteration": 1,
+    "risk_score": 8.5,
+    "risk_level": "CRITICAL",
+    "approval_status": "CONDITIONAL_APPROVAL",
+    "blocker_id": "BLOCKER_5",
+    "blocker_category": "TOKEN_BASELINE_MISSING",
+    "blast_radius": "ENTIRE_PROJECT",
+    "findings": {
+      "critical_issues": [
+        {
+          "issue_id": "08-04-C1",
+          "category": "UNVALIDATABLE_SUCCESS_CRITERIA",
+          "title": "SC7 Token Savings Measurement Impossible Without Baseline",
+          "description": "Success Criteria SC7 requires measuring ~60% token savings by comparing TOON file sizes to original MD file sizes. However, no baseline measurements of original MD files exist. Roadmap references Phase 2.4 'Archive Original MD Files' but this step does not exist in the defined roadmap. Without baseline, the formula ((original_bytes - toon_bytes) / original_bytes * 100) cannot be calculated.",
+          "evidence": [
+            "MASTER_SUMMARY.md line 137-148: 'SC7 requires ~60% token savings measurement, but no baseline exists to compare against'",
+            "No archive/original_md_byte_counts.json file found in codebase",
+            "No step 02-04.json defining baseline capture process",
+            "Step 08-04 prerequisites (line 36-41) acknowledge missing baseline but provide only fallback mitigations",
+            "Baseline.yaml mentions Phase 2.4 but roadmap.yaml doesn't define Phase 2 step structure"
+          ],
+          "impact": "SC7 success criteria cannot be validated. Project completion blocked - SC7 is one of 7 mandatory gates. Token savings claims become unverifiable guesswork rather than measured improvement.",
+          "severity": "CRITICAL",
+          "probability": "100% (baseline definitively missing)",
+          "resolution_required": "BEFORE_EXECUTION",
+          "recommended_actions": [
+            "OPTION 1: Create Phase 2.4 step to measure and archive current MD file sizes (all 26 agents + 20 commands) in archive/md_baseline.json BEFORE any conversion begins",
+            "OPTION 2: Capture baseline NOW from existing MD files if they still exist (may be deleted if Phases 1-6 already executed)",
+            "OPTION 3: Remove SC7 from success criteria if token savings is non-critical to project goals",
+            "OPTION 4: Use build output sizes as proxy baseline (less accurate - compiled MD vs source MD sizes differ)"
+          ]
+        },
+        {
+          "issue_id": "08-04-C2",
+          "category": "UPSTREAM_DEPENDENCY_ASSUMPTION",
+          "title": "TOON Files Assumed to Exist (May Not If Phase 1-6 Blocked)",
+          "description": "Step 08-04 assumes TOON files exist in 5d-wave/**/*.toon for SC1 and SC7 validation. However, BLOCKER #1 (Phase 1 toolchain missing) and BLOCKER #4 (Phase 5 circular dependencies) may prevent TOON file creation entirely. If upstream phases fail, this step attempts to count non-existent files.",
+          "evidence": [
+            "MASTER_SUMMARY.md line 28-49: 'Phase 1 Toolchain Missing - tools/toon/ infrastructure doesn't exist'",
+            "MASTER_SUMMARY.md line 101-129: 'Phase 5 circular dependencies - skills cannot be validated before implementation'",
+            "Step 08-04 line 78-79: test_sc1_all_toon_sources counts .toon files assuming they exist",
+            "Step 08-04 line 176-177: token_savings_measurement assumes TOON source files exist",
+            "No validation in 08-04 that prerequisite phases actually completed successfully"
+          ],
+          "impact": "SC1 count test finds 0 TOON files → immediate failure. SC7 token savings test cannot run → validation blocked. Entire step fails immediately if upstream work incomplete.",
+          "severity": "CRITICAL",
+          "probability": "HIGH (70-80% if upstream blockers not resolved)",
+          "resolution_required": "BEFORE_EXECUTION",
+          "recommended_actions": [
+            "Add prerequisite validation: Check that Phases 1-6 completed successfully BEFORE running 08-04",
+            "Add fallback: If TOON files don't exist, fail fast with clear error message indicating which upstream phase failed",
+            "Add quality gate: Verify TOON compiler exists and works BEFORE Phase 6 conversion begins",
+            "Add incremental validation: Don't wait until Phase 8 to discover Phase 1-6 failures"
+          ]
+        },
+        {
+          "issue_id": "08-04-C3",
+          "category": "INCOMPLETE_VALIDATION",
+          "title": "SC1 Measures Count Not Format Compliance (26 Agents Reality)",
+          "description": "Test test_sc1_all_toon_sources (line 78) enhanced to parse TOON files for format validation, but acceptance criteria (line 65) still states '26 TOON agents + 20 TOON commands counted and format-validated'. However, BLOCKER #2 reveals actual agent count is 26, not 28 as originally specified. Quality gates must use correct count.",
+          "evidence": [
+            "MASTER_SUMMARY.md line 51-74: 'Agent Count Mismatch - roadmap specifies 28 agents, build processes 26 agents'",
+            "dist/ide/agents/dw/config.json: 'agents_processed': 26 (actual reality)",
+            "Step 08-04 line 213-219: component_count_correction acknowledges 26 agents as correct count",
+            "Original SC1 specification (baseline.yaml): claimed 28 agents before correction",
+            "Risk: Using wrong count (28) causes test assertion failures even when migration succeeds"
+          ],
+          "impact": "If test uses hardcoded 28 agents assertion, validation fails even when all actual agents (26) converted successfully. False negative failure blocks project completion.",
+          "severity": "HIGH",
+          "probability": "100% (count mismatch confirmed)",
+          "resolution_required": "BEFORE_EXECUTION",
+          "recommended_actions": [
+            "Update test_sc1_all_toon_sources assertion to use correct count: assert toon_count >= 46 (26 agents + 20 commands)",
+            "Document actual vs planned counts in test output: '26 agents found (planned: 28 - 2 agents not implemented)'",
+            "Update all quality gates to use 26 agents consistently",
+            "Audit source to verify 26 is correct OR identify 2 missing agents and implement them"
+          ]
+        }
+      ],
+      "high_issues": [
+        {
+          "issue_id": "08-04-H1",
+          "category": "MISSING_PREREQUISITE_STEP",
+          "title": "Phase 2.4 'Archive Original MD Files' Step Not Defined in Roadmap",
+          "description": "Baseline.yaml and step specifications reference Phase 2.4 'Archive Original MD Files' as source for token baseline measurements. However, roadmap.yaml does not define Phase 2 step structure, and no step 02-04.json file exists. This orphaned reference creates confusion and missing prerequisite.",
+          "evidence": [
+            "MASTER_SUMMARY.md line 142: 'Roadmap mentions Phase 2.4 Archive Original MD Files but step doesn't exist'",
+            "Step 08-04 line 36: References 'Phase 2.4 (Archive Original MD Files) should have captured baseline'",
+            "Step 08-04 line 174: 'Original MD files from 5d-wave/ before migration (archived in Phase 2.4 OR captured in 08-04 if missing)'",
+            "Grep search for 02-04.json: No file found",
+            "Baseline.yaml mentions Phase 2.4 but roadmap structure undefined"
+          ],
+          "impact": "Developers following roadmap cannot find Phase 2.4 definition → confusion about when/how to capture baseline. Fallback mitigations in 08-04 create technical debt (baseline should be captured early, not as fallback).",
+          "severity": "HIGH",
+          "probability": "100% (step definitively missing)",
+          "resolution_required": "BEFORE_PHASE_2",
+          "recommended_actions": [
+            "Create step definition file 02-04.json defining baseline capture process",
+            "Specify exact format for archive/md_baseline.json (agent_bytes, command_bytes, total_bytes, capture_date)",
+            "Add baseline capture to Phase 2 execution workflow",
+            "Update roadmap.yaml to include Phase 2.4 in structured format"
+          ]
+        },
+        {
+          "issue_id": "08-04-H2",
+          "category": "CALCULATION_METHODOLOGY_UNCLEAR",
+          "title": "Token Savings Formula Unverifiable Without Both Measurements",
+          "description": "Step specifies formula: token_savings_pct = ((baseline_bytes - toon_bytes) / baseline_bytes) * 100 (line 183-186). However, 'baseline_bytes' source is undefined (original MD? compiled MD? something else?) and 'toon_bytes' may include files not in baseline (new skills, new agents).",
+          "evidence": [
+            "MASTER_SUMMARY.md line 143: 'Cannot calculate (original - toon) / original * 100% without original measurements'",
+            "Step 08-04 line 173-177: baseline_calculation source lists 3 options (archived, current MD, build output) but doesn't specify which is authoritative",
+            "Step 08-04 line 178-181: current_calculation uses TOON source files, but these may include new components not in baseline",
+            "No specification for handling new files: Should Phase 5 skills be included in token savings calculation?"
+          ],
+          "impact": "Token savings percentage becomes ambiguous - different baseline sources produce different percentages. Cannot objectively validate if ~60% savings achieved or if calculation methodology is sound.",
+          "severity": "HIGH",
+          "probability": "MEDIUM (50-60% if not clarified)",
+          "resolution_required": "BEFORE_EXECUTION",
+          "recommended_actions": [
+            "Define authoritative baseline source: MUST use original MD source files from before migration",
+            "Define scope: Only compare agents/commands that existed in baseline (exclude Phase 5 new skills from calculation)",
+            "Document calculation example with real numbers: If baseline = 150KB, TOON = 55KB, savings = 63.3%",
+            "Add test assertion: Fail if baseline source is 'estimated' or 'build output proxy' (too inaccurate)"
+          ]
+        }
+      ],
+      "medium_issues": [
+        {
+          "issue_id": "08-04-M1",
+          "category": "TIME_ESTIMATE_OPTIMISTIC",
+          "title": "3-Hour Estimate Underestimates Baseline Discovery Complexity",
+          "description": "Step estimates 3 hours total (revised from 1 hour). Workflow breakdown (line 93-107) allocates 30 min for 'Verify token baseline exists or capture now'. However, if baseline doesn't exist, capturing it requires: (1) Finding all original MD files (may be scattered), (2) Parsing and measuring each file, (3) Validating completeness, (4) Creating archive structure, (5) Documenting provenance. This likely exceeds 30 min.",
+          "evidence": [
+            "Step 08-04 line 193-205: estimate_revision shows 3 hours with 0.5h for baseline_handling",
+            "MASTER_SUMMARY.md patterns: Time estimates consistently 2-4x underestimated across all steps",
+            "Baseline capture involves file discovery, measurement, validation, documentation - complex multi-step process",
+            "No buffer for 'baseline not found' scenario requiring deeper investigation"
+          ],
+          "impact": "If baseline missing and must be captured during 08-04 execution, step runs over time budget → project timeline slips. Developer may rush baseline capture → poor quality measurements → SC7 validation unreliable.",
+          "severity": "MEDIUM",
+          "probability": "MEDIUM-HIGH (60-70% if baseline missing)",
+          "resolution_required": "PLANNING",
+          "recommended_actions": [
+            "Increase baseline discovery/capture allocation from 0.5h to 1.5h",
+            "Revise total estimate from 3h to 4h to account for discovery complexity",
+            "Add explicit time buffer for 'baseline not found' scenario",
+            "Consider moving baseline capture to Phase 2 (cleaner separation of concerns)"
+          ]
+        },
+        {
+          "issue_id": "08-04-M2",
+          "category": "TEST_RESULT_REUSE_FRAGILITY",
+          "title": "SC5/SC6 Validation Depends on 08-03 Results Persistence",
+          "description": "Tests test_sc5_workflow_functional and test_sc6_constraints_enforced (line 167-170) load results from 08-03 execution instead of re-testing. This assumes: (1) 08-03 ran successfully, (2) Test results persisted to readable location, (3) No environment changes between 08-03 and 08-04. If any assumption breaks, SC5/SC6 validation fails.",
+          "evidence": [
+            "Step 08-04 line 163-171: sc5_sc6_test_reuse approach loads 08-03 results",
+            "Rationale (line 164): 'Re-running identical tests wastes time and risks different results'",
+            "Implementation (line 167): 'Load test results from tests/plugin/test_full_workflow.py execution in 08-03'",
+            "No specification for WHERE results are persisted (pytest cache? custom JSON? stdout parsing?)"
+          ],
+          "impact": "If 08-03 results not available (deleted, format changed, different test runner), SC5/SC6 tests fail → false negative. Fallback (line 170) adds 60 min to re-run tests, negating time savings.",
+          "severity": "MEDIUM",
+          "probability": "LOW-MEDIUM (30-40% in different environments)",
+          "resolution_required": "IMPLEMENTATION",
+          "recommended_actions": [
+            "Specify exact result persistence format: Use pytest-json-report plugin for machine-readable results",
+            "Add validation: Check that 08-03 results file exists and is recent (<24 hours old)",
+            "Implement fallback gracefully: If results unavailable, re-run tests automatically (don't fail immediately)",
+            "Document result file location explicitly: tests/plugin/.pytest_cache/test_results.json"
+          ]
+        }
+      ],
+      "improvements": [
+        {
+          "issue_id": "08-04-I1",
+          "category": "VALIDATION_DEPTH",
+          "title": "SC1 Format Validation Could Be More Comprehensive",
+          "description": "Enhancement sc1_format_validation_enhancement (line 148-162) adds syntax validation for TOON files. However, validation depth is 'syntax only - semantic validation deferred to build step 08-01'. This means files with valid syntax but incorrect content (wrong metadata, missing sections) pass SC1 but fail in 08-01.",
+          "recommendation": "Add semantic validation for critical TOON sections: (1) Verify 'agent' section exists for agent files, (2) Verify 'command' section exists for command files, (3) Validate required metadata fields present (name, id, version). This catches content errors earlier.",
+          "effort_estimate": "1-2 hours additional implementation",
+          "value": "MEDIUM (earlier error detection, clearer failure messages)"
+        },
+        {
+          "issue_id": "08-04-I2",
+          "category": "OUTPUT_VERBOSITY",
+          "title": "Stdout Logging Could Include More Diagnostic Context",
+          "description": "Quality gates (line 119) specify 'Results logged to stdout only (no files created)'. Current output format (line 188-190) logs percentages and sources but doesn't include: (1) Individual file sizes, (2) Top 5 largest files, (3) Compression details, (4) Comparison to target (60% vs actual).",
+          "recommendation": "Enhance stdout output with: 'SC7 Token Savings: 63.3% (Target: 60% - PASS) | Baseline: 150KB (26 agents + 20 cmds) | Current: 55KB | Top 5 largest TOON files: [list] | Baseline source: archived (Phase 2.4)'",
+          "effort_estimate": "30 min additional implementation",
+          "value": "LOW-MEDIUM (better transparency, easier debugging)"
+        }
+      ]
+    },
+    "mitigations_applied": {
+      "critical_blocker_addressed": "Yes - Blocker #5 addressed with fallback baseline capture strategy (line 123-146)",
+      "fallback_mechanisms": [
+        "PRIMARY: Load baseline from archive/original_md_byte_counts.json if Phase 2.4 executed",
+        "FALLBACK 1: Capture baseline from current MD files in 5d-wave/ if they still exist",
+        "FALLBACK 2: Estimate baseline from build output metadata (dist/ide/) if no MD files available",
+        "FALLBACK 3: Create archive/token_baseline.json with current measurements and document provenance"
+      ],
+      "prerequisite_validation_added": "Yes - prerequisites section (line 33-56) validates baseline availability before execution",
+      "component_count_corrected": "Yes - component_count_correction (line 207-219) updates from 28 to 26 agents",
+      "estimate_revised": "Yes - estimate_revision (line 193-205) increases from 1h to 3h for complexity"
+    },
+    "residual_risks": {
+      "baseline_quality": "If baseline captured as fallback (not from Phase 2.4), measurements may be less accurate (compiled MD vs source MD sizes differ by 10-20%)",
+      "upstream_failures": "If Phases 1-6 fail, TOON files don't exist → SC1 and SC7 validation impossible → entire step fails",
+      "count_mismatch": "If actual agent count changes during development (26 → 27 or 25), hardcoded assertions break",
+      "time_overrun": "If baseline capture required during execution, 3h estimate may be insufficient (realistic: 4-5h)"
+    },
+    "execution_readiness": {
+      "can_execute_now": false,
+      "blockers_remaining": [
+        "CRITICAL: Resolve BLOCKER #1 (Phase 1 toolchain) OR confirm Phases 1-6 complete before 08-04",
+        "CRITICAL: Capture token baseline (create Phase 2.4 step) OR execute fallback baseline capture in 08-04",
+        "HIGH: Create step 02-04.json to formalize baseline capture process",
+        "HIGH: Clarify token savings calculation methodology (baseline source, scope, formula)"
+      ],
+      "prerequisites_for_execution": [
+        "Steps 08-01, 08-02, 08-03 completed successfully with all tests passing",
+        "TOON files exist in 5d-wave/**/*.toon (at least 46 files: 26 agents + 20 commands)",
+        "Token baseline available from archive/md_baseline.json OR current MD files OR build output",
+        "Quality gates updated to use correct agent count (26, not 28)"
+      ],
+      "estimated_success_probability": "40-50% (if blockers resolved: 70-75%)"
+    },
+    "recommendations": {
+      "immediate_actions": [
+        "DO NOT EXECUTE 08-04 until token baseline captured and validated",
+        "Create Phase 2.4 step definition (02-04.json) for baseline capture process",
+        "Verify Phases 1-6 completed successfully before attempting 08-04",
+        "Update all quality gates and test assertions to use correct agent count (26)"
+      ],
+      "architectural_improvements": [
+        "Add incremental validation gates after Phases 2, 4, 6 (don't wait until Phase 8 for validation)",
+        "Move baseline capture to Phase 2 (cleaner separation, earlier failure detection)",
+        "Enhance SC1 validation to include semantic checks (metadata, required sections)",
+        "Document exact result persistence format for SC5/SC6 test reuse"
+      ],
+      "timeline_adjustments": [
+        "Increase estimate from 3h to 4h to account for baseline discovery complexity",
+        "Add 1-2h buffer for prerequisite validation and upstream failure investigation",
+        "Consider total Phase 8 time: 08-01 (4-6h) + 08-02 (3-4h) + 08-03 (6-8h) + 08-04 (4h) = 17-22h realistic"
+      ]
+    },
+    "review_metadata": {
+      "review_duration_minutes": 45,
+      "findings_count": {
+        "critical": 3,
+        "high": 2,
+        "medium": 2,
+        "improvements": 2
+      },
+      "evidence_sources": [
+        "docs/workflow/plugin-marketplace-migration/adversarial-reviews/MASTER_SUMMARY.md",
+        "docs/workflow/plugin-marketplace-migration/steps/08-04.json (self-review)",
+        "dist/ide/agents/dw/config.json (agent count validation)",
+        "Codebase grep searches (baseline file, Phase 2.4 step, TOON infrastructure)"
+      ],
+      "cross_references": [
+        "BLOCKER #5: Token baseline missing (MASTER_SUMMARY.md line 132-154)",
+        "BLOCKER #2: Agent count mismatch (MASTER_SUMMARY.md line 51-74)",
+        "BLOCKER #1: Phase 1 toolchain missing (affects upstream TOON file creation)",
+        "Common pattern: Late-stage validation detects early-phase failures"
+      ],
+      "next_review_trigger": "After baseline capture mechanism implemented (Phase 2.4) OR before 08-04 execution begins"
+    }
   }
 }

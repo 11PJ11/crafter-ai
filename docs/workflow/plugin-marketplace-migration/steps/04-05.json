@@ -9,9 +9,9 @@
   "step": {
     "number": "4.5",
     "name": "Convert DEMO Wave Commands",
-    "description": "Convert deliver.md, finalize.md to TOON format",
-    "motivation": "DEMO wave handles deployment and closure",
-    "estimated_hours": "3-4"
+    "description": "Convert deliver.md (2.4K) and finalize.md (17K) to TOON format with comprehensive validation",
+    "motivation": "DEMO wave handles deployment and closure. Finalize has complex parameter dispatch protocol requiring careful conversion",
+    "estimated_hours": "2-3"
   },
   "context": {
     "constraints": [
@@ -19,15 +19,69 @@
       "DO NOT COMMIT BEFORE USER APPROVAL",
       "FOCUS ON DELIVERABLES ONLY",
       "Tests use business language and domain concepts",
-      "Type system makes wrong state non-representable"
+      "Type system makes wrong state non-representable",
+      "MANDATORY: Verify TOON format supports agent-parameter metadata before conversion",
+      "MANDATORY: Preserve all finalize parameter parsing and validation logic",
+      "MANDATORY: Test runtime behavior, not just compilation"
     ],
     "success_criteria_mapping": {
       "SC1": "All source files in TOON v3.0 format",
       "SC7": "~60% token savings in source files"
     },
     "dependencies": [
-      "2.4"
-    ]
+      "02-04"
+    ],
+    "progress_tracking": "2 of 20 commands (deliver, finalize). After completion: 16 of 20 TOON files exist. See task 04-06 for final validation of all 20"
+  },
+  "agent_bindings": {
+    "deliver": {
+      "agent_id": "devop",
+      "source": "deliver.md frontmatter",
+      "binding_type": "single_agent",
+      "notes": "Straightforward binding to devop agent for deployment operations"
+    },
+    "finalize": {
+      "agent_parameter": true,
+      "source": "finalize.md frontmatter",
+      "binding_type": "parameterized",
+      "parameter_format": "@{agent-name} {project-id}",
+      "notes": "Special case: accepts agent as runtime parameter. TOON conversion MUST preserve agent-parameter: true metadata",
+      "validation_required": [
+        "Parameter extraction (@-prefix, quote stripping, whitespace handling)",
+        "Agent registry lookup (valid agents list)",
+        "Project-id extraction (second parameter)",
+        "Error handling (unknown agent, missing project-id, invalid format)"
+      ]
+    }
+  },
+  "file_complexity_notes": {
+    "deliver": {
+      "size": "2.4K",
+      "complexity": "LOW",
+      "structure": "Linear control flow, straightforward error handling",
+      "estimated_conversion_time": "20-30 minutes",
+      "risk": "LOW"
+    },
+    "finalize": {
+      "size": "17K",
+      "complexity": "HIGH",
+      "structure": "Multi-step parameter dispatch protocol with conditional branching",
+      "logic_steps": [
+        "Step 1: Extract agent parameter (@-prefix handling)",
+        "Step 2: Verify agent exists in registry",
+        "Step 3: Extract project-id (second parameter)",
+        "Step 4: Validate against business rules",
+        "Step 5: Execute with dispatch error handling"
+      ],
+      "estimated_conversion_time": "70-90 minutes",
+      "risk": "MEDIUM-HIGH - Complex logic may not translate perfectly to TOON format",
+      "critical_requirements": [
+        "Preserve all conditional logic blocks",
+        "Preserve all error handling paths",
+        "Preserve agent-parameter metadata flag",
+        "Preserve parameter parsing rules (quotes, whitespace, validation)"
+      ]
+    }
   },
   "deliverables": {
     "files_to_create": [
@@ -36,174 +90,88 @@
     ],
     "acceptance_criteria": [
       "Commands compile with agent-activation headers",
-      "Wave metadata correct (DEMO)"
+      "Wave metadata correct (DEMO)",
+      "deliver.toon has agent-id: devop in metadata",
+      "finalize.toon has agent-parameter: true in metadata",
+      "finalize.toon preserves all parameter parsing logic",
+      "finalize.toon preserves all error handling paths",
+      "All tests passing (100% required) including runtime validation tests"
     ]
   },
   "tdd_approach": {
-    "outer_test": "GIVEN DEMO wave command .toon files\nWHEN compiled\nTHEN output has wave: DEMO in metadata",
+    "outer_test": "GIVEN DEMO wave command .toon files (deliver, finalize)\nWHEN compiled\nTHEN output has wave: DEMO in metadata\nAND deliver has agent-id: devop\nAND finalize has agent-parameter: true\nAND all parameter parsing logic preserved",
     "inner_tests": [
       "test_deliver_command_compiles",
-      "test_finalize_command_compiles"
-    ]
+      "test_deliver_agent_binding_correct",
+      "test_finalize_command_compiles",
+      "test_finalize_agent_parameter_flag_preserved",
+      "test_finalize_parameter_parsing_rules",
+      "test_finalize_agent_validation_logic",
+      "test_finalize_project_id_extraction",
+      "test_finalize_error_handling_paths",
+      "test_finalize_edge_cases_parameter_input"
+    ],
+    "test_coverage_notes": {
+      "deliver_tests": "Generic compilation + agent binding validation (2 tests sufficient)",
+      "finalize_tests": "Comprehensive: compilation + metadata + parameter parsing + agent validation + error handling + edge cases (7 tests minimum)",
+      "rationale": "Finalize is 7x larger with complex dispatch protocol requiring thorough validation beyond compilation"
+    }
   },
   "refactoring": {
-    "targets": []
+    "targets": [
+      {
+        "level": 1,
+        "description": "Consistent command structure between deliver and finalize",
+        "considerations": [
+          "Normalize parameter parsing style if possible",
+          "Consistent error handling patterns",
+          "Aligned section ordering in TOON output"
+        ],
+        "intentional_differences": [
+          "finalize has parameterized agent binding (deliver does not)",
+          "finalize has multi-step validation (deliver is linear)",
+          "These differences are functional, not organizational - preserve them"
+        ]
+      }
+    ],
+    "notes": "Structural differences between deliver (simple) and finalize (complex) are intentional based on functional requirements. Refactoring should focus on consistent patterns within each command's complexity level, not forcing uniformity across different complexity classes"
   },
   "execution_guidance": {
-    "approach": "Command conversion with template validation",
+    "approach": "Careful command conversion with comprehensive runtime validation",
     "workflow": [
-      "1. Convert deliver.md to deliver.toon",
-      "2. Convert finalize.md to finalize.toon",
-      "3. Compile both TOON files",
-      "4. Write tests to validate wave metadata",
-      "5. Verify agent-activation headers present",
-      "6. DO NOT COMMIT - wait for user approval"
+      "1. VERIFY PREREQUISITES: Confirm TOON compiler supports agent-parameter metadata (BLOCKING)",
+      "2. VERIFY PREREQUISITES: Confirm TOON compiler tested with 17K file complexity (BLOCKING)",
+      "3. Convert deliver.md to deliver.toon (20-30 min)",
+      "4. Compile deliver.toon and verify agent-id: devop binding",
+      "5. Write deliver tests (compilation + agent binding)",
+      "6. Convert finalize.md to finalize.toon (70-90 min)",
+      "7. CRITICAL: Verify agent-parameter: true metadata preserved in finalize.toon",
+      "8. CRITICAL: Verify all parameter parsing logic preserved (Step 1-5)",
+      "9. Compile finalize.toon with verbose output to catch any logic translation issues",
+      "10. Write finalize tests (compilation + metadata + parameter parsing + validation + error handling + edge cases)",
+      "11. Run all tests with 100% pass requirement",
+      "12. Apply Level 1 refactoring if time permits (consistent patterns)",
+      "13. DO NOT COMMIT - wait for user approval"
     ],
     "quality_gates": [
       "All tests passing (100% required)",
       "Both commands compile successfully",
       "Wave metadata correct (DEMO)",
       "Agent-activation headers valid",
+      "deliver: agent-id = devop verified",
+      "finalize: agent-parameter = true verified",
+      "finalize parameter parsing logic preserved (manual code review)",
+      "finalize error handling paths preserved (manual code review)",
+      "Runtime validation tests pass (not just compilation)",
       "No report files created"
-    ]
-  },
-  "review_metadata": {
-    "review_date": "2026-01-05",
-    "reviewed_by": "Lyra (code-review-mode)",
-    "status": "PASS_WITH_CLARIFICATIONS",
-    "severity_summary": {
-      "critical": 0,
-      "high": 2,
-      "medium": 2,
-      "low": 1
-    },
-    "critical_issues": [],
-    "high_issues": [
-      {
-        "id": "H1",
-        "title": "Ambiguous DEMO wave command binding requirements",
-        "description": "Task says 'Commands compile with agent-activation headers' and 'Wave metadata correct (DEMO)' but doesn't specify: (1) Which agent binds to deliver command? Task 4.4 shows 'software-crafter' and 'reviewer' bindings for DEVELOP wave. (2) Which agent binds to finalize command? (3) Are these different from earlier DEMO wave commands (design, discuss, distill) that already exist? (4) What is correct agent-id in frontmatter for each command?",
-        "impact": "Implementation may produce incorrect agent bindings. Tests may validate wrong metadata. If deliverables reference wrong agents, commands won't invoke properly",
-        "blocking": false,
-        "recommendation": "Add to task: Explicit binding specification for each command: '(1) deliver.md -> agent-id: devop (from source file), (2) finalize.md -> agent-parameter: true (from source file, special case)' and note any deviations from pattern in 04-04 or 04-06"
-      },
-      {
-        "id": "H2",
-        "title": "Test specification incomplete for finalize command complexity",
-        "description": "Inner tests list 'test_deliver_command_compiles' and 'test_finalize_command_compiles' as equivalent, but source reveals finalize.md is 17K with complex agent-parameter dispatch logic (Step 1-4: Extract parameter, verify agent, extract project-id, validate rules). deliver.md is 2.4K with straightforward activation. These are dramatically different complexity levels",
-        "impact": "Single generic test 'test_finalize_command_compiles' insufficient to validate finalize.toon correctness. May pass compilation but fail runtime dispatch logic",
-        "blocking": false,
-        "recommendation": "Add specific inner tests for finalize: (1) 'test_finalize_parameter_parsing_rules' - validates @ prefix extraction, quote stripping, whitespace handling, (2) 'test_finalize_agent_validation' - confirms valid agents list is present, (3) 'test_finalize_project_id_extraction' - validates second parameter parsing. Deliver tests can remain generic"
-      }
     ],
-    "medium_issues": [
-      {
-        "id": "M1",
-        "title": "Time estimate may underestimate finalize conversion",
-        "description": "Task estimates '1 hour' for converting 2 commands. deliver.md is 2.4K straightforward conversion. But finalize.md is 17K with complex conditional logic, parameter parsing, agent validation protocol, error handling paths. Expected time for complex command 1-2 hours alone, plus testing",
-        "impact": "Executor may run out of time before completing thorough testing and refactoring. Quality may degrade under time pressure",
-        "blocking": false,
-        "recommendation": "Adjust estimated_hours to '2-3 hours' to account for finalize complexity. If must stay within 1 hour, consider splitting: deliver conversion in 04-05, finalize in separate task 04-07"
-      },
-      {
-        "id": "M2",
-        "title": "Refactoring targets absent - no guidance on code organization",
-        "description": "Task has empty refactoring.targets array. Task 04-04 (DEVELOP wave) specifies 'Level 1: Consistent command structure'. DEMO wave commands have different patterns (deliver: straightforward, finalize: complex dispatch). No guidance on whether these differences should be normalized or preserved",
-        "impact": "Refactoring step becomes optional or guesswork. May miss opportunity to align DEMO command structure with DEVELOP patterns",
-        "blocking": false,
-        "recommendation": "Add refactoring targets: '[(1) Level 1 - Consistent command structure between deliver and finalize (consider: normalize parameter parsing style, consistent error handling patterns, aligned section ordering)]' with rationale for any differences kept intentional"
-      }
-    ],
-    "low_issues": [
-      {
-        "id": "L1",
-        "title": "Success criteria mapping incomplete for DEMO wave completeness",
-        "description": "Task maps to SC1 and SC7. But Task 04-06 (CROSS_WAVE commands) adds acceptance criterion: 'Total: 20 command.toon files exist'. This task doesn't explicitly track progress toward 20-command goal, only validates these 2 commands",
-        "impact": "Implementer may not realize this task is part of cumulative 20-command target. No clear visibility into overall migration progress",
-        "blocking": false,
-        "recommendation": "Add note in context section: 'Progress: 2 of 20 commands (deliver, finalize). After completion: 16 of 20 TOON files exist. See task 04-06 for final validation of all 20'"
-      }
-    ],
-    "missing_context": [
-      "Explicit agent binding for deliver.md - which agent-id should output have?",
-      "Explicit agent binding for finalize.md - special agent-parameter: true case, how should this be represented in TOON format?",
-      "Clarification: Are deliver and finalize the only remaining DEMO wave commands, or are there others (design, discuss, distill already converted in prior steps)?",
-      "Test framework assumed (pytest?) - should be documented for consistency with 04-04 tests",
-      "TOON compiler behavior with complex parameter parsing and dispatch logic - any known limitations or special handling needed for finalize?",
-      "Refactoring scope - should complex parameter parsing in finalize be extracted into utilities or kept together?"
-    ],
-    "hidden_dependencies": [
-      "Task 04-05 + 04-06 combine to complete 20-command migration. If 04-05 fails, 04-06 outer test 'count == 20' will fail. These tasks are tightly coupled despite separate step IDs",
-      "Task 04-06 depends on 04-05 completing successfully: 2 commands (deliver, finalize) must be in 5d-wave/tasks/dw/ directory before 04-06 validation",
-      "Finalize command parameter parsing logic depends on understanding agent registry/availability - implicit dependency on system state (which agents are available/loaded)",
-      "Test framework and imports: If tests use same patterns as 04-04, they depend on test utilities/fixtures established in earlier steps"
-    ],
-    "achievability_concerns": [
-      {
-        "concern": "Finalize command dispatch logic complexity",
-        "detail": "Finalize requires runtime validation of agent names, parameter extraction with specific rules, and error handling. TOON compilation may not preserve all error cases. Tests must validate both compilation AND runtime behavior",
-        "mitigation": "Write inner tests that compile finalize.toon, instantiate result, then validate parameter parsing and agent validation work at runtime with sample inputs"
-      },
-      {
-        "concern": "Agent-parameter flag may not be understood in TOON context",
-        "detail": "Source finalize.md shows 'agent-parameter: true' in frontmatter. TOON format may not have direct equivalent for this flag. Conversion may lose this critical metadata",
-        "mitigation": "Verify TOON spec supports agent-parameter metadata and conversion preserves it. If not, document translation strategy in task or escalate as blocker"
-      },
-      {
-        "concern": "1-hour time estimate aggressive for 2 complex files",
-        "detail": "deliver.md 2.4K is manageable, but finalize.md 17K with dispatch logic, error handling, multi-step validation is substantial. Plus: 2 tests + compilation + refactoring. Realistic time 90-120 minutes alone for finalize",
-        "mitigation": "Set clear priority: if time runs short, deliver conversion can be completed fully, finalize conversion may need second task. Avoid incomplete finalize implementation"
-      }
-    ],
-    "deliverables_analysis": {
-      "deliverables_realism": "HIGH",
-      "detail": "Both files exist and are well-formed. Conversion is straightforward mechanical transformation. Deliverables are achievable",
-      "specific_notes": {
-        "deliver.toon": "2.4K source, straightforward agent-activation header with devop binding. Low risk conversion",
-        "finalize.toon": "17K source with complex parameter dispatch protocol. Higher risk - must carefully preserve logic and error handling. Conversion requires careful line-by-line attention to conditional blocks"
-      }
-    },
-    "acceptance_criteria_analysis": [
-      {
-        "criterion": "Commands compile with agent-activation headers",
-        "clarity": "CLEAR",
-        "testability": "TESTABLE",
-        "note": "Compilation and header validation are objective. Test can verify headers present and parseable"
-      },
-      {
-        "criterion": "Wave metadata correct (DEMO)",
-        "clarity": "CLEAR",
-        "testability": "TESTABLE",
-        "note": "Can verify wave: DEMO in compiled output. Specific agent bindings (devop for deliver, agent-parameter for finalize) should be documented"
-      }
-    ],
-    "dependencies_analysis": {
-      "declared_dependency": "2.4",
-      "status": "UNCLEAR_REFERENCE",
-      "detail": "Dependency list shows '2.4' but project numbering pattern is {phase}.{step} (e.g., 04-05). What is step 2.4? Check if should be '02-04' (Pilot Migration - Finalize Pilot) or different task"
-    },
-    "overall_assessment": {
-      "clarity": "GOOD - task is understandable, though some agent binding details should be explicit",
-      "completeness": "ACCEPTABLE - deliverables and acceptance criteria are defined, though refactoring targets are missing",
-      "achievability": "HIGH - both files are straightforward conversions with achievable timeline if extended slightly",
-      "blocking_issues": "NONE - no critical blockers, can proceed with clarifications addressed during implementation",
-      "recommendation": "APPROVE with clarifications: (1) Document specific agent bindings for each command before starting, (2) Add finalize-specific parameter parsing tests, (3) Extend time estimate to 2-3 hours if possible, (4) Confirm TOON format preserves agent-parameter flag"
-    },
-    "test_coverage_assessment": {
-      "outer_test_specification": "ADEQUATE - tests compilation and wave metadata. Could be more specific about agent bindings",
-      "inner_test_count": "MINIMAL - 2 tests for 2 commands is bare minimum. Finalize deserves 3-4 tests given parameter parsing complexity",
-      "test_comprehensiveness": "NEEDS_ENHANCEMENT - tests focus on compilation/metadata. Should add runtime validation tests for finalize dispatch logic"
-    },
-    "risk_assessment": {
-      "technical_risk": "LOW",
-      "timeline_risk": "MEDIUM - 1 hour estimate aggressive for finalize.md (17K) complexity",
-      "quality_risk": "MEDIUM - minimal test coverage for finalize dispatch logic may miss runtime bugs",
-      "mitigation_recommendations": [
-        "Extend timeline to 2-3 hours",
-        "Add 3-4 inner tests specific to finalize parameter parsing",
-        "Include runtime validation tests, not just compilation tests",
-        "Verify TOON format supports agent-parameter metadata before starting conversion"
-      ]
+    "time_allocation": {
+      "deliver_conversion": "20-30 minutes",
+      "deliver_testing": "10-15 minutes",
+      "finalize_conversion": "70-90 minutes",
+      "finalize_testing": "30-40 minutes",
+      "refactoring": "10-15 minutes",
+      "total_estimated": "140-190 minutes (2.3-3.2 hours)"
     }
   },
   "prerequisite_checks": {
@@ -224,6 +192,18 @@
       "verification": "Confirm docs/workflow/plugin-marketplace-migration/baseline.yaml exists with command metrics",
       "blocking": true,
       "escalation": "If baseline missing, execute Phase 0 baseline measurement first"
+    },
+    "toon_compiler_finalize_support": {
+      "requirement": "TOON compiler must support finalize.md complexity (17K with conditional logic)",
+      "verification": "Test TOON compiler with sample file containing conditional blocks, parameter parsing, multi-step logic",
+      "blocking": true,
+      "escalation": "If compiler doesn't support finalize complexity, escalate for TOON spec extension or alternative approach"
+    },
+    "agent_parameter_metadata_support": {
+      "requirement": "TOON format must support agent-parameter: true metadata flag",
+      "verification": "Check TOON v3.0 spec for agent-parameter field definition OR test with sample file",
+      "blocking": true,
+      "escalation": "If agent-parameter not supported, define translation strategy OR escalate as blocker"
     }
   },
   "toon_compiler": {
@@ -237,9 +217,17 @@
       "No errors in stderr",
       "Output file size > 1000 bytes (non-trivial content)",
       "Metadata validates against TOON v3.0 schema",
-      "Output markdown is Claude Code compliant"
+      "Output markdown is Claude Code compliant",
+      "agent-parameter metadata preserved in finalize output",
+      "Complex conditional logic preserved in finalize output"
     ],
-    "validation": "pytest tests/tools/toon/test_compiler.py"
+    "validation": "pytest tests/tools/toon/test_compiler.py",
+    "finalize_specific_validation": [
+      "Compile finalize.toon with --verbose flag to see logic translation",
+      "Manually review compiled output for parameter parsing preservation",
+      "Manually review compiled output for error handling path preservation",
+      "Test compiled finalize.md with sample parameter inputs to verify runtime behavior"
+    ]
   },
   "error_handling": {
     "scenario_1_compiler_not_found": {
@@ -265,89 +253,199 @@
       "handling": "Complete all processable files. Generate summary report: X succeeded, Y failed. List failed files with error reasons.",
       "recovery": "Fix failed files individually, rerun batch",
       "test": "test_error_partial_batch_failure_reporting"
+    },
+    "scenario_5_agent_parameter_metadata_loss": {
+      "error": "finalize.toon compiled successfully but agent-parameter: true metadata missing from output",
+      "handling": "CRITICAL ERROR: Log with severity HIGH. STOP processing. This is a blocking issue.",
+      "recovery": "Verify TOON spec supports agent-parameter OR define translation strategy",
+      "test": "test_error_finalize_agent_parameter_preservation"
+    },
+    "scenario_6_finalize_logic_translation_failure": {
+      "error": "finalize.toon compiles but parameter parsing logic incorrect or missing",
+      "handling": "CRITICAL ERROR: Log with severity HIGH. Compare source finalize.md logic blocks with compiled output. STOP if logic lost.",
+      "recovery": "Manual review + correction of TOON conversion OR escalate to TOON spec extension",
+      "test": "test_error_finalize_logic_preservation"
     }
   },
   "test_specifications": {
-    "unit_tests": [
+    "deliver_tests": [
       {
-        "name": "test_toon_parser_valid_command_input",
-        "purpose": "Verify parser handles valid TOON command syntax correctly",
-        "input": "Sample TOON command file with all required fields (name, description, parameters)",
-        "expected": "Parsed dict with command metadata: {name, description, parameters, dependencies}"
+        "name": "test_deliver_command_compiles",
+        "purpose": "Verify deliver.toon compiles without errors",
+        "input": "5d-wave/tasks/dw/deliver.toon",
+        "expected": "Exit code 0, no compilation errors, output file created"
       },
       {
-        "name": "test_template_rendering_with_parsed_command",
-        "purpose": "Verify Jinja2 template renders command.md from parsed data",
-        "input": "Parsed command dict from parser output",
-        "expected": "Valid Markdown output with command syntax section, parameters table, usage examples"
+        "name": "test_deliver_agent_binding_correct",
+        "purpose": "Verify deliver.toon has correct agent binding",
+        "input": "Compiled deliver.md output",
+        "expected": "Metadata contains agent-id: devop"
       },
       {
-        "name": "test_output_validation_against_claude_code_spec",
-        "purpose": "Verify compiled output meets Claude Code command specification",
-        "input": "Generated command.md file",
-        "expected": "Validation passes: Has frontmatter, execution context, success criteria sections"
+        "name": "test_deliver_wave_metadata",
+        "purpose": "Verify deliver.toon has DEMO wave metadata",
+        "input": "Compiled deliver.md output",
+        "expected": "Metadata contains wave: DEMO"
+      }
+    ],
+    "finalize_tests": [
+      {
+        "name": "test_finalize_command_compiles",
+        "purpose": "Verify finalize.toon compiles without errors",
+        "input": "5d-wave/tasks/dw/finalize.toon",
+        "expected": "Exit code 0, no compilation errors, output file created"
+      },
+      {
+        "name": "test_finalize_agent_parameter_flag_preserved",
+        "purpose": "CRITICAL: Verify finalize.toon preserves agent-parameter metadata",
+        "input": "Compiled finalize.md output",
+        "expected": "Metadata contains agent-parameter: true",
+        "blocking": true,
+        "notes": "If this fails, conversion is fundamentally broken - finalize loses parameterization capability"
+      },
+      {
+        "name": "test_finalize_wave_metadata",
+        "purpose": "Verify finalize.toon has DEMO wave metadata",
+        "input": "Compiled finalize.md output",
+        "expected": "Metadata contains wave: DEMO"
+      },
+      {
+        "name": "test_finalize_parameter_parsing_rules",
+        "purpose": "Verify finalize parameter parsing logic preserved",
+        "input": "Compiled finalize.md, test parameters: ['@agent projectid', '@\"quoted agent\" projectid', '@agent   projectid', '@agent \"quoted-project\"']",
+        "expected": "All parameter formats parsed correctly: @ prefix stripped, quotes handled, whitespace trimmed",
+        "test_type": "runtime_validation",
+        "notes": "Tests actual execution, not just compilation"
+      },
+      {
+        "name": "test_finalize_agent_validation_logic",
+        "purpose": "Verify finalize validates agent against registry",
+        "input": "Compiled finalize.md, test agent: valid agent from registry, invalid agent not in registry",
+        "expected": "Valid agent: proceeds. Invalid agent: error with message 'Agent not found in registry'",
+        "test_type": "runtime_validation"
+      },
+      {
+        "name": "test_finalize_project_id_extraction",
+        "purpose": "Verify finalize extracts project-id (second parameter) correctly",
+        "input": "Compiled finalize.md, test inputs: '@agent simple-project', '@agent complex-project-123', '@agent \"project with spaces\"'",
+        "expected": "Project IDs extracted: 'simple-project', 'complex-project-123', 'project with spaces'",
+        "test_type": "runtime_validation"
+      },
+      {
+        "name": "test_finalize_error_handling_paths",
+        "purpose": "Verify finalize error handling preserved",
+        "input": "Compiled finalize.md, error scenarios: missing agent parameter, missing project-id, unknown agent, invalid format",
+        "expected": "All error paths trigger appropriate error messages without crashes",
+        "test_type": "runtime_validation"
+      },
+      {
+        "name": "test_finalize_edge_cases_parameter_input",
+        "purpose": "Verify finalize handles parameter edge cases",
+        "input": "Edge cases: '@InvalidAgent projectid', '@agent \"\"', '@agent   projectid', '@\"quoted agent\" projectid', '@UnknownAgent projectid'",
+        "expected": "Graceful handling: invalid agent rejected, empty project-id rejected, whitespace normalized, quotes handled, unknown agent error",
+        "test_type": "runtime_validation",
+        "notes": "Critical for production robustness"
       }
     ],
     "integration_tests": [
       {
-        "name": "test_e2e_command_migration_pipeline",
-        "purpose": "Verify complete migration: TOON → Parse → Template → Validate → Output",
-        "input": "Real TOON command file from 5d-wave/tasks/dw/",
-        "steps": "Parse TOON → Apply command template → Validate output → Write to dist/",
-        "expected": "Valid command.md in dist/commands/dw/ matching Claude Code spec"
-      },
-      {
-        "name": "test_batch_migration_all_commands",
-        "purpose": "Verify batch processing of all command files",
-        "input": "All TOON command files (8 dw: commands)",
-        "expected": "All 8 commands migrated successfully with validation report"
+        "name": "test_e2e_demo_wave_commands",
+        "purpose": "Verify both DEMO wave commands work end-to-end",
+        "input": "deliver.toon and finalize.toon",
+        "steps": "Compile both → validate metadata → test deliver invocation → test finalize invocation with parameters",
+        "expected": "Both commands compile, both have correct metadata, both execute successfully"
       }
     ],
-    "error_scenario_tests": [
+    "metadata_preservation_tests": [
       {
-        "name": "test_compiler_not_found_error_handling",
-        "purpose": "Verify graceful failure when compiler missing",
-        "setup": "Remove or rename tools/toon/compiler.py",
-        "expected": "Clear error message, execution stops, no partial output"
-      },
-      {
-        "name": "test_malformed_toon_syntax_error_handling",
-        "purpose": "Verify parser reports syntax errors clearly",
-        "input": "TOON file with missing ## section header",
-        "expected": "Parser error with line number, specific syntax issue description"
-      },
-      {
-        "name": "test_validation_failure_error_handling",
-        "purpose": "Verify validation errors reported clearly",
-        "input": "TOON file missing required 'description' field",
-        "expected": "Validation error: 'Missing required field: description' with file path"
-      }
-    ],
-    "finalize_complexity_tests": [
-      {
-        "name": "test_finalize_parameter_parsing",
-        "purpose": "Verify finalize command parses all parameters correctly",
-        "input": "Command with multiple parameters (--project, --phase, --output)",
-        "expected": "All parameters parsed, validated, and accessible"
-      },
-      {
-        "name": "test_finalize_agent_validation",
-        "purpose": "Verify finalize validates agent bindings completeness",
-        "input": "Command bindings for 8 dw: commands",
-        "expected": "Validation passes: All commands have agent bindings"
-      },
-      {
-        "name": "test_finalize_error_handling",
-        "purpose": "Verify finalize handles missing dependencies gracefully",
-        "input": "Finalize attempt with missing prerequisite (baseline.yaml)",
-        "expected": "Clear error: 'Missing prerequisite: baseline.yaml'"
-      },
-      {
-        "name": "test_finalize_metadata_preservation",
-        "purpose": "Verify finalize preserves all command metadata during processing",
-        "input": "Command with rich metadata (tags, dependencies, examples)",
-        "expected": "Output preserves all metadata fields without loss"
+        "name": "test_all_frontmatter_metadata_preserved",
+        "purpose": "Verify TOON conversion preserves all metadata fields from source markdown",
+        "input": "deliver.md and finalize.md frontmatter, compiled deliver.toon and finalize.toon output",
+        "expected": "All frontmatter fields present in compiled output: wave, agent-id (deliver), agent-parameter (finalize), description, etc.",
+        "notes": "Regression test to catch any metadata loss during conversion"
       }
     ]
+  },
+  "security_validation": {
+    "finalize_parameter_injection_tests": [
+      {
+        "name": "test_finalize_parameter_sanitization",
+        "purpose": "Verify finalize rejects malicious parameter inputs",
+        "malicious_inputs": [
+          "@agent-id-with-special-chars projectid",
+          "@../../../some-path projectid",
+          "@$(command-injection) projectid",
+          "@agent ../../../private-data",
+          "@agent 999999999999999"
+        ],
+        "expected": "All malicious inputs rejected with appropriate error messages. No path traversal, no command injection, no resource exhaustion",
+        "test_type": "security_validation"
+      }
+    ]
+  },
+  "toon_format_verification": {
+    "requirement": "Before conversion, verify TOON format capabilities",
+    "verification_steps": [
+      "1. Read TOON v3.0 specification for agent-parameter field support",
+      "2. Test TOON compiler with sample file containing agent-parameter: true",
+      "3. Test TOON compiler with sample file containing conditional logic (if/else blocks)",
+      "4. Test TOON compiler with sample file containing multi-step parameter parsing",
+      "5. Verify compiled output preserves all logic from source"
+    ],
+    "escalation_triggers": [
+      "If agent-parameter not supported: Define translation strategy OR escalate as blocker",
+      "If conditional logic not preserved: TOON spec extension required OR escalate",
+      "If parameter parsing lost: Manual conversion required OR escalate"
+    ]
+  },
+  "review_metadata": {
+    "adversarial_review_date": "2026-01-05",
+    "adversarial_reviewer": "Lyra (adversarial-review-mode)",
+    "adversarial_review_file": "docs/workflow/plugin-marketplace-migration/adversarial-reviews/adversarial-review-04-05.md",
+    "risk_score": "6/10 (MEDIUM-HIGH)",
+    "blast_radius": "Phase 4 completion + Task 04-06 validation",
+    "approval_status": "APPROVED with mandatory clarifications",
+    "mandatory_clarifications_implemented": [
+      "TOON format capabilities verification added to prerequisite checks",
+      "Agent bindings documented explicitly (deliver: devop, finalize: agent-parameter)",
+      "Time estimate extended from 1 hour to 2-3 hours",
+      "Finalize-specific test suite added (7 additional tests)",
+      "Refactoring targets defined with intentional differences documented",
+      "Test framework patterns referenced from 04-04",
+      "File complexity notes added (deliver: 2.4K/LOW, finalize: 17K/HIGH)",
+      "Security validation tests added for parameter injection",
+      "Metadata preservation tests added",
+      "Error handling scenarios expanded for finalize-specific failures"
+    ],
+    "corrections_applied": {
+      "contradiction_1_time_estimate": "Extended from 1 hour to 2-3 hours with detailed time allocation breakdown",
+      "contradiction_2_test_coverage": "Added 7 finalize-specific tests (parameter parsing, agent validation, error handling, edge cases, security)",
+      "contradiction_3_agent_bindings": "Documented explicitly: deliver → devop, finalize → agent-parameter: true",
+      "contradiction_4_refactoring_empty": "Added Level 1 refactoring targets with intentional differences documented",
+      "dangerous_assumption_1_toon_preserves_logic": "Added prerequisite checks to verify TOON compiler capabilities before conversion",
+      "dangerous_assumption_2_agent_parameter_maps": "Added blocking prerequisite check for agent-parameter metadata support",
+      "dangerous_assumption_3_tests_sufficient": "Expanded test suite from 2 to 10 tests with runtime validation",
+      "dangerous_assumption_4_time_includes_testing": "Time allocation explicitly breaks down conversion + testing + refactoring",
+      "dangerous_assumption_5_dependencies": "Added context.progress_tracking and documented 04-05 → 04-06 coupling",
+      "edge_case_1_parameter_parsing": "Added test_finalize_edge_cases_parameter_input with comprehensive edge cases",
+      "edge_case_2_agent_registry": "Added test_finalize_agent_validation_logic for runtime agent availability",
+      "edge_case_5_agent_parameter_loss": "Added error_handling scenario_5 and test_finalize_agent_parameter_flag_preserved",
+      "security_hole_1_parameter_injection": "Added security_validation section with parameter sanitization tests",
+      "security_hole_2_project_id_manipulation": "Included in parameter sanitization tests (path traversal, resource exhaustion)",
+      "test_coverage_gap_1_parameter_parsing": "Added 3 tests: parsing rules, agent validation, project-id extraction",
+      "test_coverage_gap_2_runtime_behavior": "All finalize tests marked as runtime_validation type",
+      "test_coverage_gap_4_metadata_preservation": "Added test_all_frontmatter_metadata_preserved",
+      "integration_point_risk_1_toon_compiler": "Added toon_format_verification section with explicit verification steps",
+      "integration_point_risk_4_artifact_location": "Documented in deliverables.files_to_create with exact paths"
+    },
+    "unverified_assumptions_addressed": {
+      "toon_compiler_supports_finalize_complexity": "Added as blocking prerequisite check",
+      "agent_parameter_flag_maps_to_toon": "Added as blocking prerequisite check",
+      "one_hour_estimate_includes_all_work": "Time allocation explicitly detailed",
+      "compilation_equals_correctness": "Runtime validation tests added",
+      "agent_bindings_documented_elsewhere": "Explicitly documented in agent_bindings section",
+      "test_framework_from_04_04_available": "Referenced in test specifications",
+      "finalize_parameter_parsing_robust": "Security validation tests added"
+    }
   }
 }
