@@ -1,0 +1,67 @@
+{%- set agent_name = metadata.get('name', 'Agent') -%}
+---
+name: {{ agent_name }}
+{%- set description_value = metadata.get('description') or metadata.get('spec') %}
+{%- if description_value %}
+description: {{ description_value }}
+{%- endif %}
+{%- if metadata.get('model') %}
+model: {{ metadata.get('model') }}
+{%- endif %}
+---
+
+> **Agent Activated**: {{ agent_name }}
+>
+> This agent was compiled from TOON format.
+
+# {{ agent_name }}
+
+{% if metadata.get('role') %}**Role**: {{ metadata.get('role') }}{% endif %}
+
+{% if sections.get('core_rules') -%}
+## Core Rules
+{# TODO: Move section type detection to parser (technical debt) #}
+{%- if sections.core_rules is mapping %}
+{%- for rule, desc in sections.core_rules.items() %}
+- **{{ rule }}**: {{ desc }}
+{%- endfor %}
+{%- else %}
+{{ sections.core_rules }}
+{%- endif %}
+{% endif %}
+
+{% if sections.get('commands') -%}
+## Commands
+
+{%- if sections.commands is mapping %}
+{%- for cmd, desc in sections.commands.items() %}
+- **{{ cmd }}**: {{ desc }}
+{%- endfor %}
+{%- elif sections.commands is iterable and sections.commands is not string %}
+{%- for cmd in sections.commands %}
+- {{ cmd }}
+{%- endfor %}
+{%- else %}
+{{ sections.commands }}
+{%- endif %}
+{% endif %}
+
+```yaml
+agent:
+  name: {{ agent_name }}
+{%- if metadata.get('id') %}
+  id: {{ metadata.get('id') }}
+{%- endif %}
+{%- if sections.get('commands') %}
+  commands:
+{%- if sections.commands is mapping %}
+{%- for cmd in sections.commands.keys() %}
+    - {{ cmd }}
+{%- endfor %}
+{%- elif sections.commands is iterable and sections.commands is not string %}
+{%- for cmd in sections.commands %}
+    - {{ cmd }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+```
