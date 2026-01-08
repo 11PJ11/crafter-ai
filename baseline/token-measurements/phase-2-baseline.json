@@ -1,0 +1,635 @@
+{
+  "timestamp": "2026-01-08T14:22:30.744227+00:00",
+  "methodology": "tiktoken cl100k_base encoding (GPT-4 tokenizer)",
+  "files": [
+    {
+      "file_path": "5d-wave/README.md",
+      "byte_count": 4897,
+      "line_count": 138,
+      "token_count": 1075
+    },
+    {
+      "file_path": "5d-wave/agents/acceptance-designer-reviewer.md",
+      "byte_count": 52047,
+      "line_count": 1272,
+      "token_count": 10040
+    },
+    {
+      "file_path": "5d-wave/agents/acceptance-designer.md",
+      "byte_count": 52069,
+      "line_count": 1271,
+      "token_count": 10038
+    },
+    {
+      "file_path": "5d-wave/agents/agent-builder-reviewer.md",
+      "byte_count": 75458,
+      "line_count": 2028,
+      "token_count": 15488
+    },
+    {
+      "file_path": "5d-wave/agents/agent-builder.md",
+      "byte_count": 76736,
+      "line_count": 2058,
+      "token_count": 15740
+    },
+    {
+      "file_path": "5d-wave/agents/avvocato.md",
+      "byte_count": 83323,
+      "line_count": 1836,
+      "token_count": 18016
+    },
+    {
+      "file_path": "5d-wave/agents/cv-optimizer.md",
+      "byte_count": 57593,
+      "line_count": 1692,
+      "token_count": 13732
+    },
+    {
+      "file_path": "5d-wave/agents/data-engineer-reviewer.md",
+      "byte_count": 90880,
+      "line_count": 1883,
+      "token_count": 18552
+    },
+    {
+      "file_path": "5d-wave/agents/data-engineer.md",
+      "byte_count": 90706,
+      "line_count": 1882,
+      "token_count": 18515
+    },
+    {
+      "file_path": "5d-wave/agents/devop-reviewer.md",
+      "byte_count": 51223,
+      "line_count": 1180,
+      "token_count": 9478
+    },
+    {
+      "file_path": "5d-wave/agents/devop.md",
+      "byte_count": 51237,
+      "line_count": 1179,
+      "token_count": 9468
+    },
+    {
+      "file_path": "5d-wave/agents/illustrator-reviewer.md",
+      "byte_count": 51675,
+      "line_count": 1118,
+      "token_count": 10708
+    },
+    {
+      "file_path": "5d-wave/agents/illustrator.md",
+      "byte_count": 51561,
+      "line_count": 1117,
+      "token_count": 10695
+    },
+    {
+      "file_path": "5d-wave/agents/novel-editor-reviewer.md",
+      "byte_count": 36878,
+      "line_count": 814,
+      "token_count": 7595
+    },
+    {
+      "file_path": "5d-wave/agents/novel-editor.md",
+      "byte_count": 37229,
+      "line_count": 818,
+      "token_count": 7658
+    },
+    {
+      "file_path": "5d-wave/agents/product-owner-reviewer.md",
+      "byte_count": 47271,
+      "line_count": 1158,
+      "token_count": 9258
+    },
+    {
+      "file_path": "5d-wave/agents/product-owner.md",
+      "byte_count": 47250,
+      "line_count": 1157,
+      "token_count": 9244
+    },
+    {
+      "file_path": "5d-wave/agents/researcher-reviewer.md",
+      "byte_count": 51914,
+      "line_count": 1331,
+      "token_count": 10943
+    },
+    {
+      "file_path": "5d-wave/agents/researcher.md",
+      "byte_count": 36243,
+      "line_count": 891,
+      "token_count": 7771
+    },
+    {
+      "file_path": "5d-wave/agents/skeleton-builder-reviewer.md",
+      "byte_count": 45573,
+      "line_count": 1088,
+      "token_count": 8558
+    },
+    {
+      "file_path": "5d-wave/agents/skeleton-builder.md",
+      "byte_count": 45561,
+      "line_count": 1087,
+      "token_count": 8539
+    },
+    {
+      "file_path": "5d-wave/agents/software-crafter-reviewer.md",
+      "byte_count": 104571,
+      "line_count": 2212,
+      "token_count": 21045
+    },
+    {
+      "file_path": "5d-wave/agents/software-crafter.md",
+      "byte_count": 111955,
+      "line_count": 2376,
+      "token_count": 22810
+    },
+    {
+      "file_path": "5d-wave/agents/solution-architect-reviewer.md",
+      "byte_count": 55738,
+      "line_count": 1465,
+      "token_count": 10632
+    },
+    {
+      "file_path": "5d-wave/agents/solution-architect.md",
+      "byte_count": 69029,
+      "line_count": 1744,
+      "token_count": 13700
+    },
+    {
+      "file_path": "5d-wave/agents/troubleshooter-reviewer.md",
+      "byte_count": 47239,
+      "line_count": 1095,
+      "token_count": 9096
+    },
+    {
+      "file_path": "5d-wave/agents/troubleshooter.md",
+      "byte_count": 47239,
+      "line_count": 1094,
+      "token_count": 9083
+    },
+    {
+      "file_path": "5d-wave/agents/visual-architect-reviewer.md",
+      "byte_count": 49210,
+      "line_count": 1270,
+      "token_count": 9528
+    },
+    {
+      "file_path": "5d-wave/agents/visual-architect.md",
+      "byte_count": 49166,
+      "line_count": 1269,
+      "token_count": 9507
+    },
+    {
+      "file_path": "5d-wave/checklists/5d-wave-methodology-checklist.md",
+      "byte_count": 13496,
+      "line_count": 333,
+      "token_count": 2418
+    },
+    {
+      "file_path": "5d-wave/checklists/atdd-compliance-checklist.md",
+      "byte_count": 12048,
+      "line_count": 312,
+      "token_count": 2114
+    },
+    {
+      "file_path": "5d-wave/checklists/demo-wave-checklist.md",
+      "byte_count": 12576,
+      "line_count": 342,
+      "token_count": 2253
+    },
+    {
+      "file_path": "5d-wave/checklists/design-wave-checklist.md",
+      "byte_count": 10509,
+      "line_count": 281,
+      "token_count": 1883
+    },
+    {
+      "file_path": "5d-wave/checklists/develop-wave-checklist.md",
+      "byte_count": 12513,
+      "line_count": 332,
+      "token_count": 2408
+    },
+    {
+      "file_path": "5d-wave/checklists/discuss-wave-checklist.md",
+      "byte_count": 8232,
+      "line_count": 240,
+      "token_count": 1569
+    },
+    {
+      "file_path": "5d-wave/checklists/distill-wave-checklist.md",
+      "byte_count": 11564,
+      "line_count": 302,
+      "token_count": 2109
+    },
+    {
+      "file_path": "5d-wave/checklists/production-service-integration-checklist.md",
+      "byte_count": 13657,
+      "line_count": 327,
+      "token_count": 2294
+    },
+    {
+      "file_path": "5d-wave/checklists/visual-architecture-checklist.md",
+      "byte_count": 12572,
+      "line_count": 324,
+      "token_count": 2175
+    },
+    {
+      "file_path": "5d-wave/data/agents_reference/AGENT_EXAMPLES_EXTRACTED.md",
+      "byte_count": 23480,
+      "line_count": 585,
+      "token_count": 4865
+    },
+    {
+      "file_path": "5d-wave/data/agents_reference/AGENT_QUICK_REFERENCE.md",
+      "byte_count": 16519,
+      "line_count": 630,
+      "token_count": 3961
+    },
+    {
+      "file_path": "5d-wave/data/agents_reference/COMMAND-AGENT-MAPPING.md",
+      "byte_count": 4302,
+      "line_count": 109,
+      "token_count": 1014
+    },
+    {
+      "file_path": "5d-wave/data/agents_reference/P1_IMPLEMENTATION_EXAMPLES.md",
+      "byte_count": 31144,
+      "line_count": 927,
+      "token_count": 6565
+    },
+    {
+      "file_path": "5d-wave/data/agents_reference/P1_IMPROVEMENTS_DESIGN.md",
+      "byte_count": 34776,
+      "line_count": 1052,
+      "token_count": 7572
+    },
+    {
+      "file_path": "5d-wave/data/agents_research/AGENTIC_AI_RESEARCH_FINDINGS.md",
+      "byte_count": 32764,
+      "line_count": 1326,
+      "token_count": 7276
+    },
+    {
+      "file_path": "5d-wave/data/anti-patterns/roadmap-prioritization.md",
+      "byte_count": 4474,
+      "line_count": 155,
+      "token_count": 1013
+    },
+    {
+      "file_path": "5d-wave/data/atdd-patterns.md",
+      "byte_count": 22347,
+      "line_count": 615,
+      "token_count": 4380
+    },
+    {
+      "file_path": "5d-wave/data/bmad-kb.md",
+      "byte_count": 22751,
+      "line_count": 562,
+      "token_count": 4146
+    },
+    {
+      "file_path": "5d-wave/data/embed/acceptance-designer/bdd-methodology.md",
+      "byte_count": 31322,
+      "line_count": 877,
+      "token_count": 6951
+    },
+    {
+      "file_path": "5d-wave/data/embed/acceptance-designer/critique-dimensions.md",
+      "byte_count": 6689,
+      "line_count": 204,
+      "token_count": 1471
+    },
+    {
+      "file_path": "5d-wave/data/embed/agent-builder/critique-dimensions.md",
+      "byte_count": 5433,
+      "line_count": 178,
+      "token_count": 1228
+    },
+    {
+      "file_path": "5d-wave/data/embed/data-engineer/01-databases-fundamentals.md",
+      "byte_count": 83517,
+      "line_count": 1152,
+      "token_count": 18191
+    },
+    {
+      "file_path": "5d-wave/data/embed/data-engineer/02-querying-design-security-governance.md",
+      "byte_count": 96651,
+      "line_count": 1167,
+      "token_count": 20703
+    },
+    {
+      "file_path": "5d-wave/data/embed/data-engineer/03-nosql-querying.md",
+      "byte_count": 92313,
+      "line_count": 1534,
+      "token_count": 20992
+    },
+    {
+      "file_path": "5d-wave/data/embed/data-engineer/04-comprehensive-overview.md",
+      "byte_count": 57852,
+      "line_count": 935,
+      "token_count": 12791
+    },
+    {
+      "file_path": "5d-wave/data/embed/data-engineer/critique-dimensions.md",
+      "byte_count": 3195,
+      "line_count": 109,
+      "token_count": 657
+    },
+    {
+      "file_path": "5d-wave/data/embed/devop/README.md",
+      "byte_count": 3041,
+      "line_count": 78,
+      "token_count": 613
+    },
+    {
+      "file_path": "5d-wave/data/embed/devop/critique-dimensions.md",
+      "byte_count": 5580,
+      "line_count": 178,
+      "token_count": 1253
+    },
+    {
+      "file_path": "5d-wave/data/embed/devop/feature-completion-deployment-readiness.md",
+      "byte_count": 32799,
+      "line_count": 433,
+      "token_count": 6850
+    },
+    {
+      "file_path": "5d-wave/data/embed/illustrator/critique-dimensions.md",
+      "byte_count": 2316,
+      "line_count": 94,
+      "token_count": 510
+    },
+    {
+      "file_path": "5d-wave/data/embed/product-owner/bdd-methodology.md",
+      "byte_count": 37453,
+      "line_count": 1167,
+      "token_count": 8634
+    },
+    {
+      "file_path": "5d-wave/data/embed/product-owner/critique-dimensions.md",
+      "byte_count": 13292,
+      "line_count": 403,
+      "token_count": 2782
+    },
+    {
+      "file_path": "5d-wave/data/embed/researcher/critique-dimensions.md",
+      "byte_count": 5421,
+      "line_count": 176,
+      "token_count": 1182
+    },
+    {
+      "file_path": "5d-wave/data/embed/skeleton-builder/comprehensive-walking-skeleton-research.md",
+      "byte_count": 45078,
+      "line_count": 699,
+      "token_count": 9157
+    },
+    {
+      "file_path": "5d-wave/data/embed/skeleton-builder/critique-dimensions.md",
+      "byte_count": 2584,
+      "line_count": 93,
+      "token_count": 574
+    },
+    {
+      "file_path": "5d-wave/data/embed/software-crafter/README.md",
+      "byte_count": 13688,
+      "line_count": 324,
+      "token_count": 2958
+    },
+    {
+      "file_path": "5d-wave/data/embed/software-crafter/critique-dimensions.md",
+      "byte_count": 15368,
+      "line_count": 459,
+      "token_count": 3260
+    },
+    {
+      "file_path": "5d-wave/data/embed/software-crafter/mikado-method-progressive-refactoring.md",
+      "byte_count": 32202,
+      "line_count": 418,
+      "token_count": 7326
+    },
+    {
+      "file_path": "5d-wave/data/embed/software-crafter/outside-in-tdd-methodology.md",
+      "byte_count": 31734,
+      "line_count": 397,
+      "token_count": 7189
+    },
+    {
+      "file_path": "5d-wave/data/embed/software-crafter/property-based-mutation-testing.md",
+      "byte_count": 30737,
+      "line_count": 446,
+      "token_count": 6729
+    },
+    {
+      "file_path": "5d-wave/data/embed/software-crafter/refactoring-patterns-catalog.md",
+      "byte_count": 25955,
+      "line_count": 415,
+      "token_count": 5388
+    },
+    {
+      "file_path": "5d-wave/data/embed/solution-architect/comprehensive-architecture-patterns-and-methodologies.md",
+      "byte_count": 57553,
+      "line_count": 1047,
+      "token_count": 12167
+    },
+    {
+      "file_path": "5d-wave/data/embed/solution-architect/critique-dimensions.md",
+      "byte_count": 13863,
+      "line_count": 420,
+      "token_count": 2799
+    },
+    {
+      "file_path": "5d-wave/data/embed/solution-architect/residuality-theory-methodology.md",
+      "byte_count": 35956,
+      "line_count": 937,
+      "token_count": 7295
+    },
+    {
+      "file_path": "5d-wave/data/embed/troubleshooter/comprehensive-rca-methodologies.md",
+      "byte_count": 67935,
+      "line_count": 1169,
+      "token_count": 14837
+    },
+    {
+      "file_path": "5d-wave/data/embed/troubleshooter/critique-dimensions.md",
+      "byte_count": 2425,
+      "line_count": 83,
+      "token_count": 506
+    },
+    {
+      "file_path": "5d-wave/data/embed/visual-architect/critique-dimensions.md",
+      "byte_count": 2396,
+      "line_count": 87,
+      "token_count": 500
+    },
+    {
+      "file_path": "5d-wave/data/outside-in-tdd-reference.md",
+      "byte_count": 25678,
+      "line_count": 755,
+      "token_count": 4989
+    },
+    {
+      "file_path": "5d-wave/data/research/data-engineering-comprehensive-research-20251003.md",
+      "byte_count": 57862,
+      "line_count": 935,
+      "token_count": 12794
+    },
+    {
+      "file_path": "5d-wave/data/research/database-querying-design-security-governance-20251003-150123.md",
+      "byte_count": 96661,
+      "line_count": 1167,
+      "token_count": 20706
+    },
+    {
+      "file_path": "5d-wave/data/research/databases-data-engineering-20251003-143424.md",
+      "byte_count": 83537,
+      "line_count": 1152,
+      "token_count": 18197
+    },
+    {
+      "file_path": "5d-wave/data/research/nosql-querying-20251003-174827.md",
+      "byte_count": 92323,
+      "line_count": 1534,
+      "token_count": 20995
+    },
+    {
+      "file_path": "5d-wave/data/research/sql-querying-practical-examples-20251003-165818.md",
+      "byte_count": 70059,
+      "line_count": 1900,
+      "token_count": 16835
+    },
+    {
+      "file_path": "5d-wave/data/systematic-refactoring-guide.md",
+      "byte_count": 54871,
+      "line_count": 1817,
+      "token_count": 11604
+    },
+    {
+      "file_path": "5d-wave/data/visual-architecture-principles.md",
+      "byte_count": 20969,
+      "line_count": 512,
+      "token_count": 3886
+    },
+    {
+      "file_path": "5d-wave/tasks/dw/baseline.md",
+      "byte_count": 28940,
+      "line_count": 788,
+      "token_count": 6269
+    },
+    {
+      "file_path": "5d-wave/tasks/dw/deliver.md",
+      "byte_count": 2417,
+      "line_count": 89,
+      "token_count": 550
+    },
+    {
+      "file_path": "5d-wave/tasks/dw/design.md",
+      "byte_count": 2409,
+      "line_count": 86,
+      "token_count": 530
+    },
+    {
+      "file_path": "5d-wave/tasks/dw/develop.md",
+      "byte_count": 2499,
+      "line_count": 86,
+      "token_count": 606
+    },
+    {
+      "file_path": "5d-wave/tasks/dw/diagram.md",
+      "byte_count": 2284,
+      "line_count": 77,
+      "token_count": 471
+    },
+    {
+      "file_path": "5d-wave/tasks/dw/discuss.md",
+      "byte_count": 1986,
+      "line_count": 74,
+      "token_count": 448
+    },
+    {
+      "file_path": "5d-wave/tasks/dw/distill.md",
+      "byte_count": 2520,
+      "line_count": 86,
+      "token_count": 569
+    },
+    {
+      "file_path": "5d-wave/tasks/dw/execute.md",
+      "byte_count": 16550,
+      "line_count": 582,
+      "token_count": 4065
+    },
+    {
+      "file_path": "5d-wave/tasks/dw/finalize.md",
+      "byte_count": 17012,
+      "line_count": 571,
+      "token_count": 3900
+    },
+    {
+      "file_path": "5d-wave/tasks/dw/forge.md",
+      "byte_count": 1917,
+      "line_count": 68,
+      "token_count": 440
+    },
+    {
+      "file_path": "5d-wave/tasks/dw/git.md",
+      "byte_count": 1607,
+      "line_count": 65,
+      "token_count": 364
+    },
+    {
+      "file_path": "5d-wave/tasks/dw/mikado.md",
+      "byte_count": 1896,
+      "line_count": 71,
+      "token_count": 423
+    },
+    {
+      "file_path": "5d-wave/tasks/dw/refactor.md",
+      "byte_count": 1841,
+      "line_count": 71,
+      "token_count": 446
+    },
+    {
+      "file_path": "5d-wave/tasks/dw/research.md",
+      "byte_count": 4010,
+      "line_count": 134,
+      "token_count": 931
+    },
+    {
+      "file_path": "5d-wave/tasks/dw/review.md",
+      "byte_count": 18672,
+      "line_count": 522,
+      "token_count": 4172
+    },
+    {
+      "file_path": "5d-wave/tasks/dw/roadmap.md",
+      "byte_count": 21707,
+      "line_count": 621,
+      "token_count": 4799
+    },
+    {
+      "file_path": "5d-wave/tasks/dw/root-why.md",
+      "byte_count": 1760,
+      "line_count": 66,
+      "token_count": 408
+    },
+    {
+      "file_path": "5d-wave/tasks/dw/skeleton.md",
+      "byte_count": 2174,
+      "line_count": 75,
+      "token_count": 463
+    },
+    {
+      "file_path": "5d-wave/tasks/dw/split.md",
+      "byte_count": 15151,
+      "line_count": 439,
+      "token_count": 3412
+    },
+    {
+      "file_path": "5d-wave/tasks/dw/start.md",
+      "byte_count": 1680,
+      "line_count": 70,
+      "token_count": 371
+    }
+  ],
+  "summary": {
+    "total_files": 104,
+    "total_bytes": 3476535,
+    "total_tokens": 725663
+  }
+}
