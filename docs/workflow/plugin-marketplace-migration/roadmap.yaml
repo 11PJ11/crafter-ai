@@ -880,7 +880,7 @@ phases:
           - ".claude-plugin/plugin.json"
         acceptance_criteria:
           - "JSON validates against Claude Code plugin schema"
-          - "All 28 agents referenced"
+          - "All 26 agents referenced"
           - "All 20 commands referenced"
           - "All 3 skills referenced"
           - "Wave organization maintained"
@@ -1060,7 +1060,7 @@ phases:
         name: "Success Criteria Validation"
         description: |
           Final validation of all 7 success criteria:
-          - SC1: Count TOON files (28 agents + 20 commands)
+          - SC1: Count TOON files (26 agents + 20 commands)
           - SC2: Validate Claude Code compliance
           - SC3: Confirm /plugin install works
           - SC4: Test skill auto-invocation
