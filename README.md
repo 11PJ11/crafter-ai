@@ -105,3 +105,4 @@ This project is open source. See the individual agent documentation for specific
 ---
 
 **For detailed information, see the comprehensive documentation in the [docs/](docs/) directory.**
+# Test pre-commit hook execution
