@@ -61,6 +61,7 @@ The system orchestrates 41+ specialized AI agents across five stages, ensuring c
 
 ### 📋 Additional Documentation
 
+- **[Development Guide](docs/DEVELOPMENT.md)** - Pre-commit hook policy, testing standards, and git workflow
 - **[Complete Agent Documentation](docs/)** - Detailed agent specifications and workflows
 - **[CI/CD Integration](docs/CI-CD-README.md)** - Continuous integration setup
 
