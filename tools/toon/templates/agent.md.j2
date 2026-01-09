@@ -1,20 +1,154 @@
 {%- set agent_name = metadata.get('name', 'Agent') -%}
+{%- set agent_id = metadata.get('id', agent_name | lower | replace(' ', '-')) -%}
+{%- macro escape_yaml_value(value) -%}
+{#- LEVEL 4 REFACTORING: Use YAMLSafeValue domain type for automatic escaping #}
+{#- This macro now delegates to domain type - type ensures YAML safety #}
+{%- if value is none -%}
+null
+{%- elif value.yaml_safe is defined -%}
+{#- Value is YAMLSafeValue domain type - use type's yaml_safe property #}
+{{- value.yaml_safe -}}
+{%- elif value is string -%}
+{#- Fallback for backward compatibility during refactoring #}
+{%- if ':' in value or '"' in value or "'" in value or '\n' in value or value.startswith('#') or value.startswith('&') or value.startswith('*') or value.startswith('[') or value.startswith('{') -%}
+"{{ value | replace('"', '\\"') | replace('\n', '\\n') }}"
+{%- else -%}
+{{ value }}
+{%- endif -%}
+{%- else -%}
+{{ value }}
+{%- endif -%}
+{%- endmacro -%}
+
+{#- ============================================================================ #}
+{#- LEVEL 2 REFACTORING: Extracted reusable template blocks                    #}
+{#- ============================================================================ #}
+
+{%- macro render_frontmatter() -%}
+{#- LEVEL 4 REFACTORING: Use metadata_safe with YAMLSafeValue domain types #}
 ---
-name: {{ agent_name }}
+{%- if metadata_safe is defined and metadata_safe.name is defined %}
+name: {{ escape_yaml_value(metadata_safe.name) }}
+{%- else %}
+name: {{ escape_yaml_value(agent_name) }}
+{%- endif %}
+{%- if metadata_safe is defined %}
+{%- set description_value = metadata_safe.get('description') or metadata_safe.get('spec') %}
+{%- else %}
 {%- set description_value = metadata.get('description') or metadata.get('spec') %}
-{%- if description_value %}
-description: {{ description_value }}
 {%- endif %}
-{%- if metadata.get('model') %}
-model: {{ metadata.get('model') }}
+{%- if description_value %}
+description: {{ escape_yaml_value(description_value) }}
+{%- endif %}
+{%- if metadata_safe is defined and metadata_safe.get('model') %}
+model: {{ escape_yaml_value(metadata_safe.get('model')) }}
+{%- elif metadata.get('model') %}
+model: {{ escape_yaml_value(metadata.get('model')) }}
 {%- endif %}
 ---
+{%- endmacro -%}
 
-> **Agent Activated**: {{ agent_name }}
->
-> This agent was compiled from TOON format.
+{%- macro render_activation_notice() -%}
+# {{ agent_id }}
 
-# {{ agent_name }}
+ACTIVATION-NOTICE: This file contains your full agent operating guidelines. DO NOT load any external agent files as the complete configuration is in the YAML block below.
+
+CRITICAL: Read the full YAML BLOCK that FOLLOWS IN THIS FILE to understand your operating params, start and follow exactly your activation-instructions to alter your state of being, stay in this being until told to exit this mode:
+
+## COMPLETE AGENT DEFINITION FOLLOWS - NO EXTERNAL FILES NEEDED
+{%- endmacro -%}
+
+{%- macro render_embedded_knowledge_markers() -%}
+{#- LEVEL 4 REFACTORING: Use EmbeddedKnowledgeMarker domain types #}
+{%- if embed_markers is defined and embed_markers %}
+
+# ============================================================================
+# EMBEDDED KNOWLEDGE (injected at build time from embed/)
+# ============================================================================
+{%- for marker in embed_markers %}
+{{ marker.start_marker }}
+<!-- Content will be injected here at build time -->
+{{ marker.end_marker }}
+
+{%- endfor %}
+{%- elif sections.get('dependencies') and sections.dependencies.get('embed_knowledge') %}
+{#- Fallback for backward compatibility during refactoring #}
+
+# ============================================================================
+# EMBEDDED KNOWLEDGE (injected at build time from embed/)
+# ============================================================================
+{%- for embed_file in sections.dependencies.embed_knowledge %}
+<!-- BUILD:INJECT:START:{{ embed_file }} -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
+
+{%- endfor %}
+{%- endif %}
+{%- endmacro -%}
+
+{%- macro render_yaml_config() -%}
+```yaml
+agent:
+  name: {{ agent_name }}
+{%- if metadata.get('id') %}
+  id: {{ metadata.get('id') }}
+{%- endif %}
+{#- LEVEL 4 REFACTORING: Use AgentCommand domain types in YAML block #}
+{%- if commands_typed is defined and commands_typed %}
+  commands:
+{%- for cmd in commands_typed %}
+    - {{ cmd.name }}
+{%- endfor %}
+{%- elif sections.get('commands') %}
+{#- Fallback for backward compatibility during refactoring #}
+  commands:
+{%- if sections.commands is mapping %}
+{%- for cmd in sections.commands.keys() %}
+    - {{ cmd }}
+{%- endfor %}
+{%- elif sections.commands is iterable and sections.commands is not string %}
+{%- for cmd in sections.commands %}
+    - {{ cmd }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if sections.get('dependencies') %}
+  dependencies:
+{%- if sections.dependencies.get('tasks') %}
+    tasks:
+{%- for task in sections.dependencies.tasks %}
+      - {{ task }}
+{%- endfor %}
+{%- endif %}
+{%- if sections.dependencies.get('templates') %}
+    templates:
+{%- for template in sections.dependencies.templates %}
+      - {{ template }}
+{%- endfor %}
+{%- endif %}
+{%- if sections.dependencies.get('embed_knowledge') %}
+    embed_knowledge:
+{%- for embed in sections.dependencies.embed_knowledge %}
+      - {{ embed }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if sections.get('persona') %}
+  persona:
+{%- if sections.persona is mapping %}
+{%- for key, value in sections.persona.items() %}
+    {{ key }}: {{ escape_yaml_value(value) }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+```
+{%- endmacro -%}
+{#- ============================================================================ #}
+{#- MAIN TEMPLATE COMPOSITION                                                  #}
+{#- ============================================================================ #}
+{{- render_frontmatter() }}
+
+{{ render_activation_notice() }}
 
 {% if metadata.get('role') %}**Role**: {{ metadata.get('role') }}{% endif %}
 
@@ -30,7 +164,15 @@ model: {{ metadata.get('model') }}
 {%- endif %}
 {% endif %}
 
-{% if sections.get('commands') -%}
+{#- LEVEL 4 REFACTORING: Use AgentCommand domain types #}
+{% if commands_typed is defined and commands_typed -%}
+## Commands
+
+{%- for cmd in commands_typed %}
+- **{{ cmd.name }}**: {{ cmd.description }}
+{%- endfor %}
+{% elif sections.get('commands') -%}
+{#- Fallback for backward compatibility during refactoring #}
 ## Commands
 
 {%- if sections.commands is mapping %}
@@ -46,22 +188,6 @@ model: {{ metadata.get('model') }}
 {%- endif %}
 {% endif %}
 
-```yaml
-agent:
-  name: {{ agent_name }}
-{%- if metadata.get('id') %}
-  id: {{ metadata.get('id') }}
-{%- endif %}
-{%- if sections.get('commands') %}
-  commands:
-{%- if sections.commands is mapping %}
-{%- for cmd in sections.commands.keys() %}
-    - {{ cmd }}
-{%- endfor %}
-{%- elif sections.commands is iterable and sections.commands is not string %}
-{%- for cmd in sections.commands %}
-    - {{ cmd }}
-{%- endfor %}
-{%- endif %}
-{%- endif %}
-```
+{{ render_embedded_knowledge_markers() }}
+
+{{ render_yaml_config() }}
