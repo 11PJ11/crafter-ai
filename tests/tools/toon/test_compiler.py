@@ -36,8 +36,10 @@ def test_compiler_produces_claude_code_agent_with_yaml_metadata(tmp_path):
     output_file = output_dir / 'genre_editor.md'
     content = output_file.read_text()
 
-    assert content.startswith('---\n')
-    assert '\n---\n' in content
+    # Template may have leading newline from Jinja2 rendering
+    content_stripped = content.lstrip('\n')
+    assert content_stripped.startswith('---\n'), "YAML frontmatter must start with ---"
+    assert '\n---\n' in content, "YAML frontmatter must have closing ---"
 
 
 def test_compiler_includes_agent_identity_in_yaml_frontmatter(tmp_path):

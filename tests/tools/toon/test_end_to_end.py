@@ -41,8 +41,8 @@ def test_compile_novel_editor_toon_to_agent_md(tmp_path):
     # Validate agent content sections present
     assert 'NOVEL EDITOR AGENT' in content or 'Aria' in content, "Agent identity should be present"
 
-    # AC#2: Activation notice present
-    assert '> **Agent Activated**:' in content, "Activation notice section missing (AC#2)"
+    # AC#2: Activation notice present (updated format)
+    assert 'ACTIVATION-NOTICE:' in content, "Activation notice section missing (AC#2)"
 
     # AC#3: Agent YAML block present with commands
     assert '```yaml' in content, "YAML code block missing (AC#3)"
