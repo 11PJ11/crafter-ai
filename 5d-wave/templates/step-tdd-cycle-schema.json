@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TDD Cycle Extension for Step Files",
+  "description": "Template to embed in step JSON files during /dw:split compilation. This schema extends existing step files without overwriting their content.",
+  "version": "1.0.0",
+
+  "tdd_cycle": {
+    "acceptance_test": {
+      "scenario_name": "",
+      "test_file": "",
+      "test_file_format": "feature",
+      "scenario_index": 0,
+      "initially_ignored": true,
+      "is_walking_skeleton": false
+    },
+    "expected_unit_tests": [],
+    "mock_boundaries": {
+      "allowed_ports": [],
+      "forbidden_domain_classes": [],
+      "in_memory_adapters": []
+    }
+  },
+
+  "quality_gates": {
+    "acceptance_test_must_fail_first": true,
+    "unit_tests_must_fail_first": true,
+    "no_mocks_inside_hexagon": true,
+    "business_language_required": true,
+    "refactor_level": 4,
+    "in_memory_test_ratio_target": 0.8,
+    "validation_after_each_review": true,
+    "validation_after_each_refactor": true
+  },
+
+  "tdd_state": {
+    "tdd_phase": "NOT_STARTED",
+    "tdd_phase_history": [],
+    "review_attempts": 0,
+    "refactor_level_completed": 0
+  },
+
+  "merge_rules": {
+    "description": "Rules for merging this template with existing step JSON files",
+    "never_overwrite": [
+      "task_id",
+      "project_id",
+      "execution_agent",
+      "self_contained_context",
+      "task_specification",
+      "dependencies",
+      "state.status",
+      "state.assigned_to",
+      "state.started_at",
+      "state.completed_at",
+      "state.updated"
+    ],
+    "always_add_if_missing": [
+      "tdd_cycle",
+      "quality_gates",
+      "tdd_state"
+    ],
+    "conflict_resolution": "existing_value_wins",
+    "validation_after_merge": [
+      "task_id matches filename pattern",
+      "tdd_cycle.acceptance_test.scenario_name is non-empty",
+      "quality_gates section present",
+      "no null required fields"
+    ]
+  },
+
+  "valid_tdd_phases": [
+    "NOT_STARTED",
+    "PREPARE",
+    "RED_ACCEPTANCE",
+    "RED_UNIT",
+    "GREEN_UNIT",
+    "CHECK_ACCEPTANCE",
+    "GREEN_ACCEPTANCE",
+    "REVIEW",
+    "REFACTOR_L1",
+    "REFACTOR_L2",
+    "REFACTOR_L3",
+    "REFACTOR_L4",
+    "POST_REFACTOR_REVIEW",
+    "FINAL_VALIDATE",
+    "COMMIT",
+    "COMPLETED"
+  ],
+
+  "valid_transitions": {
+    "NOT_STARTED": ["PREPARE"],
+    "PREPARE": ["RED_ACCEPTANCE"],
+    "RED_ACCEPTANCE": ["RED_UNIT", "PREPARE"],
+    "RED_UNIT": ["GREEN_UNIT"],
+    "GREEN_UNIT": ["CHECK_ACCEPTANCE"],
+    "CHECK_ACCEPTANCE": ["RED_UNIT", "GREEN_ACCEPTANCE"],
+    "GREEN_ACCEPTANCE": ["REVIEW"],
+    "REVIEW": ["REFACTOR_L1", "REVIEW"],
+    "REFACTOR_L1": ["REFACTOR_L2"],
+    "REFACTOR_L2": ["REFACTOR_L3"],
+    "REFACTOR_L3": ["REFACTOR_L4"],
+    "REFACTOR_L4": ["POST_REFACTOR_REVIEW"],
+    "POST_REFACTOR_REVIEW": ["FINAL_VALIDATE", "REFACTOR_L1"],
+    "FINAL_VALIDATE": ["COMMIT"],
+    "COMMIT": ["COMPLETED"]
+  },
+
+  "failure_classification": {
+    "valid_red": [
+      "ASSERTION_FAILED",
+      "EXPECTED_EXCEPTION_NOT_THROWN"
+    ],
+    "invalid_red": [
+      "COMPILATION_ERROR",
+      "RUNTIME_NULL_REFERENCE",
+      "MISSING_DEPENDENCY",
+      "TIMEOUT",
+      "TEST_FRAMEWORK_ERROR"
+    ],
+    "acceptance_valid_failures": [
+      "BUSINESS_LOGIC_NOT_IMPLEMENTED",
+      "MISSING_ENDPOINT",
+      "MISSING_UI_ELEMENT"
+    ],
+    "acceptance_invalid_failures": [
+      "DATABASE_CONNECTION_FAILED",
+      "TEST_DRIVER_TIMEOUT",
+      "EXTERNAL_SERVICE_UNREACHABLE"
+    ]
+  },
+
+  "test_file_formats": {
+    "feature": {
+      "ignore_syntax": "@ignore",
+      "file_extension": ".feature",
+      "framework": "Cucumber/SpecFlow/Behave"
+    },
+    "cs_nunit": {
+      "ignore_syntax": "[Ignore(\"...\")]",
+      "file_extension": ".cs",
+      "framework": "NUnit"
+    },
+    "cs_xunit": {
+      "ignore_syntax": "[Fact(Skip = \"...\")]",
+      "file_extension": ".cs",
+      "framework": "xUnit"
+    },
+    "py_pytest": {
+      "ignore_syntax": "@pytest.mark.skip",
+      "file_extension": ".py",
+      "framework": "pytest"
+    },
+    "js_jest": {
+      "ignore_syntax": "test.skip()",
+      "file_extension": ".js",
+      "framework": "Jest"
+    },
+    "java_junit5": {
+      "ignore_syntax": "@Disabled",
+      "file_extension": ".java",
+      "framework": "JUnit 5"
+    }
+  }
+}

@@ -4,7 +4,7 @@ argument-hint: '[agent] [step-file-path] - Example: @researcher "steps/01-01.jso
 agent-activation:
   required: false
   agent-parameter: true
-  agent-command: "*workflow-execute"
+  agent-command: "*feature-execute"
 ---
 
 # DW-EXECUTE: Atomic Task Execution Engine
@@ -36,7 +36,7 @@ If agent unavailable:
 ### STEP 3: Extract Step File Path
 
 Extract the second argument (step file path):
-- Example: `"docs/workflow/auth-upgrade/steps/01-01.json"`
+- Example: `"docs/feature/auth-upgrade/steps/01-01.json"`
 - Ensure path is absolute or resolve relative to working directory
 
 ### Parameter Parsing Rules
@@ -136,7 +136,7 @@ Your specific role for this command: Execute atomic tasks with complete state tr
 
 Task type: execute
 
-Read and execute the atomic task specified in: /mnt/c/Repositories/Projects/ai-craft/docs/workflow/auth-upgrade/steps/01-01.json
+Read and execute the atomic task specified in: /mnt/c/Repositories/Projects/ai-craft/docs/feature/auth-upgrade/steps/01-01.json
 
 [... rest of instructions ...]"
 ```
@@ -149,7 +149,7 @@ Your specific role for this command: Execute atomic tasks with complete state tr
 
 Task type: execute
 
-Read and execute the atomic task specified in: /mnt/c/Repositories/Projects/ai-craft/docs/workflow/auth-upgrade/steps/02-01.json
+Read and execute the atomic task specified in: /mnt/c/Repositories/Projects/ai-craft/docs/feature/auth-upgrade/steps/02-01.json
 
 [... rest of instructions ...]"
 ```
@@ -179,16 +179,16 @@ Designed to work with clean context, ensuring consistent quality by giving each 
 
 ```bash
 # Execute a research task
-/dw:execute @researcher "docs/workflow/auth-upgrade/steps/01-01.json"
+/dw:execute @researcher "docs/feature/auth-upgrade/steps/01-01.json"
 
 # Execute implementation task
-/dw:execute @software-crafter "docs/workflow/auth-upgrade/steps/02-01.json"
+/dw:execute @software-crafter "docs/feature/auth-upgrade/steps/02-01.json"
 
 # Execute testing task
-/dw:execute @devop "docs/workflow/auth-upgrade/steps/04-01.json"
+/dw:execute @devop "docs/feature/auth-upgrade/steps/04-01.json"
 
 # Override the suggested agent
-/dw:execute @solution-architect "docs/workflow/auth-upgrade/steps/01-02.json"
+/dw:execute @solution-architect "docs/feature/auth-upgrade/steps/01-02.json"
 ```
 
 ## Complete Workflow Integration
@@ -203,13 +203,13 @@ These commands work together to form a complete workflow:
 /dw:split @solution-architect "auth-migration"
 
 # Step 3: Execute first research task
-/dw:execute @researcher "docs/workflow/auth-migration/steps/01-01.json"
+/dw:execute @researcher "docs/feature/auth-migration/steps/01-01.json"
 
 # Step 4: Review before implementation
-/dw:review @software-crafter task "docs/workflow/auth-migration/steps/02-01.json"
+/dw:review @software-crafter task "docs/feature/auth-migration/steps/02-01.json"
 
 # Step 5: Execute implementation
-/dw:execute @software-crafter "docs/workflow/auth-migration/steps/02-01.json"
+/dw:execute @software-crafter "docs/feature/auth-migration/steps/02-01.json"
 
 # Step 6: Finalize when all tasks complete
 /dw:finalize @devop "auth-migration"
@@ -334,7 +334,7 @@ Execute this task and provide outputs as specified.
   "execution_result": {
     "success": true,
     "outputs": [
-      "docs/workflow/auth-upgrade/provider-selection.md"
+      "docs/feature/auth-upgrade/provider-selection.md"
     ],
     "acceptance_criteria_met": [
       {
@@ -534,7 +534,7 @@ If `ready_for_execution` is false, execution is blocked until issues are resolve
 
 - Updated step file with execution results
 - Any outputs specified in acceptance criteria
-- Execution logs in `docs/workflow/{project-id}/logs/{timestamp}-{task-id}.log`
+- Execution logs in `docs/feature/{project-id}/logs/{timestamp}-{task-id}.log`
 
 ## Notes
 

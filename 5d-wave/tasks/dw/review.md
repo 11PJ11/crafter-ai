@@ -44,7 +44,7 @@ Extract the second argument (artifact type):
 - Example: `task`
 
 Extract the third argument (artifact path):
-- Example: `"docs/workflow/auth-upgrade/steps/01-01.json"`
+- Example: `"docs/feature/auth-upgrade/steps/01-01.json"`
 - Ensure path is absolute or resolve relative to working directory
 
 ### Parameter Parsing Rules
@@ -163,7 +163,7 @@ Your specific role for this command: Provide expert critique and quality assuran
 
 Task type: review
 
-Perform a comprehensive task review of: /mnt/c/Repositories/Projects/ai-craft/docs/workflow/auth-upgrade/steps/02-01.json
+Perform a comprehensive task review of: /mnt/c/Repositories/Projects/ai-craft/docs/feature/auth-upgrade/steps/02-01.json
 
 [... rest of instructions ...]"
 ```
@@ -176,7 +176,7 @@ Your specific role for this command: Provide expert critique and quality assuran
 
 Task type: review
 
-Perform a comprehensive roadmap review of: /mnt/c/Repositories/Projects/ai-craft/docs/workflow/auth-upgrade/roadmap.yaml
+Perform a comprehensive roadmap review of: /mnt/c/Repositories/Projects/ai-craft/docs/feature/auth-upgrade/roadmap.yaml
 
 [... rest of instructions ...]"
 ```
@@ -211,16 +211,16 @@ Supports three review modes:
 
 ```bash
 # Review a roadmap before splitting into tasks
-/dw:review @solution-architect roadmap "docs/workflow/auth-upgrade/roadmap.yaml"
+/dw:review @solution-architect roadmap "docs/feature/auth-upgrade/roadmap.yaml"
 
 # Review a task file before sub-agent execution
-/dw:review @software-crafter task "docs/workflow/auth-upgrade/steps/02-01.json"
+/dw:review @software-crafter task "docs/feature/auth-upgrade/steps/02-01.json"
 
 # Review implementation against requirements
-/dw:review @devop implementation "docs/workflow/auth-upgrade/steps/01-01.json"
+/dw:review @devop implementation "docs/feature/auth-upgrade/steps/01-01.json"
 
 # Security review of authentication roadmap
-/dw:review @security-expert roadmap "docs/workflow/auth-upgrade/roadmap.yaml"
+/dw:review @security-expert roadmap "docs/feature/auth-upgrade/roadmap.yaml"
 ```
 
 ## Complete Workflow Integration
@@ -235,13 +235,13 @@ These commands work together to form a complete workflow:
 /dw:split @solution-architect "auth-migration"
 
 # Step 3: Execute first research task
-/dw:execute @researcher "docs/workflow/auth-migration/steps/01-01.json"
+/dw:execute @researcher "docs/feature/auth-migration/steps/01-01.json"
 
 # Step 4: Review before implementation
-/dw:review @software-crafter task "docs/workflow/auth-migration/steps/02-01.json"
+/dw:review @software-crafter task "docs/feature/auth-migration/steps/02-01.json"
 
 # Step 5: Execute implementation
-/dw:execute @software-crafter "docs/workflow/auth-migration/steps/02-01.json"
+/dw:execute @software-crafter "docs/feature/auth-migration/steps/02-01.json"
 
 # Step 6: Finalize when all tasks complete
 /dw:finalize @devop "auth-migration"
@@ -482,7 +482,7 @@ Choose reviewer based on domain expertise:
 ## Output Artifacts
 
 - Updated artifact file with embedded review
-- Optional: `docs/workflow/{project-id}/reviews/{timestamp}-{artifact-type}-review.md`
+- Optional: `docs/feature/{project-id}/reviews/{timestamp}-{artifact-type}-review.md`
 
 ## Notes
 

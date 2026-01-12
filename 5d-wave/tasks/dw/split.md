@@ -4,10 +4,10 @@ argument-hint: '[agent] [project-id] - Example: @devop "auth-upgrade"'
 agent-activation:
   required: false
   agent-parameter: true
-  agent-command: "*workflow-split"
+  agent-command: "*feature-split"
 ---
 
-# DW-SPLIT: Atomic Task Generation from Roadmap
+# DW-SPLIT: Atomic Task Generation from Roadmap with TDD Cycle Embedding
 
 ## CRITICAL: Agent Invocation Protocol
 
@@ -87,7 +87,7 @@ Task type: split
 Generate atomic, self-contained task files from the roadmap for project: {project-id}
 
 Your responsibilities:
-1. Read the roadmap from: docs/workflow/{project-id}/roadmap.yaml
+1. Read the roadmap from: docs/feature/{project-id}/roadmap.yaml
 2. Transform each step into a complete, atomic task file
 3. Enrich each task with full context so it's self-contained
 4. Ensure no task requires prior context or external knowledge
@@ -96,8 +96,8 @@ Your responsibilities:
 
 WarningCRITICAL: DO NOT COMMIT FILES - REQUEST USER APPROVAL FIRST
 
-Input: docs/workflow/{project-id}/roadmap.yaml
-Output: docs/workflow/{project-id}/steps/*.json
+Input: docs/feature/{project-id}/roadmap.yaml
+Output: docs/feature/{project-id}/steps/*.json
 
 Task File Schema (JSON):
 - task_id: Phase-step number (e.g., '01-01')
@@ -109,7 +109,7 @@ Task File Schema (JSON):
 - state: status='TODO', assigned_to=null, timestamps
 
 Folder Structure:
-docs/workflow/{project-id}/steps/
+docs/feature/{project-id}/steps/
 ├── 01-01.json  (Phase 1, Step 1)
 ├── 01-02.json  (Phase 1, Step 2)
 ├── 02-01.json  (Phase 2, Step 1)
@@ -183,7 +183,7 @@ Generate atomic, self-contained task files from the roadmap for project: microse
 
 **Roadmap Not Found**:
 - If roadmap file doesn't exist at expected path, respond with error:
-  "Roadmap not found: docs/workflow/{project-id}/roadmap.yaml. Please run /dw:roadmap first."
+  "Roadmap not found: docs/feature/{project-id}/roadmap.yaml. Please run /dw:roadmap first."
 
 ---
 
@@ -226,13 +226,13 @@ These commands work together to form a complete workflow:
 /dw:split @solution-architect "auth-migration"
 
 # Step 3: Execute first research task
-/dw:execute @researcher "docs/workflow/auth-migration/steps/01-01.json"
+/dw:execute @researcher "docs/feature/auth-migration/steps/01-01.json"
 
 # Step 4: Review before implementation
-/dw:review @software-crafter task "docs/workflow/auth-migration/steps/02-01.json"
+/dw:review @software-crafter task "docs/feature/auth-migration/steps/02-01.json"
 
 # Step 5: Execute implementation
-/dw:execute @software-crafter "docs/workflow/auth-migration/steps/02-01.json"
+/dw:execute @software-crafter "docs/feature/auth-migration/steps/02-01.json"
 
 # Step 6: Finalize when all tasks complete
 /dw:finalize @devop "auth-migration"
@@ -242,7 +242,7 @@ For details on each command, see respective sections.
 
 ## Context Files Required
 
-- docs/workflow/{project-id}/roadmap.yaml - Master roadmap document
+- docs/feature/{project-id}/roadmap.yaml - Master roadmap document
 - Must be created by DW-ROADMAP command first
 
 ---
@@ -262,7 +262,7 @@ Verify the coordinator performed these tasks:
 
 The invoked agent must accomplish (Reference Only):
 - [ ] Roadmap.yaml successfully parsed
-- [ ] Project folder structure created: `docs/workflow/{project-id}/steps/`
+- [ ] Project folder structure created: `docs/feature/{project-id}/steps/`
 - [ ] All JSON files are syntactically valid
 - [ ] File names follow {phase:02d}-{step:02d}.json format
 - [ ] All fields from roadmap preserved in JSON files
@@ -300,8 +300,8 @@ The following section documents what the invoked agent will do. **You (the coord
 
 **Task**: Transform roadmap into self-contained atomic task files
 
-**Input**: `docs/workflow/{project-id}/roadmap.yaml`
-**Output**: `docs/workflow/{project-id}/steps/*.json`
+**Input**: `docs/feature/{project-id}/roadmap.yaml`
+**Output**: `docs/feature/{project-id}/steps/*.json`
 
 **Core Principle**: Each generated file must be **completely self-contained** so a sub-agent can execute it without any prior context or knowledge of other steps.
 
@@ -312,9 +312,9 @@ The following section documents what the invoked agent will do. **You (the coord
 4. Include all necessary background information
 5. Generate atomic task files for sub-agent execution
 
-**Generated Atomic Task Schema:**
+**Generated Atomic Task Schema with TDD Cycle:**
 
-Each file (`{phase:02d}-{step:02d}.json`) is a complete, executable unit:
+Each file (`{phase:02d}-{step:02d}.json`) is a complete, executable unit with embedded TDD cycle:
 
 ```json
 {
@@ -344,14 +344,93 @@ Each file (`{phase:02d}-{step:02d}.json`) is a complete, executable unit:
     "assigned_to": null,
     "started_at": null,
     "completed_at": null,
-    "updated": "current-timestamp"
+    "updated": "current-timestamp",
+    "tdd_phase": "NOT_STARTED",
+    "tdd_phase_history": [],
+    "review_attempts": 0,
+    "refactor_level_completed": 0
+  },
+  "tdd_cycle": {
+    "acceptance_test": {
+      "scenario_name": "Business scenario from roadmap",
+      "test_file": "tests/acceptance/Feature.feature",
+      "test_file_format": "feature",
+      "scenario_index": 0,
+      "initially_ignored": true,
+      "is_walking_skeleton": false
+    },
+    "expected_unit_tests": [],
+    "mock_boundaries": {
+      "allowed_ports": ["IOrderRepository", "IPaymentGateway"],
+      "forbidden_domain_classes": ["Order", "Money", "Customer"],
+      "in_memory_adapters": ["InMemoryOrderRepository"]
+    }
+  },
+  "quality_gates": {
+    "acceptance_test_must_fail_first": true,
+    "unit_tests_must_fail_first": true,
+    "no_mocks_inside_hexagon": true,
+    "business_language_required": true,
+    "refactor_level": 4,
+    "in_memory_test_ratio_target": 0.8,
+    "validation_after_each_review": true,
+    "validation_after_each_refactor": true
   }
 }
 ```
 
+### TDD Cycle Template Embedding
+
+**CRITICAL**: The TDD cycle section is embedded from template, NOT generated from scratch.
+
+**Template Location**: `5d-wave/templates/step-tdd-cycle-schema.json`
+
+**Merge Algorithm**:
+
+```
+MERGE(existing_step, tdd_template):
+  1. PRESERVE all existing fields from existing_step
+  2. ADD tdd_cycle section from template
+  3. ADD quality_gates section from template
+  4. ADD TDD state fields to state section
+  5. IF conflict on field name:
+     - existing_step value takes precedence
+     - Log warning: "Field {name} conflict, keeping existing value"
+  6. NEVER overwrite: task_id, project_id, task_specification, dependencies
+  7. ALWAYS add: tdd_cycle, quality_gates (if not present)
+```
+
+**Conflict Resolution Priority**:
+1. User-defined values (highest)
+2. Existing step schema values
+3. TDD template defaults (lowest)
+
+### Step Generation Rules
+
+1. **One Scenario = One Step**: Each step maps exactly ONE acceptance test scenario
+2. **First Step Walking Skeleton**: Step 01-01 has `is_walking_skeleton: true`
+3. **Test File Agnostic**: Supports .feature, .cs, .py, .js, etc.
+4. **Mock Boundaries from Architecture**: Analyze docs/architecture to populate allowed_ports
+5. **TDD Phase Tracking**: Initialize `tdd_phase: "NOT_STARTED"`
+
+### Scenario-to-Step Mapping
+
+```
+Feature: Order Management
+├── Scenario 1: Place new order     → Step 01-01 (is_walking_skeleton: true)
+├── Scenario 2: Add item to order   → Step 01-02
+├── Scenario 3: Calculate total     → Step 01-03
+└── Scenario 4: Complete order      → Step 01-04
+```
+
+**Naming Convention**:
+- `scenario_name`: Business description from feature file
+- `test_file`: Path to acceptance test file
+- `scenario_index`: 0-based index within test file
+
 ### Folder Structure Created:
 ```
-docs/workflow/
+docs/feature/
 ├── {project-id}/
 │   ├── roadmap.yaml          # Source roadmap (already exists)
 │   └── steps/                # Generated tracking files
@@ -392,7 +471,7 @@ docs/workflow/
 
 ## Output Artifacts
 
-- Individual JSON tracking files in `docs/workflow/{project-id}/steps/`
+- Individual JSON tracking files in `docs/feature/{project-id}/steps/`
 - Each file ready for state tracking and updates
 - Consistent structure across all project steps
 

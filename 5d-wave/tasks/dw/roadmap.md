@@ -4,7 +4,7 @@ argument-hint: '[agent] [goal-description] - Example: @solution-architect "Migra
 agent-activation:
   required: false
   agent-parameter: true
-  agent-command: "*workflow-roadmap"
+  agent-command: "*feature-roadmap"
 ---
 
 # DW-ROADMAP: Comprehensive Goal Planning Document
@@ -57,7 +57,7 @@ Rules:
 
 #### 3.5.2: Check Baseline File Existence
 
-Expected path: `docs/workflow/{project-id}/baseline.yaml`
+Expected path: `docs/feature/{project-id}/baseline.yaml`
 
 Use the Read tool to check if file exists:
 - If file exists AND is valid YAML: Proceed to 3.5.3
@@ -87,7 +87,7 @@ If validation fails, return specific error:
 ```
 BASELINE VALIDATION FAILED
 
-File: docs/workflow/{project-id}/baseline.yaml
+File: docs/feature/{project-id}/baseline.yaml
 Issue: {specific validation failure}
 
 Please fix the baseline file and retry.
@@ -102,7 +102,7 @@ If baseline file does not exist, return this error and STOP:
 ROADMAP BLOCKED: Baseline measurement file not found
 ================================================================================
 
-Expected location: docs/workflow/{project-id}/baseline.yaml
+Expected location: docs/feature/{project-id}/baseline.yaml
 
 WHAT TO DO:
 
@@ -135,7 +135,7 @@ FOR PROCESS IMPROVEMENTS (non-performance):
 If baseline validation passes, extract key data for agent:
 
 ```
-Baseline Summary (from docs/workflow/{project-id}/baseline.yaml):
+Baseline Summary (from docs/feature/{project-id}/baseline.yaml):
 - Type: {baseline.type}
 - Problem: {baseline.problem_statement.summary}
 - Largest Bottleneck: {baseline.measurements.bottleneck_ranking[0].component} ({baseline.measurements.bottleneck_ranking[0].impact})
@@ -241,7 +241,7 @@ Your responsibilities:
 5. Include complete context in each step for sub-agent execution
 6. Generate structured YAML roadmap document
 
-Output Location: docs/workflow/{project-id}/roadmap.yaml
+Output Location: docs/feature/{project-id}/roadmap.yaml
 
 Roadmap Structure (YAML):
 - project: Metadata including id, name, goal, methodology, estimated_duration
@@ -310,7 +310,7 @@ If research is qualitative-only (no timing), STOP and gather metrics.
 
 For complex refactoring projects, set methodology: 'mikado' and include mikado_integration section referencing the Mikado graph.
 
-Save the roadmap to docs/workflow/{project-id}/roadmap.yaml where project-id is kebab-case derived from the goal."
+Save the roadmap to docs/feature/{project-id}/roadmap.yaml where project-id is kebab-case derived from the goal."
 ```
 
 **Parameter Substitution**:
@@ -405,13 +405,13 @@ These commands work together to form a complete workflow:
 /dw:split @solution-architect "auth-migration"
 
 # Step 3: Execute first research task
-/dw:execute @researcher "docs/workflow/auth-migration/steps/01-01.json"
+/dw:execute @researcher "docs/feature/auth-migration/steps/01-01.json"
 
 # Step 4: Review before implementation
-/dw:review @software-crafter task "docs/workflow/auth-migration/steps/02-01.json"
+/dw:review @software-crafter task "docs/feature/auth-migration/steps/02-01.json"
 
 # Step 5: Execute implementation
-/dw:execute @software-crafter "docs/workflow/auth-migration/steps/02-01.json"
+/dw:execute @software-crafter "docs/feature/auth-migration/steps/02-01.json"
 
 # Step 6: Finalize when all tasks complete
 /dw:finalize @devop "auth-migration"
@@ -448,7 +448,7 @@ The invoked agent must accomplish (Reference Only):
 - [ ] Acceptance criteria are specific and measurable
 - [ ] Dependencies properly mapped between steps
 - [ ] Time estimates provided for planning
-- [ ] File saved as `docs/workflow/{project-id}/roadmap.yaml`
+- [ ] File saved as `docs/feature/{project-id}/roadmap.yaml`
 - [ ] Mikado integration included if applicable
 
 ---
@@ -468,7 +468,7 @@ The following section documents what the invoked agent will do. **You (the coord
 - Design for parallel execution where possible
 - Prevent context degradation through completeness
 
-**Output Location**: `docs/workflow/{project-id}/roadmap.yaml`
+**Output Location**: `docs/feature/{project-id}/roadmap.yaml`
 
 **Roadmap Structure (YAML format for token efficiency):**
 

@@ -1,13 +1,13 @@
 ---
-description: 'Summarize achievements, archive to docs/evolution, clean up workflow [agent] [project-id] - Example: @devop "auth-upgrade"'
+description: 'Summarize achievements, archive to docs/evolution, clean up feature files [agent] [project-id] - Example: @devop "auth-upgrade"'
 argument-hint: '[agent] [project-id] - Example: @devop "auth-upgrade"'
 agent-activation:
   required: false
   agent-parameter: true
-  agent-command: "*workflow-finalize"
+  agent-command: "*feature-finalize"
 ---
 
-# DW-FINALIZE: Project Completion and Archive
+# DW-FINALIZE: Feature Completion, Archive, and Prepare for Push
 
 ## CRITICAL: Agent Invocation Protocol
 
@@ -37,7 +37,7 @@ If agent unavailable:
 
 Extract the second argument (project ID):
 - Example: `"auth-upgrade"`
-- This should match the project-id in the workflow directory
+- This should match the project-id in the feature directory
 
 ### Parameter Parsing Rules
 
@@ -84,14 +84,14 @@ Your specific role for this command: Summarize achievements, archive project evo
 
 Task type: finalize
 
-Finalize and archive the completed workflow project: {project-id}
+Finalize and archive the completed feature: {project-id}
 
 Your responsibilities:
-1. Load project data from docs/workflow/{project-id}/
+1. Load project data from docs/feature/{project-id}/
 2. Read roadmap.yaml and all step JSON files
 3. Analyze execution history and completion metrics
 4. Create comprehensive summary document
-5. Archive to docs/evolution/ with timestamp
+5. Archive to docs/evolution/ with date-feature naming (YYYY-MM-DD-{feature-name}.md)
 6. Clean up temporary workflow files after user approval
 
 CRITICAL: DO NOT COMMIT OR DELETE FILES - REQUEST APPROVAL FIRST
@@ -99,8 +99,8 @@ CRITICAL: DO NOT COMMIT OR DELETE FILES - REQUEST APPROVAL FIRST
 Processing Steps:
 
 PHASE 1 - GATHER:
-- Read docs/workflow/{project-id}/roadmap.yaml
-- Read all docs/workflow/{project-id}/steps/*.json files
+- Read docs/feature/{project-id}/roadmap.yaml
+- Read all docs/feature/{project-id}/steps/*.json files
 - Collect completion metrics, execution times, review feedback
 - Identify key achievements and decisions
 
@@ -116,13 +116,14 @@ Create comprehensive markdown document with executive summary, original goal, ph
 
 PHASE 4 - ARCHIVE:
 - Ensure docs/evolution/ directory exists
-- Save summary as: docs/evolution/{project-id}-{YYYYMMDD-HHMMSS}.md
+- Save summary as: docs/evolution/YYYY-MM-DD-{project-id}.md (date-feature format for temporal ordering)
+- Example: docs/evolution/2025-01-12-order-management.md
 - Show user the archive location
 
 PHASE 5 - CLEANUP (only after user approval):
-- Delete docs/workflow/{project-id}/steps/*.json
-- Delete docs/workflow/{project-id}/roadmap.yaml
-- Delete docs/workflow/{project-id}/ directory if empty
+- Delete docs/feature/{project-id}/steps/*.json
+- Delete docs/feature/{project-id}/roadmap.yaml
+- Delete docs/feature/{project-id}/ directory if empty
 - Preserve the evolution archive and all deliverables
 
 Show user a summary of what will be archived and deleted, then REQUEST APPROVAL before proceeding with cleanup."
@@ -156,7 +157,7 @@ Your specific role for this command: Summarize achievements, archive project evo
 
 Task type: finalize
 
-Finalize and archive the completed workflow project: auth-upgrade
+Finalize and archive the completed feature: auth-upgrade
 
 [... rest of instructions ...]"
 ```
@@ -169,7 +170,7 @@ Your specific role for this command: Summarize achievements, archive project evo
 
 Task type: finalize
 
-Finalize and archive the completed workflow project: microservices-migration
+Finalize and archive the completed feature: microservices-migration
 
 [... rest of instructions ...]"
 ```
@@ -186,7 +187,7 @@ Finalize and archive the completed workflow project: microservices-migration
 
 **Project Not Found**:
 - If project directory doesn't exist, respond with error:
-  "Project not found: docs/workflow/{project-id}/. Please verify project ID."
+  "Project not found: docs/feature/{project-id}/. Please verify project ID."
 
 **Project Not Complete**:
 - If project has incomplete tasks, warn user:
@@ -225,13 +226,13 @@ These commands work together to form a complete workflow:
 /dw:split @solution-architect "auth-migration"
 
 # Step 3: Execute first research task
-/dw:execute @researcher "docs/workflow/auth-migration/steps/01-01.json"
+/dw:execute @researcher "docs/feature/auth-migration/steps/01-01.json"
 
 # Step 4: Review before implementation
-/dw:review @software-crafter task "docs/workflow/auth-migration/steps/02-01.json"
+/dw:review @software-crafter task "docs/feature/auth-migration/steps/02-01.json"
 
 # Step 5: Execute implementation
-/dw:execute @software-crafter "docs/workflow/auth-migration/steps/02-01.json"
+/dw:execute @software-crafter "docs/feature/auth-migration/steps/02-01.json"
 
 # Step 6: Finalize when all tasks complete
 /dw:finalize @devop "auth-migration"
@@ -241,8 +242,8 @@ For details on each command, see respective sections.
 
 ## Context Files Required
 
-- docs/workflow/{project-id}/roadmap.yaml - Original roadmap
-- docs/workflow/{project-id}/steps/*.json - All step tracking files
+- docs/feature/{project-id}/roadmap.yaml - Original roadmap
+- docs/feature/{project-id}/steps/*.json - All step tracking files
 
 ---
 
@@ -282,8 +283,8 @@ The following section documents what the invoked agent will do. **You (the coord
 
 **Task**: Summarize achievements, archive history, and clean up workflow files
 
-**Input**: `docs/workflow/{project-id}/`
-**Output**: `docs/evolution/{project-id}-{timestamp}.md`
+**Input**: `docs/feature/{project-id}/`
+**Output**: `docs/evolution/YYYY-MM-DD-{project-id}.md` (date-feature format for temporal ordering)
 
 **Processing Steps:**
 
@@ -472,7 +473,9 @@ Start: {date}
 **Save Evolution Record**:
 ```python
 1. Ensure docs/evolution/ directory exists
-2. Generate filename: {project-id}-{YYYYMMDD-HHMMSS}.md
+2. Generate filename using date-feature format: YYYY-MM-DD-{project-id}.md
+   # Example: 2025-01-12-order-management.md
+   # This format ensures temporal ordering when listing files
 3. Write summary document
 4. Verify file created successfully
 ```
@@ -483,19 +486,19 @@ Start: {date}
 
 **Remove Workflow Artifacts**:
 ```python
-1. Delete docs/workflow/{project-id}/steps/ directory
-2. Delete docs/workflow/{project-id}/roadmap.yaml
-3. Delete docs/workflow/{project-id}/ directory (if empty)
+1. Delete docs/feature/{project-id}/steps/ directory
+2. Delete docs/feature/{project-id}/roadmap.yaml
+3. Delete docs/feature/{project-id}/ directory (if empty)
 4. Verify cleanup completed
 ```
 
 **Files to Remove**:
-- `docs/workflow/{project-id}/steps/*.json` - All step tracking files
-- `docs/workflow/{project-id}/roadmap.yaml` - Original roadmap
-- `docs/workflow/{project-id}/` - Project workflow directory
+- `docs/feature/{project-id}/steps/*.json` - All step tracking files
+- `docs/feature/{project-id}/roadmap.yaml` - Original roadmap
+- `docs/feature/{project-id}/` - Project workflow directory
 
 **Files to Preserve**:
-- `docs/evolution/{project-id}-{timestamp}.md` - Permanent archive
+- `docs/evolution/YYYY-MM-DD-{project-id}.md` - Permanent archive (date-feature format)
 - Any deliverable artifacts referenced in summary
 - Production code and documentation
 
@@ -503,16 +506,21 @@ Start: {date}
 
 ```
 docs/
-├── evolution/                    # Permanent project history
-│   ├── auth-upgrade-20240115-143000.md
-│   ├── api-refactor-20240120-091500.md
-│   └── microservices-20240201-165500.md
-└── workflow/                     # Empty or removed
+├── evolution/                    # Permanent project history (date-feature naming)
+│   ├── 2025-01-12-auth-upgrade.md
+│   ├── 2025-01-15-api-refactor.md
+│   └── 2025-02-01-microservices-migration.md
+└── feature/                      # Empty or removed (cleaned up)
 ```
+
+**Note**: The date-feature naming (YYYY-MM-DD-{feature-name}.md) ensures:
+- Temporal ordering when listing files
+- Easy identification of when features were completed
+- Chronological project evolution view
 
 ## Output Artifacts
 
-- `docs/evolution/{project-id}-{timestamp}.md` - Permanent project archive
+- `docs/evolution/YYYY-MM-DD-{project-id}.md` - Permanent project archive (date-feature format)
 - Console summary showing:
   - Steps completed
   - Total execution time

@@ -34,11 +34,11 @@ Rules:
 ### STEP 3: Check for Existing Baseline
 
 Check if baseline file already exists:
-- Path: `docs/workflow/{project-id}/baseline.yaml`
+- Path: `docs/feature/{project-id}/baseline.yaml`
 
 If exists:
 ```
-WARNING: Baseline file already exists at docs/workflow/{project-id}/baseline.yaml
+WARNING: Baseline file already exists at docs/feature/{project-id}/baseline.yaml
 
 Options:
 1. View existing baseline and continue to /dw:roadmap
@@ -76,7 +76,7 @@ Before invoking Task tool, verify ALL items:
 - [ ] Goal description extracted and non-empty
 - [ ] Project ID derived (kebab-case)
 - [ ] Baseline type selected (1, 2, or 3)
-- [ ] Target directory can be created: `docs/workflow/{project-id}/`
+- [ ] Target directory can be created: `docs/feature/{project-id}/`
 - [ ] No secrets or credentials in goal description
 
 **ONLY proceed to Task tool invocation if ALL items above are checked.**
@@ -137,10 +137,10 @@ Your responsibilities:
 6. VALIDATE AND OUTPUT
    - Verify all numeric fields contain actual numbers
    - Ensure baseline_metric.value == target.current
-   - Save to: docs/workflow/{project-id}/baseline.yaml
+   - Save to: docs/feature/{project-id}/baseline.yaml
    - Use the BASELINE FILE SCHEMA (embedded below) for structure
 
-Output Location: docs/workflow/{project-id}/baseline.yaml
+Output Location: docs/feature/{project-id}/baseline.yaml
 
 CRITICAL: All numeric values MUST be actual measurements.
 - value: 532 (CORRECT - actual number)
@@ -197,10 +197,10 @@ Your responsibilities:
    - Ensure at least one of: incident_references OR failure_modes
    - Ensure at least 2 alternatives documented
    - Each alternative must have specific why_insufficient reason
-   - Save to: docs/workflow/{project-id}/baseline.yaml
+   - Save to: docs/feature/{project-id}/baseline.yaml
    - Use the BASELINE FILE SCHEMA (embedded below) for structure
 
-Output Location: docs/workflow/{project-id}/baseline.yaml
+Output Location: docs/feature/{project-id}/baseline.yaml
 
 CRITICAL: Process improvements need EVIDENCE, not assumptions.
 - 'This seems like a problem' (WRONG - no evidence)
@@ -252,10 +252,10 @@ Your responsibilities:
 4. VALIDATE AND OUTPUT
    - Ensure current_state.description is filled
    - Ensure requirements_source.origin is filled
-   - Save to: docs/workflow/{project-id}/baseline.yaml
+   - Save to: docs/feature/{project-id}/baseline.yaml
    - Use the BASELINE FILE SCHEMA (embedded below) for structure
 
-Output Location: docs/workflow/{project-id}/baseline.yaml
+Output Location: docs/feature/{project-id}/baseline.yaml
 
 CRITICAL: Features need clear origin and validation.
 - 'We should build X' (WRONG - no origin or validation)
@@ -286,9 +286,9 @@ Examples:
 **Directory Creation Failure**:
 ```
 ERROR: Cannot create workflow directory.
-Path: docs/workflow/{project-id}/
+Path: docs/feature/{project-id}/
 
-Please ensure docs/workflow/ exists and is writable.
+Please ensure docs/feature/ exists and is writable.
 ```
 
 ---
@@ -325,7 +325,7 @@ The baseline file ensures measurement-first approach and prevents the "wrong pro
 /dw:split @solution-architect "test-optimization"
 
 # Step 4: Execute tasks
-/dw:execute @researcher "docs/workflow/test-optimization/steps/01-01.json"
+/dw:execute @researcher "docs/feature/test-optimization/steps/01-01.json"
 ```
 
 ## Context Files Required
@@ -356,18 +356,18 @@ The researcher agent must accomplish (Reference Only):
 - [ ] bottleneck_ranking identifies #1 bottleneck
 - [ ] target.current matches baseline_metric.value
 - [ ] quick_wins has at least 1 entry if applicable
-- [ ] File saved to docs/workflow/{project-id}/baseline.yaml
+- [ ] File saved to docs/feature/{project-id}/baseline.yaml
 
 **For PROCESS_IMPROVEMENT:**
 - [ ] At least one of: incident_references OR failure_modes populated
 - [ ] simplest_alternatives_considered has at least 2 entries
 - [ ] Each alternative has specific why_insufficient reason
-- [ ] File saved to docs/workflow/{project-id}/baseline.yaml
+- [ ] File saved to docs/feature/{project-id}/baseline.yaml
 
 **For FEATURE_DEVELOPMENT:**
 - [ ] current_state.description is populated
 - [ ] requirements_source.origin is populated
-- [ ] File saved to docs/workflow/{project-id}/baseline.yaml
+- [ ] File saved to docs/feature/{project-id}/baseline.yaml
 
 ---
 
@@ -375,7 +375,7 @@ The researcher agent must accomplish (Reference Only):
 
 **Handoff To**: /dw:roadmap command
 **Deliverables**:
-- Validated baseline file at docs/workflow/{project-id}/baseline.yaml
+- Validated baseline file at docs/feature/{project-id}/baseline.yaml
 - All required sections populated based on baseline type
 - Numeric values are actual measurements (not placeholders)
 
@@ -419,7 +419,7 @@ The baseline file schema is embedded below for direct use without external file 
 # BASELINE FILE SCHEMA
 # =============================================================================
 # Purpose: Establish quantitative baseline BEFORE roadmap creation
-# Usage: Save to docs/workflow/{project-id}/baseline.yaml
+# Usage: Save to docs/feature/{project-id}/baseline.yaml
 # Command: /dw:baseline "{goal-description}"
 # =============================================================================
 #
@@ -438,7 +438,7 @@ baseline:
   # ---------------------------------------------------------------------------
   # METADATA (REQUIRED for all types)
   # ---------------------------------------------------------------------------
-  project_id: "your-project-id"  # (REQUIRED) kebab-case, matches workflow folder
+  project_id: "your-project-id"  # (REQUIRED) kebab-case, matches feature folder
   created: "2025-01-01T00:00:00Z"  # (REQUIRED) ISO-8601 timestamp
   type: "performance_optimization"  # (REQUIRED) One of: performance_optimization | process_improvement | feature_development
   author: "researcher"  # (REQUIRED) human | researcher

@@ -2,7 +2,7 @@
 # BASELINE FILE TEMPLATE
 # =============================================================================
 # Purpose: Establish quantitative baseline BEFORE roadmap creation
-# Usage: Copy this file to docs/workflow/{project-id}/baseline.yaml
+# Usage: Copy this file to docs/feature/{project-id}/baseline.yaml
 # Command: /dw:baseline "{goal-description}"
 # =============================================================================
 #
@@ -21,7 +21,7 @@ baseline:
   # ---------------------------------------------------------------------------
   # METADATA (REQUIRED for all types)
   # ---------------------------------------------------------------------------
-  project_id: "your-project-id"  # (REQUIRED) kebab-case, matches workflow folder
+  project_id: "your-project-id"  # (REQUIRED) kebab-case, matches feature folder
   created: "2025-01-01T00:00:00Z"  # (REQUIRED) ISO-8601 timestamp
   type: "performance_optimization"  # (REQUIRED) One of: performance_optimization | process_improvement | feature_development
   author: "researcher"  # (REQUIRED) human | researcher
