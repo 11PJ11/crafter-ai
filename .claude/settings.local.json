@@ -32,7 +32,8 @@
       "SlashCommand(/dw:refactor:*)",
       "Bash(python:*)",
       "Bash(git add:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
