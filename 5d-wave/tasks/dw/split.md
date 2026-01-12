@@ -428,6 +428,95 @@ Feature: Order Management
 - `test_file`: Path to acceptance test file
 - `scenario_index`: 0-based index within test file
 
+### 11-Phase TDD Enforcement
+
+**CRITICAL**: All generated step files MUST include the 11-phase tracking structure.
+
+**Phase Execution Requirements**:
+1. Each phase must be documented in `phase_execution_log`
+2. `current_phase` must track progress
+3. Commit is BLOCKED until all 11 phases complete
+4. Each phase log entry must include:
+   - `phase_name`: Name of the phase (e.g., "RED (Acceptance)")
+   - `timestamp`: ISO 8601 timestamp when phase started
+   - `duration_minutes`: Time spent in phase
+   - `outcome`: "PASS" or "FAIL"
+   - `notes`: Observations and decisions
+   - `artifacts`: Files created/modified
+   - `validation_result`: For phases with validation
+
+**Phase Execution Log Example**:
+```json
+{
+  "tdd_cycle": {
+    "tdd_phase_tracking": {
+      "current_phase": "GREEN (Acceptance)",
+      "active_e2e_test": "Place new order - 01-01",
+      "inactive_e2e_tests": "All other @skip scenarios remain disabled",
+      "phases_completed": ["PREPARE", "RED (Acceptance)", "RED (Unit)", "GREEN (Unit)", "CHECK", "GREEN (Acceptance)"],
+      "phase_execution_log": [
+        {
+          "phase_name": "PREPARE",
+          "timestamp": "2024-01-15T10:00:00Z",
+          "duration_minutes": 5,
+          "outcome": "PASS",
+          "notes": "Removed @skip from scenario 'Place new order', verified all other scenarios disabled",
+          "artifacts": ["tests/acceptance/order_management.feature"],
+          "validation_result": "1 scenario enabled, 3 scenarios skipped"
+        },
+        {
+          "phase_name": "RED (Acceptance)",
+          "timestamp": "2024-01-15T10:05:00Z",
+          "duration_minutes": 3,
+          "outcome": "PASS",
+          "notes": "Acceptance test fails as expected - OrderService not implemented",
+          "artifacts": [],
+          "validation_result": "Test failed with: 'OrderService' is not defined"
+        },
+        {
+          "phase_name": "RED (Unit)",
+          "timestamp": "2024-01-15T10:08:00Z",
+          "duration_minutes": 12,
+          "outcome": "PASS",
+          "notes": "Written 3 unit tests for OrderService.PlaceOrder - all failing as expected",
+          "artifacts": ["tests/unit/OrderServiceTests.cs"],
+          "validation_result": "3 tests failing with NotImplementedException"
+        },
+        {
+          "phase_name": "GREEN (Unit)",
+          "timestamp": "2024-01-15T10:20:00Z",
+          "duration_minutes": 18,
+          "outcome": "PASS",
+          "notes": "Implemented minimum OrderService logic to pass all unit tests",
+          "artifacts": ["src/OrderService.cs"],
+          "validation_result": "3/3 unit tests passing"
+        },
+        {
+          "phase_name": "CHECK",
+          "timestamp": "2024-01-15T10:38:00Z",
+          "duration_minutes": 2,
+          "outcome": "PASS",
+          "notes": "Verified all unit tests still passing",
+          "artifacts": [],
+          "validation_result": "3/3 unit tests passing"
+        },
+        {
+          "phase_name": "GREEN (Acceptance)",
+          "timestamp": "2024-01-15T10:40:00Z",
+          "duration_minutes": 5,
+          "outcome": "PASS",
+          "notes": "Acceptance test now passes - order placement working end-to-end",
+          "artifacts": [],
+          "validation_result": "1/1 acceptance test passing, 3/3 unit tests passing"
+        }
+      ]
+    }
+  }
+}
+```
+
+**Merge Algorithm Update**: When embedding the TDD template, ensure `tdd_phase_tracking` from `5d-wave/templates/step-tdd-cycle-schema.json` is included in the merged step file.
+
 ### Folder Structure Created:
 ```
 docs/feature/

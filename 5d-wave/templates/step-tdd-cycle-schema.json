@@ -3,7 +3,6 @@
   "title": "TDD Cycle Extension for Step Files",
   "description": "Template to embed in step JSON files during /dw:split compilation. This schema extends existing step files without overwriting their content.",
   "version": "1.0.0",
-
   "tdd_cycle": {
     "acceptance_test": {
       "scenario_name": "",
@@ -18,9 +17,15 @@
       "allowed_ports": [],
       "forbidden_domain_classes": [],
       "in_memory_adapters": []
+    },
+    "tdd_phase_tracking": {
+      "current_phase": "NOT_STARTED",
+      "active_e2e_test": "",
+      "inactive_e2e_tests": "All other @skip scenarios remain disabled",
+      "phases_completed": [],
+      "phase_execution_log": []
     }
   },
-
   "quality_gates": {
     "acceptance_test_must_fail_first": true,
     "unit_tests_must_fail_first": true,
@@ -29,16 +34,16 @@
     "refactor_level": 4,
     "in_memory_test_ratio_target": 0.8,
     "validation_after_each_review": true,
-    "validation_after_each_refactor": true
+    "validation_after_each_refactor": true,
+    "all_11_phases_mandatory": true,
+    "phase_documentation_required": true
   },
-
   "tdd_state": {
     "tdd_phase": "NOT_STARTED",
     "tdd_phase_history": [],
     "review_attempts": 0,
     "refactor_level_completed": 0
   },
-
   "merge_rules": {
     "description": "Rules for merging this template with existing step JSON files",
     "never_overwrite": [
@@ -67,7 +72,6 @@
       "no null required fields"
     ]
   },
-
   "valid_tdd_phases": [
     "NOT_STARTED",
     "PREPARE",
@@ -86,25 +90,57 @@
     "COMMIT",
     "COMPLETED"
   ],
-
   "valid_transitions": {
-    "NOT_STARTED": ["PREPARE"],
-    "PREPARE": ["RED_ACCEPTANCE"],
-    "RED_ACCEPTANCE": ["RED_UNIT", "PREPARE"],
-    "RED_UNIT": ["GREEN_UNIT"],
-    "GREEN_UNIT": ["CHECK_ACCEPTANCE"],
-    "CHECK_ACCEPTANCE": ["RED_UNIT", "GREEN_ACCEPTANCE"],
-    "GREEN_ACCEPTANCE": ["REVIEW"],
-    "REVIEW": ["REFACTOR_L1", "REVIEW"],
-    "REFACTOR_L1": ["REFACTOR_L2"],
-    "REFACTOR_L2": ["REFACTOR_L3"],
-    "REFACTOR_L3": ["REFACTOR_L4"],
-    "REFACTOR_L4": ["POST_REFACTOR_REVIEW"],
-    "POST_REFACTOR_REVIEW": ["FINAL_VALIDATE", "REFACTOR_L1"],
-    "FINAL_VALIDATE": ["COMMIT"],
-    "COMMIT": ["COMPLETED"]
+    "NOT_STARTED": [
+      "PREPARE"
+    ],
+    "PREPARE": [
+      "RED_ACCEPTANCE"
+    ],
+    "RED_ACCEPTANCE": [
+      "RED_UNIT",
+      "PREPARE"
+    ],
+    "RED_UNIT": [
+      "GREEN_UNIT"
+    ],
+    "GREEN_UNIT": [
+      "CHECK_ACCEPTANCE"
+    ],
+    "CHECK_ACCEPTANCE": [
+      "RED_UNIT",
+      "GREEN_ACCEPTANCE"
+    ],
+    "GREEN_ACCEPTANCE": [
+      "REVIEW"
+    ],
+    "REVIEW": [
+      "REFACTOR_L1",
+      "REVIEW"
+    ],
+    "REFACTOR_L1": [
+      "REFACTOR_L2"
+    ],
+    "REFACTOR_L2": [
+      "REFACTOR_L3"
+    ],
+    "REFACTOR_L3": [
+      "REFACTOR_L4"
+    ],
+    "REFACTOR_L4": [
+      "POST_REFACTOR_REVIEW"
+    ],
+    "POST_REFACTOR_REVIEW": [
+      "FINAL_VALIDATE",
+      "REFACTOR_L1"
+    ],
+    "FINAL_VALIDATE": [
+      "COMMIT"
+    ],
+    "COMMIT": [
+      "COMPLETED"
+    ]
   },
-
   "failure_classification": {
     "valid_red": [
       "ASSERTION_FAILED",
@@ -128,7 +164,6 @@
       "EXTERNAL_SERVICE_UNREACHABLE"
     ]
   },
-
   "test_file_formats": {
     "feature": {
       "ignore_syntax": "@ignore",
@@ -160,5 +195,21 @@
       "file_extension": ".java",
       "framework": "JUnit 5"
     }
+  },
+  "task_specification": {
+    "commit_policy": "Commit ONLY after ALL 11 PHASES complete. AUTO-PUSH after commit.",
+    "mandatory_phases": [
+      "PREPARE - Remove @skip, verify only 1 scenario enabled",
+      "RED (Acceptance) - Test must FAIL initially",
+      "RED (Unit) - Write failing unit tests",
+      "GREEN (Unit) - Implement minimum code to pass",
+      "CHECK - Verify unit tests pass",
+      "GREEN (Acceptance) - All tests PASS",
+      "REVIEW - Execute /dw:review @software-crafter-reviewer (MANDATORY)",
+      "REFACTOR - Apply L1\u2192L4 with validation (MANDATORY)",
+      "POST-REFACTOR REVIEW - Execute /dw:review again (MANDATORY)",
+      "FINAL VALIDATE - Document full test results (MANDATORY)",
+      "COMMIT - Commit with detailed message"
+    ]
   }
 }

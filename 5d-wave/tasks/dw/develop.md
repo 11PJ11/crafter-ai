@@ -345,6 +345,150 @@ COMMIT(step):
 
 ---
 
+## CRITICAL: 11-Phase TDD Loop Enforcement
+
+**BLOCKER**: The following validation MUST occur before ANY git commit is allowed.
+
+### Pre-Commit Validation Checklist
+
+Execute these checks before `git commit`:
+
+```python
+def validate_11_phases_complete(step_file_path):
+    """
+    Validates that ALL 11 mandatory phases have been executed and documented.
+
+    Returns: (bool, str) - (is_valid, error_message)
+    """
+    import json
+
+    with open(step_file_path) as f:
+        step_data = json.load(f)
+
+    tracking = step_data['tdd_cycle']['tdd_phase_tracking']
+    log = tracking['phase_execution_log']
+
+    MANDATORY_PHASES = [
+        "PREPARE",
+        "RED (Acceptance)",
+        "RED (Unit)",
+        "GREEN (Unit)",
+        "CHECK",
+        "GREEN (Acceptance)",
+        "REVIEW",
+        "REFACTOR",
+        "POST-REFACTOR REVIEW",
+        "FINAL VALIDATE",
+        "COMMIT"
+    ]
+
+    # Check 1: All phases present in log
+    logged_phases = {entry['phase_name'] for entry in log}
+    missing_phases = set(MANDATORY_PHASES) - logged_phases
+
+    if missing_phases:
+        return False, f"Missing phases: {missing_phases}"
+
+    # Check 2: All phases have PASS outcome
+    failed_phases = [
+        entry['phase_name']
+        for entry in log
+        if entry['outcome'] != 'PASS'
+    ]
+
+    if failed_phases:
+        return False, f"Failed phases: {failed_phases}"
+
+    # Check 3: Commit policy field present
+    commit_policy = step_data['task_specification'].get('commit_policy')
+    if not commit_policy or '11 PHASES' not in commit_policy:
+        return False, "Missing or invalid commit_policy"
+
+    # Check 4: Review phases documented
+    review_phases = [e for e in log if 'REVIEW' in e['phase_name']]
+    if len(review_phases) < 2:
+        return False, "Both REVIEW and POST-REFACTOR REVIEW are mandatory"
+
+    # Check 5: Refactor level documented
+    refactor_entry = next((e for e in log if e['phase_name'] == 'REFACTOR'), None)
+    if not refactor_entry or 'refactor_level' not in refactor_entry.get('notes', ''):
+        return False, "REFACTOR phase must document refactor_level (L1-L4)"
+
+    return True, "All 11 phases validated successfully"
+
+# USAGE: Call this function before git commit
+is_valid, message = validate_11_phases_complete('docs/feature/{project-id}/steps/{task-id}.json')
+if not is_valid:
+    print(f"❌ COMMIT BLOCKED: {message}")
+    print("Complete all 11 phases before committing.")
+    exit(1)
+else:
+    print(f"✅ {message}")
+    # Proceed with commit
+```
+
+### Execution Workflow
+
+```
+1. PREPARE      → Remove @skip, enable 1 scenario
+                  ↓
+2. RED (Accept) → Run tests, verify FAIL
+                  ↓
+3. RED (Unit)   → Write failing unit tests
+                  ↓
+4. GREEN (Unit) → Implement minimum code
+                  ↓
+5. CHECK        → Verify unit tests PASS
+                  ↓
+6. GREEN (Accept)→ Verify acceptance test PASS
+                  ↓
+7. REVIEW       → /dw:review @software-crafter-reviewer
+                  ↓ (wait for approval)
+8. REFACTOR     → Apply L1→L4 refactoring
+                  ↓ (run tests after each level)
+9. POST-REVIEW  → /dw:review @software-crafter-reviewer
+                  ↓ (wait for approval)
+10. VALIDATE    → Document full test results
+                  ↓
+11. COMMIT      → git commit + auto-push
+```
+
+**CRITICAL GATES**:
+- Gate 1: RED (Acceptance) must FAIL before proceeding
+- Gate 2: GREEN (Acceptance) must PASS before REVIEW
+- Gate 3: REVIEW must approve (ready_for_execution = true)
+- Gate 4: REFACTOR must reach L4 (or document exception)
+- Gate 5: POST-REFACTOR REVIEW must approve
+- Gate 6: VALIDATE must document all test results
+- Gate 7: All phases documented in execution_result
+
+**Commit Message Template**:
+```
+feat(scenario): <scenario_name>
+
+Phase execution summary:
+- PREPARE: <duration>min - <notes>
+- RED (Acceptance): <duration>min - <notes>
+- RED (Unit): <duration>min - <count> tests written
+- GREEN (Unit): <duration>min - <implementation summary>
+- CHECK: <duration>min - <test results>
+- GREEN (Acceptance): <duration>min - <test results>
+- REVIEW: <duration>min - <reviewer feedback summary>
+- REFACTOR: <duration>min - <refactor levels applied>
+- POST-REFACTOR REVIEW: <duration>min - <reviewer feedback>
+- FINAL VALIDATE: <duration>min - <validation results>
+- COMMIT: <duration>min - <total time for scenario>
+
+Total time: <total_duration>min
+Tests: <unit_count> unit, 1 acceptance (all passing)
+Refactor level: L<1-4>
+Reviews: 2 (pre-refactor, post-refactor)
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+```
+
+---
+
 ## Context Files Required
 
 - `docs/feature/{feature-name}/steps/{step-id}.json` - Step specification with TDD cycle
