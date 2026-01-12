@@ -489,6 +489,122 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
 
 ---
 
+## 11-Phase Command Invocation Mapping
+
+The following table maps each of the 11 mandatory phases to the specific commands that must be invoked:
+
+| Phase | Command to Invoke | Description | Duration Target |
+|-------|------------------|-------------|-----------------|
+| **1. PREPARE** | Internal (`/dw:develop`) | Remove `@skip` from target acceptance test, verify only 1 scenario enabled | 3-5 min |
+| **2. RED (Acceptance)** | Internal (`/dw:develop`) | Run acceptance test - MUST fail for valid business reason | 3-5 min |
+| **3. RED (Unit)** | Internal (`/dw:develop`) | Write unit test that fails for CORRECT reason (assertion, not setup/compilation) | 5-10 min |
+| **4. GREEN (Unit)** | Internal (`/dw:develop`) | Implement MINIMAL code to pass unit test (YAGNI principle) | 10-20 min |
+| **5. CHECK** | Internal (`/dw:develop`) | Check if acceptance test passes now. If FAILS → RETURN to Phase 3 | 2-3 min |
+| **6. GREEN (Acceptance)** | Internal (`/dw:develop`) | Run ALL tests (unit + acceptance) - all must pass | 5-10 min |
+| **7. REVIEW** | **`/dw:review @software-crafter-reviewer implementation`** | Mandatory peer review of implementation quality (max 2 iterations) | 10-15 min |
+| **8. REFACTOR** | **`/dw:refactor`** (L1-L4) OR **`/dw:mikado`** (complex) | Progressive refactoring with test validation after each level | 15-30 min |
+| **9. POST-REFACTOR REVIEW** | **`/dw:review @software-crafter-reviewer refactored_implementation`** | Review after refactoring complete (max 2 iterations) | 10-15 min |
+| **10. FINAL VALIDATE** | Internal (`/dw:develop`) | Run ALL tests (unit, integration, acceptance) - 100% must pass | 5-10 min |
+| **11. COMMIT** | **`/dw:git commit`** | Commit with detailed message and 11-phase validation | 5 min |
+
+### Command Invocation Protocol
+
+**Phases 1-6, 10** are handled internally by the `/dw:develop` command as part of the main TDD loop.
+
+**Phase 7 (REVIEW)** requires explicit invocation:
+```bash
+/dw:review @software-crafter-reviewer implementation {step-file-path}
+```
+- Max 2 iterations allowed
+- Must approve before proceeding to REFACTOR
+- If rejected after 2 iterations → escalate to tech lead
+
+**Phase 8 (REFACTOR)** requires explicit invocation:
+
+*Simple to moderate refactoring (L1-L4):*
+```bash
+/dw:refactor --level 4 --scope module
+```
+- Apply progressive levels L1 → L2 → L3 → L4
+- Run tests after EACH level
+- Revert if any test fails
+
+*Complex refactoring (requires dependency exploration):*
+```bash
+/dw:mikado --goal "Replace UserManager with hexagonal architecture"
+```
+- Use Mikado Method for complex architectural refactorings
+- Discovery-tracking commits for exploration
+- Execute leaves bottom-up with test validation
+
+**Phase 9 (POST-REFACTOR REVIEW)** requires explicit invocation:
+```bash
+/dw:review @software-crafter-reviewer refactored_implementation {step-file-path}
+```
+- Max 2 iterations allowed
+- If major issues → may RETURN to REFACTOR at L1
+- Must approve before proceeding to FINAL VALIDATE
+
+**Phase 11 (COMMIT)** requires git commit:
+```bash
+git add .
+git commit -m "feat(...): ..."
+```
+- Pre-commit hook validates 100% test pass rate
+- Step file validation ensures all 11 phases documented
+- NO PUSH until `/dw:finalize` completes
+
+### Integration Example
+
+Complete execution flow for a single step:
+
+```bash
+# Phase 1-6: Main TDD loop (internal to /dw:develop)
+/dw:develop order-management --step 01-02
+
+# Phase 7: REVIEW (explicit command)
+/dw:review @software-crafter-reviewer implementation "docs/feature/order-management/steps/01-02.json"
+# Wait for approval...
+
+# Phase 8: REFACTOR (explicit command - choose one)
+/dw:refactor --level 4 --scope module
+# OR for complex refactoring:
+/dw:mikado --goal "Extract OrderService from OrderController"
+
+# Phase 9: POST-REFACTOR REVIEW (explicit command)
+/dw:review @software-crafter-reviewer refactored_implementation "docs/feature/order-management/steps/01-02.json"
+# Wait for approval...
+
+# Phase 10: FINAL VALIDATE (internal to /dw:develop)
+# Automatically runs all tests
+
+# Phase 11: COMMIT (explicit git command)
+git add .
+git commit -m "feat(order-management): Place new order - step 01-02
+
+- Acceptance test: Place new order scenario
+- Unit tests: 5 new (OrderService, OrderValidator)
+- Refactoring level: L4
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+```
+
+### Alternative: Fully Automated Execution
+
+For fully automated execution with minimal manual intervention:
+
+```bash
+/dw:execute @software-crafter "docs/feature/order-management/steps/01-02.json"
+```
+
+The `execute` command will:
+1. Automatically invoke `/dw:develop` for phases 1-6 and 10
+2. Automatically invoke `/dw:review` for phases 7 and 9
+3. Automatically invoke `/dw:refactor` or `/dw:mikado` for phase 8
+4. Automatically commit for phase 11 if all validations pass
+
+---
+
 ## Context Files Required
 
 - `docs/feature/{feature-name}/steps/{step-id}.json` - Step specification with TDD cycle

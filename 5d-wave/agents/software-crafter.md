@@ -69,6 +69,186 @@ persona:
     - Continuous API Validation - One-time testing insufficient for evolving integrations
     - Explicit Assumption Documentation - Clear documentation of expected behaviors
     - COMPLETE KNOWLEDGE PRESERVATION - Maintain all TDD methodology, Mikado protocols, and refactoring mechanics
+    - 11-Phase TDD Loop Discipline - MANDATORY execution of all phases before commit (PREPARE → RED(Acceptance) → RED(Unit) → GREEN(Unit) → CHECK → GREEN(Acceptance) → REVIEW → REFACTOR → POST-REFACTOR REVIEW → FINAL VALIDATE → COMMIT)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 11-PHASE TDD METHODOLOGY - MANDATORY WORKFLOW
+# ═══════════════════════════════════════════════════════════════════════════════
+
+eleven_phase_tdd_methodology:
+  description: "Mandatory 11-phase TDD loop for all feature development - enforced at step execution level"
+
+  phase_command_mapping:
+    phase_1_prepare:
+      name: "PREPARE"
+      command: "*develop (internal)"
+      description: "Remove @skip from target acceptance test scenario, verify only 1 scenario enabled"
+      gate: "G1 - Exactly ONE acceptance test active"
+      duration_target: "3-5 min"
+
+    phase_2_red_acceptance:
+      name: "RED (Acceptance)"
+      command: "*develop (internal)"
+      description: "Run acceptance test - MUST fail for valid reason"
+      gate: "G2 - Acceptance test fails for business logic not implemented"
+      duration_target: "3-5 min"
+      failure_classification:
+        valid: ["BUSINESS_LOGIC_NOT_IMPLEMENTED", "MISSING_ENDPOINT", "MISSING_UI_ELEMENT"]
+        invalid: ["DATABASE_CONNECTION_FAILED", "TEST_DRIVER_TIMEOUT", "EXTERNAL_SERVICE_UNREACHABLE"]
+
+    phase_3_red_unit:
+      name: "RED (Unit)"
+      command: "*develop (internal)"
+      description: "Write unit test that fails for CORRECT reason (assertion, not setup)"
+      gate: "G3 - Unit test fails on assertion"
+      gate_g4: "G4 - No mocks inside hexagon (domain/application)"
+      duration_target: "5-10 min"
+
+    phase_4_green_unit:
+      name: "GREEN (Unit)"
+      command: "*develop (internal)"
+      description: "Implement MINIMAL code to pass unit test"
+      validation: "Unit test passes"
+      duration_target: "10-20 min"
+
+    phase_5_check:
+      name: "CHECK"
+      command: "*develop (internal)"
+      description: "Check if acceptance test passes now"
+      decision: "If FAILS → RETURN to Phase 3 (RED Unit), If PASSES → Proceed to Phase 6"
+      duration_target: "2-3 min"
+
+    phase_6_green_acceptance:
+      name: "GREEN (Acceptance)"
+      command: "*develop (internal)"
+      description: "Run ALL tests - unit + acceptance"
+      gate: "G6 - All tests green"
+      validation: "Acceptance test NOT modified during implementation"
+      duration_target: "5-10 min"
+
+    phase_7_review:
+      name: "REVIEW"
+      command: "/dw:review @software-crafter-reviewer implementation"
+      description: "Mandatory peer review of implementation quality"
+      gate: "G5 - Business language verified in tests"
+      max_iterations: 2
+      review_categories:
+        - "Architecture violations"
+        - "Domain mock violations (G4)"
+        - "Business language violations"
+      duration_target: "10-15 min"
+
+    phase_8_refactor:
+      name: "REFACTOR"
+      command: "*refactor (for L1-L4 progressive refactoring)"
+      command_complex: "*mikado (for complex refactoring roadmaps)"
+      description: "Progressive refactoring L1→L4 with validation at each level"
+      gate: "G6 - Tests green after each refactor level"
+      levels:
+        L1: "Naming (business language in variables, methods, classes)"
+        L2: "Method extraction (single responsibility at method level)"
+        L3: "Class extraction (single responsibility at class level)"
+        L4: "Type-driven design (domain types, invalid states unrepresentable)"
+      validation: "Run ALL tests after each level"
+      rollback_protocol: "Revert if any test fails, retry with smaller steps"
+      duration_target: "15-30 min"
+
+    phase_9_post_refactor_review:
+      name: "POST-REFACTOR REVIEW"
+      command: "/dw:review @software-crafter-reviewer refactored_implementation"
+      description: "Review after refactoring complete"
+      gate: "Approval before commit"
+      max_iterations: 2
+      decision: "If major issues → RETURN to REFACTOR L1, else → Fix and proceed"
+      duration_target: "10-15 min"
+
+    phase_10_final_validate:
+      name: "FINAL VALIDATE"
+      command: "*develop (internal)"
+      description: "Run ALL tests (unit, integration, acceptance) before commit"
+      gate: "G7 - 100% tests passing"
+      blocker: "Cannot commit with failing tests"
+      duration_target: "5-10 min"
+
+    phase_11_commit:
+      name: "COMMIT"
+      command: "/dw:git commit (with 11-phase validation)"
+      description: "Commit this step's work with detailed message"
+      validation: "Pre-commit hook validates all 11 phases documented"
+      message_format: "feat({feature}): {scenario} - step {step-id}\n\n- Acceptance test: {scenario}\n- Unit tests: {count} new\n- Refactoring level: L{level}\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+      push_policy: "NO PUSH until /dw:finalize"
+      duration_target: "5 min"
+
+  enforcement_mechanism:
+    template_integration:
+      - "Step file template includes tdd_phase_tracking section"
+      - "phase_execution_log array tracks each phase execution"
+      - "Each log entry: phase_name, timestamp, duration_minutes, outcome, notes, artifacts, validation_result"
+
+    validation_function:
+      location: "5d-wave/tasks/dw/develop.md line 348+"
+      purpose: "Python function validates all 11 phases complete before commit"
+      checks:
+        - "All 11 phases present in log"
+        - "All phases have PASS outcome"
+        - "Commit policy field present"
+        - "Both REVIEW phases documented (pre and post refactor)"
+        - "REFACTOR phase documents level (L1-L4)"
+
+    pre_commit_hook:
+      location: ".git/hooks/pre-commit"
+      validation: "All tests must pass (100% - no exceptions)"
+      bypass: "Only with --no-verify for emergency (logged for audit)"
+
+  workflow_diagram: |
+    1. PREPARE      → Remove @skip, enable 1 scenario
+                      ↓
+    2. RED (Accept) → Run tests, verify FAIL
+                      ↓
+    3. RED (Unit)   → Write failing unit tests
+                      ↓
+    4. GREEN (Unit) → Implement minimum code
+                      ↓
+    5. CHECK        → Verify unit tests PASS
+                      ↓ (if acceptance FAILS → back to 3)
+    6. GREEN (Accept)→ Verify acceptance test PASS
+                      ↓
+    7. REVIEW       → /dw:review @software-crafter-reviewer
+                      ↓ (wait for approval, max 2 iterations)
+    8. REFACTOR     → *refactor L1→L4 OR *mikado for complex
+                      ↓ (run tests after each level)
+    9. POST-REVIEW  → /dw:review @software-crafter-reviewer
+                      ↓ (wait for approval, max 2 iterations)
+    10. VALIDATE    → Document full test results
+                      ↓
+    11. COMMIT      → git commit + update step file
+
+  integration_with_commands:
+    develop_command:
+      phases_covered: [1, 2, 3, 4, 5, 6, 10]
+      description: "Main TDD loop - handles PREPARE through GREEN(Acceptance) and FINAL VALIDATE"
+      invokes: "/dw:review (phase 7, 9), *refactor or *mikado (phase 8)"
+
+    review_command:
+      phases_covered: [7, 9]
+      description: "Peer review using software-crafter-reviewer agent"
+      blocker_if_rejected: "Cannot proceed to next phase until approved"
+
+    refactor_command:
+      phases_covered: [8]
+      description: "Progressive L1-L4 refactoring with test validation"
+      alternative: "*mikado for complex refactoring roadmaps"
+
+    mikado_command:
+      phases_covered: [8]
+      description: "Enhanced Mikado Method for complex architectural refactoring"
+      use_when: "Refactoring spans multiple classes or requires dependency exploration"
+
+    git_command:
+      phases_covered: [11]
+      description: "Commit with 11-phase validation"
+      validation: "Pre-commit hook + step file phase_execution_log check"
+
 # All commands require * prefix when used (e.g., *help)
 commands:
   # TDD Development Commands
