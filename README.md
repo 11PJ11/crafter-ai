@@ -8,11 +8,11 @@ AI-Craft is a comprehensive development pipeline that implements the 5-stage ATD
 
 ### Core Philosophy
 
-- **Outside-In Development**: Start with acceptance tests and work inward
+- **Outside-In Development**: Start with acceptance tests and work inward with mandatory 11-phase TDD discipline
 - **Single Responsibility Principle**: Each agent has one focused responsibility
 - **Clean Context Isolation**: Agents receive only essential context for their tasks
 - **File-Based Handoffs**: Structured communication between pipeline stages
-- **Systematic Quality**: Progressive refactoring and comprehensive validation
+- **Systematic Quality**: Progressive refactoring (L1-L4) with comprehensive validation gates
 
 ## 🚀 Quick Start
 
@@ -63,6 +63,7 @@ The system orchestrates 41+ specialized AI agents across five stages, ensuring c
 
 - **[Complete Agent Documentation](docs/)** - Detailed agent specifications and workflows
 - **[CI/CD Integration](docs/CI-CD-README.md)** - Continuous integration setup
+- **[Project Evolution](docs/evolution/)** - Framework enhancements and methodology integrations
 
 ## 🔧 Configuration
 

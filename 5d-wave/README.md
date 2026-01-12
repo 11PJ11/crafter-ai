@@ -11,7 +11,7 @@ The 5D-WAVE methodology implements a systematic approach to software development
 1. **DISCUSS**: Requirements gathering and business analysis
 2. **DESIGN**: Architecture design with visual representation
 3. **DISTILL**: Acceptance test creation and business validation scenarios
-4. **DEVELOP**: Outside-In TDD implementation with systematic refactoring
+4. **DEVELOP**: Outside-In TDD with mandatory 11-phase discipline (PREPARE→RED→GREEN→REVIEW→REFACTOR→VALIDATE→COMMIT)
 5. **DEMO**: Production readiness validation and stakeholder demonstration
 
 ## Core Agents (10 Total)
