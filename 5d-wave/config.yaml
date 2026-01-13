@@ -112,6 +112,13 @@ commands:
     wave: "DEVELOP"
     outputs: ["complete_feature", "quality_gates_passed", "evolution_document"]
 
+  baseline:
+    description: "Establish measurement baseline before roadmap creation"
+    argument_hint: "[goal-description] - Example: \"optimize test execution time\""
+    agents: ["researcher"]
+    wave: "DEVELOP"
+    outputs: ["baseline_yaml"]
+
   demo:
     description: "Production readiness validation"
     argument_hint: "[deployment-target] - Optional: --environment=[staging|production] --validation=[full|smoke]"
@@ -157,27 +164,27 @@ commands:
     outputs: ["refactored_code", "refactoring_log"]
 
   roadmap:
-    description: "Create comprehensive planning document [agent] [goal-description]"
+    description: "Create comprehensive planning document"
     argument_hint: "[agent] [goal-description] - Example: @solution-architect \"Migrate to microservices\""
     outputs: ["roadmap_yaml"]
 
   split:
-    description: "Generate atomic task files from roadmap [agent] [project-id]"
+    description: "Generate atomic task files from roadmap"
     argument_hint: "[agent] [project-id] - Example: @devop \"auth-upgrade\""
     outputs: ["task_files"]
 
   review:
-    description: "Expert critique and quality review [agent] [artifact-type] [path] - Types: roadmap, task, implementation"
+    description: "Expert critique and quality review - Types: baseline, roadmap, step, task, implementation"
     argument_hint: "[agent] [artifact-type] [artifact-path] - Example: @software-crafter task \"steps/01-01.json\""
     outputs: ["review_report"]
 
   execute:
-    description: "Execute atomic task with state tracking [agent] [step-file-path]"
+    description: "Execute atomic task with state tracking"
     argument_hint: "[agent] [step-file-path] - Example: @researcher \"steps/01-01.json\""
     outputs: ["task_results"]
 
   finalize:
-    description: "Summarize achievements, archive to docs/evolution, and clean up workflow files [agent] [project-id]"
+    description: "Summarize achievements, archive to docs/evolution, clean up feature files"
     argument_hint: "[agent] [project-id] - Example: @devop \"auth-upgrade\""
     outputs: ["evolution_document"]
 
