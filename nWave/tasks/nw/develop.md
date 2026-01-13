@@ -49,6 +49,43 @@ Execute a **complete DEVELOP wave** that orchestrates:
 
 ## CRITICAL: Orchestration Protocol
 
+### ⚡ ORCHESTRATOR ROLE (Read This First!)
+
+**YOU are the orchestrator** - the agent reading this specification right now.
+
+**Your responsibilities:**
+1. ✅ **YOU** follow these 12 steps directly (don't delegate to another orchestrator)
+2. ✅ **YOU** check validation.status for skip logic
+3. ✅ **YOU** invoke sub-commands using appropriate agents:
+   - For implementation: Use `Task` tool with `@software-crafter`
+   - For reviews: Use `Task` tool with `@{reviewer-agent}`
+4. ✅ **YOU** manage progress tracking and error handling
+5. ✅ **YOU** report completion summary
+
+**Agent Delegation Pattern:**
+```python
+# For step execution (STEP 10)
+Task(
+  subagent_type="software-crafter",
+  prompt='Execute step from "docs/workflow/{project-id}/steps/01-03.json" using 11-phase TDD',
+  description="Execute step 01-03"
+)
+
+# For review (STEP 4, 6, 7, 9)
+Task(
+  subagent_type="software-crafter-reviewer",  # or product-owner-reviewer
+  prompt='Review artifact at "{artifact-path}" for {project-description}',
+  description="Review baseline"
+)
+```
+
+**DO NOT:**
+- ❌ Create a sub-agent to read this specification
+- ❌ Delegate orchestration to another agent
+- ❌ Skip validation checks or quality gates
+
+---
+
 ### Input Requirements
 
 The command accepts a single parameter:
@@ -760,14 +797,43 @@ STEP 12: Phase 9 - Report Completion
            completed_steps.append(step_id)
            continue
 
-       # Execute step with 11-phase TDD
-       print(f"Invoking: /nw:execute @software-crafter \"{step_file}\"")
+       # Execute step with 11-phase TDD using Task tool
+       print(f"Invoking: Task tool with @software-crafter for step {step_id}")
 
-       # Use Task tool to invoke execute command
-       # (In real implementation, this would be actual Task tool invocation)
-       result = execute_step_with_11_phases(step_file)
+       task_result = Task(
+           subagent_type="software-crafter",
+           prompt=f'''Execute step from "{step_file}" using the complete 11-phase TDD methodology.
 
-       if result['success']:
+Step file: {step_file}
+Step ID: {step_id}
+
+Follow all 11 TDD phases in order:
+1. RED - Write failing test
+2. GREEN - Implement minimal code to pass
+3. REFACTOR - Improve code quality
+4. REVIEW - Self-review changes
+5. POST-REFACTOR REVIEW - Verify refactoring
+6. INTEGRATE - Ensure integration compatibility
+7. E2E TEST - End-to-end validation
+8. PERFORMANCE - Check performance
+9. DOCUMENTATION - Update documentation
+10. COMMIT - Create git commit
+11. REFLECT - Document learnings
+
+Update tdd_cycle.phase_execution_log in the step file after each phase.
+Report completion status clearly.''',
+           description=f"Execute step {step_id} with 11-phase TDD"
+       )
+
+       # Verify completion by checking step file for COMMIT/PASS
+       with open(step_file, 'r') as f:
+           updated_step_data = json.load(f)
+
+       tdd_tracking_after = updated_step_data.get('tdd_cycle', {}).get('tdd_phase_tracking', {})
+       phase_log_after = tdd_tracking_after.get('phase_execution_log', [])
+       commit_phase_after = next((p for p in phase_log_after if p['phase_name'] == 'COMMIT'), None)
+
+       if commit_phase_after and commit_phase_after.get('outcome') == 'PASS':
            print(f"✓ Step {step_id} completed successfully")
            completed_steps.append(step_id)
 
@@ -777,7 +843,12 @@ STEP 12: Phase 9 - Report Completion
                completed_steps=completed_steps
            )
        else:
-           print(f"❌ Step {step_id} failed: {result['error']}")
+           # Step did not complete successfully (no COMMIT/PASS in phase log)
+           failure_reason = "Step execution did not complete with COMMIT/PASS"
+           if commit_phase_after:
+               failure_reason = f"COMMIT phase outcome: {commit_phase_after.get('outcome', 'unknown')}"
+
+           print(f"❌ Step {step_id} failed: {failure_reason}")
            failed_step = step_id
 
            # Update progress with failure
@@ -785,7 +856,7 @@ STEP 12: Phase 9 - Report Completion
                project_id,
                failed_step=failed_step,
                failed_phase='Phase 7: Execute All Steps',
-               failure_reason=f"Step {step_id} execution failed: {result['error']}"
+               failure_reason=f"Step {step_id} execution failed: {failure_reason}"
            )
 
            print("\n" + "="*60)
@@ -793,7 +864,7 @@ STEP 12: Phase 9 - Report Completion
            print("="*60)
            print(f"\nCompleted steps: {len(completed_steps)}/{len(sorted_step_files)}")
            print(f"Failed step: {step_id}")
-           print(f"Error: {result['error']}")
+           print(f"Failure reason: {failure_reason}")
            print("\nManual intervention required:")
            print("1. Review error above")
            print("2. Fix implementation issues")
