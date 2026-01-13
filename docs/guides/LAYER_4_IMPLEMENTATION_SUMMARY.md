@@ -23,7 +23,7 @@
 
 ### 1. Reviewer Agent Specifications (12 Agents)
 
-**Location**: `/mnt/c/Repositories/Projects/ai-craft/5d-wave/agents/reviewers/`
+**Location**: `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/reviewers/`
 
 All 12 reviewer agents created with comprehensive specifications:
 
@@ -427,7 +427,7 @@ stakeholder_satisfaction:
 ### Reviewer Agents (12 files)
 
 ```
-5d-wave/agents/reviewers/
+nWave/agents/reviewers/
 ├── acceptance-designer-reviewer.md
 ├── agent-forger-reviewer.md
 ├── architecture-diagram-manager-reviewer.md

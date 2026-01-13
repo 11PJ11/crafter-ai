@@ -109,62 +109,62 @@ Removed 1,199 lines of duplicate framework sections that were added during autom
 
 ### Agent Files (Primary Deliverables)
 
-1. `/mnt/c/Repositories/Projects/ai-craft/5d-wave/agents/acceptance-designer.md`
+1. `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/acceptance-designer.md`
    - Added: enterprise_safety_layers
    - Removed: 109 lines of duplicates
    - Status: ✅ Production Ready
 
-2. `/mnt/c/Repositories/Projects/ai-craft/5d-wave/agents/architecture-diagram-manager.md`
+2. `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/architecture-diagram-manager.md`
    - Added: enterprise_safety_layers
    - Removed: 109 lines of duplicates
    - Status: ✅ Production Ready
 
-3. `/mnt/c/Repositories/Projects/ai-craft/5d-wave/agents/business-analyst.md`
+3. `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/business-analyst.md`
    - Added: enterprise_safety_layers
    - Removed: 109 lines of duplicates
    - Status: ✅ Production Ready
 
-4. `/mnt/c/Repositories/Projects/ai-craft/5d-wave/agents/data-engineer.md`
+4. `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/data-engineer.md`
    - Added: enterprise_safety_layers
    - Removed: 109 lines of duplicates
    - Status: ✅ Production Ready
 
-5. `/mnt/c/Repositories/Projects/ai-craft/5d-wave/agents/feature-completion-coordinator.md`
+5. `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/feature-completion-coordinator.md`
    - Added: enterprise_safety_layers
    - Removed: 109 lines of duplicates
    - Status: ✅ Production Ready
 
-6. `/mnt/c/Repositories/Projects/ai-craft/5d-wave/agents/knowledge-researcher.md`
+6. `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/knowledge-researcher.md`
    - Added: enterprise_safety_layers
    - Removed: 109 lines of duplicates
    - Status: ✅ Production Ready
 
-7. `/mnt/c/Repositories/Projects/ai-craft/5d-wave/agents/root-cause-analyzer.md`
+7. `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/root-cause-analyzer.md`
    - Added: enterprise_safety_layers
    - Removed: 109 lines of duplicates
    - Status: ✅ Production Ready
 
-8. `/mnt/c/Repositories/Projects/ai-craft/5d-wave/agents/software-crafter.md`
+8. `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/software-crafter.md`
    - Added: enterprise_safety_layers
    - Removed: 109 lines of duplicates
    - Status: ✅ Production Ready
 
-9. `/mnt/c/Repositories/Projects/ai-craft/5d-wave/agents/solution-architect.md`
+9. `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/solution-architect.md`
    - Added: enterprise_safety_layers
    - Removed: 109 lines of duplicates
    - Status: ✅ Production Ready
 
-10. `/mnt/c/Repositories/Projects/ai-craft/5d-wave/agents/visual-2d-designer.md`
+10. `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/visual-2d-designer.md`
     - Added: enterprise_safety_layers
     - Removed: 109 lines of duplicates
     - Status: ✅ Production Ready
 
-11. `/mnt/c/Repositories/Projects/ai-craft/5d-wave/agents/walking-skeleton-helper.md`
+11. `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/walking-skeleton-helper.md`
     - Added: enterprise_safety_layers
     - Removed: 109 lines of duplicates
     - Status: ✅ Production Ready
 
-12. `/mnt/c/Repositories/Projects/ai-craft/5d-wave/agents/agent-forger.md`
+12. `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/agent-forger.md`
     - No changes required (meta-agent with complete frameworks)
     - Status: ✅ Production Ready
 
@@ -238,11 +238,11 @@ The production frameworks are **universal** across all agent archetypes:
    - Frameworks: Full contract, safety, testing, observability, error recovery
 
 2. **Orchestrator Agents** (workflow coordinators)
-   - Example: 5d-wave-complete-orchestrator
+   - Example: nWave-complete-orchestrator
    - Frameworks: Same universal frameworks adapted for coordination
 
 3. **Team Agents** (collaborative systems)
-   - Example: 5d-wave-core-team
+   - Example: nWave-core-team
    - Frameworks: Same frameworks with multi-agent metrics
 
 4. **Tool Agents** (domain-specific utilities)

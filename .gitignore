@@ -24,6 +24,7 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .pytest_cache/
+.coverage
 
 # Node modules
 node_modules/
@@ -35,3 +36,7 @@ target/
 # Build logs
 build.log
 build-test.log
+
+# TOON format agents (separate branch)
+agents/
+output/

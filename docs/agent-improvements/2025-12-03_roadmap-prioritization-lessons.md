@@ -195,9 +195,9 @@ The data showed that ~80% of Tier 2 tests could parallelize immediately with **z
 
 | Command | Current Behavior | Required Change |
 |---------|-----------------|-----------------|
-| `/dw:roadmap` | Creates comprehensive roadmap | Add "Pre-Planning Measurement Gate" |
-| `/dw:split` | Splits roadmap into tasks | Validate measurement data exists |
-| `/dw:review` | Reviews for completeness | Add "Priority Validation" dimension |
+| `/nw:roadmap` | Creates comprehensive roadmap | Add "Pre-Planning Measurement Gate" |
+| `/nw:split` | Splits roadmap into tasks | Validate measurement data exists |
+| `/nw:review` | Reviews for completeness | Add "Priority Validation" dimension |
 
 ### New Validation Gates Needed
 
@@ -225,7 +225,7 @@ The data showed that ~80% of Tier 2 tests could parallelize immediately with **z
 
 **What:** Mandatory measurement step that BLOCKS roadmap creation.
 
-**Where:** Agent definitions for `solution-architect` and slash command `/dw:roadmap`
+**Where:** Agent definitions for `solution-architect` and slash command `/nw:roadmap`
 
 **How - Agent Definition Addition:**
 
@@ -253,7 +253,7 @@ core_principles:
 
 **How - Slash Command Addition:**
 
-Add to `/dw:roadmap` command template:
+Add to `/nw:roadmap` command template:
 
 ```markdown
 ## Pre-Planning Measurement Gate (MANDATORY)
@@ -339,7 +339,7 @@ pipeline:
 
 **What:** Mandatory consideration of simple alternatives before complex solutions.
 
-**Where:** Agent definitions for `solution-architect`, `software-crafter`, `/dw:roadmap` command
+**Where:** Agent definitions for `solution-architect`, `software-crafter`, `/nw:roadmap` command
 
 **How - Agent Definition Addition:**
 
@@ -398,11 +398,11 @@ quality_gates:
 
 **What:** Research phase must produce quantitative impact data, not just categorization.
 
-**Where:** Agent definitions for `researcher` (if separate), `/dw:research` command
+**Where:** Agent definitions for `researcher` (if separate), `/nw:research` command
 
 **How - Slash Command Addition:**
 
-Modify research phase template in `/dw:roadmap`:
+Modify research phase template in `/nw:roadmap`:
 
 ```yaml
 research_phase:
@@ -448,7 +448,7 @@ Quick Win: Enable parallelization for Tier 2 non-SISTER tests
 
 **What:** Reviewer must validate prioritization, not just completeness.
 
-**Where:** `/dw:review` command, reviewer agent definitions
+**Where:** `/nw:review` command, reviewer agent definitions
 
 **How - Review Checklist Addition:**
 
@@ -511,31 +511,31 @@ critique_dimensions:
 
 | Step | Action | File to Modify | Effort |
 |------|--------|---------------|--------|
-| 1.1 | Add "Measure Before Plan" principle to solution-architect | `5d-wave/agents/dw/solution-architect.md` | 30 min |
-| 1.2 | Add Pre-Planning Measurement Gate to /dw:roadmap | `.claude/commands/dw/roadmap.md` | 30 min |
-| 1.3 | Add Priority Validation dimension to reviewer agents | `5d-wave/agents/dw/*-reviewer.md` | 45 min |
+| 1.1 | Add "Measure Before Plan" principle to solution-architect | `nWave/agents/nw/solution-architect.md` | 30 min |
+| 1.2 | Add Pre-Planning Measurement Gate to /nw:roadmap | `.claude/commands/nw/roadmap.md` | 30 min |
+| 1.3 | Add Priority Validation dimension to reviewer agents | `nWave/agents/nw/*-reviewer.md` | 45 min |
 
 ### Priority 2: High (Implement This Week)
 
 | Step | Action | File to Modify | Effort |
 |------|--------|---------------|--------|
-| 2.1 | Add Constraint Prioritization Framework to solution-architect | `5d-wave/agents/dw/solution-architect.md` | 45 min |
-| 2.2 | Add "Simplest Solution First" quality gate | `5d-wave/agents/dw/solution-architect.md` | 30 min |
-| 2.3 | Update research phase to require timing analysis | `.claude/commands/dw/roadmap.md` | 30 min |
+| 2.1 | Add Constraint Prioritization Framework to solution-architect | `nWave/agents/nw/solution-architect.md` | 45 min |
+| 2.2 | Add "Simplest Solution First" quality gate | `nWave/agents/nw/solution-architect.md` | 30 min |
+| 2.3 | Update research phase to require timing analysis | `.claude/commands/nw/roadmap.md` | 30 min |
 
 ### Priority 3: Medium (Implement This Sprint)
 
 | Step | Action | File to Modify | Effort |
 |------|--------|---------------|--------|
-| 3.1 | Add quantitative research requirements to /dw:research | `.claude/commands/dw/research.md` | 30 min |
-| 3.2 | Update /dw:split to validate measurement data | `.claude/commands/dw/split.md` | 20 min |
-| 3.3 | Document anti-patterns in agent training data | `5d-wave/data/anti-patterns/` | 60 min |
+| 3.1 | Add quantitative research requirements to /nw:research | `.claude/commands/nw/research.md` | 30 min |
+| 3.2 | Update /nw:split to validate measurement data | `.claude/commands/nw/split.md` | 20 min |
+| 3.3 | Document anti-patterns in agent training data | `nWave/data/anti-patterns/` | 60 min |
 
 ### Priority 4: Low (Backlog)
 
 | Step | Action | File to Modify | Effort |
 |------|--------|---------------|--------|
-| 4.1 | Create automated validation scripts | `5d-wave/utils/validate-roadmap.py` | 2 hours |
+| 4.1 | Create automated validation scripts | `nWave/utils/validate-roadmap.py` | 2 hours |
 | 4.2 | Add telemetry for roadmap quality tracking | Infrastructure | 4 hours |
 
 ---

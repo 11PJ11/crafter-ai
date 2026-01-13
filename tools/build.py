@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-5D-WAVE IDE Bundle Builder - Simple Entry Point
+nWave IDE Bundle Builder - Simple Entry Point
 
 Simple entry point that loads configuration and runs the main builder.
 This provides a clean interface for running the build system.

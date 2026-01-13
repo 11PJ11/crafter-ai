@@ -58,7 +58,7 @@
 
 ### 2. Solution-Architect Embed File
 
-**Location**: `/mnt/c/Repositories/Projects/ai-craft/5d-wave/data/embed/solution-architect/residuality-theory-methodology.md`
+**Location**: `/mnt/c/Repositories/Projects/ai-craft/nWave/data/embed/solution-architect/residuality-theory-methodology.md`
 
 **Size**: ~14,000 words
 
@@ -116,8 +116,8 @@
 ### Existing Embed Files
 
 **Current solution-architect Embeds**:
-- `5d-wave/data/embed/solution-architect/comprehensive-architecture-patterns-and-methodologies.md` (existing)
-- `5d-wave/data/embed/solution-architect/residuality-theory-methodology.md` (NEW)
+- `nWave/data/embed/solution-architect/comprehensive-architecture-patterns-and-methodologies.md` (existing)
+- `nWave/data/embed/solution-architect/residuality-theory-methodology.md` (NEW)
 
 **Integration Strategy**: **Additive** (both embeds coexist)
 - Existing embed: Foundational patterns, principles, evaluation methods
@@ -132,7 +132,7 @@
 
 ## Agent Definition Update Required
 
-**File**: `5d-wave/agents/solution-architect.md`
+**File**: `nWave/agents/solution-architect.md`
 
 **Required Changes**:
 
@@ -145,7 +145,7 @@
 
 2. **Add injection marker in appropriate section** (e.g., after "Advanced Architecture Methodologies"):
    ```markdown
-   <!-- BUILD:INJECT:START:5d-wave/data/embed/solution-architect/residuality-theory-methodology.md -->
+   <!-- BUILD:INJECT:START:nWave/data/embed/solution-architect/residuality-theory-methodology.md -->
    <!-- Residuality Theory knowledge will be injected here during build -->
    <!-- BUILD:INJECT:END -->
    ```
@@ -216,8 +216,8 @@
 | Deliverable | Location | Status | Size |
 |-------------|----------|--------|------|
 | Research Document | `data/research/architecture-patterns/residuality-theory-comprehensive-research.md` | ✅ Complete | 35,000 words |
-| Embed File | `5d-wave/data/embed/solution-architect/residuality-theory-methodology.md` | ✅ Complete | 14,000 words |
-| Agent Definition Update | `5d-wave/agents/solution-architect.md` | ⏸️ Awaiting approval | N/A |
+| Embed File | `nWave/data/embed/solution-architect/residuality-theory-methodology.md` | ✅ Complete | 14,000 words |
+| Agent Definition Update | `nWave/agents/solution-architect.md` | ⏸️ Awaiting approval | N/A |
 | Summary Report | `docs/knowledge-architecture-integration-summary.md` | ✅ Complete | This document |
 
 ---

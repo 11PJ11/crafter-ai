@@ -1,9 +1,11 @@
-# 5D-WAVE IDE Bundle Builder Configuration
+# nWave IDE Bundle Builder Configuration
+
+version: "1.0.0"
 
 # Build settings
 build:
   # Source and output directories
-  source_dir: "../5d-wave"
+  source_dir: "../nWave"
   output_dir: "../dist/ide"
 
   # Build behavior
@@ -51,9 +53,9 @@ processing:
 output:
   # Directory structure under dist/ide/
   structure:
-    agents: "agents/dw"
-    commands: "commands/dw"
-    config: "agents/dw" # Config lives with agents
+    agents: "agents/nw"
+    commands: "commands/nw"
+    config: "agents/nw" # Config lives with agents
 
   # File naming conventions
   naming:
@@ -171,8 +173,8 @@ quality_gates:
 # IDE integration
 ide:
   # Category configuration
-  category_name: "dw"
-  category_description: "5D-WAVE Methodology"
+  category_name: "nw"
+  category_description: "nWave Methodology"
 
   # Metadata generation
   include_build_info: true

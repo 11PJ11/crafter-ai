@@ -10,7 +10,7 @@
 
 **Reviewer agents** are Layer 4 Adversarial Verification agents that provide **peer review** of primary agent outputs to reduce confirmation bias, identify completeness gaps, and improve quality through independent critique. This guide explains how to ensure reviewers are invoked in your workflows.
 
-**Current Status**: Reviewer agents exist in source code (`5d-wave/agents/reviewers/`) but are **NOT currently included in the build/installation** process. They need to be either:
+**Current Status**: Reviewer agents exist in source code (`nWave/agents/reviewers/`) but are **NOT currently included in the build/installation** process. They need to be either:
 1. Added to the build process, OR
 2. Manually invoked through the Task tool
 
@@ -72,20 +72,20 @@ Phase 5: Handoff   → Approved artifact handed to next wave
 
 ### ❌ Reviewers NOT Installed
 
-**Issue**: Reviewer agents in `5d-wave/agents/reviewers/` are **NOT included** in the build process.
+**Issue**: Reviewer agents in `nWave/agents/reviewers/` are **NOT included** in the build process.
 
 **Evidence**:
 ```bash
 # Source has reviewers
-$ ls 5d-wave/agents/reviewers/ | wc -l
+$ ls nWave/agents/reviewers/ | wc -l
 12
 
 # Installation does NOT have reviewers
-$ ls ~/.claude/agents/dw/ | grep reviewer | wc -l
+$ ls ~/.claude/agents/nw/ | grep reviewer | wc -l
 0
 ```
 
-**Root Cause**: Build script (`tools/build_ide_bundle.py`) only processes agents from `5d-wave/agents/*.md`, NOT subdirectories like `reviewers/`.
+**Root Cause**: Build script (`tools/build_ide_bundle.py`) only processes agents from `nWave/agents/*.md`, NOT subdirectories like `reviewers/`.
 
 ```python
 # Line 114 in build_ide_bundle.py
@@ -139,7 +139,7 @@ Since reviewers are not installed, **use the Task tool** to invoke them directly
     You are the business-analyst-reviewer agent (Scout persona).
 
     Read the complete agent specification from:
-    5d-wave/agents/reviewers/business-analyst-reviewer.md
+    nWave/agents/reviewers/business-analyst-reviewer.md
 
     Then review the artifact at:
     docs/requirements/requirements.md
@@ -172,7 +172,7 @@ Since reviewers are not installed, **use the Task tool** to invoke them directly
     You are the acceptance-designer-reviewer agent (Sentinel persona).
 
     Read the specification from:
-    5d-wave/agents/reviewers/acceptance-designer-reviewer.md
+    nWave/agents/reviewers/acceptance-designer-reviewer.md
 
     Review the acceptance tests at:
     tests/acceptance/features/checkout.feature
@@ -200,7 +200,7 @@ Since reviewers are not installed, **use the Task tool** to invoke them directly
 **User**: Activate as acceptance-designer-reviewer and review my tests
 
 **Claude**:
-<Read file="5d-wave/agents/reviewers/acceptance-designer-reviewer.md" />
+<Read file="nWave/agents/reviewers/acceptance-designer-reviewer.md" />
 
 [Adopts Sentinel persona]
 
@@ -217,10 +217,10 @@ Please provide the acceptance test artifact to review.
 
 ### Method 3: Workflow Command Pattern
 
-**Add reviewer invocation to workflow commands** (e.g., `/dw:distill`):
+**Add reviewer invocation to workflow commands** (e.g., `/nw:distill`):
 
 ```markdown
-# In task file: 5d-wave/tasks/dw/distill.md
+# In task file: nWave/tasks/dw/distill.md
 
 ## Workflow Steps
 
@@ -429,7 +429,7 @@ def process_agents(self) -> None:
 ./scripts/update-ai-craft.sh --backup --force
 
 # Verify installation
-ls ~/.claude/agents/dw/ | grep reviewer
+ls ~/.claude/agents/nw/ | grep reviewer
 # Should show 12 reviewer agents
 ```
 
@@ -481,7 +481,7 @@ layer_4_config:
 **Modify** wave commands to include review steps:
 
 ```markdown
-# Example: /dw:distill command
+# Example: /nw:distill command
 
 ## Implementation Steps
 
@@ -508,21 +508,21 @@ layer_4_config:
 claude-code
 
 > I need to review my requirements document. Use the Task tool to invoke
-> business-analyst-reviewer from 5d-wave/agents/reviewers/business-analyst-reviewer.md
+> business-analyst-reviewer from nWave/agents/reviewers/business-analyst-reviewer.md
 > to review docs/requirements/requirements.md
 ```
 
 ### Test 2: Direct Activation
 
 ```bash
-> Read 5d-wave/agents/reviewers/acceptance-designer-reviewer.md and adopt
+> Read nWave/agents/reviewers/acceptance-designer-reviewer.md and adopt
 > the Sentinel persona. Then review tests/acceptance/features/checkout.feature
 ```
 
 ### Test 3: Workflow Integration
 
 ```bash
-> Run /dw:distill for checkout feature. Ensure Layer 4 review is invoked
+> Run /nw:distill for checkout feature. Ensure Layer 4 review is invoked
 > before handoff to DEVELOP wave.
 ```
 
@@ -548,7 +548,7 @@ claude-code
 **Symptom**: "Reviewer agent not found: business-analyst-reviewer"
 
 **Solution**:
-1. Check if reviewers installed: `ls ~/.claude/agents/dw/ | grep reviewer`
+1. Check if reviewers installed: `ls ~/.claude/agents/nw/ | grep reviewer`
 2. If empty, rebuild with fixed build script
 3. Use manual Task invocation as workaround
 
@@ -580,7 +580,7 @@ claude-code
 
 ```markdown
 <Task subagent_type="general-purpose">
-  Read 5d-wave/agents/reviewers/{reviewer-name}.md
+  Read nWave/agents/reviewers/{reviewer-name}.md
   Review artifact at {path}
   Provide YAML feedback
 </Task>
@@ -602,7 +602,7 @@ claude-code
 - **Integration Guide**: `docs/guides/LAYER_4_INTEGRATION_GUIDE.md`
 - **Workflow Documentation**: `docs/reports/adversarial/ADVERSARIAL_VERIFICATION_WORKFLOW.md`
 - **Example Review Cycle**: `examples/adversarial-verification-example.md`
-- **Reviewer Specifications**: `5d-wave/agents/reviewers/*.md`
+- **Reviewer Specifications**: `nWave/agents/reviewers/*.md`
 
 ---
 

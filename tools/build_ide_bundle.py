@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-5D-WAVE IDE Bundle Builder
+nWave IDE Bundle Builder
 
-Main orchestrator script that transforms 5D-WAVE methodology source files
-into IDE-compatible distributions organized under the "dw" category.
+Main orchestrator script that transforms nWave methodology source files
+into IDE-compatible distributions organized under the "nw" category.
 
 Usage:
     python build_ide_bundle.py [options]
 
 Options:
-    --source-dir    Source directory (default: 5d-wave)
+    --source-dir    Source directory (default: nWave)
     --output-dir    Output directory (default: dist/ide)
     --clean         Clean output directory before build
     --verbose       Enable verbose logging
@@ -30,13 +30,12 @@ from datetime import datetime
 from processors.agent_processor import AgentProcessor
 from processors.command_processor import CommandProcessor
 from processors.team_processor import TeamProcessor
-from processors.workflow_processor import WorkflowProcessor
 from utils.config_manager import ConfigManager
 from utils.file_manager import FileManager
 
 
 class IDEBundleBuilder:
-    """Main builder class that orchestrates the 5D-WAVE IDE bundling process."""
+    """Main builder class that orchestrates the nWave IDE bundling process."""
 
     def __init__(self, source_dir: Path, output_dir: Path, dry_run: bool = False):
         self.source_dir = Path(source_dir)
@@ -45,28 +44,26 @@ class IDEBundleBuilder:
 
         # Initialize components
         self.file_manager = FileManager(dry_run=dry_run)
-        self.config_manager = ConfigManager(self.source_dir / "config.yaml")
+        self.config_manager = ConfigManager(self.source_dir / "framework-catalog.yaml")
 
         # Initialize processors
         self.agent_processor = AgentProcessor(self.source_dir, self.output_dir, self.file_manager)
         self.command_processor = CommandProcessor(self.source_dir, self.output_dir, self.file_manager)
         self.team_processor = TeamProcessor(self.source_dir, self.output_dir, self.file_manager)
-        self.workflow_processor = WorkflowProcessor(self.source_dir, self.output_dir, self.file_manager)
 
         # Build statistics
         self.stats = {
             'agents_processed': 0,
             'commands_processed': 0,
             'teams_processed': 0,
-            'workflows_processed': 0,
             'errors': 0,
             'warnings': 0
         }
 
     def validate_source(self) -> bool:
-        """Validate that the source directory contains required 5D-WAVE structure."""
-        required_dirs = ['agents', 'tasks', 'workflows', 'agent-teams', 'templates', 'checklists', 'data']
-        required_files = ['config.yaml']
+        """Validate that the source directory contains required nWave structure."""
+        required_dirs = ['agents', 'tasks', 'templates', 'data']
+        required_files = ['framework-catalog.yaml']
 
         logging.info(f"Validating source directory: {self.source_dir}")
 
@@ -92,8 +89,8 @@ class IDEBundleBuilder:
     def prepare_output_structure(self) -> None:
         """Create the output directory structure."""
         output_dirs = [
-            self.output_dir / "agents" / "dw",
-            self.output_dir / "commands" / "dw"
+            self.output_dir / "agents" / "nw",
+            self.output_dir / "commands" / "nw"
         ]
 
         for dir_path in output_dirs:
@@ -125,7 +122,7 @@ class IDEBundleBuilder:
     def process_commands(self) -> None:
         """Process all task files into commands."""
         logging.info("Processing commands...")
-        tasks_dir = self.source_dir / "tasks" / "dw"
+        tasks_dir = self.source_dir / "tasks" / "nw"
 
         if not tasks_dir.exists():
             logging.warning(f"Tasks directory not found: {tasks_dir}")
@@ -164,32 +161,11 @@ class IDEBundleBuilder:
                 logging.error(f"Error processing team {team_file.name}: {e}")
                 self.stats['errors'] += 1
 
-    def process_workflows(self) -> None:
-        """Process all workflow files into orchestrator agents."""
-        logging.info("Processing workflows...")
-        workflows_dir = self.source_dir / "workflows"
-
-        if not workflows_dir.exists():
-            logging.warning(f"Workflows directory not found: {workflows_dir}")
-            return
-
-        workflow_files = list(workflows_dir.glob("*.yaml"))
-        logging.info(f"Found {len(workflow_files)} workflow files")
-
-        for workflow_file in workflow_files:
-            try:
-                logging.debug(f"Processing workflow: {workflow_file.name}")
-                self.workflow_processor.process_workflow(workflow_file, self.config_manager.get_config())
-                self.stats['workflows_processed'] += 1
-            except Exception as e:
-                logging.error(f"Error processing workflow {workflow_file.name}: {e}")
-                self.stats['errors'] += 1
-
     def generate_config(self) -> None:
         """Generate the IDE configuration file."""
         logging.info("Generating IDE configuration...")
 
-        config_output_path = self.output_dir / "agents" / "dw" / "config.json"
+        config_output_path = self.output_dir / "agents" / "nw" / "config.json"
 
         try:
             ide_config = self.config_manager.generate_ide_config(self.stats)
@@ -208,12 +184,11 @@ class IDEBundleBuilder:
     def print_summary(self) -> None:
         """Print build summary statistics."""
         print("\n" + "="*60)
-        print("5D-WAVE IDE Bundle Build Summary")
+        print("nWave IDE Bundle Build Summary")
         print("="*60)
         print(f"Agents processed:    {self.stats['agents_processed']}")
         print(f"Commands processed:  {self.stats['commands_processed']}")
         print(f"Teams processed:     {self.stats['teams_processed']}")
-        print(f"Workflows processed: {self.stats['workflows_processed']}")
         print(f"Warnings:            {self.stats['warnings']}")
         print(f"Errors:              {self.stats['errors']}")
         print(f"Output directory:    {self.output_dir}")
@@ -231,7 +206,7 @@ class IDEBundleBuilder:
     def build(self) -> bool:
         """Execute the complete build process."""
         start_time = datetime.now()
-        logging.info(f"Starting 5D-WAVE IDE bundle build at {start_time}")
+        logging.info(f"Starting nWave IDE bundle build at {start_time}")
 
         try:
             # Validation
@@ -246,7 +221,6 @@ class IDEBundleBuilder:
             self.process_agents()
             self.process_commands()
             self.process_teams()
-            self.process_workflows()
 
             # Configuration
             self.generate_config()
@@ -284,13 +258,13 @@ def setup_logging(verbose: bool = False) -> None:
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="Build 5D-WAVE IDE bundles from methodology source files"
+        description="Build nWave IDE bundles from methodology source files"
     )
     parser.add_argument(
         "--source-dir",
         type=Path,
-        default="../5d-wave",
-        help="Source directory containing 5D-WAVE files (default: ../5d-wave)"
+        default="../nWave",
+        help="Source directory containing nWave files (default: ../nWave)"
     )
     parser.add_argument(
         "--output-dir",

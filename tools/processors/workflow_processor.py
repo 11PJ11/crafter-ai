@@ -1,8 +1,8 @@
 """
 Workflow Processor
 
-Processes 5D-WAVE workflow YAML files and converts them into orchestrator agent files
-that guide multi-phase 5D-WAVE methodology execution.
+Processes nWave workflow YAML files and converts them into orchestrator agent files
+that guide multi-phase nWave methodology execution.
 """
 
 import logging
@@ -51,7 +51,7 @@ class WorkflowProcessor:
 
     def get_workflow_info_from_config(self, workflow_name: str, config: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Extract workflow information from main config.yaml.
+        Extract workflow information from main framework-catalog.yaml.
 
         Args:
             workflow_name: Name of the workflow
@@ -100,14 +100,14 @@ class WorkflowProcessor:
         header_parts = [
             f"# {workflow_base}-orchestrator",
             "",
-            "ACTIVATION-NOTICE: This is a workflow orchestrator agent that guides complete 5D-WAVE methodology execution.",
+            "ACTIVATION-NOTICE: This is a workflow orchestrator agent that guides complete nWave methodology execution.",
             "",
             "CRITICAL: This orchestrator coordinates multi-phase workflows. Follow the phase guidance and agent coordination patterns defined below.",
             "",
             f"## Orchestrator Identity",
             f"**Workflow**: {workflow_title}",
-            f"**Description**: {workflow_info.get('description', 'Multi-phase 5D-WAVE orchestration')}",
-            f"**Methodology**: 5D-WAVE ({' → '.join(workflow_info.get('phases', []))})",
+            f"**Description**: {workflow_info.get('description', 'Multi-phase nWave orchestration')}",
+            f"**Methodology**: nWave ({' → '.join(workflow_info.get('phases', []))})",
             ""
         ]
 
@@ -133,7 +133,7 @@ class WorkflowProcessor:
         guidance_parts = [
             "## Phase Guidance",
             "",
-            "Execute the 5D-WAVE methodology in the following sequence:",
+            "Execute the nWave methodology in the following sequence:",
             ""
         ]
 
@@ -410,7 +410,7 @@ class WorkflowProcessor:
             orchestrator_content = self.generate_orchestrator_content(workflow_file, config)
 
             # Determine output path - workflows become orchestrator agents
-            output_path = self.output_dir / "agents" / "dw" / f"{workflow_name}-orchestrator.md"
+            output_path = self.output_dir / "agents" / "nw" / f"{workflow_name}-orchestrator.md"
 
             # Write output file
             success = self.file_manager.write_file(output_path, orchestrator_content)

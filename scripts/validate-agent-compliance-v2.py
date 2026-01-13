@@ -14,7 +14,7 @@ from typing import Dict, List, Tuple
 
 # Configuration
 TEMPLATE_VERSION = "1.2"
-AGENTS_DIR = Path("5d-wave/agents")
+AGENTS_DIR = Path("nWave/agents")
 REPORT_FILE = Path("docs/COMPLIANCE_VALIDATION_REPORT.md")
 
 # Validation results

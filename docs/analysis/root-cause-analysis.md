@@ -2,13 +2,13 @@
 
 **Date**: 2025-10-16
 **Analyst**: Sage (troubleshooter)
-**Problem**: Commands like `/dw:execute` and `/dw:review` fail to invoke specified subagents; main agent handles tasks directly instead
+**Problem**: Commands like `/nw:execute` and `/nw:review` fail to invoke specified subagents; main agent handles tasks directly instead
 
 ---
 
 ## Executive Summary
 
-Commands with agent parameters (`/dw:execute`, `/dw:review`, `/dw:roadmap`, `/dw:split`, `/dw:finalize`) declare agent invocation capability in their YAML frontmatter but **do not contain actual invocation mechanisms** in their implementation. The commands document *how* a subagent *should* be invoked but lack the critical instruction that tells Claude Code to *actually invoke* the subagent using the Task tool.
+Commands with agent parameters (`/nw:execute`, `/nw:review`, `/nw:roadmap`, `/nw:split`, `/nw:finalize`) declare agent invocation capability in their YAML frontmatter but **do not contain actual invocation mechanisms** in their implementation. The commands document *how* a subagent *should* be invoked but lack the critical instruction that tells Claude Code to *actually invoke* the subagent using the Task tool.
 
 **Impact**: High - Distributed workflow system cannot function as designed; tasks meant for specialized agents are handled by generalist main agent, degrading quality and violating architecture principles.
 
@@ -30,7 +30,7 @@ Applied Toyota 5 Whys technique with multi-causal investigation:
 
 ### Evidence 1: Agent-Parameter Commands Lack Invocation Instructions
 
-**Source File**: `/mnt/c/Repositories/Projects/ai-craft/5d-wave/tasks/dw/execute.md`
+**Source File**: `/mnt/c/Repositories/Projects/ai-craft/nWave/tasks/dw/execute.md`
 
 **YAML Frontmatter** (Lines 1-8):
 ```yaml
@@ -69,7 +69,7 @@ Execute task from: {step-file-path}
 
 ### Evidence 2: Working Commands Use Different Pattern
 
-**Source File**: `/mnt/c/Repositories/Projects/ai-craft/5d-wave/tasks/dw/develop.md`
+**Source File**: `/mnt/c/Repositories/Projects/ai-craft/nWave/tasks/dw/develop.md`
 
 **YAML Frontmatter** (Lines 1-8):
 ```yaml
@@ -89,15 +89,15 @@ agent-activation:
 - `auto-activate: true` triggers automatic agent invocation
 
 **Key Difference**:
-- **Working commands** (`/dw:develop`, `/dw:discuss`) have `agent-id` field with fixed agent
-- **Non-working commands** (`/dw:execute`, `/dw:review`) have `agent-parameter: true` but no fixed `agent-id`
+- **Working commands** (`/nw:develop`, `/nw:discuss`) have `agent-id` field with fixed agent
+- **Non-working commands** (`/nw:execute`, `/nw:review`) have `agent-parameter: true` but no fixed `agent-id`
 - Build system likely handles `auto-activate: true` but not `agent-parameter: true`
 
 ---
 
 ### Evidence 3: Review Command Has Same Pattern
 
-**Source File**: `/mnt/c/Repositories/Projects/ai-craft/5d-wave/tasks/dw/review.md`
+**Source File**: `/mnt/c/Repositories/Projects/ai-craft/nWave/tasks/dw/review.md`
 
 **YAML Frontmatter** (Lines 1-8):
 ```yaml
@@ -122,7 +122,7 @@ Perform {artifact-type} review of: {artifact-path}
 ### Primary Task Instructions
 ```
 
-**Analysis**: Identical pattern to `/dw:execute` - declares capability but lacks implementation
+**Analysis**: Identical pattern to `/nw:execute` - declares capability but lacks implementation
 
 ---
 
@@ -166,7 +166,7 @@ def generate_command_content(self, task_file: Path, config: Dict[str, Any]) -> s
 **EVIDENCE**: Lines 53-112 of execute.md show documentation text, not executable Task tool invocation.
 
 **WHY #2A**: Why is there no Task tool invocation in the command?
-**ANSWER**: The source task file (`5d-wave/tasks/dw/execute.md`) contains only documentation of invocation, not implementation.
+**ANSWER**: The source task file (`nWave/tasks/dw/execute.md`) contains only documentation of invocation, not implementation.
 **EVIDENCE**: Agent Invocation section uses template placeholders `@{specified-agent}` that are never substituted.
 
 **WHY #3A**: Why does the source file lack implementation?
@@ -190,7 +190,7 @@ def generate_command_content(self, task_file: Path, config: Dict[str, Any]) -> s
 
 **WHY #2B**: Why doesn't command_processor handle agent-parameter?
 **ANSWER**: The build system was designed to handle fixed agent assignments (`agent-id` + `auto-activate`), not dynamic agent parameters.
-**EVIDENCE**: Working commands like `/dw:develop` use `agent-id: software-crafter` and `auto-activate: true` pattern, which the system handles.
+**EVIDENCE**: Working commands like `/nw:develop` use `agent-id: software-crafter` and `auto-activate: true` pattern, which the system handles.
 
 **WHY #3B**: Why was dynamic agent handling not implemented?
 **ANSWER**: Dynamic agent invocation from parameters is architecturally more complex than fixed agent activation - requires parameter parsing, validation, and Task tool injection.
@@ -198,7 +198,7 @@ def generate_command_content(self, task_file: Path, config: Dict[str, Any]) -> s
 
 **WHY #4B**: Why is parameter-based invocation more complex?
 **ANSWER**: Claude Code slash commands expand at parse time (before execution), but agent parameter values are only known at runtime (user provides them).
-**EVIDENCE**: `/dw:execute @researcher "file.json"` - the `@researcher` value is not available when slash command markdown is generated during build.
+**EVIDENCE**: `/nw:execute @researcher "file.json"` - the `@researcher` value is not available when slash command markdown is generated during build.
 
 **WHY #5B (ROOT CAUSE 2)**: Why can't parse-time expansion handle runtime values?
 **ROOT CAUSE 2**: Architectural limitation of static slash command expansion model - commands are expanded to static markdown before execution, but parameter-based agent selection requires dynamic behavior at execution time.
@@ -214,8 +214,8 @@ def generate_command_content(self, task_file: Path, config: Dict[str, Any]) -> s
 **Details**: The YAML frontmatter supports declaring `agent-parameter: true` to indicate an agent should be invoked based on command parameters, but neither the build system (`command_processor.py`) nor Claude Code runtime implements this feature. Only `auto-activate: true` with fixed `agent-id` is implemented.
 
 **Evidence Files**:
-- `/mnt/c/Repositories/Projects/ai-craft/5d-wave/tasks/dw/execute.md` (lines 4-7)
-- `/mnt/c/Repositories/Projects/ai-craft/5d-wave/tasks/dw/review.md` (lines 4-7)
+- `/mnt/c/Repositories/Projects/ai-craft/nWave/tasks/dw/execute.md` (lines 4-7)
+- `/mnt/c/Repositories/Projects/ai-craft/nWave/tasks/dw/review.md` (lines 4-7)
 - `/mnt/c/Repositories/Projects/ai-craft/tools/processors/command_processor.py` (lines 182-218)
 
 ---
@@ -227,8 +227,8 @@ def generate_command_content(self, task_file: Path, config: Dict[str, Any]) -> s
 **Details**: Claude Code expands slash commands to markdown at parse time (static), but parameter-based agent selection requires knowing the parameter value at execution time (dynamic). The current architecture cannot bridge this static-to-dynamic gap without explicit Task tool invocation instructions in the expanded markdown.
 
 **Evidence Files**:
-- Comparison of `/dw:develop` (static, works) vs. `/dw:execute` (dynamic, fails)
-- Build output in `/mnt/c/Repositories/Projects/ai-craft/dist/ide/commands/dw/execute.md` shows static content
+- Comparison of `/nw:develop` (static, works) vs. `/nw:execute` (dynamic, fails)
+- Build output in `/mnt/c/Repositories/Projects/ai-craft/dist/ide/commands/nw/execute.md` shows static content
 
 ---
 
@@ -343,7 +343,7 @@ agent-activation:
 **YOU ARE THE COORDINATOR** - Do not execute the task yourself.
 
 **STEP 1**: Extract agent name from first parameter
-- User provides: `/dw:execute @researcher "file.json"`
+- User provides: `/nw:execute @researcher "file.json"`
 - Extract: `@researcher`
 
 **STEP 2**: Extract remaining parameters
@@ -374,11 +374,11 @@ Return results to user.
 ## Affected Commands
 
 All commands with `agent-parameter: true`:
-1. `/dw:execute` - Task execution engine
-2. `/dw:review` - Quality review system
-3. `/dw:roadmap` - Planning document creation
-4. `/dw:split` - Task file generation
-5. `/dw:finalize` - Workflow completion
+1. `/nw:execute` - Task execution engine
+2. `/nw:review` - Quality review system
+3. `/nw:roadmap` - Planning document creation
+4. `/nw:split` - Task file generation
+5. `/nw:finalize` - Workflow completion
 
 All currently non-functional for subagent invocation.
 
@@ -395,7 +395,7 @@ All currently non-functional for subagent invocation.
 - Context degradation (main agent accumulates context across multiple tasks)
 - User confusion (commands don't work as documented)
 
-**Urgency**: HIGH - Core functionality of 5D-Wave workflow system blocked
+**Urgency**: HIGH - Core functionality of nWave workflow system blocked
 
 ---
 
@@ -405,13 +405,13 @@ Once solution implemented, verify with:
 
 **Test 1**: Execute command with agent parameter
 ```bash
-/dw:execute @researcher "docs/workflow/test/steps/01-01.json"
+/nw:execute @researcher "docs/workflow/test/steps/01-01.json"
 ```
 **Expected**: Researcher agent activates and handles task, not main agent
 
 **Test 2**: Review command with agent parameter
 ```bash
-/dw:review @software-crafter task "docs/workflow/test/steps/02-01.json"
+/nw:review @software-crafter task "docs/workflow/test/steps/02-01.json"
 ```
 **Expected**: Software-crafter agent activates and provides review
 
@@ -439,10 +439,10 @@ The subagent invocation failure is caused by **two complementary root causes**:
 **Both causes must be addressed** for full solution. The hybrid approach (Solution 3) provides immediate workaround, while Solutions 1 or 2 provide systematic long-term fixes.
 
 **Critical files requiring attention**:
-- Source: `/mnt/c/Repositories/Projects/ai-craft/5d-wave/tasks/dw/execute.md`
-- Source: `/mnt/c/Repositories/Projects/ai-craft/5d-wave/tasks/dw/review.md`
+- Source: `/mnt/c/Repositories/Projects/ai-craft/nWave/tasks/dw/execute.md`
+- Source: `/mnt/c/Repositories/Projects/ai-craft/nWave/tasks/dw/review.md`
 - Build: `/mnt/c/Repositories/Projects/ai-craft/tools/processors/command_processor.py`
-- Output: `/mnt/c/Repositories/Projects/ai-craft/dist/ide/commands/dw/*.md` (5 commands)
+- Output: `/mnt/c/Repositories/Projects/ai-craft/dist/ide/commands/nw/*.md` (5 commands)
 
 ---
 

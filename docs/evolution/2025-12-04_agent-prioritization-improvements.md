@@ -3,7 +3,7 @@
 **Project ID:** agent-prioritization-improvements
 **Date Range:** 2025-12-03 to 2025-12-04
 **Status:** Completed
-**Methodology:** Standard 5D-Wave Workflow
+**Methodology:** Standard nWave Workflow
 
 ---
 
@@ -64,9 +64,9 @@ This project successfully implemented systematic fixes to prevent agents from cr
 **Status:** COMPLETED
 **Implementation Layer:** PRIMARY
 **Deliverables:**
-- `5d-wave/templates/baseline-template.yaml` - Template with schema for all three baseline types
-- `5d-wave/tasks/dw/baseline.md` - Command to gather baseline data via researcher agent
-- Updated `5d-wave/tasks/dw/roadmap.md` - Validation gate that BLOCKS if baseline file missing
+- `nWave/templates/baseline-template.yaml` - Template with schema for all three baseline types
+- `nWave/tasks/dw/baseline.md` - Command to gather baseline data via researcher agent
+- Updated `nWave/tasks/dw/roadmap.md` - Validation gate that BLOCKS if baseline file missing
 
 **Key Innovation:** Physical file artifact (baseline.yaml) creates undeniable prerequisite that cannot be rationalized away by text-based prompts.
 
@@ -79,24 +79,24 @@ This project successfully implemented systematic fixes to prevent agents from cr
 - Performance optimization: Baseline metric value MUST be numeric (not placeholder)
 - Performance optimization: Breakdown MUST identify #1 bottleneck with percentage
 - Process improvement: MUST document simplest alternatives considered (minimum 2)
-- All types: Clear error message guides user to `/dw:baseline` command if missing
+- All types: Clear error message guides user to `/nw:baseline` command if missing
 
 #### Step 1-1: Add 'Measure Before Plan' Principle to solution-architect ✓
 
 **Status:** COMPLETED
 **Implementation Layer:** SECONDARY
-**Target:** `5d-wave/agents/solution-architect.md`
+**Target:** `nWave/agents/solution-architect.md`
 
 **Change:** Added BLOCKING principle to core_principles section
 **Content:** Validation prompt that HALTS roadmap creation if timing data, impact ranking, or target validation is missing
 
 **Reinforcement Strategy:** This principle reinforces the baseline file requirement in agent cognition, creating redundant protection.
 
-#### Step 1-2: Add Pre-Planning Measurement Gate to /dw:roadmap ✓
+#### Step 1-2: Add Pre-Planning Measurement Gate to /nw:roadmap ✓
 
 **Status:** COMPLETED
 **Implementation Layer:** SECONDARY
-**Target:** `5d-wave/tasks/dw/roadmap.md`
+**Target:** `nWave/tasks/dw/roadmap.md`
 
 **Change:** Added Pre-Planning Measurement Gate section with BLOCKING behavior
 **Gate Components:**
@@ -133,7 +133,7 @@ This project successfully implemented systematic fixes to prevent agents from cr
 #### Step 2-1: Add Constraint Prioritization Framework to solution-architect ✓
 
 **Status:** COMPLETED
-**Target:** `5d-wave/agents/solution-architect.md`
+**Target:** `nWave/agents/solution-architect.md`
 
 **Change:** Added constraint_analysis pipeline stage with mandatory impact quantification
 
@@ -148,7 +148,7 @@ This project successfully implemented systematic fixes to prevent agents from cr
 #### Step 2-2: Add 'Simplest Solution First' Quality Gate to solution-architect ✓
 
 **Status:** COMPLETED
-**Target:** `5d-wave/agents/solution-architect.md`
+**Target:** `nWave/agents/solution-architect.md`
 
 **Change:** Added simplest_solution_check quality gate (BLOCKING)
 
@@ -166,7 +166,7 @@ This project successfully implemented systematic fixes to prevent agents from cr
 #### Step 2-3: Update Research Phase to Require Timing Analysis ✓
 
 **Status:** COMPLETED
-**Target:** `5d-wave/tasks/dw/roadmap.md`
+**Target:** `nWave/tasks/dw/roadmap.md`
 
 **Change:** Added Research Phase Requirements section (MANDATORY for performance roadmaps)
 
@@ -188,10 +188,10 @@ This project successfully implemented systematic fixes to prevent agents from cr
 **Estimated Hours:** 3.0
 **Priority:** MEDIUM
 
-#### Step 3-1: Add Quantitative Research Requirements to /dw:research ✓
+#### Step 3-1: Add Quantitative Research Requirements to /nw:research ✓
 
 **Status:** COMPLETED
-**Target:** `5d-wave/tasks/dw/research.md`
+**Target:** `nWave/tasks/dw/research.md`
 
 **Change:** Added Quantitative Research Validations criteria and Impact Summary template
 
@@ -202,10 +202,10 @@ This project successfully implemented systematic fixes to prevent agents from cr
 - Largest bottleneck explicitly stated with evidence
 - Impact Summary with percentages required
 
-#### Step 3-2: Update /dw:split to Validate Measurement Data Exists ✓
+#### Step 3-2: Update /nw:split to Validate Measurement Data Exists ✓
 
 **Status:** COMPLETED
-**Target:** `5d-wave/tasks/dw/split.md`
+**Target:** `nWave/tasks/dw/split.md`
 
 **Change:** Added Measurement Data Validation (REQUIRED)
 
@@ -214,14 +214,14 @@ This project successfully implemented systematic fixes to prevent agents from cr
 - Verify constraint impact analysis if constraints mentioned
 - Verify rejected simple alternatives if >3 phases
 - Exception for process improvements (gate_type = "process_improvement")
-- Error blocks split with clear message directing to /dw:roadmap validation
+- Error blocks split with clear message directing to /nw:roadmap validation
 
 **Rationale:** Prevents propagating prioritization errors to atomic task files.
 
 #### Step 3-3: Document Anti-Patterns for Future Reference ✓
 
 **Status:** COMPLETED
-**Deliverable:** `5d-wave/data/anti-patterns/roadmap-prioritization.md`
+**Deliverable:** `nWave/data/anti-patterns/roadmap-prioritization.md`
 
 **Anti-Patterns Documented:**
 1. **Architecture Before Measurement** - Creating solution without quantitative problem analysis
@@ -240,7 +240,7 @@ This project successfully implemented systematic fixes to prevent agents from cr
 #### Step 3-4: Update agent-builder with Measurement Gate Safeguards ✓
 
 **Status:** COMPLETED
-**Target:** `5d-wave/agents/agent-builder.md`
+**Target:** `nWave/agents/agent-builder.md`
 
 **Change:** Added prioritization_safeguards quality gate
 
@@ -262,13 +262,13 @@ This project successfully implemented systematic fixes to prevent agents from cr
 
 #### Step 4-1: Create Automated Validation Scripts (BACKLOG)
 
-**Target:** `5d-wave/utils/validate-roadmap.py`
+**Target:** `nWave/utils/validate-roadmap.py`
 **Purpose:** Python script to automate roadmap validation
 **Status:** Deferred for future work
 
 #### Step 4-2: Add Telemetry for Roadmap Quality Tracking (BACKLOG)
 
-**Target:** `5d-wave/utils/roadmap-telemetry.py`
+**Target:** `nWave/utils/roadmap-telemetry.py`
 **Purpose:** Metrics collection for data-driven improvement
 **Status:** Deferred for future work
 
@@ -280,12 +280,12 @@ This project successfully implemented systematic fixes to prevent agents from cr
 
 **PRIMARY Enforcement (Strongest):**
 - Baseline file requirement creates physical artifact that cannot be bypassed
-- File must exist at `docs/workflow/{project-id}/baseline.yaml` before /dw:roadmap proceeds
+- File must exist at `docs/workflow/{project-id}/baseline.yaml` before /nw:roadmap proceeds
 - Three baseline types supported (performance, process, feature) with type-specific validation
 
 **SECONDARY Enforcement (Redundant Protection):**
 - Agent principle: "Measure Before Plan" in solution-architect cognition
-- Command gate: Pre-Planning Measurement Gate in /dw:roadmap
+- Command gate: Pre-Planning Measurement Gate in /nw:roadmap
 - Review dimension: Priority Validation in all 7 reviewer agents
 
 **Rationale:** Defense-in-depth approach ensures failure in one layer doesn't compromise protection.
@@ -303,7 +303,7 @@ This project successfully implemented systematic fixes to prevent agents from cr
 ### 3. Knowledge Preservation
 
 **Anti-Patterns Documentation:**
-- 5 anti-patterns documented in `5d-wave/data/anti-patterns/roadmap-prioritization.md`
+- 5 anti-patterns documented in `nWave/data/anti-patterns/roadmap-prioritization.md`
 - Each includes warning signs, incorrect example, correct pattern, prevention link
 - Serves as training data for future agent improvements
 - Incident ROADMAP-2025-12-03-001 fully analyzed in reference document
@@ -321,7 +321,7 @@ This project successfully implemented systematic fixes to prevent agents from cr
 1. **Undeniable Prerequisite** - Physical artifact cannot be rationalized away
 2. **Audit Trail** - Baseline file documents what was measured and when
 3. **Forced Sequencing** - Data gathering MUST occur before roadmap session starts
-4. **Clear Guidance** - Error message directs to `/dw:baseline` command with clear next steps
+4. **Clear Guidance** - Error message directs to `/nw:baseline` command with clear next steps
 5. **Type Safety** - Schema enforces numeric values for metrics (prevents placeholder values)
 
 **Three Baseline Types:**
@@ -349,7 +349,7 @@ All 4 validation scenarios from roadmap now pass:
 
 | Scenario | Before Fix | After Fix | Status |
 |----------|------------|-----------|--------|
-| 1: Measurement Gate Blocks Premature Roadmap | Agent produces roadmap without data | BLOCKED - Error directs to /dw:baseline | PASS ✓ |
+| 1: Measurement Gate Blocks Premature Roadmap | Agent produces roadmap without data | BLOCKED - Error directs to /nw:baseline | PASS ✓ |
 | 2: Constraint Prioritization Prevents Tunnel Vision | Agent designs around minority constraint | Constraint Impact Analysis quantifies percentages | PASS ✓ |
 | 3: Simple Alternative Documented | No alternatives considered | Rejected Simple Alternatives section required | PASS ✓ |
 | 4: Review Catches Prioritization Error | Reviewer approves wrong-problem roadmap | Priority Validation FAILS with specific reason | PASS ✓ |
@@ -357,24 +357,24 @@ All 4 validation scenarios from roadmap now pass:
 ### Files Modified
 
 **Created:**
-- `5d-wave/templates/baseline-template.yaml`
-- `5d-wave/tasks/dw/baseline.md`
-- `5d-wave/data/anti-patterns/roadmap-prioritization.md`
+- `nWave/templates/baseline-template.yaml`
+- `nWave/tasks/dw/baseline.md`
+- `nWave/data/anti-patterns/roadmap-prioritization.md`
 - `docs/evolution/2025-12-04_agent-prioritization-improvements.md` (this file)
 
 **Modified:**
-- `5d-wave/agents/solution-architect.md` (3 additions: Measure Before Plan principle, Constraint Prioritization Framework, Simplest Solution First gate)
-- `5d-wave/tasks/dw/roadmap.md` (2 additions: Pre-Planning Measurement Gate, Research Phase Requirements)
-- `5d-wave/tasks/dw/research.md` (1 addition: Quantitative Research Validations)
-- `5d-wave/tasks/dw/split.md` (1 addition: Measurement Data Validation)
-- `5d-wave/agents/agent-builder.md` (1 addition: prioritization_safeguards quality gate)
-- `5d-wave/data/embed/solution-architect/critique-dimensions.md` (1 addition: Priority Validation)
-- `5d-wave/data/embed/software-crafter/critique-dimensions.md` (1 addition: Priority Validation)
-- `5d-wave/data/embed/researcher/critique-dimensions.md` (1 addition: Priority Validation)
-- `5d-wave/data/embed/acceptance-designer/critique-dimensions.md` (1 addition: Priority Validation)
-- `5d-wave/data/embed/product-owner/critique-dimensions.md` (1 addition: Priority Validation)
-- `5d-wave/data/embed/devop/critique-dimensions.md` (1 addition: Priority Validation)
-- `5d-wave/data/embed/agent-builder/critique-dimensions.md` (1 addition: Priority Validation)
+- `nWave/agents/solution-architect.md` (3 additions: Measure Before Plan principle, Constraint Prioritization Framework, Simplest Solution First gate)
+- `nWave/tasks/dw/roadmap.md` (2 additions: Pre-Planning Measurement Gate, Research Phase Requirements)
+- `nWave/tasks/dw/research.md` (1 addition: Quantitative Research Validations)
+- `nWave/tasks/dw/split.md` (1 addition: Measurement Data Validation)
+- `nWave/agents/agent-builder.md` (1 addition: prioritization_safeguards quality gate)
+- `nWave/data/embed/solution-architect/critique-dimensions.md` (1 addition: Priority Validation)
+- `nWave/data/embed/software-crafter/critique-dimensions.md` (1 addition: Priority Validation)
+- `nWave/data/embed/researcher/critique-dimensions.md` (1 addition: Priority Validation)
+- `nWave/data/embed/acceptance-designer/critique-dimensions.md` (1 addition: Priority Validation)
+- `nWave/data/embed/product-owner/critique-dimensions.md` (1 addition: Priority Validation)
+- `nWave/data/embed/devop/critique-dimensions.md` (1 addition: Priority Validation)
+- `nWave/data/embed/agent-builder/critique-dimensions.md` (1 addition: Priority Validation)
 
 **Total Files Impacted:** 16
 
@@ -416,7 +416,7 @@ All 4 validation scenarios from roadmap now pass:
 
 **Solution:** All error messages include:
 1. Clear explanation of what's missing
-2. Specific command to fix it (`/dw:baseline`)
+2. Specific command to fix it (`/nw:baseline`)
 3. What the command will do (gather metrics, identify bottlenecks, create validated baseline)
 4. Why this is blocked (roadmap creation requires data)
 
@@ -439,19 +439,19 @@ All 4 validation scenarios from roadmap now pass:
 
 ### Primary Deliverables
 
-1. **Baseline Template** (`5d-wave/templates/baseline-template.yaml`)
+1. **Baseline Template** (`nWave/templates/baseline-template.yaml`)
    - Full schema with all three baseline types
    - Clear comments explaining each field
    - Example values demonstrating format
    - Validation rules documented as comments
 
-2. **Baseline Command** (`5d-wave/tasks/dw/baseline.md`)
+2. **Baseline Command** (`nWave/tasks/dw/baseline.md`)
    - COORDINATOR pattern dispatching to researcher agent
    - Type-specific Task prompts for each baseline type
    - Parameter extraction and validation
    - Success criteria and next step guidance
 
-3. **Anti-Patterns Documentation** (`5d-wave/data/anti-patterns/roadmap-prioritization.md`)
+3. **Anti-Patterns Documentation** (`nWave/data/anti-patterns/roadmap-prioritization.md`)
    - 5 anti-patterns fully documented
    - Each with warning signs, examples, correct patterns
    - Prevention mechanisms linked to implemented solutions
@@ -505,7 +505,7 @@ All 4 validation scenarios from roadmap now pass:
 1. **Validate in Production**
    - Test baseline file requirement with real roadmap request
    - Verify error messages are clear and actionable
-   - Confirm `/dw:baseline` command works end-to-end
+   - Confirm `/nw:baseline` command works end-to-end
    - Test all three baseline types (performance, process, feature)
 
 2. **Create Example Baselines**
@@ -517,7 +517,7 @@ All 4 validation scenarios from roadmap now pass:
 3. **User Documentation**
    - Update user guide with baseline requirement
    - Document when to use each baseline type
-   - Provide workflow: /dw:baseline → review → /dw:roadmap
+   - Provide workflow: /nw:baseline → review → /nw:roadmap
    - FAQ section for common questions
 
 ### Medium Priority (Consider for Q1 2025)
@@ -538,7 +538,7 @@ All 4 validation scenarios from roadmap now pass:
    - Tool to analyze codebase and quantify constraint impact
    - Example: "Tests with SISTER dependency: 18 of 89 (20%)"
    - Automated percentage calculations for Constraint Impact Analysis
-   - Integration with /dw:baseline command
+   - Integration with /nw:baseline command
 
 ### Low Priority (Future Considerations)
 
@@ -711,7 +711,7 @@ All 11 core steps (Phases 1-3) are complete. Phase 4 automation steps are deferr
 **Archived By:** software-crafter (Crafty)
 **Archive Format:** Markdown
 **Archive Location:** `docs/evolution/2025-12-04_agent-prioritization-improvements.md`
-**Related Files:** Preserved in `5d-wave/` directory hierarchy
+**Related Files:** Preserved in `nWave/` directory hierarchy
 **Workflow Files:** Ready for cleanup (see next section)
 
 ---
@@ -742,6 +742,6 @@ The following workflow files can be safely deleted after user approval:
 - `docs/workflow/agent-prioritization-improvements/` (after files deleted)
 
 **Preserved Files (DO NOT DELETE):**
-- All deliverables in `5d-wave/` directory
+- All deliverables in `nWave/` directory
 - `docs/agent-improvements/2025-12-03_roadmap-prioritization-lessons.md`
 - `docs/evolution/2025-12-04_agent-prioritization-improvements.md` (this archive)

@@ -1,7 +1,7 @@
 # Knowledge Architecture Implementation Analysis
 
 **Date**: 2025-10-09
-**Task**: Complete knowledge architecture for all 21 remaining 5D-WAVE agents
+**Task**: Complete knowledge architecture for all 21 remaining nWave agents
 **Status**: COMPLETE - Analysis finished, 1 agent implementation completed, 20 documented with gaps
 
 ---
@@ -25,7 +25,7 @@ Analyzed all 21 agents (9 primary + 12 reviewers) for knowledge architecture nee
 
 #### 1. **data-engineer**
 - **Status**: ✅ COMPLETE
-- **Embed Directory**: `5d-wave/data/embed/data-engineer/`
+- **Embed Directory**: `nWave/data/embed/data-engineer/`
 - **Research Files**: 4 files, 4784 lines, ~325KB
   - `01-databases-fundamentals.md` (1151 lines, ~82KB)
   - `02-querying-design-security-governance.md` (1166 lines, ~95KB)
@@ -208,8 +208,8 @@ The data-engineer agent now includes:
 
 2. **Create embed directories and files**:
    ```bash
-   mkdir -p 5d-wave/data/embed/software-crafter
-   mkdir -p 5d-wave/data/embed/solution-architect
+   mkdir -p nWave/data/embed/software-crafter
+   mkdir -p nWave/data/embed/solution-architect
    ```
 
 3. **Add configuration to agents**:
@@ -262,8 +262,8 @@ The current build system (`tools/processors/agent_processor.py`) correctly:
 ### 3-Tier System Verified ✓
 
 1. **Research Tier** (`data/research/{topic}/`): Source research documents
-2. **Embed Tier** (`5d-wave/data/embed/{agent}/`): Agent-specific knowledge (FULL content, self-contained)
-3. **Agent Tier** (`5d-wave/agents/{agent}.md`): Build-time injection via markers
+2. **Embed Tier** (`nWave/data/embed/{agent}/`): Agent-specific knowledge (FULL content, self-contained)
+3. **Agent Tier** (`nWave/agents/{agent}.md`): Build-time injection via markers
 
 ### Key Principles Satisfied ✓
 

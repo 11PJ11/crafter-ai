@@ -1,0 +1,5 @@
+# Python Dependencies for AI-Craft
+
+# Version validation dependencies
+PyYAML>=6.0
+packaging>=21.0

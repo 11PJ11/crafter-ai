@@ -8,7 +8,7 @@ set -euo pipefail
 
 # Configuration
 TEMPLATE_VERSION="1.2"
-AGENTS_DIR="5d-wave/agents"
+AGENTS_DIR="nWave/agents"
 REPORT_FILE="docs/COMPLIANCE_VALIDATION_REPORT.md"
 TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
 

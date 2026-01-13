@@ -1,16 +1,16 @@
-# 5D-WAVE IDE Bundle Builder
+# nWave IDE Bundle Builder
 
-Python build system that transforms 5D-WAVE methodology source files into IDE-compatible distributions organized under the "dw" category.
+Python build system that transforms nWave methodology source files into IDE-compatible distributions organized under the "nw" category.
 
 ## Overview
 
-This build system processes the complete 5D-WAVE methodology structure and generates IDE-compatible bundles:
+This build system processes the complete nWave methodology structure and generates IDE-compatible bundles:
 
-- **Agents**: Individual agent files with embedded dependencies → `dist/ide/agents/dw/`
-- **Commands**: Task files converted to IDE commands → `dist/ide/commands/dw/`
-- **Teams**: Team configurations converted to massive agents → `dist/ide/agents/dw/{team}-team.md`
-- **Workflows**: Workflow orchestrators → `dist/ide/agents/dw/{workflow}-orchestrator.md`
-- **Configuration**: Central IDE configuration → `dist/ide/agents/dw/config.json`
+- **Agents**: Individual agent files with embedded dependencies → `dist/ide/agents/nw/`
+- **Commands**: Task files converted to IDE commands → `dist/ide/commands/nw/`
+- **Teams**: Team configurations converted to massive agents → `dist/ide/agents/nw/{team}-team.md`
+- **Workflows**: Workflow orchestrators → `dist/ide/agents/nw/{workflow}-orchestrator.md`
+- **Configuration**: Central IDE configuration → `dist/ide/agents/nw/config.json`
 
 ## Quick Start
 
@@ -33,7 +33,7 @@ pip install -r requirements.txt
 python build.py
 
 # Build with custom directories
-python build.py --source-dir ../5d-wave --output-dir ../dist/ide
+python build.py --source-dir ../nWave --output-dir ../dist/ide
 
 # Clean build
 python build.py --clean
@@ -65,7 +65,7 @@ python build.py --verbose
 #### Utility Modules (`utils/`)
 
 - **FileManager**: Handles all file I/O operations with dry-run support
-- **ConfigManager**: Manages 5D-WAVE configuration loading and IDE config generation
+- **ConfigManager**: Manages nWave configuration loading and IDE config generation
 - **DependencyResolver**: Resolves and embeds dependencies with proper formatting
 
 ### Processing Flow
@@ -86,7 +86,7 @@ Comprehensive configuration file controlling all aspects of the build process:
 
 ```yaml
 build:
-  source_dir: "5d-wave"
+  source_dir: "nWave"
   output_dir: "dist/ide"
   incremental: true
   validate_dependencies: true
@@ -109,7 +109,7 @@ validation:
     - "commands"
 ```
 
-### 5D-WAVE Configuration (`5d-wave/config.yaml`)
+### nWave Configuration (`nWave/config.yaml`)
 
 Source configuration defining the methodology structure:
 
@@ -122,13 +122,13 @@ Source configuration defining the methodology structure:
 
 ```
 dist/ide/
-├── agents/dw/
+├── agents/nw/
 │   ├── business-analyst.md              # Individual agents
 │   ├── solution-architect.md
-│   ├── 5d-wave-core-team.md           # Teams as massive agents
+│   ├── nWave-core-team.md           # Teams as massive agents
 │   ├── greenfield-orchestrator.md      # Workflow orchestrators
 │   └── config.json                     # Central configuration
-└── commands/dw/
+└── commands/nw/
     ├── dw-start.md                      # Wave commands
     ├── dw-discuss.md
     ├── dw-design.md
@@ -147,7 +147,7 @@ dist/ide/
 
 ### Wave Integration
 
-- Processes 5D-WAVE methodology phases: DISCUSS → DESIGN → DISTILL → DEVELOP → DEMO
+- Processes nWave methodology phases: DISCUSS → DESIGN → DISTILL → DEVELOP → DEMO
 - Assigns agents to waves based on configuration
 - Generates wave-specific command headers and metadata
 
@@ -166,7 +166,7 @@ dist/ide/
 ### IDE Compatibility
 
 - Generates clean, individual files suitable for IDE integration
-- Organizes all components under "dw" category
+- Organizes all components under "nw" category
 - Provides central configuration for IDE consumption
 
 ## Command Line Options
@@ -175,7 +175,7 @@ dist/ide/
 python build.py [options]
 
 Options:
-  --source-dir PATH     Source directory (default: 5d-wave)
+  --source-dir PATH     Source directory (default: nWave)
   --output-dir PATH     Output directory (default: dist/ide)
   --clean              Clean output directory before build
   --verbose, -v        Enable verbose logging
@@ -231,7 +231,7 @@ python build.py --dry-run --verbose
 python -m pytest tests/ --cov=processors/
 
 # Validate configuration
-python -c "from utils.config_manager import ConfigManager; cm = ConfigManager('5d-wave/config.yaml'); print(cm.validate_configuration())"
+python -c "from utils.config_manager import ConfigManager; cm = ConfigManager('nWave/config.yaml'); print(cm.validate_configuration())"
 ```
 
 ## Troubleshooting
@@ -239,13 +239,13 @@ python -c "from utils.config_manager import ConfigManager; cm = ConfigManager('5
 ### Build Failures
 
 1. **Check Prerequisites**: Ensure Python 3.8+ and PyYAML are installed
-2. **Verify Source Structure**: Confirm 5d-wave/ directory contains required files
+2. **Verify Source Structure**: Confirm nWave/ directory contains required files
 3. **Check Permissions**: Ensure write access to output directory
 4. **Review Logs**: Check `build.log` for detailed error information
 
 ### Validation Errors
 
-1. **Missing Sections**: Add required sections to `5d-wave/config.yaml`
+1. **Missing Sections**: Add required sections to `nWave/config.yaml`
 2. **Invalid Wave Assignments**: Ensure agent waves match defined wave_phases
 3. **Broken Dependencies**: Fix file paths in agent dependency configurations
 
@@ -261,4 +261,4 @@ python -c "from utils.config_manager import ConfigManager; cm = ConfigManager('5
 2. Add comprehensive error handling and logging
 3. Update configuration files when adding new features
 4. Test with both clean builds and incremental updates
-5. Maintain backward compatibility with existing 5D-WAVE structures
+5. Maintain backward compatibility with existing nWave structures

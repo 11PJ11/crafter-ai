@@ -45,7 +45,7 @@ This report defines comprehensive adversarial tests for all AI-Craft agents:
 
 ## Test Plans by Agent
 
-### 5d-wave-complete-orchestrator
+### nWave-complete-orchestrator
 
 **Agent Type**: orchestrator
 **Total Tests**: 16

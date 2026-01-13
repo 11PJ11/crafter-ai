@@ -41,7 +41,7 @@ show_help() {
 AI-Craft Framework Installation Script for Linux/WSL
 
 DESCRIPTION:
-    Installs the 5D-WAVE methodology framework to your global Claude config directory.
+    Installs the nWave methodology framework to your global Claude config directory.
     This makes all specialized agents and commands available across all projects.
 
 USAGE:
@@ -54,24 +54,24 @@ OPTIONS:
     --help           Show this help message
 
 EXAMPLES:
-    $0                      # Install 5D-WAVE framework
+    $0                      # Install nWave framework
     $0 --dry-run            # Show what would be installed (no changes made)
     $0 --backup-only        # Create backup only
     $0 --restore           # Restore from latest backup
 
 WHAT GETS INSTALLED:
-    - 5D-WAVE specialized agents (DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER methodology)
-    - 5D-WAVE command interface for workflow orchestration
+    - nWave specialized agents (DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER methodology)
+    - nWave command interface for workflow orchestration
     - ATDD (Acceptance Test Driven Development) integration
     - Outside-In TDD with double-loop architecture
     - Quality validation network with Level 1-6 refactoring
 
 INSTALLATION LOCATION:
-    ~/.claude/agents/dw/    # 5D-WAVE agent specifications
-    ~/.claude/commands/dw/  # 5D-WAVE command integrations
+    ~/.claude/agents/nw/    # nWave agent specifications
+    ~/.claude/commands/nw/  # nWave command integrations
 
 FILES INCLUDED:
-    - All built 5D-WAVE agents and commands from dist/ide/
+    - All built nWave agents and commands from dist/ide/
 
 For more information: https://github.com/11PJ11/crafter-ai
 EOF
@@ -88,20 +88,20 @@ check_source() {
     fi
 
     # Check for the built IDE distribution structure
-    if [[ ! -d "$FRAMEWORK_SOURCE/agents/dw" ]]; then
-        error "Framework appears incomplete - agents/dw directory not found"
+    if [[ ! -d "$FRAMEWORK_SOURCE/agents/nw" ]]; then
+        error "Framework appears incomplete - agents/nw directory not found"
         error "Please build the framework first: cd tools && python3 build_ide_bundle.py"
         exit 1
     fi
 
-    if [[ ! -d "$FRAMEWORK_SOURCE/commands/dw" ]]; then
-        error "Framework appears incomplete - commands/dw directory not found"
+    if [[ ! -d "$FRAMEWORK_SOURCE/commands/nw" ]]; then
+        error "Framework appears incomplete - commands/nw directory not found"
         error "Please build the framework first: cd tools && python3 build_ide_bundle.py"
         exit 1
     fi
 
-    local agent_count=$(find "$FRAMEWORK_SOURCE/agents/dw" -name "*.md" ! -name "README.md" | wc -l)
-    local command_count=$(find "$FRAMEWORK_SOURCE/commands/dw" -name "*.md" ! -name "README.md" | wc -l)
+    local agent_count=$(find "$FRAMEWORK_SOURCE/agents/nw" -name "*.md" ! -name "README.md" | wc -l)
+    local command_count=$(find "$FRAMEWORK_SOURCE/commands/nw" -name "*.md" ! -name "README.md" | wc -l)
 
     info "Found framework with $agent_count agent files and $command_count commands"
 
@@ -207,16 +207,16 @@ install_framework() {
 
         # Show agents that would be installed
         info "${YELLOW}[DRY RUN]${NC} Would install agents..."
-        if [[ -d "$FRAMEWORK_SOURCE/agents/dw" ]]; then
-            local agent_count=$(find "$FRAMEWORK_SOURCE/agents/dw" -name "*.md" ! -name "README.md" | wc -l)
-            info "${YELLOW}[DRY RUN]${NC} Would create: $CLAUDE_CONFIG_DIR/agents/dw"
+        if [[ -d "$FRAMEWORK_SOURCE/agents/nw" ]]; then
+            local agent_count=$(find "$FRAMEWORK_SOURCE/agents/nw" -name "*.md" ! -name "README.md" | wc -l)
+            info "${YELLOW}[DRY RUN]${NC} Would create: $CLAUDE_CONFIG_DIR/agents/nw"
             info "${YELLOW}[DRY RUN]${NC} Would install $agent_count agent files"
         fi
 
         # Show commands that would be installed
         info "${YELLOW}[DRY RUN]${NC} Would install commands..."
-        if [[ -d "$FRAMEWORK_SOURCE/commands/dw" ]]; then
-            local command_count=$(find "$FRAMEWORK_SOURCE/commands/dw" -name "*.md" ! -name "README.md" | wc -l)
+        if [[ -d "$FRAMEWORK_SOURCE/commands/nw" ]]; then
+            local command_count=$(find "$FRAMEWORK_SOURCE/commands/nw" -name "*.md" ! -name "README.md" | wc -l)
             info "${YELLOW}[DRY RUN]${NC} Would create: $CLAUDE_CONFIG_DIR/commands"
             info "${YELLOW}[DRY RUN]${NC} Would install $command_count command files"
         fi
@@ -231,33 +231,33 @@ install_framework() {
 
     # Copy agents directory (excluding README.md)
     info "Installing agents..."
-    if [[ -d "$FRAMEWORK_SOURCE/agents/dw" ]]; then
-        mkdir -p "$CLAUDE_CONFIG_DIR/agents/dw"
+    if [[ -d "$FRAMEWORK_SOURCE/agents/nw" ]]; then
+        mkdir -p "$CLAUDE_CONFIG_DIR/agents/nw"
 
-        find "$FRAMEWORK_SOURCE/agents/dw" -name "*.md" ! -name "README.md" | while read -r file; do
-            local relative_path="${file#$FRAMEWORK_SOURCE/agents/dw/}"
-            local target_file="$CLAUDE_CONFIG_DIR/agents/dw/$relative_path"
+        find "$FRAMEWORK_SOURCE/agents/nw" -name "*.md" ! -name "README.md" | while read -r file; do
+            local relative_path="${file#$FRAMEWORK_SOURCE/agents/nw/}"
+            local target_file="$CLAUDE_CONFIG_DIR/agents/nw/$relative_path"
             local target_dir=$(dirname "$target_file")
 
             mkdir -p "$target_dir"
             cp "$file" "$target_file"
         done
 
-        local copied_agents=$(find "$CLAUDE_CONFIG_DIR/agents/dw" -name "*.md" | wc -l)
+        local copied_agents=$(find "$CLAUDE_CONFIG_DIR/agents/nw" -name "*.md" | wc -l)
         info "Installed $copied_agents agent files"
     fi
 
     # Copy commands directory
     info "Installing commands..."
-    if [[ -d "$FRAMEWORK_SOURCE/commands/dw" ]]; then
+    if [[ -d "$FRAMEWORK_SOURCE/commands/nw" ]]; then
         mkdir -p "$CLAUDE_CONFIG_DIR/commands"
         cp -r "$FRAMEWORK_SOURCE/commands/"* "$CLAUDE_CONFIG_DIR/commands/"
 
         local copied_commands=$(find "$CLAUDE_CONFIG_DIR/commands" -name "*.md" | wc -l)
         info "Installed $copied_commands command files"
 
-        if [[ -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
-            local dw_commands=$(find "$CLAUDE_CONFIG_DIR/commands/dw" -name "*.md" | wc -l)
+        if [[ -d "$CLAUDE_CONFIG_DIR/commands/nw" ]]; then
+            local dw_commands=$(find "$CLAUDE_CONFIG_DIR/commands/nw" -name "*.md" | wc -l)
             info "  - DW commands: $dw_commands essential commands"
         fi
     fi
@@ -270,13 +270,13 @@ validate_installation() {
     local errors=0
 
     # Check that agents are installed
-    if [[ ! -d "$CLAUDE_CONFIG_DIR/agents/dw" ]]; then
+    if [[ ! -d "$CLAUDE_CONFIG_DIR/agents/nw" ]]; then
         error "Missing DW agents directory"
         ((errors++)) || true
     fi
 
     # Check that commands are installed
-    if [[ ! -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
+    if [[ ! -d "$CLAUDE_CONFIG_DIR/commands/nw" ]]; then
         error "Missing DW commands directory"
         ((errors++)) || true
     fi
@@ -284,14 +284,14 @@ validate_installation() {
     # Check essential DW commands exist
     local essential_commands=("discuss" "design" "distill" "develop" "deliver")
     for cmd in "${essential_commands[@]}"; do
-        if [[ ! -f "$CLAUDE_CONFIG_DIR/commands/dw/$cmd.md" ]]; then
+        if [[ ! -f "$CLAUDE_CONFIG_DIR/commands/nw/$cmd.md" ]]; then
             error "Missing essential DW command: $cmd.md"
             ((errors++)) || true
         fi
     done
 
     # Count installed files
-    local total_agents=$(find "$CLAUDE_CONFIG_DIR/agents/dw" -name "*.md" 2>/dev/null | wc -l)
+    local total_agents=$(find "$CLAUDE_CONFIG_DIR/agents/nw" -name "*.md" 2>/dev/null | wc -l)
     local total_commands=$(find "$CLAUDE_CONFIG_DIR/commands" -name "*.md" 2>/dev/null | wc -l)
 
     info "Installation summary:"
@@ -299,12 +299,12 @@ validate_installation() {
     info "  - Commands installed: $total_commands"
     info "  - Installation directory: $CLAUDE_CONFIG_DIR"
 
-    if [[ -d "$CLAUDE_CONFIG_DIR/agents/dw" ]]; then
-        info "  - 5D-WAVE agents: Available"
+    if [[ -d "$CLAUDE_CONFIG_DIR/agents/nw" ]]; then
+        info "  - nWave agents: Available"
     fi
 
-    if [[ -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
-        info "  - 5D-WAVE commands: Available"
+    if [[ -d "$CLAUDE_CONFIG_DIR/commands/nw" ]]; then
+        info "  - nWave commands: Available"
     fi
 
     if [[ $total_agents -lt 10 ]]; then
@@ -349,8 +349,8 @@ Framework Components:
 - Quality validation network with Level 1-6 refactoring
 
 Usage:
-- Use 5D-WAVE commands: '/dw:discuss', '/dw:design', '/dw:distill', '/dw:develop', '/dw:deliver'
-- Use '/dw:start "feature description"' to initialize 5D-WAVE workflow
+- Use nWave commands: '/nw:discuss', '/nw:design', '/nw:distill', '/nw:develop', '/nw:deliver'
+- Use '/nw:start "feature description"' to initialize nWave workflow
 - All agents available globally across projects
 
 For help: https://github.com/11PJ11/crafter-ai
@@ -403,24 +403,24 @@ main() {
     if validate_installation; then
         create_manifest
         info ""
-        info "${GREEN}✅ 5D-WAVE Framework installed successfully!${NC}"
+        info "${GREEN}✅ nWave Framework installed successfully!${NC}"
         info ""
         info "Framework Components Installed:"
-        info "- 5D-WAVE specialized agents (DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER)"
-        info "- 5D-WAVE command interface for workflow orchestration"
+        info "- nWave specialized agents (DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER)"
+        info "- nWave command interface for workflow orchestration"
         info "- ATDD and Outside-In TDD integration"
         info ""
         info "Next steps:"
         info "1. Navigate to any project directory"
-        info "2. Use 5D-WAVE commands to orchestrate development workflow"
+        info "2. Use nWave commands to orchestrate development workflow"
         info "3. Access agents through the dw category in Claude Code"
         info ""
-        info "5D-WAVE methodology available:"
-        info "- ${BLUE}/dw:discuss${NC} - Requirements gathering and business analysis"
-        info "- ${BLUE}/dw:design${NC} - Architecture design with visual representation"
-        info "- ${BLUE}/dw:distill${NC} - Acceptance test creation and business validation"
-        info "- ${BLUE}/dw:develop${NC} - Outside-In TDD implementation with refactoring"
-        info "- ${BLUE}/dw:deliver${NC} - Production readiness validation"
+        info "nWave methodology available:"
+        info "- ${BLUE}/nw:discuss${NC} - Requirements gathering and business analysis"
+        info "- ${BLUE}/nw:design${NC} - Architecture design with visual representation"
+        info "- ${BLUE}/nw:distill${NC} - Acceptance test creation and business validation"
+        info "- ${BLUE}/nw:develop${NC} - Outside-In TDD implementation with refactoring"
+        info "- ${BLUE}/nw:deliver${NC} - Production readiness validation"
         info ""
         info "Documentation: https://github.com/11PJ11/crafter-ai"
     else
