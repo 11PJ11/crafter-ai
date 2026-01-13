@@ -24,7 +24,9 @@
     "success_criteria_mapping": {
       "SC3": "Plugin installable via /plugin install"
     },
-    "dependencies": ["7.1"]
+    "dependencies": [
+      "7.1"
+    ]
   },
   "deliverables": {
     "files_to_modify": [
@@ -552,5 +554,10 @@
     "verdict": "BLOCKED - DO NOT EXECUTE",
     "blocking_reason": "Step 7.3 references non-existent file (tools/toon/compiler.py) and undefined artifact type (skills). Cannot be executed without resolving at minimum: blocker B1 (tools location) and blocker B2 (skills definition). Execution will fail immediately with FileNotFoundError or produce tests that validate wrong thing.",
     "estimated_effort_to_unblock": "2-4 hours of clarification and specification work before step can be attempted"
+  },
+  "validation": {
+    "status": "pending",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.381993"
   }
 }

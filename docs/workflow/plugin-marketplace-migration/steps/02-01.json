@@ -26,7 +26,9 @@
       "SC2": "Build produces Claude Code compliant output",
       "SC7": "Token count improvements measured and documented (baseline captured here)"
     },
-    "dependencies": ["1.6"],
+    "dependencies": [
+      "1.6"
+    ],
     "blocking_conditions": [
       "Phase 1 (steps 1.1-1.6) MUST be complete and tested",
       "TOON compiler MUST exist: tools/toon/compiler.py",
@@ -175,5 +177,10 @@
       "issue_id": "TEST-GAP-05",
       "remediation": "Added test_toon_preserves_embedded_knowledge_markers"
     }
-  ]
+  ],
+  "validation": {
+    "status": "pending",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.096494"
+  }
 }

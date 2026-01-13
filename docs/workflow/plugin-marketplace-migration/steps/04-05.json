@@ -447,5 +447,10 @@
       "test_framework_from_04_04_available": "Referenced in test specifications",
       "finalize_parameter_parsing_robust": "Security validation tests added"
     }
+  },
+  "validation": {
+    "status": "pending",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.242722"
   }
 }

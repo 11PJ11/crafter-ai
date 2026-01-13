@@ -247,7 +247,9 @@
       "SC5": "Full workflow (implement->review->fix->refactor) functional",
       "SC6": "Default constraints integrated (no auto-report, no auto-commit)"
     },
-    "dependencies": ["8.2"],
+    "dependencies": [
+      "8.2"
+    ],
     "dependencies_notes": "Step 8.2 must be fully complete with all 9 blocking questions resolved and /plugin install mechanism verified working. Starting this step before 8.2 completion will result in cascading failures.",
     "prerequisites": [
       {
@@ -461,19 +463,28 @@
   "expected_workflow_output_specification": {
     "note": "Detailed specification in docs/workflow/plugin-marketplace-migration/nWave-expected-outputs.md",
     "discuss_phase": {
-      "expected_files": ["docs/discuss/{feature}.md"],
+      "expected_files": [
+        "docs/discuss/{feature}.md"
+      ],
       "validation": "File exists, contains requirements section with user needs and acceptance criteria, markdown format valid, minimum content threshold met"
     },
     "design_phase": {
-      "expected_files": ["docs/design/{feature}.md"],
+      "expected_files": [
+        "docs/design/{feature}.md"
+      ],
       "validation": "File exists, contains architecture diagram or description with components and interactions, references specific technologies, actionable design decisions documented"
     },
     "distill_phase": {
-      "expected_files": ["tests/acceptance/test_{feature}.py"],
+      "expected_files": [
+        "tests/acceptance/test_{feature}.py"
+      ],
       "validation": "File exists, contains Given-When-Then test cases in pytest-compatible format, acceptance criteria from DISCUSS phase covered, tests executable"
     },
     "develop_phase": {
-      "expected_files": ["src/{feature}/", "tests/unit/test_{feature}.py"],
+      "expected_files": [
+        "src/{feature}/",
+        "tests/unit/test_{feature}.py"
+      ],
       "validation": "Implementation files exist with working code, unit tests exist and pass (pytest src/ tests/ --tb=short returns 0 exit code), acceptance tests from DISTILL pass"
     },
     "demo_phase": {
@@ -564,5 +575,10 @@
       "case": "Tests share artifacts causing pollution",
       "handling": "test_test_isolation verifies cleanup between tests. Each test uses separate temporary directory."
     }
+  },
+  "validation": {
+    "status": "pending",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.419227"
   }
 }

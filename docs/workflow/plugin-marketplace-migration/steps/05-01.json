@@ -4,13 +4,11 @@
   "correction_version": "2.0-circular-dependency-fix",
   "correction_date": "2026-01-06",
   "correction_rationale": "Original step has CONDITIONAL_APPROVAL but is prerequisite for 05-04 validation. Circular dependency: cannot validate before implementation proven. Solution: Split into two sub-steps with clear prerequisite resolution phase.",
-
   "phase": {
     "number": 5,
     "name": "Skills Creation",
     "purpose": "Create 3 skill definitions for auto-invocation capability"
   },
-
   "step": {
     "number": "5.1",
     "name": "Create develop Skill (with Prerequisites Resolution)",
@@ -18,7 +16,6 @@
     "motivation": "develop skill is the primary inner loop automation. Prerequisites must be resolved BEFORE implementation to prevent circular dependency with validation step 05-04.",
     "estimated_hours": "6-8 (4 hours prerequisites + 2-4 hours implementation)"
   },
-
   "context": {
     "constraints": [
       "DO NOT START PHASE B UNTIL PHASE A COMPLETE",
@@ -33,7 +30,9 @@
       "SC5": "Full workflow (implement->review->fix->refactor) functional",
       "SC6": "Default constraints integrated (no auto-report, no auto-commit)"
     },
-    "dependencies": ["1.6"],
+    "dependencies": [
+      "1.6"
+    ],
     "blocking_prerequisites": [
       "TOON v3.0 skill syntax specification documented",
       "Skill invocation mechanism explained",
@@ -42,7 +41,6 @@
       "Test environment for E2E skill triggering available"
     ]
   },
-
   "deliverables": {
     "phase_a_deliverables": [
       "docs/toon-v3-skill-syntax-specification.md",
@@ -66,7 +64,6 @@
       "PHASE B: Default constraints embedded in skill"
     ]
   },
-
   "tdd_approach": {
     "outer_test": "GIVEN PHASE A complete AND develop SKILL.toon compiled\nWHEN user says \"implementa questa feature\"\nTHEN skill should trigger software-crafter with develop workflow",
     "inner_tests": [
@@ -80,7 +77,6 @@
       "test_phase_b_constraints_embedded"
     ]
   },
-
   "refactoring": {
     "targets": [
       {
@@ -89,7 +85,6 @@
       }
     ]
   },
-
   "execution_guidance": {
     "approach": "Two-Phase Execution: Prerequisites Resolution then Implementation",
     "phase_a_workflow": [
@@ -127,7 +122,6 @@
       "PHASE B: No report files created"
     ]
   },
-
   "approval_status": {
     "status": "CORRECTED_PENDING_REVIEW",
     "changes_from_original": [
@@ -141,7 +135,6 @@
     "dependency_chain_fixed": "05-01 Phase A -> 05-01 Phase B -> 05-02/05-03 (parallel) -> 05-04 validation",
     "circular_dependency_resolution": "05-04 now depends on 05-01/05-02/05-03 FULL COMPLETION (not conditional approval). Phase A removes all unknowns before implementation."
   },
-
   "adversarial_review": {
     "review_date": "2026-01-06",
     "reviewer": "adversarial-software-crafter-reviewer (Haiku model)",
@@ -152,7 +145,6 @@
       "blast_radius": "MULTIPLE_PHASES",
       "execution_status": "BLOCKED_BY_PREREQUISITES"
     },
-
     "critical_findings": [
       {
         "id": "CF-05-01-001",
@@ -216,7 +208,6 @@
         "risk_score": "8.8/10"
       }
     ],
-
     "mitigations_applied": [
       {
         "finding_id": "CF-05-01-001",
@@ -270,7 +261,6 @@
         "residual_risk": "4.0/10 (documentation quality dependent on research)"
       }
     ],
-
     "dangerous_assumptions_identified": [
       "ASSUMPTION: TOON skill syntax is documented somewhere (FALSE - doesn't exist)",
       "ASSUMPTION: Skill invocation mechanism is obvious (FALSE - requires research)",
@@ -278,7 +268,6 @@
       "ASSUMPTION: 2 hours sufficient (FALSE - 6-8 hours realistic)",
       "ASSUMPTION: Validation can run before implementation proven (FALSE - circular dependency)"
     ],
-
     "unhandled_edge_cases": [
       {
         "case": "TOON skill syntax changes during implementation",
@@ -305,7 +294,6 @@
         "mitigation": "Phase A defines format with compiler validation"
       }
     ],
-
     "test_coverage_gaps": [
       {
         "gap": "No test for TOON skill compilation success",
@@ -328,40 +316,51 @@
         "added": "Phase B: test_phase_b_constraints_embedded"
       }
     ],
-
     "execution_blockers": [
       {
         "blocker": "TOON v3.0 skill syntax specification missing",
         "blocking_until": "Phase A deliverable #1 created",
         "resolution_time": "60-90 minutes research + documentation",
-        "prerequisite_for": ["Phase B implementation", "Step 05-02", "Step 05-03"]
+        "prerequisite_for": [
+          "Phase B implementation",
+          "Step 05-02",
+          "Step 05-03"
+        ]
       },
       {
         "blocker": "Skill invocation mechanism undefined",
         "blocking_until": "Phase A deliverable #2 created",
         "resolution_time": "45-60 minutes research + documentation",
-        "prerequisite_for": ["Phase B implementation", "Step 05-04 validation"]
+        "prerequisite_for": [
+          "Phase B implementation",
+          "Step 05-04 validation"
+        ]
       },
       {
         "blocker": "Constraint embedding format unspecified",
         "blocking_until": "Phase A deliverable #3 created",
         "resolution_time": "30-45 minutes research + documentation",
-        "prerequisite_for": ["Phase B implementation with default constraints"]
+        "prerequisite_for": [
+          "Phase B implementation with default constraints"
+        ]
       },
       {
         "blocker": "SKILL_TEMPLATE.toon reference missing",
         "blocking_until": "Phase A deliverable #4 created",
         "resolution_time": "60-90 minutes creation + compilation test",
-        "prerequisite_for": ["Phase B copy-customize workflow"]
+        "prerequisite_for": [
+          "Phase B copy-customize workflow"
+        ]
       },
       {
         "blocker": "Test environment for skill triggering missing",
         "blocking_until": "Phase A deliverable #5 created",
         "resolution_time": "45-60 minutes setup + validation",
-        "prerequisite_for": ["E2E acceptance test execution"]
+        "prerequisite_for": [
+          "E2E acceptance test execution"
+        ]
       }
     ],
-
     "corrected_execution_model": {
       "phase_a": {
         "name": "Prerequisites Resolution (BLOCKING)",
@@ -421,7 +420,6 @@
         ]
       }
     },
-
     "trigger_patterns_specification": {
       "multilingual_support": true,
       "italian_patterns": [
@@ -438,7 +436,6 @@
       "collision_risk_with_other_skills": "LOW (develop-specific patterns)",
       "validation_method": "Phase A test environment simulates pattern matching"
     },
-
     "recommendation": {
       "approval_status": "CONDITIONAL_APPROVAL_WITH_PHASE_GATE",
       "conditions": [
@@ -457,7 +454,6 @@
         "Track against 6-8 hour estimate, not 2 hours"
       ]
     },
-
     "lessons_learned": {
       "what_went_wrong_originally": [
         "Assumed prerequisites existed instead of explicitly defining them",
@@ -475,5 +471,10 @@
       ],
       "core_principle": "Cannot validate before artifacts exist and work. Prerequisites must be resolved explicitly, not assumed."
     }
+  },
+  "validation": {
+    "status": "pending",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.269619"
   }
 }

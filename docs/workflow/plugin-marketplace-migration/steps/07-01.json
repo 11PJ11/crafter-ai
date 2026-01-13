@@ -24,7 +24,11 @@
     "success_criteria_mapping": {
       "SC3": "Plugin installable via /plugin install"
     },
-    "dependencies": ["3.3", "4.6", "5.4"]
+    "dependencies": [
+      "3.3",
+      "4.6",
+      "5.4"
+    ]
   },
   "deliverables": {
     "files_to_create": [
@@ -278,7 +282,11 @@
       {
         "id": "CONTRADICTION_1",
         "description": "Task references 26 agents in plugin.json but Phase 3 (agent migration to TOON) is BLOCKED",
-        "location": ["line 35", "line 36", "dependencies line 27"],
+        "location": [
+          "line 35",
+          "line 36",
+          "dependencies line 27"
+        ],
         "contradiction": "Step 7.1 expects: 'All 26 agents referenced' in plugin.json (novel-editor and novel-editor-reviewer excluded from build). But dependency 3.3 review shows Phase 3 is BLOCKED due to missing TOON toolchain (tools/toon/README.md doesn't exist). Agents may still be .md format, not migrated to .toon. What agent format does plugin.json expect?",
         "failure_scenario": "If agents are still .md format (not migrated), plugin.json may reference non-existent .toon files or use wrong metadata format. Installation fails.",
         "impact": "CRITICAL - Task assumes Phase 3 complete, but Phase 3 is BLOCKED. Either wait for Phase 3, or clarify if plugin.json uses .md agents.",
@@ -287,7 +295,10 @@
       {
         "id": "CONTRADICTION_2",
         "description": "Task claims '20 commands organized by wave' but no verification commands exist in nWave/tasks/dw/",
-        "location": ["line 36", "line 66"],
+        "location": [
+          "line 36",
+          "line 66"
+        ],
         "contradiction": "Acceptance criteria: 'All 20 commands referenced'. Execution guidance (line 66): 'Add all 20 command references organized by wave'. But what commands? Where are they? Do they exist in .toon format or .md?",
         "failure_scenario": "Executor counts .md files in dw/ directory, finds 14 files (not 20). Tries to reference non-existent 20 commands. plugin.json validation fails.",
         "impact": "CRITICAL - Unclear which 20 commands should be referenced or if they even exist",
@@ -296,7 +307,11 @@
       {
         "id": "CONTRADICTION_3",
         "description": "Task references '3 skills' but Step 5.4 (skill validation) is BLOCKED - skills don't exist yet",
-        "location": ["line 37", "line 67", "dependencies line 27"],
+        "location": [
+          "line 37",
+          "line 67",
+          "dependencies line 27"
+        ],
         "contradiction": "Acceptance criteria: 'All 3 skills referenced'. But dependency 5.4 review shows Step 5.4 is BLOCKED: 'Cannot proceed until dependencies complete. Steps 5.1-5.3 have CONDITIONAL_APPROVAL - not yet completed.' If 5.1-5.3 skills don't exist, what 3 skills should plugin.json reference?",
         "failure_scenario": "Executor tries to reference skills before they're created. Names, trigger patterns, agent bindings are unknown. plugin.json validation fails or references undefined skills.",
         "impact": "CRITICAL - Depends on Step 5.4 which is blocked by Steps 5.1-5.3. These steps have no 'APPROVED' status, just 'CONDITIONAL_APPROVAL'.",
@@ -305,7 +320,10 @@
       {
         "id": "CONTRADICTION_4",
         "description": "Thinking budget differentiation (D3 decision) is referenced but not documented - executor must guess implementation",
-        "location": ["line 14 description", "line 69 workflow"],
+        "location": [
+          "line 14 description",
+          "line 69 workflow"
+        ],
         "contradiction": "Line 14 mentions 'Thinking budget configuration (differentiated - D3 decision)'. Line 69 says 'Configure thinking budgets differentiated by agent'. But where is D3 decision documented? What's the differentiation strategy? Which agents get high budgets, which get low?",
         "failure_scenario": "Executor creates plugin.json with thinking budgets but applies them arbitrarily (all agents same budget, or incorrect assignments). If D3 decision says 'software-crafter gets 20K, others get 5K', but executor gives all agents 10K, plugin.json is non-compliant.",
         "impact": "HIGH - Cannot validate plugin.json compliance without knowing D3 decision. Tests may pass but result is wrong.",
@@ -314,7 +332,10 @@
       {
         "id": "CONTRADICTION_5",
         "description": "Tool restrictions policy (D2 decision) is referenced but rationale not documented",
-        "location": ["line 18 constraints", "line 68 workflow"],
+        "location": [
+          "line 18 constraints",
+          "line 68 workflow"
+        ],
         "contradiction": "Line 18 mentions 'Tool restrictions (none - D2 decision)'. But why no restrictions? What was considered and rejected? If D2 says 'no restrictions', should plugin.json omit 'tools' field entirely, set tools=[], or something else?",
         "failure_scenario": "Executor implements 'no tool restrictions' differently than intended. If D2 decision says 'omit tools field' but executor creates tools=[], or vice versa, validation fails.",
         "impact": "MEDIUM - Ambiguous implementation detail for a critical security decision",
@@ -323,7 +344,9 @@
       {
         "id": "CONTRADICTION_6",
         "description": "Test definitions are incomplete - what exactly do inner tests validate?",
-        "location": ["lines 44-50"],
+        "location": [
+          "lines 44-50"
+        ],
         "contradiction": "Inner tests are named but not specified: test_plugin_json_valid_schema, test_all_agents_referenced, test_all_commands_referenced, test_all_skills_referenced, test_wave_organization_preserved, test_agent_list_completeness, test_command_list_completeness. But what do they assert? Do they validate JSON schema only, or also verify file existence? Do they cross-check against nWave/agents/ directory or assume agent names are provided separately?",
         "failure_scenario": "Developer implements test_all_agents_referenced as: assert 'agents' in plugin_json (just checks key exists). Test passes even with 5 agents instead of 26. Or test validates against wrong directory.",
         "impact": "HIGH - False positive tests that don't actually verify acceptance criteria",
@@ -742,5 +765,10 @@
       }
     ],
     "summary": "Step 7.1 (Create plugin.json) - AGENT COUNT CORRECTED (26 agents, novel-editor and novel-editor-reviewer excluded). Blocker #2 RESOLVED (risk score reduced from 9.2/10 to 0/10). Remaining blockers: Phase 3 migration BLOCKED (missing TOON toolchain), Phase 5 skills BLOCKED (incomplete predecessor steps), decision documentation MISSING (D2/D3 undocumented), command count UNCLEAR (14 vs expected 20). Tests updated to expect 26 agents. Overall: READY WITH PREREQUISITES - agent count mismatch resolved, can execute once Phase 3 and Phase 5 complete. Recommend: (1) Resolve Phase 3 toolchain immediately, (2) Complete Phase 5 with documented specifications, (3) Provide D2/D3 decision documentation, (4) Clarify command count, (5) Execute with corrected 26-agent expectations"
+  },
+  "validation": {
+    "status": "pending",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.357648"
   }
 }

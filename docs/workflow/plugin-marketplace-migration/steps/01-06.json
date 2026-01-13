@@ -802,5 +802,10 @@
         "validation": "30 minutes (all AC verified, quality gates passed)"
       }
     }
+  },
+  "validation": {
+    "status": "pending",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.084671"
   }
 }

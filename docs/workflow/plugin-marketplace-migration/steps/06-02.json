@@ -26,14 +26,24 @@
     "success_criteria_mapping": {
       "SC1": "All source files in TOON v3.0 format OR Markdown format (if toolchain unavailable)"
     },
-    "dependencies": ["2.4", "PHASE_1_TOOLCHAIN_OR_FALLBACK"],
+    "dependencies": [
+      "2.4",
+      "PHASE_1_TOOLCHAIN_OR_FALLBACK"
+    ],
     "critical_blocker_status": {
       "blocker_id": "BLOCKER_001",
       "title": "Phase 1 TOON Toolchain Missing",
       "severity": "CRITICAL",
       "evidence": "tools/toon/ directory does not exist (verified 2026-01-05)",
       "impact": "Cannot execute TOON conversion workflow without parser/compiler",
-      "affects_steps": ["06-01", "06-02", "06-03", "07-01", "07-02", "07-03"],
+      "affects_steps": [
+        "06-01",
+        "06-02",
+        "06-03",
+        "07-01",
+        "07-02",
+        "07-03"
+      ],
       "resolution_options": [
         {
           "option": "A",
@@ -235,5 +245,10 @@
     "clarity_assessment": "NOW CLEAR - Prerequisite verification mandatory, three resolution paths documented",
     "completeness_assessment": "NOW COMPLETE - Blocking scenario addressed with concrete options",
     "achievability_assessment": "NOW ACHIEVABLE - With prerequisite checks and fallback strategies"
+  },
+  "validation": {
+    "status": "pending",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.329727"
   }
 }

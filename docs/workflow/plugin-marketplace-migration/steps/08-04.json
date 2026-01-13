@@ -30,7 +30,9 @@
       "SC6": "Default constraints integrated (no auto-report, no auto-commit)",
       "SC7": "~60% token savings in source files (measured against baseline)"
     },
-    "dependencies": ["8.3"],
+    "dependencies": [
+      "8.3"
+    ],
     "prerequisites": [
       {
         "prerequisite": "CRITICAL: Token savings baseline from Phase 2 OR capture now",
@@ -187,7 +189,11 @@
     },
     "output_format": {
       "stdout_log": "SC7 Token Savings: {savings_pct}% (Baseline: {baseline_bytes} bytes, Current: {toon_bytes} bytes, Source: {baseline_source})",
-      "baseline_source_values": ["archived (Phase 2.4)", "captured (current MD files)", "estimated (build output proxy)"]
+      "baseline_source_values": [
+        "archived (Phase 2.4)",
+        "captured (current MD files)",
+        "estimated (build output proxy)"
+      ]
     }
   },
   "estimate_revision": {
@@ -220,15 +226,27 @@
   },
   "prerequisites_dependency_validation": {
     "step_8_1_completion": {
-      "required_artifacts": ["Build system updated with TOON compiler integration", "dist/ide/ directory populated with plugin files", "Token savings reported in build output (stdout)"],
+      "required_artifacts": [
+        "Build system updated with TOON compiler integration",
+        "dist/ide/ directory populated with plugin files",
+        "Token savings reported in build output (stdout)"
+      ],
       "validation": "Verify build completes without errors, dist/ide/plugin.json exists"
     },
     "step_8_2_completion": {
-      "required_artifacts": ["Plugin installation mechanism validated", "All 26 agents accessible after installation", "Installation tests passing"],
+      "required_artifacts": [
+        "Plugin installation mechanism validated",
+        "All 26 agents accessible after installation",
+        "Installation tests passing"
+      ],
       "validation": "Verify tests/plugin/test_installation.py executed and all tests passed"
     },
     "step_8_3_completion": {
-      "required_artifacts": ["Workflow tests passing (SC5 validated)", "Constraint tests passing (SC6 validated)", "Mock reviewer integration successful"],
+      "required_artifacts": [
+        "Workflow tests passing (SC5 validated)",
+        "Constraint tests passing (SC6 validated)",
+        "Mock reviewer integration successful"
+      ],
       "validation": "Verify tests/plugin/test_full_workflow.py executed and all tests passed"
     },
     "blocking_condition": "If ANY prerequisite step (08-01, 08-02, 08-03) has failing tests or incomplete execution, DO NOT proceed with 08-04. Success criteria validation requires ALL upstream work stable and verified."
@@ -504,5 +522,10 @@
       ],
       "next_review_trigger": "After baseline capture mechanism implemented (Phase 2.4) OR before 08-04 execution begins"
     }
+  },
+  "validation": {
+    "status": "pending",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.433359"
   }
 }

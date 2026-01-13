@@ -113,7 +113,12 @@
         "SecurityError": "Raised when path traversal or code injection detected"
       },
       "error_format": {
-        "required_fields": ["error_type", "file_path", "message", "suggested_fix"],
+        "required_fields": [
+          "error_type",
+          "file_path",
+          "message",
+          "suggested_fix"
+        ],
         "example": "ParseError: Failed to parse agent.toon at line 42: Invalid YAML syntax. Suggested fix: Check for unmatched quotes or indentation errors."
       }
     },
@@ -704,5 +709,10 @@
     "test_coverage_gap_closed": true,
     "integration_fragility_reduced": true,
     "verification": "All sections of adversarial review (contradictions, assumptions, edge cases, failures, security, test coverage, blockers) have been incorporated into updated step definition"
+  },
+  "validation": {
+    "status": "pending",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.070904"
   }
 }

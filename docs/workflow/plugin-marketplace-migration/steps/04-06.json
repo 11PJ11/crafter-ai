@@ -762,5 +762,10 @@
         "expected": "Validation error: 'Missing required field: description' with file path"
       }
     ]
+  },
+  "validation": {
+    "status": "pending",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.255037"
   }
 }

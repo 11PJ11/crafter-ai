@@ -3,37 +3,46 @@
 # Created: 2026-01-02
 # Methodology: Outside-In ATDD with Progressive Refactoring
 
-project:
-  id: plugin-marketplace-migration
-  name: "Plugin Marketplace Migration"
-  goal: "Migrate AI-Craft framework to Claude Code distributable plugin using TOON v3.0 format with target 50-60% token savings (to be validated)"
-  methodology: outside_in_atdd
-  created: "2026-01-02"
-  baseline_ref: "docs/workflow/plugin-marketplace-migration/baseline.yaml"
+roadmap:
+  project:
+    id: plugin-marketplace-migration
+    name: "Plugin Marketplace Migration"
+    goal: "Migrate AI-Craft framework to Claude Code distributable plugin using TOON v3.0 format with target 50-60% token savings (to be validated)"
+    methodology: outside_in_atdd
+    created: "2026-01-02"
+    baseline_ref: "docs/workflow/plugin-marketplace-migration/baseline.yaml"
 
-  # Embedded constraints (apply to ALL steps)
-  constraints:
-    - "DO NOT CREATE NEW REPORT FILES"
-    - "DO NOT COMMIT BEFORE USER APPROVAL"
-    - "FOCUS ON DELIVERABLES ONLY"
-    - "Tests use business language and domain concepts"
-    - "Type system makes wrong state non-representable"
+    # Embedded constraints (apply to ALL steps)
+    constraints:
+      - "DO NOT CREATE NEW REPORT FILES"
+      - "DO NOT COMMIT BEFORE USER APPROVAL"
+      - "FOCUS ON DELIVERABLES ONLY"
+      - "Tests use business language and domain concepts"
+      - "Type system makes wrong state non-representable"
 
-  success_criteria_mapping:
-    SC1: "All source files in TOON v3.0 format"
-    SC2: "Build produces Claude Code compliant output"
-    SC3: "Plugin installable via /plugin install"
-    SC4: "Skills auto-invoked correctly"
-    SC5: "Full workflow (implement->review->fix->refactor) functional"
-    SC6: "Default constraints integrated (no auto-report, no auto-commit)"
-    SC7: "~60% token savings in source files"
+    success_criteria_mapping:
+      SC1: "All source files in TOON v3.0 format"
+      SC2: "Build produces Claude Code compliant output"
+      SC3: "Plugin installable via /plugin install"
+      SC4: "Skills auto-invoked correctly"
+      SC5: "Full workflow (implement->review->fix->refactor) functional"
+      SC6: "Default constraints integrated (no auto-report, no auto-commit)"
+      SC7: "~60% token savings in source files"
 
-  estimated_total_hours: 55-70
+    estimated_total_hours: 55-70
+
+  validation:
+    status: "approved"
+    notes: "Roadmap complete with 8 phases and 34 steps"
+    approved_at: "2026-01-13T22:15:00Z"
+    reviewed_by:
+      - "product-owner-reviewer"
+      - "software-crafter-reviewer"
 
 # =============================================================================
 # PHASE 1: TOON INFRASTRUCTURE
 # =============================================================================
-phases:
+  phases:
   - number: 1
     name: "TOON Infrastructure"
     purpose: "Create parser and compiler toolchain that transforms TOON source into Claude Code compliant output"

@@ -438,7 +438,10 @@
     },
     "scope_final": {
       "reviewers_in_scope": 11,
-      "excluded_reviewers": ["novel-editor-reviewer", "researcher-reviewer"],
+      "excluded_reviewers": [
+        "novel-editor-reviewer",
+        "researcher-reviewer"
+      ],
       "exclusion_handling": "Prerequisite check 'Reviewer scope confirmed' requires explicit documentation of why these 2 are excluded and when they will be converted",
       "total_reviewer_count": 13,
       "note": "Step 3.2 converts 11 reviewers. Excluded 2 must be documented in prerequisite validation."
@@ -446,12 +449,20 @@
   },
   "review_metadata": {
     "reviewed_by": "software-crafter (iteration 1), Lyra (iteration 2 - adversarial)",
-    "review_dates": ["2026-01-06", "2026-01-08"],
+    "review_dates": [
+      "2026-01-06",
+      "2026-01-08"
+    ],
     "review_status": "Comprehensive adversarial review complete - all 11 critical failures addressed",
     "total_issues_identified": 18,
     "total_corrections_applied": 50,
     "risk_score_before": "9/10 (CATASTROPHIC)",
     "risk_score_after": "2/10 (MANAGEABLE) - pending Phase 1 prerequisite completion",
     "recommendation": "Step is now executable IF AND ONLY IF all 11 prerequisite checks pass. If any prerequisite fails, HALT and escalate per resolution guidance."
+  },
+  "validation": {
+    "status": "pending",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.158375"
   }
 }

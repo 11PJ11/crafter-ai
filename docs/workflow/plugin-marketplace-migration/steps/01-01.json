@@ -214,8 +214,14 @@
               "model": "claude-sonnet-4.5"
             },
             "sections": {
-              "commands": ["develop", "refactor", "mikado"],
-              "dependencies": ["tools/toon/parser"],
+              "commands": [
+                "develop",
+                "refactor",
+                "mikado"
+              ],
+              "dependencies": [
+                "tools/toon/parser"
+              ],
               "persona": {
                 "role": "Master Software Crafter"
               }
@@ -251,7 +257,9 @@
     {
       "action": "CRITICAL BLOCKER: Coordinate parser schema with step 1.2 owner",
       "priority": "critical",
-      "blocks": ["01-02 (Jinja2 template design)"],
+      "blocks": [
+        "01-02 (Jinja2 template design)"
+      ],
       "assigned_to": "developer + 1.2 owner",
       "estimated_time": "90 minutes"
     },
@@ -365,5 +373,27 @@
     ],
     "review_quality_improvement": "Original embedded review identified 4 critical issues. Adversarial review found 10 additional failure modes. All 14 issues now addressed in updated task definition.",
     "risk_score_reduction": "From 8/10 (CRITICAL) to 3/10 (MEDIUM-LOW) after corrections applied - remaining risk is execution risk, not planning risk"
+  },
+  "validation": {
+    "status": "approved",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.022470",
+    "approved_by": "software-crafter-reviewer",
+    "approved_at": "2026-01-13T22:11:27.022482"
+  },
+  "tdd_cycle": {
+    "tdd_phase_tracking": {
+      "phase_execution_log": [
+        {
+          "phase_name": "COMMIT",
+          "outcome": "PASS",
+          "timestamp": "2026-01-13T22:11:27.022483",
+          "notes": {
+            "commit_hash": "migrated",
+            "message": "Step 01-01 completed (tracking added during migration)"
+          }
+        }
+      ]
+    }
   }
 }

@@ -344,5 +344,10 @@
     "review_status": "CORRECTED - Ready for execution after prerequisite verification",
     "corrections_applied": "Wave classification split, prerequisites added, time estimate corrected (1h → 4-6h), error handling added, token savings claim removed from step-level",
     "estimated_hours_justification": "4-6 hours includes: 1h TOON format study, 1-2h conversion, 1-2h test implementation, 1h compilation/validation, buffer for learning curve on first TOON conversion"
+  },
+  "validation": {
+    "status": "pending",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.180210"
   }
 }

@@ -32,7 +32,9 @@
       "SC1": "All source files in TOON v3.0 format (specification must be validated first)",
       "SC7": "Token savings measured and documented (baseline from Phase 2.4 archive vs TOON source)"
     },
-    "dependencies": ["2.4"],
+    "dependencies": [
+      "2.4"
+    ],
     "prerequisite_checks": [
       {
         "check": "TOON v3.0 specification exists and is documented",
@@ -627,5 +629,10 @@
     },
     "step_status_after_corrections": "CONDITIONAL-GO - Safe to execute IF all 7 prerequisite checks PASS. HALT immediately if any CRITICAL check fails.",
     "estimated_total_remediation_if_all_missing": "21-28 hours (sum of all prerequisite resolution estimates)"
+  },
+  "validation": {
+    "status": "pending",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.143780"
   }
 }

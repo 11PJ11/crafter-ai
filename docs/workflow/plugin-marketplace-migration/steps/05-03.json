@@ -4,13 +4,11 @@
   "correction_version": "2.0-circular-dependency-fix",
   "correction_date": "2026-01-06",
   "correction_rationale": "Original step inherits all blockers from 05-01. Circular dependency fix: 05-03 can start in PARALLEL with 05-02 but ONLY AFTER 05-01 Phase A+B complete. Both 05-02 and 05-03 use 05-01 outputs.",
-
   "phase": {
     "number": 5,
     "name": "Skills Creation",
     "purpose": "Create 3 skill definitions for auto-invocation capability"
   },
-
   "step": {
     "number": "5.3",
     "name": "Create mikado Skill (Parallel with 05-02 after 05-01)",
@@ -18,7 +16,6 @@
     "motivation": "mikado skill for complex dependency-driven refactoring. CRITICAL: Must use TOON knowledge from 05-01 Phase A. Can run parallel with 05-02 after 05-01 complete.",
     "estimated_hours": "2.5-3 (same as 05-02, using shared 05-01 prerequisites)"
   },
-
   "context": {
     "constraints": [
       "BLOCKING: DO NOT START UNTIL 05-01 PHASE A+B COMPLETE",
@@ -33,7 +30,9 @@
       "SC4": "Skills auto-invoked correctly",
       "SC5": "Full workflow functional"
     },
-    "dependencies": ["05-01 (FULL COMPLETION - Phase A + Phase B)"],
+    "dependencies": [
+      "05-01 (FULL COMPLETION - Phase A + Phase B)"
+    ],
     "prerequisite_artifacts_from_05_01": [
       "docs/toon-v3-skill-syntax-specification.md (from 05-01 Phase A)",
       "nWave/templates/SKILL_TEMPLATE.toon (from 05-01 Phase A)",
@@ -44,7 +43,6 @@
       "nWave/skills/refactor/SKILL.md (if 05-02 completes first, can use as additional reference)"
     ]
   },
-
   "deliverables": {
     "files_to_create": [
       "nWave/skills/mikado/SKILL.toon",
@@ -59,7 +57,6 @@
       "No pattern collisions with develop or refactor skills (verified via conflict matrix)"
     ]
   },
-
   "tdd_approach": {
     "outer_test": "GIVEN mikado SKILL.toon compiled\nWHEN user says \"metodo mikado per refactoring complesso\"\nTHEN skill should trigger software-crafter with mikado workflow",
     "inner_tests": [
@@ -70,11 +67,9 @@
       "test_methodology_scope_complete"
     ]
   },
-
   "refactoring": {
     "targets": []
   },
-
   "execution_guidance": {
     "approach": "Template-Based Skill Creation (using 05-01 learnings, parallel with 05-02)",
     "workflow": [
@@ -99,14 +94,36 @@
       "No report files created"
     ],
     "trigger_pattern_conflict_resolution": {
-      "develop_patterns": ["implementa", "scrivi codice", "TDD", "implement", "write code"],
-      "refactor_patterns": ["refactor-level-1", "refactor-level-2", "refactor-level-3", "refactor-level-4", "refactor-level-5", "refactor-level-6", "progressive-refactoring", "code-structure-improvement", "cleanup-codebase", "refactoring sistematico"],
-      "mikado_patterns": ["mikado-method", "refactoring-complesso", "dependency-mapping", "complex-refactoring-graph", "metodo-mikado"],
+      "develop_patterns": [
+        "implementa",
+        "scrivi codice",
+        "TDD",
+        "implement",
+        "write code"
+      ],
+      "refactor_patterns": [
+        "refactor-level-1",
+        "refactor-level-2",
+        "refactor-level-3",
+        "refactor-level-4",
+        "refactor-level-5",
+        "refactor-level-6",
+        "progressive-refactoring",
+        "code-structure-improvement",
+        "cleanup-codebase",
+        "refactoring sistematico"
+      ],
+      "mikado_patterns": [
+        "mikado-method",
+        "refactoring-complesso",
+        "dependency-mapping",
+        "complex-refactoring-graph",
+        "metodo-mikado"
+      ],
       "collision_check": "NO OVERLAPS DETECTED",
       "conflict_resolution_rule": "Mikado patterns emphasize COMPLEXITY and DEPENDENCIES. Refactor patterns emphasize LEVELS. Develop patterns emphasize IMPLEMENTATION. No substring matches."
     }
   },
-
   "approval_status": {
     "status": "CORRECTED_PENDING_REVIEW",
     "changes_from_original": [
@@ -122,7 +139,6 @@
     "blocking_dependency_resolution": "05-03 CANNOT START until 05-01 Phase A (prerequisites) AND Phase B (implementation) both complete. CAN RUN IN PARALLEL with 05-02 since both use same 05-01 outputs.",
     "circular_dependency_fix": "Original plan had 05-03 sequential after 05-02, but both can be parallel after 05-01. Now: 05-01 -> [05-02 || 05-03] (parallel)."
   },
-
   "adversarial_review": {
     "review_date": "2026-01-05",
     "reviewer": "adversarial-software-crafter-reviewer (Haiku model)",
@@ -130,7 +146,6 @@
     "risk_score": "8.9/10",
     "severity": "CRITICAL",
     "blast_radius": "MULTIPLE_PHASES",
-
     "critical_findings": [
       {
         "issue": "CATASTROPHIC version mismatch - TOON v3.0 specification required but v1.0 test data",
@@ -161,7 +176,6 @@
         "recommendation": "Revise to 3.5-4h to account for: (1) v3.0 syntax learning curve, (2) Mikado methodology research, (3) trigger pattern validation, (4) Decision guidance creation"
       }
     ],
-
     "dangerous_assumptions": [
       {
         "assumption": "TOON v3.0 specification exists and is complete in 05-01 Phase A",
@@ -188,7 +202,6 @@
         "mitigation": "Verify test environment supports v3.0 BEFORE writing skill tests"
       }
     ],
-
     "unhandled_edge_cases": [
       {
         "edge_case": "TOON v3.0 parser errors with unhelpful messages",
@@ -215,7 +228,6 @@
         "recommendation": "Test Italian patterns explicitly with UTF-8 validation"
       }
     ],
-
     "test_coverage_gaps": [
       {
         "gap": "No test for TOON v3.0 syntax validation",
@@ -238,7 +250,6 @@
         "recommendation": "Add test: test_mikado_skill_triggers_software_crafter_with_workflow"
       }
     ],
-
     "blockers": [
       {
         "blocker_id": "TOON_V3_SPECIFICATION_DEPENDENCY",
@@ -262,7 +273,6 @@
         "estimated_delay": "Included in 2.5-3h estimate"
       }
     ],
-
     "corrections_applied": [
       {
         "correction": "Explicit TOON v3.0 specification requirement",
@@ -295,7 +305,6 @@
         "impact": "More realistic timeline but still potentially underestimated"
       }
     ],
-
     "mitigations": [
       {
         "risk": "TOON v3.0 version mismatch",
@@ -318,7 +327,6 @@
         "effectiveness": "HIGH - eliminates circular dependency entirely"
       }
     ],
-
     "revised_estimates": {
       "original_estimate": "1.5h",
       "corrected_estimate": "2.5-3h",
@@ -335,7 +343,6 @@
       },
       "confidence": "MEDIUM (v3.0 unknowns remain)"
     },
-
     "recommendations": {
       "immediate": [
         "DO NOT START until 05-01 Phase A+B FULLY COMPLETE and validated",
@@ -357,7 +364,6 @@
         "Integration test: skill triggers software-crafter with correct workflow context"
       ]
     },
-
     "approval_recommendation": "CONDITIONAL_APPROVAL",
     "conditions": [
       "Execute ONLY AFTER 05-01 Phase A+B both complete",
@@ -366,5 +372,10 @@
       "Add v3.0 syntax validation test before starting",
       "Test trigger patterns with exact phrase matching"
     ]
+  },
+  "validation": {
+    "status": "pending",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.294517"
   }
 }

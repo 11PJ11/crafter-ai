@@ -10,6 +10,11 @@ baseline:
   created_at: "2026-01-02T00:00:00Z"
   status: READY_FOR_ROADMAP
 
+  validation:
+    status: "approved"
+    notes: "Baseline complete and ready for roadmap creation"
+    approved_at: "2026-01-13T22:15:00Z"
+
 # =============================================================================
 # SECTION 1: CURRENT STATE ANALYSIS
 # =============================================================================
@@ -373,9 +378,10 @@ baseline_metrics:
   evidence: "migration-plan.md defines 8 implementation phases (lines 247-327)"
 
 # =============================================================================
-# SECTION 7: VALIDATION
+# SECTION 7: VALIDATION (Legacy - kept for reference)
 # =============================================================================
-validation:
+# NOTE: validation.status has been moved to baseline.validation for spec compliance
+validation_legacy:
   current_state_complete: true
   requirements_source_documented: true
   alternatives_analyzed: true

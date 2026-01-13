@@ -396,5 +396,10 @@
     "review_status": "CORRECTED - Ready for execution after 04-01 completion",
     "corrections_applied": "New step created to resolve wave classification conflict, CROSS_WAVE validation added, prerequisite on 04-01 completion, reduced time estimate (2-3h) due to established patterns",
     "estimated_hours_justification": "2-3 hours includes: 0.5h TOON format review (already studied in 04-01), 1h conversion using established patterns, 0.5-1h test implementation (following 04-01 test structure), 0.5h compilation/validation. Reduced from 04-01's 4-6h due to eliminated learning curve."
+  },
+  "validation": {
+    "status": "pending",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.193645"
   }
 }

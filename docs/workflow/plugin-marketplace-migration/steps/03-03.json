@@ -25,7 +25,11 @@
       "SC1": "All source files in TOON v3.0 format",
       "SC7": "Target 50-60% token savings (to be validated - measurement only, not hard gate)"
     },
-    "dependencies": ["2.4", "3.1", "3.2"],
+    "dependencies": [
+      "2.4",
+      "3.1",
+      "3.2"
+    ],
     "prerequisite_checks": [
       {
         "check": "TOON toolchain exists and is functional",
@@ -268,5 +272,10 @@
       },
       "verification": "1 + 10 + 9 + 6 = 26 ✓"
     }
+  },
+  "validation": {
+    "status": "pending",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.169644"
   }
 }

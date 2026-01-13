@@ -26,7 +26,9 @@
       "SC2": "Build produces Claude Code compliant output",
       "SC3": "Plugin installable via /plugin install (or alternative mechanism)"
     },
-    "dependencies": ["7.3"],
+    "dependencies": [
+      "7.3"
+    ],
     "prerequisites": [
       {
         "prerequisite": "TOON compiler maturity validation REQUIRED",
@@ -508,5 +510,10 @@
         "Whether 2 missing agents exist and need implementation or if 26 is correct count"
       ]
     }
+  },
+  "validation": {
+    "status": "pending",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.393882"
   }
 }

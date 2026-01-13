@@ -4,13 +4,11 @@
   "correction_version": "3.0-adversarial-review-corrections",
   "correction_date": "2026-01-08",
   "correction_rationale": "Integrated all corrections from adversarial review (Risk Score 8.2/10): removed trigger pattern conflicts ('improve code'), defined methodology embedding scope precisely, added trigger pattern conflict matrix, updated time estimates, clarified test definitions, added blockers resolution tracking.",
-
   "phase": {
     "number": 5,
     "name": "Skills Creation",
     "purpose": "Create 3 skill definitions for auto-invocation capability"
   },
-
   "step": {
     "number": "5.2",
     "name": "Create refactor Skill (Sequential after 05-01)",
@@ -18,7 +16,6 @@
     "motivation": "refactor skill enables code quality improvements through progressive levels 1-6. BLOCKING DEPENDENCIES: Cannot start until 05-01 Phase A (TOON syntax spec, test environment) AND Phase B (develop skill example, compilation verification) are FULLY COMPLETE.",
     "estimated_hours": "2.5-3.5 (increased from 1.5h based on adversarial review analysis; assumes 05-01 blockers resolved)"
   },
-
   "context": {
     "constraints": [
       "BLOCKING: DO NOT START UNTIL 05-01 PHASE A+B COMPLETE (TOON syntax spec, invocation mechanism, test environment, develop skill example)",
@@ -36,7 +33,9 @@
       "SC4": "Skills auto-invoked correctly (no dual-skill firing, no silent failures)",
       "SC5": "Full workflow functional (tested in production-equivalent environment)"
     },
-    "dependencies": ["05-01 (FULL COMPLETION - Phase A + Phase B)"],
+    "dependencies": [
+      "05-01 (FULL COMPLETION - Phase A + Phase B)"
+    ],
     "prerequisite_artifacts_from_05_01": [
       "docs/toon-v3-skill-syntax-specification.md (REQUIRED - from 05-01 Phase A)",
       "docs/skill-invocation-mechanism.md (REQUIRED - from 05-01 Phase A)",
@@ -54,7 +53,6 @@
       "FALSE-POSITIVE-1: Quality gates lack validation logic - NOW SPECIFIED in quality_gates section"
     ]
   },
-
   "deliverables": {
     "files_to_create": [
       "nWave/skills/refactor/SKILL.toon",
@@ -74,7 +72,6 @@
       "AC10: Error recovery behavior documented: what happens if software-crafter agent fails to load after skill trigger"
     ]
   },
-
   "tdd_approach": {
     "outer_test": "GIVEN refactor SKILL.toon compiled AND deployed to production-equivalent Claude Code environment\nWHEN user says 'refactoring sistematico livello 2'\nTHEN skill should trigger software-crafter agent with refactor workflow AND no other skills trigger (no dual-skill firing)\nAND skill provides level 2 guidance from methodology reference",
     "inner_tests": [
@@ -102,11 +99,9 @@
       "test_methodology_staleness_detection: If agent spec updates to v2.0 but SKILL.md has v1.0 -> version mismatch warning"
     ]
   },
-
   "refactoring": {
     "targets": []
   },
-
   "execution_guidance": {
     "approach": "Template-Based Skill Creation with Adversarial Review Corrections Applied",
     "workflow": [
@@ -209,7 +204,6 @@
       "logging": "All errors logged to skill invocation log for debugging"
     }
   },
-
   "approval_status": {
     "status": "ADVERSARIAL_REVIEW_CORRECTIONS_APPLIED",
     "adversarial_review_metadata": {
@@ -293,5 +287,10 @@
     ],
     "blocking_dependency_resolution": "05-02 CANNOT START until 05-01 Phase A (TOON syntax, invocation mechanism, template, test environment) AND Phase B (develop skill example, conflict matrix) are FULLY COMPLETE with all 6 artifacts verified readable.",
     "circular_dependency_fix": "Original plan had 05-02 parallel with 05-01, but adversarial review confirmed 05-02 needs 05-01 outputs. Sequential execution enforced with blocker verification gate."
+  },
+  "validation": {
+    "status": "pending",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.281989"
   }
 }

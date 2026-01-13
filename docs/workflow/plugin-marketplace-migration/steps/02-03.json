@@ -24,7 +24,9 @@
     "success_criteria_mapping": {
       "SC1": "All source files in TOON v3.0 format"
     },
-    "dependencies": ["2.2"],
+    "dependencies": [
+      "2.2"
+    ],
     "blocking_conditions": [
       "Step 2.2 MUST be complete with patterns enumerated (not just pass/fail)",
       "File MUST exist: baseline/patterns/02-02-discovered-patterns.json",
@@ -399,5 +401,10 @@
     "usage": "Phase 3 executors will reference this guide for all 100+ agent conversions",
     "update_mechanism": "If Phase 3 discovers new patterns not in this README, create addendum with version tracking",
     "quality_impact": "Errors in this documentation amplify across entire batch migration - accuracy critical"
+  },
+  "validation": {
+    "status": "pending",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.121089"
   }
 }

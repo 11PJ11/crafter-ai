@@ -24,7 +24,9 @@
     "success_criteria_mapping": {
       "SC3": "Plugin installable via available mechanism (/plugin install OR manual installation OR marketplace)"
     },
-    "dependencies": ["8.1"],
+    "dependencies": [
+      "8.1"
+    ],
     "prerequisites": [
       {
         "prerequisite": "CRITICAL: Identify available installation mechanism",
@@ -426,5 +428,10 @@
       "mitigation_effectiveness": "HIGH - fallback mechanisms defined, prerequisites explicit, component counts corrected, test isolation designed. Step is now executable even without /plugin install command.",
       "residual_risk": "MEDIUM - manual installation fallback works for testing but may not satisfy production delivery expectations. Recommend implementing /plugin install command during Phase 8 execution or updating SC3 to accept alternative installation mechanisms."
     }
+  },
+  "validation": {
+    "status": "pending",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.406213"
   }
 }

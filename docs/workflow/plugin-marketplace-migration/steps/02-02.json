@@ -25,7 +25,9 @@
       "SC1": "All source files in TOON v3.0 format",
       "SC2": "Build produces Claude Code compliant output"
     },
-    "dependencies": ["2.1"],
+    "dependencies": [
+      "2.1"
+    ],
     "blocking_conditions": [
       "Step 2.1 MUST be complete: nWave/agents/software-crafter.toon exists",
       "Token baseline MUST exist: baseline/token-measurements/02-01-pre-conversion.json",
@@ -242,5 +244,10 @@
       "issue_id": "MISSING_CONTEXT",
       "remediation": "Added pattern_discovery_specification requiring enumeration of minimum 5 patterns and 3 edge cases for step 2.3 input"
     }
-  ]
+  ],
+  "validation": {
+    "status": "pending",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.107136"
+  }
 }

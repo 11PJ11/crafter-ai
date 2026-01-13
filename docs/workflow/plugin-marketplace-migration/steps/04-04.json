@@ -33,7 +33,12 @@
     ],
     "toon_format_specification": {
       "reference": "tools/toon/TOON-v3.0-SPEC.md or agents/novel-editor-chatgpt-toon.txt",
-      "required_fields": ["wave", "agent", "description", "parameters"],
+      "required_fields": [
+        "wave",
+        "agent",
+        "description",
+        "parameters"
+      ],
       "metadata_format": "YAML key: value style",
       "header_format": "@agent [agent-name] for activation headers",
       "wave_format": "wave: [WAVE_NAME] (uppercase, e.g., DEVELOP)"
@@ -481,5 +486,10 @@
         "Validate against agent registry during integration testing"
       ]
     }
+  },
+  "validation": {
+    "status": "pending",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.228638"
   }
 }

@@ -561,42 +561,6 @@
   },
   "prerequisites": {
     "blocking": [
-      "Step 01-01 parser_output_schema MUST be defined with example",
-      "Parser output structure documented (what fields are available for template rendering)",
-      "Example showing: TOON input \u2192 parsed output \u2192 expected template output"
-    ],
-    "reference_specifications": [
-      {
-        "name": "Claude Code Agent Structure",
-        "location": "~/.claude/agents/*.md (existing agents as examples)",
-        "required_sections": [
-          "YAML frontmatter with name/description/model",
-          "Activation notice",
-          "Agent YAML configuration block with commands/dependencies/persona"
-        ]
-      }
-    ]
-  },
-  "critical_blocker_status": {
-    "BLOCKER_001": {
-      "title": "Parser Output Schema Dependency",
-      "status": "BLOCKING - MUST COMPLETE 01-01 FIRST",
-      "evidence": "Template cannot be designed without knowing parser output structure from step 01-01",
-      "impact": "Cannot create template without parser schema definition, blocks template implementation",
-      "resolution": "Step 01-01 MUST complete with parser_output_schema definition (tools/toon/parser_schema.py) before starting 01-02",
-      "validation_command": "ls tools/toon/parser_schema.py"
-    },
-    "BLOCKER_002": {
-      "title": "Claude Code Agent Spec Reference Missing",
-      "status": "INFORMATIONAL - Reference exists but must be reviewed",
-      "evidence": "Existing agents in ~/.claude/agents/*.md provide specification",
-      "impact": "Must review existing agents to understand required output format",
-      "resolution": "Review ~/.claude/agents/software-crafter.md and other agents before implementation",
-      "validation_command": "ls ~/.claude/agents/software-crafter.md"
-    }
-  },
-  "prerequisites": {
-    "blocking": [
       "tools/toon/ directory MUST exist with README.md (from 01-01 prerequisite)",
       "Step 01-01 parser_output_schema MUST be defined with example showing all output fields",
       "Parser output structure documented with TypedDict or dataclass showing field names and types",
@@ -627,5 +591,45 @@
       }
     ],
     "validation": "Run: ls tools/toon/parser_schema.py && ls ~/.claude/agents/software-crafter.md. Both must exist."
+  },
+  "critical_blocker_status": {
+    "BLOCKER_001": {
+      "title": "Parser Output Schema Dependency",
+      "status": "BLOCKING - MUST COMPLETE 01-01 FIRST",
+      "evidence": "Template cannot be designed without knowing parser output structure from step 01-01",
+      "impact": "Cannot create template without parser schema definition, blocks template implementation",
+      "resolution": "Step 01-01 MUST complete with parser_output_schema definition (tools/toon/parser_schema.py) before starting 01-02",
+      "validation_command": "ls tools/toon/parser_schema.py"
+    },
+    "BLOCKER_002": {
+      "title": "Claude Code Agent Spec Reference Missing",
+      "status": "INFORMATIONAL - Reference exists but must be reviewed",
+      "evidence": "Existing agents in ~/.claude/agents/*.md provide specification",
+      "impact": "Must review existing agents to understand required output format",
+      "resolution": "Review ~/.claude/agents/software-crafter.md and other agents before implementation",
+      "validation_command": "ls ~/.claude/agents/software-crafter.md"
+    }
+  },
+  "validation": {
+    "status": "approved",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.034150",
+    "approved_by": "software-crafter-reviewer",
+    "approved_at": "2026-01-13T22:11:27.034160"
+  },
+  "tdd_cycle": {
+    "tdd_phase_tracking": {
+      "phase_execution_log": [
+        {
+          "phase_name": "COMMIT",
+          "outcome": "PASS",
+          "timestamp": "2026-01-13T22:11:27.034161",
+          "notes": {
+            "commit_hash": "migrated",
+            "message": "Step 01-02 completed (tracking added during migration)"
+          }
+        }
+      ]
+    }
   }
 }

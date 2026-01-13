@@ -10,7 +10,9 @@
   "priority": "HIGH",
   "context": {
     "motivation": "SC7 in Phase 8 requires baseline measurements to validate token savings. Without this baseline, SC7 is unvalidatable.",
-    "dependencies": ["2.3"],
+    "dependencies": [
+      "2.3"
+    ],
     "blocking_conditions": [
       "All agent .md files must exist in nWave/agents/",
       "All command .md files must exist in nWave/commands/",
@@ -163,5 +165,10 @@
     "Phase 8 will re-run this script and compare to validate SC7 (~60% token savings)",
     "Token counting uses tiktoken cl100k_base (GPT-4 encoding) for accuracy",
     "Baseline captures pre-YAML-migration state for comparison"
-  ]
+  ],
+  "validation": {
+    "status": "pending",
+    "notes": "Step validation",
+    "migrated_at": "2026-01-13T22:11:27.133289"
+  }
 }
