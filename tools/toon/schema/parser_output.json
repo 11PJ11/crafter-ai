@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-craft.dev/schemas/toon-parser-output.json",
+  "title": "TOON Parser Output Schema",
+  "description": "JSON Schema for TOON parser output. Coordinated between step 01-01 (parser), 01-02 (agent template), and 01-03 (command template).",
+  "version": "1.0.0",
+
+  "type": "object",
+  "required": ["id", "type", "metadata", "sections", "toon_version"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier (agent ID or command name)",
+      "examples": ["software-crafter", "develop", "review"]
+    },
+    "type": {
+      "type": "string",
+      "enum": ["agent", "command", "skill"],
+      "description": "Content type for template selection routing"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Extracted metadata from header and ID section",
+      "properties": {
+        "name": {"type": "string", "description": "Display name"},
+        "id": {"type": "string", "description": "Identifier"},
+        "role": {"type": "string", "description": "Role description"},
+        "spec": {"type": "string", "description": "Specialization or domain"},
+        "model": {"type": "string", "description": "Model configuration"},
+        "version": {"type": "string", "description": "TOON format version"},
+        "description": {"type": "string", "description": "Brief description"},
+        "parent_agent": {
+          "type": "string",
+          "description": "FOR COMMANDS ONLY: Which agent owns this command"
+        },
+        "parameters": {
+          "type": "array",
+          "description": "FOR COMMANDS ONLY: Command parameters",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {"type": "string"},
+              "type": {"type": "string"},
+              "required": {"type": "boolean"},
+              "description": {"type": "string"}
+            }
+          }
+        },
+        "returns": {
+          "type": "object",
+          "description": "FOR COMMANDS ONLY: Return value specification"
+        }
+      }
+    },
+    "sections": {
+      "type": "object",
+      "description": "All parsed sections from TOON file (dynamic keys based on content)",
+      "additionalProperties": true
+    },
+    "source_file": {
+      "type": ["string", "null"],
+      "description": "Original TOON file path (if available)"
+    },
+    "toon_version": {
+      "type": "string",
+      "description": "Detected TOON version",
+      "enum": ["v1.0", "v3.0"]
+    },
+    "raw_content": {
+      "type": ["string", "null"],
+      "description": "Original unparsed content (optional, for debugging)"
+    }
+  },
+
+  "examples": [
+    {
+      "$comment": "EXAMPLE 1: AGENT (software-crafter)",
+      "id": "software-crafter",
+      "type": "agent",
+      "metadata": {
+        "name": "Crafty",
+        "id": "software-crafter",
+        "role": "Master Software Crafter",
+        "spec": "TDD, Refactoring, Quality",
+        "model": "claude-sonnet-4.5",
+        "version": "v3.0",
+        "description": "Unified Software Craftsmanship Specialist"
+      },
+      "sections": {
+        "core_rules": {
+          "evidence_only": "Cite source for all claims",
+          "no_quant_claims": "No percentages/metrics without data",
+          "confidence": "HIGH/MED/LOW with justification"
+        },
+        "commands": [
+          "develop",
+          "refactor",
+          "mikado"
+        ],
+        "dependencies": {
+          "tasks": ["nw/develop.md", "nw/mikado.md"],
+          "templates": ["develop-outside-in-tdd.yaml"]
+        },
+        "persona": {
+          "role": "Master Software Crafter",
+          "style": "Methodical, test-driven, quality-obsessed",
+          "communication": "Clear, evidence-based, professional"
+        }
+      },
+      "source_file": "agents/software-crafter.toon",
+      "toon_version": "v3.0",
+      "raw_content": null
+    },
+    {
+      "$comment": "EXAMPLE 2: COMMAND (develop) - NOTE STRUCTURAL DIFFERENCES",
+      "id": "develop",
+      "type": "command",
+      "metadata": {
+        "name": "develop",
+        "description": "Execute complete DEVELOP wave with 11-phase TDD",
+        "parent_agent": "software-crafter",
+        "version": "v3.0",
+        "parameters": [
+          {
+            "name": "feature-description",
+            "type": "string",
+            "required": true,
+            "description": "Natural language description of feature to develop"
+          }
+        ],
+        "returns": {
+          "type": "object",
+          "properties": {
+            "success": {"type": "boolean"},
+            "commits": {"type": "integer"},
+            "evolution_doc": {"type": "string"}
+          }
+        }
+      },
+      "sections": {
+        "prerequisites": [
+          "baseline approved",
+          "roadmap approved",
+          "all step files reviewed"
+        ],
+        "workflow": {
+          "steps": [
+            "Validate baseline",
+            "Execute all steps with TDD",
+            "Finalize and archive"
+          ]
+        },
+        "success_criteria": [
+          "All tests passing",
+          "All commits created",
+          "Evolution document generated"
+        ]
+      },
+      "source_file": "commands/develop.toon",
+      "toon_version": "v3.0",
+      "raw_content": null
+    }
+  ],
+
+  "structuralDifferences": {
+    "$comment": "CRITICAL: Command vs Agent Structural Differences",
+    "agent": {
+      "metadata_fields": ["name", "id", "role", "spec", "model", "version", "description"],
+      "common_sections": ["core_rules", "commands", "dependencies", "persona"],
+      "purpose": "Define autonomous agent with capabilities, rules, and persona",
+      "activation": "Can be invoked with @agent-name, auto-activates based on task context"
+    },
+    "command": {
+      "metadata_fields": ["name", "description", "parent_agent", "version", "parameters", "returns"],
+      "common_sections": ["prerequisites", "workflow", "success_criteria"],
+      "purpose": "Define invocable operation within agent context",
+      "activation": "Explicitly invoked via /command syntax, NOT auto-activated",
+      "key_differences": [
+        "Commands have 'parameters' and 'returns' (agents don't)",
+        "Commands have 'parent_agent' (agents don't)",
+        "Commands have 'prerequisites' and 'workflow' (agents have 'core_rules' and 'persona')",
+        "Commands are operations, agents are actors"
+      ]
+    }
+  },
+
+  "validationRules": {
+    "$comment": "Validation rules for generated output (referenced by step 01-03)",
+    "agent_output": {
+      "required_frontmatter_keys": ["name", "description", "model"],
+      "required_sections": ["activation_notice", "agent_yaml_block"],
+      "agent_yaml_required_keys": ["commands", "dependencies", "persona"]
+    },
+    "command_output": {
+      "required_frontmatter_keys": ["name", "description", "parent_agent"],
+      "required_sections": ["invocation_header", "parameters_spec", "returns_spec"],
+      "no_persona_section": true,
+      "no_auto_activation": true
+    }
+  }
+}

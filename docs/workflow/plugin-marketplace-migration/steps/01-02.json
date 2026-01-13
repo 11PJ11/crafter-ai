@@ -33,14 +33,22 @@
       "tools/toon/templates/agent.md.j2",
       "tests/tools/toon/test_agent_template.py"
     ],
+    "documentation_references": [
+      "tools/toon/schema/parser_output.json (parser output schema with examples)",
+      "tools/toon/schema/command-vs-agent-differences.md (structural differences)",
+      "tools/toon/schema/agent-template-expected-output.md (complete output example)"
+    ],
     "acceptance_criteria": [
       "Template produces valid YAML frontmatter with mandatory keys: name, description, model",
-      "Template includes activation notice section with proper formatting",
-      "Template renders YAML block with agent configuration (commands, dependencies, persona)",
-      "Template handles embedded knowledge injection markers with format: <!-- BUILD:INJECT:START:path -->",
-      "Template escapes YAML special characters in descriptions (colons, quotes, newlines)",
-      "Template handles multiline strings with proper YAML indentation",
-      "Output validates against Claude Code agent spec (frontmatter + activation notice + agent YAML block)"
+      "Template includes activation notice section with structure: header + triggers + manual invocation",
+      "Agent YAML block contains required top-level keys: agent, commands, dependencies, persona",
+      "Agent metadata includes: name, id, model, description, role, specialization",
+      "Command definitions include both 'name' and 'description' fields",
+      "Template handles embedded knowledge injection markers with EXACT format: <!-- BUILD:INJECT:START:path --> ... <!-- BUILD:INJECT:END:path -->",
+      "Template escapes YAML special characters: colons wrapped in quotes, double quotes escaped",
+      "Template handles multiline strings using literal block scalar (|) or folded scalar (>)",
+      "Output matches structure defined in tools/toon/schema/agent-template-expected-output.md",
+      "All YAML output is parseable (yaml.safe_load succeeds with no exceptions)"
     ]
   },
   "tdd_approach": {
@@ -469,7 +477,10 @@
         "description": "Task describes producing 'Claude Code compliant agent.md format' but provides no example showing YAML frontmatter keys, activation notice structure, or sample agent configuration block",
         "impact": "Implementer cannot determine what compliant output looks like without reverse-engineering from actual agents",
         "blocking": true,
-        "recommendation": "Add to acceptance criteria: Example showing complete YAML frontmatter structure with mandatory keys (name, description, model), sample activation notice, one complete command definition, and example of embedded knowledge injection markers"
+        "recommendation": "Add to acceptance criteria: Example showing complete YAML frontmatter structure with mandatory keys (name, description, model), sample activation notice, one complete command definition, and example of embedded knowledge injection markers",
+        "status": "RESOLVED",
+        "resolved_at": "2026-01-13T22:30:00Z",
+        "resolution": "Created tools/toon/schema/agent-template-expected-output.md with complete example"
       },
       {
         "id": "C2",
@@ -477,7 +488,10 @@
         "description": "This criterion is not testable without knowing what the spec validation rules are",
         "impact": "Test will be ambiguous; unclear what constitutes valid output",
         "blocking": true,
-        "recommendation": "Replace with specific criteria: 'Output contains mandatory frontmatter keys: name, description, model', 'Agent definition has required top-level keys: agent, persona, commands, dependencies', 'All embedded knowledge markers use correct comment format: <!-- BUILD:INJECT:START:path -->'"
+        "recommendation": "Replace with specific criteria: 'Output contains mandatory frontmatter keys: name, description, model', 'Agent definition has required top-level keys: agent, persona, commands, dependencies', 'All embedded knowledge markers use correct comment format: <!-- BUILD:INJECT:START:path -->'",
+        "status": "RESOLVED",
+        "resolved_at": "2026-01-13T22:30:00Z",
+        "resolution": "Replaced vague criterion with 9 specific, testable criteria"
       },
       {
         "id": "C3",
@@ -485,7 +499,10 @@
         "description": "Template receives 'parsed agent data' from step 1.1 but input data shape is completely undefined",
         "impact": "Template cannot be designed without knowing what the parser produces as output",
         "blocking": true,
-        "recommendation": "Add to execution guidance: Example showing sample parsed data structure (e.g., keys for id, name, description, commands list, dependencies dict)"
+        "recommendation": "Add to execution guidance: Example showing sample parsed data structure (e.g., keys for id, name, description, commands list, dependencies dict)",
+        "status": "RESOLVED",
+        "resolved_at": "2026-01-13T22:30:00Z",
+        "resolution": "Added parser_output.json with example parsed agent data structure"
       },
       {
         "id": "C4",
@@ -493,7 +510,10 @@
         "description": "Acceptance criterion mentions handling markers but exact format, placement, and behavior undefined",
         "impact": "Template may produce incorrect marker syntax or placement relative to content",
         "blocking": true,
-        "recommendation": "Add explicit specification: marker format (<!-- BUILD:INJECT:START:path --> / <!-- BUILD:INJECT:END -->), placement rules, whether existing content between markers should be preserved or replaced"
+        "recommendation": "Add explicit specification: marker format (<!-- BUILD:INJECT:START:path --> / <!-- BUILD:INJECT:END -->), placement rules, whether existing content between markers should be preserved or replaced",
+        "status": "RESOLVED",
+        "resolved_at": "2026-01-13T22:30:00Z",
+        "resolution": "Documented exact embedded knowledge marker format with examples"
       }
     ],
     "high_issues": [

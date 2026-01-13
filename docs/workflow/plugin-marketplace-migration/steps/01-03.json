@@ -35,19 +35,25 @@
     ],
     "blocking_prerequisites": {
       "01-01_schema_definition": {
-        "status": "UNRESOLVED",
+        "status": "RESOLVED",
         "requirement": "Parser MUST document output schema with field definitions and examples",
-        "impact_if_missing": "Cannot write accurate tests or template - will guess wrong structure"
+        "impact_if_missing": "Cannot write accurate tests or template - will guess wrong structure",
+        "resolved_at": "2026-01-13T22:30:00Z",
+        "resolution": "Created tools/toon/schema/parser_output.json with complete schema and agent/command examples"
       },
       "01-02_pattern_reference": {
-        "status": "UNRESOLVED",
+        "status": "RESOLVED",
         "requirement": "Agent template MUST resolve C1-C4 to provide stable patterns",
-        "impact_if_missing": "Will copy wrong patterns, require complete redesign"
+        "impact_if_missing": "Will copy wrong patterns, require complete redesign",
+        "resolved_at": "2026-01-13T22:30:00Z",
+        "resolution": "Created tools/toon/schema/agent-template-expected-output.md with complete patterns and C1-C4 issues resolved"
       },
       "command_vs_agent_specification": {
-        "status": "UNRESOLVED",
+        "status": "RESOLVED",
         "requirement": "Document how command structure differs from agent structure",
-        "impact_if_missing": "Tests will validate wrong acceptance criteria"
+        "impact_if_missing": "Tests will validate wrong acceptance criteria",
+        "resolved_at": "2026-01-13T22:30:00Z",
+        "resolution": "Created tools/toon/schema/command-vs-agent-differences.md and added command example in parser_output.json"
       }
     }
   },
@@ -503,8 +509,54 @@
     }
   },
   "validation": {
-    "status": "pending",
-    "notes": "Step validation",
+    "status": "approved",
+    "approval_date": "2026-01-13T22:15:00Z",
+    "reviewer": "lyra",
+    "review_type": "quality_and_completeness",
+    "approval_notes": "Step file demonstrates exceptional quality with comprehensive acceptance criteria (10 ACs), realistic time estimates (11.5h with detailed breakdown), and thorough adversarial review identifying 4 major failure scenarios. All risks properly documented and mitigated through pre-execution validation workflow. Execution BLOCKED until critical prerequisites resolved: (1) Step 01-01 parser output schema defined with examples, (2) Step 01-02 C1-C4 issues resolved, (3) Command vs agent structural differences documented, (4) Example parsed command data provided. Pre-execution validation steps 0.1-0.4 must pass before implementation begins. When blockers resolved, this step has sufficient clarity and testability to succeed.",
+    "criteria_scores": {
+      "task_clarity": 9,
+      "dependencies": 9,
+      "success_criteria": 9,
+      "constraints": 8,
+      "testability": 9,
+      "scope": 8,
+      "overall": 8.7
+    },
+    "blocking_status": {
+      "execution_ready": false,
+      "blocker_count": 4,
+      "blocker_resolution_required": true,
+      "blockers": [
+        "Step 01-01 parser output schema MUST be defined with field definitions and examples",
+        "Step 01-02 critical issues C1-C4 MUST be resolved",
+        "Command vs agent structural differences MUST be documented with concrete examples",
+        "Example parsed command data MUST be provided from parser test fixtures"
+      ]
+    },
+    "strengths": [
+      "Comprehensive acceptance criteria with command-specific terminology (10 ACs vs original 4)",
+      "Detailed adversarial review identifying real failure scenarios (F1-F4) with probabilities",
+      "Realistic time estimate with breakdown justifying 5.75x original estimate",
+      "Edge case test coverage for null fields, YAML escaping, name collisions, marker preservation",
+      "Pre-execution validation workflow (steps 0.1-0.4) catches missing prerequisites before wasting effort",
+      "Clear distinction between command and agent paradigms with examples",
+      "Output validation requirement against Claude Code spec prevents silent failures",
+      "Comprehensive failure prevention section with concrete remediation strategies"
+    ],
+    "improvement_opportunities": [
+      "Consider adding concrete example of command invocation header (what it should look like)",
+      "No contingency if parser completely redesigned during step 01-01 execution",
+      "Integration test for 'validates against Claude Code spec' needs explicit test file and validator",
+      "Could specify exact YAML validation mechanism (yaml.safe_load vs schema validator)"
+    ],
+    "risk_assessment": {
+      "risk_score": 9,
+      "risk_scale": "1-10 (blocked dependencies)",
+      "risk_type": "BLOCKING_PREREQUISITES",
+      "risk_if_executed_now": "90%+ failure probability based on documented failure scenarios F1-F2",
+      "risk_if_prerequisites_resolved": "Controlled and testable through documented workflow"
+    },
     "migrated_at": "2026-01-13T22:11:27.045354"
   }
 }
