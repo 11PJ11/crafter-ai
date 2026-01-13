@@ -30,7 +30,6 @@ from datetime import datetime
 from processors.agent_processor import AgentProcessor
 from processors.command_processor import CommandProcessor
 from processors.team_processor import TeamProcessor
-from processors.workflow_processor import WorkflowProcessor
 from utils.config_manager import ConfigManager
 from utils.file_manager import FileManager
 
@@ -51,21 +50,19 @@ class IDEBundleBuilder:
         self.agent_processor = AgentProcessor(self.source_dir, self.output_dir, self.file_manager)
         self.command_processor = CommandProcessor(self.source_dir, self.output_dir, self.file_manager)
         self.team_processor = TeamProcessor(self.source_dir, self.output_dir, self.file_manager)
-        self.workflow_processor = WorkflowProcessor(self.source_dir, self.output_dir, self.file_manager)
 
         # Build statistics
         self.stats = {
             'agents_processed': 0,
             'commands_processed': 0,
             'teams_processed': 0,
-            'workflows_processed': 0,
             'errors': 0,
             'warnings': 0
         }
 
     def validate_source(self) -> bool:
         """Validate that the source directory contains required nWave structure."""
-        required_dirs = ['agents', 'tasks', 'workflows', 'templates', 'data']
+        required_dirs = ['agents', 'tasks', 'templates', 'data']
         required_files = ['config.yaml']
 
         logging.info(f"Validating source directory: {self.source_dir}")
@@ -164,27 +161,6 @@ class IDEBundleBuilder:
                 logging.error(f"Error processing team {team_file.name}: {e}")
                 self.stats['errors'] += 1
 
-    def process_workflows(self) -> None:
-        """Process all workflow files into orchestrator agents."""
-        logging.info("Processing workflows...")
-        workflows_dir = self.source_dir / "workflows"
-
-        if not workflows_dir.exists():
-            logging.warning(f"Workflows directory not found: {workflows_dir}")
-            return
-
-        workflow_files = list(workflows_dir.glob("*.yaml"))
-        logging.info(f"Found {len(workflow_files)} workflow files")
-
-        for workflow_file in workflow_files:
-            try:
-                logging.debug(f"Processing workflow: {workflow_file.name}")
-                self.workflow_processor.process_workflow(workflow_file, self.config_manager.get_config())
-                self.stats['workflows_processed'] += 1
-            except Exception as e:
-                logging.error(f"Error processing workflow {workflow_file.name}: {e}")
-                self.stats['errors'] += 1
-
     def generate_config(self) -> None:
         """Generate the IDE configuration file."""
         logging.info("Generating IDE configuration...")
@@ -213,7 +189,6 @@ class IDEBundleBuilder:
         print(f"Agents processed:    {self.stats['agents_processed']}")
         print(f"Commands processed:  {self.stats['commands_processed']}")
         print(f"Teams processed:     {self.stats['teams_processed']}")
-        print(f"Workflows processed: {self.stats['workflows_processed']}")
         print(f"Warnings:            {self.stats['warnings']}")
         print(f"Errors:              {self.stats['errors']}")
         print(f"Output directory:    {self.output_dir}")
@@ -246,7 +221,6 @@ class IDEBundleBuilder:
             self.process_agents()
             self.process_commands()
             self.process_teams()
-            self.process_workflows()
 
             # Configuration
             self.generate_config()

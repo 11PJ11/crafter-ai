@@ -29,8 +29,8 @@ All DW commands are now configured to automatically trigger specialized agent te
 
 ### DESIGN Wave Commands
 
-- **`/nw:design`** → `solution-architect` (Morgan), `architecture-diagram-manager` (Archer), `visual-architecture-orchestrator`
-- **`/nw:diagram`** → `architecture-diagram-manager` (Archer), `visual-architecture-orchestrator`, `solution-architect` (Morgan)
+- **`/nw:design`** → `solution-architect` (Morgan), `architecture-diagram-manager` (Archer)
+- **`/nw:diagram`** → `architecture-diagram-manager` (Archer), `solution-architect` (Morgan)
 
 ### DISTILL Wave Commands
 
@@ -39,13 +39,13 @@ All DW commands are now configured to automatically trigger specialized agent te
 
 ### DEVELOP Wave Commands
 
-- **`/nw:develop`** → `software-crafter` (Crafty), `atdd-focused-orchestrator`
+- **`/nw:develop`** → `software-crafter` (Crafty)
 - **`/nw:refactor`** → `software-crafter` (Crafty), `architecture-diagram-manager`
 - **`/nw:mikado`** → `software-crafter` (Crafty), `architecture-diagram-manager` (Archer)
 
 ### DEMO Wave Commands
 
-- **`/nw:demo`** → `feature-completion-coordinator`, `nWave-complete-orchestrator`, `business-analyst` (Riley)
+- **`/nw:demo`** → `feature-completion-coordinator`, `business-analyst` (Riley)
 
 ### Workflow Commands
 
