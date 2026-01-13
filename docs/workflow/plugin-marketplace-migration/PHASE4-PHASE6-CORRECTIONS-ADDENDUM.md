@@ -46,7 +46,7 @@
 "toon_compiler": {
   "tool_location": "tools/toon/compiler.py (from Phase 1)",
   "purpose": "Transforms TOON source to Claude Code compliant output",
-  "input": "5d-wave/tasks/dw/*.toon (TOON format)",
+  "input": "nWave/tasks/dw/*.toon (TOON format)",
   "output": "dist/commands/dw/*.md (Markdown format)",
   "invocation": "python tools/toon/compiler.py <input.toon> --validate --output <output.md>",
   "success_criteria": [

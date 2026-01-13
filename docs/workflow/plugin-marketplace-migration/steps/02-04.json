@@ -12,8 +12,8 @@
     "motivation": "SC7 in Phase 8 requires baseline measurements to validate token savings. Without this baseline, SC7 is unvalidatable.",
     "dependencies": ["2.3"],
     "blocking_conditions": [
-      "All agent .md files must exist in 5d-wave/agents/",
-      "All command .md files must exist in 5d-wave/commands/",
+      "All agent .md files must exist in nWave/agents/",
+      "All command .md files must exist in nWave/commands/",
       "Token counting methodology must be defined"
     ],
     "success_criteria_mapping": {
@@ -91,7 +91,7 @@
       },
       {
         "order": 5,
-        "description": "Run script against 5d-wave/agents/ and 5d-wave/commands/",
+        "description": "Run script against nWave/agents/ and nWave/commands/",
         "notes": "Execute manually to create baseline/token-measurements/phase-2-baseline.json"
       },
       {
@@ -134,12 +134,12 @@
       {
         "test": "test_all_agents_measured",
         "description": "Verify 26 agent files in baseline",
-        "assertion": "Count files with path matching 5d-wave/agents/*.md == 26"
+        "assertion": "Count files with path matching nWave/agents/*.md == 26"
       },
       {
         "test": "test_all_commands_measured",
         "description": "Verify 20 command files in baseline",
-        "assertion": "Count files with path matching 5d-wave/commands/*.md == 20"
+        "assertion": "Count files with path matching nWave/commands/*.md == 20"
       },
       {
         "test": "test_baseline_includes_metadata",

@@ -74,7 +74,7 @@ From step 05-04 adversarial review (risk 9.2/10):
 1. `docs/toon-v3-skill-syntax-specification.md` - Complete TOON v3.0 syntax for skills
 2. `docs/skill-invocation-mechanism.md` - How Claude Code triggers skills
 3. `docs/constraint-embedding-format.md` - How constraints appear in SKILL.md
-4. `5d-wave/templates/SKILL_TEMPLATE.toon` - Reference template all skills copy
+4. `nWave/templates/SKILL_TEMPLATE.toon` - Reference template all skills copy
 5. `tests/skills/skill_test_environment_setup.md` - Test environment documentation
 
 **Time Estimate**: 4 hours (research + documentation)
@@ -93,19 +93,19 @@ From step 05-04 adversarial review (risk 9.2/10):
 **05-01 Phase B**: develop skill implementation
 - Uses SKILL_TEMPLATE.toon from Phase A
 - Time: 2-4 hours
-- Deliverable: `5d-wave/skills/develop/SKILL.md`
+- Deliverable: `nWave/skills/develop/SKILL.md`
 
 **05-02**: refactor skill implementation (AFTER 05-01 complete)
 - Uses 05-01 Phase A specifications
 - Uses 05-01 Phase B as reference example
 - Time: 2.5-3 hours
-- Deliverable: `5d-wave/skills/refactor/SKILL.md`
+- Deliverable: `nWave/skills/refactor/SKILL.md`
 
 **05-03**: mikado skill implementation (parallel with 05-02)
 - Uses same 05-01 outputs as 05-02
 - Can run parallel with 05-02 (both use same prerequisites)
 - Time: 2.5-3 hours
-- Deliverable: `5d-wave/skills/mikado/SKILL.md`
+- Deliverable: `nWave/skills/mikado/SKILL.md`
 
 ---
 
@@ -453,7 +453,7 @@ AFTER:  05-01 Phase A depends on [1.6]
 - [ ] `docs/toon-v3-skill-syntax-specification.md` exists with examples
 - [ ] `docs/skill-invocation-mechanism.md` explains Claude Code triggering
 - [ ] `docs/constraint-embedding-format.md` defines constraint representation
-- [ ] `5d-wave/templates/SKILL_TEMPLATE.toon` compiles to valid SKILL.md
+- [ ] `nWave/templates/SKILL_TEMPLATE.toon` compiles to valid SKILL.md
 - [ ] `tests/skills/skill_test_environment_setup.md` documents test approach
 
 **Checkpoint**: Review all 5 documents. ABORT if any incomplete.

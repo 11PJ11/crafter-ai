@@ -83,10 +83,10 @@
   },
   "deliverables": {
     "files_to_create": [
-      "5d-wave/tasks/dw/start.toon"
+      "nWave/tasks/dw/start.toon"
     ],
     "files_excluded": [
-      "5d-wave/tasks/dw/discuss.toon (already created in step 04-01)"
+      "nWave/tasks/dw/discuss.toon (already created in step 04-01)"
     ],
     "acceptance_criteria": [
       "start.toon compiles with valid TOON v3.0 format",
@@ -132,14 +132,14 @@
       "partial_failure": "Rollback all conversions, fix issue, restart batch"
     },
     "purpose": "Transforms TOON source to Claude Code compliant output with CROSS_WAVE metadata",
-    "input": "5d-wave/tasks/dw/start.toon (TOON format)",
+    "input": "nWave/tasks/dw/start.toon (TOON format)",
     "output": "dist/commands/dw/start.md (Markdown format)",
     "validation": "pytest tests/tools/toon/test_start_migration.py"
   },
   "test_specifications": {
     "test_start_command_compiles": {
       "framework": "pytest",
-      "test_code_skeleton": "def test_start_command_compiles():\n    \"\"\"Verify start.toon compiles without errors.\"\"\"\n    result = subprocess.run(\n        ['python', 'tools/toon/compiler.py', '5d-wave/tasks/dw/start.toon', '--validate'],\n        capture_output=True,\n        text=True\n    )\n    assert result.returncode == 0, f\"Compilation failed: {result.stderr}\"\n    assert len(result.stderr) == 0, \"Stderr should be empty on success\"\n    assert 'ERROR' not in result.stdout",
+      "test_code_skeleton": "def test_start_command_compiles():\n    \"\"\"Verify start.toon compiles without errors.\"\"\"\n    result = subprocess.run(\n        ['python', 'tools/toon/compiler.py', 'nWave/tasks/dw/start.toon', '--validate'],\n        capture_output=True,\n        text=True\n    )\n    assert result.returncode == 0, f\"Compilation failed: {result.stderr}\"\n    assert len(result.stderr) == 0, \"Stderr should be empty on success\"\n    assert 'ERROR' not in result.stdout",
       "assertions": [
         "Exit code == 0",
         "Stderr is empty",
@@ -148,7 +148,7 @@
     },
     "test_start_wave_metadata_cross_wave": {
       "framework": "pytest",
-      "test_code_skeleton": "def test_start_wave_metadata_cross_wave():\n    \"\"\"Verify wave metadata is correctly set to CROSS_WAVE (not DISCUSS).\"\"\"\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/start.toon')\n    assert 'wave' in toon_file.metadata, \"Wave metadata missing\"\n    assert toon_file.metadata['wave'] == 'CROSS_WAVE', f\"Expected CROSS_WAVE, got {toon_file.metadata['wave']}. start.md is NOT a DISCUSS command.\"\n    assert 'agent-id' in toon_file.metadata, \"Agent-id metadata missing\"\n    # Validate cross-wave orchestration fields\n    assert 'cross-wave-scope' in toon_file.metadata or 'orchestration' in str(toon_file.sections), \"Cross-wave orchestration metadata missing\"",
+      "test_code_skeleton": "def test_start_wave_metadata_cross_wave():\n    \"\"\"Verify wave metadata is correctly set to CROSS_WAVE (not DISCUSS).\"\"\"\n    toon_file = TOONParser().parse('nWave/tasks/dw/start.toon')\n    assert 'wave' in toon_file.metadata, \"Wave metadata missing\"\n    assert toon_file.metadata['wave'] == 'CROSS_WAVE', f\"Expected CROSS_WAVE, got {toon_file.metadata['wave']}. start.md is NOT a DISCUSS command.\"\n    assert 'agent-id' in toon_file.metadata, \"Agent-id metadata missing\"\n    # Validate cross-wave orchestration fields\n    assert 'cross-wave-scope' in toon_file.metadata or 'orchestration' in str(toon_file.sections), \"Cross-wave orchestration metadata missing\"",
       "assertions": [
         "Wave field exists",
         "Wave value == 'CROSS_WAVE' (CRITICAL - not DISCUSS)",
@@ -158,7 +158,7 @@
     },
     "test_start_agent_activation_preserved": {
       "framework": "pytest",
-      "test_code_skeleton": "def test_start_agent_activation_preserved():\n    \"\"\"Verify agent-activation headers preserved from start.md.\"\"\"\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/start.toon')\n    # start.md may have project-initializer or orchestrator agent\n    assert 'agent-id' in toon_file.metadata, \"Agent-id not preserved\"\n    assert 'agent-command' in toon_file.metadata, \"Agent-command not preserved\"\n    assert toon_file.metadata['agent-command'] == 'start', \"Agent-command should be 'start'\"\n    # Verify activation instructions present\n    assert 'activation-instructions' in toon_file.sections or 'ACTIVATION' in str(toon_file.sections).upper(), \"Activation instructions missing\"",
+      "test_code_skeleton": "def test_start_agent_activation_preserved():\n    \"\"\"Verify agent-activation headers preserved from start.md.\"\"\"\n    toon_file = TOONParser().parse('nWave/tasks/dw/start.toon')\n    # start.md may have project-initializer or orchestrator agent\n    assert 'agent-id' in toon_file.metadata, \"Agent-id not preserved\"\n    assert 'agent-command' in toon_file.metadata, \"Agent-command not preserved\"\n    assert toon_file.metadata['agent-command'] == 'start', \"Agent-command should be 'start'\"\n    # Verify activation instructions present\n    assert 'activation-instructions' in toon_file.sections or 'ACTIVATION' in str(toon_file.sections).upper(), \"Activation instructions missing\"",
       "assertions": [
         "Agent-id field present",
         "Agent-command == 'start'",
@@ -167,7 +167,7 @@
     },
     "test_start_cross_wave_orchestration_preserved": {
       "framework": "pytest",
-      "test_code_skeleton": "def test_start_cross_wave_orchestration_preserved():\n    \"\"\"Verify cross-wave orchestration metadata preserved from start.md.\"\"\"\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/start.toon')\n    # start.md includes project initialization spanning all 5 waves\n    content = str(toon_file.sections)\n    # Check for wave orchestration indicators\n    wave_indicators = ['DISCUSS', 'DESIGN', 'DISTILL', 'DEVELOP', 'DELIVER']\n    waves_mentioned = sum(1 for wave in wave_indicators if wave in content)\n    assert waves_mentioned >= 3, f\"Expected cross-wave orchestration (3+ waves mentioned), found {waves_mentioned}. start.md should reference multiple waves.\"\n    # Verify initialization metadata\n    assert 'project' in content.lower() or 'initialization' in content.lower(), \"Project initialization content missing\"",
+      "test_code_skeleton": "def test_start_cross_wave_orchestration_preserved():\n    \"\"\"Verify cross-wave orchestration metadata preserved from start.md.\"\"\"\n    toon_file = TOONParser().parse('nWave/tasks/dw/start.toon')\n    # start.md includes project initialization spanning all 5 waves\n    content = str(toon_file.sections)\n    # Check for wave orchestration indicators\n    wave_indicators = ['DISCUSS', 'DESIGN', 'DISTILL', 'DEVELOP', 'DELIVER']\n    waves_mentioned = sum(1 for wave in wave_indicators if wave in content)\n    assert waves_mentioned >= 3, f\"Expected cross-wave orchestration (3+ waves mentioned), found {waves_mentioned}. start.md should reference multiple waves.\"\n    # Verify initialization metadata\n    assert 'project' in content.lower() or 'initialization' in content.lower(), \"Project initialization content missing\"",
       "assertions": [
         "Multiple 5D waves referenced (3+)",
         "Project initialization content present",
@@ -176,7 +176,7 @@
     },
     "test_start_compilation_output_valid": {
       "framework": "pytest",
-      "test_code_skeleton": "def test_start_compilation_output_valid():\n    \"\"\"Verify compiled output is valid Claude Code markdown with CROSS_WAVE metadata.\"\"\"\n    result = subprocess.run(\n        ['python', 'tools/toon/compiler.py', '5d-wave/tasks/dw/start.toon', '--output', '/tmp/start-output.md'],\n        capture_output=True\n    )\n    assert result.returncode == 0\n    \n    # Verify output file exists and has content\n    output_path = Path('/tmp/start-output.md')\n    assert output_path.exists(), \"Output file not created\"\n    assert output_path.stat().st_size > 1000, \"Output file too small (< 1000 bytes)\"\n    \n    # Verify Claude Code compliance and CROSS_WAVE metadata\n    content = output_path.read_text()\n    assert '# ' in content, \"No markdown headers found\"\n    assert 'agent' in content.lower(), \"Agent metadata missing\"\n    assert 'CROSS_WAVE' in content or 'cross-wave' in content.lower(), \"CROSS_WAVE metadata missing in output\"\n    assert 'wave' in content.lower(), \"Wave classification missing\"",
+      "test_code_skeleton": "def test_start_compilation_output_valid():\n    \"\"\"Verify compiled output is valid Claude Code markdown with CROSS_WAVE metadata.\"\"\"\n    result = subprocess.run(\n        ['python', 'tools/toon/compiler.py', 'nWave/tasks/dw/start.toon', '--output', '/tmp/start-output.md'],\n        capture_output=True\n    )\n    assert result.returncode == 0\n    \n    # Verify output file exists and has content\n    output_path = Path('/tmp/start-output.md')\n    assert output_path.exists(), \"Output file not created\"\n    assert output_path.stat().st_size > 1000, \"Output file too small (< 1000 bytes)\"\n    \n    # Verify Claude Code compliance and CROSS_WAVE metadata\n    content = output_path.read_text()\n    assert '# ' in content, \"No markdown headers found\"\n    assert 'agent' in content.lower(), \"Agent metadata missing\"\n    assert 'CROSS_WAVE' in content or 'cross-wave' in content.lower(), \"CROSS_WAVE metadata missing in output\"\n    assert 'wave' in content.lower(), \"Wave classification missing\"",
       "assertions": [
         "Compilation succeeds",
         "Output file created",
@@ -210,7 +210,7 @@
       {
         "name": "test_e2e_start_command_migration",
         "purpose": "Verify complete migration: start.md → start.toon → compiled output with CROSS_WAVE",
-        "input": "5d-wave/tasks/dw/start.md",
+        "input": "nWave/tasks/dw/start.md",
         "steps": "Convert to TOON → Parse TOON → Compile → Validate output",
         "expected": "Valid start.md in dist/commands/dw/ matching Claude Code spec with CROSS_WAVE wave metadata (not DISCUSS)"
       }
@@ -313,10 +313,10 @@
       "  - Preserve agent-activation header from YAML frontmatter",
       "  - Set wave metadata to CROSS_WAVE (CRITICAL - not DISCUSS)",
       "  - Preserve cross-wave orchestration metadata (project initialization, wave references)",
-      "  - Create file: 5d-wave/tasks/dw/start.toon",
+      "  - Create file: nWave/tasks/dw/start.toon",
       "",
       "STEP 2: Compile TOON file",
-      "  - Run: python tools/toon/compiler.py 5d-wave/tasks/dw/start.toon --validate",
+      "  - Run: python tools/toon/compiler.py nWave/tasks/dw/start.toon --validate",
       "  - Verify exit code = 0",
       "  - Capture stderr and stdout",
       "  - If compilation fails: DO NOT PROCEED - see error_handling.compilation_failure",

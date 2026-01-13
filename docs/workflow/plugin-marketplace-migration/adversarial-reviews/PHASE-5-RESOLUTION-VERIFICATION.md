@@ -107,7 +107,7 @@ Each arrow represents **PROVEN COMPLETION**, not conditional approval.
 1. `docs/toon-v3-skill-syntax-specification.md` ← CRITICAL
 2. `docs/skill-invocation-mechanism.md` ← CRITICAL
 3. `docs/constraint-embedding-format.md` ← CRITICAL
-4. `5d-wave/templates/SKILL_TEMPLATE.toon` ← CRITICAL
+4. `nWave/templates/SKILL_TEMPLATE.toon` ← CRITICAL
 5. `tests/skills/skill_test_environment_setup.md` ← CRITICAL
 
 ---

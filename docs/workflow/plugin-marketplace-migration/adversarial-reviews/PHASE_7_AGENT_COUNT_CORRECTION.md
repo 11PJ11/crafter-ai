@@ -10,11 +10,11 @@
 
 **Blocker #2**: Agent Count Mismatch (Risk Score: 9.2/10)
 
-The roadmap and Phase 7 specifications claimed **28 agents**, but the actual build system processes only **26 agents**.
+The roadmap and Phase 7 specifications claimed **26 agents**, but the actual build system processes only **26 agents**.
 
 ### Root Cause Analysis
 
-**Source Count**: 28 .md files in `5d-wave/agents/`
+**Source Count**: 28 .md files in `nWave/agents/`
 **Build Processing**: 26 agents actually compiled by `build_ide_bundle.py`
 
 **Missing from Build** (2 agents):
@@ -25,7 +25,7 @@ The roadmap and Phase 7 specifications claimed **28 agents**, but the actual bui
 
 ```bash
 # Source files
-$ ls 5d-wave/agents/*.md | wc -l
+$ ls nWave/agents/*.md | wc -l
 28
 
 # Actually processed by build
@@ -41,9 +41,9 @@ $ cat dist/ide/agents/dw/config.json | grep agents_processed
 
 **Without Correction**:
 - Step 07-01: `test_all_agents_referenced` would fail (expects 28, finds 26)
-- Step 07-01: Quality gate "All 28 agents referenced" would fail
+- Step 07-01: Quality gate "All 26 agents referenced" would fail
 - Step 08-02: Plugin installation test would fail on agent count assertion
-- Step 08-04: Success criteria validation would fail (SC1: 28 agents claim vs 26 reality)
+- Step 08-04: Success criteria validation would fail (SC1: 26 agents claim vs 26 reality)
 
 ---
 
@@ -53,22 +53,22 @@ $ cat dist/ide/agents/dw/config.json | grep agents_processed
 
 **Changes Made**:
 1. **Line 35**: Acceptance criteria updated
-   - Before: `"All 28 agents referenced"`
+   - Before: `"All 26 agents referenced"`
    - After: `"All 26 agents referenced (actual count: novel-editor and novel-editor-reviewer excluded from build)"`
 
 2. **Line 42**: Outer test updated
-   - Before: `all 28 agents + 20 commands + 3 skills are discoverable`
+   - Before: `all 26 agents + 20 commands + 3 skills are discoverable`
    - After: `all 26 agents + 20 commands + 3 skills are discoverable`
 
 3. **Line 65**: Workflow step updated
-   - Before: `"2. Add all 28 agent references organized by wave"`
+   - Before: `"2. Add all 26 agent references organized by wave"`
    - After: `"2. Add all 26 agent references organized by wave (DISCUSS, DESIGN, DISTILL, DEVELOP, DEMO) - excludes novel-editor and novel-editor-reviewer not in build"`
 
 4. **Line 78**: Quality gate updated
-   - Before: `"All 28 agents referenced (verify count and names)"`
+   - Before: `"All 26 agents referenced (verify count and names)"`
    - After: `"All 26 agents referenced (verify count and names) - NOTE: novel-editor and novel-editor-reviewer excluded from build system"`
 
-5. **Multiple locations**: All references to "28 agents" replaced with "26 agents" throughout:
+5. **Multiple locations**: All references to "26 agents" replaced with "26 agents" throughout:
    - Dependency details (line 105)
    - Test specifications (line 130)
    - Hidden dependencies (line 158)
@@ -94,7 +94,7 @@ $ cat dist/ide/agents/dw/config.json | grep agents_processed
 
 **Changes Made**:
 1. **Line 177**: Recommendation updated
-   - Before: `"~28 agents and ~20 commands"`
+   - Before: `"~26 agents and ~20 commands"`
    - After: `"26 agents (novel-editor and novel-editor-reviewer excluded from build) and ~20 commands"`
 
 ---
@@ -234,7 +234,7 @@ fix(specs): correct agent count from 28 to 26 across Phase 7 steps
 BLOCKER #2 RESOLUTION: Agent count mismatch
 
 Problem:
-- Roadmap claimed 28 agents
+- Roadmap claimed 26 agents
 - Build system processes 26 agents
 - novel-editor and novel-editor-reviewer excluded from build
 - Tests would fail on count assertion

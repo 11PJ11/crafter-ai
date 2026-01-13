@@ -68,7 +68,7 @@ Deadlock: validation needs completion, completion needs validation
 - `docs/toon-v3-skill-syntax-specification.md` ← CRITICAL
 - `docs/skill-invocation-mechanism.md` ← CRITICAL
 - `docs/constraint-embedding-format.md` ← CRITICAL
-- `5d-wave/templates/SKILL_TEMPLATE.toon` ← CRITICAL
+- `nWave/templates/SKILL_TEMPLATE.toon` ← CRITICAL
 - `tests/skills/skill_test_environment_setup.md` ← CRITICAL
 
 ---

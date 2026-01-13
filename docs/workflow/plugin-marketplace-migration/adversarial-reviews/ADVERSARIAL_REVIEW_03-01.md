@@ -269,7 +269,7 @@ Reality: Different agents have different complexity. A large agent (76KB agent-b
 **CLARIFY BEFORE PROCEEDING**:
 1. Measure baseline token counts for all source agents:
    ```bash
-   for agent in /mnt/c/Repositories/Projects/ai-craft/5d-wave/agents/*.md; do
+   for agent in /mnt/c/Repositories/Projects/ai-craft/nWave/agents/*.md; do
      echo "$agent: $(wc -c < $agent) bytes"
    done
    ```
@@ -418,8 +418,8 @@ def test_token_savings_per_agent():
     Methodology: Use Anthropic token counter
     """
     for agent in agents:
-        original_md = load_agent(f"5d-wave/agents/{agent}.md")
-        compiled_toon = compile_toon(f"5d-wave/agents/{agent}.toon")
+        original_md = load_agent(f"nWave/agents/{agent}.md")
+        compiled_toon = compile_toon(f"nWave/agents/{agent}.toon")
 
         original_tokens = count_tokens(original_md)  # Anthropic API
         toon_tokens = count_tokens(compiled_toon)    # Anthropic API
@@ -490,8 +490,8 @@ ls -la /mnt/c/Repositories/Projects/ai-craft/archive/pre-toon-migration/ 2>/dev/
 # If empty or missing: 2.4 not complete
 
 # Verify which agent files exist in sources
-ls /mnt/c/Repositories/Projects/ai-craft/5d-wave/agents/*.md | wc -l
-# Result: 28 agents in source (this is expected)
+ls /mnt/c/Repositories/Projects/ai-craft/nWave/agents/*.md | wc -l
+# Result: 26 agents in source (this is expected)
 
 # Check if any evidence of 2.4 execution
 grep -r "archive\|pre-toon" /mnt/c/Repositories/Projects/ai-craft/docs/workflow --include="*.md" --include="*.json" 2>/dev/null
@@ -503,7 +503,7 @@ grep -r "archive\|pre-toon" /mnt/c/Repositories/Projects/ai-craft/docs/workflow 
 ```
 Step 2.4 execution (unclear source path):
   Developer archives files from dist/ide/agents/dw/ (WRONG - 32 compiled files)
-  Instead of 5d-wave/agents/ (CORRECT - 28 source files)
+  Instead of nWave/agents/ (CORRECT - 28 source files)
 
 Step 3.1 begins:
   Instruction: "Apply conversion patterns from pilot (step 2.4)"
@@ -511,7 +511,7 @@ Step 3.1 begins:
 
   But which product-owner.md?
   - From dist/ide/: post-compilation, has embedded dependencies, different structure
-  - From 5d-wave/: original source, clean structure
+  - From nWave/: original source, clean structure
 
   Developer converts using wrong baseline → Output has different schema/structure
   Phase 3.2 (Secondary Agents) expects pattern consistency → Fails
@@ -527,7 +527,7 @@ Step 3.1 begins:
    ```
 
 2. Verify 2.4 is PASSING (not just NEEDS_CLARIFICATION):
-   - All 28 agents archived from correct source (5d-wave/agents/)
+   - All 26 agents archived from correct source (nWave/agents/)
    - Archive verified in commit (git log shows 2.4 execution)
    - Baseline measurements recorded from archives
 
@@ -740,7 +740,7 @@ Total cost: 15 hours Phase 3 (wasted) + 16 hours redesign + 15 hours Phase 3 ret
 **3. Baseline Measurements [1 hour]**
    - Measure and record token counts for all 28 source agents:
      ```bash
-     for agent in /mnt/c/Repositories/Projects/ai-craft/5d-wave/agents/*.md; do
+     for agent in /mnt/c/Repositories/Projects/ai-craft/nWave/agents/*.md; do
        name=$(basename "$agent")
        size=$(wc -c < "$agent")
        echo "$name: $size bytes"
@@ -815,7 +815,7 @@ Total cost: 15 hours Phase 3 (wasted) + 16 hours redesign + 15 hours Phase 3 ret
 1. **TOON Format**: Is the target TOON v3.0 or v1.0? If v3.0, where is the specification?
 2. **Compiler**: Which tool compiles TOON files? Phase 1.2 (Jinja2) or something else?
 3. **Phase 2 Status**: Has Phase 2.4 (archive) been executed? Can you verify files in `archive/pre-toon-migration/`?
-4. **Token Baseline**: What are the actual token counts for the 28 agents? Do we have Phase 2.1 profiling data?
+4. **Token Baseline**: What are the actual token counts for the 26 agents? Do we have Phase 2.1 profiling data?
 5. **Acceptance Criteria**: If pilot agents achieve 48% savings but criteria requires 50%, what happens?
 6. **Time Estimate**: Acknowledge that 5 hours is optimistic and 10-15 hours is realistic?
 7. **Phase 1 Completion**: Can you confirm Phase 1.1-1.6 are complete and the parser/compiler work?

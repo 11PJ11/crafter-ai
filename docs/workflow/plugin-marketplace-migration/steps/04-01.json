@@ -66,10 +66,10 @@
   },
   "deliverables": {
     "files_to_create": [
-      "5d-wave/tasks/dw/discuss.toon"
+      "nWave/tasks/dw/discuss.toon"
     ],
     "files_excluded": [
-      "5d-wave/tasks/dw/start.toon (deferred to step 04-01b)"
+      "nWave/tasks/dw/start.toon (deferred to step 04-01b)"
     ],
     "acceptance_criteria": [
       "discuss.toon compiles with valid TOON v3.0 format",
@@ -111,14 +111,14 @@
       "partial_failure": "Rollback all conversions, fix issue, restart batch"
     },
     "purpose": "Transforms TOON source to Claude Code compliant output",
-    "input": "5d-wave/tasks/dw/*.toon (TOON format)",
+    "input": "nWave/tasks/dw/*.toon (TOON format)",
     "output": "dist/commands/dw/*.md (Markdown format)",
     "validation": "pytest tests/tools/toon/test_compiler.py"
   },
   "test_specifications": {
     "test_discuss_command_compiles": {
       "framework": "pytest",
-      "test_code_skeleton": "def test_discuss_command_compiles():\n    \"\"\"Verify discuss.toon compiles without errors.\"\"\"\n    result = subprocess.run(\n        ['python', 'tools/toon/compiler.py', '5d-wave/tasks/dw/discuss.toon', '--validate'],\n        capture_output=True,\n        text=True\n    )\n    assert result.returncode == 0, f\"Compilation failed: {result.stderr}\"\n    assert len(result.stderr) == 0, \"Stderr should be empty on success\"\n    assert 'ERROR' not in result.stdout",
+      "test_code_skeleton": "def test_discuss_command_compiles():\n    \"\"\"Verify discuss.toon compiles without errors.\"\"\"\n    result = subprocess.run(\n        ['python', 'tools/toon/compiler.py', 'nWave/tasks/dw/discuss.toon', '--validate'],\n        capture_output=True,\n        text=True\n    )\n    assert result.returncode == 0, f\"Compilation failed: {result.stderr}\"\n    assert len(result.stderr) == 0, \"Stderr should be empty on success\"\n    assert 'ERROR' not in result.stdout",
       "assertions": [
         "Exit code == 0",
         "Stderr is empty",
@@ -127,7 +127,7 @@
     },
     "test_discuss_wave_metadata": {
       "framework": "pytest",
-      "test_code_skeleton": "def test_discuss_wave_metadata():\n    \"\"\"Verify wave metadata is correctly set to DISCUSS.\"\"\"\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/discuss.toon')\n    assert 'wave' in toon_file.metadata, \"Wave metadata missing\"\n    assert toon_file.metadata['wave'] == 'DISCUSS', f\"Expected DISCUSS, got {toon_file.metadata['wave']}\"\n    assert 'agent-id' in toon_file.metadata, \"Agent-id metadata missing\"",
+      "test_code_skeleton": "def test_discuss_wave_metadata():\n    \"\"\"Verify wave metadata is correctly set to DISCUSS.\"\"\"\n    toon_file = TOONParser().parse('nWave/tasks/dw/discuss.toon')\n    assert 'wave' in toon_file.metadata, \"Wave metadata missing\"\n    assert toon_file.metadata['wave'] == 'DISCUSS', f\"Expected DISCUSS, got {toon_file.metadata['wave']}\"\n    assert 'agent-id' in toon_file.metadata, \"Agent-id metadata missing\"",
       "assertions": [
         "Wave field exists",
         "Wave value == 'DISCUSS'",
@@ -136,7 +136,7 @@
     },
     "test_discuss_agent_activation_preserved": {
       "framework": "pytest",
-      "test_code_skeleton": "def test_discuss_agent_activation_preserved():\n    \"\"\"Verify agent-activation headers preserved from discuss.md.\"\"\"\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/discuss.toon')\n    assert toon_file.metadata['agent-id'] == 'requirements-analyst', \"Agent-id not preserved\"\n    assert toon_file.metadata['agent-command'] == 'discuss', \"Agent-command not preserved\"\n    # Verify activation instructions present\n    assert 'activation-instructions' in toon_file.sections, \"Activation instructions missing\"",
+      "test_code_skeleton": "def test_discuss_agent_activation_preserved():\n    \"\"\"Verify agent-activation headers preserved from discuss.md.\"\"\"\n    toon_file = TOONParser().parse('nWave/tasks/dw/discuss.toon')\n    assert toon_file.metadata['agent-id'] == 'requirements-analyst', \"Agent-id not preserved\"\n    assert toon_file.metadata['agent-command'] == 'discuss', \"Agent-command not preserved\"\n    # Verify activation instructions present\n    assert 'activation-instructions' in toon_file.sections, \"Activation instructions missing\"",
       "assertions": [
         "Agent-id == 'requirements-analyst'",
         "Agent-command == 'discuss'",
@@ -145,7 +145,7 @@
     },
     "test_discuss_compilation_output_valid": {
       "framework": "pytest",
-      "test_code_skeleton": "def test_discuss_compilation_output_valid():\n    \"\"\"Verify compiled output is valid Claude Code markdown.\"\"\"\n    result = subprocess.run(\n        ['python', 'tools/toon/compiler.py', '5d-wave/tasks/dw/discuss.toon', '--output', '/tmp/discuss-output.md'],\n        capture_output=True\n    )\n    assert result.returncode == 0\n    \n    # Verify output file exists and has content\n    output_path = Path('/tmp/discuss-output.md')\n    assert output_path.exists(), \"Output file not created\"\n    assert output_path.stat().st_size > 1000, \"Output file too small (< 1000 bytes)\"\n    \n    # Verify Claude Code compliance (basic checks)\n    content = output_path.read_text()\n    assert '# ' in content, \"No markdown headers found\"\n    assert 'agent' in content.lower(), \"Agent metadata missing\"",
+      "test_code_skeleton": "def test_discuss_compilation_output_valid():\n    \"\"\"Verify compiled output is valid Claude Code markdown.\"\"\"\n    result = subprocess.run(\n        ['python', 'tools/toon/compiler.py', 'nWave/tasks/dw/discuss.toon', '--output', '/tmp/discuss-output.md'],\n        capture_output=True\n    )\n    assert result.returncode == 0\n    \n    # Verify output file exists and has content\n    output_path = Path('/tmp/discuss-output.md')\n    assert output_path.exists(), \"Output file not created\"\n    assert output_path.stat().st_size > 1000, \"Output file too small (< 1000 bytes)\"\n    \n    # Verify Claude Code compliance (basic checks)\n    content = output_path.read_text()\n    assert '# ' in content, \"No markdown headers found\"\n    assert 'agent' in content.lower(), \"Agent metadata missing\"",
       "assertions": [
         "Compilation succeeds",
         "Output file created",
@@ -178,7 +178,7 @@
       {
         "name": "test_e2e_discuss_command_migration",
         "purpose": "Verify complete migration: discuss.md → discuss.toon → compiled output",
-        "input": "5d-wave/tasks/dw/discuss.md",
+        "input": "nWave/tasks/dw/discuss.md",
         "steps": "Convert to TOON → Parse TOON → Compile → Validate output",
         "expected": "Valid discuss.md in dist/commands/dw/ matching Claude Code spec with DISCUSS wave metadata"
       }
@@ -267,10 +267,10 @@
       "  - Use TOON v3.0 format specification as conversion guide",
       "  - Preserve agent-activation header from YAML frontmatter",
       "  - Set wave metadata to DISCUSS (verified from source file)",
-      "  - Create file: 5d-wave/tasks/dw/discuss.toon",
+      "  - Create file: nWave/tasks/dw/discuss.toon",
       "",
       "STEP 2: Compile TOON file",
-      "  - Run: python tools/toon/compiler.py 5d-wave/tasks/dw/discuss.toon --validate",
+      "  - Run: python tools/toon/compiler.py nWave/tasks/dw/discuss.toon --validate",
       "  - Verify exit code = 0",
       "  - Capture stderr and stdout",
       "  - If compilation fails: DO NOT PROCEED - see error_handling.compilation_failure",

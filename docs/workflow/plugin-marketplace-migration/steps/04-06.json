@@ -67,10 +67,10 @@
   },
   "deliverables": {
     "files_to_create": [
-      "5d-wave/tasks/dw/research.toon",
-      "5d-wave/tasks/dw/root-why.toon",
-      "5d-wave/tasks/dw/git.toon",
-      "5d-wave/tasks/dw/forge.toon"
+      "nWave/tasks/dw/research.toon",
+      "nWave/tasks/dw/root-why.toon",
+      "nWave/tasks/dw/git.toon",
+      "nWave/tasks/dw/forge.toon"
     ],
     "acceptance_criteria": [
       "Commands compile with agent-activation headers",
@@ -81,11 +81,11 @@
       "All agent metadata preserved: original .md metadata == converted .toon metadata",
       "TOON format validation passes against TOON v3.0 schema for all files",
       "Token savings measured and documented: baseline .md tokens vs new .toon tokens (~60% target)",
-      "Zero .md command files remain in 5d-wave/tasks/dw/ directory"
+      "Zero .md command files remain in nWave/tasks/dw/ directory"
     ]
   },
   "tdd_approach": {
-    "outer_test": "GIVEN all command .toon files in 5d-wave/tasks/dw/\nWHEN I count .toon files\nTHEN count == 20 AND all are .toon (zero .md files remain)",
+    "outer_test": "GIVEN all command .toon files in nWave/tasks/dw/\nWHEN I count .toon files\nTHEN count == 20 AND all are .toon (zero .md files remain)",
     "inner_tests": [
       "test_cross_wave_commands_compile",
       "test_cross_wave_metadata_correct",
@@ -131,7 +131,7 @@
       "11. Write and run tests to validate total command count (20)",
       "12. Write tests for agent bindings and compilation success",
       "13. Apply refactoring level 1 for final consistency across all 20 files",
-      "14. Verify NO .md files remain in 5d-wave/tasks/dw/ (all converted)",
+      "14. Verify NO .md files remain in nWave/tasks/dw/ (all converted)",
       "15. Verify all quality gates pass before proceeding",
       "16. DO NOT COMMIT - wait for user approval"
     ],
@@ -207,8 +207,8 @@
       {
         "contradiction": "TOON v3.0 format doesn't exist",
         "evidence": [
-          "All 20 command files currently .md format (verified: /mnt/c/Repositories/Projects/ai-craft/5d-wave/tasks/dw/*.md)",
-          "Zero .toon files exist in the project (/mnt/c/Repositories/Projects/ai-craft/5d-wave/tasks/dw/)",
+          "All 20 command files currently .md format (verified: /mnt/c/Repositories/Projects/ai-craft/nWave/tasks/dw/*.md)",
+          "Zero .toon files exist in the project (/mnt/c/Repositories/Projects/ai-craft/nWave/tasks/dw/)",
           "Task assumes .toon format is defined and available",
           "Step 01-01 already identified TOON version mismatch as CATASTROPHIC - see ADVERSARIAL_REVIEW_SUMMARY.md"
         ],
@@ -218,7 +218,7 @@
       {
         "contradiction": "Task claims 20 commands already migrated (steps 4.1-4.5), but reality shows ZERO migrated",
         "evidence": [
-          "Task assumes steps 4.1-4.5 completed: 'all 20 .toon files in 5d-wave/tasks/dw/' (line 54)",
+          "Task assumes steps 4.1-4.5 completed: 'all 20 .toon files in nWave/tasks/dw/' (line 54)",
           "Actual state: 20 files remain as .md, zero exist as .toon",
           "Steps 4.1-4.5 are either not executed or failed silently",
           "Quality gate at line 85-86 assumes 16 commands already converted: not true"
@@ -291,7 +291,7 @@
       },
       {
         "edge_case": "Steps 4.1-4.5 failed (no .toon files exist - CONFIRMED)",
-        "trigger": "Check /5d-wave/tasks/dw/*.toon - zero files found",
+        "trigger": "Check /nWave/tasks/dw/*.toon - zero files found",
         "outcome": "Step 4.6 cannot execute. Cascade failure blocks entire Phase 4.",
         "mitigation": "Investigate why steps 4.1-4.5 didn't create .toon files. Fix predecessors first."
       },
@@ -587,7 +587,7 @@
       "status": "CRITICAL FAILURE - DO NOT EXECUTE",
       "root_cause": "Task assumes TOON v3.0 format exists and steps 4.1-4.5 succeeded. Both assumptions are false. Task is impossible in current state.",
       "evidence": [
-        "Zero .toon files exist in project (verified: /5d-wave/tasks/dw/)",
+        "Zero .toon files exist in project (verified: /nWave/tasks/dw/)",
         "All 20 command files remain in .md format",
         "TOON v3.0 specification not found anywhere in codebase",
         "Step 01-01 identified TOON version mismatch - unresolved",
@@ -668,7 +668,7 @@
   "toon_compiler": {
     "tool_location": "tools/toon/compiler.py (from Phase 1)",
     "purpose": "Transforms TOON source to Claude Code compliant output",
-    "input": "5d-wave/tasks/dw/*.toon (TOON format)",
+    "input": "nWave/tasks/dw/*.toon (TOON format)",
     "output": "dist/commands/dw/*.md (Markdown format)",
     "invocation": "python tools/toon/compiler.py <input.toon> --validate --output <output.md>",
     "success_criteria": [
@@ -731,7 +731,7 @@
       {
         "name": "test_e2e_command_migration_pipeline",
         "purpose": "Verify complete migration: TOON → Parse → Template → Validate → Output",
-        "input": "Real TOON command file from 5d-wave/tasks/dw/",
+        "input": "Real TOON command file from nWave/tasks/dw/",
         "steps": "Parse TOON → Apply command template → Validate output → Write to dist/",
         "expected": "Valid command.md in dist/commands/dw/ matching Claude Code spec"
       },

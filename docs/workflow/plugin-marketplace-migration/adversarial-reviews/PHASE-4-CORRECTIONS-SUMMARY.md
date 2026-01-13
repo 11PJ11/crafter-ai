@@ -131,7 +131,7 @@ All steps now include:
 "test_specifications": {
   "test_start_command_compiles": {
     "framework": "pytest",
-    "test_code_skeleton": "def test_start_command_compiles():\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/start.toon')\n    assert toon_file.metadata['wave'] == 'CROSS_WAVE'\n    assert toon_file.metadata['agent-id'] == 'project-initializer'\n    assert toon_file.compilation_errors == []",
+    "test_code_skeleton": "def test_start_command_compiles():\n    toon_file = TOONParser().parse('nWave/tasks/dw/start.toon')\n    assert toon_file.metadata['wave'] == 'CROSS_WAVE'\n    assert toon_file.metadata['agent-id'] == 'project-initializer'\n    assert toon_file.compilation_errors == []",
     "assertions": [
       "File parses without errors",
       "Wave metadata == CROSS_WAVE",

@@ -36,19 +36,19 @@
     "dependencies": ["05-01 (FULL COMPLETION - Phase A + Phase B)"],
     "prerequisite_artifacts_from_05_01": [
       "docs/toon-v3-skill-syntax-specification.md (from 05-01 Phase A)",
-      "5d-wave/templates/SKILL_TEMPLATE.toon (from 05-01 Phase A)",
-      "5d-wave/skills/develop/SKILL.md (compiled example from 05-01 Phase B)",
+      "nWave/templates/SKILL_TEMPLATE.toon (from 05-01 Phase A)",
+      "nWave/skills/develop/SKILL.md (compiled example from 05-01 Phase B)",
       "tests/skills/skill_test_environment_setup.md (from 05-01 Phase A)"
     ],
     "optional_reference_from_05_02": [
-      "5d-wave/skills/refactor/SKILL.md (if 05-02 completes first, can use as additional reference)"
+      "nWave/skills/refactor/SKILL.md (if 05-02 completes first, can use as additional reference)"
     ]
   },
 
   "deliverables": {
     "files_to_create": [
-      "5d-wave/skills/mikado/SKILL.toon",
-      "5d-wave/skills/mikado/SKILL.md (compiled output)"
+      "nWave/skills/mikado/SKILL.toon",
+      "nWave/skills/mikado/SKILL.md (compiled output)"
     ],
     "acceptance_criteria": [
       "Skill compiles to valid SKILL.md using 05-01 TOON syntax",
@@ -79,7 +79,7 @@
     "approach": "Template-Based Skill Creation (using 05-01 learnings, parallel with 05-02)",
     "workflow": [
       "0. PREREQUISITE CHECK: Verify 05-01 Phase A+B deliverables exist",
-      "1. Copy SKILL_TEMPLATE.toon from 05-01 to 5d-wave/skills/mikado/",
+      "1. Copy SKILL_TEMPLATE.toon from 05-01 to nWave/skills/mikado/",
       "2. Define mikado-specific trigger patterns (complex-refactoring focus)",
       "3. Reference Mikado method 4-step cycle using format from 05-01",
       "4. Add decision guidance: When to use mikado vs refactor vs develop",
@@ -251,7 +251,7 @@
         "blocker_id": "DEVELOP_SKILL_EXAMPLE_DEPENDENCY",
         "description": "05-03 uses develop skill as template/reference from 05-01 Phase B",
         "blocking_step": "05-01 Phase B",
-        "unblock_condition": "5d-wave/skills/develop/SKILL.md compiles successfully with 05-01 Phase B",
+        "unblock_condition": "nWave/skills/develop/SKILL.md compiles successfully with 05-01 Phase B",
         "estimated_delay": "0h if 05-01 Phase B complete, 3h if not (sequential wait)"
       },
       {

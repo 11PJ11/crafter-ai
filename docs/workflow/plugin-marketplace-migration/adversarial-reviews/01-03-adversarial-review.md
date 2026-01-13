@@ -182,7 +182,7 @@ When first command.md is generated and doesn't match Claude Code spec, forcing c
 **The Issue**:
 Step 01-01 creates parser that outputs "structured dict/object".
 This same parser is expected to produce data suitable for:
-- Agent templates (28 agents)
+- Agent templates (26 agents)
 - Command templates (20 commands)
 - Other templates (future)
 

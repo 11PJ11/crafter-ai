@@ -25,7 +25,7 @@ Step 04-06 (Convert CROSS_WAVE Commands) appears straightforward: convert 4 .md 
 ### Evidence (Verified)
 
 ```
-File system check: /mnt/c/Repositories/Projects/ai-craft/5d-wave/tasks/dw/
+File system check: /mnt/c/Repositories/Projects/ai-craft/nWave/tasks/dw/
 Result: 20 .md files exist, ZERO .toon files exist
 
 This PROVES:
@@ -71,7 +71,7 @@ This assumes steps 4.1-4.5 already created 16 .toon files.
 
 **What Reality Shows**:
 ```bash
-ls /mnt/c/Repositories/Projects/ai-craft/5d-wave/tasks/dw/*.toon
+ls /mnt/c/Repositories/Projects/ai-craft/nWave/tasks/dw/*.toon
 # Result: No files found
 ```
 

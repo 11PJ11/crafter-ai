@@ -79,7 +79,7 @@ Step 04-06 assumes two things that are demonstrably FALSE:
    - Developers cannot convert to unknown format
 
 2. **Steps 4.1-4.5 created 16 .toon files** → ZERO FILES EXIST
-   - Verified: `/5d-wave/tasks/dw/*.toon` = empty
+   - Verified: `/nWave/tasks/dw/*.toon` = empty
    - All 20 command files remain in .md format
    - Quality gate cannot be satisfied
    - Task has no foundation to build on
@@ -87,10 +87,10 @@ Step 04-06 assumes two things that are demonstrably FALSE:
 ### Evidence
 
 ```bash
-$ find /mnt/c/Repositories/Projects/ai-craft/5d-wave/tasks/dw -name "*.toon"
+$ find /mnt/c/Repositories/Projects/ai-craft/nWave/tasks/dw -name "*.toon"
 # Result: (no output - zero files)
 
-$ find /mnt/c/Repositories/Projects/ai-craft/5d-wave/tasks/dw -name "*.md"
+$ find /mnt/c/Repositories/Projects/ai-craft/nWave/tasks/dw -name "*.md"
 # Result: baseline.md deliver.md design.md develop.md diagram.md discuss.md
 #         distill.md execute.md finalize.md forge.md git.md mikado.md
 #         refactor.md research.md review.md roadmap.md root-why.md

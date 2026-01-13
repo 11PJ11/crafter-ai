@@ -191,7 +191,7 @@ Pre-work validation test:
 **Risk Level**: MEDIUM
 
 **The Assumption**:
-Task assumes all 8 source .md files at `5d-wave/tasks/dw/*.md` are valid input for conversion.
+Task assumes all 8 source .md files at `nWave/tasks/dw/*.md` are valid input for conversion.
 
 **Dangerous Because**:
 - No test validates source files before conversion starts
@@ -367,7 +367,7 @@ Refactoring level 1 - Consistency rule:
 **Scenario**:
 ```
 Pre-execution state:
-  5d-wave/tasks/dw/develop.toon exists (from previous phase)
+  nWave/tasks/dw/develop.toon exists (from previous phase)
 
 Step 04-04 execution:
   Convert develop.md → develop.toon
@@ -802,7 +802,7 @@ Specify test framework in task.
     {
       "name": "No Existing Target .toon Files",
       "required": true,
-      "validation": "5d-wave/tasks/dw/*.toon must not exist"
+      "validation": "nWave/tasks/dw/*.toon must not exist"
     },
     {
       "name": "Source .md Files Valid",

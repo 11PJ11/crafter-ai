@@ -44,7 +44,7 @@ Additionally, **agent count mismatch** (28 vs 26) and **circular dependency on s
    - Backward compatibility: RECOMMENDED cutover approach (no parallel processing)
 
 3. **Updated Acceptance Criteria**:
-   - Changed "28 agents" to "26 agents + 20 commands minimum"
+   - Changed "26 agents" to "26 agents + 20 commands minimum"
    - Added format validation requirement: "verified by schema or manifest check"
    - Specified token reporting format: logged to stdout
 
@@ -76,7 +76,7 @@ Additionally, **agent count mismatch** (28 vs 26) and **circular dependency on s
    - Updated success criteria: "Plugin installable via available mechanism (any of: /plugin install, manual copy, install script)"
 
 2. **Component Count Correction**:
-   - Changed hardcoded 28 agents to 26 agents (based on dist/ide/agents/dw/config.json evidence)
+   - Changed hardcoded 26 agents to 26 agents (based on dist/ide/agents/dw/config.json evidence)
    - Added dynamic validation: load plugin.json, count components, verify files exist
    - Prevents brittleness: tests use manifest-based counts, not hardcoded numbers
 
@@ -158,14 +158,14 @@ Additionally, **agent count mismatch** (28 vs 26) and **circular dependency on s
 
 1. **BLOCKER #5 RESOLUTION**: Fallback baseline capture
    - PRIMARY: Check if archive/original_md_byte_counts.json exists (Phase 2.4 executed)
-   - FALLBACK 1: Count bytes from current MD files in 5d-wave/ (if any remain)
+   - FALLBACK 1: Count bytes from current MD files in nWave/ (if any remain)
    - FALLBACK 2: Estimate baseline from build output metadata (less accurate)
    - CAPTURE NOW: Create archive/token_baseline.json if no baseline exists
    - DOCUMENT: Log baseline source in test output (archived/current/estimated)
 
 2. **Token Savings Measurement Methodology**:
    - Baseline: Original MD file bytes (from archive or fallback)
-   - Current: TOON source file bytes (5d-wave/**/*.toon)
+   - Current: TOON source file bytes (nWave/**/*.toon)
    - Formula: token_savings_pct = ((baseline - current) / baseline) * 100
    - Acceptance threshold: >= 50% savings required
    - Output format: "SC7 Token Savings: {pct}% (Baseline: {bytes} bytes, Current: {bytes} bytes, Source: {source})"
@@ -182,7 +182,7 @@ Additionally, **agent count mismatch** (28 vs 26) and **circular dependency on s
    - If 08-03 not run or tests failed, BLOCK 08-04
 
 5. **Component Count Correction**:
-   - Changed 48 total (28 agents + 20 commands) to 46 total (26 agents + 20 commands)
+   - Changed 48 total (26 agents + 20 commands) to 46 total (26 agents + 20 commands)
    - Evidence: dist/ide/agents/dw/config.json shows agents_processed: 26
    - Use >= assertion to allow for future growth
 
@@ -260,7 +260,7 @@ Additionally, **agent count mismatch** (28 vs 26) and **circular dependency on s
 
 **Steps Affected**: 08-02, 08-04
 **Severity**: MEDIUM - Tests would fail immediately
-**Original Impact**: Hardcoded count of 28 agents would cause test assertion failures (actual count is 26)
+**Original Impact**: Hardcoded count of 26 agents would cause test assertion failures (actual count is 26)
 
 **Resolution**:
 - Corrected all hardcoded counts to 26 agents (based on dist/ide/agents/dw/config.json evidence)

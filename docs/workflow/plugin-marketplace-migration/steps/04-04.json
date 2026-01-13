@@ -41,14 +41,14 @@
   },
   "deliverables": {
     "files_to_create": [
-      "5d-wave/tasks/dw/baseline.toon",
-      "5d-wave/tasks/dw/roadmap.toon",
-      "5d-wave/tasks/dw/split.toon",
-      "5d-wave/tasks/dw/execute.toon",
-      "5d-wave/tasks/dw/review.toon",
-      "5d-wave/tasks/dw/develop.toon",
-      "5d-wave/tasks/dw/refactor.toon",
-      "5d-wave/tasks/dw/mikado.toon"
+      "nWave/tasks/dw/baseline.toon",
+      "nWave/tasks/dw/roadmap.toon",
+      "nWave/tasks/dw/split.toon",
+      "nWave/tasks/dw/execute.toon",
+      "nWave/tasks/dw/review.toon",
+      "nWave/tasks/dw/develop.toon",
+      "nWave/tasks/dw/refactor.toon",
+      "nWave/tasks/dw/mikado.toon"
     ],
     "acceptance_criteria": [
       "All 8 commands compile with agent-activation headers",
@@ -78,7 +78,7 @@
     "workflow": [
       "PRE-WORK: Run all prerequisite checks (see prerequisite_checks section)",
       "PRE-WORK: Verify TOON format specification available",
-      "PRE-WORK: Verify no existing .toon files in target directory (5d-wave/tasks/dw/)",
+      "PRE-WORK: Verify no existing .toon files in target directory (nWave/tasks/dw/)",
       "PRE-WORK: Validate all 8 source .md files parse without errors",
       "1. Convert all 8 DEVELOP wave .md files to .toon using compiler",
       "2. Compile each TOON file with python tools/toon/compiler.py <input.toon> --validate",
@@ -155,7 +155,7 @@
       }
     },
     "hidden_dependencies": [
-      "All 8 source .md files must exist at 5d-wave/tasks/dw/ (VERIFIED: all present)",
+      "All 8 source .md files must exist at nWave/tasks/dw/ (VERIFIED: all present)",
       "Sequential dependency on steps 04-01, 04-02, 04-03 completion",
       "TOON compiler availability (not verified in review)",
       "Test framework must be configured and available"
@@ -218,7 +218,7 @@
     },
     "no_existing_toon_files": {
       "requirement": "No .toon files exist in target directory to avoid collision",
-      "verification": "Check 5d-wave/tasks/dw/*.toon files do not exist",
+      "verification": "Check nWave/tasks/dw/*.toon files do not exist",
       "blocking": true,
       "escalation": "If .toon files exist, abort and request user to remove or archive them first"
     },
@@ -245,7 +245,7 @@
   "toon_compiler": {
     "tool_location": "tools/toon/compiler.py (from Phase 1)",
     "purpose": "Transforms TOON source to Claude Code compliant output",
-    "input": "5d-wave/tasks/dw/*.toon (TOON format)",
+    "input": "nWave/tasks/dw/*.toon (TOON format)",
     "output": "dist/commands/dw/*.md (Markdown format)",
     "invocation": "python tools/toon/compiler.py <input.toon> --validate --output <output.md>",
     "success_criteria": [
@@ -345,7 +345,7 @@
       {
         "name": "test_e2e_command_migration_pipeline",
         "purpose": "Verify complete migration: TOON → Parse → Template → Validate → Output",
-        "input": "Real TOON command file from 5d-wave/tasks/dw/",
+        "input": "Real TOON command file from nWave/tasks/dw/",
         "steps": "Parse TOON → Apply command template → Validate output → Write to dist/",
         "expected": "Valid command.md in dist/commands/dw/ matching Claude Code spec"
       },

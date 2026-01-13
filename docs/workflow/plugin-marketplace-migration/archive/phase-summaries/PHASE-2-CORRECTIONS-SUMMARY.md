@@ -128,7 +128,7 @@ All Phase 2 steps have been systematically corrected based on adversarial review
 ### Critical Corrections
 
 1. **Clarified Source Directories** (CRITICAL)
-   - Agents: `5d-wave/agents/*.md` (28 files - source files)
+   - Agents: `nWave/agents/*.md` (28 files - source files)
    - Commands: `dist/ide/commands/dw/*.md` (20 files)
    - Explicitly documented: DO NOT archive `dist/ide/agents/dw/` (compiled output)
    - **Impact**: Correct files archived, no confusion

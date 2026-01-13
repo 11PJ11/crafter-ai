@@ -29,7 +29,7 @@
   },
   "deliverables": {
     "files_to_create": [
-      "5d-wave/skills/refactor/SKILL.toon"
+      "nWave/skills/refactor/SKILL.toon"
     ],
     "acceptance_criteria": [
       "Skill compiles to valid SKILL.md",

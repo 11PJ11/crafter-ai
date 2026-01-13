@@ -149,7 +149,7 @@ Il consolidamento ha reso più accessibili i **5 blockers critici** identificati
 
 ### 🚨 Blocker #2: Agent Count Mismatch
 **Risk**: 9.2/10 | **Affected**: 3 steps
-- Roadmap: 28 agents | Actual: 26 agents
+- Roadmap: 26 agents | Actual: 26 agents
 - Vedi: Step 07-01, 08-02, 08-04 reviews
 
 ### 🚨 Blocker #3: /plugin install Missing

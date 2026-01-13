@@ -21,7 +21,7 @@ this task impossible:
 2. Prerequisite steps failed (zero .toon files exist in project)
 
 Both facts are verified through:
-  - File system check: ls /5d-wave/tasks/dw/*.toon = (empty)
+  - File system check: ls /nWave/tasks/dw/*.toon = (empty)
   - Codebase search: TOON v3.0 specification not found
   - Step 01-01 review: Identified same issue as CATASTROPHIC, unresolved
 
@@ -100,10 +100,10 @@ VERIFIED EVIDENCE
 
 File System Check (DEFINITIVE PROOF):
 
-$ find /mnt/c/Repositories/Projects/ai-craft/5d-wave/tasks/dw -name "*.toon"
+$ find /mnt/c/Repositories/Projects/ai-craft/nWave/tasks/dw -name "*.toon"
 Result: (no files found)
 
-$ find /mnt/c/Repositories/Projects/ai-craft/5d-wave/tasks/dw -name "*.md"
+$ find /mnt/c/Repositories/Projects/ai-craft/nWave/tasks/dw -name "*.md"
 Result: baseline.md deliver.md design.md develop.md diagram.md discuss.md
          distill.md execute.md finalize.md forge.md git.md mikado.md
          refactor.md research.md review.md roadmap.md root-why.md
@@ -311,7 +311,7 @@ Total Realistic Effort: 12-16 hours (not 2 hours)
 Key Success Criteria:
   - All tests passing (100% pass rate required)
   - 20 .toon files exist
-  - Zero .md files remain in /5d-wave/tasks/dw/
+  - Zero .md files remain in /nWave/tasks/dw/
   - All 4 CROSS_WAVE commands compile successfully
   - Agent bindings valid in converted files
   - Metadata preserved (before = after)

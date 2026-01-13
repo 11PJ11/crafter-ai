@@ -235,7 +235,7 @@ Each step needs three workflow branches:
 
 ### Step 07-01: Comprehensive Agent Count Fix
 
-**CRITICAL**: Replace ALL instances of "28 agents" with "26 agents" + exclusion note
+**CRITICAL**: Replace ALL instances of "26 agents" with "26 agents" + exclusion note
 
 #### Locations to Update in 07-01.json:
 
@@ -281,7 +281,7 @@ Each step needs three workflow branches:
 
 **Line 177** correction:
 ```json
-"recommendation": "VERIFY BEFORE STARTING: (1) Confirm 'find 5d-wave/agents -name \"*.toon\" | wc -l' == 28 total files (26 agents for build, 2 excluded: novel-editor, novel-editor-reviewer)"
+"recommendation": "VERIFY BEFORE STARTING: (1) Confirm 'find nWave/agents -name \"*.toon\" | wc -l' == 26 total files (26 agents for build, 2 excluded: novel-editor, novel-editor-reviewer)"
 ```
 
 ---
@@ -319,7 +319,7 @@ Each step needs three workflow branches:
 "toon_compiler": {
   "location": "tools/toon/compiler.py",
   "purpose": "Transforms TOON source to Claude Code compliant output",
-  "input": "5d-wave/tasks/dw/*.toon (TOON format)",
+  "input": "nWave/tasks/dw/*.toon (TOON format)",
   "output": "dist/commands/dw/*.md (Markdown format)",
   "validation": "pytest tests/tools/toon/test_compiler.py"
 }

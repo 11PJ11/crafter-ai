@@ -105,14 +105,14 @@
     "hidden_dependencies": [
       {
         "dependency": "Skill definitions from steps 5.1-5.3",
-        "location": "5d-wave/skills/{develop,refactor,mikado}/SKILL.toon (not yet created)",
+        "location": "nWave/skills/{develop,refactor,mikado}/SKILL.toon (not yet created)",
         "impact": "CRITICAL - cannot validate skill triggering without skills to test",
         "blocking": true,
         "status": "BLOCKED by 5.1-5.3 implementation"
       },
       {
         "dependency": "Trigger matching algorithm",
-        "location": "Not documented - may be in 5d-wave/skills/trigger_matcher.py or similar",
+        "location": "Not documented - may be in nWave/skills/trigger_matcher.py or similar",
         "impact": "CRITICAL - test harness needs to validate trigger matching",
         "blocking": true,
         "status": "Unknown - may not exist yet"
@@ -311,7 +311,7 @@
       {
         "priority": "MEDIUM",
         "action": "Validate skill compilation before running trigger tests",
-        "details": "Add setup step to 5.4: verify that SKILL.toon files from 5.1-5.3 compile correctly to SKILL.md. This prevents test failures due to upstream issues. Example: 'pytest --co' to collect tests, but before running, verify 'all SKILL.toon files in 5d-wave/skills compile without errors'.",
+        "details": "Add setup step to 5.4: verify that SKILL.toon files from 5.1-5.3 compile correctly to SKILL.md. This prevents test failures due to upstream issues. Example: 'pytest --co' to collect tests, but before running, verify 'all SKILL.toon files in nWave/skills compile without errors'.",
         "owner": "Implementation team",
         "verification": "Execution guidance includes 'Verify skill compilation' as first step"
       },
@@ -332,7 +332,7 @@
     ],
     "approval_decision": "CONDITIONAL APPROVAL - Task is logically sound (validation after creation is correct sequence) but BLOCKED by incomplete predecessor steps (5.1-5.3). Also has HIGH-severity specification gaps (trigger matching algorithm, test harness architecture, agent chaining validation) that must be resolved before implementation. Do not proceed until: (1) Steps 5.1-5.3 completed, (2) Trigger matching algorithm documented, (3) Test harness architecture designed, (4) False positive test cases defined.",
     "implementation_can_start_when": [
-      "Steps 5.1-5.3 are APPROVED and implemented (skills exist in 5d-wave/skills/)",
+      "Steps 5.1-5.3 are APPROVED and implemented (skills exist in nWave/skills/)",
       "Trigger matching algorithm is documented with examples",
       "Test harness architecture is designed and documented",
       "False positive test set (minimum 5-10 concrete examples) is defined",
@@ -357,7 +357,7 @@
         "contradiction": "Step 5.4 description: 'Create test harness to validate skills trigger correctly... Test each trigger pattern produces expected skill activation.' But skills don't exist yet. Step 5.1 review_metadata documents CRITICAL blockers: 'SKILL.toon format assumed but not specified anywhere in project'. If 5.1 can't be executed, what will 5.4 test? Non-existent files don't trigger patterns.",
         "severity": "CRITICAL",
         "impact": "5.4 task description assumes 5.1-5.3 will complete successfully. But if 5.1 hits the documented blockers (TOON syntax undefined, skill compiler missing, invocation mechanism not documented), 5.4 inherits complete failure.",
-        "failure_mode": "Execution timeline: (1) 5.4 starts, (2) attempts to load skills from 5d-wave/skills/{develop,refactor,mikado}/SKILL.md, (3) files don't exist because 5.1-5.3 failed/blocked, (4) test harness E2E test fails immediately, (5) entire validation step fails."
+        "failure_mode": "Execution timeline: (1) 5.4 starts, (2) attempts to load skills from nWave/skills/{develop,refactor,mikado}/SKILL.md, (3) files don't exist because 5.1-5.3 failed/blocked, (4) test harness E2E test fails immediately, (5) entire validation step fails."
       },
       {
         "id": "CONTRA-CASCADE-2",
@@ -488,7 +488,7 @@
       {
         "id": "FAIL-IMMEDIATE-1",
         "scenario": "Skills from 5.1-5.3 don't exist or don't compile",
-        "trigger": "Implementer runs 5.4, attempts to load 5d-wave/skills/{develop,refactor,mikado}/SKILL.md. Files not found or unparseable.",
+        "trigger": "Implementer runs 5.4, attempts to load nWave/skills/{develop,refactor,mikado}/SKILL.md. Files not found or unparseable.",
         "consequence": "E2E test fails immediately: 'No compiled skills found'. Entire validation step fails before any trigger pattern testing occurs.",
         "detection_time": "Immediately (first test run)",
         "recovery_difficulty": "EXTREME - Requires completing and fixing all of 5.1-5.3 first"

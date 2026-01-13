@@ -151,7 +151,7 @@ These adversarial reviews use:
 1. **TOON Format**: Is target truly TOON v3.0? If so, where is specification?
 2. **Compiler**: Which tool compiles TOON → agent.md? Proven to work?
 3. **Phase Completion**: Can you verify Phase 1.1-1.6 complete and Phase 2.4 executed?
-4. **Baseline Data**: What are actual token counts for 28 agents? Do we have Phase 2.1 metrics?
+4. **Baseline Data**: What are actual token counts for 26 agents? Do we have Phase 2.1 metrics?
 5. **Acceptance Criteria**: If pilot achieves 48% savings but criteria requires 50%, what happens?
 6. **Time Realism**: Can you acknowledge 5 hours is optimistic and 10-15 hours is realistic?
 7. **Test Implementation**: Are test assertions defined? Which token counter tool?

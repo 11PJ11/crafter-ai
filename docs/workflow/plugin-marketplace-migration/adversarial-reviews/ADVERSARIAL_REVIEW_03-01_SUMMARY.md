@@ -94,8 +94,8 @@ This is worse than immediate failure - it appears successful until phase 4, then
    - Gate: Must pass before step 03-01 starts
 
 2. **Verify Phase 2.4 Completion** [2 hrs]
-   - Confirm archive/pre-toon-migration/ has 28 agents
-   - Confirm correct source (5d-wave/agents/, not dist/ide/)
+   - Confirm archive/pre-toon-migration/ has 26 agents
+   - Confirm correct source (nWave/agents/, not dist/ide/)
    - Gate: Must verify baseline data integrity
 
 3. **Measure Baseline Tokens** [1 hr]

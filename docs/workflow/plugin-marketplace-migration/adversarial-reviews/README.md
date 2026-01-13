@@ -123,7 +123,7 @@ Circular Dependencies:    3 identified
 
 ### 🚨 #2: Agent Count Mismatch
 **Risk**: 9.2/10 | **Affected**: 3 steps
-- Roadmap: 28 agents
+- Roadmap: 26 agents
 - Actual: 26 agents
 - Test failures guaranteed
 

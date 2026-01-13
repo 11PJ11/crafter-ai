@@ -88,7 +88,7 @@
   },
   "deliverables": {
     "files_to_create": [
-      "5d-wave/templates/SKILL_TEMPLATE.toon (Option A) OR 5d-wave/templates/SKILL_TEMPLATE.md (Option B)"
+      "nWave/templates/SKILL_TEMPLATE.toon (Option A) OR nWave/templates/SKILL_TEMPLATE.md (Option B)"
     ],
     "acceptance_criteria": [
       "PREREQUISITE CHECK PASSED: Phase 5.4 complete AND (TOON toolchain exists OR fallback approach approved)",
@@ -117,7 +117,7 @@
         {
           "check_id": "PRE-01",
           "description": "Verify Phase 5.1-5.3 complete (actual skill implementations exist)",
-          "validation_command": "ls -la 5d-wave/skills/{develop,refactor,mikado}/*.toon OR ls -la 5d-wave/skills/{develop,refactor,mikado}/*.md",
+          "validation_command": "ls -la nWave/skills/{develop,refactor,mikado}/*.toon OR ls -la nWave/skills/{develop,refactor,mikado}/*.md",
           "success_criteria": "At least 3 skill files exist (one per type: develop, refactor, mikado)",
           "failure_action": "STOP - Cannot create template without actual skills to reference. Wait for Phase 5 completion."
         },

@@ -6,7 +6,7 @@
 
 ## Agent Count Reconciliation
 
-**VERIFIED AGENT COUNT: 28 total agents**
+**VERIFIED AGENT COUNT: 26 total agents**
 
 Breakdown:
 - **1 pilot agent** (step 2.1): software-crafter
@@ -19,14 +19,14 @@ Breakdown:
 ## Corrections Applied to All Phase 3 Steps
 
 ### 1. Agent Count Consistency
-- **Fixed**: Clarified Phase 3 purpose statement to "Convert remaining 27 agents to TOON format (28 total including pilot)"
-- **Fixed**: All acceptance criteria now reference 28 total agents consistently
+- **Fixed**: Clarified Phase 3 purpose statement to "Convert remaining 25 agents to TOON format (26 total including pilot)"
+- **Fixed**: All acceptance criteria now reference 26 total agents consistently
 - **Fixed**: Added agent count reconciliation section to step 03-03 review metadata
 
 ### 2. Prerequisite Validation Framework
 **Added to all steps (03-01, 03-02, 03-03):**
 - TOON toolchain exists and is functional (blocking)
-- Phase 2.4 archive is complete with 28 agents (blocking)
+- Phase 2.4 archive is complete with 26 agents (blocking)
 - Conversion patterns documented in tools/toon/README.md (blocking)
 - Previous steps complete (03-03 only: blocks on 03-01 and 03-02 completion)
 
@@ -78,8 +78,8 @@ Breakdown:
 ### 8. Completion Verification (Step 03-03)
 **Added explicit verification commands:**
 ```bash
-find 5d-wave/agents/ -name '*.toon' | wc -l  # expect: 28
-find 5d-wave/agents/ -name '*.md' | wc -l    # expect: 0
+find nWave/agents/ -name '*.toon' | wc -l  # expect: 28
+find nWave/agents/ -name '*.md' | wc -l    # expect: 0
 ls archive/pre-toon-migration/agents/ | wc -l # expect: 28
 ```
 
@@ -121,7 +121,7 @@ All critical blockers identified in adversarial reviews have been addressed:
 
 ## Validation Status
 
-- ✅ Agent count consistent across all steps (28 total)
+- ✅ Agent count consistent across all steps (26 total)
 - ✅ Prerequisite checks added to all steps
 - ✅ Time estimates revised to realistic values
 - ✅ Error handling procedures comprehensive

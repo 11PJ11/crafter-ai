@@ -24,7 +24,7 @@
         "finding": "CIRCULAR DEPENDENCY: Reviewer Agent Not Yet Installed",
         "severity": "CRITICAL",
         "probability": "85%",
-        "description": "Inner loop testing requires /dw:review command which depends on software-crafter-reviewer agent. Agent is created in step 8.4 (AFTER this step). Test will fail when invoking reviewer.",
+        "description": "Inner loop testing requires /nw:review command which depends on software-crafter-reviewer agent. Agent is created in step 8.4 (AFTER this step). Test will fail when invoking reviewer.",
         "resolution": "Create mock_reviewer.py stub implementation that returns fixed 'approved' response. Allows testing workflow mechanics without dependency on real reviewer agent.",
         "time_cost_if_ignored": "2-4 days when discovered mid-execution"
       },
@@ -116,7 +116,7 @@
       },
       {
         "case": "E3: Inner Loop Infrastructure Missing",
-        "description": "/dw:develop fails because analyzer tool not installed",
+        "description": "/nw:develop fails because analyzer tool not installed",
         "failure_mode": "Test fails but root cause is missing infrastructure, not workflow logic"
       },
       {
@@ -150,7 +150,7 @@
       "No test for DESIGN quality - Incomplete designs pass as 'executed correctly'",
       "No test for YAML/artifact format - Malformed output not caught",
       "No test for constraint validation - Test doesn't verify constraints actually prevent behaviors",
-      "No test for loop termination - What prevents infinite loop if /dw:refactor keeps finding code smells?",
+      "No test for loop termination - What prevents infinite loop if /nw:refactor keeps finding code smells?",
       "No test for state flow - Do waves share state correctly? Does DESIGN output flow into DISTILL input?",
       "No test for error handling - What if wave fails mid-execution? Does workflow gracefully degrade?",
       "No test for settings loading - Test assumes settings work, doesn't verify plugin reads configuration"
@@ -165,7 +165,7 @@
       },
       {
         "blocker": "BLOCKER 2: Reviewer Agent Must Exist",
-        "what": "software-crafter-reviewer agent must be callable via /dw:review command",
+        "what": "software-crafter-reviewer agent must be callable via /nw:review command",
         "why": "Inner loop testing requires this command",
         "action": "Either (a) complete step 8.4 first, OR (b) create mock reviewer stub for testing",
         "time": "Mock approach: 1-2 hours"
@@ -252,7 +252,7 @@
     "prerequisites": [
       {
         "prerequisite": "CRITICAL: Mock software-crafter-reviewer agent for inner loop testing",
-        "description": "Inner loop requires /dw:review command which depends on software-crafter-reviewer agent. Full agent is installed in step 08-04 (AFTER this step). Create mock reviewer for testing.",
+        "description": "Inner loop requires /nw:review command which depends on software-crafter-reviewer agent. Full agent is installed in step 08-04 (AFTER this step). Create mock reviewer for testing.",
         "validation_method": "Mock reviewer implementation exists: stub agent that returns 'APPROVED' for all reviews, enables inner loop testing without full reviewer",
         "blocker_if_missing": true,
         "mitigation": "Create tests/mocks/mock_reviewer.py with stub implementation:\n- Accepts review request\n- Returns fixed response: {approval_status: 'approved', issues: []}\n- Allows inner loop to complete without real reviewer\n- Tests validate workflow mechanics, not review quality",
@@ -263,7 +263,7 @@
         "description": "Define what artifacts/files each wave (DISCUSS, DESIGN, DISTILL, DEVELOP, DEMO) should produce. Cannot write test assertions without knowing what success looks like.",
         "validation_method": "Specification document lists for each phase: output files, format, validation criteria with examples",
         "blocker_if_missing": true,
-        "mitigation": "Create docs/workflow/plugin-marketplace-migration/5d-wave-expected-outputs.md:\n- DISCUSS: docs/discuss/{feature}.md with requirements\n- DESIGN: docs/design/{feature}.md with architecture\n- DISTILL: tests/acceptance/test_{feature}.py with acceptance tests\n- DEVELOP: src/{feature}/ with implementation + tests passing\n- DEMO: No new files (demo is interactive with stakeholder)\n- Include format specifications and validation criteria for each",
+        "mitigation": "Create docs/workflow/plugin-marketplace-migration/nWave-expected-outputs.md:\n- DISCUSS: docs/discuss/{feature}.md with requirements\n- DESIGN: docs/design/{feature}.md with architecture\n- DISTILL: tests/acceptance/test_{feature}.py with acceptance tests\n- DEVELOP: src/{feature}/ with implementation + tests passing\n- DEMO: No new files (demo is interactive with stakeholder)\n- Include format specifications and validation criteria for each",
         "implementation_time": "2-3 hours"
       },
       {
@@ -296,7 +296,7 @@
     "files_to_create": [
       "tests/plugin/test_full_workflow.py (main workflow test suite)",
       "tests/mocks/mock_reviewer.py (stub software-crafter-reviewer for inner loop testing)",
-      "docs/workflow/plugin-marketplace-migration/5d-wave-expected-outputs.md (specification of expected artifacts per phase)",
+      "docs/workflow/plugin-marketplace-migration/nWave-expected-outputs.md (specification of expected artifacts per phase)",
       "docs/workflow/plugin-marketplace-migration/constraint-enforcement-spec.md (specification of constraint enforcement mechanism)"
     ],
     "acceptance_criteria": [
@@ -315,13 +315,13 @@
     ]
   },
   "tdd_approach": {
-    "outer_test": "GIVEN installed plugin with mock reviewer and expected output specification\nWHEN I execute /dw:start -> /dw:develop -> /dw:finalize\nTHEN workflow completes with constraints enforced, expected artifacts created, and no errors",
+    "outer_test": "GIVEN installed plugin with mock reviewer and expected output specification\nWHEN I execute /nw:start -> /nw:develop -> /nw:finalize\nTHEN workflow completes with constraints enforced, expected artifacts created, and no errors",
     "inner_tests": [
       "test_wave_progression (validates DISCUSS -> DESIGN -> DISTILL -> DEVELOP -> DEMO sequence)",
       "test_inner_loop_with_mock_reviewer (validates implement -> review -> fix -> refactor using mock)",
       "test_no_auto_reports (validates docs/ directory contains only expected artifacts, no auto-generated reports)",
       "test_no_auto_commits (validates git log unchanged after workflow - no automation commits)",
-      "test_mock_reviewer_integration (validates mock reviewer responds correctly to /dw:review)",
+      "test_mock_reviewer_integration (validates mock reviewer responds correctly to /nw:review)",
       "test_workflow_error_handling (validates workflow fails gracefully on errors with clear messages)",
       "test_expected_artifacts_created (validates each phase produces artifacts per specification)",
       "test_discuss_completeness (validates DISCUSS produces requirements document with expected content)",
@@ -343,7 +343,7 @@
     "approach": "End-to-end workflow testing with mock reviewer and comprehensive validation",
     "workflow": [
       "PREREQUISITE PHASE (5-6 hours):",
-      "1. Create docs/workflow/plugin-marketplace-migration/5d-wave-expected-outputs.md (2-3h):",
+      "1. Create docs/workflow/plugin-marketplace-migration/nWave-expected-outputs.md (2-3h):",
       "   - Document expected artifacts for each wave",
       "   - Include format specifications",
       "   - Provide validation criteria",
@@ -370,7 +370,7 @@
       "   - Check expected artifacts per specification",
       "   - Verify state flow between waves",
       "7. Write test_inner_loop_with_mock_reviewer (1h):",
-      "   - Execute /dw:develop command",
+      "   - Execute /nw:develop command",
       "   - Verify mock reviewer called",
       "   - Verify refactor step executes",
       "   - Verify cycle completes",
@@ -401,7 +401,7 @@
       "No auto-reports created (docs/ contains only expected artifacts per specification)",
       "No auto-commits made (git log shows only test setup commits)",
       "Mock reviewer successfully integrated (test validates stub behavior)",
-      "Expected artifacts created (per 5d-wave-expected-outputs.md specification)",
+      "Expected artifacts created (per nWave-expected-outputs.md specification)",
       "Constraint enforcement verified (constraints actually prevent behaviors)",
       "Settings loading verified (plugin reads settings.local.json)",
       "Test isolation verified (no test pollution)",
@@ -413,7 +413,7 @@
   },
   "circular_dependency_resolution": {
     "dependency_problem": {
-      "description": "Inner loop requires /dw:review command -> requires software-crafter-reviewer agent -> agent installed in step 08-04 -> which is AFTER step 08-03",
+      "description": "Inner loop requires /nw:review command -> requires software-crafter-reviewer agent -> agent installed in step 08-04 -> which is AFTER step 08-03",
       "severity": "CRITICAL",
       "impact": "Cannot test inner loop without reviewer agent, but reviewer agent not yet installed when 08-03 executes",
       "probability_of_blocking": "85%"
@@ -438,7 +438,7 @@
   },
   "constraint_validation_approach": {
     "sc6_no_auto_reports": {
-      "test_method": "Capture docs/ directory state before workflow, after workflow. Assert: only expected artifacts exist (per 5d-wave-expected-outputs.md specification).",
+      "test_method": "Capture docs/ directory state before workflow, after workflow. Assert: only expected artifacts exist (per nWave-expected-outputs.md specification).",
       "validation_logic": "before_files = get_docs_files(); run_workflow(); after_files = get_docs_files(); expected = load_expected_artifacts_spec(); assert after_files == before_files + expected OR after_files == expected",
       "edge_cases_handled": [
         "Workflow legitimately creates documentation (DISCUSS, DESIGN phases) - these are EXPECTED artifacts per specification, not auto-reports",
@@ -459,7 +459,7 @@
     }
   },
   "expected_workflow_output_specification": {
-    "note": "Detailed specification in docs/workflow/plugin-marketplace-migration/5d-wave-expected-outputs.md",
+    "note": "Detailed specification in docs/workflow/plugin-marketplace-migration/nWave-expected-outputs.md",
     "discuss_phase": {
       "expected_files": ["docs/discuss/{feature}.md"],
       "validation": "File exists, contains requirements section with user needs and acceptance criteria, markdown format valid, minimum content threshold met"
@@ -529,7 +529,7 @@
       "test_settings_loading - Validates plugin reads configuration (addresses coverage gap 8)",
       "test_state_flow_between_waves - Validates state flow between phases (addresses coverage gap 6)"
     ],
-    "remaining_gap": "Loop termination testing deferred - requires understanding of /dw:refactor termination logic (coverage gap 5)"
+    "remaining_gap": "Loop termination testing deferred - requires understanding of /nw:refactor termination logic (coverage gap 5)"
   },
   "edge_case_handling": {
     "e1_discuss_no_artifacts": {

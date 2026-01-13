@@ -36,11 +36,11 @@
   },
   "deliverables": {
     "files_to_create": [
-      "5d-wave/agents/software-crafter.toon",
+      "nWave/agents/software-crafter.toon",
       "baseline/token-measurements/02-01-pre-conversion.json"
     ],
     "files_to_keep": [
-      "5d-wave/agents/software-crafter.md (Keep for comparison until Phase 8 validates)"
+      "nWave/agents/software-crafter.md (Keep for comparison until Phase 8 validates)"
     ],
     "acceptance_criteria": [
       "TOON file contains all agent metadata",
@@ -81,11 +81,11 @@
       "   d. Verify TOON v3.0 spec accessible (baseline.yaml reference or docs/)",
       "1. CAPTURE TOKEN BASELINE (CRITICAL FOR PHASE 8):",
       "   a. Install tiktoken: pip install tiktoken",
-      "   b. Run: python -c \"import tiktoken; enc = tiktoken.get_encoding('cl100k_base'); print(len(enc.encode(open('5d-wave/agents/software-crafter.md').read())))\"",
+      "   b. Run: python -c \"import tiktoken; enc = tiktoken.get_encoding('cl100k_base'); print(len(enc.encode(open('nWave/agents/software-crafter.md').read())))\"",
       "   c. Create baseline/token-measurements/02-01-pre-conversion.json:",
       "      {",
       "        \"step_id\": \"02-01\",",
-      "        \"file_path\": \"5d-wave/agents/software-crafter.md\",",
+      "        \"file_path\": \"nWave/agents/software-crafter.md\",",
       "        \"measurement_date\": \"<ISO-8601-timestamp>\",",
       "        \"tokenizer\": \"tiktoken/cl100k_base\",",
       "        \"total_tokens\": <measured-value>,",
@@ -105,7 +105,7 @@
       "   - Embedded knowledge markers preserved",
       "   - Token baseline captured with required fields",
       "5. Run compiler to validate TOON syntax:",
-      "   python tools/toon/compiler.py 5d-wave/agents/software-crafter.toon --validate",
+      "   python tools/toon/compiler.py nWave/agents/software-crafter.toon --validate",
       "6. Compare compiler output against original for semantic equivalence",
       "7. DO NOT COMMIT - wait for user approval"
     ],

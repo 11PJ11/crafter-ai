@@ -4,7 +4,7 @@
   "phase": {
     "number": 3,
     "name": "Agent Batch Migration",
-    "purpose": "Convert remaining 27 agents to TOON format (28 total including pilot)"
+    "purpose": "Convert remaining 25 agents to TOON format (26 total including pilot)"
   },
   "step": {
     "number": "3.2",
@@ -112,17 +112,17 @@
   },
   "deliverables": {
     "files_to_create": [
-      "5d-wave/agents/acceptance-designer-reviewer.toon",
-      "5d-wave/agents/agent-builder-reviewer.toon",
-      "5d-wave/agents/data-engineer-reviewer.toon",
-      "5d-wave/agents/devop-reviewer.toon",
-      "5d-wave/agents/illustrator-reviewer.toon",
-      "5d-wave/agents/product-owner-reviewer.toon",
-      "5d-wave/agents/skeleton-builder-reviewer.toon",
-      "5d-wave/agents/software-crafter-reviewer.toon",
-      "5d-wave/agents/solution-architect-reviewer.toon",
-      "5d-wave/agents/troubleshooter-reviewer.toon",
-      "5d-wave/agents/visual-architect-reviewer.toon"
+      "nWave/agents/acceptance-designer-reviewer.toon",
+      "nWave/agents/agent-builder-reviewer.toon",
+      "nWave/agents/data-engineer-reviewer.toon",
+      "nWave/agents/devop-reviewer.toon",
+      "nWave/agents/illustrator-reviewer.toon",
+      "nWave/agents/product-owner-reviewer.toon",
+      "nWave/agents/skeleton-builder-reviewer.toon",
+      "nWave/agents/software-crafter-reviewer.toon",
+      "nWave/agents/solution-architect-reviewer.toon",
+      "nWave/agents/troubleshooter-reviewer.toon",
+      "nWave/agents/visual-architect-reviewer.toon"
     ],
     "scope_note": "This step converts 11 reviewers. novel-editor-reviewer and researcher-reviewer are handled in step 3.3 (confirmed via prerequisite check).",
     "acceptance_criteria": [

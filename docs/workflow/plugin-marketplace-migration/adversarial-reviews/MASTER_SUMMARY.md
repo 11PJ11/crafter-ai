@@ -54,13 +54,13 @@ Comprehensive adversarial review of all 33 steps across 8 phases revealed **5 cr
 **Severity**: CRITICAL
 **Risk Score**: 9.2/10
 
-**Issue**: Roadmap and quality gates specify **28 agents**, but actual build system processes **26 agents**.
+**Issue**: Roadmap and quality gates specify **26 agents**, but actual build system processes **26 agents**.
 
 **Evidence**:
-- Roadmap (baseline.yaml): "28 agents"
+- Roadmap (baseline.yaml): "26 agents"
 - Build reality (dist/ide/agents/dw/config.json): `"agents_processed": 26`
-- Step 07-01: plugin.json hardcodes 28 agents → tests will fail
-- Step 08-02: Quality gates check "All 28 agents accessible" → assertion fails
+- Step 07-01: plugin.json hardcodes 26 agents → tests will fail
+- Step 08-02: Quality gates check "All 26 agents accessible" → assertion fails
 
 **Impact**:
 - Phase 8 validation tests fail with count mismatches
@@ -397,7 +397,7 @@ Comprehensive adversarial review of all 33 steps across 8 phases revealed **5 cr
 
 **Steps**:
 1. Create Phase 2.4 step definition
-2. Measure byte counts for all 28 agents + 20 commands in MD format
+2. Measure byte counts for all 26 agents + 20 commands in MD format
 3. Store baseline in `archive/md_baseline.json`
 4. Update Step 08-04 to reference baseline file
 

@@ -84,7 +84,7 @@ Added to `execution_guidance.workflow` for steps 01-03 through 01-06:
 
 #### Step 01-02: Agent Jinja2 Template
 **Changes**:
-- Motivation updated: "28 agent files" → **"26 agent files (excluding novel-editor and novel-editor-reviewer from build)"**
+- Motivation updated: "26 agent files" → **"26 agent files (excluding novel-editor and novel-editor-reviewer from build)"**
 - Time estimate: Already correct at 4-5h
 - BLOCKER_001 and prerequisites added (includes dependency on 01-01 schema)
 
@@ -143,14 +143,14 @@ Added to `execution_guidance.workflow` for steps 01-03 through 01-06:
 
 ### Global Correction: Agent Count Fix
 
-**Original**: "28 agents"
+**Original**: "26 agents"
 **Corrected**: "26 agents (novel-editor and novel-editor-reviewer excluded from build)"
 
 **Affected Locations** (across all 3 files): 15+ instances corrected via systematic replacement
 
 #### Step 07-01: Plugin.json Creation
 **Key Changes**:
-- Acceptance criteria: References to 28 agents → **26 agents + exclusion note**
+- Acceptance criteria: References to 26 agents → **26 agents + exclusion note**
 - Outer test: Validation count updated to 26 agents
 - Workflow steps: Agent reference count corrected
 - Quality gates: Agent count verification note added
@@ -159,7 +159,7 @@ Added to `execution_guidance.workflow` for steps 01-03 through 01-06:
 **Example Correction**:
 ```json
 // Before:
-"All 28 agents referenced (actual count varies by wave)"
+"All 26 agents referenced (actual count varies by wave)"
 
 // After:
 "All 26 agents referenced (actual count: novel-editor and novel-editor-reviewer excluded from build)"
@@ -173,12 +173,12 @@ Added to `execution_guidance.workflow` for steps 01-03 through 01-06:
 
 #### Step 07-03: Output Structure Organization
 **Key Changes**:
-- Recommendation updated: Verification command now expects 28 total TOON files (26 for build, 2 excluded)
+- Recommendation updated: Verification command now expects 26 total TOON files (26 for build, 2 excluded)
 - Agent count references throughout corrected
 
 **Critical Correction**:
 ```json
-"recommendation": "VERIFY BEFORE STARTING: (1) Confirm 'find 5d-wave/agents -name \"*.toon\" | wc -l' == 28 total files (26 agents for build, 2 excluded: novel-editor, novel-editor-reviewer)"
+"recommendation": "VERIFY BEFORE STARTING: (1) Confirm 'find nWave/agents -name \"*.toon\" | wc -l' == 26 total files (26 agents for build, 2 excluded: novel-editor, novel-editor-reviewer)"
 ```
 
 ### Validation Results
@@ -272,7 +272,7 @@ Corrections application complete!
 "toon_compiler": {
   "tool_location": "tools/toon/compiler.py (from Phase 1)",
   "purpose": "Transforms TOON source to Claude Code compliant output",
-  "input": "5d-wave/tasks/dw/*.toon (TOON format)",
+  "input": "nWave/tasks/dw/*.toon (TOON format)",
   "output": "dist/commands/dw/*.md (Markdown format)",
   "invocation": "python tools/toon/compiler.py <input.toon> --validate --output <output.md>",
   "success_criteria": [

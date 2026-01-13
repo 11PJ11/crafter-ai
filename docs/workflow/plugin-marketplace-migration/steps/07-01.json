@@ -104,7 +104,7 @@
         "issue": "Steps 3.3, 4.6, and 5.4 completion status not verified before starting 7.1",
         "details": "Task depends on: (1) Step 3.3 - complete 26 agents migrated to .toon format (novel-editor and novel-editor-reviewer excluded from build system), (2) Step 4.6 - complete 20 commands migrated to .toon format, (3) Step 5.4 - complete 3 skills validated for auto-invocation. If ANY of these predecessor steps failed or completed incompletely, step 7.1 will reference incorrect or missing agent/command/skill lists.",
         "impact": "CRITICAL - plugin.json will be invalid if agents, commands, or skills are incomplete or missing. Installation will fail.",
-        "recommendation": "VERIFY BEFORE STARTING: (1) Confirm 'find 5d-wave/agents -name \"*.toon\" | wc -l' == 26, (2) Confirm 'find 5d-wave/tasks/dw -name \"*.toon\" | wc -l' == 20, (3) Confirm step 5.4 skills are created and validated. If counts don't match, do NOT proceed - predecessor steps need completion/fixing."
+        "recommendation": "VERIFY BEFORE STARTING: (1) Confirm 'find nWave/agents -name \"*.toon\" | wc -l' == 26, (2) Confirm 'find nWave/tasks/dw -name \"*.toon\" | wc -l' == 20, (3) Confirm step 5.4 skills are created and validated. If counts don't match, do NOT proceed - predecessor steps need completion/fixing."
       },
       {
         "severity": "HIGH",
@@ -126,9 +126,9 @@
         "severity": "MEDIUM",
         "category": "Test Implementation Completeness Undefined",
         "issue": "Inner tests are named but not specified - what exactly do they validate?",
-        "details": "Lines 44-48 name 5 inner tests (test_plugin_json_valid, test_all_agents_referenced, etc.) but don't specify what each test does. For example: Does test_all_agents_referenced validate (a) schema contains 'agents' key, (b) agents array has 26 elements, (c) each agent has required fields (name, type, description), or (d) all agent names match files in 5d-wave/agents/? Different interpretations lead to different test implementations.",
+        "details": "Lines 44-48 name 5 inner tests (test_plugin_json_valid, test_all_agents_referenced, etc.) but don't specify what each test does. For example: Does test_all_agents_referenced validate (a) schema contains 'agents' key, (b) agents array has 26 elements, (c) each agent has required fields (name, type, description), or (d) all agent names match files in nWave/agents/? Different interpretations lead to different test implementations.",
         "impact": "MEDIUM - Tests may be incomplete or validate wrong things. If test only checks 'agents key exists' but not 'exactly 26 agents', executor could create invalid plugin.json with wrong count and tests would pass.",
-        "recommendation": "SPECIFY: For each inner test, provide assertion examples. Example: 'test_all_agents_referenced: Assert len(plugin_json[\"agents\"]) == 26 AND all names match files in 5d-wave/agents/ AND each agent has fields: name, wave, type'."
+        "recommendation": "SPECIFY: For each inner test, provide assertion examples. Example: 'test_all_agents_referenced: Assert len(plugin_json[\"agents\"]) == 26 AND all names match files in nWave/agents/ AND each agent has fields: name, wave, type'."
       }
     ],
     "missing_context": [
@@ -158,13 +158,13 @@
         "dependency": "Step 3.3 completion - all 26 agents must be migrated and named consistently (novel-editor and novel-editor-reviewer excluded)",
         "reason": "plugin.json references these agents by name. If step 3.3 incomplete or uses different naming, plugin.json references will be broken.",
         "status": "UNKNOWN - Step 3.3 has CRITICAL ISSUES from prior review (TOON toolchain missing)",
-        "mitigation": "Verify: 'ls 5d-wave/agents/*.toon | wc -l' == 26 before referencing agents"
+        "mitigation": "Verify: 'ls nWave/agents/*.toon | wc -l' == 26 before referencing agents"
       },
       {
         "dependency": "Step 4.6 completion - all 20 commands must be migrated and wave-organized",
         "reason": "plugin.json includes command references organized by wave. If step 4.6 incomplete, command list will be missing entries.",
         "status": "UNKNOWN - Prior review (04-06.json) showed completion is achievable but not yet verified executed",
-        "mitigation": "Verify: 'ls 5d-wave/tasks/dw/*.toon | wc -l' == 20 before referencing commands"
+        "mitigation": "Verify: 'ls nWave/tasks/dw/*.toon | wc -l' == 20 before referencing commands"
       },
       {
         "dependency": "Step 5.4 completion - all 3 skills must be created and validated",
@@ -189,7 +189,7 @@
       {
         "priority": "CRITICAL",
         "action": "Verify all 26 agents (not 28 - excludes novel-editor, novel-editor-reviewer), 20 commands, 3 skills are complete before starting",
-        "detail": "Run verification commands: (1) 'ls 5d-wave/agents/*.toon 2>/dev/null | wc -l' must == 26, (2) 'ls 5d-wave/tasks/dw/*.toon 2>/dev/null | wc -l' must == 20, (3) Verify step 5.4 completed successfully. If ANY count is wrong, previous steps must complete first.",
+        "detail": "Run verification commands: (1) 'ls nWave/agents/*.toon 2>/dev/null | wc -l' must == 26, (2) 'ls nWave/tasks/dw/*.toon 2>/dev/null | wc -l' must == 20, (3) Verify step 5.4 completed successfully. If ANY count is wrong, previous steps must complete first.",
         "effort": "5 minutes - verification commands only"
       },
       {
@@ -219,7 +219,7 @@
       {
         "priority": "HIGH",
         "action": "Update inner tests with specific assertions",
-        "detail": "Provide test implementations: 'test_all_agents_referenced: Assert len(agents) == 26, all names match 5d-wave/agents/*.toon files, all agents have [required fields]. test_all_commands_referenced: Assert len(commands) == 20, all commands match 5d-wave/tasks/dw/*.toon files, all commands have correct wave labels.'",
+        "detail": "Provide test implementations: 'test_all_agents_referenced: Assert len(agents) == 26, all names match nWave/agents/*.toon files, all agents have [required fields]. test_all_commands_referenced: Assert len(commands) == 20, all commands match nWave/tasks/dw/*.toon files, all commands have correct wave labels.'",
         "effort": "25 minutes - test specification"
       },
       {
@@ -286,12 +286,12 @@
       },
       {
         "id": "CONTRADICTION_2",
-        "description": "Task claims '20 commands organized by wave' but no verification commands exist in 5d-wave/tasks/dw/",
+        "description": "Task claims '20 commands organized by wave' but no verification commands exist in nWave/tasks/dw/",
         "location": ["line 36", "line 66"],
         "contradiction": "Acceptance criteria: 'All 20 commands referenced'. Execution guidance (line 66): 'Add all 20 command references organized by wave'. But what commands? Where are they? Do they exist in .toon format or .md?",
         "failure_scenario": "Executor counts .md files in dw/ directory, finds 14 files (not 20). Tries to reference non-existent 20 commands. plugin.json validation fails.",
         "impact": "CRITICAL - Unclear which 20 commands should be referenced or if they even exist",
-        "evidence": "Running 'ls 5d-wave/tasks/dw/' shows 14 files, not 20. Task says 'All 20 commands' but real count is unclear."
+        "evidence": "Running 'ls nWave/tasks/dw/' shows 14 files, not 20. Task says 'All 20 commands' but real count is unclear."
       },
       {
         "id": "CONTRADICTION_3",
@@ -324,7 +324,7 @@
         "id": "CONTRADICTION_6",
         "description": "Test definitions are incomplete - what exactly do inner tests validate?",
         "location": ["lines 44-50"],
-        "contradiction": "Inner tests are named but not specified: test_plugin_json_valid_schema, test_all_agents_referenced, test_all_commands_referenced, test_all_skills_referenced, test_wave_organization_preserved, test_agent_list_completeness, test_command_list_completeness. But what do they assert? Do they validate JSON schema only, or also verify file existence? Do they cross-check against 5d-wave/agents/ directory or assume agent names are provided separately?",
+        "contradiction": "Inner tests are named but not specified: test_plugin_json_valid_schema, test_all_agents_referenced, test_all_commands_referenced, test_all_skills_referenced, test_wave_organization_preserved, test_agent_list_completeness, test_command_list_completeness. But what do they assert? Do they validate JSON schema only, or also verify file existence? Do they cross-check against nWave/agents/ directory or assume agent names are provided separately?",
         "failure_scenario": "Developer implements test_all_agents_referenced as: assert 'agents' in plugin_json (just checks key exists). Test passes even with 5 agents instead of 26. Or test validates against wrong directory.",
         "impact": "HIGH - False positive tests that don't actually verify acceptance criteria",
         "evidence": "Test specifications are missing assertion details."
@@ -336,21 +336,21 @@
         "assumption": "All 26 agents are migrated to TOON format and ready to reference (novel-editor and novel-editor-reviewer excluded from build)",
         "why_dangerous": "Phase 3 (Step 3.3) is BLOCKED. TOON toolchain (tools/toon/README.md) is MISSING. Agents may still be .md files or partially converted. If agents aren't migrated yet, plugin.json will reference non-existent or incorrectly-formatted agent definitions.",
         "failure_cascade": "plugin.json references agents → agents don't exist or wrong format → plugin validation fails → marketplace installation fails",
-        "mitigation": "PREREQUISITE: Verify 'ls 5d-wave/agents/*.toon | wc -l' == 26. If < 26, Phase 3 is incomplete. Wait or determine what format plugin.json should use (.md vs .toon)."
+        "mitigation": "PREREQUISITE: Verify 'ls nWave/agents/*.toon | wc -l' == 26. If < 26, Phase 3 is incomplete. Wait or determine what format plugin.json should use (.md vs .toon)."
       },
       {
         "id": "ASSUMPTION_2",
-        "assumption": "20 commands exist and are properly migrated in 5d-wave/tasks/dw/",
+        "assumption": "20 commands exist and are properly migrated in nWave/tasks/dw/",
         "why_dangerous": "Actual directory has 14 files. Are the other 6 commands missing, or is the count wrong? Task doesn't verify this before starting.",
         "failure_cascade": "plugin.json expects 20 command references → only 14 exist → test_all_commands_referenced fails with 'Expected 20, found 14'",
-        "mitigation": "PREREQUISITE: Run 'ls 5d-wave/tasks/dw/*.md | wc -l' (or .toon if migrated). Verify count matches expected 20. If not, determine which commands are missing."
+        "mitigation": "PREREQUISITE: Run 'ls nWave/tasks/dw/*.md | wc -l' (or .toon if migrated). Verify count matches expected 20. If not, determine which commands are missing."
       },
       {
         "id": "ASSUMPTION_3",
         "assumption": "3 skills are created and available for plugin.json to reference",
         "why_dangerous": "Steps 5.1-5.3 are not APPROVED, only CONDITIONAL_APPROVAL. Step 5.4 is BLOCKED waiting for 5.1-5.3 to complete. Skills may not exist yet.",
         "failure_cascade": "plugin.json tries to reference undefined skills → skill names/patterns unknown → validation fails",
-        "mitigation": "PREREQUISITE: Verify 'ls 5d-wave/skills/*/SKILL.md | wc -l' == 3. If < 3, skills aren't created yet. Cannot reference non-existent skills."
+        "mitigation": "PREREQUISITE: Verify 'ls nWave/skills/*/SKILL.md | wc -l' == 3. If < 3, skills aren't created yet. Cannot reference non-existent skills."
       },
       {
         "id": "ASSUMPTION_4",
@@ -371,7 +371,7 @@
         "assumption": "Wave organization in plugin.json matches what was created in Phases 1-4",
         "why_dangerous": "Task says 'Wave organization maintained' but doesn't verify actual wave assignments. What if Phase 3/4/5 agents were assigned differently? What if wave distribution is 30 DEVELOP agents instead of 10?",
         "failure_cascade": "plugin.json documents wrong wave distribution → test_wave_organization_preserved fails → task blocked pending clarification",
-        "mitigation": "PREREQUISITE: Document actual wave distribution: 'DISCUSS: 2 agents, DESIGN: 4, DISTILL: 4, DEVELOP: 10, DEMO: 8'. Verify this matches agents in 5d-wave/agents/ directory."
+        "mitigation": "PREREQUISITE: Document actual wave distribution: 'DISCUSS: 2 agents, DESIGN: 4, DISTILL: 4, DEVELOP: 10, DEMO: 8'. Verify this matches agents in nWave/agents/ directory."
       },
       {
         "id": "ASSUMPTION_7",
@@ -391,10 +391,10 @@
       },
       {
         "id": "EDGE_CASE_2",
-        "scenario": "Agent names in plugin.json don't match agent filenames in 5d-wave/agents/",
+        "scenario": "Agent names in plugin.json don't match agent filenames in nWave/agents/",
         "current_handling": "Test validates 'agents referenced' but doesn't verify names match actual files",
-        "risk": "plugin.json says 'agents: [agent-builder, avvocato, ...]' but 5d-wave/agents/ has 'agent_builder.md, avvocato.md' (underscores vs hyphens). Validation passes but references are broken.",
-        "handling_needed": "Add cross-validation: For each agent in plugin.json, verify corresponding file exists in 5d-wave/agents/ with exact name match."
+        "risk": "plugin.json says 'agents: [agent-builder, avvocato, ...]' but nWave/agents/ has 'agent_builder.md, avvocato.md' (underscores vs hyphens). Validation passes but references are broken.",
+        "handling_needed": "Add cross-validation: For each agent in plugin.json, verify corresponding file exists in nWave/agents/ with exact name match."
       },
       {
         "id": "EDGE_CASE_3",
@@ -433,10 +433,10 @@
       },
       {
         "id": "EDGE_CASE_8",
-        "scenario": "Command organization by wave doesn't match actual command locations in 5d-wave/tasks/dw/",
+        "scenario": "Command organization by wave doesn't match actual command locations in nWave/tasks/dw/",
         "current_handling": "Quality gate says 'All 20 commands referenced (verify count and wave organization)' but doesn't cross-validate against files",
         "risk": "plugin.json organizes commands by wave per task layout, but commands are in different files than expected. Validation passes but commands aren't discoverable.",
-        "handling_needed": "For each command in plugin.json, verify it exists in 5d-wave/tasks/dw/ and matches expected wave assignment."
+        "handling_needed": "For each command in plugin.json, verify it exists in nWave/tasks/dw/ and matches expected wave assignment."
       }
     ],
     "failure_scenarios": [
@@ -507,7 +507,7 @@
         "impact": "HIGH - Acceptance criteria 'All 20 commands referenced' cannot be met if only 14 commands exist",
         "cascading_failures": [
           "Step 7.1 starts, expects 20 commands",
-          "Only 14 commands found in 5d-wave/tasks/dw/",
+          "Only 14 commands found in nWave/tasks/dw/",
           "test_all_commands_referenced fails: 'Expected 20, found 14'",
           "Cannot proceed without clarifying which 20 are meant or updating requirement to 14"
         ],
@@ -569,13 +569,13 @@
         "prerequisite": "Phase 3 completion (all 26 agents migrated to TOON format - novel-editor and novel-editor-reviewer excluded)",
         "status": "BLOCKED - TOON toolchain missing",
         "impact": "CRITICAL - Cannot reference agents in plugin.json if they don't exist",
-        "verification": "Run: ls 5d-wave/agents/*.toon | wc -l. Must == 26. Currently: BLOCKED"
+        "verification": "Run: ls nWave/agents/*.toon | wc -l. Must == 26. Currently: BLOCKED"
       },
       {
         "prerequisite": "Phase 5 completion (3 skills created and validated)",
         "status": "BLOCKED - Phase 5.1-5.3 incomplete, Phase 5.4 blocked",
         "impact": "CRITICAL - Cannot reference skills in plugin.json if they don't exist",
-        "verification": "Run: ls 5d-wave/skills/*/SKILL.md | wc -l. Must == 3. Currently: Unknown (likely 0)"
+        "verification": "Run: ls nWave/skills/*/SKILL.md | wc -l. Must == 3. Currently: Unknown (likely 0)"
       },
       {
         "prerequisite": "D3 decision documentation (thinking budget differentiation strategy)",
@@ -596,10 +596,10 @@
         "verification": "Locate official Claude Code plugin schema documentation. Reference in task."
       },
       {
-        "prerequisite": "Verification that exactly 20 commands exist in 5d-wave/tasks/dw/",
+        "prerequisite": "Verification that exactly 20 commands exist in nWave/tasks/dw/",
         "status": "UNCERTAIN - Directory shows 14 files",
         "impact": "CRITICAL - Acceptance criteria 'All 20 commands' cannot be met if only 14 exist",
-        "verification": "Run: ls 5d-wave/tasks/dw/ | wc -l. Clarify if 14 is correct count or if 6 commands are elsewhere"
+        "verification": "Run: ls nWave/tasks/dw/ | wc -l. Clarify if 14 is correct count or if 6 commands are elsewhere"
       },
       {
         "prerequisite": "Wave organization diagram showing agent distribution across 5 waves",
@@ -631,14 +631,14 @@
     "test_coverage_gaps": [
       {
         "id": "TEST_GAP_1",
-        "gap": "No test validates that agent names in plugin.json match actual files in 5d-wave/agents/",
+        "gap": "No test validates that agent names in plugin.json match actual files in nWave/agents/",
         "coverage": "Currently: test_all_agents_referenced just counts or lists agents. Missing: file existence check.",
         "risk": "HIGH - plugin.json could reference 'software-crafter-v2' but actual file is 'software-crafter.md'. Validation passes but reference is broken.",
-        "coverage_needed": "For each agent in plugin.json, verify corresponding file exists in 5d-wave/agents/ with exact name match (case-sensitive)."
+        "coverage_needed": "For each agent in plugin.json, verify corresponding file exists in nWave/agents/ with exact name match (case-sensitive)."
       },
       {
         "id": "TEST_GAP_2",
-        "gap": "No test validates that command names in plugin.json match actual files in 5d-wave/tasks/dw/",
+        "gap": "No test validates that command names in plugin.json match actual files in nWave/tasks/dw/",
         "coverage": "Currently: test_all_commands_referenced counts commands. Missing: file existence check.",
         "risk": "HIGH - Similar to agent gap. Command references could be broken.",
         "coverage_needed": "For each command in plugin.json, verify file exists and wave assignment is correct."

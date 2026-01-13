@@ -53,7 +53,7 @@
   - Include placeholder trigger patterns
   - Include placeholder agent binding
   - Include placeholder methodology reference
-  - **Output**: `5d-wave/templates/SKILL_TEMPLATE.toon`
+  - **Output**: `nWave/templates/SKILL_TEMPLATE.toon`
 
 - [ ] **Task A5**: Set up test environment
   - Define test framework (pytest, custom simulator)
@@ -81,7 +81,7 @@
 
 ### Implementation Tasks
 
-- [ ] **Task B1.1**: Copy SKILL_TEMPLATE.toon to `5d-wave/skills/develop/SKILL.toon`
+- [ ] **Task B1.1**: Copy SKILL_TEMPLATE.toon to `nWave/skills/develop/SKILL.toon`
 
 - [ ] **Task B1.2**: Customize develop skill trigger patterns
   - Italian: "implementa", "scrivi codice", "TDD"
@@ -102,7 +102,7 @@
 - [ ] **Task B1.5**: Compile SKILL.toon to SKILL.md
   - Run TOON compiler
   - Verify output SKILL.md is well-formed
-  - **Output**: `5d-wave/skills/develop/SKILL.md`
+  - **Output**: `nWave/skills/develop/SKILL.md`
 
 - [ ] **Task B1.6**: Write E2E test for develop skill triggering
   - Test: User says "implementa questa feature" -> skill triggers
@@ -137,7 +137,7 @@
 
 ### Implementation Tasks - refactor Skill (05-02)
 
-- [ ] **Task B2.1**: Copy SKILL_TEMPLATE.toon to `5d-wave/skills/refactor/SKILL.toon`
+- [ ] **Task B2.1**: Copy SKILL_TEMPLATE.toon to `nWave/skills/refactor/SKILL.toon`
 
 - [ ] **Task B2.2**: Customize refactor skill trigger patterns
   - Level-specific: "refactor-level-1", "refactor-level-2", ..., "refactor-level-6"
@@ -154,7 +154,7 @@
 - [ ] **Task B2.4**: Embed default constraints using Phase A format
 
 - [ ] **Task B2.5**: Compile SKILL.toon to SKILL.md
-  - **Output**: `5d-wave/skills/refactor/SKILL.md`
+  - **Output**: `nWave/skills/refactor/SKILL.md`
 
 - [ ] **Task B2.6**: Update trigger pattern conflict matrix
   - Document all refactor patterns
@@ -168,7 +168,7 @@
 
 ### Implementation Tasks - mikado Skill (05-03)
 
-- [ ] **Task B3.1**: Copy SKILL_TEMPLATE.toon to `5d-wave/skills/mikado/SKILL.toon`
+- [ ] **Task B3.1**: Copy SKILL_TEMPLATE.toon to `nWave/skills/mikado/SKILL.toon`
 
 - [ ] **Task B3.2**: Customize mikado skill trigger patterns
   - Complexity-focused: "mikado-method", "refactoring-complesso", "dependency-mapping", "complex-refactoring-graph"
@@ -183,7 +183,7 @@
 - [ ] **Task B3.4**: Embed default constraints using Phase A format
 
 - [ ] **Task B3.5**: Compile SKILL.toon to SKILL.md
-  - **Output**: `5d-wave/skills/mikado/SKILL.md`
+  - **Output**: `nWave/skills/mikado/SKILL.md`
 
 - [ ] **Task B3.6**: Update trigger pattern conflict matrix
   - Document all mikado patterns
@@ -221,9 +221,9 @@
 
 ### Prerequisite Verification
 
-- [ ] **VERIFY C0.1**: `5d-wave/skills/develop/SKILL.md` exists
-- [ ] **VERIFY C0.2**: `5d-wave/skills/refactor/SKILL.md` exists
-- [ ] **VERIFY C0.3**: `5d-wave/skills/mikado/SKILL.md` exists
+- [ ] **VERIFY C0.1**: `nWave/skills/develop/SKILL.md` exists
+- [ ] **VERIFY C0.2**: `nWave/skills/refactor/SKILL.md` exists
+- [ ] **VERIFY C0.3**: `nWave/skills/mikado/SKILL.md` exists
 - [ ] **VERIFY C0.4**: All 3 skills compile without errors
 - [ ] **VERIFY C0.5**: Trigger pattern conflict matrix reviewed (no overlaps)
 - [ ] **VERIFY C0.6**: Test environment from Phase A is functional
@@ -292,13 +292,13 @@
 - [ ] `docs/toon-v3-skill-syntax-specification.md`
 - [ ] `docs/skill-invocation-mechanism.md`
 - [ ] `docs/constraint-embedding-format.md`
-- [ ] `5d-wave/templates/SKILL_TEMPLATE.toon`
+- [ ] `nWave/templates/SKILL_TEMPLATE.toon`
 - [ ] `tests/skills/skill_test_environment_setup.md`
 
 **Phase B** (3 skills):
-- [ ] `5d-wave/skills/develop/SKILL.toon` + `.md`
-- [ ] `5d-wave/skills/refactor/SKILL.toon` + `.md`
-- [ ] `5d-wave/skills/mikado/SKILL.toon` + `.md`
+- [ ] `nWave/skills/develop/SKILL.toon` + `.md`
+- [ ] `nWave/skills/refactor/SKILL.toon` + `.md`
+- [ ] `nWave/skills/mikado/SKILL.toon` + `.md`
 
 **Phase C** (4 test suites + 1 report):
 - [ ] `tests/skills/test_skill_triggers.py`

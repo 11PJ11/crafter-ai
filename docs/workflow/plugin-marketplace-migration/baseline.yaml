@@ -26,15 +26,15 @@ current_state:
     format: "Markdown with embedded YAML blocks"
     source_files:
       agents:
-        location: "5d-wave/agents/*.md"
-        count: 28
-        evidence: "Glob pattern returned 28 files including software-crafter.md, researcher.md, etc."
+        location: "nWave/agents/*.md"
+        count: 26
+        evidence: "Glob pattern returned 26 files including software-crafter.md, researcher.md, etc."
       commands:
-        location: "5d-wave/tasks/dw/*.md"
+        location: "nWave/tasks/dw/*.md"
         count: 20
         evidence: "Glob pattern returned 20 files: develop.md, refactor.md, baseline.md, etc."
       templates:
-        location: "5d-wave/templates/*.yaml"
+        location: "nWave/templates/*.yaml"
         count: 10
         evidence: "Glob pattern returned 10 files including AGENT_TEMPLATE.yaml, COMMAND_TEMPLATE.yaml"
 
@@ -99,9 +99,9 @@ current_state:
     evidence_sources:
       - file: "docs/workflow/plugin-migration/migration-plan.md"
         content: "Complete workflow diagram and command categorization (lines 12-66)"
-      - file: "5d-wave/agents/software-crafter.md"
+      - file: "nWave/agents/software-crafter.md"
         content: "Agent structure with YAML frontmatter, commands, dependencies (lines 1-160+)"
-      - file: "5d-wave/tasks/dw/develop.md"
+      - file: "nWave/tasks/dw/develop.md"
         content: "Command structure with agent-activation header (lines 1-85)"
 
   limitations:
@@ -122,7 +122,7 @@ current_state:
 
     skills_support:
       issue: "No Claude Code 'skills' implementation (auto-invokable capabilities)"
-      evidence: "Glob for 5d-wave/skills/**/* returned 'No files found'"
+      evidence: "Glob for nWave/skills/**/* returned 'No files found'"
       impact: "Cannot leverage Claude Code skill auto-invocation"
 
     toon_infrastructure:
@@ -183,7 +183,7 @@ requirements_source:
   specific_requirements:
     functional:
       - id: FR1
-        requirement: "Convert 28 agent .md files to .toon format"
+        requirement: "Convert 26 agent .md files to .toon format"
         source: "migration-plan.md Phase 2 (lines 261-270)"
 
       - id: FR2
@@ -280,7 +280,7 @@ success_criteria:
   - id: SC1
     criterion: "All source files in TOON v3.0 format"
     measurable: true
-    metric: "0 .md files in 5d-wave/agents/, 28 .toon files present"
+    metric: "0 .md files in nWave/agents/, 28 .toon files present"
 
   - id: SC2
     criterion: "Build produces Claude Code compliant output"
@@ -398,11 +398,11 @@ next_steps:
 
   upon_approval:
     - action: "Create roadmap with task breakdown"
-      command: "/dw:roadmap"
+      command: "/nw:roadmap"
       input: "This baseline document"
 
     - action: "Split into executable steps"
-      command: "/dw:split"
+      command: "/nw:split"
 
     - action: "Begin Phase 1: TOON infrastructure"
       first_task: "Create tools/toon/parser.py"

@@ -9,7 +9,7 @@
   "step": {
     "number": "2.2",
     "name": "Round-Trip Validation",
-    "description": "Compile software-crafter.toon to .md and validate semantic equivalence. Create validation script that checks for missing content and enumerates discovered patterns/edge cases.\n\nCRITICAL: This step must produce explicit enumeration of patterns and edge cases for step 2.3 documentation.\n\nCompiler invocation: python tools/toon/compiler.py 5d-wave/agents/software-crafter.toon --output compiled-output.md --validate",
+    "description": "Compile software-crafter.toon to .md and validate semantic equivalence. Create validation script that checks for missing content and enumerates discovered patterns/edge cases.\n\nCRITICAL: This step must produce explicit enumeration of patterns and edge cases for step 2.3 documentation.\n\nCompiler invocation: python tools/toon/compiler.py nWave/agents/software-crafter.toon --output compiled-output.md --validate",
     "motivation": "Round-trip proves conversion is lossless for critical content AND discovers patterns for batch migration",
     "estimated_hours": "2-3"
   },
@@ -27,7 +27,7 @@
     },
     "dependencies": ["2.1"],
     "blocking_conditions": [
-      "Step 2.1 MUST be complete: 5d-wave/agents/software-crafter.toon exists",
+      "Step 2.1 MUST be complete: nWave/agents/software-crafter.toon exists",
       "Token baseline MUST exist: baseline/token-measurements/02-01-pre-conversion.json",
       "Compiler MUST be functional and versioned"
     ]
@@ -70,11 +70,11 @@
     "approach": "Outside-In TDD with double-loop and pattern discovery",
     "workflow": [
       "0. PRE-FLIGHT VALIDATION:",
-      "   a. Verify 5d-wave/agents/software-crafter.toon exists (from step 2.1)",
+      "   a. Verify nWave/agents/software-crafter.toon exists (from step 2.1)",
       "   b. Verify baseline/token-measurements/02-01-pre-conversion.json exists",
       "   c. Verify compiler available: python tools/toon/compiler.py --version",
       "1. Compile TOON to MD:",
-      "   python tools/toon/compiler.py 5d-wave/agents/software-crafter.toon --output compiled-software-crafter.md --validate",
+      "   python tools/toon/compiler.py nWave/agents/software-crafter.toon --output compiled-software-crafter.md --validate",
       "2. Write failing E2E test (outer_test) - validates >=95% equivalence",
       "3. Implement validation script via inner TDD loop:",
       "   a. Create tools/toon/validate_roundtrip.py with function:",
@@ -216,7 +216,7 @@
     },
     {
       "issue_id": "C2",
-      "remediation": "Documented compiler invocation: python tools/toon/compiler.py 5d-wave/agents/software-crafter.toon --output compiled-software-crafter.md --validate"
+      "remediation": "Documented compiler invocation: python tools/toon/compiler.py nWave/agents/software-crafter.toon --output compiled-software-crafter.md --validate"
     },
     {
       "issue_id": "C3",

@@ -31,7 +31,7 @@ This creates a perfect storm:
 
 **Severity**: CRITICAL (85% probability of blocking failure)
 
-The inner loop testing requirement includes `/dw:review` command. This command requires the `software-crafter-reviewer` agent. However:
+The inner loop testing requirement includes `/nw:review` command. This command requires the `software-crafter-reviewer` agent. However:
 
 - **Agent creation timeline**: Phase 8, Step 8.4 (after this step)
 - **This step timeline**: Phase 8, Step 8.3 (before step 8.4)
@@ -39,8 +39,8 @@ The inner loop testing requirement includes `/dw:review` command. This command r
 
 **Timeline of Failure**:
 1. Step 8.3 starts
-2. Test invokes `/dw:develop` command
-3. Inner loop includes `/dw:review`
+2. Test invokes `/nw:develop` command
+3. Inner loop includes `/nw:review`
 4. Command fails - reviewer agent not registered
 5. Test fails with "reviewer agent not found" error
 6. Discovery at step execution (not planning) = wasted effort
@@ -154,7 +154,7 @@ If DISCUSS is purely a user discussion with no output artifacts, test assumes ou
 DESIGN produces visualization but no actionable design. Test checks "DESIGN ran" but doesn't validate completeness → downstream DISTILL fails due to incomplete design
 
 ### E3: Inner Loop Infrastructure Missing
-`/dw:develop` fails because analyzer tool not installed. Test fails but root cause is missing infrastructure, not workflow logic → cascading false failure
+`/nw:develop` fails because analyzer tool not installed. Test fails but root cause is missing infrastructure, not workflow logic → cascading false failure
 
 ### E4: Constraint Conflicts With Legitimate Behavior
 "no_auto_report_files" constraint prevents agents from legitimately creating documentation → workflow cannot complete, but test reports constraint enforcement success
@@ -184,7 +184,7 @@ Test 1 creates artifacts. Test 2 runs with leftover artifacts from test 1 → fa
 **Cost**: 1-2 days to implement actual constraint enforcement
 
 ### F3: Reviewer Agent Missing (85% probability)
-**Timeline**: Inner loop invokes `/dw:review`. Agent not found or not initialized.
+**Timeline**: Inner loop invokes `/nw:review`. Agent not found or not initialized.
 **Cost**: Blocks step completion until step 8.4 OR requires mock reviewer
 
 ### F4: Expected Output Structure Wrong (75% probability)
@@ -210,7 +210,7 @@ Test 1 creates artifacts. Test 2 runs with leftover artifacts from test 1 → fa
 - **Time**: 3-4 hours (not in this step's scope)
 
 ### BLOCKER 2: Reviewer Agent Must Exist
-- **What**: `software-crafter-reviewer` agent must be callable via `/dw:review` command
+- **What**: `software-crafter-reviewer` agent must be callable via `/nw:review` command
 - **Why**: Inner loop testing requires this command
 - **Action**: Either (a) complete step 8.4 first, OR (b) create mock reviewer stub for testing
 - **Time**: Depends on approach (step 8.4 = multi-day, mock = 1-2 hours)
@@ -237,7 +237,7 @@ The current test specification has these coverage gaps that will cause failures:
 2. **No test for DESIGN quality** - Incomplete designs pass as "executed correctly"
 3. **No test for YAML/artifact format** - Malformed output not caught
 4. **No test for constraint validation** - Test doesn't verify constraints actually prevent behaviors
-5. **No test for loop termination** - What prevents infinite loop if `/dw:refactor` keeps finding code smells?
+5. **No test for loop termination** - What prevents infinite loop if `/nw:refactor` keeps finding code smells?
 6. **No test for state flow** - Do waves share state correctly? Does DESIGN output flow into DISTILL input?
 7. **No test for error handling** - What if wave fails mid-execution? Does workflow gracefully degrade?
 8. **No test for settings loading** - Test assumes settings work, doesn't verify plugin reads configuration

@@ -140,7 +140,7 @@
     },
     "missing_context": {
       "critical": [
-        "What exactly ARE 'skills'? Are they tasks from 5d-wave/tasks/dw/*.md? A new artifact type? Commands that end in /skill?",
+        "What exactly ARE 'skills'? Are they tasks from nWave/tasks/dw/*.md? A new artifact type? Commands that end in /skill?",
         "Why does task reference 'tools/toon/compiler.py' when the actual build system is 'tools/build_ide_bundle.py'?",
         "Is this task supposed to: (A) Create a new 'toon' compiler system, or (B) Configure existing build_ide_bundle.py?",
         "Current dist/ ALREADY has agents/dw/ and commands/dw/ with outputs from build_ide_bundle.py - is this expected or mistake?",
@@ -164,7 +164,7 @@
       {
         "priority": "CRITICAL",
         "issue": "'Skills' artifact type is undefined",
-        "action": "DEFINE in acceptance criteria: What constitutes a 'skill'? Examples: 'Skills are task definitions from 5d-wave/tasks/dw/*.md' OR 'Skills are command implementations in dist/commands/dw/' OR 'Skills are a new artifact type to be created in this phase?'"
+        "action": "DEFINE in acceptance criteria: What constitutes a 'skill'? Examples: 'Skills are task definitions from nWave/tasks/dw/*.md' OR 'Skills are command implementations in dist/commands/dw/' OR 'Skills are a new artifact type to be created in this phase?'"
       },
       {
         "priority": "CRITICAL",
@@ -238,7 +238,7 @@
           "No SkillProcessor in tools/processors/ (only: agent_processor, command_processor, team_processor, workflow_processor)",
           "No dist/skills/ directory exists",
           "Roadmap success criterion SC4 mentions 'Skills auto-invoked correctly' but no skill definition provided",
-          "No 5d-wave/skills/ source directory found",
+          "No nWave/skills/ source directory found",
           "test_skill_output_path test cannot be written without knowing what a 'skill' is"
         ],
         "consequence": "Developer cannot write test_skill_output_path because skill output path structure is undefined. Test will fail or be skipped, breaking '100% tests passing' quality gate",
@@ -260,11 +260,11 @@
       },
       {
         "contradiction_id": "C5_WAVE_ORGANIZATION_AMBIGUITY",
-        "contradiction": "Acceptance criteria says 'Wave-based organization maintained' but current dist/ (dist/ide/agents/dw/, dist/ide/commands/dw/) suggests IDE-specific organization, NOT wave-based organization from 5d-wave/",
+        "contradiction": "Acceptance criteria says 'Wave-based organization maintained' but current dist/ (dist/ide/agents/dw/, dist/ide/commands/dw/) suggests IDE-specific organization, NOT wave-based organization from nWave/",
         "evidence": [
           "Current structure: dist/ide/agents/dw/ (IDE-specific, not wave-based)",
-          "5D-Wave source structure: 5d-wave/data/embed/software-crafter/, 5d-wave/tasks/dw/, etc.",
-          "Task claims to organize by 'Wave-based organization' but spec shows dist/agents/dw/ (flat under agents, not organized by wave like 5d-wave/)",
+          "5D-Wave source structure: nWave/data/embed/software-crafter/, nWave/tasks/dw/, etc.",
+          "Task claims to organize by 'Wave-based organization' but spec shows dist/agents/dw/ (flat under agents, not organized by wave like nWave/)",
           "Unclear: Does 'Wave-based' mean 'dw prefix' (current), or 'organized by 5D-Wave structure' (different)"
         ],
         "consequence": "Developer may reorganize dist/ into 5D-Wave-based structure (breaking existing dist/ide organization), or may keep IDE structure (misunderstanding task intent)",
@@ -285,7 +285,7 @@
         "assumption_id": "DA2_SKILLS_EXIST_SOMEWHERE",
         "assumption": "Task assumes 'skills' are defined artifact type somewhere that tests can validate",
         "danger": "If skills don't exist in codebase or specification, test_skill_output_path cannot be written. Test fails. Quality gate (100% tests passing) violated",
-        "evidence": "Skills not found in: 5d-wave/, tools/, source docs, or project specification",
+        "evidence": "Skills not found in: nWave/, tools/, source docs, or project specification",
         "likelihood": "CERTAIN - skills undefined",
         "consequence_if_wrong": "Test suite incomplete. Cannot achieve '100% tests passing' quality gate. Phase 7 blocks. Entire plugin-marketplace-migration project blocked"
       },
@@ -519,7 +519,7 @@
         "action": "Define 'skills' artifact type",
         "rationale": "Cannot implement output structure for undefined artifact type. Cannot write test_skill_output_path without knowing what skill is",
         "definition_requirements": [
-          "Specify: What ARE skills? (e.g., 'Skills are command implementations from dist/commands/', or 'Skills are task definitions from 5d-wave/tasks/', or 'Skills are new artifact type')",
+          "Specify: What ARE skills? (e.g., 'Skills are command implementations from dist/commands/', or 'Skills are task definitions from nWave/tasks/', or 'Skills are new artifact type')",
           "Provide: At least 2 concrete examples of skills with expected output paths (e.g., 'dist/skills/my-skill/SKILL.md')",
           "Clarify: How do skills relate to existing 5D-Wave objects (agents, commands, teams, workflows)?",
           "Specify: Should SkillProcessor be added to tools/processors/ as new processor type?"

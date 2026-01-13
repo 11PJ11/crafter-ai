@@ -170,7 +170,7 @@ Step 06-03 (SKILL_TEMPLATE creation) had an **additional blocker**: dependency o
 {
   "check_id": "PRE-01",
   "description": "Verify Phase 5.1-5.3 complete (actual skill implementations exist)",
-  "validation_command": "ls -la 5d-wave/skills/{develop,refactor,mikado}/*.toon OR ls -la 5d-wave/skills/{develop,refactor,mikado}/*.md",
+  "validation_command": "ls -la nWave/skills/{develop,refactor,mikado}/*.toon OR ls -la nWave/skills/{develop,refactor,mikado}/*.md",
   "success_criteria": "At least 3 skill files exist (one per type: develop, refactor, mikado)",
   "failure_action": "STOP - Cannot create template without actual skills to reference. Wait for Phase 5 completion."
 },
@@ -335,7 +335,7 @@ ls -la /mnt/c/Repositories/Projects/ai-craft/tools/toon/
 # Expected: "No such file or directory" (confirms blocker)
 
 # Step 2: Verify Phase 5 completion status (for 06-03 only)
-ls -la /mnt/c/Repositories/Projects/ai-craft/5d-wave/skills/{develop,refactor,mikado}/
+ls -la /mnt/c/Repositories/Projects/ai-craft/nWave/skills/{develop,refactor,mikado}/
 # Expected: Directory may not exist or be empty (confirms Phase 5 not complete)
 
 # Step 3: Verify corrected JSON files exist

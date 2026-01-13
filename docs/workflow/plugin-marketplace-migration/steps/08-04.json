@@ -37,14 +37,14 @@
         "description": "SC7 requires comparing TOON file sizes to original MD file sizes. Phase 2.4 (Archive Original MD Files) should have captured baseline, but this step may not exist in roadmap.",
         "validation_method": "Check if archive/original_md_byte_counts.json exists with baseline measurements. If not, capture baseline now from current MD files (if any remain) or estimate from build output.",
         "blocker_if_missing": true,
-        "mitigation": "FALLBACK BASELINE CAPTURE:\n1. IF original MD files archived: Load archive/original_md_byte_counts.json\n2. IF MD files still present in 5d-wave/: Count bytes now, use as baseline\n3. IF no MD files available: Use build output sizes as proxy baseline (less accurate)\n4. Document baseline source in test output for transparency"
+        "mitigation": "FALLBACK BASELINE CAPTURE:\n1. IF original MD files archived: Load archive/original_md_byte_counts.json\n2. IF MD files still present in nWave/: Count bytes now, use as baseline\n3. IF no MD files available: Use build output sizes as proxy baseline (less accurate)\n4. Document baseline source in test output for transparency"
       },
       {
         "prerequisite": "Token savings calculation methodology defined",
         "description": "Define exact formula for token savings calculation",
         "validation_method": "Specification exists defining: (1) baseline source (original MD bytes), (2) current source (TOON bytes OR compiled MD bytes), (3) formula: savings = (baseline - current) / baseline * 100",
         "blocker_if_missing": false,
-        "mitigation": "DEFAULT METHODOLOGY:\n- Baseline: Original MD file bytes (from archive or current state)\n- Current: TOON source file bytes (5d-wave/**/*.toon)\n- Formula: token_savings_pct = (baseline_bytes - toon_bytes) / baseline_bytes * 100\n- Acceptance threshold: >= 50% savings required for SC7 pass"
+        "mitigation": "DEFAULT METHODOLOGY:\n- Baseline: Original MD file bytes (from archive or current state)\n- Current: TOON source file bytes (nWave/**/*.toon)\n- Formula: token_savings_pct = (baseline_bytes - toon_bytes) / baseline_bytes * 100\n- Acceptance threshold: >= 50% savings required for SC7 pass"
       },
       {
         "prerequisite": "Steps 08-01, 08-02, 08-03 completed successfully",
@@ -95,7 +95,7 @@
       "2. PREREQUISITE: Verify steps 08-01, 08-02, 08-03 passed (15 min)",
       "3. Create comprehensive validation test script test_success_criteria.py (30 min)",
       "4. Write test_token_baseline_exists - validate baseline available (15 min)",
-      "5. Write test_sc1_all_toon_sources - count and validate TOON files (30 min):\n   - Count .toon files in 5d-wave/\n   - Validate TOON v3.0 format compliance (parse each file)\n   - Assert count >= 46 (26 agents + 20 commands)",
+      "5. Write test_sc1_all_toon_sources - count and validate TOON files (30 min):\n   - Count .toon files in nWave/\n   - Validate TOON v3.0 format compliance (parse each file)\n   - Assert count >= 46 (26 agents + 20 commands)",
       "6. Write test_sc2_claude_code_compliant - validate build output (20 min):\n   - Validate dist/ide/plugin.json exists and is valid JSON\n   - Validate plugin directory structure matches expected format",
       "7. Write test_sc3_plugin_installable - reference 08-02 result (10 min)",
       "8. Write test_sc4_skills_auto_invoke - validate skill triggering (15 min)",
@@ -131,7 +131,7 @@
       "strategy": "FALLBACK BASELINE CAPTURE with multiple sources",
       "implementation": [
         "1. PRIMARY: Check if archive/original_md_byte_counts.json exists (Phase 2.4 executed)",
-        "2. FALLBACK 1: If original MD files still present in 5d-wave/, count bytes now and use as baseline",
+        "2. FALLBACK 1: If original MD files still present in nWave/, count bytes now and use as baseline",
         "3. FALLBACK 2: If no MD files available, estimate baseline from build output metadata (less accurate)",
         "4. CAPTURE NOW: If no baseline exists anywhere, create archive/token_baseline.json with current measurements",
         "5. DOCUMENT: Log baseline source in test output for transparency (archived vs captured vs estimated)"
@@ -151,7 +151,7 @@
     "resolution": {
       "approach": "Enhanced validation - count AND parse each TOON file",
       "implementation": [
-        "1. Find all .toon files in 5d-wave/",
+        "1. Find all .toon files in nWave/",
         "2. For each file: attempt to parse as TOON v3.0 (validate syntax, required sections)",
         "3. Count only files that parse successfully as valid TOON",
         "4. Assert: valid_toon_count >= 46 (26 agents + 20 commands)",
@@ -171,12 +171,12 @@
   },
   "token_savings_measurement_methodology": {
     "baseline_calculation": {
-      "source": "Original MD files from 5d-wave/ before migration (archived in Phase 2.4 OR captured in 08-04 if missing)",
+      "source": "Original MD files from nWave/ before migration (archived in Phase 2.4 OR captured in 08-04 if missing)",
       "method": "Sum byte counts of all .md files (agents + commands)",
       "units": "bytes (not tokens, but bytes are proxy for token count)"
     },
     "current_calculation": {
-      "source": "TOON source files in 5d-wave/ after migration",
+      "source": "TOON source files in nWave/ after migration",
       "method": "Sum byte counts of all .toon files (agents + commands)",
       "units": "bytes"
     },
@@ -272,7 +272,7 @@
           "issue_id": "08-04-C2",
           "category": "UPSTREAM_DEPENDENCY_ASSUMPTION",
           "title": "TOON Files Assumed to Exist (May Not If Phase 1-6 Blocked)",
-          "description": "Step 08-04 assumes TOON files exist in 5d-wave/**/*.toon for SC1 and SC7 validation. However, BLOCKER #1 (Phase 1 toolchain missing) and BLOCKER #4 (Phase 5 circular dependencies) may prevent TOON file creation entirely. If upstream phases fail, this step attempts to count non-existent files.",
+          "description": "Step 08-04 assumes TOON files exist in nWave/**/*.toon for SC1 and SC7 validation. However, BLOCKER #1 (Phase 1 toolchain missing) and BLOCKER #4 (Phase 5 circular dependencies) may prevent TOON file creation entirely. If upstream phases fail, this step attempts to count non-existent files.",
           "evidence": [
             "MASTER_SUMMARY.md line 28-49: 'Phase 1 Toolchain Missing - tools/toon/ infrastructure doesn't exist'",
             "MASTER_SUMMARY.md line 101-129: 'Phase 5 circular dependencies - skills cannot be validated before implementation'",
@@ -297,13 +297,13 @@
           "title": "SC1 Measures Count Not Format Compliance (26 Agents Reality)",
           "description": "Test test_sc1_all_toon_sources (line 78) enhanced to parse TOON files for format validation, but acceptance criteria (line 65) still states '26 TOON agents + 20 TOON commands counted and format-validated'. However, BLOCKER #2 reveals actual agent count is 26, not 28 as originally specified. Quality gates must use correct count.",
           "evidence": [
-            "MASTER_SUMMARY.md line 51-74: 'Agent Count Mismatch - roadmap specifies 28 agents, build processes 26 agents'",
+            "MASTER_SUMMARY.md line 51-74: 'Agent Count Mismatch - roadmap specifies 26 agents, build processes 26 agents'",
             "dist/ide/agents/dw/config.json: 'agents_processed': 26 (actual reality)",
             "Step 08-04 line 213-219: component_count_correction acknowledges 26 agents as correct count",
-            "Original SC1 specification (baseline.yaml): claimed 28 agents before correction",
+            "Original SC1 specification (baseline.yaml): claimed 26 agents before correction",
             "Risk: Using wrong count (28) causes test assertion failures even when migration succeeds"
           ],
-          "impact": "If test uses hardcoded 28 agents assertion, validation fails even when all actual agents (26) converted successfully. False negative failure blocks project completion.",
+          "impact": "If test uses hardcoded 26 agents assertion, validation fails even when all actual agents (26) converted successfully. False negative failure blocks project completion.",
           "severity": "HIGH",
           "probability": "100% (count mismatch confirmed)",
           "resolution_required": "BEFORE_EXECUTION",
@@ -324,7 +324,7 @@
           "evidence": [
             "MASTER_SUMMARY.md line 142: 'Roadmap mentions Phase 2.4 Archive Original MD Files but step doesn't exist'",
             "Step 08-04 line 36: References 'Phase 2.4 (Archive Original MD Files) should have captured baseline'",
-            "Step 08-04 line 174: 'Original MD files from 5d-wave/ before migration (archived in Phase 2.4 OR captured in 08-04 if missing)'",
+            "Step 08-04 line 174: 'Original MD files from nWave/ before migration (archived in Phase 2.4 OR captured in 08-04 if missing)'",
             "Grep search for 02-04.json: No file found",
             "Baseline.yaml mentions Phase 2.4 but roadmap structure undefined"
           ],
@@ -433,7 +433,7 @@
       "critical_blocker_addressed": "Yes - Blocker #5 addressed with fallback baseline capture strategy (line 123-146)",
       "fallback_mechanisms": [
         "PRIMARY: Load baseline from archive/original_md_byte_counts.json if Phase 2.4 executed",
-        "FALLBACK 1: Capture baseline from current MD files in 5d-wave/ if they still exist",
+        "FALLBACK 1: Capture baseline from current MD files in nWave/ if they still exist",
         "FALLBACK 2: Estimate baseline from build output metadata (dist/ide/) if no MD files available",
         "FALLBACK 3: Create archive/token_baseline.json with current measurements and document provenance"
       ],
@@ -457,7 +457,7 @@
       ],
       "prerequisites_for_execution": [
         "Steps 08-01, 08-02, 08-03 completed successfully with all tests passing",
-        "TOON files exist in 5d-wave/**/*.toon (at least 46 files: 26 agents + 20 commands)",
+        "TOON files exist in nWave/**/*.toon (at least 46 files: 26 agents + 20 commands)",
         "Token baseline available from archive/md_baseline.json OR current MD files OR build output",
         "Quality gates updated to use correct agent count (26, not 28)"
       ],

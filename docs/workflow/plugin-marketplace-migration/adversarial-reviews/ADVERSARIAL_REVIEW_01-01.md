@@ -167,7 +167,7 @@ Add validation gate: "After step 1.1 completion, schema review by 01-02 owner be
 **If this step fails:**
 
 - Phase 1 TOON Infrastructure blocked (steps 1.2-1.6 cannot start)
-- 28 agent files cannot be migrated
+- 26 agent files cannot be migrated
 - Entire plugin marketplace migration timeline slips
 - Estimated rework: 12-20 hours
 

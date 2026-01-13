@@ -4,7 +4,7 @@
   "phase": {
     "number": 3,
     "name": "Agent Batch Migration",
-    "purpose": "Convert remaining 27 agents to TOON format (28 total including pilot)"
+    "purpose": "Convert remaining 25 agents to TOON format (26 total including pilot)"
   },
   "step": {
     "number": "3.1",
@@ -56,7 +56,7 @@
         "blocking": true,
         "severity": "CRITICAL",
         "risk_if_missing": "Cannot measure token savings without baseline - acceptance criteria validation impossible",
-        "resolution_if_missing": "Complete step 2.4 archive creation AND measure baseline token counts for all 28 agents (estimated 2 hours)"
+        "resolution_if_missing": "Complete step 2.4 archive creation AND measure baseline token counts for all 26 agents (estimated 2 hours)"
       },
       {
         "check": "Pilot conversion successful with measured savings",
@@ -84,26 +84,26 @@
       },
       {
         "check": "Phase 2.4 source path verified correct",
-        "validation": "Verify archive/pre-toon-migration/agents/ contains SOURCE files from 5d-wave/agents/ NOT compiled dist/ide/agents/",
+        "validation": "Verify archive/pre-toon-migration/agents/ contains SOURCE files from nWave/agents/ NOT compiled dist/ide/agents/",
         "blocking": true,
         "severity": "HIGH",
         "risk_if_missing": "Baseline comparison uses wrong files - all token measurements invalid",
-        "resolution_if_missing": "Re-run Phase 2.4 with correct source path 5d-wave/agents/ (estimated 1-2 hours)"
+        "resolution_if_missing": "Re-run Phase 2.4 with correct source path nWave/agents/ (estimated 1-2 hours)"
       }
     ]
   },
   "deliverables": {
     "files_to_create": [
-      "5d-wave/agents/product-owner.toon",
-      "5d-wave/agents/solution-architect.toon",
-      "5d-wave/agents/acceptance-designer.toon",
-      "5d-wave/agents/skeleton-builder.toon",
-      "5d-wave/agents/researcher.toon",
-      "5d-wave/agents/devop.toon",
-      "5d-wave/agents/troubleshooter.toon",
-      "5d-wave/agents/visual-architect.toon",
-      "5d-wave/agents/illustrator.toon",
-      "5d-wave/agents/data-engineer.toon"
+      "nWave/agents/product-owner.toon",
+      "nWave/agents/solution-architect.toon",
+      "nWave/agents/acceptance-designer.toon",
+      "nWave/agents/skeleton-builder.toon",
+      "nWave/agents/researcher.toon",
+      "nWave/agents/devop.toon",
+      "nWave/agents/troubleshooter.toon",
+      "nWave/agents/visual-architect.toon",
+      "nWave/agents/illustrator.toon",
+      "nWave/agents/data-engineer.toon"
     ],
     "acceptance_criteria": [
       {
@@ -147,7 +147,7 @@
         "description": "Verify all 10 .toon files compile without errors",
         "assertions": [
           "For each agent in [product-owner, solution-architect, acceptance-designer, skeleton-builder, researcher, devop, troubleshooter, visual-architect, illustrator, data-engineer]:",
-          "  compiled = compile_toon(f'5d-wave/agents/{agent}.toon')",
+          "  compiled = compile_toon(f'nWave/agents/{agent}.toon')",
           "  assert compiled.exit_code == 0, f'{agent}: Compilation failed with exit code {compiled.exit_code}'",
           "  assert compiled.output_file_exists, f'{agent}: No output file created'",
           "  assert 'ERROR' not in compiled.stderr, f'{agent}: Compilation errors in stderr'"
@@ -159,7 +159,7 @@
         "assertions": [
           "For each agent:",
           "  original = load_from_archive(f'archive/pre-toon-migration/agents/{agent}.md')",
-          "  compiled = load_compiled(f'5d-wave/agents/{agent}.md')",
+          "  compiled = load_compiled(f'nWave/agents/{agent}.md')",
           "  original_commands = extract_commands(original)",
           "  compiled_commands = extract_commands(compiled)",
           "  assert set(original_commands) == set(compiled_commands), f'{agent}: Command mismatch. Missing: {set(original_commands) - set(compiled_commands)}'"
@@ -171,7 +171,7 @@
         "assertions": [
           "For each agent:",
           "  original = load_from_archive(f'archive/pre-toon-migration/agents/{agent}.md')",
-          "  compiled = load_compiled(f'5d-wave/agents/{agent}.md')",
+          "  compiled = load_compiled(f'nWave/agents/{agent}.md')",
           "  original_deps = extract_dependencies(original)",
           "  compiled_deps = extract_dependencies(compiled)",
           "  assert set(original_deps) == set(compiled_deps), f'{agent}: Dependency mismatch. Missing: {set(original_deps) - set(compiled_deps)}'"
@@ -184,7 +184,7 @@
         "assertions": [
           "For each agent:",
           "  baseline_tokens = count_tokens_from_archive(f'archive/pre-toon-migration/agents/{agent}.md')",
-          "  toon_tokens = count_tokens(f'5d-wave/agents/{agent}.toon')",
+          "  toon_tokens = count_tokens(f'nWave/agents/{agent}.toon')",
           "  savings_percentage = ((baseline_tokens - toon_tokens) / baseline_tokens) * 100",
           "  document_savings(agent, baseline_tokens, toon_tokens, savings_percentage)",
           "  # NOTE: No hard threshold - documentation only"
@@ -195,7 +195,7 @@
         "description": "Verify all compiled outputs have valid YAML frontmatter with required fields",
         "assertions": [
           "For each agent:",
-          "  compiled = load_compiled(f'5d-wave/agents/{agent}.md')",
+          "  compiled = load_compiled(f'nWave/agents/{agent}.md')",
           "  assert compiled.has_yaml_frontmatter, f'{agent}: No YAML frontmatter found'",
           "  assert 'agent_id' in compiled.metadata, f'{agent}: Missing agent_id in frontmatter'",
           "  assert 'commands' in compiled.metadata, f'{agent}: Missing commands in frontmatter'",
@@ -209,7 +209,7 @@
         "assertions": [
           "For each agent:",
           "  original = load_from_archive(f'archive/pre-toon-migration/agents/{agent}.md')",
-          "  compiled = load_compiled(f'5d-wave/agents/{agent}.md')",
+          "  compiled = load_compiled(f'nWave/agents/{agent}.md')",
           "  critical_sections = ['persona', 'commands', 'dependencies']",
           "  for section in critical_sections:",
           "    assert section in compiled.sections, f'{agent}: Missing critical section {section}'",
@@ -247,7 +247,7 @@
       "   b. Document results: which checks passed, which failed, blocking issues",
       "   c. HALT if any CRITICAL severity check fails - escalate with estimated remediation time",
       "   d. Verify tools/toon/README.md contains: TOON v3.0 spec, compiler location/syntax, token counting methodology, conversion examples",
-      "   e. Verify archive/pre-toon-migration/agents/ has 28 files from correct source (5d-wave/agents/)",
+      "   e. Verify archive/pre-toon-migration/agents/ has 28 files from correct source (nWave/agents/)",
       "   f. Verify baseline token measurements exist and are documented",
       "   g. Only proceed when all checks PASS",
       "1. BASELINE VERIFICATION:",
@@ -363,7 +363,7 @@
         "severity": "CRITICAL",
         "detection": "Prerequisite check #3 fails: archive incomplete or no baseline token counts",
         "action": "HALT execution immediately",
-        "escalation": "Complete Phase 2.4 archive creation AND measure baseline token counts for all 28 agents",
+        "escalation": "Complete Phase 2.4 archive creation AND measure baseline token counts for all 26 agents",
         "estimated_resolution": "2 hours",
         "rationale": "Cannot measure token savings without baseline - acceptance criteria validation impossible"
       },
@@ -397,9 +397,9 @@
       {
         "scenario": "Archive from wrong source path",
         "severity": "HIGH",
-        "detection": "Prerequisite check #7 fails: archive contains dist/ files instead of 5d-wave/agents/",
+        "detection": "Prerequisite check #7 fails: archive contains dist/ files instead of nWave/agents/",
         "action": "HALT execution, verify source correctness",
-        "escalation": "Re-run Phase 2.4 with correct source path 5d-wave/agents/",
+        "escalation": "Re-run Phase 2.4 with correct source path nWave/agents/",
         "estimated_resolution": "1-2 hours",
         "rationale": "Baseline comparison uses wrong files - all token measurements invalid"
       },
@@ -537,9 +537,9 @@
         "blocker": "Dependency Chain Broken (Phase 2.4 Source Path Ambiguity)",
         "original_severity": "HIGH (7/10)",
         "original_risk": "Baseline comparison uses wrong files - all token measurements invalid",
-        "mitigation": "Added HIGH prerequisite check #7: Verify archive/pre-toon-migration/agents/ contains SOURCE files from 5d-wave/agents/ NOT compiled dist/ide/agents/",
+        "mitigation": "Added HIGH prerequisite check #7: Verify archive/pre-toon-migration/agents/ contains SOURCE files from nWave/agents/ NOT compiled dist/ide/agents/",
         "mitigation_type": "Prerequisite validation with explicit source path verification",
-        "validation_method": "Verify archive contains files from correct source directory (5d-wave/agents/)",
+        "validation_method": "Verify archive contains files from correct source directory (nWave/agents/)",
         "estimated_resolution_if_missing": "1-2 hours (Re-run Phase 2.4 with correct path)",
         "blast_radius_prevented": "All token savings measurements based on wrong baseline, invalid success criteria validation"
       }

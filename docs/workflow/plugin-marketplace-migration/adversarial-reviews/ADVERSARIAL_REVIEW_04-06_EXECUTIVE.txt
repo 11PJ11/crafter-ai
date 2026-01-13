@@ -22,10 +22,10 @@ VERIFIED FACTS
 ================================================================================
 
 File System Check:
-  ls /mnt/c/Repositories/Projects/ai-craft/5d-wave/tasks/dw/*.toon
+  ls /mnt/c/Repositories/Projects/ai-craft/nWave/tasks/dw/*.toon
   Result: NO FILES FOUND (zero .toon files)
 
-  ls /mnt/c/Repositories/Projects/ai-craft/5d-wave/tasks/dw/*.md
+  ls /mnt/c/Repositories/Projects/ai-craft/nWave/tasks/dw/*.md
   Result: 20 files (all commands remain in .md format)
 
 CONCLUSION: Steps 4.1-4.5 produced ZERO output. Step 4.6 has no foundation.

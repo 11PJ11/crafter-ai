@@ -77,7 +77,7 @@
   },
   "deliverables": {
     "files_to_create": [
-      "5d-wave/templates/COMMAND_TEMPLATE.toon (Option A) OR 5d-wave/templates/COMMAND_TEMPLATE.md (Option B)"
+      "nWave/templates/COMMAND_TEMPLATE.toon (Option A) OR nWave/templates/COMMAND_TEMPLATE.md (Option B)"
     ],
     "acceptance_criteria": [
       "PREREQUISITE CHECK PASSED: TOON toolchain exists OR fallback approach approved",

@@ -183,7 +183,7 @@ Phase 4-8: Downstream phases (dependent on Phase 3.2 completion)
 - `/mnt/c/Repositories/Projects/ai-craft/docs/workflow/ADVERSARIAL_REVIEW_01-01.md` (Phase 1 related)
 
 ### Reviewer Agents (Being Converted)
-- `/mnt/c/Repositories/Projects/ai-craft/5d-wave/agents/*-reviewer.md` (11-13 files)
+- `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/*-reviewer.md` (11-13 files)
 
 ---
 

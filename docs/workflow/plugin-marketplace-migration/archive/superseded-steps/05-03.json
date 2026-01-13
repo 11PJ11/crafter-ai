@@ -29,7 +29,7 @@
   },
   "deliverables": {
     "files_to_create": [
-      "5d-wave/skills/mikado/SKILL.toon"
+      "nWave/skills/mikado/SKILL.toon"
     ],
     "acceptance_criteria": [
       "Skill compiles to valid SKILL.md",

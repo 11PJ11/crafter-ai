@@ -30,7 +30,7 @@
   },
   "deliverables": {
     "files_to_create": [
-      "5d-wave/skills/develop/SKILL.toon"
+      "nWave/skills/develop/SKILL.toon"
     ],
     "acceptance_criteria": [
       "Skill compiles to valid SKILL.md",
@@ -90,7 +90,7 @@
       {
         "id": "CONTRA-1",
         "title": "SKILL.toon format assumed but not specified anywhere in project",
-        "contradiction": "Task says 'Create develop skill with' and 'Skill compiles to valid SKILL.md' but NOWHERE in the project (phases 1-5 so far) is there any specification of what TOON syntax looks like for SKILLS. Phase 4 created 20 COMMANDS in TOON but the file 5d-wave/skills/ does not exist and no SKILL template is documented.",
+        "contradiction": "Task says 'Create develop skill with' and 'Skill compiles to valid SKILL.md' but NOWHERE in the project (phases 1-5 so far) is there any specification of what TOON syntax looks like for SKILLS. Phase 4 created 20 COMMANDS in TOON but the file nWave/skills/ does not exist and no SKILL template is documented.",
         "severity": "CRITICAL",
         "impact": "Implementer cannot write SKILL.toon without understanding the syntax. Will either guess (incompatible with compiler) or discover mid-implementation that TOON command syntax /= TOON skill syntax.",
         "failure_mode": "Implementer creates SKILL.toon that looks like COMMAND.toon. Compiler rejects. Hours wasted discovering format mismatch."
@@ -529,7 +529,7 @@
     "hidden_dependencies": [
       {
         "dependency": "SKILL template or specification",
-        "location": "Not found in 5d-wave/templates/ or documented in baseline",
+        "location": "Not found in nWave/templates/ or documented in baseline",
         "impact": "Critical - cannot implement skill definition without understanding TOON syntax for skills",
         "blocking": true
       },
@@ -620,7 +620,7 @@
         "item": "Create SKILL_TEMPLATE.toon if not present",
         "status": "BLOCKING",
         "owner": "Implementation team",
-        "verification": "Template file exists in 5d-wave/templates/"
+        "verification": "Template file exists in nWave/templates/"
       },
       {
         "item": "Clarify workflow step semantics",

@@ -77,7 +77,7 @@
   },
   "deliverables": {
     "files_to_create": [
-      "5d-wave/templates/AGENT_TEMPLATE.toon (Option A) OR 5d-wave/templates/AGENT_TEMPLATE.md (Option B)"
+      "nWave/templates/AGENT_TEMPLATE.toon (Option A) OR nWave/templates/AGENT_TEMPLATE.md (Option B)"
     ],
     "acceptance_criteria": [
       "PREREQUISITE CHECK PASSED: TOON toolchain exists OR fallback approach approved",
@@ -232,7 +232,7 @@
       ],
       "RISK_MITIGATION_EFFECTIVENESS": "Prerequisite checks reduce risk from 8.5/10 to 4.0/10 by preventing execution with missing dependencies"
     },
-    "blast_radius": "CRITICAL - Phase 6 is pilot for Phase 7 batch migration (28 agents). Failure cascades to Phase 7, potentially invalidating entire 6-7 phase sequence. If Phase 6 template incompatible with agents, Phase 7 fails. Recovery: rework Phase 6 template (2h) + reconvert all 28 agents (4-6h) = 6-8 hour setback.",
+    "blast_radius": "CRITICAL - Phase 6 is pilot for Phase 7 batch migration (26 agents). Failure cascades to Phase 7, potentially invalidating entire 6-7 phase sequence. If Phase 6 template incompatible with agents, Phase 7 fails. Recovery: rework Phase 6 template (2h) + reconvert all 26 agents (4-6h) = 6-8 hour setback.",
     "execution_readiness": "NOT READY without prerequisite verification → READY after prerequisite checks pass → BLOCKED if checks fail and Option C chosen"
   },
   "review_metadata": {

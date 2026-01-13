@@ -40,8 +40,8 @@
     "prerequisite_artifacts_from_05_01": [
       "docs/toon-v3-skill-syntax-specification.md (REQUIRED - from 05-01 Phase A)",
       "docs/skill-invocation-mechanism.md (REQUIRED - from 05-01 Phase A)",
-      "5d-wave/templates/SKILL_TEMPLATE.toon (REQUIRED - from 05-01 Phase A)",
-      "5d-wave/skills/develop/SKILL.md (REQUIRED - compiled example from 05-01 Phase B)",
+      "nWave/templates/SKILL_TEMPLATE.toon (REQUIRED - from 05-01 Phase A)",
+      "nWave/skills/develop/SKILL.md (REQUIRED - compiled example from 05-01 Phase B)",
       "tests/skills/skill_test_environment_setup.md (REQUIRED - from 05-01 Phase A)",
       "docs/trigger-pattern-conflict-matrix.md (REQUIRED - from 05-01 Phase B or created in 05-02)"
     ],
@@ -57,8 +57,8 @@
 
   "deliverables": {
     "files_to_create": [
-      "5d-wave/skills/refactor/SKILL.toon",
-      "5d-wave/skills/refactor/SKILL.md (compiled output)",
+      "nWave/skills/refactor/SKILL.toon",
+      "nWave/skills/refactor/SKILL.md (compiled output)",
       "docs/trigger-pattern-conflict-matrix.md (if not created in 05-01)"
     ],
     "acceptance_criteria": [
@@ -112,7 +112,7 @@
     "workflow": [
       "0. BLOCKER VERIFICATION: Confirm ALL 05-01 Phase A+B deliverables exist (TOON syntax spec, invocation mechanism, template, develop skill example, test environment, conflict matrix)",
       "1. Blocker Check: Read docs/toon-v3-skill-syntax-specification.md and docs/skill-invocation-mechanism.md - if missing, STOP and escalate to 05-01",
-      "2. Copy SKILL_TEMPLATE.toon from 05-01 to 5d-wave/skills/refactor/SKILL.toon",
+      "2. Copy SKILL_TEMPLATE.toon from 05-01 to nWave/skills/refactor/SKILL.toon",
       "3. Define refactor-specific trigger patterns: 'refactor-level-1' through 'refactor-level-6', 'progressive-refactoring', 'code-structure-improvement', 'cleanup-codebase', 'refactoring sistematico', 'pulisci il codice'",
       "4. CRITICAL: EXCLUDE conflicting patterns: 'improve code', 'refactor' (generic), 'code improvement', 'better code'",
       "5. Reference progressive refactoring methodology with LIMITED scope: (a) All 6 level names with symbols (🟨🟢🟢🟢🔵🔵), (b) One-sentence description per level, (c) Decision guidance table (refactor vs develop vs mikado)",
@@ -275,11 +275,11 @@
       "from_05_01_phase_a": [
         "docs/toon-v3-skill-syntax-specification.md",
         "docs/skill-invocation-mechanism.md",
-        "5d-wave/templates/SKILL_TEMPLATE.toon",
+        "nWave/templates/SKILL_TEMPLATE.toon",
         "tests/skills/skill_test_environment_setup.md"
       ],
       "from_05_01_phase_b": [
-        "5d-wave/skills/develop/SKILL.md (example)",
+        "nWave/skills/develop/SKILL.md (example)",
         "docs/trigger-pattern-conflict-matrix.md (or created in 05-02)"
       ],
       "blocking_condition": "If ANY of these 6 artifacts missing, step 05-02 CANNOT START - must escalate to 05-01"

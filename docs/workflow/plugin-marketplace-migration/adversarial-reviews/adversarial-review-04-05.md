@@ -437,7 +437,7 @@ finalize @agent 999999999999999
 **Risk**: Not explicitly stated; assumed but not verified
 
 ### IP4: Artifact Location Integration
-**Assumption**: Files created in `5d-wave/tasks/dw/` directory
+**Assumption**: Files created in `nWave/tasks/dw/` directory
 **Risk**: Task 04-06 depends on exact path; any deviation breaks validation
 
 ---

@@ -59,8 +59,8 @@
   },
   "deliverables": {
     "files_to_create": [
-      "5d-wave/tasks/dw/distill.toon",
-      "5d-wave/tasks/dw/skeleton.toon"
+      "nWave/tasks/dw/distill.toon",
+      "nWave/tasks/dw/skeleton.toon"
     ],
     "acceptance_criteria": [
       "Commands compile successfully with tools/toon/compiler.py (exit code 0)",
@@ -132,7 +132,7 @@
       "setup_requirements": [
         "pytest installed (pip install pytest>=7.0.0)",
         "tools/toon/compiler.py accessible in PATH or via absolute path",
-        "Source files available: 5d-wave/tasks/dw/distill.md, skeleton.md"
+        "Source files available: nWave/tasks/dw/distill.md, skeleton.md"
       ]
     },
     "tdd_workflow": {
@@ -187,8 +187,8 @@
     "source_files_available": {
       "requirement": "Source files (distill.md, skeleton.md) must be accessible",
       "verification_steps": [
-        "Confirm 5d-wave/tasks/dw/distill.md exists and is readable",
-        "Confirm 5d-wave/tasks/dw/skeleton.md exists and is readable",
+        "Confirm nWave/tasks/dw/distill.md exists and is readable",
+        "Confirm nWave/tasks/dw/skeleton.md exists and is readable",
         "Verify both files contain YAML frontmatter with agent-activation headers"
       ],
       "blocking": true,
@@ -198,12 +198,12 @@
   "toon_compiler": {
     "tool_location": "tools/toon/compiler.py (from Phase 1)",
     "purpose": "Transforms TOON source to Claude Code compliant output",
-    "input": "5d-wave/tasks/dw/*.toon (TOON format)",
+    "input": "nWave/tasks/dw/*.toon (TOON format)",
     "output": "dist/commands/dw/*.md (Markdown format)",
     "invocation": "python tools/toon/compiler.py <input.toon> --validate --output <output.md>",
     "invocation_examples": [
-      "python tools/toon/compiler.py 5d-wave/tasks/dw/distill.toon --validate --output dist/commands/dw/distill.md",
-      "python tools/toon/compiler.py 5d-wave/tasks/dw/skeleton.toon --validate --output dist/commands/dw/skeleton.md"
+      "python tools/toon/compiler.py nWave/tasks/dw/distill.toon --validate --output dist/commands/dw/distill.md",
+      "python tools/toon/compiler.py nWave/tasks/dw/skeleton.toon --validate --output dist/commands/dw/skeleton.md"
     ],
     "success_criteria": [
       "Exit code = 0 (no errors)",
@@ -391,7 +391,7 @@
       {
         "name": "test_e2e_command_migration_pipeline",
         "purpose": "Verify complete migration: TOON → Parse → Template → Validate → Output",
-        "input": "Real TOON command file from 5d-wave/tasks/dw/",
+        "input": "Real TOON command file from nWave/tasks/dw/",
         "steps": "Parse TOON → Apply command template → Validate output → Write to dist/",
         "expected": "Valid command.md in dist/commands/dw/ matching Claude Code spec"
       },
@@ -461,7 +461,7 @@
       "3. CONVERT FIRST COMMAND (distill.md → distill.toon)",
       "   a. Read tools/toon/TOON-v3.0-SPEC.md for format reference",
       "   b. Convert distill.md to distill.toon following spec",
-      "   c. Compile: python tools/toon/compiler.py 5d-wave/tasks/dw/distill.toon --validate --output dist/commands/dw/distill.md",
+      "   c. Compile: python tools/toon/compiler.py nWave/tasks/dw/distill.toon --validate --output dist/commands/dw/distill.md",
       "   d. Run tests - expect SOME failures (metadata, content validation)",
       "4. REFINE CONVERSION (TDD GREEN PHASE)",
       "   a. Fix metadata validation failures (add missing wave, agent-id fields)",

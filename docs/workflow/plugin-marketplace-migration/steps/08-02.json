@@ -43,7 +43,7 @@
       {
         "prerequisite": "Component accessibility definition",
         "description": "Define operationally what 'agents/commands/skills accessible after install' means",
-        "validation_method": "Specification states: accessible = (import-able Python module) OR (listed in Claude Code help) OR (invocable via /dw:* command) OR (registered in plugin registry)",
+        "validation_method": "Specification states: accessible = (import-able Python module) OR (listed in Claude Code help) OR (invocable via /nw:* command) OR (registered in plugin registry)",
         "blocker_if_missing": false,
         "mitigation": "DEFAULT DEFINITION: Accessible = files exist in correct directories AND plugin.json references them correctly. Advanced validation (import/invocation) deferred to 08-03."
       },
@@ -140,7 +140,7 @@
       "commands": 20,
       "skills": 3,
       "evidence": "dist/ide/agents/dw/config.json shows 'agents_processed': 26, not 28",
-      "rationale": "Hardcoded count of 28 agents was incorrect - actual build processes 26 agents. Tests expecting 28 would fail immediately."
+      "rationale": "Hardcoded count of 26 agents was incorrect - actual build processes 26 agents. Tests expecting 28 would fail immediately."
     },
     "test_implementation_guidance": "Use dynamic count validation from plugin.json manifest rather than hardcoded numbers. Tests should: (1) Load plugin.json, (2) Count agents/commands/skills referenced, (3) Verify files exist for each reference. This prevents brittleness when plugin evolves."
   },
@@ -216,11 +216,11 @@
           "issue_id": "AGENT_COUNT_MISMATCH",
           "title": "Hardcoded agent count 28 vs actual 26",
           "severity": "CRITICAL",
-          "description": "Quality gates and acceptance criteria specify 28 agents, but actual build output processes only 26 agents. Tests will fail immediately on count assertion.",
+          "description": "Quality gates and acceptance criteria specify 26 agents, but actual build output processes only 26 agents. Tests will fail immediately on count assertion.",
           "evidence": [
-            "Roadmap baseline.yaml: '28 agents' specified",
+            "Roadmap baseline.yaml: '26 agents' specified",
             "Build reality dist/ide/agents/dw/config.json: 'agents_processed': 26",
-            "Quality gates line 106: 'All 28 agents accessible' → will fail",
+            "Quality gates line 106: 'All 26 agents accessible' → will fail",
             "Acceptance criteria line 66: 'All 26 agents accessible' → CORRECTED in this step but inconsistent with other steps"
           ],
           "impact": "Phase 8 validation tests fail with count mismatches. Plugin installation validation produces false negatives. Success criteria SC1 becomes unvalidatable.",
@@ -268,7 +268,7 @@
           "correction_applied": "Added prerequisite to identify installation mechanism BEFORE writing tests, with fallback to manual installation"
         },
         {
-          "assumption": "28 agents will be accessible after installation",
+          "assumption": "26 agents will be accessible after installation",
           "reality": "Only 26 agents exist in build output",
           "risk": "Tests fail on assertion, false negatives reported",
           "correction_applied": "Corrected acceptance criteria and quality gates to expect 26 agents"

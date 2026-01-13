@@ -175,7 +175,7 @@
       {
         "id": "ASSUME-4",
         "assumption": "All parsed agents have identical structure (same keys, command formats)",
-        "why_dangerous": "28 agents will vary - some may have optional sections, different command counts, specialized configuration. Template assumes homogeneous input.",
+        "why_dangerous": "26 agents will vary - some may have optional sections, different command counts, specialized configuration. Template assumes homogeneous input.",
         "likelihood": "HIGH",
         "consequence": "Template produces output for 'standard' agents but fails on edge cases (agents with 3 commands, agents with 50 commands, agents with specialized fields)."
       },
@@ -242,7 +242,7 @@
         "id": "FAIL-1",
         "scenario": "Integration failure: Template and parser mismatch",
         "trigger": "Step 1.2 completes successfully, step 1.1 completes with different output schema than template expects",
-        "consequence": "Template-rendered agents missing required sections or with malformed structure. Build fails on all 28 agents.",
+        "consequence": "Template-rendered agents missing required sections or with malformed structure. Build fails on all 26 agents.",
         "detection_time": "Phase 2 (too late to fix in Phase 1)",
         "recovery_difficulty": "EXTREME - Requires re-implementation of template or parser"
       },
@@ -252,7 +252,7 @@
         "trigger": "Agent descriptions with special characters (e.g., 'Uses: X > Y ratio') rendered without escaping",
         "consequence": "Generated agent.md files are syntactically invalid YAML. Agents fail to load at runtime. Users report broken agents.",
         "detection_time": "Runtime (when users try to use agents)",
-        "recovery_difficulty": "HIGH - Requires regenerating all 28 agents and republishing"
+        "recovery_difficulty": "HIGH - Requires regenerating all 26 agents and republishing"
       },
       {
         "id": "FAIL-3",

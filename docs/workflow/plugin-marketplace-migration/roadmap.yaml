@@ -94,7 +94,7 @@ phases:
           Create Jinja2 template that transforms parsed agent data into
           Claude Code compliant agent.md format with YAML frontmatter.
           Template must produce output matching existing agent structure.
-        motivation: "Agent template defines output format for 28 agent files"
+        motivation: "Agent template defines output format for 26 agent files"
         estimated_hours: 2-3
         dependencies: ["1.1"]
         files_to_create:
@@ -268,9 +268,9 @@ phases:
         estimated_hours: 3-4
         dependencies: ["1.6"]
         files_to_create:
-          - "5d-wave/agents/software-crafter.toon"
+          - "nWave/agents/software-crafter.toon"
         files_to_keep:
-          - "5d-wave/agents/software-crafter.md"  # Keep for comparison until validated
+          - "nWave/agents/software-crafter.md"  # Keep for comparison until validated
         acceptance_criteria:
           - "TOON file contains all agent metadata"
           - "TOON file contains all commands"
@@ -359,7 +359,7 @@ phases:
         files_to_create:
           - "archive/pre-toon-migration/.gitkeep"
         acceptance_criteria:
-          - "All 28 agent .md files copied to archive"
+          - "All 26 agent .md files copied to archive"
           - "All 20 command .md files copied to archive"
           - "Archive directory committed to git"
           - "Original files remain in place until Phase 8"
@@ -379,7 +379,7 @@ phases:
 # =============================================================================
   - number: 3
     name: "Agent Batch Migration"
-    purpose: "Convert remaining 27 agents to TOON format"
+    purpose: "Convert remaining 25 agents to TOON format"
     success_criteria: ["SC1", "SC7"]
     estimated_hours: 12-16
     parallel_opportunities: "All steps can run in parallel (independent files)"
@@ -395,16 +395,16 @@ phases:
         estimated_hours: 5
         dependencies: ["2.4"]  # Requires archive before batch migration
         files_to_create:
-          - "5d-wave/agents/product-owner.toon"
-          - "5d-wave/agents/solution-architect.toon"
-          - "5d-wave/agents/acceptance-designer.toon"
-          - "5d-wave/agents/skeleton-builder.toon"
-          - "5d-wave/agents/researcher.toon"
-          - "5d-wave/agents/devop.toon"
-          - "5d-wave/agents/troubleshooter.toon"
-          - "5d-wave/agents/visual-architect.toon"
-          - "5d-wave/agents/illustrator.toon"
-          - "5d-wave/agents/data-engineer.toon"
+          - "nWave/agents/product-owner.toon"
+          - "nWave/agents/solution-architect.toon"
+          - "nWave/agents/acceptance-designer.toon"
+          - "nWave/agents/skeleton-builder.toon"
+          - "nWave/agents/researcher.toon"
+          - "nWave/agents/devop.toon"
+          - "nWave/agents/troubleshooter.toon"
+          - "nWave/agents/visual-architect.toon"
+          - "nWave/agents/illustrator.toon"
+          - "nWave/agents/data-engineer.toon"
         acceptance_criteria:
           - "All 10 TOON files compile without errors"
           - "All compiled outputs have valid Claude Code format"
@@ -434,17 +434,17 @@ phases:
         estimated_hours: 5
         dependencies: ["2.4"]  # Requires archive before batch migration
         files_to_create:
-          - "5d-wave/agents/acceptance-designer-reviewer.toon"
-          - "5d-wave/agents/agent-builder-reviewer.toon"
-          - "5d-wave/agents/data-engineer-reviewer.toon"
-          - "5d-wave/agents/devop-reviewer.toon"
-          - "5d-wave/agents/illustrator-reviewer.toon"
-          - "5d-wave/agents/product-owner-reviewer.toon"
-          - "5d-wave/agents/skeleton-builder-reviewer.toon"
-          - "5d-wave/agents/software-crafter-reviewer.toon"
-          - "5d-wave/agents/solution-architect-reviewer.toon"
-          - "5d-wave/agents/troubleshooter-reviewer.toon"
-          - "5d-wave/agents/visual-architect-reviewer.toon"
+          - "nWave/agents/acceptance-designer-reviewer.toon"
+          - "nWave/agents/agent-builder-reviewer.toon"
+          - "nWave/agents/data-engineer-reviewer.toon"
+          - "nWave/agents/devop-reviewer.toon"
+          - "nWave/agents/illustrator-reviewer.toon"
+          - "nWave/agents/product-owner-reviewer.toon"
+          - "nWave/agents/skeleton-builder-reviewer.toon"
+          - "nWave/agents/software-crafter-reviewer.toon"
+          - "nWave/agents/solution-architect-reviewer.toon"
+          - "nWave/agents/troubleshooter-reviewer.toon"
+          - "nWave/agents/visual-architect-reviewer.toon"
         acceptance_criteria:
           - "All 11 reviewer TOON files compile without errors"
           - "Reviewer agents maintain critique dimensions"
@@ -470,19 +470,19 @@ phases:
         estimated_hours: 2-3
         dependencies: ["2.4"]  # Requires archive before batch migration
         files_to_create:
-          - "5d-wave/agents/agent-builder.toon"
-          - "5d-wave/agents/avvocato.toon"
-          - "5d-wave/agents/cv-optimizer.toon"
-          - "5d-wave/agents/novel-editor.toon"
-          - "5d-wave/agents/novel-editor-reviewer.toon"
-          - "5d-wave/agents/researcher-reviewer.toon"
+          - "nWave/agents/agent-builder.toon"
+          - "nWave/agents/avvocato.toon"
+          - "nWave/agents/cv-optimizer.toon"
+          - "nWave/agents/novel-editor.toon"
+          - "nWave/agents/novel-editor-reviewer.toon"
+          - "nWave/agents/researcher-reviewer.toon"
         acceptance_criteria:
           - "All 6 TOON files compile without errors"
-          - "Total: 28 agent.toon files exist"
+          - "Total: 26 agent.toon files exist"
           - "Total: 0 agent.md source files remain (moved to archive)"
         tdd_approach:
           outer_test: |
-            GIVEN all agent .toon files in 5d-wave/agents/
+            GIVEN all agent .toon files in nWave/agents/
             WHEN I count .toon files
             THEN count == 28
           inner_tests:
@@ -510,8 +510,8 @@ phases:
         estimated_hours: 1
         dependencies: ["2.4"]  # Requires archive before batch migration
         files_to_create:
-          - "5d-wave/tasks/dw/start.toon"
-          - "5d-wave/tasks/dw/discuss.toon"
+          - "nWave/tasks/dw/start.toon"
+          - "nWave/tasks/dw/discuss.toon"
         acceptance_criteria:
           - "Commands compile with agent-activation headers"
           - "Wave metadata correct (DISCUSS)"
@@ -532,8 +532,8 @@ phases:
         estimated_hours: 1
         dependencies: ["2.4"]  # Requires archive before batch migration
         files_to_create:
-          - "5d-wave/tasks/dw/design.toon"
-          - "5d-wave/tasks/dw/diagram.toon"
+          - "nWave/tasks/dw/design.toon"
+          - "nWave/tasks/dw/diagram.toon"
         acceptance_criteria:
           - "Commands compile with agent-activation headers"
           - "Wave metadata correct (DESIGN)"
@@ -554,8 +554,8 @@ phases:
         estimated_hours: 1
         dependencies: ["2.4"]  # Requires archive before batch migration
         files_to_create:
-          - "5d-wave/tasks/dw/distill.toon"
-          - "5d-wave/tasks/dw/skeleton.toon"
+          - "nWave/tasks/dw/distill.toon"
+          - "nWave/tasks/dw/skeleton.toon"
         acceptance_criteria:
           - "Commands compile with agent-activation headers"
           - "Wave metadata correct (DISTILL)"
@@ -579,14 +579,14 @@ phases:
         estimated_hours: 4
         dependencies: ["2.4"]  # Requires archive before batch migration
         files_to_create:
-          - "5d-wave/tasks/dw/baseline.toon"
-          - "5d-wave/tasks/dw/roadmap.toon"
-          - "5d-wave/tasks/dw/split.toon"
-          - "5d-wave/tasks/dw/execute.toon"
-          - "5d-wave/tasks/dw/review.toon"
-          - "5d-wave/tasks/dw/develop.toon"
-          - "5d-wave/tasks/dw/refactor.toon"
-          - "5d-wave/tasks/dw/mikado.toon"
+          - "nWave/tasks/dw/baseline.toon"
+          - "nWave/tasks/dw/roadmap.toon"
+          - "nWave/tasks/dw/split.toon"
+          - "nWave/tasks/dw/execute.toon"
+          - "nWave/tasks/dw/review.toon"
+          - "nWave/tasks/dw/develop.toon"
+          - "nWave/tasks/dw/refactor.toon"
+          - "nWave/tasks/dw/mikado.toon"
         acceptance_criteria:
           - "All 8 commands compile with agent-activation headers"
           - "Wave metadata correct (DEVELOP)"
@@ -611,8 +611,8 @@ phases:
         estimated_hours: 1
         dependencies: ["2.4"]  # Requires archive before batch migration
         files_to_create:
-          - "5d-wave/tasks/dw/deliver.toon"
-          - "5d-wave/tasks/dw/finalize.toon"
+          - "nWave/tasks/dw/deliver.toon"
+          - "nWave/tasks/dw/finalize.toon"
         acceptance_criteria:
           - "Commands compile with agent-activation headers"
           - "Wave metadata correct (DEMO)"
@@ -635,10 +635,10 @@ phases:
         estimated_hours: 2
         dependencies: ["2.4"]  # Requires archive before batch migration
         files_to_create:
-          - "5d-wave/tasks/dw/research.toon"
-          - "5d-wave/tasks/dw/root-why.toon"
-          - "5d-wave/tasks/dw/git.toon"
-          - "5d-wave/tasks/dw/forge.toon"
+          - "nWave/tasks/dw/research.toon"
+          - "nWave/tasks/dw/root-why.toon"
+          - "nWave/tasks/dw/git.toon"
+          - "nWave/tasks/dw/forge.toon"
         acceptance_criteria:
           - "Commands compile with agent-activation headers"
           - "Wave metadata correct (CROSS_WAVE)"
@@ -646,7 +646,7 @@ phases:
         tdd_approach:
           outer_test: |
             GIVEN all command .toon files
-            WHEN I count .toon files in 5d-wave/tasks/dw/
+            WHEN I count .toon files in nWave/tasks/dw/
             THEN count == 20
           inner_tests:
             - "test_all_commands_migrated"
@@ -679,7 +679,7 @@ phases:
         estimated_hours: 2
         dependencies: ["1.6"]  # Requires full toolchain validated
         files_to_create:
-          - "5d-wave/skills/develop/SKILL.toon"
+          - "nWave/skills/develop/SKILL.toon"
         acceptance_criteria:
           - "Skill compiles to valid SKILL.md"
           - "Trigger patterns include Italian and English"
@@ -712,7 +712,7 @@ phases:
         estimated_hours: 1.5
         dependencies: ["1.6"]  # Requires full toolchain validated
         files_to_create:
-          - "5d-wave/skills/refactor/SKILL.toon"
+          - "nWave/skills/refactor/SKILL.toon"
         acceptance_criteria:
           - "Skill compiles to valid SKILL.md"
           - "Trigger patterns for refactoring terminology"
@@ -739,7 +739,7 @@ phases:
         estimated_hours: 1.5
         dependencies: ["1.6"]  # Requires full toolchain validated
         files_to_create:
-          - "5d-wave/skills/mikado/SKILL.toon"
+          - "nWave/skills/mikado/SKILL.toon"
         acceptance_criteria:
           - "Skill compiles to valid SKILL.md"
           - "Trigger patterns for complex refactoring"
@@ -799,7 +799,7 @@ phases:
         estimated_hours: 1
         dependencies: ["2.4"]  # Requires archive and patterns documented
         files_to_create:
-          - "5d-wave/templates/AGENT_TEMPLATE.toon"
+          - "nWave/templates/AGENT_TEMPLATE.toon"
         acceptance_criteria:
           - "Template compiles to valid reference MD"
           - "Includes all agent structure elements"
@@ -819,7 +819,7 @@ phases:
         estimated_hours: 1
         dependencies: ["2.4"]  # Requires archive and patterns documented
         files_to_create:
-          - "5d-wave/templates/COMMAND_TEMPLATE.toon"
+          - "nWave/templates/COMMAND_TEMPLATE.toon"
         acceptance_criteria:
           - "Template compiles to valid reference MD"
           - "Includes all command structure elements"
@@ -839,7 +839,7 @@ phases:
         estimated_hours: 1
         dependencies: ["5.4"]
         files_to_create:
-          - "5d-wave/templates/SKILL_TEMPLATE.toon"
+          - "nWave/templates/SKILL_TEMPLATE.toon"
         acceptance_criteria:
           - "Template includes skill structure reference"
           - "Template documents trigger pattern format"
@@ -1047,7 +1047,7 @@ phases:
         tdd_approach:
           outer_test: |
             GIVEN installed plugin
-            WHEN I execute /dw:start -> /dw:develop -> /dw:finalize
+            WHEN I execute /nw:start -> /nw:develop -> /nw:finalize
             THEN workflow completes with constraints enforced
           inner_tests:
             - "test_wave_progression"
@@ -1129,4 +1129,4 @@ summary:
     R3_skill_invocation: "Phase 5.4 POC validation"
     R4_regression: "Phase 2 round-trip validation"
 
-  next_action: "Split roadmap into executable steps via /dw:split"
+  next_action: "Split roadmap into executable steps via /nw:split"

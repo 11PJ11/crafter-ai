@@ -4,13 +4,13 @@
   "phase": {
     "number": 3,
     "name": "Agent Batch Migration",
-    "purpose": "Convert remaining 27 agents to TOON format (28 total including pilot)"
+    "purpose": "Convert remaining 25 agents to TOON format (26 total including pilot)"
   },
   "step": {
     "number": "3.3",
     "name": "Convert Remaining Agents",
     "description": "Convert 6 remaining agents: agent-builder, avvocato, cv-optimizer, novel-editor, novel-editor-reviewer, researcher-reviewer",
-    "motivation": "Complete agent migration to reach 28 total agents in TOON format",
+    "motivation": "Complete agent migration to reach 26 total agents in TOON format",
     "estimated_hours": "5-8"
   },
   "context": {
@@ -55,24 +55,24 @@
   },
   "deliverables": {
     "files_to_create": [
-      "5d-wave/agents/agent-builder.toon",
-      "5d-wave/agents/avvocato.toon",
-      "5d-wave/agents/cv-optimizer.toon",
-      "5d-wave/agents/novel-editor.toon",
-      "5d-wave/agents/novel-editor-reviewer.toon",
-      "5d-wave/agents/researcher-reviewer.toon"
+      "nWave/agents/agent-builder.toon",
+      "nWave/agents/avvocato.toon",
+      "nWave/agents/cv-optimizer.toon",
+      "nWave/agents/novel-editor.toon",
+      "nWave/agents/novel-editor-reviewer.toon",
+      "nWave/agents/researcher-reviewer.toon"
     ],
     "acceptance_criteria": [
       "All 6 TOON files compile without errors using tools/toon compiler",
-      "Total count: 26 agent.toon files exist in 5d-wave/agents/ (1 pilot + 10 primary + 9 reviewers + 6 remaining)",
+      "Total count: 26 agent.toon files exist in nWave/agents/ (1 pilot + 10 primary + 9 reviewers + 6 remaining)",
       "All 26 compiled outputs have valid Claude Code format",
-      "Total count: 0 agent.md source files remain in 5d-wave/agents/ (all archived)",
+      "Total count: 0 agent.md source files remain in nWave/agents/ (all archived)",
       "Token savings measured and documented for all 26 agents",
       "Round-trip validation passes for all 6 remaining agents"
     ]
   },
   "tdd_approach": {
-    "outer_test": "GIVEN all 26 agent .toon files in 5d-wave/agents/\nWHEN I count .toon files AND .md files\nTHEN .toon count == 26 AND .md count == 0 (all archived)",
+    "outer_test": "GIVEN all 26 agent .toon files in nWave/agents/\nWHEN I count .toon files AND .md files\nTHEN .toon count == 26 AND .md count == 0 (all archived)",
     "inner_tests": [
       "test_all_6_remaining_agents_compile",
       "test_total_agent_toon_count_equals_26",
@@ -101,7 +101,7 @@
       "4. Compile each TOON file immediately after conversion to validate syntax",
       "5. For each agent: compare compiled output with archived original using round-trip validator",
       "6. Write tests to validate completion: 26 total agents, 0 orphan MD files, all compile successfully",
-      "7. Verify no orphan .md files remain in 5d-wave/agents/ directory",
+      "7. Verify no orphan .md files remain in nWave/agents/ directory",
       "8. Measure token savings for all 26 agents: compare total TOON source size with total archived MD baseline",
       "9. Apply refactoring level 1 for final consistency pass across all 26 agents",
       "10. DO NOT COMMIT - wait for user approval"
@@ -109,9 +109,9 @@
     "quality_gates": [
       "All prerequisite checks pass (TOON toolchain exists, archive complete, steps 3.1 and 3.2 complete)",
       "All tests passing (100% required)",
-      "Exactly 26 agent.toon files exist in 5d-wave/agents/",
+      "Exactly 26 agent.toon files exist in nWave/agents/",
       "All 26 agents compile successfully with zero errors",
-      "Exactly 0 agent.md files remain in 5d-wave/agents/ (all archived in archive/pre-toon-migration/agents/)",
+      "Exactly 0 agent.md files remain in nWave/agents/ (all archived in archive/pre-toon-migration/agents/)",
       "Round-trip validation passes for all 6 remaining agents (semantic equivalence >= 95%)",
       "Token savings measured and documented for all 26 agents (aggregate and per-agent)",
       "Refactoring applied (level 1) for final consistency",
@@ -155,8 +155,8 @@
       }
     ],
     "completion_verification": [
-      "Run: find 5d-wave/agents/ -name '*.toon' | wc -l (expect: 26)",
-      "Run: find 5d-wave/agents/ -name '*.md' | wc -l (expect: 0)",
+      "Run: find nWave/agents/ -name '*.toon' | wc -l (expect: 26)",
+      "Run: find nWave/agents/ -name '*.md' | wc -l (expect: 0)",
       "Run: ls archive/pre-toon-migration/agents/ | wc -l (expect: 26)",
       "Verify all 26 agents compile: for each .toon file, run compiler and verify exit code 0",
       "Generate token savings report: total bytes TOON source vs total bytes archived MD baseline"
@@ -176,7 +176,7 @@
       },
       {
         "blocker": "Agent count inconsistency (27 vs 28 vs 29)",
-        "mitigation": "Clarified: Phase 3 converts 27 remaining agents + 1 pilot = 28 total. Added explicit count validation in prerequisite checks.",
+        "mitigation": "Clarified: Phase 3 converts 27 remaining agents + 1 pilot = 26 total. Added explicit count validation in prerequisite checks.",
         "estimated_resolution": "Addressed in clarification"
       },
       {
@@ -189,7 +189,7 @@
       {
         "assumption": "These exact 6 agents are the REMAINING unconverted agents",
         "mitigation": "Added prerequisite check to verify steps 3.1 and 3.2 are complete before starting 3.3",
-        "action": "List all .md files in 5d-wave/agents/ BEFORE starting to confirm these 6 are actually remaining"
+        "action": "List all .md files in nWave/agents/ BEFORE starting to confirm these 6 are actually remaining"
       },
       {
         "assumption": "Phase 2.4 archive is complete with exactly 26 agents",

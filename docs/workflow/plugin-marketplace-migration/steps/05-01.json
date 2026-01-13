@@ -48,12 +48,12 @@
       "docs/toon-v3-skill-syntax-specification.md",
       "docs/skill-invocation-mechanism.md",
       "docs/constraint-embedding-format.md",
-      "5d-wave/templates/SKILL_TEMPLATE.toon",
+      "nWave/templates/SKILL_TEMPLATE.toon",
       "tests/skills/skill_test_environment_setup.md"
     ],
     "phase_b_deliverables": [
-      "5d-wave/skills/develop/SKILL.toon",
-      "5d-wave/skills/develop/SKILL.md (compiled output)"
+      "nWave/skills/develop/SKILL.toon",
+      "nWave/skills/develop/SKILL.md (compiled output)"
     ],
     "acceptance_criteria": [
       "PHASE A: All 5 prerequisite documents created and reviewed",
@@ -104,7 +104,7 @@
       "9. CHECKPOINT: Review all Phase A deliverables before proceeding"
     ],
     "phase_b_workflow": [
-      "1. Copy SKILL_TEMPLATE.toon to 5d-wave/skills/develop/SKILL.toon",
+      "1. Copy SKILL_TEMPLATE.toon to nWave/skills/develop/SKILL.toon",
       "2. Customize trigger patterns for develop skill",
       "3. Define workflow steps (implement->review->fix->refactor)",
       "4. Embed default constraints using Phase A format",
@@ -263,7 +263,7 @@
           "Phase A deliverable #1: docs/toon-v3-skill-syntax-specification.md",
           "Phase A deliverable #2: docs/skill-invocation-mechanism.md",
           "Phase A deliverable #3: docs/constraint-embedding-format.md",
-          "Phase A deliverable #4: 5d-wave/templates/SKILL_TEMPLATE.toon",
+          "Phase A deliverable #4: nWave/templates/SKILL_TEMPLATE.toon",
           "Phase A deliverable #5: tests/skills/skill_test_environment_setup.md",
           "All 5 deliverables MUST be created and reviewed before Phase B starts"
         ],
@@ -381,7 +381,7 @@
           "docs/toon-v3-skill-syntax-specification.md",
           "docs/skill-invocation-mechanism.md",
           "docs/constraint-embedding-format.md",
-          "5d-wave/templates/SKILL_TEMPLATE.toon",
+          "nWave/templates/SKILL_TEMPLATE.toon",
           "tests/skills/skill_test_environment_setup.md"
         ],
         "quality_gates": [
@@ -396,7 +396,7 @@
         "name": "Implementation (ENABLED AFTER PHASE A)",
         "estimated_hours": "2-4",
         "workflow": [
-          "1. Copy SKILL_TEMPLATE.toon to 5d-wave/skills/develop/SKILL.toon",
+          "1. Copy SKILL_TEMPLATE.toon to nWave/skills/develop/SKILL.toon",
           "2. Customize trigger patterns for develop skill (implementa, scrivi codice, TDD, implement, write code)",
           "3. Define workflow steps (implement->review->fix->refactor)",
           "4. Embed default constraints using Phase A format (no auto-report, no auto-commit)",
@@ -407,8 +407,8 @@
           "9. DO NOT COMMIT - wait for user approval"
         ],
         "deliverables": [
-          "5d-wave/skills/develop/SKILL.toon",
-          "5d-wave/skills/develop/SKILL.md (compiled output)"
+          "nWave/skills/develop/SKILL.toon",
+          "nWave/skills/develop/SKILL.md (compiled output)"
         ],
         "quality_gates": [
           "develop SKILL.toon compiles to valid SKILL.md",

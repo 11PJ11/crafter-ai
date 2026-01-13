@@ -70,7 +70,7 @@
 
 ## Categorizzazione Comandi per Plugin
 
-### 1. Commands (Invocazione Manuale /dw:xxx)
+### 1. Commands (Invocazione Manuale /nw:xxx)
 
 | Comando | Wave | Agente | Tipo |
 |---------|------|--------|------|
@@ -259,41 +259,41 @@ parallel_execution:
 - `tools/toon/templates/skill.md.j2`
 
 ### Fase 2: Migrazione Agenti a TOON
-1. Convertire `5d-wave/agents/*.md` → `5d-wave/agents/*.toon`
+1. Convertire `nWave/agents/*.md` → `nWave/agents/*.toon`
 2. Iniziare con 1 agente pilota (es. `software-crafter`)
 3. Validare round-trip: TOON → MD → confronto con originale
 4. Batch conversion degli altri agenti
 
 **File da modificare:**
-- `5d-wave/agents/software-crafter.md` → `.toon`
-- `5d-wave/agents/*.md` → `*.toon` (28 file)
+- `nWave/agents/software-crafter.md` → `.toon`
+- `nWave/agents/*.md` → `*.toon` (28 file)
 
 ### Fase 3: Migrazione Comandi a TOON
-1. Convertire `5d-wave/tasks/dw/*.md` → `*.toon`
+1. Convertire `nWave/tasks/dw/*.md` → `*.toon`
 2. Aggiornare build system per processare TOON
 
 **File da modificare:**
-- `5d-wave/tasks/dw/*.md` → `*.toon` (20 file)
+- `nWave/tasks/dw/*.md` → `*.toon` (20 file)
 - `tools/build_ide_bundle.py` (integrare TOON compiler)
 
 ### Fase 4: Creazione Skills
-1. Creare directory `5d-wave/skills/`
+1. Creare directory `nWave/skills/`
 2. Creare `develop/SKILL.toon` con full workflow integrato
 3. Creare `refactor/SKILL.toon` come sub-skill
 4. Creare `mikado/SKILL.toon` come sub-skill
 
 **File da creare:**
-- `5d-wave/skills/develop/SKILL.toon`
-- `5d-wave/skills/refactor/SKILL.toon`
-- `5d-wave/skills/mikado/SKILL.toon`
+- `nWave/skills/develop/SKILL.toon`
+- `nWave/skills/refactor/SKILL.toon`
+- `nWave/skills/mikado/SKILL.toon`
 
 ### Fase 5: Migrazione Templates
-1. Convertire `5d-wave/templates/*.yaml` → `*.toon`
+1. Convertire `nWave/templates/*.yaml` → `*.toon`
 2. Creare SKILL_TEMPLATE.toon
 
 **File da modificare:**
-- `5d-wave/templates/AGENT_TEMPLATE.yaml` → `.toon`
-- `5d-wave/templates/COMMAND_TEMPLATE.yaml` → `.toon`
+- `nWave/templates/AGENT_TEMPLATE.yaml` → `.toon`
+- `nWave/templates/COMMAND_TEMPLATE.yaml` → `.toon`
 
 ### Fase 6: Migrazione Workflow Files
 1. Definire schema TOON per baseline, roadmap, step
@@ -301,9 +301,9 @@ parallel_execution:
 3. Aggiornare comandi per generare TOON invece di YAML/JSON
 
 **File da creare/modificare:**
-- `5d-wave/schemas/baseline.toon.schema`
-- `5d-wave/schemas/roadmap.toon.schema`
-- `5d-wave/schemas/step.toon.schema`
+- `nWave/schemas/baseline.toon.schema`
+- `nWave/schemas/roadmap.toon.schema`
+- `nWave/schemas/step.toon.schema`
 
 ### Fase 7: Setup Plugin Structure
 1. Creare `.claude-plugin/plugin.json`
@@ -334,11 +334,11 @@ parallel_execution:
 | `tools/toon/parser.py` | Creare | P0 |
 | `tools/toon/compiler.py` | Creare | P0 |
 | `tools/build_ide_bundle.py` | Modificare | P1 |
-| `5d-wave/agents/software-crafter.md` | Migrare a TOON (pilota) | P1 |
-| `5d-wave/skills/develop/SKILL.toon` | Creare | P1 |
+| `nWave/agents/software-crafter.md` | Migrare a TOON (pilota) | P1 |
+| `nWave/skills/develop/SKILL.toon` | Creare | P1 |
 | `.claude-plugin/plugin.json` | Creare | P2 |
-| `5d-wave/agents/*.md` | Migrare a TOON (batch) | P2 |
-| `5d-wave/tasks/dw/*.md` | Migrare a TOON | P2 |
+| `nWave/agents/*.md` | Migrare a TOON (batch) | P2 |
+| `nWave/tasks/dw/*.md` | Migrare a TOON | P2 |
 | `marketplace.json` | Creare | P3 |
 
 ---

@@ -62,8 +62,8 @@
   },
   "deliverables": {
     "files_to_create": [
-      "5d-wave/tasks/dw/design.toon",
-      "5d-wave/tasks/dw/diagram.toon"
+      "nWave/tasks/dw/design.toon",
+      "nWave/tasks/dw/diagram.toon"
     ],
     "acceptance_criteria": [
       "Both commands compile with valid TOON v3.0 format",
@@ -99,14 +99,14 @@
       "partial_failure": "Rollback ALL conversions, fix issue, restart batch"
     },
     "purpose": "Transforms TOON source to Claude Code compliant output",
-    "input": "5d-wave/tasks/dw/*.toon (TOON format)",
+    "input": "nWave/tasks/dw/*.toon (TOON format)",
     "output": "dist/commands/dw/*.md (Markdown format)",
     "validation": "pytest tests/tools/toon/test_compiler.py"
   },
   "test_specifications": {
     "test_design_command_compiles": {
       "framework": "pytest",
-      "test_code_skeleton": "def test_design_command_compiles():\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/design.toon')\n    assert toon_file.metadata['wave'] == 'DESIGN'\n    assert toon_file.metadata['agent-id'] == 'solution-architect'\n    assert toon_file.compilation_errors == []",
+      "test_code_skeleton": "def test_design_command_compiles():\n    toon_file = TOONParser().parse('nWave/tasks/dw/design.toon')\n    assert toon_file.metadata['wave'] == 'DESIGN'\n    assert toon_file.metadata['agent-id'] == 'solution-architect'\n    assert toon_file.compilation_errors == []",
       "assertions": [
         "File parses without errors",
         "Wave metadata == DESIGN",
@@ -116,7 +116,7 @@
     },
     "test_diagram_command_compiles": {
       "framework": "pytest",
-      "test_code_skeleton": "def test_diagram_command_compiles():\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/diagram.toon')\n    assert toon_file.metadata['wave'] == 'DESIGN'\n    assert toon_file.metadata['agent-id'] == 'architecture-diagram-manager'\n    assert toon_file.compilation_errors == []",
+      "test_code_skeleton": "def test_diagram_command_compiles():\n    toon_file = TOONParser().parse('nWave/tasks/dw/diagram.toon')\n    assert toon_file.metadata['wave'] == 'DESIGN'\n    assert toon_file.metadata['agent-id'] == 'architecture-diagram-manager'\n    assert toon_file.compilation_errors == []",
       "assertions": [
         "File parses without errors",
         "Wave metadata == DESIGN",
@@ -126,7 +126,7 @@
     },
     "test_design_wave_metadata": {
       "framework": "pytest",
-      "test_code_skeleton": "def test_design_wave_metadata():\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/design.toon')\n    assert toon_file.metadata['wave'] == 'DESIGN'\n    assert 'agent-command' in toon_file.metadata",
+      "test_code_skeleton": "def test_design_wave_metadata():\n    toon_file = TOONParser().parse('nWave/tasks/dw/design.toon')\n    assert toon_file.metadata['wave'] == 'DESIGN'\n    assert 'agent-command' in toon_file.metadata",
       "assertions": [
         "Wave field exists and equals DESIGN",
         "Agent-command field present"
@@ -134,7 +134,7 @@
     },
     "test_diagram_wave_metadata": {
       "framework": "pytest",
-      "test_code_skeleton": "def test_diagram_wave_metadata():\n    toon_file = TOONParser().parse('5d-wave/tasks/dw/diagram.toon')\n    assert toon_file.metadata['wave'] == 'DESIGN'\n    assert 'agent-command' in toon_file.metadata",
+      "test_code_skeleton": "def test_diagram_wave_metadata():\n    toon_file = TOONParser().parse('nWave/tasks/dw/diagram.toon')\n    assert toon_file.metadata['wave'] == 'DESIGN'\n    assert 'agent-command' in toon_file.metadata",
       "assertions": [
         "Wave field exists and equals DESIGN",
         "Agent-command field present"
@@ -164,7 +164,7 @@
       {
         "name": "test_e2e_command_migration_pipeline",
         "purpose": "Verify complete migration: TOON → Parse → Template → Validate → Output",
-        "input": "Real TOON command file from 5d-wave/tasks/dw/",
+        "input": "Real TOON command file from nWave/tasks/dw/",
         "steps": "Parse TOON → Apply command template → Validate output → Write to dist/",
         "expected": "Valid command.md in dist/commands/dw/ matching Claude Code spec"
       },
@@ -262,8 +262,8 @@
       "  - Set wave metadata to DESIGN",
       "  - Verify agent-id: architecture-diagram-manager",
       "STEP 3: Compile both TOON files",
-      "  - Run: toon-compiler 5d-wave/tasks/dw/design.toon --validate",
-      "  - Run: toon-compiler 5d-wave/tasks/dw/diagram.toon --validate",
+      "  - Run: toon-compiler nWave/tasks/dw/design.toon --validate",
+      "  - Run: toon-compiler nWave/tasks/dw/diagram.toon --validate",
       "  - Verify exit code = 0 for BOTH",
       "  - If either fails: rollback both, fix issue, restart (see error_handling)",
       "STEP 4: Write tests to validate conversions",
