@@ -524,8 +524,70 @@
     }
   },
   "validation": {
-    "status": "pending",
-    "notes": "Step validation",
+    "status": "conditional_approval",
+    "severity": "CRITICAL",
+    "overall_quality": "comprehensive_with_blockers",
+    "execution_readiness": "40-50% (critical blockers remain)",
+    "blockers": [
+      "BLOCKER #5: Token baseline missing - must be captured in Phase 2.4 (define 02-04.json) OR fallback in 08-04 execution",
+      "BLOCKER #1: Phase 1 toolchain status - affects TOON file creation for SC1/SC7 validation",
+      "Agent count verification: Confirm actual count is 26 (original spec claimed 28) before finalizing test assertions"
+    ],
+    "strengths": [
+      "Comprehensive 7-success-criteria mapping with clear validation methods",
+      "Well-documented fallback mechanisms if baseline missing (captured, estimated, or archived)",
+      "Enhanced SC1 validation: file count + TOON v3.0 format parsing",
+      "Correct agent count correction (28 → 26) with supporting evidence",
+      "Clear TDD approach with 8 specific test methods",
+      "Proper prerequisite validation for 08-01/08-02/08-03 dependencies"
+    ],
+    "critical_issues": [
+      {
+        "id": "C1",
+        "title": "Token baseline missing - SC7 unvalidatable",
+        "resolution": "Create Phase 2.4 baseline capture step BEFORE Phase 2, OR execute fallback capture in 08-04 with documented provenance"
+      },
+      {
+        "id": "C2",
+        "title": "Upstream phases may not complete (missing toolchain)",
+        "resolution": "Add prerequisite check: verify Phases 1-6 completed successfully before attempting 08-04"
+      },
+      {
+        "id": "C3",
+        "title": "Agent count unverified (26 vs 28 vs 25)",
+        "resolution": "Confirm actual agent count from dist/ide/agents/dw/config.json before finalizing test assertions"
+      }
+    ],
+    "high_issues": [
+      {
+        "id": "H1",
+        "title": "Phase 2.4 step definition missing from roadmap",
+        "resolution": "Create 02-04.json with exact baseline capture format specification"
+      },
+      {
+        "id": "H2",
+        "title": "Token savings calculation methodology ambiguous (baseline source unclear)",
+        "resolution": "Define authoritative baseline source: original MD files (not compiled, not proxy estimates)"
+      }
+    ],
+    "can_execute_when": [
+      "Token baseline captured (Phase 2.4 step created and executed, or fallback executed with documentation)",
+      "Phases 1-6 complete with minimum 46 TOON files present (26 agents + 20 commands)",
+      "Agent count confirmed as 26 (not 25 or 27)",
+      "Token savings calculation methodology documented (baseline source, scope, formula)"
+    ],
+    "execution_recommendations": [
+      "Priority 1: Create Phase 2.4 step definition (02-04.json) before Phase 2 execution",
+      "Priority 2: Verify upstream phases complete before Phase 8.4 execution",
+      "Priority 3: Confirm agent count matches assertions (26, not hardcoded 28)",
+      "Priority 4: Capture baseline early (Phase 2) rather than fallback during Phase 8",
+      "Priority 5: Increase time estimate from 3h to 4-5h for realistic baseline discovery"
+    ],
+    "notes": "Step is well-structured with clear success criteria and fallback mechanisms. However, execution is blocked by missing token baseline (BLOCKER #5) and potentially missing upstream phases (BLOCKER #1). Fallback strategies exist but should not be primary path. Recommend creating Phase 2.4 step to formalize baseline capture before proceeding with Phase 8.",
+    "reviewed_by": "adversarial-software-crafter-reviewer",
+    "review_date": "2026-01-05",
+    "review_scope": "Task Clarity, Dependencies, Success Criteria, Constraints, Testability, Scope",
+    "next_review_trigger": "After Phase 2.4 baseline capture implemented OR immediately before Phase 8 execution begins",
     "migrated_at": "2026-01-13T22:11:27.433359"
   }
 }

@@ -14,7 +14,7 @@
     "name": "Create mikado Skill (Parallel with 05-02 after 05-01)",
     "description": "Create mikado skill with:\n- Trigger patterns: \"mikado-method\", \"refactoring-complesso\", \"dependency-mapping\", \"complex-refactoring-graph\", \"metodo-mikado\" (Italian)\n- Agent binding: software-crafter\n- Mikado method workflow reference: 4-step cycle (Goal -> Experiment -> Visualize -> Revert)",
     "motivation": "mikado skill for complex dependency-driven refactoring. CRITICAL: Must use TOON knowledge from 05-01 Phase A. Can run parallel with 05-02 after 05-01 complete.",
-    "estimated_hours": "2.5-3 (same as 05-02, using shared 05-01 prerequisites)"
+    "estimated_hours": "3.5-4 (revised: Mikado methodology research 1h, skill customization 45min, decision guidance 45min, v3.0 unknowns buffer 30min)"
   },
   "context": {
     "constraints": [
@@ -61,10 +61,14 @@
     "outer_test": "GIVEN mikado SKILL.toon compiled\nWHEN user says \"metodo mikado per refactoring complesso\"\nTHEN skill should trigger software-crafter with mikado workflow",
     "inner_tests": [
       "test_skill_compiles_with_05_01_syntax",
+      "test_toon_v3_0_syntax_features_used",
       "test_mikado_triggers_with_specific_patterns",
       "test_mikado_method_referenced_with_guidance",
+      "test_mikado_four_steps_complete_with_descriptions",
+      "test_decision_guidance_completeness",
       "test_no_collision_with_develop_or_refactor_patterns",
-      "test_methodology_scope_complete"
+      "test_methodology_scope_complete",
+      "test_mikado_skill_agent_integration"
     ]
   },
   "refactoring": {
@@ -85,12 +89,14 @@
       "9. DO NOT COMMIT - wait for user approval"
     ],
     "quality_gates": [
-      "Prerequisite check passed (05-01 artifacts exist)",
-      "All tests passing (100% required)",
-      "Skill compiles to valid SKILL.md",
-      "Trigger patterns validated (no collisions)",
-      "Mikado method 4-step cycle referenced with decision guidance",
-      "Methodology scope complete (4 steps + descriptions + guidance)",
+      "Prerequisite check: all 05-01 Phase A+B artifacts exist and verified (BLOCKING if failed)",
+      "TOON v3.0 specification completeness verified",
+      "All tests passing (100% required - including new v3.0 and integration tests)",
+      "Skill compiles to valid SKILL.md with v3.0 syntax",
+      "Trigger patterns validated (no collisions with develop or refactor patterns)",
+      "Mikado method 4-step cycle complete (all 4 steps + descriptions + decision guidance present)",
+      "Decision guidance accuracy verified against software-crafter agent specification",
+      "Agent integration validated (skill triggers software-crafter with correct workflow)",
       "No report files created"
     ],
     "trigger_pattern_conflict_resolution": {
@@ -374,8 +380,27 @@
     ]
   },
   "validation": {
-    "status": "pending",
-    "notes": "Step validation",
-    "migrated_at": "2026-01-13T22:11:27.294517"
+    "status": "APPROVED_WITH_CONDITIONS",
+    "review_date": "2026-01-13",
+    "reviewer": "Lyra (comprehensive quality review)",
+    "conditions": [
+      "Execute ONLY AFTER 05-01 Phase A+B both complete and artifacts verified",
+      "TOON v3.0 specification must include 'skill definition syntax' section",
+      "Allocate 3.5-4 hours (revised from 2.5-3h) - accounts for methodology research and v3.0 unknowns",
+      "All 9 inner tests must pass before skill deployment",
+      "Trigger pattern conflict matrix validation mandatory - test with actual user phrases",
+      "Decision guidance must be cross-referenced with software-crafter agent spec during creation",
+      "Mikado 4-step cycle: all 4 steps + descriptions + when-to-use guidance must be present"
+    ],
+    "amendments_applied": [
+      "Time estimate revised: 2.5-3h → 3.5-4h (with detailed breakdown)",
+      "Test coverage expanded: 5 inner tests → 9 inner tests (added v3.0 syntax, cycle completeness, decision guidance, integration tests)",
+      "Quality gates enhanced: added v3.0 spec verification, agent integration validation, decision guidance accuracy check",
+      "Prerequisite verification: explicitly added as BLOCKING quality gate"
+    ],
+    "critical_notes": "TOON v3.0 specification completeness and software-crafter agent alignment are blocking risks - verify before execution",
+    "notes": "Step comprehensively corrected by adversarial review. All critical circular dependencies resolved. Parallel execution with 05-02 properly qualified.",
+    "migrated_at": "2026-01-13T22:11:27.294517",
+    "reviewed_at": "2026-01-13T22:45:00Z"
   }
 }

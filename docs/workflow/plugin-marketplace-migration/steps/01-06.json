@@ -804,8 +804,63 @@
     }
   },
   "validation": {
-    "status": "pending",
-    "notes": "Step validation",
+    "status": "needs_revision",
+    "reviewed_at": "2026-01-13T23:45:00Z",
+    "reviewer_notes": "Step structure is strong with comprehensive adversarial review. Task clarity (8/10), dependencies (7/10), success criteria (9/10), constraints (7/10), testability (6/10), scope (8/10). Quality score: 7.5/10. APPROVAL BLOCKED by unresolved TOON version mismatch and circular output specification dependency.",
+    "review_findings": {
+      "quality_score": "7.5/10",
+      "approval_recommendation": "CONDITIONAL - Approve execution only after resolving critical blockers",
+      "blockers": [
+        {
+          "issue": "TOON v1.0 vs v3.0 format mismatch",
+          "severity": "CRITICAL",
+          "impact": "Test fixture incompatible with parser. First test run will fail.",
+          "resolution": "Execute TOON version validation (step 0 in execution_guidance). If incompatible: implement version detection in parser or convert fixture to v3.0.",
+          "pre_execution_check": "Parser must succeed on novel-editor-chatgpt-toon.txt before test implementation begins"
+        },
+        {
+          "issue": "Output specification dependency circular",
+          "severity": "CRITICAL",
+          "impact": "AC requires output validation but output structure not documented. Implementation will guess.",
+          "resolution": "Before test implementation: document expected output for agent/command/skill types by cross-referencing completed templates (01-02 through 01-04)",
+          "pre_execution_check": "Output specification document must be available and referenced in execution_guidance"
+        }
+      ],
+      "improvements_needed": [
+        {
+          "category": "Constraints",
+          "item": "Add constraint: Test output must be written to separate location (not overwrite test fixture)",
+          "priority": "MEDIUM"
+        },
+        {
+          "category": "Constraints",
+          "item": "Add constraint: All errors must be visible (logged/alerted), no silent failures",
+          "priority": "MEDIUM"
+        },
+        {
+          "category": "Success Criteria",
+          "item": "Specify exception types expected for error propagation test (e.g., ParserError, TemplateNotFoundError)",
+          "priority": "MEDIUM"
+        },
+        {
+          "category": "Deliverables",
+          "item": "Explicitly document test fixture file path: agents/novel-editor-chatgpt-toon.txt",
+          "priority": "LOW"
+        },
+        {
+          "category": "Time Estimate",
+          "item": "Consider 4-5 hours for realistic execution (includes prerequisite validation, error handling complexity)",
+          "priority": "LOW"
+        }
+      ],
+      "strengths": [
+        "Comprehensive adversarial review section identifies real risks",
+        "Corrections applied show evolution and risk awareness",
+        "Type-specific output validation enforces meaningful testing",
+        "NO MOCKS policy ensures real component integration testing",
+        "Clear workflow with prerequisite validation step"
+      ]
+    },
     "migrated_at": "2026-01-13T22:11:27.084671"
   }
 }

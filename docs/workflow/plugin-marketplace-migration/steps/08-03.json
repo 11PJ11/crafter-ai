@@ -577,8 +577,96 @@
     }
   },
   "validation": {
-    "status": "pending",
-    "notes": "Step validation",
-    "migrated_at": "2026-01-13T22:11:27.419227"
+    "status": "blocked_on_prerequisites",
+    "severity": "CRITICAL",
+    "validated_by": "Lyra (Quality Review)",
+    "validation_date": "2026-01-13",
+    "overall_assessment": "Step is comprehensively documented with exceptional adversarial analysis. Cannot execute until 4 critical prerequisites created and Step 8.2 verified complete.",
+    "blockers_identified": [
+      {
+        "blocker": "PREREQUISITE 1: Expected Output Specification",
+        "file": "docs/workflow/plugin-marketplace-migration/nWave-expected-outputs.md",
+        "status": "NOT_CREATED",
+        "time_to_create": "2-3 hours",
+        "criticality": "CRITICAL - Tests cannot validate success without knowing expected artifacts"
+      },
+      {
+        "blocker": "PREREQUISITE 2: Constraint Enforcement Specification",
+        "file": "docs/workflow/plugin-marketplace-migration/constraint-enforcement-spec.md",
+        "status": "NOT_CREATED",
+        "time_to_create": "2-3 hours",
+        "criticality": "CRITICAL - Cannot write constraint validation tests without knowing enforcement mechanism"
+      },
+      {
+        "blocker": "PREREQUISITE 3: Mock Reviewer Implementation",
+        "file": "tests/mocks/mock_reviewer.py",
+        "status": "NOT_CREATED",
+        "time_to_create": "1-2 hours",
+        "criticality": "CRITICAL - Inner loop testing blocked until mock reviewer stub exists"
+      },
+      {
+        "blocker": "PREREQUISITE 4: Step 8.2 Completion Verification",
+        "file": "docs/workflow/plugin-marketplace-migration/steps/08-02.json",
+        "status": "NEEDS_VERIFICATION",
+        "time_to_create": "3-4 hours (external)",
+        "criticality": "CRITICAL - Cannot start 08-03 until 08-02 fully complete and verified"
+      }
+    ],
+    "clarifications_needed": [
+      {
+        "issue": "Sample Feature Name Not Documented",
+        "location": "expected_workflow_output_specification, test_fixture setup",
+        "impact": "Test paths like docs/discuss/{feature}.md cannot be validated without concrete feature name",
+        "resolution": "Document which feature name will be used for workflow testing (suggest: 'sample_workflow_feature' or 'plugin_marketplace_validator')"
+      },
+      {
+        "issue": "Mock Reviewer Input Contract Undefined",
+        "location": "mock_reviewer_specification (lines 432-437)",
+        "impact": "Cannot implement mock without knowing /nw:review request structure",
+        "resolution": "Document expected review request format including: files to review, metrics to assess, response structure"
+      },
+      {
+        "issue": "Settings Flags Not Documented",
+        "location": "test_settings_loading (line 335), constraints_validation_approach",
+        "impact": "Cannot write settings loading test without knowing constraint flag names",
+        "resolution": "Link to constraint-enforcement-spec.md or document: constraint flag names in settings.local.json, default values, enforcement behaviors"
+      },
+      {
+        "issue": "Test Isolation Cleanup Strategy Vague",
+        "location": "edge_case_handling.e8_test_pollution, test_fixture_setup",
+        "impact": "Cleanup between tests may fail, leaving artifacts for next test",
+        "resolution": "Specify pytest fixture pattern with yield/cleanup: @pytest.fixture def workflow_test_env() with explicit teardown"
+      },
+      {
+        "issue": "Prerequisite vs Implementation Phase Timing Ambiguous",
+        "location": "execution_guidance (lines 347-397)",
+        "impact": "Unclear if 5-6h prerequisites are in-scope or pre-work, affects scheduling",
+        "resolution": "Clarify: Prerequisites MUST be done before starting 08-03 implementation, total timeline is 11-14h (5-6h prep + 6-8h implementation)"
+      }
+    ],
+    "strengths": [
+      "Exceptional adversarial analysis with 5 critical findings, detailed risk scoring, and clear impact assessment",
+      "Circular dependency explicitly identified and pragmatic mock reviewer resolution documented",
+      "Constraint validation approach concrete and testable, with edge case handling for false positives",
+      "Time estimation realistic (6-8h implementation + 5-6h prerequisites = 11-14h total)",
+      "Test coverage improvements documented with explicit mapping to 8 coverage gaps",
+      "All 8 edge cases have explicit handling strategies",
+      "Acceptance criteria detailed and testable (12 criteria mapped to SC5/SC6)",
+      "Dependencies documented with clear blocking conditions"
+    ],
+    "readiness_for_execution": "NOT_READY - Do not start until: (1) Step 8.2 verified complete, (2) 4 prerequisite artifacts created, (3) 5 clarifications resolved",
+    "next_steps": [
+      "STEP 1: Verify Step 8.2 completion - run 08-02 tests and confirm all pass",
+      "STEP 2: Create nWave-expected-outputs.md with artifact specifications per phase (2-3h)",
+      "STEP 3: Create constraint-enforcement-spec.md with all constraint flags and enforcement mechanism (2-3h)",
+      "STEP 4: Create mock_reviewer.py stub implementation with interface contract (1-2h)",
+      "STEP 5: Document sample feature name and update execution_guidance with clarified timing",
+      "STEP 6: Re-validate 08-03.json with clarifications resolved",
+      "STEP 7: Execute step following execution_guidance with quality gates"
+    ],
+    "quality_score": "9.2/10",
+    "quality_score_rationale": "Step analysis is exceptionally thorough and realistic. Score deducted for: (1) 5 items requiring clarification before execution, (2) 4 critical prerequisites not yet created. Once prerequisites created, this will be a high-quality, well-documented test step.",
+    "migrated_at": "2026-01-13T22:11:27.419227",
+    "reviewed_at": "2026-01-13T23:45:00.000000"
   }
 }
