@@ -1,12 +1,3 @@
----
-agent-activation:
-  required: true
-  agent-id: product-owner
-  agent-name: "Riley"
-  agent-command: "*gather-requirements"
-  auto-activate: true
----
-
 # DW-START: Initialize nWave Workflow
 
 **Wave**: CROSS_WAVE (project initialization)

@@ -1,12 +1,3 @@
----
-description: 'Generate atomic task files from roadmap [agent] [project-id]'
-argument-hint: '[agent] [project-id] - Example: @devop "auth-upgrade"'
-agent-activation:
-  required: false
-  agent-parameter: true
-  agent-command: "*feature-split"
----
-
 # DW-SPLIT: Atomic Task Generation from Roadmap with TDD Cycle Embedding
 
 ## CRITICAL: Agent Invocation Protocol

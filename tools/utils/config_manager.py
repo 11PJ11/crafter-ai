@@ -2,7 +2,7 @@
 Config Manager
 
 Manages nWave configuration loading, parsing, and IDE config generation.
-Handles the central config.yaml file and generates IDE-compatible configuration.
+Handles the central framework-catalog.yaml file and generates IDE-compatible configuration.
 """
 
 import logging

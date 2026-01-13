@@ -1,12 +1,3 @@
----
-description: 'Create comprehensive planning document [agent] [goal-description]'
-argument-hint: '[agent] [goal-description] - Example: @solution-architect "Migrate to microservices"'
-agent-activation:
-  required: false
-  agent-parameter: true
-  agent-command: "*feature-roadmap"
----
-
 # DW-ROADMAP: Comprehensive Goal Planning Document
 
 ## CRITICAL: Agent Invocation Protocol

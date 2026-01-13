@@ -51,7 +51,7 @@ class WorkflowProcessor:
 
     def get_workflow_info_from_config(self, workflow_name: str, config: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Extract workflow information from main config.yaml.
+        Extract workflow information from main framework-catalog.yaml.
 
         Args:
             workflow_name: Name of the workflow

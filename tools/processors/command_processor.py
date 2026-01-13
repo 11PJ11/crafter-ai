@@ -27,7 +27,7 @@ class CommandProcessor:
 
     def get_command_info_from_config(self, task_name: str, config: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Extract command information from config.yaml.
+        Extract command information from framework-catalog.yaml.
 
         Args:
             task_name: Name of the task/command

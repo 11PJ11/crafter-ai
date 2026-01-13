@@ -1,12 +1,3 @@
----
-description: 'Expert critique and quality review [agent] [artifact-type] [path] - Types: baseline, roadmap, step, task, implementation'
-argument-hint: '[agent] [artifact-type] [artifact-path] - Example: @software-crafter task "steps/01-01.json"'
-agent-activation:
-  required: false
-  agent-parameter: true
-  agent-command: "*workflow-review"
----
-
 # DW-REVIEW: Expert Critique and Quality Assurance
 
 ## CRITICAL: Agent Invocation Protocol

@@ -44,7 +44,7 @@ class IDEBundleBuilder:
 
         # Initialize components
         self.file_manager = FileManager(dry_run=dry_run)
-        self.config_manager = ConfigManager(self.source_dir / "config.yaml")
+        self.config_manager = ConfigManager(self.source_dir / "framework-catalog.yaml")
 
         # Initialize processors
         self.agent_processor = AgentProcessor(self.source_dir, self.output_dir, self.file_manager)
@@ -63,7 +63,7 @@ class IDEBundleBuilder:
     def validate_source(self) -> bool:
         """Validate that the source directory contains required nWave structure."""
         required_dirs = ['agents', 'tasks', 'templates', 'data']
-        required_files = ['config.yaml']
+        required_files = ['framework-catalog.yaml']
 
         logging.info(f"Validating source directory: {self.source_dir}")
 

@@ -1,12 +1,3 @@
----
-agent-activation:
-  required: true
-  agent-id: software-crafter
-  agent-name: "Crafty"
-  agent-command: "*refactor"
-  auto-activate: true
----
-
 # DW-REFACTOR: Systematic Code Analysis and Refactoring
 
 **Wave**: CROSS_WAVE (continuous improvement support)

@@ -1,12 +1,3 @@
----
-description: 'Execute complete DEVELOP wave: baseline → roadmap → split → execute-all → finalize [feature-description]'
-argument-hint: '[feature-description] - Example: "Implement user authentication with JWT"'
-agent-activation:
-  required: false
-  agent-parameter: false
-  agent-command: "*devop"
----
-
 # DW-DEVELOP: Complete DEVELOP Wave Orchestrator
 
 **Wave**: DEVELOP

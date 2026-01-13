@@ -1,12 +1,3 @@
----
-agent-activation:
-  required: true
-  agent-id: agent-builder
-  agent-name: "Sage"
-  agent-command: "*forge"
-  auto-activate: true
----
-
 # DW-FORGE: Agent Creation with Research-Validated Patterns
 
 **Wave**: CROSS_WAVE

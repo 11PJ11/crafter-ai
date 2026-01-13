@@ -1,12 +1,3 @@
----
-agent-activation:
-  required: true
-  agent-id: solution-architect
-  agent-name: "Morgan"
-  agent-command: "*design-architecture"
-  auto-activate: true
----
-
 # DW-DESIGN: Architecture Design with Visual Representation
 
 **Wave**: DESIGN

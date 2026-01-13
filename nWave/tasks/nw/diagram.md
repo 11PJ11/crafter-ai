@@ -1,12 +1,3 @@
----
-agent-activation:
-  required: true
-  agent-id: visual-architect
-  agent-name: "Archer"
-  agent-command: "*create-diagrams"
-  auto-activate: true
----
-
 # DW-DIAGRAM: Visual Architecture Lifecycle Management
 
 **Wave**: CROSS_WAVE (primarily DESIGN integration)

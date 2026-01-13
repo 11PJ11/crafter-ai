@@ -1,12 +1,3 @@
----
-description: 'Execute atomic task with state tracking [agent] [step-file-path]'
-argument-hint: '[agent] [step-file-path] - Example: @researcher "steps/01-01.json"'
-agent-activation:
-  required: false
-  agent-parameter: true
-  agent-command: "*feature-execute"
----
-
 # DW-EXECUTE: Atomic Task Execution Engine
 
 ## CRITICAL: Agent Invocation Protocol

@@ -1,12 +1,3 @@
----
-description: 'Summarize achievements, archive to docs/evolution, clean up feature files [agent] [project-id] - Example: @devop "auth-upgrade"'
-argument-hint: '[agent] [project-id] - Example: @devop "auth-upgrade"'
-agent-activation:
-  required: false
-  agent-parameter: true
-  agent-command: "*feature-finalize"
----
-
 # DW-FINALIZE: Feature Completion, Archive, and Prepare for Push
 
 ## CRITICAL: Agent Invocation Protocol

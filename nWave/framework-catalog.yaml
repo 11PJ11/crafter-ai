@@ -1,6 +1,25 @@
+# ============================================================================
+# nWave Framework Catalog
+# ============================================================================
+#
+# IMPORTANT: This file is the **SOURCE OF TRUTH** for command metadata.
+#
+# The build system (tools/build_ide_bundle.py) uses this file to generate
+# command YAML frontmatter and IDE configuration. YAML frontmatter in
+# task files (nWave/tasks/nw/*.md) is IGNORED by the build system.
+#
+# What this file contains:
+# - Command descriptions and argument hints (used in slash command UI)
+# - Agent→Wave assignments (which agents belong to which methodology phase)
+# - Quality gates and validation rules
+# - Knowledge base references and templates
+#
+# DO NOT add YAML frontmatter to task files - configure commands here instead.
+# ============================================================================
+
 name: "AI-Craft nWave"
 version: "1.0.0"
-description: "Comprehensive DISCUSS→DESIGN→DISTILL→DEVELOP→DEMO methodology with visual architecture lifecycle management"
+description: "Comprehensive DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER methodology with visual architecture lifecycle management"
 author: "AI-Craft Team"
 license: "MIT"
 documentation_url: "https://github.com/your-org/ai-craft/nWave"
@@ -12,7 +31,7 @@ wave_phases:
   - "DESIGN"
   - "DISTILL"
   - "DEVELOP"
-  - "DEMO"
+  - "DELIVER"
 
 # Agent registry with wave assignments
 agents:
@@ -39,7 +58,7 @@ agents:
     knowledge_preservation: "COMPLETE"
 
   feature_completion_coordinator:
-    wave: "DEMO"
+    wave: "DELIVER"
     priority: 1
     role: "production_readiness"
 
@@ -119,11 +138,11 @@ commands:
     wave: "DEVELOP"
     outputs: ["baseline_yaml"]
 
-  demo:
+  deliver:
     description: "Production readiness validation"
     argument_hint: "[deployment-target] - Optional: --environment=[staging|production] --validation=[full|smoke]"
     agents: ["feature_completion_coordinator"]
-    wave: "DEMO"
+    wave: "DELIVER"
     outputs: ["production_deployment", "stakeholder_demo"]
 
   # Specialist Commands
@@ -134,11 +153,8 @@ commands:
       ["mikado_refactoring_specialist_enhanced", "architecture_diagram_manager"]
     outputs: ["refactoring_roadmap", "dependency_diagrams"]
 
-  skeleton:
-    description: "Walking skeleton E2E automation"
-    argument_hint: "[feature-name] - Optional: --depth=[minimal|standard|comprehensive] --validation=[quick|thorough]"
-    agents: ["walking_skeleton_helper", "architecture_diagram_manager"]
-    outputs: ["minimal_e2e_implementation", "skeleton_architecture"]
+  # NOTE: skeleton command removed - Walking Skeleton functionality integrated into /nw:discuss
+  # See nWave/tasks/nw/discuss.md for greenfield project detection and WS suggestion logic
 
   root_why:
     description: "Root cause analysis and debugging"
@@ -188,24 +204,31 @@ commands:
     argument_hint: "[agent] [project-id] - Example: @devop \"auth-upgrade\""
     outputs: ["evolution_document"]
 
-# Workflow configurations
-workflows:
-  greenfield:
-    name: "nWave-greenfield"
-    description: "Complete greenfield development with visual architecture"
-    phases: ["DISCUSS", "DESIGN", "DISTILL", "DEVELOP", "DEMO"]
-
-  brownfield:
-    name: "nWave-brownfield"
-    description: "Legacy system enhancement with visual refactoring"
-    phases: ["DISCUSS", "DESIGN", "DISTILL", "DEVELOP", "DEMO"]
-    special_agents:
-      ["mikado_refactoring_specialist_enhanced", "walking_skeleton_helper"]
-
-  rapid_prototype:
-    name: "5d-rapid-prototype"
-    description: "Streamlined validation with essential visual architecture"
-    phases: ["DISCUSS", "DESIGN", "DEVELOP", "DEMO"]
+# ============================================================================
+# Workflow Configurations (DEPRECATED - Not Currently Processed)
+# ============================================================================
+# NOTE: WorkflowProcessor was removed from the build system (commit 5171f66).
+# Workflow orchestrators are no longer generated from these YAML definitions.
+# This section is preserved for historical reference but is not actively used.
+# ============================================================================
+#
+# workflows:
+#   greenfield:
+#     name: "nWave-greenfield"
+#     description: "Complete greenfield development with visual architecture"
+#     phases: ["DISCUSS", "DESIGN", "DISTILL", "DEVELOP", "DELIVER"]
+#
+#   brownfield:
+#     name: "nWave-brownfield"
+#     description: "Legacy system enhancement with visual refactoring"
+#     phases: ["DISCUSS", "DESIGN", "DISTILL", "DEVELOP", "DELIVER"]
+#     special_agents:
+#       ["mikado_refactoring_specialist_enhanced", "walking_skeleton_helper"]
+#
+#   rapid_prototype:
+#     name: "5d-rapid-prototype"
+#     description: "Streamlined validation with essential visual architecture"
+#     phases: ["DISCUSS", "DESIGN", "DEVELOP", "DELIVER"]
 
 # Quality gates and validation
 quality_gates:
@@ -279,9 +302,9 @@ templates:
       interactivity: "simple"
       methodology: "outside_in_tdd_systematic_refactoring"
 
-    demo_moderate:
-      file: "templates/demo-production-readiness.yaml"
-      description: "Moderately interactive production readiness for DEMO wave"
+    deliver_moderate:
+      file: "templates/deliver-production-readiness.yaml"
+      description: "Moderately interactive production readiness for DELIVER wave"
       interactivity: "moderate"
       validation: "deployment_business_value_measurement"
 

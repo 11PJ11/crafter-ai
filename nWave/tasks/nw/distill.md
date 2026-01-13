@@ -1,12 +1,3 @@
----
-agent-activation:
-  required: true
-  agent-id: acceptance-designer
-  agent-name: "Quinn"
-  agent-command: "*create-acceptance-tests"
-  auto-activate: true
----
-
 # DW-DISTILL: Acceptance Test Creation and Business Validation
 
 **Wave**: DISTILL

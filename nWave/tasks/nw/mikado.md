@@ -1,12 +1,3 @@
----
-agent-activation:
-  required: true
-  agent-id: software-crafter
-  agent-name: "Crafty"
-  agent-command: "*mikado"
-  auto-activate: true
----
-
 # DW-MIKADO: Complex Refactoring Roadmaps with Visual Tracking
 
 **Wave**: CROSS_WAVE (complex refactoring support)

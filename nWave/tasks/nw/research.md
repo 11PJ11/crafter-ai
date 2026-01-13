@@ -1,12 +1,3 @@
----
-agent-activation:
-  required: true
-  agent-id: researcher
-  agent-name: "Nova"
-  agent-command: "*research"
-  auto-activate: true
----
-
 # DW-RESEARCH: Evidence-Driven Knowledge Research
 
 **Wave**: CROSS_WAVE

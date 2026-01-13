@@ -1,12 +1,3 @@
----
-agent-activation:
-  required: true
-  agent-id: feature-completion-coordinator
-  agent-name: "Dakota"
-  agent-command: "*git-workflow"
-  auto-activate: true
----
-
 # DW-GIT: Git Workflow Operations
 
 **Wave**: CROSS_WAVE

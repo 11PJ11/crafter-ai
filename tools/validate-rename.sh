@@ -101,15 +101,15 @@ fi
 # Check 4: Configuration authority
 echo
 echo "Check 4: Configuration validation..."
-if [ -f "nWave/config.yaml" ]; then
-    if grep -q 'methodology: "nWave"' nWave/config.yaml; then
-        echo "✓ Methodology name updated in config.yaml"
+if [ -f "nWave/framework-catalog.yaml" ]; then
+    if grep -q 'methodology: "nWave"' nWave/framework-catalog.yaml; then
+        echo "✓ Methodology name updated in framework-catalog.yaml"
     else
-        echo "✗ Methodology name not updated in config.yaml"
+        echo "✗ Methodology name not updated in framework-catalog.yaml"
         ((errors++))
     fi
 else
-    echo "✗ nWave/config.yaml not found"
+    echo "✗ nWave/framework-catalog.yaml not found"
     ((errors++))
 fi
 

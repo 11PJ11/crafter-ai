@@ -1,12 +1,3 @@
----
-agent-activation:
-  required: true
-  agent-id: devop
-  agent-name: "Dakota"
-  agent-command: "*validate-production-readiness"
-  auto-activate: true
----
-
 # DW-DELIVER: Production Readiness Validation and Stakeholder Demonstration
 
 **Wave**: DELIVER

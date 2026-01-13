@@ -1,12 +1,3 @@
----
-agent-activation:
-  required: true
-  agent-id: troubleshooter
-  agent-name: "Sage"
-  agent-command: "*investigate-root-cause"
-  auto-activate: true
----
-
 # DW-ROOT-WHY: Toyota 5 Whys Multi-Causal Analysis
 
 **Wave**: CROSS_WAVE

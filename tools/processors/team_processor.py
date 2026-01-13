@@ -51,7 +51,7 @@ class TeamProcessor:
 
     def get_team_info_from_config(self, team_name: str, config: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Extract team information from main config.yaml.
+        Extract team information from main framework-catalog.yaml.
 
         Args:
             team_name: Name of the team

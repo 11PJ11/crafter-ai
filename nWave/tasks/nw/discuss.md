@@ -1,12 +1,3 @@
----
-agent-activation:
-  required: true
-  agent-id: product-owner
-  agent-name: "Riley"
-  agent-command: "*gather-requirements"
-  auto-activate: true
----
-
 # DW-DISCUSS: Requirements Gathering and Business Analysis
 
 **Wave**: DISCUSS

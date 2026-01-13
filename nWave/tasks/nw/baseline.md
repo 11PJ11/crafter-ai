@@ -1,12 +1,3 @@
----
-description: 'Establish measurement baseline before roadmap creation [goal-description]'
-argument-hint: '[goal-description] - Example: "optimize test execution time"'
-agent-activation:
-  required: false
-  agent-parameter: false
-  agent-command: "*research"
----
-
 # DW-BASELINE: Establish Measurement Baseline
 
 ## CRITICAL: Agent Invocation Protocol
