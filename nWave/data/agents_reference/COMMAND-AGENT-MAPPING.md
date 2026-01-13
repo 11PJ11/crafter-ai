@@ -34,8 +34,8 @@ All DW commands are now configured to automatically trigger specialized agent te
 
 ### DISTILL Wave Commands
 
-- **`/nw:distill`** → `acceptance-designer`, `software-crafter` (Crafty), `walking-skeleton-helper`
-- **`/nw:skeleton`** → `walking-skeleton-helper`, `software-crafter` (Crafty), `architecture-diagram-manager` (Archer)
+- **`/nw:distill`** → `acceptance-designer`, `software-crafter` (Crafty)
+- **Note**: Walking Skeleton functionality integrated into `/nw:discuss` (automatic detection and suggestion)
 
 ### DEVELOP Wave Commands
 
@@ -49,7 +49,7 @@ All DW commands are now configured to automatically trigger specialized agent te
 
 ### Workflow Commands
 
-- **`/nw:start`** → `nWave-core-team-team`, `business-analyst` (Riley), `walking-skeleton-helper`
+- **`/nw:start`** → `nWave-core-team-team`, `business-analyst` (Riley)
 - **`/nw:git`** → `feature-completion-coordinator`, `systematic-refactorer`, `business-analyst` (Riley)
 
 ## Context Isolation Guarantees
