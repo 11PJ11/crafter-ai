@@ -65,7 +65,7 @@ class IDEBundleBuilder:
 
     def validate_source(self) -> bool:
         """Validate that the source directory contains required 5D-WAVE structure."""
-        required_dirs = ['agents', 'tasks', 'workflows', 'agent-teams', 'templates', 'checklists', 'data']
+        required_dirs = ['agents', 'tasks', 'workflows', 'templates', 'checklists', 'data']
         required_files = ['config.yaml']
 
         logging.info(f"Validating source directory: {self.source_dir}")

@@ -225,26 +225,6 @@ quality_gates:
     toyota_5_whys: true
     alistair_cockburn_skeleton: true
 
-# Team configurations
-agent_teams:
-  5d_wave_core_team:
-    file: "agent-teams/5d-wave-core-team.yaml"
-    description: "Essential DISCUSS→DESIGN→DISTILL→DEVELOP→DEMO methodology team"
-    scope: "standard_projects"
-    methodology_focus: "complete_5d_wave"
-
-  5d_wave_greenfield_team:
-    file: "agent-teams/5d-wave-greenfield-team.yaml"
-    description: "Complete new project team with walking skeleton validation"
-    scope: "new_projects"
-    methodology_focus: "clean_architecture_establishment"
-
-  5d_wave_brownfield_team:
-    file: "agent-teams/5d-wave-brownfield-team.yaml"
-    description: "Legacy system enhancement with advanced refactoring specialists"
-    scope: "legacy_projects"
-    methodology_focus: "systematic_modernization"
-
 # Quality validation checklists
 checklists:
   wave_specific:
@@ -366,7 +346,6 @@ integration:
   agent_collaboration_patterns: true
   visual_architecture_lifecycle: true
   cross_wave_coordination: true
-  team_configuration_support: true
   checklist_validation_integration: true
   knowledge_base_accessibility: true
   template_orchestration_support: true
