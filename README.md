@@ -1,6 +1,6 @@
 # AI-Craft: Intelligent ATDD Pipeline with Specialized Agent Network
 
-<!-- version: 1.0.0 -->
+<!-- version: 1.0.1 -->
 
 🚀 **A systematic approach to software development using ATDD (Acceptance Test Driven Development) with intelligent AI agent orchestration**
 
@@ -303,7 +303,104 @@ Scripts:
 
 ---
 
-**Note**: These scripts are currently maintained for manual execution. Future work will evaluate integration into pre-commit hooks to automate quality gates and security validation as part of the commit workflow.
+## 📋 Version Tracking System
+
+AI-Craft uses **automated version tracking** to keep documentation synchronized with source configuration files. This system prevents documentation drift by enforcing version consistency through pre-commit validation.
+
+### How It Works
+
+The version tracking system maintains a dependency graph between source configurations and derived documentation:
+
+**Source Files** (with version fields):
+- `nWave/framework-catalog.yaml` - Primary framework configuration
+- `tools/build_config.yaml` - Build system configuration
+
+**Dependent Files** (synchronized automatically):
+- `README.md` - Project documentation (this file)
+- `nWave/data/agents_reference/COMMAND-AGENT-MAPPING.md` - Command mappings
+
+**Pre-Commit Validation**:
+1. Detects when source files are modified
+2. Checks if version field was bumped (semantic versioning: MAJOR.MINOR.PATCH)
+3. Checks if dependent files have outdated versions
+4. Blocks commit if inconsistencies found
+5. Provides structured JSON error messages for LLM-driven updates
+
+### Development Workflow
+
+When modifying framework configuration:
+
+1. **Modify source file** (e.g., add command to `framework-catalog.yaml`)
+2. **Bump version** in source file (e.g., `1.0.0` → `1.1.0`)
+3. **Update dependent sections** in documentation files
+4. **Bump versions** in dependent files to match
+5. **Commit** - pre-commit validates automatically ✓
+
+**Example**:
+```bash
+# 1. Edit framework-catalog.yaml (add new command)
+# 2. Update version: "1.0.0" → "1.1.0"
+# 3. Update README.md command examples section
+# 4. Update README.md version: <!-- version: 1.0.0 --> → <!-- version: 1.1.0 -->
+# 5. git commit (validation runs automatically)
+```
+
+### LLM-Driven Updates
+
+When pre-commit validation fails, the hook outputs a structured JSON error message that LLMs can interpret:
+
+```json
+{
+  "error_type": "VERSION_VALIDATION_FAILED",
+  "errors": {
+    "version_not_bumped": [...],
+    "dependents_outdated": [...]
+  },
+  "resolution_steps": [...],
+  "llm_guidance": {
+    "files_to_edit": ["README.md"],
+    "sections_to_update": [...],
+    "validation": "Ensure all version fields updated"
+  }
+}
+```
+
+The LLM reads the error, updates the specified files and sections, bumps versions, and retries the commit.
+
+### System Files
+
+- **`.dependency-map.yaml`** - Dependency relationships and validation rules
+- **`scripts/validate-documentation-versions.py`** - Core validation engine
+- **`.git/hooks/pre-commit`** - Enforcement point (Phase 1: tests, Phase 2: versions)
+
+### Emergency Bypass
+
+For emergency situations only:
+```bash
+git commit --no-verify -m "message"  # Bypasses BOTH test and version validation
+```
+
+**⚠️ WARNING**: Use sparingly. Bypassed commits require immediate follow-up to fix validation issues.
+
+### Version Strategy
+
+**Semantic Versioning (MAJOR.MINOR.PATCH)**:
+- **MAJOR** - Breaking changes, incompatible API changes
+- **MINOR** - New features, backward-compatible additions
+- **PATCH** - Bug fixes, documentation corrections
+
+### Adding Tracked Files
+
+To track new files, edit `.dependency-map.yaml`:
+```yaml
+tracked_files:
+  - path: "new-file.md"
+    version_format: "markdown_comment"
+    version_pattern: "<!-- version: {version} -->"
+    triggers_update: [...]
+```
+
+---
 
 ## 🤝 Contributing
 
