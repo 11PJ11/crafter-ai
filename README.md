@@ -143,6 +143,166 @@ The `update-ai-craft.sh` script orchestrates:
 3. Install newly built framework bundle
 4. Validate successful update (agents, commands, configuration)
 
+## 🔧 Essential Scripts
+
+The `scripts/` directory contains critical infrastructure scripts for building, installing, and managing the AI-Craft framework. These scripts are essential for the framework lifecycle.
+
+### Core Scripts (Category 1)
+
+#### 1. `build-ide-bundle.sh` (2.4KB)
+**Purpose**: Build wrapper for Python build system
+
+Orchestrates the complete build process, generating the IDE-ready bundle from source files.
+
+**Usage**:
+```bash
+./scripts/build-ide-bundle.sh
+```
+
+**What it does**:
+- Invokes Python build system (`tools/build_ide_bundle.py`)
+- Processes agents, commands, and templates from `nWave/`
+- Generates output in `dist/ide/` with proper IDE structure
+- Validates build artifacts and reports statistics
+
+**When to use**: After any modification to agents, commands, or framework components before installation.
+
+---
+
+#### 2. `install-ai-craft.sh` (15KB)
+**Purpose**: Framework installation to Claude Code environment
+
+Installs the built AI-Craft framework into Claude Code's agent directory (`~/.claude/`).
+
+**Usage**:
+```bash
+# Standard installation
+./scripts/install-ai-craft.sh
+
+# Dry-run (preview what would be installed)
+./scripts/install-ai-craft.sh --dry-run
+
+# With backup before installation
+./scripts/install-ai-craft.sh --backup
+```
+
+**What it does**:
+- Validates build artifacts exist in `dist/ide/`
+- Copies agents to `~/.claude/agents/nw/`
+- Copies commands to `~/.claude/commands/nw/`
+- Installs configuration files
+- Verifies installation success
+- Optional: Creates timestamped backup before installation
+
+**When to use**: After building the framework or for fresh installations.
+
+---
+
+#### 3. `uninstall-ai-craft.sh` (13KB)
+**Purpose**: Clean removal of AI-Craft framework
+
+Completely removes AI-Craft installation from Claude Code environment.
+
+**Usage**:
+```bash
+# Standard uninstall
+./scripts/uninstall-ai-craft.sh
+
+# Dry-run (preview what would be removed)
+./scripts/uninstall-ai-craft.sh --dry-run
+
+# With backup before uninstall (recommended)
+./scripts/uninstall-ai-craft.sh --backup
+```
+
+**What it does**:
+- Removes `~/.claude/agents/nw/` directory
+- Removes `~/.claude/commands/nw/` directory
+- Cleans up configuration files
+- Optional: Creates timestamped backup before removal
+- Verifies clean uninstallation
+
+**When to use**: Before reinstalling, when switching versions, or for complete removal.
+
+---
+
+#### 4. `update-ai-craft.sh` (16KB)
+**Purpose**: Orchestrates complete update workflow
+
+End-to-end update automation: build → uninstall → install → validate.
+
+**Usage**:
+```bash
+# Standard update
+./scripts/update-ai-craft.sh --force
+
+# With backup (recommended for production)
+./scripts/update-ai-craft.sh --force --backup
+
+# Dry-run (preview entire update process)
+./scripts/update-ai-craft.sh --force --dry-run
+```
+
+**What it does**:
+1. Validates source files in `nWave/`
+2. Builds framework bundle via `build-ide-bundle.sh`
+3. Uninstalls existing version via `uninstall-ai-craft.sh`
+4. Installs new version via `install-ai-craft.sh`
+5. Validates installation success
+6. Reports update statistics
+
+**When to use**: Recommended workflow for applying framework changes during development.
+
+---
+
+### Future: Pre-commit Hook Integration (TODO)
+
+The following script categories are currently maintained for manual execution but are **candidates for future pre-commit hook automation** to enforce quality gates before commits:
+
+#### Category 3: Validation Scripts (13KB total)
+**Purpose**: Agent compliance and structure validation
+
+Scripts:
+- `validate-agent-compliance.py` (v1.0)
+- `validate-agent-compliance-v2.py` (v2.0)
+- `validate-agent-compliance.sh` (shell wrapper)
+- `validate-reviewers.py` (reviewer agent validation)
+
+**Potential pre-commit use**: Validate agent file structure, YAML frontmatter, required sections, and compliance with agent template specification before allowing commits.
+
+---
+
+#### Category 4: Adversarial Security Testing (67KB total)
+**Purpose**: Security framework validation through adversarial testing
+
+Scripts:
+- `run-adversarial-tests.py` (29KB) - Test case definitions
+  - 258 security tests across 4 categories
+  - Prompt injection (PI-001 to PI-004)
+  - Jailbreak attempts (JB-001+)
+  - Credential access (CA-001+)
+  - Tool misuse (TM-001+)
+- `execute-adversarial-tests.py` (38KB) - Test execution framework
+  - Mode 1: Auto - validates security framework structure
+  - Mode 2: Manual - generates test execution scripts
+
+**Potential pre-commit use**: Run automated security framework structure validation (Mode 1) to ensure agent security patterns are maintained before allowing commits. Full adversarial test suite could run in CI/CD.
+
+---
+
+#### Category 5: Development Tools (21.6KB total)
+**Purpose**: Agent generation and backup utilities
+
+Scripts:
+- `create-reviewer-agents.py` (4.6KB) - Generates reviewer agents from main agents
+- `enhanced-backup-system.sh` (17KB) - Timestamped backups with compression
+
+**Potential pre-commit use**: Evaluate if backup automation should trigger on certain commit patterns (e.g., before major refactorings).
+
+---
+
+**Note**: These scripts are currently maintained for manual execution. Future work will evaluate integration into pre-commit hooks to automate quality gates and security validation as part of the commit workflow.
+
 ## 🤝 Contributing
 
 The AI-Craft system follows clean architecture principles with specialized agents. Each agent has a single responsibility and communicates through well-defined file-based interfaces.
