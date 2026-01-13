@@ -225,55 +225,6 @@ quality_gates:
     toyota_5_whys: true
     alistair_cockburn_skeleton: true
 
-# Quality validation checklists
-checklists:
-  wave_specific:
-    discuss_wave:
-      file: "checklists/discuss-wave-checklist.md"
-      description: "DISCUSS wave validation with ATDD foundation"
-      complexity_levels: ["basic", "intermediate", "advanced"]
-
-    design_wave:
-      file: "checklists/design-wave-checklist.md"
-      description: "Architecture design with visual representation"
-      focus: "hexagonal_architecture_stakeholder_communication"
-
-    distill_wave:
-      file: "checklists/distill-wave-checklist.md"
-      description: "Acceptance test creation with production service integration"
-      validation: "given_when_then_real_services"
-
-    develop_wave:
-      file: "checklists/develop-wave-checklist.md"
-      description: "Outside-In TDD with systematic refactoring"
-      integration: "production_service_business_naming"
-
-    demo_wave:
-      file: "checklists/demo-wave-checklist.md"
-      description: "Production readiness and stakeholder demonstration"
-      coverage: "deployment_monitoring_business_value"
-
-  methodology_specific:
-    atdd_compliance:
-      file: "checklists/atdd-compliance-checklist.md"
-      description: "ATDD methodology compliance across all phases"
-      validation: "customer_developer_tester_collaboration"
-
-    visual_architecture:
-      file: "checklists/visual-architecture-checklist.md"
-      description: "Visual architecture lifecycle management"
-      focus: "stakeholder_communication_implementation_sync"
-
-    production_service_integration:
-      file: "checklists/production-service-integration-checklist.md"
-      description: "Critical validation preventing test infrastructure deception"
-      requirement: "step_methods_call_production_services"
-
-    methodology_master:
-      file: "checklists/5d-wave-methodology-checklist.md"
-      description: "Complete 5D-Wave methodology execution validation"
-      scope: "cross_wave_integration_business_value"
-
 # Knowledge base and reference materials
 knowledge_base:
   methodology_guide:
@@ -346,6 +297,5 @@ integration:
   agent_collaboration_patterns: true
   visual_architecture_lifecycle: true
   cross_wave_coordination: true
-  checklist_validation_integration: true
   knowledge_base_accessibility: true
   template_orchestration_support: true
