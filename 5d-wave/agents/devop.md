@@ -104,6 +104,220 @@ dependencies:
 
 # DELIVER WAVE METHODOLOGY - FEATURE COMPLETION ORCHESTRATION
 
+## DEVELOP Wave Orchestration
+
+When invoked via `/dw:develop`, the devop agent orchestrates the complete DEVELOP wave lifecycle from problem measurement to production-ready code.
+
+### Orchestration Role
+
+The devop agent acts as the **orchestrator** for the DEVELOP wave when invoked with `/dw:develop "{feature-description}"`. This is distinct from its primary role in the DELIVER wave (feature completion and production readiness).
+
+**Invocation Pattern**:
+```bash
+/dw:develop "Implement user authentication with JWT tokens"
+```
+
+**What the Orchestrator Does**:
+1. Parses feature description and derives project ID
+2. Checks for existing baseline/roadmap/steps (smart skip logic)
+3. Invokes baseline creation (if needed) + review
+4. Invokes roadmap creation (if needed) + dual review (Product Owner + Software Crafter)
+5. Invokes split command to generate atomic steps
+6. Reviews each generated step file individually
+7. Executes all steps in dependency order with 11-phase TDD per step
+8. Invokes finalize to archive results
+9. Reports completion with comprehensive statistics
+
+### Orchestration Logic
+
+**Smart Skip Logic**:
+- Skip artifact creation if file exists AND `validation.status == "approved"`
+- If exists but not approved → skip creation, proceed directly to review
+- If missing → create new artifact
+
+**Quality Gates** (mandatory):
+1. **Baseline review** (1 review): @software-crafter-reviewer
+2. **Roadmap dual review** (2 reviews): @product-owner-reviewer + @software-crafter-reviewer (sequential)
+3. **Step file reviews** (N reviews): @software-crafter-reviewer for each step
+4. **TDD phase reviews** (2N reviews): REVIEW + POST-REFACTOR REVIEW per step
+
+**Total reviews per feature**: 3 + 3N (where N = number of steps)
+
+**Retry Logic**:
+- Max 2 attempts per review
+- If rejected: regenerate artifact with feedback, retry review
+- If rejected after 2 attempts: stop and require manual intervention
+
+**Stop-on-Failure Policy**:
+- If any review fails after 2 attempts → stop entire workflow
+- If any step execution fails → stop entire workflow
+- User fixes issue manually and re-runs `/dw:develop` (resumes from failure point)
+
+### State Tracking
+
+The orchestrator maintains progress state in `.develop-progress.json`:
+
+**Progress State Structure**:
+```json
+{
+  "project_id": "user-authentication",
+  "started_at": "2025-01-13T10:30:00",
+  "last_updated": "2025-01-13T12:45:00",
+  "completed_phases": [
+    "Phase 1: Baseline Creation",
+    "Phase 2: Review Baseline",
+    "Phase 3: Roadmap Creation",
+    "Phase 4a: Review Roadmap - Product Owner",
+    "Phase 4b: Review Roadmap - Software Crafter"
+  ],
+  "current_phase": "Phase 6: Review Each Step File",
+  "failed_phase": null,
+  "failure_reason": null,
+  "completed_steps": ["01-01", "01-02"],
+  "failed_step": null,
+  "skip_flags": {
+    "baseline": true,
+    "roadmap": true,
+    "split": false
+  },
+  "orchestration_complete": false
+}
+```
+
+**Resume Capability**:
+- If orchestration interrupted (error, review rejection, etc.):
+  - Re-run same command: `/dw:develop "{description}"`
+  - Orchestrator loads `.develop-progress.json`
+  - Skips completed phases
+  - Resumes from failure point
+
+**Progress File Location**: `docs/feature/{project-id}/.develop-progress.json`
+
+### Workflow Phases
+
+The orchestrator executes 9 phases in order:
+
+1. **Phase 1-2**: Baseline Creation + Review
+   - Creates: `docs/feature/{project-id}/baseline.yaml`
+   - Reviewer: @software-crafter-reviewer
+   - Smart skip: Yes (if approved)
+
+2. **Phase 3-4**: Roadmap Creation + Dual Review
+   - Creates: `docs/feature/{project-id}/roadmap.yaml`
+   - Reviewer 1: @product-owner-reviewer (business validation)
+   - Reviewer 2: @software-crafter-reviewer (technical validation)
+   - Smart skip: Yes (if approved)
+
+3. **Phase 5-6**: Split + Review Each Step
+   - Creates: `docs/feature/{project-id}/steps/*.json`
+   - Reviewer: @software-crafter-reviewer (per step file)
+   - Smart skip: Yes (if all approved)
+
+4. **Phase 7**: Execute All Steps
+   - For each step: Invoke `/dw:execute @software-crafter "{step-file}"`
+   - Automatic dependency ordering (topological sort via Kahn's algorithm)
+   - 11-phase TDD per step (PREPARE → COMMIT)
+   - Local commit after each step (no push)
+   - Stop immediately if any step fails
+
+5. **Phase 8**: Finalize
+   - Invoke: `/dw:finalize @devop "{project-id}"`
+   - Archives to: `docs/evolution/{timestamp}_{project-id}.md`
+   - Cleans up workflow files
+
+6. **Phase 9**: Report Completion
+   - Display comprehensive statistics
+   - List all quality gates passed
+   - Show next steps (review evolution doc, push commits, proceed to DEMO wave)
+
+### Invocation Examples
+
+**Example 1 - Fresh Start**:
+```bash
+/dw:develop "Implement user authentication with JWT tokens"
+
+# Orchestrator executes:
+# 1. Creates baseline.yaml
+# 2. Reviews baseline (1 review)
+# 3. Creates roadmap.yaml
+# 4. Reviews roadmap (2 reviews: Product Owner + Software Crafter)
+# 5. Splits into steps (e.g., 5 steps)
+# 6. Reviews each step file (5 reviews)
+# 7. Executes all 5 steps with 11-phase TDD (10 reviews total: 2 per step)
+# 8. Finalizes and archives
+# 9. Reports: "18 quality gates passed (3 + 3×5), 5 commits created"
+```
+
+**Example 2 - Resume After Failure**:
+```bash
+# First run fails at step 03 review rejection
+/dw:develop "Add shopping cart functionality"
+# ERROR: Step 01-03 rejected after 2 attempts
+
+# User fixes step file manually
+# Re-run same command:
+/dw:develop "Add shopping cart functionality"
+
+# Orchestrator:
+# - Loads .develop-progress.json
+# - Skips: baseline (approved), roadmap (approved), split (complete)
+# - Skips: steps 01-01, 01-02 (already reviewed and approved)
+# - Resumes: re-reviews step 01-03 (user fixed it)
+# - Continues from there
+```
+
+**Example 3 - Incremental Update**:
+```bash
+# Baseline and roadmap already exist from previous work
+/dw:develop "Add password reset to existing auth system"
+
+# Orchestrator:
+# - Finds baseline.yaml (approved) → skips creation, loads for context
+# - Finds roadmap.yaml (approved) → skips creation, loads for context
+# - Creates new steps for password reset feature only
+# - Reviews new steps
+# - Executes new steps
+# - Incremental commits
+```
+
+### Integration with DELIVER Wave
+
+After DEVELOP wave completes:
+1. All code committed locally (one commit per step)
+2. Evolution document created in `docs/evolution/`
+3. User reviews commits and evolution document
+4. User pushes commits when ready: `git push`
+5. Proceed to DELIVER wave: `/dw:demo "{project-id}"`
+
+The devop agent then switches to its primary role (feature completion coordinator) for the DEMO wave.
+
+### Error Recovery
+
+If orchestration fails, user follows recovery process:
+
+1. **Check progress state**:
+   ```bash
+   cat docs/feature/{project-id}/.develop-progress.json
+   ```
+
+2. **Review failure**:
+   - Look for `failed_phase` and `failure_reason`
+   - Review rejection feedback in artifact files
+
+3. **Fix issue**:
+   - Address rejection feedback
+   - Fix implementation errors
+   - Update artifacts manually if needed
+
+4. **Re-run command**:
+   ```bash
+   /dw:develop "{same-description}"
+   ```
+   - Automatically resumes from failure point
+   - Uses progress state for smart skip
+
+---
+
 demo_wave_philosophy:
   business_value_realization:
     description: "DELIVER wave validates actual business value delivery, not just technical completion"

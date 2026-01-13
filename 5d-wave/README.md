@@ -103,12 +103,45 @@ The architecture-diagram-manager provides complete visual architecture lifecycle
 
 ### Execute Full 5D-Wave Cycle
 
-```
+**Option 1: Automated DEVELOP Wave (Recommended)**
+```bash
 *dw-discuss "User registration and login requirements"
 *dw-design "Microservices with JWT authentication"
 *dw-distill "User can register and login securely"
-*dw-develop "auth-service-001"
-*dw-demo "authentication-mvp"
+*dw-develop "Implement user authentication with JWT"
+  # Automatically: baseline → roadmap → split → execute all steps → finalize
+  # Quality gates: 3 + 3N reviews (e.g., 10 steps = 33 reviews)
+*dw-demo "user-authentication"
+```
+
+**Option 2: Manual Granular Control (Advanced)**
+```bash
+# DISCUSS and DESIGN waves
+*dw-discuss "User registration requirements"
+*dw-design "JWT authentication architecture"
+
+# DEVELOP wave - manual orchestration
+*dw-baseline "Implement user authentication"
+*dw-roadmap @solution-architect "Implement user authentication"
+*dw-split @devop "user-authentication"
+
+# Execute individual steps with 11-phase TDD
+*dw-execute @software-crafter "docs/feature/user-authentication/steps/01-01.json"
+*dw-execute @software-crafter "docs/feature/user-authentication/steps/01-02.json"
+# ... (repeat for all steps)
+
+*dw-finalize @devop "user-authentication"
+
+# DEMO wave
+*dw-demo "user-authentication"
+```
+
+**Option 3: Execute Single Step with Complete 11-Phase TDD**
+```bash
+# For executing one specific step with full TDD workflow
+*dw:execute @software-crafter "docs/feature/user-auth/steps/01-02.json"
+  # Automatic: PREPARE → RED → GREEN → REVIEW → REFACTOR → VALIDATE → COMMIT
+  # Includes mandatory reviews and progressive refactoring (L1-L4)
 ```
 
 ### Complex Refactoring with Visual Tracking

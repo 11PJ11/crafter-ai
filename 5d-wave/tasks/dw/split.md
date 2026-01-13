@@ -206,6 +206,91 @@ Each generated task file contains all information needed for completion, enablin
 /dw:split @software-crafter "auth-refactor"
 ```
 
+## Additional Parameters
+
+### `--regenerate-step {step-id}` (Optional)
+
+Regenerates a single step file after review rejection, incorporating feedback without affecting other approved steps.
+
+**Usage**:
+```bash
+/dw:split @devop "{project-id}" --regenerate-step {step-id} --feedback "{feedback}"
+```
+
+**Purpose**:
+- Regenerate rejected step file with reviewer feedback
+- Preserve all other approved steps unchanged
+- Part of automatic retry logic in `/dw:develop` orchestration
+
+**Parameters**:
+- `{step-id}`: Step identifier to regenerate (e.g., "01-02", "02-03")
+- `--feedback "{feedback}"`: Rejection reason from review (required)
+
+**Examples**:
+```bash
+# Regenerate step 01-02 with feedback
+/dw:split @devop "auth-upgrade" --regenerate-step 01-02 --feedback "Missing acceptance criteria for error handling"
+
+# Regenerate step 02-01 with technical feedback
+/dw:split @software-crafter "shopping-cart" --regenerate-step 02-01 --feedback "Dependencies not specified - requires step 01-03"
+
+# Regenerate step 01-05 with context feedback
+/dw:split @solution-architect "microservices" --regenerate-step 01-05 --feedback "Self-contained context insufficient - missing architecture decisions from phase 1"
+```
+
+**Behavior**:
+1. **Loads existing steps**: Reads all step files from `docs/feature/{project-id}/steps/`
+2. **Preserves approved steps**: Keeps all steps except the one being regenerated
+3. **Incorporates feedback**: Uses feedback to improve regenerated step
+4. **Maintains consistency**: Ensures dependency references remain valid
+5. **Updates single file**: Only writes the regenerated step file
+
+**Integration with `/dw:develop` Orchestration**:
+
+This parameter is automatically invoked during Phase 6 (Review Each Step File) when using `/dw:develop`:
+
+```
+Phase 6: Review Step Files
+  ↓
+Step 01-02 Review → REJECTED
+  ↓
+Automatic retry (attempt 1 of 2):
+  Invoke: /dw:split @devop "{project-id}"
+          --regenerate-step 01-02
+          --feedback "{rejection-reason}"
+  ↓
+Re-review Step 01-02
+  ↓
+If approved → continue
+If rejected → attempt 2
+  ↓
+If rejected after 2 attempts → STOP, manual intervention required
+```
+
+**Validation**:
+- Step ID must exist in original roadmap
+- Feedback must be non-empty
+- Project directory must exist
+- Other step files must be valid JSON
+
+**Error Handling**:
+```bash
+# Invalid step ID
+ERROR: Step 01-99 not found in roadmap
+
+# Missing feedback
+ERROR: --feedback parameter required when using --regenerate-step
+
+# No existing steps
+ERROR: No step files found in docs/feature/{project-id}/steps/
+```
+
+**Notes**:
+- **Idempotent**: Can be called multiple times safely
+- **Atomic**: Either completes fully or fails without partial updates
+- **Context preservation**: Maintains self-contained context requirement
+- **Review loop**: Part of 2-attempt retry strategy in orchestration
+
 ## Key Benefits
 
 - **Context Preservation**: Each task is self-contained with all required information

@@ -30,11 +30,23 @@ cd ai-craft
 ### Basic Usage
 
 ```bash
-# Start ATDD workflow
-/dw:start "Build user authentication system"
+# Develop complete feature (automated DEVELOP wave)
+/dw:develop "Build user authentication system"
+  # Automatically: baseline → roadmap → split → execute all → finalize
+  # Quality gates: 3 + 3N reviews per feature
 
-# Or process requirements
+# Execute specific step (11-phase TDD)
+/dw:execute @software-crafter "docs/feature/auth/steps/01-02.json"
+  # Automatic: PREPARE → RED → GREEN → REVIEW → REFACTOR → VALIDATE → COMMIT
+
+# Manual workflow control (advanced)
 /dw:discuss @requirements.txt
+/dw:design "JWT authentication architecture"
+/dw:baseline "Implement authentication"
+/dw:roadmap @solution-architect "Implement authentication"
+/dw:split @devop "authentication"
+# ... execute individual steps ...
+/dw:finalize @devop "authentication"
 ```
 
 ## 🏗️ ATDD Five-Stage Workflow
