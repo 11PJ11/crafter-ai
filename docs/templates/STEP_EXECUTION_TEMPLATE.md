@@ -24,7 +24,7 @@ This template defines the standardized workflow for executing any step in the pl
 
 ### 1. Implement ({ESTIMATED_HOURS_IMPLEMENT}h)
 ```
-/dw:execute @agent-{PRIMARY_AGENT} implement docs/feature/plugin-marketplace-migration/steps/{STEP_FILE}.json
+/nw:execute @agent-{PRIMARY_AGENT} implement docs/feature/plugin-marketplace-migration/steps/{STEP_FILE}.json
 - Focus on deliverables only (no reports)
 - Use business language and domain concepts throughout
 - CRITICAL TDD CYCLE: Write test → Test FAILS for correct reason → Implement → Test PASSES
@@ -121,7 +121,7 @@ The implementation MUST follow the disciplined 11-phase TDD inner loop:
 
 ### 2. Review ({ESTIMATED_HOURS_REVIEW}h)
 ```
-/dw:review @agent-{PRIMARY_AGENT}-reviewer review implementation of docs/feature/plugin-marketplace-migration/steps/{STEP_FILE}.json
+/nw:review @agent-{PRIMARY_AGENT}-reviewer review implementation of docs/feature/plugin-marketplace-migration/steps/{STEP_FILE}.json
 - Embed critique in response (no separate reports)
 - Verify business language is used consistently
 - DO NOT COMMIT before user approval
@@ -130,14 +130,14 @@ The implementation MUST follow the disciplined 11-phase TDD inner loop:
 
 ### 3. Fix ({ESTIMATED_HOURS_FIX}h)
 ```
-/dw:execute @agent-{PRIMARY_AGENT} implement fix for ALL issues found in review
+/nw:execute @agent-{PRIMARY_AGENT} implement fix for ALL issues found in review
 - DO NOT COMMIT before user approval
 ```
 - Tell user: "Fixes applied" + description
 
 ### 4. Refactor ({ESTIMATED_HOURS_REFACTOR}h)
 ```
-/dw:refactor @agent-{PRIMARY_AGENT} refactor implementation and tests for docs/feature/plugin-marketplace-migration/steps/{STEP_FILE}.json from level 1 to level {REFACTOR_LEVEL}
+/nw:refactor @agent-{PRIMARY_AGENT} refactor implementation and tests for docs/feature/plugin-marketplace-migration/steps/{STEP_FILE}.json from level 1 to level {REFACTOR_LEVEL}
 - Use business language and domain definitions for:
   * Type discovery and implementation
   * Class and method names

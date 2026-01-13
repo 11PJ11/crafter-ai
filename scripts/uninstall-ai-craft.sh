@@ -51,8 +51,8 @@ ${BLUE}EXAMPLES:${NC}
     $0 --force              # Uninstall without confirmation prompts
 
 ${BLUE}WHAT GETS REMOVED:${NC}
-    - All 5D-WAVE agents in agents/dw/ directory
-    - All DW commands in commands/dw/ directory
+    - All nWave agents in agents/nw/ directory
+    - All DW commands in commands/nw/ directory
     - AI-Craft configuration files (manifest)
     - AI-Craft installation logs and backup directories
 
@@ -86,14 +86,14 @@ check_installation() {
 
     local installation_found=false
 
-    if [[ -d "$CLAUDE_CONFIG_DIR/agents/dw" ]]; then
+    if [[ -d "$CLAUDE_CONFIG_DIR/agents/nw" ]]; then
         installation_found=true
-        info "Found 5D-WAVE agents in: $CLAUDE_CONFIG_DIR/agents/dw"
+        info "Found nWave agents in: $CLAUDE_CONFIG_DIR/agents/nw"
     fi
 
-    if [[ -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
+    if [[ -d "$CLAUDE_CONFIG_DIR/commands/nw" ]]; then
         installation_found=true
-        info "Found 5D-WAVE commands in: $CLAUDE_CONFIG_DIR/commands/dw"
+        info "Found nWave commands in: $CLAUDE_CONFIG_DIR/commands/nw"
     fi
 
     if [[ -f "$CLAUDE_CONFIG_DIR/ai-craft-manifest.txt" ]]; then
@@ -133,8 +133,8 @@ confirm_removal() {
     echo -e "${RED}WARNING: This will completely remove the framework installation from your system.${NC}"
     echo ""
     echo -e "${YELLOW}The following will be removed:${NC}"
-    echo -e "${YELLOW}  - All 5D-WAVE agents${NC}"
-    echo -e "${YELLOW}  - All 5D-WAVE commands${NC}"
+    echo -e "${YELLOW}  - All nWave agents${NC}"
+    echo -e "${YELLOW}  - All nWave commands${NC}"
     echo -e "${YELLOW}  - Configuration files and manifest${NC}"
     echo -e "${YELLOW}  - Installation logs and backup directories${NC}"
     echo ""
@@ -171,16 +171,16 @@ create_backup() {
     info "Creating backup before removal..."
     mkdir -p "$BACKUP_DIR"
 
-    if [[ -d "$CLAUDE_CONFIG_DIR/agents/dw" ]]; then
+    if [[ -d "$CLAUDE_CONFIG_DIR/agents/nw" ]]; then
         mkdir -p "$BACKUP_DIR/agents"
-        cp -r "$CLAUDE_CONFIG_DIR/agents/dw" "$BACKUP_DIR/agents/"
-        info "Backed up agents/dw directory"
+        cp -r "$CLAUDE_CONFIG_DIR/agents/nw" "$BACKUP_DIR/agents/"
+        info "Backed up agents/nw directory"
     fi
 
-    if [[ -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
+    if [[ -d "$CLAUDE_CONFIG_DIR/commands/nw" ]]; then
         mkdir -p "$BACKUP_DIR/commands"
-        cp -r "$CLAUDE_CONFIG_DIR/commands/dw" "$BACKUP_DIR/commands/"
-        info "Backed up commands/dw directory"
+        cp -r "$CLAUDE_CONFIG_DIR/commands/nw" "$BACKUP_DIR/commands/"
+        info "Backed up commands/nw directory"
     fi
 
     if [[ -f "$CLAUDE_CONFIG_DIR/ai-craft-manifest.txt" ]]; then
@@ -205,18 +205,18 @@ EOF
 
 remove_agents() {
     if [[ "$DRY_RUN" == "true" ]]; then
-        info "${YELLOW}[DRY RUN]${NC} Would remove 5D-WAVE agents..."
-        if [[ -d "$CLAUDE_CONFIG_DIR/agents/dw" ]]; then
-            info "${YELLOW}[DRY RUN]${NC} Would remove agents/dw directory"
+        info "${YELLOW}[DRY RUN]${NC} Would remove nWave agents..."
+        if [[ -d "$CLAUDE_CONFIG_DIR/agents/nw" ]]; then
+            info "${YELLOW}[DRY RUN]${NC} Would remove agents/nw directory"
         fi
         return 0
     fi
 
-    info "Removing 5D-WAVE agents..."
+    info "Removing nWave agents..."
 
-    if [[ -d "$CLAUDE_CONFIG_DIR/agents/dw" ]]; then
-        rm -rf "$CLAUDE_CONFIG_DIR/agents/dw"
-        info "Removed agents/dw directory"
+    if [[ -d "$CLAUDE_CONFIG_DIR/agents/nw" ]]; then
+        rm -rf "$CLAUDE_CONFIG_DIR/agents/nw"
+        info "Removed agents/nw directory"
     fi
 
     if [[ -d "$CLAUDE_CONFIG_DIR/agents" ]]; then
@@ -231,18 +231,18 @@ remove_agents() {
 
 remove_commands() {
     if [[ "$DRY_RUN" == "true" ]]; then
-        info "${YELLOW}[DRY RUN]${NC} Would remove 5D-WAVE commands..."
-        if [[ -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
-            info "${YELLOW}[DRY RUN]${NC} Would remove commands/dw directory"
+        info "${YELLOW}[DRY RUN]${NC} Would remove nWave commands..."
+        if [[ -d "$CLAUDE_CONFIG_DIR/commands/nw" ]]; then
+            info "${YELLOW}[DRY RUN]${NC} Would remove commands/nw directory"
         fi
         return 0
     fi
 
-    info "Removing 5D-WAVE commands..."
+    info "Removing nWave commands..."
 
-    if [[ -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
-        rm -rf "$CLAUDE_CONFIG_DIR/commands/dw"
-        info "Removed commands/dw directory"
+    if [[ -d "$CLAUDE_CONFIG_DIR/commands/nw" ]]; then
+        rm -rf "$CLAUDE_CONFIG_DIR/commands/nw"
+        info "Removed commands/nw directory"
     fi
 
     if [[ -d "$CLAUDE_CONFIG_DIR/commands" ]]; then
@@ -314,13 +314,13 @@ validate_removal() {
 
     local errors=0
 
-    if [[ -d "$CLAUDE_CONFIG_DIR/agents/dw" ]]; then
-        error "5D-WAVE agents directory still exists"
+    if [[ -d "$CLAUDE_CONFIG_DIR/agents/nw" ]]; then
+        error "nWave agents directory still exists"
         ((errors++)) || true
     fi
 
-    if [[ -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
-        error "5D-WAVE commands directory still exists"
+    if [[ -d "$CLAUDE_CONFIG_DIR/commands/nw" ]]; then
+        error "nWave commands directory still exists"
         ((errors++)) || true
     fi
 
@@ -359,8 +359,8 @@ Computer: $(hostname)
 User: $(whoami)
 
 Uninstall Summary:
-- 5D-WAVE agents removed from: $CLAUDE_CONFIG_DIR/agents/dw/
-- 5D-WAVE commands removed from: $CLAUDE_CONFIG_DIR/commands/dw/
+- nWave agents removed from: $CLAUDE_CONFIG_DIR/agents/nw/
+- nWave commands removed from: $CLAUDE_CONFIG_DIR/commands/nw/
 - Configuration files removed
 - Installation logs removed
 - Backup directories cleaned
@@ -431,8 +431,8 @@ main() {
     info "✅ Framework uninstalled successfully!"
     echo ""
     info "Summary:"
-    info "- All 5D-WAVE agents removed"
-    info "- All 5D-WAVE commands removed"
+    info "- All nWave agents removed"
+    info "- All nWave commands removed"
     info "- Configuration files cleaned"
     info "- Backup directories removed"
 

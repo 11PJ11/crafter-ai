@@ -27,7 +27,7 @@ All 12 agents have the required production frameworks present:
 ## Verification Commands
 
 ```bash
-for agent in 5d-wave/agents/*.md; do
+for agent in nWave/agents/*.md; do
   echo "=== $(basename $agent .md) ==="
   grep -c "enterprise_safety_layers:" "$agent"
 done

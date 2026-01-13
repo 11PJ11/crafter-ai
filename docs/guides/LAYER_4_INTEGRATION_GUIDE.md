@@ -702,8 +702,8 @@ metrics:
 ```bash
 # AI-Craft Configuration
 export AI_CRAFT_HOME="/opt/ai-craft"
-export AI_CRAFT_AGENTS_DIR="$AI_CRAFT_HOME/5d-wave/agents"
-export AI_CRAFT_REVIEWERS_DIR="$AI_CRAFT_HOME/5d-wave/agents/reviewers"
+export AI_CRAFT_AGENTS_DIR="$AI_CRAFT_HOME/nWave/agents"
+export AI_CRAFT_REVIEWERS_DIR="$AI_CRAFT_HOME/nWave/agents/reviewers"
 
 # Layer 4 Configuration
 export LAYER4_AUTO_TRIGGER="true"           # Auto-trigger after Layer 1 pass

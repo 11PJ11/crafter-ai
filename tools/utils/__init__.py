@@ -1,1 +1,1 @@
-# Utility modules for 5D-WAVE IDE bundle generation
+# Utility modules for nWave IDE bundle generation

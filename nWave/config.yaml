@@ -1,0 +1,301 @@
+name: "AI-Craft nWave"
+version: "1.0.0"
+description: "Comprehensive DISCUSS→DESIGN→DISTILL→DEVELOP→DEMO methodology with visual architecture lifecycle management"
+author: "AI-Craft Team"
+license: "MIT"
+documentation_url: "https://github.com/your-org/ai-craft/nWave"
+
+# Core methodology implementation
+methodology: "nWave"
+wave_phases:
+  - "DISCUSS"
+  - "DESIGN"
+  - "DISTILL"
+  - "DEVELOP"
+  - "DEMO"
+
+# Agent registry with wave assignments
+agents:
+  # nWave Core Agents
+  business_analyst:
+    wave: "DISCUSS"
+    priority: 1
+    role: "requirements_gathering"
+
+  solution_architect:
+    wave: "DESIGN"
+    priority: 1
+    role: "architecture_design"
+
+  acceptance_designer:
+    wave: "DISTILL"
+    priority: 1
+    role: "test_scenarios"
+
+  test_first_developer:
+    wave: "DEVELOP"
+    priority: 1
+    role: "outside_in_tdd"
+    knowledge_preservation: "COMPLETE"
+
+  feature_completion_coordinator:
+    wave: "DEMO"
+    priority: 1
+    role: "production_readiness"
+
+  systematic_refactorer:
+    wave: "DEVELOP"
+    priority: 2
+    role: "code_quality"
+    knowledge_preservation: "COMPLETE"
+
+  # Specialist Agents (Cross-Wave)
+  mikado_refactoring_specialist_enhanced:
+    wave: "CROSS_WAVE"
+    priority: 1
+    role: "complex_refactoring"
+    knowledge_preservation: "COMPLETE"
+    collaboration_mode: "STANDALONE_AND_COLLABORATIVE"
+
+  walking_skeleton_helper:
+    wave: "CROSS_WAVE"
+    priority: 2
+    role: "e2e_validation"
+    methodology: "ALISTAIR_COCKBURN"
+
+  root_cause_analyzer:
+    wave: "CROSS_WAVE"
+    priority: 3
+    role: "problem_investigation"
+    methodology: "TOYOTA_5_WHYS"
+
+  architecture_diagram_manager:
+    wave: "DESIGN"
+    priority: 1
+    role: "visual_architecture"
+    collaboration_scope: "ALL_WAVES"
+
+# Command mappings
+commands:
+  # nWave Core Commands
+  start:
+    description: "Initialize nWave workflow"
+    argument_hint: "[project-name] - Optional: --template=[greenfield|brownfield] --scope=[small|medium|large]"
+    agents: ["business_analyst"]
+    outputs: ["project_brief", "requirements_outline"]
+
+  discuss:
+    description: "Requirements gathering and business analysis"
+    argument_hint: "[feature-name] - Optional: --interactive=[high|moderate] --output-format=[md|yaml]"
+    agents: ["business_analyst"]
+    wave: "DISCUSS"
+    outputs: ["requirements_document", "user_stories"]
+
+  design:
+    description: "Architecture design with visual representation"
+    argument_hint: "[component-name] - Optional: --architecture=[hexagonal|layered|microservices] --diagram-format=[mermaid|plantuml]"
+    agents: ["solution_architect", "architecture_diagram_manager"]
+    wave: "DESIGN"
+    outputs: ["architecture_document", "architecture_diagrams"]
+
+  distill:
+    description: "Acceptance test creation and business validation"
+    argument_hint: "[story-id] - Optional: --test-framework=[cucumber|specflow|pytest-bdd] --integration=[real-services|mocks]"
+    agents: ["acceptance_designer"]
+    wave: "DISTILL"
+    outputs: ["acceptance_tests", "test_scenarios"]
+
+  develop:
+    description: "Execute complete DEVELOP wave: baseline → roadmap → split → execute-all → finalize"
+    argument_hint: "[feature-description] - Example: \"Implement user authentication with JWT\""
+    agents: ["devop"]
+    wave: "DEVELOP"
+    outputs: ["complete_feature", "quality_gates_passed", "evolution_document"]
+
+  baseline:
+    description: "Establish measurement baseline before roadmap creation"
+    argument_hint: "[goal-description] - Example: \"optimize test execution time\""
+    agents: ["researcher"]
+    wave: "DEVELOP"
+    outputs: ["baseline_yaml"]
+
+  demo:
+    description: "Production readiness validation"
+    argument_hint: "[deployment-target] - Optional: --environment=[staging|production] --validation=[full|smoke]"
+    agents: ["feature_completion_coordinator"]
+    wave: "DEMO"
+    outputs: ["production_deployment", "stakeholder_demo"]
+
+  # Specialist Commands
+  mikado:
+    description: "Complex refactoring roadmaps with visual tracking"
+    argument_hint: "[refactoring-goal] - Optional: --complexity=[simple|moderate|complex] --visualization=[tree|graph]"
+    agents:
+      ["mikado_refactoring_specialist_enhanced", "architecture_diagram_manager"]
+    outputs: ["refactoring_roadmap", "dependency_diagrams"]
+
+  skeleton:
+    description: "Walking skeleton E2E automation"
+    argument_hint: "[feature-name] - Optional: --depth=[minimal|standard|comprehensive] --validation=[quick|thorough]"
+    agents: ["walking_skeleton_helper", "architecture_diagram_manager"]
+    outputs: ["minimal_e2e_implementation", "skeleton_architecture"]
+
+  root_why:
+    description: "Root cause analysis and debugging"
+    argument_hint: "[problem-description] - Optional: --depth=[3|5|7-whys] --output=[text|diagram|report]"
+    agents: ["root_cause_analyzer"]
+    outputs: ["root_cause_analysis", "investigation_report"]
+
+  diagram:
+    description: "Architecture diagram management"
+    argument_hint: "[diagram-type] - Optional: --format=[mermaid|plantuml|c4] --level=[context|container|component]"
+    agents: ["architecture_diagram_manager"]
+    outputs: ["updated_diagrams", "visual_architecture"]
+
+  git:
+    description: "Git workflow operations"
+    argument_hint: "[operation] - Options: commit, push, status, branch, merge - Optional: --message='commit msg'"
+    outputs: ["git_status", "commit_history"]
+
+  refactor:
+    description: "Systematic refactoring with Mikado Method"
+    argument_hint: "[target-class-or-module] - Optional: --level=[1-6] --method=[extract|inline|rename|move] --scope=[method|class|module]"
+    agents: ["systematic_refactorer"]
+    outputs: ["refactored_code", "refactoring_log"]
+
+  roadmap:
+    description: "Create comprehensive planning document"
+    argument_hint: "[agent] [goal-description] - Example: @solution-architect \"Migrate to microservices\""
+    outputs: ["roadmap_yaml"]
+
+  split:
+    description: "Generate atomic task files from roadmap"
+    argument_hint: "[agent] [project-id] - Example: @devop \"auth-upgrade\""
+    outputs: ["task_files"]
+
+  review:
+    description: "Expert critique and quality review - Types: baseline, roadmap, step, task, implementation"
+    argument_hint: "[agent] [artifact-type] [artifact-path] - Example: @software-crafter task \"steps/01-01.json\""
+    outputs: ["review_report"]
+
+  execute:
+    description: "Execute atomic task with state tracking"
+    argument_hint: "[agent] [step-file-path] - Example: @researcher \"steps/01-01.json\""
+    outputs: ["task_results"]
+
+  finalize:
+    description: "Summarize achievements, archive to docs/evolution, clean up feature files"
+    argument_hint: "[agent] [project-id] - Example: @devop \"auth-upgrade\""
+    outputs: ["evolution_document"]
+
+# Workflow configurations
+workflows:
+  greenfield:
+    name: "nWave-greenfield"
+    description: "Complete greenfield development with visual architecture"
+    phases: ["DISCUSS", "DESIGN", "DISTILL", "DEVELOP", "DEMO"]
+
+  brownfield:
+    name: "nWave-brownfield"
+    description: "Legacy system enhancement with visual refactoring"
+    phases: ["DISCUSS", "DESIGN", "DISTILL", "DEVELOP", "DEMO"]
+    special_agents:
+      ["mikado_refactoring_specialist_enhanced", "walking_skeleton_helper"]
+
+  rapid_prototype:
+    name: "5d-rapid-prototype"
+    description: "Streamlined validation with essential visual architecture"
+    phases: ["DISCUSS", "DESIGN", "DEVELOP", "DEMO"]
+
+# Quality gates and validation
+quality_gates:
+  knowledge_preservation:
+    test_first_developer: "925_lines_methodology"
+    systematic_refactorer: "complete_refactoring_mechanics"
+    mikado_specialist: "enhanced_methodology_full"
+
+  visual_architecture:
+    diagram_synchronization: true
+    evolution_tracking: true
+    validation_integration: true
+
+  methodology_compliance:
+    atdd_integration: true
+    outside_in_tdd: true
+    toyota_5_whys: true
+    alistair_cockburn_skeleton: true
+
+# Knowledge base and reference materials
+knowledge_base:
+  methodology_guide:
+    file: "data/bmad-kb.md"
+    description: "Comprehensive nWave methodology knowledge base"
+    content: "atdd_patterns_technology_integration_best_practices"
+
+  atdd_patterns:
+    file: "data/atdd-patterns.md"
+    description: "ATDD implementation patterns and anti-patterns"
+    focus: "production_service_integration_troubleshooting"
+
+  outside_in_tdd:
+    file: "data/outside-in-tdd-reference.md"
+    description: "Outside-In TDD with double-loop architecture guide"
+    methodology: "four_stage_atdd_technology_examples"
+
+  visual_architecture:
+    file: "data/visual-architecture-principles.md"
+    description: "Stakeholder communication and implementation synchronization"
+    approach: "multi_audience_visualization_automation"
+
+  systematic_refactoring:
+    file: "data/systematic-refactoring-guide.md"
+    description: "Six-level refactoring hierarchy with progressive implementation"
+    integration: "tdd_cycles_technology_examples"
+
+# Interactive workflow templates
+templates:
+  wave_templates:
+    discuss_interactive:
+      file: "templates/discuss-requirements-interactive.yaml"
+      description: "Highly interactive requirements elicitation for DISCUSS wave"
+      interactivity: "high"
+      framework: "stakeholder_collaboration_three_amigos"
+
+    design_interactive:
+      file: "templates/design-architecture-interactive.yaml"
+      description: "Highly interactive architectural design for DESIGN wave"
+      interactivity: "high"
+      focus: "hexagonal_architecture_visual_stakeholder_communication"
+
+    distill_moderate:
+      file: "templates/distill-acceptance-tests.yaml"
+      description: "Moderately interactive acceptance test creation for DISTILL wave"
+      interactivity: "moderate"
+      patterns: "production_service_integration_given_when_then"
+
+    develop_simple:
+      file: "templates/develop-outside-in-tdd.yaml"
+      description: "Simple implementation-focused template for DEVELOP wave"
+      interactivity: "simple"
+      methodology: "outside_in_tdd_systematic_refactoring"
+
+    demo_moderate:
+      file: "templates/demo-production-readiness.yaml"
+      description: "Moderately interactive production readiness for DEMO wave"
+      interactivity: "moderate"
+      validation: "deployment_business_value_measurement"
+
+  comprehensive_template:
+    complete_methodology:
+      file: "templates/nWave-complete-methodology.yaml"
+      description: "Comprehensive orchestration for complete nWave methodology"
+      interactivity: "high"
+      scope: "end_to_end_methodology_execution"
+
+# Integration settings
+integration:
+  agent_collaboration_patterns: true
+  visual_architecture_lifecycle: true
+  cross_wave_coordination: true
+  knowledge_base_accessibility: true
+  template_orchestration_support: true

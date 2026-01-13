@@ -1112,7 +1112,7 @@ Create validation script to check all agents:
 #!/bin/bash
 
 TEMPLATE_VERSION="1.2"
-AGENTS_DIR="5d-wave/agents"
+AGENTS_DIR="nWave/agents"
 
 for agent in ${AGENTS_DIR}/*.md; do
   echo "Validating: $(basename $agent)"

@@ -372,7 +372,7 @@ def add_frameworks_to_agent(agent_file: Path) -> Tuple[bool, str]:
 
 def main():
     """Main execution"""
-    agents_dir = Path("5d-wave/agents")
+    agents_dir = Path("nWave/agents")
 
     if not agents_dir.exists():
         print(f"❌ Agents directory not found: {agents_dir}")

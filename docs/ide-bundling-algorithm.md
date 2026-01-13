@@ -1,8 +1,8 @@
-# 5D-WAVE IDE Integration Bundling Algorithm
+# nWave IDE Integration Bundling Algorithm
 
 ## Overview
 
-This document defines the algorithm for generating IDE-compatible distributions from 5D-WAVE methodology source files. The algorithm focuses on creating individual agent and command files suitable for IDE integration, specifically designed for Claude Code and similar development environments.
+This document defines the algorithm for generating IDE-compatible distributions from nWave methodology source files. The algorithm focuses on creating individual agent and command files suitable for IDE integration, specifically designed for Claude Code and similar development environments.
 
 ## Goals
 
@@ -16,31 +16,31 @@ This document defines the algorithm for generating IDE-compatible distributions 
 
 ### 1. Agents (Primary Output)
 
-- **Input**: `5d-wave/agents/{agent}.md`
+- **Input**: `nWave/agents/{agent}.md`
 - **Output**: Individual `.md` files with all dependencies embedded
 - **Purpose**: Self-contained agent files ready for IDE integration
 
 ### 2. Commands (Secondary Output)
 
-- **Input**: `5d-wave/tasks/{task}.md`
+- **Input**: `nWave/tasks/{task}.md`
 - **Output**: Command files with embedded dependencies
 - **Purpose**: Direct task execution through IDE commands
 
 ### 3. Orchestrator Agents (Workflow-Based)
 
-- **Input**: `5d-wave/workflows/{workflow}.yaml`
+- **Input**: `nWave/workflows/{workflow}.yaml`
 - **Output**: Agent files that guide multi-phase processes
 - **Purpose**: Coordinate complex multi-wave processes
 
 ### 4. Agent Teams (Collaborative Configurations)
 
-- **Input**: `5d-wave/agent-teams/{team}.yaml`
+- **Input**: `nWave/agent-teams/{team}.yaml`
 - **Output**: Team configuration files for collaborative development
 - **Purpose**: Enable coordinated multi-agent workflows
 
 ### 5. Configuration Processing
 
-- **Input**: `5d-wave/config.yaml`
+- **Input**: `nWave/config.yaml`
 - **Output**: IDE-compatible configuration with agent mappings
 - **Purpose**: Central configuration for methodology execution
 
@@ -49,14 +49,14 @@ This document defines the algorithm for generating IDE-compatible distributions 
 ### Step 1: Agent Processing
 
 ```pseudocode
-FOR each agent_file in 5d-wave/agents/*.md:
+FOR each agent_file in nWave/agents/*.md:
     1. Parse agent embedded YAML configuration block
     2. Extract dependencies section from YAML
     3. FOR each dependency_type in [tasks, templates, checklists, data]:
-        a. Load all referenced files of dependency_type from 5d-wave/{type}/
+        a. Load all referenced files of dependency_type from nWave/{type}/
         b. Embed content directly in agent file
         c. Preserve original format (YAML as code blocks, MD as sections)
-    4. Replace {root} placeholders with 5d-wave-specific paths
+    4. Replace {root} placeholders with nWave-specific paths
     5. Generate output file: dist/ide/dw/agents/{agent-id}.md
 ```
 
@@ -125,14 +125,14 @@ dependencies:
 ### Step 2: Command Processing
 
 ```pseudocode
-FOR each task_file in 5d-wave/tasks/*.md:
+FOR each task_file in nWave/tasks/*.md:
     1. Load task file content
     2. Parse any task dependencies (if present)
     3. FOR each dependency:
-        a. Load and embed dependency content from 5d-wave/{type}/
+        a. Load and embed dependency content from nWave/{type}/
         b. Maintain content type formatting
     4. Add command header wrapper with wave assignment from config.yaml
-    5. Generate output file: dist/5d-wave/ide/commands/{task-id}.md
+    5. Generate output file: dist/nWave/ide/commands/{task-id}.md
 ````
 
 **Command Header Template**:
@@ -224,7 +224,7 @@ dist/expansion-packs/{pack-name}/ide/
 │   ├── business-analyst.md              # Agent with embedded dependencies
 │   ├── solution-architect.md            # Agent with embedded dependencies
 │   ├── acceptance-designer.md           # Agent with embedded dependencies
-│   ├── 5d-wave-complete-orchestrator.md # Workflow converted to agent
+│   ├── nWave-complete-orchestrator.md # Workflow converted to agent
 │   ├── atdd-focused-orchestrator.md     # Workflow converted to agent
 │   └── visual-architecture-orchestrator.md
 ├── commands/

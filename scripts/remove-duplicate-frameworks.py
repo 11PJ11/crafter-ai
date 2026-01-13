@@ -12,17 +12,17 @@ from pathlib import Path
 
 # Agent files to clean
 AGENT_FILES = [
-    "5d-wave/agents/acceptance-designer.md",
-    "5d-wave/agents/architecture-diagram-manager.md",
-    "5d-wave/agents/business-analyst.md",
-    "5d-wave/agents/data-engineer.md",
-    "5d-wave/agents/feature-completion-coordinator.md",
-    "5d-wave/agents/knowledge-researcher.md",
-    "5d-wave/agents/root-cause-analyzer.md",
-    "5d-wave/agents/software-crafter.md",
-    "5d-wave/agents/solution-architect.md",
-    "5d-wave/agents/visual-2d-designer.md",
-    "5d-wave/agents/walking-skeleton-helper.md",
+    "nWave/agents/acceptance-designer.md",
+    "nWave/agents/architecture-diagram-manager.md",
+    "nWave/agents/business-analyst.md",
+    "nWave/agents/data-engineer.md",
+    "nWave/agents/feature-completion-coordinator.md",
+    "nWave/agents/knowledge-researcher.md",
+    "nWave/agents/root-cause-analyzer.md",
+    "nWave/agents/software-crafter.md",
+    "nWave/agents/solution-architect.md",
+    "nWave/agents/visual-2d-designer.md",
+    "nWave/agents/walking-skeleton-helper.md",
 ]
 
 def remove_duplicate_frameworks(file_path: Path) -> tuple[bool, str]:

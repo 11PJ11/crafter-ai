@@ -31,22 +31,22 @@ cd ai-craft
 
 ```bash
 # Develop complete feature (automated DEVELOP wave)
-/dw:develop "Build user authentication system"
+/nw:develop "Build user authentication system"
   # Automatically: baseline → roadmap → split → execute all → finalize
   # Quality gates: 3 + 3N reviews per feature
 
 # Execute specific step (11-phase TDD)
-/dw:execute @software-crafter "docs/feature/auth/steps/01-02.json"
+/nw:execute @software-crafter "docs/feature/auth/steps/01-02.json"
   # Automatic: PREPARE → RED → GREEN → REVIEW → REFACTOR → VALIDATE → COMMIT
 
 # Manual workflow control (advanced)
-/dw:discuss @requirements.txt
-/dw:design "JWT authentication architecture"
-/dw:baseline "Implement authentication"
-/dw:roadmap @solution-architect "Implement authentication"
-/dw:split @devop "authentication"
+/nw:discuss @requirements.txt
+/nw:design "JWT authentication architecture"
+/nw:baseline "Implement authentication"
+/nw:roadmap @solution-architect "Implement authentication"
+/nw:split @devop "authentication"
 # ... execute individual steps ...
-/dw:finalize @devop "authentication"
+/nw:finalize @devop "authentication"
 ```
 
 ## 🏗️ ATDD Five-Stage Workflow
@@ -96,7 +96,7 @@ All agents reference shared constants for maintainability through the centralize
 
 ```
 ai-craft/
-├── 5d-wave/                  # ATDD workflow agents and commands
+├── nWave/                  # ATDD workflow agents and commands
 │   ├── agents/               # Specialized agent definitions
 │   ├── commands/             # Slash command definitions
 │   └── data/                 # Reference data and research
@@ -130,7 +130,7 @@ After making changes to agents, commands, or other framework components, rebuild
 ### Build Process Details
 
 The build system (`tools/build_ide_bundle.py`) processes:
-- **Agents**: Individual agent files with embedded dependencies → `dist/ide/agents/dw/`
+- **Agents**: Individual agent files with embedded dependencies → `dist/ide/agents/nw/`
 - **Commands**: Task files converted to IDE commands
 - **Teams**: Team configurations converted to collaborative agents
 - **Workflows**: Workflow orchestrators for multi-phase guidance
@@ -138,7 +138,7 @@ The build system (`tools/build_ide_bundle.py`) processes:
 ### Update Process
 
 The `update-ai-craft.sh` script orchestrates:
-1. Build new framework bundle from source (`5d-wave/`)
+1. Build new framework bundle from source (`nWave/`)
 2. Uninstall existing AI-Craft installation (cleanly removes from `~/.claude/`)
 3. Install newly built framework bundle
 4. Validate successful update (agents, commands, configuration)

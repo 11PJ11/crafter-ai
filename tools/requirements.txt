@@ -1,4 +1,4 @@
-# 5D-WAVE IDE Bundle Builder Dependencies
+# nWave IDE Bundle Builder Dependencies
 
 # Core dependencies
 PyYAML>=6.0

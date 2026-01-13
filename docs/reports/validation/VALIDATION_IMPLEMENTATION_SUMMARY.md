@@ -151,7 +151,7 @@ Applied to ALL 12 agents for security validation:
 - FV-001 to FV-002: Format validation (invalid syntax, inconsistent notation)
 - VC-001: Visual clarity (ambiguous elements)
 
-**Orchestrators** (5d-wave-complete-orchestrator, atdd-focused-orchestrator) - 0 additional tests:
+**Orchestrators** (nWave-complete-orchestrator, atdd-focused-orchestrator) - 0 additional tests:
 - Only universal agent security tests (16 tests)
 
 **Total Test Cases**: 258 tests across 12 agents
@@ -297,7 +297,7 @@ python3 scripts/run-adversarial-tests.py
 
 ### Root Cause
 
-Frameworks were successfully added to AGENT_TEMPLATE.yaml v1.2 in previous session but have not yet been propagated to individual agent files in `5d-wave/agents/`. This is the expected workflow:
+Frameworks were successfully added to AGENT_TEMPLATE.yaml v1.2 in previous session but have not yet been propagated to individual agent files in `nWave/agents/`. This is the expected workflow:
 
 1. ✅ Design frameworks (complete)
 2. ✅ Add to template (complete)

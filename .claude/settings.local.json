@@ -30,7 +30,7 @@
       "WebFetch(domain:cheatsheetseries.owasp.org)",
       "WebFetch(domain:cassandra.apache.org)",
       "WebFetch(domain:neo4j.com)",
-      "Read($HOME/.claude/commands/dw/**)",
+      "Read($HOME/.claude/commands/nw/**)",
       "Bash(chmod:*)",
       "Bash(cat:*)",
       "Bash(tree:*)",
@@ -61,11 +61,14 @@
       "WebFetch(domain:www.studiocataldi.it)",
       "WebFetch(domain:www.iusinitinere.it)",
       "WebFetch(domain:www.brocardi.it)",
-      "WebFetch(domain:www.wipo.int)"
+      "WebFetch(domain:www.wipo.int)",
+      "Bash(git mv:*)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "sequential-thinking"
   ]

@@ -162,7 +162,7 @@ AGENT_CONFIGS = {
     "agent-forger": {
         "type": "meta",
         "wave": "CROSS_WAVE",
-        "primary_output": "5d-wave/agents/{agent-name}.md",
+        "primary_output": "nWave/agents/{agent-name}.md",
         "allowed_tools": ["Read", "Write", "Edit", "Grep", "Glob"],
         "forbidden_tools": ["Bash", "WebFetch", "Execute"],
         "allowed_operations": ["Agent creation", "Specification validation", "Framework implementation"],
@@ -783,7 +783,7 @@ error_recovery_framework:
 def update_agent_file(agent_id: str) -> Tuple[bool, str]:
     """Update a single agent file with all 5 production frameworks."""
     try:
-        agent_path = Path(f"/mnt/c/Repositories/Projects/ai-craft/5d-wave/agents/{agent_id}.md")
+        agent_path = Path(f"/mnt/c/Repositories/Projects/ai-craft/nWave/agents/{agent_id}.md")
 
         # Read existing agent content
         with open(agent_path, 'r', encoding='utf-8') as f:
@@ -895,7 +895,7 @@ def main():
     print()
     print("=" * 80)
     print("Next Steps:")
-    print("1. Review updated agent files in 5d-wave/agents/")
+    print("1. Review updated agent files in nWave/agents/")
     print("2. Run compliance validation: python scripts/validate-agent-compliance.sh")
     print("3. Execute adversarial tests: python scripts/run-adversarial-tests.py")
     print("4. Deploy to production when all validations pass")

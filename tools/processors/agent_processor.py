@@ -1,7 +1,7 @@
 """
 Agent Processor
 
-Processes 5D-WAVE agent .md files with embedded YAML configuration blocks,
+Processes nWave agent .md files with embedded YAML configuration blocks,
 extracts and embeds dependencies, and generates IDE-compatible agent files.
 """
 
@@ -77,7 +77,7 @@ class AgentProcessor:
         def replace_marker(match):
             embed_path = match.group(1).strip()
 
-            # Resolve path relative to project root (parent of source_dir which is 5d-wave)
+            # Resolve path relative to project root (parent of source_dir which is nWave)
             project_root = self.source_dir.parent
             embed_full_path = project_root / embed_path
 
@@ -291,7 +291,7 @@ class AgentProcessor:
             agent_content = self.generate_agent_content(agent_file)
 
             # Determine output path
-            output_path = self.output_dir / "agents" / "dw" / f"{agent_name}.md"
+            output_path = self.output_dir / "agents" / "nw" / f"{agent_name}.md"
 
             # Write output file
             success = self.file_manager.write_file(output_path, agent_content)

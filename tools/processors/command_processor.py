@@ -1,7 +1,7 @@
 """
 Command Processor
 
-Processes 5D-WAVE task files and converts them into IDE-compatible command files
+Processes nWave task files and converts them into IDE-compatible command files
 with wave assignments and embedded dependencies.
 """
 
@@ -236,7 +236,7 @@ class CommandProcessor:
             command_content = self.generate_command_content(task_file, config)
 
             # Determine output path
-            output_path = self.output_dir / "commands" / "dw" / f"{task_name}.md"
+            output_path = self.output_dir / "commands" / "nw" / f"{task_name}.md"
 
             # Write output file
             success = self.file_manager.write_file(output_path, command_content)

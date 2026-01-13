@@ -48,7 +48,7 @@ def main():
     print("=" * 70)
     print()
 
-    reviewers_dir = Path("5d-wave/agents/reviewers")
+    reviewers_dir = Path("nWave/agents/reviewers")
 
     if not reviewers_dir.exists():
         print(f"❌ Error: Reviewers directory not found: {reviewers_dir}")

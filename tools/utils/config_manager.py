@@ -1,7 +1,7 @@
 """
 Config Manager
 
-Manages 5D-WAVE configuration loading, parsing, and IDE config generation.
+Manages nWave configuration loading, parsing, and IDE config generation.
 Handles the central config.yaml file and generates IDE-compatible configuration.
 """
 
@@ -14,7 +14,7 @@ from datetime import datetime
 
 
 class ConfigManager:
-    """Manages configuration for 5D-WAVE IDE bundle generation."""
+    """Manages configuration for nWave IDE bundle generation."""
 
     def __init__(self, config_file: Path):
         self.config_file = Path(config_file)
@@ -71,10 +71,10 @@ class ConfigManager:
             dict: Methodology information
         """
         return {
-            'name': self._config.get('name', '5D-WAVE'),
+            'name': self._config.get('name', 'nWave'),
             'version': self._config.get('version', '1.0.0'),
-            'description': self._config.get('description', '5D-WAVE Methodology'),
-            'methodology': self._config.get('methodology', '5D-WAVE'),
+            'description': self._config.get('description', 'nWave Methodology'),
+            'methodology': self._config.get('methodology', 'nWave'),
             'wave_phases': self._config.get('wave_phases', [])
         }
 
@@ -284,7 +284,7 @@ class ConfigManager:
                 'description': methodology_info['description'],
                 'methodology': methodology_info['methodology'],
                 'generated_at': datetime.now().isoformat(),
-                'generator': '5D-WAVE IDE Bundle Builder'
+                'generator': 'nWave IDE Bundle Builder'
             },
             'methodology': {
                 'wave_phases': methodology_info['wave_phases'],

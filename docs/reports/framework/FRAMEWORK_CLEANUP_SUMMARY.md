@@ -172,7 +172,7 @@ Agent File Structure:
 
 ### Duplicate Marker Check
 ```bash
-grep -c "^# Production Frameworks (YAML Format)" 5d-wave/agents/*.md
+grep -c "^# Production Frameworks (YAML Format)" nWave/agents/*.md
 ```
 
 **Result**: All agents return `0` (no duplicate markers found)

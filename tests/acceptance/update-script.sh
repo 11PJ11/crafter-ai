@@ -80,21 +80,21 @@ trap cleanup EXIT
 #######################################
 
 test_update_dry_run_no_changes() {
-    local before_count=$(find "$TEST_CLAUDE_CONFIG/agents/dw" -name "*.md" 2>/dev/null | wc -l)
+    local before_count=$(find "$TEST_CLAUDE_CONFIG/agents/nw" -name "*.md" 2>/dev/null | wc -l)
 
     "$PROJECT_ROOT/scripts/update-ai-craft.sh" --dry-run --force >/dev/null 2>&1
 
-    local after_count=$(find "$TEST_CLAUDE_CONFIG/agents/dw" -name "*.md" 2>/dev/null | wc -l)
+    local after_count=$(find "$TEST_CLAUDE_CONFIG/agents/nw" -name "*.md" 2>/dev/null | wc -l)
 
     [[ $before_count -eq $after_count ]]
 }
 
 test_update_preserves_agent_count() {
-    local before_count=$(find "$TEST_CLAUDE_CONFIG/agents/dw" -name "*.md" 2>/dev/null | wc -l)
+    local before_count=$(find "$TEST_CLAUDE_CONFIG/agents/nw" -name "*.md" 2>/dev/null | wc -l)
 
     "$PROJECT_ROOT/scripts/update-ai-craft.sh" --force >/dev/null 2>&1
 
-    local after_count=$(find "$TEST_CLAUDE_CONFIG/agents/dw" -name "*.md" 2>/dev/null | wc -l)
+    local after_count=$(find "$TEST_CLAUDE_CONFIG/agents/nw" -name "*.md" 2>/dev/null | wc -l)
 
     # Should have same or more agents after update
     [[ $after_count -ge $before_count ]]
@@ -120,7 +120,7 @@ test_update_manifest_updated() {
 test_update_essential_commands_present() {
     local essential_commands=("discuss.md" "design.md" "distill.md" "develop.md" "deliver.md")
     for cmd in "${essential_commands[@]}"; do
-        if [[ ! -f "$TEST_CLAUDE_CONFIG/commands/dw/$cmd" ]]; then
+        if [[ ! -f "$TEST_CLAUDE_CONFIG/commands/nw/$cmd" ]]; then
             return 1
         fi
     done

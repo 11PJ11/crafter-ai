@@ -80,11 +80,11 @@ trap cleanup EXIT
 
 test_install_creates_agents_directory() {
     "$PROJECT_ROOT/scripts/install-ai-craft.sh" >/dev/null 2>&1
-    [[ -d "$TEST_CLAUDE_CONFIG/agents/dw" ]]
+    [[ -d "$TEST_CLAUDE_CONFIG/agents/nw" ]]
 }
 
 test_install_creates_commands_directory() {
-    [[ -d "$TEST_CLAUDE_CONFIG/commands/dw" ]]
+    [[ -d "$TEST_CLAUDE_CONFIG/commands/nw" ]]
 }
 
 test_install_creates_manifest() {
@@ -92,14 +92,14 @@ test_install_creates_manifest() {
 }
 
 test_install_has_minimum_agents() {
-    local agent_count=$(find "$TEST_CLAUDE_CONFIG/agents/dw" -name "*.md" 2>/dev/null | wc -l)
+    local agent_count=$(find "$TEST_CLAUDE_CONFIG/agents/nw" -name "*.md" 2>/dev/null | wc -l)
     [[ $agent_count -ge 10 ]]
 }
 
 test_install_has_essential_commands() {
     local essential_commands=("discuss.md" "design.md" "distill.md" "develop.md" "deliver.md")
     for cmd in "${essential_commands[@]}"; do
-        if [[ ! -f "$TEST_CLAUDE_CONFIG/commands/dw/$cmd" ]]; then
+        if [[ ! -f "$TEST_CLAUDE_CONFIG/commands/nw/$cmd" ]]; then
             return 1
         fi
     done
@@ -129,11 +129,11 @@ test_uninstall_removes_agents() {
     # Run uninstall
     "$PROJECT_ROOT/scripts/uninstall-ai-craft.sh" --force >/dev/null 2>&1
 
-    [[ ! -d "$TEST_CLAUDE_CONFIG/agents/dw" ]]
+    [[ ! -d "$TEST_CLAUDE_CONFIG/agents/nw" ]]
 }
 
 test_uninstall_removes_commands() {
-    [[ ! -d "$TEST_CLAUDE_CONFIG/commands/dw" ]]
+    [[ ! -d "$TEST_CLAUDE_CONFIG/commands/nw" ]]
 }
 
 test_uninstall_removes_manifest() {
@@ -160,7 +160,7 @@ test_uninstall_dry_run_no_changes() {
     "$PROJECT_ROOT/scripts/uninstall-ai-craft.sh" --dry-run --force >/dev/null 2>&1
 
     # Verify installation still exists
-    [[ -d "$TEST_CLAUDE_CONFIG/agents/dw" ]]
+    [[ -d "$TEST_CLAUDE_CONFIG/agents/nw" ]]
 }
 
 #######################################
@@ -173,14 +173,14 @@ test_reinstall_cycle() {
 
     # Install
     "$PROJECT_ROOT/scripts/install-ai-craft.sh" >/dev/null 2>&1
-    local install1_agents=$(find "$TEST_CLAUDE_CONFIG/agents/dw" -name "*.md" 2>/dev/null | wc -l)
+    local install1_agents=$(find "$TEST_CLAUDE_CONFIG/agents/nw" -name "*.md" 2>/dev/null | wc -l)
 
     # Uninstall
     "$PROJECT_ROOT/scripts/uninstall-ai-craft.sh" --force >/dev/null 2>&1
 
     # Reinstall
     "$PROJECT_ROOT/scripts/install-ai-craft.sh" >/dev/null 2>&1
-    local install2_agents=$(find "$TEST_CLAUDE_CONFIG/agents/dw" -name "*.md" 2>/dev/null | wc -l)
+    local install2_agents=$(find "$TEST_CLAUDE_CONFIG/agents/nw" -name "*.md" 2>/dev/null | wc -l)
 
     # Verify same number of agents
     [[ $install1_agents -eq $install2_agents ]] && [[ $install1_agents -gt 0 ]]

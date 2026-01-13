@@ -8,7 +8,7 @@ import os
 import re
 from pathlib import Path
 
-AGENTS_DIR = Path("/mnt/c/Repositories/Projects/ai-craft/5d-wave/agents")
+AGENTS_DIR = Path("/mnt/c/Repositories/Projects/ai-craft/nWave/agents")
 
 # Agent type mapping
 AGENT_TYPES = {

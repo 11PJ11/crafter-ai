@@ -1,0 +1,288 @@
+---
+name: "ATDD-Focused nWave Implementation"
+description: "ATDD-centric workflow emphasizing customer collaboration and Outside-In TDD"
+version: "1.0.0"
+author: "AI-Craft Team"
+category: "atdd-methodology"
+
+workflow:
+  type: "iterative"
+  focus: "acceptance_test_driven_development"
+
+  atdd_cycle:
+    - name: "DISCUSS"
+      description: "Customer-developer-tester collaboration for requirements"
+      activities:
+        - "Requirements clarification workshops with all stakeholders"
+        - "Ubiquitous language development with domain experts"
+        - "Business rule validation and acceptance criteria definition"
+        - "Risk assessment with customer impact analysis"
+
+    - name: "DISTILL"
+      description: "Acceptance test creation from user perspective"
+      activities:
+        - "Given-When-Then scenario creation with business language"
+        - "Production service integration pattern establishment"
+        - "One E2E test at a time strategy implementation"
+        - "Business validation criteria and success metrics"
+
+    - name: "DEVELOP"
+      description: "Outside-In TDD with double-loop architecture"
+      activities:
+        - "Failing acceptance test drives development (OUTER LOOP)"
+        - "Unit test cycles for implementation (INNER LOOP)"
+        - "Systematic refactoring maintaining green tests"
+        - "Production service integration throughout"
+
+    - name: "DEMO"
+      description: "Customer validation and feedback integration"
+      activities:
+        - "Working software demonstration to customers"
+        - "Business value measurement and validation"
+        - "Customer feedback collection and integration"
+        - "Next iteration planning based on learning"
+
+agents:
+  atdd_core_team:
+    business_analyst:
+      role: "Riley"
+      responsibilities:
+        - "Customer requirements facilitation and documentation"
+        - "Business domain expertise and ubiquitous language"
+        - "Stakeholder communication and consensus building"
+        - "Business value measurement and validation"
+
+    acceptance_designer:
+      role: "Quinn"
+      responsibilities:
+        - "Acceptance test creation with Given-When-Then format"
+        - "Production service integration pattern design"
+        - "Business validation criteria establishment"
+        - "Test scenario prioritization and sequencing"
+
+    software_crafter:
+      role: "Crafty"
+      responsibilities:
+        - "Outside-In TDD implementation with double-loop"
+        - "Production service integration in step methods"
+        - "Unit test creation driving implementation"
+        - "Systematic refactoring through six levels"
+        - "Complex refactoring roadmaps with Mikado Method"
+        - "Progressive Level 1-6 code quality improvement"
+
+    feature_completion_coordinator:
+      role: "Dakota"
+      responsibilities:
+        - "Feature completion validation and production readiness"
+        - "Customer demonstration coordination and facilitation"
+        - "Business value measurement and reporting"
+        - "Stakeholder feedback integration and next iteration planning"
+
+atdd_principles:
+  customer_collaboration:
+    principle: "Customer involvement throughout development process"
+    implementation:
+      - "Regular customer feedback sessions and validation"
+      - "Customer-accessible test language and documentation"
+      - "Customer participation in acceptance criteria definition"
+      - "Customer validation of business value delivery"
+
+  specification_by_example:
+    principle: "Executable specifications drive development"
+    implementation:
+      - "Acceptance tests as living documentation"
+      - "Examples drive understanding and implementation"
+      - "Test scenarios validate business requirements"
+      - "Automated validation of business rules"
+
+  outside_in_development:
+    principle: "Start from customer needs and work inward"
+    implementation:
+      - "Customer workflows drive technical implementation"
+      - "Business language preserved throughout technical layers"
+      - "User perspective maintained in technical decisions"
+      - "Business value drives technical architecture"
+
+  iterative_refinement:
+    principle: "Continuous improvement through customer feedback"
+    implementation:
+      - "Short iterations with customer validation"
+      - "Feedback integration in next iteration planning"
+      - "Continuous learning and adaptation"
+      - "Evolving understanding reflected in tests"
+
+double_loop_tdd:
+  outer_loop_atdd:
+    description: "Customer view - business requirements validation"
+    process:
+      - "Start with failing acceptance test representing customer need"
+      - "Test written in business language using Given-When-Then"
+      - "Test serves as executable specification of business requirement"
+      - "Test must fail initially to validate proper test implementation"
+
+    quality_gates:
+      - "Acceptance test written from customer perspective"
+      - "Business language used throughout test specification"
+      - "Test fails initially indicating proper implementation pressure"
+      - "Customer can understand and validate test scenarios"
+
+  inner_loop_utdd:
+    description: "Developer view - technical implementation validation"
+    process:
+      - "Step down to unit tests when acceptance test fails"
+      - "Write failing unit test for smallest behavior"
+      - "Implement minimal code to make unit test pass"
+      - "Refactor continuously while maintaining green tests"
+
+    quality_gates:
+      - "Unit tests drive minimal implementation"
+      - "Business naming used in technical implementation"
+      - "Refactoring maintains test success throughout"
+      - "Implementation focuses on making acceptance test pass"
+
+production_service_integration:
+  mandatory_patterns:
+    step_method_requirements:
+      - "Every step method must call production services via dependency injection"
+      - "Use _serviceProvider.GetRequiredService<T>() for all business operations"
+      - "No business logic in test infrastructure - delegate to production"
+      - "Test infrastructure provides setup/teardown only"
+
+    service_registration:
+      - "Production services properly registered in DI container"
+      - "Real service implementations used in acceptance tests"
+      - "Test environment configuration mirrors production patterns"
+      - "Integration testing with actual service implementations"
+
+  anti_patterns_to_avoid:
+    test_infrastructure_business_logic:
+      problem: "Business logic implemented in test infrastructure"
+      solution: "Move all business logic to production services"
+      validation: "Step methods only contain service invocation calls"
+
+    excessive_mocking:
+      problem: "Mocking production services in acceptance tests"
+      solution: "Use real production services with test data"
+      validation: "Minimal mocking limited to external system boundaries"
+
+one_e2e_strategy:
+  implementation_approach:
+    sequential_enabling:
+      - "Enable only one E2E test at a time during development"
+      - "Use [Ignore] attribute for unimplemented scenarios"
+      - "Complete implementation before enabling next test"
+      - "Commit working implementation after each scenario"
+
+    commit_requirements:
+      - "Active E2E test must pass (not ignored)"
+      - "All other tests must pass"
+      - "All quality gates must pass"
+      - "No skipped tests in execution"
+
+  benefits:
+    development_focus:
+      - "Clear focus on single business scenario"
+      - "Prevents overwhelming NotImplementedException errors"
+      - "Enables clean commit history"
+      - "Maintains continuous integration"
+
+quality_gates:
+  atdd_compliance:
+    customer_collaboration:
+      - "Customer involvement in requirements and validation"
+      - "Business language used throughout specifications"
+      - "Customer can understand and approve test scenarios"
+      - "Regular customer feedback and iteration planning"
+
+    specification_quality:
+      - "Acceptance tests written from user perspective"
+      - "Given-When-Then format with business language"
+      - "One E2E test at a time to maintain focus"
+      - "Natural test progression without test modification"
+
+    implementation_quality:
+      - "Outside-In TDD with double-loop architecture"
+      - "Production service integration in all step methods"
+      - "Systematic refactoring applied throughout"
+      - "Business naming preserved in technical implementation"
+
+deliverables:
+  customer_collaboration:
+    - "CUSTOMER_WORKSHOPS.md - Workshop summaries and decisions"
+    - "BUSINESS_REQUIREMENTS.md - Customer-validated requirements"
+    - "UBIQUITOUS_LANGUAGE.md - Domain language dictionary"
+    - "CUSTOMER_FEEDBACK.md - Feedback integration and responses"
+
+  acceptance_specifications:
+    - "ACCEPTANCE_TESTS.feature - Complete Gherkin specification"
+    - "STEP_DEFINITIONS.cs - Production service integration"
+    - "BUSINESS_SCENARIOS.md - Scenario documentation and rationale"
+    - "VALIDATION_CRITERIA.md - Business success measurement"
+
+  implementation_artifacts:
+    - "PRODUCTION_SERVICES/ - Business logic implementation"
+    - "UNIT_TESTS/ - Comprehensive unit test suite"
+    - "INTEGRATION_TESTS/ - Service integration validation"
+    - "REFACTORING_LOG.md - Quality improvement documentation"
+
+success_metrics:
+  customer_satisfaction:
+    - "Customer approval of delivered functionality"
+    - "Business value realization measurement"
+    - "User adoption and engagement rates"
+    - "Customer retention and satisfaction scores"
+
+  specification_quality:
+    - "Test scenario coverage of customer requirements"
+    - "Business language preservation throughout implementation"
+    - "Test scenario comprehension by non-technical stakeholders"
+    - "Specification accuracy and completeness"
+
+  implementation_excellence:
+    - "100% acceptance test pass rate"
+    - "Production service integration compliance"
+    - "Systematic refactoring application"
+    - "Technical debt minimization"
+
+integration_with_5d_wave:
+  wave_alignment:
+    discuss_wave:
+      atdd_activities:
+        - "Customer collaboration workshops"
+        - "Requirements elicitation with examples"
+        - "Business language development"
+        - "Acceptance criteria definition"
+
+    distill_wave:
+      atdd_activities:
+        - "Acceptance test creation with Given-When-Then"
+        - "Production service pattern establishment"
+        - "Business validation criteria definition"
+        - "Test prioritization and sequencing"
+
+    develop_wave:
+      atdd_activities:
+        - "Outside-In TDD implementation"
+        - "Double-loop architecture execution"
+        - "Production service integration"
+        - "Systematic refactoring application"
+
+    demo_wave:
+      atdd_activities:
+        - "Customer demonstration and validation"
+        - "Business value measurement"
+        - "Feedback collection and integration"
+        - "Next iteration planning"
+
+continuous_improvement:
+  atdd_practices:
+    - "Regular retrospectives on customer collaboration effectiveness"
+    - "Specification quality assessment and improvement"
+    - "Implementation technique refinement"
+    - "Customer feedback integration process optimization"
+
+  learning_focus:
+    - "Customer domain understanding deepening"
+    - "Business language evolution and refinement"
+    - "Technical implementation skill development"
+    - "Collaboration process improvement"

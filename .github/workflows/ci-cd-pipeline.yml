@@ -54,7 +54,7 @@ jobs:
           echo "::group::Agent Validation"
 
           # Check that all agent markdown files exist
-          agent_count=$(find 5d-wave/agents -name "*.md" -type f | wc -l)
+          agent_count=$(find nWave/agents -name "*.md" -type f | wc -l)
           echo "Found $agent_count agent definitions"
 
           if [[ $agent_count -lt 10 ]]; then
@@ -70,7 +70,7 @@ jobs:
           echo "::group::Command Validation"
 
           # Check that command files exist
-          command_count=$(find 5d-wave/commands -name "*.md" -type f | wc -l)
+          command_count=$(find nWave/commands -name "*.md" -type f | wc -l)
           echo "Found $command_count command definitions"
 
           echo "✅ Command definitions found: $command_count"

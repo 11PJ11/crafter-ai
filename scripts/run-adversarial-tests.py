@@ -393,7 +393,7 @@ AGENT_TYPE_MAPPING = {
     "visual-2d-designer": "tool",
     "feature-completion-coordinator": "document",
     "agent-forger": "document",
-    "5d-wave-complete-orchestrator": "orchestrator",
+    "nWave-complete-orchestrator": "orchestrator",
     "atdd-focused-orchestrator": "orchestrator"
 }
 

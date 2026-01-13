@@ -2,7 +2,7 @@
 File Manager
 
 Handles all file I/O operations, path management, and directory creation
-for the 5D-WAVE IDE bundle generation system.
+for the nWave IDE bundle generation system.
 """
 
 import logging

@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-5D-WAVE IDE Bundle Builder
+nWave IDE Bundle Builder
 
-Main orchestrator script that transforms 5D-WAVE methodology source files
-into IDE-compatible distributions organized under the "dw" category.
+Main orchestrator script that transforms nWave methodology source files
+into IDE-compatible distributions organized under the "nw" category.
 
 Usage:
     python build_ide_bundle.py [options]
 
 Options:
-    --source-dir    Source directory (default: 5d-wave)
+    --source-dir    Source directory (default: nWave)
     --output-dir    Output directory (default: dist/ide)
     --clean         Clean output directory before build
     --verbose       Enable verbose logging
@@ -36,7 +36,7 @@ from utils.file_manager import FileManager
 
 
 class IDEBundleBuilder:
-    """Main builder class that orchestrates the 5D-WAVE IDE bundling process."""
+    """Main builder class that orchestrates the nWave IDE bundling process."""
 
     def __init__(self, source_dir: Path, output_dir: Path, dry_run: bool = False):
         self.source_dir = Path(source_dir)
@@ -64,7 +64,7 @@ class IDEBundleBuilder:
         }
 
     def validate_source(self) -> bool:
-        """Validate that the source directory contains required 5D-WAVE structure."""
+        """Validate that the source directory contains required nWave structure."""
         required_dirs = ['agents', 'tasks', 'workflows', 'templates', 'data']
         required_files = ['config.yaml']
 
@@ -92,8 +92,8 @@ class IDEBundleBuilder:
     def prepare_output_structure(self) -> None:
         """Create the output directory structure."""
         output_dirs = [
-            self.output_dir / "agents" / "dw",
-            self.output_dir / "commands" / "dw"
+            self.output_dir / "agents" / "nw",
+            self.output_dir / "commands" / "nw"
         ]
 
         for dir_path in output_dirs:
@@ -125,7 +125,7 @@ class IDEBundleBuilder:
     def process_commands(self) -> None:
         """Process all task files into commands."""
         logging.info("Processing commands...")
-        tasks_dir = self.source_dir / "tasks" / "dw"
+        tasks_dir = self.source_dir / "tasks" / "nw"
 
         if not tasks_dir.exists():
             logging.warning(f"Tasks directory not found: {tasks_dir}")
@@ -189,7 +189,7 @@ class IDEBundleBuilder:
         """Generate the IDE configuration file."""
         logging.info("Generating IDE configuration...")
 
-        config_output_path = self.output_dir / "agents" / "dw" / "config.json"
+        config_output_path = self.output_dir / "agents" / "nw" / "config.json"
 
         try:
             ide_config = self.config_manager.generate_ide_config(self.stats)
@@ -208,7 +208,7 @@ class IDEBundleBuilder:
     def print_summary(self) -> None:
         """Print build summary statistics."""
         print("\n" + "="*60)
-        print("5D-WAVE IDE Bundle Build Summary")
+        print("nWave IDE Bundle Build Summary")
         print("="*60)
         print(f"Agents processed:    {self.stats['agents_processed']}")
         print(f"Commands processed:  {self.stats['commands_processed']}")
@@ -231,7 +231,7 @@ class IDEBundleBuilder:
     def build(self) -> bool:
         """Execute the complete build process."""
         start_time = datetime.now()
-        logging.info(f"Starting 5D-WAVE IDE bundle build at {start_time}")
+        logging.info(f"Starting nWave IDE bundle build at {start_time}")
 
         try:
             # Validation
@@ -284,13 +284,13 @@ def setup_logging(verbose: bool = False) -> None:
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="Build 5D-WAVE IDE bundles from methodology source files"
+        description="Build nWave IDE bundles from methodology source files"
     )
     parser.add_argument(
         "--source-dir",
         type=Path,
-        default="../5d-wave",
-        help="Source directory containing 5D-WAVE files (default: ../5d-wave)"
+        default="../nWave",
+        help="Source directory containing nWave files (default: ../nWave)"
     )
     parser.add_argument(
         "--output-dir",

@@ -1,7 +1,7 @@
 """
 Dependency Resolver
 
-Resolves and embeds dependencies for 5D-WAVE agents and other components.
+Resolves and embeds dependencies for nWave agents and other components.
 Handles {root} placeholder resolution and content embedding with proper formatting.
 """
 

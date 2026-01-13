@@ -23,7 +23,7 @@ from typing import Dict, List, Tuple
 # ============================================================================
 
 ROOT_DIR = Path("/mnt/c/Repositories/Projects/ai-craft")
-AGENTS_DIR = ROOT_DIR / "5d-wave" / "agents"
+AGENTS_DIR = ROOT_DIR / "nWave" / "agents"
 TEMPLATE_PATH = ROOT_DIR / "docs" / "PRODUCTION_FRAMEWORKS_TEMPLATE.yaml"
 
 # Agent type classification

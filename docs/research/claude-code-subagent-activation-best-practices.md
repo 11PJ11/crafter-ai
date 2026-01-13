@@ -1,14 +1,14 @@
 # Claude Code Subagent Activation & Optimal Handoff Best Practices
 
 **Research Date**: 2025-10-07
-**Purpose**: Eliminate knowledge duplication in 5D-Wave tasks and optimize agent invocation performance
+**Purpose**: Eliminate knowledge duplication in nWave tasks and optimize agent invocation performance
 **Impact**: 90%+ reduction in task file size, 40% reduction in agent execution tokens
 
 ---
 
 ## Executive Summary
 
-Current 5D-Wave implementation has **massive knowledge duplication**: 15 task files each contain 500-2000 lines of workflow instructions that belong in agent files. Additionally, task files fail to provide **optimal context handoff** to agents, forcing agents to spend 5-10 tool calls searching for files and inferring context.
+Current nWave implementation has **massive knowledge duplication**: 15 task files each contain 500-2000 lines of workflow instructions that belong in agent files. Additionally, task files fail to provide **optimal context handoff** to agents, forcing agents to spend 5-10 tool calls searching for files and inferring context.
 
 This document defines:
 1. Official Claude Code activation patterns
@@ -23,7 +23,7 @@ This document defines:
 
 ### Three Official Activation Methods
 
-#### Method 1: Explicit Invocation (Recommended for 5D-Wave)
+#### Method 1: Explicit Invocation (Recommended for nWave)
 
 **Syntax**: Direct mention of agent by name or `@agent-name`
 
@@ -45,7 +45,7 @@ Please execute *gather-requirements for the authentication feature.
 **When to Use:**
 - Direct user-initiated workflows
 - Clear agent selection needed
-- **5D-Wave slash commands** (optimal choice)
+- **nWave slash commands** (optimal choice)
 
 **Advantages:**
 - Explicit and clear
@@ -68,7 +68,7 @@ I need to gather requirements for a new feature.
 - Agent selection should be transparent
 - Task description clearly matches one agent
 
-**Disadvantages for 5D-Wave:**
+**Disadvantages for nWave:**
 - Less control over context handoff
 - Ambiguous which agent activates
 - Hard to pass explicit file paths
@@ -92,11 +92,11 @@ Task(
 - Programmatic workflows
 - Parallel agent execution
 
-**Note**: Current 5D-Wave agents don't use this pattern (uses explicit invocation instead)
+**Note**: Current nWave agents don't use this pattern (uses explicit invocation instead)
 
 ---
 
-### Current 5D-Wave Pattern Analysis
+### Current nWave Pattern Analysis
 
 **Current Implementation** (YAML frontmatter in task files):
 
@@ -190,7 +190,7 @@ Every agent invocation should provide:
 
 **Format**: Outputs from previous wave/agent
 
-**Purpose**: Enable seamless wave-to-wave handoff in 5D-Wave
+**Purpose**: Enable seamless wave-to-wave handoff in nWave
 
 **Examples:**
 
@@ -266,7 +266,7 @@ agent-activation:
 
 ## Overview
 
-{2-3 paragraph description of what this wave accomplishes and its role in 5D-Wave methodology}
+{2-3 paragraph description of what this wave accomplishes and its role in nWave methodology}
 
 ## Context Files Required
 
@@ -399,11 +399,11 @@ agent-activation:
 
 Execute systematic evidence-based research with source verification, gathering knowledge from web and files while ensuring highest quality through clarification questions and reputable sources only.
 
-This cross-wave support capability provides evidence-driven insights for any 5D-Wave phase requiring research-backed decision making.
+This cross-wave support capability provides evidence-driven insights for any nWave phase requiring research-backed decision making.
 
 ## Context Files Required
 
-- 5d-wave/data/trusted-source-domains.yaml - Source reputation validation
+- nWave/data/trusted-source-domains.yaml - Source reputation validation
 
 ## Previous Artifacts
 
@@ -416,7 +416,7 @@ This cross-wave support capability provides evidence-driven insights for any 5D-
 Execute *research on {topic}.
 
 **Context Files:**
-- 5d-wave/data/trusted-source-domains.yaml
+- nWave/data/trusted-source-domains.yaml
 
 **Configuration:**
 - research_depth: detailed
@@ -426,7 +426,7 @@ Execute *research on {topic}.
 
 ## Success Criteria
 
-Refer to Nova's quality gates in 5d-wave/agents/knowledge-researcher.md.
+Refer to Nova's quality gates in nWave/agents/knowledge-researcher.md.
 
 **Key Validations:**
 - [ ] All sources from trusted-source-domains.yaml
@@ -460,7 +460,7 @@ agent-activation:
 # DW-DISCUSS: Requirements Gathering and Business Analysis
 
 ## Overview
-Execute DISCUSS wave of 5D-Wave methodology...
+Execute DISCUSS wave of nWave methodology...
 
 ## Mandatory Pre-Execution Steps
 1. **Project Brief Validation**: Ensure PROJECT_BRIEF.md exists...
@@ -503,7 +503,7 @@ agent-activation:
 
 ## Overview
 
-Execute DISCUSS wave of 5D-Wave methodology through comprehensive requirements gathering, stakeholder collaboration, and business analysis. Establishes ATDD foundation (Customer-Developer-Tester collaboration) for all subsequent waves.
+Execute DISCUSS wave of nWave methodology through comprehensive requirements gathering, stakeholder collaboration, and business analysis. Establishes ATDD foundation (Customer-Developer-Tester collaboration) for all subsequent waves.
 
 ## Context Files Required
 
@@ -513,7 +513,7 @@ Execute DISCUSS wave of 5D-Wave methodology through comprehensive requirements g
 
 ## Previous Artifacts
 
-- None (DISCUSS is the first wave in 5D-Wave)
+- None (DISCUSS is the first wave in nWave)
 
 ## Agent Invocation
 
@@ -533,7 +533,7 @@ Execute *gather-requirements for {feature-name}.
 
 ## Success Criteria
 
-Refer to Riley's quality gates in 5d-wave/agents/business-analyst.md.
+Refer to Riley's quality gates in nWave/agents/business-analyst.md.
 
 **Key Validations:**
 - [ ] Requirements completeness score > 0.95
@@ -648,16 +648,16 @@ Verify agent activates correctly:
 
 ```bash
 # Before: 1500 lines
-wc -l 5d-wave/tasks/dw/discuss.md
-# Output: 1500 5d-wave/tasks/dw/discuss.md
+wc -l nWave/tasks/dw/discuss.md
+# Output: 1500 nWave/tasks/dw/discuss.md
 
 # After refactoring: 50 lines
-wc -l 5d-wave/tasks/dw/discuss.md
-# Output: 50 5d-wave/tasks/dw/discuss.md
+wc -l nWave/tasks/dw/discuss.md
+# Output: 50 nWave/tasks/dw/discuss.md
 
 # Workflow moved to agent (now self-contained)
-wc -l 5d-wave/agents/business-analyst.md
-# Output: 1800 5d-wave/agents/business-analyst.md (includes all workflows)
+wc -l nWave/agents/business-analyst.md
+# Output: 1800 nWave/agents/business-analyst.md (includes all workflows)
 ```
 
 ---
@@ -687,7 +687,7 @@ $relevant_files
 **Solution**: Define wave-specific configuration templates
 
 ```yaml
-# 5d-wave/config/wave-configs.yaml
+# nWave/config/wave-configs.yaml
 discuss_wave:
   interactive: high
   output_format: markdown
@@ -743,7 +743,7 @@ handoff:
 **Solution**: Bundle related context files
 
 ```yaml
-# 5d-wave/config/context-bundles.yaml
+# nWave/config/context-bundles.yaml
 discuss_wave_context:
   - docs/project-brief.md
   - docs/stakeholders.yaml
@@ -843,7 +843,7 @@ Total: ~3000 tokens
 
 ### Code Size Comparison
 
-**Before (Current 5D-Wave):**
+**Before (Current nWave):**
 ```
 15 task files × 1000 avg lines = 15,000 lines
 12 agent files × 1500 avg lines = 18,000 lines
@@ -866,7 +866,7 @@ Total: 22,350 lines
 
 ### Key Takeaways
 
-1. **Activation Pattern**: Use explicit `@agent-name` invocation for 5D-Wave (clear, controlled)
+1. **Activation Pattern**: Use explicit `@agent-name` invocation for nWave (clear, controlled)
 2. **Optimal Handoff**: Treat agents as functions with explicit context files, configuration, previous artifacts
 3. **Minimal Tasks**: Reduce task files from 500-2000 lines to ~50 lines (delegation only)
 4. **Agent Self-Containment**: Move all workflow details to agent files (eliminate duplication)
@@ -893,7 +893,7 @@ Total: 22,350 lines
 
 ### Long-Term Vision
 
-**5D-Wave 2.0 Architecture:**
+**nWave 2.0 Architecture:**
 - Task files: Pure delegation (50 lines each)
 - Agent files: Self-contained workflows (1500-2000 lines)
 - Context bundles: Pre-defined file sets per wave
@@ -912,9 +912,9 @@ Total: 22,350 lines
 ## References
 
 - Claude Code Documentation: https://docs.claude.com/en/docs/claude-code/sub-agents.md
-- AGENT_TEMPLATE.yaml: 5d-wave/templates/AGENT_TEMPLATE.yaml
-- Current Task Files: 5d-wave/tasks/dw/*.md
-- Current Agent Files: 5d-wave/agents/*.md
+- AGENT_TEMPLATE.yaml: nWave/templates/AGENT_TEMPLATE.yaml
+- Current Task Files: nWave/tasks/dw/*.md
+- Current Agent Files: nWave/agents/*.md
 
 **Last Updated**: 2025-10-07
 **Version**: 1.0

@@ -1,8 +1,8 @@
-# Jobs To Be Done Guide: 5D-Wave Framework
+# Jobs To Be Done Guide: nWave Framework
 
 ## Overview
 
-This guide uses the **Outcome Driven Innovation (ODI)** framework to help you understand when and how to use the 5D-Wave agentic system based on your specific job context.
+This guide uses the **Outcome Driven Innovation (ODI)** framework to help you understand when and how to use the nWave agentic system based on your specific job context.
 
 ---
 
@@ -55,16 +55,16 @@ Research is not a fixed step in a sequence - it's a capability you invoke **when
 
 ```bash
 # Domain research before requirements
-/dw:research "multi-tenant architecture patterns"
+/nw:research "multi-tenant architecture patterns"
 
 # Technology evaluation
-/dw:research "compare OAuth2 providers for enterprise"
+/nw:research "compare OAuth2 providers for enterprise"
 
 # Performance research (quantitative)
-/dw:research "analyze test execution bottlenecks"
+/nw:research "analyze test execution bottlenecks"
 
 # Research with embed for agent knowledge
-/dw:research "Residuality Theory" --embed-for=solution-architect
+/nw:research "Residuality Theory" --embed-for=solution-architect
 ```
 
 ---
@@ -102,20 +102,20 @@ Research is not a fixed step in a sequence - it's a capability you invoke **when
 **Example Commands**:
 
 ```bash
-/dw:research "authentication best practices for SaaS"
-/dw:start "Build user authentication system"
-/dw:discuss "authentication requirements"
-/dw:design --architecture=hexagonal
-/dw:diagram --format=mermaid --level=container  # Visualize architecture
-/dw:distill "user-login-story"
-/dw:skeleton "auth-e2e-slice"
-/dw:baseline "implement authentication"
-/dw:roadmap @solution-architect "implement authentication"
-/dw:split @devop "implement-authentication"
-/dw:execute @software-crafter "docs/workflow/implement-authentication/steps/01-01.json"
-/dw:review @software-crafter task "docs/workflow/implement-authentication/steps/01-02.json"
+/nw:research "authentication best practices for SaaS"
+/nw:start "Build user authentication system"
+/nw:discuss "authentication requirements"
+/nw:design --architecture=hexagonal
+/nw:diagram --format=mermaid --level=container  # Visualize architecture
+/nw:distill "user-login-story"
+/nw:skeleton "auth-e2e-slice"
+/nw:baseline "implement authentication"
+/nw:roadmap @solution-architect "implement authentication"
+/nw:split @devop "implement-authentication"
+/nw:execute @software-crafter "docs/workflow/implement-authentication/steps/01-01.json"
+/nw:review @software-crafter task "docs/workflow/implement-authentication/steps/01-02.json"
 # After implementation, update diagrams if architecture evolved
-/dw:diagram --format=mermaid --level=component
+/nw:diagram --format=mermaid --level=component
 ```
 
 ---
@@ -147,15 +147,15 @@ Research is not a fixed step in a sequence - it's a capability you invoke **when
 **Example Commands**:
 
 ```bash
-/dw:research "xUnit parallelization strategies"  # Optional: gather options
-/dw:baseline "optimize test execution time"
-/dw:roadmap @solution-architect "optimize test execution time"
-/dw:split @devop "optimize-test-execution-time"
-/dw:execute @researcher "docs/workflow/optimize-test-execution-time/steps/01-01.json"
-/dw:review @software-crafter task "docs/workflow/optimize-test-execution-time/steps/02-01.json"
-/dw:execute @software-crafter "docs/workflow/optimize-test-execution-time/steps/02-01.json"
+/nw:research "xUnit parallelization strategies"  # Optional: gather options
+/nw:baseline "optimize test execution time"
+/nw:roadmap @solution-architect "optimize test execution time"
+/nw:split @devop "optimize-test-execution-time"
+/nw:execute @researcher "docs/workflow/optimize-test-execution-time/steps/01-01.json"
+/nw:review @software-crafter task "docs/workflow/optimize-test-execution-time/steps/02-01.json"
+/nw:execute @software-crafter "docs/workflow/optimize-test-execution-time/steps/02-01.json"
 # ... repeat execute → review for each task
-/dw:finalize @devop "optimize-test-execution-time"
+/nw:finalize @devop "optimize-test-execution-time"
 ```
 
 ---
@@ -188,15 +188,15 @@ Research is not a fixed step in a sequence - it's a capability you invoke **when
 
 ```bash
 # Simple refactoring
-/dw:mikado "extract payment processing module"
-/dw:refactor --target="PaymentService" --level=3
+/nw:mikado "extract payment processing module"
+/nw:refactor --target="PaymentService" --level=3
 
 # Complex refactoring with full tracking
-/dw:research "strangler fig pattern for legacy replacement"
-/dw:baseline "replace legacy authentication"
-/dw:roadmap @software-crafter "replace legacy authentication"  # Sets methodology: mikado
-/dw:split @devop "replace-legacy-authentication"
-/dw:execute @software-crafter "docs/workflow/replace-legacy-authentication/steps/01-01.json"
+/nw:research "strangler fig pattern for legacy replacement"
+/nw:baseline "replace legacy authentication"
+/nw:roadmap @software-crafter "replace legacy authentication"  # Sets methodology: mikado
+/nw:split @devop "replace-legacy-authentication"
+/nw:execute @software-crafter "docs/workflow/replace-legacy-authentication/steps/01-01.json"
 ```
 
 ---
@@ -218,10 +218,10 @@ Research is not a fixed step in a sequence - it's a capability you invoke **when
 **Example Commands**:
 
 ```bash
-/dw:research "JWT token expiration edge cases"  # Optional: if unfamiliar with area
-/dw:root-why "authentication timeout errors in production"
-/dw:develop "fix-auth-timeout"
-/dw:deliver
+/nw:research "JWT token expiration edge cases"  # Optional: if unfamiliar with area
+/nw:root-why "authentication timeout errors in production"
+/nw:develop "fix-auth-timeout"
+/nw:deliver
 ```
 
 ---
@@ -244,19 +244,19 @@ research → [decision point: which job to pursue next]
 
 ```bash
 # Technology evaluation
-/dw:research "compare OAuth2 providers for enterprise use"
+/nw:research "compare OAuth2 providers for enterprise use"
 
 # Domain understanding
-/dw:research "event sourcing patterns for audit trails"
+/nw:research "event sourcing patterns for audit trails"
 
 # Research with knowledge embedding for future use
-/dw:research "Hexagonal Architecture" --embed-for=solution-architect
+/nw:research "Hexagonal Architecture" --embed-for=solution-architect
 ```
 
 **Research Output Locations**:
 
 - Research files: `docs/research/{category}/{topic}.md`
-- Embedded knowledge: `5d-wave/data/embed/{agent}/{topic}.md`
+- Embedded knowledge: `nWave/data/embed/{agent}/{topic}.md`
 
 ---
 
@@ -292,26 +292,26 @@ This section breaks down what specific job each command fulfills.
 
 | Job | Command | Outcome |
 |-----|---------|---------|
-| Capture stakeholder needs | `/dw:discuss` | Requirements documented |
-| Align business and tech | `/dw:discuss` | Shared understanding |
-| Define acceptance criteria | `/dw:discuss` | Testable requirements |
+| Capture stakeholder needs | `/nw:discuss` | Requirements documented |
+| Align business and tech | `/nw:discuss` | Shared understanding |
+| Define acceptance criteria | `/nw:discuss` | Testable requirements |
 
 #### DESIGN Wave
 
 | Job | Command | Outcome |
 |-----|---------|---------|
-| Choose architecture pattern | `/dw:design` | Architecture decision |
-| Select technology stack | `/dw:design` | Technology rationale |
-| Define component boundaries | `/dw:design` | Clear module separation |
-| Communicate architecture visually | `/dw:diagram` | Stakeholder-ready diagrams |
+| Choose architecture pattern | `/nw:design` | Architecture decision |
+| Select technology stack | `/nw:design` | Technology rationale |
+| Define component boundaries | `/nw:design` | Clear module separation |
+| Communicate architecture visually | `/nw:diagram` | Stakeholder-ready diagrams |
 
 #### DISTILL Wave
 
 | Job | Command | Outcome |
 |-----|---------|---------|
-| Define what "done" looks like | `/dw:distill` | Acceptance tests (Given-When-Then) |
-| Validate architecture early | `/dw:skeleton` | Working E2E slice |
-| Reduce integration risk | `/dw:skeleton` | Proven deployment pipeline |
+| Define what "done" looks like | `/nw:distill` | Acceptance tests (Given-When-Then) |
+| Validate architecture early | `/nw:skeleton` | Working E2E slice |
+| Reduce integration risk | `/nw:skeleton` | Proven deployment pipeline |
 
 ### Execution Loop Jobs
 
@@ -319,42 +319,42 @@ This section breaks down what specific job each command fulfills.
 
 | Job | Command | Outcome |
 |-----|---------|---------|
-| Measure current state | `/dw:baseline` | Quantified starting point |
-| Identify biggest bottleneck | `/dw:baseline` | Prioritized problem |
-| Find quick wins | `/dw:baseline` | Low-effort high-impact options |
-| Prevent wrong-problem syndrome | `/dw:baseline` | Evidence-based focus |
+| Measure current state | `/nw:baseline` | Quantified starting point |
+| Identify biggest bottleneck | `/nw:baseline` | Prioritized problem |
+| Find quick wins | `/nw:baseline` | Low-effort high-impact options |
+| Prevent wrong-problem syndrome | `/nw:baseline` | Evidence-based focus |
 
 #### ROADMAP
 
 | Job | Command | Outcome |
 |-----|---------|---------|
-| Plan while context is fresh | `/dw:roadmap` | Comprehensive plan |
-| Capture dependencies | `/dw:roadmap` | Sequenced steps |
-| Enable parallel work | `/dw:roadmap` | Independent task identification |
+| Plan while context is fresh | `/nw:roadmap` | Comprehensive plan |
+| Capture dependencies | `/nw:roadmap` | Sequenced steps |
+| Enable parallel work | `/nw:roadmap` | Independent task identification |
 
 #### SPLIT
 
 | Job | Command | Outcome |
 |-----|---------|---------|
-| Prevent context degradation | `/dw:split` | Atomic self-contained tasks |
-| Enable clean execution | `/dw:split` | Each task has full context |
-| Track progress granularly | `/dw:split` | Individual task state |
+| Prevent context degradation | `/nw:split` | Atomic self-contained tasks |
+| Enable clean execution | `/nw:split` | Each task has full context |
+| Track progress granularly | `/nw:split` | Individual task state |
 
 #### EXECUTE
 
 | Job | Command | Outcome |
 |-----|---------|---------|
-| Do work with max LLM quality | `/dw:execute` | Clean context per task |
-| Track state transitions | `/dw:execute` | TODO → IN_PROGRESS → DONE |
-| Capture execution results | `/dw:execute` | Evidence of completion |
+| Do work with max LLM quality | `/nw:execute` | Clean context per task |
+| Track state transitions | `/nw:execute` | TODO → IN_PROGRESS → DONE |
+| Capture execution results | `/nw:execute` | Evidence of completion |
 
 #### REVIEW
 
 | Job | Command | Outcome |
 |-----|---------|---------|
-| Catch issues before they propagate | `/dw:review` | Quality gate |
-| Get expert critique | `/dw:review` | Domain-specific feedback |
-| Validate acceptance criteria | `/dw:review` | APPROVED / NEEDS_REVISION |
+| Catch issues before they propagate | `/nw:review` | Quality gate |
+| Get expert critique | `/nw:review` | Domain-specific feedback |
+| Validate acceptance criteria | `/nw:review` | APPROVED / NEEDS_REVISION |
 
 ### Cross-Wave Jobs
 
@@ -362,27 +362,27 @@ This section breaks down what specific job each command fulfills.
 
 | Job | Command | Outcome |
 |-----|---------|---------|
-| Gather evidence before deciding | `/dw:research` | Cited findings |
-| Evaluate technology options | `/dw:research` | Comparison analysis |
-| Understand unfamiliar domain | `/dw:research` | Knowledge base |
-| Find root cause (not symptoms) | `/dw:root-why` | 5 Whys analysis |
-| Understand failure patterns | `/dw:root-why` | Multi-causal map |
+| Gather evidence before deciding | `/nw:research` | Cited findings |
+| Evaluate technology options | `/nw:research` | Comparison analysis |
+| Understand unfamiliar domain | `/nw:research` | Knowledge base |
+| Find root cause (not symptoms) | `/nw:root-why` | 5 Whys analysis |
+| Understand failure patterns | `/nw:root-why` | Multi-causal map |
 
 #### Development
 
 | Job | Command | Outcome |
 |-----|---------|---------|
-| Implement with TDD | `/dw:develop` | Test-first code |
-| Refactor safely | `/dw:refactor` | Improved structure |
-| Handle complex dependencies | `/dw:mikado` | Reversible change path |
+| Implement with TDD | `/nw:develop` | Test-first code |
+| Refactor safely | `/nw:refactor` | Improved structure |
+| Handle complex dependencies | `/nw:mikado` | Reversible change path |
 
 #### Operations
 
 | Job | Command | Outcome |
 |-----|---------|---------|
-| Commit with quality | `/dw:git` | Clean commits |
-| Validate production readiness | `/dw:deliver` | Deployment confidence |
-| Archive completed work | `/dw:finalize` | Clean project closure |
+| Commit with quality | `/nw:git` | Clean commits |
+| Validate production readiness | `/nw:deliver` | Deployment confidence |
+| Archive completed work | `/nw:finalize` | Clean project closure |
 
 ### Job Categories Summary
 
@@ -445,7 +445,7 @@ The execution loop is the workhorse of brownfield work:
 
 ## Baseline Types
 
-The `/dw:baseline` command supports three types:
+The `/nw:baseline` command supports three types:
 
 ### 1. Performance Optimization
 
@@ -518,7 +518,7 @@ Every agent has a corresponding `*-reviewer` variant that uses the Haiku model f
 - `@acceptance-designer-reviewer` - Test completeness review
 - etc.
 
-**Usage**: The `/dw:review` command automatically routes to the reviewer variant.
+**Usage**: The `/nw:review` command automatically routes to the reviewer variant.
 
 ---
 
@@ -527,46 +527,46 @@ Every agent has a corresponding `*-reviewer` variant that uses the Haiku model f
 ### New Feature on Existing Codebase
 
 ```bash
-/dw:research "best practices for {feature-domain}"  # Optional
-/dw:baseline "add multi-tenant support"
-/dw:roadmap @solution-architect "add multi-tenant support"
-/dw:split @devop "add-multi-tenant-support"
+/nw:research "best practices for {feature-domain}"  # Optional
+/nw:baseline "add multi-tenant support"
+/nw:roadmap @solution-architect "add multi-tenant support"
+/nw:split @devop "add-multi-tenant-support"
 # execute → review loop
 ```
 
 ### Performance Optimization
 
 ```bash
-/dw:research "profiling techniques for {technology}"  # Optional
-/dw:baseline "optimize API response time"  # Type: performance_optimization
-/dw:roadmap @solution-architect "optimize API response time"
-/dw:split @devop "optimize-api-response-time"
+/nw:research "profiling techniques for {technology}"  # Optional
+/nw:baseline "optimize API response time"  # Type: performance_optimization
+/nw:roadmap @solution-architect "optimize API response time"
+/nw:split @devop "optimize-api-response-time"
 # execute → review loop
 ```
 
 ### Legacy System Modernization
 
 ```bash
-/dw:research "strangler fig pattern"
-/dw:root-why "current system limitations"
-/dw:baseline "migrate to microservices"
-/dw:roadmap @solution-architect "migrate to microservices"
-/dw:split @devop "migrate-to-microservices"
+/nw:research "strangler fig pattern"
+/nw:root-why "current system limitations"
+/nw:baseline "migrate to microservices"
+/nw:roadmap @solution-architect "migrate to microservices"
+/nw:split @devop "migrate-to-microservices"
 # execute → review loop with mikado for complex refactoring
 ```
 
 ### Quick Bug Fix
 
 ```bash
-/dw:root-why "users cannot login after password reset"
-/dw:develop "fix-password-reset-flow"
-/dw:deliver
+/nw:root-why "users cannot login after password reset"
+/nw:develop "fix-password-reset-flow"
+/nw:deliver
 ```
 
 ### Pure Research Task
 
 ```bash
-/dw:research "event sourcing vs CRUD for audit requirements"
+/nw:research "event sourcing vs CRUD for audit requirements"
 # Output: docs/research/architecture-patterns/event-sourcing-vs-crud.md
 # Decision: proceed with JOB 1, 2, or 3 based on findings
 ```
@@ -574,19 +574,19 @@ Every agent has a corresponding `*-reviewer` variant that uses the Haiku model f
 ### Architecture with Visual Documentation
 
 ```bash
-/dw:design --architecture=hexagonal
-/dw:diagram --format=mermaid --level=container
+/nw:design --architecture=hexagonal
+/nw:diagram --format=mermaid --level=container
 # Output: docs/architecture/diagrams/*.svg
 ```
 
 ### Data-Heavy Project
 
 ```bash
-/dw:research "compare PostgreSQL vs MongoDB for {use-case}"
+/nw:research "compare PostgreSQL vs MongoDB for {use-case}"
 # Invoke data-engineer agent for specialized guidance
-/dw:baseline "implement data pipeline"
-/dw:roadmap @data-engineer "implement data pipeline"
-/dw:split @devop "implement-data-pipeline"
+/nw:baseline "implement data pipeline"
+/nw:roadmap @data-engineer "implement data pipeline"
+/nw:split @devop "implement-data-pipeline"
 # execute → review loop
 ```
 
@@ -594,16 +594,16 @@ Every agent has a corresponding `*-reviewer` variant that uses the Haiku model f
 
 ```bash
 # After completing a task
-/dw:git commit  # Auto-generates commit message
-/dw:git branch "feature/auth-upgrade"
-/dw:git push
+/nw:git commit  # Auto-generates commit message
+/nw:git branch "feature/auth-upgrade"
+/nw:git push
 ```
 
 ### Creating a New Agent
 
 ```bash
-/dw:forge  # Uses agent-builder to create new agent from template
-# Output: 5d-wave/agents/{new-agent}.md
+/nw:forge  # Uses agent-builder to create new agent from template
+# Output: nWave/agents/{new-agent}.md
 ```
 
 ---
@@ -627,41 +627,41 @@ Every agent has a corresponding `*-reviewer` variant that uses the Haiku model f
 
 | Command | Agent | Purpose |
 |---------|-------|---------|
-| `/dw:start` | product-owner | Initialize 5D-Wave workflow with project brief |
-| `/dw:discuss` | product-owner | Requirements gathering and business analysis |
-| `/dw:design` | solution-architect | Architecture design with technology selection |
-| `/dw:distill` | acceptance-designer | Acceptance test creation (Given-When-Then) |
-| `/dw:skeleton` | skeleton-builder | Walking skeleton E2E validation |
+| `/nw:start` | product-owner | Initialize nWave workflow with project brief |
+| `/nw:discuss` | product-owner | Requirements gathering and business analysis |
+| `/nw:design` | solution-architect | Architecture design with technology selection |
+| `/nw:distill` | acceptance-designer | Acceptance test creation (Given-When-Then) |
+| `/nw:skeleton` | skeleton-builder | Walking skeleton E2E validation |
 
 ### Execution Loop Commands
 
 | Command | Agent | Purpose |
 |---------|-------|---------|
-| `/dw:baseline` | researcher | Establish measurement baseline (BLOCKS roadmap) |
-| `/dw:roadmap` | varies | Create comprehensive planning document |
-| `/dw:split` | varies | Generate atomic task files from roadmap |
-| `/dw:execute` | varies | Execute atomic task with state tracking |
-| `/dw:review` | *-reviewer | Expert critique and quality assurance |
-| `/dw:finalize` | devop | Archive project and clean up workflow |
-| `/dw:deliver` | devop | Production readiness validation |
+| `/nw:baseline` | researcher | Establish measurement baseline (BLOCKS roadmap) |
+| `/nw:roadmap` | varies | Create comprehensive planning document |
+| `/nw:split` | varies | Generate atomic task files from roadmap |
+| `/nw:execute` | varies | Execute atomic task with state tracking |
+| `/nw:review` | *-reviewer | Expert critique and quality assurance |
+| `/nw:finalize` | devop | Archive project and clean up workflow |
+| `/nw:deliver` | devop | Production readiness validation |
 
 ### Cross-Wave Specialist Commands
 
 | Command | Agent | Purpose |
 |---------|-------|---------|
-| `/dw:research` | researcher | Evidence-driven research with source verification |
-| `/dw:root-why` | troubleshooter | Toyota 5 Whys root cause analysis |
-| `/dw:mikado` | software-crafter | Complex refactoring roadmaps (Mikado Method) |
-| `/dw:refactor` | software-crafter | Systematic code refactoring (Level 1-6) |
-| `/dw:develop` | software-crafter | Outside-In TDD implementation |
-| `/dw:diagram` | visual-architect | Architecture diagram lifecycle management |
+| `/nw:research` | researcher | Evidence-driven research with source verification |
+| `/nw:root-why` | troubleshooter | Toyota 5 Whys root cause analysis |
+| `/nw:mikado` | software-crafter | Complex refactoring roadmaps (Mikado Method) |
+| `/nw:refactor` | software-crafter | Systematic code refactoring (Level 1-6) |
+| `/nw:develop` | software-crafter | Outside-In TDD implementation |
+| `/nw:diagram` | visual-architect | Architecture diagram lifecycle management |
 
 ### Utility Commands
 
 | Command | Agent | Purpose |
 |---------|-------|---------|
-| `/dw:git` | devop | Git workflow operations (commit, branch, merge) |
-| `/dw:forge` | agent-builder | Create new agents from templates |
+| `/nw:git` | devop | Git workflow operations (commit, branch, merge) |
+| `/nw:forge` | agent-builder | Create new agents from templates |
 
 ---
 
@@ -670,7 +670,7 @@ Every agent has a corresponding `*-reviewer` variant that uses the Haiku model f
 | Artifact | Location |
 |----------|----------|
 | Research | `docs/research/{category}/{topic}.md` |
-| Embedded Knowledge | `5d-wave/data/embed/{agent}/{topic}.md` |
+| Embedded Knowledge | `nWave/data/embed/{agent}/{topic}.md` |
 | Baseline | `docs/workflow/{project-id}/baseline.yaml` |
 | Roadmap | `docs/workflow/{project-id}/roadmap.yaml` |
 | Tasks | `docs/workflow/{project-id}/steps/*.json` |
@@ -678,4 +678,4 @@ Every agent has a corresponding `*-reviewer` variant that uses the Haiku model f
 | Architecture | `docs/architecture/` |
 | Architecture Diagrams | `docs/architecture/diagrams/` |
 | Requirements | `docs/requirements/` |
-| Agents | `5d-wave/agents/` |
+| Agents | `nWave/agents/` |

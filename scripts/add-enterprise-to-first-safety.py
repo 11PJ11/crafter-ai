@@ -6,7 +6,7 @@ Add enterprise_safety_layers to the FIRST safety_framework section in each agent
 import re
 from pathlib import Path
 
-AGENTS_DIR = Path("/mnt/c/Repositories/Projects/ai-craft/5d-wave/agents")
+AGENTS_DIR = Path("/mnt/c/Repositories/Projects/ai-craft/nWave/agents")
 
 ENTERPRISE_LAYERS = """
   enterprise_safety_layers:

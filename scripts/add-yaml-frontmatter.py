@@ -128,7 +128,7 @@ def main():
     print()
 
     # Get agents directory
-    agents_dir = Path("5d-wave/agents")
+    agents_dir = Path("nWave/agents")
     if not agents_dir.exists():
         print(f"❌ Error: Agents directory not found: {agents_dir}")
         return 1

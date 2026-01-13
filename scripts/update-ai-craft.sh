@@ -139,7 +139,7 @@ check_current_installation() {
     local installation_found=false
 
     # Check for existing installation
-    if [[ -d "$CLAUDE_CONFIG_DIR/agents/dw" ]] || [[ -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
+    if [[ -d "$CLAUDE_CONFIG_DIR/agents/nw" ]] || [[ -d "$CLAUDE_CONFIG_DIR/commands/nw" ]]; then
         installation_found=true
         info "Found existing AI-Craft installation"
 
@@ -169,16 +169,16 @@ create_update_backup() {
     # Backup current Claude configuration
     if [[ -d "$CLAUDE_CONFIG_DIR" ]]; then
         # Create selective backup of AI-Craft components
-        if [[ -d "$CLAUDE_CONFIG_DIR/agents/dw" ]]; then
+        if [[ -d "$CLAUDE_CONFIG_DIR/agents/nw" ]]; then
             mkdir -p "$UPDATE_BACKUP_DIR/agents"
-            cp -r "$CLAUDE_CONFIG_DIR/agents/dw" "$UPDATE_BACKUP_DIR/agents/"
-            info "Backed up agents/dw directory"
+            cp -r "$CLAUDE_CONFIG_DIR/agents/nw" "$UPDATE_BACKUP_DIR/agents/"
+            info "Backed up agents/nw directory"
         fi
 
-        if [[ -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
+        if [[ -d "$CLAUDE_CONFIG_DIR/commands/nw" ]]; then
             mkdir -p "$UPDATE_BACKUP_DIR/commands"
-            cp -r "$CLAUDE_CONFIG_DIR/commands/dw" "$UPDATE_BACKUP_DIR/commands/"
-            info "Backed up commands/dw directory"
+            cp -r "$CLAUDE_CONFIG_DIR/commands/nw" "$UPDATE_BACKUP_DIR/commands/"
+            info "Backed up commands/nw directory"
         fi
 
         # Backup configuration files
@@ -204,8 +204,8 @@ Backup Contents:
 
 Restoration Command:
   # To restore if update fails:
-  cp -r $UPDATE_BACKUP_DIR/agents/dw $CLAUDE_CONFIG_DIR/agents/ 2>/dev/null || true
-  cp -r $UPDATE_BACKUP_DIR/commands/dw $CLAUDE_CONFIG_DIR/commands/ 2>/dev/null || true
+  cp -r $UPDATE_BACKUP_DIR/agents/nw $CLAUDE_CONFIG_DIR/agents/ 2>/dev/null || true
+  cp -r $UPDATE_BACKUP_DIR/commands/nw $CLAUDE_CONFIG_DIR/commands/ 2>/dev/null || true
   cp $UPDATE_BACKUP_DIR/*.txt $CLAUDE_CONFIG_DIR/ 2>/dev/null || true
 EOF
 
@@ -296,12 +296,12 @@ validate_update() {
     local validation_errors=0
 
     # Check that new installation exists
-    if [[ ! -d "$CLAUDE_CONFIG_DIR/agents/dw" ]]; then
+    if [[ ! -d "$CLAUDE_CONFIG_DIR/agents/nw" ]]; then
         error "Agents directory missing after update"
         ((validation_errors++)) || true
     fi
 
-    if [[ ! -d "$CLAUDE_CONFIG_DIR/commands/dw" ]]; then
+    if [[ ! -d "$CLAUDE_CONFIG_DIR/commands/nw" ]]; then
         error "Commands directory missing after update"
         ((validation_errors++)) || true
     fi
@@ -313,8 +313,8 @@ validate_update() {
     fi
 
     # Count installed components
-    local agent_count=$(find "$CLAUDE_CONFIG_DIR/agents/dw" -name "*.md" 2>/dev/null | wc -l || echo "0")
-    local command_count=$(find "$CLAUDE_CONFIG_DIR/commands/dw" -name "*.md" 2>/dev/null | wc -l || echo "0")
+    local agent_count=$(find "$CLAUDE_CONFIG_DIR/agents/nw" -name "*.md" 2>/dev/null | wc -l || echo "0")
+    local command_count=$(find "$CLAUDE_CONFIG_DIR/commands/nw" -name "*.md" 2>/dev/null | wc -l || echo "0")
 
     info "Installation verification - Agents: $agent_count, Commands: $command_count"
 
@@ -393,8 +393,8 @@ Backup Information:
 
 BACKUP_INFO
 fi)Final Installation Status:
-- Agents: $(find "$CLAUDE_CONFIG_DIR/agents/dw" -name "*.md" 2>/dev/null | wc -l || echo "0") installed
-- Commands: $(find "$CLAUDE_CONFIG_DIR/commands/dw" -name "*.md" 2>/dev/null | wc -l || echo "0") installed
+- Agents: $(find "$CLAUDE_CONFIG_DIR/agents/nw" -name "*.md" 2>/dev/null | wc -l || echo "0") installed
+- Commands: $(find "$CLAUDE_CONFIG_DIR/commands/nw" -name "*.md" 2>/dev/null | wc -l || echo "0") installed
 
 Update completed successfully. Framework ready for use.
 EOF
@@ -460,7 +460,7 @@ main() {
         info "- Framework bundle built from latest source"
         info "- Previous installation cleanly removed"
         info "- New framework installation validated"
-        info "- All 5D-WAVE components operational"
+        info "- All nWave components operational"
 
         if [[ "$BACKUP_BEFORE_UPDATE" == "true" ]]; then
             echo ""
@@ -471,7 +471,7 @@ main() {
 
         echo ""
         info "🚀 Updated AI-Craft framework ready for use!"
-        info "   Try: /dw:discuss, /dw:design, /dw:develop, /dw:deliver commands"
+        info "   Try: /nw:discuss, /nw:design, /nw:develop, /nw:deliver commands"
 
     else
         error "Update validation failed"

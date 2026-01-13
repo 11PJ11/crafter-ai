@@ -190,10 +190,10 @@ cat docs/ADVERSARIAL_TEST_REPORT.md
 ### Framework Propagation Issues
 ```bash
 # Validate agent file structure
-grep -A 5 "^contract:" 5d-wave/agents/business-analyst.md
+grep -A 5 "^contract:" nWave/agents/business-analyst.md
 
 # Check YAML frontmatter
-head -20 5d-wave/agents/business-analyst.md | grep -A 10 "^---$"
+head -20 nWave/agents/business-analyst.md | grep -A 10 "^---$"
 ```
 
 ---
@@ -204,7 +204,7 @@ head -20 5d-wave/agents/business-analyst.md | grep -A 10 "^---$"
 - **Implementation Plan**: `docs/NEXT_STEPS_WEEK2-3.md`
 - **Compliance Report**: `docs/COMPLIANCE_VALIDATION_REPORT.md`
 - **Adversarial Tests**: `docs/ADVERSARIAL_TEST_REPORT.md`
-- **Template**: `5d-wave/templates/AGENT_TEMPLATE.yaml`
+- **Template**: `nWave/templates/AGENT_TEMPLATE.yaml`
 
 ---
 

@@ -1,7 +1,7 @@
 """
 Team Processor
 
-Processes 5D-WAVE agent-team YAML files and converts them into massive agent files
+Processes nWave agent-team YAML files and converts them into massive agent files
 with embedded team coordination and collaboration logic.
 """
 
@@ -99,7 +99,7 @@ class TeamProcessor:
         header_parts = [
             f"# {team_base}-team",
             "",
-            "ACTIVATION-NOTICE: This is a massive collaborative team agent that coordinates multiple specialized agents for complex 5D-WAVE methodology execution.",
+            "ACTIVATION-NOTICE: This is a massive collaborative team agent that coordinates multiple specialized agents for complex nWave methodology execution.",
             "",
             "CRITICAL: This team agent orchestrates the complete collaboration workflow. Follow the team coordination patterns defined below.",
             "",
@@ -107,7 +107,7 @@ class TeamProcessor:
             f"**Name**: {team_meta.get('name', team_base.replace('-', ' ').title())}",
             f"**Focus**: {team_info.get('methodology_focus', '5d_wave')}",
             f"**Scope**: {team_info.get('scope', 'general_projects')}",
-            f"**Description**: {team_info.get('description', 'Collaborative team for 5D-WAVE methodology')}",
+            f"**Description**: {team_info.get('description', 'Collaborative team for nWave methodology')}",
             ""
         ]
 
@@ -354,7 +354,7 @@ class TeamProcessor:
             team_content = self.generate_team_agent_content(team_file, config)
 
             # Determine output path - teams become agents
-            output_path = self.output_dir / "agents" / "dw" / f"{team_name}-team.md"
+            output_path = self.output_dir / "agents" / "nw" / f"{team_name}-team.md"
 
             # Write output file
             success = self.file_manager.write_file(output_path, team_content)

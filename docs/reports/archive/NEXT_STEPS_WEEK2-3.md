@@ -53,7 +53,7 @@
 ```bash
 # Create script: scripts/add-frameworks-to-agents.py
 # - Read AGENT_TEMPLATE.yaml framework sections
-# - For each agent in 5d-wave/agents/*.md:
+# - For each agent in nWave/agents/*.md:
 #   - Extract existing YAML configuration
 #   - Add missing frameworks with agent-type adaptations
 #   - Preserve existing content
@@ -83,7 +83,7 @@
 - Observability: Tool-specific metrics (diagram_validation_rate, clarity_score)
 - Error Recovery: Format correction, notation consistency enforcement
 
-**Orchestrators** (5d-wave-complete-orchestrator, atdd-focused-orchestrator):
+**Orchestrators** (nWave-complete-orchestrator, atdd-focused-orchestrator):
 - Testing L2: Workflow handoff validation
 - Observability: Workflow metrics (phase_transition_success_rate)
 - Error Recovery: Workflow pause on handoff rejection

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Build IDE Bundle Script
-# Builds the 5D-WAVE IDE bundle with agents, commands, and hooks
+# Builds the nWave IDE bundle with agents, commands, and hooks
 
 # Note: Not using 'set -e' here because we want to handle Python script exit codes explicitly
 
@@ -17,7 +17,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}=====================================${NC}"
-echo -e "${BLUE}  5D-WAVE IDE Bundle Builder${NC}"
+echo -e "${BLUE}  nWave IDE Bundle Builder${NC}"
 echo -e "${BLUE}=====================================${NC}"
 echo
 
@@ -59,7 +59,7 @@ fi
 # Run the Python build script with correct source and output directories
 echo -e "${BLUE}Starting build process...${NC}"
 echo
-python3 "$BUILD_SCRIPT" --source 5d-wave --output dist/ide $DRY_RUN
+python3 "$BUILD_SCRIPT" --source nWave --output dist/ide $DRY_RUN
 
 # Check if build was successful
 if [ $? -eq 0 ]; then

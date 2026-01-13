@@ -7,8 +7,8 @@ If you're experiencing issues with AI-Craft, run this quick diagnostic first:
 ```bash
 # Quick system check
 echo "=== AI-Craft Quick Diagnostic ==="
-echo "Installation: $(ls ~/.claude/agents/dw/ 2>/dev/null && echo 'OK' || echo 'MISSING')"
-echo "Commands: $(ls ~/.claude/commands/dw/ 2>/dev/null | wc -l) found"
+echo "Installation: $(ls ~/.claude/agents/nw/ 2>/dev/null && echo 'OK' || echo 'MISSING')"
+echo "Commands: $(ls ~/.claude/commands/nw/ 2>/dev/null | wc -l) found"
 ```
 
 ## Installation Issues
@@ -17,7 +17,7 @@ echo "Commands: $(ls ~/.claude/commands/dw/ 2>/dev/null | wc -l) found"
 
 **Symptoms**:
 
-- Commands like `/dw:start` not recognized
+- Commands like `/nw:start` not recognized
 - No agents directory found
 - Missing framework files
 
@@ -25,13 +25,13 @@ echo "Commands: $(ls ~/.claude/commands/dw/ 2>/dev/null | wc -l) found"
 
 ```bash
 # Check installation
-ls ~/.claude/agents/dw/ ~/.claude/commands/dw/
+ls ~/.claude/agents/nw/ ~/.claude/commands/nw/
 
 # If missing, reinstall
 ./scripts/install-ai-craft.sh
 
 # If install fails, check source
-ls 5d-wave/agents/
+ls nWave/agents/
 ```
 
 ### Installation Fails
@@ -46,7 +46,7 @@ ls 5d-wave/agents/
 
 ```bash
 # Check source framework
-ls 5d-wave/agents/
+ls nWave/agents/
 
 # Check permissions
 ls -la ~/.claude/
@@ -83,7 +83,7 @@ cat ~/.claude/ai-craft-install.log
 
 **Symptoms**:
 
-- `/dw:start` command not recognized
+- `/nw:start` command not recognized
 - Commands not available in Claude Code
 - Command completion not working
 
@@ -91,10 +91,10 @@ cat ~/.claude/ai-craft-install.log
 
 ```bash
 # Check command installation
-ls ~/.claude/commands/dw/
+ls ~/.claude/commands/nw/
 
 # Expected commands
-cat ~/.claude/commands/dw/start.md
+cat ~/.claude/commands/nw/start.md
 
 # Reinstall commands
 ./scripts/install-ai-craft.sh
@@ -106,13 +106,13 @@ cat ~/.claude/commands/dw/start.md
 
 ```bash
 # Check command files
-ls -la ~/.claude/commands/dw/
+ls -la ~/.claude/commands/nw/
 
 # Check permissions
-find ~/.claude/commands/dw/ -name "*.md" -ls
+find ~/.claude/commands/nw/ -name "*.md" -ls
 
 # Verify command structure
-head -20 ~/.claude/commands/dw/start.md
+head -20 ~/.claude/commands/nw/start.md
 ```
 
 ## Agent Issues
@@ -129,10 +129,10 @@ head -20 ~/.claude/commands/dw/start.md
 
 ```bash
 # Check agent installation
-ls ~/.claude/agents/dw/
+ls ~/.claude/agents/nw/
 
 # Verify agent files
-head -20 ~/.claude/agents/dw/solution-architect.md
+head -20 ~/.claude/agents/nw/solution-architect.md
 ```
 
 ### Agent Context Issues
@@ -141,10 +141,10 @@ head -20 ~/.claude/agents/dw/solution-architect.md
 
 ```bash
 # Check agent specifications
-ls ~/.claude/agents/dw/
+ls ~/.claude/agents/nw/
 
 # Verify agent organization
-find ~/.claude/agents/dw/ -name "*.md" | wc -l
+find ~/.claude/agents/nw/ -name "*.md" | wc -l
 ```
 
 ## Environment Issues
@@ -165,8 +165,8 @@ echo $PATH
 which python3 pip3
 
 # Fix WSL permissions
-sudo chmod -R 755 ~/.claude/agents/dw/
-sudo chmod -R 755 ~/.claude/commands/dw/
+sudo chmod -R 755 ~/.claude/agents/nw/
+sudo chmod -R 755 ~/.claude/commands/nw/
 ```
 
 ### macOS Issues
@@ -185,8 +185,8 @@ python3 --version
 which python3
 
 # Fix permissions
-chmod -R 755 ~/.claude/agents/dw/
-chmod -R 755 ~/.claude/commands/dw/
+chmod -R 755 ~/.claude/agents/nw/
+chmod -R 755 ~/.claude/commands/nw/
 ```
 
 ### Windows Issues
@@ -222,8 +222,8 @@ echo "Shell: $SHELL"
 echo ""
 
 echo "=== Installation Check ==="
-echo "Agents: $(ls ~/.claude/agents/dw/ 2>/dev/null | wc -l) agent files"
-echo "Commands: $(ls ~/.claude/commands/dw/ 2>/dev/null | wc -l) commands"
+echo "Agents: $(ls ~/.claude/agents/nw/ 2>/dev/null | wc -l) agent files"
+echo "Commands: $(ls ~/.claude/commands/nw/ 2>/dev/null | wc -l) commands"
 echo ""
 
 echo "=== Tool Availability ==="
@@ -301,8 +301,8 @@ If all else fails, perform a complete reset:
 ./scripts/install-ai-craft.sh
 
 # 3. Test functionality
-ls ~/.claude/agents/dw/
-ls ~/.claude/commands/dw/
+ls ~/.claude/agents/nw/
+ls ~/.claude/commands/nw/
 ```
 
 ### Restore from Backup
