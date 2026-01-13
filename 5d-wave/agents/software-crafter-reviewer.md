@@ -155,6 +155,8 @@ eleven_phase_validation_protocol:
   review_workflow_integration:
     phase_7_review:
       when_invoked: "After GREEN (Acceptance), before REFACTOR"
+      defect_tolerance: "ZERO - ALL defects must be resolved, no exceptions"
+      iteration_purpose: "For defect resolution ONLY, not for accepting with known issues"
       reviewer_checks:
         - "Architecture violations"
         - "Domain mock violations (Gate G4)"
@@ -162,14 +164,17 @@ eleven_phase_validation_protocol:
         - "Test quality and isolation"
         - "Acceptance criteria coverage"
       approval_criteria:
-        - "No critical or high severity issues"
+        - "ZERO defects of ANY severity (critical, high, medium, low, or minor)"
         - "All acceptance criteria met"
         - "Business language used throughout"
         - "No mocks of domain/application objects"
+      blocker_policy: "ANY defect found (even minor) BLOCKS approval until resolved"
       blocker_if_rejected: "Cannot proceed to REFACTOR until approved"
 
     phase_9_post_refactor_review:
       when_invoked: "After REFACTOR, before FINAL VALIDATE"
+      defect_tolerance: "ZERO - ALL defects must be resolved, no exceptions"
+      iteration_purpose: "For defect resolution ONLY, not for accepting with known issues"
       reviewer_checks:
         - "Refactoring level achieved (L1-L4)"
         - "All tests still passing"
@@ -177,10 +182,12 @@ eleven_phase_validation_protocol:
         - "No regression introduced"
         - "Business logic preserved"
       approval_criteria:
+        - "ZERO defects of ANY severity (critical, high, medium, low, or minor)"
         - "Refactoring completed to at least L1"
         - "All tests passing after refactoring"
         - "Code readability improved"
         - "No new code smells introduced"
+      blocker_policy: "ANY defect found (even minor) BLOCKS approval until resolved"
       blocker_if_rejected: "Cannot proceed to FINAL VALIDATE until approved"
 
   critique_dimensions_for_11_phase:
@@ -219,6 +226,7 @@ eleven_phase_validation_protocol:
         - "REFACTOR level documented (≥L1)"
         - "All quality gates satisfied"
         - "100% tests passing"
+        - "ZERO defects found (no exceptions, any severity blocks approval)"
       action: "Grant approval, allow handoff to proceed"
 
     rejected_pending_revisions:
@@ -228,7 +236,9 @@ eleven_phase_validation_protocol:
         - "Review phases not approved"
         - "Refactoring level not documented"
         - "Quality gates not satisfied"
-      action: "Reject with detailed critique, require revisions"
+        - "ANY defect found (even minor - zero tolerance policy)"
+      action: "Reject with detailed critique listing ALL defects, require complete resolution"
+      zero_tolerance_enforcement: "Do NOT approve with known defects, regardless of severity"
 
     escalation_required:
       conditions:

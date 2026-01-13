@@ -501,9 +501,9 @@ The following table maps each of the 11 mandatory phases to the specific command
 | **4. GREEN (Unit)** | Internal (`/dw:develop`) | Implement MINIMAL code to pass unit test (YAGNI principle) | 10-20 min |
 | **5. CHECK** | Internal (`/dw:develop`) | Check if acceptance test passes now. If FAILS → RETURN to Phase 3 | 2-3 min |
 | **6. GREEN (Acceptance)** | Internal (`/dw:develop`) | Run ALL tests (unit + acceptance) - all must pass | 5-10 min |
-| **7. REVIEW** | **`/dw:review @software-crafter-reviewer implementation`** | Mandatory peer review of implementation quality (max 2 iterations) | 10-15 min |
+| **7. REVIEW** | **`/dw:review @software-crafter-reviewer implementation`** | Mandatory peer review - ZERO TOLERANCE: ALL defects must be resolved (max 2 iterations for corrections) | 10-15 min |
 | **8. REFACTOR** | **`/dw:refactor`** (L1-L4) OR **`/dw:mikado`** (complex) | Progressive refactoring with test validation after each level | 15-30 min |
-| **9. POST-REFACTOR REVIEW** | **`/dw:review @software-crafter-reviewer refactored_implementation`** | Review after refactoring complete (max 2 iterations) | 10-15 min |
+| **9. POST-REFACTOR REVIEW** | **`/dw:review @software-crafter-reviewer refactored_implementation`** | Post-refactoring review - ZERO TOLERANCE: ALL defects must be resolved (max 2 iterations for corrections) | 10-15 min |
 | **10. FINAL VALIDATE** | Internal (`/dw:develop`) | Run ALL tests (unit, integration, acceptance) - 100% must pass | 5-10 min |
 | **11. COMMIT** | **`/dw:git commit`** | Commit with detailed message and 11-phase validation | 5 min |
 
@@ -515,7 +515,8 @@ The following table maps each of the 11 mandatory phases to the specific command
 ```bash
 /dw:review @software-crafter-reviewer implementation {step-file-path}
 ```
-- Max 2 iterations allowed
+- **ZERO TOLERANCE for defects**: ALL defects (even minor) MUST be resolved before approval
+- Max 2 iterations allowed FOR CORRECTIONS ONLY, not for accepting with known issues
 - Must approve before proceeding to REFACTOR
 - If rejected after 2 iterations → escalate to tech lead
 
@@ -541,7 +542,8 @@ The following table maps each of the 11 mandatory phases to the specific command
 ```bash
 /dw:review @software-crafter-reviewer refactored_implementation {step-file-path}
 ```
-- Max 2 iterations allowed
+- **ZERO TOLERANCE for defects**: ALL defects (even minor) MUST be resolved before approval
+- Max 2 iterations allowed FOR CORRECTIONS ONLY, not for accepting with known issues
 - If major issues → may RETURN to REFACTOR at L1
 - Must approve before proceeding to FINAL VALIDATE
 

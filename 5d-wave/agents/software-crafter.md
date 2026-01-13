@@ -132,10 +132,13 @@ eleven_phase_tdd_methodology:
       description: "Mandatory peer review of implementation quality"
       gate: "G5 - Business language verified in tests"
       max_iterations: 2
+      defect_tolerance: "ZERO - ALL defects must be resolved, no exceptions"
+      iteration_purpose: "For defect resolution ONLY, not for accepting with known issues"
       review_categories:
         - "Architecture violations"
         - "Domain mock violations (G4)"
         - "Business language violations"
+      blocker_policy: "ANY defect found (even minor) BLOCKS approval until resolved"
       duration_target: "10-15 min"
 
     phase_8_refactor:
@@ -159,7 +162,10 @@ eleven_phase_tdd_methodology:
       description: "Review after refactoring complete"
       gate: "Approval before commit"
       max_iterations: 2
+      defect_tolerance: "ZERO - ALL defects must be resolved, no exceptions"
+      iteration_purpose: "For defect resolution ONLY, not for accepting with known issues"
       decision: "If major issues → RETURN to REFACTOR L1, else → Fix and proceed"
+      blocker_policy: "ANY defect found (even minor) BLOCKS approval until resolved"
       duration_target: "10-15 min"
 
     phase_10_final_validate:

@@ -95,6 +95,42 @@ ai-craft/
 └── README.md                 # This file
 ```
 
+## 👨‍💻 Development & Build
+
+### Building the Framework
+
+After making changes to agents, commands, or other framework components, rebuild and install:
+
+```bash
+# Option 1: Full update (build + uninstall + install + validate)
+./scripts/update-ai-craft.sh --force
+
+# Option 2: With backup before update (recommended)
+./scripts/update-ai-craft.sh --force --backup
+
+# Option 3: Build only (without installing)
+./scripts/build-ide-bundle.sh
+
+# Option 4: Manual install after build
+./scripts/install-ai-craft.sh
+```
+
+### Build Process Details
+
+The build system (`tools/build_ide_bundle.py`) processes:
+- **Agents**: Individual agent files with embedded dependencies → `dist/ide/agents/dw/`
+- **Commands**: Task files converted to IDE commands
+- **Teams**: Team configurations converted to collaborative agents
+- **Workflows**: Workflow orchestrators for multi-phase guidance
+
+### Update Process
+
+The `update-ai-craft.sh` script orchestrates:
+1. Build new framework bundle from source (`5d-wave/`)
+2. Uninstall existing AI-Craft installation (cleanly removes from `~/.claude/`)
+3. Install newly built framework bundle
+4. Validate successful update (agents, commands, configuration)
+
 ## 🤝 Contributing
 
 The AI-Craft system follows clean architecture principles with specialized agents. Each agent has a single responsibility and communicates through well-defined file-based interfaces.
