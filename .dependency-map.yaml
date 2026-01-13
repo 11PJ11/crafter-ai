@@ -1,0 +1,110 @@
+# =============================================================================
+# nWave Documentation Dependency Map
+# =============================================================================
+# Defines dependency relationships between source configurations and derived
+# documentation. Used by pre-commit validation to enforce consistency.
+#
+# Structure:
+#   - tracked_files: List of files with version fields that participate in tracking
+#   - validation_rules: Validation behavior configuration
+#   - version_strategy: Versioning approach and comparison logic
+# =============================================================================
+
+version: "1.0.0"
+description: "Dependency tracking for nWave framework documentation consistency"
+
+# -----------------------------------------------------------------------------
+# Tracked Files
+# -----------------------------------------------------------------------------
+# Files with version fields that participate in dependency tracking
+
+tracked_files:
+  # Source: Framework catalog (primary configuration)
+  - path: "nWave/framework-catalog.yaml"
+    version_format: "yaml"
+    version_field: "version"
+    description: "Primary framework configuration - commands, agents, workflows"
+
+    triggers_update:
+      - file: "README.md"
+        sections:
+          - id: "command-reference"
+            location: "~lines 30-50"
+            description: "Command list and usage examples"
+            source: "framework-catalog.yaml:commands"
+          - id: "agent-overview"
+            location: "~lines 86-93"
+            description: "Agent counts and wave assignments"
+            source: "framework-catalog.yaml:agents"
+        reason: "Command descriptions and agent metadata must match catalog"
+
+      - file: "nWave/data/agents_reference/COMMAND-AGENT-MAPPING.md"
+        sections:
+          - id: "full-document"
+            location: "entire file"
+            description: "Complete command-agent mapping table"
+            source: "framework-catalog.yaml:commands,agents"
+        reason: "Mapping document is fully derived from catalog"
+
+  # Source: Build configuration
+  - path: "tools/build_config.yaml"
+    version_format: "yaml"
+    version_field: "version"
+    description: "IDE bundle builder configuration"
+
+    triggers_update:
+      - file: "README.md"
+        sections:
+          - id: "installation"
+            location: "~lines 17-28"
+            description: "Installation instructions and script usage"
+            source: "build_config.yaml:build,output"
+        reason: "Build instructions must match configuration"
+
+  # Terminal: Root documentation
+  - path: "README.md"
+    version_format: "markdown_comment"
+    version_pattern: "<!-- version: {version} -->"
+    description: "Primary project documentation"
+    triggers_update: []  # Terminal node - no downstream dependencies
+
+  # Terminal: Command-agent reference
+  - path: "nWave/data/agents_reference/COMMAND-AGENT-MAPPING.md"
+    version_format: "markdown_comment"
+    version_pattern: "<!-- version: {version} -->"
+    description: "Auto-generated command-agent mapping reference"
+    triggers_update: []  # Terminal node - regenerated from catalog
+
+# -----------------------------------------------------------------------------
+# Validation Rules
+# -----------------------------------------------------------------------------
+
+validation_rules:
+  # Require version bump when file content changes (excluding whitespace)
+  require_version_bump_on_change: true
+
+  # Enforce dependent versions >= source version
+  enforce_downstream_version_sync: true
+
+  # Allow dependents to have higher versions (manual updates permitted)
+  allow_dependent_ahead: true
+
+  # Ignore whitespace-only changes
+  ignore_whitespace_changes: true
+
+  # Block commits with invalid version formats
+  block_invalid_version_format: true
+
+# -----------------------------------------------------------------------------
+# Version Strategy
+# -----------------------------------------------------------------------------
+
+version_strategy:
+  format: "semver"  # Semantic versioning (MAJOR.MINOR.PATCH)
+  comparison: "semver_compare"  # Use semantic version comparison
+
+  # Version increment guidance
+  increment_guidance:
+    major: "Breaking changes, incompatible API changes"
+    minor: "New features, backward-compatible additions"
+    patch: "Bug fixes, documentation corrections"

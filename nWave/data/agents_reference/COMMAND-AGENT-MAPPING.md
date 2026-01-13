@@ -1,5 +1,7 @@
 # Command-Agent Auto-Activation Mapping
 
+<!-- version: 1.0.0 -->
+
 ## Configuration Status: ✅ COMPLETE
 
 All DW commands are now configured to automatically trigger specialized agent teams while keeping the main instance context-free.

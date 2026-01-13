@@ -1,5 +1,7 @@
 # nWave IDE Bundle Builder Configuration
 
+version: "1.0.0"
+
 # Build settings
 build:
   # Source and output directories
