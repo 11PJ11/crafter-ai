@@ -106,11 +106,11 @@ commands:
     outputs: ["acceptance_tests", "test_scenarios"]
 
   develop:
-    description: "Outside-In TDD implementation with refactoring"
-    argument_hint: "[feature-name] - Optional: --tdd-mode=[strict|pragmatic] --refactor-level=[1-6]"
-    agents: ["test_first_developer", "systematic_refactorer"]
+    description: "Execute complete DEVELOP wave: baseline → roadmap → split → execute-all → finalize"
+    argument_hint: "[feature-description] - Example: \"Implement user authentication with JWT\""
+    agents: ["devop"]
     wave: "DEVELOP"
-    outputs: ["working_code", "refactored_implementation"]
+    outputs: ["complete_feature", "quality_gates_passed", "evolution_document"]
 
   demo:
     description: "Production readiness validation"
