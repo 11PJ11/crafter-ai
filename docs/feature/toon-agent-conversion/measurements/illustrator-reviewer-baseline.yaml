@@ -1,0 +1,15 @@
+# Token Measurement Baseline for illustrator-reviewer
+# Step 06-04: Token measurement and compression validation
+# Generated: 2026-01-14
+
+step_id: "06-04"
+agent_name: illustrator-reviewer
+measurement_date: "2026-01-14"
+tokenizer: cl100k_base
+
+original:
+  file: nWave/agents/illustrator-reviewer.md
+  tokens: 10706
+  bytes: 51673
+  lines: 1117
+  description: "Visual diagram and documentation review specialist - Haiku optimized"

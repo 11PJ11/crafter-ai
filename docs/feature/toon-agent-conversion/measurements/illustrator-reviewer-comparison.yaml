@@ -1,0 +1,41 @@
+# Token Measurement Comparison for illustrator-reviewer
+# Step 06-04: Token measurement and compression validation
+# Generated: 2026-01-14
+
+step_id: "06-04"
+agent_name: illustrator-reviewer
+measurement_date: "2026-01-14"
+tokenizer: cl100k_base
+
+original:
+  file: nWave/agents/illustrator-reviewer.md
+  tokens: 10706
+  bytes: 51673
+  lines: 1117
+
+toon:
+  file: nWave/agents/illustrator-reviewer.toon
+  tokens: 1745
+  bytes: 7018
+  lines: 211
+
+compression:
+  ratio: "6.14:1"
+  token_reduction: 8961
+  token_reduction_percent: 83.7
+  byte_reduction: 44655
+  byte_reduction_percent: 86.4
+  line_reduction: 906
+  line_reduction_percent: 81.1
+
+target_analysis:
+  primary_target_5_1: true
+  secondary_target_4_1: true
+  exception_required: false
+  notes: "Exceeds primary target of 5:1 - excellent compression achieved"
+
+quality_assessment:
+  content_preserved: true
+  semantic_equivalence: verified
+  reviewer_functionality: preserved
+  haiku_model_optimization: preserved
