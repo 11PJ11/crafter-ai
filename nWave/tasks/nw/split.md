@@ -98,6 +98,9 @@ Task File Schema (JSON):
 - task_specification: Name, description, motivation, detailed_instructions, acceptance_criteria, estimated_hours
 - dependencies: requires (task-ids), blocking (task-ids)
 - state: status='TODO', assigned_to=null, timestamps
+- tdd_cycle: **MANDATORY** - Pre-populated from template with ALL 14 phases in NOT_EXECUTED status (see embedded template below)
+- quality_gates: TDD quality requirements
+- phase_validation_rules: Commit acceptance rules
 
 Folder Structure:
 docs/feature/{project-id}/steps/

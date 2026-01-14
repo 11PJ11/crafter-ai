@@ -369,20 +369,32 @@ def validate_step_file(file_path: str) -> Tuple[bool, List[Dict[str, Any]]]:
 
         if status == "EXECUTED":
             # Check for gaps (executed phases after non-executed ones)
+            # But allow gaps if they contain only valid SKIPPED phases
             if last_executed_index >= 0 and i > last_executed_index + 1:
                 for j in range(last_executed_index + 1, i):
-                    skipped_phase = REQUIRED_PHASES[j]
-                    # Only add if not already in issues
-                    if not any(iss.get("phase") == skipped_phase for iss in issues):
+                    gap_phase = REQUIRED_PHASES[j]
+                    gap_entry = phase_lookup.get(gap_phase)
+
+                    # Check if gap phase is a valid SKIPPED
+                    if gap_entry:
+                        gap_status = gap_entry.get("status", "NOT_EXECUTED")
+                        if gap_status == "SKIPPED":
+                            # Verify it's a valid SKIPPED (with proper blocked_by)
+                            is_valid_skip, _ = validate_skipped_phase(gap_entry)
+                            if is_valid_skip:
+                                continue  # Valid SKIPPED, not a gap issue
+
+                    # Only add gap error if not already in issues
+                    if not any(iss.get("phase") == gap_phase for iss in issues):
                         issues.append({
-                            "phase": skipped_phase,
+                            "phase": gap_phase,
                             "phase_index": j,
                             "status": "SKIPPED_GAP",
                             "issue": f"Phase skipped (gap between {REQUIRED_PHASES[last_executed_index]} and {phase_name})"
                         })
             last_executed_index = i
 
-            # Validate that EXECUTED phases have outcome
+            # Validate that EXECUTED phases have outcome with valid value
             outcome = entry.get("outcome")
             if not outcome:
                 issues.append({
@@ -390,6 +402,13 @@ def validate_step_file(file_path: str) -> Tuple[bool, List[Dict[str, Any]]]:
                     "phase_index": i,
                     "status": "INCOMPLETE",
                     "issue": "EXECUTED phase missing outcome (PASS/FAIL)"
+                })
+            elif outcome not in ["PASS", "FAIL"]:
+                issues.append({
+                    "phase": phase_name,
+                    "phase_index": i,
+                    "status": "INVALID_OUTCOME",
+                    "issue": f"Invalid outcome '{outcome}' - must be PASS or FAIL"
                 })
 
         elif status == "IN_PROGRESS":
