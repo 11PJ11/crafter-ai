@@ -315,6 +315,15 @@ Execute this task and provide outputs as specified.
 The step file contains a pre-populated `phase_execution_log` with all 14 TDD phases.
 You MUST update each phase as you execute it. **DO NOT BATCH UPDATES** - save the step file after each phase.
 
+#### The 14 TDD Phases (Execute in Order)
+
+**Single Source of Truth**: See `nWave/templates/step-tdd-cycle-schema.json` → `task_specification.mandatory_phases`
+
+The phases are (0-13):
+`PREPARE` → `RED_ACCEPTANCE` → `RED_UNIT` → `GREEN_UNIT` → `CHECK_ACCEPTANCE` → `GREEN_ACCEPTANCE` → `REVIEW` → `REFACTOR_L1` → `REFACTOR_L2` → `REFACTOR_L3` → `REFACTOR_L4` → `POST_REFACTOR_REVIEW` → `FINAL_VALIDATE` → `COMMIT`
+
+**For non-ATDD steps** (research, infrastructure): Phases 1-5 are pre-set to `SKIPPED` with `blocked_by: "NOT_APPLICABLE"`.
+
 #### Before Starting a Phase
 
 1. READ the step file

@@ -62,20 +62,27 @@ Execute a **complete DEVELOP wave** that orchestrates:
 4. ✅ **YOU** manage progress tracking and error handling
 5. ✅ **YOU** report completion summary
 
-**Agent Delegation Pattern:**
+**Agent Delegation Pattern (with explicit command invocation):**
 ```python
 # For step execution (STEP 10)
 Task(
   subagent_type="software-crafter",
-  prompt='Execute step from "docs/workflow/{project-id}/steps/01-03.json" using 14-phase TDD',
+  prompt='/nw:execute @software-crafter "docs/workflow/{project-id}/steps/01-03.json"',
   description="Execute step 01-03"
 )
 
 # For review (STEP 4, 6, 7, 9)
 Task(
   subagent_type="software-crafter-reviewer",  # or product-owner-reviewer
-  prompt='Review artifact at "{artifact-path}" for {project-description}',
+  prompt='/nw:review @software-crafter-reviewer baseline "{artifact-path}"',
   description="Review baseline"
+)
+
+# For roadmap creation (STEP 5)
+Task(
+  subagent_type="solution-architect",
+  prompt='/nw:roadmap @solution-architect "{feature_description}"',
+  description="Create implementation roadmap"
 )
 ```
 
@@ -1298,12 +1305,17 @@ STEP 12: Phase 9 - Report Completion
 
 2. **If baseline creation needed** (status == 'missing'):
 
-   a. Invoke baseline command:
-   ```bash
-   /nw:baseline "{feature_description}"
+   a. Invoke baseline command via Task tool delegation:
+   ```python
+   # Delegate to software-crafter sub-agent
+   task_result = Task(
+       subagent_type="software-crafter",
+       prompt=f'/nw:baseline "{feature_description}"',
+       description="Create measurement baseline"
+   )
    ```
 
-   b. Wait for completion
+   b. Task tool handles completion automatically
 
    c. Verify baseline.yaml created:
    ```python
@@ -1420,12 +1432,17 @@ STEP 12: Phase 9 - Report Completion
 
 2. **If roadmap creation needed**:
 
-   a. Invoke roadmap command:
-   ```bash
-   /nw:roadmap @solution-architect "{feature_description}"
+   a. Invoke roadmap command via Task tool delegation:
+   ```python
+   # Delegate to solution-architect sub-agent
+   task_result = Task(
+       subagent_type="solution-architect",
+       prompt=f'/nw:roadmap @solution-architect "{feature_description}"',
+       description="Create implementation roadmap"
+   )
    ```
 
-   b. Wait for completion
+   b. Task tool handles completion automatically
 
    c. Verify roadmap.yaml created:
    ```python
@@ -1602,12 +1619,17 @@ STEP 12: Phase 9 - Report Completion
 
 2. **If split needed** (!should_skip):
 
-   a. Invoke split command:
-   ```bash
-   /nw:split @devop "{project_id}"
+   a. Invoke split command via Task tool delegation:
+   ```python
+   # Delegate to software-crafter sub-agent (per COMMAND-AGENT-MAPPING.md)
+   task_result = Task(
+       subagent_type="software-crafter",
+       prompt=f'/nw:split @software-crafter "{project_id}"',
+       description="Split roadmap into atomic steps"
+   )
    ```
 
-   b. Wait for completion
+   b. Task tool handles completion automatically
 
    c. Verify step files created:
    ```python
@@ -1791,34 +1813,13 @@ STEP 12: Phase 9 - Report Completion
            completed_steps.append(step_id)
            continue
 
-       # Execute step with 14-phase TDD using Task tool
+       # Execute step with 14-phase TDD using Task tool delegation
        print(f"Invoking: Task tool with @software-crafter for step {step_id}")
 
+       # Delegate to software-crafter sub-agent with explicit /nw:execute command
        task_result = Task(
            subagent_type="software-crafter",
-           prompt=f'''Execute step from "{step_file}" using the complete 14-phase TDD methodology.
-
-Step file: {step_file}
-Step ID: {step_id}
-
-Follow all 14 TDD phases in order:
-1. PREPARE - Remove @skip, verify only 1 scenario enabled
-2. RED_ACCEPTANCE - Acceptance test must FAIL initially
-3. RED_UNIT - Write failing unit tests
-4. GREEN_UNIT - Implement minimum code to pass
-5. CHECK_ACCEPTANCE - Verify unit tests pass
-6. GREEN_ACCEPTANCE - All tests PASS
-7. REVIEW - Execute /nw:review @software-crafter-reviewer
-8. REFACTOR_L1 - Naming clarity
-9. REFACTOR_L2 - Method extraction
-10. REFACTOR_L3 - Class responsibilities
-11. REFACTOR_L4 - Architecture patterns
-12. POST_REFACTOR_REVIEW - Execute /nw:review again
-13. FINAL_VALIDATE - Document full test results
-14. COMMIT - Create git commit with detailed message
-
-Update tdd_cycle.phase_execution_log in the step file after each phase.
-Report completion status clearly.''',
+           prompt=f'/nw:execute @software-crafter "{step_file}"',
            description=f"Execute step {step_id} with 14-phase TDD"
        )
 
@@ -1904,12 +1905,17 @@ Report completion status clearly.''',
        print(error_message)  # "✓ All completed steps have git commits"
    ```
 
-2. **Invoke finalize command**:
-   ```bash
-   /nw:finalize @devop "{project_id}"
+2. **Invoke finalize command via Task tool delegation**:
+   ```python
+   # Delegate to devop sub-agent (per COMMAND-AGENT-MAPPING.md)
+   task_result = Task(
+       subagent_type="devop",
+       prompt=f'/nw:finalize @devop "{project_id}"',
+       description="Finalize and archive project"
+   )
    ```
 
-3. **Wait for completion and verify**:
+3. **Task tool handles completion, then verify**:
    ```python
    evolution_files = glob.glob(f'docs/evolution/*{project_id}*.md')
 
@@ -2525,12 +2531,17 @@ def execute_review_with_retry(reviewer_agent, artifact_type, artifact_path,
         review_cmd = f'/nw:review {reviewer_agent} {artifact_type.lower().replace(" ", "-")} "{artifact_path}"'
         print(f"Invoking: {review_cmd}")
 
-        # In real implementation, use Task tool to invoke review command
-        # Here we simulate by checking artifact's validation status after review
+        # Delegate to reviewer sub-agent via Task tool
+        # Extract agent type from reviewer_agent (e.g., '@software-crafter-reviewer' -> 'software-crafter-reviewer')
+        agent_type = reviewer_agent.lstrip('@')
 
-        # Simulate waiting for review completion
-        print("Waiting for review completion...")
-        time.sleep(1)  # In real implementation, this would be actual Task tool wait
+        task_result = Task(
+            subagent_type=agent_type,
+            prompt=review_cmd,
+            description=f"Review {artifact_type}"
+        )
+
+        print("Review completed via sub-agent delegation")
 
         # Read artifact after review
         try:
@@ -2590,8 +2601,19 @@ def execute_review_with_retry(reviewer_agent, artifact_type, artifact_path,
                         continue
 
                 print(f"Invoking: {regen_cmd}")
-                # In real implementation, invoke via Task tool
-                time.sleep(1)  # Simulate regeneration
+                # Delegate regeneration to appropriate sub-agent via Task tool
+                if artifact_type == 'Baseline':
+                    regen_agent = 'software-crafter'
+                elif artifact_type == 'Roadmap':
+                    regen_agent = 'solution-architect'
+                else:
+                    regen_agent = 'software-crafter'  # Default
+
+                task_result = Task(
+                    subagent_type=regen_agent,
+                    prompt=regen_cmd,
+                    description=f"Regenerate {artifact_type} with feedback"
+                )
 
                 print(f"\n{artifact_type} regenerated. Proceeding to attempt {attempt + 1}...")
             else:
