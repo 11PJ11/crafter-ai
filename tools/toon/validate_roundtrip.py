@@ -241,6 +241,7 @@ def extract_commands(content: str) -> list[str]:
     commands = []
 
     # Find commands section specifically (YAML format)
+    # Pattern 1: Indented content after commands:
     commands_section_match = re.search(
         r"^commands:\s*\n((?:[\s#].*\n)*)",
         content,
@@ -254,6 +255,22 @@ def extract_commands(content: str) -> list[str]:
         for match in re.finditer(command_pattern, commands_content, re.MULTILINE):
             cmd = match.group(1).lower()
             # Exclude dependency categories
+            if cmd not in ["tasks", "templates", "checklists", "data", "embed_knowledge"]:
+                commands.append(cmd)
+
+    # Pattern 2: Commands section with optional blank line before list items
+    # Handles format: "commands:\n\n- help: ..." (blank line between header and items)
+    commands_blank_line_match = re.search(
+        r"^commands:\s*\n\s*\n((?:-\s*[^\n]+\n)*)",
+        content,
+        re.MULTILINE | re.IGNORECASE,
+    )
+
+    if commands_blank_line_match:
+        commands_content = commands_blank_line_match.group(1)
+        command_pattern = r"^-\s*([a-zA-Z_-]+):\s*[^-\n]"
+        for match in re.finditer(command_pattern, commands_content, re.MULTILINE):
+            cmd = match.group(1).lower()
             if cmd not in ["tasks", "templates", "checklists", "data", "embed_knowledge"]:
                 commands.append(cmd)
 
