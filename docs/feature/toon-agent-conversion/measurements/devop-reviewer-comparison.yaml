@@ -1,0 +1,26 @@
+# Token Measurement Comparison for devop-reviewer
+# Generated: 2026-01-15
+
+step_id: "08-04"
+agent_name: devop-reviewer
+measurement_date: '2026-01-15'
+tokenizer: cl100k_base
+original:
+  file: nWave/agents/devop-reviewer.md
+  tokens: 9465
+  bytes: 51211
+  lines: 1179
+toon:
+  file: nWave/agents/devop-reviewer.toon
+  tokens: 2157
+  bytes: 10676
+  lines: 278
+compression:
+  ratio: "4.39:1"
+  token_reduction: 7308
+  token_reduction_percent: 77.2
+target_analysis:
+  primary_target_5_1: false
+  secondary_target_4_1: true
+  exception_required: false
+  notes: "Meets secondary target (4:1). devop-reviewer is a reviewer variant with haiku model, extensive deployment/operational framework content."

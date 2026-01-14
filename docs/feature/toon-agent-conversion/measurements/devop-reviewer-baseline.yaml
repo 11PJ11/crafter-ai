@@ -1,0 +1,12 @@
+# Token Measurement Baseline for devop-reviewer
+# Generated: 2026-01-15
+
+step_id: "08-04"
+agent_name: devop-reviewer
+measurement_date: '2026-01-15'
+tokenizer: cl100k_base
+original:
+  file: nWave/agents/devop-reviewer.md
+  tokens: 9465
+  bytes: 51211
+  lines: 1179
