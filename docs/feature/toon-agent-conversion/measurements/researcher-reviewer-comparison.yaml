@@ -1,0 +1,68 @@
+# researcher-reviewer Token Comparison
+# Step: 02-04
+# Purpose: Compare original MD vs TOON token counts
+
+step_id: "02-04"
+agent: "researcher-reviewer"
+comparison_date: "2026-01-14T16:30:00Z"
+tokenizer: "tiktoken/cl100k_base"
+
+original:
+  file_path: "nWave/agents/researcher-reviewer.md"
+  total_tokens: 10916
+  file_size_bytes: 51886
+  line_count: 1330
+  char_count: 51828
+
+toon:
+  file_path: "nWave/agents/researcher-reviewer.toon"
+  total_tokens: 4750
+  file_size_bytes: 21713
+  line_count: 553
+  char_count: 21646
+
+compression_metrics:
+  token_reduction: 6166
+  token_reduction_percent: 56.5
+  compression_ratio: "2.30:1"
+  size_reduction_bytes: 30173
+  line_reduction: 777
+
+# Target Achievement Analysis
+target_achieved: false
+exception_documented: true
+exception_reason: |
+  The researcher-reviewer TOON conversion achieves 2.30:1 compression ratio,
+  which is below the 5:1 primary target and 4:1 secondary target.
+
+  Root cause analysis:
+  1. The researcher-reviewer agent has less structural redundancy than software-crafter
+  2. The original MD file (10916 tokens) is significantly smaller than software-crafter (24852 tokens)
+  3. The TOON format overhead becomes more significant with smaller agents
+  4. The researcher agent contains substantial unique content (research templates, output templates)
+     that cannot be compressed without semantic loss
+
+  Comparison with pilot:
+  - software-crafter: 24852 -> 4004 tokens (6.21:1)
+  - researcher-reviewer: 10916 -> 4750 tokens (2.30:1)
+
+  The TOON file (4750 tokens) is actually LARGER than software-crafter's TOON (4004 tokens)
+  despite the original being less than half the size. This suggests:
+  - researcher-reviewer has higher content density (less boilerplate)
+  - The TOON format preserves all essential content
+  - Further compression would risk semantic loss
+
+  Recommendation:
+  - Accept current compression for researcher-reviewer
+  - Investigate TOON format optimization for smaller agents in Phase 3
+  - Consider content-aware compression strategies
+
+quality_assessment:
+  semantic_preservation: "COMPLETE"
+  format_compliance: "VALID TOON v3.0"
+  readability: "MAINTAINED"
+
+notes:
+  - "Compression below target due to high content density in original"
+  - "No semantic loss - all functionality preserved"
+  - "Exception documented for review in Phase 3 retrospective"

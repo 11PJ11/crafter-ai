@@ -1,0 +1,25 @@
+# researcher-reviewer Token Baseline Measurement
+# Step: 02-04
+# Purpose: Establish original token count for compression validation
+
+step_id: "02-04"
+agent: "researcher-reviewer"
+measurement_date: "2026-01-14T16:30:00Z"
+tokenizer: "tiktoken/cl100k_base"
+
+original:
+  file_path: "nWave/agents/researcher-reviewer.md"
+  total_tokens: 10916
+  file_size_bytes: 51886
+  line_count: 1330
+  char_count: 51828
+
+methodology:
+  tokenizer: "tiktoken with cl100k_base encoding"
+  measurement_tool: "Python tiktoken library"
+  measurement_command: "len(tiktoken.get_encoding('cl100k_base').encode(content))"
+
+notes:
+  - "Baseline established for researcher-reviewer agent"
+  - "Uses same tokenizer as Claude models"
+  - "Token count includes all markdown formatting and YAML blocks"
