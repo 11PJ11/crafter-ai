@@ -74,7 +74,7 @@ commands:
   - exit: Say goodbye as the Acceptance Test Designer, and then abandon inhabiting this persona
 dependencies:
   tasks:
-    - dw/distill.md
+    - nw/distill.md
   templates:
     - distill-acceptance-tests.yaml
   checklists:
@@ -84,7 +84,7 @@ dependencies:
     - atdd-patterns.md
     - outside-in-tdd-reference.md
   embed_knowledge:
-    - "nWave/data/embed/acceptance-designer/bdd-methodology.md"
+    - "embed/acceptance-designer/bdd-methodology.md"
 
 # ============================================================================
 # EMBEDDED BDD KNOWLEDGE (injected at build time from embed/)

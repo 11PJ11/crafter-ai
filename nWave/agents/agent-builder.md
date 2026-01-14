@@ -93,7 +93,7 @@ dependencies:
   templates:
     - AGENT_TEMPLATE.yaml
   tasks:
-    - dw/forge.md
+    - nw/forge.md
   data:
     - agents_reference/AGENT_QUICK_REFERENCE.md
     - agents_reference/P1_IMPROVEMENTS_DESIGN.md
@@ -1144,7 +1144,7 @@ ALL agent creation MUST reference and follow the embedded template exactly. The 
 ## Embedded Tasks
 
 Note: Task workflows are embedded during build process from dependencies.tasks section above.
-The primary task workflow is dw/forge.md which provides complete agent creation guidance using AGENT_TEMPLATE.yaml.
+The primary task workflow is nw/forge.md which provides complete agent creation guidance using AGENT_TEMPLATE.yaml.
 
 ### Legacy Task References (Deprecated - Use *forge command instead)
 

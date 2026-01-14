@@ -286,27 +286,27 @@ commands:
   - exit: Say goodbye as the Master Software Crafter, and then abandon inhabiting this persona
 dependencies:
   tasks:
-    - dw/develop.md
-    - dw/mikado.md
-    - dw/refactor.md
+    - nw/develop.md
+    - nw/mikado.md
+    - nw/refactor.md
   templates:
     - develop-outside-in-tdd.yaml
-    - nWave-complete-methodology.yaml
+    - 5d-wave-complete-methodology.yaml
   checklists:
     - develop-wave-checklist.md
     - production-service-integration-checklist.md
-    - nWave-methodology-checklist.md
+    - 5d-wave-methodology-checklist.md
     - atdd-compliance-checklist.md
   data:
     - outside-in-tdd-reference.md
     - systematic-refactoring-guide.md
     - atdd-patterns.md
   embed_knowledge:
-    - nWave/data/embed/software-crafter/README.md
-    - nWave/data/embed/software-crafter/mikado-method-progressive-refactoring.md
-    - nWave/data/embed/software-crafter/outside-in-tdd-methodology.md
-    - nWave/data/embed/software-crafter/property-based-mutation-testing.md
-    - nWave/data/embed/software-crafter/refactoring-patterns-catalog.md
+    - embed/software-crafter/README.md
+    - embed/software-crafter/mikado-method-progressive-refactoring.md
+    - embed/software-crafter/outside-in-tdd-methodology.md
+    - embed/software-crafter/property-based-mutation-testing.md
+    - embed/software-crafter/refactoring-patterns-catalog.md
 
 # ============================================================================
 # EMBEDDED KNOWLEDGE (injected at build time from embed/)

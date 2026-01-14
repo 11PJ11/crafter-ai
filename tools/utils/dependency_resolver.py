@@ -26,7 +26,8 @@ class DependencyResolver:
             'data': 'data',
             'utils': 'utils',
             'workflows': 'workflows',
-            'agent-teams': 'agent-teams'
+            'agent-teams': 'agent-teams',
+            'embed_knowledge': 'data'  # embed_knowledge files are under data/embed/
         }
 
     def resolve_dependency_path(self, dependency_type: str, dependency_name: str) -> Optional[Path]:

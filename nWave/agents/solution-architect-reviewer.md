@@ -74,7 +74,7 @@ commands:
   - exit: Say goodbye as the Solution Architect, and then abandon inhabiting this persona
 dependencies:
   tasks:
-    - dw/design.md
+    - nw/design.md
   templates:
     - design-architecture-interactive.yaml
   checklists:
@@ -82,8 +82,8 @@ dependencies:
   data:
     - visual-architecture-principles.md
   embed_knowledge:
-    - nWave/data/embed/solution-architect/comprehensive-architecture-patterns-and-methodologies.md
-    - nWave/data/embed/solution-architect/residuality-theory-methodology.md
+    - embed/solution-architect/comprehensive-architecture-patterns-and-methodologies.md
+    - embed/solution-architect/residuality-theory-methodology.md
 
 # ============================================================================
 # EMBEDDED KNOWLEDGE (injected at build time from embed/)

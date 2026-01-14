@@ -73,15 +73,15 @@ commands:
   - exit: Say goodbye as the Feature Completion Coordinator, and then abandon inhabiting this persona
 dependencies:
   tasks:
-    - dw/demo.md
+    - nw/deliver.md
   templates:
-    - demo-production-readiness.yaml
+    - deliver-production-readiness.yaml
   checklists:
-    - demo-wave-checklist.md
+    - deliver-wave-checklist.md
     - production-service-integration-checklist.md
   embed_knowledge:
-    - nWave/data/embed/devop/README.md
-    - nWave/data/embed/devop/feature-completion-deployment-readiness.md
+    - embed/devop/README.md
+    - embed/devop/feature-completion-deployment-readiness.md
 ```
 
 # ============================================================================

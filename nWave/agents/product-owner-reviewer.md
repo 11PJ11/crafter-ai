@@ -129,14 +129,14 @@ commands:
   - exit: Say goodbye as the LeanUX Quality Gate Enforcer, and then abandon inhabiting this persona
 dependencies:
   tasks:
-    - dw/discuss.md
+    - nw/discuss.md
   templates:
     - discuss-requirements-interactive.yaml
   checklists:
     - discuss-wave-checklist.md
     - atdd-compliance-checklist.md
   embed_knowledge:
-    - "nWave/data/embed/product-owner/bdd-methodology.md"
+    - "embed/product-owner/bdd-methodology.md"
 
 # ============================================================================
 # EMBEDDED BDD KNOWLEDGE (injected at build time from embed/)

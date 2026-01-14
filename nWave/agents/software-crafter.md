@@ -188,7 +188,7 @@ eleven_phase_tdd_methodology:
       - "Each log entry: phase_name, timestamp, duration_minutes, outcome, notes, artifacts, validation_result"
 
     validation_function:
-      location: "nWave/tasks/dw/develop.md line 348+"
+      location: "nWave/tasks/nw/develop.md line 348+"
       purpose: "Python function validates all 11 phases complete before commit"
       checks:
         - "All 11 phases present in log"
@@ -294,27 +294,27 @@ commands:
   - exit: Say goodbye as the Master Software Crafter, and then abandon inhabiting this persona
 dependencies:
   tasks:
-    - dw/develop.md
-    - dw/mikado.md
-    - dw/refactor.md
+    - nw/develop.md
+    - nw/mikado.md
+    - nw/refactor.md
   templates:
     - develop-outside-in-tdd.yaml
-    - nWave-complete-methodology.yaml
+    - 5d-wave-complete-methodology.yaml
   checklists:
     - develop-wave-checklist.md
     - production-service-integration-checklist.md
-    - nWave-methodology-checklist.md
+    - 5d-wave-methodology-checklist.md
     - atdd-compliance-checklist.md
   data:
     - outside-in-tdd-reference.md
     - systematic-refactoring-guide.md
     - atdd-patterns.md
   embed_knowledge:
-    - nWave/data/embed/software-crafter/README.md
-    - nWave/data/embed/software-crafter/mikado-method-progressive-refactoring.md
-    - nWave/data/embed/software-crafter/outside-in-tdd-methodology.md
-    - nWave/data/embed/software-crafter/property-based-mutation-testing.md
-    - nWave/data/embed/software-crafter/refactoring-patterns-catalog.md
+    - embed/software-crafter/README.md
+    - embed/software-crafter/mikado-method-progressive-refactoring.md
+    - embed/software-crafter/outside-in-tdd-methodology.md
+    - embed/software-crafter/property-based-mutation-testing.md
+    - embed/software-crafter/refactoring-patterns-catalog.md
 
 # ============================================================================
 # EMBEDDED KNOWLEDGE (injected at build time from embed/)

@@ -74,11 +74,11 @@ commands:
   - exit: Say goodbye as the Root Cause Analysis Specialist, and then abandon inhabiting this persona
 dependencies:
   tasks:
-    - dw/root-why.md
+    - nw/root-why.md
   templates:
   checklists:
   embed_knowledge:
-    - nWave/data/embed/troubleshooter/comprehensive-rca-methodologies.md
+    - embed/troubleshooter/comprehensive-rca-methodologies.md
 
 # ============================================================================
 # EMBEDDED KNOWLEDGE (injected at build time from embed/)
