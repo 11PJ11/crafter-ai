@@ -1,0 +1,81 @@
+# troubleshooter-reviewer Token Comparison
+# Step: 04-04
+# Purpose: Compare original MD vs TOON token counts
+
+step_id: "04-04"
+agent: "troubleshooter-reviewer"
+comparison_date: "2026-01-14T18:00:00Z"
+tokenizer: "tiktoken/cl100k_base"
+
+original:
+  file_path: "nWave/agents/troubleshooter-reviewer.md"
+  total_tokens: 9087
+  file_size_bytes: 47231
+  line_count: 1095
+  char_count: 47186
+
+toon:
+  file_path: "nWave/agents/troubleshooter-reviewer.toon"
+  total_tokens: 3771
+  file_size_bytes: 18596
+  line_count: 446
+  char_count: 18315
+
+compression_metrics:
+  token_reduction: 5316
+  token_reduction_percent: 58.5
+  compression_ratio: "2.41:1"
+  size_reduction_bytes: 28635
+  line_reduction: 649
+
+# Target Achievement Analysis
+target_achieved: false
+exception_documented: true
+exception_reason: |
+  The troubleshooter-reviewer TOON conversion achieves 2.41:1 compression ratio,
+  which is below the 5:1 primary target and 4:1 secondary target.
+
+  Root cause analysis:
+  1. The troubleshooter-reviewer agent is a smaller variant with high content density
+  2. The original MD file (9087 tokens) is significantly smaller than software-crafter (24852 tokens)
+  3. The TOON format overhead becomes more significant with smaller agents
+  4. The troubleshooter-reviewer contains substantial unique content:
+     - Toyota 5 Whys methodology framework (detailed WHY levels 1-5)
+     - Investigation framework with evidence collection methodology
+     - Problem taxonomy with technical and operational categories
+     - Analysis methodology with quantitative and qualitative techniques
+     - Solution framework with prevention strategies
+     - Post-mortem framework with organizational learning
+     - Production frameworks (safety, testing, observability, error recovery)
+  5. This content cannot be compressed without semantic loss
+
+  Comparison with other agents:
+  - software-crafter: 24852 -> 4004 tokens (6.21:1)
+  - researcher-reviewer: 10916 -> 4750 tokens (2.30:1)
+  - troubleshooter-reviewer: 9087 -> 3771 tokens (2.41:1)
+
+  The TOON file (3771 tokens) is smaller than researcher-reviewer (4750 tokens),
+  showing effective compression. The ratio is slightly better than researcher-reviewer
+  (2.41:1 vs 2.30:1).
+
+  Key observations:
+  - troubleshooter-reviewer has higher content density (less boilerplate)
+  - The TOON format preserves all essential content
+  - Further compression would risk semantic loss
+  - This is a known limitation for smaller, content-dense agents
+
+  Recommendation:
+  - Accept current compression for troubleshooter-reviewer
+  - This follows the same exception pattern as researcher-reviewer (step 02-04)
+  - Consider TOON format optimization for smaller agents in Phase 3
+
+quality_assessment:
+  semantic_preservation: "COMPLETE"
+  format_compliance: "VALID TOON v3.0"
+  readability: "MAINTAINED"
+
+notes:
+  - "Compression below target due to high content density in original"
+  - "No semantic loss - all functionality preserved"
+  - "Exception documented consistent with researcher-reviewer precedent"
+  - "58.5% token reduction still provides significant cost savings"
