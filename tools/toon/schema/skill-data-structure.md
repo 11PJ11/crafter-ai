@@ -264,11 +264,256 @@ ValidationError("Skill 'develop': workflow_integration.wave='unknown' (must be o
 
 ## Integration Points
 
-- **Parser Output**: Step 01-01 produces `SkillData` objects
+- **Parser Output**: Step 01-01 produces `TOONParserOutput`, converted to `SkillData` via mapping function
 - **Template Input**: Step 01-04 Jinja2 template receives `SkillData` objects and renders to SKILL.md
 - **Compiler**: Step 01-05 uses `type` field to route skill data to skill template
 - **Integration Tests**: Step 01-06 validates parsed skill data matches schema before rendering
 
+---
+
+## TOONParserOutput → SkillData Mapping
+
+### Overview
+
+The TOON parser produces a generic `TOONParserOutput` structure. When `type='skill'`, this output
+must be converted to the specialized `SkillData` structure before template rendering.
+
+### Mapping Function
+
+```python
+from typing import Union, List, Dict, Any
+from tools.toon.parser_schema import TOONParserOutput
+
+def toon_output_to_skill_data(parser_output: TOONParserOutput) -> SkillData:
+    """Convert generic TOONParserOutput to SkillData.
+
+    Args:
+        parser_output: Generic parser output with type='skill'
+
+    Returns:
+        SkillData: Specialized skill data structure
+
+    Raises:
+        ValueError: If type is not 'skill'
+        ValidationError: If required skill fields are missing
+    """
+    if parser_output['type'] != 'skill':
+        raise ValueError(
+            f"Expected type='skill', got type='{parser_output['type']}'"
+        )
+
+    sections = parser_output['sections']
+    metadata = parser_output['metadata']
+
+    # Extract required fields
+    skill_data: SkillData = {
+        'id': parser_output['id'],
+        'name': _extract_required(sections, 'name', metadata.get('name', '')),
+        'type': 'skill',
+        'triggers': _extract_triggers(sections),
+        'agent_association': _extract_agent_association(sections),
+        'workflow_integration': _extract_workflow_integration(sections),
+    }
+
+    # Add optional fields if present
+    if 'description' in sections or 'description' in metadata:
+        skill_data['description'] = sections.get(
+            'description', metadata.get('description')
+        )
+
+    if 'version' in sections or 'version' in metadata:
+        skill_data['version'] = sections.get(
+            'version', metadata.get('version')
+        )
+
+    if 'metadata' in sections:
+        skill_data['metadata'] = sections['metadata']
+
+    return skill_data
+
+
+def _extract_required(sections: Dict, key: str, fallback: str) -> str:
+    """Extract required field with fallback."""
+    value = sections.get(key, fallback)
+    if not value:
+        raise ValidationError(f"Missing required field: '{key}'")
+    return value
+
+
+def _extract_triggers(sections: Dict) -> List[str]:
+    """Extract and validate trigger patterns."""
+    triggers = sections.get('triggers', [])
+
+    if not triggers:
+        raise ValidationError("Skill must have at least one trigger pattern")
+
+    if isinstance(triggers, str):
+        triggers = [triggers]
+
+    if not isinstance(triggers, list):
+        raise ValidationError(
+            f"triggers must be list, got {type(triggers).__name__}"
+        )
+
+    # Validate each pattern is valid regex
+    for pattern in triggers:
+        try:
+            re.compile(pattern, re.IGNORECASE)
+        except re.error as e:
+            raise ValidationError(
+                f"Invalid trigger pattern '{pattern}': {e}"
+            )
+
+    return triggers
+
+
+def _extract_agent_association(sections: Dict) -> Union[str, List[str]]:
+    """Extract agent association (1:1 or 1:N)."""
+    assoc = sections.get('agent_association')
+
+    if assoc is None:
+        raise ValidationError("Missing required field: 'agent_association'")
+
+    if isinstance(assoc, str):
+        return assoc  # 1:1 mode
+
+    if isinstance(assoc, list):
+        if not assoc:
+            raise ValidationError("agent_association list cannot be empty")
+        return assoc  # 1:N mode
+
+    raise ValidationError(
+        f"agent_association must be str or list, got {type(assoc).__name__}"
+    )
+
+
+def _extract_workflow_integration(sections: Dict) -> Dict[str, Any]:
+    """Extract and validate workflow integration."""
+    wi = sections.get('workflow_integration')
+
+    if wi is None:
+        raise ValidationError("Missing required field: 'workflow_integration'")
+
+    if not isinstance(wi, dict):
+        raise ValidationError(
+            f"workflow_integration must be dict, got {type(wi).__name__}"
+        )
+
+    # Validate required sub-fields
+    if 'wave' not in wi:
+        raise ValidationError(
+            "workflow_integration missing required field: 'wave'"
+        )
+
+    if 'phase' not in wi:
+        raise ValidationError(
+            "workflow_integration missing required field: 'phase'"
+        )
+
+    # Validate wave value
+    valid_waves = ['DISCUSS', 'DESIGN', 'DEVELOP', 'DISTILL', 'DELIVER']
+    if wi['wave'] not in valid_waves:
+        raise ValidationError(
+            f"Invalid wave '{wi['wave']}', must be one of: {valid_waves}"
+        )
+
+    # Validate phase value
+    if not isinstance(wi['phase'], int) or not (1 <= wi['phase'] <= 8):
+        raise ValidationError(
+            f"Invalid phase '{wi['phase']}', must be integer 1-8"
+        )
+
+    return wi
+```
+
+### Field Mapping Table
+
+| TOONParserOutput | Location | SkillData | Notes |
+|------------------|----------|-----------|-------|
+| `id` | root | `id` | Direct mapping |
+| `type` | root | `type` | Must be 'skill' |
+| `metadata.name` | metadata | `name` (fallback) | Fallback if not in sections |
+| `metadata.description` | metadata | `description` (fallback) | Optional |
+| `metadata.version` | metadata | `version` (fallback) | Optional |
+| `sections.name` | sections | `name` | Primary source |
+| `sections.description` | sections | `description` | Optional |
+| `sections.triggers` | sections | `triggers` | REQUIRED |
+| `sections.agent_association` | sections | `agent_association` | REQUIRED |
+| `sections.workflow_integration` | sections | `workflow_integration` | REQUIRED |
+| `sections.version` | sections | `version` | Optional |
+| `sections.metadata` | sections | `metadata` | Optional dict |
+
+### TOON Skill File Format
+
+For the mapping to work, TOON skill files must follow this structure:
+
+```yaml
+# TOON Skill File Format
+id: develop
+type: skill
+name: TDD Development
+
+triggers:
+  - implement.*
+  - TDD
+  - outside-in
+
+agent_association: software-crafter
+
+workflow_integration:
+  wave: DEVELOP
+  phase: 3
+  context: TDD cycle
+
+# Optional fields
+description: |
+  Systematic test-driven development approach
+  with outside-in TDD methodology
+
+version: 1.0.0
+
+metadata:
+  tags: [testing, automation]
+  priority: high
+```
+
+### Usage in Compiler
+
+```python
+# In compiler.py (step 01-05)
+from tools.toon.parser import parse_toon_file
+from tools.toon.schema.skill_mapping import toon_output_to_skill_data
+
+def compile_skill(toon_file: str, output_dir: str) -> str:
+    """Compile TOON skill file to SKILL.md."""
+    # Step 1: Parse TOON file
+    parser_output = parse_toon_file(toon_file)
+
+    # Step 2: Validate and convert to SkillData
+    if parser_output['type'] != 'skill':
+        raise ValueError(f"Expected skill file, got {parser_output['type']}")
+
+    skill_data = toon_output_to_skill_data(parser_output)
+
+    # Step 3: Render template
+    template = load_template('skill.md.j2')
+    output = template.render(skill=skill_data)
+
+    # Step 4: Write output
+    output_path = f"{output_dir}/{skill_data['id']}/SKILL.md"
+    write_file(output_path, output)
+
+    return output_path
+```
+
+---
+
 ## Version History
+
+- **v1.1** (2026-01-14): Opus review resolutions
+  - Added TOONParserOutput → SkillData mapping function and validation
+  - Added field mapping table for parser integration
+  - Added TOON skill file format specification
+  - Added compiler usage example
 
 - **v1.0** (2026-01-14): Initial specification with basic skill structure, single/multi-agent binding, workflow integration
