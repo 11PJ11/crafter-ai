@@ -1,0 +1,175 @@
+# TOON Agent Conversion Project Baseline
+# Created: 2026-01-14
+# Purpose: Establish quantitative measurements for Phase 2-8 migration
+
+validation:
+  status: "approved"
+  timestamp: "2026-01-14T09:30:00Z"
+  validator: "software-crafter"
+  reviewed_by: "software-crafter (review mode)"
+  reviewed_at: "2026-01-14T15:45:00Z"
+  review_verdict: "APPROVED"
+  review_notes: "Baseline contains complete quantitative measurements, clear targets, full agent inventory, and documented methodology. Pilot conversion data provides strong confidence in compression targets."
+
+project:
+  name: "TOON Agent Conversion"
+  description: "Migrate nWave agents from Markdown to TOON v3.0 format for Claude Code Plugin Marketplace"
+  repository: "ai-craft"
+  branch: "feature/plugin-marketplace-migration"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CURRENT STATE MEASUREMENTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+current_state:
+  phase_status:
+    phase_1_infrastructure:
+      status: "COMPLETED"
+      tests_passing: 168
+      description: "TOON toolchain and parser implementation"
+
+    phase_2_pilot_migration:
+      status: "IN_PROGRESS"
+      steps:
+        step_02_01:
+          description: "software-crafter.md to software-crafter.toon conversion"
+          status: "COMPLETED"
+        step_02_02:
+          description: "Roundtrip validation (100% equivalence)"
+          status: "COMPLETED"
+        step_02_03:
+          description: "Conversion guide documentation"
+          status: "COMPLETED"
+        step_02_04:
+          description: "Token comparison measurement"
+          status: "COMPLETED"
+
+    phase_3_full_conversion:
+      status: "PENDING"
+      description: "Convert remaining 21 agents to TOON format"
+
+    phase_4_to_8:
+      status: "PENDING"
+      description: "Registry, marketplace integration, and deployment"
+
+  # Quantitative measurements
+  measurements:
+    test_suite:
+      total_tests: 216
+      passing_tests: 216
+      pass_rate_percent: 100.0
+      note: "168 Phase 1 + 48 Phase 2 validation tests"
+
+    agent_inventory:
+      total_md_agents: 22
+      converted_to_toon: 1
+      pending_conversion: 21
+      conversion_percent: 4.5
+
+    token_metrics:
+      pilot_agent: "software-crafter"
+      original_tokens: 24852
+      toon_tokens: 4004
+      reduction_absolute: 20848
+      reduction_percent: 83.9
+      compression_ratio: "6.21:1"
+
+    file_metrics:
+      md_lines: 2561
+      toon_lines: 447
+      line_reduction_percent: 82.5
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TARGET METRICS (Success Criteria)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+targets:
+  phase_3_completion:
+    description: "All 22 agents converted to TOON format"
+    metrics:
+      toon_files_target: 22
+      md_files_deprecated: 22
+      minimum_compression_ratio: "5:1"
+      roundtrip_equivalence: "100%"
+
+  quality_gates:
+    test_pass_rate: 100.0
+    roundtrip_validation: "mandatory"
+    token_reduction_minimum_percent: 70.0
+    semantic_equivalence: "exact"
+
+  timeline:
+    phase_3_target: "2026-01-31"
+    full_completion_target: "2026-02-28"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# AGENT INVENTORY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+agent_inventory:
+  converted:
+    - name: "software-crafter"
+      md_path: "nWave/agents/software-crafter.md"
+      toon_path: "nWave/agents/software-crafter.toon"
+      tokens_original: 24852
+      tokens_toon: 4004
+      compression_ratio: "6.21:1"
+      validation_status: "PASSED"
+
+  pending:
+    - name: "acceptance-designer"
+    - name: "acceptance-designer-reviewer"
+    - name: "agent-builder"
+    - name: "agent-builder-reviewer"
+    - name: "data-engineer"
+    - name: "data-engineer-reviewer"
+    - name: "devop"
+    - name: "devop-reviewer"
+    - name: "illustrator"
+    - name: "illustrator-reviewer"
+    - name: "product-owner"
+    - name: "product-owner-reviewer"
+    - name: "researcher"
+    - name: "researcher-reviewer"
+    - name: "software-crafter-reviewer"
+    - name: "solution-architect"
+    - name: "solution-architect-reviewer"
+    - name: "troubleshooter"
+    - name: "troubleshooter-reviewer"
+    - name: "visual-architect"
+    - name: "visual-architect-reviewer"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# METHODOLOGY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+methodology:
+  conversion_process:
+    - step: 1
+      action: "Parse MD agent file"
+      validation: "Structure extraction successful"
+    - step: 2
+      action: "Transform to TOON v3.0 format"
+      validation: "TOON syntax valid"
+    - step: 3
+      action: "Roundtrip validation"
+      validation: "100% semantic equivalence"
+    - step: 4
+      action: "Token measurement"
+      validation: "Compression ratio >= 5:1"
+
+  quality_assurance:
+    tdd_approach: "11-phase TDD methodology"
+    review_required: true
+    adversarial_verification: true
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# NOTES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+notes:
+  - "Token counts measured using Claude tokenizer"
+  - "Compression ratio calculated as original_tokens / toon_tokens"
+  - "Roundtrip validation ensures MD -> TOON -> MD produces equivalent result"
+  - "All 168 Phase 1 tests from TOON toolchain implementation"
+  - "Phase 2 added 48 additional validation tests"
