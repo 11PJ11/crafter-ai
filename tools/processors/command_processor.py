@@ -12,6 +12,7 @@ import yaml
 
 import sys
 from pathlib import Path
+
 sys.path.append(str(Path(__file__).parent.parent))
 from utils.dependency_resolver import DependencyResolver
 
@@ -25,7 +26,9 @@ class CommandProcessor:
         self.file_manager = file_manager
         self.dependency_resolver = DependencyResolver(source_dir, file_manager)
 
-    def get_command_info_from_config(self, task_name: str, config: Dict[str, Any]) -> Dict[str, Any]:
+    def get_command_info_from_config(
+        self, task_name: str, config: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Extract command information from framework-catalog.yaml.
 
@@ -36,7 +39,7 @@ class CommandProcessor:
         Returns:
             dict: Command information
         """
-        commands = config.get('commands', {})
+        commands = config.get("commands", {})
 
         # Look for exact match first
         if task_name in commands:
@@ -54,10 +57,10 @@ class CommandProcessor:
 
         # Return default command info
         return {
-            'description': f'Execute {task_base} task',
-            'wave': 'UNKNOWN',
-            'agents': [],
-            'outputs': []
+            "description": f"Execute {task_base} task",
+            "wave": "UNKNOWN",
+            "agents": [],
+            "outputs": [],
         }
 
     def get_wave_info(self, wave_name: str, config: Dict[str, Any]) -> Dict[str, Any]:
@@ -71,16 +74,18 @@ class CommandProcessor:
         Returns:
             dict: Wave information
         """
-        wave_phases = config.get('wave_phases', [])
+        wave_phases = config.get("wave_phases", [])
         if wave_name in wave_phases:
             return {
-                'name': wave_name,
-                'index': wave_phases.index(wave_name),
-                'total_phases': len(wave_phases)
+                "name": wave_name,
+                "index": wave_phases.index(wave_name),
+                "total_phases": len(wave_phases),
             }
-        return {'name': wave_name, 'index': -1, 'total_phases': len(wave_phases)}
+        return {"name": wave_name, "index": -1, "total_phases": len(wave_phases)}
 
-    def generate_command_frontmatter(self, task_name: str, command_info: Dict[str, Any]) -> str:
+    def generate_command_frontmatter(
+        self, task_name: str, command_info: Dict[str, Any]
+    ) -> str:
         """
         Generate Claude Code compatible YAML frontmatter for slash commands.
 
@@ -94,32 +99,34 @@ class CommandProcessor:
         task_base = Path(task_name).stem
 
         # Get base description from config
-        description = command_info.get('description', f'Execute {task_base} command')
+        description = command_info.get("description", f"Execute {task_base} command")
 
         # Get argument hint from config (preferred) or use fallback
-        argument_hint = command_info.get('argument_hint', '')
+        argument_hint = command_info.get("argument_hint", "")
 
         # Append argument hint to description for better UI visibility
         if argument_hint:
             description = f"{description} {argument_hint}"
 
         # Build frontmatter dictionary
-        frontmatter = {
-            'description': description
-        }
+        frontmatter = {"description": description}
 
         # Also add separate argument-hint field for Claude Code
         if argument_hint:
-            frontmatter['argument-hint'] = argument_hint
+            frontmatter["argument-hint"] = argument_hint
 
         try:
-            yaml_content = yaml.dump(frontmatter, default_flow_style=False, sort_keys=False)
+            yaml_content = yaml.dump(
+                frontmatter, default_flow_style=False, sort_keys=False
+            )
             return f"---\n{yaml_content}---\n\n"
         except Exception as e:
             logging.error(f"Failed to generate command frontmatter: {e}")
             return ""
 
-    def generate_command_header(self, task_name: str, command_info: Dict[str, Any], wave_info: Dict[str, Any]) -> str:
+    def generate_command_header(
+        self, task_name: str, command_info: Dict[str, Any], wave_info: Dict[str, Any]
+    ) -> str:
         """
         Generate command header with metadata.
 
@@ -132,29 +139,29 @@ class CommandProcessor:
             str: Formatted command header
         """
         task_base = Path(task_name).stem
-        wave_name = command_info.get('wave', 'UNKNOWN')
+        wave_name = command_info.get("wave", "UNKNOWN")
 
         header_parts = [
             f"# /{task_base} Command",
             "",
             f"**Wave**: {wave_name}",
             f"**Description**: {command_info.get('description', 'No description available')}",
-            ""
+            "",
         ]
 
         # Add wave progression if available
-        if wave_info['index'] >= 0:
+        if wave_info["index"] >= 0:
             progress = f"{wave_info['index'] + 1}/{wave_info['total_phases']}"
             header_parts.append(f"**Wave Progress**: {progress}")
 
         # Add associated agents
-        agents = command_info.get('agents', [])
+        agents = command_info.get("agents", [])
         if agents:
             agent_list = ", ".join(agents)
             header_parts.append(f"**Primary Agents**: {agent_list}")
 
         # Add expected outputs
-        outputs = command_info.get('outputs', [])
+        outputs = command_info.get("outputs", [])
         if outputs:
             output_list = ", ".join(outputs)
             header_parts.append(f"**Expected Outputs**: {output_list}")
@@ -199,7 +206,7 @@ class CommandProcessor:
             # Get command and wave information
             task_name = task_file.name
             command_info = self.get_command_info_from_config(task_name, config)
-            wave_info = self.get_wave_info(command_info.get('wave', 'UNKNOWN'), config)
+            wave_info = self.get_wave_info(command_info.get("wave", "UNKNOWN"), config)
 
             # CRITICAL: Generate Claude Code compatible YAML frontmatter FIRST
             frontmatter = self.generate_command_frontmatter(task_name, command_info)
@@ -252,7 +259,9 @@ class CommandProcessor:
             logging.error(f"Error processing task {task_file}: {e}")
             return False
 
-    def get_command_info(self, task_file: Path, config: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def get_command_info(
+        self, task_file: Path, config: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
         """
         Extract command information for configuration generation.
 
@@ -268,12 +277,12 @@ class CommandProcessor:
             command_info = self.get_command_info_from_config(task_name, config)
 
             return {
-                'name': task_file.stem,
-                'file': task_file.name,
-                'description': command_info.get('description'),
-                'wave': command_info.get('wave'),
-                'agents': command_info.get('agents', []),
-                'outputs': command_info.get('outputs', [])
+                "name": task_file.stem,
+                "file": task_file.name,
+                "description": command_info.get("description"),
+                "wave": command_info.get("wave"),
+                "agents": command_info.get("agents", []),
+                "outputs": command_info.get("outputs", []),
             }
 
         except Exception as e:

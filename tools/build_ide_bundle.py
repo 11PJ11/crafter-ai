@@ -47,23 +47,29 @@ class IDEBundleBuilder:
         self.config_manager = ConfigManager(self.source_dir / "framework-catalog.yaml")
 
         # Initialize processors
-        self.agent_processor = AgentProcessor(self.source_dir, self.output_dir, self.file_manager)
-        self.command_processor = CommandProcessor(self.source_dir, self.output_dir, self.file_manager)
-        self.team_processor = TeamProcessor(self.source_dir, self.output_dir, self.file_manager)
+        self.agent_processor = AgentProcessor(
+            self.source_dir, self.output_dir, self.file_manager
+        )
+        self.command_processor = CommandProcessor(
+            self.source_dir, self.output_dir, self.file_manager
+        )
+        self.team_processor = TeamProcessor(
+            self.source_dir, self.output_dir, self.file_manager
+        )
 
         # Build statistics
         self.stats = {
-            'agents_processed': 0,
-            'commands_processed': 0,
-            'teams_processed': 0,
-            'errors': 0,
-            'warnings': 0
+            "agents_processed": 0,
+            "commands_processed": 0,
+            "teams_processed": 0,
+            "errors": 0,
+            "warnings": 0,
         }
 
     def validate_source(self) -> bool:
         """Validate that the source directory contains required nWave structure."""
-        required_dirs = ['agents', 'tasks', 'templates', 'data']
-        required_files = ['framework-catalog.yaml']
+        required_dirs = ["agents", "tasks", "templates", "data"]
+        required_files = ["framework-catalog.yaml"]
 
         logging.info(f"Validating source directory: {self.source_dir}")
 
@@ -90,7 +96,7 @@ class IDEBundleBuilder:
         """Create the output directory structure."""
         output_dirs = [
             self.output_dir / "agents" / "nw",
-            self.output_dir / "commands" / "nw"
+            self.output_dir / "commands" / "nw",
         ]
 
         for dir_path in output_dirs:
@@ -114,10 +120,10 @@ class IDEBundleBuilder:
             try:
                 logging.info(f"Processing agent: {agent_file.stem}")
                 self.agent_processor.process_agent(agent_file)
-                self.stats['agents_processed'] += 1
+                self.stats["agents_processed"] += 1
             except Exception as e:
                 logging.error(f"Error processing agent {agent_file.name}: {e}")
-                self.stats['errors'] += 1
+                self.stats["errors"] += 1
 
     def process_commands(self) -> None:
         """Process all task files into commands."""
@@ -134,11 +140,13 @@ class IDEBundleBuilder:
         for task_file in task_files:
             try:
                 logging.debug(f"Processing task: {task_file.name}")
-                self.command_processor.process_task(task_file, self.config_manager.get_config())
-                self.stats['commands_processed'] += 1
+                self.command_processor.process_task(
+                    task_file, self.config_manager.get_config()
+                )
+                self.stats["commands_processed"] += 1
             except Exception as e:
                 logging.error(f"Error processing task {task_file.name}: {e}")
-                self.stats['errors'] += 1
+                self.stats["errors"] += 1
 
     def process_teams(self) -> None:
         """Process all team files into massive agents."""
@@ -155,11 +163,13 @@ class IDEBundleBuilder:
         for team_file in team_files:
             try:
                 logging.debug(f"Processing team: {team_file.name}")
-                self.team_processor.process_team(team_file, self.config_manager.get_config())
-                self.stats['teams_processed'] += 1
+                self.team_processor.process_team(
+                    team_file, self.config_manager.get_config()
+                )
+                self.stats["teams_processed"] += 1
             except Exception as e:
                 logging.error(f"Error processing team {team_file.name}: {e}")
-                self.stats['errors'] += 1
+                self.stats["errors"] += 1
 
     def generate_config(self) -> None:
         """Generate the IDE configuration file."""
@@ -171,21 +181,23 @@ class IDEBundleBuilder:
             ide_config = self.config_manager.generate_ide_config(self.stats)
 
             if not self.dry_run:
-                with open(config_output_path, 'w', encoding='utf-8') as f:
+                with open(config_output_path, "w", encoding="utf-8") as f:
                     json.dump(ide_config, f, indent=2, ensure_ascii=False)
                 logging.info(f"Generated IDE config: {config_output_path}")
             else:
-                logging.info(f"[DRY RUN] Would generate IDE config: {config_output_path}")
+                logging.info(
+                    f"[DRY RUN] Would generate IDE config: {config_output_path}"
+                )
 
         except Exception as e:
             logging.error(f"Error generating IDE config: {e}")
-            self.stats['errors'] += 1
+            self.stats["errors"] += 1
 
     def print_summary(self) -> None:
         """Print build summary statistics."""
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("nWave IDE Bundle Build Summary")
-        print("="*60)
+        print("=" * 60)
         print(f"Agents processed:    {self.stats['agents_processed']}")
         print(f"Commands processed:  {self.stats['commands_processed']}")
         print(f"Teams processed:     {self.stats['teams_processed']}")
@@ -196,7 +208,7 @@ class IDEBundleBuilder:
         if self.dry_run:
             print("\n[DRY RUN MODE] No files were actually created")
 
-        if self.stats['errors'] > 0:
+        if self.stats["errors"] > 0:
             print(f"\n⚠️  Build completed with {self.stats['errors']} errors")
             return False
         else:
@@ -243,15 +255,15 @@ class IDEBundleBuilder:
 def setup_logging(verbose: bool = False) -> None:
     """Configure logging based on verbosity level."""
     level = logging.DEBUG if verbose else logging.INFO
-    format_str = '%(asctime)s - %(levelname)s - %(message)s'
+    format_str = "%(asctime)s - %(levelname)s - %(message)s"
 
     logging.basicConfig(
         level=level,
         format=format_str,
         handlers=[
             logging.StreamHandler(sys.stdout),
-            logging.FileHandler('build.log', mode='w')
-        ]
+            logging.FileHandler("build.log", mode="w"),
+        ],
     )
 
 
@@ -264,28 +276,24 @@ def main():
         "--source-dir",
         type=Path,
         default="../nWave",
-        help="Source directory containing nWave files (default: ../nWave)"
+        help="Source directory containing nWave files (default: ../nWave)",
     )
     parser.add_argument(
         "--output-dir",
         type=Path,
         default="../dist/ide",
-        help="Output directory for IDE bundles (default: ../dist/ide)"
+        help="Output directory for IDE bundles (default: ../dist/ide)",
     )
     parser.add_argument(
-        "--clean",
-        action="store_true",
-        help="Clean output directory before build"
+        "--clean", action="store_true", help="Clean output directory before build"
     )
     parser.add_argument(
-        "--verbose", "-v",
-        action="store_true",
-        help="Enable verbose logging"
+        "--verbose", "-v", action="store_true", help="Enable verbose logging"
     )
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Show what would be built without creating files"
+        help="Show what would be built without creating files",
     )
 
     args = parser.parse_args()
@@ -296,6 +304,7 @@ def main():
     # Clean output directory if requested
     if args.clean and args.output_dir.exists():
         import shutil
+
         if not args.dry_run:
             shutil.rmtree(args.output_dir)
             logging.info(f"Cleaned output directory: {args.output_dir}")

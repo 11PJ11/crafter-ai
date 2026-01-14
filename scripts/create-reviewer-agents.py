@@ -21,93 +21,89 @@ AGENTS = {
     "software-crafter": "Code quality and implementation review specialist",
     "solution-architect": "Architecture design and patterns review specialist",
     "troubleshooter": "Risk analysis and failure mode review specialist",
-    "visual-architect": "Architecture diagram accuracy review specialist"
+    "visual-architect": "Architecture diagram accuracy review specialist",
 }
+
 
 def create_reviewer_agent(base_agent_name, review_description):
     """Create a reviewer version of a base agent."""
 
-    base_path = Path(f"/mnt/c/Repositories/Projects/ai-craft/nWave/agents/{base_agent_name}.md")
-    reviewer_path = Path(f"/mnt/c/Repositories/Projects/ai-craft/nWave/agents/{base_agent_name}-reviewer.md")
+    base_path = Path(
+        f"/mnt/c/Repositories/Projects/ai-craft/nWave/agents/{base_agent_name}.md"
+    )
+    reviewer_path = Path(
+        f"/mnt/c/Repositories/Projects/ai-craft/nWave/agents/{base_agent_name}-reviewer.md"
+    )
 
     if not base_path.exists():
         print(f"❌ Base agent not found: {base_agent_name}.md")
         return False
 
     # Read the base agent file
-    with open(base_path, 'r', encoding='utf-8') as f:
+    with open(base_path, "r", encoding="utf-8") as f:
         content = f.read()
 
     # Update YAML frontmatter
     # Change model from 'inherit' to 'haiku'
-    content = re.sub(r'^model:\s+inherit.*$', 'model: haiku', content, flags=re.MULTILINE)
+    content = re.sub(
+        r"^model:\s+inherit.*$", "model: haiku", content, flags=re.MULTILINE
+    )
 
     # Update name field
     content = re.sub(
-        r'^name:\s+(.+)$',
-        f'name: {base_agent_name}-reviewer',
+        r"^name:\s+(.+)$",
+        f"name: {base_agent_name}-reviewer",
         content,
-        flags=re.MULTILINE
+        flags=re.MULTILINE,
     )
 
     # Update description field
     content = re.sub(
-        r'^description:\s+(.+)$',
-        f'description: {review_description} - Optimized for cost-efficient review operations using Haiku model',
+        r"^description:\s+(.+)$",
+        f"description: {review_description} - Optimized for cost-efficient review operations using Haiku model",
         content,
-        flags=re.MULTILINE
+        flags=re.MULTILINE,
     )
 
     # Update the agent id in YAML block
-    content = re.sub(
-        r'(\s+id:\s+)([^\s]+)',
-        rf'\1{base_agent_name}-reviewer',
-        content
-    )
+    content = re.sub(r"(\s+id:\s+)([^\s]+)", rf"\1{base_agent_name}-reviewer", content)
 
     # Update whenToUse field
     content = re.sub(
-        r'(\s+whenToUse:\s+)(.+)',
-        rf'\1Use for review and critique tasks - {review_description}. Runs on Haiku for cost efficiency.',
-        content
+        r"(\s+whenToUse:\s+)(.+)",
+        rf"\1Use for review and critique tasks - {review_description}. Runs on Haiku for cost efficiency.",
+        content,
     )
 
     # Update the title
-    content = re.sub(
-        r'(\s+title:\s+)(.+)',
-        rf'\1\2 (Review Specialist)',
-        content
-    )
+    content = re.sub(r"(\s+title:\s+)(.+)", rf"\1\2 (Review Specialist)", content)
 
     # Add review focus to the role
-    content = re.sub(
-        r'(\s+role:\s+)(.+)',
-        rf'\1Review & Critique Expert - \2',
-        content
-    )
+    content = re.sub(r"(\s+role:\s+)(.+)", rf"\1Review & Critique Expert - \2", content)
 
     # Update the header comment
     content = re.sub(
-        f'^# {base_agent_name}$',
-        f'# {base_agent_name}-reviewer',
+        f"^# {base_agent_name}$",
+        f"# {base_agent_name}-reviewer",
         content,
-        flags=re.MULTILINE
+        flags=re.MULTILINE,
     )
 
     # Add a note about review focus at the beginning of the persona section
-    if 'persona:' in content:
+    if "persona:" in content:
         content = re.sub(
-            r'(persona:\s*\n)',
-            r'\1  # Review-focused variant using Haiku model for cost efficiency\n',
-            content
+            r"(persona:\s*\n)",
+            r"\1  # Review-focused variant using Haiku model for cost efficiency\n",
+            content,
         )
 
     # Write the reviewer agent file
-    with open(reviewer_path, 'w', encoding='utf-8') as f:
+    with open(reviewer_path, "w", encoding="utf-8") as f:
         f.write(content)
 
     print(f"✅ Created: {base_agent_name}-reviewer.md")
     return True
+
 
 def main():
     """Create all reviewer agents."""
@@ -137,6 +133,7 @@ def main():
         print("\n⚠️ Some agents failed to create. Please check the errors above.")
 
     return success_count == len(AGENTS)
+
 
 if __name__ == "__main__":
     exit(0 if main() else 1)

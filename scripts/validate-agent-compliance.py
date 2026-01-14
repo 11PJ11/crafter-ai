@@ -18,12 +18,7 @@ AGENTS_DIR = Path("nWave/agents")
 REPORT_FILE = Path("docs/COMPLIANCE_VALIDATION_REPORT.md")
 
 # Validation results
-results = {
-    "total": 0,
-    "passed": 0,
-    "failed": 0,
-    "agents": {}
-}
+results = {"total": 0, "passed": 0, "failed": 0, "agents": {}}
 
 
 def check_section_exists(content: str, section: str) -> bool:
@@ -43,7 +38,7 @@ def check_subsection_exists(content: str, section: str, subsection: str) -> bool
 
     # Look for subsection within next 200 lines after section
     start_pos = section_match.end()
-    subsection_text = content[start_pos:start_pos+5000]
+    subsection_text = content[start_pos : start_pos + 5000]
 
     # Check for subsection (either at 2 spaces or 4 spaces indentation)
     subsection_pattern = rf"^  {re.escape(subsection)}:\s*$"
@@ -53,42 +48,46 @@ def check_subsection_exists(content: str, section: str, subsection: str) -> bool
 def check_frontmatter(content: str) -> bool:
     """Check if YAML frontmatter is complete"""
     # Extract frontmatter between --- markers
-    frontmatter_match = re.search(r'^---\s*\n(.*?)\n---', content, re.MULTILINE | re.DOTALL)
+    frontmatter_match = re.search(
+        r"^---\s*\n(.*?)\n---", content, re.MULTILINE | re.DOTALL
+    )
 
     if not frontmatter_match:
         return False
 
     frontmatter = frontmatter_match.group(1)
 
-    has_name = bool(re.search(r'^name:', frontmatter, re.MULTILINE))
-    has_description = bool(re.search(r'^description:', frontmatter, re.MULTILINE))
-    has_model = bool(re.search(r'^model:', frontmatter, re.MULTILINE))
+    has_name = bool(re.search(r"^name:", frontmatter, re.MULTILINE))
+    has_description = bool(re.search(r"^description:", frontmatter, re.MULTILINE))
+    has_model = bool(re.search(r"^model:", frontmatter, re.MULTILINE))
 
     return has_name and has_description and has_model
 
 
 def check_testing_layers(content: str) -> bool:
     """Check if all 4 testing layers are present"""
-    testing_section = re.search(r'^testing_framework:(.*?)(?=^[a-z_]+:|$)',
-                                content, re.MULTILINE | re.DOTALL)
+    testing_section = re.search(
+        r"^testing_framework:(.*?)(?=^[a-z_]+:|$)", content, re.MULTILINE | re.DOTALL
+    )
 
     if not testing_section:
         return False
 
     testing_text = testing_section.group(1)
 
-    has_l1 = bool(re.search(r'layer_1_unit', testing_text))
-    has_l2 = bool(re.search(r'layer_2_integration', testing_text))
-    has_l3 = bool(re.search(r'layer_3_adversarial', testing_text))
-    has_l4 = bool(re.search(r'layer_4_adversarial_verification', testing_text))
+    has_l1 = bool(re.search(r"layer_1_unit", testing_text))
+    has_l2 = bool(re.search(r"layer_2_integration", testing_text))
+    has_l3 = bool(re.search(r"layer_3_adversarial", testing_text))
+    has_l4 = bool(re.search(r"layer_4_adversarial_verification", testing_text))
 
     return has_l1 and has_l2 and has_l3 and has_l4
 
 
 def check_safety_layers(content: str) -> bool:
     """Check if safety framework has 4 validation + 7 enterprise layers"""
-    safety_section = re.search(r'^safety_framework:(.*?)(?=^[a-z_]+:|$)',
-                               content, re.MULTILINE | re.DOTALL)
+    safety_section = re.search(
+        r"^safety_framework:(.*?)(?=^[a-z_]+:|$)", content, re.MULTILINE | re.DOTALL
+    )
 
     if not safety_section:
         return False
@@ -96,15 +95,21 @@ def check_safety_layers(content: str) -> bool:
     safety_text = safety_section.group(1)
 
     # Check 4 validation layers
-    has_input = bool(re.search(r'input_validation', safety_text))
-    has_output = bool(re.search(r'output_filtering', safety_text))
-    has_behavioral = bool(re.search(r'behavioral_constraints', safety_text))
-    has_monitoring = bool(re.search(r'continuous_monitoring', safety_text))
+    has_input = bool(re.search(r"input_validation", safety_text))
+    has_output = bool(re.search(r"output_filtering", safety_text))
+    has_behavioral = bool(re.search(r"behavioral_constraints", safety_text))
+    has_monitoring = bool(re.search(r"continuous_monitoring", safety_text))
 
     # Check enterprise security layers reference
-    has_enterprise = bool(re.search(r'enterprise_safety_layers', safety_text))
+    has_enterprise = bool(re.search(r"enterprise_safety_layers", safety_text))
 
-    return has_input and has_output and has_behavioral and has_monitoring and has_enterprise
+    return (
+        has_input
+        and has_output
+        and has_behavioral
+        and has_monitoring
+        and has_enterprise
+    )
 
 
 def validate_agent(agent_file: Path) -> Dict[str, any]:
@@ -114,7 +119,7 @@ def validate_agent(agent_file: Path) -> Dict[str, any]:
     print(f"Validating: {agent_name}...")
 
     # Read file content
-    with open(agent_file, 'r', encoding='utf-8') as f:
+    with open(agent_file, "r", encoding="utf-8") as f:
         content = f.read()
 
     # Initialize checks
@@ -125,15 +130,17 @@ def validate_agent(agent_file: Path) -> Dict[str, any]:
         "observability": False,
         "error_recovery": False,
         "frontmatter": False,
-        "metrics": False
+        "metrics": False,
     }
 
     # Check Contract Framework
     if check_section_exists(content, "contract"):
-        if (check_subsection_exists(content, "contract", "inputs") and
-            check_subsection_exists(content, "contract", "outputs") and
-            check_subsection_exists(content, "contract", "side_effects") and
-            check_subsection_exists(content, "contract", "error_handling")):
+        if (
+            check_subsection_exists(content, "contract", "inputs")
+            and check_subsection_exists(content, "contract", "outputs")
+            and check_subsection_exists(content, "contract", "side_effects")
+            and check_subsection_exists(content, "contract", "error_handling")
+        ):
             checks["contract"] = True
 
     # Check Safety Framework
@@ -144,26 +151,49 @@ def validate_agent(agent_file: Path) -> Dict[str, any]:
 
     # Check Observability Framework
     if check_section_exists(content, "observability_framework"):
-        if (check_subsection_exists(content, "observability_framework", "structured_logging") and
-            check_subsection_exists(content, "observability_framework", "metrics") and
-            check_subsection_exists(content, "observability_framework", "alerting")):
+        if (
+            check_subsection_exists(
+                content, "observability_framework", "structured_logging"
+            )
+            and check_subsection_exists(content, "observability_framework", "metrics")
+            and check_subsection_exists(content, "observability_framework", "alerting")
+        ):
             checks["observability"] = True
 
     # Check Error Recovery Framework
     if check_section_exists(content, "error_recovery_framework"):
-        if (check_subsection_exists(content, "error_recovery_framework", "retry_strategies") and
-            check_subsection_exists(content, "error_recovery_framework", "circuit_breakers") and
-            check_subsection_exists(content, "error_recovery_framework", "degraded_mode")):
+        if (
+            check_subsection_exists(
+                content, "error_recovery_framework", "retry_strategies"
+            )
+            and check_subsection_exists(
+                content, "error_recovery_framework", "circuit_breakers"
+            )
+            and check_subsection_exists(
+                content, "error_recovery_framework", "degraded_mode"
+            )
+        ):
             checks["error_recovery"] = True
 
     # Check YAML Frontmatter
     checks["frontmatter"] = check_frontmatter(content)
 
     # Check Agent-Specific Metrics (optional - in observability)
-    checks["metrics"] = "agent_specific" in content or "document_agents" in content or "code_agents" in content
+    checks["metrics"] = (
+        "agent_specific" in content
+        or "document_agents" in content
+        or "code_agents" in content
+    )
 
     # Determine pass/fail
-    required_checks = ["contract", "safety", "testing", "observability", "error_recovery", "frontmatter"]
+    required_checks = [
+        "contract",
+        "safety",
+        "testing",
+        "observability",
+        "error_recovery",
+        "frontmatter",
+    ]
     failures = sum(1 for check in required_checks if not checks[check])
     passed = failures == 0
 
@@ -171,7 +201,7 @@ def validate_agent(agent_file: Path) -> Dict[str, any]:
         "name": agent_name,
         "checks": checks,
         "failures": failures,
-        "passed": passed
+        "passed": passed,
     }
 
 
@@ -184,8 +214,9 @@ def generate_report(results: Dict):
     failed = results["failed"]
     pass_rate = (passed / total * 100) if total > 0 else 0
 
-    with open(REPORT_FILE, 'w') as f:
-        f.write(f"""# Agent Compliance Validation Report
+    with open(REPORT_FILE, "w") as f:
+        f.write(
+            f"""# Agent Compliance Validation Report
 
 **Template Version**: AGENT_TEMPLATE.yaml v{TEMPLATE_VERSION}
 **Validation Date**: {timestamp}
@@ -211,7 +242,8 @@ This report validates all AI-Craft agents against AGENT_TEMPLATE.yaml v1.2 produ
 
 | Agent | Contract | Safety | Testing L1-4 | Observability | Error Recovery | Frontmatter | Metrics | Status |
 |-------|----------|--------|--------------|---------------|----------------|-------------|---------|--------|
-""")
+"""
+        )
 
         # Sort agents by name
         for agent_name in sorted(results["agents"].keys()):
@@ -219,17 +251,23 @@ This report validates all AI-Craft agents against AGENT_TEMPLATE.yaml v1.2 produ
             checks = agent["checks"]
 
             # Create status symbols
-            def sym(val): return "✅" if val else "❌"
-            def sym_opt(val): return "✅" if val else "⚠️"  # Optional
+            def sym(val):
+                return "✅" if val else "❌"
+
+            def sym_opt(val):
+                return "✅" if val else "⚠️"  # Optional
 
             status = "✅ PASS" if agent["passed"] else "❌ FAIL"
 
-            f.write(f"| {agent_name} | {sym(checks['contract'])} | {sym(checks['safety'])} | "
-                   f"{sym(checks['testing'])} | {sym(checks['observability'])} | "
-                   f"{sym(checks['error_recovery'])} | {sym(checks['frontmatter'])} | "
-                   f"{sym_opt(checks['metrics'])} | {status} |\n")
+            f.write(
+                f"| {agent_name} | {sym(checks['contract'])} | {sym(checks['safety'])} | "
+                f"{sym(checks['testing'])} | {sym(checks['observability'])} | "
+                f"{sym(checks['error_recovery'])} | {sym(checks['frontmatter'])} | "
+                f"{sym_opt(checks['metrics'])} | {status} |\n"
+            )
 
-        f.write(f"""
+        f.write(
+            f"""
 
 ---
 
@@ -287,10 +325,12 @@ This report validates all AI-Craft agents against AGENT_TEMPLATE.yaml v1.2 produ
 
 ## Recommendations
 
-""")
+"""
+        )
 
         if failed > 0:
-            f.write(f"""### Critical Issues
+            f.write(
+                f"""### Critical Issues
 
 {failed} agent(s) failed compliance validation. **Production deployment blocked** until all agents pass.
 
@@ -300,9 +340,11 @@ This report validates all AI-Craft agents against AGENT_TEMPLATE.yaml v1.2 produ
 3. Re-run validation: `python3 scripts/validate-agent-compliance.py`
 4. Ensure 100% pass rate before proceeding to adversarial testing
 
-""")
+"""
+            )
         else:
-            f.write(f"""### Production Readiness Status
+            f.write(
+                f"""### Production Readiness Status
 
 ✅ **All {total} agents passed compliance validation**
 
@@ -313,15 +355,18 @@ This report validates all AI-Craft agents against AGENT_TEMPLATE.yaml v1.2 produ
 4. 🔄 Deploy observability infrastructure
 5. 🔄 Conduct production pilot with monitoring
 
-""")
+"""
+            )
 
-        f.write(f"""
+        f.write(
+            f"""
 
 ---
 
 **Report Generated**: {timestamp}
 **Validation Script**: scripts/validate-agent-compliance.py
-""")
+"""
+        )
 
 
 def main():
@@ -349,7 +394,9 @@ def main():
             print(f"  ✅ {agent_result['name']}: PASS")
         else:
             results["failed"] += 1
-            print(f"  ❌ {agent_result['name']}: FAIL ({agent_result['failures']} framework(s) missing)")
+            print(
+                f"  ❌ {agent_result['name']}: FAIL ({agent_result['failures']} framework(s) missing)"
+            )
 
     # Generate report
     print("")

@@ -29,7 +29,7 @@ class ConfigManager:
                 self._config = {}
                 return
 
-            with open(self.config_file, 'r', encoding='utf-8') as f:
+            with open(self.config_file, "r", encoding="utf-8") as f:
                 self._config = yaml.safe_load(f) or {}
 
             logging.info(f"Loaded configuration from: {self.config_file}")
@@ -71,11 +71,11 @@ class ConfigManager:
             dict: Methodology information
         """
         return {
-            'name': self._config.get('name', 'nWave'),
-            'version': self._config.get('version', '1.0.0'),
-            'description': self._config.get('description', 'nWave Methodology'),
-            'methodology': self._config.get('methodology', 'nWave'),
-            'wave_phases': self._config.get('wave_phases', [])
+            "name": self._config.get("name", "nWave"),
+            "version": self._config.get("version", "1.0.0"),
+            "description": self._config.get("description", "nWave Methodology"),
+            "methodology": self._config.get("methodology", "nWave"),
+            "wave_phases": self._config.get("wave_phases", []),
         }
 
     def get_agents_config(self) -> Dict[str, Any]:
@@ -85,7 +85,7 @@ class ConfigManager:
         Returns:
             dict: Agents configuration
         """
-        return self.get_section('agents')
+        return self.get_section("agents")
 
     def get_commands_config(self) -> Dict[str, Any]:
         """
@@ -94,7 +94,7 @@ class ConfigManager:
         Returns:
             dict: Commands configuration
         """
-        return self.get_section('commands')
+        return self.get_section("commands")
 
     def get_workflows_config(self) -> Dict[str, Any]:
         """
@@ -103,7 +103,7 @@ class ConfigManager:
         Returns:
             dict: Workflows configuration
         """
-        return self.get_section('workflows')
+        return self.get_section("workflows")
 
     def get_teams_config(self) -> Dict[str, Any]:
         """
@@ -112,7 +112,7 @@ class ConfigManager:
         Returns:
             dict: Agent teams configuration
         """
-        return self.get_section('agent_teams')
+        return self.get_section("agent_teams")
 
     def get_quality_gates(self) -> Dict[str, Any]:
         """
@@ -121,7 +121,7 @@ class ConfigManager:
         Returns:
             dict: Quality gates configuration
         """
-        return self.get_section('quality_gates')
+        return self.get_section("quality_gates")
 
     def get_checklists_config(self) -> Dict[str, Any]:
         """
@@ -130,7 +130,7 @@ class ConfigManager:
         Returns:
             dict: Checklists configuration
         """
-        return self.get_section('checklists')
+        return self.get_section("checklists")
 
     def get_templates_config(self) -> Dict[str, Any]:
         """
@@ -139,7 +139,7 @@ class ConfigManager:
         Returns:
             dict: Templates configuration
         """
-        return self.get_section('templates')
+        return self.get_section("templates")
 
     def get_knowledge_base_config(self) -> Dict[str, Any]:
         """
@@ -148,7 +148,7 @@ class ConfigManager:
         Returns:
             dict: Knowledge base configuration
         """
-        return self.get_section('knowledge_base')
+        return self.get_section("knowledge_base")
 
     def get_integration_config(self) -> Dict[str, Any]:
         """
@@ -157,7 +157,7 @@ class ConfigManager:
         Returns:
             dict: Integration configuration
         """
-        return self.get_section('integration')
+        return self.get_section("integration")
 
     def get_agent_by_name(self, agent_name: str) -> Optional[Dict[str, Any]]:
         """
@@ -199,12 +199,12 @@ class ConfigManager:
         wave_agents = []
 
         for agent_name, agent_config in agents.items():
-            if agent_config.get('wave') == wave_name:
+            if agent_config.get("wave") == wave_name:
                 agent_info = agent_config.copy()
-                agent_info['name'] = agent_name
+                agent_info["name"] = agent_name
                 wave_agents.append(agent_info)
 
-        return sorted(wave_agents, key=lambda x: x.get('priority', 99))
+        return sorted(wave_agents, key=lambda x: x.get("priority", 99))
 
     def get_commands_by_wave(self, wave_name: str) -> List[Dict[str, Any]]:
         """
@@ -220,9 +220,9 @@ class ConfigManager:
         wave_commands = []
 
         for command_name, command_config in commands.items():
-            if command_config.get('wave') == wave_name:
+            if command_config.get("wave") == wave_name:
                 command_info = command_config.copy()
-                command_info['name'] = command_name
+                command_info["name"] = command_name
                 wave_commands.append(command_info)
 
         return wave_commands
@@ -237,31 +237,38 @@ class ConfigManager:
         errors = []
 
         # Check required sections
-        required_sections = ['wave_phases', 'agents', 'commands']
+        required_sections = ["wave_phases", "agents", "commands"]
         for section in required_sections:
             if section not in self._config:
                 errors.append(f"Missing required section: {section}")
 
         # Validate wave phases
-        wave_phases = self._config.get('wave_phases', [])
+        wave_phases = self._config.get("wave_phases", [])
         if not wave_phases:
             errors.append("No wave phases defined")
 
         # Validate agents
         agents = self.get_agents_config()
         for agent_name, agent_config in agents.items():
-            if 'wave' not in agent_config:
+            if "wave" not in agent_config:
                 errors.append(f"Agent {agent_name} missing wave assignment")
-            elif agent_config['wave'] not in wave_phases and agent_config['wave'] != 'CROSS_WAVE':
-                errors.append(f"Agent {agent_name} assigned to unknown wave: {agent_config['wave']}")
+            elif (
+                agent_config["wave"] not in wave_phases
+                and agent_config["wave"] != "CROSS_WAVE"
+            ):
+                errors.append(
+                    f"Agent {agent_name} assigned to unknown wave: {agent_config['wave']}"
+                )
 
         # Validate commands
         commands = self.get_commands_config()
         for command_name, command_config in commands.items():
-            if 'agents' in command_config:
-                for agent_name in command_config['agents']:
+            if "agents" in command_config:
+                for agent_name in command_config["agents"]:
                     if agent_name not in agents:
-                        errors.append(f"Command {command_name} references unknown agent: {agent_name}")
+                        errors.append(
+                            f"Command {command_name} references unknown agent: {agent_name}"
+                        )
 
         return errors
 
@@ -278,27 +285,27 @@ class ConfigManager:
         methodology_info = self.get_methodology_info()
 
         ide_config = {
-            'metadata': {
-                'name': methodology_info['name'],
-                'version': methodology_info['version'],
-                'description': methodology_info['description'],
-                'methodology': methodology_info['methodology'],
-                'generated_at': datetime.now().isoformat(),
-                'generator': 'nWave IDE Bundle Builder'
+            "metadata": {
+                "name": methodology_info["name"],
+                "version": methodology_info["version"],
+                "description": methodology_info["description"],
+                "methodology": methodology_info["methodology"],
+                "generated_at": datetime.now().isoformat(),
+                "generator": "nWave IDE Bundle Builder",
             },
-            'methodology': {
-                'wave_phases': methodology_info['wave_phases'],
-                'total_phases': len(methodology_info['wave_phases'])
+            "methodology": {
+                "wave_phases": methodology_info["wave_phases"],
+                "total_phases": len(methodology_info["wave_phases"]),
             },
-            'agents': self._generate_agents_index(),
-            'commands': self._generate_commands_index(),
-            'teams': self._generate_teams_index(),
-            'workflows': self._generate_workflows_index(),
-            'quality_gates': self.get_quality_gates(),
-            'build_info': {
-                'stats': build_stats,
-                'validation_errors': self.validate_configuration()
-            }
+            "agents": self._generate_agents_index(),
+            "commands": self._generate_commands_index(),
+            "teams": self._generate_teams_index(),
+            "workflows": self._generate_workflows_index(),
+            "quality_gates": self.get_quality_gates(),
+            "build_info": {
+                "stats": build_stats,
+                "validation_errors": self.validate_configuration(),
+            },
         }
 
         return ide_config
@@ -310,10 +317,10 @@ class ConfigManager:
 
         for agent_name, agent_config in agents.items():
             agents_index[agent_name] = {
-                'wave': agent_config.get('wave'),
-                'role': agent_config.get('role'),
-                'priority': agent_config.get('priority'),
-                'file': f"{agent_name}.md"
+                "wave": agent_config.get("wave"),
+                "role": agent_config.get("role"),
+                "priority": agent_config.get("priority"),
+                "file": f"{agent_name}.md",
             }
 
         return agents_index
@@ -325,11 +332,11 @@ class ConfigManager:
 
         for command_name, command_config in commands.items():
             commands_index[command_name] = {
-                'description': command_config.get('description'),
-                'wave': command_config.get('wave'),
-                'agents': command_config.get('agents', []),
-                'outputs': command_config.get('outputs', []),
-                'file': f"{command_name}.md"
+                "description": command_config.get("description"),
+                "wave": command_config.get("wave"),
+                "agents": command_config.get("agents", []),
+                "outputs": command_config.get("outputs", []),
+                "file": f"{command_name}.md",
             }
 
         return commands_index
@@ -341,10 +348,10 @@ class ConfigManager:
 
         for team_name, team_config in teams.items():
             teams_index[team_name] = {
-                'description': team_config.get('description'),
-                'scope': team_config.get('scope'),
-                'methodology_focus': team_config.get('methodology_focus'),
-                'file': f"{team_name}-team.md"
+                "description": team_config.get("description"),
+                "scope": team_config.get("scope"),
+                "methodology_focus": team_config.get("methodology_focus"),
+                "file": f"{team_name}-team.md",
             }
 
         return teams_index
@@ -356,15 +363,15 @@ class ConfigManager:
 
         for workflow_name, workflow_config in workflows.items():
             workflows_index[workflow_name] = {
-                'name': workflow_config.get('name'),
-                'description': workflow_config.get('description'),
-                'phases': workflow_config.get('phases', []),
-                'file': f"{workflow_name}-orchestrator.md"
+                "name": workflow_config.get("name"),
+                "description": workflow_config.get("description"),
+                "phases": workflow_config.get("phases", []),
+                "file": f"{workflow_name}-orchestrator.md",
             }
 
         return workflows_index
 
-    def export_config(self, output_file: Path, format: str = 'json') -> bool:
+    def export_config(self, output_file: Path, format: str = "json") -> bool:
         """
         Export configuration to a file.
 
@@ -376,12 +383,14 @@ class ConfigManager:
             bool: True if successful
         """
         try:
-            if format.lower() == 'json':
-                with open(output_file, 'w', encoding='utf-8') as f:
+            if format.lower() == "json":
+                with open(output_file, "w", encoding="utf-8") as f:
                     json.dump(self._config, f, indent=2, ensure_ascii=False)
-            elif format.lower() == 'yaml':
-                with open(output_file, 'w', encoding='utf-8') as f:
-                    yaml.dump(self._config, f, default_flow_style=False, sort_keys=False)
+            elif format.lower() == "yaml":
+                with open(output_file, "w", encoding="utf-8") as f:
+                    yaml.dump(
+                        self._config, f, default_flow_style=False, sort_keys=False
+                    )
             else:
                 logging.error(f"Unsupported export format: {format}")
                 return False

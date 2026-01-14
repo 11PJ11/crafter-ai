@@ -15,16 +15,18 @@ from pathlib import Path
 
 def check_reviewer_agent(file_path: Path) -> dict:
     """Check if reviewer agent has required components."""
-    content = file_path.read_text(encoding='utf-8')
+    content = file_path.read_text(encoding="utf-8")
 
     result = {
         "name": file_path.stem,
         "file": file_path.name,
         "file_size": len(content),
-        "has_frontmatter": content.strip().startswith('---'),
-        "has_reviewer_role": "reviewer" in content.lower() or "-reviewer" in file_path.name,
-        "has_peer_review_workflow": "peer review" in content.lower() or "feedback" in content.lower(),
-        "status": "UNKNOWN"
+        "has_frontmatter": content.strip().startswith("---"),
+        "has_reviewer_role": "reviewer" in content.lower()
+        or "-reviewer" in file_path.name,
+        "has_peer_review_workflow": "peer review" in content.lower()
+        or "feedback" in content.lower(),
+        "status": "UNKNOWN",
     }
 
     # Determine status
@@ -96,14 +98,18 @@ def main():
     output_file = Path("test-results/adversarial/reviewer-validation-results.json")
     output_file.parent.mkdir(parents=True, exist_ok=True)
 
-    with open(output_file, 'w', encoding='utf-8') as f:
-        json.dump({
-            "total_reviewers": len(results),
-            "passed": passed,
-            "failed": failed,
-            "pass_rate": passed/len(results)*100,
-            "reviewers": results
-        }, f, indent=2)
+    with open(output_file, "w", encoding="utf-8") as f:
+        json.dump(
+            {
+                "total_reviewers": len(results),
+                "passed": passed,
+                "failed": failed,
+                "pass_rate": passed / len(results) * 100,
+                "reviewers": results,
+            },
+            f,
+            indent=2,
+        )
 
     print(f"Results saved: {output_file}")
     print()

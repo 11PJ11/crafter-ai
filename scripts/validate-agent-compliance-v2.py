@@ -18,27 +18,24 @@ AGENTS_DIR = Path("nWave/agents")
 REPORT_FILE = Path("docs/COMPLIANCE_VALIDATION_REPORT.md")
 
 # Validation results
-results = {
-    "total": 0,
-    "passed": 0,
-    "failed": 0,
-    "agents": {}
-}
+results = {"total": 0, "passed": 0, "failed": 0, "agents": {}}
 
 
 def check_frontmatter(content: str) -> bool:
     """Check if YAML frontmatter is complete"""
     # Extract frontmatter between --- markers
-    frontmatter_match = re.search(r'^---\s*\n(.*?)\n---', content, re.MULTILINE | re.DOTALL)
+    frontmatter_match = re.search(
+        r"^---\s*\n(.*?)\n---", content, re.MULTILINE | re.DOTALL
+    )
 
     if not frontmatter_match:
         return False
 
     frontmatter = frontmatter_match.group(1)
 
-    has_name = bool(re.search(r'^name:', frontmatter, re.MULTILINE))
-    has_description = bool(re.search(r'^description:', frontmatter, re.MULTILINE))
-    has_model = bool(re.search(r'^model:', frontmatter, re.MULTILINE))
+    has_name = bool(re.search(r"^name:", frontmatter, re.MULTILINE))
+    has_description = bool(re.search(r"^description:", frontmatter, re.MULTILINE))
+    has_model = bool(re.search(r"^model:", frontmatter, re.MULTILINE))
 
     return has_name and has_description and has_model
 
@@ -46,36 +43,51 @@ def check_frontmatter(content: str) -> bool:
 def check_contract_framework(content: str) -> bool:
     """Check if contract framework is present with all required sections"""
     # Simple keyword-based approach
-    has_contract = 'contract:' in content
-    has_inputs = 'inputs:' in content
-    has_outputs = 'outputs:' in content
-    has_side_effects = 'side_effects:' in content
-    has_error_handling = 'error_handling:' in content
+    has_contract = "contract:" in content
+    has_inputs = "inputs:" in content
+    has_outputs = "outputs:" in content
+    has_side_effects = "side_effects:" in content
+    has_error_handling = "error_handling:" in content
 
-    return has_contract and has_inputs and has_outputs and has_side_effects and has_error_handling
+    return (
+        has_contract
+        and has_inputs
+        and has_outputs
+        and has_side_effects
+        and has_error_handling
+    )
 
 
 def check_safety_framework(content: str) -> bool:
     """Check if safety framework has 4 validation + 7 enterprise layers"""
     # Simple keyword-based approach
-    has_safety = 'safety_framework:' in content
-    has_input = 'input_validation' in content
-    has_output = 'output_filtering' in content
-    has_behavioral = 'behavioral_constraints' in content
-    has_monitoring = 'continuous_monitoring' in content
-    has_enterprise = 'enterprise_safety_layers:' in content
+    has_safety = "safety_framework:" in content
+    has_input = "input_validation" in content
+    has_output = "output_filtering" in content
+    has_behavioral = "behavioral_constraints" in content
+    has_monitoring = "continuous_monitoring" in content
+    has_enterprise = "enterprise_safety_layers:" in content
 
-    return has_safety and has_input and has_output and has_behavioral and has_monitoring and has_enterprise
+    return (
+        has_safety
+        and has_input
+        and has_output
+        and has_behavioral
+        and has_monitoring
+        and has_enterprise
+    )
 
 
 def check_testing_framework(content: str) -> bool:
     """Check if all 4 testing layers are present"""
     # Simple keyword-based approach
-    has_testing = 'testing_framework:' in content
-    has_l1 = 'layer_1_unit_testing' in content
-    has_l2 = 'layer_2_integration_testing' in content
-    has_l3 = 'layer_3_adversarial' in content  # Can be adversarial_output_validation or adversarial_security
-    has_l4 = 'layer_4_adversarial_verification' in content
+    has_testing = "testing_framework:" in content
+    has_l1 = "layer_1_unit_testing" in content
+    has_l2 = "layer_2_integration_testing" in content
+    has_l3 = (
+        "layer_3_adversarial" in content
+    )  # Can be adversarial_output_validation or adversarial_security
+    has_l4 = "layer_4_adversarial_verification" in content
 
     return has_testing and has_l1 and has_l2 and has_l3 and has_l4
 
@@ -83,10 +95,10 @@ def check_testing_framework(content: str) -> bool:
 def check_observability_framework(content: str) -> bool:
     """Check if observability framework is present"""
     # Simple keyword-based approach
-    has_observability = 'observability_framework:' in content
-    has_logging = 'structured_logging' in content
-    has_metrics = 'metrics' in content or 'domain_metrics' in content
-    has_alerting = 'alerting' in content or 'alerting_thresholds' in content
+    has_observability = "observability_framework:" in content
+    has_logging = "structured_logging" in content
+    has_metrics = "metrics" in content or "domain_metrics" in content
+    has_alerting = "alerting" in content or "alerting_thresholds" in content
 
     return has_observability and has_logging and has_metrics and has_alerting
 
@@ -94,20 +106,22 @@ def check_observability_framework(content: str) -> bool:
 def check_error_recovery_framework(content: str) -> bool:
     """Check if error recovery framework is present"""
     # Simple keyword-based approach
-    has_error_recovery = 'error_recovery_framework:' in content
-    has_retry = 'retry_strategies' in content
-    has_circuit_breaker = 'circuit_breaker' in content
-    has_degraded = 'degraded_mode' in content
+    has_error_recovery = "error_recovery_framework:" in content
+    has_retry = "retry_strategies" in content
+    has_circuit_breaker = "circuit_breaker" in content
+    has_degraded = "degraded_mode" in content
 
     return has_error_recovery and has_retry and has_circuit_breaker and has_degraded
 
 
 def check_agent_metrics(content: str) -> bool:
     """Check if agent-specific metrics are present (optional)"""
-    return ('agent_specific' in content or
-            'document_agents' in content or
-            'code_agents' in content or
-            'domain_metrics' in content)
+    return (
+        "agent_specific" in content
+        or "document_agents" in content
+        or "code_agents" in content
+        or "domain_metrics" in content
+    )
 
 
 def validate_agent(agent_file: Path) -> Dict[str, any]:
@@ -117,7 +131,7 @@ def validate_agent(agent_file: Path) -> Dict[str, any]:
     print(f"Validating: {agent_name}...")
 
     # Read file content
-    with open(agent_file, 'r', encoding='utf-8') as f:
+    with open(agent_file, "r", encoding="utf-8") as f:
         content = f.read()
 
     # Initialize checks
@@ -128,11 +142,18 @@ def validate_agent(agent_file: Path) -> Dict[str, any]:
         "observability": check_observability_framework(content),
         "error_recovery": check_error_recovery_framework(content),
         "frontmatter": check_frontmatter(content),
-        "metrics": check_agent_metrics(content)
+        "metrics": check_agent_metrics(content),
     }
 
     # Determine pass/fail
-    required_checks = ["contract", "safety", "testing", "observability", "error_recovery", "frontmatter"]
+    required_checks = [
+        "contract",
+        "safety",
+        "testing",
+        "observability",
+        "error_recovery",
+        "frontmatter",
+    ]
     failures = sum(1 for check in required_checks if not checks[check])
     passed = failures == 0
 
@@ -140,7 +161,7 @@ def validate_agent(agent_file: Path) -> Dict[str, any]:
         "name": agent_name,
         "checks": checks,
         "failures": failures,
-        "passed": passed
+        "passed": passed,
     }
 
 
@@ -153,8 +174,9 @@ def generate_report(results: Dict):
     failed = results["failed"]
     pass_rate = (passed / total * 100) if total > 0 else 0
 
-    with open(REPORT_FILE, 'w') as f:
-        f.write(f"""# Agent Compliance Validation Report
+    with open(REPORT_FILE, "w") as f:
+        f.write(
+            f"""# Agent Compliance Validation Report
 
 **Template Version**: AGENT_TEMPLATE.yaml v{TEMPLATE_VERSION}
 **Validation Date**: {timestamp}
@@ -181,7 +203,8 @@ This report validates all AI-Craft agents against AGENT_TEMPLATE.yaml v1.2 produ
 
 | Agent | Contract | Safety | Testing L1-4 | Observability | Error Recovery | Frontmatter | Metrics | Status |
 |-------|----------|--------|--------------|---------------|----------------|-------------|---------|--------|
-""")
+"""
+        )
 
         # Sort agents by name
         for agent_name in sorted(results["agents"].keys()):
@@ -189,17 +212,23 @@ This report validates all AI-Craft agents against AGENT_TEMPLATE.yaml v1.2 produ
             checks = agent["checks"]
 
             # Create status symbols
-            def sym(val): return "✅" if val else "❌"
-            def sym_opt(val): return "✅" if val else "⚠️"  # Optional
+            def sym(val):
+                return "✅" if val else "❌"
+
+            def sym_opt(val):
+                return "✅" if val else "⚠️"  # Optional
 
             status = "✅ PASS" if agent["passed"] else "❌ FAIL"
 
-            f.write(f"| {agent_name} | {sym(checks['contract'])} | {sym(checks['safety'])} | "
-                   f"{sym(checks['testing'])} | {sym(checks['observability'])} | "
-                   f"{sym(checks['error_recovery'])} | {sym(checks['frontmatter'])} | "
-                   f"{sym_opt(checks['metrics'])} | {status} |\n")
+            f.write(
+                f"| {agent_name} | {sym(checks['contract'])} | {sym(checks['safety'])} | "
+                f"{sym(checks['testing'])} | {sym(checks['observability'])} | "
+                f"{sym(checks['error_recovery'])} | {sym(checks['frontmatter'])} | "
+                f"{sym_opt(checks['metrics'])} | {status} |\n"
+            )
 
-        f.write(f"""
+        f.write(
+            f"""
 
 ---
 
@@ -257,10 +286,12 @@ This report validates all AI-Craft agents against AGENT_TEMPLATE.yaml v1.2 produ
 
 ## Recommendations
 
-""")
+"""
+        )
 
         if failed > 0:
-            f.write(f"""### Critical Issues
+            f.write(
+                f"""### Critical Issues
 
 {failed} agent(s) failed compliance validation. **Production deployment blocked** until all agents pass.
 
@@ -270,9 +301,11 @@ This report validates all AI-Craft agents against AGENT_TEMPLATE.yaml v1.2 produ
 3. Re-run validation: `python3 scripts/validate-agent-compliance-v2.py`
 4. Ensure 100% pass rate before proceeding to adversarial testing
 
-""")
+"""
+            )
         else:
-            f.write(f"""### Production Readiness Status
+            f.write(
+                f"""### Production Readiness Status
 
 ✅ **All {total} agents passed compliance validation**
 
@@ -283,16 +316,19 @@ This report validates all AI-Craft agents against AGENT_TEMPLATE.yaml v1.2 produ
 4. 🔄 Deploy observability infrastructure
 5. 🔄 Conduct production pilot with monitoring
 
-""")
+"""
+            )
 
-        f.write(f"""
+        f.write(
+            f"""
 
 ---
 
 **Report Generated**: {timestamp}
 **Validation Script**: scripts/validate-agent-compliance-v2.py (Keyword-based validation)
 **Improvement over v1**: Simpler, more reliable keyword-based validation instead of complex regex
-""")
+"""
+        )
 
 
 def main():
@@ -321,7 +357,9 @@ def main():
             print(f"  ✅ {agent_result['name']}: PASS")
         else:
             results["failed"] += 1
-            print(f"  ❌ {agent_result['name']}: FAIL ({agent_result['failures']} framework(s) missing)")
+            print(
+                f"  ❌ {agent_result['name']}: FAIL ({agent_result['failures']} framework(s) missing)"
+            )
 
     # Generate report
     print("")

@@ -12,6 +12,7 @@ import yaml
 
 import sys
 from pathlib import Path
+
 sys.path.append(str(Path(__file__).parent.parent))
 from utils.dependency_resolver import DependencyResolver
 
@@ -49,7 +50,9 @@ class WorkflowProcessor:
             logging.error(f"Error loading workflow config {workflow_file}: {e}")
             return None
 
-    def get_workflow_info_from_config(self, workflow_name: str, config: Dict[str, Any]) -> Dict[str, Any]:
+    def get_workflow_info_from_config(
+        self, workflow_name: str, config: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Extract workflow information from main framework-catalog.yaml.
 
@@ -60,25 +63,32 @@ class WorkflowProcessor:
         Returns:
             dict: Workflow information
         """
-        workflows = config.get('workflows', {})
+        workflows = config.get("workflows", {})
 
         # Look for exact match first
         if workflow_name in workflows:
             return workflows[workflow_name]
 
         # Look for workflow name without extension
-        workflow_base = Path(workflow_name).stem.replace('-', '_')
+        workflow_base = Path(workflow_name).stem.replace("-", "_")
         if workflow_base in workflows:
             return workflows[workflow_base]
 
         # Return default workflow info
         return {
-            'name': workflow_name,
-            'description': f'{workflow_name} workflow orchestration',
-            'phases': config.get('wave_phases', ['DISCUSS', 'DESIGN', 'DISTILL', 'DEVELOP', 'DEMO'])
+            "name": workflow_name,
+            "description": f"{workflow_name} workflow orchestration",
+            "phases": config.get(
+                "wave_phases", ["DISCUSS", "DESIGN", "DISTILL", "DEVELOP", "DEMO"]
+            ),
         }
 
-    def generate_orchestrator_header(self, workflow_name: str, workflow_config: Dict[str, Any], main_config: Dict[str, Any]) -> str:
+    def generate_orchestrator_header(
+        self,
+        workflow_name: str,
+        workflow_config: Dict[str, Any],
+        main_config: Dict[str, Any],
+    ) -> str:
         """
         Generate header for orchestrator agent.
 
@@ -94,8 +104,10 @@ class WorkflowProcessor:
         workflow_info = self.get_workflow_info_from_config(workflow_name, main_config)
 
         # Extract workflow metadata
-        workflow_meta = workflow_config.get('workflow', {})
-        workflow_title = workflow_meta.get('name', workflow_base.replace('-', ' ').title())
+        workflow_meta = workflow_config.get("workflow", {})
+        workflow_title = workflow_meta.get(
+            "name", workflow_base.replace("-", " ").title()
+        )
 
         header_parts = [
             f"# {workflow_base}-orchestrator",
@@ -108,12 +120,14 @@ class WorkflowProcessor:
             f"**Workflow**: {workflow_title}",
             f"**Description**: {workflow_info.get('description', 'Multi-phase nWave orchestration')}",
             f"**Methodology**: nWave ({' → '.join(workflow_info.get('phases', []))})",
-            ""
+            "",
         ]
 
         return "\n".join(header_parts)
 
-    def generate_phase_guidance(self, workflow_config: Dict[str, Any], main_config: Dict[str, Any]) -> str:
+    def generate_phase_guidance(
+        self, workflow_config: Dict[str, Any], main_config: Dict[str, Any]
+    ) -> str:
         """
         Generate phase guidance section.
 
@@ -124,8 +138,8 @@ class WorkflowProcessor:
         Returns:
             str: Phase guidance content
         """
-        workflow_info = workflow_config.get('workflow', {})
-        phases = workflow_info.get('phases', main_config.get('wave_phases', []))
+        workflow_info = workflow_config.get("workflow", {})
+        phases = workflow_info.get("phases", main_config.get("wave_phases", []))
 
         if not phases:
             return "## Phase Guidance\n\nNo phases defined for this workflow.\n"
@@ -134,52 +148,46 @@ class WorkflowProcessor:
             "## Phase Guidance",
             "",
             "Execute the nWave methodology in the following sequence:",
-            ""
+            "",
         ]
 
         for i, phase in enumerate(phases, 1):
             # Handle both string and dictionary phase definitions
             if isinstance(phase, dict):
-                phase_name = phase.get('name', 'Unknown Phase')
-                phase_wave = phase.get('wave', phase_name)
-                phase_description = phase.get('description', '')
-                phase_duration = phase.get('duration', '')
+                phase_name = phase.get("name", "Unknown Phase")
+                phase_wave = phase.get("wave", phase_name)
+                phase_description = phase.get("description", "")
+                phase_duration = phase.get("duration", "")
 
-                guidance_parts.extend([
-                    f"### {i}. {phase_name} Wave",
-                    ""
-                ])
+                guidance_parts.extend([f"### {i}. {phase_name} Wave", ""])
 
                 if phase_description:
-                    guidance_parts.extend([
-                        f"**Description**: {phase_description}",
-                        ""
-                    ])
+                    guidance_parts.extend([f"**Description**: {phase_description}", ""])
 
                 if phase_duration:
-                    guidance_parts.extend([
-                        f"**Duration**: {phase_duration}",
-                        ""
-                    ])
+                    guidance_parts.extend([f"**Duration**: {phase_duration}", ""])
 
                 # Use the wave name for phase-specific guidance
-                phase_guidance = self.get_phase_specific_guidance(phase_wave, main_config)
+                phase_guidance = self.get_phase_specific_guidance(
+                    phase_wave, main_config
+                )
             else:
                 # Handle simple string phases (backward compatibility)
                 phase_name = str(phase)
-                guidance_parts.extend([
-                    f"### {i}. {phase_name} Wave",
-                    ""
-                ])
+                guidance_parts.extend([f"### {i}. {phase_name} Wave", ""])
 
-                phase_guidance = self.get_phase_specific_guidance(phase_name, main_config)
+                phase_guidance = self.get_phase_specific_guidance(
+                    phase_name, main_config
+                )
 
             guidance_parts.extend(phase_guidance)
             guidance_parts.append("")
 
         return "\n".join(guidance_parts)
 
-    def get_phase_specific_guidance(self, phase: str, config: Dict[str, Any]) -> List[str]:
+    def get_phase_specific_guidance(
+        self, phase: str, config: Dict[str, Any]
+    ) -> List[str]:
         """
         Get specific guidance for a phase.
 
@@ -192,43 +200,45 @@ class WorkflowProcessor:
         """
         # Get agents assigned to this phase
         phase_agents = []
-        agents = config.get('agents', {})
+        agents = config.get("agents", {})
 
         for agent_name, agent_info in agents.items():
-            if agent_info.get('wave') == phase:
-                role = agent_info.get('role', 'Unknown')
-                priority = agent_info.get('priority', 'Normal')
-                phase_agents.append(f"- **{agent_name}** ({role}) - Priority: {priority}")
+            if agent_info.get("wave") == phase:
+                role = agent_info.get("role", "Unknown")
+                priority = agent_info.get("priority", "Normal")
+                phase_agents.append(
+                    f"- **{agent_name}** ({role}) - Priority: {priority}"
+                )
 
         guidance = []
 
         # Standard phase descriptions
         phase_descriptions = {
-            'DISCUSS': [
+            "DISCUSS": [
                 "**Objective**: Gather and analyze business requirements",
                 "**Focus**: Stakeholder collaboration, requirements clarity, business value",
-                "**Outputs**: Requirements document, user stories, acceptance criteria"
+                "**Outputs**: Requirements document, user stories, acceptance criteria",
             ],
-            'DESIGN': [
+            "DESIGN": [
                 "**Objective**: Create system architecture and design",
                 "**Focus**: Technical design, architecture patterns, component boundaries",
-                "**Outputs**: Architecture document, design diagrams, technical specifications"
+                "**Outputs**: Architecture document, design diagrams, technical specifications",
             ],
-            'DISTILL': [
+            "DISTILL": [
                 "**Objective**: Create acceptance tests and validation scenarios",
                 "**Focus**: Test scenarios, business validation, acceptance criteria",
-                "**Outputs**: Acceptance tests, test scenarios, validation frameworks"
+                "**Outputs**: Acceptance tests, test scenarios, validation frameworks",
             ],
-            'DEVELOP': [
+            "DEVELOP": [
                 "**Objective**: Implement solution using Outside-In TDD",
                 "**Focus**: Test-driven development, code quality, systematic refactoring",
-                "**Outputs**: Working code, test suite, refactored implementation"
+                "**Outputs**: Working code, test suite, refactored implementation",
             ],
-            'DEMO': [
+            "DEMO": [
                 "**Objective**: Validate production readiness and demonstrate value",
                 "**Focus**: Production deployment, stakeholder validation, business value",
-                "**Outputs**: Production deployment, stakeholder demo, value metrics"
-            ]
+                "**Outputs**: Production deployment, stakeholder demo, value metrics",
+            ],
         }
 
         # Add standard description
@@ -261,16 +271,22 @@ class WorkflowProcessor:
             return f"## Workflow Definition\n\n```yaml\n{yaml_content}```\n"
 
         except (TypeError, ValueError, yaml.YAMLError) as e:
-            logging.warning(f"Complex workflow structure cannot be serialized to YAML: {e}")
+            logging.warning(
+                f"Complex workflow structure cannot be serialized to YAML: {e}"
+            )
             # Provide basic workflow information as fallback
-            workflow_name = workflow_config.get('name', 'Unknown Workflow')
-            workflow_desc = workflow_config.get('description', 'Complex workflow definition')
+            workflow_name = workflow_config.get("name", "Unknown Workflow")
+            workflow_desc = workflow_config.get(
+                "description", "Complex workflow definition"
+            )
             return f"## Workflow Definition\n\n**Name**: {workflow_name}\n**Description**: {workflow_desc}\n\n*Complex nested workflow structure - see source YAML file for full definition*\n"
         except Exception as e:
             logging.error(f"Unexpected error generating workflow YAML: {e}")
             return "## Workflow Definition\n\n*Workflow definition temporarily unavailable*\n"
 
-    def generate_agent_coordination(self, workflow_config: Dict[str, Any], main_config: Dict[str, Any]) -> str:
+    def generate_agent_coordination(
+        self, workflow_config: Dict[str, Any], main_config: Dict[str, Any]
+    ) -> str:
         """
         Generate agent coordination section.
 
@@ -285,39 +301,38 @@ class WorkflowProcessor:
             "## Agent Coordination",
             "",
             "This orchestrator coordinates the following agent interactions:",
-            ""
+            "",
         ]
 
         # Get all agents and their wave assignments
-        agents = main_config.get('agents', {})
+        agents = main_config.get("agents", {})
         wave_agents = {}
 
         for agent_name, agent_info in agents.items():
-            wave = agent_info.get('wave', 'UNKNOWN')
+            wave = agent_info.get("wave", "UNKNOWN")
             if wave not in wave_agents:
                 wave_agents[wave] = []
-            wave_agents[wave].append({
-                'name': agent_name,
-                'role': agent_info.get('role', 'Unknown'),
-                'priority': agent_info.get('priority', 'Normal')
-            })
+            wave_agents[wave].append(
+                {
+                    "name": agent_name,
+                    "role": agent_info.get("role", "Unknown"),
+                    "priority": agent_info.get("priority", "Normal"),
+                }
+            )
 
         # Add coordination by wave
         for wave, wave_agent_list in wave_agents.items():
-            if wave == 'UNKNOWN':
+            if wave == "UNKNOWN":
                 continue
 
-            coordination_parts.extend([
-                f"### {wave} Wave Coordination",
-                ""
-            ])
+            coordination_parts.extend([f"### {wave} Wave Coordination", ""])
 
             # Sort agents with safe priority handling
             def safe_priority_sort(agent_dict):
-                priority = agent_dict.get('priority', 'Normal')
+                priority = agent_dict.get("priority", "Normal")
                 # Convert to consistent type for sorting
                 if isinstance(priority, str):
-                    priority_map = {'High': 1, 'Normal': 2, 'Low': 3}
+                    priority_map = {"High": 1, "Normal": 2, "Low": 3}
                     return priority_map.get(priority, 2)  # Default to Normal
                 elif isinstance(priority, int):
                     return priority
@@ -331,7 +346,9 @@ class WorkflowProcessor:
 
         return "\n".join(coordination_parts)
 
-    def generate_orchestrator_content(self, workflow_file: Path, config: Dict[str, Any]) -> str:
+    def generate_orchestrator_content(
+        self, workflow_file: Path, config: Dict[str, Any]
+    ) -> str:
         """
         Generate complete orchestrator agent content.
 
@@ -355,10 +372,14 @@ class WorkflowProcessor:
 
             try:
                 # Header
-                header = self.generate_orchestrator_header(workflow_name, workflow_config, config)
+                header = self.generate_orchestrator_header(
+                    workflow_name, workflow_config, config
+                )
                 content_parts.append(header)
             except Exception as e:
-                logging.error(f"Error in generate_orchestrator_header for {workflow_file}: {e}")
+                logging.error(
+                    f"Error in generate_orchestrator_header for {workflow_file}: {e}"
+                )
                 raise
 
             try:
@@ -366,15 +387,21 @@ class WorkflowProcessor:
                 phase_guidance = self.generate_phase_guidance(workflow_config, config)
                 content_parts.append(phase_guidance)
             except Exception as e:
-                logging.error(f"Error in generate_phase_guidance for {workflow_file}: {e}")
+                logging.error(
+                    f"Error in generate_phase_guidance for {workflow_file}: {e}"
+                )
                 raise
 
             try:
                 # Agent coordination
-                agent_coordination = self.generate_agent_coordination(workflow_config, config)
+                agent_coordination = self.generate_agent_coordination(
+                    workflow_config, config
+                )
                 content_parts.append(agent_coordination)
             except Exception as e:
-                logging.error(f"Error in generate_agent_coordination for {workflow_file}: {e}")
+                logging.error(
+                    f"Error in generate_agent_coordination for {workflow_file}: {e}"
+                )
                 raise
 
             try:
@@ -382,13 +409,17 @@ class WorkflowProcessor:
                 workflow_def = self.generate_workflow_definition(workflow_config)
                 content_parts.append(workflow_def)
             except Exception as e:
-                logging.error(f"Error in generate_workflow_definition for {workflow_file}: {e}")
+                logging.error(
+                    f"Error in generate_workflow_definition for {workflow_file}: {e}"
+                )
                 raise
 
             return "\n".join(content_parts)
 
         except Exception as e:
-            logging.error(f"Error generating orchestrator content for {workflow_file}: {e}")
+            logging.error(
+                f"Error generating orchestrator content for {workflow_file}: {e}"
+            )
             raise
 
     def process_workflow(self, workflow_file: Path, config: Dict[str, Any]) -> bool:
@@ -407,10 +438,14 @@ class WorkflowProcessor:
             logging.info(f"Processing workflow: {workflow_name}")
 
             # Generate orchestrator content
-            orchestrator_content = self.generate_orchestrator_content(workflow_file, config)
+            orchestrator_content = self.generate_orchestrator_content(
+                workflow_file, config
+            )
 
             # Determine output path - workflows become orchestrator agents
-            output_path = self.output_dir / "agents" / "nw" / f"{workflow_name}-orchestrator.md"
+            output_path = (
+                self.output_dir / "agents" / "nw" / f"{workflow_name}-orchestrator.md"
+            )
 
             # Write output file
             success = self.file_manager.write_file(output_path, orchestrator_content)
@@ -426,7 +461,9 @@ class WorkflowProcessor:
             logging.error(f"Error processing workflow {workflow_file}: {e}")
             return False
 
-    def get_workflow_info(self, workflow_file: Path, config: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def get_workflow_info(
+        self, workflow_file: Path, config: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
         """
         Extract workflow information for configuration generation.
 
@@ -442,15 +479,17 @@ class WorkflowProcessor:
             if not workflow_config:
                 return None
 
-            workflow_info = self.get_workflow_info_from_config(workflow_file.name, config)
-            workflow_meta = workflow_config.get('workflow', {})
+            workflow_info = self.get_workflow_info_from_config(
+                workflow_file.name, config
+            )
+            workflow_meta = workflow_config.get("workflow", {})
 
             return {
-                'name': workflow_file.stem,
-                'file': f"{workflow_file.stem}-orchestrator.md",
-                'description': workflow_info.get('description'),
-                'phases': workflow_info.get('phases', []),
-                'type': 'orchestrator'
+                "name": workflow_file.stem,
+                "file": f"{workflow_file.stem}-orchestrator.md",
+                "description": workflow_info.get("description"),
+                "phases": workflow_info.get("phases", []),
+                "type": "orchestrator",
             }
 
         except Exception as e:

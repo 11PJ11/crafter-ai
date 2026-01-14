@@ -26,9 +26,10 @@ sys.path.insert(0, str(scripts_dir))
 
 # Import module with dashes using importlib
 import importlib.util
+
 spec = importlib.util.spec_from_file_location(
     "validate_documentation_versions",
-    scripts_dir / "validate-documentation-versions.py"
+    scripts_dir / "validate-documentation-versions.py",
 )
 validate_module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(validate_module)
@@ -46,6 +47,7 @@ SectionUpdate = validate_module.SectionUpdate
 # Fixtures - Test Environment Setup
 # =============================================================================
 
+
 @pytest.fixture
 def temp_git_repo(tmp_path):
     """Create isolated temporary git repository for testing"""
@@ -56,20 +58,28 @@ def temp_git_repo(tmp_path):
     subprocess.run(["git", "init"], cwd=repo_dir, check=True, capture_output=True)
     subprocess.run(
         ["git", "config", "user.email", "test@example.com"],
-        cwd=repo_dir, check=True, capture_output=True
+        cwd=repo_dir,
+        check=True,
+        capture_output=True,
     )
     subprocess.run(
         ["git", "config", "user.name", "Test User"],
-        cwd=repo_dir, check=True, capture_output=True
+        cwd=repo_dir,
+        check=True,
+        capture_output=True,
     )
 
     # Create initial commit (required for HEAD references)
     initial_file = repo_dir / "README.md"
     initial_file.write_text("# Test Repository\n")
-    subprocess.run(["git", "add", "README.md"], cwd=repo_dir, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "add", "README.md"], cwd=repo_dir, check=True, capture_output=True
+    )
     subprocess.run(
         ["git", "commit", "-m", "Initial commit"],
-        cwd=repo_dir, check=True, capture_output=True
+        cwd=repo_dir,
+        check=True,
+        capture_output=True,
     )
 
     # Store original directory to restore later
@@ -91,9 +101,9 @@ def sample_yaml_file(temp_git_repo):
     content = {
         "version": "1.0.0",
         "name": "test-config",
-        "description": "Test configuration file"
+        "description": "Test configuration file",
     }
-    with open(yaml_file, 'w') as f:
+    with open(yaml_file, "w") as f:
         yaml.dump(content, f)
 
     return yaml_file
@@ -125,7 +135,7 @@ def dependency_map_simple(temp_git_repo):
     config = {
         "validation_rules": {
             "require_version_bump_on_change": True,
-            "ignore_whitespace_changes": True
+            "ignore_whitespace_changes": True,
         },
         "tracked_files": [
             {
@@ -133,11 +143,11 @@ def dependency_map_simple(temp_git_repo):
                 "version_format": "yaml",
                 "version_field": "version",
                 "description": "Main configuration",
-                "triggers_update": []
+                "triggers_update": [],
             }
-        ]
+        ],
     }
-    with open(dep_map, 'w') as f:
+    with open(dep_map, "w") as f:
         yaml.dump(config, f)
 
     return dep_map
@@ -150,7 +160,7 @@ def dependency_map_with_dependents(temp_git_repo):
     config = {
         "validation_rules": {
             "require_version_bump_on_change": True,
-            "ignore_whitespace_changes": True
+            "ignore_whitespace_changes": True,
         },
         "tracked_files": [
             {
@@ -166,21 +176,21 @@ def dependency_map_with_dependents(temp_git_repo):
                                 "id": "config_reference",
                                 "location": "docs/guide.md#configuration",
                                 "description": "Configuration reference section",
-                                "source": "source.yaml"
+                                "source": "source.yaml",
                             }
-                        ]
+                        ],
                     }
-                ]
+                ],
             },
             {
                 "path": "docs/guide.md",
                 "version_format": "markdown_comment",
                 "description": "Documentation guide",
-                "triggers_update": []
-            }
-        ]
+                "triggers_update": [],
+            },
+        ],
     }
-    with open(dep_map, 'w') as f:
+    with open(dep_map, "w") as f:
         yaml.dump(config, f)
 
     return dep_map
@@ -189,6 +199,7 @@ def dependency_map_with_dependents(temp_git_repo):
 # =============================================================================
 # Unit Tests - VersionParser
 # =============================================================================
+
 
 class TestVersionParser:
     """Unit tests for VersionParser component"""
@@ -202,7 +213,7 @@ class TestVersionParser:
         """Should extract version from custom YAML field"""
         yaml_file = temp_git_repo / "custom.yaml"
         content = {"app_version": "2.5.3", "name": "test"}
-        with open(yaml_file, 'w') as f:
+        with open(yaml_file, "w") as f:
             yaml.dump(content, f)
 
         version = VersionParser.parse_yaml_version(yaml_file, "app_version")
@@ -212,7 +223,7 @@ class TestVersionParser:
         """Should return None when version field missing"""
         yaml_file = temp_git_repo / "no_version.yaml"
         content = {"name": "test", "description": "No version field"}
-        with open(yaml_file, 'w') as f:
+        with open(yaml_file, "w") as f:
             yaml.dump(content, f)
 
         version = VersionParser.parse_yaml_version(yaml_file, "version")
@@ -262,31 +273,37 @@ class TestVersionParser:
         version = VersionParser.parse_markdown_version(md_file)
         assert version is None
 
-    @pytest.mark.parametrize("version_str,expected", [
-        ("1.0.0", True),
-        ("2.5.13", True),
-        ("0.0.1", True),
-        ("10.20.30", True),
-        ("invalid", False),
-        ("1.0", True),   # packaging library accepts this (normalizes to 1.0.0)
-        ("1", True),     # packaging library accepts this (normalizes to 1.0.0)
-        ("v1.0.0", True),  # packaging library accepts 'v' prefix
-        ("1.0.0-beta", True),  # Pre-release versions are valid
-        ("1.0.0+build", True),  # Build metadata is valid
-    ])
+    @pytest.mark.parametrize(
+        "version_str,expected",
+        [
+            ("1.0.0", True),
+            ("2.5.13", True),
+            ("0.0.1", True),
+            ("10.20.30", True),
+            ("invalid", False),
+            ("1.0", True),  # packaging library accepts this (normalizes to 1.0.0)
+            ("1", True),  # packaging library accepts this (normalizes to 1.0.0)
+            ("v1.0.0", True),  # packaging library accepts 'v' prefix
+            ("1.0.0-beta", True),  # Pre-release versions are valid
+            ("1.0.0+build", True),  # Build metadata is valid
+        ],
+    )
     def test_validate_version_format(self, version_str, expected):
         """Should validate semantic version format correctly"""
         result = VersionParser.validate_version_format(version_str)
         assert result == expected
 
-    @pytest.mark.parametrize("v1,v2,expected", [
-        ("1.0.0", "2.0.0", -1),  # v1 < v2
-        ("2.0.0", "1.0.0", 1),   # v1 > v2
-        ("1.0.0", "1.0.0", 0),   # v1 == v2
-        ("1.0.0", "1.0.1", -1),  # Patch version
-        ("1.1.0", "1.0.9", 1),   # Minor version precedence
-        ("2.0.0", "1.99.99", 1), # Major version precedence
-    ])
+    @pytest.mark.parametrize(
+        "v1,v2,expected",
+        [
+            ("1.0.0", "2.0.0", -1),  # v1 < v2
+            ("2.0.0", "1.0.0", 1),  # v1 > v2
+            ("1.0.0", "1.0.0", 0),  # v1 == v2
+            ("1.0.0", "1.0.1", -1),  # Patch version
+            ("1.1.0", "1.0.9", 1),  # Minor version precedence
+            ("2.0.0", "1.99.99", 1),  # Major version precedence
+        ],
+    )
     def test_compare_versions(self, v1, v2, expected):
         """Should compare semantic versions correctly"""
         result = VersionParser.compare_versions(v1, v2)
@@ -301,6 +318,7 @@ class TestVersionParser:
 # =============================================================================
 # Unit Tests - GitHelper
 # =============================================================================
+
 
 class TestGitHelper:
     """Unit tests for GitHelper component"""
@@ -317,9 +335,15 @@ class TestGitHelper:
         staged = GitHelper.get_staged_files()
         assert "config.yaml" in staged
 
-    def test_get_staged_files_multiple(self, temp_git_repo, sample_yaml_file, sample_markdown_file):
+    def test_get_staged_files_multiple(
+        self, temp_git_repo, sample_yaml_file, sample_markdown_file
+    ):
         """Should return list with multiple staged files"""
-        subprocess.run(["git", "add", "config.yaml", "docs/guide.md"], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "add", "config.yaml", "docs/guide.md"],
+            check=True,
+            capture_output=True,
+        )
 
         staged = GitHelper.get_staged_files()
         assert "config.yaml" in staged
@@ -330,12 +354,14 @@ class TestGitHelper:
         """Should return True when file has substantive changes"""
         # Commit initial version
         subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
-        subprocess.run(["git", "commit", "-m", "Add config"], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "commit", "-m", "Add config"], check=True, capture_output=True
+        )
 
         # Modify file
         content = yaml.safe_load(open(sample_yaml_file))
         content["version"] = "2.0.0"
-        with open(sample_yaml_file, 'w') as f:
+        with open(sample_yaml_file, "w") as f:
             yaml.dump(content, f)
 
         subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
@@ -347,10 +373,12 @@ class TestGitHelper:
         """Should return True even for trailing newlines (git diff -w shows them)"""
         # Commit initial version
         subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
-        subprocess.run(["git", "commit", "-m", "Add config"], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "commit", "-m", "Add config"], check=True, capture_output=True
+        )
 
         # Add only trailing newlines
-        with open(sample_yaml_file, 'a') as f:
+        with open(sample_yaml_file, "a") as f:
             f.write("\n\n")
 
         subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
@@ -359,14 +387,18 @@ class TestGitHelper:
         has_changes = GitHelper.file_has_changes("config.yaml", ignore_whitespace=True)
         assert has_changes is True  # Adding blank lines IS a change
 
-    def test_file_has_changes_no_ignore_whitespace(self, temp_git_repo, sample_yaml_file):
+    def test_file_has_changes_no_ignore_whitespace(
+        self, temp_git_repo, sample_yaml_file
+    ):
         """Should return True for whitespace changes when not ignoring"""
         # Commit initial version
         subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
-        subprocess.run(["git", "commit", "-m", "Add config"], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "commit", "-m", "Add config"], check=True, capture_output=True
+        )
 
         # Add whitespace
-        with open(sample_yaml_file, 'a') as f:
+        with open(sample_yaml_file, "a") as f:
             f.write("\n\n")
 
         subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
@@ -378,7 +410,9 @@ class TestGitHelper:
         """Should extract version from HEAD commit for YAML file"""
         # Commit file with version
         subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
-        subprocess.run(["git", "commit", "-m", "Add config"], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "commit", "-m", "Add config"], check=True, capture_output=True
+        )
 
         version = GitHelper.get_version_from_head("config.yaml", "yaml", "version")
         assert version == "1.0.0"
@@ -387,7 +421,9 @@ class TestGitHelper:
         """Should extract version from HEAD commit for Markdown file"""
         # Commit file with version comment
         subprocess.run(["git", "add", "docs/guide.md"], check=True, capture_output=True)
-        subprocess.run(["git", "commit", "-m", "Add guide"], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "commit", "-m", "Add guide"], check=True, capture_output=True
+        )
 
         version = GitHelper.get_version_from_head("docs/guide.md", "markdown_comment")
         assert version == "1.0.0"
@@ -407,6 +443,7 @@ class TestGitHelper:
 # =============================================================================
 # Unit Tests - DocumentationVersionValidator
 # =============================================================================
+
 
 class TestDocumentationVersionValidator:
     """Unit tests for DocumentationVersionValidator core logic"""
@@ -439,16 +476,20 @@ class TestDocumentationVersionValidator:
         assert result is True
         assert len(validator.errors) == 0
 
-    def test_validate_version_not_bumped(self, temp_git_repo, dependency_map_simple, sample_yaml_file):
+    def test_validate_version_not_bumped(
+        self, temp_git_repo, dependency_map_simple, sample_yaml_file
+    ):
         """Should detect when file changed but version not bumped"""
         # Commit initial version
         subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
-        subprocess.run(["git", "commit", "-m", "Add config"], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "commit", "-m", "Add config"], check=True, capture_output=True
+        )
 
         # Modify content but keep same version
         content = yaml.safe_load(open(sample_yaml_file))
         content["description"] = "Modified description"
-        with open(sample_yaml_file, 'w') as f:
+        with open(sample_yaml_file, "w") as f:
             yaml.dump(content, f)
 
         subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
@@ -461,17 +502,21 @@ class TestDocumentationVersionValidator:
         assert validator.errors[0].error_type == "VERSION_NOT_BUMPED"
         assert validator.errors[0].file == "config.yaml"
 
-    def test_validate_version_bumped_correctly(self, temp_git_repo, dependency_map_simple, sample_yaml_file):
+    def test_validate_version_bumped_correctly(
+        self, temp_git_repo, dependency_map_simple, sample_yaml_file
+    ):
         """Should pass validation when version bumped after change"""
         # Commit initial version
         subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
-        subprocess.run(["git", "commit", "-m", "Add config"], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "commit", "-m", "Add config"], check=True, capture_output=True
+        )
 
         # Modify content AND bump version
         content = yaml.safe_load(open(sample_yaml_file))
         content["description"] = "Modified description"
         content["version"] = "1.1.0"
-        with open(sample_yaml_file, 'w') as f:
+        with open(sample_yaml_file, "w") as f:
             yaml.dump(content, f)
 
         subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
@@ -482,16 +527,20 @@ class TestDocumentationVersionValidator:
         assert result is True
         assert len(validator.errors) == 0
 
-    def test_validate_invalid_version_format(self, temp_git_repo, dependency_map_simple, sample_yaml_file):
+    def test_validate_invalid_version_format(
+        self, temp_git_repo, dependency_map_simple, sample_yaml_file
+    ):
         """Should detect invalid semantic version format"""
         # Commit initial version
         subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
-        subprocess.run(["git", "commit", "-m", "Add config"], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "commit", "-m", "Add config"], check=True, capture_output=True
+        )
 
         # Change to invalid version format
         content = yaml.safe_load(open(sample_yaml_file))
         content["version"] = "not-a-version"
-        with open(sample_yaml_file, 'w') as f:
+        with open(sample_yaml_file, "w") as f:
             yaml.dump(content, f)
 
         subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
@@ -504,14 +553,18 @@ class TestDocumentationVersionValidator:
         assert validator.errors[0].error_type == "INVALID_VERSION"
         assert "not-a-version" in validator.errors[0].reason
 
-    def test_validate_whitespace_only_change(self, temp_git_repo, dependency_map_simple, sample_yaml_file):
+    def test_validate_whitespace_only_change(
+        self, temp_git_repo, dependency_map_simple, sample_yaml_file
+    ):
         """Should treat trailing newlines as substantive change requiring version bump"""
         # Commit initial version
         subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
-        subprocess.run(["git", "commit", "-m", "Add config"], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "commit", "-m", "Add config"], check=True, capture_output=True
+        )
 
         # Add trailing newlines
-        with open(sample_yaml_file, 'a') as f:
+        with open(sample_yaml_file, "a") as f:
             f.write("\n\n")
 
         subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
@@ -525,12 +578,14 @@ class TestDocumentationVersionValidator:
         assert len(validator.errors) == 1
         assert validator.errors[0].error_type == "VERSION_NOT_BUMPED"
 
-    def test_validate_dependent_outdated(self, temp_git_repo, dependency_map_with_dependents):
+    def test_validate_dependent_outdated(
+        self, temp_git_repo, dependency_map_with_dependents
+    ):
         """Should detect when dependent file version is outdated"""
         # Create source file with version 2.0.0
         source_file = temp_git_repo / "source.yaml"
         source_content = {"version": "2.0.0", "name": "source"}
-        with open(source_file, 'w') as f:
+        with open(source_file, "w") as f:
             yaml.dump(source_content, f)
 
         # Create dependent file with older version 1.0.0
@@ -553,12 +608,14 @@ class TestDocumentationVersionValidator:
         assert validator.errors[0].current_version == "1.0.0"
         assert validator.errors[0].expected_version == "2.0.0"
 
-    def test_validate_dependent_synchronized(self, temp_git_repo, dependency_map_with_dependents):
+    def test_validate_dependent_synchronized(
+        self, temp_git_repo, dependency_map_with_dependents
+    ):
         """Should pass when dependent file version matches source"""
         # Create source file with version 2.0.0
         source_file = temp_git_repo / "source.yaml"
         source_content = {"version": "2.0.0", "name": "source"}
-        with open(source_file, 'w') as f:
+        with open(source_file, "w") as f:
             yaml.dump(source_content, f)
 
         # Create dependent file with matching version
@@ -576,15 +633,19 @@ class TestDocumentationVersionValidator:
         assert result is True
         assert len(validator.errors) == 0
 
-    def test_generate_error_report_structure(self, temp_git_repo, dependency_map_simple, sample_yaml_file):
+    def test_generate_error_report_structure(
+        self, temp_git_repo, dependency_map_simple, sample_yaml_file
+    ):
         """Should generate complete JSON error report with LLM guidance"""
         # Create scenario with version not bumped error
         subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
-        subprocess.run(["git", "commit", "-m", "Add config"], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "commit", "-m", "Add config"], check=True, capture_output=True
+        )
 
         content = yaml.safe_load(open(sample_yaml_file))
         content["description"] = "Modified"
-        with open(sample_yaml_file, 'w') as f:
+        with open(sample_yaml_file, "w") as f:
             yaml.dump(content, f)
 
         subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
@@ -614,12 +675,14 @@ class TestDocumentationVersionValidator:
         assert "files_to_read" in report["llm_guidance"]
         assert "files_to_edit" in report["llm_guidance"]
 
-    def test_generate_error_report_multiple_error_types(self, temp_git_repo, dependency_map_with_dependents):
+    def test_generate_error_report_multiple_error_types(
+        self, temp_git_repo, dependency_map_with_dependents
+    ):
         """Should categorize multiple error types in report"""
         # Create invalid version in source
         source_file = temp_git_repo / "source.yaml"
         source_content = {"version": "invalid-version", "name": "source"}
-        with open(source_file, 'w') as f:
+        with open(source_file, "w") as f:
             yaml.dump(source_content, f)
 
         # Create outdated dependent
@@ -644,10 +707,13 @@ class TestDocumentationVersionValidator:
 # Integration Tests - Complete Workflows
 # =============================================================================
 
+
 class TestIntegrationWorkflows:
     """Integration tests for complete validation workflows"""
 
-    def test_workflow_new_file_no_version_required(self, temp_git_repo, dependency_map_simple):
+    def test_workflow_new_file_no_version_required(
+        self, temp_git_repo, dependency_map_simple
+    ):
         """Workflow: Add new file (not tracked) - should pass"""
         new_file = temp_git_repo / "untracked.txt"
         new_file.write_text("New content")
@@ -658,17 +724,21 @@ class TestIntegrationWorkflows:
 
         assert result is True
 
-    def test_workflow_modify_bump_commit(self, temp_git_repo, dependency_map_simple, sample_yaml_file):
+    def test_workflow_modify_bump_commit(
+        self, temp_git_repo, dependency_map_simple, sample_yaml_file
+    ):
         """Workflow: Modify tracked file → bump version → stage → validate → pass"""
         # Initial commit
         subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
-        subprocess.run(["git", "commit", "-m", "Initial"], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "commit", "-m", "Initial"], check=True, capture_output=True
+        )
 
         # Modify and bump version
         content = yaml.safe_load(open(sample_yaml_file))
         content["new_field"] = "new value"
         content["version"] = "1.1.0"
-        with open(sample_yaml_file, 'w') as f:
+        with open(sample_yaml_file, "w") as f:
             yaml.dump(content, f)
 
         subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
@@ -680,17 +750,21 @@ class TestIntegrationWorkflows:
         assert result is True
         assert len(validator.errors) == 0
 
-    def test_workflow_forgot_version_bump_blocked(self, temp_git_repo, dependency_map_simple, sample_yaml_file):
+    def test_workflow_forgot_version_bump_blocked(
+        self, temp_git_repo, dependency_map_simple, sample_yaml_file
+    ):
         """Workflow: Modify tracked file → forget version bump → validation fails"""
         # Initial commit
         subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
-        subprocess.run(["git", "commit", "-m", "Initial"], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "commit", "-m", "Initial"], check=True, capture_output=True
+        )
 
         # Modify WITHOUT bumping version
         content = yaml.safe_load(open(sample_yaml_file))
         content["new_field"] = "new value"
         # version stays 1.0.0
-        with open(sample_yaml_file, 'w') as f:
+        with open(sample_yaml_file, "w") as f:
             yaml.dump(content, f)
 
         subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
@@ -704,12 +778,14 @@ class TestIntegrationWorkflows:
         assert validator.errors[0].error_type == "VERSION_NOT_BUMPED"
         assert "required_actions" in report_error_dict(validator.errors[0])
 
-    def test_workflow_source_update_requires_dependent_update(self, temp_git_repo, dependency_map_with_dependents):
+    def test_workflow_source_update_requires_dependent_update(
+        self, temp_git_repo, dependency_map_with_dependents
+    ):
         """Workflow: Update source → dependent outdated → validation fails with guidance"""
         # Initial state: both at 1.0.0
         source_file = temp_git_repo / "source.yaml"
         source_content = {"version": "1.0.0", "name": "source"}
-        with open(source_file, 'w') as f:
+        with open(source_file, "w") as f:
             yaml.dump(source_content, f)
 
         docs_dir = temp_git_repo / "docs"
@@ -718,13 +794,19 @@ class TestIntegrationWorkflows:
         doc_content = "<!-- version: 1.0.0 -->\n# Guide\n"
         doc_file.write_text(doc_content)
 
-        subprocess.run(["git", "add", "source.yaml", "docs/guide.md"], check=True, capture_output=True)
-        subprocess.run(["git", "commit", "-m", "Initial"], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "add", "source.yaml", "docs/guide.md"],
+            check=True,
+            capture_output=True,
+        )
+        subprocess.run(
+            ["git", "commit", "-m", "Initial"], check=True, capture_output=True
+        )
 
         # Update source to 2.0.0
         source_content["version"] = "2.0.0"
         source_content["new_config"] = "added"
-        with open(source_file, 'w') as f:
+        with open(source_file, "w") as f:
             yaml.dump(source_content, f)
 
         subprocess.run(["git", "add", "source.yaml"], check=True, capture_output=True)
@@ -746,12 +828,14 @@ class TestIntegrationWorkflows:
         report = validator.generate_error_report()
         assert "docs/guide.md" in report["llm_guidance"]["files_to_edit"]
 
-    def test_workflow_multiple_files_multiple_errors(self, temp_git_repo, dependency_map_with_dependents):
+    def test_workflow_multiple_files_multiple_errors(
+        self, temp_git_repo, dependency_map_with_dependents
+    ):
         """Workflow: Multiple files with different error types"""
         # Source with invalid version
         source_file = temp_git_repo / "source.yaml"
         source_content = {"version": "not-valid", "name": "source"}
-        with open(source_file, 'w') as f:
+        with open(source_file, "w") as f:
             yaml.dump(source_content, f)
 
         # Dependent with old version (would be outdated if source was valid)
@@ -779,6 +863,7 @@ class TestIntegrationWorkflows:
 # Edge Cases and Error Conditions
 # =============================================================================
 
+
 class TestEdgeCases:
     """Edge cases and error conditions"""
 
@@ -796,7 +881,7 @@ class TestEdgeCases:
         """Should handle dependency map with no tracked_files key"""
         dep_map = temp_git_repo / ".dependency-map.yaml"
         config = {"validation_rules": {}}
-        with open(dep_map, 'w') as f:
+        with open(dep_map, "w") as f:
             yaml.dump(config, f)
 
         validator = DocumentationVersionValidator(".dependency-map.yaml")
@@ -804,7 +889,9 @@ class TestEdgeCases:
 
         assert result is True
 
-    def test_version_cache_avoids_redundant_parsing(self, temp_git_repo, dependency_map_simple, sample_yaml_file):
+    def test_version_cache_avoids_redundant_parsing(
+        self, temp_git_repo, dependency_map_simple, sample_yaml_file
+    ):
         """Should cache version parsing results to avoid redundant file reads"""
         subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
 
@@ -815,7 +902,7 @@ class TestEdgeCases:
             path="config.yaml",
             version_format="yaml",
             version_field="version",
-            triggers_update=[]
+            triggers_update=[],
         )
         version1 = validator._get_current_version(tracked)
 
@@ -839,7 +926,7 @@ class TestEdgeCases:
         """Should handle different version formats in same validation run"""
         # Create YAML file
         yaml_file = temp_git_repo / "config.yaml"
-        with open(yaml_file, 'w') as f:
+        with open(yaml_file, "w") as f:
             yaml.dump({"version": "1.0.0"}, f)
 
         # Create Markdown file
@@ -850,14 +937,24 @@ class TestEdgeCases:
         dep_map = temp_git_repo / ".dependency-map.yaml"
         config = {
             "tracked_files": [
-                {"path": "config.yaml", "version_format": "yaml", "triggers_update": []},
-                {"path": "doc.md", "version_format": "markdown_comment", "triggers_update": []}
+                {
+                    "path": "config.yaml",
+                    "version_format": "yaml",
+                    "triggers_update": [],
+                },
+                {
+                    "path": "doc.md",
+                    "version_format": "markdown_comment",
+                    "triggers_update": [],
+                },
             ]
         }
-        with open(dep_map, 'w') as f:
+        with open(dep_map, "w") as f:
             yaml.dump(config, f)
 
-        subprocess.run(["git", "add", "config.yaml", "doc.md"], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "add", "config.yaml", "doc.md"], check=True, capture_output=True
+        )
 
         validator = DocumentationVersionValidator(".dependency-map.yaml")
         result = validator.validate()
@@ -868,6 +965,7 @@ class TestEdgeCases:
 # =============================================================================
 # Helper Functions
 # =============================================================================
+
 
 def report_error_dict(error: ValidationError) -> Dict:
     """Convert ValidationError to dict for assertion checking"""
@@ -883,10 +981,10 @@ def report_error_dict(error: ValidationError) -> Dict:
                 "section_id": s.section_id,
                 "location": s.location,
                 "description": s.description,
-                "source": s.source
+                "source": s.source,
             }
             for s in (error.sections_to_update or [])
-        ]
+        ],
     }
 
 

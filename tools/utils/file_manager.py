@@ -39,7 +39,7 @@ class FileManager:
                 logging.error(f"Path is not a file: {file_path}")
                 return None
 
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
             logging.debug(f"Read file: {file_path} ({len(content)} chars)")
@@ -74,11 +74,13 @@ class FileManager:
                 return False
 
             if self.dry_run:
-                logging.info(f"[DRY RUN] Would write file: {file_path} ({len(content)} chars)")
+                logging.info(
+                    f"[DRY RUN] Would write file: {file_path} ({len(content)} chars)"
+                )
                 return True
 
             # Write file
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 f.write(content)
 
             logging.debug(f"Wrote file: {file_path} ({len(content)} chars)")
@@ -163,7 +165,9 @@ class FileManager:
             logging.error(f"Error copying file {source} to {destination}: {e}")
             return False
 
-    def list_files(self, directory: Path, pattern: str = "*", recursive: bool = False) -> List[Path]:
+    def list_files(
+        self, directory: Path, pattern: str = "*", recursive: bool = False
+    ) -> List[Path]:
         """
         List files in a directory matching a pattern.
 
@@ -194,7 +198,9 @@ class FileManager:
             # Filter to only files (not directories)
             files = [f for f in files if f.is_file()]
 
-            logging.debug(f"Found {len(files)} files in {directory} matching '{pattern}'")
+            logging.debug(
+                f"Found {len(files)} files in {directory} matching '{pattern}'"
+            )
             return files
 
         except Exception as e:
@@ -275,11 +281,15 @@ class FileManager:
             dir_path = Path(dir_path)
 
             if not dir_path.exists():
-                logging.warning(f"Directory does not exist (already removed?): {dir_path}")
+                logging.warning(
+                    f"Directory does not exist (already removed?): {dir_path}"
+                )
                 return True
 
             if self.dry_run:
-                action = "remove directory tree" if recursive else "remove empty directory"
+                action = (
+                    "remove directory tree" if recursive else "remove empty directory"
+                )
                 logging.info(f"[DRY RUN] Would {action}: {dir_path}")
                 return True
 

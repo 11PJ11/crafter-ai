@@ -20,17 +20,19 @@ class DependencyResolver:
 
         # Define dependency type mappings
         self.dependency_mappings = {
-            'tasks': 'tasks',
-            'templates': 'templates',
-            'checklists': 'checklists',
-            'data': 'data',
-            'utils': 'utils',
-            'workflows': 'workflows',
-            'agent-teams': 'agent-teams',
-            'embed_knowledge': 'data'  # embed_knowledge files are under data/embed/
+            "tasks": "tasks",
+            "templates": "templates",
+            "checklists": "checklists",
+            "data": "data",
+            "utils": "utils",
+            "workflows": "workflows",
+            "agent-teams": "agent-teams",
+            "embed_knowledge": "data",  # embed_knowledge files are under data/embed/
         }
 
-    def resolve_dependency_path(self, dependency_type: str, dependency_name: str) -> Optional[Path]:
+    def resolve_dependency_path(
+        self, dependency_type: str, dependency_name: str
+    ) -> Optional[Path]:
         """
         Resolve the full path to a dependency file.
 
@@ -59,20 +61,31 @@ class DependencyResolver:
 
         for candidate in candidates:
             if candidate.exists() and candidate.is_file():
-                logging.debug(f"Resolved dependency: {dependency_type}/{dependency_name} -> {candidate}")
+                logging.debug(
+                    f"Resolved dependency: {dependency_type}/{dependency_name} -> {candidate}"
+                )
                 return candidate
 
         # Search for partial matches
         if dependency_dir.exists():
             for file_path in dependency_dir.iterdir():
-                if file_path.is_file() and dependency_name.lower() in file_path.name.lower():
-                    logging.debug(f"Found partial match for dependency: {dependency_type}/{dependency_name} -> {file_path}")
+                if (
+                    file_path.is_file()
+                    and dependency_name.lower() in file_path.name.lower()
+                ):
+                    logging.debug(
+                        f"Found partial match for dependency: {dependency_type}/{dependency_name} -> {file_path}"
+                    )
                     return file_path
 
-        logging.warning(f"Could not resolve dependency: {dependency_type}/{dependency_name}")
+        logging.warning(
+            f"Could not resolve dependency: {dependency_type}/{dependency_name}"
+        )
         return None
 
-    def resolve_dependency(self, dependency_type: str, dependency_name: str) -> Optional[str]:
+    def resolve_dependency(
+        self, dependency_type: str, dependency_name: str
+    ) -> Optional[str]:
         """
         Resolve and load content of a dependency.
 
@@ -92,10 +105,14 @@ class DependencyResolver:
             logging.error(f"Could not read dependency content: {dependency_path}")
             return None
 
-        logging.debug(f"Loaded dependency: {dependency_type}/{dependency_name} ({len(content)} chars)")
+        logging.debug(
+            f"Loaded dependency: {dependency_type}/{dependency_name} ({len(content)} chars)"
+        )
         return content
 
-    def resolve_placeholders(self, config: Union[Dict[str, Any], List[Any], str]) -> Union[Dict[str, Any], List[Any], str]:
+    def resolve_placeholders(
+        self, config: Union[Dict[str, Any], List[Any], str]
+    ) -> Union[Dict[str, Any], List[Any], str]:
         """
         Resolve {root} placeholders in configuration recursively.
 
@@ -116,8 +133,8 @@ class DependencyResolver:
 
         elif isinstance(config, str):
             # Replace {root} with the source directory path
-            if '{root}' in config:
-                resolved = config.replace('{root}', str(self.source_dir))
+            if "{root}" in config:
+                resolved = config.replace("{root}", str(self.source_dir))
                 logging.debug(f"Resolved placeholder: {config} -> {resolved}")
                 return resolved
             return config
@@ -126,7 +143,9 @@ class DependencyResolver:
             # Return non-string, non-dict, non-list values as-is
             return config
 
-    def get_dependency_metadata(self, dependency_type: str, dependency_name: str) -> Dict[str, Any]:
+    def get_dependency_metadata(
+        self, dependency_type: str, dependency_name: str
+    ) -> Dict[str, Any]:
         """
         Get metadata about a dependency.
 
@@ -140,37 +159,39 @@ class DependencyResolver:
         dependency_path = self.resolve_dependency_path(dependency_type, dependency_name)
         if not dependency_path:
             return {
-                'exists': False,
-                'type': dependency_type,
-                'name': dependency_name,
-                'path': None,
-                'size': 0,
-                'format': 'unknown'
+                "exists": False,
+                "type": dependency_type,
+                "name": dependency_name,
+                "path": None,
+                "size": 0,
+                "format": "unknown",
             }
 
         try:
             stat = dependency_path.stat()
             return {
-                'exists': True,
-                'type': dependency_type,
-                'name': dependency_name,
-                'path': str(dependency_path),
-                'size': stat.st_size,
-                'format': dependency_path.suffix.lstrip('.') or 'unknown',
-                'modified': stat.st_mtime
+                "exists": True,
+                "type": dependency_type,
+                "name": dependency_name,
+                "path": str(dependency_path),
+                "size": stat.st_size,
+                "format": dependency_path.suffix.lstrip(".") or "unknown",
+                "modified": stat.st_mtime,
             }
         except Exception as e:
             logging.error(f"Error getting dependency metadata: {e}")
             return {
-                'exists': False,
-                'type': dependency_type,
-                'name': dependency_name,
-                'path': str(dependency_path) if dependency_path else None,
-                'size': 0,
-                'format': 'unknown'
+                "exists": False,
+                "type": dependency_type,
+                "name": dependency_name,
+                "path": str(dependency_path) if dependency_path else None,
+                "size": 0,
+                "format": "unknown",
             }
 
-    def validate_dependencies(self, dependencies: Dict[str, List[str]]) -> Dict[str, List[Dict[str, Any]]]:
+    def validate_dependencies(
+        self, dependencies: Dict[str, List[str]]
+    ) -> Dict[str, List[Dict[str, Any]]]:
         """
         Validate all dependencies in a configuration.
 
@@ -193,7 +214,9 @@ class DependencyResolver:
 
         return validation_results
 
-    def get_missing_dependencies(self, dependencies: Dict[str, List[str]]) -> List[Dict[str, str]]:
+    def get_missing_dependencies(
+        self, dependencies: Dict[str, List[str]]
+    ) -> List[Dict[str, str]]:
         """
         Get list of missing dependencies.
 
@@ -208,12 +231,14 @@ class DependencyResolver:
 
         for dep_type, results in validation_results.items():
             for result in results:
-                if not result['exists']:
-                    missing.append({
-                        'type': dep_type,
-                        'name': result['name'],
-                        'expected_path': result['path']
-                    })
+                if not result["exists"]:
+                    missing.append(
+                        {
+                            "type": dep_type,
+                            "name": result["name"],
+                            "expected_path": result["path"],
+                        }
+                    )
 
         return missing
 
@@ -232,27 +257,27 @@ class DependencyResolver:
             return ""
 
         # Determine how to format based on file extension
-        if file_format.lower() in ['yaml', 'yml']:
+        if file_format.lower() in ["yaml", "yml"]:
             # Embed YAML as code block
             return f"```yaml\n{content.strip()}\n```"
 
-        elif file_format.lower() in ['json']:
+        elif file_format.lower() in ["json"]:
             # Embed JSON as code block
             return f"```json\n{content.strip()}\n```"
 
-        elif file_format.lower() in ['py', 'python']:
+        elif file_format.lower() in ["py", "python"]:
             # Embed Python as code block
             return f"```python\n{content.strip()}\n```"
 
-        elif file_format.lower() in ['js', 'javascript']:
+        elif file_format.lower() in ["js", "javascript"]:
             # Embed JavaScript as code block
             return f"```javascript\n{content.strip()}\n```"
 
-        elif file_format.lower() in ['sh', 'bash']:
+        elif file_format.lower() in ["sh", "bash"]:
             # Embed shell scripts as code block
             return f"```bash\n{content.strip()}\n```"
 
-        elif file_format.lower() in ['md', 'markdown']:
+        elif file_format.lower() in ["md", "markdown"]:
             # Embed markdown directly (but clean up any conflicting headers)
             return self._clean_markdown_for_embedding(content)
 
@@ -271,14 +296,16 @@ class DependencyResolver:
             str: Cleaned markdown content
         """
         # Remove any YAML front matter
-        content = re.sub(r'^---\n.*?\n---\n', '', markdown_content, flags=re.DOTALL)
+        content = re.sub(r"^---\n.*?\n---\n", "", markdown_content, flags=re.DOTALL)
 
         # Ensure proper spacing
         content = content.strip()
 
         return content
 
-    def resolve_all_dependencies(self, dependencies: Dict[str, List[str]]) -> Dict[str, Dict[str, str]]:
+    def resolve_all_dependencies(
+        self, dependencies: Dict[str, List[str]]
+    ) -> Dict[str, Dict[str, str]]:
         """
         Resolve all dependencies and return their content.
 
@@ -298,13 +325,17 @@ class DependencyResolver:
                 if content:
                     # Get file format for proper embedding
                     dep_path = self.resolve_dependency_path(dep_type, dep_file)
-                    file_format = dep_path.suffix.lstrip('.') if dep_path else 'txt'
+                    file_format = dep_path.suffix.lstrip(".") if dep_path else "txt"
 
                     # Format content for embedding
-                    formatted_content = self.format_content_for_embedding(content, file_format)
+                    formatted_content = self.format_content_for_embedding(
+                        content, file_format
+                    )
                     resolved[dep_type][dep_file] = formatted_content
                 else:
-                    logging.warning(f"Could not resolve dependency: {dep_type}/{dep_file}")
+                    logging.warning(
+                        f"Could not resolve dependency: {dep_type}/{dep_file}"
+                    )
 
         return resolved
 
@@ -328,12 +359,14 @@ class DependencyResolver:
         missing_count = len(missing)
         resolved_count = total_deps - missing_count
 
-        summary_parts.extend([
-            f"- **Total Dependencies**: {total_deps}",
-            f"- **Resolved**: {resolved_count}",
-            f"- **Missing**: {missing_count}",
-            ""
-        ])
+        summary_parts.extend(
+            [
+                f"- **Total Dependencies**: {total_deps}",
+                f"- **Resolved**: {resolved_count}",
+                f"- **Missing**: {missing_count}",
+                "",
+            ]
+        )
 
         # List by type
         for dep_type, results in validation_results.items():
@@ -344,8 +377,8 @@ class DependencyResolver:
             summary_parts.append("")
 
             for result in results:
-                status = "✅" if result['exists'] else "❌"
-                size_info = f" ({result['size']} bytes)" if result['exists'] else ""
+                status = "✅" if result["exists"] else "❌"
+                size_info = f" ({result['size']} bytes)" if result["exists"] else ""
                 summary_parts.append(f"- {status} {result['name']}{size_info}")
 
             summary_parts.append("")

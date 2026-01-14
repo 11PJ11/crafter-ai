@@ -12,27 +12,25 @@ from typing import List, Dict, Tuple
 # Replacement patterns (order matters - most specific first!)
 REPLACEMENTS = [
     # Directory paths
-    (r'nWave/', 'nWave/'),
+    (r"nWave/", "nWave/"),
     (r'"nWave"', '"nWave"'),
     (r"'nWave'", "'nWave'"),
-    (r'=nWave', '=nWave'),
-
+    (r"=nWave", "=nWave"),
     # IDE category paths
-    (r'agents/nw', 'agents/nw'),
-    (r'commands/nw', 'commands/nw'),
+    (r"agents/nw", "agents/nw"),
+    (r"commands/nw", "commands/nw"),
     (r'"nw"', '"nw"'),  # In config contexts (quoted)
-
     # Command prefixes (with colon to avoid confusion)
-    (r'/nw:', '/nw:'),
-
+    (r"/nw:", "/nw:"),
     # Branding (all variations)
-    (r'nWave', 'nWave'),
-    (r'nWave', 'nWave'),
-    (r'nWave', 'nWave'),  # Remaining lowercase (not in paths)
+    (r"nWave", "nWave"),
+    (r"nWave", "nWave"),
+    (r"nWave", "nWave"),  # Remaining lowercase (not in paths)
 ]
 
-EXCLUDE_DIRS = {'.git', 'dist', 'output', 'node_modules', '__pycache__'}
-INCLUDE_EXTENSIONS = {'.md', '.py', '.sh', '.yaml', '.yml', '.json', '.txt'}
+EXCLUDE_DIRS = {".git", "dist", "output", "node_modules", "__pycache__"}
+INCLUDE_EXTENSIONS = {".md", ".py", ".sh", ".yaml", ".yml", ".json", ".txt"}
+
 
 def should_process_file(file_path: Path) -> bool:
     """Determine if file should be processed."""
@@ -40,7 +38,10 @@ def should_process_file(file_path: Path) -> bool:
         return False
     return file_path.suffix in INCLUDE_EXTENSIONS
 
-def apply_replacements(content: str, file_path: Path, dry_run: bool, verbose: bool) -> Tuple[str, int]:
+
+def apply_replacements(
+    content: str, file_path: Path, dry_run: bool, verbose: bool
+) -> Tuple[str, int]:
     """Apply all replacement patterns to content."""
     modified_content = content
     total_replacements = 0
@@ -55,52 +56,64 @@ def apply_replacements(content: str, file_path: Path, dry_run: bool, verbose: bo
 
     return modified_content, total_replacements
 
-def rename_files_in_directory(root_dir: Path, dry_run: bool = False, verbose: bool = False) -> Dict[str, int]:
-    """Process all eligible files in directory tree."""
-    stats = {
-        'files_processed': 0,
-        'files_modified': 0,
-        'total_replacements': 0
-    }
 
-    for file_path in root_dir.rglob('*'):
+def rename_files_in_directory(
+    root_dir: Path, dry_run: bool = False, verbose: bool = False
+) -> Dict[str, int]:
+    """Process all eligible files in directory tree."""
+    stats = {"files_processed": 0, "files_modified": 0, "total_replacements": 0}
+
+    for file_path in root_dir.rglob("*"):
         if not file_path.is_file() or not should_process_file(file_path):
             continue
 
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 original_content = f.read()
 
             modified_content, replacements = apply_replacements(
                 original_content, file_path, dry_run, verbose
             )
 
-            stats['files_processed'] += 1
+            stats["files_processed"] += 1
 
             if replacements > 0:
-                stats['files_modified'] += 1
-                stats['total_replacements'] += replacements
+                stats["files_modified"] += 1
+                stats["total_replacements"] += replacements
 
                 if not dry_run:
-                    with open(file_path, 'w', encoding='utf-8') as f:
+                    with open(file_path, "w", encoding="utf-8") as f:
                         f.write(modified_content)
-                    print(f"✓ Modified: {file_path.relative_to(root_dir)} ({replacements}x)")
+                    print(
+                        f"✓ Modified: {file_path.relative_to(root_dir)} ({replacements}x)"
+                    )
                 else:
-                    print(f"[DRY RUN] Would modify: {file_path.relative_to(root_dir)} ({replacements}x)")
+                    print(
+                        f"[DRY RUN] Would modify: {file_path.relative_to(root_dir)} ({replacements}x)"
+                    )
 
         except Exception as e:
             print(f"✗ Error processing {file_path}: {e}")
 
     return stats
 
+
 def main():
-    parser = argparse.ArgumentParser(description='Rename nWave to nWave')
-    parser.add_argument('--root', type=Path, default=Path.cwd(),
-                       help='Root directory to process (default: current directory)')
-    parser.add_argument('--dry-run', action='store_true',
-                       help='Show what would be changed without modifying files')
-    parser.add_argument('--verbose', action='store_true',
-                       help='Show detailed replacement information')
+    parser = argparse.ArgumentParser(description="Rename nWave to nWave")
+    parser.add_argument(
+        "--root",
+        type=Path,
+        default=Path.cwd(),
+        help="Root directory to process (default: current directory)",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show what would be changed without modifying files",
+    )
+    parser.add_argument(
+        "--verbose", action="store_true", help="Show detailed replacement information"
+    )
 
     args = parser.parse_args()
 
@@ -118,5 +131,6 @@ def main():
     print(f"Total replacements: {stats['total_replacements']}")
     print("=" * 60)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

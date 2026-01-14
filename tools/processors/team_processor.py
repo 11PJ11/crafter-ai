@@ -12,6 +12,7 @@ import yaml
 
 import sys
 from pathlib import Path
+
 sys.path.append(str(Path(__file__).parent.parent))
 from utils.dependency_resolver import DependencyResolver
 
@@ -49,7 +50,9 @@ class TeamProcessor:
             logging.error(f"Error loading team config {team_file}: {e}")
             return None
 
-    def get_team_info_from_config(self, team_name: str, config: Dict[str, Any]) -> Dict[str, Any]:
+    def get_team_info_from_config(
+        self, team_name: str, config: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Extract team information from main framework-catalog.yaml.
 
@@ -60,25 +63,27 @@ class TeamProcessor:
         Returns:
             dict: Team information
         """
-        agent_teams = config.get('agent_teams', {})
+        agent_teams = config.get("agent_teams", {})
 
         # Look for exact match first
         if team_name in agent_teams:
             return agent_teams[team_name]
 
         # Look for team name without extension
-        team_base = Path(team_name).stem.replace('-', '_')
+        team_base = Path(team_name).stem.replace("-", "_")
         if team_base in agent_teams:
             return agent_teams[team_base]
 
         # Return default team info
         return {
-            'description': f'{team_name} collaborative team',
-            'scope': 'general_projects',
-            'methodology_focus': '5d_wave'
+            "description": f"{team_name} collaborative team",
+            "scope": "general_projects",
+            "methodology_focus": "5d_wave",
         }
 
-    def generate_team_agent_header(self, team_name: str, team_config: Dict[str, Any], main_config: Dict[str, Any]) -> str:
+    def generate_team_agent_header(
+        self, team_name: str, team_config: Dict[str, Any], main_config: Dict[str, Any]
+    ) -> str:
         """
         Generate header for team agent.
 
@@ -94,7 +99,7 @@ class TeamProcessor:
         team_info = self.get_team_info_from_config(team_name, main_config)
 
         # Extract team metadata
-        team_meta = team_config.get('team', {})
+        team_meta = team_config.get("team", {})
 
         header_parts = [
             f"# {team_base}-team",
@@ -108,7 +113,7 @@ class TeamProcessor:
             f"**Focus**: {team_info.get('methodology_focus', '5d_wave')}",
             f"**Scope**: {team_info.get('scope', 'general_projects')}",
             f"**Description**: {team_info.get('description', 'Collaborative team for nWave methodology')}",
-            ""
+            "",
         ]
 
         return "\n".join(header_parts)
@@ -125,7 +130,7 @@ class TeamProcessor:
         """
         try:
             # Convert agent name to file name (underscore to hyphen)
-            agent_file_name = agent_name.replace('_', '-') + '.md'
+            agent_file_name = agent_name.replace("_", "-") + ".md"
             agent_file_path = self.source_dir / "agents" / agent_file_name
 
             if agent_file_path.exists():
@@ -151,8 +156,8 @@ class TeamProcessor:
             str: Team composition content with embedded agents
         """
         # Get team agents from the team config structure
-        team_meta = team_config.get('team', {})
-        team_agents = team_meta.get('agents', {})
+        team_meta = team_config.get("team", {})
+        team_agents = team_meta.get("agents", {})
 
         if not team_agents:
             return "## Team Composition\n\nNo agents defined for this team.\n"
@@ -161,26 +166,25 @@ class TeamProcessor:
             "## Team Composition",
             "",
             "This massive collaborative team includes the following specialized agents with their complete specifications embedded:",
-            ""
+            "",
         ]
 
         # Process agents by wave
         for wave_name, wave_agents in team_agents.items():
-            composition_parts.extend([
-                f"### {wave_name.upper().replace('_', ' ')}",
-                ""
-            ])
+            composition_parts.extend([f"### {wave_name.upper().replace('_', ' ')}", ""])
 
             for agent_name, agent_info in wave_agents.items():
-                role = agent_info.get('role', 'Team Member')
-                wave_priority = agent_info.get('wave_priority', 1)
-                responsibilities = agent_info.get('responsibilities', [])
+                role = agent_info.get("role", "Team Member")
+                wave_priority = agent_info.get("wave_priority", 1)
+                responsibilities = agent_info.get("responsibilities", [])
 
-                composition_parts.extend([
-                    f"#### {agent_name.replace('_', ' ').title()} ({role})",
-                    f"**Wave Priority**: {wave_priority}",
-                    ""
-                ])
+                composition_parts.extend(
+                    [
+                        f"#### {agent_name.replace('_', ' ').title()} ({role})",
+                        f"**Wave Priority**: {wave_priority}",
+                        "",
+                    ]
+                )
 
                 # Add responsibilities
                 if responsibilities:
@@ -190,20 +194,16 @@ class TeamProcessor:
                     composition_parts.append("")
 
                 # Embed the full agent content
-                composition_parts.extend([
-                    f"**EMBEDDED AGENT SPECIFICATION:**",
-                    ""
-                ])
+                composition_parts.extend([f"**EMBEDDED AGENT SPECIFICATION:**", ""])
 
                 agent_content = self.load_agent_content(agent_name)
                 # Indent the agent content to make it clearly embedded
-                indented_content = "\n".join(f"    {line}" if line.strip() else "" for line in agent_content.split("\n"))
+                indented_content = "\n".join(
+                    f"    {line}" if line.strip() else ""
+                    for line in agent_content.split("\n")
+                )
                 composition_parts.append(indented_content)
-                composition_parts.extend([
-                    "",
-                    "---",
-                    ""
-                ])
+                composition_parts.extend(["", "---", ""])
 
         return "\n".join(composition_parts)
 
@@ -217,51 +217,33 @@ class TeamProcessor:
         Returns:
             str: Workflow coordination content
         """
-        workflow = team_config.get('workflow', {})
+        workflow = team_config.get("workflow", {})
         if not workflow:
             return "## Workflow Coordination\n\nNo workflow patterns defined.\n"
 
-        coord_parts = [
-            "## Workflow Coordination",
-            ""
-        ]
+        coord_parts = ["## Workflow Coordination", ""]
 
         # Add coordination strategy
-        strategy = workflow.get('coordination_strategy', 'sequential')
-        coord_parts.extend([
-            f"**Coordination Strategy**: {strategy}",
-            ""
-        ])
+        strategy = workflow.get("coordination_strategy", "sequential")
+        coord_parts.extend([f"**Coordination Strategy**: {strategy}", ""])
 
         # Add wave coordination if available
-        if 'wave_coordination' in workflow:
-            wave_coord = workflow['wave_coordination']
-            coord_parts.extend([
-                "### Wave Coordination",
-                ""
-            ])
+        if "wave_coordination" in workflow:
+            wave_coord = workflow["wave_coordination"]
+            coord_parts.extend(["### Wave Coordination", ""])
 
             for wave, coordination in wave_coord.items():
-                coord_parts.extend([
-                    f"**{wave} Wave**:",
-                    f"- Coordination: {coordination}",
-                    ""
-                ])
+                coord_parts.extend(
+                    [f"**{wave} Wave**:", f"- Coordination: {coordination}", ""]
+                )
 
         # Add collaboration patterns
-        if 'collaboration_patterns' in workflow:
-            patterns = workflow['collaboration_patterns']
-            coord_parts.extend([
-                "### Collaboration Patterns",
-                ""
-            ])
+        if "collaboration_patterns" in workflow:
+            patterns = workflow["collaboration_patterns"]
+            coord_parts.extend(["### Collaboration Patterns", ""])
 
             for pattern_name, pattern_info in patterns.items():
-                coord_parts.extend([
-                    f"**{pattern_name}**:",
-                    f"- {pattern_info}",
-                    ""
-                ])
+                coord_parts.extend([f"**{pattern_name}**:", f"- {pattern_info}", ""])
 
         return "\n".join(coord_parts)
 
@@ -278,20 +260,24 @@ class TeamProcessor:
         try:
             # Create simplified config for embedding
             embedded_config = {
-                'team': team_config.get('team', {}),
-                'agents': team_config.get('agents', {}),
-                'workflow': team_config.get('workflow', {}),
-                'integration': team_config.get('integration', {})
+                "team": team_config.get("team", {}),
+                "agents": team_config.get("agents", {}),
+                "workflow": team_config.get("workflow", {}),
+                "integration": team_config.get("integration", {}),
             }
 
-            yaml_content = yaml.dump(embedded_config, default_flow_style=False, sort_keys=False)
+            yaml_content = yaml.dump(
+                embedded_config, default_flow_style=False, sort_keys=False
+            )
             return f"## Team Configuration\n\n```yaml\n{yaml_content}```\n"
 
         except Exception as e:
             logging.error(f"Failed to generate team YAML config: {e}")
             return "## Team Configuration\n\nConfiguration unavailable.\n"
 
-    def generate_team_agent_content(self, team_file: Path, config: Dict[str, Any]) -> str:
+    def generate_team_agent_content(
+        self, team_file: Path, config: Dict[str, Any]
+    ) -> str:
         """
         Generate complete team agent content.
 
@@ -370,7 +356,9 @@ class TeamProcessor:
             logging.error(f"Error processing team {team_file}: {e}")
             return False
 
-    def get_team_info(self, team_file: Path, config: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def get_team_info(
+        self, team_file: Path, config: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
         """
         Extract team information for configuration generation.
 
@@ -387,15 +375,15 @@ class TeamProcessor:
                 return None
 
             team_info = self.get_team_info_from_config(team_file.name, config)
-            team_meta = team_config.get('team', {})
+            team_meta = team_config.get("team", {})
 
             return {
-                'name': team_file.stem,
-                'file': f"{team_file.stem}-team.md",
-                'description': team_info.get('description'),
-                'scope': team_info.get('scope'),
-                'methodology_focus': team_info.get('methodology_focus'),
-                'agents': list(team_config.get('agents', {}).keys())
+                "name": team_file.stem,
+                "file": f"{team_file.stem}-team.md",
+                "description": team_info.get("description"),
+                "scope": team_info.get("scope"),
+                "methodology_focus": team_info.get("methodology_focus"),
+                "agents": list(team_config.get("agents", {}).keys()),
             }
 
         except Exception as e:
