@@ -277,22 +277,46 @@ install_framework() {
     mkdir -p "$CLAUDE_CONFIG_DIR"
 
     # Copy agents directory (excluding README.md)
+    # Uses built dist/ide first, falls back to source nWave/agents if incomplete
     info "Installing agents..."
-    if [[ -d "$FRAMEWORK_SOURCE/agents/nw" ]]; then
-        mkdir -p "$CLAUDE_CONFIG_DIR/agents/nw"
+    local source_agent_dir="$PROJECT_ROOT/nWave/agents"
+    local dist_agent_dir="$FRAMEWORK_SOURCE/agents/nw"
+    local dist_agent_count=0
+    local source_agent_count=0
 
-        find "$FRAMEWORK_SOURCE/agents/nw" -name "*.md" ! -name "README.md" | while read -r file; do
-            local relative_path="${file#$FRAMEWORK_SOURCE/agents/nw/}"
+    if [[ -d "$dist_agent_dir" ]]; then
+        dist_agent_count=$(find "$dist_agent_dir" -name "*.md" ! -name "README.md" 2>/dev/null | wc -l)
+    fi
+    if [[ -d "$source_agent_dir" ]]; then
+        source_agent_count=$(find "$source_agent_dir" -name "*.md" ! -name "README.md" 2>/dev/null | wc -l)
+    fi
+
+    mkdir -p "$CLAUDE_CONFIG_DIR/agents/nw"
+
+    # Use dist if it has most agents, otherwise fall back to source
+    if [[ $dist_agent_count -ge $((source_agent_count / 2)) ]] && [[ $dist_agent_count -gt 5 ]]; then
+        info "Installing from built distribution ($dist_agent_count agents)..."
+        find "$dist_agent_dir" -name "*.md" ! -name "README.md" | while read -r file; do
+            local relative_path="${file#$dist_agent_dir/}"
             local target_file="$CLAUDE_CONFIG_DIR/agents/nw/$relative_path"
             local target_dir=$(dirname "$target_file")
-
             mkdir -p "$target_dir"
             cp "$file" "$target_file"
         done
-
-        local copied_agents=$(find "$CLAUDE_CONFIG_DIR/agents/nw" -name "*.md" | wc -l)
-        info "Installed $copied_agents agent files"
+    else
+        # Fallback: copy from source (agents work without embedding)
+        info "Build incomplete ($dist_agent_count/$source_agent_count agents), using source files..."
+        find "$source_agent_dir" -name "*.md" ! -name "README.md" | while read -r file; do
+            local relative_path="${file#$source_agent_dir/}"
+            local target_file="$CLAUDE_CONFIG_DIR/agents/nw/$relative_path"
+            local target_dir=$(dirname "$target_file")
+            mkdir -p "$target_dir"
+            cp "$file" "$target_file"
+        done
     fi
+
+    local copied_agents=$(find "$CLAUDE_CONFIG_DIR/agents/nw" -name "*.md" | wc -l)
+    info "Installed $copied_agents agent files"
 
     # Copy commands directory
     info "Installing commands..."
