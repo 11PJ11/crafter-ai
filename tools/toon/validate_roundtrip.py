@@ -137,26 +137,43 @@ def dependency_list_validator(original: str, compiled: str) -> bool:
 
 
 def metadata_validator(compiled: str) -> bool:
-    """Validate compiled output has valid YAML frontmatter.
+    """Validate compiled output has valid metadata.
+
+    Accepts both YAML frontmatter and TOON ## ID section format.
 
     Args:
         compiled: Compiled markdown content
 
     Returns:
-        True if frontmatter is valid YAML with required fields
+        True if valid metadata present (either YAML frontmatter or TOON ID section)
     """
+    # Check for YAML frontmatter first
     frontmatter = extract_frontmatter(compiled)
-    if frontmatter is None:
-        return False
+    if frontmatter is not None:
+        # Required fields for Claude Code agent format
+        required_fields = ["name"]
+        for field in required_fields:
+            if field not in frontmatter:
+                return False
+        return True
 
-    # Required fields for Claude Code agent format
-    required_fields = ["name"]
+    # Check for TOON ## ID section format
+    # TOON agents have ## ID section with role: name | id
+    toon_id_match = re.search(
+        r"^##\s*ID\s*\n((?:.*\n)*?)(?=^##|$)",
+        compiled,
+        re.MULTILINE | re.IGNORECASE
+    )
+    if toon_id_match:
+        id_content = toon_id_match.group(1)
+        # Check for required metadata: role, title, or id
+        has_metadata = bool(
+            re.search(r"role:", id_content, re.IGNORECASE) or
+            re.search(r"title:", id_content, re.IGNORECASE)
+        )
+        return has_metadata
 
-    for field in required_fields:
-        if field not in frontmatter:
-            return False
-
-    return True
+    return False
 
 
 def section_presence_validator(compiled: str) -> bool:
@@ -219,11 +236,11 @@ def extract_commands(content: str) -> list[str]:
 
     Looks for patterns like:
     - help: description
-    within a commands: section
+    within a commands: section. Handles both YAML and TOON formats.
     """
     commands = []
 
-    # Find commands section specifically
+    # Find commands section specifically (YAML format)
     commands_section_match = re.search(
         r"^commands:\s*\n((?:[\s#].*\n)*)",
         content,
@@ -240,21 +257,25 @@ def extract_commands(content: str) -> list[str]:
             if cmd not in ["tasks", "templates", "checklists", "data", "embed_knowledge"]:
                 commands.append(cmd)
 
-    # Also check ## Commands section format (TOON compiled output)
-    commands_header_match = re.search(
-        r"^##\s*Commands?\s*\n((?:.*\n)*?)(?=^##|^#\s|\Z)",
-        content,
-        re.MULTILINE | re.IGNORECASE,
-    )
-
-    if commands_header_match:
-        commands_content = commands_header_match.group(1)
-        # Extract command names
-        command_pattern = r"^\s*-\s*([a-zA-Z_-]+):\s*[^-\n]"
-        for match in re.finditer(command_pattern, commands_content, re.MULTILINE):
-            cmd = match.group(1).lower()
-            if cmd not in ["tasks", "templates", "checklists", "data", "embed_knowledge"]:
-                commands.append(cmd)
+    # Check ## Commands or ## COMMANDS section format (TOON compiled output)
+    # Split by ## sections and find COMMANDS section
+    sections = re.split(r"^##\s+", content, flags=re.MULTILINE)
+    for i, section in enumerate(sections):
+        if section.upper().startswith("COMMANDS"):
+            # Found the COMMANDS section
+            # Extract everything until the next section (which would be at start of next element)
+            # Remove the section header to get just the content
+            lines = section.split("\n")
+            if lines[0].upper().startswith("COMMANDS"):
+                # Skip the header line and find command lines
+                commands_content = "\n".join(lines[1:])
+                # Extract command names (- command_name: description)
+                command_pattern = r"^\s*-\s*([a-zA-Z_-]+):\s*[^-\n]"
+                for match in re.finditer(command_pattern, commands_content, re.MULTILINE):
+                    cmd = match.group(1).lower()
+                    if cmd not in ["tasks", "templates", "checklists", "data", "embed_knowledge"]:
+                        commands.append(cmd)
+            break
 
     # Also check embedded YAML block with agent.commands
     yaml_commands_match = re.search(
@@ -278,6 +299,7 @@ def extract_dependencies(content: str) -> dict[str, list[str]]:
     """Extract dependencies from markdown content.
 
     Returns dict with keys: tasks, templates, checklists, data, embed_knowledge
+    Handles both YAML format and TOON ## DEPENDENCIES format.
     """
     deps: dict[str, list[str]] = {
         "tasks": [],
@@ -287,7 +309,7 @@ def extract_dependencies(content: str) -> dict[str, list[str]]:
         "embed_knowledge": [],
     }
 
-    # Find dependencies section
+    # Find dependencies section (YAML format under "dependencies:")
     deps_section_match = re.search(
         r"dependencies:\s*\n((?:\s+[^\n]+\n)*)", content, re.IGNORECASE
     )
@@ -301,6 +323,26 @@ def extract_dependencies(content: str) -> dict[str, list[str]]:
             if cat_match:
                 items = re.findall(r"^\s+-\s*(.+?)$", cat_match.group(1), re.MULTILINE)
                 deps[category] = [item.strip() for item in items]
+
+    # Also check ## DEPENDENCIES section (TOON format)
+    toon_deps_match = re.search(
+        r"^##\s*DEPENDENCIES\s*\n((?:(?!^##).)*)",
+        content,
+        re.MULTILINE | re.IGNORECASE | re.DOTALL,
+    )
+    if toon_deps_match:
+        deps_content = toon_deps_match.group(1)
+
+        # Extract each category from TOON format
+        for category in deps:
+            # Pattern: category:\n  - item (with optional parenthetical description)
+            cat_pattern = rf"^{category}:\s*\n((?:\s+-\s*[^\n]+\n)*)"
+            cat_match = re.search(cat_pattern, deps_content, re.MULTILINE | re.IGNORECASE)
+            if cat_match:
+                items_str = cat_match.group(1)
+                # Extract items, removing trailing descriptions in parentheses
+                items = re.findall(r"^\s+-\s*([^\s()]+(?:\s+[^\s()]+)*)\s*(?:\([^)]*\))?", items_str, re.MULTILINE)
+                deps[category] = [item.strip() for item in items if item.strip()]
 
     return deps
 

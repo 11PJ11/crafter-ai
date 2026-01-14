@@ -14,7 +14,7 @@
   "current_phase": "Phase 7: Execute All Steps",
   "failed_phase": null,
   "failure_reason": null,
-  "completed_steps": ["01-01"],
+  "completed_steps": ["01-01", "01-02"],
   "failed_step": null,
   "skip_flags": {
     "baseline": false,
