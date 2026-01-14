@@ -3,11 +3,13 @@
 Parses agent specification files in Markdown format with:
 - YAML frontmatter (---...---)
 - Embedded YAML code blocks (```yaml...```)
+- Inline YAML sections (without code block markers)
 - Markdown content sections
 
 Output matches TOONParserOutput schema for compatibility with template rendering.
 
 Step: 02-01 - Parse researcher-reviewer.md
+Step: 05-01 - Enhanced for illustrator.md inline YAML parsing
 """
 
 import re
@@ -120,17 +122,18 @@ class MDAgentParser:
         return {}
 
     def _extract_embedded_yaml(self, content: str) -> dict[str, Any]:
-        """Extract embedded YAML code blocks from content.
+        """Extract embedded YAML code blocks or inline YAML from content.
 
         Looks for:
             ```yaml
             key: value
             ```
 
-        Falls back to section-by-section extraction if YAML parsing fails.
+        If no yaml code blocks found, falls back to inline YAML extraction
+        (sections defined with key: at start of line without code block markers).
 
         Returns:
-            Merged dict of all YAML blocks
+            Merged dict of all YAML blocks/sections
         """
         yaml_block_pattern = r"```yaml\s*\n(.*?)\n```"
         matches = re.findall(yaml_block_pattern, content, re.DOTALL)
@@ -146,7 +149,179 @@ class MDAgentParser:
                 fallback = self._extract_sections_fallback(match)
                 result.update(fallback)
 
+        # If no yaml code blocks found, try inline YAML extraction
+        if not result:
+            result = self._extract_inline_yaml_sections(content)
+
         return result
+
+    def _extract_inline_yaml_sections(self, content: str) -> dict[str, Any]:
+        """Extract inline YAML sections from markdown content.
+
+        For files like illustrator.md where YAML is inline without code block markers.
+        Identifies top-level sections starting at column 0 (e.g., "agent:", "persona:")
+        and extracts their content until the next top-level section or markdown heading.
+
+        Handles special case where parent sections (agent:, persona:, pipeline:)
+        have children at the same indentation level - these are grouped under the parent.
+
+        Args:
+            content: Full markdown content
+
+        Returns:
+            Dict with section names and parsed content
+        """
+        result: dict[str, Any] = {}
+
+        # Remove frontmatter first
+        content_without_frontmatter = re.sub(
+            r"^---\s*\n.*?\n---\s*\n",
+            "",
+            content,
+            flags=re.DOTALL
+        )
+
+        lines = content_without_frontmatter.split("\n")
+
+        # Define known parent sections that have children
+        # These are sections that appear as "section:" on their own line
+        # followed by key: value pairs that belong to them
+        known_parent_sections = {
+            'agent', 'persona', 'pipeline', 'dependencies', 'elicitation',
+            'handoff', 'review_criteria', 'toolchain_recommendations',
+            'lip_sync_framework', 'export_framework'
+        }
+
+        # First pass: identify all section boundaries
+        sections_found = self._identify_section_boundaries(
+            lines, known_parent_sections
+        )
+
+        # Second pass: extract content for each section
+        for section_name, (start_idx, end_idx) in sections_found.items():
+            section_lines = lines[start_idx:end_idx]
+            section_data = self._parse_inline_section(section_name, section_lines)
+            if section_data is not None:
+                result[section_name] = section_data
+
+        return result
+
+    def _identify_section_boundaries(
+        self,
+        lines: list[str],
+        known_parent_sections: set[str]
+    ) -> dict[str, tuple[int, int]]:
+        """Identify start and end indices for each section.
+
+        Args:
+            lines: All lines of content
+            known_parent_sections: Set of section names that have children
+
+        Returns:
+            Dict mapping section name to (start_idx, end_idx) of content lines
+        """
+        sections: dict[str, tuple[int, int]] = {}
+        section_pattern = r"^([a-zA-Z_][a-zA-Z0-9_-]*):\s*(.*)$"
+
+        current_section: str | None = None
+        current_start: int = 0
+        in_parent_section = False
+
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+
+            # Markdown headings and HTML comments end current section
+            if self._is_section_terminator(line):
+                if current_section is not None:
+                    sections[current_section] = (current_start, i)
+                    current_section = None
+                in_parent_section = False
+                i += 1
+                continue
+
+            match = re.match(section_pattern, line)
+            if match:
+                section_name = match.group(1)
+                inline_value = match.group(2).strip()
+
+                # Handle known parent sections (e.g., agent:, persona:, pipeline:)
+                if self._is_parent_section(section_name, inline_value, known_parent_sections):
+                    if current_section is not None:
+                        sections[current_section] = (current_start, i)
+                    current_section = section_name
+                    current_start = i + 1
+                    in_parent_section = True
+
+                elif not in_parent_section:
+                    # Regular section (not child of parent)
+                    if current_section is not None:
+                        sections[current_section] = (current_start, i)
+                    current_section = section_name
+                    current_start = i + 1 if not inline_value else i
+                    in_parent_section = False
+                # else: child key of parent section - continue collecting
+
+            i += 1
+
+        # Save final section
+        if current_section is not None:
+            sections[current_section] = (current_start, len(lines))
+
+        return sections
+
+    def _is_section_terminator(self, line: str) -> bool:
+        """Check if line terminates the current section.
+
+        Markdown headings and HTML comments are section terminators.
+        """
+        return line.startswith("#") or line.startswith("<!--")
+
+    def _is_parent_section(
+        self,
+        section_name: str,
+        inline_value: str,
+        known_parent_sections: set[str]
+    ) -> bool:
+        """Check if this is a known parent section with no inline value.
+
+        Parent sections (like agent:, persona:, pipeline:) have children
+        at the same indentation level.
+        """
+        return section_name in known_parent_sections and not inline_value
+
+    def _parse_inline_section(
+        self, section_name: str, content_lines: list[str]
+    ) -> Any | None:
+        """Parse an inline YAML section's content.
+
+        Args:
+            section_name: Name of the section (e.g., 'agent', 'persona')
+            content_lines: Lines of content belonging to this section
+
+        Returns:
+            Parsed section data, or None if empty/invalid
+        """
+        if not content_lines:
+            return None
+
+        # Join lines and try to parse as YAML
+        content = "\n".join(content_lines)
+
+        # Skip empty content
+        if not content.strip():
+            return None
+
+        # Try parsing as YAML first
+        try:
+            parsed = yaml.safe_load(content)
+            if parsed is not None:
+                return parsed
+        except yaml.YAMLError:
+            pass
+
+        # Fall back to line-by-line extraction
+        return self._extract_items_from_lines(content_lines, content)
 
     def _extract_sections_fallback(self, yaml_content: str) -> dict[str, Any]:
         """Extract top-level sections from malformed YAML.
