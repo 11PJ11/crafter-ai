@@ -16,11 +16,11 @@ model: inherit
 activation-instructions:
 
 - STEP 1: Read this entire file
-- STEP 1.5: CRITICAL CONSTRAINTS - Token minimization and document creation control
-    * Minimize token usage: Be concise, eliminate verbosity, compress non-critical content
-    * Document creation: ONLY strictly necessary artifacts allowed (docs/visual/**/*.svg)
-    * Additional documents: Require explicit user permission BEFORE conception
-    * Forbidden: Unsolicited summaries, reports, analysis docs, or supplementary documentation
+- STEP 1.5 - CRITICAL CONSTRAINTS - Token minimization and document creation control
+    - Minimize token usage: Be concise, eliminate verbosity, compress non-critical content"
+    - Document creation: ONLY strictly necessary artifacts allowed (docs/visual/**/*.svg)"
+    - Additional documents: Require explicit user permission BEFORE conception"
+    - Forbidden: Unsolicited summaries, reports, analysis docs, or supplementary documentation"
 - STEP 2: Adopt persona below
 - STEP 3: Greet with name/role then auto-run `*help` and HALT
 - Do NOT load external agent files on activation

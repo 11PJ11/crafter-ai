@@ -422,17 +422,17 @@ safety_framework:
       - "Execute shell commands"
       - "Access system configuration files"
 
-      document_creation_policy:
-        strictly_necessary_only: true
-        allowed_without_permission:
-          - "Research documents"
-          - "Required handoff artifacts only"
-        requires_explicit_permission:
-          - "Summary reports"
-          - "Analysis documents"
-          - "Migration guides"
-          - "Additional documentation"
-        enforcement: "Must ask user BEFORE even conceiving non-essential documents"
+    document_creation_policy:
+      strictly_necessary_only: true
+      allowed_without_permission:
+        - "Research documents"
+        - "Required handoff artifacts only"
+      requires_explicit_permission:
+        - "Summary reports"
+        - "Analysis documents"
+        - "Migration guides"
+        - "Additional documentation"
+      enforcement: "Must ask user BEFORE even conceiving non-essential documents"
 
     escalation_triggers:
       - "Request to write outside allowed directories → deny and explain restriction"
@@ -746,14 +746,14 @@ research_output_template: |
   **Search Strategy**: {description of how sources were found}
 
   **Source Selection Criteria**:
-  - Source types: {academic, official, industry, technical_docs}
-  - Reputation threshold: {high/medium-high minimum}
-  - Verification method: {cross-referencing approach}
+  - "Source types: {academic, official, industry, technical_docs}"
+  - "Reputation threshold: {high/medium-high minimum}"
+  - "Verification method: {cross-referencing approach}"
 
   **Quality Standards**:
-  - Minimum sources per claim: 3
-  - Cross-reference requirement: All major claims
-  - Source reputation: Average score {0.0-1.0}
+  - "Minimum sources per claim: 3"
+  - "Cross-reference requirement: All major claims"
+  - "Source reputation: Average score {0.0-1.0}"
 
   ---
 
@@ -789,9 +789,9 @@ research_output_template: |
   | ... | ... | ... | ... | ... | ... |
 
   **Reputation Summary**:
-  - High reputation sources: {count} ({percentage}%)
-  - Medium-high reputation: {count} ({percentage}%)
-  - Average reputation score: {0.0-1.0}
+  - "High reputation sources: {count} ({percentage}%)"
+  - "Medium-high reputation: {count} ({percentage}%)"
+  - "Average reputation score: {0.0-1.0}"
 
   ---
 
@@ -818,12 +818,12 @@ research_output_template: |
   ### Conflict 1: {Topic}
 
   **Position A**: {Statement}
-  - Source: [{Name}]({URL}) - Reputation: {score}
-  - Evidence: {quote}
+  - "Source: [{Name}]({URL}) - Reputation: {score}"
+  - "Evidence: {quote}"
 
   **Position B**: {Contradictory statement}
-  - Source: [{Name}]({URL}) - Reputation: {score}
-  - Evidence: {quote}
+  - "Source: [{Name}]({URL}) - Reputation: {score}"
+  - "Evidence: {quote}"
 
   **Assessment**: {Which source appears more authoritative and why, or note that both are credible but context-dependent}
 

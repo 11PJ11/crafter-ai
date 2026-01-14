@@ -43,8 +43,17 @@ class AgentProcessor:
 
         yaml_content = match.group(1)
 
+        # Strip HTML comments (BUILD:INJECT markers) before parsing
+        # These are processed separately by process_embed_injections()
+        yaml_content_clean = re.sub(
+            r'^\s*<!--.*?-->\s*$',
+            '',
+            yaml_content,
+            flags=re.MULTILINE
+        )
+
         try:
-            yaml_config = yaml.safe_load(yaml_content)
+            yaml_config = yaml.safe_load(yaml_content_clean)
             # Remove the YAML block from content since we'll rebuild it
             remaining_content = content[:match.start()] + content[match.end():]
             return yaml_config, remaining_content
