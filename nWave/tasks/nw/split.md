@@ -7,9 +7,10 @@
 ### STEP 1: Extract Agent Parameter
 
 Parse the first argument to extract the agent name:
-- User provides: `/nw:split @devop "auth-upgrade"`
-- Extract agent name: `devop` (remove @ prefix)
-- Validate agent name is one of: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
+- User provides: `/nw:split @software-crafter "auth-upgrade"`
+- Extract agent name: `software-crafter` (remove @ prefix)
+- Validate agent name is one of: software-crafter, researcher, solution-architect, product-owner, acceptance-designer, devop
+- **Default/Recommended agent**: software-crafter (optimized for TDD step generation with 14-phase enforcement)
 
 ### STEP 2: Verify Agent Availability
 
@@ -18,7 +19,7 @@ Before proceeding to Task tool invocation:
 - Check agent is not at maximum concurrency
 - Confirm agent type is compatible with this command
 
-Valid agents: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
+Valid agents: software-crafter (default), researcher, solution-architect, product-owner, acceptance-designer, devop
 
 If agent unavailable:
 - Return error: "Agent '{agent-name}' is not currently available. Available agents: {list}"
@@ -39,11 +40,11 @@ Apply these rules to ALL extracted parameters:
 4. Reject if extra parameters provided beyond expected count
 
 Example for split.md:
-- Input: `/nw:split  @devop  "auth-upgrade"`
+- Input: `/nw:split  @software-crafter  "auth-upgrade"`
 - After parsing:
-  - agent_name = "devop" (whitespace trimmed)
+  - agent_name = "software-crafter" (whitespace trimmed)
   - project_id = "auth-upgrade" (quotes removed)
-- Input: `/nw:split @devop "auth-upgrade" extra`
+- Input: `/nw:split @software-crafter "auth-upgrade" extra`
 - Error: "Too many parameters. Expected 2, got 3"
 
 ### STEP 4: Pre-Invocation Validation Checklist
@@ -120,18 +121,18 @@ After generating files, show the user a summary and request approval before comm
 ```
 
 **Parameter Substitution**:
-- Replace `{agent-name}` with the extracted agent name (e.g., "devop")
+- Replace `{agent-name}` with the extracted agent name (e.g., "software-crafter")
 - Replace `{project-id}` with the project ID
 
 ### Agent Registry
 
-Valid agents are: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop
+Valid agents are: software-crafter (default), researcher, solution-architect, product-owner, acceptance-designer, devop
 
 Note: This list is maintained in sync with the agent registry at `~/.claude/agents/nw/`. If you encounter "agent not found" errors, verify the agent is registered in that location.
 
 Each agent has specific capabilities:
+- **software-crafter** (default): Implementation, testing, refactoring, code quality, TDD step generation
 - **researcher**: Information gathering, analysis, documentation
-- **software-crafter**: Implementation, testing, refactoring, code quality
 - **solution-architect**: System design, architecture decisions, planning
 - **product-owner**: Requirements, business analysis, stakeholder alignment
 - **acceptance-designer**: Test definition, acceptance criteria, BDD
@@ -139,9 +140,9 @@ Each agent has specific capabilities:
 
 ### Example Invocations
 
-**For devop splitting auth-upgrade roadmap**:
+**For software-crafter splitting auth-upgrade roadmap** (recommended):
 ```
-Task: "You are the devop agent.
+Task: "You are the software-crafter agent.
 
 Your specific role for this command: Decompose roadmaps into self-contained atomic task files
 
@@ -169,7 +170,7 @@ Generate atomic, self-contained task files from the roadmap for project: microse
 
 **Invalid Agent Name**:
 - If agent name is not in the valid list, respond with error:
-  "Invalid agent name: {name}. Must be one of: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop"
+  "Invalid agent name: {name}. Must be one of: software-crafter, researcher, solution-architect, product-owner, acceptance-designer, devop"
 
 **Missing Project ID**:
 - If project ID is not provided, respond with error:
@@ -190,8 +191,8 @@ Each generated task file contains all information needed for completion, enablin
 ## Usage Examples
 
 ```bash
-# Split architecture roadmap into tasks
-/nw:split @devop "microservices-migration"
+# Split architecture roadmap into tasks (recommended: software-crafter)
+/nw:split @software-crafter "microservices-migration"
 
 # Split data pipeline roadmap
 /nw:split @data-engineer "analytics-pipeline"
@@ -208,7 +209,7 @@ Regenerates a single step file after review rejection, incorporating feedback wi
 
 **Usage**:
 ```bash
-/nw:split @devop "{project-id}" --regenerate-step {step-id} --feedback "{feedback}"
+/nw:split @software-crafter "{project-id}" --regenerate-step {step-id} --feedback "{feedback}"
 ```
 
 **Purpose**:
@@ -223,7 +224,7 @@ Regenerates a single step file after review rejection, incorporating feedback wi
 **Examples**:
 ```bash
 # Regenerate step 01-02 with feedback
-/nw:split @devop "auth-upgrade" --regenerate-step 01-02 --feedback "Missing acceptance criteria for error handling"
+/nw:split @software-crafter "auth-upgrade" --regenerate-step 01-02 --feedback "Missing acceptance criteria for error handling"
 
 # Regenerate step 02-01 with technical feedback
 /nw:split @software-crafter "shopping-cart" --regenerate-step 02-01 --feedback "Dependencies not specified - requires step 01-03"
@@ -249,7 +250,7 @@ Phase 6: Review Step Files
 Step 01-02 Review → REJECTED
   ↓
 Automatic retry (attempt 1 of 2):
-  Invoke: /nw:split @devop "{project-id}"
+  Invoke: /nw:split @software-crafter "{project-id}"
           --regenerate-step 01-02
           --feedback "{rejection-reason}"
   ↓

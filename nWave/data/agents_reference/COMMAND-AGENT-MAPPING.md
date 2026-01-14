@@ -1,6 +1,6 @@
 # Command-Agent Auto-Activation Mapping
 
-<!-- version: 1.0.0 -->
+<!-- version: 1.1.0 -->
 
 ## Configuration Status: ✅ COMPLETE
 
@@ -52,6 +52,11 @@ All DW commands are now configured to automatically trigger specialized agent te
 ### Workflow Commands
 
 - **`/nw:start`** → `nWave-core-team-team`, `business-analyst` (Riley)
+- **`/nw:roadmap`** → Specified agent (via @agent parameter)
+- **`/nw:split`** → `software-crafter` (Crafty) - Default agent for TDD step generation with 14-phase enforcement
+- **`/nw:execute`** → Specified agent (via @agent parameter)
+- **`/nw:review`** → Specified reviewer agent (via @agent parameter)
+- **`/nw:finalize`** → `devop`, `feature-completion-coordinator`
 - **`/nw:git`** → `feature-completion-coordinator`, `systematic-refactorer`, `business-analyst` (Riley)
 
 ## Context Isolation Guarantees
@@ -92,15 +97,15 @@ All DW commands are now configured to automatically trigger specialized agent te
 
 ## Validation Status
 
-- ✅ **12/12** commands configured for auto-agent activation
-- ✅ **3/12** commands have explicit context-free implementation patterns
+- ✅ **17/17** commands configured for auto-agent activation
+- ✅ **3/17** commands have explicit context-free implementation patterns
 - ✅ **16 specialized agents** available for domain-specific work
 - ✅ **Main instance isolation** preserved across all command flows
 - ✅ **Agent coordination** through shared documentation artifacts
 
 ## Next Steps
 
-1. **Pattern Propagation**: Apply context-free implementation pattern to remaining 9 commands
+1. **Pattern Propagation**: Apply context-free implementation pattern to remaining 14 commands
 2. **Testing**: Validate actual command execution follows context-free patterns
 3. **Documentation**: Ensure all agents understand their coordination protocols
 4. **Monitoring**: Track that main instance maintains context isolation

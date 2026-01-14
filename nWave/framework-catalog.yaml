@@ -17,8 +17,8 @@
 # DO NOT add YAML frontmatter to task files - configure commands here instead.
 # ============================================================================
 
-name: "AI-Craft nWave"
-version: "1.0.0"
+name: "nWave"
+version: "1.1.0"
 description: "Comprehensive DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER methodology with visual architecture lifecycle management"
 author: "AI-Craft Team"
 license: "MIT"
@@ -186,7 +186,8 @@ commands:
 
   split:
     description: "Generate atomic task files from roadmap"
-    argument_hint: "[agent] [project-id] - Example: @devop \"auth-upgrade\""
+    argument_hint: "[agent] [project-id] - Example: @software-crafter \"auth-upgrade\""
+    agents: ["software_crafter"]
     outputs: ["task_files"]
 
   review:
