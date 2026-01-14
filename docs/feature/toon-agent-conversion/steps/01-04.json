@@ -1,0 +1,45 @@
+{
+  "task_specification": {
+    "task_id": "01-04",
+    "wave": "wave_1",
+    "agent": "researcher",
+    "action": "Token measurement and compression validation for researcher",
+    "gate": "G4_compression",
+    "requires": [
+      "01-03"
+    ],
+    "output": "Token metrics (original, toon, ratio)",
+    "duration_estimate": "10-15 min"
+  },
+  "acceptance_criteria": [
+    "Token measurement completed (original and TOON)",
+    "Compression ratio >= 5:1 (or 4:1 with documented exception)",
+    "Token metrics recorded in step output"
+  ],
+  "tdd_cycle": {
+    "methodology": "11-phase TDD",
+    "phases": [
+      "RED",
+      "GREEN",
+      "REFACTOR",
+      "REVIEW",
+      "POST-REFACTOR_REVIEW",
+      "INTEGRATE",
+      "E2E_TEST",
+      "PERFORMANCE",
+      "DOCUMENTATION",
+      "COMMIT",
+      "REFLECT"
+    ],
+    "tdd_phase_tracking": {
+      "current_phase": null,
+      "phase_execution_log": []
+    }
+  },
+  "validation": {
+    "status": "approved",
+    "notes": "",
+    "timestamp": "2026-01-14",
+    "reviewer": "batch-review-automation"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "task_specification": {
+    "task_id": "22-04",
+    "wave": "wave_5",
+    "action": "Archive original MD files (preserve, do not delete)",
+    "gate": null,
+    "requires": [
+      "22-03"
+    ],
+    "output": "nWave/agents/archive/md-originals/",
+    "duration_estimate": "15-30 min"
+  },
+  "acceptance_criteria": [
+    "All 21 .md files verified present before archiving",
+    "Archive directory created: nWave/agents/archive/md-originals/",
+    "All MD files copied to archive (not moved)",
+    "Archive integrity verified"
+  ],
+  "tdd_cycle": {
+    "methodology": "11-phase TDD",
+    "phases": [
+      "RED",
+      "GREEN",
+      "REFACTOR",
+      "REVIEW",
+      "POST-REFACTOR_REVIEW",
+      "INTEGRATE",
+      "E2E_TEST",
+      "PERFORMANCE",
+      "DOCUMENTATION",
+      "COMMIT",
+      "REFLECT"
+    ],
+    "tdd_phase_tracking": {
+      "current_phase": null,
+      "phase_execution_log": []
+    }
+  },
+  "validation": {
+    "status": "approved",
+    "notes": "",
+    "timestamp": "2026-01-14",
+    "reviewer": "batch-review-automation"
+  }
+}

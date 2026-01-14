@@ -1,0 +1,47 @@
+{
+  "task_specification": {
+    "task_id": "M3",
+    "wave": "wave_3",
+    "type": "milestone",
+    "action": "Wave 3 validation and checkpoint",
+    "gate": "G5_tests",
+    "requires": [
+      "18-04"
+    ],
+    "output": "Milestone validation report",
+    "duration_estimate": "30 min"
+  },
+  "acceptance_criteria": [
+    "5 agents converted in Wave 3",
+    "Cumulative: 18/21 agents converted (86%)",
+    "All roundtrip validations passed",
+    "All compression ratios >= 5:1",
+    "Test suite 100% green"
+  ],
+  "tdd_cycle": {
+    "methodology": "11-phase TDD",
+    "phases": [
+      "RED",
+      "GREEN",
+      "REFACTOR",
+      "REVIEW",
+      "POST-REFACTOR_REVIEW",
+      "INTEGRATE",
+      "E2E_TEST",
+      "PERFORMANCE",
+      "DOCUMENTATION",
+      "COMMIT",
+      "REFLECT"
+    ],
+    "tdd_phase_tracking": {
+      "current_phase": null,
+      "phase_execution_log": []
+    }
+  },
+  "validation": {
+    "status": "approved",
+    "notes": "",
+    "timestamp": "2026-01-14",
+    "reviewer": "batch-review-automation"
+  }
+}

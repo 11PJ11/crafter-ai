@@ -1,0 +1,45 @@
+{
+  "task_specification": {
+    "task_id": "22-02",
+    "wave": "wave_5",
+    "action": "Generate comprehensive token metrics report",
+    "gate": null,
+    "requires": [
+      "22-01"
+    ],
+    "output": "docs/feature/toon-agent-conversion/metrics-report.yaml",
+    "duration_estimate": "30-45 min"
+  },
+  "acceptance_criteria": [
+    "Total original tokens (all 22 agents) documented",
+    "Total TOON tokens (all 22 agents) documented",
+    "Overall compression ratio calculated",
+    "Per-agent compression breakdown included"
+  ],
+  "tdd_cycle": {
+    "methodology": "11-phase TDD",
+    "phases": [
+      "RED",
+      "GREEN",
+      "REFACTOR",
+      "REVIEW",
+      "POST-REFACTOR_REVIEW",
+      "INTEGRATE",
+      "E2E_TEST",
+      "PERFORMANCE",
+      "DOCUMENTATION",
+      "COMMIT",
+      "REFLECT"
+    ],
+    "tdd_phase_tracking": {
+      "current_phase": null,
+      "phase_execution_log": []
+    }
+  },
+  "validation": {
+    "status": "approved",
+    "notes": "",
+    "timestamp": "2026-01-14",
+    "reviewer": "batch-review-automation"
+  }
+}

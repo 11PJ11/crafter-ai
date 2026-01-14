@@ -1,0 +1,45 @@
+{
+  "task_specification": {
+    "task_id": "22-05",
+    "wave": "wave_5",
+    "action": "Update documentation references to use TOON files",
+    "gate": null,
+    "requires": [
+      "22-04"
+    ],
+    "output": "Updated documentation files",
+    "duration_estimate": "30-45 min"
+  },
+  "acceptance_criteria": [
+    "nWave/README.md updated to reference .toon files",
+    "tools/toon/README.md updated",
+    "All files referencing .md agent paths updated",
+    "No broken references"
+  ],
+  "tdd_cycle": {
+    "methodology": "11-phase TDD",
+    "phases": [
+      "RED",
+      "GREEN",
+      "REFACTOR",
+      "REVIEW",
+      "POST-REFACTOR_REVIEW",
+      "INTEGRATE",
+      "E2E_TEST",
+      "PERFORMANCE",
+      "DOCUMENTATION",
+      "COMMIT",
+      "REFLECT"
+    ],
+    "tdd_phase_tracking": {
+      "current_phase": null,
+      "phase_execution_log": []
+    }
+  },
+  "validation": {
+    "status": "approved",
+    "notes": "",
+    "timestamp": "2026-01-14",
+    "reviewer": "batch-review-automation"
+  }
+}

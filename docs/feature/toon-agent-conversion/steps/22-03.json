@@ -1,0 +1,45 @@
+{
+  "task_specification": {
+    "task_id": "22-03",
+    "wave": "wave_5",
+    "action": "Update baseline.yaml with final measurements",
+    "gate": null,
+    "requires": [
+      "22-02"
+    ],
+    "output": "docs/feature/toon-agent-conversion/baseline.yaml (updated)",
+    "duration_estimate": "15-30 min"
+  },
+  "acceptance_criteria": [
+    "phase_2_pilot_migration.status: COMPLETED",
+    "phase_3_full_conversion.status: COMPLETED",
+    "measurements.agent_inventory.converted_to_toon: 22",
+    "measurements.agent_inventory.conversion_percent: 100"
+  ],
+  "tdd_cycle": {
+    "methodology": "11-phase TDD",
+    "phases": [
+      "RED",
+      "GREEN",
+      "REFACTOR",
+      "REVIEW",
+      "POST-REFACTOR_REVIEW",
+      "INTEGRATE",
+      "E2E_TEST",
+      "PERFORMANCE",
+      "DOCUMENTATION",
+      "COMMIT",
+      "REFLECT"
+    ],
+    "tdd_phase_tracking": {
+      "current_phase": null,
+      "phase_execution_log": []
+    }
+  },
+  "validation": {
+    "status": "approved",
+    "notes": "",
+    "timestamp": "2026-01-14",
+    "reviewer": "batch-review-automation"
+  }
+}

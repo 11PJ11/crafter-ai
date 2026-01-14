@@ -1,0 +1,46 @@
+{
+  "task_specification": {
+    "task_id": "09-03",
+    "wave": "wave_2",
+    "agent": "visual-architect",
+    "action": "Roundtrip validation for visual-architect",
+    "gate": "G3_roundtrip",
+    "requires": [
+      "09-02"
+    ],
+    "output": "Validation report (pass/fail)",
+    "duration_estimate": "15-30 min"
+  },
+  "acceptance_criteria": [
+    "MD -> TOON -> MD produces equivalent output",
+    "All YAML keys present in both directions",
+    "Values match after whitespace normalization",
+    "Embedded knowledge sections byte-identical"
+  ],
+  "tdd_cycle": {
+    "methodology": "11-phase TDD",
+    "phases": [
+      "RED",
+      "GREEN",
+      "REFACTOR",
+      "REVIEW",
+      "POST-REFACTOR_REVIEW",
+      "INTEGRATE",
+      "E2E_TEST",
+      "PERFORMANCE",
+      "DOCUMENTATION",
+      "COMMIT",
+      "REFLECT"
+    ],
+    "tdd_phase_tracking": {
+      "current_phase": null,
+      "phase_execution_log": []
+    }
+  },
+  "validation": {
+    "status": "approved",
+    "notes": "",
+    "timestamp": "2026-01-14",
+    "reviewer": "batch-review-automation"
+  }
+}

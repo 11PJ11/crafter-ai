@@ -1,0 +1,45 @@
+{
+  "task_specification": {
+    "task_id": "22-06",
+    "wave": "wave_5",
+    "action": "Prepare Phase 4 handoff package",
+    "gate": null,
+    "requires": [
+      "22-05"
+    ],
+    "output": "docs/feature/toon-agent-conversion/phase3-handoff.yaml",
+    "duration_estimate": "30-45 min"
+  },
+  "acceptance_criteria": [
+    "22 TOON agent files documented",
+    "Comprehensive metrics report included",
+    "Updated baseline included",
+    "Phase 4 prerequisites checklist created"
+  ],
+  "tdd_cycle": {
+    "methodology": "11-phase TDD",
+    "phases": [
+      "RED",
+      "GREEN",
+      "REFACTOR",
+      "REVIEW",
+      "POST-REFACTOR_REVIEW",
+      "INTEGRATE",
+      "E2E_TEST",
+      "PERFORMANCE",
+      "DOCUMENTATION",
+      "COMMIT",
+      "REFLECT"
+    ],
+    "tdd_phase_tracking": {
+      "current_phase": null,
+      "phase_execution_log": []
+    }
+  },
+  "validation": {
+    "status": "approved",
+    "notes": "",
+    "timestamp": "2026-01-14",
+    "reviewer": "batch-review-automation"
+  }
+}

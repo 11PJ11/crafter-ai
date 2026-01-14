@@ -1,0 +1,46 @@
+{
+  "task_specification": {
+    "task_id": "03-02",
+    "wave": "wave_1",
+    "agent": "troubleshooter",
+    "action": "Transform troubleshooter to TOON v3.0 format",
+    "gate": "G2_transform",
+    "requires": [
+      "03-01"
+    ],
+    "output": "nWave/agents/troubleshooter.toon",
+    "duration_estimate": "30-60 min"
+  },
+  "acceptance_criteria": [
+    "TOON v3.0 file generated: nWave/agents/troubleshooter.toon",
+    "Schema validation passes",
+    "All YAML keys preserved",
+    "Zero syntax errors"
+  ],
+  "tdd_cycle": {
+    "methodology": "11-phase TDD",
+    "phases": [
+      "RED",
+      "GREEN",
+      "REFACTOR",
+      "REVIEW",
+      "POST-REFACTOR_REVIEW",
+      "INTEGRATE",
+      "E2E_TEST",
+      "PERFORMANCE",
+      "DOCUMENTATION",
+      "COMMIT",
+      "REFLECT"
+    ],
+    "tdd_phase_tracking": {
+      "current_phase": null,
+      "phase_execution_log": []
+    }
+  },
+  "validation": {
+    "status": "approved",
+    "notes": "",
+    "timestamp": "2026-01-14",
+    "reviewer": "batch-review-automation"
+  }
+}

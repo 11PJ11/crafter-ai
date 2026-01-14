@@ -1,0 +1,47 @@
+{
+  "task_specification": {
+    "task_id": "M4",
+    "wave": "wave_4",
+    "type": "milestone",
+    "action": "Wave 4 validation - ALL AGENTS CONVERTED",
+    "gate": "G5_tests",
+    "requires": [
+      "21-04"
+    ],
+    "output": "Milestone validation report",
+    "duration_estimate": "30 min"
+  },
+  "acceptance_criteria": [
+    "3 agents converted in Wave 4",
+    "Cumulative: 21/21 agents converted (100%)",
+    "All roundtrip validations passed",
+    "All compression ratios >= 5:1",
+    "Test suite 100% green"
+  ],
+  "tdd_cycle": {
+    "methodology": "11-phase TDD",
+    "phases": [
+      "RED",
+      "GREEN",
+      "REFACTOR",
+      "REVIEW",
+      "POST-REFACTOR_REVIEW",
+      "INTEGRATE",
+      "E2E_TEST",
+      "PERFORMANCE",
+      "DOCUMENTATION",
+      "COMMIT",
+      "REFLECT"
+    ],
+    "tdd_phase_tracking": {
+      "current_phase": null,
+      "phase_execution_log": []
+    }
+  },
+  "validation": {
+    "status": "approved",
+    "notes": "",
+    "timestamp": "2026-01-14",
+    "reviewer": "batch-review-automation"
+  }
+}

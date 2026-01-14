@@ -1,0 +1,46 @@
+{
+  "task_specification": {
+    "task_id": "14-02",
+    "wave": "wave_3",
+    "agent": "solution-architect",
+    "action": "Transform solution-architect to TOON v3.0 format",
+    "gate": "G2_transform",
+    "requires": [
+      "14-01"
+    ],
+    "output": "nWave/agents/solution-architect.toon",
+    "duration_estimate": "60-120 min"
+  },
+  "acceptance_criteria": [
+    "TOON v3.0 file generated: nWave/agents/solution-architect.toon",
+    "Schema validation passes",
+    "All YAML keys preserved",
+    "Zero syntax errors"
+  ],
+  "tdd_cycle": {
+    "methodology": "11-phase TDD",
+    "phases": [
+      "RED",
+      "GREEN",
+      "REFACTOR",
+      "REVIEW",
+      "POST-REFACTOR_REVIEW",
+      "INTEGRATE",
+      "E2E_TEST",
+      "PERFORMANCE",
+      "DOCUMENTATION",
+      "COMMIT",
+      "REFLECT"
+    ],
+    "tdd_phase_tracking": {
+      "current_phase": null,
+      "phase_execution_log": []
+    }
+  },
+  "validation": {
+    "status": "approved",
+    "notes": "",
+    "timestamp": "2026-01-14",
+    "reviewer": "batch-review-automation"
+  }
+}
