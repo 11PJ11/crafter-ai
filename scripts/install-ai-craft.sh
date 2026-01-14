@@ -65,39 +65,86 @@ WHAT GETS INSTALLED:
     - ATDD (Acceptance Test Driven Development) integration
     - Outside-In TDD with double-loop architecture
     - Quality validation network with Level 1-6 refactoring
+    - 14-phase TDD enforcement hooks (installed in target projects via /nw:develop)
+
+AUTOMATIC BUILD:
+    This script automatically:
+    1. Runs source embedding to update embedded hooks/templates
+    2. Builds the IDE bundle if dist/ide/ doesn't exist
+    3. Rebuilds if source files are newer than distribution
+    No manual build step required!
 
 INSTALLATION LOCATION:
     ~/.claude/agents/nw/    # nWave agent specifications
     ~/.claude/commands/nw/  # nWave command integrations
 
-FILES INCLUDED:
-    - All built nWave agents and commands from dist/ide/
-
 For more information: https://github.com/11PJ11/crafter-ai
 EOF
 }
 
-# Check if source framework exists
+# Run source embedding to ensure embedded content is up to date
+run_embedding() {
+    local embed_script="$PROJECT_ROOT/tools/embed_sources.py"
+
+    if [[ -f "$embed_script" ]]; then
+        info "Running source embedding to update embedded content..."
+        if python3 "$embed_script" > /dev/null 2>&1; then
+            info "Source embedding completed"
+        else
+            warn "Source embedding had issues, continuing anyway..."
+        fi
+    fi
+}
+
+# Build the IDE bundle
+build_framework() {
+    info "Building IDE bundle..."
+
+    local build_script="$PROJECT_ROOT/scripts/build-ide-bundle.sh"
+
+    if [[ ! -f "$build_script" ]]; then
+        error "Build script not found at: $build_script"
+        exit 1
+    fi
+
+    # Run build script (suppress verbose output, show errors)
+    if bash "$build_script" 2>&1 | grep -E "(ERROR|Build completed|✅)" ; then
+        info "Build completed successfully"
+    else
+        error "Build failed"
+        exit 1
+    fi
+}
+
+# Check if source framework exists, build if necessary
 check_source() {
     info "Checking source framework..."
 
+    # First, run embedding to ensure sources are up to date
+    run_embedding
+
+    # Check if dist/ide exists
     if [[ ! -d "$FRAMEWORK_SOURCE" ]]; then
-        error "AI-Craft framework source not found at: $FRAMEWORK_SOURCE"
-        error "Please run this script from the ai-craft project directory."
-        exit 1
+        info "Distribution not found, building framework..."
+        build_framework
     fi
 
     # Check for the built IDE distribution structure
-    if [[ ! -d "$FRAMEWORK_SOURCE/agents/nw" ]]; then
-        error "Framework appears incomplete - agents/nw directory not found"
-        error "Please build the framework first: cd tools && python3 build_ide_bundle.py"
-        exit 1
+    if [[ ! -d "$FRAMEWORK_SOURCE/agents/nw" ]] || [[ ! -d "$FRAMEWORK_SOURCE/commands/nw" ]]; then
+        info "Distribution incomplete, rebuilding framework..."
+        build_framework
     fi
 
-    if [[ ! -d "$FRAMEWORK_SOURCE/commands/nw" ]]; then
-        error "Framework appears incomplete - commands/nw directory not found"
-        error "Please build the framework first: cd tools && python3 build_ide_bundle.py"
-        exit 1
+    # Check if source files are newer than distribution
+    local source_dir="$PROJECT_ROOT/nWave"
+    local newest_source=$(find "$source_dir" -name "*.md" -o -name "*.py" -o -name "*.json" 2>/dev/null | xargs ls -t 2>/dev/null | head -1)
+    local newest_dist=$(find "$FRAMEWORK_SOURCE" -name "*.md" 2>/dev/null | xargs ls -t 2>/dev/null | head -1)
+
+    if [[ -n "$newest_source" ]] && [[ -n "$newest_dist" ]]; then
+        if [[ "$newest_source" -nt "$newest_dist" ]]; then
+            info "Source files are newer than distribution, rebuilding..."
+            build_framework
+        fi
     fi
 
     local agent_count=$(find "$FRAMEWORK_SOURCE/agents/nw" -name "*.md" ! -name "README.md" | wc -l)
