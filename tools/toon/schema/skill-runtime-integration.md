@@ -1,411 +1,347 @@
-# Skill Runtime Integration Specification
+# Skill Runtime Integration - Claude Code Native Format
 
 ## Executive Summary
 
-**CRITICAL DISCOVERY**: The nWave SKILL.md format is **NOT COMPATIBLE** with Claude Code's native Agent Skills format.
+nWave skills adopt the **Claude Code native Agent Skills format** for full compatibility with the Claude Code ecosystem.
 
-This document:
-1. Documents the incompatibility
-2. Defines the nWave runtime consumer
-3. Proposes a dual-format compatibility strategy
-4. Establishes the integration architecture
+**Decision**: Single format aligned with Claude Code specification (no custom nWave format).
 
 ---
 
-## 1. Format Comparison
+## 1. Claude Code Agent Skills Format
 
-### Claude Code Native Format (Official)
+### Official Specification
 
 **Source**: [Anthropic Agent Skills](https://github.com/anthropics/skills), [Engineering Blog](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills)
 
-```yaml
+### SKILL.md Structure
+
+```markdown
 ---
-name: my-skill-name
-description: A clear description of what this skill does and when to use it
+name: skill-name
+description: |
+  A clear description of what this skill does and when to use it.
+  Claude uses this description for semantic matching to determine
+  when to activate the skill.
 ---
 
 # Skill Title
 
 [Instructions that Claude follows when skill is active]
+
+## Guidelines
+- Guideline 1
+- Guideline 2
+
+## Examples
+- Example usage 1
+- Example usage 2
 ```
 
-**Required fields**: ONLY `name` and `description`
+### Required Fields
 
-**Activation mechanism**: Claude reads `description` and determines semantic relevance to user request. **No regex patterns**.
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Unique skill identifier (lowercase, hyphens) |
+| `description` | string | What the skill does and when to use it |
 
-**Location**: `~/.claude/skills/` or `.claude/skills/`
+### Optional Fields (nWave Extensions)
 
-### nWave Format (Our Implementation)
+These fields are **optional** and used internally by nWave for workflow orchestration:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `wave` | string | nWave phase (DISCUSS/DESIGN/DEVELOP/DISTILL/DELIVER) |
+| `phase` | int | Phase number (1-8) |
+| `agents` | list | Agent IDs that can use this skill |
+| `version` | string | Skill version (semver) |
+
+---
+
+## 2. Activation Mechanism
+
+### Claude Code Semantic Matching
+
+Claude Code uses **semantic matching** on the `description` field:
+
+1. User makes a request
+2. Claude reads all skill descriptions from system prompt
+3. Claude determines which skills are relevant based on semantic similarity
+4. Relevant skills are loaded into context
+
+**No regex patterns**. The `description` field must clearly explain:
+- What the skill does
+- When it should be activated
+- Key trigger terms users might mention
+
+### Writing Effective Descriptions
 
 ```yaml
+# GOOD - Clear activation triggers in description
+description: |
+  Use this skill when implementing features using test-driven development (TDD).
+  Activates for: implementing features, writing tests first, outside-in TDD,
+  red-green-refactor cycle, unit testing, integration testing.
+
+# BAD - Vague description
+description: |
+  A skill for development tasks.
+```
+
 ---
-skill_id: develop
+
+## 3. Directory Structure
+
+### Skill Location
+
+Skills are placed in standard Claude Code locations:
+
+```
+project/
+├── .claude/
+│   └── skills/
+│       ├── develop/
+│       │   └── SKILL.md
+│       ├── refactor/
+│       │   └── SKILL.md
+│       └── research/
+│           └── SKILL.md
+```
+
+### User-Level Skills
+
+```
+~/.claude/
+└── skills/
+    └── my-custom-skill/
+        └── SKILL.md
+```
+
+---
+
+## 4. Complete Example
+
+### TOON Source → Claude Code SKILL.md
+
+**Input** (TOON skill definition):
+```yaml
+id: develop
 name: TDD Development
-agent_association: software-crafter
+description: |
+  Systematic test-driven development for implementing features.
+  Use when: implementing features, TDD, outside-in testing,
+  red-green-refactor, writing tests first.
 wave: DEVELOP
 phase: 3
+agents:
+  - software-crafter
+version: 1.0.0
+```
+
+**Output** (`.claude/skills/develop/SKILL.md`):
+```markdown
+---
+name: develop
+description: |
+  Systematic test-driven development for implementing features.
+  Use when: implementing features, TDD, outside-in testing,
+  red-green-refactor, writing tests first.
+wave: DEVELOP
+phase: 3
+agents:
+  - software-crafter
+version: 1.0.0
+---
+
+# TDD Development Skill
+
+This skill guides systematic test-driven development using the outside-in TDD methodology.
+
+## When to Use
+
+- Implementing new features
+- Writing tests first (TDD approach)
+- Red-green-refactor cycle
+- Outside-in testing strategy
+
+## Guidelines
+
+1. Start with a failing acceptance test (outer loop)
+2. Write failing unit tests (inner loop)
+3. Implement minimal code to pass
+4. Refactor for quality
+5. Repeat until acceptance test passes
+
+## TDD Cycle
+
+1. **Red**: Write a failing test
+2. **Green**: Write minimal code to pass
+3. **Blue**: Refactor for quality
+
+## Integration with nWave
+
+- **Wave**: DEVELOP
+- **Phase**: 3 (Implementation)
+- **Agent**: software-crafter
+```
+
+---
+
+## 5. Migration from Trigger Patterns
+
+### Converting Triggers to Description
+
+Old trigger patterns are converted to semantic description:
+
+| Old (Triggers) | New (Description) |
+|----------------|-------------------|
+| `implement.*` | "Use when implementing features" |
+| `TDD` | "Use for test-driven development (TDD)" |
+| `outside-in` | "Use for outside-in testing approach" |
+| `refactor.*` | "Use when refactoring code" |
+
+### Conversion Example
+
+**Before** (trigger-based):
+```yaml
 triggers:
   - implement.*
   - TDD
   - outside-in
+  - test.*first
+```
+
+**After** (description-based):
+```yaml
 description: |
-  Systematic test-driven development approach
----
-
-# Activation Notice
-...
+  Use this skill when implementing features using test-driven development.
+  Activates for: implementing features, TDD, outside-in testing,
+  writing tests first, red-green-refactor cycle.
 ```
 
-**Required fields**: `skill_id`, `name`, `triggers`, `agent_association`, `workflow_integration`
+---
 
-**Activation mechanism**: Regex pattern matching against task context
+## 6. Runtime Consumer
 
-**Location**: `dist/skills/{skill_id}/SKILL.md`
+### Claude Code Native Runtime
+
+The runtime consumer is **Claude Code itself**:
+
+1. **Discovery**: Claude Code scans `.claude/skills/` at startup
+2. **Loading**: Skill names and descriptions loaded into system prompt
+3. **Matching**: Claude semantically matches user requests to skills
+4. **Activation**: Relevant skill content loaded into context
+5. **Execution**: Claude follows skill instructions
+
+### Hot Reload
+
+Claude Code 2.1.0+ supports hot reload:
+- New/updated skills available immediately
+- No session restart required
 
 ---
 
-## 2. Incompatibility Analysis
+## 7. nWave Workflow Integration
 
-| Aspect | Claude Code Native | nWave Format | Compatible? |
-|--------|-------------------|--------------|-------------|
-| **Required fields** | `name`, `description` | `skill_id`, `name`, `triggers`, `agent_association`, `workflow_integration` | **NO** |
-| **Activation** | Semantic (description-based) | Regex patterns | **NO** |
-| **Location** | `~/.claude/skills/` | `dist/skills/` | **NO** |
-| **Runtime** | Claude Code built-in | nWave orchestrator | **NO** |
-| **Discovery** | Auto-discovery by Claude | nWave skill registry | **NO** |
+### Optional Metadata
 
-### Critical Differences
+nWave-specific fields (`wave`, `phase`, `agents`) are:
+- **Stored in YAML frontmatter** (Claude Code ignores unknown fields)
+- **Used by nWave orchestrator** for workflow sequencing
+- **Transparent to Claude Code runtime**
 
-1. **No `triggers` in Claude Code**: Claude uses semantic matching on `description`, not regex patterns
-2. **No `agent_association` in Claude Code**: Skills are available to all agents
-3. **No `workflow_integration` in Claude Code**: No wave/phase concept
-4. **No `skill_id` in Claude Code**: Uses `name` as identifier
+### Example with nWave Metadata
 
+```yaml
+---
+name: design-architecture
+description: |
+  Architecture design skill for creating system designs.
+  Use when: designing architecture, creating diagrams,
+  defining components, planning system structure.
+# nWave metadata (optional, ignored by Claude Code)
+wave: DESIGN
+phase: 2
+agents:
+  - solution-architect
+version: 1.0.0
 ---
 
-## 3. Strategic Decision: Dual-Format Compatibility
+# Architecture Design Skill
 
-### Architecture
-
-nWave skills are **framework-specific extensions** that compile to **two output formats**:
-
+[Skill content...]
 ```
-TOON Source File (.toon)
-        │
-        ▼
-   TOON Compiler
-        │
-        ├─────────────────────────────────┐
-        ▼                                 ▼
-[nWave SKILL.md]                  [Claude Code SKILL.md]
-(Full nWave format)               (Native format)
-        │                                 │
-        ▼                                 ▼
-dist/skills/{id}/                 .claude/skills/{name}/
-   SKILL.md                          SKILL.md
-        │                                 │
-        ▼                                 ▼
-nWave Orchestrator                Claude Code Runtime
-(Regex pattern matching)          (Semantic matching)
-```
-
-### Output 1: nWave Format (Primary)
-
-**Location**: `dist/skills/{skill_id}/SKILL.md`
-
-**Consumer**: nWave Orchestrator (custom component)
-
-**Purpose**: Full nWave workflow integration with:
-- Regex-based trigger patterns
-- Agent association (1:1, 1:N binding)
-- Wave/phase positioning
-- Custom metadata
-
-### Output 2: Claude Code Format (Secondary)
-
-**Location**: `.claude/skills/{name}/SKILL.md`
-
-**Consumer**: Claude Code native runtime
-
-**Purpose**: Native Claude Code integration allowing:
-- Automatic discovery by Claude
-- Semantic matching on description
-- Hot-reload support
-- Standard skill ecosystem compatibility
 
 ---
 
-## 4. nWave Runtime Consumer Specification
+## 8. Validation Rules
 
-### Component: nWave Skill Orchestrator
-
-**Responsibility**: Load, match, and activate nWave skills during workflow execution
-
-**Location**: Part of nWave framework (to be implemented)
-
-**Interface**:
+### Required Validation
 
 ```python
-class SkillOrchestrator:
-    """nWave skill discovery and activation."""
+def validate_skill(skill_data: dict) -> bool:
+    """Validate skill follows Claude Code format."""
+    # Required fields
+    if 'name' not in skill_data:
+        raise ValidationError("Missing required field: 'name'")
 
-    def __init__(self, skill_directory: str = "dist/skills"):
-        """Initialize with skill directory path."""
-        self.skills: Dict[str, LoadedSkill] = {}
-        self._load_skills(skill_directory)
+    if 'description' not in skill_data:
+        raise ValidationError("Missing required field: 'description'")
 
-    def _load_skills(self, directory: str) -> None:
-        """Scan directory and load all SKILL.md files."""
-        # Parse YAML frontmatter from each SKILL.md
-        # Build internal skill registry
-        pass
+    # Name format: lowercase, hyphens
+    if not re.match(r'^[a-z][a-z0-9-]*$', skill_data['name']):
+        raise ValidationError(
+            f"Invalid name '{skill_data['name']}': "
+            "must be lowercase with hyphens"
+        )
 
-    def match_skills(self, task_context: str) -> List[LoadedSkill]:
-        """Find skills whose triggers match task context.
+    # Description must be meaningful
+    if len(skill_data['description']) < 50:
+        raise ValidationError(
+            "Description too short. Must clearly explain "
+            "what skill does and when to use it."
+        )
 
-        Args:
-            task_context: User task description or input
-
-        Returns:
-            List of matching skills (OR logic: any pattern match)
-        """
-        matches = []
-        for skill in self.skills.values():
-            for pattern in skill.triggers:
-                if re.search(pattern, task_context, re.IGNORECASE):
-                    matches.append(skill)
-                    break  # One match is enough (OR logic)
-        return matches
-
-    def activate_skill(
-        self,
-        skill: LoadedSkill,
-        agent_id: str
-    ) -> Optional[str]:
-        """Activate skill for given agent.
-
-        Args:
-            skill: Skill to activate
-            agent_id: Agent requesting activation
-
-        Returns:
-            Skill content if agent authorized, None otherwise
-        """
-        if not self._is_agent_authorized(skill, agent_id):
-            return None
-        return skill.content
-
-    def _is_agent_authorized(
-        self,
-        skill: LoadedSkill,
-        agent_id: str
-    ) -> bool:
-        """Check if agent can use this skill."""
-        assoc = skill.agent_association
-        if isinstance(assoc, str):
-            return assoc == agent_id
-        return agent_id in assoc
-
-@dataclass
-class LoadedSkill:
-    """Parsed skill from SKILL.md."""
-    id: str
-    name: str
-    description: str
-    triggers: List[re.Pattern]  # Pre-compiled regex patterns
-    agent_association: Union[str, List[str]]
-    workflow_integration: Dict[str, Any]
-    content: str  # Full markdown content for injection
+    return True
 ```
 
-### Integration Point
-
-The Skill Orchestrator integrates with nWave workflow at these points:
-
-1. **Task Execution**: Before agent receives task, orchestrator checks for matching skills
-2. **Skill Injection**: Matching skill content added to agent context
-3. **Agent Validation**: Skill only activated if agent is authorized
-
-```
-User Task
-    │
-    ▼
-nWave Orchestrator
-    │
-    ├── Match skills (regex against task)
-    │
-    ├── Filter by agent_association
-    │
-    ├── Inject skill content into agent context
-    │
-    ▼
-Agent Execution (with skill context)
-```
-
----
-
-## 5. Template Modifications Required
-
-### Skill Template Must Generate BOTH Formats
-
-**Primary Output** (nWave): `dist/skills/{id}/SKILL.md`
-- Full nWave format with all fields
-- Consumed by nWave Skill Orchestrator
-
-**Secondary Output** (Claude Code): `.claude/skills/{name}/SKILL.md`
-- Claude Code native format
-- Only `name` and `description`
-- Consumed by Claude Code runtime
-
-### Conversion Logic
+### Optional nWave Validation
 
 ```python
-def convert_nwave_to_claude_code(nwave_skill: SkillData) -> str:
-    """Convert nWave skill to Claude Code format.
+def validate_nwave_metadata(skill_data: dict) -> bool:
+    """Validate optional nWave metadata if present."""
+    if 'wave' in skill_data:
+        valid_waves = ['DISCUSS', 'DESIGN', 'DEVELOP', 'DISTILL', 'DELIVER']
+        if skill_data['wave'] not in valid_waves:
+            raise ValidationError(f"Invalid wave: {skill_data['wave']}")
 
-    Key transformations:
-    1. skill_id → name (convert underscores to hyphens)
-    2. triggers → description (explain when skill activates)
-    3. Drop: agent_association, workflow_integration, wave, phase
-    """
-    # Build description from triggers and original description
-    trigger_description = f"Use this skill when: {', '.join(nwave_skill['triggers'])}"
-    full_description = nwave_skill.get('description', '')
-    if full_description:
-        description = f"{full_description}\n\n{trigger_description}"
-    else:
-        description = trigger_description
+    if 'phase' in skill_data:
+        if not isinstance(skill_data['phase'], int) or not (1 <= skill_data['phase'] <= 8):
+            raise ValidationError(f"Invalid phase: {skill_data['phase']}")
 
-    return f'''---
-name: {nwave_skill['id'].replace('_', '-')}
-description: |
-  {description}
----
-
-{nwave_skill.get('content', '')}
-'''
+    return True
 ```
 
 ---
 
-## 6. Directory Structure
+## 9. Benefits of Native Format
 
-### After Compilation
-
-```
-project/
-├── dist/
-│   └── skills/
-│       ├── develop/
-│       │   └── SKILL.md          # nWave format
-│       └── refactor/
-│           └── SKILL.md          # nWave format
-│
-└── .claude/
-    └── skills/
-        ├── develop/
-        │   └── SKILL.md          # Claude Code format
-        └── refactor/
-            └── SKILL.md          # Claude Code format
-```
-
-### Build Process
-
-```bash
-# TOON compile generates both formats
-python -m tools.toon.compiler skills/develop.toon
-
-# Outputs:
-# - dist/skills/develop/SKILL.md (nWave)
-# - .claude/skills/develop/SKILL.md (Claude Code)
-```
-
----
-
-## 7. Validation Requirements
-
-### nWave Format Validation
-
-Parser/compiler MUST validate:
-1. All required nWave fields present
-2. Triggers are valid regex patterns
-3. Agent association references valid agents
-4. Workflow integration has wave/phase
-
-### Claude Code Format Validation
-
-Generated output MUST:
-1. Have `name` and `description` in frontmatter
-2. Use hyphenated name (no underscores)
-3. Include meaningful description for semantic matching
-4. Be valid Markdown
-
----
-
-## 8. Impact on Step Files
-
-### Step 01-04 (Skill Jinja2 Template)
-
-**Modification Required**:
-- Template must generate TWO output files
-- Primary: nWave SKILL.md format (existing spec)
-- Secondary: Claude Code SKILL.md format
-
-### Step 01-05 (TOON Compiler)
-
-**Modification Required**:
-- Compiler must write to TWO locations
-- `dist/skills/{id}/SKILL.md` (nWave)
-- `.claude/skills/{name}/SKILL.md` (Claude Code)
-
-### New Step Required
-
-**Suggested**: Step 01-07 (Skill Orchestrator)
-- Implement `SkillOrchestrator` class
-- Unit tests for pattern matching
-- Integration with nWave workflow
-
----
-
-## 9. Migration Path
-
-### Phase 1: Document (COMPLETE)
-- This document establishes the dual-format strategy
-- All stakeholders understand the incompatibility
-
-### Phase 2: Update Templates
-- Modify skill template to output both formats
-- Update compiler to write to both locations
-
-### Phase 3: Implement Orchestrator
-- Build nWave Skill Orchestrator
-- Add pattern matching with compiled regex
-- Add agent authorization checks
-
-### Phase 4: Integration Tests
-- Verify both formats are valid
-- Test pattern matching logic
-- Test Claude Code discovery
-
----
-
-## 10. Open Questions (Resolved)
-
-| Question | Resolution |
-|----------|------------|
-| Who consumes SKILL.md? | **Dual consumer**: nWave Orchestrator + Claude Code Runtime |
-| Is nWave format compatible? | **No**, requires dual-format output |
-| Do we need regex patterns? | **Yes** for nWave; converted to description for Claude Code |
-| How does agent binding work? | **nWave only**; Claude Code skills available to all agents |
+| Aspect | Benefit |
+|--------|---------|
+| **Ecosystem** | Full compatibility with Claude Code plugins and marketplace |
+| **Discovery** | Automatic discovery by Claude Code runtime |
+| **Hot Reload** | Instant updates without restart |
+| **Simplicity** | Single format to maintain |
+| **Future-proof** | Aligned with Anthropic's official specification |
 
 ---
 
 ## Version History
 
-- **v1.0** (2026-01-14): Initial specification documenting incompatibility and dual-format strategy
+- **v2.0** (2026-01-14): Simplified to Claude Code native format only
+  - Removed dual-format strategy
+  - Adopted Claude Code `name` + `description` as required fields
+  - Trigger patterns converted to semantic descriptions
+  - nWave metadata as optional fields
 
-## References
-
-- [Anthropic Agent Skills Repository](https://github.com/anthropics/skills)
-- [Engineering Blog: Equipping Agents with Skills](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills)
-- [Claude Code Skills Documentation](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)
+- **v1.0** (2026-01-14): Initial dual-format specification (superseded)

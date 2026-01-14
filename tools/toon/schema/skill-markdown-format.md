@@ -2,485 +2,348 @@
 
 ## Overview
 
-This document specifies the format of SKILL.md files produced by the Skill Jinja2 template (step 01-04). These files are the compiled output that integrate skills into the nWave framework.
+This document specifies the SKILL.md format following the **Claude Code Agent Skills** specification from Anthropic.
+
+**Reference**: [Anthropic Agent Skills](https://github.com/anthropics/skills)
+
+---
 
 ## File Structure
 
-SKILL.md files follow this structure:
+SKILL.md files follow the Claude Code native format:
 
 ```markdown
 ---
-skill_id: <skill_id>
-name: <skill_name>
-agent_association: <agent_id | [agent_ids]>
-wave: <DISCUSS|DESIGN|DEVELOP|DISTILL|DELIVER>
-phase: <1-8>
-triggers:
-  - <trigger_pattern>
-  - <trigger_pattern>
----
-
-# Activation Notice
-
-This is a **skill** artifact for the nWave framework.
-
-- **Activation**: Automatically triggered when patterns match
-- **Scope**: Bound to agent(s): `<agent_id(s)>`
-- **Context**: Wave `<WAVE>` / Phase `<phase>`
-
----
-
-## Trigger Patterns
-
-Skill activates when any pattern matches task context:
-
-- `<trigger_1>`
-- `<trigger_2>`
-- `<trigger_3>`
-(one per line, as regex strings)
-
----
-
-## Skill Metadata
-
-```yaml
-skill_id: <skill_id>
-name: <skill_name>
+name: skill-name
 description: |
-  <skill_description>
-version: <version | omitted if not provided>
-agent_association: <agent_id | [agent_ids]>
-trigger_count: <number_of_triggers>
-workflow_integration:
-  wave: <DISCUSS|DESIGN|DEVELOP|DISTILL|DELIVER>
-  phase: <1-8>
-  context: <execution_context | omitted>
+  Clear description of what this skill does and when to use it.
+  Claude uses this for semantic matching to activate the skill.
+---
+
+# Skill Title
+
+[Instructions that Claude follows when skill is active]
+
+## When to Use
+
+- Scenario 1
+- Scenario 2
+
+## Guidelines
+
+1. Guideline 1
+2. Guideline 2
+
+## Examples
+
+- Example usage 1
+- Example usage 2
 ```
 
 ---
 
-## Additional Metadata (if provided)
+## YAML Frontmatter
+
+### Required Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Skill identifier (lowercase, hyphens only) |
+| `description` | string | What the skill does and when to use it |
+
+### Optional Fields (nWave Extensions)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `wave` | string | nWave phase (DISCUSS/DESIGN/DEVELOP/DISTILL/DELIVER) |
+| `phase` | int | Phase number (1-8) |
+| `agents` | list | Agent IDs that can use this skill |
+| `version` | string | Skill version (semver) |
+
+### Frontmatter Example
 
 ```yaml
-metadata:
-  <key>: <value>
-  <key>: <value>
-```
-
 ---
-
-## Raw Trigger Patterns (for direct matching)
-
-<list_trigger_patterns_as_yaml_array>
-```
-```yaml
-triggers:
-  - <trigger_1>
-  - <trigger_2>
-```
-```
-
----
-
-```
-
-## Detailed Sections
-
-### YAML Frontmatter (Lines 1-N)
-
-**Purpose**: Machine-readable skill metadata
-
-**Fields** (all REQUIRED):
-- `skill_id`: Skill identifier (matches `SkillData.id`)
-- `name`: Human-readable skill name
-- `agent_association`: Agent ID(s) (string or YAML list)
-- `wave`: nWave phase (DISCUSS, DESIGN, DEVELOP, DISTILL, DELIVER)
-- `phase`: Phase number (1-8)
-- `triggers`: YAML list of trigger patterns
-
-**Fields** (OPTIONAL):
-- `description`: Skill description (only if provided in SkillData)
-- `version`: Semantic version (only if provided in SkillData)
-- `metadata`: Additional metadata dict (only if provided in SkillData)
-
-**YAML Escaping Rules**:
-- String values with special characters MUST be quoted: `"value: with: colons"`
-- Colons in YAML must be escaped or quoted: `key: "value: here"` or `"key:value"`
-- Double quotes inside strings must be escaped: `"He said \"hello\""`
-- List items are on separate lines with `-` prefix
-- Multiline strings use `|` or `>` YAML syntax
-
-**Example**:
-```yaml
----
-skill_id: develop
-name: TDD Development
-agent_association: software-crafter
+name: develop
+description: |
+  Use this skill when implementing features using test-driven development.
+  Activates for: implementing features, TDD, outside-in testing,
+  writing tests first, red-green-refactor cycle.
 wave: DEVELOP
 phase: 3
-triggers:
-  - implement.*
-  - TDD
-  - outside-in
-description: |
-  Systematic test-driven development approach
+agents:
+  - software-crafter
 version: 1.0.0
-metadata:
-  tags: [testing, automation]
-  priority: high
 ---
 ```
 
-### Activation Notice Section
+---
 
-**Purpose**: Human-readable documentation of skill activation
+## Content Sections
 
-**Format**:
+### Skill Title (H1)
+
 ```markdown
-# Activation Notice
-
-This is a **skill** artifact for the nWave framework.
-
-- **Activation**: Automatically triggered when patterns match
-- **Scope**: Bound to agent(s): `<agent_id(s)>`
-- **Context**: Wave `<WAVE>` / Phase `<phase>`
+# TDD Development Skill
 ```
 
-**Rules**:
-- Always use header `# Activation Notice`
-- Always include "This is a **skill** artifact..." statement
-- **Activation** line explains skill is pattern-triggered
-- **Scope** lists agent(s) with backticks around agent ID(s)
-- **Context** shows wave and phase numbers
+- Required
+- Should be descriptive and match skill purpose
 
-**Examples**:
+### When to Use (H2)
+
 ```markdown
-# Activation Notice
+## When to Use
 
-This is a **skill** artifact for the nWave framework.
-
-- **Activation**: Automatically triggered when patterns match
-- **Scope**: Bound to agent(s): `software-crafter`
-- **Context**: Wave `DEVELOP` / Phase `3`
+- Implementing new features
+- Writing tests first (TDD approach)
+- Red-green-refactor cycle
 ```
 
-Multi-agent version:
+- Recommended
+- Lists scenarios when skill should activate
+- Reinforces semantic matching triggers
+
+### Guidelines (H2)
+
 ```markdown
-# Activation Notice
+## Guidelines
 
-This is a **skill** artifact for the nWave framework.
-
-- **Activation**: Automatically triggered when patterns match
-- **Scope**: Bound to agent(s): `software-crafter`, `solution-architect`
-- **Context**: Wave `DEVELOP` / Phase `5`
+1. Start with a failing acceptance test
+2. Write failing unit tests
+3. Implement minimal code to pass
+4. Refactor for quality
 ```
 
-### Trigger Patterns Section
+- Recommended
+- Step-by-step instructions Claude follows
+- Numbered for clarity
 
-**Purpose**: Human-readable documentation of activation patterns
+### Examples (H2)
 
-**Format**:
 ```markdown
-## Trigger Patterns
+## Examples
 
-Skill activates when any pattern matches task context:
-
-- `<trigger_1>`
-- `<trigger_2>`
-- `<trigger_3>`
-(one per line, as regex strings)
+- "Implement user authentication using TDD"
+- "Add a new API endpoint with tests first"
 ```
 
-**Rules**:
-- Always use header `## Trigger Patterns`
-- Introductory text explains patterns are OR logic (any match = activation)
-- List each pattern as markdown list item with backticks
-- Patterns are regex strings, not evaluated in markdown
-- Last line "(one per line, as regex strings)" clarifies format
-- Special regex characters are NOT escaped in markdown (they're already escaped in YAML)
+- Optional
+- Shows example user requests that activate skill
+- Helps Claude understand usage context
 
-**Examples**:
+### Additional Sections
+
+Add any sections relevant to the skill:
+
 ```markdown
-## Trigger Patterns
+## Technical Details
+...
 
-Skill activates when any pattern matches task context:
+## Integration Notes
+...
 
-- `implement.*`
-- `TDD`
-- `outside-in`
-(one per line, as regex strings)
+## References
+- [External Resource](url)
 ```
 
-### Skill Metadata Section
-
-**Purpose**: Machine-readable skill data in YAML format
-
-**Format**:
-```yaml
-## Skill Metadata
-
-\`\`\`yaml
-skill_id: <skill_id>
-name: <skill_name>
-description: |
-  <skill_description>
-version: <version>
-agent_association: <agent_id | [agent_ids]>
-trigger_count: <number>
-workflow_integration:
-  wave: <WAVE>
-  phase: <number>
-  context: <context>
-\`\`\`
-```
-
-**Rules**:
-- Always use header `## Skill Metadata`
-- Enclose in Markdown triple backticks with `yaml` language tag
-- Include all fields from SkillData
-- `description`: Use YAML multiline syntax if present: `description: |` followed by indented text
-- `trigger_count`: Integer count of triggers (useful for debugging/monitoring)
-- `workflow_integration`: Nested YAML structure with wave, phase, context (context omitted if not in SkillData)
-- Omit optional fields if not provided in SkillData (description, version, metadata)
-
-**Example**:
-```yaml
-## Skill Metadata
-
-\`\`\`yaml
-skill_id: develop
-name: TDD Development
-description: |
-  Systematic test-driven development approach
-  with outside-in TDD methodology
-version: 1.0.0
-agent_association: software-crafter
-trigger_count: 3
-workflow_integration:
-  wave: DEVELOP
-  phase: 3
-  context: TDD cycle
-\`\`\`
-```
-
-### Additional Metadata Section
-
-**Conditions**: Only if `metadata` field exists in SkillData
-
-**Purpose**: Extension point for future metadata
-
-**Format**:
-```yaml
-## Additional Metadata
-
-\`\`\`yaml
-metadata:
-  tags: [tag1, tag2, tag3]
-  priority: high
-  custom_field: custom_value
-\`\`\`
-```
-
-**Rules**:
-- Only included if `metadata` dict present in SkillData
-- Use header `## Additional Metadata`
-- Render complete metadata dict as YAML
-
-### Raw Trigger Patterns Section
-
-**Purpose**: Machine-readable trigger list for runtime pattern matching
-
-**Format**:
-```markdown
-## Raw Trigger Patterns (for direct matching)
-
-\`\`\`yaml
-triggers:
-  - <trigger_1>
-  - <trigger_2>
-  - <trigger_3>
-\`\`\`
-```
-
-**Rules**:
-- Use header `## Raw Trigger Patterns (for direct matching)`
-- List triggers as YAML array
-- Each pattern on separate line with `-` prefix
-- Patterns are exact copies from SkillData.triggers (no transformation)
-- YAML escaping already applied from frontmatter
-
-**Example**:
-```markdown
-## Raw Trigger Patterns (for direct matching)
-
-\`\`\`yaml
-triggers:
-  - implement.*
-  - TDD
-  - "outside-in.*task"
-\`\`\`
-```
+---
 
 ## Complete Example
 
 ### Input (SkillData)
+
 ```python
 {
-    'id': 'develop',
-    'name': 'TDD Development',
-    'type': 'skill',
-    'description': 'Systematic test-driven development approach\nwith outside-in TDD methodology',
-    'triggers': ['implement.*', 'TDD', 'outside-in'],
+    'name': 'develop',
+    'description': 'Use this skill when implementing features using test-driven development.\nActivates for: implementing features, TDD, outside-in testing.',
+    'wave': 'DEVELOP',
+    'phase': 3,
+    'agents': ['software-crafter'],
     'version': '1.0.0',
-    'agent_association': 'software-crafter',
-    'workflow_integration': {
-        'wave': 'DEVELOP',
-        'phase': 3,
-        'context': 'TDD cycle'
-    },
-    'metadata': {
-        'tags': ['testing', 'automation'],
-        'priority': 'high'
-    }
+    'content': '...'
 }
 ```
 
 ### Output (SKILL.md)
+
 ```markdown
 ---
-skill_id: develop
-name: TDD Development
-agent_association: software-crafter
+name: develop
+description: |
+  Use this skill when implementing features using test-driven development.
+  Activates for: implementing features, TDD, outside-in testing.
 wave: DEVELOP
 phase: 3
-triggers:
-  - implement.*
-  - TDD
-  - outside-in
-description: |
-  Systematic test-driven development approach
-  with outside-in TDD methodology
-version: 1.0.0
-metadata:
-  tags: [testing, automation]
-  priority: high
----
-
-# Activation Notice
-
-This is a **skill** artifact for the nWave framework.
-
-- **Activation**: Automatically triggered when patterns match
-- **Scope**: Bound to agent(s): `software-crafter`
-- **Context**: Wave `DEVELOP` / Phase `3`
-
----
-
-## Trigger Patterns
-
-Skill activates when any pattern matches task context:
-
-- `implement.*`
-- `TDD`
-- `outside-in`
-(one per line, as regex strings)
-
----
-
-## Skill Metadata
-
-\`\`\`yaml
-skill_id: develop
-name: TDD Development
-description: |
-  Systematic test-driven development approach
-  with outside-in TDD methodology
-version: 1.0.0
-agent_association: software-crafter
-trigger_count: 3
-workflow_integration:
-  wave: DEVELOP
-  phase: 3
-  context: TDD cycle
-\`\`\`
-
----
-
-## Additional Metadata
-
-\`\`\`yaml
-metadata:
-  tags: [testing, automation]
-  priority: high
-\`\`\`
-
----
-
-## Raw Trigger Patterns (for direct matching)
-
-\`\`\`yaml
-triggers:
-  - implement.*
-  - TDD
-  - outside-in
-\`\`\`
-```
-
-## Multi-Agent Skill Example
-
-### Output (Multi-Agent SKILL.md)
-```markdown
----
-skill_id: refactor
-name: Code Refactoring
-agent_association:
+agents:
   - software-crafter
-  - solution-architect
-wave: DEVELOP
-phase: 5
-triggers:
-  - refactor.*
-  - simplify.*
-  - optimize
-description: |
-  Systematic code refactoring using Mikado Method
-version: 1.2.0
-metadata:
-  priority: high
+version: 1.0.0
 ---
 
-# Activation Notice
+# TDD Development Skill
 
-This is a **skill** artifact for the nWave framework.
+This skill guides systematic test-driven development using the outside-in TDD methodology.
 
-- **Activation**: Automatically triggered when patterns match
-- **Scope**: Bound to agent(s): `software-crafter`, `solution-architect`
-- **Context**: Wave `DEVELOP` / Phase `5`
+## When to Use
 
-[rest of sections same as above]
+- Implementing new features
+- Writing tests first (TDD approach)
+- Red-green-refactor cycle
+- Outside-in testing strategy
+
+## Guidelines
+
+1. Start with a failing acceptance test (outer loop)
+2. Write failing unit tests (inner loop)
+3. Implement minimal code to pass
+4. Refactor for quality
+5. Repeat until acceptance test passes
+
+## TDD Cycle
+
+1. **Red**: Write a failing test
+2. **Green**: Write minimal code to pass
+3. **Blue**: Refactor for quality
+
+## Examples
+
+- "Implement user authentication using TDD"
+- "Add payment processing with outside-in tests"
+- "Create REST API endpoint using red-green-refactor"
+
+## References
+
+- [Outside-In TDD Methodology](nWave/data/embed/software-crafter/outside-in-tdd-methodology.md)
 ```
 
-## Validation Rules for Template
+---
 
-Template MUST verify:
+## YAML Escaping Rules
 
-1. **Frontmatter validity**: All required fields present and valid YAML
-2. **YAML escaping**: Special characters properly escaped (colons, quotes, etc.)
-3. **Trigger list**: Non-empty, each item is string
-4. **Agent association**: String or valid YAML list of strings
-5. **Activation notice**: Contains required lines in correct order
-6. **Trigger patterns section**: Lists all triggers with backticks
-7. **Metadata section**: Valid YAML if included
-8. **Output is valid Markdown**: Parses without syntax errors
+### String Values
 
-## Error Messages
+```yaml
+# Simple strings - no quotes needed
+name: develop
 
-Template should error on:
-- Missing required frontmatter fields
-- Invalid YAML in frontmatter
-- Empty trigger list
-- Malformed agent_association
+# Strings with special chars - use quotes
+description: "Value with: colons"
+
+# Multiline strings - use pipe
+description: |
+  Line 1
+  Line 2
+  Line 3
+```
+
+### Special Characters
+
+| Character | Handling |
+|-----------|----------|
+| `:` | Quote the value: `"value: here"` |
+| `#` | Quote the value: `"value # here"` |
+| `'` | Use double quotes: `"it's"` |
+| `"` | Escape: `"He said \"hello\""` |
+| `|` | Use as multiline indicator at end |
+
+---
+
+## Validation Rules
+
+Template output MUST:
+
+1. **Valid YAML frontmatter**: Parseable by any YAML parser
+2. **Required fields present**: `name` and `description`
+3. **Name format**: Lowercase, hyphens only (`^[a-z][a-z0-9-]*$`)
+4. **Description length**: Minimum 50 characters
+5. **Valid Markdown**: Parseable without syntax errors
+6. **Proper escaping**: Special characters escaped in YAML
+
+### Validation Code
+
+```python
+import yaml
+import re
+
+def validate_skill_md(content: str) -> bool:
+    """Validate SKILL.md follows Claude Code format."""
+
+    # Extract frontmatter
+    if not content.startswith('---'):
+        raise ValidationError("Must start with YAML frontmatter (---)")
+
+    parts = content.split('---', 2)
+    if len(parts) < 3:
+        raise ValidationError("Invalid frontmatter format")
+
+    frontmatter_yaml = parts[1]
+    markdown_content = parts[2]
+
+    # Parse YAML
+    try:
+        data = yaml.safe_load(frontmatter_yaml)
+    except yaml.YAMLError as e:
+        raise ValidationError(f"Invalid YAML: {e}")
+
+    # Required fields
+    if 'name' not in data:
+        raise ValidationError("Missing required field: 'name'")
+
+    if 'description' not in data:
+        raise ValidationError("Missing required field: 'description'")
+
+    # Name format
+    if not re.match(r'^[a-z][a-z0-9-]*$', data['name']):
+        raise ValidationError(
+            f"Invalid name '{data['name']}': must be lowercase with hyphens"
+        )
+
+    # Description length
+    if len(data['description']) < 50:
+        raise ValidationError("Description must be at least 50 characters")
+
+    return True
+```
+
+---
+
+## Directory Structure
+
+Skills are output to Claude Code standard location:
+
+```
+.claude/
+└── skills/
+    ├── develop/
+    │   └── SKILL.md
+    ├── refactor/
+    │   └── SKILL.md
+    └── design-architecture/
+        └── SKILL.md
+```
+
+---
+
+## Template Requirements
+
+The Jinja2 template (step 01-04) must:
+
+1. Generate valid YAML frontmatter with `name` and `description`
+2. Include optional nWave fields if provided
+3. Generate markdown content with H1 title
+4. Include "When to Use" section from description keywords
+5. Generate "Guidelines" section if instructions provided
+6. Properly escape all YAML special characters
+7. Output valid Markdown
+
+---
 
 ## Version History
 
-- **v1.0** (2026-01-14): Initial specification with frontmatter, sections, YAML escaping rules
+- **v2.0** (2026-01-14): Aligned with Claude Code native format
+  - Simplified to `name` + `description` required fields
+  - Removed custom sections (Activation Notice, Raw Triggers)
+  - Added standard Claude Code sections (When to Use, Guidelines, Examples)
+  - Updated directory structure to `.claude/skills/`
+
+- **v1.0** (2026-01-14): Initial specification (superseded)
