@@ -10,12 +10,15 @@ Acceptance Criteria:
 """
 
 import pytest
-from pathlib import Path
+import os
+import sys
 
+# Add tools directory to path for TOON parser
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'tools', 'toon'))
 
-# File path constants
-TOON_FILE_PATH = Path("/mnt/c/Repositories/Projects/ai-craft/nWave/agents/researcher-reviewer.toon")
-SOURCE_MD_PATH = Path("/mnt/c/Repositories/Projects/ai-craft/nWave/agents/researcher-reviewer.md")
+# File path constants - use relative paths from project root
+TOON_FILE = "nWave/agents/researcher-reviewer.toon"
+SOURCE_MD_FILE = "nWave/agents/researcher-reviewer.md"
 
 
 class TestResearcherReviewerToonFileExists:
@@ -23,12 +26,13 @@ class TestResearcherReviewerToonFileExists:
 
     def test_toon_file_exists(self):
         """The TOON file must exist at the expected path"""
-        assert TOON_FILE_PATH.exists(), f"TOON file not found at {TOON_FILE_PATH}"
+        assert os.path.exists(TOON_FILE), f"TOON file not found at {TOON_FILE}"
 
     def test_toon_file_not_empty(self):
         """The TOON file must contain content"""
-        assert TOON_FILE_PATH.exists(), "TOON file must exist first"
-        content = TOON_FILE_PATH.read_text(encoding='utf-8')
+        assert os.path.exists(TOON_FILE), "TOON file must exist first"
+        with open(TOON_FILE, 'r', encoding='utf-8') as f:
+            content = f.read()
         assert len(content) > 0, "TOON file must not be empty"
 
 
@@ -38,9 +42,10 @@ class TestResearcherReviewerToonSchemaValidation:
     @pytest.fixture
     def toon_content(self) -> str:
         """Load TOON file content"""
-        if not TOON_FILE_PATH.exists():
+        if not os.path.exists(TOON_FILE):
             pytest.skip("TOON file does not exist yet")
-        return TOON_FILE_PATH.read_text(encoding='utf-8')
+        with open(TOON_FILE, 'r', encoding='utf-8') as f:
+            return f.read()
 
     def test_has_toon_header(self, toon_content: str):
         """TOON file must have proper header with version"""
@@ -85,9 +90,10 @@ class TestResearcherReviewerYamlKeysPreserved:
     @pytest.fixture
     def toon_content(self) -> str:
         """Load TOON file content"""
-        if not TOON_FILE_PATH.exists():
+        if not os.path.exists(TOON_FILE):
             pytest.skip("TOON file does not exist yet")
-        return TOON_FILE_PATH.read_text(encoding='utf-8')
+        with open(TOON_FILE, 'r', encoding='utf-8') as f:
+            return f.read()
 
     def test_agent_id_preserved(self, toon_content: str):
         """Agent ID 'researcher-reviewer' must be present"""
@@ -139,9 +145,10 @@ class TestResearcherReviewerToonSyntax:
     @pytest.fixture
     def toon_content(self) -> str:
         """Load TOON file content"""
-        if not TOON_FILE_PATH.exists():
+        if not os.path.exists(TOON_FILE):
             pytest.skip("TOON file does not exist yet")
-        return TOON_FILE_PATH.read_text(encoding='utf-8')
+        with open(TOON_FILE, 'r', encoding='utf-8') as f:
+            return f.read()
 
     def test_no_unclosed_brackets(self, toon_content: str):
         """No unclosed brackets in content"""
@@ -184,9 +191,10 @@ class TestResearcherReviewerToonParserIntegration:
     @pytest.fixture
     def toon_content(self) -> str:
         """Load TOON file content"""
-        if not TOON_FILE_PATH.exists():
+        if not os.path.exists(TOON_FILE):
             pytest.skip("TOON file does not exist yet")
-        return TOON_FILE_PATH.read_text(encoding='utf-8')
+        with open(TOON_FILE, 'r', encoding='utf-8') as f:
+            return f.read()
 
     def test_parser_can_parse_file(self, toon_content: str):
         """TOON parser should successfully parse the file"""
@@ -238,9 +246,10 @@ class TestResearcherReviewerSpecificContent:
     @pytest.fixture
     def toon_content(self) -> str:
         """Load TOON file content"""
-        if not TOON_FILE_PATH.exists():
+        if not os.path.exists(TOON_FILE):
             pytest.skip("TOON file does not exist yet")
-        return TOON_FILE_PATH.read_text(encoding='utf-8')
+        with open(TOON_FILE, 'r', encoding='utf-8') as f:
+            return f.read()
 
     def test_review_specialist_reference(self, toon_content: str):
         """Should mention review specialist role"""
