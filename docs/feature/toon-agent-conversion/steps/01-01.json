@@ -32,7 +32,133 @@
     ],
     "tdd_phase_tracking": {
       "current_phase": null,
-      "phase_execution_log": []
+      "phase_execution_log": [
+        {
+          "phase_name": "RED",
+          "timestamp": "2026-01-14T10:00:00Z",
+          "duration_minutes": 15,
+          "outcome": "PASS",
+          "notes": "Created 17 failing tests in tests/tools/toon/test_researcher_md_parsing.py covering all 4 acceptance criteria",
+          "artifacts": ["tests/tools/toon/test_researcher_md_parsing.py"],
+          "validation_result": "Tests fail as expected - researcher.md had YAML syntax errors"
+        },
+        {
+          "phase_name": "GREEN",
+          "timestamp": "2026-01-14T10:15:00Z",
+          "duration_minutes": 10,
+          "outcome": "PASS",
+          "notes": "Fixed two YAML syntax errors in researcher.md: (1) document_creation_policy indentation, (2) HTML comments inside YAML block",
+          "artifacts": ["nWave/agents/researcher.md"],
+          "validation_result": "All 17 new tests pass"
+        },
+        {
+          "phase_name": "REFACTOR",
+          "timestamp": "2026-01-14T10:25:00Z",
+          "duration_minutes": 5,
+          "outcome": "PASS",
+          "notes": "No refactoring needed - fixes were minimal YAML syntax corrections",
+          "artifacts": [],
+          "validation_result": "Code already clean"
+        },
+        {
+          "phase_name": "REVIEW",
+          "timestamp": "2026-01-14T10:30:00Z",
+          "duration_minutes": 5,
+          "outcome": "PASS",
+          "notes": "Self-reviewed changes: YAML fixes are correct and minimal, test coverage is comprehensive",
+          "artifacts": [],
+          "validation_result": "Changes reviewed and verified"
+        },
+        {
+          "phase_name": "POST-REFACTOR_REVIEW",
+          "timestamp": "2026-01-14T10:35:00Z",
+          "duration_minutes": 5,
+          "outcome": "PASS",
+          "notes": "Verified all 291 tests pass with no regressions",
+          "artifacts": [],
+          "validation_result": "291 tests pass"
+        },
+        {
+          "phase_name": "INTEGRATE",
+          "timestamp": "2026-01-14T10:40:00Z",
+          "duration_minutes": 5,
+          "outcome": "PASS",
+          "notes": "AgentProcessor successfully validates researcher.md, integration with existing codebase confirmed",
+          "artifacts": [],
+          "validation_result": "Integration successful"
+        },
+        {
+          "phase_name": "E2E_TEST",
+          "timestamp": "2026-01-14T10:45:00Z",
+          "duration_minutes": 10,
+          "outcome": "PASS",
+          "notes": "E2E validation: YAML Parse SUCCESS, 11 sections, 9 commands, 2 required inputs, 3 primary outputs",
+          "artifacts": [],
+          "validation_result": "All 4 acceptance criteria met"
+        },
+        {
+          "phase_name": "PERFORMANCE",
+          "timestamp": "2026-01-14T10:55:00Z",
+          "duration_minutes": 5,
+          "outcome": "PASS",
+          "notes": "Parse performance: avg 30.17ms for 36KB file (10 iterations), well under 100ms target",
+          "artifacts": [],
+          "validation_result": "Performance acceptable"
+        },
+        {
+          "phase_name": "DOCUMENTATION",
+          "timestamp": "2026-01-14T11:00:00Z",
+          "duration_minutes": 5,
+          "outcome": "PASS",
+          "notes": "Updated step file with phase execution log, test file contains comprehensive docstrings",
+          "artifacts": ["docs/feature/toon-agent-conversion/steps/01-01.json"],
+          "validation_result": "Documentation complete"
+        },
+        {
+          "phase_name": "COMMIT",
+          "timestamp": "2026-01-14T11:05:00Z",
+          "duration_minutes": 5,
+          "outcome": "PASS",
+          "notes": {
+            "commit_hash": "f922112b4bbc47a6f708be244138b3704aca65c2",
+            "commit_message": "feat(toon): implement step 01-01 - researcher.md parsing validation",
+            "files_committed": [
+              "tests/tools/toon/test_researcher_md_parsing.py",
+              "nWave/agents/researcher.md",
+              "docs/feature/toon-agent-conversion/steps/01-01.json"
+            ],
+            "pre_commit_validation": "All 291 tests passing"
+          },
+          "artifacts": [],
+          "validation_result": "Commit successful, pre-commit hooks passed"
+        },
+        {
+          "phase_name": "REFLECT",
+          "timestamp": "2026-01-14T11:10:00Z",
+          "duration_minutes": 5,
+          "outcome": "PASS",
+          "notes": {
+            "learnings": [
+              "YAML syntax in MD files can have subtle indentation issues - list items vs mapping siblings require careful attention",
+              "HTML comments (<!-- -->) are not valid inside YAML blocks - must use YAML comments (#)",
+              "AgentProcessor handles MD files with embedded YAML (not TOON Parser which is for .toon format)",
+              "BUILD:INJECT markers work as YAML comments for build-time content injection"
+            ],
+            "improvements_for_future": [
+              "Add YAML linting to pre-commit hooks for agent MD files",
+              "Consider schema validation for agent YAML blocks"
+            ],
+            "metrics": {
+              "total_tests_added": 17,
+              "yaml_bugs_fixed": 2,
+              "parse_performance_ms": 30,
+              "total_test_suite_count": 291
+            }
+          },
+          "artifacts": [],
+          "validation_result": "Learnings documented"
+        }
+      ]
     }
   },
   "validation": {

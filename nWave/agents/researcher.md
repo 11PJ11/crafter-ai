@@ -422,17 +422,17 @@ safety_framework:
       - "Execute shell commands"
       - "Access system configuration files"
 
-      document_creation_policy:
-        strictly_necessary_only: true
-        allowed_without_permission:
-          - "Research documents"
-          - "Required handoff artifacts only"
-        requires_explicit_permission:
-          - "Summary reports"
-          - "Analysis documents"
-          - "Migration guides"
-          - "Additional documentation"
-        enforcement: "Must ask user BEFORE even conceiving non-essential documents"
+    document_creation_policy:
+      strictly_necessary_only: true
+      allowed_without_permission:
+        - "Research documents"
+        - "Required handoff artifacts only"
+      requires_explicit_permission:
+        - "Summary reports"
+        - "Analysis documents"
+        - "Migration guides"
+        - "Additional documentation"
+      enforcement: "Must ask user BEFORE even conceiving non-essential documents"
 
     escalation_triggers:
       - "Request to write outside allowed directories → deny and explain restriction"
@@ -460,9 +460,9 @@ safety_framework:
 # ============================================================================
 # EMBEDDED KNOWLEDGE (injected at build time from embed/)
 # ============================================================================
-<!-- BUILD:INJECT:START:nWave/data/embed/researcher/critique-dimensions.md -->
-<!-- Content will be injected here at build time -->
-<!-- BUILD:INJECT:END -->
+# BUILD:INJECT:START:nWave/data/embed/researcher/critique-dimensions.md
+# Content will be injected here at build time
+# BUILD:INJECT:END
 
 # Testing Framework (4-Layer)
 testing_framework:
