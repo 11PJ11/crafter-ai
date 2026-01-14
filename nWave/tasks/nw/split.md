@@ -466,20 +466,78 @@ Each file (`{phase:02d}-{step:02d}.json`) is a complete, executable unit with em
 ```
 MERGE(existing_step, tdd_template):
   1. PRESERVE all existing fields from existing_step
-  2. ADD tdd_cycle section from template
+  2. ADD tdd_cycle section from template (INCLUDING phase_execution_log)
   3. ADD quality_gates section from template
-  4. ADD TDD state fields to state section
-  5. IF conflict on field name:
+  4. ADD phase_validation_rules section from template
+  5. ADD TDD state fields to state section
+  6. IF conflict on field name:
      - existing_step value takes precedence
      - Log warning: "Field {name} conflict, keeping existing value"
-  6. NEVER overwrite: task_id, project_id, task_specification, dependencies
-  7. ALWAYS add: tdd_cycle, quality_gates (if not present)
+  7. NEVER overwrite: task_id, project_id, task_specification, dependencies
+  8. ALWAYS add: tdd_cycle, quality_gates, phase_validation_rules (if not present)
 ```
 
 **Conflict Resolution Priority**:
 1. User-defined values (highest)
 2. Existing step schema values
 3. TDD template defaults (lowest)
+
+### Phase Pre-Population Rule (MANDATORY)
+
+**CRITICAL**: Every generated step file MUST include the complete `phase_execution_log` with all 14 phases pre-populated with status `NOT_EXECUTED`.
+
+This is **NON-NEGOTIABLE**. The agent executing the step cannot add phases - they must already exist. The agent can only UPDATE existing phase entries.
+
+**14 Required Phases** (in order):
+1. PREPARE (phase_index: 0)
+2. RED_ACCEPTANCE (phase_index: 1)
+3. RED_UNIT (phase_index: 2)
+4. GREEN_UNIT (phase_index: 3)
+5. CHECK_ACCEPTANCE (phase_index: 4)
+6. GREEN_ACCEPTANCE (phase_index: 5)
+7. REVIEW (phase_index: 6)
+8. REFACTOR_L1 (phase_index: 7)
+9. REFACTOR_L2 (phase_index: 8)
+10. REFACTOR_L3 (phase_index: 9)
+11. REFACTOR_L4 (phase_index: 10)
+12. POST_REFACTOR_REVIEW (phase_index: 11)
+13. FINAL_VALIDATE (phase_index: 12)
+14. COMMIT (phase_index: 13)
+
+**Each Phase Entry Schema**:
+```json
+{
+  "phase_name": "PREPARE",
+  "phase_index": 0,
+  "status": "NOT_EXECUTED",
+  "started_at": null,
+  "ended_at": null,
+  "duration_minutes": null,
+  "outcome": null,
+  "outcome_details": null,
+  "artifacts_created": [],
+  "artifacts_modified": [],
+  "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
+  "notes": null,
+  "blocked_by": null,
+  "history": []
+}
+```
+
+**Post-Generation Verification**:
+After generating each step file, verify:
+- [ ] `phase_execution_log` exists in `tdd_cycle` section
+- [ ] Exactly 14 entries present
+- [ ] All entries have `status: "NOT_EXECUTED"`
+- [ ] All entries have correct `phase_index` (0-13)
+- [ ] All entries have correct `phase_name` matching the 14 required phases
+- [ ] No duplicate phase names
+- [ ] Sequential order matches phase_index
+
+**If Verification Fails**:
+- DO NOT create the step file
+- Return error: "Step file generation failed: phase_execution_log validation error"
+- Include specific issue (missing phases, wrong count, etc.)
 
 ### Step Generation Rules
 
@@ -504,22 +562,39 @@ Feature: Order Management
 - `test_file`: Path to acceptance test file
 - `scenario_index`: 0-based index within test file
 
-### 11-Phase TDD Enforcement
+### 14-Phase TDD Enforcement
 
-**CRITICAL**: All generated step files MUST include the 11-phase tracking structure.
+**CRITICAL**: All generated step files MUST include the 14-phase tracking structure, pre-populated at generation time.
 
 **Phase Execution Requirements**:
-1. Each phase must be documented in `phase_execution_log`
-2. `current_phase` must track progress
-3. Commit is BLOCKED until all 11 phases complete
-4. Each phase log entry must include:
-   - `phase_name`: Name of the phase (e.g., "RED (Acceptance)")
-   - `timestamp`: ISO 8601 timestamp when phase started
+1. Each phase MUST be pre-populated in `phase_execution_log` at step file creation (by /nw:split)
+2. The executing agent can only UPDATE existing phase entries, not add new ones
+3. `current_phase` must track progress through the 14 phases
+4. Commit is BLOCKED until all 14 phases have status "EXECUTED" or valid "SKIPPED"
+5. Pre-commit hook validates phase completeness before allowing commit
+6. Each phase log entry fields:
+   - `phase_name`: Name of the phase (e.g., "PREPARE", "RED_ACCEPTANCE")
+   - `phase_index`: Sequential index (0-13)
+   - `status`: "NOT_EXECUTED" | "IN_PROGRESS" | "EXECUTED" | "SKIPPED"
+   - `started_at`: ISO 8601 timestamp when phase started
+   - `ended_at`: ISO 8601 timestamp when phase completed
    - `duration_minutes`: Time spent in phase
-   - `outcome`: "PASS" or "FAIL"
+   - `outcome`: "PASS" or "FAIL" (required for EXECUTED status)
+   - `outcome_details`: Details if outcome is FAIL
+   - `artifacts_created`: Files created during this phase
+   - `artifacts_modified`: Files modified during this phase
+   - `test_results`: Object with total/passed/failed/skipped counts
    - `notes`: Observations and decisions
-   - `artifacts`: Files created/modified
-   - `validation_result`: For phases with validation
+   - `blocked_by`: Required if status is "SKIPPED" (must have valid prefix)
+   - `history`: Array for tracking phase re-execution (recovery mechanism)
+
+**Valid SKIPPED Prefixes** (allow commit):
+- `BLOCKED_BY_DEPENDENCY:` - External dependency unavailable
+- `NOT_APPLICABLE:` - Phase not applicable for this task
+- `APPROVED_SKIP:` - Skip explicitly approved by reviewer
+
+**Invalid SKIPPED Prefixes** (block commit):
+- `DEFERRED:` - Indicates incomplete work, must be resolved before commit
 
 **Phase Execution Log Example**:
 ```json
@@ -591,23 +666,28 @@ Feature: Order Management
 }
 ```
 
-**11-Phase Command Mapping**:
+**14-Phase Command Mapping**:
 
-Each step file generated by `/nw:split` is designed to be executed through the 11-phase TDD workflow using `/nw:develop` and related commands:
+Each step file generated by `/nw:split` is designed to be executed through the 14-phase TDD workflow using `/nw:develop` and related commands:
 
-| Phase | Command | Invoked By |
-|-------|---------|------------|
-| 1. PREPARE | Internal TDD loop | `/nw:develop {feature} --step {step-id}` |
-| 2. RED (Acceptance) | Internal TDD loop | `/nw:develop {feature} --step {step-id}` |
-| 3. RED (Unit) | Internal TDD loop | `/nw:develop {feature} --step {step-id}` |
-| 4. GREEN (Unit) | Internal TDD loop | `/nw:develop {feature} --step {step-id}` |
-| 5. CHECK | Internal TDD loop | `/nw:develop {feature} --step {step-id}` |
-| 6. GREEN (Acceptance) | Internal TDD loop | `/nw:develop {feature} --step {step-id}` |
-| 7. REVIEW | Explicit invocation | `/nw:review @software-crafter-reviewer implementation {step-file}` |
-| 8. REFACTOR | Explicit invocation | `/nw:refactor --level 4` OR `/nw:mikado --goal "{goal}"` |
-| 9. POST-REFACTOR REVIEW | Explicit invocation | `/nw:review @software-crafter-reviewer refactored_implementation {step-file}` |
-| 10. FINAL VALIDATE | Internal TDD loop | `/nw:develop {feature} --step {step-id}` |
-| 11. COMMIT | Explicit git commit | `git commit -m "feat({feature}): {scenario} - step {step-id}"` |
+| Phase | Phase Name | Command | Invoked By |
+|-------|------------|---------|------------|
+| 0 | PREPARE | Internal TDD loop | `/nw:develop {feature} --step {step-id}` |
+| 1 | RED_ACCEPTANCE | Internal TDD loop | `/nw:develop {feature} --step {step-id}` |
+| 2 | RED_UNIT | Internal TDD loop | `/nw:develop {feature} --step {step-id}` |
+| 3 | GREEN_UNIT | Internal TDD loop | `/nw:develop {feature} --step {step-id}` |
+| 4 | CHECK_ACCEPTANCE | Internal TDD loop | `/nw:develop {feature} --step {step-id}` |
+| 5 | GREEN_ACCEPTANCE | Internal TDD loop | `/nw:develop {feature} --step {step-id}` |
+| 6 | REVIEW | Explicit invocation | `/nw:review @software-crafter-reviewer implementation {step-file}` |
+| 7 | REFACTOR_L1 | Explicit invocation | `/nw:refactor --level 1` |
+| 8 | REFACTOR_L2 | Explicit invocation | `/nw:refactor --level 2` |
+| 9 | REFACTOR_L3 | Explicit invocation | `/nw:refactor --level 3` |
+| 10 | REFACTOR_L4 | Explicit invocation | `/nw:refactor --level 4` OR `/nw:mikado --goal "{goal}"` |
+| 11 | POST_REFACTOR_REVIEW | Explicit invocation | `/nw:review @software-crafter-reviewer refactored_implementation {step-file}` |
+| 12 | FINAL_VALIDATE | Internal TDD loop | `/nw:develop {feature} --step {step-id}` |
+| 13 | COMMIT | Explicit git commit | `git commit -m "feat({feature}): {scenario} - step {step-id}"` |
+
+**NOTE**: Pre-commit hook validates all 14 phases before allowing commit. The hook is installed in the target project by `/nw:develop`.
 
 **Alternative: Fully Automated Execution**:
 

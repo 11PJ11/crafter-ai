@@ -1,6 +1,6 @@
 # nWave IDE Bundle Builder Configuration
 
-version: "1.0.0"
+version: "1.1.0"
 
 # Build settings
 build:
@@ -21,6 +21,34 @@ build:
   strict_validation: true
   fail_on_missing_deps: false
   fail_on_warnings: false
+
+# Source embedding configuration
+# Run: python tools/embed_sources.py
+source_embedding:
+  # Enable/disable embedding step in build
+  enabled: true
+
+  # Target files to scan for embed markers
+  target_patterns:
+    - "nWave/tasks/**/*.md"
+    - "nWave/data/**/*.md"
+
+  # Source files that can be embedded
+  # Map source path -> description
+  embeddable_sources:
+    "nWave/hooks/pre_commit_tdd_phases.py": "TDD phase validation pre-commit hook"
+    "nWave/hooks/post_commit_bypass_logger.py": "Bypass detection post-commit hook"
+    "nWave/scripts/validate_tdd_phases_ci.py": "CI/CD validation script"
+    "nWave/scripts/migrate_step_files.py": "Step file migration script"
+
+  # Marker format documentation
+  # Start: <!-- EMBED_START:path/to/file.py:format -->
+  # End:   <!-- EMBED_END:path/to/file.py -->
+  #
+  # Supported formats:
+  #   - python_string: Escape as Python multiline string variable
+  #   - markdown_code: Wrap in markdown code fence
+  #   - raw: Insert content as-is
 
 # Processing options
 processing:

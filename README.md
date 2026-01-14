@@ -1,6 +1,6 @@
 # AI-Craft: Intelligent ATDD Pipeline with Specialized Agent Network
 
-<!-- version: 1.0.1 -->
+<!-- version: 1.1.0 -->
 
 🚀 **A systematic approach to software development using ATDD (Acceptance Test Driven Development) with intelligent AI agent orchestration**
 
@@ -10,7 +10,7 @@ AI-Craft is a comprehensive development pipeline that implements the 5-stage ATD
 
 ### Core Philosophy
 
-- **Outside-In Development**: Start with acceptance tests and work inward with mandatory 11-phase TDD discipline
+- **Outside-In Development**: Start with acceptance tests and work inward with mandatory 14-phase TDD discipline
 - **Single Responsibility Principle**: Each agent has one focused responsibility
 - **Clean Context Isolation**: Agents receive only essential context for their tasks
 - **File-Based Handoffs**: Structured communication between pipeline stages

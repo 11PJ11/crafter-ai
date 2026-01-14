@@ -310,6 +310,127 @@ ACCEPTANCE CRITERIA:
 Execute this task and provide outputs as specified.
 ```
 
+### MANDATORY: Phase Tracking Protocol
+
+The step file contains a pre-populated `phase_execution_log` with all 14 TDD phases.
+You MUST update each phase as you execute it. **DO NOT BATCH UPDATES** - save the step file after each phase.
+
+#### Before Starting a Phase
+
+1. READ the step file
+2. LOCATE the phase entry in `tdd_cycle.phase_execution_log` by `phase_name`
+3. UPDATE the entry:
+   ```json
+   {
+     "status": "IN_PROGRESS",
+     "started_at": "2024-01-15T10:00:00Z"
+   }
+   ```
+4. SAVE the step file (atomic write: temp file + rename)
+
+#### After Completing a Phase
+
+5. UPDATE the entry:
+   ```json
+   {
+     "status": "EXECUTED",
+     "ended_at": "2024-01-15T10:05:00Z",
+     "duration_minutes": 5,
+     "outcome": "PASS",
+     "outcome_details": "Test failed as expected with NotImplementedException",
+     "artifacts_created": ["tests/unit/OrderServiceTests.cs"],
+     "artifacts_modified": [],
+     "test_results": {
+       "total": 3,
+       "passed": 0,
+       "failed": 3,
+       "skipped": 0
+     },
+     "notes": "All 3 unit tests failing as expected - ready for GREEN"
+   }
+   ```
+6. SAVE the step file IMMEDIATELY (before starting next phase)
+
+#### If Phase Cannot Be Completed
+
+If a phase cannot be completed for valid reasons:
+
+```json
+{
+  "status": "SKIPPED",
+  "blocked_by": "NOT_APPLICABLE: No unit tests required for documentation-only task"
+}
+```
+
+**Valid SKIPPED Prefixes** (allow commit):
+- `BLOCKED_BY_DEPENDENCY:` - External dependency unavailable
+- `NOT_APPLICABLE:` - Phase not applicable for this task type
+- `APPROVED_SKIP:` - Explicitly approved by reviewer
+
+**Invalid SKIPPED Prefixes** (block commit):
+- `DEFERRED:` - Indicates incomplete work that must be resolved
+
+#### Phase History for Recovery
+
+Each phase entry has a `history` array for tracking re-execution:
+
+```json
+{
+  "phase_name": "GREEN_UNIT",
+  "status": "EXECUTED",
+  "history": [
+    {
+      "status": "EXECUTED",
+      "outcome": "FAIL",
+      "ended_at": "2024-01-15T10:20:00Z",
+      "notes": "Initial attempt failed - edge case not handled"
+    },
+    {
+      "status": "EXECUTED",
+      "outcome": "PASS",
+      "ended_at": "2024-01-15T10:35:00Z",
+      "notes": "Fixed edge case, all tests passing"
+    }
+  ]
+}
+```
+
+#### Phase Tracking Violations
+
+These are CRITICAL violations that will cause the pre-commit hook to block commits:
+
+- **Batching updates** - Saving step file only at the end instead of after each phase
+- **Skipping phases** - Leaving phases as NOT_EXECUTED without valid blocked_by
+- **Leaving IN_PROGRESS** - Phases left in IN_PROGRESS status indicate abandoned execution
+- **Missing outcome** - EXECUTED phases must have outcome (PASS/FAIL)
+- **Invalid SKIPPED reason** - SKIPPED without blocked_by or with DEFERRED prefix
+
+#### Validation Before COMMIT Phase
+
+Before executing the COMMIT phase, verify:
+- [ ] All 13 previous phases have status "EXECUTED" or valid "SKIPPED"
+- [ ] No phase has status "IN_PROGRESS" or "NOT_EXECUTED"
+- [ ] All EXECUTED phases have outcome field set
+- [ ] All SKIPPED phases have blocked_by with valid prefix
+- [ ] No SKIPPED phases have DEFERRED prefix (blocks commit)
+
+```python
+# Validation pseudo-code
+for phase in phase_execution_log:
+    if phase.status == "NOT_EXECUTED":
+        ERROR: "Phase {phase.phase_name} not executed"
+    elif phase.status == "IN_PROGRESS":
+        ERROR: "Phase {phase.phase_name} left in progress"
+    elif phase.status == "SKIPPED":
+        if not phase.blocked_by:
+            ERROR: "SKIPPED without reason"
+        if phase.blocked_by.startswith("DEFERRED:"):
+            ERROR: "DEFERRED phases block commit"
+    elif phase.status == "EXECUTED":
+        if not phase.outcome:
+            ERROR: "EXECUTED without outcome"
+```
+
 #### 3. POST-EXECUTION PHASE
 
 **Success State Update**:
