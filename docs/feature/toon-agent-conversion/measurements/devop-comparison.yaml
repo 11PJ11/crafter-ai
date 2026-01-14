@@ -1,0 +1,25 @@
+# Token Measurement Comparison for devop
+# Generated: 2026-01-14
+
+step_id: XX-04
+agent_name: devop
+measurement_date: '2026-01-14'
+tokenizer: cl100k_base
+original:
+  file: nWave/agents/devop.md
+  tokens: 11298
+  bytes: 58426
+  lines: 1392
+toon:
+  file: nWave/agents/devop.toon
+  tokens: 2589
+  bytes: 12891
+  lines: 312
+compression:
+  ratio: 4.36:1
+  token_reduction: 8709
+  token_reduction_percent: 77.1
+target_analysis:
+  primary_target_5_1: false
+  secondary_target_4_1: true
+  exception_required: false
