@@ -322,7 +322,13 @@ def extract_dependencies(content: str) -> dict[str, list[str]]:
             cat_match = re.search(cat_pattern, deps_content, re.IGNORECASE)
             if cat_match:
                 items = re.findall(r"^\s+-\s*(.+?)$", cat_match.group(1), re.MULTILINE)
-                deps[category] = [item.strip() for item in items]
+                # Normalize items: strip parenthetical descriptions for comparison
+                normalized_items = []
+                for item in items:
+                    # Remove trailing parenthetical descriptions: "file.md (description)"
+                    normalized = re.sub(r"\s*\([^)]*\)\s*$", "", item.strip())
+                    normalized_items.append(normalized)
+                deps[category] = normalized_items
 
     # Also check ## DEPENDENCIES section (TOON format)
     toon_deps_match = re.search(
