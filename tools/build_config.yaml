@@ -1,6 +1,6 @@
 # nWave IDE Bundle Builder Configuration
 
-version: "1.1.0"
+version: "1.2.0"
 
 # Build settings
 build:
@@ -40,6 +40,7 @@ source_embedding:
     "nWave/hooks/post_commit_bypass_logger.py": "Bypass detection post-commit hook"
     "nWave/scripts/validate_tdd_phases_ci.py": "CI/CD validation script"
     "nWave/scripts/migrate_step_files.py": "Step file migration script"
+    "nWave/templates/step-tdd-cycle-schema.json": "14-phase TDD step template schema"
 
   # Marker format documentation
   # Start: <!-- EMBED_START:path/to/file.py:format -->
