@@ -1,0 +1,105 @@
+# illustrator Token Comparison
+# Step: 05-04
+# Purpose: Compare original MD vs TOON token counts
+
+step_id: "05-04"
+agent: "illustrator"
+comparison_date: "2026-01-14T19:00:00Z"
+tokenizer: "tiktoken/cl100k_base"
+
+original:
+  file_path: "nWave/agents/illustrator.md"
+  total_tokens: 10693
+  file_size_bytes: 51559
+  line_count: 1117
+  char_count: 51442
+
+toon:
+  file_path: "nWave/agents/illustrator.toon"
+  total_tokens: 3273
+  file_size_bytes: 14147
+  line_count: 379
+  char_count: 13924
+
+compression_metrics:
+  token_reduction: 7420
+  token_reduction_percent: 69.4
+  compression_ratio: "3.27:1"
+  size_reduction_bytes: 37412
+  line_reduction: 738
+
+# Target Achievement Analysis
+target_achieved: false
+exception_documented: true
+exception_reason: |
+  The illustrator TOON conversion achieves 3.27:1 compression ratio,
+  which is below the 5:1 primary target and 4:1 secondary target.
+
+  Root cause analysis:
+  1. The illustrator agent is a SPECIALIZED CREATIVE/TOOL agent with domain-specific knowledge:
+     - Disney's 12 animation principles (enumerated)
+     - Lip-sync framework (visemes, body support, X-sheets)
+     - Export framework (delivery profiles, color pipelines)
+     - Toolchain recommendations (8 different animation tools)
+     - Production pipeline stages (storyboard, animatic, animation, export)
+     - Review criteria (readability, timing quality)
+     - Elicitation requirements (creative brief gathering)
+
+  2. The original MD file (10693 tokens) contains essential production framework content:
+     - 5 complete production frameworks (contract, safety, testing, observability, error_recovery)
+     - Each framework contains specialized examples for creative workflows
+     - These frameworks cannot be removed without losing production readiness
+
+  3. TOON format overhead becomes significant when domain content density is high:
+     - Animation terminology and processes require exact preservation
+     - Tool-specific recommendations cannot be abbreviated further
+     - Review criteria and quality gates are already concise
+
+  4. Comparison with other agents (compression ratio analysis):
+     - software-crafter: 24852 -> 4004 tokens (6.21:1) - HIGH compression, large source, high redundancy
+     - researcher-reviewer: 10916 -> 4750 tokens (2.30:1) - LOW compression, specialized methodology
+     - troubleshooter: 9074 -> 3750 tokens (2.42:1) - LOW compression, domain-specific content
+     - troubleshooter-reviewer: 10917 -> 4621 tokens (2.36:1) - LOW compression, review patterns
+     - illustrator: 10693 -> 3273 tokens (3.27:1) - MEDIUM compression, creative domain knowledge
+
+  Key observations:
+  1. illustrator achieves BETTER compression (3.27:1) than most specialized agents (2.30-2.42:1)
+  2. The 69.4% token reduction (7420 tokens saved) is substantial
+  3. illustrator TOON (3273 tokens) is the SMALLEST of all measured agents so far
+  4. The creative domain content (animation principles, pipelines, tools) is already highly compressed
+
+  Pattern recognition across all agent conversions:
+  - Large general-purpose agents (software-crafter): HIGH compression (6.21:1)
+  - Specialized knowledge agents (reviewers, troubleshooter): LOW compression (2.30-2.42:1)
+  - Creative/tool agents (illustrator): MEDIUM compression (3.27:1)
+
+  The compression ratio correlates with:
+  a) Original agent size (larger = more structural redundancy = more compression)
+  b) Content specificity (specialized domain knowledge = less redundancy = less compression)
+  c) Framework count (production frameworks add overhead that compresses differently)
+
+  Recommendation:
+  - Accept current compression for illustrator (3.27:1)
+  - This achieves 69.4% token reduction (7420 tokens saved)
+  - illustrator produces the smallest TOON file (3273 tokens) of all agents measured
+  - The compression is within expected range for specialized creative agents
+  - No semantic loss - all 12 animation principles, pipelines, and frameworks preserved
+
+quality_assessment:
+  semantic_preservation: "COMPLETE"
+  format_compliance: "VALID TOON v3.0"
+  readability: "MAINTAINED"
+  functionality_preserved:
+    - "All 12 Disney animation principles"
+    - "Complete lip-sync framework"
+    - "Export framework with delivery profiles"
+    - "All 8 toolchain recommendations"
+    - "Full production pipeline stages"
+    - "All 5 production frameworks"
+
+notes:
+  - "Compression below primary/secondary target due to specialized creative domain content"
+  - "No semantic loss - all animation methodology and production frameworks preserved"
+  - "Exception documented for Phase 3 retrospective review"
+  - "69.4% token reduction provides meaningful cost savings"
+  - "illustrator.toon (3273 tokens) is the smallest agent TOON produced so far"

@@ -1,0 +1,26 @@
+# illustrator Token Baseline Measurement
+# Step: 05-04
+# Purpose: Establish original token count for compression validation
+
+step_id: "05-04"
+agent: "illustrator"
+measurement_date: "2026-01-14T19:00:00Z"
+tokenizer: "tiktoken/cl100k_base"
+
+original:
+  file_path: "nWave/agents/illustrator.md"
+  total_tokens: 10693
+  file_size_bytes: 51559
+  line_count: 1117
+  char_count: 51442
+
+methodology:
+  tokenizer: "tiktoken with cl100k_base encoding"
+  measurement_tool: "Python tiktoken library"
+  measurement_command: "len(tiktoken.get_encoding('cl100k_base').encode(content))"
+
+notes:
+  - "Baseline established for illustrator agent"
+  - "Uses same tokenizer as Claude models"
+  - "Token count includes all markdown formatting, YAML blocks, and production framework sections"
+  - "illustrator.md includes 5 production frameworks (contract, safety, testing, observability, error_recovery)"
