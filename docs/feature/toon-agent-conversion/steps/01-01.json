@@ -120,7 +120,7 @@
           "duration_minutes": 5,
           "outcome": "PASS",
           "notes": {
-            "commit_hash": "f922112b4bbc47a6f708be244138b3704aca65c2",
+            "commit_hash": "3dee0689a32633422e18c5eda1e5d6fca2c4d302",
             "commit_message": "feat(toon): implement step 01-01 - researcher.md parsing validation",
             "files_committed": [
               "tests/tools/toon/test_researcher_md_parsing.py",

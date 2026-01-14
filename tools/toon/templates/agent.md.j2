@@ -126,6 +126,18 @@ agent:
       - {{ template }}
 {%- endfor %}
 {%- endif %}
+{%- if sections.dependencies.get('checklists') %}
+    checklists:
+{%- for checklist in sections.dependencies.checklists %}
+      - {{ checklist }}
+{%- endfor %}
+{%- endif %}
+{%- if sections.dependencies.get('data') %}
+    data:
+{%- for datafile in sections.dependencies.data %}
+      - {{ datafile }}
+{%- endfor %}
+{%- endif %}
 {%- if sections.dependencies.get('embed_knowledge') %}
     embed_knowledge:
 {%- for embed in sections.dependencies.embed_knowledge %}

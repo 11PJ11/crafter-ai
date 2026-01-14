@@ -1,0 +1,9 @@
+{
+  "step_id": "02-01",
+  "file_path": "nWave/agents/software-crafter.md",
+  "measurement_date": "2026-01-14T08:39:10.249079Z",
+  "tokenizer": "tiktoken/cl100k_base",
+  "total_tokens": 24852,
+  "file_size_bytes": 120664,
+  "line_count": 2562
+}

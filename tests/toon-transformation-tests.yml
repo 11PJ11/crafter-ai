@@ -1,0 +1,94 @@
+---
+test_suite: researcher_toon_transformation
+test_id: 01-02
+description: Validate researcher.md transformation to TOON v3.0 format
+
+tests:
+  - id: T1_file_exists
+    name: Output file exists at correct path
+    precondition: None
+    action: Check if /mnt/c/Repositories/Projects/ai-craft/nWave/agents/researcher.toon exists
+    expected_result: File exists and is readable
+    actual_result: PENDING
+    status: PENDING
+
+  - id: T2_yaml_valid
+    name: Output file contains valid YAML
+    precondition: T1 passes
+    action: Parse researcher.toon as YAML
+    expected_result: YAML parses without syntax errors
+    actual_result: PENDING
+    status: PENDING
+
+  - id: T3_required_sections
+    name: All required TOON v3.0 sections present
+    precondition: T2 passes
+    action: Verify these sections exist at root level:
+      - "# RESEARCHER AGENT (TOON v3.0)"
+      - "## ID"
+      - "## PERSONA"
+      - "## CORE_PRINCIPLES"
+      - "## ACTIVATION"
+      - "## COMMANDS"
+      - "## DEPENDENCIES"
+    expected_result: All sections present
+    actual_result: PENDING
+    status: PENDING
+
+  - id: T4_yaml_keys_preserved
+    name: All critical YAML keys from original preserved
+    precondition: T2 passes
+    action: Verify these YAML keys exist:
+      - agent.id = researcher
+      - persona.role = "Evidence-Driven Knowledge Researcher"
+      - persona.name = Nova
+      - core_principles (array with ≥5 principles)
+      - commands (array with ≥7 commands)
+      - contract (input/output specification)
+      - safety_framework (4-layer)
+      - testing_framework (4-layer)
+      - observability_framework
+      - error_recovery_framework
+    expected_result: All keys present and values intact
+    actual_result: PENDING
+    status: PENDING
+
+  - id: T5_no_syntax_errors
+    name: No YAML or Markdown syntax errors
+    precondition: T2 passes
+    action: |
+      1. YAML validation: Parse complete file
+      2. Markdown validation: Check header hierarchy, link formats
+      3. Formatting: Verify indentation consistency
+    expected_result: Zero syntax errors reported
+    actual_result: PENDING
+    status: PENDING
+
+  - id: T6_embedded_knowledge_markers
+    name: Embedded knowledge BUILD:INJECT markers preserved
+    precondition: T2 passes
+    action: Verify BUILD:INJECT markers for:
+      - nWave/data/embed/researcher/critique-dimensions.md
+    expected_result: All BUILD:INJECT:START/END pairs present and balanced
+    actual_result: PENDING
+    status: PENDING
+
+  - id: T7_acceptance_criteria_met
+    name: All acceptance criteria from step 01-02.json met
+    precondition: T1, T3, T4, T5, T6 all pass
+    action: Verify all AC conditions
+    expected_result: |
+      1. TOON v3.0 file generated ✓
+      2. Schema validation passes ✓
+      3. All YAML keys preserved ✓
+      4. Zero syntax errors ✓
+    actual_result: PENDING
+    status: PENDING
+
+acceptance_criteria:
+  - "TOON v3.0 file generated: nWave/agents/researcher.toon"
+  - "Schema validation passes"
+  - "All YAML keys preserved"
+  - "Zero syntax errors"
+
+pass_threshold: "All 7 tests pass (T7 aggregates T1-T6)"

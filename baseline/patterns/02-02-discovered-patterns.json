@@ -1,0 +1,106 @@
+{
+  "step_id": "02-02",
+  "agent_converted": "software-crafter",
+  "discovery_date": "2026-01-14T09:15:00Z",
+  "patterns_discovered": [
+    {
+      "pattern_id": "PATTERN-001",
+      "description": "Agent metadata in YAML frontmatter maps to TOON ## ID section",
+      "before_example": "---\nname: agent-name\ndescription: Agent description\nmodel: inherit\n---",
+      "after_example": "## ID\nrole: AgentName | agent-name\ntitle: Agent Title\nmodel: inherit",
+      "applies_to": "All agents with metadata"
+    },
+    {
+      "pattern_id": "PATTERN-002",
+      "description": "Commands list uses YAML list format with - prefix and colon separator",
+      "before_example": "commands:\n  - help: Show numbered list of all available commands\n  - develop: Execute main TDD workflow",
+      "after_example": "## COMMANDS\n\n### Category Name\n- help: Show numbered list of all available commands\n- develop: Execute main TDD workflow",
+      "applies_to": "All agents with commands"
+    },
+    {
+      "pattern_id": "PATTERN-003",
+      "description": "Dependencies use nested YAML structure with category keys",
+      "before_example": "dependencies:\n  tasks:\n    - dw/develop.md\n    - dw/mikado.md\n  templates:\n    - template.yaml",
+      "after_example": "## DEPENDENCIES\ntasks:\n  - dw/develop.md\n  - dw/mikado.md\ntemplates:\n  - template.yaml",
+      "applies_to": "All agents with dependencies"
+    },
+    {
+      "pattern_id": "PATTERN-004",
+      "description": "Section headers use ## prefix for major sections, ### for subsections",
+      "before_example": "# Part 1: Outside-In TDD Methodology\n## Core Principles",
+      "after_example": "## CORE_TDD_METHODOLOGY\n\n### Double Loop Architecture",
+      "applies_to": "All multi-section agents"
+    },
+    {
+      "pattern_id": "PATTERN-005",
+      "description": "TOON uses arrow symbols (→) for implies/flow relationships",
+      "before_example": "Step 1 leads to Step 2 which produces output",
+      "after_example": "Step 1 → Step 2 → output",
+      "applies_to": "Flow descriptions and relationships"
+    },
+    {
+      "pattern_id": "PATTERN-006",
+      "description": "Activation instructions preserve step-based format with numbered steps",
+      "before_example": "activation-instructions:\n  - STEP 1: Read this file\n  - STEP 2: Adopt persona",
+      "after_example": "## ACTIVATION\n- STEP 1: Read this file\n- STEP 2: Adopt persona",
+      "applies_to": "All agents with activation sequence"
+    },
+    {
+      "pattern_id": "PATTERN-007",
+      "description": "Persona definition maps to dedicated PERSONA section",
+      "before_example": "persona:\n  role: Master Software Crafter\n  style: Methodical, test-driven",
+      "after_example": "## PERSONA\nname: Crafty\nrole: Master Software Crafter\nstyle: Methodical, test-driven",
+      "applies_to": "All agents with persona definitions"
+    },
+    {
+      "pattern_id": "PATTERN-008",
+      "description": "Core principles use arrow symbol (→) prefix for emphasis",
+      "before_example": "core_principles:\n  - Token Economy: Minimize tokens\n  - Document Control: Only necessary docs",
+      "after_example": "## CORE_PRINCIPLES\n→ Token Economy: Minimize tokens\n→ Document Control: Only necessary docs",
+      "applies_to": "All agents with principle lists"
+    }
+  ],
+  "edge_cases_found": [
+    {
+      "edge_case_id": "EDGE-001",
+      "description": "Embedded knowledge with BUILD:INJECT markers requires preservation",
+      "handling_strategy": "Preserve BUILD:INJECT markers verbatim in EMBEDDED_KNOWLEDGE section. Format: <!-- BUILD:INJECT:START:path --> and <!-- BUILD:INJECT:END -->"
+    },
+    {
+      "edge_case_id": "EDGE-002",
+      "description": "Large agents with multi-part structure (Part 1, Part 2, etc.) containing extensive methodology",
+      "handling_strategy": "Consolidate into semantic sections. Map Part N: Topic to ## TOPIC section. Preserve critical methodology content, compress verbose explanations."
+    },
+    {
+      "edge_case_id": "EDGE-003",
+      "description": "Embedded YAML code blocks within markdown (```yaml ... ```)",
+      "handling_strategy": "Extract YAML content and convert to TOON section format. Remove code fences, preserve key-value structure."
+    },
+    {
+      "edge_case_id": "EDGE-004",
+      "description": "YAML frontmatter with nested dict values (e.g., agent.customization)",
+      "handling_strategy": "Flatten to TOON key-value pairs. Use dot notation (agent.customization) or create nested sections."
+    },
+    {
+      "edge_case_id": "EDGE-005",
+      "description": "Unicode symbols (emojis, arrows) in content require UTF-8 handling",
+      "handling_strategy": "Preserve Unicode symbols - TOON format supports UTF-8. Emojis (🛠️) and arrows (→) pass through unchanged."
+    },
+    {
+      "edge_case_id": "EDGE-006",
+      "description": "Production framework sections with deeply nested YAML structures",
+      "handling_strategy": "Create subsections using ### headers. Flatten complex nesting to 2 levels maximum: ## SECTION / ### SUBSECTION."
+    }
+  ],
+  "conversion_statistics": {
+    "original_file": "nWave/agents/software-crafter.md",
+    "toon_file": "nWave/agents/software-crafter.toon",
+    "original_lines": 2562,
+    "toon_lines": 448,
+    "compression_ratio": "5.7:1",
+    "original_tokens": 24852,
+    "sections_converted": 18,
+    "commands_preserved": 27,
+    "dependencies_preserved": 16
+  }
+}
