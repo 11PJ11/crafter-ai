@@ -1,0 +1,69 @@
+# Pre-commit hooks configuration for AI-Craft nWave Framework
+# Install: pip install pre-commit && pre-commit install
+# Manual run: pre-commit run --all-files
+
+repos:
+  # Local hooks for nWave framework
+  - repo: local
+    hooks:
+      # Phase 0: Auto-increment version when nWave files are modified
+      - id: nwave-version-bump
+        name: nWave Version Auto-Increment
+        entry: scripts/hooks/version-bump.sh
+        language: script
+        files: ^(nWave/|tools/)
+        exclude: version\.md$
+        pass_filenames: false
+        stages: [pre-commit]
+
+      # Phase 1: Run pytest test suite
+      - id: pytest-validation
+        name: Pytest Test Validation
+        entry: scripts/hooks/validate-tests.sh
+        language: script
+        pass_filenames: false
+        stages: [pre-commit]
+        always_run: true
+
+      # Phase 2: Documentation version validation
+      - id: docs-version-validation
+        name: Documentation Version Validation
+        entry: scripts/hooks/validate-docs.sh
+        language: script
+        pass_filenames: false
+        stages: [pre-commit]
+        always_run: true
+
+  # Standard hooks from pre-commit repository
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^(dist/|\.git/)
+      - id: end-of-file-fixer
+        exclude: ^(dist/|\.git/)
+      - id: check-yaml
+        exclude: ^(dist/|\.git/)
+      - id: check-json
+        exclude: ^(dist/|\.git/)
+      - id: check-merge-conflict
+      - id: detect-private-key
+
+  # Python-specific hooks
+  - repo: https://github.com/psf/black
+    rev: 24.1.1
+    hooks:
+      - id: black
+        language_version: python3
+        files: ^(scripts/|tools/|tests/).*\.py$
+
+  # Shell script validation
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.9.0.6
+    hooks:
+      - id: shellcheck
+        files: ^scripts/.*\.sh$
+
+# Configuration
+default_stages: [pre-commit]
+fail_fast: false
