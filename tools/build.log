@@ -8,7 +8,7 @@
 2026-01-13 10:09:05,676 - INFO - Processing agent: acceptance-designer-reviewer
 2026-01-13 10:09:05,694 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 11, column 29:
-          * Minimize token usage: Be concise, eliminate verbosit ... 
+          * Minimize token usage: Be concise, eliminate verbosit ...
                                 ^
 2026-01-13 10:09:05,721 - INFO - Injecting embed content from: 5d-wave/data/embed/acceptance-designer/bdd-methodology.md
 2026-01-13 10:09:05,738 - INFO - Injecting embed content from: 5d-wave/data/embed/acceptance-designer/critique-dimensions.md
@@ -17,7 +17,7 @@
 2026-01-13 10:09:05,755 - INFO - Processing agent: acceptance-designer
 2026-01-13 10:09:05,771 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 11, column 29:
-          * Minimize token usage: Be concise, eliminate verbosit ... 
+          * Minimize token usage: Be concise, eliminate verbosit ...
                                 ^
 2026-01-13 10:09:05,778 - INFO - Injecting embed content from: 5d-wave/data/embed/acceptance-designer/bdd-methodology.md
 2026-01-13 10:09:05,784 - INFO - Injecting embed content from: 5d-wave/data/embed/acceptance-designer/critique-dimensions.md
@@ -26,7 +26,7 @@
 2026-01-13 10:09:05,802 - INFO - Processing agent: agent-builder-reviewer
 2026-01-13 10:09:05,823 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 13, column 29:
-          * Minimize token usage: Be concise, eliminate verbosit ... 
+          * Minimize token usage: Be concise, eliminate verbosit ...
                                 ^
 2026-01-13 10:09:05,840 - INFO - Injecting embed content from: 5d-wave/data/embed/agent-builder/critique-dimensions.md
 2026-01-13 10:09:05,841 - INFO - Processed 1 embed injection(s)
@@ -34,7 +34,7 @@
 2026-01-13 10:09:05,860 - INFO - Processing agent: agent-builder
 2026-01-13 10:09:05,879 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 13, column 29:
-          * Minimize token usage: Be concise, eliminate verbosit ... 
+          * Minimize token usage: Be concise, eliminate verbosit ...
                                 ^
 2026-01-13 10:09:05,888 - INFO - Injecting embed content from: 5d-wave/data/embed/agent-builder/critique-dimensions.md
 2026-01-13 10:09:05,888 - INFO - Processed 1 embed injection(s)
@@ -44,13 +44,13 @@
 2026-01-13 10:09:06,010 - INFO - Processing agent: cv-optimizer
 2026-01-13 10:09:06,025 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 13, column 29:
-          * Minimize token usage: Be concise, eliminate verbosit ... 
+          * Minimize token usage: Be concise, eliminate verbosit ...
                                 ^
 2026-01-13 10:09:06,046 - INFO - Processing agent: data-engineer-reviewer
 2026-01-13 10:09:06,046 - INFO - Processing agent: data-engineer-reviewer
 2026-01-13 10:09:06,065 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 13, column 29:
-          * Minimize token usage: Be concise, eliminate verbosit ... 
+          * Minimize token usage: Be concise, eliminate verbosit ...
                                 ^
 2026-01-13 10:09:06,086 - INFO - Injecting embed content from: 5d-wave/data/embed/data-engineer/01-databases-fundamentals.md
 2026-01-13 10:09:06,111 - INFO - Injecting embed content from: 5d-wave/data/embed/data-engineer/02-querying-design-security-governance.md
@@ -62,7 +62,7 @@
 2026-01-13 10:09:06,203 - INFO - Processing agent: data-engineer
 2026-01-13 10:09:06,218 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 13, column 29:
-          * Minimize token usage: Be concise, eliminate verbosit ... 
+          * Minimize token usage: Be concise, eliminate verbosit ...
                                 ^
 2026-01-13 10:09:06,228 - INFO - Injecting embed content from: 5d-wave/data/embed/data-engineer/01-databases-fundamentals.md
 2026-01-13 10:09:06,237 - INFO - Injecting embed content from: 5d-wave/data/embed/data-engineer/02-querying-design-security-governance.md
@@ -74,7 +74,7 @@
 2026-01-13 10:09:06,291 - INFO - Processing agent: devop-reviewer
 2026-01-13 10:09:06,311 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 11, column 29:
-          * Minimize token usage: Be concise, eliminate verbosit ... 
+          * Minimize token usage: Be concise, eliminate verbosit ...
                                 ^
 2026-01-13 10:09:06,330 - INFO - Injecting embed content from: 5d-wave/data/embed/devop/README.md
 2026-01-13 10:09:06,354 - INFO - Injecting embed content from: 5d-wave/data/embed/devop/feature-completion-deployment-readiness.md
@@ -84,7 +84,7 @@
 2026-01-13 10:09:06,391 - INFO - Processing agent: devop
 2026-01-13 10:09:06,410 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 11, column 29:
-          * Minimize token usage: Be concise, eliminate verbosit ... 
+          * Minimize token usage: Be concise, eliminate verbosit ...
                                 ^
 2026-01-13 10:09:06,419 - INFO - Injecting embed content from: 5d-wave/data/embed/devop/README.md
 2026-01-13 10:09:06,427 - INFO - Injecting embed content from: 5d-wave/data/embed/devop/feature-completion-deployment-readiness.md
@@ -104,19 +104,19 @@
 2026-01-13 10:09:06,537 - INFO - Processing agent: novel-editor-reviewer
 2026-01-13 10:09:06,555 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 13, column 29:
-          * Minimize token usage: Be concise, eliminate verbosit ... 
+          * Minimize token usage: Be concise, eliminate verbosit ...
                                 ^
 2026-01-13 10:09:06,571 - INFO - Processing agent: novel-editor
 2026-01-13 10:09:06,571 - INFO - Processing agent: novel-editor
 2026-01-13 10:09:06,587 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 13, column 29:
-          * Minimize token usage: Be concise, eliminate verbosit ... 
+          * Minimize token usage: Be concise, eliminate verbosit ...
                                 ^
 2026-01-13 10:09:06,604 - INFO - Processing agent: product-owner-reviewer
 2026-01-13 10:09:06,604 - INFO - Processing agent: product-owner-reviewer
 2026-01-13 10:09:06,622 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 11, column 29:
-          * Minimize token usage: Be concise, eliminate verbosit ... 
+          * Minimize token usage: Be concise, eliminate verbosit ...
                                 ^
 2026-01-13 10:09:06,639 - INFO - Injecting embed content from: 5d-wave/data/embed/product-owner/bdd-methodology.md
 2026-01-13 10:09:06,656 - INFO - Injecting embed content from: 5d-wave/data/embed/product-owner/critique-dimensions.md
@@ -125,7 +125,7 @@
 2026-01-13 10:09:06,673 - INFO - Processing agent: product-owner
 2026-01-13 10:09:06,687 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 11, column 29:
-          * Minimize token usage: Be concise, eliminate verbosit ... 
+          * Minimize token usage: Be concise, eliminate verbosit ...
                                 ^
 2026-01-13 10:09:06,695 - INFO - Injecting embed content from: 5d-wave/data/embed/product-owner/bdd-methodology.md
 2026-01-13 10:09:06,701 - INFO - Injecting embed content from: 5d-wave/data/embed/product-owner/critique-dimensions.md
@@ -146,7 +146,7 @@ expected <block end>, but found '<scalar>'
 2026-01-13 10:09:06,764 - INFO - Processing agent: researcher
 2026-01-13 10:09:06,793 - ERROR - Failed to parse YAML configuration: while parsing a block collection
   in "<unicode string>", line 404, column 7:
-          - "Write to directories outside  ... 
+          - "Write to directories outside  ...
           ^
 expected <block end>, but found '?'
   in "<unicode string>", line 409, column 7:
@@ -158,7 +158,7 @@ expected <block end>, but found '?'
 2026-01-13 10:09:06,821 - INFO - Processing agent: skeleton-builder-reviewer
 2026-01-13 10:09:06,836 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 11, column 29:
-          * Minimize token usage: Be concise, eliminate verbosit ... 
+          * Minimize token usage: Be concise, eliminate verbosit ...
                                 ^
 2026-01-13 10:09:06,855 - INFO - Injecting embed content from: 5d-wave/data/embed/skeleton-builder/comprehensive-walking-skeleton-research.md
 2026-01-13 10:09:06,872 - INFO - Injecting embed content from: 5d-wave/data/embed/skeleton-builder/critique-dimensions.md
@@ -167,7 +167,7 @@ expected <block end>, but found '?'
 2026-01-13 10:09:06,886 - INFO - Processing agent: skeleton-builder
 2026-01-13 10:09:06,901 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 11, column 29:
-          * Minimize token usage: Be concise, eliminate verbosit ... 
+          * Minimize token usage: Be concise, eliminate verbosit ...
                                 ^
 2026-01-13 10:09:06,906 - INFO - Injecting embed content from: 5d-wave/data/embed/skeleton-builder/comprehensive-walking-skeleton-research.md
 2026-01-13 10:09:06,912 - INFO - Injecting embed content from: 5d-wave/data/embed/skeleton-builder/critique-dimensions.md
@@ -176,7 +176,7 @@ expected <block end>, but found '?'
 2026-01-13 10:09:06,928 - INFO - Processing agent: software-crafter-reviewer
 2026-01-13 10:09:06,935 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 11, column 29:
-          * Minimize token usage: Be concise, eliminate verbosit ... 
+          * Minimize token usage: Be concise, eliminate verbosit ...
                                 ^
 2026-01-13 10:09:06,953 - INFO - Injecting embed content from: 5d-wave/data/embed/software-crafter/README.md
 2026-01-13 10:09:06,970 - INFO - Injecting embed content from: 5d-wave/data/embed/software-crafter/mikado-method-progressive-refactoring.md
@@ -189,7 +189,7 @@ expected <block end>, but found '?'
 2026-01-13 10:09:07,076 - INFO - Processing agent: software-crafter
 2026-01-13 10:09:07,083 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 11, column 29:
-          * Minimize token usage: Be concise, eliminate verbosit ... 
+          * Minimize token usage: Be concise, eliminate verbosit ...
                                 ^
 2026-01-13 10:09:07,092 - INFO - Injecting embed content from: 5d-wave/data/embed/software-crafter/README.md
 2026-01-13 10:09:07,098 - INFO - Injecting embed content from: 5d-wave/data/embed/software-crafter/mikado-method-progressive-refactoring.md
@@ -202,7 +202,7 @@ expected <block end>, but found '?'
 2026-01-13 10:09:07,141 - INFO - Processing agent: solution-architect-reviewer
 2026-01-13 10:09:07,157 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 11, column 29:
-          * Minimize token usage: Be concise, eliminate verbosit ... 
+          * Minimize token usage: Be concise, eliminate verbosit ...
                                 ^
 2026-01-13 10:09:07,208 - INFO - Injecting embed content from: 5d-wave/data/embed/solution-architect/comprehensive-architecture-patterns-and-methodologies.md
 2026-01-13 10:09:07,224 - INFO - Injecting embed content from: 5d-wave/data/embed/solution-architect/residuality-theory-methodology.md
@@ -212,7 +212,7 @@ expected <block end>, but found '?'
 2026-01-13 10:09:07,259 - INFO - Processing agent: solution-architect
 2026-01-13 10:09:07,276 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 11, column 29:
-          * Minimize token usage: Be concise, eliminate verbosit ... 
+          * Minimize token usage: Be concise, eliminate verbosit ...
                                 ^
 2026-01-13 10:09:07,283 - INFO - Injecting embed content from: 5d-wave/data/embed/solution-architect/comprehensive-architecture-patterns-and-methodologies.md
 2026-01-13 10:09:07,290 - INFO - Injecting embed content from: 5d-wave/data/embed/solution-architect/residuality-theory-methodology.md
@@ -222,7 +222,7 @@ expected <block end>, but found '?'
 2026-01-13 10:09:07,320 - INFO - Processing agent: troubleshooter-reviewer
 2026-01-13 10:09:07,335 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 11, column 29:
-          * Minimize token usage: Be concise, eliminate verbosit ... 
+          * Minimize token usage: Be concise, eliminate verbosit ...
                                 ^
 2026-01-13 10:09:07,354 - INFO - Injecting embed content from: 5d-wave/data/embed/troubleshooter/comprehensive-rca-methodologies.md
 2026-01-13 10:09:07,368 - INFO - Injecting embed content from: 5d-wave/data/embed/troubleshooter/critique-dimensions.md
@@ -231,7 +231,7 @@ expected <block end>, but found '?'
 2026-01-13 10:09:07,385 - INFO - Processing agent: troubleshooter
 2026-01-13 10:09:07,402 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 11, column 29:
-          * Minimize token usage: Be concise, eliminate verbosit ... 
+          * Minimize token usage: Be concise, eliminate verbosit ...
                                 ^
 2026-01-13 10:09:07,408 - INFO - Injecting embed content from: 5d-wave/data/embed/troubleshooter/comprehensive-rca-methodologies.md
 2026-01-13 10:09:07,415 - INFO - Injecting embed content from: 5d-wave/data/embed/troubleshooter/critique-dimensions.md
@@ -240,7 +240,7 @@ expected <block end>, but found '?'
 2026-01-13 10:09:07,432 - INFO - Processing agent: visual-architect-reviewer
 2026-01-13 10:09:07,447 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 11, column 29:
-          * Minimize token usage: Be concise, eliminate verbosit ... 
+          * Minimize token usage: Be concise, eliminate verbosit ...
                                 ^
 2026-01-13 10:09:07,461 - INFO - Injecting embed content from: 5d-wave/data/embed/visual-architect/critique-dimensions.md
 2026-01-13 10:09:07,462 - INFO - Processed 1 embed injection(s)
@@ -248,7 +248,7 @@ expected <block end>, but found '?'
 2026-01-13 10:09:07,478 - INFO - Processing agent: visual-architect
 2026-01-13 10:09:07,494 - ERROR - Failed to parse YAML configuration: mapping values are not allowed here
   in "<unicode string>", line 11, column 29:
-          * Minimize token usage: Be concise, eliminate verbosit ... 
+          * Minimize token usage: Be concise, eliminate verbosit ...
                                 ^
 2026-01-13 10:09:07,499 - INFO - Injecting embed content from: 5d-wave/data/embed/visual-architect/critique-dimensions.md
 2026-01-13 10:09:07,499 - INFO - Processed 1 embed injection(s)

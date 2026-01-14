@@ -1,5 +1,8 @@
 # Python Dependencies for AI-Craft
 
+# Pre-commit hooks framework
+pre-commit>=3.0.0
+
 # Version validation dependencies
 PyYAML>=6.0
 packaging>=21.0
