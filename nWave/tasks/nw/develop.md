@@ -958,7 +958,10 @@ def install_hook():
             existing = f.read()
 
         if "nWave-TDD-PHASE-VALIDATION" in existing:
-            print("[OK] nWave hook already installed")
+            print("[OK] nWave pre-commit hook already installed")
+            # Still ensure post-commit is installed
+            install_post_commit_hook()
+            print("[OK] nWave post-commit hook verified")
             return True
 
         # Backup existing hook
@@ -984,6 +987,11 @@ def install_hook():
         os.chmod(hook_path, st.st_mode | stat.S_IEXEC)
 
     print("[OK] nWave pre-commit hook installed")
+
+    # Also install post-commit bypass detector
+    install_post_commit_hook()
+    print("[OK] nWave post-commit hook installed")
+
     return True
 
 def install_post_commit_hook():
