@@ -6,7 +6,6 @@ for the nWave IDE bundle generation system.
 """
 
 import logging
-import os
 from pathlib import Path
 from typing import Optional, List
 import shutil

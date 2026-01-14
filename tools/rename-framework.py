@@ -7,7 +7,7 @@ Renames nWave to nWave across all framework files
 import argparse
 import re
 from pathlib import Path
-from typing import List, Dict, Tuple
+from typing import Dict, Tuple
 
 # Replacement patterns (order matters - most specific first!)
 REPLACEMENTS = [

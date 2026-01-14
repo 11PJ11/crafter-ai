@@ -14,7 +14,7 @@ tools_dir = Path(__file__).parent
 sys.path.insert(0, str(tools_dir))
 
 # Import and run the main builder
-from build_ide_bundle import main
+from build_ide_bundle import main  # noqa: E402
 
 if __name__ == "__main__":
     main()

@@ -11,7 +11,6 @@ from typing import Dict, List, Optional, Any
 import yaml
 
 import sys
-from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))
 from utils.dependency_resolver import DependencyResolver
@@ -116,7 +115,7 @@ class WorkflowProcessor:
             "",
             "CRITICAL: This orchestrator coordinates multi-phase workflows. Follow the phase guidance and agent coordination patterns defined below.",
             "",
-            f"## Orchestrator Identity",
+            "## Orchestrator Identity",
             f"**Workflow**: {workflow_title}",
             f"**Description**: {workflow_info.get('description', 'Multi-phase nWave orchestration')}",
             f"**Methodology**: nWave ({' → '.join(workflow_info.get('phases', []))})",
@@ -482,7 +481,6 @@ class WorkflowProcessor:
             workflow_info = self.get_workflow_info_from_config(
                 workflow_file.name, config
             )
-            workflow_meta = workflow_config.get("workflow", {})
 
             return {
                 "name": workflow_file.stem,

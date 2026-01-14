@@ -31,7 +31,7 @@ import re
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any, Tuple
+from typing import Dict, Any
 
 
 # =============================================================================
@@ -928,7 +928,7 @@ This report presents results from dual-mode adversarial testing execution:
             issue_count = len(result.get("issues", []))
             content += f"| {agent_name} | {result['agent_type']} | {result['compliance_score']}% | {status_icon} {result['status']} | {issue_count} |\n"
 
-    content += f"""
+    content += """
 
 ### Framework Coverage Analysis
 
@@ -955,7 +955,7 @@ This report presents results from dual-mode adversarial testing execution:
         bar = "█" * int(percentage / 5)
         content += f"- **{fw.replace('_', ' ').title()}**: {count}/{total} ({percentage}%) {bar}\n"
 
-    content += f"""
+    content += """
 
 ### Security Components Analysis
 
@@ -982,7 +982,7 @@ This report presents results from dual-mode adversarial testing execution:
         content += f"- **{comp.replace('_', ' ').title()}**: {count}/{total} ({percentage}%) {bar}\n"
 
     if auto_results["summary"]["blocking_issues"]:
-        content += f"""
+        content += """
 
 ### ⚠️ Blocking Issues
 

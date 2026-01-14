@@ -7,11 +7,10 @@ with embedded team coordination and collaboration logic.
 
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Dict, Optional, Any
 import yaml
 
 import sys
-from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))
 from utils.dependency_resolver import DependencyResolver
@@ -108,7 +107,7 @@ class TeamProcessor:
             "",
             "CRITICAL: This team agent orchestrates the complete collaboration workflow. Follow the team coordination patterns defined below.",
             "",
-            f"## Team Identity",
+            "## Team Identity",
             f"**Name**: {team_meta.get('name', team_base.replace('-', ' ').title())}",
             f"**Focus**: {team_info.get('methodology_focus', '5d_wave')}",
             f"**Scope**: {team_info.get('scope', 'general_projects')}",
@@ -194,7 +193,7 @@ class TeamProcessor:
                     composition_parts.append("")
 
                 # Embed the full agent content
-                composition_parts.extend([f"**EMBEDDED AGENT SPECIFICATION:**", ""])
+                composition_parts.extend(["**EMBEDDED AGENT SPECIFICATION:**", ""])
 
                 agent_content = self.load_agent_content(agent_name)
                 # Indent the agent content to make it clearly embedded
@@ -375,7 +374,6 @@ class TeamProcessor:
                 return None
 
             team_info = self.get_team_info_from_config(team_file.name, config)
-            team_meta = team_config.get("team", {})
 
             return {
                 "name": team_file.stem,

@@ -75,10 +75,10 @@ def main():
         results.append(result)
 
         if result["status"] == "PASS":
-            print(f"✅ PASS")
+            print("✅ PASS")
             passed += 1
         else:
-            print(f"❌ FAIL")
+            print("❌ FAIL")
             if "issues" in result:
                 for issue in result["issues"]:
                     print(f"     - {issue}")

@@ -8,11 +8,10 @@ extracts and embeds dependencies, and generates IDE-compatible agent files.
 import logging
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Dict, Optional, Any
 import yaml
 
 import sys
-from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))
 from utils.dependency_resolver import DependencyResolver

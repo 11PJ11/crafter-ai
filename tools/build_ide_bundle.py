@@ -19,10 +19,7 @@ Options:
 import argparse
 import logging
 import sys
-import shutil
 from pathlib import Path
-from typing import Dict, List, Optional
-import yaml
 import json
 from datetime import datetime
 

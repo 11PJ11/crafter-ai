@@ -10,7 +10,7 @@ import sys
 import re
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, List, Tuple
+from typing import Dict
 
 # Configuration
 TEMPLATE_VERSION = "1.2"

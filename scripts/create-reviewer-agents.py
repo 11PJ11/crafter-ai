@@ -4,7 +4,6 @@ Create Haiku-powered reviewer agents from base agents.
 Each reviewer agent is optimized for cost-efficient review operations.
 """
 
-import os
 import re
 from pathlib import Path
 
@@ -76,10 +75,10 @@ def create_reviewer_agent(base_agent_name, review_description):
     )
 
     # Update the title
-    content = re.sub(r"(\s+title:\s+)(.+)", rf"\1\2 (Review Specialist)", content)
+    content = re.sub(r"(\s+title:\s+)(.+)", r"\1\2 (Review Specialist)", content)
 
     # Add review focus to the role
-    content = re.sub(r"(\s+role:\s+)(.+)", rf"\1Review & Critique Expert - \2", content)
+    content = re.sub(r"(\s+role:\s+)(.+)", r"\1Review & Critique Expert - \2", content)
 
     # Update the header comment
     content = re.sub(

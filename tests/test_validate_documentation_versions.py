@@ -11,12 +11,10 @@ Test isolation: Each test uses temporary git repository, no shared state.
 """
 
 import pytest
-import json
 import yaml
-import tempfile
 import subprocess
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict
 import sys
 import os
 
@@ -25,7 +23,7 @@ scripts_dir = Path(__file__).parent.parent / "scripts"
 sys.path.insert(0, str(scripts_dir))
 
 # Import module with dashes using importlib
-import importlib.util
+import importlib.util  # noqa: E402
 
 spec = importlib.util.spec_from_file_location(
     "validate_documentation_versions",

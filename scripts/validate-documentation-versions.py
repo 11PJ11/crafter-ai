@@ -20,8 +20,8 @@ import yaml
 import subprocess
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
-from dataclasses import dataclass, asdict
+from typing import Dict, List, Optional
+from dataclasses import dataclass
 from packaging import version
 
 # =============================================================================
@@ -129,7 +129,7 @@ class VersionParser:
         try:
             version.parse(version_str)
             return True
-        except:
+        except Exception:
             return False
 
     @staticmethod
@@ -205,7 +205,7 @@ class GitHelper:
             try:
                 data = yaml.safe_load(content)
                 return data.get(field or "version")
-            except:
+            except Exception:
                 return None
         elif format_type == "markdown_comment":
             match = re.search(
@@ -316,10 +316,10 @@ class DocumentationVersionValidator:
                             current_version=current_version,
                             reason="File content changed but version field not updated",
                             required_actions=[
-                                f"1. Determine change type: breaking change (MAJOR), new feature (MINOR), or bug fix (PATCH)",
+                                "1. Determine change type: breaking change (MAJOR), new feature (MINOR), or bug fix (PATCH)",
                                 f"2. Update version field in {tracked.path} from '{current_version}' to next appropriate version",
                                 f"3. Stage the version change: git add {tracked.path}",
-                                f"4. Retry commit",
+                                "4. Retry commit",
                             ],
                         )
                     )
@@ -380,7 +380,7 @@ class DocumentationVersionValidator:
                                 f"1. Update {dependent_file} sections based on {tracked.path}",
                                 f"2. Update {dependent_file} version to '{current_version}'",
                                 f"3. Stage changes: git add {dependent_file}",
-                                f"4. Retry commit",
+                                "4. Retry commit",
                             ],
                         )
                     )
