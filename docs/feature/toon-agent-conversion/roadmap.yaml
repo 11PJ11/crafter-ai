@@ -1,0 +1,2034 @@
+# TOON Agent Conversion Roadmap
+# Project: toon-agent-conversion
+# Created: 2026-01-14
+# Purpose: Convert 21 nWave agents from Markdown to TOON v3.0 format
+
+validation:
+  status: "approved"
+  timestamp: "2026-01-14T16:00:00Z"
+  author: "solution-architect"
+  reviewed_by: "solution-architect-reviewer"
+  reviewed_at: "2026-01-14T16:30:00Z"
+  review_verdict: "APPROVED (technical)"
+  final_approval_by: "product-owner-reviewer (Sage)"
+  final_approval_at: "2026-01-14T19:30:00Z"
+  final_approval_status: "APPROVED (business)"
+
+  product_owner_review_attempt_1:
+    timestamp: "2026-01-14T18:45:00Z"
+    reviewer: "product-owner-reviewer (Sage)"
+    review_verdict: "NEEDS_REVISION"
+    approval_status: "BLOCKED_ON_5_CRITICAL_ISSUES"
+    critical_issues_addressed:
+      - "CRITICAL-1: Roundtrip equivalence definition added (lines 63-78)"
+      - "CRITICAL-2: Compression exception policy added (lines 80-90)"
+      - "CRITICAL-3: Business case section added (lines 55-82)"
+      - "CRITICAL-4: Team composition section added (lines 88-108)"
+      - "CRITICAL-5: Tool readiness prerequisites added (lines 114-158)"
+
+  product_owner_review_attempt_2:
+    timestamp: "2026-01-14T19:00:00Z"
+    status: "REJECTED"
+    issue: "CRITICAL-2 contradiction in compression threshold language"
+    correction_applied: "Aligned success_criteria and R3_mitigation with exception_policy"
+
+  product_owner_review_attempt_3:
+    timestamp: "2026-01-14T19:15:00Z"
+    status: "APPROVED"
+    reviewer: "product-owner-reviewer (Sage)"
+    reviewed_at: "2026-01-14T19:30:00Z"
+    changes:
+      - "success_criteria.minimum_compression_ratio now references exception policy explicitly (line 184)"
+      - "R3_compression_target_miss mitigation aligned with exception policy (line 1604)"
+      - "compression_exception_policy section defines conditions and escalation (lines 206-215)"
+    verification:
+      contradiction_resolved: true
+      all_references_aligned: true
+      language_consistency: "All three locations use 'Per compression_exception_policy' phrasing"
+      approval_verdict: "APPROVED"
+
+  baseline_reference: "docs/feature/toon-agent-conversion/baseline.yaml"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PROJECT OVERVIEW
+# ═══════════════════════════════════════════════════════════════════════════════
+
+project:
+  id: "toon-agent-conversion"
+  description: "Complete Phase 2 validation and Phase 3 Full Agent Conversion following 11-phase TDD"
+  repository: "ai-craft"
+  branch: "feature/plugin-marketplace-migration"
+
+  current_state:
+    phase_1: "COMPLETED - TOON Infrastructure (168 tests)"
+    phase_2: "IN_PROGRESS - Pilot Migration (48 tests)"
+    phase_3: "PENDING - Full Agent Conversion (this roadmap)"
+
+  pilot_metrics:
+    agent: "software-crafter"
+    original_tokens: 24852
+    toon_tokens: 4004
+    token_reduction: "83.9%"
+    compression_ratio: "6.21:1"
+    original_lines: 2561
+    toon_lines: 447
+    line_reduction: "82.5%"
+    validation_status: "PASSED"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CRITICAL-3 FIX: BUSINESS CASE - WHY TOON ENABLES MARKETPLACE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+business_case:
+  executive_summary: |
+    TOON conversion is a prerequisite for Claude Code Plugin Marketplace integration.
+    Without TOON format, nWave agents cannot be distributed as marketplace plugins.
+
+  why_toon_enables_marketplace:
+    - reason: "Native Plugin Format"
+      explanation: "Claude Code Plugin Marketplace requires .toon format for agent skills - MD format is not supported"
+    - reason: "Token Efficiency"
+      explanation: "Marketplace has token budget limits per plugin; 6:1 compression enables complex agents within limits"
+    - reason: "Schema Validation"
+      explanation: "Marketplace validates plugins against TOON schema; MD files cannot pass marketplace validation"
+    - reason: "Dependency Resolution"
+      explanation: "TOON format enables explicit dependency declaration for marketplace dependency resolution"
+    - reason: "Version Management"
+      explanation: "TOON frontmatter supports semantic versioning required by marketplace"
+
+  business_value_quantified:
+    token_savings_per_session: "~20,000 tokens per agent load (based on pilot)"
+    api_cost_reduction: "Estimated 80%+ reduction in per-session context cost"
+    marketplace_reach: "Access to Claude Code user base for nWave distribution"
+    maintenance_benefit: "Single format to maintain instead of MD + TOON parallel"
+
+  phase_4_integration_requirements:
+    - "All 22 agents in valid TOON v3.0 format"
+    - "TOON schema validation passing"
+    - "Marketplace manifest file generated"
+    - "Plugin registry entry created"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CRITICAL-4 FIX: TEAM COMPOSITION AND RESOURCE ALLOCATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+team_and_resources:
+  assumptions:
+    team_size: "1 AI agent (Claude) executing conversions"
+    human_oversight: "1 human reviewer for milestone approvals"
+    work_pattern: "Sequential execution with human checkpoints at milestones"
+
+  execution_model:
+    executor: "software-crafter agent via /nw:develop orchestration"
+    reviewer: "software-crafter-reviewer agent for step validation"
+    approver: "Human Product Owner for milestone sign-off"
+
+  time_allocation:
+    effective_hours_per_day: 6  # Accounting for context switches, reviews
+    total_estimated_hours: "53-74 hours"
+    calendar_days: "10-12 working days"
+    buffer_days: 3
+
+  capacity_constraints:
+    - "AI agent can execute one step at a time (sequential)"
+    - "Human review required at each milestone (M1-M5)"
+    - "Context window limits may require session breaks for large agents"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CRITICAL-5 FIX: TOOL READINESS PREREQUISITES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+prerequisites:
+  tool_readiness:
+    status: "VALIDATED"
+    validation_date: "2026-01-14"
+    evidence: "Phase 1 completed with 168 passing tests; Phase 2 pilot successful"
+
+    required_tools:
+      - tool: "TOON Parser"
+        location: "tools/toon/parser/"
+        status: "READY"
+        validation: "168 parser tests passing"
+
+      - tool: "MD to TOON Transformer"
+        location: "tools/toon/transformer/"
+        status: "READY"
+        validation: "Pilot conversion successful (software-crafter)"
+
+      - tool: "Roundtrip Validator"
+        location: "tools/toon/validate_roundtrip.py"
+        status: "READY"
+        validation: "100% equivalence achieved on pilot"
+
+      - tool: "Token Counter"
+        location: "tools/toon/token_counter.py"
+        status: "READY"
+        validation: "Accurate measurement on pilot (24852 → 4004)"
+
+    wave_1_pre_validation:
+      description: "Validate tools work on Wave 1 agents before full execution"
+      check_agents:
+        - "researcher (smallest, 890 lines)"
+        - "troubleshooter (simple structure, 1093 lines)"
+      validation_criteria:
+        - "Parse completes without errors"
+        - "Transform produces valid TOON"
+        - "Roundtrip validation passes"
+      when: "Before step_01_01 execution"
+
+  human_approvals_required:
+    - milestone: "M1"
+      approver: "Product Owner"
+      gate: "Wave 1 complete - process validated"
+    - milestone: "M5"
+      approver: "Product Owner"
+      gate: "Phase 3 complete - marketplace ready"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SUCCESS CRITERIA
+# ═══════════════════════════════════════════════════════════════════════════════
+
+success_criteria:
+  overall:
+    total_agents_converted: 21
+    test_pass_rate: "100%"
+    minimum_compression_ratio: "5:1 target (4:1 acceptable with documented exception per policy below)"
+    roundtrip_equivalence: "100%"
+    semantic_preservation: "exact"
+
+  # CRITICAL-1 FIX: Explicit definition of roundtrip equivalence
+  roundtrip_equivalence_definition:
+    description: "100% roundtrip equivalence means MD -> TOON -> MD produces functionally identical output"
+    criteria:
+      - key: "YAML keys preservation"
+        check: "All YAML frontmatter keys present in both directions"
+      - key: "Values normalization match"
+        check: "Values match after whitespace normalization and case-insensitive comparison"
+      - key: "Embedded knowledge identical"
+        check: "BUILD:INJECT sections byte-identical before/after conversion"
+      - key: "Command structure intact"
+        check: "All commands with name, trigger, agent preserved exactly"
+      - key: "Dependency graph preserved"
+        check: "All declared dependencies present with same targets"
+    validation_tool: "tools/toon/validate_roundtrip.py"
+    validation_command: "python tools/toon/validate_roundtrip.py --agent {agent_name}"
+
+  # CRITICAL-2 FIX: Aligned compression policy
+  compression_exception_policy:
+    hard_requirement: "5:1 minimum compression ratio"
+    exception_allowed: true
+    exception_threshold: "4:1 minimum"
+    exception_conditions:
+      - "Agent has unusually high embedded knowledge content (> 60% of file)"
+      - "All other quality gates pass (G1, G2, G3, G5)"
+      - "Exception documented with justification"
+      - "Product Owner approval obtained for specific exception"
+    exception_escalation: "If < 4:1, conversion blocked - requires architecture review"
+
+  per_agent:
+    - "Parse MD file successfully"
+    - "Generate valid TOON v3.0 syntax"
+    - "Pass roundtrip validation (MD -> TOON -> MD = equivalent per definition above)"
+    - "Achieve >= 5:1 compression ratio (4:1 with documented exception)"
+    - "All existing tests pass after conversion"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# QUALITY GATES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+quality_gates:
+  G1_parse:
+    name: "Structure Extraction"
+    validation: "MD file parsed without errors"
+    measurement: "All sections identified and extracted"
+
+  G2_transform:
+    name: "TOON Syntax Valid"
+    validation: "Generated TOON passes schema validation"
+    measurement: "Zero syntax errors"
+
+  G3_roundtrip:
+    name: "Semantic Equivalence"
+    validation: "MD -> TOON -> MD produces equivalent output"
+    measurement: "100% structural and content equivalence"
+
+  G4_compression:
+    name: "Token Reduction"
+    validation: "Compression ratio >= 5:1"
+    measurement: "original_tokens / toon_tokens >= 5.0"
+
+  G5_tests:
+    name: "Test Suite Green"
+    validation: "All tests pass after conversion"
+    measurement: "100% pass rate maintained"
+
+  milestone_gates:
+    wave_completion:
+      - "All agents in wave converted"
+      - "All wave agents pass G1-G5"
+      - "Cumulative test suite green"
+      - "Documentation updated"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TDD METHODOLOGY REFERENCE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+methodology:
+  approach: "11-Phase TDD per agent conversion"
+  reference: "baseline.yaml -> methodology.conversion_process"
+
+  conversion_phases:
+    phase_1_parse:
+      action: "Parse MD agent file"
+      tdd_step: "Write test for structure extraction -> implement parser call -> verify"
+      gate: "G1_parse"
+      duration_estimate: "15-30 min"
+
+    phase_2_transform:
+      action: "Transform to TOON v3.0 format"
+      tdd_step: "Write test for expected TOON output -> implement transformer -> verify"
+      gate: "G2_transform"
+      duration_estimate: "30-60 min"
+
+    phase_3_validate:
+      action: "Roundtrip validation"
+      tdd_step: "Write equivalence test -> run roundtrip -> verify semantic match"
+      gate: "G3_roundtrip"
+      duration_estimate: "15-30 min"
+
+    phase_4_measure:
+      action: "Token measurement and compression validation"
+      tdd_step: "Write compression test -> measure tokens -> verify ratio"
+      gate: "G4_compression"
+      duration_estimate: "10-15 min"
+
+  per_agent_estimate: "1.5-2.5 hours (varies by complexity)"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# AGENT COMPLEXITY CLASSIFICATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+complexity_tiers:
+  small:
+    threshold: "< 1200 lines"
+    agents:
+      - { name: "researcher", lines: 890 }
+      - { name: "troubleshooter", lines: 1093 }
+      - { name: "troubleshooter-reviewer", lines: 1094 }
+      - { name: "illustrator", lines: 1116 }
+      - { name: "illustrator-reviewer", lines: 1117 }
+      - { name: "devop-reviewer", lines: 1179 }
+    estimate_per_agent: "1-2 hours"
+
+  medium:
+    threshold: "1200-1600 lines"
+    agents:
+      - { name: "visual-architect", lines: 1268 }
+      - { name: "visual-architect-reviewer", lines: 1269 }
+      - { name: "acceptance-designer-reviewer", lines: 1271 }
+      - { name: "researcher-reviewer", lines: 1330 }
+      - { name: "acceptance-designer", lines: 1331 }
+      - { name: "devop", lines: 1392 }
+      - { name: "solution-architect-reviewer", lines: 1464 }
+    estimate_per_agent: "2-3 hours"
+
+  large:
+    threshold: "1600-2000 lines"
+    agents:
+      - { name: "product-owner", lines: 1634 }
+      - { name: "product-owner-reviewer", lines: 1641 }
+      - { name: "solution-architect", lines: 1743 }
+      - { name: "data-engineer", lines: 1881 }
+      - { name: "data-engineer-reviewer", lines: 1882 }
+    estimate_per_agent: "3-4 hours"
+
+  very_large:
+    threshold: "> 2000 lines"
+    agents:
+      - { name: "agent-builder-reviewer", lines: 2027 }
+      - { name: "agent-builder", lines: 2057 }
+      - { name: "software-crafter-reviewer", lines: 2389 }
+    estimate_per_agent: "4-5 hours"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONVERSION WAVES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+waves:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # WAVE 1: Smallest Agents (Process Validation)
+  # ─────────────────────────────────────────────────────────────────────────────
+  wave_1:
+    id: "wave-1-small"
+    name: "Process Validation Wave"
+    description: "Convert smallest agents to validate conversion process at scale"
+    agent_count: 6
+    estimated_effort: "8-12 hours"
+
+    rationale: |
+      Start with smallest agents to:
+      1. Validate conversion process works consistently
+      2. Build momentum with quick wins
+      3. Identify any process issues early
+      4. Establish conversion patterns for larger agents
+
+    agents:
+      - researcher
+      - researcher-reviewer
+      - troubleshooter
+      - troubleshooter-reviewer
+      - illustrator
+      - illustrator-reviewer
+
+    success_criteria:
+      - "6/6 agents converted to TOON v3.0"
+      - "All 6 pass roundtrip validation"
+      - "All 6 achieve >= 5:1 compression"
+      - "Test suite remains 100% green"
+
+    milestone: "M1_SMALL_COMPLETE"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # WAVE 2: Medium Agents (Pattern Consolidation)
+  # ─────────────────────────────────────────────────────────────────────────────
+  wave_2:
+    id: "wave-2-medium-a"
+    name: "Pattern Consolidation Wave"
+    description: "Convert medium-complexity agents, consolidate conversion patterns"
+    agent_count: 7
+    estimated_effort: "14-21 hours"
+    depends_on: ["wave_1"]
+
+    rationale: |
+      Medium agents introduce more complex structures:
+      1. More elaborate PERSONA and COMMANDS sections
+      2. Richer DEPENDENCIES and EMBEDDED_KNOWLEDGE
+      3. More extensive PRODUCTION_FRAMEWORKS
+
+    agents:
+      - devop
+      - devop-reviewer
+      - visual-architect
+      - visual-architect-reviewer
+      - acceptance-designer
+      - acceptance-designer-reviewer
+      - solution-architect-reviewer
+
+    success_criteria:
+      - "7/7 agents converted to TOON v3.0"
+      - "All 7 pass roundtrip validation"
+      - "All 7 achieve >= 5:1 compression"
+      - "Cumulative: 13/21 agents converted"
+      - "Test suite remains 100% green"
+
+    milestone: "M2_MEDIUM_A_COMPLETE"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # WAVE 3: Large Agents (Complex Structures)
+  # ─────────────────────────────────────────────────────────────────────────────
+  wave_3:
+    id: "wave-3-large"
+    name: "Complex Structures Wave"
+    description: "Convert large agents with complex embedded knowledge and frameworks"
+    agent_count: 5
+    estimated_effort: "15-20 hours"
+    depends_on: ["wave_2"]
+
+    rationale: |
+      Large agents have extensive:
+      1. EMBEDDED_KNOWLEDGE sections
+      2. Complex methodology descriptions
+      3. Elaborate collaboration patterns
+      4. Multiple production frameworks
+
+    agents:
+      - solution-architect
+      - product-owner
+      - product-owner-reviewer
+      - data-engineer
+      - data-engineer-reviewer
+
+    success_criteria:
+      - "5/5 agents converted to TOON v3.0"
+      - "All 5 pass roundtrip validation"
+      - "All 5 achieve >= 5:1 compression"
+      - "Cumulative: 18/21 agents converted"
+      - "Test suite remains 100% green"
+
+    milestone: "M3_LARGE_COMPLETE"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # WAVE 4: Very Large Agents (Final Conversion)
+  # ─────────────────────────────────────────────────────────────────────────────
+  wave_4:
+    id: "wave-4-very-large"
+    name: "Final Conversion Wave"
+    description: "Convert most complex agents to complete Phase 3"
+    agent_count: 3
+    estimated_effort: "12-15 hours"
+    depends_on: ["wave_3"]
+
+    rationale: |
+      Very large agents require careful handling:
+      1. Most extensive EMBEDDED_KNOWLEDGE
+      2. Complex multi-methodology integration
+      3. Elaborate quality frameworks
+      4. Maximum token reduction potential
+
+    agents:
+      - agent-builder
+      - agent-builder-reviewer
+      - software-crafter-reviewer
+
+    success_criteria:
+      - "3/3 agents converted to TOON v3.0"
+      - "All 3 pass roundtrip validation"
+      - "All 3 achieve >= 5:1 compression"
+      - "Cumulative: 21/21 agents converted (100%)"
+      - "Test suite remains 100% green"
+
+    milestone: "M4_ALL_CONVERTED"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # WAVE 5: Validation & Finalization
+  # ─────────────────────────────────────────────────────────────────────────────
+  wave_5:
+    id: "wave-5-validation"
+    name: "Final Validation Wave"
+    description: "Comprehensive validation and cleanup of all conversions"
+    agent_count: 0
+    estimated_effort: "4-6 hours"
+    depends_on: ["wave_4"]
+
+    activities:
+      - "Run full test suite validation"
+      - "Generate comprehensive token metrics report"
+      - "Update baseline.yaml with final measurements"
+      - "Archive original MD files (do not delete)"
+      - "Update documentation references"
+      - "Prepare Phase 4 handoff package"
+
+    success_criteria:
+      - "22/22 total agents in TOON format (including pilot)"
+      - "All 216+ tests passing"
+      - "Average compression ratio >= 5:1"
+      - "Documentation updated"
+      - "Phase 4 ready"
+
+    milestone: "M5_PHASE3_COMPLETE"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DETAILED STEPS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+steps:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # WAVE 1 STEPS: Small Agents
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  # --- researcher (890 lines - smallest, ideal first candidate) ---
+  step_01_01:
+    id: "01-01"
+    wave: "wave_1"
+    agent: "researcher"
+    action: "Parse researcher.md and validate structure extraction"
+    gate: "G1_parse"
+    depends_on: []
+    output: "Parsed structure JSON/object"
+    duration: "15-30 min"
+
+  step_01_02:
+    id: "01-02"
+    wave: "wave_1"
+    agent: "researcher"
+    action: "Transform researcher to TOON v3.0 format"
+    gate: "G2_transform"
+    depends_on: ["step_01_01"]
+    output: "nWave/agents/researcher.toon"
+    duration: "30-60 min"
+
+  step_01_03:
+    id: "01-03"
+    wave: "wave_1"
+    agent: "researcher"
+    action: "Roundtrip validation for researcher"
+    gate: "G3_roundtrip"
+    depends_on: ["step_01_02"]
+    output: "Validation report (pass/fail)"
+    duration: "15-30 min"
+
+  step_01_04:
+    id: "01-04"
+    wave: "wave_1"
+    agent: "researcher"
+    action: "Token measurement and compression validation for researcher"
+    gate: "G4_compression"
+    depends_on: ["step_01_03"]
+    output: "Token metrics (original, toon, ratio)"
+    duration: "10-15 min"
+
+  # --- researcher-reviewer (1330 lines) ---
+  step_02_01:
+    id: "02-01"
+    wave: "wave_1"
+    agent: "researcher-reviewer"
+    action: "Parse researcher-reviewer.md and validate structure extraction"
+    gate: "G1_parse"
+    depends_on: ["step_01_04"]  # Reviewer follows primary
+    output: "Parsed structure JSON/object"
+    duration: "15-30 min"
+
+  step_02_02:
+    id: "02-02"
+    wave: "wave_1"
+    agent: "researcher-reviewer"
+    action: "Transform researcher-reviewer to TOON v3.0 format"
+    gate: "G2_transform"
+    depends_on: ["step_02_01"]
+    output: "nWave/agents/researcher-reviewer.toon"
+    duration: "30-60 min"
+
+  step_02_03:
+    id: "02-03"
+    wave: "wave_1"
+    agent: "researcher-reviewer"
+    action: "Roundtrip validation for researcher-reviewer"
+    gate: "G3_roundtrip"
+    depends_on: ["step_02_02"]
+    output: "Validation report (pass/fail)"
+    duration: "15-30 min"
+
+  step_02_04:
+    id: "02-04"
+    wave: "wave_1"
+    agent: "researcher-reviewer"
+    action: "Token measurement and compression validation for researcher-reviewer"
+    gate: "G4_compression"
+    depends_on: ["step_02_03"]
+    output: "Token metrics (original, toon, ratio)"
+    duration: "10-15 min"
+
+  # --- troubleshooter (1093 lines) ---
+  step_03_01:
+    id: "03-01"
+    wave: "wave_1"
+    agent: "troubleshooter"
+    action: "Parse troubleshooter.md and validate structure extraction"
+    gate: "G1_parse"
+    depends_on: ["step_02_04"]
+    output: "Parsed structure JSON/object"
+    duration: "15-30 min"
+
+  step_03_02:
+    id: "03-02"
+    wave: "wave_1"
+    agent: "troubleshooter"
+    action: "Transform troubleshooter to TOON v3.0 format"
+    gate: "G2_transform"
+    depends_on: ["step_03_01"]
+    output: "nWave/agents/troubleshooter.toon"
+    duration: "30-60 min"
+
+  step_03_03:
+    id: "03-03"
+    wave: "wave_1"
+    agent: "troubleshooter"
+    action: "Roundtrip validation for troubleshooter"
+    gate: "G3_roundtrip"
+    depends_on: ["step_03_02"]
+    output: "Validation report (pass/fail)"
+    duration: "15-30 min"
+
+  step_03_04:
+    id: "03-04"
+    wave: "wave_1"
+    agent: "troubleshooter"
+    action: "Token measurement and compression validation for troubleshooter"
+    gate: "G4_compression"
+    depends_on: ["step_03_03"]
+    output: "Token metrics (original, toon, ratio)"
+    duration: "10-15 min"
+
+  # --- troubleshooter-reviewer (1094 lines) ---
+  step_04_01:
+    id: "04-01"
+    wave: "wave_1"
+    agent: "troubleshooter-reviewer"
+    action: "Parse troubleshooter-reviewer.md and validate structure extraction"
+    gate: "G1_parse"
+    depends_on: ["step_03_04"]
+    output: "Parsed structure JSON/object"
+    duration: "15-30 min"
+
+  step_04_02:
+    id: "04-02"
+    wave: "wave_1"
+    agent: "troubleshooter-reviewer"
+    action: "Transform troubleshooter-reviewer to TOON v3.0 format"
+    gate: "G2_transform"
+    depends_on: ["step_04_01"]
+    output: "nWave/agents/troubleshooter-reviewer.toon"
+    duration: "30-60 min"
+
+  step_04_03:
+    id: "04-03"
+    wave: "wave_1"
+    agent: "troubleshooter-reviewer"
+    action: "Roundtrip validation for troubleshooter-reviewer"
+    gate: "G3_roundtrip"
+    depends_on: ["step_04_02"]
+    output: "Validation report (pass/fail)"
+    duration: "15-30 min"
+
+  step_04_04:
+    id: "04-04"
+    wave: "wave_1"
+    agent: "troubleshooter-reviewer"
+    action: "Token measurement and compression validation for troubleshooter-reviewer"
+    gate: "G4_compression"
+    depends_on: ["step_04_03"]
+    output: "Token metrics (original, toon, ratio)"
+    duration: "10-15 min"
+
+  # --- illustrator (1116 lines) ---
+  step_05_01:
+    id: "05-01"
+    wave: "wave_1"
+    agent: "illustrator"
+    action: "Parse illustrator.md and validate structure extraction"
+    gate: "G1_parse"
+    depends_on: ["step_04_04"]
+    output: "Parsed structure JSON/object"
+    duration: "15-30 min"
+
+  step_05_02:
+    id: "05-02"
+    wave: "wave_1"
+    agent: "illustrator"
+    action: "Transform illustrator to TOON v3.0 format"
+    gate: "G2_transform"
+    depends_on: ["step_05_01"]
+    output: "nWave/agents/illustrator.toon"
+    duration: "30-60 min"
+
+  step_05_03:
+    id: "05-03"
+    wave: "wave_1"
+    agent: "illustrator"
+    action: "Roundtrip validation for illustrator"
+    gate: "G3_roundtrip"
+    depends_on: ["step_05_02"]
+    output: "Validation report (pass/fail)"
+    duration: "15-30 min"
+
+  step_05_04:
+    id: "05-04"
+    wave: "wave_1"
+    agent: "illustrator"
+    action: "Token measurement and compression validation for illustrator"
+    gate: "G4_compression"
+    depends_on: ["step_05_03"]
+    output: "Token metrics (original, toon, ratio)"
+    duration: "10-15 min"
+
+  # --- illustrator-reviewer (1117 lines) ---
+  step_06_01:
+    id: "06-01"
+    wave: "wave_1"
+    agent: "illustrator-reviewer"
+    action: "Parse illustrator-reviewer.md and validate structure extraction"
+    gate: "G1_parse"
+    depends_on: ["step_05_04"]
+    output: "Parsed structure JSON/object"
+    duration: "15-30 min"
+
+  step_06_02:
+    id: "06-02"
+    wave: "wave_1"
+    agent: "illustrator-reviewer"
+    action: "Transform illustrator-reviewer to TOON v3.0 format"
+    gate: "G2_transform"
+    depends_on: ["step_06_01"]
+    output: "nWave/agents/illustrator-reviewer.toon"
+    duration: "30-60 min"
+
+  step_06_03:
+    id: "06-03"
+    wave: "wave_1"
+    agent: "illustrator-reviewer"
+    action: "Roundtrip validation for illustrator-reviewer"
+    gate: "G3_roundtrip"
+    depends_on: ["step_06_02"]
+    output: "Validation report (pass/fail)"
+    duration: "15-30 min"
+
+  step_06_04:
+    id: "06-04"
+    wave: "wave_1"
+    agent: "illustrator-reviewer"
+    action: "Token measurement and compression validation for illustrator-reviewer"
+    gate: "G4_compression"
+    depends_on: ["step_06_03"]
+    output: "Token metrics (original, toon, ratio)"
+    duration: "10-15 min"
+
+  # --- Wave 1 Milestone ---
+  step_M1:
+    id: "M1"
+    wave: "wave_1"
+    type: "milestone"
+    action: "Wave 1 validation and checkpoint"
+    gate: "G5_tests"
+    depends_on: ["step_06_04"]
+    validation:
+      - "6 agents converted: researcher, researcher-reviewer, troubleshooter, troubleshooter-reviewer, illustrator, illustrator-reviewer"
+      - "All roundtrip validations passed"
+      - "All compression ratios >= 5:1"
+      - "Test suite 100% green"
+    duration: "30 min"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # WAVE 2 STEPS: Medium Agents
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  # --- devop (1392 lines) ---
+  step_07_01:
+    id: "07-01"
+    wave: "wave_2"
+    agent: "devop"
+    action: "Parse devop.md and validate structure extraction"
+    gate: "G1_parse"
+    depends_on: ["step_M1"]
+    output: "Parsed structure JSON/object"
+    duration: "15-30 min"
+
+  step_07_02:
+    id: "07-02"
+    wave: "wave_2"
+    agent: "devop"
+    action: "Transform devop to TOON v3.0 format"
+    gate: "G2_transform"
+    depends_on: ["step_07_01"]
+    output: "nWave/agents/devop.toon"
+    duration: "45-90 min"
+
+  step_07_03:
+    id: "07-03"
+    wave: "wave_2"
+    agent: "devop"
+    action: "Roundtrip validation for devop"
+    gate: "G3_roundtrip"
+    depends_on: ["step_07_02"]
+    output: "Validation report (pass/fail)"
+    duration: "15-30 min"
+
+  step_07_04:
+    id: "07-04"
+    wave: "wave_2"
+    agent: "devop"
+    action: "Token measurement and compression validation for devop"
+    gate: "G4_compression"
+    depends_on: ["step_07_03"]
+    output: "Token metrics (original, toon, ratio)"
+    duration: "10-15 min"
+
+  # --- devop-reviewer (1179 lines) ---
+  step_08_01:
+    id: "08-01"
+    wave: "wave_2"
+    agent: "devop-reviewer"
+    action: "Parse devop-reviewer.md and validate structure extraction"
+    gate: "G1_parse"
+    depends_on: ["step_07_04"]
+    output: "Parsed structure JSON/object"
+    duration: "15-30 min"
+
+  step_08_02:
+    id: "08-02"
+    wave: "wave_2"
+    agent: "devop-reviewer"
+    action: "Transform devop-reviewer to TOON v3.0 format"
+    gate: "G2_transform"
+    depends_on: ["step_08_01"]
+    output: "nWave/agents/devop-reviewer.toon"
+    duration: "30-60 min"
+
+  step_08_03:
+    id: "08-03"
+    wave: "wave_2"
+    agent: "devop-reviewer"
+    action: "Roundtrip validation for devop-reviewer"
+    gate: "G3_roundtrip"
+    depends_on: ["step_08_02"]
+    output: "Validation report (pass/fail)"
+    duration: "15-30 min"
+
+  step_08_04:
+    id: "08-04"
+    wave: "wave_2"
+    agent: "devop-reviewer"
+    action: "Token measurement and compression validation for devop-reviewer"
+    gate: "G4_compression"
+    depends_on: ["step_08_03"]
+    output: "Token metrics (original, toon, ratio)"
+    duration: "10-15 min"
+
+  # --- visual-architect (1268 lines) ---
+  step_09_01:
+    id: "09-01"
+    wave: "wave_2"
+    agent: "visual-architect"
+    action: "Parse visual-architect.md and validate structure extraction"
+    gate: "G1_parse"
+    depends_on: ["step_08_04"]
+    output: "Parsed structure JSON/object"
+    duration: "15-30 min"
+
+  step_09_02:
+    id: "09-02"
+    wave: "wave_2"
+    agent: "visual-architect"
+    action: "Transform visual-architect to TOON v3.0 format"
+    gate: "G2_transform"
+    depends_on: ["step_09_01"]
+    output: "nWave/agents/visual-architect.toon"
+    duration: "45-75 min"
+
+  step_09_03:
+    id: "09-03"
+    wave: "wave_2"
+    agent: "visual-architect"
+    action: "Roundtrip validation for visual-architect"
+    gate: "G3_roundtrip"
+    depends_on: ["step_09_02"]
+    output: "Validation report (pass/fail)"
+    duration: "15-30 min"
+
+  step_09_04:
+    id: "09-04"
+    wave: "wave_2"
+    agent: "visual-architect"
+    action: "Token measurement and compression validation for visual-architect"
+    gate: "G4_compression"
+    depends_on: ["step_09_03"]
+    output: "Token metrics (original, toon, ratio)"
+    duration: "10-15 min"
+
+  # --- visual-architect-reviewer (1269 lines) ---
+  step_10_01:
+    id: "10-01"
+    wave: "wave_2"
+    agent: "visual-architect-reviewer"
+    action: "Parse visual-architect-reviewer.md and validate structure extraction"
+    gate: "G1_parse"
+    depends_on: ["step_09_04"]
+    output: "Parsed structure JSON/object"
+    duration: "15-30 min"
+
+  step_10_02:
+    id: "10-02"
+    wave: "wave_2"
+    agent: "visual-architect-reviewer"
+    action: "Transform visual-architect-reviewer to TOON v3.0 format"
+    gate: "G2_transform"
+    depends_on: ["step_10_01"]
+    output: "nWave/agents/visual-architect-reviewer.toon"
+    duration: "45-75 min"
+
+  step_10_03:
+    id: "10-03"
+    wave: "wave_2"
+    agent: "visual-architect-reviewer"
+    action: "Roundtrip validation for visual-architect-reviewer"
+    gate: "G3_roundtrip"
+    depends_on: ["step_10_02"]
+    output: "Validation report (pass/fail)"
+    duration: "15-30 min"
+
+  step_10_04:
+    id: "10-04"
+    wave: "wave_2"
+    agent: "visual-architect-reviewer"
+    action: "Token measurement and compression validation for visual-architect-reviewer"
+    gate: "G4_compression"
+    depends_on: ["step_10_03"]
+    output: "Token metrics (original, toon, ratio)"
+    duration: "10-15 min"
+
+  # --- acceptance-designer (1331 lines) ---
+  step_11_01:
+    id: "11-01"
+    wave: "wave_2"
+    agent: "acceptance-designer"
+    action: "Parse acceptance-designer.md and validate structure extraction"
+    gate: "G1_parse"
+    depends_on: ["step_10_04"]
+    output: "Parsed structure JSON/object"
+    duration: "15-30 min"
+
+  step_11_02:
+    id: "11-02"
+    wave: "wave_2"
+    agent: "acceptance-designer"
+    action: "Transform acceptance-designer to TOON v3.0 format"
+    gate: "G2_transform"
+    depends_on: ["step_11_01"]
+    output: "nWave/agents/acceptance-designer.toon"
+    duration: "45-75 min"
+
+  step_11_03:
+    id: "11-03"
+    wave: "wave_2"
+    agent: "acceptance-designer"
+    action: "Roundtrip validation for acceptance-designer"
+    gate: "G3_roundtrip"
+    depends_on: ["step_11_02"]
+    output: "Validation report (pass/fail)"
+    duration: "15-30 min"
+
+  step_11_04:
+    id: "11-04"
+    wave: "wave_2"
+    agent: "acceptance-designer"
+    action: "Token measurement and compression validation for acceptance-designer"
+    gate: "G4_compression"
+    depends_on: ["step_11_03"]
+    output: "Token metrics (original, toon, ratio)"
+    duration: "10-15 min"
+
+  # --- acceptance-designer-reviewer (1271 lines) ---
+  step_12_01:
+    id: "12-01"
+    wave: "wave_2"
+    agent: "acceptance-designer-reviewer"
+    action: "Parse acceptance-designer-reviewer.md and validate structure extraction"
+    gate: "G1_parse"
+    depends_on: ["step_11_04"]
+    output: "Parsed structure JSON/object"
+    duration: "15-30 min"
+
+  step_12_02:
+    id: "12-02"
+    wave: "wave_2"
+    agent: "acceptance-designer-reviewer"
+    action: "Transform acceptance-designer-reviewer to TOON v3.0 format"
+    gate: "G2_transform"
+    depends_on: ["step_12_01"]
+    output: "nWave/agents/acceptance-designer-reviewer.toon"
+    duration: "45-75 min"
+
+  step_12_03:
+    id: "12-03"
+    wave: "wave_2"
+    agent: "acceptance-designer-reviewer"
+    action: "Roundtrip validation for acceptance-designer-reviewer"
+    gate: "G3_roundtrip"
+    depends_on: ["step_12_02"]
+    output: "Validation report (pass/fail)"
+    duration: "15-30 min"
+
+  step_12_04:
+    id: "12-04"
+    wave: "wave_2"
+    agent: "acceptance-designer-reviewer"
+    action: "Token measurement and compression validation for acceptance-designer-reviewer"
+    gate: "G4_compression"
+    depends_on: ["step_12_03"]
+    output: "Token metrics (original, toon, ratio)"
+    duration: "10-15 min"
+
+  # --- solution-architect-reviewer (1464 lines) ---
+  step_13_01:
+    id: "13-01"
+    wave: "wave_2"
+    agent: "solution-architect-reviewer"
+    action: "Parse solution-architect-reviewer.md and validate structure extraction"
+    gate: "G1_parse"
+    depends_on: ["step_12_04"]
+    output: "Parsed structure JSON/object"
+    duration: "15-30 min"
+
+  step_13_02:
+    id: "13-02"
+    wave: "wave_2"
+    agent: "solution-architect-reviewer"
+    action: "Transform solution-architect-reviewer to TOON v3.0 format"
+    gate: "G2_transform"
+    depends_on: ["step_13_01"]
+    output: "nWave/agents/solution-architect-reviewer.toon"
+    duration: "45-90 min"
+
+  step_13_03:
+    id: "13-03"
+    wave: "wave_2"
+    agent: "solution-architect-reviewer"
+    action: "Roundtrip validation for solution-architect-reviewer"
+    gate: "G3_roundtrip"
+    depends_on: ["step_13_02"]
+    output: "Validation report (pass/fail)"
+    duration: "15-30 min"
+
+  step_13_04:
+    id: "13-04"
+    wave: "wave_2"
+    agent: "solution-architect-reviewer"
+    action: "Token measurement and compression validation for solution-architect-reviewer"
+    gate: "G4_compression"
+    depends_on: ["step_13_03"]
+    output: "Token metrics (original, toon, ratio)"
+    duration: "10-15 min"
+
+  # --- Wave 2 Milestone ---
+  step_M2:
+    id: "M2"
+    wave: "wave_2"
+    type: "milestone"
+    action: "Wave 2 validation and checkpoint"
+    gate: "G5_tests"
+    depends_on: ["step_13_04"]
+    validation:
+      - "7 agents converted in Wave 2"
+      - "Cumulative: 13/21 agents converted (62%)"
+      - "All roundtrip validations passed"
+      - "All compression ratios >= 5:1"
+      - "Test suite 100% green"
+    duration: "30 min"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # WAVE 3 STEPS: Large Agents
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  # --- solution-architect (1743 lines) ---
+  step_14_01:
+    id: "14-01"
+    wave: "wave_3"
+    agent: "solution-architect"
+    action: "Parse solution-architect.md and validate structure extraction"
+    gate: "G1_parse"
+    depends_on: ["step_M2"]
+    output: "Parsed structure JSON/object"
+    duration: "20-40 min"
+
+  step_14_02:
+    id: "14-02"
+    wave: "wave_3"
+    agent: "solution-architect"
+    action: "Transform solution-architect to TOON v3.0 format"
+    gate: "G2_transform"
+    depends_on: ["step_14_01"]
+    output: "nWave/agents/solution-architect.toon"
+    duration: "60-120 min"
+
+  step_14_03:
+    id: "14-03"
+    wave: "wave_3"
+    agent: "solution-architect"
+    action: "Roundtrip validation for solution-architect"
+    gate: "G3_roundtrip"
+    depends_on: ["step_14_02"]
+    output: "Validation report (pass/fail)"
+    duration: "20-40 min"
+
+  step_14_04:
+    id: "14-04"
+    wave: "wave_3"
+    agent: "solution-architect"
+    action: "Token measurement and compression validation for solution-architect"
+    gate: "G4_compression"
+    depends_on: ["step_14_03"]
+    output: "Token metrics (original, toon, ratio)"
+    duration: "10-15 min"
+
+  # --- product-owner (1634 lines) ---
+  step_15_01:
+    id: "15-01"
+    wave: "wave_3"
+    agent: "product-owner"
+    action: "Parse product-owner.md and validate structure extraction"
+    gate: "G1_parse"
+    depends_on: ["step_14_04"]
+    output: "Parsed structure JSON/object"
+    duration: "20-40 min"
+
+  step_15_02:
+    id: "15-02"
+    wave: "wave_3"
+    agent: "product-owner"
+    action: "Transform product-owner to TOON v3.0 format"
+    gate: "G2_transform"
+    depends_on: ["step_15_01"]
+    output: "nWave/agents/product-owner.toon"
+    duration: "60-100 min"
+
+  step_15_03:
+    id: "15-03"
+    wave: "wave_3"
+    agent: "product-owner"
+    action: "Roundtrip validation for product-owner"
+    gate: "G3_roundtrip"
+    depends_on: ["step_15_02"]
+    output: "Validation report (pass/fail)"
+    duration: "20-40 min"
+
+  step_15_04:
+    id: "15-04"
+    wave: "wave_3"
+    agent: "product-owner"
+    action: "Token measurement and compression validation for product-owner"
+    gate: "G4_compression"
+    depends_on: ["step_15_03"]
+    output: "Token metrics (original, toon, ratio)"
+    duration: "10-15 min"
+
+  # --- product-owner-reviewer (1641 lines) ---
+  step_16_01:
+    id: "16-01"
+    wave: "wave_3"
+    agent: "product-owner-reviewer"
+    action: "Parse product-owner-reviewer.md and validate structure extraction"
+    gate: "G1_parse"
+    depends_on: ["step_15_04"]
+    output: "Parsed structure JSON/object"
+    duration: "20-40 min"
+
+  step_16_02:
+    id: "16-02"
+    wave: "wave_3"
+    agent: "product-owner-reviewer"
+    action: "Transform product-owner-reviewer to TOON v3.0 format"
+    gate: "G2_transform"
+    depends_on: ["step_16_01"]
+    output: "nWave/agents/product-owner-reviewer.toon"
+    duration: "60-100 min"
+
+  step_16_03:
+    id: "16-03"
+    wave: "wave_3"
+    agent: "product-owner-reviewer"
+    action: "Roundtrip validation for product-owner-reviewer"
+    gate: "G3_roundtrip"
+    depends_on: ["step_16_02"]
+    output: "Validation report (pass/fail)"
+    duration: "20-40 min"
+
+  step_16_04:
+    id: "16-04"
+    wave: "wave_3"
+    agent: "product-owner-reviewer"
+    action: "Token measurement and compression validation for product-owner-reviewer"
+    gate: "G4_compression"
+    depends_on: ["step_16_03"]
+    output: "Token metrics (original, toon, ratio)"
+    duration: "10-15 min"
+
+  # --- data-engineer (1881 lines) ---
+  step_17_01:
+    id: "17-01"
+    wave: "wave_3"
+    agent: "data-engineer"
+    action: "Parse data-engineer.md and validate structure extraction"
+    gate: "G1_parse"
+    depends_on: ["step_16_04"]
+    output: "Parsed structure JSON/object"
+    duration: "20-40 min"
+
+  step_17_02:
+    id: "17-02"
+    wave: "wave_3"
+    agent: "data-engineer"
+    action: "Transform data-engineer to TOON v3.0 format"
+    gate: "G2_transform"
+    depends_on: ["step_17_01"]
+    output: "nWave/agents/data-engineer.toon"
+    duration: "60-120 min"
+
+  step_17_03:
+    id: "17-03"
+    wave: "wave_3"
+    agent: "data-engineer"
+    action: "Roundtrip validation for data-engineer"
+    gate: "G3_roundtrip"
+    depends_on: ["step_17_02"]
+    output: "Validation report (pass/fail)"
+    duration: "20-40 min"
+
+  step_17_04:
+    id: "17-04"
+    wave: "wave_3"
+    agent: "data-engineer"
+    action: "Token measurement and compression validation for data-engineer"
+    gate: "G4_compression"
+    depends_on: ["step_17_03"]
+    output: "Token metrics (original, toon, ratio)"
+    duration: "10-15 min"
+
+  # --- data-engineer-reviewer (1882 lines) ---
+  step_18_01:
+    id: "18-01"
+    wave: "wave_3"
+    agent: "data-engineer-reviewer"
+    action: "Parse data-engineer-reviewer.md and validate structure extraction"
+    gate: "G1_parse"
+    depends_on: ["step_17_04"]
+    output: "Parsed structure JSON/object"
+    duration: "20-40 min"
+
+  step_18_02:
+    id: "18-02"
+    wave: "wave_3"
+    agent: "data-engineer-reviewer"
+    action: "Transform data-engineer-reviewer to TOON v3.0 format"
+    gate: "G2_transform"
+    depends_on: ["step_18_01"]
+    output: "nWave/agents/data-engineer-reviewer.toon"
+    duration: "60-120 min"
+
+  step_18_03:
+    id: "18-03"
+    wave: "wave_3"
+    agent: "data-engineer-reviewer"
+    action: "Roundtrip validation for data-engineer-reviewer"
+    gate: "G3_roundtrip"
+    depends_on: ["step_18_02"]
+    output: "Validation report (pass/fail)"
+    duration: "20-40 min"
+
+  step_18_04:
+    id: "18-04"
+    wave: "wave_3"
+    agent: "data-engineer-reviewer"
+    action: "Token measurement and compression validation for data-engineer-reviewer"
+    gate: "G4_compression"
+    depends_on: ["step_18_03"]
+    output: "Token metrics (original, toon, ratio)"
+    duration: "10-15 min"
+
+  # --- Wave 3 Milestone ---
+  step_M3:
+    id: "M3"
+    wave: "wave_3"
+    type: "milestone"
+    action: "Wave 3 validation and checkpoint"
+    gate: "G5_tests"
+    depends_on: ["step_18_04"]
+    validation:
+      - "5 agents converted in Wave 3"
+      - "Cumulative: 18/21 agents converted (86%)"
+      - "All roundtrip validations passed"
+      - "All compression ratios >= 5:1"
+      - "Test suite 100% green"
+    duration: "30 min"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # WAVE 4 STEPS: Very Large Agents
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  # --- agent-builder (2057 lines) ---
+  step_19_01:
+    id: "19-01"
+    wave: "wave_4"
+    agent: "agent-builder"
+    action: "Parse agent-builder.md and validate structure extraction"
+    gate: "G1_parse"
+    depends_on: ["step_M3"]
+    output: "Parsed structure JSON/object"
+    duration: "30-45 min"
+
+  step_19_02:
+    id: "19-02"
+    wave: "wave_4"
+    agent: "agent-builder"
+    action: "Transform agent-builder to TOON v3.0 format"
+    gate: "G2_transform"
+    depends_on: ["step_19_01"]
+    output: "nWave/agents/agent-builder.toon"
+    duration: "90-150 min"
+
+  step_19_03:
+    id: "19-03"
+    wave: "wave_4"
+    agent: "agent-builder"
+    action: "Roundtrip validation for agent-builder"
+    gate: "G3_roundtrip"
+    depends_on: ["step_19_02"]
+    output: "Validation report (pass/fail)"
+    duration: "30-45 min"
+
+  step_19_04:
+    id: "19-04"
+    wave: "wave_4"
+    agent: "agent-builder"
+    action: "Token measurement and compression validation for agent-builder"
+    gate: "G4_compression"
+    depends_on: ["step_19_03"]
+    output: "Token metrics (original, toon, ratio)"
+    duration: "10-15 min"
+
+  # --- agent-builder-reviewer (2027 lines) ---
+  step_20_01:
+    id: "20-01"
+    wave: "wave_4"
+    agent: "agent-builder-reviewer"
+    action: "Parse agent-builder-reviewer.md and validate structure extraction"
+    gate: "G1_parse"
+    depends_on: ["step_19_04"]
+    output: "Parsed structure JSON/object"
+    duration: "30-45 min"
+
+  step_20_02:
+    id: "20-02"
+    wave: "wave_4"
+    agent: "agent-builder-reviewer"
+    action: "Transform agent-builder-reviewer to TOON v3.0 format"
+    gate: "G2_transform"
+    depends_on: ["step_20_01"]
+    output: "nWave/agents/agent-builder-reviewer.toon"
+    duration: "90-150 min"
+
+  step_20_03:
+    id: "20-03"
+    wave: "wave_4"
+    agent: "agent-builder-reviewer"
+    action: "Roundtrip validation for agent-builder-reviewer"
+    gate: "G3_roundtrip"
+    depends_on: ["step_20_02"]
+    output: "Validation report (pass/fail)"
+    duration: "30-45 min"
+
+  step_20_04:
+    id: "20-04"
+    wave: "wave_4"
+    agent: "agent-builder-reviewer"
+    action: "Token measurement and compression validation for agent-builder-reviewer"
+    gate: "G4_compression"
+    depends_on: ["step_20_03"]
+    output: "Token metrics (original, toon, ratio)"
+    duration: "10-15 min"
+
+  # --- software-crafter-reviewer (2389 lines - largest remaining) ---
+  step_21_01:
+    id: "21-01"
+    wave: "wave_4"
+    agent: "software-crafter-reviewer"
+    action: "Parse software-crafter-reviewer.md and validate structure extraction"
+    gate: "G1_parse"
+    depends_on: ["step_20_04"]
+    output: "Parsed structure JSON/object"
+    duration: "30-45 min"
+
+  step_21_02:
+    id: "21-02"
+    wave: "wave_4"
+    agent: "software-crafter-reviewer"
+    action: "Transform software-crafter-reviewer to TOON v3.0 format"
+    gate: "G2_transform"
+    depends_on: ["step_21_01"]
+    output: "nWave/agents/software-crafter-reviewer.toon"
+    duration: "90-180 min"
+
+  step_21_03:
+    id: "21-03"
+    wave: "wave_4"
+    agent: "software-crafter-reviewer"
+    action: "Roundtrip validation for software-crafter-reviewer"
+    gate: "G3_roundtrip"
+    depends_on: ["step_21_02"]
+    output: "Validation report (pass/fail)"
+    duration: "30-45 min"
+
+  step_21_04:
+    id: "21-04"
+    wave: "wave_4"
+    agent: "software-crafter-reviewer"
+    action: "Token measurement and compression validation for software-crafter-reviewer"
+    gate: "G4_compression"
+    depends_on: ["step_21_03"]
+    output: "Token metrics (original, toon, ratio)"
+    duration: "10-15 min"
+
+  # --- Wave 4 Milestone ---
+  step_M4:
+    id: "M4"
+    wave: "wave_4"
+    type: "milestone"
+    action: "Wave 4 validation - ALL AGENTS CONVERTED"
+    gate: "G5_tests"
+    depends_on: ["step_21_04"]
+    validation:
+      - "3 agents converted in Wave 4"
+      - "Cumulative: 21/21 agents converted (100%)"
+      - "All roundtrip validations passed"
+      - "All compression ratios >= 5:1"
+      - "Test suite 100% green"
+    duration: "30 min"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # WAVE 5 STEPS: Validation & Finalization
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  step_22_01:
+    id: "22-01"
+    wave: "wave_5"
+    action: "Run comprehensive test suite validation"
+    gate: "G5_tests"
+    depends_on: ["step_M4"]
+    validation:
+      - "All 216+ tests passing"
+      - "No regressions from conversions"
+    duration: "15-30 min"
+
+  step_22_02:
+    id: "22-02"
+    wave: "wave_5"
+    action: "Generate comprehensive token metrics report"
+    depends_on: ["step_22_01"]
+    output: "docs/feature/toon-agent-conversion/metrics-report.yaml"
+    metrics:
+      - "Total original tokens (all 22 agents)"
+      - "Total TOON tokens (all 22 agents)"
+      - "Overall compression ratio"
+      - "Per-agent compression breakdown"
+    duration: "30-45 min"
+
+  step_22_03:
+    id: "22-03"
+    wave: "wave_5"
+    action: "Update baseline.yaml with final measurements"
+    depends_on: ["step_22_02"]
+    output: "docs/feature/toon-agent-conversion/baseline.yaml (updated)"
+    updates:
+      - "phase_2_pilot_migration.status: COMPLETED"
+      - "phase_3_full_conversion.status: COMPLETED"
+      - "measurements.agent_inventory.converted_to_toon: 22"
+      - "measurements.agent_inventory.conversion_percent: 100"
+    duration: "15-30 min"
+
+  step_22_04:
+    id: "22-04"
+    wave: "wave_5"
+    action: "Archive original MD files (preserve, do not delete)"
+    depends_on: ["step_22_03"]
+    archive_location: "nWave/agents/archive/md-originals/"
+    note: "Keep MD files for reference and rollback capability"
+    duration: "15-30 min"
+
+  step_22_05:
+    id: "22-05"
+    wave: "wave_5"
+    action: "Update documentation references to use TOON files"
+    depends_on: ["step_22_04"]
+    files_to_update:
+      - "nWave/README.md"
+      - "tools/toon/README.md"
+      - "Any files referencing .md agent paths"
+    duration: "30-45 min"
+
+  step_22_06:
+    id: "22-06"
+    wave: "wave_5"
+    action: "Prepare Phase 4 handoff package"
+    depends_on: ["step_22_05"]
+    output: "docs/feature/toon-agent-conversion/phase3-handoff.yaml"
+    contents:
+      - "22 TOON agent files"
+      - "Comprehensive metrics report"
+      - "Updated baseline"
+      - "Phase 4 prerequisites checklist"
+    duration: "30-45 min"
+
+  # --- Final Milestone ---
+  step_M5:
+    id: "M5"
+    wave: "wave_5"
+    type: "milestone"
+    action: "PHASE 3 COMPLETE - Full Agent Conversion Done"
+    gate: "G5_tests"
+    depends_on: ["step_22_06"]
+    validation:
+      - "22/22 agents in TOON format"
+      - "All tests passing (216+)"
+      - "Average compression ratio >= 5:1"
+      - "Documentation updated"
+      - "Phase 4 handoff ready"
+    celebration: "Phase 3 Complete - Ready for Registry Integration!"
+    duration: "15 min"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TIMELINE ESTIMATES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+timeline:
+  wave_1:
+    agents: 6
+    estimated_hours: "8-12"
+    target_completion: "2026-01-17"
+
+  wave_2:
+    agents: 7
+    estimated_hours: "14-21"
+    target_completion: "2026-01-21"
+
+  wave_3:
+    agents: 5
+    estimated_hours: "15-20"
+    target_completion: "2026-01-24"
+
+  wave_4:
+    agents: 3
+    estimated_hours: "12-15"
+    target_completion: "2026-01-27"
+
+  wave_5:
+    agents: 0
+    estimated_hours: "4-6"
+    target_completion: "2026-01-28"
+
+  total:
+    agents: 21
+    steps: 90
+    estimated_hours: "53-74"
+    target_completion: "2026-01-28"
+    buffer_days: 3
+    deadline: "2026-01-31"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# RISK MITIGATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+risks:
+  R1_complex_embedded_knowledge:
+    description: "Some agents have extensive EMBEDDED_KNOWLEDGE that may not compress well"
+    probability: "Medium"
+    impact: "Medium"
+    mitigation: "Pilot conversion achieved 6.21:1 with embedded knowledge - pattern established"
+
+  R2_roundtrip_failures:
+    description: "Roundtrip validation may fail for edge cases"
+    probability: "Low"
+    impact: "High"
+    mitigation: "Fix and re-validate immediately; do not proceed until 100% equivalence"
+
+  R3_compression_target_miss:
+    description: "Some agents may not achieve 5:1 compression target"
+    probability: "Low"
+    impact: "Medium"
+    mitigation: "Per compression_exception_policy: 4:1 acceptable with documented exception and PO approval; < 4:1 blocks conversion"
+
+  R4_test_regressions:
+    description: "Conversions may cause unexpected test failures"
+    probability: "Low"
+    impact: "High"
+    mitigation: "Run full test suite after each agent conversion; fix immediately"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# NOTES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+notes:
+  - "All step IDs follow XX-YY pattern where XX is agent number, YY is phase (01-04)"
+  - "Milestone steps use M# pattern"
+  - "Dependencies ensure sequential execution within pairs (primary before reviewer)"
+  - "Waves can be executed independently after their dependencies complete"
+  - "Token measurements use Claude tokenizer for consistency"
+  - "Original MD files archived, not deleted, for rollback capability"
+  - "This roadmap creates 90 atomic, testable steps across 5 waves"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PRODUCT OWNER REVIEW (CRITICAL GATE)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+product_owner_review:
+  reviewer: "product-owner-reviewer (Sage)"
+  review_date: "2026-01-14T18:45:00Z"
+  review_scope: "Business value alignment, success criteria clarity, risk assessment, stakeholder visibility, timeline reasonability"
+  verdict: "NEEDS_REVISION"
+  approval_possible_after: "Critical revisions completed"
+
+  dimension_1_business_value_alignment:
+    status: "PARTIALLY_CLEAR"
+    findings:
+      - category: "Token Reduction Target"
+        status: "EVIDENCED"
+        evidence: "Pilot metrics show actual 6.21:1 compression (24852 → 4004 tokens), exceeds 5:1 minimum target"
+        assessment: "Measurable, quantified, achievable based on empirical data"
+
+      - category: "Agent Conversion Scope"
+        status: "CLEAR"
+        evidence: "21 remaining agents explicitly listed by complexity tier with line counts"
+        assessment: "Scope is well-defined and verifiable"
+
+      - category: "Marketplace Readiness"
+        status: "UNDEFINED"
+        evidence: "Roadmap mentions 'Phase 4 handoff preparation' (line 1354) but doesn't explain marketplace integration strategy"
+        issue: "Stakeholders may not understand why TOON conversion enables marketplace readiness"
+        remediation: "REQUIRED: Explain the causal link between TOON format and marketplace capability"
+
+    verdict: "INCOMPLETE - Marketplace readiness business case must be articulated"
+
+  dimension_2_success_criteria_clarity:
+    status: "MOSTLY_CLEAR_WITH_AMBIGUITY"
+    findings:
+      - criterion: "total_agents_converted: 21"
+        clarity: "CLEAR"
+        measurability: "100% (can count)"
+
+      - criterion: "test_pass_rate: 100%"
+        clarity: "CLEAR"
+        measurability: "100% (automated validation)"
+
+      - criterion: "minimum_compression_ratio: 5:1"
+        clarity: "CLEAR"
+        measurability: "100% (mathematical)"
+
+      - criterion: "roundtrip_equivalence: 100%"
+        clarity: "AMBIGUOUS"
+        measurability: "0% - undefined what '100% equivalence' means"
+        issue: "No explicit definition of roundtrip equivalence criteria"
+        example_problem: "Does 100% equivalence require: byte-for-byte identical? Functionally identical? Structurally identical?"
+        remediation: "REQUIRED: Define explicit equivalence criteria per G3_roundtrip gate"
+
+      - criterion: "semantic_preservation: exact"
+        clarity: "VAGUE"
+        measurability: "0% - 'exact' is qualitative not quantitative"
+        issue: "Same as roundtrip_equivalence issue above"
+        remediation: "REQUIRED: Quantify what 'exact semantic preservation' means"
+
+    verdict: "CRITICAL GAP - Roundtrip validation criteria must be explicitly defined before execution"
+
+  dimension_3_risk_assessment:
+    status: "INCOMPLETE"
+    documented_risks:
+      - risk_id: "R1"
+        description: "Complex embedded knowledge may not compress well"
+        assessment: "WELL_MITIGATED - Pilot evidence (6.21:1) supports feasibility"
+
+      - risk_id: "R2"
+        description: "Roundtrip validation failures"
+        assessment: "REACTIVE_MITIGATION - 'Fix and re-validate' doesn't prevent failures"
+
+      - risk_id: "R3"
+        description: "Compression target miss (< 5:1)"
+        assessment: "CONTRADICTORY - Mitigation says '4:1 acceptable' but success criteria says '>=5:1'"
+        issue: "CRITICAL: Risk mitigation contradicts success criteria"
+        remediation: "REQUIRED: Resolve - is 5:1 hard requirement or soft target with 4:1 fallback?"
+
+      - risk_id: "R4"
+        description: "Test regressions"
+        assessment: "REACTIVE_MITIGATION - Assumes tests exist and are comprehensive"
+
+    critical_missing_risks:
+      - risk: "Conversion tooling and automation"
+        description: "Roadmap doesn't explain HOW conversions will be performed (manual? automated? semi-automated?)"
+        impact: "HIGH - 90 steps could fail due to tooling gaps"
+        remediation: "REQUIRED: Define conversion process (tooling, automation level, manual review gates)"
+
+      - risk: "Knowledge loss in compression"
+        description: "Converting from human-readable MD to compressed TOON could lose documentation value"
+        impact: "MEDIUM - Agents become harder to understand/maintain"
+        remediation: "REQUIRED: Explain how developer understanding is preserved"
+
+      - risk: "Phase 4 dependency cascade"
+        description: "Marketplace integration may have undiscovered prerequisites"
+        impact: "HIGH - Could block Phase 4 handoff despite 100% conversion completion"
+        remediation: "REQUIRED: Document Phase 4 requirements and validate roadmap alignment"
+
+      - risk: "Team execution capability"
+        description: "Roadmap requires executing 90+ steps correctly but doesn't assess team skill/capacity"
+        impact: "HIGH - Wrong team composition/training could cause widespread failures"
+        remediation: "REQUIRED: Define team composition, training requirements, and skill validation"
+
+    verdict: "CRITICAL GAPS - Risk analysis incomplete and contradictory"
+
+  dimension_4_stakeholder_visibility:
+    status: "TACTICALLY_GOOD_STRATEGICALLY_WEAK"
+    findings:
+      - aspect: "Progress tracking"
+        assessment: "GOOD"
+        strengths:
+          - "5 clear milestones (M1-M5) with explicit dates"
+          - "90 atomic steps enable daily progress reporting"
+          - "Wave structure allows status like '13/21 agents complete' (M2)"
+          - "Peer review approval visible (solution-architect-reviewer)"
+
+      - aspect: "Decision authority"
+        assessment: "MISSING"
+        issue: "No stakeholder decision authority identified"
+        question: "Who approves if risks materialize? Who decides on scope changes?"
+        remediation: "REQUIRED: Define decision authority matrix"
+
+      - aspect: "Status reporting cadence"
+        assessment: "MISSING"
+        issue: "No reporting schedule defined"
+        question: "Daily? Weekly? Event-driven?"
+        remediation: "REQUIRED: Define status reporting frequency and audience"
+
+      - aspect: "Escalation path"
+        assessment: "MISSING"
+        issue: "No escalation process if waves slip"
+        question: "If Wave 1 overruns, what happens to deadline?"
+        remediation: "REQUIRED: Define escalation triggers and procedures"
+
+      - aspect: "Phase 4 readiness definition"
+        assessment: "MISSING"
+        issue: "Roadmap mentions 'Phase 4 readiness' but doesn't define it"
+        question: "What must be true for Phase 4 to start?"
+        remediation: "REQUIRED: Define Phase 4 prerequisites and readiness criteria"
+
+    verdict: "INCOMPLETE - Strategic visibility gaps must be addressed"
+
+  dimension_5_timeline_reasonability:
+    status: "SPECULATIVE"
+    findings:
+      - aspect: "Effort estimate"
+        calculation: "53-74 hours total, 90 steps = 0.59-0.82 hours/step"
+        per_agent_check: "Small (1-2h), Medium (2-3h), Large (3-4h), Very Large (4-5h) - REASONABLE"
+        assessment: "Effort estimate appears internally consistent"
+
+      - aspect: "Timeline allocation"
+        detail: "14 days (Jan 14-28) for execution, 3 days buffer to Jan 31"
+        wave_1_example: "6 agents in 3.5 days (8-12 hours) = 2.25-4 hours/day"
+        assessment: "Feasible IF: single person full-time OR multiple people with coordination"
+
+      - aspect: "Dependency structure"
+        detail: "Sequential waves (1→2→3→4→5), sequential agents within waves"
+        assessment: "Conservative but safe. Reduces parallelism risk."
+
+      - aspect: "Buffer analysis"
+        detail: "3 days = ~18 hours capacity"
+        percentage: "24% of total effort range"
+        assessment: "Reasonable for project work with unknowns"
+
+    critical_unknown_variables:
+      - variable: "Team size and allocation"
+        impact: "HIGH"
+        issue: "Timeline assumes unknown team composition"
+        question: "1 person full-time? 3 people part-time? Dedicated or interrupt-driven?"
+        remediation: "REQUIRED: Define team composition and FTE allocation"
+
+      - variable: "Tool readiness"
+        impact: "HIGH"
+        issue: "Roadmap assumes conversion tools exist and are tested"
+        question: "Are tools production-ready? Tested on all 21 agent types?"
+        remediation: "REQUIRED: Validate tooling readiness before execution"
+
+      - variable: "Learning curve"
+        impact: "MEDIUM"
+        issue: "Timeline assumes team understanding of TOON format"
+        question: "Has team converted agents before? Do they understand schema?"
+        remediation: "RECOMMENDED: Conduct team training before Wave 1"
+
+      - variable: "Interruption frequency"
+        impact: "HIGH"
+        issue: "Timeline assumes protected work time"
+        question: "Can team members work without context switches?"
+        remediation: "REQUIRED: Define protection from interruptions (sprints, focus blocks)"
+
+    verdict: "FEASIBLE IF unknowns are resolved, but timeline is currently SPECULATIVE"
+
+  critical_issues_blocking_approval:
+    - issue_id: "CRITICAL-1"
+      title: "Roundtrip Validation Definition Missing"
+      description: "Success criteria require '100% roundtrip equivalence' but don't define what equivalence means"
+      location: "Lines 50, 75-78, 1504"
+      business_impact: "Cannot validate success if equivalence criteria undefined"
+      remediation: "Define explicit equivalence: 'All YAML keys present, values match after normalization, embedded knowledge sections byte-identical'"
+      severity: "CRITICAL"
+      must_fix_before: "Wave 1 execution"
+
+    - issue_id: "CRITICAL-2"
+      title: "Risk R3 Contradiction with Success Criteria"
+      description: "Success criteria requires '>= 5:1' compression but Risk R3 mitigation says '4:1 acceptable'"
+      location: "Lines 49, 1440"
+      business_impact: "Unclear acceptance threshold - what constitutes project success?"
+      remediation: "Resolve: Is 5:1 hard requirement (block if not met) or soft target (proceed with 4:1 if necessary)?"
+      severity: "CRITICAL"
+      must_fix_before: "Wave 1 execution"
+
+    - issue_id: "CRITICAL-3"
+      title: "Marketplace Integration Business Case Missing"
+      description: "Roadmap mentions 'Phase 4 marketplace readiness' but doesn't explain why TOON conversion enables it"
+      location: "Lines 1354-1362"
+      business_impact: "Stakeholders cannot understand business value of conversion effort"
+      remediation: "Add business case section: 'Why TOON Format Enables Marketplace: [explanation]'"
+      severity: "CRITICAL"
+      must_fix_before: "Stakeholder approval"
+
+    - issue_id: "CRITICAL-4"
+      title: "Team Composition and Capacity Undefined"
+      description: "Timeline assumes unknown team size/allocation - critical input for feasibility"
+      location: "Timeline section (lines 1385-1418)"
+      business_impact: "Timeline may be unrealistic if team composition differs from assumptions"
+      remediation: "Define: 'This roadmap assumes X people, Y hours/week, Z priority (protected/interruptible)'"
+      severity: "CRITICAL"
+      must_fix_before: "Team commitment"
+
+    - issue_id: "CRITICAL-5"
+      title: "Tooling Readiness Not Validated"
+      description: "Roadmap assumes conversion tools are production-ready but doesn't state prerequisites"
+      location: "Methodology section (lines 101-130)"
+      business_impact: "Conversion cannot begin if tools are not ready"
+      remediation: "Add prerequisite check: 'Validate tool readiness on representative agents before Wave 1'"
+      severity: "CRITICAL"
+      must_fix_before: "Wave 1 execution"
+
+  recommended_revisions_not_blocking:
+    - issue_id: "REC-1"
+      title: "Add Decision Authority Matrix"
+      description: "Define who approves scope changes, accepts risks, resolves blockers"
+      location: "Add new section: Governance"
+      severity: "HIGH"
+
+    - issue_id: "REC-2"
+      title: "Define Status Reporting Cadence"
+      description: "When and how to report progress to stakeholders"
+      location: "Add to stakeholder section"
+      severity: "HIGH"
+
+    - issue_id: "REC-3"
+      title: "Define Escalation Triggers and Procedures"
+      description: "What happens if waves slip (reduce scope? extend deadline? add resources?)"
+      location: "Add to risks section"
+      severity: "MEDIUM"
+
+    - issue_id: "REC-4"
+      title: "Add Phase 4 Readiness Checklist"
+      description: "Explicit list of what must be true before Phase 4 can start"
+      location: "Add to Wave 5 (lines 1354-1362)"
+      severity: "MEDIUM"
+
+    - issue_id: "REC-5"
+      title: "Validate Researcher-Reviewer Complexity Classification"
+      description: "researcher-reviewer (1330 lines) exceeds small threshold (<1200 lines) but classified in Wave 1"
+      location: "Peer review (line 1485) identifies this - acceptable as paired with researcher"
+      severity: "LOW"
+
+  approval_conditions:
+    condition_1: "CRITICAL-1 resolved: Roundtrip equivalence criteria explicitly defined"
+    condition_2: "CRITICAL-2 resolved: Success criteria and risk mitigation aligned on compression threshold"
+    condition_3: "CRITICAL-3 resolved: Business case for marketplace integration documented"
+    condition_4: "CRITICAL-4 resolved: Team composition and FTE allocation specified"
+    condition_5: "CRITICAL-5 resolved: Tool readiness validated before Wave 1"
+
+  final_assessment: |
+    VERDICT: NEEDS_REVISION - Conditional Approval
+
+    STRENGTHS:
+    ✓ Excellent technical planning and wave decomposition
+    ✓ Clear and specific milestones with realistic dates
+    ✓ Atomic steps enable granular progress tracking
+    ✓ Grounded in quantitative pilot data (6.21:1 compression achieved)
+    ✓ Comprehensive quality gates covering all critical validation points
+    ✓ Peer review provides technical validation
+
+    CRITICAL GAPS (Must Fix):
+    ✗ Roundtrip validation criteria undefined - cannot validate success
+    ✗ Risk mitigation contradicts success criteria (4:1 vs 5:1)
+    ✗ Marketplace business case missing - no clear value explanation
+    ✗ Team composition undefined - timeline feasibility unknown
+    ✗ Tool readiness not validated - blocking prerequisite
+
+    STRATEGIC VISIBILITY GAPS (Recommended):
+    ○ Decision authority not defined
+    ○ Status reporting cadence not defined
+    ○ Escalation procedures not defined
+    ○ Phase 4 readiness criteria not defined
+
+    NEXT STEPS:
+    1. Address all 5 CRITICAL issues with concrete revisions
+    2. Update roadmap.yaml with revised sections
+    3. Resubmit for Product Owner approval
+    4. Once approved, proceed to /nw:split for atomic step generation
+
+    This roadmap demonstrates solid technical planning but needs business
+    context, clarity on success criteria, and team/tool validation before
+    execution can commence. The 5 critical gaps must be resolved to enable
+    confident stakeholder commitment and realistic execution expectations.
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PEER REVIEW
+# ═══════════════════════════════════════════════════════════════════════════════
+
+reviews:
+  - reviewer: "solution-architect-reviewer"
+    date: "2026-01-14T16:30:00Z"
+    overall_assessment: "APPROVED"
+    risk_level: "LOW"
+    estimated_accuracy: "Realistic"
+
+    strengths:
+      - "Excellent baseline alignment: Roadmap correctly references approved baseline (baseline.yaml) with quantitative measurements"
+      - "Clear wave-based decomposition: 5 waves organized by complexity (small -> very large -> validation) is logical progression"
+      - "Comprehensive quality gates: G1-G5 cover all critical validation points (parse, transform, roundtrip, compression, tests)"
+      - "Strong dependency modeling: Steps correctly chain dependencies within agent pairs and across waves"
+      - "Pilot metrics grounded: 6.21:1 compression ratio from pilot provides realistic foundation for 5:1 target"
+      - "Risk mitigation documented: R1-R4 identify key risks with appropriate mitigations"
+      - "Atomic step design: 4 steps per agent (parse, transform, validate, measure) enables granular progress tracking"
+      - "Timeline includes buffer: 3-day buffer before deadline shows realistic planning"
+
+    critiques:
+      - phase: "wave_1"
+        step: "agents list"
+        issue: "researcher-reviewer (1330 lines) classified in Wave 1 but exceeds small threshold (<1200 lines)"
+        severity: "LOW"
+        recommendation: "Minor inconsistency - acceptable since it follows researcher as pair. Document this exception."
+
+      - phase: "methodology"
+        step: "conversion_phases"
+        issue: "Duration estimates show high variance (e.g., 30-60 min for transform)"
+        severity: "LOW"
+        recommendation: "Variance is appropriate given complexity differences. Track actuals vs estimates for future calibration."
+
+      - phase: "wave_5"
+        step: "step_22_04"
+        issue: "Archive step lacks verification that all 21 agents are backed up before archiving"
+        severity: "MEDIUM"
+        recommendation: "Add pre-archive validation: 'Verify 21 .md files exist before archiving'"
+
+      - phase: "quality_gates"
+        step: "G3_roundtrip"
+        issue: "No explicit definition of what 'semantic equivalence' means in measurable terms"
+        severity: "MEDIUM"
+        recommendation: "Define equivalence criteria: 'All YAML keys present, values match after normalization, embedded knowledge sections identical'"
+
+      - phase: "timeline"
+        step: "total"
+        issue: "90 steps in 53-74 hours implies ~0.6-0.8 hours per step average, but some steps estimate 90-180 min"
+        severity: "LOW"
+        recommendation: "Math is correct when accounting for milestone steps and wave 5 activities. No action needed."
+
+    missing_steps: []
+
+    dependencies_issues:
+      - "Step 02 (researcher-reviewer) depends on step 01_04 but step 03 (troubleshooter) also depends on 02_04 - this creates purely sequential execution within Wave 1. Consider: troubleshooter could start after researcher (not researcher-reviewer) to enable parallel pair execution."
+
+    parallel_opportunities:
+      - "Within each wave, primary-reviewer pairs are sequential by design (correct). However, different pairs within same wave could theoretically run in parallel if resources allow."
+      - "Wave 5 steps 22_02 and 22_04 could potentially run in parallel (metrics generation vs archiving are independent)"
+
+    review_validation:
+      baseline_alignment: "VERIFIED - All 21 pending agents from baseline.yaml accounted for"
+      quality_gates_coverage: "COMPLETE - Covers parse, transform, roundtrip, compression, tests"
+      tdd_methodology_reference: "PRESENT - 11-phase TDD referenced in methodology section"
+      success_criteria_measurable: "YES - All criteria have quantitative targets"
+      risk_assessment: "ADEQUATE - 4 risks identified with mitigations"
+
+    approval_conditions:
+      - condition: "Address MEDIUM severity critique about G3_roundtrip equivalence definition"
+        status: "RECOMMENDED but not blocking"
+      - condition: "Consider adding pre-archive validation in step_22_04"
+        status: "RECOMMENDED but not blocking"
+
+    final_verdict: "APPROVED - Roadmap is well-structured, comprehensive, and aligned with baseline. Minor improvements recommended but not blocking execution."
+
+    reviewer_notes: |
+      This roadmap demonstrates excellent planning discipline:
+      1. Grounded in quantitative baseline data (pilot metrics)
+      2. Logical progression from simple to complex
+      3. Clear quality gates at every level
+      4. Realistic timeline with appropriate buffer
+
+      The sequential execution within waves is a conservative choice that trades
+      potential parallelism for reduced coordination overhead - appropriate for
+      this conversion task where consistency is paramount.
+
+      Recommend proceeding to /nw:split to generate atomic step files.
