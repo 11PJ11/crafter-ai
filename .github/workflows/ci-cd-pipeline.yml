@@ -76,6 +76,31 @@ jobs:
           echo "✅ Command definitions found: $command_count"
           echo "::endgroup::"
 
+  python-tests:
+    name: Python Test Suite
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov pyyaml tiktoken
+
+      - name: Run tests
+        run: |
+          echo "::group::Python Test Suite"
+          python -m pytest tests/ -v --tb=short --color=yes
+          echo "::endgroup::"
+
   documentation-check:
     name: Documentation Validation
     runs-on: ubuntu-latest
@@ -107,7 +132,7 @@ jobs:
   pipeline-completion:
     name: Pipeline Completion
     runs-on: ubuntu-latest
-    needs: [quality-gates, documentation-check]
+    needs: [quality-gates, python-tests, documentation-check]
     if: always()
 
     steps:
@@ -116,10 +141,12 @@ jobs:
           echo "::group::AI-Craft CI/CD Pipeline Summary"
 
           if [[ "${{ needs.quality-gates.result }}" == "success" &&
+                "${{ needs.python-tests.result }}" == "success" &&
                 "${{ needs.documentation-check.result }}" == "success" ]]; then
 
             echo "🎉 AI-Craft CI/CD Pipeline: SUCCESS"
             echo "✅ All quality gates passed"
+            echo "✅ Python tests passed"
             echo "✅ Documentation validated"
             echo ""
             echo "🚀 System ready for deployment"
@@ -128,6 +155,7 @@ jobs:
             echo "❌ AI-Craft CI/CD Pipeline: FAILED"
             echo "Results:"
             echo "  - Quality Gates: ${{ needs.quality-gates.result }}"
+            echo "  - Python Tests: ${{ needs.python-tests.result }}"
             echo "  - Documentation: ${{ needs.documentation-check.result }}"
             exit 1
           fi
