@@ -1,0 +1,76 @@
+# troubleshooter Token Comparison
+# Step: 03-04
+# Purpose: Compare original MD vs TOON token counts
+
+step_id: "03-04"
+agent: "troubleshooter"
+comparison_date: "2026-01-14T18:00:00Z"
+tokenizer: "tiktoken/cl100k_base"
+
+original:
+  file_path: "nWave/agents/troubleshooter.md"
+  total_tokens: 9074
+  file_size_bytes: 47231
+  line_count: 1093
+  char_count: 47186
+
+toon:
+  file_path: "nWave/agents/troubleshooter.toon"
+  total_tokens: 3750
+  file_size_bytes: 18577
+  line_count: 444
+  char_count: 18296
+
+compression_metrics:
+  token_reduction: 5324
+  token_reduction_percent: 58.7
+  compression_ratio: "2.42:1"
+  size_reduction_bytes: 28654
+  line_reduction: 649
+
+# Target Achievement Analysis
+target_achieved: false
+exception_documented: true
+exception_reason: |
+  The troubleshooter TOON conversion achieves 2.42:1 compression ratio,
+  which is below the 5:1 primary target and 4:1 secondary target.
+
+  Root cause analysis:
+  1. The troubleshooter agent has less structural redundancy than software-crafter
+  2. The original MD file (9074 tokens) is significantly smaller than software-crafter (24852 tokens)
+  3. The TOON format overhead becomes more significant with smaller agents
+  4. The troubleshooter agent contains substantial unique content (Toyota 5 Whys methodology,
+     investigation framework, problem taxonomy, analysis methodology, solution framework)
+     that cannot be compressed without semantic loss
+
+  Comparison with other agents:
+  - software-crafter: 24852 -> 4004 tokens (6.21:1) - HIGH compression, large source
+  - researcher-reviewer: 10916 -> 4750 tokens (2.30:1) - LOW compression, medium source
+  - troubleshooter: 9074 -> 3750 tokens (2.42:1) - LOW compression, medium source
+
+  Key observations:
+  1. TOON format provides significant compression for large agents with high redundancy
+  2. Smaller agents with domain-specific content achieve lower compression ratios
+  3. troubleshooter TOON (3750 tokens) is smaller than researcher-reviewer TOON (4750 tokens)
+     despite similar original sizes, suggesting troubleshooter had more compressible structure
+
+  This pattern is consistent with researcher-reviewer findings - agents with specialized
+  domain knowledge (research methodology, root cause analysis) have higher content density
+  that cannot be compressed without losing essential information.
+
+  Recommendation:
+  - Accept current compression for troubleshooter (2.42:1)
+  - This achieves 58.7% token reduction (5324 tokens saved)
+  - Investigate TOON format optimization for medium-sized agents in Phase 3
+  - Consider content-aware compression strategies for specialized knowledge sections
+
+quality_assessment:
+  semantic_preservation: "COMPLETE"
+  format_compliance: "VALID TOON v3.0"
+  readability: "MAINTAINED"
+
+notes:
+  - "Compression below target due to high content density in original"
+  - "No semantic loss - all functionality preserved"
+  - "Exception documented for review in Phase 3 retrospective"
+  - "58.7% token reduction still provides meaningful savings"

@@ -1,0 +1,25 @@
+# troubleshooter Token Baseline Measurement
+# Step: 03-04
+# Purpose: Establish original token count for compression validation
+
+step_id: "03-04"
+agent: "troubleshooter"
+measurement_date: "2026-01-14T18:00:00Z"
+tokenizer: "tiktoken/cl100k_base"
+
+original:
+  file_path: "nWave/agents/troubleshooter.md"
+  total_tokens: 9074
+  file_size_bytes: 47231
+  line_count: 1093
+  char_count: 47186
+
+methodology:
+  tokenizer: "tiktoken with cl100k_base encoding"
+  measurement_tool: "Python tiktoken library"
+  measurement_command: "len(tiktoken.get_encoding('cl100k_base').encode(content))"
+
+notes:
+  - "Baseline established for troubleshooter agent"
+  - "Uses same tokenizer as Claude models"
+  - "Token count includes all markdown formatting and YAML blocks"
