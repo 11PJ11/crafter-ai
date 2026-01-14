@@ -1,0 +1,140 @@
+{%- set skill_name = metadata.get('name', 'skill') -%}
+{%- macro escape_yaml_value(value) -%}
+{#- YAML escaping for special characters #}
+{%- if value is none -%}
+null
+{%- elif value is string -%}
+{%- if ':' in value or '"' in value or "'" in value or '\n' in value or value.startswith('#') or value.startswith('&') or value.startswith('*') or value.startswith('[') or value.startswith('{') -%}
+"{{ value | replace('"', '\\"') | replace('\n', '\\n') }}"
+{%- else -%}
+{{ value }}
+{%- endif -%}
+{%- else -%}
+{{ value }}
+{%- endif -%}
+{%- endmacro -%}
+
+{#- ============================================================================ #}
+{#- REUSABLE TEMPLATE BLOCKS                                                    #}
+{#- ============================================================================ #}
+
+{%- macro render_frontmatter() %}
+---
+name: {{ escape_yaml_value(skill_name) }}
+{% if metadata.get('description') -%}
+description: {{ escape_yaml_value(metadata.get('description')) }}
+{% endif -%}
+{%- if metadata.get('wave') -%}
+wave: {{ metadata.get('wave') }}
+{% endif -%}
+{%- if metadata.get('phase') is not none -%}
+phase: {{ metadata.get('phase') }}
+{% endif -%}
+{%- if metadata.get('agents') -%}
+agents:
+{% for agent in metadata.agents -%}
+  - {{ agent }}
+{% endfor -%}
+{% endif -%}
+{%- if metadata.get('version') -%}
+version: {{ escape_yaml_value(metadata.get('version')) }}
+{% endif -%}
+---
+{%- endmacro -%}
+
+{%- macro render_skill_title() -%}
+# {{ skill_name | title | replace('-', ' ') }} Skill
+
+{% if metadata.get('description') -%}
+{{ metadata.get('description').split('\n')[0] }}
+{% endif %}
+{%- endmacro -%}
+
+{%- macro render_when_to_use() -%}
+{%- if sections.get('when_to_use') %}
+## When to Use
+
+{% for item in sections.when_to_use -%}
+- {{ item }}
+{% endfor %}
+{%- endif %}
+{%- endmacro -%}
+
+{%- macro render_guidelines() -%}
+{%- if sections.get('guidelines') %}
+## Guidelines
+
+{% for item in sections.guidelines -%}
+{{ loop.index }}. {{ item }}
+{% endfor %}
+{%- endif %}
+{%- endmacro -%}
+
+{%- macro render_examples() -%}
+{%- if sections.get('examples') %}
+## Examples
+
+{% for item in sections.examples -%}
+- {{ item }}
+{% endfor %}
+{%- endif %}
+{%- endmacro -%}
+
+{%- macro render_nwave_integration() -%}
+{%- if metadata.get('wave') or metadata.get('phase') or metadata.get('agents') %}
+## Integration with nWave
+
+{%- if metadata.get('wave') %}
+- **Wave**: {{ metadata.get('wave') }}
+{%- endif %}
+{%- if metadata.get('phase') is not none %}
+- **Phase**: {{ metadata.get('phase') }}
+{%- endif %}
+{%- if metadata.get('agents') %}
+- **Agent{% if metadata.agents | length > 1 %}s{% endif %}**: {{ metadata.agents | join(', ') }}
+{%- endif %}
+{% endif %}
+{%- endmacro -%}
+
+{%- macro render_embedded_knowledge_markers() -%}
+{%- if embed_markers is defined and embed_markers %}
+
+# ============================================================================
+# EMBEDDED KNOWLEDGE (injected at build time from embed/)
+# ============================================================================
+{%- for marker in embed_markers %}
+{{ marker.start_marker }}
+<!-- Content will be injected here at build time -->
+{{ marker.end_marker }}
+
+{%- endfor %}
+{%- elif sections.get('embed_knowledge') %}
+
+# ============================================================================
+# EMBEDDED KNOWLEDGE (injected at build time from embed/)
+# ============================================================================
+{%- for embed_file in sections.embed_knowledge %}
+<!-- BUILD:INJECT:START:{{ embed_file }} -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
+
+{%- endfor %}
+{%- endif %}
+{%- endmacro -%}
+
+{#- ============================================================================ #}
+{#- MAIN TEMPLATE COMPOSITION                                                  #}
+{#- ============================================================================ #}
+{{- render_frontmatter() }}
+
+{{ render_skill_title() }}
+
+{{ render_when_to_use() }}
+
+{{ render_guidelines() }}
+
+{{ render_examples() }}
+
+{{ render_nwave_integration() }}
+
+{{ render_embedded_knowledge_markers() }}

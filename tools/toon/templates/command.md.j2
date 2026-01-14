@@ -1,0 +1,166 @@
+{%- set command_name = metadata.get('name', 'command') -%}
+{%- set parent_agent = metadata.get('parent_agent', 'unknown') -%}
+{%- macro escape_yaml_value(value) -%}
+{#- YAML escaping for special characters #}
+{%- if value is none -%}
+null
+{%- elif value is string -%}
+{%- if ':' in value or '"' in value or "'" in value or '\n' in value or value.startswith('#') or value.startswith('&') or value.startswith('*') or value.startswith('[') or value.startswith('{') -%}
+"{{ value | replace('"', '\\"') | replace('\n', '\\n') }}"
+{%- else -%}
+{{ value }}
+{%- endif -%}
+{%- else -%}
+{{ value }}
+{%- endif -%}
+{%- endmacro -%}
+
+{#- ============================================================================ #}
+{#- REUSABLE TEMPLATE BLOCKS                                                    #}
+{#- ============================================================================ #}
+
+{%- macro render_frontmatter() %}
+---
+name: {{ escape_yaml_value(command_name) }}
+{% if metadata.get('description') -%}
+description: {{ escape_yaml_value(metadata.get('description')) }}
+{% endif -%}
+parent_agent: {{ escape_yaml_value(parent_agent) }}
+{% if metadata.get('version') -%}
+version: {{ escape_yaml_value(metadata.get('version')) }}
+{% endif -%}
+---
+{%- endmacro -%}
+
+{%- macro render_invocation_header() -%}
+# /{{ command_name }}
+
+**Command**: `/{{ command_name }}`
+**Parent Agent**: @{{ parent_agent }}
+{%- if metadata.get('description') %}
+**Purpose**: {{ metadata.get('description') }}
+{%- endif %}
+
+---
+{%- endmacro -%}
+
+{%- macro render_parameters() -%}
+{%- if metadata.get('parameters') %}
+## Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+{%- for param in metadata.parameters %}
+| `{{ param.name }}` | {{ param.type | default('any') }} | {{ 'Yes' if param.required else 'No' }} | {{ param.description | default('') }} |
+{%- endfor %}
+{%- endif %}
+{%- endmacro -%}
+
+{%- macro render_returns() -%}
+{%- if metadata.get('returns') %}
+## Returns
+
+{%- if metadata.returns.get('type') %}
+**Type**: `{{ metadata.returns.type }}`
+{%- endif %}
+
+{%- if metadata.returns.get('properties') %}
+| Property | Type | Description |
+|----------|------|-------------|
+{%- for prop_name, prop_value in metadata.returns.properties.items() %}
+| `{{ prop_name }}` | {{ prop_value.get('type', 'any') }} | {{ prop_value.get('description', '') }} |
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- endmacro -%}
+
+{%- macro render_prerequisites() -%}
+{%- if sections.get('prerequisites') %}
+## Prerequisites
+
+{%- if sections.prerequisites is iterable and sections.prerequisites is not string %}
+{%- for prereq in sections.prerequisites %}
+- [ ] {{ prereq }}
+{%- endfor %}
+{%- else %}
+{{ sections.prerequisites }}
+{%- endif %}
+{%- endif %}
+{%- endmacro -%}
+
+{%- macro render_workflow() -%}
+{%- if sections.get('workflow') %}
+## Workflow
+
+{%- if sections.workflow is mapping and sections.workflow.get('steps') %}
+{%- for step in sections.workflow.steps %}
+{{ loop.index }}. {{ step }}
+{%- endfor %}
+{%- elif sections.workflow is iterable and sections.workflow is not string %}
+{%- for step in sections.workflow %}
+{{ loop.index }}. {{ step }}
+{%- endfor %}
+{%- else %}
+{{ sections.workflow }}
+{%- endif %}
+{%- endif %}
+{%- endmacro -%}
+
+{%- macro render_success_criteria() -%}
+{%- if sections.get('success_criteria') %}
+## Success Criteria
+
+{%- if sections.success_criteria is iterable and sections.success_criteria is not string %}
+{%- for criterion in sections.success_criteria %}
+- [ ] {{ criterion }}
+{%- endfor %}
+{%- else %}
+{{ sections.success_criteria }}
+{%- endif %}
+{%- endif %}
+{%- endmacro -%}
+
+{%- macro render_embedded_knowledge_markers() -%}
+{%- if embed_markers is defined and embed_markers %}
+
+# ============================================================================
+# EMBEDDED KNOWLEDGE (injected at build time from embed/)
+# ============================================================================
+{%- for marker in embed_markers %}
+{{ marker.start_marker }}
+<!-- Content will be injected here at build time -->
+{{ marker.end_marker }}
+
+{%- endfor %}
+{%- elif sections.get('embed_knowledge') %}
+
+# ============================================================================
+# EMBEDDED KNOWLEDGE (injected at build time from embed/)
+# ============================================================================
+{%- for embed_file in sections.embed_knowledge %}
+<!-- BUILD:INJECT:START:{{ embed_file }} -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
+
+{%- endfor %}
+{%- endif %}
+{%- endmacro -%}
+
+{#- ============================================================================ #}
+{#- MAIN TEMPLATE COMPOSITION                                                  #}
+{#- ============================================================================ #}
+{{- render_frontmatter() }}
+
+{{ render_invocation_header() }}
+
+{{ render_parameters() }}
+
+{{ render_returns() }}
+
+{{ render_prerequisites() }}
+
+{{ render_workflow() }}
+
+{{ render_success_criteria() }}
+
+{{ render_embedded_knowledge_markers() }}
