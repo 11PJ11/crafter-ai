@@ -483,6 +483,8 @@ phases:
         motivation: "Clear requirements prevent scope creep"
         estimated_hours: 4
         dependencies: []  # step references like "1.2", "2.1"
+        step_type: "research"  # research|infrastructure|atdd
+        suggested_agent: "researcher"  # Optional: agent best suited
         acceptance_criteria:
           - "All user stories documented"
           - "Acceptance criteria defined"
@@ -494,6 +496,8 @@ phases:
         motivation: "Architecture guides implementation"
         estimated_hours: 6
         dependencies: ["1.1"]
+        step_type: "research"
+        suggested_agent: "solution-architect"
         acceptance_criteria:
           - "Component diagram created"
           - "Data flow documented"
@@ -509,6 +513,13 @@ phases:
         motivation: "Core functionality enables all features"
         estimated_hours: 16
         dependencies: ["1.2"]
+        step_type: "atdd"  # ATDD step with acceptance test
+        suggested_agent: "software-crafter"
+        suggested_scenario:  # Optional: mapped acceptance test
+          test_file: "tests/acceptance/core_module.feature"
+          scenario_name: "Create core module with basic functionality"
+          scenario_index: 0
+          test_format: "feature"  # Optional: auto-detected from extension
         acceptance_criteria:
           - "Core module passes all unit tests"
           - "API contracts fulfilled"
@@ -574,10 +585,76 @@ phases:
         description: "Evaluate and select OAuth2 provider"
         motivation: "Provider choice affects entire implementation"
         estimated_hours: 3
+        step_type: "research"  # Non-ATDD step
+        suggested_agent: "researcher"
         acceptance_criteria:
           - "Provider comparison documented"
           - "Cost analysis complete"
+
+  - number: 2
+    name: "Implementation"
+    purpose: "Implement OAuth2 authentication"
+    steps:
+      - number: 1
+        name: "OAuth2 Login Flow"
+        description: "Implement user login via OAuth2"
+        motivation: "Core authentication feature"
+        estimated_hours: 8
+        step_type: "atdd"  # ATDD step
+        suggested_agent: "software-crafter"
+        suggested_scenario:
+          test_file: "tests/acceptance/auth.feature"
+          scenario_name: "User logs in via OAuth2"
+          scenario_index: 0
+          test_format: "feature"  # Optional: auto-detected from extension
+        acceptance_criteria:
+          - "User can authenticate via OAuth2 provider"
+          - "JWT token generated after successful login"
 ```
+
+### Step Types (COSA - What to Do)
+
+The roadmap defines WHAT needs to be done. The `/nw:split` command determines HOW.
+
+**Valid step_type values:**
+
+| Type | Description | TDD Phases | Example |
+|------|-------------|------------|---------|
+| `atdd` | Acceptance Test Driven Development | All 14 phases | Feature implementation |
+| `research` | Investigation, analysis, documentation | Phases 0,6-13 (skip RED/GREEN) | Requirements analysis |
+| `infrastructure` | Setup, configuration, tooling | Phases 0,6-13 (skip RED/GREEN) | CI/CD pipeline setup |
+
+**Field Descriptions:**
+
+- **step_type**: Required. Indicates how `/nw:split` should generate the step file
+- **suggested_agent**: Optional. Recommended agent for execution (validated by split)
+- **suggested_scenario**: Optional. Mapped acceptance test for ATDD steps
+  - `test_file`: Path to acceptance test file (any format: .feature, .cs, .py, .js, .java, etc.)
+  - `scenario_name`: Business scenario/test method description
+  - `scenario_index`: 0-based index in test file (or test method name for xUnit-style)
+  - `test_format`: Optional. Test format hint (feature, pytest, jest, nunit, xunit, junit5)
+
+**Supported Test Formats:**
+
+| Format | Extension | Framework | Scenario Identifier |
+|--------|-----------|-----------|---------------------|
+| feature | .feature | Cucumber/SpecFlow/Behave | Scenario name |
+| pytest | .py | pytest-bdd, pytest | Test function name |
+| jest | .js/.ts | Jest | test() description |
+| nunit | .cs | NUnit | [Test] method name |
+| xunit | .cs | xUnit | [Fact] method name |
+| junit5 | .java | JUnit 5 | @Test method name |
+
+**Roadmap Responsibility (COSA):**
+- Define WHAT needs to be accomplished
+- Suggest appropriate agent and scenario mapping
+- Keep steps high-level and business-focused
+
+**Split Responsibility (COME):**
+- Validate suggested mappings against actual files
+- Generate detailed instructions
+- Create self_contained_context
+- Assign final execution_agent
 
 ## Next Steps
 
