@@ -153,6 +153,156 @@ class VersionParser:
 
 
 # =============================================================================
+# Source Change Analyzer
+# =============================================================================
+
+
+class SourceChangeAnalyzer:
+    """Analyze semantic changes in source files to guide documentation updates"""
+
+    @staticmethod
+    def get_yaml_diff(file_path: str) -> Dict:
+        """
+        Compare current YAML with HEAD version and identify semantic changes.
+        Returns dict with added, removed, modified items.
+        """
+        changes = {
+            "commands_added": [],
+            "commands_removed": [],
+            "commands_modified": [],
+            "agents_added": [],
+            "agents_removed": [],
+            "agents_modified": [],
+            "other_changes": [],
+        }
+
+        # Get current content
+        current_path = Path(file_path)
+        if not current_path.exists():
+            return changes
+
+        try:
+            with open(current_path, "r", encoding="utf-8") as f:
+                current_data = yaml.safe_load(f) or {}
+        except Exception:
+            return changes
+
+        # Get HEAD content
+        result = subprocess.run(
+            ["git", "show", f"HEAD:{file_path}"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+        if result.returncode != 0:
+            # New file - everything is "added"
+            if "commands" in current_data:
+                changes["commands_added"] = list(current_data["commands"].keys())
+            if "agents" in current_data:
+                changes["agents_added"] = list(current_data["agents"].keys())
+            return changes
+
+        try:
+            head_data = yaml.safe_load(result.stdout) or {}
+        except Exception:
+            return changes
+
+        # Compare commands
+        current_commands = set(current_data.get("commands", {}).keys())
+        head_commands = set(head_data.get("commands", {}).keys())
+
+        changes["commands_added"] = list(current_commands - head_commands)
+        changes["commands_removed"] = list(head_commands - current_commands)
+
+        # Check for modified commands
+        for cmd in current_commands & head_commands:
+            if current_data["commands"].get(cmd) != head_data["commands"].get(cmd):
+                changes["commands_modified"].append(cmd)
+
+        # Compare agents
+        current_agents = set(current_data.get("agents", {}).keys())
+        head_agents = set(head_data.get("agents", {}).keys())
+
+        changes["agents_added"] = list(current_agents - head_agents)
+        changes["agents_removed"] = list(head_agents - current_agents)
+
+        # Check for modified agents
+        for agent in current_agents & head_agents:
+            if current_data["agents"].get(agent) != head_data["agents"].get(agent):
+                changes["agents_modified"].append(agent)
+
+        # Track other top-level changes
+        current_keys = set(current_data.keys()) - {"commands", "agents"}
+        head_keys = set(head_data.keys()) - {"commands", "agents"}
+
+        for key in current_keys | head_keys:
+            if current_data.get(key) != head_data.get(key):
+                changes["other_changes"].append(key)
+
+        return changes
+
+    @staticmethod
+    def has_meaningful_changes(changes: Dict) -> bool:
+        """Check if there are meaningful changes to report"""
+        return any(
+            changes.get(key)
+            for key in [
+                "commands_added",
+                "commands_removed",
+                "commands_modified",
+                "agents_added",
+                "agents_removed",
+                "agents_modified",
+                "other_changes",
+            ]
+        )
+
+    @staticmethod
+    def generate_update_guidance(changes: Dict, source_file: str) -> List[str]:
+        """Generate specific update instructions based on detected changes"""
+        guidance = []
+
+        if changes.get("commands_added"):
+            for cmd in changes["commands_added"]:
+                guidance.append(
+                    f"ADD documentation for new command '{cmd}' from {source_file}"
+                )
+
+        if changes.get("commands_removed"):
+            for cmd in changes["commands_removed"]:
+                guidance.append(f"REMOVE documentation for deleted command '{cmd}'")
+
+        if changes.get("commands_modified"):
+            for cmd in changes["commands_modified"]:
+                guidance.append(
+                    f"UPDATE documentation for modified command '{cmd}' from {source_file}"
+                )
+
+        if changes.get("agents_added"):
+            for agent in changes["agents_added"]:
+                guidance.append(
+                    f"ADD documentation for new agent '{agent}' from {source_file}"
+                )
+
+        if changes.get("agents_removed"):
+            for agent in changes["agents_removed"]:
+                guidance.append(f"REMOVE documentation for deleted agent '{agent}'")
+
+        if changes.get("agents_modified"):
+            for agent in changes["agents_modified"]:
+                guidance.append(
+                    f"UPDATE documentation for modified agent '{agent}' from {source_file}"
+                )
+
+        if changes.get("other_changes"):
+            for key in changes["other_changes"]:
+                guidance.append(f"REVIEW changes to '{key}' section in {source_file}")
+
+        return guidance
+
+
+# =============================================================================
 # Git Integration
 # =============================================================================
 
@@ -413,6 +563,20 @@ class DocumentationVersionValidator:
         ]
         invalid_version = [e for e in self.errors if e.error_type == "INVALID_VERSION"]
 
+        # Analyze semantic changes for source files
+        source_changes_map: Dict[str, Dict] = {}
+        all_update_guidance: List[str] = []
+
+        for error in version_not_bumped:
+            if error.file.endswith(".yaml") or error.file.endswith(".yml"):
+                changes = SourceChangeAnalyzer.get_yaml_diff(error.file)
+                if SourceChangeAnalyzer.has_meaningful_changes(changes):
+                    source_changes_map[error.file] = changes
+                    guidance = SourceChangeAnalyzer.generate_update_guidance(
+                        changes, error.file
+                    )
+                    all_update_guidance.extend(guidance)
+
         # Build resolution steps
         resolution_steps = []
         step_num = 1
@@ -444,6 +608,64 @@ class DocumentationVersionValidator:
             set(e.file for e in version_not_bumped + dependent_outdated)
         )
 
+        # Build version_not_bumped errors with semantic changes
+        version_not_bumped_errors = []
+        for e in version_not_bumped:
+            error_entry = {
+                "file": e.file,
+                "current_version": e.current_version,
+                "reason": e.reason,
+                "required_actions": e.required_actions,
+            }
+            # Add semantic changes if available
+            if e.file in source_changes_map:
+                error_entry["source_changes"] = source_changes_map[e.file]
+                error_entry["update_guidance"] = (
+                    SourceChangeAnalyzer.generate_update_guidance(
+                        source_changes_map[e.file], e.file
+                    )
+                )
+            version_not_bumped_errors.append(error_entry)
+
+        # Build dependent_outdated errors with upstream changes
+        dependent_outdated_errors = []
+        for e in dependent_outdated:
+            # Extract source file from reason (format: "Dependency X updated to Y")
+            source_file = None
+            for src in source_changes_map.keys():
+                if src in e.reason:
+                    source_file = src
+                    break
+
+            error_entry = {
+                "file": e.file,
+                "current_version": e.current_version,
+                "required_version_minimum": e.expected_version,
+                "reason": e.reason,
+                "sections_to_update": [
+                    {
+                        "section_id": s.section_id,
+                        "location": s.location,
+                        "description": s.description,
+                        "source": s.source,
+                        "update_instructions": s.update_instructions,
+                    }
+                    for s in e.sections_to_update
+                ],
+                "required_actions": e.required_actions,
+            }
+
+            # Add upstream source changes if available
+            if source_file and source_file in source_changes_map:
+                error_entry["upstream_changes"] = source_changes_map[source_file]
+                error_entry["update_guidance"] = (
+                    SourceChangeAnalyzer.generate_update_guidance(
+                        source_changes_map[source_file], source_file
+                    )
+                )
+
+            dependent_outdated_errors.append(error_entry)
+
         return {
             "error_type": "VERSION_VALIDATION_FAILED",
             "blocking": True,
@@ -456,6 +678,7 @@ class DocumentationVersionValidator:
                 "version_not_bumped": len(version_not_bumped),
                 "dependents_outdated": len(dependent_outdated),
             },
+            "source_changes_detected": source_changes_map,
             "errors": {
                 "invalid_version_format": [
                     {
@@ -465,41 +688,15 @@ class DocumentationVersionValidator:
                     }
                     for e in invalid_version
                 ],
-                "version_not_bumped": [
-                    {
-                        "file": e.file,
-                        "current_version": e.current_version,
-                        "reason": e.reason,
-                        "required_actions": e.required_actions,
-                    }
-                    for e in version_not_bumped
-                ],
-                "dependents_outdated": [
-                    {
-                        "file": e.file,
-                        "current_version": e.current_version,
-                        "required_version_minimum": e.expected_version,
-                        "reason": e.reason,
-                        "sections_to_update": [
-                            {
-                                "section_id": s.section_id,
-                                "location": s.location,
-                                "description": s.description,
-                                "source": s.source,
-                                "update_instructions": s.update_instructions,
-                            }
-                            for s in e.sections_to_update
-                        ],
-                        "required_actions": e.required_actions,
-                    }
-                    for e in dependent_outdated
-                ],
+                "version_not_bumped": version_not_bumped_errors,
+                "dependents_outdated": dependent_outdated_errors,
             },
             "resolution_steps": resolution_steps,
             "llm_guidance": {
                 "task": "Update documentation files to match source configuration versions",
                 "files_to_read": files_to_read,
                 "files_to_edit": files_to_edit,
+                "semantic_update_guidance": all_update_guidance,
                 "validation": "Ensure all version fields are updated and dependencies synchronized",
             },
         }
