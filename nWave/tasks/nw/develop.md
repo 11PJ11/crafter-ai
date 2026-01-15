@@ -31,6 +31,27 @@ Execute a **complete DEVELOP wave** that orchestrates:
 - **Progress Tracking**: Resume capability via `.develop-progress.json`
 - **Zero-Tolerance Validation**: All tests must pass, all reviews must approve
 
+### Target Project Prerequisites
+
+**⚠️ REQUIREMENTS**: The target project where `/nw:develop` is executed must have:
+
+| Prerequisite | Version | Purpose |
+|-------------|---------|---------|
+| **Python 3** | 3.8+ | Required for hook scripts and validation |
+| **pre-commit** | 2.0+ | Framework for git hook management |
+| **pip** | Latest | To install pre-commit if missing |
+
+**Installation check** (run in target project):
+```bash
+# Check Python
+python3 --version  # Must be 3.8+
+
+# Check pre-commit
+pre-commit --version  # If missing: pip install pre-commit
+```
+
+> 💡 **Note**: The orchestrator will prompt to install `pre-commit` if not found, but Python must already be available on the system.
+
 ### Breaking Change Notice
 
 **⚠️ BREAKING CHANGE**: This is a complete redesign of the `/nw:develop` command.
