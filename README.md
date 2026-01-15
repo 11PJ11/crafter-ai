@@ -1,6 +1,6 @@
 # AI-Craft: Intelligent ATDD Pipeline with Specialized Agent Network
 
-<!-- version: 1.2.2 -->
+<!-- version: 1.2.3 -->
 
 🚀 **A systematic approach to software development using ATDD (Acceptance Test Driven Development) with intelligent AI agent orchestration**
 
@@ -257,11 +257,61 @@ End-to-end update automation: build → uninstall → install → validate.
 
 ---
 
-### Future: Pre-commit Hook Integration (TODO)
+### Pre-commit Hooks
 
-The following script categories are currently maintained for manual execution but are **candidates for future pre-commit hook automation** to enforce quality gates before commits:
+AI-Craft uses the [pre-commit](https://pre-commit.com/) framework for automated quality gates.
 
-#### Category 3: Validation Scripts (13KB total)
+#### Installation (New Machine)
+
+```bash
+# Install pre-commit
+pip install pre-commit
+
+# OR with pipx (recommended)
+pipx install pre-commit
+
+# Activate hooks in repository
+cd ai-craft
+pre-commit install
+```
+
+#### Active Hooks
+
+| Hook | Description |
+|------|-------------|
+| `nwave-version-bump` | Auto-increments version when nWave/tools files modified |
+| `pytest-validation` | Runs full test suite (58 tests) |
+| `docs-version-validation` | Validates documentation version sync |
+| `ruff` | Python linting (replaces flake8, isort) |
+| `ruff-format` | Python formatting (replaces black) |
+| `trailing-whitespace` | Removes trailing whitespace |
+| `end-of-file-fixer` | Ensures files end with newline |
+| `check-yaml` | Validates YAML syntax |
+| `check-json` | Validates JSON syntax |
+| `check-merge-conflict` | Detects merge conflict markers |
+| `detect-private-key` | Prevents committing private keys |
+
+#### Manual Run
+
+```bash
+# Run all hooks on all files
+pre-commit run --all-files
+
+# Run specific hook
+pre-commit run ruff --all-files
+```
+
+#### Hook Scripts (Versioned)
+
+- `scripts/hooks/version-bump.sh` - Version auto-increment logic
+- `scripts/hooks/validate-tests.sh` - Pytest validation wrapper
+- `scripts/hooks/validate-docs.sh` - Documentation version validation
+
+---
+
+### Additional Validation Scripts
+
+#### Validation Scripts (13KB total)
 **Purpose**: Agent compliance and structure validation
 
 Scripts:
@@ -270,36 +320,14 @@ Scripts:
 - `validate-agent-compliance.sh` (shell wrapper)
 - `validate-reviewers.py` (reviewer agent validation)
 
-**Potential pre-commit use**: Validate agent file structure, YAML frontmatter, required sections, and compliance with agent template specification before allowing commits.
-
 ---
 
-#### Category 4: Adversarial Security Testing (67KB total)
+#### Adversarial Security Testing (67KB total)
 **Purpose**: Security framework validation through adversarial testing
 
 Scripts:
-- `run-adversarial-tests.py` (29KB) - Test case definitions
-  - 258 security tests across 4 categories
-  - Prompt injection (PI-001 to PI-004)
-  - Jailbreak attempts (JB-001+)
-  - Credential access (CA-001+)
-  - Tool misuse (TM-001+)
+- `run-adversarial-tests.py` (29KB) - 258 security tests across 4 categories
 - `execute-adversarial-tests.py` (38KB) - Test execution framework
-  - Mode 1: Auto - validates security framework structure
-  - Mode 2: Manual - generates test execution scripts
-
-**Potential pre-commit use**: Run automated security framework structure validation (Mode 1) to ensure agent security patterns are maintained before allowing commits. Full adversarial test suite could run in CI/CD.
-
----
-
-#### Category 5: Development Tools (21.6KB total)
-**Purpose**: Agent generation and backup utilities
-
-Scripts:
-- `create-reviewer-agents.py` (4.6KB) - Generates reviewer agents from main agents
-- `enhanced-backup-system.sh` (17KB) - Timestamped backups with compression
-
-**Potential pre-commit use**: Evaluate if backup automation should trigger on certain commit patterns (e.g., before major refactorings).
 
 ---
 
@@ -369,9 +397,10 @@ The LLM reads the error, updates the specified files and sections, bumps version
 
 ### System Files
 
+- **`.pre-commit-config.yaml`** - Pre-commit hooks configuration (versioned)
 - **`.dependency-map.yaml`** - Dependency relationships and validation rules
+- **`scripts/hooks/`** - Hook scripts (version-bump, validate-tests, validate-docs)
 - **`scripts/validate-documentation-versions.py`** - Core validation engine
-- **`.git/hooks/pre-commit`** - Enforcement point (Phase 1: tests, Phase 2: versions)
 
 ### Emergency Bypass
 
