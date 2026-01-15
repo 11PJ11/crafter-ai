@@ -51,43 +51,177 @@ NWAVE_HOOKS_CONFIG = """
 """
 
 NWAVE_TDD_VALIDATOR_SCRIPT = '''#!/usr/bin/env python3
-"""nWave TDD Phase Validator - Pre-commit hook."""
+"""
+nWave TDD Phase Validator - Pre-commit hook
+
+Validates that all 14 TDD phases are properly executed before allowing commits.
+Blocks commits with incomplete phase execution.
+
+Exit codes:
+    0 - Validation passed (or no step files staged)
+    1 - Validation failed (phases incomplete)
+"""
 import sys
 import json
+import re
+import subprocess
 from pathlib import Path
+from typing import List, Dict, Any, Tuple
 
-def main():
-    """Validate TDD phases if .develop-progress.json exists."""
-    progress_file = Path(".develop-progress.json")
+# Required TDD phases in order (14 total)
+REQUIRED_PHASES = [
+    "PREPARE",
+    "RED_ACCEPTANCE",
+    "RED_UNIT",
+    "GREEN_UNIT",
+    "CHECK_ACCEPTANCE",
+    "GREEN_ACCEPTANCE",
+    "REVIEW",
+    "REFACTOR_L1",
+    "REFACTOR_L2",
+    "REFACTOR_L3",
+    "REFACTOR_L4",
+    "POST_REFACTOR_REVIEW",
+    "FINAL_VALIDATE",
+    "COMMIT",
+]
 
-    if not progress_file.exists():
-        # No active develop session - allow commit
-        print("nWave TDD: No active develop session")
-        return 0
+# Valid prefixes for SKIPPED phases that allow commit
+VALID_SKIP_PREFIXES = [
+    "BLOCKED_BY_DEPENDENCY:",
+    "NOT_APPLICABLE:",
+    "APPROVED_SKIP:",
+]
+
+
+def get_staged_step_files() -> List[str]:
+    """Get list of step files staged for commit."""
+    try:
+        result = subprocess.run(
+            ["git", "diff", "--cached", "--name-only", "--diff-filter=ACM"],
+            capture_output=True, text=True, check=True, timeout=10
+        )
+        files = result.stdout.strip().split("\\n")
+
+        # Filter for step files
+        step_patterns = [
+            re.compile(r"steps/\\d+-\\d+\\.json$"),
+            re.compile(r"docs/.*/steps/\\d+-\\d+\\.json$"),
+        ]
+
+        return [f for f in files if f and any(p.search(f) for p in step_patterns)]
+    except Exception:
+        return []
+
+
+def validate_skipped_phase(entry: Dict[str, Any]) -> Tuple[bool, str]:
+    """Validate that a SKIPPED phase has proper justification."""
+    blocked_by = entry.get("blocked_by", "")
+
+    if not blocked_by:
+        return False, "SKIPPED phase missing blocked_by reason"
+
+    for prefix in VALID_SKIP_PREFIXES:
+        if blocked_by.startswith(prefix):
+            return True, ""
+
+    return False, f"SKIPPED phase has invalid blocked_by: {blocked_by}"
+
+
+def validate_step_file(file_path: str) -> Tuple[bool, List[Dict[str, Any]]]:
+    """Validate a step file has all TDD phases properly executed."""
+    issues: List[Dict[str, Any]] = []
 
     try:
-        progress = json.loads(progress_file.read_text())
-        current_step = progress.get("current_step")
-
-        if current_step:
-            phase_log = progress.get("phase_execution_log", {})
-            step_phases = phase_log.get(current_step, [])
-
-            # Check if minimum phases completed (at least RED phase)
-            if len(step_phases) < 1:
-                print(f"nWave TDD: Step {current_step} has no phases executed")
-                print("  Hint: Complete at least RED phase before committing")
-                # Warning only, don't block
-
-        print("nWave TDD: Phase validation passed")
-        return 0
-
-    except json.JSONDecodeError:
-        print("nWave TDD: Warning - Could not parse progress file")
-        return 0
+        with open(file_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except json.JSONDecodeError as e:
+        return False, [{"phase": "N/A", "issue": f"Invalid JSON: {e}"}]
+    except FileNotFoundError:
+        return False, [{"phase": "N/A", "issue": "File not found"}]
     except Exception as e:
-        print(f"nWave TDD: Warning - {e}")
+        return False, [{"phase": "N/A", "issue": f"Cannot read: {e}"}]
+
+    # Get phase execution log
+    tdd_cycle = data.get("tdd_cycle", {})
+    phase_log = tdd_cycle.get("phase_execution_log", [])
+
+    if not phase_log:
+        # Check if step is marked as not requiring TDD validation
+        if tdd_cycle.get("skip_validation"):
+            return True, []
+        return False, [{"phase": "N/A", "issue": "No phase_execution_log found"}]
+
+    # Build lookup by phase name
+    phase_lookup = {p.get("phase_name"): p for p in phase_log}
+
+    for i, phase_name in enumerate(REQUIRED_PHASES):
+        entry = phase_lookup.get(phase_name)
+
+        if not entry:
+            issues.append({"phase": phase_name, "issue": "Phase not in log"})
+            continue
+
+        status = entry.get("status", "NOT_EXECUTED")
+
+        if status == "EXECUTED":
+            outcome = entry.get("outcome")
+            if outcome not in ["PASS", "FAIL"]:
+                issues.append({"phase": phase_name, "issue": f"Invalid outcome: {outcome}"})
+
+        elif status == "IN_PROGRESS":
+            issues.append({"phase": phase_name, "issue": "Phase left IN_PROGRESS"})
+
+        elif status == "NOT_EXECUTED":
+            issues.append({"phase": phase_name, "issue": "Phase NOT_EXECUTED"})
+
+        elif status == "SKIPPED":
+            is_valid, msg = validate_skipped_phase(entry)
+            if not is_valid:
+                issues.append({"phase": phase_name, "issue": msg})
+
+    return len(issues) == 0, issues
+
+
+def main():
+    """Main validation entry point."""
+    # Check for staged step files
+    step_files = get_staged_step_files()
+
+    if not step_files:
+        # No step files staged - check for .develop-progress.json
+        progress_file = Path(".develop-progress.json")
+        if not progress_file.exists():
+            print("nWave TDD: No active session, no step files staged")
+            return 0
+
+        # Active session but no step files - warn but allow
+        print("nWave TDD: Active session, no step files staged (OK)")
         return 0
+
+    # Validate each staged step file
+    all_valid = True
+    print(f"nWave TDD: Validating {len(step_files)} step file(s)...")
+
+    for step_file in step_files:
+        is_valid, issues = validate_step_file(step_file)
+
+        if not is_valid:
+            all_valid = False
+            print(f"\\n❌ {step_file}:")
+            for issue in issues[:5]:  # Show first 5 issues
+                print(f"   • {issue['phase']}: {issue['issue']}")
+            if len(issues) > 5:
+                print(f"   ... and {len(issues) - 5} more issues")
+
+    if all_valid:
+        print("✅ nWave TDD: All phases validated")
+        return 0
+    else:
+        print("\\n❌ nWave TDD: COMMIT BLOCKED - Complete all 14 phases first")
+        print("   Phases: PREPARE → RED → GREEN → REVIEW → REFACTOR → COMMIT")
+        return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())
