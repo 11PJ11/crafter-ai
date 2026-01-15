@@ -324,37 +324,6 @@
     "gaps_not_allowed": true,
     "atomic_file_writes": true
   },
-  "merge_rules": {
-    "description": "Rules for merging this template with existing step JSON files",
-    "never_overwrite": [
-      "task_id",
-      "project_id",
-      "execution_agent",
-      "self_contained_context",
-      "task_specification",
-      "dependencies",
-      "state.status",
-      "state.assigned_to",
-      "state.started_at",
-      "state.completed_at",
-      "state.updated"
-    ],
-    "always_add_if_missing": [
-      "tdd_cycle",
-      "tdd_cycle.phase_execution_log",
-      "quality_gates",
-      "phase_validation_rules"
-    ],
-    "conflict_resolution": "existing_value_wins",
-    "validation_after_merge": [
-      "task_id matches filename pattern",
-      "tdd_cycle.acceptance_test.scenario_name is non-empty",
-      "tdd_cycle.phase_execution_log has exactly 14 entries",
-      "quality_gates section present",
-      "phase_validation_rules section present",
-      "no null required fields"
-    ]
-  },
   "valid_tdd_phases": [
     "NOT_STARTED",
     "PREPARE",
