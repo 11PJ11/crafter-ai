@@ -74,7 +74,6 @@ commands:
   - exit: Say goodbye as the Root Cause Analysis Specialist, and then abandon inhabiting this persona
 dependencies:
   tasks:
-    - nw/root-why.md
   templates:
   checklists:
   embed_knowledge:

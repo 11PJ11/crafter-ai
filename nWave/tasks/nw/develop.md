@@ -62,26 +62,64 @@ Execute a **complete DEVELOP wave** that orchestrates:
 4. ✅ **YOU** manage progress tracking and error handling
 5. ✅ **YOU** report completion summary
 
-**Agent Delegation Pattern (with explicit command invocation):**
+**Agent Delegation Pattern (with explicit command invocation and BOUNDARY):**
+
+⚠️ **CRITICAL: All Task invocations MUST include boundary instructions to prevent sub-agents from continuing the workflow beyond their assigned task.**
+
 ```python
+# BOUNDARY TEMPLATE - Include in ALL Task prompts:
+BOUNDARY_TEMPLATE = '''
+═══════════════════════════════════════════════════════════
+⚠️  TASK BOUNDARY - READ BEFORE EXECUTING
+═══════════════════════════════════════════════════════════
+YOUR ONLY TASK: {task_description}
+FORBIDDEN ACTIONS:
+  ❌ DO NOT execute other /nw: commands beyond your assigned task
+  ❌ DO NOT continue the workflow
+  ❌ DO NOT assume orchestrator responsibilities
+REQUIRED: Return control to orchestrator after completion
+═══════════════════════════════════════════════════════════
+
+{actual_command}
+'''
+
+# For baseline creation (STEP 3) - Use RESEARCHER agent
+Task(
+  subagent_type="researcher",  # NOT software-crafter - per baseline.md spec
+  prompt=BOUNDARY_TEMPLATE.format(
+      task_description="Create baseline.yaml measurement file",
+      actual_command='/nw:baseline "{feature_description}"'
+  ),
+  description="Create measurement baseline"
+)
+
 # For step execution (STEP 10)
 Task(
   subagent_type="software-crafter",
-  prompt='/nw:execute @software-crafter "docs/workflow/{project-id}/steps/01-03.json"',
+  prompt=BOUNDARY_TEMPLATE.format(
+      task_description="Execute step {step_id} with 14-phase TDD",
+      actual_command='/nw:execute @software-crafter "{step_file}"'
+  ),
   description="Execute step 01-03"
 )
 
 # For review (STEP 4, 6, 7, 9)
 Task(
   subagent_type="software-crafter-reviewer",  # or product-owner-reviewer
-  prompt='/nw:review @software-crafter-reviewer baseline "{artifact-path}"',
+  prompt=BOUNDARY_TEMPLATE.format(
+      task_description="Review {artifact_type} artifact",
+      actual_command='/nw:review @software-crafter-reviewer baseline "{artifact-path}"'
+  ),
   description="Review baseline"
 )
 
 # For roadmap creation (STEP 5)
 Task(
   subagent_type="solution-architect",
-  prompt='/nw:roadmap @solution-architect "{feature_description}"',
+  prompt=BOUNDARY_TEMPLATE.format(
+      task_description="Create implementation roadmap",
+      actual_command='/nw:roadmap @solution-architect "{feature_description}"'
+  ),
   description="Create implementation roadmap"
 )
 ```
@@ -90,6 +128,7 @@ Task(
 - ❌ Create a sub-agent to read this specification
 - ❌ Delegate orchestration to another agent
 - ❌ Skip validation checks or quality gates
+- ❌ Invoke Task without boundary instructions (causes workflow continuation bug)
 
 ---
 
@@ -1307,10 +1346,25 @@ STEP 12: Phase 9 - Report Completion
 
    a. Invoke baseline command via Task tool delegation:
    ```python
-   # Delegate to software-crafter sub-agent
+   # Delegate to researcher sub-agent (per baseline.md specification)
+   # CRITICAL: Include boundary instructions to prevent workflow continuation
    task_result = Task(
-       subagent_type="software-crafter",
-       prompt=f'/nw:baseline "{feature_description}"',
+       subagent_type="researcher",
+       prompt=f'''
+═══════════════════════════════════════════════════════════
+⚠️  TASK BOUNDARY - READ BEFORE EXECUTING
+═══════════════════════════════════════════════════════════
+YOUR ONLY TASK: Create baseline.yaml measurement file
+FORBIDDEN ACTIONS:
+  ❌ DO NOT execute /nw:roadmap
+  ❌ DO NOT execute /nw:split
+  ❌ DO NOT execute ANY other /nw: commands
+  ❌ DO NOT continue the workflow beyond baseline creation
+REQUIRED: Return control to orchestrator after completion
+═══════════════════════════════════════════════════════════
+
+/nw:baseline "{feature_description}"
+''',
        description="Create measurement baseline"
    )
    ```

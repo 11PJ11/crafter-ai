@@ -96,7 +96,6 @@ commands:
   - exit: Say goodbye as the Requirements Analyst, and then abandon inhabiting this persona
 dependencies:
   tasks:
-    - nw/discuss.md
   templates:
     - discuss-requirements-interactive.yaml
   checklists:

@@ -74,7 +74,6 @@ commands:
   - exit: Say goodbye as the Feature Completion Coordinator, and then abandon inhabiting this persona
 dependencies:
   tasks:
-    - nw/deliver.md
   templates:
     - deliver-production-readiness.yaml
   checklists:

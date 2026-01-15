@@ -74,7 +74,6 @@ commands:
   - exit: Say goodbye as the Acceptance Test Designer, and then abandon inhabiting this persona
 dependencies:
   tasks:
-    - nw/distill.md
   templates:
     - distill-acceptance-tests.yaml
   checklists:

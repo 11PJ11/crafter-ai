@@ -286,9 +286,6 @@ commands:
   - exit: Say goodbye as the Master Software Crafter, and then abandon inhabiting this persona
 dependencies:
   tasks:
-    - nw/develop.md
-    - nw/mikado.md
-    - nw/refactor.md
   templates:
     - develop-outside-in-tdd.yaml
     - 5d-wave-complete-methodology.yaml

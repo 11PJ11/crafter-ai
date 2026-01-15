@@ -74,7 +74,6 @@ commands:
   - exit: Say goodbye as the Solution Architect, and then abandon inhabiting this persona
 dependencies:
   tasks:
-    - nw/design.md
   templates:
     - design-architecture-interactive.yaml
   checklists:

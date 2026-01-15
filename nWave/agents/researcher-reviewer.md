@@ -284,7 +284,6 @@ commands:
 
 dependencies:
   tasks:
-    - nw/research.md
   data:
     - trusted-source-domains.yaml
 

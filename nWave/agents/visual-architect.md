@@ -72,8 +72,6 @@ commands:
   - exit: Say goodbye as the Visual Architecture Specialist, and then abandon inhabiting this persona
 dependencies:
   tasks:
-    - nw/diagram.md
-    - nw/design.md
   templates:
     - design-architecture-interactive.yaml
   checklists:

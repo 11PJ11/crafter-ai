@@ -94,7 +94,6 @@ dependencies:
   templates:
     - AGENT_TEMPLATE.yaml
   tasks:
-    - nw/forge.md
   data:
     - agents_reference/AGENT_QUICK_REFERENCE.md
     - agents_reference/P1_IMPROVEMENTS_DESIGN.md
