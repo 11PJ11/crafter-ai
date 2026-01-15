@@ -264,12 +264,6 @@
     "all_14_phases_mandatory": true,
     "phase_documentation_required": true
   },
-  "tdd_state": {
-    "tdd_phase": "NOT_STARTED",
-    "tdd_phase_history": [],
-    "review_attempts": 0,
-    "refactor_level_completed": 0
-  },
   "phase_validation_rules": {
     "description": "Rules for validating phase execution status before commit",
     "all_phases_required": true,
@@ -349,7 +343,6 @@
       "tdd_cycle",
       "tdd_cycle.phase_execution_log",
       "quality_gates",
-      "tdd_state",
       "phase_validation_rules"
     ],
     "conflict_resolution": "existing_value_wins",

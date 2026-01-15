@@ -831,12 +831,6 @@ Each file (`{phase:02d}-{step:02d}.json`) is a complete, executable unit with em
     "all_14_phases_mandatory": true,
     "phase_documentation_required": true
   },
-  "tdd_state": {
-    "tdd_phase": "NOT_STARTED",
-    "tdd_phase_history": [],
-    "review_attempts": 0,
-    "refactor_level_completed": 0
-  },
   "phase_validation_rules": {
     "description": "Rules for validating phase execution status before commit",
     "all_phases_required": true,
@@ -916,7 +910,6 @@ Each file (`{phase:02d}-{step:02d}.json`) is a complete, executable unit with em
       "tdd_cycle",
       "tdd_cycle.phase_execution_log",
       "quality_gates",
-      "tdd_state",
       "phase_validation_rules"
     ],
     "conflict_resolution": "existing_value_wins",
@@ -1163,7 +1156,7 @@ The executing agent can only UPDATE existing phase entries, not create new ones.
 2. **First Step Walking Skeleton**: Step 01-01 has `is_walking_skeleton: true` (if ATDD)
 3. **Test File Agnostic**: Supports .feature, .cs, .py, .js, .java, .ts, etc.
 4. **Mock Boundaries from Architecture**: Analyze docs/architecture to populate allowed_ports
-5. **TDD Phase Tracking**: Initialize `tdd_phase: "NOT_STARTED"`
+5. **TDD Phase Tracking**: Initialize all 14 phases in `tdd_cycle.phase_execution_log` with status `"NOT_EXECUTED"`
 6. **Step Type Handling**: Process `step_type` from roadmap (atdd, research, infrastructure)
 
 ### Step Type Processing (COME - How to Execute)
