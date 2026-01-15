@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 # Version - Must match nWave/framework-catalog.yaml version
-__version__ = "1.2.14"
+__version__ = "1.2.18"
 
 # Required TDD phases (14 total)
 REQUIRED_PHASES = [
