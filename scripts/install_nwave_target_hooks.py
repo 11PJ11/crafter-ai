@@ -23,7 +23,7 @@ from typing import Tuple
 # VERSION - Must match nWave/framework-catalog.yaml version
 # ══════════════════════════════════════════════════════════════════════════════
 
-__version__ = "1.2.22"
+__version__ = "1.2.26"
 
 # ══════════════════════════════════════════════════════════════════════════════
 # CONFIGURATION

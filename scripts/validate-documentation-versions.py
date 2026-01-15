@@ -14,6 +14,9 @@ Exit Codes:
     2 - Configuration error (dependency map missing/invalid)
 """
 
+# Version - Must match nWave/framework-catalog.yaml version
+__version__ = "1.2.26"
+
 import sys
 import json
 import yaml

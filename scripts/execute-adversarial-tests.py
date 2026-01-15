@@ -3,9 +3,6 @@
 Adversarial Testing Execution Framework (Dual-Mode)
 Executes Layer 3 adversarial tests for all AI-Craft agents
 
-Version: 2.0
-Date: 2025-10-06
-
 MODES:
   Mode 1: Automated Framework Validation
     - Parse agent files for security framework components
@@ -24,6 +21,9 @@ Usage:
   python3 scripts/execute-adversarial-tests.py --mode manual
   python3 scripts/execute-adversarial-tests.py --mode both (default)
 """
+
+# Version - Must match nWave/framework-catalog.yaml version
+__version__ = "1.2.26"
 
 import argparse
 import json

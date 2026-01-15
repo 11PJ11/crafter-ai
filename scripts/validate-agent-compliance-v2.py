@@ -2,9 +2,10 @@
 """
 Automated Agent Compliance Validation v2
 Validates all agents against AGENT_TEMPLATE.yaml v1.2
-Version: 2.0 (Improved keyword-based validation)
-Date: 2025-10-06
 """
+
+# Version - Must match nWave/framework-catalog.yaml version
+__version__ = "1.2.26"
 
 import sys
 import re

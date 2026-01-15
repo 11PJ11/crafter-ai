@@ -8,6 +8,9 @@ Validates all 12 peer reviewer agents have:
 - Proper reviewer configuration
 """
 
+# Version - Must match nWave/framework-catalog.yaml version
+__version__ = "1.2.26"
+
 import json
 import sys
 from pathlib import Path

@@ -180,6 +180,59 @@ python3 install_nwave_target_hooks.py
 python3 ~/.claude/scripts/install_nwave_target_hooks.py
 ```
 
+#### Ensuring Latest Script Versions
+
+**CRITICAL**: The orchestrator MUST check and update scripts before running. Outdated scripts can cause format validation failures.
+
+```python
+import subprocess
+import re
+from pathlib import Path
+
+def check_and_update_scripts():
+    """Check script versions and update if outdated."""
+    scripts_dir = Path.home() / ".claude" / "scripts"
+
+    # Get framework version from catalog (or from installed manifest)
+    manifest_path = Path.home() / ".claude" / "ai-craft-manifest.txt"
+    if manifest_path.exists():
+        manifest = manifest_path.read_text()
+        match = re.search(r'Version:\s*(\d+\.\d+\.\d+)', manifest)
+        framework_version = match.group(1) if match else "0.0.0"
+    else:
+        framework_version = "0.0.0"
+
+    # Check each utility script
+    scripts_to_check = [
+        "install_nwave_target_hooks.py",
+        "validate_step_file.py"
+    ]
+
+    outdated = []
+    for script_name in scripts_to_check:
+        script_path = scripts_dir / script_name
+        if script_path.exists():
+            content = script_path.read_text()
+            match = re.search(r'__version__\s*=\s*["\'](\d+\.\d+\.\d+)["\']', content)
+            script_version = match.group(1) if match else "0.0.0"
+            if script_version < framework_version:
+                outdated.append(f"{script_name}: {script_version} < {framework_version}")
+
+    if outdated:
+        print("⚠️ Outdated scripts detected:")
+        for msg in outdated:
+            print(f"  - {msg}")
+        print("\n🔄 Re-run: bash ~/.claude/scripts/install-ai-craft.sh")
+        print("   Or download latest from: https://github.com/11PJ11/crafter-ai")
+        return False
+
+    print("✅ All scripts up-to-date")
+    return True
+
+# Run at startup
+check_and_update_scripts()
+```
+
 #### What the Installer Does
 
 The `install_nwave_target_hooks.py` script:

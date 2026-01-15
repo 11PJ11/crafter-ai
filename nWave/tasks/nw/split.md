@@ -1067,9 +1067,31 @@ This is **NON-NEGOTIABLE**. The agent executing the step cannot add phases - the
 }
 ```
 
+**Per-Step Validation (MANDATORY)**:
+
+**CRITICAL**: After writing EACH step file, you MUST validate immediately:
+
+```bash
+# Validate EACH step file right after writing it
+python3 ~/.claude/scripts/validate_step_file.py docs/feature/{project-id}/steps/{step-id}.json
+
+# If validation fails:
+# 1. DO NOT proceed to next step
+# 2. Fix the step file immediately
+# 3. Re-validate until it passes
+```
+
+**Common Validation Failures to Avoid**:
+- ❌ Wrong phase names: "RED (Acceptance)" → ✅ Use "RED_ACCEPTANCE"
+- ❌ Missing `tdd_cycle.phase_execution_log` → ✅ Copy from schema template
+- ❌ Less than 14 phases → ✅ Include ALL 14 phases
+- ❌ Wrong fields: `step_id`, `phase_id` → ✅ Use `task_id`, no `phase_id`
+
+**Single Source of Truth**: `nWave/templates/step-tdd-cycle-schema.json`
+
 **Post-Generation Verification (MANDATORY)**:
 
-After generating ALL step files, you MUST run the validation script:
+After generating ALL step files, run validation on entire directory:
 
 ```bash
 python3 ~/.claude/scripts/validate_step_file.py --all docs/feature/{project-id}/steps/

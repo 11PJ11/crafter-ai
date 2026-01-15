@@ -4,6 +4,9 @@ Create Haiku-powered reviewer agents from base agents.
 Each reviewer agent is optimized for cost-efficient review operations.
 """
 
+# Version - Must match nWave/framework-catalog.yaml version
+__version__ = "1.2.26"
+
 import re
 from pathlib import Path
 

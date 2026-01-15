@@ -3,9 +3,6 @@
 Adversarial Testing Suite for AI-Craft Agents
 Executes Layer 3 (Adversarial Output Validation) and Agent Security tests
 
-Version: 1.0
-Date: 2025-10-05
-
 This script defines comprehensive adversarial tests for all 12 agents:
 - Agent Security Validation (universal): Prompt injection, jailbreak, credential access, tool misuse
 - Adversarial Output Validation (agent-type-specific): Challenge output quality and validity
@@ -13,6 +10,9 @@ This script defines comprehensive adversarial tests for all 12 agents:
 Note: Actual test execution requires agent runtime environment (Claude Code).
 This script defines test cases and generates test execution plan.
 """
+
+# Version - Must match nWave/framework-catalog.yaml version
+__version__ = "1.2.26"
 
 import json
 import sys
