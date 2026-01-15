@@ -486,11 +486,7 @@ Each file (`{phase:02d}-{step:02d}.json`) is a complete, executable unit with em
     "assigned_to": null,
     "started_at": null,
     "completed_at": null,
-    "updated": "current-timestamp",
-    "tdd_phase": "NOT_STARTED",
-    "tdd_phase_history": [],
-    "review_attempts": 0,
-    "refactor_level_completed": 0
+    "updated": "current-timestamp"
   },
   "tdd_cycle": {
     "acceptance_test": {
@@ -508,6 +504,10 @@ Each file (`{phase:02d}-{step:02d}.json`) is a complete, executable unit with em
       "in_memory_adapters": ["ANALYZED: available test adapters"]
     },
     "phase_execution_log": [
+      // MANDATORY: All 14 phases (copy from step-tdd-cycle-schema.json):
+      // PREPARE, RED_ACCEPTANCE, RED_UNIT, GREEN_UNIT, CHECK_ACCEPTANCE,
+      // GREEN_ACCEPTANCE, REVIEW, REFACTOR_L1, REFACTOR_L2, REFACTOR_L3,
+      // REFACTOR_L4, POST_REFACTOR_REVIEW, FINAL_VALIDATE, COMMIT
       // For ATDD: all 14 phases with status "NOT_EXECUTED"
       // For research/infrastructure: phases 1-5 with status "SKIPPED", blocked_by "NOT_APPLICABLE:..."
     ]
