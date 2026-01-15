@@ -332,6 +332,24 @@ install_framework() {
             info "  - DW commands: $dw_commands essential commands"
         fi
     fi
+
+    # Copy utility scripts for target projects
+    info "Installing utility scripts..."
+    local scripts_source="$PROJECT_ROOT/scripts"
+    local scripts_target="$CLAUDE_CONFIG_DIR/scripts"
+
+    mkdir -p "$scripts_target"
+
+    # Copy the nWave target hooks installer
+    if [[ -f "$scripts_source/install_nwave_target_hooks.py" ]]; then
+        cp "$scripts_source/install_nwave_target_hooks.py" "$scripts_target/"
+        info "Installed install_nwave_target_hooks.py"
+    fi
+
+    local copied_scripts=$(find "$scripts_target" -name "*.py" 2>/dev/null | wc -l)
+    if [[ $copied_scripts -gt 0 ]]; then
+        info "Installed $copied_scripts utility script(s)"
+    fi
 }
 
 # Validate installation
