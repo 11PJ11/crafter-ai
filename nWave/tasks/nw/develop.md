@@ -136,58 +136,144 @@ Task(
 
 ### Pre-Requisite: TDD Phase Validation Hook Installation
 
-Before executing the main phases, the orchestrator verifies and optionally installs the TDD phase validation hook in the target project.
+Before executing the main phases, the orchestrator verifies and optionally installs the TDD phase validation hooks in the target project **using the pre-commit framework** (https://pre-commit.com/).
 
-#### Hook Detection
+> ⚠️ **IMPORTANT**: Hooks are installed via the **pre-commit framework**, NOT directly in `.git/hooks/`. This ensures:
+> - Hooks are version-controlled in `.pre-commit-config.yaml`
+> - Consistent hook behavior across team members
+> - Easy updates and maintenance
+
+#### Framework and Hook Detection
 
 ```python
 import os
+import subprocess
 import sys
+import yaml
 
-def get_hook_path():
-    """Get the pre-commit hook path, cross-platform."""
-    git_dir = ".git"
-    if not os.path.isdir(git_dir):
-        return None
-    hooks_dir = os.path.join(git_dir, "hooks")
-    return os.path.join(hooks_dir, "pre-commit")
-
-def check_hook_installed():
-    """Check if nWave TDD hook is installed."""
-    hook_path = get_hook_path()
-    if not hook_path or not os.path.exists(hook_path):
+def check_precommit_framework_installed():
+    """Check if pre-commit framework is installed."""
+    try:
+        result = subprocess.run(
+            ["pre-commit", "--version"],
+            capture_output=True, text=True, check=False
+        )
+        return result.returncode == 0
+    except FileNotFoundError:
         return False
 
-    with open(hook_path, 'r', encoding='utf-8') as f:
-        content = f.read()
+def check_precommit_config_exists():
+    """Check if .pre-commit-config.yaml exists in project."""
+    return os.path.exists(".pre-commit-config.yaml")
 
-    return "nWave-TDD-PHASE-VALIDATION" in content
+def check_nwave_hooks_configured():
+    """Check if nWave TDD hooks are configured in .pre-commit-config.yaml."""
+    config_path = ".pre-commit-config.yaml"
+    if not os.path.exists(config_path):
+        return {"pre_commit": False, "post_commit": False}
+
+    try:
+        with open(config_path, 'r', encoding='utf-8') as f:
+            config = yaml.safe_load(f)
+
+        hooks_status = {"pre_commit": False, "post_commit": False}
+
+        for repo in config.get("repos", []):
+            if repo.get("repo") == "local":
+                for hook in repo.get("hooks", []):
+                    if hook.get("id") == "nwave-tdd-phase-validation":
+                        hooks_status["pre_commit"] = True
+                    if hook.get("id") == "nwave-bypass-detector":
+                        hooks_status["post_commit"] = True
+
+        return hooks_status
+    except Exception:
+        return {"pre_commit": False, "post_commit": False}
+
+def get_hook_installation_status():
+    """Get complete status of hook installation."""
+    return {
+        "framework_installed": check_precommit_framework_installed(),
+        "config_exists": check_precommit_config_exists(),
+        "hooks": check_nwave_hooks_configured()
+    }
 ```
 
-#### User Prompt for Hook Installation
+#### User Prompts for Installation
 
-If the hook is not installed, present the user with options:
+**Step 1: Check Framework Installation**
 
+```python
+status = get_hook_installation_status()
+
+if not status["framework_installed"]:
+    # Framework not installed - ask user
+    print("""
+╔═══════════════════════════════════════════════════════════════════╗
+║  Pre-commit Framework Required                                     ║
+╠═══════════════════════════════════════════════════════════════════╣
+║  nWave uses the pre-commit framework for TDD validation hooks.    ║
+║                                                                    ║
+║  The framework:                                                    ║
+║  ✓ Manages git hooks via version-controlled config                 ║
+║  ✓ Ensures consistent hooks across team members                    ║
+║  ✓ Allows easy hook updates and maintenance                        ║
+║                                                                    ║
+║  Installation command:                                             ║
+║    pip install pre-commit                                          ║
+║                                                                    ║
+║  [1] Yes, install pre-commit framework (Recommended)               ║
+║  [2] No, skip hook installation (Not recommended)                  ║
+╚═══════════════════════════════════════════════════════════════════╝
+""")
+    # Use AskUserQuestion tool with options
 ```
-+-------------------------------------------------------------+
-|  nWave TDD Phase Validation Hook                             |
-+-------------------------------------------------------------+
-|  This project uses 14-phase TDD methodology.                 |
-|  A pre-commit hook enforces that ALL phases are              |
-|  completed before allowing commits.                          |
-|                                                              |
-|  The hook will:                                              |
-|  [OK] Check step files have all 14 phases executed           |
-|  [OK] Block commits with incomplete phases                   |
-|  [OK] Show which phases are missing                          |
-|  [OK] Work on Windows, Mac, and Linux                        |
-|                                                              |
-|  Install pre-commit hook?                                    |
-|                                                              |
-|  [1] Yes, install the hook (Recommended)                     |
-|  [2] No, skip hook installation                              |
-|  [3] Show me the hook code first                             |
-+-------------------------------------------------------------+
+
+**Step 2: Install Framework if Approved**
+
+```python
+def install_precommit_framework():
+    """Install pre-commit framework via pip."""
+    print("[INFO] Installing pre-commit framework...")
+    result = subprocess.run(
+        [sys.executable, "-m", "pip", "install", "pre-commit"],
+        capture_output=True, text=True
+    )
+    if result.returncode == 0:
+        print("[OK] Pre-commit framework installed successfully")
+        return True
+    else:
+        print(f"[ERROR] Failed to install pre-commit: {result.stderr}")
+        return False
+```
+
+**Step 3: Configure nWave Hooks**
+
+```python
+if not status["hooks"]["pre_commit"] or not status["hooks"]["post_commit"]:
+    missing = []
+    if not status["hooks"]["pre_commit"]:
+        missing.append("TDD Phase Validation (pre-commit)")
+    if not status["hooks"]["post_commit"]:
+        missing.append("Bypass Detector (post-commit)")
+
+    print(f"""
+╔═══════════════════════════════════════════════════════════════════╗
+║  nWave TDD Hooks Configuration                                     ║
+╠═══════════════════════════════════════════════════════════════════╣
+║  Missing hooks: {', '.join(missing):<43} ║
+║                                                                    ║
+║  These hooks will:                                                 ║
+║  ✓ Enforce 14-phase TDD completion before commits                  ║
+║  ✓ Block commits with incomplete phases                            ║
+║  ✓ Detect and log bypass attempts                                  ║
+║  ✓ Work on Windows, Mac, and Linux                                 ║
+║                                                                    ║
+║  [1] Yes, configure nWave hooks (Recommended)                      ║
+║  [2] No, skip hook configuration                                   ║
+║  [3] Show me the hook configuration first                          ║
+╚═══════════════════════════════════════════════════════════════════╝
+""")
 ```
 
 #### Embedded Hook Scripts
@@ -986,91 +1072,144 @@ if __name__ == "__main__":
 """
 <!-- EMBED_END:nWave/hooks/post_commit_bypass_logger.py -->
 
-#### Hook Installation Logic
+#### Hook Installation Logic (via Pre-commit Framework)
 
 ```python
-import stat
+import os
+import subprocess
 import tempfile
 
-def install_hook():
-    """Install the nWave TDD pre-commit hook from embedded source."""
-    hook_path = get_hook_path()
-    hooks_dir = os.path.dirname(hook_path)
+# nWave hook configuration for .pre-commit-config.yaml
+NWAVE_PRECOMMIT_CONFIG = """
+# nWave TDD Phase Validation Hooks
+# Added by /nw:develop command
+# Documentation: https://pre-commit.com/
 
-    # Ensure hooks directory exists
+repos:
+  - repo: local
+    hooks:
+      # Pre-commit: Validate TDD phase completion
+      - id: nwave-tdd-phase-validation
+        name: nWave TDD Phase Validation
+        entry: python scripts/hooks/nwave-tdd-validator.py
+        language: python
+        stages: [pre-commit]
+        pass_filenames: false
+        always_run: true
+        description: "Enforces 14-phase TDD completion before commits"
+
+      # Post-commit: Detect bypass attempts
+      - id: nwave-bypass-detector
+        name: nWave Bypass Detector
+        entry: python scripts/hooks/nwave-bypass-detector.py
+        language: python
+        stages: [post-commit]
+        pass_filenames: false
+        always_run: true
+        description: "Logs when pre-commit validation was bypassed"
+"""
+
+def create_hook_scripts_directory():
+    """Create scripts/hooks/ directory and write hook scripts."""
+    hooks_dir = "scripts/hooks"
     os.makedirs(hooks_dir, exist_ok=True)
 
-    # Check if pre-commit already exists
-    if os.path.exists(hook_path):
-        with open(hook_path, 'r', encoding='utf-8') as f:
-            existing = f.read()
+    # Write pre-commit TDD validator script
+    validator_path = os.path.join(hooks_dir, "nwave-tdd-validator.py")
+    with open(validator_path, 'w', encoding='utf-8') as f:
+        f.write(PRE_COMMIT_TDD_PHASES_PY)
+    print(f"[OK] Created {validator_path}")
 
-        if "nWave-TDD-PHASE-VALIDATION" in existing:
-            print("[OK] nWave pre-commit hook already installed")
-            # Still ensure post-commit is installed
-            install_post_commit_hook()
-            print("[OK] nWave post-commit hook verified")
-            return True
-
-        # Backup existing hook
-        backup_path = hook_path + ".backup"
-        with open(backup_path, 'w', encoding='utf-8') as f:
-            f.write(existing)
-        print(f"[INFO] Existing hook backed up to {backup_path}")
-
-    # Write embedded hook script (atomic write: temp + rename)
-    fd, temp_path = tempfile.mkstemp(dir=hooks_dir, suffix=".tmp")
-    try:
-        with os.fdopen(fd, 'w', encoding='utf-8') as f:
-            f.write(PRE_COMMIT_TDD_PHASES_PY)
-        os.replace(temp_path, hook_path)
-    except Exception:
-        if os.path.exists(temp_path):
-            os.unlink(temp_path)
-        raise
-
-    # Make executable (Unix only)
-    if os.name != 'nt':
-        st = os.stat(hook_path)
-        os.chmod(hook_path, st.st_mode | stat.S_IEXEC)
-
-    print("[OK] nWave pre-commit hook installed")
-
-    # Also install post-commit bypass detector
-    install_post_commit_hook()
-    print("[OK] nWave post-commit hook installed")
+    # Write post-commit bypass detector script
+    detector_path = os.path.join(hooks_dir, "nwave-bypass-detector.py")
+    with open(detector_path, 'w', encoding='utf-8') as f:
+        f.write(POST_COMMIT_BYPASS_LOGGER_PY)
+    print(f"[OK] Created {detector_path}")
 
     return True
 
-def install_post_commit_hook():
-    """Install the post-commit bypass detector hook from embedded source."""
-    hook_path = os.path.join(os.path.dirname(get_hook_path()), "post-commit")
-    hooks_dir = os.path.dirname(hook_path)
+def update_precommit_config():
+    """Add nWave hooks to .pre-commit-config.yaml."""
+    config_path = ".pre-commit-config.yaml"
 
-    os.makedirs(hooks_dir, exist_ok=True)
-
-    if os.path.exists(hook_path):
-        with open(hook_path, 'r', encoding='utf-8') as f:
+    if os.path.exists(config_path):
+        # Read existing config
+        with open(config_path, 'r', encoding='utf-8') as f:
             existing = f.read()
 
-        if "nWave-TDD-BYPASS-DETECTOR" in existing:
+        # Check if nWave hooks already configured
+        if "nwave-tdd-phase-validation" in existing:
+            print("[OK] nWave hooks already configured in .pre-commit-config.yaml")
             return True
 
-    # Write embedded hook script (atomic write)
-    fd, temp_path = tempfile.mkstemp(dir=hooks_dir, suffix=".tmp")
-    try:
-        with os.fdopen(fd, 'w', encoding='utf-8') as f:
-            f.write(POST_COMMIT_BYPASS_LOGGER_PY)
-        os.replace(temp_path, hook_path)
-    except Exception:
-        if os.path.exists(temp_path):
-            os.unlink(temp_path)
-        raise
+        # Append nWave config to existing
+        print("[INFO] Adding nWave hooks to existing .pre-commit-config.yaml")
+        with open(config_path, 'a', encoding='utf-8') as f:
+            f.write("\n" + NWAVE_PRECOMMIT_CONFIG)
+    else:
+        # Create new config
+        print("[INFO] Creating .pre-commit-config.yaml with nWave hooks")
+        with open(config_path, 'w', encoding='utf-8') as f:
+            f.write(NWAVE_PRECOMMIT_CONFIG)
 
-    if os.name != 'nt':
-        st = os.stat(hook_path)
-        os.chmod(hook_path, st.st_mode | stat.S_IEXEC)
+    print("[OK] nWave hooks configured in .pre-commit-config.yaml")
+    return True
 
+def run_precommit_install():
+    """Run 'pre-commit install' to activate hooks."""
+    print("[INFO] Running 'pre-commit install'...")
+
+    # Install pre-commit hooks
+    result = subprocess.run(
+        ["pre-commit", "install"],
+        capture_output=True, text=True
+    )
+    if result.returncode != 0:
+        print(f"[ERROR] Failed to install pre-commit hooks: {result.stderr}")
+        return False
+    print("[OK] Pre-commit hooks installed")
+
+    # Install post-commit hooks
+    result = subprocess.run(
+        ["pre-commit", "install", "--hook-type", "post-commit"],
+        capture_output=True, text=True
+    )
+    if result.returncode != 0:
+        print(f"[WARN] Failed to install post-commit hooks: {result.stderr}")
+        # Not fatal - pre-commit is more important
+    else:
+        print("[OK] Post-commit hooks installed")
+
+    return True
+
+def install_nwave_hooks():
+    """Complete installation of nWave hooks via pre-commit framework."""
+    print("\n" + "="*60)
+    print("Installing nWave TDD Hooks via Pre-commit Framework")
+    print("="*60 + "\n")
+
+    # Step 1: Create hook scripts
+    if not create_hook_scripts_directory():
+        return False
+
+    # Step 2: Update .pre-commit-config.yaml
+    if not update_precommit_config():
+        return False
+
+    # Step 3: Run pre-commit install
+    if not run_precommit_install():
+        return False
+
+    print("\n" + "="*60)
+    print("[OK] nWave TDD Hooks installed successfully!")
+    print("="*60)
+    print("""
+Next steps:
+  - Hooks will run automatically on 'git commit'
+  - To test: 'pre-commit run --all-files'
+  - To update: 'pre-commit autoupdate'
+  - Config file: .pre-commit-config.yaml
+""")
     return True
 ```
 
@@ -1079,10 +1218,17 @@ def install_post_commit_hook():
 If user selects [2] (skip installation):
 
 ```
-[WARN] WARNING: Without the hook, commits with incomplete TDD phases are possible.
+[WARN] WARNING: Without hooks, commits with incomplete TDD phases are possible.
        The review process will still catch these, but earlier detection is better.
 
-       You can install later with: /nw:develop --install-hook
+       You can install later with:
+         pip install pre-commit
+         /nw:develop --install-hook
+
+       Or manually:
+         1. pip install pre-commit
+         2. Add nWave hooks to .pre-commit-config.yaml
+         3. Run: pre-commit install && pre-commit install --hook-type post-commit
 ```
 
 #### Check for Recent Bypasses
@@ -1090,7 +1236,7 @@ If user selects [2] (skip installation):
 At the start of each `/nw:develop` execution, check for recent bypass attempts:
 
 ```python
-BYPASS_LOG_FILE = ".git/nwave-bypass.log"
+BYPASS_LOG_FILE = ".nwave-bypass.log"  # Note: Not in .git/ for version control visibility
 
 def check_for_recent_bypasses():
     """Check for recent bypass attempts and warn user."""
