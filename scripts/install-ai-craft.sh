@@ -394,6 +394,25 @@ install_framework() {
     if [[ $copied_scripts -gt 0 ]]; then
         info "Total $copied_scripts utility script(s) installed"
     fi
+
+    # Install templates (canonical schema files)
+    info "Installing templates..."
+    local templates_source="$PROJECT_ROOT/nWave/templates"
+    local templates_target="$CLAUDE_CONFIG_DIR/templates"
+
+    mkdir -p "$templates_target"
+
+    # Copy the canonical step file schema
+    local schema_file="step-tdd-cycle-schema.json"
+    if [[ -f "$templates_source/$schema_file" ]]; then
+        cp "$templates_source/$schema_file" "$templates_target/$schema_file"
+        info "Installed canonical schema: $schema_file"
+    fi
+
+    local copied_templates=$(find "$templates_target" -name "*.json" 2>/dev/null | wc -l)
+    if [[ $copied_templates -gt 0 ]]; then
+        info "Total $copied_templates template(s) installed"
+    fi
 }
 
 # Validate installation

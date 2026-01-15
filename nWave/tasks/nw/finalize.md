@@ -77,10 +77,26 @@ Task type: finalize
 
 Finalize and archive the completed feature: {project-id}
 
+## STEP FILE FORMAT REFERENCE
+
+For reading step files, understand the canonical schema at `~/.claude/templates/step-tdd-cycle-schema.json`.
+
+Correct step file structure includes:
+- task_id: Task identifier (e.g., '01-01') - NOT step_id!
+- project_id: Project identifier
+- state: Current task state with status field
+- tdd_cycle.phase_execution_log: Array of 14 phases tracking execution progress
+- execution_result: Results from task execution
+
+The 14 TDD phases to look for in phase_execution_log:
+PREPARE, RED_ACCEPTANCE, RED_UNIT, GREEN_UNIT, CHECK_ACCEPTANCE, GREEN_ACCEPTANCE, REVIEW, REFACTOR_L1, REFACTOR_L2, REFACTOR_L3, REFACTOR_L4, POST_REFACTOR_REVIEW, FINAL_VALIDATE, COMMIT
+
+Note: If you encounter step files with wrong format (step_id instead of task_id, or missing tdd_cycle.phase_execution_log), flag this in the summary as a format compliance issue.
+
 Your responsibilities:
 1. Load project data from docs/feature/{project-id}/
-2. Read roadmap.yaml and all step JSON files
-3. Analyze execution history and completion metrics
+2. Read roadmap.yaml and all step JSON files (understanding the canonical format)
+3. Analyze execution history and completion metrics from phase_execution_log
 4. Create comprehensive summary document
 5. Archive to docs/evolution/ with date-feature naming (YYYY-MM-DD-{feature-name}.md)
 6. Clean up temporary workflow files after user approval
@@ -92,11 +108,13 @@ Processing Steps:
 PHASE 1 - GATHER:
 - Read docs/feature/{project-id}/roadmap.yaml
 - Read all docs/feature/{project-id}/steps/*.json files
+- Extract data from tdd_cycle.phase_execution_log for each step
 - Collect completion metrics, execution times, review feedback
 - Identify key achievements and decisions
 
 PHASE 2 - ANALYZE:
-- Calculate completion statistics
+- Calculate completion statistics from phase_execution_log entries
+- Identify completed vs skipped phases across all steps
 - Extract execution times and token usage
 - Document critical decisions made
 - Summarize review outcomes

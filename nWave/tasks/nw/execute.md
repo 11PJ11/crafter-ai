@@ -77,19 +77,65 @@ Task type: execute
 
 Read and execute the atomic task specified in: {step-file-path}
 
-The step file is a complete JSON specification containing:
+## CRITICAL: READ THE CANONICAL SCHEMA FIRST
+
+**BEFORE processing the step file:**
+1. Read the canonical schema: `~/.claude/templates/step-tdd-cycle-schema.json` (or from repo: `nWave/templates/step-tdd-cycle-schema.json`)
+2. Understand the exact structure expected for phase_execution_log updates
+3. Validate the step file has the correct format before proceeding
+
+## STEP FILE FORMAT REFERENCE
+
+The step file follows the canonical schema. Key structure:
+- task_id: The task identifier (e.g., '01-01') - NOT step_id!
+- project_id: Project identifier
 - self_contained_context: All background and context needed
 - task_specification: What to do and acceptance criteria
 - dependencies: Prerequisites (must already be complete)
 - state: Current task state
+- tdd_cycle.phase_execution_log: Array of 14 phases to track progress (MANDATORY)
+- quality_gates: TDD quality requirements
+- phase_validation_rules: Commit acceptance rules
 
-Your responsibilities:
-1. Load the step file and validate it
-2. Update state to IN_PROGRESS
-3. Execute the task following the detailed_instructions
-4. Validate all acceptance_criteria are met
-5. Update state to DONE with execution_result
-6. Update the step file with your results
+## MANDATORY 14-PHASE TDD CYCLE
+
+Each step file contains `tdd_cycle.phase_execution_log` with EXACTLY these 14 phases:
+1. PREPARE - Remove @skip tags, verify scenario setup
+2. RED_ACCEPTANCE - Run acceptance test, expect FAIL
+3. RED_UNIT - Write failing unit tests
+4. GREEN_UNIT - Implement minimum code to pass unit tests
+5. CHECK_ACCEPTANCE - Verify unit implementation
+6. GREEN_ACCEPTANCE - Run acceptance test, expect PASS
+7. REVIEW - Execute /nw:review @software-crafter-reviewer
+8. REFACTOR_L1 - Naming clarity improvements
+9. REFACTOR_L2 - Method extraction
+10. REFACTOR_L3 - Class responsibilities
+11. REFACTOR_L4 - Architecture patterns
+12. POST_REFACTOR_REVIEW - Execute /nw:review again
+13. FINAL_VALIDATE - Full test suite validation
+14. COMMIT - Commit with detailed message
+
+## Your responsibilities:
+1. READ the canonical schema first
+2. Load the step file and validate it has the correct 14-phase structure
+3. Update state to IN_PROGRESS
+4. Execute EACH PHASE in order, updating phase_execution_log as you go:
+   - Set status: IN_PROGRESS while working, then EXECUTED or SKIPPED
+   - Record duration_minutes, outcome, outcome_details, notes
+5. Execute the task following the detailed_instructions
+6. Validate all acceptance_criteria are met
+7. Update state to DONE with execution_result
+8. Update the step file with your results
+
+## WRONG FORMATS TO REJECT
+
+If you encounter these in the step file, STOP and report the error:
+❌ 'step_id' instead of 'task_id'
+❌ 'phase_id' at top level
+❌ 'tdd_phase' at top level without 'tdd_cycle.phase_execution_log'
+❌ Less than 14 phases in phase_execution_log
+❌ Phase names with parentheses like 'RED (Acceptance)'
+❌ Phase names with spaces like 'REFACTOR L1'
 
 If you encounter issues:
 - Update state to FAILED with failure_reason
