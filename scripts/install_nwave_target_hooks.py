@@ -20,6 +20,12 @@ from pathlib import Path
 from typing import Tuple
 
 # ══════════════════════════════════════════════════════════════════════════════
+# VERSION - Must match nWave/framework-catalog.yaml version
+# ══════════════════════════════════════════════════════════════════════════════
+
+__version__ = "1.2.14"
+
+# ══════════════════════════════════════════════════════════════════════════════
 # CONFIGURATION
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -28,9 +34,18 @@ REQUIRED_PYTHON_VERSION = (3, 8)
 NWAVE_HOOKS_CONFIG = """
   # ═══════════════════════════════════════════════════════════════════════════
   # nWave TDD Hooks - Auto-installed by /nw:develop
+  # Version: {version}
   # ═══════════════════════════════════════════════════════════════════════════
   - repo: local
     hooks:
+      - id: nwave-step-structure-validation
+        name: nWave Step Structure Validation
+        entry: python scripts/hooks/nwave-step-structure-validator.py
+        language: python
+        stages: [pre-commit]
+        files: (^|/)steps/\\d+-\\d+\\.json$
+        description: Validates step files have phase_execution_log structure
+
       - id: nwave-tdd-phase-validation
         name: nWave TDD Phase Validation
         entry: python scripts/hooks/nwave-tdd-validator.py
@@ -48,7 +63,7 @@ NWAVE_HOOKS_CONFIG = """
         always_run: true
         pass_filenames: false
         description: Logs any bypass attempts for audit purposes
-"""
+""".format(version=__version__)
 
 NWAVE_TDD_VALIDATOR_SCRIPT = '''#!/usr/bin/env python3
 """
@@ -183,6 +198,95 @@ def validate_step_file(file_path: str) -> Tuple[bool, List[Dict[str, Any]]]:
     return len(issues) == 0, issues
 
 
+def extract_step_id(file_path: str) -> str:
+    """Extract step ID from file path (e.g., '01-02' from 'steps/01-02.json')."""
+    import os
+    basename = os.path.basename(file_path)
+    return basename.replace(".json", "")
+
+
+def get_staged_progress_file() -> bool:
+    """Check if .develop-progress.json is staged."""
+    try:
+        result = subprocess.run(
+            ["git", "diff", "--cached", "--name-only"],
+            capture_output=True, text=True, check=True, timeout=10
+        )
+        return ".develop-progress.json" in result.stdout
+    except Exception:
+        return False
+
+
+def validate_progress_file(step_files: List[str]) -> Tuple[bool, List[str]]:
+    """Validate progress file consistency with step files.
+
+    Args:
+        step_files: List of step files being committed
+
+    Returns:
+        Tuple of (is_valid, list of issues)
+    """
+    issues: List[str] = []
+
+    # Find progress file (could be in docs/feature/{project}/ or root)
+    progress_paths = [
+        Path(".develop-progress.json"),
+    ]
+
+    # Try to find project-specific progress file from step file paths
+    if step_files:
+        for sf in step_files:
+            parts = Path(sf).parts
+            for i, part in enumerate(parts):
+                if part == "steps" and i > 0:
+                    # Found steps dir, progress file should be one level up
+                    parent = Path(*parts[:i])
+                    progress_paths.insert(0, parent / ".develop-progress.json")
+                    break
+
+    progress_file = None
+    for p in progress_paths:
+        if p.exists():
+            progress_file = p
+            break
+
+    if not progress_file:
+        # No progress file - this is OK if no active session
+        return True, []
+
+    try:
+        with open(progress_file, "r", encoding="utf-8") as f:
+            progress = json.load(f)
+    except (json.JSONDecodeError, Exception) as e:
+        return False, [f"Cannot read progress file: {e}"]
+
+    # Extract step IDs being committed
+    committed_step_ids = {extract_step_id(sf) for sf in step_files}
+
+    # Check if progress file is also staged when step files are staged
+    progress_staged = get_staged_progress_file()
+
+    # Get completed steps from progress file
+    completed_steps = set(progress.get("completed_steps", []))
+    current_step = progress.get("current_step")
+
+    # Validate: if committing a step, it should be current_step or in completed_steps
+    for step_id in committed_step_ids:
+        if step_id not in completed_steps and step_id != current_step:
+            issues.append(
+                f"Step {step_id} not tracked in progress file "
+                f"(current_step={current_step}, completed={len(completed_steps)})"
+            )
+
+    # Warn if progress file not staged but step files are
+    if step_files and not progress_staged and progress_file.exists():
+        issues.append(
+            f"⚠️  Progress file not staged - run: git add {progress_file}"
+        )
+
+    return len(issues) == 0, issues
+
+
 def main():
     """Main validation entry point."""
     # Check for staged step files
@@ -213,6 +317,14 @@ def main():
                 print(f"   • {issue['phase']}: {issue['issue']}")
             if len(issues) > 5:
                 print(f"   ... and {len(issues) - 5} more issues")
+
+    # Validate progress file consistency
+    progress_valid, progress_issues = validate_progress_file(step_files)
+    if not progress_valid:
+        all_valid = False
+        print("\\n❌ Progress file issues:")
+        for issue in progress_issues:
+            print(f"   • {issue}")
 
     if all_valid:
         print("✅ nWave TDD: All phases validated")
@@ -278,6 +390,116 @@ if __name__ == "__main__":
     sys.exit(main())
 '''
 
+NWAVE_STEP_STRUCTURE_VALIDATOR_SCRIPT = '''#!/usr/bin/env python3
+"""
+nWave Step Structure Validator - Pre-commit hook
+
+Validates that step files have the required structure including phase_execution_log.
+This runs BEFORE the phase validation to catch malformed step files early.
+
+Version: {version}
+
+Exit codes:
+    0 - All step files have valid structure
+    1 - Structure validation failed
+"""
+import sys
+import json
+from pathlib import Path
+from typing import List, Dict, Any, Tuple
+
+__version__ = "{version}"
+
+REQUIRED_PHASES = [
+    "PREPARE", "RED_ACCEPTANCE", "RED_UNIT", "GREEN_UNIT",
+    "CHECK_ACCEPTANCE", "GREEN_ACCEPTANCE", "REVIEW",
+    "REFACTOR_L1", "REFACTOR_L2", "REFACTOR_L3", "REFACTOR_L4",
+    "POST_REFACTOR_REVIEW", "FINAL_VALIDATE", "COMMIT",
+]
+
+REQUIRED_FIELDS = ["task_id", "project_id", "tdd_cycle"]
+
+
+def validate_step_structure(file_path: str) -> Tuple[bool, List[str]]:
+    """Validate step file has required structure."""
+    issues: List[str] = []
+
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except json.JSONDecodeError as e:
+        return False, [f"Invalid JSON: {{e}}"]
+    except Exception as e:
+        return False, [f"Cannot read: {{e}}"]
+
+    # Check required fields
+    for field in REQUIRED_FIELDS:
+        if field not in data:
+            issues.append(f"Missing required field: {{field}}")
+
+    # Check tdd_cycle structure
+    tdd_cycle = data.get("tdd_cycle", {{}})
+    if not tdd_cycle:
+        issues.append("Missing tdd_cycle section")
+        return False, issues
+
+    # Check phase_execution_log
+    phase_log = tdd_cycle.get("phase_execution_log", [])
+    if not phase_log:
+        issues.append("Missing phase_execution_log - step cannot track TDD phases")
+        return False, issues
+
+    if len(phase_log) != 14:
+        issues.append(f"phase_execution_log has {{len(phase_log)}} entries, expected 14")
+
+    # Verify all phases present
+    phase_names = {{p.get("phase_name") for p in phase_log}}
+    for phase in REQUIRED_PHASES:
+        if phase not in phase_names:
+            issues.append(f"Missing phase: {{phase}}")
+
+    return len(issues) == 0, issues
+
+
+def main():
+    """Validate step files passed as arguments."""
+    if len(sys.argv) < 2:
+        print("nWave Structure: No files to validate")
+        return 0
+
+    all_valid = True
+    files_checked = 0
+
+    for file_path in sys.argv[1:]:
+        if not file_path.endswith(".json"):
+            continue
+
+        files_checked += 1
+        is_valid, issues = validate_step_structure(file_path)
+
+        if not is_valid:
+            all_valid = False
+            print(f"\\n❌ {{file_path}}:")
+            for issue in issues:
+                print(f"   • {{issue}}")
+
+    if files_checked == 0:
+        return 0
+
+    if all_valid:
+        print(f"✅ nWave Structure: {{files_checked}} step file(s) valid")
+        return 0
+    else:
+        print("\\n❌ nWave Structure: COMMIT BLOCKED")
+        print("   Step files must have phase_execution_log with all 14 phases")
+        print("   Run /nw:split to regenerate step files correctly")
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+'''.format(version=__version__)
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # HELPER FUNCTIONS
@@ -339,31 +561,32 @@ def install_precommit() -> bool:
         return False
 
 
-def check_nwave_hooks_configured(path: Path = None) -> Tuple[bool, bool]:
+def check_nwave_hooks_configured(path: Path = None) -> Tuple[bool, bool, bool]:
     """Check if nWave hooks are in .pre-commit-config.yaml.
 
     Args:
         path: Directory to check. Defaults to current working directory.
 
     Returns:
-        Tuple of (phase_validation_present, bypass_detector_present)
+        Tuple of (structure_validation_present, phase_validation_present, bypass_detector_present)
     """
     if path is None:
         path = Path.cwd()
 
     config_path = path / ".pre-commit-config.yaml"
     if not config_path.exists():
-        return False, False
+        return False, False, False
 
     content = config_path.read_text()
 
     # Check for various naming patterns
+    structure_validation = "nwave-step-structure-validation" in content
     phase_validation = (
         "nwave-tdd-phase-validation" in content or "nwave-phase-validation" in content
     )
     bypass_detector = "nwave-bypass-detector" in content
 
-    return phase_validation, bypass_detector
+    return structure_validation, phase_validation, bypass_detector
 
 
 def create_precommit_config(path: Path = None) -> bool:
@@ -408,9 +631,11 @@ def add_nwave_hooks_to_config(path: Path = None, force: bool = False) -> bool:
         if not create_precommit_config(path):
             return False
 
-    phase_present, bypass_present = check_nwave_hooks_configured(path)
+    structure_present, phase_present, bypass_present = check_nwave_hooks_configured(
+        path
+    )
 
-    if phase_present and bypass_present and not force:
+    if structure_present and phase_present and bypass_present and not force:
         print_status("nWave hooks already configured", "OK")
         return True
 
@@ -419,7 +644,7 @@ def add_nwave_hooks_to_config(path: Path = None, force: bool = False) -> bool:
     content = config_path.read_text()
 
     # Add hooks if not present
-    if not phase_present or not bypass_present or force:
+    if not structure_present or not phase_present or not bypass_present or force:
         content += NWAVE_HOOKS_CONFIG
         config_path.write_text(content)
         print_status("nWave hooks added to .pre-commit-config.yaml", "OK")
@@ -442,6 +667,17 @@ def create_hook_scripts(path: Path = None, force: bool = False) -> bool:
 
     hooks_dir = path / "scripts" / "hooks"
     hooks_dir.mkdir(parents=True, exist_ok=True)
+
+    # Create step structure validator script (runs first)
+    structure_path = hooks_dir / "nwave-step-structure-validator.py"
+    if not structure_path.exists() or force:
+        print_status("Creating nwave-step-structure-validator.py...", "RUN")
+        structure_path.write_text(NWAVE_STEP_STRUCTURE_VALIDATOR_SCRIPT)
+        try:
+            structure_path.chmod(0o755)
+        except OSError:
+            pass  # Windows doesn't support chmod
+        print_status("Step structure validator script created", "OK")
 
     # Create TDD validator script
     validator_path = hooks_dir / "nwave-tdd-validator.py"
@@ -519,7 +755,11 @@ def verify_installation(path: Path = None) -> bool:
     errors = []
 
     # Check .pre-commit-config.yaml
-    phase_present, bypass_present = check_nwave_hooks_configured(path)
+    structure_present, phase_present, bypass_present = check_nwave_hooks_configured(
+        path
+    )
+    if not structure_present:
+        errors.append("nwave-step-structure-validation not in config")
     if not phase_present:
         errors.append("nwave-tdd-phase-validation not in config")
     if not bypass_present:
@@ -527,6 +767,8 @@ def verify_installation(path: Path = None) -> bool:
 
     # Check hook scripts exist
     hooks_dir = path / "scripts" / "hooks"
+    if not (hooks_dir / "nwave-step-structure-validator.py").exists():
+        errors.append("nwave-step-structure-validator.py script missing")
     if not (hooks_dir / "nwave-tdd-validator.py").exists():
         errors.append("nwave-tdd-validator.py script missing")
     if not (hooks_dir / "nwave-bypass-detector.py").exists():
@@ -599,8 +841,10 @@ def install_nwave_hooks(path: Path = None, force: bool = False) -> bool:
 
     # Step 3: Check if already configured (skip if force)
     if not force:
-        phase_present, bypass_present = check_nwave_hooks_configured(path)
-        if phase_present and bypass_present:
+        structure_present, phase_present, bypass_present = check_nwave_hooks_configured(
+            path
+        )
+        if structure_present and phase_present and bypass_present:
             print_status("nWave hooks already configured", "OK")
             # Still verify everything is in place
             return verify_installation(path)

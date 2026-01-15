@@ -340,15 +340,59 @@ install_framework() {
 
     mkdir -p "$scripts_target"
 
-    # Copy the nWave target hooks installer
-    if [[ -f "$scripts_source/install_nwave_target_hooks.py" ]]; then
-        cp "$scripts_source/install_nwave_target_hooks.py" "$scripts_target/"
-        info "Installed install_nwave_target_hooks.py"
+    # Helper function to extract version from Python script (macOS compatible)
+    get_script_version() {
+        local script_path="$1"
+        if [[ -f "$script_path" ]]; then
+            # Use awk for portability (grep -P not available on macOS)
+            awk -F'"' '/__version__/ {print $2; exit}' "$script_path" 2>/dev/null || echo "0.0.0"
+        else
+            echo "0.0.0"
+        fi
+    }
+
+    # Helper function to compare semver (returns 0 if $1 > $2, 1 if $1 <= $2)
+    version_gt() {
+        test "$(printf '%s\n' "$1" "$2" | sort -V | head -n 1)" != "$1"
+    }
+
+    # Copy/update the nWave target hooks installer
+    local source_script="$scripts_source/install_nwave_target_hooks.py"
+    local target_script="$scripts_target/install_nwave_target_hooks.py"
+    if [[ -f "$source_script" ]]; then
+        local source_ver=$(get_script_version "$source_script")
+        local target_ver=$(get_script_version "$target_script")
+        if version_gt "$source_ver" "$target_ver"; then
+            cp "$source_script" "$target_script"
+            info "Upgraded install_nwave_target_hooks.py ($target_ver → $source_ver)"
+        elif [[ ! -f "$target_script" ]]; then
+            cp "$source_script" "$target_script"
+            info "Installed install_nwave_target_hooks.py (v$source_ver)"
+        else
+            info "install_nwave_target_hooks.py already up-to-date (v$target_ver)"
+        fi
+    fi
+
+    # Copy/update the step file validator
+    source_script="$scripts_source/validate_step_file.py"
+    target_script="$scripts_target/validate_step_file.py"
+    if [[ -f "$source_script" ]]; then
+        local source_ver=$(get_script_version "$source_script")
+        local target_ver=$(get_script_version "$target_script")
+        if version_gt "$source_ver" "$target_ver"; then
+            cp "$source_script" "$target_script"
+            info "Upgraded validate_step_file.py ($target_ver → $source_ver)"
+        elif [[ ! -f "$target_script" ]]; then
+            cp "$source_script" "$target_script"
+            info "Installed validate_step_file.py (v$source_ver)"
+        else
+            info "validate_step_file.py already up-to-date (v$target_ver)"
+        fi
     fi
 
     local copied_scripts=$(find "$scripts_target" -name "*.py" 2>/dev/null | wc -l)
     if [[ $copied_scripts -gt 0 ]]; then
-        info "Installed $copied_scripts utility script(s)"
+        info "Total $copied_scripts utility script(s) installed"
     fi
 }
 

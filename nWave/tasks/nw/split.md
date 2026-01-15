@@ -1041,20 +1041,35 @@ This is **NON-NEGOTIABLE**. The agent executing the step cannot add phases - the
 }
 ```
 
-**Post-Generation Verification**:
-After generating each step file, verify:
+**Post-Generation Verification (MANDATORY)**:
+
+After generating ALL step files, you MUST run the validation script:
+
+```bash
+python3 ~/.claude/scripts/validate_step_file.py --all docs/feature/{project-id}/steps/
+```
+
+**Manual Checklist** (for each step file):
 - [ ] `phase_execution_log` exists in `tdd_cycle` section
 - [ ] Exactly 14 entries present
-- [ ] All entries have `status: "NOT_EXECUTED"`
+- [ ] All entries have `status: "NOT_EXECUTED"` (or `SKIPPED` for research steps)
 - [ ] All entries have correct `phase_index` (0-13)
 - [ ] All entries have correct `phase_name` matching the 14 required phases
 - [ ] No duplicate phase names
 - [ ] Sequential order matches phase_index
 
-**If Verification Fails**:
-- DO NOT create the step file
-- Return error: "Step file generation failed: phase_execution_log validation error"
-- Include specific issue (missing phases, wrong count, etc.)
+**If Validation Script Fails**:
+- DO NOT proceed to /nw:execute
+- Fix the step file(s) with missing/invalid phase_execution_log
+- Re-run validation until it passes
+- Error message will indicate specific issues
+
+**If Validation Script Not Available**:
+- Run from ai-craft project: `python3 scripts/validate_step_file.py --all <steps_dir>`
+- Or manually verify each step file has the complete tdd_cycle structure
+
+**CRITICAL**: Step files WITHOUT phase_execution_log will cause /nw:execute to fail.
+The executing agent can only UPDATE existing phase entries, not create new ones.
 
 ### Step Generation Rules
 
