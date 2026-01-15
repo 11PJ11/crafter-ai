@@ -985,18 +985,18 @@ Each file (`{phase:02d}-{step:02d}.json`) is a complete, executable unit with em
     "commit_policy": "Commit ONLY after ALL 14 PHASES complete. AUTO-PUSH after commit.",
     "mandatory_phases": [
       "PREPARE - Remove @skip, verify only 1 scenario enabled",
-      "RED (Acceptance) - Test must FAIL initially",
-      "RED (Unit) - Write failing unit tests",
-      "GREEN (Unit) - Implement minimum code to pass",
-      "CHECK - Verify unit tests pass",
-      "GREEN (Acceptance) - All tests PASS",
+      "RED_ACCEPTANCE - Test must FAIL initially",
+      "RED_UNIT - Write failing unit tests",
+      "GREEN_UNIT - Implement minimum code to pass",
+      "CHECK_ACCEPTANCE - Verify unit tests pass",
+      "GREEN_ACCEPTANCE - All tests PASS",
       "REVIEW - Execute /nw:review @software-crafter-reviewer (MANDATORY)",
-      "REFACTOR L1 - Naming clarity",
-      "REFACTOR L2 - Method extraction",
-      "REFACTOR L3 - Class responsibilities",
-      "REFACTOR L4 - Architecture patterns",
-      "POST-REFACTOR REVIEW - Execute /nw:review again (MANDATORY)",
-      "FINAL VALIDATE - Document full test results (MANDATORY)",
+      "REFACTOR_L1 - Naming clarity",
+      "REFACTOR_L2 - Method extraction",
+      "REFACTOR_L3 - Class responsibilities",
+      "REFACTOR_L4 - Architecture patterns",
+      "POST_REFACTOR_REVIEW - Execute /nw:review again (MANDATORY)",
+      "FINAL_VALIDATE - Document full test results (MANDATORY)",
       "COMMIT - Commit with detailed message"
     ]
   }
@@ -1257,75 +1257,122 @@ Feature: Order Management
 **Invalid SKIPPED Prefixes** (block commit):
 - `DEFERRED:` - Indicates incomplete work, must be resolved before commit
 
-**Phase Execution Log Example**:
+**Phase Execution Log Example** (showing first 6 phases - all 14 required):
+
+⚠️ **CRITICAL**: The `phase_execution_log` is at `tdd_cycle.phase_execution_log`, NOT nested inside `tdd_phase_tracking`.
+
 ```json
 {
   "tdd_cycle": {
     "tdd_phase_tracking": {
-      "current_phase": "GREEN (Acceptance)",
+      "current_phase": "GREEN_ACCEPTANCE",
       "active_e2e_test": "Place new order - 01-01",
       "inactive_e2e_tests": "All other @skip scenarios remain disabled",
-      "phases_completed": ["PREPARE", "RED (Acceptance)", "RED (Unit)", "GREEN (Unit)", "CHECK", "GREEN (Acceptance)"],
-      "phase_execution_log": [
-        {
-          "phase_name": "PREPARE",
-          "timestamp": "2024-01-15T10:00:00Z",
-          "duration_minutes": 5,
-          "outcome": "PASS",
-          "notes": "Removed @skip from scenario 'Place new order', verified all other scenarios disabled",
-          "artifacts": ["tests/acceptance/order_management.feature"],
-          "validation_result": "1 scenario enabled, 3 scenarios skipped"
-        },
-        {
-          "phase_name": "RED (Acceptance)",
-          "timestamp": "2024-01-15T10:05:00Z",
-          "duration_minutes": 3,
-          "outcome": "PASS",
-          "notes": "Acceptance test fails as expected - OrderService not implemented",
-          "artifacts": [],
-          "validation_result": "Test failed with: 'OrderService' is not defined"
-        },
-        {
-          "phase_name": "RED (Unit)",
-          "timestamp": "2024-01-15T10:08:00Z",
-          "duration_minutes": 12,
-          "outcome": "PASS",
-          "notes": "Written 3 unit tests for OrderService.PlaceOrder - all failing as expected",
-          "artifacts": ["tests/unit/OrderServiceTests.cs"],
-          "validation_result": "3 tests failing with NotImplementedException"
-        },
-        {
-          "phase_name": "GREEN (Unit)",
-          "timestamp": "2024-01-15T10:20:00Z",
-          "duration_minutes": 18,
-          "outcome": "PASS",
-          "notes": "Implemented minimum OrderService logic to pass all unit tests",
-          "artifacts": ["src/OrderService.cs"],
-          "validation_result": "3/3 unit tests passing"
-        },
-        {
-          "phase_name": "CHECK",
-          "timestamp": "2024-01-15T10:38:00Z",
-          "duration_minutes": 2,
-          "outcome": "PASS",
-          "notes": "Verified all unit tests still passing",
-          "artifacts": [],
-          "validation_result": "3/3 unit tests passing"
-        },
-        {
-          "phase_name": "GREEN (Acceptance)",
-          "timestamp": "2024-01-15T10:40:00Z",
-          "duration_minutes": 5,
-          "outcome": "PASS",
-          "notes": "Acceptance test now passes - order placement working end-to-end",
-          "artifacts": [],
-          "validation_result": "1/1 acceptance test passing, 3/3 unit tests passing"
-        }
-      ]
-    }
+      "phases_completed": ["PREPARE", "RED_ACCEPTANCE", "RED_UNIT", "GREEN_UNIT", "CHECK_ACCEPTANCE", "GREEN_ACCEPTANCE"]
+    },
+    "phase_execution_log": [
+      {
+        "phase_name": "PREPARE",
+        "phase_index": 0,
+        "status": "EXECUTED",
+        "started_at": "2024-01-15T10:00:00Z",
+        "ended_at": "2024-01-15T10:05:00Z",
+        "duration_minutes": 5,
+        "outcome": "PASS",
+        "outcome_details": "Removed @skip from scenario 'Place new order'",
+        "artifacts_created": [],
+        "artifacts_modified": ["tests/acceptance/order_management.feature"],
+        "test_results": {"total": 1, "passed": 0, "failed": 0, "skipped": 1},
+        "notes": "1 scenario enabled, 3 scenarios remain skipped",
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "RED_ACCEPTANCE",
+        "phase_index": 1,
+        "status": "EXECUTED",
+        "started_at": "2024-01-15T10:05:00Z",
+        "ended_at": "2024-01-15T10:08:00Z",
+        "duration_minutes": 3,
+        "outcome": "PASS",
+        "outcome_details": "Test failed as expected - OrderService not implemented",
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {"total": 1, "passed": 0, "failed": 1, "skipped": 0},
+        "notes": "Valid RED: 'OrderService' is not defined",
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "RED_UNIT",
+        "phase_index": 2,
+        "status": "EXECUTED",
+        "started_at": "2024-01-15T10:08:00Z",
+        "ended_at": "2024-01-15T10:20:00Z",
+        "duration_minutes": 12,
+        "outcome": "PASS",
+        "outcome_details": "3 failing unit tests written for OrderService.PlaceOrder",
+        "artifacts_created": ["tests/unit/OrderServiceTests.cs"],
+        "artifacts_modified": [],
+        "test_results": {"total": 3, "passed": 0, "failed": 3, "skipped": 0},
+        "notes": "Valid RED: NotImplementedException in all tests",
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "GREEN_UNIT",
+        "phase_index": 3,
+        "status": "EXECUTED",
+        "started_at": "2024-01-15T10:20:00Z",
+        "ended_at": "2024-01-15T10:38:00Z",
+        "duration_minutes": 18,
+        "outcome": "PASS",
+        "outcome_details": "Implemented minimum OrderService logic",
+        "artifacts_created": ["src/OrderService.cs"],
+        "artifacts_modified": [],
+        "test_results": {"total": 3, "passed": 3, "failed": 0, "skipped": 0},
+        "notes": "All unit tests now passing",
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "CHECK_ACCEPTANCE",
+        "phase_index": 4,
+        "status": "EXECUTED",
+        "started_at": "2024-01-15T10:38:00Z",
+        "ended_at": "2024-01-15T10:40:00Z",
+        "duration_minutes": 2,
+        "outcome": "PASS",
+        "outcome_details": "Unit tests verified before acceptance check",
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {"total": 3, "passed": 3, "failed": 0, "skipped": 0},
+        "notes": "Checkpoint - units green before E2E",
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "GREEN_ACCEPTANCE",
+        "phase_index": 5,
+        "status": "EXECUTED",
+        "started_at": "2024-01-15T10:40:00Z",
+        "ended_at": "2024-01-15T10:45:00Z",
+        "duration_minutes": 5,
+        "outcome": "PASS",
+        "outcome_details": "Acceptance test passes - order placement working E2E",
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {"total": 4, "passed": 4, "failed": 0, "skipped": 0},
+        "notes": "1/1 acceptance + 3/3 unit tests passing",
+        "blocked_by": null,
+        "history": []
+      }
+    ]
   }
 }
 ```
+
+**NOTE**: The example above shows only phases 0-5. A complete step file MUST have all 14 phases (PREPARE through COMMIT). See the embedded schema for the complete structure.
 
 **14-Phase Command Mapping**:
 
