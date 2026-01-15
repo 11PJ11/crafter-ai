@@ -1,8 +1,10 @@
 # DW-DEVELOP: Complete DEVELOP Wave Orchestrator
 
 **Wave**: DEVELOP
-**Agent**: DevOp Orchestrator
+**Agent**: Main Instance (YOU - the orchestrator reading this)
 **Command**: `/nw:develop "{feature-description}"`
+
+> ⚠️ **IMPORTANT**: This command is executed by the **main Claude instance**, NOT by a specialized agent. The main instance orchestrates the workflow by delegating to specialized agents (researcher, software-crafter, solution-architect, etc.) via the Task tool.
 
 ## Overview
 

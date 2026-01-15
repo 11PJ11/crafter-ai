@@ -1,6 +1,6 @@
 # AI-Craft: Intelligent ATDD Pipeline with Specialized Agent Network
 
-<!-- version: 1.2.4 -->
+<!-- version: 1.2.6 -->
 
 🚀 **A systematic approach to software development using ATDD (Acceptance Test Driven Development) with intelligent AI agent orchestration**
 
