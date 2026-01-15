@@ -128,7 +128,7 @@ Task(
 
 # For review (STEP 4, 6, 7, 9)
 Task(
-  subagent_type="software-crafter-reviewer",  # or product-owner-reviewer
+  subagent_type="software-crafter-reviewer",
   prompt=BOUNDARY_TEMPLATE.format(
       task_description="Review {artifact_type} artifact",
       actual_command='/nw:review @software-crafter-reviewer baseline "{artifact-path}"'
@@ -308,19 +308,17 @@ STEP 4: Phase 2 - Review Baseline (retry max 2)
   ↓
 STEP 5: Phase 3 - Roadmap Creation (with skip)
   ↓
-STEP 6: Phase 4a - Review Roadmap - Product Owner (retry max 2)
+STEP 6: Phase 4 - Review Roadmap - Software Crafter (retry max 2)
   ↓
-STEP 7: Phase 4b - Review Roadmap - Software Crafter (retry max 2)
+STEP 7: Phase 5 - Split into Atomic Steps (with skip)
   ↓
-STEP 8: Phase 5 - Split into Atomic Steps (with skip)
+STEP 8: Phase 6 - Review Each Step File (retry max 2 per file)
   ↓
-STEP 9: Phase 6 - Review Each Step File (retry max 2 per file)
+STEP 9: Phase 7 - Execute All Steps (14-phase TDD per step)
   ↓
-STEP 10: Phase 7 - Execute All Steps (14-phase TDD per step)
+STEP 10: Phase 8 - Finalize
   ↓
-STEP 11: Phase 8 - Finalize
-  ↓
-STEP 12: Phase 9 - Report Completion
+STEP 11: Phase 9 - Report Completion
 ```
 
 ---
@@ -667,59 +665,7 @@ REQUIRED: Return control to orchestrator after completion
 
 ---
 
-### STEP 6: Phase 4a - Review Roadmap - Product Owner (with Retry)
-
-**Objective**: Validate roadmap against business requirements through Product Owner review.
-
-**Actions**:
-
-1. **Execute Product Owner review with retry**:
-   ```python
-   approved, attempts, final_status, rejection_reasons = execute_review_with_retry(
-       reviewer_agent='@product-owner-reviewer',
-       artifact_type='Roadmap',
-       artifact_path=f'docs/feature/{project_id}/roadmap.yaml',
-       project_description=feature_description,
-       project_id=project_id,
-       max_attempts=2
-   )
-
-   if not approved:
-       print("\n" + "="*60)
-       print("ERROR: Roadmap Product Owner review failed after 2 attempts")
-       print("="*60)
-       print("\nRejection history:")
-       for rejection in rejection_reasons:
-           print(f"\nAttempt {rejection['attempt']}:")
-           print(f"  {rejection['reason']}")
-
-       print("\nManual intervention required:")
-       print("1. Review Product Owner feedback above")
-       print("2. Fix roadmap.yaml manually")
-       print("3. Re-run: /nw:develop \"{feature_description}\"")
-
-       update_progress_state(
-           project_id,
-           failed_phase='Phase 4a: Review Roadmap - Product Owner',
-           failure_reason=f"Product Owner review rejected after {attempts} attempts"
-       )
-
-       EXIT
-   else:
-       print(f"\n✓ Roadmap approved by Product Owner after {attempts} attempt(s)")
-       print("Proceeding to Phase 4b (Software Crafter review)...")
-
-       mark_phase_complete(project_id, 'Phase 4a: Review Roadmap - Product Owner')
-   ```
-
-**Success Criteria**:
-- Roadmap approved by Product Owner
-- Business requirements validated
-- Progress state updated
-
----
-
-### STEP 7: Phase 4b - Review Roadmap - Software Crafter (with Retry)
+### STEP 6: Phase 4 - Review Roadmap - Software Crafter (with Retry)
 
 **Objective**: Validate roadmap technical feasibility and implementation approach.
 
@@ -752,7 +698,7 @@ REQUIRED: Return control to orchestrator after completion
 
        update_progress_state(
            project_id,
-           failed_phase='Phase 4b: Review Roadmap - Software Crafter',
+           failed_phase='Phase 4: Review Roadmap - Software Crafter',
            failure_reason=f"Software Crafter review rejected after {attempts} attempts"
        )
 
@@ -761,18 +707,17 @@ REQUIRED: Return control to orchestrator after completion
        print(f"\n✓ Roadmap approved by Software Crafter after {attempts} attempt(s)")
        print("Proceeding to Phase 5 (split into atomic steps)...")
 
-       mark_phase_complete(project_id, 'Phase 4b: Review Roadmap - Software Crafter')
+       mark_phase_complete(project_id, 'Phase 4: Review Roadmap - Software Crafter')
    ```
 
 **Success Criteria**:
 - Roadmap approved by Software Crafter
 - Technical approach validated
-- Both Product Owner and Software Crafter approvals obtained
 - Progress state updated
 
 ---
 
-### STEP 8: Phase 5 - Split into Atomic Steps (with Skip Logic)
+### STEP 7: Phase 5 - Split into Atomic Steps (with Skip Logic)
 
 **Objective**: Decompose roadmap into atomic, executable steps.
 
@@ -856,7 +801,7 @@ REQUIRED: Return control to orchestrator after completion
 
 ---
 
-### STEP 9: Phase 6 - Review Each Step File (with Retry per File)
+### STEP 8: Phase 6 - Review Each Step File (with Retry per File)
 
 **Objective**: Ensure each generated step meets quality standards before execution.
 
@@ -948,7 +893,7 @@ REQUIRED: Return control to orchestrator after completion
 
 ---
 
-### STEP 10: Phase 7 - Execute All Steps (11-Phase TDD per Step)
+### STEP 9: Phase 7 - Execute All Steps (14-Phase TDD per Step)
 
 **Objective**: Execute all atomic steps in dependency order using complete 14-phase TDD.
 
@@ -1081,7 +1026,7 @@ REQUIRED: Return control to orchestrator after completion
 
 ---
 
-### STEP 11: Phase 8 - Finalize
+### STEP 10: Phase 8 - Finalize
 
 **Objective**: Archive results and clean up workflow files.
 
@@ -1134,7 +1079,7 @@ REQUIRED: Return control to orchestrator after completion
 
 ---
 
-### STEP 12: Phase 9 - Report Completion
+### STEP 11: Phase 9 - Report Completion
 
 **Objective**: Provide comprehensive summary of DEVELOP wave execution.
 
@@ -1159,7 +1104,7 @@ REQUIRED: Return control to orchestrator after completion
    # Count reviews
    total_reviews = (
        1 +  # Baseline review
-       2 +  # Roadmap reviews (Product Owner + Software Crafter)
+       1 +  # Roadmap review (Software Crafter)
        len(step_files) +  # Step file reviews
        (commit_count * 2)  # TDD phase reviews (REVIEW + POST-REFACTOR REVIEW per step)
    )
@@ -2042,7 +1987,7 @@ Develop a complete feature from natural language description:
 1. Creates baseline measurement (`docs/feature/user-authentication/baseline.yaml`)
 2. Reviews baseline (1 review)
 3. Creates roadmap (`docs/feature/user-authentication/roadmap.yaml`)
-4. Reviews roadmap (2 reviews: Product Owner + Software Crafter)
+4. Reviews roadmap (Software Crafter)
 5. Splits into atomic steps (`docs/feature/user-authentication/steps/*.json`)
 6. Reviews each step file (N reviews, one per step)
 7. Executes all steps with 14-phase TDD (2N reviews: REVIEW + POST-REFACTOR per step)
@@ -2238,7 +2183,7 @@ rm -rf docs/feature/user-authentication/
 **NEW Workflow** (automatic):
 - **Mandatory reviews**: 3 + 3N per feature (enforced)
   - 1 baseline review
-  - 2 roadmap reviews (Product Owner + Software Crafter)
+  - 1 roadmap review (Software Crafter)
   - N step file reviews
   - 2N TDD phase reviews (REVIEW + POST-REFACTOR per step)
 - **Automatic retry**: Max 2 attempts per review
