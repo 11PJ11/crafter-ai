@@ -133,6 +133,23 @@ def validate_step_file(file_path: Path) -> Tuple[bool, List[str]]:
         if field not in data:
             issues.append(f"Missing required field: {field}")
 
+    # REJECT OLD/WRONG FORMAT PATTERNS
+    if "step_id" in data:
+        issues.append(
+            "WRONG FORMAT: Found 'step_id' - use 'task_id' instead. "
+            "This is an obsolete format that must be regenerated."
+        )
+    if "phase_id" in data:
+        issues.append(
+            "WRONG FORMAT: Found 'phase_id' - this field should not exist. "
+            "Each step contains ALL 14 phases, not a single phase."
+        )
+    if "tdd_phase" in data and "tdd_cycle" not in data:
+        issues.append(
+            "WRONG FORMAT: Found 'tdd_phase' at top level without 'tdd_cycle'. "
+            "Phases must be in tdd_cycle.phase_execution_log array."
+        )
+
     # Check tdd_cycle exists
     tdd_cycle = data.get("tdd_cycle")
     if not tdd_cycle:

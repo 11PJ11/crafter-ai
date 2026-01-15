@@ -487,6 +487,32 @@ Each file (`{phase:02d}-{step:02d}.json`) is a complete, executable unit with em
 }
 ```
 
+### MANDATORY: One Step = One Complete BDD Scenario
+
+**DESIGN PRINCIPLE**: Each step file represents ONE COMPLETE BDD SCENARIO containing ALL 14 TDD phases. Different steps are DIFFERENT SCENARIOS, NOT different phases of the same scenario.
+
+**CORRECT**: Step 01-01 = Scenario A (all 14 phases), Step 01-02 = Scenario B (all 14 phases)
+**WRONG**: Step 01-01 = Phase RED, Step 01-02 = Phase GREEN (THIS IS FUNDAMENTALLY WRONG)
+
+### FORMAT VALIDATION - REJECT INVALID FILES
+
+**BEFORE WRITING ANY STEP FILE**, validate it contains:
+
+1. ✅ `"task_id"` (NOT `"step_id"` or `"phase_id"`)
+2. ✅ `"tdd_cycle"` object with nested `"phase_execution_log"` array
+3. ✅ `"phase_execution_log"` containing EXACTLY 14 phase entries
+4. ✅ Each phase has `"phase_name"`, `"phase_index"`, `"status": "NOT_EXECUTED"`
+
+**IMMEDIATELY REJECT files with these WRONG patterns:**
+
+❌ `"tdd_phase": "RED"` at top level → WRONG (phases go in phase_execution_log)
+❌ `"step_id"` instead of `"task_id"` → WRONG
+❌ `"phase_id"` field → WRONG (this format doesn't exist)
+❌ Missing `tdd_cycle.phase_execution_log` → WRONG
+❌ Less than 14 phases in phase_execution_log → WRONG
+
+**If you generate a file with any of these patterns, DELETE IT and regenerate using the template below.**
+
 ### TDD Cycle Template Embedding
 
 **CRITICAL**: The TDD cycle section is embedded from template, NOT generated from scratch.

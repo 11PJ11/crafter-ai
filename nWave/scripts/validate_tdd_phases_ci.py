@@ -104,6 +104,23 @@ def validate_step_file(
     except Exception as e:
         return False, [{"severity": "ERROR", "issue": f"Cannot read file: {e}"}]
 
+    # REJECT OLD/WRONG FORMAT PATTERNS
+    if "step_id" in data:
+        return False, [{
+            "severity": "ERROR",
+            "issue": "WRONG FORMAT: Found 'step_id' - use 'task_id'. Obsolete format."
+        }]
+    if "phase_id" in data:
+        return False, [{
+            "severity": "ERROR",
+            "issue": "WRONG FORMAT: Found 'phase_id' - each step has ALL 14 phases, not one."
+        }]
+    if "tdd_phase" in data and "tdd_cycle" not in data:
+        return False, [{
+            "severity": "ERROR",
+            "issue": "WRONG FORMAT: 'tdd_phase' at top level. Use tdd_cycle.phase_execution_log."
+        }]
+
     # Get phase execution log
     tdd_cycle = data.get("tdd_cycle", {})
     phase_log = tdd_cycle.get("phase_execution_log", [])

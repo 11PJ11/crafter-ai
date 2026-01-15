@@ -173,6 +173,26 @@ def validate_step_file(file_path: str) -> Tuple[bool, List[Dict[str, Any]]]:
     except Exception as e:
         return False, [{"phase": "N/A", "status": "ERROR", "issue": f"Cannot read file: {e}"}]
 
+    # REJECT OLD/WRONG FORMAT PATTERNS
+    if "step_id" in data:
+        return False, [{
+            "phase": "N/A",
+            "status": "WRONG_FORMAT",
+            "issue": "Found 'step_id' - use 'task_id'. This is an obsolete format."
+        }]
+    if "phase_id" in data:
+        return False, [{
+            "phase": "N/A",
+            "status": "WRONG_FORMAT",
+            "issue": "Found 'phase_id' - this field should not exist. Each step has ALL 14 phases."
+        }]
+    if "tdd_phase" in data and "tdd_cycle" not in data:
+        return False, [{
+            "phase": "N/A",
+            "status": "WRONG_FORMAT",
+            "issue": "Found 'tdd_phase' at top level. Phases must be in tdd_cycle.phase_execution_log."
+        }]
+
     # Get phase execution log
     phase_log = data.get("tdd_cycle", {}).get("phase_execution_log", [])
 
