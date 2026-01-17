@@ -38,5 +38,5 @@ build.log
 build-test.log
 
 # TOON format agents (separate branch)
-agents/
+/agents/
 output/
