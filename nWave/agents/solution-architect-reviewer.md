@@ -80,7 +80,7 @@ dependencies:
   checklists:
     - design-wave-checklist.md
   data:
-    - visual-architecture-principles.md
+    - methodologies/visual-architecture-principles.md
   embed_knowledge:
     - embed/solution-architect/comprehensive-architecture-patterns-and-methodologies.md
     - embed/solution-architect/residuality-theory-methodology.md

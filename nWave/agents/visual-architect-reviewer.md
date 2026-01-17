@@ -80,7 +80,7 @@ dependencies:
     - visual-architecture-checklist.md
     - design-wave-checklist.md
   data:
-    - visual-architecture-principles.md
+    - methodologies/visual-architecture-principles.md
 
 # ============================================================================
 # EMBEDDED KNOWLEDGE (injected at build time from embed/)

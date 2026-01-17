@@ -162,13 +162,7 @@ commands:
 dependencies:
   tasks:
   templates:
-    - discovery-session.yaml
-    - assumption-tracker.yaml
-    - opportunity-solution-tree.yaml
-    - lean-canvas.yaml
   checklists:
-    - discovery-phase-checklist.md
-    - interview-quality-checklist.md
   embed_knowledge:
     - "embed/product-discoverer/discovery-methodology.md"
 

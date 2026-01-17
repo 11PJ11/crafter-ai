@@ -304,9 +304,9 @@ dependencies:
     - 5d-wave-methodology-checklist.md
     - atdd-compliance-checklist.md
   data:
-    - outside-in-tdd-reference.md
-    - systematic-refactoring-guide.md
-    - atdd-patterns.md
+    - methodologies/outside-in-tdd-reference.md
+    - methodologies/systematic-refactoring-guide.md
+    - methodologies/atdd-patterns.md
   embed_knowledge:
     - embed/software-crafter/README.md
     - embed/software-crafter/mikado-method-progressive-refactoring.md

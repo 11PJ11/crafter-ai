@@ -285,7 +285,7 @@ commands:
 dependencies:
   tasks:
   data:
-    - trusted-source-domains.yaml
+    - config/trusted-source-domains.yaml
 
 # Input/Output Contract
 contract:

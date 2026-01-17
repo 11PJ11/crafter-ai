@@ -299,8 +299,6 @@ dependencies:
   tasks:
   templates:
   checklists:
-    - discovery-phase-checklist.md
-    - interview-quality-checklist.md
   embed_knowledge:
     - "embed/product-discoverer/discovery-methodology.md"
 

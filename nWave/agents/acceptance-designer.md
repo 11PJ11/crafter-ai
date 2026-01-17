@@ -82,8 +82,8 @@ dependencies:
     - atdd-compliance-checklist.md
     - distill-wave-checklist.md
   data:
-    - atdd-patterns.md
-    - outside-in-tdd-reference.md
+    - methodologies/atdd-patterns.md
+    - methodologies/outside-in-tdd-reference.md
   embed_knowledge:
     - "embed/acceptance-designer/bdd-methodology.md"
 
