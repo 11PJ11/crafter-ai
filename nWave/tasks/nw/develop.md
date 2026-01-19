@@ -70,6 +70,10 @@ pre-commit --version  # If missing: pip install pre-commit
 
 ---
 
+## Instance Isolation in Develop Orchestration
+
+The /nw:develop command orchestrates MULTIPLE Task tool invocations, each creating a distinct agent instance. The command coordinates these instances by managing the shared step file. Instance 1 (RED_ACCEPTANCE phase) loads the step, executes, updates it with results, and terminates. Instance 2 (RED_UNIT phase) loads the updated step, reads what Instance 1 did, continues execution, updates the step again. This chain of instances (each independent, each reading prior results) executes the complete 14-phase TDD cycle.
+
 ## CRITICAL: Orchestration Protocol
 
 ### ⚡ ORCHESTRATOR ROLE (Read This First!)
@@ -948,6 +952,10 @@ REQUIRED: Return control to orchestrator after completion
 
 ### STEP 9: Phase 7 - Execute All Steps (14-Phase TDD per Step)
 
+#### Cross-Instance Phase Coordination
+
+Each Task invocation (representing a new agent instance) updates phase_execution_log with its progress. Instance 1 marks PREPARE as EXECUTED. Instance 2 reads this log, sees PREPARE is done, and executes RED_ACCEPTANCE (marking it EXECUTED). Instance 3 reads both completed phases and executes RED_UNIT. This phase-aware coordination through JSON allows /nw:develop to orchestrate work across multiple instances without shared session state.
+
 **Objective**: Execute all atomic steps in dependency order using complete 14-phase TDD.
 
 **Actions**:
@@ -1005,6 +1013,13 @@ REQUIRED: Return control to orchestrator after completion
            print(f"✓ Step {step_id} already completed - skipping")
            completed_steps.append(step_id)
            continue
+
+       # Between Task invocations, the step file is the ONLY persistence mechanism.
+       # No intermediate working files, session variables, or agent memory carries forward.
+       # When Instance 2 starts, it loads the step file written by Instance 1, sees all
+       # prior accomplishments in structured JSON, and knows exactly where to continue.
+       # This clean separation prevents context degradation and ensures each instance
+       # operates with full clarity of prior progress.
 
        # Execute step with 14-phase TDD using Task tool delegation
        print(f"Invoking: Task tool with @software-crafter for step {step_id}")

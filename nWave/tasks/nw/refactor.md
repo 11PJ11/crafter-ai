@@ -10,6 +10,10 @@ Execute systematic refactoring of existing codebases through progressive code qu
 
 Progressive refactoring hierarchy: Readability (L1-2) → Structure (L3-4) → Design (L5-6) with continuous validation and automated quality gates.
 
+## Refactoring Across Agent Instances
+
+The /nw:refactor command may be invoked as a new agent instance (via Task tool) to perform systematic refactoring. Each refactoring instance is independent: it loads the codebase, reads the refactoring specification, performs improvements, runs tests, documents changes, and terminates. If refactoring is complex and spans multiple instances (/nw:refactor L1, L2, L3), each instance reads prior modifications from the codebase and builds on them. Code files themselves serve as state: changes made by Instance 1 (L1 refactoring) are visible to Instance 2 (L2 refactoring) in the modified source.
+
 ## Context Files Required
 
 - src/\* - Codebase to analyze and refactor

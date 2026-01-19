@@ -212,6 +212,10 @@ Executes a self-contained atomic task by invoking the specified agent with compl
 
 Designed to work with clean context, ensuring consistent quality by giving each agent a fresh start with all necessary information contained in the step file.
 
+## Agent Instance Isolation Model
+
+Each invocation of the Task tool creates a NEW, INDEPENDENT agent instance. The instance loads the step JSON file, reads all context and prior progress, executes work, updates the step file with results, and terminates. No session state is retained between invocations. State is preserved through the JSON step file, not through agent memory. This isolation ensures clean execution without context degradation from previous instances.
+
 ## Usage Examples
 
 ```bash
@@ -356,6 +360,10 @@ ACCEPTANCE CRITERIA:
 Execute this task and provide outputs as specified.
 ```
 
+### State Management Across Instances
+
+The executing agent does not have access to previous invocations' memory. All prior execution state (from previous agent instances) is captured in the step JSON file. The agent READS the complete step file at start, sees what prior instances accomplished (via phase_execution_log), continues from that point, and UPDATES the same step file with new results. This JSON-based state management allows clean handoff between instances without context pollution.
+
 ### MANDATORY: Phase Tracking Protocol
 
 The step file contains a pre-populated `phase_execution_log` with all 14 TDD phases.
@@ -369,6 +377,8 @@ The phases are (0-13):
 `PREPARE` → `RED_ACCEPTANCE` → `RED_UNIT` → `GREEN_UNIT` → `CHECK_ACCEPTANCE` → `GREEN_ACCEPTANCE` → `REVIEW` → `REFACTOR_L1` → `REFACTOR_L2` → `REFACTOR_L3` → `REFACTOR_L4` → `POST_REFACTOR_REVIEW` → `FINAL_VALIDATE` → `COMMIT`
 
 **For non-ATDD steps** (research, infrastructure): Phases 1-5 are pre-set to `SKIPPED` with `blocked_by: "NOT_APPLICABLE"`.
+
+When an agent instance begins execution, it examines phase_execution_log to understand which phases completed in prior instances. Each log entry shows what prior instances accomplished. The current instance may CONTINUE from where the previous left off (if resuming an interrupted phase) or ADVANCE to the next incomplete phase. The phase log serves as a timeline of execution across all instances working on this step.
 
 #### Before Starting a Phase
 

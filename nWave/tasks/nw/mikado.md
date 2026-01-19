@@ -10,6 +10,10 @@ Execute complex refactoring operations using enhanced Mikado Method with discove
 
 Revolutionary implementation captures every exploration attempt through commits, ensures all dependencies identified, and provides complete audit trail of refactoring decisions.
 
+## Mikado Execution Across Multiple Instances
+
+Complex Mikado refactorings may span multiple agent instances. The Mikado graph is persisted in docs/refactoring/mikado-graph.md. Each instance (working on different leaf nodes or consolidation steps) reads the graph, sees what prior instances accomplished (marked nodes and dependencies), updates the graph with new progress, and commits this progress. The graph is the cross-instance coordination mechanism. Discovery commits create an audit trail showing which paths each instance explored.
+
 ## Context Files Required
 
 - src/\* - Codebase to refactor

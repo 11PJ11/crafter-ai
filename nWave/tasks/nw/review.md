@@ -74,6 +74,10 @@ If any check fails, return specific error and stop.
 
 ### STEP 5: Invoke Agent Using Task Tool
 
+#### Review as a New Instance Invocation
+
+The /nw:review command invokes a NEW, INDEPENDENT reviewer agent instance. This instance loads the artifact file (task JSON, roadmap YAML, or implementation record), reads all context embedded in the file, performs expert review, and updates the file with review metadata. The reviewer instance does not retain memory from prior reviews. Each review is by a fresh instance that reads the artifact and adds its critique to the structured review field.
+
 **MANDATORY**: Use the Task tool to invoke the specified expert agent. Do NOT attempt to perform the review yourself.
 
 **IMPORTANT**: Always use the reviewer variant by appending `-reviewer` to the agent name.
@@ -511,6 +515,8 @@ Choose reviewer based on domain expertise:
 6. **Create Report**: Generate summary for stakeholders
 
 **IMPORTANT**: The review command ALWAYS updates the original artifact file (roadmap.yaml or step JSON) by appending the review data. This ensures critiques travel with the artifact and are available to all subsequent agents.
+
+Review instances update the original artifact by APPENDING review metadata to the file. Because the reviewer instance has no session memory, the review output must be written to the persistent artifact file. Subsequent instances (implementation, deployment, cleanup) read this file and see all accumulated reviews. This ensures review feedback travels with the artifact across all instances and stages.
 
 ## Output Artifacts
 

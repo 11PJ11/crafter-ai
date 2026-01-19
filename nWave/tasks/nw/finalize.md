@@ -106,11 +106,18 @@ CRITICAL: DO NOT COMMIT OR DELETE FILES - REQUEST APPROVAL FIRST
 Processing Steps:
 
 PHASE 1 - GATHER:
+
+Finalize is invoked as a single agent instance that loads and analyzes the complete project history. The instance reads all step JSON files (which contain phase_execution_log from all prior instances), reads the roadmap, and synthesizes this information into a comprehensive summary. The finalize instance has NO direct memory of prior execution instances. It only knows what it can read from the persistent files: step JSON with detailed phase logs, roadmap with original plan, and any other documentation created.
+
 - Read docs/feature/{project-id}/roadmap.yaml
 - Read all docs/feature/{project-id}/steps/*.json files
 - Extract data from tdd_cycle.phase_execution_log for each step
 - Collect completion metrics, execution times, review feedback
 - Identify key achievements and decisions
+
+### Reading Multi-Instance Execution History
+
+The finalize instance reads phase_execution_log from each step JSON. This log shows every instance's contributions: what phases executed, how long each took, what artifacts created/modified, what test results, what decisions made. Each phase log entry is a snapshot of one instance's work. By reading all phase entries across all step files, the finalize instance reconstructs the complete execution history without needing memory of individual instances.
 
 PHASE 2 - ANALYZE:
 - Calculate completion statistics from phase_execution_log entries

@@ -10,6 +10,10 @@ Execute DELIVER wave of nWave methodology through comprehensive feature completi
 
 Validates actual business value delivery, not just technical completion: functional completeness, operational excellence, performance validation, security compliance, disaster recovery.
 
+## Delivery as Fresh Instance Validation
+
+The deliver command invokes a new agent instance that validates production readiness. This instance reads completed implementation files, reviews all accumulated documentation (architecture, test results, review feedback), executes validation scenarios in production-like environments, and produces delivery artifacts. The instance does not rely on prior session memory. All context needed for delivery validation comes from persistent artifacts: implementation files, documentation, test records, and deployment configurations.
+
 ## Context Files Required
 
 - src/\* - (from DEVELOP wave)
