@@ -159,8 +159,8 @@ current_state:
     github_workflows_measurement:
       measurement_command: "ls -la .github/workflows/ 2>/dev/null | grep -E '\\.yml|\\.yaml' | wc -l"
       measured_value: 2
-      verification_timestamp: "2026-01-20T16:45:00Z"
-      note: "Two workflow files exist: CI workflow and release workflow"
+      verification_timestamp: "2026-01-20T20:57:00Z"
+      note: "Two workflow files exist: ci.yml (matrix testing and installers) and ci-cd-pipeline.yml (release with tag triggers)"
     github_workflows:
       - name: "ci.yml"
         triggers:
@@ -168,24 +168,29 @@ current_state:
           - "pull_request to master/main"
         jobs_count: 3
         jobs:
-          - "quality-gates"
-          - "documentation-check"
-          - "pipeline-completion"
+          - "build-and-test"
+          - "unix-installer-test"
+          - "windows-installer-test"
         matrix_testing_enabled: true
         platforms_tested: 3
         platforms_list:
           - "ubuntu-latest"
           - "macos-latest"
           - "windows-latest"
-      - name: "release.yml"
+      - name: "ci-cd-pipeline.yml"
         triggers:
-          - "push to master/main with version tag"
+          - "push to master/main/develop"
+          - "pull_request to master/main"
+          - "push with tags (v*)"
         status: "implemented"
     release_workflow_exists: true
     release_workflow_triggered_by_tags: true
     automated_release_creation: true
     cross_platform_ci_validation: true
     installer_testing_in_ci: true
+    workflow_names:
+      - "ci.yml"
+      - "ci-cd-pipeline.yml"
 
 # ============================================================================
 # TARGET STATE MEASUREMENTS
@@ -476,22 +481,22 @@ success_criteria:
         description: "CI workflow validates build on all platforms"
         metric: "ci_platforms_tested"
         target: 3
-        current: 1
+        current: 3
       - id: "P6-02"
         description: "CI workflow tests installers"
         metric: "installer_testing_in_ci"
         target: true
-        current: false
+        current: true
       - id: "P6-03"
         description: "Release workflow triggers on version tags"
         metric: "release_workflow_triggered_by_tags"
         target: true
-        current: false
+        current: true
       - id: "P6-04"
         description: "Release workflow creates GitHub release with artifacts"
         metric: "automated_release_creation"
         target: true
-        current: false
+        current: true
       - id: "P6-05"
         description: "Release workflow uploads platform archives"
         metric: "release_artifacts_uploaded"
@@ -504,8 +509,15 @@ success_criteria:
 
 summary:
   total_success_criteria: 29
-  criteria_currently_met: 2
-  criteria_completion_percentage: 6.9
+  criteria_currently_met: 6
+  criteria_completion_percentage: 20.7
+  criteria_met_list:
+    - "P3-02: Feature-centric directory structure documented"
+    - "P6-01: CI workflow validates build on all 3 platforms"
+    - "P6-02: CI workflow tests installers"
+    - "P6-03: Release workflow triggers on version tags"
+    - "P6-04: Release workflow creates GitHub release with artifacts"
+    - "P3-03: Evolution archive directory exists"
 
   phase_completion_status:
     phase_0: "not_started"
