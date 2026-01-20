@@ -10,6 +10,74 @@ Execute systematic evidence-based research with source verification, gathering k
 
 Cross-wave support capability providing evidence-driven insights for any nWave phase requiring research-backed decision making using trusted academic, official, and industry sources.
 
+## Orchestrator Briefing
+
+**CRITICAL ARCHITECTURAL CONSTRAINT**: Sub-agents launched via Task tool have NO ACCESS to the Skill tool. They can ONLY use: Read, Write, Edit, Bash, Glob, Grep.
+
+### What Orchestrator Must Do
+
+1. **Read trusted source domains and research topic context** and embed complete specifications inline
+2. **Create a complete agent prompt** that includes:
+   - Full research topic definition and scope (inline)
+   - Complete trusted-source-domains.yaml content (inline, not path reference)
+   - Research depth requirements (overview/detailed/comprehensive/deep-dive)
+   - Source verification procedures and reputation thresholds (inline)
+   - Cross-reference requirements (minimum 3 sources per major claim)
+   - Distillation procedures if --embed-for specified (academic to actionable transformation)
+   - Research output structure with Impact Summary requirements
+   - All procedural steps for evidence gathering, citation, and validation
+3. **Do NOT reference any /nw:* commands** in the agent prompt (agent cannot invoke them)
+4. **Embed all research procedures** - agent executes directly, no command delegation
+
+### Agent Prompt Must Contain
+
+- Full research topic definition with clear boundaries (inline)
+- Complete trusted-source-domains.yaml content with reputation scores (inline, not path reference)
+- Research depth specifications:
+  - overview: Surface-level introduction to topic
+  - detailed: Comprehensive coverage with practical applications
+  - comprehensive: Full deep-dive with academic rigor and cross-disciplinary perspectives
+  - deep-dive: Exhaustive analysis with original research implications
+- Source verification procedures:
+  - Domain reputation scoring from trusted-source-domains.yaml
+  - Cross-reference requirement (≥3 sources per major claim)
+  - Citation quality threshold (> 95% coverage)
+  - Average reputation requirement (≥ 0.80)
+- Research output structure:
+  - Executive summary with key findings
+  - Detailed findings organized by topic area
+  - Impact Summary table (Component, Metric, Impact, Priority)
+  - Largest Bottleneck identification with evidence
+  - Quick Wins section with effort/impact analysis
+  - Complete citations and source documentation
+- Distillation procedures (if --embed-for specified):
+  - Transform academic findings to practitioner-focused actionable insights
+  - Preserve 100% of essential concepts (NO compression)
+  - Create self-contained embed file with no external references
+  - Token budget management (<5000 tokens per embed file)
+- Quantitative research requirements (for performance/impact research):
+  - Collect timing data, not just categorization
+  - Rank impact by quantitative measures (time, count, frequency)
+  - Identify quick wins with effort/impact analysis
+- Expected deliverables and file locations
+
+### What NOT to Include
+
+- ❌ "Agent should invoke /nw:research on related topics" (agent handles topic only)
+- ❌ "Use /nw:execute to validate research" (agent validates directly)
+- ❌ Any reference to skills or other commands the agent should call
+- ❌ References to next wave or @agent-forger peer review (orchestrator handles handoffs)
+- ❌ Path references without complete content embedded (agent needs trusted domains inline)
+- ❌ External links or tool references without complete procedures embedded (WebSearch, WebFetch)
+
+### Example: What TO Do
+
+✅ "Research this topic using only these trusted sources: [COMPLETE DOMAINS WITH REPUTATION SCORES]"
+✅ "Gather evidence ensuring ≥3 cross-references per major claim using this procedure: [COMPLETE PROCEDURE]"
+✅ "Create Impact Summary following this structure: [COMPLETE TABLE FORMAT WITH EXAMPLES]"
+✅ "Distill research for {agent-name} by transforming findings to actionable insights: [COMPLETE DISTILLATION PROCEDURE]"
+✅ "Provide outputs: comprehensive-research.md in data/research/, embed file in nWave/data/embed/{agent}/"
+
 ## Context Files Required
 
 - nWave/data/trusted-source-domains.yaml - Source reputation validation
