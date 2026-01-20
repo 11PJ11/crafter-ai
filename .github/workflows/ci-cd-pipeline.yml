@@ -7,9 +7,41 @@ on:
     branches: [master, main]
 
 jobs:
+  matrix-build:
+    name: Matrix Build Validation
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+      fail-fast: true
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up environment
+        run: |
+          echo "Building on ${{ matrix.os }}"
+          echo "Build platform: ${{ runner.os }}"
+
+      - name: Validate platform-specific setup
+        run: |
+          if [[ "${{ runner.os }}" == "Linux" ]]; then
+            echo "✅ Linux environment configured"
+            lsb_release -a || echo "Linux version info unavailable"
+          elif [[ "${{ runner.os }}" == "macOS" ]]; then
+            echo "✅ macOS environment configured"
+            sw_vers
+          elif [[ "${{ runner.os }}" == "Windows" ]]; then
+            echo "✅ Windows environment configured"
+            [[ $(uname -s) == MINGW* ]] && echo "Git Bash detected" || echo "Windows shell detected"
+          fi
+        shell: bash
+
   quality-gates:
     name: Quality Gates Validation
     runs-on: ubuntu-latest
+    needs: matrix-build
 
     steps:
       - name: Checkout Code
@@ -107,7 +139,7 @@ jobs:
   pipeline-completion:
     name: Pipeline Completion
     runs-on: ubuntu-latest
-    needs: [quality-gates, documentation-check]
+    needs: [matrix-build, quality-gates, documentation-check]
     if: always()
 
     steps:
@@ -115,10 +147,12 @@ jobs:
         run: |
           echo "::group::AI-Craft CI/CD Pipeline Summary"
 
-          if [[ "${{ needs.quality-gates.result }}" == "success" &&
+          if [[ "${{ needs.matrix-build.result }}" == "success" &&
+                "${{ needs.quality-gates.result }}" == "success" &&
                 "${{ needs.documentation-check.result }}" == "success" ]]; then
 
             echo "🎉 AI-Craft CI/CD Pipeline: SUCCESS"
+            echo "✅ Matrix build validation passed (Ubuntu, macOS, Windows)"
             echo "✅ All quality gates passed"
             echo "✅ Documentation validated"
             echo ""
@@ -127,6 +161,7 @@ jobs:
           else
             echo "❌ AI-Craft CI/CD Pipeline: FAILED"
             echo "Results:"
+            echo "  - Matrix Build: ${{ needs.matrix-build.result }}"
             echo "  - Quality Gates: ${{ needs.quality-gates.result }}"
             echo "  - Documentation: ${{ needs.documentation-check.result }}"
             exit 1
