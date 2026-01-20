@@ -538,24 +538,162 @@ error_recovery_framework:
 
 validation_rules:
   naming_conventions:
-    agent_id: "Must be kebab-case matching filename"
-    persona_name: "Single friendly name (e.g., Riley, Quinn, Sage)"
-    commands: "kebab-case with * prefix required at runtime"
-    files: "kebab-case.md or kebab-case.yaml"
+    agent_id: "Must be kebab-case matching filename (e.g., 'software-crafter' → software-crafter.md)"
+    persona_name: "Single friendly name (e.g., Riley, Quinn, Sage) - NO SPACES OR UNDERSCORES"
+    commands: "kebab-case with * prefix required at runtime (e.g., *create-agent, *validate-spec)"
+    files: "kebab-case.md or kebab-case.yaml - matching agent_id exactly"
+
+    validation_checks:
+      - "agent_id matches filename (with extension removed)"
+      - "persona_name is single word (A-Z, a-z only)"
+      - "All commands are kebab-case starting with letter"
+      - "No command named * (prefix only)"
+      - "Command list starts with 'help' command"
+      - "Command list ends with 'exit' command"
 
   structural_requirements:
-    yaml_frontmatter: "Required: name, description, model fields"
-    activation_notice: "Must include clear activation instructions"
-    persona_definition: "Must include role, style, identity, focus, core_principles"
-    command_list: "Must start with 'help', end with 'exit'"
-    embedded_content: "All dependencies embedded inline, no external files"
+    yaml_frontmatter:
+      required_fields:
+        - "name: Agent identifier (kebab-case)"
+        - "description: Clear purpose (40-100 chars)"
+        - "model: inherit or specific model name"
+      validation: "All three fields must be non-empty strings"
+
+    activation_notice:
+      requirements:
+        - "ACTIVATION-NOTICE section present"
+        - "Clearly states this is complete specification"
+        - "States DO NOT load external files"
+        - "Contains 'CRITICAL:' prefix for emphasis"
+      validation: "Section must be first element after heading"
+
+    persona_definition:
+      required_sections:
+        - "role: Job title and expertise"
+        - "style: Communication pattern description"
+        - "identity: Core values and characteristics"
+        - "focus: Primary responsibilities"
+        - "core_principles: List of guiding principles"
+      validation: "All sections must have substantive content (>20 chars each)"
+
+    command_list:
+      requirements:
+        - "Starts with 'help' command"
+        - "Ends with 'exit' command"
+        - "All commands kebab-case"
+        - "Each command has brief description"
+        - "Minimum 3 commands, maximum 20 commands"
+      validation: "Command list must be complete and functional"
+
+    embedded_content:
+      requirements:
+        - "All dependencies embedded inline in agent file"
+        - "NO external file imports"
+        - "NO relative path references"
+        - "Self-contained specification"
+        - "Maximum 2500 lines recommended"
+      validation: "File must be fully functional standalone"
+
+    frameworks_integration:
+      required_frameworks:
+        - "contract: Input/Output specification"
+        - "safety_framework: 4-layer validation + 7-layer security"
+        - "testing_framework: 4-layer quality assurance"
+        - "observability_framework: Logging, metrics, alerting"
+        - "error_recovery_framework: Retries, circuit breakers, degraded mode"
+      validation: "All five frameworks must be present and documented"
 
   safety_requirements:
-    input_validation: "All inputs must be validated before processing"
-    output_filtering: "All outputs must pass guardrail checks"
-    tool_restrictions: "Tools limited to necessary set only"
-    audit_logging: "All actions must be logged"
-    error_handling: "Fail-safe defaults on all error paths"
+    input_validation:
+      requirements:
+        - "All inputs validated before processing"
+        - "Schema validation for data types"
+        - "Content sanitization for dangerous patterns"
+        - "Contextual validation for business logic"
+        - "Security scanning for injection attempts"
+      validation: "Input validation strategy must be explicit and comprehensive"
+
+    output_filtering:
+      requirements:
+        - "All outputs pass guardrail checks"
+        - "LLM-based content moderation"
+        - "Rules-based filtering for sensitive data"
+        - "Relevance validation for on-topic responses"
+        - "Safety classification for blocked content"
+      validation: "Output filtering rules must be specific and documented"
+
+    tool_restrictions:
+      requirements:
+        - "Tools limited to necessary set only (least privilege)"
+        - "Forbidden tools explicitly listed"
+        - "Conditional tools requiring approval documented"
+        - "Justification provided for each allowed tool"
+      validation: "Tool set must be minimal and justified"
+
+    audit_logging:
+      requirements:
+        - "All significant actions logged"
+        - "Structured logging with timestamp, action, outcome"
+        - "Errors logged with full context"
+        - "Security events logged immediately"
+      validation: "Logging must be comprehensive and queryable"
+
+    error_handling:
+      requirements:
+        - "Fail-safe defaults on all error paths"
+        - "Graceful degradation with clear messaging"
+        - "No silent failures - all errors must be visible"
+        - "Escalation triggers for critical errors"
+      validation: "Error handling must preserve safety under all conditions"
+
+    document_creation_control:
+      requirements:
+        - "Strictly necessary artifacts only without permission"
+        - "Explicit permission required for supplementary documents"
+        - "No unsolicited reports or analysis documents"
+        - "Ask user BEFORE even conceiving non-essential documents"
+      validation: "Document creation policy must be strictly enforced"
+
+  framework_compliance:
+    contract_completeness:
+      requirements:
+        - "Input specification with types and validation"
+        - "Output specification with format and location"
+        - "Side effects documented (allowed/forbidden)"
+        - "Error handling strategy defined"
+      validation: "Contract must be complete and machine-readable"
+
+    safety_framework_depth:
+      requirements:
+        - "4-layer validation framework implemented"
+        - "7-layer security enterprise architecture"
+        - "Continuous monitoring for safety alignment"
+        - "Adversarial testing suite defined"
+      validation: "Safety framework must address all known threat vectors"
+
+    testing_framework_coverage:
+      requirements:
+        - "Layer 1: Unit testing for output validation"
+        - "Layer 2: Integration testing for handoffs"
+        - "Layer 3: Adversarial output validation"
+        - "Layer 4: Adversarial verification with peer review"
+      validation: "All 4 layers must be testable and measurable"
+
+    observability_integration:
+      requirements:
+        - "Structured logging configuration"
+        - "Metrics collection strategy"
+        - "Alerting thresholds defined"
+        - "Continuous validation monitoring"
+      validation: "Observability must enable incident investigation"
+
+    error_recovery_planning:
+      requirements:
+        - "Retry strategies for transient failures"
+        - "Circuit breaker patterns for persistent failures"
+        - "Degraded mode operation capability"
+        - "Recovery escalation procedures"
+      validation: "All failure scenarios must have recovery path"
 
 adversarial_testing_suite:
   prompt_injection:
@@ -627,6 +765,244 @@ handoff:
       - "Plan iterative improvements"
 
   next_agent: deployment-coordinator
+
+agent_creation_compliance_checklist:
+  description: "Comprehensive validation checklist for agent creation quality and compliance"
+  purpose: "Ensure all new agents meet safety, quality, and specification standards before deployment"
+
+  pre_creation_phase:
+    requirements_analysis:
+      - "[  ] Agent purpose is clearly defined"
+      - "[  ] Use case and target users identified"
+      - "[  ] Success criteria established"
+      - "[  ] Risk assessment completed"
+      - "[  ] Required frameworks identified"
+      validation: "User must approve requirements before creation begins"
+
+    architecture_planning:
+      - "[  ] Agent persona designed with clear identity"
+      - "[  ] Command set defined (3-20 commands recommended)"
+      - "[  ] Tool restrictions determined"
+      - "[  ] Safety boundaries established"
+      - "[  ] Integration points with other agents defined"
+      validation: "Architecture must be documented before implementation"
+
+  creation_phase:
+    specification_structure:
+      - "[  ] YAML frontmatter complete (name, description, model)"
+      - "[  ] ACTIVATION-NOTICE present and emphatic"
+      - "[  ] Persona definition comprehensive (role, style, identity, focus, principles)"
+      - "[  ] Commands list present with 'help' first and 'exit' last"
+      - "[  ] All dependencies embedded inline (no external files)"
+      validation: "Specification must be standalone and self-contained"
+
+    naming_compliance:
+      - "[  ] agent_id is kebab-case and matches filename"
+      - "[  ] persona_name is single friendly word"
+      - "[  ] All commands are kebab-case"
+      - "[  ] No naming conflicts with existing agents"
+      - "[  ] Naming follows project conventions"
+      validation: "Naming must be consistent and searchable"
+
+    framework_implementation:
+      contract_framework:
+        - "[  ] Input specification documented with types"
+        - "[  ] Output specification with format and location"
+        - "[  ] Side effects clearly enumerated"
+        - "[  ] Error handling strategy defined"
+        - "[  ] Constraints and limitations documented"
+        validation: "Contract must be machine-readable and complete"
+
+      safety_framework:
+        - "[  ] 4-layer validation implemented (schema, sanitization, contextual, security)"
+        - "[  ] Output filtering rules specified (LLM, rules-based, relevance, classification)"
+        - "[  ] Tool restrictions with least privilege applied"
+        - "[  ] Behavioral constraints and scope boundaries defined"
+        - "[  ] Continuous monitoring metrics established"
+        - "[  ] Adversarial testing scenarios documented"
+        validation: "Safety framework must address all known threat classes"
+
+      testing_framework:
+        - "[  ] Layer 1: Unit testing validation criteria defined"
+        - "[  ] Layer 2: Integration testing handoff validation"
+        - "[  ] Layer 3: Adversarial output validation tests"
+        - "[  ] Layer 4: Adversarial verification peer review process"
+        - "[  ] Quality gates and metrics specified"
+        validation: "All 4 testing layers must be implementable"
+
+      observability_framework:
+        - "[  ] Structured logging format defined"
+        - "[  ] Metrics collection strategy documented"
+        - "[  ] Alert thresholds established"
+        - "[  ] Continuous validation monitoring configured"
+        - "[  ] Dashboard/metrics plan defined"
+        validation: "Observability must enable operational insight"
+
+      error_recovery_framework:
+        - "[  ] Retry strategies defined for transient failures"
+        - "[  ] Circuit breaker patterns for persistent failures"
+        - "[  ] Degraded mode operation capability"
+        - "[  ] Escalation procedures for critical failures"
+        - "[  ] Recovery state preservation strategy"
+        validation: "All failure scenarios must have recovery path"
+
+    document_creation_control:
+      - "[  ] Only necessary agent specification file created"
+      - "[  ] No unsolicited documentation generated"
+      - "[  ] Supplementary documents require explicit permission"
+      - "[  ] Document creation policy enforced"
+      validation: "Document creation must be strictly controlled"
+
+    safety_guardrails_embedding:
+      - "[  ] Input validation guards implemented"
+      - "[  ] Output filtering guardrails active"
+      - "[  ] Tool usage restrictions enforced"
+      - "[  ] Audit logging enabled"
+      - "[  ] Error handling fail-safes in place"
+      validation: "All safety guardrails must be active in specification"
+
+  validation_phase:
+    specification_validation:
+      - "[  ] YAML syntax is valid"
+      - "[  ] All required sections present"
+      - "[  ] No external file references"
+      - "[  ] Embedded content is complete"
+      - "[  ] File size within acceptable range (<2500 lines)"
+      validation: "Specification must be syntactically correct and complete"
+
+    compliance_validation:
+      - "[  ] Follows AGENT_TEMPLATE.yaml structure"
+      - "[  ] All naming conventions met"
+      - "[  ] Framework completeness verified"
+      - "[  ] Safety requirements addressed"
+      - "[  ] Testing strategy is implementable"
+      validation: "Specification must be compliant with all standards"
+
+    quality_validation:
+      - "[  ] Documentation is clear and comprehensive"
+      - "[  ] Examples provided for complex sections"
+      - "[  ] No ambiguous requirements"
+      - "[  ] Commands are focused and purposeful"
+      - "[  ] Error messages are helpful"
+      validation: "Quality must enable easy agent operation"
+
+    safety_validation:
+      - "[  ] Safety framework is comprehensive"
+      - "[  ] All threat vectors addressed"
+      - "[  ] Tool restrictions are justified"
+      - "[  ] Error handling is fail-safe"
+      - "[  ] Document creation control enforced"
+      validation: "Safety validation MUST pass before deployment"
+
+    adversarial_validation:
+      - "[  ] Prompt injection attempts documented and mitigated"
+      - "[  ] Jailbreak attempts addressed"
+      - "[  ] Credential/data access attempts prevented"
+      - "[  ] Tool misuse attempts detected and blocked"
+      - "[  ] Context manipulation attempts handled"
+      validation: "Agent must withstand known adversarial attacks"
+
+  peer_review_phase:
+    reviewer_role_validation:
+      - "[  ] Qualified peer reviewer assigned (architecture/safety expertise)"
+      - "[  ] Reviewer has no conflicts of interest"
+      - "[  ] Reviewer has adequate time for thorough review"
+      - "[  ] Review rubric provided to reviewer"
+      validation: "Reviewer must be qualified and unbiased"
+
+    technical_review_gates:
+      - "[  ] Architecture decisions justified"
+      - "[  ] Safety framework implementation sound"
+      - "[  ] Testing strategy adequate"
+      - "[  ] Error handling comprehensive"
+      - "[  ] Framework integration complete"
+      validation: "Reviewer must approve technical implementation"
+
+    quality_review_gates:
+      - "[  ] Documentation clarity approved"
+      - "[  ] Examples provided where needed"
+      - "[  ] Command purposes clear"
+      - "[  ] Success criteria measurable"
+      validation: "Reviewer must approve quality standards"
+
+    security_review_gates:
+      - "[  ] Threat modeling complete"
+      - "[  ] Mitigations for all identified threats"
+      - "[  ] Adversarial testing plan comprehensive"
+      - "[  ] Security assumptions documented"
+      validation: "Reviewer must approve security posture"
+
+    approval_process:
+      - "[  ] Reviewer provides structured feedback"
+      - "[  ] Creator addresses all feedback items"
+      - "[  ] Re-review cycle if major issues found"
+      - "[  ] Final approval obtained in writing"
+      - "[  ] Approval documented in git commit"
+      validation: "Approval must be explicit and documented"
+
+  production_readiness_phase:
+    final_validation:
+      - "[  ] All checklist items marked as complete"
+      - "[  ] No critical issues outstanding"
+      - "[  ] No high-priority issues unaddressed"
+      - "[  ] All security validations passed"
+      - "[  ] Peer review approval obtained"
+      validation: "All validations must pass before deployment"
+
+    deployment_preparation:
+      - "[  ] Documentation reviewed and current"
+      - "[  ] Monitoring/alerting configuration ready"
+      - "[  ] Operational runbook prepared"
+      - "[  ] Incident response plan documented"
+      - "[  ] Rollback procedures tested"
+      validation: "Operational readiness must be confirmed"
+
+    handoff_readiness:
+      - "[  ] Agent specification complete and approved"
+      - "[  ] All frameworks implemented and tested"
+      - "[  ] Documentation comprehensive"
+      - "[  ] Quality gates passed (100% compliance)"
+      - "[  ] Ready for integration with other agents"
+      validation: "Agent must be ready for immediate deployment"
+
+  compliance_validation_gates:
+    critical_gates:
+      - gate: "Safety framework completeness"
+        measurement: "All 5 frameworks present and documented"
+        blocker_if_failed: true
+
+      - gate: "Adversarial security validation"
+        measurement: "All known attack vectors addressed"
+        blocker_if_failed: true
+
+      - gate: "Peer review approval"
+        measurement: "Reviewer approval obtained"
+        blocker_if_failed: true
+
+      - gate: "Framework compliance"
+        measurement: "100% compliance with AGENT_TEMPLATE.yaml"
+        blocker_if_failed: true
+
+    major_gates:
+      - gate: "Testing framework completeness"
+        measurement: "All 4 testing layers implementable"
+        blocker_if_failed: true
+
+      - gate: "Documentation quality"
+        measurement: "All sections clear and complete"
+        blocker_if_failed: false
+
+      - gate: "Error handling comprehensiveness"
+        measurement: "All error scenarios have recovery path"
+        blocker_if_failed: true
+
+    compliance_reporting:
+      - "[  ] Compliance status documented"
+      - "[  ] Failed gates identified and addressed"
+      - "[  ] Compliance evidence retained"
+      - "[  ] Approval chain documented"
+      - "[  ] Compliance metrics tracked"
+
   validation_checklist:
     - All deliverables complete
     - Quality gates passed
