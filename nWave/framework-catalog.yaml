@@ -18,7 +18,7 @@
 # ============================================================================
 
 name: "nWave"
-version: "1.2.50"
+version: "1.2.51"
 description: "Comprehensive DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER methodology with visual architecture lifecycle management"
 author: "AI-Craft Team"
 license: "MIT"
@@ -137,6 +137,13 @@ commands:
     agents: ["researcher"]
     wave: "DEVELOP"
     outputs: ["baseline_yaml"]
+
+  mutation_test:
+    description: "Mutation testing quality gate for test suite validation"
+    argument_hint: "[project-id] - Optional: --threshold=[75|80|85] --language=[auto|python|java|javascript]"
+    agents: ["software_crafter"]
+    wave: "DEVELOP"
+    outputs: ["mutation_report"]
 
   deliver:
     description: "Production readiness validation"

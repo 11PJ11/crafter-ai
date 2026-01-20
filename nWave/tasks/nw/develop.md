@@ -91,8 +91,9 @@ Execute a **complete DEVELOP wave** that orchestrates:
 2. **Phase 3-4**: Roadmap Creation + Dual Review (strategic planning)
 3. **Phase 5-6**: Split into Atomic Steps + Review Each Step (task decomposition)
 4. **Phase 7**: Execute All Steps (14-phase TDD per step)
-5. **Phase 8**: Finalize (archival and cleanup)
-6. **Phase 9**: Report Completion
+5. **Phase 7.5**: Mutation Testing (test quality validation)
+6. **Phase 8**: Finalize (archival and cleanup)
+7. **Phase 9**: Report Completion
 
 ### Key Features
 
@@ -446,9 +447,11 @@ STEP 8: Phase 6 - Review Each Step File (retry max 2 per file)
   ↓
 STEP 9: Phase 7 - Execute All Steps (14-phase TDD per step)
   ↓
-STEP 10: Phase 8 - Finalize
+STEP 10: Phase 7.5 - Mutation Testing (quality gate)
   ↓
-STEP 11: Phase 9 - Report Completion
+STEP 11: Phase 8 - Finalize
+  ↓
+STEP 12: Phase 9 - Report Completion
 ```
 
 ---
@@ -1325,7 +1328,7 @@ DELIVERABLES:
            EXIT
 
    print(f"\n✅ All {len(sorted_step_files)} steps completed successfully")
-   print("Proceeding to Phase 8 (finalize)...")
+   print("Proceeding to Phase 7.5 (mutation testing)...")
 
    mark_phase_complete(project_id, 'Phase 7: Execute All Steps')
    ```
@@ -1339,7 +1342,206 @@ DELIVERABLES:
 
 ---
 
-### STEP 10: Phase 8 - Finalize
+### STEP 10: Phase 7.5 - Mutation Testing (Quality Gate)
+
+**Objective**: Validate test suite quality through mutation testing before finalize.
+
+**Gate Threshold**: 75% mutation kill rate (configurable per project)
+
+**Actions**:
+
+1. **Detect project language**:
+   ```python
+   def detect_project_language(project_root):
+       """Detect primary language from project configuration files."""
+       detectors = [
+           ('pyproject.toml', 'python'),
+           ('setup.py', 'python'),
+           ('requirements.txt', 'python'),
+           ('pom.xml', 'java-maven'),
+           ('build.gradle', 'java-gradle'),
+           ('build.gradle.kts', 'kotlin-gradle'),
+           ('package.json', 'javascript'),
+           ('tsconfig.json', 'typescript'),
+           ('*.csproj', 'csharp'),
+           ('go.mod', 'go'),
+           ('Cargo.toml', 'rust'),
+       ]
+
+       for pattern, language in detectors:
+           if '*' in pattern:
+               if glob.glob(os.path.join(project_root, pattern)):
+                   return language
+           elif os.path.exists(os.path.join(project_root, pattern)):
+               return language
+
+       return 'unknown'
+
+   language = detect_project_language('.')
+   print(f"Detected language: {language}")
+   ```
+
+2. **Select mutation testing tool**:
+   ```python
+   MUTATION_TOOLS = {
+       'python': {
+           'tool': 'mutmut',
+           'install': 'pip install mutmut',
+           'run': 'mutmut run --paths-to-mutate={src}',
+           'report': 'mutmut results',
+       },
+       'java-maven': {
+           'tool': 'pitest',
+           'install': 'Add org.pitest:pitest-maven-plugin to pom.xml',
+           'run': 'mvn org.pitest:pitest-maven:mutationCoverage',
+           'report': 'target/pit-reports/*/index.html',
+       },
+       'java-gradle': {
+           'tool': 'pitest',
+           'install': 'Add id "info.solidsoft.pitest" to build.gradle plugins',
+           'run': 'gradle pitest',
+           'report': 'build/reports/pitest/*/index.html',
+       },
+       'javascript': {
+           'tool': 'stryker',
+           'install': 'npm install --save-dev @stryker-mutator/core',
+           'run': 'npx stryker run',
+           'report': 'reports/mutation/mutation.html',
+       },
+       'typescript': {
+           'tool': 'stryker',
+           'install': 'npm install --save-dev @stryker-mutator/core @stryker-mutator/typescript-checker',
+           'run': 'npx stryker run',
+           'report': 'reports/mutation/mutation.html',
+       },
+       'csharp': {
+           'tool': 'stryker.net',
+           'install': 'dotnet tool install -g dotnet-stryker',
+           'run': 'dotnet stryker',
+           'report': 'StrykerOutput/*/reports/mutation-report.html',
+       },
+       'go': {
+           'tool': 'go-mutesting',
+           'install': 'go install github.com/zimmski/go-mutesting/cmd/go-mutesting@latest',
+           'run': 'go-mutesting ./...',
+           'report': 'stdout (JSON format)',
+       },
+   }
+
+   if language not in MUTATION_TOOLS:
+       print(f"⚠️  No mutation testing tool configured for {language}")
+       print("Skipping mutation testing (manual review required)")
+       mutation_score = None
+   else:
+       tool_config = MUTATION_TOOLS[language]
+       print(f"Using {tool_config['tool']} for mutation testing")
+   ```
+
+3. **Check tool installation and run mutation testing**:
+   ```python
+   def run_mutation_testing(language, src_paths):
+       """Run mutation testing and return score."""
+       tool = MUTATION_TOOLS.get(language)
+       if not tool:
+           return None, "No tool configured"
+
+       # Check if tool is installed
+       check_cmd = {
+           'python': 'mutmut --version',
+           'java-maven': 'mvn --version',
+           'java-gradle': 'gradle --version',
+           'javascript': 'npx stryker --version',
+           'typescript': 'npx stryker --version',
+           'csharp': 'dotnet stryker --version',
+           'go': 'go-mutesting --version',
+       }
+
+       try:
+           subprocess.run(check_cmd[language], shell=True, check=True,
+                         capture_output=True, timeout=30)
+       except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+           return None, f"Tool not installed. Run: {tool['install']}"
+
+       # Run mutation testing (may take significant time)
+       print("Running mutation testing (this may take several minutes)...")
+       run_cmd = tool['run'].format(src=','.join(src_paths) if src_paths else 'src')
+
+       try:
+           result = subprocess.run(run_cmd, shell=True, capture_output=True,
+                                  text=True, timeout=1800)  # 30 min timeout
+           # Parse score from output (tool-specific)
+           return parse_mutation_score(result.stdout, language), None
+       except subprocess.TimeoutExpired:
+           return None, "Mutation testing timed out (>30 min)"
+
+   mutation_score, error = run_mutation_testing(language, ['src', 'lib'])
+   ```
+
+4. **Evaluate against threshold**:
+   ```python
+   MUTATION_THRESHOLD = 75  # Configurable per project
+
+   if mutation_score is None:
+       if language == 'unknown':
+           print("⚠️  Language not detected, mutation testing skipped")
+           print("Manual test quality review required before finalize")
+           # Allow proceed with warning
+       else:
+           print(f"❌ Mutation testing failed: {error}")
+           print("Fix the issue and re-run, or document justification")
+           EXIT
+   elif mutation_score < MUTATION_THRESHOLD:
+       print(f"❌ Mutation score {mutation_score}% below threshold {MUTATION_THRESHOLD}%")
+       print("\nSurviving mutants indicate gaps in test coverage.")
+       print("Options:")
+       print("  1. Add tests to kill surviving mutants")
+       print("  2. Document equivalent mutants (false positives)")
+       print("  3. Adjust threshold in project config (with justification)")
+
+       # Create surviving mutant report
+       create_mutation_report(project_id, mutation_score, surviving_mutants)
+       EXIT
+   else:
+       print(f"✅ Mutation score {mutation_score}% meets threshold {MUTATION_THRESHOLD}%")
+
+   mark_phase_complete(project_id, 'Phase 7.5: Mutation Testing')
+   print("Proceeding to Phase 8 (finalize)...")
+   ```
+
+5. **Create mutation report** (for documentation):
+   ```python
+   def create_mutation_report(project_id, score, surviving):
+       """Create mutation testing report."""
+       report_path = f'docs/feature/{project_id}/mutation-report.md'
+
+       with open(report_path, 'w') as f:
+           f.write(f"# Mutation Testing Report\n\n")
+           f.write(f"**Project**: {project_id}\n")
+           f.write(f"**Date**: {datetime.now().isoformat()}\n")
+           f.write(f"**Score**: {score}%\n")
+           f.write(f"**Threshold**: {MUTATION_THRESHOLD}%\n")
+           f.write(f"**Status**: {'PASS' if score >= MUTATION_THRESHOLD else 'FAIL'}\n\n")
+
+           if surviving:
+               f.write("## Surviving Mutants\n\n")
+               for mutant in surviving:
+                   f.write(f"- {mutant['file']}:{mutant['line']} - {mutant['mutation']}\n")
+   ```
+
+**Success Criteria**:
+- Language detected or explicitly configured
+- Mutation testing tool executed successfully
+- Mutation score >= 75% threshold
+- Mutation report created
+- Progress state updated
+
+**Skip Conditions**:
+- Unknown language with no mutation tool available (proceeds with warning)
+- Project explicitly opts out via `.mutation-config.yaml` with documented justification
+
+---
+
+### STEP 11: Phase 8 - Finalize
 
 **Objective**: Archive results and clean up workflow files.
 
@@ -1438,7 +1640,7 @@ DELIVERABLES:
 
 ---
 
-### STEP 11: Phase 9 - Report Completion
+### STEP 12: Phase 9 - Report Completion
 
 **Objective**: Provide comprehensive summary of DEVELOP wave execution.
 
@@ -2570,6 +2772,7 @@ rm -rf docs/feature/user-authentication/
 - [ ] **Phase 3-4**: Roadmap created OR skipped (if approved), dual reviewed and approved
 - [ ] **Phase 5-6**: Steps created OR skipped (if all approved), each reviewed and approved
 - [ ] **Phase 7**: All steps executed with 14-phase TDD, all commits created
+- [ ] **Phase 7.5**: Mutation testing passed (>= 75% kill rate) or documented skip
 - [ ] **Phase 8**: Finalize executed, evolution document created
 - [ ] **Phase 9**: Completion report displayed
 
@@ -2580,6 +2783,7 @@ rm -rf docs/feature/user-authentication/
 - [ ] All step files executed successfully
 - [ ] All commits created (one per step, local only)
 - [ ] No failing tests
+- [ ] Mutation testing gate passed (>= 75% or documented skip)
 - [ ] Progress tracking complete
 - [ ] Evolution document created
 

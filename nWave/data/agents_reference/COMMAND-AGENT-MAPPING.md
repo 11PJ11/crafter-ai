@@ -1,6 +1,6 @@
 # Command-Agent Auto-Activation Mapping
 
-<!-- version: 1.2.50 -->
+<!-- version: 1.2.51 -->
 
 ## Configuration Status: ✅ COMPLETE
 
@@ -44,6 +44,7 @@ All DW commands are now configured to automatically trigger specialized agent te
 - **`/nw:develop`** → `software-crafter` (Crafty)
 - **`/nw:refactor`** → `software-crafter` (Crafty), `architecture-diagram-manager`
 - **`/nw:mikado`** → `software-crafter` (Crafty), `architecture-diagram-manager` (Archer)
+- **`/nw:mutation-test`** → `software-crafter` (Crafty) - Mutation testing quality gate
 
 ### DEMO Wave Commands
 
@@ -97,7 +98,7 @@ All DW commands are now configured to automatically trigger specialized agent te
 
 ## Validation Status
 
-- ✅ **17/17** commands configured for auto-agent activation
+- ✅ **18/18** commands configured for auto-agent activation
 - ✅ **3/17** commands have explicit context-free implementation patterns
 - ✅ **16 specialized agents** available for domain-specific work
 - ✅ **Main instance isolation** preserved across all command flows

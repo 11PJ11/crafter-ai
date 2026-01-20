@@ -3,7 +3,7 @@
 **Date**: 2026-01-20
 **Auditor**: Lyra (Claude Opus 4.5)
 **Purpose**: Identify and document violations of the delegation principle
-**Status**: ✅ ALL FIXES COMPLETE
+**Status**: ✅ ALL FIXES COMPLETE + MUTATION TESTING ADDED
 
 ## Summary
 
@@ -137,12 +137,28 @@ DELIVERABLES:
    - Record review findings in step file under tdd_cycle.phase_execution_log[6]
 ```
 
-## Next Steps
+## Completed Fixes
 
-1. Fix `/nw:develop` - Replace Task prompts with complete inline instructions
-2. Fix `/nw:execute` - Replace phase 7 and 12 skill references with inline criteria
-3. Fix `/nw:split` - Replace phase 7, 12 skill references and schema entries
-4. Add orchestrator briefing sections to all commands
+1. ✅ Fix `/nw:develop` - Replaced Task prompts with complete inline instructions
+2. ✅ Fix `/nw:execute` - Replaced phase 7 and 12 skill references with inline criteria
+3. ✅ Fix `/nw:split` - Replaced phase 7, 12 skill references and schema entries
+4. ✅ Add orchestrator briefing sections to all commands
+5. ✅ Add Phase 7.5 Mutation Testing to develop.md
+6. ✅ Create `/nw:mutation-test` command (new file)
+
+## Phase B Addition: Mutation Testing
+
+**New Command**: `/nw:mutation-test`
+**Location**: `nWave/tasks/nw/mutation-test.md`
+**Purpose**: Test suite quality gate with language-aware mutation testing
+
+**Features**:
+- Auto-detects project language (Python, Java, JavaScript, TypeScript, C#, Go)
+- Selects appropriate mutation tool (mutmut, PIT, Stryker, Stryker.NET, go-mutesting)
+- Enforces 75% mutation kill rate threshold
+- Creates detailed mutation report
+
+**Integration**: Added as Phase 7.5 in `/nw:develop` workflow between Execute All Steps and Finalize.
 
 ## Verification After Fix
 
