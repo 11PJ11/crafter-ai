@@ -226,3 +226,25 @@
   And all production services are real implementations
   And only external boundaries use test doubles
   And tests fail when production services are unavailable
+
+---
+
+# Phase 4: Pre-commit Hooks Integration
+
+## Scenario: Pre-commit hook detects conflicting file changes
+  @skip
+  Given related files (agent specification and command file) exist in git index
+  When pre-commit hook runs conflict detection
+  Then hook displays conflict detected warning
+  And hook suggests manual review before commit
+  And hook shows specific discrepancy details
+  And hook exits with warning status (non-blocking)
+
+## Scenario: Code formatter unavailable during pre-commit
+  @skip
+  Given code formatter tools (ruff/mypy) are configured
+  When code formatter tool is not installed
+  Then hook fails with formatter not found error
+  And hook provides installation instructions
+  And hook suggests alternative formatter configurations
+  And hook exits with error status (blocking)

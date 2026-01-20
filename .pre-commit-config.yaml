@@ -34,6 +34,24 @@ repos:
         stages: [pre-commit]
         always_run: true
 
+      # Phase 4: Conflict detection between related files
+      - id: conflict-detection
+        name: Conflict Detection - Related Files
+        entry: scripts/hooks/detect-conflicts.sh
+        language: script
+        files: ^(nWave/|scripts/|tools/)
+        pass_filenames: false
+        stages: [pre-commit]
+
+      # Phase 4: Code formatter availability check
+      - id: formatter-availability
+        name: Code Formatter Availability Check
+        entry: scripts/hooks/check-formatter-available.sh
+        language: script
+        files: ^(scripts/|tools/|tests/).*\.py$
+        pass_filenames: false
+        stages: [pre-commit]
+
   # Standard hooks from pre-commit repository
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
