@@ -89,15 +89,23 @@ commands:
   - refactor-agent: Refactor existing agent to improve quality and adherence to standards
   - document-agent: Generate comprehensive documentation for agent usage and architecture
   - handoff-deploy: Prepare agent for deployment with validation checklist and monitoring setup
+  - validate-command-template: Validate nWave command files against COMMAND_TEMPLATE.yaml standards and framework rationalization requirements
+  - check-command-size: Validate command file is between 50-60 lines with violation categorization
+  - detect-workflow-duplication: Scan command for embedded workflows that should be in agent specifications
+  - verify-context-bundling: Confirm context files are explicitly defined and properly referenced
+  - validate-invocation-pattern: Verify proper agent invocation patterns and subagent delegation rules
+  - audit-command-compliance: Comprehensive audit of command template compliance with actionable remediation
   - exit: Say goodbye as the Agent Architect, and then abandon inhabiting this persona
 
 dependencies:
   templates:
     - AGENT_TEMPLATE.yaml
+    - COMMAND_TEMPLATE.yaml
   tasks:
   data:
     - agents_reference/AGENT_QUICK_REFERENCE.md
     - agents_reference/P1_IMPROVEMENTS_DESIGN.md
+    - docs/features/framework-rationalization/04-develop/p0-01-analysis.md
 
 # ============================================================================
 # EMBEDDED KNOWLEDGE (injected at build time from embed/)
@@ -350,6 +358,53 @@ quality_gates:
     - Troubleshooting guide provided
     - Examples included
 
+  command_template_compliance:
+    description: "Validate nWave command files against COMMAND_TEMPLATE.yaml standards"
+    size_validation:
+      - "Command size is between 50-60 lines (target optimal range)"
+      - "Commands exceeding 60 lines flagged with violation factor"
+      - "Critical violations (>500 lines) block approval"
+      - "Major violations (151-500 lines) require justification"
+    structure_validation:
+      - "ORCHESTRATOR BRIEFING section present (mandatory for all commands)"
+      - "ORCHESTRATOR BRIEFING clearly documents subagent constraints"
+      - "ORCHESTRATOR BRIEFING includes WRONG vs CORRECT patterns"
+      - "Agent activation metadata defined (agent-id, when-to-use)"
+      - "Context files section explicitly lists dependencies"
+      - "Success criteria referenced or defined"
+      - "Next wave handoff clearly identified"
+    workflow_duplication_check:
+      - "No embedded orchestration logic (belongs in agent file)"
+      - "No embedded procedural step sequences (STEP 1, STEP 2, etc.)"
+      - "No embedded progress tracking state machine"
+      - "No embedded parameter parsing/validation logic"
+      - "No coordination patterns (belongs in orchestrator agent)"
+    delegation_principle_validation:
+      - "Business logic delegated to agent, not command file"
+      - "Complex workflows reference agent specification"
+      - "Clear separation between command (thin) and agent (logic-rich)"
+      - "Agent invocation pattern used consistently"
+    context_bundling_validation:
+      - "Context files explicitly listed (not hardcoded paths)"
+      - "Context file paths verified to exist"
+      - "Suggested context-bundles.yaml references where applicable"
+      - "Previous artifacts path format consistent"
+    agent_invocation_pattern:
+      - "Command uses proper agent name format (@agent-id notation)"
+      - "Agent parameters extracted correctly"
+      - "Subagent tool limitations documented (no Skill, no AskUserQuestion)"
+      - "Handoff package structure defined"
+    critical_violations:
+      - "Procedural steps embedded across 7+ files (BLOCKER)"
+      - "Progress tracking logic embedded (BLOCKER)"
+      - "State machine documentation inline (BLOCKER)"
+      - "Orchestration coordination in command file (BLOCKER)"
+    feedback_requirements:
+      - "Violations categorized by severity (Critical/Major/Minor)"
+      - "Actionable remediation provided for each violation"
+      - "Migration path specified (where to move embedded content)"
+      - "Evidence provided from compliance analysis"
+
 testing_framework:
   layer_1_unit_testing:
     purpose: "Validate individual agent outputs meet structural and quality standards"
@@ -417,6 +472,79 @@ testing_framework:
     layer_5_data_protection: "Encryption, sanitization, privacy preservation"
     layer_6_monitoring: "Real-time tracking, anomaly detection, alert systems"
     layer_7_governance: "Policy enforcement, compliance validation, audit trails"
+
+  command_template_validation_protocol:
+    purpose: "Validate nWave command files against COMMAND_TEMPLATE.yaml standards and framework rationalization requirements"
+    validation_workflow:
+      step_1_load_command_file:
+        description: "Load and parse target command file (nWave/tasks/nw/*.md)"
+        checks:
+          - "File exists at expected path"
+          - "File is valid markdown"
+          - "File contains required frontmatter sections"
+      step_2_size_compliance:
+        description: "Validate command file size is within target range (50-60 lines)"
+        severity: "BLOCKER if > 500 lines, WARNING if > 60 lines"
+        measurement: "Line count excluding frontmatter and empty lines"
+        violation_categories:
+          - "COMPLIANT: 50-60 lines (optimal)"
+          - "MINOR: 61-150 lines (review justification)"
+          - "MAJOR: 151-500 lines (embedded workflows detected)"
+          - "CRITICAL: > 500 lines (severe violations)"
+      step_3_structure_validation:
+        description: "Validate command structure matches COMMAND_TEMPLATE.yaml requirements"
+        required_sections:
+          - "Agent Activation Metadata (YAML)"
+          - "Task Header (Overview)"
+          - "Context Files Section (explicit list)"
+          - "Previous Artifacts (reference previous wave)"
+          - "Agent Invocation (proper format)"
+          - "Success Criteria (quality gates)"
+          - "Next Wave Handoff (identified)"
+          - "ORCHESTRATOR BRIEFING (mandatory, clearly documented)"
+        severity: "BLOCKER if ORCHESTRATOR BRIEFING missing"
+      step_4_workflow_duplication_check:
+        description: "Detect embedded workflows that belong in agent specifications"
+        anti_patterns_to_detect:
+          - "Procedural step sequences (STEP 1, STEP 2, etc.) - 5+ detected = BLOCKER"
+          - "Progress tracking state machine - any detection = WARNING"
+          - "Embedded parameter parsing logic - any detection = WARNING"
+          - "Orchestration coordination language - any detection = BLOCKER"
+          - "Measurement protocols inline - any detection = MAJOR"
+        action_on_detection: "Document location and recommend movement to agent specification"
+      step_5_delegation_principle:
+        description: "Verify business logic delegated to agent, not command file"
+        checks:
+          - "Command file is thin (primarily metadata and structure)"
+          - "Complex workflows reference agent specification"
+          - "Clear separation between command (orchestrator) and agent (executor)"
+          - "No business logic implementation in command file"
+        severity: "BLOCKER if business logic found in command file"
+      step_6_context_bundling:
+        description: "Validate context files explicitly defined and bundled"
+        checks:
+          - "Context files explicitly listed (not hardcoded in agent)"
+          - "Context file paths verified to exist"
+          - "Suggested context-bundles.yaml references where applicable"
+          - "Previous artifacts path format consistent"
+        severity: "BLOCKER if no explicit context definition"
+      step_7_agent_invocation:
+        description: "Verify correct agent invocation pattern used"
+        pattern: "@agent-id or /nw:command-name format"
+        checks:
+          - "Agent name format correct (@agent-id)"
+          - "Parameters extracted with clear naming"
+          - "Subagent tool limitations documented"
+          - "Handoff package structure defined"
+        severity: "BLOCKER if invocation pattern incorrect"
+    output_format:
+      compliance_status: "[COMPLIANT | NON_COMPLIANT | BLOCKED]"
+      violation_summary: "Categorized by severity with line numbers"
+      size_metrics: "Current lines vs target range with violation factor"
+      embedded_workflows: "List of detected anti-patterns with locations"
+      actionable_feedback: "Specific remediation steps for each violation"
+      migration_path: "Where to move embedded content (reference agent spec)"
+      approval_decision: "[APPROVED | REJECTED_PENDING_REVISIONS | ESCALATED]"
 
   layer_4_adversarial_verification:
     purpose: "Quality validation through peer review to reduce confirmation bias"

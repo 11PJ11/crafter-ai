@@ -63,7 +63,10 @@
       "WebFetch(domain:www.brocardi.it)",
       "WebFetch(domain:www.wipo.int)",
       "Bash(git mv:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Skill(nw:execute)",
+      "Skill(nw:execute:*)",
+      "Bash(git config:*)"
     ],
     "deny": [],
     "ask": []
