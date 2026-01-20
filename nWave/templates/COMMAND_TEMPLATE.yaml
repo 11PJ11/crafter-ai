@@ -6,6 +6,9 @@
 # Source: Claude Code Subagent Activation Best Practices Research + Pattern Analysis
 #
 # CHANGELOG:
+# - v1.2 (2026-01-20): Enhanced based on P0-01 analysis - 38% ORCHESTRATOR BRIEFING
+#                      compliance, top 10 violation patterns documented, stronger
+#                      anti-pattern guidance with real-world examples from 21 commands
 # - v1.1 (2026-01-20): Added Anti-Patterns section, Delegation Principle emphasis,
 #                      Compliance Checklist based on analysis of 20 existing commands
 # - v1.0 (2025-10-07): Initial template with 50-60 line target
@@ -185,49 +188,56 @@ Refer to {PersonaName} agent's quality gates in nWave/agents/{agent-id}.md.
 # - data/research/command-template-analysis-2026-01-20.md (Latest analysis)
 #
 # ============================================================================
-# ANTI-PATTERNS TO AVOID (Evidence-Based)
+# ANTI-PATTERNS TO AVOID (Evidence-Based from P0-01 Analysis)
 # ============================================================================
 #
 # Analysis date: 2026-01-20
-# Evidence: 20 nWave command files, 8,334 total lines analyzed
-# Finding: 80% of commands exceeded 60-line target (average violation: 7x target)
+# Evidence: 21 nWave command files, 8,334 total lines analyzed
+# Finding: 48% of commands exceeded 60-line target (avg violation: 13.4x target)
 # Root cause: Embedded workflows that belong in agent files
+#
+# CRITICAL VIOLATIONS (>500 lines):
+#   develop.md: 2,854 lines (47.6x target) - embedded orchestration logic
+#   split.md: 1,563 lines (26.0x target) - task generation workflow embedded
+#
+# MAJOR VIOLATIONS (151-500 lines):
+#   baseline.md: 816 lines (13.6x target) - measurement protocol embedded
+#   execute.md: 809 lines (13.5x target) - step execution workflow embedded
+#   roadmap.md: 728 lines (12.1x target) - roadmap generation workflow embedded
+#   review.md: 605 lines (10.1x target) - review framework workflow embedded
 #
 # DO NOT INCLUDE IN COMMAND FILES:
 #
-# ❌ Multi-step workflow instructions ("STEP 1, STEP 2, STEP 3...")
-#    Evidence: 42 occurrences across 7 files
-#    → Location: Agent activation_instructions section
+# ❌ PATTERN 1 (Frequency: 7 files): Multi-step workflow instructions
+#    Examples: "STEP 1: Define baseline", "PHASE 1: Create roadmap"
+#    → Location: Agent activation_instructions section in agent file
 #
-# ❌ Progress tracking and state management logic
-#    Evidence: 224 occurrences (highest frequency violation)
+# ❌ PATTERN 2 (Frequency: 9 files): Progress tracking and state management
+#    Examples: Phase tracking, progress markers, state machine transitions
 #    → Location: Orchestrator agent or infrastructure layer
 #
-# ❌ Orchestration coordination ("YOU ARE THE COORDINATOR")
-#    Evidence: 64 occurrences across 9 files
-#    → Location: Orchestrator agent specification
+# ❌ PATTERN 3 (Frequency: 6 files): State machine and dependency documentation
+#    Examples: Detailed state transitions, phase dependencies, flow diagrams
+#    → Location: Agent specification with brief reference in command
 #
-# ❌ Task tool invocation details and examples
-#    Evidence: 33 occurrences across 7 files
-#    → Location: Orchestrator agent implementation guide
-#
-# ❌ Parameter parsing and validation procedures
-#    Evidence: 13 occurrences across 7 files
+# ❌ PATTERN 4 (Frequency: 5 files): Parameter parsing and validation
+#    Examples: "Extract agent name from arguments", "Validate parameter types"
 #    → Location: Command parser infrastructure
 #
-# ❌ Error handling workflows and recovery logic
-#    Evidence: 27 occurrences across 7 files
-#    → Location: Agent error handling protocols
+# ❌ PATTERN 5 (Frequency: 4 files): Orchestration coordination logic
+#    Examples: "YOU ARE THE COORDINATOR", "Agent Invocation Protocol"
+#    → Location: Orchestrator agent specification only
 #
-# ❌ Detailed quality gate checklists
-#    Evidence: 6 validation checklist duplications
-#    → Location: Agent specification, reference only in commands
+# COMPLIANCE BASELINE (as of 2026-01-20):
+# - ORCHESTRATOR BRIEFING present: 38% (8/21 files) ⚠️ TARGET: 100%
+# - Size compliant (≤60 lines): 52% (11/21 files) ⚠️ TARGET: 100%
+# - Full template compliance: 52% (averaging all sections)
 #
-# VIOLATION EXAMPLES FROM ANALYSIS:
-#
-# - develop.md: 2,360 lines (39x target) - massive orchestration embedded
-# - split.md: 1,532 lines (26x target) - task generation workflow embedded
-# - baseline.md: 779 lines (13x target) - measurement protocol embedded
+# REAL-WORLD VIOLATION IMPACT:
+# - develop.md: ~2,360 lines of embedded orchestration (belongs in software-crafter.md)
+# - split.md: ~950 lines of embeddable content (belongs in software-crafter.md)
+# - baseline.md: ~650 lines of measurement protocol (belongs in researcher.md)
+# - Result: Critical files are 11-47x their target size
 #
 # REMEMBER: Commands are DELEGATION files, not IMPLEMENTATION files
 # External validation: CLI best practices (clig.dev) recommend atomic commands
@@ -270,7 +280,7 @@ Refer to {PersonaName} agent's quality gates in nWave/agents/{agent-id}.md.
 # Agent file contains WORKFLOW IMPLEMENTATION.
 #
 # ============================================================================
-# ORCHESTRATOR BRIEFING SECTION (MANDATORY)
+# ORCHESTRATOR BRIEFING SECTION (MANDATORY - CRITICAL FOR ALL COMMANDS)
 # ============================================================================
 #
 # 🚨 CRITICAL ARCHITECTURAL CONSTRAINT:
@@ -278,21 +288,24 @@ Refer to {PersonaName} agent's quality gates in nWave/agents/{agent-id}.md.
 # They can ONLY use: Read, Write, Edit, Bash, Glob, Grep
 #
 # This means agents CANNOT:
-# - Invoke /nw:* commands
-# - Access any Skills
-# - Call other agents
+# - Invoke /nw:* commands (agents will silently fail)
+# - Access any Skills (no skill invocations possible)
+# - Call other agents (no Task tool available)
+#
+# CURRENT COMPLIANCE: Only 38% of commands (8/21) include this section
+# COMPLIANCE TARGET: 100% - ALL commands MUST include ORCHESTRATOR BRIEFING
 #
 # WHY THIS MATTERS:
-# If a command says "Agent should invoke /nw:review", the agent will
-# receive that text but cannot execute it. The agent completes without
-# performing the review because it has no mechanism to run the command.
+# If a command says "Agent should invoke /nw:review", the agent will receive
+# that text but CANNOT execute it. The agent completes without performing the
+# review because it has no mechanism to run commands. This is a SILENT FAILURE.
 #
 # REQUIRED IN EVERY COMMAND FILE:
 # Each command MUST include an "## Orchestrator Briefing" section that tells
 # the orchestrator (main Claude instance) EXACTLY what to communicate to
 # agents when delegating via Task tool.
 #
-# ORCHESTRATOR BRIEFING TEMPLATE:
+# ORCHESTRATOR BRIEFING TEMPLATE (COMPLETE EXAMPLE):
 #
 # ## Orchestrator Briefing
 #
@@ -300,12 +313,12 @@ Refer to {PersonaName} agent's quality gates in nWave/agents/{agent-id}.md.
 #
 # 1. **Read this command file** and extract all workflow details
 # 2. **Create a complete agent prompt** that includes:
-#    - All context files content (not just paths)
-#    - All step/task details inline
-#    - Complete workflow instructions embedded
-#    - Expected outputs explicitly stated
-# 3. **Do NOT reference any /nw:* commands** in the agent prompt
-# 4. **Do NOT assume the agent can call other agents or skills**
+#    - All context files content (not just paths) - embed the file content inline
+#    - All step/task details inline - no references to external files
+#    - Complete workflow instructions embedded - everything the agent needs
+#    - Expected outputs explicitly stated - leave no ambiguity
+# 3. **Do NOT reference any /nw:* commands** in the agent prompt (agent can't invoke)
+# 4. **Do NOT assume the agent can call other agents or skills** (it can't)
 #
 # ### Agent Prompt Template for {command-name}
 #
@@ -313,74 +326,128 @@ Refer to {PersonaName} agent's quality gates in nWave/agents/{agent-id}.md.
 # You are a {agent-name} agent executing {task-description}.
 #
 # CONTEXT:
-# {full content of all context files, embedded inline}
+# [EMBED COMPLETE CONTENT OF ALL CONTEXT FILES HERE - NOT JUST PATHS]
 #
 # TASK DETAILS:
-# {step file content or task specification, embedded inline}
+# [EMBED COMPLETE STEP FILE CONTENT OR TASK SPECIFICATION HERE - INLINE]
 #
 # INSTRUCTIONS:
-# {complete workflow instructions - do NOT reference /nw:* commands}
+# [COMPLETE WORKFLOW INSTRUCTIONS - DO NOT REFERENCE /nw:* COMMANDS]
+# [Each step must be self-contained - do not assume agent can invoke skills]
 #
 # EXPECTED OUTPUTS:
-# {explicit list of deliverables}
+# [EXPLICIT LIST OF DELIVERABLES WITH FILE PATHS AND CONTENT DESCRIPTIONS]
 #
 # QUALITY GATES:
-# {validation criteria inline - do NOT say "run /nw:review"}
+# [VALIDATION CRITERIA INLINE - DO NOT SAY "RUN /nw:review"]
+# [Include validation logic inline that agent can perform independently]
 # ```
 #
 # ANTI-PATTERNS (NEVER INCLUDE IN COMMANDS OR AGENT PROMPTS):
-# ❌ "Agent should invoke /nw:review"
-# ❌ "Use /nw:execute to process the step"
-# ❌ "After completion, run /nw:finalize"
-# ❌ Any reference to agents calling skills or commands
-# ❌ Assuming agents have access to anything beyond basic tools
+# ❌ "Agent should invoke /nw:review" → SILENT FAILURE (agent can't invoke)
+# ❌ "Use /nw:execute to process the step" → AGENT CANNOT EXECUTE THIS
+# ❌ "After completion, run /nw:finalize" → SILENT FAILURE (agent can't invoke)
+# ❌ "See nWave/tasks/nw/baseline.md for workflow" → AGENT NEEDS CONTENT, NOT PATH
+# ❌ Any reference to agents calling skills or commands → AGENT CANNOT ACCESS
+# ❌ Assuming agents have access to anything beyond Read, Write, Edit, Bash, Grep
 #
 # CORRECT PATTERNS:
 # ✅ "Orchestrator should read /nw:review and embed review criteria in prompt"
-# ✅ "Provide agent with complete workflow instructions inline"
-# ✅ "Agent prompt must contain full file content, not just paths"
-# ✅ "Include all quality gate criteria directly in the prompt"
+# ✅ "Provide agent with complete workflow instructions inline (not as paths)"
+# ✅ "Agent prompt must contain full file content, not references to files"
+# ✅ "Include all quality gate criteria directly in the prompt for agent use"
+# ✅ "Orchestrator translates skill references into inline workflows"
+#
+# VALIDATION CHECKLIST FOR ORCHESTRATOR BRIEFING:
+# - [ ] Section header present: "## Orchestrator Briefing"
+# - [ ] 1-4 numbered steps documented with agent prompt template
+# - [ ] Agent prompt template shows CONTENT embedding (not file paths)
+# - [ ] Anti-patterns section included (what NOT to do)
+# - [ ] Correct patterns section included (what TO do)
+# - [ ] No references to agents invoking /nw:* commands
+# - [ ] No assumptions that agents can access skills
+# - [ ] All validation logic shown as inline procedures (not command invocation)
 #
 # ============================================================================
-# TEMPLATE COMPLIANCE CHECKLIST
+# TEMPLATE COMPLIANCE CHECKLIST (Based on P0-01 Analysis)
 # ============================================================================
 #
-# Before committing a command file, verify ALL items:
+# Before committing a command file, verify ALL items below.
+# Compliance rate target: 100% (currently 52% as of P0-01 analysis)
 #
-# SIZE COMPLIANCE:
+# SECTION 1: SIZE COMPLIANCE
 # - [ ] Total lines ≤ 60 (excluding comments and template notes)
-# - [ ] If >60 lines, workflow sections moved to agent file?
+#       Current: 52% compliance (11/21 commands)
+#       If >60 lines: Move workflow sections to agent file before commit
+#       Note: This is the PRIMARY compliance gate - size drives content decisions
 #
-# CONTENT COMPLIANCE (Anti-Pattern Check):
-# - [ ] No "STEP 1, STEP 2" procedural workflows
-# - [ ] No orchestration coordination logic
-# - [ ] No progress tracking implementation
-# - [ ] No Task tool invocation tutorials
-# - [ ] No parameter parsing procedures
-# - [ ] No error handling workflows
-# - [ ] Quality gates referenced, not duplicated
+# SECTION 2: CONTENT COMPLIANCE (Anti-Pattern Check)
+# Verify NONE of these patterns exist in the command file:
+# - [ ] No "STEP 1, STEP 2" procedural workflows (violation freq: 7 files)
+# - [ ] No orchestration coordination logic (violation freq: 4 files)
+# - [ ] No progress tracking implementation (violation freq: 9 files)
+# - [ ] No Task tool invocation tutorials (violation freq: 5 files)
+# - [ ] No parameter parsing procedures (violation freq: 5 files)
+# - [ ] No state machine documentation (violation freq: 6 files)
+# - [ ] No error handling workflows (violation freq: implied)
+# - [ ] Quality gates referenced, not duplicated (never more than 10 lines)
 #
-# DELEGATION COMPLIANCE:
+# SECTION 3: DELEGATION COMPLIANCE
 # - [ ] Context files explicitly listed (with descriptions)
-# - [ ] Configuration parameters defined
-# - [ ] Previous artifacts identified (wave handoff)
+# - [ ] Configuration parameters defined (if any apply)
+# - [ ] Previous artifacts identified (wave handoff source noted)
 # - [ ] Agent invocation uses explicit inputs pattern
+#       (not generic "run this agent" pattern)
 #
-# ORCHESTRATOR BRIEFING COMPLIANCE (CRITICAL):
-# - [ ] Contains "## Orchestrator Briefing" section
-# - [ ] Includes agent prompt template with inline content placeholders
+# SECTION 4: ORCHESTRATOR BRIEFING COMPLIANCE (CRITICAL FOR ALL COMMANDS)
+# ⚠️ MANDATORY REQUIREMENT - NOT OPTIONAL
+# Current compliance: 38% (8/21 files) - MUST IMPROVE TO 100%
+# - [ ] Contains "## Orchestrator Briefing" section (non-negotiable)
+# - [ ] Includes complete agent prompt template (with all details)
+# - [ ] Template shows CONTENT EMBEDDING (not file path references)
 # - [ ] NO references to agents invoking /nw:* commands
 # - [ ] NO assumptions that agents can call skills
-# - [ ] Quality gates embedded inline (not "run /nw:review")
-# - [ ] All workflow instructions inline (not "see /nw:execute")
+# - [ ] Quality gates embedded inline (never "run /nw:review")
+# - [ ] All workflow instructions inline (never "see /nw:execute")
+# - [ ] Anti-patterns section included (what NOT to put in agent prompts)
+# - [ ] Correct patterns section included (what TO put in agent prompts)
 #
-# QUALITY VALIDATION:
-# - [ ] Command file is pure delegation (50-60 lines)
-# - [ ] All workflow details in agent file
+# SECTION 5: QUALITY VALIDATION
+# - [ ] Command file is pure delegation (50-60 lines target)
+# - [ ] All workflow details in agent file (not command file)
 # - [ ] No duplication between command and agent files
+# - [ ] Every section aligns with COMMAND_TEMPLATE.yaml structure
 #
-# If any checklist item fails, REFACTOR before committing.
+# SECTION 6: ORCHESTRATOR VALIDATION (Before Committing)
+# - [ ] Agent can execute with provided context files (no searching)
+# - [ ] All /nw:* references translated to inline instructions
+# - [ ] No dangling references to external workflows
+# - [ ] Validation logic executable without skill access
 #
-# COMPLIANCE RATE TARGET: 100% (currently 20% as of 2026-01-20 analysis)
+# ============================================================================
+# COMPLIANCE ESCALATION PATH
+# ============================================================================
+#
+# If command legitimately requires >60 lines (RARE - justify in comment):
+#
+# 1. Move primary workflow to agent file
+# 2. Keep only critical sections in command file
+# 3. Add comment explaining why >60 lines justified
+# 4. Document escalation in commit message
+# 5. Example: "Command requires 200 lines due to [specific reason not embeddable]"
+#
+# Expected to apply to: 0-2 commands maximum
+# Current violations: 10 commands (19 lines above target on average)
+#
+# ============================================================================
+#
+# If ANY checklist item fails, REFACTOR before committing.
+# Pre-commit validation is MANDATORY before all commits.
+#
+# COMPLIANCE RATE TARGETS:
+# - Size compliance: 100% (all commands ≤60 lines)
+# - Orchestrator briefing: 100% (all commands have section)
+# - Content compliance: 100% (no embedded workflows)
+# - Overall compliance: 100% (all sections per template)
 #
 # ============================================================================
