@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, main, develop ]
+  pull_request:
+    branches: [ master, main, develop ]
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        node-version: [ 18.x, 20.x ]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build on Ubuntu
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        echo "Validating build on Ubuntu platform"
+        npm run build
+      shell: bash
+
+    - name: Build on macOS
+      if: matrix.os == 'macos-latest'
+      run: |
+        echo "Validating build on macOS platform"
+        npm run build
+      shell: bash
+
+    - name: Build on Windows
+      if: matrix.os == 'windows-latest'
+      run: |
+        echo "Validating build on Windows platform"
+        npm run build
+      shell: bash
+
+    - name: Run tests
+      run: npm test
+
+    - name: Report CI status
+      if: always()
+      run: |
+        echo "CI validation completed for ${{ matrix.os }} with Node.js ${{ matrix.node-version }}"
+      shell: bash
