@@ -38,6 +38,13 @@ jobs:
           fi
         shell: bash
 
+      - name: Test Installer Dry-Run (Unix Only)
+        if: runner.os != 'Windows'
+        run: |
+          chmod +x scripts/test-installer-unix.sh
+          scripts/test-installer-unix.sh
+        shell: bash
+
   quality-gates:
     name: Quality Gates Validation
     runs-on: ubuntu-latest
