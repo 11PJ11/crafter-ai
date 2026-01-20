@@ -321,3 +321,37 @@ jobs:
           exit 1
         fi
       shell: bash
+
+    - name: Create GitHub release with artifacts
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        echo "Creating GitHub release for version ${{ github.ref_name }}"
+
+        # Determine Codex archive name (handle both .tar.gz and .txt variants)
+        codex_artifact=""
+        if [[ -f "release-artifacts/codex-${{ github.ref_name }}.tar.gz" ]]; then
+          codex_artifact="release-artifacts/codex-${{ github.ref_name }}.tar.gz"
+          echo "Using Codex archive: $codex_artifact"
+        elif [[ -f "release-artifacts/codex-${{ github.ref_name }}.txt" ]]; then
+          codex_artifact="release-artifacts/codex-${{ github.ref_name }}.txt"
+          echo "Using Codex placeholder: $codex_artifact"
+        else
+          echo "Error: Neither Codex archive nor placeholder found"
+          exit 1
+        fi
+
+        # Create GitHub release with all assets and auto-generated release notes
+        gh release create "${{ github.ref_name }}" \
+          "release-artifacts/claude-code-${{ github.ref_name }}.tar.gz" \
+          "$codex_artifact" \
+          "release-artifacts/CHECKSUMS.sha256" \
+          --generate-notes \
+          --title "Release ${{ github.ref_name }}" \
+          --verify
+
+        echo "GitHub release created successfully with all assets and auto-generated release notes"
+
+        # Verify release was created
+        gh release view "${{ github.ref_name }}" --json name,tagName,url,assets
+      shell: bash
