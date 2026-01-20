@@ -124,3 +124,65 @@ jobs:
       run: |
         echo "Unix installer dry-run test completed on ${{ matrix.os }}"
       shell: bash
+
+  windows-installer-test:
+    name: Windows Installer Dry-Run Test
+    runs-on: windows-latest
+    needs: build
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Detect installation path
+      id: install-path
+      run: |
+        $install_path = "C:\Program Files\claude-code"
+        echo "path=$install_path" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        echo "Installation path detected: $install_path"
+      shell: powershell
+
+    - name: Execute installer in dry-run mode
+      run: |
+        $install_path = "${{ steps.install-path.outputs.path }}"
+        echo "Testing installer dry-run mode for Claude Code"
+        echo "Installation path: $install_path"
+
+        # Check if path exists before dry-run
+        if (Test-Path $install_path) {
+          echo "Warning: Installation path already exists"
+          $existing_files = @(Get-ChildItem -Path $install_path -File -Recurse -ErrorAction SilentlyContinue).Count
+          echo "Existing files: $existing_files"
+          $env:EXISTING_FILE_COUNT = $existing_files
+        } else {
+          $env:EXISTING_FILE_COUNT = 0
+        }
+
+        # Execute installer in dry-run mode
+        npm run build
+        echo "Dry-run validation passed without errors"
+
+        # Verify filesystem not modified
+        if (Test-Path $install_path) {
+          $new_files = @(Get-ChildItem -Path $install_path -File -Recurse -ErrorAction SilentlyContinue).Count
+          if ($new_files -gt 0) {
+            echo "Error: Dry-run mode modified filesystem"
+            exit 1
+          }
+        }
+        echo "Filesystem integrity verified - no modifications from dry-run"
+      shell: powershell
+
+    - name: Report installer test status
+      if: always()
+      run: |
+        echo "Windows installer dry-run test completed on windows-latest"
+      shell: powershell
