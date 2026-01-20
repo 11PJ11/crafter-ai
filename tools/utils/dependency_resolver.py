@@ -2,13 +2,14 @@
 Dependency Resolver
 
 Resolves and embeds dependencies for nWave agents and other components.
-Handles {root} placeholder resolution and content embedding with proper formatting.
+Handles {root} placeholder resolution, content embedding with proper formatting,
+BUILD:INCLUDE markers, and BUILD:INJECT coexistence.
 """
 
 import logging
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Optional, Any, Union, Set
 
 
 class DependencyResolver:
@@ -29,6 +30,181 @@ class DependencyResolver:
             "agent-teams": "agent-teams",
             "embed_knowledge": "data",  # embed_knowledge files are under data/embed/
         }
+
+        # Track circular references during BUILD:INCLUDE resolution
+        self._include_stack: Set[str] = set()
+
+    def parse_build_include_markers(self, content: str) -> List[Dict[str, str]]:
+        """
+        Parse BUILD:INCLUDE markers from content.
+
+        Marker format: {{ BUILD:INCLUDE file_path }}
+
+        Args:
+            content: Content to parse
+
+        Returns:
+            list: List of dicts with 'marker' (full text) and 'path' (file path)
+        """
+        pattern = r"{{\s*BUILD:INCLUDE\s+([^\s}]+)\s*}}"
+        matches = re.finditer(pattern, content)
+
+        markers = []
+        for match in matches:
+            markers.append({"marker": match.group(0), "path": match.group(1)})
+
+        return markers
+
+    def resolve_build_include_markers(
+        self, content: str, source_file: Optional[Path] = None
+    ) -> str:
+        """
+        Resolve BUILD:INCLUDE markers by replacing with file content.
+
+        Args:
+            content: Content with BUILD:INCLUDE markers
+            source_file: Path to source file (for relative path resolution)
+
+        Returns:
+            str: Content with markers replaced
+
+        Raises:
+            ValueError: If circular reference detected or file not found
+        """
+        markers = self.parse_build_include_markers(content)
+
+        if not markers:
+            return content
+
+        result = content
+
+        for marker_info in markers:
+            marker_text = marker_info["marker"]
+            file_path = marker_info["path"]
+
+            # Resolve path (handle relative paths)
+            resolved_path = self._resolve_include_path(file_path, source_file)
+
+            if not resolved_path:
+                raise ValueError(
+                    f"BUILD:INCLUDE file not found: {file_path} "
+                    f"(from {source_file or 'unknown'})"
+                )
+
+            # Check for circular references
+            if str(resolved_path) in self._include_stack:
+                raise ValueError(
+                    f"Circular BUILD:INCLUDE reference detected: {file_path} "
+                    f"(include stack: {' -> '.join(self._include_stack)})"
+                )
+
+            # Load included file content
+            try:
+                included_content = self.file_manager.read_file(resolved_path)
+                if not included_content:
+                    raise ValueError(f"Could not read BUILD:INCLUDE file: {file_path}")
+
+                # Add to stack to track circular refs
+                self._include_stack.add(str(resolved_path))
+
+                # Recursively resolve nested BUILD:INCLUDE markers
+                resolved_content = self.resolve_build_include_markers(
+                    included_content, resolved_path
+                )
+
+                # Remove from stack
+                self._include_stack.discard(str(resolved_path))
+
+                # Format for embedding
+                file_format = resolved_path.suffix.lstrip(".") or "txt"
+                formatted_content = self.format_content_for_embedding(
+                    resolved_content, file_format
+                )
+
+                # Replace marker with content
+                result = result.replace(marker_text, formatted_content)
+
+                logging.debug(
+                    f"Resolved BUILD:INCLUDE marker: {file_path} -> {resolved_path} "
+                    f"({len(formatted_content)} chars)"
+                )
+
+            except Exception as e:
+                logging.error(
+                    f"Error resolving BUILD:INCLUDE marker '{file_path}': {e}"
+                )
+                raise ValueError(
+                    f"Failed to resolve BUILD:INCLUDE marker '{file_path}': {e}"
+                )
+
+        return result
+
+    def _resolve_include_path(
+        self, file_path: str, source_file: Optional[Path] = None
+    ) -> Optional[Path]:
+        """
+        Resolve BUILD:INCLUDE file path with security checks.
+
+        Args:
+            file_path: Path from marker
+            source_file: Source file path (for relative resolution)
+
+        Returns:
+            Path: Resolved absolute path or None if not found
+
+        Raises:
+            ValueError: If path traversal attack detected
+        """
+        try:
+            # Parse the path
+            target_path = Path(file_path)
+
+            # Security check: prevent directory traversal attacks
+            if ".." in target_path.parts:
+                raise ValueError(
+                    f"Path traversal attack detected in BUILD:INCLUDE: {file_path}"
+                )
+
+            # If absolute path, use as-is (but still inside project)
+            if target_path.is_absolute():
+                # Ensure it's within source_dir
+                try:
+                    target_path.relative_to(self.source_dir)
+                except ValueError:
+                    raise ValueError(f"BUILD:INCLUDE path outside project: {file_path}")
+                resolved = target_path
+            else:
+                # Relative path: resolve from source file or source_dir
+                if source_file and source_file.is_file():
+                    resolved = source_file.parent / target_path
+                else:
+                    resolved = self.source_dir / target_path
+
+                # Normalize and verify still within source_dir
+                resolved = resolved.resolve()
+                try:
+                    resolved.relative_to(self.source_dir)
+                except ValueError:
+                    raise ValueError(
+                        f"BUILD:INCLUDE path outside project: {file_path} "
+                        f"(resolved to {resolved})"
+                    )
+
+            # Check file exists
+            if not resolved.exists():
+                logging.warning(f"BUILD:INCLUDE file not found: {resolved}")
+                return None
+
+            if not resolved.is_file():
+                raise ValueError(f"BUILD:INCLUDE path is not a file: {resolved}")
+
+            return resolved
+
+        except ValueError:
+            raise
+        except Exception as e:
+            logging.error(f"Error resolving BUILD:INCLUDE path '{file_path}': {e}")
+            return None
 
     def resolve_dependency_path(
         self, dependency_type: str, dependency_name: str
@@ -384,3 +560,71 @@ class DependencyResolver:
             summary_parts.append("")
 
         return "\n".join(summary_parts)
+
+    def verify_build_include_and_inject_coexistence(
+        self, content: str
+    ) -> Dict[str, Any]:
+        """
+        Verify that BUILD:INCLUDE and BUILD:INJECT mechanisms work together.
+
+        Args:
+            content: Content to check
+
+        Returns:
+            dict: Verification results with 'valid' bool and 'findings' list
+        """
+        findings = []
+
+        # Parse both types of markers
+        include_markers = self.parse_build_include_markers(content)
+        inject_pattern = r"BUILD:INJECT\s+(\w+)\s+(\S+)"
+        inject_matches = re.finditer(inject_pattern, content)
+        inject_markers = [
+            {"type": m.group(1), "target": m.group(2)} for m in inject_matches
+        ]
+
+        # Check for conflicts (same file referenced in both)
+        include_files = {m["path"] for m in include_markers}
+        inject_targets = {m["target"] for m in inject_markers}
+
+        conflicts = include_files & inject_targets
+        if conflicts:
+            findings.append(
+                {
+                    "level": "warning",
+                    "message": f"Files referenced in both BUILD:INCLUDE and BUILD:INJECT: {conflicts}",
+                    "type": "coexistence_conflict",
+                }
+            )
+
+        # Verify BUILD:INCLUDE files exist
+        for marker in include_markers:
+            resolved_path = self._resolve_include_path(marker["path"])
+            if not resolved_path:
+                findings.append(
+                    {
+                        "level": "error",
+                        "message": f'BUILD:INCLUDE file not found: {marker["path"]}',
+                        "type": "missing_include_file",
+                    }
+                )
+
+        # Check for circular references in BUILD:INCLUDE chain
+        for marker in include_markers:
+            try:
+                self._include_stack.clear()
+                self.resolve_build_include_markers(
+                    f"{{{{ BUILD:INCLUDE {marker['path']} }}}}"
+                )
+            except ValueError as e:
+                findings.append(
+                    {"level": "error", "message": str(e), "type": "circular_reference"}
+                )
+
+        return {
+            "valid": len([f for f in findings if f["level"] == "error"]) == 0,
+            "findings": findings,
+            "include_markers_count": len(include_markers),
+            "inject_markers_count": len(inject_markers),
+            "conflicts": list(conflicts),
+        }

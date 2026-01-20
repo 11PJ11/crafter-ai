@@ -248,3 +248,183 @@
   And hook provides installation instructions
   And hook suggests alternative formatter configurations
   And hook exits with error status (blocking)
+
+---
+
+# Cross-Phase E2E Integration Validation
+
+## Scenario: Complete wave workflow execution
+  @skip
+  Given the nWave framework is configured for cross-phase integration
+  When the DEVELOP wave execution workflow is triggered
+  Then DISCUSS phase outputs are discoverable and documented
+  And DESIGN wave references DISCUSS outputs
+  And DISTILL wave references DESIGN outputs
+  And DEVELOP wave references DISTILL outputs
+  And pre-commit hook validates wave handoff integrity
+
+## Scenario: Complete release workflow from commit to installation
+  @skip
+  Given the codebase has passed all acceptance tests
+  When a code commit is pushed to the repository
+  Then code commit triggers CI/CD pipeline
+  And tests pass in CI environment
+  And build artifact is created
+  And release package is generated with checksums
+  And package is uploaded to release repository
+  And user can download package
+  And user can extract package without errors
+  And installation completes successfully
+  And backup of previous version is created
+
+## Scenario: Same command executed on different platforms produces identical output
+  @skip
+  Given agent specifications are defined for command interface
+  When the same command is executed on Claude Code
+  And the same command is executed on Codex
+  Then output structure is identical on all platforms
+  And output values are identical except for platform-specific metadata
+  And differences are only in metadata fields
+
+## Scenario: New command created from template complies with structure constraints
+  @skip
+  Given agent-builder has command template in dependencies
+  When a developer creates a new command via forge capability
+  Then command is 50-60 lines in length
+  And command contains zero workflow implementation
+  And command bundles context with pre-discovered file paths
+  And command uses proper agent invocation pattern
+  And command passes template compliance checker
+
+## Scenario: Multi-platform build fails on path handling incompatibility
+  @skip
+  Given cross-platform build infrastructure is configured
+  When build system processes file paths
+  Then path normalization handles format correctly
+  Or build fails with clear path format error
+  And error specifies which path caused failure
+  And cross-platform path guidelines are provided
+
+## Scenario: Shared content and embedded content conflict on same location
+  @skip
+  Given shared content library uses BUILD:INCLUDE markers
+  And embedded content uses BUILD:INJECT markers
+  When both target the same location in a file
+  Then resolver fails with marker conflict error
+  And error specifies conflicting marker locations
+  And suggested resolution separates the markers
+
+## Scenario: Complete wave workflow interrupted mid-execution
+  @skip
+  Given wave workflow execution has been started
+  When execution is interrupted at mid-point
+  Then partial progress is saved to recovery file
+  And next execution offers resume option
+  And user can choose resume or restart
+  And no work is lost from interruption
+
+---
+
+# Phase 6: CI/CD Integration and Release Workflow
+
+## Background: CI/CD Pipeline Requirements
+  Given the nWave framework requires automated testing on multiple platforms
+  And the release workflow must validate code quality before creating releases
+  And all platform-specific issues must be detected and reported
+  And release artifacts must be properly versioned and tracked
+
+## Scenario: CI workflow validates build on all platforms
+  Given CI workflow matrix is configured for Ubuntu, macOS, and Windows
+  When code is pushed to master or develop branch
+  Then CI validates build on Ubuntu platform
+  And CI validates build on macOS platform
+  And CI validates build on Windows platform
+  And all platform builds complete successfully
+  And CI status is reported to pull request
+
+## Scenario: Unix installer dry-run succeeds with valid installation structure
+  @skip
+  Given nWave installer script is available for Unix platforms
+  When installer dry-run is executed
+  Then installation structure is validated without making changes
+  And dry-run confirms all target directories are accessible
+  And dry-run identifies existing installations if present
+  And dry-run completes successfully
+
+## Scenario: Windows installer dry-run succeeds with valid installation structure
+  @skip
+  Given nWave installer PowerShell script is available for Windows
+  When installer dry-run is executed on Windows
+  Then installation structure is validated without making changes
+  And dry-run confirms all target directories are accessible
+  And dry-run identifies existing installations if present
+  And dry-run completes successfully
+
+## Scenario: Release trigger workflow activates when version tag is created
+  @skip
+  Given semantic versioning tag pattern is v* (e.g., v1.0.0)
+  When a new version tag is pushed to repository
+  Then release trigger workflow activates automatically
+  And workflow retrieves version from tag
+  And workflow extracts release notes from commits since previous tag
+  And workflow prepares build artifacts for release
+
+## Scenario: Release build successfully compiles and packages all artifacts
+  @skip
+  Given release trigger workflow has been activated
+  When build process executes
+  Then build compiles successfully on all target platforms
+  And build packaging creates distributable artifacts
+  And build artifacts are tagged with version number
+  And checksums are generated for integrity verification
+
+## Scenario: GitHub release is created with artifacts and release notes
+  @skip
+  Given release build has completed successfully
+  When release creation workflow executes
+  Then GitHub release is created with appropriate version tag
+  And release notes are auto-generated from commit history
+  And build artifacts are uploaded to release
+  And release is marked as production-ready
+
+## Scenario: Release workflow fails if build errors occur
+  @skip
+  Given release workflow is executing
+  When build process encounters compilation errors
+  Then workflow execution stops immediately
+  And release is NOT created
+  And workflow status shows failure
+  And error logs are available for debugging
+
+## Scenario: CI workflow fails due to missing dependencies
+  @skip
+  Given CI workflow validates dependencies
+  When required dependencies are not available
+  Then CI fails with missing dependency error
+  And failure logs show missing dependency name
+  And dependency installation instructions are provided
+
+## Scenario: Release workflow fails when tag version mismatches configuration
+  @skip
+  Given release workflow validates version consistency
+  When tag version does not match package.json or version file
+  Then workflow fails with version mismatch error
+  And error displays both versions for comparison
+  And workflow halts before creating release
+
+## Scenario: Release creation fails due to API rate limiting
+  @skip
+  Given release workflow creates GitHub release via API
+  When GitHub API rate limit is exceeded
+  Then API returns rate limit exceeded error
+  And workflow logs rate limit reset time
+  And retry guidance is provided in error output
+
+## Scenario: Installer dry-run detects existing installation conflicts
+  @skip
+  Given installer is executed in environment with existing installation
+  When installer dry-run detects structural conflicts
+  Then installer detects structural conflict
+  And installer reports migration required warning
+  And installer provides migration guide link
+  And installer lists specific conflicting paths

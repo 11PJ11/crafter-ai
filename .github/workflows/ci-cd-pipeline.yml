@@ -3,13 +3,44 @@ name: AI-Craft CI/CD Pipeline
 on:
   push:
     branches: [master, main, develop]
+    tags:
+      - 'v*'
   pull_request:
     branches: [master, main]
 
 jobs:
+  ci-matrix-validation:
+    name: CI Matrix Validation
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node-version: [18.x, 20.x]
+      fail-fast: false
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Tests
+        run: npm test
+
+      - name: Run Build
+        run: npm run build
+
   quality-gates:
     name: Quality Gates Validation
     runs-on: ubuntu-latest
+    needs: ci-matrix-validation
+    if: always()
 
     steps:
       - name: Checkout Code
@@ -21,7 +52,7 @@ jobs:
 
           # Find and validate all shell scripts
           echo "Validating shell script syntax..."
-          find scripts -name "*.sh" -type f | while read -r script; do
+          find scripts -name "*.sh" -type f 2>/dev/null | while read -r script; do
             echo "Checking: $script"
             bash -n "$script" || exit 1
           done
@@ -29,7 +60,7 @@ jobs:
           # Linting with shellcheck if available
           if command -v shellcheck >/dev/null 2>&1; then
             echo "Running shellcheck analysis..."
-            find scripts -name "*.sh" -type f | xargs shellcheck -x || true
+            find scripts -name "*.sh" -type f 2>/dev/null | xargs shellcheck -x || true
           fi
 
           echo "::endgroup::"
@@ -54,7 +85,7 @@ jobs:
           echo "::group::Agent Validation"
 
           # Check that all agent markdown files exist
-          agent_count=$(find nWave/agents -name "*.md" -type f | wc -l)
+          agent_count=$(find nWave/agents -name "*.md" -type f 2>/dev/null | wc -l)
           echo "Found $agent_count agent definitions"
 
           if [[ $agent_count -lt 10 ]]; then
@@ -70,7 +101,7 @@ jobs:
           echo "::group::Command Validation"
 
           # Check that command files exist
-          command_count=$(find nWave/commands -name "*.md" -type f | wc -l)
+          command_count=$(find nWave/commands -name "*.md" -type f 2>/dev/null | wc -l)
           echo "Found $command_count command definitions"
 
           echo "✅ Command definitions found: $command_count"

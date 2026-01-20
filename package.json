@@ -1,0 +1,19 @@
+{
+  "name": "ai-craft",
+  "version": "1.0.0",
+  "description": "nWave Framework - Open Source Publication",
+  "type": "module",
+  "scripts": {
+    "test": "echo 'Running acceptance tests with Gherkin/Cucumber' && exit 1",
+    "build": "echo 'Building nWave framework' && exit 0"
+  },
+  "keywords": [
+    "nwave",
+    "framework",
+    "cicd",
+    "automation"
+  ],
+  "author": "ai-craft",
+  "license": "MIT",
+  "devDependencies": {}
+}
