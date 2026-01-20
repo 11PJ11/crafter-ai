@@ -1,5 +1,45 @@
 # DW-FINALIZE: Feature Completion, Archive, and Prepare for Push
 
+---
+## ORCHESTRATOR BRIEFING (MANDATORY)
+
+**CRITICAL ARCHITECTURAL CONSTRAINT**: Sub-agents launched via Task tool have NO ACCESS to the Skill tool. They can ONLY use: Read, Write, Edit, Bash, Glob, Grep.
+
+### What Orchestrator Must Do
+
+When delegating this command to an agent via Task tool:
+
+1. **Do NOT pass `/nw:finalize`** to the agent - they cannot execute it
+2. **Create a complete agent prompt** with all instructions embedded inline
+3. **Include**: project ID, feature directory path, evolution document path
+4. **Embed**: archival steps, evolution document structure, cleanup requirements
+
+### Agent Prompt Template
+
+```text
+You are a devop agent finalizing and archiving a completed feature.
+
+PROJECT: {project_id}
+INPUT DIRECTORY: docs/feature/{project_id}/
+OUTPUT FILE: docs/evolution/{project_id}-evolution.md
+
+YOUR TASK: Archive the completed feature by:
+1. Create evolution document summarizing achievements
+2. Move/archive workflow files (baseline.yaml, roadmap.yaml, step files)
+3. Update any project tracking documents
+4. Clean up temporary files
+
+[Include evolution document structure and deliverables]
+```
+
+### What NOT to Include in Agent Prompts
+
+- ❌ `/nw:finalize`
+- ❌ Any skill or command reference
+- ❌ References to continuing to other commands
+
+---
+
 ## CRITICAL: Agent Invocation Protocol
 
 **YOU ARE THE COORDINATOR** - Do NOT finalize the project yourself. Your role is to dispatch to the appropriate agent.

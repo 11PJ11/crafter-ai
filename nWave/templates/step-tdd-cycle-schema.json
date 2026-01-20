@@ -423,12 +423,12 @@
       "GREEN_UNIT - Implement minimum code to pass",
       "CHECK_ACCEPTANCE - Verify unit tests pass",
       "GREEN_ACCEPTANCE - All tests PASS",
-      "REVIEW - Execute /nw:review @software-crafter-reviewer (MANDATORY)",
+      "REVIEW - Self-review: SOLID, coverage, acceptance criteria (MANDATORY)",
       "REFACTOR_L1 - Naming clarity",
       "REFACTOR_L2 - Method extraction",
       "REFACTOR_L3 - Class responsibilities",
       "REFACTOR_L4 - Architecture patterns",
-      "POST_REFACTOR_REVIEW - Execute /nw:review again (MANDATORY)",
+      "POST_REFACTOR_REVIEW - Self-review: tests pass, quality improved (MANDATORY)",
       "FINAL_VALIDATE - Document full test results (MANDATORY)",
       "COMMIT - Commit with detailed message"
     ]

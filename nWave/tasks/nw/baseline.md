@@ -1,5 +1,43 @@
 # DW-BASELINE: Establish Measurement Baseline
 
+---
+## ORCHESTRATOR BRIEFING (MANDATORY)
+
+**CRITICAL ARCHITECTURAL CONSTRAINT**: Sub-agents launched via Task tool have NO ACCESS to the Skill tool. They can ONLY use: Read, Write, Edit, Bash, Glob, Grep.
+
+### What Orchestrator Must Do
+
+When delegating this command to an agent via Task tool:
+
+1. **Do NOT pass `/nw:baseline`** to the agent - they cannot execute it
+2. **Create a complete agent prompt** with all instructions embedded inline
+3. **Include**: project ID, output file path, measurement requirements
+4. **Embed**: baseline YAML structure, deliverables, quality criteria
+
+### Agent Prompt Template
+
+```text
+You are a researcher agent creating a measurement baseline.
+
+PROJECT: {project_id}
+OUTPUT FILE: docs/feature/{project_id}/baseline.yaml
+
+YOUR TASK: Create a quantitative measurement baseline that captures:
+1. Current state metrics (performance, complexity, coverage)
+2. Measurement methodology used
+3. Target improvement thresholds
+
+[Include baseline YAML structure and deliverables]
+```
+
+### What NOT to Include in Agent Prompts
+
+- ❌ `/nw:baseline`
+- ❌ "Execute /nw:roadmap next"
+- ❌ Any skill or command reference
+
+---
+
 ## CRITICAL: Agent Invocation Protocol
 
 **YOU ARE THE COORDINATOR** - Do NOT gather baseline data yourself. Your role is to dispatch to the researcher agent for evidence-based data gathering.

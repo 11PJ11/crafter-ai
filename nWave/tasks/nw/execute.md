@@ -1,5 +1,35 @@
 # DW-EXECUTE: Atomic Task Execution Engine
 
+---
+## ORCHESTRATOR BRIEFING (MANDATORY)
+
+**CRITICAL ARCHITECTURAL CONSTRAINT**: Sub-agents launched via Task tool have NO ACCESS to the Skill tool. They can ONLY use: Read, Write, Edit, Bash, Glob, Grep.
+
+### What Orchestrator Must Do
+
+When delegating this command to an agent via Task tool:
+
+1. **Read step file content** and embed it in the agent prompt (not just the path)
+2. **Include all 14 TDD phases** with inline criteria (especially REVIEW and POST_REFACTOR_REVIEW)
+3. **Do NOT reference any /nw:* commands** in the agent prompt
+4. **Embed review criteria inline** - agents cannot invoke /nw:review
+
+### Agent Prompt Must Contain
+
+- Full step file JSON content (or summary of key fields)
+- Complete 14-phase TDD cycle instructions
+- Inline review criteria for phases 7 and 12
+- Expected outputs and quality gates
+- No references to `/nw:*` commands
+
+### What NOT to Include
+
+- ❌ "Execute /nw:review after implementation"
+- ❌ "Use /nw:finalize when done"
+- ❌ Any command or skill the agent should invoke
+
+---
+
 ## CRITICAL: Agent Invocation Protocol
 
 **YOU ARE THE COORDINATOR** - Do NOT execute the task yourself. Your role is to dispatch to the appropriate agent.
@@ -106,14 +136,35 @@ Each step file contains `tdd_cycle.phase_execution_log` with EXACTLY these 14 ph
 4. GREEN_UNIT - Implement minimum code to pass unit tests
 5. CHECK_ACCEPTANCE - Verify unit implementation
 6. GREEN_ACCEPTANCE - Run acceptance test, expect PASS
-7. REVIEW - Execute /nw:review @software-crafter-reviewer
+7. REVIEW - Perform self-review (see INLINE REVIEW CRITERIA below)
 8. REFACTOR_L1 - Naming clarity improvements
 9. REFACTOR_L2 - Method extraction
 10. REFACTOR_L3 - Class responsibilities
 11. REFACTOR_L4 - Architecture patterns
-12. POST_REFACTOR_REVIEW - Execute /nw:review again
+12. POST_REFACTOR_REVIEW - Perform post-refactor self-review (see INLINE REVIEW CRITERIA below)
 13. FINAL_VALIDATE - Full test suite validation
 14. COMMIT - Commit with detailed message
+
+## INLINE REVIEW CRITERIA (Phases 7 and 12)
+
+Since agents cannot invoke /nw:review, perform self-review with these criteria:
+
+### Phase 7 (REVIEW) Checklist:
+- [ ] Implementation follows SOLID principles
+- [ ] Test coverage is adequate (aim for >80%)
+- [ ] Acceptance criteria from task_specification are met
+- [ ] Code is readable and maintainable
+- [ ] No obvious security vulnerabilities (OWASP Top 10)
+- [ ] No hardcoded secrets or credentials
+
+### Phase 12 (POST_REFACTOR_REVIEW) Checklist:
+- [ ] Refactoring did not break existing tests
+- [ ] Refactoring improved code quality (naming, structure)
+- [ ] No new duplication introduced
+- [ ] Architecture patterns applied correctly
+- [ ] All tests still pass after refactoring
+
+Record review findings in step file under `tdd_cycle.phase_execution_log[N].notes`
 
 ## Your responsibilities:
 1. READ the canonical schema first

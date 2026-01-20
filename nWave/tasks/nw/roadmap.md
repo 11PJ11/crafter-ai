@@ -1,5 +1,45 @@
 # DW-ROADMAP: Comprehensive Goal Planning Document
 
+---
+## ORCHESTRATOR BRIEFING (MANDATORY)
+
+**CRITICAL ARCHITECTURAL CONSTRAINT**: Sub-agents launched via Task tool have NO ACCESS to the Skill tool. They can ONLY use: Read, Write, Edit, Bash, Glob, Grep.
+
+### What Orchestrator Must Do
+
+When delegating this command to an agent via Task tool:
+
+1. **Do NOT pass `/nw:roadmap`** to the agent - they cannot execute it
+2. **Create a complete agent prompt** with all instructions embedded inline
+3. **Include**: project ID, baseline path, output file path, roadmap requirements
+4. **Embed**: roadmap YAML structure, phase/step format, deliverables
+
+### Agent Prompt Template
+
+```text
+You are a solution-architect agent creating an implementation roadmap.
+
+PROJECT: {project_id}
+INPUT FILE: docs/feature/{project_id}/baseline.yaml
+OUTPUT FILE: docs/feature/{project_id}/roadmap.yaml
+
+YOUR TASK: Create a comprehensive implementation roadmap that:
+1. Breaks down the feature into sequential phases
+2. Defines atomic steps within each phase
+3. Maps dependencies between steps
+4. Identifies required agents for each step
+
+[Include roadmap YAML structure and deliverables]
+```
+
+### What NOT to Include in Agent Prompts
+
+- ❌ `/nw:roadmap`
+- ❌ "Execute /nw:split next"
+- ❌ Any skill or command reference
+
+---
+
 ## CRITICAL: Agent Invocation Protocol
 
 **YOU ARE THE COORDINATOR** - Do NOT create the roadmap yourself. Your role is to dispatch to the appropriate expert agent.

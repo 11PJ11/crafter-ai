@@ -1,9 +1,14 @@
 # ============================================================================
 # nWave COMMAND/TASK TEMPLATE
 # ============================================================================
-# Version: 1.0 (2025-10-07)
+# Version: 1.1 (2026-01-20)
 # Purpose: Minimal task template for optimal agent handoff (50-60 lines target)
-# Source: Claude Code Subagent Activation Best Practices Research
+# Source: Claude Code Subagent Activation Best Practices Research + Pattern Analysis
+#
+# CHANGELOG:
+# - v1.1 (2026-01-20): Added Anti-Patterns section, Delegation Principle emphasis,
+#                      Compliance Checklist based on analysis of 20 existing commands
+# - v1.0 (2025-10-07): Initial template with 50-60 line target
 #
 # CRITICAL DESIGN PRINCIPLE:
 # Tasks are DELEGATION files, NOT workflow duplication files.
@@ -174,8 +179,208 @@ Refer to {PersonaName} agent's quality gates in nWave/agents/{agent-id}.md.
 # - context-bundles.yaml: Pre-defined file sets per wave (if created)
 # - wave-configs.yaml: Wave-specific configuration templates (if created)
 #
-# RESEARCH SOURCE:
+# RESEARCH SOURCES:
 #
-# docs/research/claude-code-subagent-activation-best-practices.md
+# - docs/research/claude-code-subagent-activation-best-practices.md (2025-10-07)
+# - data/research/command-template-analysis-2026-01-20.md (Latest analysis)
+#
+# ============================================================================
+# ANTI-PATTERNS TO AVOID (Evidence-Based)
+# ============================================================================
+#
+# Analysis date: 2026-01-20
+# Evidence: 20 nWave command files, 8,334 total lines analyzed
+# Finding: 80% of commands exceeded 60-line target (average violation: 7x target)
+# Root cause: Embedded workflows that belong in agent files
+#
+# DO NOT INCLUDE IN COMMAND FILES:
+#
+# ❌ Multi-step workflow instructions ("STEP 1, STEP 2, STEP 3...")
+#    Evidence: 42 occurrences across 7 files
+#    → Location: Agent activation_instructions section
+#
+# ❌ Progress tracking and state management logic
+#    Evidence: 224 occurrences (highest frequency violation)
+#    → Location: Orchestrator agent or infrastructure layer
+#
+# ❌ Orchestration coordination ("YOU ARE THE COORDINATOR")
+#    Evidence: 64 occurrences across 9 files
+#    → Location: Orchestrator agent specification
+#
+# ❌ Task tool invocation details and examples
+#    Evidence: 33 occurrences across 7 files
+#    → Location: Orchestrator agent implementation guide
+#
+# ❌ Parameter parsing and validation procedures
+#    Evidence: 13 occurrences across 7 files
+#    → Location: Command parser infrastructure
+#
+# ❌ Error handling workflows and recovery logic
+#    Evidence: 27 occurrences across 7 files
+#    → Location: Agent error handling protocols
+#
+# ❌ Detailed quality gate checklists
+#    Evidence: 6 validation checklist duplications
+#    → Location: Agent specification, reference only in commands
+#
+# VIOLATION EXAMPLES FROM ANALYSIS:
+#
+# - develop.md: 2,360 lines (39x target) - massive orchestration embedded
+# - split.md: 1,532 lines (26x target) - task generation workflow embedded
+# - baseline.md: 779 lines (13x target) - measurement protocol embedded
+#
+# REMEMBER: Commands are DELEGATION files, not IMPLEMENTATION files
+# External validation: CLI best practices (clig.dev) recommend atomic commands
+#
+# ============================================================================
+# DELEGATION PRINCIPLE (CRITICAL)
+# ============================================================================
+#
+# Commands follow the "Agent as Function" pattern:
+#
+# 1. EXPLICIT INPUTS (Required):
+#    - User command/request (natural language)
+#    - Context files (pre-discovered file paths with descriptions)
+#    - Configuration parameters (runtime settings)
+#    - Previous artifacts (wave handoff from prior agents)
+#
+# 2. AGENT EXECUTION (Delegated to agent file):
+#    - Agent reads provided context (no searching required)
+#    - Agent executes workflow (defined in agent activation_instructions)
+#    - Agent produces outputs (per agent contract specification)
+#
+# 3. HANDOFF PACKAGE (Output):
+#    - Deliverables for next agent/wave
+#    - Validation status
+#    - Quality gate results
+#
+# MEASURED PERFORMANCE IMPACT:
+#
+# Without explicit context handoff:
+#   - Agent uses ~1,500 tokens searching for files (5-10 tool calls)
+#   - Execution time: increased by file discovery overhead
+#
+# With explicit context handoff:
+#   - Agent starts immediately with ~650 tokens (40% reduction)
+#   - Execution time: optimized (no discovery phase)
+#
+# Source: claude-code-subagent-activation-best-practices.md
+#
+# Command file provides INPUTS and REFERENCES workflow.
+# Agent file contains WORKFLOW IMPLEMENTATION.
+#
+# ============================================================================
+# ORCHESTRATOR BRIEFING SECTION (MANDATORY)
+# ============================================================================
+#
+# 🚨 CRITICAL ARCHITECTURAL CONSTRAINT:
+# Sub-agents launched via Task tool have NO ACCESS to the Skill tool.
+# They can ONLY use: Read, Write, Edit, Bash, Glob, Grep
+#
+# This means agents CANNOT:
+# - Invoke /nw:* commands
+# - Access any Skills
+# - Call other agents
+#
+# WHY THIS MATTERS:
+# If a command says "Agent should invoke /nw:review", the agent will
+# receive that text but cannot execute it. The agent completes without
+# performing the review because it has no mechanism to run the command.
+#
+# REQUIRED IN EVERY COMMAND FILE:
+# Each command MUST include an "## Orchestrator Briefing" section that tells
+# the orchestrator (main Claude instance) EXACTLY what to communicate to
+# agents when delegating via Task tool.
+#
+# ORCHESTRATOR BRIEFING TEMPLATE:
+#
+# ## Orchestrator Briefing
+#
+# When delegating this command to an agent via Task tool, the orchestrator MUST:
+#
+# 1. **Read this command file** and extract all workflow details
+# 2. **Create a complete agent prompt** that includes:
+#    - All context files content (not just paths)
+#    - All step/task details inline
+#    - Complete workflow instructions embedded
+#    - Expected outputs explicitly stated
+# 3. **Do NOT reference any /nw:* commands** in the agent prompt
+# 4. **Do NOT assume the agent can call other agents or skills**
+#
+# ### Agent Prompt Template for {command-name}
+#
+# ```text
+# You are a {agent-name} agent executing {task-description}.
+#
+# CONTEXT:
+# {full content of all context files, embedded inline}
+#
+# TASK DETAILS:
+# {step file content or task specification, embedded inline}
+#
+# INSTRUCTIONS:
+# {complete workflow instructions - do NOT reference /nw:* commands}
+#
+# EXPECTED OUTPUTS:
+# {explicit list of deliverables}
+#
+# QUALITY GATES:
+# {validation criteria inline - do NOT say "run /nw:review"}
+# ```
+#
+# ANTI-PATTERNS (NEVER INCLUDE IN COMMANDS OR AGENT PROMPTS):
+# ❌ "Agent should invoke /nw:review"
+# ❌ "Use /nw:execute to process the step"
+# ❌ "After completion, run /nw:finalize"
+# ❌ Any reference to agents calling skills or commands
+# ❌ Assuming agents have access to anything beyond basic tools
+#
+# CORRECT PATTERNS:
+# ✅ "Orchestrator should read /nw:review and embed review criteria in prompt"
+# ✅ "Provide agent with complete workflow instructions inline"
+# ✅ "Agent prompt must contain full file content, not just paths"
+# ✅ "Include all quality gate criteria directly in the prompt"
+#
+# ============================================================================
+# TEMPLATE COMPLIANCE CHECKLIST
+# ============================================================================
+#
+# Before committing a command file, verify ALL items:
+#
+# SIZE COMPLIANCE:
+# - [ ] Total lines ≤ 60 (excluding comments and template notes)
+# - [ ] If >60 lines, workflow sections moved to agent file?
+#
+# CONTENT COMPLIANCE (Anti-Pattern Check):
+# - [ ] No "STEP 1, STEP 2" procedural workflows
+# - [ ] No orchestration coordination logic
+# - [ ] No progress tracking implementation
+# - [ ] No Task tool invocation tutorials
+# - [ ] No parameter parsing procedures
+# - [ ] No error handling workflows
+# - [ ] Quality gates referenced, not duplicated
+#
+# DELEGATION COMPLIANCE:
+# - [ ] Context files explicitly listed (with descriptions)
+# - [ ] Configuration parameters defined
+# - [ ] Previous artifacts identified (wave handoff)
+# - [ ] Agent invocation uses explicit inputs pattern
+#
+# ORCHESTRATOR BRIEFING COMPLIANCE (CRITICAL):
+# - [ ] Contains "## Orchestrator Briefing" section
+# - [ ] Includes agent prompt template with inline content placeholders
+# - [ ] NO references to agents invoking /nw:* commands
+# - [ ] NO assumptions that agents can call skills
+# - [ ] Quality gates embedded inline (not "run /nw:review")
+# - [ ] All workflow instructions inline (not "see /nw:execute")
+#
+# QUALITY VALIDATION:
+# - [ ] Command file is pure delegation (50-60 lines)
+# - [ ] All workflow details in agent file
+# - [ ] No duplication between command and agent files
+#
+# If any checklist item fails, REFACTOR before committing.
+#
+# COMPLIANCE RATE TARGET: 100% (currently 20% as of 2026-01-20 analysis)
 #
 # ============================================================================

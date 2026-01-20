@@ -1,5 +1,50 @@
 # DW-REVIEW: Expert Critique and Quality Assurance
 
+---
+## ORCHESTRATOR BRIEFING (MANDATORY)
+
+**CRITICAL ARCHITECTURAL CONSTRAINT**: Sub-agents launched via Task tool have NO ACCESS to the Skill tool. They can ONLY use: Read, Write, Edit, Bash, Glob, Grep.
+
+### What Orchestrator Must Do
+
+When delegating this command to an agent via Task tool:
+
+1. **Do NOT pass `/nw:review`** to the agent - they cannot execute it
+2. **Create a complete agent prompt** with all instructions embedded inline
+3. **Include**: artifact path, artifact type, review criteria
+4. **Embed**: complete review checklist, severity levels, output format
+
+### Agent Prompt Template
+
+```text
+You are a {agent-name}-reviewer agent performing expert review.
+
+ARTIFACT TYPE: {artifact-type}
+ARTIFACT PATH: {artifact-path}
+
+YOUR TASK: Perform comprehensive review:
+1. Read and understand the artifact thoroughly
+2. Apply domain expertise to identify issues
+3. Provide structured feedback with severity levels
+4. Make specific, actionable recommendations
+5. Update the artifact with review metadata
+6. Assign approval status: APPROVED, NEEDS_REVISION, or REJECTED
+
+REVIEW CRITERIA:
+[Embed specific criteria for artifact type]
+
+OUTPUT FORMAT:
+[Embed required output structure]
+```
+
+### What NOT to Include in Agent Prompts
+
+- ❌ `/nw:review`
+- ❌ "Execute /nw:finalize after approval"
+- ❌ Any skill or command reference
+
+---
+
 ## CRITICAL: Agent Invocation Protocol
 
 **YOU ARE THE COORDINATOR** - Do NOT perform the review yourself. Your role is to dispatch to the appropriate expert agent.

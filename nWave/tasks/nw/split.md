@@ -1,5 +1,35 @@
 # DW-SPLIT: Atomic Task Generation from Roadmap with TDD Cycle Embedding
 
+---
+## ORCHESTRATOR BRIEFING (MANDATORY)
+
+**CRITICAL ARCHITECTURAL CONSTRAINT**: Sub-agents launched via Task tool have NO ACCESS to the Skill tool. They can ONLY use: Read, Write, Edit, Bash, Glob, Grep.
+
+### What Orchestrator Must Do
+
+When delegating this command to an agent via Task tool:
+
+1. **Read roadmap.yaml content** and embed key sections in the agent prompt
+2. **Include the canonical step-tdd-cycle-schema.json** content inline
+3. **Do NOT reference any /nw:* commands** in the agent prompt
+4. **Embed all 14 TDD phase descriptions** with inline criteria (not command references)
+
+### Agent Prompt Must Contain
+
+- Roadmap content (phases, steps, dependencies)
+- Canonical schema structure for step files
+- All 14 TDD phase names and descriptions (inline, no skill references)
+- Review criteria embedded inline for phases 7 and 12
+- Expected output file structure
+
+### What NOT to Include
+
+- ❌ "Execute /nw:review for each generated step"
+- ❌ "Use /nw:refactor after review"
+- ❌ Any command or skill the agent should invoke
+
+---
+
 ## CRITICAL: Agent Invocation Protocol
 
 **YOU ARE THE COORDINATOR** - Do NOT generate task files yourself. Your role is to dispatch to the appropriate agent.
@@ -95,14 +125,16 @@ Every step file MUST include `tdd_cycle.phase_execution_log` with EXACTLY these 
 4. GREEN_UNIT - Implement minimum code to pass unit tests
 5. CHECK_ACCEPTANCE - Verify unit implementation
 6. GREEN_ACCEPTANCE - Run acceptance test, expect PASS
-7. REVIEW - Execute /nw:review @software-crafter-reviewer
+7. REVIEW - Perform self-review (SOLID principles, test coverage, acceptance criteria)
 8. REFACTOR_L1 - Naming clarity improvements
 9. REFACTOR_L2 - Method extraction
 10. REFACTOR_L3 - Class responsibilities
 11. REFACTOR_L4 - Architecture patterns
-12. POST_REFACTOR_REVIEW - Execute /nw:review again
+12. POST_REFACTOR_REVIEW - Perform post-refactor self-review (tests pass, quality improved)
 13. FINAL_VALIDATE - Full test suite validation
 14. COMMIT - Commit with detailed message
+
+**NOTE**: Phases 7 and 12 use inline self-review criteria because agents cannot invoke /nw:review
 
 ## WRONG FORMATS TO REJECT - DO NOT USE THESE
 
@@ -996,12 +1028,12 @@ Each file (`{phase:02d}-{step:02d}.json`) is a complete, executable unit with em
       "GREEN_UNIT - Implement minimum code to pass",
       "CHECK_ACCEPTANCE - Verify unit tests pass",
       "GREEN_ACCEPTANCE - All tests PASS",
-      "REVIEW - Execute /nw:review @software-crafter-reviewer (MANDATORY)",
+      "REVIEW - Self-review: SOLID, coverage, acceptance criteria (MANDATORY)",
       "REFACTOR_L1 - Naming clarity",
       "REFACTOR_L2 - Method extraction",
       "REFACTOR_L3 - Class responsibilities",
       "REFACTOR_L4 - Architecture patterns",
-      "POST_REFACTOR_REVIEW - Execute /nw:review again (MANDATORY)",
+      "POST_REFACTOR_REVIEW - Self-review: tests pass, quality improved (MANDATORY)",
       "FINAL_VALIDATE - Document full test results (MANDATORY)",
       "COMMIT - Commit with detailed message"
     ]

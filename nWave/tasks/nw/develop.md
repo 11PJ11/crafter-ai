@@ -6,6 +6,79 @@
 
 > ⚠️ **IMPORTANT**: This command is executed by the **main Claude instance**, NOT by a specialized agent. The main instance orchestrates the workflow by delegating to specialized agents (researcher, software-crafter, solution-architect, etc.) via the Task tool.
 
+---
+## 🚨 CRITICAL: ORCHESTRATOR BRIEFING (MANDATORY)
+
+**Sub-agents launched via Task tool have NO ACCESS to the Skill tool.**
+
+They can ONLY use: Read, Write, Edit, Bash, Glob, Grep
+
+### The Architectural Constraint
+
+When you (the orchestrator) delegate to an agent, you MUST:
+
+1. **READ the relevant command file** (e.g., `/nw:baseline`) yourself
+2. **EXTRACT the workflow instructions** from that command
+3. **CREATE a complete agent prompt** with all instructions embedded inline
+4. **DO NOT pass `/nw:*` commands** to agents - they cannot execute them
+
+### WRONG Pattern (Agent receives unusable command reference)
+
+```python
+# ❌ BROKEN - Agent cannot invoke /nw:baseline
+Task(
+    subagent_type="researcher",
+    prompt=f'/nw:baseline "{feature_description}"',
+)
+```
+
+### CORRECT Pattern (Agent receives complete instructions)
+
+```python
+# ✅ CORRECT - Agent receives complete instructions inline
+Task(
+    subagent_type="researcher",
+    prompt=f'''
+You are a researcher agent creating a measurement baseline.
+
+PROJECT: {project_id}
+OUTPUT FILE: docs/feature/{project_id}/baseline.yaml
+
+YOUR TASK: Create a quantitative measurement baseline that captures:
+1. Current state metrics (performance, complexity, coverage)
+2. Measurement methodology used
+3. Target improvement thresholds
+
+DELIVERABLES:
+- Create baseline.yaml with measured values
+- Document measurement methodology
+- Include evidence of measurements
+
+Do NOT continue to roadmap or split - return when baseline is complete.
+''',
+)
+```
+
+### Commands Requiring Translation
+
+When orchestrating these commands, you MUST read the command file and translate:
+
+| Command | Read From | Agent Type |
+|---------|-----------|------------|
+| `/nw:baseline` | `nWave/tasks/nw/baseline.md` | researcher |
+| `/nw:roadmap` | `nWave/tasks/nw/roadmap.md` | solution-architect |
+| `/nw:split` | `nWave/tasks/nw/split.md` | software-crafter |
+| `/nw:execute` | `nWave/tasks/nw/execute.md` | varies by step |
+| `/nw:review` | `nWave/tasks/nw/review.md` | *-reviewer variant |
+
+### What NOT to Include in Agent Prompts
+
+- ❌ `/nw:baseline`, `/nw:roadmap`, `/nw:split`, `/nw:execute`, `/nw:review`
+- ❌ Any skill or command the agent should "invoke"
+- ❌ References to other commands
+
+---
+
 ## Overview
 
 The DEVELOP wave orchestrator automates the complete feature development lifecycle from problem measurement to production-ready code through disciplined Test-Driven Development with mandatory quality gates.
@@ -540,26 +613,50 @@ STEP 11: Phase 9 - Report Completion
 
 2. **If baseline creation needed** (status == 'missing'):
 
-   a. Invoke baseline command via Task tool delegation:
+   a. Create complete agent prompt and invoke via Task tool:
    ```python
-   # Delegate to researcher sub-agent (per baseline.md specification)
-   # CRITICAL: Include boundary instructions to prevent workflow continuation
+   # CRITICAL: Do NOT pass /nw:baseline to agent - they cannot execute it
+   # Instead, read baseline.md and embed instructions inline
    task_result = Task(
        subagent_type="researcher",
        prompt=f'''
+You are a researcher agent creating a measurement baseline.
+
 ═══════════════════════════════════════════════════════════
 ⚠️  TASK BOUNDARY - READ BEFORE EXECUTING
 ═══════════════════════════════════════════════════════════
 YOUR ONLY TASK: Create baseline.yaml measurement file
+OUTPUT FILE: docs/feature/{project_id}/baseline.yaml
 FORBIDDEN ACTIONS:
-  ❌ DO NOT execute /nw:roadmap
-  ❌ DO NOT execute /nw:split
-  ❌ DO NOT execute ANY other /nw: commands
-  ❌ DO NOT continue the workflow beyond baseline creation
+  ❌ DO NOT continue to roadmap or split
+  ❌ DO NOT attempt to execute the full workflow
 REQUIRED: Return control to orchestrator after completion
 ═══════════════════════════════════════════════════════════
 
-/nw:baseline "{feature_description}"
+PROJECT: {project_id}
+DESCRIPTION: {feature_description}
+
+YOUR TASK: Create a quantitative measurement baseline that captures:
+1. Current state metrics relevant to: {feature_description}
+2. Measurement methodology used (tools, commands, techniques)
+3. Target improvement thresholds
+
+BASELINE YAML STRUCTURE:
+```yaml
+project_id: {project_id}
+created_at: <timestamp>
+measurements:
+  - metric_name: <name>
+    current_value: <measured value>
+    target_value: <goal>
+    methodology: <how measured>
+    evidence: <proof of measurement>
+```
+
+DELIVERABLES:
+- Create baseline.yaml at docs/feature/{project_id}/baseline.yaml
+- Document all measurements with evidence
+- Return when baseline creation is complete
 ''',
        description="Create measurement baseline"
    )
@@ -682,12 +779,58 @@ REQUIRED: Return control to orchestrator after completion
 
 2. **If roadmap creation needed**:
 
-   a. Invoke roadmap command via Task tool delegation:
+   a. Create complete agent prompt and invoke via Task tool:
    ```python
-   # Delegate to solution-architect sub-agent
+   # CRITICAL: Do NOT pass /nw:roadmap to agent - they cannot execute it
+   # Instead, embed complete roadmap instructions inline
    task_result = Task(
        subagent_type="solution-architect",
-       prompt=f'/nw:roadmap @solution-architect "{feature_description}"',
+       prompt=f'''
+You are a solution-architect agent creating an implementation roadmap.
+
+═══════════════════════════════════════════════════════════
+⚠️  TASK BOUNDARY - READ BEFORE EXECUTING
+═══════════════════════════════════════════════════════════
+YOUR ONLY TASK: Create roadmap.yaml implementation plan
+OUTPUT FILE: docs/feature/{project_id}/roadmap.yaml
+INPUT FILE: docs/feature/{project_id}/baseline.yaml (read for context)
+FORBIDDEN ACTIONS:
+  ❌ DO NOT continue to split or execute
+  ❌ DO NOT attempt to execute the full workflow
+REQUIRED: Return control to orchestrator after completion
+═══════════════════════════════════════════════════════════
+
+PROJECT: {project_id}
+DESCRIPTION: {feature_description}
+
+YOUR TASK: Create a comprehensive implementation roadmap that:
+1. Breaks down the feature into sequential phases
+2. Defines atomic steps within each phase
+3. Maps dependencies between steps
+4. Identifies required agents for each step
+
+ROADMAP YAML STRUCTURE:
+```yaml
+project_id: {project_id}
+created_at: <timestamp>
+phases:
+  - phase_id: "01"
+    name: <phase name>
+    steps:
+      - step_id: "01-01"
+        name: <step name>
+        description: <what to implement>
+        acceptance_criteria: [<list of criteria>]
+        suggested_agent: <researcher|software-crafter|etc>
+        dependencies: [<list of step_ids>]
+        estimated_hours: <number>
+```
+
+DELIVERABLES:
+- Create roadmap.yaml at docs/feature/{project_id}/roadmap.yaml
+- Ensure all steps are atomic and self-contained
+- Return when roadmap creation is complete
+''',
        description="Create implementation roadmap"
    )
    ```
@@ -816,12 +959,58 @@ REQUIRED: Return control to orchestrator after completion
 
 2. **If split needed** (!should_skip):
 
-   a. Invoke split command via Task tool delegation:
+   a. Create complete agent prompt and invoke via Task tool:
    ```python
-   # Delegate to software-crafter sub-agent (per COMMAND-AGENT-MAPPING.md)
+   # CRITICAL: Do NOT pass /nw:split to agent - they cannot execute it
+   # Instead, embed complete split instructions inline
    task_result = Task(
        subagent_type="software-crafter",
-       prompt=f'/nw:split @software-crafter "{project_id}"',
+       prompt=f'''
+You are a software-crafter agent generating atomic task files from a roadmap.
+
+═══════════════════════════════════════════════════════════
+⚠️  TASK BOUNDARY - READ BEFORE EXECUTING
+═══════════════════════════════════════════════════════════
+YOUR ONLY TASK: Generate step JSON files from roadmap
+INPUT FILE: docs/feature/{project_id}/roadmap.yaml
+OUTPUT DIRECTORY: docs/feature/{project_id}/steps/
+FORBIDDEN ACTIONS:
+  ❌ DO NOT execute any steps
+  ❌ DO NOT continue to the execute phase
+REQUIRED: Return control to orchestrator after completion
+═══════════════════════════════════════════════════════════
+
+PROJECT: {project_id}
+
+YOUR TASK: Transform each roadmap step into a complete task JSON file that:
+1. Includes the 14-phase TDD cycle structure
+2. Contains self-contained context
+3. Has clear acceptance criteria
+4. Maps all dependencies
+
+MANDATORY 14 TDD PHASES (include in each step file):
+1. PREPARE - Remove @skip tags, verify scenario setup
+2. RED_ACCEPTANCE - Run acceptance test, expect FAIL
+3. RED_UNIT - Write failing unit tests
+4. GREEN_UNIT - Implement minimum code to pass
+5. CHECK_ACCEPTANCE - Verify unit implementation
+6. GREEN_ACCEPTANCE - Run acceptance test, expect PASS
+7. REVIEW - Self-review (SOLID, coverage, acceptance criteria)
+8. REFACTOR_L1 - Naming clarity
+9. REFACTOR_L2 - Method extraction
+10. REFACTOR_L3 - Class responsibilities
+11. REFACTOR_L4 - Architecture patterns
+12. POST_REFACTOR_REVIEW - Self-review (tests pass, quality improved)
+13. FINAL_VALIDATE - Full test suite validation
+14. COMMIT - Commit with detailed message
+
+Read the canonical schema from: nWave/templates/step-tdd-cycle-schema.json
+
+DELIVERABLES:
+- Create JSON file for each step in docs/feature/{project_id}/steps/
+- Validate each file has correct 14-phase structure
+- Return when all step files are generated
+''',
        description="Split roadmap into atomic steps"
    )
    ```
@@ -1024,10 +1213,66 @@ Each Task invocation (representing a new agent instance) updates phase_execution
        # Execute step with 14-phase TDD using Task tool delegation
        print(f"Invoking: Task tool with @software-crafter for step {step_id}")
 
-       # Delegate to software-crafter sub-agent with explicit /nw:execute command
+       # CRITICAL: Do NOT pass /nw:execute to agent - they cannot execute it
+       # Read the step file content and embed complete instructions inline
+       with open(step_file, 'r') as f:
+           step_content = json.load(f)
+
        task_result = Task(
            subagent_type="software-crafter",
-           prompt=f'/nw:execute @software-crafter "{step_file}"',
+           prompt=f'''
+You are a software-crafter agent executing atomic task {step_id}.
+
+═══════════════════════════════════════════════════════════
+⚠️  TASK BOUNDARY - READ BEFORE EXECUTING
+═══════════════════════════════════════════════════════════
+YOUR ONLY TASK: Execute step {step_id} through all 14 TDD phases
+STEP FILE: {step_file}
+FORBIDDEN ACTIONS:
+  ❌ DO NOT execute other steps
+  ❌ DO NOT continue the workflow
+REQUIRED: Return control to orchestrator after completion
+═══════════════════════════════════════════════════════════
+
+STEP CONTENT:
+```json
+{json.dumps(step_content, indent=2)}
+```
+
+EXECUTE THESE 14 TDD PHASES IN ORDER:
+1. PREPARE - Remove @skip tags, verify scenario setup
+2. RED_ACCEPTANCE - Run acceptance test, expect FAIL
+3. RED_UNIT - Write failing unit tests
+4. GREEN_UNIT - Implement minimum code to pass
+5. CHECK_ACCEPTANCE - Verify unit implementation
+6. GREEN_ACCEPTANCE - Run acceptance test, expect PASS
+7. REVIEW - Self-review using criteria below
+8. REFACTOR_L1 - Naming clarity improvements
+9. REFACTOR_L2 - Method extraction
+10. REFACTOR_L3 - Class responsibilities
+11. REFACTOR_L4 - Architecture patterns
+12. POST_REFACTOR_REVIEW - Self-review using criteria below
+13. FINAL_VALIDATE - Full test suite validation
+14. COMMIT - Commit with detailed message
+
+INLINE REVIEW CRITERIA (Phases 7 and 12):
+- SOLID principles followed
+- Test coverage adequate (>80%)
+- Acceptance criteria met
+- Code readable and maintainable
+- No security vulnerabilities
+- Refactoring did not break tests
+
+After EACH phase, UPDATE the step file:
+- Set phase status to EXECUTED or SKIPPED
+- Record duration_minutes, outcome, outcome_details
+- Commit after green phases
+
+DELIVERABLES:
+- Complete all 14 phases
+- Update step file with execution results
+- Return when COMMIT phase completes with PASS
+''',
            description=f"Execute step {step_id} with 14-phase TDD"
        )
 
@@ -1113,12 +1358,58 @@ Each Task invocation (representing a new agent instance) updates phase_execution
        print(error_message)  # "✓ All completed steps have git commits"
    ```
 
-2. **Invoke finalize command via Task tool delegation**:
+2. **Create complete agent prompt and invoke via Task tool**:
    ```python
-   # Delegate to devop sub-agent (per COMMAND-AGENT-MAPPING.md)
+   # CRITICAL: Do NOT pass /nw:finalize to agent - they cannot execute it
+   # Instead, embed complete finalize instructions inline
    task_result = Task(
        subagent_type="devop",
-       prompt=f'/nw:finalize @devop "{project_id}"',
+       prompt=f'''
+You are a devop agent finalizing and archiving a completed feature.
+
+═══════════════════════════════════════════════════════════
+⚠️  TASK BOUNDARY - READ BEFORE EXECUTING
+═══════════════════════════════════════════════════════════
+YOUR ONLY TASK: Finalize and archive project {project_id}
+INPUT DIRECTORY: docs/feature/{project_id}/
+OUTPUT FILE: docs/evolution/{project_id}-evolution.md
+FORBIDDEN ACTIONS:
+  ❌ DO NOT continue to any other phase
+REQUIRED: Return control to orchestrator after completion
+═══════════════════════════════════════════════════════════
+
+PROJECT: {project_id}
+
+YOUR TASK: Archive the completed feature by:
+1. Create evolution document summarizing achievements
+2. Move/archive workflow files (baseline.yaml, roadmap.yaml, step files)
+3. Update any project tracking documents
+4. Clean up temporary files
+
+EVOLUTION DOCUMENT STRUCTURE:
+```markdown
+# Evolution: {project_id}
+
+## Summary
+- Feature description
+- Implementation highlights
+- Key decisions made
+
+## Metrics
+- Steps completed: X
+- Total phases executed: Y
+- Duration: Z
+
+## Artifacts
+- Location of archived files
+- Key deliverables
+```
+
+DELIVERABLES:
+- Create docs/evolution/{project_id}-evolution.md
+- Archive or clean up feature files
+- Return when finalization is complete
+''',
        description="Finalize and archive project"
    )
    ```
