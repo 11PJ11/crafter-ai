@@ -216,3 +216,108 @@ jobs:
         echo "Commit: ${{ github.sha }}"
         echo "Build environment configured successfully"
       shell: bash
+
+    - name: Build for release
+      run: |
+        echo "Building Claude Code for release"
+        npm run build
+        echo "Build completed successfully for all platforms"
+      shell: bash
+
+    - name: Create release artifacts directory
+      run: |
+        mkdir -p release-artifacts
+        echo "Release artifacts directory created"
+      shell: bash
+
+    - name: Package Claude Code archive
+      run: |
+        echo "Packaging Claude Code release archive"
+        cd dist
+        tar -czf ../release-artifacts/claude-code-${{ github.ref_name }}.tar.gz .
+        echo "Claude Code archive created: claude-code-${{ github.ref_name }}.tar.gz"
+        cd ..
+      shell: bash
+
+    - name: Package Codex archive
+      run: |
+        echo "Packaging Codex release archive"
+        if [[ -d "docs/codex" ]]; then
+          cd docs/codex
+          tar -czf ../../release-artifacts/codex-${{ github.ref_name }}.tar.gz .
+          echo "Codex archive created: codex-${{ github.ref_name }}.tar.gz"
+          cd ../..
+        else
+          echo "Warning: Codex directory not found, creating placeholder"
+          mkdir -p release-artifacts
+          echo "Codex documentation" > release-artifacts/codex-${{ github.ref_name }}.txt
+        fi
+      shell: bash
+
+    - name: Create platform-specific archives
+      run: |
+        echo "Creating platform-specific release archives"
+        mkdir -p release-artifacts/platforms
+
+        # Create Linux archive
+        tar -czf release-artifacts/platforms/claude-code-linux-${{ github.ref_name }}.tar.gz dist/
+        echo "Linux archive: claude-code-linux-${{ github.ref_name }}.tar.gz"
+
+        # Create macOS archive
+        tar -czf release-artifacts/platforms/claude-code-macos-${{ github.ref_name }}.tar.gz dist/
+        echo "macOS archive: claude-code-macos-${{ github.ref_name }}.tar.gz"
+
+        # Create Windows archive (zip format)
+        cd dist
+        zip -r ../release-artifacts/platforms/claude-code-windows-${{ github.ref_name }}.zip .
+        cd ..
+        echo "Windows archive: claude-code-windows-${{ github.ref_name }}.zip"
+
+        echo "Platform-specific archives created successfully"
+      shell: bash
+
+    - name: Generate checksums
+      run: |
+        echo "Generating checksums for release artifacts"
+        cd release-artifacts
+        find . -type f \( -name "*.tar.gz" -o -name "*.zip" -o -name "*.txt" \) -exec sha256sum {} \; > CHECKSUMS.sha256
+        echo "Checksums file created: CHECKSUMS.sha256"
+        echo ""
+        echo "Release artifacts summary:"
+        ls -lah
+        echo ""
+        echo "Checksums:"
+        cat CHECKSUMS.sha256
+        cd ..
+      shell: bash
+
+    - name: Verify release artifacts
+      run: |
+        echo "Verifying release artifacts"
+        artifact_count=$(find release-artifacts -type f | wc -l)
+        echo "Total artifacts: $artifact_count"
+
+        # Verify required files exist
+        required_files=(
+          "release-artifacts/claude-code-${{ github.ref_name }}.tar.gz"
+          "release-artifacts/codex-${{ github.ref_name }}.tar.gz"
+          "release-artifacts/CHECKSUMS.sha256"
+        )
+
+        all_exist=true
+        for file in "${required_files[@]}"; do
+          if [[ -f "$file" ]]; then
+            echo "✓ Found: $file"
+          else
+            echo "✗ Missing: $file"
+            all_exist=false
+          fi
+        done
+
+        if [[ "$all_exist" == true ]]; then
+          echo "All required release artifacts verified"
+        else
+          echo "Error: Some required artifacts are missing"
+          exit 1
+        fi
+      shell: bash
