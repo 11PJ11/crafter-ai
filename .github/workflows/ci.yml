@@ -219,8 +219,14 @@ jobs:
 
     - name: Build for release
       run: |
+        set -e
         echo "Building Claude Code for release"
-        npm run build
+
+        if ! npm run build; then
+          echo "Build failed - stopping release workflow"
+          exit 1
+        fi
+
         echo "Build completed successfully for all platforms"
       shell: bash
 
