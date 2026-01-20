@@ -11,6 +11,15 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
+# CRITICAL: Clear git environment variables that pre-commit sets
+# These can interfere with tests that create temporary git repositories
+unset GIT_DIR
+unset GIT_WORK_TREE
+unset GIT_INDEX_FILE
+unset GIT_AUTHOR_DATE
+unset GIT_AUTHOR_NAME
+unset GIT_AUTHOR_EMAIL
+
 echo -e "${BLUE}Running test validation...${NC}"
 
 # Check if pytest is available

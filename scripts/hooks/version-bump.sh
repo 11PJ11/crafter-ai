@@ -10,6 +10,12 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
+# CRITICAL: Clear git environment variables that pre-commit sets
+# These can cause git commands to fail or behave unexpectedly
+unset GIT_DIR
+unset GIT_WORK_TREE
+unset GIT_INDEX_FILE
+
 CATALOG_FILE="nWave/framework-catalog.yaml"
 VERSION_FILE="nWave/tasks/nw/version.md"
 
