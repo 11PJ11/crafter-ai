@@ -38,6 +38,8 @@ target/
 # Build logs
 build.log
 build-test.log
+tools/build.log
+**/build.log
 
 # TOON format agents (separate branch)
 /agents/
