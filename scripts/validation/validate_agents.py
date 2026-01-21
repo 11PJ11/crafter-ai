@@ -413,7 +413,7 @@ def main():
     print(f"Total Agents: {results['total']}")
     print(f"Passed: {results['passed']}")
     print(f"Failed: {results['failed']}")
-    print(f"Pass Rate: {results['passed']/results['total']*100:.1f}%")
+    print(f"Pass Rate: {results['passed'] / results['total'] * 100:.1f}%")
     print("")
     print(f"Report generated: {REPORT_FILE}")
     print("")

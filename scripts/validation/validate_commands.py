@@ -226,7 +226,7 @@ class CommandTemplateValidator:
         procedural_matches = list(self.PROCEDURAL_STEP_PATTERN.finditer(self.content))
         if len(procedural_matches) >= 5:
             locations = [
-                f"Line {self.content[:m.start()].count(chr(10)) + 1}"
+                f"Line {self.content[: m.start()].count(chr(10)) + 1}"
                 for m in procedural_matches[:3]
             ]
             embedded_workflows["procedural_steps"] = locations
@@ -241,7 +241,7 @@ class CommandTemplateValidator:
             )
         elif procedural_matches:
             embedded_workflows["procedural_steps"] = [
-                f"Line {self.content[:m.start()].count(chr(10)) + 1}"
+                f"Line {self.content[: m.start()].count(chr(10)) + 1}"
                 for m in procedural_matches
             ]
 
@@ -249,7 +249,7 @@ class CommandTemplateValidator:
         progress_matches = list(self.PROGRESS_TRACKING_PATTERN.finditer(self.content))
         if progress_matches:
             embedded_workflows["progress_tracking"] = [
-                f"Line {self.content[:m.start()].count(chr(10)) + 1}"
+                f"Line {self.content[: m.start()].count(chr(10)) + 1}"
                 for m in progress_matches[:3]
             ]
             violations.append(
@@ -265,7 +265,7 @@ class CommandTemplateValidator:
         orch_matches = list(self.ORCHESTRATION_PATTERN.finditer(self.content))
         if len(orch_matches) >= 3:
             embedded_workflows["orchestration"] = [
-                f"Line {self.content[:m.start()].count(chr(10)) + 1}"
+                f"Line {self.content[: m.start()].count(chr(10)) + 1}"
                 for m in orch_matches[:3]
             ]
             violations.append(
@@ -281,7 +281,7 @@ class CommandTemplateValidator:
         param_matches = list(self.PARAMETER_PARSING_PATTERN.finditer(self.content))
         if param_matches:
             embedded_workflows["parameter_parsing"] = [
-                f"Line {self.content[:m.start()].count(chr(10)) + 1}"
+                f"Line {self.content[: m.start()].count(chr(10)) + 1}"
                 for m in param_matches[:3]
             ]
             violations.append(

@@ -44,7 +44,7 @@ import json
 import os
 import sys
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 
 # Required TDD phases in order (14 total)
@@ -79,8 +79,7 @@ BLOCKS_COMMIT_PREFIXES = [
 
 
 def validate_step_file(
-    file_path: str,
-    strict: bool = False
+    file_path: str, strict: bool = False
 ) -> Tuple[bool, List[Dict[str, Any]]]:
     """
     Validate a single step file for TDD phase completeness.
@@ -106,20 +105,26 @@ def validate_step_file(
 
     # REJECT OLD/WRONG FORMAT PATTERNS
     if "step_id" in data:
-        return False, [{
-            "severity": "ERROR",
-            "issue": "WRONG FORMAT: Found 'step_id' - use 'task_id'. Obsolete format."
-        }]
+        return False, [
+            {
+                "severity": "ERROR",
+                "issue": "WRONG FORMAT: Found 'step_id' - use 'task_id'. Obsolete format.",
+            }
+        ]
     if "phase_id" in data:
-        return False, [{
-            "severity": "ERROR",
-            "issue": "WRONG FORMAT: Found 'phase_id' - each step has ALL 14 phases, not one."
-        }]
+        return False, [
+            {
+                "severity": "ERROR",
+                "issue": "WRONG FORMAT: Found 'phase_id' - each step has ALL 14 phases, not one.",
+            }
+        ]
     if "tdd_phase" in data and "tdd_cycle" not in data:
-        return False, [{
-            "severity": "ERROR",
-            "issue": "WRONG FORMAT: 'tdd_phase' at top level. Use tdd_cycle.phase_execution_log."
-        }]
+        return False, [
+            {
+                "severity": "ERROR",
+                "issue": "WRONG FORMAT: 'tdd_phase' at top level. Use tdd_cycle.phase_execution_log.",
+            }
+        ]
 
     # Get phase execution log
     tdd_cycle = data.get("tdd_cycle", {})
@@ -127,20 +132,26 @@ def validate_step_file(
 
     if not phase_log:
         # Check old location
-        phase_log = tdd_cycle.get("tdd_phase_tracking", {}).get("phase_execution_log", [])
+        phase_log = tdd_cycle.get("tdd_phase_tracking", {}).get(
+            "phase_execution_log", []
+        )
 
     if not phase_log:
-        return False, [{
-            "severity": "ERROR",
-            "issue": "No phase_execution_log found - file may need migration"
-        }]
+        return False, [
+            {
+                "severity": "ERROR",
+                "issue": "No phase_execution_log found - file may need migration",
+            }
+        ]
 
     # Check phase count
     if len(phase_log) < len(REQUIRED_PHASES):
-        issues.append({
-            "severity": "ERROR",
-            "issue": f"Expected {len(REQUIRED_PHASES)} phases, found {len(phase_log)}"
-        })
+        issues.append(
+            {
+                "severity": "ERROR",
+                "issue": f"Expected {len(REQUIRED_PHASES)} phases, found {len(phase_log)}",
+            }
+        )
 
     # Build lookup by phase name
     phase_lookup = {p.get("phase_name"): p for p in phase_log}
@@ -150,12 +161,14 @@ def validate_step_file(
         entry = phase_lookup.get(phase_name)
 
         if not entry:
-            issues.append({
-                "severity": "ERROR",
-                "phase": phase_name,
-                "phase_index": i,
-                "issue": "Phase missing from log"
-            })
+            issues.append(
+                {
+                    "severity": "ERROR",
+                    "phase": phase_name,
+                    "phase_index": i,
+                    "issue": "Phase missing from log",
+                }
+            )
             continue
 
         status = entry.get("status", "NOT_EXECUTED")
@@ -163,69 +176,85 @@ def validate_step_file(
         if status == "EXECUTED":
             # Validate outcome exists
             if not entry.get("outcome"):
-                issues.append({
-                    "severity": "WARNING",
-                    "phase": phase_name,
-                    "phase_index": i,
-                    "issue": "EXECUTED phase missing outcome"
-                })
+                issues.append(
+                    {
+                        "severity": "WARNING",
+                        "phase": phase_name,
+                        "phase_index": i,
+                        "issue": "EXECUTED phase missing outcome",
+                    }
+                )
 
         elif status == "IN_PROGRESS":
-            issues.append({
-                "severity": "ERROR",
-                "phase": phase_name,
-                "phase_index": i,
-                "issue": "Phase left IN_PROGRESS (incomplete execution)"
-            })
+            issues.append(
+                {
+                    "severity": "ERROR",
+                    "phase": phase_name,
+                    "phase_index": i,
+                    "issue": "Phase left IN_PROGRESS (incomplete execution)",
+                }
+            )
 
         elif status == "NOT_EXECUTED":
-            issues.append({
-                "severity": "ERROR",
-                "phase": phase_name,
-                "phase_index": i,
-                "issue": "Phase not executed"
-            })
+            issues.append(
+                {
+                    "severity": "ERROR",
+                    "phase": phase_name,
+                    "phase_index": i,
+                    "issue": "Phase not executed",
+                }
+            )
 
         elif status == "SKIPPED":
             blocked_by = entry.get("blocked_by", "")
 
             if not blocked_by:
-                issues.append({
-                    "severity": "ERROR",
-                    "phase": phase_name,
-                    "phase_index": i,
-                    "issue": "SKIPPED without blocked_by reason"
-                })
+                issues.append(
+                    {
+                        "severity": "ERROR",
+                        "phase": phase_name,
+                        "phase_index": i,
+                        "issue": "SKIPPED without blocked_by reason",
+                    }
+                )
             elif any(blocked_by.startswith(p) for p in BLOCKS_COMMIT_PREFIXES):
-                issues.append({
-                    "severity": "ERROR",
-                    "phase": phase_name,
-                    "phase_index": i,
-                    "issue": f"DEFERRED phase blocks commit: {blocked_by}"
-                })
+                issues.append(
+                    {
+                        "severity": "ERROR",
+                        "phase": phase_name,
+                        "phase_index": i,
+                        "issue": f"DEFERRED phase blocks commit: {blocked_by}",
+                    }
+                )
             elif not any(blocked_by.startswith(p) for p in VALID_SKIP_PREFIXES):
-                issues.append({
-                    "severity": "ERROR",
-                    "phase": phase_name,
-                    "phase_index": i,
-                    "issue": f"Invalid blocked_by prefix: {blocked_by}"
-                })
+                issues.append(
+                    {
+                        "severity": "ERROR",
+                        "phase": phase_name,
+                        "phase_index": i,
+                        "issue": f"Invalid blocked_by prefix: {blocked_by}",
+                    }
+                )
             elif strict:
                 # In strict mode, even valid SKIPPED is an issue
-                issues.append({
+                issues.append(
+                    {
+                        "severity": "WARNING",
+                        "phase": phase_name,
+                        "phase_index": i,
+                        "issue": f"SKIPPED (strict mode): {blocked_by}",
+                    }
+                )
+
+        else:
+            issues.append(
+                {
                     "severity": "WARNING",
                     "phase": phase_name,
                     "phase_index": i,
-                    "issue": f"SKIPPED (strict mode): {blocked_by}"
-                })
-
-        else:
-            issues.append({
-                "severity": "WARNING",
-                "phase": phase_name,
-                "phase_index": i,
-                "issue": f"Unknown status: {status}"
-            })
+                    "issue": f"Unknown status: {status}",
+                }
+            )
 
     # Count errors
     error_count = sum(1 for iss in issues if iss.get("severity") == "ERROR")
@@ -248,6 +277,7 @@ def find_step_files(base_path: str = ".") -> List[str]:
 
     # Filter to only step files (pattern: XX-XX.json)
     import re
+
     step_pattern = re.compile(r"\d+-\d+\.json$")
     step_files = [f for f in step_files if step_pattern.search(f)]
 
@@ -259,28 +289,17 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="Validate TDD phase completeness for CI/CD",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=__doc__
+        epilog=__doc__,
     )
     parser.add_argument(
-        "--strict",
-        action="store_true",
-        help="Fail on SKIPPED phases too"
+        "--strict", action="store_true", help="Fail on SKIPPED phases too"
+    )
+    parser.add_argument("--json", action="store_true", help="Output results as JSON")
+    parser.add_argument(
+        "--fail-fast", action="store_true", help="Stop at first failure"
     )
     parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Output results as JSON"
-    )
-    parser.add_argument(
-        "--fail-fast",
-        action="store_true",
-        help="Stop at first failure"
-    )
-    parser.add_argument(
-        "path",
-        nargs="?",
-        default=".",
-        help="Directory or file to validate"
+        "path", nargs="?", default=".", help="Directory or file to validate"
     )
 
     args = parser.parse_args()
@@ -294,7 +313,7 @@ def main() -> int:
         "files_failed": 0,
         "total_errors": 0,
         "total_warnings": 0,
-        "details": []
+        "details": [],
     }
 
     # Find step files
@@ -341,7 +360,7 @@ def main() -> int:
             "valid": is_valid,
             "errors": error_count,
             "warnings": warning_count,
-            "issues": issues
+            "issues": issues,
         }
         results["details"].append(file_result)
 

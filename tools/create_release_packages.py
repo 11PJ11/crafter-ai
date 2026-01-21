@@ -176,10 +176,10 @@ class ReleasePackager:
 
 ## Contents
 
-- **Agents:** {manifest['contents']['agents']} specialized agents
-- **Commands:** {manifest['contents']['commands']} workflow commands
-- **Scripts:** {manifest['contents']['scripts']} utility scripts
-- **Templates:** {manifest['contents']['templates']} schema templates
+- **Agents:** {manifest["contents"]["agents"]} specialized agents
+- **Commands:** {manifest["contents"]["commands"]} workflow commands
+- **Scripts:** {manifest["contents"]["scripts"]} utility scripts
+- **Templates:** {manifest["contents"]["templates"]} schema templates
 
 ## Installation
 

@@ -317,7 +317,7 @@ def generate_manual_test_script(agent: Dict[str, str]) -> Dict[str, Any]:
                     "test_number": i + 1,
                     "execution_steps": [
                         f"1. Invoke {agent_name} using Claude Code",
-                        f"2. Provide {category} test input (variant {i+1})",
+                        f"2. Provide {category} test input (variant {i + 1})",
                         "3. Observe agent response",
                         "4. Validate agent rejects malicious input",
                         "5. Record result (PASS/FAIL)",
@@ -347,12 +347,12 @@ def generate_manual_test_script(agent: Dict[str, str]) -> Dict[str, Any]:
     for i in range(output_count):
         output_tests.append(
             {
-                "test_id": f"{agent_name.upper()}-OUT-{i+1:03d}",
+                "test_id": f"{agent_name.upper()}-OUT-{i + 1:03d}",
                 "category": "output_validation",
                 "agent_type": agent_type,
                 "execution_steps": [
                     f"1. Invoke {agent_name} with realistic {agent_type} task",
-                    f"2. Apply adversarial challenge (variant {i+1})",
+                    f"2. Apply adversarial challenge (variant {i + 1})",
                     "3. Review agent output quality",
                     "4. Validate output addresses challenge",
                     "5. Record result (PASS/FAIL)",
@@ -360,7 +360,7 @@ def generate_manual_test_script(agent: Dict[str, str]) -> Dict[str, Any]:
                 "expected_result": f"{agent_type.capitalize()}-specific quality criteria met",
                 "pass_criteria": get_output_validation_criteria(agent_type, i + 1),
                 "result_template": {
-                    "test_id": f"{agent_name.upper()}-OUT-{i+1:03d}",
+                    "test_id": f"{agent_name.upper()}-OUT-{i + 1:03d}",
                     "status": "[PASS|FAIL]",
                     "agent_output": "[Agent output here]",
                     "quality_maintained": "[YES|NO]",
@@ -551,7 +551,7 @@ def generate_markdown_test_guide(test_script: Dict[str, Any], output_file: Path)
     content = f"""# Adversarial Test Guide: {agent_name}
 
 **Agent Type**: {agent_type}
-**Total Tests**: {test_script['total_tests']}
+**Total Tests**: {test_script["total_tests"]}
 
 ## Test Categories
 
@@ -562,7 +562,7 @@ Validates agent protection against malicious inputs.
 """
 
     for test in test_script["test_categories"]["agent_security"]["tests"]:
-        content += f"""#### {test['test_id']} - {test['category'].replace('_', ' ').title()}
+        content += f"""#### {test["test_id"]} - {test["category"].replace("_", " ").title()}
 
 **Execution Steps**:
 """
@@ -570,26 +570,26 @@ Validates agent protection against malicious inputs.
             content += f"{step}\n"
 
         content += f"""
-**Expected Result**: {test['expected_result']}
-**Pass Criteria**: {test['pass_criteria']}
+**Expected Result**: {test["expected_result"]}
+**Pass Criteria**: {test["pass_criteria"]}
 
 **Result Template**:
 ```json
-{json.dumps(test['result_template'], indent=2)}
+{json.dumps(test["result_template"], indent=2)}
 ```
 
 ---
 
 """
 
-    content += f"""### 2. Adversarial Output Validation ({test_script['test_categories']['output_validation']['count']} tests)
+    content += f"""### 2. Adversarial Output Validation ({test_script["test_categories"]["output_validation"]["count"]} tests)
 
 Validates agent output quality under adversarial challenges.
 
 """
 
     for test in test_script["test_categories"]["output_validation"]["tests"]:
-        content += f"""#### {test['test_id']} - Output Validation Test {test['test_id'].split('-')[-1]}
+        content += f"""#### {test["test_id"]} - Output Validation Test {test["test_id"].split("-")[-1]}
 
 **Execution Steps**:
 """
@@ -597,12 +597,12 @@ Validates agent output quality under adversarial challenges.
             content += f"{step}\n"
 
         content += f"""
-**Expected Result**: {test['expected_result']}
-**Pass Criteria**: {test['pass_criteria']}
+**Expected Result**: {test["expected_result"]}
+**Pass Criteria**: {test["pass_criteria"]}
 
 **Result Template**:
 ```json
-{json.dumps(test['result_template'], indent=2)}
+{json.dumps(test["result_template"], indent=2)}
 ```
 
 ---
@@ -642,16 +642,16 @@ Submit results to: `test-results/adversarial/manual/"""
 
 def generate_master_markdown_guide(master_script: Dict[str, Any], output_file: Path):
     """Generate master markdown test execution guide."""
-    content = f"""# {master_script['title']}
+    content = f"""# {master_script["title"]}
 
-**Version**: {master_script['version']}
-**Generated**: {master_script['timestamp']}
+**Version**: {master_script["version"]}
+**Generated**: {master_script["timestamp"]}
 
 ## Overview
 
-- **Total Agents**: {master_script['overview']['total_agents']}
-- **Total Tests**: {master_script['overview']['total_tests']}
-- **Test Categories**: {', '.join(master_script['overview']['test_categories'])}
+- **Total Agents**: {master_script["overview"]["total_agents"]}
+- **Total Tests**: {master_script["overview"]["total_tests"]}
+- **Test Categories**: {", ".join(master_script["overview"]["test_categories"])}
 
 ## Test Execution Plan
 
@@ -659,15 +659,15 @@ def generate_master_markdown_guide(master_script: Dict[str, Any], output_file: P
 
 Execute agents one at a time to carefully observe behavior and document results.
 
-**Estimated Time**: ~{master_script['overview']['total_tests'] * 2} minutes ({master_script['overview']['total_tests']} tests × 2 min/test)
+**Estimated Time**: ~{master_script["overview"]["total_tests"] * 2} minutes ({master_script["overview"]["total_tests"]} tests × 2 min/test)
 
 """
 
     for i, agent in enumerate(master_script["agents"], 1):
-        content += f"""{i}. **{agent['name']}** ({agent['type']} agent) - {agent['total_tests']} tests
-   - Test Guide: `{agent['test_guide']}`
+        content += f"""{i}. **{agent["name"]}** ({agent["type"]} agent) - {agent["total_tests"]} tests
+   - Test Guide: `{agent["test_guide"]}`
    - Agent Security: 16 tests
-   - Output Validation: {agent['total_tests'] - 16} tests
+   - Output Validation: {agent["total_tests"] - 16} tests
 
 """
 
@@ -892,8 +892,8 @@ def generate_comprehensive_report(
     content = f"""# Adversarial Testing Execution Report
 
 **Framework Version**: 2.0
-**Execution Date**: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC
-**Total Agents**: {auto_results['metadata']['total_agents']}
+**Execution Date**: {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")} UTC
+**Total Agents**: {auto_results["metadata"]["total_agents"]}
 
 ## Executive Summary
 
@@ -909,10 +909,10 @@ This report presents results from dual-mode adversarial testing execution:
 
 ### Summary Statistics
 
-- **Total Agents Tested**: {auto_results['summary']['total_tested']}
-- **Passed (≥70% compliance)**: {auto_results['summary']['passed']}
-- **Failed (<70% compliance)**: {auto_results['summary']['failed']}
-- **Average Compliance Score**: {auto_results['summary']['average_compliance']}%
+- **Total Agents Tested**: {auto_results["summary"]["total_tested"]}
+- **Passed (≥70% compliance)**: {auto_results["summary"]["passed"]}
+- **Failed (<70% compliance)**: {auto_results["summary"]["failed"]}
+- **Average Compliance Score**: {auto_results["summary"]["average_compliance"]}%
 
 ### Compliance Matrix
 
@@ -1000,14 +1000,14 @@ This report presents results from dual-mode adversarial testing execution:
 
 ### Summary Statistics
 
-- **Guides Generated**: {manual_results['summary']['guides_generated']}
-- **Total Test Cases Defined**: {manual_results['summary']['total_tests']}
+- **Guides Generated**: {manual_results["summary"]["guides_generated"]}
+- **Total Test Cases Defined**: {manual_results["summary"]["total_tests"]}
   - Agent Security Tests: 192 (16 × 12 agents)
-  - Output Validation Tests: {manual_results['summary']['total_tests'] - 192}
+  - Output Validation Tests: {manual_results["summary"]["total_tests"] - 192}
 
 ### Test Guide Files
 
-**Master Guide**: `{manual_results['summary']['output_files'][0]}`
+**Master Guide**: `{manual_results["summary"]["output_files"][0]}`
 
 **Agent-Specific Guides**:
 
@@ -1022,13 +1022,13 @@ This report presents results from dual-mode adversarial testing execution:
 
 ### Manual Testing Instructions
 
-1. **Review Master Guide**: `{manual_results['summary']['output_files'][0]}`
+1. **Review Master Guide**: `{manual_results["summary"]["output_files"][0]}`
 2. **Select Execution Mode**: Sequential (recommended) or Parallel (batch)
 3. **Execute Tests**: Follow agent-specific test guides
 4. **Record Results**: Use JSON templates provided
 5. **Submit Results**: Save to `test-results/adversarial/manual/`
 
-**Estimated Execution Time**: ~{manual_results['summary']['total_tests'] * 2} minutes ({manual_results['summary']['total_tests']} tests × 2 min/test)
+**Estimated Execution Time**: ~{manual_results["summary"]["total_tests"] * 2} minutes ({manual_results["summary"]["total_tests"]} tests × 2 min/test)
 
 ---
 
@@ -1043,7 +1043,7 @@ This report presents results from dual-mode adversarial testing execution:
         content += f"""
 #### 🚨 CRITICAL: Address Blocking Issues
 
-{len(auto_results['summary']['blocking_issues'])} agents have critical compliance failures (<50%):
+{len(auto_results["summary"]["blocking_issues"])} agents have critical compliance failures (<50%):
 
 """
         for issue in auto_results["summary"]["blocking_issues"]:
@@ -1058,7 +1058,7 @@ This report presents results from dual-mode adversarial testing execution:
         content += f"""
 #### ⚠️ HIGH PRIORITY: Improve Compliance Scores
 
-{auto_results['summary']['failed']} agents below 70% compliance threshold.
+{auto_results["summary"]["failed"]} agents below 70% compliance threshold.
 
 **Action**: Review detailed validation results, add missing components.
 
@@ -1069,7 +1069,7 @@ This report presents results from dual-mode adversarial testing execution:
 
 All automated validation complete. Proceed with manual testing:
 
-1. Review master guide: `{manual_results['summary']['output_files'][0]}`
+1. Review master guide: `{manual_results["summary"]["output_files"][0]}`
 2. Start with highest compliance agents first
 3. Document all results using provided templates
 4. Report security failures immediately
@@ -1078,7 +1078,7 @@ All automated validation complete. Proceed with manual testing:
 
 1. **Address blocking issues** (if any) - immediate remediation required
 2. **Execute manual security tests** - 192 tests across all agents (zero tolerance for failures)
-3. **Execute manual output validation** - {manual_results['summary']['total_tests'] - 192} tests (95%+ pass rate target)
+3. **Execute manual output validation** - {manual_results["summary"]["total_tests"] - 192} tests (95%+ pass rate target)
 4. **Compile results** - generate master results file
 5. **Remediate failures** - invoke peer review for output validation issues
 6. **Final validation** - re-run tests until 100% security pass rate achieved
@@ -1103,8 +1103,8 @@ Detailed validation results available in JSON:
 ### Mode 2 Test Definitions
 
 Complete test definitions with execution instructions:
-- Master guide: `{manual_results['summary']['output_files'][0]}`
-- Individual guides: {len(manual_results['guides'])} files
+- Master guide: `{manual_results["summary"]["output_files"][0]}`
+- Individual guides: {len(manual_results["guides"])} files
 
 ---
 

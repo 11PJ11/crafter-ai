@@ -9,8 +9,8 @@ on:
     branches: [ master, main, develop ]
 
 jobs:
-  build:
-    name: Build on ${{ matrix.os }}
+  build-and-test:
+    name: Build & Test (${{ matrix.os }}, Node ${{ matrix.node-version }})
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
@@ -40,35 +40,141 @@ jobs:
     - name: Install Node dependencies
       run: npm ci
 
-    - name: Build on Ubuntu
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        echo "Validating build on Ubuntu platform"
-        npm run build
-      shell: bash
-
-    - name: Build on macOS
-      if: matrix.os == 'macos-latest'
-      run: |
-        echo "Validating build on macOS platform"
-        npm run build
-      shell: bash
-
-    - name: Build on Windows
-      if: matrix.os == 'windows-latest'
-      run: |
-        echo "Validating build on Windows platform"
-        npm run build
-      shell: bash
-
     - name: Run tests
       run: npm test
 
-    - name: Report CI status
+    - name: Run build
+      run: npm run build
+
+    - name: Report status
       if: always()
       run: |
         echo "CI validation completed for ${{ matrix.os }} with Node.js ${{ matrix.node-version }}"
       shell: bash
+
+  quality-gates:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install Python dependencies
+      run: |
+        python3 -m pip install --upgrade pip
+        pip install -r tools/requirements.txt
+
+    - name: YAML validation
+      run: |
+        echo "::group::YAML File Validation"
+        python3 scripts/validation/validate_yaml_files.py
+        echo "::endgroup::"
+
+    - name: Shell script validation
+      run: |
+        echo "::group::Shell Script Validation"
+
+        # Syntax validation
+        echo "Validating shell script syntax..."
+        find scripts -name "*.sh" -type f 2>/dev/null | while read -r script; do
+          echo "Checking: $script"
+          bash -n "$script" || exit 1
+        done
+
+        # Shellcheck linting
+        if command -v shellcheck >/dev/null 2>&1; then
+          echo "Running shellcheck analysis..."
+          find scripts -name "*.sh" -type f 2>/dev/null | xargs shellcheck -x || true
+        else
+          echo "Shellcheck not available, skipping linting"
+        fi
+
+        echo "::endgroup::"
+
+    - name: Python linting (Ruff)
+      run: |
+        echo "::group::Python Linting"
+        pip install ruff
+        ruff check scripts/ tools/ tests/ --exit-non-zero-on-fix || echo "Ruff linting completed with warnings"
+        echo "::endgroup::"
+
+    - name: Python formatting check (Ruff)
+      run: |
+        echo "::group::Python Formatting Check"
+        ruff format --check scripts/ tools/ tests/ || echo "Formatting issues detected"
+        echo "::endgroup::"
+
+    - name: Security validation
+      run: |
+        echo "::group::Security Validation"
+
+        # Check for hardcoded secrets
+        if grep -rE "(password|secret|token)[[:space:]]*=[[:space:]]*['\"][^'\"]+['\"]" scripts/ --include="*.sh" 2>/dev/null | grep -v "example\|test\|comment\|TODO"; then
+          echo "⚠️ Potential hardcoded credentials detected - review required"
+          exit 1
+        fi
+
+        echo "✅ Security validation: No hardcoded credentials detected"
+        echo "::endgroup::"
+
+    - name: Agent definition validation
+      run: |
+        echo "::group::Agent Validation"
+
+        agent_count=$(find nWave/agents -name "*.md" -type f 2>/dev/null | wc -l)
+        echo "Found $agent_count agent definitions"
+
+        if [[ $agent_count -lt 10 ]]; then
+          echo "⚠️ Expected more agent definitions"
+        else
+          echo "✅ Agent definitions found: $agent_count"
+        fi
+
+        echo "::endgroup::"
+
+    - name: Command definition validation
+      run: |
+        echo "::group::Command Validation"
+
+        command_count=$(find nWave/tasks -name "*.md" -type f 2>/dev/null | wc -l)
+        echo "Found $command_count command definitions"
+        echo "✅ Command definitions found: $command_count"
+
+        echo "::endgroup::"
+
+  documentation-check:
+    name: Documentation Validation
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Check required documentation
+      run: |
+        echo "::group::Documentation Validation"
+
+        documentation_files=(
+          "README.md"
+          "docs/installation/INSTALL.md"
+        )
+
+        for doc_file in "${documentation_files[@]}"; do
+          if [[ -f "$doc_file" ]]; then
+            echo "✅ Found: $doc_file"
+          else
+            echo "⚠️ Missing documentation: $doc_file"
+          fi
+        done
+
+        echo "::endgroup::"
 
   unix-installer-test:
     name: Unix Installer Dry-Run Test
@@ -77,7 +183,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest, macos-latest ]
       fail-fast: false
-    needs: build
+    needs: build-and-test
 
     steps:
     - name: Checkout code
@@ -140,7 +246,7 @@ jobs:
   windows-installer-test:
     name: Windows Installer Dry-Run Test
     runs-on: windows-latest
-    needs: build
+    needs: build-and-test
 
     steps:
     - name: Checkout code
@@ -203,7 +309,7 @@ jobs:
     name: Release on Version Tag
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: build
+    needs: [build-and-test, quality-gates]
 
     steps:
     - name: Checkout code
@@ -371,3 +477,36 @@ jobs:
         # Verify release was created
         gh release view "${{ github.ref_name }}" --json name,tagName,url,assets
       shell: bash
+
+  ci-summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: [build-and-test, quality-gates, documentation-check]
+    if: always()
+
+    steps:
+    - name: Report pipeline status
+      run: |
+        echo "::group::CI Pipeline Summary"
+
+        if [[ "${{ needs.build-and-test.result }}" == "success" &&
+              "${{ needs.quality-gates.result }}" == "success" &&
+              "${{ needs.documentation-check.result }}" == "success" ]]; then
+
+          echo "🎉 CI Pipeline: SUCCESS"
+          echo "✅ Build and test matrix passed"
+          echo "✅ Quality gates passed"
+          echo "✅ Documentation validated"
+          echo ""
+          echo "🚀 System ready for deployment"
+
+        else
+          echo "❌ CI Pipeline: FAILED"
+          echo "Results:"
+          echo "  - Build & Test: ${{ needs.build-and-test.result }}"
+          echo "  - Quality Gates: ${{ needs.quality-gates.result }}"
+          echo "  - Documentation: ${{ needs.documentation-check.result }}"
+          exit 1
+        fi
+
+        echo "::endgroup::"

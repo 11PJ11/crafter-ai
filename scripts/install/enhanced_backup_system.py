@@ -103,10 +103,10 @@ class EnhancedBackupSystem:
 
         # Write scan summary
         summary_file = self.backup_dir / "metadata" / "scan_summary.txt"
-        summary_content = f"""Agents: {config_summary['agents_count']} files found
-Commands: {config_summary['commands_count']} files found
-SuperClaude Commands: {config_summary['superclaud_commands']} files found
-Settings: {"settings.local.json found" if config_summary['config_files'] > 0 else "No settings file"}
+        summary_content = f"""Agents: {config_summary["agents_count"]} files found
+Commands: {config_summary["commands_count"]} files found
+SuperClaude Commands: {config_summary["superclaud_commands"]} files found
+Settings: {"settings.local.json found" if config_summary["config_files"] > 0 else "No settings file"}
 """
         summary_file.write_text(summary_content, encoding="utf-8")
 

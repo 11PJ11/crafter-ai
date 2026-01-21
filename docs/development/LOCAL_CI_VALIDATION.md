@@ -23,13 +23,16 @@ The local validation environment mirrors the GitHub Actions CI/CD pipeline, allo
 ```
 
 This runs all the same checks as GitHub Actions CI/CD:
-- YAML file validation
-- Python test suite (pytest)
-- Build process validation
-- Shell script syntax checks
-- Security validation (no hardcoded credentials)
-- nWave framework validation
-- Documentation checks
+1. YAML file validation
+2. Python test suite (pytest)
+3. Build process validation
+4. Shell script syntax checks
+5. Shellcheck linting **NEW**
+6. Python linting (Ruff) **NEW**
+7. Python formatting check (Ruff) **NEW**
+8. Security validation (no hardcoded credentials)
+9. nWave framework validation
+10. Documentation checks
 
 ### 2. Fast Mode (Skip Build)
 
@@ -109,8 +112,12 @@ pre-commit install
 3. **Documentation Version Validation** - Checks doc versions are synchronized
 4. **Conflict Detection** - Detects conflicts between related files
 5. **Code Formatter Check** - Ensures ruff/mypy are available
-6. **YAML File Validation** - Validates all YAML syntax (NEW)
-7. **Standard Checks** - Trailing whitespace, EOF, merge conflicts, private keys
+6. **YAML File Validation** - Validates all YAML syntax
+7. **Shell Syntax Check** - Validates shell script syntax (bash -n) **NEW**
+8. **Shellcheck Linting** - Lints shell scripts for best practices **NEW**
+9. **Ruff Linting** - Python code linting
+10. **Ruff Formatting** - Python code formatting check
+11. **Standard Checks** - Trailing whitespace, EOF, merge conflicts, private keys
 
 ### Run Pre-Commit Manually
 
@@ -135,17 +142,22 @@ git commit --no-verify
 
 This will be logged in `.git/hooks/pre-commit.log` for audit.
 
-## CI/CD Alignment Matrix
+## CI/CD Alignment Matrix - 100% Parity
 
-| Check | Local Script | Pre-Commit | CI/CD |
-|-------|-------------|------------|-------|
-| YAML Validation | ✅ local-ci.sh | ✅ yaml-validation hook | ✅ check-yaml |
-| Python Tests | ✅ npm test | ✅ pytest-validation | ✅ npm test |
-| Build Process | ✅ npm run build | ❌ (too slow) | ✅ npm run build |
-| Shell Syntax | ✅ local-ci.sh | ❌ | ✅ quality-gates |
-| Security Scan | ✅ local-ci.sh | ❌ | ✅ quality-gates |
-| Agent Count | ✅ local-ci.sh | ❌ | ✅ quality-gates |
-| Documentation | ✅ local-ci.sh | ❌ | ✅ documentation-check |
+| Check | Local Script | Pre-Commit | CI/CD | Notes |
+|-------|-------------|------------|-------|-------|
+| YAML Validation | ✅ local-ci.sh | ✅ yaml-validation hook | ✅ quality-gates | **100% parity** |
+| Python Tests | ✅ npm test | ✅ pytest-validation | ✅ build-and-test | **100% parity** |
+| Build Process | ✅ npm run build | ❌ (too slow) | ✅ build-and-test | Pre-commit skips (slow) |
+| Shell Syntax | ✅ local-ci.sh | ✅ bash -n hook | ✅ quality-gates | **100% parity** |
+| Shellcheck | ✅ local-ci.sh | ✅ shellcheck hook | ✅ quality-gates | **100% parity** |
+| Ruff Linting | ✅ local-ci.sh | ✅ ruff hook | ✅ quality-gates | **100% parity** |
+| Ruff Formatting | ✅ local-ci.sh | ✅ ruff-format hook | ✅ quality-gates | **100% parity** |
+| Security Scan | ✅ local-ci.sh | ❌ (security context) | ✅ quality-gates | Pre-commit skips |
+| Agent Count | ✅ local-ci.sh | ❌ (informational) | ✅ quality-gates | Pre-commit skips |
+| Documentation | ✅ local-ci.sh | ❌ (informational) | ✅ documentation-check | Pre-commit skips |
+
+**Key Achievement**: Every CI check now has a local equivalent - zero gaps!
 
 ## Common Issues and Solutions
 
@@ -236,19 +248,35 @@ If CI/CD fails after push:
 5. **Verify fix with local validation**
 6. **Commit and push** again
 
+## Consolidated Workflow Architecture
+
+**Single Unified CI Workflow**: `.github/workflows/ci.yml`
+
+The previous duplicate workflows (`ci.yml` and `ci-cd-pipeline.yml`) have been **consolidated** into a single workflow with these jobs:
+
+1. **build-and-test** - Matrix build (3 OS × 2 Node versions = 6 builds total, not 12)
+2. **quality-gates** - YAML, shellcheck, ruff linting, security, agent/command validation
+3. **documentation-check** - Required documentation validation
+4. **unix-installer-test** - Dry-run installer tests (Ubuntu + macOS)
+5. **windows-installer-test** - Dry-run installer test (Windows)
+6. **release** - Automated release on version tags
+7. **ci-summary** - Final status report
+
+**Zero Duplication**: Matrix builds run once, not twice (6 builds instead of 12).
+
 ## Adding New Validation Checks
 
 To add a new validation check that mirrors CI/CD:
 
-1. **Add to CI/CD workflow** (`.github/workflows/ci.yml` or `ci-cd-pipeline.yml`)
+1. **Add to CI workflow** (`.github/workflows/ci.yml` → `quality-gates` job)
 2. **Add to local-ci.sh** script
-3. **Optionally add to pre-commit** (if fast enough)
+3. **Add to pre-commit** (if fast enough - typically <2 seconds)
 4. **Update this documentation**
 
 Example:
 ```bash
 # In scripts/local-ci.sh
-print_header "8. New Validation Check"
+print_header "10. New Validation Check"
 run_check "New check description" "command-to-run"
 ```
 

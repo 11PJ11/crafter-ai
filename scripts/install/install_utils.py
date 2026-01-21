@@ -236,7 +236,7 @@ class BackupManager:
         files_count = sum(1 for _ in self.backup_dir.rglob("*.md"))
 
         content = f"""AI-Craft Framework Backup
-Created: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+Created: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 Source: {self.claude_config_dir}
 Backup Type: {self.backup_type}
 Backup contents: {files_count} framework files
@@ -312,7 +312,7 @@ class ManifestWriter:
 
         content = f"""AI-Craft Framework Installation Manifest
 ========================================
-Installed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+Installed: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 Source: {script_dir}
 Version: Production Ready
 
@@ -355,9 +355,9 @@ For help: https://github.com/11PJ11/crafter-ai
 
         content = f"""Framework Uninstallation Report
 ===============================
-Uninstalled: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-Computer: {os.uname().nodename if hasattr(os, 'uname') else 'unknown'}
-User: {os.environ.get('USER', os.environ.get('USERNAME', 'unknown'))}
+Uninstalled: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+Computer: {os.uname().nodename if hasattr(os, "uname") else "unknown"}
+User: {os.environ.get("USER", os.environ.get("USERNAME", "unknown"))}
 
 Uninstall Summary:
 - nWave agents removed from: {claude_config_dir}/agents/nw/
@@ -402,9 +402,9 @@ Uninstall Summary:
 
         content = f"""AI-Craft Framework Update Report
 ===============================
-Update Completed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-Computer: {os.uname().nodename if hasattr(os, 'uname') else 'unknown'}
-User: {os.environ.get('USER', os.environ.get('USERNAME', 'unknown'))}
+Update Completed: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+Computer: {os.uname().nodename if hasattr(os, "uname") else "unknown"}
+User: {os.environ.get("USER", os.environ.get("USERNAME", "unknown"))}
 Update Method: Automated orchestrated update
 
 Update Process Summary:

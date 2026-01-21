@@ -52,7 +52,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-cd "$PROJECT_ROOT"
+cd "$PROJECT_ROOT" || exit 1
 
 # Helper functions
 print_header() {
@@ -145,6 +145,8 @@ fi
 print_header "4. Shell Script Validation"
 if compgen -G "scripts/*.sh" > /dev/null; then
     shell_errors=0
+
+    # Syntax validation
     for script in scripts/*.sh; do
         if bash -n "$script" 2>&1; then
             print_success "Shell syntax: $(basename "$script")"
@@ -153,6 +155,18 @@ if compgen -G "scripts/*.sh" > /dev/null; then
             ((shell_errors++))
         fi
     done
+
+    # Shellcheck linting (non-blocking if not available)
+    if command -v shellcheck >/dev/null 2>&1; then
+        print_info "Running shellcheck analysis..."
+        if find scripts -name "*.sh" -type f -exec shellcheck -x {} + 2>&1; then
+            print_success "Shellcheck linting passed"
+        else
+            print_warning "Shellcheck found issues (non-blocking)"
+        fi
+    else
+        print_warning "Shellcheck not available - install for additional validation"
+    fi
 
     if [ $shell_errors -eq 0 ]; then
         ((TESTS_PASSED++))
@@ -163,8 +177,36 @@ else
     print_info "No shell scripts found in scripts/"
 fi
 
-# 5. Security Validation (matches CI security check)
-print_header "5. Security Validation"
+# 5. Python Linting (Ruff - matches CI quality gates)
+print_header "5. Python Linting (Ruff)"
+if command -v ruff >/dev/null 2>&1; then
+    if ruff check scripts/ tools/ tests/ 2>&1; then
+        print_success "Ruff linting passed"
+        ((TESTS_PASSED++))
+    else
+        print_warning "Ruff linting issues found"
+        ((TESTS_FAILED++))
+    fi
+else
+    print_warning "Ruff not available - install with: pip install ruff"
+fi
+
+# 6. Python Formatting Check (Ruff - matches CI quality gates)
+print_header "6. Python Formatting Check (Ruff)"
+if command -v ruff >/dev/null 2>&1; then
+    if ruff format --check scripts/ tools/ tests/ 2>&1; then
+        print_success "Ruff formatting check passed"
+        ((TESTS_PASSED++))
+    else
+        print_warning "Ruff formatting issues found - run: ruff format scripts/ tools/ tests/"
+        ((TESTS_FAILED++))
+    fi
+else
+    print_warning "Ruff not available - install with: pip install ruff"
+fi
+
+# 7. Security Validation (matches CI security check)
+print_header "7. Security Validation"
 security_issues=$(grep -rE "(password|secret|token)[[:space:]]*=[[:space:]]*['\"][^'\"]+['\"]" scripts/ --include="*.sh" 2>/dev/null | grep -v "example\|test\|comment\|TODO" || true)
 
 if [ -z "$security_issues" ]; then
@@ -176,8 +218,8 @@ else
     ((TESTS_FAILED++))
 fi
 
-# 6. Agent and Command Validation (matches quality-gates)
-print_header "6. nWave Framework Validation"
+# 8. Agent and Command Validation (matches quality-gates)
+print_header "8. nWave Framework Validation"
 if [ -d "nWave/agents" ]; then
     agent_count=$(find nWave/agents -name "*.md" -type f 2>/dev/null | wc -l)
     if [ "$agent_count" -ge 10 ]; then
@@ -199,8 +241,8 @@ else
     print_info "nWave tasks directory not found"
 fi
 
-# 7. Documentation Check (matches documentation-check job)
-print_header "7. Documentation Validation"
+# 9. Documentation Check (matches documentation-check job)
+print_header "9. Documentation Validation"
 required_docs=("README.md" "docs/installation/INSTALL.md")
 doc_errors=0
 

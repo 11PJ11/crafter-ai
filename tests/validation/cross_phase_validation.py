@@ -13,12 +13,10 @@ Validates all 7 cross-phase acceptance criteria:
 """
 
 import json
-import os
 import sys
-import subprocess
 from pathlib import Path
 from dataclasses import dataclass
-from typing import List, Dict, Tuple
+from typing import List, Tuple
 
 
 @dataclass
@@ -100,8 +98,10 @@ class CrossPhaseValidator:
         return ValidationResult(
             test_name="cross-01: E2E Workflow",
             passed=passed,
-            message="Complete DISCUSS→DESIGN→DISTILL→DEVELOP workflow validated" if passed else "Workflow structure incomplete",
-            details=details
+            message="Complete DISCUSS→DESIGN→DISTILL→DEVELOP workflow validated"
+            if passed
+            else "Workflow structure incomplete",
+            details=details,
         )
 
     def validate_cross_02_release_workflow(self) -> ValidationResult:
@@ -125,7 +125,9 @@ class CrossPhaseValidator:
         # Check for GitHub Actions CI/CD workflows
         workflows_dir = self.repo_root / ".github/workflows"
         if workflows_dir.exists():
-            workflows = list(workflows_dir.glob("*.yml")) + list(workflows_dir.glob("*.yaml"))
+            workflows = list(workflows_dir.glob("*.yml")) + list(
+                workflows_dir.glob("*.yaml")
+            )
             if workflows:
                 details.append(f"✓ CI/CD workflows found: {len(workflows)} workflows")
             else:
@@ -139,14 +141,14 @@ class CrossPhaseValidator:
         release_config_paths = [
             self.repo_root / "release.json",
             self.repo_root / ".releaserc",
-            self.repo_root / "release.config.js"
+            self.repo_root / "release.config.js",
         ]
         release_found = any(p.exists() for p in release_config_paths)
         if release_found:
             found_path = next(p for p in release_config_paths if p.exists())
             details.append(f"✓ Release configuration found: {found_path}")
         else:
-            details.append(f"✗ No release configuration found")
+            details.append("✗ No release configuration found")
             passed = False
 
         # Check for installer scripts
@@ -160,14 +162,16 @@ class CrossPhaseValidator:
                 break
 
         if not installers_found:
-            details.append(f"✗ No installer scripts found")
+            details.append("✗ No installer scripts found")
             passed = False
 
         return ValidationResult(
             test_name="cross-02: Release Workflow",
             passed=passed,
-            message="Release workflow infrastructure validated" if passed else "Release infrastructure incomplete",
-            details=details
+            message="Release workflow infrastructure validated"
+            if passed
+            else "Release infrastructure incomplete",
+            details=details,
         )
 
     def validate_cross_03_multi_platform_consistency(self) -> ValidationResult:
@@ -186,11 +190,13 @@ class CrossPhaseValidator:
         # Check for platform-specific agent definitions
         agent_builder_dir = self.repo_root / "docs/agents"
         if agent_builder_dir.exists():
-            agents = list(agent_builder_dir.glob("*.yaml")) + list(agent_builder_dir.glob("*.yml"))
+            agents = list(agent_builder_dir.glob("*.yaml")) + list(
+                agent_builder_dir.glob("*.yml")
+            )
             if agents:
                 details.append(f"✓ Agent definitions found: {len(agents)} agents")
             else:
-                details.append(f"✗ No agent definitions found")
+                details.append("✗ No agent definitions found")
                 passed = False
         else:
             details.append(f"✗ Agents directory NOT FOUND: {agent_builder_dir}")
@@ -200,7 +206,7 @@ class CrossPhaseValidator:
         shared_content_patterns = [
             self.repo_root / "docs/shared-content",
             self.repo_root / "src/shared-content",
-            self.repo_root / "content/shared"
+            self.repo_root / "content/shared",
         ]
         shared_content_found = False
         for path in shared_content_patterns:
@@ -212,22 +218,26 @@ class CrossPhaseValidator:
                     break
 
         if not shared_content_found:
-            details.append(f"✗ Shared content library NOT FOUND")
+            details.append("✗ Shared content library NOT FOUND")
             passed = False
 
         # Check for platform metadata configuration
         metadata_configs = list(self.repo_root.glob("**/platform-metadata.json"))
         if metadata_configs:
-            details.append(f"✓ Platform metadata configuration found: {len(metadata_configs)} files")
+            details.append(
+                f"✓ Platform metadata configuration found: {len(metadata_configs)} files"
+            )
         else:
-            details.append(f"✗ Platform metadata configuration NOT FOUND")
+            details.append("✗ Platform metadata configuration NOT FOUND")
             passed = False
 
         return ValidationResult(
             test_name="cross-03: Multi-Platform Consistency",
             passed=passed,
-            message="Multi-platform consistency framework validated" if passed else "Platform consistency incomplete",
-            details=details
+            message="Multi-platform consistency framework validated"
+            if passed
+            else "Platform consistency incomplete",
+            details=details,
         )
 
     def validate_cross_04_template_compliance(self) -> ValidationResult:
@@ -248,7 +258,7 @@ class CrossPhaseValidator:
         command_template_paths = [
             self.repo_root / "docs/templates/command-template.md",
             self.repo_root / "src/templates/command.template",
-            self.repo_root / "templates/command.yaml"
+            self.repo_root / "templates/command.yaml",
         ]
         command_template_found = False
         for path in command_template_paths:
@@ -258,7 +268,7 @@ class CrossPhaseValidator:
                 break
 
         if not command_template_found:
-            details.append(f"✗ Command template NOT FOUND")
+            details.append("✗ Command template NOT FOUND")
             passed = False
 
         # Check for command files in wave directories
@@ -266,22 +276,26 @@ class CrossPhaseValidator:
         if command_files:
             details.append(f"✓ Command files found: {len(command_files)} commands")
         else:
-            details.append(f"✗ No command files found in wave directories")
+            details.append("✗ No command files found in wave directories")
             passed = False
 
         # Check for template compliance checker
         compliance_checkers = list(self.repo_root.glob("**/check*command*compliance*"))
         if compliance_checkers:
-            details.append(f"✓ Template compliance checker found: {len(compliance_checkers)} files")
+            details.append(
+                f"✓ Template compliance checker found: {len(compliance_checkers)} files"
+            )
         else:
-            details.append(f"✗ Template compliance checker NOT FOUND")
+            details.append("✗ Template compliance checker NOT FOUND")
             passed = False
 
         return ValidationResult(
             test_name="cross-04: Template Compliance",
             passed=passed,
-            message="Command template compliance framework validated" if passed else "Template compliance infrastructure incomplete",
-            details=details
+            message="Command template compliance framework validated"
+            if passed
+            else "Template compliance infrastructure incomplete",
+            details=details,
         )
 
     def validate_cross_05_path_incompatibility_error(self) -> ValidationResult:
@@ -298,11 +312,13 @@ class CrossPhaseValidator:
         passed = True
 
         # Check for path normalization utilities
-        path_utils_patterns = list(self.repo_root.glob("**/path*.py")) + list(self.repo_root.glob("**/file*.py"))
+        path_utils_patterns = list(self.repo_root.glob("**/path*.py")) + list(
+            self.repo_root.glob("**/file*.py")
+        )
         if path_utils_patterns:
             details.append(f"✓ Path utilities found: {len(path_utils_patterns)} files")
         else:
-            details.append(f"✗ Path utilities NOT FOUND")
+            details.append("✗ Path utilities NOT FOUND")
             passed = False
 
         # Check for cross-platform build script
@@ -310,7 +326,7 @@ class CrossPhaseValidator:
             self.repo_root / "build.sh",
             self.repo_root / "build.py",
             self.repo_root / "scripts/build.sh",
-            self.repo_root / "scripts/build.py"
+            self.repo_root / "scripts/build.py",
         ]
         build_script_found = False
         for path in build_script_patterns:
@@ -320,14 +336,14 @@ class CrossPhaseValidator:
                 break
 
         if not build_script_found:
-            details.append(f"✗ Build script NOT FOUND")
+            details.append("✗ Build script NOT FOUND")
             passed = False
 
         # Check for cross-platform path guidelines documentation
         guidelines_paths = [
             self.repo_root / "docs/CROSS_PLATFORM.md",
             self.repo_root / "docs/PATH_HANDLING.md",
-            self.repo_root / "README.md"
+            self.repo_root / "README.md",
         ]
         guidelines_found = False
         for path in guidelines_paths:
@@ -339,14 +355,18 @@ class CrossPhaseValidator:
                     break
 
         if not guidelines_found:
-            details.append(f"✗ Cross-platform path guidelines NOT FOUND or NOT DOCUMENTED")
+            details.append(
+                "✗ Cross-platform path guidelines NOT FOUND or NOT DOCUMENTED"
+            )
             passed = False
 
         return ValidationResult(
             test_name="cross-05: Path Incompatibility Error",
             passed=passed,
-            message="Cross-platform path handling validated" if passed else "Path handling infrastructure incomplete",
-            details=details
+            message="Cross-platform path handling validated"
+            if passed
+            else "Path handling infrastructure incomplete",
+            details=details,
         )
 
     def validate_cross_06_marker_conflict_error(self) -> ValidationResult:
@@ -362,27 +382,33 @@ class CrossPhaseValidator:
         passed = True
 
         # Check for marker resolution utility
-        marker_resolver_patterns = list(self.repo_root.glob("**/marker*.py")) + \
-                                  list(self.repo_root.glob("**/resolver*.py")) + \
-                                  list(self.repo_root.glob("**/build*.py"))
+        marker_resolver_patterns = (
+            list(self.repo_root.glob("**/marker*.py"))
+            + list(self.repo_root.glob("**/resolver*.py"))
+            + list(self.repo_root.glob("**/build*.py"))
+        )
         if marker_resolver_patterns:
-            details.append(f"✓ Marker resolver utilities found: {len(marker_resolver_patterns)} files")
+            details.append(
+                f"✓ Marker resolver utilities found: {len(marker_resolver_patterns)} files"
+            )
         else:
-            details.append(f"✗ Marker resolver utilities NOT FOUND")
+            details.append("✗ Marker resolver utilities NOT FOUND")
             passed = False
 
         # Check for marker definitions
-        marker_docs = list(self.repo_root.glob("**/MARKERS.md")) + \
-                     list(self.repo_root.glob("**/markers.yaml"))
+        marker_docs = list(self.repo_root.glob("**/MARKERS.md")) + list(
+            self.repo_root.glob("**/markers.yaml")
+        )
         if marker_docs:
             details.append(f"✓ Marker documentation found: {len(marker_docs)} files")
         else:
-            details.append(f"✗ Marker documentation NOT FOUND")
+            details.append("✗ Marker documentation NOT FOUND")
             passed = False
 
         # Check for error handling in build process
-        build_files = list(self.repo_root.glob("**/build.py")) + \
-                     list(self.repo_root.glob("**/build.sh"))
+        build_files = list(self.repo_root.glob("**/build.py")) + list(
+            self.repo_root.glob("**/build.sh")
+        )
         build_with_error_handling = False
         for build_file in build_files:
             if build_file.suffix == ".py":
@@ -393,14 +419,16 @@ class CrossPhaseValidator:
                     break
 
         if not build_with_error_handling:
-            details.append(f"✗ Error handling for marker conflicts NOT FOUND")
+            details.append("✗ Error handling for marker conflicts NOT FOUND")
             passed = False
 
         return ValidationResult(
             test_name="cross-06: Marker Conflict Error",
             passed=passed,
-            message="Marker conflict detection framework validated" if passed else "Marker conflict detection incomplete",
-            details=details
+            message="Marker conflict detection framework validated"
+            if passed
+            else "Marker conflict detection incomplete",
+            details=details,
         )
 
     def validate_cross_07_interruption_recovery(self) -> ValidationResult:
@@ -417,36 +445,44 @@ class CrossPhaseValidator:
         passed = True
 
         # Check for state persistence mechanism
-        state_patterns = list(self.repo_root.glob("**/state*.py")) + \
-                        list(self.repo_root.glob("**/persistence*.py")) + \
-                        list(self.repo_root.glob("**/checkpoint*.py"))
+        state_patterns = (
+            list(self.repo_root.glob("**/state*.py"))
+            + list(self.repo_root.glob("**/persistence*.py"))
+            + list(self.repo_root.glob("**/checkpoint*.py"))
+        )
         if state_patterns:
-            details.append(f"✓ State persistence utilities found: {len(state_patterns)} files")
+            details.append(
+                f"✓ State persistence utilities found: {len(state_patterns)} files"
+            )
         else:
-            details.append(f"✗ State persistence utilities NOT FOUND")
+            details.append("✗ State persistence utilities NOT FOUND")
             passed = False
 
         # Check for recovery file location
         recovery_dir_patterns = [
             self.repo_root / ".recovery",
             self.repo_root / ".checkpoints",
-            self.repo_root / "tmp/recovery"
+            self.repo_root / "tmp/recovery",
         ]
         recovery_dir_found = False
         for path in recovery_dir_patterns:
             if path.exists() or path.parent.exists():
-                details.append(f"✓ Recovery directory structure available: {path.parent}")
+                details.append(
+                    f"✓ Recovery directory structure available: {path.parent}"
+                )
                 recovery_dir_found = True
                 break
 
         if not recovery_dir_found:
-            details.append(f"✗ Recovery directory NOT FOUND or not configured")
+            details.append("✗ Recovery directory NOT FOUND or not configured")
             passed = False
 
         # Check for CLI option/parameter for resume
-        main_entry_points = list(self.repo_root.glob("**/main.py")) + \
-                           list(self.repo_root.glob("**/cli.py")) + \
-                           list(self.repo_root.glob("**/run.py"))
+        main_entry_points = (
+            list(self.repo_root.glob("**/main.py"))
+            + list(self.repo_root.glob("**/cli.py"))
+            + list(self.repo_root.glob("**/run.py"))
+        )
         resume_option_found = False
         for entry_point in main_entry_points:
             if entry_point.exists():
@@ -457,21 +493,23 @@ class CrossPhaseValidator:
                     break
 
         if not resume_option_found:
-            details.append(f"✗ Resume CLI option NOT FOUND")
+            details.append("✗ Resume CLI option NOT FOUND")
             passed = False
 
         return ValidationResult(
             test_name="cross-07: Interruption Recovery",
             passed=passed,
-            message="Workflow interruption recovery framework validated" if passed else "Interruption recovery infrastructure incomplete",
-            details=details
+            message="Workflow interruption recovery framework validated"
+            if passed
+            else "Interruption recovery infrastructure incomplete",
+            details=details,
         )
 
     def run_all_validations(self) -> Tuple[List[ValidationResult], bool]:
         """Run all cross-phase validations."""
-        print("="*70)
+        print("=" * 70)
         print("CROSS-PHASE E2E WORKFLOW VALIDATION SUITE")
-        print("="*70)
+        print("=" * 70)
         print()
 
         self.results = [
@@ -495,11 +533,11 @@ class CrossPhaseValidator:
             if not result.passed:
                 all_passed = False
 
-        print("="*70)
+        print("=" * 70)
         passed_count = sum(1 for r in self.results if r.passed)
         total_count = len(self.results)
         print(f"RESULTS: {passed_count}/{total_count} validations passed")
-        print("="*70)
+        print("=" * 70)
         print()
 
         return self.results, all_passed
@@ -516,10 +554,10 @@ class CrossPhaseValidator:
                     "test_name": r.test_name,
                     "passed": r.passed,
                     "message": r.message,
-                    "details": r.details
+                    "details": r.details,
                 }
                 for r in self.results
-            ]
+            ],
         }
 
         report_json = json.dumps(report, indent=2)

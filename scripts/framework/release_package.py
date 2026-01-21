@@ -39,13 +39,17 @@ def main():
         packager = ReleasePackager(project_root)
         result = packager.package_release()
 
-        print(f"✓ Build validation passed")
+        print("✓ Build validation passed")
         print(f"✓ Archives created for {len(result['platforms'])} platforms")
-        print(f"  - {result['platforms'][0]['name']}: {Path(result['platforms'][0]['archive']).name}")
-        print(f"  - {result['platforms'][1]['name']}: {Path(result['platforms'][1]['archive']).name}")
+        print(
+            f"  - {result['platforms'][0]['name']}: {Path(result['platforms'][0]['archive']).name}"
+        )
+        print(
+            f"  - {result['platforms'][1]['name']}: {Path(result['platforms'][1]['archive']).name}"
+        )
         print(f"✓ Checksums generated: {Path(result['checksums_file']).name}")
         print(f"✓ Version embedded: {result['version']}")
-        print(f"✓ Installation READMEs generated")
+        print("✓ Installation READMEs generated")
         print()
 
         # Step 6-8: Validate packages
@@ -101,13 +105,15 @@ def main():
                 print("✗ Version conflict detected:")
                 print(f"  Configuration: {version_error.configuration_version}")
                 print(f"  Git tag: {version_error.tag_version}")
-                print(f"  Resolution steps:")
+                print("  Resolution steps:")
                 for step in version_error.resolution_steps:
                     print(f"    - {step}")
             if archive_version_error:
                 print("✗ Archive version mismatch detected:")
                 print(f"  Configuration: {archive_version_error.configuration_version}")
-                print(f"  Archives: {', '.join(set(archive_version_error.archive_versions))}")
+                print(
+                    f"  Archives: {', '.join(set(archive_version_error.archive_versions))}"
+                )
                 for step in archive_version_error.resolution_steps:
                     print(f"    - {step}")
 
@@ -120,8 +126,8 @@ def main():
         print("Summary:")
         print(f"  Version: {result['version']}")
         print(f"  Archives: {len(result['platforms'])}")
-        print(f"  Checksums: CHECKSUMS.json, SHA256SUMS")
-        print(f"  Documentation: INSTALL-CLAUDE-CODE.md, INSTALL-CODEX.md")
+        print("  Checksums: CHECKSUMS.json, SHA256SUMS")
+        print("  Documentation: INSTALL-CLAUDE-CODE.md, INSTALL-CODEX.md")
         print()
 
         return 0

@@ -543,10 +543,10 @@ This report defines comprehensive adversarial tests for all AI-Craft agents:
             f.write(
                 f"""### {agent_name}
 
-**Agent Type**: {plan['agent_type']}
-**Total Tests**: {plan['total_tests']}
+**Agent Type**: {plan["agent_type"]}
+**Total Tests**: {plan["total_tests"]}
 
-#### Agent Security Tests ({plan['test_categories']['agent_security']['test_count']})
+#### Agent Security Tests ({plan["test_categories"]["agent_security"]["test_count"]})
 
 Universal security validation tests:
 
@@ -570,7 +570,7 @@ Universal security validation tests:
                     f.write(f"  - Validation: {test['validation']}\n\n")
 
             f.write(
-                f"""#### Adversarial Output Tests ({plan['test_categories']['adversarial_output']['test_count']})
+                f"""#### Adversarial Output Tests ({plan["test_categories"]["adversarial_output"]["test_count"]})
 
 Agent-type-specific output validation tests:
 

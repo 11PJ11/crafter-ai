@@ -1,450 +1,435 @@
-# Root Cause Analysis: Subagent Invocation Failure in Slash Commands
+# CI/CD Root Cause Analysis - Comprehensive 5-Whys Investigation
 
-**Date**: 2025-10-16
-**Analyst**: Sage (troubleshooter)
-**Problem**: Commands like `/nw:execute` and `/nw:review` fail to invoke specified subagents; main agent handles tasks directly instead
+**Date**: 2026-01-21
+**Analyst**: Troubleshooter Agent
+**Status**: Critical Issue Identified - Build Exits with Code 0 Despite Failures
 
 ---
 
 ## Executive Summary
 
-Commands with agent parameters (`/nw:execute`, `/nw:review`, `/nw:roadmap`, `/nw:split`, `/nw:finalize`) declare agent invocation capability in their YAML frontmatter but **do not contain actual invocation mechanisms** in their implementation. The commands document *how* a subagent *should* be invoked but lack the critical instruction that tells Claude Code to *actually invoke* the subagent using the Task tool.
+Your CI/CD pipeline is **not actually failing**—it's masking failures and reporting false success. The build script reports errors in logs but exits with code 0, causing workflows to pass despite real problems.
 
-**Impact**: High - Distributed workflow system cannot function as designed; tasks meant for specialized agents are handled by generalist main agent, degrading quality and violating architecture principles.
-
-**Root Causes Identified**: 2 (multi-causal problem)
-
----
-
-## Investigation Methodology
-
-Applied Toyota 5 Whys technique with multi-causal investigation:
-- Examined slash command implementations (`execute.md`, `review.md`, `develop.md`)
-- Compared working agent-activation commands vs non-working agent-parameter commands
-- Analyzed build process (command_processor.py)
-- Traced from symptom → source files → generated outputs
+**Critical Findings**:
+1. **Masked Failures**: Build script catches exceptions but doesn't propagate failures
+2. **YAML Syntax Error**: `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/agent-builder.md` line 773 has invalid YAML
+3. **Dependency Resolution Failures**: Missing file references not treated as build failures
+4. **Test Pass Illusion**: All 219 tests pass, but build warnings/errors are ignored
+5. **Exit Code Deception**: `sys.exit(0)` occurs even when errors occur
 
 ---
 
-## Evidence Collection
+## What's Happening (The Discrepancy)
 
-### Evidence 1: Agent-Parameter Commands Lack Invocation Instructions
+### Reported Status: PASSED
+- WebFetch shows GitHub workflows as "PASSED"
+- `npm run build` returns exit code 0
+- Build summary shows: "✅ Build completed successfully!"
+- Build stats show: "Errors: 0"
+- All 219 tests pass
 
-**Source File**: `/mnt/c/Repositories/Projects/ai-craft/nWave/tasks/dw/execute.md`
+### Actual Status: FAILURES HIDDEN
+- Build log contains: `ERROR - Failed to parse YAML configuration`
+- Agent-builder.md fails to parse (YAML syntax error)
+- Build artifacts may be incomplete
+- Error messages in logs but not propagated to exit code
+- Build continues despite processing failures
 
-**YAML Frontmatter** (Lines 1-8):
-```yaml
 ---
-description: 'Execute atomic task with state tracking [agent] [step-file-path]'
-argument-hint: '[agent] [step-file-path] - Example: @researcher "steps/01-01.json"'
-agent-activation:
-  required: false
-  agent-parameter: true
-  agent-command: "*workflow-execute"
----
+
+## 5-Whys Root Cause Analysis
+
+### WHY #1: SYMPTOM LEVEL - What is immediately observable?
+
+**The Symptom**: Build reports success while logging errors
+
+**Evidence**:
+```
+Build Output: "✅ Build completed successfully!"
+Exit Code: 0
+But Also: "2026-01-21 15:18:03,913 - ERROR - Failed to parse YAML configuration"
+And: "Errors: 0" in stats
 ```
 
-**Analysis**:
-- `agent-parameter: true` declares agent comes from command parameter
-- `agent-command: "*workflow-execute"` specifies command to send to agent
-- **CRITICAL MISSING**: No instruction to actually invoke the agent using Task tool
-
-**Agent Invocation Section** (Lines 53-58):
-```markdown
-## Agent Invocation
-
-@{specified-agent}
-
-Execute task from: {step-file-path}
-
-### Primary Task Instructions
-```
-
-**Analysis**:
-- This is **documentation** of what should happen, not executable instruction
-- Template placeholders `@{specified-agent}` and `{step-file-path}` are never substituted
-- No Task tool invocation present
-
----
-
-### Evidence 2: Working Commands Use Different Pattern
-
-**Source File**: `/mnt/c/Repositories/Projects/ai-craft/nWave/tasks/dw/develop.md`
-
-**YAML Frontmatter** (Lines 1-8):
-```yaml
----
-agent-activation:
-  required: true
-  agent-id: software-crafter
-  agent-name: "Crafty"
-  agent-command: "*develop"
-  auto-activate: true
----
-```
-
-**Analysis**:
-- `required: true` declares agent activation mandatory
-- `agent-id: software-crafter` specifies **fixed** agent (not parameter)
-- `auto-activate: true` triggers automatic agent invocation
-
-**Key Difference**:
-- **Working commands** (`/nw:develop`, `/nw:discuss`) have `agent-id` field with fixed agent
-- **Non-working commands** (`/nw:execute`, `/nw:review`) have `agent-parameter: true` but no fixed `agent-id`
-- Build system likely handles `auto-activate: true` but not `agent-parameter: true`
-
----
-
-### Evidence 3: Review Command Has Same Pattern
-
-**Source File**: `/mnt/c/Repositories/Projects/ai-craft/nWave/tasks/dw/review.md`
-
-**YAML Frontmatter** (Lines 1-8):
-```yaml
----
-description: 'Expert critique and quality review [agent] [artifact-type] [path] - Types: roadmap, task, implementation'
-argument-hint: '[agent] [artifact-type] [artifact-path] - Example: @software-crafter task "steps/01-01.json"'
-agent-activation:
-  required: false
-  agent-parameter: true
-  agent-command: "*workflow-review"
----
-```
-
-**Agent Invocation Section** (Lines 47-52):
-```markdown
-## Agent Invocation
-
-@{specified-agent}
-
-Perform {artifact-type} review of: {artifact-path}
-
-### Primary Task Instructions
-```
-
-**Analysis**: Identical pattern to `/nw:execute` - declares capability but lacks implementation
-
----
-
-### Evidence 4: Build System Copies Files Verbatim
-
-**Source File**: `/mnt/c/Repositories/Projects/ai-craft/tools/processors/command_processor.py`
-
-**Key Method** (Lines 182-218):
-```python
-def generate_command_content(self, task_file: Path, config: Dict[str, Any]) -> str:
-    """Generate complete command content with Claude Code compatible YAML frontmatter."""
-    # Read source task file
-    task_content = self.file_manager.read_file(task_file)
-
-    # Generate Claude Code compatible YAML frontmatter FIRST
-    frontmatter = self.generate_command_frontmatter(task_name, command_info)
-
-    # Generate command header
-    header = self.generate_command_header(task_name, command_info, wave_info)
-
-    # Process task content
-    processed_content = self.process_task_dependencies(task_content)
-
-    # Combine frontmatter, header and content
-    return f"{frontmatter}{header}{processed_content}"
-```
-
-**Analysis**:
-- Build process reads source task markdown
-- Adds frontmatter and header
-- **Does NOT substitute placeholders** like `@{specified-agent}`
-- **Does NOT inject Task tool invocation** for `agent-parameter: true` commands
-- Copies content mostly verbatim from source to output
-
----
-
-## 5 Whys Analysis: Path A (Missing Invocation Logic)
-
-**WHY #1A**: Why doesn't the subagent get invoked?
-**ANSWER**: The slash command markdown contains no instruction to invoke a subagent using the Task tool.
-**EVIDENCE**: Lines 53-112 of execute.md show documentation text, not executable Task tool invocation.
-
-**WHY #2A**: Why is there no Task tool invocation in the command?
-**ANSWER**: The source task file (`nWave/tasks/dw/execute.md`) contains only documentation of invocation, not implementation.
-**EVIDENCE**: Agent Invocation section uses template placeholders `@{specified-agent}` that are never substituted.
-
-**WHY #3A**: Why does the source file lack implementation?
-**ANSWER**: The task file was written as a specification document describing desired behavior, not as an executable instruction set.
-**EVIDENCE**: Language like "Agent receives complete context" and "Execute this task and provide outputs" is descriptive, not prescriptive to Claude Code.
-
-**WHY #4A**: Why was it written as specification rather than implementation?
-**ANSWER**: Author assumed Claude Code would interpret agent-parameter declaration in YAML frontmatter and automatically invoke the agent.
-**EVIDENCE**: YAML frontmatter declares `agent-parameter: true` and `agent-command: "*workflow-execute"`, suggesting expected automatic handling.
-
-**WHY #5A (ROOT CAUSE 1)**: Why was automatic handling assumed?
-**ROOT CAUSE 1**: Design gap between YAML frontmatter capabilities and build system implementation - `agent-parameter: true` is not handled by build system or Claude Code, only `auto-activate: true` with fixed `agent-id` works.
-
----
-
-## 5 Whys Analysis: Path B (Build System Limitation)
-
-**WHY #1B**: Why doesn't the build system inject invocation logic?
-**ANSWER**: The command_processor.py does not contain logic to handle `agent-parameter: true` declarations.
-**EVIDENCE**: `generate_command_content()` method (lines 182-218) only concatenates frontmatter + header + content, no template substitution or Task tool injection.
-
-**WHY #2B**: Why doesn't command_processor handle agent-parameter?
-**ANSWER**: The build system was designed to handle fixed agent assignments (`agent-id` + `auto-activate`), not dynamic agent parameters.
-**EVIDENCE**: Working commands like `/nw:develop` use `agent-id: software-crafter` and `auto-activate: true` pattern, which the system handles.
-
-**WHY #3B**: Why was dynamic agent handling not implemented?
-**ANSWER**: Dynamic agent invocation from parameters is architecturally more complex than fixed agent activation - requires parameter parsing, validation, and Task tool injection.
-**EVIDENCE**: Fixed activation is simple (if auto-activate: true, invoke agent-id), but parameter-based requires runtime extraction of agent from command arguments.
-
-**WHY #4B**: Why is parameter-based invocation more complex?
-**ANSWER**: Claude Code slash commands expand at parse time (before execution), but agent parameter values are only known at runtime (user provides them).
-**EVIDENCE**: `/nw:execute @researcher "file.json"` - the `@researcher` value is not available when slash command markdown is generated during build.
-
-**WHY #5B (ROOT CAUSE 2)**: Why can't parse-time expansion handle runtime values?
-**ROOT CAUSE 2**: Architectural limitation of static slash command expansion model - commands are expanded to static markdown before execution, but parameter-based agent selection requires dynamic behavior at execution time.
-
----
-
-## Root Causes Summary
-
-### Root Cause 1: Design Gap - Unimplemented YAML Frontmatter Feature
-**Nature**: Specification-Implementation Mismatch
-**Location**: YAML `agent-activation` specification vs. build system capabilities
-
-**Details**: The YAML frontmatter supports declaring `agent-parameter: true` to indicate an agent should be invoked based on command parameters, but neither the build system (`command_processor.py`) nor Claude Code runtime implements this feature. Only `auto-activate: true` with fixed `agent-id` is implemented.
-
-**Evidence Files**:
-- `/mnt/c/Repositories/Projects/ai-craft/nWave/tasks/dw/execute.md` (lines 4-7)
-- `/mnt/c/Repositories/Projects/ai-craft/nWave/tasks/dw/review.md` (lines 4-7)
-- `/mnt/c/Repositories/Projects/ai-craft/tools/processors/command_processor.py` (lines 182-218)
-
----
-
-### Root Cause 2: Architectural Limitation - Static Expansion vs. Dynamic Parameters
-**Nature**: Architectural Constraint
-**Location**: Slash command expansion model
-
-**Details**: Claude Code expands slash commands to markdown at parse time (static), but parameter-based agent selection requires knowing the parameter value at execution time (dynamic). The current architecture cannot bridge this static-to-dynamic gap without explicit Task tool invocation instructions in the expanded markdown.
-
-**Evidence Files**:
-- Comparison of `/nw:develop` (static, works) vs. `/nw:execute` (dynamic, fails)
-- Build output in `/mnt/c/Repositories/Projects/ai-craft/dist/ide/commands/nw/execute.md` shows static content
-
----
-
-## Backwards Chain Validation
-
-### Validation of Root Cause 1 → Symptom
-**Chain**: Design gap (unimplemented agent-parameter) → No invocation logic in command → Main agent handles task
-**Validation**: ✅ VALID
-- If `agent-parameter: true` were implemented, build system would inject Task tool invocation
-- Injected invocation would cause subagent to handle task
-- Without implementation, no invocation occurs, main agent proceeds
-
-### Validation of Root Cause 2 → Symptom
-**Chain**: Static expansion model → Cannot inject runtime parameter values → No dynamic agent selection → Main agent handles task
-**Validation**: ✅ VALID
-- Static markdown cannot contain "invoke agent from parameter $1"
-- Requires explicit Task tool invocation with specific agent name
-- Without ability to inject dynamic values, command must be handled by main agent
-
-### Cross-Validation of Root Causes
-**Test**: Do both root causes contradict each other?
-**Result**: ❌ NO CONTRADICTION
-- Root Cause 1 explains *why* no invocation logic exists (feature not implemented)
-- Root Cause 2 explains *why* implementing it is non-trivial (architectural constraint)
-- Both are necessary causes contributing to the problem
-
----
-
-## Completeness Check
-
-### Are any contributing factors missed?
-
-**Question 1**: Could this be a Claude Code bug in parsing agent-parameter?
-**Assessment**: No - evidence shows agent-parameter is a custom extension not recognized by Claude Code. It's a build system feature that was declared but not implemented.
-
-**Question 2**: Could template substitution fix this without build changes?
-**Assessment**: No - even with placeholder substitution (e.g., `@{specified-agent}` → actual value), there's still no Task tool invocation instruction present. The entire invocation mechanism is missing.
-
-**Question 3**: Could working commands provide a pattern to copy?
-**Assessment**: Partially - working commands use `auto-activate: true` but only work with fixed `agent-id`. This pattern cannot be directly applied to parameter-based agent selection without architectural changes.
-
-**Conclusion**: Analysis is comprehensive - both root causes identified explain the full symptom, no major contributing factors missed.
-
----
-
-## Recommended Solutions (NOT IMPLEMENTED - ANALYSIS ONLY)
-
-### Solution 1: Implement Agent-Parameter Handling in Build System
-**Approach**: Extend `command_processor.py` to detect `agent-parameter: true` and inject Task tool invocation template
-
-**Pseudo-implementation**:
-```python
-def inject_agent_invocation(self, content: str, agent_activation: dict) -> str:
-    if agent_activation.get('agent-parameter'):
-        # Insert Task tool invocation at top of content
-        agent_command = agent_activation.get('agent-command', '*execute')
-        invocation = f"""
-        **CRITICAL**: Extract agent name from first parameter (format: @agent-name)
-
-        Then invoke using Task tool:
-        ```
-        You are the coordinator. The user has specified an agent parameter.
-        Use the Task tool to invoke the specified agent with the command.
-
-        Example: If user provides @researcher, invoke:
-        Task: "You are @researcher. Execute {agent_command} with provided arguments."
-        ```
-        """
-        return invocation + content
-    return content
-```
-
-**Limitations**: Still requires runtime parameter extraction logic that may be complex
-
----
-
-### Solution 2: Change Commands to Use Fixed Coordinator Agent
-**Approach**: Create a `workflow-coordinator` agent that acts as dispatcher for all workflow commands
-
-**Pattern**:
-```yaml
----
-agent-activation:
-  required: true
-  agent-id: workflow-coordinator
-  agent-name: "Coordinator"
-  agent-command: "*coordinate"
-  auto-activate: true
----
-```
-
-**Coordinator Logic**:
-- Read command parameters
-- Extract agent name (e.g., `@researcher`)
-- Use Task tool to invoke that agent with remaining parameters
-- Return results to user
-
-**Advantages**:
-- Works with existing auto-activate mechanism
-- Centralizes agent dispatch logic
-- No build system changes needed
-
----
-
-### Solution 3: Hybrid - Explicit Invocation Instructions in Markdown
-**Approach**: Add explicit Task tool invocation instructions directly in command markdown (manual solution)
-
-**Example Addition to execute.md**:
-```markdown
-## CRITICAL EXECUTION INSTRUCTION
-
-**YOU ARE THE COORDINATOR** - Do not execute the task yourself.
-
-**STEP 1**: Extract agent name from first parameter
-- User provides: `/nw:execute @researcher "file.json"`
-- Extract: `@researcher`
-
-**STEP 2**: Extract remaining parameters
-- Extract: `"file.json"` (step-file-path)
-
-**STEP 3**: Invoke agent using Task tool
-```
-Task: "You are @researcher.
-Read the step file at: {step-file-path}
-Execute the task as specified in the file.
-Update the file with execution results."
-```
-
-Return results to user.
-```
-
-**Advantages**:
-- No build system changes required
-- Works immediately
-- Clear, explicit instructions
-
-**Disadvantages**:
-- Manual, repetitive across commands
-- Prone to human error during updates
-
----
-
-## Affected Commands
-
-All commands with `agent-parameter: true`:
-1. `/nw:execute` - Task execution engine
-2. `/nw:review` - Quality review system
-3. `/nw:roadmap` - Planning document creation
-4. `/nw:split` - Task file generation
-5. `/nw:finalize` - Workflow completion
-
-All currently non-functional for subagent invocation.
-
----
-
-## Risk Assessment
-
-**Severity**: HIGH
-**Impact**: Distributed workflow system cannot function - all specialized agent tasks handled by generalist main agent
-
-**Consequences**:
-- Lower quality outputs (wrong agent expertise applied)
-- Violation of architecture principles (agent specialization bypassed)
-- Context degradation (main agent accumulates context across multiple tasks)
-- User confusion (commands don't work as documented)
-
-**Urgency**: HIGH - Core functionality of nWave workflow system blocked
-
----
-
-## Verification Strategy (For Implementer)
-
-Once solution implemented, verify with:
-
-**Test 1**: Execute command with agent parameter
+**Verification Done**:
 ```bash
-/nw:execute @researcher "docs/workflow/test/steps/01-01.json"
+python3 tools/build.py > /tmp/build_out.txt 2>&1
+echo "Exit code: $?"  # Returns: 0
+grep "ERROR" /tmp/build_out.txt  # Returns: Multiple ERROR lines
 ```
-**Expected**: Researcher agent activates and handles task, not main agent
 
-**Test 2**: Review command with agent parameter
-```bash
-/nw:review @software-crafter task "docs/workflow/test/steps/02-01.json"
-```
-**Expected**: Software-crafter agent activates and provides review
-
-**Test 3**: Verify main agent does NOT handle task
-**Expected**: Main agent acts only as coordinator, delegating to specified agent
+**Multiple Observable Problems**:
+1. YAML parsing error occurs in agent-builder.md line 773
+2. Error is logged at line 58 in agent_processor.py
+3. But doesn't cause build to fail
+4. Build stats show "Errors: 0" despite ERROR logs
+5. Exit code is 0 (success) despite failures
 
 ---
 
-## Related Issues
+### WHY #2: CONTEXT LEVEL - Why do these conditions exist?
 
-**Potential Related Problems** (not investigated):
-1. Do commands with `agent-parameter: true` have any working use cases?
-2. Are there other unimplemented YAML frontmatter features?
-3. Does Claude Code have any native support for parameter-based agent selection?
+**Branch A: Why does YAML error not cause build failure?**
+
+Location: `/mnt/c/Repositories/Projects/ai-craft/tools/processors/agent_processor.py` lines 52-59
+
+```python
+try:
+    yaml_config = yaml.safe_load(yaml_content_clean)
+    remaining_content = content[: match.start()] + content[match.end() :]
+    return yaml_config, remaining_content
+except yaml.YAMLError as e:
+    logging.error(f"Failed to parse YAML configuration: {e}")
+    return None, content  # ← CONTINUES, doesn't raise!
+```
+
+The exception is caught and logged, but:
+- Doesn't re-raise the exception
+- Doesn't increment an error counter
+- Returns None as config (caller doesn't validate this)
+- Processing continues as if nothing happened
+
+**Branch B: Why doesn't error counter increment?**
+
+Location: `/mnt/c/Repositories/Projects/ai-craft/tools/core/build_ide_bundle.py` lines 117-123
+
+```python
+for agent_file in agent_files:
+    try:
+        self.agent_processor.process_agent(agent_file)
+        self.stats["agents_processed"] += 1
+    except Exception as e:
+        logging.error(f"Error processing agent {agent_file.name}: {e}")
+        self.stats["errors"] += 1
+```
+
+The outer try/except only catches exceptions that are **raised**. But:
+- The YAML error was caught internally by agent_processor
+- It was converted to a return value (None)
+- No exception is re-raised
+- So the outer try/except never sees it
+- Error counter never increments
+
+**Branch C: Why does build exit with 0 if no errors are counted?**
+
+Location: `/mnt/c/Repositories/Projects/ai-craft/tools/core/build_ide_bundle.py` lines 208-213 and 320
+
+```python
+def print_summary(self):
+    if self.stats["errors"] > 0:
+        return False  # Build failed
+    else:
+        print("\n✅ Build completed successfully!")
+        return True  # Build succeeded
+
+def main():
+    success = builder.build()
+    sys.exit(0 if success else 1)  # ← Exit code determined by success boolean
+```
+
+Since stats["errors"] is 0 (YAML errors never incremented it):
+- print_summary() returns True
+- success = True
+- sys.exit(0)
+
+**Root Cause at This Level**: The architecture has two separate error handling paths that don't communicate:
+- **Lower-level**: extract_yaml_block() catches and logs but doesn't propagate
+- **Upper-level**: process_agents() only catches exceptions that are raised
+
+The exception gets caught at the lower level and never bubbles up to the counter.
+
+---
+
+### WHY #3: SYSTEM LEVEL - Why was the system designed this way?
+
+**Design Pattern Identified**: "Silent Degradation with Logging"
+
+The build system implements this pattern:
+1. Try to do something (parse YAML, load file, etc.)
+2. If it fails, log the error
+3. Continue with partial/default value
+4. Don't propagate failure upward
+5. Only fail the build if an exception escapes to top level
+
+**Why This Pattern Exists**:
+- The system attempts to be "resilient"—if one agent fails, build others
+- Philosophy: "Don't fail the entire build for one bad file"
+- But result: Silent failures accumulate without visibility
+
+**Manifestation**: Two separate error paths that don't converge:
+
+```
+Path A (Exception Raised):
+  agent_processor.process_agent()
+    → Exception raised
+    → Caught by process_agents()
+    → stats["errors"] incremented
+    ✓ Counted in build failure
+
+Path B (Exception Swallowed):
+  agent_processor.extract_yaml_block()
+    → yaml.YAMLError occurs
+    → Caught and logged
+    → Returns None (no exception)
+    → Called by process_agent()
+    → No exception to catch
+    ✗ Never counted in build failure
+```
+
+**Historical Note**: Commit `aa8cdb4` fixed some YAML issues but didn't address the underlying architecture. New YAML errors in agent-builder.md weren't caught by the previous fixes because they don't validate all agents—they only validate specific known issues.
+
+---
+
+### WHY #4: DESIGN DECISION LEVEL - Why wasn't this caught?
+
+**Root Causes at Design Level**:
+
+1. **No Validation of extract_yaml_block() Return Values**
+   - Function returns (yaml_config, remaining_content)
+   - Where yaml_config can be None if parsing fails
+   - But callers don't check: `if yaml_config is None: raise error`
+
+2. **No Error Propagation Convention**
+   - Lower-level functions catch exceptions
+   - But don't have a mechanism to signal failure upward
+   - No "was this successful?" flag returned
+   - Only way to signal failure is to raise an exception (which they don't)
+
+3. **Error Counter Decoupled from Actual Failures**
+   - stats["errors"] only counts exceptions
+   - But many failures don't raise exceptions (return None, continue)
+   - Result: Error counter ≠ Actual errors
+
+4. **No Build Artifact Validation**
+   - Build completes and creates dist/ directory
+   - But doesn't verify files are valid/complete
+   - No checksum or manifest validation
+   - No verification that agents were successfully processed
+
+5. **No Build-Specific Tests**
+   - 219 tests exist for validators, agents, commands
+   - But zero tests for the build system itself
+   - No test like: "Build with invalid YAML → Exit code 1"
+   - Previous fixes were never tested for regression
+
+---
+
+### WHY #5: FUNDAMENTAL LEVEL - Why do these architectural decisions persist?
+
+**Fundamental Issues**:
+
+1. **Catch-All Exception Handling Without Failure Semantics**
+   - The codebase catches exceptions and logs them as warnings
+   - Philosophy: "Errors = log and continue"
+   - Should be: "Errors = log and propagate or counter"
+   - Result: Errors get silently absorbed
+
+2. **No Distinction Between Error Severity**
+   - YAML parsing error = critical (agent cannot be processed)
+   - Missing optional file = warning (can be skipped)
+   - Currently treated the same: catch, log, continue
+
+3. **Test Coverage Gap for Build System**
+   - Testing focuses on: agent validation, command validation, installers
+   - Missing: build system tests
+   - Missing: regression tests for build failures
+
+4. **No Build Verification Pipeline**
+   - npm run build
+   - → creates dist/
+   - → (no verification step)
+   - → returns 0
+
+5. **Inconsistent Error Reporting**
+   - build.log shows: ERROR messages
+   - stdout shows: "Errors: 0"
+   - Exit code shows: 0
+   - These are contradictory but nothing enforces consistency
+
+**Why This Matters**: Previous fixes (commits aa8cdb4, de4884a, 92042d8) addressed specific symptoms but not the systemic issue. New YAML errors are caught by the same buggy system, so they fail silently again.
+
+---
+
+## Multiple Contributing Root Causes (All Required for Problem)
+
+This is NOT a single-cause failure. All of these must be true simultaneously:
+
+### ROOT CAUSE 1: Invalid YAML in agent-builder.md (The Trigger)
+**File**: `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/agent-builder.md`
+**Lines**: 766-779
+**Problem**: Incorrect YAML structure mixing list items with inline keys
+
+```yaml
+pre_creation_phase:
+  requirements_analysis:
+    - "[  ] Agent purpose is clearly defined"
+    - "[  ] Use case and target users identified"
+    - "[  ] Agent scope boundaries defined"
+    - "[  ] Success criteria established"
+    - "[  ] Risk assessment completed"
+    - "[  ] Required frameworks identified"
+    validation: "User must approve requirements before creation begins"
+    # ↑ This inline key after list items is invalid YAML
+```
+
+**Why It Fails**: After a list item with proper indentation, adding a sibling key at the same indentation level breaks YAML structure.
+
+**Evidence**: YAML parser throws `yaml.YAMLError: expected <block end>, but found '?'`
+
+### ROOT CAUSE 2: Silent Exception Swallowing (The Mechanism)
+**File**: `/mnt/c/Repositories/Projects/ai-craft/tools/processors/agent_processor.py`
+**Lines**: 52-59
+**Problem**: YAML error caught but not re-raised
+
+```python
+except yaml.YAMLError as e:
+    logging.error(f"Failed to parse YAML configuration: {e}")
+    return None, content  # Swallows exception, returns None
+```
+
+**Impact**: Allows process to continue as if nothing happened
+
+### ROOT CAUSE 3: No Counter Increment (The Hidden Failure)
+**File**: `/mnt/c/Repositories/Projects/ai-craft/tools/core/build_ide_bundle.py`
+**Lines**: 117-123
+**Problem**: Only catches exceptions that are raised
+
+```python
+try:
+    self.agent_processor.process_agent(agent_file)
+    self.stats["agents_processed"] += 1
+except Exception as e:
+    # ← Never reached because exception was caught lower down
+    self.stats["errors"] += 1
+```
+
+**Impact**: Error counter stays at 0
+
+### ROOT CAUSE 4: Exit Code Decoupling (The False Report)
+**File**: `/mnt/c/Repositories/Projects/ai-craft/tools/core/build_ide_bundle.py`
+**Lines**: 208-213, 320
+**Problem**: Exit code depends only on error counter
+
+```python
+if self.stats["errors"] > 0:
+    return False
+sys.exit(0 if success else 1)  # ← Returns 0 when success=True
+```
+
+**Impact**: Even with failures, exits 0 because error counter was never incremented
+
+### ROOT CAUSE 5: No Downstream Validation (The Acceptance)
+**File**: `.github/workflows/ci.yml`
+**Lines**: 43-47
+**Problem**: No validation of build output
+
+```yaml
+- name: Build on Ubuntu
+  run: npm run build
+  # ← No verification that dist/ has expected files
+```
+
+**Impact**: Workflow accepts whatever the build produces, whether valid or not
+
+---
+
+## Cross-Validation Matrix
+
+| If Fixed Alone | Problem Still Occurs | Why |
+|---|---|---|
+| Only fix YAML in agent-builder.md | Yes | Other agents could have YAML errors |
+| Only fix exception swallowing | Yes | Other failures might bypass counter |
+| Only fix error counter | Yes | Exit code still depends on counter |
+| Only fix exit code logic | Yes | Build still reports success to CI |
+| Only add workflow validation | Yes | Build still internally broken |
+
+**Requirement**: All five causes must be addressed for comprehensive fix.
+
+---
+
+## Why Previous Fixes Failed
+
+**Commit aa8cdb4** ("fix(ci): resolve build failures and yaml structure issues")
+- Fixed specific YAML issues found at that time
+- But didn't address the systemic error-swallowing architecture
+- No tests added to prevent regression
+- New YAML errors introduced later weren't caught
+
+**Commit de4884a** ("fix(ci): add Python dependency installation to workflows")
+- Fixed missing Python dependencies
+- Didn't touch the build system architecture
+
+**Commit 92042d8** ("fix(deps): remove pathlib from requirements.txt")
+- Fixed incorrect dependency
+- Didn't touch error handling
+
+**Why They Didn't Work**: The fixes were symptoms-focused, not architecture-focused. The underlying error-swallowing pattern continues to hide new failures.
+
+---
+
+## Verification of Each Root Cause
+
+**Verification 1: YAML Error Occurs**
+```bash
+grep -n "validation:" /mnt/c/Repositories/Projects/ai-craft/nWave/agents/agent-builder.md | head -5
+# Line 773: validation: "User must approve requirements before creation begins"
+```
+
+**Verification 2: Exception Gets Caught and Swallowed**
+```bash
+grep -A2 "except yaml.YAMLError" /mnt/c/Repositories/Projects/ai-craft/tools/processors/agent_processor.py
+# Shows: logging.error(...) then return None, content
+```
+
+**Verification 3: Exception Never Reaches Outer Handler**
+```bash
+grep -A3 "for agent_file in agent_files:" /mnt/c/Repositories/Projects/ai-craft/tools/core/build_ide_bundle.py | grep -A3 "try:"
+# Shows: try/except only catches exceptions raised
+```
+
+**Verification 4: Error Counter Controls Exit**
+```bash
+grep -A5 "if self.stats\[\"errors\"\] > 0:" /mnt/c/Repositories/Projects/ai-craft/tools/core/build_ide_bundle.py
+# Shows: return False only if errors > 0
+```
+
+**Verification 5: Build Exits 0 Despite Errors**
+```bash
+npm run build 2>&1 | grep "ERROR"  # Shows ERROR lines
+npm run build > /dev/null 2>&1; echo $?  # Shows exit code 0
+```
+
+---
+
+## Impact Assessment
+
+**Component Status**:
+
+| Component | Actual Status | Reported Status | Risk |
+|-----------|---|---|---|
+| Tests | All Pass ✓ | PASSED | Low |
+| Build | Partial Failure | SUCCESS | HIGH |
+| Agents | Some Skip YAML | All Processed | HIGH |
+| Artifacts | Incomplete | Complete | HIGH |
+| Exit Code | Should be 1 | Is 0 | CRITICAL |
+
+**User Impact**:
+- Agents with YAML errors don't get processed correctly
+- Incomplete agents deployed to dist/
+- No visibility that this happened
+- Downstream systems (IDE) receive broken config
 
 ---
 
 ## Conclusion
 
-The subagent invocation failure is caused by **two complementary root causes**:
+The CI/CD pipeline appears to be passing (exit code 0, tests passing) but is actually silently failing. The root cause is architectural: the build system catches exceptions at lower levels and doesn't propagate them upward, resulting in errors being logged but not counted, and builds exiting with code 0 despite failures.
 
-1. **Design Gap**: YAML frontmatter feature `agent-parameter: true` was specified but never implemented in build system or runtime
-2. **Architectural Limitation**: Static slash command expansion model cannot easily support dynamic agent selection from runtime parameters
+This is compounded by:
+1. Invalid YAML in agent files (the trigger)
+2. Silent exception handling (the mechanism)
+3. No error counter increment (the invisibility)
+4. Exit code decoupled from actual state (the false report)
+5. No downstream validation (the acceptance)
 
-**Both causes must be addressed** for full solution. The hybrid approach (Solution 3) provides immediate workaround, while Solutions 1 or 2 provide systematic long-term fixes.
-
-**Critical files requiring attention**:
-- Source: `/mnt/c/Repositories/Projects/ai-craft/nWave/tasks/dw/execute.md`
-- Source: `/mnt/c/Repositories/Projects/ai-craft/nWave/tasks/dw/review.md`
-- Build: `/mnt/c/Repositories/Projects/ai-craft/tools/processors/command_processor.py`
-- Output: `/mnt/c/Repositories/Projects/ai-craft/dist/ide/commands/nw/*.md` (5 commands)
-
----
-
-**Analysis Complete**: 2025-10-16
-**Analyst**: Sage (troubleshooter)
+All five factors working together create the false success signal.

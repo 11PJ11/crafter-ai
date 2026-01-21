@@ -65,11 +65,11 @@ def create_phase_skeleton() -> List[Dict[str, Any]]:
                 "total": None,
                 "passed": None,
                 "failed": None,
-                "skipped": None
+                "skipped": None,
             },
             "notes": None,
             "blocked_by": None,
-            "history": []
+            "history": [],
         }
         for i, phase in enumerate(REQUIRED_PHASES)
     ]
@@ -89,7 +89,9 @@ def needs_migration(step_data: Dict[str, Any]) -> Tuple[bool, str]:
 
     if not phase_log:
         # Check old location
-        phase_log = tdd_cycle.get("tdd_phase_tracking", {}).get("phase_execution_log", [])
+        phase_log = tdd_cycle.get("tdd_phase_tracking", {}).get(
+            "phase_execution_log", []
+        )
 
     if not phase_log:
         return True, "No phase_execution_log found"
@@ -128,13 +130,17 @@ def migrate_step_file(step_data: Dict[str, Any]) -> Dict[str, Any]:
     # Get existing phase log (check both locations)
     existing_log = tdd_cycle.get("phase_execution_log", [])
     if not existing_log:
-        existing_log = tdd_cycle.get("tdd_phase_tracking", {}).get("phase_execution_log", [])
+        existing_log = tdd_cycle.get("tdd_phase_tracking", {}).get(
+            "phase_execution_log", []
+        )
 
     # Create new skeleton
     new_log = create_phase_skeleton()
 
     # Preserve existing phase data
-    existing_by_name = {p.get("phase_name"): p for p in existing_log if p.get("phase_name")}
+    existing_by_name = {
+        p.get("phase_name"): p for p in existing_log if p.get("phase_name")
+    }
 
     for phase in new_log:
         phase_name = phase["phase_name"]
@@ -178,7 +184,7 @@ def migrate_step_file(step_data: Dict[str, Any]) -> Dict[str, Any]:
             "validation_after_each_review": True,
             "validation_after_each_refactor": True,
             "all_14_phases_mandatory": True,
-            "phase_documentation_required": True
+            "phase_documentation_required": True,
         }
 
     # Add phase_validation_rules if missing
@@ -196,13 +202,13 @@ def migrate_step_file(step_data: Dict[str, Any]) -> Dict[str, Any]:
                     "valid_blocked_by_prefixes": [
                         "BLOCKED_BY_DEPENDENCY:",
                         "NOT_APPLICABLE:",
-                        "APPROVED_SKIP:"
+                        "APPROVED_SKIP:",
                     ],
-                    "blocks_commit_prefixes": ["DEFERRED:"]
+                    "blocks_commit_prefixes": ["DEFERRED:"],
                 },
                 "IN_PROGRESS": {"allows_commit": False},
-                "NOT_EXECUTED": {"allows_commit": False}
-            }
+                "NOT_EXECUTED": {"allows_commit": False},
+            },
         }
 
     # Add migration metadata
@@ -210,7 +216,7 @@ def migrate_step_file(step_data: Dict[str, Any]) -> Dict[str, Any]:
         "migrated_at": datetime.utcnow().isoformat() + "Z",
         "migrated_by": "migrate_step_files.py",
         "migration_version": "2.0.0",
-        "previous_phase_count": len(existing_log)
+        "previous_phase_count": len(existing_log),
     }
 
     return step_data
@@ -236,23 +242,21 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="Migrate step files to 14-phase TDD format",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=__doc__
+        epilog=__doc__,
     )
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Show what would be changed without modifying files"
+        help="Show what would be changed without modifying files",
     )
     parser.add_argument(
-        "--backup",
-        action="store_true",
-        help="Create .bak files before modifying"
+        "--backup", action="store_true", help="Create .bak files before modifying"
     )
     parser.add_argument(
         "path",
         nargs="?",
         default=".",
-        help="Directory containing step files (default: auto-detect)"
+        help="Directory containing step files (default: auto-detect)",
     )
 
     args = parser.parse_args()
@@ -327,7 +331,7 @@ def main() -> int:
 
             os.replace(temp_path, step_file)
 
-            print(f"  [MIGRATED] Successfully updated")
+            print("  [MIGRATED] Successfully updated")
             migrated_count += 1
 
         except json.JSONDecodeError as e:

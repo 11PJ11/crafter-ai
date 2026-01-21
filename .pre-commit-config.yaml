@@ -61,6 +61,23 @@ repos:
         pass_filenames: false
         stages: [pre-commit]
 
+      # Phase 6: Shell script syntax validation (bash -n)
+      - id: shell-syntax-check
+        name: Shell Script Syntax Check
+        entry: bash -n
+        language: system
+        files: \.sh$
+        stages: [pre-commit]
+
+  # Shellcheck linting (optional - non-blocking if not installed)
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.9.0.6
+    hooks:
+      - id: shellcheck
+        args: [-x]
+        files: \.sh$
+        stages: [pre-commit]
+
   # Standard hooks from pre-commit repository
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0

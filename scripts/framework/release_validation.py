@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 from dataclasses import dataclass
 
 
@@ -12,6 +12,7 @@ class MissingArtifactsValidator:
     @dataclass
     class MissingArtifactError:
         """Error for missing artifacts."""
+
         platform: str
         missing_files: List[str]
         remediation: str
@@ -42,13 +43,17 @@ class MissingArtifactsValidator:
     def __init__(self, dist_dir: Path):
         self.dist_dir = Path(dist_dir)
 
-    def validate_platform_artifacts(self, platform: str) -> Optional[MissingArtifactError]:
+    def validate_platform_artifacts(
+        self, platform: str
+    ) -> Optional[MissingArtifactError]:
         """Check if all platform artifacts exist."""
         required = self.PLATFORM_REQUIREMENTS.get(platform, [])
         missing = []
 
         for artifact in required:
-            archive_name = f"nwave-{platform}-*.zip"
+            _archive_name = (
+                f"nwave-{platform}-*.zip"  # Placeholder for future validation
+            )
             # This would be called after archive creation, so we just validate they were created
 
         if missing:
@@ -77,6 +82,7 @@ class ChecksumMismatchValidator:
     @dataclass
     class ChecksumMismatchError:
         """Error for checksum mismatch."""
+
         filename: str
         expected_checksum: str
         actual_checksum: str
@@ -142,6 +148,7 @@ class VersionConflictValidator:
     @dataclass
     class VersionConflictError:
         """Error for version conflict."""
+
         configuration_version: str
         tag_version: str
         archive_versions: List[str]
@@ -201,7 +208,7 @@ class VersionConflictValidator:
                 archive_versions=[],
                 resolution_steps=[
                     "Option 1: Update framework-catalog.yaml to match git tag",
-                    f"  - Edit: nWave/framework-catalog.yaml",
+                    "  - Edit: nWave/framework-catalog.yaml",
                     f"  - Set version: {tag_version}",
                     "Option 2: Create git tag to match configuration",
                     f"  - Run: git tag v{config_version}",
@@ -214,7 +221,9 @@ class VersionConflictValidator:
 
         return None
 
-    def validate_archive_versions(self, dist_dir: Path) -> Optional[VersionConflictError]:
+    def validate_archive_versions(
+        self, dist_dir: Path
+    ) -> Optional[VersionConflictError]:
         """Validate that archive versions match configuration."""
         config_version = self.get_configuration_version()
         archive_versions = []
@@ -240,7 +249,7 @@ class VersionConflictValidator:
                     f"  Configuration: {config_version}",
                     f"  Archives: {', '.join(set(archive_versions))}",
                     "Resolution: Rebuild archives with clean parameter",
-                    f"  Run: nwave package --clean",
+                    "  Run: nwave package --clean",
                 ],
             )
             return error

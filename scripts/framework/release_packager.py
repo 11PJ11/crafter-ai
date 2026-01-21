@@ -2,17 +2,16 @@
 
 import json
 import hashlib
-import os
-import shutil
 import zipfile
 from pathlib import Path
-from dataclasses import dataclass, asdict
-from typing import Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Dict, List, Optional
 from enum import Enum
 
 
 class Platform(Enum):
     """Supported platforms for release packages."""
+
     CLAUDE_CODE = "claude-code"
     CODEX = "codex"
 
@@ -20,6 +19,7 @@ class Platform(Enum):
 @dataclass
 class BuildValidationResult:
     """Result of build output validation."""
+
     valid: bool
     missing_files: List[str]
     error_message: Optional[str] = None
@@ -28,6 +28,7 @@ class BuildValidationResult:
 @dataclass
 class ArchiveMetadata:
     """Metadata for generated archives."""
+
     platform: str
     version: str
     filename: str
@@ -171,7 +172,9 @@ class ArchiveCreator:
             validators_dir = self.project_root / "nWave" / "validators"
             if validators_dir.exists():
                 for validator_file in validators_dir.glob("**/*.py"):
-                    arcname = f"nWave/validators/{validator_file.relative_to(validators_dir)}"
+                    arcname = (
+                        f"nWave/validators/{validator_file.relative_to(validators_dir)}"
+                    )
                     zf.write(validator_file, arcname)
 
             # Add hooks
@@ -186,7 +189,9 @@ class ArchiveCreator:
             if installers_dir.exists():
                 for installer in installers_dir.glob("**/*"):
                     if installer.is_file():
-                        arcname = f"tools/installers/{installer.relative_to(installers_dir)}"
+                        arcname = (
+                            f"tools/installers/{installer.relative_to(installers_dir)}"
+                        )
                         zf.write(installer, arcname)
 
             # Add documentation and version file
@@ -226,7 +231,9 @@ class ArchiveCreator:
             validators_dir = self.project_root / "nWave" / "validators"
             if validators_dir.exists():
                 for validator_file in validators_dir.glob("**/*.py"):
-                    arcname = f"nWave/validators/{validator_file.relative_to(validators_dir)}"
+                    arcname = (
+                        f"nWave/validators/{validator_file.relative_to(validators_dir)}"
+                    )
                     zf.write(validator_file, arcname)
 
             # Add hooks
@@ -249,7 +256,9 @@ class ArchiveCreator:
             if installers_dir.exists():
                 for installer in installers_dir.glob("**/*"):
                     if installer.is_file():
-                        arcname = f"tools/installers/{installer.relative_to(installers_dir)}"
+                        arcname = (
+                            f"tools/installers/{installer.relative_to(installers_dir)}"
+                        )
                         zf.write(installer, arcname)
 
             # Add documentation and version file
@@ -276,9 +285,7 @@ class ChecksumGenerator:
         return sha256_hash.hexdigest()
 
     @staticmethod
-    def generate_checksums_file(
-        archive_paths: List[str], output_path: Path
-    ) -> str:
+    def generate_checksums_file(archive_paths: List[str], output_path: Path) -> str:
         """Generate checksums file in standard format."""
         checksums = {}
         for archive_path in archive_paths:
@@ -413,9 +420,7 @@ Refer to the integrated documentation and configuration guides.
     }
 
     @staticmethod
-    def generate_readme(
-        platform: Platform, version: str, output_path: Path
-    ) -> str:
+    def generate_readme(platform: Platform, version: str, output_path: Path) -> str:
         """Generate platform-specific README."""
         template = ReadmeGenerator.INSTALLATION_TEMPLATES[platform]
         content = template.format(version=version)
@@ -450,9 +455,7 @@ class ReleasePackager:
         version = self.version_reader.read_version()
 
         # Create archives
-        claude_code_archive = self.archive_creator.create_claude_code_archive(
-            version
-        )
+        claude_code_archive = self.archive_creator.create_claude_code_archive(version)
         codex_archive = self.archive_creator.create_codex_archive(version)
 
         # Generate checksums
@@ -471,12 +474,16 @@ class ReleasePackager:
                 {
                     "name": Platform.CLAUDE_CODE.value,
                     "archive": claude_code_archive,
-                    "checksum": self.checksum_gen.generate_checksum(Path(claude_code_archive)),
+                    "checksum": self.checksum_gen.generate_checksum(
+                        Path(claude_code_archive)
+                    ),
                 },
                 {
                     "name": Platform.CODEX.value,
                     "archive": codex_archive,
-                    "checksum": self.checksum_gen.generate_checksum(Path(codex_archive)),
+                    "checksum": self.checksum_gen.generate_checksum(
+                        Path(codex_archive)
+                    ),
                 },
             ],
             "checksums_file": str(self.dist_dir / "CHECKSUMS.json"),

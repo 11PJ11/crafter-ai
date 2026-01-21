@@ -93,7 +93,7 @@ def main():
     print(f"Total Reviewers: {len(results)}")
     print(f"Passed: {passed}")
     print(f"Failed: {failed}")
-    print(f"Pass Rate: {passed/len(results)*100:.1f}%")
+    print(f"Pass Rate: {passed / len(results) * 100:.1f}%")
     print("-" * 70)
     print()
 

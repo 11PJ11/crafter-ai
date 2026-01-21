@@ -604,7 +604,7 @@ class DependencyResolver:
                 findings.append(
                     {
                         "level": "error",
-                        "message": f'BUILD:INCLUDE file not found: {marker["path"]}',
+                        "message": f"BUILD:INCLUDE file not found: {marker['path']}",
                         "type": "missing_include_file",
                     }
                 )

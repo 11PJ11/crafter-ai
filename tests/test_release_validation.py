@@ -1,9 +1,7 @@
 """Tests for release validation and error handling."""
 
 import json
-import zipfile
-from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 import pytest
 
@@ -25,7 +23,7 @@ class TestMissingArtifactsValidator:
         validator = MissingArtifactsValidator(dist_dir)
 
         # Test with claude-code platform
-        error = validator.validate_platform_artifacts("claude-code")
+        _error = validator.validate_platform_artifacts("claude-code")
         # No actual archives yet, so validation would need to check archive presence
         # This is a validation pattern check
 
@@ -76,6 +74,7 @@ class TestChecksumMismatchValidator:
 
         # Calculate actual checksum
         import hashlib
+
         sha256_hash = hashlib.sha256()
         with open(test_file, "rb") as f:
             for byte_block in iter(lambda: f.read(4096), b""):
@@ -174,9 +173,7 @@ description: "Test framework"
         validator = VersionConflictValidator(tmp_path)
 
         # Mock git tag to return different version
-        with patch.object(
-            validator, "get_git_tag_version", return_value="1.2.56"
-        ):
+        with patch.object(validator, "get_git_tag_version", return_value="1.2.56"):
             error = validator.validate_version_consistency()
 
         assert error is not None
