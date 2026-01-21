@@ -25,7 +25,7 @@ if [ ! -f ".dependency-map.yaml" ]; then
     exit 0
 fi
 
-if [ ! -f "scripts/validate-documentation-versions.py" ]; then
+if [ ! -f "scripts/validation/validate-documentation-versions.py" ]; then
     echo -e "${YELLOW}Warning: validation script not found, skipping version validation${NC}"
     exit 0
 fi
@@ -38,7 +38,7 @@ fi
 
 # Run validation
 set +e
-python3 scripts/validate-documentation-versions.py
+python3 scripts/validation/validate-documentation-versions.py
 VERSION_EXIT_CODE=$?
 set -e
 

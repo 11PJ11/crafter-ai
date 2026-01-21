@@ -130,10 +130,10 @@ After making changes to agents, commands, or other framework components, rebuild
 ./scripts/update-ai-craft.sh --force --backup
 
 # Option 3: Build only (without installing)
-./scripts/build-ide-bundle.sh
+python tools/build_ide_bundle.py
 
 # Option 4: Manual install after build
-./scripts/install-ai-craft.sh
+python scripts/install/install_ai_craft.py
 ```
 
 ### Build Process Details
@@ -146,11 +146,14 @@ The build system (`tools/build_ide_bundle.py`) processes:
 
 ### Update Process
 
-The `update-ai-craft.sh` script orchestrates:
+The update script orchestrates:
 1. Build new framework bundle from source (`nWave/`)
 2. Uninstall existing AI-Craft installation (cleanly removes from `~/.claude/`)
 3. Install newly built framework bundle
 4. Validate successful update (agents, commands, configuration)
+
+**Cross-platform Python** (recommended): `python scripts/install/update_ai_craft.py`
+**Legacy shell** (Unix/Mac only): `./scripts/install/update-ai-craft.sh`
 
 ## 🔧 Essential Scripts
 
@@ -158,21 +161,23 @@ The `scripts/` directory contains critical infrastructure scripts for building, 
 
 ### Core Scripts (Category 1)
 
-#### 1. `build-ide-bundle.sh` (2.4KB)
-**Purpose**: Build wrapper for Python build system
+#### 1. `build_ide_bundle.py` (Cross-Platform)
+**Purpose**: Python-based IDE bundle builder
 
 Orchestrates the complete build process, generating the IDE-ready bundle from source files.
 
 **Usage**:
 ```bash
-./scripts/build-ide-bundle.sh
+python tools/build_ide_bundle.py
+# or use the shortcut:
+python tools/build.py
 ```
 
 **What it does**:
-- Invokes Python build system (`tools/build_ide_bundle.py`)
 - Processes agents, commands, and templates from `nWave/`
 - Generates output in `dist/ide/` with proper IDE structure
 - Validates build artifacts and reports statistics
+- Cross-platform compatible (Windows, Mac, Linux)
 
 **When to use**: After any modification to agents, commands, or framework components before installation.
 
@@ -325,7 +330,9 @@ Scripts:
 - `validate-agent-compliance.py` (v1.0)
 - `validate-agent-compliance-v2.py` (v2.0)
 - `validate-agent-compliance.sh` (shell wrapper)
-- `validate-reviewers.py` (reviewer agent validation)
+- `scripts/validation/validate-reviewers.py` (reviewer agent validation)
+- `scripts/validation/add-doc-version-tags.py` (documentation versioning)
+- `scripts/framework/create-reviewer-agents.py` (agent generation)
 
 ---
 
@@ -407,7 +414,7 @@ The LLM reads the error, updates the specified files and sections, bumps version
 - **`.pre-commit-config.yaml`** - Pre-commit hooks configuration (versioned)
 - **`.dependency-map.yaml`** - Dependency relationships and validation rules
 - **`scripts/hooks/`** - Hook scripts (version-bump, validate-tests, validate-docs)
-- **`scripts/validate-documentation-versions.py`** - Core validation engine
+- **`scripts/validation/validate-documentation-versions.py`** - Core validation engine
 
 ### Emergency Bypass
 
