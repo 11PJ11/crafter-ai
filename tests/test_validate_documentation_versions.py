@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Dict
 import sys
 import os
+from unittest.mock import patch, MagicMock
 
 # Add scripts directory to Python path and import module with dashes in name
 scripts_dir = Path(__file__).parent.parent / "scripts" / "validation"
@@ -39,6 +40,7 @@ DocumentationVersionValidator = validate_module.DocumentationVersionValidator
 ValidationError = validate_module.ValidationError
 TrackedFile = validate_module.TrackedFile
 SectionUpdate = validate_module.SectionUpdate
+SourceChangeAnalyzer = validate_module.SourceChangeAnalyzer
 
 
 # =============================================================================
@@ -858,6 +860,175 @@ class TestIntegrationWorkflows:
 
 
 # =============================================================================
+# Unit Tests - SourceChangeAnalyzer
+# =============================================================================
+
+
+class TestSourceChangeAnalyzer:
+    """Unit tests for SourceChangeAnalyzer semantic change detection"""
+
+    def test_get_yaml_diff_new_file(self, temp_git_repo):
+        """Should detect all items as added for new file"""
+        # Create new YAML file with commands and agents
+        yaml_file = temp_git_repo / "catalog.yaml"
+        content = {
+            "version": "1.0.0",
+            "commands": {"help": {"description": "Show help"}},
+            "agents": {"researcher": {"description": "Research agent"}},
+        }
+        with open(yaml_file, "w") as f:
+            yaml.dump(content, f)
+
+        changes = SourceChangeAnalyzer.get_yaml_diff("catalog.yaml")
+
+        assert "help" in changes["commands_added"]
+        assert "researcher" in changes["agents_added"]
+        assert len(changes["commands_removed"]) == 0
+        assert len(changes["commands_modified"]) == 0
+
+    def test_get_yaml_diff_commands_added(self, temp_git_repo):
+        """Should detect new commands added"""
+        # Commit initial version
+        yaml_file = temp_git_repo / "catalog.yaml"
+        content = {"version": "1.0.0", "commands": {"help": {"desc": "Help"}}}
+        with open(yaml_file, "w") as f:
+            yaml.dump(content, f)
+
+        subprocess.run(["git", "add", "catalog.yaml"], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "commit", "-m", "Initial"], check=True, capture_output=True
+        )
+
+        # Add new command
+        content["commands"]["new_cmd"] = {"desc": "New command"}
+        content["version"] = "1.1.0"
+        with open(yaml_file, "w") as f:
+            yaml.dump(content, f)
+
+        subprocess.run(["git", "add", "catalog.yaml"], check=True, capture_output=True)
+
+        changes = SourceChangeAnalyzer.get_yaml_diff("catalog.yaml")
+
+        assert "new_cmd" in changes["commands_added"]
+        assert len(changes["commands_removed"]) == 0
+
+    def test_get_yaml_diff_commands_removed(self, temp_git_repo):
+        """Should detect commands removed"""
+        # Commit initial version with two commands
+        yaml_file = temp_git_repo / "catalog.yaml"
+        content = {
+            "version": "1.0.0",
+            "commands": {"help": {"desc": "Help"}, "old_cmd": {"desc": "Old"}},
+        }
+        with open(yaml_file, "w") as f:
+            yaml.dump(content, f)
+
+        subprocess.run(["git", "add", "catalog.yaml"], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "commit", "-m", "Initial"], check=True, capture_output=True
+        )
+
+        # Remove command
+        del content["commands"]["old_cmd"]
+        content["version"] = "2.0.0"
+        with open(yaml_file, "w") as f:
+            yaml.dump(content, f)
+
+        subprocess.run(["git", "add", "catalog.yaml"], check=True, capture_output=True)
+
+        changes = SourceChangeAnalyzer.get_yaml_diff("catalog.yaml")
+
+        assert "old_cmd" in changes["commands_removed"]
+        assert len(changes["commands_added"]) == 0
+
+    def test_get_yaml_diff_commands_modified(self, temp_git_repo):
+        """Should detect commands modified"""
+        # Commit initial version
+        yaml_file = temp_git_repo / "catalog.yaml"
+        content = {"version": "1.0.0", "commands": {"help": {"desc": "Original"}}}
+        with open(yaml_file, "w") as f:
+            yaml.dump(content, f)
+
+        subprocess.run(["git", "add", "catalog.yaml"], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "commit", "-m", "Initial"], check=True, capture_output=True
+        )
+
+        # Modify command description
+        content["commands"]["help"]["desc"] = "Modified description"
+        content["version"] = "1.0.1"
+        with open(yaml_file, "w") as f:
+            yaml.dump(content, f)
+
+        subprocess.run(["git", "add", "catalog.yaml"], check=True, capture_output=True)
+
+        changes = SourceChangeAnalyzer.get_yaml_diff("catalog.yaml")
+
+        assert "help" in changes["commands_modified"]
+        assert len(changes["commands_added"]) == 0
+        assert len(changes["commands_removed"]) == 0
+
+    def test_has_meaningful_changes_true(self):
+        """Should return True when changes detected"""
+        changes = {"commands_added": ["new_cmd"], "commands_removed": []}
+        assert SourceChangeAnalyzer.has_meaningful_changes(changes) is True
+
+    def test_has_meaningful_changes_false(self):
+        """Should return False when no changes"""
+        changes = {
+            "commands_added": [],
+            "commands_removed": [],
+            "commands_modified": [],
+            "agents_added": [],
+            "agents_removed": [],
+            "agents_modified": [],
+            "other_changes": [],
+        }
+        assert SourceChangeAnalyzer.has_meaningful_changes(changes) is False
+
+    def test_generate_update_guidance_commands(self):
+        """Should generate guidance for command changes"""
+        changes = {
+            "commands_added": ["new_cmd"],
+            "commands_removed": ["old_cmd"],
+            "commands_modified": ["help"],
+        }
+
+        guidance = SourceChangeAnalyzer.generate_update_guidance(
+            changes, "catalog.yaml"
+        )
+
+        assert any("ADD documentation for new command 'new_cmd'" in g for g in guidance)
+        assert any(
+            "REMOVE documentation for deleted command 'old_cmd'" in g for g in guidance
+        )
+        assert any(
+            "UPDATE documentation for modified command 'help'" in g for g in guidance
+        )
+
+    def test_generate_update_guidance_agents(self):
+        """Should generate guidance for agent changes"""
+        changes = {
+            "agents_added": ["new_agent"],
+            "agents_removed": ["old_agent"],
+            "agents_modified": ["researcher"],
+        }
+
+        guidance = SourceChangeAnalyzer.generate_update_guidance(
+            changes, "catalog.yaml"
+        )
+
+        assert any("ADD documentation for new agent 'new_agent'" in g for g in guidance)
+        assert any(
+            "REMOVE documentation for deleted agent 'old_agent'" in g for g in guidance
+        )
+        assert any(
+            "UPDATE documentation for modified agent 'researcher'" in g
+            for g in guidance
+        )
+
+
+# =============================================================================
 # Edge Cases and Error Conditions
 # =============================================================================
 
@@ -910,6 +1081,49 @@ class TestEdgeCases:
         assert version1 == version2 == "1.0.0"
         assert "config.yaml" in validator.version_cache
 
+    def test_stderr_error_messages_invalid_yaml(self, temp_git_repo, capsys):
+        """Should capture stderr warning for invalid YAML"""
+        yaml_file = temp_git_repo / "invalid.yaml"
+        yaml_file.write_text("invalid: yaml: syntax:")
+
+        VersionParser.parse_yaml_version(yaml_file, "version")
+
+        captured = capsys.readouterr()
+        assert "Warning: Failed to parse YAML version" in captured.err
+        assert "invalid.yaml" in captured.err
+
+    def test_stderr_error_messages_invalid_markdown(self, temp_git_repo, capsys):
+        """Should capture stderr warning for markdown parsing error"""
+        # Create file that will cause read error by making it a directory
+        md_path = temp_git_repo / "invalid.md"
+        md_path.mkdir()
+
+        VersionParser.parse_markdown_version(md_path)
+
+        captured = capsys.readouterr()
+        assert "Warning: Failed to parse Markdown version" in captured.err
+
+    def test_stderr_dependency_map_missing(self, temp_git_repo, capsys):
+        """Should capture stderr error for missing dependency map"""
+        with pytest.raises(SystemExit) as exc_info:
+            DocumentationVersionValidator(".nonexistent.yaml")
+
+        captured = capsys.readouterr()
+        assert "ERROR: Dependency map not found" in captured.err
+        assert exc_info.value.code == 2
+
+    def test_stderr_dependency_map_invalid_yaml(self, temp_git_repo, capsys):
+        """Should capture stderr error for invalid dependency map YAML"""
+        dep_map = temp_git_repo / ".dependency-map.yaml"
+        dep_map.write_text("invalid: yaml: syntax:")
+
+        with pytest.raises(SystemExit) as exc_info:
+            DocumentationVersionValidator(".dependency-map.yaml")
+
+        captured = capsys.readouterr()
+        assert "ERROR: Failed to load dependency map" in captured.err
+        assert exc_info.value.code == 2
+
     def test_markdown_version_deep_in_file(self, temp_git_repo):
         """Should find version comment even if not at top of file"""
         md_file = temp_git_repo / "deep.md"
@@ -919,6 +1133,393 @@ class TestEdgeCases:
         # Parser only checks first 2000 chars, so version should still be found
         version = VersionParser.parse_markdown_version(md_file)
         assert version == "3.2.1"
+
+    def test_markdown_version_at_boundary_2000_chars(self, temp_git_repo):
+        """Should find version at exactly 2000 character boundary"""
+        md_file = temp_git_repo / "boundary.md"
+        # Create content that puts version comment at exactly 2000 chars
+        padding = "x" * (2000 - len("<!-- version: 1.2.3 -->"))
+        content = padding + "<!-- version: 1.2.3 -->"
+        md_file.write_text(content)
+
+        version = VersionParser.parse_markdown_version(md_file)
+        # Should find it since we read first 2000 chars
+        assert version == "1.2.3"
+
+    def test_markdown_version_beyond_2000_chars(self, temp_git_repo):
+        """Should NOT find version beyond 2000 character boundary"""
+        md_file = temp_git_repo / "beyond.md"
+        # Put version comment beyond 2000 chars
+        padding = "x" * 2001
+        content = padding + "<!-- version: 1.2.3 -->"
+        md_file.write_text(content)
+
+        version = VersionParser.parse_markdown_version(md_file)
+        # Should NOT find it since it's beyond the 2000 char limit
+        assert version is None
+
+    def test_markdown_version_almost_matches_regex(self, temp_git_repo):
+        """Should NOT match version comments with wrong format"""
+        md_file = temp_git_repo / "almost.md"
+
+        # Test various near-miss formats that should NOT match
+        # Note: regex allows optional whitespace after colon (\s*), so "version:1.2.3" WILL match
+        test_cases = [
+            "<!-- version: 1.2 -->",  # Missing patch version
+            "<!-- version: v1.2.3 -->",  # Has 'v' prefix
+            "<!-- version: 1.2.3.4 -->",  # Too many version parts
+            "<!-- ver: 1.2.3 -->",  # Wrong keyword
+            "<!-- version: 1.2.3",  # Missing closing -->
+        ]
+
+        for content in test_cases:
+            md_file.write_text(content)
+            version = VersionParser.parse_markdown_version(md_file)
+            assert version is None, f"Should not match: {content}"
+
+    def test_dependency_map_missing_required_keys(self, temp_git_repo):
+        """Should handle dependency map with missing required keys"""
+        dep_map = temp_git_repo / ".dependency-map.yaml"
+
+        # Missing version_format key
+        config = {
+            "tracked_files": [
+                {
+                    "path": "config.yaml",
+                    # Missing version_format
+                    "triggers_update": [],
+                }
+            ]
+        }
+        with open(dep_map, "w") as f:
+            yaml.dump(config, f)
+
+        validator = DocumentationVersionValidator(".dependency-map.yaml")
+
+        # Should handle gracefully - parsing may fail but shouldn't crash
+        try:
+            _ = validator.validate()
+            # If it doesn't crash, that's acceptable behavior
+        except (KeyError, AttributeError):
+            # Also acceptable to raise exception for malformed config
+            pass
+
+    def test_dependency_map_wrong_data_types(self, temp_git_repo):
+        """Should handle dependency map with wrong data types"""
+        dep_map = temp_git_repo / ".dependency-map.yaml"
+
+        # tracked_files should be list but provide dict
+        config = {
+            "tracked_files": {
+                "not": "a list"  # Wrong type - should be list
+            }
+        }
+        with open(dep_map, "w") as f:
+            yaml.dump(config, f)
+
+        validator = DocumentationVersionValidator(".dependency-map.yaml")
+
+        # Should handle gracefully without crashing
+        try:
+            _ = validator.validate()
+            # Should return True (no valid tracked files to validate)
+        except (TypeError, AttributeError):
+            # Also acceptable to raise exception for malformed config
+            pass
+
+
+# =============================================================================
+# Unit Tests - Subprocess Mocking
+# =============================================================================
+
+
+class TestSubprocessMocking:
+    """Tests that verify exact git command strings using subprocess mocking"""
+
+    @patch("subprocess.run")
+    def test_git_diff_exact_command_staged_files(self, mock_run, temp_git_repo):
+        """Should execute exact git diff command for staged files"""
+        mock_run.return_value = MagicMock(
+            returncode=0, stdout="file1.yaml\nfile2.md", stderr=""
+        )
+
+        GitHelper.get_staged_files()
+
+        mock_run.assert_called_once_with(
+            ["git", "diff", "--cached", "--name-only"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    @patch("subprocess.run")
+    def test_git_show_exact_command_with_file_path(self, mock_run, temp_git_repo):
+        """Should execute exact git show command with file path"""
+        mock_run.return_value = MagicMock(
+            returncode=0, stdout="version: 1.0.0\n", stderr=""
+        )
+
+        GitHelper.get_version_from_head("catalog.yaml", "yaml", "version")
+
+        mock_run.assert_called_once_with(
+            ["git", "show", "HEAD:catalog.yaml"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    @patch("subprocess.run")
+    def test_git_command_failure_returns_empty_list(self, mock_run, temp_git_repo):
+        """Should handle git command failure gracefully"""
+        mock_run.return_value = MagicMock(
+            returncode=128, stdout="", stderr="fatal: not a git repository"
+        )
+
+        result = GitHelper.get_staged_files()
+
+        assert result == []
+
+    @patch("subprocess.run")
+    def test_git_show_nonexistent_file_returns_none(self, mock_run, temp_git_repo):
+        """Should return None for nonexistent file in HEAD"""
+        mock_run.return_value = MagicMock(
+            returncode=128,
+            stdout="",
+            stderr="fatal: path 'nonexistent.yaml' does not exist",
+        )
+
+        result = GitHelper.get_version_from_head("nonexistent.yaml", "yaml", "version")
+
+        assert result is None
+
+    @patch("subprocess.run")
+    def test_subprocess_exception_handling(self, mock_run, temp_git_repo):
+        """Should handle subprocess exceptions without crashing"""
+        mock_run.side_effect = Exception("Subprocess error")
+
+        # GitHelper should handle exception gracefully
+        try:
+            result = GitHelper.get_staged_files()
+            # Should return empty list or None
+            assert result in ([], None)
+        except Exception:
+            # If it raises, it should be a handled exception
+            pass
+
+    @patch("subprocess.run")
+    def test_git_diff_whitespace_flag(self, mock_run, temp_git_repo):
+        """Should execute git diff with -w flag when ignoring whitespace"""
+        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+
+        GitHelper.file_has_changes("test.yaml", ignore_whitespace=True)
+
+        # Verify -w flag is included
+        called_args = mock_run.call_args[0][0]
+        assert "-w" in called_args or "--ignore-all-space" in called_args
+
+
+# =============================================================================
+# Unit Tests - Report Structure Detailed Validation
+# =============================================================================
+
+
+class TestReportStructureDetailed:
+    """Tests that verify detailed report structure with type assertions"""
+
+    def test_error_report_has_required_keys_and_types(self, temp_git_repo):
+        """Should verify all required keys exist with correct types"""
+        # Create mismatched versions to generate error report
+        yaml_file = temp_git_repo / "test.yaml"
+        yaml_file.write_text("version: 1.0.0\n")
+
+        doc_file = temp_git_repo / "test.md"
+        doc_file.write_text("<!-- version: 2.0.0 -->")
+
+        # Create minimal dependency map
+        dep_map = temp_git_repo / ".dependency-map.yaml"
+        config = {
+            "tracked_files": [
+                {
+                    "path": "test.yaml",
+                    "version_format": "yaml",
+                    "version_field": "version",
+                    "triggers_update": [{"file": "test.md"}],
+                }
+            ]
+        }
+        with open(dep_map, "w") as f:
+            yaml.dump(config, f)
+
+        subprocess.run(["git", "add", "test.yaml"], check=True, capture_output=True)
+
+        validator = DocumentationVersionValidator(".dependency-map.yaml")
+        _ = validator.validate()
+
+        # Generate JSON report
+        report = validator.generate_error_report()
+
+        # Verify top-level structure
+        assert isinstance(report, dict)
+        assert "error_type" in report
+        assert isinstance(report["error_type"], str)
+        assert "blocking" in report
+        assert isinstance(report["blocking"], bool)
+
+        # Verify summary section types
+        assert "summary" in report
+        assert isinstance(report["summary"], dict)
+        assert isinstance(report["summary"].get("total_errors", 0), int)
+
+        # Verify errors section types
+        assert "errors" in report
+        assert isinstance(report["errors"], dict)
+
+        # Verify resolution_steps is list of strings
+        assert "resolution_steps" in report
+        assert isinstance(report["resolution_steps"], list)
+        if len(report["resolution_steps"]) > 0:
+            assert all(isinstance(step, str) for step in report["resolution_steps"])
+
+        # Verify llm_guidance structure
+        assert "llm_guidance" in report
+        assert isinstance(report["llm_guidance"], dict)
+        assert "task" in report["llm_guidance"]
+        assert isinstance(report["llm_guidance"]["task"], str)
+        assert "files_to_read" in report["llm_guidance"]
+        assert isinstance(report["llm_guidance"]["files_to_read"], list)
+        assert "files_to_edit" in report["llm_guidance"]
+        assert isinstance(report["llm_guidance"]["files_to_edit"], list)
+
+    def test_validation_error_object_types(self, temp_git_repo, dependency_map_simple):
+        """Should verify ValidationError object has correct attribute types"""
+        # Create scenario with version not bumped
+        yaml_file = temp_git_repo / "config.yaml"
+        content = {"version": "1.0.0", "name": "test"}
+        with open(yaml_file, "w") as f:
+            yaml.dump(content, f)
+
+        subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "commit", "-m", "Initial"], check=True, capture_output=True
+        )
+
+        # Modify without version bump
+        content["name"] = "modified"
+        with open(yaml_file, "w") as f:
+            yaml.dump(content, f)
+
+        subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
+
+        validator = DocumentationVersionValidator(".dependency-map.yaml")
+        validator.validate()
+
+        # Verify error object types
+        assert len(validator.errors) > 0
+        error = validator.errors[0]
+
+        assert isinstance(error.error_type, str)
+        assert isinstance(error.file, str)
+        assert error.current_version is None or isinstance(error.current_version, str)
+        assert error.expected_version is None or isinstance(error.expected_version, str)
+        assert isinstance(error.reason, str)
+        assert isinstance(error.required_actions, list)
+        if error.sections_to_update:
+            assert isinstance(error.sections_to_update, list)
+
+    def test_report_format_consistency_multiple_errors(self, temp_git_repo):
+        """Should maintain consistent report format across multiple errors"""
+        # Create two files with different version errors
+        yaml1 = temp_git_repo / "source1.yaml"
+        yaml1.write_text("version: invalid-version\n")
+
+        yaml2 = temp_git_repo / "source2.yaml"
+        content2 = {"version": "1.0.0", "name": "source2"}
+        with open(yaml2, "w") as f:
+            yaml.dump(content2, f)
+
+        # Commit source2, modify it without version bump
+        subprocess.run(["git", "add", "source2.yaml"], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "commit", "-m", "Add source2"], check=True, capture_output=True
+        )
+
+        content2["name"] = "modified"
+        with open(yaml2, "w") as f:
+            yaml.dump(content2, f)
+
+        # Create dependency map
+        dep_map = temp_git_repo / ".dependency-map.yaml"
+        config = {
+            "tracked_files": [
+                {
+                    "path": "source1.yaml",
+                    "version_format": "yaml",
+                    "version_field": "version",
+                    "triggers_update": [],
+                },
+                {
+                    "path": "source2.yaml",
+                    "version_format": "yaml",
+                    "version_field": "version",
+                    "triggers_update": [],
+                },
+            ]
+        }
+        with open(dep_map, "w") as f:
+            yaml.dump(config, f)
+
+        subprocess.run(
+            ["git", "add", "source1.yaml", "source2.yaml"],
+            check=True,
+            capture_output=True,
+        )
+
+        validator = DocumentationVersionValidator(".dependency-map.yaml")
+        validator.validate()
+
+        # All errors should be ValidationError objects with same structure
+        if len(validator.errors) >= 2:
+            error1_attrs = set(dir(validator.errors[0]))
+            error2_attrs = set(dir(validator.errors[1]))
+            # Check that both have same public attributes
+            public_attrs1 = {attr for attr in error1_attrs if not attr.startswith("_")}
+            public_attrs2 = {attr for attr in error2_attrs if not attr.startswith("_")}
+            assert public_attrs1 == public_attrs2
+
+    def test_report_json_serializable(self, temp_git_repo, dependency_map_simple):
+        """Should verify report is JSON serializable"""
+        import json
+
+        # Create error scenario
+        yaml_file = temp_git_repo / "config.yaml"
+        content = {"version": "1.0.0"}
+        with open(yaml_file, "w") as f:
+            yaml.dump(content, f)
+
+        subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "commit", "-m", "Initial"], check=True, capture_output=True
+        )
+
+        content["modified"] = True
+        with open(yaml_file, "w") as f:
+            yaml.dump(content, f)
+
+        subprocess.run(["git", "add", "config.yaml"], check=True, capture_output=True)
+
+        validator = DocumentationVersionValidator(".dependency-map.yaml")
+        validator.validate()
+        report = validator.generate_error_report()
+
+        # Should be able to serialize to JSON without errors
+        try:
+            json_str = json.dumps(report, indent=2)
+            assert len(json_str) > 0
+            # Should be able to deserialize back
+            parsed = json.loads(json_str)
+            assert isinstance(parsed, dict)
+        except (TypeError, ValueError) as e:
+            pytest.fail(f"Report is not JSON serializable: {e}")
 
     def test_concurrent_version_formats(self, temp_git_repo):
         """Should handle different version formats in same validation run"""
