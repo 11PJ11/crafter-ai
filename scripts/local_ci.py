@@ -133,9 +133,37 @@ class LocalCIValidator:
         else:
             self.print_warning("YAML validator script not found")
 
+    def validate_npm_dependencies(self) -> None:
+        """Validate npm dependencies match CI workflow requirements."""
+        self.print_header("2. npm Dependency Validation")
+
+        package_json = self.project_root / "package.json"
+        package_lock = self.project_root / "package-lock.json"
+
+        if not package_json.exists():
+            self.print_info("No package.json found - skipping npm validation")
+            return
+
+        # Check package-lock.json exists (required for npm ci)
+        if not package_lock.exists():
+            self.print_error(
+                "package-lock.json missing - npm ci will fail in CI (run: npm install)"
+            )
+            self.tests_failed += 1
+            return
+
+        self.print_success("package-lock.json exists")
+
+        # Validate npm ci works (mirrors CI exactly)
+        try:
+            subprocess.run(["npm", "--version"], capture_output=True, check=True)
+            self.run_command(["npm", "ci"], "npm ci (dependency installation)")
+        except FileNotFoundError:
+            self.print_warning("npm not available - skipping npm ci validation")
+
     def run_python_tests(self) -> None:
         """Run Python test suite."""
-        self.print_header("2. Python Test Suite")
+        self.print_header("3. Python Test Suite")
 
         # Try npm test first (mirrors CI), fall back to pytest
         if (self.project_root / "package.json").exists():
@@ -152,7 +180,7 @@ class LocalCIValidator:
             self.print_info("Skipping build (fast mode)")
             return
 
-        self.print_header("3. Build Process Validation")
+        self.print_header("4. Build Process Validation")
 
         if (self.project_root / "package.json").exists():
             self.run_command(["npm", "run", "build"], "Build process")
@@ -161,7 +189,7 @@ class LocalCIValidator:
 
     def validate_shell_scripts(self) -> None:
         """Validate shell scripts."""
-        self.print_header("4. Shell Script Validation")
+        self.print_header("5. Shell Script Validation")
 
         scripts_dir = self.project_root / "scripts"
         shell_scripts = list(scripts_dir.glob("*.sh"))
@@ -223,7 +251,7 @@ class LocalCIValidator:
 
     def validate_python_linting(self) -> None:
         """Run Python linting with Ruff."""
-        self.print_header("5. Python Linting (Ruff)")
+        self.print_header("6. Python Linting (Ruff)")
 
         try:
             subprocess.run(["ruff", "--version"], capture_output=True, check=True)
@@ -235,7 +263,7 @@ class LocalCIValidator:
 
     def validate_python_formatting(self) -> None:
         """Check Python formatting with Ruff."""
-        self.print_header("6. Python Formatting Check (Ruff)")
+        self.print_header("7. Python Formatting Check (Ruff)")
 
         try:
             subprocess.run(["ruff", "--version"], capture_output=True, check=True)
@@ -248,7 +276,7 @@ class LocalCIValidator:
 
     def validate_security(self) -> None:
         """Run basic security validation."""
-        self.print_header("7. Security Validation")
+        self.print_header("8. Security Validation")
 
         # Simple grep-based check for hardcoded credentials
         scripts_dir = self.project_root / "scripts"
@@ -283,7 +311,7 @@ class LocalCIValidator:
 
     def validate_nwave_framework(self) -> None:
         """Validate nWave framework structure."""
-        self.print_header("8. nWave Framework Validation")
+        self.print_header("9. nWave Framework Validation")
 
         # Check agent definitions
         agents_dir = self.project_root / "nWave" / "agents"
@@ -311,7 +339,7 @@ class LocalCIValidator:
 
     def validate_documentation(self) -> None:
         """Validate required documentation exists."""
-        self.print_header("9. Documentation Validation")
+        self.print_header("10. Documentation Validation")
 
         required_docs = [
             "README.md",
@@ -372,6 +400,7 @@ class LocalCIValidator:
 
         # Run all validation phases
         self.validate_yaml()
+        self.validate_npm_dependencies()
         self.run_python_tests()
         self.validate_build()
         self.validate_shell_scripts()
