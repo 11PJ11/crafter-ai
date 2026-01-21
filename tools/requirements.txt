@@ -2,7 +2,7 @@
 
 # Core dependencies
 PyYAML>=6.0
-pathlib>=1.0.1
+# Note: pathlib is built-in to Python 3.4+ and doesn't need to be installed
 
 # Optional dependencies for enhanced functionality
 click>=8.0.0  # For better CLI interface (if needed)

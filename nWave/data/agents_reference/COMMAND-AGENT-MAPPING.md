@@ -1,6 +1,6 @@
 # Command-Agent Auto-Activation Mapping
 
-<!-- version: 1.2.74 -->
+<!-- version: 1.2.75 -->
 
 ## Configuration Status: ✅ COMPLETE
 
