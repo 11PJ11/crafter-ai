@@ -18,6 +18,12 @@ The local validation environment mirrors the GitHub Actions CI/CD pipeline, allo
 
 ### 1. Run Full Local CI Validation
 
+**Recommended - Python version** (cross-platform):
+```bash
+python3 scripts/local_ci.py
+```
+
+**Alternative - Shell version** (Unix only):
 ```bash
 ./scripts/local-ci.sh
 ```
@@ -38,6 +44,12 @@ This runs all the same checks as GitHub Actions CI/CD:
 
 For quicker validation during development:
 
+**Python**:
+```bash
+python3 scripts/local_ci.py --fast
+```
+
+**Shell**:
 ```bash
 ./scripts/local-ci.sh --fast
 ```
@@ -46,6 +58,12 @@ For quicker validation during development:
 
 For detailed debugging information:
 
+**Python**:
+```bash
+python3 scripts/local_ci.py --verbose
+```
+
+**Shell**:
 ```bash
 ./scripts/local-ci.sh --verbose
 ```
