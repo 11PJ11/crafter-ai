@@ -16,9 +16,9 @@ from pathlib import Path
 
 import pytest
 
-# Add scripts to path for importing REQUIRED_PHASES
+# Add project root to path for importing from scripts.validation
 REPO_ROOT = Path(__file__).parent.parent
-sys.path.insert(0, str(REPO_ROOT / "scripts"))
+sys.path.insert(0, str(REPO_ROOT))
 
 CANONICAL_TEMPLATE = REPO_ROOT / "nWave/templates/step-tdd-cycle-schema.json"
 SPLIT_MD = REPO_ROOT / "nWave/tasks/nw/split.md"
@@ -51,7 +51,7 @@ class TestCanonicalTemplateValidity:
 
     def test_canonical_phase_names_match_validator(self, canonical_template):
         """Phase names in template must match validator constants."""
-        from validate_step_file import REQUIRED_PHASES
+        from scripts.validation.validate_steps import REQUIRED_PHASES
 
         template_phases = [
             p["phase_name"]
@@ -145,7 +145,7 @@ class TestSplitMdEmbeddedTemplate:
 
     def test_split_md_references_correct_phases(self, split_md_content):
         """split.md must reference correct phase names in examples."""
-        from validate_step_file import REQUIRED_PHASES
+        from scripts.validation.validate_steps import REQUIRED_PHASES
 
         # Extract phase_name values from embedded JSON
         pattern = r'"phase_name":\s*"([A-Z_]+)"'
@@ -189,7 +189,7 @@ class TestValidatorSchemaAlignment:
 
     def test_validator_phases_count(self):
         """Validator must define exactly 14 phases."""
-        from validate_step_file import REQUIRED_PHASES
+        from scripts.validation.validate_steps import REQUIRED_PHASES
 
         assert (
             len(REQUIRED_PHASES) == 14
@@ -197,7 +197,7 @@ class TestValidatorSchemaAlignment:
 
     def test_validator_phases_uppercase_underscore(self):
         """Validator phase names must use UPPERCASE_UNDERSCORE format."""
-        from validate_step_file import REQUIRED_PHASES
+        from scripts.validation.validate_steps import REQUIRED_PHASES
 
         for phase in REQUIRED_PHASES:
             assert phase == phase.upper(), f"Phase not uppercase: {phase}"
@@ -206,7 +206,7 @@ class TestValidatorSchemaAlignment:
 
     def test_validator_required_fields_correct(self):
         """Validator must require correct fields."""
-        from validate_step_file import REQUIRED_FIELDS
+        from scripts.validation.validate_steps import REQUIRED_FIELDS
 
         # Must require task_id
         assert "task_id" in REQUIRED_FIELDS, "Validator must require task_id"
@@ -223,7 +223,7 @@ class TestCrossFileConsistency:
 
     def test_template_and_validator_in_sync(self):
         """Template phases must match validator phases exactly."""
-        from validate_step_file import REQUIRED_PHASES
+        from scripts.validation.validate_steps import REQUIRED_PHASES
 
         with open(CANONICAL_TEMPLATE, encoding="utf-8") as f:
             template = json.load(f)
@@ -242,7 +242,7 @@ class TestCrossFileConsistency:
 
     def test_mandatory_phases_list_matches(self):
         """mandatory_phases in template must use correct phase names."""
-        from validate_step_file import REQUIRED_PHASES
+        from scripts.validation.validate_steps import REQUIRED_PHASES
 
         with open(CANONICAL_TEMPLATE, encoding="utf-8") as f:
             template = json.load(f)

@@ -27,11 +27,17 @@ scripts/
 │   ├── validate-docs.sh            # Doc version validation
 │   └── detect-conflicts.sh         # Agent/command coupling detection
 │
-├── install/             # Installation tools (shell-based, Python conversion planned)
-│   ├── install-ai-craft.sh         # Framework installation
-│   ├── uninstall-ai-craft.sh       # Framework removal
-│   ├── update-ai-craft.sh          # Update pipeline
-│   └── enhanced-backup-system.sh   # Backup management
+├── install/             # Installation tools (Python cross-platform + legacy shell)
+│   ├── install_ai_craft.py          # Framework installation (RECOMMENDED)
+│   ├── uninstall_ai_craft.py        # Framework removal (RECOMMENDED)
+│   ├── update_ai_craft.py           # Update pipeline (RECOMMENDED)
+│   ├── enhanced_backup_system.py    # Backup management (RECOMMENDED)
+│   ├── install_utils.py             # Shared utilities module
+│   ├── install-ai-craft.sh          # Legacy shell version
+│   ├── uninstall-ai-craft.sh        # Legacy shell version
+│   ├── update-ai-craft.sh           # Legacy shell version
+│   ├── enhanced-backup-system.sh    # Legacy shell version
+│   └── README.md                    # Detailed installation docs
 │
 ├── archive/             # Historical/unused scripts
 │   ├── run-adversarial-tests.py    # LLM-based testing (archived)
@@ -87,20 +93,29 @@ pre-commit run --all-files
 
 ### Installation
 
-Install AI-Craft framework:
+Install AI-Craft framework (Python - cross-platform):
 ```bash
-bash scripts/install/install-ai-craft.sh
+python scripts/install/install_ai_craft.py
 ```
 
 Update framework:
 ```bash
-bash scripts/install/update-ai-craft.sh
+python scripts/install/update_ai_craft.py --backup
 ```
 
 Uninstall framework:
 ```bash
-bash scripts/install/uninstall-ai-craft.sh
+python scripts/install/uninstall_ai_craft.py --backup
 ```
+
+Legacy shell versions (Unix/Mac only):
+```bash
+bash scripts/install/install-ai-craft.sh  # Legacy
+bash scripts/install/update-ai-craft.sh   # Legacy
+bash scripts/install/uninstall-ai-craft.sh # Legacy
+```
+
+See `scripts/install/README.md` for detailed installation documentation.
 
 ## Integration
 
@@ -116,9 +131,10 @@ When adding new validators:
 
 ## Cross-Platform Support
 
-- **Validators**: Python 3.8+ (Windows, Mac, Linux)
-- **Installation**: Shell scripts (Unix/Mac only - Python conversion planned)
-- **Hooks**: Mixed shell + Python
+- **Validators**: Python 3.7+ (Windows, Mac, Linux)
+- **Installation**: Python 3.7+ (Windows, Mac, Linux) - **RECOMMENDED**
+  - Legacy shell scripts available for Unix/Mac (not maintained)
+- **Hooks**: Mixed shell + Python (Python preferred)
 
 ## Testing
 
