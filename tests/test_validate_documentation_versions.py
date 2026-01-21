@@ -19,7 +19,7 @@ import sys
 import os
 
 # Add scripts directory to Python path and import module with dashes in name
-scripts_dir = Path(__file__).parent.parent / "scripts"
+scripts_dir = Path(__file__).parent.parent / "scripts" / "validation"
 sys.path.insert(0, str(scripts_dir))
 
 # Import module with dashes using importlib
