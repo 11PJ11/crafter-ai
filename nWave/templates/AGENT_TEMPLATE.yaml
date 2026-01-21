@@ -2036,19 +2036,21 @@ design_patterns_comprehensive:
     rationale:
       cognitive_asymmetry:
         generation_tasks:
-          - "Creative synthesis from multiple sources"
-          - "Novel solution creation"
-          - "Complex architectural design"
-          - "Original content production"
+          items:
+            - "Creative synthesis from multiple sources"
+            - "Novel solution creation"
+            - "Complex architectural design"
+            - "Original content production"
           complexity: "HIGH - requires deep reasoning, creativity, context integration"
 
         verification_tasks:
-          - "Pattern matching against quality criteria"
-          - "Gap detection in existing artifacts"
-          - "Checklist-driven validation"
-          - "Bias identification"
-          - "Citation verification"
-          - "Logical fallacy detection"
+          items:
+            - "Pattern matching against quality criteria"
+            - "Gap detection in existing artifacts"
+            - "Checklist-driven validation"
+            - "Bias identification"
+            - "Citation verification"
+            - "Logical fallacy detection"
           complexity: "MEDIUM - systematic analysis, not creative synthesis"
 
       adversarial_training_precedent:

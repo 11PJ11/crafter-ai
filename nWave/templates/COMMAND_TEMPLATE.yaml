@@ -31,106 +31,35 @@ agent-activation:
   agent-name: "{PersonaName}"       # e.g., Riley, Quinn, Crafty, Dakota
   agent-command: "*{command-name}"  # e.g., *gather-requirements, *design-architecture
   auto-activate: true               # Claude auto-invokes agent when task loaded
----
 
 # ============================================================================
-# TASK HEADER
+# TEMPLATE NOTES: Below is a markdown template for actual task files
 # ============================================================================
-
-# DW-{WAVE}: {Task Title}
-
-**Wave**: {DISCUSS|DESIGN|DISTILL|DEVELOP|DEMO|CROSS_WAVE}
-**Agent**: {PersonaName} ({agent-id})
-**Command**: `*{command-name}`
-
-## Overview
-
-{2-3 paragraph description of:
- - What this wave/task accomplishes
- - Its role in nWave methodology (or cross-wave support)
- - Key outcomes and value delivered}
-
+# When creating a new task file, follow this structure:
+#
+# # DW-{WAVE}: {Task Title}
+#
+# **Wave**: {DISCUSS|DESIGN|DISTILL|DEVELOP|DEMO|CROSS_WAVE}
+# **Agent**: {PersonaName} ({agent-id})
+# **Command**: `*{command-name}`
+#
+# ## Overview
+# {2-3 paragraph description of what this wave/task accomplishes}
+#
+# ## Context Files Required
+# - {file-path-1} - {purpose/description}
+# - {file-path-2} - {purpose/description}
+#
+# ## Agent Invocation
+# @{agent-id}
+# Execute *{command-name} for {feature-name}.
+#
+# ## Success Criteria
+# See {agent-id}.md for quality gates
+#
+# ## Next Wave Handoff
+# **Handoff To**: {next-agent-id}
 # ============================================================================
-# CONTEXT FILES SECTION (CRITICAL FOR PERFORMANCE)
-# ============================================================================
-# Pre-discovered file paths provided to agent (40% token reduction vs agent search)
-
-## Context Files Required
-
-- {file-path-1} - {purpose/description}
-- {file-path-2} - {purpose/description}
-- {file-path-3} - {purpose/description}
-
-# Examples:
-# - docs/project-brief.md - Project context and objectives
-# - docs/stakeholders.yaml - Stakeholder identification and roles
-# - docs/architecture/constraints.md - Technical and business constraints
-
-# ============================================================================
-# PREVIOUS ARTIFACTS SECTION (Wave Handoff)
-# ============================================================================
-# Outputs from previous wave that this wave consumes
-
-## Previous Artifacts (Wave Handoff)
-
-- {artifact-path-from-previous-wave} - (from {PREVIOUS_WAVE} wave)
-- {artifact-path-2} - (from {PREVIOUS_WAVE} wave)
-
-# Examples:
-# - docs/requirements/requirements.md - (from DISCUSS wave)
-# - docs/architecture/system-design.md - (from DESIGN wave)
-# - None (if this is the first wave - DISCUSS)
-
-# ============================================================================
-# AGENT INVOCATION (Explicit Context Handoff)
-# ============================================================================
-# Treat agent as function with explicit inputs (Agent-as-Function pattern)
-
-## Agent Invocation
-
-@{agent-id}
-
-Execute *{command-name} for {feature-name}.
-
-**Context Files:**
-- {file-path-1}
-- {file-path-2}
-- {file-path-3}
-
-**Previous Artifacts:**
-- {artifact-from-previous-wave}
-
-**Configuration:**
-- {config-key}: {config-value}              # e.g., interactive: high
-- {config-key-2}: {config-value-2}          # e.g., output_format: markdown
-- {config-key-3}: {config-value-3}          # e.g., elicitation_depth: comprehensive
-
-# ============================================================================
-# SUCCESS CRITERIA (Reference to Agent's Quality Gates)
-# ============================================================================
-# Do NOT duplicate full quality gates here - reference agent specification
-
-## Success Criteria
-
-Refer to {PersonaName} agent's quality gates in nWave/agents/{agent-id}.md.
-
-**Key Validations:**
-- [ ] {critical-validation-1}               # e.g., Requirements completeness > 0.95
-- [ ] {critical-validation-2}               # e.g., Stakeholder consensus achieved
-- [ ] {critical-validation-3}               # e.g., Handoff accepted by next agent
-
-# ============================================================================
-# NEXT WAVE HANDOFF
-# ============================================================================
-# Coordination with next wave agent
-
-## Next Wave
-
-**Handoff To**: {next-agent-id}             # e.g., solution-architect (DESIGN wave)
-**Deliverables**: See {agent-name} agent's handoff package specification
-
-# Expected outputs (reference only - details in agent spec):
-# - {deliverable-1}.md
 # - {deliverable-2}.md
 
 # ============================================================================
