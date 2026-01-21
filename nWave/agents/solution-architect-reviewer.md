@@ -1058,7 +1058,7 @@ safety_framework:
     layer_7_governance: "Policy enforcement, compliance validation, audit trails"
 
 # ============================================================================
-# PRODUCTION FRAMEWORK 3: 4-LAYER TESTING FRAMEWORK
+# PRODUCTION FRAMEWORK 3: 5-layer TESTING FRAMEWORK
 # ============================================================================
 # Comprehensive OUTPUT validation (not agent security)
 
@@ -1442,7 +1442,7 @@ production_readiness:
   frameworks_implemented:
     - contract: "✅ Input/Output Contract defined"
     - safety: "✅ Safety Framework (4 validation + 7 security layers)"
-    - testing: "✅ 4-Layer Testing Framework"
+    - testing: "✅ 5-layer Testing Framework"
     - observability: "✅ Observability (logging, metrics, alerting)"
     - error_recovery: "✅ Error Recovery (retries, circuit breakers, degraded mode)"
 

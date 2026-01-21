@@ -302,7 +302,7 @@ safety_framework:
       - dangerous_command_blocks: "Track attempts to execute DDL/DML without approval"
       - response_accuracy: "Validate recommendations against research sources"
 
-# Production Testing Framework (4 Layers) - OUTPUT VALIDATION
+# Production Testing Framework (5 layers) - OUTPUT VALIDATION
 testing_framework:
   overview: |
     Data engineer agent outputs (recommendations, architecture guidance, security practices)
@@ -847,7 +847,7 @@ safety_framework:
     layer_7_governance: "Policy enforcement, compliance validation, audit trails"
 
 # ============================================================================
-# PRODUCTION FRAMEWORK 3: 4-LAYER TESTING FRAMEWORK
+# PRODUCTION FRAMEWORK 3: 5-layer TESTING FRAMEWORK
 # ============================================================================
 # Comprehensive OUTPUT validation (not agent security)
 
@@ -1095,7 +1095,7 @@ production_readiness:
   frameworks_implemented:
     - contract: "✅ Input/Output Contract defined"
     - safety: "✅ Safety Framework (4 validation + 7 security layers)"
-    - testing: "✅ 4-Layer Testing Framework"
+    - testing: "✅ 5-layer Testing Framework"
     - observability: "✅ Observability (logging, metrics, alerting)"
     - error_recovery: "✅ Error Recovery (retries, circuit breakers, degraded mode)"
 
@@ -1350,8 +1350,8 @@ All command names clearly data-focused, no ambiguity.
 - ✅ Agent identity (name: DataArch, id: data-engineer, title, icon, whenToUse)
 - ✅ Persona (role, style, identity, focus, core_principles with 10 principles)
 - ✅ Contract (inputs, outputs, side_effects, error_handling)
-- ✅ Safety framework (4 layers: input_validation, output_filtering, behavioral_constraints, continuous_monitoring)
-- ✅ Testing framework (4 layers referenced)
+- ✅ Safety framework (5 layers: input_validation, output_filtering, behavioral_constraints, continuous_monitoring)
+- ✅ Testing framework (5 layers referenced)
 - ✅ Observability framework (structured logging, metrics, alerting)
 - ✅ Error recovery framework (retry strategies, circuit breakers, degraded mode)
 - ✅ Commands with help/exit
@@ -1716,8 +1716,8 @@ User always informed of degraded state, knows to validate independently.
 - ✅ Agent identity defined (name: DataArch, id: data-engineer, title, icon, whenToUse)
 - ✅ Persona complete (role, style, identity, focus, 10 core principles)
 - ✅ Contract defined (inputs required/optional, outputs primary/secondary, side effects, error handling)
-- ✅ Safety framework (4 layers: input validation, output filtering, behavioral constraints, monitoring)
-- ✅ Testing framework (4 layers referenced with data-engineer-specific validation)
+- ✅ Safety framework (5 layers: input validation, output filtering, behavioral constraints, monitoring)
+- ✅ Testing framework (5 layers referenced with data-engineer-specific validation)
 - ✅ Observability framework (structured logging, agent-specific metrics, alerting)
 - ✅ Error recovery framework (retry strategies, circuit breakers, degraded mode)
 - ✅ Commands (help first, exit last, * prefix documented)
@@ -1734,13 +1734,13 @@ User always informed of degraded state, knows to validate independently.
 **14 Core Principles Validation**:
 1. ✅ Evidence-Based Design - Recommendations cite research findings
 2. ✅ Research-Driven Architecture - ReAct pattern for data engineering guidance
-3. ✅ Safety-First Architecture - 4-layer safety framework implemented
+3. ✅ Safety-First Architecture - 5-layer safety framework implemented
 4. ✅ Defense in Depth - Input validation + output filtering + behavioral constraints + monitoring
 5. ✅ Least Privilege - Tools minimal (Read, Write, Grep, Bash read-only)
 6. ✅ Fail-Safe Design - Circuit breakers, degraded mode, escalation defined
 7. ✅ Specification Compliance - AGENT_TEMPLATE.yaml structure followed exactly
 8. ✅ Single Responsibility - Data engineering guidance (focused domain)
-9. ✅ 4-Layer Testing - Unit, integration, adversarial output validation, peer review
+9. ✅ 5-layer Testing - Unit, integration, adversarial output validation, peer review
 10. ✅ Continuous Validation - Monitoring with research_citation_rate, security_coverage metrics
 11. ✅ Fact-Driven Claims - No quantitative performance claims without measurements
 12. ✅ Clear Documentation - Comprehensive persona, contract, safety, testing documentation
@@ -1760,7 +1760,7 @@ User always informed of degraded state, knows to validate independently.
 | Requirements Analysis | Phase 1 | ✅ PASSED | Scope appropriate, tools minimal, criteria measurable |
 | Architecture Design | Phase 2 | ✅ PASSED | Persona research-grounded, template-compliant |
 | Safety Framework | Phase 3 | ✅ PASSED | Multi-layer validation, comprehensive threat coverage |
-| Testing Framework | Phase 4 | ✅ PASSED | 4 layers defined with data-engineer-specific validation |
+| Testing Framework | Phase 4 | ✅ PASSED | 5 layers defined with data-engineer-specific validation |
 | Observability & Error Recovery | Phase 5 | ✅ PASSED | Meaningful metrics, graceful degradation, data integrity preserved |
 | Final Validation | Phase 6 | ✅ PASSED | Agent security tests passed, template compliance verified, 14 principles addressed |
 
@@ -1769,7 +1769,7 @@ User always informed of degraded state, knows to validate independently.
 1. **Comprehensive Research Foundation**: 234KB knowledge base (3 research documents, 234KB total, 0.92-0.96 average source reputation, 100% cross-verified)
 2. **Evidence-Based Guidance**: Mandatory research citation rate >95%, all recommendations traceable to research findings
 3. **Security-First Design**: 100% security coverage requirement, OWASP/NIST alignment, multi-layer safety framework
-4. **Production-Ready Safety**: 4-layer testing, circuit breakers, degraded mode, comprehensive audit logging
+4. **Production-Ready Safety**: 5-layer testing, circuit breakers, degraded mode, comprehensive audit logging
 5. **Technology-Agnostic**: Multi-vendor research coverage prevents bias, trade-offs presented fairly
 
 ### Identified Limitations
@@ -1785,8 +1785,8 @@ User always informed of degraded state, knows to validate independently.
 
 **Evidence**:
 - All 6 phases completed with adversarial validation
-- Safety framework comprehensive (4 layers + agent security validation)
-- Testing framework complete (4 layers with data-engineer-specific tests)
+- Safety framework comprehensive (5 layers + agent security validation)
+- Testing framework complete (5 layers with data-engineer-specific tests)
 - Observability operational (structured logging, metrics, alerting)
 - Error recovery resilient (retry, circuit breakers, degraded mode)
 - AGENT_TEMPLATE.yaml compliance verified

@@ -14,7 +14,7 @@ This project successfully implemented systematic fixes to prevent agents from cr
 ### Achievement Highlights
 
 - **PRIMARY Enforcement:** Baseline file requirement creates undeniable prerequisite
-- **Defense-in-Depth:** 4-layer protection system (baseline file + agent principles + command gates + reviewer validation)
+- **Defense-in-Depth:** 5-layer protection system (baseline file + agent principles + command gates + reviewer validation)
 - **Incident Prevention:** All 5 root causes from ROADMAP-2025-12-03-001 addressed
 - **Knowledge Preservation:** Anti-patterns documented for future training
 - **Extensibility:** Safeguards embedded in agent-builder for future agents
@@ -661,7 +661,7 @@ All 4 validation scenarios from roadmap now pass:
 ### Additional Success Indicators
 
 - **Incident Recurrence:** PREVENTED (all 5 root causes addressed)
-- **Defense Layers:** 4 layers implemented (PRIMARY baseline file + 3 SECONDARY)
+- **Defense Layers:** 5 layers implemented (PRIMARY baseline file + 3 SECONDARY)
 - **Future Protection:** agent-builder updated to prevent regression
 - **Knowledge Preserved:** Anti-patterns documented for training
 - **File Coverage:** 16 files modified across agent specs, commands, and critiques

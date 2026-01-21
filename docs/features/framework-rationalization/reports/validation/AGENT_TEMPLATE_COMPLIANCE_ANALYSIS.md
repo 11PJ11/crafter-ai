@@ -13,7 +13,7 @@
 **0 of 12 agents are production-ready** per AGENT_TEMPLATE.yaml v1.2 requirements.
 
 All agents are missing critical production frameworks:
-- **4-Layer Testing Framework**: Missing in ALL 12 agents
+- **5-layer Testing Framework**: Missing in ALL 12 agents
 - **Observability Framework**: Missing in ALL 12 agents
 - **Error Recovery Framework**: Missing in ALL 12 agents
 - **Complete Safety Framework**: Missing in ALL 12 agents
@@ -42,7 +42,7 @@ All agents are missing critical production frameworks:
 - Add Observability Framework basics (structured logging, metrics) for all 12 agents
 
 **Priority 2: Testing & Recovery (Weeks 3-4)**
-- Implement 4-Layer Testing Framework for all 12 agents
+- Implement 5-layer Testing Framework for all 12 agents
 - Add Error Recovery Framework (retries, circuit breakers, degraded mode) for all 12 agents
 - Create adversarial verification workflows (peer review) for all agent types
 
@@ -56,9 +56,9 @@ All agents are missing critical production frameworks:
 
 ## Universal Gaps (All 12 Agents)
 
-### 1. Missing: 4-Layer Testing Framework
+### 1. Missing: 5-layer Testing Framework
 
-**Current State**: ZERO agents have complete 4-layer testing
+**Current State**: ZERO agents have complete 5-layer testing
 
 **Impact**:
 - No validation of output quality (Layer 1)
@@ -826,7 +826,7 @@ code_producing_agents:
 
 **P1-CRITICAL Tasks**:
 
-**2.1 Implement 4-Layer Testing Framework (12 agents)**
+**2.1 Implement 5-layer Testing Framework (12 agents)**
 
 **Layer 1: Unit Testing** (agent-type-specific)
 
@@ -1243,7 +1243,7 @@ production_readiness_checklist:
 **Quality & Validation Principles**:
 7. **Specification Compliance**: Strict adherence to templates
 8. **Single Responsibility**: One clear, focused purpose
-9. **4-Layer Testing**: Unit, Integration, Adversarial Output Validation, Adversarial Verification
+9. **5-layer Testing**: Unit, Integration, Adversarial Output Validation, Adversarial Verification
 10. **Continuous Validation**: Real-time monitoring with metrics
 
 **Operational Principles**:
@@ -1797,7 +1797,7 @@ Infrastructure Lead, and Performance Engineer to define measurable SLAs.
 - ✅ 12/12 agents have Observability Framework (structured logging, metrics, alerting)
 
 **Phase 2 Complete**:
-- ✅ 12/12 agents have 4-Layer Testing Framework
+- ✅ 12/12 agents have 5-layer Testing Framework
   - Layer 1 (Unit): Agent-type-specific output validation
   - Layer 2 (Integration): Handoff validation
   - Layer 3 (Adversarial Output Validation): Bias, completeness, edge case challenges

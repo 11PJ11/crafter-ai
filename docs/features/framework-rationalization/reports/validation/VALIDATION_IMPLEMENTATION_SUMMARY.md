@@ -29,7 +29,7 @@ Successfully implemented comprehensive validation and testing infrastructure for
 **Validation Criteria**:
 - ✅ Contract Framework: Input/output specification with error handling
 - ✅ Safety Framework: 4 validation layers + 7 enterprise security layers
-- ✅ Testing Framework: All 4 layers (Unit, Integration, Adversarial Output, Adversarial Verification)
+- ✅ Testing Framework: All 5 layers (Unit, Integration, Adversarial Output, Adversarial Verification)
 - ✅ Observability Framework: Structured logging, metrics, alerting
 - ✅ Error Recovery Framework: Retry strategies, circuit breakers, degraded mode
 - ✅ YAML Frontmatter: Complete (name, description, model)
@@ -277,7 +277,7 @@ python3 scripts/run-adversarial-tests.py
 **Frameworks in Template** ✅:
 - ✅ Contract Framework (complete)
 - ✅ Safety Framework (4 validation + 7 security layers)
-- ✅ Testing Framework (4 layers)
+- ✅ Testing Framework (5 layers)
 - ✅ Observability Framework (logging, metrics, alerting)
 - ✅ Error Recovery Framework (retry, circuit breakers, degraded mode)
 
@@ -356,7 +356,7 @@ def check_subsection_exists(content: str, section: str, subsection: str) -> bool
 **Validation Depth**:
 - Level 1: Section existence (e.g., `contract:`, `safety_framework:`)
 - Level 2: Subsection existence (e.g., `contract.inputs`, `safety_framework.input_validation`)
-- Level 3: Multi-layer validation (e.g., testing_framework has all 4 layers)
+- Level 3: Multi-layer validation (e.g., testing_framework has all 5 layers)
 - Level 4: Cross-references (e.g., enterprise_safety_layers referenced)
 
 **Limitations**:

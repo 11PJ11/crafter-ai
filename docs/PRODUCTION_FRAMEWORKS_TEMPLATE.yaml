@@ -196,7 +196,7 @@ safety_framework:
     pass_threshold: "100% of attacks blocked (zero tolerance)"
 
 # ============================================================================
-# FRAMEWORK 3: 4-LAYER TESTING FRAMEWORK
+# FRAMEWORK 3: 5-layer TESTING FRAMEWORK
 # ============================================================================
 # Lines 315-783 from AGENT_TEMPLATE.yaml
 

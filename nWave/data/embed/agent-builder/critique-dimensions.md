@@ -18,7 +18,7 @@
 **Required Sections**:
 - Input/Output contract
 - Safety framework (validation + security)
-- 4-layer testing
+- 5-layer testing
 - Observability
 - Error recovery
 
@@ -48,7 +48,7 @@
 
 **Pattern**: Missing test layers or insufficient coverage
 
-**Required 4 Layers**:
+**Required 5 layers**:
 - Layer 1: Unit tests (agent logic)
 - Layer 2: Integration tests (dependencies)
 - Layer 3: Adversarial tests (security, edge cases)

@@ -13,7 +13,7 @@ This report validates all nWave agents against AGENT_TEMPLATE.yaml v1.2 producti
 
 1. **Contract Framework**: Input/output contract with validation
 2. **Safety Framework**: 4 validation layers + 7 enterprise security layers
-3. **Testing Framework**: All 4 layers (Unit, Integration, Adversarial Output, Adversarial Verification)
+3. **Testing Framework**: All 5 layers (Unit, Integration, Adversarial Output, Adversarial Verification)
 4. **Observability Framework**: Structured logging, metrics, alerting
 5. **Error Recovery Framework**: Retry strategies, circuit breakers, degraded mode
 6. **YAML Frontmatter**: Complete and valid (name, description, model)
@@ -68,7 +68,7 @@ This report validates all nWave agents against AGENT_TEMPLATE.yaml v1.2 producti
 - **Purpose**: Multi-layer security and safety validation
 
 ### 3. Testing Framework
-- **Required**: All 4 layers present
+- **Required**: All 5 layers present
   - Layer 1: Unit testing (output quality validation)
   - Layer 2: Integration testing (handoff validation)
   - Layer 3: Adversarial output validation (challenge output validity)

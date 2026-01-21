@@ -19,7 +19,7 @@ Successfully implemented 5 critical production frameworks across ALL 12 nWave ag
 All updated agents now include:
 1. Input/Output Contract (agent as function)
 2. Safety Framework (4 validation + 7 security layers)
-3. 4-Layer Testing Framework (unit, integration, adversarial output validation, adversarial verification)
+3. 5-layer Testing Framework (unit, integration, adversarial output validation, adversarial verification)
 4. Observability Framework (structured logging, metrics, alerting)
 5. Error Recovery Framework (retry strategies, circuit breakers, degraded mode)
 
@@ -150,7 +150,7 @@ Created Python automation script (`scripts/update-agents-production-frameworks.p
 
 ---
 
-### Framework 3: 4-Layer Testing Framework
+### Framework 3: 5-layer Testing Framework
 
 **Purpose**: Comprehensive output validation
 
@@ -297,7 +297,7 @@ Created Python automation script (`scripts/update-agents-production-frameworks.p
 
 1. **Input/Output Contract**: ~80 lines
 2. **Safety Framework**: ~95 lines
-3. **4-Layer Testing Framework**: ~95 lines
+3. **5-layer Testing Framework**: ~95 lines
 4. **Observability Framework**: ~85 lines
 5. **Error Recovery Framework**: ~95 lines
 6. **Production Readiness Validation**: ~30 lines
@@ -433,7 +433,7 @@ Created Python automation script (`scripts/update-agents-production-frameworks.p
 **Quality Gates** (must pass before production deployment):
 - ✅ 12/12 agents have complete contracts (100%)
 - ✅ 12/12 agents have safety framework (100%)
-- ✅ 12/12 agents have 4-layer testing (100%)
+- ✅ 12/12 agents have 5-layer testing (100%)
 - ✅ 12/12 agents have observability (100%)
 - ✅ 12/12 agents have error recovery (100%)
 - ⏳ 100% adversarial security tests pass (pending execution - scheduled Week 1)
@@ -480,7 +480,7 @@ Successfully transformed ALL 12 nWave agents from development prototypes to prod
 
 1. **Input/Output Contract**: Agents now have explicit function signatures
 2. **Safety Framework**: Multi-layer protection (4 validation + 7 security layers)
-3. **4-Layer Testing**: Unit, integration, adversarial output validation, peer review
+3. **5-layer Testing**: Unit, integration, adversarial output validation, peer review
 4. **Observability**: Structured logging, metrics, alerting for production monitoring
 5. **Error Recovery**: Retry strategies, circuit breakers, degraded mode for resilience
 

@@ -150,7 +150,7 @@ cat docs/NEXT_STEPS_WEEK2-3.md
 
 ### 3. Testing Framework
 **Purpose**: Comprehensive testing from unit to adversarial
-**Required**: All 4 layers (Unit, Integration, Adversarial Output, Adversarial Verification)
+**Required**: All 5 layers (Unit, Integration, Adversarial Output, Adversarial Verification)
 
 ### 4. Observability Framework
 **Purpose**: Production monitoring and debugging

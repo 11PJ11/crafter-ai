@@ -291,7 +291,7 @@ Artifact Production
 - Example: Requirements approved by independent reviewer before architecture design
 
 **Quality Assurance**: Multi-agent validation before production
-- Example: 4-layer testing (unit, integration, adversarial security, peer review)
+- Example: 5-layer testing (unit, integration, adversarial security, peer review)
 
 **Audit Trail**: Documented review process for compliance
 - Example: Review feedback, revision notes, approval timestamp traceable
@@ -417,7 +417,7 @@ Ensures test suite is comprehensive by verifying:
 
 ### Implementation Notes
 
-- Integrates with existing Layer 1-4 framework
+- Integrates with existing Layer 1-5 framework
 - Runs in CI/CD pipeline automatically after peer review
 - Generates detailed mutation analysis reports
 - Identifies weak test patterns for improvement

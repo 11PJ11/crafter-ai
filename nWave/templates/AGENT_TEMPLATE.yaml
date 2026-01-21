@@ -239,7 +239,7 @@ specialist_agent_template: |
 
       note: |
         This validates the AGENT'S security posture, NOT the quality of agent outputs.
-        Output quality validation occurs in testing_framework (Layers 1-4).
+        Output quality validation occurs in testing_framework (Layers 1-5).
 
         Agent security = Protecting the agent from attacks
         Output validation = Validating what the agent produces
@@ -314,7 +314,7 @@ specialist_agent_template: |
         layer_3_behavioral_constraints: "Enforces tool restrictions and scope boundaries"
         layer_4_continuous_monitoring: "Detects anomalous behavior patterns indicating attack attempts"
 
-  # Production Testing Framework (4 Layers) - OUTPUT VALIDATION
+  # Production Testing Framework (5 layers) - OUTPUT VALIDATION
   testing_framework:
     overview: |
       All agents require comprehensive OUTPUT testing before production deployment.
@@ -1834,7 +1834,7 @@ version_history:
   v1.2:
     date: "2025-10-03"
     changes:
-      - "P1 CRITICAL: Added comprehensive 4-layer Testing Framework"
+      - "P1 CRITICAL: Added comprehensive 5-layer Testing Framework"
       - "Layer 1: Unit Testing (artifact/code validation with agent-type adaptations)"
       - "Layer 2: Integration Testing (handoff validation between agents)"
       - "Layer 3: Adversarial Testing (security validation - injection, jailbreak, exfiltration)"
@@ -2159,7 +2159,7 @@ core_principles_comprehensive:
       description: "Multiple layers of validation, guardrails, and security measures with misevolution detection"
       rationale: "Defense in depth prevents single-point security failures"
       application:
-        - "Implement 4-layer validation (input/output/behavioral/monitoring)"
+        - "Implement 5-layer validation (input/output/behavioral/monitoring)"
         - "Configure misevolution detection for safety drift"
         - "Enable continuous monitoring with alerting"
       validation: "All safety layers present and tested"
@@ -2216,7 +2216,7 @@ core_principles_comprehensive:
       validation: "Agent purpose stated in single sentence"
 
     9_four_layer_testing:
-      principle: "4-Layer Testing"
+      principle: "5-layer Testing"
       description: "Unit, Integration, Adversarial Security, Adversarial Verification (peer review for bias reduction)"
       rationale: "Comprehensive testing catches issues before production"
       application:

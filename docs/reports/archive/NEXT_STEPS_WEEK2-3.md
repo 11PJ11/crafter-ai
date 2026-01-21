@@ -13,7 +13,7 @@
 1. **Production Frameworks Added to AGENT_TEMPLATE.yaml v1.2**
    - Contract Framework: Input/output specification
    - Safety Framework: 4 validation layers + 7 enterprise security layers
-   - Testing Framework: 4-layer testing (Unit, Integration, Adversarial Output, Adversarial Verification)
+   - Testing Framework: 5-layer testing (Unit, Integration, Adversarial Output, Adversarial Verification)
    - Observability Framework: Structured logging, metrics, alerting
    - Error Recovery Framework: Retry, circuit breakers, degraded mode
 

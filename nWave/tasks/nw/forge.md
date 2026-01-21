@@ -6,7 +6,7 @@
 
 ## Overview
 
-Execute agent creation using AGENT_TEMPLATE.yaml with comprehensive safety frameworks, 4-layer testing, structured observability, and production-grade error recovery.
+Execute agent creation using AGENT_TEMPLATE.yaml with comprehensive safety frameworks, 5-layer testing, structured observability, and production-grade error recovery.
 
 Creates production-ready agents using 7 research-validated design patterns, 14 evidence-based core principles, comprehensive safety (4 validation + 7 security layers), and complete production frameworks.
 
@@ -44,7 +44,7 @@ Refer to Sage's quality gates in nWave/agents/agent-builder.md.
 - [ ] AGENT_TEMPLATE.yaml compliance verified
 - [ ] Design pattern from template's 7 validated patterns
 - [ ] Safety framework complete (4 validation + 7 security layers)
-- [ ] Testing framework complete (4-layer testing)
+- [ ] Testing framework complete (5-layer testing)
 - [ ] Observability operational (logging, metrics, alerting)
 - [ ] Error recovery resilient (retry, circuit breakers, degraded mode)
 

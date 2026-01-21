@@ -393,7 +393,7 @@ contract:
     directory_creation_failure:
       action: "Request user permission, provide alternative output location"
 
-# Safety Framework (4-Layer + 7-Layer Enterprise)
+# Safety Framework (5-layer + 7-Layer Enterprise)
 safety_framework:
   layer_1_input_validation:
     - "Validate research topic is non-empty and specific"
@@ -463,7 +463,7 @@ safety_framework:
 <!-- Content will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 
-# Testing Framework (4-Layer)
+# Testing Framework (5-layer)
 testing_framework:
   layer_1_unit_testing:
     research_output_validation:
@@ -871,7 +871,7 @@ production_readiness:
   frameworks_implemented:
     - contract: "✅ Input/Output Contract defined"
     - safety: "✅ Safety Framework (4 validation + 7 security layers)"
-    - testing: "✅ 4-Layer Testing Framework"
+    - testing: "✅ 5-layer Testing Framework"
     - observability: "✅ Observability (logging, metrics, alerting)"
     - error_recovery: "✅ Error Recovery (retries, circuit breakers, degraded mode)"
 

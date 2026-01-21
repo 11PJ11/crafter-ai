@@ -7,7 +7,7 @@
 
 This document defines P1-CRITICAL improvements to the nWave AGENT_TEMPLATE.yaml framework, adding production-grade reliability through comprehensive testing, monitoring, and error recovery capabilities. These improvements apply **universally to all agent types** (coding and non-coding) while adapting implementation methods to agent output types.
 
-### Key Innovation: 4-Layer Testing Framework
+### Key Innovation: 5-layer Testing Framework
 
 We introduce a novel **4th layer: Adversarial Verification** (peer review by equal agent) to reduce confirmation bias and improve output quality—going beyond traditional security-focused adversarial testing.
 
@@ -20,7 +20,7 @@ We introduce a novel **4th layer: Adversarial Verification** (peer review by equ
 - Orchestrator agents (workflow coordinators)
 
 **Framework components**:
-1. **Testing Framework** (4 layers: unit, integration, adversarial security, adversarial verification)
+1. **Testing Framework** (5 layers: unit, integration, adversarial security, adversarial verification)
 2. **Observability & Monitoring** (structured logging, domain-specific metrics, alerting, dashboards)
 3. **Error Recovery & Resilience** (retry strategies, circuit breakers, degraded mode, fail-safe defaults)
 
@@ -60,7 +60,7 @@ On error, agents must:
 
 ---
 
-## Testing Framework (4 Layers)
+## Testing Framework (5 layers)
 
 ### Layer 1: Unit Testing
 
@@ -1042,7 +1042,7 @@ team to complete requirements before finalizing architecture.
 
 The P1 improvements transform AGENT_TEMPLATE.yaml from a solid foundation into a **production-grade framework** suitable for enterprise deployment. By introducing universal patterns with agent-type-specific adaptations, we enable ALL agents (coding and non-coding) to achieve:
 
-- **Comprehensive testing** (4 layers including novel peer review)
+- **Comprehensive testing** (5 layers including novel peer review)
 - **Production observability** (structured logging, domain metrics, alerting)
 - **Graceful error handling** (retry, circuit breaking, degradation)
 

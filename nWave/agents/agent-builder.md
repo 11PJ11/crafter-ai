@@ -59,7 +59,7 @@ persona:
     - Safety-First Architecture - Multiple layers of validation, guardrails, and security measures with misevolution detection
     - Specification Compliance - Strict adherence to defined standards and templates
     - Single Responsibility - Each agent has one clear, focused purpose
-    - 4-Layer Testing - Unit (output quality), Integration (handoffs), Adversarial Output Validation (challenge output validity), Adversarial Verification (peer review for bias reduction)
+    - 5-layer Testing - Unit (output quality), Integration (handoffs), Adversarial Output Validation (challenge output validity), Adversarial Verification (peer review for bias reduction)
     - Defense in Depth - 7-layer enterprise security framework (Identity, Guardrails, Evaluations, Adversarial, Data Protection, Monitoring, Governance)
     - Least Privilege Principle - Grant only necessary tools and capabilities
     - Continuous Validation - Real-time monitoring with measurable metrics, not just pre-deployment
@@ -141,7 +141,7 @@ pipeline:
     inputs: [agent_specification, test_requirements, embedded_AGENT_TEMPLATE]
     outputs: [test_suite, validation_results, quality_report]
     guidance:
-      - "CRITICAL: Implement template testing_framework 4-layer approach (lines 235-531)"
+      - "CRITICAL: Implement template testing_framework 5-layer approach (lines 235-531)"
       - "Layer 1: Unit tests with agent-type-specific validation (document/code/tool adaptations)"
       - "Layer 2: Integration tests for handoff validation between agents"
       - "Layer 3: Adversarial output validation (challenge output validity: source verification, bias detection, edge cases, security in OUTPUT)"
@@ -590,8 +590,8 @@ validation_rules:
     frameworks_integration:
       required_frameworks:
         - "contract: Input/Output specification"
-        - "safety_framework: 4-layer validation + 7-layer security"
-        - "testing_framework: 4-layer quality assurance"
+        - "safety_framework: 5-layer validation + 7-layer security"
+        - "testing_framework: 5-layer quality assurance"
         - "observability_framework: Logging, metrics, alerting"
         - "error_recovery_framework: Retries, circuit breakers, degraded mode"
       validation: "All five frameworks must be present and documented"
@@ -658,7 +658,7 @@ validation_rules:
 
     safety_framework_depth:
       requirements:
-        - "4-layer validation framework implemented"
+        - "5-layer validation framework implemented"
         - "7-layer security enterprise architecture"
         - "Continuous monitoring for safety alignment"
         - "Adversarial testing suite defined"
@@ -670,7 +670,7 @@ validation_rules:
         - "Layer 2: Integration testing for handoffs"
         - "Layer 3: Adversarial output validation"
         - "Layer 4: Adversarial verification with peer review"
-      validation: "All 4 layers must be testable and measurable"
+      validation: "All 5 layers must be testable and measurable"
 
     observability_integration:
       requirements:
@@ -813,7 +813,7 @@ agent_creation_compliance_checklist:
 
       safety_framework:
         items:
-          - "[  ] 4-layer validation implemented (schema, sanitization, contextual, security)"
+          - "[  ] 5-layer validation implemented (schema, sanitization, contextual, security)"
           - "[  ] Output filtering rules specified (LLM, rules-based, relevance, classification)"
           - "[  ] Tool restrictions with least privilege applied"
           - "[  ] Behavioral constraints and scope boundaries defined"
@@ -1236,7 +1236,7 @@ safety_framework:
 
 
 # ============================================================================
-# PRODUCTION FRAMEWORK 3: 4-LAYER TESTING FRAMEWORK
+# PRODUCTION FRAMEWORK 3: 5-layer TESTING FRAMEWORK
 # ============================================================================
 # Comprehensive OUTPUT validation (not agent security)
 
@@ -1334,7 +1334,7 @@ testing_framework:
         Conduct comprehensive peer review for:
         1. Template compliance (YAML frontmatter, agent structure, production frameworks)
         2. Framework completeness (all 5 production frameworks implemented)
-        3. Design pattern quality (commands, dependencies, Layer 1-4 testing)
+        3. Design pattern quality (commands, dependencies, Layer 1-5 testing)
         4. Production readiness (observability, error recovery, safety)
 
         Provide structured YAML feedback with:
@@ -1502,7 +1502,7 @@ production_readiness:
   frameworks_implemented:
     - contract: "✅ Input/Output Contract defined"
     - safety: "✅ Safety Framework (4 validation + 7 security layers)"
-    - testing: "✅ 4-Layer Testing Framework"
+    - testing: "✅ 5-layer Testing Framework"
     - observability: "✅ Observability (logging, metrics, alerting)"
     - error_recovery: "✅ Error Recovery (retries, circuit breakers, degraded mode)"
 
@@ -1527,8 +1527,8 @@ The AGENT_TEMPLATE.yaml at nWave/templates/AGENT_TEMPLATE.yaml is the **single s
 - 4 agent type archetypes (Specialist/Orchestrator/Team/Tool)
 - 7 research-validated design patterns
 - 14 evidence-based core principles
-- Complete safety framework (4-layer validation + 7-layer enterprise security)
-- Complete testing framework (4-layer testing including adversarial verification)
+- Complete safety framework (5-layer validation + 7-layer enterprise security)
+- Complete testing framework (5-layer testing including adversarial verification)
 - Complete observability framework (structured logging, metrics, alerting)
 - Complete error recovery framework (retry strategies, circuit breakers, degraded mode)
 
