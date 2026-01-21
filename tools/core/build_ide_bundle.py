@@ -254,13 +254,19 @@ def setup_logging(verbose: bool = False) -> None:
     level = logging.DEBUG if verbose else logging.INFO
     format_str = "%(asctime)s - %(levelname)s - %(message)s"
 
+    handlers = [logging.StreamHandler(sys.stdout)]
+
+    # Try to add file handler, but don't fail if we can't write to it
+    try:
+        handlers.append(logging.FileHandler("build.log", mode="w"))
+    except (OSError, PermissionError):
+        # Skip file logging if we can't create the log file (e.g., CI environment)
+        pass
+
     logging.basicConfig(
         level=level,
         format=format_str,
-        handlers=[
-            logging.StreamHandler(sys.stdout),
-            logging.FileHandler("build.log", mode="w"),
-        ],
+        handlers=handlers,
     )
 
 

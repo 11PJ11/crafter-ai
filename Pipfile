@@ -40,4 +40,4 @@ validate-fast = "python scripts/local_ci.py --fast"
 validate-yaml = "python scripts/validation/validate_yaml_files.py"
 
 [requires]
-python_version = "3.12"
+python_version = "3"
