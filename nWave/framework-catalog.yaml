@@ -18,7 +18,7 @@
 # ============================================================================
 
 name: "nWave"
-version: "1.2.71"
+version: "1.2.74"
 description: "Comprehensive DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER methodology with visual architecture lifecycle management"
 author: "AI-Craft Team"
 license: "MIT"
@@ -259,7 +259,7 @@ quality_gates:
 # Knowledge base and reference materials
 # knowledge_base removed - content integrated into agent definitions
 # methodology_guide previously referenced data/bmad-kb.md (predecessor framework)
-
+reference_materials:
   atdd_patterns:
     file: "data/atdd-patterns.md"
     description: "ATDD implementation patterns and anti-patterns"

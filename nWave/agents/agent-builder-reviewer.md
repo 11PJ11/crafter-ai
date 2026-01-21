@@ -105,7 +105,6 @@ dependencies:
   data:
     - agents_reference/AGENT_QUICK_REFERENCE.md
     - agents_reference/P1_IMPROVEMENTS_DESIGN.md
-    - docs/features/framework-rationalization/04-develop/p0-01-analysis.md
 
 # ============================================================================
 # EMBEDDED KNOWLEDGE (injected at build time from embed/)

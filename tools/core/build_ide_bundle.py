@@ -266,20 +266,25 @@ def setup_logging(verbose: bool = False) -> None:
 
 def main():
     """Main entry point."""
+    # Get the project root directory (parent of tools directory)
+    tools_dir = Path(__file__).parent.parent.parent
+    default_source_dir = tools_dir / "nWave"
+    default_output_dir = tools_dir / "dist" / "ide"
+
     parser = argparse.ArgumentParser(
         description="Build nWave IDE bundles from methodology source files"
     )
     parser.add_argument(
         "--source-dir",
         type=Path,
-        default="../nWave",
-        help="Source directory containing nWave files (default: ../nWave)",
+        default=default_source_dir,
+        help=f"Source directory containing nWave files (default: {default_source_dir})",
     )
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default="../dist/ide",
-        help="Output directory for IDE bundles (default: ../dist/ide)",
+        default=default_output_dir,
+        help=f"Output directory for IDE bundles (default: {default_output_dir})",
     )
     parser.add_argument(
         "--clean", action="store_true", help="Clean output directory before build"
