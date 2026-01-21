@@ -44,8 +44,16 @@ jobs:
     - name: Run tests
       run: pipenv run python -m pytest tests/ -v
 
+    - name: Clean dist directory
+      run: |
+        python -c "import shutil; import os; shutil.rmtree('dist', ignore_errors=True); print('Cleaned dist directory')"
+      shell: bash
+
     - name: Run build
-      run: pipenv run python tools/build.py
+      run: |
+        pipenv run python tools/build.py
+      env:
+        PYTHONIOENCODING: utf-8
 
     - name: Report status
       if: always()
