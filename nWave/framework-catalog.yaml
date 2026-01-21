@@ -257,11 +257,8 @@ quality_gates:
     alistair_cockburn_skeleton: true
 
 # Knowledge base and reference materials
-knowledge_base:
-  methodology_guide:
-    file: "data/bmad-kb.md"
-    description: "Comprehensive nWave methodology knowledge base"
-    content: "atdd_patterns_technology_integration_best_practices"
+# knowledge_base removed - content integrated into agent definitions
+# methodology_guide previously referenced data/bmad-kb.md (predecessor framework)
 
   atdd_patterns:
     file: "data/atdd-patterns.md"

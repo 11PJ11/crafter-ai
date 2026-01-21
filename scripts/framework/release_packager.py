@@ -349,7 +349,7 @@ Expected output: `nWave Framework v{version}`
 
 For complete documentation, refer to:
 - Main documentation: See included `README.md`
-- Framework guide: See `nWave/data/bmad-kb.md`
+- Framework guide: See `nWave/README.md`
 - API reference: See `nWave/data/` directory
 
 ## Support

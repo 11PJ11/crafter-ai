@@ -1285,7 +1285,7 @@ team_agent_template: |
 
   ## Team Identity
   **Name**: {Team Display Name}
-  **Focus**: {team_focus}  # e.g., complete_5d_wave, greenfield_development
+  **Focus**: {team_focus}  # e.g., complete_nwave, greenfield_development
   **Scope**: {project_scope}  # e.g., standard_projects, legacy_modernization
   **Description**: {Team purpose and methodology}
 

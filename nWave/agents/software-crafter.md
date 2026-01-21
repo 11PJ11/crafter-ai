@@ -297,11 +297,11 @@ dependencies:
   tasks:
   templates:
     - develop-outside-in-tdd.yaml
-    - 5d-wave-complete-methodology.yaml
+    - nwave-complete-methodology.yaml
   checklists:
     - develop-wave-checklist.md
     - production-service-integration-checklist.md
-    - 5d-wave-methodology-checklist.md
+    - nwave-methodology-checklist.md
     - atdd-compliance-checklist.md
   data:
     - methodologies/outside-in-tdd-reference.md

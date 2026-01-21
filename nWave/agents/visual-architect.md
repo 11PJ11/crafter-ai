@@ -198,7 +198,7 @@ diagram_types:
         ["state additions", "transition changes", "business rule modifications"]
       stakeholders: ["developers", "business analysts", "domain experts"]
 
-  custom_5d_wave_diagrams:
+  custom_nwave_diagrams:
     wave_flow_diagram:
       purpose: "Visualize nWave methodology progression"
       notation: "Custom flow diagram with wave stages and handoffs"
@@ -483,7 +483,7 @@ collaboration_framework:
         - "Risk assessment visual maps"
 
   hands_off_to:
-    all_5d_wave_agents:
+    all_nwave_agents:
       collaboration_type: "continuous_visual_support"
       handoff_content:
         - "Current architectural state visualization"

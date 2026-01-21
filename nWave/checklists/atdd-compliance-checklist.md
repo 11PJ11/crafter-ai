@@ -2,7 +2,7 @@
 
 ## Overview
 
-Comprehensive validation checklist for Acceptance Test Driven Development (ATDD) methodology compliance across all 5D-Wave phases with customer-developer-tester collaboration focus and progressive complexity levels.
+Comprehensive validation checklist for Acceptance Test Driven Development (ATDD) methodology compliance across all nWave phases with customer-developer-tester collaboration focus and progressive complexity levels.
 
 ---
 

@@ -183,7 +183,7 @@ Validation checklist for DEMO wave completion focusing on production readiness v
   - User training and onboarding completed
   - User adoption metrics showing positive engagement
 
-### 5D-Wave Methodology Completion
+### nWave Methodology Completion
 
 - [ ] **Complete methodology cycle validated**
   - DISCUSS → DESIGN → DISTILL → DEVELOP → DEMO cycle completed
@@ -211,7 +211,7 @@ Validation checklist for DEMO wave completion focusing on production readiness v
 - **Stakeholder Confidence**: High confidence in system value and ongoing success
 - **Operational Readiness**: Operations team confident in system support capabilities
 - **Business Impact**: Clear evidence of positive business impact and value delivery
-- **Methodology Success**: Team and stakeholders positive about 5D-Wave methodology
+- **Methodology Success**: Team and stakeholders positive about nWave methodology
 
 ---
 
@@ -337,5 +337,5 @@ Validation checklist for DEMO wave completion focusing on production readiness v
 ### For Project Teams
 
 - Review checklist during DEMO wave execution and final retrospectives
-- Use as validation for 5D-Wave methodology completion
+- Use as validation for nWave methodology completion
 - Document lessons learned and process improvements for future projects
