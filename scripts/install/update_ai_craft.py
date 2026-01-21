@@ -382,7 +382,7 @@ Restoration Command:
             return True
 
         print()
-        print(f"{Colors.YELLOW}AI-CRAFT FRAMEWORK UPDATE{Colors.NC}")
+        print(f"{Colors.YELLOW}nWave FRAMEWORK UPDATE{Colors.NC}")
         print(f"{Colors.YELLOW}========================={Colors.NC}")
         print()
         print(f"{Colors.YELLOW}This will:{Colors.NC}")
@@ -540,7 +540,7 @@ def main():
 
         # Success message
         print()
-        updater.logger.info("🎉 AI-CRAFT FRAMEWORK UPDATE COMPLETED SUCCESSFULLY!")
+        updater.logger.info("🎉 nWave FRAMEWORK UPDATE COMPLETED SUCCESSFULLY!")
         print()
         updater.logger.info("Summary:")
         updater.logger.info("- Framework bundle built from latest source")

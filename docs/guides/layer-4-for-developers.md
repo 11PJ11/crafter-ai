@@ -1,6 +1,6 @@
 # Layer 4 for Developers
 
-**Version**: 1.4.0
+**Version**: 1.4.1
 **Date**: 2026-01-21
 **Status**: Production Ready
 
@@ -313,6 +313,83 @@ from nwave.layer1 import validate_artifact
 errors = validate_artifact(artifact)
 if errors:
     print(f"Fix these before Layer 4: {errors}")
+```
+
+---
+
+## Layer 5: Mutation Testing
+
+Layer 5 validates that your test suite effectively catches defects by introducing mutations.
+
+### Basic Mutation Test
+
+```python
+from nwave.layer5 import MutationOrchestrator
+
+orchestrator = MutationOrchestrator()
+result = orchestrator.run_mutation_tests(
+    source_path="src/checkout/",
+    test_path="tests/unit/checkout/",
+    mutation_score_threshold=0.85  # 85% minimum
+)
+
+if result.passed:
+    print(f"Mutation score: {result.score:.1%} (threshold: 85%)")
+else:
+    print(f"FAILED: {result.score:.1%} < 85%")
+    print(f"Surviving mutants: {len(result.surviving_mutants)}")
+```
+
+### TypeScript
+
+```typescript
+import { MutationOrchestrator } from '@nwave/layer5';
+
+const orchestrator = new MutationOrchestrator();
+const result = await orchestrator.runMutationTests({
+  sourcePath: 'src/checkout/',
+  testPath: 'tests/unit/checkout/',
+  mutationScoreThreshold: 0.85
+});
+
+if (result.passed) {
+  console.log(`Mutation score: ${(result.score * 100).toFixed(1)}%`);
+}
+```
+
+### Targeting Specific Mutations
+
+```python
+from nwave.layer5 import MutationOrchestrator, MutationConfig
+
+config = MutationConfig(
+    mutation_types=[
+        "arithmetic_operator",    # + → -
+        "comparison_boundary",    # < → <=
+        "boolean_literal",        # true → false
+        "return_value"            # return x → return None
+    ],
+    exclude_patterns=["**/test_*.py", "**/conftest.py"],
+    parallel_workers=4
+)
+
+result = orchestrator.run_mutation_tests(
+    source_path="src/",
+    test_path="tests/",
+    config=config
+)
+```
+
+### Analyzing Surviving Mutants
+
+```python
+for mutant in result.surviving_mutants:
+    print(f"File: {mutant.file_path}:{mutant.line_number}")
+    print(f"Type: {mutant.mutation_type}")
+    print(f"Original: {mutant.original_code}")
+    print(f"Mutated:  {mutant.mutated_code}")
+    print(f"Suggestion: Add test to detect this mutation")
+    print("---")
 ```
 
 ---

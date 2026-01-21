@@ -1,6 +1,6 @@
 # Layer 4 for Users
 
-**Version**: 1.4.0
+**Version**: 1.4.1
 **Date**: 2026-01-21
 **Status**: Production Ready
 
@@ -333,6 +333,114 @@ nwave validate-agent business-analyst-reviewer
 
 # Test reviewer without changes
 nwave test-reviewer business-analyst-reviewer --dry-run
+```
+
+---
+
+## Layer 5: Mutation Testing
+
+Layer 5 validates your test suite quality by checking if tests detect code mutations.
+
+### Quick Start
+
+```bash
+nwave mutation-test \
+  --source src/checkout/ \
+  --tests tests/unit/checkout/ \
+  --threshold 85
+```
+
+### Understanding Output
+
+```
+Running Layer 5 Mutation Testing...
+Source: src/checkout/
+Tests: tests/unit/checkout/
+
+Generating mutants... 127 mutants created
+Running tests against mutants...
+
+[████████████████████████████████████████] 127/127
+
+Results:
+  Total Mutants: 127
+  Killed: 112 (tests caught the mutation)
+  Survived: 15 (tests missed the mutation)
+
+Mutation Score: 88.2% (threshold: 85%)
+Status: PASSED ✓
+
+Surviving mutants saved to: mutations/surviving_mutants.yaml
+```
+
+### Interpreting Mutation Score
+
+| Score | Quality | Action |
+|-------|---------|--------|
+| ≥ 90% | Excellent | Tests are comprehensive |
+| 85-89% | Good | Meets threshold, minor gaps |
+| 70-84% | Fair | Add tests for surviving mutants |
+| < 70% | Poor | Significant test gaps exist |
+
+### Viewing Surviving Mutants
+
+```bash
+cat mutations/surviving_mutants.yaml
+```
+
+```yaml
+surviving_mutants:
+  - file: src/checkout/cart.py
+    line: 45
+    type: arithmetic_operator
+    original: "total = subtotal + tax"
+    mutated: "total = subtotal - tax"
+    suggestion: "Add test verifying tax is added, not subtracted"
+
+  - file: src/checkout/discount.py
+    line: 23
+    type: comparison_boundary
+    original: "if quantity >= 10:"
+    mutated: "if quantity > 10:"
+    suggestion: "Add boundary test for exactly 10 items"
+```
+
+### Adding Tests for Survivors
+
+For each surviving mutant:
+
+1. **Read the mutation**: What code change was made?
+2. **Write a test**: Create a test that would fail if the mutation existed
+3. **Re-run**: Verify the mutant is now killed
+
+```bash
+# After adding new tests
+nwave mutation-test \
+  --source src/checkout/ \
+  --tests tests/unit/checkout/ \
+  --threshold 85
+```
+
+### Common Options
+
+```bash
+# Focus on specific mutation types
+nwave mutation-test \
+  --source src/ \
+  --tests tests/ \
+  --mutation-types arithmetic,comparison,boolean
+
+# Quick mode (fewer mutants, faster)
+nwave mutation-test \
+  --source src/ \
+  --tests tests/ \
+  --quick
+
+# Verbose output
+nwave mutation-test \
+  --source src/ \
+  --tests tests/ \
+  --verbose
 ```
 
 ---

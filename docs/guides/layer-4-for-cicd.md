@@ -1,6 +1,6 @@
 # Layer 4 for CI/CD
 
-**Version**: 1.4.0
+**Version**: 1.4.1
 **Date**: 2026-01-21
 **Status**: Production Ready
 
@@ -450,6 +450,146 @@ nwave review \
   --output-format json \
   2>/dev/null > review.json
 ```
+
+---
+
+## Layer 5: Mutation Testing in CI/CD
+
+Layer 5 validates test suite effectiveness by checking mutation detection rates.
+
+### GitHub Actions
+
+```yaml
+- name: Layer 5 Mutation Testing
+  run: |
+    nwave mutation-test \
+      --source src/ \
+      --tests tests/unit/ \
+      --threshold 85 \
+      --output-format json > mutation_results.json
+
+- name: Check mutation score
+  run: |
+    SCORE=$(jq -r '.mutation_score' mutation_results.json)
+    if (( $(echo "$SCORE < 0.85" | bc -l) )); then
+      echo "Mutation score $SCORE below 85% threshold"
+      exit 1
+    fi
+```
+
+### Complete 5-Layer Workflow
+
+```yaml
+name: nWave 5-Layer Testing
+
+on: [pull_request]
+
+jobs:
+  layer1-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: nwave test --layer 1
+
+  layer2-integration:
+    needs: layer1-unit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: nwave test --layer 2
+
+  layer3-adversarial:
+    needs: layer2-integration
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: nwave test --layer 3
+
+  layer4-peer-review:
+    needs: layer3-adversarial
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          nwave review \
+            --artifact docs/requirements/ \
+            --reviewer business-analyst-reviewer \
+            --fail-on-critical
+
+  layer5-mutation:
+    needs: layer4-peer-review
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run Mutation Tests
+        run: |
+          nwave mutation-test \
+            --source src/ \
+            --tests tests/unit/ \
+            --threshold 85 \
+            --output-format json > mutation.json
+
+      - name: Upload mutation report
+        uses: actions/upload-artifact@v3
+        with:
+          name: mutation-report
+          path: mutation.json
+```
+
+### GitLab CI
+
+```yaml
+layer5_mutation:
+  stage: test_layer5
+  image: nwave/cli:latest
+  script:
+    - nwave mutation-test \
+        --source src/ \
+        --tests tests/unit/ \
+        --threshold 85 \
+        --output-format json > mutation.json
+    - |
+      SCORE=$(jq -r '.mutation_score' mutation.json)
+      echo "Mutation Score: $SCORE"
+      if (( $(echo "$SCORE < 0.85" | bc -l) )); then
+        exit 1
+      fi
+  artifacts:
+    paths:
+      - mutation.json
+    when: always
+```
+
+### Layer 5 Metrics
+
+```yaml
+# In .nwave/layer5.yaml
+layer5:
+  mutation_testing:
+    threshold: 0.85
+    mutation_types:
+      - arithmetic_operator
+      - comparison_boundary
+      - boolean_literal
+      - return_value
+    exclude:
+      - "**/migrations/**"
+      - "**/test_*.py"
+  metrics:
+    enabled: true
+    export_to:
+      - prometheus
+```
+
+### Available Metrics
+
+| Metric | Description |
+|--------|-------------|
+| `layer5_mutation_score` | Percentage of killed mutants |
+| `layer5_mutants_total` | Total mutants generated |
+| `layer5_mutants_killed` | Mutants detected by tests |
+| `layer5_mutants_survived` | Mutants not detected |
+| `layer5_duration_seconds` | Mutation test duration |
 
 ---
 
