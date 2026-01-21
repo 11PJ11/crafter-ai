@@ -49,9 +49,37 @@ python build.py --verbose
 
 ## Architecture
 
+### Directory Structure
+
+```
+tools/
+├── README.md                 # This file
+├── build.py                  # Entry point - run this to build
+├── requirements.txt          # Python dependencies
+├── core/                     # Core build system
+│   ├── build_ide_bundle.py   # Main orchestrator
+│   ├── embed_sources.py      # Source embedding utility
+│   └── build_config.yaml.reference  # Configuration reference (not used)
+├── processors/               # Content processors
+│   ├── agent_processor.py
+│   ├── command_processor.py
+│   ├── team_processor.py
+│   └── workflow_processor.py
+└── utils/                    # Utility modules
+    ├── config_manager.py
+    ├── dependency_resolver.py
+    └── file_manager.py
+```
+
 ### Core Components
 
-#### Main Orchestrator (`build_ide_bundle.py`)
+#### Entry Point (`build.py`)
+
+- Simple wrapper that imports and runs the main builder
+- Provides clean command-line interface
+- Handles Python path setup
+
+#### Main Orchestrator (`core/build_ide_bundle.py`)
 
 - Coordinates the entire build process
 - Manages validation, preparation, and processing phases
@@ -82,22 +110,27 @@ python build.py --verbose
 
 ## Configuration
 
-### Build Configuration (`build_config.yaml`)
+### Framework Catalog (`nWave/framework-catalog.yaml`)
 
-Comprehensive configuration file controlling all aspects of the build process:
+The build system reads its configuration from `nWave/framework-catalog.yaml`, which defines:
 
 ```yaml
-build:
-  source_dir: "nWave"
-  output_dir: "dist/ide"
-  incremental: true
-  validate_dependencies: true
+version: "1.2.26"
 
-processing:
-  agents:
-    embed_dependencies: true
-    resolve_placeholders: true
-  commands:
+wave_phases:
+  - discuss
+  - design
+  - distill
+  - develop
+  - deliver
+
+agents:
+  business-analyst:
+    wave: discuss
+    role: "Requirements gathering"
+  # ... more agents
+
+commands:
     add_wave_headers: true
   teams:
     convert_to_agents: true
@@ -220,7 +253,7 @@ Options:
 ### Extending Dependency Types
 
 1. Add new type mapping in `DependencyResolver.dependency_mappings`
-2. Update `build_config.yaml` with new source directory
+2. Update `nWave/framework-catalog.yaml` with agent/command definitions
 3. Add format handling in `format_content_for_embedding()`
 
 ### Testing
