@@ -7,7 +7,7 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from nWave.validators.release_validation import (
+from scripts.framework.release_validation import (
     MissingArtifactsValidator,
     ChecksumMismatchValidator,
     VersionConflictValidator,

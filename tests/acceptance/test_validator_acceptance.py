@@ -7,10 +7,10 @@ correctly identifies violations in non-compliant command files.
 import sys
 from pathlib import Path
 
-# Add nWave validators to Python path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "nWave"))
+# Add scripts validators to Python path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from validators.command_template_validator import (
+from scripts.validation.validate_commands import (
     CommandTemplateValidator,
     SeverityLevel,
     validate_command,

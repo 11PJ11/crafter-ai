@@ -15,8 +15,8 @@ This script demonstrates all 8 steps of Phase 5:
 import sys
 from pathlib import Path
 
-from nWave.validators.release_packager import ReleasePackager
-from nWave.validators.release_validation import (
+from scripts.framework.release_packager import ReleasePackager
+from scripts.framework.release_validation import (
     MissingArtifactsValidator,
     ChecksumMismatchValidator,
     VersionConflictValidator,

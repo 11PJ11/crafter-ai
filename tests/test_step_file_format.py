@@ -14,12 +14,12 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List
 
-# Add scripts directory to Python path for module import
-scripts_dir = Path(__file__).parent.parent / "scripts"
-sys.path.insert(0, str(scripts_dir))
+# Add project root to Python path for module import
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
-# Import validation functions from validate_step_file.py
-from validate_step_file import (  # noqa: E402
+# Import validation functions from scripts/validation/validate_steps.py
+from scripts.validation.validate_steps import (  # noqa: E402
     REQUIRED_PHASES,
     validate_step_file,
     validate_phase_execution_log,

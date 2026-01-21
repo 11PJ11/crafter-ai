@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from nWave.validators.release_packager import (
+from scripts.framework.release_packager import (
     BuildValidator,
     VersionReader,
     ArchiveCreator,
