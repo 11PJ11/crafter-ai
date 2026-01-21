@@ -291,6 +291,16 @@ jobs:
         echo "Installation path detected: $install_path"
       shell: powershell
 
+    - name: Clean dist directory
+      run: |
+        if (Test-Path "dist") {
+          Remove-Item -Recurse -Force "dist"
+          echo "Cleaned dist directory"
+        } else {
+          echo "No dist directory to clean"
+        }
+      shell: powershell
+
     - name: Execute installer in dry-run mode
       run: |
         $install_path = "${{ steps.install-path.outputs.path }}"
@@ -308,7 +318,7 @@ jobs:
         }
 
         # Execute installer in dry-run mode
-        pipenv run build
+        pipenv run python tools/build.py
         echo "Dry-run validation passed without errors"
 
         # Verify filesystem not modified
@@ -320,6 +330,8 @@ jobs:
           }
         }
         echo "Filesystem integrity verified - no modifications from dry-run"
+      env:
+        PYTHONIOENCODING: utf-8
       shell: powershell
 
     - name: Report installer test status
