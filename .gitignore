@@ -1,6 +1,7 @@
 # Test and development state files
 state/
 test-results/
+.nwave/
 
 # Temporary files
 *.tmp
