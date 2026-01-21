@@ -4,8 +4,8 @@
   "description": "nWave Framework - Open Source Publication",
   "type": "module",
   "scripts": {
-    "test": "echo 'Running acceptance tests with Gherkin/Cucumber' && exit 1",
-    "build": "echo 'Building nWave framework' && exit 0"
+    "test": "python3 -m pytest tests/ -v || python -m pytest tests/ -v",
+    "build": "python3 tools/build.py || python tools/build.py"
   },
   "keywords": [
     "nwave",
