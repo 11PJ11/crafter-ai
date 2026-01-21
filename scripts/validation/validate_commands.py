@@ -13,6 +13,7 @@ from typing import List, Dict, Optional, Tuple
 
 class SeverityLevel(Enum):
     """Severity classification for validation violations."""
+
     BLOCKER = "BLOCKER"
     CRITICAL = "CRITICAL"
     MAJOR = "MAJOR"
@@ -23,6 +24,7 @@ class SeverityLevel(Enum):
 @dataclass
 class ValidationViolation:
     """Represents a single validation violation."""
+
     category: str
     severity: SeverityLevel
     message: str
@@ -34,6 +36,7 @@ class ValidationViolation:
 @dataclass
 class SizeMetrics:
     """Command file size metrics."""
+
     total_lines: int
     content_lines: int
     violation_factor: float
@@ -44,6 +47,7 @@ class SizeMetrics:
 @dataclass
 class ValidationResult:
     """Complete validation result for a command file."""
+
     command_file: str
     compliance_status: str = "NOT_EVALUATED"  # COMPLIANT, NON_COMPLIANT, BLOCKED
     violations: List[ValidationViolation] = field(default_factory=list)
@@ -62,8 +66,10 @@ class ValidationResult:
 
     def has_critical_violations(self) -> bool:
         """Check if any CRITICAL violations exist."""
-        return any(v.severity in (SeverityLevel.BLOCKER, SeverityLevel.CRITICAL)
-                  for v in self.violations)
+        return any(
+            v.severity in (SeverityLevel.BLOCKER, SeverityLevel.CRITICAL)
+            for v in self.violations
+        )
 
 
 class CommandTemplateValidator:
@@ -76,45 +82,42 @@ class CommandTemplateValidator:
     MAJOR_THRESHOLD = 500
 
     # Anti-pattern detection patterns
-    PROCEDURAL_STEP_PATTERN = re.compile(r'^\s*(?:STEP|Step)\s+\d+:', re.MULTILINE)
+    PROCEDURAL_STEP_PATTERN = re.compile(r"^\s*(?:STEP|Step)\s+\d+:", re.MULTILINE)
     PROGRESS_TRACKING_PATTERN = re.compile(
-        r'(?:phase|state|status|tracking).*?:.*?(?:PENDING|IN_PROGRESS|COMPLETED)',
-        re.IGNORECASE
+        r"(?:phase|state|status|tracking).*?:.*?(?:PENDING|IN_PROGRESS|COMPLETED)",
+        re.IGNORECASE,
     )
     ORCHESTRATION_PATTERN = re.compile(
-        r'(?:coordinator|orchestrator|orchestration|orchestrate)',
-        re.IGNORECASE
+        r"(?:coordinator|orchestrator|orchestration|orchestrate)", re.IGNORECASE
     )
     PARAMETER_PARSING_PATTERN = re.compile(
-        r'(?:extract|parse|parse.*parameter|validate.*parameter)',
-        re.IGNORECASE
+        r"(?:extract|parse|parse.*parameter|validate.*parameter)", re.IGNORECASE
     )
     MEASUREMENT_PROTOCOL_PATTERN = re.compile(
-        r'(?:measurement|metric.*collection|baseline|quantitative)',
-        re.IGNORECASE
+        r"(?:measurement|metric.*collection|baseline|quantitative)", re.IGNORECASE
     )
 
     # Required sections in command files
     REQUIRED_SECTIONS = [
-        'Agent Activation Metadata',
-        'Task Header',
-        'Context Files',
-        'Agent Invocation',
-        'Success Criteria',
-        'ORCHESTRATOR BRIEFING'
+        "Agent Activation Metadata",
+        "Task Header",
+        "Context Files",
+        "Agent Invocation",
+        "Success Criteria",
+        "ORCHESTRATOR BRIEFING",
     ]
 
     def __init__(self, command_file_path: str):
         """Initialize validator with command file path."""
         self.command_file_path = Path(command_file_path)
         self.content = self._load_file()
-        self.lines = self.content.split('\n')
+        self.lines = self.content.split("\n")
 
     def _load_file(self) -> str:
         """Load command file content."""
         if not self.command_file_path.exists():
             raise FileNotFoundError(f"Command file not found: {self.command_file_path}")
-        return self.command_file_path.read_text(encoding='utf-8')
+        return self.command_file_path.read_text(encoding="utf-8")
 
     def validate(self) -> ValidationResult:
         """Run complete validation workflow."""
@@ -178,7 +181,7 @@ class CommandTemplateValidator:
             content_lines=content_lines,
             violation_factor=violation_factor,
             category=category,
-            within_range=within_range
+            within_range=within_range,
         )
 
     def _validate_structure(self) -> List[ValidationViolation]:
@@ -186,27 +189,35 @@ class CommandTemplateValidator:
         violations = []
 
         # Check for ORCHESTRATOR BRIEFING
-        if 'ORCHESTRATOR BRIEFING' not in self.content:
-            violations.append(ValidationViolation(
-                category='structure',
-                severity=SeverityLevel.BLOCKER,
-                message='ORCHESTRATOR BRIEFING section is missing (mandatory)',
-                remediation='Add ORCHESTRATOR BRIEFING section with subagent constraints'
-            ))
+        if "ORCHESTRATOR BRIEFING" not in self.content:
+            violations.append(
+                ValidationViolation(
+                    category="structure",
+                    severity=SeverityLevel.BLOCKER,
+                    message="ORCHESTRATOR BRIEFING section is missing (mandatory)",
+                    remediation="Add ORCHESTRATOR BRIEFING section with subagent constraints",
+                )
+            )
 
         # Check for minimal required sections
-        for section in self.REQUIRED_SECTIONS[:-1]:  # Exclude ORCHESTRATOR BRIEFING (already checked)
+        for section in self.REQUIRED_SECTIONS[
+            :-1
+        ]:  # Exclude ORCHESTRATOR BRIEFING (already checked)
             if section.lower() not in self.content.lower():
-                violations.append(ValidationViolation(
-                    category='structure',
-                    severity=SeverityLevel.WARNING,
-                    message=f'{section} section not found',
-                    remediation=f'Add {section} section'
-                ))
+                violations.append(
+                    ValidationViolation(
+                        category="structure",
+                        severity=SeverityLevel.WARNING,
+                        message=f"{section} section not found",
+                        remediation=f"Add {section} section",
+                    )
+                )
 
         return violations
 
-    def _detect_workflow_duplication(self) -> Tuple[List[ValidationViolation], Dict[str, List[str]]]:
+    def _detect_workflow_duplication(
+        self,
+    ) -> Tuple[List[ValidationViolation], Dict[str, List[str]]]:
         """Detect embedded workflows."""
         violations = []
         embedded_workflows = {}
@@ -214,59 +225,73 @@ class CommandTemplateValidator:
         # Check for procedural steps
         procedural_matches = list(self.PROCEDURAL_STEP_PATTERN.finditer(self.content))
         if len(procedural_matches) >= 5:
-            locations = [f"Line {self.content[:m.start()].count(chr(10)) + 1}"
-                         for m in procedural_matches[:3]]
-            embedded_workflows['procedural_steps'] = locations
-            violations.append(ValidationViolation(
-                category='workflow_duplication',
-                severity=SeverityLevel.BLOCKER,
-                message=f'Embedded procedural steps detected ({len(procedural_matches)} found)',
-                location=', '.join(locations),
-                remediation='Extract procedural steps to agent specification'
-            ))
+            locations = [
+                f"Line {self.content[:m.start()].count(chr(10)) + 1}"
+                for m in procedural_matches[:3]
+            ]
+            embedded_workflows["procedural_steps"] = locations
+            violations.append(
+                ValidationViolation(
+                    category="workflow_duplication",
+                    severity=SeverityLevel.BLOCKER,
+                    message=f"Embedded procedural steps detected ({len(procedural_matches)} found)",
+                    location=", ".join(locations),
+                    remediation="Extract procedural steps to agent specification",
+                )
+            )
         elif procedural_matches:
-            embedded_workflows['procedural_steps'] = [
-                f"Line {self.content[:m.start()].count(chr(10)) + 1}" for m in procedural_matches
+            embedded_workflows["procedural_steps"] = [
+                f"Line {self.content[:m.start()].count(chr(10)) + 1}"
+                for m in procedural_matches
             ]
 
         # Check for progress tracking
         progress_matches = list(self.PROGRESS_TRACKING_PATTERN.finditer(self.content))
         if progress_matches:
-            embedded_workflows['progress_tracking'] = [
-                f"Line {self.content[:m.start()].count(chr(10)) + 1}" for m in progress_matches[:3]
+            embedded_workflows["progress_tracking"] = [
+                f"Line {self.content[:m.start()].count(chr(10)) + 1}"
+                for m in progress_matches[:3]
             ]
-            violations.append(ValidationViolation(
-                category='workflow_duplication',
-                severity=SeverityLevel.WARNING,
-                message='Progress tracking state machine detected',
-                remediation='Move progress tracking to agent specification'
-            ))
+            violations.append(
+                ValidationViolation(
+                    category="workflow_duplication",
+                    severity=SeverityLevel.WARNING,
+                    message="Progress tracking state machine detected",
+                    remediation="Move progress tracking to agent specification",
+                )
+            )
 
         # Check for orchestration patterns
         orch_matches = list(self.ORCHESTRATION_PATTERN.finditer(self.content))
         if len(orch_matches) >= 3:
-            embedded_workflows['orchestration'] = [
-                f"Line {self.content[:m.start()].count(chr(10)) + 1}" for m in orch_matches[:3]
+            embedded_workflows["orchestration"] = [
+                f"Line {self.content[:m.start()].count(chr(10)) + 1}"
+                for m in orch_matches[:3]
             ]
-            violations.append(ValidationViolation(
-                category='workflow_duplication',
-                severity=SeverityLevel.BLOCKER,
-                message='Orchestration coordination logic detected',
-                remediation='Move orchestration to orchestrator agent specification'
-            ))
+            violations.append(
+                ValidationViolation(
+                    category="workflow_duplication",
+                    severity=SeverityLevel.BLOCKER,
+                    message="Orchestration coordination logic detected",
+                    remediation="Move orchestration to orchestrator agent specification",
+                )
+            )
 
         # Check for parameter parsing
         param_matches = list(self.PARAMETER_PARSING_PATTERN.finditer(self.content))
         if param_matches:
-            embedded_workflows['parameter_parsing'] = [
-                f"Line {self.content[:m.start()].count(chr(10)) + 1}" for m in param_matches[:3]
+            embedded_workflows["parameter_parsing"] = [
+                f"Line {self.content[:m.start()].count(chr(10)) + 1}"
+                for m in param_matches[:3]
             ]
-            violations.append(ValidationViolation(
-                category='workflow_duplication',
-                severity=SeverityLevel.WARNING,
-                message='Parameter parsing logic detected',
-                remediation='Move parameter extraction to command parser infrastructure'
-            ))
+            violations.append(
+                ValidationViolation(
+                    category="workflow_duplication",
+                    severity=SeverityLevel.WARNING,
+                    message="Parameter parsing logic detected",
+                    remediation="Move parameter extraction to command parser infrastructure",
+                )
+            )
 
         return violations, embedded_workflows
 
@@ -276,14 +301,16 @@ class CommandTemplateValidator:
 
         # Check if command is thin (primarily metadata)
         # Commands should mostly contain YAML and brief descriptions
-        code_blocks = len(re.findall(r'```', self.content))
+        code_blocks = len(re.findall(r"```", self.content))
         if code_blocks > 2:
-            violations.append(ValidationViolation(
-                category='delegation',
-                severity=SeverityLevel.MAJOR,
-                message='Excessive code blocks in command file (should be in agent)',
-                remediation='Move code examples to agent specification'
-            ))
+            violations.append(
+                ValidationViolation(
+                    category="delegation",
+                    severity=SeverityLevel.MAJOR,
+                    message="Excessive code blocks in command file (should be in agent)",
+                    remediation="Move code examples to agent specification",
+                )
+            )
 
         return violations
 
@@ -293,16 +320,27 @@ class CommandTemplateValidator:
 
         # Check for explicit context definition with section header and file paths
         # Must have "Context Files" section with explicit file paths
-        has_context_section = re.search(r'##\s+Context Files', self.content, re.IGNORECASE) is not None
-        has_file_paths = re.search(r'^-\s+[a-zA-Z0-9_\-./]+\.(md|yaml|yml|json)', self.content, re.MULTILINE) is not None
+        has_context_section = (
+            re.search(r"##\s+Context Files", self.content, re.IGNORECASE) is not None
+        )
+        has_file_paths = (
+            re.search(
+                r"^-\s+[a-zA-Z0-9_\-./]+\.(md|yaml|yml|json)",
+                self.content,
+                re.MULTILINE,
+            )
+            is not None
+        )
 
         if not (has_context_section and has_file_paths):
-            violations.append(ValidationViolation(
-                category='context_bundling',
-                severity=SeverityLevel.WARNING,
-                message='No explicit context file definition found',
-                remediation='Add explicit context files list (Context Files Section)'
-            ))
+            violations.append(
+                ValidationViolation(
+                    category="context_bundling",
+                    severity=SeverityLevel.WARNING,
+                    message="No explicit context file definition found",
+                    remediation="Add explicit context files list (Context Files Section)",
+                )
+            )
 
         return violations
 
@@ -311,13 +349,15 @@ class CommandTemplateValidator:
         violations = []
 
         # Check for proper invocation pattern (@agent-id or Skill tool)
-        if '@' not in self.content and 'Skill' not in self.content:
-            violations.append(ValidationViolation(
-                category='invocation_pattern',
-                severity=SeverityLevel.WARNING,
-                message='No clear agent invocation pattern found',
-                remediation='Use @agent-id or Skill tool invocation pattern'
-            ))
+        if "@" not in self.content and "Skill" not in self.content:
+            violations.append(
+                ValidationViolation(
+                    category="invocation_pattern",
+                    severity=SeverityLevel.WARNING,
+                    message="No clear agent invocation pattern found",
+                    remediation="Use @agent-id or Skill tool invocation pattern",
+                )
+            )
 
         return violations
 
@@ -360,9 +400,14 @@ class CommandTemplateValidator:
                 )
 
         # Violation feedback
-        for violation in sorted(result.violations,
-                               key=lambda v: (v.severity.value, v.category)):
-            severity_icon = "✗" if violation.severity in (SeverityLevel.BLOCKER, SeverityLevel.CRITICAL) else "⚠"
+        for violation in sorted(
+            result.violations, key=lambda v: (v.severity.value, v.category)
+        ):
+            severity_icon = (
+                "✗"
+                if violation.severity in (SeverityLevel.BLOCKER, SeverityLevel.CRITICAL)
+                else "⚠"
+            )
             feedback.append(
                 f"{severity_icon} [{violation.severity.value}] {violation.message}"
             )
@@ -378,37 +423,37 @@ class CommandTemplateValidator:
         """Format validation result as human-readable report."""
         lines = [
             "=" * 70,
-            f"COMMAND TEMPLATE VALIDATION REPORT",
+            "COMMAND TEMPLATE VALIDATION REPORT",
             f"File: {result.command_file}",
             f"Status: {result.compliance_status}",
             f"Approval: {result.approval_decision}",
             "=" * 70,
-            ""
+            "",
         ]
 
         if result.size_metrics:
-            lines.extend([
-                "SIZE METRICS:",
-                f"  Total lines: {result.size_metrics.total_lines}",
-                f"  Content lines: {result.size_metrics.total_lines}",
-                f"  Category: {result.size_metrics.category}",
-                f"  Violation factor: {result.size_metrics.violation_factor:.2f}x",
-                ""
-            ])
+            lines.extend(
+                [
+                    "SIZE METRICS:",
+                    f"  Total lines: {result.size_metrics.total_lines}",
+                    f"  Content lines: {result.size_metrics.total_lines}",
+                    f"  Category: {result.size_metrics.category}",
+                    f"  Violation factor: {result.size_metrics.violation_factor:.2f}x",
+                    "",
+                ]
+            )
 
         if result.embedded_workflows:
-            lines.extend([
-                "EMBEDDED WORKFLOWS DETECTED:",
-                *[f"  - {k}: {v}" for k, v in result.embedded_workflows.items()],
-                ""
-            ])
+            lines.extend(
+                [
+                    "EMBEDDED WORKFLOWS DETECTED:",
+                    *[f"  - {k}: {v}" for k, v in result.embedded_workflows.items()],
+                    "",
+                ]
+            )
 
         if result.violations:
-            lines.extend([
-                "VIOLATIONS:",
-                *[f"  {fb}" for fb in result.feedback],
-                ""
-            ])
+            lines.extend(["VIOLATIONS:", *[f"  {fb}" for fb in result.feedback], ""])
         else:
             lines.extend(result.feedback + [""])
 
