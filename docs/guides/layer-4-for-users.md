@@ -1,12 +1,12 @@
 # Layer 4 for Users
 
-**Version**: 1.2.81
+**Version**: 1.4.0
 **Date**: 2026-01-21
 **Status**: Production Ready
 
 Manual review workflows via CLI and interactive mode.
 
-**Prerequisites**: ai-craft CLI installed.
+**Prerequisites**: nwave CLI installed.
 
 **Related Docs**:
 - [API Reference](../reference/layer-4-api-reference.md) (contracts)
@@ -20,7 +20,7 @@ Manual review workflows via CLI and interactive mode.
 Request a peer review:
 
 ```bash
-ai-craft review \
+nwave review \
   --artifact docs/requirements/requirements.md \
   --reviewer business-analyst-reviewer \
   --interactive
@@ -33,7 +33,7 @@ ai-craft review \
 ### Step 1: Run Review Command
 
 ```bash
-ai-craft review \
+nwave review \
   --artifact docs/requirements/requirements.md \
   --reviewer business-analyst-reviewer \
   --interactive
@@ -57,7 +57,7 @@ Review saved to: reviews/rev_20251006_152330_requirements.yaml
 Next Steps:
 1. Review feedback: cat reviews/rev_20251006_152330_requirements.yaml
 2. Address critical and high issues
-3. Re-submit: ai-craft review --artifact docs/requirements/requirements.md --iteration 2
+3. Re-submit: nwave review --artifact docs/requirements/requirements.md --iteration 2
 ```
 
 ---
@@ -68,13 +68,13 @@ Focus review on specific areas:
 
 ```bash
 # Review only for bias detection
-ai-craft review \
+nwave review \
   --artifact docs/requirements/requirements.md \
   --reviewer business-analyst-reviewer \
   --dimensions bias
 
 # Review for completeness and testability
-ai-craft review \
+nwave review \
   --artifact docs/requirements/requirements.md \
   --reviewer business-analyst-reviewer \
   --dimensions completeness,testability
@@ -96,7 +96,7 @@ ai-craft review \
 Let the CLI guide you through options:
 
 ```bash
-ai-craft review --interactive
+nwave review --interactive
 ```
 
 **Prompts**:
@@ -178,7 +178,7 @@ vim docs/requirements/requirements.md
 ### Step 2: Re-Submit (Iteration 2)
 
 ```bash
-ai-craft review \
+nwave review \
   --artifact docs/requirements/requirements.md \
   --reviewer business-analyst-reviewer \
   --iteration 2 \
@@ -244,7 +244,7 @@ Before handing off to the next wave:
 
 ```bash
 # After DISCUSS wave, before DESIGN
-ai-craft review \
+nwave review \
   --artifact docs/requirements/requirements.md \
   --reviewer business-analyst-reviewer \
   --fail-on-critical
@@ -255,7 +255,7 @@ ai-craft review \
 Fast check for common biases:
 
 ```bash
-ai-craft review \
+nwave review \
   --artifact docs/architecture/architecture.md \
   --reviewer solution-architect-reviewer \
   --dimensions bias \
@@ -267,7 +267,7 @@ ai-craft review \
 Comprehensive review of all dimensions:
 
 ```bash
-ai-craft review \
+nwave review \
   --artifact docs/requirements/requirements.md \
   --reviewer business-analyst-reviewer \
   --dimensions bias,completeness,clarity,testability \
@@ -285,13 +285,13 @@ ai-craft review \
 **Fix**:
 ```bash
 # Check available reviewers
-ls -1 $AI_CRAFT_REVIEWERS_DIR/
+ls -1 $NWAVE_REVIEWERS_DIR/
 
 # Verify specific reviewer
-cat $AI_CRAFT_REVIEWERS_DIR/business-analyst-reviewer.md
+cat $NWAVE_REVIEWERS_DIR/business-analyst-reviewer.md
 
 # Re-install if missing
-./scripts/install-ai-craft.sh
+./scripts/install-nwave.sh
 ```
 
 ### Review Takes Too Long
@@ -301,7 +301,7 @@ cat $AI_CRAFT_REVIEWERS_DIR/business-analyst-reviewer.md
 **Fix**:
 ```bash
 export REVIEWER_TIMEOUT_SECONDS="600"  # 10 minutes
-ai-craft review --artifact ...
+nwave review --artifact ...
 ```
 
 ### No Feedback Returned
@@ -310,7 +310,7 @@ ai-craft review --artifact ...
 
 **Fix**: Use verbose mode:
 ```bash
-ai-craft review \
+nwave review \
   --artifact docs/requirements/requirements.md \
   --reviewer business-analyst-reviewer \
   --verbose \
@@ -323,16 +323,16 @@ ai-craft review \
 
 ```bash
 # Enable verbose logging
-ai-craft review --artifact ... --verbose --debug
+nwave review --artifact ... --verbose --debug
 
 # Check Layer 4 status
-ai-craft status --layer 4
+nwave status --layer 4
 
 # Validate reviewer agent
-ai-craft validate-agent business-analyst-reviewer
+nwave validate-agent business-analyst-reviewer
 
 # Test reviewer without changes
-ai-craft test-reviewer business-analyst-reviewer --dry-run
+nwave test-reviewer business-analyst-reviewer --dry-run
 ```
 
 ---

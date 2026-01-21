@@ -761,7 +761,7 @@ Description: Represents "fresh air" against "typical literary treatment of mothe
   - Medium-High confidence: 25% (craft patterns from multiple reader confirmations)
   - Medium confidence: 15% (single-source observations, subjective assessments)
 - **Primary Limitation**: No access to actual published text for direct analysis
-- **Output File**: `/mnt/c/Repositories/Projects/ai-craft/data/research/narrative-craft/titania-blesh-comprehensive-research.md`
+- **Output File**: `/mnt/c/Repositories/Projects/nwave/data/research/narrative-craft/titania-blesh-comprehensive-research.md`
 
 ---
 
@@ -769,7 +769,7 @@ Description: Represents "fresh air" against "typical literary treatment of mothe
 
 **Status**: COMPREHENSIVE RESEARCH COMPLETE
 
-**Supersedes**: `/mnt/c/Repositories/Projects/ai-craft/data/research/narrative-craft/titania-blesh-addendum.md`
+**Supersedes**: `/mnt/c/Repositories/Projects/nwave/data/research/narrative-craft/titania-blesh-addendum.md`
 
 **Integration Recommendation**: This standalone comprehensive research document can be:
 1. Referenced independently for Titania Blesh style analysis

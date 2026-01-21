@@ -813,4 +813,4 @@ Based on research findings, a documentarian agent should:
   - Medium confidence (2 sources): 14%
   - Medium-low confidence (documented recommendation): 1%
 - **Knowledge Gaps**: Limited quantitative outcome metrics; incomplete implementation documentation; tool-specific vendor guidelines
-- **Output File**: /mnt/c/Repositories/Projects/ai-craft/data/research/divio-system-comprehensive-research.md
+- **Output File**: /mnt/c/Repositories/Projects/nwave/data/research/divio-system-comprehensive-research.md

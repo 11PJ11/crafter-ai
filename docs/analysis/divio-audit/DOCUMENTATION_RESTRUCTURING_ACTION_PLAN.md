@@ -1,6 +1,6 @@
 # Documentation Restructuring Action Plan
 
-**Version**: 1.2.81
+**Version**: 1.4.0
 **Date**: 2026-01-21
 **Priority**: CRITICAL
 **Scope**: Eliminate DIVIO collapse patterns in 3 files
@@ -88,7 +88,7 @@ Current document serves three incompatible user needs:
 **Content** (Source from current lines 30-65, 436-477):
 - Reviewer agents table (12 agents with persona, focus)
 - Agent role descriptions
-- Configuration reference (.ai-craft/layer4.yaml)
+- Configuration reference (.nwave/layer4.yaml)
 - Environment variables
 - API/command contracts (move from LAYER_4_INTEGRATION_GUIDE.md)
 - Quick reference for each reviewer type
@@ -104,7 +104,7 @@ Current document serves three incompatible user needs:
 
 2. Configuration Reference
    ├─ Environment variables
-   ├─ .ai-craft/layer4.yaml schema
+   ├─ .nwave/layer4.yaml schema
    ├─ Example configuration
    └─ Defaults and overrides
 
@@ -197,7 +197,7 @@ Current document serves four incompatible audiences:
 | DevOps | Pipeline YAML (how-to) + configuration (reference) | Mixed with developer code |
 | All | Error handling, contracts, configuration (reference) | Scattered throughout |
 
-**Problem**: Developer looking for `ReviewRequest` interface finds CLI commands. User looking for `ai-craft review` command finds Python code.
+**Problem**: Developer looking for `ReviewRequest` interface finds CLI commands. User looking for `nwave review` command finds Python code.
 
 ### Solution: Create 4 Documents
 
@@ -214,7 +214,7 @@ Current document serves four incompatible audiences:
 - ReviewCriteria interface
 - Error types and exceptions
 - Environment variables (complete list)
-- Configuration file (.ai-craft/layer4.yaml) schema
+- Configuration file (.nwave/layer4.yaml) schema
 - Default values and overrides
 
 **Structure**:
@@ -239,7 +239,7 @@ Current document serves four incompatible audiences:
 
 4. Configuration
    ├─ Environment Variables
-   ├─ .ai-craft/layer4.yaml Schema
+   ├─ .nwave/layer4.yaml Schema
    ├─ Configuration Examples
    └─ Default Values
 

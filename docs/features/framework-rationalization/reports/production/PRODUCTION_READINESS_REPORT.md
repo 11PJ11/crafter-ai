@@ -1,4 +1,4 @@
-# AI-Craft Framework - Production Readiness Report
+# nWave Framework - Production Readiness Report
 
 **Framework Version**: 2.0
 **Report Date**: 2025-10-06
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-All 12 AI-Craft agents have achieved **100% production readiness** with complete framework compliance, Claude Code integration, and comprehensive adversarial testing infrastructure deployed.
+All 12 nWave agents have achieved **100% production readiness** with complete framework compliance, Claude Code integration, and comprehensive adversarial testing infrastructure deployed.
 
 ### Key Achievements
 
@@ -319,7 +319,7 @@ The software-crafter agent received production-proven enhancements based on real
 
 ## Conclusion
 
-The AI-Craft Framework has achieved **100% production readiness** across all 12 agents with comprehensive framework compliance, robust security infrastructure, and validated adversarial testing capabilities.
+The nWave Framework has achieved **100% production readiness** across all 12 agents with comprehensive framework compliance, robust security infrastructure, and validated adversarial testing capabilities.
 
 **Key Success Metrics**:
 
@@ -339,5 +339,5 @@ The AI-Craft Framework has achieved **100% production readiness** across all 12 
 ---
 
 **Report Generated**: 2025-10-06
-**Framework Architect**: AI-Craft Team
+**Framework Architect**: nWave Team
 **Validation Status**: COMPLETE

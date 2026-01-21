@@ -237,7 +237,7 @@ Your specific role for this command: Provide expert critique and quality assuran
 
 Task type: review
 
-Perform a comprehensive task review of: /mnt/c/Repositories/Projects/ai-craft/docs/feature/auth-upgrade/steps/02-01.json
+Perform a comprehensive task review of: /mnt/c/Repositories/Projects/nwave/docs/feature/auth-upgrade/steps/02-01.json
 
 [... rest of instructions ...]"
 ```
@@ -250,7 +250,7 @@ Your specific role for this command: Provide expert critique and quality assuran
 
 Task type: review
 
-Perform a comprehensive roadmap review of: /mnt/c/Repositories/Projects/ai-craft/docs/feature/auth-upgrade/roadmap.yaml
+Perform a comprehensive roadmap review of: /mnt/c/Repositories/Projects/nwave/docs/feature/auth-upgrade/roadmap.yaml
 
 [... rest of instructions ...]"
 ```

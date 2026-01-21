@@ -31,7 +31,7 @@
 ✓ **Pattern: Always use absolute paths**
 ```python
 # Correct - absolute paths
-file_path = "/mnt/c/Repositories/Projects/ai-craft/src/module.py"
+file_path = "/mnt/c/Repositories/Projects/nwave/src/module.py"
 config_path = os.path.expanduser("~/.claude/config.yaml")
 
 # Incorrect - relative paths (environment dependent)
@@ -97,7 +97,7 @@ project_root = Path(subprocess.check_output(
 import tempfile
 
 # Correct - uses system temp directory
-temp_dir = Path(tempfile.gettempdir()) / "ai-craft-cache"
+temp_dir = Path(tempfile.gettempdir()) / "nwave-cache"
 
 # Platform-specific but correct:
 # Windows: C:\Users\User\AppData\Local\Temp
@@ -188,7 +188,7 @@ def test_file_creation(test_config_dir):
 ```python
 # Correct - uses Python's built-in expansion
 config_path = Path(os.path.expanduser("~/.claude/config.yaml"))
-temp_path = Path(os.environ.get("TMPDIR", "/tmp")) / "ai-craft"
+temp_path = Path(os.environ.get("TMPDIR", "/tmp")) / "nwave"
 
 # Handles differences:
 # Windows (WSL2): Expands ~ to /home/user

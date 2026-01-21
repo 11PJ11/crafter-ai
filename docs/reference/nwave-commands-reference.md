@@ -1,6 +1,6 @@
 # nWave Commands Reference
 
-**Version**: 1.2.81
+**Version**: 1.4.0
 **Date**: 2026-01-21
 **Status**: Production Ready
 

@@ -20,7 +20,7 @@
 
 ### 1. Comprehensive Research Document
 
-**Location**: `/mnt/c/Repositories/Projects/ai-craft/data/research/architecture-patterns/residuality-theory-comprehensive-research.md`
+**Location**: `/mnt/c/Repositories/Projects/nwave/data/research/architecture-patterns/residuality-theory-comprehensive-research.md`
 
 **Size**: ~35,000 words
 
@@ -58,7 +58,7 @@
 
 ### 2. Solution-Architect Embed File
 
-**Location**: `/mnt/c/Repositories/Projects/ai-craft/nWave/data/embed/solution-architect/residuality-theory-methodology.md`
+**Location**: `/mnt/c/Repositories/Projects/nwave/nWave/data/embed/solution-architect/residuality-theory-methodology.md`
 
 **Size**: ~14,000 words
 

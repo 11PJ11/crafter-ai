@@ -1161,7 +1161,7 @@ In regulated industries (healthcare, aviation, nuclear), RCA documentation must 
 - **Sources Cited**: 52
 - **Cross-References Performed**: 156 (minimum 3 per finding)
 - **Confidence Distribution**: High: 100%
-- **Output File**: /mnt/c/Repositories/Projects/ai-craft/data/research/root-cause-analysis/comprehensive-rca-methodologies.md
+- **Output File**: /mnt/c/Repositories/Projects/nwave/data/research/root-cause-analysis/comprehensive-rca-methodologies.md
 
 ---
 

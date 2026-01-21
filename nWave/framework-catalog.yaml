@@ -18,11 +18,11 @@
 # ============================================================================
 
 name: "nWave"
-version: "1.2.81"
+version: "1.2.84"
 description: "Comprehensive DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER methodology with visual architecture lifecycle management"
-author: "AI-Craft Team"
+author: "nWave Team"
 license: "MIT"
-documentation_url: "https://github.com/your-org/ai-craft/nWave"
+documentation_url: "https://github.com/your-org/nwave/nWave"
 
 # Core methodology implementation
 methodology: "nWave"

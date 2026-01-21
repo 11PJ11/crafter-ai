@@ -224,7 +224,7 @@ Your specific role for this command: Execute atomic tasks with complete state tr
 
 Task type: execute
 
-Read and execute the atomic task specified in: /mnt/c/Repositories/Projects/ai-craft/docs/feature/auth-upgrade/steps/01-01.json
+Read and execute the atomic task specified in: /mnt/c/Repositories/Projects/nwave/docs/feature/auth-upgrade/steps/01-01.json
 
 [... rest of instructions ...]"
 ```
@@ -237,7 +237,7 @@ Your specific role for this command: Execute atomic tasks with complete state tr
 
 Task type: execute
 
-Read and execute the atomic task specified in: /mnt/c/Repositories/Projects/ai-craft/docs/feature/auth-upgrade/steps/02-01.json
+Read and execute the atomic task specified in: /mnt/c/Repositories/Projects/nwave/docs/feature/auth-upgrade/steps/02-01.json
 
 [... rest of instructions ...]"
 ```

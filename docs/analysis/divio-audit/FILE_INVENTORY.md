@@ -1,7 +1,7 @@
-# AI-Craft Documentation File Inventory
+# nWave Documentation File Inventory
 
 **Date**: 2026-01-21
-**Version**: 1.2.81
+**Version**: 1.4.0
 **Analyst**: Quill, Documentation Quality Guardian
 **Purpose**: Complete inventory of all analyzed documentation files
 
@@ -316,7 +316,7 @@ docs/
 
 ## Analyst Notes
 
-This inventory represents a comprehensive audit of all user-facing documentation in the AI-Craft project. The consolidation effort successfully:
+This inventory represents a comprehensive audit of all user-facing documentation in the nWave project. The consolidation effort successfully:
 
 1. **Identified and fixed collapse patterns** - 2 critical issues split into 5 proper documents
 2. **Organized documentation by user need** - Clear DIVIO hierarchy
@@ -332,4 +332,4 @@ The documentation is now production-ready with clear guidance for users of all b
 **Method**: DIVIO/Diataxis Framework
 **Status**: ✅ Complete and Approved
 **Date**: 2026-01-21
-**Version**: 1.2.81
+**Version**: 1.4.0

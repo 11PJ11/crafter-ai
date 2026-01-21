@@ -10,8 +10,8 @@
 #   - version_strategy: Versioning approach and comparison logic
 # =============================================================================
 
-version: "1.0.0"
-description: "Dependency tracking for nWave framework documentation consistency"
+version: "1.1.0"
+description: "Dependency tracking for nWave framework documentation consistency (5-layer testing)"
 
 # -----------------------------------------------------------------------------
 # Tracked Files

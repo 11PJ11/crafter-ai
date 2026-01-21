@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Installation Utilities for AI-Craft Framework
+Installation Utilities for nWave Framework
 
 Shared utilities for install/uninstall/update/backup scripts.
 Cross-platform compatible (Windows, Mac, Linux).
 """
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 import os
 import shutil
@@ -162,7 +162,7 @@ class PathUtils:
 
 
 class BackupManager:
-    """Manages backups for AI-Craft framework."""
+    """Manages backups for nWave framework."""
 
     def __init__(self, logger: Logger, backup_type: str = "install"):
         """
@@ -177,11 +177,11 @@ class BackupManager:
         self.claude_config_dir = PathUtils.get_claude_config_dir()
         self.backup_root = self.claude_config_dir / "backups"
         self.timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-        self.backup_dir = self.backup_root / f"ai-craft-{backup_type}-{self.timestamp}"
+        self.backup_dir = self.backup_root / f"nwave-{backup_type}-{self.timestamp}"
 
     def create_backup(self, dry_run: bool = False) -> Optional[Path]:
         """
-        Create backup of current AI-Craft installation.
+        Create backup of current nWave installation.
 
         Args:
             dry_run: If True, only simulate backup
@@ -198,7 +198,7 @@ class BackupManager:
         commands_dir = self.claude_config_dir / "commands"
 
         if not agents_dir.exists() and not commands_dir.exists():
-            self.logger.info("No existing AI-Craft installation found, skipping backup")
+            self.logger.info("No existing nWave installation found, skipping backup")
             return None
 
         self.logger.info(f"Creating backup at: {self.backup_dir}")
@@ -217,7 +217,7 @@ class BackupManager:
             self.logger.info("Backed up commands directory")
 
         # Backup config files
-        for config_file in ["ai-craft-manifest.txt", "ai-craft-install.log"]:
+        for config_file in ["nwave-manifest.txt", "nwave-install.log"]:
             src = self.claude_config_dir / config_file
             if src.exists():
                 shutil.copy2(src, self.backup_dir / config_file)
@@ -235,7 +235,7 @@ class BackupManager:
 
         files_count = sum(1 for _ in self.backup_dir.rglob("*.md"))
 
-        content = f"""AI-Craft Framework Backup
+        content = f"""nWave Framework Backup
 Created: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 Source: {self.claude_config_dir}
 Backup Type: {self.backup_type}
@@ -301,7 +301,7 @@ class ManifestWriter:
         claude_config_dir: Path, backup_dir: Optional[Path], script_dir: Path
     ):
         """Write installation manifest."""
-        manifest_path = claude_config_dir / "ai-craft-manifest.txt"
+        manifest_path = claude_config_dir / "nwave-manifest.txt"
 
         agents_count = PathUtils.count_files(claude_config_dir / "agents", "*.md")
         commands_count = PathUtils.count_files(claude_config_dir / "commands", "*.md")
@@ -310,7 +310,7 @@ class ManifestWriter:
             f"- Backup directory: {backup_dir}" if backup_dir else "- No backup created"
         )
 
-        content = f"""AI-Craft Framework Installation Manifest
+        content = f"""nWave Framework Installation Manifest
 ========================================
 Installed: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 Source: {script_dir}
@@ -376,7 +376,7 @@ Uninstall Summary:
         claude_config_dir: Path, backup_dir: Optional[Path], backup_created: bool
     ):
         """Write update report."""
-        report_path = claude_config_dir / "ai-craft-update-report.txt"
+        report_path = claude_config_dir / "nwave-update-report.txt"
 
         agents_count = PathUtils.count_files(claude_config_dir / "agents/nw", "*.md")
         commands_count = PathUtils.count_files(
@@ -400,7 +400,7 @@ Uninstall Summary:
             else ""
         )
 
-        content = f"""AI-Craft Framework Update Report
+        content = f"""nWave Framework Update Report
 ===============================
 Update Completed: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 Computer: {os.uname().nodename if hasattr(os, "uname") else "unknown"}

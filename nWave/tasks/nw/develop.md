@@ -244,17 +244,17 @@ Before executing the main phases, the orchestrator **MUST** verify and install T
 **Option A: Download and run installer script**
 
 ```bash
-# Download the installer from ai-craft repository
+# Download the installer from nwave repository
 curl -sSL https://raw.githubusercontent.com/11PJ11/crafter-ai/master/scripts/install_nwave_target_hooks.py -o install_nwave_target_hooks.py
 
 # Run the installer
 python3 install_nwave_target_hooks.py
 ```
 
-**Option B: Run directly from ai-craft installation**
+**Option B: Run directly from nwave installation**
 
 ```bash
-# If ai-craft is installed locally
+# If nwave is installed locally
 python3 ~/.claude/scripts/install_nwave_target_hooks.py
 ```
 
@@ -272,7 +272,7 @@ def check_and_update_scripts():
     scripts_dir = Path.home() / ".claude" / "scripts"
 
     # Get framework version from catalog (or from installed manifest)
-    manifest_path = Path.home() / ".claude" / "ai-craft-manifest.txt"
+    manifest_path = Path.home() / ".claude" / "nwave-manifest.txt"
     if manifest_path.exists():
         manifest = manifest_path.read_text()
         match = re.search(r'Version:\s*(\d+\.\d+\.\d+)', manifest)
@@ -300,7 +300,7 @@ def check_and_update_scripts():
         print("⚠️ Outdated scripts detected:")
         for msg in outdated:
             print(f"  - {msg}")
-        print("\n🔄 Re-run: bash ~/.claude/scripts/install-ai-craft.sh")
+        print("\n🔄 Re-run: bash ~/.claude/scripts/install-nwave.sh")
         print("   Or download latest from: https://github.com/11PJ11/crafter-ai")
         return False
 

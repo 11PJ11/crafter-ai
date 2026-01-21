@@ -428,7 +428,7 @@ jobs:
 **For end users:**
 ```bash
 # Download specific version
-curl -LO https://github.com/{org}/ai-craft/releases/download/v1.2.48/nwave-1.2.48-claude-code.zip
+curl -LO https://github.com/{org}/nwave/releases/download/v1.2.48/nwave-1.2.48-claude-code.zip
 unzip nwave-1.2.48-claude-code.zip
 cd nwave-1.2.48-claude-code
 ./install.sh
@@ -436,10 +436,10 @@ cd nwave-1.2.48-claude-code
 
 **For developers (clone and build):**
 ```bash
-git clone https://github.com/{org}/ai-craft.git
-cd ai-craft/tools
+git clone https://github.com/{org}/nwave.git
+cd nwave/tools
 python build_ide_bundle.py
-./install-ai-craft.sh --platform claude-code
+./install-nwave.sh --platform claude-code
 ```
 
 ---
@@ -584,7 +584,7 @@ Skills feature will be planned and implemented in a separate iteration after cor
 | `tools/processors/command_processor.py` | Platform-aware command generation |
 | `tools/utils/dependency_resolver.py` | Add BUILD:INCLUDE support |
 | `nWave/framework-catalog.yaml` | Add platforms configuration, update argument_hints with --output |
-| `install-ai-craft.sh` | Add --platform parameter |
+| `install-nwave.sh` | Add --platform parameter |
 
 ### Wave Command Updates (add --output parameter)
 

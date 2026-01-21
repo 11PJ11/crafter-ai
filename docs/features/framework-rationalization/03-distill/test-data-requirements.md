@@ -433,7 +433,7 @@ abc123def456...  nwave-1.2.48-claude-code.zip
 {
   "ref": "refs/tags/v1.2.49",
   "repository": {
-    "name": "ai-craft",
+    "name": "nwave",
     "owner": {
       "login": "test-org"
     }

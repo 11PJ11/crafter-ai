@@ -12,7 +12,7 @@ Your CI/CD pipeline is **not actually failing**—it's masking failures and repo
 
 **Critical Findings**:
 1. **Masked Failures**: Build script catches exceptions but doesn't propagate failures
-2. **YAML Syntax Error**: `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/agent-builder.md` line 773 has invalid YAML
+2. **YAML Syntax Error**: `/mnt/c/Repositories/Projects/nwave/nWave/agents/agent-builder.md` line 773 has invalid YAML
 3. **Dependency Resolution Failures**: Missing file references not treated as build failures
 4. **Test Pass Illusion**: All 219 tests pass, but build warnings/errors are ignored
 5. **Exit Code Deception**: `sys.exit(0)` occurs even when errors occur
@@ -71,7 +71,7 @@ grep "ERROR" /tmp/build_out.txt  # Returns: Multiple ERROR lines
 
 **Branch A: Why does YAML error not cause build failure?**
 
-Location: `/mnt/c/Repositories/Projects/ai-craft/tools/processors/agent_processor.py` lines 52-59
+Location: `/mnt/c/Repositories/Projects/nwave/tools/processors/agent_processor.py` lines 52-59
 
 ```python
 try:
@@ -91,7 +91,7 @@ The exception is caught and logged, but:
 
 **Branch B: Why doesn't error counter increment?**
 
-Location: `/mnt/c/Repositories/Projects/ai-craft/tools/core/build_ide_bundle.py` lines 117-123
+Location: `/mnt/c/Repositories/Projects/nwave/tools/core/build_ide_bundle.py` lines 117-123
 
 ```python
 for agent_file in agent_files:
@@ -112,7 +112,7 @@ The outer try/except only catches exceptions that are **raised**. But:
 
 **Branch C: Why does build exit with 0 if no errors are counted?**
 
-Location: `/mnt/c/Repositories/Projects/ai-craft/tools/core/build_ide_bundle.py` lines 208-213 and 320
+Location: `/mnt/c/Repositories/Projects/nwave/tools/core/build_ide_bundle.py` lines 208-213 and 320
 
 ```python
 def print_summary(self):
@@ -255,7 +255,7 @@ Path B (Exception Swallowed):
 This is NOT a single-cause failure. All of these must be true simultaneously:
 
 ### ROOT CAUSE 1: Invalid YAML in agent-builder.md (The Trigger)
-**File**: `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/agent-builder.md`
+**File**: `/mnt/c/Repositories/Projects/nwave/nWave/agents/agent-builder.md`
 **Lines**: 766-779
 **Problem**: Incorrect YAML structure mixing list items with inline keys
 
@@ -277,7 +277,7 @@ pre_creation_phase:
 **Evidence**: YAML parser throws `yaml.YAMLError: expected <block end>, but found '?'`
 
 ### ROOT CAUSE 2: Silent Exception Swallowing (The Mechanism)
-**File**: `/mnt/c/Repositories/Projects/ai-craft/tools/processors/agent_processor.py`
+**File**: `/mnt/c/Repositories/Projects/nwave/tools/processors/agent_processor.py`
 **Lines**: 52-59
 **Problem**: YAML error caught but not re-raised
 
@@ -290,7 +290,7 @@ except yaml.YAMLError as e:
 **Impact**: Allows process to continue as if nothing happened
 
 ### ROOT CAUSE 3: No Counter Increment (The Hidden Failure)
-**File**: `/mnt/c/Repositories/Projects/ai-craft/tools/core/build_ide_bundle.py`
+**File**: `/mnt/c/Repositories/Projects/nwave/tools/core/build_ide_bundle.py`
 **Lines**: 117-123
 **Problem**: Only catches exceptions that are raised
 
@@ -306,7 +306,7 @@ except Exception as e:
 **Impact**: Error counter stays at 0
 
 ### ROOT CAUSE 4: Exit Code Decoupling (The False Report)
-**File**: `/mnt/c/Repositories/Projects/ai-craft/tools/core/build_ide_bundle.py`
+**File**: `/mnt/c/Repositories/Projects/nwave/tools/core/build_ide_bundle.py`
 **Lines**: 208-213, 320
 **Problem**: Exit code depends only on error counter
 
@@ -371,25 +371,25 @@ sys.exit(0 if success else 1)  # ← Returns 0 when success=True
 
 **Verification 1: YAML Error Occurs**
 ```bash
-grep -n "validation:" /mnt/c/Repositories/Projects/ai-craft/nWave/agents/agent-builder.md | head -5
+grep -n "validation:" /mnt/c/Repositories/Projects/nwave/nWave/agents/agent-builder.md | head -5
 # Line 773: validation: "User must approve requirements before creation begins"
 ```
 
 **Verification 2: Exception Gets Caught and Swallowed**
 ```bash
-grep -A2 "except yaml.YAMLError" /mnt/c/Repositories/Projects/ai-craft/tools/processors/agent_processor.py
+grep -A2 "except yaml.YAMLError" /mnt/c/Repositories/Projects/nwave/tools/processors/agent_processor.py
 # Shows: logging.error(...) then return None, content
 ```
 
 **Verification 3: Exception Never Reaches Outer Handler**
 ```bash
-grep -A3 "for agent_file in agent_files:" /mnt/c/Repositories/Projects/ai-craft/tools/core/build_ide_bundle.py | grep -A3 "try:"
+grep -A3 "for agent_file in agent_files:" /mnt/c/Repositories/Projects/nwave/tools/core/build_ide_bundle.py | grep -A3 "try:"
 # Shows: try/except only catches exceptions raised
 ```
 
 **Verification 4: Error Counter Controls Exit**
 ```bash
-grep -A5 "if self.stats\[\"errors\"\] > 0:" /mnt/c/Repositories/Projects/ai-craft/tools/core/build_ide_bundle.py
+grep -A5 "if self.stats\[\"errors\"\] > 0:" /mnt/c/Repositories/Projects/nwave/tools/core/build_ide_bundle.py
 # Shows: return False only if errors > 0
 ```
 

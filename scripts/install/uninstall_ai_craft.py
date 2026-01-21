@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-AI-Craft Framework Uninstallation Script
+nWave Framework Uninstallation Script
 
 Cross-platform uninstaller for the nWave methodology framework.
-Completely removes AI-Craft framework from global Claude config directory.
+Completely removes nWave framework from global Claude config directory.
 
-Usage: python uninstall_ai_craft.py [--backup] [--force] [--dry-run] [--help]
+Usage: python uninstall_nwave.py [--backup] [--force] [--dry-run] [--help]
 """
 
 import argparse
@@ -21,11 +21,11 @@ from install_utils import (
     confirm_action,
 )
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 
-class AIUninstaller:
-    """AI-Craft framework uninstaller."""
+class NWaveUninstaller:
+    """nWave framework uninstaller."""
 
     def __init__(
         self,
@@ -46,21 +46,21 @@ class AIUninstaller:
         self.dry_run = dry_run
 
         self.claude_config_dir = PathUtils.get_claude_config_dir()
-        log_file = self.claude_config_dir / "ai-craft-uninstall.log"
+        log_file = self.claude_config_dir / "nwave-uninstall.log"
         self.logger = Logger(log_file if not dry_run else None)
 
         self.backup_manager = BackupManager(self.logger, "uninstall")
 
     def check_installation(self) -> bool:
-        """Check for existing AI-Craft installation."""
-        self.logger.info("Checking for AI-Craft installation...")
+        """Check for existing nWave installation."""
+        self.logger.info("Checking for nWave installation...")
 
         installation_found = False
 
         agents_dir = self.claude_config_dir / "agents" / "nw"
         commands_dir = self.claude_config_dir / "commands" / "nw"
-        manifest_file = self.claude_config_dir / "ai-craft-manifest.txt"
-        install_log = self.claude_config_dir / "ai-craft-install.log"
+        manifest_file = self.claude_config_dir / "nwave-manifest.txt"
+        install_log = self.claude_config_dir / "nwave-install.log"
         backups_dir = self.claude_config_dir / "backups"
 
         if agents_dir.exists():
@@ -73,23 +73,23 @@ class AIUninstaller:
 
         if manifest_file.exists():
             installation_found = True
-            self.logger.info("Found AI-Craft manifest file")
+            self.logger.info("Found nWave manifest file")
 
         if install_log.exists():
             installation_found = True
-            self.logger.info("Found AI-Craft installation logs")
+            self.logger.info("Found nWave installation logs")
 
         if backups_dir.exists():
-            ai_craft_backups = list(backups_dir.glob("ai-craft-*"))
-            if ai_craft_backups:
+            nwave_backups = list(backups_dir.glob("nwave-*"))
+            if nwave_backups:
                 installation_found = True
-                self.logger.info("Found AI-Craft backup directories")
+                self.logger.info("Found nWave backup directories")
 
         if not installation_found:
-            self.logger.info("No AI-Craft installation found")
+            self.logger.info("No nWave installation found")
             print()
             print(
-                f"{Colors.YELLOW}No AI-Craft framework installation detected.{Colors.NC}"
+                f"{Colors.YELLOW}No nWave framework installation detected.{Colors.NC}"
             )
             print(f"{Colors.YELLOW}Nothing to uninstall.{Colors.NC}")
             return False
@@ -194,14 +194,14 @@ class AIUninstaller:
                 self.logger.info("Kept commands directory (contains other files)")
 
     def remove_config_files(self) -> None:
-        """Remove AI-Craft configuration files."""
+        """Remove nWave configuration files."""
         if self.dry_run:
-            self.logger.info("[DRY RUN] Would remove AI-Craft configuration files...")
+            self.logger.info("[DRY RUN] Would remove nWave configuration files...")
             return
 
-        self.logger.info("Removing AI-Craft configuration files...")
+        self.logger.info("Removing nWave configuration files...")
 
-        config_files = ["ai-craft-manifest.txt", "ai-craft-install.log"]
+        config_files = ["nwave-manifest.txt", "nwave-install.log"]
 
         for config_file in config_files:
             file_path = self.claude_config_dir / config_file
@@ -210,18 +210,18 @@ class AIUninstaller:
                 self.logger.info(f"Removed {config_file}")
 
     def remove_backups(self) -> None:
-        """Remove AI-Craft backup directories."""
+        """Remove nWave backup directories."""
         if self.dry_run:
-            self.logger.info("[DRY RUN] Would remove AI-Craft backup directories...")
+            self.logger.info("[DRY RUN] Would remove nWave backup directories...")
             return
 
-        self.logger.info("Removing AI-Craft backup directories...")
+        self.logger.info("Removing nWave backup directories...")
 
         backup_count = 0
         backups_dir = self.claude_config_dir / "backups"
 
         if backups_dir.exists():
-            for backup_dir in backups_dir.glob("ai-craft-*"):
+            for backup_dir in backups_dir.glob("nwave-*"):
                 if backup_dir.is_dir():
                     # Skip the backup we just created during this uninstall
                     if (
@@ -237,9 +237,9 @@ class AIUninstaller:
                     backup_count += 1
 
         if backup_count > 0:
-            self.logger.info(f"Removed {backup_count} old AI-Craft backup directories")
+            self.logger.info(f"Removed {backup_count} old nWave backup directories")
         else:
-            self.logger.info("No old AI-Craft backup directories found")
+            self.logger.info("No old nWave backup directories found")
 
     def validate_removal(self) -> bool:
         """Validate complete removal."""
@@ -261,14 +261,14 @@ class AIUninstaller:
             self.logger.error("nWave commands directory still exists")
             errors += 1
 
-        manifest_file = self.claude_config_dir / "ai-craft-manifest.txt"
+        manifest_file = self.claude_config_dir / "nwave-manifest.txt"
         if manifest_file.exists():
-            self.logger.error("AI-Craft manifest file still exists")
+            self.logger.error("nWave manifest file still exists")
             errors += 1
 
-        install_log = self.claude_config_dir / "ai-craft-install.log"
+        install_log = self.claude_config_dir / "nwave-install.log"
         if install_log.exists():
-            self.logger.error("AI-Craft installation log still exists")
+            self.logger.error("nWave installation log still exists")
             errors += 1
 
         if errors == 0:
@@ -301,14 +301,14 @@ class AIUninstaller:
 
 def show_help():
     """Show help message."""
-    help_text = f"""{Colors.BLUE}AI-Craft Framework Uninstallation Script for Cross-Platform{Colors.NC}
+    help_text = f"""{Colors.BLUE}nWave Framework Uninstallation Script for Cross-Platform{Colors.NC}
 
 {Colors.BLUE}DESCRIPTION:{Colors.NC}
-    Completely removes the AI-Craft ATDD agent framework from your global Claude config directory.
+    Completely removes the nWave ATDD agent framework from your global Claude config directory.
     This removes all specialized agents, commands, configuration files, logs, and backups.
 
 {Colors.BLUE}USAGE:{Colors.NC}
-    python uninstall_ai_craft.py [OPTIONS]
+    python uninstall_nwave.py [OPTIONS]
 
 {Colors.BLUE}OPTIONS:{Colors.NC}
     --backup         Create backup before removal (recommended)
@@ -317,16 +317,16 @@ def show_help():
     --help           Show this help message
 
 {Colors.BLUE}EXAMPLES:{Colors.NC}
-    python uninstall_ai_craft.py              # Interactive uninstall with confirmation
-    python uninstall_ai_craft.py --dry-run    # Show what would be removed
-    python uninstall_ai_craft.py --backup     # Create backup before removal
-    python uninstall_ai_craft.py --force      # Uninstall without confirmation prompts
+    python uninstall_nwave.py              # Interactive uninstall with confirmation
+    python uninstall_nwave.py --dry-run    # Show what would be removed
+    python uninstall_nwave.py --backup     # Create backup before removal
+    python uninstall_nwave.py --force      # Uninstall without confirmation prompts
 
 {Colors.BLUE}WHAT GETS REMOVED:{Colors.NC}
     - All nWave agents in agents/nw/ directory
     - All DW commands in commands/nw/ directory
-    - AI-Craft configuration files (manifest)
-    - AI-Craft installation logs and backup directories
+    - nWave configuration files (manifest)
+    - nWave installation logs and backup directories
 
 {Colors.BLUE}IMPORTANT:{Colors.NC}
     This action cannot be undone unless you use --backup option.
@@ -337,7 +337,7 @@ def show_help():
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="Uninstall AI-Craft framework", add_help=False
+        description="Uninstall nWave framework", add_help=False
     )
     parser.add_argument(
         "--backup", action="store_true", help="Create backup before removal"
@@ -356,7 +356,7 @@ def main():
         show_help()
         return 0
 
-    uninstaller = AIUninstaller(
+    uninstaller = NWaveUninstaller(
         backup_before_removal=args.backup, force=args.force, dry_run=args.dry_run
     )
 

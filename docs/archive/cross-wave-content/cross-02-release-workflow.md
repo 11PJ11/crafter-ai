@@ -29,8 +29,8 @@ pytest tests/ --cov=src
 ```
 
 ✓ **Artifacts Generated**
-- `/dist/ai-craft-{version}.whl` (Python wheel)
-- `/dist/ai-craft-{version}.tar.gz` (Source distribution)
+- `/dist/nwave-{version}.whl` (Python wheel)
+- `/dist/nwave-{version}.tar.gz` (Source distribution)
 - Build logs and test reports
 - Coverage metrics
 
@@ -52,7 +52,7 @@ pytest tests/ --cov=src
 ✓ **Local Installation**
 ```bash
 # Install from local build
-pip install dist/ai-craft-{version}.whl
+pip install dist/nwave-{version}.whl
 # Verify installation
 python -m acraft --version
 ```

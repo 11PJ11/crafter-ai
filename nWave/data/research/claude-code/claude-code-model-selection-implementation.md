@@ -134,7 +134,7 @@ Your capabilities:
   "model": "haiku",
   "testCommand": "npm test",
   "lintCommand": "npm lint",
-  "project": "ai-craft",
+  "project": "nwave",
   "description": "Development configuration - Haiku by default, override with specific commands"
 }
 ```
@@ -398,9 +398,9 @@ export ANTHROPIC_DEFAULT_HAIKU_MODEL=claude-3-5-haiku-20241022
 
 ---
 
-## Integration with AI-Craft Project
+## Integration with nWave Project
 
-If implementing within the AI-Craft 5D Wave system:
+If implementing within the nWave 5D Wave system:
 
 1. **Review Phase** (Wave 1): Use `/review` command with Haiku
 2. **Implementation Phase** (Wave 2): Use `/implement` command with Sonnet
@@ -428,8 +428,8 @@ If implementing within the AI-Craft 5D Wave system:
 - **Official Docs**: https://docs.claude.com/en/docs/claude-code/slash-commands
 - **Subagents**: https://docs.claude.com/en/docs/claude-code/sub-agents
 - **Model Config**: https://docs.claude.com/en/docs/claude-code/model-config
-- **Research Report**: `/mnt/c/Repositories/Projects/ai-craft/data/research/claude-code-model-selection-research.md`
-- **Research Summary**: `/mnt/c/Repositories/Projects/ai-craft/data/research/claude-code-model-selection-summary.md`
+- **Research Report**: `/mnt/c/Repositories/Projects/nwave/data/research/claude-code-model-selection-research.md`
+- **Research Summary**: `/mnt/c/Repositories/Projects/nwave/data/research/claude-code-model-selection-summary.md`
 
 ---
 

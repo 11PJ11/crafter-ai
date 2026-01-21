@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-AI-Craft Framework Update Script
+nWave Framework Update Script
 
 Cross-platform updater that orchestrates build + uninstall + install.
 Provides seamless framework updates while preserving configuration.
 
-Usage: python update_ai_craft.py [--backup] [--force] [--dry-run] [--help]
+Usage: python update_nwave.py [--backup] [--force] [--dry-run] [--help]
 """
 
 import argparse
@@ -22,11 +22,11 @@ from install_utils import (
     confirm_action,
 )
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 
-class AIUpdater:
-    """AI-Craft framework updater."""
+class NWaveUpdater:
+    """nWave framework updater."""
 
     def __init__(
         self,
@@ -50,7 +50,7 @@ class AIUpdater:
         self.project_root = PathUtils.get_project_root(self.script_dir)
         self.claude_config_dir = PathUtils.get_claude_config_dir()
 
-        log_file = self.claude_config_dir / "ai-craft-update.log"
+        log_file = self.claude_config_dir / "nwave-update.log"
         self.logger = Logger(log_file if not dry_run else None)
 
         self.backup_manager = BackupManager(self.logger, "update")
@@ -65,22 +65,22 @@ class AIUpdater:
             build_script = self.project_root / "scripts" / "build-ide-bundle.sh"
             if not build_script.exists():
                 self.logger.error(
-                    "Build script not found. Ensure you're running from AI-Craft project root"
+                    "Build script not found. Ensure you're running from nWave project root"
                 )
                 return False
 
         # Check for uninstall/install scripts
-        uninstall_script = self.script_dir / "uninstall_ai_craft.py"
-        install_script = self.script_dir / "install_ai_craft.py"
+        uninstall_script = self.script_dir / "uninstall_nwave.py"
+        install_script = self.script_dir / "install_nwave.py"
 
         if not uninstall_script.exists():
-            uninstall_script = self.script_dir.parent / "uninstall-ai-craft.sh"
+            uninstall_script = self.script_dir.parent / "uninstall-nwave.sh"
             if not uninstall_script.exists():
                 self.logger.error("Uninstall script not found")
                 return False
 
         if not install_script.exists():
-            install_script = self.script_dir.parent / "install-ai-craft.sh"
+            install_script = self.script_dir.parent / "install-nwave.sh"
             if not install_script.exists():
                 self.logger.error("Install script not found")
                 return False
@@ -103,8 +103,8 @@ class AIUpdater:
         return True
 
     def check_current_installation(self) -> bool:
-        """Check current AI-Craft installation."""
-        self.logger.step("Checking current AI-Craft installation...")
+        """Check current nWave installation."""
+        self.logger.step("Checking current nWave installation...")
 
         agents_dir = self.claude_config_dir / "agents" / "nw"
         commands_dir = self.claude_config_dir / "commands" / "nw"
@@ -112,10 +112,10 @@ class AIUpdater:
         installation_found = agents_dir.exists() or commands_dir.exists()
 
         if installation_found:
-            self.logger.info("Found existing AI-Craft installation")
+            self.logger.info("Found existing nWave installation")
 
             # Get current installation details
-            manifest_file = self.claude_config_dir / "ai-craft-manifest.txt"
+            manifest_file = self.claude_config_dir / "nwave-manifest.txt"
             if manifest_file.exists():
                 try:
                     manifest_content = manifest_file.read_text(encoding="utf-8")
@@ -127,7 +127,7 @@ class AIUpdater:
                 except Exception:
                     pass
         else:
-            self.logger.warn("No existing AI-Craft installation detected")
+            self.logger.warn("No existing nWave installation detected")
             self.logger.warn("This will perform a fresh installation instead of update")
 
         return True
@@ -153,13 +153,13 @@ class AIUpdater:
                 self.backup_manager.backup_dir / "update-backup-manifest.txt"
             )
 
-            content = f"""AI-Craft Framework Pre-Update Backup
+            content = f"""nWave Framework Pre-Update Backup
 Created: {self.backup_manager.timestamp}
 Source: {self.claude_config_dir}
 Backup Type: Comprehensive pre-update backup
 Update Process: Build → Uninstall → Install
 Backup Contents:
-  - Complete AI-Craft installation state
+  - Complete nWave installation state
   - Configuration files and settings
   - Installation logs and manifests
 
@@ -177,8 +177,8 @@ Restoration Command:
             )
 
     def build_framework(self) -> bool:
-        """Build new AI-Craft framework bundle."""
-        self.logger.step("Building new AI-Craft framework bundle...")
+        """Build new nWave framework bundle."""
+        self.logger.step("Building new nWave framework bundle...")
 
         if self.dry_run:
             self.logger.info("[DRY RUN] Would execute build process")
@@ -237,16 +237,16 @@ Restoration Command:
             return False
 
     def uninstall_current(self) -> bool:
-        """Uninstall current AI-Craft installation."""
-        self.logger.step("Uninstalling current AI-Craft installation...")
+        """Uninstall current nWave installation."""
+        self.logger.step("Uninstalling current nWave installation...")
 
         if self.dry_run:
             self.logger.info("[DRY RUN] Would execute uninstallation process")
             return True
 
-        uninstall_script = self.script_dir / "uninstall_ai_craft.py"
+        uninstall_script = self.script_dir / "uninstall_nwave.py"
         if not uninstall_script.exists():
-            uninstall_script = self.script_dir.parent / "uninstall-ai-craft.sh"
+            uninstall_script = self.script_dir.parent / "uninstall-nwave.sh"
 
         # Build uninstall options
         uninstall_options = ["--force"]
@@ -285,16 +285,16 @@ Restoration Command:
             return False
 
     def install_new_framework(self) -> bool:
-        """Install new AI-Craft framework."""
-        self.logger.step("Installing new AI-Craft framework...")
+        """Install new nWave framework."""
+        self.logger.step("Installing new nWave framework...")
 
         if self.dry_run:
             self.logger.info("[DRY RUN] Would execute installation process")
             return True
 
-        install_script = self.script_dir / "install_ai_craft.py"
+        install_script = self.script_dir / "install_nwave.py"
         if not install_script.exists():
-            install_script = self.script_dir.parent / "install-ai-craft.sh"
+            install_script = self.script_dir.parent / "install-nwave.sh"
 
         self.logger.info("Executing installation process...")
 
@@ -354,7 +354,7 @@ Restoration Command:
             validation_errors += 1
 
         # Check manifest
-        manifest_file = self.claude_config_dir / "ai-craft-manifest.txt"
+        manifest_file = self.claude_config_dir / "nwave-manifest.txt"
         if not manifest_file.exists():
             self.logger.warn("Installation manifest missing")
             validation_errors += 1
@@ -389,9 +389,7 @@ Restoration Command:
         print(
             f"{Colors.YELLOW}  1. Build new framework from current source code{Colors.NC}"
         )
-        print(
-            f"{Colors.YELLOW}  2. Uninstall existing AI-Craft installation{Colors.NC}"
-        )
+        print(f"{Colors.YELLOW}  2. Uninstall existing nWave installation{Colors.NC}")
         print(f"{Colors.YELLOW}  3. Install newly built framework{Colors.NC}")
         print()
 
@@ -409,7 +407,7 @@ Restoration Command:
             )
 
         print()
-        return confirm_action("Continue with AI-Craft framework update?")
+        return confirm_action("Continue with nWave framework update?")
 
     def create_update_report(self) -> None:
         """Create update report."""
@@ -426,24 +424,24 @@ Restoration Command:
         )
 
         self.logger.info(
-            f"Update report created: {self.claude_config_dir / 'ai-craft-update-report.txt'}"
+            f"Update report created: {self.claude_config_dir / 'nwave-update-report.txt'}"
         )
 
 
 def show_help():
     """Show help message."""
-    help_text = f"""{Colors.BLUE}AI-Craft Framework Update Script for Cross-Platform{Colors.NC}
+    help_text = f"""{Colors.BLUE}nWave Framework Update Script for Cross-Platform{Colors.NC}
 
 {Colors.BLUE}DESCRIPTION:{Colors.NC}
-    Orchestrates complete AI-Craft framework update process:
+    Orchestrates complete nWave framework update process:
     1. Builds new framework bundle from source
-    2. Uninstalls existing AI-Craft installation
+    2. Uninstalls existing nWave installation
     3. Installs newly built framework bundle
 
     This provides a seamless update experience while preserving configuration.
 
 {Colors.BLUE}USAGE:{Colors.NC}
-    python update_ai_craft.py [OPTIONS]
+    python update_nwave.py [OPTIONS]
 
 {Colors.BLUE}OPTIONS:{Colors.NC}
     --backup         Create comprehensive backup before update (recommended)
@@ -452,15 +450,15 @@ def show_help():
     --help           Show this help message
 
 {Colors.BLUE}EXAMPLES:{Colors.NC}
-    python update_ai_craft.py                # Interactive update with confirmations
-    python update_ai_craft.py --backup       # Update with comprehensive backup
-    python update_ai_craft.py --force --backup # Automated update with backup
-    python update_ai_craft.py --dry-run      # Preview update process
+    python update_nwave.py                # Interactive update with confirmations
+    python update_nwave.py --backup       # Update with comprehensive backup
+    python update_nwave.py --force --backup # Automated update with backup
+    python update_nwave.py --dry-run      # Preview update process
 
 {Colors.BLUE}UPDATE PROCESS:{Colors.NC}
     Step 1: Pre-update validation and backup
     Step 2: Build new framework bundle (dist/ide/)
-    Step 3: Uninstall current AI-Craft installation
+    Step 3: Uninstall current nWave installation
     Step 4: Install new framework bundle
     Step 5: Validate successful update
 
@@ -468,7 +466,7 @@ def show_help():
     - Comprehensive pre-update backup created
     - Individual component backups during uninstall/install
     - Full rollback capability if update fails
-    - Backup location: ~/.claude/backups/ai-craft-update-<timestamp>/
+    - Backup location: ~/.claude/backups/nwave-update-<timestamp>/
 
 {Colors.BLUE}IMPORTANT:{Colors.NC}
     - Requires Python 3.7+ for build process
@@ -482,7 +480,7 @@ def show_help():
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="Update AI-Craft framework", add_help=False
+        description="Update nWave framework", add_help=False
     )
     parser.add_argument(
         "--backup", action="store_true", help="Create backup before update"
@@ -501,11 +499,11 @@ def main():
         show_help()
         return 0
 
-    updater = AIUpdater(
+    updater = NWaveUpdater(
         backup_before_update=args.backup, force=args.force, dry_run=args.dry_run
     )
 
-    updater.logger.info("AI-Craft Framework Update Process")
+    updater.logger.info("nWave Framework Update Process")
     updater.logger.info("=" * 33)
 
     if args.dry_run:
@@ -557,7 +555,7 @@ def main():
             updater.logger.info("   Contains complete pre-update state for recovery")
 
         print()
-        updater.logger.info("🚀 Updated AI-Craft framework ready for use!")
+        updater.logger.info("🚀 Updated nWave framework ready for use!")
         updater.logger.info(
             "   Try: /nw:discuss, /nw:design, /nw:develop, /nw:deliver commands"
         )

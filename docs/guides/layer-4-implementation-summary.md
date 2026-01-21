@@ -1,21 +1,23 @@
 # Layer 4 Adversarial Verification - Implementation Summary
-**Version**: 1.0
+**Version**: 1.1
 **Date**: 2025-10-06
+**Updated**: 2026-01-21 (Added Layer 5 Mutation Testing)
 **Status**: ✅ COMPLETE - Production Ready
 
 ---
 
 ## Executive Summary
 
-**Achievement**: Successfully implemented Layer 4 Adversarial Verification workflow for all 12 primary AI-Craft agents, completing the comprehensive 4-layer testing framework.
+**Achievement**: Successfully implemented Layer 4 Adversarial Verification workflow for all 12 primary nWave agents, completing the comprehensive 5-layer testing framework including new Layer 5 Mutation Testing.
 
-**Novel Contribution**: Layer 4 introduces **peer review by equal-expertise agents** as a distinct testing layer beyond traditional adversarial output validation. This is a unique approach that reduces confirmation bias, improves quality through independent critique, and enables knowledge transfer between agents.
+**Novel Contribution**: Layer 4 introduces **peer review by equal-expertise agents** as a distinct testing layer beyond traditional adversarial output validation. This is a unique approach that reduces confirmation bias, improves quality through independent critique, and enables knowledge transfer between agents. Layer 5 adds **mutation testing** to validate test suite effectiveness.
 
-**Impact**: Layer 4 completes the production-grade testing framework:
+**Impact**: Layer 4-5 complete the production-grade 5-layer testing framework:
 - **Layer 1**: Unit Testing (agent-type-specific output validation)
 - **Layer 2**: Integration Testing (handoff validation between agents)
 - **Layer 3**: Adversarial Output Validation (challenge output validity through adversarial scrutiny)
-- **Layer 4**: Adversarial Verification (peer review for bias reduction) ← **NEW**
+- **Layer 4**: Adversarial Verification (peer review for bias reduction)
+- **Layer 5**: Mutation Testing (test suite effectiveness validation) ← **NEW**
 
 ---
 
@@ -23,7 +25,7 @@
 
 ### 1. Reviewer Agent Specifications (12 Agents)
 
-**Location**: `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/reviewers/`
+**Location**: `/mnt/c/Repositories/Projects/nwave/nWave/agents/reviewers/`
 
 All 12 reviewer agents created with comprehensive specifications:
 
@@ -33,14 +35,14 @@ All 12 reviewer agents created with comprehensive specifications:
 | 2 | solution-architect | solution-architect-reviewer | Atlas | Architectural bias, ADR quality, feasibility |
 | 3 | acceptance-designer | acceptance-designer-reviewer | Sentinel | Happy path bias, GWT quality, coverage |
 | 4 | software-crafter | software-crafter-reviewer | Mentor | Implementation bias, test coupling, complexity |
-| 5 | knowledge-researcher | knowledge-researcher-reviewer | Scholar | Source bias, evidence quality, replicability |
+| 5 | researcher | researcher-reviewer | Scholar | Source bias, evidence quality, replicability |
 | 6 | data-engineer | data-engineer-reviewer | Validator | Performance claims, query optimization, security |
-| 7 | architecture-diagram-manager | architecture-diagram-manager-reviewer | Clarity | Visual clarity, consistency, accessibility |
-| 8 | visual-2d-designer | visual-2d-designer-reviewer | Critic | 12 principles compliance, timing, readability |
-| 9 | feature-completion-coordinator | feature-completion-coordinator-reviewer | Auditor | Handoff completeness, phase validation, traceability |
-| 10 | root-cause-analyzer | root-cause-analyzer-reviewer | Logician | Causality logic, evidence quality, alternatives |
-| 11 | walking-skeleton-helper | walking-skeleton-helper-reviewer | Minimalist | Minimal scope, E2E completeness, deployment viability |
-| 12 | agent-forger | agent-forger-reviewer | Inspector | Template compliance, framework completeness, design patterns |
+| 7 | visual-architect | visual-architect-reviewer | Clarity | Visual clarity, consistency, accessibility |
+| 8 | illustrator | illustrator-reviewer | Critic | 12 principles compliance, timing, readability |
+| 9 | devop | devop-reviewer | Auditor | Handoff completeness, phase validation, traceability |
+| 10 | troubleshooter | troubleshooter-reviewer | Logician | Causality logic, evidence quality, alternatives |
+| 11 | skeleton-builder | skeleton-builder-reviewer | Minimalist | Minimal scope, E2E completeness, deployment viability |
+| 12 | agent-builder | agent-builder-reviewer | Inspector | Template compliance, framework completeness, design patterns |
 
 **Key Features**:
 - ✅ Equal expertise to primary agents (peer review, not hierarchical)
@@ -52,7 +54,7 @@ All 12 reviewer agents created with comprehensive specifications:
 
 ### 2. Workflow Documentation
 
-**Location**: `/mnt/c/Repositories/Projects/ai-craft/docs/ADVERSARIAL_VERIFICATION_WORKFLOW.md`
+**Location**: `/mnt/c/Repositories/Projects/nwave/docs/ADVERSARIAL_VERIFICATION_WORKFLOW.md`
 
 **Contents** (25 pages):
 - 5-phase review process (Production → Review → Revision → Approval → Handoff)
@@ -74,7 +76,7 @@ All 12 reviewer agents created with comprehensive specifications:
 
 ### 3. Complete Example Review Cycle
 
-**Location**: `/mnt/c/Repositories/Projects/ai-craft/examples/adversarial-verification-example.md`
+**Location**: `/mnt/c/Repositories/Projects/nwave/examples/adversarial-verification-example.md`
 
 **Scenario**: E-Commerce Checkout Feature Requirements Review
 
@@ -103,7 +105,7 @@ All 12 reviewer agents created with comprehensive specifications:
 
 ### 4. Integration Guide
 
-**Location**: `/mnt/c/Repositories/Projects/ai-craft/docs/LAYER_4_INTEGRATION_GUIDE.md`
+**Location**: `/mnt/c/Repositories/Projects/nwave/docs/LAYER_4_INTEGRATION_GUIDE.md`
 
 **Contents** (27 pages):
 
@@ -130,7 +132,7 @@ All 12 reviewer agents created with comprehensive specifications:
 
 #### Configuration Reference
 - Environment variables
-- Configuration file format (.ai-craft/layer4.yaml)
+- Configuration file format (.nwave/layer4.yaml)
 - Automation settings
 - Reviewer settings
 - Metrics and monitoring
@@ -371,11 +373,54 @@ stakeholder_satisfaction:
 4. **Quality Gates**: Teams can enforce peer review before wave handoffs
 
 **Deployment Steps**:
-1. Install reviewer agents: `./scripts/install-ai-craft.sh`
-2. Configure Layer 4: `.ai-craft/layer4.yaml`
-3. Test manual review: `ai-craft review --artifact docs/requirements/requirements.md --reviewer business-analyst-reviewer`
+1. Install reviewer agents: `./scripts/install-nwave.sh`
+2. Configure Layer 4: `.nwave/layer4.yaml`
+3. Test manual review: `nwave review --artifact docs/requirements/requirements.md --reviewer business-analyst-reviewer`
 4. Integrate into CI/CD: Use provided workflow examples
 5. Monitor metrics: Configure Prometheus/Datadog export
+
+---
+
+## Layer 5: Mutation Testing (NEW - 2026-01-21)
+
+### Purpose
+
+Layer 5 Mutation Testing validates test suite effectiveness by introducing small, deliberate changes (mutations) to production code and verifying that the test suite detects and fails on these mutations.
+
+### Integration Point
+
+Layer 5 runs **after** Layer 4 (Peer Review) approval in the CI/CD pipeline:
+
+```
+Layer 1 Pass → Layer 2 Pass → Layer 3 Pass → Layer 4 Approval → Layer 5 Mutation Testing
+```
+
+### Key Metrics
+
+- **Mutation Score**: Percentage of mutations detected by test suite
+  - Target: ≥85% mutation score
+  - Alert: <70% mutation score indicates weak test coverage
+
+- **Mutant Categories**:
+  - Logic mutations (condition inversions, arithmetic changes)
+  - Boundary mutations (off-by-one errors, comparison changes)
+  - Return value mutations (constant changes, variable swaps)
+  - Statement mutations (deletions, insertions)
+
+### Test Suite Quality Validation
+
+Ensures test suite is comprehensive by verifying:
+- ✅ All critical code paths tested
+- ✅ Edge cases and boundaries covered
+- ✅ Error handling validated
+- ✅ No "zombie tests" (tests that pass regardless of code)
+
+### Implementation Notes
+
+- Integrates with existing Layer 1-4 framework
+- Runs in CI/CD pipeline automatically after peer review
+- Generates detailed mutation analysis reports
+- Identifies weak test patterns for improvement
 
 ---
 

@@ -1,6 +1,6 @@
 # Framework Propagation Final Report
 
-**Project**: AI-Craft Production Framework Implementation
+**Project**: nWave Production Framework Implementation
 **Date**: 2025-10-06
 **Status**: ✅ COMPLETE
 **Priority**: P1 - CRITICAL
@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-The Priority 1 framework propagation initiative is **complete**. All 12 AI-Craft agents now have comprehensive production-grade frameworks embedded, including:
+The Priority 1 framework propagation initiative is **complete**. All 12 nWave agents now have comprehensive production-grade frameworks embedded, including:
 
 - ✅ **Contract Framework**: Input/output contracts for all agents
 - ✅ **Safety Framework**: 4 validation layers + 7 enterprise security layers
@@ -55,7 +55,7 @@ enterprise_safety_layers:
 10. walking-skeleton-helper
 11. data-engineer (already had complete frameworks)
 
-**Method**: Used automated script `/mnt/c/Repositories/Projects/ai-craft/scripts/add-enterprise-safety-layers.py`
+**Method**: Used automated script `/mnt/c/Repositories/Projects/nwave/scripts/add-enterprise-safety-layers.py`
 
 ### Phase 2: Duplicate Framework Cleanup
 **Date**: 2025-10-06
@@ -69,7 +69,7 @@ Removed 1,199 lines of duplicate framework sections that were added during autom
 
 **Solution**: Removed duplicate sections, keeping only comprehensive frameworks.
 
-**Method**: Used automated script `/mnt/c/Repositories/Projects/ai-craft/scripts/remove-duplicate-frameworks.py`
+**Method**: Used automated script `/mnt/c/Repositories/Projects/nwave/scripts/remove-duplicate-frameworks.py`
 
 **Results**:
 - ✅ 11/11 agents cleaned successfully
@@ -109,86 +109,86 @@ Removed 1,199 lines of duplicate framework sections that were added during autom
 
 ### Agent Files (Primary Deliverables)
 
-1. `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/acceptance-designer.md`
+1. `/mnt/c/Repositories/Projects/nwave/nWave/agents/acceptance-designer.md`
    - Added: enterprise_safety_layers
    - Removed: 109 lines of duplicates
    - Status: ✅ Production Ready
 
-2. `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/architecture-diagram-manager.md`
+2. `/mnt/c/Repositories/Projects/nwave/nWave/agents/architecture-diagram-manager.md`
    - Added: enterprise_safety_layers
    - Removed: 109 lines of duplicates
    - Status: ✅ Production Ready
 
-3. `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/business-analyst.md`
+3. `/mnt/c/Repositories/Projects/nwave/nWave/agents/business-analyst.md`
    - Added: enterprise_safety_layers
    - Removed: 109 lines of duplicates
    - Status: ✅ Production Ready
 
-4. `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/data-engineer.md`
+4. `/mnt/c/Repositories/Projects/nwave/nWave/agents/data-engineer.md`
    - Added: enterprise_safety_layers
    - Removed: 109 lines of duplicates
    - Status: ✅ Production Ready
 
-5. `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/feature-completion-coordinator.md`
+5. `/mnt/c/Repositories/Projects/nwave/nWave/agents/feature-completion-coordinator.md`
    - Added: enterprise_safety_layers
    - Removed: 109 lines of duplicates
    - Status: ✅ Production Ready
 
-6. `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/knowledge-researcher.md`
+6. `/mnt/c/Repositories/Projects/nwave/nWave/agents/knowledge-researcher.md`
    - Added: enterprise_safety_layers
    - Removed: 109 lines of duplicates
    - Status: ✅ Production Ready
 
-7. `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/root-cause-analyzer.md`
+7. `/mnt/c/Repositories/Projects/nwave/nWave/agents/root-cause-analyzer.md`
    - Added: enterprise_safety_layers
    - Removed: 109 lines of duplicates
    - Status: ✅ Production Ready
 
-8. `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/software-crafter.md`
+8. `/mnt/c/Repositories/Projects/nwave/nWave/agents/software-crafter.md`
    - Added: enterprise_safety_layers
    - Removed: 109 lines of duplicates
    - Status: ✅ Production Ready
 
-9. `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/solution-architect.md`
+9. `/mnt/c/Repositories/Projects/nwave/nWave/agents/solution-architect.md`
    - Added: enterprise_safety_layers
    - Removed: 109 lines of duplicates
    - Status: ✅ Production Ready
 
-10. `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/visual-2d-designer.md`
+10. `/mnt/c/Repositories/Projects/nwave/nWave/agents/visual-2d-designer.md`
     - Added: enterprise_safety_layers
     - Removed: 109 lines of duplicates
     - Status: ✅ Production Ready
 
-11. `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/walking-skeleton-helper.md`
+11. `/mnt/c/Repositories/Projects/nwave/nWave/agents/walking-skeleton-helper.md`
     - Added: enterprise_safety_layers
     - Removed: 109 lines of duplicates
     - Status: ✅ Production Ready
 
-12. `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/agent-forger.md`
+12. `/mnt/c/Repositories/Projects/nwave/nWave/agents/agent-forger.md`
     - No changes required (meta-agent with complete frameworks)
     - Status: ✅ Production Ready
 
 ### Supporting Scripts
 
-1. `/mnt/c/Repositories/Projects/ai-craft/scripts/add-enterprise-safety-layers.py`
+1. `/mnt/c/Repositories/Projects/nwave/scripts/add-enterprise-safety-layers.py`
    - Purpose: Automated addition of enterprise_safety_layers to agents
    - Status: ✅ Executed successfully
 
-2. `/mnt/c/Repositories/Projects/ai-craft/scripts/remove-duplicate-frameworks.py`
+2. `/mnt/c/Repositories/Projects/nwave/scripts/remove-duplicate-frameworks.py`
    - Purpose: Remove duplicate framework sections
    - Status: ✅ Executed successfully
 
-3. `/mnt/c/Repositories/Projects/ai-craft/scripts/validate-agent-compliance-v2.py`
+3. `/mnt/c/Repositories/Projects/nwave/scripts/validate-agent-compliance-v2.py`
    - Purpose: Improved keyword-based validation
    - Status: ✅ Created and tested
 
 ### Documentation
 
-1. `/mnt/c/Repositories/Projects/ai-craft/docs/COMPLIANCE_VALIDATION_REPORT.md`
+1. `/mnt/c/Repositories/Projects/nwave/docs/COMPLIANCE_VALIDATION_REPORT.md`
    - Generated by validation script
    - Shows comprehensive compliance matrix
 
-2. `/mnt/c/Repositories/Projects/ai-craft/docs/FRAMEWORK_PROPAGATION_FINAL_REPORT.md`
+2. `/mnt/c/Repositories/Projects/nwave/docs/FRAMEWORK_PROPAGATION_FINAL_REPORT.md`
    - This document
    - Final status and next steps
 
@@ -403,7 +403,7 @@ The production frameworks are **universal** across all agent archetypes:
 
 ## Conclusion
 
-**Priority 1 framework propagation is COMPLETE**. All 12 AI-Craft agents now have comprehensive production-grade frameworks that enable:
+**Priority 1 framework propagation is COMPLETE**. All 12 nWave agents now have comprehensive production-grade frameworks that enable:
 
 - **Safety**: Multi-layer validation with enterprise security
 - **Quality**: 4-layer testing from unit to adversarial verification
@@ -417,5 +417,5 @@ The agents are **production-ready** and ready for Week 2 priorities: adversarial
 
 **Report Status**: ✅ FINAL
 **Date**: 2025-10-06
-**Prepared By**: AI-Craft Framework Team
+**Prepared By**: nWave Framework Team
 **Template Version**: AGENT_TEMPLATE.yaml v1.2

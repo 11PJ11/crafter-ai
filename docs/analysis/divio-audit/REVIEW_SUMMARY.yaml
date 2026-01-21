@@ -45,7 +45,7 @@ readme_validation:
   navigation_quality: "excellent"
 
   sections_verified:
-    - "What is AI-Craft"
+    - "What is nWave"
     - "Quick Start"
     - "Documentation Structure"
     - "Core Concepts"
@@ -274,5 +274,5 @@ sign_off:
   reviewer: "documentarist-reviewer (Quill)"
   method: "DIVIO/Diataxis Framework with adversarial verification"
   date: "2026-01-21"
-  version: "1.2.81"
+  version: "1.4.0"
   status: "COMPLETE"

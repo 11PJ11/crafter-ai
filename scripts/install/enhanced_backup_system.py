@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Enhanced Backup System for AI-Craft Framework Installation
+Enhanced Backup System for nWave Framework Installation
 
 Prevents configuration loss and enables framework coexistence.
-Detects conflicts between AI-Craft and other frameworks (like SuperClaude).
+Detects conflicts between nWave and other frameworks (like SuperClaude).
 
 Usage: python enhanced_backup_system.py {backup|restore|list|status} [TIMESTAMP]
 """
@@ -29,7 +29,7 @@ class EnhancedBackupSystem:
         self.claude_config_dir = PathUtils.get_claude_config_dir()
         self.backup_root_dir = self.claude_config_dir / "backups"
         self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.backup_dir = self.backup_root_dir / f"pre_ai_craft_{self.timestamp}"
+        self.backup_dir = self.backup_root_dir / f"pre_nwave_{self.timestamp}"
         self.manifest_file = self.backup_dir / "backup_manifest.json"
 
         log_file = self.claude_config_dir / "backup_system.log"
@@ -137,16 +137,16 @@ Settings: {"settings.local.json found" if config_summary["config_files"] > 0 els
         conflicts_found = False
         conflict_details = []
 
-        # Check for AI-Craft existing installation
-        ai_craft_dir = self.claude_config_dir / "agents" / "cai"
-        if ai_craft_dir.exists():
-            self.logger.warn("Existing AI-Craft installation detected")
+        # Check for nWave existing installation
+        nwave_dir = self.claude_config_dir / "agents" / "cai"
+        if nwave_dir.exists():
+            self.logger.warn("Existing nWave installation detected")
             conflicts_found = True
             conflict_details.append(
                 {
-                    "type": "existing_ai_craft",
+                    "type": "existing_nwave",
                     "severity": "HIGH",
-                    "description": "AI-Craft agents already exist",
+                    "description": "nWave agents already exist",
                     "location": "agents/cai/",
                     "recommendation": "Backup and merge with new installation",
                 }
@@ -170,8 +170,8 @@ Settings: {"settings.local.json found" if config_summary["config_files"] > 0 els
                 )
 
         # Check for command name collisions
-        ai_craft_commands = ["atdd", "root-why"]
-        for cmd in ai_craft_commands:
+        nwave_commands = ["atdd", "root-why"]
+        for cmd in nwave_commands:
             cmd_file = commands_dir / f"{cmd}.md" if commands_dir.exists() else None
             if cmd_file and cmd_file.exists():
                 self.logger.warn(f"Command collision detected: {cmd}.md already exists")
@@ -262,8 +262,8 @@ Settings: {"settings.local.json found" if config_summary["config_files"] > 0 els
 
         total_files = agents_count + commands_count + config_count
 
-        # Check for AI-Craft presence
-        ai_craft_present = (self.claude_config_dir / "agents" / "cai").exists()
+        # Check for nWave presence
+        nwave_present = (self.claude_config_dir / "agents" / "cai").exists()
         superclaud_present = superclaud_commands > 0
 
         # Read conflict analysis
@@ -281,7 +281,7 @@ Settings: {"settings.local.json found" if config_summary["config_files"] > 0 els
             "backup_metadata": {
                 "timestamp": datetime.now().isoformat(),
                 "backup_dir": str(self.backup_dir),
-                "backup_type": "pre_ai_craft_installation",
+                "backup_type": "pre_nwave_installation",
                 "claude_config_dir": str(self.claude_config_dir),
             },
             "backup_summary": {
@@ -307,7 +307,7 @@ Settings: {"settings.local.json found" if config_summary["config_files"] > 0 els
                 "scan_summary": str(self.backup_dir / "metadata" / "scan_summary.txt"),
             },
             "framework_analysis": {
-                "ai_craft_present": ai_craft_present,
+                "nwave_present": nwave_present,
                 "superclaud_present": superclaud_present,
                 "conflicts_detected": conflicts_detected,
             },
@@ -326,7 +326,7 @@ Settings: {"settings.local.json found" if config_summary["config_files"] > 0 els
 
         restore_script_content = f"""#!/bin/bash
 
-# AI-Craft Framework Configuration Restoration Script
+# nWave Framework Configuration Restoration Script
 # Generated automatically by enhanced backup system
 
 set -euo pipefail
@@ -345,7 +345,7 @@ log_error() {{ echo -e "${{RED}}[ERROR]${{NC}} $1"; }}
 log_success() {{ echo -e "${{GREEN}}[SUCCESS]${{NC}} $1"; }}
 log_warn() {{ echo -e "${{YELLOW}}[WARN]${{NC}} $1"; }}
 
-echo "=== AI-Craft Configuration Restoration ==="
+echo "=== nWave Configuration Restoration ==="
 echo "Backup Location: $BACKUP_DIR"
 echo "Restore Target: $CLAUDE_CONFIG_DIR"
 echo ""
@@ -446,7 +446,7 @@ echo "Current state backup available at: $CURRENT_BACKUP"
     def execute_comprehensive_backup(self) -> bool:
         """Execute comprehensive backup system."""
         self.logger.info(
-            "Starting comprehensive backup system for AI-Craft installation..."
+            "Starting comprehensive backup system for nWave installation..."
         )
 
         # Create backup structure
@@ -492,7 +492,7 @@ echo "Current state backup available at: $CURRENT_BACKUP"
             print("No backups found")
             return
 
-        backups = sorted(self.backup_root_dir.glob("pre_ai_craft_*"))
+        backups = sorted(self.backup_root_dir.glob("pre_nwave_*"))
         if not backups:
             print("No backups found")
         else:
@@ -508,7 +508,7 @@ echo "Current state backup available at: $CURRENT_BACKUP"
         print()
 
         if self.backup_root_dir.exists():
-            backup_count = len(list(self.backup_root_dir.glob("pre_ai_craft_*")))
+            backup_count = len(list(self.backup_root_dir.glob("pre_nwave_*")))
             print(f"Available backups: {backup_count}")
         else:
             print("No backup directory found")
@@ -516,13 +516,13 @@ echo "Current state backup available at: $CURRENT_BACKUP"
 
 def show_help():
     """Show help message."""
-    help_text = f"""{Colors.BLUE}AI-Craft Enhanced Backup System{Colors.NC}
+    help_text = f"""{Colors.BLUE}nWave Enhanced Backup System{Colors.NC}
 
 {Colors.BLUE}USAGE:{Colors.NC}
     python enhanced_backup_system.py {{backup|restore|list|status}} [TIMESTAMP]
 
 {Colors.BLUE}COMMANDS:{Colors.NC}
-    backup          Create comprehensive backup before AI-Craft installation
+    backup          Create comprehensive backup before nWave installation
     restore TIMESTAMP  Restore from specific backup
     list           List available backups
     status         Show backup system status
@@ -538,7 +538,7 @@ def show_help():
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="Enhanced backup system for AI-Craft framework", add_help=False
+        description="Enhanced backup system for nWave framework", add_help=False
     )
     parser.add_argument(
         "command",

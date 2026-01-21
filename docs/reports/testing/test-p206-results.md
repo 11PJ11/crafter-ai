@@ -36,7 +36,7 @@ def validate_path_security(path: Path, project_root: Path) -> bool:
 **Result**: PASS (Blocked)
 ```
 Marker: ../../../etc/passwd
-Resolved: /mnt/c/Repositories/Projects/ai-craft/../../../etc/passwd
+Resolved: /mnt/c/Repositories/Projects/nwave/../../../etc/passwd
 [BLOCKED] Path traversal attempt blocked: ../../../etc/passwd
 ```
 
@@ -56,7 +56,7 @@ Resolved: /mnt/c/Repositories/Projects/ai-craft/../../../etc/passwd
 **Result**: PASS (Blocked)
 ```
 Marker: nWave/data/core/../../../../../../etc/passwd
-Resolved: /mnt/c/Repositories/Projects/ai-craft/nWave/data/core/../../../../../../etc/passwd
+Resolved: /mnt/c/Repositories/Projects/nwave/nWave/data/core/../../../../../../etc/passwd
 [BLOCKED] Path traversal attempt blocked: nWave/data/core/../../../../../../etc/passwd
 ```
 
@@ -93,7 +93,7 @@ Resolved: /etc/passwd
 **Result**: NOT FOUND (Expected - File doesn't exist)
 ```
 Marker: nWave/data/core/radical-candor.md
-Resolved: /mnt/c/Repositories/Projects/ai-craft/nWave/data/core/radical-candor.md
+Resolved: /mnt/c/Repositories/Projects/nwave/nWave/data/core/radical-candor.md
 [NOT FOUND] File not found: nWave/data/core/radical-candor.md
 ```
 
@@ -114,7 +114,7 @@ Resolved: /mnt/c/Repositories/Projects/ai-craft/nWave/data/core/radical-candor.m
 **Result**: NOT FOUND (Invalid path on Linux)
 ```
 Marker: nWave\\data\\..\\..\\windows\\system32\\config
-Resolved: /mnt/c/Repositories/Projects/ai-craft/nWave\\data\\..\\..\\windows\\system32\\config
+Resolved: /mnt/c/Repositories/Projects/nwave/nWave\\data\\..\\..\\windows\\system32\\config
 [NOT FOUND] File not found: nWave\\data\\..\\..\\windows\\system32\\config
 ```
 
@@ -135,7 +135,7 @@ Resolved: /mnt/c/Repositories/Projects/ai-craft/nWave\\data\\..\\..\\windows\\sy
 **Result**: NOT FOUND
 ```
 Marker: nWave/data/core/file.md
-Resolved: /mnt/c/Repositories/Projects/ai-craft/nWave/data/core/file.md
+Resolved: /mnt/c/Repositories/Projects/nwave/nWave/data/core/file.md
 [NOT FOUND] File not found: nWave/data/core/file.md
 ```
 
@@ -156,7 +156,7 @@ Resolved: /mnt/c/Repositories/Projects/ai-craft/nWave/data/core/file.md
 **Result**: NOT FOUND (Treated as literal path)
 ```
 Marker: ..%2F..%2F..%2Fetc%2Fpasswd
-Resolved: /mnt/c/Repositories/Projects/ai-craft/..%2F..%2F..%2Fetc%2Fpasswd
+Resolved: /mnt/c/Repositories/Projects/nwave/..%2F..%2F..%2Fetc%2Fpasswd
 [NOT FOUND] File not found: ..%2F..%2F..%2Fetc%2Fpasswd
 ```
 
@@ -206,7 +206,7 @@ Marker: nWave/data/core/radical-candor.md
 **Result**: NOT FOUND (Case-sensitive filesystem)
 ```
 Marker: NWave/DATA/CORE/radical-candor.md
-Resolved: /mnt/c/Repositories/Projects/ai-craft/NWave/DATA/CORE/radical-candor.md
+Resolved: /mnt/c/Repositories/Projects/nwave/NWave/DATA/CORE/radical-candor.md
 [NOT FOUND] File not found: NWave/DATA/CORE/radical-candor.md
 ```
 

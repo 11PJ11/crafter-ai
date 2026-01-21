@@ -198,7 +198,7 @@ $ ls -la package*.json
 **Additional Context**:
 ```json
 {
-  "name": "ai-craft",
+  "name": "nwave",
   "version": "1.0.0",
   "description": "nWave Framework - Open Source Publication",
   "type": "module",
@@ -207,7 +207,7 @@ $ ls -la package*.json
     "build": "python3 tools/build.py || python tools/build.py"
   },
   "keywords": ["nwave", "framework", "cicd", "automation"],
-  "author": "ai-craft",
+  "author": "nwave",
   "license": "MIT",
   "devDependencies": {}
 }

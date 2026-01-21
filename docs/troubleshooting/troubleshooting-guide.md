@@ -1,12 +1,12 @@
-# AI-Craft Framework Troubleshooting Guide
+# nWave Framework Troubleshooting Guide
 
 ## Quick Diagnostic
 
-If you're experiencing issues with AI-Craft, run this quick diagnostic first:
+If you're experiencing issues with nWave, run this quick diagnostic first:
 
 ```bash
 # Quick system check
-echo "=== AI-Craft Quick Diagnostic ==="
+echo "=== nWave Quick Diagnostic ==="
 echo "Installation: $(ls ~/.claude/agents/nw/ 2>/dev/null && echo 'OK' || echo 'MISSING')"
 echo "Commands: $(ls ~/.claude/commands/nw/ 2>/dev/null | wc -l) found"
 ```
@@ -28,7 +28,7 @@ echo "Commands: $(ls ~/.claude/commands/nw/ 2>/dev/null | wc -l) found"
 ls ~/.claude/agents/nw/ ~/.claude/commands/nw/
 
 # If missing, reinstall
-./scripts/install-ai-craft.sh
+./scripts/install-nwave.sh
 
 # If install fails, check source
 ls nWave/agents/
@@ -52,7 +52,7 @@ ls nWave/agents/
 ls -la ~/.claude/
 
 # Test with backup
-./scripts/install-ai-craft.sh --backup-only
+./scripts/install-nwave.sh --backup-only
 
 # Check Python availability
 python3 --version
@@ -70,11 +70,11 @@ python3 --version
 
 ```bash
 # Uninstall and reinstall
-./scripts/uninstall-ai-craft.sh --backup --force
-./scripts/install-ai-craft.sh
+./scripts/uninstall-nwave.sh --backup --force
+./scripts/install-nwave.sh
 
 # Check validation logs
-cat ~/.claude/ai-craft-install.log
+cat ~/.claude/nwave-install.log
 ```
 
 ## Command Issues
@@ -97,7 +97,7 @@ ls ~/.claude/commands/nw/
 cat ~/.claude/commands/nw/start.md
 
 # Reinstall commands
-./scripts/install-ai-craft.sh
+./scripts/install-nwave.sh
 ```
 
 ### Command Execution Errors
@@ -199,9 +199,9 @@ chmod -R 755 ~/.claude/commands/nw/
 # Enable WSL in Windows
 wsl --install
 
-# Install AI-Craft in WSL
+# Install nWave in WSL
 cd /mnt/c/path/to/crafter-ai
-./scripts/install-ai-craft.sh
+./scripts/install-nwave.sh
 ```
 
 ## Comprehensive Diagnostics
@@ -210,7 +210,7 @@ cd /mnt/c/path/to/crafter-ai
 
 ```bash
 #!/bin/bash
-echo "=== AI-Craft Comprehensive Diagnostic ==="
+echo "=== nWave Comprehensive Diagnostic ==="
 echo "Date: $(date)"
 echo "User: $(whoami)"
 echo "System: $(uname -a)"
@@ -237,7 +237,7 @@ done
 echo ""
 
 echo "=== Recent Logs ==="
-tail -5 ~/.claude/ai-craft-install.log 2>/dev/null || echo "No install log found"
+tail -5 ~/.claude/nwave-install.log 2>/dev/null || echo "No install log found"
 ```
 
 ### Log Collection
@@ -245,9 +245,9 @@ tail -5 ~/.claude/ai-craft-install.log 2>/dev/null || echo "No install log found
 ```bash
 # Collect comprehensive logs for support
 {
-    echo "=== AI-Craft Support Information ==="
+    echo "=== nWave Support Information ==="
     echo "Generated: $(date)"
-    echo "Version: $(head -5 ~/.claude/ai-craft-manifest.txt 2>/dev/null)"
+    echo "Version: $(head -5 ~/.claude/nwave-manifest.txt 2>/dev/null)"
     echo ""
 
     # Run full diagnostic
@@ -257,9 +257,9 @@ tail -5 ~/.claude/ai-craft-install.log 2>/dev/null || echo "No install log found
     echo "=== Recent Error Logs ==="
     find ~/.claude/ -name "*.log" -mtime -1 -exec echo "=== {} ===" \; -exec tail -10 {} \; 2>/dev/null
 
-} > ai-craft-support-$(date +%Y%m%d-%H%M%S).log
+} > nwave-support-$(date +%Y%m%d-%H%M%S).log
 
-echo "Support information collected in: ai-craft-support-$(date +%Y%m%d-%H%M%S).log"
+echo "Support information collected in: nwave-support-$(date +%Y%m%d-%H%M%S).log"
 ```
 
 ## Getting Help
@@ -284,8 +284,8 @@ Include this information:
 
 - **Documentation**: `README.md`
 - **GitHub Issues**: [https://github.com/11PJ11/crafter-ai/issues](https://github.com/11PJ11/crafter-ai/issues)
-- **Installation Logs**: `~/.claude/ai-craft-install.log`
-- **Backup Recovery**: `./scripts/install-ai-craft.sh --restore`
+- **Installation Logs**: `~/.claude/nwave-install.log`
+- **Backup Recovery**: `./scripts/install-nwave.sh --restore`
 
 ## Recovery Procedures
 
@@ -295,10 +295,10 @@ If all else fails, perform a complete reset:
 
 ```bash
 # 1. Backup current state
-./scripts/uninstall-ai-craft.sh --backup
+./scripts/uninstall-nwave.sh --backup
 
 # 2. Clean installation
-./scripts/install-ai-craft.sh
+./scripts/install-nwave.sh
 
 # 3. Test functionality
 ls ~/.claude/agents/nw/
@@ -312,7 +312,7 @@ ls ~/.claude/commands/nw/
 ls ~/.claude/backups/
 
 # Restore from backup
-./scripts/install-ai-craft.sh --restore
+./scripts/install-nwave.sh --restore
 ```
 
 ---

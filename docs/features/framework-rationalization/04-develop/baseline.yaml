@@ -146,7 +146,7 @@ current_state:
     releases_directory_path: "dist/releases/"
     installers:
       bash_installer_exists: true
-      bash_installer_path: "scripts/install-ai-craft.sh"
+      bash_installer_path: "scripts/install-nwave.sh"
       bash_installer_has_platform_param: false
       powershell_installer_exists: false
       python_universal_installer_exists: false

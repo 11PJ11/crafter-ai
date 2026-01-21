@@ -5,7 +5,7 @@
 
 ## Executive Summary
 
-This document defines P1-CRITICAL improvements to the AI-Craft AGENT_TEMPLATE.yaml framework, adding production-grade reliability through comprehensive testing, monitoring, and error recovery capabilities. These improvements apply **universally to all agent types** (coding and non-coding) while adapting implementation methods to agent output types.
+This document defines P1-CRITICAL improvements to the nWave AGENT_TEMPLATE.yaml framework, adding production-grade reliability through comprehensive testing, monitoring, and error recovery capabilities. These improvements apply **universally to all agent types** (coding and non-coding) while adapting implementation methods to agent output types.
 
 ### Key Innovation: 4-Layer Testing Framework
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Adversarial Testing Execution Framework (Dual-Mode)
-Executes Layer 3 adversarial tests for all AI-Craft agents
+Executes Layer 3 adversarial tests for all nWave agents
 
 MODES:
   Mode 1: Automated Framework Validation
@@ -467,7 +467,7 @@ def run_manual_guide_generation(output_dir: Path) -> Dict[str, Any]:
 
     # Generate master test execution script
     master_script = {
-        "title": "AI-Craft Adversarial Testing - Master Execution Guide",
+        "title": "nWave Adversarial Testing - Master Execution Guide",
         "version": "2.0",
         "timestamp": datetime.utcnow().isoformat() + "Z",
         "overview": {

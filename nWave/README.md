@@ -1,10 +1,10 @@
-<!-- version: 1.0.0 -->
+<!-- version: 1.4.0 -->
 
-# AI-Craft nWave Framework
+# nWave Framework
 
 ## Overview
 
-The nWave framework implements the comprehensive DISCUSS→DESIGN→DISTILL→DEVELOP→DEMO methodology. This framework converts the proven CAI ATDD framework into a streamlined, integrated workflow with complete knowledge preservation for critical technical execution agents.
+The nWave framework implements the comprehensive DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER methodology. This framework provides a streamlined, integrated workflow with complete knowledge preservation for critical technical execution agents and comprehensive 5-layer testing framework.
 
 ## nWave Methodology
 
@@ -85,10 +85,10 @@ The architecture-diagram-manager provides complete visual architecture lifecycle
 
 ## Installation
 
-1. Place this framework in your AI-Craft installation:
+1. Place this framework in your nWave installation:
 
    ```
-   ai-craft/nWave/
+   nwave/nWave/
    ```
 
 2. Update your configuration to include the nWave framework.
@@ -165,7 +165,8 @@ The architecture-diagram-manager provides complete visual architecture lifecycle
 - Complete knowledge preservation for technical execution agents
 - Zero-risk refactoring with comprehensive safety protocols
 - Visual architecture validation throughout development lifecycle
-- Full integration with AI-Craft core functionality
+- Full integration with nWave core functionality
+- 5-layer testing framework including mutation testing (Layer 5)
 
 ## Support
 

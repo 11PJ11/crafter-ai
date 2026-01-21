@@ -93,7 +93,7 @@ def sample_yaml_file(temp_git_repo):
 
 @pytest.fixture
 def sample_markdown_file(temp_git_repo):
-    """Markdown with <!-- version: 1.0.0 --> comment"""
+    """Markdown with <!-- version: 1.4.0 --> comment"""
 
 @pytest.fixture
 def dependency_map_simple(temp_git_repo):

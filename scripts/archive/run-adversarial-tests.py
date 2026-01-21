@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Adversarial Testing Suite for AI-Craft Agents
+Adversarial Testing Suite for nWave Agents
 Executes Layer 3 (Adversarial Output Validation) and Agent Security tests
 
 This script defines comprehensive adversarial tests for all 12 agents:
@@ -496,7 +496,7 @@ def generate_markdown_report(test_plans: Dict[str, Any], output_file: Path):
 
 ## Executive Summary
 
-This report defines comprehensive adversarial tests for all AI-Craft agents:
+This report defines comprehensive adversarial tests for all nWave agents:
 
 1. **Agent Security Validation** (Universal): Validates agent protection against attacks
    - Prompt injection attacks
@@ -717,7 +717,7 @@ def generate_json_report(test_plans: Dict[str, Any], output_file: Path):
 def main():
     """Generate adversarial test plans for all agents"""
     print("=" * 60)
-    print("AI-Craft Adversarial Testing Suite")
+    print("nWave Adversarial Testing Suite")
     print("=" * 60)
     print("")
 

@@ -555,7 +555,7 @@ None identified. All sources (official Anthropic documentation and GitHub issues
 - **Sources Cited**: 8
 - **Cross-References Performed**: All major claims verified across minimum 2 independent sources
 - **Confidence Distribution**: High: 100%, Medium: 0%, Low: 0%
-- **Output File**: /mnt/c/Repositories/Projects/ai-craft/data/research/claude-code-model-selection-research.md
+- **Output File**: /mnt/c/Repositories/Projects/nwave/data/research/claude-code-model-selection-research.md
 
 ---
 

@@ -172,7 +172,7 @@ The user's goal is **fully achievable** with current Claude Code capabilities. N
 ## Full Research Report
 
 Comprehensive research document available at:
-`/mnt/c/Repositories/Projects/ai-craft/data/research/claude-code-model-selection-research.md`
+`/mnt/c/Repositories/Projects/nwave/data/research/claude-code-model-selection-research.md`
 
 Contains:
 - Detailed findings with evidence and citations

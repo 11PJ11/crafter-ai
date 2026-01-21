@@ -1,8 +1,8 @@
-<!-- version: 1.0.0 -->
+<!-- version: 1.4.0 -->
 
 # nWave Scripts Directory
 
-Organized scripts for AI-Craft/nWave framework operations, validation, and installation.
+Organized scripts for nWave/nWave framework operations, validation, and installation.
 
 ## Directory Structure
 
@@ -30,14 +30,14 @@ scripts/
 │   └── detect-conflicts.sh         # Agent/command coupling detection
 │
 ├── install/             # Installation tools (Python cross-platform + legacy shell)
-│   ├── install_ai_craft.py          # Framework installation (RECOMMENDED)
-│   ├── uninstall_ai_craft.py        # Framework removal (RECOMMENDED)
-│   ├── update_ai_craft.py           # Update pipeline (RECOMMENDED)
+│   ├── install_nwave.py          # Framework installation (RECOMMENDED)
+│   ├── uninstall_nwave.py        # Framework removal (RECOMMENDED)
+│   ├── update_nwave.py           # Update pipeline (RECOMMENDED)
 │   ├── enhanced_backup_system.py    # Backup management (RECOMMENDED)
 │   ├── install_utils.py             # Shared utilities module
-│   ├── install-ai-craft.sh          # Legacy shell version
-│   ├── uninstall-ai-craft.sh        # Legacy shell version
-│   ├── update-ai-craft.sh           # Legacy shell version
+│   ├── install-nwave.sh          # Legacy shell version
+│   ├── uninstall-nwave.sh        # Legacy shell version
+│   ├── update-nwave.sh           # Legacy shell version
 │   ├── enhanced-backup-system.sh    # Legacy shell version
 │   └── README.md                    # Detailed installation docs
 │
@@ -95,26 +95,26 @@ pre-commit run --all-files
 
 ### Installation
 
-Install AI-Craft framework (Python - cross-platform):
+Install nWave framework (Python - cross-platform):
 ```bash
-python scripts/install/install_ai_craft.py
+python scripts/install/install_nwave.py
 ```
 
 Update framework:
 ```bash
-python scripts/install/update_ai_craft.py --backup
+python scripts/install/update_nwave.py --backup
 ```
 
 Uninstall framework:
 ```bash
-python scripts/install/uninstall_ai_craft.py --backup
+python scripts/install/uninstall_nwave.py --backup
 ```
 
 Legacy shell versions (Unix/Mac only):
 ```bash
-bash scripts/install/install-ai-craft.sh  # Legacy
-bash scripts/install/update-ai-craft.sh   # Legacy
-bash scripts/install/uninstall-ai-craft.sh # Legacy
+bash scripts/install/install-nwave.sh  # Legacy
+bash scripts/install/update-nwave.sh   # Legacy
+bash scripts/install/uninstall-nwave.sh # Legacy
 ```
 
 See `scripts/install/README.md` for detailed installation documentation.

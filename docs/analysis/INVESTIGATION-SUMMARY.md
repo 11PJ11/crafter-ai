@@ -140,9 +140,9 @@ All three parts working together = false success signal
 
 ## Files Affected
 
-- `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/agent-builder.md` (invalid YAML)
-- `/mnt/c/Repositories/Projects/ai-craft/tools/processors/agent_processor.py` (swallows exceptions)
-- `/mnt/c/Repositories/Projects/ai-craft/tools/core/build_ide_bundle.py` (error counter logic)
+- `/mnt/c/Repositories/Projects/nwave/nWave/agents/agent-builder.md` (invalid YAML)
+- `/mnt/c/Repositories/Projects/nwave/tools/processors/agent_processor.py` (swallows exceptions)
+- `/mnt/c/Repositories/Projects/nwave/tools/core/build_ide_bundle.py` (error counter logic)
 - `.github/workflows/ci.yml` (no validation)
 
 ---
@@ -150,10 +150,10 @@ All three parts working together = false success signal
 ## Next Steps
 
 1. **Read the detailed analysis**:
-   - `/mnt/c/Repositories/Projects/ai-craft/docs/analysis/root-cause-analysis.md`
+   - `/mnt/c/Repositories/Projects/nwave/docs/analysis/root-cause-analysis.md`
 
 2. **Review specific blockers**:
-   - `/mnt/c/Repositories/Projects/ai-craft/docs/analysis/ci-cd-blockers.md`
+   - `/mnt/c/Repositories/Projects/nwave/docs/analysis/ci-cd-blockers.md`
 
 3. **Implement fixes** in order (CRITICAL → HIGH → MEDIUM → Prevention)
 

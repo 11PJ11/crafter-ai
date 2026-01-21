@@ -5,7 +5,7 @@
 
 ## Purpose
 
-This document provides **concrete, runnable examples** for implementing P1 improvements (Testing, Monitoring, Error Recovery) in AI-Craft agents. Examples are production-ready and adaptable to specific agent needs.
+This document provides **concrete, runnable examples** for implementing P1 improvements (Testing, Monitoring, Error Recovery) in nWave agents. Examples are production-ready and adaptable to specific agent needs.
 
 ---
 

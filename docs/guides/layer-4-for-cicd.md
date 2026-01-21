@@ -1,12 +1,12 @@
 # Layer 4 for CI/CD
 
-**Version**: 1.2.81
+**Version**: 1.4.0
 **Date**: 2026-01-21
 **Status**: Production Ready
 
 Pipeline integration for automated peer review in CI/CD workflows.
 
-**Prerequisites**: ai-craft CLI available in CI environment.
+**Prerequisites**: nwave CLI available in CI environment.
 
 **Related Docs**:
 - [API Reference](../reference/layer-4-api-reference.md) (contracts)
@@ -22,7 +22,7 @@ Add to your pipeline:
 ```yaml
 - name: Layer 4 Review
   run: |
-    ai-craft review \
+    nwave review \
       --artifact docs/requirements/requirements.md \
       --reviewer business-analyst-reviewer \
       --fail-on-critical \
@@ -55,8 +55,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup AI-Craft
-        uses: ai-craft/setup-action@v1
+      - name: Setup nWave
+        uses: nwave/setup-action@v1
         with:
           version: '1.0.0'
 
@@ -69,7 +69,7 @@ jobs:
       - name: Run Layer 4 Review (Requirements)
         if: contains(steps.detect.outputs.changed_files, 'docs/requirements/')
         run: |
-          ai-craft review \
+          nwave review \
             --artifact docs/requirements/requirements.md \
             --reviewer business-analyst-reviewer \
             --fail-on-critical \
@@ -78,7 +78,7 @@ jobs:
       - name: Run Layer 4 Review (Architecture)
         if: contains(steps.detect.outputs.changed_files, 'docs/architecture/')
         run: |
-          ai-craft review \
+          nwave review \
             --artifact docs/architecture/architecture.md \
             --reviewer solution-architect-reviewer \
             --fail-on-critical \
@@ -87,7 +87,7 @@ jobs:
       - name: Run Layer 4 Review (Tests)
         if: contains(steps.detect.outputs.changed_files, 'tests/acceptance/')
         run: |
-          ai-craft review \
+          nwave review \
             --artifact tests/acceptance/*.feature \
             --reviewer acceptance-designer-reviewer \
             --fail-on-critical \
@@ -151,14 +151,14 @@ stages:
 
 layer4_peer_review:
   stage: test_layer4
-  image: ai-craft/cli:latest
+  image: nwave/cli:latest
   script:
     - echo "Layer 4 Adversarial Verification"
 
     # Review changed artifacts
     - |
       if [ -f "docs/requirements/requirements.md" ]; then
-        ai-craft review \
+        nwave review \
           --artifact docs/requirements/requirements.md \
           --reviewer business-analyst-reviewer \
           --fail-on-critical \
@@ -215,7 +215,7 @@ pipeline {
         script {
           def reviewResult = sh(
             script: '''
-              ai-craft review \
+              nwave review \
                 --artifact docs/requirements/requirements.md \
                 --reviewer business-analyst-reviewer \
                 --output-format json
@@ -269,7 +269,7 @@ pipeline {
 Configure when to fail the pipeline:
 
 ```yaml
-# In .ai-craft/layer4.yaml
+# In .nwave/layer4.yaml
 layer4:
   approval:
     block_on_critical: true       # Fail on any critical issue
@@ -281,7 +281,7 @@ layer4:
 Pass pipeline with warnings:
 
 ```bash
-ai-craft review \
+nwave review \
   --artifact docs/requirements/requirements.md \
   --reviewer business-analyst-reviewer \
   --warn-on-critical   # Don't fail, just warn
@@ -294,7 +294,7 @@ ai-craft review \
 ### Export to Prometheus
 
 ```yaml
-# In .ai-craft/layer4.yaml
+# In .nwave/layer4.yaml
 layer4:
   metrics:
     enabled: true
@@ -333,19 +333,19 @@ layer4:
 # GitHub Actions
 - name: Review Requirements
   if: contains(steps.detect.outputs.changed_files, 'docs/requirements/')
-  run: ai-craft review --artifact docs/requirements/ --reviewer business-analyst-reviewer
+  run: nwave review --artifact docs/requirements/ --reviewer business-analyst-reviewer
 
 - name: Review Architecture
   if: contains(steps.detect.outputs.changed_files, 'docs/architecture/')
-  run: ai-craft review --artifact docs/architecture/ --reviewer solution-architect-reviewer
+  run: nwave review --artifact docs/architecture/ --reviewer solution-architect-reviewer
 
 - name: Review Tests
   if: contains(steps.detect.outputs.changed_files, 'tests/acceptance/')
-  run: ai-craft review --artifact tests/acceptance/ --reviewer acceptance-designer-reviewer
+  run: nwave review --artifact tests/acceptance/ --reviewer acceptance-designer-reviewer
 
 - name: Review Code
   if: contains(steps.detect.outputs.changed_files, 'src/')
-  run: ai-craft review --artifact src/ --reviewer software-crafter-reviewer
+  run: nwave review --artifact src/ --reviewer software-crafter-reviewer
 ```
 
 ---
@@ -369,7 +369,7 @@ jobs:
             reviewer: acceptance-designer-reviewer
     steps:
       - run: |
-          ai-craft review \
+          nwave review \
             --artifact ${{ matrix.artifact }} \
             --reviewer ${{ matrix.reviewer }} \
             --fail-on-critical
@@ -424,7 +424,7 @@ jobs:
 ```yaml
 - name: Run review
   timeout-minutes: 15
-  run: ai-craft review --artifact ...
+  run: nwave review --artifact ...
 ```
 
 ### Missing Reviewer in CI
@@ -433,10 +433,10 @@ jobs:
 
 **Fix**: Install reviewers in CI:
 ```yaml
-- name: Setup AI-Craft
+- name: Setup nWave
   run: |
-    ./scripts/install-ai-craft.sh
-    ls $AI_CRAFT_REVIEWERS_DIR/  # Verify
+    ./scripts/install-nwave.sh
+    ls $NWAVE_REVIEWERS_DIR/  # Verify
 ```
 
 ### JSON Parse Error
@@ -445,7 +445,7 @@ jobs:
 
 **Fix**: Use explicit format:
 ```bash
-ai-craft review \
+nwave review \
   --artifact ... \
   --output-format json \
   2>/dev/null > review.json

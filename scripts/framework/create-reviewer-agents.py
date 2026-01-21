@@ -31,10 +31,10 @@ def create_reviewer_agent(base_agent_name, review_description):
     """Create a reviewer version of a base agent."""
 
     base_path = Path(
-        f"/mnt/c/Repositories/Projects/ai-craft/nWave/agents/{base_agent_name}.md"
+        f"/mnt/c/Repositories/Projects/nwave/nWave/agents/{base_agent_name}.md"
     )
     reviewer_path = Path(
-        f"/mnt/c/Repositories/Projects/ai-craft/nWave/agents/{base_agent_name}-reviewer.md"
+        f"/mnt/c/Repositories/Projects/nwave/nWave/agents/{base_agent_name}-reviewer.md"
     )
 
     if not base_path.exists():
@@ -129,7 +129,7 @@ def main():
         print("\n✅ All reviewer agents created successfully!")
         print("\nNext steps:")
         print("1. Update review.md command to auto-append -reviewer suffix")
-        print("2. Run build pipeline: ./scripts/update-ai-craft.sh")
+        print("2. Run build pipeline: ./scripts/update-nwave.sh")
         print("3. Test with: /nw:review @software-crafter task 'file.json'")
     else:
         print("\n⚠️ Some agents failed to create. Please check the errors above.")

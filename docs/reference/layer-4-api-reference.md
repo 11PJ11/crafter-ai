@@ -1,6 +1,6 @@
 # Layer 4 API Reference
 
-**Version**: 1.2.81
+**Version**: 1.4.0
 **Date**: 2026-01-21
 **Status**: Production Ready
 
@@ -177,9 +177,9 @@ class ArtifactValidationError(Exception):
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
-| `AI_CRAFT_HOME` | path | `/opt/ai-craft` | Installation directory |
-| `AI_CRAFT_AGENTS_DIR` | path | `$AI_CRAFT_HOME/nWave/agents` | Agents directory |
-| `AI_CRAFT_REVIEWERS_DIR` | path | `$AI_CRAFT_HOME/nWave/agents/reviewers` | Reviewers directory |
+| `NWAVE_HOME` | path | `/opt/nwave` | Installation directory |
+| `NWAVE_AGENTS_DIR` | path | `$NWAVE_HOME/nWave/agents` | Agents directory |
+| `NWAVE_REVIEWERS_DIR` | path | `$NWAVE_HOME/nWave/agents/reviewers` | Reviewers directory |
 | `LAYER4_AUTO_TRIGGER` | bool | `true` | Auto-trigger after Layer 1 pass |
 | `LAYER4_MAX_ITERATIONS` | int | `2` | Maximum revision iterations |
 | `LAYER4_FAIL_ON_CRITICAL` | bool | `true` | Fail pipeline on critical issues |
@@ -191,7 +191,7 @@ class ArtifactValidationError(Exception):
 
 ### Configuration File Schema
 
-**Location**: `.ai-craft/layer4.yaml`
+**Location**: `.nwave/layer4.yaml`
 
 ```yaml
 layer4:
@@ -336,14 +336,14 @@ layer4_iteration_count:
 
 | Command | Description |
 |---------|-------------|
-| `ai-craft review --artifact <path> --reviewer <id>` | Request review |
-| `ai-craft review --interactive` | Interactive review mode |
-| `ai-craft review --iteration 2` | Re-submit for iteration 2 |
-| `ai-craft status --layer 4` | Check Layer 4 status |
-| `ai-craft validate-agent <id>` | Validate reviewer agent |
-| `ai-craft test-reviewer <id> --dry-run` | Test reviewer |
-| `ai-craft escalate --issue <path>` | Escalate issue |
-| `ai-craft mediate --issue <id>` | Request mediation |
+| `nwave review --artifact <path> --reviewer <id>` | Request review |
+| `nwave review --interactive` | Interactive review mode |
+| `nwave review --iteration 2` | Re-submit for iteration 2 |
+| `nwave status --layer 4` | Check Layer 4 status |
+| `nwave validate-agent <id>` | Validate reviewer agent |
+| `nwave test-reviewer <id> --dry-run` | Test reviewer |
+| `nwave escalate --issue <path>` | Escalate issue |
+| `nwave mediate --issue <id>` | Request mediation |
 
 ### Command Flags
 

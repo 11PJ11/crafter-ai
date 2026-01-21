@@ -1,6 +1,7 @@
-# Pre-commit hooks configuration for AI-Craft nWave Framework
+# Pre-commit hooks configuration for nWave Framework
 # Install: pip install pre-commit && pre-commit install
 # Manual run: pre-commit run --all-files
+# Testing Framework: 5-Layer (Unit, Integration, Adversarial, Peer Review, Mutation Testing)
 
 repos:
   # Local hooks for nWave framework

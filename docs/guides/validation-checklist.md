@@ -1,6 +1,6 @@
 # Quick Reference: Validation and Testing Infrastructure
 
-**Quick Start Guide** for AI-Craft production validation and testing
+**Quick Start Guide** for nWave production validation and testing
 
 ---
 

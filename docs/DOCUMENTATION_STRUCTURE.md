@@ -1,6 +1,6 @@
-# AI-Craft Documentation Structure Guide
+# nWave Documentation Structure Guide
 
-**Version**: 1.2.81
+**Version**: 1.4.0
 **Date**: 2026-01-21
 **Type**: Reference + How-to Guide
 **Status**: Production Ready
@@ -9,7 +9,7 @@
 
 ## Overview
 
-This document explains how AI-Craft documentation is organized using the **DIVIO (Diataxis) Framework**, which ensures that each document serves one primary user need and has maximum usability.
+This document explains how nWave documentation is organized using the **DIVIO (Diataxis) Framework**, which ensures that each document serves one primary user need and has maximum usability.
 
 ## DIVIO Framework (Four Types)
 
@@ -22,7 +22,7 @@ Documentation is organized into exactly four types:
 - **Success Criteria**: User gains both competence AND confidence
 - **Example**: Installation guide for a new user
 
-**AI-Craft Tutorials**:
+**nWave Tutorials**:
 - `docs/installation/INSTALL.md` - Installation instructions
 - `docs/guides/jobs-to-be-done-guide.md` - Workflow orientation
 
@@ -33,7 +33,7 @@ Documentation is organized into exactly four types:
 - **Success Criteria**: User completes the task successfully
 - **Assumes**: User has baseline knowledge; needs goal completion
 
-**AI-Craft How-to Guides**:
+**nWave How-to Guides**:
 - `docs/guides/how-to-invoke-reviewers.md` - Request peer reviews
 - `docs/guides/layer-4-for-developers.md` - Programmatic review API
 - `docs/guides/layer-4-for-users.md` - Manual review workflows
@@ -47,7 +47,7 @@ Documentation is organized into exactly four types:
 - **Success Criteria**: User finds correct information quickly
 - **Assumes**: User knows what to look for
 
-**AI-Craft Reference Documents**:
+**nWave Reference Documents**:
 - `docs/reference/nwave-commands-reference.md` - Commands and agents
 - `docs/reference/reviewer-agents-reference.md` - Reviewer specifications
 - `docs/reference/layer-4-api-reference.md` - API contracts
@@ -61,7 +61,7 @@ Documentation is organized into exactly four types:
 - **Success Criteria**: User understands design rationale
 - **Assumes**: User wants to understand "why"
 
-**AI-Craft Explanations**:
+**nWave Explanations**:
 - `docs/guides/LAYER_4_IMPLEMENTATION_SUMMARY.md` - Why Layer 4 matters
 - `docs/guides/knowledge-architecture-analysis.md` - Architecture decisions
 - `README.md` (partial) - Project vision and philosophy
@@ -111,7 +111,7 @@ docs/
 
 ## How to Navigate Documentation
 
-### "I'm brand new to AI-Craft"
+### "I'm brand new to nWave"
 1. Start: `README.md` - Get oriented
 2. Read: `docs/guides/jobs-to-be-done-guide.md` - Understand when to use what
 3. Install: `docs/installation/INSTALL.md` - Set up the framework
@@ -222,7 +222,7 @@ To get hands-on with this concept, see [Layer 4 for Developers](./layer-4-for-de
 All primary documentation files include version tags for synchronization:
 
 ```markdown
-<!-- version: 1.2.81 -->
+<!-- version: 1.4.0 -->
 ```
 
 This ensures documentation stays in sync with code through pre-commit validation.
@@ -291,7 +291,7 @@ When creating new documentation:
 
 5. **Add version tag** (if user-facing):
    ```markdown
-   <!-- version: 1.2.81 -->
+   <!-- version: 1.4.0 -->
    ```
 
 6. **Cross-reference appropriately**:

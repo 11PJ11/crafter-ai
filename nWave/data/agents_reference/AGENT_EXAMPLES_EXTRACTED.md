@@ -1,6 +1,6 @@
 # Real Agent Examples - Extracted Patterns
 
-**Source**: Analysis of 15 installed AI-Craft agents
+**Source**: Analysis of 15 installed nWave agents
 **Date**: 2025-10-03
 **Purpose**: Show actual working examples from production agents
 
@@ -580,5 +580,5 @@ dependencies:
 ---
 
 **Last Updated**: 2025-10-03
-**Source Agents**: All 15 installed AI-Craft agents
+**Source Agents**: All 15 installed nWave agents
 **Usage**: Reference actual working patterns when creating new agents

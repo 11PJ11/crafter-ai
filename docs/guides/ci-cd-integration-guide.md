@@ -1,6 +1,6 @@
-# AI-Craft CI/CD Integration
+# nWave CI/CD Integration
 
-Comprehensive CI/CD pipeline with validation for the AI-Craft framework.
+Comprehensive CI/CD pipeline with validation for the nWave framework.
 
 ## 🚀 Quick Start
 

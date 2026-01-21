@@ -1,7 +1,7 @@
 # Titania Blesh Research - Integration Summary
 
 **Research Completed**: 2025-12-30
-**Comprehensive Report**: `/mnt/c/Repositories/Projects/ai-craft/data/research/narrative-craft/titania-blesh-comprehensive-research.md`
+**Comprehensive Report**: `/mnt/c/Repositories/Projects/nwave/data/research/narrative-craft/titania-blesh-comprehensive-research.md`
 
 ---
 
@@ -132,7 +132,7 @@
 
 **Recommended Approach**:
 
-**Option 1**: Add as Finding 21 in `/mnt/c/Repositories/Projects/ai-craft/data/research/narrative-craft/novel-editor-agent-comprehensive-research.md`
+**Option 1**: Add as Finding 21 in `/mnt/c/Repositories/Projects/nwave/data/research/narrative-craft/novel-editor-agent-comprehensive-research.md`
 
 **Option 2**: Reference comprehensive standalone report for detailed analysis
 
@@ -143,13 +143,13 @@
 ## Files Generated
 
 1. **Comprehensive Research** (10,000+ words):
-   `/mnt/c/Repositories/Projects/ai-craft/data/research/narrative-craft/titania-blesh-comprehensive-research.md`
+   `/mnt/c/Repositories/Projects/nwave/data/research/narrative-craft/titania-blesh-comprehensive-research.md`
 
 2. **Integration Summary** (this file):
-   `/mnt/c/Repositories/Projects/ai-craft/data/research/narrative-craft/titania-blesh-integration-summary.md`
+   `/mnt/c/Repositories/Projects/nwave/data/research/narrative-craft/titania-blesh-integration-summary.md`
 
 3. **Original Addendum** (superseded):
-   `/mnt/c/Repositories/Projects/ai-craft/data/research/narrative-craft/titania-blesh-addendum.md`
+   `/mnt/c/Repositories/Projects/nwave/data/research/narrative-craft/titania-blesh-addendum.md`
 
 ---
 

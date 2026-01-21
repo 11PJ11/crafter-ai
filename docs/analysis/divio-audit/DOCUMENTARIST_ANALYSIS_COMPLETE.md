@@ -1,9 +1,9 @@
 # Documentarist Analysis Complete
 
-**Version**: 1.2.81
+**Version**: 1.4.0
 **Date**: 2026-01-21
 **Agent**: Quill, Documentation Quality Guardian
-**Scope**: DIVIO Classification of AI-Craft User Documentation
+**Scope**: DIVIO Classification of nWave User Documentation
 **Status**: ✅ ANALYSIS COMPLETE - RESTRUCTURING IMPLEMENTED
 
 ---
@@ -234,19 +234,19 @@ I systematically classified all primary user-facing documentation in `/docs/` di
 ## Files Generated
 
 1. **DOCUMENTATION_CLASSIFICATION_REPORT.yaml**
-   - Location: `/mnt/c/Repositories/Projects/ai-craft/DOCUMENTATION_CLASSIFICATION_REPORT.yaml`
+   - Location: `/mnt/c/Repositories/Projects/nwave/DOCUMENTATION_CLASSIFICATION_REPORT.yaml`
    - Size: 500+ lines
    - Format: Structured YAML for analysis tools
    - Purpose: Detailed technical classification report
 
 2. **DIVIO_CLASSIFICATION_SUMMARY.md**
-   - Location: `/mnt/c/Repositories/Projects/ai-craft/DIVIO_CLASSIFICATION_SUMMARY.md`
+   - Location: `/mnt/c/Repositories/Projects/nwave/DIVIO_CLASSIFICATION_SUMMARY.md`
    - Size: 400+ lines
    - Format: Executive summary with recommendations
    - Purpose: High-level overview for stakeholders
 
 3. **DOCUMENTATION_RESTRUCTURING_ACTION_PLAN.md**
-   - Location: `/mnt/c/Repositories/Projects/ai-craft/DOCUMENTATION_RESTRUCTURING_ACTION_PLAN.md`
+   - Location: `/mnt/c/Repositories/Projects/nwave/DOCUMENTATION_RESTRUCTURING_ACTION_PLAN.md`
    - Size: 600+ lines
    - Format: Detailed implementation guide
    - Purpose: Step-by-step instructions for remediation
@@ -323,7 +323,7 @@ A: Split HOW_TO_INVOKE_REVIEWERS.md (highest collapse severity + cleanest soluti
 
 ## Conclusion
 
-The AI-Craft documentation has a strong foundation (8/12 files properly classified) but suffers from **documentation collapse** in 2 critical files. These files inappropriately mix multiple DIVIO types, confusing readers about document purpose.
+The nWave documentation has a strong foundation (8/12 files properly classified) but suffers from **documentation collapse** in 2 critical files. These files inappropriately mix multiple DIVIO types, confusing readers about document purpose.
 
 Implementing the recommended restructuring (3 files into 7 properly-classified documents) will:
 

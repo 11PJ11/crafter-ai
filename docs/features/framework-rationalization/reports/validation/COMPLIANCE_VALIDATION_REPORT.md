@@ -7,7 +7,7 @@
 
 ## Executive Summary
 
-This report validates all AI-Craft agents against AGENT_TEMPLATE.yaml v1.2 production framework requirements.
+This report validates all nWave agents against AGENT_TEMPLATE.yaml v1.2 production framework requirements.
 
 ### Validation Criteria
 

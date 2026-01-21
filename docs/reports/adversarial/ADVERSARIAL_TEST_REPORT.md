@@ -6,7 +6,7 @@
 
 ## Executive Summary
 
-This report defines comprehensive adversarial tests for all AI-Craft agents:
+This report defines comprehensive adversarial tests for all nWave agents:
 
 1. **Agent Security Validation** (Universal): Validates agent protection against attacks
    - Prompt injection attacks

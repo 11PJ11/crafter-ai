@@ -193,7 +193,7 @@ Two comprehensive analysis documents were created to guide this work:
 
 2. **RENAME_MAPPING.md** - Detailed mapping showing old → new filenames, cross-reference locations, and step-by-step implementation plan
 
-Both documents are in `/mnt/c/Repositories/Projects/ai-craft/docs/analysis/` for future reference.
+Both documents are in `/mnt/c/Repositories/Projects/nwave/docs/analysis/` for future reference.
 
 ---
 

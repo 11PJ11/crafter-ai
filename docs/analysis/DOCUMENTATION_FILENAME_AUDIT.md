@@ -227,13 +227,13 @@ mv docs/guides/CI-CD-README.md docs/guides/ci-cd-integration-guide.md
 ### Phase 2: Update Cross-References
 
 **Files requiring link updates**:
-1. `/mnt/c/Repositories/Projects/ai-craft/README.md`
-2. `/mnt/c/Repositories/Projects/ai-craft/docs/reference/reviewer-agents-reference.md`
-3. `/mnt/c/Repositories/Projects/ai-craft/docs/reference/nwave-commands-reference.md`
-4. `/mnt/c/Repositories/Projects/ai-craft/docs/guides/layer-4-for-developers.md`
-5. `/mnt/c/Repositories/Projects/ai-craft/docs/guides/layer-4-for-users.md`
-6. `/mnt/c/Repositories/Projects/ai-craft/docs/guides/layer-4-for-cicd.md`
-7. `/mnt/c/Repositories/Projects/ai-craft/.dependency-map.yaml`
+1. `/mnt/c/Repositories/Projects/nwave/README.md`
+2. `/mnt/c/Repositories/Projects/nwave/docs/reference/reviewer-agents-reference.md`
+3. `/mnt/c/Repositories/Projects/nwave/docs/reference/nwave-commands-reference.md`
+4. `/mnt/c/Repositories/Projects/nwave/docs/guides/layer-4-for-developers.md`
+5. `/mnt/c/Repositories/Projects/nwave/docs/guides/layer-4-for-users.md`
+6. `/mnt/c/Repositories/Projects/nwave/docs/guides/layer-4-for-cicd.md`
+7. `/mnt/c/Repositories/Projects/nwave/.dependency-map.yaml`
 
 ### Phase 3: Version Bump
 

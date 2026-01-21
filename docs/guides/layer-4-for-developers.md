@@ -1,6 +1,6 @@
 # Layer 4 for Developers
 
-**Version**: 1.2.81
+**Version**: 1.4.0
 **Date**: 2026-01-21
 **Status**: Production Ready
 
@@ -18,7 +18,7 @@ Programmatic integration guide for invoking Layer 4 peer review in code.
 ## Quick Start
 
 ```python
-from ai_craft.layer4 import ReviewOrchestrator
+from nwave.layer4 import ReviewOrchestrator
 
 orchestrator = ReviewOrchestrator()
 result = orchestrator.request_review(
@@ -37,8 +37,8 @@ if result.approved:
 ### Python
 
 ```python
-from ai_craft.agents import load_agent, invoke_review
-from ai_craft.layer4 import ReviewOrchestrator
+from nwave.agents import load_agent, invoke_review
+from nwave.layer4 import ReviewOrchestrator
 
 # Step 1: Load primary agent and produce artifact
 business_analyst = load_agent("business-analyst")
@@ -73,7 +73,7 @@ else:
 ### TypeScript
 
 ```typescript
-import { loadAgent, ReviewOrchestrator } from '@ai-craft/agents';
+import { loadAgent, ReviewOrchestrator } from '@nwave/agents';
 
 async function executeWithPeerReview() {
   // Step 1: Produce artifact
@@ -114,7 +114,7 @@ async function executeWithPeerReview() {
 Customize review focus with specific criteria:
 
 ```python
-from ai_craft.layer4 import ReviewOrchestrator, ReviewCriteria
+from nwave.layer4 import ReviewOrchestrator, ReviewCriteria
 
 custom_criteria = ReviewCriteria(
     critical_bias_patterns=["technology_assumption", "happy_path_only"],
@@ -158,7 +158,7 @@ review_result = orchestrator.request_review(
 Handle specific error conditions:
 
 ```python
-from ai_craft.layer4.exceptions import (
+from nwave.layer4.exceptions import (
     ReviewerNotFoundError,
     MaxIterationsExceededError,
     ReviewerDisagreementError,
@@ -239,8 +239,8 @@ if result.approved:
 
 ```python
 import pytest
-from ai_craft.layer4 import ReviewOrchestrator
-from ai_craft.layer4.mocks import MockReviewer
+from nwave.layer4 import ReviewOrchestrator
+from nwave.layer4.mocks import MockReviewer
 
 def test_review_approval():
     orchestrator = ReviewOrchestrator()
@@ -282,12 +282,12 @@ def test_review_rejection():
 **Fix**:
 ```python
 # List available reviewers
-from ai_craft.agents import list_reviewers
+from nwave.agents import list_reviewers
 print(list_reviewers())
 
 # Verify installation
 import os
-reviewers_dir = os.environ.get("AI_CRAFT_REVIEWERS_DIR")
+reviewers_dir = os.environ.get("NWAVE_REVIEWERS_DIR")
 print(os.listdir(reviewers_dir))
 ```
 
@@ -308,7 +308,7 @@ orchestrator = ReviewOrchestrator(
 
 **Fix**: Run Layer 1 tests first:
 ```python
-from ai_craft.layer1 import validate_artifact
+from nwave.layer1 import validate_artifact
 
 errors = validate_artifact(artifact)
 if errors:

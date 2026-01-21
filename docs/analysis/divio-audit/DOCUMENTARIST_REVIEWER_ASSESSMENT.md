@@ -98,7 +98,7 @@ All documents meet optimal readability targets.
 
 **Structure Review**:
 ```
-✅ What is AI-Craft? (4-sentence elevator pitch)
+✅ What is nWave? (4-sentence elevator pitch)
 ✅ Quick Start (5-minute installation + first feature)
 ✅ Documentation Structure (DIVIO-based navigation)
 ✅ Core Concepts (Workflow and agents overview)
@@ -351,7 +351,7 @@ Example: [Jobs To Be Done Guide](../guides/jobs-to-be-done-guide.md)
 ### Metadata Consistency
 
 ✅ **Version Tags Synchronized**:
-- README.md: `<!-- version: 1.2.81 -->`
+- README.md: `<!-- version: 1.4.0 -->`
 - All guide documents: Marked as Version 1.2.81, Date 2026-01-21
 - Pre-commit hook enforces synchronization
 - `.dependency-map.yaml` tracks dependencies
@@ -463,7 +463,7 @@ Either:
 ```markdown
 ## Quick Navigation
 
-- **New to AI-Craft?** → [Quick Start](#quick-start)
+- **New to nWave?** → [Quick Start](#quick-start)
 - **Want step-by-step setup?** → [Installation Guide](docs/installation/INSTALL.md)
 - **Need to accomplish a task?** → [How-To Guides](docs/guides/)
 - **Looking up command syntax?** → [Commands Reference](docs/reference/nwave-commands-reference.md)
@@ -567,4 +567,4 @@ The project is well-positioned for users to find documentation easily and mainta
 **Reviewer**: Quill, Documentation Quality Guardian
 **Method**: DIVIO/Diataxis Framework with adversarial verification
 **Date**: 2026-01-21
-**Version**: 1.2.81
+**Version**: 1.4.0

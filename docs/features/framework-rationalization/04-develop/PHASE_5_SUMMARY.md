@@ -157,8 +157,8 @@ Total: 37 passing tests
 - **Integration Tests**: 1 test
 
 ### Test Files
-- `/mnt/c/Repositories/Projects/ai-craft/tests/test_release_packaging.py` (22 tests)
-- `/mnt/c/Repositories/Projects/ai-craft/tests/test_release_validation.py` (15 tests)
+- `/mnt/c/Repositories/Projects/nwave/tests/test_release_packaging.py` (22 tests)
+- `/mnt/c/Repositories/Projects/nwave/tests/test_release_validation.py` (15 tests)
 
 ### Running Tests
 ```bash

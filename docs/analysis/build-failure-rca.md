@@ -23,14 +23,14 @@ Both are legitimately blocking issues that require fixing. Neither are configura
 ### Symptom
 ```
 ERROR - Could not resolve dependency: data/docs/features/framework-rationalization/04-develop/p0-01-analysis.md
-ERROR - Error processing agent /mnt/c/Repositories/Projects/ai-craft/nWave/agents/agent-builder-reviewer.md
+ERROR - Error processing agent /mnt/c/Repositories/Projects/nwave/nWave/agents/agent-builder-reviewer.md
 ```
 
 ### 5-Whys Analysis
 
 **WHY #1: What immediate cause produces this error?**
 
-The build system attempts to resolve a file reference in `agent-builder-reviewer.md` dependencies section but the file does not exist at the specified path: `/mnt/c/Repositories/Projects/ai-craft/nWave/data/docs/features/framework-rationalization/04-develop/p0-01-analysis.md`
+The build system attempts to resolve a file reference in `agent-builder-reviewer.md` dependencies section but the file does not exist at the specified path: `/mnt/c/Repositories/Projects/nwave/nWave/data/docs/features/framework-rationalization/04-develop/p0-01-analysis.md`
 
 **Evidence**:
 - Directory verification: `./nWave/data/docs/features/` does not exist

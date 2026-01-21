@@ -1322,4 +1322,4 @@ alert_conditions = {
 **Document Status**: Complete
 **Last Updated**: 2025-10-03
 **Next Review**: When creating agent-creation-agent
-**Maintained By**: AI-Craft Framework Team
+**Maintained By**: nWave Framework Team

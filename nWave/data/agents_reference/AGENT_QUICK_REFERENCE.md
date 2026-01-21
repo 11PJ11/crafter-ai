@@ -1,4 +1,4 @@
-# AI-Craft Agent Quick Reference
+# nWave Agent Quick Reference
 
 **Purpose**: Fast reference for creating new agents using proven patterns from existing agents
 **Version**: 1.0 (2025-10-03)
@@ -593,7 +593,7 @@ scripts/build-ide-bundle.sh
     ↓
 dist/ide/agents/{agent}.md
     ↓
-scripts/install-ai-craft.sh
+scripts/install-nwave.sh
     ↓
 ~/.claude/agents/nw/{agent}.md
 ```

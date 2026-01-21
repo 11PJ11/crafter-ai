@@ -1,6 +1,6 @@
 # Reviewer Agents Reference
 
-**Version**: 1.2.81
+**Version**: 1.4.0
 **Date**: 2026-01-21
 **Status**: Production Ready
 
@@ -103,7 +103,7 @@ nWave/agents/
 
 ### Configuration File
 
-**Location**: `.ai-craft/layer4.yaml`
+**Location**: `.nwave/layer4.yaml`
 
 ```yaml
 layer_4_config:

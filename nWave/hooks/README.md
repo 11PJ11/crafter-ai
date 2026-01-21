@@ -1,10 +1,10 @@
-<!-- version: 1.0.0 -->
+<!-- version: 1.4.0 -->
 
 # nWave Git Hooks
 
 This directory contains git hooks for the nWave 14-phase TDD methodology.
 
-**IMPORTANT**: These hooks are templates that get installed in target projects when running `/nw:develop`. They are NOT active in this ai-craft repository.
+**IMPORTANT**: These hooks are templates that get installed in target projects when running `/nw:develop`. They are NOT active in this nwave repository.
 
 ## Build-Time Embedding
 

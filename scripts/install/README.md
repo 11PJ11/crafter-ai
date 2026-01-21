@@ -1,35 +1,35 @@
-<!-- version: 1.0.0 -->
+<!-- version: 1.4.0 -->
 
-# AI-Craft Installation Scripts
+# nWave Installation Scripts
 
 Cross-platform Python-based installation tools for the nWave methodology framework.
 
 ## Overview
 
-This directory contains Python scripts for installing, uninstalling, updating, and backing up the AI-Craft framework. All scripts are cross-platform compatible (Windows, Mac, Linux).
+This directory contains Python scripts for installing, uninstalling, updating, and backing up the nWave framework. All scripts are cross-platform compatible (Windows, Mac, Linux).
 
 ## Files
 
 ### Core Scripts
 
-1. **`install_ai_craft.py`** - Main installation script
+1. **`install_nwave.py`** - Main installation script
    - Installs nWave framework to `~/.claude/`
    - Automatically builds framework if needed
    - Version-aware utility script management
    - Creates installation backups
 
-2. **`uninstall_ai_craft.py`** - Uninstallation script
-   - Completely removes AI-Craft framework
+2. **`uninstall_nwave.py`** - Uninstallation script
+   - Completely removes nWave framework
    - Optional backup before removal
    - Validates complete uninstallation
 
-3. **`update_ai_craft.py`** - Update orchestrator
+3. **`update_nwave.py`** - Update orchestrator
    - Automates: Build → Uninstall → Install
    - Pre-update backups
    - Validates update success
 
 4. **`enhanced_backup_system.py`** - Advanced backup system
-   - Framework conflict detection (SuperClaude vs AI-Craft)
+   - Framework conflict detection (SuperClaude vs nWave)
    - Namespace separation implementation
    - Restoration script generation
    - Comprehensive backup manifests
@@ -49,48 +49,48 @@ This directory contains Python scripts for installing, uninstalling, updating, a
 
 ```bash
 # Basic installation
-python scripts/install/install_ai_craft.py
+python scripts/install/install_nwave.py
 
 # Dry run (show what would be installed)
-python scripts/install/install_ai_craft.py --dry-run
+python scripts/install/install_nwave.py --dry-run
 
 # Create backup only
-python scripts/install/install_ai_craft.py --backup-only
+python scripts/install/install_nwave.py --backup-only
 
 # Restore from latest backup
-python scripts/install/install_ai_craft.py --restore
+python scripts/install/install_nwave.py --restore
 ```
 
 ### Uninstallation
 
 ```bash
 # Interactive uninstall with confirmation
-python scripts/install/uninstall_ai_craft.py
+python scripts/install/uninstall_nwave.py
 
 # With backup before removal
-python scripts/install/uninstall_ai_craft.py --backup
+python scripts/install/uninstall_nwave.py --backup
 
 # Force uninstall without prompts
-python scripts/install/uninstall_ai_craft.py --force
+python scripts/install/uninstall_nwave.py --force
 
 # Dry run
-python scripts/install/uninstall_ai_craft.py --dry-run
+python scripts/install/uninstall_nwave.py --dry-run
 ```
 
 ### Update
 
 ```bash
 # Interactive update
-python scripts/install/update_ai_craft.py
+python scripts/install/update_nwave.py
 
 # With comprehensive backup
-python scripts/install/update_ai_craft.py --backup
+python scripts/install/update_nwave.py --backup
 
 # Automated update (no prompts)
-python scripts/install/update_ai_craft.py --force --backup
+python scripts/install/update_nwave.py --force --backup
 
 # Dry run
-python scripts/install/update_ai_craft.py --dry-run
+python scripts/install/update_nwave.py --dry-run
 ```
 
 ### Enhanced Backup System
@@ -134,7 +134,7 @@ python scripts/install/enhanced_backup_system.py status
 ### Backup & Recovery
 
 - **Comprehensive Backups**: Agents, commands, config files
-- **Conflict Detection**: Identifies framework conflicts (AI-Craft vs SuperClaude)
+- **Conflict Detection**: Identifies framework conflicts (nWave vs SuperClaude)
 - **Namespace Separation**: Implements `/sc/` and `/cai/` separation
 - **Restoration Scripts**: Auto-generated bash restoration scripts
 - **Backup Manifests**: JSON manifests with full metadata
@@ -158,20 +158,20 @@ python scripts/install/enhanced_backup_system.py status
 ├── templates/          # Canonical schemas
 │   └── step-tdd-cycle-schema.json
 ├── backups/            # Installation backups
-│   ├── pre_ai_craft_<timestamp>/
-│   ├── ai-craft-install-<timestamp>/
-│   ├── ai-craft-uninstall-<timestamp>/
-│   ├── ai-craft-update-<timestamp>/
+│   ├── pre_nwave_<timestamp>/
+│   ├── nwave-install-<timestamp>/
+│   ├── nwave-uninstall-<timestamp>/
+│   ├── nwave-update-<timestamp>/
 │   └── restore_scripts/
-└── ai-craft-manifest.txt  # Installation manifest
+└── nwave-manifest.txt  # Installation manifest
 ```
 
 ## Logs
 
 All operations are logged to:
-- `~/.claude/ai-craft-install.log` - Installation logs
-- `~/.claude/ai-craft-uninstall.log` - Uninstallation logs
-- `~/.claude/ai-craft-update.log` - Update logs
+- `~/.claude/nwave-install.log` - Installation logs
+- `~/.claude/nwave-uninstall.log` - Uninstallation logs
+- `~/.claude/nwave-update.log` - Update logs
 - `~/.claude/backup_system.log` - Backup system logs
 
 ## Error Handling
@@ -183,7 +183,7 @@ All operations are logged to:
 
 ## Migration from Shell Scripts
 
-The original shell scripts (`install-ai-craft.sh`, `uninstall-ai-craft.sh`, `update-ai-craft.sh`, `enhanced-backup-system.sh`) have been superseded by these Python versions.
+The original shell scripts (`install-nwave.sh`, `uninstall-nwave.sh`, `update-nwave.sh`, `enhanced-backup-system.sh`) have been superseded by these Python versions.
 
 **Advantages of Python versions**:
 - Cross-platform (Windows support)
@@ -214,9 +214,9 @@ The original shell scripts (`install-ai-craft.sh`, `uninstall-ai-craft.sh`, `upd
 
 ```bash
 # Test all scripts with dry-run
-python scripts/install/install_ai_craft.py --dry-run
-python scripts/install/uninstall_ai_craft.py --dry-run
-python scripts/install/update_ai_craft.py --dry-run
+python scripts/install/install_nwave.py --dry-run
+python scripts/install/uninstall_nwave.py --dry-run
+python scripts/install/update_nwave.py --dry-run
 
 # Test backup system
 python scripts/install/enhanced_backup_system.py status
@@ -250,4 +250,4 @@ python scripts/install/enhanced_backup_system.py list
 
 ## License
 
-Part of the AI-Craft framework. See project LICENSE for details.
+Part of the nWave framework. See project LICENSE for details.

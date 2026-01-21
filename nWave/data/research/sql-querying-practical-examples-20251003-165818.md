@@ -1892,7 +1892,7 @@ WHERE order_date >= '2024-10-01'
 - **Sources Cited**: 22 (100% citation rate)
 - **Cross-References Performed**: 35+ (multiple sources per major concept)
 - **Confidence Distribution**: High: 100% (11/11 findings)
-- **Output File**: /mnt/c/Repositories/Projects/ai-craft/docs/research/sql-querying-practical-examples-20251003-165818.md
+- **Output File**: /mnt/c/Repositories/Projects/nwave/docs/research/sql-querying-practical-examples-20251003-165818.md
 
 ---
 

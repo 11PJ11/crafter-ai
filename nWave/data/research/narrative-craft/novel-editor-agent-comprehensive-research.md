@@ -756,7 +756,7 @@ Quote: "With no text to slow the reader down between lines, we can only assume t
 
 **Limitation**: No access to actual text for computational linguistic analysis. All findings based on reader reviews, publisher descriptions, and author statements.
 
-**Detailed Research**: Full comprehensive analysis (789 lines, 8 patterns with evidence, 5 knowledge gaps documented) available at `/mnt/c/Repositories/Projects/ai-craft/data/research/narrative-craft/titania-blesh-comprehensive-research.md`
+**Detailed Research**: Full comprehensive analysis (789 lines, 8 patterns with evidence, 5 knowledge gaps documented) available at `/mnt/c/Repositories/Projects/nwave/data/research/narrative-craft/titania-blesh-comprehensive-research.md`
 
 ---
 
@@ -1125,7 +1125,7 @@ Quote: "With no text to slow the reader down between lines, we can only assume t
 - **Sources Cited**: 24 (including partial information from homepages)
 - **Cross-References Performed**: 12 (findings verified across multiple sources)
 - **Confidence Distribution**: High: 60%, Medium: 30%, Low: 10%
-- **Output File**: /mnt/c/Repositories/Projects/ai-craft/data/research/narrative-craft/novel-editor-agent-comprehensive-research.md
+- **Output File**: /mnt/c/Repositories/Projects/nwave/data/research/narrative-craft/novel-editor-agent-comprehensive-research.md
 - **Primary Genre Focus**: Fantasy, Science Fiction, Romantasy (commercial fiction)
 - **Research Approach**: Pragmatic craft techniques from successful authors rather than academic literary theory
 

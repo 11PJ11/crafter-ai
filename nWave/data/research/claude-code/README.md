@@ -56,7 +56,7 @@ Step-by-step practical guide with:
 - Testing and verification procedures
 - Troubleshooting section
 - Performance expectations
-- Integration with AI-Craft project
+- Integration with nWave project
 
 **Read time**: 10 minutes | **Best for**: Implementation and immediate action
 
@@ -219,7 +219,7 @@ If citing this research:
 "Claude Code Model Selection Research (2025-10-17), Evidence-Driven Knowledge Researcher"
 
 **Full Citation**:
-"Nova. Claude Code Model Selection: Comprehensive Research Report. Evidence-based investigation of model selection capabilities in Anthropic's Claude Code commands. October 17, 2025. Available at: /mnt/c/Repositories/Projects/ai-craft/data/research/"
+"Nova. Claude Code Model Selection: Comprehensive Research Report. Evidence-based investigation of model selection capabilities in Anthropic's Claude Code commands. October 17, 2025. Available at: /mnt/c/Repositories/Projects/nwave/data/research/"
 
 ---
 

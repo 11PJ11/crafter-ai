@@ -1147,7 +1147,7 @@ The adversarial validation process confirms this research meets the highest stan
   - Medium-High: 2 findings (9%)
   - Medium: 2 findings (9%)
 - **Average Source Reputation Score**: 0.96 (high)
-- **Output File**: /mnt/c/Repositories/Projects/ai-craft/docs/research/database-querying-design-security-governance-20251003-150123.md
+- **Output File**: /mnt/c/Repositories/Projects/nwave/docs/research/database-querying-design-security-governance-20251003-150123.md
 - **Research Quality Metrics**:
   - Citation coverage: 100% (all claims evidence-backed)
   - Cross-reference rate: 100% (all major claims cross-verified)
@@ -1161,6 +1161,6 @@ The adversarial validation process confirms this research meets the highest stan
 
 **Research Complete**: 2025-10-03T15:01:23Z
 
-**Prepared for**: AI-Craft Framework - Data Engineer Expert Agent Development
+**Prepared for**: nWave Framework - Data Engineer Expert Agent Development
 
 **Next Steps**: Use this research as knowledge base for implementing data engineer agent with comprehensive understanding of database querying, design patterns, security best practices, lineage tracking, and governance frameworks.

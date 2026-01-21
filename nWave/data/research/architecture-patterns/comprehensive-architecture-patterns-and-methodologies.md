@@ -1043,4 +1043,4 @@ For smaller projects, lightweight approaches exist:
 - **Sources Cited**: 45
 - **Cross-References Performed**: 30
 - **Confidence Distribution**: High: 100%, Medium: 0%, Low: 0%
-- **Output File**: /mnt/c/Repositories/Projects/ai-craft/data/research/architecture-patterns/comprehensive-architecture-patterns-and-methodologies.md
+- **Output File**: /mnt/c/Repositories/Projects/nwave/data/research/architecture-patterns/comprehensive-architecture-patterns-and-methodologies.md

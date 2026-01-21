@@ -34,7 +34,7 @@
       "Bash(chmod:*)",
       "Bash(cat:*)",
       "Bash(tree:*)",
-      "Bash(./scripts/update-ai-craft.sh:*)",
+      "Bash(./scripts/update-nwave.sh:*)",
       "WebFetch(domain:cucumber.io)",
       "WebFetch(domain:specflow.org)",
       "WebFetch(domain:dannorth.net)",

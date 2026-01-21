@@ -1,17 +1,17 @@
-# AI-Craft Framework Uninstallation Guide
+# nWave Framework Uninstallation Guide
 
-Complete guide for removing the AI-Craft ATDD agent framework from your system.
+Complete guide for removing the nWave ATDD agent framework from your system.
 
 ## Overview
 
-The AI-Craft framework consists of 41+ specialized AI agents, commands, configuration files, and supporting infrastructure installed in your global Claude configuration directory. This guide provides comprehensive instructions for complete removal.
+The nWave framework consists of 41+ specialized AI agents, commands, configuration files, and supporting infrastructure installed in your global Claude configuration directory. This guide provides comprehensive instructions for complete removal.
 
 ## ⚠️ Important Warnings
 
-- **Irreversible Action**: Uninstallation permanently removes all AI-Craft components
+- **Irreversible Action**: Uninstallation permanently removes all nWave components
 - **Custom Configurations Lost**: Any customizations or local changes will be deleted
 - **Backup Recommended**: Use the `--backup` option to preserve your installation before removal
-- **System Impact**: Removal affects all projects that use AI-Craft commands globally
+- **System Impact**: Removal affects all projects that use nWave commands globally
 
 ## Quick Uninstall
 
@@ -20,19 +20,19 @@ For immediate removal without backup:
 ### Windows (PowerShell)
 
 ```powershell
-.\uninstall-ai-craft.ps1 -Force
+.\uninstall-nwave.ps1 -Force
 ```
 
 ### Windows (Command Prompt)
 
 ```cmd
-uninstall-ai-craft.bat --force
+uninstall-nwave.bat --force
 ```
 
 ### Linux/Mac
 
 ```bash
-./uninstall-ai-craft.sh --force
+./uninstall-nwave.sh --force
 ```
 
 ## Safe Uninstall with Backup
@@ -42,24 +42,24 @@ Recommended approach that creates a backup before removal:
 ### Windows (PowerShell)
 
 ```powershell
-.\uninstall-ai-craft.ps1 -Backup
+.\uninstall-nwave.ps1 -Backup
 ```
 
 ### Windows (Command Prompt)
 
 ```cmd
-uninstall-ai-craft.bat --backup
+uninstall-nwave.bat --backup
 ```
 
 ### Linux/Mac
 
 ```bash
-./uninstall-ai-craft.sh --backup
+./uninstall-nwave.sh --backup
 ```
 
 ## What Gets Removed
 
-The uninstall scripts remove all AI-Craft components:
+The uninstall scripts remove all nWave components:
 
 ### Agent Files
 
@@ -79,43 +79,43 @@ The uninstall scripts remove all AI-Craft components:
 ### Command Files
 
 - **Location**: `~/.claude/commands/cai/`
-- **Contents**: All AI-Craft commands including:
+- **Contents**: All nWave commands including:
   - `cai/atdd` - Main ATDD workflow command
   - Supporting command infrastructure (20 command files)
 
 ### Configuration Files
 
-- **ai-craft-manifest.txt** - Installation manifest and metadata
-- **ai-craft-install.log** - Installation history and logs
+- **nwave-manifest.txt** - Installation manifest and metadata
+- **nwave-install.log** - Installation history and logs
 - **constants.md** - Framework configuration (if not in cai subdirectory)
 
 ### Backup Directories
 
-- **Location**: `~/.claude/backups/ai-craft-*`
-- **Contents**: All previous AI-Craft installation backups
+- **Location**: `~/.claude/backups/nwave-*`
+- **Contents**: All previous nWave installation backups
 - **Note**: Current uninstall backup (if created) is preserved
 
 ### Project State Files
 
-- **Location**: `~/.claude/projects/*ai-craft*`
-- **Contents**: AI-Craft related project state and metadata
+- **Location**: `~/.claude/projects/*nwave*`
+- **Contents**: nWave related project state and metadata
 
 ## Uninstall Scripts Reference
 
-### Windows Batch Script (`uninstall-ai-craft.bat`)
+### Windows Batch Script (`uninstall-nwave.bat`)
 
 ```cmd
 # Interactive uninstall with confirmation
-uninstall-ai-craft.bat
+uninstall-nwave.bat
 
 # Create backup before removal
-uninstall-ai-craft.bat --backup
+uninstall-nwave.bat --backup
 
 # Force removal without prompts
-uninstall-ai-craft.bat --force
+uninstall-nwave.bat --force
 
 # Show help information
-uninstall-ai-craft.bat --help
+uninstall-nwave.bat --help
 ```
 
 **Features**:
@@ -127,20 +127,20 @@ uninstall-ai-craft.bat --help
 - Color-coded output
 - Error handling and recovery
 
-### PowerShell Script (`uninstall-ai-craft.ps1`)
+### PowerShell Script (`uninstall-nwave.ps1`)
 
 ```powershell
 # Interactive uninstall with confirmation
-.\uninstall-ai-craft.ps1
+.\uninstall-nwave.ps1
 
 # Create backup before removal
-.\uninstall-ai-craft.ps1 -Backup
+.\uninstall-nwave.ps1 -Backup
 
 # Force removal without prompts
-.\uninstall-ai-craft.ps1 -Force
+.\uninstall-nwave.ps1 -Force
 
 # Show help information
-.\uninstall-ai-craft.ps1 -Help
+.\uninstall-nwave.ps1 -Help
 ```
 
 **Features**:
@@ -152,20 +152,20 @@ uninstall-ai-craft.bat --help
 - Detailed validation
 - Cross-platform PowerShell support
 
-### Bash Script (`uninstall-ai-craft.sh`)
+### Bash Script (`uninstall-nwave.sh`)
 
 ```bash
 # Interactive uninstall with confirmation
-./uninstall-ai-craft.sh
+./uninstall-nwave.sh
 
 # Create backup before removal
-./uninstall-ai-craft.sh --backup
+./uninstall-nwave.sh --backup
 
 # Force removal without prompts
-./uninstall-ai-craft.sh --force
+./uninstall-nwave.sh --force
 
 # Show help information
-./uninstall-ai-craft.sh --help
+./uninstall-nwave.sh --help
 ```
 
 **Features**:
@@ -184,7 +184,7 @@ uninstall-ai-craft.bat --help
 When using the `--backup` option, a complete backup is created at:
 
 ```
-~/.claude/backups/ai-craft-uninstall-YYYYMMDD-HHMMSS/
+~/.claude/backups/nwave-uninstall-YYYYMMDD-HHMMSS/
 ```
 
 **Backup Contents**:
@@ -201,25 +201,25 @@ To restore from an uninstall backup:
 1. **Locate Backup Directory**:
 
    ```bash
-   ls ~/.claude/backups/ai-craft-uninstall-*
+   ls ~/.claude/backups/nwave-uninstall-*
    ```
 
 2. **Restore Agents**:
 
    ```bash
-   cp -r ~/.claude/backups/ai-craft-uninstall-*/agents/cai ~/.claude/agents/
+   cp -r ~/.claude/backups/nwave-uninstall-*/agents/cai ~/.claude/agents/
    ```
 
 3. **Restore Commands**:
 
    ```bash
-   cp -r ~/.claude/backups/ai-craft-uninstall-*/commands/cai ~/.claude/commands/
+   cp -r ~/.claude/backups/nwave-uninstall-*/commands/cai ~/.claude/commands/
    ```
 
 4. **Restore Configuration**:
    ```bash
-   cp ~/.claude/backups/ai-craft-uninstall-*/ai-craft-manifest.txt ~/.claude/
-   cp ~/.claude/backups/ai-craft-uninstall-*/ai-craft-install.log ~/.claude/
+   cp ~/.claude/backups/nwave-uninstall-*/nwave-manifest.txt ~/.claude/
+   cp ~/.claude/backups/nwave-uninstall-*/nwave-install.log ~/.claude/
    ```
 
 ### Manual Backup
@@ -236,8 +236,8 @@ cp -r "$HOME/.claude/agents/cai" "$BACKUP_DIR/agents/" 2>/dev/null || true
 cp -r "$HOME/.claude/commands/cai" "$BACKUP_DIR/commands/" 2>/dev/null || true
 
 # Backup configuration files
-cp "$HOME/.claude/ai-craft-manifest.txt" "$BACKUP_DIR/" 2>/dev/null || true
-cp "$HOME/.claude/ai-craft-install.log" "$BACKUP_DIR/" 2>/dev/null || true
+cp "$HOME/.claude/nwave-manifest.txt" "$BACKUP_DIR/" 2>/dev/null || true
+cp "$HOME/.claude/nwave-install.log" "$BACKUP_DIR/" 2>/dev/null || true
 ```
 
 ## Manual Uninstall
@@ -247,7 +247,7 @@ If scripts are not available, manual removal steps:
 ### 1. Remove Agent Files
 
 ```bash
-# Remove AI-Craft agents
+# Remove nWave agents
 rm -rf ~/.claude/agents/cai
 
 # Remove agents directory if empty
@@ -257,7 +257,7 @@ rmdir ~/.claude/agents 2>/dev/null || true
 ### 2. Remove Command Files
 
 ```bash
-# Remove AI-Craft commands
+# Remove nWave commands
 rm -rf ~/.claude/commands/cai
 
 # Remove commands directory if empty
@@ -268,22 +268,22 @@ rmdir ~/.claude/commands 2>/dev/null || true
 
 ```bash
 # Remove configuration and log files
-rm -f ~/.claude/ai-craft-manifest.txt
-rm -f ~/.claude/ai-craft-install.log
+rm -f ~/.claude/nwave-manifest.txt
+rm -f ~/.claude/nwave-install.log
 ```
 
 ### 4. Remove Backup Directories
 
 ```bash
-# Remove all AI-Craft backups
-rm -rf ~/.claude/backups/ai-craft-*
+# Remove all nWave backups
+rm -rf ~/.claude/backups/nwave-*
 ```
 
 ### 5. Remove Project Files
 
 ```bash
-# Remove AI-Craft project state files
-rm -rf ~/.claude/projects/*ai-craft*
+# Remove nWave project state files
+rm -rf ~/.claude/projects/*nwave*
 ```
 
 ## Verification
@@ -293,8 +293,8 @@ rm -rf ~/.claude/projects/*ai-craft*
 After uninstall, verify removal:
 
 ```bash
-# Check for remaining AI-Craft files
-find ~/.claude -name "*ai-craft*" -o -name "*cai*" 2>/dev/null
+# Check for remaining nWave files
+find ~/.claude -name "*nwave*" -o -name "*cai*" 2>/dev/null
 ```
 
 Expected result: No output (complete removal) or only uninstall-related files.
@@ -303,9 +303,9 @@ Expected result: No output (complete removal) or only uninstall-related files.
 
 These files are **expected** after uninstall:
 
-- `ai-craft-uninstall.log` - Uninstall process log
-- `ai-craft-uninstall-report.txt` - Uninstall completion report
-- `backups/ai-craft-uninstall-*` - Uninstall backup (if created)
+- `nwave-uninstall.log` - Uninstall process log
+- `nwave-uninstall-report.txt` - Uninstall completion report
+- `backups/nwave-uninstall-*` - Uninstall backup (if created)
 
 ## Troubleshooting
 
@@ -324,10 +324,10 @@ Right-click Command Prompt/PowerShell → "Run as administrator"
 
 ```bash
 # Add execute permissions
-chmod +x uninstall-ai-craft.sh
+chmod +x uninstall-nwave.sh
 
 # Run with sudo if needed (rarely required)
-sudo ./uninstall-ai-craft.sh
+sudo ./uninstall-nwave.sh
 ```
 
 ### Partial Removal
@@ -352,8 +352,8 @@ If files are locked/in use:
 
 If uninstall scripts are missing:
 
-1. **Check Directory**: Ensure you're in the AI-Craft project directory
-2. **Download Scripts**: Re-download AI-Craft framework to get uninstall scripts
+1. **Check Directory**: Ensure you're in the nWave project directory
+2. **Download Scripts**: Re-download nWave framework to get uninstall scripts
 3. **Manual Removal**: Use manual uninstall steps above
 4. **Verify Path**: Check file paths and permissions
 
@@ -363,14 +363,14 @@ If uninstall scripts are missing:
 
 After uninstall:
 
-1. **Test Claude Code**: Verify Claude Code works without AI-Craft
+1. **Test Claude Code**: Verify Claude Code works without nWave
 2. **Check Commands**: Ensure no `cai/atdd` commands remain accessible
 3. **Clean Environment**: Restart terminal/IDE to clear cached paths
 4. **Update Projects**: Update project documentation to reflect removal
 
 ### Alternative Frameworks
 
-Consider these alternatives after AI-Craft removal:
+Consider these alternatives after nWave removal:
 
 1. **Native Claude Code**: Use built-in Claude Code functionality
 2. **Custom Agents**: Create custom agent configurations
@@ -385,8 +385,8 @@ If you encounter issues:
 
 1. **Check Logs**: Review uninstall logs for specific error messages
 2. **Documentation**: Re-read this uninstall guide thoroughly
-3. **Community Support**: Seek help from AI-Craft community forums
-4. **Issue Reports**: Report bugs in AI-Craft GitHub repository
+3. **Community Support**: Seek help from nWave community forums
+4. **Issue Reports**: Report bugs in nWave GitHub repository
 
 ### Reporting Issues
 
@@ -400,9 +400,9 @@ When reporting uninstall issues:
 
 ## Reinstallation
 
-To reinstall AI-Craft after removal:
+To reinstall nWave after removal:
 
-1. **Download Framework**: Get latest AI-Craft release
+1. **Download Framework**: Get latest nWave release
 2. **Run Installer**: Execute appropriate install script
 3. **Verify Installation**: Confirm all components installed correctly
 4. **Restore Configurations**: Restore custom configurations from backup
@@ -414,9 +414,9 @@ To reinstall AI-Craft after removal:
 
 | Platform    | Script                   | Interactive | With Backup | Force     |
 | ----------- | ------------------------ | ----------- | ----------- | --------- |
-| Windows CMD | `uninstall-ai-craft.bat` | Default     | `--backup`  | `--force` |
-| PowerShell  | `uninstall-ai-craft.ps1` | Default     | `-Backup`   | `-Force`  |
-| Linux/Mac   | `uninstall-ai-craft.sh`  | Default     | `--backup`  | `--force` |
+| Windows CMD | `uninstall-nwave.bat` | Default     | `--backup`  | `--force` |
+| PowerShell  | `uninstall-nwave.ps1` | Default     | `-Backup`   | `-Force`  |
+| Linux/Mac   | `uninstall-nwave.sh`  | Default     | `--backup`  | `--force` |
 
 **Safety Checklist**:
 
@@ -426,4 +426,4 @@ To reinstall AI-Craft after removal:
 - ✅ Review what will be removed
 - ✅ Have recovery plan if needed
 
-The AI-Craft framework uninstall scripts provide comprehensive, safe removal with optional backup functionality. Choose the approach that best fits your needs and risk tolerance.
+The nWave framework uninstall scripts provide comprehensive, safe removal with optional backup functionality. Choose the approach that best fits your needs and risk tolerance.

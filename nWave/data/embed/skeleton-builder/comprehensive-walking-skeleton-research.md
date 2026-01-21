@@ -695,4 +695,4 @@ The key insight: Testing *infrastructure* must be production-ready (CI pipeline,
 - **Sources Cited**: 29
 - **Cross-References Performed**: 47 (minimum 3 per major finding)
 - **Confidence Distribution**: High: 100%, Medium: 0%, Low: 0%
-- **Output File**: /mnt/c/Repositories/Projects/ai-craft/data/research/walking-skeleton/comprehensive-walking-skeleton-research.md
+- **Output File**: /mnt/c/Repositories/Projects/nwave/data/research/walking-skeleton/comprehensive-walking-skeleton-research.md

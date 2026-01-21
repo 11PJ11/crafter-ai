@@ -1151,7 +1151,7 @@ python3 ~/.claude/scripts/validate_step_file.py --all docs/feature/{project-id}/
 - Error message will indicate specific issues
 
 **If Validation Script Not Available**:
-- Run from ai-craft project: `python3 scripts/validate_step_file.py --all <steps_dir>`
+- Run from nwave project: `python3 scripts/validate_step_file.py --all <steps_dir>`
 - Or manually verify each step file has the complete tdd_cycle structure
 
 **CRITICAL**: Step files WITHOUT phase_execution_log will cause /nw:execute to fail.

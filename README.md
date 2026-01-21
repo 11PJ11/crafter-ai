@@ -1,12 +1,12 @@
-# AI-Craft: Intelligent ATDD Pipeline with Specialized Agent Network
+# nWave: Intelligent ATDD Pipeline with Specialized Agent Network
 
-<!-- version: 1.3.1 -->
+<!-- version: 1.4.0 -->
 
 A systematic approach to software development using ATDD (Acceptance Test Driven Development) with intelligent AI agent orchestration. The framework automates the 5-stage workflow through 41+ specialized agents, each following the Single Responsibility Principle.
 
-## What is AI-Craft?
+## What is nWave?
 
-AI-Craft is an agentic system that guides you through systematic software development:
+nWave is an agentic system that guides you through systematic software development:
 
 - **Start with requirements** (DISCUSS phase) - Gather business needs with AI assistance
 - **Design solutions** (DESIGN phase) - Architecture decisions with visual documentation
@@ -26,9 +26,9 @@ curl -O https://github.com/11PJ11/crafter-ai/releases/latest/download/install-nw
 python3 install-nwave-claude-code.py
 
 # Or from repository
-git clone https://github.com/11PJ11/crafter-ai.git ai-craft
-cd ai-craft
-python3 scripts/install/install_ai_craft.py
+git clone https://github.com/11PJ11/crafter-ai.git nwave
+cd nwave
+python3 scripts/install/install_nwave.py
 ```
 
 Full installation details: [Installation Guide](docs/installation/installation-guide.md)
@@ -64,10 +64,10 @@ Or use manual control for more guidance:
 
 ## Documentation Structure
 
-AI-Craft documentation is organized using the **DIVIO framework** for maximum usability. Find what you need:
+nWave documentation is organized using the **DIVIO framework** for maximum usability. Find what you need:
 
 ### Getting Started
-Start here if you're new to AI-Craft:
+Start here if you're new to nWave:
 - **[Jobs To Be Done Guide](docs/guides/jobs-to-be-done-guide.md)** - Understand when and how to use each workflow
 - **[Installation Guide](docs/installation/installation-guide.md)** - Step-by-step setup instructions
 
@@ -86,7 +86,7 @@ Find exact specifications and configuration:
 - **[Troubleshooting Guide](docs/troubleshooting/troubleshooting-guide.md)** - Common issues and solutions
 
 ### Understanding Concepts (Explanation)
-Deepen your understanding of why AI-Craft works:
+Deepen your understanding of why nWave works:
 - **[Layer 4 Implementation Summary](docs/guides/layer-4-implementation-summary.md)** - How peer review by equal-expertise agents reduces bias
 - **[Architecture Patterns](docs/guides/knowledge-architecture-analysis.md)** - Design decisions and rationale
 
@@ -124,13 +124,14 @@ Each stage involves specialized AI agents and produces validated artifacts.
 - Each reviewer has equal expertise to primary agent
 - Structured YAML feedback with severity classification
 
-### Quality Assurance (4-Layer Testing)
+### Quality Assurance (5-Layer Testing)
 
 ```
 Layer 1: Unit Testing            - Individual agent output validation
 Layer 2: Integration Testing     - Handoff validation between agents
 Layer 3: Adversarial Validation  - Challenge output validity
-Layer 4: Peer Review             - Equal-expertise reviewer critique ← Unique to AI-Craft
+Layer 4: Peer Review             - Equal-expertise reviewer critique ← Unique to nWave
+Layer 5: Mutation Testing        - Test suite effectiveness validation ← NEW
 ```
 
 ## Use Cases
@@ -192,23 +193,23 @@ After modifying agents, commands, or framework components:
 
 ```bash
 # Option 1: Full update (build + install + validate) - Recommended
-python scripts/install/update_ai_craft.py --force
+python scripts/install/update_nwave.py --force
 
 # Option 2: Build only (without installing)
 python tools/build_ide_bundle.py
 
 # Option 3: Manual install after build
-python scripts/install/install_ai_craft.py
+python scripts/install/install_nwave.py
 ```
 
 ### Pre-Commit Hooks
 
-AI-Craft enforces quality gates through pre-commit hooks:
+nWave enforces quality gates through pre-commit hooks:
 
 ```bash
 # Install pre-commit (first time only)
 pip install pre-commit
-cd ai-craft
+cd nwave
 pre-commit install
 
 # Hooks validate automatically on commit:
@@ -241,7 +242,7 @@ git commit --no-verify  # Bypasses ALL validation - requires immediate fix
 ## Project Structure
 
 ```
-ai-craft/
+nwave/
 ├── README.md                    # This file (entry point)
 ├── docs/                        # DIVIO-organized documentation
 │   ├── guides/                  # How-to guides (practical tasks)
@@ -271,7 +272,7 @@ ai-craft/
 ├── scripts/                     # Installation and utility scripts
 ├── tools/                       # Build and development tools
 ├── tests/                       # Automated test suite
-└── .pre-commit-config.yaml      # Quality gates (pre-commit hooks)
+└── .pre-commit-config.yaml      # Quality gates (5-layer testing framework)
 ```
 
 ## Architecture Overview
@@ -302,7 +303,7 @@ Progressive refactoring with validation:
 
 ## Contributing
 
-AI-Craft follows clean architecture principles:
+nWave follows clean architecture principles:
 1. Each agent has **one responsibility**
 2. Communication through **well-defined interfaces** (JSON/YAML)
 3. **Testable code** with 58-test validation suite
@@ -324,7 +325,7 @@ See individual agent documentation in `nWave/agents/` for implementation details
 
 ## Version
 
-- Current Version: 1.2.81
+- Current Version: 1.2.84
 - Last Updated: 2026-01-21
 - Status: Production Ready
 

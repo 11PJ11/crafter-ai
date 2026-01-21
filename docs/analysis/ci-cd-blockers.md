@@ -8,7 +8,7 @@
 ## Blocker #1: Invalid YAML in agent-builder.md
 
 **Severity**: CRITICAL
-**File**: `/mnt/c/Repositories/Projects/ai-craft/nWave/agents/agent-builder.md`
+**File**: `/mnt/c/Repositories/Projects/nwave/nWave/agents/agent-builder.md`
 **Lines**: 773
 
 **Problem**:
@@ -44,7 +44,7 @@ pre_creation_phase:
 
 **Verification**:
 ```bash
-python3 -c "import yaml; yaml.safe_load(open('/mnt/c/Repositories/Projects/ai-craft/nWave/agents/agent-builder.md').read())"
+python3 -c "import yaml; yaml.safe_load(open('/mnt/c/Repositories/Projects/nwave/nWave/agents/agent-builder.md').read())"
 # Should not raise yaml.YAMLError
 ```
 
@@ -53,7 +53,7 @@ python3 -c "import yaml; yaml.safe_load(open('/mnt/c/Repositories/Projects/ai-cr
 ## Blocker #2: Silent Exception Swallowing in agent_processor.py
 
 **Severity**: HIGH
-**File**: `/mnt/c/Repositories/Projects/ai-craft/tools/processors/agent_processor.py`
+**File**: `/mnt/c/Repositories/Projects/nwave/tools/processors/agent_processor.py`
 **Lines**: 57-59
 
 **Problem**:
@@ -113,7 +113,7 @@ else:
 ## Blocker #3: Error Counter Never Incremented for YAML Failures
 
 **Severity**: HIGH
-**File**: `/mnt/c/Repositories/Projects/ai-craft/tools/core/build_ide_bundle.py`
+**File**: `/mnt/c/Repositories/Projects/nwave/tools/core/build_ide_bundle.py`
 **Lines**: 117-123
 
 **Problem**:
@@ -180,7 +180,7 @@ PYEOF
 ## Blocker #4: Exit Code Decoupled from Actual Build State
 
 **Severity**: CRITICAL
-**File**: `/mnt/c/Repositories/Projects/ai-craft/tools/core/build_ide_bundle.py`
+**File**: `/mnt/c/Repositories/Projects/nwave/tools/core/build_ide_bundle.py`
 **Lines**: 208-213, 320
 
 **Problem**:

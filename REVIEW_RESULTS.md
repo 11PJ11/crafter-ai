@@ -8,7 +8,7 @@
 
 ## Quick Summary
 
-The AI-Craft documentation consolidation is **complete, high-quality, and production-ready**. All quality metrics exceed targets:
+The nWave documentation consolidation is **complete, high-quality, and production-ready**. All quality metrics exceed targets:
 
 - ✅ 92% average type purity (target: 80%)
 - ✅ Zero collapse patterns (improved from 2 critical issues)
@@ -221,6 +221,6 @@ The documentation consolidation is complete, high-quality, and ready for users. 
 
 **Reviewer**: Quill, Documentation Quality Guardian (documentarist-reviewer agent)
 **Date**: 2026-01-21
-**Version**: 1.2.81
+**Version**: 1.4.0
 **Confidence**: High
 **Status**: Complete

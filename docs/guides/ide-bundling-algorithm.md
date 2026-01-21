@@ -312,4 +312,4 @@ dist/expansion-packs/{pack-name}/ide/
 
 ---
 
-This algorithm provides a complete framework for generating IDE-compatible AI-Craft framework distributions, focusing on individual file generation with embedded dependencies while discarding web-specific concepts.
+This algorithm provides a complete framework for generating IDE-compatible nWave framework distributions, focusing on individual file generation with embedded dependencies while discarding web-specific concepts.

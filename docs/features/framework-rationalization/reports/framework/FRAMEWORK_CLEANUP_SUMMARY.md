@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-Successfully removed 1,199 lines of duplicate framework sections from 11 AI-Craft agents, resulting in cleaner, more maintainable agent specifications.
+Successfully removed 1,199 lines of duplicate framework sections from 11 nWave agents, resulting in cleaner, more maintainable agent specifications.
 
 ---
 
@@ -191,7 +191,7 @@ No hanging duplicate framework sections.
 ## Tools Used
 
 ### 1. Remove Duplicate Frameworks Script
-**File**: `/mnt/c/Repositories/Projects/ai-craft/scripts/remove-duplicate-frameworks.py`
+**File**: `/mnt/c/Repositories/Projects/nwave/scripts/remove-duplicate-frameworks.py`
 
 **Method**: Split agent content at marker, keep only first part
 

@@ -187,7 +187,7 @@ scripts/validation/
 ```
 scripts/install/
 ├── __init__.py
-├── install.py               (installs AI-Craft framework)
+├── install.py               (installs nWave framework)
 ├── uninstall.py             (removes framework)
 ├── update.py                (orchestrates update pipeline)
 └── backup.py                (manages backups during install)
@@ -235,9 +235,9 @@ scripts/
 │
 ├── install/                           ← Python-based installation tools
 │   ├── __init__.py
-│   ├── install.py                     (CONVERTED from install-ai-craft.sh)
-│   ├── uninstall.py                   (CONVERTED from uninstall-ai-craft.sh)
-│   ├── update.py                      (CONVERTED from update-ai-craft.sh)
+│   ├── install.py                     (CONVERTED from install-nwave.sh)
+│   ├── uninstall.py                   (CONVERTED from uninstall-nwave.sh)
+│   ├── update.py                      (CONVERTED from update-nwave.sh)
 │   └── backup.py                      (from enhanced-backup-system.sh)
 │
 ├── validation/                        ← Python-based validators
@@ -413,9 +413,9 @@ touch scripts/install/__init__.py
 ```
 
 **Conversion tasks**:
-- Convert `install-ai-craft.sh` (586 lines) → `scripts/install/install.py`
-- Convert `uninstall-ai-craft.sh` → `scripts/install/uninstall.py`
-- Convert `update-ai-craft.sh` → `scripts/install/update.py`
+- Convert `install-nwave.sh` (586 lines) → `scripts/install/install.py`
+- Convert `uninstall-nwave.sh` → `scripts/install/uninstall.py`
+- Convert `update-nwave.sh` → `scripts/install/update.py`
 - Integrate backup functionality from `enhanced-backup-system.sh`
 
 **Cross-platform considerations**:

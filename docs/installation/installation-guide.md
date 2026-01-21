@@ -1,6 +1,6 @@
-# AI-Craft Framework Installation Guide
+# nWave Framework Installation Guide
 
-This guide helps you install the AI-Craft ATDD framework to your global Claude config directory, making all 41+ specialized agents and the `cai/atdd` command available across all your projects.
+This guide helps you install the nWave ATDD framework to your global Claude config directory, making all 41+ specialized agents and the `cai/atdd` command available across all your projects.
 
 ## Quick Start
 
@@ -9,20 +9,20 @@ This guide helps you install the AI-Craft ATDD framework to your global Claude c
 **Option 1: PowerShell (Recommended)**
 
 ```powershell
-.\install-ai-craft.ps1
+.\install-nwave.ps1
 ```
 
 **Option 2: Command Prompt**
 
 ```cmd
-install-ai-craft.bat
+install-nwave.bat
 ```
 
 ### macOS/Linux Users
 
 ```bash
-chmod +x install-ai-craft.sh
-./install-ai-craft.sh
+chmod +x install-nwave.sh
+./install-nwave.sh
 ```
 
 ## What Gets Installed
@@ -54,7 +54,7 @@ chmod +x install-ai-craft.sh
 ```
 ~/.claude/                           # Global Claude config directory
 ├── agents/
-│   └── cai/                        # AI-Craft agent specifications
+│   └── cai/                        # nWave agent specifications
 │       ├── constants.md            # Centralized configuration
 │       ├── requirements-analysis/  # Blue family agents (5)
 │       ├── architecture-design/    # Orange family agents (3)
@@ -79,9 +79,9 @@ chmod +x install-ai-craft.sh
 Installs the complete framework with automatic backup:
 
 ```bash
-./install-ai-craft.sh                    # macOS/Linux
-.\install-ai-craft.ps1                   # Windows PowerShell
-install-ai-craft.bat                     # Windows Command Prompt
+./install-nwave.sh                    # macOS/Linux
+.\install-nwave.ps1                   # Windows PowerShell
+install-nwave.bat                     # Windows Command Prompt
 ```
 
 ### Backup Only
@@ -89,9 +89,9 @@ install-ai-craft.bat                     # Windows Command Prompt
 Creates backup without installing (useful before upgrades):
 
 ```bash
-./install-ai-craft.sh --backup-only      # macOS/Linux
-.\install-ai-craft.ps1 -BackupOnly       # Windows PowerShell
-install-ai-craft.bat --backup-only       # Windows Command Prompt
+./install-nwave.sh --backup-only      # macOS/Linux
+.\install-nwave.ps1 -BackupOnly       # Windows PowerShell
+install-nwave.bat --backup-only       # Windows Command Prompt
 ```
 
 ### Restore Previous Installation
@@ -99,9 +99,9 @@ install-ai-craft.bat --backup-only       # Windows Command Prompt
 Restores from the most recent backup:
 
 ```bash
-./install-ai-craft.sh --restore          # macOS/Linux
-.\install-ai-craft.ps1 -Restore          # Windows PowerShell
-install-ai-craft.bat --restore           # Windows Command Prompt
+./install-nwave.sh --restore          # macOS/Linux
+.\install-nwave.ps1 -Restore          # Windows PowerShell
+install-nwave.bat --restore           # Windows Command Prompt
 ```
 
 ### Help
@@ -109,9 +109,9 @@ install-ai-craft.bat --restore           # Windows Command Prompt
 Shows detailed usage information:
 
 ```bash
-./install-ai-craft.sh --help             # macOS/Linux
-.\install-ai-craft.ps1 -Help             # Windows PowerShell
-install-ai-craft.bat --help              # Windows Command Prompt
+./install-nwave.sh --help             # macOS/Linux
+.\install-nwave.ps1 -Help             # Windows PowerShell
+install-nwave.bat --help              # Windows Command Prompt
 ```
 
 ## What Gets Excluded
@@ -199,7 +199,7 @@ If you encounter permission errors:
 
 ```bash
 # macOS/Linux: Make script executable
-chmod +x install-ai-craft.sh
+chmod +x install-nwave.sh
 
 # Windows: Run as Administrator if needed
 # Right-click → "Run as administrator"
@@ -210,9 +210,9 @@ chmod +x install-ai-craft.sh
 If the script can't find the framework source:
 
 ```bash
-# Ensure you're running from the ai-craft project directory
-cd /path/to/ai-craft
-./install-ai-craft.sh
+# Ensure you're running from the nwave project directory
+cd /path/to/nwave
+./install-nwave.sh
 ```
 
 ### Existing Installation
@@ -227,14 +227,14 @@ If you have an existing installation:
 
 If installation validation fails:
 
-- Check the installation log: `~/.claude/ai-craft-install.log`
+- Check the installation log: `~/.claude/nwave-install.log`
 - Verify source framework is complete
 - Use `--restore` to rollback
 - Report issues with log details
 
 ## Uninstallation
 
-To remove the AI-Craft framework:
+To remove the nWave framework:
 
 ```bash
 # Remove framework directories
@@ -242,14 +242,14 @@ rm -rf ~/.claude/agents/
 rm -rf ~/.claude/commands/cai/
 
 # Or restore from a pre-installation backup
-./install-ai-craft.sh --restore
+./install-nwave.sh --restore
 ```
 
 ## Updates
 
 To update to a newer version:
 
-1. Download the latest AI-Craft framework
+1. Download the latest nWave framework
 2. Run the installation script (creates automatic backup)
 3. The new version overwrites the old installation
 4. Use `--restore` if you need to rollback
@@ -259,7 +259,7 @@ To update to a newer version:
 - **Documentation**: Complete framework documentation in this repository
 - **Issues**: Report problems on GitHub
 - **Help**: Use `cai/atdd --help` for command help
-- **Logs**: Check `~/.claude/ai-craft-install.log` for installation details
+- **Logs**: Check `~/.claude/nwave-install.log` for installation details
 
 ---
 

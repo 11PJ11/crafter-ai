@@ -186,7 +186,7 @@ def generate_report(results: Dict):
 
 ## Executive Summary
 
-This report validates all AI-Craft agents against AGENT_TEMPLATE.yaml v1.2 production framework requirements.
+This report validates all nWave agents against AGENT_TEMPLATE.yaml v1.2 production framework requirements.
 
 ### Validation Criteria
 
@@ -335,7 +335,7 @@ This report validates all AI-Craft agents against AGENT_TEMPLATE.yaml v1.2 produ
 def main():
     """Main validation function"""
     print("=" * 60)
-    print("AI-Craft Agent Compliance Validation v2")
+    print("nWave Agent Compliance Validation v2")
     print(f"Template Version: {TEMPLATE_VERSION}")
     print("Validation Method: Keyword-based (improved)")
     print("=" * 60)

@@ -1,8 +1,8 @@
 # Documentation Version - must match nWave/framework-catalog.yaml
-version: "1.2.81"
+version: "1.4.0"
 
 classification_report:
-  title: "AI-Craft Documentation DIVIO Classification Analysis"
+  title: "nWave Documentation DIVIO Classification Analysis"
   classification_date: "2026-01-21"
   analyst: "Quill (Documentation Quality Guardian)"
   total_files_analyzed: 12
@@ -34,7 +34,7 @@ classification_report:
       signals:
         - "Platform-specific installation procedures (Windows, macOS, Linux)"
         - "Step-by-step commands with expected outcomes"
-        - "Clear goal: 'Install the AI-Craft ATDD framework'"
+        - "Clear goal: 'Install the nWave ATDD framework'"
         - "After-action commands verifying success"
         - "Backup and restore options documented"
       rationale: "Document teaches reader how to accomplish specific task (installation) with clear end state. Assumes reader knows why installation is needed."

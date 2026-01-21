@@ -605,7 +605,7 @@ Add `--platform` parameter to install for a specific AI IDE:
 
 ## Documentation
 
-Full documentation: https://github.com/your-org/ai-craft
+Full documentation: https://github.com/your-org/nwave
 """
 
     def package_all(self) -> None:
@@ -1200,7 +1200,7 @@ gantt
 - `install.py` (root level, for releases)
 
 **Files to Modify:**
-- `scripts/install-ai-craft.sh` (add --platform parameter)
+- `scripts/install-nwave.sh` (add --platform parameter)
 
 ### Phase 6: CI/CD Integration
 

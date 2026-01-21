@@ -40,26 +40,26 @@ All files maintain **80%+ single-type purity** (DIVIO compliant).
 
 ### 4. Created Renamed Files
 Generated 8 new files with proper naming:
-- `/mnt/c/Repositories/Projects/ai-craft/docs/installation/installation-guide.md`
-- `/mnt/c/Repositories/Projects/ai-craft/docs/installation/uninstall-guide.md`
-- `/mnt/c/Repositories/Projects/ai-craft/docs/troubleshooting/troubleshooting-guide.md`
-- `/mnt/c/Repositories/Projects/ai-craft/docs/guides/invoke-reviewer-agents.md`
-- `/mnt/c/Repositories/Projects/ai-craft/docs/guides/layer-4-implementation-summary.md`
-- `/mnt/c/Repositories/Projects/ai-craft/docs/guides/validation-checklist.md`
-- `/mnt/c/Repositories/Projects/ai-craft/docs/guides/ci-cd-integration-guide.md`
+- `/mnt/c/Repositories/Projects/nwave/docs/installation/installation-guide.md`
+- `/mnt/c/Repositories/Projects/nwave/docs/installation/uninstall-guide.md`
+- `/mnt/c/Repositories/Projects/nwave/docs/troubleshooting/troubleshooting-guide.md`
+- `/mnt/c/Repositories/Projects/nwave/docs/guides/invoke-reviewer-agents.md`
+- `/mnt/c/Repositories/Projects/nwave/docs/guides/layer-4-implementation-summary.md`
+- `/mnt/c/Repositories/Projects/nwave/docs/guides/validation-checklist.md`
+- `/mnt/c/Repositories/Projects/nwave/docs/guides/ci-cd-integration-guide.md`
 
 ### 5. Updated Cross-References
 Modified **5 files** with corrected links:
-- `/mnt/c/Repositories/Projects/ai-craft/README.md` (4 link updates + version bump to 1.3.1)
-- `/mnt/c/Repositories/Projects/ai-craft/docs/reference/reviewer-agents-reference.md` (1 link update)
-- `/mnt/c/Repositories/Projects/ai-craft/docs/reference/nwave-commands-reference.md` (1 link update)
-- `/mnt/c/Repositories/Projects/ai-craft/docs/guides/invoke-reviewer-agents.md` (1 internal reference)
+- `/mnt/c/Repositories/Projects/nwave/README.md` (4 link updates + version bump to 1.3.1)
+- `/mnt/c/Repositories/Projects/nwave/docs/reference/reviewer-agents-reference.md` (1 link update)
+- `/mnt/c/Repositories/Projects/nwave/docs/reference/nwave-commands-reference.md` (1 link update)
+- `/mnt/c/Repositories/Projects/nwave/docs/guides/invoke-reviewer-agents.md` (1 internal reference)
 
 ### 6. Generated Analysis Documents
 Created comprehensive documentation for future reference:
-- `/mnt/c/Repositories/Projects/ai-craft/docs/analysis/DOCUMENTATION_FILENAME_AUDIT.md` - Full audit with DIVIO analysis
-- `/mnt/c/Repositories/Projects/ai-craft/docs/analysis/RENAME_MAPPING.md` - Detailed mapping and rationale
-- `/mnt/c/Repositories/Projects/ai-craft/DOCUMENTATION_FILENAME_CHANGES.md` - Implementation summary
+- `/mnt/c/Repositories/Projects/nwave/docs/analysis/DOCUMENTATION_FILENAME_AUDIT.md` - Full audit with DIVIO analysis
+- `/mnt/c/Repositories/Projects/nwave/docs/analysis/RENAME_MAPPING.md` - Detailed mapping and rationale
+- `/mnt/c/Repositories/Projects/nwave/DOCUMENTATION_FILENAME_CHANGES.md` - Implementation summary
 
 ---
 
@@ -161,17 +161,17 @@ rm docs/guides/CI-CD-README.md
 ## Documents for Reference
 
 ### Detailed Analysis
-- **Path**: `/mnt/c/Repositories/Projects/ai-craft/docs/analysis/DOCUMENTATION_FILENAME_AUDIT.md`
+- **Path**: `/mnt/c/Repositories/Projects/nwave/docs/analysis/DOCUMENTATION_FILENAME_AUDIT.md`
 - **Size**: ~15 KB
 - **Contents**: Full audit of 68 files, detailed rationale for each rename, DIVIO assessment
 
 ### Implementation Mapping
-- **Path**: `/mnt/c/Repositories/Projects/ai-craft/docs/analysis/RENAME_MAPPING.md`
+- **Path**: `/mnt/c/Repositories/Projects/nwave/docs/analysis/RENAME_MAPPING.md`
 - **Size**: ~20 KB
 - **Contents**: Old → New mapping, cross-reference locations, verification checklist
 
 ### Change Summary
-- **Path**: `/mnt/c/Repositories/Projects/ai-craft/DOCUMENTATION_FILENAME_CHANGES.md`
+- **Path**: `/mnt/c/Repositories/Projects/nwave/DOCUMENTATION_FILENAME_CHANGES.md`
 - **Size**: ~10 KB
 - **Contents**: Executive summary, impact assessment, verification checklist
 

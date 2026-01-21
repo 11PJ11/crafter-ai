@@ -36,7 +36,7 @@
 - More discoverable in ls/grep searches (lowercase)
 
 **DIVIO Type**: Tutorial
-**Audience**: New users installing AI-Craft
+**Audience**: New users installing nWave
 **Content Focus**: Step-by-step instructions, prerequisites, troubleshooting
 
 ---
@@ -53,7 +53,7 @@
 - More discoverable (lowercase searches)
 
 **DIVIO Type**: How-to Guide
-**Audience**: Users removing AI-Craft
+**Audience**: Users removing nWave
 **Content Focus**: Uninstall steps, cleanup procedures
 
 ---
@@ -223,7 +223,7 @@ Line 86:
 ```
 
 **Version bump**:
-Change from `<!-- version: 1.3.0 -->` to `<!-- version: 1.3.1 -->`
+Change from `<!-- version: 1.4.0 -->` to `<!-- version: 1.4.0 -->`
 
 ---
 

@@ -28,7 +28,7 @@ class ValidationResult:
 
 
 class CrossPhaseValidator:
-    def __init__(self, repo_root: str = "/mnt/c/Repositories/Projects/ai-craft"):
+    def __init__(self, repo_root: str = "/mnt/c/Repositories/Projects/nwave"):
         self.repo_root = Path(repo_root)
         self.results: List[ValidationResult] = []
         self.features_dir = self.repo_root / "docs/features/framework-rationalization"
@@ -574,7 +574,7 @@ def main():
     results, all_passed = validator.run_all_validations()
 
     # Generate report
-    report_file = "/mnt/c/Repositories/Projects/ai-craft/test-results/cross-phase-validation-report.json"
+    report_file = "/mnt/c/Repositories/Projects/nwave/test-results/cross-phase-validation-report.json"
     Path(report_file).parent.mkdir(parents=True, exist_ok=True)
     validator.generate_report(report_file)
 

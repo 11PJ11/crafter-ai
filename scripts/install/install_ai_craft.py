@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-AI-Craft Framework Installation Script
+nWave Framework Installation Script
 
 Cross-platform installer for the nWave methodology framework.
 Installs specialized agents and commands to global Claude config directory.
 
-Usage: python install_ai_craft.py [--backup-only] [--restore] [--dry-run] [--help]
+Usage: python install_nwave.py [--backup-only] [--restore] [--dry-run] [--help]
 """
 
 import argparse
@@ -22,11 +22,11 @@ from install_utils import (
     VersionUtils,
 )
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 
-class AIInstaller:
-    """AI-Craft framework installer."""
+class NWaveInstaller:
+    """nWave framework installer."""
 
     def __init__(self, dry_run: bool = False):
         """Initialize installer."""
@@ -36,7 +36,7 @@ class AIInstaller:
         self.claude_config_dir = PathUtils.get_claude_config_dir()
         self.framework_source = self.project_root / "dist" / "ide"
 
-        log_file = self.claude_config_dir / "ai-craft-install.log"
+        log_file = self.claude_config_dir / "nwave-install.log"
         self.logger = Logger(log_file if not dry_run else None)
 
         self.backup_manager = BackupManager(self.logger, "install")
@@ -184,9 +184,9 @@ class AIInstaller:
             return False
 
         # Find latest backup
-        backups = sorted(backup_root.glob("ai-craft-*"))
+        backups = sorted(backup_root.glob("nwave-*"))
         if not backups:
-            self.logger.error("No AI-Craft backups found")
+            self.logger.error("No nWave backups found")
             return False
 
         latest_backup = backups[-1]
@@ -228,7 +228,7 @@ class AIInstaller:
         """Install framework files."""
         if self.dry_run:
             self.logger.info(
-                f"[DRY RUN] Would install AI-Craft framework to: {self.claude_config_dir}"
+                f"[DRY RUN] Would install nWave framework to: {self.claude_config_dir}"
             )
             self.logger.info(
                 f"[DRY RUN] Would create target directory: {self.claude_config_dir}"
@@ -250,7 +250,7 @@ class AIInstaller:
 
             return True
 
-        self.logger.info(f"Installing AI-Craft framework to: {self.claude_config_dir}")
+        self.logger.info(f"Installing nWave framework to: {self.claude_config_dir}")
 
         # Create target directories
         self.claude_config_dir.mkdir(parents=True, exist_ok=True)
@@ -474,32 +474,32 @@ class AIInstaller:
         )
 
         self.logger.info(
-            f"Installation manifest created: {self.claude_config_dir / 'ai-craft-manifest.txt'}"
+            f"Installation manifest created: {self.claude_config_dir / 'nwave-manifest.txt'}"
         )
 
 
 def show_help():
     """Show help message."""
-    help_text = f"""{Colors.BLUE}AI-Craft Framework Installation Script for Cross-Platform{Colors.NC}
+    help_text = f"""{Colors.BLUE}nWave Framework Installation Script for Cross-Platform{Colors.NC}
 
 {Colors.BLUE}DESCRIPTION:{Colors.NC}
     Installs the nWave methodology framework to your global Claude config directory.
     This makes all specialized agents and commands available across all projects.
 
 {Colors.BLUE}USAGE:{Colors.NC}
-    python install_ai_craft.py [OPTIONS]
+    python install_nwave.py [OPTIONS]
 
 {Colors.BLUE}OPTIONS:{Colors.NC}
-    --backup-only    Create backup of existing AI-Craft installation without installing
+    --backup-only    Create backup of existing nWave installation without installing
     --restore        Restore from the most recent backup
     --dry-run        Show what would be installed without making any changes
     --help           Show this help message
 
 {Colors.BLUE}EXAMPLES:{Colors.NC}
-    python install_ai_craft.py              # Install nWave framework
-    python install_ai_craft.py --dry-run    # Show what would be installed
-    python install_ai_craft.py --backup-only # Create backup only
-    python install_ai_craft.py --restore    # Restore from latest backup
+    python install_nwave.py              # Install nWave framework
+    python install_nwave.py --dry-run    # Show what would be installed
+    python install_nwave.py --backup-only # Create backup only
+    python install_nwave.py --restore    # Restore from latest backup
 
 {Colors.BLUE}WHAT GETS INSTALLED:{Colors.NC}
     - nWave specialized agents (DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER methodology)
@@ -521,7 +521,7 @@ For more information: https://github.com/11PJ11/crafter-ai
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="Install AI-Craft framework", add_help=False
+        description="Install nWave framework", add_help=False
     )
     parser.add_argument("--backup-only", action="store_true", help="Create backup only")
     parser.add_argument("--restore", action="store_true", help="Restore from backup")
@@ -536,9 +536,9 @@ def main():
         show_help()
         return 0
 
-    installer = AIInstaller(dry_run=args.dry_run)
+    installer = NWaveInstaller(dry_run=args.dry_run)
 
-    installer.logger.info("AI-Craft Framework Installation Script")
+    installer.logger.info("nWave Framework Installation Script")
     installer.logger.info("=" * 38)
 
     if args.dry_run:
@@ -615,7 +615,7 @@ def main():
     else:
         installer.logger.error("Installation failed validation")
         installer.logger.warn(
-            "You can restore the previous installation with: python install_ai_craft.py --restore"
+            "You can restore the previous installation with: python install_nwave.py --restore"
         )
         return 1
 
