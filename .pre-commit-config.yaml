@@ -52,6 +52,15 @@ repos:
         pass_filenames: false
         stages: [pre-commit]
 
+      # Phase 5: YAML validation (mirrors CI/CD validation)
+      - id: yaml-validation
+        name: YAML File Validation
+        entry: python3 scripts/validation/validate_yaml_files.py
+        language: system
+        files: \.(yaml|yml)$
+        pass_filenames: false
+        stages: [pre-commit]
+
   # Standard hooks from pre-commit repository
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
@@ -61,7 +70,7 @@ repos:
       - id: end-of-file-fixer
         exclude: ^(dist/|\.git/)
       - id: check-yaml
-        exclude: ^(dist/|\.git/|nWave/templates/)
+        exclude: ^(dist/|\.git/)
       - id: check-json
         exclude: ^(dist/|\.git/)
       - id: check-merge-conflict
