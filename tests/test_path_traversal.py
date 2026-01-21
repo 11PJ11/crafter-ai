@@ -49,7 +49,7 @@ def process_includes(file_path: str, verbose: bool = False) -> tuple[bool, list[
     project_root = get_project_root()
 
     try:
-        with open(file_path, 'r') as f:
+        with open(file_path, "r") as f:
             content = f.read()
     except FileNotFoundError:
         return False, [f"File not found: {file_path}"]

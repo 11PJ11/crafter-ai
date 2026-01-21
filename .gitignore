@@ -18,7 +18,7 @@ test-results/
 .DS_Store
 Thumbs.db
 
-# Python cache
+# Python cache and artifacts
 __pycache__/
 *.pyc
 *.pyo
@@ -26,6 +26,7 @@ __pycache__/
 .ruff_cache/
 .pytest_cache/
 .coverage
+*.egg-info/
 
 # Node modules
 node_modules/
