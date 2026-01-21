@@ -7,20 +7,42 @@ This document describes how to run CI/CD validation checks locally before pushin
 The local validation environment mirrors the GitHub Actions CI/CD pipeline, allowing you to catch errors before they reach the remote repository.
 
 **Benefits:**
-- ✅ Catch YAML syntax errors before commit
-- ✅ Validate tests pass locally
-- ✅ Ensure build succeeds
-- ✅ Check security issues
-- ✅ Faster feedback loop
-- ✅ Avoid failed CI/CD runs
+- Catch YAML syntax errors before commit
+- Validate tests pass locally
+- Ensure build succeeds
+- Check security issues
+- Faster feedback loop
+- Avoid failed CI/CD runs
+
+## Prerequisites
+
+**Required:**
+- Python 3.11 or 3.12
+- pipenv (`pip install pipenv`)
+
+**Optional (for enhanced validation):**
+- shellcheck (shell script linting)
+- pre-commit (`pip install pre-commit`)
 
 ## Quick Start
 
-### 1. Run Full Local CI Validation
+### 1. Install Dependencies
+
+```bash
+# Install pipenv (if not already installed)
+pip install pipenv
+
+# Install all dependencies (runtime + dev)
+pipenv install --dev
+```
+
+### 2. Run Full Local CI Validation
 
 **Recommended - Python version** (cross-platform):
 ```bash
-python3 scripts/local_ci.py
+pipenv run validate
+# or directly:
+python scripts/local_ci.py
 ```
 
 **Alternative - Shell version** (Unix only):
@@ -30,23 +52,26 @@ python3 scripts/local_ci.py
 
 This runs all the same checks as GitHub Actions CI/CD:
 1. YAML file validation
-2. Python test suite (pytest)
-3. Build process validation
-4. Shell script syntax checks
-5. Shellcheck linting **NEW**
-6. Python linting (Ruff) **NEW**
-7. Python formatting check (Ruff) **NEW**
-8. Security validation (no hardcoded credentials)
-9. nWave framework validation
-10. Documentation checks
+2. Pipenv dependency validation
+3. Python test suite (pytest)
+4. Build process validation
+5. Shell script syntax checks
+6. Shellcheck linting
+7. Python linting (Ruff)
+8. Python formatting check (Ruff)
+9. Security validation (no hardcoded credentials)
+10. nWave framework validation
+11. Documentation checks
 
-### 2. Fast Mode (Skip Build)
+### 3. Fast Mode (Skip Build)
 
 For quicker validation during development:
 
 **Python**:
 ```bash
-python3 scripts/local_ci.py --fast
+pipenv run validate-fast
+# or:
+python scripts/local_ci.py --fast
 ```
 
 **Shell**:
@@ -54,19 +79,34 @@ python3 scripts/local_ci.py --fast
 ./scripts/local-ci.sh --fast
 ```
 
-### 3. Verbose Output
+### 4. Verbose Output
 
 For detailed debugging information:
 
 **Python**:
 ```bash
-python3 scripts/local_ci.py --verbose
+python scripts/local_ci.py --verbose
 ```
 
 **Shell**:
 ```bash
 ./scripts/local-ci.sh --verbose
 ```
+
+## Available Pipenv Scripts
+
+All CI/CD commands are centralized in the Pipfile:
+
+| Command | Description |
+|---------|-------------|
+| `pipenv run test` | Run pytest test suite |
+| `pipenv run build` | Run build process |
+| `pipenv run lint` | Run Ruff linting |
+| `pipenv run format` | Run Ruff formatting |
+| `pipenv run format-check` | Check formatting without modifying |
+| `pipenv run validate` | Run full local CI validation |
+| `pipenv run validate-fast` | Run fast validation (skip build) |
+| `pipenv run validate-yaml` | Validate YAML files only |
 
 ## Individual Validation Scripts
 
@@ -75,19 +115,21 @@ python3 scripts/local_ci.py --verbose
 Validates all YAML files in the repository:
 
 ```bash
-python3 scripts/validation/validate_yaml_files.py
+pipenv run validate-yaml
+# or:
+python scripts/validation/validate_yaml_files.py
 ```
 
 **Verbose mode:**
 ```bash
-python3 scripts/validation/validate_yaml_files.py --verbose
+python scripts/validation/validate_yaml_files.py --verbose
 ```
 
 This checks:
-- ✅ YAML syntax correctness
-- ✅ Proper structure (no mixed list/dict indentation)
-- ✅ Valid multi-document YAML files
-- ✅ Template files (nWave/templates/)
+- YAML syntax correctness
+- Proper structure (no mixed list/dict indentation)
+- Valid multi-document YAML files
+- Template files (nWave/templates/)
 
 **Exit codes:**
 - `0`: All YAML files valid
@@ -96,15 +138,15 @@ This checks:
 ### Run Tests Only
 
 ```bash
-npm test
+pipenv run test
 ```
 
-Runs the full pytest test suite (219 tests).
+Runs the full pytest test suite.
 
 ### Run Build Only
 
 ```bash
-npm run build
+pipenv run build
 ```
 
 Builds the nWave IDE bundle from source files.
@@ -131,8 +173,8 @@ pre-commit install
 4. **Conflict Detection** - Detects conflicts between related files
 5. **Code Formatter Check** - Ensures ruff/mypy are available
 6. **YAML File Validation** - Validates all YAML syntax
-7. **Shell Syntax Check** - Validates shell script syntax (bash -n) **NEW**
-8. **Shellcheck Linting** - Lints shell scripts for best practices **NEW**
+7. **Shell Syntax Check** - Validates shell script syntax (bash -n)
+8. **Shellcheck Linting** - Lints shell scripts for best practices
 9. **Ruff Linting** - Python code linting
 10. **Ruff Formatting** - Python code formatting check
 11. **Standard Checks** - Trailing whitespace, EOF, merge conflicts, private keys
@@ -152,7 +194,7 @@ pre-commit run yaml-validation
 
 ### Bypass Pre-Commit (Emergency Only)
 
-**⚠️ NOT RECOMMENDED** - Only use in emergencies:
+**NOT RECOMMENDED** - Only use in emergencies:
 
 ```bash
 git commit --no-verify
@@ -164,16 +206,17 @@ This will be logged in `.git/hooks/pre-commit.log` for audit.
 
 | Check | Local Script | Pre-Commit | CI/CD | Notes |
 |-------|-------------|------------|-------|-------|
-| YAML Validation | ✅ local-ci.sh | ✅ yaml-validation hook | ✅ quality-gates | **100% parity** |
-| Python Tests | ✅ npm test | ✅ pytest-validation | ✅ build-and-test | **100% parity** |
-| Build Process | ✅ npm run build | ❌ (too slow) | ✅ build-and-test | Pre-commit skips (slow) |
-| Shell Syntax | ✅ local-ci.sh | ✅ bash -n hook | ✅ quality-gates | **100% parity** |
-| Shellcheck | ✅ local-ci.sh | ✅ shellcheck hook | ✅ quality-gates | **100% parity** |
-| Ruff Linting | ✅ local-ci.sh | ✅ ruff hook | ✅ quality-gates | **100% parity** |
-| Ruff Formatting | ✅ local-ci.sh | ✅ ruff-format hook | ✅ quality-gates | **100% parity** |
-| Security Scan | ✅ local-ci.sh | ❌ (security context) | ✅ quality-gates | Pre-commit skips |
-| Agent Count | ✅ local-ci.sh | ❌ (informational) | ✅ quality-gates | Pre-commit skips |
-| Documentation | ✅ local-ci.sh | ❌ (informational) | ✅ documentation-check | Pre-commit skips |
+| Pipenv Dependencies | `pipenv install --dev` | - | `pipenv install --deploy --dev` | **100% parity** |
+| YAML Validation | `pipenv run validate-yaml` | yaml-validation hook | quality-gates | **100% parity** |
+| Python Tests | `pipenv run test` | pytest-validation | build-and-test | **100% parity** |
+| Build Process | `pipenv run build` | (too slow) | build-and-test | Pre-commit skips (slow) |
+| Shell Syntax | local-ci.sh | bash -n hook | quality-gates | **100% parity** |
+| Shellcheck | local-ci.sh | shellcheck hook | quality-gates | **100% parity** |
+| Ruff Linting | `pipenv run lint` | ruff hook | quality-gates | **100% parity** |
+| Ruff Formatting | `pipenv run format-check` | ruff-format hook | quality-gates | **100% parity** |
+| Security Scan | local-ci.py | (security context) | quality-gates | Pre-commit skips |
+| Agent Count | local-ci.py | (informational) | quality-gates | Pre-commit skips |
+| Documentation | local-ci.py | (informational) | documentation-check | Pre-commit skips |
 
 **Key Achievement**: Every CI check now has a local equivalent - zero gaps!
 
@@ -182,7 +225,7 @@ This will be logged in `.git/hooks/pre-commit.log` for audit.
 ### Issue: YAML Validation Fails
 
 ```
-✗ nWave/templates/AGENT_TEMPLATE.yaml
+YAML syntax: File.yaml
   Line 2043, Col 11: while parsing a block collection, expected <block end>, but found '?'
 ```
 
@@ -190,13 +233,13 @@ This will be logged in `.git/hooks/pre-commit.log` for audit.
 
 **Solution:**
 ```yaml
-# ❌ WRONG - dictionary key at same level as list items
+# WRONG - dictionary key at same level as list items
 section:
   - item1
   - item2
   validation: "text"
 
-# ✅ CORRECT - wrap list with 'items:' key
+# CORRECT - wrap list with 'items:' key
 section:
   items:
     - item1
@@ -219,10 +262,23 @@ expected a single document in the stream but found another document
 **Cause:** Environment differences between local and CI.
 
 **Solution:**
-1. Run `./scripts/local-ci.sh` to ensure all checks pass
-2. Verify Python and Node versions match CI (Python 3.12, Node 18.x/20.x)
-3. Check that all dependencies are installed: `npm ci`
-4. Review `.github/workflows/` for any CI-specific configuration
+1. Run `pipenv run validate` to ensure all checks pass
+2. Verify Python version matches CI (Python 3.11 or 3.12)
+3. Check that all dependencies are installed: `pipenv install --dev`
+4. Review `.github/workflows/ci.yml` for any CI-specific configuration
+
+### Issue: Pipenv Lock Issues
+
+**Cause:** Pipfile.lock out of sync with Pipfile.
+
+**Solution:**
+```bash
+# Regenerate lock file
+pipenv lock
+
+# Then install
+pipenv install --dev
+```
 
 ### Issue: Pre-Commit is Slow
 
@@ -231,8 +287,8 @@ expected a single document in the stream but found another document
 # Skip slow hooks for quick commits
 SKIP=pytest-validation git commit -m "quick fix"
 
-# Or use local-ci.sh in fast mode instead
-./scripts/local-ci.sh --fast
+# Or use local-ci.py in fast mode instead
+pipenv run validate-fast
 ```
 
 ## Workflow Integration
@@ -242,12 +298,12 @@ SKIP=pytest-validation git commit -m "quick fix"
 1. **Make changes** to code/configuration
 2. **Run quick validation**:
    ```bash
-   ./scripts/local-ci.sh --fast
+   pipenv run validate-fast
    ```
 3. **Fix any issues** identified
 4. **Run full validation** before commit:
    ```bash
-   ./scripts/local-ci.sh
+   pipenv run validate
    ```
 5. **Commit** (pre-commit hooks run automatically)
 6. **Push** to remote (CI/CD runs automatically)
@@ -259,7 +315,7 @@ If CI/CD fails after push:
 1. **Check GitHub Actions logs** for specific error
 2. **Run local validation**:
    ```bash
-   ./scripts/local-ci.sh --verbose
+   python scripts/local_ci.py --verbose
    ```
 3. **Reproduce the error locally**
 4. **Fix the issue**
@@ -270,9 +326,9 @@ If CI/CD fails after push:
 
 **Single Unified CI Workflow**: `.github/workflows/ci.yml`
 
-The previous duplicate workflows (`ci.yml` and `ci-cd-pipeline.yml`) have been **consolidated** into a single workflow with these jobs:
+The workflow uses pipenv for all Python operations with these jobs:
 
-1. **build-and-test** - Matrix build (3 OS × 2 Node versions = 6 builds total, not 12)
+1. **build-and-test** - Matrix build (3 OS x 2 Python versions = 6 builds total)
 2. **quality-gates** - YAML, shellcheck, ruff linting, security, agent/command validation
 3. **documentation-check** - Required documentation validation
 4. **unix-installer-test** - Dry-run installer tests (Ubuntu + macOS)
@@ -280,22 +336,30 @@ The previous duplicate workflows (`ci.yml` and `ci-cd-pipeline.yml`) have been *
 6. **release** - Automated release on version tags
 7. **ci-summary** - Final status report
 
-**Zero Duplication**: Matrix builds run once, not twice (6 builds instead of 12).
+**Zero Duplication**: Matrix builds run once across 6 configurations.
 
 ## Adding New Validation Checks
 
 To add a new validation check that mirrors CI/CD:
 
-1. **Add to CI workflow** (`.github/workflows/ci.yml` → `quality-gates` job)
-2. **Add to local-ci.sh** script
-3. **Add to pre-commit** (if fast enough - typically <2 seconds)
-4. **Update this documentation**
+1. **Add to CI workflow** (`.github/workflows/ci.yml` -> `quality-gates` job)
+2. **Add to Pipfile** `[scripts]` section (if applicable)
+3. **Add to local_ci.py** script
+4. **Add to pre-commit** (if fast enough - typically <2 seconds)
+5. **Update this documentation**
 
 Example:
-```bash
-# In scripts/local-ci.sh
-print_header "10. New Validation Check"
-run_check "New check description" "command-to-run"
+```toml
+# In Pipfile [scripts] section
+new-check = "python scripts/new_check.py"
+```
+
+```python
+# In scripts/local_ci.py
+def validate_new_check(self) -> None:
+    """Run new validation check."""
+    self.print_header("11. New Validation Check")
+    self.run_command(["pipenv", "run", "new-check"], "New check passed")
 ```
 
 ## Maintenance
@@ -316,10 +380,21 @@ pre-commit install --install-hooks
 pre-commit clean
 ```
 
+### Update Dependencies
+
+```bash
+# Update all dependencies
+pipenv update
+
+# Update specific package
+pipenv update ruff
+```
+
 ## References
 
 - GitHub Actions Workflows: `.github/workflows/`
-- Local CI Script: `scripts/local-ci.sh`
+- Local CI Script: `scripts/local_ci.py`
 - YAML Validator: `scripts/validation/validate_yaml_files.py`
 - Pre-Commit Config: `.pre-commit-config.yaml`
+- Pipenv Configuration: `Pipfile`
 - CI/CD Documentation: `docs/ci-cd/`

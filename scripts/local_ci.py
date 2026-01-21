@@ -133,42 +133,64 @@ class LocalCIValidator:
         else:
             self.print_warning("YAML validator script not found")
 
-    def validate_npm_dependencies(self) -> None:
-        """Validate npm dependencies match CI workflow requirements."""
-        self.print_header("2. npm Dependency Validation")
+    def validate_pipenv_dependencies(self) -> None:
+        """Validate pipenv dependencies match CI workflow requirements."""
+        self.print_header("2. Pipenv Dependency Validation")
 
-        package_json = self.project_root / "package.json"
-        package_lock = self.project_root / "package-lock.json"
+        pipfile = self.project_root / "Pipfile"
+        pipfile_lock = self.project_root / "Pipfile.lock"
 
-        if not package_json.exists():
-            self.print_info("No package.json found - skipping npm validation")
-            return
-
-        # Check package-lock.json exists (required for npm ci)
-        if not package_lock.exists():
-            self.print_error(
-                "package-lock.json missing - npm ci will fail in CI (run: npm install)"
-            )
+        if not pipfile.exists():
+            self.print_error("Pipfile missing - pipenv install will fail")
             self.tests_failed += 1
             return
 
-        self.print_success("package-lock.json exists")
+        self.print_success("Pipfile exists")
 
-        # Validate npm ci works (mirrors CI exactly)
+        # Check Pipfile.lock exists (required for pipenv install --deploy)
+        if not pipfile_lock.exists():
+            self.print_warning(
+                "Pipfile.lock missing - run: pipenv lock (CI uses --deploy flag)"
+            )
+            # Generate lock file
+            try:
+                subprocess.run(
+                    ["pipenv", "lock"],
+                    cwd=self.project_root,
+                    check=True,
+                    capture_output=not self.verbose,
+                    text=True,
+                )
+                self.print_success("Pipfile.lock generated")
+            except (FileNotFoundError, subprocess.CalledProcessError) as e:
+                self.print_error(f"Failed to generate Pipfile.lock: {e}")
+                self.tests_failed += 1
+                return
+
+        self.print_success("Pipfile.lock exists")
+
+        # Validate pipenv install works (mirrors CI exactly)
         try:
-            subprocess.run(["npm", "--version"], capture_output=True, check=True)
-            self.run_command(["npm", "ci"], "npm ci (dependency installation)")
+            subprocess.run(["pipenv", "--version"], capture_output=True, check=True)
+            self.run_command(
+                ["pipenv", "install", "--dev"],
+                "pipenv install --dev (dependency installation)",
+            )
         except FileNotFoundError:
-            self.print_warning("npm not available - skipping npm ci validation")
+            self.print_warning(
+                "pipenv not available - install with: pip install pipenv"
+            )
 
     def run_python_tests(self) -> None:
         """Run Python test suite."""
         self.print_header("3. Python Test Suite")
 
-        # Try npm test first (mirrors CI), fall back to pytest
-        if (self.project_root / "package.json").exists():
-            self.run_command(["npm", "test"], "Python tests (pytest)")
-        else:
+        # Use pipenv run test (mirrors CI exactly)
+        try:
+            subprocess.run(["pipenv", "--version"], capture_output=True, check=True)
+            self.run_command(["pipenv", "run", "test"], "Python tests (pytest)")
+        except FileNotFoundError:
+            # Fall back to direct pytest if pipenv not available
             self.run_command(
                 [sys.executable, "-m", "pytest", "tests/", "-v"],
                 "Python tests (pytest)",
@@ -182,10 +204,17 @@ class LocalCIValidator:
 
         self.print_header("4. Build Process Validation")
 
-        if (self.project_root / "package.json").exists():
-            self.run_command(["npm", "run", "build"], "Build process")
-        else:
-            self.print_info("No build script found (package.json missing)")
+        # Use pipenv run build (mirrors CI exactly)
+        try:
+            subprocess.run(["pipenv", "--version"], capture_output=True, check=True)
+            self.run_command(["pipenv", "run", "build"], "Build process")
+        except FileNotFoundError:
+            # Fall back to direct Python if pipenv not available
+            build_script = self.project_root / "tools" / "build.py"
+            if build_script.exists():
+                self.run_command([sys.executable, str(build_script)], "Build process")
+            else:
+                self.print_warning("Build script not found")
 
     def validate_shell_scripts(self) -> None:
         """Validate shell scripts."""
@@ -254,25 +283,42 @@ class LocalCIValidator:
         self.print_header("6. Python Linting (Ruff)")
 
         try:
-            subprocess.run(["ruff", "--version"], capture_output=True, check=True)
-            self.run_command(
-                ["ruff", "check", "scripts/", "tools/", "tests/"], "Ruff linting passed"
-            )
-        except (FileNotFoundError, subprocess.CalledProcessError):
-            self.print_warning("Ruff not available - install with: pip install ruff")
+            subprocess.run(["pipenv", "--version"], capture_output=True, check=True)
+            self.run_command(["pipenv", "run", "lint"], "Ruff linting passed")
+        except FileNotFoundError:
+            # Fall back to direct ruff if pipenv not available
+            try:
+                subprocess.run(["ruff", "--version"], capture_output=True, check=True)
+                self.run_command(
+                    ["ruff", "check", "scripts/", "tools/", "tests/"],
+                    "Ruff linting passed",
+                )
+            except (FileNotFoundError, subprocess.CalledProcessError):
+                self.print_warning(
+                    "Ruff not available - install with: pipenv install --dev"
+                )
 
     def validate_python_formatting(self) -> None:
         """Check Python formatting with Ruff."""
         self.print_header("7. Python Formatting Check (Ruff)")
 
         try:
-            subprocess.run(["ruff", "--version"], capture_output=True, check=True)
+            subprocess.run(["pipenv", "--version"], capture_output=True, check=True)
             self.run_command(
-                ["ruff", "format", "--check", "scripts/", "tools/", "tests/"],
-                "Ruff formatting check passed",
+                ["pipenv", "run", "format-check"], "Ruff formatting check passed"
             )
-        except (FileNotFoundError, subprocess.CalledProcessError):
-            self.print_warning("Ruff not available - install with: pip install ruff")
+        except FileNotFoundError:
+            # Fall back to direct ruff if pipenv not available
+            try:
+                subprocess.run(["ruff", "--version"], capture_output=True, check=True)
+                self.run_command(
+                    ["ruff", "format", "--check", "scripts/", "tools/", "tests/"],
+                    "Ruff formatting check passed",
+                )
+            except (FileNotFoundError, subprocess.CalledProcessError):
+                self.print_warning(
+                    "Ruff not available - install with: pipenv install --dev"
+                )
 
     def validate_security(self) -> None:
         """Run basic security validation."""
@@ -400,7 +446,7 @@ class LocalCIValidator:
 
         # Run all validation phases
         self.validate_yaml()
-        self.validate_npm_dependencies()
+        self.validate_pipenv_dependencies()
         self.run_python_tests()
         self.validate_build()
         self.validate_shell_scripts()

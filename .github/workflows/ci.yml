@@ -10,11 +10,11 @@ on:
 
 jobs:
   build-and-test:
-    name: Build & Test (${{ matrix.os }}, Node ${{ matrix.node-version }})
+    name: Build & Test (${{ matrix.os }}, Python ${{ matrix.python-version }})
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
-        node-version: [ 18.x, 20.x ]
+        python-version: [ '3.11', '3.12' ]
       fail-fast: false
     runs-on: ${{ matrix.os }}
 
@@ -22,34 +22,35 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-
     - name: Setup Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
+        python-version: ${{ matrix.python-version }}
 
-    - name: Install Python dependencies
-      run: |
-        python3 -m pip install --upgrade pip
-        pip install -r tools/requirements.txt
+    - name: Install pipenv
+      run: pip install pipenv
 
-    - name: Install Node dependencies
-      run: npm ci
+    - name: Cache pipenv virtualenv
+      uses: actions/cache@v4
+      with:
+        path: ~/.local/share/virtualenvs
+        key: ${{ runner.os }}-python-${{ matrix.python-version }}-pipenv-${{ hashFiles('Pipfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-python-${{ matrix.python-version }}-pipenv-
+
+    - name: Install dependencies
+      run: pipenv install --deploy --dev
 
     - name: Run tests
-      run: npm test
+      run: pipenv run test
 
     - name: Run build
-      run: npm run build
+      run: pipenv run build
 
     - name: Report status
       if: always()
       run: |
-        echo "CI validation completed for ${{ matrix.os }} with Node.js ${{ matrix.node-version }}"
+        echo "CI validation completed for ${{ matrix.os }} with Python ${{ matrix.python-version }}"
       shell: bash
 
   quality-gates:
@@ -62,19 +63,28 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Setup Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.12'
 
-    - name: Install Python dependencies
-      run: |
-        python3 -m pip install --upgrade pip
-        pip install -r tools/requirements.txt
+    - name: Install pipenv
+      run: pip install pipenv
+
+    - name: Cache pipenv virtualenv
+      uses: actions/cache@v4
+      with:
+        path: ~/.local/share/virtualenvs
+        key: ${{ runner.os }}-python-3.12-pipenv-${{ hashFiles('Pipfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-python-3.12-pipenv-
+
+    - name: Install dependencies
+      run: pipenv install --deploy --dev
 
     - name: YAML validation
       run: |
         echo "::group::YAML File Validation"
-        python3 scripts/validation/validate_yaml_files.py
+        pipenv run validate-yaml
         echo "::endgroup::"
 
     - name: Shell script validation
@@ -101,14 +111,13 @@ jobs:
     - name: Python linting (Ruff)
       run: |
         echo "::group::Python Linting"
-        pip install ruff
-        ruff check scripts/ tools/ tests/ --exit-non-zero-on-fix || echo "Ruff linting completed with warnings"
+        pipenv run lint || echo "Ruff linting completed with warnings"
         echo "::endgroup::"
 
     - name: Python formatting check (Ruff)
       run: |
         echo "::group::Python Formatting Check"
-        ruff format --check scripts/ tools/ tests/ || echo "Formatting issues detected"
+        pipenv run format-check || echo "Formatting issues detected"
         echo "::endgroup::"
 
     - name: Security validation
@@ -117,11 +126,11 @@ jobs:
 
         # Check for hardcoded secrets
         if grep -rE "(password|secret|token)[[:space:]]*=[[:space:]]*['\"][^'\"]+['\"]" scripts/ --include="*.sh" 2>/dev/null | grep -v "example\|test\|comment\|TODO"; then
-          echo "⚠️ Potential hardcoded credentials detected - review required"
+          echo "Potential hardcoded credentials detected - review required"
           exit 1
         fi
 
-        echo "✅ Security validation: No hardcoded credentials detected"
+        echo "Security validation: No hardcoded credentials detected"
         echo "::endgroup::"
 
     - name: Agent definition validation
@@ -132,9 +141,9 @@ jobs:
         echo "Found $agent_count agent definitions"
 
         if [[ $agent_count -lt 10 ]]; then
-          echo "⚠️ Expected more agent definitions"
+          echo "Expected more agent definitions"
         else
-          echo "✅ Agent definitions found: $agent_count"
+          echo "Agent definitions found: $agent_count"
         fi
 
         echo "::endgroup::"
@@ -145,7 +154,7 @@ jobs:
 
         command_count=$(find nWave/tasks -name "*.md" -type f 2>/dev/null | wc -l)
         echo "Found $command_count command definitions"
-        echo "✅ Command definitions found: $command_count"
+        echo "Command definitions found: $command_count"
 
         echo "::endgroup::"
 
@@ -168,9 +177,9 @@ jobs:
 
         for doc_file in "${documentation_files[@]}"; do
           if [[ -f "$doc_file" ]]; then
-            echo "✅ Found: $doc_file"
+            echo "Found: $doc_file"
           else
-            echo "⚠️ Missing documentation: $doc_file"
+            echo "Missing documentation: $doc_file"
           fi
         done
 
@@ -189,13 +198,16 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Setup Python
+      uses: actions/setup-python@v5
       with:
-        node-version: 20.x
+        python-version: '3.12'
+
+    - name: Install pipenv
+      run: pip install pipenv
 
     - name: Install dependencies
-      run: npm ci
+      run: pipenv install --deploy --dev
 
     - name: Detect installation path
       id: install-path
@@ -223,7 +235,7 @@ jobs:
         fi
 
         # Execute installer in dry-run mode
-        npm run build
+        pipenv run build
         echo "Dry-run validation passed without errors"
 
         # Verify filesystem not modified
@@ -252,13 +264,16 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Setup Python
+      uses: actions/setup-python@v5
       with:
-        node-version: 20.x
+        python-version: '3.12'
+
+    - name: Install pipenv
+      run: pip install pipenv
 
     - name: Install dependencies
-      run: npm ci
+      run: pipenv install --deploy --dev
 
     - name: Detect installation path
       id: install-path
@@ -285,7 +300,7 @@ jobs:
         }
 
         # Execute installer in dry-run mode
-        npm run build
+        pipenv run build
         echo "Dry-run validation passed without errors"
 
         # Verify filesystem not modified
@@ -317,13 +332,16 @@ jobs:
       with:
         ref: ${{ github.ref }}
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Setup Python
+      uses: actions/setup-python@v5
       with:
-        node-version: 20.x
+        python-version: '3.12'
+
+    - name: Install pipenv
+      run: pip install pipenv
 
     - name: Install dependencies
-      run: npm ci
+      run: pipenv install --deploy --dev
 
     - name: Report release configuration
       run: |
@@ -338,7 +356,7 @@ jobs:
         set -e
         echo "Building Claude Code for release"
 
-        if ! npm run build; then
+        if ! pipenv run build; then
           echo "Build failed - stopping release workflow"
           exit 1
         fi
@@ -429,9 +447,9 @@ jobs:
         all_exist=true
         for file in "${required_files[@]}"; do
           if [[ -f "$file" ]]; then
-            echo "✓ Found: $file"
+            echo "Found: $file"
           else
-            echo "✗ Missing: $file"
+            echo "Missing: $file"
             all_exist=false
           fi
         done
@@ -493,15 +511,15 @@ jobs:
               "${{ needs.quality-gates.result }}" == "success" &&
               "${{ needs.documentation-check.result }}" == "success" ]]; then
 
-          echo "🎉 CI Pipeline: SUCCESS"
-          echo "✅ Build and test matrix passed"
-          echo "✅ Quality gates passed"
-          echo "✅ Documentation validated"
+          echo "CI Pipeline: SUCCESS"
+          echo "Build and test matrix passed"
+          echo "Quality gates passed"
+          echo "Documentation validated"
           echo ""
-          echo "🚀 System ready for deployment"
+          echo "System ready for deployment"
 
         else
-          echo "❌ CI Pipeline: FAILED"
+          echo "CI Pipeline: FAILED"
           echo "Results:"
           echo "  - Build & Test: ${{ needs.build-and-test.result }}"
           echo "  - Quality Gates: ${{ needs.quality-gates.result }}"
