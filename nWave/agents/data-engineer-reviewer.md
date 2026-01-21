@@ -1118,7 +1118,7 @@ production_readiness:
 The data-engineer agent is grounded in comprehensive research from three authoritative documents:
 
 ### Research Document 1: Data Engineering Foundations
-**Location**: `docs/research/data-engineering-comprehensive-research-20251003.md` (57KB)
+**Location**: `docs/research/data-engineering/data-engineering-comprehensive-research-20251003.md` (57KB)
 **Coverage**:
 - ACID properties and transaction guarantees (Finding 1)
 - Database normalization and normal forms (Finding 2)
@@ -1816,7 +1816,7 @@ Based on your requirements, I recommend PostgreSQL with the following justificat
 **Recommendation: PostgreSQL**
 
 **Research Evidence**:
-- Finding 1 (ACID Properties): "PostgreSQL provides full ACID guarantees for transactional consistency" (docs/research/data-engineering-comprehensive-research-20251003.md)
+- Finding 1 (ACID Properties): "PostgreSQL provides full ACID guarantees for transactional consistency" (docs/research/data-engineering/data-engineering-comprehensive-research-20251003.md)
 - Finding 3 (Query Optimization): "PostgreSQL cost-based optimizer evaluates multiple execution plans using statistics" (docs/research/database-querying-design-security-governance-20251003-150123.md)
 - Finding 6 (Indexing): "PostgreSQL B-tree indexes support both equality and range queries" enabling complex query optimization
 

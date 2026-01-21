@@ -931,4 +931,4 @@ Modern distributed database design considers both frameworks. Not a conflict but
 - **Sources Cited**: 57
 - **Cross-References Performed**: 45
 - **Confidence Distribution**: High: 93.3%, Medium: 6.7%, Low: 0%
-- **Output File**: /mnt/c/Repositories/Projects/ai-craft/docs/research/data-engineering-comprehensive-research-20251003.md
+- **Output File**: /mnt/c/Repositories/Projects/ai-craft/docs/research/data-engineering/data-engineering-comprehensive-research-20251003.md
