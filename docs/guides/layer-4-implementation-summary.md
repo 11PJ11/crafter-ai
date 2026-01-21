@@ -35,7 +35,7 @@ All 12 reviewer agents created with comprehensive specifications:
 | 4 | software-crafter | software-crafter-reviewer | Mentor | Implementation bias, test coupling, complexity |
 | 5 | knowledge-researcher | knowledge-researcher-reviewer | Scholar | Source bias, evidence quality, replicability |
 | 6 | data-engineer | data-engineer-reviewer | Validator | Performance claims, query optimization, security |
-| 7 | architecture-diagram-manager | architecture-diagram-manager-reviewer | Clarity | Visual clarity, consistency, stakeholder accessibility |
+| 7 | architecture-diagram-manager | architecture-diagram-manager-reviewer | Clarity | Visual clarity, consistency, accessibility |
 | 8 | visual-2d-designer | visual-2d-designer-reviewer | Critic | 12 principles compliance, timing, readability |
 | 9 | feature-completion-coordinator | feature-completion-coordinator-reviewer | Auditor | Handoff completeness, phase validation, traceability |
 | 10 | root-cause-analyzer | root-cause-analyzer-reviewer | Logician | Causality logic, evidence quality, alternatives |

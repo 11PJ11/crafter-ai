@@ -1,6 +1,6 @@
 # AI-Craft: Intelligent ATDD Pipeline with Specialized Agent Network
 
-<!-- version: 1.3.0 -->
+<!-- version: 1.3.1 -->
 
 A systematic approach to software development using ATDD (Acceptance Test Driven Development) with intelligent AI agent orchestration. The framework automates the 5-stage workflow through 41+ specialized agents, each following the Single Responsibility Principle.
 
@@ -31,7 +31,7 @@ cd ai-craft
 python3 scripts/install/install_ai_craft.py
 ```
 
-Full installation details: [Installation Guide](docs/installation/INSTALL.md)
+Full installation details: [Installation Guide](docs/installation/installation-guide.md)
 
 ### 2. Your First Development Cycle
 
@@ -69,11 +69,11 @@ AI-Craft documentation is organized using the **DIVIO framework** for maximum us
 ### Getting Started
 Start here if you're new to AI-Craft:
 - **[Jobs To Be Done Guide](docs/guides/jobs-to-be-done-guide.md)** - Understand when and how to use each workflow
-- **[Installation Guide](docs/installation/INSTALL.md)** - Step-by-step setup instructions
+- **[Installation Guide](docs/installation/installation-guide.md)** - Step-by-step setup instructions
 
 ### Practical Guides (How-To)
 Learn how to accomplish specific tasks:
-- **[How to Invoke Reviewer Agents](docs/guides/how-to-invoke-reviewers.md)** - Request peer reviews for quality assurance
+- **[Invoke Reviewer Agents](docs/guides/invoke-reviewer-agents.md)** - Request peer reviews for quality assurance
 - **[Layer 4 for Developers](docs/guides/layer-4-for-developers.md)** - Programmatic review integration in code
 - **[Layer 4 for Users](docs/guides/layer-4-for-users.md)** - Manual review workflows
 - **[Layer 4 for CI/CD](docs/guides/layer-4-for-cicd.md)** - Automated review in pipelines
@@ -83,11 +83,11 @@ Find exact specifications and configuration:
 - **[nWave Commands Reference](docs/reference/nwave-commands-reference.md)** - All commands, agents, file locations
 - **[Reviewer Agents Reference](docs/reference/reviewer-agents-reference.md)** - Reviewer specifications and configuration
 - **[Layer 4 API Reference](docs/reference/layer-4-api-reference.md)** - API contracts and interfaces
-- **[Troubleshooting Guide](docs/troubleshooting/TROUBLESHOOTING.md)** - Common issues and solutions
+- **[Troubleshooting Guide](docs/troubleshooting/troubleshooting-guide.md)** - Common issues and solutions
 
 ### Understanding Concepts (Explanation)
 Deepen your understanding of why AI-Craft works:
-- **[Layer 4 Implementation Summary](docs/guides/LAYER_4_IMPLEMENTATION_SUMMARY.md)** - How peer review by equal-expertise agents reduces bias
+- **[Layer 4 Implementation Summary](docs/guides/layer-4-implementation-summary.md)** - How peer review by equal-expertise agents reduces bias
 - **[Architecture Patterns](docs/guides/knowledge-architecture-analysis.md)** - Design decisions and rationale
 
 ## Core Concepts
