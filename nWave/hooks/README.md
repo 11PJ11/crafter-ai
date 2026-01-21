@@ -1,3 +1,5 @@
+<!-- version: 1.0.0 -->
+
 # nWave Git Hooks
 
 This directory contains git hooks for the nWave 14-phase TDD methodology.

@@ -1,3 +1,5 @@
+<!-- version: 1.0.0 -->
+
 # AI-Craft Installation Scripts
 
 Cross-platform Python-based installation tools for the nWave methodology framework.

@@ -75,6 +75,48 @@ tracked_files:
     description: "Auto-generated command-agent mapping reference"
     triggers_update: []  # Terminal node - regenerated from catalog
 
+  # Documentation: nWave framework README
+  - path: "nWave/README.md"
+    version_format: "markdown_comment"
+    version_pattern: "<!-- version: {version} -->"
+    description: "nWave framework overview and methodology documentation"
+    triggers_update: []  # Terminal node - should match framework-catalog.yaml version
+
+  # Documentation: Scripts directory README
+  - path: "scripts/README.md"
+    version_format: "markdown_comment"
+    version_pattern: "<!-- version: {version} -->"
+    description: "Scripts directory structure and usage documentation"
+    triggers_update: []  # Terminal node - update when script structure changes
+
+  # Documentation: Installation scripts README
+  - path: "scripts/install/README.md"
+    version_format: "markdown_comment"
+    version_pattern: "<!-- version: {version} -->"
+    description: "Installation scripts comprehensive documentation"
+    triggers_update: []  # Terminal node - update when install scripts change
+
+  # Documentation: Build tools README
+  - path: "tools/README.md"
+    version_format: "markdown_comment"
+    version_pattern: "<!-- version: {version} -->"
+    description: "Build and IDE bundling tools documentation"
+    triggers_update: []  # Terminal node - should match build_config.yaml version
+
+  # Documentation: Hooks README
+  - path: "nWave/hooks/README.md"
+    version_format: "markdown_comment"
+    version_pattern: "<!-- version: {version} -->"
+    description: "Pre-commit hooks and validation documentation"
+    triggers_update: []  # Terminal node - update when hooks change
+
+  # Documentation: Archived scripts README
+  - path: "scripts/archive/README.md"
+    version_format: "markdown_comment"
+    version_pattern: "<!-- version: {version} -->"
+    description: "Archived and legacy scripts documentation"
+    triggers_update: []  # Terminal node - rarely changes
+
 # -----------------------------------------------------------------------------
 # Validation Rules
 # -----------------------------------------------------------------------------

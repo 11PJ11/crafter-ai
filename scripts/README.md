@@ -1,3 +1,5 @@
+<!-- version: 1.0.0 -->
+
 # nWave Scripts Directory
 
 Organized scripts for AI-Craft/nWave framework operations, validation, and installation.

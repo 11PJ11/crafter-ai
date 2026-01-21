@@ -1,3 +1,5 @@
+<!-- version: 1.0.0 -->
+
 # AI-Craft nWave Framework
 
 ## Overview

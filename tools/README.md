@@ -1,3 +1,5 @@
+<!-- version: 1.0.0 -->
+
 # nWave IDE Bundle Builder
 
 Python build system that transforms nWave methodology source files into IDE-compatible distributions organized under the "nw" category.

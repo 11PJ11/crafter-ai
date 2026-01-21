@@ -1,3 +1,5 @@
+<!-- version: 1.0.0 -->
+
 # Archived Scripts
 
 This directory contains scripts that are no longer actively used but preserved for reference.
