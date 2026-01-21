@@ -478,47 +478,14 @@ Use when building new capabilities (greenfield or brownfield development).
 
 ---
 
-## Agent Selection Guide
+## Agent Selection
 
-### Core Wave Agents
+For complete agent specifications and selection guidance, see the [nWave Commands Reference](../reference/nwave-commands-reference.md).
 
-| Agent | Use For |
-|-------|---------|
-| `@product-owner` | Requirements, business analysis, stakeholder alignment |
-| `@solution-architect` | Architecture design, technology selection, planning |
-| `@acceptance-designer` | BDD scenarios, acceptance tests, test completeness |
-| `@software-crafter` | Implementation, TDD, refactoring, code quality |
-| `@devop` | Deployment, operations, lifecycle management, git workflow |
-
-### Cross-Wave Specialist Agents
-
-| Agent | Use For |
-|-------|---------|
-| `@researcher` | Information gathering, evidence collection, analysis |
-| `@troubleshooter` | Root cause analysis, failure investigation (Toyota 5 Whys) |
-| `@visual-architect` | Architecture diagrams, visual documentation |
-| `@skeleton-builder` | Walking skeleton, early E2E validation |
-| `@data-engineer` | Database systems, data pipelines, query optimization, data governance |
-| `@illustrator` | Visual 2D diagrams, design artifacts, workflow visualizations |
-
-### Utility Agents
-
-| Agent | Use For |
-|-------|---------|
-| `@agent-builder` | Create new agents using validated patterns and templates |
-| `@avvocato` | Italian contract law, GDPR compliance, software contracts (domain-specific) |
-
-### Reviewer Agents (Cost-Optimized)
-
-Every agent has a corresponding `*-reviewer` variant that uses the Haiku model for cost-efficient reviews:
-
-- `@software-crafter-reviewer` - Code quality review
-- `@solution-architect-reviewer` - Architecture review
-- `@product-owner-reviewer` - Requirements review
-- `@acceptance-designer-reviewer` - Test completeness review
-- etc.
-
-**Usage**: The `/nw:review` command automatically routes to the reviewer variant.
+**Quick Overview**:
+- **Core Wave Agents**: product-owner, solution-architect, acceptance-designer, software-crafter, devop
+- **Cross-Wave Specialists**: researcher, troubleshooter, visual-architect, skeleton-builder, data-engineer
+- **Reviewer Agents**: Every agent has a `*-reviewer` variant for quality assurance
 
 ---
 
@@ -621,61 +588,6 @@ Every agent has a corresponding `*-reviewer` variant that uses the Haiku model f
 
 ---
 
-## Complete Command Reference
+## Command and File Reference
 
-### Discovery Phase Commands
-
-| Command | Agent | Purpose |
-|---------|-------|---------|
-| `/nw:start` | product-owner | Initialize nWave workflow with project brief |
-| `/nw:discuss` | product-owner | Requirements gathering and business analysis |
-| `/nw:design` | solution-architect | Architecture design with technology selection |
-| `/nw:distill` | acceptance-designer | Acceptance test creation (Given-When-Then) |
-| `/nw:skeleton` | skeleton-builder | Walking skeleton E2E validation |
-
-### Execution Loop Commands
-
-| Command | Agent | Purpose |
-|---------|-------|---------|
-| `/nw:baseline` | researcher | Establish measurement baseline (BLOCKS roadmap) |
-| `/nw:roadmap` | varies | Create comprehensive planning document |
-| `/nw:split` | varies | Generate atomic task files from roadmap |
-| `/nw:execute` | varies | Execute atomic task with state tracking |
-| `/nw:review` | *-reviewer | Expert critique and quality assurance |
-| `/nw:finalize` | devop | Archive project and clean up workflow |
-| `/nw:deliver` | devop | Production readiness validation |
-
-### Cross-Wave Specialist Commands
-
-| Command | Agent | Purpose |
-|---------|-------|---------|
-| `/nw:research` | researcher | Evidence-driven research with source verification |
-| `/nw:root-why` | troubleshooter | Toyota 5 Whys root cause analysis |
-| `/nw:mikado` | software-crafter | Complex refactoring roadmaps (Mikado Method) |
-| `/nw:refactor` | software-crafter | Systematic code refactoring (Level 1-6) |
-| `/nw:develop` | software-crafter | Outside-In TDD implementation |
-| `/nw:diagram` | visual-architect | Architecture diagram lifecycle management |
-
-### Utility Commands
-
-| Command | Agent | Purpose |
-|---------|-------|---------|
-| `/nw:git` | devop | Git workflow operations (commit, branch, merge) |
-| `/nw:forge` | agent-builder | Create new agents from templates |
-
----
-
-## File Locations
-
-| Artifact | Location |
-|----------|----------|
-| Research | `docs/research/{category}/{topic}.md` |
-| Embedded Knowledge | `nWave/data/embed/{agent}/{topic}.md` |
-| Baseline | `docs/workflow/{project-id}/baseline.yaml` |
-| Roadmap | `docs/workflow/{project-id}/roadmap.yaml` |
-| Tasks | `docs/workflow/{project-id}/steps/*.json` |
-| Reviews | Embedded in task files |
-| Architecture | `docs/architecture/` |
-| Architecture Diagrams | `docs/architecture/diagrams/` |
-| Requirements | `docs/requirements/` |
-| Agents | `nWave/agents/` |
+For complete command specifications, agent selection, and file locations, see the [nWave Commands Reference](../reference/nwave-commands-reference.md).

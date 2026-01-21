@@ -117,6 +117,87 @@ tracked_files:
     description: "Archived and legacy scripts documentation"
     triggers_update: []  # Terminal node - rarely changes
 
+  # =============================================================================
+  # DIVIO-Restructured Documentation (Version: **Version**: X.Y.Z format)
+  # =============================================================================
+
+  # How-to Guide: Invoking Reviewers
+  - path: "docs/guides/how-to-invoke-reviewers.md"
+    version_format: "markdown_header"
+    version_pattern: "**Version**: {version}"
+    description: "How-to guide for invoking Layer 4 peer review agents"
+    triggers_update: []  # Terminal node - should match framework-catalog.yaml version
+
+  # Reference: Reviewer Agents
+  - path: "docs/reference/reviewer-agents-reference.md"
+    version_format: "markdown_header"
+    version_pattern: "**Version**: {version}"
+    description: "Reference documentation for all reviewer agent specifications"
+    triggers_update: []  # Terminal node - should match framework-catalog.yaml version
+
+  # Reference: Layer 4 API
+  - path: "docs/reference/layer-4-api-reference.md"
+    version_format: "markdown_header"
+    version_pattern: "**Version**: {version}"
+    description: "API contracts, interfaces, and configuration reference for Layer 4"
+    triggers_update: []  # Terminal node - should match framework-catalog.yaml version
+
+  # How-to Guide: Layer 4 for Developers
+  - path: "docs/guides/layer-4-for-developers.md"
+    version_format: "markdown_header"
+    version_pattern: "**Version**: {version}"
+    description: "Programmatic integration guide for developers"
+    triggers_update: []  # Terminal node - should match framework-catalog.yaml version
+
+  # How-to Guide: Layer 4 for Users
+  - path: "docs/guides/layer-4-for-users.md"
+    version_format: "markdown_header"
+    version_pattern: "**Version**: {version}"
+    description: "Manual workflow guide for CLI users"
+    triggers_update: []  # Terminal node - should match framework-catalog.yaml version
+
+  # How-to Guide: Layer 4 for CI/CD
+  - path: "docs/guides/layer-4-for-cicd.md"
+    version_format: "markdown_header"
+    version_pattern: "**Version**: {version}"
+    description: "Pipeline integration guide for CI/CD systems"
+    triggers_update: []  # Terminal node - should match framework-catalog.yaml version
+
+  # Reference: nWave Commands
+  - path: "docs/reference/nwave-commands-reference.md"
+    version_format: "markdown_header"
+    version_pattern: "**Version**: {version}"
+    description: "Complete command reference for nWave workflow"
+    triggers_update: []  # Terminal node - should match framework-catalog.yaml version
+
+  # DIVIO Analysis: Classification Report (YAML)
+  - path: "docs/analysis/divio-audit/DOCUMENTATION_CLASSIFICATION_REPORT.yaml"
+    version_format: "yaml"
+    version_field: "version"
+    description: "DIVIO classification analysis of all documentation"
+    triggers_update: []  # Analysis artifact - version tracks framework alignment
+
+  # DIVIO Analysis: Classification Summary
+  - path: "docs/analysis/divio-audit/DIVIO_CLASSIFICATION_SUMMARY.md"
+    version_format: "markdown_header"
+    version_pattern: "**Version**: {version}"
+    description: "Executive summary of DIVIO classification results"
+    triggers_update: []  # Analysis artifact - version tracks framework alignment
+
+  # DIVIO Analysis: Restructuring Action Plan
+  - path: "docs/analysis/divio-audit/DOCUMENTATION_RESTRUCTURING_ACTION_PLAN.md"
+    version_format: "markdown_header"
+    version_pattern: "**Version**: {version}"
+    description: "Detailed implementation guide for documentation restructuring"
+    triggers_update: []  # Analysis artifact - version tracks framework alignment
+
+  # DIVIO Analysis: Completion Summary
+  - path: "docs/analysis/divio-audit/DOCUMENTARIST_ANALYSIS_COMPLETE.md"
+    version_format: "markdown_header"
+    version_pattern: "**Version**: {version}"
+    description: "Summary of documentarist analysis completion"
+    triggers_update: []  # Analysis artifact - version tracks framework alignment
+
 # -----------------------------------------------------------------------------
 # Validation Rules
 # -----------------------------------------------------------------------------

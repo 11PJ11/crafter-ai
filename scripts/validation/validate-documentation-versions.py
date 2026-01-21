@@ -15,7 +15,7 @@ Exit Codes:
 """
 
 # Version - Must match nWave/framework-catalog.yaml version
-__version__ = "1.2.26"
+__version__ = "1.2.81"
 
 import sys
 import json
@@ -114,6 +114,24 @@ class VersionParser:
             return None
 
     @staticmethod
+    def parse_markdown_header_version(file_path: Path) -> Optional[str]:
+        """Extract version from Markdown header format: **Version**: X.Y.Z"""
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                # Only check first 2000 characters for performance
+                content = f.read(2000)
+                match = re.search(
+                    r"\*\*Version\*\*:\s*([0-9]+\.[0-9]+\.[0-9]+)", content
+                )
+                return match.group(1) if match else None
+        except Exception as e:
+            print(
+                f"Warning: Failed to parse Markdown header version from {file_path}: {e}",
+                file=sys.stderr,
+            )
+            return None
+
+    @staticmethod
     def parse_version(
         file_path: Path, format_type: str, field: Optional[str] = None
     ) -> Optional[str]:
@@ -122,6 +140,8 @@ class VersionParser:
             return VersionParser.parse_yaml_version(file_path, field or "version")
         elif format_type == "markdown_comment":
             return VersionParser.parse_markdown_version(file_path)
+        elif format_type == "markdown_header":
+            return VersionParser.parse_markdown_header_version(file_path)
         else:
             print(f"Warning: Unknown version format: {format_type}", file=sys.stderr)
             return None
@@ -364,6 +384,9 @@ class GitHelper:
             match = re.search(
                 r"<!--\s*version:\s*([0-9]+\.[0-9]+\.[0-9]+)\s*-->", content
             )
+            return match.group(1) if match else None
+        elif format_type == "markdown_header":
+            match = re.search(r"\*\*Version\*\*:\s*([0-9]+\.[0-9]+\.[0-9]+)", content)
             return match.group(1) if match else None
 
         return None

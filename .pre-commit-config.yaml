@@ -9,8 +9,8 @@ repos:
       # Phase 0: Auto-increment version when nWave files are modified
       - id: nwave-version-bump
         name: nWave Version Auto-Increment
-        entry: scripts/hooks/version-bump.sh
-        language: script
+        entry: python3 scripts/hooks/version_bump.py
+        language: system
         files: ^(nWave/|tools/)
         exclude: version\.md$
         pass_filenames: false
@@ -19,8 +19,8 @@ repos:
       # Phase 1: Run pytest test suite
       - id: pytest-validation
         name: Pytest Test Validation
-        entry: scripts/hooks/validate-tests.sh
-        language: script
+        entry: python3 scripts/hooks/validate_tests.py
+        language: system
         pass_filenames: false
         stages: [pre-commit]
         always_run: true
@@ -28,8 +28,8 @@ repos:
       # Phase 2: Documentation version validation
       - id: docs-version-validation
         name: Documentation Version Validation
-        entry: scripts/hooks/validate-docs.sh
-        language: script
+        entry: python3 scripts/hooks/validate_docs.py
+        language: system
         pass_filenames: false
         stages: [pre-commit]
         always_run: true
@@ -37,8 +37,8 @@ repos:
       # Phase 4: Conflict detection between related files
       - id: conflict-detection
         name: Conflict Detection - Related Files
-        entry: scripts/hooks/detect-conflicts.sh
-        language: script
+        entry: python3 scripts/hooks/detect_conflicts.py
+        language: system
         files: ^(nWave/|scripts/|tools/)
         pass_filenames: false
         stages: [pre-commit]
@@ -46,8 +46,8 @@ repos:
       # Phase 4: Code formatter availability check
       - id: formatter-availability
         name: Code Formatter Availability Check
-        entry: scripts/hooks/check-formatter-available.sh
-        language: script
+        entry: python3 scripts/hooks/check_formatter_available.py
+        language: system
         files: ^(scripts/|tools/|tests/).*\.py$
         pass_filenames: false
         stages: [pre-commit]
@@ -62,20 +62,22 @@ repos:
         stages: [pre-commit]
 
       # Phase 6: Shell script syntax validation (bash -n)
+      # Note: Only for acceptance test scripts in tests/acceptance/
       - id: shell-syntax-check
         name: Shell Script Syntax Check
         entry: bash -n
         language: system
-        files: \.sh$
+        files: ^tests/acceptance/.*\.sh$
         stages: [pre-commit]
 
   # Shellcheck linting (optional - non-blocking if not installed)
+  # Note: Only for acceptance test scripts in tests/acceptance/
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.9.0.6
     hooks:
       - id: shellcheck
         args: [-x]
-        files: \.sh$
+        files: ^tests/acceptance/.*\.sh$
         stages: [pre-commit]
 
   # Standard hooks from pre-commit repository

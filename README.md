@@ -1,475 +1,344 @@
 # AI-Craft: Intelligent ATDD Pipeline with Specialized Agent Network
 
-<!-- version: 1.2.81 -->
+<!-- version: 1.3.0 -->
 
-🚀 **A systematic approach to software development using ATDD (Acceptance Test Driven Development) with intelligent AI agent orchestration**
+A systematic approach to software development using ATDD (Acceptance Test Driven Development) with intelligent AI agent orchestration. The framework automates the 5-stage workflow through 41+ specialized agents, each following the Single Responsibility Principle.
 
-## 🎯 Overview
+## What is AI-Craft?
 
-AI-Craft is a comprehensive development pipeline that implements the 5-stage ATDD workflow through specialized AI agents, each following the Single Responsibility Principle. The system provides intelligent project analysis, automated workflow initiation, and systematic quality assurance.
+AI-Craft is an agentic system that guides you through systematic software development:
 
-### Core Philosophy
+- **Start with requirements** (DISCUSS phase) - Gather business needs with AI assistance
+- **Design solutions** (DESIGN phase) - Architecture decisions with visual documentation
+- **Define acceptance tests** (DISTILL phase) - BDD scenarios that define "done"
+- **Implement with TDD** (DEVELOP phase) - Outside-in development with quality gates
+- **Validate production readiness** (DELIVER phase) - Comprehensive quality assurance
 
-- **Outside-In Development**: Start with acceptance tests and work inward with mandatory 14-phase TDD discipline
-- **Single Responsibility Principle**: Each agent has one focused responsibility
-- **Clean Context Isolation**: Agents receive only essential context for their tasks
-- **File-Based Handoffs**: Structured communication between pipeline stages
-- **Systematic Quality**: Progressive refactoring (L1-L4) with comprehensive validation gates
+Each phase involves specialized AI agents that understand domain-specific best practices.
 
-## 🚀 Quick Start
+## Quick Start
 
-### Installation
-
-#### Option 1: Standalone Installer (Recommended)
-
-No need to clone the repository! Download and run the installer:
+### 1. Installation (5 minutes)
 
 ```bash
-# Download the latest installer
+# macOS/Linux
 curl -O https://github.com/11PJ11/crafter-ai/releases/latest/download/install-nwave-claude-code.py
-
-# Run the installer
 python3 install-nwave-claude-code.py
 
-# Or install a specific version
-python3 install-nwave-claude-code.py --version 1.2.70
-```
-
-#### Option 2: From Repository
-
-```bash
-# Clone the repository
+# Or from repository
 git clone https://github.com/11PJ11/crafter-ai.git ai-craft
 cd ai-craft
-
-# Run installation script
 python3 scripts/install/install_ai_craft.py
 ```
 
-### Basic Usage
+Full installation details: [Installation Guide](docs/installation/INSTALL.md)
+
+### 2. Your First Development Cycle
 
 ```bash
-# Develop complete feature (automated DEVELOP wave)
+# Build a complete feature with automatic workflow
 /nw:develop "Build user authentication system"
-  # Automatically: baseline → roadmap → split → execute all → finalize
-  # Quality gates: 3 + 3N reviews per feature
 
-# Execute specific step (11-phase TDD)
-/nw:execute @software-crafter "docs/feature/auth/steps/01-02.json"
-  # Automatic: PREPARE → RED → GREEN → REVIEW → REFACTOR → VALIDATE → COMMIT
-
-# Manual workflow control (advanced)
-/nw:discuss @requirements.txt
-/nw:design "JWT authentication architecture"
-/nw:baseline "Implement authentication"
-/nw:roadmap @solution-architect "Implement authentication"
-/nw:split @devop "authentication"
-# ... execute individual steps ...
-/nw:finalize @devop "authentication"
+# This automatically:
+# 1. Baseline: Measure starting state
+# 2. Roadmap: Create comprehensive plan
+# 3. Split: Break into atomic tasks
+# 4. Execute: Run each task with clean context
+# 5. Review: Quality gate each step
+# 6. Finalize: Archive completed work
 ```
 
-## 🏗️ ATDD Five-Stage Workflow
+Or use manual control for more guidance:
+
+```bash
+# Step by step (recommended for first feature)
+/nw:discuss "authentication requirements"           # Requirements gathering
+/nw:design --architecture=hexagonal                # Architecture design
+/nw:distill "user-login-story"                     # Acceptance tests
+/nw:baseline "implement authentication"             # Measure starting point
+/nw:roadmap @solution-architect "implement auth"   # Create plan
+/nw:split @devop "auth-implementation"             # Break into tasks
+/nw:execute @software-crafter "docs/workflow/..."  # Execute tasks
+/nw:review @software-crafter task "docs/workflow/..." # Quality check
+```
+
+## Documentation Structure
+
+AI-Craft documentation is organized using the **DIVIO framework** for maximum usability. Find what you need:
+
+### Getting Started
+Start here if you're new to AI-Craft:
+- **[Jobs To Be Done Guide](docs/guides/jobs-to-be-done-guide.md)** - Understand when and how to use each workflow
+- **[Installation Guide](docs/installation/INSTALL.md)** - Step-by-step setup instructions
+
+### Practical Guides (How-To)
+Learn how to accomplish specific tasks:
+- **[How to Invoke Reviewer Agents](docs/guides/how-to-invoke-reviewers.md)** - Request peer reviews for quality assurance
+- **[Layer 4 for Developers](docs/guides/layer-4-for-developers.md)** - Programmatic review integration in code
+- **[Layer 4 for Users](docs/guides/layer-4-for-users.md)** - Manual review workflows
+- **[Layer 4 for CI/CD](docs/guides/layer-4-for-cicd.md)** - Automated review in pipelines
+
+### Reference (Lookup)
+Find exact specifications and configuration:
+- **[nWave Commands Reference](docs/reference/nwave-commands-reference.md)** - All commands, agents, file locations
+- **[Reviewer Agents Reference](docs/reference/reviewer-agents-reference.md)** - Reviewer specifications and configuration
+- **[Layer 4 API Reference](docs/reference/layer-4-api-reference.md)** - API contracts and interfaces
+- **[Troubleshooting Guide](docs/troubleshooting/TROUBLESHOOTING.md)** - Common issues and solutions
+
+### Understanding Concepts (Explanation)
+Deepen your understanding of why AI-Craft works:
+- **[Layer 4 Implementation Summary](docs/guides/LAYER_4_IMPLEMENTATION_SUMMARY.md)** - How peer review by equal-expertise agents reduces bias
+- **[Architecture Patterns](docs/guides/knowledge-architecture-analysis.md)** - Design decisions and rationale
+
+## Core Concepts
+
+### 5-Stage Workflow (ATDD Pipeline)
 
 ```
 DISCUSS → DESIGN → DISTILL → DEVELOP → DELIVER
    ↓         ↓         ↓         ↓        ↓
-business   solution  acceptance test-first feature
-analyst    architect  designer  developer completion
+Requirements  Architecture  Acceptance  Test-First  Feature
+Gathering     Design        Tests       Implementation Completion
 ```
 
-The system orchestrates 41+ specialized AI agents across five stages, ensuring comprehensive coverage from requirements analysis to feature completion.
+Each stage involves specialized AI agents and produces validated artifacts.
 
-## 📚 Documentation
+### Agent Organization (41+ Agents)
 
-### 📦 Installation & Setup
+**Core Wave Agents** (one per phase):
+- `@product-owner` - Requirements gathering and business analysis (DISCUSS)
+- `@solution-architect` - Architecture design with visual diagrams (DESIGN)
+- `@acceptance-designer` - BDD scenarios and acceptance tests (DISTILL)
+- `@software-crafter` - Outside-in TDD implementation (DEVELOP)
+- `@devop` - Production readiness and operations (DELIVER)
 
-- **[Installation Guide](docs/installation/INSTALL.md)** - Detailed installation instructions for all platforms
-- **[Uninstallation Guide](docs/installation/UNINSTALL.md)** - Complete removal instructions
+**Cross-Wave Specialists** (use anytime):
+- `@researcher` - Evidence-based research and analysis
+- `@troubleshooter` - Root cause analysis (Toyota 5 Whys)
+- `@visual-architect` - Architecture diagrams and visualization
+- `@skeleton-builder` - Walking skeleton E2E validation
+- `@data-engineer` - Database design and query optimization
 
-### 🔧 Troubleshooting
+**Reviewer Agents** (Layer 4 quality assurance):
+- 12 reviewer agents providing peer review with bias detection
+- Each reviewer has equal expertise to primary agent
+- Structured YAML feedback with severity classification
 
-- **[Troubleshooting Guide](docs/troubleshooting/TROUBLESHOOTING.md)** - Common issues and solutions
-
-### 📋 Additional Documentation
-
-- **[Complete Agent Documentation](docs/)** - Detailed agent specifications and workflows
-- **[CI/CD Integration](docs/CI-CD-README.md)** - Continuous integration setup
-- **[Project Evolution](docs/evolution/)** - Framework enhancements and methodology integrations
-
-## 🔧 Configuration
-
-All agents reference shared constants for maintainability through the centralized configuration system.
-
-## 🏢 Architecture
-
-### Agent Organization (10 Specialized Agents)
-
-**Core Wave Agents**:
-- **business_analyst** - Requirements gathering and business analysis (DISCUSS)
-- **solution_architect** - Architecture design with visual representation (DESIGN)
-- **acceptance_designer** - Acceptance test scenarios and business validation (DISTILL)
-- **test_first_developer** - Outside-In TDD with double-loop implementation (DEVELOP)
-- **feature_completion_coordinator** - Production readiness validation (DELIVER)
-- **systematic_refactorer** - Progressive refactoring with code quality improvement (DEVELOP)
-
-**Specialist Cross-Wave Agents**:
-- **mikado_refactoring_specialist_enhanced** - Complex refactoring roadmaps with visual tracking
-- **walking_skeleton_helper** - End-to-end validation with Alistair Cockburn patterns
-- **root_cause_analyzer** - Problem investigation using Toyota 5 Whys methodology
-- **architecture_diagram_manager** - Visual architecture lifecycle management (DESIGN with ALL_WAVES collaboration)
-
-### File Structure
+### Quality Assurance (4-Layer Testing)
 
 ```
-ai-craft/
-├── nWave/                  # ATDD workflow agents and commands
-│   ├── agents/               # Specialized agent definitions
-│   ├── commands/             # Slash command definitions
-│   └── data/                 # Reference data and research
-├── docs/                     # All project documentation
-│   ├── installation/         # Setup and installation guides
-│   └── troubleshooting/      # Issue resolution guides
-├── scripts/                  # Installation and utility scripts
-└── README.md                 # This file
+Layer 1: Unit Testing            - Individual agent output validation
+Layer 2: Integration Testing     - Handoff validation between agents
+Layer 3: Adversarial Validation  - Challenge output validity
+Layer 4: Peer Review             - Equal-expertise reviewer critique ← Unique to AI-Craft
 ```
 
-## 👨‍💻 Development & Build
+## Use Cases
 
-### Building the Framework
-
-After making changes to agents, commands, or other framework components, rebuild and install:
+### Building New Features (Greenfield)
 
 ```bash
-# Option 1: Full update (build + uninstall + install + validate)
-./scripts/update-ai-craft.sh --force
+/nw:discuss "feature requirements"
+/nw:design --architecture=hexagonal
+/nw:distill "acceptance tests"
+/nw:baseline "measure starting state"
+/nw:roadmap @solution-architect
+/nw:split @devop
+/nw:execute @software-crafter
+/nw:review @software-crafter
+```
 
-# Option 2: With backup before update (recommended)
-./scripts/update-ai-craft.sh --force --backup
+### Improving Existing System (Brownfield)
 
-# Option 3: Build only (without installing)
+```bash
+/nw:baseline "current state measurement"        # MANDATORY - blocks roadmap
+/nw:roadmap @solution-architect                # Plan while context fresh
+/nw:split @devop                               # Break into atomic tasks
+/nw:execute @software-crafter                  # Execute with clean context
+/nw:review @software-crafter                   # Quality gate
+```
+
+### Complex Refactoring
+
+```bash
+/nw:baseline "measure starting state"
+/nw:roadmap @solution-architect "methodology: mikado"
+/nw:split @devop
+/nw:execute @software-crafter
+# Mikado Method ensures reversibility at every step
+```
+
+### Investigating Issues
+
+```bash
+/nw:root-why "description of symptom"          # Find root cause (not symptoms)
+/nw:develop "fix-issue"                        # Implement fix with TDD
+/nw:deliver                                    # Validate production readiness
+```
+
+### Research & Learning
+
+```bash
+/nw:research "topic or technology"
+# Output: docs/research/{category}/{topic}.md
+# Then proceed with appropriate job (greenfield, brownfield, etc.)
+```
+
+## Development Workflow
+
+### Making Changes to Framework
+
+After modifying agents, commands, or framework components:
+
+```bash
+# Option 1: Full update (build + install + validate) - Recommended
+python scripts/install/update_ai_craft.py --force
+
+# Option 2: Build only (without installing)
 python tools/build_ide_bundle.py
 
-# Option 4: Manual install after build
+# Option 3: Manual install after build
 python scripts/install/install_ai_craft.py
 ```
 
-### Build Process Details
+### Pre-Commit Hooks
 
-The build system (`tools/build_ide_bundle.py`) processes:
-- **Agents**: Individual agent files with embedded dependencies → `dist/ide/agents/nw/`
-- **Commands**: Task files converted to IDE commands
-- **Teams**: Team configurations converted to collaborative agents
-- **Workflows**: Workflow orchestrators for multi-phase guidance
-
-### Update Process
-
-The update script orchestrates:
-1. Build new framework bundle from source (`nWave/`)
-2. Uninstall existing AI-Craft installation (cleanly removes from `~/.claude/`)
-3. Install newly built framework bundle
-4. Validate successful update (agents, commands, configuration)
-
-**Cross-platform Python** (recommended): `python scripts/install/update_ai_craft.py`
-**Legacy shell** (Unix/Mac only): `./scripts/install/update-ai-craft.sh`
-
-## 🔧 Essential Scripts
-
-The `scripts/` directory contains critical infrastructure scripts for building, installing, and managing the AI-Craft framework. These scripts are essential for the framework lifecycle.
-
-### Core Scripts (Category 1)
-
-#### 1. `build_ide_bundle.py` (Cross-Platform)
-**Purpose**: Python-based IDE bundle builder
-
-Orchestrates the complete build process, generating the IDE-ready bundle from source files.
-
-**Usage**:
-```bash
-python tools/build_ide_bundle.py
-# or use the shortcut:
-python tools/build.py
-```
-
-**What it does**:
-- Processes agents, commands, and templates from `nWave/`
-- Generates output in `dist/ide/` with proper IDE structure
-- Validates build artifacts and reports statistics
-- Cross-platform compatible (Windows, Mac, Linux)
-
-**When to use**: After any modification to agents, commands, or framework components before installation.
-
----
-
-#### 2. `install-ai-craft.sh` (15KB)
-**Purpose**: Framework installation to Claude Code environment
-
-Installs the built AI-Craft framework into Claude Code's agent directory (`~/.claude/`).
-
-**Usage**:
-```bash
-# Standard installation
-./scripts/install-ai-craft.sh
-
-# Dry-run (preview what would be installed)
-./scripts/install-ai-craft.sh --dry-run
-
-# With backup before installation
-./scripts/install-ai-craft.sh --backup
-```
-
-**What it does**:
-- Validates build artifacts exist in `dist/ide/`
-- Copies agents to `~/.claude/agents/nw/`
-- Copies commands to `~/.claude/commands/nw/`
-- Installs configuration files
-- Verifies installation success
-- Optional: Creates timestamped backup before installation
-
-**When to use**: After building the framework or for fresh installations.
-
----
-
-#### 3. `uninstall-ai-craft.sh` (13KB)
-**Purpose**: Clean removal of AI-Craft framework
-
-Completely removes AI-Craft installation from Claude Code environment.
-
-**Usage**:
-```bash
-# Standard uninstall
-./scripts/uninstall-ai-craft.sh
-
-# Dry-run (preview what would be removed)
-./scripts/uninstall-ai-craft.sh --dry-run
-
-# With backup before uninstall (recommended)
-./scripts/uninstall-ai-craft.sh --backup
-```
-
-**What it does**:
-- Removes `~/.claude/agents/nw/` directory
-- Removes `~/.claude/commands/nw/` directory
-- Cleans up configuration files
-- Optional: Creates timestamped backup before removal
-- Verifies clean uninstallation
-
-**When to use**: Before reinstalling, when switching versions, or for complete removal.
-
----
-
-#### 4. `update-ai-craft.sh` (16KB)
-**Purpose**: Orchestrates complete update workflow
-
-End-to-end update automation: build → uninstall → install → validate.
-
-**Usage**:
-```bash
-# Standard update
-./scripts/update-ai-craft.sh --force
-
-# With backup (recommended for production)
-./scripts/update-ai-craft.sh --force --backup
-
-# Dry-run (preview entire update process)
-./scripts/update-ai-craft.sh --force --dry-run
-```
-
-**What it does**:
-1. Validates source files in `nWave/`
-2. Builds framework bundle via `build-ide-bundle.sh`
-3. Uninstalls existing version via `uninstall-ai-craft.sh`
-4. Installs new version via `install-ai-craft.sh`
-5. Validates installation success
-6. Reports update statistics
-
-**When to use**: Recommended workflow for applying framework changes during development.
-
----
-
-### Pre-commit Hooks
-
-AI-Craft uses the [pre-commit](https://pre-commit.com/) framework for automated quality gates.
-
-#### Installation (New Machine)
+AI-Craft enforces quality gates through pre-commit hooks:
 
 ```bash
-# Install pre-commit
+# Install pre-commit (first time only)
 pip install pre-commit
-
-# OR with pipx (recommended)
-pipx install pre-commit
-
-# Activate hooks in repository
 cd ai-craft
 pre-commit install
+
+# Hooks validate automatically on commit:
+# - nwave-version-bump: Version consistency
+# - pytest-validation: All tests pass (58 tests)
+# - docs-version-validation: Documentation stays in sync
+# - ruff: Python linting and formatting
+# - trailing-whitespace: Removes trailing spaces
+# - check-yaml: Validates YAML syntax
 ```
 
-#### Active Hooks
-
-| Hook | Description |
-|------|-------------|
-| `nwave-version-bump` | Auto-increments version when nWave/tools files modified |
-| `pytest-validation` | Runs full test suite (58 tests) |
-| `docs-version-validation` | Validates documentation version sync |
-| `ruff` | Python linting (replaces flake8, isort) |
-| `ruff-format` | Python formatting (replaces black) |
-| `trailing-whitespace` | Removes trailing whitespace |
-| `end-of-file-fixer` | Ensures files end with newline |
-| `check-yaml` | Validates YAML syntax |
-| `check-json` | Validates JSON syntax |
-| `check-merge-conflict` | Detects merge conflict markers |
-| `detect-private-key` | Prevents committing private keys |
-
-#### Manual Run
-
+For emergency bypass (not recommended):
 ```bash
-# Run all hooks on all files
-pre-commit run --all-files
-
-# Run specific hook
-pre-commit run ruff --all-files
+git commit --no-verify  # Bypasses ALL validation - requires immediate fix
 ```
 
-#### Hook Scripts (Versioned)
+## Troubleshooting
 
-- `scripts/hooks/version-bump.sh` - Version auto-increment logic
-- `scripts/hooks/validate-tests.sh` - Pytest validation wrapper
-- `scripts/hooks/validate-docs.sh` - Documentation version validation
+**Issue**: Agents not found after installation?
+- Check: [Troubleshooting Guide](docs/troubleshooting/TROUBLESHOOTING.md)
+
+**Issue**: Tests failing on commit?
+- Run: `pytest` locally to debug
+- Ensure: All tests pass before commit
+
+**Issue**: Documentation out of sync with code?
+- Run: `pre-commit run --all-files`
+- Ensures: Version tags match across tracked files
+
+## Project Structure
+
+```
+ai-craft/
+├── README.md                    # This file (entry point)
+├── docs/                        # DIVIO-organized documentation
+│   ├── guides/                  # How-to guides (practical tasks)
+│   │   ├── jobs-to-be-done-guide.md        # When to use each workflow
+│   │   ├── how-to-invoke-reviewers.md       # How to request reviews
+│   │   ├── layer-4-for-developers.md        # Programmatic review API
+│   │   ├── layer-4-for-users.md             # Manual review workflows
+│   │   └── layer-4-for-cicd.md              # Automated review pipelines
+│   ├── reference/               # Reference (lookup)
+│   │   ├── nwave-commands-reference.md      # All commands and agents
+│   │   ├── reviewer-agents-reference.md     # Reviewer specs
+│   │   └── layer-4-api-reference.md         # API contracts
+│   ├── installation/            # Installation documentation
+│   │   ├── INSTALL.md                       # Setup guide
+│   │   └── UNINSTALL.md                     # Removal guide
+│   ├── troubleshooting/         # Troubleshooting
+│   │   └── TROUBLESHOOTING.md               # Common issues
+│   ├── analysis/                # Analysis and audits
+│   │   └── divio-audit/                     # DIVIO compliance audit
+│   └── research/                # Research and background
+│
+├── nWave/                       # ATDD workflow framework
+│   ├── agents/                  # Agent specifications
+│   ├── commands/                # Slash command definitions
+│   └── data/                    # Reference data and research
+│
+├── scripts/                     # Installation and utility scripts
+├── tools/                       # Build and development tools
+├── tests/                       # Automated test suite
+└── .pre-commit-config.yaml      # Quality gates (pre-commit hooks)
+```
+
+## Architecture Overview
+
+### Agent Communication
+
+Agents communicate through **file-based handoffs** with structured JSON/YAML:
+- Clean context isolation (no accumulated confusion)
+- Traceable decisions (audit trail)
+- Parallel processing (independent task execution)
+- State tracking (TODO → IN_PROGRESS → DONE)
+
+### Framework Configuration
+
+Centralized configuration through:
+- `nWave/framework-catalog.yaml` - Command definitions and agent mappings
+- `.dependency-map.yaml` - Version tracking and documentation synchronization
+- `.pre-commit-config.yaml` - Quality gates
+
+### Quality Gates
+
+Progressive refactoring with validation:
+- **L1 Refactoring**: Basic code cleanup
+- **L2 Refactoring**: Structure improvements
+- **L3 Refactoring**: Design pattern application
+- **L4 Refactoring**: Advanced architectural improvements
+- **L5-L6 Refactoring**: Major restructuring with comprehensive validation
+
+## Contributing
+
+AI-Craft follows clean architecture principles:
+1. Each agent has **one responsibility**
+2. Communication through **well-defined interfaces** (JSON/YAML)
+3. **Testable code** with 58-test validation suite
+4. **Quality gates** at every commit
+
+See individual agent documentation in `nWave/agents/` for implementation details.
+
+## Key Features
+
+✅ **41+ Specialized AI Agents** - Each understands domain-specific best practices
+✅ **5-Stage ATDD Workflow** - Proven development methodology
+✅ **Layer 4 Peer Review** - Unique equal-expertise reviewer critique
+✅ **Progressive Refactoring** - L1-L6 quality improvement framework
+✅ **Walking Skeleton Validation** - E2E architecture proof
+✅ **Evidence-Based Planning** - Baseline measurement blocks roadmap
+✅ **Atomic Task Execution** - Clean context per task (no degradation)
+✅ **Cross-Platform** - Works on Windows, macOS, Linux
+✅ **Offline Documentation** - Complete reference materials included
+
+## Version
+
+- Current Version: 1.2.81
+- Last Updated: 2026-01-21
+- Status: Production Ready
+
+## Related Documentation
+
+- [DIVIO Audit & Classification](docs/analysis/divio-audit/DIVIO_CLASSIFICATION_SUMMARY.md) - Documentation quality assessment
+- [CI/CD Integration](docs/guides/CI-CD-README.md) - Continuous integration setup
+- [Releasing & Deployment](docs/RELEASING.md) - Release process
+- [Project Evolution](docs/evolution/) - Framework enhancements and improvements
+
+## License
+
+This project is open source. See individual agent documentation for specific implementation details and usage patterns.
 
 ---
 
-### Additional Validation Scripts
-
-#### Validation Scripts (13KB total)
-**Purpose**: Agent compliance and structure validation
-
-Scripts:
-- `validate-agent-compliance.py` (v1.0)
-- `validate-agent-compliance-v2.py` (v2.0)
-- `validate-agent-compliance.sh` (shell wrapper)
-- `scripts/validation/validate-reviewers.py` (reviewer agent validation)
-- `scripts/validation/add-doc-version-tags.py` (documentation versioning)
-- `scripts/framework/create-reviewer-agents.py` (agent generation)
-
----
-
-#### Adversarial Security Testing (67KB total)
-**Purpose**: Security framework validation through adversarial testing
-
-Scripts:
-- `run-adversarial-tests.py` (29KB) - 258 security tests across 4 categories
-- `execute-adversarial-tests.py` (38KB) - Test execution framework
-
----
-
-## 📋 Version Tracking System
-
-AI-Craft uses **automated version tracking** to keep documentation synchronized with source configuration files. This system prevents documentation drift by enforcing version consistency through pre-commit validation.
-
-### How It Works
-
-The version tracking system maintains a dependency graph between source configurations and derived documentation:
-
-**Source Files** (with version fields):
-- `nWave/framework-catalog.yaml` - Primary framework configuration
-- `tools/build_config.yaml` - Build system configuration
-
-**Dependent Files** (synchronized automatically):
-- `README.md` - Project documentation (this file)
-- `nWave/data/agents_reference/COMMAND-AGENT-MAPPING.md` - Command mappings
-
-**Pre-Commit Validation**:
-1. Detects when source files are modified
-2. Checks if version field was bumped (semantic versioning: MAJOR.MINOR.PATCH)
-3. Checks if dependent files have outdated versions
-4. Blocks commit if inconsistencies found
-5. Provides structured JSON error messages for LLM-driven updates
-
-### Development Workflow
-
-When modifying framework configuration:
-
-1. **Modify source file** (e.g., add command to `framework-catalog.yaml`)
-2. **Bump version** in source file (e.g., `1.0.0` → `1.1.0`)
-3. **Update dependent sections** in documentation files
-4. **Bump versions** in dependent files to match
-5. **Commit** - pre-commit validates automatically ✓
-
-**Example**:
-```bash
-# 1. Edit framework-catalog.yaml (add new command)
-# 2. Update version: "1.0.0" → "1.1.0"
-# 3. Update README.md command examples section
-# 4. Update README.md version: <!-- version: 1.0.0 --> → <!-- version: 1.1.0 -->
-# 5. git commit (validation runs automatically)
-```
-
-### LLM-Driven Updates
-
-When pre-commit validation fails, the hook outputs a structured JSON error message that LLMs can interpret:
-
-```json
-{
-  "error_type": "VERSION_VALIDATION_FAILED",
-  "errors": {
-    "version_not_bumped": [...],
-    "dependents_outdated": [...]
-  },
-  "resolution_steps": [...],
-  "llm_guidance": {
-    "files_to_edit": ["README.md"],
-    "sections_to_update": [...],
-    "validation": "Ensure all version fields updated"
-  }
-}
-```
-
-The LLM reads the error, updates the specified files and sections, bumps versions, and retries the commit.
-
-### System Files
-
-- **`.pre-commit-config.yaml`** - Pre-commit hooks configuration (versioned)
-- **`.dependency-map.yaml`** - Dependency relationships and validation rules
-- **`scripts/hooks/`** - Hook scripts (version-bump, validate-tests, validate-docs)
-- **`scripts/validation/validate-documentation-versions.py`** - Core validation engine
-
-### Emergency Bypass
-
-For emergency situations only:
-```bash
-git commit --no-verify -m "message"  # Bypasses BOTH test and version validation
-```
-
-**⚠️ WARNING**: Use sparingly. Bypassed commits require immediate follow-up to fix validation issues.
-
-### Version Strategy
-
-**Semantic Versioning (MAJOR.MINOR.PATCH)**:
-- **MAJOR** - Breaking changes, incompatible API changes
-- **MINOR** - New features, backward-compatible additions
-- **PATCH** - Bug fixes, documentation corrections
-
-### Adding Tracked Files
-
-To track new files, edit `.dependency-map.yaml`:
-```yaml
-tracked_files:
-  - path: "new-file.md"
-    version_format: "markdown_comment"
-    version_pattern: "<!-- version: {version} -->"
-    triggers_update: [...]
-```
-
----
-
-## 🤝 Contributing
-
-The AI-Craft system follows clean architecture principles with specialized agents. Each agent has a single responsibility and communicates through well-defined file-based interfaces.
-
-## 📄 License
-
-This project is open source. See the individual agent documentation for specific implementation details and usage patterns.
-
----
-
-**For detailed information, see the comprehensive documentation in the [docs/](docs/) directory.**
+**For detailed information about specific topics, use the documentation structure above to find exactly what you need.**
