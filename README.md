@@ -1,6 +1,6 @@
 # AI-Craft: Intelligent ATDD Pipeline with Specialized Agent Network
 
-<!-- version: 1.2.70 -->
+<!-- version: 1.2.71 -->
 
 🚀 **A systematic approach to software development using ATDD (Acceptance Test Driven Development) with intelligent AI agent orchestration**
 
@@ -20,13 +20,30 @@ AI-Craft is a comprehensive development pipeline that implements the 5-stage ATD
 
 ### Installation
 
+#### Option 1: Standalone Installer (Recommended)
+
+No need to clone the repository! Download and run the installer:
+
+```bash
+# Download the latest installer
+curl -O https://github.com/11PJ11/crafter-ai/releases/latest/download/install-nwave-claude-code.py
+
+# Run the installer
+python3 install-nwave-claude-code.py
+
+# Or install a specific version
+python3 install-nwave-claude-code.py --version 1.2.70
+```
+
+#### Option 2: From Repository
+
 ```bash
 # Clone the repository
-git clone <repository-url> ai-craft
+git clone https://github.com/11PJ11/crafter-ai.git ai-craft
 cd ai-craft
 
 # Run installation script
-./scripts/install-ai-craft.sh
+python3 scripts/install/install_ai_craft.py
 ```
 
 ### Basic Usage
