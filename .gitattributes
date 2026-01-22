@@ -1,6 +1,3 @@
-# Enforce Unix line endings (LF) for shell scripts on all platforms
-*.sh text eol=lf
-
 # Enforce Unix line endings for Python files
 *.py text eol=lf
 

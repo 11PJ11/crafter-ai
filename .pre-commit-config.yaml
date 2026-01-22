@@ -7,6 +7,15 @@ repos:
   # Local hooks for nWave framework
   - repo: local
     hooks:
+      # Phase 0: Prevent shell scripts (cross-platform policy)
+      - id: prevent-shell-scripts
+        name: Prevent Shell/PowerShell/Batch Scripts
+        entry: python3 scripts/hooks/prevent_shell_scripts.py
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+        always_run: true
+
       # Phase 0: Auto-increment version when nWave files are modified
       - id: nwave-version-bump
         name: nWave Version Auto-Increment
@@ -82,14 +91,6 @@ repos:
 
   # Shellcheck linting (optional - non-blocking if not installed)
   # Note: Only for acceptance test scripts in tests/acceptance/
-  - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.9.0.6
-    hooks:
-      - id: shellcheck
-        args: [-x]
-        files: ^tests/acceptance/.*\.sh$
-        stages: [pre-commit]
-
   # Standard hooks from pre-commit repository
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
