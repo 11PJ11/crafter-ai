@@ -15,7 +15,7 @@ curl -O https://github.com/11PJ11/crafter-ai/releases/latest/download/install-nw
 python3 install-nwave-claude-code.py
 ```
 
-**Prerequisites**: Python 3.8 or higher
+**Prerequisites**: Python 3.11 or higher
 
 ## What Gets Installed
 

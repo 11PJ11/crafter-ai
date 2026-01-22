@@ -1,12 +1,12 @@
 # Layer 4 for Developers
 
-**Version**: 1.4.1
-**Date**: 2026-01-21
+**Version**: 1.4.3
+**Date**: 2026-01-22
 **Status**: Production Ready
 
 Programmatic integration guide for invoking Layer 4 peer review in code.
 
-**Prerequisites**: Python 3.8+ or TypeScript/Node.js environment.
+**Prerequisites**: Python 3.11+ or TypeScript/Node.js environment.
 
 **Related Docs**:
 - [API Reference](../reference/layer-4-api-reference.md) (contracts)

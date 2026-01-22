@@ -7,7 +7,6 @@ implemented in a dependency resolver.
 """
 
 from pathlib import Path
-from typing import List, Tuple
 import re
 import sys
 
@@ -40,7 +39,7 @@ def resolve_path(path_str: str) -> Path:
     return full_path
 
 
-def process_includes(file_path: str, verbose: bool = False) -> Tuple[bool, List[str]]:
+def process_includes(file_path: str, verbose: bool = False) -> tuple[bool, list[str]]:
     """
     Process a file for BUILD:INCLUDE markers and validate path security.
 

@@ -24,8 +24,8 @@ Runs on **every push and pull request** across multiple environments:
 
 #### Test Matrix
 - **Operating Systems**: Ubuntu, Windows, macOS
-- **Python Versions**: 3.8, 3.10, 3.12
-- **Total Combinations**: 9 (3 OS × 3 Python versions)
+- **Python Versions**: 3.11, 3.12
+- **Total Combinations**: 6 (3 OS × 2 Python versions)
 
 #### Quality Gates
 
