@@ -6,9 +6,9 @@ Validates the GitHub Actions workflow locally before deployment.
 Tests all quality gates that would run in CI.
 
 Usage:
-    python scripts/validation/validate_ci_cd_workflow.py
-    python scripts/validation/validate_ci_cd_workflow.py --verbose
-    python scripts/validation/validate_ci_cd_workflow.py --fix  # Auto-fix issues
+    python3 scripts/validation/validate_ci_cd_workflow.py
+    python3 scripts/validation/validate_ci_cd_workflow.py --verbose
+    python3 scripts/validation/validate_ci_cd_workflow.py --fix  # Auto-fix issues
 """
 
 import argparse
@@ -128,7 +128,7 @@ class WorkflowValidator:
             return True
 
         success, output = self.run_command(
-            f"python {sync_script} --verify", "Agent name synchronization"
+            f"python3 {sync_script} --verify", "Agent name synchronization"
         )
 
         if success:
@@ -138,7 +138,7 @@ class WorkflowValidator:
             if self.auto_fix:
                 self.log("Attempting to fix agent sync...", "WARNING")
                 fix_success, _ = self.run_command(
-                    f"python {sync_script} --fix", "Fixing agent synchronization"
+                    f"python3 {sync_script} --fix", "Fixing agent synchronization"
                 )
                 if fix_success:
                     self.passed.append("Agent names synchronized (auto-fixed)")
@@ -213,7 +213,7 @@ class WorkflowValidator:
             return True
 
         success, output = self.run_command(
-            f"python {build_script} --dry-run",
+            f"python3 {build_script} --dry-run",
             "Build system dry-run",
         )
 

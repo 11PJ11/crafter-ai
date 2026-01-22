@@ -98,7 +98,7 @@ jobs:
 
       - name: Install core dependencies
         run: |
-          python -m pip install --upgrade pip setuptools wheel
+          python3 -m pip install --upgrade pip setuptools wheel
           pip install pytest pytest-cov pyyaml
 
       - name: Install project dependencies (if requirements.txt exists)
@@ -123,7 +123,7 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Verify agent name synchronization
         run: |
-          python scripts/framework/sync_agent_names.py --verify
+          python3 scripts/framework/sync_agent_names.py --verify
         shell: bash
 
       # -----------------------------------------------------------------------
@@ -131,7 +131,7 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Validate framework-catalog.yaml
         run: |
-          python -c "
+          python3 -c "
           import yaml
           import sys
 
@@ -170,7 +170,7 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Verify documentation version consistency
         run: |
-          python -c "
+          python3 -c "
           import yaml
           import re
           import sys
@@ -277,7 +277,7 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          python -m pip install --upgrade pip setuptools wheel
+          python3 -m pip install --upgrade pip setuptools wheel
           pip install pyyaml
 
       # -----------------------------------------------------------------------
@@ -297,7 +297,7 @@ jobs:
       - name: Verify version consistency
         run: |
           TAG_VERSION="${{ steps.get_version.outputs.VERSION }}"
-          CATALOG_VERSION=$(python -c "import yaml; print(yaml.safe_load(open('nWave/framework-catalog.yaml'))['version'])")
+          CATALOG_VERSION=$(python3 -c "import yaml; print(yaml.safe_load(open('nWave/framework-catalog.yaml'))['version'])")
 
           echo "Tag version: ${TAG_VERSION}"
           echo "Catalog version: ${CATALOG_VERSION}"
@@ -318,7 +318,7 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Build IDE bundle
         run: |
-          python tools/core/build_ide_bundle.py \
+          python3 tools/core/build_ide_bundle.py \
             --source-dir nWave \
             --output-dir dist/ide \
             --clean \
@@ -332,11 +332,11 @@ jobs:
         run: |
           # Check if release packager exists
           if [ -f "tools/core/release_packager.py" ]; then
-            python tools/core/release_packager.py \
+            python3 tools/core/release_packager.py \
               --version ${{ steps.get_version.outputs.VERSION }} \
               --output-dir dist/releases
           elif [ -f "scripts/framework/release_package.py" ]; then
-            python scripts/framework/release_package.py \
+            python3 scripts/framework/release_package.py \
               --version ${{ steps.get_version.outputs.VERSION }} \
               --output-dir dist/releases
           else
@@ -470,7 +470,7 @@ jobs:
 
           ---
 
-          **Full Changelog**: https://github.com/${{ github.repository }}/compare/v$(python -c "v='${{ steps.get_version.outputs.VERSION }}'.split('.'); v[-1]=str(int(v[-1])-1); print('.'.join(v))")...v${{ steps.get_version.outputs.VERSION }}
+          **Full Changelog**: https://github.com/${{ github.repository }}/compare/v$(python3 -c "v='${{ steps.get_version.outputs.VERSION }}'.split('.'); v[-1]=str(int(v[-1])-1); print('.'.join(v))")...v${{ steps.get_version.outputs.VERSION }}
           EOF
 
           cat dist/releases/RELEASE_NOTES.md

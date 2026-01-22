@@ -1,6 +1,6 @@
 # nWave: Intelligent ATDD Pipeline with Specialized Agent Network
 
-<!-- version: 1.4.9 -->
+<!-- version: 1.5.2 -->
 
 A systematic approach to software development using ATDD (Acceptance Test Driven Development) with intelligent AI agent orchestration. The framework automates the 5-stage workflow through 26 specialized agents (13 primary + 13 reviewers), each following the Single Responsibility Principle.
 
@@ -333,8 +333,8 @@ See individual agent documentation in `nWave/agents/` for implementation details
 
 ## Version
 
-- Current Version: 1.4.8
-- Last Updated: 2026-01-21
+- Current Version: 1.5.2
+- Last Updated: 2026-01-22
 - Status: Production Ready
 
 ## Related Documentation
