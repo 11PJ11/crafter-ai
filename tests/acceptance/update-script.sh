@@ -1,6 +1,7 @@
 #!/bin/bash
 # Acceptance Tests for AI-Craft Update Script
 # Tests the update workflow: build → uninstall → install
+# shellcheck disable=SC2317,SC2155  # Test helper functions called indirectly, declare/assign acceptable in tests
 
 set -euo pipefail
 

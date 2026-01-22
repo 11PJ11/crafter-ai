@@ -1,6 +1,7 @@
 #!/bin/bash
 # Acceptance Tests for AI-Craft Install/Uninstall Scripts
 # Tests the complete lifecycle: install → verify → uninstall → verify
+# shellcheck disable=SC2317,SC2155  # Test helper functions called indirectly, declare/assign acceptable in tests
 
 set -euo pipefail
 
@@ -169,7 +170,7 @@ test_uninstall_dry_run_no_changes() {
 
 test_reinstall_cycle() {
     # Clean slate
-    rm -rf "$TEST_CLAUDE_CONFIG"/*
+    rm -rf "${TEST_CLAUDE_CONFIG:?}"/*
 
     # Install
     "$PROJECT_ROOT/scripts/install-ai-craft.sh" >/dev/null 2>&1
