@@ -275,24 +275,26 @@ Feature: Timeout and Turn Discipline
     And remaining work is documented in recovery_suggestions
 ```
 
-### Scenario 15: Watchdog Detects Stale Execution
+### Scenario 15: Pre-Execution Stale Check Detects Abandoned Work
 
 ```gherkin
-  Scenario: External watchdog detects orphaned execution
-    Given Marcus started "/nw:execute" 45 minutes ago
-    And the process crashed without triggering SubagentStop hook
+  Scenario: Pre-execution stale check blocks new work until resolved
+    Given Marcus's previous session crashed 45 minutes ago
     And step file "01-07.json" shows phase "RED_UNIT" with status "IN_PROGRESS"
     And phase "RED_UNIT" started_at is 45 minutes ago
-    When external watchdog runs with 30-minute stale threshold
-    Then orphaned execution is detected
-    And watchdog reports:
+    When Marcus runs "/nw:execute @software-crafter steps/02-01.json"
+    Then pre-execution stale check runs automatically
+    And stale execution is detected (threshold: 30 minutes)
+    And execution is BLOCKED with message:
       """
-      Orphaned execution detected:
+      Stale execution found - resolve before proceeding:
       - Step: 01-07.json
       - Phase: RED_UNIT
       - Stale for: 45 minutes
+      - Action: Mark phase as ABANDONED or investigate
       """
-    And recovery options are provided
+    And new execution does NOT start
+    And no external daemon is required (session-scoped check)
 ```
 
 ---
@@ -583,28 +585,27 @@ Feature: Concurrent Execution Protection
     And agent A continues uninterrupted
 ```
 
-### Scenario 32: Watchdog Intervention on Stale Execution
+### Scenario 32: User Resolves Stale Execution to Unblock
 
 ```gherkin
-Feature: Watchdog Automatic Intervention
-  As Priya (Tech Lead)
-  I want the watchdog to take corrective action on stale executions
-  So that abandoned work doesn't block future executions
+Feature: Stale Execution Resolution
+  As Marcus (Senior Developer)
+  I want to resolve stale executions quickly
+  So that I can continue working without manual file editing
 
-  Scenario: Watchdog marks stale execution as abandoned
-    Given step "01-01.json" has phase RED_UNIT marked IN_PROGRESS
-    And the IN_PROGRESS timestamp is 45 minutes ago
-    And no agent is currently running (session terminated)
-    When the external watchdog runs with 30-minute threshold
-    Then watchdog detects stale execution for step "01-01.json"
-    And watchdog sets phase RED_UNIT status to "ABANDONED"
-    And watchdog adds recovery_suggestions to step file:
+  Scenario: User marks stale phase as abandoned to unblock new work
+    Given pre-execution stale check detected step "01-01.json"
+    And phase RED_UNIT has been IN_PROGRESS for 45 minutes
+    When Marcus chooses to mark phase as ABANDONED
+    Then phase RED_UNIT status changes from "IN_PROGRESS" to "ABANDONED"
+    And recovery_suggestions are added to step file:
       | Suggestion |
       | "Review agent transcript for error details" |
       | "Reset RED_UNIT to NOT_EXECUTED to retry" |
       | "Run /nw:execute to resume from RED_UNIT" |
-    And watchdog logs "WATCHDOG_INTERVENTION" event to audit trail
-    And step file is now unlocked for new execution
+    And "STALE_RESOLUTION" event is logged to daily audit trail
+    And Marcus can now run "/nw:execute" for new work
+    And no external daemon was required (session-scoped resolution)
 ```
 
 ---
@@ -623,7 +624,7 @@ Feature: Watchdog Automatic Intervention
 | Non-Functional | 3 |
 | Edge Cases | 4 |
 | Concurrent Execution Protection | 1 |
-| Watchdog Intervention | 1 |
+| Stale Execution Resolution | 1 |
 | **Total** | **33** |
 
 ---

@@ -409,52 +409,60 @@ Marcus explicitly starts next step when ready.
 
 ---
 
-### US-008: External Watchdog for Stale Execution Detection
+### US-008: Session-Scoped Stale Execution Detection
 
 **As** Priya (Tech Lead),
-**I want** an external watchdog to detect stale executions,
-**So that** stuck agents don't run indefinitely without detection.
+**I want** DES to detect stale executions during my work session,
+**So that** stuck agents are caught early without requiring external daemons or databases.
 
-**Story Points:** 3
+**Story Points:** 2
 **Priority:** P1 (Should Have)
 
 #### Problem (The Pain)
-Sometimes agents get stuck despite prompt-based turn discipline (network issues, model errors, infinite loops). Without external monitoring, a stuck agent could run for hours before anyone notices, wasting resources and blocking work.
+Sometimes agents get stuck despite prompt-based turn discipline (network issues, model errors, infinite loops). Without detection, Marcus might start new work while a previous execution is still "in progress" (actually abandoned).
 
 #### Who (The User)
 - Tech Lead responsible for system reliability
-- Needs backup detection mechanism
-- Cannot rely solely on agent self-regulation
+- Wants lightweight, zero-dependency solution
+- Prefers session-scoped checks over persistent daemons
 
 #### Solution (What We Build)
-External watchdog process that scans step files for IN_PROGRESS phases older than a configurable threshold (default 30 minutes). Alerts user and optionally marks execution as stale.
+Session-scoped stale execution check that:
+1. Runs automatically **before** each `/nw:execute` command
+2. Scans step files for abandoned IN_PROGRESS phases older than threshold
+3. Alerts user and blocks execution if stale work found
+4. **Terminates with the session** - no persistent daemon required
+
+No databases, no external services, no installation required. Pure file scanning.
 
 #### Domain Examples
 
-**Example 1: Stale Execution Detected**
-Marcus's agent has been running for 45 minutes on RED_UNIT phase.
-Watchdog scans step files, finds step 01-01 with RED_UNIT IN_PROGRESS since 45 min ago.
-Alert: "Stale execution detected: step 01-01.json, phase RED_UNIT, age 45 minutes"
-Priya is notified to investigate.
+**Example 1: Pre-Execution Stale Check**
+Marcus runs `/nw:execute @software-crafter "steps/02-01.json"`.
+Before starting, DES scans for stale executions.
+Finds step 01-01 with RED_UNIT IN_PROGRESS since 45 min ago (abandoned from previous session).
+Alert: "Stale execution found: step 01-01.json, phase RED_UNIT (45 min). Resolve before proceeding."
+Marcus must address the stale step before starting new work.
 
-**Example 2: Watchdog Marks Execution Abandoned**
-After detection, watchdog can optionally mark the phase as ABANDONED.
-Step file updated: phase status changed from IN_PROGRESS to ABANDONED.
-Recovery suggestions added automatically.
-Marcus can resume with clear starting point.
+**Example 2: Clean Start**
+Marcus runs `/nw:execute @software-crafter "steps/01-01.json"`.
+Pre-execution scan finds no stale IN_PROGRESS phases.
+Execution proceeds normally.
+No daemon running in background - check completes and control returns.
 
-**Example 3: Configurable Threshold**
-For complex tasks, threshold can be increased to 60 minutes.
-For simple tasks, threshold can be reduced to 15 minutes.
-Configuration in `.claude/settings.local.json` or environment variable.
+**Example 3: Resolve and Continue**
+Marcus resolves stale step 01-01 (marks as ABANDONED with recovery suggestions).
+Runs `/nw:execute` again.
+Pre-execution scan passes - no stale phases found.
+New execution starts on step 02-01.
 
 #### Acceptance Criteria
 
-- [ ] AC-008.1: Watchdog can scan all step files in a project for stale IN_PROGRESS phases
-- [ ] AC-008.2: Stale threshold is configurable (default 30 minutes)
-- [ ] AC-008.3: Detection generates alert with step file path, phase name, and age
-- [ ] AC-008.4: Optional auto-mark as ABANDONED with recovery suggestions
-- [ ] AC-008.5: Watchdog can run as periodic background process or on-demand
+- [ ] AC-008.1: Stale check runs automatically before each `/nw:execute` invocation
+- [ ] AC-008.2: Stale threshold is configurable (default 30 minutes, env var or config)
+- [ ] AC-008.3: Detection blocks execution with clear alert (step file, phase, age)
+- [ ] AC-008.4: User can resolve stale step (mark ABANDONED) to unblock
+- [ ] AC-008.5: No external dependencies - pure file scanning, session-scoped
 
 ---
 

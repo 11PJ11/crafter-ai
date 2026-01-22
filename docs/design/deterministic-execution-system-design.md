@@ -532,22 +532,50 @@ If you cannot complete within the limit:
 - Ignore progress checkpoints
 ```
 
-#### Mechanism 2: External Watchdog (BACKUP)
+#### Mechanism 2: Pre-Execution Stale Check (BACKUP)
 
-Since we cannot enforce hard timeouts, an external watchdog process can detect stale executions:
+Session-scoped stale detection runs **automatically before each `/nw:execute`** to catch abandoned work from previous sessions. No persistent daemon required - terminates with the session.
+
+**Design Principles:**
+- **Zero dependencies:** Pure file scanning, no databases or external services
+- **Session-scoped:** Runs during work, closes when user stops
+- **Blocking:** Stale work must be resolved before new execution starts
 
 ```python
-# nWave/tools/execution_watchdog.py
-def find_stale_executions(stale_threshold_minutes: int = 30) -> list[dict]:
+# nWave/utils/stale_detection.py
+from datetime import datetime, timedelta
+from pathlib import Path
+import json
+
+def check_for_stale_executions(
+    project_dir: str,
+    threshold_minutes: int = 30
+) -> list[dict]:
     """
-    Scan step files for IN_PROGRESS phases older than threshold.
-    Run periodically or before starting new work.
+    Pre-execution stale check - runs before /nw:execute.
+    Scans step files for abandoned IN_PROGRESS phases.
+
+    Returns list of stale executions to resolve.
     """
-    # Implementation: scan step files for timestamps
-    pass
+    stale = []
+    threshold = datetime.now() - timedelta(minutes=threshold_minutes)
+
+    for step_file in Path(project_dir).rglob("steps/*.json"):
+        data = json.loads(step_file.read_text())
+        for phase in data.get("tdd_cycle", {}).get("phase_execution_log", []):
+            if phase.get("status") == "IN_PROGRESS":
+                started = datetime.fromisoformat(phase.get("started_at", ""))
+                if started < threshold:
+                    stale.append({
+                        "step_file": str(step_file),
+                        "phase": phase.get("phase_name"),
+                        "started_at": phase.get("started_at"),
+                        "age_minutes": (datetime.now() - started).seconds // 60
+                    })
+    return stale
 ```
 
-**Note:** This is a safety net, not the primary mechanism. Prompt discipline should prevent most issues.
+**Note:** This is a safety net. Prompt discipline should prevent most issues, but crashes happen.
 
 #### Mechanism 3: Boundary Rules
 
