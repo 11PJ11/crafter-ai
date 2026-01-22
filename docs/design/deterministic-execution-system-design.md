@@ -3,7 +3,7 @@
 **Version:** 1.0
 **Date:** 2026-01-22
 **Author:** Lyra (AI Design Assistant)
-**Status:** DRAFT - Pending Multi-Agent Review
+**Status:** DRAFT - Updated with Empirical Findings (Q1 Resolved)
 **Branch:** `determinism`
 
 ---
@@ -150,22 +150,61 @@ From research document: MCP `notifications/message` is received but NOT displaye
 
 ## Technical Constraints
 
-### Claude Code Limitations (Verified)
+### Claude Code Limitations (Empirically Verified 2026-01-22)
 
 | Capability | Available | Notes |
 |------------|-----------|-------|
-| SubagentStop hook | ✅ Yes | Can trigger validation after sub-agent completes |
-| Task tool timeout | ❌ No | Must use max_turns or prompt instructions |
+| SubagentStop hook | ✅ Yes | Fires when sub-agent completes, provides transcript path |
+| Task tool timeout | ❌ No | Must use prompt instructions only |
 | Interrupt running agent | ❌ No | All instructions must be upfront |
 | Message running agent | ❌ No | MCP notifications not displayed |
-| max_turns parameter | ✅ Yes | Limits API round-trips |
+| max_turns parameter | ❌ **NO** | **CLI-only flag, NOT available in Task tool** |
+| Agent transcript access | ✅ Yes | Hook receives `agent_transcript_path` with full prompt |
 | Background agent monitoring | ⚠️ Limited | Can check transcript files post-hoc |
+
+### SubagentStop Hook Schema (Empirically Verified)
+
+The SubagentStop hook receives the following JSON input via stdin:
+
+```json
+{
+  "session_id": "786ebad4-6e5b-42d3-a954-c1df6e6f25b7",
+  "transcript_path": "/home/user/.claude/projects/.../session.jsonl",
+  "cwd": "/path/to/project",
+  "permission_mode": "bypassPermissions",
+  "hook_event_name": "SubagentStop",
+  "stop_hook_active": false,
+  "agent_id": "ab7af5b",
+  "agent_transcript_path": "/home/user/.claude/projects/.../subagents/agent-ab7af5b.jsonl"
+}
+```
+
+| Field | Type | DES Usage |
+|-------|------|-----------|
+| `session_id` | string | Track parent session |
+| `transcript_path` | string | Parent session transcript |
+| `cwd` | string | Verify working directory |
+| `permission_mode` | string | N/A |
+| `hook_event_name` | string | Verify event type |
+| `stop_hook_active` | boolean | N/A |
+| **`agent_id`** | string | **Match to Task tool return value** |
+| **`agent_transcript_path`** | string | **KEY: Extract prompt from here** |
+
+**Agent Transcript Format (JSONL):**
+
+```jsonl
+{"type":"user","message":{"role":"user","content":"<FULL PROMPT HERE>"},...}
+{"type":"assistant","message":{"role":"assistant","content":[...]},...}
+{"type":"progress","data":{"type":"hook_progress",...},...}
+```
+
+The first line (type="user") contains the original prompt, which can be searched for DES markers.
 
 ### Design Implications
 
 1. **Front-loaded validation:** Since we can't correct mid-execution, prompts MUST be complete
-2. **Defensive timeouts:** Use max_turns to prevent infinite execution
-3. **Post-hoc verification:** SubagentStop hook for state verification
+2. **Prompt-based discipline:** No max_turns available; rely on explicit timeout instructions in prompt
+3. **Post-hoc verification:** SubagentStop hook + transcript parsing for validation
 4. **Fail-safe defaults:** If validation fails, block further execution
 
 ---
@@ -465,35 +504,20 @@ def validate_before_task_invocation(prompt: str, step_file_path: str = None) -> 
 
 ### Timeout Strategy
 
-Since Claude Code Task tool has no built-in timeout, we use multiple mechanisms:
+Since Claude Code Task tool has no built-in timeout and **max_turns is NOT available** (CLI-only parameter), we rely on prompt-based discipline and external monitoring.
 
-#### Mechanism 1: max_turns Parameter
+> ⚠️ **CRITICAL CORRECTION:** The original design assumed `max_turns` was available for Task tool. Empirical testing confirmed this is FALSE - max_turns is a CLI flag only, not a Task tool parameter.
 
-```python
-Task(
-    subagent_type="software-crafter",
-    prompt="...",
-    max_turns=50,  # Hard limit on API round-trips
-)
-```
+#### Mechanism 1: Prompt-Based Turn Awareness (PRIMARY)
 
-**Recommendation:** Set `max_turns` based on expected complexity:
-
-| Task Type | Recommended max_turns |
-|-----------|----------------------|
-| Research step | 20 |
-| Simple implementation | 30 |
-| Complex implementation | 50 |
-| Full TDD cycle | 75 |
-
-#### Mechanism 2: Prompt-Based Timeout Instruction
+Since we cannot enforce turn limits programmatically, agents must self-regulate based on explicit instructions.
 
 Include in every DES-validated prompt:
 
 ```markdown
 ## TIMEOUT_INSTRUCTION
 
-**Turn Limit:** You have a maximum of {max_turns} turns to complete this task.
+**Turn Budget:** Aim to complete this task within approximately 50 turns.
 
 **Early Exit Protocol:**
 If you cannot complete within the limit:
@@ -505,8 +529,25 @@ If you cannot complete within the limit:
 **DO NOT:**
 - Loop indefinitely trying to fix unfixable issues
 - Continue past your scope
-- Ignore the turn limit
+- Ignore progress checkpoints
 ```
+
+#### Mechanism 2: External Watchdog (BACKUP)
+
+Since we cannot enforce hard timeouts, an external watchdog process can detect stale executions:
+
+```python
+# nWave/tools/execution_watchdog.py
+def find_stale_executions(stale_threshold_minutes: int = 30) -> list[dict]:
+    """
+    Scan step files for IN_PROGRESS phases older than threshold.
+    Run periodically or before starting new work.
+    """
+    # Implementation: scan step files for timestamps
+    pass
+```
+
+**Note:** This is a safety net, not the primary mechanism. Prompt discipline should prevent most issues.
 
 #### Mechanism 3: Boundary Rules
 
@@ -629,10 +670,10 @@ def invoke_step_execution(agent_name: str, step_path: str):
         )
 
     # Proceed with invocation
+    # Note: max_turns is NOT available for Task tool (CLI-only)
     return Task(
         subagent_type=agent_name,
         prompt=prompt,
-        max_turns=50,
         description=f"Execute step {step_data['task_id']}"
     )
 ```
@@ -668,6 +709,7 @@ def invoke_step_execution(agent_name: str, step_path: str):
 
 import json
 import sys
+import re
 from pathlib import Path
 from datetime import datetime
 
@@ -676,13 +718,20 @@ def validate_post_execution():
     Validate step file state after sub-agent completion.
 
     This hook runs after every SubagentStop event.
+
+    Input Schema (via stdin):
+    {
+        "session_id": "...",
+        "agent_id": "...",
+        "agent_transcript_path": "/path/to/agent.jsonl",
+        ...
+    }
     """
-    # Read hook context from stdin (Claude Code passes this)
+    # Read hook context from stdin
     context = json.loads(sys.stdin.read())
 
-    # Extract step file path from agent transcript or prompt
-    # (Implementation depends on how context is passed)
-    step_file_path = extract_step_file_from_context(context)
+    # Extract step file path from agent's transcript (contains the prompt)
+    step_file_path = extract_step_file_from_transcript(context)
 
     if not step_file_path:
         # Not a DES-managed task, skip validation
@@ -755,27 +804,36 @@ def validate_post_execution():
         sys.exit(1)
 
 
-def extract_step_file_from_context(context: dict) -> str | None:
+def extract_step_file_from_transcript(context: dict) -> str | None:
     """
-    Extract step file path from SubagentStop context.
+    Extract step file path from SubagentStop context via transcript.
 
-    Looks for DES metadata markers in the agent's prompt or transcript.
+    The prompt is NOT in the hook input directly. We must read it from
+    the agent's transcript file (first line, type="user").
     """
-    # Try to find in prompt
-    prompt = context.get("prompt", "")
+    agent_transcript_path = context.get("agent_transcript_path")
+    if not agent_transcript_path:
+        return None
 
-    import re
+    transcript_path = Path(agent_transcript_path)
+    if not transcript_path.exists():
+        return None
+
+    # Read first line (contains the original prompt)
+    with open(transcript_path) as f:
+        first_line = f.readline()
+
+    try:
+        entry = json.loads(first_line)
+        # Structure: {"type":"user","message":{"role":"user","content":"..."}}
+        prompt = entry.get("message", {}).get("content", "")
+    except json.JSONDecodeError:
+        return None
+
+    # Search for DES marker in prompt
     match = re.search(r'<!-- DES-STEP-FILE: (.+?) -->', prompt)
     if match:
         return match.group(1)
-
-    # Try to find in transcript messages
-    transcript = context.get("transcript", [])
-    for msg in transcript:
-        if "DES-STEP-FILE" in str(msg):
-            match = re.search(r'DES-STEP-FILE: (.+?)(?:\s|-->)', str(msg))
-            if match:
-                return match.group(1)
 
     return None
 
@@ -949,13 +1007,21 @@ def handle_silent_completion(step_file_path: str):
 
 ## Open Questions
 
-### Q1: Hook Context Access
+### Q1: Hook Context Access ✅ RESOLVED
 
 **Question:** What exactly does the SubagentStop hook receive in its stdin?
 
-**Impact:** Determines how we extract step file path from context.
+**Answer (Empirically Verified 2026-01-22):**
 
-**To Research:** Test hook with actual sub-agent invocation and log received data.
+The hook receives 8 fields via stdin JSON:
+- `session_id`, `transcript_path`, `cwd`, `permission_mode`
+- `hook_event_name`, `stop_hook_active`
+- **`agent_id`** - Matches Task tool return value
+- **`agent_transcript_path`** - Contains the full prompt in first line
+
+**Key Finding:** The prompt is NOT included directly. Must read from `agent_transcript_path` first line (type="user").
+
+**Impact:** Design updated to use transcript extraction instead of direct prompt access.
 
 ### Q2: Parallel Execution
 
@@ -1000,7 +1066,7 @@ def handle_silent_completion(step_file_path: str):
 - [ ] **AC-3:** 14-phase TDD list is embedded in every step execution prompt
 - [ ] **AC-4:** SubagentStop hook validates step file state after completion
 - [ ] **AC-5:** Phases stuck in IN_PROGRESS are detected and flagged
-- [ ] **AC-6:** max_turns is set for all step execution Tasks
+- [ ] **AC-6:** TIMEOUT_INSTRUCTION is included in all step execution prompts (max_turns NOT available)
 - [ ] **AC-7:** Audit trail captures all state transitions
 
 ### Should Have (P1)
@@ -1031,8 +1097,8 @@ def handle_silent_completion(step_file_path: str):
 ### Phase 2: Lifecycle Management (Estimated: Second)
 
 1. Update command files to use templates
-2. Add max_turns to all step execution Tasks
-3. Implement TIMEOUT_INSTRUCTION and BOUNDARY_RULES
+2. Implement TIMEOUT_INSTRUCTION in all prompts (max_turns NOT available for Task tool)
+3. Implement BOUNDARY_RULES for scope enforcement
 4. Create state machine definition file
 
 ### Phase 3: Post-Execution Validation (Estimated: Third)
@@ -1193,16 +1259,18 @@ Return control IMMEDIATELY with execution summary.
 
 # TIMEOUT_INSTRUCTION
 
-**Turn Limit:** You have a maximum of {max_turns} turns.
+**Turn Budget:** Aim to complete this task within approximately 50 turns.
+
+> ⚠️ Note: There is no hard turn limit enforcement. You must self-regulate.
 
 **Progress Checkpoints:**
-- By turn 10: Should have completed PREPARE and RED phases
-- By turn 25: Should have completed GREEN phases
-- By turn 40: Should have completed REFACTOR phases
-- By turn 50: Must be finishing COMMIT or returning partial
+- By turn ~10: Should have completed PREPARE and RED phases
+- By turn ~25: Should have completed GREEN phases
+- By turn ~40: Should have completed REFACTOR phases
+- By turn ~50: Should be finishing COMMIT or returning partial
 
 **Early Exit Protocol:**
-If you cannot complete within the turn limit:
+If you realize you cannot complete reasonably:
 1. Save all current progress to step file
 2. Set current phase to IN_PROGRESS with detailed notes
 3. Set task state to PARTIAL with recovery_suggestions

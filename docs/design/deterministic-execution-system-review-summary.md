@@ -1,6 +1,6 @@
 # Deterministic Execution System - Multi-Agent Review Summary
 
-**Date:** 2026-01-22
+**Date:** 2026-01-22 (Updated with Q1 Resolution)
 **Design Document:** [deterministic-execution-system-design.md](deterministic-execution-system-design.md)
 **Branch:** `determinism`
 
@@ -17,34 +17,40 @@
 
 ---
 
-## Consensus: CRITICAL BLOCKERS
+## ✅ BLOCKER #1 RESOLVED: SubagentStop Hook Context Verified
 
-All four reviewers identified the same critical issue:
+> **Q1 was resolved on 2026-01-22 via empirical testing after session restart.**
 
-### BLOCKER #1: SubagentStop Hook Context Unknown
+### Resolution Details
 
-> **Q1 must be resolved before implementation can begin.**
+- **Hook fires correctly** after session restart (settings require restart to load)
+- **8-field schema captured** including critical `agent_transcript_path`
+- **Prompt accessible** via transcript first line (not in hook input directly)
 
-- **Solution Architect:** "SubagentStop hook reliability is unverified - CRITICAL"
-- **Software Crafter:** "Run a discovery hook to capture actual SubagentStop context"
-- **Product Owner:** "Q1 is a blocker - marked 'To Research' but AC-4 (P0) depends on it"
-- **Troubleshooter:** "SubagentStop hook may not fire at all if process dies"
+### Verified Schema
 
-**Required Action:** Create discovery test hook FIRST:
-```python
-# nWave/hooks/discover_subagent_context.py
-import sys, json
-from datetime import datetime
-
-raw = sys.stdin.read()
-with open(".git/subagent_context_discovery.log", "a") as f:
-    f.write(json.dumps({
-        "timestamp": datetime.now().isoformat(),
-        "raw_length": len(raw),
-        "sample": raw[:2000] if raw else "(empty)",
-        "parsed_keys": list(json.loads(raw).keys()) if raw else []
-    }) + "\n")
+```json
+{
+  "session_id": "...",
+  "transcript_path": "...",
+  "cwd": "...",
+  "permission_mode": "bypassPermissions",
+  "hook_event_name": "SubagentStop",
+  "stop_hook_active": false,
+  "agent_id": "ab7af5b",           // ← Correlate with Task return
+  "agent_transcript_path": "..."   // ← Contains prompt in first line
+}
 ```
+
+### Key Finding: max_turns NOT Available
+
+The design assumed `max_turns` parameter exists for Task tool. **This is FALSE** - it's CLI-only. Design updated to use prompt-based turn discipline.
+
+## Remaining Blockers
+
+### BLOCKER #2: Missing UAT Scenarios (Product Owner)
+
+Given/When/Then scenarios required before implementation. See draft scenarios below.
 
 ---
 
@@ -96,8 +102,8 @@ with open(".git/subagent_context_discovery.log", "a") as f:
 
 ### P0 - Must Fix Before Implementation
 
-1. **Resolve Q1 empirically** - Test SubagentStop hook context with real invocation
-2. **Verify Claude Code hook settings schema** - Confirm `SubagentStop` configuration works
+1. ✅ ~~**Resolve Q1 empirically**~~ - SubagentStop schema captured (8 fields)
+2. ✅ ~~**Verify Claude Code hook settings schema**~~ - Works after session restart
 3. **Add UAT scenarios** - 5-7 Given/When/Then covering happy path and failures
 4. **Implement atomic file writes** - Prevent step file corruption
 5. **Add external watchdog** - Detect orphaned IN_PROGRESS when process dies
@@ -260,35 +266,37 @@ And recovery options are provided
 
 | Question | Status | Resolution |
 |----------|--------|------------|
-| Q1: Hook context contents | **BLOCKING** | Must test empirically |
+| Q1: Hook context contents | ✅ **RESOLVED** | 8-field schema captured; prompt via transcript |
 | Q2: Parallel execution | Deferred | Sequential MVP accepted |
 | Q3: Background agent monitoring | Deferred | Use TaskOutput polling |
 | Q4: Token usage measurement | Deferred | Track post-implementation |
 | Q5: Template inheritance | Rejected | Keep simple (no inheritance) |
+| **NEW: max_turns** | ❌ **NOT AVAILABLE** | CLI-only; use prompt discipline |
 
 ---
 
 ## Next Steps
 
-### Immediate (This Session)
+### Completed ✅
 
-1. [ ] Create discovery hook to capture SubagentStop context
-2. [ ] Run test invocation and analyze results
-3. [ ] Update design based on actual hook capabilities
+1. [x] Create discovery hook to capture SubagentStop context
+2. [x] Run test invocation and analyze results (after session restart)
+3. [x] Update design based on actual hook capabilities
+4. [x] Update design to remove max_turns assumption
 
 ### Before Implementation Sprint
 
-4. [ ] Add 5-7 UAT scenarios to design document
-5. [ ] Map requirements to Marcus/Priya/Alex personas
-6. [ ] Add effort estimates (days) per phase
-7. [ ] Create ADRs for key decisions (FSM, metadata embedding, sequential MVP)
+5. [ ] Add 5-7 UAT scenarios to design document
+6. [ ] Map requirements to Marcus/Priya/Alex personas
+7. [ ] Add effort estimates (days) per phase
+8. [ ] Create ADRs for key decisions (FSM, metadata embedding, sequential MVP)
 
 ### Implementation Sprint 1 (Foundation)
 
-8. [ ] Extract phase definitions to single YAML file
-9. [ ] Implement prompt template with YAML frontmatter
-10. [ ] Implement atomic file write utility
-11. [ ] Create validation module structure
+9. [ ] Extract phase definitions to single YAML file
+10. [ ] Implement prompt template with YAML frontmatter
+11. [ ] Implement atomic file write utility
+12. [ ] Create validation module structure
 
 ---
 

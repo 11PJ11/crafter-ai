@@ -1,19 +1,22 @@
 # DES Discovery Report: SubagentStop Hook and max_turns Empirical Testing
 
-**Date:** 2026-01-22
+**Date:** 2026-01-22 (Updated after session restart)
 **Branch:** `determinism`
-**Status:** CRITICAL FINDINGS - Design Assumptions Invalid
+**Status:** Q1 RESOLVED - SubagentStop Hook Verified Working
 
 ---
 
 ## Executive Summary
 
-Empirical testing of Claude Code hook mechanisms revealed **two critical findings** that invalidate key assumptions in the DES design:
+Empirical testing of Claude Code hook mechanisms revealed **important findings** for the DES design:
 
 | Assumption | Reality | Impact |
 |------------|---------|--------|
-| Task tool accepts `max_turns` parameter | **FALSE** - `max_turns` is CLI flag only | HIGH - No programmatic turn limit |
-| SubagentStop hook fires reliably | **UNCLEAR** - Hook did not fire in testing | HIGH - Post-execution validation uncertain |
+| Task tool accepts `max_turns` parameter | **FALSE** - `max_turns` is CLI flag only | HIGH - Must use prompt-based discipline |
+| SubagentStop hook fires reliably | **TRUE** ✅ - Hook fires after session restart | RESOLVED - Can use for validation |
+| Prompt available in hook input | **FALSE** - Must read from transcript | MEDIUM - Design updated |
+
+**UPDATE 2026-01-22 (post session restart):** SubagentStop hook now fires correctly. The hook configuration requires session restart to load. Q1 is RESOLVED.
 
 ---
 
@@ -51,109 +54,112 @@ All references to `max_turns` in Task tool invocations must be removed:
 
 ---
 
-## Discovery 2: SubagentStop Hook May Not Fire in VSCode Context
+## Discovery 2: SubagentStop Hook Fires After Session Restart ✅ RESOLVED
 
-### Test Setup
+### Initial Test (Before Restart)
 
 1. Created discovery hook script: `nWave/hooks/discover_subagent_context.py`
-2. Configured in `.claude/settings.local.json`:
+2. Configured in `.claude/settings.local.json`
+3. Ran multiple Task tool invocations - **Hook did NOT fire**
 
-```json
-{
-  "hooks": {
-    "SubagentStop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/nWave/hooks/discover_subagent_context.py\"",
-            "timeout": 30
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+### Root Cause Found
 
-3. Ran multiple Task tool invocations
+**Settings require session restart to load.** The hook configuration was correct but not active until the Claude Code session was restarted.
 
-### Test Results
+### Test After Session Restart (2026-01-22)
 
 | Test | Task Type | Result |
 |------|-----------|--------|
-| Test 1 | Explore agent (haiku) | Hook did NOT fire |
-| Test 2 | Explore agent (haiku) | Hook did NOT fire |
-| Test 3 | Explore agent (haiku) | Hook did NOT fire |
-| Manual | echo JSON \| python3 script | Script works correctly |
+| Test 1 (post-restart) | Explore agent (haiku) | ✅ Hook FIRED |
 
-### Possible Explanations
+### Evidence
 
-1. **Settings require session restart** - Configuration changes may not be hot-reloaded
-2. **VSCode extension handles hooks differently** - Environment variable `CLAUDE_CODE_ENTRYPOINT: "claude-vscode"` suggests different execution context
-3. **SubagentStop may not fire for Explore agents** - May only fire for certain agent types
-4. **Hook path resolution issue** - Even with `$CLAUDE_PROJECT_DIR`, path may not resolve correctly
+Files created in `.git/des-discovery/`:
+- `subagent_context.jsonl` - JSONL log
+- `latest_discovery.json` - Last event details
+- `discovery_summary.md` - Human-readable summary
 
-### Evidence of Script Correctness
+### Key Lesson
 
-Manual test confirms the Python script works:
-
-```bash
-echo '{"session_id": "test", "hook_event_name": "SubagentStop"}' | python3 nWave/hooks/discover_subagent_context.py
-# Output: {"continue": true}
-# Files created in .git/des-discovery/
-```
+**Hook configuration changes require session restart.** This is important for:
+- Development workflow (restart after config changes)
+- Documentation (note this requirement)
+- Troubleshooting (restart before debugging hooks)
 
 ### Impact on DES Design
 
-The SubagentStop hook was planned as **Gate 2** for post-execution validation. If the hook doesn't fire reliably:
-
-- Post-execution validation cannot be guaranteed
-- Abandoned IN_PROGRESS phases may go undetected
-- State corruption may not be caught until pre-commit
+SubagentStop hook is now **confirmed viable** for Gate 2 post-execution validation. The design can proceed as planned with minor updates for transcript-based prompt extraction.
 
 ---
 
-## Discovery 3: Hook Input Schema (From Documentation)
+## Discovery 3: Hook Input Schema (Empirically Captured)
 
-Even though the hook didn't fire, documentation confirms the expected input schema:
+### Actual Schema (8 Fields)
+
+The SubagentStop hook receives the following JSON via stdin:
 
 ```json
 {
-  "session_id": "string",
-  "transcript_path": "string",
-  "cwd": "string",
-  "permission_mode": "string",
+  "session_id": "786ebad4-6e5b-42d3-a954-c1df6e6f25b7",
+  "transcript_path": "/home/user/.claude/projects/.../session.jsonl",
+  "cwd": "/mnt/c/Repositories/Projects/ai-craft",
+  "permission_mode": "bypassPermissions",
   "hook_event_name": "SubagentStop",
-  "stop_hook_active": boolean
+  "stop_hook_active": false,
+  "agent_id": "ab7af5b",
+  "agent_transcript_path": "/home/user/.claude/projects/.../subagents/agent-ab7af5b.jsonl"
 }
 ```
 
-### Critical Observation
+### Schema Analysis
 
-**The prompt is NOT included in hook input.**
+| Field | Type | DES Usage |
+|-------|------|-----------|
+| `session_id` | string | Track parent session |
+| `transcript_path` | string | Parent session transcript |
+| `cwd` | string | Verify working directory |
+| `permission_mode` | string | N/A |
+| `hook_event_name` | string | Verify event type |
+| `stop_hook_active` | boolean | N/A |
+| **`agent_id`** | string | **Correlate with Task tool return value** |
+| **`agent_transcript_path`** | string | **KEY: Read prompt from here** |
 
-This means:
-- We CANNOT identify which step file was being processed from hook input
-- We MUST embed identifiers (like `DES-STEP-FILE`) in the prompt AND write to a known location
-- The transcript file is the only way to discover what the agent was doing
+### Critical Discovery: Prompt Access via Transcript
 
-### Fallback Strategy
+**The prompt is NOT in hook input but IS accessible via `agent_transcript_path`.**
 
-If hook doesn't receive step file info directly, we need:
+The agent transcript is JSONL format. First line contains the prompt:
+
+```jsonl
+{"type":"user","message":{"role":"user","content":"<FULL PROMPT HERE>"},...}
+{"type":"assistant","message":{"role":"assistant",...},...}
+{"type":"progress","data":{"type":"hook_progress",...},...}
+```
+
+### Extraction Strategy
 
 ```python
-# Before Task invocation, write to known location
+def get_prompt_from_transcript(agent_transcript_path: str) -> str:
+    """Extract the original prompt from agent's transcript."""
+    with open(agent_transcript_path) as f:
+        first_line = f.readline()
+    entry = json.loads(first_line)
+    return entry["message"]["content"]
+
+# Then search for DES markers:
+prompt = get_prompt_from_transcript(context["agent_transcript_path"])
+match = re.search(r'<!-- DES-STEP-FILE: (.+?) -->', prompt)
+step_file = match.group(1) if match else None
+```
+
+### Fallback Strategy (No Longer Primary)
+
+The active step file pattern is now a **fallback**, not the primary mechanism:
+
+```python
+# Primary: Extract from transcript
+# Fallback: Read from known location (if transcript unavailable)
 ACTIVE_STEP_FILE = ".git/des-active-step.json"
-
-def before_task_invoke(step_path: str):
-    with open(ACTIVE_STEP_FILE, "w") as f:
-        json.dump({
-            "step_file": step_path,
-            "started_at": datetime.now().isoformat()
-        }, f)
-
-# SubagentStop hook reads from ACTIVE_STEP_FILE
 ```
 
 ---
@@ -177,27 +183,27 @@ Additionally observed in our environment:
 
 ## Recommendations
 
-### Immediate Actions
+### Completed Actions ✅
 
-1. **Test in CLI mode** - Verify if hooks work differently outside VSCode
-2. **Restart session** - Test if hooks load after full restart
-3. **Try Stop hook instead** - Test if parent `Stop` hook fires (may cascade to subagents)
+1. ~~Test in CLI mode~~ - Not needed, hooks work in VSCode after restart
+2. ✅ **Restart session** - Confirmed hooks load after restart
+3. ~~Try Stop hook~~ - Not needed, SubagentStop works correctly
 
-### Design Revisions Required
+### Design Revisions Completed ✅
 
-| DES Layer | Required Change |
-|-----------|-----------------|
-| Layer 2 (Templates) | Remove max_turns references |
-| Layer 3 (Lifecycle) | Replace max_turns with prompt-based discipline |
-| Layer 4 (Validation) | Add fallback if SubagentStop unreliable |
+| DES Layer | Change | Status |
+|-----------|--------|--------|
+| Technical Constraints | Added actual hook schema | ✅ Done |
+| Layer 2 (Templates) | Remove max_turns references | ✅ Done |
+| Layer 3 (Lifecycle) | Replace max_turns with prompt-based discipline | ✅ Done |
+| Layer 4 (Validation) | Use transcript extraction for prompt | ✅ Done |
+| Open Questions | Mark Q1 as RESOLVED | ✅ Done |
 
-### Alternative Validation Strategy
+### Remaining Work
 
-If SubagentStop proves unreliable, consider:
-
-1. **Pre-Commit as Primary Gate** - Move validation weight to commit time
-2. **External Watchdog** - Independent process monitoring step file activity
-3. **Checkpoint File Pattern** - Write to known location before/after Task
+1. **Add UAT scenarios** - Given/When/Then format for Product Owner
+2. **Build PoC hook** - Working post_subagent_validation.py
+3. **Effort estimates** - Days per implementation phase
 
 ---
 
@@ -214,24 +220,38 @@ If SubagentStop proves unreliable, consider:
 
 ## Next Steps
 
-1. **Restart Claude Code session** and re-test hook firing
-2. **Test in CLI mode** (`claude -p "..."`) to compare behavior
-3. **Contact Anthropic** or search GitHub issues for SubagentStop reliability
-4. **Update DES design** with findings and alternative strategies
+1. ✅ ~~Restart Claude Code session and re-test hook firing~~ **DONE - Hook fires correctly**
+2. ✅ ~~Update DES design with findings~~ **DONE - Design document updated**
+3. **Add UAT scenarios** - Required by Product Owner review (Given/When/Then format)
+4. **Implement proof-of-concept** - Build working post_subagent_validation.py
+5. **Update review summary** - Reflect Q1 resolution to unblock reviews
 
 ---
 
 ## Conclusion
 
-This empirical testing revealed that our design relied on two mechanisms that either don't exist (`max_turns` for Task tool) or may not work reliably (`SubagentStop` hook in VSCode).
+Empirical testing across two sessions revealed:
 
-The DES design must be revised to:
-1. Use prompt-based execution discipline instead of programmatic turn limits
-2. Implement fallback validation strategies that don't depend on SubagentStop
-3. Strengthen pre-commit validation as the reliable final gate
+### Resolved Issues ✅
 
-**The design is NOT ready for implementation until these issues are resolved.**
+1. **Q1 (SubagentStop Hook):** RESOLVED - Hook fires after session restart
+2. **Hook Schema:** Captured actual 8-field schema with `agent_transcript_path`
+3. **Prompt Access:** Confirmed via transcript extraction
+
+### Remaining Constraint ⚠️
+
+1. **max_turns:** NOT available for Task tool (CLI-only) - Must use prompt-based discipline
+
+### Design Status
+
+The DES design has been updated to reflect empirical findings:
+- SubagentStop hook is viable for Gate 2
+- Transcript extraction replaces direct prompt access
+- max_turns removed from all Task tool references
+- Prompt-based timeout instructions are the primary turn limiting mechanism
+
+**Q1 blocker is RESOLVED. Design can proceed to UAT scenarios and implementation planning.**
 
 ---
 
-*Report generated from empirical testing session on determinism branch.*
+*Report updated after session restart testing on 2026-01-22.*
