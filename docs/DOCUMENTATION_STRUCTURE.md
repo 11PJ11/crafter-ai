@@ -1,7 +1,7 @@
 # nWave Documentation Structure Guide
 
-**Version**: 1.4.5
-**Date**: 2026-01-21
+**Version**: 1.5.2
+**Date**: 2026-01-22
 **Type**: Reference + How-to Guide
 **Status**: Production Ready
 
@@ -35,9 +35,9 @@ Documentation is organized into exactly four types:
 
 **nWave How-to Guides**:
 - `docs/guides/how-to-invoke-reviewers.md` - Request peer reviews
-- `docs/guides/layer-4-for-developers.md` - Programmatic review API
-- `docs/guides/layer-4-for-users.md` - Manual review workflows
-- `docs/guides/layer-4-for-cicd.md` - CI/CD integration
+- `docs/guides/5-layer-testing-developers.md` - Programmatic review API
+- `docs/guides/5-layer-testing-users.md` - Manual review workflows
+- `docs/guides/5-layer-testing-cicd.md` - CI/CD integration
 - `docs/troubleshooting/TROUBLESHOOTING.md` - Solve common issues
 
 ### 3. **Reference** (Information Orientation)
@@ -50,7 +50,7 @@ Documentation is organized into exactly four types:
 **nWave Reference Documents**:
 - `docs/reference/nwave-commands-reference.md` - Commands and agents
 - `docs/reference/reviewer-agents-reference.md` - Reviewer specifications
-- `docs/reference/layer-4-api-reference.md` - API contracts
+- `docs/reference/5-layer-testing-api.md` - API contracts
 - `docs/guides/QUICK_REFERENCE_VALIDATION.md` - Quick lookup tables
 - `docs/templates/STEP_EXECUTION_TEMPLATE.md` - Template specification
 
@@ -77,9 +77,9 @@ docs/
 ├── guides/                                # HOW-TO & EXPLANATION docs
 │   ├── jobs-to-be-done-guide.md          # When to use each workflow
 │   ├── how-to-invoke-reviewers.md         # How to request reviews
-│   ├── layer-4-for-developers.md          # Programmatic API usage
-│   ├── layer-4-for-users.md               # Manual workflows
-│   ├── layer-4-for-cicd.md                # CI/CD integration
+│   ├── 5-layer-testing-developers.md          # Programmatic API usage
+│   ├── 5-layer-testing-users.md               # Manual workflows
+│   ├── 5-layer-testing-cicd.md                # CI/CD integration
 │   ├── LAYER_4_IMPLEMENTATION_SUMMARY.md  # Why Layer 4 works
 │   ├── knowledge-architecture-analysis.md # Architecture rationale
 │   └── [other guides...]
@@ -87,7 +87,7 @@ docs/
 ├── reference/                             # REFERENCE docs (lookup)
 │   ├── nwave-commands-reference.md        # All commands, agents, files
 │   ├── reviewer-agents-reference.md       # Reviewer specifications
-│   ├── layer-4-api-reference.md           # API contracts & types
+│   ├── 5-layer-testing-api.md           # API contracts & types
 │   └── [other references...]
 │
 ├── installation/                          # INSTALLATION (Tutorial/How-to)
@@ -147,7 +147,7 @@ All documentation files follow **kebab-case** naming:
 
 ✅ **Correct**:
 - `how-to-invoke-reviewers.md`
-- `layer-4-for-developers.md`
+- `5-layer-testing-developers.md`
 - `nwave-commands-reference.md`
 
 ❌ **Avoid**:
@@ -197,7 +197,7 @@ Documents link to each other following DIVIO principles:
 
 ### How-to → Reference
 ```markdown
-For detailed API contracts, see the [API Reference](../reference/layer-4-api-reference.md).
+For detailed API contracts, see the [API Reference](../reference/5-layer-testing-api.md).
 ```
 
 ### How-to → Explanation
@@ -212,7 +212,7 @@ For usage examples, see [How to Invoke Reviewers](./how-to-invoke-reviewers.md).
 
 ### Explanation → How-to
 ```markdown
-To get hands-on with this concept, see [Layer 4 for Developers](./layer-4-for-developers.md).
+To get hands-on with this concept, see [Layer 4 for Developers](./5-layer-testing-developers.md).
 ```
 
 ---

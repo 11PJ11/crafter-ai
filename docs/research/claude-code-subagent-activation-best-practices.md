@@ -917,4 +917,4 @@ Total: 22,350 lines
 - Current Agent Files: nWave/agents/*.md
 
 **Last Updated**: 2025-10-07
-**Version**: 1.0
+**Version**: 1.5.2

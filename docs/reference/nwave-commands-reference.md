@@ -1,7 +1,7 @@
 # nWave Commands Reference
 
-**Version**: 1.4.5
-**Date**: 2026-01-21
+**Version**: 1.5.2
+**Date**: 2026-01-22
 **Status**: Production Ready
 
 Quick reference for all nWave commands, agents, and file locations.

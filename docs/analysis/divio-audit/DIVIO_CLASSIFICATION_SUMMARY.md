@@ -1,7 +1,7 @@
 # nWave Documentation DIVIO Classification Summary
 
-**Version**: 1.4.0
-**Date**: 2026-01-21
+**Version**: 1.5.2
+**Date**: 2026-01-22
 **Analyst**: Quill, Documentation Quality Guardian
 **Classification Method**: DIVIO (Diataxis) Framework
 

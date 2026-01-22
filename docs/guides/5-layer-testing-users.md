@@ -1,7 +1,7 @@
 # Layer 4 for Users
 
-**Version**: 1.4.1
-**Date**: 2026-01-21
+**Version**: 1.5.2
+**Date**: 2026-01-22
 **Status**: Production Ready
 
 Manual review workflows via CLI and interactive mode.
@@ -9,9 +9,9 @@ Manual review workflows via CLI and interactive mode.
 **Prerequisites**: nwave CLI installed.
 
 **Related Docs**:
-- [API Reference](../reference/layer-4-api-reference.md) (contracts)
-- [For Developers](layer-4-for-developers.md) (code)
-- [For CI/CD](layer-4-for-cicd.md) (pipelines)
+- [API Reference](../reference/5-layer-testing-api.md) (contracts)
+- [For Developers](5-layer-testing-developers.md) (code)
+- [For CI/CD](5-layer-testing-cicd.md) (pipelines)
 
 ---
 

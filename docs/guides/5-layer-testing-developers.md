@@ -1,6 +1,6 @@
 # Layer 4 for Developers
 
-**Version**: 1.4.3
+**Version**: 1.5.2
 **Date**: 2026-01-22
 **Status**: Production Ready
 
@@ -9,9 +9,9 @@ Programmatic integration guide for invoking Layer 4 peer review in code.
 **Prerequisites**: Python 3.11+ or TypeScript/Node.js environment.
 
 **Related Docs**:
-- [API Reference](../reference/layer-4-api-reference.md) (contracts)
-- [For Users](layer-4-for-users.md) (CLI)
-- [For CI/CD](layer-4-for-cicd.md) (pipelines)
+- [API Reference](../reference/5-layer-testing-api.md) (contracts)
+- [For Users](5-layer-testing-users.md) (CLI)
+- [For CI/CD](5-layer-testing-cicd.md) (pipelines)
 
 ---
 

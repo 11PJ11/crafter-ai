@@ -1,7 +1,7 @@
 # Reviewer Agents Reference
 
-**Version**: 1.4.0
-**Date**: 2026-01-21
+**Version**: 1.5.2
+**Date**: 2026-01-22
 **Status**: Production Ready
 
 Quick reference for Layer 4 peer review agents - specifications, configuration, and lookup.

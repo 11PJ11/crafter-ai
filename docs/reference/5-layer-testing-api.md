@@ -1,15 +1,15 @@
 # Layer 4 API Reference
 
-**Version**: 1.4.0
-**Date**: 2026-01-21
+**Version**: 1.5.2
+**Date**: 2026-01-22
 **Status**: Production Ready
 
 API contracts, interfaces, configuration schemas, and technical specifications for Layer 4 Adversarial Verification.
 
 **Related Docs**:
-- [For Developers](../guides/layer-4-for-developers.md) (how-to)
-- [For Users](../guides/layer-4-for-users.md) (how-to)
-- [For CI/CD](../guides/layer-4-for-cicd.md) (how-to)
+- [For Developers](../guides/5-layer-testing-developers.md) (how-to)
+- [For Users](../guides/5-layer-testing-users.md) (how-to)
+- [For CI/CD](../guides/5-layer-testing-cicd.md) (how-to)
 
 ---
 

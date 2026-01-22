@@ -35,9 +35,9 @@ The documentation consolidation work is **production-ready and high-quality**, w
 | Document | Type | Claimed Purity | Status | Notes |
 |----------|------|---|--------|-------|
 | `how-to-invoke-reviewers.md` | How-to | 95% | ✅ Verified | Clear task-focused structure |
-| `layer-4-for-developers.md` | How-to | 92% | ✅ Verified | Good code examples, minimal theory |
-| `layer-4-for-users.md` | How-to | 94% | ✅ Verified | CLI-focused, step-by-step |
-| `layer-4-for-cicd.md` | How-to | 93% | ✅ Verified | Pipeline integration focused |
+| `5-layer-testing-developers.md` | How-to | 92% | ✅ Verified | Good code examples, minimal theory |
+| `5-layer-testing-users.md` | How-to | 94% | ✅ Verified | CLI-focused, step-by-step |
+| `5-layer-testing-cicd.md` | How-to | 93% | ✅ Verified | Pipeline integration focused |
 | `jobs-to-be-done-guide.md` | Explanation+How-to | 85% | ⚠️ Acceptable | Intentional hybrid - explains when to use + some how-to steps |
 | `nwave-commands-reference.md` | Reference | 98% | ✅ Verified | Clean table format, lookup-ready |
 | `reviewer-agents-reference.md` | Reference | 97% | ✅ Verified | Specification-focused |
@@ -62,10 +62,10 @@ The documentation consolidation work is **production-ready and high-quality**, w
 
 **Critical Action Taken**: The original `LAYER_4_INTEGRATION_GUIDE.md` (40-45% type purity) was properly split into:
 - `how-to-invoke-reviewers.md` (95% purity)
-- `layer-4-for-developers.md` (92% purity)
-- `layer-4-for-users.md` (94% purity)
-- `layer-4-for-cicd.md` (93% purity)
-- `layer-4-api-reference.md` (98% purity)
+- `5-layer-testing-developers.md` (92% purity)
+- `5-layer-testing-users.md` (94% purity)
+- `5-layer-testing-cicd.md` (93% purity)
+- `5-layer-testing-api.md` (98% purity)
 
 This represents excellent structural improvement.
 
@@ -83,7 +83,7 @@ All documents meet optimal readability targets.
 ### Content Accuracy
 
 **Spot-Check Results**:
-- Code examples in `layer-4-for-developers.md`: Verified syntax is correct (Python/TypeScript)
+- Code examples in `5-layer-testing-developers.md`: Verified syntax is correct (Python/TypeScript)
 - CLI commands in `how-to-invoke-reviewers.md`: Referenced agent paths verified correct
 - API reference structure: Follows OpenAPI-style documentation standards
 - Version tags: All synchronized to 1.2.81 ✅
@@ -119,12 +119,12 @@ All documents meet optimal readability targets.
 | Installation Guide | `docs/installation/INSTALL.md` | ✅ Exists | Verified accessible |
 | Jobs To Be Done Guide | `docs/guides/jobs-to-be-done-guide.md` | ✅ Exists | Verified accessible |
 | How to Invoke Reviewers | `docs/guides/how-to-invoke-reviewers.md` | ✅ Exists | Verified accessible |
-| Layer 4 for Developers | `docs/guides/layer-4-for-developers.md` | ✅ Exists | Verified accessible |
-| Layer 4 for Users | `docs/guides/layer-4-for-users.md` | ✅ Exists | Verified accessible |
-| Layer 4 for CI/CD | `docs/guides/layer-4-for-cicd.md` | ✅ Exists | Verified accessible |
+| Layer 4 for Developers | `docs/guides/5-layer-testing-developers.md` | ✅ Exists | Verified accessible |
+| Layer 4 for Users | `docs/guides/5-layer-testing-users.md` | ✅ Exists | Verified accessible |
+| Layer 4 for CI/CD | `docs/guides/5-layer-testing-cicd.md` | ✅ Exists | Verified accessible |
 | nWave Commands Reference | `docs/reference/nwave-commands-reference.md` | ✅ Exists | Verified accessible |
 | Reviewer Agents Reference | `docs/reference/reviewer-agents-reference.md` | ✅ Exists | Verified accessible |
-| Layer 4 API Reference | `docs/reference/layer-4-api-reference.md` | ✅ Exists | Verified accessible |
+| Layer 4 API Reference | `docs/reference/5-layer-testing-api.md` | ✅ Exists | Verified accessible |
 | Troubleshooting Guide | `docs/troubleshooting/TROUBLESHOOTING.md` | ✅ Exists | Verified accessible |
 | Layer 4 Implementation Summary | `docs/guides/LAYER_4_IMPLEMENTATION_SUMMARY.md` | ✅ Exists | Verified accessible |
 | Architecture Patterns | `docs/guides/knowledge-architecture-analysis.md` | ✅ Exists | Verified accessible |
@@ -214,9 +214,9 @@ All documents meet optimal readability targets.
 ✅ **docs/guides/** (9 files - all verified):
 - `jobs-to-be-done-guide.md` ✅
 - `how-to-invoke-reviewers.md` ✅
-- `layer-4-for-developers.md` ✅
-- `layer-4-for-users.md` ✅
-- `layer-4-for-cicd.md` ✅
+- `5-layer-testing-developers.md` ✅
+- `5-layer-testing-users.md` ✅
+- `5-layer-testing-cicd.md` ✅
 - `LAYER_4_IMPLEMENTATION_SUMMARY.md` ✅
 - `knowledge-architecture-analysis.md` ✅
 - `knowledge-architecture-integration-summary.md` ✅
@@ -225,7 +225,7 @@ All documents meet optimal readability targets.
 ✅ **docs/reference/** (3 files - all verified):
 - `nwave-commands-reference.md` ✅
 - `reviewer-agents-reference.md` ✅
-- `layer-4-api-reference.md` ✅
+- `5-layer-testing-api.md` ✅
 
 ✅ **docs/installation/** (2 files - all verified):
 - `INSTALL.md` ✅
@@ -284,8 +284,8 @@ git commit -m "chore(docs): remove obsolete consolidated files"
 
 **How-to → Reference** (Proper pattern):
 ```
-Found in: docs/guides/layer-4-for-developers.md
-Example: [API Reference](../reference/layer-4-api-reference.md)
+Found in: docs/guides/5-layer-testing-developers.md
+Example: [API Reference](../reference/5-layer-testing-api.md)
 ```
 
 **How-to → Explanation** (Proper pattern):
@@ -322,10 +322,10 @@ Example: [Jobs To Be Done Guide](../guides/jobs-to-be-done-guide.md)
 
 ✅ **Compliant Files** (New consolidation files):
 - `how-to-invoke-reviewers.md`
-- `layer-4-for-developers.md`
-- `layer-4-for-users.md`
-- `layer-4-for-cicd.md`
-- `layer-4-api-reference.md`
+- `5-layer-testing-developers.md`
+- `5-layer-testing-users.md`
+- `5-layer-testing-cicd.md`
+- `5-layer-testing-api.md`
 - `knowledge-architecture-analysis.md`
 - `jobs-to-be-done-guide.md`
 
@@ -566,5 +566,5 @@ The project is well-positioned for users to find documentation easily and mainta
 
 **Reviewer**: Quill, Documentation Quality Guardian
 **Method**: DIVIO/Diataxis Framework with adversarial verification
-**Date**: 2026-01-21
-**Version**: 1.4.0
+**Date**: 2026-01-22
+**Version**: 1.5.2

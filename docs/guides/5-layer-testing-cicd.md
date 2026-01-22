@@ -1,7 +1,7 @@
 # Layer 4 for CI/CD
 
-**Version**: 1.4.1
-**Date**: 2026-01-21
+**Version**: 1.5.2
+**Date**: 2026-01-22
 **Status**: Production Ready
 
 Pipeline integration for automated peer review in CI/CD workflows.
@@ -9,9 +9,9 @@ Pipeline integration for automated peer review in CI/CD workflows.
 **Prerequisites**: nwave CLI available in CI environment.
 
 **Related Docs**:
-- [API Reference](../reference/layer-4-api-reference.md) (contracts)
-- [For Developers](layer-4-for-developers.md) (code)
-- [For Users](layer-4-for-users.md) (CLI)
+- [API Reference](../reference/5-layer-testing-api.md) (contracts)
+- [For Developers](5-layer-testing-developers.md) (code)
+- [For Users](5-layer-testing-users.md) (CLI)
 
 ---
 

@@ -1,7 +1,7 @@
 # nWave Documentation File Inventory
 
-**Date**: 2026-01-21
-**Version**: 1.4.0
+**Date**: 2026-01-22
+**Version**: 1.5.2
 **Analyst**: Quill, Documentation Quality Guardian
 **Purpose**: Complete inventory of all analyzed documentation files
 
@@ -27,9 +27,9 @@ All files classified using DIVIO framework. Files below are organized by directo
 |------|------|--------|--------|-------|
 | `jobs-to-be-done-guide.md` | Explanation+How-to | 85% | ✅ Approved | 594 |
 | `how-to-invoke-reviewers.md` | How-to | 95% | ✅ Approved | 310 |
-| `layer-4-for-developers.md` | How-to | 92% | ✅ Approved | 150+ |
-| `layer-4-for-users.md` | How-to | 94% | ✅ Approved | 150+ |
-| `layer-4-for-cicd.md` | How-to | 93% | ✅ Approved | 150+ |
+| `5-layer-testing-developers.md` | How-to | 92% | ✅ Approved | 150+ |
+| `5-layer-testing-users.md` | How-to | 94% | ✅ Approved | 150+ |
+| `5-layer-testing-cicd.md` | How-to | 93% | ✅ Approved | 150+ |
 | `LAYER_4_IMPLEMENTATION_SUMMARY.md` | Explanation | 90% | ✅ Approved | 250+ |
 | `knowledge-architecture-analysis.md` | Explanation | 88% | ✅ Approved | 300+ |
 | `knowledge-architecture-integration-summary.md` | Explanation | 87% | ✅ Approved | 250+ |
@@ -43,7 +43,7 @@ All files classified using DIVIO framework. Files below are organized by directo
 |------|------|--------|--------|-------|
 | `nwave-commands-reference.md` | Reference | 98% | ✅ Approved | 150+ |
 | `reviewer-agents-reference.md` | Reference | 97% | ✅ Approved | 150+ |
-| `layer-4-api-reference.md` | Reference | 98% | ✅ Approved | 200+ |
+| `5-layer-testing-api.md` | Reference | 98% | ✅ Approved | 200+ |
 | `QUICK_REFERENCE_VALIDATION.md` | Reference | 96% | ✅ Approved | 100+ |
 
 ---
@@ -183,10 +183,10 @@ These files support the framework but are not primary user documentation:
 ### Files Following Kebab-Case Standard ✅
 - `jobs-to-be-done-guide.md`
 - `how-to-invoke-reviewers.md`
-- `layer-4-for-developers.md`
-- `layer-4-for-users.md`
-- `layer-4-for-cicd.md`
-- `layer-4-api-reference.md`
+- `5-layer-testing-developers.md`
+- `5-layer-testing-users.md`
+- `5-layer-testing-cicd.md`
+- `5-layer-testing-api.md`
 - `nwave-commands-reference.md`
 - `reviewer-agents-reference.md`
 - `knowledge-architecture-analysis.md`
@@ -220,9 +220,9 @@ docs/
 ├── guides/                                [9 files]
 │   ├── jobs-to-be-done-guide.md
 │   ├── how-to-invoke-reviewers.md
-│   ├── layer-4-for-developers.md
-│   ├── layer-4-for-users.md
-│   ├── layer-4-for-cicd.md
+│   ├── 5-layer-testing-developers.md
+│   ├── 5-layer-testing-users.md
+│   ├── 5-layer-testing-cicd.md
 │   ├── LAYER_4_IMPLEMENTATION_SUMMARY.md
 │   ├── knowledge-architecture-analysis.md
 │   ├── knowledge-architecture-integration-summary.md
@@ -231,7 +231,7 @@ docs/
 ├── reference/                             [4 files]
 │   ├── nwave-commands-reference.md
 │   ├── reviewer-agents-reference.md
-│   ├── layer-4-api-reference.md
+│   ├── 5-layer-testing-api.md
 │   └── QUICK_REFERENCE_VALIDATION.md
 │
 ├── installation/                          [2 files]
@@ -279,10 +279,10 @@ docs/
 - Cross-reference issues: 0
 
 ### New Documents Created
-1. `layer-4-for-developers.md` (How-to)
-2. `layer-4-for-users.md` (How-to)
-3. `layer-4-for-cicd.md` (How-to)
-4. `layer-4-api-reference.md` (Reference)
+1. `5-layer-testing-developers.md` (How-to)
+2. `5-layer-testing-users.md` (How-to)
+3. `5-layer-testing-cicd.md` (How-to)
+4. `5-layer-testing-api.md` (Reference)
 5. `DOCUMENTATION_STRUCTURE.md` (How-to + Reference)
 6. `CONSOLIDATION_SUMMARY.md` (Reference + How-to)
 7. `DOCUMENTATION_CONSOLIDATION_COMPLETE.md` (Reference)
@@ -331,5 +331,5 @@ The documentation is now production-ready with clear guidance for users of all b
 **Analyst**: Quill, Documentation Quality Guardian
 **Method**: DIVIO/Diataxis Framework
 **Status**: ✅ Complete and Approved
-**Date**: 2026-01-21
-**Version**: 1.4.0
+**Date**: 2026-01-22
+**Version**: 1.5.2

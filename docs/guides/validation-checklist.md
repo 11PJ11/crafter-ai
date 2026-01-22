@@ -209,4 +209,4 @@ head -20 nWave/agents/business-analyst.md | grep -A 10 "^---$"
 ---
 
 **Last Updated**: 2025-10-05
-**Version**: 1.0
+**Version**: 1.5.2
