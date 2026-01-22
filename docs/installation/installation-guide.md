@@ -1,35 +1,27 @@
 # nWave Framework Installation Guide
 
-This guide helps you install the nWave ATDD framework to your global Claude config directory, making all 41+ specialized agents and the `cai/atdd` command available across all your projects.
+This guide helps you install the nWave ATDD framework to your global Claude config directory, making 13 specialized agents (+ 13 reviewer agents) available across all your projects.
 
 ## Quick Start
 
-### Windows Users
-
-**Option 1: PowerShell (Recommended)**
-
-```powershell
-.\install-nwave.ps1
-```
-
-**Option 2: Command Prompt**
-
-```cmd
-install-nwave.bat
-```
-
-### macOS/Linux Users
+### All Platforms (Python - Recommended)
 
 ```bash
-chmod +x install-nwave.sh
-./install-nwave.sh
+# From repository root
+python3 scripts/install/install_nwave.py
+
+# Or download the standalone installer
+curl -O https://github.com/11PJ11/crafter-ai/releases/latest/download/install-nwave-claude-code.py
+python3 install-nwave-claude-code.py
 ```
+
+**Prerequisites**: Python 3.8 or higher
 
 ## What Gets Installed
 
 ### Framework Components
 
-- **41+ Specialized AI Agents** organized in 9 color-coded categories
+- **26 Specialized AI Agents** (13 primary + 13 reviewers) organized by wave and role
 - **cai/atdd Command Interface** with intelligent project analysis
 - **Wave Processing Architecture** with clean context isolation
 - **Centralized Configuration System** (constants.md)
@@ -182,7 +174,7 @@ cai/atdd --help
 
 ### Global Agent Access
 
-All 41+ agents are available globally:
+All 26 agents (13 primary + 13 reviewers) are available globally:
 
 - Access specialized expertise (UX, Security, Legal, DevOps) when needed
 - Use centralized configuration across all projects

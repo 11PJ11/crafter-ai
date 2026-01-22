@@ -1,8 +1,8 @@
 # nWave: Intelligent ATDD Pipeline with Specialized Agent Network
 
-<!-- version: 1.4.5 -->
+<!-- version: 1.4.8 -->
 
-A systematic approach to software development using ATDD (Acceptance Test Driven Development) with intelligent AI agent orchestration. The framework automates the 5-stage workflow through 41+ specialized agents, each following the Single Responsibility Principle.
+A systematic approach to software development using ATDD (Acceptance Test Driven Development) with intelligent AI agent orchestration. The framework automates the 5-stage workflow through 26 specialized agents (13 primary + 13 reviewers), each following the Single Responsibility Principle.
 
 ## What is nWave?
 
@@ -28,7 +28,7 @@ python3 install-nwave-claude-code.py
 # Or from repository
 git clone https://github.com/11PJ11/crafter-ai.git nwave
 cd nwave
-python3 scripts/install/install_nwave.py
+python3 scripts/install/install_ai_craft.py
 ```
 
 Full installation details: [Installation Guide](docs/installation/installation-guide.md)
@@ -108,7 +108,7 @@ Gathering     Design        Tests       Implementation Completion
 
 Each stage involves specialized AI agents and produces validated artifacts.
 
-### Agent Organization (41+ Agents)
+### Agent Organization (26 Agents)
 
 **Core Wave Agents** (one per phase):
 - `@product-owner` - Requirements gathering and business analysis (DISCUSS)
@@ -121,8 +121,10 @@ Each stage involves specialized AI agents and produces validated artifacts.
 - `@researcher` - Evidence-based research and analysis
 - `@troubleshooter` - Root cause analysis (Toyota 5 Whys)
 - `@visual-architect` - Architecture diagrams and visualization
-- `@skeleton-builder` - Walking skeleton E2E validation
 - `@data-engineer` - Database design and query optimization
+- `@product-discoverer` - Evidence-based product discovery
+- `@agent-builder` - Create and validate new agents
+- `@illustrator` - Visual diagrams and design artifacts
 
 **Reviewer Agents** (Layer 4 quality assurance):
 - 12 reviewer agents providing peer review with bias detection
@@ -319,7 +321,7 @@ See individual agent documentation in `nWave/agents/` for implementation details
 
 ## Key Features
 
-✅ **41+ Specialized AI Agents** - Each understands domain-specific best practices
+✅ **26 Specialized AI Agents** - 13 primary agents + 13 peer reviewers, each understanding domain-specific best practices
 ✅ **5-Stage ATDD Workflow** - Proven development methodology
 ✅ **Layer 4 Peer Review** - Unique equal-expertise reviewer critique
 ✅ **Progressive Refactoring** - L1-L6 quality improvement framework
@@ -331,7 +333,7 @@ See individual agent documentation in `nWave/agents/` for implementation details
 
 ## Version
 
-- Current Version: 1.4.5
+- Current Version: 1.4.8
 - Last Updated: 2026-01-21
 - Status: Production Ready
 

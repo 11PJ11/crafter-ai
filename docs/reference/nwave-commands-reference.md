@@ -1,6 +1,6 @@
 # nWave Commands Reference
 
-**Version**: 1.4.0
+**Version**: 1.4.5
 **Date**: 2026-01-21
 **Status**: Production Ready
 
@@ -20,7 +20,6 @@ Quick reference for all nWave commands, agents, and file locations.
 | `/nw:discuss` | product-owner | Requirements gathering and business analysis |
 | `/nw:design` | solution-architect | Architecture design with technology selection |
 | `/nw:distill` | acceptance-designer | Acceptance test creation (Given-When-Then) |
-| `/nw:skeleton` | skeleton-builder | Walking skeleton E2E validation |
 
 ---
 
@@ -43,9 +42,11 @@ Quick reference for all nWave commands, agents, and file locations.
 | Command | Agent | Purpose |
 |---------|-------|---------|
 | `/nw:research` | researcher | Evidence-driven research with source verification |
+| `/nw:document` | researcher + documentarist | DIVIO-compliant documentation with Layer 4 peer review |
 | `/nw:root-why` | troubleshooter | Toyota 5 Whys root cause analysis |
 | `/nw:mikado` | software-crafter | Complex refactoring roadmaps (Mikado Method) |
 | `/nw:refactor` | software-crafter | Systematic code refactoring (Level 1-6) |
+| `/nw:mutation-test` | software-crafter | Layer 5 mutation testing for test suite effectiveness |
 | `/nw:develop` | software-crafter | Outside-In TDD implementation |
 | `/nw:diagram` | visual-architect | Architecture diagram lifecycle management |
 
@@ -79,9 +80,11 @@ Quick reference for all nWave commands, agents, and file locations.
 | `@researcher` | Information gathering, evidence collection, analysis |
 | `@troubleshooter` | Root cause analysis, failure investigation (Toyota 5 Whys) |
 | `@visual-architect` | Architecture diagrams, visual documentation |
-| `@skeleton-builder` | Walking skeleton, early E2E validation |
 | `@data-engineer` | Database systems, data pipelines, query optimization, data governance |
+| `@product-discoverer` | Evidence-based product discovery and validation |
+| `@agent-builder` | Create and validate new specialized agents |
 | `@illustrator` | Visual 2D diagrams, design artifacts, workflow visualizations |
+| `@documentarist` | DIVIO-compliant documentation quality assurance |
 
 ### Utility Agents
 
@@ -181,6 +184,13 @@ Every agent has a corresponding `*-reviewer` variant using the Haiku model:
 
 # Research with embedding
 /nw:research "topic" --embed-for=solution-architect
+
+# Create DIVIO-compliant documentation
+/nw:document "Getting Started Guide" --type=tutorial
+/nw:document "API Reference" --type=reference --research-depth=comprehensive
+
+# Mutation testing (Layer 5)
+/nw:mutation-test --scope=module --operators=arithmetic,logic
 
 # Root cause analysis
 /nw:root-why "problem description"

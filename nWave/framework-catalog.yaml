@@ -18,7 +18,7 @@
 # ============================================================================
 
 name: "nWave"
-version: "1.4.5"
+version: "1.4.8"
 description: "Comprehensive DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER methodology with visual architecture lifecycle management"
 author: "nWave Team"
 license: "MIT"
@@ -34,66 +34,55 @@ wave_phases:
   - "DELIVER"
 
 # Agent registry with wave assignments
+# NOTE: Agent names must match filenames in nWave/agents/ (using hyphens, not underscores)
 agents:
-  # nWave Core Agents
-  business_analyst:
+  # nWave Core Agents (Wave-Specific)
+  product-owner:
     wave: "DISCUSS"
     priority: 1
     role: "requirements_gathering"
+    description: "Business requirements and product definition"
 
-  solution_architect:
+  solution-architect:
     wave: "DESIGN"
     priority: 1
     role: "architecture_design"
+    description: "System architecture and technical design"
 
-  acceptance_designer:
+  acceptance-designer:
     wave: "DISTILL"
     priority: 1
     role: "test_scenarios"
+    description: "BDD scenarios and acceptance criteria"
 
-  test_first_developer:
+  software-crafter:
     wave: "DEVELOP"
     priority: 1
     role: "outside_in_tdd"
     knowledge_preservation: "COMPLETE"
+    description: "Outside-in TDD implementation and refactoring"
 
-  feature_completion_coordinator:
+  devop:
     wave: "DELIVER"
     priority: 1
     role: "production_readiness"
+    description: "Production readiness and deployment orchestration"
 
-  systematic_refactorer:
-    wave: "DEVELOP"
-    priority: 2
-    role: "code_quality"
-    knowledge_preservation: "COMPLETE"
-
-  # Specialist Agents (Cross-Wave)
-  mikado_refactoring_specialist_enhanced:
-    wave: "CROSS_WAVE"
-    priority: 1
-    role: "complex_refactoring"
-    knowledge_preservation: "COMPLETE"
-    collaboration_mode: "STANDALONE_AND_COLLABORATIVE"
-
-  walking_skeleton_helper:
-    wave: "CROSS_WAVE"
-    priority: 2
-    role: "e2e_validation"
-    methodology: "ALISTAIR_COCKBURN"
-
-  root_cause_analyzer:
-    wave: "CROSS_WAVE"
-    priority: 3
-    role: "problem_investigation"
-    methodology: "TOYOTA_5_WHYS"
-
+  # Cross-Wave Specialist Agents
   researcher:
     wave: "CROSS_WAVE"
     priority: 1
     role: "evidence_driven_research"
     methodology: "SOURCE_VERIFICATION"
     knowledge_preservation: "COMPLETE"
+    description: "Evidence-based research with source verification"
+
+  troubleshooter:
+    wave: "CROSS_WAVE"
+    priority: 2
+    role: "problem_investigation"
+    methodology: "TOYOTA_5_WHYS"
+    description: "Root cause analysis and problem investigation"
 
   documentarist:
     wave: "CROSS_WAVE"
@@ -101,12 +90,38 @@ agents:
     role: "documentation_quality"
     methodology: "DIVIO_DIATAXIS"
     collaboration_mode: "QUALITY_GUARDIAN"
+    description: "DIVIO-compliant documentation quality assurance"
 
-  architecture_diagram_manager:
-    wave: "DESIGN"
+  visual-architect:
+    wave: "CROSS_WAVE"
     priority: 1
     role: "visual_architecture"
     collaboration_scope: "ALL_WAVES"
+    description: "Architecture diagrams and visual documentation"
+
+  data-engineer:
+    wave: "CROSS_WAVE"
+    priority: 2
+    role: "data_architecture"
+    description: "Database design and data pipeline architecture"
+
+  agent-builder:
+    wave: "CROSS_WAVE"
+    priority: 3
+    role: "agent_development"
+    description: "Create and validate new specialized agents"
+
+  illustrator:
+    wave: "CROSS_WAVE"
+    priority: 2
+    role: "visual_design"
+    description: "Create 2D diagrams and visual artifacts"
+
+  product-discoverer:
+    wave: "CROSS_WAVE"
+    priority: 1
+    role: "product_discovery"
+    description: "Evidence-based product discovery and validation"
 
 # Command mappings
 commands:
@@ -114,27 +129,27 @@ commands:
   start:
     description: "Initialize nWave workflow"
     argument_hint: "[project-name] - Optional: --template=[greenfield|brownfield] --scope=[small|medium|large]"
-    agents: ["business_analyst"]
+    agents: ["product-owner"]
     outputs: ["project_brief", "requirements_outline"]
 
   discuss:
     description: "Requirements gathering and business analysis"
     argument_hint: "[feature-name] - Optional: --interactive=[high|moderate] --output-format=[md|yaml]"
-    agents: ["business_analyst"]
+    agents: ["product-owner"]
     wave: "DISCUSS"
     outputs: ["requirements_document", "user_stories"]
 
   design:
     description: "Architecture design with visual representation"
     argument_hint: "[component-name] - Optional: --architecture=[hexagonal|layered|microservices] --diagram-format=[mermaid|plantuml]"
-    agents: ["solution_architect", "architecture_diagram_manager"]
+    agents: ["solution-architect", "visual-architect"]
     wave: "DESIGN"
     outputs: ["architecture_document", "architecture_diagrams"]
 
   distill:
     description: "Acceptance test creation and business validation"
     argument_hint: "[story-id] - Optional: --test-framework=[cucumber|specflow|pytest-bdd] --integration=[real-services|mocks]"
-    agents: ["acceptance_designer"]
+    agents: ["acceptance-designer"]
     wave: "DISTILL"
     outputs: ["acceptance_tests", "test_scenarios"]
 
@@ -169,7 +184,7 @@ commands:
   deliver:
     description: "Production readiness validation"
     argument_hint: "[deployment-target] - Optional: --environment=[staging|production] --validation=[full|smoke]"
-    agents: ["feature_completion_coordinator"]
+    agents: ["devop"]
     wave: "DELIVER"
     outputs: ["production_deployment", "stakeholder_demo"]
 
@@ -178,7 +193,7 @@ commands:
     description: "Complex refactoring roadmaps with visual tracking"
     argument_hint: "[refactoring-goal] - Optional: --complexity=[simple|moderate|complex] --visualization=[tree|graph]"
     agents:
-      ["mikado_refactoring_specialist_enhanced", "architecture_diagram_manager"]
+      ["software-crafter", "visual-architect"]
     outputs: ["refactoring_roadmap", "dependency_diagrams"]
 
   # NOTE: skeleton command removed - Walking Skeleton functionality integrated into /nw:discuss
@@ -187,13 +202,13 @@ commands:
   root_why:
     description: "Root cause analysis and debugging"
     argument_hint: "[problem-description] - Optional: --depth=[3|5|7-whys] --output=[text|diagram|report]"
-    agents: ["root_cause_analyzer"]
+    agents: ["troubleshooter"]
     outputs: ["root_cause_analysis", "investigation_report"]
 
   diagram:
     description: "Architecture diagram management"
     argument_hint: "[diagram-type] - Optional: --format=[mermaid|plantuml|c4] --level=[context|container|component]"
-    agents: ["architecture_diagram_manager"]
+    agents: ["visual-architect"]
     outputs: ["updated_diagrams", "visual_architecture"]
 
   git:
@@ -262,7 +277,7 @@ commands:
 # Quality gates and validation
 quality_gates:
   knowledge_preservation:
-    test_first_developer: "925_lines_methodology"
+    software-crafter: "925_lines_methodology"
     systematic_refactorer: "complete_refactoring_mechanics"
     mikado_specialist: "enhanced_methodology_full"
 

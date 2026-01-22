@@ -15,7 +15,7 @@ The framework operates in **two fundamentally different phases** that can be use
 │                        PHASE 1: DISCOVERY                               │
 │           (When you DON'T KNOW what to build)                           │
 │                                                                         │
-│   [research] ──→ discuss ──→ design ──→ distill ──→ [skeleton]          │
+│   [research] ──→ discuss ──→ design ──→ distill                         │
 │       │            │           │          │                             │
 │   GATHER        WHAT are    HOW should  WHAT does                       │
 │   evidence      the needs?  it work?    "done" look like?               │
@@ -80,7 +80,7 @@ Research is not a fixed step in a sequence - it's a capability you invoke **when
 **Sequence**:
 
 ```text
-[research] → discuss → design → [diagram] → distill → [skeleton] → baseline → roadmap → split → execute → review
+[research] → discuss → design → [diagram] → distill → baseline → roadmap → split → execute → review
 ```
 
 **Why each step**:
@@ -92,7 +92,6 @@ Research is not a fixed step in a sequence - it's a capability you invoke **when
 | `design` | Make architecture decisions, select technology |
 | `diagram` | (Optional) Visualize architecture for stakeholder communication |
 | `distill` | Define acceptance tests - what does "done" look like? |
-| `skeleton` | (Optional) Prove architecture works with minimal E2E |
 | `baseline` | Measure starting point for tracking improvement |
 | `roadmap` | Create comprehensive plan while context is fresh |
 | `split` | Break into atomic, self-contained tasks |
@@ -108,7 +107,6 @@ Research is not a fixed step in a sequence - it's a capability you invoke **when
 /nw:design --architecture=hexagonal
 /nw:diagram --format=mermaid --level=container  # Visualize architecture
 /nw:distill "user-login-story"
-/nw:skeleton "auth-e2e-slice"
 /nw:baseline "implement authentication"
 /nw:roadmap @solution-architect "implement authentication"
 /nw:split @devop "implement-authentication"
@@ -310,8 +308,6 @@ This section breaks down what specific job each command fulfills.
 | Job | Command | Outcome |
 |-----|---------|---------|
 | Define what "done" looks like | `/nw:distill` | Acceptance tests (Given-When-Then) |
-| Validate architecture early | `/nw:skeleton` | Working E2E slice |
-| Reduce integration risk | `/nw:skeleton` | Proven deployment pipeline |
 
 ### Execution Loop Jobs
 
@@ -484,7 +480,7 @@ For complete agent specifications and selection guidance, see the [nWave Command
 
 **Quick Overview**:
 - **Core Wave Agents**: product-owner, solution-architect, acceptance-designer, software-crafter, devop
-- **Cross-Wave Specialists**: researcher, troubleshooter, visual-architect, skeleton-builder, data-engineer
+- **Cross-Wave Specialists**: researcher, troubleshooter, visual-architect, data-engineer, product-discoverer, agent-builder, illustrator, documentarist
 - **Reviewer Agents**: Every agent has a `*-reviewer` variant for quality assurance
 
 ---

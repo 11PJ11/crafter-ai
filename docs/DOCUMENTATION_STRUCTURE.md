@@ -1,6 +1,6 @@
 # nWave Documentation Structure Guide
 
-**Version**: 1.4.0
+**Version**: 1.4.5
 **Date**: 2026-01-21
 **Type**: Reference + How-to Guide
 **Status**: Production Ready
