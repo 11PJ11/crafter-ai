@@ -2,13 +2,18 @@
 
 ## Overview
 
-Comprehensive validation checklist for complete nWave methodology execution across all phases (DISCUSS→DESIGN→DISTILL→DEVELOP→DEMO) with ATDD integration, visual architecture lifecycle, and production service patterns.
+Comprehensive validation checklist for complete nWave methodology execution across all phases (DISCOVER→DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER) with ATDD integration, visual architecture lifecycle, and production service patterns.
 
 ---
 
 ## 🟢 **BASIC Level - Essential nWave Methodology Requirements**
 
 ### Complete Wave Cycle Execution
+
+- [ ] **DISCOVER wave completed with evidence-based validation**
+  - Product discovery conducted with evidence-based market research
+  - Problem validation completed through customer interviews
+  - Opportunity analysis and lean canvas developed
 
 - [ ] **DISCUSS wave completed with stakeholder alignment**
   - Customer-developer-tester collaboration established
@@ -30,7 +35,7 @@ Comprehensive validation checklist for complete nWave methodology execution acro
   - Production service integration operational throughout implementation
   - Systematic refactoring applied for code quality
 
-- [ ] **DEMO wave completed with production readiness**
+- [ ] **DELIVER wave completed with production readiness**
   - Production deployment operational with stakeholder validation
   - Business value delivery demonstrated and measured
   - Operational knowledge transfer completed
@@ -171,7 +176,7 @@ Comprehensive validation checklist for complete nWave methodology execution acro
 
 - [ ] **All BASIC level requirements completed**
 - [ ] **At least 80% of INTERMEDIATE level requirements completed**
-- [ ] **Complete wave cycle (DISCUSS→DESIGN→DISTILL→DEVELOP→DEMO) executed**
+- [ ] **Complete wave cycle (DISCOVER→DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER) executed**
 - [ ] **Stakeholder satisfaction and business value delivery validated**
 
 ### ATDD Methodology Integration Validation
@@ -248,6 +253,11 @@ Comprehensive validation checklist for complete nWave methodology execution acro
 
 ### Wave Transition Gates
 
+- [ ] **DISCOVER to DISCUSS transition**
+  - Product discovery completed with validated evidence
+  - Market context and problem statement understood
+  - Opportunity analysis informs business requirements
+
 - [ ] **DISCUSS to DESIGN transition**
   - Stakeholder consensus and requirements clarity achieved
   - ATDD foundation established and operational
@@ -263,12 +273,12 @@ Comprehensive validation checklist for complete nWave methodology execution acro
   - Production service integration patterns established
   - Test scenarios suitable for Outside-In TDD implementation
 
-- [ ] **DEVELOP to DEMO transition**
+- [ ] **DEVELOP to DELIVER transition**
   - Implementation complete with all acceptance tests passing
   - Production service integration operational
   - System ready for production deployment validation
 
-- [ ] **DEMO completion and methodology closure**
+- [ ] **DELIVER completion and methodology closure**
   - Production deployment successful with stakeholder validation
   - Business value delivery confirmed and measured
   - Methodology retrospective and lessons learned completed

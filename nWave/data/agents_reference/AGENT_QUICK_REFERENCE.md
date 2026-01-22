@@ -119,7 +119,7 @@ ACTIVATION-NOTICE: This is a workflow orchestrator agent.
 ## Orchestrator Identity
 **Workflow**: My Custom Workflow
 **Description**: custom-workflow.yaml orchestration
-**Methodology**: nWave (DISCUSS → DESIGN → DISTILL → DEVELOP → DEMO)
+**Methodology**: nWave (DISCOVER → DISCUSS → DESIGN → DISTILL → DEVELOP → DELIVER)
 
 ## Phase Guidance
 
@@ -271,7 +271,7 @@ commands:
   - develop: Execute Outside-In TDD implementation
   - refactor: Systematic refactoring with Mikado Method
   - validate-tests: Ensure test suite quality
-  - handoff-demo: Prepare handoff to DEMO wave
+  - handoff-deliver: Prepare handoff to DELIVER wave
   - exit: Exit development mode
 ```
 
@@ -542,14 +542,14 @@ handoff:
 - **Type**: Specialist
 - **Example**: software-crafter
 - **Focus**: Outside-In TDD, refactoring, code quality
-- **Key Commands**: develop, refactor, validate-tests, handoff-demo
+- **Key Commands**: develop, refactor, validate-tests, handoff-deliver
 
-### DEMO Wave Agent
+### DELIVER Wave Agent
 
 - **Type**: Specialist
 - **Example**: feature-completion-coordinator
-- **Focus**: Production readiness, deployment, stakeholder demo
-- **Key Commands**: validate-production, prepare-demo, measure-value
+- **Focus**: Production readiness, deployment, stakeholder validation
+- **Key Commands**: validate-production, prepare-delivery, measure-value
 
 ---
 

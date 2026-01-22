@@ -1,13 +1,13 @@
 ---
 template_type: "moderate-demo-production-readiness"
 methodology: "nWave ATDD"
-wave: "DEMO"
+wave: "DELIVER"
 interactivity_level: "moderate"
-description: "Moderately interactive production readiness and stakeholder validation template for DEMO wave with comprehensive deployment and business value validation"
+description: "Moderately interactive production readiness and stakeholder validation template for DELIVER wave with comprehensive deployment and business value validation"
 version: "1.0.0"
 
 # ==================================================================================
-# DEMO WAVE: Production Readiness and Stakeholder Validation Template
+# DELIVER WAVE: Production Readiness and Stakeholder Validation Template
 # ==================================================================================
 
 metadata:
@@ -762,7 +762,7 @@ interactive_guidance:
 usage_documentation: |
   # Template Usage Instructions
 
-  This moderately interactive template supports comprehensive production deployment and stakeholder validation for the DEMO wave of the nWave methodology.
+  This moderately interactive template supports comprehensive production deployment and stakeholder validation for the DELIVER wave of the nWave methodology.
 
   ## Customization Guidelines
 

@@ -22,10 +22,14 @@ metadata:
     ]
 
 methodology_overview:
-  description: "Complete nWave execution from initial requirements through production deployment"
+  description: "Complete nWave execution from evidence-based discovery through production deployment"
   phases:
+    - phase: "DISCOVER"
+      duration: "10% of total timeline"
+      focus: "Evidence-based product discovery and market validation"
+      deliverable: "Validated problem statement and opportunity analysis"
     - phase: "DISCUSS"
-      duration: "20% of total timeline"
+      duration: "15% of total timeline"
       focus: "Requirements clarification and stakeholder alignment"
       deliverable: "Validated business requirements with acceptance criteria"
     - phase: "DESIGN"
@@ -40,8 +44,8 @@ methodology_overview:
       duration: "30% of total timeline"
       focus: "Outside-In TDD implementation with systematic refactoring"
       deliverable: "Production-ready implementation with quality validation"
-    - phase: "DEMO"
-      duration: "10% of total timeline"
+    - phase: "DELIVER"
+      duration: "5% of total timeline"
       focus: "Stakeholder validation and production readiness"
       deliverable: "Deployed feature with business value measurement"
 
@@ -61,6 +65,9 @@ team_composition:
       engagement: "All phases"
 
   specialist_integration:
+    - specialist: "Product Discovery Guide"
+      activation: "DISCOVER phase for market research"
+      purpose: "Facilitate evidence-based product discovery and validation"
     - specialist: "Visual Architecture Manager"
       activation: "DESIGN phase for stakeholder communication"
       purpose: "Maintain architecture-implementation synchronization"
@@ -203,6 +210,14 @@ interactive_sections:
 
 quality_gates:
   wave_transitions:
+    discover_to_discuss:
+      - criterion: "Product discovery completed with validated problems"
+        validation: "Discovery decision gates G1-G4 passed"
+        evidence: "Problem validation report and opportunity analysis"
+      - criterion: "Market context and assumptions documented"
+        validation: "Lean Canvas and decision documentation"
+        evidence: "Evidence-backed assumptions and market research"
+
     discuss_to_design:
       - criterion: "Business requirements validated by stakeholders"
         validation: "Three amigos session completed"
@@ -227,7 +242,7 @@ quality_gates:
         validation: "Three amigos acceptance test review"
         evidence: "Approved executable specifications"
 
-    develop_to_demo:
+    develop_to_deliver:
       - criterion: "Outside-In TDD implementation completed"
         validation: "Systematic refactoring levels 1-6 applied"
         evidence: "Production-ready code with quality metrics"
@@ -235,7 +250,7 @@ quality_gates:
         validation: "No test infrastructure deception detected"
         evidence: "Production service call validation"
 
-    demo_completion:
+    deliver_completion:
       - criterion: "Production deployment successful"
         validation: "Production readiness checklist completed"
         evidence: "Deployed feature with monitoring"
@@ -302,7 +317,7 @@ execution_templates:
     # nWave Project Completion Validation
 
     ## Methodology Compliance
-    - [ ] All five waves executed completely
+    - [ ] All six waves executed completely
     - [ ] ATDD principles applied throughout
     - [ ] Quality gates satisfied
     - [ ] Visual architecture maintained

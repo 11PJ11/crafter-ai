@@ -513,7 +513,9 @@ Execute DISCUSS wave of nWave methodology through comprehensive requirements gat
 
 ## Previous Artifacts
 
-- None (DISCUSS is the first wave in nWave)
+- None (DISCUSS is the second wave in nWave - DISCOVER is the first wave as of v1.5.2)
+
+**Note**: This document reflects the wave structure as of the research date. Current nWave includes DISCOVER as the first wave: DISCOVER → DISCUSS → DESIGN → DISTILL → DEVELOP → DELIVER
 
 ## Agent Invocation
 

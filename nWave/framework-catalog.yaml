@@ -18,8 +18,8 @@
 # ============================================================================
 
 name: "nWave"
-version: "1.5.2"
-description: "Comprehensive DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER methodology with visual architecture lifecycle management"
+version: "1.5.3"
+description: "Comprehensive DISCOVER→DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER methodology with visual architecture lifecycle management"
 author: "nWave Team"
 license: "MIT"
 documentation_url: "https://github.com/your-org/nwave/nWave"
@@ -27,6 +27,7 @@ documentation_url: "https://github.com/your-org/nwave/nWave"
 # Core methodology implementation
 methodology: "nWave"
 wave_phases:
+  - "DISCOVER"
   - "DISCUSS"
   - "DESIGN"
   - "DISTILL"
@@ -37,6 +38,12 @@ wave_phases:
 # NOTE: Agent names must match filenames in nWave/agents/ (using hyphens, not underscores)
 agents:
   # nWave Core Agents (Wave-Specific)
+  product-discoverer:
+    wave: "DISCOVER"
+    priority: 1
+    role: "product_discovery"
+    description: "Evidence-based product discovery and market validation"
+
   product-owner:
     wave: "DISCUSS"
     priority: 1
@@ -117,11 +124,6 @@ agents:
     role: "visual_design"
     description: "Create 2D diagrams and visual artifacts"
 
-  product-discoverer:
-    wave: "CROSS_WAVE"
-    priority: 1
-    role: "product_discovery"
-    description: "Evidence-based product discovery and validation"
 
 # Command mappings
 commands:
@@ -131,6 +133,13 @@ commands:
     argument_hint: "[project-name] - Optional: --template=[greenfield|brownfield] --scope=[small|medium|large]"
     agents: ["product-owner"]
     outputs: ["project_brief", "requirements_outline"]
+
+  discover:
+    description: "Evidence-based product discovery and market validation"
+    argument_hint: "[product-concept] - Optional: --interview-depth=[overview|comprehensive] --output-format=[md|yaml]"
+    agents: ["product-discoverer"]
+    wave: "DISCOVER"
+    outputs: ["problem_validation", "opportunity_tree", "lean_canvas"]
 
   discuss:
     description: "Requirements gathering and business analysis"
@@ -182,7 +191,7 @@ commands:
     outputs: ["mutation_report"]
 
   deliver:
-    description: "Production readiness validation"
+    description: "Production readiness validation and deployment"
     argument_hint: "[deployment-target] - Optional: --environment=[staging|production] --validation=[full|smoke]"
     agents: ["devop"]
     wave: "DELIVER"

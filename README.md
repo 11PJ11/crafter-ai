@@ -1,14 +1,15 @@
 # nWave: Intelligent ATDD Pipeline with Specialized Agent Network
 
-<!-- version: 1.5.2 -->
+<!-- version: 1.5.3 -->
 
-A systematic approach to software development using ATDD (Acceptance Test Driven Development) with intelligent AI agent orchestration. The framework automates the 5-stage workflow through 26 specialized agents (13 primary + 13 reviewers), each following the Single Responsibility Principle.
+A systematic approach to software development using ATDD (Acceptance Test Driven Development) with intelligent AI agent orchestration. The framework automates the 6-wave workflow through 26 specialized agents (13 primary + 13 reviewers), each following the Single Responsibility Principle.
 
 ## What is nWave?
 
 nWave is an agentic system that guides you through systematic software development:
 
-- **Start with requirements** (DISCUSS phase) - Gather business needs with AI assistance
+- **Discover evidence** (DISCOVER phase) - Evidence-based product discovery and market validation
+- **Gather requirements** (DISCUSS phase) - Collect business needs with AI assistance
 - **Design solutions** (DESIGN phase) - Architecture decisions with visual documentation
 - **Define acceptance tests** (DISTILL phase) - BDD scenarios that define "done"
 - **Implement with TDD** (DEVELOP phase) - Outside-in development with quality gates
@@ -57,6 +58,7 @@ Or use the complete workflow with human-in-the-loop control:
 ```bash
 # Full ATDD workflow with human decision points at each stage
 # (recommended for complex features, first-time use, or non-technical tasks)
+/nw:discover "authentication market research"      # Product discovery
 /nw:discuss "authentication requirements"           # Requirements gathering
 /nw:design --architecture=hexagonal                # Architecture design
 /nw:distill "user-login-story"                     # Acceptance tests
@@ -97,13 +99,13 @@ Deepen your understanding of why nWave works:
 
 ## Core Concepts
 
-### 5-Stage Workflow (ATDD Pipeline)
+### 6-Wave Workflow (ATDD Pipeline)
 
 ```
-DISCUSS → DESIGN → DISTILL → DEVELOP → DELIVER
-   ↓         ↓         ↓         ↓        ↓
-Requirements  Architecture  Acceptance  Test-First  Feature
-Gathering     Design        Tests       Implementation Completion
+DISCOVER → DISCUSS → DESIGN → DISTILL → DEVELOP → DELIVER
+   ↓         ↓         ↓        ↓         ↓         ↓
+Discovery  Requirements  Architecture  Acceptance  Test-First  Feature
+Validation Gathering     Design        Tests       Implementation Completion
 ```
 
 Each stage involves specialized AI agents and produces validated artifacts.
@@ -111,6 +113,7 @@ Each stage involves specialized AI agents and produces validated artifacts.
 ### Agent Organization (26 Agents)
 
 **Core Wave Agents** (one per phase):
+- `@product-discoverer` - Evidence-based product discovery (DISCOVER)
 - `@product-owner` - Requirements gathering and business analysis (DISCUSS)
 - `@solution-architect` - Architecture design with visual diagrams (DESIGN)
 - `@acceptance-designer` - BDD scenarios and acceptance tests (DISTILL)
@@ -146,6 +149,7 @@ Layer 5: Mutation Testing        - Test suite effectiveness validation ← NEW
 ### Building New Features (Greenfield)
 
 ```bash
+/nw:discover "feature market research"
 /nw:discuss "feature requirements"
 /nw:design --architecture=hexagonal
 /nw:distill "acceptance tests"
@@ -322,10 +326,11 @@ See individual agent documentation in `nWave/agents/` for implementation details
 ## Key Features
 
 ✅ **26 Specialized AI Agents** - 13 primary agents + 13 peer reviewers, each understanding domain-specific best practices
-✅ **5-Stage ATDD Workflow** - Proven development methodology
+✅ **6-Wave ATDD Workflow** - Proven development methodology with discovery phase
 ✅ **Layer 4 Peer Review** - Unique equal-expertise reviewer critique
 ✅ **Progressive Refactoring** - L1-L6 quality improvement framework
 ✅ **Walking Skeleton Validation** - E2E architecture proof
+✅ **Evidence-Based Discovery** - Market research and problem validation
 ✅ **Evidence-Based Planning** - Baseline measurement blocks roadmap
 ✅ **Atomic Task Execution** - Clean context per task (no degradation)
 ✅ **Cross-Platform** - Works on Windows, macOS, Linux
@@ -333,7 +338,7 @@ See individual agent documentation in `nWave/agents/` for implementation details
 
 ## Version
 
-- Current Version: 1.5.2
+- Current Version: 1.5.3
 - Last Updated: 2026-01-22
 - Status: Production Ready
 

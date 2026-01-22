@@ -321,7 +321,7 @@ Validation checklist for DEVELOP wave completion focusing on Outside-In TDD with
 ### For Teams
 
 - Review checklist during DEVELOP wave execution and retrospectives
-- Use as quality gate for DEMO wave transition
+- Use as quality gate for DELIVER wave transition
 - Adapt ADVANCED level items based on system complexity and requirements
 
 ### For Quality Assurance

@@ -322,7 +322,7 @@ definition_of_done:
   description: "Completion criteria - story is not Done until ALL items checked"
   validation_point: "DISTILL→DEVELOP transition (owned by acceptance-designer)"
   validation_owner: "acceptance-designer"
-  product_owner_role: "Defines checklist, reviews completion at DEMO wave"
+  product_owner_role: "Defines checklist, reviews completion at DELIVER wave"
 
   checklist:
     - item: "All UAT scenarios pass (green)"

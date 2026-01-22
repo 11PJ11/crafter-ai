@@ -225,7 +225,7 @@ The orchestrator executes 9 phases in order:
 6. **Phase 9**: Report Completion
    - Display comprehensive statistics
    - List all quality gates passed
-   - Show next steps (review evolution doc, push commits, proceed to DEMO wave)
+   - Show next steps (review evolution doc, push commits, proceed to DELIVER wave)
 
 ### Invocation Examples
 
@@ -284,9 +284,9 @@ After DEVELOP wave completes:
 2. Evolution document created in `docs/evolution/`
 3. User reviews commits and evolution document
 4. User pushes commits when ready: `git push`
-5. Proceed to DELIVER wave: `/nw:demo "{project-id}"`
+5. Proceed to DELIVER wave: `/nw:deliver "{project-id}"`
 
-The devop agent then switches to its primary role (feature completion coordinator) for the DEMO wave.
+The devop agent then switches to its primary role (feature completion coordinator) for the DELIVER wave.
 
 ### Error Recovery
 

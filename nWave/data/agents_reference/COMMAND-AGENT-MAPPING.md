@@ -1,6 +1,6 @@
 # Command-Agent Auto-Activation Mapping
 
-<!-- version: 1.5.2 -->
+<!-- version: 1.5.3 -->
 
 ## Configuration Status: ✅ COMPLETE
 
@@ -24,10 +24,14 @@ All DW commands are now configured to automatically trigger specialized agent te
 
 ## Command → Agent Team Mappings
 
+### DISCOVER Wave Commands
+
+- **`/nw:discover`** → `product-discoverer` (Scout), `researcher`, `product-owner` (Riley)
+
 ### DISCUSS Wave Commands
 
-- **`/nw:discuss`** → `business-analyst` (Riley), `acceptance-designer`, `root-cause-analyzer`
-- **`/nw:root-why`** → `root-cause-analyzer`, `business-analyst` (Riley), `solution-architect` (Morgan)
+- **`/nw:discuss`** → `product-owner` (Riley), `acceptance-designer`, `root-cause-analyzer`
+- **`/nw:root-why`** → `root-cause-analyzer`, `product-owner` (Riley), `solution-architect` (Morgan)
 
 ### DESIGN Wave Commands
 
@@ -46,19 +50,19 @@ All DW commands are now configured to automatically trigger specialized agent te
 - **`/nw:mikado`** → `software-crafter` (Crafty), `architecture-diagram-manager` (Archer)
 - **`/nw:mutation-test`** → `software-crafter` (Crafty) - Mutation testing quality gate
 
-### DEMO Wave Commands
+### DELIVER Wave Commands
 
-- **`/nw:demo`** → `feature-completion-coordinator`, `business-analyst` (Riley)
+- **`/nw:deliver`** → `feature-completion-coordinator`, `devop`, `product-owner` (Riley)
 
 ### Workflow Commands
 
-- **`/nw:start`** → `nWave-core-team-team`, `business-analyst` (Riley)
+- **`/nw:start`** → `nWave-core-team-team`, `product-owner` (Riley)
 - **`/nw:roadmap`** → Specified agent (via @agent parameter)
 - **`/nw:split`** → `software-crafter` (Crafty) - Default agent for TDD step generation with 14-phase enforcement
 - **`/nw:execute`** → Specified agent (via @agent parameter)
 - **`/nw:review`** → Specified reviewer agent (via @agent parameter)
 - **`/nw:finalize`** → `devop`, `feature-completion-coordinator`
-- **`/nw:git`** → `feature-completion-coordinator`, `systematic-refactorer`, `business-analyst` (Riley)
+- **`/nw:git`** → `feature-completion-coordinator`, `systematic-refactorer`, `product-owner` (Riley)
 
 ## Context Isolation Guarantees
 

@@ -2600,21 +2600,24 @@ rm -rf docs/feature/user-authentication/
 ### Greenfield Project - Full nWave
 
 ```bash
-# Wave 1: DISCUSS (optional - can skip if requirements clear)
+# Wave 1: DISCOVER (optional - market research and validation)
+/nw:discover "User authentication market research"
+
+# Wave 2: DISCUSS (optional - can skip if requirements clear)
 /nw:discuss "User authentication system requirements"
 
-# Wave 2: DESIGN (optional - can skip if architecture defined)
+# Wave 3: DESIGN (optional - can skip if architecture defined)
 /nw:design "Microservices with hexagonal architecture for auth"
 
-# Wave 3: DISTILL (optional - acceptance tests from design)
+# Wave 4: DISTILL (optional - acceptance tests from design)
 /nw:distill "User can register and login securely"
 
-# Wave 4: DEVELOP (THIS COMMAND - fully automated)
+# Wave 5: DEVELOP (THIS COMMAND - fully automated)
 /nw:develop "Implement user authentication with JWT tokens"
 # Automatically: baseline → roadmap → split → execute all → finalize
 
-# Wave 5: DEMO
-/nw:demo "user-authentication"
+# Wave 6: DELIVER
+/nw:deliver "user-authentication"
 ```
 
 ---

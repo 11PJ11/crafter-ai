@@ -2,11 +2,11 @@
 
 **Wave**: DISCUSS
 **Agent**: Riley (product-owner)
-**Command**: `*gather-requirements`
+**Command**: `/nw:discuss`
 
 ## Overview
 
-Execute DISCUSS wave of nWave methodology through comprehensive requirements gathering, stakeholder collaboration, and business analysis. Establishes ATDD foundation (Customer-Developer-Tester collaboration) for all subsequent waves.
+Execute DISCUSS wave (wave 2 of 6) of nWave methodology through comprehensive requirements gathering, stakeholder collaboration, and business analysis. Establishes ATDD foundation (Customer-Developer-Tester collaboration) for all subsequent waves.
 
 The DISCUSS wave creates shared understanding between stakeholders, developers, and testers through collaborative requirements elicitation, user story creation, and acceptance criteria definition.
 
@@ -18,7 +18,9 @@ The DISCUSS wave creates shared understanding between stakeholders, developers, 
 
 ## Previous Artifacts (Wave Handoff)
 
-- None (DISCUSS is the first wave in nWave)
+- docs/discovery/problem-validation.md - Problem statement from DISCOVER wave
+- docs/discovery/opportunity-tree.md - Opportunity analysis from DISCOVER wave
+- docs/discovery/lean-canvas.md - Lean Canvas from DISCOVER wave
 
 ## Walking Skeleton First Feature Check
 
@@ -169,7 +171,7 @@ If detection criteria are met, use **AskUserQuestion** tool:
 
 @product-owner
 
-Execute \*gather-requirements for {feature-name}.
+Execute `/nw:discuss` for {feature-name}.
 
 **Context Files:**
 
