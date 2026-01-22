@@ -6,10 +6,11 @@ state/
 test-results/
 .nwave/
 
-# Temporary files
+# Temporary files and directory
 *.tmp
 *.temp
 *.bak
+_tmp/
 
 # IDE files
 .vscode/
