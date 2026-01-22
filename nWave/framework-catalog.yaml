@@ -18,7 +18,7 @@
 # ============================================================================
 
 name: "nWave"
-version: "1.4.4"
+version: "1.4.5"
 description: "Comprehensive DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER methodology with visual architecture lifecycle management"
 author: "nWave Team"
 license: "MIT"
@@ -88,6 +88,20 @@ agents:
     role: "problem_investigation"
     methodology: "TOYOTA_5_WHYS"
 
+  researcher:
+    wave: "CROSS_WAVE"
+    priority: 1
+    role: "evidence_driven_research"
+    methodology: "SOURCE_VERIFICATION"
+    knowledge_preservation: "COMPLETE"
+
+  documentarist:
+    wave: "CROSS_WAVE"
+    priority: 1
+    role: "documentation_quality"
+    methodology: "DIVIO_DIATAXIS"
+    collaboration_mode: "QUALITY_GUARDIAN"
+
   architecture_diagram_manager:
     wave: "DESIGN"
     priority: 1
@@ -137,6 +151,13 @@ commands:
     agents: ["researcher"]
     wave: "DEVELOP"
     outputs: ["baseline_yaml"]
+
+  document:
+    description: "Create evidence-based DIVIO-compliant documentation"
+    argument_hint: "[topic/component] - Optional: --type=[tutorial|howto|reference|explanation] --research-depth=[overview|detailed|comprehensive|deep-dive]"
+    agents: ["researcher", "documentarist"]
+    wave: "CROSS_WAVE"
+    outputs: ["research_document", "divio_documentation", "validation_report"]
 
   mutation_test:
     description: "Mutation testing quality gate for test suite validation"

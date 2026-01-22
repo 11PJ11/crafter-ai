@@ -1,6 +1,6 @@
 # nWave: Intelligent ATDD Pipeline with Specialized Agent Network
 
-<!-- version: 1.4.4 -->
+<!-- version: 1.4.5 -->
 
 A systematic approach to software development using ATDD (Acceptance Test Driven Development) with intelligent AI agent orchestration. The framework automates the 5-stage workflow through 41+ specialized agents, each following the Single Responsibility Principle.
 
@@ -46,12 +46,17 @@ Full installation details: [Installation Guide](docs/installation/installation-g
 # 4. Execute: Run each task with clean context
 # 5. Review: Quality gate each step
 # 6. Finalize: Archive completed work
+
+# NOTE: /nw:develop is optimized for technical development tasks.
+# For features requiring deeper business analysis or design exploration,
+# use the manual step-by-step workflow below.
 ```
 
-Or use manual control for more guidance:
+Or use the complete workflow with human-in-the-loop control:
 
 ```bash
-# Step by step (recommended for first feature)
+# Full ATDD workflow with human decision points at each stage
+# (recommended for complex features, first-time use, or non-technical tasks)
 /nw:discuss "authentication requirements"           # Requirements gathering
 /nw:design --architecture=hexagonal                # Architecture design
 /nw:distill "user-login-story"                     # Acceptance tests
@@ -244,6 +249,7 @@ git commit --no-verify  # Bypasses ALL validation - requires immediate fix
 ```
 nwave/
 ├── README.md                    # This file (entry point)
+├── .claude/                     # User-specific configuration (excluded from version control)
 ├── docs/                        # DIVIO-organized documentation
 │   ├── guides/                  # How-to guides (practical tasks)
 │   │   ├── jobs-to-be-done-guide.md        # When to use each workflow
@@ -325,7 +331,7 @@ See individual agent documentation in `nWave/agents/` for implementation details
 
 ## Version
 
-- Current Version: 1.4.4
+- Current Version: 1.4.5
 - Last Updated: 2026-01-21
 - Status: Production Ready
 
