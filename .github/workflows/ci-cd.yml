@@ -48,6 +48,7 @@ permissions:
 env:
   PYTHON_DEFAULT: '3.12'
   CACHE_VERSION: v1
+  PYTHONIOENCODING: 'utf-8'  # Ensure UTF-8 encoding on Windows for Unicode characters
 
 jobs:
   # ===========================================================================
