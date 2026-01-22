@@ -88,7 +88,9 @@ def main():
         else:
             print(f"  ✓ Already current: {relative_path}")
 
-    print(f"\n✓ Synchronized {updated_count}/{len(docs)} documents to version {framework_version}")
+    print(
+        f"\n✓ Synchronized {updated_count}/{len(docs)} documents to version {framework_version}"
+    )
     return 0
 
 
