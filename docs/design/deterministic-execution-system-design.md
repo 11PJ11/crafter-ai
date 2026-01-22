@@ -792,8 +792,10 @@ def validate_post_execution():
 
     print(json.dumps(result, indent=2))
 
-    # Log to audit trail
-    audit_log_path = Path(step_file_path).parent / "audit.log"
+    # Log to daily audit trail
+    from datetime import date
+    today = date.today().isoformat()
+    audit_log_path = Path(step_file_path).parent / f"audit-{today}.log"
     with open(audit_log_path, "a") as f:
         f.write(json.dumps({
             "event": "SUBAGENT_STOP_VALIDATION",
@@ -849,9 +851,10 @@ The existing `pre_commit_tdd_phases.py` hook remains the final gate.
 **Enhancement:** Add coordination with Gate 2 results:
 
 ```python
-# Check if SubagentStop validation already flagged issues
-audit_log = Path(step_file).parent / "audit.log"
-if audit_log.exists():
+# Check if SubagentStop validation already flagged issues in any daily log
+import glob
+step_dir = Path(step_file).parent
+for audit_log in step_dir.glob("audit-*.log"):
     with open(audit_log) as f:
         for line in f:
             entry = json.loads(line)
@@ -862,18 +865,23 @@ if audit_log.exists():
 
 ### Gate 4: Audit Trail
 
-Every state transition is logged:
+Every state transition is logged to **daily rotating log files** (`audit-YYYY-MM-DD.log`) to prevent single files from growing too large:
 
 ```python
 # nWave/utils/audit.py
 
 import json
-from datetime import datetime
+from datetime import datetime, date
 from pathlib import Path
 
+def get_daily_audit_path(step_file_path: str) -> Path:
+    """Get path to today's audit log file."""
+    today = date.today().isoformat()  # e.g., "2026-01-22"
+    return Path(step_file_path).parent / f"audit-{today}.log"
+
 def log_event(step_file_path: str, event_type: str, data: dict):
-    """Append event to audit trail."""
-    audit_path = Path(step_file_path).parent / "audit.log"
+    """Append event to daily audit trail."""
+    audit_path = get_daily_audit_path(step_file_path)
 
     entry = {
         "timestamp": datetime.now().isoformat(),
@@ -896,6 +904,7 @@ def log_event(step_file_path: str, event_type: str, data: dict):
 # - SUBAGENT_STOP_VALIDATION
 # - COMMIT_VALIDATION_PASSED
 # - COMMIT_VALIDATION_FAILED
+# - WATCHDOG_INTERVENTION
 ```
 
 ---

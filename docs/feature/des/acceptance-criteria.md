@@ -362,9 +362,9 @@ Feature: Audit Trail
   So that I can verify TDD compliance during PR review
 
   Scenario: Full execution creates complete audit trail
-    Given Marcus invokes "/nw:execute @software-crafter steps/03-01.json"
+    Given Marcus invokes "/nw:execute @software-crafter steps/03-01.json" on 2026-01-22
     When the execution completes successfully through all 14 phases
-    Then audit.log contains entries in order:
+    Then daily audit log "audit-2026-01-22.log" contains entries in order:
       | Event | Description |
       | TASK_INVOCATION_STARTED | Task execution initiated |
       | TASK_INVOCATION_VALIDATED | Pre-invocation validation passed |
@@ -376,16 +376,16 @@ Feature: Audit Trail
       | SUBAGENT_STOP_VALIDATION | Post-execution validation passed |
     And each entry has ISO 8601 timestamp
     And each entry has step_file path
-    And Priya can review audit.log for PR evidence
+    And Priya can review daily audit logs for PR evidence
 ```
 
 ### Scenario 19: Audit Trail for Failed Validation
 
 ```gherkin
   Scenario: Failed validation is recorded in audit trail
-    Given Marcus invokes "/nw:execute" with incomplete prompt
+    Given Marcus invokes "/nw:execute" with incomplete prompt on 2026-01-22
     When pre-invocation validation fails
-    Then audit.log contains:
+    Then daily audit log "audit-2026-01-22.log" contains:
       | Event | Status |
       | TASK_INVOCATION_STARTED | initiated |
       | TASK_INVOCATION_REJECTED | failed |
@@ -397,12 +397,26 @@ Feature: Audit Trail
 
 ```gherkin
   Scenario: Audit trail cannot be modified retroactively
-    Given audit.log contains 10 previous entries
-    When a new event is logged
+    Given daily audit log "audit-2026-01-22.log" contains 10 previous entries
+    When a new event is logged on the same day
     Then the new entry is appended (not inserted)
     And previous entries are unchanged
-    And audit.log is append-only
+    And daily audit log is append-only
     And tampering would require file-level modification (detectable)
+    And new day creates new log file "audit-2026-01-23.log"
+```
+
+### Scenario 20b: Daily Log Rotation
+
+```gherkin
+  Scenario: Audit logs rotate daily to prevent file bloat
+    Given Marcus executes steps on 2026-01-22
+    And "audit-2026-01-22.log" accumulates 50 entries
+    When Marcus continues work on 2026-01-23
+    Then new events are written to "audit-2026-01-23.log"
+    And "audit-2026-01-22.log" remains unchanged
+    And each daily log file stays manageable in size
+    And Priya can query specific dates for PR review
 ```
 
 ---
@@ -604,13 +618,13 @@ Feature: Watchdog Automatic Intervention
 | Post-Execution Validation | 6 |
 | Timeout/Turn Discipline | 2 |
 | Crash Recovery | 2 |
-| Audit Trail | 3 |
+| Audit Trail | 4 |
 | Boundary Rules | 3 |
 | Non-Functional | 3 |
 | Edge Cases | 4 |
 | Concurrent Execution Protection | 1 |
 | Watchdog Intervention | 1 |
-| **Total** | **32** |
+| **Total** | **33** |
 
 ---
 

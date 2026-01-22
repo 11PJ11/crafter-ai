@@ -205,16 +205,16 @@ Priya reviews a PR that claims full TDD compliance. The step file shows "DONE" f
 - Cannot rely on trust alone for quality assurance
 
 #### Solution (What We Build)
-Append-only audit log (audit.log) that records every state transition with timestamp, event type, and relevant data. Immutable log that cannot be retroactively modified.
+Append-only daily audit logs (`audit-YYYY-MM-DD.log`) that record every state transition with timestamp, event type, and relevant data. Daily rotation prevents single files from growing too large. Immutable logs that cannot be retroactively modified.
 
 #### Domain Examples
 
 **Example 1: Complete Execution Audit**
-Marcus runs `/nw:execute @software-crafter "steps/01-01.json"`.
-Audit log captures: TASK_INVOCATION_STARTED, TASK_INVOCATION_VALIDATED.
+Marcus runs `/nw:execute @software-crafter "steps/01-01.json"` on 2026-01-22.
+Audit log `audit-2026-01-22.log` captures: TASK_INVOCATION_STARTED, TASK_INVOCATION_VALIDATED.
 For each phase: PHASE_STARTED, PHASE_COMPLETED (with outcome).
 Finally: SUBAGENT_STOP_VALIDATION (success), COMMIT_VALIDATION_PASSED.
-Priya reviews audit.log and sees complete execution history with timestamps.
+Priya reviews daily audit log and sees complete execution history with timestamps.
 
 **Example 2: Failed Validation Audit**
 Marcus runs `/nw:execute` with incomplete prompt.
@@ -234,6 +234,7 @@ Priya can see exactly where execution stopped.
 - [ ] AC-004.3: Event types include: TASK_INVOCATION_*, PHASE_*, SUBAGENT_STOP_*, COMMIT_*
 - [ ] AC-004.4: Each entry includes step file path and relevant event data
 - [ ] AC-004.5: Audit log is human-readable (JSONL format)
+- [ ] AC-004.6: Audit logs rotate daily (`audit-YYYY-MM-DD.log` naming convention)
 
 ---
 
