@@ -213,7 +213,7 @@ class WorkflowValidator:
             return True
 
         success, output = self.run_command(
-            f"python3 {build_script} --dry-run",
+            f"PYTHONPATH=tools python3 {build_script} --dry-run",
             "Build system dry-run",
         )
 

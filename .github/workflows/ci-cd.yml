@@ -318,7 +318,7 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Build IDE bundle
         run: |
-          python3 tools/core/build_ide_bundle.py \
+          PYTHONPATH=tools python3 tools/core/build_ide_bundle.py \
             --source-dir nWave \
             --output-dir dist/ide \
             --clean \
@@ -330,23 +330,9 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Create release packages
         run: |
-          # Check if release packager exists
-          if [ -f "tools/core/release_packager.py" ]; then
-            python3 tools/core/release_packager.py \
-              --version ${{ steps.get_version.outputs.VERSION }} \
-              --output-dir dist/releases
-          elif [ -f "scripts/framework/release_package.py" ]; then
-            python3 scripts/framework/release_package.py \
-              --version ${{ steps.get_version.outputs.VERSION }} \
-              --output-dir dist/releases
-          else
-            echo "WARNING: No release packager found - creating basic tar.gz"
-            mkdir -p dist/releases
-            tar -czf dist/releases/nwave-claude-code-${{ steps.get_version.outputs.VERSION }}.tar.gz \
-              -C dist/ide .
-            tar -czf dist/releases/nwave-codex-${{ steps.get_version.outputs.VERSION }}.tar.gz \
-              -C dist/ide .
-          fi
+          python3 tools/create_release_packages.py \
+            --version ${{ steps.get_version.outputs.VERSION }} \
+            --output-dir dist/releases
         shell: bash
 
       # -----------------------------------------------------------------------
