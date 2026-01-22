@@ -1,3 +1,6 @@
+# Local Claude settings
+.claude/settings.local.json
+
 # Test and development state files
 state/
 test-results/
@@ -35,6 +38,7 @@ node_modules/
 dist/
 build/
 target/
+
 # Build logs
 build.log
 build-test.log
