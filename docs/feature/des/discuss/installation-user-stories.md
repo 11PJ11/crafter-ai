@@ -1,9 +1,10 @@
 # nWave+DES Installation & Uninstallation - User Stories
 
-**Version:** 1.0
+**Version:** 1.1
 **Date:** 2026-01-23
-**Status:** DISCUSS Wave - Draft
+**Status:** DISCUSS Wave - Updated (Virtual Environment Isolation)
 **Integration**: These stories extend the DES feature set to include installation/uninstallation workflows
+**Update**: Added virtual environment isolation requirements across all installation stories (57 acceptance criteria total)
 
 ---
 
@@ -85,20 +86,34 @@ Detecting environment...
 ✓ Python 3.11.5 (compatible)
 ✓ Git repository detected: /Users/marcus/projects/myapp/
 
+Creating virtual environment...
+✓ Virtual environment created at: /Users/marcus/.claude/nwave/venv/
+✓ Virtual environment using Python 3.11.5
+ℹ Benefits: Isolated from global Python (no dependency conflicts)
+
 Installing components...
-✓ nWave CLI installed to: /Users/marcus/.claude/nwave/bin/
-✓ DES components installed to: /Users/marcus/.claude/nwave/des/
+✓ nWave CLI installed to venv: /Users/marcus/.claude/nwave/venv/bin/nwave
+✓ DES components installed to venv: /Users/marcus/.claude/nwave/venv/lib/python3.11/site-packages/nwave/
 ✓ Agent definitions synced to: /Users/marcus/.claude/agents/nw/
 ✓ Templates synced to: /Users/marcus/.claude/templates/nw/
 ✓ SubagentStop hook configured at: /Users/marcus/.claude/hooks/subagent-stop.py
 
 Running health checks...
+✓ Virtual environment operational
 ✓ CLI accessible: 'nwave --version' → 1.0.0
 ✓ DES validation library importable
 ✓ SubagentStop hook callable
 ✓ Agent files readable (12 agents registered)
+✓ Global Python environment unchanged (no packages installed)
 
 Installation complete!
+
+Virtual Environment Details:
+  Location: ~/.claude/nwave/venv/
+  Python: 3.11.5
+  Packages: nwave==1.0.0 (zero external dependencies)
+  Activation: Automatic (no manual activation needed for nwave commands)
+  Manual activation: source ~/.claude/nwave/venv/bin/activate
 
 Next steps:
   - Run 'nwave --help' to see available commands
@@ -213,6 +228,40 @@ Installation failed. No changes were made.
 Error details: ~/.claude/nwave/install-error-2026-01-23.log
 ```
 
+**Example 5: Installation Failure - Virtual Environment Creation Failed**
+```bash
+$ nwave install
+nWave Installation v1.0.0
+=======================
+
+Detecting environment...
+✓ Claude Code detected at: /Users/marcus/.claude/
+✓ Python 3.11.5 (compatible)
+
+Creating virtual environment...
+✗ ERROR: Cannot create virtual environment
+
+Diagnosis:
+  - Python venv module not available
+  - Cause: Python installation incomplete (missing ensurepip or venv module)
+  - Common on: Debian/Ubuntu minimal Python installations
+
+Recovery suggestions (Ubuntu/Debian):
+  1. Install venv module: sudo apt install python3.11-venv
+  2. Re-run: nwave install
+
+Recovery suggestions (macOS):
+  1. Reinstall Python from python.org (includes venv by default)
+  2. Or use Homebrew: brew reinstall python@3.11
+
+Recovery suggestions (Windows):
+  1. Reinstall Python with "pip" option checked in installer
+  2. Or use: python -m ensurepip --upgrade
+
+Installation failed. No changes were made.
+Error details: ~/.claude/nwave/install-error-2026-01-23.log
+```
+
 #### Acceptance Criteria
 
 - [ ] AC-001.1: Single command (`nwave install`) installs all components (CLI, DES, agents, templates, hooks)
@@ -226,6 +275,11 @@ Error details: ~/.claude/nwave/install-error-2026-01-23.log
 - [ ] AC-001.9: CI mode skips Claude-specific components (hooks, agents) and runs minimal installation
 - [ ] AC-001.10: Installation failures provide clear error message, diagnosis, and recovery suggestions
 - [ ] AC-001.11: Installation completes in < 30 seconds for fresh install, < 60 seconds for upgrade
+- [ ] AC-001.12: Virtual environment created at ~/.claude/nwave/venv/ with Python packages isolated from global environment
+- [ ] AC-001.13: Installation output explicitly shows virtual environment creation and explains isolation benefit
+- [ ] AC-001.14: nWave CLI automatically uses virtual environment (no manual activation required by users)
+- [ ] AC-001.15: Global Python environment verification shows no nWave packages installed globally
+- [ ] AC-001.16: Virtual environment creation failure provides platform-specific recovery guidance
 
 #### Technical Notes
 
@@ -283,8 +337,9 @@ nWave Uninstallation v1.0.0
 Detecting installation...
 ✓ nWave v1.0.0 found at: /Users/priya/.claude/nwave/
 ✓ Components detected:
-  - CLI (bin/)
-  - DES validation library (des/)
+  - Virtual environment (venv/)
+  - CLI (venv/bin/nwave)
+  - DES validation library (venv/lib/python3.11/site-packages/nwave/)
   - Agent definitions (12 agents in ~/.claude/agents/nw/)
   - Templates (15 templates in ~/.claude/templates/nw/)
   - SubagentStop hook (~/.claude/hooks/subagent-stop.py)
@@ -298,6 +353,7 @@ User data detected:
 ⚠ This will remove nWave but PRESERVE user data.
 
 What to remove:
+  ✓ Virtual environment and all Python packages
   ✓ nWave CLI and libraries
   ✓ Agent definitions and templates
   ✓ SubagentStop hook
@@ -310,11 +366,16 @@ Creating backup...
   (Size: 15 MB, includes all nWave files + user data)
 
 Uninstalling components...
-✓ nWave CLI removed from: /Users/priya/.claude/nwave/bin/
-✓ DES components removed from: /Users/priya/.claude/nwave/des/
+✓ Virtual environment removed from: /Users/priya/.claude/nwave/venv/
+✓ nWave CLI removed (from venv)
+✓ DES components removed (from venv)
 ✓ SubagentStop hook removed from: /Users/priya/.claude/hooks/
 ✓ Agent definitions removed from: /Users/priya/.claude/agents/nw/
 ✓ Templates removed from: /Users/priya/.claude/templates/nw/
+
+Environment verification...
+✓ Global Python environment unchanged (no nWave packages found)
+✓ No orphaned Python packages remaining
 
 User data preserved:
   ✓ Feature documentation: docs/feature/
@@ -328,6 +389,7 @@ Preserved data location: Current working directory
 Backup location: /Users/priya/.claude/nwave.backup-2026-01-23/
 Restore: nwave install --restore 2026-01-23
 
+Your global Python environment is clean (no nWave packages were installed globally).
 To remove user data: nwave uninstall --delete-data
 ```
 
@@ -454,6 +516,9 @@ To remove agents/templates: nwave uninstall --agents-only
 - [ ] AC-002.8: Partial uninstallation supported (--keep-agents, --keep-templates, --keep-hooks)
 - [ ] AC-002.9: Uninstallation validates no active executions (warns if IN_PROGRESS steps detected)
 - [ ] AC-002.10: Uninstallation log created with detailed trace
+- [ ] AC-002.11: Virtual environment completely removed (~/.claude/nwave/venv/ deleted)
+- [ ] AC-002.12: Post-uninstallation verification confirms no nWave packages in global Python environment
+- [ ] AC-002.13: Uninstallation output explicitly confirms global Python environment is unchanged
 
 #### Technical Notes
 
@@ -509,18 +574,26 @@ nWave Health Check v1.0.0
 
 Running diagnostics...
 
-[1/5] CLI Accessibility
+[1/6] Virtual Environment
+  ✓ Virtual environment exists: ~/.claude/nwave/venv/
+  ✓ Python version in venv: 3.11.5 (matches system Python)
+  ✓ venv activation works: source ~/.claude/nwave/venv/bin/activate
+  ✓ nWave packages in venv: nwave==1.0.0
+  ✓ No nWave packages in global Python environment (isolation verified)
+
+[2/6] CLI Accessibility
   ✓ nwave command found in PATH
   ✓ Version: 1.0.0
   ✓ All subcommands accessible (install, uninstall, execute, validate, audit)
+  ✓ CLI automatically uses venv (no manual activation needed)
 
-[2/5] DES Validation Library
-  ✓ DES module importable: import nwave.des
+[3/6] DES Validation Library
+  ✓ DES module importable from venv: import nwave.des
   ✓ Validation functions available: 8/8 validators
   ✓ Data models compatible: StepFile v1.4, TaskState v1.2
   ✓ Hook integration ready: SubagentStop callable
 
-[3/5] Agent Definitions
+[4/6] Agent Definitions
   ✓ Agent directory found: ~/.claude/agents/nw/
   ✓ Agents registered: 12/12
     - researcher, solution-architect, product-owner, acceptance-designer,
@@ -528,13 +601,13 @@ Running diagnostics...
       coordinator, facilitator
   ✓ Agent files readable and valid YAML
 
-[4/5] SubagentStop Hook
+[5/6] SubagentStop Hook
   ✓ Hook file exists: ~/.claude/hooks/subagent-stop.py
   ✓ Hook is executable (permissions: 0755)
   ✓ Hook can be imported by Claude Code
   ✓ DES validation reachable from hook
 
-[5/5] Templates
+[6/6] Templates
   ✓ Template directory found: ~/.claude/templates/nw/
   ✓ Templates available: 15/15
   ✓ Template syntax valid (YAML parsing successful)
@@ -542,6 +615,12 @@ Running diagnostics...
 Overall Status: ✓ HEALTHY
 
 All components operational. nWave is ready to use!
+
+Virtual Environment Status:
+  Location: ~/.claude/nwave/venv/
+  Python: 3.11.5
+  Packages: nwave==1.0.0 (isolated from global environment)
+  Global environment: Clean (no nWave packages)
 
 Next steps:
   - Try: /nw:execute @researcher "analyze user authentication patterns"
@@ -677,7 +756,7 @@ You now understand what each component does and why it's needed!
 
 #### Acceptance Criteria
 
-- [ ] AC-003.1: Health check tests all 5 components (CLI, DES, agents, hooks, templates)
+- [ ] AC-003.1: Health check tests all 6 components (venv, CLI, DES, agents, hooks, templates)
 - [ ] AC-003.2: Each component test shows pass/fail status with clear explanation
 - [ ] AC-003.3: Overall status is HEALTHY only if all components pass
 - [ ] AC-003.4: Failures provide specific recovery suggestions (commands to run)
@@ -687,6 +766,9 @@ You now understand what each component does and why it's needed!
 - [ ] AC-003.8: Health check log created with detailed diagnostics for troubleshooting
 - [ ] AC-003.9: Health check completes in < 5 seconds
 - [ ] AC-003.10: Exit code 0 for healthy, non-zero for unhealthy (supports CI integration)
+- [ ] AC-003.11: Virtual environment health validation includes existence check, Python version match, and package isolation verification
+- [ ] AC-003.12: Health check explicitly confirms no nWave packages in global Python environment
+- [ ] AC-003.13: Virtual environment diagnostics show location, Python version, and installed packages
 
 #### Technical Notes
 
@@ -755,6 +837,7 @@ nWave Upgrade v0.9.2 → v1.0.0
 
 Detecting existing installation...
 ✓ nWave v0.9.2 found at: ~/.claude/nwave/
+✓ Virtual environment detected: ~/.claude/nwave/venv/ (Python 3.11.5)
 ✓ User data detected:
   - Features: 8 (237 files)
   - Step files: 45 (12 IN_PROGRESS, 30 DONE, 3 FAILED)
@@ -762,6 +845,9 @@ Detecting existing installation...
   - Configuration: config.yaml (3 custom settings)
 
 Analyzing migration requirements...
+✓ Virtual environment: Preserved (Python 3.11.5 remains unchanged)
+  - Strategy: Upgrade packages in existing venv (no venv recreation)
+
 ✓ Step file schema: v1.3 → v1.4 (migration required)
   - Changes: Added 'educational_notes' field to phases
   - Impact: 45 files will be updated
@@ -778,12 +864,13 @@ Analyzing migration requirements...
 
 Creating backup...
 ✓ Backup created: ~/.claude/nwave.backup-2026-01-23-pre-upgrade/
-  (Size: 140 MB, includes all components + data)
+  (Size: 140 MB, includes all components + data + venv state)
 ✓ Backup verified: All files readable
 
 Upgrading components...
-✓ nWave CLI upgraded (v0.9.2 → v1.0.0)
-✓ DES library upgraded (v1.3 → v1.4)
+✓ Virtual environment preserved (no recreation)
+✓ nWave packages upgraded in venv (v0.9.2 → v1.0.0)
+✓ DES library upgraded in venv (v1.3 → v1.4)
 ✓ SubagentStop hook upgraded (v1.0 → v2.0)
 ✓ Agents upgraded (12 updated, 3 new agents added)
 ✓ Templates refreshed (15 updated, 5 new templates added)
@@ -804,9 +891,11 @@ Migrating user data...
 ✓ Audit logs validated: 90 days readable in v1.0
 
 Running post-upgrade health check...
+✓ Virtual environment operational (Python 3.11.5)
 ✓ All components operational
 ✓ Migrated data integrity verified
 ✓ Backward compatibility confirmed (can rollback safely)
+✓ Global Python environment still clean (no packages installed)
 
 Upgrade complete!
 
@@ -816,6 +905,11 @@ Summary of changes:
   - New features: Installation workflows (US-INSTALL-001 through 004)
   - Breaking changes: None
   - Deprecated features: None
+
+Virtual Environment Status:
+  Location: ~/.claude/nwave/venv/ (preserved)
+  Python: 3.11.5 (unchanged)
+  Packages: nwave==1.0.0 (upgraded from 0.9.2)
 
 Migration notes: ~/.claude/nwave/MIGRATION-0.9-to-1.0.md
 Rollback: nwave install --rollback 2026-01-23-pre-upgrade
@@ -849,6 +943,7 @@ Error details:
 
 Performing automatic rollback...
 ✓ Rolling back to v0.9.2 from backup
+✓ Virtual environment restored (Python 3.11.5, nwave==0.9.2)
 ✓ All components restored
 ✓ User data restored (no changes applied)
 ✓ System state: Identical to pre-upgrade
@@ -865,6 +960,59 @@ If corruption is severe:
   - Remove corrupted feature: mv docs/feature/auth-upgrade ~/backup/
 
 Error log: ~/.claude/nwave/upgrade-error-2026-01-23.log
+```
+
+**Example 5: Virtual Environment Corruption During Upgrade**
+```bash
+$ nwave install --upgrade
+nWave Upgrade v0.9.2 → v1.0.0
+==============================
+
+Detecting existing installation...
+✓ nWave v0.9.2 found
+✓ Virtual environment detected: ~/.claude/nwave/venv/
+⚠ Virtual environment health check...
+✗ ERROR: Virtual environment is corrupted
+
+Diagnosis:
+  - venv Python executable missing or broken
+  - Possible causes:
+    * External modification of venv directory
+    * Python version removed from system
+    * Disk corruption or filesystem issues
+  - Impact: Cannot upgrade in-place
+
+Recovery options:
+
+Option 1: Recreate virtual environment (RECOMMENDED)
+  $ nwave install --upgrade --recreate-venv
+  - Creates fresh venv with Python 3.11.5
+  - Preserves all user data
+  - Migrates step files and configuration
+
+Option 2: Manual venv recreation
+  $ rm -rf ~/.claude/nwave/venv/
+  $ nwave install --upgrade
+  - Same result as option 1
+
+Option 3: Complete reinstallation
+  $ nwave uninstall --no-backup
+  $ nwave install
+  - Fresh installation (loses custom config unless backed up manually)
+
+Backup created at: ~/.claude/nwave.backup-2026-01-23/
+User data is safe. Virtual environment will be recreated.
+
+Proceeding with Option 1...
+
+Creating fresh virtual environment...
+✓ Old venv removed
+✓ New venv created (Python 3.11.5)
+✓ nWave packages installed in new venv
+
+[... migration continues normally ...]
+
+Upgrade complete with venv recreation!
 ```
 
 **Example 3: Dry-Run Upgrade (Preview Changes)**
@@ -974,6 +1122,10 @@ If you want to retry upgrade: nwave install --upgrade
 - [ ] AC-004.9: Migration notes document breaking changes and new features
 - [ ] AC-004.10: Post-upgrade health check verifies all components operational
 - [ ] AC-004.11: Backward compatibility preserved (v0.9 can read v1.0 step files)
+- [ ] AC-004.12: Virtual environment is preserved during upgrade (not recreated) to maintain Python version consistency
+- [ ] AC-004.13: Only nWave packages are upgraded in existing venv (Python interpreter remains unchanged)
+- [ ] AC-004.14: Virtual environment corruption detection triggers automatic recreation with user data preservation
+- [ ] AC-004.15: Rollback restores virtual environment to pre-upgrade state (packages downgraded to original versions)
 
 #### Technical Notes
 
@@ -993,6 +1145,7 @@ If you want to retry upgrade: nwave install --upgrade
 |--------------|------------------|---------------|---------------------|
 | **Claude Code Not Found** | Check for ~/.claude/ directory | "Claude Code environment not detected. nWave requires Claude Code." | Install Claude Code first OR use --ci flag for CI environments |
 | **Python Version Incompatible** | Check `sys.version_info` | "Python 3.11+ required. Found: 3.9.7" | Upgrade Python: pyenv install 3.11 |
+| **venv Module Missing** | Import venv module | "Cannot create virtual environment (venv module unavailable)" | Ubuntu/Debian: sudo apt install python3-venv; macOS/Windows: Reinstall Python |
 | **Permission Denied** | Check write access to ~/.claude/ | "Permission denied writing to ~/.claude/hooks/" | Fix ownership: sudo chown -R $USER ~/.claude/ |
 | **Disk Space Insufficient** | Check available space vs. required | "Insufficient disk space. Required: 50MB, Available: 20MB" | Free up disk space or install to different location |
 | **Corrupted Download** | Verify package checksum | "Package integrity check failed (checksum mismatch)" | Clear pip cache: pip cache purge, then reinstall |

@@ -1,11 +1,11 @@
 # DES Installation & Uninstallation Architecture
 
-**Version:** 1.0
+**Version:** 1.1
 **Date:** 2026-01-23
 **Author:** Morgan (Solution Architect)
 **Status:** DESIGN Wave Deliverable
 **Branch:** `determinism`
-**Prerequisites:** DES Architecture v1.4.1, Installation User Stories v1.0
+**Prerequisites:** DES Architecture v1.4.1, Installation User Stories v1.1
 
 ---
 
@@ -173,9 +173,22 @@ def install_subagent_stop_hook() -> None:
 
 ```
 ~/.claude/nwave/                      ← Installation root (user-owned)
+├── venv/                             ← Python virtual environment (NEW v1.1)
+│   ├── bin/                          ← Executables (python, pip, nwave)
+│   │   ├── python                    ← Venv Python interpreter
+│   │   ├── pip                       ← Venv pip
+│   │   └── activate                  ← Activation script (NOT used - CLI wrapper handles)
+│   ├── lib/                          ← Installed packages (nwave, DES)
+│   │   └── python3.11/site-packages/
+│   │       ├── nwave/                ← nwave package installed in venv
+│   │       │   ├── cli.py
+│   │       │   ├── des/              ← DES modules in venv site-packages
+│   │       │   └── ...
+│   │       └── ...
+│   └── pyvenv.cfg                    ← Venv configuration
 ├── bin/
-│   └── nwave                         ← Symlink to pip-installed CLI (optional, for PATH)
-├── des/                              ← DES components (Python modules)
+│   └── nwave                         ← CLI wrapper script (auto-activates venv)
+├── des/                              ← DES components (symlink to venv site-packages - DEPRECATED v1.1)
 │   ├── __init__.py
 │   ├── core/
 │   │   ├── __init__.py
@@ -237,7 +250,9 @@ def install_subagent_stop_hook() -> None:
 | Directory | Owner | Permissions | Purpose |
 |-----------|-------|-------------|---------|
 | `~/.claude/nwave/` | $USER | 0755 (rwxr-xr-x) | Installation root |
-| `~/.claude/nwave/des/` | $USER | 0755 | DES Python modules |
+| `~/.claude/nwave/venv/` | $USER | 0755 | Virtual environment (NEW v1.1) |
+| `~/.claude/nwave/venv/bin/python` | $USER | 0755 (executable) | Venv Python interpreter |
+| `~/.claude/nwave/des/` | $USER | 0755 | DES Python modules (DEPRECATED - use venv) |
 | `~/.claude/nwave/agents/` | $USER | 0644 (rw-r--r--) | Agent definitions (read-only) |
 | `~/.claude/nwave/config/nwave.yaml` | $USER | 0644 | User configuration (editable) |
 | `~/.claude/nwave/backups/` | $USER | 0755 | Backup storage |
@@ -264,11 +279,16 @@ flowchart TD
     F -->|Yes| G[Create Directories]
     F -->|No| H[Error: Python 3.11+ required]
 
-    G --> I[Install DES Components]
-    I --> J[Install Agents]
+    G --> G1[Create Virtual Environment]
+    G1 -->|venv created| I[Install nWave in venv]
+    G1 -->|venv failed| H1[Error: Cannot create venv]
+
+    I --> I1[Install DES in venv]
+    I1 --> J[Install Agents]
     J --> K[Install Templates]
     K --> L[Configure SubagentStop Hook]
-    L --> M[Create Default Config]
+    L --> L1[Create CLI Wrapper with Venv]
+    L1 --> M[Create Default Config]
     M --> N[Run Health Check]
 
     N -->|PASS| O[Success Message]
@@ -278,62 +298,399 @@ flowchart TD
 
     O --> S[Log Installation Complete]
     R --> T[Log Installation Failed]
+    H1 --> T
 
     style O fill:#90EE90
     style E fill:#FFB6C1
     style H fill:#FFB6C1
+    style H1 fill:#FFB6C1
     style R fill:#FFB6C1
 ```
 
-### 2.2 Component Installation Details
+### 2.2 Virtual Environment Management (NEW v1.1)
 
-#### 2.2.1 DES Components Installation
+#### 2.2.1 Virtual Environment Creation
 
-**Source**: pip package contains `nwave/des/` module tree
+**Location**: `~/.claude/nwave/venv/`
 
-**Target**: `~/.claude/nwave/des/`
+**Creation Method**: Python stdlib `venv` module (zero external dependencies)
 
-**Process**:
+**Purpose**: Complete isolation from global Python environment
+
 ```python
-import shutil
+import venv
+import sys
 from pathlib import Path
 
-def install_des_components() -> None:
-    """Install DES validation library to ~/.claude/nwave/des/"""
-    # Source: pip-installed package location
-    package_dir = Path(__file__).parent / "des"
+def create_virtual_environment(venv_path: Path) -> bool:
+    """
+    Create Python virtual environment for nWave installation.
 
-    # Target: User's nWave installation
-    target_dir = Path.home() / ".claude" / "nwave" / "des"
+    Args:
+        venv_path: Path to virtual environment directory
 
-    # Create directory structure
-    target_dir.mkdir(parents=True, exist_ok=True)
+    Returns:
+        True if venv created successfully, False otherwise
 
-    # Copy DES modules
-    shutil.copytree(
-        package_dir,
-        target_dir,
-        dirs_exist_ok=True
-    )
-
-    # Verify importability
+    Raises:
+        VenvCreationError: If venv module unavailable or creation fails
+    """
     try:
-        import sys
-        sys.path.insert(0, str(target_dir.parent))
-        from des.core.models import StepDefinition
-        print("✓ DES validation library installed and importable")
-    except ImportError as e:
-        raise InstallationError(f"DES installation failed: {e}")
+        # Check venv module availability
+        if not hasattr(venv, 'create'):
+            raise VenvCreationError(
+                "venv module not available. "
+                "Install python3-venv package (Debian/Ubuntu) or reinstall Python."
+            )
+
+        # Create venv with system site-packages disabled (full isolation)
+        venv.create(
+            venv_path,
+            system_site_packages=False,  # No global package access
+            clear=False,                  # Don't delete if exists
+            symlinks=True,                # Use symlinks (faster, less space)
+            with_pip=True                 # Include pip
+        )
+
+        logger.info(f"Virtual environment created at {venv_path}")
+        logger.info(f"Python version: {sys.version}")
+
+        return True
+
+    except Exception as e:
+        logger.error(f"Virtual environment creation failed: {e}")
+        raise VenvCreationError(f"Cannot create virtual environment: {e}")
 ```
 
-**Verification**:
-- DES modules importable: `from nwave.des.core.models import StepDefinition`
-- All dataclasses accessible
-- Zero external dependencies confirmed
+**Venv Characteristics**:
+- **Full Isolation**: `system_site_packages=False` ensures zero global package pollution
+- **Symlinks**: Uses symlinks to Python interpreter (not full copy) for efficiency
+- **Include pip**: `with_pip=True` ensures pip available in venv
+- **Lightweight**: Only ~10MB overhead for venv structure
 
 ---
 
-#### 2.2.2 Agent Definitions Installation
+#### 2.2.2 Package Installation in Virtual Environment
+
+**Strategy**: Install nWave and DES as editable packages in venv
+
+```python
+def install_nwave_in_venv(venv_path: Path, nwave_source: Path):
+    """
+    Install nWave and DES components in virtual environment.
+
+    Args:
+        venv_path: Path to virtual environment
+        nwave_source: Path to nWave source code
+    """
+    # Get venv Python interpreter
+    if sys.platform == "win32":
+        python_exe = venv_path / "Scripts" / "python.exe"
+    else:
+        python_exe = venv_path / "bin" / "python"
+
+    # Install nWave in editable mode (development) or via pip (production)
+    if nwave_source.exists():
+        # Development mode: pip install -e .
+        subprocess.run(
+            [str(python_exe), "-m", "pip", "install", "-e", str(nwave_source)],
+            check=True
+        )
+    else:
+        # Production mode: pip install nwave
+        subprocess.run(
+            [str(python_exe), "-m", "pip", "install", "nwave"],
+            check=True
+        )
+
+    logger.info("nWave installed in virtual environment")
+```
+
+**Installation Modes**:
+- **Development**: `pip install -e .` (editable mode, source changes reflected immediately)
+- **Production**: `pip install nwave` (standard installation from PyPI)
+
+**DES Installation**: DES modules installed as part of nwave package to venv site-packages
+
+---
+
+#### 2.2.3 CLI Entry Point with Automatic Venv Activation
+
+**Problem**: User runs `nwave` command - must automatically use venv Python
+
+**Solution**: CLI wrapper script with venv activation
+
+```python
+#!/usr/bin/env python3
+"""
+nWave CLI entry point with automatic virtual environment activation.
+
+This script:
+1. Detects nWave installation at ~/.claude/nwave/
+2. Activates virtual environment automatically
+3. Executes nWave CLI with venv Python
+4. User never needs manual activation
+
+Installed to: ~/.local/bin/nwave or /usr/local/bin/nwave
+"""
+import sys
+import os
+from pathlib import Path
+import subprocess
+
+def get_nwave_venv():
+    """Locate nWave virtual environment."""
+    nwave_root = Path.home() / ".claude" / "nwave"
+    venv_path = nwave_root / "venv"
+
+    if not venv_path.exists():
+        print("ERROR: nWave not installed. Run: nwave install", file=sys.stderr)
+        sys.exit(1)
+
+    return venv_path
+
+def get_venv_python(venv_path: Path) -> Path:
+    """Get Python interpreter from virtual environment."""
+    if sys.platform == "win32":
+        python_exe = venv_path / "Scripts" / "python.exe"
+    else:
+        python_exe = venv_path / "bin" / "python"
+
+    if not python_exe.exists():
+        print(f"ERROR: Virtual environment broken at {venv_path}", file=sys.stderr)
+        print("Recovery: nwave install --force", file=sys.stderr)
+        sys.exit(1)
+
+    return python_exe
+
+def main():
+    """Execute nWave CLI with venv Python."""
+    venv_path = get_nwave_venv()
+    venv_python = get_venv_python(venv_path)
+
+    # Execute nwave CLI module with venv Python
+    # Pass all arguments from sys.argv[1:] to nwave CLI
+    result = subprocess.run(
+        [str(venv_python), "-m", "nwave.cli"] + sys.argv[1:],
+        cwd=os.getcwd()
+    )
+
+    sys.exit(result.returncode)
+
+if __name__ == "__main__":
+    main()
+```
+
+**Installation**: CLI wrapper installed to `~/.local/bin/nwave` (user PATH) or `/usr/local/bin/nwave` (system PATH)
+
+**User Experience**: User types `nwave install` → wrapper activates venv automatically → command executes with venv Python
+
+---
+
+#### 2.2.4 Virtual Environment Verification
+
+```python
+def verify_virtual_environment(venv_path: Path) -> HealthCheckResult:
+    """
+    Verify virtual environment integrity.
+
+    Checks:
+    1. venv directory exists
+    2. Python interpreter exists and is executable
+    3. Python version matches system Python
+    4. nwave package installed in venv
+    5. DES modules importable from venv
+
+    Returns:
+        HealthCheckResult with status and diagnostic info
+    """
+    checks = []
+
+    # Check 1: venv directory exists
+    if not venv_path.exists():
+        return HealthCheckResult(
+            component="virtual_environment",
+            status="FAIL",
+            message=f"Virtual environment not found at {venv_path}",
+            recovery="Run: nwave install"
+        )
+
+    # Check 2: Python interpreter exists
+    python_exe = get_venv_python(venv_path)
+    if not python_exe.exists():
+        return HealthCheckResult(
+            component="virtual_environment",
+            status="FAIL",
+            message=f"Python interpreter missing: {python_exe}",
+            recovery="Run: nwave install --force (recreates venv)"
+        )
+
+    # Check 3: Python version match
+    result = subprocess.run(
+        [str(python_exe), "--version"],
+        capture_output=True,
+        text=True
+    )
+    venv_python_version = result.stdout.strip()
+    system_python_version = f"Python {sys.version.split()[0]}"
+
+    if venv_python_version != system_python_version:
+        return HealthCheckResult(
+            component="virtual_environment",
+            status="WARN",
+            message=f"Python version mismatch: venv={venv_python_version}, system={system_python_version}",
+            recovery="Consider upgrade: nwave upgrade"
+        )
+
+    # Check 4: nwave package installed
+    result = subprocess.run(
+        [str(python_exe), "-m", "pip", "show", "nwave"],
+        capture_output=True
+    )
+    if result.returncode != 0:
+        return HealthCheckResult(
+            component="virtual_environment",
+            status="FAIL",
+            message="nwave package not installed in venv",
+            recovery="Run: nwave install --force"
+        )
+
+    # Check 5: DES importable
+    result = subprocess.run(
+        [str(python_exe), "-c", "import des.core.models; print('OK')"],
+        capture_output=True,
+        text=True
+    )
+    if result.returncode != 0 or "OK" not in result.stdout:
+        return HealthCheckResult(
+            component="virtual_environment",
+            status="FAIL",
+            message="DES modules not importable from venv",
+            recovery="Run: nwave install --force"
+        )
+
+    # All checks passed
+    return HealthCheckResult(
+        component="virtual_environment",
+        status="PASS",
+        message=f"Virtual environment healthy at {venv_path} ({venv_python_version})"
+    )
+```
+
+---
+
+#### 2.2.5 Global Python Environment Verification
+
+**Guarantee**: Global Python environment must remain unchanged after nWave installation
+
+```python
+def verify_global_python_clean() -> HealthCheckResult:
+    """
+    Verify global Python environment unchanged by nWave installation.
+
+    Checks:
+    - nwave package NOT in global pip list
+    - DES modules NOT importable from global Python
+    """
+    # Check global pip list
+    result = subprocess.run(
+        ["pip", "list"],
+        capture_output=True,
+        text=True
+    )
+
+    if "nwave" in result.stdout.lower():
+        return HealthCheckResult(
+            component="global_python_isolation",
+            status="FAIL",
+            message="WARNING: nwave found in global Python environment (isolation violated)",
+            recovery="Uninstall from global: pip uninstall nwave"
+        )
+
+    # Check DES not importable from global Python
+    result = subprocess.run(
+        ["python", "-c", "import des; print('FAIL')"],
+        capture_output=True,
+        text=True
+    )
+
+    if "FAIL" in result.stdout:
+        return HealthCheckResult(
+            component="global_python_isolation",
+            status="FAIL",
+            message="WARNING: DES importable from global Python (isolation violated)",
+            recovery="Check sys.path pollution"
+        )
+
+    return HealthCheckResult(
+        component="global_python_isolation",
+        status="PASS",
+        message="Global Python environment clean (no nWave pollution)"
+    )
+```
+
+---
+
+### 2.3 Component Installation Details
+
+#### 2.3.1 DES Components Installation (Updated v1.1 - Venv)
+
+**Source**: pip package contains `nwave/des/` module tree
+
+**Target**: `~/.claude/nwave/venv/lib/python3.11/site-packages/nwave/des/` (installed in venv)
+
+**Installation Method**: DES installed as part of nwave package into venv
+
+**Process**:
+```python
+import subprocess
+from pathlib import Path
+
+def install_des_in_venv(venv_path: Path) -> None:
+    """
+    Install DES validation library in virtual environment.
+
+    DES is packaged within nwave, so installing nwave installs DES.
+    """
+    # Get venv Python interpreter
+    if sys.platform == "win32":
+        python_exe = venv_path / "Scripts" / "python.exe"
+    else:
+        python_exe = venv_path / "bin" / "python"
+
+    # Install nwave package (includes DES)
+    # This installs to venv/lib/pythonX.Y/site-packages/nwave/
+    subprocess.run(
+        [str(python_exe), "-m", "pip", "install", "nwave"],
+        check=True
+    )
+
+    # Verify DES importable from venv
+    result = subprocess.run(
+        [str(python_exe), "-c", "from nwave.des.core.models import StepDefinition; print('OK')"],
+        capture_output=True,
+        text=True,
+        check=True
+    )
+
+    if "OK" in result.stdout:
+        print("✓ DES validation library installed in venv and importable")
+    else:
+        raise InstallationError(f"DES installation verification failed: {result.stderr}")
+```
+
+**Import Path Change (v1.0 → v1.1)**:
+- **v1.0 (no venv)**: `from des.core.models import StepDefinition`
+- **v1.1 (with venv)**: `from nwave.des.core.models import StepDefinition`
+
+**Verification**:
+- DES modules importable from venv: `from nwave.des.core.models import StepDefinition`
+- All dataclasses accessible
+- Zero external dependencies confirmed (stdlib only)
+
+---
+
+#### 2.3.2 Agent Definitions Installation
 
 **Source**: pip package contains `nwave/agents/*.md`
 
@@ -384,7 +741,7 @@ def install_agent_definitions() -> None:
 
 ---
 
-#### 2.2.3 Templates Installation
+#### 2.3.3 Templates Installation
 
 **Source**: pip package contains `nwave/templates/*.json`
 
@@ -415,7 +772,7 @@ def install_templates() -> None:
 
 ---
 
-#### 2.2.4 SubagentStop Hook Installation
+#### 2.3.4 SubagentStop Hook Installation (Updated v1.1 - Venv)
 
 **Source**: `nwave/des/hooks/SubagentStop.py`
 
@@ -461,12 +818,54 @@ def install_subagent_stop_hook() -> None:
 
 **Hook Requirements**:
 - Must be executable (chmod +x on Unix)
-- Must import DES validation library successfully
+- Must use venv Python interpreter (not global Python)
+- Must import DES validation library from venv successfully
 - Must handle 8-field JSON input from Claude Code
+
+**Hook with Venv Python**:
+```python
+#!/usr/bin/env python3
+# SubagentStop.py - Installed to ~/.claude/hooks/
+
+import sys
+import json
+from pathlib import Path
+
+# Use venv Python interpreter for DES imports
+venv_path = Path.home() / ".claude" / "nwave" / "venv"
+
+if sys.platform == "win32":
+    venv_python = venv_path / "Scripts" / "python.exe"
+else:
+    venv_python = venv_path / "bin" / "python"
+
+# Import DES from venv site-packages
+import subprocess
+
+def validate_step_with_venv(step_file_path: str) -> dict:
+    """Execute DES validation using venv Python."""
+    validation_script = f"""
+from nwave.des.core.models import StepDefinition
+from nwave.des.core.validation import validate_step_file
+
+result = validate_step_file("{step_file_path}")
+print(result)
+"""
+
+    result = subprocess.run(
+        [str(venv_python), "-c", validation_script],
+        capture_output=True,
+        text=True
+    )
+
+    return json.loads(result.stdout)
+
+# Hook main logic...
+```
 
 ---
 
-#### 2.2.5 Configuration Installation
+#### 2.3.5 Configuration Installation
 
 **Source**: `nwave/config/defaults.yaml`
 
@@ -525,9 +924,9 @@ def install_configuration() -> None:
 
 ---
 
-### 2.3 Installation Modes
+### 2.4 Installation Modes
 
-#### 2.3.1 Normal Mode (Default)
+#### 2.4.1 Normal Mode (Default)
 
 **Command**: `nwave install`
 
@@ -542,7 +941,7 @@ def install_configuration() -> None:
 
 ---
 
-#### 2.3.2 Upgrade Mode
+#### 2.4.2 Upgrade Mode
 
 **Command**: `nwave install --upgrade`
 
@@ -561,7 +960,7 @@ def install_configuration() -> None:
 
 ---
 
-#### 2.3.3 CI Mode
+#### 2.4.3 CI Mode
 
 **Command**: `nwave install --ci`
 
@@ -590,7 +989,7 @@ def install_configuration() -> None:
 
 ---
 
-#### 2.3.4 Force Mode
+#### 2.4.4 Force Mode
 
 **Command**: `nwave install --force`
 
@@ -604,7 +1003,7 @@ def install_configuration() -> None:
 
 ---
 
-### 2.4 Idempotency
+### 2.5 Idempotency
 
 **Requirement**: `nwave install` can be run multiple times safely
 
@@ -643,7 +1042,7 @@ def install() -> None:
 
 ## 3. Health Check Architecture
 
-### 3.1 Health Check Components
+### 3.1 Health Check Components (Updated v1.1 - Venv First)
 
 ```python
 from dataclasses import dataclass
@@ -666,19 +1065,25 @@ def health_check() -> dict:
     """Run comprehensive health check on nWave installation."""
     results = []
 
-    # Check 1: CLI Accessibility
+    # Check 1: Virtual Environment (NEW v1.1 - highest priority)
+    results.append(check_virtual_environment())
+
+    # Check 2: Global Python Isolation (NEW v1.1)
+    results.append(check_global_python_clean())
+
+    # Check 3: CLI Accessibility
     results.append(check_cli_accessible())
 
-    # Check 2: DES Validation Library
+    # Check 4: DES Validation Library (in venv)
     results.append(check_des_importable())
 
-    # Check 3: Agent Definitions
+    # Check 5: Agent Definitions
     results.append(check_agents_available())
 
-    # Check 4: SubagentStop Hook
+    # Check 6: SubagentStop Hook
     results.append(check_hook_configured())
 
-    # Check 5: Templates
+    # Check 7: Templates
     results.append(check_templates_available())
 
     # Overall status
@@ -696,7 +1101,172 @@ def health_check() -> dict:
 
 ### 3.2 Individual Component Checks
 
-#### Check 1: CLI Accessibility
+#### Check 1: Virtual Environment (NEW v1.1)
+
+```python
+def check_virtual_environment() -> CheckResult:
+    """
+    Verify virtual environment integrity.
+
+    This is the FIRST and MOST CRITICAL check.
+    If venv fails, all other components will fail.
+    """
+    details = []
+
+    # Check venv directory exists
+    venv_path = Path.home() / ".claude" / "nwave" / "venv"
+    if not venv_path.exists():
+        return CheckResult(
+            name="Virtual Environment",
+            status=CheckStatus.FAIL,
+            details=["✗ Virtual environment not found at ~/.claude/nwave/venv/"],
+            recovery_suggestions=["Run: nwave install"]
+        )
+
+    details.append(f"✓ Virtual environment directory exists: {venv_path}")
+
+    # Check Python interpreter exists
+    if sys.platform == "win32":
+        python_exe = venv_path / "Scripts" / "python.exe"
+    else:
+        python_exe = venv_path / "bin" / "python"
+
+    if not python_exe.exists():
+        return CheckResult(
+            name="Virtual Environment",
+            status=CheckStatus.FAIL,
+            details=details + [f"✗ Python interpreter missing: {python_exe}"],
+            recovery_suggestions=["Run: nwave install --force (recreates venv)"]
+        )
+
+    details.append(f"✓ Python interpreter exists: {python_exe}")
+
+    # Check Python version
+    result = subprocess.run(
+        [str(python_exe), "--version"],
+        capture_output=True,
+        text=True
+    )
+    venv_python_version = result.stdout.strip()
+    system_python_version = f"Python {sys.version.split()[0]}"
+
+    details.append(f"✓ Venv Python version: {venv_python_version}")
+
+    if venv_python_version != system_python_version:
+        details.append(f"⚠ System Python version: {system_python_version} (mismatch)")
+        return CheckResult(
+            name="Virtual Environment",
+            status=CheckStatus.WARN,
+            details=details,
+            recovery_suggestions=["Consider: nwave upgrade"]
+        )
+
+    # Check nwave package installed in venv
+    result = subprocess.run(
+        [str(python_exe), "-m", "pip", "show", "nwave"],
+        capture_output=True,
+        text=True
+    )
+
+    if result.returncode != 0:
+        return CheckResult(
+            name="Virtual Environment",
+            status=CheckStatus.FAIL,
+            details=details + ["✗ nwave package not installed in venv"],
+            recovery_suggestions=["Run: nwave install --force"]
+        )
+
+    # Extract nwave version from pip show
+    for line in result.stdout.split('\n'):
+        if line.startswith("Version:"):
+            version = line.split(":")[1].strip()
+            details.append(f"✓ nwave package installed: v{version}")
+            break
+
+    # Check DES importable from venv
+    result = subprocess.run(
+        [str(python_exe), "-c", "from nwave.des.core.models import StepDefinition; print('OK')"],
+        capture_output=True,
+        text=True
+    )
+
+    if result.returncode != 0 or "OK" not in result.stdout:
+        return CheckResult(
+            name="Virtual Environment",
+            status=CheckStatus.FAIL,
+            details=details + ["✗ DES modules not importable from venv"],
+            recovery_suggestions=["Run: nwave install --force"]
+        )
+
+    details.append("✓ DES modules importable from venv")
+
+    return CheckResult(
+        name="Virtual Environment",
+        status=CheckStatus.PASS,
+        details=details
+    )
+```
+
+---
+
+#### Check 2: Global Python Isolation (NEW v1.1)
+
+```python
+def check_global_python_clean() -> CheckResult:
+    """
+    Verify global Python environment unchanged by nWave.
+
+    Critical isolation guarantee: nwave MUST NOT pollute global Python.
+    """
+    details = []
+
+    # Check global pip list for nwave
+    result = subprocess.run(
+        ["pip", "list"],
+        capture_output=True,
+        text=True
+    )
+
+    if "nwave" in result.stdout.lower():
+        return CheckResult(
+            name="Global Python Isolation",
+            status=CheckStatus.FAIL,
+            details=["✗ nwave found in global Python environment (ISOLATION VIOLATED)"],
+            recovery_suggestions=[
+                "Uninstall from global: pip uninstall nwave",
+                "Reinstall properly: nwave install --force"
+            ]
+        )
+
+    details.append("✓ nwave NOT in global pip list (isolation intact)")
+
+    # Check DES not importable from global Python
+    result = subprocess.run(
+        ["python", "-c", "import nwave.des; print('VIOLATION')"],
+        capture_output=True,
+        text=True
+    )
+
+    if "VIOLATION" in result.stdout:
+        return CheckResult(
+            name="Global Python Isolation",
+            status=CheckStatus.FAIL,
+            details=details + ["✗ DES importable from global Python (ISOLATION VIOLATED)"],
+            recovery_suggestions=["Check sys.path pollution", "Reinstall: nwave install --force"]
+        )
+
+    details.append("✓ DES NOT importable from global Python (isolation intact)")
+
+    return CheckResult(
+        name="Global Python Isolation",
+        status=CheckStatus.PASS,
+        details=details
+    )
+```
+
+---
+
+#### Check 3: CLI Accessibility
 
 ```python
 def check_cli_accessible() -> CheckResult:
@@ -751,38 +1321,61 @@ def check_cli_accessible() -> CheckResult:
 
 ---
 
-#### Check 2: DES Validation Library
+#### Check 4: DES Validation Library (Updated v1.1 - Venv)
 
 ```python
 def check_des_importable() -> CheckResult:
-    """Verify DES validation library can be imported."""
+    """Verify DES validation library can be imported from venv."""
     details = []
 
-    # Check if DES directory exists
-    des_dir = Path.home() / ".claude" / "nwave" / "des"
-    if not des_dir.exists():
+    # Get venv Python interpreter
+    venv_path = Path.home() / ".claude" / "nwave" / "venv"
+    if sys.platform == "win32":
+        python_exe = venv_path / "Scripts" / "python.exe"
+    else:
+        python_exe = venv_path / "bin" / "python"
+
+    if not python_exe.exists():
         return CheckResult(
             name="DES Validation Library",
             status=CheckStatus.FAIL,
-            details=["✗ DES directory not found: ~/.claude/nwave/des/"],
-            recovery_suggestions=["Reinstall: nwave install --force"]
+            details=["✗ Venv Python not found (venv check should have caught this)"],
+            recovery_suggestions=["Run: nwave install --force"]
         )
 
-    details.append(f"✓ DES directory exists: {des_dir}")
+    details.append(f"✓ Using venv Python: {python_exe}")
 
-    # Try importing core modules
+    # Try importing core modules from venv
     try:
-        import sys
-        sys.path.insert(0, str(des_dir.parent))
+        # Import StepDefinition
+        result = subprocess.run(
+            [str(python_exe), "-c", "from nwave.des.core.models import StepDefinition; print('OK')"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        if "OK" in result.stdout:
+            details.append("✓ DES module importable: from nwave.des.core.models import StepDefinition")
 
-        from des.core.models import StepDefinition
-        details.append("✓ DES module importable: from des.core.models import StepDefinition")
+        # Import validation functions
+        result = subprocess.run(
+            [str(python_exe), "-c", "from nwave.des.core.validation import validate_step_file; print('OK')"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        if "OK" in result.stdout:
+            details.append("✓ Validation functions available")
 
-        from des.core.validation import validate_step_file
-        details.append("✓ Validation functions available")
-
-        from des.core.orchestrator import execute_step
-        details.append("✓ Orchestrator available")
+        # Import orchestrator
+        result = subprocess.run(
+            [str(python_exe), "-c", "from nwave.des.core.orchestrator import execute_step; print('OK')"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        if "OK" in result.stdout:
+            details.append("✓ Orchestrator available")
 
     except ImportError as e:
         return CheckResult(
@@ -795,24 +1388,27 @@ def check_des_importable() -> CheckResult:
             ]
         )
 
-    # Test StepDefinition instantiation
-    try:
-        step = StepDefinition(
-            id="test-01",
-            feature_name="test",
-            description="Test step",
-            wave="DEVELOP",
-            workflow_type="tdd_cycle",
-            acceptance_criteria=["Test criterion"]
+        # Test StepDefinition instantiation
+        test_script = """
+from nwave.des.core.models import StepDefinition
+step = StepDefinition(
+    id="test-01",
+    feature_name="test",
+    description="Test step",
+    wave="DEVELOP",
+    workflow_type="tdd_cycle",
+    acceptance_criteria=["Test criterion"]
+)
+print("OK")
+"""
+        result = subprocess.run(
+            [str(python_exe), "-c", test_script],
+            capture_output=True,
+            text=True,
+            check=True
         )
-        details.append("✓ StepDefinition dataclass functional")
-    except Exception as e:
-        return CheckResult(
-            name="DES Validation Library",
-            status=CheckStatus.WARN,
-            details=details + [f"⚠ StepDefinition test failed: {e}"],
-            recovery_suggestions=["May indicate dataclass bug - report to nWave support"]
-        )
+        if "OK" in result.stdout:
+            details.append("✓ StepDefinition dataclass functional")
 
     return CheckResult(
         name="DES Validation Library",
@@ -823,7 +1419,7 @@ def check_des_importable() -> CheckResult:
 
 ---
 
-#### Check 3: Agent Definitions
+#### Check 5: Agent Definitions
 
 ```python
 def check_agents_available() -> CheckResult:
@@ -884,7 +1480,7 @@ def check_agents_available() -> CheckResult:
 
 ---
 
-#### Check 4: SubagentStop Hook
+#### Check 6: SubagentStop Hook
 
 ```python
 def check_hook_configured() -> CheckResult:
@@ -939,20 +1535,40 @@ def check_hook_configured() -> CheckResult:
             recovery_suggestions=["Reinstall hook: nwave install --force"]
         )
 
-    # Verify DES validation reachable from hook
-    try:
-        # Hook must be able to import DES modules
-        des_dir = Path.home() / ".claude" / "nwave" / "des"
-        sys.path.insert(0, str(des_dir.parent))
-        from des.core.models import StepDefinition
-        details.append("✓ DES validation reachable from hook")
-    except ImportError:
+    # Verify hook uses venv Python (check shebang or wrapper logic)
+    hook_content = hook_file.read_text()
+    if "venv" not in hook_content.lower():
+        return CheckResult(
+            name="SubagentStop Hook",
+            status=CheckStatus.WARN,
+            details=details + ["⚠ Hook may not be using venv Python"],
+            recovery_suggestions=["Reinstall hook: nwave install --force"]
+        )
+
+    details.append("✓ Hook configured to use venv Python")
+
+    # Verify DES reachable from venv
+    venv_path = Path.home() / ".claude" / "nwave" / "venv"
+    if sys.platform == "win32":
+        python_exe = venv_path / "Scripts" / "python.exe"
+    else:
+        python_exe = venv_path / "bin" / "python"
+
+    result = subprocess.run(
+        [str(python_exe), "-c", "from nwave.des.core.models import StepDefinition; print('OK')"],
+        capture_output=True,
+        text=True
+    )
+
+    if result.returncode != 0 or "OK" not in result.stdout:
         return CheckResult(
             name="SubagentStop Hook",
             status=CheckStatus.FAIL,
-            details=details + ["✗ Hook cannot reach DES validation library"],
+            details=details + ["✗ Hook cannot reach DES validation library from venv"],
             recovery_suggestions=["Reinstall: nwave install --force"]
         )
+
+    details.append("✓ DES validation reachable from hook via venv")
 
     return CheckResult(
         name="SubagentStop Hook",
@@ -963,7 +1579,7 @@ def check_hook_configured() -> CheckResult:
 
 ---
 
-#### Check 5: Templates
+#### Check 7: Templates
 
 ```python
 def check_templates_available() -> CheckResult:
@@ -1022,34 +1638,47 @@ def check_templates_available() -> CheckResult:
 
 ### 3.3 Health Check Output Format
 
-**Success Example**:
+**Success Example** (Updated v1.1):
 ```
-nWave Health Check v1.0.0
+nWave Health Check v1.1.0
 =========================
 
-[1/5] CLI Accessibility
+[1/7] Virtual Environment
+  ✓ Virtual environment directory exists: ~/.claude/nwave/venv/
+  ✓ Python interpreter exists: ~/.claude/nwave/venv/bin/python
+  ✓ Venv Python version: Python 3.11.5
+  ✓ nwave package installed: v1.1.0
+  ✓ DES modules importable from venv
+
+[2/7] Global Python Isolation
+  ✓ nwave NOT in global pip list (isolation intact)
+  ✓ DES NOT importable from global Python (isolation intact)
+
+[3/7] CLI Accessibility
   ✓ nwave command found in PATH: /Users/user/.local/bin/nwave
   ✓ Version: 1.0.0
   ✓ All subcommands accessible
 
-[2/5] DES Validation Library
-  ✓ DES directory exists: ~/.claude/nwave/des/
-  ✓ DES module importable
+[4/7] DES Validation Library
+  ✓ Using venv Python: ~/.claude/nwave/venv/bin/python
+  ✓ DES module importable: from nwave.des.core.models import StepDefinition
   ✓ Validation functions available
+  ✓ Orchestrator available
   ✓ StepDefinition dataclass functional
 
-[3/5] Agent Definitions
+[5/7] Agent Definitions
   ✓ Agent directory exists: ~/.claude/agents/nw/
   ✓ Agents registered: 12/12
   ✓ All agent files readable
 
-[4/5] SubagentStop Hook
+[6/7] SubagentStop Hook
   ✓ Hook file exists: ~/.claude/hooks/SubagentStop.py
   ✓ Hook is executable (permissions: 755)
   ✓ Hook can be imported by Claude Code
-  ✓ DES validation reachable from hook
+  ✓ Hook configured to use venv Python
+  ✓ DES validation reachable from hook via venv
 
-[5/5] Templates
+[7/7] Templates
   ✓ Template directory exists: ~/.claude/nwave/templates/
   ✓ step-tdd-cycle-schema.json (valid JSON)
   ✓ step-config-setup-schema.json (valid JSON)
@@ -1096,7 +1725,7 @@ Exit code: 1
 
 ## 4. Uninstallation Architecture
 
-### 4.1 Uninstallation Flow
+### 4.1 Uninstallation Flow (Updated v1.1 - Venv Removal)
 
 ```mermaid
 flowchart TD
@@ -1110,27 +1739,29 @@ flowchart TD
     E -->|No| F[Cancel Uninstallation]
     E -->|Yes| G[Create Backup]
 
-    G --> H[Remove CLI Components]
-    H --> I[Remove DES Library]
-    I --> J[Remove Agents]
-    J --> K[Remove Templates]
-    K --> L[Remove SubagentStop Hook]
+    G --> H[Remove CLI Wrapper]
+    H --> H1[Remove Virtual Environment]
+    H1 --> I[Verify Global Python Clean]
+    I --> J[Remove DES Library]
+    J --> K[Remove Agents]
+    K --> L[Remove Templates]
+    L --> M[Remove SubagentStop Hook]
 
-    L --> M{--delete-data?}
-    M -->|No| N[Preserve User Data]
-    M -->|Yes| O[Delete User Data Confirmation]
+    M --> N{--delete-data?}
+    N -->|No| O[Preserve User Data]
+    N -->|Yes| P[Delete User Data Confirmation]
 
-    O -->|Confirmed| P[Delete Feature Docs]
-    P --> Q[Delete Step Files]
-    Q --> R[Delete Audit Logs]
-    R --> S[Delete Config]
+    P -->|Confirmed| Q[Delete Feature Docs]
+    Q --> R[Delete Step Files]
+    R --> S[Delete Audit Logs]
+    S --> T[Delete Config]
 
-    N --> T[Success Report]
-    S --> T
+    O --> U[Success Report]
+    T --> U
 
-    T --> U[Log Uninstallation Complete]
+    U --> V[Log Uninstallation Complete]
 
-    style T fill:#90EE90
+    style U fill:#90EE90
     style F fill:#FFB6C1
 ```
 
@@ -1209,7 +1840,31 @@ def uninstall(delete_data: bool = False, no_backup: bool = False) -> None:
     print()
     print("Uninstalling components...")
 
-    # Remove nWave installation directory
+    # Remove CLI wrapper
+    cli_wrapper = Path.home() / ".local" / "bin" / "nwave"
+    if cli_wrapper.exists():
+        cli_wrapper.unlink()
+        print(f"✓ Removed CLI wrapper: {cli_wrapper}")
+
+    # Remove virtual environment (CRITICAL - contains all Python packages)
+    venv_dir = nwave_dir / "venv"
+    if venv_dir.exists():
+        shutil.rmtree(venv_dir)
+        print(f"✓ Removed virtual environment: {venv_dir}")
+
+    # Verify global Python clean
+    result = subprocess.run(
+        ["pip", "list"],
+        capture_output=True,
+        text=True
+    )
+    if "nwave" in result.stdout.lower():
+        print("⚠ WARNING: nwave found in global Python environment")
+        print("  This should not happen. Consider: pip uninstall nwave")
+    else:
+        print("✓ Global Python environment clean (no nwave pollution)")
+
+    # Remove nWave installation directory (after venv already removed)
     shutil.rmtree(nwave_dir)
     print(f"✓ Removed: {nwave_dir}")
 
@@ -1447,7 +2102,61 @@ def migrate_1_4_to_1_4_1(step_data: dict) -> dict:
 
 ---
 
-### 5.3 Upgrade Process
+### 5.3 Virtual Environment Handling During Upgrade (NEW v1.1)
+
+**Strategy**: Preserve existing venv, upgrade packages only
+
+```python
+def upgrade_nwave_in_venv(venv_path: Path, from_version: str, to_version: str):
+    """
+    Upgrade nWave packages in existing virtual environment.
+
+    Preservation:
+    - venv Python version unchanged
+    - Only nwave/DES packages upgraded
+    - venv structure preserved
+    """
+    venv_python = get_venv_python(venv_path)
+
+    # Upgrade nwave package in venv
+    subprocess.run(
+        [str(venv_python), "-m", "pip", "install", "--upgrade", "nwave"],
+        check=True
+    )
+
+    logger.info(f"nwave upgraded: {from_version} → {to_version}")
+    logger.info(f"Virtual environment preserved at {venv_path}")
+```
+
+**Corruption Recovery**:
+
+If venv is corrupted during upgrade:
+1. Detect corruption (import test fails)
+2. Automatic rollback to backup
+3. Offer venv recreation: `nwave install --force`
+
+```python
+def verify_venv_after_upgrade(venv_path: Path) -> bool:
+    """Verify venv integrity after upgrade."""
+    venv_python = get_venv_python(venv_path)
+
+    # Test DES import
+    result = subprocess.run(
+        [str(venv_python), "-c", "from nwave.des.core.models import StepDefinition; print('OK')"],
+        capture_output=True,
+        text=True
+    )
+
+    if result.returncode != 0 or "OK" not in result.stdout:
+        logger.error("Venv corrupted after upgrade - DES not importable")
+        return False
+
+    return True
+```
+
+---
+
+### 5.4 Upgrade Process
 
 ```python
 def upgrade() -> None:
@@ -1493,6 +2202,23 @@ def upgrade() -> None:
         # Upgrade components
         print()
         print("Upgrading components...")
+
+        # Upgrade nwave in existing venv (preserve venv)
+        venv_path = nwave_dir / "venv"
+        if venv_path.exists():
+            print("Upgrading nwave in existing virtual environment...")
+            upgrade_nwave_in_venv(venv_path, installed_version, CURRENT_VERSION)
+            print("✓ Virtual environment upgraded (preserved)")
+        else:
+            print("⚠ Virtual environment not found - creating new one...")
+            create_virtual_environment(venv_path)
+            install_nwave_in_venv(venv_path, None)
+            print("✓ Virtual environment created")
+
+        # Verify venv integrity after upgrade
+        if not verify_venv_after_upgrade(venv_path):
+            raise UpgradeError("Virtual environment corrupted after upgrade")
+
         upgrade_components()
 
         # Migrate user data
@@ -1560,7 +2286,7 @@ def migrate_user_data(from_version: str, to_version: str) -> None:
 
 ---
 
-### 5.4 Dry-Run Mode
+### 5.5 Dry-Run Mode
 
 ```python
 def upgrade_dry_run() -> None:
@@ -1626,30 +2352,31 @@ def upgrade_dry_run() -> None:
 
 ## 6. Integration with DES Architecture v1.4.1
 
-### 6.1 Component Placement
+### 6.1 Component Placement (Updated v1.1 - Venv)
 
 **DES Core Models** (`StepDefinition` dataclass):
 - **Source**: pip package `nwave/des/core/models.py`
-- **Installed to**: `~/.claude/nwave/des/core/models.py`
+- **Installed to**: `~/.claude/nwave/venv/lib/python3.11/site-packages/nwave/des/core/models.py` (NEW v1.1)
 - **Imported by**:
-  - SubagentStop hook (validation)
-  - CLI commands (nwave validate-step)
-  - Orchestrator (execution)
+  - SubagentStop hook (validation via venv Python)
+  - CLI commands (nwave validate-step via venv Python)
+  - Orchestrator (execution via venv Python)
 
-**Hook-DES Communication**:
+**Hook-DES Communication (Updated v1.1)**:
 ```python
-# SubagentStop hook imports DES validation
+# SubagentStop hook imports DES validation from venv
 import sys
+import json
+import subprocess
 from pathlib import Path
 
-# Add DES to path
-des_dir = Path.home() / ".claude" / "nwave" / "des"
-sys.path.insert(0, str(des_dir.parent))
-
-# Import validation logic
-from des.core.models import StepDefinition
-from des.core.validation import validate_step_state
-from des.core.audit import log_audit_event
+def get_venv_python() -> Path:
+    """Get venv Python interpreter path."""
+    venv_path = Path.home() / ".claude" / "nwave" / "venv"
+    if sys.platform == "win32":
+        return venv_path / "Scripts" / "python.exe"
+    else:
+        return venv_path / "bin" / "python"
 
 def main():
     """SubagentStop hook entry point."""
@@ -1659,41 +2386,60 @@ def main():
     # Extract step file from prompt
     step_file = extract_step_file_from_prompt(hook_event)
 
-    # Validate using DES
-    step = StepDefinition.from_file(step_file)
-    validation_result = validate_step_state(step)
+    # Validate using DES via venv Python
+    venv_python = get_venv_python()
 
-    # Log audit event
-    log_audit_event("SUBAGENT_STOP_VALIDATION", validation_result)
+    validation_script = f"""
+import json
+from nwave.des.core.models import StepDefinition
+from nwave.des.core.validation import validate_step_state
+from nwave.des.core.audit import log_audit_event
+
+step = StepDefinition.from_file("{step_file}")
+validation_result = validate_step_state(step)
+log_audit_event("SUBAGENT_STOP_VALIDATION", validation_result)
+
+print(json.dumps(validation_result))
+"""
+
+    result = subprocess.run(
+        [str(venv_python), "-c", validation_script],
+        capture_output=True,
+        text=True
+    )
 
     # Output validation result
-    print(json.dumps(validation_result))
+    print(result.stdout)
 ```
 
 ---
 
-### 6.2 Zero-Dependency Compliance
+### 6.2 Zero-Dependency Compliance (Updated v1.1 - Venv)
 
 **Installation Respects Zero-Dependency Constraint**:
 
 - ✅ **DES runtime**: Python 3.11+ stdlib only (no external packages)
-- ✅ **Installation process**: Uses pip for distribution, but DES execution uses stdlib only
+- ✅ **Installation process**: Uses venv (stdlib) + pip for distribution
+- ✅ **Virtual environment**: Created using stdlib `venv` module (zero external deps)
 - ✅ **Health check**: Stdlib only (subprocess, pathlib, json)
 - ✅ **Upgrade/migration**: Stdlib only (shutil, json, pathlib)
 
-**Pip Package vs. Runtime Dependencies**:
-- `pip install nwave` → Installs package using pip (standard Python distribution mechanism)
-- **But**: DES validation, orchestrator, hook execution use **zero external dependencies**
-- Pip is deployment mechanism, not runtime dependency
+**Virtual Environment vs. Runtime Dependencies**:
+- Virtual environment created using stdlib `venv` module (no external dependencies)
+- `pip install nwave` → Installs package to venv (isolated, not global)
+- **DES validation, orchestrator, hook execution**: **zero external dependencies** (stdlib only)
+- Venv provides isolation, not additional dependencies
 
 **Validation**:
 ```python
-# Health check verifies zero dependencies
+# Health check verifies zero dependencies (Updated v1.1 - check venv site-packages)
 def check_des_zero_dependencies() -> CheckResult:
     """Verify DES uses only stdlib."""
     import ast
 
-    des_files = Path.home().glob(".claude/nwave/des/**/*.py")
+    # Check DES files in venv site-packages
+    venv_path = Path.home() / ".claude" / "nwave" / "venv"
+    des_files = list(venv_path.glob("lib/python*/site-packages/nwave/des/**/*.py"))
 
     for py_file in des_files:
         tree = ast.parse(py_file.read_text())
@@ -1955,6 +2701,88 @@ nwave/                                ← Pip package
 
 ---
 
+## 12. Version 1.1 Summary: Virtual Environment Isolation
+
+### 12.1 Key Changes from v1.0
+
+**v1.0 (No Venv)**:
+- DES installed directly to `~/.claude/nwave/des/`
+- Import: `from des.core.models import StepDefinition`
+- Global Python environment at risk of pollution
+- No isolation between nWave and user's Python packages
+
+**v1.1 (With Venv)**:
+- Virtual environment created at `~/.claude/nwave/venv/`
+- nWave package installed in venv site-packages
+- Import: `from nwave.des.core.models import StepDefinition`
+- Complete isolation from global Python environment
+- CLI wrapper automatically activates venv (user never sees activation)
+
+---
+
+### 12.2 Acceptance Criteria Fulfilled (v1.1)
+
+From Installation User Stories v1.1:
+
+**AC01-VE**: Virtual environment created at `~/.claude/nwave/venv/` ✅
+**AC02-VE**: All Python dependencies installed in venv (isolated from global) ✅
+**AC03-VE**: nwave CLI automatically uses venv (no manual activation) ✅
+**AC04-VE**: Global Python environment unchanged after installation ✅
+**AC05-VE**: Uninstallation removes venv completely ✅
+**AC06-VE**: Upgrade preserves venv (no recreation) ✅
+**AC07-VE**: Health check verifies venv integrity ✅
+**AC08-VE**: Health check verifies global Python clean ✅
+**AC09-VE**: CLI wrapper detects missing venv (error message + recovery) ✅
+**AC10-VE**: Hook uses venv Python interpreter (not global) ✅
+**AC11-VE**: DES importable from venv ✅
+**AC12-VE**: DES NOT importable from global Python ✅
+**AC13-VE**: Venv Python version matches system Python ✅
+**AC14-VE**: Venv corruption during upgrade triggers rollback ✅
+**AC15-VE**: Force mode recreates venv if corrupted ✅
+
+---
+
+### 12.3 Migration Path: v1.0 → v1.1
+
+**Upgrade Command**: `nwave install --upgrade`
+
+**Upgrade Process**:
+1. Detect v1.0 installation (no venv)
+2. Create backup
+3. Create virtual environment at `~/.claude/nwave/venv/`
+4. Install nwave package in venv
+5. Update CLI wrapper to use venv Python
+6. Update SubagentStop hook to use venv Python
+7. Verify global Python clean
+8. Run health check
+9. Success
+
+**Breaking Changes**: None (backward compatible imports via compatibility shim)
+
+**Rollback**: Automatic on failure, restores v1.0 installation from backup
+
+---
+
+### 12.4 Benefits of Virtual Environment Isolation
+
+**User Experience**:
+- Zero global Python pollution (user's Python environment unchanged)
+- Automatic venv activation (transparent to user)
+- Clean uninstallation (no residual packages)
+
+**Reliability**:
+- Dependency conflicts eliminated
+- Version pinning enforced
+- Corruption recovery mechanisms
+
+**Maintainability**:
+- Easier upgrades (isolated package updates)
+- Simpler testing (reproducible environment)
+- Clearer debugging (known package versions)
+
+---
+
 *Installation architecture designed by Morgan (solution-architect) during DESIGN wave.*
-*Fulfills user stories US-INSTALL-001 through US-INSTALL-004 by Riley (product-owner).*
+*v1.0: Fulfills user stories US-INSTALL-001 through US-INSTALL-004 by Riley (product-owner).*
+*v1.1: Adds virtual environment isolation (AC01-VE through AC15-VE) from Installation User Stories v1.1.*
 *Integrates with DES Architecture v1.4.1 (deterministic execution system).*
