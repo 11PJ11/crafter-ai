@@ -34,6 +34,24 @@ class DESOrchestrator:
             return "full"
         return "none"
 
+    def _generate_des_markers(self, command: str, step_file: str) -> str:
+        """
+        Generate DES validation markers for execute/develop commands.
+
+        Args:
+            command: Command type (e.g., "/nw:execute", "/nw:develop")
+            step_file: Path to step file
+
+        Returns:
+            Formatted DES marker string with validation, step file, and origin markers
+        """
+        markers = [
+            "<!-- DES-VALIDATION: required -->",
+            f"<!-- DES-STEP-FILE: {step_file} -->",
+            f"<!-- DES-ORIGIN: command:{command} -->",
+        ]
+        return "\n".join(markers)
+
     def render_prompt(
         self,
         command: str,
@@ -58,13 +76,7 @@ class DESOrchestrator:
         validation_level = self._get_validation_level(command)
 
         if validation_level == "full":
-            # Build prompt with DES validation markers
-            markers = [
-                "<!-- DES-VALIDATION: required -->",
-                f"<!-- DES-STEP-FILE: {step_file} -->",
-                f"<!-- DES-ORIGIN: command:{command} -->",
-            ]
-            return "\n".join(markers)
+            return self._generate_des_markers(command, step_file)
 
         # Research and other commands bypass DES validation
         return ""

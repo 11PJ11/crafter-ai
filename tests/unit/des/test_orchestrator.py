@@ -211,3 +211,77 @@ class TestDESOrchestrator:
         orchestrator = DESOrchestrator()
         validation_level = orchestrator._get_validation_level("/nw:unknown")
         assert validation_level == "none"
+
+    def test_generate_des_markers_returns_string(self):
+        """
+        GIVEN command and step_file parameters
+        WHEN _generate_des_markers is called
+        THEN it returns a string
+        """
+        from des.orchestrator import DESOrchestrator
+
+        orchestrator = DESOrchestrator()
+        result = orchestrator._generate_des_markers(
+            command="/nw:execute", step_file="steps/01-01.json"
+        )
+        assert isinstance(result, str)
+
+    def test_generate_des_markers_includes_validation_marker(self):
+        """
+        GIVEN command and step_file parameters
+        WHEN _generate_des_markers is called
+        THEN result includes DES-VALIDATION marker
+        """
+        from des.orchestrator import DESOrchestrator
+
+        orchestrator = DESOrchestrator()
+        result = orchestrator._generate_des_markers(
+            command="/nw:execute", step_file="steps/01-01.json"
+        )
+        assert "<!-- DES-VALIDATION: required -->" in result
+
+    def test_generate_des_markers_includes_step_file_marker(self):
+        """
+        GIVEN command and step_file parameters
+        WHEN _generate_des_markers is called
+        THEN result includes DES-STEP-FILE marker with correct path
+        """
+        from des.orchestrator import DESOrchestrator
+
+        orchestrator = DESOrchestrator()
+        result = orchestrator._generate_des_markers(
+            command="/nw:execute", step_file="steps/02-03.json"
+        )
+        assert "<!-- DES-STEP-FILE: steps/02-03.json -->" in result
+
+    def test_generate_des_markers_includes_origin_marker(self):
+        """
+        GIVEN command and step_file parameters
+        WHEN _generate_des_markers is called
+        THEN result includes DES-ORIGIN marker with command
+        """
+        from des.orchestrator import DESOrchestrator
+
+        orchestrator = DESOrchestrator()
+        result = orchestrator._generate_des_markers(
+            command="/nw:develop", step_file="steps/01-01.json"
+        )
+        assert "<!-- DES-ORIGIN: command:/nw:develop -->" in result
+
+    def test_generate_des_markers_format_multiline(self):
+        """
+        GIVEN command and step_file parameters
+        WHEN _generate_des_markers is called
+        THEN result contains markers separated by newlines
+        """
+        from des.orchestrator import DESOrchestrator
+
+        orchestrator = DESOrchestrator()
+        result = orchestrator._generate_des_markers(
+            command="/nw:execute", step_file="steps/01-01.json"
+        )
+        lines = result.split("\n")
+        assert len(lines) == 3
+        assert lines[0] == "<!-- DES-VALIDATION: required -->"
+        assert lines[1] == "<!-- DES-STEP-FILE: steps/01-01.json -->"
+        assert lines[2] == "<!-- DES-ORIGIN: command:/nw:execute -->"
