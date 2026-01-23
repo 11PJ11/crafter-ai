@@ -285,3 +285,161 @@ class TestDESOrchestrator:
         assert lines[0] == "<!-- DES-VALIDATION: required -->"
         assert lines[1] == "<!-- DES-STEP-FILE: steps/01-01.json -->"
         assert lines[2] == "<!-- DES-ORIGIN: command:/nw:execute -->"
+
+
+class TestDESOrchestratorEdgeCases:
+    """Edge case and error handling tests for DESOrchestrator."""
+
+    def test_render_prompt_with_none_command_raises_value_error(self):
+        """
+        GIVEN None as command parameter
+        WHEN render_prompt is called
+        THEN it should raise ValueError with clear error message
+        """
+        import pytest
+        from des.orchestrator import DESOrchestrator
+
+        orchestrator = DESOrchestrator()
+        with pytest.raises(ValueError, match="Command cannot be None or empty"):
+            orchestrator.render_prompt(
+                command=None,
+                agent="@software-crafter",
+                step_file="steps/01-01.json",
+            )
+
+    def test_render_prompt_with_empty_command_raises_value_error(self):
+        """
+        GIVEN empty string as command parameter
+        WHEN render_prompt is called
+        THEN it should raise ValueError with clear error message
+        """
+        import pytest
+        from des.orchestrator import DESOrchestrator
+
+        orchestrator = DESOrchestrator()
+        with pytest.raises(ValueError, match="Command cannot be None or empty"):
+            orchestrator.render_prompt(
+                command="",
+                agent="@software-crafter",
+                step_file="steps/01-01.json",
+            )
+
+    def test_render_prompt_with_none_step_file_for_validation_command_raises_error(
+        self,
+    ):
+        """
+        GIVEN /nw:execute command with None step_file
+        WHEN render_prompt is called
+        THEN it should raise ValueError
+        """
+        import pytest
+        from des.orchestrator import DESOrchestrator
+
+        orchestrator = DESOrchestrator()
+        with pytest.raises(
+            ValueError, match="Step file required for validation commands"
+        ):
+            orchestrator.render_prompt(
+                command="/nw:execute",
+                agent="@software-crafter",
+                step_file=None,
+            )
+
+    def test_render_prompt_with_empty_step_file_for_validation_command_raises_error(
+        self,
+    ):
+        """
+        GIVEN /nw:execute command with empty step_file
+        WHEN render_prompt is called
+        THEN it should raise ValueError
+        """
+        import pytest
+        from des.orchestrator import DESOrchestrator
+
+        orchestrator = DESOrchestrator()
+        with pytest.raises(
+            ValueError, match="Step file required for validation commands"
+        ):
+            orchestrator.render_prompt(
+                command="/nw:execute",
+                agent="@software-crafter",
+                step_file="",
+            )
+
+    def test_generate_des_markers_with_none_command_raises_value_error(self):
+        """
+        GIVEN None as command parameter
+        WHEN _generate_des_markers is called
+        THEN it should raise ValueError
+        """
+        import pytest
+        from des.orchestrator import DESOrchestrator
+
+        orchestrator = DESOrchestrator()
+        with pytest.raises(ValueError, match="Command cannot be None or empty"):
+            orchestrator._generate_des_markers(
+                command=None, step_file="steps/01-01.json"
+            )
+
+    def test_generate_des_markers_with_empty_command_raises_value_error(self):
+        """
+        GIVEN empty string as command parameter
+        WHEN _generate_des_markers is called
+        THEN it should raise ValueError
+        """
+        import pytest
+        from des.orchestrator import DESOrchestrator
+
+        orchestrator = DESOrchestrator()
+        with pytest.raises(ValueError, match="Command cannot be None or empty"):
+            orchestrator._generate_des_markers(command="", step_file="steps/01-01.json")
+
+    def test_generate_des_markers_with_none_step_file_raises_value_error(self):
+        """
+        GIVEN None as step_file parameter
+        WHEN _generate_des_markers is called
+        THEN it should raise ValueError
+        """
+        import pytest
+        from des.orchestrator import DESOrchestrator
+
+        orchestrator = DESOrchestrator()
+        with pytest.raises(ValueError, match="Step file cannot be None or empty"):
+            orchestrator._generate_des_markers(command="/nw:execute", step_file=None)
+
+    def test_generate_des_markers_with_empty_step_file_raises_value_error(self):
+        """
+        GIVEN empty string as step_file parameter
+        WHEN _generate_des_markers is called
+        THEN it should raise ValueError
+        """
+        import pytest
+        from des.orchestrator import DESOrchestrator
+
+        orchestrator = DESOrchestrator()
+        with pytest.raises(ValueError, match="Step file cannot be None or empty"):
+            orchestrator._generate_des_markers(command="/nw:execute", step_file="")
+
+    def test_get_validation_level_with_none_command_defaults_to_none(self):
+        """
+        GIVEN None as command parameter
+        WHEN _get_validation_level is called
+        THEN it returns "none" as safe default
+        """
+        from des.orchestrator import DESOrchestrator
+
+        orchestrator = DESOrchestrator()
+        validation_level = orchestrator._get_validation_level(None)
+        assert validation_level == "none"
+
+    def test_get_validation_level_with_empty_command_defaults_to_none(self):
+        """
+        GIVEN empty string as command parameter
+        WHEN _get_validation_level is called
+        THEN it returns "none" as safe default
+        """
+        from des.orchestrator import DESOrchestrator
+
+        orchestrator = DESOrchestrator()
+        validation_level = orchestrator._get_validation_level("")
+        assert validation_level == "none"

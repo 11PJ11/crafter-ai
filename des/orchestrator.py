@@ -19,7 +19,7 @@ class DESOrchestrator:
     # Commands that require full DES validation
     VALIDATION_COMMANDS = ["/nw:execute", "/nw:develop"]
 
-    def _get_validation_level(self, command: str) -> str:
+    def _get_validation_level(self, command: str | None) -> str:
         """
         Determine validation level based on command type.
 
@@ -28,13 +28,17 @@ class DESOrchestrator:
 
         Returns:
             "full" for execute/develop commands requiring DES validation
-            "none" for research and other exploratory commands
+            "none" for research and other exploratory commands (or invalid input)
         """
+        # Safe default for None or empty command
+        if not command:
+            return "none"
+
         if command in self.VALIDATION_COMMANDS:
             return "full"
         return "none"
 
-    def _generate_des_markers(self, command: str, step_file: str) -> str:
+    def _generate_des_markers(self, command: str | None, step_file: str | None) -> str:
         """
         Generate DES validation markers for execute/develop commands.
 
@@ -44,7 +48,18 @@ class DESOrchestrator:
 
         Returns:
             Formatted DES marker string with validation, step file, and origin markers
+
+        Raises:
+            ValueError: If command or step_file is None or empty
         """
+        # Validate command parameter
+        if not command:
+            raise ValueError("Command cannot be None or empty")
+
+        # Validate step_file parameter
+        if not step_file:
+            raise ValueError("Step file cannot be None or empty")
+
         markers = [
             "<!-- DES-VALIDATION: required -->",
             f"<!-- DES-STEP-FILE: {step_file} -->",
@@ -54,7 +69,7 @@ class DESOrchestrator:
 
     def render_prompt(
         self,
-        command: str,
+        command: str | None,
         agent: str | None = None,
         step_file: str | None = None,
         project_root: str | None = None,
@@ -72,10 +87,22 @@ class DESOrchestrator:
 
         Returns:
             Rendered prompt string with or without DES markers
+
+        Raises:
+            ValueError: If command is None or empty, or if step_file is missing
+                       for validation commands
         """
+        # Validate command parameter
+        if not command:
+            raise ValueError("Command cannot be None or empty")
+
         validation_level = self._get_validation_level(command)
 
         if validation_level == "full":
+            # Validate step_file for validation commands
+            if not step_file:
+                raise ValueError("Step file required for validation commands")
+
             return self._generate_des_markers(command, step_file)
 
         # Research and other commands bypass DES validation
