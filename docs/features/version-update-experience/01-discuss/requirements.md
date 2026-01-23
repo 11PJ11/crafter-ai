@@ -4,7 +4,9 @@
 **Status:** Requirements validated
 **Next Wave:** DESIGN
 **Feature:** Version delivery and update loop for end users
-**Stakeholders:** Mike (framework maintainer + end user), Alessandro (collaborator)
+**Stakeholders:**
+- **Creators:** Mike & Alessandro (framework builders, release management)
+- **Users:** Open source users (current), Enterprise users (future)
 
 ---
 
@@ -45,10 +47,35 @@ Close the "version delivery & update loop" with four components:
 
 ## Personas
 
+### Creators (Framework Builders)
+
+People who BUILD and MAINTAIN nWave. Their workflow is: develop, commit, push, release.
+
 | Persona | Role | Context | Key Need |
 |---------|------|---------|----------|
-| **Mike** | Framework maintainer | Uses nWave daily on MacBook to orchestrate AI agents | Know his version is current, safe updates |
-| **Alessandro** | Contributor/collaborator | Contributes features via PR, needs version tracking | Clear version info for issue reports |
+| **Mike** | Framework creator | Co-creates nWave, maintains codebase, orchestrates releases | Consistent versioning, automated changelog, clean release process |
+| **Alessandro** | Framework co-creator | Contributes features via PR, co-maintains repository | Conventional commits, semantic release, version coherence |
+
+**Creator Pain Points:**
+- Ensuring version consistency across releases
+- Generating accurate changelogs from commit history
+- Enforcing commit conventions for semantic-release
+- CI/CD pipeline reliability for automated releases
+
+### Users (Framework Consumers)
+
+People who USE nWave. Their workflow is: `/nw:version`, `/nw:update`.
+
+| Persona | Role | Context | Key Need |
+|---------|------|---------|----------|
+| **Open Source User** | Individual developer | Installs nWave locally via install script, uses for personal projects | Know installed version, update safely, understand changes |
+| **Enterprise User** (future) | Team member | Uses nWave in corporate environment with compliance requirements | Audit trail, controlled updates, breaking change visibility |
+
+**User Pain Points:**
+- No awareness of installed version
+- Fear of updates (what will break?)
+- No visibility into what changed between versions
+- Developer-focused tooling excludes non-technical users
 
 ---
 
@@ -57,10 +84,11 @@ Close the "version delivery & update loop" with four components:
 ### US-001: Check Installed Version
 
 **Effort Estimate:** ~1 day
+**Persona:** User (Open Source / Enterprise)
 
-**As** Mike, a framework maintainer who uses nWave daily
-**I want** to see my currently installed version
-**So that** I can report issues accurately and know if I'm up to date
+**As** an nWave user
+**I want** to see my currently installed version and whether updates are available
+**So that** I can report issues accurately and know if I'm running the latest version
 
 **Acceptance Criteria:**
 
@@ -94,10 +122,11 @@ Scenario: Network failure during version check
 ### US-002: Update nWave Safely
 
 **Effort Estimate:** ~2-3 days
+**Persona:** User (Open Source / Enterprise)
 
-**As** Mike, a framework maintainer who uses nWave daily
-**I want** to update to the latest version with a safety backup
-**So that** I can recover if something goes wrong
+**As** an nWave user
+**I want** to update to the latest version with automatic backup
+**So that** I can safely upgrade and recover if something goes wrong
 
 **Acceptance Criteria:**
 
@@ -157,10 +186,11 @@ Scenario: Insufficient permissions during update
 ### US-003: Breaking Change Warning
 
 **Effort Estimate:** ~0.5 days (extends US-001)
+**Persona:** User (Open Source / Enterprise)
 
-**As** Alessandro, a contributor who needs to track version changes
-**I want** clear warning when updating across major versions
-**So that** I understand migration may be required
+**As** an nWave user considering an update
+**I want** clear warning when a major version update contains breaking changes
+**So that** I understand migration may be required before I proceed
 
 **Acceptance Criteria:**
 
@@ -185,8 +215,9 @@ Scenario: Minor version update (no warning)
 ### US-004: Automatic Backup Cleanup
 
 **Effort Estimate:** ~0.5 days (extends US-002)
+**Persona:** User (Open Source / Enterprise)
 
-**As** Mike, a framework maintainer who updates frequently
+**As** an nWave user who updates regularly
 **I want** old backups automatically cleaned up
 **So that** my disk doesn't fill with stale backup directories
 
@@ -231,7 +262,127 @@ Scenario: Large number of backups (performance)
 
 ---
 
+### US-005: Conventional Commit Enforcement
+
+**Effort Estimate:** ~1 day
+**Persona:** Creator (Mike / Alessandro)
+
+**As** a framework creator committing changes
+**I want** my commit messages validated against Conventional Commits format
+**So that** semantic-release can automatically determine version bumps and generate changelogs
+
+**Acceptance Criteria:**
+
+```gherkin
+Scenario: Valid conventional commit accepted
+  Given I have staged changes
+  When I commit with message "feat: add user dashboard"
+  Then the commit is accepted
+  And no error is shown
+
+Scenario: Valid scoped commit accepted
+  Given I have staged changes
+  When I commit with message "fix(auth): resolve login timeout issue"
+  Then the commit is accepted
+  And no error is shown
+
+Scenario: Breaking change commit accepted
+  Given I have staged changes
+  When I commit with message "feat!: redesign API endpoints"
+  Then the commit is accepted
+  And no error is shown
+
+Scenario: Invalid commit rejected with guidance
+  Given I have staged changes
+  When I commit with message "fixed the login bug"
+  Then the commit is rejected
+  And I see error showing:
+    | What was wrong    | "fixed the login bug" doesn't match format |
+    | Expected format   | <type>[scope]: <description> |
+    | Examples          | feat: add user authentication |
+    |                   | fix(auth): resolve login timeout |
+    | Reference link    | https://www.conventionalcommits.org/ |
+```
+
+---
+
+### US-006: Pre-push Validation
+
+**Effort Estimate:** ~0.5 days
+**Persona:** Creator (Mike / Alessandro)
+
+**As** a framework creator pushing changes
+**I want** validation that VERSION file and semantic-release config exist
+**So that** releases are always properly configured before code reaches the remote
+
+**Acceptance Criteria:**
+
+```gherkin
+Scenario: Push succeeds when all validations pass
+  Given nWave/VERSION file exists with valid semver format
+  And .releaserc configuration exists
+  When I push to origin
+  Then the push succeeds
+
+Scenario: Push rejected when VERSION file missing
+  Given nWave/VERSION file does not exist
+  When I push to origin
+  Then the push is rejected
+  And I see error:
+    | Check   | VERSION file missing |
+    | Action  | Create nWave/VERSION with current version (e.g., "1.5.7") |
+
+Scenario: Push rejected when semantic-release not configured
+  Given .releaserc configuration does not exist
+  And release.config.js does not exist
+  When I push to origin
+  Then the push is rejected
+  And I see error:
+    | Check   | semantic-release not configured |
+    | Action  | Create .releaserc or run 'npx semantic-release-cli setup' |
+```
+
+---
+
+### US-007: Automated Changelog Generation
+
+**Effort Estimate:** ~1 day (CI/CD setup)
+**Persona:** Creator (Mike / Alessandro)
+
+**As** a framework creator releasing a new version
+**I want** the changelog automatically generated from commit history
+**So that** users can see what changed without manual documentation effort
+
+**Acceptance Criteria:**
+
+```gherkin
+Scenario: Changelog generated on release
+  Given commits since last release:
+    | Commit message                        | Type |
+    | feat: add user dashboard              | feat |
+    | fix(auth): resolve timeout issue      | fix  |
+    | docs: update installation guide       | docs |
+  When semantic-release runs on push to main
+  Then CHANGELOG.md is updated with new section
+  And GitHub Release is created with release notes
+  And release notes include:
+    | Section      | Content                    |
+    | Features     | add user dashboard         |
+    | Bug Fixes    | resolve timeout issue      |
+
+Scenario: Breaking change highlighted in changelog
+  Given a commit with message "feat!: redesign API endpoints"
+  When semantic-release runs
+  Then CHANGELOG.md includes "BREAKING CHANGES" section
+  And GitHub Release prominently shows breaking change warning
+```
+
+---
+
 ## Technical Requirements
+
+> **Note:** TR-001 through TR-004 support **User** stories (version check, update).
+> TR-005 and TR-006 support **Creator** stories (commit validation, release process).
 
 ### TR-001: Version Source of Truth
 
@@ -561,17 +712,29 @@ module.exports = {
 
 ### Requirements Summary
 
+**User Stories (for Users):**
+
+| Story | Requirement | Priority | Status |
+|-------|-------------|----------|--------|
+| US-001 | Version command with GitHub API | HIGH | Defined |
+| US-002 | Update command with backup | HIGH | Defined |
+| US-003 | Breaking change warning | HIGH | Defined |
+| US-004 | Backup auto-cleanup (30 days) | MEDIUM | Defined |
+
+**User Stories (for Creators):**
+
+| Story | Requirement | Priority | Status |
+|-------|-------------|----------|--------|
+| US-005 | Conventional commit enforcement | HIGH | Defined |
+| US-006 | Pre-push validation | HIGH | Defined |
+| US-007 | Automated changelog generation | HIGH | Defined |
+
+**Additional Requirements:**
+
 | Requirement | Priority | Status |
 |-------------|----------|--------|
-| Version command with GitHub API | HIGH | Defined |
-| Update command with backup | HIGH | Defined |
 | Attention-grabbing notification | HIGH | Defined |
-| Breaking change warning | HIGH | Defined |
 | Backup creation and naming | HIGH | Defined |
-| Conventional commit enforcement (TR-005) | HIGH | Defined |
-| Pre-push validation (TR-006) | HIGH | Defined |
-| semantic-release auto-changelog | HIGH | Defined |
-| Backup auto-cleanup (30 days) | MEDIUM | Defined |
 | Network failure handling | MEDIUM | Defined |
 | README documentation | MEDIUM | Defined |
 | Configurable retention | LOW | Deferred |
