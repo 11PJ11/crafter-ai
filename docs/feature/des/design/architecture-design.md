@@ -1,11 +1,11 @@
 # Deterministic Execution System (DES) - Architecture Design
 
-**Version:** 1.1
+**Version:** 1.2
 **Date:** 2026-01-23
 **Author:** Morgan (Solution Architect)
-**Status:** DESIGN Wave Deliverable - Peer Review Revisions Applied
+**Status:** DESIGN Wave Deliverable - Command-Specific Validation Clarification
 **Branch:** `determinism`
-**Review Status:** Addresses CRITICAL and HIGH severity issues from solution-architect-reviewer
+**Review Status:** Clarifies template validation as command-specific (addresses implementation confusion)
 
 ---
 
@@ -215,20 +215,53 @@ def extract_metadata(prompt: str) -> dict:
 - Rendered prompt with DES markers
 - Validation result (pass/fail with errors)
 
-**Mandatory Sections:**
+**Validation Sets (Command-Specific):**
+
+DES supports multiple template validation levels based on command type:
+
+#### Full Validation Template (execute, develop)
+
+Used by `/nw:execute` and `/nw:develop` for TDD cycle enforcement:
+
 1. `DES_METADATA` - Origin, step file, validation flag
 2. `AGENT_IDENTITY` - Who the agent is
 3. `TASK_CONTEXT` - What they're working on
-4. `TDD_14_PHASES` - Complete phase list with criteria
+4. `TDD_14_PHASES` - Complete 14-phase TDD cycle with gate criteria
 5. `QUALITY_GATES` - G1-G6 gate definitions
-6. `OUTCOME_RECORDING` - How to record results
+6. `OUTCOME_RECORDING` - How to record phase results
 7. `BOUNDARY_RULES` - Scope limitations
 8. `TIMEOUT_INSTRUCTION` - Turn discipline
 
+**Template Files:**
+- `nWave/templates/prompt-templates/execute-step.template.md`
+- `nWave/templates/prompt-templates/develop-task.template.md`
+
+#### Partial Validation Template (baseline)
+
+Used by `/nw:baseline` for measurement tasks (NO TDD enforcement):
+
+1. `DES_METADATA` - Origin, step file, validation flag
+2. `AGENT_IDENTITY` - Who the agent is
+3. `TASK_CONTEXT` - What they're measuring
+4. `OUTCOME_RECORDING` - How to record measurements
+5. `BOUNDARY_RULES` - Measurement scope
+
+**Template Files:**
+- `nWave/templates/prompt-templates/baseline.template.md`
+
+#### No Validation (research, review)
+
+Used by `/nw:research` and `/nw:review` - no DES validation applied:
+
+**Template Files:**
+- `nWave/templates/prompt-templates/research-topic.template.md`
+- No template for review (ad-hoc prompts)
+
 **Template Section Markers**
 
-DES uses HTML comment markers to identify mandatory sections for validation:
+DES uses HTML comment markers to identify sections for validation. The required set depends on the command:
 
+**Full Validation Commands** (`/nw:execute`, `/nw:develop`):
 ```markdown
 <!-- DES-SECTION: DES_METADATA -->
 <!-- DES-SECTION: AGENT_IDENTITY -->
@@ -240,38 +273,114 @@ DES uses HTML comment markers to identify mandatory sections for validation:
 <!-- DES-SECTION: TIMEOUT_INSTRUCTION -->
 ```
 
+**Partial Validation Commands** (`/nw:baseline`):
+```markdown
+<!-- DES-SECTION: DES_METADATA -->
+<!-- DES-SECTION: AGENT_IDENTITY -->
+<!-- DES-SECTION: TASK_CONTEXT -->
+<!-- DES-SECTION: OUTCOME_RECORDING -->
+<!-- DES-SECTION: BOUNDARY_RULES -->
+```
+
+**No Validation Commands** (`/nw:research`, `/nw:review`):
+No section markers required - DES validation bypassed.
+
 **Detection Method**
 
-The template validator uses regex pattern matching to detect section presence:
+The template validator uses regex pattern matching to detect section presence with command-specific validation levels:
 
 ```python
 import re
+from typing import Set
 
 SECTION_PATTERN = re.compile(r'<!-- DES-SECTION: (\w+) -->')
 
-def validate_prompt_sections(prompt: str) -> list[str]:
-    """Return list of missing mandatory sections.
-
-    Args:
-        prompt: Complete DES prompt with HTML comment markers
-
-    Returns:
-        List of missing section names (empty if all present)
-    """
-    found_sections = set(SECTION_PATTERN.findall(prompt))
-    required = {
+# Validation sets by command type
+VALIDATION_SETS = {
+    "full": {  # For /nw:execute, /nw:develop
         "DES_METADATA", "AGENT_IDENTITY", "TASK_CONTEXT",
         "TDD_14_PHASES", "QUALITY_GATES", "OUTCOME_RECORDING",
         "BOUNDARY_RULES", "TIMEOUT_INSTRUCTION"
-    }
+    },
+    "partial": {  # For /nw:baseline
+        "DES_METADATA", "AGENT_IDENTITY", "TASK_CONTEXT",
+        "OUTCOME_RECORDING", "BOUNDARY_RULES"
+    },
+    "none": set()  # For /nw:research, /nw:review
+}
+
+def validate_prompt_sections(
+    prompt: str,
+    validation_level: str = "full"
+) -> list[str]:
+    """Return list of missing required sections for validation level.
+
+    Args:
+        prompt: Complete DES prompt with HTML comment markers
+        validation_level: "full", "partial", or "none"
+
+    Returns:
+        List of missing section names (empty if all present or level="none")
+
+    Raises:
+        ValueError: If validation_level is not recognized
+    """
+    if validation_level not in VALIDATION_SETS:
+        raise ValueError(
+            f"Unknown validation level: {validation_level}. "
+            f"Must be one of: {list(VALIDATION_SETS.keys())}"
+        )
+
+    required = VALIDATION_SETS[validation_level]
+    if not required:  # "none" validation level
+        return []
+
+    found_sections = set(SECTION_PATTERN.findall(prompt))
     return list(required - found_sections)
 
 # Example usage in Gate 1 validation
-missing = validate_prompt_sections(rendered_prompt)
+validation_level = determine_validation_level(command_origin)
+missing = validate_prompt_sections(rendered_prompt, validation_level)
 if missing:
     raise TemplateValidationError(
-        f"Prompt missing required sections: {', '.join(missing)}"
+        f"Prompt missing required sections for {validation_level} validation: "
+        f"{', '.join(missing)}"
     )
+```
+
+**Command-to-Validation Mapping**
+
+The DES metadata marker `<!-- DES-ORIGIN: command:/nw:execute -->` determines validation level:
+
+```python
+def determine_validation_level(origin: str) -> str:
+    """Map DES origin to validation level.
+
+    Args:
+        origin: DES-ORIGIN marker value (e.g., "command:/nw:execute")
+
+    Returns:
+        Validation level: "full", "partial", or "none"
+    """
+    if origin in ["command:/nw:execute", "command:/nw:develop"]:
+        return "full"
+    elif origin == "command:/nw:baseline":
+        return "partial"
+    elif origin in ["command:/nw:research", "command:/nw:review", "ad-hoc"]:
+        return "none"
+    else:
+        # Unknown command - default to full validation for safety
+        return "full"
+```
+
+**Validation Decision Flow:**
+
+```
+1. Extract DES-ORIGIN from prompt markers
+2. Determine validation level using determine_validation_level()
+3. Get required sections from VALIDATION_SETS[level]
+4. Validate prompt sections using validate_prompt_sections()
+5. Block Task invocation if sections missing
 ```
 
 **Template Rendering Process:**
@@ -735,13 +844,18 @@ def validate_subagent_execution(hook_event: dict) -> dict:
 
 ### 8.2 nWave Commands
 
-| Command | DES Integration |
-|---------|-----------------|
-| `/nw:execute` | Full validation (Gate 1, 2, 3, 4) |
-| `/nw:develop` | Full validation for sub-tasks |
-| `/nw:baseline` | Partial validation |
-| `/nw:research` | No validation |
-| `/nw:review` | No validation |
+| Command | DES Integration | Validation Level | Required Sections |
+|---------|-----------------|------------------|-------------------|
+| `/nw:execute` | Full validation (Gate 1, 2, 3, 4) | **full** | All 8 sections (with TDD_14_PHASES) |
+| `/nw:develop` | Full validation for sub-tasks | **full** | All 8 sections (with TDD_14_PHASES) |
+| `/nw:baseline` | Partial validation | **partial** | 5 sections (NO TDD_14_PHASES) |
+| `/nw:research` | No validation | **none** | 0 sections (DES bypassed) |
+| `/nw:review` | No validation | **none** | 0 sections (DES bypassed) |
+
+**Rationale:**
+- **Full validation**: TDD cycle enforcement requires complete phase tracking (14 phases + gates)
+- **Partial validation**: Measurement tasks need context and recording but not TDD phases
+- **No validation**: Research and review are exploratory; strict determinism not needed
 
 ### 8.3 Pre-Commit Hook
 
