@@ -1,11 +1,23 @@
 # Deterministic Execution System (DES) - Data Models
 
-**Version:** 1.4
+**Version:** 1.5.0 (CORRECTED)
 **Date:** 2026-01-23
 **Author:** Morgan (Solution Architect)
 **Status:** DESIGN Wave Deliverable - Dataclass-Driven Schema (Single Source of Truth)
 **Canonical Schema Location:** `des/core/models.py` (StepDefinition dataclass)
 **This Document:** Auto-generated documentation from canonical schema
+
+---
+
+**⚠️ VERSION 1.5.0 CORRECTIONS**:
+- **SubagentStop hook schema updated** to reflect real 6-field schema from official Claude Code documentation
+- **Removed non-existent fields**: `agent_id` and `agent_transcript_path` (these fields DO NOT exist in the actual hook)
+- **Added missing field**: `tool_use_id` (provided as Python callback parameter for correlation)
+- **Updated audit event examples** to use `tool_use_id` instead of non-existent `agent_id`
+- **session_id clarification**: Shared across all subagents (not agent-specific)
+- **transcript_path clarification**: Main session transcript, not agent-specific transcript
+
+**Source of Truth**: See `des-discovery-report.md` v2.0 and `architecture-design.md` v1.5.0 for hook field verification
 
 ---
 
@@ -660,7 +672,8 @@ Extracted from `StepDefinition` dataclass:
           "format": "date-time"
         },
         "agent_id": {
-          "type": "string"
+          "type": "string",
+          "description": "Agent identifier for execution record (NOTE: This is a step file field, not a SubagentStop hook field)"
         },
         "result": {
           "type": "string",
@@ -792,9 +805,9 @@ For current implementation, see:
       "minimum": 0,
       "description": "Duration in milliseconds"
     },
-    "agent_id": {
+    "tool_use_id": {
       "type": "string",
-      "description": "Identifier of the agent (for SubagentStop)"
+      "description": "Tool use correlation ID (from SubagentStop hook context, not native field)"
     },
     "recovery_action": {
       "type": "string",
@@ -838,12 +851,12 @@ For current implementation, see:
 
 **SubagentStop Validation (Success):**
 ```json
-{"timestamp":"2026-01-22T11:30:00Z","event":"SUBAGENT_STOP_VALIDATION","step_file":"steps/01-01.json","status":"success","agent_id":"ab7af5b"}
+{"timestamp":"2026-01-22T11:30:00Z","event":"SUBAGENT_STOP_VALIDATION","step_file":"steps/01-01.json","status":"success","tool_use_id":"toolu_01ABC123xyz"}
 ```
 
 **SubagentStop Validation (Error):**
 ```json
-{"timestamp":"2026-01-22T11:30:00Z","event":"SUBAGENT_STOP_VALIDATION","step_file":"steps/01-01.json","status":"error","agent_id":"ab7af5b","errors":["Phase GREEN_UNIT left IN_PROGRESS (abandoned)"]}
+{"timestamp":"2026-01-22T11:30:00Z","event":"SUBAGENT_STOP_VALIDATION","step_file":"steps/01-01.json","status":"error","tool_use_id":"toolu_01ABC123xyz","errors":["Phase GREEN_UNIT left IN_PROGRESS (abandoned)"]}
 ```
 
 **Stale Resolution:**
@@ -904,69 +917,106 @@ def extract_markers(prompt: str) -> dict:
 
 ## 5. Hook Input Schema
 
-### 5.1 SubagentStop Hook Input
+### 5.1 SubagentStop Hook Input (CORRECTED - Real 6-Field Schema)
+
+**⚠️ IMPORTANT CORRECTION**: Previous version incorrectly showed 8 fields including non-existent `agent_id` and `agent_transcript_path`. The schema below reflects the **actual fields** from Claude Code documentation.
+
+**Non-existent fields (DO NOT USE)**:
+- ❌ `agent_id` - Does not exist in hook context
+- ❌ `agent_transcript_path` - Does not exist in hook context
+- ❌ `task_id` - Does not exist in hook context
+- ❌ `start_time` - Does not exist in hook context
+- ❌ `end_time` - Does not exist in hook context
+- ❌ `status` - Does not exist in hook context
+- ❌ `prompt_hash` - Does not exist in hook context
+- ❌ `context_metadata` - Does not exist in hook context
+
+**Real field (added)**:
+- ✅ `tool_use_id` - Provided as Python callback parameter (not in stdin JSON, but available in Python hooks)
 
 ```json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://nwave.ai/schemas/subagent-stop-input.json",
-  "title": "SubagentStop Hook Input",
-  "description": "Input received by SubagentStop hook via stdin",
+  "title": "SubagentStop Hook Input (Real Schema)",
+  "description": "Input received by SubagentStop hook via stdin (6 real fields from Claude Code)",
   "type": "object",
-  "required": ["session_id", "hook_event_name", "agent_id", "agent_transcript_path"],
+  "required": ["hook_event_name", "session_id", "transcript_path", "stop_hook_active", "cwd", "permission_mode"],
   "properties": {
-    "session_id": {
-      "type": "string",
-      "format": "uuid",
-      "description": "Parent session identifier"
-    },
-    "transcript_path": {
-      "type": "string",
-      "description": "Path to parent session transcript"
-    },
-    "cwd": {
-      "type": "string",
-      "description": "Current working directory"
-    },
-    "permission_mode": {
-      "type": "string",
-      "description": "Permission mode of the session"
-    },
     "hook_event_name": {
       "type": "string",
       "const": "SubagentStop",
-      "description": "Event that triggered the hook"
+      "description": "Event that triggered the hook (always 'SubagentStop')"
+    },
+    "session_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Session identifier - NOTE: Shared across ALL subagents in the same session (not agent-specific)"
+    },
+    "transcript_path": {
+      "type": "string",
+      "description": "Path to main session transcript (JSONL format) - NOTE: Not agent-specific, contains all conversation including DES markers in prompt"
     },
     "stop_hook_active": {
       "type": "boolean",
-      "description": "Whether stop hook is active"
+      "description": "Whether the Stop hook is also active (conflict detection)"
     },
-    "agent_id": {
+    "cwd": {
       "type": "string",
-      "description": "Identifier of the sub-agent"
+      "description": "Current working directory at time of hook invocation"
     },
-    "agent_transcript_path": {
+    "permission_mode": {
       "type": "string",
-      "description": "Path to sub-agent transcript file"
+      "description": "Permission mode of the session (e.g., 'auto', 'manual', 'bypassPermissions')"
     }
-  }
+  },
+  "additionalProperties": false
 }
 ```
 
-### 5.2 Example Input
+**Note on `tool_use_id`**: This field is provided as a **Python callback parameter**, not in the stdin JSON. For Python hooks:
 
+```python
+def subagent_stop_hook(input_data: dict, tool_use_id: str, context: dict):
+    # tool_use_id available as parameter
+    # input_data contains the 6 fields above
+    pass
+```
+
+**DES Metadata Extraction Strategy**: Since `agent_id` and `agent_transcript_path` do not exist, DES must extract metadata via **transcript parsing** using DES markers embedded in prompts. See `des-discovery-report.md` v2.0 Section 3.2 for extraction implementation.
+
+### 5.2 Example Input (Real 6-Field Schema)
+
+**stdin JSON** (received by hook):
 ```json
 {
+  "hook_event_name": "SubagentStop",
   "session_id": "786ebad4-6e5b-42d3-a954-c1df6e6f25b7",
   "transcript_path": "/home/user/.claude/projects/-mnt-c-Projects-ai-craft/session.jsonl",
-  "cwd": "/mnt/c/Repositories/Projects/ai-craft",
-  "permission_mode": "bypassPermissions",
-  "hook_event_name": "SubagentStop",
   "stop_hook_active": false,
-  "agent_id": "ab7af5b",
-  "agent_transcript_path": "/home/user/.claude/projects/-mnt-c-Projects-ai-craft/subagents/agent-ab7af5b.jsonl"
+  "cwd": "/mnt/c/Repositories/Projects/ai-craft",
+  "permission_mode": "bypassPermissions"
 }
 ```
+
+**Python callback parameters** (for Python hooks):
+```python
+# Function signature for Python hooks
+def subagent_stop_hook(
+    input_data: dict,      # Contains the 6 fields above
+    tool_use_id: str,      # "toolu_01ABC123xyz" - for correlation
+    context: dict          # Additional hook context
+):
+    # tool_use_id is available here but NOT in stdin JSON
+    # Example: "toolu_01ABC123xyz"
+    pass
+```
+
+**What happened to `agent_id` and `agent_transcript_path`?**
+- These fields **DO NOT EXIST** in the real Claude Code SubagentStop hook
+- Previous versions incorrectly showed them as hook fields
+- DES must extract agent identity via **transcript parsing** using DES markers
+- See `des-discovery-report.md` v2.0 Section 3.2 for extraction approach
 
 ---
 
