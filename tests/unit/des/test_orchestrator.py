@@ -163,3 +163,51 @@ class TestDESOrchestrator:
         assert "<!-- DES-VALIDATION:" not in prompt
         assert "<!-- DES-STEP-FILE:" not in prompt
         assert "<!-- DES-ORIGIN:" not in prompt
+
+    def test_get_validation_level_returns_full_for_execute(self):
+        """
+        GIVEN /nw:execute command
+        WHEN _get_validation_level is called
+        THEN it returns "full"
+        """
+        from des.orchestrator import DESOrchestrator
+
+        orchestrator = DESOrchestrator()
+        validation_level = orchestrator._get_validation_level("/nw:execute")
+        assert validation_level == "full"
+
+    def test_get_validation_level_returns_full_for_develop(self):
+        """
+        GIVEN /nw:develop command
+        WHEN _get_validation_level is called
+        THEN it returns "full"
+        """
+        from des.orchestrator import DESOrchestrator
+
+        orchestrator = DESOrchestrator()
+        validation_level = orchestrator._get_validation_level("/nw:develop")
+        assert validation_level == "full"
+
+    def test_get_validation_level_returns_none_for_research(self):
+        """
+        GIVEN /nw:research command
+        WHEN _get_validation_level is called
+        THEN it returns "none"
+        """
+        from des.orchestrator import DESOrchestrator
+
+        orchestrator = DESOrchestrator()
+        validation_level = orchestrator._get_validation_level("/nw:research")
+        assert validation_level == "none"
+
+    def test_get_validation_level_returns_none_for_unknown_command(self):
+        """
+        GIVEN unknown command
+        WHEN _get_validation_level is called
+        THEN it returns "none" (safe default)
+        """
+        from des.orchestrator import DESOrchestrator
+
+        orchestrator = DESOrchestrator()
+        validation_level = orchestrator._get_validation_level("/nw:unknown")
+        assert validation_level == "none"

@@ -19,6 +19,21 @@ class DESOrchestrator:
     # Commands that require full DES validation
     VALIDATION_COMMANDS = ["/nw:execute", "/nw:develop"]
 
+    def _get_validation_level(self, command: str) -> str:
+        """
+        Determine validation level based on command type.
+
+        Args:
+            command: Command string (e.g., "/nw:execute", "/nw:research")
+
+        Returns:
+            "full" for execute/develop commands requiring DES validation
+            "none" for research and other exploratory commands
+        """
+        if command in self.VALIDATION_COMMANDS:
+            return "full"
+        return "none"
+
     def render_prompt(
         self,
         command: str,
@@ -40,7 +55,9 @@ class DESOrchestrator:
         Returns:
             Rendered prompt string with or without DES markers
         """
-        if command in self.VALIDATION_COMMANDS:
+        validation_level = self._get_validation_level(command)
+
+        if validation_level == "full":
             # Build prompt with DES validation markers
             markers = [
                 "<!-- DES-VALIDATION: required -->",
