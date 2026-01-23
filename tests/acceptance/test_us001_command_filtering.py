@@ -23,8 +23,6 @@ SOURCE:
 - docs/feature/des/design/architecture-design.md (Section 4.1)
 """
 
-import pytest
-
 
 class TestCommandOriginFiltering:
     """
@@ -34,9 +32,6 @@ class TestCommandOriginFiltering:
     Task invocations while allowing ad-hoc exploration to bypass validation.
     """
 
-    @pytest.mark.skip(
-        reason="Outside-In TDD RED state - will be unskipped during DEVELOP wave"
-    )
     def test_execute_command_includes_des_validation_marker(
         self, tmp_project_root, minimal_step_file, des_orchestrator
     ):
@@ -82,9 +77,6 @@ class TestCommandOriginFiltering:
             "<!-- DES-ORIGIN: command:/nw:execute -->" in prompt
         ), "Origin marker missing - audit trail cannot track command source"
 
-    @pytest.mark.skip(
-        reason="Outside-In TDD RED state - will be unskipped during DEVELOP wave"
-    )
     def test_ad_hoc_task_bypasses_des_validation(
         self, tmp_project_root, des_orchestrator
     ):
@@ -125,9 +117,6 @@ class TestCommandOriginFiltering:
             "<!-- DES-ORIGIN:" not in prompt
         ), "Ad-hoc tasks have no command origin tracking"
 
-    @pytest.mark.skip(
-        reason="Outside-In TDD RED state - will be unskipped during DEVELOP wave"
-    )
     def test_research_command_skips_full_validation(
         self, tmp_project_root, des_orchestrator
     ):
@@ -155,22 +144,18 @@ class TestCommandOriginFiltering:
             command=command, topic=research_topic, project_root=tmp_project_root
         )
 
-        # THEN: Full validation not required
-        # Research may have DES-ORIGIN tracking for audit, but not validation
-        if "<!-- DES-VALIDATION:" in prompt:
-            # If present, must be "none" not "required"
-            assert (
-                "<!-- DES-VALIDATION: none -->" in prompt
-            ), "Research commands should not require full DES validation"
+        # THEN: NO DES validation markers (validation_level = "none")
+        # Architecture decision (v1.6.0, line 417): Research commands bypass ALL validation
+        # Research commands grouped with ad-hoc tasks - no markers, no overhead
+        assert (
+            "<!-- DES-VALIDATION:" not in prompt
+        ), "Research commands must have NO DES-VALIDATION marker (validation_level='none')"
 
         # No step file required for research
         assert (
             "<!-- DES-STEP-FILE:" not in prompt
         ), "Research commands do not use step files"
 
-    @pytest.mark.skip(
-        reason="Outside-In TDD RED state - will be unskipped during DEVELOP wave"
-    )
     def test_develop_command_includes_des_validation_marker(
         self, tmp_project_root, minimal_step_file, des_orchestrator
     ):
