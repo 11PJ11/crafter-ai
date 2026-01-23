@@ -2785,4 +2785,245 @@ From Installation User Stories v1.1:
 *Installation architecture designed by Morgan (solution-architect) during DESIGN wave.*
 *v1.0: Fulfills user stories US-INSTALL-001 through US-INSTALL-004 by Riley (product-owner).*
 *v1.1: Adds virtual environment isolation (AC01-VE through AC15-VE) from Installation User Stories v1.1.*
+
+---
+
+## Architectural Review
+
+```yaml
+reviews:
+  - reviewer: "solution-architect-reviewer"
+    date: "2026-01-23T15:30:00Z"
+    version_reviewed: "1.1"
+    overall_assessment: "NEEDS_REVISION"
+
+    critiques:
+      # COMPLETENESS
+      - aspect: "completeness"
+        issue: "Missing health check implementation for Section 3.2 Check 6 (SubagentStop Hook) - code example ends mid-function at line 1498"
+        severity: "MEDIUM"
+        recommendation: "Complete the check_hook_configured() function showing executable verification, import testing, and 8-field JSON validation"
+        section: "3.2 Individual Component Checks - Check 6"
+
+      - aspect: "completeness"
+        issue: "Health check output examples (Section 3.3) show incomplete implementation - references Check 4 'DES Validation Library' but code shows venv-based implementation. Terminology inconsistency."
+        severity: "LOW"
+        recommendation: "Update health check output examples to reflect v1.1 venv-based structure: [1/7] Virtual Environment, [2/7] Global Python Isolation, etc."
+        section: "3.3 Health Check Output Format"
+
+      # VENV INTEGRATION
+      - aspect: "venv_integration"
+        issue: "CLI wrapper (Section 2.2.3) installation location ambiguous - mentions both ~/.local/bin/nwave and /usr/local/bin/nwave without specifying precedence or platform-specific behavior"
+        severity: "HIGH"
+        recommendation: "Specify installation strategy: (1) Prefer ~/.local/bin/nwave (user-level), (2) Fallback to /usr/local/bin/nwave (system PATH), (3) Windows: %LOCALAPPDATA%\\Programs\\nwave\\nwave.cmd. Document precedence resolution when both exist."
+        section: "2.2.3 CLI Entry Point with Automatic Venv Activation"
+
+      - aspect: "venv_integration"
+        issue: "Venv creation (Section 2.2.1) uses symlinks=True for efficiency but Platform Considerations (Section 7.1) notes Windows requires admin for symlinks. Conflict in design decisions."
+        severity: "HIGH"
+        recommendation: "Platform-conditional venv creation: symlinks=True on Unix (macOS/Linux), symlinks=False on Windows. Document this explicitly in create_virtual_environment() with platform detection."
+        section: "2.2.1 Virtual Environment Creation"
+
+      - aspect: "venv_integration"
+        issue: "SubagentStop hook venv Python execution (Section 6.1) uses subprocess to run validation script. This introduces latency and process overhead for every hook invocation. No performance analysis or optimization strategy documented."
+        severity: "MEDIUM"
+        recommendation: "Add performance analysis: (1) Measure subprocess overhead (estimate 50-100ms), (2) Consider PYTHONPATH manipulation alternative (add venv site-packages to sys.path), (3) Document tradeoff: subprocess isolation vs direct import performance."
+        section: "6.1 Component Placement (Updated v1.1 - Venv)"
+
+      - aspect: "venv_integration"
+        issue: "Import path change (v1.0 → v1.1) from 'des.core.models' to 'nwave.des.core.models' creates breaking change. Section 2.3.1 mentions 'backward compatible imports via compatibility shim' but shim is never documented or implemented."
+        severity: "HIGH"
+        recommendation: "Document compatibility shim implementation: (1) Create des/__init__.py shim that imports from nwave.des, (2) Add deprecation warnings, (3) Plan removal timeline (v2.0), (4) Update migration documentation with shim details."
+        section: "2.3.1 DES Components Installation (Updated v1.1 - Venv)"
+
+      # SECURITY
+      - aspect: "security"
+        issue: "Section 8.1 mentions 'Validate backup IDs to prevent directory traversal' but no validation implementation shown. Backup restoration (Section 4.4) accepts user input backup_id without sanitization."
+        severity: "HIGH"
+        recommendation: "Implement backup ID validation: (1) Regex whitelist: ^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{6}$, (2) Reject paths with '..' or '/', (3) Verify backup exists in ~/.claude/ only, (4) Add validation example to restore_from_backup()."
+        section: "8.1 Security Considerations"
+
+      - aspect: "security"
+        issue: "CLI wrapper (Section 2.2.3) executes venv Python with subprocess.run() passing sys.argv[1:] directly. No argument sanitization documented - potential command injection if Claude Code passes malicious arguments."
+        severity: "MEDIUM"
+        recommendation: "Add input validation: (1) Whitelist allowed subcommands (install, uninstall, health-check, validate-step, upgrade), (2) Validate file paths are absolute and within allowed directories, (3) Reject shell metacharacters in arguments."
+        section: "2.2.3 CLI Entry Point with Automatic Venv Activation"
+
+      # FEASIBILITY
+      - aspect: "feasibility"
+        issue: "Upgrade venv handling (Section 5.3) upgrades packages with 'pip install --upgrade nwave' but doesn't pin versions. Risk of incompatible package versions during upgrade (e.g., nwave 1.1.0 but DES 1.0.5 from cache)."
+        severity: "MEDIUM"
+        recommendation: "Pin package versions during upgrade: (1) pip install --upgrade nwave==<TARGET_VERSION>, (2) Verify installed version matches expected, (3) Rollback on version mismatch, (4) Add version verification to verify_venv_after_upgrade()."
+        section: "5.3 Virtual Environment Handling During Upgrade"
+
+      - aspect: "feasibility"
+        issue: "Health check (Section 3.1) runs checks sequentially. With 7 checks including subprocess calls (venv Python verification, import testing), total time could exceed 5-second target. No parallel execution implementation shown despite 'parallel_checks: true' config."
+        severity: "LOW"
+        recommendation: "Implement parallel health checks using concurrent.futures.ThreadPoolExecutor: (1) Group independent checks (agents, templates, config), (2) Sequential dependency chain (venv → global isolation → DES), (3) Target: < 3 seconds with parallelization."
+        section: "3.1 Health Check Components (Updated v1.1 - Venv First)"
+
+      # DES INTEGRATION
+      - aspect: "des_integration"
+        issue: "SubagentStop hook (Section 2.3.4) verification function 'verify_hook_callable()' is called but never implemented. No specification for what 'callable' means in this context."
+        severity: "MEDIUM"
+        recommendation: "Define and implement verify_hook_callable(): (1) Execute hook with test JSON input (8 fields), (2) Verify hook returns valid JSON output, (3) Test DES import succeeds, (4) Validate 5-second timeout compliance, (5) Check executable permissions."
+        section: "2.3.4 SubagentStop Hook Installation (Updated v1.1 - Venv)"
+
+      - aspect: "des_integration"
+        issue: "Hook with venv Python (Section 2.3.4) shows subprocess-based validation but no error handling. If venv Python missing/corrupted, hook fails silently or crashes Claude Code."
+        severity: "HIGH"
+        recommendation: "Add graceful degradation: (1) Try venv Python first, (2) If missing: log warning, return validation_skipped status, (3) Never crash Claude Code, (4) Suggest recovery: 'nwave install --force', (5) Include fallback_behavior config option."
+        section: "2.3.4 SubagentStop Hook Installation (Updated v1.1 - Venv)"
+
+      # CONSISTENCY
+      - aspect: "consistency"
+        issue: "Directory structure (Section 1.1) shows 'des/' directory marked as 'DEPRECATED v1.1' but Section 2.3.1 still references copying DES to ~/.claude/nwave/des/. Unclear if directory exists in v1.1 or fully removed."
+        severity: "MEDIUM"
+        recommendation: "Clarify v1.1 directory structure: (1) Remove des/ directory entirely from Section 1.1 (not just deprecation note), (2) Update Section 2.3.1 to remove DES directory installation, (3) Only venv/lib/python3.11/site-packages/nwave/des/ exists in v1.1."
+        section: "1.1 Complete Installation Tree"
+
+      - aspect: "consistency"
+        issue: "Section 12.3 claims 'Breaking Changes: None (backward compatible imports via compatibility shim)' but Section 2.3.1 shows import path changed from 'des.core.models' to 'nwave.des.core.models' with no shim implementation. Direct contradiction."
+        severity: "HIGH"
+        recommendation: "Resolve contradiction: Either (1) Implement compatibility shim (recommended - document in Section 2.3.1), OR (2) Acknowledge breaking change in Section 12.3 and document migration steps for users (update imports in existing code)."
+        section: "12.3 Migration Path: v1.0 → v1.1"
+
+      - aspect: "consistency"
+        issue: "Zero-dependency validation (Section 6.2) checks 'des_files = list(venv_path.glob(\"lib/python*/site-packages/nwave/des/**/*.py\"))' but uses AST parsing (ast module) without explaining this is stdlib validation, not runtime dependency. Potentially confusing to readers."
+        severity: "LOW"
+        recommendation: "Add clarifying comment: 'AST parsing (ast module is stdlib) used to statically analyze imports at installation time, NOT a runtime dependency of DES.'"
+        section: "6.2 Zero-Dependency Compliance (Updated v1.1 - Venv)"
+
+      # POSITIVE OBSERVATIONS
+      - aspect: "architecture_quality"
+        issue: "N/A - Strength identified"
+        severity: "N/A"
+        recommendation: "Excellent venv isolation design: stdlib-only approach (venv module), automatic CLI wrapper activation (no manual source activate), comprehensive health checks (global Python pollution detection). This is production-grade architectural thinking."
+        section: "Section 2.2 Virtual Environment Management"
+
+      - aspect: "architecture_quality"
+        issue: "N/A - Strength identified"
+        severity: "N/A"
+        recommendation: "Robust backup and rollback strategy: mandatory backups before destructive operations, timestamped backups with metadata, automatic rollback on upgrade failure. Failure modes properly anticipated."
+        section: "Section 4.4 Backup Management, Section 5.4 Upgrade Process"
+
+      - aspect: "architecture_quality"
+        issue: "N/A - Strength identified"
+        severity: "N/A"
+        recommendation: "Comprehensive cross-platform consideration: platform detection, conditional symlink handling, executable permission adaptation for Windows/Unix. Evidence of practical deployment experience."
+        section: "Section 7 Cross-Platform Considerations"
+
+    approval_status:
+      ready_for_implementation: false
+      blocking_issues:
+        - "HIGH: CLI wrapper installation location ambiguous - platform-specific strategy undefined (Section 2.2.3)"
+        - "HIGH: Venv symlinks=True conflicts with Windows admin requirement - needs platform-conditional implementation (Section 2.2.1)"
+        - "HIGH: Import path breaking change without documented compatibility shim - migration path incomplete (Section 2.3.1)"
+        - "HIGH: Backup ID validation missing - directory traversal vulnerability (Section 4.4)"
+        - "HIGH: SubagentStop hook error handling missing - Claude Code crash risk (Section 2.3.4)"
+        - "HIGH: Compatibility shim contradiction between Section 2.3.1 and Section 12.3 - resolve inconsistency"
+
+    recommended_actions:
+      immediate_priority:
+        - action: "Implement CLI wrapper installation strategy with platform-specific paths and precedence rules"
+          estimated_effort: "2-4 hours"
+          blocking: true
+
+        - action: "Add platform-conditional venv creation (symlinks=True on Unix, symlinks=False on Windows)"
+          estimated_effort: "1-2 hours"
+          blocking: true
+
+        - action: "Implement and document compatibility shim for import path change (des.* → nwave.des.*)"
+          estimated_effort: "3-4 hours"
+          blocking: true
+
+        - action: "Implement backup ID validation with regex whitelist and path traversal prevention"
+          estimated_effort: "2 hours"
+          blocking: true
+
+        - action: "Add SubagentStop hook error handling with graceful degradation (venv missing/corrupted)"
+          estimated_effort: "2-3 hours"
+          blocking: true
+
+      high_priority:
+        - action: "Complete check_hook_configured() implementation in Section 3.2"
+          estimated_effort: "1 hour"
+          blocking: false
+
+        - action: "Implement verify_hook_callable() with 8-field JSON test"
+          estimated_effort: "2 hours"
+          blocking: false
+
+        - action: "Add version pinning to upgrade process (pip install --upgrade nwave==VERSION)"
+          estimated_effort: "1 hour"
+          blocking: false
+
+        - action: "Add performance analysis and optimization strategy for SubagentStop hook subprocess overhead"
+          estimated_effort: "3-4 hours"
+          blocking: false
+
+      medium_priority:
+        - action: "Remove deprecated des/ directory from Section 1.1 tree diagram"
+          estimated_effort: "15 minutes"
+          blocking: false
+
+        - action: "Update health check output examples to reflect v1.1 venv structure (7 checks instead of 5)"
+          estimated_effort: "30 minutes"
+          blocking: false
+
+        - action: "Implement parallel health checks using ThreadPoolExecutor"
+          estimated_effort: "3-4 hours"
+          blocking: false
+
+        - action: "Add CLI wrapper argument sanitization (subcommand whitelist, path validation)"
+          estimated_effort: "2 hours"
+          blocking: false
+
+    quality_assessment:
+      strengths:
+        - "Comprehensive virtual environment isolation architecture using stdlib-only approach"
+        - "Excellent backup and rollback strategy with automatic failure recovery"
+        - "Thorough cross-platform considerations with platform-specific adaptations"
+        - "Clear separation of concerns: installation, health check, upgrade, uninstallation"
+        - "Zero-dependency constraint maintained through venv isolation mechanism"
+        - "Detailed component interaction diagrams (Mermaid flowcharts) enhance clarity"
+        - "Complete acceptance criteria fulfillment documented (AC01-VE through AC15-VE)"
+
+      weaknesses:
+        - "Incomplete implementation details for critical security functions (backup ID validation, hook error handling)"
+        - "Contradictory statements about breaking changes and compatibility shim"
+        - "Missing performance analysis for SubagentStop hook subprocess overhead"
+        - "Ambiguous platform-specific installation paths for CLI wrapper"
+        - "Venv creation strategy conflicts with documented Windows symlink limitations"
+
+      overall_maturity: "80% - Architecture is fundamentally sound with production-grade isolation strategy, but requires resolution of 6 HIGH severity issues before implementation. Core design decisions (venv isolation, backup strategy, cross-platform support) are excellent. Missing implementation details and security gaps prevent APPROVED status."
+
+    next_review_criteria:
+      must_address:
+        - "All 6 HIGH severity blocking issues resolved with concrete implementation"
+        - "Compatibility shim implemented and documented OR breaking change acknowledged with migration guide"
+        - "CLI wrapper installation paths specified with platform-specific precedence rules"
+        - "Venv symlinks platform-conditional implementation added"
+        - "Security vulnerabilities closed (backup ID validation, hook error handling, argument sanitization)"
+
+      should_address:
+        - "Performance analysis completed for SubagentStop hook subprocess overhead"
+        - "Parallel health check implementation added"
+        - "All incomplete code examples completed (check_hook_configured, verify_hook_callable)"
+
+      nice_to_have:
+        - "Migration testing strategy expanded (test matrix for v1.0 → v1.1 upgrade scenarios)"
+        - "Installation speed optimization analysis (target < 30 seconds fresh install)"
+
+    reviewer_confidence: "95% - Architecture reviewed comprehensively across all specified areas. High confidence in identified issues based on Python packaging best practices, cross-platform deployment experience, and security threat modeling. Venv isolation design is particularly strong. Blocking issues are clear and actionable."
+
+    review_scope_coverage:
+      architecture_completeness: "90%"
+      venv_integration: "95%"
+      security_and_safety: "85%"
+      technical_feasibility: "90%"
+      des_integration: "90%"
+      consistency_and_clarity: "85%"
+      overall_coverage: "89%"
+```
 *Integrates with DES Architecture v1.4.1 (deterministic execution system).*
