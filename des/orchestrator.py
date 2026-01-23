@@ -16,6 +16,9 @@ class DESOrchestrator:
     - Track command origin for audit trail
     """
 
+    # Commands that require full DES validation
+    VALIDATION_COMMANDS = ["/nw:execute", "/nw:develop"]
+
     def render_prompt(
         self,
         command: str,
@@ -37,10 +40,7 @@ class DESOrchestrator:
         Returns:
             Rendered prompt string with or without DES markers
         """
-        # Commands requiring DES validation
-        validation_commands = ["/nw:execute", "/nw:develop"]
-
-        if command in validation_commands:
+        if command in self.VALIDATION_COMMANDS:
             # Build prompt with DES validation markers
             markers = [
                 "<!-- DES-VALIDATION: required -->",
