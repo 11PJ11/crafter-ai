@@ -1,11 +1,11 @@
 # Deterministic Execution System (DES) - Architecture Design
 
-**Version:** 1.4
+**Version:** 1.4.1
 **Date:** 2026-01-23
 **Author:** Morgan (Solution Architect)
-**Status:** DESIGN Wave Deliverable - Schema Validation Strategy (Dataclass-Based Type Safety)
+**Status:** Review Conditions Addressed - Workflow Validation, Retry Feedback, Workflow-Aware Defaults
 **Branch:** `determinism`
-**Review Status:** Addresses robustness gaps in field access, validation timing, and schema-code synchronization
+**Review Status:** Approved with conditions - v1.4.1 addresses workflow-specific validation, structured retry feedback loop, and workflow-aware safe defaults
 
 ---
 
@@ -696,20 +696,53 @@ class StepDefinition:
         """
         Validate structure and apply safe defaults.
 
+        Workflow-specific validation ensures TDD cycle and configuration_setup
+        have required fields for their respective workflows (v1.4.1 fix).
+
         Raises:
             ValidationError: If structure is invalid
         """
         self._apply_safe_defaults()
+
+        # Common validation
         self._validate_file_patterns()
         self._validate_workflow_type()
         self._validate_dependencies()
-        self._validate_safety()
+
+        # Workflow-specific validation (v1.4.1 addition)
+        if self.workflow_type == "tdd_cycle":
+            self._validate_tdd_requirements()
+        elif self.workflow_type == "configuration_setup":
+            self._validate_config_requirements()
 
     def _apply_safe_defaults(self):
-        """Apply restrictive defaults for security-critical fields."""
+        """
+        Apply restrictive defaults for security-critical fields.
+
+        Defaults are workflow-type-aware (v1.4.1):
+        - tdd_cycle: Source and test directories (implementation needs code access)
+        - configuration_setup: Feature documentation only (config tasks don't modify code)
+        """
         if self.allowed_file_patterns is None:
-            # Safe default: Scope to feature directory only
-            self.allowed_file_patterns = [f"docs/feature/{self.feature_name}/**"]
+            # Workflow-aware defaults (v1.4.1 improvement)
+            if self.workflow_type == "tdd_cycle":
+                # TDD cycle needs source code and test access
+                self.allowed_file_patterns = [
+                    f"src/**/*.py",           # Source code
+                    f"tests/**/*.py",         # Test files
+                    f"docs/feature/{self.feature_name}/**"  # Feature documentation
+                ]
+            elif self.workflow_type == "configuration_setup":
+                # Configuration tasks scope to documentation only (safe default)
+                self.allowed_file_patterns = [
+                    f"docs/feature/{self.feature_name}/**",
+                    f".env*",                 # Environment files
+                    f"*.yaml", f"*.yml",      # Configuration files
+                    f"*.json"                 # Configuration files
+                ]
+            else:
+                # Unknown workflow type - most restrictive default
+                self.allowed_file_patterns = [f"docs/feature/{self.feature_name}/**"]
 
     def _validate_file_patterns(self):
         """Validate allowed_file_patterns structure and content."""
@@ -774,6 +807,47 @@ class StepDefinition:
                         f"Step {self.id}: Destructive operation requires rollback_plan in safety metadata"
                     )
 
+    def _validate_tdd_requirements(self):
+        """
+        Validate TDD cycle workflow requirements (v1.4.1).
+
+        TDD cycle tasks must have acceptance criteria to enable
+        Outside-In TDD with acceptance test first approach.
+        """
+        if not self.acceptance_criteria or len(self.acceptance_criteria) == 0:
+            raise ValidationError(
+                f"Step {self.id}: TDD cycle workflow requires acceptance_criteria. "
+                f"Cannot implement Outside-In TDD without defined acceptance criteria."
+            )
+
+        # Validate criteria are meaningful (not just placeholders)
+        for criterion in self.acceptance_criteria:
+            if not isinstance(criterion, str) or len(criterion.strip()) < 10:
+                raise ValidationError(
+                    f"Step {self.id}: Acceptance criterion '{criterion}' too short. "
+                    f"Must be meaningful statement (min 10 chars)."
+                )
+
+    def _validate_config_requirements(self):
+        """
+        Validate configuration_setup workflow requirements (v1.4.1).
+
+        Configuration tasks must declare safety metadata to enable
+        pre-execution safety gates.
+        """
+        if not isinstance(self.safety, dict):
+            raise ValidationError(
+                f"Step {self.id}: configuration_setup workflow requires safety metadata object"
+            )
+
+        # If destructive, rollback plan is mandatory
+        if self.safety.get("is_destructive", False):
+            if not self.safety.get("rollback_plan") or len(self.safety.get("rollback_plan", "").strip()) == 0:
+                raise ValidationError(
+                    f"Step {self.id}: Destructive configuration_setup operation requires rollback_plan. "
+                    f"Provide exact commands to undo changes (e.g., 'rm -rf /path/to/created/dir')."
+                )
+
     @classmethod
     def from_json(cls, step_data: dict) -> "StepDefinition":
         """
@@ -825,32 +899,124 @@ class StepDefinition:
 
 ```python
 # During roadmap → steps generation
+import re
+import json
+
 def generate_step_from_template(template: dict, max_retries: int = 3) -> StepDefinition:
-    """Generate and validate step file from AI template."""
+    """
+    Generate and validate step file from AI template with structured feedback loop (v1.4.1).
+
+    Args:
+        template: Roadmap step template with context
+        max_retries: Maximum generation attempts before abort
+
+    Returns:
+        Validated StepDefinition instance
+
+    Raises:
+        ValidationError: If generation fails after max_retries
+    """
+    validation_errors = []  # Accumulate errors for feedback
+
     for attempt in range(max_retries):
         try:
-            # AI generates step JSON
-            step_json = ai_generate_step(template)
+            # Build prompt with accumulated feedback
+            prompt_context = {
+                "template": template,
+                "attempt": attempt + 1,
+                "previous_errors": validation_errors if attempt > 0 else None,
+                "schema_hints": _generate_schema_hints(validation_errors) if attempt > 0 else None
+            }
+
+            # AI generates step JSON with feedback
+            step_json = ai_generate_step(prompt_context)
 
             # Validate by constructing dataclass
             step = StepDefinition.from_json(step_json)
 
-            logger.info(f"Step {step.id} validated successfully (attempt {attempt + 1})")
+            logger.info(f"Step {step.id} validated successfully on attempt {attempt + 1}")
             return step
 
         except ValidationError as e:
-            logger.warning(f"Step validation failed (attempt {attempt + 1}/{max_retries}): {e}")
+            # Capture structured error for feedback loop
+            error_detail = {
+                "attempt": attempt + 1,
+                "error_type": type(e).__name__,
+                "error_message": str(e),
+                "field": _extract_field_from_error(e),  # Parse field name from error
+                "suggestion": _generate_fix_suggestion(e)  # Actionable fix
+            }
+            validation_errors.append(error_detail)
+
+            logger.warning(
+                f"Step validation failed (attempt {attempt + 1}/{max_retries}): {e}\n"
+                f"Suggestion: {error_detail['suggestion']}"
+            )
+
             if attempt < max_retries - 1:
-                # Retry with schema hints
+                # Retry with structured feedback
+                logger.info(f"Retrying with schema hints based on: {error_detail['field']}")
                 continue
             else:
-                raise ValidationError(f"Step generation failed after {max_retries} attempts: {e}")
+                # Max retries exhausted - provide diagnostic report
+                raise ValidationError(
+                    f"Step generation failed after {max_retries} attempts. "
+                    f"Validation errors: {json.dumps(validation_errors, indent=2)}"
+                )
+
+def _extract_field_from_error(error: ValidationError) -> str:
+    """Extract field name from validation error message."""
+    # Parse error message like "Step 01-01: acceptance_criteria is required"
+    match = re.search(r'Step \d+-\d+: (\w+)', str(error))
+    return match.group(1) if match else "unknown"
+
+def _generate_fix_suggestion(error: ValidationError) -> str:
+    """Generate actionable fix suggestion based on error type."""
+    error_msg = str(error).lower()
+
+    if "acceptance_criteria" in error_msg and "required" in error_msg:
+        return "Add acceptance_criteria array with specific, testable statements (e.g., ['Token is valid JWT format', 'Login returns 200 OK'])"
+
+    if "rollback_plan" in error_msg:
+        return "Add safety.rollback_plan with exact undo commands (e.g., 'rm -rf /created/directory')"
+
+    if "allowed_file_patterns" in error_msg and "empty" in error_msg:
+        return "Add allowed_file_patterns array with glob patterns (e.g., ['src/auth/**/*.py', 'tests/auth/**/*.py'])"
+
+    if "workflow_type" in error_msg:
+        return "Set workflow_type to 'tdd_cycle' (for code with tests) or 'configuration_setup' (for infrastructure)"
+
+    return "Review StepDefinition schema and ensure all required fields are present"
+
+def _generate_schema_hints(validation_errors: list[dict]) -> str:
+    """
+    Generate schema hints from accumulated validation errors.
+
+    Returns human-readable hint for AI prompt injection.
+    """
+    if not validation_errors:
+        return ""
+
+    latest_error = validation_errors[-1]
+    field = latest_error["field"]
+    suggestion = latest_error["suggestion"]
+
+    return f"""
+SCHEMA CORRECTION NEEDED:
+Previous attempt failed validation on field: {field}
+Error: {latest_error["error_message"]}
+Fix: {suggestion}
+
+Ensure your generated JSON includes this correction before submitting.
+"""
 ```
 
-**Benefits**:
-- Catches AI generation errors immediately
-- Prevents invalid step files from being created
-- Provides feedback loop for template improvement
+**Feedback Loop Benefits** (v1.4.1):
+
+- **Structured Errors**: AI receives field name, error type, and actionable fix
+- **Iterative Improvement**: Each retry includes specific schema hints
+- **Diagnostic Report**: After max retries, complete error history available for debugging
+- **Faster Convergence**: AI learns from mistakes, typically succeeds by attempt 2
 
 **Layer 2: Pre-Execution Validation** (Gate 1)
 
@@ -907,14 +1073,26 @@ def execute_step(step_file_path: str) -> ExecutionResult:
 
 | Field | Default Value | Rationale |
 |-------|---------------|-----------|
-| `allowed_file_patterns` | `["docs/feature/{feature}/**"]` | Scope to feature directory only, prevent accidental scope creep |
+| `allowed_file_patterns` | **Workflow-aware** (v1.4.1)<br>- `tdd_cycle`: `["src/**/*.py", "tests/**/*.py", "docs/feature/{feature}/**"]`<br>- `configuration_setup`: `["docs/feature/{feature}/**", ".env*", "*.yaml", "*.json"]` | TDD cycle needs code access for implementation; configuration tasks need config file access but not source code |
 | `workflow_type` | **REQUIRED** (no default) | Must be explicit - no assumptions about task type |
+| `acceptance_criteria` | **REQUIRED for tdd_cycle** (no default) | TDD cycle cannot proceed without defined acceptance tests |
 | `safety.is_destructive` | `false` | Safe default - operations assumed non-destructive unless declared |
 | `safety.affects_production` | `false` | Safe default - production changes require explicit declaration |
 
+**NOTE on Workflow-Aware Defaults** (v1.4.1):
+
+The v1.4 uniform default (`["docs/feature/{feature}/**"]`) was too restrictive for TDD cycle workflows. Steps requiring source code implementation would trigger scope violations during legitimate development.
+
+The v1.4.1 improvement provides workflow-specific defaults:
+- **TDD cycle**: Grants access to `src/`, `tests/`, and feature docs (necessary for Outside-In TDD)
+- **Configuration setup**: Restricts to documentation and config files only (no source code modification)
+
+This maintains the Principle of Least Privilege while enabling actual implementation workflows.
+
 **Contrasts with Previous Design**:
 - **v1.3**: `allowed_file_patterns` defaulted to `["**/*"]` (permissive, unsafe)
-- **v1.4**: Defaults to feature directory scope (restrictive, safe)
+- **v1.4**: Uniform default to feature directory scope (restrictive, but blocked TDD implementation)
+- **v1.4.1**: Workflow-aware defaults (restrictive AND functional)
 
 #### 4.5.5 Magic String Elimination
 
@@ -2147,3 +2325,653 @@ review_result:
 ---
 
 *Review conducted by Atlas (solution-architect-reviewer) as Architecture Quality Gate Enforcer*
+
+---
+
+## Architecture Design Review #2 (v1.4 Schema Validation Focus)
+
+```yaml
+---
+reviews:
+  - reviewer: "solution-architect-reviewer"
+    reviewer_id: "morgan-review-mode"
+    review_type: "architecture_design_v1.4_schema_validation"
+    date: "2026-01-23T00:00:00Z"
+    version_reviewed: "1.4"
+    overall_assessment: "APPROVED_WITH_CONDITIONS"
+    focus_areas:
+      - "Schema validation strategy (dataclass-based single source of truth)"
+      - "Two-layer validation defense (creation + execution)"
+      - "Safe defaults policy (restrictive vs permissive)"
+      - "Magic string elimination and refactoring safety"
+      - "Migration path from v1.3 to v1.4"
+      - "Integration with existing gates and architecture layers"
+
+    critiques:
+      - section: "4.5.2"
+        aspect: "schema_validation_implementation"
+        issue: "StepDefinition dataclass validation logic incomplete for workflow_type discrimination"
+        severity: "HIGH"
+        recommendation: |
+          The __post_init__ validation applies same checks regardless of workflow_type. Configuration_setup tasks
+          require safety metadata validation, but this is only shown in _validate_safety(). Need explicit branching:
+
+          ```python
+          def __post_init__(self):
+              self._apply_safe_defaults()
+              self._validate_required_fields()
+
+              # Workflow-specific validation
+              if self.workflow_type == "tdd_cycle":
+                  self._validate_tdd_requirements()
+              elif self.workflow_type == "configuration_setup":
+                  self._validate_safety()  # Already implemented
+                  self._validate_configuration_requirements()
+
+              self._validate_file_patterns()
+              self._validate_dependencies()
+          ```
+
+          Add _validate_tdd_requirements() to check acceptance_criteria presence (should be required for TDD cycle).
+
+        code_example: |
+          def _validate_tdd_requirements(self):
+              """Validate TDD cycle workflow requirements."""
+              if not self.acceptance_criteria or len(self.acceptance_criteria) == 0:
+                  raise ValidationError(
+                      f"Step {self.id}: TDD cycle requires acceptance_criteria array"
+                  )
+
+              # Validate acceptance criteria format (GIVEN-WHEN-THEN)
+              for idx, criterion in enumerate(self.acceptance_criteria):
+                  if not any(keyword in criterion.lower() for keyword in ["given", "when", "then"]):
+                      logger.warning(
+                          f"Step {self.id}: AC[{idx}] may not follow GIVEN-WHEN-THEN format"
+                      )
+
+      - section: "4.5.3"
+        aspect: "two_layer_defense_feasibility"
+        issue: "Layer 1 validation retry mechanism lacks feedback loop to AI template generator"
+        severity: "HIGH"
+        recommendation: |
+          The generate_step_from_template() shows retry with schema hints comment but doesn't implement
+          the feedback mechanism. AI needs structured error messages to improve next attempt:
+
+          ```python
+          for attempt in range(max_retries):
+              try:
+                  # Include previous errors in prompt for next attempt
+                  validation_context = {
+                      "previous_errors": previous_errors if attempt > 0 else [],
+                      "schema_hints": get_schema_hints(StepDefinition)
+                  }
+
+                  step_json = ai_generate_step(template, validation_context)
+                  step = StepDefinition.from_json(step_json)
+                  return step
+
+              except ValidationError as e:
+                  previous_errors.append({
+                      "attempt": attempt + 1,
+                      "error": str(e),
+                      "failed_field": extract_field_from_error(e)
+                  })
+
+                  if attempt < max_retries - 1:
+                      continue
+                  else:
+                      raise ValidationError(
+                          f"Step generation failed after {max_retries} attempts. "
+                          f"Validation errors: {previous_errors}"
+                      )
+          ```
+
+          Add get_schema_hints() function to extract field requirements from StepDefinition annotations.
+
+      - section: "4.5.4"
+        aspect: "safe_defaults_policy"
+        issue: "Restrictive default for allowed_file_patterns may block legitimate refactoring scenarios"
+        severity: "MEDIUM"
+        recommendation: |
+          Default ["docs/feature/{feature}/**"] scope is safe for documentation-only tasks but blocks
+          implementation tasks that need src/ access. Consider task-type-aware defaults:
+
+          Safe defaults policy should distinguish:
+          - Documentation tasks: ["docs/feature/{feature}/**"]
+          - Implementation tasks: ["src/{feature}/**", "tests/**/{feature}/**", "docs/feature/{feature}/**"]
+          - Configuration tasks: ["config/**", ".claude/**", "docs/feature/{feature}/**"]
+
+          Recommendation: Add default_scope field to workflow_type enum or infer from wave:
+          - DISCUSS/DESIGN waves → documentation scope
+          - DEVELOP wave → implementation scope
+          - DELIVER wave → configuration scope
+
+          Alternative: Make allowed_file_patterns REQUIRED (no default) to force explicit declaration.
+
+        code_example: |
+          def _apply_safe_defaults(self):
+              """Apply workflow-type-aware restrictive defaults."""
+              if self.allowed_file_patterns is None:
+                  # Infer safe scope from workflow type
+                  if self.workflow_type == "tdd_cycle":
+                      # Implementation task - broader scope needed
+                      self.allowed_file_patterns = [
+                          f"src/{self.feature_name}/**",
+                          f"tests/**/{self.feature_name}/**",
+                          f"docs/feature/{self.feature_name}/**"
+                      ]
+                  elif self.workflow_type == "configuration_setup":
+                      # Configuration task - config + docs only
+                      self.allowed_file_patterns = [
+                          "config/**",
+                          ".claude/**",
+                          f"docs/feature/{self.feature_name}/**"
+                      ]
+                  else:
+                      # Unknown type - most restrictive
+                      self.allowed_file_patterns = [f"docs/feature/{self.feature_name}/**"]
+
+      - section: "4.5.5"
+        aspect: "magic_string_elimination"
+        issue: "Migration script for JSON field renames not provided"
+        severity: "MEDIUM"
+        recommendation: |
+          Architecture claims refactoring safety through dataclass field renames but doesn't address
+          JSON step files persistence. Need migration strategy:
+
+          1. Add schema version field to StepDefinition:
+             schema_version: str = "1.4"
+
+          2. Create migration registry:
+             MIGRATIONS = {
+                 "1.3": {
+                     "workflow_type": None,  # Field didn't exist, add default
+                     "allowed_file_patterns": "allowed_patterns"  # Renamed
+                 }
+             }
+
+          3. Implement migration in from_file():
+             @classmethod
+             def from_file(cls, step_file_path: str) -> "StepDefinition":
+                 step_data = json.loads(Path(step_file_path).read_text())
+
+                 # Check schema version and migrate if needed
+                 file_version = step_data.get("schema_version", "1.3")
+                 if file_version != "1.4":
+                     step_data = migrate_schema(step_data, file_version, "1.4")
+
+                 return cls.from_json(step_data)
+
+          This enables gradual migration without breaking existing step files.
+
+      - section: "4.5.6"
+        aspect: "integration_with_existing_gates"
+        issue: "Gate 1 schema validation adds latency to existing template validation - performance impact not analyzed"
+        severity: "MEDIUM"
+        recommendation: |
+          Updated data flow shows Gate 1 now includes schema validation (parse JSON, construct dataclass,
+          validate in __post_init__). This adds ~50-100ms to validation latency. Architecture should:
+
+          1. Update Section 9.1 performance targets:
+             - OLD: Pre-invocation validation < 500ms
+             - NEW: Pre-invocation validation < 600ms (includes schema validation overhead)
+
+          2. Add schema validation measurement:
+             | Operation | Target | Measurement |
+             |-----------|--------|-------------|
+             | Schema validation (Gate 1) | < 100ms | Time to construct and validate StepDefinition |
+             | Template validation (Gate 1) | < 400ms | Time to parse and validate prompt sections |
+             | Combined Gate 1 | < 600ms | Total pre-invocation latency |
+
+          3. Consider caching validated StepDefinition objects:
+             - Key: (step_file_path, mtime)
+             - Invalidate on file modification
+             - Reduces repeat validation overhead during development
+
+      - section: "4.4 (Gate 2)"
+        aspect: "scope_violation_detection_integration"
+        issue: "detect_scope_violations() uses StepDefinition.from_file() but doesn't handle validation errors from Gate 1 bypass"
+        severity: "MEDIUM"
+        recommendation: |
+          Gate 2 scope violation code assumes step file is already validated by Gate 1. However, manual edits
+          between Gate 1 and Gate 2 could invalidate step file. Need defensive programming:
+
+          ```python
+          def detect_scope_violations(step_file_path: str) -> list[str]:
+              """Detect files modified outside allowed scope."""
+              try:
+                  # Validate step file (should be cached from Gate 1)
+                  step = StepDefinition.from_file(step_file_path)
+              except ValidationError as e:
+                  # Step file became invalid between Gate 1 and Gate 2
+                  logger.error(f"Gate 2: Step file validation failed: {e}")
+                  # Treat as scope violation (safest failure mode)
+                  return ["STEP_FILE_INVALID"]
+
+              allowed_patterns = step.allowed_file_patterns
+
+              # ... rest of implementation
+          ```
+
+          Add audit event STEP_FILE_TAMPERED if validation fails at Gate 2 but passed at Gate 1.
+
+      - section: "11.5"
+        aspect: "backward_compatibility"
+        issue: "Migration path claims no migration required but safe defaults change breaks existing behavior"
+        severity: "MEDIUM"
+        recommendation: |
+          Architecture states "existing step files remain valid (optional field with safe default)" but this
+          is misleading. The DEFAULT CHANGED from permissive ["**/*"] to restrictive [feature scope].
+
+          Existing step files without allowed_file_patterns will:
+          - v1.3 behavior: Allow all files (permissive)
+          - v1.4 behavior: Restrict to feature directory (restrictive)
+
+          This breaks backward compatibility for implementation tasks. Need explicit migration strategy:
+
+          Option 1: Version detection (RECOMMENDED)
+          - Add schema_version field to StepDefinition
+          - If schema_version < 1.4 and allowed_file_patterns is None:
+              Apply v1.3 default ["**/*"] (preserve old behavior)
+          - If schema_version == 1.4 and allowed_file_patterns is None:
+              Apply v1.4 restrictive default (new behavior)
+
+          Option 2: Require explicit field
+          - Make allowed_file_patterns REQUIRED (no default)
+          - Migration script adds explicit ["**/*"] to existing files
+          - Forces conscious decision about scope
+
+          Document breaking change in migration guide with rollback instructions.
+
+      - section: "4.5.2"
+        aspect: "dataclass_validation_completeness"
+        issue: "_validate_file_patterns() warns for ['**/*'] but doesn't prevent it - warning may be ignored"
+        severity: "LOW"
+        recommendation: |
+          Code shows logger.warning() for unrestricted access but doesn't require human confirmation.
+          Consider adding interactive confirmation for permissive patterns during step creation:
+
+          ```python
+          def _validate_file_patterns(self):
+              # ... existing validation logic
+
+              if "**/*" in self.allowed_file_patterns:
+                  if os.getenv("DES_STRICT_MODE") == "1":
+                      raise ValidationError(
+                          f"Step {self.id}: Unrestricted file access blocked in strict mode. "
+                          f"Specify explicit patterns or set DES_STRICT_MODE=0"
+                      )
+                  else:
+                      logger.warning(
+                          f"Step {self.id}: Unrestricted file access (['**/*']) detected. "
+                          f"Validate this is intentional for the task scope."
+                      )
+          ```
+
+          Add DES_STRICT_MODE environment variable for organizations requiring explicit scope declarations.
+
+    commendations:
+      - "Excellent v1.4 enhancement - dataclass-based validation addresses robustness gaps systematically"
+      - "Two-layer validation defense (creation + execution) is architecturally sound and follows defense-in-depth principle"
+      - "Safe defaults philosophy (restrictive over permissive) is security-conscious and aligns with principle of least privilege"
+      - "Magic string elimination through dataclass fields enables refactoring-safe codebase"
+      - "StepDefinition as single source of truth prevents schema drift between code and JSON"
+      - "Comprehensive validation methods (_validate_file_patterns, _validate_workflow_type, _validate_safety) cover edge cases"
+      - "from_file() and from_json() class methods provide clean API with validation guarantees"
+      - "ValidationError exception hierarchy enables precise error handling"
+      - "Integration with existing gates (Gate 1, Gate 2) is well-designed with clear validation points"
+      - "Code examples in architecture are syntactically correct and demonstrate actual implementation patterns"
+
+    risk_assessment:
+      - category: "implementation"
+        risk_level: "MEDIUM"
+        mitigation: |
+          Two-layer validation retry logic needs feedback loop implementation. Without structured error
+          messages to AI generator, retry attempts may repeat same validation failures.
+
+          Mitigation: Implement get_schema_hints() and error context passing in generate_step_from_template().
+
+      - category: "performance"
+        risk_level: "LOW"
+        mitigation: |
+          Schema validation adds ~50-100ms to Gate 1 latency. Acceptable for single-step execution but
+          may accumulate in batch operations.
+
+          Mitigation: Implement StepDefinition caching with (path, mtime) invalidation strategy.
+
+      - category: "backward_compatibility"
+        risk_level: "MEDIUM"
+        mitigation: |
+          Safe defaults change from permissive to restrictive breaks existing step files behavior.
+          Existing implementation tasks without explicit allowed_file_patterns will fail scope validation.
+
+          Mitigation: Add schema_version field with version-aware defaults, or require explicit migration
+          with tool support (migrate_step_files.py).
+
+      - category: "usability"
+        risk_level: "LOW"
+        mitigation: |
+          Restrictive defaults may frustrate developers during legitimate refactoring. Scope violations
+          generate warnings but require manual step file updates.
+
+          Mitigation: Provide workflow-type-aware default patterns (implementation vs configuration vs documentation).
+
+      - category: "maintenance"
+        risk_level: "LOW"
+        mitigation: |
+          Dataclass validation logic in __post_init__ will grow over time as new workflow types are added.
+          Could become complex and hard to test.
+
+          Mitigation: Extract validation strategies per workflow type into separate validator classes
+          (TDDWorkflowValidator, ConfigurationWorkflowValidator).
+
+    approval_status:
+      ready_for_implementation: true
+      conditions:
+        - "Address HIGH severity issues: workflow_type-specific validation branching, retry feedback loop"
+        - "Update performance targets in Section 9.1 to account for schema validation latency"
+        - "Clarify backward compatibility strategy with explicit migration path documentation"
+        - "Add schema_version field to StepDefinition for version-aware defaults"
+      recommended_enhancements:
+        - "Implement workflow-type-aware safe defaults for allowed_file_patterns"
+        - "Add DES_STRICT_MODE environment variable for organizations requiring explicit scope"
+        - "Create StepDefinition caching strategy to reduce validation overhead"
+        - "Extract validation strategies into separate classes for maintainability"
+
+    architectural_decisions_validation:
+      decision_1:
+        decision: "Dataclasses as single source of truth"
+        assessment: "EXCELLENT"
+        rationale: |
+          Eliminates schema-code synchronization issues. IDE autocomplete and mypy validation provide
+          strong guarantees. __post_init__ validation catches errors at construction time, not runtime.
+
+      decision_2:
+        decision: "Two-layer validation defense (creation + execution)"
+        assessment: "SOUND"
+        rationale: |
+          Defense-in-depth approach catches AI generation errors (Layer 1) and manual edit errors (Layer 2).
+          Prevents invalid step files from ever reaching execution. High severity issue: needs feedback loop.
+
+      decision_3:
+        decision: "Safe defaults policy (restrictive, not permissive)"
+        assessment: "APPROPRIATE_WITH_CAVEATS"
+        rationale: |
+          Security-first approach prevents accidental scope creep. However, restrictive defaults may block
+          legitimate implementation tasks. Medium severity issue: needs workflow-type-aware defaults.
+
+      decision_4:
+        decision: "Magic string elimination through dataclass fields"
+        assessment: "EXCELLENT"
+        rationale: |
+          Refactoring-safe codebase with IDE support. Field renames propagate automatically through code.
+          Medium severity issue: needs JSON migration strategy for schema evolution.
+
+      decision_5:
+        decision: "Zero-dependency validation (stdlib only)"
+        assessment: "EXCELLENT"
+        rationale: |
+          Dataclasses module in Python 3.11+ stdlib provides sufficient functionality. No Pydantic or
+          dataclasses_json dependencies needed. Maintains architecture constraint consistency.
+
+    v1_4_specific_findings:
+      schema_validation_strategy:
+        completeness: "HIGH"
+        issues:
+          - "Workflow-type-specific validation needs explicit branching in __post_init__"
+          - "Retry feedback loop in Layer 1 validation needs implementation"
+        strengths:
+          - "Comprehensive validation methods cover all edge cases"
+          - "ValidationError messages are specific and actionable"
+          - "from_file() and from_json() provide clean validation API"
+
+      safe_defaults_implementation:
+        completeness: "MEDIUM"
+        issues:
+          - "Restrictive defaults may block legitimate implementation tasks"
+          - "Default pattern doesn't distinguish workflow types (TDD vs configuration)"
+        strengths:
+          - "Security-conscious restrictive approach"
+          - "Feature-scoped default prevents broad scope creep"
+          - "_apply_safe_defaults() method is extensible"
+
+      integration_with_gates:
+        completeness: "HIGH"
+        issues:
+          - "Performance impact of schema validation on Gate 1 not analyzed"
+          - "Gate 2 scope validation assumes Gate 1 validation always passes"
+        strengths:
+          - "Clear integration points with existing architecture"
+          - "Validation happens at appropriate gates (creation, execution)"
+          - "Type-safe field access prevents runtime errors in gate logic"
+
+      migration_strategy:
+        completeness: "LOW"
+        issues:
+          - "Backward compatibility claims misleading - defaults changed"
+          - "No schema_version field for version-aware behavior"
+          - "Migration script shown but not integrated into from_file()"
+        strengths:
+          - "Migration script skeleton provided in architecture"
+          - "Acknowledgment that strict mode may be desired (future)"
+
+overall_assessment_rationale: |
+  The v1.4 schema validation strategy is a significant architectural improvement that systematically
+  addresses robustness gaps in field access, validation timing, and schema-code synchronization.
+
+  APPROVED_WITH_CONDITIONS because:
+
+  ✅ Core architectural decisions are sound:
+  - Dataclass-based single source of truth eliminates magic strings
+  - Two-layer validation defense follows security best practices
+  - Safe defaults policy is security-conscious and appropriate
+  - Zero-dependency constraint maintained (stdlib dataclasses)
+  - Integration with existing gates is clean and well-designed
+
+  ⚠️ Conditions for approval:
+  - HIGH: Implement workflow-type-specific validation branching in __post_init__
+  - HIGH: Add retry feedback loop with structured error messages to AI generator
+  - MEDIUM: Update performance targets accounting for schema validation latency
+  - MEDIUM: Add schema_version field and migration strategy for backward compatibility
+  - MEDIUM: Implement workflow-type-aware default patterns for allowed_file_patterns
+
+  The architecture is ready for implementation with these high-priority enhancements. The foundation
+  is solid and the approach is sound. Issues identified are refinements, not fundamental flaws.
+
+  Estimated effort to address conditions: 2-3 days (mostly feedback loop and workflow-specific validation).
+```
+
+### v1.4 Schema Validation Detailed Analysis
+
+#### Strengths of v1.4 Approach
+
+1. **Dataclass-Based Single Source of Truth**
+
+The decision to use Python dataclasses as the canonical schema is architecturally excellent:
+
+- ✅ **Type Safety**: IDE autocomplete and mypy static analysis catch errors at development time
+- ✅ **Validation Guarantees**: `__post_init__` runs automatically on construction, impossible to create invalid instance
+- ✅ **Refactoring Safety**: Field renames update all references automatically (no grep needed)
+- ✅ **Zero Dependencies**: Stdlib `dataclasses` module sufficient (no Pydantic needed)
+- ✅ **Clean API**: `from_file()` and `from_json()` provide validation guarantees at entry points
+
+2. **Two-Layer Validation Defense**
+
+The defense-in-depth approach is sound:
+
+- ✅ **Layer 1 (Creation)**: Catches AI generation errors immediately during `/nw:split`
+- ✅ **Layer 2 (Execution)**: Catches manual edit errors before Task invocation (Gate 1)
+- ✅ **Fail-Safe**: Invalid step files never reach execution, preventing runtime failures
+- ⚠️ **High Issue**: Retry feedback loop needs structured error messages to AI generator
+
+3. **Safe Defaults Policy**
+
+The restrictive-over-permissive philosophy is security-conscious:
+
+- ✅ **Principle of Least Privilege**: Default to minimal scope, expand only when needed
+- ✅ **Prevents Scope Creep**: Feature-scoped default `["docs/feature/{feature}/**"]` is safe
+- ⚠️ **Medium Issue**: May block legitimate implementation tasks (src/ access needed)
+- ⚠️ **Medium Issue**: Backward compatibility - default changed from `["**/*"]` to feature scope
+
+4. **Magic String Elimination**
+
+Removing hardcoded field names is refactoring-safe:
+
+- ✅ **Before**: `.get("allowed_file_patterns")` - typos possible, refactoring manual
+- ✅ **After**: `.allowed_file_patterns` - IDE autocomplete, mypy validation, refactoring automatic
+- ⚠️ **Medium Issue**: JSON persistence needs migration strategy for field renames
+
+#### Issues Requiring Resolution
+
+**HIGH SEVERITY**:
+
+1. **Workflow-Type-Specific Validation Incomplete** (Section 4.5.2)
+
+Current implementation validates all workflow types identically. TDD cycle requires acceptance_criteria, configuration_setup requires safety metadata. Need explicit branching:
+
+```python
+def __post_init__(self):
+    self._apply_safe_defaults()
+
+    # Workflow-specific validation
+    if self.workflow_type == "tdd_cycle":
+        self._validate_tdd_requirements()  # Check acceptance_criteria
+    elif self.workflow_type == "configuration_setup":
+        self._validate_safety()  # Check rollback_plan if destructive
+
+    # Common validation
+    self._validate_file_patterns()
+    self._validate_dependencies()
+```
+
+2. **Retry Feedback Loop Missing** (Section 4.5.3)
+
+Layer 1 validation shows retry with "schema hints comment" but doesn't implement feedback mechanism. AI needs structured error messages to improve next attempt, not just generic retry.
+
+**MEDIUM SEVERITY**:
+
+3. **Backward Compatibility Claims Misleading** (Section 11.5)
+
+Architecture states "no migration required" but safe default changed from permissive `["**/*"]` to restrictive feature scope. Existing step files without explicit `allowed_file_patterns` will have different behavior in v1.4, potentially breaking implementation tasks.
+
+Solution: Add `schema_version` field with version-aware defaults.
+
+4. **Restrictive Defaults May Block Implementation Tasks** (Section 4.5.4)
+
+Default `["docs/feature/{feature}/**"]` is appropriate for documentation tasks but blocks TDD cycle implementation tasks needing `src/` and `tests/` access. Need workflow-type-aware defaults.
+
+5. **Performance Impact Not Analyzed** (Section 4.5.6)
+
+Schema validation adds ~50-100ms to Gate 1 latency. Section 9.1 performance targets need updating from <500ms to <600ms.
+
+#### Validation Method Quality Assessment
+
+**Comprehensive Coverage**:
+
+```python
+# ✅ EXCELLENT: File pattern validation
+def _validate_file_patterns(self):
+    # Type check
+    if not isinstance(self.allowed_file_patterns, list): ...
+
+    # Empty array check
+    if len(self.allowed_file_patterns) == 0: ...
+
+    # Element type check
+    if not all(isinstance(p, str) for p in self.allowed_file_patterns): ...
+
+    # Permissive pattern warning
+    if "**/*" in self.allowed_file_patterns:
+        logger.warning(...)
+```
+
+This validation is thorough and catches common errors.
+
+**Missing Validation**:
+
+```python
+# ⚠️ MEDIUM: workflow_type validation exists but not workflow-specific requirements
+def _validate_workflow_type(self):
+    valid_types = {"tdd_cycle", "configuration_setup"}
+    if self.workflow_type not in valid_types: ...
+    # Missing: validation of workflow-specific fields
+    # - tdd_cycle should require acceptance_criteria
+    # - configuration_setup should require safety metadata
+```
+
+#### Integration Quality Assessment
+
+**Gate 1 Integration** (Section 4.5.6):
+
+✅ Clean integration point:
+```python
+def execute_step(step_file_path: str) -> ExecutionResult:
+    try:
+        step = StepDefinition.from_file(step_file_path)  # Validation automatic
+        # ... execution logic uses validated step object
+```
+
+⚠️ Performance impact not documented in Section 9.1.
+
+**Gate 2 Integration** (Section 4.4):
+
+✅ Type-safe field access:
+```python
+def detect_scope_violations(step_file_path: str) -> list[str]:
+    step = StepDefinition.from_file(step_file_path)
+    allowed_patterns = step.allowed_file_patterns  # Type-safe, validated
+```
+
+⚠️ No error handling for step file becoming invalid between Gate 1 and Gate 2 (manual edits).
+
+#### Migration Strategy Assessment
+
+**Provided Migration Script** (Section 11.5):
+```python
+def migrate_step_file(step_path: Path, feature_name: str):
+    step_data = json.loads(step_path.read_text())
+    if "allowed_file_patterns" not in step_data:
+        step_data["allowed_file_patterns"] = [f"docs/feature/{feature_name}/**"]
+```
+
+✅ Script skeleton provided
+⚠️ Not integrated into `from_file()` - requires manual execution
+⚠️ No schema versioning for automatic migration
+⚠️ Backward compatibility misleading - applies new restrictive default to old files
+
+**Recommended Enhancement**:
+```python
+@classmethod
+def from_file(cls, step_file_path: str) -> "StepDefinition":
+    step_data = json.loads(Path(step_file_path).read_text())
+
+    # Auto-migrate old schema versions
+    file_version = step_data.get("schema_version", "1.3")
+    if file_version < "1.4":
+        step_data = migrate_schema(step_data, file_version, "1.4")
+
+    return cls.from_json(step_data)
+```
+
+### Approval Decision
+
+**Status**: APPROVED_WITH_CONDITIONS
+
+**Rationale**:
+
+The v1.4 schema validation strategy is architecturally sound and addresses the stated robustness gaps systematically. The dataclass-based approach eliminates an entire class of runtime errors and provides strong refactoring safety.
+
+**Conditions**:
+1. Implement workflow-type-specific validation branching (HIGH - ~4 hours)
+2. Add retry feedback loop with structured error messages (HIGH - ~8 hours)
+3. Update performance targets in Section 9.1 (MEDIUM - ~1 hour)
+4. Add schema_version field and migration strategy (MEDIUM - ~4 hours)
+5. Implement workflow-type-aware default patterns (MEDIUM - ~4 hours)
+
+**Estimated Effort**: 2-3 days to address all conditions.
+
+**Next Steps**: Once conditions addressed, architecture is ready for DISTILL wave (acceptance test design).
+
+---
+
+*Review conducted by Morgan (solution-architect-reviewer) as v1.4 Schema Validation Specialist*
