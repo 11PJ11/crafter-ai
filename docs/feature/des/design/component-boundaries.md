@@ -1,9 +1,26 @@
 # Deterministic Execution System (DES) - Component Boundaries
 
-**Version:** 1.0
-**Date:** 2026-01-22
+**Version:** 1.5.0
+**Date:** 2026-01-23
 **Author:** Morgan (Solution Architect)
-**Status:** DESIGN Wave Deliverable
+**Status:** CORRECTED - SubagentStop Hook Schema Updated to Real 6-Field Schema (v1.0 → v1.5.0)
+
+---
+
+## Version History
+
+**v1.5.0 (2026-01-23)** - CRITICAL SCHEMA CORRECTION
+- ✅ **CORRECTED**: SubagentStop hook schema from incorrect 8-field to real 6-field
+- ❌ **REMOVED**: Non-existent fields `agent_id` and `agent_transcript_path`
+- ✅ **ADDED**: Section 6.1.1 - DES marker extraction implementation from main session transcript
+- ✅ **UPDATED**: Section 5.5 - Gate 2 now uses transcript parsing approach
+- ✅ **UPDATED**: Section 7 - Component Interaction Matrix reflects transcript parsing
+- ✅ **UPDATED**: All JSON examples use correct 6-field schema
+- **See**: `des-discovery-report.md` v2.0 and `architecture-design.md` v1.5.0 for verification
+
+**v1.0 (2026-01-22)** - Initial component boundary specification
+- Original document with incorrect 8-field SubagentStop hook schema
+- Speculative fields based on assumption, not documentation
 
 ---
 
@@ -643,7 +660,9 @@ class PreInvocationGate(ValidationGatePort):
         )
 ```
 
-### 5.5 Gate 2: SubagentStop Hook
+### 5.5 Gate 2: SubagentStop Hook (v1.5.0 Updated)
+
+**CORRECTED (v1.5.0)**: Gate 2 now extracts DES context from main session transcript via `transcript_path` field. The `step_file` is obtained through DES marker parsing, not from native hook fields.
 
 ```python
 # nWave/adapters/gates/subagent_stop_gate.py
@@ -652,20 +671,56 @@ from pathlib import Path
 from nWave.ports.validation_gate import ValidationGatePort, GateValidation, GateResult
 
 class SubagentStopGate(ValidationGatePort):
-    """Validates step file state after sub-agent completion."""
+    """Validates step file state after sub-agent completion.
+
+    v1.5.0: Extracts DES context from main session transcript via
+    extract_des_context() before validation.
+    """
 
     def get_gate_id(self) -> str:
         return "GATE_2_SUBAGENT_STOP"
 
     def validate(self, context: dict) -> GateValidation:
-        step_file = context.get("step_file")
-        if not step_file:
+        """Validate step file state post-execution.
+
+        Args:
+            context: Must contain 'transcript_path' from SubagentStop hook event.
+                     'step_file' extracted via DES marker parsing.
+        """
+        # v1.5.0: Extract DES context from transcript first
+        transcript_path = context.get("transcript_path")
+        if not transcript_path:
             return GateValidation(
                 gate_id=self.get_gate_id(),
                 result=GateResult.WARNING,
                 errors=[],
-                warnings=["No step file in context - DES validation skipped"],
+                warnings=["No transcript_path in context - cannot extract DES metadata"],
                 recovery_suggestions=[]
+            )
+
+        # Extract DES metadata from main session transcript
+        from nWave.adapters.des_marker_parser import extract_des_context
+        des_context = extract_des_context(transcript_path)
+
+        # Skip validation if not DES-validated task
+        if not des_context.get('validation_required'):
+            return GateValidation(
+                gate_id=self.get_gate_id(),
+                result=GateResult.PASS,
+                errors=[],
+                warnings=["No DES-VALIDATION marker - ad-hoc Task invocation"],
+                recovery_suggestions=[]
+            )
+
+        # Get step file from extracted context
+        step_file = des_context.get("step_file")
+        if not step_file:
+            return GateValidation(
+                gate_id=self.get_gate_id(),
+                result=GateResult.FAIL,
+                errors=["DES-VALIDATION marker present but DES-STEP-FILE marker missing"],
+                warnings=[],
+                recovery_suggestions=["Add <!-- DES-STEP-FILE: path --> marker to prompt"]
             )
 
         errors = []
@@ -785,19 +840,161 @@ class AuditTrail(ValidationGatePort):
 
 ### 6.1 Hook Integration Contract
 
-The SubagentStop hook receives a specific JSON schema via stdin:
+**CORRECTED (v1.5.0)**: SubagentStop hook schema updated to real 6-field schema from official Claude Code documentation. Previous versions incorrectly showed non-existent fields `agent_id` and `agent_transcript_path`.
+
+**See**: `des-discovery-report.md` v2.0 and `architecture-design.md` v1.5.0 for complete verification and corrected architecture.
+
+The SubagentStop hook receives this **6-field JSON schema** via stdin:
 
 ```json
 {
-  "session_id": "uuid",
-  "transcript_path": "/path/to/session.jsonl",
-  "cwd": "/project/path",
-  "permission_mode": "bypassPermissions",
   "hook_event_name": "SubagentStop",
+  "session_id": "cb67a406-fd98-47ca-9b03-fcca9cc43e8d",
+  "transcript_path": "/home/user/.claude/projects/.../session.jsonl",
   "stop_hook_active": false,
-  "agent_id": "ab7af5b",
-  "agent_transcript_path": "/path/to/subagents/agent-ab7af5b.jsonl"
+  "cwd": "/current/working/directory",
+  "permission_mode": "auto"
 }
+```
+
+**Plus**: `tool_use_id` parameter available in Python callback for correlation.
+
+**Field Descriptions**:
+
+| Field | Type | Description | DES Usage |
+|-------|------|-------------|-----------|
+| `hook_event_name` | string | Always "SubagentStop" | Event identification |
+| `session_id` | UUID | Session identifier | ⚠️ Shared across subagents - use DES markers instead |
+| `transcript_path` | path | Path to main session transcript (JSONL) | **PRIMARY**: Extract prompt and DES markers via parsing |
+| `stop_hook_active` | boolean | Whether Stop hook is also active | Conflict detection |
+| `cwd` | path | Current working directory | File path resolution |
+| `permission_mode` | string | Permission mode (auto/manual/bypassPermissions) | Permission context |
+| `tool_use_id` | string | (Python callback only) Tool use correlation | Subagent identification |
+
+**DES Marker Extraction**: Since the hook does NOT provide `agent_id` or dedicated `agent_transcript_path`, DES metadata must be extracted from the main session transcript by:
+1. Reading JSONL file at `transcript_path`
+2. Parsing first user message containing Task invocation prompt
+3. Extracting DES markers via regex: `<!-- DES-VALIDATION: required -->`, `<!-- DES-STEP-FILE: path -->`, etc.
+
+See Section 6.1.1 for marker extraction implementation.
+
+### 6.1.1 DES Marker Extraction Implementation
+
+**Purpose**: Extract DES metadata from main session transcript since native hook fields do not exist.
+
+**Input**: `transcript_path` from SubagentStop hook event (points to main session JSONL)
+
+**Output**: DES context dictionary with extracted metadata
+
+**Implementation**:
+
+```python
+def extract_des_context(transcript_path: str) -> dict:
+    """Extract DES metadata from transcript via parsing.
+
+    Args:
+        transcript_path: Path to main session transcript (JSONL format)
+
+    Returns:
+        Dictionary containing extracted DES metadata:
+        - validation_required: bool
+        - step_file: str | None
+        - agent_name: str | None
+        - command: str | None
+        - start_time: str | None
+        - end_time: str | None
+    """
+    from pathlib import Path
+    import json
+    import re
+
+    # Read transcript JSONL
+    transcript = Path(transcript_path).read_text().splitlines()
+    messages = [json.loads(line) for line in transcript]
+
+    # Find first user message (contains prompt with DES markers)
+    user_message = next((m for m in messages if m['role'] == 'user'), None)
+    if not user_message:
+        return {'validation_required': False}
+
+    prompt = user_message['content']
+
+    # Extract DES markers using regex
+    des_context = {}
+
+    # Extract: <!-- DES-VALIDATION: required -->
+    if match := re.search(r'<!-- DES-VALIDATION: (\w+) -->', prompt):
+        des_context['validation_required'] = match.group(1) == 'required'
+    else:
+        des_context['validation_required'] = False
+
+    # Extract: <!-- DES-STEP-FILE: steps/01-01.json -->
+    if match := re.search(r'<!-- DES-STEP-FILE: ([^\s]+) -->', prompt):
+        des_context['step_file'] = match.group(1)
+    else:
+        des_context['step_file'] = None
+
+    # Extract: <!-- DES-AGENT: software-crafter -->
+    if match := re.search(r'<!-- DES-AGENT: ([^\s]+) -->', prompt):
+        des_context['agent_name'] = match.group(1)
+    else:
+        des_context['agent_name'] = None
+
+    # Extract: <!-- DES-COMMAND: /nw:execute -->
+    if match := re.search(r'<!-- DES-COMMAND: ([^\s]+) -->', prompt):
+        des_context['command'] = match.group(1)
+    else:
+        des_context['command'] = None
+
+    # Add timestamps from transcript metadata
+    des_context['start_time'] = user_message.get('timestamp')
+    des_context['end_time'] = messages[-1].get('timestamp') if messages else None
+
+    return des_context
+```
+
+**Example Output**:
+
+```json
+{
+  "validation_required": true,
+  "step_file": "steps/01-01.json",
+  "agent_name": "software-crafter",
+  "command": "/nw:execute",
+  "start_time": "2026-01-23T14:20:10.123456",
+  "end_time": "2026-01-23T14:23:15.234567"
+}
+```
+
+**Integration with Gate 2**:
+
+```python
+def validate_subagent_stop(hook_event: dict) -> dict:
+    """Complete Gate 2 validation logic.
+
+    Args:
+        hook_event: 6-field JSON from SubagentStop hook (v1.5.0 corrected)
+
+    Returns:
+        Validation result with warnings and errors
+    """
+    # Extract DES context from main session transcript
+    des_context = extract_des_context(hook_event['transcript_path'])
+
+    # Skip validation if not DES-validated task
+    if not des_context.get('validation_required'):
+        return {'continue': True}
+
+    # Load step file using extracted path
+    step_file = des_context['step_file']
+    if not step_file:
+        return {
+            'continue': False,
+            'error': 'DES-VALIDATION marker present but DES-STEP-FILE missing'
+        }
+
+    # Perform validation...
+    # (rest of validation logic)
 ```
 
 ### 6.2 Step File Contract
@@ -844,7 +1041,7 @@ All audit entries must follow this format:
 
 ---
 
-## 7. Component Interaction Matrix
+## 7. Component Interaction Matrix (v1.5.0 Updated)
 
 | Component | Reads | Writes | Calls |
 |-----------|-------|--------|-------|
@@ -852,9 +1049,11 @@ All audit entries must follow this format:
 | Template Engine | Templates, Section Defs | - | - |
 | Lifecycle Manager | Step Files | - | - |
 | Gate 1 | Prompt | - | Template Engine |
-| Gate 2 | Step File, Transcript | Step File (FAILED) | - |
+| Gate 2 | **Main Session Transcript** (via `transcript_path`), Step File | Step File (FAILED) | `extract_des_context()` |
 | Gate 3 | Step File, Audit Log | - | - |
 | Gate 4 | - | Audit Log | - |
+
+**v1.5.0 Update**: Gate 2 now reads main session transcript to extract DES markers (no native `agent_id` or `agent_transcript_path` fields exist).
 
 ---
 
