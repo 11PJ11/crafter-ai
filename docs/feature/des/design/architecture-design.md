@@ -1,11 +1,11 @@
 # Deterministic Execution System (DES) - Architecture Design
 
-**Version:** 1.3
+**Version:** 1.4
 **Date:** 2026-01-23
 **Author:** Morgan (Solution Architect)
-**Status:** DESIGN Wave Deliverable - Workflow Type Terminology and Safety Requirements
+**Status:** DESIGN Wave Deliverable - Schema Validation Strategy (Dataclass-Based Type Safety)
 **Branch:** `determinism`
-**Review Status:** Clarifies template validation as command-specific (addresses implementation confusion)
+**Review Status:** Addresses robustness gaps in field access, validation timing, and schema-code synchronization
 
 ---
 
@@ -555,21 +555,25 @@ import subprocess
 import json
 from pathlib import Path
 
-def check_scope_violations(step_file_path: str) -> list[str]:
-    """Detect files modified outside allowed patterns.
+def detect_scope_violations(step_file_path: str) -> list[str]:
+    """
+    Detect files modified outside allowed scope.
 
-    This function implements the "Agent Runaway" detection from the
-    failure mode matrix (Section 5.1).
+    Uses pre-validated StepDefinition to ensure allowed_file_patterns
+    is structurally correct (v1.4 improvement).
 
     Args:
-        step_file_path: Path to step file with allowed_file_patterns
+        step_file_path: Path to step file (must be pre-validated)
 
     Returns:
         List of file paths that violate scope (empty if compliant)
+
+    Raises:
+        ValidationError: If step file is invalid (should not happen if Gate 1 passed)
     """
-    # Load allowed patterns from step file
-    step_data = json.loads(Path(step_file_path).read_text())
-    allowed = step_data.get("allowed_file_patterns", ["**/*"])
+    # Load pre-validated step definition (Gate 1 already validated)
+    step = StepDefinition.from_file(step_file_path)
+    allowed_patterns = step.allowed_file_patterns  # Type-safe, validated
 
     # Get files changed since task start (uncommitted + staged)
     result = subprocess.run(
@@ -580,9 +584,9 @@ def check_scope_violations(step_file_path: str) -> list[str]:
 
     # Filter files not matching any allowed pattern
     violations = []
-    for file in changed_files:
-        if file and not any(Path(file).match(pattern) for pattern in allowed):
-            violations.append(file)
+    for file_path in changed_files:
+        if not any(Path(file_path).match(pattern) for pattern in allowed_patterns):
+            violations.append(file_path)
 
     return violations
 
@@ -607,7 +611,7 @@ def validate_subagent_stop(hook_event: dict) -> dict:
     }
 
     # Check for scope violations (Agent Runaway detection)
-    violations = check_scope_violations(step_file)
+    violations = detect_scope_violations(step_file)
     if violations:
         results["warnings"].append({
             "type": "SCOPE_VIOLATION",
@@ -630,6 +634,352 @@ def validate_subagent_stop(hook_event: dict) -> dict:
 - **Recovery**: User reviews violations, updates `allowed_file_patterns` or reverts changes
 - **Rationale**: Legitimate work may occasionally require scope expansion; blocking is too strict
 
+### 4.5 Schema Validation Strategy (v1.4)
+
+#### 4.5.1 Problem Statement
+
+**Robustness Gaps Identified**:
+
+1. **Unsafe Field Access**: Code uses `.get("allowed_file_patterns", ["**/*"])` with permissive default and no structure validation
+2. **No Pre-Execution Validation**: Step files could have invalid structure, failures happen at runtime
+3. **Magic Strings**: Field names hardcoded in Python, risk of desynchronization after schema refactoring
+
+**Risk**: Runtime failures, scope protection bypass, refactoring errors
+
+#### 4.5.2 Solution: Dataclass-Based Validation
+
+**Design Decision**: Python dataclasses as single source of truth for step file schema
+
+**Rationale**:
+- ✅ Type safety: IDE autocomplete, mypy static analysis
+- ✅ Validation: `__post_init__` checks enforce structure
+- ✅ Safe defaults: Restrictive patterns, not permissive
+- ✅ Refactoring safety: No magic strings, field rename updates all code
+- ✅ Zero dependencies: stdlib `dataclasses` module
+
+**Architecture**:
+
+```python
+# des/core/models.py (NEW MODULE)
+from dataclasses import dataclass, field
+from typing import Literal
+from pathlib import Path
+import json
+
+class ValidationError(Exception):
+    """Step file validation failed."""
+    pass
+
+@dataclass
+class StepDefinition:
+    """
+    Step definition structure for DES workflow tasks.
+
+    This dataclass is the canonical schema. All step file access
+    MUST use StepDefinition.from_file() to ensure validation.
+    """
+
+    # Required fields
+    id: str
+    feature_name: str
+    description: str
+    wave: Literal["DISCOVER", "DISCUSS", "DESIGN", "DISTILL", "DEVELOP", "DELIVER"]
+    workflow_type: Literal["tdd_cycle", "configuration_setup"]
+
+    # Optional fields with safe defaults
+    allowed_file_patterns: list[str] | None = None
+    dependencies: list[str] = field(default_factory=list)
+    acceptance_criteria: list[str] = field(default_factory=list)
+    safety: dict[str, bool | str] = field(default_factory=dict)
+
+    def __post_init__(self):
+        """
+        Validate structure and apply safe defaults.
+
+        Raises:
+            ValidationError: If structure is invalid
+        """
+        self._apply_safe_defaults()
+        self._validate_file_patterns()
+        self._validate_workflow_type()
+        self._validate_dependencies()
+        self._validate_safety()
+
+    def _apply_safe_defaults(self):
+        """Apply restrictive defaults for security-critical fields."""
+        if self.allowed_file_patterns is None:
+            # Safe default: Scope to feature directory only
+            self.allowed_file_patterns = [f"docs/feature/{self.feature_name}/**"]
+
+    def _validate_file_patterns(self):
+        """Validate allowed_file_patterns structure and content."""
+        if not isinstance(self.allowed_file_patterns, list):
+            raise ValidationError(
+                f"Step {self.id}: allowed_file_patterns must be array, "
+                f"got {type(self.allowed_file_patterns).__name__}"
+            )
+
+        if len(self.allowed_file_patterns) == 0:
+            raise ValidationError(
+                f"Step {self.id}: allowed_file_patterns cannot be empty "
+                f"(use ['**/*'] for unrestricted access)"
+            )
+
+        if not all(isinstance(p, str) for p in self.allowed_file_patterns):
+            raise ValidationError(
+                f"Step {self.id}: All file patterns must be strings"
+            )
+
+        # Warn if overly permissive
+        if "**/*" in self.allowed_file_patterns:
+            logger.warning(
+                f"Step {self.id}: Unrestricted file access (['**/*']) detected. "
+                f"Validate this is intentional for the task scope."
+            )
+
+    def _validate_workflow_type(self):
+        """Validate workflow_type against allowed values."""
+        valid_types = {"tdd_cycle", "configuration_setup"}
+        if self.workflow_type not in valid_types:
+            raise ValidationError(
+                f"Step {self.id}: Invalid workflow_type '{self.workflow_type}'. "
+                f"Must be one of {valid_types}"
+            )
+
+    def _validate_dependencies(self):
+        """Validate dependencies array structure."""
+        if not isinstance(self.dependencies, list):
+            raise ValidationError(
+                f"Step {self.id}: dependencies must be array"
+            )
+
+        for dep in self.dependencies:
+            if not isinstance(dep, str) or not dep.strip():
+                raise ValidationError(
+                    f"Step {self.id}: Invalid dependency '{dep}' (must be non-empty string)"
+                )
+
+    def _validate_safety(self):
+        """Validate safety metadata for configuration_setup workflows."""
+        if self.workflow_type == "configuration_setup":
+            if not isinstance(self.safety, dict):
+                raise ValidationError(
+                    f"Step {self.id}: safety must be object for configuration_setup"
+                )
+
+            # Check destructive operations have rollback plan
+            if self.safety.get("is_destructive", False):
+                if not self.safety.get("rollback_plan"):
+                    raise ValidationError(
+                        f"Step {self.id}: Destructive operation requires rollback_plan in safety metadata"
+                    )
+
+    @classmethod
+    def from_json(cls, step_data: dict) -> "StepDefinition":
+        """
+        Construct StepDefinition from JSON data with validation.
+
+        Args:
+            step_data: Parsed JSON dictionary
+
+        Returns:
+            Validated StepDefinition instance
+
+        Raises:
+            ValidationError: If structure is invalid or required fields missing
+        """
+        try:
+            return cls(**step_data)
+        except TypeError as e:
+            raise ValidationError(f"Invalid step structure: {e}")
+
+    @classmethod
+    def from_file(cls, step_file_path: str) -> "StepDefinition":
+        """
+        Load and validate step definition from file.
+
+        This is the ONLY approved method for loading step files.
+        Direct JSON parsing bypasses validation and is unsafe.
+
+        Args:
+            step_file_path: Path to step JSON file
+
+        Returns:
+            Validated StepDefinition instance
+
+        Raises:
+            ValidationError: If file is invalid or validation fails
+        """
+        try:
+            step_data = json.loads(Path(step_file_path).read_text())
+            return cls.from_json(step_data)
+        except json.JSONDecodeError as e:
+            raise ValidationError(f"Invalid JSON in {step_file_path}: {e}")
+        except FileNotFoundError:
+            raise ValidationError(f"Step file not found: {step_file_path}")
+```
+
+#### 4.5.3 Two-Layer Validation Defense
+
+**Layer 1: Creation-Time Validation** (`/nw:split` command)
+
+```python
+# During roadmap → steps generation
+def generate_step_from_template(template: dict, max_retries: int = 3) -> StepDefinition:
+    """Generate and validate step file from AI template."""
+    for attempt in range(max_retries):
+        try:
+            # AI generates step JSON
+            step_json = ai_generate_step(template)
+
+            # Validate by constructing dataclass
+            step = StepDefinition.from_json(step_json)
+
+            logger.info(f"Step {step.id} validated successfully (attempt {attempt + 1})")
+            return step
+
+        except ValidationError as e:
+            logger.warning(f"Step validation failed (attempt {attempt + 1}/{max_retries}): {e}")
+            if attempt < max_retries - 1:
+                # Retry with schema hints
+                continue
+            else:
+                raise ValidationError(f"Step generation failed after {max_retries} attempts: {e}")
+```
+
+**Benefits**:
+- Catches AI generation errors immediately
+- Prevents invalid step files from being created
+- Provides feedback loop for template improvement
+
+**Layer 2: Pre-Execution Validation** (Gate 1)
+
+```python
+# des/core/orchestrator.py - Gate 1 implementation
+def execute_step(step_file_path: str) -> ExecutionResult:
+    """
+    Execute step with schema validation.
+
+    Gate 1: Validate step structure before Task invocation.
+    """
+    try:
+        # VALIDATION GATE: Load and validate step file
+        step = StepDefinition.from_file(step_file_path)
+
+        logger.info(f"Step {step.id} passed Gate 1 validation")
+        logger.info(f"  Workflow: {step.workflow_type}")
+        logger.info(f"  File scope: {step.allowed_file_patterns}")
+
+        # Safety check for configuration_setup
+        if step.workflow_type == "configuration_setup":
+            if step.safety.get("is_destructive") and not step.safety.get("rollback_plan"):
+                raise ValidationError(
+                    f"Step {step.id}: Destructive operation blocked - missing rollback_plan"
+                )
+
+        # Execute with validated step definition
+        result = task_tool.invoke(
+            agent=determine_agent(step),
+            step_definition=step,  # Pass validated object
+            context=build_context(step)
+        )
+
+        return result
+
+    except ValidationError as e:
+        logger.error(f"Gate 1 validation failed: {e}")
+        return ExecutionResult(
+            status="VALIDATION_FAILED",
+            step_id=step_file_path,
+            error=str(e),
+            recommendation="Fix step file structure or regenerate with /nw:split"
+        )
+```
+
+**Benefits**:
+- Catches manually edited step files with errors
+- Blocks execution before Task tool invocation (fail-safe)
+- Provides clear error messages for recovery
+
+#### 4.5.4 Safe Defaults Policy
+
+**Principle**: Security-critical fields default to RESTRICTIVE, not permissive.
+
+| Field | Default Value | Rationale |
+|-------|---------------|-----------|
+| `allowed_file_patterns` | `["docs/feature/{feature}/**"]` | Scope to feature directory only, prevent accidental scope creep |
+| `workflow_type` | **REQUIRED** (no default) | Must be explicit - no assumptions about task type |
+| `safety.is_destructive` | `false` | Safe default - operations assumed non-destructive unless declared |
+| `safety.affects_production` | `false` | Safe default - production changes require explicit declaration |
+
+**Contrasts with Previous Design**:
+- **v1.3**: `allowed_file_patterns` defaulted to `["**/*"]` (permissive, unsafe)
+- **v1.4**: Defaults to feature directory scope (restrictive, safe)
+
+#### 4.5.5 Magic String Elimination
+
+**BEFORE (v1.3 - UNSAFE)**:
+
+```python
+# Multiple magic strings, no type safety
+step_data = json.loads(Path(step_file_path).read_text())
+workflow = step_data.get("workflow_type", "tdd_cycle")  # Magic string
+patterns = step_data.get("allowed_file_patterns", ["**/*"])  # Magic string
+safety = step_data.get("safety", {})  # No type hints
+```
+
+**AFTER (v1.4 - SAFE)**:
+
+```python
+# Type-safe, refactoring-safe, validated
+step = StepDefinition.from_file(step_file_path)  # Validation automatic
+workflow = step.workflow_type  # IDE autocomplete, mypy validation
+patterns = step.allowed_file_patterns  # Type: list[str], validated
+safety = step.safety  # Type: dict[str, bool | str], validated
+```
+
+**Refactoring Safety Example**:
+
+If you rename `workflow_type` → `execution_mode` in the dataclass:
+1. IDE refactoring renames ALL references in code automatically
+2. No grep needed for magic strings
+3. Mypy catches any missed references
+4. JSON files update via migration script (one-time)
+
+#### 4.5.6 Integration with Existing Gates
+
+**Updated Data Flow**:
+
+```mermaid
+sequenceDiagram
+    participant Orchestrator
+    participant Gate1 as Gate 1: Schema Validation (NEW)
+    participant Gate2 as Gate 2: Scope Enforcement
+    participant TaskTool
+    participant SubAgent
+
+    Orchestrator->>Gate1: Load step file
+    Gate1->>Gate1: Parse JSON
+    Gate1->>Gate1: Construct StepDefinition dataclass
+    Gate1->>Gate1: Validate in __post_init__
+
+    alt Validation Fails
+        Gate1-->>Orchestrator: ValidationError
+        Orchestrator-->>User: Block execution, return error
+    else Validation Succeeds
+        Gate1->>Orchestrator: StepDefinition object
+        Orchestrator->>Gate2: Check file scope
+        Gate2->>TaskTool: Invoke with validated step
+        TaskTool->>SubAgent: Execute with validated context
+    end
+```
+
+**Gate Integration**:
+- **Gate 1** (Pre-Invocation): Now includes schema validation
+- **Gate 2** (Scope Enforcement): Uses `step.allowed_file_patterns` (already validated)
+- **Gate 3** (Pre-Commit): Unchanged (existing hook)
+- **Gate 4** (Audit Trail): Logs validated step structure
+
 ---
 
 ## 5. Error Handling Strategy
@@ -640,7 +990,7 @@ def validate_subagent_stop(hook_event: dict) -> dict:
 |--------------|-----------|----------|
 | **Agent Crash** | IN_PROGRESS phases after SubagentStop | Reset phase to NOT_EXECUTED, preserve completed work |
 | **Agent Stuck** | Self-monitoring via TIMEOUT_INSTRUCTION | Agent returns PARTIAL, recovery suggestions added |
-| **Agent Runaway** | **Gate 2 (SubagentStop hook)**: Read `git diff --name-only` and validate against step file `allowed_file_patterns` | Warning logged, scope violation flagged in step file |
+| **Agent Runaway** | **Gate 2 (SubagentStop hook)**: Read `git diff --name-only` and validate against `step.allowed_file_patterns` (pre-validated by Gate 1) | Warning logged, scope violation flagged in step file |
 | **Silent Completion** | All phases NOT_EXECUTED after completion | FAILED state with transcript review suggestion |
 | **Template Error** | Pre-invocation validation | Block with specific missing section/phase |
 
@@ -1399,6 +1749,37 @@ Run: `/nw:execute @software-crafter steps/01-01.json` and check for SubagentStop
 | **Verification Evidence Missing** | Step state → FAILED | Add validation output with command results, re-run VALIDATE phase |
 | **Documentation Incomplete** | Step state → FAILED | Expand documentation with WHAT/WHY/HOW, update step file |
 | **Rollback Not Tested** | Step state → FAILED | Execute rollback plan, document results, update validation output |
+
+### 11.5 Schema Validation Migration (v1.3 → v1.4)
+
+**Change Summary**:
+- Introduced dataclass-based schema validation
+- Eliminated magic strings in field access
+- Changed `allowed_file_patterns` default from `["**/*"]` (permissive) to feature-scoped (restrictive)
+
+**Backward Compatibility**:
+- Existing step files remain valid (optional field with safe default)
+- No migration required for MVP
+- Future strict mode (optional): Make `allowed_file_patterns` required
+
+**Migration Path** (if strict mode desired):
+
+```python
+# des/scripts/migrate_step_files.py
+def migrate_step_file(step_path: Path, feature_name: str):
+    """Add allowed_file_patterns to step file if missing."""
+    step_data = json.loads(step_path.read_text())
+
+    if "allowed_file_patterns" not in step_data:
+        step_data["allowed_file_patterns"] = [f"docs/feature/{feature_name}/**"]
+        step_path.write_text(json.dumps(step_data, indent=2))
+        print(f"Migrated {step_path}")
+```
+
+**Trade-off Analysis**:
+- **Added Complexity**: ≈400 lines (new `des/core/models.py` module, validation logic)
+- **Benefits**: Type safety, fail-fast validation, refactoring safety, safe defaults
+- **Justification**: Prevents entire class of runtime failures (malformed step files, scope violations)
 
 ---
 

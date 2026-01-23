@@ -1,34 +1,342 @@
 # Deterministic Execution System (DES) - Data Models
 
-**Version:** 1.3
+**Version:** 1.4
 **Date:** 2026-01-23
 **Author:** Morgan (Solution Architect)
-**Status:** DESIGN Wave Deliverable - Workflow Type and Safety Metadata
+**Status:** DESIGN Wave Deliverable - Dataclass-Driven Schema (Single Source of Truth)
+**Canonical Schema Location:** `des/core/models.py` (StepDefinition dataclass)
+**This Document:** Auto-generated documentation from canonical schema
+
+---
+
+**⚠️ IMPORTANT: Schema Source of Truth**
+
+This document contains **auto-generated documentation** from the canonical Python schema.
+
+**DO NOT manually edit field definitions** - they will be overwritten on next schema export.
+
+**To modify the schema**:
+1. Edit `des/core/models.py` (StepDefinition dataclass)
+2. Run `python des/scripts/export_schema.py` to regenerate documentation
+3. Update this file with regenerated content
+
+**Canonical Source**: `des/core/models.py` (StepDefinition dataclass)
 
 ---
 
 ## 1. Overview
 
-This document defines the JSON schemas for all data structures used by DES. All schemas use JSON Schema draft-07 for validation.
+This document provides human-readable documentation of the data structures used by DES. The canonical schema is defined in Python dataclasses, ensuring zero divergence between creation and validation.
+
+## 1.1 Schema Source of Truth (v1.4)
+
+### 1.1.1 Design Principle: Code as Schema
+
+**SINGLE SOURCE OF TRUTH**: Python dataclasses in `des/core/models.py`
+
+All step file structure validation uses the `StepDefinition` dataclass. This document contains **auto-generated documentation** derived from the canonical Python schema.
+
+**Why Dataclasses, Not JSON Schema?**
+
+| Approach | Creation | Validation | Synchronization Risk |
+|----------|----------|------------|---------------------|
+| **Manual JSON Schema** | AI reads docs | Python validates manually | HIGH: Two schemas can diverge |
+| **Dataclasses (v1.4)** | AI uses dataclass | Dataclass validates itself | ZERO: Single definition |
+
+**Principle**: "The code that validates IS the schema"
+
+### 1.1.2 Canonical Schema Location
+
+**File**: `des/core/models.py`
+**Class**: `StepDefinition`
+
+```python
+@dataclass
+class StepDefinition:
+    """
+    Canonical step file schema for DES.
+
+    All step file creation and validation MUST use this dataclass.
+    Direct JSON parsing bypasses validation and is prohibited.
+    """
+
+    # Required fields
+    id: str
+    feature_name: str
+    workflow_type: Literal["tdd_cycle", "configuration_setup"]
+
+    # Optional fields with safe defaults
+    allowed_file_patterns: list[str] | None = None
+
+    def __post_init__(self):
+        """Validation happens here - this IS the schema."""
+        # ... validation logic ...
+```
+
+**Access Pattern** (REQUIRED):
+
+```python
+# ✅ CORRECT: Single source of truth
+step = StepDefinition.from_file("steps/01-01.json")
+patterns = step.allowed_file_patterns  # Validated, type-safe
+
+# ❌ WRONG: Bypasses validation, unsafe
+step_data = json.loads(Path("steps/01-01.json").read_text())
+patterns = step_data.get("allowed_file_patterns")  # Magic string, no validation
+```
+
+### 1.1.3 Schema Export for Documentation
+
+**Script**: `des/scripts/export_schema.py` (v1.4)
+
+```python
+#!/usr/bin/env python3
+"""
+Export JSON Schema from canonical Python dataclasses.
+
+This script generates the JSON Schema documentation in data-models.md
+from the canonical StepDefinition dataclass.
+
+Usage:
+    python des/scripts/export_schema.py > docs/feature/des/design/schema-generated.json
+"""
+
+import json
+from dataclasses import fields
+from typing import get_type_hints, get_origin, get_args, Union, Literal
+
+from des.core.models import StepDefinition
+
+def dataclass_to_json_schema(cls) -> dict:
+    """
+    Convert dataclass to JSON Schema.
+
+    This is a simplified converter for documentation purposes.
+    For production, consider using a library like pydantic.
+    """
+    schema = {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": cls.__name__,
+        "description": cls.__doc__.strip() if cls.__doc__ else "",
+        "type": "object",
+        "properties": {},
+        "required": []
+    }
+
+    type_hints = get_type_hints(cls)
+
+    for field in fields(cls):
+        field_name = field.name
+        field_type = type_hints[field_name]
+
+        # Determine if field is required (no default)
+        if field.default == field.default_factory == field.MISSING:
+            schema["required"].append(field_name)
+
+        # Convert Python type to JSON Schema type
+        schema["properties"][field_name] = python_type_to_json_schema(field_type)
+
+    return schema
+
+def python_type_to_json_schema(py_type) -> dict:
+    """Convert Python type annotation to JSON Schema type."""
+    origin = get_origin(py_type)
+
+    # Handle Optional (Union with None)
+    if origin is Union:
+        args = get_args(py_type)
+        non_none = [a for a in args if a is not type(None)]
+        if len(non_none) == 1:
+            return python_type_to_json_schema(non_none[0])
+
+    # Handle list
+    if origin is list:
+        item_type = get_args(py_type)[0] if get_args(py_type) else str
+        return {
+            "type": "array",
+            "items": python_type_to_json_schema(item_type)
+        }
+
+    # Handle Literal (enum)
+    if origin is Literal:
+        return {
+            "type": "string",
+            "enum": list(get_args(py_type))
+        }
+
+    # Handle basic types
+    type_mapping = {
+        str: {"type": "string"},
+        int: {"type": "integer"},
+        float: {"type": "number"},
+        bool: {"type": "boolean"},
+        dict: {"type": "object"}
+    }
+
+    return type_mapping.get(py_type, {"type": "string"})
+
+if __name__ == "__main__":
+    schema = dataclass_to_json_schema(StepDefinition)
+    print(json.dumps(schema, indent=2))
+```
+
+**Documentation Update Process**:
+
+```bash
+# Regenerate JSON Schema documentation
+python des/scripts/export_schema.py > docs/feature/des/design/schema-generated.json
+
+# Manually update data-models.md Section 2 with generated schema
+# (Or automate with sed/awk if desired)
+```
+
+### 1.1.4 Validation Lifecycle
+
+**Both creation and validation use the SAME dataclass**:
+
+```mermaid
+graph TD
+    A[Roadmap Template] --> B[AI generates step JSON]
+    B --> C[StepDefinition.from_json]
+    C --> D{Validation in __post_init__}
+    D -->|Success| E[Write step file]
+    D -->|Failure| F[Retry with hints]
+
+    E --> G[User manually edits step file]
+    G --> H[Execution: StepDefinition.from_file]
+    H --> I{Same validation in __post_init__}
+    I -->|Success| J[Execute task]
+    I -->|Failure| K[Block execution]
+
+    style C fill:#90EE90
+    style H fill:#90EE90
+    style D fill:#FFD700
+    style I fill:#FFD700
+```
+
+**Key Point**: Validation logic runs IDENTICALLY in creation and execution (no divergence possible)
 
 ---
 
-## 2. Step File Schema
+## 2. Step File Schema (v1.4)
 
-### 2.1 Complete Schema
+### 2.1 Canonical Schema Source
+
+**IMPORTANT**: The canonical schema is the `StepDefinition` dataclass in `des/core/models.py`.
+
+This section provides **human-readable documentation** derived from the canonical schema. For programmatic access, always use:
+
+```python
+from des.core.models import StepDefinition
+
+# Load and validate step file
+step = StepDefinition.from_file("steps/01-01.json")
+```
+
+**Schema Documentation** (auto-generated from `StepDefinition` dataclass):
+
+For the complete, executable schema definition, see:
+- **Source**: `des/core/models.py` (StepDefinition class)
+- **Documentation**: Section 4.5.2 in architecture-design.md
+
+### 2.2 Required Fields
+
+Extracted from `StepDefinition` dataclass:
+
+| Field | Type | Description | Source |
+|-------|------|-------------|--------|
+| `id` | `str` | Step identifier (e.g., "01-01") | `StepDefinition.id` |
+| `feature_name` | `str` | Feature this step belongs to | `StepDefinition.feature_name` |
+| `workflow_type` | `Literal["tdd_cycle", "configuration_setup"]` | Execution workflow type | `StepDefinition.workflow_type` |
+| `description` | `str` | Human-readable task description | `StepDefinition.description` |
+| `wave` | `Literal["DISCOVER", "DISCUSS", "DESIGN", "DISTILL", "DEVELOP", "DELIVER"]` | nWave methodology phase | `StepDefinition.wave` |
+
+### 2.3 Optional Fields with Safe Defaults
+
+| Field | Type | Default | Description | Source |
+|-------|------|---------|-------------|--------|
+| `allowed_file_patterns` | `list[str]` | `[f"docs/feature/{feature_name}/**"]` | File scope (restrictive default) | `StepDefinition.allowed_file_patterns` |
+| `dependencies` | `list[str]` | `[]` | Prerequisite step IDs | `StepDefinition.dependencies` |
+| `acceptance_criteria` | `list[str]` | `[]` | Task completion criteria | `StepDefinition.acceptance_criteria` |
+| `safety` | `dict[str, bool \| str]` | `{}` | Safety metadata for configuration_setup | `StepDefinition.safety` |
+
+### 2.4 Validation Rules
+
+**All validation is defined in `StepDefinition.__post_init__`**:
+
+1. **File Patterns Validation** (`_validate_file_patterns`):
+   - Must be array of strings
+   - Cannot be empty
+   - Warns if `["**/*"]` (overly permissive)
+
+2. **Workflow Type Validation** (`_validate_workflow_type`):
+   - Must be one of: `"tdd_cycle"`, `"configuration_setup"`
+
+3. **Dependencies Validation** (`_validate_dependencies`):
+   - Must be array of non-empty strings
+
+4. **Safety Validation** (`_validate_safety`):
+   - For `configuration_setup`: destructive operations require `rollback_plan`
+
+**See `des/core/models.py` for complete validation implementation.**
+
+### 2.5 Example Step File (Minimal)
+
+```json
+{
+  "id": "01-01",
+  "feature_name": "auth-upgrade",
+  "workflow_type": "tdd_cycle",
+  "description": "Implement JWT token service",
+  "wave": "DEVELOP"
+}
+```
+
+**Note**: `allowed_file_patterns` not specified → defaults to `["docs/feature/auth-upgrade/**"]` (safe default)
+
+### 2.6 Example Step File (Complete)
+
+```json
+{
+  "id": "02-03",
+  "feature_name": "auth-upgrade",
+  "workflow_type": "configuration_setup",
+  "description": "Configure Auth0 test environment",
+  "wave": "DEVELOP",
+  "allowed_file_patterns": [
+    ".env.test",
+    "docs/feature/auth-upgrade/**"
+  ],
+  "dependencies": ["02-01", "02-02"],
+  "acceptance_criteria": [
+    "Auth0 test tenant created",
+    "API keys stored in 1Password",
+    "Webhook endpoint configured"
+  ],
+  "safety": {
+    "is_destructive": false,
+    "rollback_plan": "",
+    "affects_production": false
+  }
+}
+```
+
+### 2.7 Legacy JSON Schema (v1.3 - Deprecated)
+
+**⚠️ DEPRECATED**: The following JSON Schema is maintained for backward compatibility only. All new development MUST use the `StepDefinition` dataclass.
 
 ```json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://nwave.ai/schemas/step-file.json",
   "title": "DES Step File",
-  "description": "Step file for Deterministic Execution System",
+  "description": "Step file for Deterministic Execution System (LEGACY - use StepDefinition dataclass)",
   "type": "object",
   "required": ["schema_version", "task_id", "project_id", "state"],
   "properties": {
     "schema_version": {
       "type": "string",
-      "const": "1.3",
+      "const": "1.4",
       "description": "Schema version for compatibility checking"
     },
     "workflow_type": {
@@ -364,60 +672,7 @@ This document defines the JSON schemas for all data structures used by DES. All 
 }
 ```
 
-### 2.2 Minimal Valid Step Files
-
-#### TDD Cycle Workflow (Default)
-
-```json
-{
-  "schema_version": "1.3",
-  "task_id": "01-01",
-  "project_id": "auth-feature",
-  "workflow_type": "tdd_cycle",
-  "state": {
-    "status": "TODO"
-  },
-  "tdd_cycle": {
-    "phase_execution_log": [
-      {"phase_name": "PREPARE", "status": "NOT_EXECUTED"},
-      {"phase_name": "RED_ACCEPTANCE", "status": "NOT_EXECUTED"},
-      {"phase_name": "RED_UNIT", "status": "NOT_EXECUTED"},
-      {"phase_name": "GREEN_UNIT", "status": "NOT_EXECUTED"},
-      {"phase_name": "CHECK_ACCEPTANCE", "status": "NOT_EXECUTED"},
-      {"phase_name": "GREEN_ACCEPTANCE", "status": "NOT_EXECUTED"},
-      {"phase_name": "REVIEW", "status": "NOT_EXECUTED"},
-      {"phase_name": "REFACTOR_L1", "status": "NOT_EXECUTED"},
-      {"phase_name": "REFACTOR_L2", "status": "NOT_EXECUTED"},
-      {"phase_name": "REFACTOR_L3", "status": "NOT_EXECUTED"},
-      {"phase_name": "REFACTOR_L4", "status": "NOT_EXECUTED"},
-      {"phase_name": "POST_REFACTOR_REVIEW", "status": "NOT_EXECUTED"},
-      {"phase_name": "FINAL_VALIDATE", "status": "NOT_EXECUTED"},
-      {"phase_name": "COMMIT", "status": "NOT_EXECUTED"}
-    ]
-  }
-}
-```
-
-#### Configuration Setup Workflow
-
-```json
-{
-  "schema_version": "1.3",
-  "task_id": "01-01",
-  "project_id": "des-installation",
-  "workflow_type": "configuration_setup",
-  "state": {
-    "status": "TODO"
-  },
-  "safety": {
-    "is_destructive": false,
-    "rollback_plan": "rm -rf /mnt/c/tools/des",
-    "affects_production": false
-  }
-}
-```
-
-### 2.3 Validation Rules (v1.3)
+### 2.8 Validation Rules (v1.3 - Legacy Reference)
 
 **Rule 1: workflow_type Validation**
 - **Valid values**: `"tdd_cycle"` (default), `"configuration_setup"`
@@ -454,174 +709,21 @@ This document defines the JSON schemas for all data structures used by DES. All 
   - Rollback testing evidence if destructive operation
 
 **Rule 5: Schema Version Compatibility**
-- **v1.0 → v1.3 Migration**:
+- **v1.0 → v1.4 Migration**:
   - `workflow_type` defaults to `"tdd_cycle"` if omitted (backward compatible)
   - `safety` metadata optional (no breaking changes)
   - `schema_version: "1.0"` files remain valid (auto-upgraded to tdd_cycle workflow)
-
-### 2.4 Complete Step File Example
-
-```json
-{
-  "schema_version": "1.3",
-  "task_id": "01-01",
-  "project_id": "auth-feature",
-  "workflow_type": "tdd_cycle",
-  "state": {
-    "status": "DONE",
-    "created_at": "2026-01-22T10:00:00Z",
-    "updated_at": "2026-01-22T11:30:00Z",
-    "failure_reason": null,
-    "recovery_suggestions": []
-  },
-  "task_specification": {
-    "name": "Implement user authentication",
-    "description": "Add login endpoint with JWT token generation",
-    "motivation": "Users need to authenticate to access protected resources",
-    "acceptance_criteria": [
-      "User can login with valid credentials",
-      "JWT token is returned on successful login",
-      "Invalid credentials return 401 error"
-    ],
-    "allowed_file_patterns": [
-      "**/auth/**",
-      "**/test_auth*"
-    ]
-  },
-  "tdd_cycle": {
-    "methodology": "outside-in-tdd-14-phase",
-    "phase_execution_log": [
-      {
-        "phase_name": "PREPARE",
-        "status": "EXECUTED",
-        "started_at": "2026-01-22T10:05:00Z",
-        "ended_at": "2026-01-22T10:08:00Z",
-        "duration_minutes": 3,
-        "outcome": "PASS",
-        "outcome_details": "Removed @skip tag from login acceptance test",
-        "notes": "Single acceptance test now active"
-      },
-      {
-        "phase_name": "RED_ACCEPTANCE",
-        "status": "EXECUTED",
-        "started_at": "2026-01-22T10:08:00Z",
-        "ended_at": "2026-01-22T10:12:00Z",
-        "duration_minutes": 4,
-        "outcome": "PASS",
-        "outcome_details": "Acceptance test fails with 404 - endpoint not implemented",
-        "test_results": {"total": 1, "passed": 0, "failed": 1, "skipped": 0}
-      },
-      {
-        "phase_name": "RED_UNIT",
-        "status": "EXECUTED",
-        "started_at": "2026-01-22T10:12:00Z",
-        "ended_at": "2026-01-22T10:20:00Z",
-        "duration_minutes": 8,
-        "outcome": "PASS",
-        "outcome_details": "Unit test for AuthService.login() fails on assertion"
-      },
-      {
-        "phase_name": "GREEN_UNIT",
-        "status": "EXECUTED",
-        "started_at": "2026-01-22T10:20:00Z",
-        "ended_at": "2026-01-22T10:35:00Z",
-        "duration_minutes": 15,
-        "outcome": "PASS",
-        "outcome_details": "Minimal implementation passes unit test",
-        "artifacts_created": ["src/auth/service.py"]
-      },
-      {
-        "phase_name": "CHECK_ACCEPTANCE",
-        "status": "EXECUTED",
-        "started_at": "2026-01-22T10:35:00Z",
-        "ended_at": "2026-01-22T10:37:00Z",
-        "duration_minutes": 2,
-        "outcome": "FAIL",
-        "outcome_details": "Acceptance test still fails - need endpoint"
-      },
-      {
-        "phase_name": "GREEN_ACCEPTANCE",
-        "status": "EXECUTED",
-        "started_at": "2026-01-22T10:37:00Z",
-        "ended_at": "2026-01-22T10:50:00Z",
-        "duration_minutes": 13,
-        "outcome": "PASS",
-        "outcome_details": "All tests green after adding endpoint",
-        "test_results": {"total": 5, "passed": 5, "failed": 0, "skipped": 0}
-      },
-      {
-        "phase_name": "REVIEW",
-        "status": "EXECUTED",
-        "started_at": "2026-01-22T10:50:00Z",
-        "ended_at": "2026-01-22T10:55:00Z",
-        "duration_minutes": 5,
-        "outcome": "PASS",
-        "outcome_details": "Code passes SOLID principles check"
-      },
-      {
-        "phase_name": "REFACTOR_L1",
-        "status": "EXECUTED",
-        "started_at": "2026-01-22T10:55:00Z",
-        "ended_at": "2026-01-22T11:00:00Z",
-        "duration_minutes": 5,
-        "outcome": "PASS",
-        "outcome_details": "Renamed variables to use business language"
-      },
-      {
-        "phase_name": "REFACTOR_L2",
-        "status": "EXECUTED",
-        "started_at": "2026-01-22T11:00:00Z",
-        "ended_at": "2026-01-22T11:05:00Z",
-        "duration_minutes": 5,
-        "outcome": "PASS",
-        "outcome_details": "Extracted token generation to separate method"
-      },
-      {
-        "phase_name": "REFACTOR_L3",
-        "status": "SKIPPED",
-        "blocked_by": "NOT_APPLICABLE: Single class, no SRP violations"
-      },
-      {
-        "phase_name": "REFACTOR_L4",
-        "status": "SKIPPED",
-        "blocked_by": "NOT_APPLICABLE: No architecture pattern changes needed"
-      },
-      {
-        "phase_name": "POST_REFACTOR_REVIEW",
-        "status": "EXECUTED",
-        "started_at": "2026-01-22T11:05:00Z",
-        "ended_at": "2026-01-22T11:10:00Z",
-        "duration_minutes": 5,
-        "outcome": "PASS",
-        "outcome_details": "All tests still pass after refactoring"
-      },
-      {
-        "phase_name": "FINAL_VALIDATE",
-        "status": "EXECUTED",
-        "started_at": "2026-01-22T11:10:00Z",
-        "ended_at": "2026-01-22T11:15:00Z",
-        "duration_minutes": 5,
-        "outcome": "PASS",
-        "outcome_details": "Complete test suite passes",
-        "test_results": {"total": 25, "passed": 25, "failed": 0, "skipped": 2}
-      },
-      {
-        "phase_name": "COMMIT",
-        "status": "EXECUTED",
-        "started_at": "2026-01-22T11:15:00Z",
-        "ended_at": "2026-01-22T11:20:00Z",
-        "duration_minutes": 5,
-        "outcome": "PASS",
-        "outcome_details": "Committed with message: feat(auth): add user login endpoint"
-      }
-    ]
-  }
-}
-```
+  - All validation now performed by `StepDefinition` dataclass
 
 ---
 
 ## 3. Audit Log Entry Schema
+
+**Note**: This schema is used for audit trail logging. While not yet migrated to dataclasses in v1.4, future versions will consolidate all schemas under the canonical dataclass approach.
+
+For current implementation, see:
+- JSON Schema validation (below)
+- Future canonical source: `des/core/audit_models.py` (planned)
 
 ### 3.1 Complete Schema
 
