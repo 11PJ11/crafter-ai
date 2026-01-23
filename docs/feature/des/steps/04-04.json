@@ -1,0 +1,78 @@
+{
+  "task_specification": {
+    "task_id": "04-04",
+    "project_id": "des",
+    "task_name": "Create unit test suite",
+    "description": "Develop comprehensive unit test suite for DESOrchestrator covering all methods,\nedge cases, and error conditions. Ensure high code coverage and test quality.",
+    "acceptance_criteria": [
+      "Unit tests for _get_validation_level() method",
+      "Unit tests for _generate_des_markers() method",
+      "Unit tests for render_prompt() with all command types",
+      "Unit tests for prepare_ad_hoc_prompt()",
+      "Edge case tests (null, empty, malformed inputs)",
+      "Error handling tests with exception validation",
+      "Unit test coverage >90% for DESOrchestrator"
+    ],
+    "requires": ["04-01", "04-02"],
+    "estimated_hours": 2,
+    "implementation_notes": "- Create tests/unit/test_des_orchestrator.py\n- Use pytest fixtures for test isolation\n- Test each method independently (no mocks of domain logic)\n- Parameterized tests for command type variations\n- Assert specific error messages for error cases\n- Use pytest.raises for exception testing"
+  },
+  "tdd_cycle": {
+    "acceptance_test": {
+      "scenario_name": "All 4 acceptance tests (regression suite)",
+      "test_file": "tests/acceptance/test_us001_command_filtering.py",
+      "test_file_format": "py_pytest",
+      "scenario_index": 0,
+      "initially_ignored": false,
+      "is_walking_skeleton": false
+    },
+    "expected_unit_tests": [],
+    "mock_boundaries": {
+      "allowed_ports": [],
+      "forbidden_domain_classes": [],
+      "in_memory_adapters": []
+    },
+    "tdd_phase_tracking": {
+      "current_phase": "NOT_STARTED",
+      "active_e2e_test": "",
+      "inactive_e2e_tests": "All other @skip scenarios remain disabled",
+      "phases_completed": []
+    },
+    "phase_execution_log": [
+      {"phase_name": "PREPARE", "phase_index": 0, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
+      {"phase_name": "RED_ACCEPTANCE", "phase_index": 1, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
+      {"phase_name": "RED_UNIT", "phase_index": 2, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
+      {"phase_name": "GREEN_UNIT", "phase_index": 3, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
+      {"phase_name": "CHECK_ACCEPTANCE", "phase_index": 4, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
+      {"phase_name": "GREEN_ACCEPTANCE", "phase_index": 5, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
+      {"phase_name": "REVIEW", "phase_index": 6, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
+      {"phase_name": "REFACTOR_L1", "phase_index": 7, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
+      {"phase_name": "REFACTOR_L2", "phase_index": 8, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
+      {"phase_name": "REFACTOR_L3", "phase_index": 9, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
+      {"phase_name": "REFACTOR_L4", "phase_index": 10, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
+      {"phase_name": "POST_REFACTOR_REVIEW", "phase_index": 11, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
+      {"phase_name": "FINAL_VALIDATE", "phase_index": 12, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
+      {"phase_name": "COMMIT", "phase_index": 13, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []}
+    ]
+  },
+  "quality_gates": {
+    "acceptance_test_must_fail_first": true,
+    "unit_tests_must_fail_first": true,
+    "no_mocks_inside_hexagon": true,
+    "business_language_required": true,
+    "refactor_level": 4,
+    "in_memory_test_ratio_target": 0.8,
+    "validation_after_each_phase": true,
+    "validation_after_each_review": true,
+    "validation_after_each_refactor": true,
+    "all_14_phases_mandatory": true,
+    "phase_documentation_required": true
+  },
+  "validation": {
+    "status": "approved",
+    "reviewer": "software-crafter-reviewer",
+    "reviewed_at": "2026-01-23T00:00:00Z",
+    "notes": "Step file meets all quality gates. JSON schema compliant, all 14 phases present in compact format, acceptance criteria comprehensive covering all methods and edge cases with specific coverage target (>90%), dependencies correctly mapped (requires 04-01, 04-02), task specification is self-contained and atomic. Proper unit testing strategy with isolation and parameterization approach specified.",
+    "issues": []
+  }
+}

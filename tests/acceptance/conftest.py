@@ -83,9 +83,11 @@ def minimal_step_file(tmp_project_root):
 @pytest.fixture
 def des_orchestrator():
     """
-    Mock DES orchestrator for testing command execution flow.
+    DES orchestrator for testing command execution flow.
 
-    This fixture will be implemented in DEVELOP wave.
-    For now, returns NotImplemented to make tests fail naturally.
+    Returns:
+        DESOrchestrator: Configured orchestrator instance
     """
-    return NotImplemented
+    from des.orchestrator import DESOrchestrator
+
+    return DESOrchestrator()
