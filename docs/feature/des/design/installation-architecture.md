@@ -1044,7 +1044,7 @@ def install_subagent_stop_hook() -> None:
 - Must be executable (chmod +x on Unix)
 - Must use venv Python interpreter (not global Python)
 - Must import DES validation library from venv successfully
-- Must handle 8-field JSON input from Claude Code
+- Must handle 6-field JSON input from Claude Code
 
 **Hook with Venv Python**:
 ```python
@@ -3375,7 +3375,7 @@ reviews:
       - aspect: "completeness"
         issue: "Missing health check implementation for Section 3.2 Check 6 (SubagentStop Hook) - code example ends mid-function at line 1498"
         severity: "MEDIUM"
-        recommendation: "Complete the check_hook_configured() function showing executable verification, import testing, and 8-field JSON validation"
+        recommendation: "Complete the check_hook_configured() function showing executable verification, import testing, and 6-field JSON validation"
         section: "3.2 Individual Component Checks - Check 6"
 
       - aspect: "completeness"
@@ -3523,7 +3523,7 @@ reviews:
           estimated_effort: "1 hour"
           blocking: false
 
-        - action: "Implement verify_hook_callable() with 8-field JSON test"
+        - action: "Implement verify_hook_callable() with 6-field JSON test"
           estimated_effort: "2 hours"
           blocking: false
 

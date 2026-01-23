@@ -145,18 +145,19 @@ from typing import Optional   # Type annotations
 }
 ```
 
-### 4.2 Hook Input Schema (Verified)
+### 4.2 Hook Input Schema (Verified v1.5.0)
+
+**CORRECTED (v1.5.0)**: Real 6-field SubagentStop hook schema from official Claude Code documentation. Non-existent fields `agent_id` and `agent_transcript_path` removed. See des-discovery-report.md v2.0.
 
 ```json
 {
+  "hook_event_name": "SubagentStop",
   "session_id": "786ebad4-6e5b-42d3-a954-c1df6e6f25b7",
   "transcript_path": "/home/user/.claude/projects/.../session.jsonl",
+  "stop_hook_active": false,
   "cwd": "/mnt/c/Repositories/Projects/ai-craft",
   "permission_mode": "bypassPermissions",
-  "hook_event_name": "SubagentStop",
-  "stop_hook_active": false,
-  "agent_id": "ab7af5b",
-  "agent_transcript_path": "/home/user/.claude/projects/.../subagents/agent-ab7af5b.jsonl"
+  "tool_use_id": "toolu_01ABC123xyz"
 }
 ```
 
