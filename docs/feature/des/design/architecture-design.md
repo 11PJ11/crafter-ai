@@ -1,9 +1,9 @@
 # Deterministic Execution System (DES) - Architecture Design
 
-**Version:** 1.2
+**Version:** 1.3
 **Date:** 2026-01-23
 **Author:** Morgan (Solution Architect)
-**Status:** DESIGN Wave Deliverable - Command-Specific Validation Clarification
+**Status:** DESIGN Wave Deliverable - Workflow Type Terminology and Safety Requirements
 **Branch:** `determinism`
 **Review Status:** Clarifies template validation as command-specific (addresses implementation confusion)
 
@@ -217,11 +217,11 @@ def extract_metadata(prompt: str) -> dict:
 
 **Validation Sets (Command-Specific):**
 
-DES supports multiple template validation levels based on command type:
+DES supports multiple template validation levels based on command type and workflow type:
 
-#### Full Validation Template (execute, develop)
+#### Full Validation Template (execute, develop with workflow_type: tdd_cycle)
 
-Used by `/nw:execute` and `/nw:develop` for TDD cycle enforcement:
+Used by `/nw:execute` and `/nw:develop` for TDD cycle enforcement (workflow_type: "tdd_cycle"):
 
 1. `DES_METADATA` - Origin, step file, validation flag
 2. `AGENT_IDENTITY` - Who the agent is
@@ -236,9 +236,9 @@ Used by `/nw:execute` and `/nw:develop` for TDD cycle enforcement:
 - `nWave/templates/prompt-templates/execute-step.template.md`
 - `nWave/templates/prompt-templates/develop-task.template.md`
 
-#### Partial Validation Template (baseline)
+#### Partial Validation Template (baseline, workflow_type: configuration_setup)
 
-Used by `/nw:baseline` for measurement tasks (NO TDD enforcement):
+Used by `/nw:baseline` for measurement tasks or `/nw:execute` with workflow_type: "configuration_setup" (NO TDD enforcement):
 
 1. `DES_METADATA` - Origin, step file, validation flag
 2. `AGENT_IDENTITY` - Who the agent is
@@ -350,24 +350,32 @@ if missing:
 
 **Command-to-Validation Mapping**
 
-The DES metadata marker `<!-- DES-ORIGIN: command:/nw:execute -->` determines validation level:
+The DES metadata marker `<!-- DES-ORIGIN: command:/nw:execute -->` and workflow_type from step file determine validation level:
 
 ```python
-def determine_validation_level(origin: str) -> str:
-    """Map DES origin to validation level.
+def determine_validation_level(origin: str, step_data: dict) -> str:
+    """Map DES origin and workflow type to validation level.
 
     Args:
         origin: DES-ORIGIN marker value (e.g., "command:/nw:execute")
+        step_data: Step file data containing workflow_type field
 
     Returns:
         Validation level: "full", "partial", or "none"
     """
+    # Get workflow type from step file (default to tdd_cycle for backward compatibility)
+    workflow_type = step_data.get("workflow_type", "tdd_cycle")
+
     if origin in ["command:/nw:execute", "command:/nw:develop"]:
-        return "full"
+        # For execute/develop, workflow_type determines validation level
+        if workflow_type == "configuration_setup":
+            return "partial"  # Configuration tasks skip TDD validation
+        else:  # workflow_type == "tdd_cycle" (default)
+            return "full"  # Full TDD enforcement
     elif origin == "command:/nw:baseline":
-        return "partial"
+        return "partial"  # Baseline always uses partial validation
     elif origin in ["command:/nw:research", "command:/nw:review", "ad-hoc"]:
-        return "none"
+        return "none"  # Research/review bypass validation
     else:
         # Unknown command - default to full validation for safety
         return "full"
@@ -377,10 +385,11 @@ def determine_validation_level(origin: str) -> str:
 
 ```
 1. Extract DES-ORIGIN from prompt markers
-2. Determine validation level using determine_validation_level()
-3. Get required sections from VALIDATION_SETS[level]
-4. Validate prompt sections using validate_prompt_sections()
-5. Block Task invocation if sections missing
+2. Load step file and extract workflow_type field
+3. Determine validation level using determine_validation_level(origin, step_data)
+4. Get required sections from VALIDATION_SETS[level]
+5. Validate prompt sections using validate_prompt_sections()
+6. Block Task invocation if sections missing
 ```
 
 **Template Rendering Process:**
@@ -1074,6 +1083,322 @@ $env:DES_STALE_THRESHOLD_MINUTES=60
 # System-wide (Linux/macOS)
 echo "export DES_STALE_THRESHOLD_MINUTES=60" >> ~/.bashrc
 ```
+
+### 11.4 Safety Classification and Pre-Execution Gates
+
+#### 11.4.1 Safety Metadata Schema
+
+Configuration setup tasks MUST include safety classification to prevent destructive operations without rollback plans:
+
+```python
+from dataclasses import dataclass
+
+@dataclass
+class SafetyMetadata:
+    """Safety metadata for configuration setup tasks.
+
+    Required for workflow_type: configuration_setup tasks to prevent
+    destructive operations without rollback plans and block production changes.
+    """
+    is_destructive: bool  # Does task delete/modify existing data?
+    rollback_plan: str    # How to undo changes (required if destructive)
+    affects_production: bool  # Does task touch production systems?
+
+    def validate(self) -> list[str]:
+        """Validate safety metadata completeness.
+
+        Returns:
+            List of validation errors (empty if valid)
+        """
+        errors = []
+        if self.is_destructive and not self.rollback_plan:
+            errors.append("Destructive operation requires rollback_plan")
+        if self.affects_production:
+            errors.append("Production changes blocked in MVP - requires manual approval")
+        return errors
+```
+
+Step JSON schema includes optional safety field:
+
+```json
+{
+  "id": "01-01",
+  "workflow_type": "configuration_setup",
+  "safety": {
+    "is_destructive": false,
+    "rollback_plan": "rm -rf /mnt/c/tools/des",
+    "affects_production": false
+  }
+}
+```
+
+**Field Definitions:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `is_destructive` | boolean | No (default: false) | Does task delete or modify existing data/files/configuration? |
+| `rollback_plan` | string | Yes (if is_destructive) | Exact commands or steps to undo changes |
+| `affects_production` | boolean | No (default: false) | Does task touch production systems or live data? |
+
+#### 11.4.2 Pre-Execution Safety Gate
+
+**Gate Name**: `PRE_EXECUTE_SAFETY`
+
+**When**: Before PREPARE phase execution (configuration_setup workflow only)
+
+**Purpose**: Prevent destructive operations without rollback plans; block production changes in MVP
+
+**Validation Logic**:
+
+```python
+from dataclasses import dataclass
+from typing import List
+
+@dataclass
+class GateResult:
+    """Result of safety gate validation."""
+    passed: bool
+    reason: str
+    blocking_errors: List[str] = None
+    warnings: List[str] = None
+
+def pre_execute_safety_gate(step_data: dict) -> GateResult:
+    """
+    Validate safety requirements before execution.
+    Applies only to workflow_type: configuration_setup.
+
+    Args:
+        step_data: Complete step file data
+
+    Returns:
+        GateResult with pass/fail status and reasons
+
+    Raises:
+        ValueError: If step_data is malformed
+    """
+    workflow_type = step_data.get("workflow_type", "tdd_cycle")
+
+    # Gate only applies to configuration_setup workflow
+    if workflow_type != "configuration_setup":
+        return GateResult(
+            passed=True,
+            reason="Not configuration_setup workflow - safety gate skipped"
+        )
+
+    safety = step_data.get("safety", {})
+    errors = []
+    warnings = []
+
+    # Check 1: Destructive operations require rollback plan
+    is_destructive = safety.get("is_destructive", False)
+    rollback_plan = safety.get("rollback_plan", "")
+
+    if is_destructive and not rollback_plan:
+        errors.append(
+            "BLOCKED: Destructive operation requires rollback_plan in safety metadata"
+        )
+
+    # Check 2: Production changes blocked (MVP constraint)
+    affects_production = safety.get("affects_production", False)
+    if affects_production:
+        errors.append(
+            "BLOCKED: Production changes require manual approval (not automated in MVP)"
+        )
+
+    # Check 3: Safety metadata present for configuration_setup
+    if not safety:
+        warnings.append(
+            "WARNING: Configuration setup tasks should include safety metadata"
+        )
+
+    # Determine gate result
+    if errors:
+        return GateResult(
+            passed=False,
+            reason=" | ".join(errors),
+            blocking_errors=errors,
+            warnings=warnings
+        )
+
+    return GateResult(
+        passed=True,
+        reason="Safety requirements validated",
+        warnings=warnings if warnings else None
+    )
+```
+
+**Error Handling:**
+
+| Error Type | Behavior | State Change | Recovery |
+|------------|----------|--------------|----------|
+| **BLOCKED (Destructive + No Rollback)** | Execution halts immediately | Step state → FAILED | Add rollback_plan to safety metadata, retry |
+| **BLOCKED (Production Change)** | Execution halts immediately | Step state → FAILED | Execute manually outside DES or change affects_production to false |
+| **WARNING (No Safety Metadata)** | Execution continues | Logged to audit trail | Add safety metadata for future runs |
+
+**Integration with Execution Flow:**
+
+```mermaid
+sequenceDiagram
+    participant Orchestrator
+    participant PreSafetyGate as PRE_EXECUTE_SAFETY Gate
+    participant StepFile as Step File
+    participant Agent as Sub-Agent
+    participant AuditLog as Audit Trail
+
+    Orchestrator->>StepFile: Load step data
+    StepFile-->>Orchestrator: workflow_type, safety metadata
+
+    alt workflow_type == "configuration_setup"
+        Orchestrator->>PreSafetyGate: validate(step_data)
+        PreSafetyGate->>PreSafetyGate: Check is_destructive + rollback_plan
+        PreSafetyGate->>PreSafetyGate: Check affects_production
+
+        alt Safety validation BLOCKED
+            PreSafetyGate->>StepFile: Set state=FAILED, add recovery_suggestions
+            PreSafetyGate->>AuditLog: Log PRE_EXECUTE_SAFETY_BLOCKED
+            PreSafetyGate-->>Orchestrator: GateResult(passed=False)
+            Orchestrator-->>User: BLOCKED with specific error
+        else Safety validation PASSED
+            PreSafetyGate->>AuditLog: Log PRE_EXECUTE_SAFETY_PASSED
+            PreSafetyGate-->>Orchestrator: GateResult(passed=True)
+            Orchestrator->>Agent: Execute PREPARE phase
+        end
+    else workflow_type == "tdd_cycle"
+        Orchestrator->>Agent: Execute PREPARE phase (gate skipped)
+    end
+```
+
+#### 11.4.3 Post-Execution Verification Gate
+
+**Gate Name**: `POST_EXECUTE_VERIFICATION`
+
+**When**: After VALIDATE phase completion (configuration_setup workflow only)
+
+**Purpose**: Ensure configuration setup includes verification evidence and complete documentation
+
+**Requirements:**
+
+```python
+def post_execute_verification_gate(step_data: dict, validation_output: str) -> GateResult:
+    """
+    Verify configuration setup includes evidence.
+    Applies only to workflow_type: configuration_setup.
+
+    Args:
+        step_data: Complete step file data
+        validation_output: Output from VALIDATE phase execution
+
+    Returns:
+        GateResult with pass/fail status and reasons
+    """
+    workflow_type = step_data.get("workflow_type", "tdd_cycle")
+
+    # Gate only applies to configuration_setup workflow
+    if workflow_type != "configuration_setup":
+        return GateResult(
+            passed=True,
+            reason="Not configuration_setup workflow - verification gate skipped"
+        )
+
+    errors = []
+
+    # Check 1: Verification evidence present
+    if not validation_output or len(validation_output) < 100:
+        errors.append(
+            "Verification evidence too short - include command output, logs, or screenshots"
+        )
+
+    # Check 2: Documentation complete
+    doc_output = step_data.get("documentation", "")
+    if not doc_output or len(doc_output) < 200:
+        errors.append(
+            "Documentation incomplete - must explain WHAT, WHY, and HOW to verify"
+        )
+
+    # Check 3: Rollback tested (if destructive)
+    safety = step_data.get("safety", {})
+    is_destructive = safety.get("is_destructive", False)
+
+    if is_destructive and "rollback" not in validation_output.lower():
+        errors.append(
+            "Destructive operation - rollback procedure must be tested and documented"
+        )
+
+    # Determine gate result
+    if errors:
+        return GateResult(
+            passed=False,
+            reason=" | ".join(errors),
+            blocking_errors=errors
+        )
+
+    return GateResult(
+        passed=True,
+        reason="Verification requirements met"
+    )
+```
+
+**Verification Evidence Requirements:**
+
+| Evidence Type | Minimum Length | Required Content |
+|---------------|----------------|------------------|
+| **Command Output** | 100 characters | Actual terminal output showing successful execution |
+| **Log Files** | 100 characters | Relevant log entries with timestamps |
+| **Screenshots** | N/A (visual) | Visual confirmation of configuration state |
+| **Documentation** | 200 characters | WHAT was configured, WHY it was needed, HOW to verify it's working |
+
+**Rollback Testing Requirement:**
+
+For destructive operations (`is_destructive: true`), the validation output MUST include:
+1. Evidence that rollback command was executed
+2. Confirmation that system returned to original state
+3. Re-execution of original operation to verify rollback completeness
+
+**Example Validation Output (Passing):**
+
+```markdown
+## Configuration Setup Verification
+
+### What Was Configured
+Installed DES toolchain to /mnt/c/tools/des with validation hooks
+
+### Verification Steps
+1. Check installation directory exists:
+   ```bash
+   $ ls -la /mnt/c/tools/des
+   drwxr-xr-x 5 user user 4096 Jan 23 10:30 .
+   drwxr-xr-x 3 user user 4096 Jan 23 10:25 ..
+   -rwxr-xr-x 1 user user 1024 Jan 23 10:30 post_subagent_validation.py
+   ```
+
+2. Verify hook configuration:
+   ```bash
+   $ cat .claude/settings.local.json | grep SubagentStop
+   "SubagentStop": [
+   ```
+
+3. Test rollback (destructive operation):
+   ```bash
+   $ rm -rf /mnt/c/tools/des
+   $ ls /mnt/c/tools/des
+   ls: cannot access '/mnt/c/tools/des': No such file exists
+
+   $ # Re-execute installation
+   $ ./install-des.sh
+   Installation complete: /mnt/c/tools/des
+   ```
+
+### How to Verify
+Run: `/nw:execute @software-crafter steps/01-01.json` and check for SubagentStop hook execution in audit log
+```
+
+**Error Handling:**
+
+| Error Type | Behavior | Recovery |
+|------------|----------|----------|
+| **Verification Evidence Missing** | Step state → FAILED | Add validation output with command results, re-run VALIDATE phase |
+| **Documentation Incomplete** | Step state → FAILED | Expand documentation with WHAT/WHY/HOW, update step file |
+| **Rollback Not Tested** | Step state → FAILED | Execute rollback plan, document results, update validation output |
 
 ---
 

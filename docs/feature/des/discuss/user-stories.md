@@ -517,6 +517,265 @@ Note: "Good work! The test now passes with minimal implementation. This is the '
 
 ---
 
+### Infrastructure Configuration User Stories
+
+### US-INF-001: Database Schema Migration Without Tests
+
+**As** Marcus (Senior Developer),
+**I want** to apply database schema migrations using configuration_setup workflow,
+**So that** I don't waste time writing acceptance tests for one-time schema changes.
+
+**Story Points:** 3
+**Priority:** P1 (Should Have)
+
+#### Problem (The Pain)
+
+Marcus needs to add a new column to the `users` table. This is a one-time infrastructure change, not a feature. Writing full TDD cycle with acceptance tests and 14 phases is overkill for schema migrations that won't have test coverage.
+
+#### Who (The User)
+
+- Senior developer executing database migrations
+- Understands SQL and schema versioning
+- Values efficiency for infrastructure tasks
+
+#### Solution (What We Build)
+
+Configuration setup workflow that validates database migrations on test databases before production, documents rollback procedures, and provides verification without requiring acceptance test scaffolding.
+
+#### Domain Examples
+
+**Example 1: Add Timestamp Column**
+```sql
+-- Migration
+ALTER TABLE users ADD COLUMN last_login_at TIMESTAMP DEFAULT NULL;
+
+-- Rollback
+ALTER TABLE users DROP COLUMN last_login_at;
+```
+- **Verification**: `SELECT last_login_at FROM users LIMIT 1` returns NULL (column exists)
+- **Safety**: Non-destructive (adding column with default NULL)
+
+**Example 2: Add Index for Performance**
+```sql
+-- Migration
+CREATE INDEX idx_orders_customer_id ON orders(customer_id);
+
+-- Rollback
+DROP INDEX idx_orders_customer_id;
+```
+- **Verification**: `EXPLAIN SELECT * FROM orders WHERE customer_id = 123` shows index usage
+- **Safety**: Non-destructive (index creation)
+
+**Example 3: Alter Column Type (Destructive)**
+```sql
+-- Migration
+ALTER TABLE products ALTER COLUMN price TYPE DECIMAL(10,2);
+
+-- Rollback
+ALTER TABLE products ALTER COLUMN price TYPE INTEGER;
+```
+- **Verification**: `SELECT price FROM products WHERE id = 1` returns decimal (e.g., 19.99)
+- **Safety**: DESTRUCTIVE (data loss if rollback - pennies truncated)
+
+#### Acceptance Criteria
+
+- [ ] AC-INF-001.1: VALIDATE phase runs migration against TEST database only (not production)
+- [ ] AC-INF-001.2: Verification query confirms schema change applied successfully
+- [ ] AC-INF-001.3: Step file includes verification evidence (query output screenshot or log)
+- [ ] AC-INF-001.4: Documentation includes migration SQL, rollback SQL, business reason, and impact analysis
+- [ ] AC-INF-001.5: Production migration flagged as manual step (DBA applies separately)
+- [ ] AC-INF-001.6: Safety classification documented (is_destructive, rollback_plan, affects_production)
+
+---
+
+### US-INF-002: Environment Variable Configuration
+
+**As** Priya (Tech Lead),
+**I want** to configure environment variables using configuration_setup workflow,
+**So that** deployment prerequisites are documented and verified systematically.
+
+**Story Points:** 2
+**Priority:** P1 (Should Have)
+
+#### Problem (The Pain)
+
+Multiple services need `.env` files with API keys, database URLs, and feature flags. Current setup is manual and error-prone. No verification that values are in correct format. Developers forget steps, leading to runtime failures.
+
+#### Who (The User)
+
+- Tech Lead responsible for environment consistency
+- Manages multiple environments (dev, staging, prod)
+- Needs audit trail for configuration changes
+
+#### Solution (What We Build)
+
+Configuration setup workflow that validates environment variable formats (regex), tests functional connectivity (database connections, API calls), redacts sensitive values from logs, and documents variable purposes.
+
+#### Domain Examples
+
+**Example 1: Database URL Configuration**
+```bash
+# .env
+DATABASE_URL=postgresql://user:password@localhost:5432/mydb
+
+# Verification
+echo $DATABASE_URL | grep -E '^postgresql://[^:]+:[^@]+@[^:]+:[0-9]+/[^/]+$'
+```
+- **Format validation**: Regex checks protocol, user, password, host, port, database
+- **Safety**: Non-destructive (setting environment variable)
+
+**Example 2: Stripe API Key with Format Validation**
+```bash
+# .env
+API_KEY_STRIPE=sk_test_51Abc...
+
+# Verification
+if [[ $API_KEY_STRIPE =~ ^sk_(test|live)_ ]]; then
+  echo "Valid Stripe key format"
+  # API call to verify key works
+  curl -u "$API_KEY_STRIPE:" https://api.stripe.com/v1/balance
+else
+  echo "Invalid Stripe key format"
+  exit 1
+fi
+```
+- **Format validation**: Starts with sk_test_ or sk_live_
+- **Functional validation**: API call returns 200 OK
+- **Safety**: Non-destructive, but sensitive (key not logged)
+
+**Example 3: Feature Flag with Boolean Validation**
+```bash
+# .env
+FEATURE_FLAG_NEW_CHECKOUT=true
+
+# Verification
+if [[ "$FEATURE_FLAG_NEW_CHECKOUT" =~ ^(true|false)$ ]]; then
+  echo "Valid boolean flag"
+else
+  echo "Invalid value - must be 'true' or 'false'"
+  exit 1
+fi
+```
+- **Format validation**: Only "true" or "false" allowed
+- **Safety**: Non-destructive
+
+#### Acceptance Criteria
+
+- [ ] AC-INF-002.1: VALIDATE phase checks environment variable format using regex validation
+- [ ] AC-INF-002.2: Functional verification tests connectivity (database connection, API call success)
+- [ ] AC-INF-002.3: Step file includes verification evidence (connection success log, API response)
+- [ ] AC-INF-002.4: Sensitive values NOT logged - audit log shows "[REDACTED]" for API keys and passwords
+- [ ] AC-INF-002.5: Documentation explains purpose of each variable, acceptable formats, and how to obtain sensitive values
+- [ ] AC-INF-002.6: Environment-specific variations documented (dev vs staging vs prod differences)
+
+---
+
+### US-INF-003: Third-Party Service Provisioning
+
+**As** Alex (Junior Developer),
+**I want** to provision third-party services (Auth0, Stripe, SendGrid) using configuration_setup workflow,
+**So that** I follow a consistent process with verification instead of ad-hoc manual setup.
+
+**Story Points:** 5
+**Priority:** P2 (Could Have)
+
+#### Problem (The Pain)
+
+Alex needs to create a Stripe test account, configure webhooks, and generate API keys. He's done this before but always forgets steps (e.g., setting correct webhook URL, restricting key permissions). No checklist or verification. Leads to runtime errors when webhooks fail.
+
+#### Who (The User)
+
+- Junior developer setting up development environment
+- Needs explicit step-by-step guidance
+- Benefits from automated verification
+
+#### Solution (What We Build)
+
+Configuration setup workflow that provides interactive checklists for manual provisioning steps, runs verification scripts to confirm service configuration, and stores credentials securely with documented locations.
+
+#### Domain Examples
+
+**Example 1: Create Stripe Test Account**
+```bash
+# Manual steps (EXECUTE phase checklist):
+1. Go to https://dashboard.stripe.com/register
+2. Sign up with team email (team+stripe-test@example.com)
+3. Skip business verification (test mode)
+4. Copy Account ID from dashboard
+
+# Verification (VALIDATE phase):
+curl https://api.stripe.com/v1/account \
+  -u sk_test_...: \
+  | jq -r '.id' \
+  | grep '^acct_test_'
+
+# Expected: Account ID starts with "acct_test_" (confirms test mode)
+```
+- **Verification**: API call confirms account exists and is test account
+- **Safety**: Non-destructive (creating test account, not production)
+
+**Example 2: Configure Stripe Webhook**
+```bash
+# Manual steps (EXECUTE phase checklist):
+1. Navigate to Developers → Webhooks in Stripe Dashboard
+2. Click "Add endpoint"
+3. Enter URL: https://api.example.com/webhooks/stripe
+4. Select events: charge.succeeded, charge.failed
+5. Copy webhook signing secret (whsec_...)
+
+# Verification (VALIDATE phase):
+curl -X POST https://api.example.com/webhooks/stripe \
+  -H "Content-Type: application/json" \
+  -d '{"type": "ping"}' \
+  | grep '200 OK'
+
+# Expected: Webhook endpoint returns 200 OK
+```
+- **Verification**: POST request to webhook URL returns 200 (endpoint accessible)
+- **Safety**: Non-destructive (configuring webhook, not production)
+
+**Example 3: Generate Restricted Stripe API Key**
+```bash
+# Manual steps (EXECUTE phase checklist):
+1. Navigate to Developers → API keys in Stripe Dashboard
+2. Click "Create restricted key"
+3. Name: "Test Environment - Charge Write Only"
+4. Permissions: Write access to Charges only (no refunds, no customers)
+5. Copy restricted key (rk_test_...)
+
+# Verification (VALIDATE phase):
+# Test 1: Verify key has charge:write permission
+curl https://api.stripe.com/v1/charges \
+  -u rk_test_...: \
+  -X POST -d "amount=100" -d "currency=usd" -d "source=tok_visa" \
+  | jq -r '.id' \
+  | grep '^ch_'
+
+# Expected: Charge created (key has write permission)
+
+# Test 2: Verify key LACKS refund permission
+curl https://api.stripe.com/v1/refunds \
+  -u rk_test_...: \
+  -X POST -d "charge=ch_..." \
+  | grep 'Invalid API Key'
+
+# Expected: API returns error (key correctly restricted)
+```
+- **Verification**: API calls confirm permissions (charge works, refund blocked)
+- **Safety**: Non-destructive (test key with restricted permissions)
+
+#### Acceptance Criteria
+
+- [ ] AC-INF-003.1: EXECUTE phase provides step-by-step checklist with expected outcomes for each step
+- [ ] AC-INF-003.2: Checklist includes screenshot references where helpful
+- [ ] AC-INF-003.3: VALIDATE phase makes API calls to verify provisioning (account ID format, webhook endpoint, key permissions)
+- [ ] AC-INF-003.4: Step file includes verification evidence (API responses showing successful verification)
+- [ ] AC-INF-003.5: DOCUMENT phase captures credentials location (1Password vault path, not actual secrets)
+- [ ] AC-INF-003.6: Rollback procedure documented (delete webhook, revoke API key, close test account)
+- [ ] AC-INF-003.7: Verification includes negative tests (confirm key LACKS unwanted permissions)
+
+---
+
 ## Story Dependencies
 
 ```

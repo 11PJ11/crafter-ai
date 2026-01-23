@@ -1,9 +1,9 @@
 # Deterministic Execution System (DES) - Data Models
 
-**Version:** 1.0
-**Date:** 2026-01-22
+**Version:** 1.3
+**Date:** 2026-01-23
 **Author:** Morgan (Solution Architect)
-**Status:** DESIGN Wave Deliverable
+**Status:** DESIGN Wave Deliverable - Workflow Type and Safety Metadata
 
 ---
 
@@ -24,12 +24,18 @@ This document defines the JSON schemas for all data structures used by DES. All 
   "title": "DES Step File",
   "description": "Step file for Deterministic Execution System",
   "type": "object",
-  "required": ["schema_version", "task_id", "project_id", "state", "tdd_cycle"],
+  "required": ["schema_version", "task_id", "project_id", "state"],
   "properties": {
     "schema_version": {
       "type": "string",
-      "const": "1.0",
+      "const": "1.3",
       "description": "Schema version for compatibility checking"
+    },
+    "workflow_type": {
+      "type": "string",
+      "enum": ["tdd_cycle", "configuration_setup"],
+      "default": "tdd_cycle",
+      "description": "Type of workflow: tdd_cycle (14-phase Outside-In TDD) or configuration_setup (installation/configuration tasks)"
     },
     "task_id": {
       "type": "string",
@@ -51,6 +57,9 @@ This document defines the JSON schemas for all data structures used by DES. All 
     },
     "self_contained_context": {
       "$ref": "#/definitions/SelfContainedContext"
+    },
+    "safety": {
+      "$ref": "#/definitions/SafetyMetadata"
     },
     "tdd_cycle": {
       "$ref": "#/definitions/TDDCycle"
@@ -149,9 +158,35 @@ This document defines the JSON schemas for all data structures used by DES. All 
         }
       }
     },
+    "SafetyMetadata": {
+      "type": "object",
+      "description": "Safety classification for configuration_setup workflows",
+      "properties": {
+        "is_destructive": {
+          "type": "boolean",
+          "default": false,
+          "description": "Does task delete or modify existing data/files/configuration?"
+        },
+        "rollback_plan": {
+          "type": "string",
+          "description": "Exact commands or steps to undo changes (required if is_destructive=true)"
+        },
+        "affects_production": {
+          "type": "boolean",
+          "default": false,
+          "description": "Does task touch production systems or live data?"
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"is_destructive": {"const": true}}},
+          "then": {"required": ["rollback_plan"]}
+        }
+      ]
+    },
     "TDDCycle": {
       "type": "object",
-      "required": ["phase_execution_log"],
+      "description": "Required for workflow_type: tdd_cycle, optional for configuration_setup",
       "properties": {
         "methodology": {
           "type": "string",
@@ -329,13 +364,16 @@ This document defines the JSON schemas for all data structures used by DES. All 
 }
 ```
 
-### 2.2 Minimal Valid Step File
+### 2.2 Minimal Valid Step Files
+
+#### TDD Cycle Workflow (Default)
 
 ```json
 {
-  "schema_version": "1.0",
+  "schema_version": "1.3",
   "task_id": "01-01",
   "project_id": "auth-feature",
+  "workflow_type": "tdd_cycle",
   "state": {
     "status": "TODO"
   },
@@ -360,13 +398,75 @@ This document defines the JSON schemas for all data structures used by DES. All 
 }
 ```
 
-### 2.3 Complete Step File Example
+#### Configuration Setup Workflow
 
 ```json
 {
-  "schema_version": "1.0",
+  "schema_version": "1.3",
+  "task_id": "01-01",
+  "project_id": "des-installation",
+  "workflow_type": "configuration_setup",
+  "state": {
+    "status": "TODO"
+  },
+  "safety": {
+    "is_destructive": false,
+    "rollback_plan": "rm -rf /mnt/c/tools/des",
+    "affects_production": false
+  }
+}
+```
+
+### 2.3 Validation Rules (v1.3)
+
+**Rule 1: workflow_type Validation**
+- **Valid values**: `"tdd_cycle"` (default), `"configuration_setup"`
+- **Default if omitted**: `"tdd_cycle"` (backward compatible with v1.0)
+- **Commands with full validation**: `/nw:execute`, `/nw:develop`
+- **Behavior**:
+  - `workflow_type: "tdd_cycle"` → Full validation with 14-phase TDD enforcement
+  - `workflow_type: "configuration_setup"` → Partial validation, NO TDD phases required
+
+**Rule 2: safety Metadata Validation**
+- **Required for**: `workflow_type: "configuration_setup"` with `is_destructive: true`
+- **Optional for**: `workflow_type: "tdd_cycle"`
+- **Fields**:
+  - `is_destructive` (boolean, default: false): Does task delete/modify existing data?
+  - `rollback_plan` (string, required if is_destructive=true): How to undo changes
+  - `affects_production` (boolean, default: false): Does task touch production systems?
+- **Validation Errors**:
+  - `is_destructive: true` AND `rollback_plan` empty → BLOCKED
+  - `affects_production: true` → BLOCKED (MVP constraint)
+
+**Rule 3: tdd_cycle Object**
+- **Required for**: `workflow_type: "tdd_cycle"`
+- **Optional for**: `workflow_type: "configuration_setup"`
+- **Must contain**: `phase_execution_log` with 14 phases if present
+- **Validation**: All 14 phase names must match schema enum exactly
+
+**Rule 4: Safety Gate Enforcement**
+- **Pre-execution gate** (PRE_EXECUTE_SAFETY) blocks if:
+  - `is_destructive=true` AND `rollback_plan` empty
+  - `affects_production=true` (MVP constraint)
+- **Post-execution gate** (POST_EXECUTE_VERIFICATION) requires:
+  - Verification evidence (>100 chars) for configuration_setup
+  - Documentation (>200 chars) explaining WHAT, WHY, HOW
+  - Rollback testing evidence if destructive operation
+
+**Rule 5: Schema Version Compatibility**
+- **v1.0 → v1.3 Migration**:
+  - `workflow_type` defaults to `"tdd_cycle"` if omitted (backward compatible)
+  - `safety` metadata optional (no breaking changes)
+  - `schema_version: "1.0"` files remain valid (auto-upgraded to tdd_cycle workflow)
+
+### 2.4 Complete Step File Example
+
+```json
+{
+  "schema_version": "1.3",
   "task_id": "01-01",
   "project_id": "auth-feature",
+  "workflow_type": "tdd_cycle",
   "state": {
     "status": "DONE",
     "created_at": "2026-01-22T10:00:00Z",
@@ -891,14 +991,27 @@ def extract_markers(prompt: str) -> dict:
       "type": "object",
       "properties": {
         "mandatory_sections": {
-          "type": "array",
-          "items": {"type": "string"}
+          "type": "object",
+          "description": "Mandatory sections per validation level",
+          "properties": {
+            "full": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Sections required for tdd_cycle workflow"
+            },
+            "partial": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Sections required for configuration_setup workflow"
+            }
+          }
         },
         "required_phases": {
           "type": "array",
           "items": {"type": "string"},
           "minItems": 14,
-          "maxItems": 14
+          "maxItems": 14,
+          "description": "14 TDD phases (only for tdd_cycle workflow)"
         }
       }
     },
@@ -924,18 +1037,27 @@ def extract_markers(prompt: str) -> dict:
 
 ```json
 {
-  "des_version": "1.0",
+  "des_version": "1.3",
   "validation": {
-    "mandatory_sections": [
-      "DES_METADATA",
-      "AGENT_IDENTITY",
-      "TASK_CONTEXT",
-      "TDD_14_PHASES",
-      "QUALITY_GATES",
-      "OUTCOME_RECORDING",
-      "BOUNDARY_RULES",
-      "TIMEOUT_INSTRUCTION"
-    ],
+    "mandatory_sections": {
+      "full": [
+        "DES_METADATA",
+        "AGENT_IDENTITY",
+        "TASK_CONTEXT",
+        "TDD_14_PHASES",
+        "QUALITY_GATES",
+        "OUTCOME_RECORDING",
+        "BOUNDARY_RULES",
+        "TIMEOUT_INSTRUCTION"
+      ],
+      "partial": [
+        "DES_METADATA",
+        "AGENT_IDENTITY",
+        "TASK_CONTEXT",
+        "OUTCOME_RECORDING",
+        "BOUNDARY_RULES"
+      ]
+    },
     "required_phases": [
       "PREPARE",
       "RED_ACCEPTANCE",
@@ -1026,6 +1148,22 @@ class TaskState:
     can_retry: bool = True
 
 @dataclass
+class SafetyMetadata:
+    """Safety metadata for configuration_setup workflows."""
+    is_destructive: bool = False
+    rollback_plan: str = ""
+    affects_production: bool = False
+
+    def validate(self) -> list[str]:
+        """Validate safety metadata completeness."""
+        errors = []
+        if self.is_destructive and not self.rollback_plan:
+            errors.append("Destructive operation requires rollback_plan")
+        if self.affects_production:
+            errors.append("Production changes blocked in MVP")
+        return errors
+
+@dataclass
 class TDDCycle:
     phase_execution_log: list[PhaseExecution]
     methodology: str = "outside-in-tdd-14-phase"
@@ -1036,7 +1174,9 @@ class StepFile:
     task_id: str
     project_id: str
     state: TaskState
-    tdd_cycle: TDDCycle
+    workflow_type: str = "tdd_cycle"  # "tdd_cycle" or "configuration_setup"
+    tdd_cycle: Optional[TDDCycle] = None  # Required for tdd_cycle workflow
+    safety: Optional[SafetyMetadata] = None  # Required for configuration_setup if destructive
     task_specification: Optional[dict] = None
     self_contained_context: Optional[dict] = None
 ```
