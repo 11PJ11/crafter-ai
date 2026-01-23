@@ -114,7 +114,7 @@ Scenario: Network failure during version check
   And GitHub API is unreachable
   When I run /nw:version
   Then I see "nWave v1.5.7 (installed)"
-  And I see "Could not check for updates. Try again later or check manually at https://github.com/11PJ11/crafter-ai/releases"
+  And I see "Could not check for updates. Try again later or check manually at {repository-releases-url}"
 ```
 
 ---
@@ -144,7 +144,7 @@ Scenario: Successful update with backup
   And I see summary:
     | Updated to     | 1.6.0 |
     | Key changes    | 2-3 bullet points |
-    | Full changelog | https://github.com/11PJ11/crafter-ai/releases/tag/v1.6.0 |
+    | Full changelog | {repository-releases-url}/tag/v1.6.0 |
 
 Scenario: Update cancelled by user
   Given nWave version 1.5.7 is installed
@@ -397,7 +397,9 @@ Scenario: Breaking change highlighted in changelog
 
 ### TR-002: GitHub API Integration
 
-**Endpoint:** `GET https://api.github.com/repos/11PJ11/crafter-ai/releases/latest`
+**Endpoint:** `GET https://api.github.com/repos/{owner}/{repo}/releases/latest`
+
+Where `{owner}/{repo}` is resolved dynamically at runtime (see TR-007).
 
 **Response parsing:**
 - `tag_name` - Version string (e.g., "v1.6.0")
@@ -408,6 +410,38 @@ Scenario: Breaking change highlighted in changelog
 - Network timeout: 10 seconds
 - Rate limiting: Graceful degradation with retry hint
 - Invalid response: Show local version only with warning
+
+### TR-007: Repository URL Dynamic Resolution
+
+**Purpose:** Ensure the update system works across different repository locations (development, open source, enterprise forks).
+
+**CRITICAL:** Repository URLs MUST NEVER be hardcoded. The canonical open source repository is `github.com/swcraftsmanshipdojo/nWave`.
+
+**Resolution algorithm:**
+```bash
+# 1. Read remote origin URL from git config
+git config --get remote.origin.url
+
+# 2. Parse owner/repo from URL (supports both formats)
+# HTTPS: https://github.com/swcraftsmanshipdojo/nWave.git → swcraftsmanshipdojo/nWave
+# SSH:   git@github.com:swcraftsmanshipdojo/nWave.git → swcraftsmanshipdojo/nWave
+
+# 3. Construct API URL
+https://api.github.com/repos/{owner}/{repo}/releases/latest
+
+# 4. Construct web URL for user display
+https://github.com/{owner}/{repo}/releases
+```
+
+**Implementation notes:**
+- Cache resolved URL for session duration (avoid repeated git config reads)
+- Handle edge cases: missing .git/config, no remote origin, invalid URL format
+- Provide clear error message if resolution fails
+
+**Fallback behavior:**
+If `.git/config` is not available or remote origin is not set:
+- Display local version only
+- Show message: "Could not determine remote repository. Run from a git repository with configured origin."
 
 ### TR-003: Backup Specification
 
@@ -618,6 +652,7 @@ module.exports = {
 | GitHub Actions workflow | Release automation on tag push |
 
 **semantic-release config (`.releaserc`):**
+
 ```json
 {
   "branches": ["main", "master"],
@@ -625,15 +660,28 @@ module.exports = {
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
     "@semantic-release/changelog",
+    ["@semantic-release/exec", {
+      "prepareCmd": "echo ${nextRelease.version} > nWave/VERSION"
+    }],
     ["@semantic-release/npm", { "npmPublish": false }],
-    "@semantic-release/github",
     ["@semantic-release/git", {
-      "assets": ["CHANGELOG.md", "package.json"],
+      "assets": ["CHANGELOG.md", "nWave/VERSION"],
       "message": "chore(release): ${nextRelease.version} [skip ci]"
-    }]
+    }],
+    "@semantic-release/github"
   ]
 }
 ```
+
+**Plugin chain order (critical):**
+
+1. `commit-analyzer` - Determines version bump from conventional commits
+2. `release-notes-generator` - Generates release notes content
+3. `changelog` - Updates CHANGELOG.md file
+4. `exec` - Updates nWave/VERSION file with new version
+5. `npm` - Updates package.json (no publish)
+6. `git` - Commits CHANGELOG.md and VERSION changes back to repo
+7. `github` - Creates GitHub Release with release notes
 
 ### Commands
 
