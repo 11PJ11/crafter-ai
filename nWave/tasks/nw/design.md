@@ -61,15 +61,15 @@ When delegating this command to an agent via Task tool:
 
 ## Context Files Required
 
-- docs/requirements/requirements.md - (from DISCUSS wave)
-- docs/requirements/user-stories.md - (from DISCUSS wave)
-- docs/architecture/constraints.md - Technical and business constraints
+- docs/feature/{feature-name}/discuss/requirements.md - (from DISCUSS wave)
+- docs/feature/{feature-name}/discuss/user-stories.md - (from DISCUSS wave)
+- docs/feature/{feature-name}/design/constraints.md - Technical and business constraints
 
 ## Previous Artifacts (Wave Handoff)
 
-- docs/requirements/requirements.md - (from DISCUSS wave)
-- docs/requirements/user-stories.md - (from DISCUSS wave)
-- docs/requirements/domain-model.md - (from DISCUSS wave)
+- docs/feature/{feature-name}/discuss/requirements.md - (from DISCUSS wave)
+- docs/feature/{feature-name}/discuss/user-stories.md - (from DISCUSS wave)
+- docs/feature/{feature-name}/discuss/domain-model.md - (from DISCUSS wave)
 
 ## Agent Invocation
 
@@ -79,15 +79,15 @@ Execute \*design-architecture for {feature-name}.
 
 **Context Files:**
 
-- docs/requirements/requirements.md
-- docs/requirements/user-stories.md
-- docs/architecture/constraints.md
+- docs/feature/{feature-name}/discuss/requirements.md
+- docs/feature/{feature-name}/discuss/user-stories.md
+- docs/feature/{feature-name}/design/constraints.md
 
 **Previous Artifacts:**
 
-- docs/requirements/requirements.md
-- docs/requirements/user-stories.md
-- docs/requirements/domain-model.md
+- docs/feature/{feature-name}/discuss/requirements.md
+- docs/feature/{feature-name}/discuss/user-stories.md
+- docs/feature/{feature-name}/discuss/domain-model.md
 
 **Configuration:**
 
@@ -116,10 +116,12 @@ Refer to Morgan's quality gates in nWave/agents/solution-architect.md.
 
 # Expected outputs (reference only):
 
-# - docs/architecture/architecture-design.md
+# - docs/feature/{feature-name}/design/architecture-design.md
 
-# - docs/architecture/technology-stack.md
+# - docs/feature/{feature-name}/design/technology-stack.md
 
-# - docs/architecture/component-boundaries.md
+# - docs/feature/{feature-name}/design/component-boundaries.md
 
-# - docs/architecture/diagrams/\*.svg
+# - docs/feature/{feature-name}/design/data-models.md
+
+# - docs/feature/{feature-name}/design/diagrams/\*.svg

@@ -74,7 +74,7 @@ The deliver command invokes a new agent instance that validates production readi
 - src/\* - (from DEVELOP wave)
 - tests/acceptance/\* - (from DISTILL wave, validated in DEVELOP)
 - tests/unit/\* - (from DEVELOP wave)
-- docs/architecture/architecture-design.md - (from DESIGN wave)
+- docs/feature/{feature-name}/design/architecture-design.md - (from DESIGN wave)
 
 ## Previous Artifacts (Wave Handoff)
 
@@ -94,7 +94,7 @@ Execute \*validate-production-readiness for {feature-name}.
 - src/\*
 - tests/acceptance/\*
 - tests/unit/\*
-- docs/architecture/architecture-design.md
+- docs/feature/{feature-name}/design/architecture-design.md
 
 **Previous Artifacts:**
 
@@ -131,8 +131,8 @@ Refer to Dakota's quality gates in nWave/agents/devop.md.
 
 # Expected outputs (reference only):
 
-# - docs/demo/production-deployment.md
+# - docs/feature/{feature-name}/deliver/production-deployment.md
 
-# - docs/demo/stakeholder-feedback.md
+# - docs/feature/{feature-name}/deliver/stakeholder-feedback.md
 
-# - docs/demo/business-impact-report.md
+# - docs/feature/{feature-name}/deliver/business-impact-report.md

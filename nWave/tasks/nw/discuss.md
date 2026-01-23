@@ -204,8 +204,10 @@ Refer to Riley's quality gates in nWave/agents/product-owner.md.
 
 # Expected outputs (reference only):
 
-# - docs/requirements/requirements.md
+# - docs/feature/{feature-name}/discuss/requirements.md
 
-# - docs/requirements/user-stories.md
+# - docs/feature/{feature-name}/discuss/user-stories.md
 
-# - docs/requirements/acceptance-criteria.md
+# - docs/feature/{feature-name}/discuss/acceptance-criteria.md
+
+# - docs/feature/{feature-name}/discuss/dor-checklist.md

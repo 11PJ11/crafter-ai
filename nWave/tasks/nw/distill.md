@@ -63,16 +63,16 @@ Creates executable specifications that bridge business requirements and technica
 
 ## Context Files Required
 
-- docs/requirements/requirements.md - (from DISCUSS wave)
-- docs/requirements/user-stories.md - (from DISCUSS wave)
-- docs/architecture/architecture-design.md - (from DESIGN wave)
-- docs/architecture/component-boundaries.md - (from DESIGN wave)
+- docs/feature/{feature-name}/discuss/requirements.md - (from DISCUSS wave)
+- docs/feature/{feature-name}/discuss/user-stories.md - (from DISCUSS wave)
+- docs/feature/{feature-name}/design/architecture-design.md - (from DESIGN wave)
+- docs/feature/{feature-name}/design/component-boundaries.md - (from DESIGN wave)
 
 ## Previous Artifacts (Wave Handoff)
 
-- docs/architecture/architecture-design.md - (from DESIGN wave)
-- docs/architecture/technology-stack.md - (from DESIGN wave)
-- docs/architecture/component-boundaries.md - (from DESIGN wave)
+- docs/feature/{feature-name}/design/architecture-design.md - (from DESIGN wave)
+- docs/feature/{feature-name}/design/technology-stack.md - (from DESIGN wave)
+- docs/feature/{feature-name}/design/component-boundaries.md - (from DESIGN wave)
 
 ## Agent Invocation
 
@@ -82,16 +82,16 @@ Execute \*create-acceptance-tests for {feature-name}.
 
 **Context Files:**
 
-- docs/requirements/requirements.md
-- docs/requirements/user-stories.md
-- docs/architecture/architecture-design.md
-- docs/architecture/component-boundaries.md
+- docs/feature/{feature-name}/discuss/requirements.md
+- docs/feature/{feature-name}/discuss/user-stories.md
+- docs/feature/{feature-name}/design/architecture-design.md
+- docs/feature/{feature-name}/design/component-boundaries.md
 
 **Previous Artifacts:**
 
-- docs/architecture/architecture-design.md
-- docs/architecture/technology-stack.md
-- docs/architecture/component-boundaries.md
+- docs/feature/{feature-name}/design/architecture-design.md
+- docs/feature/{feature-name}/design/technology-stack.md
+- docs/feature/{feature-name}/design/component-boundaries.md
 
 **Configuration:**
 
@@ -120,8 +120,8 @@ Refer to Quinn's quality gates in nWave/agents/acceptance-designer.md.
 
 # Expected outputs (reference only):
 
-# - tests/acceptance/acceptance-tests.feature
+# - docs/feature/{feature-name}/distill/acceptance-tests.feature
 
-# - tests/acceptance/step-definitions.cs
+# - docs/feature/{feature-name}/distill/step-definitions.{language}
 
-# - docs/testing/test-scenarios.md
+# - docs/feature/{feature-name}/distill/test-scenarios.md
