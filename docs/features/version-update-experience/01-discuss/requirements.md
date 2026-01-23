@@ -43,11 +43,22 @@ Close the "version delivery & update loop" with four components:
 
 ---
 
+## Personas
+
+| Persona | Role | Context | Key Need |
+|---------|------|---------|----------|
+| **Mike** | Framework maintainer | Uses nWave daily on MacBook to orchestrate AI agents | Know his version is current, safe updates |
+| **Alessandro** | Contributor/collaborator | Contributes features via PR, needs version tracking | Clear version info for issue reports |
+
+---
+
 ## User Stories
 
 ### US-001: Check Installed Version
 
-**As** an nWave user
+**Effort Estimate:** ~1 day
+
+**As** Mike, a framework maintainer who uses nWave daily
 **I want** to see my currently installed version
 **So that** I can report issues accurately and know if I'm up to date
 
@@ -75,14 +86,16 @@ Scenario: Network failure during version check
   And GitHub API is unreachable
   When I run /nw:version
   Then I see "nWave v1.5.7 (installed)"
-  And I see "Could not check for updates. Try again later or check manually at https://github.com/{org}/nwave/releases"
+  And I see "Could not check for updates. Try again later or check manually at https://github.com/11PJ11/crafter-ai/releases"
 ```
 
 ---
 
 ### US-002: Update nWave Safely
 
-**As** an nWave user
+**Effort Estimate:** ~2-3 days
+
+**As** Mike, a framework maintainer who uses nWave daily
 **I want** to update to the latest version with a safety backup
 **So that** I can recover if something goes wrong
 
@@ -102,7 +115,7 @@ Scenario: Successful update with backup
   And I see summary:
     | Updated to     | 1.6.0 |
     | Key changes    | 2-3 bullet points |
-    | Full changelog | https://github.com/{org}/nwave/releases/tag/v1.6.0 |
+    | Full changelog | https://github.com/11PJ11/crafter-ai/releases/tag/v1.6.0 |
 
 Scenario: Update cancelled by user
   Given nWave version 1.5.7 is installed
@@ -119,13 +132,33 @@ Scenario: Already up to date
   And GitHub latest release is 1.6.0
   When I run /nw:update
   Then I see "Already running latest version (1.6.0). No update needed."
+
+Scenario: Update fails mid-process - automatic rollback
+  Given nWave version 1.5.7 is installed at ~/.claude/
+  And GitHub latest release is 1.6.0
+  And backup has been created at ~/.claude_bck_20260123/
+  When I confirm the update
+  And the download fails mid-process (network error, corrupted file)
+  Then the system automatically restores from ~/.claude_bck_20260123/
+  And I see "Update failed: [error details]. Restored from backup. Your installation is unchanged."
+  And nWave 1.5.7 remains installed
+
+Scenario: Insufficient permissions during update
+  Given nWave version 1.5.7 is installed at ~/.claude/
+  And the user lacks write permissions to ~/.claude/
+  When I run /nw:update
+  Then I see "Permission denied: Cannot write to ~/.claude/. Check file permissions."
+  And no backup is created
+  And no changes are made
 ```
 
 ---
 
 ### US-003: Breaking Change Warning
 
-**As** an nWave user
+**Effort Estimate:** ~0.5 days (extends US-001)
+
+**As** Alessandro, a contributor who needs to track version changes
 **I want** clear warning when updating across major versions
 **So that** I understand migration may be required
 
@@ -151,7 +184,9 @@ Scenario: Minor version update (no warning)
 
 ### US-004: Automatic Backup Cleanup
 
-**As** an nWave user
+**Effort Estimate:** ~0.5 days (extends US-002)
+
+**As** Mike, a framework maintainer who updates frequently
 **I want** old backups automatically cleaned up
 **So that** my disk doesn't fill with stale backup directories
 
@@ -169,6 +204,29 @@ Scenario: Cleanup backups older than 30 days
   And ~/.claude_bck_20251215/ is deleted (>30 days)
   And ~/.claude_bck_20260110/ is preserved (<30 days)
   And new backup ~/.claude_bck_20260123/ is created
+
+Scenario: Backup directory is locked or in-use
+  Given ~/.claude_bck_20251201/ exists and is older than 30 days
+  And the directory is locked by another process
+  When I run /nw:update and confirm
+  Then the cleanup logs a warning: "Could not delete ~/.claude_bck_20251201/: directory in use"
+  And the update proceeds normally
+  And other eligible backups are cleaned up
+
+Scenario: Insufficient permissions to delete backup
+  Given ~/.claude_bck_20251201/ exists and is older than 30 days
+  And the user lacks delete permissions for that directory
+  When I run /nw:update and confirm
+  Then the cleanup logs a warning: "Could not delete ~/.claude_bck_20251201/: permission denied"
+  And the update proceeds normally
+  And no error is thrown to user (cleanup failure is non-blocking)
+
+Scenario: Large number of backups (performance)
+  Given 50 backup directories exist spanning 6 months
+  When I run /nw:update and confirm
+  Then backups older than 30 days are cleaned up
+  And cleanup completes within 10 seconds
+  And only a summary is shown: "Cleaned up 40 old backups"
 ```
 
 ---
@@ -179,13 +237,16 @@ Scenario: Cleanup backups older than 30 days
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
-| Local version | `~/.claude/nWave/VERSION` file | Installed version |
+| Local version (installed) | `~/.claude/nwave-version.txt` | Installed version (created by installer) |
+| Local version (source) | `nWave/VERSION` in repo | Source version for builds |
 | Remote version | GitHub API: latest release tag | Available version |
-| Changelog | GitHub release notes OR `CHANGELOG.md` | What changed |
+| Changelog | GitHub release notes (auto-generated by semantic-release) | What changed |
+
+**Note:** The installed VERSION file (`~/.claude/nwave-version.txt`) is separate from the source VERSION file. The installer writes the version to `~/.claude/nwave-version.txt` during install. This avoids confusion with the agent directory structure (`~/.claude/agents/nw/`).
 
 ### TR-002: GitHub API Integration
 
-**Endpoint:** `GET https://api.github.com/repos/{org}/nwave/releases/latest`
+**Endpoint:** `GET https://api.github.com/repos/11PJ11/crafter-ai/releases/latest`
 
 **Response parsing:**
 - `tag_name` - Version string (e.g., "v1.6.0")
@@ -351,7 +412,8 @@ Push rejected. Fix the above issues and try again.
 | Artifact | Location | Purpose |
 |----------|----------|---------|
 | CHANGELOG.md | Repository root | Version history (AUTO-GENERATED by semantic-release) |
-| VERSION file | `~/.claude/nWave/VERSION` | Local version tracking |
+| VERSION file (source) | `nWave/VERSION` in repo | Source version for builds |
+| VERSION file (installed) | `~/.claude/nwave-version.txt` | Local version tracking (written by installer) |
 | README update | Repository README.md | Install AND update instructions |
 
 ### Git Hooks Configuration
@@ -470,8 +532,13 @@ module.exports = {
 |------|-------------|--------|------------|
 | GitHub API rate limiting | Low | Medium | No caching, real-time checks only |
 | Backup disk space | Medium | Low | 30-day auto-cleanup |
-| Update fails mid-process | Low | High | Backup-first, atomic operations |
+| Update fails mid-process | Low | High | Backup-first, automatic rollback |
 | Breaking change not detected | Low | Medium | Semantic versioning discipline |
+| File permission errors | Medium | Medium | Pre-check permissions before backup/update, clear error messages |
+| Concurrent update attempts | Low | High | Lock file mechanism during update process |
+| Corrupted download | Low | High | Checksum validation, automatic rollback from backup |
+| VERSION file tampering | Low | Low | Re-download fresh on each version check (no local cache trust) |
+| Backup directory conflict | Low | Low | Append timestamp if date collision, log warning |
 
 ---
 
