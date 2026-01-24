@@ -15,7 +15,7 @@
 
 import pytest
 from pathlib import Path
-from tools.build_ide_bundle import IDEBundleBuilder
+from tools.core.build_ide_bundle import IDEBundleBuilder
 from tools.platforms import PlatformRegistry
 from tools.utils.dependency_resolver import DependencyResolver
 from tools.processors.agent_processor import AgentProcessor

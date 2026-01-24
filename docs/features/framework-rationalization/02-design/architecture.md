@@ -1145,7 +1145,8 @@ gantt
 - `tools/platforms/codex.py`
 
 **Files to Modify:**
-- `tools/build_ide_bundle.py`
+- `tools/build.py` (CLI entry point)
+- `tools/core/build_ide_bundle.py` (internal builder)
 - `tools/processors/agent_processor.py`
 - `tools/processors/command_processor.py`
 

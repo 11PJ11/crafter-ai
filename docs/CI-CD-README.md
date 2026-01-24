@@ -76,7 +76,7 @@ Triggered **only when version tags are pushed** (e.g., `v1.4.8`).
 
 2. **IDE Bundle Build**
    ```bash
-   python tools/core/build_ide_bundle.py --clean --verbose
+   python tools/build.py --clean --verbose
    ```
 
 3. **Release Package Creation**
@@ -254,7 +254,7 @@ git push origin :refs/tags/v1.4.9
 #### Build Failures
 ```bash
 # Test build locally
-python tools/core/build_ide_bundle.py --clean --verbose
+python tools/build.py --clean --verbose
 
 # Check for errors in build output
 ```
