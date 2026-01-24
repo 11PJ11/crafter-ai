@@ -77,7 +77,7 @@ class NWaveInstaller:
 
         if not build_script.exists():
             # Try Python build script as fallback
-            build_script = self.project_root / "tools" / "build_ide_bundle.py"
+            build_script = self.project_root / "tools" / "build.py"
             if not build_script.exists():
                 self.logger.error(f"Build script not found at: {build_script}")
                 return False
