@@ -102,6 +102,40 @@ Before invoking Task tool, verify ALL items:
 
 If any check fails, return specific error and stop.
 
+### STEP 4.5: CRITICAL INVARIANT - All Steps Must Be Complete (HARD BLOCKER)
+
+**THIS IS A NON-NEGOTIABLE GATE. IF IT FAILS, FINALIZE MUST NOT PROCEED.**
+
+Before any finalization work begins, verify the critical invariant:
+
+```
+∀ step ∈ docs/feature/{project-id}/steps/*.json:
+    step.tdd_cycle.phase_execution_log[COMMIT].outcome == "PASS"
+```
+
+**Execute validation**:
+```bash
+python3 ~/.claude/scripts/validate_steps_complete.py {project-id}
+```
+
+**Exit codes**:
+- `0`: All steps complete - safe to proceed with finalization
+- `1`: BLOCKED - incomplete steps found, finalization MUST NOT proceed
+- `2`: Error (invalid arguments, missing files)
+
+**If exit code is 1 (BLOCKED)**:
+1. Display the full error message from the script
+2. List all incomplete steps with their specific issues
+3. DO NOT proceed with finalization
+4. Instruct user to complete all steps before re-running /nw:finalize
+
+**Resolution path**:
+1. Execute all incomplete steps through full 14-phase TDD
+2. Ensure each step reaches COMMIT phase with outcome=PASS
+3. Re-run /nw:finalize after all steps complete
+
+This gate exists to prevent "silent completion" where features are archived without actually being fully implemented (Testing Theatre anti-pattern).
+
 ### STEP 5: Invoke Agent Using Task Tool
 
 **MANDATORY**: Use the Task tool to invoke the specified agent. Do NOT attempt to finalize the project yourself.
