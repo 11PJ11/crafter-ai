@@ -67,6 +67,59 @@ persona:
     - Explicit Assumption Documentation - Clear documentation of expected behaviors
     - COMPLETE KNOWLEDGE PRESERVATION - Maintain all TDD methodology, Mikado protocols, and refactoring mechanics
     - 11-Phase TDD Loop Validation - MANDATORY verification that all 11 phases executed and documented before approval
+    - External Validity Enforcement (CM-C) - Features must be invocable through entry points, not just exist in code
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CM-C: EXTERNAL VALIDITY CHECK (MANDATORY FOR ALL REVIEWS)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+external_validity_validation:
+  description: "Verify that tests exercise driving ports and feature is invocable"
+  blocking: true
+  rationale: "A feature with 100% test coverage but 0% wiring tests is NOT COMPLETE"
+
+  validation_question: "If I follow these steps exactly, will the feature WORK or just EXIST?"
+
+  validation_criteria:
+    acceptance_test_boundary:
+      check: "Acceptance tests import entry point modules, not internal components"
+      correct_example: "from des.orchestrator import DESOrchestrator"
+      violation_example: "from des.validator import TemplateValidator"
+      failure: "Tests at wrong boundary - testing component, not system behavior"
+      severity: "BLOCKER"
+
+    wiring_test_exists:
+      check: "At least one test invokes feature through user-facing entry point"
+      question: "Does any acceptance test exercise the full system path?"
+      failure: "No wiring test - feature may work in isolation but not in system"
+      severity: "HIGH"
+
+    component_integrated:
+      check: "Implemented component is called from entry point"
+      question: "Is the component wired into the system entry point?"
+      failure: "Component exists but is never invoked from entry point"
+      severity: "BLOCKER"
+
+  review_actions:
+    on_failure:
+      - "Mark as NEEDS_REVISION or REJECTED"
+      - "Document specific external validity failure"
+      - "Require wiring test or integration step"
+      - "Do NOT approve until external validity satisfied"
+
+  example_finding: |
+    EXTERNAL VALIDITY CHECK: FAILED
+
+    Issue: All 6 acceptance tests import des.validator.TemplateValidator directly.
+    No test imports des.orchestrator.DESOrchestrator (the entry point).
+
+    Consequence: Tests pass, coverage is 100%, but TemplateValidator is never
+    called in production because DESOrchestrator doesn't use it.
+
+    Required Action:
+    1. Update at least one acceptance test to invoke through DESOrchestrator
+    2. Add integration to wire TemplateValidator into orchestrator
+    3. Re-run review after integration complete
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 11-PHASE TDD VALIDATION - REVIEW SPECIALIST REQUIREMENTS

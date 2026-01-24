@@ -110,8 +110,88 @@ Refer to Quinn's quality gates in nWave/agents/acceptance-designer.md.
 - [ ] Step methods call real production services
 - [ ] One-at-a-time implementation strategy established
 - [ ] Architecture-informed test structure respects component boundaries
+- [ ] **Hexagonal boundary check passed (CM-A)** - see below
 - [ ] Handoff accepted by software-crafter (DEVELOP wave)
 - [ ] Layer 4 peer review approval obtained
+
+## CM-A: Hexagonal Boundary Enforcement (MANDATORY)
+
+**CRITICAL**: Acceptance tests MUST exercise driving ports, not internal components.
+
+### The Problem This Solves
+
+Acceptance tests written at the wrong boundary (internal components instead of driving ports) can:
+- Pass 100% while the feature remains non-functional
+- Create "Testing Theatre" - high metrics with false confidence
+- Miss integration issues entirely
+
+### Boundary Validation Criteria
+
+**Acceptance tests MUST**:
+1. Import entry-point modules (driving ports)
+2. Exercise the system from user perspective
+3. Verify observable system behavior
+
+**Acceptance tests MUST NOT**:
+1. Import internal components directly
+2. Test implementation details instead of behavior
+3. Bypass the system entry point
+
+### Validation Check
+
+```yaml
+hexagonal_boundary_check:
+  criterion: "Acceptance tests must exercise driving ports"
+
+  validation:
+    - "Tests import entry-point modules (e.g., DESOrchestrator, API client)"
+    - "Tests do NOT import internal components directly"
+
+  violation_examples:
+    - "from des.validator import TemplateValidator"     # WRONG - internal component
+    - "from internal.service import BusinessLogic"       # WRONG - internal component
+
+  correct_examples:
+    - "from des.orchestrator import DESOrchestrator"    # CORRECT - driving port
+    - "from api.client import FeatureClient"            # CORRECT - driving port
+
+  gate_failure:
+    action: "REJECT acceptance tests"
+    reason: "Tests at wrong boundary - would produce non-functional feature"
+    required_fix: "Rewrite tests to invoke through system entry point"
+```
+
+### Review Question
+
+Before finalizing acceptance tests, ask:
+
+> "Do these tests import the USER-FACING ENTRY POINT, or do they directly instantiate internal components?"
+
+If tests directly instantiate internal components (e.g., `validator = TemplateValidator()`), they are at the WRONG BOUNDARY and must be rewritten.
+
+### Example: Correct vs Incorrect
+
+**INCORRECT** (tests internal component):
+```python
+# tests/acceptance/test_validation.py
+from des.validator import TemplateValidator  # WRONG - internal component
+
+def test_validation_blocks_invalid_prompt():
+    validator = TemplateValidator()  # WRONG - direct instantiation
+    result = validator.validate_prompt(prompt)
+    assert result.task_invocation_allowed == False
+```
+
+**CORRECT** (tests through driving port):
+```python
+# tests/acceptance/test_validation.py
+from des.orchestrator import DESOrchestrator  # CORRECT - entry point
+
+def test_validation_blocks_invalid_prompt():
+    orchestrator = DESOrchestrator()  # CORRECT - system entry point
+    result = orchestrator.render_prompt("/nw:execute", step_file="...")
+    assert result["task_invocation_allowed"] == False
+```
 
 ## Next Wave
 

@@ -213,6 +213,95 @@ These use different workflow (US-INF-* stories with manual verification).
 
 ---
 
+## CM-B: Integration Step Requirement (v1.1 Addition)
+
+### The Missing Constraint
+
+The 1:1 step-to-scenario mapping validates **COUNT** but not **BOUNDARY**.
+
+A roadmap can have:
+- 6 scenarios → 6 steps ✅ (count matches)
+- All 6 steps test internal component ❌ (wrong boundary)
+- No step integrates component into entry point ❌ (missing integration)
+
+### Extended Validation Rule
+
+```
+VALIDATION (v1.0):
+  num_step_files == num_acceptance_test_scenarios  ✅ REQUIRED
+
+NEW VALIDATION (v1.1):
+  num_step_files == num_acceptance_test_scenarios  ✅ REQUIRED
+  at_least_one_step.targets_entry_point == true    ✅ REQUIRED
+  at_least_one_test.imports_entry_point == true    ✅ REQUIRED
+```
+
+### Step Types
+
+Each step in the roadmap should specify its type:
+
+```yaml
+step_types:
+  feature:        # Normal feature step with acceptance test
+  integration:    # REQUIRED: Wires component into entry point
+  research:       # Investigation (no acceptance test)
+  infrastructure: # Setup/config (no acceptance test)
+
+validation_rule: |
+  count(steps.step_type == "integration") >= 1  # At least 1 integration step
+```
+
+### Boundary Validation
+
+**Acceptance tests must be at the correct boundary**:
+
+```yaml
+boundary_check:
+  correct: "Tests import entry-point module (driving port)"
+  violation: "Tests import internal component directly"
+
+  examples:
+    correct:
+      - "from des.orchestrator import DESOrchestrator"
+      - "from api.client import FeatureClient"
+
+    violation:
+      - "from des.validator import TemplateValidator"
+      - "from internal.service import BusinessLogic"
+```
+
+### Extended Validation Script (v1.1)
+
+```python
+def validate_integration_boundary(project_id, test_file):
+    """Validate at least one test invokes through entry point."""
+    content = Path(test_file).read_text()
+
+    # Check imports
+    imports = re.findall(r'^(?:from|import)\s+(\S+)', content, re.MULTILINE)
+
+    entry_point_imports = [i for i in imports if
+                          'orchestrator' in i.lower() or
+                          'entry_point' in i.lower() or
+                          'api.client' in i.lower()]
+
+    internal_only_imports = [i for i in imports if
+                            'validator' in i.lower() or
+                            'internal.' in i.lower()]
+
+    if not entry_point_imports and internal_only_imports:
+        print(f"❌ BOUNDARY VIOLATION: Tests import internal components only")
+        print(f"   Found: {internal_only_imports}")
+        print(f"   Missing: Entry point imports (orchestrator, api, etc.)")
+        print(f"\n   At least one acceptance test must invoke through entry point.")
+        sys.exit(1)
+
+    print(f"✅ BOUNDARY CHECK: Entry point import found")
+    print(f"   Entry point imports: {entry_point_imports}")
+```
+
+---
+
 ## Lessons Learned
 
 ### Case Study: DES US-001 (Anti-Pattern)
