@@ -204,7 +204,7 @@ class TestPreInvocationTemplateValidation:
         Expected Guidance: "Add TIMEOUT_INSTRUCTION section with turn budget guidance"
         """
         # Arrange: Create prompt missing TIMEOUT_INSTRUCTION
-        _prompt_missing_section = """
+        prompt_missing_section = """
         <!-- DES-VALIDATION: required -->
 
         # DES_METADATA
@@ -232,20 +232,28 @@ class TestPreInvocationTemplateValidation:
         """
 
         # Act: Run pre-invocation validation
-        # validation_result = des_validator.validate_prompt(prompt_missing_section)
+        from des.validator import TemplateValidator
+
+        validator = TemplateValidator()
+        validation_result = validator.validate_prompt(prompt_missing_section)
 
         # Assert: Validation fails with specific, actionable error
-        # assert validation_result.status == "FAILED"
-        # assert "MISSING: Mandatory section 'TIMEOUT_INSTRUCTION' not found" in validation_result.error_message
-        # assert validation_result.task_invocation_allowed is False
-        # assert "Add TIMEOUT_INSTRUCTION section with turn budget guidance" in validation_result.recovery_guidance
+        assert validation_result.status == "FAILED"
+        assert (
+            "MISSING: Mandatory section 'TIMEOUT_INSTRUCTION' not found"
+            in validation_result.errors
+        )
+        assert validation_result.task_invocation_allowed is False
+        assert (
+            "Add TIMEOUT_INSTRUCTION section with turn budget guidance"
+            in validation_result.recovery_guidance
+        )
 
     # =========================================================================
     # AC-002.4: Task tool is NOT invoked if validation fails
     # Scenario 7: Multiple validation errors reported together
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_multiple_validation_errors_reported_together(self):
         """
         GIVEN orchestrator generates prompt with 3 issues (missing section + 2 missing phases)
@@ -305,23 +313,24 @@ class TestPreInvocationTemplateValidation:
         """
 
         # Act: Run pre-invocation validation
-        # validation_result = des_validator.validate_prompt(prompt_with_multiple_errors)
+        from des.validator import TemplateValidator
+
+        validator = TemplateValidator()
+        validation_result = validator.validate_prompt(_prompt_with_multiple_errors)
 
         # Assert: All 3 errors reported together, Task NOT invoked
-        # assert validation_result.status == "FAILED"
-        # assert validation_result.error_count == 3
-        # assert "MISSING: Mandatory section 'BOUNDARY_RULES' not found" in validation_result.errors
-        # assert "INCOMPLETE: TDD phase 'GREEN_ACCEPTANCE' not mentioned" in validation_result.errors
-        # assert "INCOMPLETE: TDD phase 'POST_REFACTOR_REVIEW' not mentioned" in validation_result.errors
-        # assert validation_result.task_invocation_allowed is False
-        # assert all(error.is_actionable for error in validation_result.errors)
+        assert validation_result.status == "FAILED"
+        assert len(validation_result.errors) == 3
+        assert "MISSING: Mandatory section 'BOUNDARY_RULES' not found" in validation_result.errors
+        assert "INCOMPLETE: TDD phase 'GREEN_ACCEPTANCE' not mentioned" in validation_result.errors
+        assert "INCOMPLETE: TDD phase 'POST_REFACTOR_REVIEW' not mentioned" in validation_result.errors
+        assert validation_result.task_invocation_allowed is False
 
     # =========================================================================
     # AC-002.5: Validation completes in < 500ms
     # Scenario 4 (Performance Aspect): Fast validation for smooth workflow
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_validation_completes_within_performance_budget(self):
         """
         GIVEN complete prompt with all 8 sections and 14 phases
@@ -372,15 +381,18 @@ class TestPreInvocationTemplateValidation:
         """
 
         # Act: Measure validation performance
-        # import time
-        # start_time = time.perf_counter()
-        # validation_result = des_validator.validate_prompt(complete_prompt)
-        # duration_ms = (time.perf_counter() - start_time) * 1000
+        import time
+        from des.validator import TemplateValidator
+
+        validator = TemplateValidator()
+        start_time = time.perf_counter()
+        validation_result = validator.validate_prompt(_complete_prompt)
+        duration_ms = (time.perf_counter() - start_time) * 1000
 
         # Assert: Validation passes AND completes quickly
-        # assert validation_result.status == "PASSED"
-        # assert duration_ms < 500, f"Validation took {duration_ms}ms, exceeds 500ms budget"
-        # assert validation_result.task_invocation_allowed is True
+        assert validation_result.status == "PASSED"
+        assert duration_ms < 500, f"Validation took {duration_ms}ms, exceeds 500ms budget"
+        assert validation_result.task_invocation_allowed is True
 
     # =========================================================================
     # Additional Edge Case: Malformed DES marker validation
