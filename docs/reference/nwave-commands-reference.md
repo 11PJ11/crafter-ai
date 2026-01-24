@@ -1,7 +1,7 @@
 # nWave Commands Reference
 
-**Version**: 1.5.2
-**Date**: 2026-01-22
+**Version**: 1.6.0
+**Date**: 2026-01-24
 **Status**: Production Ready
 
 Quick reference for all nWave commands, agents, and file locations.
@@ -9,6 +9,9 @@ Quick reference for all nWave commands, agents, and file locations.
 **Related Docs**:
 - [Jobs To Be Done Guide](../guides/jobs-to-be-done-guide.md) (explanation)
 - [How to Invoke Reviewers](../guides/how-to-invoke-reviewers.md) (how-to)
+- [How To: Execute DEVELOP Wave with Step-to-Scenario Mapping](../guides/how-to-develop-wave-step-scenario-mapping.md) (how-to)
+- [Outside-In TDD: Step-to-Scenario Mapping Principle](../principles/outside-in-tdd-step-mapping.md) (explanation)
+- [Step Template: mapped_scenario Field Reference](./step-template-mapped-scenario-field.md) (reference)
 
 ---
 
@@ -28,8 +31,8 @@ Quick reference for all nWave commands, agents, and file locations.
 | Command | Agent | Purpose |
 |---------|-------|---------|
 | `/nw:baseline` | researcher | Establish measurement baseline (BLOCKS roadmap) |
-| `/nw:roadmap` | varies | Create comprehensive planning document |
-| `/nw:split` | varies | Generate atomic task files from roadmap |
+| `/nw:roadmap` | solution-architect | Create comprehensive planning document (reads acceptance tests for scenario mapping) |
+| `/nw:split` | software-crafter | Generate atomic task files from roadmap (enforces 1:1 step-to-scenario mapping) |
 | `/nw:execute` | varies | Execute atomic task with state tracking |
 | `/nw:review` | *-reviewer | Expert critique and quality assurance |
 | `/nw:finalize` | devop | Archive project and clean up workflow |
@@ -203,6 +206,75 @@ Every agent has a corresponding `*-reviewer` variant using the Haiku model:
 
 ---
 
-**Last Updated**: 2026-01-21
+## DEVELOP Wave: Step-to-Scenario Mapping Constraint
+
+**Applies to**: `/nw:roadmap`, `/nw:split`, `/nw:execute` when creating feature steps.
+
+### The Rule
+
+**1 Acceptance Test Scenario = 1 Roadmap Step = 1 TDD Cycle**
+
+This is a hard constraint for Outside-In TDD, not a suggestion.
+
+```
+Acceptance Tests (from DISTILL):          Roadmap Steps (from solution-architect):
+├─ test_scenario_001_execute              ├─ 01-01: Make scenario_001 pass
+├─ test_scenario_002_ad_hoc                ├─ 01-02: Make scenario_002 pass
+├─ test_scenario_003_research              ├─ 01-03: Make scenario_003 pass
+└─ test_scenario_004_develop               └─ 01-04: Make scenario_004 pass
+
+VALIDATION: num_roadmap_steps == num_acceptance_scenarios ✅ REQUIRED
+```
+
+### Why It Matters
+
+- **Preserves TDD discipline**: Each step has clear RED → GREEN progression
+- **Enables traceability**: Scenario → Step → Commit (business requirement to code)
+- **Prevents architectural thinking in DEVELOP**: Focus on behavioral implementation, not technical layers
+- **Maintains test granularity**: Can't batch multiple features into one step
+
+### For solution-architect (/nw:roadmap)
+
+**BEFORE creating roadmap**:
+1. Read acceptance test file: `tests/acceptance/test_us00X_*.py`
+2. Count scenarios: `grep 'def test_' | wc -l`
+3. Create exactly N steps for N scenarios
+4. Each step must map to one scenario
+
+**Each roadmap step must include**:
+```yaml
+- step_id: "01-01"
+  acceptance_test_scenario: "test_scenario_001_execute_command"
+  acceptance_test_file: "tests/acceptance/test_us001_*.py"
+  description: "Make test_scenario_001 pass (RED → GREEN)"
+```
+
+### For software-crafter (/nw:split)
+
+**Before generating step files**:
+1. Count roadmap steps
+2. Count acceptance test scenarios
+3. **ENFORCE**: `assert num_steps == num_acceptance_scenarios`
+
+If mismatch detected, the split command FAILS with error message directing to [principle documentation](../principles/outside-in-tdd-step-mapping.md).
+
+### Exceptions: Infrastructure & Refactoring Steps
+
+Steps that don't map to acceptance tests CAN exist, but only as:
+- **Infrastructure steps**: Database migrations, environment setup (type: `infrastructure`)
+- **Refactoring steps**: Code improvement without behavior change (type: `refactoring`)
+
+These steps have NO acceptance test scenario and do NOT count toward the 1:1 mapping validation.
+
+### Related Documentation
+
+- **Detailed Principle**: [Outside-In TDD: Step-to-Scenario Mapping Principle](../principles/outside-in-tdd-step-mapping.md)
+- **How-to Guide**: [How To: Execute DEVELOP Wave](../guides/how-to-develop-wave-step-scenario-mapping.md)
+- **Template Reference**: [Step Template: mapped_scenario Field](./step-template-mapped-scenario-field.md)
+- **Agent Spec**: [solution-architect - Step-to-Scenario Mapping core principle](../../nWave/agents/solution-architect.md)
+
+---
+
+**Last Updated**: 2026-01-24
 **Type**: Reference
 **Purity**: 98%+
