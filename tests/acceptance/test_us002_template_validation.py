@@ -28,7 +28,6 @@ class TestPreInvocationTemplateValidation:
     # Scenario 4: Complete prompt passes validation
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_complete_prompt_passes_all_validation_checks(self):
         """
         GIVEN orchestrator generates prompt for step with all 8 mandatory sections
@@ -48,8 +47,11 @@ class TestPreInvocationTemplateValidation:
         7. BOUNDARY_RULES
         8. TIMEOUT_INSTRUCTION
         """
+        import time
+        from des.validator import TemplateValidator
+
         # Arrange: Create prompt with all 8 mandatory sections
-        _prompt_with_all_sections = """
+        prompt_with_all_sections = """
         <!-- DES-VALIDATION: required -->
         <!-- DES-STEP-FILE: steps/01-01.json -->
 
@@ -98,13 +100,16 @@ class TestPreInvocationTemplateValidation:
         """
 
         # Act: Run pre-invocation validation
-        # validation_result = des_validator.validate_prompt(prompt_with_all_sections)
+        start_time = time.perf_counter()
+        validator = TemplateValidator()
+        validation_result = validator.validate_prompt(prompt_with_all_sections)
+        duration_ms = (time.perf_counter() - start_time) * 1000
 
         # Assert: Validation passes, Task invocation proceeds
-        # assert validation_result.status == "PASSED"
-        # assert validation_result.errors == []
-        # assert validation_result.task_invocation_allowed is True
-        # assert validation_result.duration_ms < 500  # AC-002.5
+        assert validation_result.status == "PASSED"
+        assert validation_result.errors == []
+        assert validation_result.task_invocation_allowed is True
+        assert duration_ms < 500  # AC-002.5
 
     # =========================================================================
     # AC-002.2: All 14 TDD phases must be explicitly mentioned
