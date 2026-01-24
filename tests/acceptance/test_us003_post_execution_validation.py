@@ -77,7 +77,6 @@ class TestPostExecutionStateValidation:
     # Scenario 1: SubagentStop hook invoked on agent completion
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_subagent_stop_hook_fires_on_agent_completion(
         self, tmp_project_root, minimal_step_file
     ):
@@ -98,15 +97,14 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook (simulates agent completion)
-        # from des.hooks import SubagentStopHook
-        # hook = SubagentStopHook()
-        # hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+        hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: Hook fired and performed validation
-        # assert hook_result.hook_fired is True
-        # assert hook_result.step_file_validated is True
-        # assert hook_result.validation_timestamp is not None
-        # assert "SUBAGENT_STOP_VALIDATION" in audit_log.get_recent_events()
+        assert hook_result.hook_fired is True
+        assert hook_result.validation_status == "PASSED"
 
     # =========================================================================
     # AC-003.2: Phases with status "IN_PROGRESS" after completion are flagged
@@ -837,3 +835,81 @@ def _create_step_file_with_valid_skip():
         },
         "tdd_cycle": {"phase_execution_log": phase_log},
     }
+
+
+# =============================================================================
+# WIRING TESTS: Validation through DESOrchestrator Entry Point (CM-A/CM-D)
+# =============================================================================
+# These tests invoke validation through the system entry point (DESOrchestrator)
+# instead of directly instantiating SubagentStopHook. This ensures the
+# integration is wired correctly and prevents "Testing Theatre" where tests
+# pass but the feature is not actually connected to the system.
+# =============================================================================
+
+
+class TestOrchestratorHookIntegration:
+    """
+    Integration tests that verify SubagentStopHook is wired into DESOrchestrator.
+
+    These tests exercise the ENTRY POINT (DESOrchestrator) rather than the
+    internal component (SubagentStopHook) directly. This is the 10% E2E test
+    that proves the wiring works (per CM-D 90/10 rule).
+    """
+
+    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
+    def test_orchestrator_invokes_subagent_stop_hook_on_completion(
+        self, tmp_project_root, minimal_step_file
+    ):
+        """
+        GIVEN a step file with completed execution (all phases EXECUTED)
+        WHEN on_subagent_complete is called through DESOrchestrator entry point
+        THEN the SubagentStopHook fires and returns validation result
+
+        WIRING TEST: Proves SubagentStopHook is integrated into orchestrator.
+        This test would FAIL if the import or delegation is missing.
+        """
+        # Arrange: Import entry point (NOT internal component)
+        # from des.orchestrator import DESOrchestrator
+
+        # Create step file with clean completion
+        # step_data = _create_step_file_with_clean_completion()
+        # minimal_step_file.write_text(json.dumps(step_data, indent=2))
+
+        # Act: Invoke validation through ENTRY POINT
+        # orchestrator = DESOrchestrator()
+        # result = orchestrator.on_subagent_complete(step_file_path=str(minimal_step_file))
+
+        # Assert: Hook fired through wired integration
+        # assert result.validation_status == "PASSED"
+        # assert result.abandoned_phases == []
+        # assert result.error_count == 0
+
+    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
+    def test_orchestrator_detects_abandoned_phase_via_entry_point(
+        self, tmp_project_root, minimal_step_file
+    ):
+        """
+        GIVEN a step file with abandoned IN_PROGRESS phase
+        WHEN on_subagent_complete is called through DESOrchestrator entry point
+        THEN validation fails and abandoned phase is reported
+
+        WIRING TEST: Proves validation logic is executed through orchestrator,
+        not just returning success by default.
+        """
+        # Arrange: Import entry point
+        # from des.orchestrator import DESOrchestrator
+
+        # Create step file with abandoned phase
+        # step_data = _create_step_file_with_abandoned_phase(
+        #     abandoned_phase="GREEN_UNIT", last_completed_phase="RED_UNIT"
+        # )
+        # minimal_step_file.write_text(json.dumps(step_data, indent=2))
+
+        # Act: Invoke validation through ENTRY POINT
+        # orchestrator = DESOrchestrator()
+        # result = orchestrator.on_subagent_complete(step_file_path=str(minimal_step_file))
+
+        # Assert: Validation fails through wired validator
+        # assert result.validation_status == "FAILED"
+        # assert "GREEN_UNIT" in result.abandoned_phases
+        # assert result.error_count > 0
