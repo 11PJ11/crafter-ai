@@ -38,6 +38,7 @@ Documentation is organized into exactly four types:
 - `docs/guides/5-layer-testing-developers.md` - Programmatic review API
 - `docs/guides/5-layer-testing-users.md` - Manual review workflows
 - `docs/guides/5-layer-testing-cicd.md` - CI/CD integration
+- `docs/guides/how-to-develop-wave-step-scenario-mapping.md` - Execute DEVELOP wave with step-to-scenario mapping
 - `docs/troubleshooting/TROUBLESHOOTING.md` - Solve common issues
 
 ### 3. **Reference** (Information Orientation)
@@ -51,6 +52,7 @@ Documentation is organized into exactly four types:
 - `docs/reference/nwave-commands-reference.md` - Commands and agents
 - `docs/reference/reviewer-agents-reference.md` - Reviewer specifications
 - `docs/reference/5-layer-testing-api.md` - API contracts
+- `docs/reference/step-template-mapped-scenario-field.md` - Step template schema with scenario mapping field
 - `docs/guides/QUICK_REFERENCE_VALIDATION.md` - Quick lookup tables
 - `docs/templates/STEP_EXECUTION_TEMPLATE.md` - Template specification
 
@@ -64,6 +66,7 @@ Documentation is organized into exactly four types:
 **nWave Explanations**:
 - `docs/guides/LAYER_4_IMPLEMENTATION_SUMMARY.md` - Why Layer 4 matters
 - `docs/guides/knowledge-architecture-analysis.md` - Architecture decisions
+- `docs/principles/outside-in-tdd-step-mapping.md` - Why step-to-scenario mapping matters for TDD discipline
 - `README.md` (partial) - Project vision and philosophy
 
 ---
@@ -102,6 +105,9 @@ docs/
 │       ├── DIVIO_CLASSIFICATION_SUMMARY.md          # Full audit
 │       ├── DOCUMENTATION_RESTRUCTURING_ACTION_PLAN.md # Restructuring
 │       └── DOCUMENTATION_CONSOLIDATION_COMPLETE.md   # Completion report
+│
+├── principles/                            # Design Principles & Explanations
+│   └── outside-in-tdd-step-mapping.md     # Step-to-scenario mapping principle
 │
 └── research/                              # Background & Research
     └── [research topics...]
