@@ -1,0 +1,20 @@
+{
+  "project_id": "des-us002",
+  "feature": "US-002 Template Validation - Pre-Invocation template validation ensuring prompts contain all mandatory DES sections before Task invocation",
+  "started_at": "2026-01-24T00:00:00Z",
+  "last_updated": "2026-01-24T00:00:00Z",
+  "completed_phases": [],
+  "current_phase": "Phase 1: Baseline Creation",
+  "failed_phase": null,
+  "failure_reason": null,
+  "completed_steps": [],
+  "failed_step": null,
+  "skip_flags": {
+    "baseline": false,
+    "roadmap": false,
+    "split": false
+  },
+  "orchestration_complete": false,
+  "acceptance_test_file": "tests/acceptance/test_us002_template_validation.py",
+  "scenario_count": 6
+}

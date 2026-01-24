@@ -1,0 +1,209 @@
+project_id: des-us002
+feature: "US-002 Template Validation - Pre-Invocation template validation ensuring prompts contain all mandatory DES sections before Task invocation"
+created_at: "2026-01-24T09:30:00Z"
+
+baseline:
+  measurements:
+    - metric_name: "acceptance_tests_status"
+      current_value: "6 skipped (100%)"
+      target_value: "6 passed (100%)"
+      methodology: "pytest execution with -v flag"
+      evidence: "pytest tests/acceptance/test_us002_template_validation.py -v"
+      notes: "All 6 tests marked with @pytest.mark.skip - Outside-In TDD RED state"
+
+    - metric_name: "test_collection_time"
+      current_value: "0.20s"
+      target_value: "<0.50s"
+      methodology: "pytest --collect-only -q timing"
+      evidence: "6 tests collected in 0.20s"
+      notes: "Baseline collection performance acceptable"
+
+    - metric_name: "test_execution_time"
+      current_value: "0.26s"
+      target_value: "<1.00s"
+      methodology: "pytest -v full execution timing"
+      evidence: "6 skipped in 0.26s"
+      notes: "Current time is skip-only; actual execution will differ"
+
+    - metric_name: "validator_component_exists"
+      current_value: false
+      target_value: true
+      methodology: "Glob pattern search for *validator*.py in des/"
+      evidence: "No validator module found in des/ directory"
+      notes: "TemplateValidator class needs implementation"
+
+    - metric_name: "mandatory_sections_validation"
+      current_value: "not implemented"
+      target_value: "8 sections validated"
+      methodology: "Code review of des/orchestrator.py"
+      evidence: "DESOrchestrator generates markers but does not validate sections"
+      notes: "Sections: DES_METADATA, AGENT_IDENTITY, TASK_CONTEXT, TDD_14_PHASES, QUALITY_GATES, OUTCOME_RECORDING, BOUNDARY_RULES, TIMEOUT_INSTRUCTION"
+
+    - metric_name: "tdd_phases_validation"
+      current_value: "not implemented"
+      target_value: "14 phases validated"
+      methodology: "Code review of des/orchestrator.py"
+      evidence: "No TDD phase validation logic exists"
+      notes: "Phases: PREPARE, RED_ACCEPTANCE, RED_UNIT, GREEN_UNIT, CHECK_ACCEPTANCE, GREEN_ACCEPTANCE, REVIEW, REFACTOR_L1-L4, POST_REFACTOR_REVIEW, FINAL_VALIDATE, COMMIT"
+
+    - metric_name: "validation_performance_budget"
+      current_value: "not measurable"
+      target_value: "<500ms per AC-002.5"
+      methodology: "time.perf_counter() measurement in test"
+      evidence: "No validator to measure yet"
+      notes: "Performance requirement from acceptance criteria"
+
+  test_scenarios_covered:
+    - scenario: "Complete prompt passes validation"
+      test_name: "test_complete_prompt_passes_all_validation_checks"
+      expected_behavior: "Validation status PASSED, Task invocation proceeds, all 8 sections present"
+      acceptance_criteria: "AC-002.1"
+
+    - scenario: "Missing TDD phase blocks invocation"
+      test_name: "test_missing_tdd_phase_blocks_task_invocation"
+      expected_behavior: "Validation FAILS with specific error naming missing phase (REFACTOR_L3)"
+      acceptance_criteria: "AC-002.2"
+
+    - scenario: "Missing mandatory section provides actionable error"
+      test_name: "test_missing_mandatory_section_provides_actionable_error"
+      expected_behavior: "FAILS with error naming section AND recovery guidance"
+      acceptance_criteria: "AC-002.3"
+
+    - scenario: "Multiple validation errors reported together"
+      test_name: "test_multiple_validation_errors_reported_together"
+      expected_behavior: "All 3 errors listed together, Task NOT invoked"
+      acceptance_criteria: "AC-002.4"
+
+    - scenario: "Validation completes within performance budget"
+      test_name: "test_validation_completes_within_performance_budget"
+      expected_behavior: "Validation completes in < 500ms"
+      acceptance_criteria: "AC-002.5"
+
+    - scenario: "Malformed DES marker detected and rejected"
+      test_name: "test_malformed_des_marker_detected_and_rejected"
+      expected_behavior: "INVALID_MARKER error for non-standard DES-VALIDATION value"
+      acceptance_criteria: "Edge case - robustness"
+
+  implementation_scope:
+    missing_components:
+      - "TemplateValidator class (des/validator.py)"
+      - "MandatorySectionChecker - validates 8 required sections"
+      - "TDDPhaseValidator - validates all 14 phases mentioned"
+      - "ValidationResult dataclass with status, errors, recovery_guidance"
+      - "DESMarkerValidator - validates DES-VALIDATION marker format"
+      - "Pre-invocation hook integration in DESOrchestrator"
+
+    existing_infrastructure:
+      - "DESOrchestrator with marker generation (des/orchestrator.py)"
+      - "DES marker format defined (DES-VALIDATION, DES-STEP-FILE, DES-ORIGIN)"
+      - "VALIDATION_COMMANDS list (/nw:execute, /nw:develop)"
+
+    success_criteria:
+      - "All 6 acceptance tests pass (GREEN state)"
+      - "TemplateValidator validates 8 mandatory sections"
+      - "TemplateValidator validates 14 TDD phases"
+      - "Validation errors are specific and actionable with recovery guidance"
+      - "Multiple errors reported in single validation pass"
+      - "Validation completes in < 500ms"
+      - "Malformed markers detected and rejected"
+
+  validation:
+    status: "approved"
+    reviewer: "software-crafter-reviewer"
+    reviewed_at: "2026-01-24T10:15:00Z"
+    notes: |
+      REVIEW OUTCOME: APPROVED
+
+      All review criteria satisfied:
+
+      1. QUANTIFIABLE METRICS: PASS
+         - All 7 measurements are specific and measurable
+         - current_value fields contain actual measurements or appropriate "not implemented" markers
+         - target_value fields are realistic and actionable
+         - methodology fields explain HOW measurements were taken
+         - No placeholder values detected
+
+      2. EVIDENCE QUALITY: PASS
+         - Test output shows actual pytest execution (6 skipped in 0.26s)
+         - Commands are reproducible
+         - Evidence artifacts reference real files that exist
+
+      3. OUTSIDE-IN TDD RED STATE: PASS
+         - All 6 tests properly marked with @pytest.mark.skip
+         - Skip reason correctly states "Outside-In TDD RED state - awaiting DEVELOP wave"
+         - Tests are SKIPPED (not failing with errors) - correct RED state
+
+      4. IMPLEMENTATION SCOPE: PASS
+         - 6 missing components clearly identified
+         - 7 success criteria are specific and measurable
+         - 5 quality gates (G1-G5) well-defined
+
+      5. STEP-TO-SCENARIO MAPPING: PASS
+         - 6 acceptance test scenarios documented
+         - Each scenario maps to specific acceptance criteria (AC-002.1 through AC-002.5 + edge case)
+         - Matches "6 scenarios -> 6 step files" requirement
+
+      VALIDATION COMPLETE - Ready for roadmap creation
+    issues: []
+
+  improvement_thresholds:
+    critical:
+      - "0% -> 100% acceptance test pass rate (6 tests)"
+      - "Missing validator component must be implemented"
+      - "Pre-invocation validation must block invalid prompts"
+
+    quality_gates:
+      - "G1: All 6 acceptance tests must pass"
+      - "G2: Validation < 500ms performance budget"
+      - "G3: 100% coverage of mandatory sections (8)"
+      - "G4: 100% coverage of TDD phases (14)"
+      - "G5: Actionable error messages with recovery guidance"
+
+  measurement_commands:
+    test_collection: "pytest tests/acceptance/test_us002_template_validation.py --collect-only -q"
+    test_execution: "pytest tests/acceptance/test_us002_template_validation.py -v"
+    validator_search: "find des/ -name '*validator*.py'"
+    coverage: "pytest tests/acceptance/test_us002_template_validation.py --cov=des --cov-report=term-missing"
+
+evidence_artifacts:
+  test_file: "tests/acceptance/test_us002_template_validation.py"
+  orchestrator_file: "des/orchestrator.py"
+  test_output: |
+    ============================= test session starts ==============================
+    platform linux -- Python 3.12.3, pytest-9.0.2
+    collected 6 items
+
+    test_complete_prompt_passes_all_validation_checks SKIPPED [ 16%]
+    test_missing_tdd_phase_blocks_task_invocation SKIPPED [ 33%]
+    test_missing_mandatory_section_provides_actionable_error SKIPPED [ 50%]
+    test_multiple_validation_errors_reported_together SKIPPED [ 66%]
+    test_validation_completes_within_performance_budget SKIPPED [ 83%]
+    test_malformed_des_marker_detected_and_rejected SKIPPED [100%]
+
+    ============================== 6 skipped in 0.26s ==============================
+
+mandatory_sections:
+  - DES_METADATA
+  - AGENT_IDENTITY
+  - TASK_CONTEXT
+  - TDD_14_PHASES
+  - QUALITY_GATES
+  - OUTCOME_RECORDING
+  - BOUNDARY_RULES
+  - TIMEOUT_INSTRUCTION
+
+tdd_phases:
+  - PREPARE
+  - RED_ACCEPTANCE
+  - RED_UNIT
+  - GREEN_UNIT
+  - CHECK_ACCEPTANCE
+  - GREEN_ACCEPTANCE
+  - REVIEW
+  - REFACTOR_L1
+  - REFACTOR_L2
+  - REFACTOR_L3
+  - REFACTOR_L4
+  - POST_REFACTOR_REVIEW
+  - FINAL_VALIDATE
+  - COMMIT
