@@ -3,7 +3,13 @@ DES Orchestrator for command-origin task filtering.
 
 This module implements the orchestrator that determines whether to apply
 DES validation based on command origin (execute/develop vs research/ad-hoc).
+
+Integration: US-002 Template Validation
+- Pre-invocation validation ensures prompts contain all mandatory sections
+- Blocks Task invocation if validation fails
 """
+
+from des.validator import TemplateValidator, ValidationResult
 
 
 class DESOrchestrator:
@@ -18,6 +24,25 @@ class DESOrchestrator:
 
     # Commands that require full DES validation
     VALIDATION_COMMANDS = ["/nw:execute", "/nw:develop"]
+
+    def __init__(self):
+        """Initialize orchestrator with template validator."""
+        self._validator = TemplateValidator()
+
+    def validate_prompt(self, prompt: str) -> ValidationResult:
+        """
+        Validate a prompt for mandatory sections and TDD phases.
+
+        This is the entry point for pre-invocation validation (US-002).
+        Blocks Task invocation if validation fails.
+
+        Args:
+            prompt: The full prompt text to validate
+
+        Returns:
+            ValidationResult with status, errors, and task_invocation_allowed flag
+        """
+        return self._validator.validate_prompt(prompt)
 
     def _get_validation_level(self, command: str | None) -> str:
         """

@@ -17,8 +17,6 @@ WAVE: DISTILL (Acceptance Test Creation)
 STATUS: RED (Outside-In TDD - awaiting DEVELOP wave implementation)
 """
 
-import pytest
-
 
 class TestPreInvocationTemplateValidation:
     """E2E acceptance tests for US-002: Pre-invocation template validation."""
@@ -321,9 +319,18 @@ class TestPreInvocationTemplateValidation:
         # Assert: All 3 errors reported together, Task NOT invoked
         assert validation_result.status == "FAILED"
         assert len(validation_result.errors) == 3
-        assert "MISSING: Mandatory section 'BOUNDARY_RULES' not found" in validation_result.errors
-        assert "INCOMPLETE: TDD phase 'GREEN_ACCEPTANCE' not mentioned" in validation_result.errors
-        assert "INCOMPLETE: TDD phase 'POST_REFACTOR_REVIEW' not mentioned" in validation_result.errors
+        assert (
+            "MISSING: Mandatory section 'BOUNDARY_RULES' not found"
+            in validation_result.errors
+        )
+        assert (
+            "INCOMPLETE: TDD phase 'GREEN_ACCEPTANCE' not mentioned"
+            in validation_result.errors
+        )
+        assert (
+            "INCOMPLETE: TDD phase 'POST_REFACTOR_REVIEW' not mentioned"
+            in validation_result.errors
+        )
         assert validation_result.task_invocation_allowed is False
 
     # =========================================================================
@@ -391,7 +398,9 @@ class TestPreInvocationTemplateValidation:
 
         # Assert: Validation passes AND completes quickly
         assert validation_result.status == "PASSED"
-        assert duration_ms < 500, f"Validation took {duration_ms}ms, exceeds 500ms budget"
+        assert (
+            duration_ms < 500
+        ), f"Validation took {duration_ms}ms, exceeds 500ms budget"
         assert validation_result.task_invocation_allowed is True
 
     # =========================================================================
@@ -452,3 +461,116 @@ class TestPreInvocationTemplateValidation:
         assert validation_result.status == "FAILED"
         assert any("INVALID_MARKER" in error for error in validation_result.errors)
         assert validation_result.task_invocation_allowed is False
+
+
+# =============================================================================
+# WIRING TESTS: Validation through DESOrchestrator Entry Point (CM-A/CM-D)
+# =============================================================================
+# These tests invoke validation through the system entry point (DESOrchestrator)
+# instead of directly instantiating TemplateValidator. This ensures the
+# integration is wired correctly and prevents "Testing Theatre" where tests
+# pass but the feature is not actually connected to the system.
+# =============================================================================
+
+
+class TestOrchestratorIntegration:
+    """
+    Integration tests that verify TemplateValidator is wired into DESOrchestrator.
+
+    These tests exercise the ENTRY POINT (DESOrchestrator) rather than the
+    internal component (TemplateValidator) directly. This is the 10% E2E test
+    that proves the wiring works (per CM-D 90/10 rule).
+    """
+
+    def test_orchestrator_validates_prompt_via_entry_point(self):
+        """
+        GIVEN a complete prompt with all mandatory sections
+        WHEN validation is invoked through DESOrchestrator entry point
+        THEN validation passes and task_invocation_allowed is True
+
+        WIRING TEST: Proves TemplateValidator is integrated into orchestrator.
+        This test would FAIL if the import or delegation is missing.
+        """
+        # Arrange: Import entry point (NOT internal component)
+        from des.orchestrator import DESOrchestrator
+
+        orchestrator = DESOrchestrator()
+
+        complete_prompt = """
+        <!-- DES-VALIDATION: required -->
+        <!-- DES-STEP-FILE: steps/01-01.json -->
+
+        # DES_METADATA
+        Step: 01-01.json
+
+        # AGENT_IDENTITY
+        Agent: software-crafter
+
+        # TASK_CONTEXT
+        Implement feature
+
+        # TDD_14_PHASES
+        1. PREPARE
+        2. RED_ACCEPTANCE
+        3. RED_UNIT
+        4. GREEN_UNIT
+        5. CHECK_ACCEPTANCE
+        6. GREEN_ACCEPTANCE
+        7. REVIEW
+        8. REFACTOR_L1
+        9. REFACTOR_L2
+        10. REFACTOR_L3
+        11. REFACTOR_L4
+        12. POST_REFACTOR_REVIEW
+        13. FINAL_VALIDATE
+        14. COMMIT
+
+        # QUALITY_GATES
+        G1-G6
+
+        # OUTCOME_RECORDING
+        Update step file
+
+        # BOUNDARY_RULES
+        Modify only allowed files
+
+        # TIMEOUT_INSTRUCTION
+        50 turns
+        """
+
+        # Act: Invoke validation through ENTRY POINT
+        result = orchestrator.validate_prompt(complete_prompt)
+
+        # Assert: Validation passes through wired validator
+        assert result.status == "PASSED"
+        assert result.task_invocation_allowed is True
+        assert result.errors == []
+
+    def test_orchestrator_blocks_invalid_prompt_via_entry_point(self):
+        """
+        GIVEN a prompt missing mandatory sections
+        WHEN validation is invoked through DESOrchestrator entry point
+        THEN validation fails and task_invocation_allowed is False
+
+        WIRING TEST: Proves validation logic is actually being executed
+        through the orchestrator, not just returning success by default.
+        """
+        # Arrange: Import entry point
+        from des.orchestrator import DESOrchestrator
+
+        orchestrator = DESOrchestrator()
+
+        # Prompt missing most mandatory sections
+        incomplete_prompt = """
+        <!-- DES-VALIDATION: required -->
+        Some incomplete prompt without mandatory sections.
+        """
+
+        # Act: Invoke validation through ENTRY POINT
+        result = orchestrator.validate_prompt(incomplete_prompt)
+
+        # Assert: Validation fails (proves validator is actually called)
+        assert result.status == "FAILED"
+        assert result.task_invocation_allowed is False
+        assert len(result.errors) > 0
+        assert any("MISSING" in error for error in result.errors)
