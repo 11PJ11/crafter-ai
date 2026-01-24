@@ -256,7 +256,7 @@
         "started_at": "2026-01-24T10:39:30Z",
         "ended_at": "2026-01-24T10:40:00Z",
         "duration_minutes": 0.5,
-        "outcome": "SUCCESS",
+        "outcome": "PASS",
         "outcome_details": "Changes committed to repository with comprehensive commit message",
         "artifacts_created": [],
         "artifacts_modified": ["des/validator.py", "docs/feature/des-us002/steps/02-01.json"],

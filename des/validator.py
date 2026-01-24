@@ -184,8 +184,10 @@ class TDDPhaseValidator:
             found = False
             if phase_lines:
                 for line in phase_lines:
-                    # Skip if it's a "MISSING" comment about this phase
-                    if f"MISSING: {phase}" in line or f"# MISSING:" in line and phase in line:
+                    # Skip if it's a "MISSING" comment about this phase or descriptive text mentioning it
+                    if (re.search(rf"\(.*\b{phase}\b.*\)", line) or  # (missing COMMIT) format
+                        re.search(rf"\b(without|missing|no)\s+{phase}\b", line, re.IGNORECASE) or  # descriptive text
+                        re.search(rf"# MISSING:\s*{phase}", line)):  # comment format
                         continue
                     # Phase found in non-missing context
                     if phase in line:
@@ -239,6 +241,120 @@ class DESMarkerValidator:
         return errors
 
 
+class ExecutionLogValidator:
+    """
+    Validates phase execution log for state violations.
+
+    Detects abandoned phases, missing required fields, and invalid state sequences
+    to ensure phase execution logs are complete and consistent.
+    """
+
+    def validate(self, phase_log: List[dict]) -> List[str]:
+        """
+        Validate phase execution log for state violations.
+
+        Checks:
+        1. No IN_PROGRESS phases (abandoned state)
+        2. EXECUTED phases must have outcome field (PASS/FAIL)
+        3. SKIPPED phases must have blocked_by reason
+        4. No NOT_EXECUTED phases in log
+
+        Args:
+            phase_log: List of phase execution records
+
+        Returns:
+            List of error messages (empty if all valid)
+        """
+        errors = []
+
+        for phase in phase_log:
+            phase_name = phase.get("phase_name", "unknown")
+            status = phase.get("status")
+
+            # Check 1: Detect IN_PROGRESS (abandoned state)
+            if status == "IN_PROGRESS":
+                errors.append(
+                    f"INCOMPLETE: Phase {phase_name} left in IN_PROGRESS state - "
+                    f"task may have been abandoned"
+                )
+
+            # Check 2: EXECUTED must have outcome
+            elif status == "EXECUTED":
+                if "outcome" not in phase or phase.get("outcome") is None:
+                    errors.append(
+                        f"ERROR: Phase {phase_name} EXECUTED but missing outcome field. "
+                        f"Must specify outcome (PASS or FAIL)"
+                    )
+
+            # Check 3: SKIPPED must have blocked_by
+            elif status == "SKIPPED":
+                if "blocked_by" not in phase or not phase.get("blocked_by"):
+                    errors.append(
+                        f"ERROR: Phase {phase_name} SKIPPED but missing blocked_by reason. "
+                        f"Must explain why phase was skipped"
+                    )
+
+            # Check 4: Reject NOT_EXECUTED
+            elif status == "NOT_EXECUTED":
+                errors.append(
+                    f"ERROR: Phase {phase_name} NOT_EXECUTED. "
+                    f"Cannot mark task complete with unexecuted phases"
+                )
+
+        return errors
+
+    def get_recovery_guidance(self, errors: List[str]) -> str:
+        """
+        Generate actionable recovery guidance for validation errors.
+
+        Args:
+            errors: List of error messages from validate()
+
+        Returns:
+            String with recovery steps for fixing errors
+        """
+        if not errors:
+            return None
+
+        guidance_items = []
+
+        for error in errors:
+            if "IN_PROGRESS" in error:
+                # Extract phase name from error message
+                if "Phase" in error:
+                    parts = error.split("Phase ")
+                    if len(parts) > 1:
+                        phase_name = parts[1].split(" ")[0]
+                        guidance_items.append(
+                            f"Complete or rollback the IN_PROGRESS phase {phase_name}"
+                        )
+            elif "SKIPPED" in error and "blocked_by" in error.lower():
+                if "Phase" in error:
+                    parts = error.split("Phase ")
+                    if len(parts) > 1:
+                        phase_name = parts[1].split(" ")[0]
+                        guidance_items.append(
+                            f"Add blocked_by reason explaining why phase {phase_name} was skipped"
+                        )
+            elif "EXECUTED" in error and "outcome" in error.lower():
+                if "Phase" in error:
+                    parts = error.split("Phase ")
+                    if len(parts) > 1:
+                        phase_name = parts[1].split(" ")[0]
+                        guidance_items.append(
+                            f"Add outcome field (PASS/FAIL) to phase {phase_name}"
+                        )
+            elif "NOT_EXECUTED" in error:
+                guidance_items.append(
+                    "Cannot complete task with NOT_EXECUTED phases. "
+                    "All required phases must be EXECUTED or explicitly SKIPPED with reason"
+                )
+
+        if guidance_items:
+            return "\n".join(guidance_items)
+        return None
+
+
 class TemplateValidator:
     """
     Main entry point for template validation.
@@ -252,6 +368,7 @@ class TemplateValidator:
         self.marker_validator = DESMarkerValidator()
         self.section_checker = MandatorySectionChecker()
         self.phase_validator = TDDPhaseValidator()
+        self.execution_log_validator = ExecutionLogValidator()
 
     def validate_prompt(self, prompt: str) -> ValidationResult:
         """
@@ -274,8 +391,12 @@ class TemplateValidator:
         # Check phases
         phase_errors = self.phase_validator.validate(prompt)
 
-        # Combine all errors (marker first, then sections, then phases)
-        all_errors = marker_errors + section_errors + phase_errors
+        # Extract and parse phase_execution_log from prompt
+        execution_log_data = self._extract_execution_log_from_prompt(prompt)
+        execution_log_errors = self.execution_log_validator.validate(execution_log_data)
+
+        # Combine all errors (marker first, then sections, then phases, then execution log)
+        all_errors = marker_errors + section_errors + phase_errors + execution_log_errors
 
         # Generate recovery guidance for errors
         recovery_guidance = None
@@ -296,3 +417,121 @@ class TemplateValidator:
             duration_ms=duration_ms,
             recovery_guidance=recovery_guidance
         )
+
+    def _extract_execution_log_from_prompt(self, prompt: str) -> List[dict]:
+        """
+        Extract and parse phase execution log from prompt text.
+
+        Searches for section markers (# EXECUTION_LOG_*) and parses multiple
+        text format variations into structured phase execution data.
+
+        Supports three distinct format variations:
+
+        Format A (Narrative):
+            "Phase REFACTOR_L2 status: IN_PROGRESS (context)"
+            → {"phase_name": "REFACTOR_L2", "status": "IN_PROGRESS"}
+
+        Format B (List):
+            "EXECUTED: PREPARE, RED_ACCEPTANCE, ...
+             NOT_EXECUTED: GREEN_ACCEPTANCE, ..."
+            → Multiple dicts, one per phase with respective status
+
+        Format C (Key-Value):
+            "Phase RED_UNIT: status=EXECUTED, outcome=null, blocked_by=reason"
+            → {"phase_name": "RED_UNIT", "status": "EXECUTED", "outcome": None, "blocked_by": "reason"}
+
+        Args:
+            prompt: The full prompt text containing execution log sections
+
+        Returns:
+            List[dict] where each dict has:
+            - phase_name: str (required)
+            - status: str (required, one of: EXECUTED, SKIPPED, IN_PROGRESS, NOT_EXECUTED)
+            - outcome: Optional[str] (for EXECUTED phases: PASS or FAIL)
+            - blocked_by: Optional[str] (for SKIPPED phases: reason text)
+
+            Returns empty list if no execution log sections found
+        """
+        import re
+
+        phase_log = []
+        section_markers = [
+            "# EXECUTION_LOG_STATUS",
+            "# EXECUTION_LOG_ISSUE",
+            "# EXECUTION_LOG_PROBLEM",
+        ]
+
+        # Search for all execution log sections in the prompt
+        for marker in section_markers:
+            if marker not in prompt:
+                continue
+
+            # Extract section content (from marker to next # section or end of text)
+            marker_index = prompt.find(marker)
+            if marker_index == -1:
+                continue
+
+            # Find end of section (next # marker or end of string)
+            section_start = marker_index + len(marker)
+            next_marker_index = prompt.find("\n#", section_start)
+            if next_marker_index == -1:
+                section_content = prompt[section_start:]
+            else:
+                section_content = prompt[section_start:next_marker_index]
+
+            # Parse Format A: Narrative style
+            # Pattern: "Phase PHASE_NAME status: STATUS (optional context)"
+            format_a_matches = re.findall(
+                r"Phase\s+(\w+)\s+status:\s+(\w+)",
+                section_content,
+            )
+            for phase_name, status in format_a_matches:
+                phase_log.append({"phase_name": phase_name, "status": status})
+
+            # Parse Format B: List style
+            # Pattern: "STATUS: PHASE1, PHASE2, ... \n STATUS: PHASE3, ..."
+            # Split by status keywords: EXECUTED, SKIPPED, IN_PROGRESS, NOT_EXECUTED
+            statuses = ["EXECUTED", "SKIPPED", "IN_PROGRESS", "NOT_EXECUTED"]
+            for status in statuses:
+                pattern = status + r":\s+([A-Z_,\s]+?)(?=\n|$|EXECUTED|SKIPPED|IN_PROGRESS|NOT_EXECUTED)"
+                matches = re.findall(pattern, section_content)
+                for match in matches:
+                    # Split phase names by comma
+                    phase_names = [
+                        p.strip()
+                        for p in match.split(",")
+                        if p.strip()
+                    ]
+                    for phase_name in phase_names:
+                        if phase_name and phase_name.isupper():
+                            phase_log.append(
+                                {"phase_name": phase_name, "status": status}
+                            )
+
+            # Parse Format C: Key-value style
+            # Pattern: "Phase PHASE_NAME: status=STATUS, outcome=VALUE, blocked_by=REASON"
+            format_c_pattern = r"Phase\s+(\w+):\s+status=(\w+)(?:,\s+outcome=(\w+))?(?:,\s+blocked_by=([^\n,]+))?"
+            format_c_matches = re.findall(format_c_pattern, section_content)
+            for phase_name, status, outcome, blocked_by in format_c_matches:
+                entry = {"phase_name": phase_name, "status": status}
+
+                # Convert "null" string to None
+                if outcome and outcome.lower() != "null":
+                    entry["outcome"] = outcome
+
+                if blocked_by:
+                    entry["blocked_by"] = blocked_by.strip()
+
+                phase_log.append(entry)
+
+        # Remove duplicates while preserving order (by checking phase_name+status combination)
+        seen = set()
+        unique_phase_log = []
+        for entry in phase_log:
+            # Create hashable key from phase_name and status
+            key = (entry.get("phase_name"), entry.get("status"))
+            if key not in seen:
+                seen.add(key)
+                unique_phase_log.append(entry)
+
+        return unique_phase_log

@@ -1,45 +1,45 @@
 {
   "task_specification": {
-    "task_id": "04-01",
-    "project_id": "des-us002",
-    "task_name": "Validation performance within budget",
-    "description": "Optimize TemplateValidator to complete validation within 500ms\nperformance budget, ensuring non-blocking developer workflow.",
-    "acceptance_criteria": [
-      "AC-002.5: Validation completes in < 500ms",
-      "Performance measured with time.perf_counter()",
-      "Validation still accurate (no shortcuts that break correctness)",
-      "Valid prompts processed within budget"
-    ],
-    "requires": [
-      "03-01"
-    ],
-    "estimated_hours": 1,
-    "implementation_notes": "Performance considerations:\n- Use efficient string searching (regex or simple in-operator)\n- Avoid unnecessary object allocations\n- Single-pass validation where possible\n- Measure with time.perf_counter() for millisecond precision\n\nAcceptance test includes timing assertion:\nassert duration_ms < 500"
+    "task_id": "01-08",
+    "project_id": "des-us003",
+    "step_type": "integration",
+    "name": "Integration: Wire SubagentStopHook into DESOrchestrator",
+    "description": "Make test_orchestrator_invokes_subagent_stop_hook_on_completion AND test_orchestrator_detects_abandoned_phase_via_entry_point pass (RED -> GREEN).\n\nThis is the INTEGRATION step required by CM-B countermeasure.\n\nImplements:\n- DESOrchestrator.on_subagent_complete() method\n- Invokes SubagentStopHook.validate() with step file path\n- Returns HookResult to caller\n- Wires validation into the actual entry point\n\nTest expectation (hook invocation):\n- Entry point calls hook after sub-agent completion\n- Hook receives correct step file path\n- HookResult returned through entry point\n\nTest expectation (abandoned detection via entry point):\n- Entry point detects abandoned phase\n- Returns FAILED validation_status\n- Proves end-to-end wiring works",
+    "acceptance_test_scenario": "test_orchestrator_invokes_subagent_stop_hook_on_completion",
+    "acceptance_test_file": "tests/acceptance/test_us003_post_execution_validation.py",
+    "acceptance_criteria": "CM-B Integration Wiring",
+    "suggested_agent": "software-crafter",
+    "estimated_complexity": "medium",
+    "requires": ["01-01", "01-02", "01-03", "01-04", "01-05", "01-06", "01-07"],
+    "additional_scenarios": ["test_orchestrator_detects_abandoned_phase_via_entry_point"],
+    "note": "This is the mandatory INTEGRATION step ensuring SubagentStopHook is wired into the actual entry point (DESOrchestrator), not just tested in isolation."
+  },
+  "state": {
+    "status": "PENDING",
+    "started_at": null,
+    "completed_at": null
   },
   "tdd_cycle": {
     "acceptance_test": {
-      "scenario_name": "test_validation_completes_within_performance_budget",
-      "test_file": "tests/acceptance/test_us002_template_validation.py",
+      "scenario_name": "test_orchestrator_invokes_subagent_stop_hook_on_completion",
+      "test_file": "tests/acceptance/test_us003_post_execution_validation.py",
       "test_file_format": "py_pytest",
-      "scenario_index": 4,
       "initially_ignored": true,
-      "is_walking_skeleton": false,
       "mapped_scenario": {
-        "scenario_function": "test_validation_completes_within_performance_budget",
-        "scenario_description": "TemplateValidator completes validation within 500ms performance budget while maintaining accuracy",
-        "mapping_type": "feature"
-      }
-    },
-    "expected_unit_tests": [],
-    "mock_boundaries": {
-      "allowed_ports": [],
-      "forbidden_domain_classes": [],
-      "in_memory_adapters": []
+        "scenario_function": "test_orchestrator_invokes_subagent_stop_hook_on_completion",
+        "scenario_description": "Verify DESOrchestrator entry point invokes SubagentStopHook after sub-agent completion",
+        "mapping_type": "integration"
+      },
+      "additional_scenarios": [
+        {
+          "scenario_function": "test_orchestrator_detects_abandoned_phase_via_entry_point",
+          "scenario_description": "Verify end-to-end detection of abandoned phases through the actual entry point",
+          "mapping_type": "integration"
+        }
+      ]
     },
     "tdd_phase_tracking": {
       "current_phase": "NOT_STARTED",
-      "active_e2e_test": "",
-      "inactive_e2e_tests": "All other @skip scenarios remain disabled",
       "phases_completed": []
     },
     "phase_execution_log": [
@@ -54,12 +54,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -75,12 +70,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -96,12 +86,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -117,12 +102,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -138,12 +118,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -159,12 +134,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -180,12 +150,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -201,12 +166,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -222,12 +182,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -243,12 +198,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -264,12 +214,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -285,12 +230,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -306,12 +246,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -323,16 +258,11 @@
         "started_at": null,
         "ended_at": null,
         "duration_minutes": null,
-        "outcome": "PASS",
+        "outcome": null,
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -342,21 +272,12 @@
   "quality_gates": {
     "acceptance_test_must_fail_first": true,
     "unit_tests_must_fail_first": true,
-    "no_mocks_inside_hexagon": true,
-    "business_language_required": true,
-    "refactor_level": 4,
-    "in_memory_test_ratio_target": 0.8,
-    "validation_after_each_phase": true,
-    "validation_after_each_review": true,
-    "validation_after_each_refactor": true,
-    "all_14_phases_mandatory": true,
-    "phase_documentation_required": true
+    "all_14_phases_mandatory": true
   },
   "validation": {
     "status": "approved",
-    "reviewer": "software-crafter-reviewer",
-    "reviewed_at": "2026-01-24T11:55:07.378873Z",
-    "notes": "Step 04-01 completed and verified - all acceptance and unit tests passing",
-    "issues": []
+    "reviewed_by": "software-crafter-reviewer",
+    "reviewed_at": "2026-01-24T12:00:00Z",
+    "review_notes": "CM-B Integration Step validated: step_type is 'integration', acceptance test scenario maps to test_orchestrator_invokes_subagent_stop_hook_on_completion (line 862), additional_scenarios includes test_orchestrator_detects_abandoned_phase_via_entry_point (line 889), dependencies correctly include ALL prior steps (01-01 through 01-07), all 14 phases present with correct indices (0-13), quality gates defined. This step ensures SubagentStopHook is wired into DESOrchestrator entry point."
   }
 }

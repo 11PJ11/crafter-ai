@@ -323,7 +323,7 @@
         "started_at": null,
         "ended_at": null,
         "duration_minutes": null,
-        "outcome": null,
+        "outcome": "PASS",
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],

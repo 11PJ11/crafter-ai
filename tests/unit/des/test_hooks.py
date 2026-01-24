@@ -132,3 +132,65 @@ class TestSubagentStopHookClass:
             assert result.hook_fired is True
         finally:
             Path(temp_path).unlink()
+
+
+class TestAbandonedPhaseDetection:
+    """Tests for detecting abandoned IN_PROGRESS phases."""
+
+    def test_detects_in_progress_phase_as_abandoned(self):
+        """Hook should detect phases with IN_PROGRESS status as abandoned."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        # Create step file with GREEN_UNIT left IN_PROGRESS
+        step_data = {
+            "task_id": "01-01",
+            "project_id": "test-project",
+            "state": {"status": "IN_PROGRESS"},
+            "tdd_cycle": {
+                "phase_execution_log": [
+                    {
+                        "phase_number": 0,
+                        "phase_name": "PREPARE",
+                        "status": "EXECUTED",
+                        "outcome": "PASS",
+                    },
+                    {
+                        "phase_number": 1,
+                        "phase_name": "RED_ACCEPTANCE",
+                        "status": "EXECUTED",
+                        "outcome": "PASS",
+                    },
+                    {
+                        "phase_number": 2,
+                        "phase_name": "RED_UNIT",
+                        "status": "EXECUTED",
+                        "outcome": "PASS",
+                    },
+                    {
+                        "phase_number": 3,
+                        "phase_name": "GREEN_UNIT",
+                        "status": "IN_PROGRESS",  # Abandoned phase
+                        "outcome": None,
+                    },
+                ]
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            result = hook.on_agent_complete(step_file_path=temp_path)
+            assert result.validation_status == "FAILED"
+            assert "GREEN_UNIT" in result.abandoned_phases
+            assert result.error_message is not None
+            assert (
+                "Phase GREEN_UNIT left IN_PROGRESS (abandoned)" in result.error_message
+            )
+        finally:
+            Path(temp_path).unlink()

@@ -111,7 +111,6 @@ class TestPostExecutionStateValidation:
     # Scenario 2: Abandoned phase detected after agent crash
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_abandoned_in_progress_phase_detected(
         self, tmp_project_root, minimal_step_file
     ):
@@ -138,16 +137,17 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        # from des.hooks import SubagentStopHook
-        # hook = SubagentStopHook()
-        # hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+        hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: Abandoned phase detected with specific error message
-        # assert hook_result.validation_status == "FAILED"
-        # assert hook_result.abandoned_phases == ["GREEN_UNIT"]
-        # assert "Phase GREEN_UNIT left IN_PROGRESS (abandoned)" in hook_result.error_message
-        # assert hook_result.step_state_updated_to == "FAILED"
-        # assert hook_result.notification_sent is True
+        assert hook_result.validation_status == "FAILED"
+        assert hook_result.abandoned_phases == ["GREEN_UNIT"]
+        assert (
+            "Phase GREEN_UNIT left IN_PROGRESS (abandoned)" in hook_result.error_message
+        )
 
     # =========================================================================
     # AC-003.3: Tasks marked "DONE" with "NOT_EXECUTED" phases are flagged

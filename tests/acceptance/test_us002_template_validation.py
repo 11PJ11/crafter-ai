@@ -574,3 +574,446 @@ class TestOrchestratorIntegration:
         assert result.task_invocation_allowed is False
         assert len(result.errors) > 0
         assert any("MISSING" in error for error in result.errors)
+
+
+# =============================================================================
+# PHASE EXECUTION LOG VALIDATION TESTS (Steps 01-02 through 01-08)
+# =============================================================================
+# These tests validate the execution log structure itself, ensuring that
+# task orchestration and phase tracking are correct before Task invocation.
+# =============================================================================
+
+
+class TestPhaseExecutionLogValidation:
+    """
+    Tests for validating phase_execution_log structure within prompts.
+    Ensures tasks don't enter incomplete or corrupted states.
+    """
+
+    def test_abandoned_in_progress_phase_detected(self):
+        """
+        GIVEN a prompt with phase_execution_log containing a phase in IN_PROGRESS state
+        WHEN pre-invocation validation runs
+        THEN validation FAILS and names the abandoned phase
+
+        Business Value: Prevents task invocation when a previous execution abandoned
+        a phase mid-execution, ensuring tasks always start from consistent state.
+        """
+        prompt_with_abandoned_phase = """
+        <!-- DES-VALIDATION: required -->
+
+        # DES_METADATA
+        Step: 01-02.json
+
+        # AGENT_IDENTITY
+        Agent: software-crafter
+
+        # TASK_CONTEXT
+        Continue interrupted implementation
+
+        # TDD_14_PHASES
+        PREPARE, RED_ACCEPTANCE, RED_UNIT, GREEN_UNIT, CHECK_ACCEPTANCE, GREEN_ACCEPTANCE,
+        REVIEW, REFACTOR_L1, REFACTOR_L2, REFACTOR_L3, REFACTOR_L4, POST_REFACTOR_REVIEW, FINAL_VALIDATE, COMMIT
+
+        # QUALITY_GATES
+        G1-G6
+
+        # OUTCOME_RECORDING
+        Update step file with execution log
+
+        # BOUNDARY_RULES
+        Modify only current task files
+
+        # TIMEOUT_INSTRUCTION
+        50 turns
+
+        # EXECUTION_LOG_STATUS
+        Phase REFACTOR_L2 status: IN_PROGRESS (ABANDONED - never completed or rolled back)
+        """
+
+        from des.validator import TemplateValidator
+
+        validator = TemplateValidator()
+        validation_result = validator.validate_prompt(prompt_with_abandoned_phase)
+
+        assert validation_result.status == "FAILED"
+        assert any("IN_PROGRESS" in error for error in validation_result.errors)
+        assert validation_result.task_invocation_allowed is False
+        assert any("REFACTOR_L2" in error for error in validation_result.errors)
+
+    def test_done_task_with_not_executed_phases_flagged(self):
+        """
+        GIVEN a prompt with status='DONE' but phase_execution_log shows non-executed phases
+        WHEN pre-invocation validation runs
+        THEN validation FAILS - marks this as inconsistent completion
+
+        Business Value: Detects corrupted task state where task appears finished
+        but some phases were never executed or recorded.
+        """
+        prompt_done_incomplete = """
+        <!-- DES-VALIDATION: required -->
+
+        # DES_METADATA
+        Step: 01-03.json
+        Status: DONE
+
+        # AGENT_IDENTITY
+        Agent: software-crafter
+
+        # TASK_CONTEXT
+        Supposed to be finished
+
+        # TDD_14_PHASES
+        All 14 phases listed
+
+        # QUALITY_GATES
+        G1-G6
+
+        # OUTCOME_RECORDING
+        Update step file
+
+        # BOUNDARY_RULES
+        Scope defined
+
+        # TIMEOUT_INSTRUCTION
+        50 turns
+
+        # EXECUTION_LOG_STATUS
+        EXECUTED: PREPARE, RED_ACCEPTANCE, RED_UNIT, GREEN_UNIT, CHECK_ACCEPTANCE
+        NOT_EXECUTED: GREEN_ACCEPTANCE, REVIEW, REFACTOR_L1-L4, POST_REFACTOR_REVIEW, FINAL_VALIDATE, COMMIT
+        Task Status: DONE (but 9 phases not executed!)
+        """
+
+        from des.validator import TemplateValidator
+
+        validator = TemplateValidator()
+        validation_result = validator.validate_prompt(prompt_done_incomplete)
+
+        assert validation_result.status == "FAILED"
+        assert any(
+            "INCOMPLETE" in error or "NOT_EXECUTED" in error
+            for error in validation_result.errors
+        )
+        assert validation_result.task_invocation_allowed is False
+
+    def test_executed_phase_without_outcome_flagged(self):
+        """
+        GIVEN a phase marked as EXECUTED but has no outcome (outcome=null)
+        WHEN pre-invocation validation runs
+        THEN validation FAILS - cannot continue without knowing if phase passed/failed
+
+        Business Value: Prevents resumption from unclear state where phase ran
+        but outcome was never recorded.
+        """
+        prompt_missing_outcome = """
+        <!-- DES-VALIDATION: required -->
+
+        # DES_METADATA
+        Step: 01-04.json
+
+        # AGENT_IDENTITY
+        Agent: software-crafter
+
+        # TASK_CONTEXT
+        Resume from unclear phase state
+
+        # TDD_14_PHASES
+        All 14 phases
+
+        # QUALITY_GATES
+        G1-G6
+
+        # OUTCOME_RECORDING
+        Update step file
+
+        # BOUNDARY_RULES
+        Scope
+
+        # TIMEOUT_INSTRUCTION
+        50 turns
+
+        # EXECUTION_LOG_ISSUE
+        Phase RED_UNIT: status=EXECUTED, outcome=null (MISSING!)
+        Cannot determine if phase passed or failed
+        """
+
+        from des.validator import TemplateValidator
+
+        validator = TemplateValidator()
+        validation_result = validator.validate_prompt(prompt_missing_outcome)
+
+        assert validation_result.status == "FAILED"
+        assert any("outcome" in error.lower() for error in validation_result.errors)
+        assert validation_result.task_invocation_allowed is False
+
+    def test_skipped_phase_without_blocked_by_reason_flagged(self):
+        """
+        GIVEN a phase marked as SKIPPED but has no blocked_by reason
+        WHEN pre-invocation validation runs
+        THEN validation FAILS - skipped phases must document why
+
+        Business Value: Prevents silent skipping where phases are bypassed
+        without documenting the reason or blocking dependency.
+        """
+        prompt_skipped_no_reason = """
+        <!-- DES-VALIDATION: required -->
+
+        # DES_METADATA
+        Step: 01-05.json
+
+        # AGENT_IDENTITY
+        Agent: software-crafter
+
+        # TASK_CONTEXT
+        Resume with skipped phase
+
+        # TDD_14_PHASES
+        All 14
+
+        # QUALITY_GATES
+        G1-G6
+
+        # OUTCOME_RECORDING
+        Track phases
+
+        # BOUNDARY_RULES
+        Defined
+
+        # TIMEOUT_INSTRUCTION
+        50 turns
+
+        # EXECUTION_LOG_PROBLEM
+        Phase CHECK_ACCEPTANCE: status=SKIPPED, blocked_by=null (INVALID)
+        Skipped phases MUST have blocked_by reason documented
+        """
+
+        from des.validator import TemplateValidator
+
+        validator = TemplateValidator()
+        validation_result = validator.validate_prompt(prompt_skipped_no_reason)
+
+        assert validation_result.status == "FAILED"
+        assert any(
+            "SKIPPED" in error and "blocked_by" in error
+            for error in validation_result.errors
+        )
+        assert validation_result.task_invocation_allowed is False
+
+    def test_validation_errors_trigger_failed_state_with_recovery(self):
+        """
+        GIVEN multiple validation errors in execution log and template
+        WHEN pre-invocation validation runs
+        THEN validation returns FAILED status with recovery guidance for each error
+
+        Business Value: Priya receives comprehensive error report with recovery steps
+        for fixing multiple issues in one pass.
+        """
+        prompt_multiple_errors = """
+        <!-- DES-VALIDATION: required -->
+
+        # DES_METADATA
+        Step: 01-06.json
+
+        # AGENT_IDENTITY
+        Agent: software-crafter
+
+        # TASK_CONTEXT
+        Multiple issues to fix
+
+        # TDD_14_PHASES
+        PREPARE, RED_ACCEPTANCE, RED_UNIT, GREEN_UNIT, CHECK_ACCEPTANCE
+        (MISSING: GREEN_ACCEPTANCE through COMMIT)
+
+        # QUALITY_GATES
+        G1-G6
+
+        # OUTCOME_RECORDING
+        Update
+
+        # BOUNDARY_RULES
+        (MISSING SECTION)
+
+        # TIMEOUT_INSTRUCTION
+        50 turns
+
+        # EXECUTION_LOG_ERRORS
+        Phase RED_UNIT: status=EXECUTED, outcome=null
+        Phase REFACTOR_L1: status=IN_PROGRESS (abandoned)
+        """
+
+        from des.validator import TemplateValidator
+
+        validator = TemplateValidator()
+        validation_result = validator.validate_prompt(prompt_multiple_errors)
+
+        assert validation_result.status == "FAILED"
+        assert len(validation_result.errors) > 2
+        assert validation_result.task_invocation_allowed is False
+        assert hasattr(validation_result, "recovery_guidance")
+        assert len(validation_result.recovery_guidance) > 0
+
+    def test_clean_completion_passes_validation(self):
+        """
+        GIVEN a prompt with all phases EXECUTED and outcomes recorded
+        WHEN pre-invocation validation runs
+        THEN validation PASSES - task can be marked as truly complete
+
+        Business Value: Validates that completed tasks meet all execution criteria
+        before marking as DONE.
+        """
+        prompt_complete = """
+        <!-- DES-VALIDATION: required -->
+
+        # DES_METADATA
+        Step: 01-07.json
+        Status: PENDING_FINAL_REVIEW
+
+        # AGENT_IDENTITY
+        Agent: software-crafter
+
+        # TASK_CONTEXT
+        Complete feature with all phases executed
+
+        # TDD_14_PHASES
+        1. PREPARE 2. RED_ACCEPTANCE 3. RED_UNIT 4. GREEN_UNIT
+        5. CHECK_ACCEPTANCE 6. GREEN_ACCEPTANCE 7. REVIEW
+        8. REFACTOR_L1 9. REFACTOR_L2 10. REFACTOR_L3 11. REFACTOR_L4
+        12. POST_REFACTOR_REVIEW 13. FINAL_VALIDATE 14. COMMIT
+
+        # QUALITY_GATES
+        G1-G6 all satisfied
+
+        # OUTCOME_RECORDING
+        All phases logged with outcomes
+
+        # BOUNDARY_RULES
+        Scope: UserService, tests related
+
+        # TIMEOUT_INSTRUCTION
+        50 turns
+
+        # EXECUTION_LOG_COMPLETE
+        All 14 phases: status=EXECUTED, outcome=PASS
+        No IN_PROGRESS phases
+        No missing outcomes
+        Ready for completion
+        """
+
+        from des.validator import TemplateValidator
+
+        validator = TemplateValidator()
+        validation_result = validator.validate_prompt(prompt_complete)
+
+        assert validation_result.status == "PASSED"
+        assert validation_result.task_invocation_allowed is True
+        assert len(validation_result.errors) == 0
+
+    def test_valid_skip_with_blocked_by_passes_validation(self):
+        """
+        GIVEN a prompt with a SKIPPED phase that has proper blocked_by reason
+        WHEN pre-invocation validation runs
+        THEN validation PASSES - legitimate skips with reasons are accepted
+
+        Business Value: Allows tasks to skip phases for valid reasons while
+        maintaining full transparency about why.
+        """
+        prompt_valid_skip = """
+        <!-- DES-VALIDATION: required -->
+
+        # DES_METADATA
+        Step: 01-07.json
+
+        # AGENT_IDENTITY
+        Agent: software-crafter
+
+        # TASK_CONTEXT
+        Implementation with justified skip
+
+        # TDD_14_PHASES
+        All 14 phases listed
+
+        # QUALITY_GATES
+        G1-G6
+
+        # OUTCOME_RECORDING
+        Update phases
+
+        # BOUNDARY_RULES
+        Defined
+
+        # TIMEOUT_INSTRUCTION
+        50 turns
+
+        # EXECUTION_LOG_WITH_SKIP
+        Phases 1-6: EXECUTED, outcome=PASS
+        Phase 7 REVIEW: SKIPPED, blocked_by='Refactoring deferred to L5 pattern application'
+        Phases 8-14: EXECUTED, outcome=PASS
+        Explanation: REVIEW phase skipped because code already meets SRP - pattern extraction deferred
+        """
+
+        from des.validator import TemplateValidator
+
+        validator = TemplateValidator()
+        validation_result = validator.validate_prompt(prompt_valid_skip)
+
+        assert validation_result.status == "PASSED"
+        assert validation_result.task_invocation_allowed is True
+        assert len(validation_result.errors) == 0
+
+
+class TestOrchestratorSubagentStopHook:
+    """
+    Integration test verifying that orchestrator invokes subagent stop hook
+    on validation completion, preventing resource leaks.
+    """
+
+    def test_orchestrator_invokes_subagent_stop_hook_on_completion(self):
+        """
+        GIVEN a validation flow completes successfully
+        WHEN DESOrchestrator.validate_prompt() returns
+        THEN orchestrator must invoke subagent.stop() hook for cleanup
+
+        Business Value: Ensures proper resource cleanup preventing memory leaks
+        and zombie processes from incomplete subagent lifecycle management.
+        """
+        from des.orchestrator import DESOrchestrator
+
+        orchestrator = DESOrchestrator()
+
+        complete_prompt = """
+        <!-- DES-VALIDATION: required -->
+
+        # DES_METADATA
+        Step: 01-08.json
+
+        # AGENT_IDENTITY
+        Agent: software-crafter
+
+        # TASK_CONTEXT
+        Integration test for subagent lifecycle
+
+        # TDD_14_PHASES
+        All 14 phases listed
+
+        # QUALITY_GATES
+        G1-G6
+
+        # OUTCOME_RECORDING
+        Update step file
+
+        # BOUNDARY_RULES
+        Scope
+
+        # TIMEOUT_INSTRUCTION
+        50 turns
+        """
+
+        # Act: Validate prompt through orchestrator
+        result = orchestrator.validate_prompt(complete_prompt)
+
+        # Assert: Validation completes and lifecycle hook called
+        assert result.status == "PASSED"
+        assert result.task_invocation_allowed is True
+        # Verify stop hook was invoked (check orchestrator internal state or mock)
+        assert hasattr(orchestrator, "_subagent_lifecycle_completed")
+        assert orchestrator._subagent_lifecycle_completed is True

@@ -1,45 +1,45 @@
 {
   "task_specification": {
-    "task_id": "04-01",
-    "project_id": "des-us002",
-    "task_name": "Validation performance within budget",
-    "description": "Optimize TemplateValidator to complete validation within 500ms\nperformance budget, ensuring non-blocking developer workflow.",
-    "acceptance_criteria": [
-      "AC-002.5: Validation completes in < 500ms",
-      "Performance measured with time.perf_counter()",
-      "Validation still accurate (no shortcuts that break correctness)",
-      "Valid prompts processed within budget"
-    ],
-    "requires": [
-      "03-01"
-    ],
-    "estimated_hours": 1,
-    "implementation_notes": "Performance considerations:\n- Use efficient string searching (regex or simple in-operator)\n- Avoid unnecessary object allocations\n- Single-pass validation where possible\n- Measure with time.perf_counter() for millisecond precision\n\nAcceptance test includes timing assertion:\nassert duration_ms < 500"
+    "task_id": "01-07",
+    "project_id": "des-us003",
+    "step_type": "feature",
+    "name": "Pass validation for clean completion and valid skips",
+    "description": "Make test_clean_completion_passes_validation AND test_valid_skip_with_blocked_by_passes_validation pass (RED -> GREEN).\n\nNote: These two happy path scenarios are tightly coupled as they both test the PASSED validation_status path. Implementing them together maintains logical cohesion while still following Outside-In TDD.\n\nImplements:\n- PASSED validation_status when no errors found\n- Empty lists for abandoned_phases, incomplete_phases, invalid_skips\n- Accept SKIPPED phases that have valid blocked_by reason\n- Audit log success event recording\n\nTest expectation (clean completion):\n- All 14 phases EXECUTED with outcomes\n- validation_status == \"PASSED\"\n- All error lists empty\n\nTest expectation (valid skip):\n- REFACTOR_L2 SKIPPED with blocked_by reason present\n- validation_status == \"PASSED\"\n- invalid_skips == []",
+    "acceptance_test_scenario": "test_clean_completion_passes_validation",
+    "acceptance_test_file": "tests/acceptance/test_us003_post_execution_validation.py",
+    "acceptance_criteria": "Happy path scenarios",
+    "suggested_agent": "software-crafter",
+    "estimated_complexity": "medium",
+    "requires": ["01-02", "01-03", "01-04", "01-05"],
+    "additional_scenarios": ["test_valid_skip_with_blocked_by_passes_validation"],
+    "note": "This step covers 2 acceptance test scenarios (happy paths) because both test the same code path (PASSED status) and are essential for validation completeness."
+  },
+  "state": {
+    "status": "PENDING",
+    "started_at": null,
+    "completed_at": null
   },
   "tdd_cycle": {
     "acceptance_test": {
-      "scenario_name": "test_validation_completes_within_performance_budget",
-      "test_file": "tests/acceptance/test_us002_template_validation.py",
+      "scenario_name": "test_clean_completion_passes_validation",
+      "test_file": "tests/acceptance/test_us003_post_execution_validation.py",
       "test_file_format": "py_pytest",
-      "scenario_index": 4,
       "initially_ignored": true,
-      "is_walking_skeleton": false,
       "mapped_scenario": {
-        "scenario_function": "test_validation_completes_within_performance_budget",
-        "scenario_description": "TemplateValidator completes validation within 500ms performance budget while maintaining accuracy",
+        "scenario_function": "test_clean_completion_passes_validation",
+        "scenario_description": "Verify hook returns PASSED validation when all phases are properly executed with outcomes",
         "mapping_type": "feature"
-      }
-    },
-    "expected_unit_tests": [],
-    "mock_boundaries": {
-      "allowed_ports": [],
-      "forbidden_domain_classes": [],
-      "in_memory_adapters": []
+      },
+      "additional_scenarios": [
+        {
+          "scenario_function": "test_valid_skip_with_blocked_by_passes_validation",
+          "scenario_description": "Verify hook returns PASSED validation when SKIPPED phases have valid blocked_by reasons",
+          "mapping_type": "feature"
+        }
+      ]
     },
     "tdd_phase_tracking": {
       "current_phase": "NOT_STARTED",
-      "active_e2e_test": "",
-      "inactive_e2e_tests": "All other @skip scenarios remain disabled",
       "phases_completed": []
     },
     "phase_execution_log": [
@@ -54,12 +54,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -75,12 +70,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -96,12 +86,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -117,12 +102,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -138,12 +118,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -159,12 +134,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -180,12 +150,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -201,12 +166,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -222,12 +182,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -243,12 +198,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -264,12 +214,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -285,12 +230,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -306,12 +246,7 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -323,16 +258,11 @@
         "started_at": null,
         "ended_at": null,
         "duration_minutes": null,
-        "outcome": "PASS",
+        "outcome": null,
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
+        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -342,21 +272,12 @@
   "quality_gates": {
     "acceptance_test_must_fail_first": true,
     "unit_tests_must_fail_first": true,
-    "no_mocks_inside_hexagon": true,
-    "business_language_required": true,
-    "refactor_level": 4,
-    "in_memory_test_ratio_target": 0.8,
-    "validation_after_each_phase": true,
-    "validation_after_each_review": true,
-    "validation_after_each_refactor": true,
-    "all_14_phases_mandatory": true,
-    "phase_documentation_required": true
+    "all_14_phases_mandatory": true
   },
   "validation": {
     "status": "approved",
-    "reviewer": "software-crafter-reviewer",
-    "reviewed_at": "2026-01-24T11:55:07.378873Z",
-    "notes": "Step 04-01 completed and verified - all acceptance and unit tests passing",
-    "issues": []
+    "reviewed_by": "software-crafter-reviewer",
+    "reviewed_at": "2026-01-24T12:00:00Z",
+    "review_notes": "Step file structure validated: task_specification complete with additional_scenarios for test_valid_skip_with_blocked_by_passes_validation (appropriate coupling of happy path scenarios), acceptance test scenarios map to lines 364 and 411, all 14 phases present with correct indices (0-13), quality gates defined, dependencies correctly specify 01-02 through 01-05 (all error detection steps)."
   }
 }
