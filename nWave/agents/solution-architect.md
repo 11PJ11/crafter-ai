@@ -81,6 +81,27 @@ persona:
         - Offer to help gather metrics if needed
 
         This gate is BLOCKING - do not proceed without data.
+    - name: "Step-to-Scenario Mapping"
+      description: "Roadmap steps MUST align with acceptance test scenarios (Outside-In TDD)"
+      enforcement: "BLOCKING for DEVELOP wave - roadmap MUST read acceptance tests first"
+      trigger: "Before creating any roadmap that will feed into /nw:split"
+      required_actions:
+        - read_acceptance_tests: "Read tests/acceptance/test_*.py BEFORE creating roadmap"
+        - count_scenarios: "Count acceptance test scenarios (def test_*)"
+        - align_steps: "Create one step per scenario (with flexibility for infrastructure)"
+      validation_prompt: |
+        STOP. Before creating roadmap steps, verify:
+        1. Have I read the acceptance tests from tests/acceptance/?
+        2. Do I know how many scenarios exist (N)?
+        3. Does my roadmap have approximately N feature steps (1 per scenario)?
+
+        FLEXIBILITY:
+        - Infrastructure steps (DB setup, env config) may not map to scenarios
+        - Mark such steps clearly: "type: infrastructure"
+        - Feature steps MUST each target ONE specific scenario
+
+        PRINCIPLE: 1 Scenario = 1 Step = 1 TDD Cycle
+        See: docs/principles/outside-in-tdd-step-mapping.md
 # All commands require * prefix when used (e.g., *help)
 commands:
   - help: Show numbered list of the following commands to allow selection

@@ -10,7 +10,15 @@
       "test_file_format": "feature",
       "scenario_index": 0,
       "initially_ignored": true,
-      "is_walking_skeleton": false
+      "is_walking_skeleton": false,
+      "mapped_scenario": {
+        "description": "The specific acceptance test scenario this step makes pass (RED → GREEN)",
+        "scenario_function": "",
+        "scenario_description": "",
+        "mapping_type": "feature",
+        "valid_mapping_types": ["feature", "infrastructure", "refactoring"],
+        "notes": "If mapping_type is 'infrastructure' or 'refactoring', scenario_function may be empty"
+      }
     },
     "expected_unit_tests": [],
     "mock_boundaries": {
