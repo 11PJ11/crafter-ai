@@ -223,6 +223,7 @@ class TestTemplateValidator:
         from des.validator import TemplateValidator
 
         prompt = """
+        <!-- DES-VALIDATION: required -->
         # DES_METADATA
         Step: 01-01.json
 

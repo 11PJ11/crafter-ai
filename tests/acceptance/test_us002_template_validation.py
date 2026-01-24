@@ -173,12 +173,16 @@ class TestPreInvocationTemplateValidation:
 
         # Act: Run pre-invocation validation
         from des.validator import TemplateValidator
+
         validator = TemplateValidator()
         validation_result = validator.validate_prompt(prompt_missing_phase)
 
         # Assert: Validation fails with specific error
         assert validation_result.status == "FAILED"
-        assert "INCOMPLETE: TDD phase 'REFACTOR_L3' not mentioned" in validation_result.errors
+        assert (
+            "INCOMPLETE: TDD phase 'REFACTOR_L3' not mentioned"
+            in validation_result.errors
+        )
         assert validation_result.task_invocation_allowed is False
 
     # =========================================================================
@@ -428,6 +432,7 @@ class TestPreInvocationTemplateValidation:
 
         # Act: Run pre-invocation validation
         from des.validator import TemplateValidator
+
         validator = TemplateValidator()
         validation_result = validator.validate_prompt(prompt_malformed_marker)
 

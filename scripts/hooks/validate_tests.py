@@ -68,11 +68,16 @@ def main():
 
     # Run tests and capture output
     try:
+        # Configure environment for subprocess - ensure Python can find project modules
+        env = os.environ.copy()
+        env["PYTHONPATH"] = os.getcwd() + ":" + env.get("PYTHONPATH", "")
+
         result = subprocess.run(
             ["python3", "-m", "pytest", "tests/", "-v", "--tb=short"],
             check=False,
             capture_output=True,
             text=True,
+            env=env,
         )
         test_output = result.stdout + result.stderr
         test_exit_code = result.returncode
@@ -98,6 +103,12 @@ def main():
         print()
         print(f"{RED}COMMIT BLOCKED: Tests failed{NC}")
         print()
+
+        # Print full pytest output to see actual error details
+        print(f"{RED}Full pytest output:{NC}")
+        print(test_output)
+        print()
+
         print(f"{RED}Failed tests:{NC}")
 
         # Extract and display failed test lines

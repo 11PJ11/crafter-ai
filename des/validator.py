@@ -198,6 +198,47 @@ class TDDPhaseValidator:
         return errors
 
 
+class DESMarkerValidator:
+    """
+    Validates the DES-VALIDATION marker format in prompts.
+
+    Ensures prompts contain a valid HTML comment marker:
+    <!-- DES-VALIDATION: required -->
+
+    The marker value MUST be exactly 'required' (case-sensitive).
+    """
+
+    def validate(self, prompt: str) -> list:
+        """
+        Validate DES-VALIDATION marker in prompt.
+
+        Args:
+            prompt: The full prompt text to validate
+
+        Returns:
+            List of error messages (empty if marker is valid)
+        """
+        errors = []
+
+        # Pattern for DES-VALIDATION marker: <!-- DES-VALIDATION: value -->
+        pattern = r'<!--\s*DES-VALIDATION\s*:\s*(\w+)\s*-->'
+        match = re.search(pattern, prompt)
+
+        if not match:
+            # Marker not found
+            errors.append("INVALID_MARKER: DES-VALIDATION marker not found")
+            return errors
+
+        # Extract value and normalize whitespace
+        value = match.group(1).strip()
+
+        # Value MUST be exactly 'required' (case-sensitive)
+        if value != 'required':
+            errors.append(f"INVALID_MARKER: DES-VALIDATION value must be 'required', got '{value}'")
+
+        return errors
+
+
 class TemplateValidator:
     """
     Main entry point for template validation.
@@ -208,6 +249,7 @@ class TemplateValidator:
 
     def __init__(self):
         """Initialize validator with checkers."""
+        self.marker_validator = DESMarkerValidator()
         self.section_checker = MandatorySectionChecker()
         self.phase_validator = TDDPhaseValidator()
 
@@ -223,14 +265,17 @@ class TemplateValidator:
         """
         start_time = time.perf_counter()
 
+        # Check marker (first - foundational validation)
+        marker_errors = self.marker_validator.validate(prompt)
+
         # Check sections
         section_errors = self.section_checker.validate(prompt)
 
         # Check phases
         phase_errors = self.phase_validator.validate(prompt)
 
-        # Combine all errors
-        all_errors = section_errors + phase_errors
+        # Combine all errors (marker first, then sections, then phases)
+        all_errors = marker_errors + section_errors + phase_errors
 
         # Generate recovery guidance for errors
         recovery_guidance = None

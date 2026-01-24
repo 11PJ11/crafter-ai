@@ -11,8 +11,6 @@ Test Coverage:
 - Case sensitivity enforcement
 """
 
-import pytest
-
 
 class TestDESMarkerValidator:
     """Unit tests for DESMarkerValidator class."""
@@ -212,7 +210,9 @@ class TestDESMarkerValidator:
         validator = DESMarkerValidator()
         errors = validator.validate(prompt_with_whitespace)
 
-        assert errors == [], f"Expected no errors for marker with extra whitespace, got: {errors}"
+        assert (
+            errors == []
+        ), f"Expected no errors for marker with extra whitespace, got: {errors}"
 
     def test_multiple_markers_first_validation(self):
         """
@@ -238,4 +238,6 @@ class TestDESMarkerValidator:
         # so this test validates current behavior. If multiple markers should be
         # forbidden, this test will need adjustment based on implementation choice.
         # For now, if value is 'required' and appears anywhere, that's sufficient.
-        assert errors == [], f"Multiple valid markers should be acceptable, got: {errors}"
+        assert (
+            errors == []
+        ), f"Multiple valid markers should be acceptable, got: {errors}"

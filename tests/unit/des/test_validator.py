@@ -5,7 +5,6 @@ Tests the MandatorySectionChecker and TDDPhaseValidator functionality,
 including recovery guidance generation for validation errors.
 """
 
-import pytest
 from des.validator import MandatorySectionChecker, ValidationResult, TemplateValidator
 
 
@@ -39,7 +38,10 @@ class TestMandatorySectionChecker:
         errors = checker.validate(prompt_without_timeout)
 
         assert len(errors) > 0
-        assert any("MISSING: Mandatory section 'TIMEOUT_INSTRUCTION' not found" in error for error in errors)
+        assert any(
+            "MISSING: Mandatory section 'TIMEOUT_INSTRUCTION' not found" in error
+            for error in errors
+        )
 
     def test_checker_validates_all_sections_present(self):
         """
@@ -106,7 +108,7 @@ class TestValidationResultWithRecoveryGuidance:
             errors=["MISSING: Mandatory section 'TIMEOUT_INSTRUCTION' not found"],
             task_invocation_allowed=False,
             duration_ms=10.5,
-            recovery_guidance="Add TIMEOUT_INSTRUCTION section with turn budget guidance"
+            recovery_guidance="Add TIMEOUT_INSTRUCTION section with turn budget guidance",
         )
 
         assert hasattr(result, "recovery_guidance")
@@ -124,7 +126,7 @@ class TestValidationResultWithRecoveryGuidance:
             errors=["MISSING: Mandatory section 'TIMEOUT_INSTRUCTION' not found"],
             task_invocation_allowed=False,
             duration_ms=10.5,
-            recovery_guidance=guidance
+            recovery_guidance=guidance,
         )
 
         assert "TIMEOUT_INSTRUCTION" in result.recovery_guidance
@@ -208,7 +210,7 @@ class TestTemplateValidatorRecoveryGuidance:
             "QUALITY_GATES",
             "OUTCOME_RECORDING",
             "BOUNDARY_RULES",
-            "TIMEOUT_INSTRUCTION"
+            "TIMEOUT_INSTRUCTION",
         ]
 
         complete_prompt = """
@@ -233,12 +235,14 @@ class TestTemplateValidatorRecoveryGuidance:
         # Test each section individually
         for section in mandatory_sections:
             # Create prompt missing this section
-            prompt_missing_section = "\n".join([
-                line for line in complete_prompt.split("\n")
-                if f"# {section}" not in line and not (
-                    section == "DES_METADATA" and "Step:" in line
-                )
-            ])
+            prompt_missing_section = "\n".join(
+                [
+                    line
+                    for line in complete_prompt.split("\n")
+                    if f"# {section}" not in line
+                    and not (section == "DES_METADATA" and "Step:" in line)
+                ]
+            )
 
             result = validator.validate_prompt(prompt_missing_section)
 
@@ -253,6 +257,7 @@ class TestTemplateValidatorRecoveryGuidance:
         """
         validator = TemplateValidator()
         complete_prompt = """
+        <!-- DES-VALIDATION: required -->
         # DES_METADATA
         Step: 01-01.json
         # AGENT_IDENTITY
