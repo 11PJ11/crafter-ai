@@ -610,6 +610,57 @@ Finalize a project when:
 - Production deployment complete
 - No pending tasks remain
 - Team consensus on completion
+- **Functional integration verified** (see gate below)
+
+### MANDATORY: Functional Integration Gate (CM-E)
+
+**BLOCKING REQUIREMENT**: Before marking any feature complete, verify functional integration exists.
+
+**Why This Gate Exists**: A feature with 100% test coverage but 0% wiring tests is NOT COMPLETE. High test metrics can mask non-functional features if tests are written at the wrong boundary (internal components instead of driving ports).
+
+**Validation Steps**:
+
+1. **Check acceptance test imports**:
+   ```bash
+   # At least one acceptance test must import the entry point module
+   grep -l "from.*orchestrator\|from.*entry_point\|from.*api" tests/acceptance/test_*.py
+   ```
+   - If no matches: BLOCK finalization
+   - Report: "Feature has no wiring test - cannot verify it works end-to-end"
+
+2. **Verify at least one acceptance test**:
+   - Imports the user-facing entry point (driving port)
+   - Invokes feature through that entry point
+   - Verifies observable system behavior (not just internal state)
+
+3. **Check integration is wired**:
+   ```bash
+   # The implemented component must be called from entry point
+   grep -r "ComponentName\|component_function" src/entry_point/
+   ```
+   - If no matches: Component exists but is never called
+
+**Gate Failure Response**:
+- Do NOT proceed with finalization
+- Report specific failure reason
+- Require integration step to be added before completion
+
+**Example Failure Case**:
+```
+FUNCTIONAL INTEGRATION GATE: FAILED
+
+Reason: Acceptance tests import internal component directly
+Evidence:
+  - tests/acceptance/test_us002.py imports "des.validator" (internal)
+  - tests/acceptance/test_us002.py does NOT import "des.orchestrator" (entry point)
+
+Resolution Required:
+  1. Add integration step to wire component into entry point
+  2. Update at least one acceptance test to invoke through entry point
+  3. Re-run finalization after integration complete
+```
+
+**This gate prevents "Testing Theatre"** - high metrics providing false confidence while features remain non-functional.
 
 ### Recovery Options
 

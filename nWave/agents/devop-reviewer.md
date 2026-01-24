@@ -652,6 +652,48 @@ quality_framework:
       - "Security and compliance requirement satisfaction"
       - "Performance and scalability validation"
 
+  # CM-E: FUNCTIONAL INTEGRATION GATE (MANDATORY)
+  functional_integration_validation:
+    description: "Verify feature is wired into system entry point - prevents Testing Theatre"
+    blocking: true
+    rationale: "A feature with 100% test coverage but 0% wiring tests is NOT COMPLETE"
+
+    validation_criteria:
+      wiring_test_exists:
+        check: "At least one acceptance test invokes feature through driving port"
+        command: "grep -l 'entry_point\\|orchestrator\\|api_client' tests/acceptance/test_*.py"
+        failure: "No acceptance test exercises user-facing entry point"
+
+      component_integrated:
+        check: "Implemented component is called from entry point module"
+        command: "grep -r 'ComponentClass\\|component_function' src/entry_point/"
+        failure: "Component exists but is never invoked from system entry point"
+
+      boundary_correct:
+        check: "Acceptance tests do NOT import internal components directly"
+        antipattern: "from internal.component import Class"
+        correct_pattern: "from entry_point import Client"
+        failure: "Tests written at wrong boundary - testing component, not system"
+
+    gate_failure_response:
+      - "BLOCK finalization - do not mark feature complete"
+      - "Report specific integration gap with evidence"
+      - "Require integration step before completion"
+      - "Document gap in review findings"
+
+    example_review_finding: |
+      FUNCTIONAL INTEGRATION GATE: FAILED
+
+      Findings:
+      1. Acceptance tests import internal component (des.validator)
+      2. Entry point (des.orchestrator) has no reference to validator
+      3. Feature cannot be invoked by users - only exercised in tests
+
+      Required Actions:
+      - Add integration to wire validator into orchestrator
+      - Update acceptance test to invoke through orchestrator
+      - Re-submit for finalization review
+
 # CONTINUOUS IMPROVEMENT AND LESSONS LEARNED
 
 improvement_framework:

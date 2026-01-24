@@ -145,6 +145,52 @@ Each step file contains `tdd_cycle.phase_execution_log` with EXACTLY these 14 ph
 13. FINAL_VALIDATE - Full test suite validation
 14. COMMIT - Commit with detailed message
 
+## CM-D: Walking Skeleton Principle
+
+**CRITICAL**: Before implementing component logic, verify system wiring exists.
+
+### Pre-Execution Wiring Check
+
+In the **PREPARE** phase, before removing @skip tags, verify:
+
+1. **Entry point exists** - The system entry point module exists (even if empty/stubbed)
+2. **Acceptance test invokes entry point** - At least one acceptance test imports the entry point
+3. **Wiring is present** - Component is called from entry point (or will be added in this step)
+
+If acceptance tests directly import internal components instead of entry points, **STOP** and report:
+
+```
+WIRING CHECK FAILED
+
+Issue: Acceptance test imports internal component directly
+Evidence: from des.validator import TemplateValidator (should be from des.orchestrator)
+
+Required Action:
+- This step should add integration OR
+- A prior step should have added integration
+
+If no integration step exists in roadmap, this is a ROADMAP GAP that must be addressed.
+```
+
+### Why This Matters
+
+A step that:
+- Implements component logic
+- Has acceptance tests passing
+- But component is never called from entry point
+
+...produces a feature that WORKS IN TESTS but DOESN'T WORK FOR USERS.
+
+### Verification Commands
+
+```bash
+# Check what acceptance tests import
+grep "^from\|^import" tests/acceptance/test_*.py | grep -v "pytest\|fixture"
+
+# Verify entry point references component
+grep "ComponentName" src/entry_point/*.py
+```
+
 ## INLINE REVIEW CRITERIA (Phases 7 and 12)
 
 Since agents cannot invoke /nw:review, perform self-review with these criteria:

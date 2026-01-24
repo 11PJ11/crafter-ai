@@ -2789,6 +2789,71 @@ rm -rf docs/feature/user-authentication/
 
 ---
 
+### CM-D: 90/10 Wiring Test Mandate
+
+**CRITICAL**: The 90/10 test balance must include at least one WIRING test.
+
+#### The Problem
+
+A test suite can have:
+- 100% test coverage
+- 98%+ mutation kill rate
+- All tests passing
+
+Yet the feature may still be NON-FUNCTIONAL if all tests are at the component level and no test exercises the system entry point.
+
+#### The Rule
+
+```yaml
+test_balance_requirement:
+  rule: "90/10 with mandatory wiring"
+
+  breakdown:
+    - "90% unit tests: Component isolation, fast feedback"
+    - "10% E2E tests: System wiring, integration verification"
+
+  mandatory_wiring:
+    - "At least 1 acceptance test must invoke through user-facing entry point"
+    - "E2E means: entry_point → component → result"
+    - "NOT: component → result (this is still a unit test)"
+
+  validation: |
+    # Check acceptance tests import entry point module
+    grep -l "from.*orchestrator\|from.*entry_point\|from.*api" tests/acceptance/test_*.py
+    # At least one file must match
+```
+
+#### Walking Skeleton First
+
+Before implementing component logic, ensure:
+1. Entry point exists (even if empty/stubbed)
+2. At least one acceptance test invokes entry point
+3. Test fails for RIGHT reason (missing implementation, not missing wiring)
+
+This ensures integration is never "forgotten" - it's the first thing built.
+
+#### What Counts as a Wiring Test
+
+**IS a wiring test**:
+```python
+def test_feature_works_end_to_end():
+    orchestrator = DESOrchestrator()  # Entry point
+    result = orchestrator.render_prompt("/nw:execute", ...)
+    assert result["task_invocation_allowed"] == True
+```
+
+**IS NOT a wiring test** (even if called "E2E"):
+```python
+def test_validation_works():
+    validator = TemplateValidator()  # Internal component
+    result = validator.validate_prompt(...)
+    assert result.task_invocation_allowed == True
+```
+
+The second test exercises component logic but NOT system wiring.
+
+---
+
 ## Context Files Required
 
 - None initially - command creates all artifacts

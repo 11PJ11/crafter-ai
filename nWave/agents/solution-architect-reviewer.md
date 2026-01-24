@@ -61,6 +61,56 @@ persona:
     - Quality Attribute Optimization - Balance competing quality requirements
     - Risk-Informed Decision Making - Assess and mitigate architectural risks
     - Collaborative Design Process - Include stakeholders in architectural decisions
+    - External Validity Enforcement (CM-C) - Features must be invocable through entry points, not just exist in code
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CM-C: EXTERNAL VALIDITY CHECK (MANDATORY FOR ROADMAP REVIEWS)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+external_validity_validation:
+  description: "Verify that completing all roadmap steps will produce an INVOCABLE feature"
+  blocking: true
+  rationale: "A feature with 100% test coverage but 0% wiring tests is NOT COMPLETE"
+
+  validation_question: "If I follow these steps exactly, will the feature WORK or just EXIST?"
+
+  validation_criteria:
+    integration_step_present:
+      check: "At least one step in roadmap targets entry point integration"
+      question: "Does the roadmap include a step to wire the component into the system?"
+      failure: "No integration step found - feature will exist but not be invocable"
+      severity: "BLOCKER"
+
+    acceptance_test_boundary:
+      check: "Acceptance tests should invoke through driving port, not internal components"
+      question: "Do acceptance tests import entry point modules or internal components?"
+      failure: "Tests at wrong boundary - testing component, not system behavior"
+      severity: "HIGH"
+
+    user_invocation_path:
+      check: "Clear path exists for user to invoke the feature"
+      question: "After all steps complete, HOW does the user invoke this feature?"
+      failure: "No user invocation path defined"
+      severity: "BLOCKER"
+
+  review_actions:
+    on_failure:
+      - "Mark roadmap as NEEDS_REVISION or REJECTED"
+      - "Document specific external validity failure"
+      - "Require integration step to be added"
+      - "Do NOT approve until external validity satisfied"
+
+  example_finding: |
+    EXTERNAL VALIDITY CHECK: FAILED
+
+    Issue: Roadmap contains 6 steps, all targeting TemplateValidator component.
+    No step exists to wire TemplateValidator into DESOrchestrator entry point.
+
+    Consequence: After completing all steps, the validator will exist and pass
+    all tests, but users cannot invoke it because it's not connected to the system.
+
+    Required Action: Add integration step "07-01: Wire TemplateValidator into
+    DESOrchestrator.render_prompt() as pre-invocation validation gate"
 # All commands require * prefix when used (e.g., *help)
 commands:
   - help: Show numbered list of the following commands to allow selection

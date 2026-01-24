@@ -1165,6 +1165,104 @@ The executing agent can only UPDATE existing phase entries, not create new ones.
 4. **Mock Boundaries from Architecture**: Analyze docs/architecture to populate allowed_ports
 5. **TDD Phase Tracking**: Initialize all 14 phases in `tdd_cycle.phase_execution_log` with status `"NOT_EXECUTED"`
 6. **Step Type Handling**: Process `step_type` from roadmap (atdd, research, infrastructure)
+7. **Integration Step Required (CM-B)**: At least one step must wire component into entry point
+
+---
+
+## CM-B: Integration Step Requirement (MANDATORY)
+
+**CRITICAL**: Every feature MUST have at least one step that wires the component into the system entry point.
+
+### The Problem This Solves
+
+A feature can have:
+- 6 steps, all implementing component logic
+- 6 acceptance tests, all passing
+- 100% coverage
+
+Yet remain NON-FUNCTIONAL because no step integrates the component into the system entry point.
+
+### Validation Rule
+
+```yaml
+integration_step_requirement:
+  rule: "At least one step must have step_type: integration or target entry point"
+
+  step_types:
+    feature:        # Normal feature step with acceptance test at driving port
+    integration:    # REQUIRED: Wires component into system entry point
+    research:       # Research/investigation (may lack acceptance test)
+    infrastructure: # DB migrations, env config (may lack acceptance test)
+
+  validation: |
+    count = 0
+    for step in roadmap.steps:
+      if step.step_type == "integration" OR step.targets_entry_point:
+        count += 1
+
+    if count == 0:
+      REJECT: "No integration step found - feature will not be wired into system"
+```
+
+### What Makes a Step an Integration Step
+
+A step qualifies as `integration` if it:
+1. Modifies the system entry point to call the new component
+2. Wires component into existing workflow
+3. Has acceptance test that invokes through entry point
+
+**Example: Integration Step in Roadmap**
+
+```yaml
+steps:
+  - step_id: "07-01"
+    name: "Wire TemplateValidator into DESOrchestrator"
+    step_type: "integration"  # <-- CRITICAL marker
+    description: |
+      Integrate TemplateValidator into DESOrchestrator.render_prompt()
+      as a pre-invocation validation gate.
+    acceptance_criteria:
+      - "DESOrchestrator calls TemplateValidator.validate_prompt()"
+      - "Invalid prompts are rejected before Task invocation"
+      - "Validation errors are surfaced to user"
+    suggested_scenario:
+      test_file: "tests/acceptance/test_us002_template_validation.py"
+      scenario_name: "test_orchestrator_rejects_invalid_prompt"
+```
+
+### Split Validation
+
+When generating step files, verify:
+
+```bash
+# Check if any step has integration type or targets entry point
+grep -l "step_type.*integration\|entry_point\|orchestrator" docs/feature/{project-id}/steps/*.json
+
+# If no results: WARN user about missing integration step
+```
+
+### Missing Integration Step Response
+
+If no integration step found:
+
+```
+⚠️ WARNING: No integration step detected in roadmap
+
+The roadmap has {N} steps but none wire the component into the system entry point.
+
+After completing all steps:
+- Component will exist and pass all tests
+- But users cannot invoke it (not connected to system)
+
+Recommended Action:
+1. Add an integration step to roadmap before splitting
+2. Or document that integration is handled externally
+
+Example integration step:
+  - step_id: "{N+1}-01"
+    name: "Wire {component} into {entry_point}"
+    step_type: "integration"
+```
 
 ### Step Type Processing (COME - How to Execute)
 

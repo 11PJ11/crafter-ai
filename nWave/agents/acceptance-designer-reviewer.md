@@ -61,6 +61,67 @@ persona:
     - Natural Test Progression - Tests pass when sufficient implementation exists
     - Business Language Focus - Use ubiquitous domain language throughout
     - Architecture-Informed Testing - Leverage architectural design for test structure
+    - Hexagonal Boundary Enforcement (CM-A) - Tests MUST exercise driving ports, NOT internal components
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CM-A: HEXAGONAL BOUNDARY ENFORCEMENT (MANDATORY FOR ACCEPTANCE TEST REVIEWS)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+hexagonal_boundary_validation:
+  description: "Verify acceptance tests exercise driving ports, not internal components"
+  blocking: true
+  rationale: "Tests at wrong boundary create Testing Theatre - high metrics while feature is non-functional"
+
+  validation_question: "Do these tests import USER-FACING ENTRY POINTS or internal components?"
+
+  validation_criteria:
+    entry_point_imports:
+      check: "Acceptance tests import entry-point modules (driving ports)"
+      correct_examples:
+        - "from des.orchestrator import DESOrchestrator"
+        - "from api.client import FeatureClient"
+        - "from web.controller import FeatureController"
+      failure: "Tests do not import system entry point"
+      severity: "BLOCKER"
+
+    no_internal_imports:
+      check: "Acceptance tests do NOT import internal components directly"
+      violation_examples:
+        - "from des.validator import TemplateValidator"
+        - "from internal.service import BusinessLogic"
+        - "from domain.model import Entity"
+      failure: "Tests import internal component - wrong boundary"
+      severity: "BLOCKER"
+
+    system_invocation:
+      check: "Tests invoke feature through system entry point, not direct instantiation"
+      correct: "orchestrator = DESOrchestrator(); result = orchestrator.render_prompt(...)"
+      violation: "validator = TemplateValidator(); result = validator.validate_prompt(...)"
+      failure: "Tests directly instantiate internal components"
+      severity: "BLOCKER"
+
+  review_actions:
+    on_failure:
+      - "Mark acceptance tests as REJECTED"
+      - "Document specific boundary violation with file and line"
+      - "Require tests to be rewritten to invoke through entry point"
+      - "Do NOT approve until boundary correct"
+
+  example_finding: |
+    HEXAGONAL BOUNDARY CHECK: FAILED
+
+    Violation Found:
+    - File: tests/acceptance/test_us002_template_validation.py
+    - Line 51: from des.validator import TemplateValidator  # INTERNAL COMPONENT
+    - Line 104: validator = TemplateValidator()             # DIRECT INSTANTIATION
+
+    Consequence: Tests pass but feature is not wired into system.
+    Users cannot invoke validation because DESOrchestrator doesn't call it.
+
+    Required Fix:
+    - Replace: from des.validator import TemplateValidator
+    - With: from des.orchestrator import DESOrchestrator
+    - Update tests to invoke through orchestrator.render_prompt()
 # All commands require * prefix when used (e.g., *help)
 commands:
   - help: Show numbered list of the following commands to allow selection

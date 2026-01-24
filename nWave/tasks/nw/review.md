@@ -527,6 +527,43 @@ reviews:
 3. Include positive feedback where appropriate
 4. Focus on preventing downstream issues
 5. Consider domain-specific best practices
+6. **Apply External Validity Check (CM-C)** - see below
+
+**CM-C: External Validity Check (MANDATORY)**
+
+For roadmap and step reviews, ask yourself:
+
+> "If I follow these steps exactly, will the feature WORK or just EXIST?"
+
+A feature that:
+- Has all tests passing
+- Has 100% coverage
+- Has high mutation score
+- But cannot be invoked by users
+
+...is NOT COMPLETE. It fails external validity.
+
+**External Validity Criteria**:
+1. **At least one step targets entry point integration** - Feature must be wired into system
+2. **Tests verify observable system behavior** - Not just internal state assertions
+3. **User can invoke feature after completion** - Entry point exists and calls the component
+
+**Review Questions to Ask**:
+- Does the roadmap include an integration step?
+- Do acceptance tests import entry point modules (not internal components)?
+- After all steps complete, how does the user invoke this feature?
+- Is there at least one wiring test proving end-to-end path works?
+
+**External Validity Failure Response**:
+```yaml
+external_validity:
+  status: FAILED
+  reason: "No integration step - feature will exist but not be invocable"
+  required_action: "Add step to wire component into entry point"
+  blocking: true
+```
+
+REJECT any artifact that would produce a non-invocable feature.
 
 **Severity Definitions**:
 - **HIGH**: Blocks progress or creates significant risk
@@ -534,9 +571,9 @@ reviews:
 - **LOW**: Nice to have improvement
 
 **Review Outcomes**:
-- **APPROVED**: Ready to proceed
+- **APPROVED**: Ready to proceed (including external validity passed)
 - **NEEDS_REVISION**: Must address HIGH severity issues
-- **REJECTED**: Fundamental flaws requiring restart
+- **REJECTED**: Fundamental flaws requiring restart (including external validity failure)
 
 ### Expert Agent Selection
 
