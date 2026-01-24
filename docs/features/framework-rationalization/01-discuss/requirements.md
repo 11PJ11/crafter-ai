@@ -33,7 +33,8 @@ tools/platforms/
 ```
 
 **Key files to modify:**
-- [build_ide_bundle.py](tools/build_ide_bundle.py) - Always build BOTH platforms
+- [tools/core/build_ide_bundle.py](tools/core/build_ide_bundle.py) - Internal builder that orchestrates build process
+- [tools/build.py](tools/build.py) - CLI entry point that delegates to the builder
 - [agent_processor.py](tools/processors/agent_processor.py) - Use platform formatter for frontmatter
 - [command_processor.py](tools/processors/command_processor.py) - Use platform formatter for commands
 
@@ -372,8 +373,7 @@ jobs:
           python-version: '3.11'
       - name: Build all platforms
         run: |
-          cd tools
-          python build_ide_bundle.py --clean
+          python build.py --clean
       - name: Test installation (Unix)
         if: runner.os != 'Windows'
         run: ./install.sh --platform claude-code --dry-run
@@ -401,9 +401,8 @@ jobs:
 
       - name: Build all platforms
         run: |
-          cd tools
-          python build_ide_bundle.py --clean
-          python package_release.py
+          python build.py --clean
+          python tools/package_release.py
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -579,7 +578,8 @@ Skills feature will be planned and implemented in a separate iteration after cor
 
 | File | Changes |
 |------|---------|
-| `tools/build_ide_bundle.py` | Always build BOTH platforms, new output structure |
+| `tools/build.py` | CLI entry point, no changes needed (delegates to builder) |
+| `tools/core/build_ide_bundle.py` | Always build BOTH platforms, new output structure |
 | `tools/processors/agent_processor.py` | Platform-aware frontmatter generation |
 | `tools/processors/command_processor.py` | Platform-aware command generation |
 | `tools/utils/dependency_resolver.py` | Add BUILD:INCLUDE support |

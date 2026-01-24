@@ -1,4 +1,4 @@
-<!-- version: 1.4.0 -->
+<!-- version: 1.4.1 -->
 
 # nWave Installation Scripts
 
@@ -227,7 +227,7 @@ python scripts/install/enhanced_backup_system.py list
 
 ### Build Fails
 
-- Check `tools/build_ide_bundle.py` exists
+- Check `tools/build.py` exists
 - Verify Python 3.7+ is installed
 - Check log files for detailed errors
 
