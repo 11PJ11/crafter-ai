@@ -924,6 +924,31 @@ DELIVERABLES:
 
 **Objective**: Decompose roadmap into atomic, executable steps.
 
+**⚠️ CRITICAL CONSTRAINT: Step-to-Scenario Mapping (Outside-In TDD)**
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│  1 ACCEPTANCE TEST SCENARIO = 1 STEP FILE = 1 COMPLETE TDD CYCLE  │
+└────────────────────────────────────────────────────────────────────┘
+
+MANDATORY VALIDATION:
+  1. Count acceptance test scenarios: grep 'def test_' tests/acceptance/test_*.py
+  2. Count roadmap steps: sum of all steps in roadmap.yaml
+  3. ENFORCE: num_step_files == num_acceptance_scenarios (with flexibility below)
+
+FLEXIBILITY CLAUSE:
+  - Infrastructure steps (DB migrations, env config) may not have scenarios
+  - Mark such steps with: "acceptance_test_scenario": "N/A - infrastructure"
+  - The principle applies to FEATURE steps, not infrastructure
+
+WHY THIS MATTERS:
+  - Each step must turn exactly ONE scenario from RED → GREEN
+  - Prevents "architectural" steps that make multiple tests pass at once
+  - Ensures clear traceability: scenario → step → commit
+
+See: docs/principles/outside-in-tdd-step-mapping.md
+```
+
 **Actions**:
 
 1. **Check for existing step files**:
@@ -985,11 +1010,19 @@ REQUIRED: Return control to orchestrator after completion
 
 PROJECT: {project_id}
 
+STEP-TO-SCENARIO MAPPING REQUIREMENT:
+Before generating steps, you MUST:
+1. Read acceptance tests: tests/acceptance/test_*.py
+2. Count scenarios: grep 'def test_' (N scenarios)
+3. Each step MUST reference ONE specific scenario it will make pass
+4. Exception: Infrastructure steps may use "N/A - infrastructure"
+
 YOUR TASK: Transform each roadmap step into a complete task JSON file that:
 1. Includes the 14-phase TDD cycle structure
 2. Contains self-contained context
 3. Has clear acceptance criteria
 4. Maps all dependencies
+5. References the specific acceptance test scenario it implements
 
 MANDATORY 14 TDD PHASES (include in each step file):
 1. PREPARE - Remove @skip tags, verify scenario setup
