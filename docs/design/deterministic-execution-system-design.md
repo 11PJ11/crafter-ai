@@ -257,6 +257,164 @@ The first line (type="user") contains the original prompt, which can be searched
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
+### DES Wiring and Integration Architecture
+
+The following diagram shows how DES components integrate with Claude Code infrastructure and nWave commands:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                         CLAUDE CODE INFRASTRUCTURE                              │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  ┌──────────────┐         ┌──────────────┐         ┌──────────────┐           │
+│  │   Session    │────────►│  Task Tool   │────────►│  Sub-Agent   │           │
+│  │  Orchestrator│         │  Invocation  │         │   Execution  │           │
+│  └──────────────┘         └──────┬───────┘         └──────┬───────┘           │
+│         │                         │                         │                   │
+│         │                         │                         │                   │
+│         ▼                         ▼                         ▼                   │
+│  ┌─────────────────────────────────────────────────────────────────────────┐   │
+│  │                      DES INTEGRATION POINTS                             │   │
+│  ├─────────────────────────────────────────────────────────────────────────┤   │
+│  │                                                                          │   │
+│  │  [IP-1] Command Execution                                               │   │
+│  │  ┌──────────────────────────────────────────────────────────────────┐  │   │
+│  │  │ /nw:execute @agent "step.json"                                   │  │   │
+│  │  │    ↓                                                              │  │   │
+│  │  │ Load Template: execute-step.template.md                          │  │   │
+│  │  │    ↓                                                              │  │   │
+│  │  │ Inject: DES-ORIGIN, DES-STEP-FILE, DES-VALIDATION markers        │  │   │
+│  │  │    ↓                                                              │  │   │
+│  │  │ GATE 1: validate_before_task_invocation()                        │  │   │
+│  │  │    ├─► Check: Mandatory sections present?                        │  │   │
+│  │  │    ├─► Check: 14 TDD phases listed?                              │  │   │
+│  │  │    ├─► Check: TIMEOUT_INSTRUCTION exists?                        │  │   │
+│  │  │    └─► Check: Step file valid JSON?                              │  │   │
+│  │  │         │                                                         │  │   │
+│  │  │         ├─ VALID ──► Invoke Task(prompt=...) ──────┐            │  │   │
+│  │  │         │                                            │            │  │   │
+│  │  │         └─ INVALID ─► BLOCK + Error Report          │            │  │   │
+│  │  └─────────────────────────────────────────────────────┼────────────┘  │   │
+│  │                                                         │               │   │
+│  │  [IP-2] Turn Budget Monitoring (Prompt-Based)          │               │   │
+│  │  ┌──────────────────────────────────────────────────────┼───────────┐  │   │
+│  │  │ Agent Self-Monitors Turn Count:                      │           │  │   │
+│  │  │   Turn 30: ⚠️ 60% warning                            │           │  │   │
+│  │  │   Turn 40: ⚠️ 80% warning                            │           │  │   │
+│  │  │   Turn 48: 🚨 95% critical warning                   │           │  │   │
+│  │  │                                                       │           │  │   │
+│  │  │ Agent Can Request Extension:                         │           │  │   │
+│  │  │   Update step file with extension_request object     │           │  │   │
+│  │  │   Continue with extended budget                      │           │  │   │
+│  │  └───────────────────────────────────────────────────────┘           │  │   │
+│  │                                                         │               │   │
+│  │  [IP-3] Phase State Tracking                           │               │   │
+│  │  ┌──────────────────────────────────────────────────────┼───────────┐  │   │
+│  │  │ Agent Updates: docs/feature/X/steps/NN-MM.json      │           │  │   │
+│  │  │                                                       │           │  │   │
+│  │  │ phase_execution_log[N]:                              │           │  │   │
+│  │  │   status: IN_PROGRESS → EXECUTED/SKIPPED/FAILED     │           │  │   │
+│  │  │   started_at, ended_at, duration_minutes             │           │  │   │
+│  │  │   outcome, outcome_details                           │           │  │   │
+│  │  │   artifacts_created, test_results                    │           │  │   │
+│  │  │                                                       │           │  │   │
+│  │  │ FSM enforces valid transitions per step-execution-fsm.yaml       │  │   │
+│  │  └───────────────────────────────────────────────────────┘           │  │   │
+│  │                                                         │               │   │
+│  └─────────────────────────────────────────────────────────┼───────────────┘   │
+│                                                            │                   │
+│                                                            ▼                   │
+│  ┌─────────────────────────────────────────────────────────────────────────┐   │
+│  │                    SUB-AGENT COMPLETION HANDLING                        │   │
+│  ├─────────────────────────────────────────────────────────────────────────┤   │
+│  │                                                                          │   │
+│  │  [IP-4] SubagentStop Hook Trigger                                       │   │
+│  │  ┌──────────────────────────────────────────────────────────────────┐  │   │
+│  │  │ Claude Code triggers: SubagentStop hook                         │  │   │
+│  │  │    ↓                                                             │  │   │
+│  │  │ Hook receives stdin JSON:                                        │  │   │
+│  │  │   {                                                              │  │   │
+│  │  │     "session_id": "...",                                         │  │   │
+│  │  │     "agent_id": "...",                                           │  │   │
+│  │  │     "agent_transcript_path": "/path/to/agent.jsonl"             │  │   │
+│  │  │   }                                                              │  │   │
+│  │  │    ↓                                                             │  │   │
+│  │  │ GATE 2: post_subagent_validation.py                             │  │   │
+│  │  │    ├─► Extract step file path from transcript                   │  │   │
+│  │  │    ├─► Load step file JSON                                      │  │   │
+│  │  │    ├─► Check: Any phases IN_PROGRESS? (abandoned)               │  │   │
+│  │  │    ├─► Check: EXECUTED phases have outcome?                     │  │   │
+│  │  │    ├─► Check: SKIPPED phases have valid blocked_by?             │  │   │
+│  │  │    └─► Check: Task state consistent with phases?                │  │   │
+│  │  │         │                                                        │  │   │
+│  │  │         ├─ VALID ──► Log SUCCESS to audit trail                 │  │   │
+│  │  │         └─ ERRORS ─► Log ERRORS + exit(1) (block workflow)      │  │   │
+│  │  └──────────────────────────────────────────────────────────────────┘  │   │
+│  │                                                                          │   │
+│  └─────────────────────────────────────────────────────────────────────────┘   │
+│                                                            │                   │
+│                                                            ▼                   │
+│  ┌─────────────────────────────────────────────────────────────────────────┐   │
+│  │                       COMMIT-TIME VALIDATION                            │   │
+│  ├─────────────────────────────────────────────────────────────────────────┤   │
+│  │                                                                          │   │
+│  │  [IP-5] Pre-Commit Hook                                                 │   │
+│  │  ┌──────────────────────────────────────────────────────────────────┐  │   │
+│  │  │ Git triggers: pre-commit hook                                    │  │   │
+│  │  │    ↓                                                             │  │   │
+│  │  │ GATE 3: pre_commit_tdd_phases.py                                │  │   │
+│  │  │    ├─► Scan: All step files in commit                           │  │   │
+│  │  │    ├─► Check: 14 phases present?                                │  │   │
+│  │  │    ├─► Check: No phases IN_PROGRESS?                            │  │   │
+│  │  │    ├─► Check: No phases NOT_EXECUTED (unless SKIPPED valid)?    │  │   │
+│  │  │    ├─► Check: No DEFERRED blocks?                               │  │   │
+│  │  │    └─► Cross-check: audit-YYYY-MM-DD.log for SubagentStop errors│  │   │
+│  │  │         │                                                        │  │   │
+│  │  │         ├─ VALID ──► Allow commit                               │  │   │
+│  │  │         └─ INVALID ─► BLOCK commit + detailed error report      │  │   │
+│  │  └──────────────────────────────────────────────────────────────────┘  │   │
+│  │                                                                          │   │
+│  └─────────────────────────────────────────────────────────────────────────┘   │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐   │
+│  │                         AUDIT TRAIL LOGGING                             │   │
+│  ├─────────────────────────────────────────────────────────────────────────┤   │
+│  │                                                                          │   │
+│  │  [IP-6] Immutable Event Log                                             │   │
+│  │  ┌──────────────────────────────────────────────────────────────────┐  │   │
+│  │  │ All integration points write to:                                │  │   │
+│  │  │   docs/feature/X/steps/audit-YYYY-MM-DD.log                     │  │   │
+│  │  │                                                                  │  │   │
+│  │  │ Event Types:                                                    │  │   │
+│  │  │   TASK_INVOCATION_VALIDATED [IP-1]                             │  │   │
+│  │  │   TASK_INVOCATION_REJECTED [IP-1]                              │  │   │
+│  │  │   PHASE_STARTED [IP-3]                                          │  │   │
+│  │  │   PHASE_COMPLETED [IP-3]                                        │  │   │
+│  │  │   EXTENSION_REQUESTED [IP-2]                                    │  │   │
+│  │  │   SUBAGENT_STOP_VALIDATION [IP-4]                              │  │   │
+│  │  │   COMMIT_VALIDATION_PASSED [IP-5]                              │  │   │
+│  │  │   COMMIT_VALIDATION_FAILED [IP-5]                              │  │   │
+│  │  │                                                                  │  │   │
+│  │  │ Format: JSONL (one event per line)                             │  │   │
+│  │  │ Rotation: Daily (prevents unbounded growth)                    │  │   │
+│  │  └──────────────────────────────────────────────────────────────────┘  │   │
+│  │                                                                          │   │
+│  └─────────────────────────────────────────────────────────────────────────┘   │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+Integration Point Summary:
+
+| ID | Integration Point | Component | Timing | Action |
+|----|-------------------|-----------|--------|--------|
+| IP-1 | Pre-Invocation Validation | validate_before_task_invocation() | Before Task() | BLOCKS if invalid |
+| IP-2 | Turn Budget Monitoring | Agent self-regulation | During execution | Warns at thresholds |
+| IP-3 | Phase State Tracking | Agent updates step file | During execution | FSM enforces transitions |
+| IP-4 | SubagentStop Hook | post_subagent_validation.py | After agent completes | BLOCKS workflow on errors |
+| IP-5 | Pre-Commit Hook | pre_commit_tdd_phases.py | Before git commit | BLOCKS commit if invalid |
+| IP-6 | Audit Trail | audit.py | All events | Immutable event log |
+```
+
 ---
 
 ## Layer 1: Command-Origin Filtering
@@ -502,34 +660,113 @@ def validate_before_task_invocation(prompt: str, step_file_path: str = None) -> 
 
 ## Layer 3: Execution Lifecycle Management
 
-### Timeout Strategy
+### 4.3 Turn Limit Enforcement and Timeout Strategy
 
-Since Claude Code Task tool has no built-in timeout and **max_turns is NOT available** (CLI-only parameter), we rely on prompt-based discipline and external monitoring.
+Since Claude Code Task tool has no built-in timeout and **max_turns is NOT available** (CLI-only parameter), we rely on prompt-based discipline with proactive warning thresholds and extension request capabilities.
 
 > ⚠️ **CRITICAL CORRECTION:** The original design assumed `max_turns` was available for Task tool. Empirical testing confirmed this is FALSE - max_turns is a CLI flag only, not a Task tool parameter.
 
+#### Turn Discipline Framework
+
+The DES implements a three-tier turn discipline framework:
+
+1. **Base Budget**: 50 turns per step execution (standard allocation)
+2. **Warning Thresholds**: Progressive warnings at 60%, 80%, and 95% of budget
+3. **Extension Protocol**: Explicit mechanism for requesting additional turns when needed
+
 #### Mechanism 1: Prompt-Based Turn Awareness (PRIMARY)
 
-Since we cannot enforce turn limits programmatically, agents must self-regulate based on explicit instructions.
+Since we cannot enforce turn limits programmatically, agents must self-regulate based on explicit instructions with progressive warnings.
 
 Include in every DES-validated prompt:
 
 ```markdown
 ## TIMEOUT_INSTRUCTION
 
-**Turn Budget:** Aim to complete this task within approximately 50 turns.
+**Base Turn Budget:** 50 turns (standard allocation for step execution)
+
+**Warning Thresholds:**
+
+You will receive internal progress warnings at:
+- **Turn 30 (60% of budget)**: "⚠️ PROGRESS CHECK: 30/50 turns used. Expected completion by turn 40."
+- **Turn 40 (80% of budget)**: "⚠️ TIME WARNING: 40/50 turns used. Consider extension request or early exit."
+- **Turn 48 (95% of budget)**: "🚨 CRITICAL: 48/50 turns used. Complete current phase and exit OR request extension NOW."
+
+**Extension Request Protocol:**
+
+If you need additional turns beyond the 50-turn base budget:
+
+1. **Assess Progress**: Determine exact work remaining
+2. **Request Extension**: Include in step file update:
+   ```json
+   {
+     "execution_result": {
+       "extension_request": {
+         "requested_turns": 20,
+         "reason": "Complex integration test debugging requires additional investigation",
+         "current_phase": "GREEN_UNIT",
+         "estimated_completion_turn": 65,
+         "critical_path": "Debugging async timeout in payment gateway integration"
+       }
+     }
+   }
+   ```
+3. **Continue Work**: Proceed with extended budget after request
+
+**Extension Request Examples:**
+
+Example 1 - Test Debugging:
+```json
+{
+  "extension_request": {
+    "requested_turns": 15,
+    "reason": "Unit test failures require investigating mock setup and state isolation",
+    "current_phase": "GREEN_UNIT",
+    "estimated_completion_turn": 60,
+    "critical_path": "Fix 3 failing unit tests related to state management"
+  }
+}
+```
+
+Example 2 - Complex Refactoring:
+```json
+{
+  "extension_request": {
+    "requested_turns": 25,
+    "reason": "Refactoring L3-L4 discovered tight coupling requiring broader architectural changes",
+    "current_phase": "REFACTOR_L3",
+    "estimated_completion_turn": 70,
+    "critical_path": "Extract repository interface and update 5 dependent classes"
+  }
+}
+```
+
+Example 3 - Build/Environment Issues:
+```json
+{
+  "extension_request": {
+    "requested_turns": 10,
+    "reason": "Dependency resolution conflicts in package manager require careful debugging",
+    "current_phase": "PREPARE",
+    "estimated_completion_turn": 58,
+    "critical_path": "Resolve conflicting versions of logging framework"
+  }
+}
+```
 
 **Early Exit Protocol:**
-If you cannot complete within the limit:
-1. Save current progress to step file
-2. Set current phase to IN_PROGRESS with notes
+
+If extension is not viable or you cannot complete reasonably:
+1. Save all current progress to step file
+2. Set current phase to IN_PROGRESS with detailed notes
 3. Return with status: "PARTIAL_COMPLETION"
 4. Include remaining work in execution_result.recovery_suggestions
 
 **DO NOT:**
 - Loop indefinitely trying to fix unfixable issues
-- Continue past your scope
-- Ignore progress checkpoints
+- Continue past your scope without extension request
+- Ignore progress warnings
+- Request extension without clear justification
 ```
 
 #### Mechanism 2: Pre-Execution Stale Check (BACKUP)
@@ -1296,17 +1533,46 @@ Return control IMMEDIATELY with execution summary.
 
 # TIMEOUT_INSTRUCTION
 
-**Turn Budget:** Aim to complete this task within approximately 50 turns.
+**Base Turn Budget:** 50 turns (standard allocation for step execution)
 
 > ⚠️ Note: There is no hard turn limit enforcement. You must self-regulate.
+
+**Warning Thresholds:**
+
+Monitor your turn count and expect these progress warnings:
+- **Turn 30 (60% of budget)**: ⚠️ PROGRESS CHECK - Expected completion by turn 40
+- **Turn 40 (80% of budget)**: ⚠️ TIME WARNING - Consider extension request or early exit
+- **Turn 48 (95% of budget)**: 🚨 CRITICAL - Complete current phase and exit OR request extension NOW
+
+**Extension Request Protocol:**
+
+If you need additional turns beyond the 50-turn base budget:
+
+1. Update step file with extension_request in execution_result:
+   ```json
+   {
+     "execution_result": {
+       "extension_request": {
+         "requested_turns": 20,
+         "reason": "Specific justification for additional turns",
+         "current_phase": "PHASE_NAME",
+         "estimated_completion_turn": 65,
+         "critical_path": "What work requires the extension"
+       }
+     }
+   }
+   ```
+
+2. Continue work with extended budget after recording request
 
 **Progress Checkpoints:**
 - By turn ~10: Should have completed PREPARE and RED phases
 - By turn ~25: Should have completed GREEN phases
 - By turn ~40: Should have completed REFACTOR phases
-- By turn ~50: Should be finishing COMMIT or returning partial
+- By turn ~50: Should be finishing COMMIT or requesting extension
 
 **Early Exit Protocol:**
+
 If you realize you cannot complete reasonably:
 1. Save all current progress to step file
 2. Set current phase to IN_PROGRESS with detailed notes
@@ -1315,8 +1581,9 @@ If you realize you cannot complete reasonably:
 
 **DO NOT:**
 - Loop indefinitely trying to fix unfixable issues
-- Continue past phase 13 (COMMIT)
-- Ignore signs you're stuck
+- Continue past phase 13 (COMMIT) without extension
+- Ignore turn budget warnings
+- Request extension without clear justification
 
 ---
 
