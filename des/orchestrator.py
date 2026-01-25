@@ -18,6 +18,7 @@ from des.hooks import SubagentStopHook, HookResult
 from des.turn_counter import TurnCounter
 from des.timeout_monitor import TimeoutMonitor
 from des.extension_api import ExtensionRequest
+from des.invocation_limits_validator import InvocationLimitsValidator, InvocationLimitsResult
 
 # Business rules
 DEFAULT_PHASE_MAX_EXTENSIONS = 2  # Maximum extensions allowed per phase
@@ -83,6 +84,29 @@ class DESOrchestrator:
         # Mark lifecycle as completed after validation
         self._subagent_lifecycle_completed = True
         return result
+
+    def validate_invocation_limits(
+        self,
+        step_file: str,
+        project_root: Path | str
+    ) -> InvocationLimitsResult:
+        """
+        Validate turn and timeout limits configuration before sub-agent invocation.
+
+        This is pre-invocation validation that ensures max_turns and duration_minutes
+        are configured in the step file before invoking the sub-agent. Prevents execution
+        with unconfigured limits and provides clear error guidance.
+
+        Args:
+            step_file: Path to step JSON file (relative to project_root)
+            project_root: Project root directory path
+
+        Returns:
+            InvocationLimitsResult with validation status, errors, and guidance
+        """
+        step_file_path = self._resolve_step_file_path(project_root, step_file)
+        validator = InvocationLimitsValidator()
+        return validator.validate_limits(step_file_path)
 
     def _get_validation_level(self, command: str | None) -> str:
         """
