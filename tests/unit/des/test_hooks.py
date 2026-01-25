@@ -228,12 +228,24 @@ class TestSilentCompletionDetection:
             "tdd_cycle": {
                 "phase_execution_log": [
                     {"phase_number": i, "phase_name": phase, "status": "NOT_EXECUTED"}
-                    for i, phase in enumerate([
-                        "PREPARE", "RED_ACCEPTANCE", "RED_UNIT", "GREEN_UNIT",
-                        "CHECK_ACCEPTANCE", "GREEN_ACCEPTANCE", "REVIEW",
-                        "REFACTOR_L1", "REFACTOR_L2", "REFACTOR_L3", "REFACTOR_L4",
-                        "POST_REFACTOR_REVIEW", "FINAL_VALIDATE", "COMMIT"
-                    ])
+                    for i, phase in enumerate(
+                        [
+                            "PREPARE",
+                            "RED_ACCEPTANCE",
+                            "RED_UNIT",
+                            "GREEN_UNIT",
+                            "CHECK_ACCEPTANCE",
+                            "GREEN_ACCEPTANCE",
+                            "REVIEW",
+                            "REFACTOR_L1",
+                            "REFACTOR_L2",
+                            "REFACTOR_L3",
+                            "REFACTOR_L4",
+                            "POST_REFACTOR_REVIEW",
+                            "FINAL_VALIDATE",
+                            "COMMIT",
+                        ]
+                    )
                 ]
             },
         }
@@ -263,7 +275,11 @@ class TestSilentCompletionDetection:
             "state": {"status": "IN_PROGRESS"},
             "tdd_cycle": {
                 "phase_execution_log": [
-                    {"phase_number": i, "phase_name": f"PHASE_{i}", "status": "NOT_EXECUTED"}
+                    {
+                        "phase_number": i,
+                        "phase_name": f"PHASE_{i}",
+                        "status": "NOT_EXECUTED",
+                    }
                     for i in range(14)
                 ]
             },
@@ -293,11 +309,20 @@ class TestSilentCompletionDetection:
             "state": {"status": "IN_PROGRESS"},
             "tdd_cycle": {
                 "phase_execution_log": [
-                    {"phase_number": 0, "phase_name": "PREPARE", "status": "EXECUTED"},
+                    {
+                        "phase_number": 0,
+                        "phase_name": "PREPARE",
+                        "status": "EXECUTED",
+                        "outcome": "PASS",
+                    },
                     *[
-                        {"phase_number": i, "phase_name": f"PHASE_{i}", "status": "NOT_EXECUTED"}
+                        {
+                            "phase_number": i,
+                            "phase_name": f"PHASE_{i}",
+                            "status": "NOT_EXECUTED",
+                        }
                         for i in range(1, 14)
-                    ]
+                    ],
                 ]
             },
         }
@@ -327,7 +352,11 @@ class TestSilentCompletionDetection:
             "state": {"status": "DONE"},  # Task completed normally
             "tdd_cycle": {
                 "phase_execution_log": [
-                    {"phase_number": i, "phase_name": f"PHASE_{i}", "status": "NOT_EXECUTED"}
+                    {
+                        "phase_number": i,
+                        "phase_name": f"PHASE_{i}",
+                        "status": "NOT_EXECUTED",
+                    }
                     for i in range(14)
                 ]
             },
@@ -390,6 +419,136 @@ class TestMissingOutcomeDetection:
             assert result.validation_status == "FAILED"
             assert "REFACTOR_L1" in result.incomplete_phases
             assert result.error_type == "MISSING_OUTCOME"
-            assert "Phase REFACTOR_L1 marked EXECUTED but missing outcome" in result.error_message
+            assert (
+                "Phase REFACTOR_L1 marked EXECUTED but missing outcome"
+                in result.error_message
+            )
+        finally:
+            Path(temp_path).unlink()
+
+
+class TestInvalidSkipDetection:
+    """Tests for detecting SKIPPED phases without blocked_by reason."""
+
+    def test_detects_skipped_phase_without_blocked_by(self):
+        """Hook should detect phases with SKIPPED status but no blocked_by reason."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        # Create step file with REFACTOR_L3 marked SKIPPED but missing blocked_by
+        step_data = {
+            "task_id": "01-05",
+            "project_id": "test-project",
+            "state": {"status": "DONE"},
+            "tdd_cycle": {
+                "phase_execution_log": [
+                    {
+                        "phase_number": 0,
+                        "phase_name": "PREPARE",
+                        "status": "EXECUTED",
+                        "outcome": "PASS",
+                    },
+                    {
+                        "phase_number": 9,
+                        "phase_name": "REFACTOR_L3",
+                        "status": "SKIPPED",
+                        "outcome": "SKIPPED",
+                        "blocked_by": None,  # Missing blocked_by reason!
+                    },
+                ]
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            result = hook.on_agent_complete(step_file_path=temp_path)
+            assert result.validation_status == "FAILED"
+            assert "REFACTOR_L3" in result.invalid_skips
+            assert result.error_type == "INVALID_SKIP"
+            assert (
+                "Phase REFACTOR_L3 marked SKIPPED but missing blocked_by reason"
+                in result.error_message
+            )
+        finally:
+            Path(temp_path).unlink()
+
+    def test_skipped_phase_with_blocked_by_is_valid(self):
+        """Hook should NOT flag SKIPPED phases that have blocked_by reason."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        # SKIPPED phase with valid blocked_by reason - should pass
+        step_data = {
+            "task_id": "01-05",
+            "project_id": "test-project",
+            "state": {"status": "DONE"},
+            "tdd_cycle": {
+                "phase_execution_log": [
+                    {
+                        "phase_number": 9,
+                        "phase_name": "REFACTOR_L3",
+                        "status": "SKIPPED",
+                        "outcome": "SKIPPED",
+                        "blocked_by": "No L3 complexity found - all methods single responsibility",
+                    },
+                ]
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            result = hook.on_agent_complete(step_file_path=temp_path)
+            assert result.validation_status == "PASSED"
+            assert result.invalid_skips == []
+        finally:
+            Path(temp_path).unlink()
+
+    def test_detects_skipped_phase_with_empty_string_blocked_by(self):
+        """Hook should detect SKIPPED phases with empty string blocked_by."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        # SKIPPED phase with empty string blocked_by - should fail
+        step_data = {
+            "task_id": "01-05",
+            "project_id": "test-project",
+            "state": {"status": "DONE"},
+            "tdd_cycle": {
+                "phase_execution_log": [
+                    {
+                        "phase_number": 9,
+                        "phase_name": "REFACTOR_L3",
+                        "status": "SKIPPED",
+                        "outcome": "SKIPPED",
+                        "blocked_by": "",  # Empty string is invalid!
+                    },
+                ]
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            result = hook.on_agent_complete(step_file_path=temp_path)
+            assert result.validation_status == "FAILED"
+            assert "REFACTOR_L3" in result.invalid_skips
+            assert result.error_type == "INVALID_SKIP"
         finally:
             Path(temp_path).unlink()

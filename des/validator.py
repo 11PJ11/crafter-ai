@@ -519,8 +519,14 @@ class TemplateValidator:
                 if outcome and outcome.lower() != "null":
                     entry["outcome"] = outcome
 
+                # Convert "null" string to None for blocked_by
+                # Handle cases like "null", "null (INVALID)", etc.
                 if blocked_by:
-                    entry["blocked_by"] = blocked_by.strip()
+                    blocked_by = blocked_by.strip()
+                    # If blocked_by starts with "null" (case-insensitive), treat as missing
+                    if not blocked_by.lower().startswith("null"):
+                        entry["blocked_by"] = blocked_by
+                    # If blocked_by starts with "null", don't add it to entry (treat as missing)
 
                 phase_log.append(entry)
 

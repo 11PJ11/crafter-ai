@@ -81,6 +81,12 @@ class SubagentStopHook:
             self._populate_missing_outcome_failure(result, incomplete_phases)
             return result
 
+        # Check for SKIPPED phases missing blocked_by reason
+        invalid_skips = self._detect_invalid_skips(phase_log)
+        if invalid_skips:
+            self._populate_invalid_skip_failure(result, invalid_skips)
+            return result
+
         return result
 
     def _detect_abandoned_phases(self, phase_log: List[dict]) -> List[str]:
@@ -172,3 +178,35 @@ class SubagentStopHook:
         result.validation_status = "FAILED"
         result.error_type = "MISSING_OUTCOME"
         result.error_message = f"Phase {incomplete_phases[0]} marked EXECUTED but missing outcome"
+
+    def _detect_invalid_skips(self, phase_log: List[dict]) -> List[str]:
+        """Detect phases marked SKIPPED but missing blocked_by reason.
+
+        Args:
+            phase_log: List of phase execution entries from step file
+
+        Returns:
+            List of phase names with SKIPPED status but no blocked_by reason
+        """
+        invalid_skips = []
+        for phase in phase_log:
+            if phase.get("status") == "SKIPPED":
+                blocked_by = phase.get("blocked_by")
+                # Check if blocked_by is None or empty string
+                if not blocked_by:
+                    phase_name = phase.get("phase_name", "UNKNOWN")
+                    invalid_skips.append(phase_name)
+        return invalid_skips
+
+    def _populate_invalid_skip_failure(self, result: HookResult, invalid_skips: List[str]) -> None:
+        """Update HookResult with invalid skip failure details.
+
+        Args:
+            result: HookResult object to populate
+            invalid_skips: List of phase names with invalid SKIPPED status
+        """
+        result.invalid_skips = invalid_skips
+        result.error_count = len(invalid_skips)
+        result.validation_status = "FAILED"
+        result.error_type = "INVALID_SKIP"
+        result.error_message = f"Phase {invalid_skips[0]} marked SKIPPED but missing blocked_by reason"

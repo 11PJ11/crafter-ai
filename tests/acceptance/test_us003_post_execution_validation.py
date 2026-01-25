@@ -154,7 +154,6 @@ class TestPostExecutionStateValidation:
     # Scenario 3: Silent completion detected (agent returned without executing)
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_done_task_with_not_executed_phases_flagged(
         self, tmp_project_root, minimal_step_file
     ):
@@ -179,24 +178,24 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        # from des.hooks import SubagentStopHook
-        # hook = SubagentStopHook()
-        # hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+        hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: Silent completion detected
-        # assert hook_result.validation_status == "FAILED"
-        # assert hook_result.error_type == "SILENT_COMPLETION"
-        # assert "Agent completed without updating step file" in hook_result.error_message
-        # assert hook_result.not_executed_phases == 14
-        # assert hook_result.recovery_suggestions is not None
-        # assert len(hook_result.recovery_suggestions) >= 1
+        assert hook_result.validation_status == "FAILED"
+        assert hook_result.error_type == "SILENT_COMPLETION"
+        assert "Agent completed without updating step file" in hook_result.error_message
+        assert hook_result.not_executed_phases == 14
+        assert hook_result.recovery_suggestions is not None
+        assert len(hook_result.recovery_suggestions) >= 1
 
     # =========================================================================
     # AC-003.4: "EXECUTED" phases without outcome field are flagged
     # Scenario 4: Incomplete phase execution detected (no outcome recorded)
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_executed_phase_without_outcome_flagged(
         self, tmp_project_root, minimal_step_file
     ):
@@ -222,22 +221,25 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        # from des.hooks import SubagentStopHook
-        # hook = SubagentStopHook()
-        # hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+        hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: Missing outcome detected
-        # assert hook_result.validation_status == "FAILED"
-        # assert hook_result.incomplete_phases == ["REFACTOR_L1"]
-        # assert "Phase REFACTOR_L1 marked EXECUTED but missing outcome" in hook_result.error_message
-        # assert hook_result.error_type == "MISSING_OUTCOME"
+        assert hook_result.validation_status == "FAILED"
+        assert hook_result.incomplete_phases == ["REFACTOR_L1"]
+        assert (
+            "Phase REFACTOR_L1 marked EXECUTED but missing outcome"
+            in hook_result.error_message
+        )
+        assert hook_result.error_type == "MISSING_OUTCOME"
 
     # =========================================================================
     # AC-003.5: "SKIPPED" phases must have valid `blocked_by` reason
     # Scenario 5: Skipped phase with missing blocked_by reason flagged
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_skipped_phase_without_blocked_by_reason_flagged(
         self, tmp_project_root, minimal_step_file
     ):
@@ -263,15 +265,19 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        # from des.hooks import SubagentStopHook
-        # hook = SubagentStopHook()
-        # hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+        hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: Invalid skip detected
-        # assert hook_result.validation_status == "FAILED"
-        # assert hook_result.invalid_skips == ["REFACTOR_L3"]
-        # assert "Phase REFACTOR_L3 marked SKIPPED but missing blocked_by reason" in hook_result.error_message
-        # assert hook_result.error_type == "INVALID_SKIP"
+        assert hook_result.validation_status == "FAILED"
+        assert hook_result.invalid_skips == ["REFACTOR_L3"]
+        assert (
+            "Phase REFACTOR_L3 marked SKIPPED but missing blocked_by reason"
+            in hook_result.error_message
+        )
+        assert hook_result.error_type == "INVALID_SKIP"
 
     # =========================================================================
     # AC-003.6: Validation errors trigger FAILED state with recovery suggestions
