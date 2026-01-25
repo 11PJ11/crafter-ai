@@ -374,9 +374,9 @@
       "des/orchestrator.py"
     ],
     "tests_added": [],
-    "tests_passing": null,
-    "coverage_percentage": null,
-    "commit_hash": null
+    "tests_passing": true,
+    "coverage_percentage": 100,
+    "commit_hash": "bfc2e0ecc04c2f864f84f89b47ec1531db2829d9"
   },
   "quality_gates": {
     "acceptance_test_must_fail_first": true,
