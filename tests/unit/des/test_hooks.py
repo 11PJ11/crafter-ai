@@ -552,3 +552,384 @@ class TestInvalidSkipDetection:
             assert result.error_type == "INVALID_SKIP"
         finally:
             Path(temp_path).unlink()
+
+
+class TestMultipleErrorAggregation:
+    """Tests for aggregating multiple validation errors instead of early return."""
+
+    def test_aggregates_abandoned_and_missing_outcome_errors(self):
+        """Hook should aggregate multiple error types instead of returning on first error."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        # Create step file with BOTH abandoned phase AND missing outcome
+        step_data = {
+            "task_id": "01-06",
+            "project_id": "des-us003",
+            "state": {"status": "IN_PROGRESS"},
+            "tdd_cycle": {
+                "phase_execution_log": [
+                    {
+                        "phase_number": 0,
+                        "phase_name": "PREPARE",
+                        "status": "EXECUTED",
+                        "outcome": "PASS",
+                    },
+                    {
+                        "phase_number": 3,
+                        "phase_name": "GREEN_UNIT",
+                        "status": "IN_PROGRESS",  # Error 1: Abandoned
+                        "outcome": None,
+                    },
+                    {
+                        "phase_number": 6,
+                        "phase_name": "REVIEW",
+                        "status": "EXECUTED",  # Error 2: Missing outcome
+                        "outcome": None,
+                    },
+                ]
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            result = hook.on_agent_complete(step_file_path=temp_path)
+
+            # Should detect BOTH errors
+            assert result.validation_status == "FAILED"
+            assert result.error_count == 2
+            assert "GREEN_UNIT" in result.abandoned_phases
+            assert "REVIEW" in result.incomplete_phases
+        finally:
+            Path(temp_path).unlink()
+
+    def test_error_message_describes_all_errors(self):
+        """Error message should mention both error types when multiple exist."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        step_data = {
+            "task_id": "01-06",
+            "state": {"status": "IN_PROGRESS"},
+            "tdd_cycle": {
+                "phase_execution_log": [
+                    {
+                        "phase_number": 3,
+                        "phase_name": "GREEN_UNIT",
+                        "status": "IN_PROGRESS",
+                    },
+                    {
+                        "phase_number": 6,
+                        "phase_name": "REVIEW",
+                        "status": "EXECUTED",
+                        "outcome": None,
+                    },
+                ]
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            result = hook.on_agent_complete(step_file_path=temp_path)
+
+            # Error message should mention multiple errors
+            assert (
+                "2 validation error" in result.error_message.lower()
+                or "multiple" in result.error_message.lower()
+            )
+        finally:
+            Path(temp_path).unlink()
+
+
+class TestRecoverySuggestionGeneration:
+    """Tests for generating actionable recovery suggestions."""
+
+    def test_generates_minimum_three_recovery_suggestions(self):
+        """Hook should generate at least 3 recovery suggestions for failures."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        step_data = {
+            "task_id": "01-06",
+            "state": {"status": "IN_PROGRESS"},
+            "tdd_cycle": {
+                "phase_execution_log": [
+                    {
+                        "phase_number": 3,
+                        "phase_name": "GREEN_UNIT",
+                        "status": "IN_PROGRESS",
+                    },
+                    {
+                        "phase_number": 6,
+                        "phase_name": "REVIEW",
+                        "status": "EXECUTED",
+                        "outcome": None,
+                    },
+                ]
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            result = hook.on_agent_complete(step_file_path=temp_path)
+
+            assert len(result.recovery_suggestions) >= 3
+        finally:
+            Path(temp_path).unlink()
+
+    def test_suggestions_are_complete_sentences(self):
+        """Each suggestion should be at least 20 chars and properly formatted."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        step_data = {
+            "task_id": "01-06",
+            "state": {"status": "IN_PROGRESS"},
+            "tdd_cycle": {
+                "phase_execution_log": [
+                    {
+                        "phase_number": 3,
+                        "phase_name": "GREEN_UNIT",
+                        "status": "IN_PROGRESS",
+                    },
+                ]
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            result = hook.on_agent_complete(step_file_path=temp_path)
+
+            for suggestion in result.recovery_suggestions:
+                assert len(suggestion) >= 20, f"Suggestion too short: {suggestion}"
+                assert suggestion[
+                    0
+                ].isupper(), f"Should start with capital: {suggestion}"
+                assert suggestion.rstrip().endswith(
+                    (".", "`", '"')
+                ), f"Should end properly: {suggestion}"
+        finally:
+            Path(temp_path).unlink()
+
+    def test_includes_why_explanation(self):
+        """At least one suggestion should explain WHY error occurred."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        step_data = {
+            "task_id": "01-06",
+            "state": {"status": "IN_PROGRESS"},
+            "tdd_cycle": {
+                "phase_execution_log": [
+                    {
+                        "phase_number": 3,
+                        "phase_name": "GREEN_UNIT",
+                        "status": "IN_PROGRESS",
+                    },
+                ]
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            result = hook.on_agent_complete(step_file_path=temp_path)
+
+            why_patterns = [
+                "because",
+                "since",
+                "left in",
+                "was not",
+                "missing",
+                "without",
+            ]
+            has_why = any(
+                any(pattern in suggestion.lower() for pattern in why_patterns)
+                for suggestion in result.recovery_suggestions
+            )
+            assert has_why, "At least one suggestion must explain WHY"
+        finally:
+            Path(temp_path).unlink()
+
+    def test_includes_how_to_fix(self):
+        """At least one suggestion should explain HOW to fix."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        step_data = {
+            "task_id": "01-06",
+            "state": {"status": "IN_PROGRESS"},
+            "tdd_cycle": {
+                "phase_execution_log": [
+                    {
+                        "phase_number": 3,
+                        "phase_name": "GREEN_UNIT",
+                        "status": "IN_PROGRESS",
+                    },
+                ]
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            result = hook.on_agent_complete(step_file_path=temp_path)
+
+            how_patterns = ["/nw:execute", "run", "reset", "add", "update", "set"]
+            has_how = any(
+                any(pattern in suggestion.lower() for pattern in how_patterns)
+                for suggestion in result.recovery_suggestions
+            )
+            assert has_how, "At least one suggestion must explain HOW to fix"
+        finally:
+            Path(temp_path).unlink()
+
+    def test_includes_specific_recovery_actions(self):
+        """Suggestions should include transcript review, status reset, and resume command."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        step_data = {
+            "task_id": "01-06",
+            "state": {"status": "IN_PROGRESS"},
+            "tdd_cycle": {
+                "phase_execution_log": [
+                    {
+                        "phase_number": 3,
+                        "phase_name": "GREEN_UNIT",
+                        "status": "IN_PROGRESS",
+                    },
+                ]
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            result = hook.on_agent_complete(step_file_path=temp_path)
+
+            suggestions_text = " ".join(result.recovery_suggestions).lower()
+            assert "transcript" in suggestions_text, "Should mention transcript review"
+            assert (
+                "reset" in suggestions_text or "status" in suggestions_text
+            ), "Should mention status reset"
+            assert (
+                "/nw:execute" in suggestions_text or "resume" in suggestions_text
+            ), "Should mention resume command"
+        finally:
+            Path(temp_path).unlink()
+
+
+class TestStepFileStateUpdate:
+    """Tests for updating step file state to FAILED."""
+
+    def test_updates_step_file_state_to_failed(self):
+        """Hook should update step file state.status to FAILED when validation fails."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        step_data = {
+            "task_id": "01-06",
+            "state": {"status": "IN_PROGRESS"},
+            "tdd_cycle": {
+                "phase_execution_log": [
+                    {
+                        "phase_number": 3,
+                        "phase_name": "GREEN_UNIT",
+                        "status": "IN_PROGRESS",
+                    },
+                ]
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            hook.on_agent_complete(step_file_path=temp_path)
+
+            # Read step file to verify state update
+            updated_data = json.loads(Path(temp_path).read_text())
+            assert updated_data["state"]["status"] == "FAILED"
+        finally:
+            Path(temp_path).unlink()
+
+    def test_adds_failure_reason_to_step_file(self):
+        """Hook should add failure_reason to step file state."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        step_data = {
+            "task_id": "01-06",
+            "state": {"status": "IN_PROGRESS"},
+            "tdd_cycle": {
+                "phase_execution_log": [
+                    {
+                        "phase_number": 3,
+                        "phase_name": "GREEN_UNIT",
+                        "status": "IN_PROGRESS",
+                    },
+                ]
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            hook.on_agent_complete(step_file_path=temp_path)
+
+            # Read step file to verify failure_reason added
+            updated_data = json.loads(Path(temp_path).read_text())
+            assert "failure_reason" in updated_data["state"]
+            assert updated_data["state"]["failure_reason"] is not None
+            assert len(updated_data["state"]["failure_reason"]) > 0
+        finally:
+            Path(temp_path).unlink()

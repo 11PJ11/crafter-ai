@@ -61,30 +61,37 @@ class SubagentStopHook:
         phase_log = step_data.get("tdd_cycle", {}).get("phase_execution_log", [])
         task_state = step_data.get("state", {}).get("status", "UNKNOWN")
 
+        # Aggregate all validation errors instead of early return
+        errors = []
+
         # Check for abandoned phases (IN_PROGRESS status)
         abandoned_phases = self._detect_abandoned_phases(phase_log)
         if abandoned_phases:
-            self._populate_validation_failure(result, abandoned_phases)
-            return result
+            result.abandoned_phases = abandoned_phases
+            errors.append(("ABANDONED_PHASE", abandoned_phases))
 
         # Check for silent completion (task IN_PROGRESS but all phases NOT_EXECUTED)
         not_executed_count = self._count_not_executed_phases(phase_log)
         result.not_executed_phases = not_executed_count
 
         if task_state == "IN_PROGRESS" and not_executed_count == len(phase_log):
-            self._populate_silent_completion_failure(result, not_executed_count)
-            return result
+            errors.append(("SILENT_COMPLETION", not_executed_count))
 
         # Check for EXECUTED phases missing outcome
         incomplete_phases = self._detect_incomplete_phases(phase_log)
         if incomplete_phases:
-            self._populate_missing_outcome_failure(result, incomplete_phases)
-            return result
+            result.incomplete_phases = incomplete_phases
+            errors.append(("MISSING_OUTCOME", incomplete_phases))
 
         # Check for SKIPPED phases missing blocked_by reason
         invalid_skips = self._detect_invalid_skips(phase_log)
         if invalid_skips:
-            self._populate_invalid_skip_failure(result, invalid_skips)
+            result.invalid_skips = invalid_skips
+            errors.append(("INVALID_SKIP", invalid_skips))
+
+        # If any errors found, populate comprehensive failure details
+        if errors:
+            self._populate_aggregated_failures(result, errors, step_file_path, step_data)
             return result
 
         return result
@@ -210,3 +217,133 @@ class SubagentStopHook:
         result.validation_status = "FAILED"
         result.error_type = "INVALID_SKIP"
         result.error_message = f"Phase {invalid_skips[0]} marked SKIPPED but missing blocked_by reason"
+
+    def _populate_aggregated_failures(
+        self, result: HookResult, errors: List[tuple], step_file_path: str, step_data: dict
+    ) -> None:
+        """Update HookResult with aggregated validation failures and recovery suggestions.
+
+        Args:
+            result: HookResult object to populate
+            errors: List of (error_type, error_data) tuples
+            step_file_path: Path to step file for updating state
+            step_data: Current step file data
+        """
+        result.validation_status = "FAILED"
+
+        # Count total errors
+        total_errors = 0
+        error_details = []
+
+        for error_type, error_data in errors:
+            if error_type == "ABANDONED_PHASE":
+                count = len(error_data)
+                total_errors += count
+                error_details.append(f"{count} abandoned phase(s): {', '.join(error_data)}")
+            elif error_type == "MISSING_OUTCOME":
+                count = len(error_data)
+                total_errors += count
+                error_details.append(f"{count} incomplete phase(s): {', '.join(error_data)}")
+            elif error_type == "INVALID_SKIP":
+                count = len(error_data)
+                total_errors += count
+                error_details.append(f"{count} invalid skip(s): {', '.join(error_data)}")
+            elif error_type == "SILENT_COMPLETION":
+                total_errors += 1
+                error_details.append(f"Silent completion ({error_data} phases NOT_EXECUTED)")
+
+        result.error_count = total_errors
+        result.error_type = "MULTIPLE_ERRORS" if len(errors) > 1 else errors[0][0]
+
+        # Use specific error messages for single errors (backward compatibility)
+        if len(errors) == 1:
+            error_type, error_data = errors[0]
+            if error_type == "ABANDONED_PHASE":
+                result.error_message = f"Phase {error_data[0]} left IN_PROGRESS (abandoned)"
+            elif error_type == "MISSING_OUTCOME":
+                result.error_message = f"Phase {error_data[0]} marked EXECUTED but missing outcome"
+            elif error_type == "INVALID_SKIP":
+                result.error_message = f"Phase {error_data[0]} marked SKIPPED but missing blocked_by reason"
+            elif error_type == "SILENT_COMPLETION":
+                result.error_message = f"Agent completed without updating step file ({error_data} phases NOT_EXECUTED)"
+        else:
+            # Multiple errors - use aggregated format
+            result.error_message = f"{total_errors} validation error(s) found: {'; '.join(error_details)}"
+
+        # Generate recovery suggestions
+        result.recovery_suggestions = self._generate_recovery_suggestions(errors)
+
+        # Update step file state to FAILED
+        self._update_step_file_state(step_file_path, step_data, result.error_message)
+
+    def _generate_recovery_suggestions(self, errors: List[tuple]) -> List[str]:
+        """Generate actionable recovery suggestions based on validation errors.
+
+        Args:
+            errors: List of (error_type, error_data) tuples
+
+        Returns:
+            List of recovery suggestion strings
+        """
+        suggestions = []
+
+        # For single SILENT_COMPLETION error, use existing suggestions
+        if len(errors) == 1 and errors[0][0] == "SILENT_COMPLETION":
+            return [
+                "Re-execute step with verbose logging to identify early exit cause",
+                "Review agent logs for error or exception that prevented work",
+                "Verify step file is writable and accessible to agent"
+            ]
+
+        # For other errors, always start with transcript review (explains WHY)
+        suggestions.append(
+            "Review agent transcript for error details to understand what went wrong during execution."
+        )
+
+        # Add error-specific suggestions (explains HOW to fix)
+        for error_type, error_data in errors:
+            if error_type == "ABANDONED_PHASE":
+                for phase in error_data:
+                    suggestions.append(
+                        f"Reset {phase} phase status to NOT_EXECUTED since it was left IN_PROGRESS without completion."
+                    )
+                suggestions.append(
+                    "Run `/nw:execute` again to resume from the first incomplete phase."
+                )
+            elif error_type == "MISSING_OUTCOME":
+                for phase in error_data:
+                    suggestions.append(
+                        f"Add outcome to {phase} phase from transcript evidence showing PASS or FAIL result."
+                    )
+            elif error_type == "INVALID_SKIP":
+                for phase in error_data:
+                    suggestions.append(
+                        f"Add blocked_by reason to {phase} phase explaining why it was skipped."
+                    )
+
+        # Ensure minimum 3 suggestions (add generic if needed)
+        if len(suggestions) < 3:
+            suggestions.append(
+                "Update step file manually with correct phase states based on transcript review."
+            )
+
+        return suggestions
+
+    def _update_step_file_state(self, step_file_path: str, step_data: dict, failure_reason: str) -> None:
+        """Update step file state to FAILED with failure reason.
+
+        Args:
+            step_file_path: Path to step file to update
+            step_data: Current step file data
+            failure_reason: Reason for validation failure
+        """
+        # Update state
+        if "state" not in step_data:
+            step_data["state"] = {}
+
+        step_data["state"]["status"] = "FAILED"
+        step_data["state"]["failure_reason"] = failure_reason
+
+        # Write updated step file
+        with open(step_file_path, 'w') as f:
+            json.dump(step_data, f, indent=2)

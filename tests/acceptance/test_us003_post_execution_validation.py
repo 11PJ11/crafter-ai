@@ -284,7 +284,6 @@ class TestPostExecutionStateValidation:
     # Scenario 6: Multiple validation errors trigger FAILED state
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_validation_errors_trigger_failed_state_with_recovery(
         self, tmp_project_root, minimal_step_file
     ):
@@ -315,49 +314,58 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        # from des.hooks import SubagentStopHook
-        # hook = SubagentStopHook()
-        # hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+        hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: FAILED state set with comprehensive recovery guidance
-        # assert hook_result.validation_status == "FAILED"
-        # assert hook_result.error_count == 2
-        # assert "GREEN_UNIT" in str(hook_result.abandoned_phases)
-        # assert "REVIEW" in str(hook_result.incomplete_phases)
+        assert hook_result.validation_status == "FAILED"
+        assert hook_result.error_count == 2
+        assert "GREEN_UNIT" in str(hook_result.abandoned_phases)
+        assert "REVIEW" in str(hook_result.incomplete_phases)
 
         # Assert: Step file updated with FAILED state
-        # updated_step = json.loads(minimal_step_file.read_text())
-        # assert updated_step["state"]["status"] == "FAILED"
-        # assert updated_step["state"]["failure_reason"] is not None
+        updated_step = json.loads(minimal_step_file.read_text())
+        assert updated_step["state"]["status"] == "FAILED"
+        assert updated_step["state"]["failure_reason"] is not None
 
         # Assert: Recovery suggestions provided with explicit format requirements
         # REQUIREMENT: Each suggestion must be actionable and educational
-        # assert len(hook_result.recovery_suggestions) >= 3
-        #
+        assert len(hook_result.recovery_suggestions) >= 3
+
         # FORMAT REQUIREMENT 1: Each suggestion >= 1 complete sentence
-        # for suggestion in hook_result.recovery_suggestions:
-        #     assert len(suggestion) >= 20, "Suggestion too short to be actionable"
-        #     assert suggestion[0].isupper(), "Suggestion should start with capital"
-        #     assert suggestion.rstrip().endswith(('.', '`', '"')), "Suggestion should end properly"
-        #
+        for suggestion in hook_result.recovery_suggestions:
+            assert len(suggestion) >= 20, "Suggestion too short to be actionable"
+            assert suggestion[0].isupper(), "Suggestion should start with capital"
+            assert suggestion.rstrip().endswith(
+                (".", "`", '"')
+            ), "Suggestion should end properly"
+
         # FORMAT REQUIREMENT 2: At least one suggestion explains WHY error occurred
-        # why_patterns = ["because", "since", "left in", "was not", "missing", "without"]
-        # assert any(
-        #     any(p in s.lower() for p in why_patterns)
-        #     for s in hook_result.recovery_suggestions
-        # ), "At least one suggestion must explain WHY error occurred"
-        #
+        why_patterns = ["because", "since", "left in", "was not", "missing", "without"]
+        assert any(
+            any(p in s.lower() for p in why_patterns)
+            for s in hook_result.recovery_suggestions
+        ), "At least one suggestion must explain WHY error occurred"
+
         # FORMAT REQUIREMENT 3: At least one suggestion explains HOW to fix
-        # how_patterns = ["/nw:execute", "run", "reset", "add", "update", "set"]
-        # assert any(
-        #     any(p in s.lower() for p in how_patterns)
-        #     for s in hook_result.recovery_suggestions
-        # ), "At least one suggestion must explain HOW to fix"
-        #
+        how_patterns = ["/nw:execute", "run", "reset", "add", "update", "set"]
+        assert any(
+            any(p in s.lower() for p in how_patterns)
+            for s in hook_result.recovery_suggestions
+        ), "At least one suggestion must explain HOW to fix"
+
         # CONTENT: Specific recovery actions expected
-        # assert any("transcript" in s.lower() for s in hook_result.recovery_suggestions)
-        # assert any("reset" in s.lower() or "status" in s.lower() for s in hook_result.recovery_suggestions)
-        # assert any("/nw:execute" in s or "resume" in s.lower() for s in hook_result.recovery_suggestions)
+        assert any("transcript" in s.lower() for s in hook_result.recovery_suggestions)
+        assert any(
+            "reset" in s.lower() or "status" in s.lower()
+            for s in hook_result.recovery_suggestions
+        )
+        assert any(
+            "/nw:execute" in s or "resume" in s.lower()
+            for s in hook_result.recovery_suggestions
+        )
 
     # =========================================================================
     # Happy Path: Clean completion passes validation silently
