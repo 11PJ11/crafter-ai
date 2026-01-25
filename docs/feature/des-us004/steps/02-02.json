@@ -18,9 +18,9 @@
     "suggested_agent": "software-crafter"
   },
   "state": {
-    "status": "IN_PROGRESS",
+    "status": "DONE",
     "started_at": "2026-01-25T12:38:57.045251+00:00",
-    "ended_at": null
+    "ended_at": "2026-01-25T13:05:00.000000+00:00"
   },
   "tdd_cycle": {
     "acceptance_test": {
@@ -333,21 +333,21 @@
       {
         "phase_name": "COMMIT",
         "phase_index": 13,
-        "status": "NOT_EXECUTED",
-        "started_at": null,
-        "ended_at": null,
-        "duration_minutes": null,
-        "outcome": null,
-        "outcome_details": null,
+        "status": "EXECUTED",
+        "started_at": "2026-01-25T13:05:00.000000+00:00",
+        "ended_at": "2026-01-25T13:06:00.000000+00:00",
+        "duration_minutes": 1.0,
+        "outcome": "PASS",
+        "outcome_details": "Step 02-02 complete: turn limit enforcement integrated in SubagentStopHook",
         "artifacts_created": [],
-        "artifacts_modified": [],
+        "artifacts_modified": ["des/hooks.py", "tests/acceptance/test_us004_turn_counting.py", "tests/unit/des/test_hooks.py"],
         "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
+          "total": 36,
+          "passed": 36,
+          "failed": 0,
+          "skipped": 0
         },
-        "notes": null,
+        "notes": "Implementation and tests committed in 70305a5, refactoring and step completion documented here",
         "blocked_by": null,
         "history": []
       }
