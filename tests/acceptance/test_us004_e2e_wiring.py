@@ -27,8 +27,8 @@ BUSINESS VALUE:
 - Confirms feature parity between /nw:execute and /nw:develop
 
 SOURCE:
-- docs/feature/des-us004/steps/08-01.json (Step 08-01 - /nw:execute wiring)
-- docs/feature/des-us004/steps/08-02.json (Step 08-02 - /nw:develop wiring)
+- docs/feature/des-us006/steps/08-01.json (Step 08-01 - /nw:execute wiring)
+- docs/feature/des-us006/steps/08-02.json (Step 08-02 - /nw:develop wiring)
 """
 
 import pytest
@@ -188,7 +188,7 @@ class TestE2EDevelopCommandWiring:
     Tests prove EXTERNAL VALIDITY by invoking real /nw:develop command and validating
     all features execute during actual orchestrator operation (same as /nw:execute).
 
-    SOURCE: docs/feature/des-us004/steps/08-02.json (Step 08-02)
+    SOURCE: docs/feature/des-us006/steps/08-02.json (Step 08-02)
     """
 
     @pytest.mark.skip(

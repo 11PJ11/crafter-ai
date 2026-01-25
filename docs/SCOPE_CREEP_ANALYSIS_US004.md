@@ -36,7 +36,7 @@ Durante l'orchestrazione di US-004, è stata implementata una "Extension API" NO
 
 ---
 
-### ROADMAP IMPLEMENTATO (des-us004/roadmap.yaml)
+### ROADMAP IMPLEMENTATO (des-us006/roadmap.yaml)
 
 **Phase 05: Extension Request Mechanism** (NON RICHIESTA)
 - Step 05-01: Design extension request API ✅ COMPLETATO

@@ -72,7 +72,7 @@ class TestScenario013TimeoutWarningsEmitAtThresholds:
         return {
             "task_specification": {
                 "task_id": "04-01",
-                "project_id": "des-us004",
+                "project_id": "des-us006",
                 "name": "Test timeout monitoring",
             },
             "state": {

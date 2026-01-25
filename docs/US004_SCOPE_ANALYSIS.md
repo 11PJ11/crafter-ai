@@ -157,7 +157,7 @@ grep -r "turn_count" des/hooks.py
 
 ### 4. FINALIZE US-004
 ```bash
-/nw:finalize @devop "des-us004"
+/nw:finalize @devop "des-us006"
 ```
 
 ---

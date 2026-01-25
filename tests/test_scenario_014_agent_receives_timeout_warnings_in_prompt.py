@@ -70,7 +70,7 @@ class TestScenario014AgentReceivesTimeoutWarningsInPrompt:
         return {
             "task_specification": {
                 "task_id": "04-02",
-                "project_id": "des-us004",
+                "project_id": "des-us006",
                 "name": "Test timeout warnings in prompt",
             },
             "state": {

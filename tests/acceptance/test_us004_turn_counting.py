@@ -21,7 +21,7 @@ BUSINESS VALUE:
 - Support timeout monitoring
 
 SOURCE:
-- docs/feature/des-us004/steps/02-01.json (Step 02-01)
+- docs/feature/des-us006/steps/02-01.json (Step 02-01)
 """
 
 
@@ -271,7 +271,7 @@ def _create_step_file_with_timeout_exceeded(
     """
     return {
         "task_id": "07-01",
-        "project_id": "des-us004",
+        "project_id": "des-us006",
         "workflow_type": "tdd_cycle",
         "state": {
             "status": "COMPLETED",
@@ -366,7 +366,7 @@ def _create_step_file_with_turn_limit_exceeded(
 
     return {
         "task_id": "02-02",
-        "project_id": "des-us004",
+        "project_id": "des-us006",
         "workflow_type": "tdd_cycle",
         "state": {
             "status": "IN_PROGRESS",
