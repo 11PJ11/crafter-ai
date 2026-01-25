@@ -1,0 +1,148 @@
+project_id: des-us004
+created_at: 2026-01-25T01:39:58Z
+baseline:
+  validation:
+    status: approved
+    reviewer: software-crafter-reviewer
+    reviewed_at: 2026-01-25T02:15:00Z
+    notes: "Baseline approved. Exceptional quality with rigorous methodology: 8 core files examined, evidence-based measurements with file/line citations, comprehensive gap analysis, and clear improvement roadmap. All 6 metrics are quantitative, verifiable, and properly documented."
+
+measurements:
+  - metric_name: "Turn limit enforcement per task"
+    current_value: "None - No programmatic turn limit enforcement exists"
+    target_value: "Configurable turn limits enforced per task type with validation in DESOrchestrator"
+    methodology: "Grepped for 'turn.*limit', 'max.*iteration' patterns in des/ module. Examined DESOrchestrator, SubagentStopHook, and TemplateValidator classes"
+    evidence:
+      - "des/orchestrator.py: No turn limit enforcement found (lines 1-170 reviewed)"
+      - "des/hooks.py: SubagentStopHook validates phase state but no turn counting (lines 1-350 reviewed)"
+      - "des/validator.py: TIMEOUT_INSTRUCTION section required but no turn enforcement (lines 67, 79)"
+      - "max_turns is CLI-only flag, NOT available for Task tool (confirmed in docs/design/des-critical-finding-max-turns.md)"
+      - "Current approach: Prompt-based turn discipline (~50 turn budget guidance)"
+    notes: "Turn limits mentioned in documentation but not enforced programmatically. Agents self-regulate based on prompt instructions only."
+
+  - metric_name: "Timeout warning thresholds"
+    current_value: "None - No timeout warnings or tracking exist"
+    target_value: "Configurable timeout warnings at 50%, 75%, 90% thresholds with agent notifications"
+    methodology: "Grepped for 'timeout', 'duration', 'elapsed' patterns in des/ module. Examined step file schema for duration tracking fields"
+    evidence:
+      - "des/validator.py: Only 'timeout' reference is checking for TIMEOUT_INSTRUCTION section presence (line 426)"
+      - "des/orchestrator.py: No timeout tracking found"
+      - "des/hooks.py: No timeout validation found"
+      - "nWave/templates/step-tdd-cycle-schema.json: duration_minutes field exists but not validated (lines 42, 58, 74, 90, etc.)"
+      - "Step schema includes started_at, ended_at, duration_minutes per phase but no threshold enforcement"
+    notes: "Duration tracking fields exist in step schema but no active monitoring or warning system implemented."
+
+  - metric_name: "Timeout extension request mechanism"
+    current_value: "None - No extension request support exists"
+    target_value: "Agents can request timeout extensions with justification, orchestrator approves/denies based on criteria"
+    methodology: "Grepped for 'extension.*request', 'timeout.*extension' patterns. Examined DESOrchestrator and SubagentStopHook interfaces"
+    evidence:
+      - "docs/evolution/des-us001-evolution.md: Line 278 mentions 'Support timeout extension requests' as future requirement"
+      - "des/orchestrator.py: No extension request methods found in DESOrchestrator class (lines 20-170)"
+      - "des/hooks.py: HookResult dataclass has no extension-related fields (lines 13-38)"
+      - "No API methods for requesting or granting extensions in orchestrator interface"
+    notes: "Extension requests mentioned in requirements but not implemented in current architecture."
+
+  - metric_name: "Turn count tracking per phase"
+    current_value: "None - No turn count tracking exists"
+    target_value: "Turn count tracked and recorded in phase_execution_log with per-phase limits"
+    methodology: "Examined step file schema phase_execution_log structure. Searched for turn counting in hooks and orchestrator"
+    evidence:
+      - "nWave/templates/step-tdd-cycle-schema.json: phase_execution_log has 14 phases (lines 35-260)"
+      - "Each phase entry includes: status, started_at, ended_at, duration_minutes, outcome, artifacts, test_results"
+      - "No 'turn_count' or 'iterations' field in phase schema"
+      - "des/hooks.py: SubagentStopHook validates phase status but does not count turns (lines 48-169)"
+      - "Step schema tracks duration_minutes but not turn iterations per phase"
+    notes: "Phase execution tracking exists for time and status but not for turn/iteration counts."
+
+  - metric_name: "Timeout instruction validation"
+    current_value: "Validation exists but only checks presence, not enforcement"
+    target_value: "TIMEOUT_INSTRUCTION section validated for presence AND enforced with active monitoring"
+    methodology: "Examined TemplateValidator for TIMEOUT_INSTRUCTION validation logic"
+    evidence:
+      - "des/validator.py: MandatorySectionChecker validates TIMEOUT_INSTRUCTION presence (line 67)"
+      - "des/validator.py: Recovery guidance suggests 'Add TIMEOUT_INSTRUCTION section with turn budget guidance' (line 79)"
+      - "Validation checks for section existence but does not enforce turn budget or timeout values"
+      - "tests/acceptance/test_us006_turn_discipline.py: Tests verify ~50 turn budget in prompt (lines 86-124)"
+      - "Current implementation: Static validation only, no runtime enforcement"
+    notes: "TIMEOUT_INSTRUCTION section required in prompts but values are guidance-only, not enforced."
+
+  - metric_name: "Phase duration tracking granularity"
+    current_value: "Minutes-level granularity in step schema"
+    target_value: "Seconds-level granularity with real-time tracking and threshold warnings"
+    methodology: "Examined step schema duration fields and hooks for time tracking implementation"
+    evidence:
+      - "nWave/templates/step-tdd-cycle-schema.json: duration_minutes field uses minutes (not seconds)"
+      - "Schema includes started_at (ISO timestamp) and ended_at (ISO timestamp) per phase"
+      - "No real-time tracking or progressive timeout warnings implemented"
+      - "des/hooks.py: Validates phase state post-execution but does not track elapsed time"
+    notes: "Time tracking infrastructure exists in schema but lacks real-time monitoring and fine-grained precision."
+
+baseline_summary:
+  current_state: "DES has prompt-based turn discipline with TIMEOUT_INSTRUCTION validation but no programmatic timeout enforcement, turn counting, or extension request mechanism."
+
+  key_gaps:
+    - "No turn limit enforcement (max_turns unavailable in Task tool)"
+    - "No timeout threshold warnings (50%, 75%, 90%)"
+    - "No timeout extension request API"
+    - "No turn count tracking per phase"
+    - "No real-time timeout monitoring"
+    - "Duration tracking exists but not actively enforced"
+
+  existing_infrastructure:
+    - "TIMEOUT_INSTRUCTION section validation in TemplateValidator"
+    - "Phase execution log with started_at, ended_at, duration_minutes fields"
+    - "SubagentStopHook for post-execution validation"
+    - "DESOrchestrator for prompt rendering and validation"
+
+  leverage_opportunities:
+    - "Extend phase_execution_log schema to include turn_count field"
+    - "Add timeout threshold monitoring to SubagentStopHook"
+    - "Add extension request methods to DESOrchestrator API"
+    - "Enhance HookResult to include timeout and turn limit violations"
+    - "Use existing started_at/ended_at infrastructure for elapsed time calculations"
+
+target_improvements:
+  turn_discipline:
+    - "Add configurable turn limits per task type (quick: 20, standard: 50, complex: 100)"
+    - "Track turn count per phase in phase_execution_log"
+    - "Validate turn limits in SubagentStopHook"
+
+  timeout_warnings:
+    - "Implement 50%, 75%, 90% threshold warnings"
+    - "Add elapsed time tracking with second-level precision"
+    - "Emit warning messages to agent when thresholds crossed"
+
+  extension_requests:
+    - "Add request_extension(reason, additional_turns) method to orchestrator API"
+    - "Implement approval criteria (valid justification, not exceeded max extensions)"
+    - "Record extension grants in phase_execution_log history field"
+
+  monitoring:
+    - "Real-time elapsed time calculation during phase execution"
+    - "Progressive timeout warnings at threshold crossings"
+    - "Turn count increment per agent API call"
+
+methodology_notes: |
+  Evidence gathering methodology:
+  1. File discovery: Used Glob to find all Python files in des/ module
+  2. Pattern search: Used Grep with regex patterns for turn/timeout/duration/extension keywords
+  3. Code analysis: Read orchestrator.py, hooks.py, validator.py, step schema JSON
+  4. Documentation review: Examined design docs, critical findings, acceptance tests
+  5. Baseline quantification: Measured current vs target state with file/line evidence
+
+  Search patterns used:
+  - Turn limits: (turn|max.*iteration|iteration.*limit)
+  - Timeouts: (timeout|duration|elapsed|time.*limit)
+  - Extensions: (extension.*request|timeout.*extension|request.*extension)
+  - Duration tracking: (started_at|ended_at|duration)
+
+  Files examined (8 core files):
+  - des/orchestrator.py (170 lines)
+  - des/hooks.py (350 lines)
+  - des/validator.py (544 lines)
+  - nWave/templates/step-tdd-cycle-schema.json (445 lines)
+  - tests/acceptance/test_us006_turn_discipline.py
+  - docs/design/des-critical-finding-max-turns.md
+  - docs/feature/des/discuss/user-stories.md
+  - docs/evolution/des-us001-evolution.md
