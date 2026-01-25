@@ -650,6 +650,80 @@ docs/
 - Easy identification of when features were completed
 - Chronological project evolution view
 
+---
+
+#### 6. COMMIT AND PUSH EVOLUTION DOCUMENT
+
+**Objective**: Create immutable record of User Story completion in git history.
+
+**Actions**:
+
+1. **Stage evolution document**:
+   ```bash
+   git add docs/evolution/{project_id}-evolution.md
+   ```
+
+2. **Extract metrics for commit message**:
+   ```python
+   import re
+
+   with open(f'docs/evolution/{project_id}-evolution.md', 'r') as f:
+       content = f.read()
+
+   # Parse key metrics
+   steps_match = re.search(r'- Steps completed:\s*(\d+)', content)
+   duration_match = re.search(r'- Duration:\s*(.+)', content)
+
+   steps = steps_match.group(1) if steps_match else "unknown"
+   duration = duration_match.group(1) if duration_match else "unknown"
+   ```
+
+3. **Create commit**:
+   ```python
+   commit_message = f"""docs({project_id}): Archive User Story evolution document
+
+Metrics:
+- Steps completed: {steps}
+- Duration: {duration}
+- Evolution doc: docs/evolution/{project_id}-evolution.md
+
+User Story implementation finalized.
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"""
+
+   subprocess.run(['git', 'commit', '-m', commit_message], check=True)
+   ```
+
+4. **Push to remote**:
+   ```bash
+   git push origin {current-branch}
+   ```
+
+5. **Error handling**:
+   ```python
+   try:
+       subprocess.run(['git', 'push'], capture_output=True, text=True, check=True)
+       print("✅ Evolution document archived to remote")
+   except subprocess.CalledProcessError as e:
+       if 'nothing to commit' in e.stderr:
+           print("⚠️ No changes to commit (evolution doc unchanged)")
+           # This is OK - evolution doc may have been committed earlier
+       elif 'rejected' in e.stderr:
+           print("❌ Push rejected - manual resolution required")
+           print("Run: git pull --rebase && git push")
+           # Don't exit - finalize can still succeed
+       else:
+           raise
+   ```
+
+**Success Criteria**:
+- Evolution document committed
+- Commit pushed to remote (or gracefully handled if no changes)
+- Git log contains finalize commit
+- No errors blocking finalize completion
+
+---
+
 ## Output Artifacts
 
 - `docs/evolution/YYYY-MM-DD-{project-id}.md` - Permanent project archive (date-feature format)
