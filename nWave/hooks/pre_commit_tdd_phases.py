@@ -48,12 +48,20 @@ VALID_SKIP_PREFIXES = [
     "BLOCKED_BY_DEPENDENCY:",
     "NOT_APPLICABLE:",
     "APPROVED_SKIP:",
+    "CHECKPOINT_PENDING:",  # NEW: For TDD checkpoint commits
 ]
 
 # Prefixes that indicate incomplete work - blocks commit
 BLOCKS_COMMIT_PREFIXES = [
     "DEFERRED:",
 ]
+
+# TDD Checkpoint Strategy:
+# CHECKPOINT_PENDING allows intermediate commits during TDD cycle:
+# - GREEN checkpoint (phases 0-5 complete, 6-13 pending)
+# - REVIEW checkpoint (phases 0-6 complete, 7-13 pending)
+# - REFACTOR checkpoint (phases 0-10 complete, 11-13 pending)
+# - FINAL checkpoint (all 14 phases complete)
 
 # Bypass logging configuration
 BYPASS_LOG_FILE = ".git/nwave-bypass.log"
