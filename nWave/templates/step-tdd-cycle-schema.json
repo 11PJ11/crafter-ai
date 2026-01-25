@@ -49,7 +49,8 @@
         "notes": null,
         "blocked_by": null,
         "turn_count": null,
-        "history": []
+        "history": [],
+        "extensions_granted": []
       },
       {
         "phase_name": "RED_ACCEPTANCE",
@@ -67,7 +68,8 @@
         "notes": null,
         "blocked_by": null,
         "turn_count": null,
-        "history": []
+        "history": [],
+        "extensions_granted": []
       },
       {
         "phase_name": "RED_UNIT",
@@ -85,7 +87,8 @@
         "notes": null,
         "blocked_by": null,
         "turn_count": null,
-        "history": []
+        "history": [],
+        "extensions_granted": []
       },
       {
         "phase_name": "GREEN_UNIT",
@@ -103,7 +106,8 @@
         "notes": null,
         "blocked_by": null,
         "turn_count": null,
-        "history": []
+        "history": [],
+        "extensions_granted": []
       },
       {
         "phase_name": "CHECK_ACCEPTANCE",
@@ -121,7 +125,8 @@
         "notes": null,
         "blocked_by": null,
         "turn_count": null,
-        "history": []
+        "history": [],
+        "extensions_granted": []
       },
       {
         "phase_name": "GREEN_ACCEPTANCE",
@@ -139,7 +144,8 @@
         "notes": null,
         "blocked_by": null,
         "turn_count": null,
-        "history": []
+        "history": [],
+        "extensions_granted": []
       },
       {
         "phase_name": "REVIEW",
@@ -157,7 +163,8 @@
         "notes": null,
         "blocked_by": null,
         "turn_count": null,
-        "history": []
+        "history": [],
+        "extensions_granted": []
       },
       {
         "phase_name": "REFACTOR_L1",
@@ -175,7 +182,8 @@
         "notes": null,
         "blocked_by": null,
         "turn_count": null,
-        "history": []
+        "history": [],
+        "extensions_granted": []
       },
       {
         "phase_name": "REFACTOR_L2",
@@ -193,7 +201,8 @@
         "notes": null,
         "blocked_by": null,
         "turn_count": null,
-        "history": []
+        "history": [],
+        "extensions_granted": []
       },
       {
         "phase_name": "REFACTOR_L3",
@@ -211,7 +220,8 @@
         "notes": null,
         "blocked_by": null,
         "turn_count": null,
-        "history": []
+        "history": [],
+        "extensions_granted": []
       },
       {
         "phase_name": "REFACTOR_L4",
@@ -229,7 +239,8 @@
         "notes": null,
         "blocked_by": null,
         "turn_count": null,
-        "history": []
+        "history": [],
+        "extensions_granted": []
       },
       {
         "phase_name": "POST_REFACTOR_REVIEW",
@@ -247,7 +258,8 @@
         "notes": null,
         "blocked_by": null,
         "turn_count": null,
-        "history": []
+        "history": [],
+        "extensions_granted": []
       },
       {
         "phase_name": "FINAL_VALIDATE",
@@ -265,7 +277,8 @@
         "notes": null,
         "blocked_by": null,
         "turn_count": null,
-        "history": []
+        "history": [],
+        "extensions_granted": []
       },
       {
         "phase_name": "COMMIT",
@@ -283,7 +296,8 @@
         "notes": null,
         "blocked_by": null,
         "turn_count": null,
-        "history": []
+        "history": [],
+        "extensions_granted": []
       }
     ]
   },

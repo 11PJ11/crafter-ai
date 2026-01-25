@@ -44,21 +44,26 @@
       "in_memory_adapters": []
     },
     "tdd_phase_tracking": {
-      "current_phase": "NOT_STARTED",
+      "current_phase": "CHECK_ACCEPTANCE",
       "active_e2e_test": "",
       "inactive_e2e_tests": "All other @skip scenarios remain disabled",
-      "phases_completed": []
+      "phases_completed": [
+        "PREPARE",
+        "RED_ACCEPTANCE",
+        "RED_UNIT",
+        "GREEN_UNIT"
+      ]
     },
     "phase_execution_log": [
       {
         "phase_name": "PREPARE",
         "phase_index": 0,
-        "status": "NOT_EXECUTED",
-        "started_at": null,
-        "ended_at": null,
-        "duration_minutes": null,
-        "outcome": null,
-        "outcome_details": null,
+        "status": "EXECUTED",
+        "started_at": "2026-01-25T11:39:13.666988+00:00",
+        "ended_at": "2026-01-25T11:39:22.693279+00:00",
+        "duration_minutes": 0.15,
+        "outcome": "PASS",
+        "outcome_details": "Infrastructure step - no E2E test to enable",
         "artifacts_created": [],
         "artifacts_modified": [],
         "test_results": {
@@ -67,18 +72,18 @@
           "failed": null,
           "skipped": null
         },
-        "notes": null,
+        "notes": "Schema extension for extension tracking",
         "blocked_by": null,
         "history": []
       },
       {
         "phase_name": "RED_ACCEPTANCE",
         "phase_index": 1,
-        "status": "NOT_EXECUTED",
-        "started_at": null,
-        "ended_at": null,
-        "duration_minutes": null,
-        "outcome": null,
+        "status": "SKIPPED",
+        "started_at": "2026-01-25T11:39:32.323661+00:00",
+        "ended_at": "2026-01-25T11:39:32.323678+00:00",
+        "duration_minutes": 0,
+        "outcome": "SKIPPED",
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
@@ -89,48 +94,52 @@
           "skipped": null
         },
         "notes": null,
-        "blocked_by": null,
+        "blocked_by": "NOT_APPLICABLE: Infrastructure change - no E2E acceptance test",
         "history": []
       },
       {
         "phase_name": "RED_UNIT",
         "phase_index": 2,
-        "status": "NOT_EXECUTED",
-        "started_at": null,
-        "ended_at": null,
-        "duration_minutes": null,
-        "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
+        "status": "EXECUTED",
+        "started_at": "2026-01-25T11:39:39.815885+00:00",
+        "ended_at": "2026-01-25T11:40:17.106395+00:00",
+        "duration_minutes": 0.62,
+        "outcome": "PASS",
+        "outcome_details": "Tests fail correctly - extensions_granted field missing",
+        "artifacts_created": [
+          "tests/unit/test_step_schema_extensions.py"
+        ],
         "artifacts_modified": [],
         "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
+          "total": 3,
+          "passed": 1,
+          "failed": 2,
+          "skipped": 0
         },
-        "notes": null,
+        "notes": "Unit tests verify extensions_granted field requirement",
         "blocked_by": null,
         "history": []
       },
       {
         "phase_name": "GREEN_UNIT",
         "phase_index": 3,
-        "status": "NOT_EXECUTED",
-        "started_at": null,
-        "ended_at": null,
-        "duration_minutes": null,
-        "outcome": null,
-        "outcome_details": null,
+        "status": "EXECUTED",
+        "started_at": "2026-01-25T11:40:24.794806+00:00",
+        "ended_at": "2026-01-25T11:41:11.755608+00:00",
+        "duration_minutes": 0.78,
+        "outcome": "PASS",
+        "outcome_details": "Added extensions_granted field to all 14 phase entries",
         "artifacts_created": [],
-        "artifacts_modified": [],
+        "artifacts_modified": [
+          "nWave/templates/step-tdd-cycle-schema.json"
+        ],
         "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
+          "total": 3,
+          "passed": 3,
+          "failed": 0,
+          "skipped": 0
         },
-        "notes": null,
+        "notes": "Schema extended with extensions_granted: [] for each phase",
         "blocked_by": null,
         "history": []
       },
