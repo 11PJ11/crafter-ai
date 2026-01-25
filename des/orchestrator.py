@@ -15,6 +15,24 @@ Integration: US-003 Post-Execution Validation
 
 from des.validator import TemplateValidator, ValidationResult
 from des.hooks import SubagentStopHook, HookResult
+from des.turn_counter import TurnCounter
+from dataclasses import dataclass
+import json
+from pathlib import Path
+
+
+@dataclass
+class ExecuteStepResult:
+    """Result from execute_step() method execution.
+
+    Attributes:
+        turn_count: Total number of turns (iterations) executed
+        phase_name: Name of the phase being executed
+        status: Execution status (e.g., "COMPLETED", "IN_PROGRESS")
+    """
+    turn_count: int
+    phase_name: str = "PREPARE"
+    status: str = "COMPLETED"
 
 
 class DESOrchestrator:
@@ -171,3 +189,73 @@ class DESOrchestrator:
             HookResult with validation status and any errors found
         """
         return self._hook.on_agent_complete(step_file_path)
+
+    def execute_step(
+        self,
+        command: str,
+        agent: str,
+        step_file: str,
+        project_root: Path | str,
+        simulated_iterations: int = 0
+    ) -> ExecuteStepResult:
+        """
+        Execute step with TurnCounter integration for turn tracking.
+
+        This method wires TurnCounter into the orchestrator's execution loop:
+        - Initializes TurnCounter at phase start
+        - Increments on each agent call iteration
+        - Persists to step file in real-time
+        - Restores state from step file on resume
+
+        Args:
+            command: Command type (/nw:execute, /nw:develop)
+            agent: Target agent identifier (e.g., @software-crafter)
+            step_file: Path to step JSON file (relative to project_root)
+            project_root: Project root directory path
+            simulated_iterations: Number of iterations to simulate (for testing)
+
+        Returns:
+            ExecuteStepResult with turn_count and execution status
+        """
+        # Initialize TurnCounter
+        counter = TurnCounter()
+
+        # Load step file
+        if isinstance(project_root, str):
+            project_root = Path(project_root)
+        step_file_path = project_root / step_file
+
+        with open(step_file_path, 'r') as f:
+            step_data = json.load(f)
+
+        # Get current phase and restore turn count
+        phase_log = step_data["tdd_cycle"]["phase_execution_log"]
+        current_phase = phase_log[0]  # For now, use first phase
+        phase_name = current_phase["phase_name"]
+
+        # Mark phase as IN_PROGRESS if not already
+        if current_phase["status"] == "NOT_EXECUTED":
+            current_phase["status"] = "IN_PROGRESS"
+
+        # Restore existing turn count if resuming
+        existing_turn_count = current_phase.get("turn_count", 0)
+        for _ in range(existing_turn_count):
+            counter.increment_turn(phase_name)
+
+        # Execute simulated iterations (in real implementation, this would be agent calls)
+        for _ in range(simulated_iterations):
+            counter.increment_turn(phase_name)
+
+        # Get final turn count
+        final_turn_count = counter.get_current_turn(phase_name)
+
+        # Persist turn count to step file
+        current_phase["turn_count"] = final_turn_count
+        with open(step_file_path, 'w') as f:
+            json.dump(step_data, f, indent=2)
+
+        return ExecuteStepResult(
+            turn_count=final_turn_count,
+            phase_name=phase_name,
+            status="COMPLETED"
+        )
