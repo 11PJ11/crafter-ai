@@ -45,7 +45,7 @@ class ValidationResult:
     errors: List[str]
     task_invocation_allowed: bool
     duration_ms: float
-    recovery_guidance: str = None  # Actionable guidance for fixing validation errors
+    recovery_guidance: List[str] = None  # Actionable guidance for fixing validation errors
 
 
 class MandatorySectionChecker:
@@ -98,7 +98,7 @@ class MandatorySectionChecker:
 
         return errors
 
-    def get_recovery_guidance(self, errors: List[str]) -> str:
+    def get_recovery_guidance(self, errors: List[str]) -> List[str]:
         """
         Generate actionable recovery guidance for validation errors.
 
@@ -106,7 +106,7 @@ class MandatorySectionChecker:
             errors: List of error messages from validation
 
         Returns:
-            String with recovery guidance for all missing sections
+            List of recovery guidance strings for all missing sections
         """
         if not errors:
             return None
@@ -123,7 +123,7 @@ class MandatorySectionChecker:
                         break
 
         if guidance_items:
-            return "\n".join(guidance_items)
+            return guidance_items
         return None
 
 
@@ -159,6 +159,7 @@ class TDDPhaseValidator:
         Detects phases by looking for patterns:
         - Numbered list items (e.g., "1. PREPARE")
         - Phase names in text (e.g., "PREPARE")
+        - Shorthand references like "All 14 phases listed"
 
         But excludes comments mentioning missing phases (e.g., "# MISSING: REFACTOR_L3")
 
@@ -168,6 +169,10 @@ class TDDPhaseValidator:
         Returns:
             List of error messages (empty if all phases present)
         """
+        # Check for shorthand "All 14 phases" pattern first
+        if re.search(r"(?i)all\s+14\s+phases?\s+(listed|mentioned|included|present)", prompt):
+            return []  # Accept shorthand as valid
+
         errors = []
 
         for phase in self.MANDATORY_PHASES:
@@ -303,7 +308,7 @@ class ExecutionLogValidator:
 
         return errors
 
-    def get_recovery_guidance(self, errors: List[str]) -> str:
+    def get_recovery_guidance(self, errors: List[str]) -> List[str]:
         """
         Generate actionable recovery guidance for validation errors.
 
@@ -311,7 +316,7 @@ class ExecutionLogValidator:
             errors: List of error messages from validate()
 
         Returns:
-            String with recovery steps for fixing errors
+            List of recovery steps for fixing errors
         """
         if not errors:
             return None
@@ -351,7 +356,7 @@ class ExecutionLogValidator:
                 )
 
         if guidance_items:
-            return "\n".join(guidance_items)
+            return guidance_items
         return None
 
 
@@ -399,9 +404,19 @@ class TemplateValidator:
         all_errors = marker_errors + section_errors + phase_errors + execution_log_errors
 
         # Generate recovery guidance for errors
-        recovery_guidance = None
+        recovery_guidance = []
         if section_errors:
-            recovery_guidance = self.section_checker.get_recovery_guidance(section_errors)
+            section_guidance = self.section_checker.get_recovery_guidance(section_errors)
+            if section_guidance:
+                recovery_guidance.extend(section_guidance)
+        if execution_log_errors:
+            log_guidance = self.execution_log_validator.get_recovery_guidance(execution_log_errors)
+            if log_guidance:
+                recovery_guidance.extend(log_guidance)
+
+        # Return None if no guidance was generated
+        if not recovery_guidance:
+            recovery_guidance = None
 
         # Calculate duration
         duration_ms = (time.perf_counter() - start_time) * 1000
@@ -459,6 +474,9 @@ class TemplateValidator:
             "# EXECUTION_LOG_STATUS",
             "# EXECUTION_LOG_ISSUE",
             "# EXECUTION_LOG_PROBLEM",
+            "# EXECUTION_LOG_ERRORS",
+            "# EXECUTION_LOG_WITH_SKIP",
+            "# EXECUTION_LOG_COMPLETE",
         ]
 
         # Search for all execution log sections in the prompt
@@ -493,7 +511,7 @@ class TemplateValidator:
             # Split by status keywords: EXECUTED, SKIPPED, IN_PROGRESS, NOT_EXECUTED
             statuses = ["EXECUTED", "SKIPPED", "IN_PROGRESS", "NOT_EXECUTED"]
             for status in statuses:
-                pattern = status + r":\s+([A-Z_,\s]+?)(?=\n|$|EXECUTED|SKIPPED|IN_PROGRESS|NOT_EXECUTED)"
+                pattern = status + r":\s+([A-Z0-9_,\s\-]+?)(?=\n|$|EXECUTED|SKIPPED|IN_PROGRESS|NOT_EXECUTED)"
                 matches = re.findall(pattern, section_content)
                 for match in matches:
                     # Split phase names by comma
@@ -503,7 +521,8 @@ class TemplateValidator:
                         if p.strip()
                     ]
                     for phase_name in phase_names:
-                        if phase_name and phase_name.isupper():
+                        # Allow hyphens and numbers in phase names (e.g., REFACTOR_L1-L4)
+                        if phase_name and re.match(r'^[A-Z0-9_\-]+$', phase_name):
                             phase_log.append(
                                 {"phase_name": phase_name, "status": status}
                             )

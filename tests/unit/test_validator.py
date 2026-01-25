@@ -147,8 +147,11 @@ class TestExecutionLogValidator:
         guidance = validator.get_recovery_guidance(errors)
 
         assert guidance is not None
-        assert "Complete" in guidance or "Rollback" in guidance
-        assert "RED_ACCEPTANCE" in guidance
+        assert isinstance(guidance, list)
+        assert len(guidance) > 0
+        guidance_str = " ".join(guidance)
+        assert "Complete" in guidance_str or "Rollback" in guidance_str
+        assert "RED_ACCEPTANCE" in guidance_str
 
     def test_allow_multiple_executed_phases_with_outcomes(self):
         """Validator accepts multiple EXECUTED phases with valid outcomes."""

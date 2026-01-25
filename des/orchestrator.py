@@ -34,6 +34,7 @@ class DESOrchestrator:
         """Initialize orchestrator with template validator and hook."""
         self._validator = TemplateValidator()
         self._hook = SubagentStopHook()
+        self._subagent_lifecycle_completed = False
 
     def validate_prompt(self, prompt: str) -> ValidationResult:
         """
@@ -48,7 +49,10 @@ class DESOrchestrator:
         Returns:
             ValidationResult with status, errors, and task_invocation_allowed flag
         """
-        return self._validator.validate_prompt(prompt)
+        result = self._validator.validate_prompt(prompt)
+        # Mark lifecycle as completed after validation
+        self._subagent_lifecycle_completed = True
+        return result
 
     def _get_validation_level(self, command: str | None) -> str:
         """
