@@ -1,32 +1,85 @@
 # DW-EXECUTE: Atomic Task Execution Engine
 
 ---
-## ORCHESTRATOR BRIEFING (MANDATORY)
+## ORCHESTRATOR INVOCATION PROTOCOL (MANDATORY)
 
-**CRITICAL ARCHITECTURAL CONSTRAINT**: Sub-agents launched via Task tool have NO ACCESS to the Skill tool. They can ONLY use: Read, Write, Edit, Bash, Glob, Grep.
+**When YOU (orchestrator) delegate this command to an agent via Task tool:**
 
-### What Orchestrator Must Do
+### CORRECT Pattern (minimal prompt):
+```python
+Task(
+    subagent_type="software-crafter",
+    prompt="Execute: docs/feature/auth-upgrade/steps/01-01.json"
+)
+```
 
-When delegating this command to an agent via Task tool:
+### Why This Works:
+- ✅ Step file contains ALL context (self_contained_context, acceptance_criteria, quality_gates)
+- ✅ Agent has internal knowledge of 14-phase TDD
+- ✅ No conversation context needed
+- ✅ Deterministic execution
 
-1. **Read step file content** and embed it in the agent prompt (not just the path)
-2. **Include all 14 TDD phases** with inline criteria (especially REVIEW and POST_REFACTOR_REVIEW)
-3. **Do NOT reference any /nw:* commands** in the agent prompt
-4. **Embed review criteria inline** - agents cannot invoke /nw:review
+### WRONG Patterns (avoid):
+```python
+# ❌ Including acceptance criteria (already in step file)
+Task(prompt="Execute step 01-01. Acceptance criteria: [long list from step file]")
 
-### Agent Prompt Must Contain
+# ❌ Listing 14 phases (agent already knows this)
+Task(prompt="Execute using 14 phases: 1. PREPARE, 2. RED_ACCEPTANCE...")
 
-- Full step file JSON content (or summary of key fields)
-- Complete 14-phase TDD cycle instructions
-- Inline review criteria for phases 7 and 12
-- Expected outputs and quality gates
-- No references to `/nw:*` commands
+# ❌ Boundary warnings (step file has phase_validation_rules)
+Task(prompt="Execute 01-01. CRITICAL: Don't forget POST_REFACTOR_REVIEW!")
 
-### What NOT to Include
+# ❌ Any context from current conversation
+Task(prompt="Execute 01-01. As we discussed earlier, the SISTER constraint...")
+```
 
-- ❌ "Execute /nw:review after implementation"
-- ❌ "Use /nw:finalize when done"
-- ❌ Any command or skill the agent should invoke
+### Key Principle:
+**Command invocation = Step file path ONLY**
+
+The step file is self-contained. Your prompt should not duplicate what's already in the file.
+
+---
+
+## AGENT PROMPT REINFORCEMENT (Command-Specific Guidance)
+
+Reinforce command-specific principles extracted from THIS file (execute.md):
+
+### Recommended Prompt Template:
+```python
+Task(
+    subagent_type="software-crafter",
+    prompt="""Execute: docs/feature/auth-upgrade/steps/01-01.json
+
+CRITICAL (from execute.md):
+- Save step file after EACH phase (no batching)
+- Verify entry point wiring in PREPARE phase (Walking Skeleton - CM-D)
+- DEFERRED blocks commit (use NOT_APPLICABLE or APPROVED_SKIP)
+- Read canonical schema first: nWave/templates/step-tdd-cycle-schema.json
+
+AVOID:
+- ❌ Batching phase updates (causes incomplete state tracking)
+- ❌ Skipping wiring check (features exist but don't work for users)
+- ❌ Using DEFERRED: prefix (blocks commit)
+- ❌ Leaving phases IN_PROGRESS (indicates abandoned execution)"""
+)
+```
+
+### Why Add This Guidance:
+- **Source**: Extracted from execute.md (not conversation context)
+- **Deterministic**: Same principles every time you invoke execute
+- **Reinforcing**: Prevents common boundary violations
+- **Token-efficient**: ~100 tokens vs 1000s in rework
+
+### What NOT to Add:
+```python
+# ❌ WRONG - This uses orchestrator's conversation context
+Task(prompt="""Execute: 01-01.json
+
+Based on our earlier analysis, the SISTER constraint affects 20% of tests.
+The tier 2 tests at 532 seconds are the main bottleneck.
+Focus on parallelization as we discussed.""")
+```
 
 ---
 

@@ -1,40 +1,84 @@
 # DW-BASELINE: Establish Measurement Baseline
 
 ---
-## ORCHESTRATOR BRIEFING (MANDATORY)
+## ORCHESTRATOR INVOCATION PROTOCOL (MANDATORY)
 
-**CRITICAL ARCHITECTURAL CONSTRAINT**: Sub-agents launched via Task tool have NO ACCESS to the Skill tool. They can ONLY use: Read, Write, Edit, Bash, Glob, Grep.
+**When YOU (orchestrator) delegate this command to an agent via Task tool:**
 
-### What Orchestrator Must Do
-
-When delegating this command to an agent via Task tool:
-
-1. **Do NOT pass `/nw:baseline`** to the agent - they cannot execute it
-2. **Create a complete agent prompt** with all instructions embedded inline
-3. **Include**: project ID, output file path, measurement requirements
-4. **Embed**: baseline YAML structure, deliverables, quality criteria
-
-### Agent Prompt Template
-
-```text
-You are a researcher agent creating a measurement baseline.
-
-PROJECT: {project_id}
-OUTPUT FILE: docs/feature/{project_id}/baseline.yaml
-
-YOUR TASK: Create a quantitative measurement baseline that captures:
-1. Current state metrics (performance, complexity, coverage)
-2. Measurement methodology used
-3. Target improvement thresholds
-
-[Include baseline YAML structure and deliverables]
+### CORRECT Pattern (minimal prompt):
+```python
+Task(
+    subagent_type="researcher",
+    prompt="Create baseline: test-optimization (type: performance_optimization)"
+)
 ```
 
-### What NOT to Include in Agent Prompts
+### Why This Works:
+- ✅ Researcher agent has internal baseline schema knowledge
+- ✅ Project ID specifies where to save: docs/feature/{project-id}/baseline.yaml
+- ✅ Baseline type specifies which sections are required
+- ✅ No conversation context needed
 
-- ❌ `/nw:baseline`
-- ❌ "Execute /nw:roadmap next"
-- ❌ Any skill or command reference
+### WRONG Patterns (avoid):
+```python
+# ❌ Embedding baseline schema (researcher already knows this)
+Task(prompt="Create baseline for test-optimization. Use this YAML structure: [long schema]")
+
+# ❌ Listing measurement requirements (researcher knows what to measure)
+Task(prompt="Create baseline. Measure timing, breakdown by category, rank by impact...")
+
+# ❌ Validation rules (researcher has internal validation)
+Task(prompt="Create baseline. Ensure baseline_metric.value matches target.current...")
+
+# ❌ Any context from current conversation
+Task(prompt="Create baseline. As we discussed, the test suite has tier 2 and tier 3...")
+```
+
+### Key Principle:
+**Command invocation = Project ID + Baseline type ONLY**
+
+The researcher agent knows how to create baselines. Your prompt should not duplicate schema.
+
+---
+
+## AGENT PROMPT REINFORCEMENT (Command-Specific Guidance)
+
+Reinforce command-specific principles extracted from THIS file (baseline.md):
+
+### Recommended Prompt Template:
+```python
+Task(
+    subagent_type="researcher",
+    prompt="""Create baseline: test-optimization (type: performance_optimization)
+
+CRITICAL (from baseline.md):
+- Measurements MUST be actual numbers (NOT placeholders like "TBD" or "~500")
+- Quick wins identified BEFORE complex solutions
+- Breakdown analysis: rank by TIME IMPACT (not by type/category)
+- baseline_metric.value must equal target.current
+
+AVOID:
+- ❌ Using placeholders or estimates without measurement
+- ❌ Categorizing without timing (need time impact, not just counts)
+- ❌ Skipping quick win analysis (may not need complex solution)
+- ❌ Assuming most-mentioned = most important (measure, don't assume)"""
+)
+```
+
+### Why Add This Guidance:
+- **Source**: Extracted from baseline.md (not conversation context)
+- **Deterministic**: Same principles every time you invoke baseline
+- **Reinforcing**: Prevents wrong-problem pattern (Incident ROADMAP-2025-12-03-001)
+- **Token-efficient**: ~100 tokens vs wrong roadmap creation
+
+### What NOT to Add:
+```python
+# ❌ WRONG - This uses orchestrator's conversation context
+Task(prompt="""Create baseline: test-optimization
+
+As we discussed, the test suite has tier 2 and tier 3 tests.
+The SISTER constraint is mentioned but only affects 20%.""")
+```
 
 ---
 

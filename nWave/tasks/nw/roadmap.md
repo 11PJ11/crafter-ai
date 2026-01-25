@@ -1,42 +1,84 @@
 # DW-ROADMAP: Comprehensive Goal Planning Document
 
 ---
-## ORCHESTRATOR BRIEFING (MANDATORY)
+## ORCHESTRATOR INVOCATION PROTOCOL (MANDATORY)
 
-**CRITICAL ARCHITECTURAL CONSTRAINT**: Sub-agents launched via Task tool have NO ACCESS to the Skill tool. They can ONLY use: Read, Write, Edit, Bash, Glob, Grep.
+**When YOU (orchestrator) delegate this command to an agent via Task tool:**
 
-### What Orchestrator Must Do
-
-When delegating this command to an agent via Task tool:
-
-1. **Do NOT pass `/nw:roadmap`** to the agent - they cannot execute it
-2. **Create a complete agent prompt** with all instructions embedded inline
-3. **Include**: project ID, baseline path, output file path, roadmap requirements
-4. **Embed**: roadmap YAML structure, phase/step format, deliverables
-
-### Agent Prompt Template
-
-```text
-You are a solution-architect agent creating an implementation roadmap.
-
-PROJECT: {project_id}
-INPUT FILE: docs/feature/{project_id}/baseline.yaml
-OUTPUT FILE: docs/feature/{project_id}/roadmap.yaml
-
-YOUR TASK: Create a comprehensive implementation roadmap that:
-1. Breaks down the feature into sequential phases
-2. Defines atomic steps within each phase
-3. Maps dependencies between steps
-4. Identifies required agents for each step
-
-[Include roadmap YAML structure and deliverables]
+### CORRECT Pattern (minimal prompt):
+```python
+Task(
+    subagent_type="solution-architect",
+    prompt="Create roadmap: test-optimization (baseline: docs/feature/test-optimization/baseline.yaml)"
+)
 ```
 
-### What NOT to Include in Agent Prompts
+### Why This Works:
+- ✅ Solution architect has internal roadmap template knowledge
+- ✅ Baseline file contains all measurement context
+- ✅ Project ID specifies where to save: docs/feature/{project-id}/roadmap.yaml
+- ✅ No conversation context needed
 
-- ❌ `/nw:roadmap`
-- ❌ "Execute /nw:split next"
-- ❌ Any skill or command reference
+### WRONG Patterns (avoid):
+```python
+# ❌ Embedding roadmap structure (architect already knows this)
+Task(prompt="Create roadmap. Use this YAML structure: project/phases/steps...")
+
+# ❌ Listing baseline details (baseline file has these)
+Task(prompt="Create roadmap. Baseline shows tier 2 is 70%, tier 3 is 30%...")
+
+# ❌ Phase guidance (architect knows how to organize phases)
+Task(prompt="Create roadmap. Start with research phase, then implementation...")
+
+# ❌ Any context from current conversation
+Task(prompt="Create roadmap. As we discussed earlier, SISTER constraint is minority...")
+```
+
+### Key Principle:
+**Command invocation = Project ID + Baseline file path ONLY**
+
+The baseline file contains all measurement context. Your prompt should not duplicate it.
+
+---
+
+## AGENT PROMPT REINFORCEMENT (Command-Specific Guidance)
+
+Reinforce command-specific principles extracted from THIS file (roadmap.md):
+
+### Recommended Prompt Template:
+```python
+Task(
+    subagent_type="solution-architect",
+    prompt="""Create roadmap: test-optimization (baseline: docs/feature/test-optimization/baseline.yaml)
+
+CRITICAL (from roadmap.md):
+- Baseline file REQUIRED (blocking gate for measurement-first approach)
+- Address LARGEST bottleneck first (from baseline ranking)
+- Quick wins = Phase 1 (before complex architecture solutions)
+- Research outputs MUST be quantitative (timing, not just categorization)
+
+AVOID:
+- ❌ Creating roadmap without baseline (enables wrong-problem pattern)
+- ❌ Designing architecture before completing research
+- ❌ Qualitative-only research (categorize by type without timing)
+- ❌ Constraint-anchored design (optimizing for minority constraint)"""
+)
+```
+
+### Why Add This Guidance:
+- **Source**: Extracted from roadmap.md (not conversation context)
+- **Deterministic**: Same principles every time you invoke roadmap
+- **Reinforcing**: Prevents Incident ROADMAP-2025-12-03-001 pattern
+- **Token-efficient**: ~100 tokens vs 34-step wrong roadmap
+
+### What NOT to Add:
+```python
+# ❌ WRONG - This uses orchestrator's conversation context
+Task(prompt="""Create roadmap: test-optimization
+
+The baseline shows tier 2 is 70% and tier 3 is 30%.
+SISTER constraint is minority but was emphasized in discussion.""")
+```
 
 ---
 
