@@ -18,8 +18,8 @@
     "suggested_agent": "software-crafter"
   },
   "state": {
-    "status": "NOT_STARTED",
-    "started_at": null,
+    "status": "IN_PROGRESS",
+    "started_at": "2026-01-25T15:00:03.072167+00:00",
     "ended_at": null
   },
   "tdd_cycle": {
@@ -45,7 +45,7 @@
       "in_memory_adapters": []
     },
     "tdd_phase_tracking": {
-      "current_phase": "NOT_STARTED",
+      "current_phase": "PREPARE",
       "active_e2e_test": "",
       "inactive_e2e_tests": "All other @skip scenarios remain disabled",
       "phases_completed": []

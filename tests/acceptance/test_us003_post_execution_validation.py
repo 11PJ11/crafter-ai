@@ -793,6 +793,108 @@ def _create_step_file_with_clean_completion():
     return _create_step_file_with_all_phases_executed()
 
 
+def _create_step_file_with_timeout_exceeded():
+    """Create step file where total execution duration exceeds configured time limit."""
+    phases = [
+        "PREPARE",
+        "RED_ACCEPTANCE",
+        "RED_UNIT",
+        "GREEN_UNIT",
+        "CHECK_ACCEPTANCE",
+        "GREEN_ACCEPTANCE",
+        "REVIEW",
+        "REFACTOR_L1",
+        "REFACTOR_L2",
+        "REFACTOR_L3",
+        "REFACTOR_L4",
+        "POST_REFACTOR_REVIEW",
+        "FINAL_VALIDATE",
+        "COMMIT",
+    ]
+
+    # Set timeout limits: 5 minutes base + 2 minutes extensions = 7 minutes = 420 seconds
+    # Set actual duration: 8 minutes = 480 seconds (exceeds limit by 60 seconds)
+    phase_log = []
+    duration_per_phase = 480 // len(phases)  # ~34 seconds per phase
+
+    for i, phase in enumerate(phases):
+        phase_log.append(
+            {
+                "phase_number": i,
+                "phase_name": phase,
+                "status": "EXECUTED",
+                "outcome": "PASS",
+                "outcome_details": f"{phase} completed",
+                "duration_seconds": duration_per_phase,
+                "blocked_by": None,
+            }
+        )
+
+    return {
+        "task_id": "01-01",
+        "project_id": "test-project",
+        "workflow_type": "tdd_cycle",
+        "state": {
+            "status": "DONE",
+            "started_at": "2026-01-22T10:00:00Z",
+            "completed_at": "2026-01-22T10:08:00Z",
+        },
+        "tdd_cycle": {
+            "duration_minutes": 5,
+            "total_extensions_minutes": 2,
+            "phase_execution_log": phase_log
+        },
+    }
+
+
+def _create_step_file_with_missing_limits():
+    """Create step file missing required max_turns and duration_minutes configuration."""
+    phases = [
+        "PREPARE",
+        "RED_ACCEPTANCE",
+        "RED_UNIT",
+        "GREEN_UNIT",
+        "CHECK_ACCEPTANCE",
+        "GREEN_ACCEPTANCE",
+        "REVIEW",
+        "REFACTOR_L1",
+        "REFACTOR_L2",
+        "REFACTOR_L3",
+        "REFACTOR_L4",
+        "POST_REFACTOR_REVIEW",
+        "FINAL_VALIDATE",
+        "COMMIT",
+    ]
+
+    phase_log = []
+    for i, phase in enumerate(phases):
+        phase_log.append(
+            {
+                "phase_number": i,
+                "phase_name": phase,
+                "status": "EXECUTED",
+                "outcome": "PASS",
+                "outcome_details": f"{phase} completed",
+                "blocked_by": None,
+            }
+        )
+
+    return {
+        "task_id": "01-01",
+        "project_id": "test-project",
+        "workflow_type": "tdd_cycle",
+        "state": {
+            "status": "DONE",
+            "started_at": "2026-01-22T10:00:00Z",
+            "completed_at": "2026-01-22T11:30:00Z",
+        },
+        "tdd_cycle": {
+            # Missing max_turns and duration_minutes fields!
+            "phase_execution_log": phase_log
+        },
+    }
+
+
 def _create_step_file_with_valid_skip():
     """Create step file with legitimately skipped phase (has blocked_by)."""
     phases = [

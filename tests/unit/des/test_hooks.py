@@ -945,18 +945,18 @@ class TestTurnLimitValidation:
         result = HookResult(validation_status="PASSED")
 
         # HookResult should have turn_limit_exceeded field
-        assert hasattr(result, 'turn_limit_exceeded'), (
-            "HookResult missing turn_limit_exceeded field"
-        )
+        assert hasattr(
+            result, "turn_limit_exceeded"
+        ), "HookResult missing turn_limit_exceeded field"
 
     def test_turn_limit_exceeded_defaults_to_false(self):
         """HookResult.turn_limit_exceeded should default to False."""
         from des.hooks import HookResult
 
         result = HookResult(validation_status="PASSED")
-        assert result.turn_limit_exceeded is False, (
-            "turn_limit_exceeded should default to False"
-        )
+        assert (
+            result.turn_limit_exceeded is False
+        ), "turn_limit_exceeded should default to False"
 
     def test_detects_phase_exceeding_turn_limit(self):
         """Hook should detect when phase turn_count exceeds max_turns."""
@@ -979,7 +979,7 @@ class TestTurnLimitValidation:
                         "turn_count": 65,  # Exceeds max_turns of 50
                         "max_turns": 50,
                     }
-                ]
+                ],
             },
         }
 
@@ -993,9 +993,9 @@ class TestTurnLimitValidation:
             result = hook.on_agent_complete(step_file_path=temp_path)
 
             # Should detect turn limit exceeded
-            assert result.turn_limit_exceeded is True, (
-                "Should detect turn_count (65) exceeds max_turns (50)"
-            )
+            assert (
+                result.turn_limit_exceeded is True
+            ), "Should detect turn_count (65) exceeds max_turns (50)"
 
             # Should include phase name in error message
             assert result.error_message is not None
@@ -1033,8 +1033,8 @@ class TestTurnLimitValidation:
                         "outcome": "PASS",
                         "turn_count": 45,  # Exceeds limit
                         "max_turns": 30,
-                    }
-                ]
+                    },
+                ],
             },
         }
 
@@ -1049,7 +1049,10 @@ class TestTurnLimitValidation:
 
             # Should identify RED_UNIT as the phase that exceeded limit
             assert "RED_UNIT" in result.error_message
-            assert "45" in result.error_message or "exceeded" in result.error_message.lower()
+            assert (
+                "45" in result.error_message
+                or "exceeded" in result.error_message.lower()
+            )
         finally:
             Path(temp_path).unlink()
 
@@ -1073,7 +1076,7 @@ class TestTurnLimitValidation:
                         "turn_count": 35,
                         "max_turns": 20,
                     }
-                ]
+                ],
             },
         }
 
@@ -1114,7 +1117,7 @@ class TestTurnLimitValidation:
                         "turn_count": 40,
                         "max_turns": 25,
                     }
-                ]
+                ],
             },
         }
 
@@ -1132,5 +1135,191 @@ class TestTurnLimitValidation:
                 keyword in suggestions_text
                 for keyword in ["simplify", "break", "smaller", "split"]
             ), "Should suggest simplifying or splitting step"
+        finally:
+            Path(temp_path).unlink()
+
+
+class TestTimeoutDetection:
+    """Tests for timeout exceeded detection in SubagentStopHook."""
+
+    def test_hook_result_has_timeout_exceeded_field(self):
+        """HookResult should have timeout_exceeded field."""
+        from des.hooks import HookResult
+
+        result = HookResult(validation_status="PASSED")
+        assert hasattr(result, "timeout_exceeded")
+        assert result.timeout_exceeded is False
+
+    def test_detect_timeout_exceeded_when_duration_exceeds_limit(self):
+        """Hook should detect when duration_seconds exceeds configured limit."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        step_data = {
+            "task_id": "07-01",
+            "state": {"status": "COMPLETED"},
+            "tdd_cycle": {
+                "duration_minutes": 30,
+                "total_extensions_minutes": 10,  # Total allowed: 40 min = 2400s
+                "phase_execution_log": [
+                    {
+                        "phase_number": 0,
+                        "phase_name": "PREPARE",
+                        "status": "EXECUTED",
+                        "outcome": "PASS",
+                        "duration_seconds": 300,
+                    },
+                    {
+                        "phase_number": 1,
+                        "phase_name": "RED_ACCEPTANCE",
+                        "status": "EXECUTED",
+                        "outcome": "PASS",
+                        "duration_seconds": 2400,  # Total: 2700s = 45 min (exceeds 40 min)
+                    },
+                ],
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            result = hook.on_agent_complete(step_file_path=temp_path)
+            assert result.timeout_exceeded is True
+        finally:
+            Path(temp_path).unlink()
+
+    def test_no_timeout_when_duration_within_limit(self):
+        """Hook should not detect timeout when duration is within limit."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        step_data = {
+            "task_id": "07-01",
+            "state": {"status": "COMPLETED"},
+            "tdd_cycle": {
+                "duration_minutes": 30,
+                "total_extensions_minutes": 10,  # Total allowed: 40 min = 2400s
+                "phase_execution_log": [
+                    {
+                        "phase_number": 0,
+                        "phase_name": "PREPARE",
+                        "status": "EXECUTED",
+                        "outcome": "PASS",
+                        "duration_seconds": 300,
+                    },
+                    {
+                        "phase_number": 1,
+                        "phase_name": "RED_ACCEPTANCE",
+                        "status": "EXECUTED",
+                        "outcome": "PASS",
+                        "duration_seconds": 2000,  # Total: 2300s < 2400s (within limit)
+                    },
+                ],
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            result = hook.on_agent_complete(step_file_path=temp_path)
+            assert result.timeout_exceeded is False
+        finally:
+            Path(temp_path).unlink()
+
+    def test_timeout_error_message_includes_duration_details(self):
+        """Error message should include actual and expected duration."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        step_data = {
+            "task_id": "07-01",
+            "state": {"status": "COMPLETED"},
+            "tdd_cycle": {
+                "duration_minutes": 30,
+                "total_extensions_minutes": 10,
+                "phase_execution_log": [
+                    {
+                        "phase_number": 0,
+                        "phase_name": "PREPARE",
+                        "status": "EXECUTED",
+                        "outcome": "PASS",
+                        "duration_seconds": 2700,  # Exceeds 40 min limit
+                    }
+                ],
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            result = hook.on_agent_complete(step_file_path=temp_path)
+            assert result.error_message is not None
+            error_msg = result.error_message.lower()
+            assert (
+                "timeout" in error_msg
+                or "exceeded" in error_msg
+                or "duration" in error_msg
+            )
+        finally:
+            Path(temp_path).unlink()
+
+    def test_timeout_recovery_suggestions_include_extension_and_simplify(self):
+        """Recovery suggestions should include requesting extension and simplifying step."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        step_data = {
+            "task_id": "07-01",
+            "state": {"status": "COMPLETED"},
+            "tdd_cycle": {
+                "duration_minutes": 30,
+                "total_extensions_minutes": 10,
+                "phase_execution_log": [
+                    {
+                        "phase_number": 0,
+                        "phase_name": "PREPARE",
+                        "status": "EXECUTED",
+                        "outcome": "PASS",
+                        "duration_seconds": 2700,  # Exceeds limit
+                    }
+                ],
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            result = hook.on_agent_complete(step_file_path=temp_path)
+            suggestions_text = " ".join(result.recovery_suggestions).lower()
+
+            assert any(
+                keyword in suggestions_text
+                for keyword in ["extension", "extend", "request", "more time"]
+            ), "Should suggest requesting extension"
+
+            assert any(
+                keyword in suggestions_text
+                for keyword in ["simplify", "break", "smaller", "split", "reduce"]
+            ), "Should suggest simplifying step"
         finally:
             Path(temp_path).unlink()

@@ -163,9 +163,11 @@ class DESOrchestrator:
         step_file: str | None = None,
         project_root: str | None = None,
         topic: str | None = None,
+        timeout_thresholds: list[int] | None = None,
+        timeout_budget_minutes: int | None = None,
     ) -> str:
         """
-        Render Task prompt with appropriate DES validation markers.
+        Render Task prompt with appropriate DES validation markers and timeout warnings.
 
         Args:
             command: Command type (/nw:execute, /nw:develop, /nw:research)
@@ -173,9 +175,11 @@ class DESOrchestrator:
             step_file: Path to step file for execute/develop commands
             project_root: Project root directory path
             topic: Research topic for research commands
+            timeout_thresholds: List of threshold values in minutes for timeout warnings
+            timeout_budget_minutes: Total time budget in minutes for the phase
 
         Returns:
-            Rendered prompt string with or without DES markers
+            Rendered prompt string with or without DES markers and timeout warnings
 
         Raises:
             ValueError: If command is None or empty, or if step_file is missing
@@ -192,7 +196,17 @@ class DESOrchestrator:
             if not step_file:
                 raise ValueError("Step file required for validation commands")
 
-            return self._generate_des_markers(command, step_file)
+            des_markers = self._generate_des_markers(command, step_file)
+
+            # Add timeout warnings if threshold monitoring is enabled
+            if timeout_thresholds and project_root and step_file:
+                warnings = self._generate_timeout_warnings(
+                    step_file, project_root, timeout_thresholds, timeout_budget_minutes
+                )
+                if warnings:
+                    return f"{des_markers}\n\n{warnings}"
+
+            return des_markers
 
         # Research and other commands bypass DES validation
         return ""
@@ -464,3 +478,63 @@ class DESOrchestrator:
         """
         with open(step_file_path, 'w') as f:
             json.dump(step_data, f, indent=2)
+
+    def _generate_timeout_warnings(
+        self,
+        step_file: str,
+        project_root: str | Path,
+        timeout_thresholds: list[int],
+        timeout_budget_minutes: int | None
+    ) -> str:
+        """Generate timeout warnings for agent prompt context.
+
+        Loads step file, checks if any thresholds have been crossed,
+        and generates formatted warnings with percentage, remaining time,
+        and phase name.
+
+        Args:
+            step_file: Path to step file (relative to project_root)
+            project_root: Project root directory path
+            timeout_thresholds: List of threshold values in minutes
+            timeout_budget_minutes: Total time budget in minutes
+
+        Returns:
+            Formatted warning string, or empty string if no thresholds crossed
+        """
+        step_file_path = self._resolve_step_file_path(project_root, step_file)
+        step_data = self._load_step_file(step_file_path)
+        current_phase = self._get_current_phase(step_data)
+
+        # Get phase start time
+        started_at = current_phase.get("started_at")
+        if not started_at:
+            return ""
+
+        # Initialize TimeoutMonitor
+        monitor = TimeoutMonitor(started_at=started_at)
+
+        # Check thresholds
+        crossed_thresholds = monitor.check_thresholds(timeout_thresholds)
+        if not crossed_thresholds:
+            return ""
+
+        # Generate warning with percentage, remaining time, and phase name
+        elapsed_seconds = monitor.get_elapsed_seconds()
+        elapsed_minutes = int(elapsed_seconds / 60)
+
+        phase_name = current_phase["phase_name"]
+
+        # Calculate percentage and remaining time if budget provided
+        warning_parts = [f"TIMEOUT WARNING: Phase {phase_name}"]
+
+        if timeout_budget_minutes:
+            percentage = int((elapsed_minutes / timeout_budget_minutes) * 100)
+            remaining = timeout_budget_minutes - elapsed_minutes
+            warning_parts.append(
+                f"{percentage}% elapsed ({elapsed_minutes}/{timeout_budget_minutes} minutes). "
+                f"Remaining: {remaining} minutes."
+            )
+        else:
+            warning_parts.append(f"has been running for {elapsed_minutes} minutes.")
+
+        return " ".join(warning_parts)

@@ -128,9 +128,7 @@ class TestTurnCountingIntegration:
         import json
 
         step_data = _create_step_file_with_turn_limit_exceeded(
-            phase_name="GREEN_UNIT",
-            turn_count=65,
-            max_turns=50
+            phase_name="GREEN_UNIT", turn_count=65, max_turns=50
         )
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
@@ -141,27 +139,28 @@ class TestTurnCountingIntegration:
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: Turn limit exceeded detected
-        assert hasattr(hook_result, 'turn_limit_exceeded'), (
-            "HookResult missing turn_limit_exceeded field"
-        )
-        assert hook_result.turn_limit_exceeded is True, (
-            "turn_limit_exceeded should be True when turn count exceeds max_turns"
-        )
+        assert hasattr(
+            hook_result, "turn_limit_exceeded"
+        ), "HookResult missing turn_limit_exceeded field"
+        assert (
+            hook_result.turn_limit_exceeded is True
+        ), "turn_limit_exceeded should be True when turn count exceeds max_turns"
 
         # Assert: Phase identified in error message
         assert hook_result.error_message is not None
-        assert "GREEN_UNIT" in hook_result.error_message, (
-            "Error message should identify which phase exceeded limit"
-        )
-        assert "65" in hook_result.error_message or "exceeded" in hook_result.error_message.lower(), (
-            "Error message should mention turn count or 'exceeded'"
-        )
+        assert (
+            "GREEN_UNIT" in hook_result.error_message
+        ), "Error message should identify which phase exceeded limit"
+        assert (
+            "65" in hook_result.error_message
+            or "exceeded" in hook_result.error_message.lower()
+        ), "Error message should mention turn count or 'exceeded'"
 
         # Assert: Recovery suggestions provided
         assert hook_result.recovery_suggestions is not None
-        assert len(hook_result.recovery_suggestions) >= 2, (
-            "At least 2 recovery suggestions expected (increase limit, simplify step)"
-        )
+        assert (
+            len(hook_result.recovery_suggestions) >= 2
+        ), "At least 2 recovery suggestions expected (increase limit, simplify step)"
 
         # Verify suggestions include key guidance
         suggestions_text = " ".join(hook_result.recovery_suggestions).lower()
@@ -174,6 +173,132 @@ class TestTurnCountingIntegration:
             keyword in suggestions_text
             for keyword in ["simplify", "break", "smaller", "split"]
         ), "Should suggest simplifying or splitting step"
+
+    def test_scenario_017_timeout_exceeded_detected_by_hook(
+        self, tmp_project_root, minimal_step_file
+    ):
+        """
+        AC-007.1: SubagentStopHook detects timeout exceeded after execution.
+
+        GIVEN software-crafter agent completes step execution
+        AND duration_seconds > (duration_minutes * 60 + total_extensions_minutes * 60)
+        WHEN SubagentStopHook.on_agent_complete() fires
+        THEN hook detects timeout_exceeded condition
+        AND HookResult includes timeout_exceeded boolean field set to True
+        AND error message identifies timeout with actual vs expected duration
+        AND recovery suggestions include requesting extension or simplifying step
+
+        Business Context:
+        Marcus configured duration_minutes=30 with total_extensions_minutes=10 for a step.
+        The agent used 2700 seconds (45 minutes), exceeding the 40-minute limit (30+10).
+        The hook must detect this post-execution and alert Marcus with:
+        1. Timeout detection (2700s > 2400s = 40 min timeout exceeded)
+        2. Suggestions to request extension or simplify the step
+
+        This enables:
+        1. Post-execution timeout detection (complements runtime monitoring)
+        2. Audit trail of timeout violations
+        3. Actionable recovery guidance
+        """
+        # Arrange: Create step file with duration exceeding timeout
+        import json
+
+        step_data = _create_step_file_with_timeout_exceeded(
+            duration_seconds=2700,  # 45 minutes
+            duration_minutes=30,
+            total_extensions_minutes=10,  # Total allowed: 40 minutes
+        )
+        minimal_step_file.write_text(json.dumps(step_data, indent=2))
+
+        # Act: Trigger SubagentStop hook
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+        hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
+
+        # Assert: Timeout exceeded detected
+        assert hasattr(
+            hook_result, "timeout_exceeded"
+        ), "HookResult missing timeout_exceeded field"
+        assert (
+            hook_result.timeout_exceeded is True
+        ), "timeout_exceeded should be True when duration exceeds limit"
+
+        # Assert: Error message identifies timeout and duration
+        assert hook_result.error_message is not None
+        error_msg = hook_result.error_message.lower()
+        assert (
+            "timeout" in error_msg or "exceeded" in error_msg or "duration" in error_msg
+        ), "Error message should mention timeout/exceeded/duration"
+        assert (
+            "2700" in hook_result.error_message or "45" in hook_result.error_message
+        ), "Error message should mention actual duration (2700s or 45min)"
+        assert (
+            "2400" in hook_result.error_message or "40" in hook_result.error_message
+        ), "Error message should mention expected duration (2400s or 40min)"
+
+        # Assert: Recovery suggestions provided
+        assert hook_result.recovery_suggestions is not None
+        assert (
+            len(hook_result.recovery_suggestions) >= 2
+        ), "At least 2 recovery suggestions expected (request extension, simplify step)"
+
+        # Verify suggestions include key guidance
+        suggestions_text = " ".join(hook_result.recovery_suggestions).lower()
+        assert any(
+            keyword in suggestions_text
+            for keyword in ["extension", "extend", "request", "more time"]
+        ), "Should suggest requesting extension"
+
+        assert any(
+            keyword in suggestions_text
+            for keyword in ["simplify", "break", "smaller", "split", "reduce"]
+        ), "Should suggest simplifying or splitting step"
+
+
+def _create_step_file_with_timeout_exceeded(
+    duration_seconds: int, duration_minutes: int, total_extensions_minutes: int
+):
+    """Create step file where execution exceeded timeout.
+
+    Args:
+        duration_seconds: Actual execution time in seconds
+        duration_minutes: Configured duration limit in minutes
+        total_extensions_minutes: Total extension time granted in minutes
+
+    Returns:
+        Step file data dict with timeout exceeded
+    """
+    return {
+        "task_id": "07-01",
+        "project_id": "des-us004",
+        "workflow_type": "tdd_cycle",
+        "state": {
+            "status": "COMPLETED",
+            "started_at": "2026-01-25T10:00:00Z",
+            "completed_at": "2026-01-25T10:45:00Z",
+        },
+        "tdd_cycle": {
+            "duration_minutes": duration_minutes,
+            "total_extensions_minutes": total_extensions_minutes,
+            "phase_execution_log": [
+                {
+                    "phase_number": 0,
+                    "phase_name": "PREPARE",
+                    "status": "EXECUTED",
+                    "outcome": "PASS",
+                    "duration_seconds": 300,
+                },
+                {
+                    "phase_number": 1,
+                    "phase_name": "RED_ACCEPTANCE",
+                    "status": "EXECUTED",
+                    "outcome": "PASS",
+                    "duration_seconds": duration_seconds - 300,  # Remaining time
+                },
+            ],
+        },
+    }
 
 
 def _create_step_file_with_turn_limit_exceeded(

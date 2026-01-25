@@ -25,6 +25,7 @@ class HookResult:
         recovery_suggestions: Recommended actions to resolve issues
         not_executed_phases: Count of phases with NOT_EXECUTED status (diagnostic)
         turn_limit_exceeded: Whether any phase exceeded configured max_turns limit
+        timeout_exceeded: Whether total duration exceeded configured time limit
     """
 
     validation_status: str
@@ -38,6 +39,7 @@ class HookResult:
     recovery_suggestions: List[str] = field(default_factory=list)
     not_executed_phases: int = 0
     turn_limit_exceeded: bool = False
+    timeout_exceeded: bool = False
 
 
 class SubagentStopHook:
@@ -97,6 +99,14 @@ class SubagentStopHook:
         if exceeded_phases:
             result.turn_limit_exceeded = True
             errors.append(("TURN_LIMIT_EXCEEDED", exceeded_phases))
+
+        # Check for timeout exceeded
+        duration_minutes = step_data.get("tdd_cycle", {}).get("duration_minutes")
+        total_extensions_minutes = step_data.get("tdd_cycle", {}).get("total_extensions_minutes")
+        timeout_info = self._detect_timeout_exceeded(phase_log, duration_minutes, total_extensions_minutes)
+        if timeout_info["timeout_exceeded"]:
+            result.timeout_exceeded = True
+            errors.append(("TIMEOUT_EXCEEDED", timeout_info))
 
         # If any errors found, populate comprehensive failure details
         if errors:
@@ -199,6 +209,43 @@ class SubagentStopHook:
                 })
         return exceeded
 
+    def _detect_timeout_exceeded(self, phase_log: List[dict], duration_minutes: Optional[int], total_extensions_minutes: Optional[int]) -> dict:
+        """Detect if total execution duration exceeded configured time limit.
+
+        Args:
+            phase_log: List of phase execution entries from step file
+            duration_minutes: Configured base duration limit in minutes
+            total_extensions_minutes: Total extension time granted in minutes
+
+        Returns:
+            Dict with timeout_exceeded bool, actual_seconds, and expected_seconds
+        """
+        if duration_minutes is None:
+            return {"timeout_exceeded": False, "actual_seconds": 0, "expected_seconds": 0}
+
+        # Calculate expected duration limit in seconds
+        base_seconds = duration_minutes * 60
+        extension_seconds = (total_extensions_minutes or 0) * 60
+        expected_seconds = base_seconds + extension_seconds
+
+        # Calculate actual duration from phase log
+        actual_seconds = 0
+        for phase in phase_log:
+            phase_duration = phase.get("duration_seconds", 0)
+            if phase_duration is not None:
+                actual_seconds += phase_duration
+
+        # Check if timeout exceeded
+        timeout_exceeded = actual_seconds > expected_seconds
+
+        return {
+            "timeout_exceeded": timeout_exceeded,
+            "actual_seconds": actual_seconds,
+            "expected_seconds": expected_seconds,
+            "actual_minutes": actual_seconds // 60,
+            "expected_minutes": expected_seconds // 60
+        }
+
     def _populate_aggregated_failures(
         self, result: HookResult, errors: List[tuple], step_file_path: str, step_data: dict
     ) -> None:
@@ -237,6 +284,11 @@ class SubagentStopHook:
                 total_errors += count
                 phase_names = [p["phase_name"] for p in error_data]
                 error_details.append(f"{count} phase(s) exceeded turn limit: {', '.join(phase_names)}")
+            elif error_type == "TIMEOUT_EXCEEDED":
+                total_errors += 1
+                actual = error_data["actual_minutes"]
+                expected = error_data["expected_minutes"]
+                error_details.append(f"Execution timeout exceeded ({actual}min > {expected}min)")
 
         result.error_count = total_errors
         result.error_type = "MULTIPLE_ERRORS" if len(errors) > 1 else errors[0][0]
@@ -257,6 +309,12 @@ class SubagentStopHook:
                 result.error_message = (
                     f"Phase {phase_info['phase_name']} exceeded turn limit "
                     f"({phase_info['turn_count']}/{phase_info['max_turns']} turns)"
+                )
+            elif error_type == "TIMEOUT_EXCEEDED":
+                result.error_message = (
+                    f"Execution timeout exceeded: {error_data['actual_seconds']}s "
+                    f"({error_data['actual_minutes']}min) > {error_data['expected_seconds']}s "
+                    f"({error_data['expected_minutes']}min)"
                 )
         else:
             # Multiple errors - use aggregated format
@@ -323,6 +381,19 @@ class SubagentStopHook:
                     )
                 suggestions.append(
                     "Break step into smaller, simpler sub-tasks to reduce turn count per phase."
+                )
+            elif error_type == "TIMEOUT_EXCEEDED":
+                actual_min = error_data["actual_minutes"]
+                expected_min = error_data["expected_minutes"]
+                additional_min = actual_min - expected_min + 10
+                suggestions.append(
+                    f"Request time extension of at least {additional_min} minutes to accommodate step complexity."
+                )
+                suggestions.append(
+                    "Break step into smaller sub-tasks to reduce execution time per step."
+                )
+                suggestions.append(
+                    "Simplify step requirements or reduce scope to fit within time limit."
                 )
 
         # Ensure minimum 3 suggestions (add generic if needed)

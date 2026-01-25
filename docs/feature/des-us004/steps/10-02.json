@@ -54,13 +54,15 @@
       {
         "phase_name": "PREPARE",
         "phase_index": 0,
-        "status": "NOT_EXECUTED",
-        "started_at": null,
-        "ended_at": null,
-        "duration_minutes": null,
-        "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
+        "status": "EXECUTED",
+        "started_at": "2026-01-25T15:12:03.928339+00:00",
+        "ended_at": "2026-01-25T15:12:03.928339+00:00",
+        "duration_minutes": 5,
+        "outcome": "PASS",
+        "outcome_details": "Created test scenarios 13-14 with @pytest.mark.skip decorator",
+        "artifacts_created": [
+          "tests/acceptance/test_us006_turn_discipline.py (scenarios 13-14)"
+        ],
         "artifacts_modified": [],
         "test_results": {
           "total": null,
@@ -68,7 +70,7 @@
           "failed": null,
           "skipped": null
         },
-        "notes": null,
+        "notes": "Added test_scenario_013_timeout_warnings_emit_at_thresholds and test_scenario_014_agent_receives_timeout_warnings_in_prompt",
         "blocked_by": null,
         "history": []
       },

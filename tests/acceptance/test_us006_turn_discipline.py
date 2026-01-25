@@ -540,3 +540,119 @@ class TestTurnDisciplineContent:
 
         # Verify it has the same structure as execute command
         assert "50" in prompt, "Turn budget must be specified for develop command"
+
+    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
+    def test_scenario_013_timeout_warnings_emit_at_thresholds(
+        self, tmp_project_root, minimal_step_file, des_orchestrator
+    ):
+        """
+        GIVEN execute_step() with timeout_thresholds=[20, 30, 36] and 40-minute budget
+        WHEN execution crosses thresholds at 50%, 75%, 90% elapsed
+        THEN warnings_emitted contains threshold warnings with remaining time
+
+        Business Context:
+        Agents need proactive warnings at configurable thresholds (50%, 75%, 90%)
+        to self-regulate execution and complete work before timeout.
+        """
+        # GIVEN: Step file with 40-minute timeout budget and thresholds
+        from pathlib import Path
+        import json
+
+        step_file = minimal_step_file
+        with open(step_file, 'r') as f:
+            step_data = json.load(f)
+
+        # Set phase start time 25 minutes ago (crossed 50% threshold at 20 min)
+        from datetime import datetime, timezone, timedelta
+        started_at = (datetime.now(timezone.utc) - timedelta(minutes=25)).isoformat()
+
+        # Update step file with started_at timestamp
+        step_data['tdd_cycle']['phase_execution_log'][0]['started_at'] = started_at
+        step_data['tdd_cycle']['phase_execution_log'][0]['status'] = 'IN_PROGRESS'
+
+        with open(step_file, 'w') as f:
+            json.dump(step_data, f, indent=2)
+
+        # WHEN: Execute step with timeout thresholds
+        result = des_orchestrator.execute_step(
+            command="/nw:execute",
+            agent="@software-crafter",
+            step_file=str(step_file.relative_to(tmp_project_root)),
+            project_root=tmp_project_root,
+            simulated_iterations=5,
+            timeout_thresholds=[20, 30, 36]  # 50%, 75%, 90% of 40 minutes
+        )
+
+        # THEN: Warnings emitted for crossed thresholds
+        assert len(result.warnings_emitted) > 0, "Should emit warnings for crossed thresholds"
+
+        # Verify 50% threshold warning (20 minutes)
+        threshold_20_warning = next(
+            (w for w in result.warnings_emitted if "20" in w and "threshold" in w.lower()),
+            None
+        )
+        assert threshold_20_warning is not None, "Should emit warning for 20-minute (50%) threshold"
+        assert "elapsed" in threshold_20_warning.lower(), "Warning should include elapsed time"
+
+    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
+    def test_scenario_014_agent_receives_timeout_warnings_in_prompt(
+        self, tmp_project_root, minimal_step_file, des_orchestrator
+    ):
+        """
+        GIVEN phase execution has crossed 75% threshold
+        WHEN agent receives next turn prompt
+        THEN prompt includes "TIMEOUT WARNING: 75% elapsed" with remaining time
+
+        Business Context:
+        Warnings must be visible in agent prompt context so agents can
+        adjust strategy (complete current work, skip optional steps, etc.)
+        """
+        # GIVEN: Step file with execution that crossed threshold
+        from pathlib import Path
+        import json
+        from datetime import datetime, timezone, timedelta
+
+        step_file = minimal_step_file
+        with open(step_file, 'r') as f:
+            step_data = json.load(f)
+
+        # Set phase start time 32 minutes ago (crossed 75% of 40-min budget)
+        started_at = (datetime.now(timezone.utc) - timedelta(minutes=32)).isoformat()
+
+        # Update step file
+        step_data['tdd_cycle']['phase_execution_log'][0]['started_at'] = started_at
+        step_data['tdd_cycle']['phase_execution_log'][0]['status'] = 'IN_PROGRESS'
+
+        with open(step_file, 'w') as f:
+            json.dump(step_data, f, indent=2)
+
+        # WHEN: Render prompt after threshold crossed
+        # Note: In real implementation, this would be render_prompt() with timeout context
+        # For now, verify execute_step emits warnings that would be included in prompt
+        result = des_orchestrator.execute_step(
+            command="/nw:execute",
+            agent="@software-crafter",
+            step_file=str(step_file.relative_to(tmp_project_root)),
+            project_root=tmp_project_root,
+            simulated_iterations=3,
+            timeout_thresholds=[20, 30, 36],
+            timeout_budget_minutes=40
+        )
+
+        # THEN: Warning format includes threshold and remaining time
+        assert len(result.warnings_emitted) > 0, "Should emit timeout warnings"
+
+        # Find 75% threshold warning
+        warning_75pct = next(
+            (w for w in result.warnings_emitted if "30" in w),  # 30 min = 75% of 40
+            None
+        )
+        assert warning_75pct is not None, "Should emit warning for 30-minute (75%) threshold"
+
+        # Verify warning format includes required elements
+        assert "TIMEOUT WARNING" in warning_75pct or "timeout warning" in warning_75pct.lower(), \
+            "Warning should have clear TIMEOUT WARNING prefix"
+        assert "30" in warning_75pct, "Warning should include threshold value (30 min)"
+        assert "minute" in warning_75pct.lower(), "Warning should include time unit"
+        assert "elapsed" in warning_75pct.lower() or "running" in warning_75pct.lower(), \
+            "Warning should indicate time has elapsed"
