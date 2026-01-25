@@ -149,6 +149,7 @@ class DESOrchestrator:
             f"<!-- DES-STEP-FILE: {step_file} -->",
             f"<!-- DES-ORIGIN: command:{command} -->",
         ]
+        return "\n".join(markers)
 
     def render_prompt(
         self,
