@@ -217,45 +217,65 @@ class DESOrchestrator:
         Returns:
             ExecuteStepResult with turn_count and execution status
         """
-        # Initialize TurnCounter
         counter = TurnCounter()
+        step_file_path = self._resolve_step_file_path(project_root, step_file)
+        step_data = self._load_step_file(step_file_path)
 
-        # Load step file
-        if isinstance(project_root, str):
-            project_root = Path(project_root)
-        step_file_path = project_root / step_file
-
-        with open(step_file_path, 'r') as f:
-            step_data = json.load(f)
-
-        # Get current phase and restore turn count
-        phase_log = step_data["tdd_cycle"]["phase_execution_log"]
-        current_phase = phase_log[0]  # For now, use first phase
+        current_phase = self._get_current_phase(step_data)
         phase_name = current_phase["phase_name"]
 
-        # Mark phase as IN_PROGRESS if not already
-        if current_phase["status"] == "NOT_EXECUTED":
-            current_phase["status"] = "IN_PROGRESS"
+        self._restore_turn_count(counter, current_phase, phase_name)
+        self._execute_iterations(counter, phase_name, simulated_iterations)
 
-        # Restore existing turn count if resuming
-        existing_turn_count = current_phase.get("turn_count", 0)
-        for _ in range(existing_turn_count):
-            counter.increment_turn(phase_name)
-
-        # Execute simulated iterations (in real implementation, this would be agent calls)
-        for _ in range(simulated_iterations):
-            counter.increment_turn(phase_name)
-
-        # Get final turn count
         final_turn_count = counter.get_current_turn(phase_name)
-
-        # Persist turn count to step file
-        current_phase["turn_count"] = final_turn_count
-        with open(step_file_path, 'w') as f:
-            json.dump(step_data, f, indent=2)
+        self._persist_turn_count(step_file_path, step_data, current_phase, final_turn_count)
 
         return ExecuteStepResult(
             turn_count=final_turn_count,
             phase_name=phase_name,
             status="COMPLETED"
         )
+
+    def _resolve_step_file_path(self, project_root: Path | str, step_file: str) -> Path:
+        """Convert project_root and step_file to absolute path."""
+        if isinstance(project_root, str):
+            project_root = Path(project_root)
+        return project_root / step_file
+
+    def _load_step_file(self, step_file_path: Path) -> dict:
+        """Load and parse step file JSON."""
+        with open(step_file_path, 'r') as f:
+            return json.load(f)
+
+    def _get_current_phase(self, step_data: dict) -> dict:
+        """Get current phase from step data and mark as IN_PROGRESS if needed."""
+        phase_log = step_data["tdd_cycle"]["phase_execution_log"]
+        current_phase = phase_log[0]  # For now, use first phase
+
+        if current_phase["status"] == "NOT_EXECUTED":
+            current_phase["status"] = "IN_PROGRESS"
+
+        return current_phase
+
+    def _restore_turn_count(self, counter: TurnCounter, current_phase: dict, phase_name: str) -> None:
+        """Restore existing turn count from phase data if resuming execution."""
+        existing_turn_count = current_phase.get("turn_count", 0)
+        for _ in range(existing_turn_count):
+            counter.increment_turn(phase_name)
+
+    def _execute_iterations(self, counter: TurnCounter, phase_name: str, iterations: int) -> None:
+        """Execute simulated agent call iterations, incrementing turn count."""
+        for _ in range(iterations):
+            counter.increment_turn(phase_name)
+
+    def _persist_turn_count(
+        self,
+        step_file_path: Path,
+        step_data: dict,
+        current_phase: dict,
+        turn_count: int
+    ) -> None:
+        """Persist turn count to step file."""
+        current_phase["turn_count"] = turn_count
+        with open(step_file_path, 'w') as f:
+            json.dump(step_data, f, indent=2)
