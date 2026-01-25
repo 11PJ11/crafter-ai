@@ -17,9 +17,16 @@ from des.validator import TemplateValidator, ValidationResult
 from des.hooks import SubagentStopHook, HookResult
 from des.turn_counter import TurnCounter
 from des.timeout_monitor import TimeoutMonitor
+from des.extension_api import ExtensionRequest
+
+# Business rules
+DEFAULT_PHASE_MAX_EXTENSIONS = 2  # Maximum extensions allowed per phase
+from des.extension_approval import ExtensionApprovalEngine, ApprovalResult
 from dataclasses import dataclass, field
 import json
 from pathlib import Path
+from datetime import datetime, timezone
+from typing import Optional
 
 
 @dataclass
@@ -56,6 +63,8 @@ class DESOrchestrator:
         self._validator = TemplateValidator()
         self._hook = SubagentStopHook()
         self._subagent_lifecycle_completed = False
+        self._approval_engine = ExtensionApprovalEngine()
+        self._step_file_path: Optional[Path] = None
 
     def validate_prompt(self, prompt: str) -> ValidationResult:
         """
@@ -327,3 +336,107 @@ class DESOrchestrator:
             f"(crossed {threshold}-minute threshold). "
             f"Elapsed time: {elapsed_minutes}m"
         )
+
+    def request_extension(
+        self,
+        reason: str,
+        additional_turns: Optional[int] = None,
+        additional_minutes: Optional[int] = None
+    ) -> ApprovalResult:
+        """Request extension to turn or time budget during execution.
+
+        This method handles extension requests from agents during step execution:
+        1. Creates ExtensionRequest from parameters
+        2. Invokes ExtensionApprovalEngine for approval decision
+        3. If approved, updates TurnCounter max_turns and TimeoutMonitor timeout_minutes
+        4. Persists extension record to step file extensions_granted list
+
+        Args:
+            reason: Human-readable explanation for extension request
+            additional_turns: Number of additional turns requested (None if not requesting turns)
+            additional_minutes: Additional time in minutes requested (None if not requesting time)
+
+        Returns:
+            ApprovalResult with approval decision and rationale
+
+        Raises:
+            ValueError: If step_file_path not set (must call execute_step first)
+        """
+        if self._step_file_path is None:
+            raise ValueError("Step file path not set - cannot process extension request")
+
+        # Load step file for current phase context
+        step_data = self._load_step_file(self._step_file_path)
+        current_phase = self._get_current_phase(step_data)
+
+        # Create ExtensionRequest
+        extension_request = ExtensionRequest(
+            reason=reason,
+            additional_turns=additional_turns,
+            additional_minutes=additional_minutes
+        )
+
+        # Get current extension count and limits
+        extensions_granted = current_phase.get("extensions_granted", [])
+        current_extensions = len(extensions_granted)
+        phase_max_extensions = DEFAULT_PHASE_MAX_EXTENSIONS
+
+        # Get original budgets for approval validation
+        original_turns = current_phase.get("max_turns")
+        original_minutes = current_phase.get("timeout_minutes")
+
+        # Invoke approval engine
+        approval_result = self._approval_engine.evaluate(
+            request=extension_request,
+            current_extensions=current_extensions,
+            phase_max_extensions=phase_max_extensions,
+            original_turns=original_turns,
+            original_minutes=original_minutes
+        )
+
+        # If approved, update limits and persist extension
+        if approval_result.approved:
+            self._apply_extension(current_phase, extension_request)
+            self._persist_step_file(self._step_file_path, step_data)
+
+        return approval_result
+
+    def _apply_extension(self, phase: dict, request: ExtensionRequest) -> None:
+        """Apply approved extension to phase limits and record.
+
+        Args:
+            phase: Phase dictionary from phase_execution_log
+            request: Approved ExtensionRequest to apply
+        """
+        # Update TurnCounter limit
+        if request.additional_turns is not None:
+            current_max_turns = phase.get("max_turns", 0)
+            phase["max_turns"] = current_max_turns + request.additional_turns
+
+        # Update TimeoutMonitor limit
+        if request.additional_minutes is not None:
+            current_timeout = phase.get("timeout_minutes", 0)
+            phase["timeout_minutes"] = current_timeout + request.additional_minutes
+
+        # Record extension grant
+        extension_record = {
+            "reason": request.reason,
+            "additional_turns": request.additional_turns,
+            "additional_minutes": request.additional_minutes,
+            "granted_at": datetime.now(timezone.utc).isoformat()
+        }
+
+        if "extensions_granted" not in phase:
+            phase["extensions_granted"] = []
+
+        phase["extensions_granted"].append(extension_record)
+
+    def _persist_step_file(self, step_file_path: Path, step_data: dict) -> None:
+        """Persist step data to file.
+
+        Args:
+            step_file_path: Path to step file
+            step_data: Complete step data dictionary to persist
+        """
+        with open(step_file_path, 'w') as f:
+            json.dump(step_data, f, indent=2)
