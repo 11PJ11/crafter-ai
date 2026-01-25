@@ -272,10 +272,15 @@ Record review findings in step file under `tdd_cycle.phase_execution_log[N].note
 4. Execute EACH PHASE in order, updating phase_execution_log as you go:
    - Set status: IN_PROGRESS while working, then EXECUTED or SKIPPED
    - Record duration_minutes, outcome, outcome_details, notes
-5. Execute the task following the detailed_instructions
-6. Validate all acceptance_criteria are met
-7. Update state to DONE with execution_result
-8. Update the step file with your results
+5. Execute TDD checkpoint commits:
+   - After phase 5 (GREEN_ACCEPTANCE): Mark phases 6-13 SKIPPED with CHECKPOINT_PENDING, commit
+   - After phase 6 (REVIEW): Update phase 6 to EXECUTED, mark 7-13 SKIPPED, commit
+   - After phase 10 (REFACTOR_L4): Update 7-10 to EXECUTED, mark 11-13 SKIPPED, commit
+   - After phase 12 (FINAL_VALIDATE): Update 11-13 to EXECUTED, commit and push
+6. Execute the task following the detailed_instructions
+7. Validate all acceptance_criteria are met
+8. Update state to DONE with execution_result
+9. Update the step file with your results
 
 ## WRONG FORMATS TO REJECT
 
@@ -527,6 +532,208 @@ The phases are (0-13):
 `PREPARE` → `RED_ACCEPTANCE` → `RED_UNIT` → `GREEN_UNIT` → `CHECK_ACCEPTANCE` → `GREEN_ACCEPTANCE` → `REVIEW` → `REFACTOR_L1` → `REFACTOR_L2` → `REFACTOR_L3` → `REFACTOR_L4` → `POST_REFACTOR_REVIEW` → `FINAL_VALIDATE` → `COMMIT`
 
 **For non-ATDD steps** (research, infrastructure): Phases 1-5 are pre-set to `SKIPPED` with `blocked_by: "NOT_APPLICABLE"`.
+
+#### TDD Checkpoint Commit Strategy
+
+The 14-phase TDD cycle supports **4 strategic checkpoint commits** for improved rollback capability and git history clarity:
+
+##### Checkpoint 1: GREEN (After Phase 5 - GREEN_ACCEPTANCE)
+**When**: All acceptance tests passing, implementation complete
+**Phases Complete**: 0-5 (PREPARE through GREEN_ACCEPTANCE)
+**Phases Pending**: 6-13 (REVIEW through COMMIT)
+
+**Pre-Checkpoint Checklist**:
+- [ ] All acceptance tests: PASS
+- [ ] All unit tests: PASS
+- [ ] Implementation meets acceptance criteria
+- [ ] No failing tests
+
+**Commit Message Template**:
+```
+feat({step-id}): GREEN - acceptance tests passing
+
+- Implemented minimal solution for {feature-name}
+- All acceptance tests: PASS ({X} scenarios)
+- Unit tests: PASS ({Y} tests)
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+```
+
+**Phase Log Actions**:
+1. Mark phases 6-13 as SKIPPED with:
+   ```json
+   "blocked_by": "CHECKPOINT_PENDING: Will complete in REFACTOR checkpoint"
+   ```
+2. Commit implementation files + step file
+3. **DO NOT PUSH** - checkpoint is local only
+
+---
+
+##### Checkpoint 2: REVIEW (After Phase 6 - REVIEW)
+**When**: Self-review complete, SOLID principles verified
+**Phases Complete**: 0-6 (PREPARE through REVIEW)
+**Phases Pending**: 7-13 (REFACTOR_L1 through COMMIT)
+
+**Pre-Checkpoint Checklist**:
+- [ ] SOLID principles followed
+- [ ] Test coverage >80% verified
+- [ ] No security vulnerabilities (OWASP Top 10)
+- [ ] Code readable and maintainable
+- [ ] Acceptance criteria met
+
+**Commit Message Template**:
+```
+review({step-id}): SOLID principles and coverage verified
+
+Self-review checklist:
+- ✅ SOLID principles followed
+- ✅ Test coverage {Z%} (threshold: >80%)
+- ✅ No security vulnerabilities
+- ✅ Code readable and maintainable
+
+All acceptance criteria met.
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+```
+
+**Phase Log Actions**:
+1. Mark phases 7-13 as SKIPPED with:
+   ```json
+   "blocked_by": "CHECKPOINT_PENDING: Will complete in REFACTOR checkpoint"
+   ```
+2. Commit reviewed code + step file
+3. **DO NOT PUSH** - checkpoint is local only
+
+---
+
+##### Checkpoint 3: REFACTOR (After Phase 10 - REFACTOR_L4)
+**When**: All 4 refactoring levels complete
+**Phases Complete**: 0-10 (PREPARE through REFACTOR_L4)
+**Phases Pending**: 11-13 (POST_REFACTOR_REVIEW through COMMIT)
+
+**Pre-Checkpoint Checklist**:
+- [ ] All tests still passing after refactoring
+- [ ] L1 (Naming clarity) complete
+- [ ] L2 (Method extraction) complete
+- [ ] L3 (Class responsibilities) complete
+- [ ] L4 (Architecture patterns) complete
+- [ ] Code quality improved vs GREEN checkpoint
+
+**Commit Message Template**:
+```
+refactor({step-id}): L4 architecture patterns applied
+
+Refactoring progression:
+- L1: Naming clarity (variables, methods, classes)
+- L2: Method extraction (DRY, single responsibility)
+- L3: Class responsibilities (cohesion, coupling)
+- L4: Architecture patterns (hexagonal, SOLID)
+
+All tests passing.
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+```
+
+**Phase Log Actions**:
+1. Update phases 6-10: SKIPPED → EXECUTED with outcomes
+2. Mark phases 11-13 as SKIPPED with:
+   ```json
+   "blocked_by": "CHECKPOINT_PENDING: Will complete in FINAL checkpoint"
+   ```
+3. Commit refactored files + step file
+4. **DO NOT PUSH** - checkpoint is local only
+
+---
+
+##### Checkpoint 4: FINAL (After Phase 12 - FINAL_VALIDATE)
+**When**: All 14 phases complete, ready for merge
+**Phases Complete**: 0-13 (ALL PHASES)
+**Phases Pending**: None
+
+**Pre-Checkpoint Checklist**:
+- [ ] POST_REFACTOR_REVIEW: PASS
+- [ ] FINAL_VALIDATE: All tests passing
+- [ ] Coverage meets threshold (>80%)
+- [ ] No test failures or warnings
+- [ ] Step file completely updated
+
+**Commit Message Template**:
+```
+test({step-id}): Full validation - READY FOR MERGE
+
+TDD cycle complete:
+- All 14 phases EXECUTED
+- Acceptance tests: {X} passed
+- Unit tests: {Y} passed
+- Coverage: {Z%}
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+```
+
+**Phase Log Actions**:
+1. Update phases 11-13: SKIPPED → EXECUTED with outcomes
+2. Commit final changes + step file
+3. **PUSH TO REMOTE**: `git push origin {branch}`
+
+---
+
+##### CRITICAL: Checkpoint Rollback Procedure
+
+If you need to rollback to a previous checkpoint:
+
+**Rollback to GREEN from REVIEW**:
+```bash
+git reset HEAD~1  # Undo REVIEW commit
+
+# Edit step file:
+# - Phase 6: Change EXECUTED back to SKIPPED
+# - Phases 7-13: Already SKIPPED (no change needed)
+# - Update blocked_by: "CHECKPOINT_PENDING: Will complete in REVIEW checkpoint"
+
+# Re-execute from phase 6 (REVIEW)
+```
+
+**Rollback to REVIEW from REFACTOR**:
+```bash
+git reset HEAD~1  # Undo REFACTOR commit
+
+# Edit step file:
+# - Phases 7-10: Change EXECUTED back to SKIPPED
+# - Update blocked_by: "CHECKPOINT_PENDING: Will complete in REFACTOR checkpoint"
+
+# Re-execute from phase 7 (REFACTOR_L1)
+```
+
+**Rollback to REFACTOR from FINAL**:
+```bash
+git reset HEAD~1  # Undo FINAL commit
+
+# Edit step file:
+# - Phases 11-13: Change EXECUTED back to SKIPPED
+# - Update blocked_by: "CHECKPOINT_PENDING: Will complete in FINAL checkpoint"
+
+# Re-execute from phase 11 (POST_REFACTOR_REVIEW)
+```
+
+---
+
+##### WARNING: Common Mistakes
+
+❌ **DO NOT** forget to mark pending phases as SKIPPED
+   → Hook will block: "Phase REVIEW: NOT_EXECUTED"
+
+❌ **DO NOT** push after GREEN, REVIEW, or REFACTOR checkpoints
+   → Only FINAL checkpoint pushes
+
+❌ **DO NOT** use DEFERRED: instead of CHECKPOINT_PENDING:
+   → DEFERRED blocks commit, CHECKPOINT_PENDING allows it
+
+❌ **DO NOT** manually edit git history after checkpoint
+   → Phase log becomes inconsistent with commits
+
+✅ **DO** verify all tests pass before each checkpoint
+✅ **DO** update step file immediately after commit
+✅ **DO** follow commit message templates for consistency
 
 When an agent instance begins execution, it examines phase_execution_log to understand which phases completed in prior instances. Each log entry shows what prior instances accomplished. The current instance may CONTINUE from where the previous left off (if resuming an interrupted phase) or ADVANCE to the next incomplete phase. The phase log serves as a timeline of execution across all instances working on this step.
 
