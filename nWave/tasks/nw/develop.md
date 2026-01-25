@@ -451,6 +451,8 @@ STEP 10: Phase 7.5 - Mutation Testing (quality gate)
   ↓
 STEP 11: Phase 8 - Finalize
   ↓
+STEP 11.5: Post-Finalize Commit and Push
+  ↓
 STEP 12: Phase 9 - Report Completion
 ```
 
@@ -1669,6 +1671,87 @@ DELIVERABLES:
 - Finalize command executed successfully
 - Evolution document created in `docs/evolution/`
 - Workflow files cleaned up or archived
+- Progress state updated
+
+---
+
+### STEP 11.5: Post-Finalize Commit and Push
+
+**Objective**: Archive User Story completion with evolution document and cleanup results.
+
+**Actions**:
+
+1. **Verify finalization artifacts exist**:
+   ```python
+   evolution_files = glob.glob(f'docs/evolution/*{project_id}*.md')
+
+   if not evolution_files:
+       ERROR: "Finalize completed but no evolution document found"
+       EXIT
+   else:
+       INFO: f"✅ Evolution document: {evolution_files[0]}"
+   ```
+
+2. **Stage all artifacts**:
+   ```bash
+   git add docs/evolution/{project_id}-evolution.md
+   git add docs/feature/{project_id}/.finalized  # Marker file if exists
+
+   # If cleanup deleted feature folder:
+   git add docs/feature/{project_id}/  # Stage deletions
+   ```
+
+3. **Create commit with summary**:
+   ```python
+   # Extract metrics from evolution doc
+   with open(evolution_file, 'r') as f:
+       evolution_content = f.read()
+
+   # Parse metrics (steps completed, duration, etc.)
+   steps_match = re.search(r'Steps completed:\s*(\d+)', evolution_content)
+   steps_count = steps_match.group(1) if steps_match else "N/A"
+
+   commit_msg = f"""feat({project_id}): Complete User Story - {feature_description}
+
+Implementation Summary:
+- User Story: {implements_user_story}
+- Steps Completed: {steps_count}
+- Evolution Doc: docs/evolution/{project_id}-evolution.md
+
+All acceptance criteria met, feature ready for production.
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"""
+
+   subprocess.run(['git', 'commit', '-m', commit_msg], check=True)
+   ```
+
+4. **Push to remote**:
+   ```bash
+   git push origin {current-branch}
+   ```
+
+5. **Handle errors**:
+   ```python
+   try:
+       result = subprocess.run(['git', 'push', 'origin', branch],
+                              capture_output=True, text=True, check=True)
+       print(f"✅ User Story archived: {result.stdout}")
+   except subprocess.CalledProcessError as e:
+       if 'rejected' in e.stderr:
+           print("⚠️ Push rejected - remote diverged")
+           print("Recovery:")
+           print("  1. git fetch origin")
+           print("  2. git rebase origin/{branch}")
+           print("  3. git push origin {branch}")
+           EXIT
+       else:
+           raise
+   ```
+
+**Success Criteria**:
+- Evolution document committed
+- Commit pushed to remote
+- Git log shows finalize commit
 - Progress state updated
 
 ---
