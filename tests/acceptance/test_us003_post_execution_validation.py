@@ -372,7 +372,6 @@ class TestPostExecutionStateValidation:
     # Scenario 7: All phases executed correctly - validation passes
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_clean_completion_passes_validation(
         self, tmp_project_root, minimal_step_file
     ):
@@ -397,18 +396,19 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        # from des.hooks import SubagentStopHook
-        # hook = SubagentStopHook()
-        # hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+        hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: Validation passes silently
-        # assert hook_result.validation_status == "PASSED"
-        # assert hook_result.abandoned_phases == []
-        # assert hook_result.incomplete_phases == []
-        # assert hook_result.invalid_skips == []
-        # assert hook_result.error_message is None
+        assert hook_result.validation_status == "PASSED"
+        assert hook_result.abandoned_phases == []
+        assert hook_result.incomplete_phases == []
+        assert hook_result.invalid_skips == []
+        assert hook_result.error_message is None
 
-        # Assert: Audit log records success
+        # Assert: Audit log records success (future implementation)
         # assert "SUBAGENT_STOP_VALIDATION" in audit_log.get_recent_events()
         # recent_event = audit_log.get_last_event()
         # assert recent_event["event_type"] == "SUBAGENT_STOP_VALIDATION"
@@ -419,7 +419,6 @@ class TestPostExecutionStateValidation:
     # Scenario 8: Legitimately skipped phases pass validation
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_valid_skip_with_blocked_by_passes_validation(
         self, tmp_project_root, minimal_step_file
     ):
@@ -443,14 +442,15 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        # from des.hooks import SubagentStopHook
-        # hook = SubagentStopHook()
-        # hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+        hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: Valid skip accepted
-        # assert hook_result.validation_status == "PASSED"
-        # assert hook_result.invalid_skips == []
-        # assert "REFACTOR_L2" not in str(hook_result.error_message or "")
+        assert hook_result.validation_status == "PASSED"
+        assert hook_result.invalid_skips == []
+        assert "REFACTOR_L2" not in str(hook_result.error_message or "")
 
 
 # =============================================================================
