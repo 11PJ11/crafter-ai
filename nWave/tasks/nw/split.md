@@ -1,32 +1,84 @@
 # DW-SPLIT: Atomic Task Generation from Roadmap with TDD Cycle Embedding
 
 ---
-## ORCHESTRATOR BRIEFING (MANDATORY)
+## ORCHESTRATOR INVOCATION PROTOCOL (MANDATORY)
 
-**CRITICAL ARCHITECTURAL CONSTRAINT**: Sub-agents launched via Task tool have NO ACCESS to the Skill tool. They can ONLY use: Read, Write, Edit, Bash, Glob, Grep.
+**When YOU (orchestrator) delegate this command to an agent via Task tool:**
 
-### What Orchestrator Must Do
+### CORRECT Pattern (minimal prompt):
+```python
+Task(
+    subagent_type="software-crafter",
+    prompt="Split: auth-upgrade (roadmap: docs/feature/auth-upgrade/roadmap.yaml)"
+)
+```
 
-When delegating this command to an agent via Task tool:
+### Why This Works:
+- ✅ Roadmap file contains ALL context (phases, steps, dependencies, acceptance_criteria)
+- ✅ Software-crafter agent has internal knowledge of step-tdd-cycle-schema.json
+- ✅ Agent knows 14-phase TDD structure and review criteria
+- ✅ No conversation context needed
 
-1. **Read roadmap.yaml content** and embed key sections in the agent prompt
-2. **Include the canonical step-tdd-cycle-schema.json** content inline
-3. **Do NOT reference any /nw:* commands** in the agent prompt
-4. **Embed all 14 TDD phase descriptions** with inline criteria (not command references)
+### WRONG Patterns (avoid):
+```python
+# ❌ Embedding step schema (agent already knows canonical schema)
+Task(prompt="Split auth-upgrade. Use this step schema: [full schema JSON]")
 
-### Agent Prompt Must Contain
+# ❌ Listing 14 phases (agent has internal knowledge)
+Task(prompt="Split auth-upgrade. Generate steps with 14 phases: PREPARE, RED_ACCEPTANCE...")
 
-- Roadmap content (phases, steps, dependencies)
-- Canonical schema structure for step files
-- All 14 TDD phase names and descriptions (inline, no skill references)
-- Review criteria embedded inline for phases 7 and 12
-- Expected output file structure
+# ❌ Review criteria (agent knows phase 7 and 12 criteria)
+Task(prompt="Split auth-upgrade. Include REVIEW checklist: SOLID, test coverage...")
 
-### What NOT to Include
+# ❌ Any context from current conversation
+Task(prompt="Split auth-upgrade. As we discussed, tier 2 tests are the bottleneck...")
+```
 
-- ❌ "Execute /nw:review for each generated step"
-- ❌ "Use /nw:refactor after review"
-- ❌ Any command or skill the agent should invoke
+### Key Principle:
+**Command invocation = Project ID + Roadmap file path ONLY**
+
+The roadmap file contains all phases/steps. Your prompt should not duplicate schema or phase details.
+
+---
+
+## AGENT PROMPT REINFORCEMENT (Command-Specific Guidance)
+
+Reinforce command-specific principles extracted from THIS file (split.md):
+
+### Recommended Prompt Template:
+```python
+Task(
+    subagent_type="software-crafter",
+    prompt="""Split: auth-upgrade (roadmap: docs/feature/auth-upgrade/roadmap.yaml)
+
+CRITICAL (from split.md):
+- Canonical schema: nWave/templates/step-tdd-cycle-schema.json
+- Each step MUST be self-contained (no forward references)
+- Pre-populate ALL 14 phases in phase_execution_log
+- Step type determines which phases are NOT_APPLICABLE
+
+AVOID:
+- ❌ Using deprecated fields (step_id, phase_id, tdd_phase at top level)
+- ❌ Generating < 14 phases (must have all 14, even if SKIPPED)
+- ❌ Forward references to later steps (breaks atomicity)
+- ❌ Wrong phase names (must be UPPERCASE_UNDERSCORE like RED_ACCEPTANCE)"""
+)
+```
+
+### Why Add This Guidance:
+- **Source**: Extracted from split.md (not conversation context)
+- **Deterministic**: Same principles every time you invoke split
+- **Reinforcing**: Prevents schema violations and non-atomic steps
+- **Token-efficient**: ~100 tokens vs broken step files
+
+### What NOT to Add:
+```python
+# ❌ WRONG - This uses orchestrator's conversation context
+Task(prompt="""Split: auth-upgrade
+
+As we discussed, tier 2 tests are the bottleneck.
+Make sure the steps address parallelization first.""")
+```
 
 ---
 

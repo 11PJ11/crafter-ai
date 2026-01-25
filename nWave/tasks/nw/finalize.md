@@ -1,42 +1,84 @@
 # DW-FINALIZE: Feature Completion, Archive, and Prepare for Push
 
 ---
-## ORCHESTRATOR BRIEFING (MANDATORY)
+## ORCHESTRATOR INVOCATION PROTOCOL (MANDATORY)
 
-**CRITICAL ARCHITECTURAL CONSTRAINT**: Sub-agents launched via Task tool have NO ACCESS to the Skill tool. They can ONLY use: Read, Write, Edit, Bash, Glob, Grep.
+**When YOU (orchestrator) delegate this command to an agent via Task tool:**
 
-### What Orchestrator Must Do
-
-When delegating this command to an agent via Task tool:
-
-1. **Do NOT pass `/nw:finalize`** to the agent - they cannot execute it
-2. **Create a complete agent prompt** with all instructions embedded inline
-3. **Include**: project ID, feature directory path, evolution document path
-4. **Embed**: archival steps, evolution document structure, cleanup requirements
-
-### Agent Prompt Template
-
-```text
-You are a devop agent finalizing and archiving a completed feature.
-
-PROJECT: {project_id}
-INPUT DIRECTORY: docs/feature/{project_id}/
-OUTPUT FILE: docs/evolution/{project_id}-evolution.md
-
-YOUR TASK: Archive the completed feature by:
-1. Create evolution document summarizing achievements
-2. Move/archive workflow files (baseline.yaml, roadmap.yaml, step files)
-3. Update any project tracking documents
-4. Clean up temporary files
-
-[Include evolution document structure and deliverables]
+### CORRECT Pattern (minimal prompt):
+```python
+Task(
+    subagent_type="devop",
+    prompt="Finalize: auth-upgrade"
+)
 ```
 
-### What NOT to Include in Agent Prompts
+### Why This Works:
+- ✅ Devop agent has internal knowledge of evolution document structure
+- ✅ Project ID specifies feature directory: docs/feature/{project-id}/
+- ✅ Agent knows archival steps (evolution doc, cleanup, tracking updates)
+- ✅ No conversation context needed
 
-- ❌ `/nw:finalize`
-- ❌ Any skill or command reference
-- ❌ References to continuing to other commands
+### WRONG Patterns (avoid):
+```python
+# ❌ Embedding evolution structure (devop already knows this)
+Task(prompt="Finalize auth-upgrade. Create evolution doc with sections: Summary, Achievements...")
+
+# ❌ Listing archival steps (devop knows what to archive)
+Task(prompt="Finalize auth-upgrade. Archive baseline.yaml, roadmap.yaml, all step files...")
+
+# ❌ Cleanup instructions (devop knows what to clean)
+Task(prompt="Finalize auth-upgrade. Delete temp files, move to evolution/, update tracking...")
+
+# ❌ Any context from current conversation
+Task(prompt="Finalize auth-upgrade. As discussed, we completed 6 steps for test optimization...")
+```
+
+### Key Principle:
+**Command invocation = Project ID ONLY**
+
+The agent knows how to finalize. Your prompt should not duplicate archival procedures.
+
+---
+
+## AGENT PROMPT REINFORCEMENT (Command-Specific Guidance)
+
+Reinforce command-specific principles extracted from THIS file (finalize.md):
+
+### Recommended Prompt Template:
+```python
+Task(
+    subagent_type="devop",
+    prompt="""Finalize: auth-upgrade
+
+CRITICAL (from finalize.md):
+- Create evolution document in docs/evolution/
+- Archive workflow files (baseline, roadmap, steps) - don't delete
+- Verify ALL steps are DONE before finalizing
+- Update project tracking documents
+
+AVOID:
+- ❌ Finalizing with incomplete steps (check all statuses first)
+- ❌ Deleting workflow files (must archive, not delete)
+- ❌ Skipping evolution document (must capture achievements)
+- ❌ Not updating tracking (leaves stale project state)"""
+)
+```
+
+### Why Add This Guidance:
+- **Source**: Extracted from finalize.md (not conversation context)
+- **Deterministic**: Same principles every time you invoke finalize
+- **Reinforcing**: Prevents premature finalization and lost documentation
+- **Token-efficient**: ~100 tokens vs incomplete archival
+
+### What NOT to Add:
+```python
+# ❌ WRONG - This uses orchestrator's conversation context
+Task(prompt="""Finalize: auth-upgrade
+
+As discussed, we completed 6 steps for test optimization.
+The tier 2 parallelization was the key achievement.""")
+```
 
 ---
 

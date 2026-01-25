@@ -249,6 +249,53 @@ agent-activation:
 # 3. **Do NOT reference any /nw:* commands** in the agent prompt (agent can't invoke)
 # 4. **Do NOT assume the agent can call other agents or skills** (it can't)
 #
+# ## Agent Prompt Reinforcement (Command-Specific Guidance)
+#
+# **CRITICAL**: Reinforce command-specific principles extracted from THIS command file.
+#
+# ### Recommended Prompt Template:
+# ```python
+# Task(
+#     subagent_type="{agent-name}",
+#     prompt="""{Command}: {identifier}
+#
+# CRITICAL (from {command}.md):
+# - [Principle 1 - extracted from THIS command file]
+# - [Principle 2 - extracted from THIS command file]
+# - [Principle 3 - extracted from THIS command file]
+# - [Principle 4 - extracted from THIS command file]
+#
+# AVOID:
+# - ❌ [Mistake 1 - extracted from THIS command file]
+# - ❌ [Mistake 2 - extracted from THIS command file]
+# - ❌ [Mistake 3 - extracted from THIS command file]"""
+# )
+# ```
+#
+# ### Why Add This Guidance:
+# - **Source**: Extracted from command file itself (NOT conversation context)
+# - **Deterministic**: Same principles every time you invoke this command
+# - **Reinforcing**: Prevents common boundary violations
+# - **Token-efficient**: ~100 tokens vs 1000s in rework from errors
+#
+# ### What NOT to Add (Conversation Context):
+# ```python
+# # ❌ WRONG - This uses orchestrator's conversation context
+# Task(prompt="""Execute: 01-01.json
+#
+# Based on our earlier analysis, the SISTER constraint affects 20% of tests.
+# The tier 2 tests at 532 seconds are the main bottleneck.
+# Focus on parallelization as we discussed.""")
+# ```
+#
+# ### Principle Extraction Guidelines:
+# 1. Extract 3-5 CRITICAL principles from the command file
+# 2. Extract 3-5 COMMON MISTAKES from the command file
+# 3. Use token-efficient format (5-10 words per bullet)
+# 4. Focus on command-specific boundaries and anti-patterns
+# 5. NO generic advice (must be specific to this command)
+# 6. NO conversation context (must be deterministic)
+#
 # ### Agent Prompt Template for {command-name}
 #
 # ```text
@@ -340,6 +387,13 @@ agent-activation:
 # - [ ] All workflow instructions inline (never "see /nw:execute")
 # - [ ] Anti-patterns section included (what NOT to put in agent prompts)
 # - [ ] Correct patterns section included (what TO put in agent prompts)
+# - [ ] **NEW**: Contains "## Agent Prompt Reinforcement" section with:
+#   - [ ] 3-5 CRITICAL principles extracted from THIS command file
+#   - [ ] 3-5 COMMON MISTAKES extracted from THIS command file
+#   - [ ] Token-efficient format (5-10 words per bullet)
+#   - [ ] Command-specific boundaries (not generic advice)
+#   - [ ] NO conversation context (deterministic only)
+#   - [ ] Shows both CORRECT pattern (from command file) and WRONG pattern (from conversation)
 #
 # SECTION 5: QUALITY VALIDATION
 # - [ ] Command file is pure delegation (50-60 lines target)

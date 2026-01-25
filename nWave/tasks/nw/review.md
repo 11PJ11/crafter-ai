@@ -1,47 +1,84 @@
 # DW-REVIEW: Expert Critique and Quality Assurance
 
 ---
-## ORCHESTRATOR BRIEFING (MANDATORY)
+## ORCHESTRATOR INVOCATION PROTOCOL (MANDATORY)
 
-**CRITICAL ARCHITECTURAL CONSTRAINT**: Sub-agents launched via Task tool have NO ACCESS to the Skill tool. They can ONLY use: Read, Write, Edit, Bash, Glob, Grep.
+**When YOU (orchestrator) delegate this command to an agent via Task tool:**
 
-### What Orchestrator Must Do
-
-When delegating this command to an agent via Task tool:
-
-1. **Do NOT pass `/nw:review`** to the agent - they cannot execute it
-2. **Create a complete agent prompt** with all instructions embedded inline
-3. **Include**: artifact path, artifact type, review criteria
-4. **Embed**: complete review checklist, severity levels, output format
-
-### Agent Prompt Template
-
-```text
-You are a {agent-name}-reviewer agent performing expert review.
-
-ARTIFACT TYPE: {artifact-type}
-ARTIFACT PATH: {artifact-path}
-
-YOUR TASK: Perform comprehensive review:
-1. Read and understand the artifact thoroughly
-2. Apply domain expertise to identify issues
-3. Provide structured feedback with severity levels
-4. Make specific, actionable recommendations
-5. Update the artifact with review metadata
-6. Assign approval status: APPROVED, NEEDS_REVISION, or REJECTED
-
-REVIEW CRITERIA:
-[Embed specific criteria for artifact type]
-
-OUTPUT FORMAT:
-[Embed required output structure]
+### CORRECT Pattern (minimal prompt):
+```python
+Task(
+    subagent_type="software-crafter-reviewer",
+    prompt="Review: task docs/feature/auth-upgrade/steps/01-01.json"
+)
 ```
 
-### What NOT to Include in Agent Prompts
+### Why This Works:
+- ✅ Step file contains ALL context (acceptance_criteria, quality_gates, TDD phases)
+- ✅ Reviewer agent has internal knowledge of review criteria
+- ✅ Artifact type ("task") specifies what to review
+- ✅ No conversation context needed
 
-- ❌ `/nw:review`
-- ❌ "Execute /nw:finalize after approval"
-- ❌ Any skill or command reference
+### WRONG Patterns (avoid):
+```python
+# ❌ Embedding review criteria (reviewer already knows this)
+Task(prompt="Review task 01-01.json. Check SOLID, test coverage, security...")
+
+# ❌ Listing validation rules (step file has these)
+Task(prompt="Review 01-01. Ensure all 14 phases executed, no DEFERRED...")
+
+# ❌ Severity guidance (reviewer knows HIGH/MEDIUM/LOW)
+Task(prompt="Review 01-01. Use HIGH for blocking issues, MEDIUM for...")
+
+# ❌ Any context from current conversation
+Task(prompt="Review 01-01. As discussed, pay attention to SISTER constraint...")
+```
+
+### Key Principle:
+**Command invocation = Artifact type + Artifact path ONLY**
+
+The artifact file is self-contained. Your prompt should not duplicate review criteria.
+
+---
+
+## AGENT PROMPT REINFORCEMENT (Command-Specific Guidance)
+
+Reinforce command-specific principles extracted from THIS file (review.md):
+
+### Recommended Prompt Template:
+```python
+Task(
+    subagent_type="software-crafter-reviewer",
+    prompt="""Review: task docs/feature/auth-upgrade/steps/01-01.json
+
+CRITICAL (from review.md):
+- Format validation FIRST (step/task files must match canonical schema)
+- External Validity (CM-C): Feature must be invocable, not just exist
+- Format errors = HIGH severity = REJECTED
+- Update original artifact file (not separate review file)
+
+AVOID:
+- ❌ Approving non-invocable features (missing integration step)
+- ❌ Ignoring format violations (wrong phase names, missing task_id)
+- ❌ Creating separate review file (must update original artifact)
+- ❌ Skipping external validity check (tests pass but users can't invoke)"""
+)
+```
+
+### Why Add This Guidance:
+- **Source**: Extracted from review.md (not conversation context)
+- **Deterministic**: Same principles every time you invoke review
+- **Reinforcing**: Prevents approving broken artifacts
+- **Token-efficient**: ~100 tokens vs costly rework
+
+### What NOT to Add:
+```python
+# ❌ WRONG - This uses orchestrator's conversation context
+Task(prompt="""Review: task 01-01.json
+
+As we discussed, pay special attention to the SISTER constraint handling.
+The implementation should address the tier 2 bottleneck we identified.""")
+```
 
 ---
 
