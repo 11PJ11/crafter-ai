@@ -933,3 +933,204 @@ class TestStepFileStateUpdate:
             assert len(updated_data["state"]["failure_reason"]) > 0
         finally:
             Path(temp_path).unlink()
+
+
+class TestTurnLimitValidation:
+    """Tests for turn limit validation in SubagentStopHook."""
+
+    def test_hook_result_has_turn_limit_exceeded_field(self):
+        """HookResult should have turn_limit_exceeded boolean field."""
+        from des.hooks import HookResult
+
+        result = HookResult(validation_status="PASSED")
+
+        # HookResult should have turn_limit_exceeded field
+        assert hasattr(result, 'turn_limit_exceeded'), (
+            "HookResult missing turn_limit_exceeded field"
+        )
+
+    def test_turn_limit_exceeded_defaults_to_false(self):
+        """HookResult.turn_limit_exceeded should default to False."""
+        from des.hooks import HookResult
+
+        result = HookResult(validation_status="PASSED")
+        assert result.turn_limit_exceeded is False, (
+            "turn_limit_exceeded should default to False"
+        )
+
+    def test_detects_phase_exceeding_turn_limit(self):
+        """Hook should detect when phase turn_count exceeds max_turns."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        # Step file with phase exceeding turn limit
+        step_data = {
+            "task_id": "02-02",
+            "state": {"status": "IN_PROGRESS"},
+            "tdd_cycle": {
+                "max_turns": 50,
+                "phase_execution_log": [
+                    {
+                        "phase_number": 3,
+                        "phase_name": "GREEN_UNIT",
+                        "status": "EXECUTED",
+                        "outcome": "PASS",
+                        "turn_count": 65,  # Exceeds max_turns of 50
+                        "max_turns": 50,
+                    }
+                ]
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            result = hook.on_agent_complete(step_file_path=temp_path)
+
+            # Should detect turn limit exceeded
+            assert result.turn_limit_exceeded is True, (
+                "Should detect turn_count (65) exceeds max_turns (50)"
+            )
+
+            # Should include phase name in error message
+            assert result.error_message is not None
+            assert "GREEN_UNIT" in result.error_message
+
+            # Should provide recovery suggestions
+            assert len(result.recovery_suggestions) >= 2
+        finally:
+            Path(temp_path).unlink()
+
+    def test_identifies_which_phase_exceeded_limit(self):
+        """Error message should identify which phase exceeded turn limit."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        step_data = {
+            "task_id": "02-02",
+            "state": {"status": "IN_PROGRESS"},
+            "tdd_cycle": {
+                "max_turns": 30,
+                "phase_execution_log": [
+                    {
+                        "phase_number": 1,
+                        "phase_name": "RED_ACCEPTANCE",
+                        "status": "EXECUTED",
+                        "outcome": "PASS",
+                        "turn_count": 10,
+                        "max_turns": 30,
+                    },
+                    {
+                        "phase_number": 2,
+                        "phase_name": "RED_UNIT",
+                        "status": "EXECUTED",
+                        "outcome": "PASS",
+                        "turn_count": 45,  # Exceeds limit
+                        "max_turns": 30,
+                    }
+                ]
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            result = hook.on_agent_complete(step_file_path=temp_path)
+
+            # Should identify RED_UNIT as the phase that exceeded limit
+            assert "RED_UNIT" in result.error_message
+            assert "45" in result.error_message or "exceeded" in result.error_message.lower()
+        finally:
+            Path(temp_path).unlink()
+
+    def test_recovery_suggestions_include_increase_limit(self):
+        """Recovery suggestions should mention increasing max_turns limit."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        step_data = {
+            "task_id": "02-02",
+            "state": {"status": "IN_PROGRESS"},
+            "tdd_cycle": {
+                "max_turns": 20,
+                "phase_execution_log": [
+                    {
+                        "phase_number": 0,
+                        "phase_name": "PREPARE",
+                        "status": "EXECUTED",
+                        "outcome": "PASS",
+                        "turn_count": 35,
+                        "max_turns": 20,
+                    }
+                ]
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            result = hook.on_agent_complete(step_file_path=temp_path)
+
+            suggestions_text = " ".join(result.recovery_suggestions).lower()
+            assert any(
+                keyword in suggestions_text
+                for keyword in ["increase", "max_turns", "limit", "higher"]
+            ), "Should suggest increasing max_turns limit"
+        finally:
+            Path(temp_path).unlink()
+
+    def test_recovery_suggestions_include_simplify_step(self):
+        """Recovery suggestions should mention simplifying or splitting step."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        step_data = {
+            "task_id": "02-02",
+            "state": {"status": "IN_PROGRESS"},
+            "tdd_cycle": {
+                "max_turns": 25,
+                "phase_execution_log": [
+                    {
+                        "phase_number": 7,
+                        "phase_name": "REFACTOR_L1",
+                        "status": "EXECUTED",
+                        "outcome": "PASS",
+                        "turn_count": 40,
+                        "max_turns": 25,
+                    }
+                ]
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            result = hook.on_agent_complete(step_file_path=temp_path)
+
+            suggestions_text = " ".join(result.recovery_suggestions).lower()
+            assert any(
+                keyword in suggestions_text
+                for keyword in ["simplify", "break", "smaller", "split"]
+            ), "Should suggest simplifying or splitting step"
+        finally:
+            Path(temp_path).unlink()
