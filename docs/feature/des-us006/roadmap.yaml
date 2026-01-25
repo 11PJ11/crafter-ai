@@ -1,5 +1,51 @@
 project_id: des-us006
 created_at: "2026-01-25T03:00:00Z"
+implements_user_story: "US-006"
+user_story_title: "Turn Discipline Without max_turns"
+user_story_description: "DES must include turn discipline instructions in every prompt for agents to self-regulate, since max_turns is not available"
+acceptance_criteria_mapping:
+  - roadmap_phase: "Phase 01: Turn Limit Infrastructure"
+    maps_to_ac: ["AC-006.5"]
+    ac_description: "Prompt instructs agent to log turn count at each phase transition"
+  - roadmap_phase: "Phase 02: Turn Counter Wiring"
+    maps_to_ac: ["AC-006.5"]
+    ac_description: "Integration of turn counter into orchestrator"
+  - roadmap_phase: "Phase 03: Timeout Warning System"
+    maps_to_ac: ["AC-006.1", "AC-006.2"]
+    ac_description: "TIMEOUT_INSTRUCTION section + turn budget specified"
+  - roadmap_phase: "Phase 04: Timeout Wiring"
+    maps_to_ac: ["AC-006.1"]
+    ac_description: "Timeout warnings in agent prompt"
+  - roadmap_phase: "Phase 05: Extension Request Mechanism"
+    status: "OUT_OF_SCOPE"
+    notes: "Extension API removed - agents self-regulate via prompt instructions only"
+  - roadmap_phase: "Phase 06: Extension API Wiring"
+    status: "OUT_OF_SCOPE"
+    notes: "Extension API removed - agents self-regulate via prompt instructions only"
+  - roadmap_phase: "Phase 07: Enforcement"
+    maps_to_ac: ["AC-006.5"]
+    ac_description: "Turn limit enforcement in hook"
+  - roadmap_phase: "Phase 08: E2E Wiring Tests"
+    maps_to_ac: ["AC-006.1", "AC-006.2", "AC-006.5"]
+    ac_description: "E2E validation of complete feature"
+  - roadmap_phase: "Phase 09: Unit Testing"
+    maps_to_ac: ["AC-006.5"]
+    ac_description: "Unit test coverage for turn counting and timeout monitoring"
+  - roadmap_phase: "Phase 10: Acceptance Testing"
+    maps_to_ac: ["AC-006.1", "AC-006.2", "AC-006.5"]
+    ac_description: "Acceptance test scenarios validating all implemented AC"
+  - roadmap_phase: "Phase 11: Documentation"
+    maps_to_ac: []
+    ac_description: "Documentation and integration (no direct AC mapping)"
+missing_acceptance_criteria:
+  - ac_id: "AC-006.3"
+    description: "Progress checkpoints (turn ~10, ~25, ~40, ~50)"
+    status: "NOT_YET_IMPLEMENTED"
+    notes: "Progress checkpoint prompts not yet implemented - future enhancement"
+  - ac_id: "AC-006.4"
+    description: "Early exit protocol"
+    status: "NOT_YET_IMPLEMENTED"
+    notes: "Early exit protocol not yet implemented - future enhancement"
 roadmap:
   validation:
     status: approved
