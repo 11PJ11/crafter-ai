@@ -10,6 +10,8 @@ Execute DESIGN wave of nWave methodology through comprehensive architecture desi
 
 Architecture serves business objectives while enabling quality attributes (performance, security, reliability, scalability).
 
+**CRITICAL DESIGN PRINCIPLE**: Always analyze and integrate with existing systems BEFORE designing new components. Prefer reusing existing infrastructure and open-source solutions over reimplementation.
+
 ## Orchestrator Briefing
 
 **CRITICAL ARCHITECTURAL CONSTRAINT**: Sub-agents launched via Task tool have NO ACCESS to the Skill tool. They can ONLY use: Read, Write, Edit, Bash, Glob, Grep.
@@ -43,6 +45,43 @@ When delegating this command to an agent via Task tool:
 - Expected deliverables with file paths and content structure
 - Quality gate criteria for architecture completeness and consistency
 
+**MANDATORY: Existing System Analysis Instructions**
+
+The agent prompt MUST include these analysis requirements:
+
+1. **Codebase Analysis Phase** (BEFORE designing):
+   - Search for existing scripts/utilities related to the feature domain
+   - Identify existing components that could be reused
+   - Find existing data models and infrastructure
+   - Locate existing configuration and installation systems
+   - Document what already exists and works
+
+2. **Integration-First Mindset**:
+   - "Analyze the existing codebase in [relevant directories] BEFORE designing new components"
+   - "Search for existing utilities, scripts, and infrastructure that solve similar problems"
+   - "Prefer extending/integrating existing systems over creating new ones"
+   - "Document why new components are necessary vs. reusing existing ones"
+
+3. **Open Source Research**:
+   - "Research existing open-source libraries for [specific functionality]"
+   - "Evaluate mature solutions (GitHub stars, maintenance, license) before custom implementation"
+   - "Document trade-offs: custom vs. library (complexity, maintenance, features)"
+
+4. **Reuse Checklist** (include in prompt):
+   ```
+   Before designing each component, ask:
+   [ ] Does this functionality already exist in the codebase?
+   [ ] Is there an existing script/utility that does this?
+   [ ] Is there a mature open-source library for this?
+   [ ] Can we extend an existing component instead of creating new?
+   [ ] What's the cost of integration vs. reimplementation?
+   ```
+
+5. **Anti-Pattern Detection**:
+   - "Flag any design that duplicates existing functionality"
+   - "Identify overlapping responsibilities between new and existing components"
+   - "Document integration points with existing systems"
+
 ### What NOT to Include
 
 - ❌ "Agent should invoke /nw:distill after architecture design"
@@ -51,13 +90,37 @@ When delegating this command to an agent via Task tool:
 - ❌ References to next wave invocation (orchestrator handles wave transitions)
 - ❌ Path references without full content embedded (agent needs content, not file paths)
 
+**Anti-Patterns to AVOID in Agent Prompts:**
+
+- ❌ "Design a complete backup system from scratch" (without checking if one exists)
+- ❌ "Implement installation logic" (without analyzing existing installers)
+- ❌ "Create new utilities for path handling" (without checking PathUtils, etc.)
+- ❌ Designing components that duplicate existing functionality
+- ❌ Ignoring existing scripts, utilities, and infrastructure
+- ❌ Not researching open-source alternatives before custom implementation
+
 ### Example: What TO Do
 
+✅ "FIRST: Analyze existing system in scripts/, nWave/, tools/ directories for related functionality"
+✅ "Search for existing installation, backup, update scripts before designing new ones"
+✅ "Research open-source libraries for [specific functionality] and document evaluation"
 ✅ "Design the system architecture according to these requirements: [FULL REQUIREMENTS]"
 ✅ "Select technology stack based on these criteria: [COMPLETE CRITERIA WITH RATIONALE]"
+✅ "REUSE existing components: [LIST OF EXISTING UTILITIES/SCRIPTS WITH PATHS]"
 ✅ "Generate C4 diagrams following this specification: [FULL DIAGRAM SPECS]"
 ✅ "Create hexagonal architecture with these boundaries: [SPECIFIC PORT/ADAPTER DEFINITIONS]"
+✅ "Document integration points with existing system: [EXISTING SCRIPTS/COMPONENTS]"
 ✅ "Provide these architecture outputs: architecture-design.md, technology-stack.md, component-boundaries.md, diagrams/"
+
+**Example: Existing System Analysis Prompt**
+
+✅ "Before designing, analyze the existing codebase:
+   1. Use Glob to find: scripts/**/*.py, nWave/**/*.py, tools/**/*.py
+   2. Search for keywords related to the feature (installation, backup, update, etc.)
+   3. Read relevant existing scripts and understand their structure
+   4. Identify reusable components: BackupManager, PathUtils, Logger, etc.
+   5. Document what exists and how the new design integrates with it
+   6. ONLY design new components if no existing solution can be reused/extended"
 
 ## Context Files Required
 
@@ -102,9 +165,14 @@ Refer to Morgan's quality gates in nWave/agents/solution-architect.md.
 
 **Key Validations:**
 
+- [ ] **Existing system analyzed BEFORE design** (codebase search performed)
+- [ ] **Integration points documented** (how design integrates with existing scripts/utilities)
+- [ ] **Reuse justified** (documented why new components vs. existing ones)
+- [ ] **Open-source research performed** (evaluated libraries vs. custom implementation)
 - [ ] Architecture supports all business requirements
 - [ ] Technology stack selected with clear rationale
 - [ ] Component boundaries defined (hexagonal architecture)
+- [ ] **No duplication of existing functionality** (anti-pattern check passed)
 - [ ] Visual diagrams complete and accessible
 - [ ] Handoff accepted by acceptance-designer (DISTILL wave)
 - [ ] Layer 4 peer review approval obtained
