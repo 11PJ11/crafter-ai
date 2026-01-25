@@ -33,7 +33,6 @@ SOURCE:
 
 import pytest
 import json
-from pathlib import Path
 
 
 class TestE2EExecuteCommandWiring:
@@ -75,7 +74,7 @@ class TestE2EExecuteCommandWiring:
         # GIVEN: Step file configured with turn/timeout limits
         step_file_path = str(minimal_step_file.relative_to(tmp_project_root))
 
-        with open(minimal_step_file, 'r') as f:
+        with open(minimal_step_file, "r") as f:
             step_data = json.load(f)
 
         # Configure limits for testing
@@ -83,7 +82,7 @@ class TestE2EExecuteCommandWiring:
         step_data["tdd_cycle"]["duration_minutes"] = 30
         step_data["tdd_cycle"]["total_extensions_minutes"] = 0
 
-        with open(minimal_step_file, 'w') as f:
+        with open(minimal_step_file, "w") as f:
             json.dump(step_data, f, indent=2)
 
         # WHEN: Orchestrator executes /nw:execute command
@@ -103,7 +102,7 @@ class TestE2EExecuteCommandWiring:
             step_file=step_file_path,
             project_root=tmp_project_root,
             simulated_iterations=expected_iterations,
-            mocked_elapsed_times=mocked_elapsed_times  # Test parameter
+            mocked_elapsed_times=mocked_elapsed_times,  # Test parameter
         )
 
         # THEN: Turn count increments for each iteration
@@ -113,7 +112,7 @@ class TestE2EExecuteCommandWiring:
         )
 
         # AND: Turn count persisted to step file
-        with open(minimal_step_file, 'r') as f:
+        with open(minimal_step_file, "r") as f:
             step_data = json.load(f)
 
         phase_log = step_data["tdd_cycle"]["phase_execution_log"]
@@ -129,9 +128,9 @@ class TestE2EExecuteCommandWiring:
         )
 
         # AND: Timeout warnings emitted when thresholds crossed
-        assert hasattr(result, "timeout_warnings"), (
-            "Result missing timeout_warnings field"
-        )
+        assert hasattr(
+            result, "timeout_warnings"
+        ), "Result missing timeout_warnings field"
         assert len(result.timeout_warnings) >= 3, (
             f"Expected at least 3 timeout warnings (50%, 75%, 90%), "
             f"got {len(result.timeout_warnings)}"
@@ -140,8 +139,7 @@ class TestE2EExecuteCommandWiring:
         # Verify warnings contain threshold information
         warnings_text = " ".join([w.lower() for w in result.timeout_warnings])
         assert any(
-            threshold in warnings_text
-            for threshold in ["50%", "75%", "90%"]
+            threshold in warnings_text for threshold in ["50%", "75%", "90%"]
         ), "Warnings should mention threshold percentages (50%, 75%, 90%)"
 
         # AND: Extension request API is callable and updates limits
@@ -149,38 +147,36 @@ class TestE2EExecuteCommandWiring:
         extension_request = {
             "step_file": step_file_path,
             "extension_minutes": 10,
-            "justification": "Complex refactoring requires additional time"
+            "justification": "Complex refactoring requires additional time",
         }
 
         extension_result = des_orchestrator.request_execution_extension(
             **extension_request
         )
 
-        assert extension_result.approved is True, (
-            "Extension request should be approved"
-        )
-        assert extension_result.new_total_extensions == 10, (
-            f"Expected new_total_extensions=10, got {extension_result.new_total_extensions}"
-        )
+        assert extension_result.approved is True, "Extension request should be approved"
+        assert (
+            extension_result.new_total_extensions == 10
+        ), f"Expected new_total_extensions=10, got {extension_result.new_total_extensions}"
 
         # Verify extension persisted to step file
-        with open(minimal_step_file, 'r') as f:
+        with open(minimal_step_file, "r") as f:
             step_data = json.load(f)
 
-        assert step_data["tdd_cycle"]["total_extensions_minutes"] == 10, (
-            "Extension should be persisted to step file total_extensions_minutes"
-        )
+        assert (
+            step_data["tdd_cycle"]["total_extensions_minutes"] == 10
+        ), "Extension should be persisted to step file total_extensions_minutes"
 
         # AND: EXTERNAL VALIDITY PROVEN
         # All features executed in actual command invocation path
-        assert result.execution_path == "DESOrchestrator.execute_step", (
-            "Test must validate features execute in real orchestrator path"
-        )
+        assert (
+            result.execution_path == "DESOrchestrator.execute_step"
+        ), "Test must validate features execute in real orchestrator path"
 
         assert result.features_validated == [
             "turn_counting",
             "timeout_monitoring",
-            "extension_api"
+            "extension_api",
         ], "All three features should be validated in execution path"
 
 
@@ -195,7 +191,9 @@ class TestE2EDevelopCommandWiring:
     SOURCE: docs/feature/des-us004/steps/08-02.json (Step 08-02)
     """
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - Step 08-02 implementation pending")
+    @pytest.mark.skip(
+        reason="Outside-In TDD RED state - Step 08-02 implementation pending"
+    )
     def test_scenario_020_develop_command_has_turn_and_timeout_features(
         self, tmp_project_root, minimal_step_file, des_orchestrator
     ):
@@ -227,7 +225,7 @@ class TestE2EDevelopCommandWiring:
         # GIVEN: Step file configured with turn/timeout limits
         step_file_path = str(minimal_step_file.relative_to(tmp_project_root))
 
-        with open(minimal_step_file, 'r') as f:
+        with open(minimal_step_file, "r") as f:
             step_data = json.load(f)
 
         # Configure limits for testing (SAME AS /nw:execute test)
@@ -235,7 +233,7 @@ class TestE2EDevelopCommandWiring:
         step_data["tdd_cycle"]["duration_minutes"] = 30
         step_data["tdd_cycle"]["total_extensions_minutes"] = 0
 
-        with open(minimal_step_file, 'w') as f:
+        with open(minimal_step_file, "w") as f:
             json.dump(step_data, f, indent=2)
 
         # WHEN: Orchestrator executes /nw:develop command (KEY DIFFERENCE)
@@ -255,7 +253,7 @@ class TestE2EDevelopCommandWiring:
             step_file=step_file_path,
             project_root=tmp_project_root,
             simulated_iterations=expected_iterations,
-            mocked_elapsed_times=mocked_elapsed_times
+            mocked_elapsed_times=mocked_elapsed_times,
         )
 
         # THEN: Turn count increments for each iteration (SAME BEHAVIOR AS /nw:execute)
@@ -265,7 +263,7 @@ class TestE2EDevelopCommandWiring:
         )
 
         # AND: Turn count persisted to step file (SAME PERSISTENCE AS /nw:execute)
-        with open(minimal_step_file, 'r') as f:
+        with open(minimal_step_file, "r") as f:
             step_data = json.load(f)
 
         phase_log = step_data["tdd_cycle"]["phase_execution_log"]
@@ -281,9 +279,9 @@ class TestE2EDevelopCommandWiring:
         )
 
         # AND: Timeout warnings emitted when thresholds crossed (SAME WARNING SYSTEM)
-        assert hasattr(result, "timeout_warnings"), (
-            "Result missing timeout_warnings field"
-        )
+        assert hasattr(
+            result, "timeout_warnings"
+        ), "Result missing timeout_warnings field"
         assert len(result.timeout_warnings) >= 3, (
             f"Expected at least 3 timeout warnings (50%, 75%, 90%), "
             f"got {len(result.timeout_warnings)}"
@@ -292,8 +290,7 @@ class TestE2EDevelopCommandWiring:
         # Verify warnings contain threshold information (SAME VALIDATION)
         warnings_text = " ".join([w.lower() for w in result.timeout_warnings])
         assert any(
-            threshold in warnings_text
-            for threshold in ["50%", "75%", "90%"]
+            threshold in warnings_text for threshold in ["50%", "75%", "90%"]
         ), "Warnings should mention threshold percentages (50%, 75%, 90%)"
 
         # AND: Extension request API is callable and updates limits (SAME API)
@@ -301,38 +298,36 @@ class TestE2EDevelopCommandWiring:
         extension_request = {
             "step_file": step_file_path,
             "extension_minutes": 10,
-            "justification": "Complex TDD cycle requires additional time for /nw:develop"
+            "justification": "Complex TDD cycle requires additional time for /nw:develop",
         }
 
         extension_result = des_orchestrator.request_execution_extension(
             **extension_request
         )
 
-        assert extension_result.approved is True, (
-            "Extension request should be approved"
-        )
-        assert extension_result.new_total_extensions == 10, (
-            f"Expected new_total_extensions=10, got {extension_result.new_total_extensions}"
-        )
+        assert extension_result.approved is True, "Extension request should be approved"
+        assert (
+            extension_result.new_total_extensions == 10
+        ), f"Expected new_total_extensions=10, got {extension_result.new_total_extensions}"
 
         # Verify extension persisted to step file (SAME PERSISTENCE)
-        with open(minimal_step_file, 'r') as f:
+        with open(minimal_step_file, "r") as f:
             step_data = json.load(f)
 
-        assert step_data["tdd_cycle"]["total_extensions_minutes"] == 10, (
-            "Extension should be persisted to step file total_extensions_minutes"
-        )
+        assert (
+            step_data["tdd_cycle"]["total_extensions_minutes"] == 10
+        ), "Extension should be persisted to step file total_extensions_minutes"
 
         # AND: EXTERNAL VALIDITY PROVEN FOR /nw:develop COMMAND
         # All features executed in actual /nw:develop command invocation path
-        assert result.execution_path == "DESOrchestrator.execute_step", (
-            "Test must validate features execute in real orchestrator path"
-        )
+        assert (
+            result.execution_path == "DESOrchestrator.execute_step"
+        ), "Test must validate features execute in real orchestrator path"
 
         assert result.features_validated == [
             "turn_counting",
             "timeout_monitoring",
-            "extension_api"
+            "extension_api",
         ], "All three features should be validated in /nw:develop execution path"
 
         # CRITICAL VALIDATION: /nw:develop has SAME features as /nw:execute

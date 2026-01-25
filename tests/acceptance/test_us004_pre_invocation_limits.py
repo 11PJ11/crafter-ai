@@ -53,7 +53,8 @@ class TestPreInvocationLimitsValidation:
 
         # Remove limits from step file (simulate missing config)
         import json
-        with open(minimal_step_file, 'r') as f:
+
+        with open(minimal_step_file, "r") as f:
             step_data = json.load(f)
 
         # Ensure no limits configured in tdd_cycle
@@ -62,22 +63,22 @@ class TestPreInvocationLimitsValidation:
         if "duration_minutes" in step_data.get("tdd_cycle", {}):
             del step_data["tdd_cycle"]["duration_minutes"]
 
-        with open(minimal_step_file, 'w') as f:
+        with open(minimal_step_file, "w") as f:
             json.dump(step_data, f, indent=2)
 
         # WHEN: Orchestrator validates before execute_step
         from des.orchestrator import DESOrchestrator
+
         orchestrator = DESOrchestrator()
 
         validation_result = orchestrator.validate_invocation_limits(
-            step_file=step_file_path,
-            project_root=tmp_project_root
+            step_file=step_file_path, project_root=tmp_project_root
         )
 
         # THEN: Validation fails with specific error about missing limits
-        assert validation_result.is_valid is False, (
-            "Validation should fail when max_turns and duration_minutes are missing"
-        )
+        assert (
+            validation_result.is_valid is False
+        ), "Validation should fail when max_turns and duration_minutes are missing"
 
         assert validation_result.errors is not None
         assert len(validation_result.errors) > 0
@@ -98,9 +99,9 @@ class TestPreInvocationLimitsValidation:
             for keyword in ["configure", "add", "set", "tdd_cycle"]
         ), "Guidance should mention how to configure limits in step file"
 
-        assert "max_turns" in guidance_text or "duration_minutes" in guidance_text, (
-            "Guidance should explicitly mention which fields to configure"
-        )
+        assert (
+            "max_turns" in guidance_text or "duration_minutes" in guidance_text
+        ), "Guidance should explicitly mention which fields to configure"
 
     # =========================================================================
     # AC-07-02.2: Pre-invocation check fails if limits invalid
@@ -125,23 +126,24 @@ class TestPreInvocationLimitsValidation:
         step_file_path = str(minimal_step_file.relative_to(tmp_project_root))
 
         import json
-        with open(minimal_step_file, 'r') as f:
+
+        with open(minimal_step_file, "r") as f:
             step_data = json.load(f)
 
         # Set invalid limits
         step_data["tdd_cycle"]["max_turns"] = -1
         step_data["tdd_cycle"]["duration_minutes"] = 0
 
-        with open(minimal_step_file, 'w') as f:
+        with open(minimal_step_file, "w") as f:
             json.dump(step_data, f, indent=2)
 
         # WHEN: Orchestrator validates limits
         from des.orchestrator import DESOrchestrator
+
         orchestrator = DESOrchestrator()
 
         validation_result = orchestrator.validate_invocation_limits(
-            step_file=step_file_path,
-            project_root=tmp_project_root
+            step_file=step_file_path, project_root=tmp_project_root
         )
 
         # THEN: Validation fails with invalid value error
@@ -183,29 +185,32 @@ class TestPreInvocationLimitsValidation:
         step_file_path = str(minimal_step_file.relative_to(tmp_project_root))
 
         import json
-        with open(minimal_step_file, 'r') as f:
+
+        with open(minimal_step_file, "r") as f:
             step_data = json.load(f)
 
         # Set valid limits
         step_data["tdd_cycle"]["max_turns"] = 50
         step_data["tdd_cycle"]["duration_minutes"] = 30
 
-        with open(minimal_step_file, 'w') as f:
+        with open(minimal_step_file, "w") as f:
             json.dump(step_data, f, indent=2)
 
         # WHEN: Orchestrator validates limits
         from des.orchestrator import DESOrchestrator
+
         orchestrator = DESOrchestrator()
 
         validation_result = orchestrator.validate_invocation_limits(
-            step_file=step_file_path,
-            project_root=tmp_project_root
+            step_file=step_file_path, project_root=tmp_project_root
         )
 
         # THEN: Validation passes
-        assert validation_result.is_valid is True, (
-            "Validation should pass when max_turns and duration_minutes are valid"
-        )
+        assert (
+            validation_result.is_valid is True
+        ), "Validation should pass when max_turns and duration_minutes are valid"
 
         assert validation_result.errors is None or len(validation_result.errors) == 0
-        assert validation_result.guidance is None or len(validation_result.guidance) == 0
+        assert (
+            validation_result.guidance is None or len(validation_result.guidance) == 0
+        )

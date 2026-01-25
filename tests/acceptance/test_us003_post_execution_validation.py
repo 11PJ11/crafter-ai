@@ -842,7 +842,7 @@ def _create_step_file_with_timeout_exceeded():
         "tdd_cycle": {
             "duration_minutes": 5,
             "total_extensions_minutes": 2,
-            "phase_execution_log": phase_log
+            "phase_execution_log": phase_log,
         },
     }
 

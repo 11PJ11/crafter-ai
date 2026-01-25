@@ -34,7 +34,7 @@ class TestOrchestratorPromptWarnings:
                 step_file="test_step.json",
                 project_root=tmpdir,
                 timeout_thresholds=[5, 10, 15],
-                timeout_budget_minutes=40
+                timeout_budget_minutes=40,
             )
             assert isinstance(prompt, str)
 
@@ -56,7 +56,7 @@ class TestOrchestratorPromptWarnings:
                 step_file="test_step.json",
                 project_root=tmpdir,
                 timeout_thresholds=[5],
-                timeout_budget_minutes=40
+                timeout_budget_minutes=40,
             )
 
             # Prompt should contain timeout warning
@@ -80,7 +80,7 @@ class TestOrchestratorPromptWarnings:
                 step_file="test_step.json",
                 project_root=tmpdir,
                 timeout_thresholds=[25],
-                timeout_budget_minutes=40
+                timeout_budget_minutes=40,
             )
 
             # Should include percentage
@@ -104,7 +104,7 @@ class TestOrchestratorPromptWarnings:
                 step_file="test_step.json",
                 project_root=tmpdir,
                 timeout_thresholds=[25],
-                timeout_budget_minutes=40
+                timeout_budget_minutes=40,
             )
 
             # Should include remaining time
@@ -128,7 +128,7 @@ class TestOrchestratorPromptWarnings:
                 step_file="test_step.json",
                 project_root=tmpdir,
                 timeout_thresholds=[5],
-                timeout_budget_minutes=40
+                timeout_budget_minutes=40,
             )
 
             # Should include phase name
@@ -152,7 +152,7 @@ class TestOrchestratorPromptWarnings:
                 step_file="test_step.json",
                 project_root=tmpdir,
                 timeout_thresholds=[5],
-                timeout_budget_minutes=40
+                timeout_budget_minutes=40,
             )
 
             # Should NOT contain warning
@@ -174,7 +174,7 @@ class TestOrchestratorPromptWarnings:
                 command="/nw:execute",
                 agent="@software-crafter",
                 step_file="test_step.json",
-                project_root=tmpdir
+                project_root=tmpdir,
             )
 
             # Should NOT contain warning
@@ -182,7 +182,9 @@ class TestOrchestratorPromptWarnings:
 
     def _create_step_file(self, step_file_path: Path, minutes_ago: int):
         """Create test step file with specified start time."""
-        started_at = (datetime.now(timezone.utc) - timedelta(minutes=minutes_ago)).isoformat()
+        started_at = (
+            datetime.now(timezone.utc) - timedelta(minutes=minutes_ago)
+        ).isoformat()
 
         step_data = {
             "task_specification": {
