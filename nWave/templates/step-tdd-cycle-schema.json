@@ -321,6 +321,18 @@
           "allows_commit": true,
           "example": "APPROVED_SKIP: Tech Lead Alice approved"
         },
+        "CHECKPOINT_PENDING:": {
+          "allows_commit": true,
+          "example": "CHECKPOINT_PENDING: Will complete in REFACTOR checkpoint",
+          "note": "Used for TDD checkpoint commits (GREEN, REVIEW, REFACTOR, FINAL)",
+          "usage": "Allows intermediate commits during TDD cycle",
+          "checkpoints": [
+            "GREEN checkpoint (phases 0-5 complete, 6-13 pending)",
+            "REVIEW checkpoint (phases 0-6 complete, 7-13 pending)",
+            "REFACTOR checkpoint (phases 0-10 complete, 11-13 pending)",
+            "FINAL checkpoint (all 14 phases complete)"
+          ]
+        },
         "DEFERRED:": {
           "allows_commit": false,
           "example": "DEFERRED: Will address in follow-up PR",
