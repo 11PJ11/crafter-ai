@@ -24,6 +24,7 @@ class HookResult:
         error_message: Human-readable error description
         recovery_suggestions: Recommended actions to resolve issues
         not_executed_phases: Count of phases with NOT_EXECUTED status (diagnostic)
+        turn_limit_exceeded: Whether any phase exceeded configured max_turns limit
     """
 
     validation_status: str
@@ -36,6 +37,7 @@ class HookResult:
     error_message: Optional[str] = None
     recovery_suggestions: List[str] = field(default_factory=list)
     not_executed_phases: int = 0
+    turn_limit_exceeded: bool = False
 
 
 class SubagentStopHook:
@@ -89,6 +91,13 @@ class SubagentStopHook:
             result.invalid_skips = invalid_skips
             errors.append(("INVALID_SKIP", invalid_skips))
 
+        # Check for turn limit exceeded
+        max_turns = step_data.get("tdd_cycle", {}).get("max_turns")
+        exceeded_phases = self._detect_turn_limit_exceeded(phase_log, max_turns)
+        if exceeded_phases:
+            result.turn_limit_exceeded = True
+            errors.append(("TURN_LIMIT_EXCEEDED", exceeded_phases))
+
         # If any errors found, populate comprehensive failure details
         if errors:
             self._populate_aggregated_failures(result, errors, step_file_path, step_data)
@@ -112,19 +121,6 @@ class SubagentStopHook:
                 abandoned.append(phase_name)
         return abandoned
 
-    def _populate_validation_failure(self, result: HookResult, abandoned_phases: List[str]) -> None:
-        """Update HookResult with validation failure details.
-
-        Args:
-            result: HookResult object to populate
-            abandoned_phases: List of abandoned phase names
-        """
-        result.abandoned_phases = abandoned_phases
-        result.error_count = len(abandoned_phases)
-        result.validation_status = "FAILED"
-        result.error_type = "ABANDONED_PHASE"
-        result.error_message = f"Phase {abandoned_phases[0]} left IN_PROGRESS (abandoned)"
-
     def _count_not_executed_phases(self, phase_log: List[dict]) -> int:
         """Count phases with NOT_EXECUTED status.
 
@@ -139,23 +135,6 @@ class SubagentStopHook:
             if phase.get("status") == "NOT_EXECUTED":
                 count += 1
         return count
-
-    def _populate_silent_completion_failure(self, result: HookResult, not_executed_count: int) -> None:
-        """Update HookResult with silent completion failure details.
-
-        Args:
-            result: HookResult object to populate
-            not_executed_count: Number of phases with NOT_EXECUTED status
-        """
-        result.validation_status = "FAILED"
-        result.error_type = "SILENT_COMPLETION"
-        result.error_count = 1
-        result.error_message = f"Agent completed without updating step file ({not_executed_count} phases NOT_EXECUTED)"
-        result.recovery_suggestions = [
-            "Re-execute step with verbose logging to identify early exit cause",
-            "Review agent logs for error or exception that prevented work",
-            "Verify step file is writable and accessible to agent"
-        ]
 
     def _detect_incomplete_phases(self, phase_log: List[dict]) -> List[str]:
         """Detect phases marked EXECUTED but missing outcome field.
@@ -172,19 +151,6 @@ class SubagentStopHook:
                 phase_name = phase.get("phase_name", "UNKNOWN")
                 incomplete.append(phase_name)
         return incomplete
-
-    def _populate_missing_outcome_failure(self, result: HookResult, incomplete_phases: List[str]) -> None:
-        """Update HookResult with missing outcome failure details.
-
-        Args:
-            result: HookResult object to populate
-            incomplete_phases: List of phase names missing outcome
-        """
-        result.incomplete_phases = incomplete_phases
-        result.error_count = len(incomplete_phases)
-        result.validation_status = "FAILED"
-        result.error_type = "MISSING_OUTCOME"
-        result.error_message = f"Phase {incomplete_phases[0]} marked EXECUTED but missing outcome"
 
     def _detect_invalid_skips(self, phase_log: List[dict]) -> List[str]:
         """Detect phases marked SKIPPED but missing blocked_by reason.
@@ -205,18 +171,33 @@ class SubagentStopHook:
                     invalid_skips.append(phase_name)
         return invalid_skips
 
-    def _populate_invalid_skip_failure(self, result: HookResult, invalid_skips: List[str]) -> None:
-        """Update HookResult with invalid skip failure details.
+    def _detect_turn_limit_exceeded(self, phase_log: List[dict], max_turns: Optional[int]) -> List[dict]:
+        """Detect phases where turn_count exceeds max_turns limit.
 
         Args:
-            result: HookResult object to populate
-            invalid_skips: List of phase names with invalid SKIPPED status
+            phase_log: List of phase execution entries from step file
+            max_turns: Maximum turns allowed per phase (from tdd_cycle config)
+
+        Returns:
+            List of dicts with phase_name, turn_count, and max_turns for exceeded phases
         """
-        result.invalid_skips = invalid_skips
-        result.error_count = len(invalid_skips)
-        result.validation_status = "FAILED"
-        result.error_type = "INVALID_SKIP"
-        result.error_message = f"Phase {invalid_skips[0]} marked SKIPPED but missing blocked_by reason"
+        if max_turns is None:
+            return []
+
+        exceeded = []
+        for phase in phase_log:
+            turn_count = phase.get("turn_count")
+            phase_max_turns = phase.get("max_turns", max_turns)
+
+            # Only check phases that have turn_count tracked
+            if turn_count is not None and turn_count > phase_max_turns:
+                phase_name = phase.get("phase_name", "UNKNOWN")
+                exceeded.append({
+                    "phase_name": phase_name,
+                    "turn_count": turn_count,
+                    "max_turns": phase_max_turns
+                })
+        return exceeded
 
     def _populate_aggregated_failures(
         self, result: HookResult, errors: List[tuple], step_file_path: str, step_data: dict
@@ -251,6 +232,11 @@ class SubagentStopHook:
             elif error_type == "SILENT_COMPLETION":
                 total_errors += 1
                 error_details.append(f"Silent completion ({error_data} phases NOT_EXECUTED)")
+            elif error_type == "TURN_LIMIT_EXCEEDED":
+                count = len(error_data)
+                total_errors += count
+                phase_names = [p["phase_name"] for p in error_data]
+                error_details.append(f"{count} phase(s) exceeded turn limit: {', '.join(phase_names)}")
 
         result.error_count = total_errors
         result.error_type = "MULTIPLE_ERRORS" if len(errors) > 1 else errors[0][0]
@@ -266,6 +252,12 @@ class SubagentStopHook:
                 result.error_message = f"Phase {error_data[0]} marked SKIPPED but missing blocked_by reason"
             elif error_type == "SILENT_COMPLETION":
                 result.error_message = f"Agent completed without updating step file ({error_data} phases NOT_EXECUTED)"
+            elif error_type == "TURN_LIMIT_EXCEEDED":
+                phase_info = error_data[0]
+                result.error_message = (
+                    f"Phase {phase_info['phase_name']} exceeded turn limit "
+                    f"({phase_info['turn_count']}/{phase_info['max_turns']} turns)"
+                )
         else:
             # Multiple errors - use aggregated format
             result.error_message = f"{total_errors} validation error(s) found: {'; '.join(error_details)}"
@@ -320,6 +312,18 @@ class SubagentStopHook:
                     suggestions.append(
                         f"Add blocked_by reason to {phase} phase explaining why it was skipped."
                     )
+            elif error_type == "TURN_LIMIT_EXCEEDED":
+                for phase_info in error_data:
+                    phase_name = phase_info["phase_name"]
+                    turn_count = phase_info["turn_count"]
+                    max_turns = phase_info["max_turns"]
+                    suggestions.append(
+                        f"Increase max_turns limit from {max_turns} to at least {turn_count + 10} "
+                        f"to accommodate {phase_name} phase complexity."
+                    )
+                suggestions.append(
+                    "Break step into smaller, simpler sub-tasks to reduce turn count per phase."
+                )
 
         # Ensure minimum 3 suggestions (add generic if needed)
         if len(suggestions) < 3:

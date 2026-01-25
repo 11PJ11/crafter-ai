@@ -50,3 +50,19 @@ class TurnCounter:
             phase: Name of the DES phase to reset
         """
         self._turn_counts[phase] = 0
+
+    def to_dict(self) -> Dict[str, int]:
+        """Serialize counter state to dictionary.
+
+        Returns:
+            Dictionary mapping phase names to turn counts
+        """
+        return dict(self._turn_counts)
+
+    def from_dict(self, state: Dict[str, int]) -> None:
+        """Restore counter state from dictionary.
+
+        Args:
+            state: Dictionary mapping phase names to turn counts
+        """
+        self._turn_counts = dict(state)
