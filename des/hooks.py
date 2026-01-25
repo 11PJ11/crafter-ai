@@ -23,6 +23,7 @@ class HookResult:
         error_type: Category of error found (if any)
         error_message: Human-readable error description
         recovery_suggestions: Recommended actions to resolve issues
+        not_executed_phases: Count of phases with NOT_EXECUTED status (diagnostic)
     """
 
     validation_status: str
@@ -34,6 +35,7 @@ class HookResult:
     error_type: Optional[str] = None
     error_message: Optional[str] = None
     recovery_suggestions: List[str] = field(default_factory=list)
+    not_executed_phases: int = 0
 
 
 class SubagentStopHook:
@@ -57,10 +59,27 @@ class SubagentStopHook:
 
         result = HookResult(validation_status="PASSED", hook_fired=True)
         phase_log = step_data.get("tdd_cycle", {}).get("phase_execution_log", [])
+        task_state = step_data.get("state", {}).get("status", "UNKNOWN")
 
+        # Check for abandoned phases (IN_PROGRESS status)
         abandoned_phases = self._detect_abandoned_phases(phase_log)
         if abandoned_phases:
             self._populate_validation_failure(result, abandoned_phases)
+            return result
+
+        # Check for silent completion (task IN_PROGRESS but all phases NOT_EXECUTED)
+        not_executed_count = self._count_not_executed_phases(phase_log)
+        result.not_executed_phases = not_executed_count
+
+        if task_state == "IN_PROGRESS" and not_executed_count == len(phase_log):
+            self._populate_silent_completion_failure(result, not_executed_count)
+            return result
+
+        # Check for EXECUTED phases missing outcome
+        incomplete_phases = self._detect_incomplete_phases(phase_log)
+        if incomplete_phases:
+            self._populate_missing_outcome_failure(result, incomplete_phases)
+            return result
 
         return result
 
@@ -92,3 +111,64 @@ class SubagentStopHook:
         result.validation_status = "FAILED"
         result.error_type = "ABANDONED_PHASE"
         result.error_message = f"Phase {abandoned_phases[0]} left IN_PROGRESS (abandoned)"
+
+    def _count_not_executed_phases(self, phase_log: List[dict]) -> int:
+        """Count phases with NOT_EXECUTED status.
+
+        Args:
+            phase_log: List of phase execution entries from step file
+
+        Returns:
+            Count of phases with NOT_EXECUTED status
+        """
+        count = 0
+        for phase in phase_log:
+            if phase.get("status") == "NOT_EXECUTED":
+                count += 1
+        return count
+
+    def _populate_silent_completion_failure(self, result: HookResult, not_executed_count: int) -> None:
+        """Update HookResult with silent completion failure details.
+
+        Args:
+            result: HookResult object to populate
+            not_executed_count: Number of phases with NOT_EXECUTED status
+        """
+        result.validation_status = "FAILED"
+        result.error_type = "SILENT_COMPLETION"
+        result.error_count = 1
+        result.error_message = f"Agent completed without updating step file ({not_executed_count} phases NOT_EXECUTED)"
+        result.recovery_suggestions = [
+            "Re-execute step with verbose logging to identify early exit cause",
+            "Review agent logs for error or exception that prevented work",
+            "Verify step file is writable and accessible to agent"
+        ]
+
+    def _detect_incomplete_phases(self, phase_log: List[dict]) -> List[str]:
+        """Detect phases marked EXECUTED but missing outcome field.
+
+        Args:
+            phase_log: List of phase execution entries from step file
+
+        Returns:
+            List of phase names with EXECUTED status but no outcome
+        """
+        incomplete = []
+        for phase in phase_log:
+            if phase.get("status") == "EXECUTED" and phase.get("outcome") is None:
+                phase_name = phase.get("phase_name", "UNKNOWN")
+                incomplete.append(phase_name)
+        return incomplete
+
+    def _populate_missing_outcome_failure(self, result: HookResult, incomplete_phases: List[str]) -> None:
+        """Update HookResult with missing outcome failure details.
+
+        Args:
+            result: HookResult object to populate
+            incomplete_phases: List of phase names missing outcome
+        """
+        result.incomplete_phases = incomplete_phases
+        result.error_count = len(incomplete_phases)
+        result.validation_status = "FAILED"
+        result.error_type = "MISSING_OUTCOME"
+        result.error_message = f"Phase {incomplete_phases[0]} marked EXECUTED but missing outcome"

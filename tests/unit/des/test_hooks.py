@@ -194,3 +194,202 @@ class TestAbandonedPhaseDetection:
             )
         finally:
             Path(temp_path).unlink()
+
+
+class TestSilentCompletionDetection:
+    """Tests for detecting silent completion (all phases NOT_EXECUTED)."""
+
+    def test_hook_result_has_not_executed_phases_field(self):
+        """HookResult should have not_executed_phases field for diagnostics."""
+        from des.hooks import HookResult
+
+        result = HookResult(validation_status="PASSED")
+        assert hasattr(result, "not_executed_phases")
+
+    def test_not_executed_phases_field_is_integer(self):
+        """not_executed_phases should be an integer count."""
+        from des.hooks import HookResult
+
+        result = HookResult(validation_status="PASSED", not_executed_phases=14)
+        assert isinstance(result.not_executed_phases, int)
+        assert result.not_executed_phases == 14
+
+    def test_detects_all_phases_not_executed_as_silent_completion(self):
+        """Hook should detect when all 14 phases are NOT_EXECUTED as SILENT_COMPLETION."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        # Create step file where task is IN_PROGRESS but ALL phases NOT_EXECUTED
+        step_data = {
+            "task_id": "01-03",
+            "project_id": "test-project",
+            "state": {"status": "IN_PROGRESS"},  # Task marked as started
+            "tdd_cycle": {
+                "phase_execution_log": [
+                    {"phase_number": i, "phase_name": phase, "status": "NOT_EXECUTED"}
+                    for i, phase in enumerate([
+                        "PREPARE", "RED_ACCEPTANCE", "RED_UNIT", "GREEN_UNIT",
+                        "CHECK_ACCEPTANCE", "GREEN_ACCEPTANCE", "REVIEW",
+                        "REFACTOR_L1", "REFACTOR_L2", "REFACTOR_L3", "REFACTOR_L4",
+                        "POST_REFACTOR_REVIEW", "FINAL_VALIDATE", "COMMIT"
+                    ])
+                ]
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            result = hook.on_agent_complete(step_file_path=temp_path)
+            assert result.validation_status == "FAILED"
+            assert result.error_type == "SILENT_COMPLETION"
+            assert result.not_executed_phases == 14
+        finally:
+            Path(temp_path).unlink()
+
+    def test_silent_completion_error_message_includes_diagnostic(self):
+        """Silent completion error message should mention agent completed without updating."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        step_data = {
+            "task_id": "01-03",
+            "state": {"status": "IN_PROGRESS"},
+            "tdd_cycle": {
+                "phase_execution_log": [
+                    {"phase_number": i, "phase_name": f"PHASE_{i}", "status": "NOT_EXECUTED"}
+                    for i in range(14)
+                ]
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            result = hook.on_agent_complete(step_file_path=temp_path)
+            assert "Agent completed without updating step file" in result.error_message
+        finally:
+            Path(temp_path).unlink()
+
+    def test_no_silent_completion_when_some_phases_executed(self):
+        """Hook should NOT flag silent completion if at least one phase was executed."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        # Task with PREPARE executed but rest NOT_EXECUTED - not silent completion
+        step_data = {
+            "task_id": "01-03",
+            "state": {"status": "IN_PROGRESS"},
+            "tdd_cycle": {
+                "phase_execution_log": [
+                    {"phase_number": 0, "phase_name": "PREPARE", "status": "EXECUTED"},
+                    *[
+                        {"phase_number": i, "phase_name": f"PHASE_{i}", "status": "NOT_EXECUTED"}
+                        for i in range(1, 14)
+                    ]
+                ]
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            result = hook.on_agent_complete(step_file_path=temp_path)
+            # Should pass - not silent completion if any phase was executed
+            assert result.validation_status == "PASSED"
+        finally:
+            Path(temp_path).unlink()
+
+    def test_no_silent_completion_when_task_status_done(self):
+        """Hook should NOT flag silent completion if task status is DONE (even if phases NOT_EXECUTED)."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        # Task DONE with all phases NOT_EXECUTED - edge case, but not silent completion
+        step_data = {
+            "task_id": "01-03",
+            "state": {"status": "DONE"},  # Task completed normally
+            "tdd_cycle": {
+                "phase_execution_log": [
+                    {"phase_number": i, "phase_name": f"PHASE_{i}", "status": "NOT_EXECUTED"}
+                    for i in range(14)
+                ]
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            result = hook.on_agent_complete(step_file_path=temp_path)
+            # Silent completion only applies when task is IN_PROGRESS
+            assert result.error_type != "SILENT_COMPLETION"
+        finally:
+            Path(temp_path).unlink()
+
+
+class TestMissingOutcomeDetection:
+    """Tests for detecting EXECUTED phases without outcome field."""
+
+    def test_detects_executed_phase_without_outcome(self):
+        """Hook should detect phases with EXECUTED status but no outcome."""
+        from des.hooks import SubagentStopHook
+
+        hook = SubagentStopHook()
+
+        # Create step file with REFACTOR_L1 marked EXECUTED but missing outcome
+        step_data = {
+            "task_id": "01-04",
+            "project_id": "test-project",
+            "state": {"status": "IN_PROGRESS"},
+            "tdd_cycle": {
+                "phase_execution_log": [
+                    {
+                        "phase_number": 0,
+                        "phase_name": "PREPARE",
+                        "status": "EXECUTED",
+                        "outcome": "PASS",
+                    },
+                    {
+                        "phase_number": 7,
+                        "phase_name": "REFACTOR_L1",
+                        "status": "EXECUTED",
+                        "outcome": None,  # Missing outcome!
+                    },
+                ]
+            },
+        }
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(step_data, f)
+            temp_path = f.name
+
+        try:
+            result = hook.on_agent_complete(step_file_path=temp_path)
+            assert result.validation_status == "FAILED"
+            assert "REFACTOR_L1" in result.incomplete_phases
+            assert result.error_type == "MISSING_OUTCOME"
+            assert "Phase REFACTOR_L1 marked EXECUTED but missing outcome" in result.error_message
+        finally:
+            Path(temp_path).unlink()
