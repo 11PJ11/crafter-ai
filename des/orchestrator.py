@@ -7,9 +7,14 @@ DES validation based on command origin (execute/develop vs research/ad-hoc).
 Integration: US-002 Template Validation
 - Pre-invocation validation ensures prompts contain all mandatory sections
 - Blocks Task invocation if validation fails
+
+Integration: US-003 Post-Execution Validation
+- Invokes SubagentStopHook after sub-agent completion
+- Validates step file phase execution state
 """
 
 from des.validator import TemplateValidator, ValidationResult
+from des.hooks import SubagentStopHook, HookResult
 
 
 class DESOrchestrator:
@@ -26,8 +31,9 @@ class DESOrchestrator:
     VALIDATION_COMMANDS = ["/nw:execute", "/nw:develop"]
 
     def __init__(self):
-        """Initialize orchestrator with template validator."""
+        """Initialize orchestrator with template validator and hook."""
         self._validator = TemplateValidator()
+        self._hook = SubagentStopHook()
 
     def validate_prompt(self, prompt: str) -> ValidationResult:
         """
@@ -146,3 +152,18 @@ class DESOrchestrator:
         """
         # Ad-hoc prompts bypass DES validation - return as-is
         return prompt
+
+    def on_subagent_complete(self, step_file_path: str) -> HookResult:
+        """
+        Invoke SubagentStopHook after sub-agent completion.
+
+        This is the entry point for post-execution validation (US-003).
+        Delegates to SubagentStopHook to validate step file state.
+
+        Args:
+            step_file_path: Path to the step JSON file to validate
+
+        Returns:
+            HookResult with validation status and any errors found
+        """
+        return self._hook.on_agent_complete(step_file_path)

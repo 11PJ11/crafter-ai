@@ -17,7 +17,6 @@ WAVE: DISTILL (Acceptance Test Creation)
 STATUS: RED (Outside-In TDD - awaiting DEVELOP wave implementation)
 """
 
-import pytest
 import json
 from typing import Protocol, Optional
 
@@ -870,7 +869,6 @@ class TestOrchestratorHookIntegration:
     that proves the wiring works (per CM-D 90/10 rule).
     """
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_orchestrator_invokes_subagent_stop_hook_on_completion(
         self, tmp_project_root, minimal_step_file
     ):
@@ -883,22 +881,23 @@ class TestOrchestratorHookIntegration:
         This test would FAIL if the import or delegation is missing.
         """
         # Arrange: Import entry point (NOT internal component)
-        # from des.orchestrator import DESOrchestrator
+        from des.orchestrator import DESOrchestrator
 
         # Create step file with clean completion
-        # step_data = _create_step_file_with_clean_completion()
-        # minimal_step_file.write_text(json.dumps(step_data, indent=2))
+        step_data = _create_step_file_with_clean_completion()
+        minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Invoke validation through ENTRY POINT
-        # orchestrator = DESOrchestrator()
-        # result = orchestrator.on_subagent_complete(step_file_path=str(minimal_step_file))
+        orchestrator = DESOrchestrator()
+        result = orchestrator.on_subagent_complete(
+            step_file_path=str(minimal_step_file)
+        )
 
         # Assert: Hook fired through wired integration
-        # assert result.validation_status == "PASSED"
-        # assert result.abandoned_phases == []
-        # assert result.error_count == 0
+        assert result.validation_status == "PASSED"
+        assert result.abandoned_phases == []
+        assert result.error_count == 0
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_orchestrator_detects_abandoned_phase_via_entry_point(
         self, tmp_project_root, minimal_step_file
     ):
@@ -911,19 +910,21 @@ class TestOrchestratorHookIntegration:
         not just returning success by default.
         """
         # Arrange: Import entry point
-        # from des.orchestrator import DESOrchestrator
+        from des.orchestrator import DESOrchestrator
 
         # Create step file with abandoned phase
-        # step_data = _create_step_file_with_abandoned_phase(
-        #     abandoned_phase="GREEN_UNIT", last_completed_phase="RED_UNIT"
-        # )
-        # minimal_step_file.write_text(json.dumps(step_data, indent=2))
+        step_data = _create_step_file_with_abandoned_phase(
+            abandoned_phase="GREEN_UNIT", last_completed_phase="RED_UNIT"
+        )
+        minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Invoke validation through ENTRY POINT
-        # orchestrator = DESOrchestrator()
-        # result = orchestrator.on_subagent_complete(step_file_path=str(minimal_step_file))
+        orchestrator = DESOrchestrator()
+        result = orchestrator.on_subagent_complete(
+            step_file_path=str(minimal_step_file)
+        )
 
         # Assert: Validation fails through wired validator
-        # assert result.validation_status == "FAILED"
-        # assert "GREEN_UNIT" in result.abandoned_phases
-        # assert result.error_count > 0
+        assert result.validation_status == "FAILED"
+        assert "GREEN_UNIT" in result.abandoned_phases
+        assert result.error_count > 0

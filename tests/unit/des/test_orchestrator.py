@@ -443,3 +443,67 @@ class TestDESOrchestratorEdgeCases:
         orchestrator = DESOrchestrator()
         validation_level = orchestrator._get_validation_level("")
         assert validation_level == "none"
+
+
+class TestOrchestratorHookIntegration:
+    """Unit tests for DESOrchestrator hook integration."""
+
+    def test_orchestrator_has_on_subagent_complete_method(self):
+        """
+        GIVEN DESOrchestrator class instantiated
+        WHEN checking for on_subagent_complete method
+        THEN method should exist and be callable
+        """
+        from des.orchestrator import DESOrchestrator
+
+        orchestrator = DESOrchestrator()
+        assert hasattr(orchestrator, "on_subagent_complete")
+        assert callable(orchestrator.on_subagent_complete)
+
+    def test_on_subagent_complete_returns_hook_result(self, tmp_path):
+        """
+        GIVEN DESOrchestrator instance with valid step file
+        WHEN on_subagent_complete is called
+        THEN it should return a HookResult object
+        """
+        import json
+        from des.orchestrator import DESOrchestrator
+        from des.hooks import HookResult
+
+        # Create minimal step file
+        step_file = tmp_path / "test-step.json"
+        step_data = {
+            "task_specification": {"task_id": "01-01"},
+            "state": {"status": "COMPLETED"},
+            "tdd_cycle": {"phase_execution_log": []},
+        }
+        step_file.write_text(json.dumps(step_data, indent=2))
+
+        orchestrator = DESOrchestrator()
+        result = orchestrator.on_subagent_complete(step_file_path=str(step_file))
+
+        assert isinstance(result, HookResult)
+
+    def test_on_subagent_complete_delegates_to_hook(self, tmp_path):
+        """
+        GIVEN DESOrchestrator instance
+        WHEN on_subagent_complete is called with step file
+        THEN it should delegate to SubagentStopHook.on_agent_complete
+        """
+        import json
+        from des.orchestrator import DESOrchestrator
+
+        # Create minimal step file
+        step_file = tmp_path / "test-step.json"
+        step_data = {
+            "task_specification": {"task_id": "01-01"},
+            "state": {"status": "COMPLETED"},
+            "tdd_cycle": {"phase_execution_log": []},
+        }
+        step_file.write_text(json.dumps(step_data, indent=2))
+
+        orchestrator = DESOrchestrator()
+        result = orchestrator.on_subagent_complete(step_file_path=str(step_file))
+
+        # Verify delegation worked (hook_fired should be True)
+        assert result.hook_fired is True
