@@ -16,7 +16,8 @@ Integration: US-003 Post-Execution Validation
 from des.validator import TemplateValidator, ValidationResult
 from des.hooks import SubagentStopHook, HookResult
 from des.turn_counter import TurnCounter
-from dataclasses import dataclass
+from des.timeout_monitor import TimeoutMonitor
+from dataclasses import dataclass, field
 import json
 from pathlib import Path
 
@@ -29,10 +30,12 @@ class ExecuteStepResult:
         turn_count: Total number of turns (iterations) executed
         phase_name: Name of the phase being executed
         status: Execution status (e.g., "COMPLETED", "IN_PROGRESS")
+        warnings_emitted: List of timeout warnings emitted during execution
     """
     turn_count: int
     phase_name: str = "PREPARE"
     status: str = "COMPLETED"
+    warnings_emitted: list[str] = field(default_factory=list)
 
 
 class DESOrchestrator:
@@ -196,14 +199,19 @@ class DESOrchestrator:
         agent: str,
         step_file: str,
         project_root: Path | str,
-        simulated_iterations: int = 0
+        simulated_iterations: int = 0,
+        timeout_thresholds: list[int] | None = None
     ) -> ExecuteStepResult:
         """
-        Execute step with TurnCounter integration for turn tracking.
+        Execute step with TurnCounter and TimeoutMonitor integration.
 
-        This method wires TurnCounter into the orchestrator's execution loop:
+        This method wires both TurnCounter and TimeoutMonitor into the orchestrator's
+        execution loop:
         - Initializes TurnCounter at phase start
-        - Increments on each agent call iteration
+        - Initializes TimeoutMonitor with phase start timestamp
+        - Increments turn count on each agent call iteration
+        - Checks timeout thresholds during execution loop
+        - Emits warnings when thresholds are crossed
         - Persists to step file in real-time
         - Restores state from step file on resume
 
@@ -213,9 +221,10 @@ class DESOrchestrator:
             step_file: Path to step JSON file (relative to project_root)
             project_root: Project root directory path
             simulated_iterations: Number of iterations to simulate (for testing)
+            timeout_thresholds: List of threshold values in minutes for timeout warnings
 
         Returns:
-            ExecuteStepResult with turn_count and execution status
+            ExecuteStepResult with turn_count, execution status, and warnings_emitted
         """
         counter = TurnCounter()
         step_file_path = self._resolve_step_file_path(project_root, step_file)
@@ -224,8 +233,27 @@ class DESOrchestrator:
         current_phase = self._get_current_phase(step_data)
         phase_name = current_phase["phase_name"]
 
+        # Initialize TimeoutMonitor with phase start timestamp
+        timeout_monitor = None
+        warnings = []
+        if timeout_thresholds:
+            started_at = current_phase.get("started_at")
+            if started_at:
+                timeout_monitor = TimeoutMonitor(started_at=started_at)
+
         self._restore_turn_count(counter, current_phase, phase_name)
-        self._execute_iterations(counter, phase_name, simulated_iterations)
+
+        # Execute iterations with threshold checking
+        for i in range(simulated_iterations):
+            counter.increment_turn(phase_name)
+
+            # Check thresholds every 5 turns or on first iteration
+            if timeout_monitor and (i % 5 == 0 or i == 0):
+                crossed = timeout_monitor.check_thresholds(timeout_thresholds)
+                for threshold in crossed:
+                    warning = self._format_timeout_warning(threshold, timeout_monitor)
+                    if warning not in warnings:
+                        warnings.append(warning)
 
         final_turn_count = counter.get_current_turn(phase_name)
         self._persist_turn_count(step_file_path, step_data, current_phase, final_turn_count)
@@ -233,7 +261,8 @@ class DESOrchestrator:
         return ExecuteStepResult(
             turn_count=final_turn_count,
             phase_name=phase_name,
-            status="COMPLETED"
+            status="COMPLETED",
+            warnings_emitted=warnings
         )
 
     def _resolve_step_file_path(self, project_root: Path | str, step_file: str) -> Path:
@@ -279,3 +308,22 @@ class DESOrchestrator:
         current_phase["turn_count"] = turn_count
         with open(step_file_path, 'w') as f:
             json.dump(step_data, f, indent=2)
+
+    def _format_timeout_warning(self, threshold: int, monitor: TimeoutMonitor) -> str:
+        """Format timeout warning message with threshold and elapsed time.
+
+        Args:
+            threshold: Threshold value in minutes that was crossed
+            monitor: TimeoutMonitor instance for elapsed time calculation
+
+        Returns:
+            Formatted warning message string
+        """
+        elapsed_seconds = monitor.get_elapsed_seconds()
+        elapsed_minutes = int(elapsed_seconds / 60)
+
+        return (
+            f"TIMEOUT WARNING: Phase has been running for {elapsed_minutes} minutes "
+            f"(crossed {threshold}-minute threshold). "
+            f"Elapsed time: {elapsed_minutes}m"
+        )
