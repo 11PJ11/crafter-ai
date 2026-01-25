@@ -47,6 +47,7 @@
         "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
+        "turn_count": null,
         "history": []
       },
       {
@@ -63,6 +64,7 @@
         "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
+        "turn_count": null,
         "history": []
       },
       {
@@ -79,6 +81,7 @@
         "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
+        "turn_count": null,
         "history": []
       },
       {
@@ -95,6 +98,7 @@
         "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
+        "turn_count": null,
         "history": []
       },
       {
@@ -111,6 +115,7 @@
         "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
+        "turn_count": null,
         "history": []
       },
       {
@@ -127,6 +132,7 @@
         "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
+        "turn_count": null,
         "history": []
       },
       {
@@ -143,6 +149,7 @@
         "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
+        "turn_count": null,
         "history": []
       },
       {
@@ -159,6 +166,7 @@
         "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
+        "turn_count": null,
         "history": []
       },
       {
@@ -175,6 +183,7 @@
         "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
+        "turn_count": null,
         "history": []
       },
       {
@@ -191,6 +200,7 @@
         "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
+        "turn_count": null,
         "history": []
       },
       {
@@ -207,6 +217,7 @@
         "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
+        "turn_count": null,
         "history": []
       },
       {
@@ -223,6 +234,7 @@
         "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
+        "turn_count": null,
         "history": []
       },
       {
@@ -239,6 +251,7 @@
         "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
+        "turn_count": null,
         "history": []
       },
       {
@@ -255,6 +268,7 @@
         "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
+        "turn_count": null,
         "history": []
       }
     ]
