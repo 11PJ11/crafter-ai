@@ -21,7 +21,6 @@ Feature: Conventional Commit Enforcement
     And no error is shown
     And the commit appears in git log
 
-  @skip
   Scenario: Breaking change commit accepted
     Given I have staged changes
     When I commit with message "feat!: redesign API endpoints"

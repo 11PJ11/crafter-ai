@@ -139,6 +139,19 @@ if __name__ == "__main__":
     cli_script.chmod(0o755)
 
 
+@given(parsers.parse("GitHub latest release is {version}"))
+def github_latest_release(mock_github_api, cli_environment, version):
+    """Set GitHub API to return specific latest version."""
+    mock_github_api["latest_version"] = version
+    cli_environment["TEST_GITHUB_LATEST_VERSION"] = version
+
+
+@given(parsers.parse("nWave version {version} is installed"))
+def nwave_version_installed(test_installation, version):
+    """Set up installation with specific version."""
+    test_installation["version_file"].write_text(version)
+
+
 @given(parsers.parse("nWave version {version} is installed at ~/.claude/"))
 def nwave_installed_at_home(test_installation, version):
     """Set up installation with version at ~/.claude/ location."""
@@ -181,12 +194,51 @@ def release_changelog_available(mock_github_api):
 # ============================================================================
 
 
-@given("these backup directories exist:")
-def create_test_backups(test_installation, pytestconfig):
-    """Create backup directories with specific ages."""
-    table = pytestconfig.getoption("--gherkin-table", None)
-    # This will be populated by pytest-bdd table parsing
-    # For now, create sample backups programmatically
+@given("nWave is installed at ~/.claude/")
+def nwave_installed_simple(test_installation):
+    """Verify nWave directory structure exists (simplified path)."""
+    assert test_installation["nwave_dir"].exists()
+    assert test_installation["cli_dir"].exists()
+
+
+@given("these backup directories exist:", target_fixture="test_backups")
+def create_test_backups(test_installation):
+    """
+    Create backup directories with specific ages based on Gherkin table.
+
+    This step creates the backups from the feature file:
+    ~/.claude_bck_20251201/ - 53 days old
+    ~/.claude_bck_20251215/ - 39 days old
+    ~/.claude_bck_20260110/ - 13 days old
+    """
+    import time
+    import os
+
+    # Define backups based on feature file
+    backups = [
+        (".claude_bck_20251201", 53),
+        (".claude_bck_20251215", 39),
+        (".claude_bck_20260110", 13),
+    ]
+
+    backups_info = {}
+    now = time.time()
+
+    for backup_name, age_days in backups:
+        backup_dir = test_installation["tmp_path"] / backup_name
+        backup_dir.mkdir(parents=True, exist_ok=True)
+
+        # Create a marker file to set the timestamp
+        marker_file = backup_dir / "nwave-version.txt"
+        marker_file.write_text("1.5.6")
+
+        # Set modification time to age_days ago
+        old_time = now - (age_days * 24 * 60 * 60)
+        os.utime(marker_file, (old_time, old_time))
+
+        backups_info[backup_name] = {"age_days": age_days, "path": backup_dir}
+
+    return backups_info
 
 
 @given(parsers.parse("{backup_path} exists and is older than 30 days"))
@@ -293,6 +345,14 @@ def simulate_download_failure(cli_environment):
 # ============================================================================
 # THEN - Assertions (Update verification)
 # ============================================================================
+
+
+@then(parsers.parse('I see "{expected_text}"'))
+def verify_output_contains(cli_result, expected_text):
+    """Verify CLI output contains expected text."""
+    assert (
+        expected_text in cli_result["stdout"]
+    ), f"Expected text '{expected_text}' not found in output:\n{cli_result['stdout']}"
 
 
 @then(parsers.parse("a backup is created at {backup_pattern}"))

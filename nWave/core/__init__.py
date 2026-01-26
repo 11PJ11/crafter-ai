@@ -1,0 +1,1 @@
+"""nWave core domain logic."""
