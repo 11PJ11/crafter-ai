@@ -6,6 +6,7 @@ with wave assignments and embedded dependencies.
 """
 
 import logging
+import re
 from pathlib import Path
 from typing import Dict, Optional, Any
 import yaml
@@ -24,6 +25,61 @@ class CommandProcessor:
         self.output_dir = Path(output_dir)
         self.file_manager = file_manager
         self.dependency_resolver = DependencyResolver(source_dir, file_manager)
+
+    def process_embed_injections(self, content: str) -> str:
+        """
+        Process BUILD:INJECT markers and replace with embed file content.
+
+        Finds markers in format:
+        <!-- BUILD:INJECT:START:path/to/file.md -->
+        <!-- Content will be injected here at build time -->
+        <!-- BUILD:INJECT:END -->
+
+        And replaces the entire marker region with the actual file content.
+
+        Args:
+            content: Content containing injection markers
+
+        Returns:
+            str: Content with markers replaced by actual embed file content
+        """
+        marker_pattern = re.compile(
+            r"<!-- BUILD:INJECT:START:(.+?) -->\n.*?<!-- BUILD:INJECT:END -->",
+            re.DOTALL,
+        )
+
+        def replace_marker(match):
+            embed_path = match.group(1).strip()
+
+            # Resolve path relative to project root (parent of source_dir which is nWave)
+            project_root = self.source_dir.parent
+            embed_full_path = project_root / embed_path
+
+            try:
+                embed_content = self.file_manager.read_file(embed_full_path)
+                if not embed_content:
+                    error_msg = f"Could not read embed file: {embed_path}"
+                    logging.error(error_msg)
+                    raise FileNotFoundError(error_msg)
+
+                logging.info(f"Injecting embed content from: {embed_path}")
+
+                # Keep the markers for documentation purposes
+                return f"<!-- BUILD:INJECT:START:{embed_path} -->\n{embed_content.strip()}\n<!-- BUILD:INJECT:END -->"
+
+            except Exception as e:
+                logging.error(f"Error processing embed injection for {embed_path}: {e}")
+                raise
+
+        # Find all markers and replace them
+        result = marker_pattern.sub(replace_marker, content)
+
+        # Log summary of injections
+        matches = marker_pattern.findall(content)
+        if matches:
+            logging.info(f"Processed {len(matches)} embed injection(s)")
+
+        return result
 
     def get_command_info_from_config(
         self, task_name: str, config: Dict[str, Any]
@@ -201,6 +257,9 @@ class CommandProcessor:
             task_content = self.file_manager.read_file(task_file)
             if not task_content:
                 raise ValueError(f"Could not read task file: {task_file}")
+
+            # Process BUILD:INJECT markers FIRST (before any other processing)
+            task_content = self.process_embed_injections(task_content)
 
             # Get command and wave information
             task_name = task_file.name
