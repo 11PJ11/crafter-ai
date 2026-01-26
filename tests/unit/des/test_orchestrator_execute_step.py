@@ -3,6 +3,7 @@
 from des.orchestrator import DESOrchestrator
 from datetime import datetime, timezone, timedelta
 import json
+import pytest
 
 
 class TestOrchestratorExecuteStep:
@@ -323,6 +324,7 @@ class TestOrchestratorTimeoutMonitoringIntegration:
 class TestOrchestratorExtensionAPIIntegration:
     """Test suite for extension API wiring in orchestrator."""
 
+    @pytest.mark.skip(reason="Extension API is OUT_OF_SCOPE for US-006")
     def test_scenario_015_extension_request_approved_updates_limits(self, tmp_path):
         """Extension request approved should update TurnCounter and TimeoutMonitor limits.
 

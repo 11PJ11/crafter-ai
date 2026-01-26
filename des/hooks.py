@@ -146,6 +146,21 @@ class SubagentStopHook:
                 count += 1
         return count
 
+    def _detect_silent_completion(self, phase_log: List[dict]) -> bool:
+        """Detect if all phases are NOT_EXECUTED (silent completion).
+
+        Args:
+            phase_log: List of phase execution entries from step file
+
+        Returns:
+            True if all phases are NOT_EXECUTED (silent completion), False otherwise
+        """
+        if not phase_log:
+            return False
+
+        not_executed_count = self._count_not_executed_phases(phase_log)
+        return not_executed_count == len(phase_log)
+
     def _detect_incomplete_phases(self, phase_log: List[dict]) -> List[str]:
         """Detect phases marked EXECUTED but missing outcome field.
 
@@ -245,6 +260,23 @@ class SubagentStopHook:
             "actual_minutes": actual_seconds // 60,
             "expected_minutes": expected_seconds // 60
         }
+
+    def _populate_silent_completion_failure(self, result: HookResult, not_executed_count: int) -> None:
+        """Populate HookResult with SILENT_COMPLETION error details.
+
+        Args:
+            result: HookResult object to populate
+            not_executed_count: Number of phases with NOT_EXECUTED status
+        """
+        result.validation_status = "FAILED"
+        result.error_type = "SILENT_COMPLETION"
+        result.error_count = 1
+        result.error_message = f"Agent completed without updating step file ({not_executed_count} phases NOT_EXECUTED)"
+        result.recovery_suggestions = [
+            "Re-execute step with verbose logging to identify early exit cause",
+            "Review agent logs for error or exception that prevented work",
+            "Verify step file is writable and accessible to agent"
+        ]
 
     def _populate_aggregated_failures(
         self, result: HookResult, errors: List[tuple], step_file_path: str, step_data: dict

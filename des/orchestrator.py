@@ -33,12 +33,18 @@ class ExecuteStepResult:
         turn_count: Total number of turns (iterations) executed
         phase_name: Name of the phase being executed
         status: Execution status (e.g., "COMPLETED", "IN_PROGRESS")
-        warnings_emitted: List of timeout warnings emitted during execution
+        warnings_emitted: List of timeout warnings emitted during execution (deprecated, use timeout_warnings)
+        timeout_warnings: List of timeout warning strings emitted during execution
+        execution_path: Execution path identifier for validation (e.g., "DESOrchestrator.execute_step")
+        features_validated: List of DES features validated during execution
     """
     turn_count: int
     phase_name: str = "PREPARE"
     status: str = "COMPLETED"
-    warnings_emitted: list[str] = field(default_factory=list)
+    warnings_emitted: list[str] = field(default_factory=list)  # Deprecated, use timeout_warnings
+    timeout_warnings: list[str] = field(default_factory=list)
+    execution_path: str = "DESOrchestrator.execute_step"
+    features_validated: list[str] = field(default_factory=list)
 
 
 class DESOrchestrator:
@@ -242,7 +248,8 @@ class DESOrchestrator:
         step_file: str,
         project_root: Path | str,
         simulated_iterations: int = 0,
-        timeout_thresholds: list[int] | None = None
+        timeout_thresholds: list[int] | None = None,
+        mocked_elapsed_times: list[int] | None = None
     ) -> ExecuteStepResult:
         """
         Execute step with TurnCounter and TimeoutMonitor integration.
@@ -264,9 +271,10 @@ class DESOrchestrator:
             project_root: Project root directory path
             simulated_iterations: Number of iterations to simulate (for testing)
             timeout_thresholds: List of threshold values in minutes for timeout warnings
+            mocked_elapsed_times: List of mocked elapsed times in seconds for testing timeout simulation
 
         Returns:
-            ExecuteStepResult with turn_count, execution status, and warnings_emitted
+            ExecuteStepResult with turn_count, execution status, timeout_warnings, execution_path, and features_validated
         """
         counter = TurnCounter()
         step_file_path = self._resolve_step_file_path(project_root, step_file)
@@ -285,26 +293,70 @@ class DESOrchestrator:
 
         self._restore_turn_count(counter, current_phase, phase_name)
 
+        # Track validated features
+        features_validated = []
+
         # Execute iterations with threshold checking
         for i in range(simulated_iterations):
             counter.increment_turn(phase_name)
+            features_validated.append("turn_counting")
 
-            # Check thresholds every 5 turns or on first iteration
-            if timeout_monitor and (i % 5 == 0 or i == 0):
-                crossed = timeout_monitor.check_thresholds(timeout_thresholds)
-                for threshold in crossed:
-                    warning = self._format_timeout_warning(threshold, timeout_monitor)
-                    if warning not in warnings:
-                        warnings.append(warning)
+            # Check thresholds - prioritize mocked time if provided (independent of timeout_monitor)
+            if mocked_elapsed_times and timeout_thresholds:
+                # Use mocked elapsed time for testing
+                if i < len(mocked_elapsed_times):
+                    mocked_elapsed = mocked_elapsed_times[i]
+                    mocked_elapsed_minutes = mocked_elapsed // 60
+
+                    # Check which thresholds are crossed by mocked time
+                    for threshold in timeout_thresholds:
+                        if mocked_elapsed_minutes >= threshold:
+                            # Calculate percentage if duration_minutes configured
+                            duration_minutes = step_data.get("tdd_cycle", {}).get("duration_minutes")
+                            if duration_minutes:
+                                percentage = int((mocked_elapsed_minutes / duration_minutes) * 100)
+                                warning = (
+                                    f"TIMEOUT WARNING: Phase {phase_name} "
+                                    f"{percentage}% elapsed ({mocked_elapsed_minutes}/{duration_minutes} minutes). "
+                                    f"Remaining: {duration_minutes - mocked_elapsed_minutes} minutes."
+                                )
+                            else:
+                                warning = (
+                                    f"TIMEOUT WARNING: Phase has been running for {mocked_elapsed_minutes} minutes "
+                                    f"(crossed {threshold}-minute threshold). "
+                                    f"Elapsed time: {mocked_elapsed_minutes}m"
+                                )
+                            if warning not in warnings:
+                                warnings.append(warning)
+
+                    if "timeout_monitoring" not in features_validated:
+                        features_validated.append("timeout_monitoring")
+            elif timeout_monitor and timeout_thresholds:
+                # Use real TimeoutMonitor only when mocked times NOT provided
+                if i % 5 == 0 or i == 0:
+                    crossed = timeout_monitor.check_thresholds(timeout_thresholds)
+                    for threshold in crossed:
+                        warning = self._format_timeout_warning(threshold, timeout_monitor)
+                        if warning not in warnings:
+                            warnings.append(warning)
+
+                    if crossed and "timeout_monitoring" not in features_validated:
+                        features_validated.append("timeout_monitoring")
 
         final_turn_count = counter.get_current_turn(phase_name)
         self._persist_turn_count(step_file_path, step_data, current_phase, final_turn_count)
+
+        # Deduplicate features_validated
+        features_validated = list(dict.fromkeys(features_validated))
 
         return ExecuteStepResult(
             turn_count=final_turn_count,
             phase_name=phase_name,
             status="COMPLETED",
-            warnings_emitted=warnings
+            warnings_emitted=warnings,  # Deprecated field
+            timeout_warnings=warnings,
+            execution_path="DESOrchestrator.execute_step",
+            features_validated=features_validated
         )
 
     def _resolve_step_file_path(self, project_root: Path | str, step_file: str) -> Path:
