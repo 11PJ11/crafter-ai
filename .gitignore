@@ -46,6 +46,9 @@ build-test.log
 tools/build.log
 **/build.log
 
+# Test logs
+**/pytest.log
+
 # TOON format agents (separate branch)
 /agents/
 output/
