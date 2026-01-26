@@ -9,6 +9,9 @@ from datetime import datetime, timedelta
 from pathlib import Path
 import tempfile
 import shutil
+import time
+import os
+from nwave.infrastructure.backup_manager import BackupManager
 
 
 class TestBackupCleanup:
@@ -34,13 +37,11 @@ class TestBackupCleanup:
             backup_13_days.mkdir()
 
             # Set modification times
-            import time
             now = time.time()
 
             # 53 days ago
             old_time_53 = now - (53 * 24 * 60 * 60)
             (backup_53_days / "marker.txt").write_text("test")
-            import os
             os.utime(backup_53_days / "marker.txt", (old_time_53, old_time_53))
 
             # 39 days ago

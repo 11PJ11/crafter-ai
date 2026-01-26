@@ -17,7 +17,6 @@ Feature: Breaking Change Warning
     And changelog highlights show breaking changes prominently
     And the command exits with code 0
 
-  @skip
   Scenario: Minor version update (no warning)
     Given nWave version 1.5.7 is installed locally
     And GitHub latest release is 1.6.0

@@ -34,7 +34,7 @@ class TestBackupManagerRollback:
         (nwave_home / "version.txt").write_text("corrupted")
 
         # Act
-        from src.nwave.update.backup_manager import BackupManager
+        from nWave.update.backup_manager import BackupManager
         manager = BackupManager(nwave_home)
         manager.restore_from_backup(backup_dir)
 
@@ -62,7 +62,7 @@ class TestBackupManagerRollback:
         (nwave_home / "partial_download.tmp").write_text("incomplete")
 
         # Act
-        from src.nwave.update.backup_manager import BackupManager
+        from nWave.update.backup_manager import BackupManager
         manager = BackupManager(nwave_home)
         manager.restore_from_backup(backup_dir)
 
@@ -83,7 +83,7 @@ class TestBackupManagerRollback:
         nonexistent_backup = tmp_path / "no_backup"
 
         # Act & Assert
-        from src.nwave.update.backup_manager import BackupManager
+        from nWave.update.backup_manager import BackupManager
         manager = BackupManager(nwave_home)
 
         with pytest.raises(FileNotFoundError) as exc_info:
@@ -111,7 +111,7 @@ class TestBackupManagerRollback:
         nwave_home.mkdir()
 
         # Act
-        from src.nwave.update.backup_manager import BackupManager
+        from nWave.update.backup_manager import BackupManager
         manager = BackupManager(nwave_home)
         manager.restore_from_backup(backup_dir)
 

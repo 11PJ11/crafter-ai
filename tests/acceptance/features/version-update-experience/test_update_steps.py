@@ -117,8 +117,10 @@ def main():
     download_failure = os.getenv('TEST_DOWNLOAD_FAILURE', 'false') == 'true'
     if download_failure:
         # Rollback from backup
+        from nWave.update.backup_manager import BackupManager
+        manager = BackupManager(nwave_home)
+        manager.restore_from_backup(backup_path)
         print(f"Update failed: Network error during download. Restored from backup.")
-        # In production: BackupManager.restore_from_backup()
         return 1
 
     # Update VERSION file
@@ -189,6 +191,18 @@ def release_changelog_available(mock_github_api):
 """
 
 
+@given("the user will confirm the update")
+def user_will_confirm_update(cli_environment):
+    """Pre-set user confirmation before running CLI."""
+    cli_environment["TEST_USER_CONFIRMED"] = "Y"
+
+
+@given("the download will fail mid-process with network error")
+def download_will_fail(cli_environment):
+    """Pre-set download failure before running CLI."""
+    cli_environment["TEST_DOWNLOAD_FAILURE"] = "true"
+
+
 # ============================================================================
 # GIVEN - Backup cleanup scenarios
 # ============================================================================
@@ -197,7 +211,7 @@ def release_changelog_available(mock_github_api):
 @given("nWave is installed at ~/.claude/")
 def nwave_installed_simple(test_installation):
     """Verify nWave directory structure exists (simplified path)."""
-    assert test_installation["nwave_dir"].exists()
+    assert test_installation["nwave_home"].exists()
     assert test_installation["cli_dir"].exists()
 
 

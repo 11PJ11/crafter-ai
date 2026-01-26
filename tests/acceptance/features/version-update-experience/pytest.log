@@ -1,15 +1,28 @@
-2026-01-26 08:35:54 [   DEBUG] parse: format 'nWave version {version} is installed locally' -> 'nWave version (?P<version>.+?) is installed locally'
-2026-01-26 08:35:54 [   DEBUG] parse: format 'GitHub latest release is {version}' -> 'GitHub latest release is (?P<version>.+?)'
-2026-01-26 08:35:54 [   DEBUG] parse: format 'the release changelog contains:\n{changelog}' -> 'the release changelog contains:\n(?P<changelog>.+?)'
-2026-01-26 08:35:54 [   DEBUG] parse: format 'the release changelog contains "BREAKING CHANGES" section' -> 'the release changelog contains "BREAKING CHANGES" section'
-2026-01-26 08:35:54 [   DEBUG] parse: format 'I see "{expected_output}"' -> 'I see "(?P<expected_output>.+?)"'
-2026-01-26 08:35:54 [   DEBUG] parse: format 'the command exits with code {exit_code:d}' -> 'the command exits with code (?P<exit_code>[-+ ]?\\d+|[-+ ]?0[xX][0-9a-fA-F]+|[-+ ]?0[bB][01]+|[-+ ]?0[oO][0-7]+)'
-2026-01-26 08:35:54 [   DEBUG] parse: format 'I see changelog highlights containing "{highlight_text}"' -> 'I see changelog highlights containing "(?P<highlight_text>.+?)"'
-2026-01-26 08:35:54 [   DEBUG] parse: format 'the update banner includes "{warning_text}"' -> 'the update banner includes "(?P<warning_text>.+?)"'
-2026-01-26 08:35:54 [   DEBUG] pytest_bdd.scenario: Adding providers for fixture 'pytestbdd_stepimpl_given_nWave is installed at ~/.claude/nWave/': [<FixtureDef argname='pytestbdd_stepdef_given_nWave is installed at ~/.claude/nWave/' scope='function' baseid='test_version_steps.py'>]
-2026-01-26 08:35:54 [   DEBUG] pytest_bdd.scenario: Adding providers for fixture 'pytestbdd_stepimpl_given_the version CLI entry point exists at ~/.claude/nWave/cli/version_cli.py': [<FixtureDef argname='pytestbdd_stepdef_given_the version CLI entry point exists at ~/.claude/nWave/cli/version_cli.py' scope='function' baseid='test_version_steps.py'>]
-2026-01-26 08:35:54 [   DEBUG] pytest_bdd.scenario: Adding providers for fixture 'pytestbdd_stepimpl_given_nWave version 1.5.7 is installed locally': [<FixtureDef argname='pytestbdd_stepdef_given_nWave version {version} is installed locally' scope='function' baseid='test_version_steps.py'>]
-2026-01-26 08:35:54 [   DEBUG] pytest_bdd.scenario: Adding providers for fixture 'pytestbdd_stepimpl_given_GitHub latest release is 1.5.7': [<FixtureDef argname='pytestbdd_stepdef_given_GitHub latest release is {version}' scope='function' baseid='test_version_steps.py'>]
-2026-01-26 08:35:54 [   DEBUG] pytest_bdd.scenario: Adding providers for fixture 'pytestbdd_stepimpl_when_I run the version command through the CLI entry point': [<FixtureDef argname='pytestbdd_stepdef_when_I run the version command through the CLI entry point' scope='function' baseid='test_version_steps.py'>]
-2026-01-26 08:35:54 [   DEBUG] pytest_bdd.scenario: Adding providers for fixture 'pytestbdd_stepimpl_then_I see "nWave v1.5.7 (up to date)"': [<FixtureDef argname='pytestbdd_stepdef_then_I see "{expected_output}"' scope='function' baseid='test_version_steps.py'>]
-2026-01-26 08:35:54 [   DEBUG] pytest_bdd.scenario: Adding providers for fixture 'pytestbdd_stepimpl_then_the command exits with code 0': [<FixtureDef argname='pytestbdd_stepdef_then_the command exits with code {exit_code:d}' scope='function' baseid='test_version_steps.py'>]
+2026-01-26 08:38:30 [   DEBUG] parse: format 'GitHub latest release is {version}' -> 'GitHub latest release is (?P<version>.+?)'
+2026-01-26 08:38:30 [   DEBUG] parse: format 'nWave version {version} is installed' -> 'nWave version (?P<version>.+?) is installed'
+2026-01-26 08:38:30 [   DEBUG] parse: format 'nWave version {version} is installed at ~/.claude/' -> 'nWave version (?P<version>.+?) is installed at ~/\\.claude/'
+2026-01-26 08:38:30 [   DEBUG] parse: format 'a backup has been created at {backup_path}' -> 'a backup has been created at (?P<backup_path>.+?)'
+2026-01-26 08:38:30 [   DEBUG] parse: format '{backup_path} exists and is older than 30 days' -> '(?P<backup_path>.+?) exists and is older than 30 days'
+2026-01-26 08:38:30 [   DEBUG] parse: format '{count:d} backup directories exist spanning {months:d} months' -> '(?P<count>[-+ ]?\\d+|[-+ ]?0[xX][0-9a-fA-F]+|[-+ ]?0[bB][01]+|[-+ ]?0[oO][0-7]+) backup directories exist spanning (?P<months>[-+ ]?\\d+|[-+ ]?0[xX][0-9a-fA-F]+|[-+ ]?0[bB][01]+|[-+ ]?0[oO][0-7]+) months'
+2026-01-26 08:38:30 [   DEBUG] parse: format 'I respond with {response}' -> 'I respond with (?P<response>.+?)'
+2026-01-26 08:38:30 [   DEBUG] parse: format 'I see "{expected_text}"' -> 'I see "(?P<expected_text>.+?)"'
+2026-01-26 08:38:30 [   DEBUG] parse: format 'a backup is created at {backup_pattern}' -> 'a backup is created at (?P<backup_pattern>.+?)'
+2026-01-26 08:38:30 [   DEBUG] parse: format 'I am prompted "{prompt_text}"' -> 'I am prompted "(?P<prompt_text>.+?)"'
+2026-01-26 08:38:30 [   DEBUG] parse: format 'nWave {version} is installed' -> 'nWave (?P<version>.+?) is installed'
+2026-01-26 08:38:30 [   DEBUG] parse: format 'the VERSION file shows {version}' -> 'the VERSION file shows (?P<version>.+?)'
+2026-01-26 08:38:30 [   DEBUG] parse: format 'the system automatically restores from {backup_path}' -> 'the system automatically restores from (?P<backup_path>.+?)'
+2026-01-26 08:38:30 [   DEBUG] parse: format 'nWave {version} remains installed' -> 'nWave (?P<version>.+?) remains installed'
+2026-01-26 08:38:30 [   DEBUG] parse: format '{backup_path} is deleted' -> '(?P<backup_path>.+?) is deleted'
+2026-01-26 08:38:30 [   DEBUG] parse: format '{backup_path} is preserved' -> '(?P<backup_path>.+?) is preserved'
+2026-01-26 08:38:30 [   DEBUG] parse: format 'a new backup {backup_pattern} is created' -> 'a new backup (?P<backup_pattern>.+?) is created'
+2026-01-26 08:38:30 [   DEBUG] parse: format 'the log contains warning "{warning_message}"' -> 'the log contains warning "(?P<warning_message>.+?)"'
+2026-01-26 08:38:30 [   DEBUG] parse: format 'cleanup completes within {seconds:d} seconds' -> 'cleanup completes within (?P<seconds>[-+ ]?\\d+|[-+ ]?0[xX][0-9a-fA-F]+|[-+ ]?0[bB][01]+|[-+ ]?0[oO][0-7]+) seconds'
+2026-01-26 08:38:30 [   DEBUG] parse: format 'I see "Cleaned up {count} old backups"' -> 'I see "Cleaned up (?P<count>.+?) old backups"'
+2026-01-26 08:38:30 [   DEBUG] pytest_bdd.scenario: Adding providers for fixture 'pytestbdd_stepimpl_given_nWave is installed at ~/.claude/': [<FixtureDef argname='pytestbdd_stepdef_given_nWave is installed at ~/.claude/' scope='function' baseid='test_update_steps.py'>, <FixtureDef argname='pytestbdd_stepdef_given_nWave is installed at ~/.claude/_1' scope='function' baseid='test_update_steps.py'>]
+2026-01-26 08:38:30 [   DEBUG] pytest_bdd.scenario: Adding providers for fixture 'pytestbdd_stepimpl_given_the update CLI entry point exists at ~/.claude/nWave/cli/update_cli.py': [<FixtureDef argname='pytestbdd_stepdef_given_the update CLI entry point exists at ~/.claude/nWave/cli/update_cli.py' scope='function' baseid='test_update_steps.py'>]
+2026-01-26 08:38:30 [   DEBUG] pytest_bdd.scenario: Adding providers for fixture 'pytestbdd_stepimpl_given_nWave version 1.5.7 is installed at ~/.claude/': [<FixtureDef argname='pytestbdd_stepdef_given_nWave version {version} is installed at ~/.claude/' scope='function' baseid='test_update_steps.py'>]
+2026-01-26 08:38:30 [   DEBUG] pytest_bdd.scenario: Adding providers for fixture 'pytestbdd_stepimpl_given_GitHub latest release is 1.6.0': [<FixtureDef argname='pytestbdd_stepdef_given_GitHub latest release is {version}' scope='function' baseid='test_update_steps.py'>]
+2026-01-26 08:38:30 [   DEBUG] pytest_bdd.scenario: Adding providers for fixture 'pytestbdd_stepimpl_given_a backup has been created at ~/.claude_bck_20260123/': [<FixtureDef argname='pytestbdd_stepdef_given_a backup has been created at {backup_path}' scope='function' baseid='test_update_steps.py'>]
+2026-01-26 08:38:30 [   DEBUG] pytest_bdd.scenario: Adding providers for fixture 'pytestbdd_stepimpl_when_I confirm the update': [<FixtureDef argname='pytestbdd_stepdef_when_I confirm the update' scope='function' baseid='test_update_steps.py'>]
+2026-01-26 08:38:30 [   DEBUG] pytest_bdd.scenario: Adding providers for fixture 'pytestbdd_stepimpl_when_the download fails mid-process with network error': [<FixtureDef argname='pytestbdd_stepdef_when_the download fails mid-process with network error' scope='function' baseid='test_update_steps.py'>]
+2026-01-26 08:38:30 [   DEBUG] pytest_bdd.scenario: Adding providers for fixture 'pytestbdd_stepimpl_then_the system automatically restores from ~/.claude_bck_20260123/': [<FixtureDef argname='pytestbdd_stepdef_then_the system automatically restores from {backup_path}' scope='function' baseid='test_update_steps.py'>]

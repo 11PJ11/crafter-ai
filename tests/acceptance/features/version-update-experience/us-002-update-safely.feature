@@ -48,8 +48,9 @@ Feature: Update nWave Safely
     Given nWave version 1.5.7 is installed at ~/.claude/
     And GitHub latest release is 1.6.0
     And a backup has been created at ~/.claude_bck_20260123/
-    When I confirm the update
-    And the download fails mid-process with network error
+    And the user will confirm the update
+    And the download will fail mid-process with network error
+    When I run the update command through the CLI entry point
     Then the system automatically restores from ~/.claude_bck_20260123/
     And I see "Update failed: [error details]. Restored from backup."
     And nWave 1.5.7 remains installed

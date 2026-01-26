@@ -24,13 +24,37 @@
           "notes": "Removed @skip tag from successful_update_with_backup scenario",
           "artifacts": ["us-002-update-safely.feature"],
           "validation_result": "Scenario enabled for testing"
+        },
+        {
+          "phase_name": "RED_ACCEPTANCE",
+          "timestamp": "2026-01-26T00:15:00Z",
+          "duration_minutes": 8,
+          "outcome": "PASS",
+          "notes": "Acceptance test executed and failed as expected - missing implementation. Fixed test infrastructure: added missing step definitions in test_update_steps.py, fixtures in conftest.py. Test now runs and fails on assertion: expects 'Backup created at ~/.claude_bck_' message.",
+          "artifacts": [
+            "tests/acceptance/features/version-update-experience/test_update_steps.py",
+            "tests/acceptance/features/version-update-experience/conftest.py"
+          ],
+          "validation_result": "RED phase confirmed - test fails for correct reason (missing implementation)"
+        },
+        {
+          "phase_name": "RED_UNIT",
+          "timestamp": "2026-01-26T00:30:00Z",
+          "duration_minutes": 15,
+          "outcome": "PASS",
+          "notes": "Created comprehensive unit tests: test_backup_manager.py (156 lines, 5 tests) covering backup creation with .claude_bck_YYYYMMDD naming, file copying, error handling, sequence numbering. test_update_orchestrator.py (160 lines, 6 tests) covering coordination logic, dependency injection, console output validation. All 11 tests failing with expected ModuleNotFoundError - proper RED state confirmed.",
+          "artifacts": [
+            "tests/unit/test_backup_manager.py",
+            "tests/unit/test_update_orchestrator.py"
+          ],
+          "validation_result": "RED phase confirmed - all 11 unit tests fail with expected ModuleNotFoundError: No module named 'scripts.update'"
         }
       ],
       "phases": [
         {"id": 1, "name": "PREPARE", "status": "complete"},
-        {"id": 2, "name": "RED_ACCEPTANCE", "status": "pending"},
-        {"id": 3, "name": "RED_UNIT", "status": "pending"},
-        {"id": 4, "name": "GREEN_UNIT", "status": "pending"},
+        {"id": 2, "name": "RED_ACCEPTANCE", "status": "complete"},
+        {"id": 3, "name": "RED_UNIT", "status": "complete"},
+        {"id": 4, "name": "GREEN_UNIT", "status": "in_progress"},
         {"id": 5, "name": "CHECK_ACCEPTANCE", "status": "pending"},
         {"id": 6, "name": "GREEN_ACCEPTANCE", "status": "pending"},
         {"id": 7, "name": "REVIEW", "status": "pending"},

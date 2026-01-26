@@ -28,13 +28,14 @@ Feature: Conventional Commit Enforcement
     And no error is shown
     And the commit appears in git log
 
-  @skip
   Scenario: Invalid commit rejected with guidance
     Given I have staged changes
     When I commit with message "fixed the login bug"
     Then the commit is rejected
     And I see error "does not follow Conventional Commits format"
-    And I see "Expected format: <type>[scope]: <description>"
-    And I see "Examples: feat: add user authentication"
+    And I see "Expected format:"
+    And I see "<type>[scope]: <description>"
+    And I see "Examples:"
+    And I see "feat: add user authentication"
     And I see reference link "https://www.conventionalcommits.org/"
     And the commit does NOT appear in git log
