@@ -8,6 +8,7 @@ CRITICAL: Hexagonal boundary enforcement - tests invoke CLI entry points ONLY.
 Cross-platform compatible (Windows, macOS, Linux).
 """
 
+import os
 import stat
 import subprocess
 import sys
@@ -83,11 +84,15 @@ def cli_environment(test_installation):
     """
     Environment variables for CLI execution.
     Points Python to test installation instead of real ~/.claude/
+
+    CRITICAL: Start from os.environ.copy() to inherit system environment.
+    On Windows, subprocess requires PATH, SystemRoot, COMSPEC, etc.
+    Without these, Python subprocess may fail silently with empty output.
     """
-    return {
-        "NWAVE_HOME": str(test_installation["install_dir"]),
-        "PYTHONPATH": str(test_installation["nwave_dir"].parent),
-    }
+    env = os.environ.copy()
+    env["NWAVE_HOME"] = str(test_installation["install_dir"])
+    env["PYTHONPATH"] = str(test_installation["nwave_dir"].parent)
+    return env
 
 
 # ============================================================================
@@ -293,9 +298,19 @@ def run_version_command(
 @then(parsers.parse('I see "{expected_output}"'))
 def verify_output_contains(cli_result, expected_output):
     """Verify CLI output contains expected text."""
-    assert (
-        expected_output in cli_result["stdout"]
-    ), f"Expected '{expected_output}' not found in output:\n{cli_result['stdout']}"
+    stdout = cli_result["stdout"]
+    stderr = cli_result["stderr"]
+    returncode = cli_result["returncode"]
+
+    # Build diagnostic message for failures
+    diagnostic = (
+        f"Expected '{expected_output}' not found in output:\n"
+        f"STDOUT: {stdout!r}\n"
+        f"STDERR: {stderr!r}\n"
+        f"Return code: {returncode}"
+    )
+
+    assert expected_output in stdout, diagnostic
 
 
 @then(parsers.parse("the command exits with code {exit_code:d}"))
