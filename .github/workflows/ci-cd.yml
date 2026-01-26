@@ -49,7 +49,9 @@ permissions:
 env:
   PYTHON_DEFAULT: '3.12'
   CACHE_VERSION: v1
-  PYTHONIOENCODING: 'utf-8'  # Ensure UTF-8 encoding on Windows for Unicode characters
+  # UTF-8 encoding for cross-platform Unicode support (Windows uses cp1252 by default)
+  PYTHONIOENCODING: 'utf-8'  # Encode stdout/stderr as UTF-8
+  PYTHONUTF8: '1'            # Python 3.7+ UTF-8 mode: forces UTF-8 for all I/O
 
 jobs:
   # ===========================================================================
@@ -78,6 +80,19 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+
+      # -----------------------------------------------------------------------
+      # Windows UTF-8 Console Configuration
+      # -----------------------------------------------------------------------
+      - name: Configure Windows console for UTF-8
+        if: runner.os == 'Windows'
+        run: |
+          # Set console code page to UTF-8 (65001) for Unicode character support
+          # This fixes: UnicodeEncodeError: 'charmap' codec can't encode character
+          chcp 65001
+          [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+          Write-Host "Console encoding set to UTF-8 (code page 65001)"
+        shell: pwsh
 
       # -----------------------------------------------------------------------
       # Dependency Installation
