@@ -41,18 +41,21 @@ def main():
 
     print(f"{BLUE}Running test validation...{NC}")
 
+    # Use sys.executable to ensure cross-platform compatibility (Windows uses 'python', Unix uses 'python3')
+    python_cmd = sys.executable
+
     # Check if pytest is available
     try:
         subprocess.run(
-            ["python3", "--version"], check=True, capture_output=True, text=True
+            [python_cmd, "--version"], check=True, capture_output=True, text=True
         )
     except (subprocess.CalledProcessError, FileNotFoundError):
-        print(f"{YELLOW}Warning: python3 not available, skipping tests{NC}")
+        print(f"{YELLOW}Warning: Python not available, skipping tests{NC}")
         return 0
 
     try:
         subprocess.run(
-            ["python3", "-m", "pytest", "--version"],
+            [python_cmd, "-m", "pytest", "--version"],
             check=True,
             capture_output=True,
             text=True,
@@ -69,7 +72,7 @@ def main():
     # Run tests and capture output
     try:
         result = subprocess.run(
-            ["python3", "-m", "pytest", "tests/", "-v", "--tb=short"],
+            [python_cmd, "-m", "pytest", "tests/", "-v", "--tb=short"],
             check=False,
             capture_output=True,
             text=True,

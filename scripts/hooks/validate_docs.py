@@ -49,19 +49,22 @@ def main():
         )
         return 0
 
-    # Check if python3 is available
+    # Use sys.executable for cross-platform compatibility (Windows uses 'python', Unix uses 'python3')
+    python_cmd = sys.executable
+
+    # Check if Python is available
     try:
         subprocess.run(
-            ["python3", "--version"], check=True, capture_output=True, text=True
+            [python_cmd, "--version"], check=True, capture_output=True, text=True
         )
     except (subprocess.CalledProcessError, FileNotFoundError):
-        print(f"{YELLOW}Warning: python3 not available, skipping validation{NC}")
+        print(f"{YELLOW}Warning: Python not available, skipping validation{NC}")
         return 0
 
     # Run validation
     try:
         result = subprocess.run(
-            ["python3", str(validation_script)], check=False, capture_output=False
+            [python_cmd, str(validation_script)], check=False, capture_output=False
         )
 
         if result.returncode == 0:
