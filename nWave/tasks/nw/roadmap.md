@@ -746,6 +746,14 @@ The roadmap defines WHAT needs to be done. The `/nw:split` command determines HO
 - All steps designed to be executable independently
 - Clear dependency graph for parallel execution
 
+## Embedded Roadmap Schema
+
+The compact roadmap template is embedded below for direct use without external file dependencies.
+
+<!-- BUILD:INJECT:START:nWave/templates/roadmap-compact.yaml -->
+<!-- Roadmap template will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
+
 ## Notes
 
 ### Design Philosophy

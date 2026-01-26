@@ -49,3 +49,8 @@ tools/build.log
 # TOON format agents (separate branch)
 /agents/
 output/
+
+# Python virtual environment
+.venv/
+venv/
+env/

@@ -15,7 +15,7 @@ Task(
 
 ### Why This Works:
 - ✅ Roadmap file contains ALL context (phases, steps, dependencies, acceptance_criteria)
-- ✅ Software-crafter agent has internal knowledge of step-tdd-cycle-schema.json
+- ✅ Software-crafter agent has internal knowledge of step-template.json (compact format)
 - ✅ Agent knows 14-phase TDD structure and review criteria
 - ✅ No conversation context needed
 
@@ -52,7 +52,13 @@ Task(
     prompt="""Split: auth-upgrade (roadmap: docs/feature/auth-upgrade/roadmap.yaml)
 
 CRITICAL (from split.md):
-- Canonical schema: nWave/templates/step-tdd-cycle-schema.json
+- Canonical schema: nWave/templates/step-tdd-cycle-schema.json (for validation)
+- Compact template: nWave/templates/step-template.json (for generation)
+
+**IMPORTANT: Use compact format:**
+- `acceptance_criteria`: Use semicolon-separated string instead of array
+  - Example: `"criterion 1; criterion 2; criterion 3"` (not `["criterion 1", "criterion 2"]`)
+- This reduces file size and context consumption while maintaining clarity
 - Each step MUST be self-contained (no forward references)
 - Pre-populate ALL 14 phases in phase_execution_log
 - Step type determines which phases are NOT_APPLICABLE

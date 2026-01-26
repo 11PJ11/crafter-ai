@@ -1,0 +1,65 @@
+# Compact Roadmap Template - Minimal Required Structure
+# Use pipe-separated step headers and semicolon-separated criteria for conciseness
+
+roadmap:
+  project_id: "{kebab-case-id}"  # Must match baseline project_id
+  created_at: "{ISO-8601}"
+  total_steps: {N}  # Total number of steps across all phases
+  phases: {M}  # Total number of phases
+
+# Phases with steps - compact array format
+phases:
+  - id: "{NN}"
+    name: "{Phase Name}"
+    description: "{1-sentence phase purpose}"
+    steps:
+      - id: "{NN-MM}"
+        agent: "{agent-name}"
+        deps: ["{dep-ids}"]
+        name: "{Step name}"
+        scenario: "{feature-file}::{scenario-name}"  # Use abbreviated path (omit tests/acceptance/features/)
+        criteria: "{criterion 1}; {criterion 2}; {criterion 3}"  # Semicolon-separated
+
+      - id: "{NN-MM}"
+        agent: "{agent-name}"
+        deps: ["{dep-ids}"]
+        name: "{Step name}"
+        scenario: "{feature-file}::{scenario-name}"
+        criteria: "{criteria}"
+
+  - id: "{NN}"
+    name: "{Phase 2 Name}"
+    depends_on: ["{phase-id}"]  # Optional: this phase blocks on previous phase completion
+    description: "{1-sentence phase purpose}"
+    steps:
+      - id: "{NN-MM}"
+        agent: "{agent-name}"
+        deps: ["{dep-ids}"]
+        name: "{Step name}"
+        scenario: "{feature-file}::{scenario-name}"
+        criteria: "{criteria}"
+
+# Dependency summary (optional but recommended for complex roadmaps)
+dependencies:
+  "{step-1}": ["{dep-ids}"]
+  "{step-2}": ["{dep-ids}"]
+  "{step-3}": ["{dep-ids}"]
+
+# Validation section
+validation:
+  status: "pending"  # pending|approved|rejected
+  reviewer: "{agent-name-reviewer}"
+  approved_at: "{ISO-8601}"
+
+# Example (remove when creating actual roadmap):
+# phases:
+#   - id: "01"
+#     name: Git Workflow Infrastructure
+#     description: "Conventional commits, pre-push validation, semantic-release"
+#     steps:
+#       - id: "01-01"
+#         agent: software-crafter
+#         deps: []
+#         name: Valid conventional commit accepted
+#         scenario: us-005-commit-enforcement.feature::valid_conventional_commit_accepted
+#         criteria: commitlint config exists; commit-msg hook installed; valid format accepted
