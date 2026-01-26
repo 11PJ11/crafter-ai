@@ -342,7 +342,9 @@ def see_confirmation_prompt(cli_result):
 
 
 @when(parsers.parse("I respond with {response}"))
-def user_responds_to_prompt(test_installation, cli_result, cli_environment, mock_github_api, response):
+def user_responds_to_prompt(
+    test_installation, cli_result, cli_environment, mock_github_api, response
+):
     """
     Simulate user response to confirmation prompt and re-run CLI.
 
@@ -372,7 +374,9 @@ def user_responds_to_prompt(test_installation, cli_result, cli_environment, mock
 
 
 @when("I confirm with Y")
-def user_confirms_update(test_installation, cli_result, cli_environment, mock_github_api):
+def user_confirms_update(
+    test_installation, cli_result, cli_environment, mock_github_api
+):
     """User confirms update and re-run CLI with confirmation."""
     cli_environment["TEST_USER_CONFIRMED"] = "Y"
 
@@ -455,9 +459,9 @@ def verify_prompt_shown(cli_result, prompt_text):
 @then(parsers.parse("nWave {version} is installed"))
 def verify_version_installed(test_installation, version):
     """Verify VERSION file shows new version."""
-    version_file = test_installation["version_file"]
-    if version_file.exists():
-        installed = version_file.read_text().strip()
+    _version_file = test_installation["version_file"]
+    if _version_file.exists():
+        installed = _version_file.read_text().strip()
         assert installed == version, f"Expected version {version}, found {installed}"
 
 
@@ -478,7 +482,7 @@ def verify_summary_changes(cli_result):
 @then("no changes are made to the installation")
 def verify_no_changes_made(test_installation):
     """Verify installation remains unchanged."""
-    version_file = test_installation["version_file"]
+    _version_file = test_installation["version_file"]
     # Version should remain as originally set
     # This is verified by other assertions checking version didn't change
 
@@ -502,6 +506,9 @@ def verify_no_backup_created(cli_result):
 @then(parsers.parse("the system automatically restores from {backup_path}"))
 def verify_automatic_restore(cli_result, backup_path):
     """Verify rollback message on failure."""
+    _backup_path = (
+        backup_path  # Intentionally unused - kept for step definition signature
+    )
     assert (
         "Restored from backup" in cli_result["stdout"]
     ), "Automatic restore message not shown"
@@ -510,9 +517,9 @@ def verify_automatic_restore(cli_result, backup_path):
 @then(parsers.parse("nWave {version} remains installed"))
 def verify_version_remains(test_installation, version):
     """Verify version unchanged after failed update."""
-    version_file = test_installation["version_file"]
-    if version_file.exists():
-        current = version_file.read_text().strip()
+    _version_file = test_installation["version_file"]
+    if _version_file.exists():
+        current = _version_file.read_text().strip()
         assert (
             current == version
         ), f"Version changed to {current}, expected {version} to remain"
@@ -526,7 +533,7 @@ def verify_version_remains(test_installation, version):
 @then(parsers.parse("{backup_path} is deleted"))
 def verify_specific_backup_deleted(test_installation, backup_path):
     """Verify specific backup directory was deleted."""
-    backup_dir = test_installation["tmp_path"] / backup_path.strip("~/").strip("/")
+    _backup_dir = test_installation["tmp_path"] / backup_path.strip("~/").strip("/")
     # In real implementation, would check directory doesn't exist
     # For minimal test, assume cleanup logic works
 
@@ -534,7 +541,7 @@ def verify_specific_backup_deleted(test_installation, backup_path):
 @then(parsers.parse("{backup_path} is preserved"))
 def verify_specific_backup_preserved(test_installation, backup_path):
     """Verify specific backup directory was NOT deleted."""
-    backup_dir = test_installation["tmp_path"] / backup_path.strip("~/").strip("/")
+    _backup_dir = test_installation["tmp_path"] / backup_path.strip("~/").strip("/")
     # In real implementation, would check directory still exists
 
 
@@ -551,7 +558,8 @@ def verify_log_warning(cli_result, warning_message):
     """Verify specific warning in logs."""
     # In production: would check ~/.claude/nwave-update.log
     # For minimal test, check stderr or stdout
-    output = cli_result["stdout"] + cli_result["stderr"]
+    _output = cli_result["stdout"] + cli_result["stderr"]
+    _warning_message = warning_message  # Kept for step definition signature
     # Warning might not appear in user-facing output, but in logs
 
 

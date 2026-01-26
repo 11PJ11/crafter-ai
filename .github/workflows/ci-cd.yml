@@ -93,26 +93,18 @@ jobs:
             ${{ runner.os }}-pip-${{ env.CACHE_VERSION }}-
             ${{ runner.os }}-pip-
 
-      - name: Install core dependencies
+      - name: Install pipenv and dependencies from Pipfile
         run: |
-          python3 -m pip install --upgrade pip setuptools wheel
-          pip install pytest pytest-cov pyyaml
-
-      - name: Install project dependencies (if requirements.txt exists)
-        run: |
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          python3 -m pip install --upgrade pip setuptools wheel pipenv
+          pipenv install --dev --deploy --ignore-pipfile || pipenv install --dev
         shell: bash
-        continue-on-error: true  # Not all projects may have requirements.txt
-
-      - name: Install pre-commit
-        run: pip install pre-commit
 
       # -----------------------------------------------------------------------
       # Quality Gate 1: Pre-commit Hooks Validation
       # -----------------------------------------------------------------------
       - name: Run pre-commit hooks
         run: |
-          pre-commit run --all-files --show-diff-on-failure
+          pipenv run pre-commit run --all-files --show-diff-on-failure
         continue-on-error: false
 
       # -----------------------------------------------------------------------
@@ -202,7 +194,7 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Run pytest test suite with coverage
         run: |
-          pytest tests/ \
+          pipenv run pytest tests/ \
             --verbose \
             --tb=short \
             --cov=. \
@@ -273,8 +265,8 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          python3 -m pip install --upgrade pip setuptools wheel
-          pip install pyyaml
+          python3 -m pip install --upgrade pip setuptools wheel pipenv
+          pipenv install --dev
 
       # -----------------------------------------------------------------------
       # Extract Version from Tag

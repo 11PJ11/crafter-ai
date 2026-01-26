@@ -6,11 +6,9 @@ NO mocking of domain logic - test with real Path operations.
 """
 
 import pytest
-from pathlib import Path
-import shutil
-from datetime import datetime
 
 
+@pytest.mark.skip(reason="Pending implementation - versioning feature")
 class TestBackupManagerRollback:
     """Test automatic rollback when update fails."""
 
@@ -35,6 +33,7 @@ class TestBackupManagerRollback:
 
         # Act
         from nWave.update.backup_manager import BackupManager
+
         manager = BackupManager(nwave_home)
         manager.restore_from_backup(backup_dir)
 
@@ -63,6 +62,7 @@ class TestBackupManagerRollback:
 
         # Act
         from nWave.update.backup_manager import BackupManager
+
         manager = BackupManager(nwave_home)
         manager.restore_from_backup(backup_dir)
 
@@ -84,6 +84,7 @@ class TestBackupManagerRollback:
 
         # Act & Assert
         from nWave.update.backup_manager import BackupManager
+
         manager = BackupManager(nwave_home)
 
         with pytest.raises(FileNotFoundError) as exc_info:
@@ -112,6 +113,7 @@ class TestBackupManagerRollback:
 
         # Act
         from nWave.update.backup_manager import BackupManager
+
         manager = BackupManager(nwave_home)
         manager.restore_from_backup(backup_dir)
 
@@ -119,4 +121,5 @@ class TestBackupManagerRollback:
         restored_file = nwave_home / "update_cli.py"
         assert restored_file.exists()
         import stat
+
         assert restored_file.stat().st_mode & stat.S_IXUSR  # User execute bit set

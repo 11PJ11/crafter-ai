@@ -404,7 +404,7 @@ def verify_reference_link(git_result, url):
 @then("the commit does NOT appear in git log")
 def verify_commit_not_in_log(git_repo):
     """Verify commit was not created (rejected by hook)."""
-    result = subprocess.run(
+    _result = subprocess.run(
         ["git", "log", "--oneline", "-1"],
         cwd=git_repo["repo_dir"],
         capture_output=True,
@@ -468,7 +468,7 @@ def verify_no_commits_pushed():
 @then("CHANGELOG.md is updated with new section")
 def verify_changelog_updated(git_repo):
     """Verify CHANGELOG.md was generated/updated."""
-    changelog = git_repo["repo_dir"] / "CHANGELOG.md"
+    _changelog = git_repo["repo_dir"] / "CHANGELOG.md"
     # In real implementation, would verify file exists and contains release
     # For minimal test, verify configuration supports changelog generation
     releaserc = git_repo["repo_dir"] / ".releaserc"

@@ -9,8 +9,6 @@ Test Coverage:
 """
 
 import pytest
-from pathlib import Path
-from unittest.mock import Mock, patch
 
 
 class TestVersionManagerShould:

@@ -4,7 +4,6 @@ Unit tests for VersionComparator - semantic version comparison.
 Business behavior: Detect major, minor, patch version changes.
 """
 
-import pytest
 from nWave.core.version_management.version_comparator import VersionComparator
 
 
