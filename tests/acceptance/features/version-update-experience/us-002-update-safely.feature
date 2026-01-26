@@ -23,7 +23,6 @@ Feature: Update nWave Safely
     And I see key changes in the summary
     And the command exits with code 0
 
-  @skip
   Scenario: Update cancelled by user
     Given nWave version 1.5.7 is installed
     And GitHub latest release is 1.6.0
@@ -35,7 +34,6 @@ Feature: Update nWave Safely
     And I see "Update cancelled. No changes made."
     And the command exits with code 2
 
-  @skip
   Scenario: Already up to date
     Given nWave version 1.6.0 is installed
     And GitHub latest release is 1.6.0

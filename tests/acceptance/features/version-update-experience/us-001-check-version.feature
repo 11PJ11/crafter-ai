@@ -14,7 +14,6 @@ Feature: Check Installed Version
     Then I see "nWave v1.5.7 (up to date)"
     And the command exits with code 0
 
-  @skip
   Scenario: Display installed version with update available
     Given nWave version 1.5.7 is installed locally
     And GitHub latest release is 1.6.0
@@ -35,7 +34,6 @@ Feature: Check Installed Version
     And I see changelog highlights containing "resolve timeout issue"
     And the command exits with code 0
 
-  @skip
   Scenario: Network failure during version check
     Given nWave version 1.5.7 is installed locally
     And GitHub API is unreachable

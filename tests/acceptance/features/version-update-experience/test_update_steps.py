@@ -342,9 +342,33 @@ def see_confirmation_prompt(cli_result):
 
 
 @when(parsers.parse("I respond with {response}"))
-def user_responds_to_prompt(cli_environment, response):
-    """Simulate user response to confirmation prompt."""
+def user_responds_to_prompt(test_installation, cli_result, cli_environment, mock_github_api, response):
+    """
+    Simulate user response to confirmation prompt and re-run CLI.
+
+    This re-runs the CLI with the user's response (Y/N) set in the environment,
+    similar to how 'I confirm with Y' works but for any response.
+    """
     cli_environment["TEST_USER_CONFIRMED"] = response
+
+    # Re-run the CLI with the response
+    cli_script = test_installation["cli_dir"] / "update_cli.py"
+
+    env = cli_environment.copy()
+    env["TEST_GITHUB_LATEST_VERSION"] = mock_github_api.get("latest_version", "")
+
+    result = subprocess.run(
+        ["python3", str(cli_script)],
+        capture_output=True,
+        text=True,
+        timeout=30,
+        env=env,
+        cwd=str(test_installation["tmp_path"]),
+    )
+
+    cli_result["stdout"] = result.stdout
+    cli_result["stderr"] = result.stderr
+    cli_result["returncode"] = result.returncode
 
 
 @when("I confirm with Y")
