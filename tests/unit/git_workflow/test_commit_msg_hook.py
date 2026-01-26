@@ -28,7 +28,15 @@ class TestCommitMsgHook:
         return project_root / ".git" / "hooks"
 
     def test_commit_msg_hook_exists(self, git_hooks_dir):
-        """Verify commit-msg hook is installed."""
+        """Verify commit-msg hook is installed.
+
+        Note: This test validates local developer setup. It is skipped in CI
+        environments where hooks are not installed (fresh clone).
+        """
+        # Skip in CI environments - hooks are local-only and not part of git clone
+        if os.environ.get("CI") or os.environ.get("GITHUB_ACTIONS"):
+            pytest.skip("Skipping hook existence test in CI - hooks are local-only")
+
         hook_file = git_hooks_dir / "commit-msg"
         assert hook_file.exists(), "commit-msg hook not found in .git/hooks/"
 

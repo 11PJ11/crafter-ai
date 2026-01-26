@@ -437,6 +437,7 @@ def verify_output_contains(cli_result, expected_text):
         # Replace [SIZE] with regex pattern to match any number
         # Also escape parentheses for regex matching
         import re
+
         pattern = expected_text.replace("[SIZE]", r"\d+")
         pattern = pattern.replace("(", r"\(").replace(")", r"\)")
         assert re.search(
