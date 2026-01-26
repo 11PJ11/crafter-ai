@@ -33,10 +33,13 @@ def get_repo_root() -> Path:
             capture_output=True,
             text=True,
             check=True,
+            timeout=30,
         )
         return Path(result.stdout.strip())
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Not in a git repository: {e.stderr}") from e
+    except subprocess.SubprocessError as e:
+        raise RuntimeError(f"Not in a git repository: {e}") from e
+    except FileNotFoundError as e:
+        raise RuntimeError(f"Git not available: {e}") from e
 
 
 def validate_version_file(repo_root: Path) -> bool:

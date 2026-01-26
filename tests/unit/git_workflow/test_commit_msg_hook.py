@@ -15,6 +15,11 @@ import sys
 from pathlib import Path
 import pytest
 
+# Constants for clarity and maintainability
+EXIT_SUCCESS = 0
+EXIT_FAILURE = 1
+SUBPROCESS_TIMEOUT = 10  # seconds
+
 
 class TestCommitMsgHook:
     """Test commit-msg hook installation and validation."""
@@ -54,6 +59,7 @@ class TestCommitMsgHook:
                 [sys.executable, str(python_script), str(msg_file)],
                 capture_output=True,
                 text=True,
+                timeout=SUBPROCESS_TIMEOUT,
             )
         elif hook_or_script.exists():
             # Fallback: try running the hook file with Python
@@ -61,6 +67,7 @@ class TestCommitMsgHook:
                 [sys.executable, str(hook_or_script), str(msg_file)],
                 capture_output=True,
                 text=True,
+                timeout=SUBPROCESS_TIMEOUT,
             )
         else:
             raise FileNotFoundError(
@@ -106,9 +113,10 @@ class TestCommitMsgHook:
             [sys.executable, str(commit_msg_script), str(msg_file)],
             capture_output=True,
             text=True,
+            timeout=SUBPROCESS_TIMEOUT,
         )
 
-        assert result.returncode == 0, (
+        assert result.returncode == EXIT_SUCCESS, (
             f"Hook rejected valid commit message. "
             f"stderr: {result.stderr}, stdout: {result.stdout}"
         )
@@ -127,9 +135,10 @@ class TestCommitMsgHook:
             [sys.executable, str(commit_msg_script), str(msg_file)],
             capture_output=True,
             text=True,
+            timeout=SUBPROCESS_TIMEOUT,
         )
 
-        assert result.returncode != 0, "Hook accepted invalid commit message"
+        assert result.returncode != EXIT_SUCCESS, "Hook accepted invalid commit message"
         output = result.stdout + result.stderr
         assert (
             "Conventional Commits" in output
@@ -156,9 +165,10 @@ class TestCommitMsgHook:
                 [sys.executable, str(commit_msg_script), str(msg_file)],
                 capture_output=True,
                 text=True,
+                timeout=SUBPROCESS_TIMEOUT,
             )
 
-            assert result.returncode == 0, (
+            assert result.returncode == EXIT_SUCCESS, (
                 f"Hook rejected valid scoped commit: '{msg}'. "
                 f"stderr: {result.stderr}, stdout: {result.stdout}"
             )
@@ -187,9 +197,10 @@ class TestCommitMsgHook:
                 [sys.executable, str(commit_msg_script), str(msg_file)],
                 capture_output=True,
                 text=True,
+                timeout=SUBPROCESS_TIMEOUT,
             )
 
-            assert result.returncode == 0, (
+            assert result.returncode == EXIT_SUCCESS, (
                 f"Hook rejected valid breaking change commit: '{msg}'. "
                 f"stderr: {result.stderr}, stdout: {result.stdout}"
             )

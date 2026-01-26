@@ -152,7 +152,7 @@ jobs:
 
       - name: Install commitlint
         run: |
-          npm install -g @commitlint/cli @commitlint/config-conventional
+          npm install -g @commitlint/cli@19.6.1 @commitlint/config-conventional@19.6.0
 
       - name: Validate commit messages
         run: |
@@ -312,7 +312,7 @@ jobs:
       # CI Summary
       # -----------------------------------------------------------------------
       - name: CI Summary
-        if: always()
+        if: success()
         run: |
           echo "## CI Summary - Python ${{ matrix.python-version }} on ${{ matrix.os }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -462,14 +462,15 @@ jobs:
       - name: Generate release notes
         run: |
           VERSION="${{ steps.get_version.outputs.VERSION }}"
+          RELEASE_DATE=$(date +%Y-%m-%d)
 
-          cat > dist/releases/RELEASE_NOTES.md << 'EOF'
-          # nWave Framework v${{ steps.get_version.outputs.VERSION }}
+          cat > dist/releases/RELEASE_NOTES.md << EOF
+          # nWave Framework v${VERSION}
 
           ## Release Information
 
-          - **Version**: ${{ steps.get_version.outputs.VERSION }}
-          - **Release Date**: $(date +%Y-%m-%d)
+          - **Version**: ${VERSION}
+          - **Release Date**: ${RELEASE_DATE}
           - **Methodology**: DISCUSS → DESIGN → DISTILL → DEVELOP → DELIVER
 
           ## What's Included
@@ -485,28 +486,28 @@ jobs:
 
           ### Claude Code
 
-          ```bash
+          \`\`\`bash
           # Download and install
-          curl -O https://github.com/${{ github.repository }}/releases/download/v${{ steps.get_version.outputs.VERSION }}/install-nwave-claude-code.py
+          curl -O https://github.com/${{ github.repository }}/releases/download/v${VERSION}/install-nwave-claude-code.py
           python install-nwave-claude-code.py
-          ```
+          \`\`\`
 
           ### Manual Installation
 
-          ```bash
+          \`\`\`bash
           # Download package
-          wget https://github.com/${{ github.repository }}/releases/download/v${{ steps.get_version.outputs.VERSION }}/nwave-claude-code-${{ steps.get_version.outputs.VERSION }}.tar.gz
+          wget https://github.com/${{ github.repository }}/releases/download/v${VERSION}/nwave-claude-code-${VERSION}.tar.gz
 
           # Extract to Claude Code directory
-          tar -xzf nwave-claude-code-${{ steps.get_version.outputs.VERSION }}.tar.gz -C ~/.claude/
-          ```
+          tar -xzf nwave-claude-code-${VERSION}.tar.gz -C ~/.claude/
+          \`\`\`
 
           ## Verification
 
-          ```bash
+          \`\`\`bash
           # Verify checksums
           sha256sum -c SHA256SUMS.txt
-          ```
+          \`\`\`
 
           ## Documentation
 
@@ -518,17 +519,17 @@ jobs:
 
           This release has passed all quality gates:
 
-          - ✅ 246 pytest tests (100% passing)
-          - ✅ Pre-commit hooks validation
-          - ✅ Cross-platform testing (Linux, Windows, macOS)
-          - ✅ Multi-Python version (3.8, 3.10, 3.12)
-          - ✅ Agent name synchronization
-          - ✅ YAML structure validation
-          - ✅ Documentation version consistency
+          - 246 pytest tests (100% passing)
+          - Pre-commit hooks validation
+          - Cross-platform testing (Linux, Windows, macOS)
+          - Multi-Python version (3.11, 3.12)
+          - Agent name synchronization
+          - YAML structure validation
+          - Documentation version consistency
 
           ---
 
-          **Full Changelog**: https://github.com/${{ github.repository }}/compare/v$(python3 -c "v='${{ steps.get_version.outputs.VERSION }}'.split('.'); v[-1]=str(int(v[-1])-1); print('.'.join(v))")...v${{ steps.get_version.outputs.VERSION }}
+          **Full Changelog**: https://github.com/${{ github.repository }}/compare/v\$(python3 -c "v='${VERSION}'.split('.'); v[-1]=str(int(v[-1])-1); print('.'.join(v))")...v${VERSION}
           EOF
 
           cat dist/releases/RELEASE_NOTES.md

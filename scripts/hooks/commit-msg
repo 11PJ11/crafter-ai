@@ -6,7 +6,6 @@ This shim ensures cross-platform compatibility by using Python instead of bash.
 The actual validation logic is in commit_msg.py.
 """
 
-import os
 import sys
 from pathlib import Path
 

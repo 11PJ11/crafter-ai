@@ -20,6 +20,9 @@ import re
 import sys
 from pathlib import Path
 
+# Exit codes for clarity and maintainability
+EXIT_SUCCESS = 0
+EXIT_FAILURE = 1
 
 # Valid commit types per Conventional Commits specification
 VALID_TYPES = [
@@ -105,11 +108,11 @@ def main() -> int:
     Main entry point for commit-msg hook.
 
     Returns:
-        0 on success, 1 on failure
+        EXIT_SUCCESS (0) on success, EXIT_FAILURE (1) on failure
     """
     if len(sys.argv) < 2:
         print("ERROR: No commit message file provided", file=sys.stderr)
-        return 1
+        return EXIT_FAILURE
 
     commit_msg_file = Path(sys.argv[1])
 
@@ -117,11 +120,11 @@ def main() -> int:
         print(
             f"ERROR: Commit message file not found: {commit_msg_file}", file=sys.stderr
         )
-        return 1
+        return EXIT_FAILURE
 
     if validate_commit_message(commit_msg_file):
-        return 0
-    return 1
+        return EXIT_SUCCESS
+    return EXIT_FAILURE
 
 
 if __name__ == "__main__":

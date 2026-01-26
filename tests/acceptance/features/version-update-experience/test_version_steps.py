@@ -9,12 +9,18 @@ Cross-platform compatible (Windows, macOS, Linux).
 """
 
 import os
+import platform
 import stat
 import subprocess
 import sys
 
 import pytest
 from pytest_bdd import scenarios, given, when, then, parsers
+
+# Constants for clarity and maintainability
+SUBPROCESS_TIMEOUT = 10
+EXIT_SUCCESS = 0
+EXIT_TIMEOUT = 124
 
 
 # Load all scenarios from feature files
@@ -187,12 +193,10 @@ if __name__ == "__main__":
 
     cli_script.write_text(script_content)
     # Make executable on Unix systems (no-op on Windows)
-    try:
+    if platform.system() != "Windows":
         cli_script.chmod(
             cli_script.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
         )
-    except (OSError, AttributeError):
-        pass  # Windows doesn't support chmod the same way
 
 
 @given(parsers.parse("nWave version {version} is installed locally"))
@@ -275,7 +279,7 @@ def run_version_command(
             [sys.executable, str(cli_script)],
             capture_output=True,
             text=True,
-            timeout=10,
+            timeout=SUBPROCESS_TIMEOUT,
             env=env,
             cwd=str(test_installation["tmp_path"]),
         )
@@ -287,7 +291,7 @@ def run_version_command(
     except subprocess.TimeoutExpired as e:
         cli_result["exception"] = e
         cli_result["stderr"] = "Command timed out"
-        cli_result["returncode"] = 124  # Timeout exit code
+        cli_result["returncode"] = EXIT_TIMEOUT
 
 
 # ============================================================================
