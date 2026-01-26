@@ -7,7 +7,6 @@ Feature: Conventional Commit Enforcement
     Given I am in the nWave repository
     And commit-msg hook is installed
 
-  @pytest.mark.skip(reason="Not implemented yet - will enable one at a time to avoid commit blocks")
   Scenario: Valid conventional commit accepted
     Given I have staged changes
     When I commit with message "feat: add user dashboard"
@@ -15,7 +14,6 @@ Feature: Conventional Commit Enforcement
     And no error is shown
     And the commit appears in git log
 
-  @pytest.mark.skip(reason="Not implemented yet - will enable one at a time to avoid commit blocks")
   Scenario: Valid scoped commit accepted
     Given I have staged changes
     When I commit with message "fix(auth): resolve login timeout issue"
@@ -23,7 +21,7 @@ Feature: Conventional Commit Enforcement
     And no error is shown
     And the commit appears in git log
 
-  @pytest.mark.skip(reason="Not implemented yet - will enable one at a time to avoid commit blocks")
+  @skip
   Scenario: Breaking change commit accepted
     Given I have staged changes
     When I commit with message "feat!: redesign API endpoints"
@@ -31,7 +29,7 @@ Feature: Conventional Commit Enforcement
     And no error is shown
     And the commit appears in git log
 
-  @pytest.mark.skip(reason="Not implemented yet - will enable one at a time to avoid commit blocks")
+  @skip
   Scenario: Invalid commit rejected with guidance
     Given I have staged changes
     When I commit with message "fixed the login bug"

@@ -1,0 +1,17 @@
+2026-01-26 08:34:59 [   DEBUG] parse: format 'a commit with message "{commit_message}"' -> 'a commit with message "(?P<commit_message>.+?)"'
+2026-01-26 08:34:59 [   DEBUG] parse: format 'I commit with message "{commit_message}"' -> 'I commit with message "(?P<commit_message>.+?)"'
+2026-01-26 08:34:59 [   DEBUG] parse: format 'I see error "{error_text}"' -> 'I see error "(?P<error_text>.+?)"'
+2026-01-26 08:34:59 [   DEBUG] parse: format 'I see "{text}"' -> 'I see "(?P<text>.+?)"'
+2026-01-26 08:34:59 [   DEBUG] parse: format 'I see reference link "{url}"' -> 'I see reference link "(?P<url>.+?)"'
+2026-01-26 08:34:59 [   DEBUG] parse: format 'I see suggested action "{action}"' -> 'I see suggested action "(?P<action>.+?)"'
+2026-01-26 08:34:59 [   DEBUG] parse: format 'release notes include {section} section with "{content}"' -> 'release notes include (?P<section>.+?) section with "(?P<content>.+?)"'
+2026-01-26 08:34:59 [   DEBUG] parse: format 'release notes include Features section with "{feature}"' -> 'release notes include Features section with "(?P<feature>.+?)"'
+2026-01-26 08:34:59 [   DEBUG] parse: format 'release notes include Bug Fixes section with "{fix}"' -> 'release notes include Bug Fixes section with "(?P<fix>.+?)"'
+2026-01-26 08:34:59 [   DEBUG] parse: format 'CHANGELOG.md includes "{section}" section' -> 'CHANGELOG\\.md includes "(?P<section>.+?)" section'
+2026-01-26 08:34:59 [   DEBUG] pytest_bdd.scenario: Adding providers for fixture 'pytestbdd_stepimpl_given_I am in the nWave repository': [<FixtureDef argname='pytestbdd_stepdef_given_I am in the nWave repository' scope='function' baseid='test_git_workflow_steps.py'>]
+2026-01-26 08:34:59 [   DEBUG] pytest_bdd.scenario: Adding providers for fixture 'pytestbdd_stepimpl_given_pre-push hook is installed': [<FixtureDef argname='pytestbdd_stepdef_given_pre-push hook is installed' scope='function' baseid='test_git_workflow_steps.py'>]
+2026-01-26 08:34:59 [   DEBUG] pytest_bdd.scenario: Adding providers for fixture 'pytestbdd_stepimpl_given_nWave/VERSION file exists with valid semver format': [<FixtureDef argname='pytestbdd_stepdef_given_nWave/VERSION file exists with valid semver format' scope='function' baseid='test_git_workflow_steps.py'>]
+2026-01-26 08:34:59 [   DEBUG] pytest_bdd.scenario: Adding providers for fixture 'pytestbdd_stepimpl_given_.releaserc configuration exists': [<FixtureDef argname='pytestbdd_stepdef_given_.releaserc configuration exists' scope='function' baseid='test_git_workflow_steps.py'>]
+2026-01-26 08:34:59 [   DEBUG] pytest_bdd.scenario: Adding providers for fixture 'pytestbdd_stepimpl_when_I push to origin': [<FixtureDef argname='pytestbdd_stepdef_when_I push to origin' scope='function' baseid='test_git_workflow_steps.py'>]
+2026-01-26 08:34:59 [   DEBUG] pytest_bdd.scenario: Adding providers for fixture 'pytestbdd_stepimpl_then_the push succeeds': [<FixtureDef argname='pytestbdd_stepdef_then_the push succeeds' scope='function' baseid='test_git_workflow_steps.py'>]
+2026-01-26 08:34:59 [   DEBUG] pytest_bdd.scenario: Adding providers for fixture 'pytestbdd_stepimpl_then_all commits reach the remote': [<FixtureDef argname='pytestbdd_stepdef_then_all commits reach the remote' scope='function' baseid='test_git_workflow_steps.py'>]

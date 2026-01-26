@@ -7,7 +7,6 @@ Feature: Update nWave Safely
     Given nWave is installed at ~/.claude/
     And the update CLI entry point exists at ~/.claude/nWave/cli/update_cli.py
 
-  @pytest.mark.skip(reason="Not implemented yet - will enable one at a time to avoid commit blocks")
   Scenario: Successful update with backup
     Given nWave version 1.5.7 is installed at ~/.claude/
     And GitHub latest release is 1.6.0
@@ -24,7 +23,7 @@ Feature: Update nWave Safely
     And I see key changes in the summary
     And the command exits with code 0
 
-  @pytest.mark.skip(reason="Not implemented yet - will enable one at a time to avoid commit blocks")
+  @skip
   Scenario: Update cancelled by user
     Given nWave version 1.5.7 is installed
     And GitHub latest release is 1.6.0
@@ -36,7 +35,7 @@ Feature: Update nWave Safely
     And I see "Update cancelled. No changes made."
     And the command exits with code 2
 
-  @pytest.mark.skip(reason="Not implemented yet - will enable one at a time to avoid commit blocks")
+  @skip
   Scenario: Already up to date
     Given nWave version 1.6.0 is installed
     And GitHub latest release is 1.6.0
@@ -45,7 +44,6 @@ Feature: Update nWave Safely
     And no backup is created
     And the command exits with code 0
 
-  @pytest.mark.skip(reason="Not implemented yet - will enable one at a time to avoid commit blocks")
   Scenario: Update fails mid-process - automatic rollback
     Given nWave version 1.5.7 is installed at ~/.claude/
     And GitHub latest release is 1.6.0
@@ -57,7 +55,7 @@ Feature: Update nWave Safely
     And nWave 1.5.7 remains installed
     And the command exits with code 1
 
-  @pytest.mark.skip(reason="Not implemented yet - will enable one at a time to avoid commit blocks")
+  @skip
   Scenario: Insufficient permissions during update
     Given nWave version 1.5.7 is installed at ~/.claude/
     And the user lacks write permissions to ~/.claude/
@@ -67,7 +65,7 @@ Feature: Update nWave Safely
     And no changes are made
     And the command exits with code 1
 
-  @pytest.mark.skip(reason="Not implemented yet - will enable one at a time to avoid commit blocks")
+  @skip
   Scenario: Insufficient disk space during update
     Given nWave version 1.5.7 is installed at ~/.claude/
     And available disk space is less than 2x installation size

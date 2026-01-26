@@ -12,8 +12,8 @@ import subprocess
 
 
 # Load all scenarios from feature files
-scenarios("../features/version-update-experience/us-001-check-version.feature")
-scenarios("../features/version-update-experience/us-003-breaking-changes.feature")
+scenarios("us-001-check-version.feature")
+scenarios("us-003-breaking-changes.feature")
 
 
 # ============================================================================

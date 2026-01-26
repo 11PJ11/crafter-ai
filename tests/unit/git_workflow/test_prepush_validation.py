@@ -1,0 +1,122 @@
+"""
+Unit tests for pre-push validation hook logic.
+
+Tests the shell script logic without requiring actual git operations.
+"""
+
+import subprocess
+import tempfile
+from pathlib import Path
+import pytest
+
+
+@pytest.fixture
+def test_repo():
+    """Create temporary directory structure mimicking git repository."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        repo_root = Path(tmpdir)
+        nwave_dir = repo_root / "nWave"
+        nwave_dir.mkdir()
+
+        # Initialize git repository
+        subprocess.run(["git", "init"], cwd=repo_root, capture_output=True, check=True)
+
+        yield {
+            "repo_root": repo_root,
+            "nwave_dir": nwave_dir,
+            "hook_script": Path(
+                "/mnt/c/Repositories/Projects/ai-craft/scripts/hooks/pre-push"
+            ),
+        }
+
+
+class TestPrePushValidation:
+    """Unit tests for pre-push hook validation logic."""
+
+    def test_passes_when_version_and_releaserc_exist(self, test_repo):
+        """Pre-push validation succeeds when all required files exist."""
+        # Arrange
+        version_file = test_repo["nwave_dir"] / "VERSION"
+        version_file.write_text("1.5.7\n")
+
+        releaserc = test_repo["repo_root"] / ".releaserc"
+        releaserc.write_text('{"branches": ["main"]}')
+
+        # Act
+        result = subprocess.run(
+            [str(test_repo["hook_script"])],
+            cwd=test_repo["repo_root"],
+            capture_output=True,
+            text=True,
+            env={"GIT_DIR": str(test_repo["repo_root"] / ".git")},
+        )
+
+        # Assert
+        assert result.returncode == 0, f"Hook failed unexpectedly:\n{result.stderr}"
+        assert "VERSION file missing" not in result.stderr
+        assert "semantic-release not configured" not in result.stderr
+
+    def test_fails_when_version_file_missing(self, test_repo):
+        """Pre-push validation fails when VERSION file is missing."""
+        # Arrange
+        releaserc = test_repo["repo_root"] / ".releaserc"
+        releaserc.write_text('{"branches": ["main"]}')
+
+        # Act
+        result = subprocess.run(
+            [str(test_repo["hook_script"])],
+            cwd=test_repo["repo_root"],
+            capture_output=True,
+            text=True,
+            env={"GIT_DIR": str(test_repo["repo_root"] / ".git")},
+        )
+
+        # Assert
+        assert result.returncode == 1, "Hook should have failed"
+        output = result.stdout + result.stderr
+        assert "VERSION file missing" in output
+        assert "Create nWave/VERSION with current version (e.g., '1.5.7')" in output
+
+    def test_fails_when_releaserc_missing(self, test_repo):
+        """Pre-push validation fails when semantic-release config is missing."""
+        # Arrange
+        version_file = test_repo["nwave_dir"] / "VERSION"
+        version_file.write_text("1.5.7\n")
+
+        # Act
+        result = subprocess.run(
+            [str(test_repo["hook_script"])],
+            cwd=test_repo["repo_root"],
+            capture_output=True,
+            text=True,
+            env={"GIT_DIR": str(test_repo["repo_root"] / ".git")},
+        )
+
+        # Assert
+        assert result.returncode == 1, "Hook should have failed"
+        output = result.stdout + result.stderr
+        assert "semantic-release not configured" in output
+        assert "Run 'npx semantic-release-cli setup'" in output
+
+    def test_accepts_release_config_js_alternative(self, test_repo):
+        """Pre-push validation accepts release.config.js as alternative to .releaserc."""
+        # Arrange
+        version_file = test_repo["nwave_dir"] / "VERSION"
+        version_file.write_text("1.5.7\n")
+
+        release_config = test_repo["repo_root"] / "release.config.js"
+        release_config.write_text("module.exports = { branches: ['main'] };")
+
+        # Act
+        result = subprocess.run(
+            [str(test_repo["hook_script"])],
+            cwd=test_repo["repo_root"],
+            capture_output=True,
+            text=True,
+            env={"GIT_DIR": str(test_repo["repo_root"] / ".git")},
+        )
+
+        # Assert
+        output = result.stdout + result.stderr
+        assert result.returncode == 0, f"Hook failed unexpectedly:\n{output}"
+        assert "semantic-release not configured" not in output

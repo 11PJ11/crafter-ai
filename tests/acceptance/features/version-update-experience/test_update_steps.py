@@ -13,13 +13,20 @@ import time
 
 
 # Load scenarios
-scenarios("../features/version-update-experience/us-002-update-safely.feature")
-scenarios("../features/version-update-experience/us-004-backup-cleanup.feature")
+scenarios("us-002-update-safely.feature")
+scenarios("us-004-backup-cleanup.feature")
 
 
 # ============================================================================
 # GIVEN - Preconditions (Update scenarios)
 # ============================================================================
+
+
+@given("nWave is installed at ~/.claude/")
+def nwave_installed(test_installation):
+    """Ensure nWave installation directory exists."""
+    # Installation already set up by test_installation fixture
+    assert test_installation["nwave_home"].exists(), "nWave home directory not found"
 
 
 @given("the update CLI entry point exists at ~/.claude/nWave/cli/update_cli.py")

@@ -7,7 +7,6 @@ Feature: Pre-push Validation
     Given I am in the nWave repository
     And pre-push hook is installed
 
-  @pytest.mark.skip(reason="Not implemented yet - will enable one at a time to avoid commit blocks")
   Scenario: Push succeeds when all validations pass
     Given nWave/VERSION file exists with valid semver format
     And .releaserc configuration exists
@@ -15,7 +14,7 @@ Feature: Pre-push Validation
     Then the push succeeds
     And all commits reach the remote
 
-  @pytest.mark.skip(reason="Not implemented yet - will enable one at a time to avoid commit blocks")
+  @skip
   Scenario: Push rejected when VERSION file missing
     Given nWave/VERSION file does not exist
     And .releaserc configuration exists

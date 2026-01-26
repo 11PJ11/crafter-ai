@@ -7,7 +7,6 @@ Feature: Automatic Backup Cleanup
     Given nWave is installed at ~/.claude/
     And the update CLI entry point exists at ~/.claude/nWave/cli/update_cli.py
 
-  @pytest.mark.skip(reason="Not implemented yet - will enable one at a time to avoid commit blocks")
   Scenario: Cleanup backups older than 30 days
     Given these backup directories exist:
       | Directory                   | Age (days) |
@@ -24,7 +23,7 @@ Feature: Automatic Backup Cleanup
     And a new backup ~/.claude_bck_YYYYMMDD/ is created
     And the command exits with code 0
 
-  @pytest.mark.skip(reason="Not implemented yet - will enable one at a time to avoid commit blocks")
+  @skip
   Scenario: Backup directory is locked or in-use
     Given ~/.claude_bck_20251201/ exists and is older than 30 days
     And the directory is locked by another process
@@ -37,7 +36,7 @@ Feature: Automatic Backup Cleanup
     And other eligible backups are cleaned up
     And the command exits with code 0
 
-  @pytest.mark.skip(reason="Not implemented yet - will enable one at a time to avoid commit blocks")
+  @skip
   Scenario: Insufficient permissions to delete backup
     Given ~/.claude_bck_20251201/ exists and is older than 30 days
     And the user lacks delete permissions for that directory
@@ -49,7 +48,7 @@ Feature: Automatic Backup Cleanup
     And the update proceeds normally
     And the command exits with code 0
 
-  @pytest.mark.skip(reason="Not implemented yet - will enable one at a time to avoid commit blocks")
+  @skip
   Scenario: Large number of backups (performance)
     Given 50 backup directories exist spanning 6 months
     And nWave version 1.5.7 is installed

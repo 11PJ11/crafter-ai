@@ -89,3 +89,66 @@ class TestCommitMsgHook:
         assert (
             "Conventional Commits" in output
         ), "Hook should mention Conventional Commits in error message"
+
+    def test_commit_msg_hook_accepts_scoped_commits(self, git_hooks_dir, tmp_path):
+        """Verify hook accepts scoped conventional commits (e.g., fix(auth): message)."""
+        hook_file = git_hooks_dir / "commit-msg"
+
+        if not hook_file.exists():
+            pytest.skip("Hook not installed yet")
+
+        # Test various scoped commit formats
+        scoped_messages = [
+            "fix(auth): resolve login timeout issue",
+            "feat(ui): add new dashboard",
+            "refactor(api): simplify endpoint logic",
+            "test(auth): add login tests",
+        ]
+
+        for msg in scoped_messages:
+            msg_file = tmp_path / f"commit-msg-{scoped_messages.index(msg)}.txt"
+            msg_file.write_text(msg)
+
+            result = subprocess.run(
+                [str(hook_file), str(msg_file)],
+                capture_output=True,
+                text=True,
+            )
+
+            assert result.returncode == 0, (
+                f"Hook rejected valid scoped commit: '{msg}'. "
+                f"stderr: {result.stderr}, stdout: {result.stdout}"
+            )
+
+    def test_commit_msg_hook_accepts_breaking_change_commits(
+        self, git_hooks_dir, tmp_path
+    ):
+        """Verify hook accepts breaking change commits with ! syntax."""
+        hook_file = git_hooks_dir / "commit-msg"
+
+        if not hook_file.exists():
+            pytest.skip("Hook not installed yet")
+
+        # Test various breaking change formats
+        breaking_messages = [
+            "feat!: redesign API endpoints",
+            "fix!: change authentication flow",
+            "refactor(api)!: remove deprecated endpoints",
+        ]
+
+        for msg in breaking_messages:
+            msg_file = (
+                tmp_path / f"commit-msg-breaking-{breaking_messages.index(msg)}.txt"
+            )
+            msg_file.write_text(msg)
+
+            result = subprocess.run(
+                [str(hook_file), str(msg_file)],
+                capture_output=True,
+                text=True,
+            )
+
+            assert result.returncode == 0, (
+                f"Hook rejected valid breaking change commit: '{msg}'. "
+                f"stderr: {result.stderr}, stdout: {result.stdout}"
+            )

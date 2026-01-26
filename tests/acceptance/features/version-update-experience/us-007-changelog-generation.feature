@@ -8,7 +8,7 @@ Feature: Automated Changelog Generation
     And semantic-release is configured
     And GitHub Actions workflow exists
 
-  @pytest.mark.skip(reason="Not implemented yet - will enable one at a time to avoid commit blocks")
+  @skip
   Scenario: Changelog generated on release
     Given commits since last release:
       | Commit message                       | Type |
@@ -21,7 +21,7 @@ Feature: Automated Changelog Generation
     And release notes include Features section with "add user dashboard"
     And release notes include Bug Fixes section with "resolve timeout issue"
 
-  @pytest.mark.skip(reason="Not implemented yet - will enable one at a time to avoid commit blocks")
+  @skip
   Scenario: Breaking change highlighted in changelog
     Given a commit with message "feat!: redesign API endpoints"
     When semantic-release runs

@@ -7,9 +7,8 @@ Feature: Breaking Change Warning
     Given nWave is installed at ~/.claude/nWave/
     And the version CLI entry point exists at ~/.claude/nWave/cli/version_cli.py
 
-  @pytest.mark.skip(reason="Not implemented yet - will enable one at a time to avoid commit blocks")
   Scenario: Major version update warning
-    Given nWave version 1.5.7 is installed
+    Given nWave version 1.5.7 is installed locally
     And GitHub latest release is 2.0.0
     And the release changelog contains "BREAKING CHANGES" section
     When I run the version command through the CLI entry point
@@ -18,9 +17,9 @@ Feature: Breaking Change Warning
     And changelog highlights show breaking changes prominently
     And the command exits with code 0
 
-  @pytest.mark.skip(reason="Not implemented yet - will enable one at a time to avoid commit blocks")
+  @skip
   Scenario: Minor version update (no warning)
-    Given nWave version 1.5.7 is installed
+    Given nWave version 1.5.7 is installed locally
     And GitHub latest release is 1.6.0
     When I run the version command through the CLI entry point
     Then no breaking change warning is shown

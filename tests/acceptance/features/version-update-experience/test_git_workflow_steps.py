@@ -11,9 +11,9 @@ import subprocess
 
 
 # Load scenarios
-scenarios("../features/version-update-experience/us-005-commit-enforcement.feature")
-scenarios("../features/version-update-experience/us-006-prepush-validation.feature")
-scenarios("../features/version-update-experience/us-007-changelog-generation.feature")
+scenarios("us-005-commit-enforcement.feature")
+scenarios("us-006-prepush-validation.feature")
+scenarios("us-007-changelog-generation.feature")
 
 
 # ============================================================================

@@ -58,10 +58,71 @@ def isolated_home(tmp_path, monkeypatch):
 
     # Set HOME environment variable
     monkeypatch.setenv("HOME", str(fake_home))
+    monkeypatch.setenv("NWAVE_HOME", str(fake_claude))
 
     yield fake_home
 
     # Cleanup is automatic via tmp_path fixture
+
+
+@pytest.fixture
+def test_installation(isolated_home, tmp_path):
+    """
+    Set up test installation structure.
+
+    Provides:
+    - tmp_path: Temporary directory for test
+    - version_file: Path to nwave-version.txt
+    - cli_dir: Directory for CLI scripts
+    - nwave_home: ~/.claude/ directory
+    """
+    nwave_home = isolated_home / ".claude"
+    nwave_home.mkdir(parents=True, exist_ok=True)
+
+    cli_dir = nwave_home / "nWave" / "cli"
+    cli_dir.mkdir(parents=True, exist_ok=True)
+
+    version_file = nwave_home / "nwave-version.txt"
+
+    return {
+        "tmp_path": tmp_path,
+        "version_file": version_file,
+        "cli_dir": cli_dir,
+        "nwave_home": nwave_home,
+    }
+
+
+@pytest.fixture
+def cli_environment(monkeypatch, test_installation):
+    """
+    Environment variables for CLI execution.
+    """
+    env = {
+        "NWAVE_HOME": str(test_installation["nwave_home"]),
+        "HOME": str(test_installation["tmp_path"] / "test-home"),
+    }
+    for key, value in env.items():
+        monkeypatch.setenv(key, value)
+    return env
+
+
+@pytest.fixture
+def cli_result():
+    """
+    Container for CLI execution results.
+    """
+    return {"stdout": "", "stderr": "", "returncode": 0}
+
+
+@pytest.fixture
+def mock_github_api():
+    """
+    Mock GitHub API responses for testing.
+    """
+    return {
+        "latest_version": "1.6.0",
+        "changelog": "Sample changelog",
+    }
 
 
 @pytest.fixture(scope="function")
