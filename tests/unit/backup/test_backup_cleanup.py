@@ -11,7 +11,7 @@ import tempfile
 import shutil
 import time
 import os
-from nwave.infrastructure.backup_manager import BackupManager
+from nWave.infrastructure.backup_manager import BackupManager
 
 
 class TestBackupCleanup:
@@ -56,7 +56,7 @@ class TestBackupCleanup:
 
             # ACT
             # This will fail until BackupManager.cleanup_old_backups is implemented
-            from nwave.infrastructure.backup_manager import BackupManager
+            from nWave.infrastructure.backup_manager import BackupManager
 
             manager = BackupManager(tmp_path)
             manager.cleanup_old_backups(retention_days=30)
@@ -94,7 +94,7 @@ class TestBackupCleanup:
             os.utime(other_dir / "file.txt", (old_time, old_time))
 
             # ACT
-            from nwave.infrastructure.backup_manager import BackupManager
+            from nWave.infrastructure.backup_manager import BackupManager
 
             manager = BackupManager(tmp_path)
             manager.cleanup_old_backups(retention_days=30)
@@ -123,7 +123,7 @@ class TestBackupCleanup:
             os.utime(old_backup, (old_time, old_time))
 
             # ACT
-            from nwave.infrastructure.backup_manager import BackupManager
+            from nWave.infrastructure.backup_manager import BackupManager
 
             manager = BackupManager(tmp_path)
             manager.cleanup_old_backups(retention_days=30)
@@ -153,7 +153,7 @@ class TestBackupCleanup:
                 os.utime(backup / "file.txt", (old_time, old_time))
 
             # ACT
-            from nwave.infrastructure.backup_manager import BackupManager
+            from nWave.infrastructure.backup_manager import BackupManager
 
             manager = BackupManager(tmp_path)
             deleted_count = manager.cleanup_old_backups(retention_days=30)

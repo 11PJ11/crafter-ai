@@ -52,7 +52,7 @@ Feature: Update nWave Safely
     And the download will fail mid-process with network error
     When I run the update command through the CLI entry point
     Then the system automatically restores from ~/.claude_bck_20260123/
-    And I see "Update failed: [error details]. Restored from backup."
+    And I see "Update failed: Network error during download. Restored from backup."
     And nWave 1.5.7 remains installed
     And the command exits with code 1
 

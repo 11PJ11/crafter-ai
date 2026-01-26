@@ -21,12 +21,14 @@ def test_repo():
         # Initialize git repository
         subprocess.run(["git", "init"], cwd=repo_root, capture_output=True, check=True)
 
+        # Get hook script path relative to project root
+        project_root = Path(__file__).parent.parent.parent.parent
+        hook_script = project_root / "scripts" / "hooks" / "pre-push"
+
         yield {
             "repo_root": repo_root,
             "nwave_dir": nwave_dir,
-            "hook_script": Path(
-                "/mnt/c/Repositories/Projects/ai-craft/scripts/hooks/pre-push"
-            ),
+            "hook_script": hook_script,
         }
 
 

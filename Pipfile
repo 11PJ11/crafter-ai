@@ -10,6 +10,7 @@ packaging = ">=21.0"
 [dev-packages]
 # Testing
 pytest = ">=7.0.0"
+pytest-bdd = ">=7.0.0"
 pytest-cov = ">=4.0.0"
 
 # Linting and formatting (ruff replaces black + flake8)

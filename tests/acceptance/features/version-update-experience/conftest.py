@@ -19,21 +19,10 @@ import os
 # pytest-bdd Configuration
 # ============================================================================
 
-
-def pytest_bdd_step_error(
-    request, feature, scenario, step, step_func, step_func_args, exception
-):
-    """
-    Custom error handler for BDD step failures.
-    Provides detailed context for debugging.
-    """
-    print(f"\n{'=' * 70}")
-    print("BDD Step Failure:")
-    print(f"  Feature: {feature.name}")
-    print(f"  Scenario: {scenario.name}")
-    print(f"  Step: {step.keyword} {step.name}")
-    print(f"  Exception: {type(exception).__name__}: {exception}")
-    print(f"{'=' * 70}\n")
+# Note: pytest_bdd_step_error was removed because it's not a valid pytest-bdd hook.
+# For step failure debugging, pytest's native exception reporting is sufficient.
+# If custom error handling is needed, use pytest's --tb=long option or
+# implement a pytest_exception_interact hook instead.
 
 
 # ============================================================================

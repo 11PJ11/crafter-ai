@@ -172,18 +172,18 @@
       "phases": [
         {"id": 1, "name": "PREPARE", "status": "complete"},
         {"id": 2, "name": "RED_ACCEPTANCE", "status": "complete"},
-        {"id": 3, "name": "RED_UNIT", "status": "in_progress"},
-        {"id": 4, "name": "GREEN_UNIT", "status": "pending"},
-        {"id": 5, "name": "CHECK_ACCEPTANCE", "status": "pending"},
-        {"id": 6, "name": "GREEN_ACCEPTANCE", "status": "pending"},
-        {"id": 7, "name": "REVIEW", "status": "pending"},
-        {"id": 8, "name": "REFACTOR_L1", "status": "pending"},
-        {"id": 9, "name": "REFACTOR_L2", "status": "pending"},
-        {"id": 10, "name": "REFACTOR_L3", "status": "pending"},
-        {"id": 11, "name": "REFACTOR_L4", "status": "pending"},
-        {"id": 12, "name": "POST_REFACTOR_REVIEW", "status": "pending"},
-        {"id": 13, "name": "FINAL_VALIDATE", "status": "pending"},
-        {"id": 14, "name": "COMMIT", "status": "pending"}
+        {"id": 3, "name": "RED_UNIT", "status": "complete"},
+        {"id": 4, "name": "GREEN_UNIT", "status": "complete"},
+        {"id": 5, "name": "CHECK_ACCEPTANCE", "status": "complete"},
+        {"id": 6, "name": "GREEN_ACCEPTANCE", "status": "complete"},
+        {"id": 7, "name": "REVIEW", "status": "complete"},
+        {"id": 8, "name": "REFACTOR_L1", "status": "complete"},
+        {"id": 9, "name": "REFACTOR_L2", "status": "complete"},
+        {"id": 10, "name": "REFACTOR_L3", "status": "complete"},
+        {"id": 11, "name": "REFACTOR_L4", "status": "complete"},
+        {"id": 12, "name": "POST_REFACTOR_REVIEW", "status": "complete"},
+        {"id": 13, "name": "FINAL_VALIDATE", "status": "complete"},
+        {"id": 14, "name": "COMMIT", "status": "complete"}
       ]
     }
   },

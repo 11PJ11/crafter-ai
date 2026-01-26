@@ -20,6 +20,12 @@ Feature: Breaking Change Warning
   Scenario: Minor version update (no warning)
     Given nWave version 1.5.7 is installed locally
     And GitHub latest release is 1.6.0
+    And the release changelog contains:
+      """
+      ## What's Changed
+      * feat: add new dashboard feature
+      * fix: resolve login timeout issue
+      """
     When I run the version command through the CLI entry point
     Then no breaking change warning is shown
     And changelog shows only feature additions and fixes

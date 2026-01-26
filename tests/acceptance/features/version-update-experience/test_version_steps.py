@@ -199,10 +199,14 @@ def github_api_unreachable(mock_github_api):
     mock_github_api["is_reachable"] = False
 
 
-@given(parsers.parse("the release changelog contains:\n{changelog}"))
-def github_changelog_content(mock_github_api, changelog):
-    """Configure mock GitHub API changelog response."""
-    mock_github_api["changelog"] = changelog
+@given("the release changelog contains:")
+def github_changelog_from_docstring(mock_github_api, docstring):
+    """Configure mock GitHub API changelog response from docstring.
+
+    In pytest-bdd 8.x, Gherkin docstrings (text between triple quotes) are
+    passed via the 'docstring' parameter.
+    """
+    mock_github_api["changelog"] = docstring
 
 
 @given(parsers.parse('the release changelog contains "BREAKING CHANGES" section'))
