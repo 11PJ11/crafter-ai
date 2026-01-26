@@ -1,0 +1,53 @@
+#!/bin/bash
+#
+# commit-msg hook - Validates conventional commit format
+#
+# This hook validates that commit messages follow the Conventional Commits
+# specification: https://www.conventionalcommits.org/
+#
+# Valid formats:
+#   type: description
+#   type(scope): description
+#   type!: breaking change description
+#   type(scope)!: breaking change description
+#
+# Valid types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
+
+COMMIT_MSG_FILE="$1"
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Get first line (subject)
+FIRST_LINE=$(echo "$COMMIT_MSG" | head -n 1)
+
+# Conventional commit pattern
+# type: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
+# optional scope in parentheses
+# optional ! for breaking changes
+# colon and space
+# description
+PATTERN="^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-zA-Z0-9_-]+\))?!?: .+"
+
+if ! echo "$FIRST_LINE" | grep -qE "$PATTERN"; then
+    echo ""
+    echo "ERROR: Commit message does not follow Conventional Commits format."
+    echo ""
+    echo "Your commit message:"
+    echo "  $FIRST_LINE"
+    echo ""
+    echo "Expected format:"
+    echo "  type(scope): description"
+    echo ""
+    echo "Valid types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert"
+    echo ""
+    echo "Examples:"
+    echo "  feat: add user dashboard"
+    echo "  fix(auth): resolve login timeout"
+    echo "  feat!: redesign API endpoints (breaking change)"
+    echo "  refactor(api)!: remove deprecated endpoints"
+    echo ""
+    echo "See: https://www.conventionalcommits.org/"
+    echo ""
+    exit 1
+fi
+
+exit 0

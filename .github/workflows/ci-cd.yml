@@ -100,6 +100,15 @@ jobs:
         shell: bash
 
       # -----------------------------------------------------------------------
+      # Install Git Hooks (required for hook existence tests)
+      # -----------------------------------------------------------------------
+      - name: Install commit-msg hook
+        run: |
+          cp scripts/hooks/commit-msg .git/hooks/commit-msg
+          chmod +x .git/hooks/commit-msg
+        shell: bash
+
+      # -----------------------------------------------------------------------
       # Quality Gate 1: Pre-commit Hooks Validation
       # -----------------------------------------------------------------------
       - name: Run pre-commit hooks
