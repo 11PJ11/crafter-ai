@@ -9,12 +9,12 @@
         {"type": "fix", "release": "patch"},
         {"type": "perf", "release": "patch"},
         {"type": "refactor", "release": "patch"},
-        {"type": "docs", "release": "patch"},
-        {"type": "style", "release": "patch"},
-        {"type": "test", "release": "patch"},
-        {"type": "build", "release": "patch"},
-        {"type": "ci", "release": "patch"},
-        {"type": "chore", "release": "patch"},
+        {"type": "docs", "release": false},
+        {"type": "style", "release": false},
+        {"type": "test", "release": false},
+        {"type": "build", "release": false},
+        {"type": "ci", "release": false},
+        {"type": "chore", "release": false},
         {"breaking": true, "release": "major"}
       ]
     }],
@@ -26,12 +26,12 @@
           {"type": "fix", "section": "Bug Fixes"},
           {"type": "perf", "section": "Performance Improvements"},
           {"type": "refactor", "section": "Code Refactoring"},
-          {"type": "docs", "section": "Documentation", "hidden": true},
-          {"type": "style", "section": "Styles", "hidden": true},
-          {"type": "test", "section": "Tests", "hidden": true},
-          {"type": "build", "section": "Build System", "hidden": true},
-          {"type": "ci", "section": "CI/CD", "hidden": true},
-          {"type": "chore", "section": "Maintenance", "hidden": true}
+          {"type": "docs", "section": "Documentation"},
+          {"type": "style", "section": "Styles"},
+          {"type": "test", "section": "Tests"},
+          {"type": "build", "section": "Build System"},
+          {"type": "ci", "section": "CI/CD"},
+          {"type": "chore", "section": "Maintenance"}
         ]
       }
     }],
