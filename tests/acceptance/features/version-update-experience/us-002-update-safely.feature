@@ -54,7 +54,6 @@ Feature: Update nWave Safely
     And nWave 1.5.7 remains installed
     And the command exits with code 1
 
-  @skip
   Scenario: Insufficient permissions during update
     Given nWave version 1.5.7 is installed at ~/.claude/
     And the user lacks write permissions to ~/.claude/
@@ -64,7 +63,6 @@ Feature: Update nWave Safely
     And no changes are made
     And the command exits with code 1
 
-  @skip
   Scenario: Insufficient disk space during update
     Given nWave version 1.5.7 is installed at ~/.claude/
     And available disk space is less than 2x installation size
