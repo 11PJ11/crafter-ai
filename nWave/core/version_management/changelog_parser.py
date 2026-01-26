@@ -15,9 +15,9 @@ class ChangelogParser:
         """
         Extract breaking changes from changelog text.
 
-        Detection strategies:
-        1. BREAKING CHANGES section
-        2. Conventional commits with ! marker (feat!, fix!)
+        Detection strategies (in priority order):
+        1. BREAKING CHANGES section - if present, use only this
+        2. Conventional commits with ! marker (feat!, fix!) - fallback
 
         Args:
             changelog: Changelog text from GitHub release, or None
@@ -28,20 +28,18 @@ class ChangelogParser:
         if not changelog:
             return []
 
-        breaking_changes = []
-
-        # Strategy 1: Extract from BREAKING CHANGES section
+        # Strategy 1: Extract from BREAKING CHANGES section (priority)
         breaking_section_changes = self._extract_from_breaking_section(changelog)
-        breaking_changes.extend(breaking_section_changes)
 
-        # Strategy 2: Find conventional commits with ! marker
+        if breaking_section_changes:
+            return breaking_section_changes
+
+        # Strategy 2: Find conventional commits with ! marker (fallback)
         conventional_commits_breaking = self._extract_from_conventional_commits(
             changelog
         )
-        breaking_changes.extend(conventional_commits_breaking)
 
-        # Remove duplicates while preserving order
-        return list(dict.fromkeys(breaking_changes))
+        return conventional_commits_breaking
 
     def _extract_from_breaking_section(self, changelog: str) -> List[str]:
         """
@@ -53,7 +51,7 @@ class ChangelogParser:
         * change 2
 
         Returns:
-            List of breaking change descriptions
+            List of breaking change descriptions (without feat!/fix! prefixes)
         """
         changes = []
 
@@ -64,8 +62,8 @@ class ChangelogParser:
         for match in matches:
             section_content = match.group(1)
 
-            # Extract bullet points
-            bullet_pattern = r'\*\s*(.+)'
+            # Extract bullet points, remove conventional commit markers
+            bullet_pattern = r'\*\s*(?:\w+!:\s*)?(.+)'
             bullets = re.findall(bullet_pattern, section_content)
 
             changes.extend([bullet.strip() for bullet in bullets])

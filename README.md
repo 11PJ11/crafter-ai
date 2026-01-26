@@ -338,7 +338,7 @@ See individual agent documentation in `nWave/agents/` for implementation details
 
 ## Version
 
-- Current Version: 1.5.13
+- Current Version: 1.5.15
 - Last Updated: 2026-01-22
 - Status: Production Ready
 
