@@ -4,11 +4,16 @@ Step definitions for version check acceptance tests (US-001, US-003).
 CRITICAL: Hexagonal boundary enforcement - tests invoke CLI entry points ONLY.
 ❌ FORBIDDEN: Direct imports of nWave.core.* components
 ✅ REQUIRED: Invoke through driving ports (CLI entry points)
+
+Cross-platform compatible (Windows, macOS, Linux).
 """
+
+import stat
+import subprocess
+import sys
 
 import pytest
 from pytest_bdd import scenarios, given, when, then, parsers
-import subprocess
 
 
 # Load all scenarios from feature files
@@ -176,7 +181,13 @@ if __name__ == "__main__":
 '''
 
     cli_script.write_text(script_content)
-    cli_script.chmod(0o755)  # Make executable
+    # Make executable on Unix systems (no-op on Windows)
+    try:
+        cli_script.chmod(
+            cli_script.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+        )
+    except (OSError, AttributeError):
+        pass  # Windows doesn't support chmod the same way
 
 
 @given(parsers.parse("nWave version {version} is installed locally"))
@@ -254,8 +265,9 @@ def run_version_command(
 
     try:
         # DRIVING PORT INVOCATION - This is the system boundary
+        # Use sys.executable for cross-platform compatibility (Windows uses 'python' not 'python3')
         result = subprocess.run(
-            ["python3", str(cli_script)],
+            [sys.executable, str(cli_script)],
             capture_output=True,
             text=True,
             timeout=10,

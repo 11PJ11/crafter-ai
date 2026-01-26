@@ -85,13 +85,23 @@ def test_installation(isolated_home, tmp_path):
 def cli_environment(monkeypatch, test_installation):
     """
     Environment variables for CLI execution.
+
+    CRITICAL: We must inherit the current environment (PATH, PYTHONPATH, etc.)
+    and only override specific test variables. Otherwise subprocess calls will
+    fail to find Python and other required executables.
     """
-    env = {
-        "NWAVE_HOME": str(test_installation["nwave_home"]),
-        "HOME": str(test_installation["tmp_path"] / "test-home"),
-    }
-    for key, value in env.items():
-        monkeypatch.setenv(key, value)
+    # Start with current environment to preserve PATH, PYTHONPATH, etc.
+    env = os.environ.copy()
+
+    # Override test-specific variables
+    env["NWAVE_HOME"] = str(test_installation["nwave_home"])
+    env["HOME"] = str(test_installation["tmp_path"] / "test-home")
+
+    # On Windows, also set USERPROFILE which is the Windows equivalent of HOME
+    env["USERPROFILE"] = str(test_installation["tmp_path"] / "test-home")
+
+    for key in ["NWAVE_HOME", "HOME", "USERPROFILE"]:
+        monkeypatch.setenv(key, env[key])
     return env
 
 
@@ -162,14 +172,16 @@ def cli_executor(isolated_home):
             dict with stdout, stderr, returncode
         """
         import subprocess
+        import sys
 
         execution_env = os.environ.copy()
         if env:
             execution_env.update(env)
 
         try:
+            # Use sys.executable for cross-platform compatibility (Windows uses 'python' not 'python3')
             result = subprocess.run(
-                ["python3", str(script_path)],
+                [sys.executable, str(script_path)],
                 capture_output=True,
                 text=True,
                 timeout=timeout,

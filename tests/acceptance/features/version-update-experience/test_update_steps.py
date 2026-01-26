@@ -4,12 +4,18 @@ Step definitions for update workflow acceptance tests (US-002, US-004).
 CRITICAL: Hexagonal boundary enforcement - tests invoke CLI entry points ONLY.
 ❌ FORBIDDEN: Direct imports of UpdateOrchestrator, BackupManager
 ✅ REQUIRED: Invoke through driving ports (update_cli.py)
+
+Cross-platform compatible (Windows, macOS, Linux).
 """
 
-from pytest_bdd import scenarios, given, when, then, parsers
+import os
+import stat
 import subprocess
-from datetime import datetime, timedelta
+import sys
 import time
+from datetime import datetime, timedelta
+
+from pytest_bdd import scenarios, given, when, then, parsers
 
 
 # Load scenarios
@@ -147,7 +153,13 @@ if __name__ == "__main__":
 '''
 
     cli_script.write_text(script_content)
-    cli_script.chmod(0o755)
+    # Make executable on Unix systems (no-op on Windows)
+    try:
+        cli_script.chmod(
+            cli_script.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+        )
+    except (OSError, AttributeError):
+        pass  # Windows doesn't support chmod the same way
 
 
 @given(parsers.parse("GitHub latest release is {version}"))
@@ -235,7 +247,6 @@ def create_test_backups(test_installation):
     ~/.claude_bck_20260110/ - 13 days old
     """
     import time
-    import os
 
     # Define backups based on feature file
     backups = [
@@ -272,7 +283,6 @@ def old_backup_exists(test_installation, backup_path):
 
     # Set modification time to 40 days ago
     old_time = time.time() - (40 * 24 * 60 * 60)
-    import os
 
     os.utime(backup_dir, (old_time, old_time))
 
@@ -319,8 +329,9 @@ def run_update_command(test_installation, cli_result, cli_environment, mock_gith
     env = cli_environment.copy()
     env["TEST_GITHUB_LATEST_VERSION"] = mock_github_api.get("latest_version", "")
 
+    # Use sys.executable for cross-platform compatibility (Windows uses 'python' not 'python3')
     result = subprocess.run(
-        ["python3", str(cli_script)],
+        [sys.executable, str(cli_script)],
         capture_output=True,
         text=True,
         timeout=30,
@@ -359,8 +370,9 @@ def user_responds_to_prompt(
     env = cli_environment.copy()
     env["TEST_GITHUB_LATEST_VERSION"] = mock_github_api.get("latest_version", "")
 
+    # Use sys.executable for cross-platform compatibility (Windows uses 'python' not 'python3')
     result = subprocess.run(
-        ["python3", str(cli_script)],
+        [sys.executable, str(cli_script)],
         capture_output=True,
         text=True,
         timeout=30,
@@ -386,8 +398,9 @@ def user_confirms_update(
     env = cli_environment.copy()
     env["TEST_GITHUB_LATEST_VERSION"] = mock_github_api.get("latest_version", "")
 
+    # Use sys.executable for cross-platform compatibility (Windows uses 'python' not 'python3')
     result = subprocess.run(
-        ["python3", str(cli_script)],
+        [sys.executable, str(cli_script)],
         capture_output=True,
         text=True,
         timeout=30,

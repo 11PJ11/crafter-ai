@@ -1,35 +1,29 @@
-#!/bin/sh
-# Pre-push validation for VERSION file and semantic-release config
-#
-# This hook validates that critical release configuration files exist
-# before allowing code to be pushed to remote repositories.
-#
-# Validates:
-# - nWave/VERSION file exists (contains semantic version)
-# - .releaserc or release.config.js exists (semantic-release config)
+#!/usr/bin/env python3
+"""
+pre-push hook - Wrapper that delegates to pre_push.py
 
-repo_root=$(git rev-parse --show-toplevel)
+This shim ensures cross-platform compatibility by using Python instead of bash.
+The actual validation logic is in pre_push.py.
+"""
 
-# Check VERSION file
-if [ ! -f "$repo_root/nWave/VERSION" ]; then
-    echo "ERROR: Pre-push validation failed."
-    echo ""
-    echo "[FAIL] VERSION file missing"
-    echo "       Expected: nWave/VERSION"
-    echo "       Action: Create nWave/VERSION with current version (e.g., '1.5.7')"
-    echo ""
-    exit 1
-fi
+import sys
+from pathlib import Path
 
-# Check semantic-release config
-if [ ! -f "$repo_root/.releaserc" ] && [ ! -f "$repo_root/release.config.js" ]; then
-    echo "ERROR: Pre-push validation failed."
-    echo ""
-    echo "[FAIL] semantic-release not configured"
-    echo "       Expected: .releaserc or release.config.js"
-    echo "       Action: Run 'npx semantic-release-cli setup' or create config manually"
-    echo ""
-    exit 1
-fi
 
-exit 0
+def main():
+    # Get the directory where this script is located
+    script_dir = Path(__file__).resolve().parent
+    python_hook = script_dir / "pre_push.py"
+
+    if python_hook.exists():
+        # Import and run the Python hook directly
+        sys.path.insert(0, str(script_dir))
+        from pre_push import main as hook_main
+        return hook_main()
+    else:
+        print(f"ERROR: pre_push.py not found at {python_hook}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

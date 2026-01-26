@@ -1,53 +1,30 @@
-#!/bin/bash
-#
-# commit-msg hook - Validates conventional commit format
-#
-# This hook validates that commit messages follow the Conventional Commits
-# specification: https://www.conventionalcommits.org/
-#
-# Valid formats:
-#   type: description
-#   type(scope): description
-#   type!: breaking change description
-#   type(scope)!: breaking change description
-#
-# Valid types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
+#!/usr/bin/env python3
+"""
+commit-msg hook - Wrapper that delegates to commit_msg.py
 
-COMMIT_MSG_FILE="$1"
-COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+This shim ensures cross-platform compatibility by using Python instead of bash.
+The actual validation logic is in commit_msg.py.
+"""
 
-# Get first line (subject)
-FIRST_LINE=$(echo "$COMMIT_MSG" | head -n 1)
+import os
+import sys
+from pathlib import Path
 
-# Conventional commit pattern
-# type: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
-# optional scope in parentheses
-# optional ! for breaking changes
-# colon and space
-# description
-PATTERN="^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-zA-Z0-9_-]+\))?!?: .+"
 
-if ! echo "$FIRST_LINE" | grep -qE "$PATTERN"; then
-    echo ""
-    echo "ERROR: Commit message does not follow Conventional Commits format."
-    echo ""
-    echo "Your commit message:"
-    echo "  $FIRST_LINE"
-    echo ""
-    echo "Expected format:"
-    echo "  type(scope): description"
-    echo ""
-    echo "Valid types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert"
-    echo ""
-    echo "Examples:"
-    echo "  feat: add user dashboard"
-    echo "  fix(auth): resolve login timeout"
-    echo "  feat!: redesign API endpoints (breaking change)"
-    echo "  refactor(api)!: remove deprecated endpoints"
-    echo ""
-    echo "See: https://www.conventionalcommits.org/"
-    echo ""
-    exit 1
-fi
+def main():
+    # Get the directory where this script is located
+    script_dir = Path(__file__).resolve().parent
+    python_hook = script_dir / "commit_msg.py"
 
-exit 0
+    if python_hook.exists():
+        # Import and run the Python hook directly
+        sys.path.insert(0, str(script_dir))
+        from commit_msg import main as hook_main
+        return hook_main()
+    else:
+        print(f"ERROR: commit_msg.py not found at {python_hook}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
