@@ -9,13 +9,14 @@
 #   - version tags (v*): Additionally create GitHub release with artifacts
 #
 # Quality Gates:
+#   0. Commit message validation (Conventional Commits via commitlint)
 #   1. Pre-commit hooks validation
 #   2. Pytest suite (246 tests) with coverage
 #   3. Agent name synchronization verification
 #   4. YAML validation (framework-catalog.yaml)
 #   5. Documentation version consistency
 #   6. Cross-platform compatibility (Linux, Windows, macOS)
-#   7. Multi-Python version testing (3.8, 3.10, 3.12)
+#   7. Multi-Python version testing (3.11, 3.12)
 #
 # Release Artifacts:
 #   - nwave-claude-code-{version}.tar.gz
@@ -106,6 +107,46 @@ jobs:
         run: |
           cp scripts/hooks/commit-msg .git/hooks/commit-msg
           chmod +x .git/hooks/commit-msg
+        shell: bash
+
+      # -----------------------------------------------------------------------
+      # Quality Gate 0: Commit Message Validation (Conventional Commits)
+      # -----------------------------------------------------------------------
+      - name: Set up Node.js for commitlint
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install commitlint
+        run: |
+          npm install -g @commitlint/cli @commitlint/config-conventional
+
+      - name: Validate commit messages
+        run: |
+          echo "Validating commit messages against Conventional Commits specification..."
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            # For PRs: validate all commits from base to head
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+            echo "PR detected: validating commits from ${BASE_SHA} to ${HEAD_SHA}"
+            commitlint --from "${BASE_SHA}" --to "${HEAD_SHA}" --verbose
+          else
+            # For pushes: validate the pushed commits
+            # Use the before/after refs from push event
+            if [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+              BEFORE_SHA="${{ github.event.before }}"
+              AFTER_SHA="${{ github.sha }}"
+              echo "Push detected: validating commits from ${BEFORE_SHA} to ${AFTER_SHA}"
+              commitlint --from "${BEFORE_SHA}" --to "${AFTER_SHA}" --verbose
+            else
+              # Initial push or force push - validate only the HEAD commit
+              echo "Initial/force push detected: validating HEAD commit only"
+              git log -1 --format=%B | commitlint --verbose
+            fi
+          fi
+
+          echo "Commit message validation passed"
         shell: bash
 
       # -----------------------------------------------------------------------
@@ -242,8 +283,9 @@ jobs:
         run: |
           echo "## CI Summary - Python ${{ matrix.python-version }} on ${{ matrix.os }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ All quality gates passed" >> $GITHUB_STEP_SUMMARY
+          echo "All quality gates passed" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Commit message validation (commitlint)" >> $GITHUB_STEP_SUMMARY
           echo "- Pre-commit validation" >> $GITHUB_STEP_SUMMARY
           echo "- Agent name synchronization" >> $GITHUB_STEP_SUMMARY
           echo "- YAML structure validation" >> $GITHUB_STEP_SUMMARY
