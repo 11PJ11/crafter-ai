@@ -8,7 +8,6 @@ from pathlib import Path
 import tempfile
 import time
 import os
-import pytest
 from nWave.infrastructure.backup_manager import BackupManager
 
 
