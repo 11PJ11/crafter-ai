@@ -250,9 +250,32 @@ jobs:
 @given("commits since last release:")
 def commits_since_last_release(git_repo, pytestconfig):
     """Create commits with conventional commit messages."""
-    # This would create commits in the test repository
-    # For minimal test, we'll skip actual commit creation
-    pass
+    # Create an initial commit to serve as "last release"
+    initial_file = git_repo["repo_dir"] / "initial.txt"
+    initial_file.write_text("Initial release content")
+    subprocess.run(["git", "add", "initial.txt"], cwd=git_repo["repo_dir"], check=True)
+    subprocess.run(
+        ["git", "commit", "-m", "chore: initial release v1.0.0"],
+        cwd=git_repo["repo_dir"],
+        capture_output=True,
+    )
+
+    # Tag the initial commit as a release point
+    subprocess.run(
+        ["git", "tag", "v1.0.0"],
+        cwd=git_repo["repo_dir"],
+        capture_output=True,
+    )
+
+    # Verify we have at least one commit since the tag
+    result = subprocess.run(
+        ["git", "rev-list", "--count", "v1.0.0..HEAD"],
+        cwd=git_repo["repo_dir"],
+        capture_output=True,
+        text=True,
+    )
+    # Initial state: 0 commits since release tag (commits will be added by scenario)
+    assert result.returncode == 0, "Failed to set up release history context"
 
 
 @given(parsers.parse('a commit with message "{commit_message}"'))
@@ -344,9 +367,9 @@ def semantic_release_runs_alt(git_repo):
 @then("the commit is accepted")
 def verify_commit_accepted(git_result):
     """Verify commit was successful."""
-    assert git_result["returncode"] == 0, (
-        f"Commit was rejected:\n{git_result['stderr']}"
-    )
+    assert (
+        git_result["returncode"] == 0
+    ), f"Commit was rejected:\n{git_result['stderr']}"
 
 
 @then("no error is shown")
@@ -365,26 +388,26 @@ def verify_commit_in_log(git_repo):
         text=True,
     )
 
-    assert result.returncode == 0 and result.stdout.strip(), (
-        "No commits found in git log"
-    )
+    assert (
+        result.returncode == 0 and result.stdout.strip()
+    ), "No commits found in git log"
 
 
 @then("the commit is rejected")
 def verify_commit_rejected(git_result):
     """Verify commit was rejected by hook."""
-    assert git_result["returncode"] != 0, (
-        "Commit was accepted when it should have been rejected"
-    )
+    assert (
+        git_result["returncode"] != 0
+    ), "Commit was accepted when it should have been rejected"
 
 
 @then(parsers.parse('I see error "{error_text}"'))
 def verify_error_message(git_result, error_text):
     """Verify specific error message is shown."""
     output = git_result["stdout"] + git_result["stderr"]
-    assert error_text in output, (
-        f"Expected error '{error_text}' not found in:\n{output}"
-    )
+    assert (
+        error_text in output
+    ), f"Expected error '{error_text}' not found in:\n{output}"
 
 
 @then(parsers.parse('I see "{text}"'))
@@ -404,16 +427,31 @@ def verify_reference_link(git_result, url):
 @then("the commit does NOT appear in git log")
 def verify_commit_not_in_log(git_repo):
     """Verify commit was not created (rejected by hook)."""
-    _result = subprocess.run(
+    result = subprocess.run(
         ["git", "log", "--oneline", "-1"],
         cwd=git_repo["repo_dir"],
         capture_output=True,
         text=True,
     )
 
-    # Either no commits or the latest commit is not the one we tried
-    # For minimal test, verify command succeeded but check is skipped
-    pass
+    # Check that either no commits exist or the latest is not the rejected one
+    if result.returncode != 0 or not result.stdout.strip():
+        # No commits at all - this confirms rejection
+        return
+
+    # Get the last commit message
+    last_commit_result = subprocess.run(
+        ["git", "log", "-1", "--format=%s"],
+        cwd=git_repo["repo_dir"],
+        capture_output=True,
+        text=True,
+    )
+
+    last_message = last_commit_result.stdout.strip()
+    # The invalid message should NOT be in the log
+    assert (
+        "invalid commit message" not in last_message.lower()
+    ), f"Rejected commit should not appear in git log, but found: {last_message}"
 
 
 # ============================================================================
@@ -426,24 +464,40 @@ def verify_push_succeeds(git_result):
     """Verify push was successful."""
     # In real scenario with remote, would check returncode
     # For test with fake remote, verify hook didn't block
-    assert "VERSION file missing" not in git_result["stderr"], (
-        "Push was blocked by validation error"
-    )
+    assert (
+        "VERSION file missing" not in git_result["stderr"]
+    ), "Push was blocked by validation error"
 
 
 @then("all commits reach the remote")
 def verify_commits_pushed(git_result):
     """Verify commits were pushed to remote."""
-    # In real implementation, would verify remote has commits
-    pass
+    # With a fake remote URL, the push will fail at network level but pre-push hook runs first
+    # If pre-push hook passed, the validation succeeded (push failure is expected with fake remote)
+    # Check that there was no hook-related error (VERSION missing, config missing)
+    combined_output = git_result["stdout"] + git_result["stderr"]
+
+    hook_errors = [
+        "VERSION file missing",
+        "semantic-release not configured",
+        "Pre-push validation failed",
+    ]
+
+    for error in hook_errors:
+        assert (
+            error not in combined_output
+        ), f"Pre-push validation blocked the push with error: {error}"
+
+    # Note: Actual push to remote fails due to fake URL, which is expected in test
+    # The important assertion is that pre-push validation passed
 
 
 @then("the push is rejected")
 def verify_push_rejected(git_result):
     """Verify push was blocked by pre-push hook."""
-    assert git_result["returncode"] != 0, (
-        "Push succeeded when it should have been rejected"
-    )
+    assert (
+        git_result["returncode"] != 0
+    ), "Push succeeded when it should have been rejected"
 
 
 @then(parsers.parse('I see suggested action "{action}"'))
@@ -454,10 +508,28 @@ def verify_suggested_action(git_result, action):
 
 
 @then("no commits reach the remote")
-def verify_no_commits_pushed():
+def verify_no_commits_pushed(git_result):
     """Verify push was blocked, no commits sent."""
-    # Implementation would verify remote state unchanged
-    pass
+    # Verify that pre-push hook blocked the push (non-zero return code)
+    assert (
+        git_result["returncode"] != 0
+    ), "Push should have been blocked by pre-push validation, but it succeeded"
+
+    # Verify there's a validation error in the output
+    combined_output = git_result["stdout"] + git_result["stderr"]
+    validation_indicators = [
+        "VERSION file missing",
+        "semantic-release not configured",
+        "Pre-push validation failed",
+        "ERROR",
+    ]
+
+    has_validation_error = any(
+        indicator in combined_output for indicator in validation_indicators
+    )
+    assert (
+        has_validation_error
+    ), f"Push was blocked but no validation error found in output:\n{combined_output}"
 
 
 # ============================================================================
@@ -476,19 +548,47 @@ def verify_changelog_updated(git_repo):
 
 
 @then("GitHub Release is created with release notes")
-def verify_github_release_created():
+def verify_github_release_created(git_repo):
     """Verify GitHub Release would be created."""
-    # In real implementation, would check GitHub API
-    # For test, verify workflow configuration exists
-    pass
+    # Verify GitHub Actions workflow exists for releases
+    workflow_path = git_repo["repo_dir"] / ".github" / "workflows" / "release.yml"
+    assert (
+        workflow_path.exists()
+    ), "GitHub Actions release workflow not found at .github/workflows/release.yml"
+
+    workflow_content = workflow_path.read_text()
+    assert (
+        "semantic-release" in workflow_content
+    ), "Release workflow does not include semantic-release execution"
+
+    # Verify .releaserc has GitHub plugin
+    releaserc = git_repo["repo_dir"] / ".releaserc"
+    assert releaserc.exists(), "Release configuration (.releaserc) not found"
+
+    releaserc_content = releaserc.read_text()
+    assert (
+        "@semantic-release/github" in releaserc_content
+    ), "GitHub plugin not configured in .releaserc - required for creating GitHub releases"
 
 
 @then(parsers.parse('release notes include {section} section with "{content}"'))
-def verify_release_notes_section(section, content):
+def verify_release_notes_section(git_repo, section, content):
     """Verify release notes contain specific section and content."""
-    # In real implementation, would parse generated release notes
-    # For test, verify semantic-release is configured correctly
-    pass
+    # Verify semantic-release config has required plugins for release notes
+    releaserc = git_repo["repo_dir"] / ".releaserc"
+    assert releaserc.exists(), "Release configuration (.releaserc) not found"
+
+    releaserc_content = releaserc.read_text()
+    assert (
+        "@semantic-release/release-notes-generator" in releaserc_content
+    ), "Release notes generator plugin not configured in .releaserc"
+
+    # Note: Actual release notes generation requires running semantic-release
+    # which needs GitHub token and real repository. This test validates configuration.
+    pytest.skip(
+        f"Pending: Release notes verification for '{section}' with '{content}' "
+        "requires actual semantic-release execution against GitHub API"
+    )
 
 
 @then(parsers.parse('release notes include Features section with "{feature}"'))
@@ -506,19 +606,61 @@ def verify_bugfixes_section(fix):
 @then(parsers.parse('CHANGELOG.md includes "{section}" section'))
 def verify_changelog_section(git_repo, section):
     """Verify specific section exists in CHANGELOG."""
-    # Implementation would read and parse CHANGELOG.md
-    pass
+    # Verify semantic-release changelog plugin is configured
+    releaserc = git_repo["repo_dir"] / ".releaserc"
+    assert releaserc.exists(), "Release configuration (.releaserc) not found"
+
+    releaserc_content = releaserc.read_text()
+    assert (
+        "@semantic-release/changelog" in releaserc_content
+    ), "Changelog plugin not configured in .releaserc - required for CHANGELOG.md generation"
+
+    # Note: CHANGELOG.md is generated by semantic-release during actual release
+    pytest.skip(
+        f"Pending: CHANGELOG.md section '{section}' verification requires "
+        "running semantic-release against a real repository with releases"
+    )
 
 
 @then("GitHub Release prominently shows breaking change warning")
-def verify_breaking_change_prominent():
+def verify_breaking_change_prominent(git_repo):
     """Verify breaking changes are prominently displayed."""
-    # Implementation would verify GitHub Release formatting
-    pass
+    # Verify semantic-release is configured for GitHub releases
+    releaserc = git_repo["repo_dir"] / ".releaserc"
+    assert releaserc.exists(), "Release configuration (.releaserc) not found"
+
+    releaserc_content = releaserc.read_text()
+    assert (
+        "@semantic-release/github" in releaserc_content
+    ), "GitHub plugin not configured in .releaserc - required for GitHub releases"
+
+    # Note: Actual GitHub release creation requires API access
+    pytest.skip(
+        "Pending: GitHub Release breaking change warning verification requires "
+        "actual semantic-release execution with GitHub API token and write access"
+    )
 
 
 @then("the version is bumped to next major version")
-def verify_major_version_bump():
+def verify_major_version_bump(git_repo):
     """Verify semantic-release calculated major version bump."""
-    # Implementation would verify version increment
-    pass
+    # Verify semantic-release commit-analyzer is configured (determines version bumps)
+    releaserc = git_repo["repo_dir"] / ".releaserc"
+    assert releaserc.exists(), "Release configuration (.releaserc) not found"
+
+    releaserc_content = releaserc.read_text()
+    assert (
+        "@semantic-release/commit-analyzer" in releaserc_content
+    ), "Commit analyzer plugin not configured in .releaserc - required for version bump calculation"
+
+    # Verify VERSION file exists for tracking current version
+    version_file = git_repo["repo_dir"] / "nWave" / "VERSION"
+    if version_file.exists():
+        current_version = version_file.read_text().strip()
+        assert current_version, "VERSION file exists but is empty"
+
+    # Note: Major version bump validation requires running semantic-release
+    pytest.skip(
+        "Pending: Major version bump verification requires running semantic-release "
+        "with commit-analyzer against actual commit history to calculate next version"
+    )
