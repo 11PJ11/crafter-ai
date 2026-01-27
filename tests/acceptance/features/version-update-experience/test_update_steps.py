@@ -61,7 +61,54 @@ In tests: demonstrates boundary enforcement.
 import sys
 from pathlib import Path
 import os
+import shutil
+import time
 from datetime import datetime
+
+def cleanup_old_backups(parent_dir, retention_days=30):
+    """
+    Remove backup directories older than retention_days.
+
+    In production: BackupManager.cleanup_old_backups()
+    Here: inline implementation for test CLI.
+
+    Returns:
+        Number of backups deleted
+    """
+    now = time.time()
+    cutoff_time = now - (retention_days * 24 * 60 * 60)
+    deleted_count = 0
+
+    for item in parent_dir.iterdir():
+        if item.is_dir() and item.name.startswith('.claude_bck_'):
+            try:
+                # Get oldest file mtime in backup
+                oldest_mtime = now
+                for file_path in item.rglob('*'):
+                    if file_path.is_file():
+                        file_mtime = file_path.stat().st_mtime
+                        oldest_mtime = min(oldest_mtime, file_mtime)
+                # If no files, use directory mtime
+                if oldest_mtime == now:
+                    oldest_mtime = item.stat().st_mtime
+
+                if oldest_mtime < cutoff_time:
+                    # Check for locked directory simulation
+                    if os.getenv('TEST_BACKUP_LOCKED', 'false') == 'true':
+                        print(f"WARNING: Could not delete {item}/: directory in use")
+                        continue
+                    # Check for permission denied simulation
+                    if os.getenv('TEST_BACKUP_DELETE_DENIED', 'false') == 'true':
+                        print(f"WARNING: Could not delete {item}/: permission denied")
+                        continue
+                    shutil.rmtree(item)
+                    deleted_count += 1
+            except PermissionError:
+                print(f"WARNING: Could not delete {item}/: permission denied")
+            except OSError as e:
+                print(f"WARNING: Could not delete {item}/: {e}")
+
+    return deleted_count
 
 def main():
     nwave_home = Path(os.getenv('NWAVE_HOME', str(Path.home() / ".claude")))
@@ -93,6 +140,12 @@ def main():
         print(f"Permission denied: Cannot write to {nwave_home}/")
         return 1
 
+    # Cleanup old backups (30-day retention policy - US-004)
+    # In production: BackupManager.cleanup_old_backups()
+    deleted_count = cleanup_old_backups(nwave_home.parent, retention_days=30)
+    if deleted_count > 0:
+        print(f"Cleaned up {deleted_count} old backup(s)")
+
     # Create backup
     # In production: BackupManager.create_backup()
     backup_date = datetime.now().strftime("%Y%m%d")
@@ -116,7 +169,6 @@ def main():
     if user_confirmed == 'N':
         # Cleanup backup and cancel
         if backup_path.exists():
-            import shutil
             shutil.rmtree(backup_path)
         print("Update cancelled. No changes made.")
         return 2  # Cancelled exit code
@@ -131,7 +183,6 @@ def main():
         # Rollback from backup - simulate restore without importing real module
         # In production: BackupManager.restore_from_backup() would be called
         if backup_path.exists():
-            import shutil
             # Copy backup files back to installation
             for item in backup_path.iterdir():
                 dest = nwave_home / item.name
@@ -253,6 +304,9 @@ def create_test_backups(test_installation):
     ~/.claude_bck_20251201/ - 53 days old
     ~/.claude_bck_20251215/ - 39 days old
     ~/.claude_bck_20260110/ - 13 days old
+
+    CRITICAL: Backups must be created in nwave_home.parent (test-home dir)
+    where the CLI script's cleanup_old_backups() function looks for them.
     """
     import time
 
@@ -266,8 +320,12 @@ def create_test_backups(test_installation):
     backups_info = {}
     now = time.time()
 
+    # Backups are created in nwave_home.parent (the parent of ~/.claude/)
+    # This is where the CLI script's cleanup_old_backups() looks for them
+    backup_parent = test_installation["nwave_home"].parent
+
     for backup_name, age_days in backups:
-        backup_dir = test_installation["tmp_path"] / backup_name
+        backup_dir = backup_parent / backup_name
         backup_dir.mkdir(parents=True, exist_ok=True)
 
         # Create a marker file to set the timestamp
@@ -286,13 +344,17 @@ def create_test_backups(test_installation):
 @given(parsers.parse("{backup_path} exists and is older than 30 days"))
 def old_backup_exists(test_installation, backup_path):
     """Create old backup directory for cleanup testing."""
-    backup_dir = test_installation["tmp_path"] / backup_path.strip("~/").strip("/")
+    # Backups are in nwave_home.parent (same as where CLI cleanup looks for them)
+    backup_parent = test_installation["nwave_home"].parent
+    backup_dir = backup_parent / backup_path.strip("~/").strip("/")
     backup_dir.mkdir(parents=True, exist_ok=True)
 
-    # Set modification time to 40 days ago
-    old_time = time.time() - (40 * 24 * 60 * 60)
+    # Create marker file and set modification time to 40 days ago
+    marker_file = backup_dir / "nwave-version.txt"
+    marker_file.write_text("1.5.6")
 
-    os.utime(backup_dir, (old_time, old_time))
+    old_time = time.time() - (40 * 24 * 60 * 60)
+    os.utime(marker_file, (old_time, old_time))
 
 
 @given("the directory is locked by another process")
@@ -310,12 +372,23 @@ def backup_no_delete_permission(cli_environment):
 @given(parsers.parse("{count:d} backup directories exist spanning {months:d} months"))
 def many_backups_exist(test_installation, count, months):
     """Create many backup directories for performance testing."""
+    # Backups are in nwave_home.parent (same as where CLI cleanup looks for them)
+    backup_parent = test_installation["nwave_home"].parent
     base_date = datetime.now()
     for i in range(count):
         days_ago = (i * months * 30) // count
         backup_date = (base_date - timedelta(days=days_ago)).strftime("%Y%m%d")
-        backup_dir = test_installation["tmp_path"] / f".claude_bck_{backup_date}"
+        backup_dir = backup_parent / f".claude_bck_{backup_date}"
         backup_dir.mkdir(parents=True, exist_ok=True)
+
+        # Create marker file with appropriate modification time
+        # BackupManager uses file mtime for age detection
+        marker_file = backup_dir / "nwave-version.txt"
+        marker_file.write_text("1.5.6")
+
+        if days_ago > 0:
+            old_time = time.time() - (days_ago * 24 * 60 * 60)
+            os.utime(marker_file, (old_time, old_time))
 
 
 # ============================================================================
@@ -599,30 +672,20 @@ def verify_version_remains(test_installation, version):
 @then(parsers.parse("{backup_path} is deleted"))
 def verify_specific_backup_deleted(test_installation, backup_path):
     """Verify specific backup directory was deleted."""
-    import pytest
-
-    backup_dir = test_installation["tmp_path"] / backup_path.strip("~/").strip("/")
-    if backup_dir.exists():
-        # Backup cleanup functionality not yet implemented in test CLI
-        pytest.skip(
-            f"Backup cleanup not implemented in test CLI; {backup_dir} still exists (expected to be deleted)"
-        )
-    # If we reach here, the directory was deleted as expected
+    # Backups are in nwave_home.parent (same as where create_test_backups puts them)
+    backup_parent = test_installation["nwave_home"].parent
+    backup_dir = backup_parent / backup_path.strip("~/").strip("/")
     assert not backup_dir.exists(), (
-        f"Backup directory {backup_dir} should have been deleted"
+        f"Backup directory {backup_dir} should have been deleted but still exists"
     )
 
 
 @then(parsers.parse("{backup_path} is preserved"))
 def verify_specific_backup_preserved(test_installation, backup_path):
     """Verify specific backup directory was NOT deleted."""
-    import pytest
-
-    backup_dir = test_installation["tmp_path"] / backup_path.strip("~/").strip("/")
-    if not backup_dir.exists():
-        pytest.skip(
-            f"Backup preservation check failed; {backup_dir} does not exist (may not have been created in test setup)"
-        )
+    # Backups are in nwave_home.parent (same as where create_test_backups puts them)
+    backup_parent = test_installation["nwave_home"].parent
+    backup_dir = backup_parent / backup_path.strip("~/").strip("/")
     assert backup_dir.exists(), (
         f"Backup directory {backup_dir} should be preserved but was deleted"
     )
@@ -697,6 +760,19 @@ def verify_cleanup_summary(cli_result, count):
     # Verify cleanup summary or success indication in output
     assert "clean" in output.lower() or cli_result["returncode"] == EXIT_SUCCESS, (
         f"Cleanup summary not found in output: {output}"
+    )
+
+
+@then("I see cleanup summary for old backups")
+def verify_cleanup_summary_generic(cli_result):
+    """Verify cleanup summary message appears with any count."""
+    output = cli_result["stdout"]
+    # Match pattern like "Cleaned up N old backup(s)"
+    import re
+
+    pattern = r"Cleaned up \d+ old backup"
+    assert re.search(pattern, output), (
+        f"Cleanup summary not found in output. Expected pattern like 'Cleaned up N old backup(s)':\n{output}"
     )
 
 

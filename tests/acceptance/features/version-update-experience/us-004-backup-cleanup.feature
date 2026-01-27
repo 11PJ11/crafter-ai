@@ -23,7 +23,6 @@ Feature: Automatic Backup Cleanup
     And a new backup ~/.claude_bck_YYYYMMDD/ is created
     And the command exits with code 0
 
-  @skip
   Scenario: Backup directory is locked or in-use
     Given ~/.claude_bck_20251201/ exists and is older than 30 days
     And the directory is locked by another process
@@ -36,7 +35,6 @@ Feature: Automatic Backup Cleanup
     And other eligible backups are cleaned up
     And the command exits with code 0
 
-  @skip
   Scenario: Insufficient permissions to delete backup
     Given ~/.claude_bck_20251201/ exists and is older than 30 days
     And the user lacks delete permissions for that directory
@@ -48,7 +46,6 @@ Feature: Automatic Backup Cleanup
     And the update proceeds normally
     And the command exits with code 0
 
-  @skip
   Scenario: Large number of backups (performance)
     Given 50 backup directories exist spanning 6 months
     And nWave version 1.5.7 is installed
@@ -57,5 +54,5 @@ Feature: Automatic Backup Cleanup
     And I confirm the update
     Then backups older than 30 days are cleaned up
     And cleanup completes within 10 seconds
-    And I see "Cleaned up [N] old backups"
+    And I see cleanup summary for old backups
     And the command exits with code 0
