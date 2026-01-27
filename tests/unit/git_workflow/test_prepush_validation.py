@@ -4,6 +4,7 @@ Unit tests for pre-push validation hook logic.
 Tests the shell script logic without requiring actual git operations.
 """
 
+import os
 import subprocess
 import sys
 import tempfile
@@ -44,17 +45,21 @@ def run_hook(hook_script: Path, cwd: Path, env: dict) -> subprocess.CompletedPro
     Args:
         hook_script: Path to the hook script
         cwd: Working directory for execution
-        env: Environment variables
+        env: Environment variables to add (merged with system env)
 
     Returns:
         CompletedProcess with stdout, stderr, and returncode
     """
+    # Merge with system environment to preserve PATH (needed for git)
+    full_env = os.environ.copy()
+    full_env.update(env)
+
     return subprocess.run(
         [sys.executable, str(hook_script)],
         cwd=cwd,
         capture_output=True,
         text=True,
-        env=env,
+        env=full_env,
     )
 
 
