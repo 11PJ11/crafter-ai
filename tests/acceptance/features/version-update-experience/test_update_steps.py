@@ -528,9 +528,9 @@ def verify_no_changes_made(test_installation):
     # Verify content is actually unchanged by comparing with original
     original_version = test_installation.get("original_version")
     if original_version:
-        assert current_version == original_version, (
-            f"Version changed from {original_version} to {current_version}"
-        )
+        assert (
+            current_version == original_version
+        ), f"Version changed from {original_version} to {current_version}"
 
 
 @then("no changes are made")
@@ -538,15 +538,17 @@ def verify_no_changes_made_simple(test_installation):
     """Verify installation remains unchanged (simplified assertion)."""
     # For permission/disk space scenarios, verify version file is unchanged
     version_file = test_installation["version_file"]
-    assert version_file.exists(), "Version file should still exist after failed operation"
+    assert (
+        version_file.exists()
+    ), "Version file should still exist after failed operation"
     current_version = version_file.read_text().strip()
     assert len(current_version) > 0, "Version file content should not be empty"
     # Verify content is actually unchanged by comparing with original
     original_version = test_installation.get("original_version")
     if original_version:
-        assert current_version == original_version, (
-            f"Version changed from {original_version} to {current_version}"
-        )
+        assert (
+            current_version == original_version
+        ), f"Version changed from {original_version} to {current_version}"
 
 
 @then("the backup directory is deleted")
@@ -598,22 +600,32 @@ def verify_version_remains(test_installation, version):
 def verify_specific_backup_deleted(test_installation, backup_path):
     """Verify specific backup directory was deleted."""
     import pytest
+
     backup_dir = test_installation["tmp_path"] / backup_path.strip("~/").strip("/")
     if backup_dir.exists():
         # Backup cleanup functionality not yet implemented in test CLI
-        pytest.skip(f"Backup cleanup not implemented in test CLI; {backup_dir} still exists (expected to be deleted)")
+        pytest.skip(
+            f"Backup cleanup not implemented in test CLI; {backup_dir} still exists (expected to be deleted)"
+        )
     # If we reach here, the directory was deleted as expected
-    assert not backup_dir.exists(), f"Backup directory {backup_dir} should have been deleted"
+    assert (
+        not backup_dir.exists()
+    ), f"Backup directory {backup_dir} should have been deleted"
 
 
 @then(parsers.parse("{backup_path} is preserved"))
 def verify_specific_backup_preserved(test_installation, backup_path):
     """Verify specific backup directory was NOT deleted."""
     import pytest
+
     backup_dir = test_installation["tmp_path"] / backup_path.strip("~/").strip("/")
     if not backup_dir.exists():
-        pytest.skip(f"Backup preservation check failed; {backup_dir} does not exist (may not have been created in test setup)")
-    assert backup_dir.exists(), f"Backup directory {backup_dir} should be preserved but was deleted"
+        pytest.skip(
+            f"Backup preservation check failed; {backup_dir} does not exist (may not have been created in test setup)"
+        )
+    assert (
+        backup_dir.exists()
+    ), f"Backup directory {backup_dir} should be preserved but was deleted"
 
 
 @then(parsers.parse("a new backup {backup_pattern} is created"))
@@ -628,6 +640,7 @@ def verify_new_backup_created(cli_result, backup_pattern):
 def verify_log_warning(cli_result, warning_message):
     """Verify specific warning in logs."""
     import pytest
+
     # In production: would check ~/.claude/nwave-update.log
     # For minimal test, check stderr or stdout for warning indicators
     output = cli_result["stdout"] + cli_result["stderr"]
@@ -637,7 +650,9 @@ def verify_log_warning(cli_result, warning_message):
     if "warning" in output.lower() or "warn" in output.lower():
         return  # Generic warning indicator found
     # Log file checking not implemented in test CLI - skip with clear reason
-    pytest.skip(f"Log file verification not implemented in test CLI; warning '{warning_message}' not found in stdout/stderr")
+    pytest.skip(
+        f"Log file verification not implemented in test CLI; warning '{warning_message}' not found in stdout/stderr"
+    )
 
 
 @then("the update proceeds normally")
