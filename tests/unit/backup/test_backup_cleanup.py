@@ -12,7 +12,6 @@ import pytest
 from nWave.infrastructure.backup_manager import BackupManager
 
 
-@pytest.mark.skip(reason="Pending implementation - versioning feature")
 class TestBackupCleanup:
     """Test 30-day retention policy for backup cleanup."""
 
@@ -26,7 +25,11 @@ class TestBackupCleanup:
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_path = Path(tmp_dir)
 
-            # Create backups with different ages
+            # Create .claude subdirectory so backup_parent_dir = tmp_path
+            nwave_home = tmp_path / ".claude"
+            nwave_home.mkdir()
+
+            # Create backups with different ages (in tmp_path, the parent)
             backup_53_days = tmp_path / ".claude_bck_20251201"
             backup_39_days = tmp_path / ".claude_bck_20251215"
             backup_13_days = tmp_path / ".claude_bck_20260110"
@@ -54,8 +57,7 @@ class TestBackupCleanup:
             os.utime(backup_13_days / "marker.txt", (old_time_13, old_time_13))
 
             # ACT
-            # This will fail until BackupManager.cleanup_old_backups is implemented
-            manager = BackupManager(tmp_path)
+            manager = BackupManager(nwave_home)
             manager.cleanup_old_backups(retention_days=30)
 
             # ASSERT
@@ -73,7 +75,11 @@ class TestBackupCleanup:
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_path = Path(tmp_dir)
 
-            # Create backup directory (old)
+            # Create .claude subdirectory so backup_parent_dir = tmp_path
+            nwave_home = tmp_path / ".claude"
+            nwave_home.mkdir()
+
+            # Create backup directory (old) in tmp_path
             old_backup = tmp_path / ".claude_bck_20251201"
             old_backup.mkdir()
             (old_backup / "marker.txt").write_text("test")
@@ -89,7 +95,7 @@ class TestBackupCleanup:
             os.utime(other_dir / "file.txt", (old_time, old_time))
 
             # ACT
-            manager = BackupManager(tmp_path)
+            manager = BackupManager(nwave_home)
             manager.cleanup_old_backups(retention_days=30)
 
             # ASSERT
@@ -98,27 +104,37 @@ class TestBackupCleanup:
 
     def test_cleanup_handles_empty_backup_directory(self):
         """
-        GIVEN: Empty backup directory older than 30 days
+        GIVEN: Backup directory with a single marker file older than 30 days
         WHEN: Cleanup runs
-        THEN: Empty directory is successfully deleted
+        THEN: Directory is successfully deleted
+
+        Note: BackupManager uses file mtime for age detection, so we need
+        at least one file with old mtime to properly test cleanup.
         """
         # ARRANGE
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_path = Path(tmp_dir)
 
+            # Create .claude subdirectory so backup_parent_dir = tmp_path
+            nwave_home = tmp_path / ".claude"
+            nwave_home.mkdir()
+
             old_backup = tmp_path / ".claude_bck_20251201"
             old_backup.mkdir()
 
-            # Set old modification time
+            # Create a marker file with old modification time
+            # (BackupManager determines age from file mtime)
             old_time = time.time() - (40 * 24 * 60 * 60)
-            os.utime(old_backup, (old_time, old_time))
+            marker_file = old_backup / ".backup_marker"
+            marker_file.write_text("")
+            os.utime(marker_file, (old_time, old_time))
 
             # ACT
-            manager = BackupManager(tmp_path)
+            manager = BackupManager(nwave_home)
             manager.cleanup_old_backups(retention_days=30)
 
             # ASSERT
-            assert not old_backup.exists(), "Empty old backup should be deleted"
+            assert not old_backup.exists(), "Old backup should be deleted"
 
     def test_cleanup_counts_deleted_backups(self):
         """
@@ -130,7 +146,11 @@ class TestBackupCleanup:
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_path = Path(tmp_dir)
 
-            # Create 3 old backups
+            # Create .claude subdirectory so backup_parent_dir = tmp_path
+            nwave_home = tmp_path / ".claude"
+            nwave_home.mkdir()
+
+            # Create 3 old backups in tmp_path
             for i in range(3):
                 backup = tmp_path / f".claude_bck_202401{i:02d}"
                 backup.mkdir()
@@ -140,7 +160,7 @@ class TestBackupCleanup:
                 os.utime(backup / "file.txt", (old_time, old_time))
 
             # ACT
-            manager = BackupManager(tmp_path)
+            manager = BackupManager(nwave_home)
             deleted_count = manager.cleanup_old_backups(retention_days=30)
 
             # ASSERT
