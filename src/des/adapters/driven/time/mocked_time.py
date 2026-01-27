@@ -1,7 +1,7 @@
 """Test implementation of time provider adapter."""
 
 from datetime import datetime, timedelta, timezone
-from src.des.ports.time_provider_port import TimeProvider
+from src.des.ports.driven_ports.time_provider_port import TimeProvider
 
 
 class MockedTimeProvider(TimeProvider):

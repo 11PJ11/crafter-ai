@@ -96,9 +96,9 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook (simulates agent completion)
-        from src.des.hooks import SubagentStopHook
+        from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
 
-        hook = SubagentStopHook()
+        hook = RealSubagentStopHook()
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: Hook fired and performed validation
@@ -136,9 +136,9 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        from src.des.hooks import SubagentStopHook
+        from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
 
-        hook = SubagentStopHook()
+        hook = RealSubagentStopHook()
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: Abandoned phase detected with specific error message
@@ -177,9 +177,9 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        from src.des.hooks import SubagentStopHook
+        from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
 
-        hook = SubagentStopHook()
+        hook = RealSubagentStopHook()
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: Silent completion detected
@@ -220,9 +220,9 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        from src.des.hooks import SubagentStopHook
+        from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
 
-        hook = SubagentStopHook()
+        hook = RealSubagentStopHook()
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: Missing outcome detected
@@ -264,9 +264,9 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        from src.des.hooks import SubagentStopHook
+        from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
 
-        hook = SubagentStopHook()
+        hook = RealSubagentStopHook()
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: Invalid skip detected
@@ -313,9 +313,9 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        from src.des.hooks import SubagentStopHook
+        from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
 
-        hook = SubagentStopHook()
+        hook = RealSubagentStopHook()
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: FAILED state set with comprehensive recovery guidance
@@ -395,9 +395,9 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        from src.des.hooks import SubagentStopHook
+        from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
 
-        hook = SubagentStopHook()
+        hook = RealSubagentStopHook()
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: Validation passes silently
@@ -441,9 +441,9 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        from src.des.hooks import SubagentStopHook
+        from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
 
-        hook = SubagentStopHook()
+        hook = RealSubagentStopHook()
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: Valid skip accepted

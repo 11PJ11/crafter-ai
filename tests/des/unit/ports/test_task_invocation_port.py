@@ -16,7 +16,7 @@ def test_task_invocation_port_interface_defines_required_methods():
     When: Interface is inspected
     Then: invoke_task method is defined as abstract
     """
-    from src.des.ports.task_invocation_port import TaskInvocationPort
+    from src.des.ports.driven_ports.task_invocation_port import TaskInvocationPort
 
     # Verify it's an abstract base class
     from abc import ABC
@@ -90,7 +90,7 @@ def test_mocked_task_adapter_implements_task_invocation_port():
     When: Class is inspected
     Then: It is an instance of TaskInvocationPort
     """
-    from src.des.ports.task_invocation_port import TaskInvocationPort
+    from src.des.ports.driven_ports.task_invocation_port import TaskInvocationPort
     from src.des.adapters.mocked_task_adapter import MockedTaskAdapter
 
     adapter = MockedTaskAdapter()
@@ -105,7 +105,7 @@ def test_claude_code_task_adapter_implements_task_invocation_port():
     When: Class is inspected
     Then: It is an instance of TaskInvocationPort
     """
-    from src.des.ports.task_invocation_port import TaskInvocationPort
+    from src.des.ports.driven_ports.task_invocation_port import TaskInvocationPort
     from src.des.adapters.claude_code_task_adapter import ClaudeCodeTaskAdapter
 
     adapter = ClaudeCodeTaskAdapter()

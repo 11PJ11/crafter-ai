@@ -5,7 +5,7 @@ Tests ExecutionLogValidator, MandatorySectionChecker, TDDPhaseValidator,
 and TemplateValidator orchestrator using business-focused test naming.
 """
 
-from src.des.validator import (
+from src.des.application.validator import (
     ValidationResult,
     ExecutionLogValidator,
     MandatorySectionChecker,

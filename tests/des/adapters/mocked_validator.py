@@ -1,6 +1,6 @@
 """Test implementation of template validator adapter."""
 
-from src.des.ports.validator_port import ValidatorPort, ValidationResult
+from src.des.ports.driver_ports.validator_port import ValidatorPort, ValidationResult
 
 
 class MockedTemplateValidator(ValidatorPort):
