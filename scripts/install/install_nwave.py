@@ -28,9 +28,10 @@ __version__ = "1.1.0"
 class NWaveInstaller:
     """nWave framework installer."""
 
-    def __init__(self, dry_run: bool = False):
+    def __init__(self, dry_run: bool = False, force_rebuild: bool = False):
         """Initialize installer."""
         self.dry_run = dry_run
+        self.force_rebuild = force_rebuild
         self.script_dir = Path(__file__).parent
         self.project_root = PathUtils.get_project_root(self.script_dir)
         self.claude_config_dir = PathUtils.get_claude_config_dir()
@@ -127,6 +128,13 @@ class NWaveInstaller:
 
         # Run embedding first
         self.run_embedding()
+
+        # Force rebuild if requested
+        if self.force_rebuild:
+            self.logger.info("Force rebuild requested, rebuilding framework...")
+            if not self.build_framework():
+                return False
+            return True
 
         # Check if dist/ide exists
         if not self.framework_source.exists():
@@ -406,6 +414,51 @@ class NWaveInstaller:
         if copied_templates > 0:
             self.logger.info(f"Total {copied_templates} template(s) installed")
 
+    def _validate_schema_template(self) -> bool:
+        """Validate TDD cycle schema template has required fields."""
+        schema_file = (
+            self.claude_config_dir / "templates" / "step-tdd-cycle-schema.json"
+        )
+
+        if not schema_file.exists():
+            self.logger.error("Schema template not found at expected location")
+            return False
+
+        try:
+            import json
+
+            with open(schema_file, "r") as f:
+                schema = json.load(f)
+
+            # Check for schema_version field
+            if "schema_version" not in schema:
+                self.logger.error(
+                    "Schema template missing 'schema_version' field - installation may have used stale source"
+                )
+                return False
+
+            schema_version = schema.get("schema_version")
+            if schema_version != "2.0":
+                self.logger.warn(
+                    f"Schema version is {schema_version}, expected 2.0 (8-phase TDD optimization)"
+                )
+
+            # Check phase count
+            phase_exec_log = schema.get("tdd_cycle", {}).get("phase_execution_log", [])
+            if len(phase_exec_log) != 8:
+                self.logger.error(
+                    f"Schema has {len(phase_exec_log)} phases, expected 8 (v2.0). "
+                    f"Installation source may be stale."
+                )
+                return False
+
+            self.logger.info(f"  - TDD cycle schema: v{schema_version} with 8 phases ✓")
+            return True
+
+        except Exception as e:
+            self.logger.error(f"Failed to validate schema template: {e}")
+            return False
+
     def validate_installation(self) -> bool:
         """Validate installation."""
         self.logger.info("Validating installation...")
@@ -431,6 +484,10 @@ class NWaveInstaller:
             if not cmd_file.exists():
                 self.logger.error(f"Missing essential DW command: {cmd}.md")
                 errors += 1
+
+        # Validate schema template
+        if not self._validate_schema_template():
+            errors += 1
 
         # Count installed files
         total_agents = PathUtils.count_files(agents_dir, "*.md")
@@ -490,16 +547,22 @@ def show_help():
     python install_nwave.py [OPTIONS]
 
 {Colors.BLUE}OPTIONS:{Colors.NC}
-    --backup-only    Create backup of existing nWave installation without installing
-    --restore        Restore from the most recent backup
-    --dry-run        Show what would be installed without making any changes
-    --help           Show this help message
+    --backup-only     Create backup of existing nWave installation without installing
+    --restore         Restore from the most recent backup
+    --force-rebuild   Force rebuild of distribution before installation (ensures fresh source)
+    --dry-run         Show what would be installed without making any changes
+    --help            Show this help message
 
 {Colors.BLUE}EXAMPLES:{Colors.NC}
-    python install_nwave.py              # Install nWave framework
-    python install_nwave.py --dry-run    # Show what would be installed
-    python install_nwave.py --backup-only # Create backup only
-    python install_nwave.py --restore    # Restore from latest backup
+    python install_nwave.py                    # Install nWave framework
+    python install_nwave.py --force-rebuild    # Rebuild and install with latest sources
+    python install_nwave.py --dry-run          # Show what would be installed
+    python install_nwave.py --backup-only      # Create backup only
+    python install_nwave.py --restore          # Restore from latest backup
+
+{Colors.BLUE}TROUBLESHOOTING:{Colors.NC}
+    If installation doesn't pick up recent changes, use --force-rebuild:
+    python install_nwave.py --force-rebuild
 
 {Colors.BLUE}WHAT GETS INSTALLED:{Colors.NC}
     - nWave specialized agents (DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER methodology)
@@ -507,11 +570,12 @@ def show_help():
     - ATDD (Acceptance Test Driven Development) integration
     - Outside-In TDD with double-loop architecture
     - Quality validation network with Level 1-6 refactoring
-    - 14-phase TDD enforcement hooks
+    - 8-phase TDD enforcement (optimized from 14 phases with schema versioning)
 
 {Colors.BLUE}INSTALLATION LOCATION:{Colors.NC}
     ~/.claude/agents/nw/    # nWave agent specifications
     ~/.claude/commands/nw/  # nWave command integrations
+    ~/.claude/templates/    # TDD cycle schema templates
 
 For more information: https://github.com/11PJ11/crafter-ai
 """
@@ -526,6 +590,9 @@ def main():
     parser.add_argument("--backup-only", action="store_true", help="Create backup only")
     parser.add_argument("--restore", action="store_true", help="Restore from backup")
     parser.add_argument(
+        "--force-rebuild", action="store_true", help="Force rebuild of distribution"
+    )
+    parser.add_argument(
         "--dry-run", action="store_true", help="Show what would be done"
     )
     parser.add_argument("--help", "-h", action="store_true", help="Show help")
@@ -536,7 +603,7 @@ def main():
         show_help()
         return 0
 
-    installer = NWaveInstaller(dry_run=args.dry_run)
+    installer = NWaveInstaller(dry_run=args.dry_run, force_rebuild=args.force_rebuild)
 
     installer.logger.info("nWave Framework Installation Script")
     installer.logger.info("=" * 38)
