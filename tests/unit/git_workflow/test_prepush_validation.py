@@ -5,6 +5,7 @@ Tests the shell script logic without requiring actual git operations.
 """
 
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 import pytest
@@ -32,6 +33,31 @@ def test_repo():
         }
 
 
+def run_hook(hook_script: Path, cwd: Path, env: dict) -> subprocess.CompletedProcess:
+    """
+    Run hook script cross-platform.
+
+    On Windows, shebangs are not honored by subprocess.run(), so we must
+    explicitly invoke Python to run the script. This mirrors how git
+    handles hooks via Git Bash.
+
+    Args:
+        hook_script: Path to the hook script
+        cwd: Working directory for execution
+        env: Environment variables
+
+    Returns:
+        CompletedProcess with stdout, stderr, and returncode
+    """
+    return subprocess.run(
+        [sys.executable, str(hook_script)],
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+
 class TestPrePushValidation:
     """Unit tests for pre-push hook validation logic."""
 
@@ -45,12 +71,10 @@ class TestPrePushValidation:
         releaserc.write_text('{"branches": ["main"]}')
 
         # Act
-        result = subprocess.run(
-            [str(test_repo["hook_script"])],
-            cwd=test_repo["repo_root"],
-            capture_output=True,
-            text=True,
-            env={"GIT_DIR": str(test_repo["repo_root"] / ".git")},
+        result = run_hook(
+            test_repo["hook_script"],
+            test_repo["repo_root"],
+            {"GIT_DIR": str(test_repo["repo_root"] / ".git")},
         )
 
         # Assert
@@ -65,12 +89,10 @@ class TestPrePushValidation:
         releaserc.write_text('{"branches": ["main"]}')
 
         # Act
-        result = subprocess.run(
-            [str(test_repo["hook_script"])],
-            cwd=test_repo["repo_root"],
-            capture_output=True,
-            text=True,
-            env={"GIT_DIR": str(test_repo["repo_root"] / ".git")},
+        result = run_hook(
+            test_repo["hook_script"],
+            test_repo["repo_root"],
+            {"GIT_DIR": str(test_repo["repo_root"] / ".git")},
         )
 
         # Assert
@@ -86,12 +108,10 @@ class TestPrePushValidation:
         version_file.write_text("1.5.7\n")
 
         # Act
-        result = subprocess.run(
-            [str(test_repo["hook_script"])],
-            cwd=test_repo["repo_root"],
-            capture_output=True,
-            text=True,
-            env={"GIT_DIR": str(test_repo["repo_root"] / ".git")},
+        result = run_hook(
+            test_repo["hook_script"],
+            test_repo["repo_root"],
+            {"GIT_DIR": str(test_repo["repo_root"] / ".git")},
         )
 
         # Assert
@@ -110,12 +130,10 @@ class TestPrePushValidation:
         release_config.write_text("module.exports = { branches: ['main'] };")
 
         # Act
-        result = subprocess.run(
-            [str(test_repo["hook_script"])],
-            cwd=test_repo["repo_root"],
-            capture_output=True,
-            text=True,
-            env={"GIT_DIR": str(test_repo["repo_root"] / ".git")},
+        result = run_hook(
+            test_repo["hook_script"],
+            test_repo["repo_root"],
+            {"GIT_DIR": str(test_repo["repo_root"] / ".git")},
         )
 
         # Assert
