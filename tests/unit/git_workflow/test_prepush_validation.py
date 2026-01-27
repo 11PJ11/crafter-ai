@@ -32,7 +32,6 @@ def test_repo():
         }
 
 
-@pytest.mark.skip(reason="Pending implementation - versioning feature")
 class TestPrePushValidation:
     """Unit tests for pre-push hook validation logic."""
 
