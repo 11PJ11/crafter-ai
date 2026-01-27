@@ -16,7 +16,7 @@ def in_memory_filesystem():
     Returns:
         InMemoryFileSystem: Fresh in-memory filesystem instance
     """
-    from des.adapters import InMemoryFileSystem
+    from tests.des.adapters import InMemoryFileSystem
 
     return InMemoryFileSystem()
 
@@ -29,7 +29,7 @@ def real_filesystem():
     Returns:
         RealFileSystem: Filesystem that performs actual disk operations
     """
-    from des.adapters import RealFileSystem
+    from src.des.adapters import RealFileSystem
 
     return RealFileSystem()
 
@@ -42,7 +42,7 @@ def mocked_time_provider():
     Returns:
         MockedTimeProvider: Time provider starting at 2026-01-26T10:00:00Z
     """
-    from des.adapters import MockedTimeProvider
+    from tests.des.adapters import MockedTimeProvider
 
     return MockedTimeProvider(datetime(2026, 1, 26, 10, 0, 0, tzinfo=timezone.utc))
 
@@ -55,7 +55,7 @@ def mocked_hook():
     Returns:
         MockedSubagentStopHook: Hook that returns predefined results
     """
-    from des.adapters import MockedSubagentStopHook
+    from tests.des.adapters import MockedSubagentStopHook
 
     return MockedSubagentStopHook()
 
@@ -68,7 +68,7 @@ def mocked_validator():
     Returns:
         MockedTemplateValidator: Validator returning passing results by default
     """
-    from des.adapters import MockedTemplateValidator
+    from tests.des.adapters import MockedTemplateValidator
 
     return MockedTemplateValidator()
 
@@ -89,7 +89,7 @@ def des_orchestrator(
     Returns:
         DESOrchestrator: Configured orchestrator with mocked dependencies
     """
-    from des.orchestrator import DESOrchestrator
+    from src.des.orchestrator import DESOrchestrator
 
     return DESOrchestrator(
         hook=mocked_hook,
@@ -115,7 +115,7 @@ def scenario_des_orchestrator(
     Returns:
         DESOrchestrator: Configured orchestrator with real filesystem
     """
-    from des.orchestrator import DESOrchestrator
+    from src.des.orchestrator import DESOrchestrator
 
     return DESOrchestrator(
         hook=mocked_hook,

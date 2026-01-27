@@ -94,7 +94,7 @@ class TestSessionScopedStaleDetection:
         target_step_path.write_text(json.dumps(target_step_data, indent=2))
 
         # Act: Attempt to execute new step (pre-execution stale check should run)
-        # from des.orchestrator import DESOrchestrator
+        # from src.des.orchestrator import DESOrchestrator
         # orchestrator = DESOrchestrator(project_root=tmp_project_root)
         # result = orchestrator.execute_step("steps/02-01.json")
 
@@ -169,7 +169,7 @@ class TestSessionScopedStaleDetection:
         target_step_path.write_text(json.dumps(target_step_data, indent=2))
 
         # Act: Execute step (pre-execution stale check should pass)
-        # from des.orchestrator import DESOrchestrator
+        # from src.des.orchestrator import DESOrchestrator
         # orchestrator = DESOrchestrator(project_root=tmp_project_root)
         # result = orchestrator.execute_step("steps/01-01.json")
 
@@ -235,7 +235,7 @@ class TestSessionScopedStaleDetection:
         target_step_path.write_text(json.dumps(target_step_data, indent=2))
 
         # Act: Execute new step with default 30-minute threshold
-        # from des.orchestrator import DESOrchestrator
+        # from src.des.orchestrator import DESOrchestrator
         # orchestrator = DESOrchestrator(project_root=tmp_project_root)
         # result = orchestrator.execute_step("steps/02-01.json")
 
@@ -297,7 +297,7 @@ class TestSessionScopedStaleDetection:
         target_step_path.write_text(json.dumps(target_step_data, indent=2))
 
         # Act: Execute with custom 10-minute threshold
-        # from des.orchestrator import DESOrchestrator
+        # from src.des.orchestrator import DESOrchestrator
         # orchestrator = DESOrchestrator(project_root=tmp_project_root)
         # result = orchestrator.execute_step("steps/02-01.json")
 
@@ -361,7 +361,7 @@ class TestSessionScopedStaleDetection:
         target_step_path.write_text(json.dumps(target_step_data, indent=2))
 
         # Act: Run stale detection
-        # from des.stale_detector import StaleExecutionDetector
+        # from src.des.stale_detector import StaleExecutionDetector
         # detector = StaleExecutionDetector(project_root=tmp_project_root)
         # stale_results = detector.scan_for_stale_executions()
 
@@ -442,7 +442,7 @@ class TestSessionScopedStaleDetection:
         target_step_path.write_text(json.dumps(target_step_data, indent=2))
 
         # Act: Execute new step (should pass since stale step is resolved)
-        # from des.orchestrator import DESOrchestrator
+        # from src.des.orchestrator import DESOrchestrator
         # orchestrator = DESOrchestrator(project_root=tmp_project_root)
         # result = orchestrator.execute_step("steps/02-01.json")
 
@@ -499,7 +499,7 @@ class TestSessionScopedStaleDetection:
         stale_step_path.write_text(json.dumps(stale_step_data, indent=2))
 
         # Act: Resolve the stale step
-        # from des.stale_resolver import StaleResolver
+        # from src.des.stale_resolver import StaleResolver
         # resolver = StaleResolver(project_root=tmp_project_root)
         # resolution_result = resolver.mark_abandoned(
         #     step_file="steps/01-01.json",
@@ -568,7 +568,7 @@ class TestSessionScopedStaleDetection:
         (tmp_project_root / "steps" / "03-01.json").write_text(json.dumps(step3_data))
 
         # Act: Run stale detection (should be pure file scanning)
-        # from des.stale_detector import StaleExecutionDetector
+        # from src.des.stale_detector import StaleExecutionDetector
         # detector = StaleExecutionDetector(project_root=tmp_project_root)
         #
         # # Verify no network or database access during scan
@@ -617,7 +617,7 @@ class TestSessionScopedStaleDetection:
         # initial_threads = threading.active_count()
         # initial_processes = len(multiprocessing.active_children())
         #
-        # from des.stale_detector import StaleExecutionDetector
+        # from src.des.stale_detector import StaleExecutionDetector
         # detector = StaleExecutionDetector(project_root=tmp_project_root)
         # stale_results = detector.scan_for_stale_executions()
         #
@@ -675,7 +675,7 @@ class TestSessionScopedStaleDetection:
             )
 
         # Act: Run stale detection
-        # from des.stale_detector import StaleExecutionDetector
+        # from src.des.stale_detector import StaleExecutionDetector
         # detector = StaleExecutionDetector(project_root=tmp_project_root)
         # stale_results = detector.scan_for_stale_executions()
 
@@ -729,7 +729,7 @@ class TestSessionScopedStaleDetection:
         )
 
         # Act: Run stale detection
-        # from des.stale_detector import StaleExecutionDetector
+        # from src.des.stale_detector import StaleExecutionDetector
         # detector = StaleExecutionDetector(project_root=tmp_project_root)
         # stale_results, warnings = detector.scan_for_stale_executions()
 

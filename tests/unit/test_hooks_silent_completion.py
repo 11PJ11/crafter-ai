@@ -4,7 +4,7 @@ Tests the specific logic for detecting when a task is marked IN_PROGRESS
 but no phases have been executed (all phases are NOT_EXECUTED).
 """
 
-from des.hooks import SubagentStopHook
+from src.des.hooks import SubagentStopHook
 
 
 class TestSilentCompletionDetection:
@@ -94,7 +94,7 @@ class TestSilentCompletionDetection:
         THEN result is updated with SILENT_COMPLETION error details
         """
         # Arrange
-        from des.hooks import HookResult
+        from src.des.hooks import HookResult
 
         result = HookResult(validation_status="PASSED")
         hook = SubagentStopHook()

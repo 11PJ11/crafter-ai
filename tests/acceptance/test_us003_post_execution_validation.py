@@ -96,7 +96,7 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook (simulates agent completion)
-        from des.hooks import SubagentStopHook
+        from src.des.hooks import SubagentStopHook
 
         hook = SubagentStopHook()
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
@@ -136,7 +136,7 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        from des.hooks import SubagentStopHook
+        from src.des.hooks import SubagentStopHook
 
         hook = SubagentStopHook()
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
@@ -177,7 +177,7 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        from des.hooks import SubagentStopHook
+        from src.des.hooks import SubagentStopHook
 
         hook = SubagentStopHook()
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
@@ -220,7 +220,7 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        from des.hooks import SubagentStopHook
+        from src.des.hooks import SubagentStopHook
 
         hook = SubagentStopHook()
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
@@ -264,7 +264,7 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        from des.hooks import SubagentStopHook
+        from src.des.hooks import SubagentStopHook
 
         hook = SubagentStopHook()
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
@@ -313,7 +313,7 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        from des.hooks import SubagentStopHook
+        from src.des.hooks import SubagentStopHook
 
         hook = SubagentStopHook()
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
@@ -395,7 +395,7 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        from des.hooks import SubagentStopHook
+        from src.des.hooks import SubagentStopHook
 
         hook = SubagentStopHook()
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
@@ -441,7 +441,7 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        from des.hooks import SubagentStopHook
+        from src.des.hooks import SubagentStopHook
 
         hook = SubagentStopHook()
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
@@ -983,14 +983,14 @@ class TestOrchestratorHookIntegration:
         This test would FAIL if the import or delegation is missing.
         """
         # Arrange: Import entry point (NOT internal component)
-        from des.orchestrator import DESOrchestrator
+        from src.des.orchestrator import DESOrchestrator
 
         # Create step file with clean completion
         step_data = _create_step_file_with_clean_completion()
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Invoke validation through ENTRY POINT
-        orchestrator = DESOrchestrator()
+        orchestrator = DESOrchestrator.create_with_defaults()
         result = orchestrator.on_subagent_complete(
             step_file_path=str(minimal_step_file)
         )
@@ -1012,7 +1012,7 @@ class TestOrchestratorHookIntegration:
         not just returning success by default.
         """
         # Arrange: Import entry point
-        from des.orchestrator import DESOrchestrator
+        from src.des.orchestrator import DESOrchestrator
 
         # Create step file with abandoned phase
         step_data = _create_step_file_with_abandoned_phase(
@@ -1021,7 +1021,7 @@ class TestOrchestratorHookIntegration:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Invoke validation through ENTRY POINT
-        orchestrator = DESOrchestrator()
+        orchestrator = DESOrchestrator.create_with_defaults()
         result = orchestrator.on_subagent_complete(
             step_file_path=str(minimal_step_file)
         )

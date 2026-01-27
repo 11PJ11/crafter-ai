@@ -387,7 +387,7 @@ class TestScopeValidationPostExecution:
         out_of_scope_file.write_text("# Modified by agent out of scope")
 
         # Act: Run post-execution scope validation
-        # from des.validation import ScopeValidator
+        # from src.des.validation import ScopeValidator
         # validator = ScopeValidator()
         # result = validator.validate_scope(
         #     step_file_path=str(minimal_step_file),
@@ -436,7 +436,7 @@ class TestScopeValidationPostExecution:
         ]
 
         # Act: Run post-execution scope validation
-        # from des.validation import ScopeValidator
+        # from src.des.validation import ScopeValidator
         # validator = ScopeValidator()
         # result = validator.validate_scope(
         #     step_file_path=str(minimal_step_file),
@@ -484,7 +484,7 @@ class TestScopeValidationPostExecution:
         _modified_files = [str(minimal_step_file)]
 
         # Act: Run post-execution scope validation
-        # from des.validation import ScopeValidator
+        # from src.des.validation import ScopeValidator
         # validator = ScopeValidator()
         # result = validator.validate_scope(
         #     step_file_path=str(minimal_step_file),
@@ -545,8 +545,8 @@ class TestScopeViolationAuditLogging:
         _out_of_scope_files = ["src/services/OrderService.py"]
 
         # Act: Run scope validation (which should log violation)
-        # from des.validation import ScopeValidator
-        # from des.audit import AuditLog
+        # from src.des.validation import ScopeValidator
+        # from src.des.audit import AuditLog
         #
         # validator = ScopeValidator()
         # audit_log = AuditLog(project_root=tmp_project_root)
@@ -604,8 +604,8 @@ class TestScopeViolationAuditLogging:
         ]
 
         # Act: Run scope validation
-        # from des.validation import ScopeValidator
-        # from des.audit import AuditLog
+        # from src.des.validation import ScopeValidator
+        # from src.des.audit import AuditLog
         #
         # validator = ScopeValidator()
         # audit_log = AuditLog(project_root=tmp_project_root)
@@ -649,8 +649,8 @@ class TestScopeViolationAuditLogging:
         _in_scope_files = ["src/repositories/UserRepository.py"]
 
         # Act: Run scope validation
-        # from des.validation import ScopeValidator
-        # from des.audit import AuditLog
+        # from src.des.validation import ScopeValidator
+        # from src.des.audit import AuditLog
         #
         # validator = ScopeValidator()
         # audit_log = AuditLog(project_root=tmp_project_root)
@@ -788,7 +788,7 @@ class TestBoundaryRulesValidation:
         Expected Error:
         "MISSING: Mandatory section 'BOUNDARY_RULES' not found"
         """
-        from des.validation import PromptValidator
+        from src.des.validation import PromptValidator
 
         # GIVEN: Prompt missing BOUNDARY_RULES
         incomplete_prompt = """

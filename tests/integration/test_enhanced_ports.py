@@ -15,12 +15,12 @@ def test_enhanced_ports_integration():
     Then: All ports function correctly and integrate seamlessly with orchestrator
     """
     # Import the ports and adapters
-    from des.ports.logging_port import LoggingPort
-    from des.ports.task_invocation_port import TaskInvocationPort
-    from des.ports.config_port import ConfigPort
-    from des.adapters.silent_logger import SilentLogger
-    from des.adapters.mocked_task_adapter import MockedTaskAdapter
-    from des.adapters.in_memory_config_adapter import InMemoryConfigAdapter
+    from src.des.ports.logging_port import LoggingPort
+    from src.des.ports.task_invocation_port import TaskInvocationPort
+    from src.des.ports.config_port import ConfigPort
+    from src.des.adapters.silent_logger import SilentLogger
+    from src.des.adapters.mocked_task_adapter import MockedTaskAdapter
+    from src.des.adapters.in_memory_config_adapter import InMemoryConfigAdapter
 
     # Given: Create adapter instances
     logger = SilentLogger()

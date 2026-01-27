@@ -172,9 +172,7 @@ class ConfigManager:
         task_types = self.get_task_types_config()
         return task_types.get(task_type)
 
-    def validate_threshold_ordering(
-        self, thresholds: Dict[str, int]
-    ) -> List[str]:
+    def validate_threshold_ordering(self, thresholds: Dict[str, int]) -> List[str]:
         """
         Validate that threshold percentages are in ascending order.
 

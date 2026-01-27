@@ -8,7 +8,6 @@ Tests configuration support for:
 - validation of threshold ordering
 """
 
-import pytest
 import tempfile
 from pathlib import Path
 import yaml
@@ -20,7 +19,7 @@ class TestTimeoutThresholdConfiguration:
 
     def create_config_file(self, config_data):
         """Helper to create temporary config file."""
-        temp_file = tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False)
+        temp_file = tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False)
         yaml.dump(config_data, temp_file)
         temp_file.flush()
         return Path(temp_file.name)
@@ -28,13 +27,7 @@ class TestTimeoutThresholdConfiguration:
     def test_configuration_supports_duration_minutes(self):
         """Configuration should support duration_minutes field."""
         # Given: A configuration with duration_minutes in task_types
-        config_data = {
-            "task_types": {
-                "standard": {
-                    "duration_minutes": 120
-                }
-            }
-        }
+        config_data = {"task_types": {"standard": {"duration_minutes": 120}}}
         config_file = self.create_config_file(config_data)
 
         # When: Loading configuration through ConfigManager
@@ -59,8 +52,8 @@ class TestTimeoutThresholdConfiguration:
                     "thresholds": {
                         "warning_50": 60,
                         "warning_75": 90,
-                        "warning_90": 108
-                    }
+                        "warning_90": 108,
+                    },
                 }
             }
         }
@@ -91,8 +84,8 @@ class TestTimeoutThresholdConfiguration:
                     "thresholds": {
                         "warning_50": 15,
                         "warning_75": 23,
-                        "warning_90": 27
-                    }
+                        "warning_90": 27,
+                    },
                 }
             }
         }
@@ -122,8 +115,8 @@ class TestTimeoutThresholdConfiguration:
                     "thresholds": {
                         "warning_50": 60,
                         "warning_75": 90,
-                        "warning_90": 108
-                    }
+                        "warning_90": 108,
+                    },
                 }
             }
         }
@@ -153,8 +146,8 @@ class TestTimeoutThresholdConfiguration:
                     "thresholds": {
                         "warning_50": 240,
                         "warning_75": 360,
-                        "warning_90": 432
-                    }
+                        "warning_90": 432,
+                    },
                 }
             }
         }
@@ -182,10 +175,10 @@ class TestTimeoutThresholdConfiguration:
                 "invalid": {
                     "duration_minutes": 120,
                     "thresholds": {
-                        "warning_50": 90,   # Wrong: 90 > 75
-                        "warning_75": 60,   # Wrong: 60 < 90
-                        "warning_90": 108
-                    }
+                        "warning_50": 90,  # Wrong: 90 > 75
+                        "warning_75": 60,  # Wrong: 60 < 90
+                        "warning_90": 108,
+                    },
                 }
             }
         }
@@ -194,7 +187,9 @@ class TestTimeoutThresholdConfiguration:
         # When: Validating configuration
         config_manager = ConfigManager(config_file)
         invalid_config = config_manager.get_task_type_config("invalid")
-        errors = config_manager.validate_threshold_ordering(invalid_config["thresholds"])
+        errors = config_manager.validate_threshold_ordering(
+            invalid_config["thresholds"]
+        )
 
         # Then: Validation should detect out-of-order thresholds
         assert len(errors) > 0
@@ -213,8 +208,8 @@ class TestTimeoutThresholdConfiguration:
                     "thresholds": {
                         "warning_50": 60,
                         "warning_75": 90,
-                        "warning_90": 108
-                    }
+                        "warning_90": 108,
+                    },
                 }
             }
         }
