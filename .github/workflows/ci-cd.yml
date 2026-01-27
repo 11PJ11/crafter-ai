@@ -246,7 +246,7 @@ jobs:
           python-version: ${{ env.PYTHON_DEFAULT }}
 
       - name: Install dependencies
-        run: pip install pyyaml
+        run: pip install pyyaml packaging
 
       - name: Validate framework-catalog.yaml
         run: |
