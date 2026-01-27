@@ -44,13 +44,13 @@ repos:
         stages: [pre-commit]
         always_run: true
 
-      # Phase 3: Documentation freshness check
+      # Phase 3: Documentation freshness check (enforced at push, not commit)
       - id: docs-freshness-check
         name: Documentation Freshness Check
         entry: python3 scripts/hooks/check_documentation_freshness.py
         language: system
         pass_filenames: false
-        stages: [pre-commit]
+        stages: [pre-push]
         always_run: true
 
       # Phase 4: Conflict detection between related files
