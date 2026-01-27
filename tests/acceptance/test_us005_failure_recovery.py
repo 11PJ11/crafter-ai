@@ -627,6 +627,161 @@ class TestFailureRecoveryGuidance:
         # )
 
     # =========================================================================
+    # AC-005.1: Timeout failure detection with recovery suggestions
+    # Scenario 004_timeout: Detect when phase exceeded timeout threshold
+    # =========================================================================
+
+    def test_scenario_004_timeout_detect_exceeded_timeout_duration(
+        self, tmp_project_root, step_file_with_abandoned_phase
+    ):
+        """
+        GIVEN phase execution exceeded configured timeout threshold
+        WHEN recovery handler detects timeout failure
+        THEN generates 3+ recovery suggestions with time analysis
+
+        Business Value: Alex sees clear guidance when his task times out.
+                       Instead of "something went wrong", he learns:
+                       - Phase ran 35 minutes (exceeded 30-minute timeout)
+                       - Why: Complex logic may need optimization
+                       - How: Try optimizing code OR increase timeout threshold
+                       - What: Specific commands to adjust and retry
+
+        Acceptance Criteria Validation:
+        1. Detects timeout (actual > configured duration)
+        2. Compares actual execution time vs configured timeout
+        3. Generates 3+ recovery suggestions with time analysis
+        4. Includes timeout duration and actual execution time
+        5. Recommends optimization or threshold adjustment approaches
+
+        Expected Recovery Suggestions:
+        1. Phase runtime analysis - WHY timeout occurred based on complexity
+        2. Code optimization guidance - HOW to improve performance
+        3. Timeout threshold adjustment - HOW to increase threshold and retry
+        4. Debugging approach - specific commands to profile and measure
+        """
+        # Arrange: Step file with phase that exceeded timeout
+        step_file = step_file_with_abandoned_phase
+        from datetime import datetime, timedelta, timezone
+
+        # Simulate a phase that ran for 35 minutes (exceeded 30-minute timeout)
+        base_time = datetime(2026, 1, 26, 10, 0, 0, tzinfo=timezone.utc)
+        phase_start = (base_time - timedelta(minutes=35)).isoformat()
+        configured_timeout_minutes = 30
+        actual_runtime_minutes = 35
+
+        # Act: RecoveryGuidanceHandler detects and handles timeout failure
+        from src.des.application.recovery_guidance_handler import (
+            RecoveryGuidanceHandler,
+        )
+
+        recovery_handler = RecoveryGuidanceHandler()
+
+        # Generate suggestions for timeout failure
+        suggestions = recovery_handler.generate_recovery_suggestions(
+            failure_type="timeout_failure",
+            context={
+                "phase": "GREEN_UNIT",
+                "phase_start": phase_start,
+                "configured_timeout_minutes": configured_timeout_minutes,
+                "actual_runtime_minutes": actual_runtime_minutes,
+                "step_file": str(step_file),
+            },
+        )
+
+        # Handle the timeout failure - update step file with recovery suggestions
+        updated_step = recovery_handler.handle_failure(
+            step_file_path=str(step_file),
+            failure_type="timeout_failure",
+            context={
+                "phase": "GREEN_UNIT",
+                "phase_start": phase_start,
+                "configured_timeout_minutes": configured_timeout_minutes,
+                "actual_runtime_minutes": actual_runtime_minutes,
+                "failure_reason": f"Phase exceeded {configured_timeout_minutes}-minute timeout (ran {actual_runtime_minutes} minutes)",
+                "suggestions": suggestions,
+            },
+        )
+
+        # Assert: Recovery suggestions meet acceptance criteria
+        assert suggestions is not None, "Should generate recovery suggestions"
+        assert isinstance(suggestions, list), "Suggestions should be a list"
+        assert (
+            len(suggestions) >= 3
+        ), f"Should have 3+ suggestions, got {len(suggestions)}"
+
+        # AC-005.1: Every suggestion addresses timeout context
+        joined_suggestions = " ".join(suggestions)
+        assert (
+            str(configured_timeout_minutes) in joined_suggestions
+        ), "Should include configured timeout (30 minutes)"
+        assert (
+            str(actual_runtime_minutes) in joined_suggestions
+        ), "Should include actual runtime (35 minutes)"
+
+        # AC-005.3: Suggestions are actionable with specific guidance
+        # Should include optimization approach
+        assert any(
+            keyword in s.lower()
+            for s in suggestions
+            for keyword in [
+                "optimize",
+                "performance",
+                "profile",
+                "improve",
+                "reduce",
+                "simplify",
+            ]
+        ), "Should recommend code optimization approach"
+
+        # Should include threshold adjustment approach
+        assert any(
+            keyword in s.lower()
+            for s in suggestions
+            for keyword in [
+                "increase",
+                "threshold",
+                "timeout",
+                "extend",
+                "raise",
+                "adjust",
+            ]
+        ), "Should recommend threshold adjustment approach"
+
+        # Should include actionable commands
+        assert any(
+            pattern in s
+            for s in suggestions
+            for pattern in ["/nw:execute", "timeout", "minutes", "run", "measure"]
+        ), "Should include actionable commands or technical guidance"
+
+        # AC-005.5: Suggestions explain WHY and HOW
+        for suggestion in suggestions:
+            # Check for WHY explanations
+            assert any(
+                kw in suggestion.lower()
+                for kw in [
+                    "because",
+                    "indicates",
+                    "due to",
+                    "the phase",
+                    "why",
+                    "reason",
+                ]
+            ), f"Suggestion should explain WHY: {suggestion}"
+
+        # Assert: Step file updated with recovery suggestions
+        assert updated_step is not None, "Should return updated state"
+        assert (
+            "recovery_suggestions" in updated_step
+        ), "Should include recovery_suggestions"
+        assert isinstance(
+            updated_step["recovery_suggestions"], list
+        ), "recovery_suggestions should be list"
+        assert (
+            len(updated_step["recovery_suggestions"]) >= 3
+        ), "Should have 3+ suggestions in step file"
+
+    # =========================================================================
     # AC-005.1 + AC-005.2: Failure mode registry - all modes have suggestions
     # Scenario 12: All defined failure modes have registered recovery handlers
     # =========================================================================

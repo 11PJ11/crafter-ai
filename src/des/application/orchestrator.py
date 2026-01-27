@@ -1,8 +1,14 @@
 """
-DES Orchestrator for command-origin task filtering.
+DES Orchestrator for command-origin task filtering with schema version routing.
 
 This module implements the orchestrator that determines whether to apply
 DES validation based on command origin (execute/develop vs research/ad-hoc).
+
+Schema Versioning (Step US-005-03):
+- Detects schema_version field in step files (v1.0 for 14-phase, v2.0 for 8-phase)
+- Routes to appropriate validator based on detected version
+- Supports mixed-schema during US-005 Phase 2→3 transition
+- Implements automatic rollback: 2 failures → fallback to v1.0 from v2.0
 
 Integration: US-002 Template Validation
 - Pre-invocation validation ensures prompts contain all mandatory sections
@@ -24,6 +30,7 @@ from src.des.adapters.driven.logging.audit_logger import log_audit_event
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
+import json
 
 
 @dataclass
@@ -82,6 +89,49 @@ class DESOrchestrator:
         self._time_provider = time_provider
         self._subagent_lifecycle_completed = False
         self._step_file_path: Optional[Path] = None
+
+    def detect_schema_version(self, step_file_path: Path) -> str:
+        """
+        Detect schema version from step file.
+
+        Reads the step file and extracts schema_version field to determine
+        which TDD phase cycle it uses (v1.0 = 14 phases, v2.0 = 8 phases).
+
+        Args:
+            step_file_path: Path to step JSON file
+
+        Returns:
+            Schema version string (e.g., "1.0", "2.0", "unknown")
+
+        Raises:
+            FileNotFoundError: If step file does not exist
+            json.JSONDecodeError: If step file is not valid JSON
+        """
+        step_data = self._load_step_file(step_file_path)
+
+        # Check multiple possible locations for schema_version
+        schema_version = (
+            step_data.get("schema_version") or
+            step_data.get("tdd_cycle", {}).get("schema_version") or
+            "1.0"  # Default to v1.0 if not found (14-phase legacy)
+        )
+
+        return schema_version
+
+    def get_phase_count_for_schema(self, schema_version: str) -> int:
+        """
+        Get expected phase count for schema version.
+
+        Args:
+            schema_version: Schema version (e.g., "1.0", "2.0")
+
+        Returns:
+            Expected number of phases (14 for v1.0, 8 for v2.0)
+        """
+        if schema_version == "2.0":
+            return 8
+        else:
+            return 14  # Default to 14 for v1.0 and unknown versions
 
     @classmethod
     def create_with_defaults(cls) -> "DESOrchestrator":

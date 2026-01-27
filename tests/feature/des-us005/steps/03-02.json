@@ -1,5 +1,6 @@
 {
-  "step_id": "03-02",
+  "task_id": "US005-03-02",
+  "project_id": "des-us005",
   "task_specification": {
     "task_id": "US005-03-02",
     "title": "Include transcript path in crash recovery suggestions",
@@ -11,67 +12,123 @@
       "Path persists in step file JSON"
     ]
   },
-  "phase_id": "03",
-  "phase_name": "Recovery Guidance Formatting and Integration",
-  "required_acceptance_test": "test_scenario_006_recovery_suggestions_include_transcript_path",
-  "test_scenario_coverage": "AC-005.3 - Actionable transcript references",
-  "dependencies": [
-    "03-01"
-  ],
-  "estimated_hours": 2,
+  "schema_version": "2.0",
   "tdd_cycle": {
-    "phase_1_prepare": {
-      "status": "NOT_EXECUTED",
-      "description": "Remove @skip from target acceptance test scenario"
+    "acceptance_test": {
+      "scenario_name": "",
+      "test_file": "",
+      "test_file_format": "feature",
+      "scenario_index": 0,
+      "initially_ignored": true,
+      "is_walking_skeleton": false,
+      "mapped_scenario": {
+        "description": "The specific acceptance test scenario this step makes pass",
+        "scenario_function": "",
+        "scenario_description": "",
+        "mapping_type": "feature",
+        "valid_mapping_types": [
+          "feature",
+          "infrastructure",
+          "refactoring"
+        ],
+        "notes": ""
+      }
     },
-    "phase_2_red_acceptance": {
-      "status": "NOT_EXECUTED",
-      "description": "Run acceptance test - MUST fail for valid reason"
+    "expected_unit_tests": [],
+    "mock_boundaries": {
+      "allowed_ports": [],
+      "forbidden_domain_classes": [],
+      "in_memory_adapters": []
     },
-    "phase_3_red_unit": {
-      "status": "NOT_EXECUTED",
-      "description": "Write unit test that fails for CORRECT reason"
+    "tdd_phase_tracking": {
+      "current_phase": "NOT_STARTED",
+      "active_e2e_test": "",
+      "inactive_e2e_tests": "All other @skip scenarios remain disabled",
+      "phases_completed": [],
+      "test_results": {
+        "total": null,
+        "passed": null,
+        "failed": null,
+        "skipped": null
+      }
     },
-    "phase_4_green_unit": {
-      "status": "NOT_EXECUTED",
-      "description": "Implement MINIMAL code to pass unit test"
-    },
-    "phase_5_check": {
-      "status": "NOT_EXECUTED",
-      "description": "Check if acceptance test passes now"
-    },
-    "phase_6_green_acceptance": {
-      "status": "NOT_EXECUTED",
-      "description": "Run ALL tests - unit + acceptance"
-    },
-    "phase_7_review": {
-      "status": "NOT_EXECUTED",
-      "description": "Mandatory peer review of implementation quality"
-    },
-    "phase_8_refactor": {
-      "status": "NOT_EXECUTED",
-      "description": "Progressive refactoring L1-L4 with validation"
-    },
-    "phase_9_post_refactor_review": {
-      "status": "NOT_EXECUTED",
-      "description": "Review after refactoring complete"
-    },
-    "phase_10_final_validate": {
-      "status": "NOT_EXECUTED",
-      "description": "Run ALL tests before commit"
-    },
-    "phase_11_commit": {
-      "status": "NOT_EXECUTED",
-      "description": "Commit this step's work with detailed message"
-    }
+    "phase_execution_log": [
+      {
+        "phase_name": "PREPARE",
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "outcome": null,
+        "notes": null,
+        "blocked_by": null
+      },
+      {
+        "phase_name": "RED_ACCEPTANCE",
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "outcome": null,
+        "notes": null,
+        "blocked_by": null
+      },
+      {
+        "phase_name": "RED_UNIT",
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "outcome": null,
+        "notes": null,
+        "blocked_by": null
+      },
+      {
+        "phase_name": "GREEN",
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "outcome": null,
+        "notes": null,
+        "blocked_by": null
+      },
+      {
+        "phase_name": "REVIEW",
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "outcome": null,
+        "notes": null,
+        "blocked_by": null
+      },
+      {
+        "phase_name": "REFACTOR_CONTINUOUS",
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "outcome": null,
+        "notes": null,
+        "blocked_by": null
+      },
+      {
+        "phase_name": "REFACTOR_L4",
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "outcome": null,
+        "notes": null,
+        "blocked_by": null
+      },
+      {
+        "phase_name": "COMMIT",
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "outcome": null,
+        "notes": null,
+        "blocked_by": null
+      }
+    ]
   },
   "validation": {
-    "approved": true,
-    "quality_gates": [
-      "Unit tests passing for transcript path integration",
-      "Acceptance test scenario passing",
-      "No regressions in existing tests",
-      "Code review approval"
-    ]
+    "status": "pending",
+    "notes": "Step regenerated with v2.0 schema (8-phase TDD cycle)"
   }
 }
