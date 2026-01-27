@@ -1,0 +1,75 @@
+{
+  "step_id": "01-01",
+  "task_specification": {
+    "task_id": "US005-01-01",
+    "title": "Create recovery_suggestions data structure in step file",
+    "description": "Add recovery_suggestions array field to step file JSON structure. Defines the data model for persisting recovery guidance.\n\nStructure: step_file[\"state\"][\"recovery_suggestions\"] = [list of strings]\nEach suggestion is a narrative string combining WHY + HOW + actionable guidance.",
+    "acceptance_criteria": [
+      "recovery_suggestions field added to step file state",
+      "Field is JSON array of strings (not just comments)",
+      "Structure persists across step file read/write cycles",
+      "Backward compatible with existing step files"
+    ]
+  },
+  "phase_id": "01",
+  "phase_name": "Core Recovery Infrastructure",
+  "required_acceptance_test": "test_scenario_004_recovery_suggestions_stored_in_step_file",
+  "test_scenario_coverage": "AC-005.2 - Suggestions stored in step file",
+  "dependencies": [],
+  "estimated_hours": 2,
+  "tdd_cycle": {
+    "phase_1_prepare": {
+      "status": "NOT_EXECUTED",
+      "description": "Remove @skip from target acceptance test scenario"
+    },
+    "phase_2_red_acceptance": {
+      "status": "NOT_EXECUTED",
+      "description": "Run acceptance test - MUST fail for valid reason"
+    },
+    "phase_3_red_unit": {
+      "status": "NOT_EXECUTED",
+      "description": "Write unit test that fails for CORRECT reason"
+    },
+    "phase_4_green_unit": {
+      "status": "NOT_EXECUTED",
+      "description": "Implement MINIMAL code to pass unit test"
+    },
+    "phase_5_check": {
+      "status": "NOT_EXECUTED",
+      "description": "Check if acceptance test passes now"
+    },
+    "phase_6_green_acceptance": {
+      "status": "NOT_EXECUTED",
+      "description": "Run ALL tests - unit + acceptance"
+    },
+    "phase_7_review": {
+      "status": "NOT_EXECUTED",
+      "description": "Mandatory peer review of implementation quality"
+    },
+    "phase_8_refactor": {
+      "status": "NOT_EXECUTED",
+      "description": "Progressive refactoring L1-L4 with validation"
+    },
+    "phase_9_post_refactor_review": {
+      "status": "NOT_EXECUTED",
+      "description": "Review after refactoring complete"
+    },
+    "phase_10_final_validate": {
+      "status": "NOT_EXECUTED",
+      "description": "Run ALL tests before commit"
+    },
+    "phase_11_commit": {
+      "status": "NOT_EXECUTED",
+      "description": "Commit this step's work with detailed message"
+    }
+  },
+  "validation": {
+    "approved": true,
+    "quality_gates": [
+      "Unit tests passing for recovery_suggestions schema",
+      "Acceptance test scenario passing",
+      "No regressions in existing tests",
+      "Backward compatibility verified"
+    ]
+  }
+}

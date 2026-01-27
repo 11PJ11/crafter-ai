@@ -1,0 +1,602 @@
+"""
+DES Orchestrator for command-origin task filtering with schema version routing.
+
+This module implements the orchestrator that determines whether to apply
+DES validation based on command origin (execute/develop vs research/ad-hoc).
+
+Schema Versioning (Step US-005-03):
+- Detects schema_version field in step files (v1.0 for 14-phase, v2.0 for 8-phase)
+- Routes to appropriate validator based on detected version
+- Supports mixed-schema during US-005 Phase 2→3 transition
+- Implements automatic rollback: 2 failures → fallback to v1.0 from v2.0
+
+Integration: US-002 Template Validation
+- Pre-invocation validation ensures prompts contain all mandatory sections
+- Blocks Task invocation if validation fails
+
+Integration: US-003 Post-Execution Validation
+- Invokes SubagentStopHook after sub-agent completion
+- Validates step file phase execution state
+"""
+
+from src.des.ports.driver_ports.hook_port import HookPort, HookResult
+from src.des.ports.driver_ports.validator_port import ValidatorPort, ValidationResult
+from src.des.ports.driven_ports.filesystem_port import FileSystemPort
+from src.des.ports.driven_ports.time_provider_port import TimeProvider
+from src.des.domain.turn_counter import TurnCounter
+from src.des.domain.timeout_monitor import TimeoutMonitor
+from src.des.domain.invocation_limits_validator import InvocationLimitsValidator, InvocationLimitsResult
+from src.des.adapters.driven.logging.audit_logger import log_audit_event
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Optional
+import json
+
+
+@dataclass
+class ExecuteStepResult:
+    """Result from execute_step() method execution.
+
+    Attributes:
+        turn_count: Total number of turns (iterations) executed
+        phase_name: Name of the phase being executed
+        status: Execution status (e.g., "COMPLETED", "IN_PROGRESS")
+        warnings_emitted: List of timeout warnings emitted during execution (deprecated, use timeout_warnings)
+        timeout_warnings: List of timeout warning strings emitted during execution
+        execution_path: Execution path identifier for validation (e.g., "DESOrchestrator.execute_step")
+        features_validated: List of DES features validated during execution
+    """
+    turn_count: int
+    phase_name: str = "PREPARE"
+    status: str = "COMPLETED"
+    warnings_emitted: list[str] = field(default_factory=list)  # Deprecated, use timeout_warnings
+    timeout_warnings: list[str] = field(default_factory=list)
+    execution_path: str = "DESOrchestrator.execute_step"
+    features_validated: list[str] = field(default_factory=list)
+
+
+class DESOrchestrator:
+    """
+    Orchestrates DES validation by analyzing command origin.
+
+    Responsibilities:
+    - Render prompts with DES markers for execute/develop commands
+    - Prepare ad-hoc prompts without DES markers for exploration
+    - Track command origin for audit trail
+    """
+
+    # Commands that require full DES validation
+    VALIDATION_COMMANDS = ["/nw:execute", "/nw:develop"]
+
+    def __init__(
+        self,
+        hook: HookPort,
+        validator: ValidatorPort,
+        filesystem: FileSystemPort,
+        time_provider: TimeProvider
+    ):
+        """Initialize with injected ports.
+
+        Args:
+            hook: Post-execution validation hook
+            validator: Template validation
+            filesystem: File I/O operations
+            time_provider: Time operations
+        """
+        self._hook = hook
+        self._validator = validator
+        self._filesystem = filesystem
+        self._time_provider = time_provider
+        self._subagent_lifecycle_completed = False
+        self._step_file_path: Optional[Path] = None
+
+    def detect_schema_version(self, step_file_path: Path) -> str:
+        """
+        Detect schema version from step file.
+
+        Reads the step file and extracts schema_version field to determine
+        which TDD phase cycle it uses (v1.0 = 14 phases, v2.0 = 8 phases).
+
+        Args:
+            step_file_path: Path to step JSON file
+
+        Returns:
+            Schema version string (e.g., "1.0", "2.0", "unknown")
+
+        Raises:
+            FileNotFoundError: If step file does not exist
+            json.JSONDecodeError: If step file is not valid JSON
+        """
+        step_data = self._load_step_file(step_file_path)
+
+        # Check multiple possible locations for schema_version
+        schema_version = (
+            step_data.get("schema_version") or
+            step_data.get("tdd_cycle", {}).get("schema_version") or
+            "1.0"  # Default to v1.0 if not found (14-phase legacy)
+        )
+
+        return schema_version
+
+    def get_phase_count_for_schema(self, schema_version: str) -> int:
+        """
+        Get expected phase count for schema version.
+
+        Args:
+            schema_version: Schema version (e.g., "1.0", "2.0")
+
+        Returns:
+            Expected number of phases (14 for v1.0, 8 for v2.0)
+        """
+        if schema_version == "2.0":
+            return 8
+        else:
+            return 14  # Default to 14 for v1.0 and unknown versions
+
+    @classmethod
+    def create_with_defaults(cls) -> "DESOrchestrator":
+        """Create an orchestrator instance with default real adapters.
+
+        This class method is used in tests and entry points that don't have
+        access to pre-configured dependencies. It creates an orchestrator
+        with real implementations (RealSubagentStopHook, RealTemplateValidator, etc.).
+
+        Returns:
+            DESOrchestrator instance with default dependencies configured
+        """
+        from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
+        from src.des.adapters.drivers.validators.real_validator import RealTemplateValidator
+        from src.des.adapters.driven.filesystem.real_filesystem import RealFileSystem
+        from src.des.adapters.driven.time.system_time import SystemTimeProvider
+
+        hook = RealSubagentStopHook()
+        validator = RealTemplateValidator()
+        filesystem = RealFileSystem()
+        time_provider = SystemTimeProvider()
+
+        return cls(
+            hook=hook,
+            validator=validator,
+            filesystem=filesystem,
+            time_provider=time_provider
+        )
+
+    def validate_prompt(self, prompt: str) -> ValidationResult:
+        """
+        Validate a prompt for mandatory sections and TDD phases.
+
+        This is the entry point for pre-invocation validation (US-002).
+        Blocks Task invocation if validation fails.
+
+        Args:
+            prompt: The full prompt text to validate
+
+        Returns:
+            ValidationResult with status, errors, and task_invocation_allowed flag
+        """
+        result = self._validator.validate_prompt(prompt)
+        # Mark lifecycle as completed after validation
+        self._subagent_lifecycle_completed = True
+        return result
+
+    def validate_invocation_limits(
+        self,
+        step_file: str,
+        project_root: Path | str
+    ) -> InvocationLimitsResult:
+        """
+        Validate turn and timeout limits configuration before sub-agent invocation.
+
+        This is pre-invocation validation that ensures max_turns and duration_minutes
+        are configured in the step file before invoking the sub-agent. Prevents execution
+        with unconfigured limits and provides clear error guidance.
+
+        Args:
+            step_file: Path to step JSON file (relative to project_root)
+            project_root: Project root directory path
+
+        Returns:
+            InvocationLimitsResult with validation status, errors, and guidance
+        """
+        step_file_path = self._resolve_step_file_path(project_root, step_file)
+        validator = InvocationLimitsValidator(filesystem=self._filesystem)
+        return validator.validate_limits(step_file_path)
+
+    def _get_validation_level(self, command: str | None) -> str:
+        """
+        Determine validation level based on command type.
+
+        Args:
+            command: Command string (e.g., "/nw:execute", "/nw:research")
+
+        Returns:
+            "full" for execute/develop commands requiring DES validation
+            "none" for research and other exploratory commands (or invalid input)
+        """
+        # Safe default for None or empty command
+        if not command:
+            return "none"
+
+        if command in self.VALIDATION_COMMANDS:
+            return "full"
+        return "none"
+
+
+    def _generate_des_markers(self, command: str | None, step_file: str | None) -> str:
+        """
+        Generate DES validation markers for execute/develop commands.
+
+        Args:
+            command: Command type (e.g., "/nw:execute", "/nw:develop")
+            step_file: Path to step file
+
+        Returns:
+            Formatted DES marker string with validation, step file, origin markers
+
+        Raises:
+            ValueError: If command or step_file is None or empty
+        """
+        # Validate command parameter
+        if not command:
+            raise ValueError("Command cannot be None or empty")
+
+        # Validate step_file parameter
+        if not step_file:
+            raise ValueError("Step file cannot be None or empty")
+
+        markers = [
+            "<!-- DES-VALIDATION: required -->",
+            f"<!-- DES-STEP-FILE: {step_file} -->",
+            f"<!-- DES-ORIGIN: command:{command} -->",
+        ]
+        return "\n".join(markers)
+
+    def render_prompt(
+        self,
+        command: str | None,
+        agent: str | None = None,
+        step_file: str | None = None,
+        project_root: str | None = None,
+        topic: str | None = None,
+        timeout_thresholds: list[int] | None = None,
+        timeout_budget_minutes: int | None = None,
+    ) -> str:
+        """
+        Render Task prompt with appropriate DES validation markers and timeout warnings.
+
+        Args:
+            command: Command type (/nw:execute, /nw:develop, /nw:research)
+            agent: Target agent identifier (e.g., @software-crafter)
+            step_file: Path to step file for execute/develop commands
+            project_root: Project root directory path
+            topic: Research topic for research commands
+            timeout_thresholds: List of threshold values in minutes for timeout warnings
+            timeout_budget_minutes: Total time budget in minutes for the phase
+
+        Returns:
+            Rendered prompt string with or without DES markers and timeout warnings
+
+        Raises:
+            ValueError: If command is None or empty, or if step_file is missing
+                       for validation commands
+        """
+        # Validate command parameter
+        if not command:
+            raise ValueError("Command cannot be None or empty")
+
+        # Log TASK_INVOCATION_STARTED for audit trail
+        log_audit_event(
+            "TASK_INVOCATION_STARTED",
+            command=command,
+            step_path=step_file,
+            agent=agent
+        )
+
+        validation_level = self._get_validation_level(command)
+
+        if validation_level == "full":
+            # Validate step_file for validation commands
+            if not step_file:
+                raise ValueError("Step file required for validation commands")
+
+            des_markers = self._generate_des_markers(command, step_file)
+
+            # Log TASK_INVOCATION_VALIDATED for audit trail
+            log_audit_event(
+                "TASK_INVOCATION_VALIDATED",
+                command=command,
+                step_path=step_file,
+                status="VALIDATED",
+                outcome="success"
+            )
+
+            # Add timeout warnings if threshold monitoring is enabled
+            if timeout_thresholds and project_root and step_file:
+                warnings = self._generate_timeout_warnings(
+                    step_file, project_root, timeout_thresholds, timeout_budget_minutes
+                )
+                if warnings:
+                    return f"{des_markers}\n\n{warnings}"
+
+            return des_markers
+
+        # Research and other commands bypass DES validation
+        return ""
+
+    def prepare_ad_hoc_prompt(self, prompt: str, project_root: str | None = None) -> str:
+        """
+        Prepare ad-hoc prompt without DES validation markers.
+
+        Args:
+            prompt: User's ad-hoc Task prompt text
+            project_root: Project root directory path
+
+        Returns:
+            Prompt text without DES markers (pass-through)
+        """
+        # Ad-hoc prompts bypass DES validation - return as-is
+        return prompt
+
+    def on_subagent_complete(self, step_file_path: str) -> HookResult:
+        """
+        Invoke SubagentStopHook after sub-agent completion.
+
+        This is the entry point for post-execution validation (US-003).
+        Delegates to SubagentStopHook to validate step file state.
+
+        Args:
+            step_file_path: Path to the step JSON file to validate
+
+        Returns:
+            HookResult with validation status and any errors found
+        """
+        return self._hook.on_agent_complete(step_file_path)
+
+    def execute_step(
+        self,
+        command: str,
+        agent: str,
+        step_file: str,
+        project_root: Path | str,
+        simulated_iterations: int = 0,
+        timeout_thresholds: list[int] | None = None,
+        mocked_elapsed_times: list[int] | None = None
+    ) -> ExecuteStepResult:
+        """
+        Execute step with TurnCounter and TimeoutMonitor integration.
+
+        This method wires both TurnCounter and TimeoutMonitor into the orchestrator's
+        execution loop:
+        - Initializes TurnCounter at phase start
+        - Initializes TimeoutMonitor with phase start timestamp
+        - Increments turn count on each agent call iteration
+        - Checks timeout thresholds during execution loop
+        - Emits warnings when thresholds are crossed
+        - Persists to step file in real-time
+        - Restores state from step file on resume
+
+        Args:
+            command: Command type (/nw:execute, /nw:develop)
+            agent: Target agent identifier (e.g., @software-crafter)
+            step_file: Path to step JSON file (relative to project_root)
+            project_root: Project root directory path
+            simulated_iterations: Number of iterations to simulate (for testing)
+            timeout_thresholds: List of threshold values in minutes for timeout warnings
+            mocked_elapsed_times: List of mocked elapsed times in seconds for testing timeout simulation
+
+        Returns:
+            ExecuteStepResult with turn_count, execution status, timeout_warnings, execution_path, and features_validated
+        """
+        counter = TurnCounter()
+        step_file_path = self._resolve_step_file_path(project_root, step_file)
+        step_data = self._load_step_file(step_file_path)
+
+        current_phase = self._get_current_phase(step_data)
+        phase_name = current_phase["phase_name"]
+
+        # Initialize TimeoutMonitor with phase start timestamp
+        timeout_monitor = None
+        warnings = []
+        if timeout_thresholds:
+            started_at = current_phase.get("started_at")
+            if started_at:
+                timeout_monitor = TimeoutMonitor(started_at=started_at, time_provider=self._time_provider)
+
+        self._restore_turn_count(counter, current_phase, phase_name)
+
+        # Track validated features
+        features_validated = []
+
+        # Execute iterations with threshold checking
+        for i in range(simulated_iterations):
+            counter.increment_turn(phase_name)
+            features_validated.append("turn_counting")
+
+            # Check thresholds - prioritize mocked time if provided (independent of timeout_monitor)
+            if mocked_elapsed_times and timeout_thresholds:
+                # Use mocked elapsed time for testing
+                if i < len(mocked_elapsed_times):
+                    mocked_elapsed = mocked_elapsed_times[i]
+                    mocked_elapsed_minutes = mocked_elapsed // 60
+
+                    # Check which thresholds are crossed by mocked time
+                    for threshold in timeout_thresholds:
+                        if mocked_elapsed_minutes >= threshold:
+                            # Calculate percentage if duration_minutes configured
+                            duration_minutes = step_data.get("tdd_cycle", {}).get("duration_minutes")
+                            if duration_minutes:
+                                percentage = int((mocked_elapsed_minutes / duration_minutes) * 100)
+                                warning = (
+                                    f"TIMEOUT WARNING: Phase {phase_name} "
+                                    f"{percentage}% elapsed ({mocked_elapsed_minutes}/{duration_minutes} minutes). "
+                                    f"Remaining: {duration_minutes - mocked_elapsed_minutes} minutes."
+                                )
+                            else:
+                                warning = (
+                                    f"TIMEOUT WARNING: Phase has been running for {mocked_elapsed_minutes} minutes "
+                                    f"(crossed {threshold}-minute threshold). "
+                                    f"Elapsed time: {mocked_elapsed_minutes}m"
+                                )
+                            if warning not in warnings:
+                                warnings.append(warning)
+
+                    if "timeout_monitoring" not in features_validated:
+                        features_validated.append("timeout_monitoring")
+            elif timeout_monitor and timeout_thresholds:
+                # Use real TimeoutMonitor only when mocked times NOT provided
+                if i % 5 == 0 or i == 0:
+                    crossed = timeout_monitor.check_thresholds(timeout_thresholds)
+                    for threshold in crossed:
+                        warning = self._format_timeout_warning(threshold, timeout_monitor)
+                        if warning not in warnings:
+                            warnings.append(warning)
+
+                    if crossed and "timeout_monitoring" not in features_validated:
+                        features_validated.append("timeout_monitoring")
+
+        final_turn_count = counter.get_current_turn(phase_name)
+        self._persist_turn_count(step_file_path, step_data, current_phase, final_turn_count)
+
+        # Deduplicate features_validated
+        features_validated = list(dict.fromkeys(features_validated))
+
+        return ExecuteStepResult(
+            turn_count=final_turn_count,
+            phase_name=phase_name,
+            status="COMPLETED",
+            warnings_emitted=warnings,  # Deprecated field
+            timeout_warnings=warnings,
+            execution_path="DESOrchestrator.execute_step",
+            features_validated=features_validated
+        )
+
+    def _resolve_step_file_path(self, project_root: Path | str, step_file: str) -> Path:
+        """Convert project_root and step_file to absolute path."""
+        if isinstance(project_root, str):
+            project_root = Path(project_root)
+        return project_root / step_file
+
+    def _load_step_file(self, step_file_path: Path) -> dict:
+        """Load and parse step file JSON using injected filesystem."""
+        return self._filesystem.read_json(step_file_path)
+
+    def _get_current_phase(self, step_data: dict) -> dict:
+        """Get current phase from step data and mark as IN_PROGRESS if needed."""
+        phase_log = step_data["tdd_cycle"]["phase_execution_log"]
+        current_phase = phase_log[0]  # For now, use first phase
+
+        if current_phase["status"] == "NOT_EXECUTED":
+            current_phase["status"] = "IN_PROGRESS"
+
+        return current_phase
+
+    def _restore_turn_count(self, counter: TurnCounter, current_phase: dict, phase_name: str) -> None:
+        """Restore existing turn count from phase data if resuming execution."""
+        existing_turn_count = current_phase.get("turn_count", 0)
+        for _ in range(existing_turn_count):
+            counter.increment_turn(phase_name)
+
+    def _execute_iterations(self, counter: TurnCounter, phase_name: str, iterations: int) -> None:
+        """Execute simulated agent call iterations, incrementing turn count."""
+        for _ in range(iterations):
+            counter.increment_turn(phase_name)
+
+    def _persist_turn_count(
+        self,
+        step_file_path: Path,
+        step_data: dict,
+        current_phase: dict,
+        turn_count: int
+    ) -> None:
+        """Persist turn count to step file using injected filesystem."""
+        current_phase["turn_count"] = turn_count
+        self._filesystem.write_json(step_file_path, step_data)
+
+    def _format_timeout_warning(self, threshold: int, monitor: TimeoutMonitor) -> str:
+        """Format timeout warning message with threshold and elapsed time.
+
+        Args:
+            threshold: Threshold value in minutes that was crossed
+            monitor: TimeoutMonitor instance for elapsed time calculation
+
+        Returns:
+            Formatted warning message string
+        """
+        elapsed_seconds = monitor.get_elapsed_seconds()
+        elapsed_minutes = int(elapsed_seconds / 60)
+
+        return (
+            f"TIMEOUT WARNING: Phase has been running for {elapsed_minutes} minutes "
+            f"(crossed {threshold}-minute threshold). "
+            f"Elapsed time: {elapsed_minutes}m"
+        )
+
+
+    def _persist_step_file(self, step_file_path: Path, step_data: dict) -> None:
+        """Persist step data to file using injected filesystem.
+
+        Args:
+            step_file_path: Path to step file
+            step_data: Complete step data dictionary to persist
+        """
+        self._filesystem.write_json(step_file_path, step_data)
+
+    def _generate_timeout_warnings(
+        self,
+        step_file: str,
+        project_root: str | Path,
+        timeout_thresholds: list[int],
+        timeout_budget_minutes: int | None
+    ) -> str:
+        """Generate timeout warnings for agent prompt context.
+
+        Loads step file, checks if any thresholds have been crossed,
+        and generates formatted warnings with percentage, remaining time,
+        and phase name.
+
+        Args:
+            step_file: Path to step file (relative to project_root)
+            project_root: Project root directory path
+            timeout_thresholds: List of threshold values in minutes
+            timeout_budget_minutes: Total time budget in minutes
+
+        Returns:
+            Formatted warning string, or empty string if no thresholds crossed
+        """
+        step_file_path = self._resolve_step_file_path(project_root, step_file)
+        step_data = self._load_step_file(step_file_path)
+        current_phase = self._get_current_phase(step_data)
+
+        # Get phase start time
+        started_at = current_phase.get("started_at")
+        if not started_at:
+            return ""
+
+        # Initialize TimeoutMonitor
+        monitor = TimeoutMonitor(started_at=started_at, time_provider=self._time_provider)
+
+        # Check thresholds
+        crossed_thresholds = monitor.check_thresholds(timeout_thresholds)
+        if not crossed_thresholds:
+            return ""
+
+        # Generate warning with percentage, remaining time, and phase name
+        elapsed_seconds = monitor.get_elapsed_seconds()
+        elapsed_minutes = int(elapsed_seconds / 60)
+
+        phase_name = current_phase["phase_name"]
+
+        # Calculate percentage and remaining time if budget provided
+        warning_parts = [f"TIMEOUT WARNING: Phase {phase_name}"]
+
+        if timeout_budget_minutes:
+            percentage = int((elapsed_minutes / timeout_budget_minutes) * 100)
+            remaining = timeout_budget_minutes - elapsed_minutes
+            warning_parts.append(
+                f"{percentage}% elapsed ({elapsed_minutes}/{timeout_budget_minutes} minutes). "
+                f"Remaining: {remaining} minutes."
+            )
+        else:
+            warning_parts.append(f"has been running for {elapsed_minutes} minutes.")
+
+        return " ".join(warning_parts)

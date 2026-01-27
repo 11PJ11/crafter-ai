@@ -1,0 +1,23 @@
+{
+  "task_specification": {
+    "task_id": "01-03",
+    "title": "Implement event type constants and AuditEvent dataclass",
+    "description": "Implement Implement event type constants and AuditEvent dataclass for US-004 Audit Trail",
+    "acceptance_criteria": [
+      "Make test_scenario_003a_task_invocation_events_captured pass",
+      "Make test_scenario_003b_phase_execution_events_captured pass",
+      "Make test_scenario_003c_subagent_stop_and_commit_events_captured pass"
+    ],
+    "requires": [],
+    "estimated_hours": 2.5
+  },
+  "tdd_cycle": {
+    "tdd_phase_tracking": {
+      "phase_execution_log": []
+    }
+  },
+  "validation": {
+    "status": "approved",
+    "notes": "Step file ready for execution"
+  }
+}

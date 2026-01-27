@@ -1,0 +1,23 @@
+{
+  "task_specification": {
+    "task_id": "02-03",
+    "title": "Implement SUBAGENT_STOP and COMMIT event logging",
+    "description": "Implement Implement SUBAGENT_STOP and COMMIT event logging for US-004 Audit Trail",
+    "acceptance_criteria": [
+      "Make test_scenario_003c_subagent_stop_and_commit_events_captured pass"
+    ],
+    "requires": [
+      "02-02"
+    ],
+    "estimated_hours": 2.5
+  },
+  "tdd_cycle": {
+    "tdd_phase_tracking": {
+      "phase_execution_log": []
+    }
+  },
+  "validation": {
+    "status": "approved",
+    "notes": "Step file ready for execution"
+  }
+}

@@ -1,0 +1,485 @@
+project_id: "des-us004"
+baseline_type: "feature"
+feature: "US-004: Audit Trail for Compliance Verification"
+created_at: "2026-01-27T16:45:00Z"
+
+measurements:
+  - category: "Audit Event Logging"
+    metrics: "Audit event capture rate: 0 events per execution; Event logging infrastructure: None implemented"
+    measured_at: "2026-01-27T16:45:00Z"
+    measurement_method: "grep for audit-related code in des/ module; pytest test collection for US-004 acceptance tests"
+    evidence: |
+      - Current state: No audit logging implemented in DES module (grep -r "audit" src/des/ returned no results)
+      - Test status: 12 acceptance tests collected, all marked with @pytest.mark.skip (RED state)
+      - Expected event types: TASK_INVOCATION_STARTED, TASK_INVOCATION_VALIDATED, PHASE_STARTED, PHASE_COMPLETED, SUBAGENT_STOP_VALIDATION, COMMIT_VALIDATION_PASSED (6+ event types)
+      - Current audit log files: None exist (no audit/ directory in project)
+      - Example: Complete TDD cycle execution should generate ~30+ audit entries (1 task invocation, 14 phases * 2 (started+completed), subagent stop, commit validation)
+    notes: "Baseline: 0 events captured. Target: 100% of state transitions logged with timestamps. This is the foundational metric for US-004."
+
+  - category: "Timestamp Coverage and Compliance"
+    metrics: "Timestamp coverage: 0% of state transitions; ISO 8601 format compliance: N/A (not yet implemented)"
+    measured_at: "2026-01-27T16:45:00Z"
+    measurement_method: "Verify ISO 8601 format (YYYY-MM-DDTHH:MM:SS.sssZ) compliance in audit entries"
+    evidence: |
+      - Current state: No timestamp collection mechanism exists
+      - Required format: ISO 8601 with millisecond precision (e.g., 2026-01-22T14:30:45.123Z)
+      - Test requirement: test_scenario_001_state_transitions_logged_with_iso_timestamp validates format compliance
+      - Coverage target: Every audit entry must include timestamp field with validated format
+      - Acceptance criteria: All timestamps parseable via datetime.fromisoformat() and ending with 'Z'
+    notes: "Timestamp infrastructure is mandatory for compliance verification. Zero coverage at baseline. Target: 100%"
+
+  - category: "Immutability Enforcement"
+    metrics: "Append-only guarantee: None; Content-hash verification: Not implemented"
+    measured_at: "2026-01-27T16:45:00Z"
+    measurement_method: "Verify existing audit entries remain unchanged after new entries appended (content-hash based)"
+    evidence: |
+      - Current state: No immutability mechanism exists (baseline can be modified arbitrarily)
+      - Test requirement: test_scenario_002_audit_log_is_append_only_immutable validates immutability
+      - Mechanism: Content hash of original entries (rows 0-N) must match after new entries appended
+      - Example scenario: 5 initial entries + 3 new entries = hash of first 5 remains identical
+      - Immutability violation risk: High - no programmatic enforcement
+    notes: "Immutability is critical for audit compliance. Cannot be modified retroactively. Target: 100% of existing entries protected."
+
+  - category: "Event Type Categorization"
+    metrics: "Event types implemented: 0 categories; Target event types: 4 categories with subcategories"
+    measured_at: "2026-01-27T16:45:00Z"
+    measurement_method: "Count distinct event types logged; grep for event type patterns in audit entries"
+    evidence: |
+      - Current state: No event categorization system implemented
+      - Required event categories (from AC-004.3):
+        * TASK_INVOCATION_* (started, validated, rejected)
+        * PHASE_* (started, completed)
+        * SUBAGENT_STOP_* (validation events)
+        * COMMIT_* (validation events)
+      - Test coverage: 3 focused scenarios (003a, 003b, 003c) for event categorization
+      - Negative case: test_scenario_004_failed_validation_captures_rejection_event validates rejection logging
+      - Current coverage: 0%. Target: 100% of relevant events categorized correctly
+    notes: "Event types enable filtering and compliance verification. Critical for audit trail usability."
+
+  - category: "Log Rotation and File Management"
+    metrics: "Daily rotation: Not implemented; Current log files: 0; File naming convention: N/A"
+    measured_at: "2026-01-27T16:45:00Z"
+    measurement_method: "Verify daily rotation with audit-YYYY-MM-DD.log naming convention; measure file sizes over time"
+    evidence: |
+      - Current state: No log rotation mechanism exists
+      - Required naming convention: audit-YYYY-MM-DD.log (e.g., audit-2026-01-22.log, audit-2026-01-23.log)
+      - Expected file distribution: ~20 executions/day = ~600 entries/day (manageable size)
+      - Test scenarios: test_scenario_008 (daily rotation), test_scenario_009 (prevents bloat with 100 executions over 5 days)
+      - Scale test: 100 executions = ~3000 audit entries, distributed across 5 files (~600 entries each)
+      - Current risk: Single file would grow unbounded (bloat risk)
+    notes: "Daily rotation prevents single file bloat and enables efficient compliance auditing. Target: Automatic rotation at UTC midnight."
+
+  - category: "Entry Context and Completeness"
+    metrics: "Required context fields: 0 implemented; Entry structure: Not defined"
+    measured_at: "2026-01-27T16:45:00Z"
+    measurement_method: "Verify each audit entry contains: step_file, event, phase (if applicable), data, timestamp"
+    evidence: |
+      - Current state: No audit entry structure defined
+      - Required fields per entry:
+        * timestamp: ISO 8601 format (mandatory)
+        * event: Event type string (mandatory)
+        * step_file: Path to step file being executed (mandatory)
+        * phase: Phase name if applicable (conditional)
+        * data: Event-specific context/outcome (conditional)
+        * status: Execution status (success/error) (conditional)
+      - Test scenario: test_scenario_005_audit_entries_include_step_path_and_event_data validates context completeness
+      - Example entry: {"event": "PHASE_COMPLETED", "step_file": "steps/01-01.json", "phase": "GREEN_UNIT", "data": {"outcome": "Test passes with minimal implementation"}, "timestamp": "2026-01-22T14:01:00.123Z"}
+    notes: "Complete context enables traceability without external file references. Target: 100% of entries include all required context."
+
+  - category: "Crash Recovery and Abandoned Phase Detection"
+    metrics: "Abandoned phase detection: Not implemented; Crash recovery audit capability: 0%"
+    measured_at: "2026-01-27T16:45:00Z"
+    measurement_method: "Verify audit trail captures incomplete execution with PHASE_STARTED but no PHASE_COMPLETED"
+    evidence: |
+      - Current state: No crash detection or abandoned phase tracking
+      - Crash scenario: Agent crashes during RED_UNIT phase execution
+      - Required audit evidence: PHASE_STARTED(RED_UNIT) + no PHASE_COMPLETED(RED_UNIT) + SUBAGENT_STOP_VALIDATION(error)
+      - Test scenario: test_scenario_006_abandoned_phase_traceable_in_audit validates this capability
+      - Recovery support: Audit trail enables exact failure point identification for debugging
+      - Impact: Supports crash recovery and execution history tracing
+    notes: "Crash detection is critical for debugging and reliability. Target: All abandoned phases traceable in audit."
+
+  - category: "Output Format and Readability"
+    metrics: "JSONL format compliance: 0%; Human readability: Not verified"
+    measured_at: "2026-01-27T16:45:00Z"
+    measurement_method: "Verify each audit log line is valid JSON; validate field naming (no abbreviations)"
+    evidence: |
+      - Current state: No output format specification
+      - Required format: JSONL (JSON Lines) - one JSON object per line, newline separated
+      - Field naming: Full descriptive names (e.g., 'timestamp' not 'ts', 'step_file' not 'sf')
+      - Parseability: Each line independently parseable via json.loads()
+      - Test scenario: test_scenario_007_audit_log_is_human_readable_jsonl validates format
+      - Human review capability: Priya should open audit log in text editor without special tools
+      - Current format compliance: N/A (not implemented)
+    notes: "JSONL format enables both human review and programmatic parsing. Target: 100% format compliance."
+
+  - category: "Test Coverage and Implementation"
+    metrics: "Acceptance tests passing: 0/12; Production code (LOC): 0; Implementation status: RED (awaiting DEVELOP)"
+    measured_at: "2026-01-27T16:45:00Z"
+    measurement_method: "pytest collection and execution of test_us004_audit_trail.py; wc -l for code measurement"
+    evidence: |
+      - Test count: 12 acceptance test scenarios collected (all marked @pytest.mark.skip)
+      - Test status: 0 passing, 12 skipped (RED state per Outside-In TDD)
+      - Test scenarios: 001-010 covering all AC-004.1 through AC-004.6 acceptance criteria
+      - Scenario distribution:
+        * Scenario 001: ISO timestamp formatting
+        * Scenario 002: Append-only immutability
+        * Scenarios 003a-c: Event categorization (split per Outside-In TDD principle)
+        * Scenario 004: Rejection event logging
+        * Scenario 005: Entry context completeness
+        * Scenario 006: Crash recovery audit
+        * Scenario 007: JSONL format
+        * Scenario 008: Daily rotation
+        * Scenario 009: Scale testing (100 executions)
+        * Scenario 010: Integration test (E2E)
+      - Production code: 0 lines (not yet implemented)
+      - Module to implement: des/audit_logger.py (estimated ~150-200 LOC)
+    notes: "All 12 tests in RED state, ready for DEVELOP wave. Each scenario targets specific acceptance criteria."
+
+breakdown_analysis:
+  metrics_ranked_by_impact:
+    - rank: 1
+      metric: "Audit Event Logging Infrastructure"
+      effort_hours: 12
+      impact: "CRITICAL - Foundation for all other audit metrics"
+      risk: "LOW - Self-contained module, minimal orchestrator coupling"
+      notes: "Create AuditLog class with append() and read() methods. Integrate with DESOrchestrator at key transition points. Core component enabling all other features."
+
+    - rank: 2
+      metric: "Timestamp Coverage and ISO 8601 Format Compliance"
+      effort_hours: 4
+      impact: "CRITICAL - Required by all audit entries"
+      risk: "LOW - Timestamp generation is standard library functionality"
+      notes: "Use datetime.now(timezone.utc).isoformat() for ISO 8601 format. Ensures all events have precise timestamps. Must happen at log entry creation time."
+
+    - rank: 3
+      metric: "Immutability Enforcement (Content-Hash Verification)"
+      effort_hours: 6
+      impact: "HIGH - Ensures compliance audit integrity"
+      risk: "LOW - Hash-based verification is standard cryptographic practice"
+      notes: "Implement SHA256 hash computation for existing entries. Verify hash matches after new appends. Protects audit trail from tampering."
+
+    - rank: 4
+      metric: "Event Type Categorization"
+      effort_hours: 8
+      impact: "HIGH - Enables audit filtering and compliance verification"
+      risk: "LOW - Event categorization logic is straightforward enum-based"
+      notes: "Define EventType enum with 4 categories (TASK_INVOCATION, PHASE, SUBAGENT_STOP, COMMIT). Log event type with each entry. Depends on rank 1."
+
+    - rank: 5
+      metric: "Log Rotation with Daily File Naming"
+      effort_hours: 5
+      impact: "MEDIUM - Prevents single file bloat, improves manageability"
+      risk: "LOW - Date-based file naming is standard practice"
+      notes: "Implement LogRotationManager with audit-YYYY-MM-DD.log naming. Check date daily, create new file at UTC midnight. Depends on rank 1."
+
+    - rank: 6
+      metric: "Entry Context and Completeness"
+      effort_hours: 4
+      impact: "MEDIUM - Enables traceability without external references"
+      risk: "LOW - Field validation logic is straightforward"
+      notes: "Define AuditEntry dataclass with required/optional fields. Validate completeness before logging. Depends on rank 1."
+
+    - rank: 7
+      metric: "Crash Recovery and Abandoned Phase Detection"
+      effort_hours: 6
+      impact: "MEDIUM - Supports debugging and recovery"
+      risk: "MEDIUM - Requires integration with SubagentStopHook"
+      notes: "Track phase start events separately. Detect missing phase completions in SubagentStopHook. Depends on rank 1."
+
+    - rank: 8
+      metric: "JSONL Output Format"
+      effort_hours: 3
+      impact: "LOW - Output format convenience (doesn't affect core functionality)"
+      risk: "LOW - JSON serialization is standard library"
+      notes: "Use json.dumps() for each entry on separate line. Validate field naming (no abbreviations). Depends on rank 1."
+
+quick_wins:
+  - action: "Create AuditEntry dataclass with required fields"
+    effort: "LOW - 1 hour (dataclass definition only)"
+    expected_impact: "Enables consistent entry structure across all audit operations"
+    impact_effort_ratio: "HIGH"
+    implementation_notes: "Define AuditEntry with: timestamp (str), event (str), step_file (str), phase (Optional[str]), data (dict), status (str). Add __post_init__ validation."
+    dependencies: "None"
+
+  - action: "Implement ISO 8601 timestamp generation utility"
+    effort: "LOW - 0.5 hours (timestamp formatting utility)"
+    expected_impact: "Ensures all audit entries have consistent, compliant timestamps"
+    impact_effort_ratio: "HIGH"
+    implementation_notes: "Create get_iso_timestamp() function: return datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'). Returns format like 2026-01-27T16:45:00.123Z"
+    dependencies: "None"
+
+  - action: "Create AuditLog class with append() and read_entries() methods"
+    effort: "MEDIUM - 4 hours (core logging class)"
+    expected_impact: "Foundation for all audit trail functionality"
+    impact_effort_ratio: "HIGH"
+    implementation_notes: "Implement JSONL file operations: append() writes one entry per line, read_entries() parses existing entries. Use atomic file operations to prevent corruption."
+    dependencies: "AuditEntry dataclass, ISO timestamp utility"
+
+  - action: "Add DES orchestrator integration points for audit logging"
+    effort: "MEDIUM - 3 hours (hook points in orchestrator)"
+    expected_impact: "Captures all state transitions in audit trail"
+    impact_effort_ratio: "HIGH"
+    implementation_notes: "Add audit_log.append() calls at: task invocation start, validation passed, phase start/complete, subagent stop, commit validation. Use existing phase_execution_log structure as reference."
+    dependencies: "AuditLog class implementation"
+
+  - action: "Implement SHA256 content-hash verification"
+    effort: "LOW - 2 hours (hash-based immutability check)"
+    expected_impact: "Ensures audit trail integrity and prevents tampering"
+    impact_effort_ratio: "HIGH"
+    implementation_notes: "Compute SHA256 hash of first N entries before append, verify after append. Store hash in metadata. Use hashlib.sha256() from standard library."
+    dependencies: "AuditLog class implementation"
+
+target_improvements:
+  audit_logging_foundation:
+    - "Implement AuditLog class with JSONL file operations"
+    - "Capture 100% of state transitions with audit entries"
+    - "Generate ~30+ events per complete TDD cycle execution"
+    - "Enable audit trail persistence across restarts"
+
+  timestamp_compliance:
+    - "Add ISO 8601 timestamp to every audit entry"
+    - "Ensure millisecond precision (HH:MM:SS.sssZ format)"
+    - "Validate timestamp format compliance in all entries"
+    - "Maintain chronological ordering of events"
+
+  immutability_protection:
+    - "Implement append-only file semantics (no modifications to existing entries)"
+    - "Use content-hash verification to detect tampering"
+    - "Protect against retroactive falsification"
+    - "Ensure accountability and compliance integrity"
+
+  event_categorization:
+    - "Define 4 event categories: TASK_INVOCATION_*, PHASE_*, SUBAGENT_STOP_*, COMMIT_*"
+    - "Log event type with every audit entry"
+    - "Enable filtering and compliance verification by event type"
+    - "Support compliance auditing workflows"
+
+  operational_excellence:
+    - "Implement daily log rotation with audit-YYYY-MM-DD.log naming"
+    - "Prevent single file bloat (distribute ~600 entries/day across files)"
+    - "Enable efficient date-based log discovery and review"
+    - "Support manageable file sizes for compliance review"
+
+  debuggability_and_recovery:
+    - "Detect and log abandoned phases for crash recovery"
+    - "Provide complete execution history for failure analysis"
+    - "Enable exact failure point identification"
+    - "Support post-execution debugging workflows"
+
+test_scenarios_covered:
+  - scenario: "Scenario 001 - ISO timestamp formatting"
+    test_name: "test_scenario_001_state_transitions_logged_with_iso_timestamp"
+    acceptance_criteria: "AC-004.1: All state transitions logged with ISO 8601 timestamp"
+    validation_method: "Verify datetime.fromisoformat() parsing success and 'Z' timezone marker"
+
+  - scenario: "Scenario 002 - Append-only immutability"
+    test_name: "test_scenario_002_audit_log_is_append_only_immutable"
+    acceptance_criteria: "AC-004.2: Existing entries unchanged after new appends (content-hash verified)"
+    validation_method: "Compute SHA256 hash before/after append operations"
+
+  - scenario: "Scenario 003a - TASK_INVOCATION_* events"
+    test_name: "test_scenario_003a_task_invocation_events_captured"
+    acceptance_criteria: "AC-004.3: Event types include TASK_INVOCATION_STARTED and TASK_INVOCATION_VALIDATED"
+    validation_method: "Verify event_types list contains expected categories"
+
+  - scenario: "Scenario 003b - PHASE_* events"
+    test_name: "test_scenario_003b_phase_lifecycle_events_captured"
+    acceptance_criteria: "AC-004.3: All 14 phases generate PHASE_STARTED and PHASE_COMPLETED"
+    validation_method: "Count event types: 14 PHASE_STARTED + 14 PHASE_COMPLETED = 28 total"
+
+  - scenario: "Scenario 003c - SUBAGENT_STOP_* and COMMIT_* events"
+    test_name: "test_scenario_003c_subagent_stop_and_commit_events_captured"
+    acceptance_criteria: "AC-004.3: Completion events logged (SUBAGENT_STOP_VALIDATION, COMMIT_VALIDATION_PASSED)"
+    validation_method: "Verify both event types present in audit trail"
+
+  - scenario: "Scenario 004 - Rejection event logging"
+    test_name: "test_scenario_004_failed_validation_captures_rejection_event"
+    acceptance_criteria: "AC-004.3: Failed validation captures TASK_INVOCATION_REJECTED with error details"
+    validation_method: "Verify rejection event contains error details and timestamp"
+
+  - scenario: "Scenario 005 - Entry context completeness"
+    test_name: "test_scenario_005_audit_entries_include_step_path_and_event_data"
+    acceptance_criteria: "AC-004.4: Each entry includes step_file, phase (if applicable), status, outcome"
+    validation_method: "Validate all required fields present in entry structure"
+
+  - scenario: "Scenario 006 - Crash recovery audit"
+    test_name: "test_scenario_006_abandoned_phase_traceable_in_audit"
+    acceptance_criteria: "AC-004.4: Abandoned phases detectable (PHASE_STARTED without PHASE_COMPLETED)"
+    validation_method: "Verify incomplete execution traceable in audit trail"
+
+  - scenario: "Scenario 007 - JSONL format readability"
+    test_name: "test_scenario_007_audit_log_is_human_readable_jsonl"
+    acceptance_criteria: "AC-004.5: Each line is valid JSON with readable field names"
+    validation_method: "Parse each line with json.loads(), verify no abbreviations"
+
+  - scenario: "Scenario 008 - Daily rotation with date naming"
+    test_name: "test_scenario_008_audit_logs_rotate_daily_with_date_naming"
+    acceptance_criteria: "AC-004.6: Separate log files per day (audit-YYYY-MM-DD.log naming)"
+    validation_method: "Verify files exist for each date with correct naming convention"
+
+  - scenario: "Scenario 009 - Scale testing (100 executions)"
+    test_name: "test_scenario_009_daily_rotation_prevents_single_file_bloat"
+    acceptance_criteria: "AC-004.6: Daily rotation manages large execution volumes"
+    validation_method: "Verify 100 executions distribute across files with manageable size"
+
+  - scenario: "Scenario 010 - Integration test (E2E)"
+    test_name: "test_scenario_010_complete_execution_produces_reviewable_audit_trail"
+    acceptance_criteria: "AC-004.1-6: Complete audit trail enables PR review compliance verification"
+    validation_method: "Verify all event types present for complete cycle execution"
+
+implementation_scope:
+  missing_components:
+    - "AuditLog class with JSONL file operations"
+    - "AuditEntry dataclass with field validation"
+    - "EventType enum (TASK_INVOCATION, PHASE, SUBAGENT_STOP, COMMIT)"
+    - "ISO 8601 timestamp generation utility"
+    - "Content-hash immutability verification"
+    - "LogRotationManager with daily rotation"
+    - "DES orchestrator integration points for audit capture"
+    - "SubagentStopHook integration for crash detection"
+
+  success_criteria:
+    - "All 12 acceptance tests pass (GREEN state)"
+    - "Code coverage >80% for audit trail module"
+    - "100% of state transitions captured with timestamps"
+    - "Immutability verified via content-hash"
+    - "Daily log rotation working with correct naming"
+    - "No regression in existing test suite"
+    - "JSONL format validated and human-readable"
+
+measurement_commands:
+  test_collection: "python3 -m pytest tests/acceptance/test_us004_audit_trail.py --collect-only -q"
+  test_execution: "python3 -m pytest tests/acceptance/test_us004_audit_trail.py -v --tb=short"
+  coverage_measurement: "python3 -m pytest tests/acceptance/test_us004_audit_trail.py --cov=src/des --cov-report=term-missing"
+  audit_code_count: "wc -l des/audit_logger.py (post-implementation)"
+  event_count_verification: "grep -c '\"event\"' audit-*.log (post-implementation)"
+  jsonl_format_validation: "python3 -c \"import json; [json.loads(line) for line in open('audit-2026-01-27.log').readlines()]\""
+
+evidence_artifacts:
+  test_file: "tests/acceptance/test_us004_audit_trail.py"
+  test_scenarios: "12 scenarios (001-010) covering AC-004.1 through AC-004.6"
+  test_status: "12 tests collected, all marked @pytest.mark.skip (RED state)"
+  acceptance_criteria_source: "User story: Priya (Tech Lead) audit trail verification for TDD compliance PR review"
+  related_acceptance_criteria: "AC-004.1: ISO timestamps; AC-004.2: Append-only; AC-004.3: Event types; AC-004.4: Entry context; AC-004.5: JSONL format; AC-004.6: Daily rotation"
+
+validation:
+  status: "approved"
+  reviewer: "software-crafter-reviewer"
+  reviewed_at: "2026-01-27T17:00:00Z"
+  baseline_type: "Outside-In TDD baseline (RED state)"
+  notes: |
+    APPROVED - Baseline meets all quality gates for US-004 audit trail implementation.
+
+    Measurement Methodology:
+    - 12 acceptance tests collected and analyzed
+    - Test status verified: All in RED state (skip markers present)
+    - Test scenarios cover all AC-004.1 through AC-004.6 acceptance criteria
+    - Current state verified: 0 audit logging code implemented
+    - Evidence-based measurements with clear current vs. target state
+
+    Metric Quality:
+    ✅ All 8 metrics have quantifiable current and target values
+    ✅ Measurement methodology documented (grep, pytest collection, code inspection)
+    ✅ Evidence provided for each metric with specific details
+    ✅ Outside-In TDD RED state correctly captured (12 skipped tests)
+    ✅ Clear acceptance criteria mapping (AC-004.1 through AC-004.6)
+    ✅ Implementation scope clearly defined
+
+    Test Coverage Analysis:
+    ✅ 12 acceptance test scenarios covering all requirements
+    ✅ Scenario 003 properly split into 003a, 003b, 003c (Outside-In TDD principle)
+    ✅ 10 unit-level scenarios + 1 integration scenario = comprehensive coverage
+    ✅ Domain examples from user story: Complete execution, failed validation, crash recovery
+
+    Breakdown Analysis:
+    ✅ 8 metrics ranked by implementation impact
+    ✅ Effort hours estimated for each metric (12 to 3 hours)
+    ✅ Risk assessment completed (all LOW except 1 MEDIUM)
+    ✅ Dependency chain identified (mostly independent, some sequential)
+    ✅ Impact-effort ratios guide prioritization
+
+    Quick Wins:
+    ✅ 5 quick wins identified before complex solutions
+    ✅ Each includes effort, impact, and implementation notes
+    ✅ Dependencies clearly stated (2 independent, 3 sequential)
+    ✅ Foundation components prioritized (dataclass, timestamp, logging)
+
+    Target Values:
+    ✅ All target values quantitative and measurable
+    ✅ Examples: "100% of state transitions logged", "30+ events per cycle"
+    ✅ Format compliance specified (JSONL, ISO 8601)
+    ✅ Scale tested (100 executions, ~3000 entries)
+
+    Strengths:
+    - Clear user story context (Priya's compliance verification need)
+    - Comprehensive scenario mapping to acceptance criteria
+    - Evidence-based baseline with no assumptions
+    - Realistic effort estimates (4-12 hours per metric)
+    - Well-defined quick wins for rapid progress
+    - Full acceptance criteria coverage (AC-004.1 through AC-004.6)
+    - Scale considerations (100 executions, daily rotation, file management)
+
+    Validation Checks:
+    ✅ All 8 metrics quantifiable and verifiable
+    ✅ Measurement methodology reproducible
+    ✅ Current state vs. target clearly defined
+    ✅ Outside-In TDD RED state correctly established (12 tests skipped)
+    ✅ Evidence artifacts properly referenced
+    ✅ Test scenarios comprehensively mapped
+    ✅ Implementation scope clearly defined
+    ✅ Effort estimates realistic and well-justified
+
+    Status: APPROVED - Ready for ROADMAP phase
+
+    This baseline establishes a clear, quantitative starting point (all metrics at 0)
+    and defines achievable targets. The 12 acceptance tests provide exact specifications
+    for DEVELOP wave implementation. Quick wins enable rapid early progress.
+
+  issues: []
+
+baseline_summary:
+  current_state: |
+    US-004 audit trail implementation is at RED baseline state (Outside-In TDD):
+    - 0 audit events captured per execution (no logging infrastructure)
+    - 0% timestamp coverage (no timestamp mechanism)
+    - 0% immutability enforcement (no content verification)
+    - 0% event categorization (no event types defined)
+    - 0% log rotation (no file management)
+    - 0 production code lines (audit_logger.py not yet created)
+    - 12 acceptance tests collected and marked @pytest.mark.skip (RED state)
+
+  target_state: |
+    After DEVELOP wave completion:
+    - 100% of state transitions logged (30+ events per complete TDD cycle)
+    - 100% timestamp coverage with ISO 8601 format compliance
+    - 100% immutability enforcement via content-hash verification
+    - 100% event categorization (4 types: TASK_INVOCATION, PHASE, SUBAGENT_STOP, COMMIT)
+    - 100% daily log rotation with audit-YYYY-MM-DD.log naming
+    - ~150-200 production code lines in audit_logger.py
+    - All 12 acceptance tests passing (GREEN state)
+    - Code coverage >80% for audit trail module
+
+  key_capabilities:
+    - Complete audit trail of all state transitions with timestamps
+    - Immutable append-only logging (prevents tampering)
+    - Event-based filtering for compliance verification
+    - Daily log rotation for manageable file sizes
+    - JSONL format for both human review and programmatic parsing
+    - Crash recovery support via abandoned phase detection
+    - Integration with existing DES orchestrator
+
+  compliance_value:
+    - Enables Priya to verify TDD compliance during PR review with concrete evidence
+    - Provides complete execution history with exact failure points
+    - Creates immutable audit records for accountability
+    - Supports debugging and recovery workflows
+    - Meets compliance requirements for process verification
+
+measurement_commands_detailed:
+  baseline_verification: "python3 -m pytest tests/acceptance/test_us004_audit_trail.py --collect-only -q"
+  current_state_check: "grep -r 'audit' src/des/ --include='*.py' 2>/dev/null || echo 'No audit code found'"
+  test_run: "python3 -m pytest tests/acceptance/test_us004_audit_trail.py -v --tb=line 2>&1 | grep -E '(PASSED|FAILED|SKIPPED)'"
+  post_impl_coverage: "python3 -m pytest tests/acceptance/test_us004_audit_trail.py --cov=src/des/audit_logger --cov-report=term-missing"
+  post_impl_event_count: "cat audit-*.log 2>/dev/null | wc -l"
+  post_impl_format_check: "python3 -c \"import json; [json.loads(line) for line in open('audit-2026-01-27.log').readlines()]\" && echo 'JSONL format valid'"

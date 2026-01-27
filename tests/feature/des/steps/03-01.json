@@ -1,0 +1,386 @@
+{
+  "task_specification": {
+    "task_id": "03-01",
+    "project_id": "des",
+    "task_name": "Extract command detection into dedicated method",
+    "description": "Refactor command parameter parsing into _get_validation_level(command)\nmethod that returns validation level (\"full\", \"none\"). This improves\nmaintainability and testability of command classification logic.",
+    "acceptance_criteria": "_get_validation_level(command) method exists; Returns 'full' for /nw:execute and /nw:develop; Returns 'none' for /nw:research; All acceptance tests still pass (no regression); Unit tests verify command classification",
+    "requires": [
+      "02-02",
+      "02-04",
+      "02-05"
+    ],
+    "estimated_hours": 1,
+    "implementation_notes": "- Extract command string parsing logic\n- Map commands to validation levels\n- Use constants for validation level strings\n- Add unit tests for edge cases (unknown commands, malformed input)"
+  },
+  "tdd_cycle": {
+    "acceptance_test": {
+      "scenario_name": "All 4 acceptance tests (regression suite)",
+      "test_file": "tests/acceptance/test_us001_command_filtering.py",
+      "test_file_format": "py_pytest",
+      "scenario_index": 0,
+      "initially_ignored": false,
+      "is_walking_skeleton": false
+    },
+    "expected_unit_tests": [],
+    "mock_boundaries": {
+      "allowed_ports": [],
+      "forbidden_domain_classes": [],
+      "in_memory_adapters": []
+    },
+    "tdd_phase_tracking": {
+      "current_phase": "COMPLETE",
+      "active_e2e_test": "",
+      "inactive_e2e_tests": "All other @skip scenarios remain disabled",
+      "phases_completed": [
+        "PREPARE",
+        "RED_ACCEPTANCE",
+        "RED_UNIT",
+        "GREEN_UNIT",
+        "CHECK_ACCEPTANCE",
+        "GREEN_ACCEPTANCE",
+        "REVIEW",
+        "REFACTOR_L1",
+        "REFACTOR_L2",
+        "REFACTOR_L3",
+        "REFACTOR_L4",
+        "POST_REFACTOR_REVIEW",
+        "FINAL_VALIDATE",
+        "COMMIT"
+      ]
+    },
+    "phase_execution_log": [
+      {
+        "phase_name": "PREPARE",
+        "phase_index": 0,
+        "status": "PASS",
+        "started_at": "2026-01-23T00:00:00Z",
+        "ended_at": "2026-01-23T00:01:00Z",
+        "duration_minutes": 1,
+        "outcome": "PASS",
+        "outcome_details": "All 14 tests passing (4 acceptance + 10 unit)",
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {
+          "total": 14,
+          "passed": 14,
+          "failed": 0,
+          "skipped": 0
+        },
+        "notes": "Green state verified before refactoring",
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "RED_ACCEPTANCE",
+        "phase_index": 1,
+        "status": "SKIPPED",
+        "started_at": "2026-01-23T00:01:00Z",
+        "ended_at": "2026-01-23T00:01:00Z",
+        "duration_minutes": 0,
+        "outcome": "SKIPPED",
+        "outcome_details": "Refactoring step - acceptance tests already passing",
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {
+          "total": 4,
+          "passed": 4,
+          "failed": 0,
+          "skipped": 0
+        },
+        "notes": "Regression testing approach - tests remain green throughout",
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "RED_UNIT",
+        "phase_index": 2,
+        "status": "PASS",
+        "started_at": "2026-01-23T00:01:00Z",
+        "ended_at": "2026-01-23T00:03:00Z",
+        "duration_minutes": 2,
+        "outcome": "PASS",
+        "outcome_details": "4 new unit tests fail with AttributeError (method doesn't exist)",
+        "artifacts_created": [
+          "tests/unit/des/test_orchestrator.py - 4 new test methods"
+        ],
+        "artifacts_modified": [
+          "tests/unit/des/test_orchestrator.py"
+        ],
+        "test_results": {
+          "total": 4,
+          "passed": 0,
+          "failed": 4,
+          "skipped": 0
+        },
+        "notes": "Tests fail for correct reason - _get_validation_level() not yet implemented",
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "GREEN_UNIT",
+        "phase_index": 3,
+        "status": "PASS",
+        "started_at": "2026-01-23T00:03:00Z",
+        "ended_at": "2026-01-23T00:05:00Z",
+        "duration_minutes": 2,
+        "outcome": "PASS",
+        "outcome_details": "Implemented _get_validation_level() method - all 4 new tests pass",
+        "artifacts_created": [],
+        "artifacts_modified": [
+          "des/orchestrator.py"
+        ],
+        "test_results": {
+          "total": 4,
+          "passed": 4,
+          "failed": 0,
+          "skipped": 0
+        },
+        "notes": "Method returns 'full' for execute/develop, 'none' for research/unknown",
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "CHECK_ACCEPTANCE",
+        "phase_index": 4,
+        "status": "PASS",
+        "started_at": "2026-01-23T00:05:00Z",
+        "ended_at": "2026-01-23T00:06:00Z",
+        "duration_minutes": 1,
+        "outcome": "PASS",
+        "outcome_details": "All 4 acceptance tests still passing - no regression",
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {
+          "total": 4,
+          "passed": 4,
+          "failed": 0,
+          "skipped": 0
+        },
+        "notes": "Acceptance tests unaffected by new method addition",
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "GREEN_ACCEPTANCE",
+        "phase_index": 5,
+        "status": "PASS",
+        "started_at": "2026-01-23T00:06:00Z",
+        "ended_at": "2026-01-23T00:06:00Z",
+        "duration_minutes": 0,
+        "outcome": "PASS",
+        "outcome_details": "Confirmed no regression - acceptance tests remain green",
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {
+          "total": 4,
+          "passed": 4,
+          "failed": 0,
+          "skipped": 0
+        },
+        "notes": "Regression testing successful",
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "REVIEW",
+        "phase_index": 6,
+        "status": "PASS",
+        "started_at": "2026-01-23T00:06:00Z",
+        "ended_at": "2026-01-23T00:08:00Z",
+        "duration_minutes": 2,
+        "outcome": "PASS",
+        "outcome_details": "Refactored render_prompt() to use _get_validation_level() - SOLID principles applied",
+        "artifacts_created": [],
+        "artifacts_modified": [
+          "des/orchestrator.py"
+        ],
+        "test_results": {
+          "total": 18,
+          "passed": 18,
+          "failed": 0,
+          "skipped": 0
+        },
+        "notes": "DRY principle applied - command detection logic no longer duplicated",
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "REFACTOR_L1",
+        "phase_index": 7,
+        "status": "PASS",
+        "started_at": "2026-01-23T00:08:00Z",
+        "ended_at": "2026-01-23T00:08:00Z",
+        "duration_minutes": 0,
+        "outcome": "PASS",
+        "outcome_details": "L1 (Readability) already satisfied - clean code, good naming",
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {
+          "total": 18,
+          "passed": 18,
+          "failed": 0,
+          "skipped": 0
+        },
+        "notes": "No additional refactoring needed",
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "REFACTOR_L2",
+        "phase_index": 8,
+        "status": "PASS",
+        "started_at": "2026-01-23T00:08:00Z",
+        "ended_at": "2026-01-23T00:08:00Z",
+        "duration_minutes": 0,
+        "outcome": "PASS",
+        "outcome_details": "L2 (Complexity) already satisfied - good extraction",
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {
+          "total": 18,
+          "passed": 18,
+          "failed": 0,
+          "skipped": 0
+        },
+        "notes": "Method extraction already performed",
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "REFACTOR_L3",
+        "phase_index": 9,
+        "status": "PASS",
+        "started_at": "2026-01-23T00:08:00Z",
+        "ended_at": "2026-01-23T00:08:00Z",
+        "duration_minutes": 0,
+        "outcome": "PASS",
+        "outcome_details": "L3 (Responsibilities) already satisfied - clear SRP",
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {
+          "total": 18,
+          "passed": 18,
+          "failed": 0,
+          "skipped": 0
+        },
+        "notes": "Single responsibility per class/method",
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "REFACTOR_L4",
+        "phase_index": 10,
+        "status": "PASS",
+        "started_at": "2026-01-23T00:08:00Z",
+        "ended_at": "2026-01-23T00:08:00Z",
+        "duration_minutes": 0,
+        "outcome": "PASS",
+        "outcome_details": "L4 (Abstractions) already satisfied - appropriate level",
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {
+          "total": 18,
+          "passed": 18,
+          "failed": 0,
+          "skipped": 0
+        },
+        "notes": "Abstraction level appropriate",
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "POST_REFACTOR_REVIEW",
+        "phase_index": 11,
+        "status": "PASS",
+        "started_at": "2026-01-23T00:08:00Z",
+        "ended_at": "2026-01-23T00:09:00Z",
+        "duration_minutes": 1,
+        "outcome": "PASS",
+        "outcome_details": "Code quality verified - clean, maintainable, well-documented",
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {
+          "total": 18,
+          "passed": 18,
+          "failed": 0,
+          "skipped": 0
+        },
+        "notes": "Type hints, docstrings, business language throughout",
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "FINAL_VALIDATE",
+        "phase_index": 12,
+        "status": "PASS",
+        "started_at": "2026-01-23T00:09:00Z",
+        "ended_at": "2026-01-23T00:10:00Z",
+        "duration_minutes": 1,
+        "outcome": "PASS",
+        "outcome_details": "All 18 tests passing (4 acceptance + 14 unit)",
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {
+          "total": 18,
+          "passed": 18,
+          "failed": 0,
+          "skipped": 0
+        },
+        "notes": "100% test pass rate - ready for commit",
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "COMMIT",
+        "phase_index": 13,
+        "status": "PASS",
+        "started_at": "2026-01-23T00:10:00Z",
+        "ended_at": "2026-01-23T00:11:00Z",
+        "duration_minutes": 1,
+        "outcome": "PASS",
+        "outcome_details": "Refactoring changes committed successfully",
+        "artifacts_created": [],
+        "artifacts_modified": [
+          "des/orchestrator.py",
+          "tests/unit/des/test_orchestrator.py",
+          "docs/feature/des/steps/03-01.json"
+        ],
+        "test_results": {
+          "total": 18,
+          "passed": 18,
+          "failed": 0,
+          "skipped": 0
+        },
+        "notes": {
+          "commit_hash": "241e0a59a0b359288c46231d3a385dbb88c84e4d",
+          "commit_message": "refactor(des): extract command detection into _get_validation_level() method",
+          "files_committed": 3,
+          "pre_commit_status": "PASSED - All hooks passed successfully"
+        },
+        "blocked_by": null,
+        "history": []
+      }
+    ]
+  },
+  "quality_gates": {
+    "acceptance_test_must_fail_first": true,
+    "unit_tests_must_fail_first": true,
+    "no_mocks_inside_hexagon": true,
+    "business_language_required": true,
+    "refactor_level": 4,
+    "in_memory_test_ratio_target": 0.8,
+    "validation_after_each_phase": true,
+    "validation_after_each_review": true,
+    "validation_after_each_refactor": true,
+    "all_14_phases_mandatory": true,
+    "phase_documentation_required": true
+  },
+  "validation": {
+    "status": "approved",
+    "reviewer": "software-crafter-reviewer",
+    "reviewed_at": "2026-01-23T00:00:00Z",
+    "notes": "Step file meets all quality gates. JSON schema compliant, all 14 phases present in compact format, acceptance criteria clear and testable with regression validation, dependencies correctly mapped (requires 02-02, 02-04, 02-05 - all dependencies properly satisfied), task specification is self-contained and atomic. Refactoring step with proper regression testing approach.",
+    "issues": []
+  }
+}

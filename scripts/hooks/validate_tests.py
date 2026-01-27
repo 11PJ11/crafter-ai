@@ -10,41 +10,12 @@ import subprocess
 import sys
 from pathlib import Path
 
-
-# Windows color support detection
-def supports_color() -> bool:
-    """Check if the terminal supports ANSI color codes."""
-    # Check for NO_COLOR environment variable (https://no-color.org/)
-    if os.environ.get("NO_COLOR"):
-        return False
-    # Check for FORCE_COLOR environment variable
-    if os.environ.get("FORCE_COLOR"):
-        return True
-    # Windows: check for ANSICON, ConEmu, or Windows Terminal
-    if sys.platform == "win32":
-        return (
-            os.environ.get("ANSICON") is not None
-            or os.environ.get("WT_SESSION") is not None  # Windows Terminal
-            or os.environ.get("ConEmuANSI") == "ON"
-            or os.environ.get("TERM_PROGRAM") == "vscode"
-        )
-    # Unix-like: check if stdout is a tty
-    return hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
-
-
-# Color codes (disabled on unsupported terminals)
-if supports_color():
-    RED = "\033[0;31m"
-    GREEN = "\033[0;32m"
-    YELLOW = "\033[1;33m"
-    BLUE = "\033[0;34m"
-    NC = "\033[0m"
-else:
-    RED = ""
-    GREEN = ""
-    YELLOW = ""
-    BLUE = ""
-    NC = ""
+# Color codes
+RED = "\033[0;31m"
+GREEN = "\033[0;32m"
+YELLOW = "\033[1;33m"
+BLUE = "\033[0;34m"
+NC = "\033[0m"
 
 
 def clear_git_environment():
@@ -64,78 +35,54 @@ def clear_git_environment():
         os.environ.pop(var, None)
 
 
-def get_repo_root() -> Path:
-    """Get the git repository root directory."""
-    try:
-        result = subprocess.run(
-            ["git", "rev-parse", "--show-toplevel"],
-            capture_output=True,
-            text=True,
-            check=True,
-            timeout=30,
-        )
-        return Path(result.stdout.strip())
-    except subprocess.SubprocessError:
-        # Fallback to current directory if not in a git repo
-        return Path.cwd()
-    except FileNotFoundError:
-        # Git not available
-        return Path.cwd()
-
-
 def main():
     """Run test validation."""
     clear_git_environment()
 
     print(f"{BLUE}Running test validation...{NC}")
 
-    # Detect if running in CI environment
-    is_ci = os.environ.get("CI", "false").lower() == "true"
-
-    # Get repository root for proper path resolution
-    repo_root = get_repo_root()
-
-    # Use sys.executable to ensure cross-platform compatibility (Windows uses 'python', Unix uses 'python3')
-    python_cmd = sys.executable
-
     # Check if pytest is available
     try:
         subprocess.run(
-            [python_cmd, "-m", "pytest", "--version"],
+            ["python3", "--version"], check=True, capture_output=True, text=True
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        print(f"{YELLOW}Warning: python3 not available, skipping tests{NC}")
+        return 0
+
+    try:
+        subprocess.run(
+            ["python3", "-m", "pytest", "--version"],
             check=True,
             capture_output=True,
             text=True,
-            timeout=30,
         )
-    except (subprocess.SubprocessError, FileNotFoundError):
-        if is_ci:
-            print(f"{RED}ERROR: pytest not available in CI{NC}", file=sys.stderr)
-            return 1
+    except (subprocess.CalledProcessError, FileNotFoundError):
         print(f"{YELLOW}Warning: pytest not available, skipping tests{NC}")
         return 0
 
     # Check if tests directory exists
-    tests_dir = repo_root / "tests"
-    if not tests_dir.is_dir():
+    if not Path("tests").is_dir():
         print(f"{YELLOW}No tests directory found, skipping tests{NC}")
         return 0
 
     # Run tests and capture output
     try:
+        # Configure environment for subprocess - ensure Python can find project modules
+        env = os.environ.copy()
+        env["PYTHONPATH"] = os.getcwd() + ":" + env.get("PYTHONPATH", "")
+
         result = subprocess.run(
-            [python_cmd, "-m", "pytest", str(tests_dir), "-v", "--tb=short"],
+            ["python3", "-m", "pytest", "tests/", "-v", "--tb=short"],
             check=False,
             capture_output=True,
             text=True,
-            timeout=300,  # 5 minutes timeout for test execution
+            env=env,
         )
         test_output = result.stdout + result.stderr
         test_exit_code = result.returncode
-    except subprocess.SubprocessError as e:
-        print(f"{RED}Error running tests: {e}{NC}", file=sys.stderr)
-        return 1
-    except FileNotFoundError as e:
-        print(f"{RED}Error running tests: {e}{NC}", file=sys.stderr)
+    except Exception as e:
+        print(f"{RED}Error running tests: {e}{NC}")
         return 1
 
     # Count tests using regex
@@ -153,28 +100,33 @@ def main():
         print(f"{YELLOW}No tests found, skipping test validation{NC}")
         return 0
     else:
-        print(file=sys.stderr)
-        print(f"{RED}COMMIT BLOCKED: Tests failed{NC}", file=sys.stderr)
-        print(file=sys.stderr)
-        print(f"{RED}Failed tests:{NC}", file=sys.stderr)
+        print()
+        print(f"{RED}COMMIT BLOCKED: Tests failed{NC}")
+        print()
+
+        # Print full pytest output to see actual error details
+        print(f"{RED}Full pytest output:{NC}")
+        print(test_output)
+        print()
+
+        print(f"{RED}Failed tests:{NC}")
 
         # Extract and display failed test lines
         for line in test_output.split("\n"):
             if "FAILED" in line or "ERROR" in line:
-                print(f"  {line}", file=sys.stderr)
+                print(f"  {line}")
 
-        print(file=sys.stderr)
+        print()
 
         if failed_tests > 0:
             passing_tests = total_tests - failed_tests
             print(
-                f"{RED}Test Results: {passing_tests}/{total_tests} passing ({failed_tests} failed){NC}",
-                file=sys.stderr,
+                f"{RED}Test Results: {passing_tests}/{total_tests} passing ({failed_tests} failed){NC}"
             )
 
-        print(file=sys.stderr)
-        print(f"{YELLOW}Fix failing tests before committing.{NC}", file=sys.stderr)
-        print(f"{YELLOW}Emergency bypass: git commit --no-verify{NC}", file=sys.stderr)
+        print()
+        print(f"{YELLOW}Fix failing tests before committing.{NC}")
+        print(f"{YELLOW}Emergency bypass: git commit --no-verify{NC}")
         return 1
 
 

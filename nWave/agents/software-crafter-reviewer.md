@@ -122,29 +122,27 @@ external_validity_validation:
     3. Re-run review after integration complete
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 11-PHASE TDD VALIDATION - REVIEW SPECIALIST REQUIREMENTS
+# 8-PHASE TDD VALIDATION - REVIEW SPECIALIST REQUIREMENTS
 # ═══════════════════════════════════════════════════════════════════════════════
 
-eleven_phase_validation_protocol:
-  description: "Reviewer validates complete 11-phase TDD execution before granting approval"
+eight_phase_validation_protocol:
+  description: "Reviewer validates complete 8-phase TDD execution before granting approval - optimized cycle with merged phases"
 
   validation_dimensions:
     phase_completeness:
-      description: "All 11 phases must be present in phase_execution_log"
+      description: "All 8 phases must be present in phase_execution_log"
       mandatory_phases:
         - "PREPARE"
-        - "RED (Acceptance)"
-        - "RED (Unit)"
-        - "GREEN (Unit)"
-        - "CHECK"
-        - "GREEN (Acceptance)"
+        - "RED_ACCEPTANCE"
+        - "RED_UNIT"
+        - "GREEN"
         - "REVIEW"
-        - "REFACTOR"
-        - "POST-REFACTOR REVIEW"
-        - "FINAL VALIDATE"
+        - "REFACTOR_CONTINUOUS"
+        - "REFACTOR_L4"
         - "COMMIT"
-      check: "Count logged phases == 11"
+      check: "Count logged phases == 8"
       severity: "BLOCKER if any phase missing"
+      note: "GREEN merges GREEN_UNIT + CHECK_ACCEPTANCE + GREEN_ACCEPTANCE; REVIEW expands to cover post-refactoring; REFACTOR_CONTINUOUS merges L1+L2+L3; REFACTOR_L4 is optional (can use CHECKPOINT_PENDING or NOT_APPLICABLE)"
 
     phase_outcomes:
       description: "All phases must have PASS outcome"
@@ -152,29 +150,37 @@ eleven_phase_validation_protocol:
       severity: "BLOCKER if any phase has outcome='FAIL'"
 
     review_phases_validation:
-      description: "Both REVIEW phases must be present and approved"
+      description: "Single comprehensive REVIEW phase with expanded scope (merges implementation + post-refactoring review)"
       required_reviews:
         - phase: "REVIEW"
-          timing: "After GREEN (Acceptance), before REFACTOR"
+          timing: "After GREEN, encompasses both implementation quality AND post-refactoring quality"
           approval_required: true
-        - phase: "POST-REFACTOR REVIEW"
-          timing: "After REFACTOR, before FINAL VALIDATE"
-          approval_required: true
-      check: "Both review phases present in log with approval"
-      severity: "BLOCKER if either review missing or not approved"
+          expanded_scope:
+            implementation_quality: "SOLID principles, tests pass, acceptance criteria met, business language verified"
+            post_refactoring_quality: "Tests still pass after refactoring, code quality improved, no regressions introduced"
+      check: "REVIEW phase present in log with approval covering both implementation AND post-refactoring checks"
+      severity: "BLOCKER if review missing or not approved"
+      note: "Single REVIEW replaces both REVIEW and POST-REFACTOR REVIEW from 14-phase cycle - executed after refactoring completes"
 
     refactoring_level_validation:
-      description: "REFACTOR phase must document level reached (L1-L4)"
-      check: "phase_execution_log entry for REFACTOR contains 'refactor_level' in notes"
-      expected_format: "L1, L2, L3, or L4"
-      minimum_level: "L1"
-      target_level: "L4"
-      severity: "HIGH if level not documented, MEDIUM if < L3"
+      description: "REFACTOR phases must document techniques used"
+      refactor_continuous_validation:
+        phase: "REFACTOR_CONTINUOUS"
+        check: "phase_execution_log entry contains techniques used (L1: naming, L2: complexity, L3: organization)"
+        expected_format: "L1+L2+L3 or specific techniques applied"
+        severity: "HIGH if not documented"
+      refactor_l4_validation:
+        phase: "REFACTOR_L4"
+        check: "phase_execution_log entry shows EXECUTED with L4 patterns OR SKIPPED with valid prefix"
+        valid_skip_prefixes: ["CHECKPOINT_PENDING:", "NOT_APPLICABLE:", "APPROVED_SKIP:"]
+        expected_format: "L4 patterns applied OR skip justification"
+        severity: "HIGH if neither documented nor properly skipped"
 
     commit_policy_validation:
-      description: "task_specification.commit_policy must reference 11 phases"
-      check: "commit_policy field contains '11 PHASES'"
+      description: "task_specification.commit_policy must reference 8 phases"
+      check: "commit_policy field contains '8 PHASES'"
       severity: "MEDIUM if missing or incorrect"
+      note: "Optimized cycle reduces from 14 phases to 8 phases for speed and token efficiency"
 
     phase_execution_documentation:
       description: "Each phase log entry must be complete"
@@ -240,31 +246,32 @@ eleven_phase_validation_protocol:
       blocker_policy: "ANY defect found (even minor) BLOCKS approval until resolved"
       blocker_if_rejected: "Cannot proceed to FINAL VALIDATE until approved"
 
-  critique_dimensions_for_11_phase:
+  critique_dimensions_for_8_phase:
     phase_tracking_audit:
       check: "Step file contains complete phase_execution_log"
       examples:
         violation: "Missing phase_execution_log in step file"
-        correction: "Add tdd_cycle.tdd_phase_tracking.phase_execution_log array with all 11 phases"
+        correction: "Add tdd_cycle.phase_execution_log array with all 8 phases"
 
     sequential_execution_validation:
       check: "Phases executed in correct order based on timestamps"
-      expected_sequence: "PREPARE → RED(A) → RED(U) → GREEN(U) → CHECK → GREEN(A) → REVIEW → REFACTOR → POST-REVIEW → VALIDATE → COMMIT"
+      expected_sequence: "PREPARE → RED_ACCEPTANCE → RED_UNIT → GREEN → REVIEW → REFACTOR_CONTINUOUS → REFACTOR_L4 → COMMIT"
       examples:
-        violation: "REFACTOR executed before REVIEW phase"
-        correction: "Ensure REVIEW phase (7) completes before REFACTOR phase (8)"
+        violation: "REFACTOR_CONTINUOUS executed before REVIEW phase"
+        correction: "Ensure REVIEW phase (4) completes before REFACTOR_CONTINUOUS phase (5)"
 
     review_iteration_limits:
-      check: "REVIEW and POST-REFACTOR REVIEW each have max 2 iterations"
+      check: "REVIEW phase has max 2 iterations"
+      note: "Single expanded REVIEW covers both implementation AND post-refactoring quality"
       examples:
         violation: "3 review iterations attempted for REVIEW phase"
         correction: "Escalate after 2 iterations, do not continue reviews"
 
     test_pass_discipline:
-      check: "All phases after GREEN (Acceptance) show 100% test pass rate"
-      critical_phases: ["GREEN (Acceptance)", "REFACTOR", "POST-REFACTOR REVIEW", "FINAL VALIDATE"]
+      check: "All phases after GREEN show 100% test pass rate"
+      critical_phases: ["GREEN", "REFACTOR_CONTINUOUS", "REFACTOR_L4", "COMMIT"]
       examples:
-        violation: "REFACTOR phase shows 95% test pass rate (1 test failing)"
+        violation: "REFACTOR_CONTINUOUS phase shows 95% test pass rate (1 test failing)"
         correction: "BLOCKER - Fix failing test before proceeding. Refactoring must maintain 100% green bar."
 
   approval_decision_logic:

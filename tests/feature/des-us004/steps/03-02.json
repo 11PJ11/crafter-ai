@@ -1,0 +1,23 @@
+{
+  "task_specification": {
+    "task_id": "03-02",
+    "title": "Implement crash recovery audit trail",
+    "description": "Implement Implement crash recovery audit trail for US-004 Audit Trail",
+    "acceptance_criteria": [
+      "Make test_scenario_006_abandoned_phase_traceable_in_audit pass"
+    ],
+    "requires": [
+      "03-01"
+    ],
+    "estimated_hours": 2.5
+  },
+  "tdd_cycle": {
+    "tdd_phase_tracking": {
+      "phase_execution_log": []
+    }
+  },
+  "validation": {
+    "status": "approved",
+    "notes": "Step file ready for execution"
+  }
+}

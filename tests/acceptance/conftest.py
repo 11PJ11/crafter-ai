@@ -1,90 +1,115 @@
-"""Shared fixtures for acceptance tests."""
+"""
+Pytest configuration for DES acceptance tests.
 
-import json
+Provides shared fixtures for test setup and teardown.
+"""
+
 import pytest
 
 
 @pytest.fixture
+def in_memory_filesystem():
+    """
+    In-memory filesystem for testing without disk I/O.
+
+    Returns:
+        InMemoryFileSystem: Fresh in-memory filesystem instance
+    """
+    from tests.des.adapters import InMemoryFileSystem
+
+    return InMemoryFileSystem()
+
+
+@pytest.fixture
+def mocked_time_provider():
+    """
+    Mocked time provider with fixed time for deterministic testing.
+
+    Returns:
+        MockedTimeProvider: Time provider starting at 2026-01-26T10:00:00Z
+    """
+    from datetime import datetime, timezone
+    from tests.des.adapters import MockedTimeProvider
+
+    return MockedTimeProvider(datetime(2026, 1, 26, 10, 0, 0, tzinfo=timezone.utc))
+
+
+@pytest.fixture
+def mocked_hook():
+    """
+    Mocked subagent stop hook for testing without real hook behavior.
+
+    Returns:
+        MockedSubagentStopHook: Hook that returns predefined results
+    """
+    from tests.des.adapters import MockedSubagentStopHook
+
+    return MockedSubagentStopHook()
+
+
+@pytest.fixture
+def mocked_validator():
+    """
+    Mocked template validator for testing without real validation.
+
+    Returns:
+        MockedTemplateValidator: Validator returning passing results by default
+    """
+    from tests.des.adapters import MockedTemplateValidator
+
+    return MockedTemplateValidator()
+
+
+@pytest.fixture
+def des_orchestrator(
+    in_memory_filesystem, mocked_hook, mocked_validator, mocked_time_provider
+):
+    """
+    DES orchestrator with mocked adapters for testing.
+
+    Uses in-memory filesystem and mocked time/hook/validator for:
+    - Zero real filesystem operations
+    - Deterministic time behavior
+    - Fast test execution (<1 second)
+
+    Returns:
+        DESOrchestrator: Configured orchestrator with mocked dependencies
+    """
+    from src.des.application.orchestrator import DESOrchestrator
+
+    return DESOrchestrator(
+        hook=mocked_hook,
+        validator=mocked_validator,
+        filesystem=in_memory_filesystem,
+        time_provider=mocked_time_provider,
+    )
+
+
+@pytest.fixture
 def tmp_project_root(tmp_path):
-    """Create temporary project root with DES directory structure."""
-    # Create required directories
-    (tmp_path / "steps").mkdir(parents=True)
-    (tmp_path / "templates" / "prompt-templates").mkdir(parents=True)
-    (tmp_path / "audit").mkdir(parents=True)
+    """
+    Temporary project root directory for acceptance tests.
+
+    Provides a clean temporary directory for each test to create step files,
+    logs, and other temporary artifacts without affecting the real filesystem.
+
+    Returns:
+        pathlib.Path: Temporary directory path for test use
+    """
     return tmp_path
 
 
 @pytest.fixture
 def minimal_step_file(tmp_project_root):
-    """Create a minimal valid step file for testing."""
-    step_file = tmp_project_root / "steps" / "test-step.json"
+    """
+    Temporary step file for testing hook validation.
 
-    # Create minimal step structure with 14 TDD phases
-    step_data = {
-        "task_specification": {
-            "task_id": "test-01",
-            "project_id": "test-project",
-            "step_type": "feature",
-            "name": "Test step",
-            "description": "Test step for validation",
-        },
-        "state": {
-            "status": "IN_PROGRESS",
-            "started_at": "2026-01-01T00:00:00Z",
-            "completed_at": None,
-        },
-        "tdd_cycle": {
-            "phase_execution_log": [
-                {
-                    "phase_name": phase_name,
-                    "phase_index": idx,
-                    "status": "NOT_EXECUTED",
-                    "started_at": None,
-                    "ended_at": None,
-                    "duration_minutes": None,
-                    "outcome": None,
-                    "outcome_details": None,
-                    "artifacts_created": [],
-                    "artifacts_modified": [],
-                    "test_results": {
-                        "total": None,
-                        "passed": None,
-                        "failed": None,
-                        "skipped": None,
-                    },
-                    "notes": None,
-                    "blocked_by": None,
-                    "history": [],
-                }
-                for idx, phase_name in enumerate(
-                    [
-                        "PREPARE",
-                        "RED_ACCEPTANCE",
-                        "RED_UNIT",
-                        "GREEN_UNIT",
-                        "CHECK_ACCEPTANCE",
-                        "GREEN_ACCEPTANCE",
-                        "REVIEW",
-                        "REFACTOR_L1",
-                        "REFACTOR_L2",
-                        "REFACTOR_L3",
-                        "REFACTOR_L4",
-                        "POST_REFACTOR_REVIEW",
-                        "FINAL_VALIDATE",
-                        "COMMIT",
-                    ]
-                )
-            ]
-        },
-    }
+    Provides a Path object pointing to a temporary JSON step file in the
+    test project root. Tests can write step data to this file and validate
+    hook behavior against it.
 
-    step_file.write_text(json.dumps(step_data, indent=2))
+    Returns:
+        pathlib.Path: Path to temporary step.json file
+    """
+    step_file = tmp_project_root / "step.json"
     return step_file
-
-
-@pytest.fixture
-def des_orchestrator():
-    """DES orchestrator for testing command execution flow."""
-    from des.orchestrator import DESOrchestrator
-
-    return DESOrchestrator()

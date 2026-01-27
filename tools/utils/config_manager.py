@@ -150,6 +150,68 @@ class ConfigManager:
         """
         return self.get_section("knowledge_base")
 
+    def get_task_types_config(self) -> Dict[str, Any]:
+        """
+        Get task types configuration with timeout thresholds.
+
+        Returns:
+            dict: Task types configuration
+        """
+        return self.get_section("task_types")
+
+    def get_task_type_config(self, task_type: str) -> Optional[Dict[str, Any]]:
+        """
+        Get configuration for a specific task type.
+
+        Args:
+            task_type: Name of task type (quick, standard, complex)
+
+        Returns:
+            dict: Task type configuration or None if not found
+        """
+        task_types = self.get_task_types_config()
+        return task_types.get(task_type)
+
+    def validate_threshold_ordering(self, thresholds: Dict[str, int]) -> List[str]:
+        """
+        Validate that threshold percentages are in ascending order.
+
+        Args:
+            thresholds: Dictionary of threshold names to values
+
+        Returns:
+            list: List of validation errors (empty if valid)
+        """
+        THRESHOLD_50 = "warning_50"
+        THRESHOLD_75 = "warning_75"
+        THRESHOLD_90 = "warning_90"
+
+        errors = []
+
+        warning_50 = thresholds.get(THRESHOLD_50)
+        warning_75 = thresholds.get(THRESHOLD_75)
+        warning_90 = thresholds.get(THRESHOLD_90)
+
+        if warning_50 is not None and warning_75 is not None:
+            if warning_50 >= warning_75:
+                errors.append(
+                    f"Threshold {THRESHOLD_50} ({warning_50}) must be less than {THRESHOLD_75} ({warning_75})"
+                )
+
+        if warning_75 is not None and warning_90 is not None:
+            if warning_75 >= warning_90:
+                errors.append(
+                    f"Threshold {THRESHOLD_75} ({warning_75}) must be less than {THRESHOLD_90} ({warning_90})"
+                )
+
+        if warning_50 is not None and warning_90 is not None:
+            if warning_50 >= warning_90:
+                errors.append(
+                    f"Threshold {THRESHOLD_50} ({warning_50}) must be less than {THRESHOLD_90} ({warning_90})"
+                )
+
+        return errors
+
     def get_integration_config(self) -> Dict[str, Any]:
         """
         Get integration configuration.

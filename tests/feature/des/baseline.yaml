@@ -1,0 +1,111 @@
+project_id: "des"
+baseline_type: "feature"
+feature: "DES Command-Origin Task Filtering (US-001)"
+created_at: "2026-01-23T15:35:00Z"
+
+measurements:
+  - category: "Test Coverage"
+    metrics: "Acceptance test count: 4 tests; Test status: 4 failing (RED state); Lines of test code: 202 lines"
+    measured_at: "2026-01-23T15:35:00Z"
+    measurement_method: "pytest --collect-only count; pytest -v execution; wc -l"
+    evidence: |
+      - pytest collected 4 tests in test_us001_command_filtering.py
+      - All 4 tests fail with: AttributeError: 'NotImplementedType' object has no attribute 'render_prompt'
+      - Failing tests: test_execute_command_includes_des_validation_marker, test_ad_hoc_task_bypasses_des_validation, test_research_command_skips_full_validation, test_develop_command_includes_des_validation_marker
+      - test_us001_command_filtering.py has 202 lines
+    notes: "All 4 acceptance criteria covered by E2E tests. Expected failure - tests require des_orchestrator fixture implementation. Comprehensive E2E acceptance tests written using Outside-In TDD."
+
+  - category: "Code Quality"
+    metrics: "Production code coverage: 0%; Cyclomatic complexity: N/A"
+    measured_at: "2026-01-23T15:35:00Z"
+    measurement_method: "pytest --cov; radon cc (post-implementation)"
+    evidence: "No production code exists - des_orchestrator returns NotImplementedType"
+    notes: "Baseline measurement N/A - coverage and complexity will be measured after DEVELOP wave implementation"
+
+  - category: "Target Quality Gates"
+    metrics: "Test pass rate: 0% → 100%; Code coverage: 0% → >80%; Cyclomatic complexity: N/A → <10 per method"
+    measured_at: "2026-01-23T15:35:00Z"
+    measurement_method: "Target values for post-implementation validation"
+    evidence: "Success criteria defined for US-001 implementation"
+    notes: "All 4 tests must pass; Production code must exist (0 → 1+ modules); Code coverage >80%; Cyclomatic complexity <10; All tests pass without warnings; No TODO/FIXME markers in production code"
+
+test_scenarios_covered:
+  - scenario: "/nw:execute command includes DES validation marker"
+    test_name: "test_execute_command_includes_des_validation_marker"
+    expected_markers:
+      - "<!-- DES-VALIDATION: required -->"
+      - "<!-- DES-STEP-FILE: [path] -->"
+      - "<!-- DES-ORIGIN: command:/nw:execute -->"
+
+  - scenario: "Ad-hoc Task bypasses DES validation"
+    test_name: "test_ad_hoc_task_bypasses_des_validation"
+    expected_behavior: "NO DES markers in ad-hoc Task prompts"
+
+  - scenario: "/nw:research command skips full validation"
+    test_name: "test_research_command_skips_full_validation"
+    expected_behavior: "NO DES-VALIDATION marker (validation_level='none')"
+
+  - scenario: "/nw:develop command includes DES validation marker"
+    test_name: "test_develop_command_includes_des_validation_marker"
+    expected_markers:
+      - "<!-- DES-VALIDATION: required -->"
+      - "<!-- DES-STEP-FILE: [path] -->"
+      - "<!-- DES-ORIGIN: command:/nw:develop -->"
+
+implementation_scope:
+  missing_components:
+    - "des_orchestrator fixture implementation"
+    - "render_prompt() method for command-originated tasks"
+    - "prepare_ad_hoc_prompt() method for ad-hoc tasks"
+    - "Command-origin detection logic"
+    - "DES marker injection logic"
+
+  success_criteria:
+    - "All 4 acceptance tests pass (GREEN state)"
+    - "Code coverage >80%"
+    - "Cyclomatic complexity <10 per method"
+    - "No regression in existing test suite"
+
+measurement_commands:
+  test_collection: "pytest tests/acceptance/test_us001_command_filtering.py --collect-only -q"
+  test_execution: "pytest tests/acceptance/test_us001_command_filtering.py -v --tb=short"
+  coverage_measurement: "pytest tests/acceptance/test_us001_command_filtering.py --cov=src/orchestrator --cov-report=term-missing"
+  complexity_analysis: "radon cc src/orchestrator --min B"
+  line_count: "wc -l tests/acceptance/test_us001_command_filtering.py"
+
+evidence_artifacts:
+  test_file: "tests/acceptance/test_us001_command_filtering.py"
+  test_output: "4 tests collected, 4 failed with NotImplementedType AttributeError"
+  acceptance_criteria_source: "docs/feature/des/discuss/acceptance-criteria.md"
+  architecture_reference: "docs/feature/des/design/architecture-design.md (v1.6.0)"
+
+validation:
+  status: "approved"
+  reviewer: "software-crafter-reviewer"
+  reviewed_at: "2026-01-23T15:36:00Z"
+  baseline_type: "Outside-In TDD baseline (RED state)"
+  notes: |
+    ✅ APPROVED - Baseline meets all quality gates
+
+    Strengths:
+    - Quantifiable metrics with clear measurement methodology
+    - Proper Outside-In TDD RED state validated (4 failing tests)
+    - Comprehensive evidence provided for each measurement
+    - Clear success criteria and improvement thresholds
+    - Reproducible measurement commands documented
+    - Realistic target values aligned with project goals
+
+    Validation Checks:
+    ✅ All metrics quantifiable and measurable
+    ✅ Methodology documented with specific commands
+    ✅ Current state vs. target clearly defined
+    ✅ Outside-In TDD RED state correctly captured (4 failing tests)
+    ✅ Evidence artifacts properly referenced
+    ✅ Test scenarios comprehensively covered
+    ✅ Implementation scope clearly defined
+
+    Baseline established for US-001 implementation.
+    Current state: 4 acceptance tests written and failing (correct RED state).
+    No production code exists - ready for DEVELOP wave.
+    Tests provide clear specification of required behavior.
+  issues: []

@@ -3,6 +3,7 @@
   "title": "TDD Cycle Extension for Step Files",
   "description": "Template to embed in step JSON files during /nw:split compilation. This schema extends existing step files without overwriting their content.",
   "version": "2.0.0",
+  "schema_version": "2.0",
   "tdd_cycle": {
     "acceptance_test": {
       "scenario_name": "",
@@ -12,11 +13,15 @@
       "initially_ignored": true,
       "is_walking_skeleton": false,
       "mapped_scenario": {
-        "description": "The specific acceptance test scenario this step makes pass (RED → GREEN)",
+        "description": "The specific acceptance test scenario this step makes pass (RED \u2192 GREEN)",
         "scenario_function": "",
         "scenario_description": "",
         "mapping_type": "feature",
-        "valid_mapping_types": ["feature", "infrastructure", "refactoring"],
+        "valid_mapping_types": [
+          "feature",
+          "infrastructure",
+          "refactoring"
+        ],
         "notes": "If mapping_type is 'infrastructure' or 'refactoring', scenario_function may be empty"
       }
     },
@@ -30,232 +35,86 @@
       "current_phase": "NOT_STARTED",
       "active_e2e_test": "",
       "inactive_e2e_tests": "All other @skip scenarios remain disabled",
-      "phases_completed": []
+      "phases_completed": [],
+      "test_results": {
+        "total": null,
+        "passed": null,
+        "failed": null,
+        "skipped": null
+      }
     },
     "phase_execution_log": [
       {
         "phase_name": "PREPARE",
-        "phase_index": 0,
         "status": "NOT_EXECUTED",
         "started_at": null,
         "ended_at": null,
-        "duration_minutes": null,
         "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
-        "blocked_by": null,
-        "history": []
+        "blocked_by": null
       },
       {
         "phase_name": "RED_ACCEPTANCE",
-        "phase_index": 1,
         "status": "NOT_EXECUTED",
         "started_at": null,
         "ended_at": null,
-        "duration_minutes": null,
         "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
-        "blocked_by": null,
-        "history": []
+        "blocked_by": null
       },
       {
         "phase_name": "RED_UNIT",
-        "phase_index": 2,
         "status": "NOT_EXECUTED",
         "started_at": null,
         "ended_at": null,
-        "duration_minutes": null,
         "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
-        "blocked_by": null,
-        "history": []
+        "blocked_by": null
       },
       {
-        "phase_name": "GREEN_UNIT",
-        "phase_index": 3,
+        "phase_name": "GREEN",
         "status": "NOT_EXECUTED",
         "started_at": null,
         "ended_at": null,
-        "duration_minutes": null,
         "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
-        "notes": null,
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "CHECK_ACCEPTANCE",
-        "phase_index": 4,
-        "status": "NOT_EXECUTED",
-        "started_at": null,
-        "ended_at": null,
-        "duration_minutes": null,
-        "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
-        "notes": null,
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "GREEN_ACCEPTANCE",
-        "phase_index": 5,
-        "status": "NOT_EXECUTED",
-        "started_at": null,
-        "ended_at": null,
-        "duration_minutes": null,
-        "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
-        "notes": null,
-        "blocked_by": null,
-        "history": []
+        "notes": "Combines implementation (GREEN_UNIT) + acceptance validation (GREEN_ACCEPTANCE). Green acceptance is consequence of green unit.",
+        "blocked_by": null
       },
       {
         "phase_name": "REVIEW",
-        "phase_index": 6,
         "status": "NOT_EXECUTED",
         "started_at": null,
         "ended_at": null,
-        "duration_minutes": null,
         "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
-        "notes": null,
-        "blocked_by": null,
-        "history": []
+        "notes": "Expanded scope: covers both implementation quality AND post-refactoring quality (merges POST_REFACTOR_REVIEW)",
+        "blocked_by": null
       },
       {
-        "phase_name": "REFACTOR_L1",
-        "phase_index": 7,
+        "phase_name": "REFACTOR_CONTINUOUS",
         "status": "NOT_EXECUTED",
         "started_at": null,
         "ended_at": null,
-        "duration_minutes": null,
         "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
-        "notes": null,
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "REFACTOR_L2",
-        "phase_index": 8,
-        "status": "NOT_EXECUTED",
-        "started_at": null,
-        "ended_at": null,
-        "duration_minutes": null,
-        "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
-        "notes": null,
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "REFACTOR_L3",
-        "phase_index": 9,
-        "status": "NOT_EXECUTED",
-        "started_at": null,
-        "ended_at": null,
-        "duration_minutes": null,
-        "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
-        "notes": null,
-        "blocked_by": null,
-        "history": []
+        "notes": "Combines L1 (naming clarity) + L2 (complexity reduction) + L3 (class responsibilities and organization)",
+        "blocked_by": null
       },
       {
         "phase_name": "REFACTOR_L4",
-        "phase_index": 10,
         "status": "NOT_EXECUTED",
         "started_at": null,
         "ended_at": null,
-        "duration_minutes": null,
         "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
-        "notes": null,
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "POST_REFACTOR_REVIEW",
-        "phase_index": 11,
-        "status": "NOT_EXECUTED",
-        "started_at": null,
-        "ended_at": null,
-        "duration_minutes": null,
-        "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
-        "notes": null,
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "FINAL_VALIDATE",
-        "phase_index": 12,
-        "status": "NOT_EXECUTED",
-        "started_at": null,
-        "ended_at": null,
-        "duration_minutes": null,
-        "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
-        "notes": null,
-        "blocked_by": null,
-        "history": []
+        "notes": "Architecture patterns - OPTIONAL (can use CHECKPOINT_PENDING or NOT_APPLICABLE prefix for skip)",
+        "blocked_by": null
       },
       {
         "phase_name": "COMMIT",
-        "phase_index": 13,
         "status": "NOT_EXECUTED",
         "started_at": null,
         "ended_at": null,
-        "duration_minutes": null,
         "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
-        "notes": null,
-        "blocked_by": null,
-        "history": []
+        "notes": "Absorbs FINAL_VALIDATE (metadata checks only)",
+        "blocked_by": null
       }
     ]
   },
@@ -269,14 +128,19 @@
     "validation_after_each_phase": true,
     "validation_after_each_review": true,
     "validation_after_each_refactor": true,
-    "all_14_phases_mandatory": true,
+    "all_8_phases_mandatory": true,
     "phase_documentation_required": true
   },
   "phase_validation_rules": {
     "description": "Rules for validating phase execution status before commit",
     "all_phases_required": true,
-    "total_phases": 14,
-    "valid_statuses": ["NOT_EXECUTED", "IN_PROGRESS", "EXECUTED", "SKIPPED"],
+    "total_phases": 8,
+    "valid_statuses": [
+      "NOT_EXECUTED",
+      "IN_PROGRESS",
+      "EXECUTED",
+      "SKIPPED"
+    ],
     "commit_acceptance_matrix": {
       "EXECUTED": {
         "allows_commit": true,
@@ -327,10 +191,10 @@
           "note": "Used for TDD checkpoint commits (GREEN, REVIEW, REFACTOR, FINAL)",
           "usage": "Allows intermediate commits during TDD cycle",
           "checkpoints": [
-            "GREEN checkpoint (phases 0-5 complete, 6-13 pending)",
-            "REVIEW checkpoint (phases 0-6 complete, 7-13 pending)",
-            "REFACTOR checkpoint (phases 0-10 complete, 11-13 pending)",
-            "FINAL checkpoint (all 14 phases complete)"
+            "GREEN checkpoint (phases 0-3 complete, 4-7 pending)",
+            "REVIEW checkpoint (phases 0-4 complete, 5-7 pending)",
+            "REFACTOR checkpoint (phases 0-6 complete, 7 pending)",
+            "FINAL checkpoint (all 8 phases complete)"
           ]
         },
         "DEFERRED:": {
@@ -349,35 +213,44 @@
     "PREPARE",
     "RED_ACCEPTANCE",
     "RED_UNIT",
-    "GREEN_UNIT",
-    "CHECK_ACCEPTANCE",
-    "GREEN_ACCEPTANCE",
+    "GREEN",
     "REVIEW",
-    "REFACTOR_L1",
-    "REFACTOR_L2",
-    "REFACTOR_L3",
+    "REFACTOR_CONTINUOUS",
     "REFACTOR_L4",
-    "POST_REFACTOR_REVIEW",
-    "FINAL_VALIDATE",
     "COMMIT",
     "COMPLETED"
   ],
   "valid_transitions": {
-    "NOT_STARTED": ["PREPARE"],
-    "PREPARE": ["RED_ACCEPTANCE"],
-    "RED_ACCEPTANCE": ["RED_UNIT", "PREPARE"],
-    "RED_UNIT": ["GREEN_UNIT"],
-    "GREEN_UNIT": ["CHECK_ACCEPTANCE"],
-    "CHECK_ACCEPTANCE": ["RED_UNIT", "GREEN_ACCEPTANCE"],
-    "GREEN_ACCEPTANCE": ["REVIEW"],
-    "REVIEW": ["REFACTOR_L1", "REVIEW"],
-    "REFACTOR_L1": ["REFACTOR_L2"],
-    "REFACTOR_L2": ["REFACTOR_L3"],
-    "REFACTOR_L3": ["REFACTOR_L4"],
-    "REFACTOR_L4": ["POST_REFACTOR_REVIEW"],
-    "POST_REFACTOR_REVIEW": ["FINAL_VALIDATE", "REFACTOR_L1"],
-    "FINAL_VALIDATE": ["COMMIT"],
-    "COMMIT": ["COMPLETED"]
+    "NOT_STARTED": [
+      "PREPARE"
+    ],
+    "PREPARE": [
+      "RED_ACCEPTANCE"
+    ],
+    "RED_ACCEPTANCE": [
+      "RED_UNIT",
+      "PREPARE"
+    ],
+    "RED_UNIT": [
+      "GREEN"
+    ],
+    "GREEN": [
+      "REVIEW"
+    ],
+    "REVIEW": [
+      "REFACTOR_CONTINUOUS",
+      "REVIEW"
+    ],
+    "REFACTOR_CONTINUOUS": [
+      "REFACTOR_L4"
+    ],
+    "REFACTOR_L4": [
+      "COMMIT",
+      "REFACTOR_CONTINUOUS"
+    ],
+    "COMMIT": [
+      "COMPLETED"
+    ]
   },
   "failure_classification": {
     "valid_red": [
@@ -435,22 +308,16 @@
     }
   },
   "task_specification": {
-    "commit_policy": "Commit ONLY after ALL 14 PHASES complete. AUTO-PUSH after commit.",
+    "commit_policy": "Commit ONLY after ALL 8 PHASES complete. AUTO-PUSH after commit.",
     "mandatory_phases": [
       "PREPARE - Remove @skip, verify only 1 scenario enabled",
       "RED_ACCEPTANCE - Test must FAIL initially",
       "RED_UNIT - Write failing unit tests",
-      "GREEN_UNIT - Implement minimum code to pass",
-      "CHECK_ACCEPTANCE - Verify unit tests pass",
-      "GREEN_ACCEPTANCE - All tests PASS",
-      "REVIEW - Self-review: SOLID, coverage, acceptance criteria (MANDATORY)",
-      "REFACTOR_L1 - Naming clarity",
-      "REFACTOR_L2 - Method extraction",
-      "REFACTOR_L3 - Class responsibilities",
-      "REFACTOR_L4 - Architecture patterns",
-      "POST_REFACTOR_REVIEW - Self-review: tests pass, quality improved (MANDATORY)",
-      "FINAL_VALIDATE - Document full test results (MANDATORY)",
-      "COMMIT - Commit with detailed message"
+      "GREEN - Implement minimum code + verify acceptance (green acceptance is consequence of green unit)",
+      "REVIEW - Self-review: SOLID, coverage, acceptance criteria, refactoring quality (MANDATORY, covers both implementation AND post-refactoring)",
+      "REFACTOR_CONTINUOUS - Progressive refactoring: L1 (naming) + L2 (complexity) + L3 (organization)",
+      "REFACTOR_L4 - Architecture patterns (OPTIONAL: can use CHECKPOINT_PENDING or NOT_APPLICABLE for skip)",
+      "COMMIT - Commit with detailed message (absorbs FINAL_VALIDATE metadata checks)"
     ]
   }
 }

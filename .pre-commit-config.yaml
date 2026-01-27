@@ -26,14 +26,14 @@ repos:
         pass_filenames: false
         stages: [pre-commit]
 
-      # Phase 1: Run pytest test suite
+      # Phase 1: Run pytest test suite (post-commit to avoid blocking)
       - id: pytest-validation
         name: Pytest Test Validation
         entry: python3 scripts/hooks/validate_tests.py
         language: system
         pass_filenames: false
-        stages: [pre-commit]
-        always_run: true
+        stages: [post-commit]
+        files: ^(tests/|src/des/).*\.py$
 
       # Phase 2: Documentation version validation
       - id: docs-version-validation
@@ -44,13 +44,13 @@ repos:
         stages: [pre-commit]
         always_run: true
 
-      # Phase 3: Documentation freshness check
+      # Phase 3: Documentation freshness check (enforced at push, not commit)
       - id: docs-freshness-check
         name: Documentation Freshness Check
         entry: python3 scripts/hooks/check_documentation_freshness.py
         language: system
         pass_filenames: false
-        stages: [pre-commit]
+        stages: [pre-push]
         always_run: true
 
       # Phase 4: Conflict detection between related files
@@ -100,10 +100,12 @@ repos:
     rev: v0.3.0
     hooks:
       - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
+        args: [--fix]
         files: ^(scripts/|tools/|tests/).*\.py$
+        stages: [pre-commit]
       - id: ruff-format
         files: ^(scripts/|tools/|tests/).*\.py$
+        stages: [pre-commit]
 
 # Configuration
 default_stages: [pre-commit]

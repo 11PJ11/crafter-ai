@@ -17,7 +17,6 @@ WAVE: DISTILL (Acceptance Test Creation)
 STATUS: RED (Outside-In TDD - awaiting DEVELOP wave implementation)
 """
 
-import pytest
 import json
 from typing import Protocol, Optional
 
@@ -97,9 +96,9 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook (simulates agent completion)
-        from des.hooks import SubagentStopHook
+        from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
 
-        hook = SubagentStopHook()
+        hook = RealSubagentStopHook()
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: Hook fired and performed validation
@@ -137,9 +136,9 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        from des.hooks import SubagentStopHook
+        from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
 
-        hook = SubagentStopHook()
+        hook = RealSubagentStopHook()
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: Abandoned phase detected with specific error message
@@ -178,17 +177,16 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        from des.hooks import SubagentStopHook
+        from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
 
-        hook = SubagentStopHook()
+        hook = RealSubagentStopHook()
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: Silent completion detected
         assert hook_result.validation_status == "FAILED"
         assert hook_result.error_type == "SILENT_COMPLETION"
         assert "Agent completed without updating step file" in hook_result.error_message
-        # Note: We expect not_executed_phases count, not a direct attribute
-        # The hook should count phases with NOT_EXECUTED status
+        assert hook_result.not_executed_phases == 14
         assert hook_result.recovery_suggestions is not None
         assert len(hook_result.recovery_suggestions) >= 1
 
@@ -197,7 +195,6 @@ class TestPostExecutionStateValidation:
     # Scenario 4: Incomplete phase execution detected (no outcome recorded)
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_executed_phase_without_outcome_flagged(
         self, tmp_project_root, minimal_step_file
     ):
@@ -223,22 +220,25 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        # from des.hooks import SubagentStopHook
-        # hook = SubagentStopHook()
-        # hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
+        from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
+
+        hook = RealSubagentStopHook()
+        hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: Missing outcome detected
-        # assert hook_result.validation_status == "FAILED"
-        # assert hook_result.incomplete_phases == ["REFACTOR_L1"]
-        # assert "Phase REFACTOR_L1 marked EXECUTED but missing outcome" in hook_result.error_message
-        # assert hook_result.error_type == "MISSING_OUTCOME"
+        assert hook_result.validation_status == "FAILED"
+        assert hook_result.incomplete_phases == ["REFACTOR_L1"]
+        assert (
+            "Phase REFACTOR_L1 marked EXECUTED but missing outcome"
+            in hook_result.error_message
+        )
+        assert hook_result.error_type == "MISSING_OUTCOME"
 
     # =========================================================================
     # AC-003.5: "SKIPPED" phases must have valid `blocked_by` reason
     # Scenario 5: Skipped phase with missing blocked_by reason flagged
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_skipped_phase_without_blocked_by_reason_flagged(
         self, tmp_project_root, minimal_step_file
     ):
@@ -264,22 +264,25 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        # from des.hooks import SubagentStopHook
-        # hook = SubagentStopHook()
-        # hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
+        from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
+
+        hook = RealSubagentStopHook()
+        hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: Invalid skip detected
-        # assert hook_result.validation_status == "FAILED"
-        # assert hook_result.invalid_skips == ["REFACTOR_L3"]
-        # assert "Phase REFACTOR_L3 marked SKIPPED but missing blocked_by reason" in hook_result.error_message
-        # assert hook_result.error_type == "INVALID_SKIP"
+        assert hook_result.validation_status == "FAILED"
+        assert hook_result.invalid_skips == ["REFACTOR_L3"]
+        assert (
+            "Phase REFACTOR_L3 marked SKIPPED but missing blocked_by reason"
+            in hook_result.error_message
+        )
+        assert hook_result.error_type == "INVALID_SKIP"
 
     # =========================================================================
     # AC-003.6: Validation errors trigger FAILED state with recovery suggestions
     # Scenario 6: Multiple validation errors trigger FAILED state
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_validation_errors_trigger_failed_state_with_recovery(
         self, tmp_project_root, minimal_step_file
     ):
@@ -310,56 +313,64 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        # from des.hooks import SubagentStopHook
-        # hook = SubagentStopHook()
-        # hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
+        from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
+
+        hook = RealSubagentStopHook()
+        hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: FAILED state set with comprehensive recovery guidance
-        # assert hook_result.validation_status == "FAILED"
-        # assert hook_result.error_count == 2
-        # assert "GREEN_UNIT" in str(hook_result.abandoned_phases)
-        # assert "REVIEW" in str(hook_result.incomplete_phases)
+        assert hook_result.validation_status == "FAILED"
+        assert hook_result.error_count == 2
+        assert "GREEN_UNIT" in str(hook_result.abandoned_phases)
+        assert "REVIEW" in str(hook_result.incomplete_phases)
 
         # Assert: Step file updated with FAILED state
-        # updated_step = json.loads(minimal_step_file.read_text())
-        # assert updated_step["state"]["status"] == "FAILED"
-        # assert updated_step["state"]["failure_reason"] is not None
+        updated_step = json.loads(minimal_step_file.read_text())
+        assert updated_step["state"]["status"] == "FAILED"
+        assert updated_step["state"]["failure_reason"] is not None
 
         # Assert: Recovery suggestions provided with explicit format requirements
         # REQUIREMENT: Each suggestion must be actionable and educational
-        # assert len(hook_result.recovery_suggestions) >= 3
-        #
+        assert len(hook_result.recovery_suggestions) >= 3
+
         # FORMAT REQUIREMENT 1: Each suggestion >= 1 complete sentence
-        # for suggestion in hook_result.recovery_suggestions:
-        #     assert len(suggestion) >= 20, "Suggestion too short to be actionable"
-        #     assert suggestion[0].isupper(), "Suggestion should start with capital"
-        #     assert suggestion.rstrip().endswith(('.', '`', '"')), "Suggestion should end properly"
-        #
+        for suggestion in hook_result.recovery_suggestions:
+            assert len(suggestion) >= 20, "Suggestion too short to be actionable"
+            assert suggestion[0].isupper(), "Suggestion should start with capital"
+            assert suggestion.rstrip().endswith(
+                (".", "`", '"')
+            ), "Suggestion should end properly"
+
         # FORMAT REQUIREMENT 2: At least one suggestion explains WHY error occurred
-        # why_patterns = ["because", "since", "left in", "was not", "missing", "without"]
-        # assert any(
-        #     any(p in s.lower() for p in why_patterns)
-        #     for s in hook_result.recovery_suggestions
-        # ), "At least one suggestion must explain WHY error occurred"
-        #
+        why_patterns = ["because", "since", "left in", "was not", "missing", "without"]
+        assert any(
+            any(p in s.lower() for p in why_patterns)
+            for s in hook_result.recovery_suggestions
+        ), "At least one suggestion must explain WHY error occurred"
+
         # FORMAT REQUIREMENT 3: At least one suggestion explains HOW to fix
-        # how_patterns = ["/nw:execute", "run", "reset", "add", "update", "set"]
-        # assert any(
-        #     any(p in s.lower() for p in how_patterns)
-        #     for s in hook_result.recovery_suggestions
-        # ), "At least one suggestion must explain HOW to fix"
-        #
+        how_patterns = ["/nw:execute", "run", "reset", "add", "update", "set"]
+        assert any(
+            any(p in s.lower() for p in how_patterns)
+            for s in hook_result.recovery_suggestions
+        ), "At least one suggestion must explain HOW to fix"
+
         # CONTENT: Specific recovery actions expected
-        # assert any("transcript" in s.lower() for s in hook_result.recovery_suggestions)
-        # assert any("reset" in s.lower() or "status" in s.lower() for s in hook_result.recovery_suggestions)
-        # assert any("/nw:execute" in s or "resume" in s.lower() for s in hook_result.recovery_suggestions)
+        assert any("transcript" in s.lower() for s in hook_result.recovery_suggestions)
+        assert any(
+            "reset" in s.lower() or "status" in s.lower()
+            for s in hook_result.recovery_suggestions
+        )
+        assert any(
+            "/nw:execute" in s or "resume" in s.lower()
+            for s in hook_result.recovery_suggestions
+        )
 
     # =========================================================================
     # Happy Path: Clean completion passes validation silently
     # Scenario 7: All phases executed correctly - validation passes
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_clean_completion_passes_validation(
         self, tmp_project_root, minimal_step_file
     ):
@@ -384,18 +395,19 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        # from des.hooks import SubagentStopHook
-        # hook = SubagentStopHook()
-        # hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
+        from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
+
+        hook = RealSubagentStopHook()
+        hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: Validation passes silently
-        # assert hook_result.validation_status == "PASSED"
-        # assert hook_result.abandoned_phases == []
-        # assert hook_result.incomplete_phases == []
-        # assert hook_result.invalid_skips == []
-        # assert hook_result.error_message is None
+        assert hook_result.validation_status == "PASSED"
+        assert hook_result.abandoned_phases == []
+        assert hook_result.incomplete_phases == []
+        assert hook_result.invalid_skips == []
+        assert hook_result.error_message is None
 
-        # Assert: Audit log records success
+        # Assert: Audit log records success (future implementation)
         # assert "SUBAGENT_STOP_VALIDATION" in audit_log.get_recent_events()
         # recent_event = audit_log.get_last_event()
         # assert recent_event["event_type"] == "SUBAGENT_STOP_VALIDATION"
@@ -406,7 +418,6 @@ class TestPostExecutionStateValidation:
     # Scenario 8: Legitimately skipped phases pass validation
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_valid_skip_with_blocked_by_passes_validation(
         self, tmp_project_root, minimal_step_file
     ):
@@ -430,14 +441,15 @@ class TestPostExecutionStateValidation:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        # from des.hooks import SubagentStopHook
-        # hook = SubagentStopHook()
-        # hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
+        from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
+
+        hook = RealSubagentStopHook()
+        hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: Valid skip accepted
-        # assert hook_result.validation_status == "PASSED"
-        # assert hook_result.invalid_skips == []
-        # assert "REFACTOR_L2" not in str(hook_result.error_message or "")
+        assert hook_result.validation_status == "PASSED"
+        assert hook_result.invalid_skips == []
+        assert "REFACTOR_L2" not in str(hook_result.error_message or "")
 
 
 # =============================================================================
@@ -781,6 +793,108 @@ def _create_step_file_with_clean_completion():
     return _create_step_file_with_all_phases_executed()
 
 
+def _create_step_file_with_timeout_exceeded():
+    """Create step file where total execution duration exceeds configured time limit."""
+    phases = [
+        "PREPARE",
+        "RED_ACCEPTANCE",
+        "RED_UNIT",
+        "GREEN_UNIT",
+        "CHECK_ACCEPTANCE",
+        "GREEN_ACCEPTANCE",
+        "REVIEW",
+        "REFACTOR_L1",
+        "REFACTOR_L2",
+        "REFACTOR_L3",
+        "REFACTOR_L4",
+        "POST_REFACTOR_REVIEW",
+        "FINAL_VALIDATE",
+        "COMMIT",
+    ]
+
+    # Set timeout limits: 5 minutes base + 2 minutes extensions = 7 minutes = 420 seconds
+    # Set actual duration: 8 minutes = 480 seconds (exceeds limit by 60 seconds)
+    phase_log = []
+    duration_per_phase = 480 // len(phases)  # ~34 seconds per phase
+
+    for i, phase in enumerate(phases):
+        phase_log.append(
+            {
+                "phase_number": i,
+                "phase_name": phase,
+                "status": "EXECUTED",
+                "outcome": "PASS",
+                "outcome_details": f"{phase} completed",
+                "duration_seconds": duration_per_phase,
+                "blocked_by": None,
+            }
+        )
+
+    return {
+        "task_id": "01-01",
+        "project_id": "test-project",
+        "workflow_type": "tdd_cycle",
+        "state": {
+            "status": "DONE",
+            "started_at": "2026-01-22T10:00:00Z",
+            "completed_at": "2026-01-22T10:08:00Z",
+        },
+        "tdd_cycle": {
+            "duration_minutes": 5,
+            "total_extensions_minutes": 2,
+            "phase_execution_log": phase_log,
+        },
+    }
+
+
+def _create_step_file_with_missing_limits():
+    """Create step file missing required max_turns and duration_minutes configuration."""
+    phases = [
+        "PREPARE",
+        "RED_ACCEPTANCE",
+        "RED_UNIT",
+        "GREEN_UNIT",
+        "CHECK_ACCEPTANCE",
+        "GREEN_ACCEPTANCE",
+        "REVIEW",
+        "REFACTOR_L1",
+        "REFACTOR_L2",
+        "REFACTOR_L3",
+        "REFACTOR_L4",
+        "POST_REFACTOR_REVIEW",
+        "FINAL_VALIDATE",
+        "COMMIT",
+    ]
+
+    phase_log = []
+    for i, phase in enumerate(phases):
+        phase_log.append(
+            {
+                "phase_number": i,
+                "phase_name": phase,
+                "status": "EXECUTED",
+                "outcome": "PASS",
+                "outcome_details": f"{phase} completed",
+                "blocked_by": None,
+            }
+        )
+
+    return {
+        "task_id": "01-01",
+        "project_id": "test-project",
+        "workflow_type": "tdd_cycle",
+        "state": {
+            "status": "DONE",
+            "started_at": "2026-01-22T10:00:00Z",
+            "completed_at": "2026-01-22T11:30:00Z",
+        },
+        "tdd_cycle": {
+            # Missing max_turns and duration_minutes fields!
+            "phase_execution_log": phase_log
+        },
+    }
+
+
 def _create_step_file_with_valid_skip():
     """Create step file with legitimately skipped phase (has blocked_by)."""
     phases = [
@@ -857,7 +971,6 @@ class TestOrchestratorHookIntegration:
     that proves the wiring works (per CM-D 90/10 rule).
     """
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_orchestrator_invokes_subagent_stop_hook_on_completion(
         self, tmp_project_root, minimal_step_file
     ):
@@ -870,22 +983,23 @@ class TestOrchestratorHookIntegration:
         This test would FAIL if the import or delegation is missing.
         """
         # Arrange: Import entry point (NOT internal component)
-        # from des.orchestrator import DESOrchestrator
+        from src.des.application.orchestrator import DESOrchestrator
 
         # Create step file with clean completion
-        # step_data = _create_step_file_with_clean_completion()
-        # minimal_step_file.write_text(json.dumps(step_data, indent=2))
+        step_data = _create_step_file_with_clean_completion()
+        minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Invoke validation through ENTRY POINT
-        # orchestrator = DESOrchestrator()
-        # result = orchestrator.on_subagent_complete(step_file_path=str(minimal_step_file))
+        orchestrator = DESOrchestrator.create_with_defaults()
+        result = orchestrator.on_subagent_complete(
+            step_file_path=str(minimal_step_file)
+        )
 
         # Assert: Hook fired through wired integration
-        # assert result.validation_status == "PASSED"
-        # assert result.abandoned_phases == []
-        # assert result.error_count == 0
+        assert result.validation_status == "PASSED"
+        assert result.abandoned_phases == []
+        assert result.error_count == 0
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_orchestrator_detects_abandoned_phase_via_entry_point(
         self, tmp_project_root, minimal_step_file
     ):
@@ -898,19 +1012,21 @@ class TestOrchestratorHookIntegration:
         not just returning success by default.
         """
         # Arrange: Import entry point
-        # from des.orchestrator import DESOrchestrator
+        from src.des.application.orchestrator import DESOrchestrator
 
         # Create step file with abandoned phase
-        # step_data = _create_step_file_with_abandoned_phase(
-        #     abandoned_phase="GREEN_UNIT", last_completed_phase="RED_UNIT"
-        # )
-        # minimal_step_file.write_text(json.dumps(step_data, indent=2))
+        step_data = _create_step_file_with_abandoned_phase(
+            abandoned_phase="GREEN_UNIT", last_completed_phase="RED_UNIT"
+        )
+        minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Invoke validation through ENTRY POINT
-        # orchestrator = DESOrchestrator()
-        # result = orchestrator.on_subagent_complete(step_file_path=str(minimal_step_file))
+        orchestrator = DESOrchestrator.create_with_defaults()
+        result = orchestrator.on_subagent_complete(
+            step_file_path=str(minimal_step_file)
+        )
 
         # Assert: Validation fails through wired validator
-        # assert result.validation_status == "FAILED"
-        # assert "GREEN_UNIT" in result.abandoned_phases
-        # assert result.error_count > 0
+        assert result.validation_status == "FAILED"
+        assert "GREEN_UNIT" in result.abandoned_phases
+        assert result.error_count > 0

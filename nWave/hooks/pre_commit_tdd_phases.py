@@ -25,8 +25,8 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Any
 
 
-# Required TDD phases in order (14 total)
-REQUIRED_PHASES = [
+# Required TDD phases - support both v1.0 (14 phases) and v2.0 (8 phases)
+REQUIRED_PHASES_V1 = [
     "PREPARE",
     "RED_ACCEPTANCE",
     "RED_UNIT",
@@ -42,6 +42,20 @@ REQUIRED_PHASES = [
     "FINAL_VALIDATE",
     "COMMIT",
 ]
+
+REQUIRED_PHASES_V2 = [
+    "PREPARE",
+    "RED_ACCEPTANCE",
+    "RED_UNIT",
+    "GREEN",
+    "REVIEW",
+    "REFACTOR_CONTINUOUS",
+    "REFACTOR_L4",
+    "COMMIT",
+]
+
+# Default to v1.0 for backward compatibility
+REQUIRED_PHASES = REQUIRED_PHASES_V1
 
 # Valid prefixes for SKIPPED phases that allow commit
 VALID_SKIP_PREFIXES = [
@@ -137,6 +151,25 @@ def get_staged_step_files() -> List[str]:
         return []
 
 
+def detect_schema_version(data: Dict[str, Any]) -> str:
+    """
+    Detect schema version from step file data.
+
+    Returns:
+        "2.0" if v2.0 schema detected, "1.0" for backward compatibility default
+    """
+    # Check root level
+    if data.get("schema_version") == "2.0":
+        return "2.0"
+
+    # Check nested in tdd_cycle
+    if data.get("tdd_cycle", {}).get("schema_version") == "2.0":
+        return "2.0"
+
+    # Default to v1.0 for backward compatibility
+    return "1.0"
+
+
 def validate_skipped_phase(entry: Dict[str, Any]) -> Tuple[bool, str]:
     """
     Validate a SKIPPED phase has proper blocked_by reason.
@@ -162,12 +195,12 @@ def validate_skipped_phase(entry: Dict[str, Any]) -> Tuple[bool, str]:
     return False, f"Invalid blocked_by format. Must start with one of: {valid_examples}"
 
 
-def validate_step_file(file_path: str) -> Tuple[bool, List[Dict[str, Any]]]:
+def validate_step_file(file_path: str) -> Tuple[bool, List[Dict[str, Any]], str]:
     """
     Validate a step file has all TDD phases properly executed.
 
     Returns:
-        Tuple of (is_valid, list_of_issues)
+        Tuple of (is_valid, list_of_issues, schema_version)
     """
     issues: List[Dict[str, Any]] = []
 
@@ -175,11 +208,15 @@ def validate_step_file(file_path: str) -> Tuple[bool, List[Dict[str, Any]]]:
         with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
     except json.JSONDecodeError as e:
-        return False, [{"phase": "N/A", "status": "ERROR", "issue": f"Invalid JSON: {e}"}]
+        return False, [{"phase": "N/A", "status": "ERROR", "issue": f"Invalid JSON: {e}"}], "1.0"
     except FileNotFoundError:
-        return False, [{"phase": "N/A", "status": "ERROR", "issue": "File not found"}]
+        return False, [{"phase": "N/A", "status": "ERROR", "issue": "File not found"}], "1.0"
     except Exception as e:
-        return False, [{"phase": "N/A", "status": "ERROR", "issue": f"Cannot read file: {e}"}]
+        return False, [{"phase": "N/A", "status": "ERROR", "issue": f"Cannot read file: {e}"}], "1.0"
+
+    # Detect schema version (v1.0 = 14 phases, v2.0 = 8 phases)
+    schema_version = detect_schema_version(data)
+    required_phases = REQUIRED_PHASES_V2 if schema_version == "2.0" else REQUIRED_PHASES_V1
 
     # REJECT OLD/WRONG FORMAT PATTERNS
     if "step_id" in data:
@@ -187,19 +224,20 @@ def validate_step_file(file_path: str) -> Tuple[bool, List[Dict[str, Any]]]:
             "phase": "N/A",
             "status": "WRONG_FORMAT",
             "issue": "Found 'step_id' - use 'task_id'. This is an obsolete format."
-        }]
+        }], schema_version
     if "phase_id" in data:
+        expected_phases = len(required_phases)
         return False, [{
             "phase": "N/A",
             "status": "WRONG_FORMAT",
-            "issue": "Found 'phase_id' - this field should not exist. Each step has ALL 14 phases."
-        }]
+            "issue": f"Found 'phase_id' - this field should not exist. Each step has ALL {expected_phases} phases (schema v{schema_version})."
+        }], schema_version
     if "tdd_phase" in data and "tdd_cycle" not in data:
         return False, [{
             "phase": "N/A",
             "status": "WRONG_FORMAT",
             "issue": "Found 'tdd_phase' at top level. Phases must be in tdd_cycle.phase_execution_log."
-        }]
+        }], schema_version
 
     # Get phase execution log
     phase_log = data.get("tdd_cycle", {}).get("phase_execution_log", [])
@@ -209,14 +247,15 @@ def validate_step_file(file_path: str) -> Tuple[bool, List[Dict[str, Any]]]:
         phase_log = data.get("tdd_cycle", {}).get("tdd_phase_tracking", {}).get("phase_execution_log", [])
 
     if not phase_log:
-        return False, [{"phase": "N/A", "status": "MISSING", "issue": "No phase_execution_log found - file may need migration"}]
+        return False, [{"phase": "N/A", "status": "MISSING", "issue": "No phase_execution_log found - file may need migration"}], schema_version
 
-    # Check if we have all 14 phases
-    if len(phase_log) < len(REQUIRED_PHASES):
+    # Check if we have correct number of phases for schema version
+    expected_count = len(required_phases)
+    if len(phase_log) < expected_count:
         issues.append({
             "phase": "N/A",
             "status": "INCOMPLETE",
-            "issue": f"Expected {len(REQUIRED_PHASES)} phases, found {len(phase_log)} - file may need migration"
+            "issue": f"Schema v{schema_version}: Expected {expected_count} phases, found {len(phase_log)} - file may need migration"
         })
 
     # Build lookup by phase name
@@ -224,7 +263,7 @@ def validate_step_file(file_path: str) -> Tuple[bool, List[Dict[str, Any]]]:
 
     last_executed_index = -1
 
-    for i, phase_name in enumerate(REQUIRED_PHASES):
+    for i, phase_name in enumerate(required_phases):
         entry = phase_lookup.get(phase_name)
 
         if not entry:
@@ -243,7 +282,7 @@ def validate_step_file(file_path: str) -> Tuple[bool, List[Dict[str, Any]]]:
             # But allow gaps if they contain only valid SKIPPED phases
             if last_executed_index >= 0 and i > last_executed_index + 1:
                 for j in range(last_executed_index + 1, i):
-                    gap_phase = REQUIRED_PHASES[j]
+                    gap_phase = required_phases[j]
                     gap_entry = phase_lookup.get(gap_phase)
 
                     # Check if gap phase is a valid SKIPPED
@@ -261,7 +300,7 @@ def validate_step_file(file_path: str) -> Tuple[bool, List[Dict[str, Any]]]:
                             "phase": gap_phase,
                             "phase_index": j,
                             "status": "SKIPPED_GAP",
-                            "issue": f"Phase skipped (gap between {REQUIRED_PHASES[last_executed_index]} and {phase_name})"
+                            "issue": f"Phase skipped (gap between {required_phases[last_executed_index]} and {phase_name})"
                         })
             last_executed_index = i
 
@@ -319,7 +358,7 @@ def validate_step_file(file_path: str) -> Tuple[bool, List[Dict[str, Any]]]:
                 "issue": f"Unknown status: {status}"
             })
 
-    return len(issues) == 0, issues
+    return len(issues) == 0, issues, schema_version
 
 
 def write_validation_marker(step_files: List[str], passed: bool) -> None:
@@ -395,12 +434,13 @@ def log_bypass_attempt(reason: str, files: List[str], issues: List[Dict]) -> Non
         pass  # Silent fail - logging is best effort
 
 
-def print_validation_result(file_path: str, is_valid: bool, issues: List[Dict]) -> None:
+def print_validation_result(file_path: str, is_valid: bool, issues: List[Dict], schema_version: str = "1.0") -> None:
     """Print validation result for a file."""
     print(f"\n  Checking: {file_path}")
 
     if is_valid:
-        print("    [OK] All 14 phases completed")
+        phase_count = 8 if schema_version == "2.0" else 14
+        print(f"    [OK] All {phase_count} phases completed (schema v{schema_version})")
     else:
         for issue in issues:
             phase = issue.get("phase", "?")
@@ -503,8 +543,8 @@ def main() -> int:
     all_issues: List[Dict] = []
 
     for file_path in step_files:
-        is_valid, issues = validate_step_file(file_path)
-        print_validation_result(file_path, is_valid, issues)
+        is_valid, issues, schema_version = validate_step_file(file_path)
+        print_validation_result(file_path, is_valid, issues, schema_version)
 
         if not is_valid:
             all_valid = False

@@ -32,6 +32,15 @@ __pycache__/
 .coverage
 *.egg-info/
 
+# Python virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python test logs
+pytest.log
+
 # Node modules
 node_modules/
 
