@@ -91,11 +91,19 @@ class TestBackupManagerRollback:
 
         assert "Backup directory not found" in str(exc_info.value)
 
+    @pytest.mark.skipif(
+        __import__("sys").platform == "win32",
+        reason="Unix file permissions not applicable on Windows",
+    )
     def test_restore_preserves_file_permissions(self, tmp_path):
         """
         GIVEN backup has executable files
         WHEN restore_from_backup is called
         THEN executable permissions are preserved
+
+        NOTE: This test only runs on Unix-like systems (Linux, macOS).
+        Windows does not support Unix permission bits - executability is
+        determined by file extension, not permission mode.
         """
         # Arrange
         nwave_home = tmp_path / "nwave"
