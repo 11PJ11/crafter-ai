@@ -14,11 +14,7 @@ roadmap:
             Create the conftest.py fixture that provides des_orchestrator instance
             to acceptance tests. This fixture will instantiate the DESOrchestrator
             class and provide it to all tests in test_us001_command_filtering.py.
-          acceptance_criteria:
-            - "Fixture des_orchestrator available in conftest.py"
-            - "Fixture returns DESOrchestrator instance"
-            - "Tests can import and use des_orchestrator without errors"
-            - "Fixture properly scoped (function-level isolation)"
+          acceptance_criteria: "Fixture des_orchestrator available in conftest.py; Fixture returns DESOrchestrator instance; Tests can import and use des_orchestrator without errors; Fixture properly scoped (function-level isolation)"
           suggested_agent: "software-crafter"
           requires: []
           estimated_hours: 1
@@ -39,12 +35,7 @@ roadmap:
             Create src/orchestrator/des_orchestrator.py with DESOrchestrator class
             defining the interface for render_prompt() and prepare_ad_hoc_prompt().
             This establishes the contract that tests expect.
-          acceptance_criteria:
-            - "DESOrchestrator class exists in src/orchestrator/des_orchestrator.py"
-            - "Class has render_prompt(**kwargs) method signature"
-            - "Class has prepare_ad_hoc_prompt(prompt, project_root) method signature"
-            - "Methods raise NotImplementedError initially (RED state preserved)"
-            - "Class can be instantiated without errors"
+          acceptance_criteria: "DESOrchestrator class exists in src/orchestrator/des_orchestrator.py; Class has render_prompt(**kwargs) method signature; Class has prepare_ad_hoc_prompt(prompt, project_root) method signature; Methods raise NotImplementedError initially (RED state preserved); Class can be instantiated without errors"
           suggested_agent: "software-crafter"
           requires: ["01-01"]
           estimated_hours: 1
@@ -61,12 +52,7 @@ roadmap:
           description: |
             Implement render_prompt() method to generate Task prompts with DES
             markers for /nw:execute command. This makes the first acceptance test pass.
-          acceptance_criteria:
-            - "test_execute_command_includes_des_validation_marker passes"
-            - "Prompt contains <!-- DES-VALIDATION: required --> marker"
-            - "Prompt contains <!-- DES-STEP-FILE: {path} --> marker"
-            - "Prompt contains <!-- DES-ORIGIN: command:/nw:execute --> marker"
-            - "Unit tests verify marker injection logic"
+          acceptance_criteria: "test_execute_command_includes_des_validation_marker passes; Prompt contains <!-- DES-VALIDATION: required --> marker; Prompt contains <!-- DES-STEP-FILE: {path} --> marker; Prompt contains <!-- DES-ORIGIN: command:/nw:execute --> marker; Unit tests verify marker injection logic"
           suggested_agent: "software-crafter"
           requires: ["02-01"]
           estimated_hours: 2
@@ -83,12 +69,7 @@ roadmap:
           description: |
             Implement prepare_ad_hoc_prompt() to handle ad-hoc Task invocations
             without DES markers. This makes the second acceptance test pass.
-          acceptance_criteria:
-            - "test_ad_hoc_task_bypasses_des_validation passes"
-            - "Ad-hoc prompts do NOT contain DES-VALIDATION marker"
-            - "Ad-hoc prompts do NOT contain DES-STEP-FILE marker"
-            - "Ad-hoc prompts do NOT contain DES-ORIGIN marker"
-            - "Unit tests verify marker absence for ad-hoc tasks"
+          acceptance_criteria: "test_ad_hoc_task_bypasses_des_validation passes; Ad-hoc prompts do NOT contain DES-VALIDATION marker; Ad-hoc prompts do NOT contain DES-STEP-FILE marker; Ad-hoc prompts do NOT contain DES-ORIGIN marker; Unit tests verify marker absence for ad-hoc tasks"
           suggested_agent: "software-crafter"
           requires: ["02-01"]
           estimated_hours: 1
@@ -103,12 +84,7 @@ roadmap:
           description: |
             Extend render_prompt() to handle /nw:research command, which bypasses
             DES validation (no markers). This makes the third acceptance test pass.
-          acceptance_criteria:
-            - "test_research_command_skips_full_validation passes"
-            - "Research prompts do NOT contain DES-VALIDATION marker"
-            - "Research prompts do NOT contain DES-STEP-FILE marker"
-            - "Research prompts do NOT contain DES-ORIGIN marker"
-            - "Unit tests verify research command marker bypass"
+          acceptance_criteria: "test_research_command_skips_full_validation passes; Research prompts do NOT contain DES-VALIDATION marker; Research prompts do NOT contain DES-STEP-FILE marker; Research prompts do NOT contain DES-ORIGIN marker; Unit tests verify research command marker bypass"
           suggested_agent: "software-crafter"
           requires: ["02-02"]
           estimated_hours: 1
@@ -124,12 +100,7 @@ roadmap:
           description: |
             Extend render_prompt() to handle /nw:develop command, which requires
             full DES validation (same as /nw:execute). Makes final test pass.
-          acceptance_criteria:
-            - "test_develop_command_includes_des_validation_marker passes"
-            - "Develop prompts contain <!-- DES-VALIDATION: required --> marker"
-            - "Develop prompts contain <!-- DES-STEP-FILE: {path} --> marker"
-            - "Develop prompts contain <!-- DES-ORIGIN: command:/nw:develop --> marker"
-            - "Unit tests verify develop command marker injection"
+          acceptance_criteria: "test_develop_command_includes_des_validation_marker passes; Develop prompts contain <!-- DES-VALIDATION: required --> marker; Develop prompts contain <!-- DES-STEP-FILE: {path} --> marker; Develop prompts contain <!-- DES-ORIGIN: command:/nw:develop --> marker; Unit tests verify develop command marker injection"
           suggested_agent: "software-crafter"
           requires: ["02-02"]
           estimated_hours: 1
@@ -150,12 +121,7 @@ roadmap:
             Refactor command parameter parsing into _get_validation_level(command)
             method that returns validation level ("full", "none"). This improves
             maintainability and testability of command classification logic.
-          acceptance_criteria:
-            - "_get_validation_level(command) method exists"
-            - "Returns 'full' for /nw:execute and /nw:develop"
-            - "Returns 'none' for /nw:research"
-            - "All acceptance tests still pass (no regression)"
-            - "Unit tests verify command classification"
+          acceptance_criteria: "_get_validation_level(command) method exists; Returns 'full' for /nw:execute and /nw:develop; Returns 'none' for /nw:research; All acceptance tests still pass (no regression); Unit tests verify command classification"
           suggested_agent: "software-crafter"
           requires: ["02-02", "02-04", "02-05"]
           estimated_hours: 1
@@ -176,12 +142,7 @@ roadmap:
             Extract DES marker generation into _generate_des_markers(command, step_file)
             helper method to eliminate code duplication between /nw:execute and
             /nw:develop implementations.
-          acceptance_criteria:
-            - "_generate_des_markers() method exists and is reused"
-            - "No duplicate marker generation code"
-            - "All acceptance tests still pass"
-            - "Cyclomatic complexity reduced (measured)"
-            - "Unit tests verify marker generation independently"
+          acceptance_criteria: "_generate_des_markers() method exists and is reused; No duplicate marker generation code; All acceptance tests still pass; Cyclomatic complexity reduced (measured); Unit tests verify marker generation independently"
           suggested_agent: "software-crafter"
           requires: ["02-02", "02-05", "03-01"]
           estimated_hours: 1
@@ -197,12 +158,7 @@ roadmap:
           description: |
             Add defensive error handling for missing parameters, invalid commands,
             and malformed inputs. Ensure graceful failure with actionable errors.
-          acceptance_criteria:
-            - "Handles missing step_file parameter gracefully"
-            - "Handles unknown command types with clear error message"
-            - "Handles None or empty prompt parameter"
-            - "All acceptance tests pass with edge case coverage"
-            - "Unit tests verify error handling paths"
+          acceptance_criteria: "Handles missing step_file parameter gracefully; Handles unknown command types with clear error message; Handles None or empty prompt parameter; All acceptance tests pass with edge case coverage; Unit tests verify error handling paths"
           suggested_agent: "software-crafter"
           requires: ["04-01"]
           estimated_hours: 2
@@ -219,12 +175,7 @@ roadmap:
           description: |
             Execute complete test suite, measure code coverage, validate all
             quality gates. Verify all 4 acceptance tests pass (GREEN state).
-          acceptance_criteria:
-            - "All 4 acceptance tests pass (100% pass rate)"
-            - "Code coverage >80% on src/orchestrator/des_orchestrator.py"
-            - "Cyclomatic complexity <10 per method"
-            - "No TODO/FIXME markers in production code"
-            - "pytest execution with no warnings or errors"
+          acceptance_criteria: "All 4 acceptance tests pass (100% pass rate); Code coverage >80% on src/orchestrator/des_orchestrator.py; Cyclomatic complexity <10 per method; No TODO/FIXME markers in production code; pytest execution with no warnings or errors"
           suggested_agent: "software-crafter"
           requires: ["04-02"]
           estimated_hours: 1
@@ -241,12 +192,7 @@ roadmap:
           description: |
             Add comprehensive unit tests for DESOrchestrator class methods.
             Test marker generation, command detection, error handling in isolation.
-          acceptance_criteria:
-            - "Unit tests exist in tests/unit/test_des_orchestrator.py"
-            - "Test coverage for all public methods"
-            - "Test coverage for _get_validation_level()"
-            - "Test coverage for _generate_des_markers()"
-            - "Unit tests pass independently of acceptance tests"
+          acceptance_criteria: "Unit tests exist in tests/unit/test_des_orchestrator.py; Test coverage for all public methods; Test coverage for _get_validation_level(); Test coverage for _generate_des_markers(); Unit tests pass independently of acceptance tests"
           suggested_agent: "software-crafter"
           requires: ["04-01", "04-02"]
           estimated_hours: 2

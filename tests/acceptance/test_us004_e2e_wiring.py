@@ -179,10 +179,13 @@ class TestE2EExecuteCommandWiring:
             result.execution_path == "DESOrchestrator.execute_step"
         ), "Test must validate features execute in real orchestrator path"
 
-        assert result.features_validated == [
-            "turn_counting",
-            "timeout_monitoring",
-        ], "Both features should be validated in execution path (extension_api is OUT_OF_SCOPE for US-006)"
+        assert (
+            result.features_validated
+            == [
+                "turn_counting",
+                "timeout_monitoring",
+            ]
+        ), "Both features should be validated in execution path (extension_api is OUT_OF_SCOPE for US-006)"
 
 
 class TestE2EDevelopCommandWiring:

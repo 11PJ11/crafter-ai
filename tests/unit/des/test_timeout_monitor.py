@@ -20,7 +20,9 @@ class TestTimeoutMonitorCalculatesElapsedTime:
 
         # And: A phase started 5 minutes ago
         started_at = (base_time - timedelta(minutes=5)).isoformat()
-        monitor = TimeoutMonitor(started_at=started_at, time_provider=mocked_time_provider)
+        monitor = TimeoutMonitor(
+            started_at=started_at, time_provider=mocked_time_provider
+        )
 
         # When: Getting elapsed seconds
         elapsed = monitor.get_elapsed_seconds()
@@ -36,7 +38,9 @@ class TestTimeoutMonitorCalculatesElapsedTime:
 
         # And: A phase that just started
         started_at = base_time.isoformat()
-        monitor = TimeoutMonitor(started_at=started_at, time_provider=mocked_time_provider)
+        monitor = TimeoutMonitor(
+            started_at=started_at, time_provider=mocked_time_provider
+        )
 
         # When: Getting elapsed seconds
         elapsed = monitor.get_elapsed_seconds()
@@ -52,7 +56,9 @@ class TestTimeoutMonitorCalculatesElapsedTime:
 
         # And: A timezone-aware timestamp from 10 minutes ago
         started_at = (base_time - timedelta(minutes=10)).isoformat()
-        monitor = TimeoutMonitor(started_at=started_at, time_provider=mocked_time_provider)
+        monitor = TimeoutMonitor(
+            started_at=started_at, time_provider=mocked_time_provider
+        )
 
         # When: Getting elapsed seconds
         elapsed = monitor.get_elapsed_seconds()
@@ -72,7 +78,9 @@ class TestTimeoutMonitorThresholdDetection:
 
         # And: A phase started 2 minutes ago
         started_at = (base_time - timedelta(minutes=2)).isoformat()
-        monitor = TimeoutMonitor(started_at=started_at, time_provider=mocked_time_provider)
+        monitor = TimeoutMonitor(
+            started_at=started_at, time_provider=mocked_time_provider
+        )
 
         # When: Checking thresholds [5, 10, 15] minutes
         crossed = monitor.check_thresholds(duration_minutes=[5, 10, 15])
@@ -88,7 +96,9 @@ class TestTimeoutMonitorThresholdDetection:
 
         # And: A phase started 7 minutes ago
         started_at = (base_time - timedelta(minutes=7)).isoformat()
-        monitor = TimeoutMonitor(started_at=started_at, time_provider=mocked_time_provider)
+        monitor = TimeoutMonitor(
+            started_at=started_at, time_provider=mocked_time_provider
+        )
 
         # When: Checking thresholds [5, 10, 15] minutes
         crossed = monitor.check_thresholds(duration_minutes=[5, 10, 15])
@@ -104,7 +114,9 @@ class TestTimeoutMonitorThresholdDetection:
 
         # And: A phase started 12 minutes ago
         started_at = (base_time - timedelta(minutes=12)).isoformat()
-        monitor = TimeoutMonitor(started_at=started_at, time_provider=mocked_time_provider)
+        monitor = TimeoutMonitor(
+            started_at=started_at, time_provider=mocked_time_provider
+        )
 
         # When: Checking thresholds [5, 10, 15] minutes
         crossed = monitor.check_thresholds(duration_minutes=[5, 10, 15])
@@ -120,7 +132,9 @@ class TestTimeoutMonitorThresholdDetection:
 
         # And: A phase started 20 minutes ago
         started_at = (base_time - timedelta(minutes=20)).isoformat()
-        monitor = TimeoutMonitor(started_at=started_at, time_provider=mocked_time_provider)
+        monitor = TimeoutMonitor(
+            started_at=started_at, time_provider=mocked_time_provider
+        )
 
         # When: Checking thresholds [5, 10, 15] minutes
         crossed = monitor.check_thresholds(duration_minutes=[5, 10, 15])
@@ -136,7 +150,9 @@ class TestTimeoutMonitorThresholdDetection:
 
         # And: A phase started 10 minutes ago
         started_at = (base_time - timedelta(minutes=10)).isoformat()
-        monitor = TimeoutMonitor(started_at=started_at, time_provider=mocked_time_provider)
+        monitor = TimeoutMonitor(
+            started_at=started_at, time_provider=mocked_time_provider
+        )
 
         # When: Checking empty threshold list
         crossed = monitor.check_thresholds(duration_minutes=[])
@@ -152,7 +168,9 @@ class TestTimeoutMonitorThresholdDetection:
 
         # And: A phase started 12 minutes ago
         started_at = (base_time - timedelta(minutes=12)).isoformat()
-        monitor = TimeoutMonitor(started_at=started_at, time_provider=mocked_time_provider)
+        monitor = TimeoutMonitor(
+            started_at=started_at, time_provider=mocked_time_provider
+        )
 
         # When: Checking unsorted thresholds [15, 5, 10] minutes
         crossed = monitor.check_thresholds(duration_minutes=[15, 5, 10])
@@ -172,13 +190,17 @@ class TestTimeoutMonitorEdgeCases:
 
         # And: A timestamp in the future (5 minutes from now)
         started_at = (base_time + timedelta(minutes=5)).isoformat()
-        monitor = TimeoutMonitor(started_at=started_at, time_provider=mocked_time_provider)
+        monitor = TimeoutMonitor(
+            started_at=started_at, time_provider=mocked_time_provider
+        )
 
         # When: Getting elapsed seconds
         elapsed = monitor.get_elapsed_seconds()
 
         # Then: Should return negative value
-        assert elapsed == -300, f"Expected -300 seconds for future timestamp, got {elapsed}"
+        assert (
+            elapsed == -300
+        ), f"Expected -300 seconds for future timestamp, got {elapsed}"
 
     def test_raises_error_for_invalid_timestamp_format(self, mocked_time_provider):
         """TimeoutMonitor raises ValueError for invalid timestamp format."""
@@ -187,7 +209,9 @@ class TestTimeoutMonitorEdgeCases:
 
         # When/Then: Creating TimeoutMonitor should raise ValueError
         with pytest.raises(ValueError):
-            TimeoutMonitor(started_at=invalid_timestamp, time_provider=mocked_time_provider)
+            TimeoutMonitor(
+                started_at=invalid_timestamp, time_provider=mocked_time_provider
+            )
 
     def test_handles_none_started_at(self, mocked_time_provider):
         """TimeoutMonitor raises ValueError for None started_at."""

@@ -482,7 +482,7 @@ class TestOrchestratorIntegration:
     that proves the wiring works (per CM-D 90/10 rule).
     """
 
-    def test_orchestrator_validates_prompt_via_entry_point(self):
+    def test_orchestrator_validates_prompt_via_entry_point(self, in_memory_filesystem, mocked_hook, mocked_time_provider):
         """
         GIVEN a complete prompt with all mandatory sections
         WHEN validation is invoked through DESOrchestrator entry point
@@ -491,10 +491,16 @@ class TestOrchestratorIntegration:
         WIRING TEST: Proves TemplateValidator is integrated into orchestrator.
         This test would FAIL if the import or delegation is missing.
         """
-        # Arrange: Import entry point (NOT internal component)
+        # Arrange: Create orchestrator with REAL validator for integration testing
         from des.orchestrator import DESOrchestrator
+        from des.validator import TemplateValidator
 
-        orchestrator = DESOrchestrator()
+        orchestrator = DESOrchestrator(
+            hook=mocked_hook,
+            validator=TemplateValidator(),  # Real validator for integration test
+            filesystem=in_memory_filesystem,
+            time_provider=mocked_time_provider,
+        )
 
         complete_prompt = """
         <!-- DES-VALIDATION: required -->
@@ -546,7 +552,7 @@ class TestOrchestratorIntegration:
         assert result.task_invocation_allowed is True
         assert result.errors == []
 
-    def test_orchestrator_blocks_invalid_prompt_via_entry_point(self):
+    def test_orchestrator_blocks_invalid_prompt_via_entry_point(self, in_memory_filesystem, mocked_hook, mocked_time_provider):
         """
         GIVEN a prompt missing mandatory sections
         WHEN validation is invoked through DESOrchestrator entry point
@@ -555,10 +561,16 @@ class TestOrchestratorIntegration:
         WIRING TEST: Proves validation logic is actually being executed
         through the orchestrator, not just returning success by default.
         """
-        # Arrange: Import entry point
+        # Arrange: Create orchestrator with REAL validator for integration testing
         from des.orchestrator import DESOrchestrator
+        from des.validator import TemplateValidator
 
-        orchestrator = DESOrchestrator()
+        orchestrator = DESOrchestrator(
+            hook=mocked_hook,
+            validator=TemplateValidator(),  # Real validator for integration test
+            filesystem=in_memory_filesystem,
+            time_provider=mocked_time_provider,
+        )
 
         # Prompt missing most mandatory sections
         incomplete_prompt = """
@@ -967,7 +979,7 @@ class TestOrchestratorSubagentStopHook:
     on validation completion, preventing resource leaks.
     """
 
-    def test_orchestrator_invokes_subagent_stop_hook_on_completion(self):
+    def test_orchestrator_invokes_subagent_stop_hook_on_completion(self, in_memory_filesystem, mocked_hook, mocked_validator, mocked_time_provider):
         """
         GIVEN a validation flow completes successfully
         WHEN DESOrchestrator.validate_prompt() returns
@@ -978,7 +990,12 @@ class TestOrchestratorSubagentStopHook:
         """
         from des.orchestrator import DESOrchestrator
 
-        orchestrator = DESOrchestrator()
+        orchestrator = DESOrchestrator(
+            hook=mocked_hook,
+            validator=mocked_validator,
+            filesystem=in_memory_filesystem,
+            time_provider=mocked_time_provider,
+        )
 
         complete_prompt = """
         <!-- DES-VALIDATION: required -->

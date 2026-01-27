@@ -5,11 +5,10 @@ This test validates that timeout warnings are injected into the agent's prompt
 context on the next turn after a threshold is crossed during execution.
 """
 
-from datetime import datetime, timezone, timedelta
+from datetime import timedelta
 from pathlib import Path
 import json
 import tempfile
-from des.orchestrator import DESOrchestrator
 
 
 class TestScenario014AgentReceivesTimeoutWarningsInPrompt:
@@ -23,17 +22,20 @@ class TestScenario014AgentReceivesTimeoutWarningsInPrompt:
     - Warnings do not block execution, only inform agent
     """
 
-    def test_agent_receives_timeout_warnings_in_prompt(self):
+    def test_agent_receives_timeout_warnings_in_prompt(
+        self, scenario_des_orchestrator, mocked_time_provider
+    ):
         """Timeout warnings are injected into agent's prompt context after threshold crossed."""
         # Given: A step file with a phase that started 7 minutes ago
         # and configured thresholds at [5, 10, 15] minutes
-        orchestrator = DESOrchestrator()
+        orchestrator = scenario_des_orchestrator
 
         with tempfile.TemporaryDirectory() as tmpdir:
             step_file_path = Path(tmpdir) / "test_step.json"
 
-            # Create step file with phase started 7 minutes ago
-            started_at = (datetime.now(timezone.utc) - timedelta(minutes=7)).isoformat()
+            # Create step file with phase started 7 minutes ago (relative to mocked time)
+            base_time = mocked_time_provider.now_utc()
+            started_at = (base_time - timedelta(minutes=7)).isoformat()
             step_data = self._create_step_file_with_started_at(started_at)
 
             with open(step_file_path, "w") as f:

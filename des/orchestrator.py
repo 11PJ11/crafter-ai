@@ -13,15 +13,15 @@ Integration: US-003 Post-Execution Validation
 - Validates step file phase execution state
 """
 
-from des.validator import TemplateValidator, ValidationResult
-from des.hooks import SubagentStopHook, HookResult
+from des.ports.hook_port import HookPort, HookResult
+from des.ports.validator_port import ValidatorPort, ValidationResult
+from des.ports.filesystem_port import FileSystemPort
+from des.ports.time_provider_port import TimeProvider
 from des.turn_counter import TurnCounter
 from des.timeout_monitor import TimeoutMonitor
 from des.invocation_limits_validator import InvocationLimitsValidator, InvocationLimitsResult
 from dataclasses import dataclass, field
-import json
 from pathlib import Path
-from datetime import datetime, timezone
 from typing import Optional
 
 
@@ -60,10 +60,25 @@ class DESOrchestrator:
     # Commands that require full DES validation
     VALIDATION_COMMANDS = ["/nw:execute", "/nw:develop"]
 
-    def __init__(self):
-        """Initialize orchestrator with template validator and hook."""
-        self._validator = TemplateValidator()
-        self._hook = SubagentStopHook()
+    def __init__(
+        self,
+        hook: HookPort,
+        validator: ValidatorPort,
+        filesystem: FileSystemPort,
+        time_provider: TimeProvider
+    ):
+        """Initialize with injected ports.
+
+        Args:
+            hook: Post-execution validation hook
+            validator: Template validation
+            filesystem: File I/O operations
+            time_provider: Time operations
+        """
+        self._hook = hook
+        self._validator = validator
+        self._filesystem = filesystem
+        self._time_provider = time_provider
         self._subagent_lifecycle_completed = False
         self._step_file_path: Optional[Path] = None
 
@@ -289,7 +304,7 @@ class DESOrchestrator:
         if timeout_thresholds:
             started_at = current_phase.get("started_at")
             if started_at:
-                timeout_monitor = TimeoutMonitor(started_at=started_at)
+                timeout_monitor = TimeoutMonitor(started_at=started_at, time_provider=self._time_provider)
 
         self._restore_turn_count(counter, current_phase, phase_name)
 
@@ -366,9 +381,8 @@ class DESOrchestrator:
         return project_root / step_file
 
     def _load_step_file(self, step_file_path: Path) -> dict:
-        """Load and parse step file JSON."""
-        with open(step_file_path, 'r') as f:
-            return json.load(f)
+        """Load and parse step file JSON using injected filesystem."""
+        return self._filesystem.read_json(step_file_path)
 
     def _get_current_phase(self, step_data: dict) -> dict:
         """Get current phase from step data and mark as IN_PROGRESS if needed."""
@@ -398,10 +412,9 @@ class DESOrchestrator:
         current_phase: dict,
         turn_count: int
     ) -> None:
-        """Persist turn count to step file."""
+        """Persist turn count to step file using injected filesystem."""
         current_phase["turn_count"] = turn_count
-        with open(step_file_path, 'w') as f:
-            json.dump(step_data, f, indent=2)
+        self._filesystem.write_json(step_file_path, step_data)
 
     def _format_timeout_warning(self, threshold: int, monitor: TimeoutMonitor) -> str:
         """Format timeout warning message with threshold and elapsed time.
@@ -424,14 +437,13 @@ class DESOrchestrator:
 
 
     def _persist_step_file(self, step_file_path: Path, step_data: dict) -> None:
-        """Persist step data to file.
+        """Persist step data to file using injected filesystem.
 
         Args:
             step_file_path: Path to step file
             step_data: Complete step data dictionary to persist
         """
-        with open(step_file_path, 'w') as f:
-            json.dump(step_data, f, indent=2)
+        self._filesystem.write_json(step_file_path, step_data)
 
     def _generate_timeout_warnings(
         self,
@@ -465,7 +477,7 @@ class DESOrchestrator:
             return ""
 
         # Initialize TimeoutMonitor
-        monitor = TimeoutMonitor(started_at=started_at)
+        monitor = TimeoutMonitor(started_at=started_at, time_provider=self._time_provider)
 
         # Check thresholds
         crossed_thresholds = monitor.check_thresholds(timeout_thresholds)

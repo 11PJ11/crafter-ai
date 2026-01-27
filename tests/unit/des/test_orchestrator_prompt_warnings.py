@@ -7,184 +7,233 @@ when thresholds are crossed during execution.
 
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
-import json
-import tempfile
-from des.orchestrator import DESOrchestrator
 
 
 class TestOrchestratorPromptWarnings:
     """Unit tests for timeout warning injection in render_prompt()."""
 
-    def test_render_prompt_accepts_timeout_parameters(self):
+    def test_render_prompt_accepts_timeout_parameters(
+        self, des_orchestrator, in_memory_filesystem, mocked_time_provider
+    ):
         """
         GIVEN DESOrchestrator instance
         WHEN render_prompt is called with timeout_thresholds and timeout_budget_minutes
         THEN method should accept parameters without error
         """
-        orchestrator = DESOrchestrator()
+        orchestrator = des_orchestrator
+        step_file_path = Path("/project/test_step.json")
+        self._create_step_file(
+            in_memory_filesystem,
+            step_file_path,
+            minutes_ago=0,
+            time_provider=mocked_time_provider,
+        )
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            step_file_path = Path(tmpdir) / "test_step.json"
-            self._create_step_file(step_file_path, minutes_ago=0)
+        # Should not raise TypeError
+        prompt = orchestrator.render_prompt(
+            command="/nw:execute",
+            agent="@software-crafter",
+            step_file="test_step.json",
+            project_root="/project",
+            timeout_thresholds=[5, 10, 15],
+            timeout_budget_minutes=40,
+        )
+        assert isinstance(prompt, str)
 
-            # Should not raise TypeError
-            prompt = orchestrator.render_prompt(
-                command="/nw:execute",
-                agent="@software-crafter",
-                step_file="test_step.json",
-                project_root=tmpdir,
-                timeout_thresholds=[5, 10, 15],
-                timeout_budget_minutes=40,
-            )
-            assert isinstance(prompt, str)
-
-    def test_render_prompt_loads_warnings_from_step_file(self):
+    def test_render_prompt_loads_warnings_from_step_file(
+        self, des_orchestrator, in_memory_filesystem, mocked_time_provider
+    ):
         """
         GIVEN step file with phase that started 7 minutes ago
         WHEN render_prompt is called with threshold at 5 minutes
         THEN orchestrator should detect crossed threshold and generate warning
         """
-        orchestrator = DESOrchestrator()
+        orchestrator = des_orchestrator
+        step_file_path = Path("/project/test_step.json")
+        self._create_step_file(
+            in_memory_filesystem,
+            step_file_path,
+            minutes_ago=7,
+            time_provider=mocked_time_provider,
+        )
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            step_file_path = Path(tmpdir) / "test_step.json"
-            self._create_step_file(step_file_path, minutes_ago=7)
+        prompt = orchestrator.render_prompt(
+            command="/nw:execute",
+            agent="@software-crafter",
+            step_file="test_step.json",
+            project_root="/project",
+            timeout_thresholds=[5],
+            timeout_budget_minutes=40,
+        )
 
-            prompt = orchestrator.render_prompt(
-                command="/nw:execute",
-                agent="@software-crafter",
-                step_file="test_step.json",
-                project_root=tmpdir,
-                timeout_thresholds=[5],
-                timeout_budget_minutes=40,
-            )
+        # Prompt should contain timeout warning
+        assert "TIMEOUT WARNING" in prompt
 
-            # Prompt should contain timeout warning
-            assert "TIMEOUT WARNING" in prompt
-
-    def test_warning_includes_percentage_elapsed(self):
+    def test_warning_includes_percentage_elapsed(
+        self, des_orchestrator, in_memory_filesystem, mocked_time_provider
+    ):
         """
         GIVEN step file with phase running for 30 minutes with 40 minute budget
         WHEN render_prompt generates warning
         THEN warning should include percentage elapsed (75%)
         """
-        orchestrator = DESOrchestrator()
+        orchestrator = des_orchestrator
+        step_file_path = Path("/project/test_step.json")
+        self._create_step_file(
+            in_memory_filesystem,
+            step_file_path,
+            minutes_ago=30,
+            time_provider=mocked_time_provider,
+        )
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            step_file_path = Path(tmpdir) / "test_step.json"
-            self._create_step_file(step_file_path, minutes_ago=30)
+        prompt = orchestrator.render_prompt(
+            command="/nw:execute",
+            agent="@software-crafter",
+            step_file="test_step.json",
+            project_root="/project",
+            timeout_thresholds=[25],
+            timeout_budget_minutes=40,
+        )
 
-            prompt = orchestrator.render_prompt(
-                command="/nw:execute",
-                agent="@software-crafter",
-                step_file="test_step.json",
-                project_root=tmpdir,
-                timeout_thresholds=[25],
-                timeout_budget_minutes=40,
-            )
+        # Should include percentage
+        assert "75%" in prompt or "75 %" in prompt
 
-            # Should include percentage
-            assert "75%" in prompt or "75 %" in prompt
-
-    def test_warning_includes_remaining_time(self):
+    def test_warning_includes_remaining_time(
+        self, des_orchestrator, in_memory_filesystem, mocked_time_provider
+    ):
         """
         GIVEN step file with phase running for 30 minutes with 40 minute budget
         WHEN render_prompt generates warning
         THEN warning should include remaining time (10 minutes)
         """
-        orchestrator = DESOrchestrator()
+        orchestrator = des_orchestrator
+        step_file_path = Path("/project/test_step.json")
+        self._create_step_file(
+            in_memory_filesystem,
+            step_file_path,
+            minutes_ago=30,
+            time_provider=mocked_time_provider,
+        )
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            step_file_path = Path(tmpdir) / "test_step.json"
-            self._create_step_file(step_file_path, minutes_ago=30)
+        prompt = orchestrator.render_prompt(
+            command="/nw:execute",
+            agent="@software-crafter",
+            step_file="test_step.json",
+            project_root="/project",
+            timeout_thresholds=[25],
+            timeout_budget_minutes=40,
+        )
 
-            prompt = orchestrator.render_prompt(
-                command="/nw:execute",
-                agent="@software-crafter",
-                step_file="test_step.json",
-                project_root=tmpdir,
-                timeout_thresholds=[25],
-                timeout_budget_minutes=40,
-            )
+        # Should include remaining time
+        assert "Remaining: 10" in prompt or "remaining: 10" in prompt.lower()
 
-            # Should include remaining time
-            assert "Remaining: 10" in prompt or "remaining: 10" in prompt.lower()
-
-    def test_warning_includes_phase_name(self):
+    def test_warning_includes_phase_name(
+        self, des_orchestrator, in_memory_filesystem, mocked_time_provider
+    ):
         """
         GIVEN step file with PREPARE phase in progress
         WHEN render_prompt generates warning
         THEN warning should include phase name
         """
-        orchestrator = DESOrchestrator()
+        orchestrator = des_orchestrator
+        step_file_path = Path("/project/test_step.json")
+        self._create_step_file(
+            in_memory_filesystem,
+            step_file_path,
+            minutes_ago=7,
+            time_provider=mocked_time_provider,
+        )
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            step_file_path = Path(tmpdir) / "test_step.json"
-            self._create_step_file(step_file_path, minutes_ago=7)
+        prompt = orchestrator.render_prompt(
+            command="/nw:execute",
+            agent="@software-crafter",
+            step_file="test_step.json",
+            project_root="/project",
+            timeout_thresholds=[5],
+            timeout_budget_minutes=40,
+        )
 
-            prompt = orchestrator.render_prompt(
-                command="/nw:execute",
-                agent="@software-crafter",
-                step_file="test_step.json",
-                project_root=tmpdir,
-                timeout_thresholds=[5],
-                timeout_budget_minutes=40,
-            )
+        # Should include phase name
+        assert "PREPARE" in prompt
 
-            # Should include phase name
-            assert "PREPARE" in prompt
-
-    def test_no_warning_when_no_threshold_crossed(self):
+    def test_no_warning_when_no_threshold_crossed(
+        self, des_orchestrator, in_memory_filesystem, mocked_time_provider
+    ):
         """
         GIVEN step file with phase running for 3 minutes
         WHEN render_prompt is called with threshold at 5 minutes
         THEN no warning should be generated
         """
-        orchestrator = DESOrchestrator()
+        orchestrator = des_orchestrator
+        step_file_path = Path("/project/test_step.json")
+        self._create_step_file(
+            in_memory_filesystem,
+            step_file_path,
+            minutes_ago=3,
+            time_provider=mocked_time_provider,
+        )
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            step_file_path = Path(tmpdir) / "test_step.json"
-            self._create_step_file(step_file_path, minutes_ago=3)
+        prompt = orchestrator.render_prompt(
+            command="/nw:execute",
+            agent="@software-crafter",
+            step_file="test_step.json",
+            project_root="/project",
+            timeout_thresholds=[5],
+            timeout_budget_minutes=40,
+        )
 
-            prompt = orchestrator.render_prompt(
-                command="/nw:execute",
-                agent="@software-crafter",
-                step_file="test_step.json",
-                project_root=tmpdir,
-                timeout_thresholds=[5],
-                timeout_budget_minutes=40,
-            )
+        # Should NOT contain warning
+        assert "TIMEOUT WARNING" not in prompt
 
-            # Should NOT contain warning
-            assert "TIMEOUT WARNING" not in prompt
-
-    def test_no_warning_when_no_timeout_thresholds_provided(self):
+    def test_no_warning_when_no_timeout_thresholds_provided(
+        self, des_orchestrator, in_memory_filesystem, mocked_time_provider
+    ):
         """
         GIVEN step file with phase running for 7 minutes
         WHEN render_prompt is called without timeout_thresholds
         THEN no warning should be generated
         """
-        orchestrator = DESOrchestrator()
+        orchestrator = des_orchestrator
+        step_file_path = Path("/project/test_step.json")
+        self._create_step_file(
+            in_memory_filesystem,
+            step_file_path,
+            minutes_ago=7,
+            time_provider=mocked_time_provider,
+        )
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            step_file_path = Path(tmpdir) / "test_step.json"
-            self._create_step_file(step_file_path, minutes_ago=7)
+        prompt = orchestrator.render_prompt(
+            command="/nw:execute",
+            agent="@software-crafter",
+            step_file="test_step.json",
+            project_root="/project",
+        )
 
-            prompt = orchestrator.render_prompt(
-                command="/nw:execute",
-                agent="@software-crafter",
-                step_file="test_step.json",
-                project_root=tmpdir,
-            )
+        # Should NOT contain warning
+        assert "TIMEOUT WARNING" not in prompt
 
-            # Should NOT contain warning
-            assert "TIMEOUT WARNING" not in prompt
+    def _create_step_file(
+        self,
+        in_memory_filesystem,
+        step_file_path: Path,
+        minutes_ago: int,
+        time_provider=None,
+    ):
+        """Create test step file in in-memory filesystem with specified start time.
 
-    def _create_step_file(self, step_file_path: Path, minutes_ago: int):
-        """Create test step file with specified start time."""
-        started_at = (
-            datetime.now(timezone.utc) - timedelta(minutes=minutes_ago)
-        ).isoformat()
+        Uses time_provider's current time if provided, otherwise uses real current time.
+        This ensures consistency with mocked time providers in testing.
+        """
+        if time_provider:
+            # Use time provider's current time (consistent with mocked time)
+            started_at = (
+                time_provider.now_utc() - timedelta(minutes=minutes_ago)
+            ).isoformat()
+        else:
+            # Fallback to real current time
+            started_at = (
+                datetime.now(timezone.utc) - timedelta(minutes=minutes_ago)
+            ).isoformat()
 
         step_data = {
             "task_specification": {
@@ -211,5 +260,4 @@ class TestOrchestratorPromptWarnings:
             },
         }
 
-        with open(step_file_path, "w") as f:
-            json.dump(step_data, f, indent=2)
+        in_memory_filesystem.seed_file(step_file_path, step_data)

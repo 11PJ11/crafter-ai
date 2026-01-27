@@ -5,6 +5,7 @@ timestamp and detect when duration thresholds are crossed.
 """
 
 from datetime import datetime, timezone
+from des.ports.time_provider_port import TimeProvider
 
 
 class TimeoutMonitor:
@@ -14,11 +15,12 @@ class TimeoutMonitor:
     duration thresholds have been crossed.
     """
 
-    def __init__(self, started_at: str):
-        """Initialize TimeoutMonitor with phase start timestamp.
+    def __init__(self, started_at: str, time_provider: TimeProvider):
+        """Initialize TimeoutMonitor with phase start timestamp and time provider.
 
         Args:
             started_at: ISO 8601 format timestamp string (timezone-aware)
+            time_provider: TimeProvider port for time operations
 
         Raises:
             ValueError: If started_at is None or invalid format
@@ -35,13 +37,16 @@ class TimeoutMonitor:
         if self.started_at.tzinfo is None:
             self.started_at = self.started_at.replace(tzinfo=timezone.utc)
 
+        # Store injected time provider
+        self._time_provider = time_provider
+
     def get_elapsed_seconds(self) -> float:
         """Calculate elapsed seconds from phase start to now.
 
         Returns:
             Number of seconds elapsed (can be negative if started_at is in future)
         """
-        now = datetime.now(timezone.utc)
+        now = self._time_provider.now_utc()
         elapsed = (now - self.started_at).total_seconds()
         return elapsed
 

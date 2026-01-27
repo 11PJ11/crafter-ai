@@ -4,14 +4,10 @@
     "project_id": "des",
     "task_name": "Create DESOrchestrator class skeleton",
     "description": "Create src/orchestrator/des_orchestrator.py with DESOrchestrator class\ndefining the interface for render_prompt() and prepare_ad_hoc_prompt().\nThis establishes the contract that tests expect.",
-    "acceptance_criteria": [
-      "DESOrchestrator class exists in src/orchestrator/des_orchestrator.py",
-      "Class has render_prompt(**kwargs) method signature",
-      "Class has prepare_ad_hoc_prompt(prompt, project_root) method signature",
-      "Methods raise NotImplementedError initially (RED state preserved)",
-      "Class can be instantiated without errors"
+    "acceptance_criteria": "DESOrchestrator class exists in src/orchestrator/des_orchestrator.py; Class has render_prompt(**kwargs) method signature; Class has prepare_ad_hoc_prompt(prompt, project_root) method signature; Methods raise NotImplementedError initially (RED state preserved); Class can be instantiated without errors",
+    "requires": [
+      "01-01"
     ],
-    "requires": ["01-01"],
     "estimated_hours": 1,
     "implementation_notes": "- Create src/orchestrator/ directory if needed\n- Define DESOrchestrator class\n- Add __init__() method\n- Add method stubs with NotImplementedError\n- Ensure conftest.py imports from correct module path"
   },
@@ -48,7 +44,12 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -64,7 +65,12 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -80,7 +86,12 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -96,7 +107,12 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -112,7 +128,12 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -128,7 +149,12 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -144,7 +170,12 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -160,7 +191,12 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -176,7 +212,12 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -192,7 +233,12 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -208,7 +254,12 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -224,7 +275,12 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -240,7 +296,12 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
         "notes": null,
         "blocked_by": null,
         "history": []
@@ -256,7 +317,12 @@
         "outcome_details": null,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
         "notes": null,
         "blocked_by": null,
         "history": []

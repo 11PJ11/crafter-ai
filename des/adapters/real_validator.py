@@ -1,0 +1,148 @@
+"""Production implementation of template validator adapter."""
+
+from des.ports.validator_port import ValidatorPort, ValidationResult
+import time
+import re
+from typing import List
+
+
+class RealTemplateValidator(ValidatorPort):
+    """Production implementation of template validation.
+
+    Validates that prompts contain all mandatory sections and TDD phases
+    before allowing Task invocation.
+    """
+
+    MANDATORY_SECTIONS = [
+        "DES_METADATA",
+        "AGENT_IDENTITY",
+        "TASK_CONTEXT",
+        "TDD_14_PHASES",
+        "QUALITY_GATES",
+        "OUTCOME_RECORDING",
+        "BOUNDARY_RULES",
+        "TIMEOUT_INSTRUCTION"
+    ]
+
+    MANDATORY_PHASES = [
+        "PREPARE",
+        "RED_ACCEPTANCE",
+        "RED_UNIT",
+        "GREEN_UNIT",
+        "CHECK_ACCEPTANCE",
+        "GREEN_ACCEPTANCE",
+        "REVIEW",
+        "REFACTOR_L1",
+        "REFACTOR_L2",
+        "REFACTOR_L3",
+        "REFACTOR_L4",
+        "POST_REFACTOR_REVIEW",
+        "FINAL_VALIDATE",
+        "COMMIT"
+    ]
+
+    def validate_prompt(self, prompt: str) -> ValidationResult:
+        """Validate prompt for mandatory sections and TDD phases.
+
+        Args:
+            prompt: Full prompt text to validate
+
+        Returns:
+            ValidationResult with status, errors, and task invocation flag
+        """
+        start_time = time.perf_counter()
+
+        all_errors = []
+
+        # Check mandatory sections
+        section_errors = self._validate_sections(prompt)
+        all_errors.extend(section_errors)
+
+        # Check TDD phases
+        phase_errors = self._validate_phases(prompt)
+        all_errors.extend(phase_errors)
+
+        # Generate recovery guidance
+        recovery_guidance = None
+        if all_errors:
+            recovery_guidance = self._generate_recovery_guidance(all_errors)
+
+        duration_ms = (time.perf_counter() - start_time) * 1000
+
+        status = "PASSED" if not all_errors else "FAILED"
+        task_invocation_allowed = not all_errors
+
+        return ValidationResult(
+            status=status,
+            errors=all_errors,
+            task_invocation_allowed=task_invocation_allowed,
+            duration_ms=duration_ms,
+            recovery_guidance=recovery_guidance
+        )
+
+    def _validate_sections(self, prompt: str) -> List[str]:
+        """Validate that all mandatory sections are present."""
+        errors = []
+        for section in self.MANDATORY_SECTIONS:
+            section_marker = f"# {section}"
+            if section_marker not in prompt:
+                errors.append(f"MISSING: Mandatory section '{section}' not found")
+        return errors
+
+    def _validate_phases(self, prompt: str) -> List[str]:
+        """Validate that all 14 TDD phases are mentioned."""
+        # Check for shorthand pattern first
+        if re.search(r"(?i)all\s+14\s+phases?\s+(listed|mentioned|included|present)", prompt):
+            return []
+
+        errors = []
+        for phase in self.MANDATORY_PHASES:
+            phase_lines = []
+            for line in prompt.split('\n'):
+                if phase in line:
+                    phase_lines.append(line.strip())
+
+            found = False
+            if phase_lines:
+                for line in phase_lines:
+                    # Skip if it's a "MISSING" comment
+                    if (re.search(rf"\(.*\b{phase}\b.*\)", line) or
+                        re.search(rf"\b(without|missing|no)\s+{phase}\b", line, re.IGNORECASE) or
+                        re.search(rf"# MISSING:\s*{phase}", line)):
+                        continue
+                    if phase in line:
+                        found = True
+                        break
+
+            if not found:
+                errors.append(f"INCOMPLETE: TDD phase '{phase}' not mentioned")
+
+        return errors
+
+    def _generate_recovery_guidance(self, errors: List[str]) -> List[str]:
+        """Generate actionable recovery guidance for validation errors."""
+        guidance_items = []
+
+        for error in errors:
+            if "MISSING: Mandatory section" in error:
+                for section in self.MANDATORY_SECTIONS:
+                    if section in error:
+                        if section == "DES_METADATA":
+                            guidance_items.append("Add DES_METADATA section with step file path and command name")
+                        elif section == "AGENT_IDENTITY":
+                            guidance_items.append("Add AGENT_IDENTITY section specifying which agent executes this step")
+                        elif section == "TASK_CONTEXT":
+                            guidance_items.append("Add TASK_CONTEXT section describing what needs to be implemented")
+                        elif section == "TDD_14_PHASES":
+                            guidance_items.append("Add TDD_14_PHASES section listing all 14 phases")
+                        elif section == "QUALITY_GATES":
+                            guidance_items.append("Add QUALITY_GATES section defining validation criteria (G1-G6)")
+                        elif section == "OUTCOME_RECORDING":
+                            guidance_items.append("Add OUTCOME_RECORDING section describing how to track phase completion")
+                        elif section == "BOUNDARY_RULES":
+                            guidance_items.append("Add BOUNDARY_RULES section specifying which files can be modified")
+                        elif section == "TIMEOUT_INSTRUCTION":
+                            guidance_items.append("Add TIMEOUT_INSTRUCTION section with turn budget guidance")
+                        break
+
+        return guidance_items if guidance_items else None

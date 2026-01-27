@@ -4,13 +4,7 @@
     "project_id": "des",
     "task_name": "Add error handling and edge cases",
     "description": "Implement comprehensive error handling for DESOrchestrator with edge case coverage.\nHandle malformed commands, missing step files, invalid validation levels, and null/empty inputs.",
-    "acceptance_criteria": [
-      "Graceful handling of malformed command strings",
-      "Proper error messages for missing step files",
-      "Validation for null/empty command parameters",
-      "Edge case tests for boundary conditions",
-      "Error handling unit tests with >90% coverage"
-    ],
+    "acceptance_criteria": "Graceful handling of malformed command strings; Proper error messages for missing step files; Validation for null/empty command parameters; Edge case tests for boundary conditions; Error handling unit tests with >90% coverage",
     "requires": [
       "04-01"
     ],

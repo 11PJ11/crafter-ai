@@ -10,15 +10,15 @@ These unit tests drive implementation for Step 08-01 E2E wiring test.
 """
 
 import pytest
-import json
-from des.orchestrator import DESOrchestrator, ExecuteStepResult
+from pathlib import Path
+from des.orchestrator import ExecuteStepResult
 
 
 class TestOrchestratorE2EWiring:
     """Unit tests for E2E wiring features in DESOrchestrator."""
 
     def test_execute_step_accepts_mocked_elapsed_times_parameter(
-        self, tmp_path, minimal_step_file_dict
+        self, des_orchestrator, in_memory_filesystem, minimal_step_file_dict
     ):
         """
         GIVEN orchestrator with step file configured
@@ -29,24 +29,21 @@ class TestOrchestratorE2EWiring:
         This enables E2E test to simulate time progression for timeout testing.
         """
         # GIVEN: Step file with timeout configuration
-        step_file_path = tmp_path / "step.json"
+        step_file_path = Path("/tmp/step.json")
         step_data = minimal_step_file_dict.copy()
         step_data["tdd_cycle"]["duration_minutes"] = 30
         step_data["tdd_cycle"]["max_turns"] = 50
 
-        with open(step_file_path, "w") as f:
-            json.dump(step_data, f, indent=2)
-
-        orchestrator = DESOrchestrator()
+        in_memory_filesystem.write_json(step_file_path, step_data)
 
         # WHEN: execute_step() called with mocked_elapsed_times
         mocked_times = [900, 1350, 1620]  # 15min (50%), 22.5min (75%), 27min (90%)
 
-        result = orchestrator.execute_step(
+        result = des_orchestrator.execute_step(
             command="/nw:execute",
             agent="@software-crafter",
             step_file="step.json",
-            project_root=tmp_path,
+            project_root="/tmp",
             simulated_iterations=3,
             mocked_elapsed_times=mocked_times,  # NEW PARAMETER
             timeout_thresholds=[15, 22, 27],  # Required for mocked time logic
@@ -68,7 +65,7 @@ class TestOrchestratorE2EWiring:
         )
 
     def test_execute_step_result_has_timeout_warnings_field(
-        self, tmp_path, minimal_step_file_dict
+        self, des_orchestrator, in_memory_filesystem, minimal_step_file_dict
     ):
         """
         GIVEN orchestrator executing step with timeout thresholds
@@ -78,17 +75,14 @@ class TestOrchestratorE2EWiring:
 
         This ensures API consistency for E2E test validation.
         """
-        step_file_path = tmp_path / "step.json"
-        with open(step_file_path, "w") as f:
-            json.dump(minimal_step_file_dict, f, indent=2)
+        step_file_path = Path("/tmp/step.json")
+        in_memory_filesystem.write_json(step_file_path, minimal_step_file_dict)
 
-        orchestrator = DESOrchestrator()
-
-        result = orchestrator.execute_step(
+        result = des_orchestrator.execute_step(
             command="/nw:execute",
             agent="@software-crafter",
             step_file="step.json",
-            project_root=tmp_path,
+            project_root="/tmp",
             simulated_iterations=1,
             timeout_thresholds=[15, 20, 27],  # minutes
         )
@@ -98,7 +92,7 @@ class TestOrchestratorE2EWiring:
         assert isinstance(result.timeout_warnings, list)
 
     def test_execute_step_result_has_execution_path_field(
-        self, tmp_path, minimal_step_file_dict
+        self, des_orchestrator, in_memory_filesystem, minimal_step_file_dict
     ):
         """
         GIVEN orchestrator executing step
@@ -108,17 +102,14 @@ class TestOrchestratorE2EWiring:
 
         This proves test validates features in actual execution path.
         """
-        step_file_path = tmp_path / "step.json"
-        with open(step_file_path, "w") as f:
-            json.dump(minimal_step_file_dict, f, indent=2)
+        step_file_path = Path("/tmp/step.json")
+        in_memory_filesystem.write_json(step_file_path, minimal_step_file_dict)
 
-        orchestrator = DESOrchestrator()
-
-        result = orchestrator.execute_step(
+        result = des_orchestrator.execute_step(
             command="/nw:execute",
             agent="@software-crafter",
             step_file="step.json",
-            project_root=tmp_path,
+            project_root="/tmp",
             simulated_iterations=1,
         )
 
@@ -127,7 +118,7 @@ class TestOrchestratorE2EWiring:
         assert result.execution_path == "DESOrchestrator.execute_step"
 
     def test_execute_step_result_has_features_validated_field(
-        self, tmp_path, minimal_step_file_dict
+        self, des_orchestrator, in_memory_filesystem, minimal_step_file_dict
     ):
         """
         GIVEN orchestrator executing step with all features
@@ -137,17 +128,14 @@ class TestOrchestratorE2EWiring:
 
         This documents which features were validated during execution.
         """
-        step_file_path = tmp_path / "step.json"
-        with open(step_file_path, "w") as f:
-            json.dump(minimal_step_file_dict, f, indent=2)
+        step_file_path = Path("/tmp/step.json")
+        in_memory_filesystem.write_json(step_file_path, minimal_step_file_dict)
 
-        orchestrator = DESOrchestrator()
-
-        result = orchestrator.execute_step(
+        result = des_orchestrator.execute_step(
             command="/nw:execute",
             agent="@software-crafter",
             step_file="step.json",
-            project_root=tmp_path,
+            project_root="/tmp",
             simulated_iterations=1,
             mocked_elapsed_times=[900],  # 15 minutes, crosses 15-minute threshold
             timeout_thresholds=[15, 20, 27],

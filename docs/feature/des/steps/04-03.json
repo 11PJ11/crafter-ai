@@ -4,14 +4,10 @@
     "project_id": "des",
     "task_name": "Run full test suite and measure coverage",
     "description": "Execute complete test suite (acceptance + unit tests) and measure code coverage.\nEnsure all tests pass and coverage meets quality gate threshold (>80%).",
-    "acceptance_criteria": [
-      "All acceptance tests pass (4/4 scenarios)",
-      "All unit tests pass (100% pass rate)",
-      "Test coverage >80% for DESOrchestrator module",
-      "Coverage report generated and documented",
-      "No skipped or ignored tests remaining"
+    "acceptance_criteria": "All acceptance tests pass (4/4 scenarios); All unit tests pass (100% pass rate); Test coverage >80% for DESOrchestrator module; Coverage report generated and documented; No skipped or ignored tests remaining",
+    "requires": [
+      "04-02"
     ],
-    "requires": ["04-02"],
     "estimated_hours": 1,
     "implementation_notes": "- Run: pytest tests/ --cov=des --cov-report=term-missing\n- Analyze coverage gaps and add tests if needed\n- Document coverage metrics in validation notes\n- Ensure cyclomatic complexity <10 (manual analysis)\n- Generate HTML coverage report for review"
   },
@@ -34,7 +30,19 @@
       "current_phase": "COMMIT",
       "active_e2e_test": "All 4 acceptance tests (regression)",
       "inactive_e2e_tests": "None - all tests active",
-      "phases_completed": ["PREPARE", "CHECK_ACCEPTANCE", "GREEN_ACCEPTANCE", "REVIEW", "REFACTOR_L1", "REFACTOR_L2", "REFACTOR_L3", "REFACTOR_L4", "POST_REFACTOR_REVIEW", "FINAL_VALIDATE", "COMMIT"]
+      "phases_completed": [
+        "PREPARE",
+        "CHECK_ACCEPTANCE",
+        "GREEN_ACCEPTANCE",
+        "REVIEW",
+        "REFACTOR_L1",
+        "REFACTOR_L2",
+        "REFACTOR_L3",
+        "REFACTOR_L4",
+        "POST_REFACTOR_REVIEW",
+        "FINAL_VALIDATE",
+        "COMMIT"
+      ]
     },
     "phase_execution_log": [
       {
@@ -172,8 +180,12 @@
         "duration_minutes": 11,
         "outcome": "PASS",
         "outcome_details": "Quality metrics captured and analyzed. All metrics exceed targets.",
-        "artifacts_created": ["htmlcov/"],
-        "artifacts_modified": ["docs/feature/des/steps/04-03.json"],
+        "artifacts_created": [
+          "htmlcov/"
+        ],
+        "artifacts_modified": [
+          "docs/feature/des/steps/04-03.json"
+        ],
         "test_results": {
           "total": 33,
           "passed": 33,
@@ -320,7 +332,9 @@
         "outcome": "PASS",
         "outcome_details": "Quality validation results committed successfully. All 14 TDD phases complete.",
         "artifacts_created": [],
-        "artifacts_modified": ["docs/feature/des/steps/04-03.json"],
+        "artifacts_modified": [
+          "docs/feature/des/steps/04-03.json"
+        ],
         "test_results": {
           "total": 33,
           "passed": 33,
@@ -398,7 +412,12 @@
       },
       "execution_time_seconds": 0.34
     },
-    "refactoring_levels_validated": ["L1", "L2", "L3", "L4"],
+    "refactoring_levels_validated": [
+      "L1",
+      "L2",
+      "L3",
+      "L4"
+    ],
     "all_quality_gates_pass": true
   },
   "validation": {

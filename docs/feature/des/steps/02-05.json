@@ -4,14 +4,10 @@
     "project_id": "des",
     "task_name": "Implement render_prompt() for /nw:develop",
     "description": "Extend render_prompt() to handle /nw:develop command, which requires\nfull DES validation (same as /nw:execute). Makes final test pass.",
-    "acceptance_criteria": [
-      "test_develop_command_includes_des_validation_marker passes",
-      "Develop prompts contain <!-- DES-VALIDATION: required --> marker",
-      "Develop prompts contain <!-- DES-STEP-FILE: {path} --> marker",
-      "Develop prompts contain <!-- DES-ORIGIN: command:/nw:develop --> marker",
-      "Unit tests verify develop command marker injection"
+    "acceptance_criteria": "test_develop_command_includes_des_validation_marker passes; Develop prompts contain <!-- DES-VALIDATION: required --> marker; Develop prompts contain <!-- DES-STEP-FILE: {path} --> marker; Develop prompts contain <!-- DES-ORIGIN: command:/nw:develop --> marker; Unit tests verify develop command marker injection",
+    "requires": [
+      "02-02"
     ],
-    "requires": ["02-02"],
     "estimated_hours": 1,
     "implementation_notes": "- Detect /nw:develop command in command parameter\n- Reuse marker injection logic from /nw:execute\n- DRY: Extract common marker generation method\n- Update DES-ORIGIN marker to reflect /nw:develop"
   },
@@ -37,20 +33,300 @@
       "phases_completed": []
     },
     "phase_execution_log": [
-      {"phase_name": "PREPARE", "phase_index": 0, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
-      {"phase_name": "RED_ACCEPTANCE", "phase_index": 1, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
-      {"phase_name": "RED_UNIT", "phase_index": 2, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
-      {"phase_name": "GREEN_UNIT", "phase_index": 3, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
-      {"phase_name": "CHECK_ACCEPTANCE", "phase_index": 4, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
-      {"phase_name": "GREEN_ACCEPTANCE", "phase_index": 5, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
-      {"phase_name": "REVIEW", "phase_index": 6, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
-      {"phase_name": "REFACTOR_L1", "phase_index": 7, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
-      {"phase_name": "REFACTOR_L2", "phase_index": 8, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
-      {"phase_name": "REFACTOR_L3", "phase_index": 9, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
-      {"phase_name": "REFACTOR_L4", "phase_index": 10, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
-      {"phase_name": "POST_REFACTOR_REVIEW", "phase_index": 11, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
-      {"phase_name": "FINAL_VALIDATE", "phase_index": 12, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []},
-      {"phase_name": "COMMIT", "phase_index": 13, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "outcome_details": null, "artifacts_created": [], "artifacts_modified": [], "test_results": {"total": null, "passed": null, "failed": null, "skipped": null}, "notes": null, "blocked_by": null, "history": []}
+      {
+        "phase_name": "PREPARE",
+        "phase_index": 0,
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "duration_minutes": null,
+        "outcome": null,
+        "outcome_details": null,
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
+        "notes": null,
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "RED_ACCEPTANCE",
+        "phase_index": 1,
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "duration_minutes": null,
+        "outcome": null,
+        "outcome_details": null,
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
+        "notes": null,
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "RED_UNIT",
+        "phase_index": 2,
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "duration_minutes": null,
+        "outcome": null,
+        "outcome_details": null,
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
+        "notes": null,
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "GREEN_UNIT",
+        "phase_index": 3,
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "duration_minutes": null,
+        "outcome": null,
+        "outcome_details": null,
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
+        "notes": null,
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "CHECK_ACCEPTANCE",
+        "phase_index": 4,
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "duration_minutes": null,
+        "outcome": null,
+        "outcome_details": null,
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
+        "notes": null,
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "GREEN_ACCEPTANCE",
+        "phase_index": 5,
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "duration_minutes": null,
+        "outcome": null,
+        "outcome_details": null,
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
+        "notes": null,
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "REVIEW",
+        "phase_index": 6,
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "duration_minutes": null,
+        "outcome": null,
+        "outcome_details": null,
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
+        "notes": null,
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "REFACTOR_L1",
+        "phase_index": 7,
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "duration_minutes": null,
+        "outcome": null,
+        "outcome_details": null,
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
+        "notes": null,
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "REFACTOR_L2",
+        "phase_index": 8,
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "duration_minutes": null,
+        "outcome": null,
+        "outcome_details": null,
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
+        "notes": null,
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "REFACTOR_L3",
+        "phase_index": 9,
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "duration_minutes": null,
+        "outcome": null,
+        "outcome_details": null,
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
+        "notes": null,
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "REFACTOR_L4",
+        "phase_index": 10,
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "duration_minutes": null,
+        "outcome": null,
+        "outcome_details": null,
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
+        "notes": null,
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "POST_REFACTOR_REVIEW",
+        "phase_index": 11,
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "duration_minutes": null,
+        "outcome": null,
+        "outcome_details": null,
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
+        "notes": null,
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "FINAL_VALIDATE",
+        "phase_index": 12,
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "duration_minutes": null,
+        "outcome": null,
+        "outcome_details": null,
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
+        "notes": null,
+        "blocked_by": null,
+        "history": []
+      },
+      {
+        "phase_name": "COMMIT",
+        "phase_index": 13,
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "duration_minutes": null,
+        "outcome": null,
+        "outcome_details": null,
+        "artifacts_created": [],
+        "artifacts_modified": [],
+        "test_results": {
+          "total": null,
+          "passed": null,
+          "failed": null,
+          "skipped": null
+        },
+        "notes": null,
+        "blocked_by": null,
+        "history": []
+      }
     ]
   },
   "quality_gates": {

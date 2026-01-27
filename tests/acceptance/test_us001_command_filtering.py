@@ -33,7 +33,7 @@ class TestCommandOriginFiltering:
     """
 
     def test_execute_command_includes_des_validation_marker(
-        self, tmp_project_root, minimal_step_file, des_orchestrator
+        self, in_memory_filesystem, des_orchestrator
     ):
         """
         GIVEN /nw:execute command invoked with step file path
@@ -50,18 +50,21 @@ class TestCommandOriginFiltering:
         - <!-- DES-STEP-FILE: steps/01-01.json -->
         - <!-- DES-ORIGIN: command:/nw:execute -->
         """
-        # GIVEN: /nw:execute command invoked with step file
+        from pathlib import Path
+
+        # GIVEN: /nw:execute command invoked with step file (no real filesystem access)
         command = "/nw:execute"
         agent = "@software-crafter"
-        step_file_path = str(minimal_step_file.relative_to(tmp_project_root))
+        step_file = "steps/01-01.json"
+        project_root = Path("/project")
 
         # WHEN: Orchestrator renders Task prompt
-        # NOTE: This will fail until DEVELOP wave implements orchestrator
+        # NOTE: No step file seeding needed - render_prompt doesn't read file
         prompt = des_orchestrator.render_prompt(
             command=command,
             agent=agent,
-            step_file=step_file_path,
-            project_root=tmp_project_root,
+            step_file=step_file,
+            project_root=project_root,
         )
 
         # THEN: Prompt contains DES validation markers
@@ -70,16 +73,14 @@ class TestCommandOriginFiltering:
         ), "DES validation marker missing - Gate 1 validation will not trigger"
 
         assert (
-            f"<!-- DES-STEP-FILE: {step_file_path} -->" in prompt
+            f"<!-- DES-STEP-FILE: {step_file} -->" in prompt
         ), "Step file marker missing - SubagentStop hook cannot locate step file"
 
         assert (
             "<!-- DES-ORIGIN: command:/nw:execute -->" in prompt
         ), "Origin marker missing - audit trail cannot track command source"
 
-    def test_ad_hoc_task_bypasses_des_validation(
-        self, tmp_project_root, des_orchestrator
-    ):
+    def test_ad_hoc_task_bypasses_des_validation(self, des_orchestrator):
         """
         GIVEN Marcus uses Task tool for ad-hoc exploration
         WHEN prompt is generated without DES command context
@@ -98,10 +99,9 @@ class TestCommandOriginFiltering:
         # GIVEN: Ad-hoc Task invocation (not from nWave command)
         prompt_text = "Find all uses of UserRepository in the codebase"
 
-        # WHEN: Orchestrator prepares ad-hoc prompt
-        # NOTE: For ad-hoc tasks, no special rendering - just the prompt text
+        # WHEN: Orchestrator prepares ad-hoc prompt (no filesystem access)
         prompt = des_orchestrator.prepare_ad_hoc_prompt(
-            prompt=prompt_text, project_root=tmp_project_root
+            prompt=prompt_text, project_root=None
         )
 
         # THEN: No DES markers present
@@ -117,9 +117,7 @@ class TestCommandOriginFiltering:
             "<!-- DES-ORIGIN:" not in prompt
         ), "Ad-hoc tasks have no command origin tracking"
 
-    def test_research_command_skips_full_validation(
-        self, tmp_project_root, des_orchestrator
-    ):
+    def test_research_command_skips_full_validation(self, des_orchestrator):
         """
         GIVEN Marcus invokes /nw:research for exploration
         WHEN orchestrator prepares Task prompt
@@ -139,9 +137,9 @@ class TestCommandOriginFiltering:
         command = "/nw:research"
         research_topic = "authentication patterns"
 
-        # WHEN: Orchestrator renders research prompt
+        # WHEN: Orchestrator renders research prompt (no filesystem access)
         prompt = des_orchestrator.render_prompt(
-            command=command, topic=research_topic, project_root=tmp_project_root
+            command=command, topic=research_topic, project_root=None
         )
 
         # THEN: NO DES validation markers (validation_level = "none")
@@ -157,7 +155,7 @@ class TestCommandOriginFiltering:
         ), "Research commands do not use step files"
 
     def test_develop_command_includes_des_validation_marker(
-        self, tmp_project_root, minimal_step_file, des_orchestrator
+        self, in_memory_filesystem, des_orchestrator
     ):
         """
         GIVEN /nw:develop command invoked with step file
@@ -174,17 +172,21 @@ class TestCommandOriginFiltering:
         - <!-- DES-STEP-FILE: steps/01-01.json -->
         - <!-- DES-ORIGIN: command:/nw:develop -->
         """
-        # GIVEN: /nw:develop command invoked
+        from pathlib import Path
+
+        # GIVEN: /nw:develop command invoked with step file (no real filesystem access)
         command = "/nw:develop"
         agent = "@software-crafter"
-        step_file_path = str(minimal_step_file.relative_to(tmp_project_root))
+        step_file = "steps/01-01.json"
+        project_root = Path("/project")
 
         # WHEN: Orchestrator renders develop prompt
+        # NOTE: No step file seeding needed - render_prompt doesn't read file
         prompt = des_orchestrator.render_prompt(
             command=command,
             agent=agent,
-            step_file=step_file_path,
-            project_root=tmp_project_root,
+            step_file=step_file,
+            project_root=project_root,
         )
 
         # THEN: Full DES validation required (same as execute)
@@ -193,7 +195,7 @@ class TestCommandOriginFiltering:
         ), "Develop command requires full DES validation"
 
         assert (
-            f"<!-- DES-STEP-FILE: {step_file_path} -->" in prompt
+            f"<!-- DES-STEP-FILE: {step_file} -->" in prompt
         ), "Develop command must reference step file for state tracking"
 
         assert (

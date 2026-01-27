@@ -4,16 +4,11 @@
     "project_id": "des",
     "task_name": "Create unit test suite",
     "description": "Develop comprehensive unit test suite for DESOrchestrator covering all methods,\nedge cases, and error conditions. Ensure high code coverage and test quality.",
-    "acceptance_criteria": [
-      "Unit tests for _get_validation_level() method",
-      "Unit tests for _generate_des_markers() method",
-      "Unit tests for render_prompt() with all command types",
-      "Unit tests for prepare_ad_hoc_prompt()",
-      "Edge case tests (null, empty, malformed inputs)",
-      "Error handling tests with exception validation",
-      "Unit test coverage >90% for DESOrchestrator"
+    "acceptance_criteria": "Unit tests for _get_validation_level() method; Unit tests for _generate_des_markers() method; Unit tests for render_prompt() with all command types; Unit tests for prepare_ad_hoc_prompt(); Edge case tests (null, empty, malformed inputs); Error handling tests with exception validation; Unit test coverage >90% for DESOrchestrator",
+    "requires": [
+      "04-01",
+      "04-02"
     ],
-    "requires": ["04-01", "04-02"],
     "estimated_hours": 2,
     "implementation_notes": "- Create tests/unit/test_des_orchestrator.py\n- Use pytest fixtures for test isolation\n- Test each method independently (no mocks of domain logic)\n- Parameterized tests for command type variations\n- Assert specific error messages for error cases\n- Use pytest.raises for exception testing"
   },
@@ -36,7 +31,21 @@
       "current_phase": "COMMIT",
       "active_e2e_test": "All 4 acceptance tests (regression suite)",
       "inactive_e2e_tests": "None",
-      "phases_completed": ["PREPARE", "RED_ACCEPTANCE", "RED_UNIT", "GREEN_UNIT", "CHECK_ACCEPTANCE", "GREEN_ACCEPTANCE", "REVIEW", "REFACTOR_L1", "REFACTOR_L2", "REFACTOR_L3", "REFACTOR_L4", "POST_REFACTOR_REVIEW", "FINAL_VALIDATE"]
+      "phases_completed": [
+        "PREPARE",
+        "RED_ACCEPTANCE",
+        "RED_UNIT",
+        "GREEN_UNIT",
+        "CHECK_ACCEPTANCE",
+        "GREEN_ACCEPTANCE",
+        "REVIEW",
+        "REFACTOR_L1",
+        "REFACTOR_L2",
+        "REFACTOR_L3",
+        "REFACTOR_L4",
+        "POST_REFACTOR_REVIEW",
+        "FINAL_VALIDATE"
+      ]
     },
     "phase_execution_log": [
       {
@@ -322,7 +331,9 @@
         "outcome": "READY",
         "outcome_details": "Ready to commit comprehensive test suite validation",
         "artifacts_created": [],
-        "artifacts_modified": ["docs/feature/des/steps/04-04.json"],
+        "artifacts_modified": [
+          "docs/feature/des/steps/04-04.json"
+        ],
         "test_results": {
           "total": 33,
           "passed": 33,
