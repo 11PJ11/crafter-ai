@@ -214,7 +214,6 @@ class TestAuditTrailForComplianceVerification:
     # Scenario 3a: TASK_INVOCATION_* events captured
     # -------------------------------------------------------------------------
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_003a_task_invocation_events_captured(self):
         """
         GIVEN Marcus runs /nw:execute @software-crafter "steps/01-01.json"
@@ -245,7 +244,6 @@ class TestAuditTrailForComplianceVerification:
     # Scenario 3b: PHASE_* events captured for all 14 TDD phases
     # -------------------------------------------------------------------------
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_003b_phase_lifecycle_events_captured(self):
         """
         GIVEN task invocation has passed validation
@@ -278,7 +276,6 @@ class TestAuditTrailForComplianceVerification:
     # Scenario 3c: SUBAGENT_STOP_* and COMMIT_* events captured
     # -------------------------------------------------------------------------
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_003c_subagent_stop_and_commit_events_captured(self):
         """
         GIVEN all 14 phases have been executed successfully
@@ -312,7 +309,6 @@ class TestAuditTrailForComplianceVerification:
     # Scenario 4: Task invocation rejection is audited
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_004_failed_validation_captures_rejection_event(self):
         """
         GIVEN orchestrator produces prompt with incomplete template
@@ -349,7 +345,6 @@ class TestAuditTrailForComplianceVerification:
     # Scenario 5: Audit entries contain complete context
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_005_audit_entries_include_step_path_and_event_data(self):
         """
         GIVEN phase transition occurs for step 01-01 during GREEN_UNIT phase
@@ -387,7 +382,6 @@ class TestAuditTrailForComplianceVerification:
     # Scenario 6: Abandoned phase is traceable in audit
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_006_abandoned_phase_traceable_in_audit(self):
         """
         GIVEN agent crashes during RED_UNIT phase execution
@@ -432,7 +426,6 @@ class TestAuditTrailForComplianceVerification:
     # Scenario 7: Log format is valid JSONL readable by humans
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_007_audit_log_is_human_readable_jsonl(self):
         """
         GIVEN audit log contains multiple entries
@@ -488,7 +481,6 @@ class TestAuditTrailForComplianceVerification:
     # Scenario 8: Daily log rotation with correct naming
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_008_audit_logs_rotate_daily_with_date_naming(self):
         """
         GIVEN executions occur on January 22 and January 23, 2026
@@ -532,7 +524,6 @@ class TestAuditTrailForComplianceVerification:
     # Scenario 9: Large execution doesn't bloat single file excessively
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_009_daily_rotation_prevents_single_file_bloat(self):
         """
         GIVEN 100 step executions occur over 5 days
@@ -569,7 +560,6 @@ class TestAuditTrailForComplianceVerification:
     # Scenario 10: Full execution produces complete audit trail for PR review
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_010_complete_execution_produces_reviewable_audit_trail(self):
         """
         GIVEN Marcus runs /nw:execute @software-crafter "steps/01-01.json" on 2026-01-22
