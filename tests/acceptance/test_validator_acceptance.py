@@ -33,18 +33,18 @@ def test_reviewer_validates_command_template_compliance():
 
     # Given: agent-builder creates a new command using command template
     test_command_file = Path(__file__).parent / "test_command_noncompliant.md"
-    assert (
-        test_command_file.exists()
-    ), f"Test command file not found: {test_command_file}"
+    assert test_command_file.exists(), (
+        f"Test command file not found: {test_command_file}"
+    )
 
     # When: agent-builder-reviewer performs peer review
     result = validate_command(str(test_command_file))
 
     # Then: the reviewer validates command size is 50-60 lines
     assert result.size_metrics is not None, "Size metrics not computed"
-    assert (
-        result.size_metrics.total_lines > 60
-    ), f"Expected size > 60, got {result.size_metrics.total_lines}"
+    assert result.size_metrics.total_lines > 60, (
+        f"Expected size > 60, got {result.size_metrics.total_lines}"
+    )
     assert result.size_metrics.violation_factor > 1.0, "Expected violation factor > 1.0"
     print(
         f"✓ Size validation: {result.size_metrics.total_lines} lines (violation factor: {result.size_metrics.violation_factor:.2f}x)"
@@ -52,18 +52,18 @@ def test_reviewer_validates_command_template_compliance():
 
     # And: the reviewer ensures zero workflow duplication
     assert len(result.embedded_workflows) > 0, "Expected to detect embedded workflows"
-    assert (
-        "procedural_steps" in result.embedded_workflows
-    ), "Expected to detect procedural steps"
-    assert (
-        "progress_tracking" in result.embedded_workflows
-    ), "Expected to detect progress tracking"
-    assert (
-        "orchestration" in result.embedded_workflows
-    ), "Expected to detect orchestration logic"
-    assert (
-        "parameter_parsing" in result.embedded_workflows
-    ), "Expected to detect parameter parsing"
+    assert "procedural_steps" in result.embedded_workflows, (
+        "Expected to detect procedural steps"
+    )
+    assert "progress_tracking" in result.embedded_workflows, (
+        "Expected to detect progress tracking"
+    )
+    assert "orchestration" in result.embedded_workflows, (
+        "Expected to detect orchestration logic"
+    )
+    assert "parameter_parsing" in result.embedded_workflows, (
+        "Expected to detect parameter parsing"
+    )
     print(f"✓ Workflow duplication detection: {list(result.embedded_workflows.keys())}")
 
     # And: the reviewer confirms explicit context bundling is present
@@ -89,12 +89,12 @@ def test_reviewer_validates_command_template_compliance():
         v for v in result.violations if v.severity == SeverityLevel.BLOCKER
     ]
     assert len(blocker_violations) > 0, "Expected BLOCKER violations"
-    assert (
-        result.approval_decision == "REJECTED_PENDING_REVISIONS"
-    ), f"Expected REJECTED_PENDING_REVISIONS, got {result.approval_decision}"
-    assert (
-        result.compliance_status == "BLOCKED"
-    ), f"Expected BLOCKED status, got {result.compliance_status}"
+    assert result.approval_decision == "REJECTED_PENDING_REVISIONS", (
+        f"Expected REJECTED_PENDING_REVISIONS, got {result.approval_decision}"
+    )
+    assert result.compliance_status == "BLOCKED", (
+        f"Expected BLOCKED status, got {result.compliance_status}"
+    )
     print(
         f"✓ Critical violations block approval: {len(blocker_violations)} BLOCKER violation(s)"
     )
@@ -103,9 +103,9 @@ def test_reviewer_validates_command_template_compliance():
 
     # And: the reviewer provides actionable feedback for non-compliant commands
     assert len(result.feedback) > 0, "Expected feedback to be generated"
-    assert any(
-        "✗" in fb for fb in result.feedback
-    ), "Expected critical feedback indicators"
+    assert any("✗" in fb for fb in result.feedback), (
+        "Expected critical feedback indicators"
+    )
 
     # Verify feedback contains remediation guidance
     has_remediation = any("→" in fb for fb in result.feedback)

@@ -344,9 +344,9 @@ def semantic_release_runs_alt(git_repo):
 @then("the commit is accepted")
 def verify_commit_accepted(git_result):
     """Verify commit was successful."""
-    assert (
-        git_result["returncode"] == 0
-    ), f"Commit was rejected:\n{git_result['stderr']}"
+    assert git_result["returncode"] == 0, (
+        f"Commit was rejected:\n{git_result['stderr']}"
+    )
 
 
 @then("no error is shown")
@@ -365,26 +365,26 @@ def verify_commit_in_log(git_repo):
         text=True,
     )
 
-    assert (
-        result.returncode == 0 and result.stdout.strip()
-    ), "No commits found in git log"
+    assert result.returncode == 0 and result.stdout.strip(), (
+        "No commits found in git log"
+    )
 
 
 @then("the commit is rejected")
 def verify_commit_rejected(git_result):
     """Verify commit was rejected by hook."""
-    assert (
-        git_result["returncode"] != 0
-    ), "Commit was accepted when it should have been rejected"
+    assert git_result["returncode"] != 0, (
+        "Commit was accepted when it should have been rejected"
+    )
 
 
 @then(parsers.parse('I see error "{error_text}"'))
 def verify_error_message(git_result, error_text):
     """Verify specific error message is shown."""
     output = git_result["stdout"] + git_result["stderr"]
-    assert (
-        error_text in output
-    ), f"Expected error '{error_text}' not found in:\n{output}"
+    assert error_text in output, (
+        f"Expected error '{error_text}' not found in:\n{output}"
+    )
 
 
 @then(parsers.parse('I see "{text}"'))
@@ -426,9 +426,9 @@ def verify_push_succeeds(git_result):
     """Verify push was successful."""
     # In real scenario with remote, would check returncode
     # For test with fake remote, verify hook didn't block
-    assert (
-        "VERSION file missing" not in git_result["stderr"]
-    ), "Push was blocked by validation error"
+    assert "VERSION file missing" not in git_result["stderr"], (
+        "Push was blocked by validation error"
+    )
 
 
 @then("all commits reach the remote")
@@ -441,9 +441,9 @@ def verify_commits_pushed(git_result):
 @then("the push is rejected")
 def verify_push_rejected(git_result):
     """Verify push was blocked by pre-push hook."""
-    assert (
-        git_result["returncode"] != 0
-    ), "Push succeeded when it should have been rejected"
+    assert git_result["returncode"] != 0, (
+        "Push succeeded when it should have been rejected"
+    )
 
 
 @then(parsers.parse('I see suggested action "{action}"'))
