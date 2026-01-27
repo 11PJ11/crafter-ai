@@ -153,7 +153,7 @@ if [ ! -f "$repo_root/nWave/VERSION" ]; then
     echo ""
     echo "[FAIL] VERSION file missing"
     echo "       Expected: nWave/VERSION"
-    echo "       Action: Create VERSION file with current version (e.g., '1.5.7')"
+    echo "       Action: Create nWave/VERSION with current version (e.g., '1.5.7')"
     echo ""
     exit 1
 fi
@@ -323,17 +323,48 @@ def commit_with_specific_message(git_repo, git_result, commit_message):
 @when("I push to origin")
 def push_to_origin(git_repo, git_result):
     """Attempt to push to remote (triggers pre-push hook)."""
-    # Add a remote (even if fake)
+    repo_dir = git_repo["repo_dir"]
+
+    # Create an initial commit if none exists (pre-push hook needs something to push)
+    result = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo_dir,
+        capture_output=True,
+    )
+    if result.returncode != 0:
+        # No commits exist, create one
+        test_file = repo_dir / "initial.txt"
+        test_file.write_text("Initial content for push test")
+        subprocess.run(["git", "add", "initial.txt"], cwd=repo_dir, check=True)
+        subprocess.run(
+            ["git", "commit", "-m", "chore: initial commit"],
+            cwd=repo_dir,
+            capture_output=True,
+            check=True,
+        )
+
+    # Ensure we're on main branch
     subprocess.run(
-        ["git", "remote", "add", "origin", "https://github.com/test/test.git"],
-        cwd=git_repo["repo_dir"],
+        ["git", "branch", "-M", "main"],
+        cwd=repo_dir,
+        capture_output=True,
+    )
+
+    # Create a local bare repository as remote (allows real push behavior)
+    bare_repo = repo_dir.parent / "origin.git"
+    subprocess.run(["git", "init", "--bare", str(bare_repo)], capture_output=True)
+
+    # Add the local bare repo as remote
+    subprocess.run(
+        ["git", "remote", "add", "origin", str(bare_repo)],
+        cwd=repo_dir,
         capture_output=True,
     )
 
     # Attempt push (will be stopped by pre-push hook if validation fails)
     result = subprocess.run(
         ["git", "push", "-u", "origin", "main"],
-        cwd=git_repo["repo_dir"],
+        cwd=repo_dir,
         capture_output=True,
         text=True,
     )

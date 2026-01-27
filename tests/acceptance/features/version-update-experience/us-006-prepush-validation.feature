@@ -14,7 +14,6 @@ Feature: Pre-push Validation
     Then the push succeeds
     And all commits reach the remote
 
-  @skip
   Scenario: Push rejected when VERSION file missing
     Given nWave/VERSION file does not exist
     And .releaserc configuration exists
