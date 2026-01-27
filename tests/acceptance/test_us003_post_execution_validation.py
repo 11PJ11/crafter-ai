@@ -983,7 +983,7 @@ class TestOrchestratorHookIntegration:
         This test would FAIL if the import or delegation is missing.
         """
         # Arrange: Import entry point (NOT internal component)
-        from src.des.orchestrator import DESOrchestrator
+        from src.des.application.orchestrator import DESOrchestrator
 
         # Create step file with clean completion
         step_data = _create_step_file_with_clean_completion()
@@ -1012,7 +1012,7 @@ class TestOrchestratorHookIntegration:
         not just returning success by default.
         """
         # Arrange: Import entry point
-        from src.des.orchestrator import DESOrchestrator
+        from src.des.application.orchestrator import DESOrchestrator
 
         # Create step file with abandoned phase
         step_data = _create_step_file_with_abandoned_phase(

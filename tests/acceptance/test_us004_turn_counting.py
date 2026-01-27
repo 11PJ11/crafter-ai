@@ -160,7 +160,7 @@ class TestTurnCountingIntegration:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        from src.des.hooks import SubagentStopHook
+        from src.des.application.hooks import SubagentStopHook
 
         hook = SubagentStopHook()
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
@@ -238,7 +238,7 @@ class TestTurnCountingIntegration:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        from src.des.hooks import SubagentStopHook
+        from src.des.application.hooks import SubagentStopHook
 
         hook = SubagentStopHook()
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))

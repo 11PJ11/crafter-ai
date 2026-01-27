@@ -89,7 +89,7 @@ def des_orchestrator(
     Returns:
         DESOrchestrator: Configured orchestrator with mocked dependencies
     """
-    from src.des.orchestrator import DESOrchestrator
+    from src.des.application.orchestrator import DESOrchestrator
 
     return DESOrchestrator(
         hook=mocked_hook,
@@ -115,7 +115,7 @@ def scenario_des_orchestrator(
     Returns:
         DESOrchestrator: Configured orchestrator with real filesystem
     """
-    from src.des.orchestrator import DESOrchestrator
+    from src.des.application.orchestrator import DESOrchestrator
 
     return DESOrchestrator(
         hook=mocked_hook,

@@ -38,7 +38,7 @@ def test_structured_logger_produces_valid_json_output():
     When: log_validation_result is called
     Then: Valid JSON is written to output stream
     """
-    from src.des.adapters.structured_logger import StructuredLogger
+    from src.des.adapters.driven.logging.structured_logger import StructuredLogger
 
     # Capture output
     output = StringIO()
@@ -75,7 +75,7 @@ def test_structured_logger_logs_hook_execution():
     When: log_hook_execution is called
     Then: Valid JSON log entry is created
     """
-    from src.des.adapters.structured_logger import StructuredLogger
+    from src.des.adapters.driven.logging.structured_logger import StructuredLogger
 
     output = StringIO()
     logger = StructuredLogger(output_stream=output)
@@ -105,7 +105,7 @@ def test_structured_logger_logs_errors():
     When: log_error is called
     Then: Error is logged as JSON
     """
-    from src.des.adapters.structured_logger import StructuredLogger
+    from src.des.adapters.driven.logging.structured_logger import StructuredLogger
 
     output = StringIO()
     logger = StructuredLogger(output_stream=output)
@@ -130,7 +130,7 @@ def test_silent_logger_is_no_op():
     When: Any logging method is called
     Then: No output is produced and no errors occur
     """
-    from src.des.adapters.silent_logger import SilentLogger
+    from src.des.adapters.driven.logging.silent_logger import SilentLogger
 
     logger = SilentLogger()
 
@@ -159,7 +159,7 @@ def test_silent_logger_implements_logging_port():
     Then: It is an instance of LoggingPort
     """
     from src.des.ports.driven_ports.logging_port import LoggingPort
-    from src.des.adapters.silent_logger import SilentLogger
+    from src.des.adapters.driven.logging.silent_logger import SilentLogger
 
     logger = SilentLogger()
     assert isinstance(logger, LoggingPort)
@@ -174,7 +174,7 @@ def test_structured_logger_implements_logging_port():
     Then: It is an instance of LoggingPort
     """
     from src.des.ports.driven_ports.logging_port import LoggingPort
-    from src.des.adapters.structured_logger import StructuredLogger
+    from src.des.adapters.driven.logging.structured_logger import StructuredLogger
 
     logger = StructuredLogger()
     assert isinstance(logger, LoggingPort)

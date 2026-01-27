@@ -35,7 +35,9 @@ def test_mocked_task_adapter_returns_predefined_results():
     When: invoke_task is called
     Then: Predefined result is returned
     """
-    from src.des.adapters.mocked_task_adapter import MockedTaskAdapter
+    from src.des.adapters.driven.task_invocation.mocked_task_adapter import (
+        MockedTaskAdapter,
+    )
 
     # Create adapter with predefined result
     predefined_result = {"success": True, "output": "Test output", "error": None}
@@ -58,7 +60,9 @@ def test_mocked_task_adapter_supports_multiple_results():
     When: invoke_task is called multiple times
     Then: Results are returned in sequence
     """
-    from src.des.adapters.mocked_task_adapter import MockedTaskAdapter
+    from src.des.adapters.driven.task_invocation.mocked_task_adapter import (
+        MockedTaskAdapter,
+    )
 
     results_queue = [
         {"success": True, "output": "First call"},
@@ -91,7 +95,9 @@ def test_mocked_task_adapter_implements_task_invocation_port():
     Then: It is an instance of TaskInvocationPort
     """
     from src.des.ports.driven_ports.task_invocation_port import TaskInvocationPort
-    from src.des.adapters.mocked_task_adapter import MockedTaskAdapter
+    from src.des.adapters.driven.task_invocation.mocked_task_adapter import (
+        MockedTaskAdapter,
+    )
 
     adapter = MockedTaskAdapter()
     assert isinstance(adapter, TaskInvocationPort)
@@ -106,7 +112,9 @@ def test_claude_code_task_adapter_implements_task_invocation_port():
     Then: It is an instance of TaskInvocationPort
     """
     from src.des.ports.driven_ports.task_invocation_port import TaskInvocationPort
-    from src.des.adapters.claude_code_task_adapter import ClaudeCodeTaskAdapter
+    from src.des.adapters.driven.task_invocation.claude_code_task_adapter import (
+        ClaudeCodeTaskAdapter,
+    )
 
     adapter = ClaudeCodeTaskAdapter()
     assert isinstance(adapter, TaskInvocationPort)

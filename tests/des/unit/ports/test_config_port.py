@@ -36,7 +36,9 @@ def test_in_memory_config_adapter_returns_hardcoded_values():
     When: Configuration methods are called
     Then: Hardcoded test values are returned
     """
-    from src.des.adapters.in_memory_config_adapter import InMemoryConfigAdapter
+    from src.des.adapters.driven.config.in_memory_config_adapter import (
+        InMemoryConfigAdapter,
+    )
 
     config = InMemoryConfigAdapter()
 
@@ -59,7 +61,9 @@ def test_in_memory_config_adapter_accepts_custom_values():
     When: Configuration methods are called
     Then: Custom values are returned
     """
-    from src.des.adapters.in_memory_config_adapter import InMemoryConfigAdapter
+    from src.des.adapters.driven.config.in_memory_config_adapter import (
+        InMemoryConfigAdapter,
+    )
 
     config = InMemoryConfigAdapter(max_turns=5, timeout_threshold=60)
 
@@ -75,7 +79,9 @@ def test_environment_config_adapter_reads_env_variables():
     When: Configuration methods are called
     Then: Values from environment are returned
     """
-    from src.des.adapters.environment_config_adapter import EnvironmentConfigAdapter
+    from src.des.adapters.driven.config.environment_config_adapter import (
+        EnvironmentConfigAdapter,
+    )
 
     # Set environment variables
     os.environ["DES_MAX_TURNS_DEFAULT"] = "15"
@@ -101,7 +107,9 @@ def test_environment_config_adapter_uses_defaults_when_env_not_set():
     When: Configuration methods are called
     Then: Default values are returned
     """
-    from src.des.adapters.environment_config_adapter import EnvironmentConfigAdapter
+    from src.des.adapters.driven.config.environment_config_adapter import (
+        EnvironmentConfigAdapter,
+    )
 
     # Ensure env vars are not set
     os.environ.pop("DES_MAX_TURNS_DEFAULT", None)
@@ -128,7 +136,9 @@ def test_in_memory_config_adapter_implements_config_port():
     Then: It is an instance of ConfigPort
     """
     from src.des.ports.driven_ports.config_port import ConfigPort
-    from src.des.adapters.in_memory_config_adapter import InMemoryConfigAdapter
+    from src.des.adapters.driven.config.in_memory_config_adapter import (
+        InMemoryConfigAdapter,
+    )
 
     config = InMemoryConfigAdapter()
     assert isinstance(config, ConfigPort)
@@ -143,7 +153,9 @@ def test_environment_config_adapter_implements_config_port():
     Then: It is an instance of ConfigPort
     """
     from src.des.ports.driven_ports.config_port import ConfigPort
-    from src.des.adapters.environment_config_adapter import EnvironmentConfigAdapter
+    from src.des.adapters.driven.config.environment_config_adapter import (
+        EnvironmentConfigAdapter,
+    )
 
     config = EnvironmentConfigAdapter()
     assert isinstance(config, ConfigPort)

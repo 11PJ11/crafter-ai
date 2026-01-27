@@ -46,7 +46,7 @@ class TestPreInvocationTemplateValidation:
         8. TIMEOUT_INSTRUCTION
         """
         import time
-        from src.des.validator import TemplateValidator
+        from src.des.application.validator import TemplateValidator
 
         # Arrange: Create prompt with all 8 mandatory sections
         prompt_with_all_sections = """
@@ -170,7 +170,7 @@ class TestPreInvocationTemplateValidation:
         """
 
         # Act: Run pre-invocation validation
-        from src.des.validator import TemplateValidator
+        from src.des.application.validator import TemplateValidator
 
         validator = TemplateValidator()
         validation_result = validator.validate_prompt(prompt_missing_phase)
@@ -230,7 +230,7 @@ class TestPreInvocationTemplateValidation:
         """
 
         # Act: Run pre-invocation validation
-        from src.des.validator import TemplateValidator
+        from src.des.application.validator import TemplateValidator
 
         validator = TemplateValidator()
         validation_result = validator.validate_prompt(prompt_missing_section)
@@ -311,7 +311,7 @@ class TestPreInvocationTemplateValidation:
         """
 
         # Act: Run pre-invocation validation
-        from src.des.validator import TemplateValidator
+        from src.des.application.validator import TemplateValidator
 
         validator = TemplateValidator()
         validation_result = validator.validate_prompt(_prompt_with_multiple_errors)
@@ -389,7 +389,7 @@ class TestPreInvocationTemplateValidation:
 
         # Act: Measure validation performance
         import time
-        from src.des.validator import TemplateValidator
+        from src.des.application.validator import TemplateValidator
 
         validator = TemplateValidator()
         start_time = time.perf_counter()
@@ -452,7 +452,7 @@ class TestPreInvocationTemplateValidation:
         """
 
         # Act: Run pre-invocation validation
-        from src.des.validator import TemplateValidator
+        from src.des.application.validator import TemplateValidator
 
         validator = TemplateValidator()
         validation_result = validator.validate_prompt(prompt_malformed_marker)
@@ -494,8 +494,8 @@ class TestOrchestratorIntegration:
         This test would FAIL if the import or delegation is missing.
         """
         # Arrange: Create orchestrator with REAL validator for integration testing
-        from src.des.orchestrator import DESOrchestrator
-        from src.des.validator import TemplateValidator
+        from src.des.application.orchestrator import DESOrchestrator
+        from src.des.application.validator import TemplateValidator
 
         orchestrator = DESOrchestrator(
             hook=mocked_hook,
@@ -566,8 +566,8 @@ class TestOrchestratorIntegration:
         through the orchestrator, not just returning success by default.
         """
         # Arrange: Create orchestrator with REAL validator for integration testing
-        from src.des.orchestrator import DESOrchestrator
-        from src.des.validator import TemplateValidator
+        from src.des.application.orchestrator import DESOrchestrator
+        from src.des.application.validator import TemplateValidator
 
         orchestrator = DESOrchestrator(
             hook=mocked_hook,
@@ -647,7 +647,7 @@ class TestPhaseExecutionLogValidation:
         Phase REFACTOR_L2 status: IN_PROGRESS (ABANDONED - never completed or rolled back)
         """
 
-        from src.des.validator import TemplateValidator
+        from src.des.application.validator import TemplateValidator
 
         validator = TemplateValidator()
         validation_result = validator.validate_prompt(prompt_with_abandoned_phase)
@@ -700,7 +700,7 @@ class TestPhaseExecutionLogValidation:
         Task Status: DONE (but 9 phases not executed!)
         """
 
-        from src.des.validator import TemplateValidator
+        from src.des.application.validator import TemplateValidator
 
         validator = TemplateValidator()
         validation_result = validator.validate_prompt(prompt_done_incomplete)
@@ -753,7 +753,7 @@ class TestPhaseExecutionLogValidation:
         Cannot determine if phase passed or failed
         """
 
-        from src.des.validator import TemplateValidator
+        from src.des.application.validator import TemplateValidator
 
         validator = TemplateValidator()
         validation_result = validator.validate_prompt(prompt_missing_outcome)
@@ -803,7 +803,7 @@ class TestPhaseExecutionLogValidation:
         Skipped phases MUST have blocked_by reason documented
         """
 
-        from src.des.validator import TemplateValidator
+        from src.des.application.validator import TemplateValidator
 
         validator = TemplateValidator()
         validation_result = validator.validate_prompt(prompt_skipped_no_reason)
@@ -857,7 +857,7 @@ class TestPhaseExecutionLogValidation:
         Phase REFACTOR_L1: status=IN_PROGRESS (abandoned)
         """
 
-        from src.des.validator import TemplateValidator
+        from src.des.application.validator import TemplateValidator
 
         validator = TemplateValidator()
         validation_result = validator.validate_prompt(prompt_multiple_errors)
@@ -915,7 +915,7 @@ class TestPhaseExecutionLogValidation:
         Ready for completion
         """
 
-        from src.des.validator import TemplateValidator
+        from src.des.application.validator import TemplateValidator
 
         validator = TemplateValidator()
         validation_result = validator.validate_prompt(prompt_complete)
@@ -967,7 +967,7 @@ class TestPhaseExecutionLogValidation:
         Explanation: REVIEW phase skipped because code already meets SRP - pattern extraction deferred
         """
 
-        from src.des.validator import TemplateValidator
+        from src.des.application.validator import TemplateValidator
 
         validator = TemplateValidator()
         validation_result = validator.validate_prompt(prompt_valid_skip)
@@ -994,7 +994,7 @@ class TestOrchestratorSubagentStopHook:
         Business Value: Ensures proper resource cleanup preventing memory leaks
         and zombie processes from incomplete subagent lifecycle management.
         """
-        from src.des.orchestrator import DESOrchestrator
+        from src.des.application.orchestrator import DESOrchestrator
 
         orchestrator = DESOrchestrator(
             hook=mocked_hook,

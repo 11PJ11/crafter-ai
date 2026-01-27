@@ -94,7 +94,7 @@ class TestSessionScopedStaleDetection:
         target_step_path.write_text(json.dumps(target_step_data, indent=2))
 
         # Act: Attempt to execute new step (pre-execution stale check should run)
-        # from src.des.orchestrator import DESOrchestrator
+        # from src.des.application.orchestrator import DESOrchestrator
         # orchestrator = DESOrchestrator(project_root=tmp_project_root)
         # result = orchestrator.execute_step("steps/02-01.json")
 
@@ -169,7 +169,7 @@ class TestSessionScopedStaleDetection:
         target_step_path.write_text(json.dumps(target_step_data, indent=2))
 
         # Act: Execute step (pre-execution stale check should pass)
-        # from src.des.orchestrator import DESOrchestrator
+        # from src.des.application.orchestrator import DESOrchestrator
         # orchestrator = DESOrchestrator(project_root=tmp_project_root)
         # result = orchestrator.execute_step("steps/01-01.json")
 
@@ -235,7 +235,7 @@ class TestSessionScopedStaleDetection:
         target_step_path.write_text(json.dumps(target_step_data, indent=2))
 
         # Act: Execute new step with default 30-minute threshold
-        # from src.des.orchestrator import DESOrchestrator
+        # from src.des.application.orchestrator import DESOrchestrator
         # orchestrator = DESOrchestrator(project_root=tmp_project_root)
         # result = orchestrator.execute_step("steps/02-01.json")
 
@@ -297,7 +297,7 @@ class TestSessionScopedStaleDetection:
         target_step_path.write_text(json.dumps(target_step_data, indent=2))
 
         # Act: Execute with custom 10-minute threshold
-        # from src.des.orchestrator import DESOrchestrator
+        # from src.des.application.orchestrator import DESOrchestrator
         # orchestrator = DESOrchestrator(project_root=tmp_project_root)
         # result = orchestrator.execute_step("steps/02-01.json")
 
@@ -442,7 +442,7 @@ class TestSessionScopedStaleDetection:
         target_step_path.write_text(json.dumps(target_step_data, indent=2))
 
         # Act: Execute new step (should pass since stale step is resolved)
-        # from src.des.orchestrator import DESOrchestrator
+        # from src.des.application.orchestrator import DESOrchestrator
         # orchestrator = DESOrchestrator(project_root=tmp_project_root)
         # result = orchestrator.execute_step("steps/02-01.json")
 
