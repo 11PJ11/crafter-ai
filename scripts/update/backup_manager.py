@@ -44,9 +44,7 @@ class BackupManager:
         source_dir = Path(source_dir)
 
         if not source_dir.exists():
-            raise FileNotFoundError(
-                f"Source directory does not exist: {source_dir}"
-            )
+            raise FileNotFoundError(f"Source directory does not exist: {source_dir}")
 
         backup_path = self._generate_backup_path()
 
