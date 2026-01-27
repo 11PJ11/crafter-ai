@@ -625,7 +625,9 @@ def get_section_for_commit_type(config, commit_type):
 
     Returns the section name (e.g., "Features" for "feat") or None if not mapped.
     """
-    notes_config = get_plugin_config(config, "@semantic-release/release-notes-generator")
+    notes_config = get_plugin_config(
+        config, "@semantic-release/release-notes-generator"
+    )
     if notes_config is None:
         return None
 
@@ -711,7 +713,9 @@ def verify_release_notes_section(git_repo, section, content):
     config = parse_releaserc(git_repo)
 
     # Verify release-notes-generator is configured
-    notes_config = get_plugin_config(config, "@semantic-release/release-notes-generator")
+    notes_config = get_plugin_config(
+        config, "@semantic-release/release-notes-generator"
+    )
     assert notes_config is not None, (
         "Release notes generator plugin (@semantic-release/release-notes-generator) "
         "not configured in .releaserc"
@@ -804,7 +808,9 @@ def verify_breaking_change_prominent(git_repo):
 
     # Verify release-notes-generator uses conventionalcommits preset
     # which formats BREAKING CHANGES prominently
-    notes_config = get_plugin_config(config, "@semantic-release/release-notes-generator")
+    notes_config = get_plugin_config(
+        config, "@semantic-release/release-notes-generator"
+    )
     assert notes_config is not None, (
         "Release notes generator not configured - required for release notes content"
     )
@@ -837,6 +843,6 @@ def verify_major_version_bump(git_repo):
     release_type = get_release_type_for_breaking(config)
     assert release_type == "major", (
         f"Breaking changes should trigger 'major' version bump, but configured "
-        f"release type is '{release_type}'. Add rule: {{\"breaking\": true, \"release\": \"major\"}} "
+        f'release type is \'{release_type}\'. Add rule: {{"breaking": true, "release": "major"}} '
         f"to commit-analyzer releaseRules."
     )
