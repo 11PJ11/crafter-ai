@@ -20,6 +20,7 @@ from src.des.ports.driven_ports.time_provider_port import TimeProvider
 from src.des.domain.turn_counter import TurnCounter
 from src.des.domain.timeout_monitor import TimeoutMonitor
 from src.des.domain.invocation_limits_validator import InvocationLimitsValidator, InvocationLimitsResult
+from src.des.adapters.driven.logging.audit_logger import log_audit_event
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
@@ -233,6 +234,14 @@ class DESOrchestrator:
         if not command:
             raise ValueError("Command cannot be None or empty")
 
+        # Log TASK_INVOCATION_STARTED for audit trail
+        log_audit_event(
+            "TASK_INVOCATION_STARTED",
+            command=command,
+            step_path=step_file,
+            agent=agent
+        )
+
         validation_level = self._get_validation_level(command)
 
         if validation_level == "full":
@@ -241,6 +250,15 @@ class DESOrchestrator:
                 raise ValueError("Step file required for validation commands")
 
             des_markers = self._generate_des_markers(command, step_file)
+
+            # Log TASK_INVOCATION_VALIDATED for audit trail
+            log_audit_event(
+                "TASK_INVOCATION_VALIDATED",
+                command=command,
+                step_path=step_file,
+                status="VALIDATED",
+                outcome="success"
+            )
 
             # Add timeout warnings if threshold monitoring is enabled
             if timeout_thresholds and project_root and step_file:

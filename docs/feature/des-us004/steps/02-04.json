@@ -1,0 +1,23 @@
+{
+  "task_specification": {
+    "task_id": "02-04",
+    "title": "Implement rejection and failure event logging",
+    "description": "Implement Implement rejection and failure event logging for US-004 Audit Trail",
+    "acceptance_criteria": [
+      "Make test_scenario_004_failed_validation_captures_rejection_event pass"
+    ],
+    "requires": [
+      "02-03"
+    ],
+    "estimated_hours": 2.5
+  },
+  "tdd_cycle": {
+    "tdd_phase_tracking": {
+      "phase_execution_log": []
+    }
+  },
+  "validation": {
+    "status": "approved",
+    "notes": "Step file ready for execution"
+  }
+}
