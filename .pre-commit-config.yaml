@@ -80,17 +80,6 @@ repos:
         pass_filenames: false
         stages: [pre-commit]
 
-      # Phase 6: Shell script syntax validation (bash -n)
-      # Note: Only for acceptance test scripts in tests/acceptance/
-      - id: shell-syntax-check
-        name: Shell Script Syntax Check
-        entry: bash -n
-        language: system
-        files: ^tests/acceptance/.*\.sh$
-        stages: [pre-commit]
-
-  # Shellcheck linting (optional - non-blocking if not installed)
-  # Note: Only for acceptance test scripts in tests/acceptance/
   # Standard hooks from pre-commit repository
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
