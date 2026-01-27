@@ -1,0 +1,520 @@
+project_id: des-us005
+created_at: '2026-01-27T17:30:00.000000'
+description: >
+  Implementation roadmap for US-005: Failure Recovery Guidance.
+  Provides junior developers with clear, actionable recovery suggestions when
+  DES execution fails. Each step maps 1:1 to an acceptance test scenario for
+  Outside-In TDD implementation.
+
+quality_attributes:
+  completeness: "Covers all 5 acceptance criteria (AC-005.1 through AC-005.5)"
+  atomicity: "Each step is atomic - implements one failure mode or component"
+  testability: "Each step validated by dedicated acceptance test scenario"
+  traceability: "Requirements to step to test scenario mapping documented"
+
+phases:
+  - phase_id: "01"
+    name: "Core Recovery Infrastructure"
+    description: "Build foundational recovery suggestion data structures and generation mechanisms"
+    objectives:
+      - AC-005.2: Enable storage of recovery_suggestions in step file
+      - AC-005.3: Establish patterns for actionable suggestions
+    steps:
+      - step_id: "01-01"
+        name: "Create recovery_suggestions data structure in step file"
+        description: |
+          Add recovery_suggestions array field to step file JSON structure.
+          Defines the data model for persisting recovery guidance.
+
+          Structure: step_file["state"]["recovery_suggestions"] = [list of strings]
+          Each suggestion is a narrative string combining WHY + HOW + actionable guidance.
+        acceptance_criteria:
+          - recovery_suggestions field added to step file state
+          - Field is JSON array of strings (not just comments)
+          - Structure persists across step file read/write cycles
+          - Backward compatible with existing step files
+        required_acceptance_test: "test_scenario_004_recovery_suggestions_stored_in_step_file"
+        test_scenario_coverage: "AC-005.2 - Suggestions stored in step file"
+        dependencies: []
+        estimated_hours: 2
+
+      - step_id: "01-02"
+        name: "Implement RecoveryGuidanceHandler core class"
+        description: |
+          Create central RecoveryGuidanceHandler class responsible for:
+          1. Generating recovery suggestions for different failure modes
+          2. Formatting suggestions with WHY + HOW + actionable guidance
+          3. Persisting suggestions to step file
+
+          Methods:
+          - generate_recovery_suggestions(failure_type, context) -> List[str]
+          - handle_failure(step_file_path, failure_type, context) -> dict
+          - format_suggestion(why_text, how_text, actionable_command) -> str
+        acceptance_criteria:
+          - RecoveryGuidanceHandler instantiates without errors
+          - Can generate suggestions for each failure mode
+          - Suggestions include actionable elements (commands, paths, phase names)
+          - Persists suggestions to step file JSON
+        required_acceptance_test: "test_scenario_001_crash_recovery_provides_recovery_suggestions"
+        test_scenario_coverage: "AC-005.1, AC-005.2, AC-005.3 - Core recovery suggestion infrastructure"
+        dependencies:
+          - "01-01"
+        estimated_hours: 3
+
+  - phase_id: "02"
+    name: "Failure Detection and Classification"
+    description: "Implement detection of specific failure modes and context extraction"
+    objectives:
+      - AC-005.1: Detect all defined failure modes (7 distinct modes)
+      - AC-005.3: Extract context for actionable suggestions
+    steps:
+      - step_id: "02-01"
+        name: "Detect abandoned phase failures (agent crash)"
+        description: |
+          Implement detection for abandoned phases left IN_PROGRESS.
+
+          Failure Mode: Agent crashed during phase execution, leaving phase in IN_PROGRESS state.
+
+          Detection Mechanism:
+          - Identify phases with status IN_PROGRESS after agent returns
+          - Check completion_at is None (never finished)
+          - Extract phase name and position in execution log
+
+          Recovery Suggestions Generated:
+          1. WHY: Agent left phase IN_PROGRESS, indicating unhandled error or timeout
+          2. HOW: Reset phase to NOT_EXECUTED for clean retry
+          3. Actionable: /nw:execute command with step file path
+        acceptance_criteria:
+          - Detects IN_PROGRESS phases after agent completion
+          - Extracts phase name and position
+          - Generates 3+ recovery suggestions
+          - Suggestions include transcript path reference
+          - Suggestions formatted with WHY + HOW + command
+        required_acceptance_test: "test_scenario_001_crash_recovery_provides_recovery_suggestions"
+        test_scenario_coverage: "AC-005.1 - Crash recovery detection and suggestions"
+        dependencies:
+          - "01-02"
+        estimated_hours: 3
+
+      - step_id: "02-02"
+        name: "Detect silent completion failures (no updates)"
+        description: |
+          Implement detection for silent completions where agent returned
+          without updating any phase status (all phases remain NOT_EXECUTED).
+
+          Failure Mode: Agent completed but made no progress (all phases NOT_EXECUTED).
+
+          Detection Mechanism:
+          - Check if task status is IN_PROGRESS but completed_at is set
+          - Verify all phases remain NOT_EXECUTED
+          - Identify mismatch: agent ran but no state changes
+
+          Recovery Suggestions Generated:
+          1. WHY: Agent completed without updating phase status, indicates missing OUTCOME_RECORDING
+          2. HOW: Check agent transcript and manually update phase status based on evidence
+          3. Actionable: Specific transcript path and verification instructions
+        acceptance_criteria:
+          - Detects when all phases remain NOT_EXECUTED despite completion
+          - Distinguishes from normal unstarted state
+          - Generates 3+ recovery suggestions
+          - Includes transcript path in suggestions
+          - Explains OUTCOME_RECORDING requirement
+        required_acceptance_test: "test_scenario_002_silent_completion_provides_recovery_suggestions"
+        test_scenario_coverage: "AC-005.1 - Silent completion detection and recovery guidance"
+        dependencies:
+          - "01-02"
+        estimated_hours: 3
+
+      - step_id: "02-03"
+        name: "Detect validation failures (missing section/phase)"
+        description: |
+          Implement detection for prompt validation failures where mandatory
+          sections or TDD phases are missing.
+
+          Failure Modes:
+          1. missing_section: Mandatory prompt section not found
+          2. missing_phase: TDD phase missing from TDD_14_PHASES section
+
+          Detection Context Extraction:
+          - Section name (which section is missing)
+          - Phase name and adjacent phases (for positioning guidance)
+
+          Recovery Suggestions Generated (per AC-005.4):
+          1. WHY: Why this element is required for DES
+          2. HOW: How to add it (specific template or location)
+          3. Actionable: Exact change needed to fix
+        acceptance_criteria:
+          - Detects missing mandatory sections
+          - Detects missing TDD phases
+          - Extracts section/phase name for error context
+          - Generates 2+ recovery suggestions per validation failure
+          - Suggestions explain purpose of missing element
+        required_acceptance_test: "test_scenario_003_validation_failure_provides_recovery_suggestions"
+        test_scenario_coverage: "AC-005.4 - Validation error recovery guidance"
+        dependencies:
+          - "01-02"
+        estimated_hours: 3
+
+      - step_id: "02-04"
+        name: "Detect stale execution and timeout failures"
+        description: |
+          Implement detection for stale phases (IN_PROGRESS too long)
+          and timeout-related failures.
+
+          Failure Modes:
+          1. stale_execution: IN_PROGRESS phase not updated for > 1 hour
+          2. timeout_failure: Phase exceeded timeout threshold
+
+          Detection Mechanism:
+          - Compare phase start time to current time
+          - Check if started_at + timeout > current_time
+
+          Recovery Suggestions Generated:
+          1. WHY: Stale state indicates agent failure to update or timeout
+          2. HOW: Manual phase reset or extended timeout
+          3. Actionable: Specific time threshold and reset command
+        acceptance_criteria:
+          - Detects stale IN_PROGRESS phases (threshold: 1 hour)
+          - Extracts time since last update
+          - Generates recovery suggestions addressing stale state
+          - Includes timestamp information in suggestions
+        required_acceptance_test: "test_scenario_001_crash_recovery_provides_recovery_suggestions (extended)"
+        test_scenario_coverage: "AC-005.1 - Extended crash detection for timeouts"
+        dependencies:
+          - "02-01"
+        estimated_hours: 2
+
+      - step_id: "02-05"
+        name: "Detect invalid phase state transitions"
+        description: |
+          Implement detection for invalid phase state combinations:
+          1. invalid_outcome: Phase EXECUTED without outcome field
+          2. invalid_skip: Phase SKIPPED without blocked_by reason
+
+          Failure Modes:
+          - Phase claims completion but provides no evidence
+          - Phase marked SKIPPED with no explanation
+
+          Recovery Suggestions Generated:
+          1. WHY: State transitions require supporting data
+          2. HOW: Add required fields (outcome, blocked_by)
+          3. Actionable: Specific field to add and expected value format
+        acceptance_criteria:
+          - Detects EXECUTED phases without outcome
+          - Detects SKIPPED phases without blocked_by
+          - Generates specific recovery suggestions
+          - Includes expected field format in suggestions
+        required_acceptance_test: "test_scenario_001_crash_recovery_provides_recovery_suggestions (extended)"
+        test_scenario_coverage: "AC-005.1 - Comprehensive failure mode detection"
+        dependencies:
+          - "02-01"
+        estimated_hours: 2
+
+  - phase_id: "03"
+    name: "Recovery Guidance Formatting and Integration"
+    description: "Format recovery suggestions with educational context and integrate with DES orchestrator"
+    objectives:
+      - AC-005.3: Ensure suggestions are actionable (commands, paths)
+      - AC-005.4: Include fix guidance in validation error messages
+      - AC-005.5: Include WHY and HOW explanations in suggestions
+    steps:
+      - step_id: "03-01"
+        name: "Format recovery suggestions with WHY + HOW + Actionable structure"
+        description: |
+          Implement suggestion formatting that includes all three components:
+          1. WHY: Educational explanation of failure cause and implications
+          2. HOW: Specific steps to fix the issue
+          3. Actionable: Command or file path to execute fix
+
+          Suggestion Format Example:
+          "The agent left GREEN_UNIT in IN_PROGRESS state, indicating it started
+          but did not complete (typically due to unhandled error or timeout). To
+          recover: Reset the phase status to NOT_EXECUTED by running:
+          `/nw:execute @software-crafter steps/01-01.json`"
+
+          Formatting Guidelines:
+          - WHY: 1-2 sentences explaining failure cause
+          - HOW: 1-2 sentences describing fix mechanism
+          - Actionable: Specific command, path, or field reference
+          - Total: 3-4 sentences per suggestion
+        acceptance_criteria:
+          - WHY clause explains failure mode clearly
+          - HOW clause describes mechanism of fix
+          - Actionable element includes command or path
+          - Suggestions are readable and junior-dev appropriate
+          - All suggestions follow consistent format
+        required_acceptance_test: "test_scenario_005_complete_failure_recovery_workflow"
+        test_scenario_coverage: "AC-005.5 - Explanatory text with WHY + HOW"
+        dependencies:
+          - "02-01"
+          - "02-02"
+          - "02-03"
+        estimated_hours: 3
+
+      - step_id: "03-02"
+        name: "Include transcript path in crash recovery suggestions"
+        description: |
+          Enhance crash recovery suggestions with specific transcript file path
+          for debugging agent behavior.
+
+          Implementation:
+          - Accept transcript_path parameter in recovery suggestion generation
+          - Include path in at least one WHY suggestion (evidence of error)
+          - Format as actionable reference: "Check agent transcript at {path}"
+
+          Example:
+          "Check agent transcript at /tmp/transcripts/session-12345.log for
+          specific error details that prevented phase completion."
+
+          Integration Points:
+          - SubagentStop hook receives transcript_path
+          - Pass to RecoveryGuidanceHandler.handle_failure()
+          - Persist path reference in step file for future reference
+        acceptance_criteria:
+          - Transcript path included in recovery suggestions
+          - Path is specific and absolute (not generic)
+          - Path is formatted as actionable reference
+          - Path persists in step file JSON
+        required_acceptance_test: "test_scenario_006_recovery_suggestions_include_transcript_path"
+        test_scenario_coverage: "AC-005.3 - Actionable transcript references"
+        dependencies:
+          - "03-01"
+        estimated_hours: 2
+
+      - step_id: "03-03"
+        name: "Integrate recovery suggestions with validation error messages"
+        description: |
+          Enhance validation error messages (AC-005.4) with inline fix guidance.
+
+          Current State: "FAILED: Section TDD_14_PHASES not found"
+          Enhanced State: "FAILED: Section TDD_14_PHASES not found.
+                         FIX: Add TDD_14_PHASES section with all 14 phases enumerated
+                         (PREPARE through COMMIT)."
+
+          Implementation:
+          - Extend ValidationResult to include recovery_guidance field
+          - Generate fix guidance for each validation failure type
+          - Append "FIX:" prefix to guidance
+          - Include section/phase name for context
+          - Include positioning hints for phase insertions
+        acceptance_criteria:
+          - Validation errors include "FIX:" guidance
+          - Fix guidance is specific (not generic "fix it")
+          - Phase insertions include positioning hints (after, between)
+          - Guidance explains what to add and why
+          - Guidance is inline in error message
+        required_acceptance_test: "test_scenario_007_validation_error_includes_inline_fix_guidance"
+        test_scenario_coverage: "AC-005.4 - Validation error fix guidance"
+        dependencies:
+          - "02-03"
+        estimated_hours: 3
+
+      - step_id: "03-04"
+        name: "Integrate RecoveryGuidanceHandler with DES orchestrator"
+        description: |
+          Wire RecoveryGuidanceHandler into DES orchestrator post-execution flow.
+
+          Integration Points:
+          1. SubagentStop hook: Detects agent crash/completion
+          2. Post-execution validation: Detects validation failures
+          3. Step file update: Persists recovery suggestions
+
+          Workflow:
+          STEP 1: Agent returns (SubagentStop hook fires)
+          STEP 2: Check for failure indicators (abandoned phase, silent completion)
+          STEP 3: Extract failure context (phase name, transcript path)
+          STEP 4: RecoveryGuidanceHandler.handle_failure() generates suggestions
+          STEP 5: Update step file with status: FAILED and recovery_suggestions
+          STEP 6: Return control with recovery guidance displayed
+
+          Error Handling:
+          - If suggestion generation fails, fall back to generic recovery guidance
+          - Log suggestion generation errors for debugging
+          - Ensure suggestions never block orchestrator progression
+        acceptance_criteria:
+          - SubagentStop hook calls RecoveryGuidanceHandler
+          - Failure context properly extracted and passed
+          - Step file updated with recovery suggestions
+          - Recovery suggestions displayed to user
+          - No orchestrator crashes if suggestion generation fails
+          - Suggestions are available in step file for later review
+        required_acceptance_test: "test_scenario_004_orchestrator_crashes_recovery_suggestions"
+        test_scenario_coverage: "AC-005.2 - Integration with orchestrator"
+        dependencies:
+          - "03-01"
+          - "03-02"
+          - "03-03"
+        estimated_hours: 4
+
+      - step_id: "03-05"
+        name: "Create comprehensive failure mode registry"
+        description: |
+          Implement centralized registry of all failure modes with associated
+          recovery suggestion templates.
+
+          Registry Structure:
+          {
+            "abandoned_phase": {
+              "description": "Agent crashed leaving phase IN_PROGRESS",
+              "why_template": "The agent left {phase} in IN_PROGRESS state...",
+              "how_template": "Reset the phase to NOT_EXECUTED...",
+              "actionable_template": "Run: /nw:execute @{agent} {step_file}"
+            },
+            "silent_completion": { ... },
+            ...
+          }
+
+          Coverage (AC-005.1):
+          Ensure all 7 failure modes have entries:
+          1. abandoned_phase
+          2. silent_completion
+          3. missing_section
+          4. missing_phase
+          5. invalid_outcome
+          6. invalid_skip
+          7. stale_execution
+
+          Benefits:
+          - Ensures every failure mode has recovery guidance (no orphans)
+          - Centralizes templates for consistency
+          - Enables validation that all modes are covered
+          - Supports future extension with new modes
+        acceptance_criteria:
+          - Registry contains all 7 failure modes
+          - Each mode has WHY, HOW, and actionable templates
+          - Templates use placeholders for context variables
+          - Registry is version controlled and documented
+          - Validation ensures no orphan failure modes
+        required_acceptance_test: "test_scenario_012_all_failure_modes_have_recovery_handlers"
+        test_scenario_coverage: "AC-005.1 - Comprehensive failure mode coverage"
+        dependencies:
+          - "02-01"
+          - "02-02"
+          - "02-03"
+          - "02-04"
+          - "02-05"
+          - "03-04"
+        estimated_hours: 2
+
+acceptance_criteria_coverage:
+  AC-005.1:
+    description: "Every failure mode has associated recovery suggestions"
+    steps:
+      - "02-01"
+      - "02-02"
+      - "02-03"
+      - "02-04"
+      - "02-05"
+      - "03-05"
+    acceptance_test: "test_scenario_012_all_failure_modes_have_recovery_handlers"
+
+  AC-005.2:
+    description: "Suggestions are stored in step file `recovery_suggestions` array"
+    steps:
+      - "01-01"
+      - "01-02"
+      - "03-04"
+    acceptance_test: "test_scenario_004_recovery_suggestions_stored_in_step_file"
+
+  AC-005.3:
+    description: "Suggestions are actionable (specific commands or file paths)"
+    steps:
+      - "02-01"
+      - "02-02"
+      - "03-01"
+      - "03-02"
+    acceptance_test: "test_scenario_005_recovery_suggestions_contain_actionable_commands"
+
+  AC-005.4:
+    description: "Validation errors include fix guidance in error message"
+    steps:
+      - "02-03"
+      - "03-03"
+    acceptance_test: "test_scenario_007_validation_error_includes_inline_fix_guidance"
+
+  AC-005.5:
+    description: "Recovery suggestions include explanatory text (WHY + HOW)"
+    steps:
+      - "03-01"
+      - "03-02"
+    acceptance_test: "test_scenario_011_complete_educational_recovery_suggestion"
+
+step_to_test_mapping:
+  "01-01": "test_scenario_004_recovery_suggestions_stored_in_step_file"
+  "01-02": "test_scenario_001_crash_recovery_provides_recovery_suggestions"
+  "02-01": "test_scenario_001_crash_recovery_provides_recovery_suggestions"
+  "02-02": "test_scenario_002_silent_completion_provides_recovery_suggestions"
+  "02-03": "test_scenario_003_validation_failure_provides_recovery_suggestions"
+  "02-04": "test_scenario_001_crash_recovery_provides_recovery_suggestions"
+  "02-05": "test_scenario_001_crash_recovery_provides_recovery_suggestions"
+  "03-01": "test_scenario_005_recovery_suggestions_contain_actionable_commands"
+  "03-02": "test_scenario_006_recovery_suggestions_include_transcript_path"
+  "03-03": "test_scenario_007_validation_error_includes_inline_fix_guidance"
+  "03-04": "test_scenario_004_orchestrator_crashes_recovery_suggestions"
+  "03-05": "test_scenario_012_all_failure_modes_have_recovery_handlers"
+
+implementation_order_rationale:
+  phase_01_first: "Establish data structures before implementing detection"
+  phase_02_before_03: "Detect failures before formatting suggestions"
+  sequential_within_phase: "Each step builds on previous step in phase"
+  03_04_last_in_phase_3: "Integration step comes after core components"
+
+estimated_total_hours: 33
+estimated_per_phase:
+  phase_01: 5
+  phase_02: 13
+  phase_03: 15
+
+deliverables:
+  - artifact: "RecoveryGuidanceHandler class"
+    files:
+      - "des/handlers/recovery_guidance_handler.py"
+    phases:
+      - "01-02"
+      - "02-01"
+      - "02-02"
+      - "02-03"
+
+  - artifact: "Failure mode registry"
+    files:
+      - "des/registries/failure_mode_registry.py"
+    phases:
+      - "03-05"
+
+  - artifact: "Validation error enhancement"
+    files:
+      - "des/validators/validation_result_extended.py"
+    phases:
+      - "03-03"
+
+  - artifact: "Orchestrator integration"
+    files:
+      - "des/orchestrator.py (modifications)"
+    phases:
+      - "03-04"
+
+  - artifact: "Step file schema update"
+    files:
+      - "docs/schema/step-file-schema.md (recovery_suggestions field)"
+    phases:
+      - "01-01"
+
+quality_gates:
+  per_step:
+    - "Unit tests passing for new classes/methods"
+    - "Acceptance test scenario passing"
+    - "No regressions in existing tests"
+    - "Code review approval"
+
+  per_phase:
+    - "All steps in phase completed"
+    - "All acceptance tests passing"
+    - "Integration tests with orchestrator passing"
+    - "Documentation updated"
+
+  end_of_roadmap:
+    - "All 5 acceptance criteria (AC-005.1-5) validated"
+    - "All 7 failure modes have recovery suggestions"
+    - "100% of validation errors include fix guidance"
+    - "Recovery suggestions average 3+ per failure"
+    - "Junior developer usability validated"

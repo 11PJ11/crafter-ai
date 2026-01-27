@@ -1,0 +1,84 @@
+{
+  "step_id": "03-05",
+  "task_specification": {
+    "task_id": "US005-03-05",
+    "title": "Create comprehensive failure mode registry",
+    "description": "Implement centralized registry of all failure modes with associated recovery suggestion templates.\n\nRegistry Structure:\n{\n  \"abandoned_phase\": {\n    \"description\": \"Agent crashed leaving phase IN_PROGRESS\",\n    \"why_template\": \"The agent left {phase} in IN_PROGRESS state...\",\n    \"how_template\": \"Reset the phase to NOT_EXECUTED...\",\n    \"actionable_template\": \"Run: /nw:execute @{agent} {step_file}\"\n  },\n  \"silent_completion\": { ... },\n  ...\n}\n\nCoverage (AC-005.1):\nEnsure all 7 failure modes have entries:\n1. abandoned_phase\n2. silent_completion\n3. missing_section\n4. missing_phase\n5. invalid_outcome\n6. invalid_skip\n7. stale_execution\n\nBenefits:\n- Ensures every failure mode has recovery guidance (no orphans)\n- Centralizes templates for consistency\n- Enables validation that all modes are covered\n- Supports future extension with new modes",
+    "acceptance_criteria": [
+      "Registry contains all 7 failure modes",
+      "Each mode has WHY, HOW, and actionable templates",
+      "Templates use placeholders for context variables",
+      "Registry is version controlled and documented",
+      "Validation ensures no orphan failure modes"
+    ]
+  },
+  "phase_id": "03",
+  "phase_name": "Recovery Guidance Formatting and Integration",
+  "required_acceptance_test": "test_scenario_012_all_failure_modes_have_recovery_handlers",
+  "test_scenario_coverage": "AC-005.1 - Comprehensive failure mode coverage",
+  "dependencies": [
+    "02-01",
+    "02-02",
+    "02-03",
+    "02-04",
+    "02-05",
+    "03-04"
+  ],
+  "estimated_hours": 2,
+  "tdd_cycle": {
+    "phase_1_prepare": {
+      "status": "NOT_EXECUTED",
+      "description": "Remove @skip from target acceptance test scenario"
+    },
+    "phase_2_red_acceptance": {
+      "status": "NOT_EXECUTED",
+      "description": "Run acceptance test - MUST fail for valid reason"
+    },
+    "phase_3_red_unit": {
+      "status": "NOT_EXECUTED",
+      "description": "Write unit test that fails for CORRECT reason"
+    },
+    "phase_4_green_unit": {
+      "status": "NOT_EXECUTED",
+      "description": "Implement MINIMAL code to pass unit test"
+    },
+    "phase_5_check": {
+      "status": "NOT_EXECUTED",
+      "description": "Check if acceptance test passes now"
+    },
+    "phase_6_green_acceptance": {
+      "status": "NOT_EXECUTED",
+      "description": "Run ALL tests - unit + acceptance"
+    },
+    "phase_7_review": {
+      "status": "NOT_EXECUTED",
+      "description": "Mandatory peer review of implementation quality"
+    },
+    "phase_8_refactor": {
+      "status": "NOT_EXECUTED",
+      "description": "Progressive refactoring L1-L4 with validation"
+    },
+    "phase_9_post_refactor_review": {
+      "status": "NOT_EXECUTED",
+      "description": "Review after refactoring complete"
+    },
+    "phase_10_final_validate": {
+      "status": "NOT_EXECUTED",
+      "description": "Run ALL tests before commit"
+    },
+    "phase_11_commit": {
+      "status": "NOT_EXECUTED",
+      "description": "Commit this step's work with detailed message"
+    }
+  },
+  "validation": {
+    "approved": true,
+    "quality_gates": [
+      "Unit tests passing for failure mode registry",
+      "Acceptance test scenario passing",
+      "All 7 failure modes have complete templates",
+      "No regressions in existing tests",
+      "Code review approval"
+    ]
+  }
+}

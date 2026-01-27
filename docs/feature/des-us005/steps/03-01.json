@@ -1,0 +1,80 @@
+{
+  "step_id": "03-01",
+  "task_specification": {
+    "task_id": "US005-03-01",
+    "title": "Format recovery suggestions with WHY + HOW + Actionable structure",
+    "description": "Implement suggestion formatting that includes all three components:\n1. WHY: Educational explanation of failure cause and implications\n2. HOW: Specific steps to fix the issue\n3. Actionable: Command or file path to execute fix\n\nSuggestion Format Example:\n\"The agent left GREEN_UNIT in IN_PROGRESS state, indicating it started but did not complete (typically due to unhandled error or timeout). To recover: Reset the phase status to NOT_EXECUTED by running: `/nw:execute @software-crafter steps/01-01.json`\"\n\nFormatting Guidelines:\n- WHY: 1-2 sentences explaining failure cause\n- HOW: 1-2 sentences describing fix mechanism\n- Actionable: Specific command, path, or field reference\n- Total: 3-4 sentences per suggestion",
+    "acceptance_criteria": [
+      "WHY clause explains failure mode clearly",
+      "HOW clause describes mechanism of fix",
+      "Actionable element includes command or path",
+      "Suggestions are readable and junior-dev appropriate",
+      "All suggestions follow consistent format"
+    ]
+  },
+  "phase_id": "03",
+  "phase_name": "Recovery Guidance Formatting and Integration",
+  "required_acceptance_test": "test_scenario_005_complete_failure_recovery_workflow",
+  "test_scenario_coverage": "AC-005.5 - Explanatory text with WHY + HOW",
+  "dependencies": [
+    "02-01",
+    "02-02",
+    "02-03"
+  ],
+  "estimated_hours": 3,
+  "tdd_cycle": {
+    "phase_1_prepare": {
+      "status": "NOT_EXECUTED",
+      "description": "Remove @skip from target acceptance test scenario"
+    },
+    "phase_2_red_acceptance": {
+      "status": "NOT_EXECUTED",
+      "description": "Run acceptance test - MUST fail for valid reason"
+    },
+    "phase_3_red_unit": {
+      "status": "NOT_EXECUTED",
+      "description": "Write unit test that fails for CORRECT reason"
+    },
+    "phase_4_green_unit": {
+      "status": "NOT_EXECUTED",
+      "description": "Implement MINIMAL code to pass unit test"
+    },
+    "phase_5_check": {
+      "status": "NOT_EXECUTED",
+      "description": "Check if acceptance test passes now"
+    },
+    "phase_6_green_acceptance": {
+      "status": "NOT_EXECUTED",
+      "description": "Run ALL tests - unit + acceptance"
+    },
+    "phase_7_review": {
+      "status": "NOT_EXECUTED",
+      "description": "Mandatory peer review of implementation quality"
+    },
+    "phase_8_refactor": {
+      "status": "NOT_EXECUTED",
+      "description": "Progressive refactoring L1-L4 with validation"
+    },
+    "phase_9_post_refactor_review": {
+      "status": "NOT_EXECUTED",
+      "description": "Review after refactoring complete"
+    },
+    "phase_10_final_validate": {
+      "status": "NOT_EXECUTED",
+      "description": "Run ALL tests before commit"
+    },
+    "phase_11_commit": {
+      "status": "NOT_EXECUTED",
+      "description": "Commit this step's work with detailed message"
+    }
+  },
+  "validation": {
+    "approved": true,
+    "quality_gates": [
+      "Unit tests passing for suggestion formatting",
+      "Acceptance test scenario passing",
+      "No regressions in existing tests",
+      "Code review approval"
+    ]
+  }
+}

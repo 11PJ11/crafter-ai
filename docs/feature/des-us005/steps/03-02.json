@@ -1,0 +1,77 @@
+{
+  "step_id": "03-02",
+  "task_specification": {
+    "task_id": "US005-03-02",
+    "title": "Include transcript path in crash recovery suggestions",
+    "description": "Enhance crash recovery suggestions with specific transcript file path for debugging agent behavior.\n\nImplementation:\n- Accept transcript_path parameter in recovery suggestion generation\n- Include path in at least one WHY suggestion (evidence of error)\n- Format as actionable reference: \"Check agent transcript at {path}\"\n\nExample:\n\"Check agent transcript at /tmp/transcripts/session-12345.log for specific error details that prevented phase completion.\"\n\nIntegration Points:\n- SubagentStop hook receives transcript_path\n- Pass to RecoveryGuidanceHandler.handle_failure()\n- Persist path reference in step file for future reference",
+    "acceptance_criteria": [
+      "Transcript path included in recovery suggestions",
+      "Path is specific and absolute (not generic)",
+      "Path is formatted as actionable reference",
+      "Path persists in step file JSON"
+    ]
+  },
+  "phase_id": "03",
+  "phase_name": "Recovery Guidance Formatting and Integration",
+  "required_acceptance_test": "test_scenario_006_recovery_suggestions_include_transcript_path",
+  "test_scenario_coverage": "AC-005.3 - Actionable transcript references",
+  "dependencies": [
+    "03-01"
+  ],
+  "estimated_hours": 2,
+  "tdd_cycle": {
+    "phase_1_prepare": {
+      "status": "NOT_EXECUTED",
+      "description": "Remove @skip from target acceptance test scenario"
+    },
+    "phase_2_red_acceptance": {
+      "status": "NOT_EXECUTED",
+      "description": "Run acceptance test - MUST fail for valid reason"
+    },
+    "phase_3_red_unit": {
+      "status": "NOT_EXECUTED",
+      "description": "Write unit test that fails for CORRECT reason"
+    },
+    "phase_4_green_unit": {
+      "status": "NOT_EXECUTED",
+      "description": "Implement MINIMAL code to pass unit test"
+    },
+    "phase_5_check": {
+      "status": "NOT_EXECUTED",
+      "description": "Check if acceptance test passes now"
+    },
+    "phase_6_green_acceptance": {
+      "status": "NOT_EXECUTED",
+      "description": "Run ALL tests - unit + acceptance"
+    },
+    "phase_7_review": {
+      "status": "NOT_EXECUTED",
+      "description": "Mandatory peer review of implementation quality"
+    },
+    "phase_8_refactor": {
+      "status": "NOT_EXECUTED",
+      "description": "Progressive refactoring L1-L4 with validation"
+    },
+    "phase_9_post_refactor_review": {
+      "status": "NOT_EXECUTED",
+      "description": "Review after refactoring complete"
+    },
+    "phase_10_final_validate": {
+      "status": "NOT_EXECUTED",
+      "description": "Run ALL tests before commit"
+    },
+    "phase_11_commit": {
+      "status": "NOT_EXECUTED",
+      "description": "Commit this step's work with detailed message"
+    }
+  },
+  "validation": {
+    "approved": true,
+    "quality_gates": [
+      "Unit tests passing for transcript path integration",
+      "Acceptance test scenario passing",
+      "No regressions in existing tests",
+      "Code review approval"
+    ]
+  }
+}

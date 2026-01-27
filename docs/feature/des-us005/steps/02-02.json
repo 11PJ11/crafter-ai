@@ -1,0 +1,78 @@
+{
+  "step_id": "02-02",
+  "task_specification": {
+    "task_id": "US005-02-02",
+    "title": "Detect silent completion failures (no updates)",
+    "description": "Implement detection for silent completions where agent returned without updating any phase status (all phases remain NOT_EXECUTED).\n\nFailure Mode: Agent completed but made no progress (all phases NOT_EXECUTED).\n\nDetection Mechanism:\n- Check if task status is IN_PROGRESS but completed_at is set\n- Verify all phases remain NOT_EXECUTED\n- Identify mismatch: agent ran but no state changes\n\nRecovery Suggestions Generated:\n1. WHY: Agent completed without updating phase status, indicates missing OUTCOME_RECORDING\n2. HOW: Check agent transcript and manually update phase status based on evidence\n3. Actionable: Specific transcript path and verification instructions",
+    "acceptance_criteria": [
+      "Detects when all phases remain NOT_EXECUTED despite completion",
+      "Distinguishes from normal unstarted state",
+      "Generates 3+ recovery suggestions",
+      "Includes transcript path in suggestions",
+      "Explains OUTCOME_RECORDING requirement"
+    ]
+  },
+  "phase_id": "02",
+  "phase_name": "Failure Detection and Classification",
+  "required_acceptance_test": "test_scenario_002_silent_completion_provides_recovery_suggestions",
+  "test_scenario_coverage": "AC-005.1 - Silent completion detection and recovery guidance",
+  "dependencies": [
+    "01-02"
+  ],
+  "estimated_hours": 3,
+  "tdd_cycle": {
+    "phase_1_prepare": {
+      "status": "NOT_EXECUTED",
+      "description": "Remove @skip from target acceptance test scenario"
+    },
+    "phase_2_red_acceptance": {
+      "status": "NOT_EXECUTED",
+      "description": "Run acceptance test - MUST fail for valid reason"
+    },
+    "phase_3_red_unit": {
+      "status": "NOT_EXECUTED",
+      "description": "Write unit test that fails for CORRECT reason"
+    },
+    "phase_4_green_unit": {
+      "status": "NOT_EXECUTED",
+      "description": "Implement MINIMAL code to pass unit test"
+    },
+    "phase_5_check": {
+      "status": "NOT_EXECUTED",
+      "description": "Check if acceptance test passes now"
+    },
+    "phase_6_green_acceptance": {
+      "status": "NOT_EXECUTED",
+      "description": "Run ALL tests - unit + acceptance"
+    },
+    "phase_7_review": {
+      "status": "NOT_EXECUTED",
+      "description": "Mandatory peer review of implementation quality"
+    },
+    "phase_8_refactor": {
+      "status": "NOT_EXECUTED",
+      "description": "Progressive refactoring L1-L4 with validation"
+    },
+    "phase_9_post_refactor_review": {
+      "status": "NOT_EXECUTED",
+      "description": "Review after refactoring complete"
+    },
+    "phase_10_final_validate": {
+      "status": "NOT_EXECUTED",
+      "description": "Run ALL tests before commit"
+    },
+    "phase_11_commit": {
+      "status": "NOT_EXECUTED",
+      "description": "Commit this step's work with detailed message"
+    }
+  },
+  "validation": {
+    "approved": true,
+    "quality_gates": [
+      "Unit tests passing for silent completion detection",
+      "Acceptance test scenario passing",
+      "No regressions in existing tests",
+      "Code review approval"
+    ]
+  }
+}

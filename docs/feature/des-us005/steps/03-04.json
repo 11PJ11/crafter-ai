@@ -1,0 +1,82 @@
+{
+  "step_id": "03-04",
+  "task_specification": {
+    "task_id": "US005-03-04",
+    "title": "Integrate RecoveryGuidanceHandler with DES orchestrator",
+    "description": "Wire RecoveryGuidanceHandler into DES orchestrator post-execution flow.\n\nIntegration Points:\n1. SubagentStop hook: Detects agent crash/completion\n2. Post-execution validation: Detects validation failures\n3. Step file update: Persists recovery suggestions\n\nWorkflow:\nSTEP 1: Agent returns (SubagentStop hook fires)\nSTEP 2: Check for failure indicators (abandoned phase, silent completion)\nSTEP 3: Extract failure context (phase name, transcript path)\nSTEP 4: RecoveryGuidanceHandler.handle_failure() generates suggestions\nSTEP 5: Update step file with status: FAILED and recovery_suggestions\nSTEP 6: Return control with recovery guidance displayed\n\nError Handling:\n- If suggestion generation fails, fall back to generic recovery guidance\n- Log suggestion generation errors for debugging\n- Ensure suggestions never block orchestrator progression",
+    "acceptance_criteria": [
+      "SubagentStop hook calls RecoveryGuidanceHandler",
+      "Failure context properly extracted and passed",
+      "Step file updated with recovery suggestions",
+      "Recovery suggestions displayed to user",
+      "No orchestrator crashes if suggestion generation fails",
+      "Suggestions are available in step file for later review"
+    ]
+  },
+  "phase_id": "03",
+  "phase_name": "Recovery Guidance Formatting and Integration",
+  "required_acceptance_test": "test_scenario_004_orchestrator_crashes_recovery_suggestions",
+  "test_scenario_coverage": "AC-005.2 - Integration with orchestrator",
+  "dependencies": [
+    "03-01",
+    "03-02",
+    "03-03"
+  ],
+  "estimated_hours": 4,
+  "tdd_cycle": {
+    "phase_1_prepare": {
+      "status": "NOT_EXECUTED",
+      "description": "Remove @skip from target acceptance test scenario"
+    },
+    "phase_2_red_acceptance": {
+      "status": "NOT_EXECUTED",
+      "description": "Run acceptance test - MUST fail for valid reason"
+    },
+    "phase_3_red_unit": {
+      "status": "NOT_EXECUTED",
+      "description": "Write unit test that fails for CORRECT reason"
+    },
+    "phase_4_green_unit": {
+      "status": "NOT_EXECUTED",
+      "description": "Implement MINIMAL code to pass unit test"
+    },
+    "phase_5_check": {
+      "status": "NOT_EXECUTED",
+      "description": "Check if acceptance test passes now"
+    },
+    "phase_6_green_acceptance": {
+      "status": "NOT_EXECUTED",
+      "description": "Run ALL tests - unit + acceptance"
+    },
+    "phase_7_review": {
+      "status": "NOT_EXECUTED",
+      "description": "Mandatory peer review of implementation quality"
+    },
+    "phase_8_refactor": {
+      "status": "NOT_EXECUTED",
+      "description": "Progressive refactoring L1-L4 with validation"
+    },
+    "phase_9_post_refactor_review": {
+      "status": "NOT_EXECUTED",
+      "description": "Review after refactoring complete"
+    },
+    "phase_10_final_validate": {
+      "status": "NOT_EXECUTED",
+      "description": "Run ALL tests before commit"
+    },
+    "phase_11_commit": {
+      "status": "NOT_EXECUTED",
+      "description": "Commit this step's work with detailed message"
+    }
+  },
+  "validation": {
+    "approved": true,
+    "quality_gates": [
+      "Unit tests passing for orchestrator integration",
+      "Acceptance test scenario passing",
+      "No regressions in existing tests",
+      "Code review approval",
+      "Integration tests with orchestrator passing"
+    ]
+  }
+}

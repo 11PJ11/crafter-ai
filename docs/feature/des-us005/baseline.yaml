@@ -1,0 +1,52 @@
+baseline:
+  measurements:
+  - current_value: 0
+    evidence: No recovery guidance currently implemented
+    methodology: Count of failure modes with recovery suggestions
+    metric_name: Error recovery documentation
+    target_value: 100
+  - current_value: 0
+    evidence: Currently not tracked
+    methodology: Average suggestions per failure mode in step file
+    metric_name: Recovery suggestions per failure
+    target_value: 3
+  - current_value: 0
+    evidence: No actionable guidance currently provided
+    methodology: Percentage of suggestions with specific commands/paths
+    metric_name: Actionable guidance coverage
+    target_value: 100
+  - current_value: 0
+    evidence: Generic error messages without fix guidance
+    methodology: Percentage of validation errors with fix guidance
+    metric_name: Validation error fix guidance
+    target_value: 100
+  - current_value: 0
+    evidence: No explanatory text in error messages
+    methodology: Percentage of suggestions with WHY + HOW text
+    metric_name: Recovery suggestion completeness
+    target_value: 100
+  - current_value: 0
+    evidence: No special handling for abandoned phases
+    methodology: Number of distinct crash recovery scenarios handled
+    metric_name: Crash recovery procedures
+    target_value: 5
+  - current_value: 0
+    evidence: No detection of silent completion failures
+    methodology: Percentage of silent completions with recovery guidance
+    metric_name: Silent completion detection
+    target_value: 100
+  - current_value: 0
+    evidence: Field not yet implemented
+    methodology: Readability score of recovery_suggestions field
+    metric_name: Step file recovery clarity
+    target_value: 100
+  - current_value: 0
+    evidence: No built-in guidance currently provided
+    methodology: Percentage of recovery paths usable without documentation lookup
+    metric_name: Junior developer guidance effectiveness
+    target_value: 100
+  validation:
+    notes: 'Baseline established for US-005: Failure Recovery Guidance'
+    status: approved
+created_at: '2026-01-27T16:13:15.006680'
+project_id: des-us005
