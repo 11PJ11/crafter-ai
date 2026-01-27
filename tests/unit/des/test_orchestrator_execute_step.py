@@ -2,6 +2,7 @@
 
 from des.orchestrator import DESOrchestrator
 from datetime import datetime, timezone, timedelta
+from pathlib import Path
 import json
 import pytest
 
@@ -9,11 +10,45 @@ import pytest
 class TestOrchestratorExecuteStep:
     """Test suite for execute_step() method with TurnCounter integration."""
 
-    def test_execute_step_initializes_turn_counter(self, tmp_path):
+    def _create_step_file(self, in_memory_filesystem, step_file_path: Path, minutes_ago: int, time_provider=None):
+        """Create test step file in in-memory filesystem with specified start time.
+
+        Uses time_provider's current time if provided, otherwise uses real current time.
+        This ensures consistency with mocked time providers in testing.
+        """
+        if time_provider:
+            # Use time provider's current time (consistent with mocked time)
+            started_at = (
+                time_provider.now_utc() - timedelta(minutes=minutes_ago)
+            ).isoformat()
+        else:
+            # Fallback to real current time
+            started_at = (
+                datetime.now(timezone.utc) - timedelta(minutes=minutes_ago)
+            ).isoformat()
+
+        step_data = {
+            "tdd_cycle": {
+                "phase_execution_log": [
+                    {
+                        "phase_name": "PREPARE",
+                        "phase_index": 0,
+                        "status": "IN_PROGRESS",
+                        "started_at": started_at,
+                        "ended_at": None,
+                        "turn_count": 0,
+                    }
+                ]
+            },
+        }
+
+        in_memory_filesystem.seed_file(step_file_path, step_data)
+
+    def test_execute_step_initializes_turn_counter(self, des_orchestrator):
         """execute_step() should initialize TurnCounter at phase start."""
         # GIVEN: Orchestrator with step file
-        orchestrator = DESOrchestrator()
-        step_file = tmp_path / "test_step.json"
+        orchestrator = des_orchestrator
+        step_file_path = Path("/tmp/test_step.json")
         step_data = {
             "tdd_cycle": {
                 "phase_execution_log": [
@@ -21,25 +56,25 @@ class TestOrchestratorExecuteStep:
                 ]
             }
         }
-        step_file.write_text(json.dumps(step_data))
+        orchestrator._filesystem.write_json(step_file_path, step_data)
 
         # WHEN: execute_step() is called
         result = orchestrator.execute_step(
             command="/nw:execute",
             agent="@software-crafter",
-            step_file=str(step_file),
-            project_root=tmp_path,
+            step_file="test_step.json",
+            project_root="/tmp",
             simulated_iterations=0,
         )
 
         # THEN: TurnCounter is initialized
         assert result.turn_count == 0
 
-    def test_execute_step_increments_turn_count(self, tmp_path):
+    def test_execute_step_increments_turn_count(self, des_orchestrator):
         """execute_step() should increment turn count on each iteration."""
         # GIVEN: Orchestrator with step file
-        orchestrator = DESOrchestrator()
-        step_file = tmp_path / "test_step.json"
+        orchestrator = des_orchestrator
+        step_file_path = Path("/tmp/test_step.json")
         step_data = {
             "tdd_cycle": {
                 "phase_execution_log": [
@@ -47,25 +82,25 @@ class TestOrchestratorExecuteStep:
                 ]
             }
         }
-        step_file.write_text(json.dumps(step_data))
+        orchestrator._filesystem.write_json(step_file_path, step_data)
 
         # WHEN: execute_step() runs with 3 simulated iterations
         result = orchestrator.execute_step(
             command="/nw:execute",
             agent="@software-crafter",
-            step_file=str(step_file),
-            project_root=tmp_path,
+            step_file="test_step.json",
+            project_root="/tmp",
             simulated_iterations=3,
         )
 
         # THEN: Turn count is 3
         assert result.turn_count == 3
 
-    def test_execute_step_persists_turn_count_to_step_file(self, tmp_path):
+    def test_execute_step_persists_turn_count_to_step_file(self, des_orchestrator):
         """execute_step() should persist turn_count to step file phase_execution_log."""
         # GIVEN: Orchestrator with step file
-        orchestrator = DESOrchestrator()
-        step_file = tmp_path / "test_step.json"
+        orchestrator = des_orchestrator
+        step_file_path = Path("/tmp/test_step.json")
         step_data = {
             "tdd_cycle": {
                 "phase_execution_log": [
@@ -73,27 +108,27 @@ class TestOrchestratorExecuteStep:
                 ]
             }
         }
-        step_file.write_text(json.dumps(step_data))
+        orchestrator._filesystem.write_json(step_file_path, step_data)
 
         # WHEN: execute_step() runs with 5 simulated iterations
         orchestrator.execute_step(
             command="/nw:execute",
             agent="@software-crafter",
-            step_file=str(step_file),
-            project_root=tmp_path,
+            step_file="test_step.json",
+            project_root="/tmp",
             simulated_iterations=5,
         )
 
         # THEN: turn_count persisted to step file
-        updated_data = json.loads(step_file.read_text())
+        updated_data = orchestrator._filesystem.read_json(step_file_path)
         phase_log = updated_data["tdd_cycle"]["phase_execution_log"][0]
         assert phase_log["turn_count"] == 5
 
-    def test_execute_step_restores_turn_count_from_step_file(self, tmp_path):
+    def test_execute_step_restores_turn_count_from_step_file(self, des_orchestrator):
         """execute_step() should restore turn count from step file on resume."""
         # GIVEN: Orchestrator with step file having existing turn count
-        orchestrator = DESOrchestrator()
-        step_file = tmp_path / "test_step.json"
+        orchestrator = des_orchestrator
+        step_file_path = Path("/tmp/test_step.json")
         step_data = {
             "tdd_cycle": {
                 "phase_execution_log": [
@@ -101,14 +136,14 @@ class TestOrchestratorExecuteStep:
                 ]
             }
         }
-        step_file.write_text(json.dumps(step_data))
+        orchestrator._filesystem.write_json(step_file_path, step_data)
 
         # WHEN: execute_step() resumes with 2 more iterations
         result = orchestrator.execute_step(
             command="/nw:execute",
             agent="@software-crafter",
-            step_file=str(step_file),
-            project_root=tmp_path,
+            step_file="test_step.json",
+            project_root="/tmp",
             simulated_iterations=2,
         )
 
@@ -119,11 +154,11 @@ class TestOrchestratorExecuteStep:
 class TestOrchestratorTimeoutMonitoringIntegration:
     """Test suite for TimeoutMonitor integration in execute_step()."""
 
-    def test_execute_step_accepts_timeout_thresholds_parameter(self, tmp_path):
+    def test_execute_step_accepts_timeout_thresholds_parameter(self, des_orchestrator):
         """execute_step() should accept timeout_thresholds parameter."""
         # GIVEN: Orchestrator with step file
-        orchestrator = DESOrchestrator()
-        step_file = tmp_path / "test_step.json"
+        orchestrator = des_orchestrator
+        step_file_path = Path("/tmp/test_step.json")
         step_data = {
             "tdd_cycle": {
                 "phase_execution_log": [
@@ -136,14 +171,14 @@ class TestOrchestratorTimeoutMonitoringIntegration:
                 ]
             }
         }
-        step_file.write_text(json.dumps(step_data))
+        orchestrator._filesystem.write_json(step_file_path, step_data)
 
         # WHEN: execute_step() is called with timeout_thresholds
         result = orchestrator.execute_step(
             command="/nw:execute",
             agent="@software-crafter",
-            step_file=str(step_file),
-            project_root=tmp_path,
+            step_file="test_step.json",
+            project_root="/tmp",
             simulated_iterations=0,
             timeout_thresholds=[5, 10, 15],
         )
@@ -152,12 +187,12 @@ class TestOrchestratorTimeoutMonitoringIntegration:
         assert result is not None
 
     def test_execute_step_initializes_timeout_monitor_with_phase_start_time(
-        self, tmp_path
+        self, des_orchestrator
     ):
         """execute_step() should initialize TimeoutMonitor with phase started_at timestamp."""
         # GIVEN: Orchestrator with step file that has started_at timestamp
-        orchestrator = DESOrchestrator()
-        step_file = tmp_path / "test_step.json"
+        orchestrator = des_orchestrator
+        step_file_path = Path("/tmp/test_step.json")
         started_at = (datetime.now(timezone.utc) - timedelta(minutes=3)).isoformat()
         step_data = {
             "tdd_cycle": {
@@ -171,14 +206,14 @@ class TestOrchestratorTimeoutMonitoringIntegration:
                 ]
             }
         }
-        step_file.write_text(json.dumps(step_data))
+        orchestrator._filesystem.write_json(step_file_path, step_data)
 
         # WHEN: execute_step() is called
         result = orchestrator.execute_step(
             command="/nw:execute",
             agent="@software-crafter",
-            step_file=str(step_file),
-            project_root=tmp_path,
+            step_file="test_step.json",
+            project_root="/tmp",
             simulated_iterations=0,
             timeout_thresholds=[5, 10, 15],
         )
@@ -186,11 +221,11 @@ class TestOrchestratorTimeoutMonitoringIntegration:
         # THEN: TimeoutMonitor is initialized (no error)
         assert result is not None
 
-    def test_execute_step_checks_thresholds_during_execution_loop(self, tmp_path):
+    def test_execute_step_checks_thresholds_during_execution_loop(self, des_orchestrator):
         """execute_step() should check thresholds during execution loop."""
         # GIVEN: Step file with phase started 7 minutes ago
-        orchestrator = DESOrchestrator()
-        step_file = tmp_path / "test_step.json"
+        orchestrator = des_orchestrator
+        step_file_path = Path("/tmp/test_step.json")
         started_at = (datetime.now(timezone.utc) - timedelta(minutes=7)).isoformat()
         step_data = {
             "tdd_cycle": {
@@ -204,14 +239,14 @@ class TestOrchestratorTimeoutMonitoringIntegration:
                 ]
             }
         }
-        step_file.write_text(json.dumps(step_data))
+        orchestrator._filesystem.write_json(step_file_path, step_data)
 
         # WHEN: execute_step() runs with threshold checking
         result = orchestrator.execute_step(
             command="/nw:execute",
             agent="@software-crafter",
-            step_file=str(step_file),
-            project_root=tmp_path,
+            step_file="test_step.json",
+            project_root="/tmp",
             simulated_iterations=3,
             timeout_thresholds=[5, 10, 15],
         )
@@ -219,12 +254,13 @@ class TestOrchestratorTimeoutMonitoringIntegration:
         # THEN: Result includes warnings_emitted attribute
         assert hasattr(result, "warnings_emitted")
 
-    def test_execute_step_emits_warnings_for_crossed_thresholds(self, tmp_path):
+    def test_execute_step_emits_warnings_for_crossed_thresholds(self, des_orchestrator, in_memory_filesystem, mocked_time_provider):
         """execute_step() should emit warnings when thresholds are crossed."""
         # GIVEN: Step file with phase started 7 minutes ago (crosses 5-minute threshold)
-        orchestrator = DESOrchestrator()
-        step_file = tmp_path / "test_step.json"
-        started_at = (datetime.now(timezone.utc) - timedelta(minutes=7)).isoformat()
+        orchestrator = des_orchestrator
+        step_file_path = Path("/project/test_step.json")
+        base_time = mocked_time_provider.now_utc()
+        started_at = (base_time - timedelta(minutes=7)).isoformat()
         step_data = {
             "tdd_cycle": {
                 "phase_execution_log": [
@@ -237,14 +273,14 @@ class TestOrchestratorTimeoutMonitoringIntegration:
                 ]
             }
         }
-        step_file.write_text(json.dumps(step_data))
+        orchestrator._filesystem.write_json(step_file_path, step_data)
 
         # WHEN: execute_step() runs with thresholds [5, 10, 15]
         result = orchestrator.execute_step(
             command="/nw:execute",
             agent="@software-crafter",
-            step_file=str(step_file),
-            project_root=tmp_path,
+            step_file="test_step.json",
+            project_root="/project",
             simulated_iterations=3,
             timeout_thresholds=[5, 10, 15],
         )
@@ -253,12 +289,13 @@ class TestOrchestratorTimeoutMonitoringIntegration:
         assert result.warnings_emitted is not None
         assert len(result.warnings_emitted) > 0
 
-    def test_execute_step_includes_threshold_value_in_warning(self, tmp_path):
+    def test_execute_step_includes_threshold_value_in_warning(self, des_orchestrator, in_memory_filesystem, mocked_time_provider):
         """Emitted warnings should include the crossed threshold value."""
         # GIVEN: Step file with phase started 7 minutes ago
-        orchestrator = DESOrchestrator()
-        step_file = tmp_path / "test_step.json"
-        started_at = (datetime.now(timezone.utc) - timedelta(minutes=7)).isoformat()
+        orchestrator = des_orchestrator
+        step_file_path = Path("/project/test_step.json")
+        base_time = mocked_time_provider.now_utc()
+        started_at = (base_time - timedelta(minutes=7)).isoformat()
         step_data = {
             "tdd_cycle": {
                 "phase_execution_log": [
@@ -271,14 +308,14 @@ class TestOrchestratorTimeoutMonitoringIntegration:
                 ]
             }
         }
-        step_file.write_text(json.dumps(step_data))
+        orchestrator._filesystem.write_json(step_file_path, step_data)
 
         # WHEN: execute_step() runs
         result = orchestrator.execute_step(
             command="/nw:execute",
             agent="@software-crafter",
-            step_file=str(step_file),
-            project_root=tmp_path,
+            step_file="test_step.json",
+            project_root="/project",
             simulated_iterations=3,
             timeout_thresholds=[5, 10, 15],
         )
@@ -286,12 +323,13 @@ class TestOrchestratorTimeoutMonitoringIntegration:
         # THEN: Warning mentions 5-minute threshold
         assert any("5" in warning for warning in result.warnings_emitted)
 
-    def test_execute_step_includes_remaining_time_in_warning(self, tmp_path):
+    def test_execute_step_includes_remaining_time_in_warning(self, des_orchestrator, in_memory_filesystem, mocked_time_provider):
         """Emitted warnings should include remaining time information."""
         # GIVEN: Step file with phase started 7 minutes ago
-        orchestrator = DESOrchestrator()
-        step_file = tmp_path / "test_step.json"
-        started_at = (datetime.now(timezone.utc) - timedelta(minutes=7)).isoformat()
+        orchestrator = des_orchestrator
+        step_file_path = Path("/project/test_step.json")
+        base_time = mocked_time_provider.now_utc()
+        started_at = (base_time - timedelta(minutes=7)).isoformat()
         step_data = {
             "tdd_cycle": {
                 "phase_execution_log": [
@@ -304,14 +342,14 @@ class TestOrchestratorTimeoutMonitoringIntegration:
                 ]
             }
         }
-        step_file.write_text(json.dumps(step_data))
+        orchestrator._filesystem.write_json(step_file_path, step_data)
 
         # WHEN: execute_step() runs
         result = orchestrator.execute_step(
             command="/nw:execute",
             agent="@software-crafter",
-            step_file=str(step_file),
-            project_root=tmp_path,
+            step_file="test_step.json",
+            project_root="/project",
             simulated_iterations=3,
             timeout_thresholds=[5, 10, 15],
         )
