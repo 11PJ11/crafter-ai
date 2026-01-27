@@ -13,7 +13,6 @@ from pathlib import Path
 from datetime import datetime
 
 
-@pytest.mark.skip(reason="Pending implementation - versioning feature")
 class TestBackupManager:
     """Unit tests for BackupManager backup creation."""
 

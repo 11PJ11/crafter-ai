@@ -8,7 +8,6 @@ NO mocking of domain logic - test with real Path operations.
 import pytest
 
 
-@pytest.mark.skip(reason="Pending implementation - versioning feature")
 class TestBackupManagerRollback:
     """Test automatic rollback when update fails."""
 

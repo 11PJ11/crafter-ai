@@ -13,7 +13,6 @@ from pathlib import Path
 from unittest.mock import Mock
 
 
-@pytest.mark.skip(reason="Pending implementation - versioning feature")
 class TestUpdateOrchestrator:
     """Unit tests for UpdateOrchestrator coordination logic."""
 
