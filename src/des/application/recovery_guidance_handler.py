@@ -72,6 +72,17 @@ class RecoveryGuidanceHandler:
                 "ACTION: Manually add outcome text describing the phase results and artifacts produced.",
             ],
         },
+        "missing_phase": {
+            "description": "TDD phase missing from implementation",
+            "suggestions": [
+                "WHY: The {phase} phase is a required step in the 14-phase TDD cycle - it serves a critical purpose in the development workflow.\n"
+                "HOW: Add the missing phase to the phase_execution_log by following the 14-phase sequence defined in the nWave methodology.\n"
+                "ACTION: Review the step file to locate where {phase} should be inserted in the TDD cycle sequence, then add its execution record with appropriate status and outcomes.",
+                "WHY: Each TDD phase is necessary for ensuring proper code quality, testing rigor, and refactoring discipline - skipping phases creates gaps in the development process.\n"
+                "HOW: Consult the 14-phase TDD template to understand what {phase} requires and why it is important for your feature implementation.\n"
+                "ACTION: Add the {phase} phase to your development workflow to ensure complete coverage of all required development steps and quality validations.",
+            ],
+        },
     }
 
     def generate_recovery_suggestions(

@@ -254,3 +254,151 @@ class TestSupportedFailureModes:
         assert suggestions is not None
         assert isinstance(suggestions, list)
         assert len(suggestions) > 0
+
+
+class TestMissingSectionDetection:
+    """Test detection and recovery guidance for missing mandatory sections."""
+
+    def test_generate_suggestions_for_missing_section_with_section_name(self):
+        """Should include specific section name in recovery suggestions for missing_section."""
+        handler = RecoveryGuidanceHandler()
+        section_name = "TDD_14_PHASES"
+        suggestions = handler.generate_recovery_suggestions(
+            failure_type="missing_section",
+            context={
+                "section_name": section_name,
+            },
+        )
+
+        assert suggestions is not None
+        assert isinstance(suggestions, list)
+        assert len(suggestions) >= 2
+
+        # Section name should appear in at least one suggestion
+        has_section_reference = any(section_name in s for s in suggestions)
+        assert (
+            has_section_reference
+        ), f"Section name '{section_name}' not found in suggestions"
+
+        # At least one suggestion should provide actionable guidance
+        has_actionable_guidance = any(
+            "add" in s.lower() or "include" in s.lower() or "template" in s.lower()
+            for s in suggestions
+        )
+        assert has_actionable_guidance, "No actionable guidance found in suggestions"
+
+    def test_missing_section_suggestions_include_why_how_action(self):
+        """Suggestions for missing_section should include WHY, HOW, and ACTION components."""
+        handler = RecoveryGuidanceHandler()
+        suggestions = handler.generate_recovery_suggestions(
+            failure_type="missing_section",
+            context={
+                "section_name": "BOUNDARY_RULES",
+            },
+        )
+
+        assert len(suggestions) >= 2
+
+        # Check for WHY, HOW, ACTION components in suggestions
+        suggestion_text = "\n".join(suggestions)
+        assert "WHY:" in suggestion_text, "Missing 'WHY:' component in suggestions"
+        assert "HOW:" in suggestion_text, "Missing 'HOW:' component in suggestions"
+        assert (
+            "ACTION:" in suggestion_text
+        ), "Missing 'ACTION:' component in suggestions"
+
+    def test_missing_section_suggestions_vary_by_section_name(self):
+        """Different section names should produce variations in recovery guidance."""
+        handler = RecoveryGuidanceHandler()
+
+        suggestions_tdd = handler.generate_recovery_suggestions(
+            failure_type="missing_section",
+            context={"section_name": "TDD_14_PHASES"},
+        )
+
+        suggestions_boundary = handler.generate_recovery_suggestions(
+            failure_type="missing_section",
+            context={"section_name": "BOUNDARY_RULES"},
+        )
+
+        # Both should mention their respective section names
+        assert any("TDD_14_PHASES" in s for s in suggestions_tdd)
+        assert any("BOUNDARY_RULES" in s for s in suggestions_boundary)
+
+        # Suggestions should be distinct based on section name
+        tdd_text = "\n".join(suggestions_tdd)
+        boundary_text = "\n".join(suggestions_boundary)
+        assert tdd_text != boundary_text, "Suggestions should vary by section_name"
+
+
+class TestMissingPhaseDetection:
+    """Test detection and recovery guidance for missing TDD phases."""
+
+    def test_generate_suggestions_for_missing_phase(self):
+        """Should generate recovery suggestions for missing_phase failure mode."""
+        handler = RecoveryGuidanceHandler()
+        suggestions = handler.generate_recovery_suggestions(
+            failure_type="missing_phase",
+            context={
+                "phase": "RED_UNIT",
+            },
+        )
+
+        assert suggestions is not None
+        assert isinstance(suggestions, list)
+        assert len(suggestions) >= 2
+        assert all(isinstance(s, str) for s in suggestions)
+
+    def test_missing_phase_suggestions_include_phase_context(self):
+        """Recovery suggestions for missing_phase should reference the specific phase."""
+        handler = RecoveryGuidanceHandler()
+        phase_name = "GREEN_ACCEPTANCE"
+        suggestions = handler.generate_recovery_suggestions(
+            failure_type="missing_phase",
+            context={
+                "phase": phase_name,
+            },
+        )
+
+        # Phase name should appear in at least one suggestion
+        has_phase_reference = any(phase_name in s for s in suggestions)
+        assert (
+            has_phase_reference
+        ), f"Phase name '{phase_name}' not found in suggestions"
+
+    def test_missing_phase_suggestions_include_why_how_action(self):
+        """Suggestions for missing_phase should include WHY, HOW, and ACTION components."""
+        handler = RecoveryGuidanceHandler()
+        suggestions = handler.generate_recovery_suggestions(
+            failure_type="missing_phase",
+            context={
+                "phase": "REFACTOR_L2",
+            },
+        )
+
+        suggestion_text = "\n".join(suggestions)
+        assert "WHY:" in suggestion_text, "Missing 'WHY:' component in suggestions"
+        assert "HOW:" in suggestion_text, "Missing 'HOW:' component in suggestions"
+        assert (
+            "ACTION:" in suggestion_text
+        ), "Missing 'ACTION:' component in suggestions"
+
+    def test_missing_phase_explains_purpose(self):
+        """Recovery suggestions for missing_phase should explain why the phase is needed."""
+        handler = RecoveryGuidanceHandler()
+        suggestions = handler.generate_recovery_suggestions(
+            failure_type="missing_phase",
+            context={
+                "phase": "REVIEW",
+            },
+        )
+
+        suggestion_text = "\n".join(suggestions).lower()
+        # Should explain purpose of the phase (review, validation, refactoring, etc.)
+        has_purpose_explanation = any(
+            keyword in suggestion_text
+            for keyword in ["needed", "required", "purpose", "important", "critical"]
+        )
+        assert (
+            has_purpose_explanation
+        ), "Suggestions should explain why the phase is required"

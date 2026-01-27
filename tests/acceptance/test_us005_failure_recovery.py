@@ -203,7 +203,6 @@ class TestFailureRecoveryGuidance:
     # Scenario 3: Validation Failure - Missing mandatory section in prompt
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_003_validation_failure_provides_recovery_suggestions(
         self, tmp_project_root
     ):
