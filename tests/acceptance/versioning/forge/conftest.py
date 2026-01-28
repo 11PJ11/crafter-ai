@@ -140,9 +140,20 @@ def in_memory_file_system_for_forge(test_repository):
             self._dist_contents: List[str] = []
             self._dist_version: Optional[str] = None
             self._was_cleaned = False
+            self._previous_build_version: Optional[str] = None
 
         def configure(self, base_version: str = "1.2.3"):
             self._pyproject_version = base_version
+
+        def configure_previous_build(self, version: str):
+            """Configure a previous build version that exists in dist/."""
+            self._previous_build_version = version
+            self._dist_version = version
+            self._dist_contents = ["VERSION", "nWave/", "agents/", "commands/"]
+
+        def get_previous_build_version(self) -> Optional[str]:
+            """Get previous build version if one exists."""
+            return self._previous_build_version
 
         def read_base_version(self) -> str:
             """Read base version from pyproject.toml."""
@@ -178,6 +189,11 @@ def in_memory_file_system_for_forge(test_repository):
         def dist_exists(self) -> bool:
             return len(self._dist_contents) > 0
 
+        @property
+        def dist_was_modified(self) -> bool:
+            """Return True if dist/ was modified (distribution created)."""
+            return self._dist_version is not None
+
     return InMemoryBuildFileSystem(test_repository)
 
 
@@ -191,3 +207,58 @@ def cli_result():
         "output": "",
         "prompt": "",
     }
+
+
+@pytest.fixture
+def in_memory_install_file_system(tmp_path):
+    """
+    In-memory implementation for install file system operations.
+
+    Manages:
+    - ~/.claude/ target directory
+    - Installation state tracking
+    - Smoke test simulation
+    """
+    class InMemoryInstallFileSystem:
+        def __init__(self, target_dir: Path):
+            self._target_dir = target_dir
+            self._installation_completed = False
+            self._installed_version: Optional[str] = None
+            self._dist_contents: List[str] = []
+
+        def copy_dist_to_claude(self) -> None:
+            """Copy dist/ contents to ~/.claude/."""
+            self._installation_completed = True
+
+        def file_exists_in_claude(self, relative_path: str) -> bool:
+            """Check if file exists in ~/.claude/."""
+            return self._installation_completed
+
+        def get_installed_file(self, relative_path: str) -> Optional[str]:
+            """Get content of installed file."""
+            if relative_path == "VERSION" and self._installed_version:
+                return self._installed_version
+            return None
+
+        def set_installed_version(self, version: str) -> None:
+            """Set the installed version (for testing)."""
+            self._installed_version = version
+
+        def list_dist_files(self) -> List[str]:
+            """List all files in dist/."""
+            return self._dist_contents
+
+        @property
+        def installation_completed(self) -> bool:
+            """Check if installation was completed."""
+            return self._installation_completed
+
+        @property
+        def installed_version(self) -> Optional[str]:
+            """Get the installed version."""
+            return self._installed_version
+
+    target_dir = tmp_path / ".claude"
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    return InMemoryInstallFileSystem(target_dir)

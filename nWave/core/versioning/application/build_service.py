@@ -74,6 +74,7 @@ class FileSystemProtocol(Protocol):
     def read_base_version(self) -> str: ...
     def clean_dist(self) -> bool: ...
     def create_distribution(self, version: str) -> bool: ...
+    def get_previous_build_version(self) -> Optional[str]: ...
 
 
 class DateProviderProtocol(Protocol):
@@ -153,11 +154,14 @@ class BuildService:
         branch = self._git.get_current_branch()
         today = self._date_provider.today()
 
+        # Calculate build number based on previous build
+        build_number = self._calculate_build_number(base_version, branch, today)
+
         rc_version = RCVersion.create(
             base_version=base_version,
             branch=branch,
             build_date=today,
-            build_number=1,  # TODO: Implement build number increment logic
+            build_number=build_number,
         )
 
         version_string = str(rc_version)
@@ -171,4 +175,64 @@ class BuildService:
             dist_cleaned=dist_cleaned,
             tests_passed=True,
             distribution_created=distribution_created,
+        )
+
+    def _calculate_build_number(
+        self, base_version: str, branch: str, today: date
+    ) -> int:
+        """
+        Calculate the build number for the current build.
+
+        If a previous build exists from the same day, branch, and base version,
+        increment the build number. Otherwise, start at 1.
+
+        Args:
+            base_version: The base semantic version
+            branch: The current git branch
+            today: Today's date
+
+        Returns:
+            The build number to use for this build
+        """
+        previous_version = self._file_system.get_previous_build_version()
+
+        if previous_version is None:
+            return 1
+
+        try:
+            previous_rc = RCVersion.parse(previous_version)
+        except ValueError:
+            return 1
+
+        if self._is_same_build_context(previous_rc, base_version, branch, today):
+            return previous_rc.build_number + 1
+
+        return 1
+
+    def _is_same_build_context(
+        self,
+        previous_rc: RCVersion,
+        base_version: str,
+        branch: str,
+        today: date,
+    ) -> bool:
+        """
+        Check if the previous build was in the same context as the current build.
+
+        Same context means same base version, branch, and date.
+
+        Args:
+            previous_rc: The previous RC version
+            base_version: The current base version
+            branch: The current branch
+            today: Today's date
+
+        Returns:
+            True if the previous build was in the same context
+        """
+        normalized_branch = RCVersion._normalize_branch_name(branch)
+        return (
+            previous_rc.base_version == base_version
+            and previous_rc.branch == normalized_branch
+            and previous_rc.build_date == today
         )
