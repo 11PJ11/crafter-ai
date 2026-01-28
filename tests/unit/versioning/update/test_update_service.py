@@ -161,7 +161,7 @@ class TestUpdateServiceValidatesChecksum:
 class TestUpdateServiceAppliesUpdate:
     """Test that UpdateService applies update after validation."""
 
-    def test_update_service_applies_update(self):
+    def test_update_service_applies_update(self, tmp_path):
         """
         GIVEN: UpdateService with mocked ports and valid checksum
         WHEN: update() is called
@@ -169,13 +169,19 @@ class TestUpdateServiceAppliesUpdate:
         """
         from nWave.core.versioning.application.update_service import UpdateService
 
-        # Arrange
+        # Arrange - set up real test directory
+        claude_dir = tmp_path / ".claude"
+        claude_dir.mkdir(parents=True)
+        version_file = claude_dir / "VERSION"
+        version_file.write_text("1.2.3")
+
         mock_file_system = MagicMock()
         mock_github_api = MagicMock()
         mock_download = MagicMock()
         mock_checksum = MagicMock()
 
         mock_file_system.read_version.return_value = Version("1.2.3")
+        mock_file_system.list_backups.return_value = []
         mock_github_api.get_latest_release.return_value = MagicMock(
             version=Version("1.3.0"),
             checksum="abc123def456",
@@ -188,6 +194,7 @@ class TestUpdateServiceAppliesUpdate:
             github_api=mock_github_api,
             download=mock_download,
             checksum=mock_checksum,
+            nwave_home=claude_dir,
         )
 
         # Act
