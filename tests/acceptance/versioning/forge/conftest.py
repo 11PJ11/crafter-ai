@@ -41,6 +41,7 @@ def mock_git_adapter():
 
     Returns configured git state for testing.
     """
+
     class MockGitAdapter:
         def __init__(self):
             self.current_branch = "main"
@@ -78,6 +79,7 @@ def mock_test_runner():
 
     Simulates pytest execution with configurable results.
     """
+
     class MockTestRunner:
         def __init__(self):
             self.tests_pass = True
@@ -109,6 +111,7 @@ def mock_date_provider():
     """
     Mock for date provider to control "today's date".
     """
+
     class MockDateProvider:
         def __init__(self):
             self._today = date(2026, 1, 27)
@@ -132,6 +135,7 @@ def in_memory_file_system_for_forge(test_repository):
     - dist/ directory (cleaned before build, populated after)
     - VERSION file in dist/
     """
+
     class InMemoryBuildFileSystem:
         def __init__(self, test_dirs):
             self._test_dirs = test_dirs
@@ -218,6 +222,7 @@ def in_memory_install_file_system(tmp_path):
     - Installation state tracking
     - Smoke test simulation
     """
+
     class InMemoryInstallFileSystem:
         def __init__(self, target_dir: Path):
             self._target_dir = target_dir

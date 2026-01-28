@@ -69,13 +69,16 @@ class TestUpdateCliDisplaysUpdateComplete:
         # Capture stdout
         with patch("builtins.print") as mock_print:
             # Set environment for test mode
-            with patch.dict(os.environ, {
-                "NWAVE_TEST_MODE": "true",
-                "NWAVE_HOME": str(claude_dir),
-                "NWAVE_MOCK_GITHUB_VERSION": "1.3.0",
-                "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
-                "NWAVE_MOCK_CONFIRM_UPDATE": "y",
-            }):
+            with patch.dict(
+                os.environ,
+                {
+                    "NWAVE_TEST_MODE": "true",
+                    "NWAVE_HOME": str(claude_dir),
+                    "NWAVE_MOCK_GITHUB_VERSION": "1.3.0",
+                    "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
+                    "NWAVE_MOCK_CONFIRM_UPDATE": "y",
+                },
+            ):
                 update_cli.main()
 
         # Check that "Update complete." was printed
@@ -106,14 +109,16 @@ class TestUpdateCliExitsWithZeroOnSuccess:
         cli_path = project_root / "nWave" / "cli" / "update_cli.py"
 
         env = os.environ.copy()
-        env.update({
-            "NWAVE_TEST_MODE": "true",
-            "NWAVE_HOME": str(claude_dir),
-            "NWAVE_MOCK_GITHUB_VERSION": "1.3.0",
-            "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
-            "NWAVE_MOCK_CONFIRM_UPDATE": "y",
-            "PYTHONPATH": str(project_root),
-        })
+        env.update(
+            {
+                "NWAVE_TEST_MODE": "true",
+                "NWAVE_HOME": str(claude_dir),
+                "NWAVE_MOCK_GITHUB_VERSION": "1.3.0",
+                "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
+                "NWAVE_MOCK_CONFIRM_UPDATE": "y",
+                "PYTHONPATH": str(project_root),
+            }
+        )
 
         result = subprocess.run(
             [sys.executable, str(cli_path)],
@@ -156,14 +161,16 @@ class TestUpdateCliShowsMajorVersionWarning:
         cli_path = project_root / "nWave" / "cli" / "update_cli.py"
 
         env = os.environ.copy()
-        env.update({
-            "NWAVE_TEST_MODE": "true",
-            "NWAVE_HOME": str(claude_dir),
-            "NWAVE_MOCK_GITHUB_VERSION": "2.0.0",
-            "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
-            "NWAVE_MOCK_CONFIRM_UPDATE": "n",  # Decline update to verify warning shown
-            "PYTHONPATH": str(project_root),
-        })
+        env.update(
+            {
+                "NWAVE_TEST_MODE": "true",
+                "NWAVE_HOME": str(claude_dir),
+                "NWAVE_MOCK_GITHUB_VERSION": "2.0.0",
+                "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
+                "NWAVE_MOCK_CONFIRM_UPDATE": "n",  # Decline update to verify warning shown
+                "PYTHONPATH": str(project_root),
+            }
+        )
 
         result = subprocess.run(
             [sys.executable, str(cli_path)],
@@ -203,14 +210,16 @@ class TestUpdateCliPromptsForMajorVersionConfirmation:
         cli_path = project_root / "nWave" / "cli" / "update_cli.py"
 
         env = os.environ.copy()
-        env.update({
-            "NWAVE_TEST_MODE": "true",
-            "NWAVE_HOME": str(claude_dir),
-            "NWAVE_MOCK_GITHUB_VERSION": "2.0.0",
-            "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
-            "NWAVE_MOCK_CONFIRM_UPDATE": "n",  # Decline update to verify prompt shown
-            "PYTHONPATH": str(project_root),
-        })
+        env.update(
+            {
+                "NWAVE_TEST_MODE": "true",
+                "NWAVE_HOME": str(claude_dir),
+                "NWAVE_MOCK_GITHUB_VERSION": "2.0.0",
+                "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
+                "NWAVE_MOCK_CONFIRM_UPDATE": "n",  # Decline update to verify prompt shown
+                "PYTHONPATH": str(project_root),
+            }
+        )
 
         result = subprocess.run(
             [sys.executable, str(cli_path)],
@@ -255,14 +264,16 @@ class TestUpdateCliCancelsMajorVersionUpdateOnDenial:
         cli_path = project_root / "nWave" / "cli" / "update_cli.py"
 
         env = os.environ.copy()
-        env.update({
-            "NWAVE_TEST_MODE": "true",
-            "NWAVE_HOME": str(claude_dir),
-            "NWAVE_MOCK_GITHUB_VERSION": "2.0.0",  # MAJOR version change
-            "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
-            "NWAVE_MOCK_CONFIRM_UPDATE": "n",  # Deny the update
-            "PYTHONPATH": str(project_root),
-        })
+        env.update(
+            {
+                "NWAVE_TEST_MODE": "true",
+                "NWAVE_HOME": str(claude_dir),
+                "NWAVE_MOCK_GITHUB_VERSION": "2.0.0",  # MAJOR version change
+                "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
+                "NWAVE_MOCK_CONFIRM_UPDATE": "n",  # Deny the update
+                "PYTHONPATH": str(project_root),
+            }
+        )
 
         result = subprocess.run(
             [sys.executable, str(cli_path)],
@@ -313,14 +324,16 @@ class TestUpdateCliPreservesVersionOnDenial:
         cli_path = project_root / "nWave" / "cli" / "update_cli.py"
 
         env = os.environ.copy()
-        env.update({
-            "NWAVE_TEST_MODE": "true",
-            "NWAVE_HOME": str(claude_dir),
-            "NWAVE_MOCK_GITHUB_VERSION": "2.0.0",  # MAJOR version change
-            "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
-            "NWAVE_MOCK_CONFIRM_UPDATE": "n",  # Deny the update
-            "PYTHONPATH": str(project_root),
-        })
+        env.update(
+            {
+                "NWAVE_TEST_MODE": "true",
+                "NWAVE_HOME": str(claude_dir),
+                "NWAVE_MOCK_GITHUB_VERSION": "2.0.0",  # MAJOR version change
+                "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
+                "NWAVE_MOCK_CONFIRM_UPDATE": "n",  # Deny the update
+                "PYTHONPATH": str(project_root),
+            }
+        )
 
         result = subprocess.run(
             [sys.executable, str(cli_path)],
@@ -363,14 +376,16 @@ class TestUpdateCliNoBackupOnDenial:
         cli_path = project_root / "nWave" / "cli" / "update_cli.py"
 
         env = os.environ.copy()
-        env.update({
-            "NWAVE_TEST_MODE": "true",
-            "NWAVE_HOME": str(claude_dir),
-            "NWAVE_MOCK_GITHUB_VERSION": "2.0.0",  # MAJOR version change
-            "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
-            "NWAVE_MOCK_CONFIRM_UPDATE": "n",  # Deny the update
-            "PYTHONPATH": str(project_root),
-        })
+        env.update(
+            {
+                "NWAVE_TEST_MODE": "true",
+                "NWAVE_HOME": str(claude_dir),
+                "NWAVE_MOCK_GITHUB_VERSION": "2.0.0",  # MAJOR version change
+                "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
+                "NWAVE_MOCK_CONFIRM_UPDATE": "n",  # Deny the update
+                "PYTHONPATH": str(project_root),
+            }
+        )
 
         result = subprocess.run(
             [sys.executable, str(cli_path)],
@@ -418,14 +433,16 @@ class TestUpdateCliShowsCustomizationWarning:
         cli_path = project_root / "nWave" / "cli" / "update_cli.py"
 
         env = os.environ.copy()
-        env.update({
-            "NWAVE_TEST_MODE": "true",
-            "NWAVE_HOME": str(claude_dir),
-            "NWAVE_MOCK_GITHUB_VERSION": "1.3.0",
-            "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
-            "NWAVE_MOCK_CONFIRM_UPDATE": "n",  # Don't proceed with update
-            "PYTHONPATH": str(project_root),
-        })
+        env.update(
+            {
+                "NWAVE_TEST_MODE": "true",
+                "NWAVE_HOME": str(claude_dir),
+                "NWAVE_MOCK_GITHUB_VERSION": "1.3.0",
+                "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
+                "NWAVE_MOCK_CONFIRM_UPDATE": "n",  # Don't proceed with update
+                "PYTHONPATH": str(project_root),
+            }
+        )
 
         result = subprocess.run(
             [sys.executable, str(cli_path)],
@@ -461,14 +478,16 @@ class TestUpdateCliShowsCustomizationWarning:
         cli_path = project_root / "nWave" / "cli" / "update_cli.py"
 
         env = os.environ.copy()
-        env.update({
-            "NWAVE_TEST_MODE": "true",
-            "NWAVE_HOME": str(claude_dir),
-            "NWAVE_MOCK_GITHUB_VERSION": "1.3.0",
-            "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
-            "NWAVE_MOCK_CONFIRM_UPDATE": "n",  # Test cancellation
-            "PYTHONPATH": str(project_root),
-        })
+        env.update(
+            {
+                "NWAVE_TEST_MODE": "true",
+                "NWAVE_HOME": str(claude_dir),
+                "NWAVE_MOCK_GITHUB_VERSION": "1.3.0",
+                "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
+                "NWAVE_MOCK_CONFIRM_UPDATE": "n",  # Test cancellation
+                "PYTHONPATH": str(project_root),
+            }
+        )
 
         result = subprocess.run(
             [sys.executable, str(cli_path)],
@@ -516,13 +535,15 @@ class TestUpdateCliShowsUpToDateMessage:
         cli_path = project_root / "nWave" / "cli" / "update_cli.py"
 
         env = os.environ.copy()
-        env.update({
-            "NWAVE_TEST_MODE": "true",
-            "NWAVE_HOME": str(claude_dir),
-            "NWAVE_MOCK_GITHUB_VERSION": "1.3.0",  # Same as installed
-            "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
-            "PYTHONPATH": str(project_root),
-        })
+        env.update(
+            {
+                "NWAVE_TEST_MODE": "true",
+                "NWAVE_HOME": str(claude_dir),
+                "NWAVE_MOCK_GITHUB_VERSION": "1.3.0",  # Same as installed
+                "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
+                "PYTHONPATH": str(project_root),
+            }
+        )
 
         result = subprocess.run(
             [sys.executable, str(cli_path)],
@@ -557,13 +578,15 @@ class TestUpdateCliShowsUpToDateMessage:
         cli_path = project_root / "nWave" / "cli" / "update_cli.py"
 
         env = os.environ.copy()
-        env.update({
-            "NWAVE_TEST_MODE": "true",
-            "NWAVE_HOME": str(claude_dir),
-            "NWAVE_MOCK_GITHUB_VERSION": "1.3.0",
-            "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
-            "PYTHONPATH": str(project_root),
-        })
+        env.update(
+            {
+                "NWAVE_TEST_MODE": "true",
+                "NWAVE_HOME": str(claude_dir),
+                "NWAVE_MOCK_GITHUB_VERSION": "1.3.0",
+                "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
+                "PYTHONPATH": str(project_root),
+            }
+        )
 
         result = subprocess.run(
             [sys.executable, str(cli_path)],
@@ -619,14 +642,16 @@ class TestUpdateCliAcceptsYConfirmation:
         cli_path = project_root / "nWave" / "cli" / "update_cli.py"
 
         env = os.environ.copy()
-        env.update({
-            "NWAVE_TEST_MODE": "true",
-            "NWAVE_HOME": str(claude_dir),
-            "NWAVE_MOCK_GITHUB_VERSION": "2.0.0",  # Major version change
-            "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
-            "NWAVE_MOCK_CONFIRM_UPDATE": "y",  # Confirm update
-            "PYTHONPATH": str(project_root),
-        })
+        env.update(
+            {
+                "NWAVE_TEST_MODE": "true",
+                "NWAVE_HOME": str(claude_dir),
+                "NWAVE_MOCK_GITHUB_VERSION": "2.0.0",  # Major version change
+                "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
+                "NWAVE_MOCK_CONFIRM_UPDATE": "y",  # Confirm update
+                "PYTHONPATH": str(project_root),
+            }
+        )
 
         result = subprocess.run(
             [sys.executable, str(cli_path)],
@@ -665,14 +690,16 @@ class TestUpdateCliAcceptsYConfirmation:
         cli_path = project_root / "nWave" / "cli" / "update_cli.py"
 
         env = os.environ.copy()
-        env.update({
-            "NWAVE_TEST_MODE": "true",
-            "NWAVE_HOME": str(claude_dir),
-            "NWAVE_MOCK_GITHUB_VERSION": "2.0.0",
-            "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
-            "NWAVE_MOCK_CONFIRM_UPDATE": "y",
-            "PYTHONPATH": str(project_root),
-        })
+        env.update(
+            {
+                "NWAVE_TEST_MODE": "true",
+                "NWAVE_HOME": str(claude_dir),
+                "NWAVE_MOCK_GITHUB_VERSION": "2.0.0",
+                "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
+                "NWAVE_MOCK_CONFIRM_UPDATE": "y",
+                "PYTHONPATH": str(project_root),
+            }
+        )
 
         result = subprocess.run(
             [sys.executable, str(cli_path)],
@@ -705,14 +732,16 @@ class TestUpdateCliAcceptsYConfirmation:
         cli_path = project_root / "nWave" / "cli" / "update_cli.py"
 
         env = os.environ.copy()
-        env.update({
-            "NWAVE_TEST_MODE": "true",
-            "NWAVE_HOME": str(claude_dir),
-            "NWAVE_MOCK_GITHUB_VERSION": "2.0.0",
-            "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
-            "NWAVE_MOCK_CONFIRM_UPDATE": "y",
-            "PYTHONPATH": str(project_root),
-        })
+        env.update(
+            {
+                "NWAVE_TEST_MODE": "true",
+                "NWAVE_HOME": str(claude_dir),
+                "NWAVE_MOCK_GITHUB_VERSION": "2.0.0",
+                "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
+                "NWAVE_MOCK_CONFIRM_UPDATE": "y",
+                "PYTHONPATH": str(project_root),
+            }
+        )
 
         result = subprocess.run(
             [sys.executable, str(cli_path)],
@@ -733,6 +762,5 @@ class TestUpdateCliAcceptsYConfirmation:
 
         # Assert: Update also completed
         assert "Update complete" in result.stdout, (
-            f"Expected 'Update complete.' after warning.\n"
-            f"STDOUT: {result.stdout}"
+            f"Expected 'Update complete.' after warning.\nSTDOUT: {result.stdout}"
         )

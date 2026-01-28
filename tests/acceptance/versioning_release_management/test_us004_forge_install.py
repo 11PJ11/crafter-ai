@@ -71,12 +71,16 @@ def valid_dist_structure(clean_test_environment):
     # Create agents/nw/ directory with sample agent
     agents_nw = dist_dir / "agents" / "nw"
     agents_nw.mkdir(parents=True, exist_ok=True)
-    (agents_nw / "software-crafter.md").write_text("# Software Crafter Agent\nversion: 1.2.3-rc.main.20260127.1")
+    (agents_nw / "software-crafter.md").write_text(
+        "# Software Crafter Agent\nversion: 1.2.3-rc.main.20260127.1"
+    )
 
     # Create commands/nw/ directory with sample command
     commands_nw = dist_dir / "commands" / "nw"
     commands_nw.mkdir(parents=True, exist_ok=True)
-    (commands_nw / "version.md").write_text("# Version Command\nversion: 1.2.3-rc.main.20260127.1")
+    (commands_nw / "version.md").write_text(
+        "# Version Command\nversion: 1.2.3-rc.main.20260127.1"
+    )
 
     return clean_test_environment
 
@@ -117,7 +121,9 @@ def forge_install_cli_path(project_root):
 
 
 @pytest.fixture
-def run_forge_install_command(clean_test_environment, cli_environment, forge_install_cli_path):
+def run_forge_install_command(
+    clean_test_environment, cli_environment, forge_install_cli_path
+):
     """
     Factory fixture for running forge install command through CLI.
 
@@ -213,7 +219,9 @@ def test_successful_installation_with_smoke_test(
     # Contents of dist/ are copied to the test ~/.claude/ directory
     installed_version = claude_dir / "VERSION"
     assert installed_version.exists(), f"VERSION file not copied. {diagnostic}"
-    assert installed_version.read_text() == "1.2.3-rc.main.20260127.1", f"VERSION mismatch. {diagnostic}"
+    assert installed_version.read_text() == "1.2.3-rc.main.20260127.1", (
+        f"VERSION mismatch. {diagnostic}"
+    )
 
     # nWave-prefixed content in ~/.claude/agents/nw/ is replaced
     agents_nw = claude_dir / "agents" / "nw" / "software-crafter.md"
@@ -224,7 +232,9 @@ def test_successful_installation_with_smoke_test(
     assert commands_nw.exists(), f"commands/nw/ content not installed. {diagnostic}"
 
     # Success message displays "Installation complete."
-    assert "Installation complete." in stdout, f"Success message not found. {diagnostic}"
+    assert "Installation complete." in stdout, (
+        f"Success message not found. {diagnostic}"
+    )
 
     # CLI should return success (exit code 0)
     assert returncode == 0, f"Expected exit code 0, got {returncode}. {diagnostic}"
@@ -251,13 +261,17 @@ def user_content_with_valid_dist(valid_dist_structure):
     user_agent_dir = claude_dir / "agents" / "my-agent"
     user_agent_dir.mkdir(parents=True, exist_ok=True)
     user_agent_file = user_agent_dir / "agent.md"
-    user_agent_file.write_text("# My Custom Agent\nThis is Elena's custom agent that should be preserved.")
+    user_agent_file.write_text(
+        "# My Custom Agent\nThis is Elena's custom agent that should be preserved."
+    )
 
     # Create custom user command (should be preserved)
     user_command_dir = claude_dir / "commands" / "my-command"
     user_command_dir.mkdir(parents=True, exist_ok=True)
     user_command_file = user_command_dir / "command.md"
-    user_command_file.write_text("# My Custom Command\nThis is Elena's custom command that should be preserved.")
+    user_command_file.write_text(
+        "# My Custom Command\nThis is Elena's custom command that should be preserved."
+    )
 
     return env
 
@@ -385,14 +399,18 @@ def test_installation_fails_when_dist_missing_required_files(
 
     # GIVEN: Greta has a dist/ directory that exists but is empty
     assert dist_dir.exists(), "dist/ directory should exist"
-    assert not (dist_dir / "VERSION").exists(), "dist/VERSION should NOT exist (empty dist)"
+    assert not (dist_dir / "VERSION").exists(), (
+        "dist/VERSION should NOT exist (empty dist)"
+    )
     assert not list(dist_dir.iterdir()), "dist/ should be empty"
 
     # Capture initial state of ~/.claude/ to verify it's unchanged
     initial_claude_contents = set()
     for item in claude_dir.rglob("*"):
         if item.is_file():
-            initial_claude_contents.add((str(item.relative_to(claude_dir)), item.read_text()))
+            initial_claude_contents.add(
+                (str(item.relative_to(claude_dir)), item.read_text())
+            )
 
     # WHEN: Greta runs /nw:forge:install command
     result = run_forge_install_command()
@@ -410,17 +428,25 @@ def test_installation_fails_when_dist_missing_required_files(
     )
 
     # Error displays "Invalid distribution: missing required files. Rebuild with /nw:forge."
-    expected_error = "Invalid distribution: missing required files. Rebuild with /nw:forge."
-    assert expected_error in stderr, f"Expected error message not found in stderr. {diagnostic}"
+    expected_error = (
+        "Invalid distribution: missing required files. Rebuild with /nw:forge."
+    )
+    assert expected_error in stderr, (
+        f"Expected error message not found in stderr. {diagnostic}"
+    )
 
     # CLI exit code is non-zero
-    assert returncode != 0, f"Expected non-zero exit code, got {returncode}. {diagnostic}"
+    assert returncode != 0, (
+        f"Expected non-zero exit code, got {returncode}. {diagnostic}"
+    )
 
     # Test ~/.claude/ directory is unchanged
     final_claude_contents = set()
     for item in claude_dir.rglob("*"):
         if item.is_file():
-            final_claude_contents.add((str(item.relative_to(claude_dir)), item.read_text()))
+            final_claude_contents.add(
+                (str(item.relative_to(claude_dir)), item.read_text())
+            )
 
     assert initial_claude_contents == final_claude_contents, (
         f"~/.claude/ directory was modified.\n"
@@ -488,7 +514,9 @@ def cli_environment_with_forced_smoke_failure(clean_test_environment, project_ro
 
 @pytest.fixture
 def run_forge_install_with_smoke_failure(
-    clean_test_environment, cli_environment_with_forced_smoke_failure, forge_install_cli_path
+    clean_test_environment,
+    cli_environment_with_forced_smoke_failure,
+    forge_install_cli_path,
 ):
     """
     Factory fixture for running forge install command with forced smoke failure.
@@ -571,12 +599,20 @@ def test_smoke_test_failure_reports_error(
 
     # Installation proceeds - files should be copied
     installed_version = claude_dir / "VERSION"
-    assert installed_version.exists(), f"VERSION file should be copied despite smoke failure. {diagnostic}"
-    assert installed_version.read_text() == "1.2.3-rc.main.20260127.1", f"VERSION mismatch. {diagnostic}"
+    assert installed_version.exists(), (
+        f"VERSION file should be copied despite smoke failure. {diagnostic}"
+    )
+    assert installed_version.read_text() == "1.2.3-rc.main.20260127.1", (
+        f"VERSION mismatch. {diagnostic}"
+    )
 
     # A warning displays the specific message
-    expected_message = "Installation complete but smoke test failed. Verify with /nw:version."
-    assert expected_message in stdout, f"Expected warning message not found. {diagnostic}"
+    expected_message = (
+        "Installation complete but smoke test failed. Verify with /nw:version."
+    )
+    assert expected_message in stdout, (
+        f"Expected warning message not found. {diagnostic}"
+    )
 
     # CLI should still return success (installation completed, just smoke test failed)
     assert returncode == 0, f"Expected exit code 0, got {returncode}. {diagnostic}"
@@ -751,4 +787,6 @@ def test_installation_fails_when_dist_directory_does_not_exist(
     )
 
     # The CLI exit code is non-zero
-    assert returncode != 0, f"Expected non-zero exit code, got {returncode}. {diagnostic}"
+    assert returncode != 0, (
+        f"Expected non-zero exit code, got {returncode}. {diagnostic}"
+    )

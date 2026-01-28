@@ -54,9 +54,9 @@ class TestOrchestratorE2EWiring:
         assert isinstance(result, ExecuteStepResult)
 
         # AND: Result has timeout_warnings field
-        assert hasattr(
-            result, "timeout_warnings"
-        ), "ExecuteStepResult must have timeout_warnings field"
+        assert hasattr(result, "timeout_warnings"), (
+            "ExecuteStepResult must have timeout_warnings field"
+        )
 
         # AND: Warnings emitted for crossed thresholds
         assert len(result.timeout_warnings) >= 3, (
@@ -148,9 +148,9 @@ class TestOrchestratorE2EWiring:
         # AND: Core features listed (extension_api is OUT_OF_SCOPE in US-006)
         expected_features = ["turn_counting", "timeout_monitoring"]
         for feature in expected_features:
-            assert (
-                feature in result.features_validated
-            ), f"Feature '{feature}' should be in features_validated list"
+            assert feature in result.features_validated, (
+                f"Feature '{feature}' should be in features_validated list"
+            )
 
 
 @pytest.fixture

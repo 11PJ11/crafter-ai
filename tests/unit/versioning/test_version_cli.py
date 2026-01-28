@@ -4,7 +4,6 @@ Unit tests for version_cli (driving adapter).
 version_cli formats VersionCheckResult into user-facing output.
 """
 
-
 from nWave.core.versioning.domain.version import Version
 
 
@@ -147,7 +146,9 @@ class TestVersionCliFormatsUnableToCheckOnRateLimit:
 
         monkeypatch.setenv("NWAVE_HOME", str(nwave_home))
         monkeypatch.setenv("NWAVE_TEST_MODE", "true")
-        monkeypatch.setenv("NWAVE_MOCK_GITHUB_REACHABLE", "false")  # Simulates rate limit/offline
+        monkeypatch.setenv(
+            "NWAVE_MOCK_GITHUB_REACHABLE", "false"
+        )  # Simulates rate limit/offline
 
         # WHEN: main() is called
         exit_code = version_cli.main()
@@ -177,7 +178,9 @@ class TestVersionCliFormatsUnableToCheckOnRateLimit:
 
         monkeypatch.setenv("NWAVE_HOME", str(nwave_home))
         monkeypatch.setenv("NWAVE_TEST_MODE", "true")
-        monkeypatch.setenv("NWAVE_MOCK_GITHUB_REACHABLE", "false")  # Simulates rate limit/offline
+        monkeypatch.setenv(
+            "NWAVE_MOCK_GITHUB_REACHABLE", "false"
+        )  # Simulates rate limit/offline
 
         # WHEN: main() is called
         version_cli.main()

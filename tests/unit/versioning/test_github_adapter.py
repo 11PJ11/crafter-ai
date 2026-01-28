@@ -10,7 +10,11 @@ from unittest.mock import Mock, patch, MagicMock
 import urllib.error
 
 from nWave.core.versioning.domain.version import Version
-from nWave.core.versioning.ports.github_api_port import ReleaseInfo, NetworkError, RateLimitError
+from nWave.core.versioning.ports.github_api_port import (
+    ReleaseInfo,
+    NetworkError,
+    RateLimitError,
+)
 
 
 class TestGitHubAdapterFetchesLatestRelease:

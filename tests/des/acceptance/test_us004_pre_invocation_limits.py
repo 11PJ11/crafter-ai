@@ -82,9 +82,9 @@ class TestPreInvocationLimitsValidation:
         )
 
         # THEN: Validation fails with specific error about missing limits
-        assert (
-            validation_result.is_valid is False
-        ), "Validation should fail when max_turns and duration_minutes are missing"
+        assert validation_result.is_valid is False, (
+            "Validation should fail when max_turns and duration_minutes are missing"
+        )
 
         assert validation_result.errors is not None
         assert len(validation_result.errors) > 0
@@ -105,9 +105,9 @@ class TestPreInvocationLimitsValidation:
             for keyword in ["configure", "add", "set", "tdd_cycle"]
         ), "Guidance should mention how to configure limits in step file"
 
-        assert (
-            "max_turns" in guidance_text or "duration_minutes" in guidance_text
-        ), "Guidance should explicitly mention which fields to configure"
+        assert "max_turns" in guidance_text or "duration_minutes" in guidance_text, (
+            "Guidance should explicitly mention which fields to configure"
+        )
 
     # =========================================================================
     # AC-07-02.2: Pre-invocation check fails if limits invalid
@@ -212,9 +212,9 @@ class TestPreInvocationLimitsValidation:
         )
 
         # THEN: Validation passes
-        assert (
-            validation_result.is_valid is True
-        ), "Validation should pass when max_turns and duration_minutes are valid"
+        assert validation_result.is_valid is True, (
+            "Validation should pass when max_turns and duration_minutes are valid"
+        )
 
         assert validation_result.errors is None or len(validation_result.errors) == 0
         assert (

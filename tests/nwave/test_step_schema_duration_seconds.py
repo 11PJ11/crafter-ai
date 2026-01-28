@@ -33,12 +33,12 @@ class TestStepSchemaDurationSeconds:
 
         # Verify duration_seconds exists in each phase
         for phase in schema["tdd_cycle"]["phase_execution_log"]:
-            assert (
-                "duration_seconds" in phase
-            ), f"Phase {phase['phase_name']} missing duration_seconds field"
-            assert (
-                "duration_minutes" in phase
-            ), f"Phase {phase['phase_name']} missing duration_minutes field (backward compatibility)"
+            assert "duration_seconds" in phase, (
+                f"Phase {phase['phase_name']} missing duration_seconds field"
+            )
+            assert "duration_minutes" in phase, (
+                f"Phase {phase['phase_name']} missing duration_minutes field (backward compatibility)"
+            )
 
             # Verify both fields are null by default
             assert phase["duration_seconds"] is None

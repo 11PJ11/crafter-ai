@@ -485,12 +485,8 @@ class TestDistributionInstalledOnAccept:
         )
 
         # Assert
-        assert result.install_invoked is True, (
-            "Expected installation to be invoked"
-        )
-        assert result.success is True, (
-            "Expected installation to succeed"
-        )
+        assert result.install_invoked is True, "Expected installation to be invoked"
+        assert result.success is True, "Expected installation to succeed"
         assert mock_file_system.installation_completed is True, (
             "Expected file system to show installation completed"
         )

@@ -17,7 +17,9 @@ class TestFileSystemAdapterReadsVersion:
 
     def test_file_system_adapter_reads_version_file(self, tmp_path):
         """Adapter should read and parse VERSION file content."""
-        from nWave.infrastructure.versioning.file_system_adapter import FileSystemAdapter
+        from nWave.infrastructure.versioning.file_system_adapter import (
+            FileSystemAdapter,
+        )
 
         # GIVEN: VERSION file exists with content "1.2.3"
         nwave_home = tmp_path / ".claude"
@@ -35,7 +37,9 @@ class TestFileSystemAdapterReadsVersion:
 
     def test_file_system_adapter_raises_on_missing_version(self, tmp_path):
         """Adapter should raise FileNotFoundError if VERSION file missing."""
-        from nWave.infrastructure.versioning.file_system_adapter import FileSystemAdapter
+        from nWave.infrastructure.versioning.file_system_adapter import (
+            FileSystemAdapter,
+        )
 
         # GIVEN: No VERSION file exists
         nwave_home = tmp_path / ".claude"
@@ -53,7 +57,9 @@ class TestFileSystemAdapterWritesWatermark:
 
     def test_file_system_adapter_writes_watermark(self, tmp_path):
         """Adapter should write watermark to nwave.update file."""
-        from nWave.infrastructure.versioning.file_system_adapter import FileSystemAdapter
+        from nWave.infrastructure.versioning.file_system_adapter import (
+            FileSystemAdapter,
+        )
 
         # GIVEN: nwave home directory exists
         nwave_home = tmp_path / ".claude"
@@ -79,7 +85,9 @@ class TestFileSystemAdapterWritesWatermark:
 
     def test_file_system_adapter_reads_watermark(self, tmp_path):
         """Adapter should read watermark from nwave.update file."""
-        from nWave.infrastructure.versioning.file_system_adapter import FileSystemAdapter
+        from nWave.infrastructure.versioning.file_system_adapter import (
+            FileSystemAdapter,
+        )
 
         # GIVEN: nwave.update file exists
         nwave_home = tmp_path / ".claude"
@@ -103,7 +111,9 @@ class TestFileSystemAdapterWritesWatermark:
 
     def test_file_system_adapter_returns_none_for_missing_watermark(self, tmp_path):
         """Adapter should return None if watermark file missing."""
-        from nWave.infrastructure.versioning.file_system_adapter import FileSystemAdapter
+        from nWave.infrastructure.versioning.file_system_adapter import (
+            FileSystemAdapter,
+        )
 
         # GIVEN: No nwave.update file exists
         nwave_home = tmp_path / ".claude"

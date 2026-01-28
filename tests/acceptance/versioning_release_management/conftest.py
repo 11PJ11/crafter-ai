@@ -86,7 +86,9 @@ def version_cli_path(project_root):
 
 
 @pytest.fixture
-def run_version_command(clean_test_environment, cli_environment, version_cli_path, mock_github_response):
+def run_version_command(
+    clean_test_environment, cli_environment, version_cli_path, mock_github_response
+):
     """
     Factory fixture for running version command through CLI.
 
@@ -99,8 +101,12 @@ def run_version_command(clean_test_environment, cli_environment, version_cli_pat
         # Inject mock GitHub response via environment
         if mock_github_response["latest_version"]:
             env["NWAVE_MOCK_GITHUB_VERSION"] = mock_github_response["latest_version"]
-        env["NWAVE_MOCK_GITHUB_REACHABLE"] = str(mock_github_response["is_reachable"]).lower()
-        env["NWAVE_MOCK_GITHUB_RATE_LIMITED"] = str(mock_github_response["rate_limited"]).lower()
+        env["NWAVE_MOCK_GITHUB_REACHABLE"] = str(
+            mock_github_response["is_reachable"]
+        ).lower()
+        env["NWAVE_MOCK_GITHUB_RATE_LIMITED"] = str(
+            mock_github_response["rate_limited"]
+        ).lower()
 
         try:
             result = subprocess.run(

@@ -154,7 +154,7 @@ class TestHandleGitHubAPIRateLimitGracefully:
             def get_latest_release(self, owner: str, repo: str):
                 raise RateLimitError(
                     "GitHub API rate limit exceeded",
-                    retry_after=3600  # 1 hour
+                    retry_after=3600,  # 1 hour
                 )
 
         service = VersionService(

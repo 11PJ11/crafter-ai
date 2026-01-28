@@ -53,9 +53,9 @@ class TestDESMarkerValidator:
         errors = validator.validate(prompt_with_invalid_marker)
 
         assert len(errors) > 0, "Expected error for invalid marker value 'unknown'"
-        assert any(
-            "INVALID_MARKER" in error for error in errors
-        ), f"Expected INVALID_MARKER error, got: {errors}"
+        assert any("INVALID_MARKER" in error for error in errors), (
+            f"Expected INVALID_MARKER error, got: {errors}"
+        )
 
     def test_invalid_optional_value_fails(self):
         """
@@ -75,9 +75,9 @@ class TestDESMarkerValidator:
         errors = validator.validate(prompt_with_invalid_marker)
 
         assert len(errors) > 0, "Expected error for invalid marker value 'optional'"
-        assert any(
-            "INVALID_MARKER" in error for error in errors
-        ), f"Expected INVALID_MARKER error, got: {errors}"
+        assert any("INVALID_MARKER" in error for error in errors), (
+            f"Expected INVALID_MARKER error, got: {errors}"
+        )
 
     def test_invalid_maybe_value_fails(self):
         """
@@ -97,9 +97,9 @@ class TestDESMarkerValidator:
         errors = validator.validate(prompt_with_invalid_marker)
 
         assert len(errors) > 0, "Expected error for invalid marker value 'maybe'"
-        assert any(
-            "INVALID_MARKER" in error for error in errors
-        ), f"Expected INVALID_MARKER error, got: {errors}"
+        assert any("INVALID_MARKER" in error for error in errors), (
+            f"Expected INVALID_MARKER error, got: {errors}"
+        )
 
     def test_invalid_empty_value_fails(self):
         """
@@ -119,9 +119,9 @@ class TestDESMarkerValidator:
         errors = validator.validate(prompt_with_empty_marker)
 
         assert len(errors) > 0, "Expected error for empty marker value"
-        assert any(
-            "INVALID_MARKER" in error for error in errors
-        ), f"Expected INVALID_MARKER error, got: {errors}"
+        assert any("INVALID_MARKER" in error for error in errors), (
+            f"Expected INVALID_MARKER error, got: {errors}"
+        )
 
     def test_missing_marker_fails(self):
         """
@@ -164,9 +164,9 @@ class TestDESMarkerValidator:
         errors = validator.validate(prompt_with_case_error)
 
         assert len(errors) > 0, "Expected error for incorrect case 'Required'"
-        assert any(
-            "INVALID_MARKER" in error for error in errors
-        ), f"Expected INVALID_MARKER error, got: {errors}"
+        assert any("INVALID_MARKER" in error for error in errors), (
+            f"Expected INVALID_MARKER error, got: {errors}"
+        )
 
     def test_malformed_comment_syntax_fails(self):
         """
@@ -210,9 +210,9 @@ class TestDESMarkerValidator:
         validator = DESMarkerValidator()
         errors = validator.validate(prompt_with_whitespace)
 
-        assert (
-            errors == []
-        ), f"Expected no errors for marker with extra whitespace, got: {errors}"
+        assert errors == [], (
+            f"Expected no errors for marker with extra whitespace, got: {errors}"
+        )
 
     def test_multiple_markers_first_validation(self):
         """
@@ -238,6 +238,6 @@ class TestDESMarkerValidator:
         # so this test validates current behavior. If multiple markers should be
         # forbidden, this test will need adjustment based on implementation choice.
         # For now, if value is 'required' and appears anywhere, that's sufficient.
-        assert (
-            errors == []
-        ), f"Multiple valid markers should be acceptable, got: {errors}"
+        assert errors == [], (
+            f"Multiple valid markers should be acceptable, got: {errors}"
+        )

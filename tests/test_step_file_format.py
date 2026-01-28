@@ -27,7 +27,10 @@ from scripts.validation.validate_steps import (  # noqa: E402
 
 
 # Import from single source of truth
-from nWave.constants.tdd_phases import REQUIRED_PHASES as CORRECT_PHASE_NAMES, PHASE_COUNT  # noqa: E402
+from nWave.constants.tdd_phases import (
+    REQUIRED_PHASES as CORRECT_PHASE_NAMES,
+    PHASE_COUNT,
+)  # noqa: E402
 
 # =============================================================================
 # Test Constants - Expected Format
@@ -139,7 +142,11 @@ def step_with_wrong_phase_names(tmp_path) -> Path:
             "status": "NOT_EXECUTED",
         },  # WRONG - should be GREEN
         {"phase_name": "REVIEW", "phase_index": 4, "status": "NOT_EXECUTED"},
-        {"phase_name": "REFACTOR_CONTINUOUS", "phase_index": 5, "status": "NOT_EXECUTED"},
+        {
+            "phase_name": "REFACTOR_CONTINUOUS",
+            "phase_index": 5,
+            "status": "NOT_EXECUTED",
+        },
         {"phase_name": "REFACTOR_L4", "phase_index": 6, "status": "NOT_EXECUTED"},
         {"phase_name": "COMMIT", "phase_index": 7, "status": "NOT_EXECUTED"},
     ]

@@ -56,6 +56,7 @@ def mock_github_adapter():
 
     Returns configured release info for testing.
     """
+
     class MockGitHubAPIAdapter:
         def __init__(self):
             self.latest_version = "1.3.0"
@@ -64,13 +65,25 @@ def mock_github_adapter():
             self.should_raise_network_error = False
             self.should_raise_rate_limit_error = False
 
-        def configure(self, latest_version: str, checksum: str = "abc123", download_url: str = None):
+        def configure(
+            self,
+            latest_version: str,
+            checksum: str = "abc123",
+            download_url: str = None,
+        ):
             self.latest_version = latest_version
             self.checksum = checksum
-            self.download_url = download_url or f"https://github.com/test/releases/v{latest_version}.zip"
+            self.download_url = (
+                download_url
+                or f"https://github.com/test/releases/v{latest_version}.zip"
+            )
 
         def get_latest_release(self, owner: str, repo: str):
-            from nWave.core.versioning.ports.github_api_port import ReleaseInfo, NetworkError, RateLimitError
+            from nWave.core.versioning.ports.github_api_port import (
+                ReleaseInfo,
+                NetworkError,
+                RateLimitError,
+            )
             from nWave.core.versioning.domain.version import Version
 
             if self.should_raise_network_error:
@@ -94,6 +107,7 @@ def in_memory_file_system_adapter(test_installation):
 
     Stores data in test installation directories.
     """
+
     class InMemoryFileSystemAdapter:
         def __init__(self, test_dirs):
             self._test_dirs = test_dirs
@@ -122,6 +136,7 @@ def in_memory_file_system_adapter(test_installation):
 
         def create_backup(self, backup_path: Path):
             import shutil
+
             nwave_home = self._test_dirs["nwave_home"]
             shutil.copytree(nwave_home, backup_path)
 
@@ -132,6 +147,7 @@ def in_memory_file_system_adapter(test_installation):
 
         def delete_backup(self, backup_path: Path):
             import shutil
+
             if backup_path.exists():
                 shutil.rmtree(backup_path)
                 return True

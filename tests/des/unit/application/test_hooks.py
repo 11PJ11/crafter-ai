@@ -726,12 +726,12 @@ class TestRecoverySuggestionGeneration:
 
             for suggestion in result.recovery_suggestions:
                 assert len(suggestion) >= 20, f"Suggestion too short: {suggestion}"
-                assert suggestion[
-                    0
-                ].isupper(), f"Should start with capital: {suggestion}"
-                assert suggestion.rstrip().endswith(
-                    (".", "`", '"')
-                ), f"Should end properly: {suggestion}"
+                assert suggestion[0].isupper(), (
+                    f"Should start with capital: {suggestion}"
+                )
+                assert suggestion.rstrip().endswith((".", "`", '"')), (
+                    f"Should end properly: {suggestion}"
+                )
         finally:
             Path(temp_path).unlink()
 
@@ -849,12 +849,12 @@ class TestRecoverySuggestionGeneration:
 
             suggestions_text = " ".join(result.recovery_suggestions).lower()
             assert "transcript" in suggestions_text, "Should mention transcript review"
-            assert (
-                "reset" in suggestions_text or "status" in suggestions_text
-            ), "Should mention status reset"
-            assert (
-                "/nw:execute" in suggestions_text or "resume" in suggestions_text
-            ), "Should mention resume command"
+            assert "reset" in suggestions_text or "status" in suggestions_text, (
+                "Should mention status reset"
+            )
+            assert "/nw:execute" in suggestions_text or "resume" in suggestions_text, (
+                "Should mention resume command"
+            )
         finally:
             Path(temp_path).unlink()
 
@@ -945,18 +945,18 @@ class TestTurnLimitValidation:
         result = HookResult(validation_status="PASSED")
 
         # HookResult should have turn_limit_exceeded field
-        assert hasattr(
-            result, "turn_limit_exceeded"
-        ), "HookResult missing turn_limit_exceeded field"
+        assert hasattr(result, "turn_limit_exceeded"), (
+            "HookResult missing turn_limit_exceeded field"
+        )
 
     def test_turn_limit_exceeded_defaults_to_false(self):
         """HookResult.turn_limit_exceeded should default to False."""
         from src.des.application.hooks import HookResult
 
         result = HookResult(validation_status="PASSED")
-        assert (
-            result.turn_limit_exceeded is False
-        ), "turn_limit_exceeded should default to False"
+        assert result.turn_limit_exceeded is False, (
+            "turn_limit_exceeded should default to False"
+        )
 
     def test_detects_phase_exceeding_turn_limit(self):
         """Hook should detect when phase turn_count exceeds max_turns."""
@@ -993,9 +993,9 @@ class TestTurnLimitValidation:
             result = hook.on_agent_complete(step_file_path=temp_path)
 
             # Should detect turn limit exceeded
-            assert (
-                result.turn_limit_exceeded is True
-            ), "Should detect turn_count (65) exceeds max_turns (50)"
+            assert result.turn_limit_exceeded is True, (
+                "Should detect turn_count (65) exceeds max_turns (50)"
+            )
 
             # Should include phase name in error message
             assert result.error_message is not None

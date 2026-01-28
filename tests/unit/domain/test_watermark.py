@@ -78,7 +78,9 @@ class TestWatermarkIsFreshWhenWithin24Hours:
     def test_watermark_is_fresh_when_exactly_24_hours_minus_1_second_ago(self):
         """Watermark is fresh when last check was 24 hours minus 1 second ago (boundary)."""
         # Use 24 hours minus 1 second to avoid timing issues at exact boundary
-        last_check = datetime.now(timezone.utc) - timedelta(hours=24) + timedelta(seconds=1)
+        last_check = (
+            datetime.now(timezone.utc) - timedelta(hours=24) + timedelta(seconds=1)
+        )
         watermark = Watermark(
             last_check=last_check,
             latest_version=Version("1.0.0"),
@@ -182,7 +184,9 @@ class TestWatermarkDeserializeFromJson:
 
     def test_deserialize_from_json_restores_last_check(self):
         """Deserialize restores last_check timestamp."""
-        json_str = '{"last_check": "2026-01-28T12:00:00+00:00", "latest_version": "1.2.3"}'
+        json_str = (
+            '{"last_check": "2026-01-28T12:00:00+00:00", "latest_version": "1.2.3"}'
+        )
 
         watermark = Watermark.from_json(json_str)
 
@@ -191,7 +195,9 @@ class TestWatermarkDeserializeFromJson:
 
     def test_deserialize_from_json_restores_latest_version(self):
         """Deserialize restores latest_version as Version object."""
-        json_str = '{"last_check": "2026-01-28T12:00:00+00:00", "latest_version": "1.2.3"}'
+        json_str = (
+            '{"last_check": "2026-01-28T12:00:00+00:00", "latest_version": "1.2.3"}'
+        )
 
         watermark = Watermark.from_json(json_str)
 
@@ -209,7 +215,9 @@ class TestWatermarkDeserializeFromJson:
 
     def test_acceptance_criteria_deserialize_from_json(self):
         """Acceptance criteria: Watermark deserializes from JSON."""
-        json_str = '{"last_check": "2026-01-28T10:30:00+00:00", "latest_version": "2.0.0"}'
+        json_str = (
+            '{"last_check": "2026-01-28T10:30:00+00:00", "latest_version": "2.0.0"}'
+        )
 
         watermark = Watermark.from_json(json_str)
 

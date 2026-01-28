@@ -125,10 +125,12 @@ class TestDailyAutoCheckUpdatesWatermarkWhenStale:
 
         # AND: The watermark file shows last_check was 25 hours ago
         stale_timestamp = datetime.now(timezone.utc) - timedelta(hours=25)
-        stale_watermark_content = json.dumps({
-            "last_check": stale_timestamp.isoformat(),
-            "latest_version": "1.2.0"  # Old version in watermark
-        })
+        stale_watermark_content = json.dumps(
+            {
+                "last_check": stale_timestamp.isoformat(),
+                "latest_version": "1.2.0",  # Old version in watermark
+            }
+        )
         watermark_file = test_installation["watermark_file"]
         watermark_file.write_text(stale_watermark_content)
 
@@ -136,11 +138,13 @@ class TestDailyAutoCheckUpdatesWatermarkWhenStale:
         mock_github_adapter.configure(latest_version="1.3.0")
 
         # Track if GitHub API was called
-        github_call_count_before = getattr(mock_github_adapter, '_call_count', 0)
+        github_call_count_before = getattr(mock_github_adapter, "_call_count", 0)
         original_get_latest = mock_github_adapter.get_latest_release
 
         def tracking_get_latest(owner, repo):
-            mock_github_adapter._call_count = getattr(mock_github_adapter, '_call_count', 0) + 1
+            mock_github_adapter._call_count = (
+                getattr(mock_github_adapter, "_call_count", 0) + 1
+            )
             return original_get_latest(owner, repo)
 
         mock_github_adapter.get_latest_release = tracking_get_latest
@@ -165,14 +169,16 @@ class TestDailyAutoCheckUpdatesWatermarkWhenStale:
         timestamp_after = datetime.now(timezone.utc)
 
         # THEN: The system checks GitHub Releases (API was called)
-        github_call_count_after = getattr(mock_github_adapter, '_call_count', 0)
+        github_call_count_after = getattr(mock_github_adapter, "_call_count", 0)
         assert github_call_count_after > github_call_count_before, (
             "Expected GitHub API to be called when watermark is stale"
         )
 
         # AND: The watermark file is updated with new timestamp
         updated_watermark_content = json.loads(watermark_file.read_text())
-        updated_timestamp = datetime.fromisoformat(updated_watermark_content["last_check"])
+        updated_timestamp = datetime.fromisoformat(
+            updated_watermark_content["last_check"]
+        )
 
         assert updated_timestamp > stale_timestamp, (
             f"Watermark timestamp {updated_timestamp} should be newer than stale {stale_timestamp}"

@@ -222,7 +222,9 @@ def test_successful_update_with_backup_creation(
     # AND: GitHub API returns v1.3.0 as latest release with SHA256 checksum
     mock_github_response["latest_version"] = "1.3.0"
     mock_github_response["checksum"] = "abc123def456"
-    mock_github_response["download_url"] = "https://mock.github.com/releases/v1.3.0.tar.gz"
+    mock_github_response["download_url"] = (
+        "https://mock.github.com/releases/v1.3.0.tar.gz"
+    )
 
     # AND: Download server provides valid release asset matching checksum
     mock_download_server["checksum"] = "abc123def456"
@@ -327,7 +329,9 @@ def clean_test_environment_with_user_content(tmp_path):
 
 
 @pytest.fixture
-def cli_environment_with_user_content(clean_test_environment_with_user_content, project_root):
+def cli_environment_with_user_content(
+    clean_test_environment_with_user_content, project_root
+):
     """
     Environment variables for CLI execution with user content.
 
@@ -471,7 +475,9 @@ def test_non_nwave_user_content_is_preserved_during_update(
     # AND: GitHub API returns v1.3.0 as latest release with valid checksum
     mock_github_response["latest_version"] = "1.3.0"
     mock_github_response["checksum"] = "abc123def456"
-    mock_github_response["download_url"] = "https://mock.github.com/releases/v1.3.0.tar.gz"
+    mock_github_response["download_url"] = (
+        "https://mock.github.com/releases/v1.3.0.tar.gz"
+    )
 
     # AND: Download server provides valid release asset
     mock_download_server["checksum"] = "abc123def456"
@@ -494,8 +500,12 @@ def test_non_nwave_user_content_is_preserved_during_update(
     )
 
     # THEN: Her custom agent at ~/.claude/agents/my-custom-agent/ remains untouched
-    assert env["custom_agent"].exists(), f"Custom agent directory should still exist. {diagnostic}"
-    assert env["custom_agent_file"].exists(), f"Custom agent file should still exist. {diagnostic}"
+    assert env["custom_agent"].exists(), (
+        f"Custom agent directory should still exist. {diagnostic}"
+    )
+    assert env["custom_agent_file"].exists(), (
+        f"Custom agent file should still exist. {diagnostic}"
+    )
     custom_agent_content_after = env["custom_agent_file"].read_text()
     assert custom_agent_content_after == custom_agent_content_before, (
         f"Custom agent content should be unchanged.\n"
@@ -505,8 +515,12 @@ def test_non_nwave_user_content_is_preserved_during_update(
     )
 
     # AND: Her custom command at ~/.claude/commands/my-custom-command/ remains untouched
-    assert env["custom_command"].exists(), f"Custom command directory should still exist. {diagnostic}"
-    assert env["custom_command_file"].exists(), f"Custom command file should still exist. {diagnostic}"
+    assert env["custom_command"].exists(), (
+        f"Custom command directory should still exist. {diagnostic}"
+    )
+    assert env["custom_command_file"].exists(), (
+        f"Custom command file should still exist. {diagnostic}"
+    )
     custom_command_content_after = env["custom_command_file"].read_text()
     assert custom_command_content_after == custom_command_content_before, (
         f"Custom command content should be unchanged.\n"
@@ -518,10 +532,14 @@ def test_non_nwave_user_content_is_preserved_during_update(
     # AND: Only nWave-prefixed content in ~/.claude/agents/nw/ is replaced
     # In test mode, we verify that nw content WOULD be replaced by checking
     # that the update was successful and nw directories are still present
-    assert env["nw_agents"].exists(), f"nWave agents directory should exist after update. {diagnostic}"
+    assert env["nw_agents"].exists(), (
+        f"nWave agents directory should exist after update. {diagnostic}"
+    )
 
     # AND: Only nWave-prefixed content in ~/.claude/commands/nw/ is replaced
-    assert env["nw_commands"].exists(), f"nWave commands directory should exist after update. {diagnostic}"
+    assert env["nw_commands"].exists(), (
+        f"nWave commands directory should exist after update. {diagnostic}"
+    )
 
     # AND: Update completed successfully
     assert returncode == 0, f"Expected exit code 0, got {returncode}. {diagnostic}"
@@ -567,7 +585,9 @@ def test_major_version_change_requires_confirmation(
     # AND: GitHub API returns v2.0.0 as the latest release (MAJOR version change)
     mock_github_response["latest_version"] = "2.0.0"
     mock_github_response["checksum"] = "abc123def456"
-    mock_github_response["download_url"] = "https://mock.github.com/releases/v2.0.0.tar.gz"
+    mock_github_response["download_url"] = (
+        "https://mock.github.com/releases/v2.0.0.tar.gz"
+    )
 
     # Configure download server
     mock_download_server["checksum"] = "abc123def456"
@@ -594,19 +614,23 @@ def test_major_version_change_requires_confirmation(
             env=env,
             cwd=str(clean_test_environment["tmp_path"]),
         )
-        cli_result.update({
-            "stdout": result.stdout,
-            "stderr": result.stderr,
-            "returncode": result.returncode,
-            "exception": None,
-        })
+        cli_result.update(
+            {
+                "stdout": result.stdout,
+                "stderr": result.stderr,
+                "returncode": result.returncode,
+                "exception": None,
+            }
+        )
     except subprocess.TimeoutExpired as e:
-        cli_result.update({
-            "stdout": "",
-            "stderr": "Command timed out",
-            "returncode": 124,
-            "exception": e,
-        })
+        cli_result.update(
+            {
+                "stdout": "",
+                "stderr": "Command timed out",
+                "returncode": 124,
+                "exception": e,
+            }
+        )
 
     # Diagnostic output for debugging
     stdout = cli_result["stdout"]
@@ -621,7 +645,9 @@ def test_major_version_change_requires_confirmation(
     )
 
     # THEN: A warning displays "Major version change detected (1.x to 2.x). This may break existing workflows."
-    expected_warning = "Major version change detected (1.x to 2.x). This may break existing workflows."
+    expected_warning = (
+        "Major version change detected (1.x to 2.x). This may break existing workflows."
+    )
     assert expected_warning in stdout, (
         f"Expected major version warning not found.\n"
         f"Expected: '{expected_warning}'\n"
@@ -682,7 +708,9 @@ def test_major_version_update_proceeds_with_confirmation(
     # AND: GitHub API returns v2.0.0 as the latest release with valid checksum
     mock_github_response["latest_version"] = "2.0.0"
     mock_github_response["checksum"] = "abc123def456"
-    mock_github_response["download_url"] = "https://mock.github.com/releases/v2.0.0.tar.gz"
+    mock_github_response["download_url"] = (
+        "https://mock.github.com/releases/v2.0.0.tar.gz"
+    )
 
     # AND: Download server provides valid release asset
     mock_download_server["checksum"] = "abc123def456"
@@ -710,19 +738,23 @@ def test_major_version_update_proceeds_with_confirmation(
             env=env,
             cwd=str(clean_test_environment["tmp_path"]),
         )
-        cli_result.update({
-            "stdout": result.stdout,
-            "stderr": result.stderr,
-            "returncode": result.returncode,
-            "exception": None,
-        })
+        cli_result.update(
+            {
+                "stdout": result.stdout,
+                "stderr": result.stderr,
+                "returncode": result.returncode,
+                "exception": None,
+            }
+        )
     except subprocess.TimeoutExpired as e:
-        cli_result.update({
-            "stdout": "",
-            "stderr": "Command timed out",
-            "returncode": 124,
-            "exception": e,
-        })
+        cli_result.update(
+            {
+                "stdout": "",
+                "stderr": "Command timed out",
+                "returncode": 124,
+                "exception": e,
+            }
+        )
 
     # Diagnostic output for debugging
     stdout = cli_result["stdout"]
@@ -800,7 +832,9 @@ def test_major_version_update_cancelled_with_denial(
     # AND: GitHub API returns v2.0.0 as the latest release (MAJOR version change)
     mock_github_response["latest_version"] = "2.0.0"
     mock_github_response["checksum"] = "abc123def456"
-    mock_github_response["download_url"] = "https://mock.github.com/releases/v2.0.0.tar.gz"
+    mock_github_response["download_url"] = (
+        "https://mock.github.com/releases/v2.0.0.tar.gz"
+    )
 
     # Configure download server
     mock_download_server["checksum"] = "abc123def456"
@@ -832,19 +866,23 @@ def test_major_version_update_cancelled_with_denial(
             env=env,
             cwd=str(clean_test_environment["tmp_path"]),
         )
-        cli_result.update({
-            "stdout": result.stdout,
-            "stderr": result.stderr,
-            "returncode": result.returncode,
-            "exception": None,
-        })
+        cli_result.update(
+            {
+                "stdout": result.stdout,
+                "stderr": result.stderr,
+                "returncode": result.returncode,
+                "exception": None,
+            }
+        )
     except subprocess.TimeoutExpired as e:
-        cli_result.update({
-            "stdout": "",
-            "stderr": "Command timed out",
-            "returncode": 124,
-            "exception": e,
-        })
+        cli_result.update(
+            {
+                "stdout": "",
+                "stderr": "Command timed out",
+                "returncode": 124,
+                "exception": e,
+            }
+        )
 
     # Diagnostic output for debugging
     stdout = cli_result["stdout"]
@@ -931,7 +969,9 @@ def test_already_up_to_date_shows_message_without_update(
     # AND: GitHub API returns v1.3.0 as the latest release (same as installed)
     mock_github_response["latest_version"] = "1.3.0"
     mock_github_response["checksum"] = "abc123def456"
-    mock_github_response["download_url"] = "https://mock.github.com/releases/v1.3.0.tar.gz"
+    mock_github_response["download_url"] = (
+        "https://mock.github.com/releases/v1.3.0.tar.gz"
+    )
 
     # Configure download server (should NOT be called)
     mock_download_server["checksum"] = "abc123def456"
@@ -960,19 +1000,23 @@ def test_already_up_to_date_shows_message_without_update(
             env=env,
             cwd=str(clean_test_environment["tmp_path"]),
         )
-        cli_result.update({
-            "stdout": result.stdout,
-            "stderr": result.stderr,
-            "returncode": result.returncode,
-            "exception": None,
-        })
+        cli_result.update(
+            {
+                "stdout": result.stdout,
+                "stderr": result.stderr,
+                "returncode": result.returncode,
+                "exception": None,
+            }
+        )
     except subprocess.TimeoutExpired as e:
-        cli_result.update({
-            "stdout": "",
-            "stderr": "Command timed out",
-            "returncode": 124,
-            "exception": e,
-        })
+        cli_result.update(
+            {
+                "stdout": "",
+                "stderr": "Command timed out",
+                "returncode": 124,
+                "exception": e,
+            }
+        )
 
     # Diagnostic output for debugging
     stdout = cli_result["stdout"]

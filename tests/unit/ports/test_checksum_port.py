@@ -46,8 +46,9 @@ class TestCalculateSha256MethodDefined:
 
         method = getattr(ChecksumPort, "calculate_sha256", None)
         assert method is not None
-        assert getattr(method, "__isabstractmethod__", False), \
+        assert getattr(method, "__isabstractmethod__", False), (
             "calculate_sha256 must be decorated with @abstractmethod"
+        )
 
     def test_calculate_sha256_accepts_file_path_parameter(self):
         """calculate_sha256 must accept file_path parameter."""
@@ -65,8 +66,9 @@ class TestCalculateSha256MethodDefined:
         from typing import get_type_hints
 
         hints = get_type_hints(ChecksumPort.calculate_sha256)
-        assert hints.get("file_path") == Path, \
+        assert hints.get("file_path") == Path, (
             "calculate_sha256 file_path must be typed as Path"
+        )
 
     def test_calculate_sha256_returns_string(self):
         """calculate_sha256 must return a string (hex digest)."""
@@ -74,8 +76,9 @@ class TestCalculateSha256MethodDefined:
         from typing import get_type_hints
 
         hints = get_type_hints(ChecksumPort.calculate_sha256)
-        assert hints.get("return") is str, \
+        assert hints.get("return") is str, (
             "calculate_sha256 must return str (SHA256 hex digest)"
+        )
 
 
 class TestVerifyMethodDefined:
@@ -93,8 +96,9 @@ class TestVerifyMethodDefined:
 
         method = getattr(ChecksumPort, "verify", None)
         assert method is not None
-        assert getattr(method, "__isabstractmethod__", False), \
+        assert getattr(method, "__isabstractmethod__", False), (
             "verify must be decorated with @abstractmethod"
+        )
 
     def test_verify_accepts_file_path_parameter(self):
         """verify must accept file_path parameter."""
@@ -112,8 +116,9 @@ class TestVerifyMethodDefined:
         sig = inspect.signature(ChecksumPort.verify)
         params = list(sig.parameters.keys())
 
-        assert "expected_checksum" in params, \
+        assert "expected_checksum" in params, (
             "Method must have 'expected_checksum' parameter"
+        )
 
     def test_verify_file_path_typed_as_path(self):
         """verify file_path parameter must be typed as Path."""
@@ -121,8 +126,7 @@ class TestVerifyMethodDefined:
         from typing import get_type_hints
 
         hints = get_type_hints(ChecksumPort.verify)
-        assert hints.get("file_path") == Path, \
-            "verify file_path must be typed as Path"
+        assert hints.get("file_path") == Path, "verify file_path must be typed as Path"
 
     def test_verify_expected_checksum_typed_as_string(self):
         """verify expected_checksum parameter must be typed as str."""
@@ -130,8 +134,9 @@ class TestVerifyMethodDefined:
         from typing import get_type_hints
 
         hints = get_type_hints(ChecksumPort.verify)
-        assert hints.get("expected_checksum") is str, \
+        assert hints.get("expected_checksum") is str, (
             "verify expected_checksum must be typed as str"
+        )
 
     def test_verify_returns_bool(self):
         """verify must return a boolean indicating match status."""
@@ -139,8 +144,9 @@ class TestVerifyMethodDefined:
         from typing import get_type_hints
 
         hints = get_type_hints(ChecksumPort.verify)
-        assert hints.get("return") is bool, \
+        assert hints.get("return") is bool, (
             "verify must return bool (checksum match status)"
+        )
 
 
 class TestChecksumMismatchErrorDefined:
@@ -156,8 +162,9 @@ class TestChecksumMismatchErrorDefined:
         """ChecksumMismatchError must be a subclass of Exception."""
         from nWave.core.versioning.ports.checksum_port import ChecksumMismatchError
 
-        assert issubclass(ChecksumMismatchError, Exception), \
+        assert issubclass(ChecksumMismatchError, Exception), (
             "ChecksumMismatchError must inherit from Exception"
+        )
 
     def test_checksum_mismatch_error_can_be_raised(self):
         """ChecksumMismatchError must be raisable with a message."""
@@ -173,9 +180,7 @@ class TestChecksumMismatchErrorDefined:
         from nWave.core.versioning.ports.checksum_port import ChecksumMismatchError
 
         error = ChecksumMismatchError(
-            "Checksum mismatch",
-            expected_checksum="abc123",
-            actual_checksum="def456"
+            "Checksum mismatch", expected_checksum="abc123", actual_checksum="def456"
         )
         assert hasattr(error, "expected_checksum")
         assert error.expected_checksum == "abc123"
@@ -185,9 +190,7 @@ class TestChecksumMismatchErrorDefined:
         from nWave.core.versioning.ports.checksum_port import ChecksumMismatchError
 
         error = ChecksumMismatchError(
-            "Checksum mismatch",
-            expected_checksum="abc123",
-            actual_checksum="def456"
+            "Checksum mismatch", expected_checksum="abc123", actual_checksum="def456"
         )
         assert hasattr(error, "actual_checksum")
         assert error.actual_checksum == "def456"

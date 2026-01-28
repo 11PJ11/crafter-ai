@@ -377,7 +377,7 @@ class TestVersionServiceHandlesRateLimitGracefully:
         mock_github = Mock()
         mock_github.get_latest_release.side_effect = RateLimitError(
             "GitHub API rate limit exceeded",
-            retry_after=3600  # 1 hour until rate limit resets
+            retry_after=3600,  # 1 hour until rate limit resets
         )
 
         version_service = VersionService(
@@ -474,7 +474,7 @@ class TestVersionServiceHandlesRateLimitGracefully:
         mock_github = Mock()
         mock_github.get_latest_release.side_effect = RateLimitError(
             "GitHub API rate limit exceeded",
-            retry_after=1800  # 30 minutes
+            retry_after=1800,  # 30 minutes
         )
 
         version_service = VersionService(

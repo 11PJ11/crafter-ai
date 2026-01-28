@@ -50,13 +50,17 @@ class TestRCVersionCreateWithFeatureBranch:
 
     def test_create_rc_version_with_simple_feature_branch(self):
         """Create RC version with simple feature branch name."""
-        rc_version = RCVersion.create("1.2.3", "feature-new-agent", date(2026, 1, 27), 2)
+        rc_version = RCVersion.create(
+            "1.2.3", "feature-new-agent", date(2026, 1, 27), 2
+        )
 
         assert str(rc_version) == "1.2.3-rc.feature-new-agent.20260127.2"
 
     def test_create_rc_version_with_hyphenated_branch_name(self):
         """Create RC version with hyphenated branch name."""
-        rc_version = RCVersion.create("1.5.0", "bugfix-critical-issue", date(2026, 2, 15), 3)
+        rc_version = RCVersion.create(
+            "1.5.0", "bugfix-critical-issue", date(2026, 2, 15), 3
+        )
 
         assert str(rc_version) == "1.5.0-rc.bugfix-critical-issue.20260215.3"
 
@@ -129,21 +133,27 @@ class TestRCVersionBranchNameNormalization:
 
     def test_slash_in_branch_name_normalized_to_hyphen(self):
         """Branch name with slash is normalized to hyphen."""
-        rc_version = RCVersion.create("1.2.3", "feature/new-agent", date(2026, 1, 27), 1)
+        rc_version = RCVersion.create(
+            "1.2.3", "feature/new-agent", date(2026, 1, 27), 1
+        )
 
         assert rc_version.branch == "feature-new-agent"
         assert str(rc_version) == "1.2.3-rc.feature-new-agent.20260127.1"
 
     def test_acceptance_criteria_branch_normalization(self):
         """Acceptance criteria: Branch names with "/" are normalized to "-"."""
-        rc_version = RCVersion.create("1.0.0", "feature/my-feature", date(2026, 1, 28), 1)
+        rc_version = RCVersion.create(
+            "1.0.0", "feature/my-feature", date(2026, 1, 28), 1
+        )
 
         assert "/" not in str(rc_version)
         assert rc_version.branch == "feature-my-feature"
 
     def test_multiple_slashes_normalized(self):
         """Multiple slashes in branch name are all normalized."""
-        rc_version = RCVersion.create("1.2.3", "feature/sub/branch", date(2026, 1, 27), 1)
+        rc_version = RCVersion.create(
+            "1.2.3", "feature/sub/branch", date(2026, 1, 27), 1
+        )
 
         assert rc_version.branch == "feature-sub-branch"
 

@@ -50,8 +50,12 @@ class TestUpdateServiceCreatesBackupBeforeUpdate:
 
         # Track call order
         call_order = []
-        mock_file_system.create_backup.side_effect = lambda p: call_order.append("backup")
-        mock_download.download.side_effect = lambda u, d, c=None: call_order.append("download")
+        mock_file_system.create_backup.side_effect = lambda p: call_order.append(
+            "backup"
+        )
+        mock_download.download.side_effect = lambda u, d, c=None: call_order.append(
+            "download"
+        )
 
         service = UpdateService(
             file_system=mock_file_system,
@@ -237,8 +241,12 @@ class TestUpdateServiceUpdatesVersionFile:
         result = service.update()
 
         # Assert: Update succeeded and VERSION file was written
-        assert result.success is True, f"Update should succeed, got: {result.error_message}"
-        assert version_file.read_text().strip() == "1.3.0", "VERSION file should contain 1.3.0"
+        assert result.success is True, (
+            f"Update should succeed, got: {result.error_message}"
+        )
+        assert version_file.read_text().strip() == "1.3.0", (
+            "VERSION file should contain 1.3.0"
+        )
 
 
 # ============================================================================
@@ -471,7 +479,9 @@ class TestUpdateServiceDetectsMajorVersionChange:
         is_major_change = service.is_major_version_change(current, target)
 
         # Assert
-        assert is_major_change is True, "1.3.0 -> 2.0.0 should be a major version change"
+        assert is_major_change is True, (
+            "1.3.0 -> 2.0.0 should be a major version change"
+        )
 
     def test_update_service_detects_minor_version_not_major(self):
         """
@@ -501,7 +511,9 @@ class TestUpdateServiceDetectsMajorVersionChange:
         is_major_change = service.is_major_version_change(current, target)
 
         # Assert
-        assert is_major_change is False, "1.2.3 -> 1.3.0 should NOT be a major version change"
+        assert is_major_change is False, (
+            "1.2.3 -> 1.3.0 should NOT be a major version change"
+        )
 
     def test_update_service_detects_patch_version_not_major(self):
         """
@@ -531,7 +543,9 @@ class TestUpdateServiceDetectsMajorVersionChange:
         is_major_change = service.is_major_version_change(current, target)
 
         # Assert
-        assert is_major_change is False, "1.2.3 -> 1.2.4 should NOT be a major version change"
+        assert is_major_change is False, (
+            "1.2.3 -> 1.2.4 should NOT be a major version change"
+        )
 
 
 class TestVersionComparisonDetectsMajorBump:
@@ -591,7 +605,9 @@ class TestUpdateServicePreservesUserContent:
         THEN: CoreContentIdentifier is used to classify paths
         """
         from nWave.core.versioning.application.update_service import UpdateService
-        from nWave.core.versioning.domain.core_content_identifier import CoreContentIdentifier
+        from nWave.core.versioning.domain.core_content_identifier import (
+            CoreContentIdentifier,
+        )
 
         # Arrange
         claude_dir = tmp_path / ".claude"
@@ -628,7 +644,9 @@ class TestUpdateServicePreservesUserContent:
 
         # Verify UpdateService has access to CoreContentIdentifier for selective replacement
         # This test will FAIL until UpdateService is updated to use CoreContentIdentifier
-        assert hasattr(service, "_content_identifier") or hasattr(service, "_core_content_identifier"), (
+        assert hasattr(service, "_content_identifier") or hasattr(
+            service, "_core_content_identifier"
+        ), (
             "UpdateService should have CoreContentIdentifier as dependency for selective content replacement"
         )
 
@@ -674,7 +692,9 @@ class TestUpdateServicePreservesUserContent:
 
         # Configure file_system to track which paths are being replaced
         replaced_paths = []
-        mock_file_system.replace_directory.side_effect = lambda src, dst: replaced_paths.append(str(dst))
+        mock_file_system.replace_directory.side_effect = (
+            lambda src, dst: replaced_paths.append(str(dst))
+        )
 
         service = UpdateService(
             file_system=mock_file_system,
@@ -689,9 +709,9 @@ class TestUpdateServicePreservesUserContent:
 
         # Assert: User agent content should be preserved
         assert custom_agent_file.exists(), "User agent file should still exist"
-        assert custom_agent_file.read_text() == "# Maria's Custom Agent\nDo not modify!", (
-            "User agent content should be unchanged"
-        )
+        assert (
+            custom_agent_file.read_text() == "# Maria's Custom Agent\nDo not modify!"
+        ), "User agent content should be unchanged"
 
         # Assert: User agent path should NOT be in replaced_paths
         str(custom_agent_dir)
@@ -741,7 +761,9 @@ class TestUpdateServicePreservesUserContent:
 
         # Configure file_system to track which paths are being replaced
         replaced_paths = []
-        mock_file_system.replace_directory.side_effect = lambda src, dst: replaced_paths.append(str(dst))
+        mock_file_system.replace_directory.side_effect = (
+            lambda src, dst: replaced_paths.append(str(dst))
+        )
 
         service = UpdateService(
             file_system=mock_file_system,
@@ -756,9 +778,10 @@ class TestUpdateServicePreservesUserContent:
 
         # Assert: User command content should be preserved
         assert custom_command_file.exists(), "User command file should still exist"
-        assert custom_command_file.read_text() == "# Maria's Custom Command\nDo not modify!", (
-            "User command content should be unchanged"
-        )
+        assert (
+            custom_command_file.read_text()
+            == "# Maria's Custom Command\nDo not modify!"
+        ), "User command content should be unchanged"
 
         # Assert: User command path should NOT be in replaced_paths
         assert not any("my-custom-command" in p for p in replaced_paths), (
@@ -807,7 +830,9 @@ class TestUpdateServicePreservesUserContent:
 
         # Configure file_system to track which paths are being replaced
         replaced_paths = []
-        mock_file_system.replace_directory.side_effect = lambda src, dst: replaced_paths.append(str(dst))
+        mock_file_system.replace_directory.side_effect = (
+            lambda src, dst: replaced_paths.append(str(dst))
+        )
 
         service = UpdateService(
             file_system=mock_file_system,
@@ -1014,11 +1039,15 @@ class TestUpdateServiceDetectsAlreadyUpToDate:
         result = service.update()
 
         # Assert: Result indicates up to date
-        assert result.success is True, "Should succeed (already up to date is a success state)"
+        assert result.success is True, (
+            "Should succeed (already up to date is a success state)"
+        )
         assert result.error_message == "Already up to date", (
             f"Error message should be 'Already up to date', got: {result.error_message}"
         )
-        assert result.previous_version == current_version, "Previous version should match"
+        assert result.previous_version == current_version, (
+            "Previous version should match"
+        )
 
     def test_no_backup_on_up_to_date(self):
         """
@@ -1191,13 +1220,17 @@ class TestUpdateServiceProceedsOnMajorConfirmation:
         )
 
         # Verify this IS a major version change
-        assert service.is_major_version_change(Version("1.3.0"), Version("2.0.0")) is True
+        assert (
+            service.is_major_version_change(Version("1.3.0"), Version("2.0.0")) is True
+        )
 
         # Act - Confirmation already given, proceed with update
         result = service.update()
 
         # Assert: Update succeeded to v2.0.0
-        assert result.success is True, f"Update should succeed, got: {result.error_message}"
+        assert result.success is True, (
+            f"Update should succeed, got: {result.error_message}"
+        )
         assert result.new_version == Version("2.0.0"), (
             f"New version should be 2.0.0, got: {result.new_version}"
         )

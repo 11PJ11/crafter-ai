@@ -242,8 +242,9 @@ class TestGitPortErrorHandling:
         docstring = GitPort.get_current_branch.__doc__ or ""
 
         # ASSERT
-        assert "GitError" in docstring, \
+        assert "GitError" in docstring, (
             "get_current_branch must document GitError in docstring"
+        )
 
     def test_has_uncommitted_changes_documents_git_error(self):
         """
@@ -258,8 +259,9 @@ class TestGitPortErrorHandling:
         docstring = GitPort.has_uncommitted_changes.__doc__ or ""
 
         # ASSERT
-        assert "GitError" in docstring, \
+        assert "GitError" in docstring, (
             "has_uncommitted_changes must document GitError in docstring"
+        )
 
     def test_get_repo_root_documents_git_error(self):
         """
@@ -274,5 +276,6 @@ class TestGitPortErrorHandling:
         docstring = GitPort.get_repo_root.__doc__ or ""
 
         # ASSERT
-        assert "GitError" in docstring, \
+        assert "GitError" in docstring, (
             "get_repo_root must document GitError in docstring"
+        )

@@ -76,9 +76,10 @@ class TestNetworkFailureDuringDownloadLeavesInstallationUnchanged:
 
         # Assert: Error message contains expected text
         assert result.success is False, "Update should fail on network error"
-        assert "network error" in result.error_message.lower() or "network" in result.error_message.lower(), (
-            f"Error message should mention network error, got: {result.error_message}"
-        )
+        assert (
+            "network error" in result.error_message.lower()
+            or "network" in result.error_message.lower()
+        ), f"Error message should mention network error, got: {result.error_message}"
 
     def test_network_failure_leaves_version_file_unchanged(self, tmp_path):
         """

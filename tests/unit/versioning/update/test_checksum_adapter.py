@@ -11,7 +11,6 @@ from pathlib import Path
 import tempfile
 
 
-
 class TestChecksumAdapterValidatesSHA256:
     """Test that ChecksumAdapter correctly validates SHA256 checksums."""
 
@@ -32,6 +31,7 @@ class TestChecksumAdapterValidatesSHA256:
 
             # Calculate expected SHA256 for this content
             import hashlib
+
             expected_checksum = hashlib.sha256(test_content).hexdigest()
 
             adapter = ChecksumAdapter()
@@ -77,6 +77,7 @@ class TestChecksumAdapterValidatesSHA256:
             test_file.write_bytes(test_content)
 
             import hashlib
+
             expected = hashlib.sha256(test_content).hexdigest()
 
             adapter = ChecksumAdapter()

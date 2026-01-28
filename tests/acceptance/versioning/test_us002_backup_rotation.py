@@ -127,20 +127,26 @@ class TestBackupRotationMaintainsExactly3Copies:
         result = service.update()
 
         # Assert
-        assert result.success is True, f"Update should succeed, got error: {result.error_message}"
+        assert result.success is True, (
+            f"Update should succeed, got error: {result.error_message}"
+        )
 
         # Verify backup was created
         assert result.backup_path is not None, "New backup should be created"
         mock_file_system.create_backup.assert_called_once()
 
         # Verify oldest backup was identified for deletion
-        assert len(deleted_backups) == 1, f"Expected 1 backup deleted, got {len(deleted_backups)}"
+        assert len(deleted_backups) == 1, (
+            f"Expected 1 backup deleted, got {len(deleted_backups)}"
+        )
         assert deleted_backups[0] == tmp_path / ".claude.backup.20260124120000", (
             f"Oldest backup should be deleted, got {deleted_backups[0]}"
         )
 
         # Verify exactly 3 backups remain
-        assert len(current_backups) == 3, f"Expected 3 backups remaining, got {len(current_backups)}"
+        assert len(current_backups) == 3, (
+            f"Expected 3 backups remaining, got {len(current_backups)}"
+        )
 
     def test_backup_policy_identifies_oldest_for_deletion(self):
         """
@@ -158,7 +164,9 @@ class TestBackupRotationMaintainsExactly3Copies:
             Path("~/.claude.backup.20260124120000"),  # oldest - should be deleted
             Path("~/.claude.backup.20260125120000"),  # should remain
             Path("~/.claude.backup.20260126120000"),  # should remain
-            Path("~/.claude.backup.20260127143000"),  # newest (just created) - should remain
+            Path(
+                "~/.claude.backup.20260127143000"
+            ),  # newest (just created) - should remain
         ]
 
         # Act
@@ -325,6 +333,10 @@ class TestBackupRotationMaintainsExactly3Copies:
 
         # Parse timestamp and verify it's within expected range
         backup_time = datetime.strptime(timestamp_str, "%Y%m%d%H%M%S")
-        assert before_time.replace(microsecond=0) <= backup_time <= after_time.replace(microsecond=0), (
+        assert (
+            before_time.replace(microsecond=0)
+            <= backup_time
+            <= after_time.replace(microsecond=0)
+        ), (
             f"Backup timestamp {backup_time} should be between {before_time} and {after_time}"
         )

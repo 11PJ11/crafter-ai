@@ -297,8 +297,14 @@ def download_will_fail(cli_environment):
     cli_environment["TEST_DOWNLOAD_FAILURE"] = "true"
 
 
-@given(parsers.parse('GitHub latest release is {version} with SHA256 checksum "{checksum}"'))
-def github_latest_release_with_checksum(mock_github_api, cli_environment, version, checksum):
+@given(
+    parsers.parse(
+        'GitHub latest release is {version} with SHA256 checksum "{checksum}"'
+    )
+)
+def github_latest_release_with_checksum(
+    mock_github_api, cli_environment, version, checksum
+):
     """Set GitHub API to return specific version with checksum."""
     mock_github_api["latest_version"] = version
     mock_github_api["expected_checksum"] = checksum
@@ -868,6 +874,8 @@ def verify_user_can_choose(cli_result):
     """Verify user is given choice to proceed or cancel."""
     output = cli_result["stdout"]
     # Check for confirmation prompt or choice indication
-    assert "proceed" in output.lower() or "y/n" in output.lower() or "Proceed with update?" in output, (
-        f"Expected choice prompt not found in output:\n{output}"
-    )
+    assert (
+        "proceed" in output.lower()
+        or "y/n" in output.lower()
+        or "Proceed with update?" in output
+    ), f"Expected choice prompt not found in output:\n{output}"

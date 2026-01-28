@@ -185,9 +185,7 @@ class TestBuildFailsWhenTestsFail:
         )
 
         # AND: The build aborts with exit code non-zero
-        assert result.success is False, (
-            "Expected build to fail when tests fail"
-        )
+        assert result.success is False, "Expected build to fail when tests fail"
         assert cli_result["returncode"] != 0, (
             "Expected non-zero exit code when build fails"
         )
@@ -448,9 +446,7 @@ class TestUserDeclinesInstallAfterSuccessfulBuild:
         assert in_memory_file_system_for_forge.dist_exists, (
             "Expected dist/ directory to contain built distribution"
         )
-        assert result.success is True, (
-            "Expected build to succeed"
-        )
+        assert result.success is True, "Expected build to succeed"
 
         # AND: No installation to ~/.claude/ occurs
         assert install_result.installation_performed is False, (
@@ -559,9 +555,7 @@ class TestUserAcceptsInstallAfterSuccessfulBuild:
         # The acceptance test focuses on the user-visible behavior:
         # 1. User says "Y" -> install is invoked
         # 2. Files are copied to ~/.claude/ (installation_completed)
-        assert install_result.success, (
-            "Expected installation to succeed"
-        )
+        assert install_result.success, "Expected installation to succeed"
 
 
 class TestFeatureBranchNameIncludedInRCVersion:

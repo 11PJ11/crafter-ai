@@ -15,7 +15,14 @@ from pytest_bdd import given, when, then, parsers
 
 # Load scenarios from the distill feature file
 # Note: Path is relative to this test file
-FEATURE_FILE = Path(__file__).parent.parent.parent.parent / "docs" / "features" / "versioning-release-management" / "distill" / "acceptance-tests.feature"
+FEATURE_FILE = (
+    Path(__file__).parent.parent.parent.parent
+    / "docs"
+    / "features"
+    / "versioning-release-management"
+    / "distill"
+    / "acceptance-tests.feature"
+)
 
 # Only load specific scenarios that are ACTIVE (not marked @skip)
 # For step 03-02, we're implementing "Display version when up-to-date"
@@ -45,7 +52,11 @@ def cli_available(version_cli_path):
     pass
 
 
-@given(parsers.parse("Sofia has nWave v{version} installed in the test ~/.claude/ directory"))
+@given(
+    parsers.parse(
+        "Sofia has nWave v{version} installed in the test ~/.claude/ directory"
+    )
+)
 def sofia_has_version_installed(clean_test_environment, version, scenario_context):
     """Set up Sofia's installation with specific version."""
     scenario_context["persona"] = "Sofia"
@@ -53,7 +64,11 @@ def sofia_has_version_installed(clean_test_environment, version, scenario_contex
     clean_test_environment["version_file"].write_text(version)
 
 
-@given(parsers.parse("Marco has nWave v{version} installed in the test ~/.claude/ directory"))
+@given(
+    parsers.parse(
+        "Marco has nWave v{version} installed in the test ~/.claude/ directory"
+    )
+)
 def marco_has_version_installed(clean_test_environment, version, scenario_context):
     """Set up Marco's installation with specific version."""
     scenario_context["persona"] = "Marco"

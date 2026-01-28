@@ -10,7 +10,6 @@ CRITICAL: Domain objects (Version) use REAL objects, not mocks.
 Mocks are ONLY used at port boundaries (GitHubAPIPort).
 """
 
-
 from nWave.core.versioning.domain.version import Version
 from nWave.core.versioning.ports.github_api_port import (
     GitHubAPIPort,

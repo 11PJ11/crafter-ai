@@ -41,7 +41,9 @@ class TestBuildServiceCleansDistBeforeBuild:
         mock_file_system.read_base_version.return_value = "1.2.3"
         mock_file_system.clean_dist.return_value = True
         mock_file_system.create_distribution.return_value = True
-        mock_file_system.get_previous_build_version.return_value = None  # No previous build
+        mock_file_system.get_previous_build_version.return_value = (
+            None  # No previous build
+        )
 
         mock_date_provider = Mock()
         mock_date_provider.today.return_value = date(2026, 1, 27)
@@ -322,9 +324,7 @@ class TestDistUnchangedOnTestFailure:
         assert result.distribution_created is False, (
             "Expected distribution_created to be False when tests fail"
         )
-        assert result.version is None, (
-            "Expected version to be None when build fails"
-        )
+        assert result.version is None, "Expected version to be None when build fails"
 
 
 # =============================================================================
@@ -356,7 +356,9 @@ class TestBuildServiceIncrementsCounterSameDay:
         mock_file_system.clean_dist.return_value = True
         mock_file_system.create_distribution.return_value = True
         # Configure previous build
-        mock_file_system.get_previous_build_version.return_value = "1.2.3-rc.main.20260127.1"
+        mock_file_system.get_previous_build_version.return_value = (
+            "1.2.3-rc.main.20260127.1"
+        )
 
         mock_date_provider = Mock()
         mock_date_provider.today.return_value = date(2026, 1, 27)
@@ -399,7 +401,9 @@ class TestBuildServiceDetectsExistingBuild:
         mock_file_system.read_base_version.return_value = "1.2.3"
         mock_file_system.clean_dist.return_value = True
         mock_file_system.create_distribution.return_value = True
-        mock_file_system.get_previous_build_version.return_value = "1.2.3-rc.main.20260127.1"
+        mock_file_system.get_previous_build_version.return_value = (
+            "1.2.3-rc.main.20260127.1"
+        )
 
         mock_date_provider = Mock()
         mock_date_provider.today.return_value = date(2026, 1, 27)
@@ -474,7 +478,9 @@ class TestBuildServiceResetsCounterOnNewDay:
         mock_file_system.clean_dist.return_value = True
         mock_file_system.create_distribution.return_value = True
         # Configure previous build from yesterday (day 27)
-        mock_file_system.get_previous_build_version.return_value = "1.2.3-rc.main.20260127.3"
+        mock_file_system.get_previous_build_version.return_value = (
+            "1.2.3-rc.main.20260127.3"
+        )
 
         mock_date_provider = Mock()
         # Today is day 28 (different from previous build)
@@ -519,7 +525,9 @@ class TestBuildServiceDetectsDateChange:
         mock_file_system.clean_dist.return_value = True
         mock_file_system.create_distribution.return_value = True
         # Previous build was on 2026-01-25 with build number 5
-        mock_file_system.get_previous_build_version.return_value = "1.2.3-rc.main.20260125.5"
+        mock_file_system.get_previous_build_version.return_value = (
+            "1.2.3-rc.main.20260125.5"
+        )
 
         mock_date_provider = Mock()
         # Today is 2026-01-28

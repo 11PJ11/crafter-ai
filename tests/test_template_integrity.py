@@ -47,8 +47,11 @@ class TestCanonicalTemplateValidity:
     def test_canonical_has_8_phases(self, canonical_template):
         """Canonical template must have exactly 8 phases (schema v2.0)."""
         from nWave.constants.tdd_phases import PHASE_COUNT
+
         phases = canonical_template.get("tdd_cycle", {}).get("phase_execution_log", [])
-        assert len(phases) == PHASE_COUNT, f"Expected {PHASE_COUNT} phases, found {len(phases)}"
+        assert len(phases) == PHASE_COUNT, (
+            f"Expected {PHASE_COUNT} phases, found {len(phases)}"
+        )
 
     def test_canonical_phase_names_match_validator(self, canonical_template):
         """Phase names in template must match validator constants."""

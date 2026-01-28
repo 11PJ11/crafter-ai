@@ -13,7 +13,6 @@ from datetime import datetime
 from pathlib import Path
 
 
-
 class TestBackupPolicyRetention:
     """Tests for backup retention rules (maximum 3 backups)."""
 
@@ -152,7 +151,9 @@ class TestBackupPolicyRotationAfterUpdate:
 
         # Verify 3 remain after deletion
         remaining = [b for b in existing_backups if b not in to_delete]
-        assert len(remaining) == 3, f"Exactly 3 backups should remain, got {len(remaining)}"
+        assert len(remaining) == 3, (
+            f"Exactly 3 backups should remain, got {len(remaining)}"
+        )
 
     def test_backup_policy_deletes_2_when_5_exist_and_max_is_3(self):
         """
@@ -167,7 +168,9 @@ class TestBackupPolicyRotationAfterUpdate:
         policy = BackupPolicy(max_backups=3)
         existing_backups = [
             Path("~/.claude.backup.20260123120000"),  # oldest - should be deleted
-            Path("~/.claude.backup.20260124120000"),  # second oldest - should be deleted
+            Path(
+                "~/.claude.backup.20260124120000"
+            ),  # second oldest - should be deleted
             Path("~/.claude.backup.20260125120000"),  # should remain
             Path("~/.claude.backup.20260126120000"),  # should remain
             Path("~/.claude.backup.20260127120000"),  # newest - should remain
@@ -185,7 +188,9 @@ class TestBackupPolicyRotationAfterUpdate:
 
         # Verify 3 remain after deletion
         remaining = [b for b in existing_backups if b not in to_delete]
-        assert len(remaining) == 3, f"Exactly 3 backups should remain, got {len(remaining)}"
+        assert len(remaining) == 3, (
+            f"Exactly 3 backups should remain, got {len(remaining)}"
+        )
 
 
 class TestBackupPolicyPathGeneration:

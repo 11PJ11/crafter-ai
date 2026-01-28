@@ -58,7 +58,9 @@ def validate_phase_execution_log(
         return issues
 
     if len(phase_log) != PHASE_COUNT:
-        issues.append(f"phase_execution_log has {len(phase_log)} phases, expected {PHASE_COUNT}")
+        issues.append(
+            f"phase_execution_log has {len(phase_log)} phases, expected {PHASE_COUNT}"
+        )
 
     # Build lookup by phase name
     phase_lookup = {p.get("phase_name"): p for p in phase_log}

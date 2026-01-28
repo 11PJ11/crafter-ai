@@ -16,7 +16,6 @@ from typing import Optional, Protocol
 from unittest.mock import Mock
 
 
-
 # ============================================================================
 # Port Protocols (for mocking at boundaries)
 # ============================================================================

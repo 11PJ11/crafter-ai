@@ -15,7 +15,6 @@ from typing import Optional
 from unittest.mock import Mock, patch
 
 
-
 @dataclass(frozen=True)
 class PRResult:
     """Result of PR creation operation."""
@@ -126,7 +125,10 @@ class TestGitHubCLIAdapterCreatesPR:
             # Assert
             assert result.success is False
             assert result.pr_number is None
-            assert "permission" in result.error_message.lower() or "denied" in result.error_message.lower()
+            assert (
+                "permission" in result.error_message.lower()
+                or "denied" in result.error_message.lower()
+            )
 
     def test_github_cli_adapter_returns_full_pr_url(self):
         """

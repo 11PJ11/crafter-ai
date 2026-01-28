@@ -8,7 +8,6 @@ CRITICAL: Hexagonal boundary enforcement - tests invoke CLI entry points ONLY.
 Feature file: docs/features/versioning-release-management/distill/acceptance-tests.feature
 """
 
-
 import pytest
 
 
@@ -320,9 +319,7 @@ def test_permission_denied_for_non_admin_user(
     returncode = result["returncode"]
     combined_output = stdout + stderr
 
-    expected_error = (
-        "Permission denied. You don't have access to create releases for this repository."
-    )
+    expected_error = "Permission denied. You don't have access to create releases for this repository."
     assert expected_error in combined_output, (
         f"Expected '{expected_error}' in output:\n"
         f"STDOUT: {stdout!r}\n"
@@ -394,7 +391,9 @@ def test_release_fails_with_uncommitted_changes(
     returncode = result["returncode"]
     combined_output = stdout + stderr
 
-    expected_error = "Uncommitted changes detected. Commit or stash changes before releasing."
+    expected_error = (
+        "Uncommitted changes detected. Commit or stash changes before releasing."
+    )
     assert expected_error in combined_output, (
         f"Expected error message '{expected_error}' in output:\n"
         f"STDOUT: {stdout!r}\n"

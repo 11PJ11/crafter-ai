@@ -41,19 +41,22 @@ class TestStepSchemaTurnCountField:
 
         # Should have 8 phases (schema v2.0)
         from nWave.constants.tdd_phases import PHASE_COUNT
-        assert len(phase_log) == PHASE_COUNT, f"Expected {PHASE_COUNT} phases, got {len(phase_log)}"
+
+        assert len(phase_log) == PHASE_COUNT, (
+            f"Expected {PHASE_COUNT} phases, got {len(phase_log)}"
+        )
 
         # Each phase should have turn_count field
         for phase in phase_log:
-            assert (
-                "turn_count" in phase
-            ), f"Phase {phase['phase_name']} missing turn_count field"
+            assert "turn_count" in phase, (
+                f"Phase {phase['phase_name']} missing turn_count field"
+            )
 
             # turn_count should be an integer or null
             turn_count = phase.get("turn_count")
-            assert (
-                turn_count is None or isinstance(turn_count, int)
-            ), f"Phase {phase['phase_name']} turn_count must be int or null, got {type(turn_count)}"
+            assert turn_count is None or isinstance(turn_count, int), (
+                f"Phase {phase['phase_name']} turn_count must be int or null, got {type(turn_count)}"
+            )
 
     def test_turn_count_validates_as_non_negative_integer(self, schema_data):
         """
@@ -68,12 +71,12 @@ class TestStepSchemaTurnCountField:
 
             # If turn_count is set, it must be >= 0
             if turn_count is not None:
-                assert isinstance(
-                    turn_count, int
-                ), f"Phase {phase['phase_name']} turn_count must be integer"
-                assert (
-                    turn_count >= 0
-                ), f"Phase {phase['phase_name']} turn_count must be non-negative, got {turn_count}"
+                assert isinstance(turn_count, int), (
+                    f"Phase {phase['phase_name']} turn_count must be integer"
+                )
+                assert turn_count >= 0, (
+                    f"Phase {phase['phase_name']} turn_count must be non-negative, got {turn_count}"
+                )
 
     def test_existing_step_files_remain_compatible(self, schema_path):
         """
@@ -94,9 +97,9 @@ class TestStepSchemaTurnCountField:
             turn_count = phase.get("turn_count")
             # Should be null or 0 in template for backward compatibility
             # 0 means "not executed" which is semantically correct
-            assert (
-                turn_count is None or turn_count == 0
-            ), f"Phase {phase['phase_name']} turn_count should default to null or 0 for compatibility, got {turn_count}"
+            assert turn_count is None or turn_count == 0, (
+                f"Phase {phase['phase_name']} turn_count should default to null or 0 for compatibility, got {turn_count}"
+            )
 
     def test_turn_count_semantic_meaning(self, schema_data):
         """
@@ -111,6 +114,6 @@ class TestStepSchemaTurnCountField:
 
         # Verify turn_count exists in all phase entries
         for phase in phase_log:
-            assert (
-                "turn_count" in phase
-            ), f"Phase {phase['phase_name']} must have turn_count field for iteration tracking"
+            assert "turn_count" in phase, (
+                f"Phase {phase['phase_name']} must have turn_count field for iteration tracking"
+            )

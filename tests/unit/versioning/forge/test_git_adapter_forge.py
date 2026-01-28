@@ -30,7 +30,7 @@ class TestGitAdapterGetCurrentBranch:
         adapter = GitAdapter()
 
         # Mock subprocess to return "main" branch
-        with patch('subprocess.run') as mock_run:
+        with patch("subprocess.run") as mock_run:
             mock_result = MagicMock()
             mock_result.returncode = 0
             mock_result.stdout = "main\n"
