@@ -48,10 +48,27 @@ class TemplateProcessor:
         # TDD Phase count and list
         phase_log = self.schema.get("tdd_cycle", {}).get("phase_execution_log", [])
         variables["TDD_PHASE_COUNT"] = str(len(phase_log))
+        variables["PHASE_COUNT"] = str(len(phase_log))
 
         # Build complete TDD phases list with descriptions
         phase_list = self._build_phase_list(phase_log)
         variables["SCHEMA_TDD_PHASES"] = phase_list
+
+        # Phase sequence (arrow-separated chain)
+        phase_sequence = self._build_phase_sequence(phase_log)
+        variables["PHASE_SEQUENCE"] = phase_sequence
+
+        # Comma-separated phase names
+        phase_names = self._build_phase_names_list(phase_log)
+        variables["SCHEMA_PHASE_NAMES"] = phase_names
+
+        # Formatted phase names with descriptions for validation
+        correct_names = self._build_correct_phase_names(phase_log)
+        variables["CORRECT_PHASE_NAMES"] = correct_names
+
+        # Complete JSON template with all phases
+        json_template = self._build_json_template(phase_log)
+        variables["SCHEMA_JSON_TEMPLATE"] = json_template
 
         # Mandatory phases with descriptions
         mandatory = self.schema.get("task_specification", {}).get(
@@ -104,6 +121,61 @@ class TemplateProcessor:
 
         for i, phase_desc in enumerate(mandatory, 1):
             lines.append(f"{i}. {phase_desc}")
+
+        return "\n".join(lines)
+
+    def _build_phase_sequence(self, phase_log: List[Dict]) -> str:
+        """Build arrow-separated phase sequence."""
+        phase_names = [phase.get("phase_name", "UNKNOWN") for phase in phase_log]
+        return " → ".join(phase_names)
+
+    def _build_phase_names_list(self, phase_log: List[Dict]) -> str:
+        """Build comma-separated list of phase names."""
+        phase_names = [phase.get("phase_name", "UNKNOWN") for phase in phase_log]
+        return ", ".join(phase_names)
+
+    def _build_correct_phase_names(self, phase_log: List[Dict]) -> str:
+        """Build formatted phase names list for validation."""
+        lines = ["Correct phase names (UPPERCASE_UNDERSCORE):", ""]
+        for i, phase in enumerate(phase_log, 1):
+            phase_name = phase.get("phase_name", "UNKNOWN")
+            lines.append(f"{i}. {phase_name}")
+
+        return "\n".join(lines)
+
+    def _build_json_template(self, phase_log: List[Dict]) -> str:
+        """Build complete JSON template with all phases pre-populated."""
+        lines = [
+            "```json",
+            "{",
+            '  "task_specification": {',
+            '    "task_id": "XX-XX",',
+            '    "name": "Task name",',
+            '    "description": "Task description",',
+            '    "acceptance_criteria": ["Criterion 1", "Criterion 2"],',
+            '    "requires": []',
+            "  },",
+            '  "tdd_cycle": {',
+            '    "phase_execution_log": [',
+        ]
+
+        for i, phase in enumerate(phase_log):
+            phase_name = phase.get("phase_name", "UNKNOWN")
+            comma = "," if i < len(phase_log) - 1 else ""
+            lines.append(
+                f'      {{"phase_name": "{phase_name}", "status": "NOT_EXECUTED"}}{comma}'
+            )
+
+        lines.extend(
+            [
+                "    ]",
+                "  },",
+                '  "state": {"status": "TODO"},',
+                '  "validation": {"status": "pending"}',
+                "}",
+                "```",
+            ]
+        )
 
         return "\n".join(lines)
 
