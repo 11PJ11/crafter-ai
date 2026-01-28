@@ -244,3 +244,75 @@ class TestReleaseServiceValidatesBranch:
             or "uncommitted" in result.error_message.lower()
         )
         mock_github_cli.create_pr.assert_not_called()
+
+
+class TestReleaseServiceHandlesPermissionDenied:
+    """
+    Test: ReleaseService handles permission denied errors from GitHub CLI.
+
+    Acceptance Criteria (Step 07-04):
+    - Error displays "Permission denied. You don't have access to create releases for this repository."
+    - No PR is created
+    - CLI exit code is non-zero
+    """
+
+    def test_release_service_handles_permission_denied(self):
+        """
+        GIVEN: User lacks repository write access
+        WHEN: GitHub CLI returns permission denied error
+        THEN: ReleaseService returns error with permission denied message
+        """
+        # Arrange - Mock port boundaries
+        mock_git = Mock(spec=GitProtocol)
+        mock_git.get_current_branch.return_value = "development"
+        mock_git.has_uncommitted_changes.return_value = False
+
+        mock_github_cli = Mock(spec=GitHubCLIProtocol)
+        mock_github_cli.create_pr.return_value = PRResult(
+            success=False,
+            pr_number=None,
+            pr_url=None,
+            error_message="Permission denied. You don't have access to create releases for this repository.",
+        )
+
+        # Act
+        from nWave.core.versioning.application.release_service import ReleaseService
+
+        service = ReleaseService(git=mock_git, github_cli=mock_github_cli)
+        result = service.create_release_pr()
+
+        # Assert
+        assert result.success is False
+        assert result.pr_number is None
+        assert result.pr_url is None
+        assert "Permission denied" in result.error_message
+        assert "don't have access" in result.error_message
+
+    def test_release_service_propagates_permission_error_message(self):
+        """
+        GIVEN: GitHub CLI returns permission denied error
+        WHEN: ReleaseService processes the result
+        THEN: The exact error message is propagated for CLI display
+        """
+        # Arrange
+        mock_git = Mock(spec=GitProtocol)
+        mock_git.get_current_branch.return_value = "development"
+        mock_git.has_uncommitted_changes.return_value = False
+
+        expected_error = "Permission denied. You don't have access to create releases for this repository."
+        mock_github_cli = Mock(spec=GitHubCLIProtocol)
+        mock_github_cli.create_pr.return_value = PRResult(
+            success=False,
+            pr_number=None,
+            pr_url=None,
+            error_message=expected_error,
+        )
+
+        # Act
+        from nWave.core.versioning.application.release_service import ReleaseService
+
+        service = ReleaseService(git=mock_git, github_cli=mock_github_cli)
+        result = service.create_release_pr()
+
+        # Assert - exact error message is propagated
+        assert result.error_message == expected_error

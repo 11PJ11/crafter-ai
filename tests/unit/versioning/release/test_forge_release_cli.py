@@ -63,7 +63,9 @@ class TestForgeReleaseCLIShowsPRInfo:
         """
         GIVEN: Successful release result
         WHEN: format_release_output() is called
-        THEN: Output includes "PR created. Pipeline running..."
+        THEN: Output includes pipeline triggered message with monitoring URL
+
+        NOTE: Updated per 07-06 - new format includes monitoring URL
         """
         from nWave.cli.forge_release_cli import format_release_output
 
@@ -75,8 +77,9 @@ class TestForgeReleaseCLIShowsPRInfo:
 
         output = format_release_output(result)
 
-        # Assert
-        assert "PR created. Pipeline running..." in output
+        # Assert - Updated format per 07-06
+        assert "CI/CD pipeline triggered" in output
+        assert "https://github.com/owner/repo/pull/456" in output
 
     def test_format_release_output_shows_error_on_failure(self):
         """
@@ -137,3 +140,126 @@ class TestForgeReleaseCLIShowsPRInfo:
 
         # Assert
         assert "uncommitted" in output.lower() or "Uncommitted" in output
+
+
+# ============================================================================
+# Step 07-06: Pipeline Status Display Tests
+# ============================================================================
+
+
+class TestForgeReleaseCLIPipelineStatus:
+    """
+    Test: forge_release_cli displays pipeline status per step 07-06.
+
+    Acceptance Criteria:
+    - Output displays "PR #123 created."
+    - Output displays "CI/CD pipeline triggered. Monitor at: {pr_url}"
+    """
+
+    def test_format_release_output_shows_pr_created_message(self):
+        """
+        GIVEN: Successful release result with PR info
+        WHEN: format_release_output() is called
+        THEN: Output includes "PR #123 created."
+
+        Step 07-06 requirement: "PR #123 created." format
+        """
+        from nWave.cli.forge_release_cli import format_release_output
+
+        result = ReleaseResult(
+            success=True,
+            pr_number=123,
+            pr_url="https://github.com/UndeadGrishnackh/crafter-ai/pull/123",
+        )
+
+        output = format_release_output(result)
+
+        # Assert - exact format "PR #123 created."
+        assert "PR #123 created." in output, (
+            f"Expected 'PR #123 created.' in output, got: {output!r}"
+        )
+
+    def test_format_release_output_shows_pipeline_monitor_url(self):
+        """
+        GIVEN: Successful release result with PR URL
+        WHEN: format_release_output() is called
+        THEN: Output includes "CI/CD pipeline triggered. Monitor at: {pr_url}"
+
+        Step 07-06 requirement: Pipeline monitoring message with URL
+        """
+        from nWave.cli.forge_release_cli import format_release_output
+
+        result = ReleaseResult(
+            success=True,
+            pr_number=456,
+            pr_url="https://github.com/owner/repo/pull/456",
+        )
+
+        output = format_release_output(result)
+
+        # Assert - exact format "CI/CD pipeline triggered. Monitor at: {url}"
+        expected_message = "CI/CD pipeline triggered. Monitor at: https://github.com/owner/repo/pull/456"
+        assert expected_message in output, (
+            f"Expected '{expected_message}' in output, got: {output!r}"
+        )
+
+
+# ============================================================================
+# Step 07-04: Permission Denied Error Display Tests
+# ============================================================================
+
+
+class TestForgeReleaseCLIPermissionError:
+    """
+    Test: forge_release_cli displays permission denied error per step 07-04.
+
+    Acceptance Criteria:
+    - Error displays "Permission denied. You don't have access to create releases for this repository."
+    - No PR info is shown
+    """
+
+    def test_format_release_output_shows_permission_error(self):
+        """
+        GIVEN: Release failed due to permission denied
+        WHEN: format_release_output() is called
+        THEN: Output shows permission denied error message
+
+        Step 07-04 requirement: Exact error message display
+        """
+        from nWave.cli.forge_release_cli import format_release_output
+
+        result = ReleaseResult(
+            success=False,
+            pr_number=None,
+            pr_url=None,
+            error_message="Permission denied. You don't have access to create releases for this repository.",
+        )
+
+        output = format_release_output(result)
+
+        # Assert - exact error message
+        assert "Permission denied" in output
+        assert "don't have access to create releases" in output
+
+    def test_format_release_output_permission_error_contains_full_message(self):
+        """
+        GIVEN: Release failed due to permission denied
+        WHEN: format_release_output() is called
+        THEN: Output contains the complete permission denied error message
+
+        Step 07-04 requirement: Full error message display
+        """
+        from nWave.cli.forge_release_cli import format_release_output
+
+        expected_error = "Permission denied. You don't have access to create releases for this repository."
+        result = ReleaseResult(
+            success=False,
+            pr_number=None,
+            pr_url=None,
+            error_message=expected_error,
+        )
+
+        output = format_release_output(result)
+
+        # Assert - full error message is present
+        assert expected_error in output
