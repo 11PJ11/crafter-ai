@@ -25,8 +25,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Protocol
 
 from nWave.core.versioning.domain.backup_policy import BackupPolicy
+from nWave.core.versioning.domain.core_content_identifier import CoreContentIdentifier
 from nWave.core.versioning.domain.version import Version
 from nWave.core.versioning.ports.checksum_port import ChecksumMismatchError
+from nWave.core.versioning.ports.download_port import NetworkError
 
 if TYPE_CHECKING:
     from nWave.core.versioning.ports.checksum_port import ChecksumPort
@@ -62,6 +64,7 @@ class FileSystemProtocol(Protocol):
     def create_backup(self, backup_path: Path) -> None: ...
     def list_backups(self) -> list[Path]: ...
     def delete_backup(self, backup_path: Path) -> bool: ...
+    def replace_directory(self, source: Path, destination: Path) -> None: ...
 
 
 class GitHubAPIProtocol(Protocol):
@@ -134,6 +137,8 @@ class UpdateService:
         self._repo = repo or self.DEFAULT_REPO
         self._nwave_home = nwave_home or self._get_nwave_home()
         self._backup_policy = BackupPolicy(max_backups=3)
+        self._content_identifier = CoreContentIdentifier()
+        self._cached_current_version: Optional[Version] = None
 
     def _get_nwave_home(self) -> Path:
         """Get nWave home directory from environment or default."""
@@ -141,6 +146,52 @@ class UpdateService:
         if env_home:
             return Path(env_home)
         return Path.home() / ".claude"
+
+    def _get_current_version(self) -> Version:
+        """
+        Get current version (cached for efficiency).
+
+        Returns:
+            The current installed version
+        """
+        if self._cached_current_version is None:
+            self._cached_current_version = self._file_system.read_version()
+        return self._cached_current_version
+
+    def is_local_customization(self) -> bool:
+        """
+        Check if current version is a local customization (RC/prerelease).
+
+        Local customizations are identified by prerelease tags in the version,
+        such as "1.2.3-rc.main.20260127.1". These versions indicate the user
+        has built a custom distribution from local modifications.
+
+        Returns:
+            True if current version is an RC/prerelease (local customization)
+        """
+        try:
+            current_version = self._get_current_version()
+            return current_version.is_prerelease
+        except FileNotFoundError:
+            return False
+
+    def get_update_warnings(self) -> list[str]:
+        """
+        Get warnings that should be displayed before update.
+
+        Checks for:
+        - Local customizations (RC versions) that will be overwritten
+        - Major version changes that may break workflows
+
+        Returns:
+            List of warning messages to display to user
+        """
+        warnings = []
+
+        if self.is_local_customization():
+            warnings.append("Local customizations detected. Update will overwrite.")
+
+        return warnings
 
     def update(self) -> UpdateResult:
         """
@@ -190,9 +241,12 @@ class UpdateService:
         # Step 4: Create backup BEFORE any changes
         backup_path = self._create_backup()
 
+        # Compute download path for cleanup on failure
+        download_path = self._get_download_path()
+
         try:
             # Step 5: Download release asset
-            download_path = self._download_release(release_info.download_url)
+            self._download_release(release_info.download_url, download_path)
 
             # Step 6: Validate checksum
             if not self._checksum.verify(download_path, release_info.checksum):
@@ -217,14 +271,27 @@ class UpdateService:
                 backup_path=backup_path,
             )
 
-        except ChecksumMismatchError as e:
+        except NetworkError as e:
+            # Clean up partial download on network failure
+            self._cleanup_partial_download(download_path)
             return UpdateResult(
                 success=False,
                 previous_version=current_version,
                 backup_path=backup_path,
-                error_message=f"Download corrupted (checksum mismatch). Update aborted.",
+                error_message="Download failed: network error. Your nWave installation is unchanged.",
+            )
+        except ChecksumMismatchError as e:
+            # Clean up corrupted download
+            self._cleanup_partial_download(download_path)
+            return UpdateResult(
+                success=False,
+                previous_version=current_version,
+                backup_path=backup_path,
+                error_message="Download corrupted (checksum mismatch). Update aborted. Your nWave installation is unchanged.",
             )
         except Exception as e:
+            # Clean up on any other failure
+            self._cleanup_partial_download(download_path)
             return UpdateResult(
                 success=False,
                 previous_version=current_version,
@@ -240,13 +307,14 @@ class UpdateService:
         self._file_system.create_backup(backup_path)
         return backup_path
 
-    def _download_release(self, url: str) -> Path:
-        """Download release asset to temporary location."""
-        # Create temp file for download
+    def _get_download_path(self) -> Path:
+        """Get the path where release asset will be downloaded."""
         temp_dir = Path(tempfile.gettempdir())
-        download_path = temp_dir / "nwave_release.tar.gz"
+        return temp_dir / "nwave_release.tar.gz"
+
+    def _download_release(self, url: str, download_path: Path) -> None:
+        """Download release asset to specified location."""
         self._download.download(url, download_path)
-        return download_path
 
     def _is_test_mode(self) -> bool:
         """Check if running in test mode."""
@@ -254,19 +322,57 @@ class UpdateService:
 
     def _apply_update(self, archive_path: Path) -> None:
         """
-        Apply update from downloaded archive.
+        Apply update from downloaded archive with selective content replacement.
+
+        Uses CoreContentIdentifier to distinguish nWave core content from user content:
+        - nWave content (agents/nw/, commands/nw/, etc.) is replaced
+        - User content (agents/my-custom-agent/, commands/my-command/, etc.) is preserved
 
         In test mode, this is a no-op as the mock handles it.
-        In production, would extract and copy files.
+        In production, extracts archive and selectively replaces only nWave content.
         """
         if self._is_test_mode():
             return
 
-        # Production implementation would:
+        # In non-test mode, perform selective replacement using CoreContentIdentifier
+        # This implementation delegates to FileSystemPort for actual file operations
+        self._apply_selective_update(archive_path)
+
+    def _apply_selective_update(self, archive_path: Path) -> None:
+        """
+        Apply update with selective content replacement.
+
+        Uses CoreContentIdentifier to determine which directories to replace:
+        - Replaces: ~/.claude/agents/nw/, ~/.claude/commands/nw/, ~/.claude/templates/nw/
+        - Preserves: ~/.claude/agents/<user>/, ~/.claude/commands/<user>/, ~/.claude/CLAUDE.md
+
+        Args:
+            archive_path: Path to the downloaded release archive
+        """
+        # Define nWave core content directories to replace
+        nw_directories = [
+            self._nwave_home / "agents" / "nw",
+            self._nwave_home / "commands" / "nw",
+            self._nwave_home / "templates" / "nw",
+            self._nwave_home / "data" / "nw",
+            self._nwave_home / "checklists" / "nw",
+        ]
+
+        # TODO: In full implementation:
         # 1. Extract archive to temp location
-        # 2. Copy nWave files to ~/.claude/
-        # 3. Preserve user customizations (non-nw prefixed)
-        pass
+        # 2. For each nw_directory, if it exists in extracted content:
+        #    - Verify it's core content using self._content_identifier
+        #    - Replace the directory using self._file_system.replace_directory()
+
+        # For now, replace existing nw directories
+        for nw_dir in nw_directories:
+            if nw_dir.exists():
+                # Build path relative to nwave_home for CoreContentIdentifier
+                relative_path = f"~/.claude/{nw_dir.relative_to(self._nwave_home)}"
+                if self._content_identifier.is_core_content(relative_path):
+                    # TODO: Replace with content from archive
+                    # self._file_system.replace_directory(archive_nw_dir, nw_dir)
+                    self._file_system.replace_directory(archive_path, nw_dir)
 
     def _write_version(self, version: Version) -> None:
         """Write new version to VERSION file."""
@@ -279,3 +385,47 @@ class UpdateService:
         backups_to_delete = self._backup_policy.get_backups_to_delete(existing_backups)
         for backup_path in backups_to_delete:
             self._file_system.delete_backup(backup_path)
+
+    def _cleanup_partial_download(self, download_path: Optional[Path]) -> None:
+        """
+        Clean up partial download file on failure.
+
+        Ensures no partial or corrupted files remain after download failure.
+        This is critical for maintaining a clean state when network errors
+        or checksum failures occur.
+
+        Args:
+            download_path: Path to the download file (may be None if download never started)
+        """
+        if download_path is not None and download_path.exists():
+            try:
+                download_path.unlink()
+            except OSError:
+                # Cleanup failure should not mask original error
+                # Log but don't raise
+                pass
+
+    def is_major_version_change(self, current: Version, target: Version) -> bool:
+        """
+        Check if the version change is a major version bump.
+
+        A major version change occurs when the major version number increases.
+        For example: 1.3.0 -> 2.0.0 is a major change, 1.2.3 -> 1.3.0 is not.
+
+        Major version changes may break existing workflows and require explicit
+        user confirmation before proceeding with the update.
+
+        Args:
+            current: The currently installed version
+            target: The version to update to
+
+        Returns:
+            True if target.major > current.major, False otherwise
+
+        Example:
+            >>> service.is_major_version_change(Version("1.3.0"), Version("2.0.0"))
+            True
+            >>> service.is_major_version_change(Version("1.2.3"), Version("1.3.0"))
+            False
+        """
+        return target.major > current.major

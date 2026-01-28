@@ -71,3 +71,26 @@ Feature: Update nWave Safely
     And I see "Required: [SIZE] MB (2x installation size for safety backup)"
     And no backup is created
     And the command exits with code 1
+
+  # Step 04-05: Local RC version triggers customization warning
+  Scenario: Local RC version triggers customization warning
+    Given Francesca has a local RC version v1.2.3-rc.main.20260127.1 installed
+    And the VERSION file contains "1.2.3-rc.main.20260127.1"
+    And GitHub latest release is 1.3.0
+    When I run the update command through the CLI entry point
+    Then a warning displays "Local customizations detected. Update will overwrite."
+    And Francesca can choose to proceed or cancel
+    And the command exits with code 0
+
+  # Step 04-07: Checksum validation failure aborts update
+  Scenario: Checksum validation failure aborts update
+    Given nWave version 1.2.3 is installed at ~/.claude/
+    And GitHub latest release is 1.3.0 with SHA256 checksum "expected123"
+    And the download server provides a corrupted file with different checksum
+    And the user will confirm the update
+    When I run the update command through the CLI entry point
+    Then an error displays "Download corrupted (checksum mismatch). Update aborted."
+    And the corrupted download is deleted
+    And no changes are made to the installation
+    And the VERSION file shows 1.2.3
+    And the command exits with code 1
