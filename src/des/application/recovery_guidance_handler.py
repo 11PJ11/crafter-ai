@@ -56,90 +56,90 @@ class RecoveryGuidanceHandler:
         "abandoned_phase": {
             "description": "Agent crashed during phase execution",
             "suggestions": [
-                "WHY: The agent left {phase} in IN_PROGRESS state, indicating it started but did not complete. This typically occurs when the agent encounters an unhandled error or timeout.\n"
-                "HOW: Resetting the phase to NOT_EXECUTED allows the execution framework to retry the phase from scratch, ensuring a clean state for the next attempt.\n"
-                "ACTION: Review agent transcript at {transcript_path} for error details, then run `/nw:execute` to resume from {phase}.",
-                "WHY: A phase left IN_PROGRESS represents incomplete work that may have corrupted the step file state.\n"
-                "HOW: Resetting the phase status clears any partial state changes made before the failure.\n"
-                "ACTION: Run `/nw:execute @software-crafter '{step_file}'` to retry the {phase} phase.",
-                "WHY: The orchestrator will not progress past an IN_PROGRESS phase without manual intervention.\n"
-                "HOW: Marking the phase as NOT_EXECUTED signals that the phase is ready for another execution attempt.\n"
-                "ACTION: Manually update the step file JSON: set state.tdd_cycle.{phase}.status = 'NOT_EXECUTED'.",
+                "WHY: Your agent stopped during {phase} and left it marked IN_PROGRESS.\n"
+                "HOW: Reset the phase status to NOT_EXECUTED so the system knows it can retry.\n"
+                "ACTION: Review {transcript_path} for what went wrong, then run `/nw:execute` to try {phase} again.",
+                "WHY: A phase stuck IN_PROGRESS blocks your system from continuing.\n"
+                "HOW: Resetting clears the incomplete state and lets execution continue.\n"
+                "ACTION: Update your step file: change state.tdd_cycle.{phase}.status to 'NOT_EXECUTED'.",
+                "WHY: You need to understand why the agent stopped to fix the real problem.\n"
+                "HOW: The transcript contains the error details and what the agent was doing.\n"
+                "ACTION: Check the transcript at {transcript_path}, then run `/nw:execute @software-crafter '{step_file}'` to retry.",
             ],
         },
         "silent_completion": {
             "description": "Agent returned without updating step file",
             "suggestions": [
-                "WHY: The agent completed execution but did not update any phase status, leaving the task state unchanged. This typically indicates the agent did not include OUTCOME_RECORDING instructions or encountered prompt parsing issues.\n"
-                "HOW: Verifying the prompt contains clear OUTCOME_RECORDING instructions ensures the agent knows to update phase status.\n"
-                "ACTION: Check agent transcript at {transcript_path} for errors or early termination.",
-                "WHY: Silent completion prevents the orchestrator from knowing what work was completed.\n"
-                "HOW: Manually updating phase status based on transcript evidence reconstructs the execution record.\n"
-                "ACTION: Review the transcript and manually update phase status based on evidence of what the agent completed.",
-                "WHY: The OUTCOME_RECORDING section instructs the agent to persist step file updates after each phase.\n"
-                "HOW: Including this section in the prompt ensures the agent knows to update the step file.\n"
-                "ACTION: Verify the prompt includes OUTCOME_RECORDING section with explicit update instructions.",
+                "WHY: Your agent finished but didn't update the step file with what it did.\n"
+                "HOW: Check the transcript to see if the agent hit an error or if it finished the work so that you understand what happened.\n"
+                "ACTION: Review {transcript_path} to understand what happened, then manually update the phases based on what you see.",
+                "WHY: The system doesn't know what phases were completed if the agent doesn't update them.\n"
+                "HOW: Your prompt needs to tell the agent to save its progress to the step file, ensuring the state is tracked.\n"
+                "ACTION: Make sure OUTCOME_RECORDING section is in your prompt with clear instructions to update the step file.",
+                "WHY: Without phase updates, you can't see your progress or know what to do next.\n"
+                "HOW: Add the missing phase status updates to match what the agent actually completed, so that progress is recorded.\n"
+                "ACTION: Based on the transcript at {transcript_path}, manually set each completed phase's status and outcome.",
             ],
         },
         "missing_section": {
             "description": "Validation found missing mandatory section",
             "suggestions": [
-                "WHY: Mandatory sections are required to provide the agent with complete context and instructions.\n"
-                "HOW: Adding the missing section provides the agent with necessary guidance for execution.\n"
-                "ACTION: Update the prompt template to include the missing {section_name} section with all required content.",
-                "WHY: Each mandatory section serves a specific purpose in the execution context.\n"
-                "HOW: Reviewing the documentation for {section_name} ensures the section is correctly implemented.\n"
-                "ACTION: Consult docs/feature/des/discuss/prompt-specification.md for {section_name} format and content requirements.",
+                "WHY: Your prompt is missing {section_name}, which the agent needs to work properly.\n"
+                "HOW: Add this section to your prompt template with the required content.\n"
+                "ACTION: Update your prompt to include the {section_name} section with its required fields.",
+                "WHY: Every section has a specific job - missing ones break the agent's workflow.\n"
+                "HOW: Check what {section_name} should contain by looking at the format guide.\n"
+                "ACTION: See docs/feature/des/discuss/prompt-specification.md for {section_name} format, then add it to your prompt.",
             ],
         },
         "invalid_outcome": {
             "description": "Phase marked EXECUTED without outcome",
             "suggestions": [
-                "WHY: Outcomes document what work was completed in each phase, essential for understanding execution progress.\n"
-                "HOW: Adding outcome details creates an audit trail of what was accomplished.\n"
-                "ACTION: Update the step file: set state.tdd_cycle.{phase}.outcome to describe what was completed.",
-                "WHY: Empty outcomes indicate incomplete phase documentation.\n"
-                "HOW: Filling in outcome details enables the orchestrator to validate phase completion.\n"
-                "ACTION: Manually add outcome text describing the phase results and artifacts produced.",
+                "WHY: Your step file marks {phase} done but doesn't say what was done.\n"
+                "HOW: Add a description of what happened in that phase.\n"
+                "ACTION: Update state.tdd_cycle.{phase}.outcome with a brief description of what was completed.",
+                "WHY: Without outcome descriptions, you can't review what each phase accomplished.\n"
+                "HOW: Write what happened - tests passed, code refactored, bugs fixed, etc.\n"
+                "ACTION: Add outcome text to {phase} describing the results and what was produced.",
             ],
         },
         "missing_phase": {
             "description": "TDD phase missing from implementation",
             "suggestions": [
-                "WHY: The {phase} phase is a required step in the TDD cycle - it serves a critical purpose in the development workflow.\n"
-                "HOW: Add the missing phase to the phase_execution_log by following the 14-phase sequence defined in the nWave methodology.\n"
-                "ACTION: Review the step file to locate where {phase} should be inserted in the TDD cycle sequence, then add its execution record with appropriate status and outcomes.",
-                "WHY: Each TDD phase is necessary for ensuring proper code quality, testing rigor, and refactoring discipline - skipping phases creates gaps in the development process.\n"
-                "HOW: Consult the TDD template to understand what {phase} requires and why it is important for your feature implementation.\n"
-                "ACTION: Add the {phase} phase to your development workflow to ensure complete coverage of all required development steps and quality validations.",
+                "WHY: Your step file is missing the {phase} phase, which is needed in the TDD cycle.\n"
+                "HOW: Add it to the phase_execution_log in the right position following the 14-phase sequence.\n"
+                "ACTION: Insert {phase} with status='NOT_EXECUTED' in the correct order in phase_execution_log.",
+                "WHY: Every TDD phase has a job - skipping one creates gaps in code quality and testing.\n"
+                "HOW: Check what {phase} does by reviewing the TDD template to understand why it's needed.\n"
+                "ACTION: Add {phase} to your step file and execute it as part of your development workflow.",
             ],
         },
         "timeout_failure": {
             "description": "Task execution exceeded configured timeout threshold",
             "suggestions": [
-                "WHY: The task execution took {actual_runtime_minutes} minutes, exceeding the configured timeout threshold of {configured_timeout_minutes} minutes. This typically occurs when the implementation is inefficient or the timeout is set too low for task complexity.\n"
-                "HOW: Optimizing the implementation for better performance can reduce execution time and prevent timeouts.\n"
-                "ACTION: Review agent transcript at {transcript_path} to identify performance bottlenecks, then optimize code to reduce execution time below {configured_timeout_minutes} minutes.",
-                "WHY: The configured timeout of {configured_timeout_minutes} minutes may be insufficient for task requirements. Actual runtime was {actual_runtime_minutes} minutes, indicating the timeout should be extended.\n"
-                "HOW: Increasing the timeout threshold allows more complex tasks to complete without interruption.\n"
-                "ACTION: Adjust the timeout configuration to {actual_runtime_minutes} minutes or higher based on measured task execution time.",
-                "WHY: Timeout failures prevent task completion and require manual intervention to retry, impacting development workflow efficiency.\n"
-                "HOW: Profiling the implementation and simplifying logic improves performance and prevents future timeouts.\n"
-                "ACTION: Profile code execution to identify slow operations, then refactor to reduce runtime below {configured_timeout_minutes} minutes.",
+                "WHY: Your task ran {actual_runtime_minutes} minutes but the timeout was set to {configured_timeout_minutes} minutes.\n"
+                "HOW: Either speed up the code or increase the timeout limit.\n"
+                "ACTION: Review {transcript_path} to find slow parts, optimize the code, then retry.",
+                "WHY: The timeout is too short for your task. It ran {actual_runtime_minutes} minutes but needs at least that long.\n"
+                "HOW: Increasing the timeout lets the task complete without interruption.\n"
+                "ACTION: Set your timeout to {actual_runtime_minutes} minutes or higher, then retry.",
+                "WHY: Timeout means your code or task is slower than expected.\n"
+                "HOW: Make your code faster by removing unnecessary work or simplifying logic.\n"
+                "ACTION: Profile the code at {transcript_path}, find bottlenecks, optimize them, and retry.",
             ],
         },
         "agent_crash": {
             "description": "Agent crashed with known transcript location",
             "suggestions": [
-                "WHY: The agent crashed during the {phase} phase, leaving work incomplete. This typically indicates an unhandled error, resource exhaustion, or timeout in agent execution.\n"
-                "HOW: Checking the agent transcript provides specific error details that explain the crash root cause.\n"
-                "ACTION: Check agent transcript at {transcript_path} for specific error details that prevented phase completion.",
-                "WHY: Reviewing the transcript helps identify whether the crash is a recoverable error or a systemic issue.\n"
-                "HOW: The transcript contains the full execution history, error messages, and state at crash time.\n"
-                "ACTION: Review {transcript_path} and identify which step failed, then decide whether to retry or adjust configuration.",
-                "WHY: The {phase} phase failure blocks further progress in the TDD cycle.\n"
-                "HOW: Once you understand the crash reason from the transcript, you can reset the phase status and retry.\n"
-                "ACTION: After reviewing {transcript_path}, reset the phase status to NOT_EXECUTED and retry with `/nw:execute`.",
+                "WHY: Your agent crashed during {phase}, leaving the work incomplete.\n"
+                "HOW: Read the transcript to see what error happened.\n"
+                "ACTION: Check {transcript_path} for the error message that caused the crash.",
+                "WHY: Understanding what caused the crash helps you fix the problem.\n"
+                "HOW: The transcript shows the full history and error that stopped the agent.\n"
+                "ACTION: Review {transcript_path}, identify the failure, then decide: fix the error and retry, or adjust your configuration.",
+                "WHY: Your {phase} phase can't continue until you fix the crash issue.\n"
+                "HOW: Once you know the cause, reset the phase and retry with better conditions.\n"
+                "ACTION: After reviewing {transcript_path}, reset {phase} to NOT_EXECUTED and run `/nw:execute` again.",
             ],
         },
     }
