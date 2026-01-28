@@ -1,0 +1,470 @@
+project_id: turn-discipline
+created_at: 2026-01-28T16:00:00Z
+description: "des-us003: Turn Discipline - Agent self-regulation through structured turn budgets and checkpoint guidance"
+
+phases:
+  - phase_id: "01"
+    name: "Foundation - Schema and Turn Counting Infrastructure"
+    duration_weeks: 2
+    objective: "Establish schema support for turn tracking and implement basic turn counting mechanism"
+    success_criteria:
+      - "Schema extended with turn_count field in phase_execution_log"
+      - "Turn counter increments on tool invocation"
+      - "Test coverage for turn counting >=85%"
+      - "No increase in code complexity (avg CC stays <2.5)"
+    steps:
+      - step_id: "01-01"
+        name: "Extend schema for turn count tracking"
+        description: "Add turn_count field to phase_execution_log in step-tdd-cycle-schema.json to track turns per phase. Field should be integer, optional, defaults to 0."
+        acceptance_test_scenario: "Infrastructure step (no corresponding test scenario)"
+        acceptance_criteria:
+          - "GIVEN step-tdd-cycle-schema.json"
+          - "WHEN schema validation runs"
+          - "THEN phase_execution_log accepts turn_count integer field"
+        suggested_agent: "software-crafter"
+        dependencies: []
+        estimated_hours: 2
+
+      - step_id: "01-02"
+        name: "Implement basic turn counter in hooks"
+        description: "Add turn_count tracking in SubagentStopHook. Increment counter on each tool invocation within a phase. Initialize counter to 0 at phase start."
+        acceptance_test_scenario: "Infrastructure step (supports scenarios 001-005)"
+        acceptance_criteria:
+          - "GIVEN phase execution starts"
+          - "WHEN tool invocations occur"
+          - "THEN turn_count increments by 1 per invocation"
+        suggested_agent: "software-crafter"
+        dependencies: ["01-01"]
+        estimated_hours: 3
+
+      - step_id: "01-03"
+        name: "Add turn count persistence to step file"
+        description: "Update on_agent_complete() hook to persist turn_count to step file's phase_execution_log. Ensure backward compatibility with existing step files."
+        acceptance_test_scenario: "Infrastructure step (supports scenarios 001-005)"
+        acceptance_criteria:
+          - "GIVEN phase execution completes"
+          - "WHEN hook processes completion"
+          - "THEN turn_count written to step file phase_execution_log"
+        suggested_agent: "software-crafter"
+        dependencies: ["01-02"]
+        estimated_hours: 2
+
+      - step_id: "01-04"
+        name: "Create turn counting unit tests"
+        description: "Write unit tests for turn counter initialization, increment logic, and persistence. Achieve >=85% coverage for turn counting code."
+        acceptance_test_scenario: "Infrastructure step (supports scenarios 001-005)"
+        acceptance_criteria:
+          - "GIVEN turn counting implementation"
+          - "WHEN unit tests execute"
+          - "THEN all edge cases covered (zero turns, multiple invocations, persistence)"
+        suggested_agent: "software-crafter"
+        dependencies: ["01-03"]
+        estimated_hours: 2
+
+  - phase_id: "02"
+    name: "Validation - TIMEOUT_INSTRUCTION Content and Structure"
+    duration_weeks: 1.5
+    objective: "Implement prompt generation and validation for TIMEOUT_INSTRUCTION section"
+    success_criteria:
+      - "TIMEOUT_INSTRUCTION section generated in all DES-validated prompts"
+      - "Validation correctly detects missing or incomplete sections"
+      - "Content includes turn budget, checkpoints, early exit protocol, logging instructions"
+      - "Scenarios 001-005, 008 moving to GREEN"
+    steps:
+      - step_id: "02-01"
+        name: "Scenario 001: Implement TIMEOUT_INSTRUCTION section header in prompt template"
+        description: "Create TIMEOUT_INSTRUCTION section in prompt template that renders for /nw:execute and /nw:develop commands. Section must be marked as ## TIMEOUT_INSTRUCTION header."
+        acceptance_test_scenario: "test_scenario_001_des_validated_prompt_includes_timeout_instruction_section"
+        acceptance_criteria:
+          - "GIVEN /nw:execute command with step file"
+          - "WHEN orchestrator renders full Task prompt"
+          - "THEN prompt contains '## TIMEOUT_INSTRUCTION' header"
+        suggested_agent: "software-crafter"
+        dependencies: ["01-04"]
+        estimated_hours: 2
+
+      - step_id: "02-02"
+        name: "Scenario 002: Add turn budget (50 turns) specification to TIMEOUT_INSTRUCTION"
+        description: "Update TIMEOUT_INSTRUCTION template to include turn budget guidance of approximately 50 turns. Accept variations: '50 turns', 'approximately 50', '~50', 'around 50'."
+        acceptance_test_scenario: "test_scenario_002_timeout_instruction_specifies_turn_budget"
+        acceptance_criteria:
+          - "GIVEN TIMEOUT_INSTRUCTION section in template"
+          - "WHEN prompt renders"
+          - "THEN section contains pattern matching '50 turn', 'approximately 50', '~50', or 'around 50'"
+        suggested_agent: "software-crafter"
+        dependencies: ["02-01"]
+        estimated_hours: 1
+
+      - step_id: "02-03"
+        name: "Scenario 003: Define progress checkpoints in TIMEOUT_INSTRUCTION"
+        description: "Add progress checkpoint guidance to TIMEOUT_INSTRUCTION specifying expected completion points at turns ~10, ~25, ~40, ~50 with associated TDD phases (PREPARE, RED, GREEN, REFACTOR, COMMIT)."
+        acceptance_test_scenario: "test_scenario_003_timeout_instruction_defines_progress_checkpoints"
+        acceptance_criteria:
+          - "GIVEN TIMEOUT_INSTRUCTION with checkpoints"
+          - "WHEN prompt renders"
+          - "THEN section mentions turn ~10, ~25, ~40 AND references TDD phases (prepare, red, green, refactor, commit)"
+        suggested_agent: "software-crafter"
+        dependencies: ["02-02"]
+        estimated_hours: 2
+
+      - step_id: "02-04"
+        name: "Scenario 004: Document early exit protocol in TIMEOUT_INSTRUCTION"
+        description: "Add early exit protocol guidance explaining how agents should gracefully exit when stuck: save progress, set phase to IN_PROGRESS, return with PARTIAL_COMPLETION status. Include state-saving guidance (save, progress, in_progress, notes, update)."
+        acceptance_test_scenario: "test_scenario_004_timeout_instruction_documents_early_exit_protocol"
+        acceptance_criteria:
+          - "GIVEN TIMEOUT_INSTRUCTION with early exit guidance"
+          - "WHEN prompt renders"
+          - "THEN section contains 'early exit', 'cannot complete', 'save progress', 'partial', 'stuck' OR 'return...budget' AND mentions state-saving terms"
+        suggested_agent: "software-crafter"
+        dependencies: ["02-03"]
+        estimated_hours: 2
+
+      - step_id: "02-05"
+        name: "Scenario 005: Add turn count logging instruction to TIMEOUT_INSTRUCTION"
+        description: "Add instruction requiring agents to log turn count at phase transitions. Format example: '[Turn 15] Starting GREEN_UNIT phase'. Include logging as required activity with phase transition association."
+        acceptance_test_scenario: "test_scenario_005_timeout_instruction_requires_turn_count_logging"
+        acceptance_criteria:
+          - "GIVEN TIMEOUT_INSTRUCTION with logging instruction"
+          - "WHEN prompt renders"
+          - "THEN section contains ('log' AND 'turn') OR ('record' AND 'turn') OR ('track' AND 'turn') OR '[turn' AND references 'phase', 'transition', 'start', 'complete', 'begin', or 'end'"
+        suggested_agent: "software-crafter"
+        dependencies: ["02-04"]
+        estimated_hours: 1
+
+      - step_id: "02-06"
+        name: "Scenario 008: Implement TIMEOUT_INSTRUCTION validation in PromptValidator"
+        description: "Extend PromptValidator to check for mandatory TIMEOUT_INSTRUCTION section. Validation must FAIL when section missing or incomplete. Return error message identifying TIMEOUT_INSTRUCTION as missing mandatory section."
+        acceptance_test_scenario: "test_scenario_008_missing_timeout_instruction_blocks_invocation"
+        acceptance_criteria:
+          - "GIVEN incomplete prompt missing TIMEOUT_INSTRUCTION"
+          - "WHEN pre-invocation validation runs"
+          - "THEN validation.is_valid == False AND error contains 'TIMEOUT_INSTRUCTION' AND error contains 'MISSING'"
+        suggested_agent: "software-crafter"
+        dependencies: ["02-05"]
+        estimated_hours: 3
+
+  - phase_id: "03"
+    name: "Content Completeness and Format Validation"
+    duration_weeks: 1
+    objective: "Verify TIMEOUT_INSTRUCTION content is complete and properly formatted for agent comprehension"
+    success_criteria:
+      - "TIMEOUT_INSTRUCTION contains all required elements in single section"
+      - "/nw:develop command also includes TIMEOUT_INSTRUCTION"
+      - "Content validation confirms section structure and elements present"
+      - "Scenarios 009-010 moving to GREEN"
+    steps:
+      - step_id: "03-01"
+        name: "Scenario 009: Validate TIMEOUT_INSTRUCTION complete structure"
+        description: "Implement comprehensive validation that TIMEOUT_INSTRUCTION section contains all four required elements: turn budget (~50), progress checkpoints, early exit protocol, and turn logging instruction. Verify during prompt generation that all elements present before invocation allowed."
+        acceptance_test_scenario: "test_scenario_009_timeout_instruction_has_complete_structure"
+        acceptance_criteria:
+          - "GIVEN full prompt with TIMEOUT_INSTRUCTION"
+          - "WHEN prompt renders for /nw:execute"
+          - "THEN section contains 'TIMEOUT_INSTRUCTION' header AND '50' with 'turn' AND checkpoint markers (~10, ~25, ~40, turn 10, 25, 40) AND ('cannot complete' OR 'early exit' OR 'save progress' OR 'stuck') AND ('log' with 'turn' OR 'phase')"
+        suggested_agent: "software-crafter"
+        dependencies: ["02-06"]
+        estimated_hours: 2
+
+      - step_id: "03-02"
+        name: "Scenario 010: Add TIMEOUT_INSTRUCTION to /nw:develop command"
+        description: "Extend prompt generation for /nw:develop command to include TIMEOUT_INSTRUCTION section with same structure and content as /nw:execute. Both commands are production workflows requiring full DES validation."
+        acceptance_test_scenario: "test_scenario_010_develop_command_also_includes_timeout_instruction"
+        acceptance_criteria:
+          - "GIVEN /nw:develop command with step file"
+          - "WHEN orchestrator renders full prompt"
+          - "THEN prompt contains 'TIMEOUT_INSTRUCTION' header AND '50' in prompt (turn budget)"
+        suggested_agent: "software-crafter"
+        dependencies: ["03-01"]
+        estimated_hours: 1
+
+  - phase_id: "04"
+    name: "Non-Validation Commands and Exclusions"
+    duration_weeks: 1
+    objective: "Ensure TIMEOUT_INSTRUCTION only appears in validated commands, not ad-hoc or research tasks"
+    success_criteria:
+      - "Ad-hoc Task commands do NOT include TIMEOUT_INSTRUCTION"
+      - "/nw:research commands do NOT include TIMEOUT_INSTRUCTION"
+      - "Only DES-validated commands (/nw:execute, /nw:develop) include TIMEOUT_INSTRUCTION"
+      - "Scenarios 006-007 moving to GREEN"
+    steps:
+      - step_id: "04-01"
+        name: "Scenario 006: Exclude TIMEOUT_INSTRUCTION from ad-hoc tasks"
+        description: "Implement logic in prompt preparation to skip TIMEOUT_INSTRUCTION for ad-hoc Task tool invocations that bypass DES validation. Ad-hoc tasks are quick research, not production TDD workflows."
+        acceptance_test_scenario: "test_scenario_006_ad_hoc_task_has_no_timeout_instruction"
+        acceptance_criteria:
+          - "GIVEN ad-hoc Task invocation without DES command context"
+          - "WHEN orchestrator prepares ad-hoc prompt"
+          - "THEN prompt does NOT contain 'TIMEOUT_INSTRUCTION'"
+        suggested_agent: "software-crafter"
+        dependencies: ["03-02"]
+        estimated_hours: 1
+
+      - step_id: "04-02"
+        name: "Scenario 007: Exclude TIMEOUT_INSTRUCTION from /nw:research commands"
+        description: "Implement logic to skip TIMEOUT_INSTRUCTION for /nw:research command rendering. Research is exploratory activity, not production work, and should not have turn discipline overhead."
+        acceptance_test_scenario: "test_scenario_007_research_command_has_no_timeout_instruction"
+        acceptance_criteria:
+          - "GIVEN /nw:research command"
+          - "WHEN orchestrator renders research prompt"
+          - "THEN prompt does NOT contain 'TIMEOUT_INSTRUCTION'"
+        suggested_agent: "software-crafter"
+        dependencies: ["04-01"]
+        estimated_hours: 1
+
+  - phase_id: "05"
+    name: "Runtime Timeout Warnings and Threshold Monitoring"
+    duration_weeks: 2
+    objective: "Implement real-time timeout monitoring and threshold-based warning emission"
+    success_criteria:
+      - "Timeout monitor tracks elapsed time during phase execution"
+      - "Warnings emitted at 50%, 75%, 90% threshold crossings"
+      - "Agent receives warnings with remaining time in prompt context"
+      - "Warning format includes 'TIMEOUT WARNING' prefix and time units"
+      - "Scenarios 013-014 moving to GREEN"
+    steps:
+      - step_id: "05-01"
+        name: "Create timeout monitor domain object"
+        description: "Implement TimeoutMonitor domain object to track phase execution time, manage threshold configuration, and determine when thresholds are crossed. Accept timeout_budget (minutes), timeout_thresholds (minute markers), and track elapsed time."
+        acceptance_test_scenario: "Infrastructure step (supports scenarios 013-014)"
+        acceptance_criteria:
+          - "GIVEN timeout_budget=40 minutes, thresholds=[20, 30, 36]"
+          - "WHEN elapsed time updates"
+          - "THEN monitor identifies when thresholds crossed (50%, 75%, 90%)"
+        suggested_agent: "software-crafter"
+        dependencies: ["04-02"]
+        estimated_hours: 2
+
+      - step_id: "05-02"
+        name: "Integrate timeout monitoring into orchestrator"
+        description: "Integrate TimeoutMonitor into execute_step() to track elapsed time during phase execution. Initialize with phase start time (started_at timestamp) and configured timeout budget."
+        acceptance_test_scenario: "Infrastructure step (supports scenarios 013-014)"
+        acceptance_criteria:
+          - "GIVEN phase execution with timeout_budget configured"
+          - "WHEN execute_step() runs"
+          - "THEN TimeoutMonitor tracks elapsed time from started_at"
+        suggested_agent: "software-crafter"
+        dependencies: ["05-01"]
+        estimated_hours: 2
+
+      - step_id: "05-03"
+        name: "Scenario 013: Emit timeout warnings at threshold crossings"
+        description: "Implement warning emission at 50% (20 min), 75% (30 min), 90% (36 min) elapsed time thresholds during phase execution. Warnings should include threshold value and elapsed time indication. Emit warnings as list in execute_step() result."
+        acceptance_test_scenario: "test_scenario_013_timeout_warnings_emit_at_thresholds"
+        acceptance_criteria:
+          - "GIVEN execute_step() with timeout_thresholds=[20, 30, 36], 40-minute budget"
+          - "WHEN execution crosses thresholds at 50%, 75%, 90%"
+          - "THEN result.warnings_emitted contains threshold warnings AND warnings include 'elapsed' indication"
+        suggested_agent: "software-crafter"
+        dependencies: ["05-02"]
+        estimated_hours: 3
+
+      - step_id: "05-04"
+        name: "Scenario 014: Include timeout warnings in agent prompt"
+        description: "Update prompt rendering to include emitted timeout warnings in context when phase has crossed warning thresholds. Format: 'TIMEOUT WARNING: 75% elapsed (30 minutes) - 10 minutes remaining'. Warnings appear in visible agent context before tool invocations."
+        acceptance_test_scenario: "test_scenario_014_agent_receives_timeout_warnings_in_prompt"
+        acceptance_criteria:
+          - "GIVEN phase execution crossed 75% threshold (30 minutes of 40-minute budget)"
+          - "WHEN agent receives next turn prompt"
+          - "THEN prompt includes 'TIMEOUT WARNING' prefix AND threshold value AND 'minute' unit AND ('elapsed' OR 'running') indication"
+        suggested_agent: "software-crafter"
+        dependencies: ["05-03"]
+        estimated_hours: 2
+
+  - phase_id: "06"
+    name: "Integration Testing and Documentation"
+    duration_weeks: 1.5
+    objective: "Full integration testing across all scenarios and comprehensive documentation"
+    success_criteria:
+      - "All 12 acceptance test scenarios PASSING"
+      - "Zero regressions in existing tests (100% pass rate maintained)"
+      - "Code coverage for turn discipline code >=90%"
+      - "Average cyclomatic complexity stays <2.5 (no function exceeds CC of 4)"
+      - "Turn discipline documentation complete (>=140 total docs)"
+    steps:
+      - step_id: "06-01"
+        name: "Full integration testing across all 12 scenarios"
+        description: "Run complete end-to-end integration testing covering all 12 scenarios (001-010, 013-014) in sequential and concurrent execution patterns. Verify no regressions in existing US-003 tests (100% pass rate) and new turn discipline tests moving from SKIP to GREEN."
+        acceptance_test_scenario: "Integration testing (all scenarios 001-010, 013-014)"
+        acceptance_criteria:
+          - "GIVEN all 12 turn discipline acceptance test scenarios"
+          - "WHEN pytest tests/acceptance/test_us006_turn_discipline.py executes"
+          - "THEN all 12 tests PASS AND existing US-003 tests remain at 100% pass rate (10/10 passing)"
+        suggested_agent: "software-crafter"
+        dependencies: ["05-04"]
+        estimated_hours: 3
+
+      - step_id: "06-02"
+        name: "Verify code coverage and complexity metrics"
+        description: "Execute coverage analysis on turn discipline code. Verify coverage >=90% for new code. Analyze cyclomatic complexity of new functions and methods (target: <2.5 average, no function exceeds 4). Document metrics."
+        acceptance_test_scenario: "Quality gates validation"
+        acceptance_criteria:
+          - "GIVEN turn discipline implementation complete"
+          - "WHEN coverage analysis runs: pytest --cov=src/des --cov-report=term-missing"
+          - "THEN code coverage >=90% AND cyclomatic complexity average <2.5 AND no function CC exceeds 4"
+        suggested_agent: "software-crafter"
+        dependencies: ["06-01"]
+        estimated_hours: 2
+
+      - step_id: "06-03"
+        name: "Create turn discipline implementation guide"
+        description: "Write how-to guide explaining TIMEOUT_INSTRUCTION section, turn budget rationale, checkpoint progression expectations, early exit protocol, and turn logging patterns. Include agent training material for recognizing turn discipline in prompts."
+        acceptance_test_scenario: "Documentation step"
+        acceptance_criteria:
+          - "GIVEN turn discipline implementation complete"
+          - "WHEN documentation guide created"
+          - "THEN guide includes: TIMEOUT_INSTRUCTION overview, turn budget explanation, checkpoint milestones, early exit protocol, turn logging examples"
+        suggested_agent: "software-crafter"
+        dependencies: ["06-02"]
+        estimated_hours: 2
+
+      - step_id: "06-04"
+        name: "Create timeout warnings and monitoring guide"
+        description: "Document timeout warning system, threshold configuration, remaining time calculation, and how agents should respond to warnings. Include checkpoint escalation procedures and agent troubleshooting guidance."
+        acceptance_test_scenario: "Documentation step"
+        acceptance_criteria:
+          - "GIVEN timeout monitoring system complete"
+          - "WHEN monitoring guide created"
+          - "THEN guide includes: warning thresholds (50%, 75%, 90%), remaining time format, agent response strategies, escalation procedures"
+        suggested_agent: "software-crafter"
+        dependencies: ["06-03"]
+        estimated_hours: 1
+
+      - step_id: "06-05"
+        name: "Update evolution documentation with lessons learned"
+        description: "Update docs/evolution/ with turn discipline implementation notes, including design decisions, trade-offs considered, performance characteristics, and recommendations for future enhancements. Add metrics from final quality gates."
+        acceptance_test_scenario: "Documentation step"
+        acceptance_criteria:
+          - "GIVEN all implementation phases complete"
+          - "WHEN evolution documentation updated"
+          - "THEN documentation includes: design decisions, trade-offs, performance metrics, lessons learned, recommendations"
+        suggested_agent: "software-crafter"
+        dependencies: ["06-04"]
+        estimated_hours: 2
+
+roadmap_summary:
+  total_phases: 6
+  total_steps: 23
+  estimated_duration_weeks: 8
+  estimated_total_hours: 48-56
+  acceptance_test_scenarios_covered: 12
+  infrastructure_steps: 11
+  feature_implementation_steps: 12
+  breakdown:
+    phase_01_foundation:
+      steps: 4
+      hours: 9
+      purpose: "Schema extension and turn counting infrastructure"
+    phase_02_validation:
+      steps: 6
+      hours: 11
+      purpose: "TIMEOUT_INSTRUCTION content and structure validation"
+    phase_03_completeness:
+      steps: 2
+      hours: 3
+      purpose: "Content completeness and format validation"
+    phase_04_exclusions:
+      steps: 2
+      hours: 2
+      purpose: "Exclude TIMEOUT_INSTRUCTION from non-validated commands"
+    phase_05_warnings:
+      steps: 4
+      hours: 9
+      purpose: "Runtime timeout monitoring and threshold warnings"
+    phase_06_integration:
+      steps: 5
+      hours: 10
+      purpose: "Full integration testing and documentation"
+
+dependencies_matrix:
+  schema_field_addition:
+    - "Prerequisite for all turn counting and monitoring features"
+    - "Must complete step 01-01 before other phases"
+  turn_counting_infrastructure:
+    - "Required by validation phase (need to log turn counts)"
+    - "Required by monitoring phase (compare against thresholds)"
+  timeout_instruction_template:
+    - "Required for all validation scenarios (001-005, 008-010)"
+    - "Must establish header before content validation"
+  validation_implementation:
+    - "Required for non-validation command exclusions (006-007)"
+    - "Prerequisite for integration testing (06-01)"
+  timeout_monitoring:
+    - "Independent from validation layer"
+    - "Can proceed in parallel after foundation complete (01-04)"
+  integration_testing:
+    - "Depends on all feature implementation complete"
+    - "Final gate before documentation and release"
+
+validation:
+  status: "rejected"
+  reviewer: "software-crafter-reviewer"
+  review_date: "2026-01-28"
+  severity: "MEDIUM"
+  blocking_issues:
+    - issue_id: "EFFORT-001"
+      category: "Effort Estimation"
+      description: "Six feature steps underestimated at 1 hour each"
+      affected_steps: ["02-02", "02-05", "03-02", "04-01", "04-02", "06-04"]
+      detail: "Feature steps should be 2-4 hours minimum. Single-hour steps lack sufficient complexity for atomic TDD cycles and cannot be delivered with confidence in testing/refactoring time."
+      impact: "Total hours: 44 (actual) vs 48-56 (roadmap claim). Leads to schedule risk and rushed implementation."
+      required_action: "Increase estimates: 02-02, 02-05, 03-02, 04-01, 04-02, 06-04 to minimum 2 hours each"
+    - issue_id: "HOURS-001"
+      category: "Total Effort Estimate"
+      description: "Total estimated hours (44) below roadmap target (48-56)"
+      detail: "After correcting single-hour steps to 2 hours minimum, total would be 50 hours (middle of range)"
+      impact: "Discrepancy suggests either underestimation of complexity or overcommitment"
+      required_action: "Adjust step estimates to align with 48-56 hour target"
+
+  notes: |
+    ROADMAP REVIEW RESULTS: REJECTED - REVISION REQUIRED
+
+    POSITIVE FINDINGS:
+    ✓ Step-to-scenario mapping PERFECT: 12 feature steps map to 12 test scenarios
+    ✓ Dependency graph VALID: No circular dependencies, all dependencies exist
+    ✓ GIVEN/WHEN/THEN format COMPLETE: All 23 steps have proper acceptance criteria
+    ✓ Dependency chain SOUND: Valid DAG structure enabling sequential execution
+    ✓ Phase sequencing LOGICAL: Foundation → Validation → Completeness → Exclusions → Monitoring → Integration
+    ✓ Infrastructure steps JUSTIFIED: 11 supporting steps clearly identified (schema, counter, monitor, tests)
+    ✓ Parallel execution ANALYZED: Documentation shows Phase 02/05 can run in parallel after Phase 01
+    ✓ Quality gates WELL-DEFINED: Coverage, complexity, regression, and performance targets specified
+
+    CRITICAL REJECTIONS (MUST FIX):
+
+    1. EFFORT ESTIMATION ISSUES (6 steps at 1 hour each):
+       - 02-02: Add turn budget (50 turns) - currently 1h, should be 2-3h
+         Reason: Requires template modification, test data setup, multiple assertion patterns
+       - 02-05: Add turn count logging instruction - currently 1h, should be 2h
+         Reason: Requires template logic, phase tracking integration, documentation
+       - 03-02: Add TIMEOUT_INSTRUCTION to /nw:develop - currently 1h, should be 2h
+         Reason: Requires command-specific rendering logic, dual-path testing
+       - 04-01: Exclude TIMEOUT_INSTRUCTION from ad-hoc tasks - currently 1h, should be 2h
+         Reason: Requires context detection logic, integration testing, edge cases
+       - 04-02: Exclude TIMEOUT_INSTRUCTION from /nw:research - currently 1h, should be 2h
+         Reason: Requires command routing logic, test setup, context propagation
+       - 06-04: Create timeout warnings guide - currently 1h, should be 2h
+         Reason: Documentation requires detailed examples, troubleshooting, agent training material
+
+    2. TOTAL HOUR DISCREPANCY:
+       - Stated total: 48-56 hours
+       - Actual total: 44 hours
+       - Gap: 4-12 hours below stated range
+       - Root cause: Six feature steps at 1 hour (should be 2-4 hours minimum)
+       - Correction needed: Adjust 1-hour steps to 2 hours each (+6 hours = 50 total hours)
+
+    ACTION ITEMS FOR APPROVAL:
+    1. Update step estimates for all 6 single-hour feature steps to minimum 2 hours
+    2. Verify total hours align with 48-56 range (should be 50 hours after adjustment)
+    3. Ensure acceptance criteria still realistic at revised estimates
+    4. Update phase duration_weeks if needed to maintain team velocity assumptions
+    5. Resubmit roadmap with updated estimates and revised validation.status = "approved"
+
+    SECONDARY OBSERVATIONS (NON-BLOCKING):
+    - Documentation steps (06-03, 06-04, 06-05) have realistic estimates
+    - Infrastructure steps (01-01 through 01-04, 05-01, 05-02) are appropriately sized
+    - Dependencies form clear sequential path with good parallelization opportunities
+    - Acceptance criteria are testable and measurable for all feature scenarios
+
+    RECOMMENDATION:
+    Roadmap has sound structure and clear execution path. Effort estimation is the only
+    blocker. Adjust single-hour feature steps to 2 hours minimum, bringing total to ~50 hours
+    (within 48-56 range), then resubmit for approval. All other validation items PASS.
