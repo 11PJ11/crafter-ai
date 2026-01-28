@@ -141,7 +141,7 @@ Feature: Update nWave to Latest Release
     Then the update proceeds
     And nWave is updated to v2.0.0
 
-  @skip
+  # ACTIVE - Step 04-04: Major version update cancellation (denial path)
   Scenario: Major version update cancelled with denial
     Given Paolo has nWave v1.3.0 installed in the test ~/.claude/ directory
     And the GitHub API returns v2.0.0 as the latest release
@@ -151,7 +151,7 @@ Feature: Update nWave to Latest Release
     And the VERSION file still contains "1.3.0"
     And no backup was created
 
-  @skip
+  # ACTIVE - Step 04-05: Local RC version triggers customization warning
   Scenario: Local RC version triggers customization warning
     Given Francesca has a local RC version v1.2.3-rc.main.20260127.1 installed
     And the VERSION file contains "1.2.3-rc.main.20260127.1"
@@ -198,7 +198,7 @@ Feature: Update nWave to Latest Release
     And the oldest backup ~/.claude.backup.20260124120000/ is deleted
     And exactly 3 backups remain
 
-  @skip
+  # ACTIVE - Step 04-09
   Scenario: Non-nWave user content is preserved during update
     Given Maria has nWave v1.2.3 installed in the test ~/.claude/ directory
     And Maria has custom agents in ~/.claude/agents/my-custom-agent/
@@ -212,7 +212,7 @@ Feature: Update nWave to Latest Release
     And only nWave-prefixed content in ~/.claude/agents/nw/ is replaced
     And only nWave-prefixed content in ~/.claude/commands/nw/ is replaced
 
-  @skip
+  # ACTIVE - Step 04-10: Already up-to-date shows message without update
   Scenario: Already up-to-date shows message without update
     Given Sofia has nWave v1.3.0 installed in the test ~/.claude/ directory
     And the GitHub API returns v1.3.0 as the latest release
@@ -287,7 +287,7 @@ Feature: Build Custom Local Distribution
     When Carlo runs the /nw:forge command through the CLI entry point
     Then the version becomes "1.2.3-rc.main.20260128.1"
 
-  @skip
+  # ACTIVE - Step 05-05: Feature branch name included in RC version
   Scenario: Feature branch name included in RC version
     Given Daniela is working in the test repository
     And the git branch is "feature/new-agent"
