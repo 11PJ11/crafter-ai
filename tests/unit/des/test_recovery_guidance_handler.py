@@ -515,3 +515,76 @@ class TestTimeoutFailureDetection:
         assert has_threshold, (
             f"No threshold adjustment keywords found in suggestions. Expected one of: {threshold_keywords}"
         )
+
+
+class TestAgentCrashFailureMode:
+    """Test detection and recovery guidance for agent crash failures with transcript path."""
+
+    def test_generate_suggestions_for_agent_crash_failure_mode(self):
+        """Should generate recovery suggestions for agent_crash failure mode."""
+        handler = RecoveryGuidanceHandler()
+        transcript_path = "/tmp/agent-transcripts/session-12345.log"
+        suggestions = handler.generate_recovery_suggestions(
+            failure_type="agent_crash",
+            context={
+                "phase": "GREEN",
+                "transcript_path": transcript_path,
+            },
+        )
+
+        assert suggestions is not None
+        assert isinstance(suggestions, list)
+        assert len(suggestions) >= 1
+
+    def test_agent_crash_suggestions_include_specific_transcript_path(self):
+        """Recovery suggestions for agent_crash should include the specific transcript_path from context."""
+        handler = RecoveryGuidanceHandler()
+        transcript_path = "/tmp/agent-transcripts/session-12345.log"
+        suggestions = handler.generate_recovery_suggestions(
+            failure_type="agent_crash",
+            context={
+                "phase": "GREEN",
+                "transcript_path": transcript_path,
+            },
+        )
+
+        # The specific transcript path must appear in at least one suggestion
+        has_path = any(transcript_path in s for s in suggestions)
+        assert (
+            has_path
+        ), f"Suggestions must include specific transcript path: {transcript_path}"
+
+    def test_agent_crash_suggestions_include_why_how_action_components(self):
+        """Suggestions for agent_crash should include WHY, HOW, and ACTION components."""
+        handler = RecoveryGuidanceHandler()
+        transcript_path = "/tmp/agent-transcripts/crash-xyz.log"
+        suggestions = handler.generate_recovery_suggestions(
+            failure_type="agent_crash",
+            context={
+                "phase": "RED_UNIT",
+                "transcript_path": transcript_path,
+            },
+        )
+
+        suggestion_text = "\n".join(suggestions)
+        assert "WHY:" in suggestion_text, "Missing 'WHY:' component in suggestions"
+        assert "HOW:" in suggestion_text, "Missing 'HOW:' component in suggestions"
+        assert (
+            "ACTION:" in suggestion_text
+        ), "Missing 'ACTION:' component in suggestions"
+
+    def test_agent_crash_suggestions_reference_phase_name(self):
+        """Recovery suggestions for agent_crash should reference the specific phase name."""
+        handler = RecoveryGuidanceHandler()
+        phase = "REVIEW"
+        suggestions = handler.generate_recovery_suggestions(
+            failure_type="agent_crash",
+            context={
+                "phase": phase,
+                "transcript_path": "/tmp/transcripts/session.log",
+            },
+        )
+
+        # Phase name should appear in at least one suggestion
+        has_phase = any(phase in s for s in suggestions)
+        assert has_phase, f"Suggestions must reference phase: {phase}"

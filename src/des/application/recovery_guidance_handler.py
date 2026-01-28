@@ -128,6 +128,20 @@ class RecoveryGuidanceHandler:
                 "ACTION: Profile code execution to identify slow operations, then refactor to reduce runtime below {configured_timeout_minutes} minutes.",
             ],
         },
+        "agent_crash": {
+            "description": "Agent crashed with known transcript location",
+            "suggestions": [
+                "WHY: The agent crashed during the {phase} phase, leaving work incomplete. This typically indicates an unhandled error, resource exhaustion, or timeout in agent execution.\n"
+                "HOW: Checking the agent transcript provides specific error details that explain the crash root cause.\n"
+                "ACTION: Check agent transcript at {transcript_path} for specific error details that prevented phase completion.",
+                "WHY: Reviewing the transcript helps identify whether the crash is a recoverable error or a systemic issue.\n"
+                "HOW: The transcript contains the full execution history, error messages, and state at crash time.\n"
+                "ACTION: Review {transcript_path} and identify which step failed, then decide whether to retry or adjust configuration.",
+                "WHY: The {phase} phase failure blocks further progress in the TDD cycle.\n"
+                "HOW: Once you understand the crash reason from the transcript, you can reset the phase status and retry.\n"
+                "ACTION: After reviewing {transcript_path}, reset the phase status to NOT_EXECUTED and retry with `/nw:execute`.",
+            ],
+        },
     }
 
     def generate_recovery_suggestions(
