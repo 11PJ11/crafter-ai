@@ -12,7 +12,6 @@ Tests interact with the system through CLI entry points (driving ports) only.
 
 import os
 import pytest
-from pathlib import Path
 
 
 # ============================================================================

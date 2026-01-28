@@ -15,9 +15,8 @@ HEXAGONAL ARCHITECTURE:
 - Mocks allowed ONLY for ports (GitPort, FileSystemPort, TestRunnerPort)
 """
 
-import pytest
 from datetime import date
-from unittest.mock import Mock, MagicMock
+from unittest.mock import Mock
 
 
 class TestBuildServiceCleansDistBeforeBuild:

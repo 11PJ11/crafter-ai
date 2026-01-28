@@ -626,7 +626,6 @@ def verify_corrupted_download_deleted(cli_result):
     """Verify corrupted download file is cleaned up."""
     # In test mode, we check that the CLI handled the cleanup
     # The actual cleanup is handled by the CLI script
-    output = cli_result["stdout"] + cli_result["stderr"]
     # Either explicit cleanup message or no leftover files mentioned
     # The corruption handling path should not leave temp files
     assert cli_result["returncode"] != 0, (

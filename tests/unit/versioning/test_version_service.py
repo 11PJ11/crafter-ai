@@ -17,7 +17,7 @@ from unittest.mock import Mock
 
 from nWave.core.versioning.domain.version import Version
 from nWave.core.versioning.domain.watermark import Watermark
-from nWave.core.versioning.ports.github_api_port import ReleaseInfo, NetworkError, RateLimitError
+from nWave.core.versioning.ports.github_api_port import ReleaseInfo, RateLimitError
 
 
 class TestVersionServiceReturnsInstalledVersion:
@@ -110,7 +110,7 @@ class TestVersionServiceUpdatesWatermark:
         timestamp_before = datetime.now(timezone.utc)
 
         # WHEN: check_version is called
-        result = version_service.check_version()
+        version_service.check_version()
 
         timestamp_after = datetime.now(timezone.utc)
 
@@ -285,7 +285,7 @@ class TestVersionServiceChecksGitHubWhenWatermarkStale:
         timestamp_before = datetime.now(timezone.utc)
 
         # WHEN: check_version is called
-        result = version_service.check_version()
+        version_service.check_version()
 
         timestamp_after = datetime.now(timezone.utc)
 
@@ -429,7 +429,7 @@ class TestVersionServiceHandlesRateLimitGracefully:
         )
 
         # WHEN: check_version is called
-        result = version_service.check_version()
+        version_service.check_version()
 
         # THEN: write_watermark was NOT called (no valid data to write)
         mock_file_system.write_watermark.assert_not_called()
@@ -533,7 +533,7 @@ class TestVersionServiceSkipsGitHubWhenWatermarkFresh:
         )
 
         # WHEN: check_version is called
-        result = version_service.check_version()
+        version_service.check_version()
 
         # THEN: GitHub API was NOT called (watermark is fresh)
         mock_github.get_latest_release.assert_not_called()
@@ -614,7 +614,7 @@ class TestVersionServiceSkipsGitHubWhenWatermarkFresh:
         )
 
         # WHEN: check_version is called
-        result = version_service.check_version()
+        version_service.check_version()
 
         # THEN: write_watermark was NOT called (no need to update fresh watermark)
         mock_file_system.write_watermark.assert_not_called()

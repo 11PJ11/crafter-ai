@@ -13,7 +13,6 @@ ACTIVE SCENARIO: Successful build with install prompt on main branch (Step 05-01
 HEXAGONAL BOUNDARY: Tests invoke through CLI entry point only.
 """
 
-import pytest
 from datetime import date
 
 

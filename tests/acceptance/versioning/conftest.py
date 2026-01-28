@@ -7,10 +7,8 @@ HEXAGONAL BOUNDARY ENFORCEMENT:
 - Mocking allowed only at port boundaries (GitHubAPIPort, FileSystemPort)
 """
 
-import os
 import pytest
 from pathlib import Path
-from datetime import datetime, timezone
 
 
 @pytest.fixture(scope="function")

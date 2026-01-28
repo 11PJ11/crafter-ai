@@ -8,7 +8,7 @@ HEXAGONAL ARCHITECTURE:
 """
 
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 import os
 import sys
 
@@ -76,7 +76,7 @@ class TestUpdateCliDisplaysUpdateComplete:
                 "NWAVE_MOCK_GITHUB_CHECKSUM": "abc123",
                 "NWAVE_MOCK_CONFIRM_UPDATE": "y",
             }):
-                result = update_cli.main()
+                update_cli.main()
 
         # Check that "Update complete." was printed
         print_calls = [str(call) for call in mock_print.call_args_list]

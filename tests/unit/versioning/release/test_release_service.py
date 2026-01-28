@@ -15,7 +15,6 @@ from dataclasses import dataclass
 from typing import Optional, Protocol
 from unittest.mock import Mock
 
-import pytest
 
 
 # ============================================================================

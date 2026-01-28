@@ -14,15 +14,11 @@ Test coverage for step 04-01:
 - test_update_service_updates_version_file
 """
 
-from pathlib import Path
 from unittest.mock import MagicMock, patch
-from datetime import datetime
 
-import pytest
 
 # Domain objects - REAL, never mocked
 from nWave.core.versioning.domain.version import Version
-from nWave.core.versioning.domain.backup_policy import BackupPolicy
 
 
 class TestUpdateServiceCreatesBackupBeforeUpdate:
@@ -689,7 +685,7 @@ class TestUpdateServicePreservesUserContent:
         )
 
         # Act
-        result = service.update()
+        service.update()
 
         # Assert: User agent content should be preserved
         assert custom_agent_file.exists(), "User agent file should still exist"
@@ -698,7 +694,7 @@ class TestUpdateServicePreservesUserContent:
         )
 
         # Assert: User agent path should NOT be in replaced_paths
-        custom_agent_path_str = str(custom_agent_dir)
+        str(custom_agent_dir)
         assert not any("my-custom-agent" in p for p in replaced_paths), (
             f"User agent directory should NOT be replaced. Replaced paths: {replaced_paths}"
         )
@@ -756,7 +752,7 @@ class TestUpdateServicePreservesUserContent:
         )
 
         # Act
-        result = service.update()
+        service.update()
 
         # Assert: User command content should be preserved
         assert custom_command_file.exists(), "User command file should still exist"
@@ -824,7 +820,7 @@ class TestUpdateServicePreservesUserContent:
         # Act: Patch _is_test_mode to return False so _apply_selective_update is executed
         # This allows us to test the actual business logic of selective content replacement
         with patch.object(service, "_is_test_mode", return_value=False):
-            result = service.update()
+            service.update()
 
         # Assert: nWave content paths SHOULD be in replaced_paths
         assert any("agents/nw" in p or "agents\\nw" in p for p in replaced_paths), (

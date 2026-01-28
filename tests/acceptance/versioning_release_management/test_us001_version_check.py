@@ -11,7 +11,7 @@ Feature file: docs/features/versioning-release-management/distill/acceptance-tes
 from pathlib import Path
 
 import pytest
-from pytest_bdd import scenarios, given, when, then, parsers
+from pytest_bdd import given, when, then, parsers
 
 # Load scenarios from the distill feature file
 # Note: Path is relative to this test file

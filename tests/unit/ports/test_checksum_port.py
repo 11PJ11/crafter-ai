@@ -74,7 +74,7 @@ class TestCalculateSha256MethodDefined:
         from typing import get_type_hints
 
         hints = get_type_hints(ChecksumPort.calculate_sha256)
-        assert hints.get("return") == str, \
+        assert hints.get("return") is str, \
             "calculate_sha256 must return str (SHA256 hex digest)"
 
 
@@ -130,7 +130,7 @@ class TestVerifyMethodDefined:
         from typing import get_type_hints
 
         hints = get_type_hints(ChecksumPort.verify)
-        assert hints.get("expected_checksum") == str, \
+        assert hints.get("expected_checksum") is str, \
             "verify expected_checksum must be typed as str"
 
     def test_verify_returns_bool(self):
@@ -139,7 +139,7 @@ class TestVerifyMethodDefined:
         from typing import get_type_hints
 
         hints = get_type_hints(ChecksumPort.verify)
-        assert hints.get("return") == bool, \
+        assert hints.get("return") is bool, \
             "verify must return bool (checksum match status)"
 
 

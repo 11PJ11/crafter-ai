@@ -9,14 +9,10 @@ HEXAGONAL BOUNDARY ENFORCEMENT:
 Step 04-06: Network failure during download leaves installation unchanged
 """
 
-import os
-import pytest
-from pathlib import Path
 from unittest.mock import MagicMock
 
 # Domain objects - REAL, never mocked
 from nWave.core.versioning.domain.version import Version
-from nWave.core.versioning.domain.backup_policy import BackupPolicy
 
 # Port exceptions
 from nWave.core.versioning.ports.download_port import NetworkError
@@ -184,7 +180,6 @@ class TestNetworkFailureDuringDownloadLeavesInstallationUnchanged:
         THEN: No partial download files remain in temp directory
         """
         from nWave.core.versioning.application.update_service import UpdateService
-        import tempfile
 
         # Arrange
         claude_dir = tmp_path / ".claude"

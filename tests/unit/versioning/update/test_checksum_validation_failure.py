@@ -15,10 +15,8 @@ Acceptance Criteria:
 - VERSION file still contains "1.2.3"
 """
 
-from pathlib import Path
 from unittest.mock import MagicMock
 
-import pytest
 
 # Domain objects - REAL, never mocked
 from nWave.core.versioning.domain.version import Version

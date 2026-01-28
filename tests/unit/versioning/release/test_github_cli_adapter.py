@@ -14,7 +14,6 @@ from dataclasses import dataclass
 from typing import Optional
 from unittest.mock import Mock, patch
 
-import pytest
 
 
 @dataclass(frozen=True)
@@ -56,7 +55,7 @@ class TestGitHubCLIAdapterCreatesPR:
                 stderr="",
             )
 
-            result = adapter.create_pr(
+            adapter.create_pr(
                 base_branch="main",
                 head_branch="development",
                 title="Release: development -> main",

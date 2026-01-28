@@ -13,7 +13,6 @@ Acceptance criteria:
 import json
 from datetime import datetime, timedelta, timezone
 
-import pytest
 
 from nWave.core.versioning.domain.watermark import Watermark
 from nWave.core.versioning.domain.version import Version

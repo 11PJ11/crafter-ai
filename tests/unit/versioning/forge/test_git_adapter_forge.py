@@ -11,7 +11,6 @@ HEXAGONAL ARCHITECTURE:
 - Tests verify correct branch retrieval
 """
 
-import pytest
 from unittest.mock import patch, MagicMock
 
 

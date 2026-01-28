@@ -27,7 +27,7 @@ from scripts.validation.validate_steps import (  # noqa: E402
 
 
 # Import from single source of truth
-from nWave.constants.tdd_phases import REQUIRED_PHASES as CORRECT_PHASE_NAMES, PHASE_COUNT
+from nWave.constants.tdd_phases import REQUIRED_PHASES as CORRECT_PHASE_NAMES, PHASE_COUNT  # noqa: E402
 
 # =============================================================================
 # Test Constants - Expected Format

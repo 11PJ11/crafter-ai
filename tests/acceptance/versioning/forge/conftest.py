@@ -7,11 +7,10 @@ HEXAGONAL BOUNDARY ENFORCEMENT:
 - No direct imports from nWave.core.* in test code
 """
 
-import os
 import pytest
 from pathlib import Path
 from datetime import date
-from typing import List, Optional, Callable
+from typing import List, Optional
 
 
 @pytest.fixture(scope="function")

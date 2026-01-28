@@ -12,7 +12,6 @@ These tests verify the PORT CONTRACT:
 - GitError exception type is defined
 """
 
-import inspect
 from abc import ABC
 
 import pytest
@@ -82,7 +81,7 @@ class TestGetCurrentBranchMethodDefined:
         hints = get_type_hints(GitPort.get_current_branch)
 
         # ASSERT
-        assert hints.get("return") == str, "get_current_branch must return str"
+        assert hints.get("return") is str, "get_current_branch must return str"
 
 
 class TestHasUncommittedChangesMethodDefined:
@@ -131,7 +130,7 @@ class TestHasUncommittedChangesMethodDefined:
         hints = get_type_hints(GitPort.has_uncommitted_changes)
 
         # ASSERT
-        assert hints.get("return") == bool, "has_uncommitted_changes must return bool"
+        assert hints.get("return") is bool, "has_uncommitted_changes must return bool"
 
 
 class TestGetRepoRootMethodDefined:

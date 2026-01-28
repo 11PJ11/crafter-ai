@@ -81,7 +81,6 @@ class TestReturnTypeIncludesVersion:
         """ReleaseInfo.version must be of type Version."""
         from nWave.core.versioning.ports.github_api_port import ReleaseInfo
         from nWave.core.versioning.domain.version import Version
-        import dataclasses
         from typing import get_type_hints
 
         hints = get_type_hints(ReleaseInfo)
@@ -106,7 +105,7 @@ class TestReturnTypeIncludesChecksum:
         from typing import get_type_hints
 
         hints = get_type_hints(ReleaseInfo)
-        assert hints.get("checksum") == str, \
+        assert hints.get("checksum") is str, \
             "ReleaseInfo.checksum must be typed as str"
 
 
@@ -127,7 +126,7 @@ class TestReturnTypeIncludesDownloadUrl:
         from typing import get_type_hints
 
         hints = get_type_hints(ReleaseInfo)
-        assert hints.get("download_url") == str, \
+        assert hints.get("download_url") is str, \
             "ReleaseInfo.download_url must be typed as str"
 
 

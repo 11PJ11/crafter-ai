@@ -10,7 +10,6 @@ HEXAGONAL ARCHITECTURE:
 from pathlib import Path
 import tempfile
 
-import pytest
 
 
 class TestChecksumAdapterValidatesSHA256:

@@ -11,13 +11,12 @@ Cross-references:
 - Step file: docs/features/versioning-release-management/steps/03-07.json (rate limit handling)
 """
 
-import pytest
 from datetime import datetime, timedelta, timezone
 from unittest.mock import Mock
 
 from nWave.core.versioning.domain.version import Version
 from nWave.core.versioning.domain.watermark import Watermark
-from nWave.core.versioning.ports.github_api_port import NetworkError, RateLimitError, ReleaseInfo
+from nWave.core.versioning.ports.github_api_port import ReleaseInfo
 
 
 class TestDisplayVersionWhenOffline:
@@ -78,10 +77,7 @@ class TestDisplayVersionWhenOffline:
         THEN it returns "nWave v1.2.3 (Unable to check for updates)"
         """
         # Arrange
-        from nWave.core.versioning.application.version_service import (
-            VersionService,
-            VersionCheckResult,
-        )
+        from nWave.core.versioning.application.version_service import VersionCheckResult
 
         version_file.write_text("1.2.3")
 
@@ -281,7 +277,7 @@ class TestSkipUpdateCheckWhenWatermarkFresh:
         )
 
         # Act
-        result = service.check_version()
+        service.check_version()
 
         # Assert - GitHub API should NOT be called when watermark is fresh
         mock_github.get_latest_release.assert_not_called()
@@ -394,7 +390,7 @@ class TestSkipUpdateCheckWhenWatermarkFresh:
         )
 
         # Act
-        result = service.check_version()
+        service.check_version()
 
         # Assert - Watermark should NOT be updated when fresh
         mock_file_system.write_watermark.assert_not_called()

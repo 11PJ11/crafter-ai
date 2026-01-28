@@ -8,7 +8,6 @@ CRITICAL: Hexagonal boundary enforcement - tests invoke CLI entry points ONLY.
 Feature file: docs/features/versioning-release-management/distill/acceptance-tests.feature
 """
 
-from pathlib import Path
 
 import pytest
 
@@ -58,7 +57,6 @@ def run_forge_release_command(
 
     Returns a function that executes the CLI and captures results.
     """
-    import os
     import subprocess
     import sys
 

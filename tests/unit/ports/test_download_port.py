@@ -80,10 +80,9 @@ class TestDownloadAcceptsUrlAndDestination:
         """download url parameter should be typed as str."""
         from nWave.core.versioning.ports.download_port import DownloadPort
         from typing import get_type_hints
-        from pathlib import Path
 
         hints = get_type_hints(DownloadPort.download)
-        assert hints.get("url") == str, "url parameter must be typed as str"
+        assert hints.get("url") is str, "url parameter must be typed as str"
 
     def test_download_destination_is_path_type(self):
         """download destination parameter should be typed as Path."""

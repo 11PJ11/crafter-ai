@@ -23,7 +23,6 @@ Scenario from acceptance-tests.feature (line 188):
       And exactly 3 backups remain
 """
 
-import pytest
 from pathlib import Path
 from unittest.mock import MagicMock
 

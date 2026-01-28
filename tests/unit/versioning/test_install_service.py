@@ -22,7 +22,6 @@ Expected unit tests:
 """
 
 from pathlib import Path
-from unittest.mock import MagicMock
 
 import pytest
 
@@ -72,7 +71,7 @@ class InMemoryFileSystemAdapter:
         dist_prefix = str(self._dist_dir)
         return [p for p in self._files if p.startswith(dist_prefix)]
 
-    def read_version(self) -> "Version":
+    def read_version(self):
         """Read VERSION file from ~/.claude/."""
         from nWave.core.versioning.domain.version import Version
         content = self.get_installed_file("VERSION")
@@ -124,7 +123,7 @@ def test_forge_install_copies_dist_to_claude_dir(valid_dist_files):
     service = InstallService(file_system=fs)
 
     # When: Install is called
-    result = service.install()
+    service.install()
 
     # Then: VERSION file is copied
     assert fs.file_exists_in_claude("VERSION"), "VERSION file should be copied"
@@ -155,7 +154,7 @@ def test_forge_install_replaces_nw_content(valid_dist_files):
     service = InstallService(file_system=fs)
 
     # When: Install is called
-    result = service.install()
+    service.install()
 
     # Then: New agent content is installed
     assert fs.file_exists_in_claude("agents/nw/software-crafter.md")
@@ -193,7 +192,7 @@ def test_forge_install_runs_smoke_test(valid_dist_files):
     service = InstallService(file_system=fs, smoke_test_runner=mock_smoke_test)
 
     # When: Install is called
-    result = service.install()
+    service.install()
 
     # Then: Smoke test was executed
     assert smoke_test_called, "Smoke test should be executed after installation"
@@ -339,7 +338,7 @@ def test_forge_install_preserves_user_agents(file_system_with_user_content):
     service = InstallService(file_system=fs, smoke_test_runner=lambda: True)
 
     # When: Install is called
-    result = service.install()
+    service.install()
 
     # Then: User's custom agent remains untouched
     assert fs.file_exists_in_claude("agents/my-agent/agent.md"), "User agent should not be deleted"
@@ -371,7 +370,7 @@ def test_forge_install_preserves_user_commands(file_system_with_user_content):
     service = InstallService(file_system=fs, smoke_test_runner=lambda: True)
 
     # When: Install is called
-    result = service.install()
+    service.install()
 
     # Then: User's custom command remains untouched
     assert fs.file_exists_in_claude("commands/my-command/command.md"), "User command should not be deleted"

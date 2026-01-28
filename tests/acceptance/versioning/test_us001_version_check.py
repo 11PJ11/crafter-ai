@@ -11,7 +11,6 @@ HEXAGONAL BOUNDARY: Tests invoke through CLI entry point only.
 """
 
 import json
-import pytest
 from datetime import datetime, timezone
 
 

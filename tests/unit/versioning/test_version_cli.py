@@ -4,8 +4,6 @@ Unit tests for version_cli (driving adapter).
 version_cli formats VersionCheckResult into user-facing output.
 """
 
-import pytest
-from datetime import datetime, timezone
 
 from nWave.core.versioning.domain.version import Version
 
@@ -66,7 +64,6 @@ class TestVersionCliHandlesMissingVersionFile:
         - Error displays "VERSION file not found. nWave may be corrupted."
         - CLI exit code is non-zero
         """
-        import sys
         from nWave.cli import version_cli
 
         # GIVEN: NWAVE_HOME points to directory without VERSION file
@@ -183,7 +180,7 @@ class TestVersionCliFormatsUnableToCheckOnRateLimit:
         monkeypatch.setenv("NWAVE_MOCK_GITHUB_REACHABLE", "false")  # Simulates rate limit/offline
 
         # WHEN: main() is called
-        exit_code = version_cli.main()
+        version_cli.main()
 
         # THEN: stderr is empty (no error)
         captured = capsys.readouterr()

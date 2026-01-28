@@ -13,7 +13,6 @@ HEXAGONAL ARCHITECTURE:
 - Formats output for user display
 """
 
-import pytest
 from typing import Optional
 
 
@@ -215,7 +214,7 @@ class TestNoInstallOnDecline:
         mock_file_system = MockInstallFileSystem()
 
         # Act
-        result = handle_install_response(
+        handle_install_response(
             user_response="n",
             build_result=build_result,
             install_file_system=mock_file_system,
@@ -439,7 +438,7 @@ class TestForgeCLIInvokesInstallCommand:
         mock_file_system = MockInstallFileSystem()
 
         # Act
-        result = handle_install_response(
+        handle_install_response(
             user_response="Y",
             build_result=build_result,
             install_file_system=mock_file_system,

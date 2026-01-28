@@ -12,10 +12,7 @@ These tests verify the PORT CONTRACT:
 - Error handling contracts are clear
 """
 
-import inspect
-from abc import ABC, abstractmethod
-from pathlib import Path
-from typing import TYPE_CHECKING
+from abc import ABC
 
 import pytest
 
@@ -166,7 +163,6 @@ class TestFileSystemPortErrorHandling:
 
         # ACT - Check method docstrings document FileNotFoundError
         read_version_doc = FileSystemPort.read_version.__doc__ or ""
-        read_watermark_doc = FileSystemPort.read_watermark.__doc__ or ""
 
         # ASSERT
         assert "FileNotFoundError" in read_version_doc, \
