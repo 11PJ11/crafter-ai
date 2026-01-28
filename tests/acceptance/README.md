@@ -1,66 +1,138 @@
-# DES Acceptance Tests
+# nWave Framework Acceptance Tests
 
-E2E acceptance tests for the Deterministic Execution System (DES), following Outside-In TDD principles.
+E2E acceptance tests for nWave framework features, following Outside-In TDD principles.
+
+---
+
+## 📁 Test Organization
+
+### DES Tests → `tests/des/acceptance/`
+
+**All Deterministic Execution System (DES) tests have been moved to `tests/des/acceptance/`.**
+
+See: [`tests/des/acceptance/`](../des/acceptance/) for:
+- US-001 through US-009 test suites
+- Complete DES acceptance test coverage
+- DES-specific fixtures and configuration
+
+---
 
 ## Purpose
 
-These tests validate DES business requirements from the **DISCUSS** wave and drive implementation in the **DEVELOP** wave through the Outside-In TDD approach.
+This directory contains acceptance tests for **nWave framework features** (not DES):
+- Framework rationalization and command template compliance
+- Version update workflow and safety mechanisms
+- Command validation and quality gates
+
+---
 
 ## Test Structure
 
 ```
 tests/acceptance/
-├── conftest.py                      # Shared pytest fixtures
-├── test_us001_command_filtering.py  # US-001: Command-origin filtering
-├── test_us002_preinvocation.py      # US-002: Pre-invocation validation (future)
-├── test_us003_postexecution.py      # US-003: Post-execution validation (future)
-└── README.md                        # This file
+├── conftest.py                              # Shared pytest fixtures
+├── acceptance-tests.feature                 # BDD: Framework rationalization
+├── test_validator_acceptance.py             # Command template compliance
+├── test_command_noncompliant.md             # Test fixture for validator
+├── features/
+│   └── version-update-experience/           # BDD: Version update workflow
+│       ├── us-001-check-version.feature
+│       ├── us-002-update-safely.feature
+│       ├── us-003-breaking-changes.feature
+│       ├── us-004-backup-cleanup.feature
+│       ├── us-005-commit-enforcement.feature
+│       ├── us-006-prepush-validation.feature
+│       ├── us-007-changelog-generation.feature
+│       ├── test_version_steps.py
+│       ├── test_update_steps.py
+│       └── test_git_workflow_steps.py
+└── README.md                                # This file
 ```
+
+---
 
 ## Running Tests
 
-### Run All Acceptance Tests
+### Run All Acceptance Tests (Framework + Version Update)
 ```bash
 pytest tests/acceptance/
 ```
 
-### Run Specific Test File
+### Run Specific Feature Tests
 ```bash
-pytest tests/acceptance/test_us001_command_filtering.py
+# Command validator tests
+pytest tests/acceptance/test_validator_acceptance.py
+
+# Version update workflow tests
+pytest tests/acceptance/features/version-update-experience/
 ```
 
-### Run Single Test
-```bash
-pytest tests/acceptance/test_us001_command_filtering.py::TestCommandOriginFiltering::test_execute_command_includes_des_validation_marker
-```
-
-### Verbose Output
+### Run with Verbose Output
 ```bash
 pytest tests/acceptance/ -v
 ```
 
-## Current Status
+---
 
-### ✅ Test Files Created
+## Test Suites
 
-- **test_us001_command_filtering.py** - Command-origin filtering (US-001)
-  - 4 test scenarios covering execute, ad-hoc, research, develop commands
-  - Tests WILL FAIL initially (no implementation yet - expected!)
+### 1. Framework Rationalization (`acceptance-tests.feature`)
 
-### ⏳ Implementation Pending
+**Feature**: nWave Framework Rationalization for Open Source Publication
 
-- **des_orchestrator fixture** - Currently returns `NotImplemented`
-- **DES marker injection** - Orchestrator prompt rendering logic
-- **Command filtering logic** - Distinguish command vs ad-hoc invocations
+**Purpose**: Validates command template compliance and agent-builder capabilities
 
-### 📋 Next Tests (One at a Time)
+**Key Scenarios**:
+- Command template compliance validation
+- Agent-builder command creation capability
+- Agent-builder-reviewer validates template compliance
+- Non-compliant command detection and feedback
 
-Per Outside-In TDD, we implement **ONE E2E test at a time**:
+**Test File**: `test_validator_acceptance.py`
 
-1. **US-001** (Current) - Command-origin filtering
-2. **US-002** (Next) - Pre-invocation template validation
-3. **US-003** - Post-execution state validation
-4. **US-004** - Audit trail logging
+**Status**: ✅ IMPLEMENTED
+
+---
+
+### 2. Command Template Validator (`test_validator_acceptance.py`)
+
+**Purpose**: Validates that nWave command files follow template guidelines
+
+**Validates**:
+- ✅ Command size is 50-60 lines
+- ✅ Zero workflow duplication (commands delegate, not implement)
+- ✅ Explicit context bundling present
+- ✅ Agent invocation pattern used correctly
+- ✅ Critical violations block approval
+- ✅ Actionable feedback for non-compliant commands
+
+**Test Fixture**: `test_command_noncompliant.md`
+
+**Status**: ✅ PASSING
+
+---
+
+### 3. Version Update Experience (`features/version-update-experience/`)
+
+**Feature**: Safe version update workflow for nWave framework
+
+**User Stories** (7 total):
+1. **US-001**: Check version - Verify current version and check for updates
+2. **US-002**: Update safely - Backup before update with rollback capability
+3. **US-003**: Breaking changes - Detect and warn about breaking changes
+4. **US-004**: Backup cleanup - Automatic cleanup of old backup directories
+5. **US-005**: Commit enforcement - Block update if uncommitted changes exist
+6. **US-006**: Pre-push validation - Validate tests pass before pushing updates
+7. **US-007**: Changelog generation - Auto-generate changelog from commit history
+
+**Test Files**:
+- `test_version_steps.py` - Version checking and display
+- `test_update_steps.py` - Update and backup workflow
+- `test_git_workflow_steps.py` - Git-based validations
+
+**Status**: ✅ IMPLEMENTED (mixed pass/skip status)
+
+---
 
 ## Test Philosophy
 
@@ -73,8 +145,8 @@ Per Outside-In TDD, we implement **ONE E2E test at a time**:
 
 ### Business-Focused Tests
 
-- **Given-When-Then structure** - Clear business scenarios
-- **Domain language** - Uses Marcus, Priya, Alex personas
+- **Given-When-Then structure** - Clear business scenarios (BDD)
+- **Domain language** - Uses personas and real-world scenarios
 - **Business value** - Each test documents WHY it matters
 - **No implementation details** - Tests validate behavior, not code structure
 
@@ -82,100 +154,56 @@ Per Outside-In TDD, we implement **ONE E2E test at a time**:
 
 ```
 ┌─────────────────────────────────────────┐
-│ DISTILL Wave (Now)                      │
+│ DISTILL Wave                            │
 │ - Create acceptance test (FAILING)      │
 │ - Test documents business requirement   │
 └─────────────────────────────────────────┘
                   ↓
 ┌─────────────────────────────────────────┐
-│ DEVELOP Wave (Next)                     │
+│ DEVELOP Wave                            │
 │ - Implement via Outside-In TDD          │
 │ - Unit tests drive implementation       │
 │ - Acceptance test turns GREEN naturally │
 └─────────────────────────────────────────┘
 ```
 
-## Test Scenarios by User Story
-
-### US-001: Command-Origin Filtering (Priority: P0 - Must Have)
-
-**Persona**: Marcus (Senior Developer)
-
-**Business Value**: Separation between production work (validated) and exploration (fast)
-
-**Test Scenarios**:
-1. ✅ Execute command includes DES validation marker
-2. ✅ Ad-hoc Task bypasses DES validation
-3. ✅ Research command skips full validation
-4. ✅ Develop command includes DES validation marker
-
-**Source Documents**:
-- User Story: `docs/feature/des/discuss/user-stories.md` (US-001)
-- Acceptance Criteria: `docs/feature/des/discuss/acceptance-criteria.md` (Scenarios 1-3)
-- Architecture: `docs/feature/des/design/architecture-design.md` (Section 4.1)
+---
 
 ## Fixtures
 
-### `tmp_project_root`
-Creates temporary DES directory structure for test isolation.
+### Shared Fixtures (`conftest.py`)
 
-**Provides**:
-- `steps/` - Step file directory
-- `templates/prompt-templates/` - Template directory
-- `audit/` - Audit log directory
+Provides pytest fixtures shared across all acceptance tests in this directory.
 
-### `minimal_step_file`
-Creates a minimal valid step file with 14-phase TDD cycle structure.
+---
 
-**Returns**: Path to created step file
+## For DES Tests
 
-### `des_orchestrator`
-Mock DES orchestrator for testing command execution flow.
+**Looking for DES acceptance tests?**
 
-**Status**: Currently `NotImplemented` - will be implemented in DEVELOP wave
+All Deterministic Execution System tests have been relocated to:
+- **Location**: `tests/des/acceptance/`
+- **Test Count**: 12 user story test files (US-001 through US-009)
+- **Status**: 39 passing, 71 skipped
+- **Documentation**: See `tests/des/acceptance/README.md` (if exists) or `docs/design/deterministic-execution-system-design.md`
 
-## Architecture Context
-
-Tests validate the 4-layer DES architecture:
-
-```
-Layer 1: Command-Origin Filtering  ← US-001 tests this layer
-Layer 2: Prompt Template Engine    ← US-002 tests this layer
-Layer 3: Execution Lifecycle       ← US-003, US-006 test this layer
-Layer 4: Validation Gates          ← US-002, US-003, US-004 test these gates
-```
-
-## Success Criteria
-
-### DISTILL Wave Complete When:
-- ✅ First acceptance test created (US-001)
-- ✅ Test is executable (`pytest tests/acceptance/test_us001_command_filtering.py`)
-- ✅ Test FAILS initially (no implementation - expected!)
-- ✅ Test clearly documents Given-When-Then
-- ✅ Test validates AC-001.1 from requirements
-- ✅ conftest.py provides necessary fixtures
-- ✅ README documents test philosophy and execution
-
-### DEVELOP Wave Complete When:
-- ⏳ Implement `des_orchestrator` fixture with real orchestration logic
-- ⏳ All US-001 tests pass (GREEN)
-- ⏳ No skipped tests in execution
-- ⏳ Implementation satisfies business requirements
+---
 
 ## References
 
-- **DISCUSS Wave Deliverables**: `/mnt/c/Repositories/Projects/ai-craft/docs/feature/des/discuss/`
-  - `requirements.md` - Functional and non-functional requirements
-  - `user-stories.md` - 12 user stories with personas and story points
-  - `acceptance-criteria.md` - 33 Given-When-Then scenarios
+### Framework Rationalization
+- **Design Document**: `docs/design/framework-rationalization.md` (if exists)
+- **Command Template**: Internal documentation in command files
 
-- **DESIGN Wave Deliverables**: `/mnt/c/Repositories/Projects/ai-craft/docs/feature/des/design/`
-  - `architecture-design.md` v1.6.0 - Production-ready architecture
-  - `component-boundaries.md` - Validation gate specifications
-  - `data-models.md` - Step file and audit log schemas
+### Version Update Workflow
+- **Feature Documentation**: `tests/acceptance/features/version-update-experience/README.md`
+- **User Stories**: Documented in `.feature` files
 
-## Outside-In TDD Resources
-
+### Outside-In TDD Resources
 - **BDD Methodology**: `nWave/data/embed/acceptance-designer/bdd-methodology.md`
 - **ATDD Patterns**: `nWave/data/methodologies/atdd-patterns.md`
 - **Outside-In TDD Reference**: `nWave/data/methodologies/outside-in-tdd-reference.md`
+
+---
+
+**Last Updated**: 2026-01-28 (DES tests relocated to `tests/des/acceptance/`)
