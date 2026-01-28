@@ -40,8 +40,7 @@ class BackupPolicy:
         Determine which backups should be deleted based on retention policy.
 
         Returns the oldest backups that exceed the maximum retention limit.
-        With max_backups=3, if there are 3 existing backups and a new one
-        will be created, the oldest backup should be deleted.
+        With max_backups=3 and 4 existing backups, delete 1 to keep 3.
 
         Args:
             existing_backups: List of existing backup paths
@@ -49,11 +48,11 @@ class BackupPolicy:
         Returns:
             List of backup paths that should be deleted (oldest first)
         """
-        if len(existing_backups) < self.max_backups:
+        if len(existing_backups) <= self.max_backups:
             return []
 
         sorted_backups = self._sort_by_timestamp(existing_backups)
-        excess_count = len(existing_backups) - self.max_backups + 1
+        excess_count = len(existing_backups) - self.max_backups
         return sorted_backups[:excess_count]
 
     def generate_backup_path(self, timestamp: datetime | None = None) -> Path:

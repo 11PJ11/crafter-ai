@@ -821,11 +821,12 @@ class TestUpdateServicePreservesUserContent:
             nwave_home=claude_dir,
         )
 
-        # Act
-        result = service.update()
+        # Act: Patch _is_test_mode to return False so _apply_selective_update is executed
+        # This allows us to test the actual business logic of selective content replacement
+        with patch.object(service, "_is_test_mode", return_value=False):
+            result = service.update()
 
         # Assert: nWave content paths SHOULD be in replaced_paths
-        # This test will FAIL until UpdateService implements selective replacement
         assert any("agents/nw" in p or "agents\\nw" in p for p in replaced_paths), (
             f"nWave agents directory SHOULD be replaced. Replaced paths: {replaced_paths}"
         )

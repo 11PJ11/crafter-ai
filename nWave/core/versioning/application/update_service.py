@@ -368,7 +368,8 @@ class UpdateService:
         for nw_dir in nw_directories:
             if nw_dir.exists():
                 # Build path relative to nwave_home for CoreContentIdentifier
-                relative_path = f"~/.claude/{nw_dir.relative_to(self._nwave_home)}"
+                # Append trailing slash so pattern /nw/ matches directory paths
+                relative_path = f"~/.claude/{nw_dir.relative_to(self._nwave_home)}/"
                 if self._content_identifier.is_core_content(relative_path):
                     # TODO: Replace with content from archive
                     # self._file_system.replace_directory(archive_nw_dir, nw_dir)

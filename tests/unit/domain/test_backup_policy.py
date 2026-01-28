@@ -18,11 +18,14 @@ import pytest
 class TestBackupPolicyRetention:
     """Tests for backup retention rules (maximum 3 backups)."""
 
-    def test_backup_policy_returns_oldest_when_3_exist(self):
+    def test_backup_policy_returns_empty_when_exactly_at_limit(self):
         """
-        GIVEN: 3 existing backup paths with different timestamps
+        GIVEN: 3 existing backup paths (exactly at max_backups limit)
         WHEN: Determining which backups to delete
-        THEN: Returns the oldest backup for deletion
+        THEN: Returns empty list (no deletion needed when at limit)
+
+        NOTE: This tests the "keep exactly N" behavior. When count == max,
+        no deletion needed. Deletion only happens when count > max.
         """
         # ARRANGE
         from nWave.core.versioning.domain.backup_policy import BackupPolicy
@@ -37,9 +40,9 @@ class TestBackupPolicyRetention:
         # ACT
         to_delete = policy.get_backups_to_delete(existing_backups)
 
-        # ASSERT
-        assert len(to_delete) == 1
-        assert to_delete[0] == Path("~/.claude.backup.20260125120000")
+        # ASSERT - At limit, nothing to delete
+        assert len(to_delete) == 0
+        assert to_delete == []
 
     def test_backup_policy_returns_empty_when_less_than_3(self):
         """
@@ -84,7 +87,9 @@ class TestBackupPolicyRetention:
         """
         GIVEN: 4 existing backups in unsorted order (1 over limit)
         WHEN: Determining which backups to delete
-        THEN: Returns 2 oldest backups for deletion (to make room for new backup)
+        THEN: Returns 1 oldest backup for deletion (to keep exactly 3)
+
+        The backups are provided in unsorted order to verify sorting works.
         """
         # ARRANGE
         from nWave.core.versioning.domain.backup_policy import BackupPolicy
@@ -92,7 +97,7 @@ class TestBackupPolicyRetention:
         policy = BackupPolicy(max_backups=3)
         existing_backups = [
             Path("~/.claude.backup.20260127120000"),  # newest
-            Path("~/.claude.backup.20260124120000"),  # oldest
+            Path("~/.claude.backup.20260124120000"),  # oldest - should be deleted
             Path("~/.claude.backup.20260125120000"),
             Path("~/.claude.backup.20260126120000"),
         ]
@@ -101,10 +106,87 @@ class TestBackupPolicyRetention:
         to_delete = policy.get_backups_to_delete(existing_backups)
 
         # ASSERT
-        # With 4 backups and max 3, delete 2 oldest to keep most recent 3
-        assert len(to_delete) == 2
+        # With 4 backups and max 3, delete 1 oldest to keep exactly 3
+        assert len(to_delete) == 1
         assert to_delete[0] == Path("~/.claude.backup.20260124120000")
-        assert to_delete[1] == Path("~/.claude.backup.20260125120000")
+
+
+class TestBackupPolicyRotationAfterUpdate:
+    """
+    Tests for backup rotation AFTER a new backup has been created.
+
+    Step 04-08 scenario: Backup rotation maintains exactly 3 copies
+    - Given 3 existing backups + 1 new backup created = 4 total
+    - When rotation runs
+    - Then exactly 1 oldest should be deleted
+    - And exactly 3 backups remain
+    """
+
+    def test_backup_policy_deletes_only_1_when_4_exist_and_max_is_3(self):
+        """
+        GIVEN: 4 existing backups (3 original + 1 new from current update)
+        WHEN: Determining which backups to delete
+        THEN: Returns exactly 1 oldest backup for deletion
+        AND: Exactly 3 backups will remain after deletion
+        """
+        # ARRANGE
+        from nWave.core.versioning.domain.backup_policy import BackupPolicy
+
+        policy = BackupPolicy(max_backups=3)
+        existing_backups = [
+            Path("~/.claude.backup.20260124120000"),  # oldest - should be deleted
+            Path("~/.claude.backup.20260125120000"),  # should remain
+            Path("~/.claude.backup.20260126120000"),  # should remain
+            Path("~/.claude.backup.20260127120000"),  # newest - should remain
+        ]
+
+        # ACT
+        to_delete = policy.get_backups_to_delete(existing_backups)
+
+        # ASSERT
+        assert len(to_delete) == 1, (
+            f"With 4 backups and max 3, should delete exactly 1 to keep 3. Got {len(to_delete)}"
+        )
+        assert to_delete[0] == Path("~/.claude.backup.20260124120000"), (
+            "Should delete the oldest backup (20260124)"
+        )
+
+        # Verify 3 remain after deletion
+        remaining = [b for b in existing_backups if b not in to_delete]
+        assert len(remaining) == 3, f"Exactly 3 backups should remain, got {len(remaining)}"
+
+    def test_backup_policy_deletes_2_when_5_exist_and_max_is_3(self):
+        """
+        GIVEN: 5 existing backups (edge case: 2 over limit)
+        WHEN: Determining which backups to delete
+        THEN: Returns exactly 2 oldest backups for deletion
+        AND: Exactly 3 backups will remain after deletion
+        """
+        # ARRANGE
+        from nWave.core.versioning.domain.backup_policy import BackupPolicy
+
+        policy = BackupPolicy(max_backups=3)
+        existing_backups = [
+            Path("~/.claude.backup.20260123120000"),  # oldest - should be deleted
+            Path("~/.claude.backup.20260124120000"),  # second oldest - should be deleted
+            Path("~/.claude.backup.20260125120000"),  # should remain
+            Path("~/.claude.backup.20260126120000"),  # should remain
+            Path("~/.claude.backup.20260127120000"),  # newest - should remain
+        ]
+
+        # ACT
+        to_delete = policy.get_backups_to_delete(existing_backups)
+
+        # ASSERT
+        assert len(to_delete) == 2, (
+            f"With 5 backups and max 3, should delete exactly 2 to keep 3. Got {len(to_delete)}"
+        )
+        assert to_delete[0] == Path("~/.claude.backup.20260123120000")
+        assert to_delete[1] == Path("~/.claude.backup.20260124120000")
+
+        # Verify 3 remain after deletion
+        remaining = [b for b in existing_backups if b not in to_delete]
+        assert len(remaining) == 3, f"Exactly 3 backups should remain, got {len(remaining)}"
 
 
 class TestBackupPolicyPathGeneration:

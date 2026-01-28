@@ -138,6 +138,18 @@ def format_update_result(result: "UpdateResult") -> str:
     return "Update complete."
 
 
+def _display_major_version_warning(current_version, latest_version) -> None:
+    """Display warning message for major version changes."""
+    print(f"Major version change detected ({current_version.major}.x to {latest_version.major}.x). This may break existing workflows.")
+    print("Continue? [y/N]")
+
+
+def _display_customization_warning(current_version) -> None:
+    """Display warning if local customizations will be overwritten."""
+    if current_version.prerelease and "rc" in current_version.prerelease.lower():
+        print("Local customizations detected. Update will overwrite.")
+
+
 def main() -> int:
     """
     Main entry point for /nw:update command.
@@ -185,6 +197,19 @@ def main() -> int:
 
             print(f"Update available: v{current_version} -> v{latest_version}")
 
+            # Create service early to use is_major_version_change method
+            service = UpdateService(
+                file_system=file_system,
+                github_api=github_api,
+                download=download,
+                checksum=checksum,
+            )
+
+            # Display warnings for major version changes or customizations
+            if service.is_major_version_change(current_version, latest_version):
+                _display_major_version_warning(current_version, latest_version)
+            _display_customization_warning(current_version)
+
         except (NetworkError, RateLimitError) as e:
             print(f"Unable to check for updates: {e}", file=sys.stderr)
             return 1
@@ -194,14 +219,7 @@ def main() -> int:
             print("Update cancelled.")
             return 0
 
-        # Create service and perform update
-        service = UpdateService(
-            file_system=file_system,
-            github_api=github_api,
-            download=download,
-            checksum=checksum,
-        )
-
+        # Perform update (service already created for version checking)
         result = service.update()
 
         # Display result
