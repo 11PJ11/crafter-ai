@@ -1,19 +1,11 @@
 {
   "step_id": "02-02",
-  "task_specification": {
-    "task_id": "US005-02-02",
-    "title": "Detect silent completion failures (no updates)",
-    "description": "Implement detection for silent completions where agent returned without updating any phase status (all phases remain NOT_EXECUTED).\n\nFailure Mode: Agent completed but made no progress (all phases NOT_EXECUTED).\n\nDetection Mechanism:\n- Check if task status is IN_PROGRESS but completed_at is set\n- Verify all phases remain NOT_EXECUTED\n- Identify mismatch: agent ran but no state changes\n\nRecovery Suggestions Generated:\n1. WHY: Agent completed without updating phase status, indicates missing OUTCOME_RECORDING\n2. HOW: Check agent transcript and manually update phase status based on evidence\n3. Actionable: Specific transcript path and verification instructions",
-    "acceptance_criteria": [
-      "Detects when all phases remain NOT_EXECUTED despite completion",
-      "Distinguishes from normal unstarted state",
-      "Generates 3+ recovery suggestions",
-      "Includes transcript path in suggestions",
-      "Explains OUTCOME_RECORDING requirement"
-    ]
-  },
+  "step_name": "Detect silent completion failures (no updates)",
+  "project_id": "des-us005",
   "phase_id": "02",
   "phase_name": "Failure Detection and Classification",
+  "description": "Implement detection for silent completions where agent returned without updating any phase status (all phases remain NOT_EXECUTED). Failure Mode: Agent completed but made no progress (all phases NOT_EXECUTED). Detection Mechanism: Check if task status is IN_PROGRESS but completed_at is set; Verify all phases remain NOT_EXECUTED; Identify mismatch: agent ran but no state changes. Recovery Suggestions Generated: 1) WHY: Agent completed without updating phase status, indicates missing OUTCOME_RECORDING; 2) HOW: Check agent transcript and manually update phase status based on evidence; 3) Actionable: Specific transcript path and verification instructions",
+  "acceptance_criteria": "Detects when all phases remain NOT_EXECUTED despite completion; Distinguishes from normal unstarted state; Generates 3+ recovery suggestions; Includes transcript path in suggestions; Explains OUTCOME_RECORDING requirement",
   "required_acceptance_test": "test_scenario_002_silent_completion_provides_recovery_suggestions",
   "test_scenario_coverage": "AC-005.1 - Silent completion detection and recovery guidance",
   "dependencies": [
@@ -21,58 +13,144 @@
   ],
   "estimated_hours": 3,
   "tdd_cycle": {
-    "phase_1_prepare": {
-      "status": "NOT_EXECUTED",
-      "description": "Remove @skip from target acceptance test scenario"
+    "acceptance_test": {
+      "scenario_name": "Detect Silent Completion No Updates",
+      "test_file": "features/recovery_guidance.feature",
+      "test_file_format": "feature",
+      "scenario_index": 2,
+      "initially_ignored": true,
+      "is_walking_skeleton": false,
+      "mapped_scenario": {
+        "description": "When all phases remain NOT_EXECUTED despite completed_at set, detection generates silent completion recovery suggestions",
+        "scenario_function": "test_scenario_002_silent_completion_provides_recovery_suggestions",
+        "scenario_description": "Verify silent completion detection and recovery generation",
+        "mapping_type": "feature"
+      }
     },
-    "phase_2_red_acceptance": {
-      "status": "NOT_EXECUTED",
-      "description": "Run acceptance test - MUST fail for valid reason"
+    "expected_unit_tests": [
+      "test_detect_all_phases_not_executed_with_completion_set",
+      "test_distinguish_silent_completion_from_normal_unstarted",
+      "test_generate_3_or_more_silent_completion_suggestions",
+      "test_silent_completion_suggestions_include_transcript_path",
+      "test_silent_completion_explains_outcome_recording_requirement"
+    ],
+    "mock_boundaries": {
+      "allowed_ports": [
+        "IStepFileRepository"
+      ],
+      "forbidden_domain_classes": [],
+      "in_memory_adapters": [
+        "InMemoryStepFileRepository"
+      ]
     },
-    "phase_3_red_unit": {
-      "status": "NOT_EXECUTED",
-      "description": "Write unit test that fails for CORRECT reason"
+    "tdd_phase_tracking": {
+      "current_phase": "PREPARE",
+      "active_e2e_test": "test_scenario_002_silent_completion_provides_recovery_suggestions",
+      "inactive_e2e_tests": "All other @skip scenarios remain disabled",
+      "phases_completed": [],
+      "test_results": {
+        "total": null,
+        "passed": null,
+        "failed": null,
+        "skipped": null
+      }
     },
-    "phase_4_green_unit": {
-      "status": "NOT_EXECUTED",
-      "description": "Implement MINIMAL code to pass unit test"
-    },
-    "phase_5_check": {
-      "status": "NOT_EXECUTED",
-      "description": "Check if acceptance test passes now"
-    },
-    "phase_6_green_acceptance": {
-      "status": "NOT_EXECUTED",
-      "description": "Run ALL tests - unit + acceptance"
-    },
-    "phase_7_review": {
-      "status": "NOT_EXECUTED",
-      "description": "Mandatory peer review of implementation quality"
-    },
-    "phase_8_refactor": {
-      "status": "NOT_EXECUTED",
-      "description": "Progressive refactoring L1-L4 with validation"
-    },
-    "phase_9_post_refactor_review": {
-      "status": "NOT_EXECUTED",
-      "description": "Review after refactoring complete"
-    },
-    "phase_10_final_validate": {
-      "status": "NOT_EXECUTED",
-      "description": "Run ALL tests before commit"
-    },
-    "phase_11_commit": {
-      "status": "NOT_EXECUTED",
-      "description": "Commit this step's work with detailed message"
-    }
+    "phase_execution_log": [
+      {
+        "phase_name": "PREPARE",
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "outcome": null,
+        "notes": null,
+        "blocked_by": null,
+        "turn_count": 0
+      },
+      {
+        "phase_name": "RED_ACCEPTANCE",
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "outcome": null,
+        "notes": null,
+        "blocked_by": null,
+        "turn_count": 0
+      },
+      {
+        "phase_name": "RED_UNIT",
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "outcome": null,
+        "notes": null,
+        "blocked_by": null,
+        "turn_count": 0
+      },
+      {
+        "phase_name": "GREEN",
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "outcome": null,
+        "notes": "Combines implementation (GREEN_UNIT) + acceptance validation (GREEN_ACCEPTANCE). Green acceptance is consequence of green unit.",
+        "blocked_by": null,
+        "turn_count": 0
+      },
+      {
+        "phase_name": "REVIEW",
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "outcome": null,
+        "notes": "Expanded scope: covers both implementation quality AND post-refactoring quality",
+        "blocked_by": null,
+        "turn_count": 0
+      },
+      {
+        "phase_name": "REFACTOR_CONTINUOUS",
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "outcome": null,
+        "notes": "Combines L1 (naming clarity) + L2 (complexity reduction) + L3 (class responsibilities and organization)",
+        "blocked_by": null,
+        "turn_count": 0
+      },
+      {
+        "phase_name": "REFACTOR_L4",
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "outcome": null,
+        "notes": "Architecture patterns - OPTIONAL (can use CHECKPOINT_PENDING or NOT_APPLICABLE prefix for skip)",
+        "blocked_by": null,
+        "turn_count": 0
+      },
+      {
+        "phase_name": "COMMIT",
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "outcome": null,
+        "notes": "Absorbs FINAL_VALIDATE (metadata checks only)",
+        "blocked_by": null,
+        "turn_count": 0
+      }
+    ]
+  },
+  "quality_gates": {
+    "acceptance_test_must_fail_first": true,
+    "unit_tests_must_fail_first": true,
+    "no_mocks_inside_hexagon": true,
+    "business_language_required": true,
+    "refactor_level": 4,
+    "in_memory_test_ratio_target": 0.8,
+    "validation_after_each_phase": true
   },
   "validation": {
-    "approved": true,
-    "quality_gates": [
-      "Unit tests passing for silent completion detection",
-      "Acceptance test scenario passing",
-      "No regressions in existing tests",
-      "Code review approval"
-    ]
+    "status": "approved",
+    "reviewed_by": "software-crafter-reviewer",
+    "reviewed_at": "2026-01-28T00:00:00Z",
+    "notes": "Step 02-02: 8-phase structure verified. All phases present with turn_count:0. Schema compliant. Depends on 01-02 (correct). Silent completion failure detection clearly described. Mock boundaries properly specified. APPROVED."
   }
 }

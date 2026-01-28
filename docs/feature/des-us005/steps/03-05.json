@@ -1,35 +1,46 @@
 {
-  "step_id": "01-01",
-  "step_name": "Create recovery_suggestions data structure in step file",
+  "step_id": "03-05",
+  "step_name": "Create comprehensive failure mode registry",
   "project_id": "des-us005",
-  "phase_id": "01",
-  "phase_name": "Core Recovery Infrastructure",
-  "description": "Add recovery_suggestions array field to step file JSON structure. Defines the data model for persisting recovery guidance. Structure: step_file['state']['recovery_suggestions'] = [list of strings]. Each suggestion is a narrative string combining WHY + HOW + actionable guidance.",
-  "acceptance_criteria": "recovery_suggestions field added to step file state; Field is JSON array of strings (not just comments); Structure persists across step file read/write cycles; Backward compatible with existing step files",
-  "required_acceptance_test": "test_scenario_004_recovery_suggestions_stored_in_step_file",
-  "test_scenario_coverage": "AC-005.2 - Suggestions stored in step file",
-  "dependencies": [],
+  "phase_id": "03",
+  "phase_name": "Recovery Guidance Formatting and Integration",
+  "description": "Implement centralized registry of all failure modes with associated recovery suggestion templates. Registry Structure: { 'abandoned_phase': { 'description': 'Agent crashed leaving phase IN_PROGRESS', 'why_template': 'The agent left {phase} in IN_PROGRESS state...', 'how_template': 'Reset the phase to NOT_EXECUTED...', 'actionable_template': 'Run: /nw:execute @{agent} {step_file}' }, 'silent_completion': { ... }, ... }. Coverage (AC-005.1): Ensure all 7 failure modes have entries: 1) abandoned_phase; 2) silent_completion; 3) missing_section; 4) missing_phase; 5) invalid_outcome; 6) invalid_skip; 7) stale_execution. Benefits: Ensures every failure mode has recovery guidance (no orphans); Centralizes templates for consistency; Enables validation that all modes are covered; Supports future extension with new modes",
+  "acceptance_criteria": "Registry contains all 7 failure modes; Each mode has WHY, HOW, and actionable templates; Templates use placeholders for context variables; Registry is version controlled and documented; Validation ensures no orphan failure modes",
+  "required_acceptance_test": "test_scenario_012_all_failure_modes_have_recovery_handlers",
+  "test_scenario_coverage": "AC-005.1 - Comprehensive failure mode coverage",
+  "dependencies": [
+    "02-01",
+    "02-02",
+    "02-03",
+    "02-04",
+    "02-05",
+    "03-04"
+  ],
   "estimated_hours": 2,
   "tdd_cycle": {
     "acceptance_test": {
-      "scenario_name": "Recovery Suggestions Stored in Step File",
+      "scenario_name": "Failure Mode Registry Complete and Documented",
       "test_file": "features/recovery_guidance.feature",
       "test_file_format": "feature",
-      "scenario_index": 0,
+      "scenario_index": 12,
       "initially_ignored": true,
       "is_walking_skeleton": false,
       "mapped_scenario": {
-        "description": "When step file is read/written, recovery_suggestions array persists with WHY+HOW+actionable content",
-        "scenario_function": "test_scenario_004_recovery_suggestions_stored_in_step_file",
-        "scenario_description": "Verify recovery_suggestions field in step file state",
+        "description": "When registry created, all 7 failure modes have complete WHY+HOW+actionable templates with placeholders",
+        "scenario_function": "test_scenario_012_all_failure_modes_have_recovery_handlers",
+        "scenario_description": "Verify comprehensive failure mode registry",
         "mapping_type": "feature"
       }
     },
     "expected_unit_tests": [
-      "test_step_file_accepts_recovery_suggestions_field",
-      "test_recovery_suggestions_persists_on_write_read_cycle",
-      "test_recovery_suggestions_field_is_json_array",
-      "test_recovery_suggestions_backward_compatible_with_existing_step_files"
+      "test_registry_contains_all_7_failure_modes",
+      "test_each_failure_mode_has_why_template",
+      "test_each_failure_mode_has_how_template",
+      "test_each_failure_mode_has_actionable_template",
+      "test_templates_use_placeholders_for_context",
+      "test_registry_is_documented",
+      "test_validation_finds_no_orphan_failure_modes",
+      "test_registry_supports_new_mode_extension"
     ],
     "mock_boundaries": {
       "allowed_ports": [],
@@ -38,7 +49,7 @@
     },
     "tdd_phase_tracking": {
       "current_phase": "PREPARE",
-      "active_e2e_test": "test_scenario_004_recovery_suggestions_stored_in_step_file",
+      "active_e2e_test": "test_scenario_012_all_failure_modes_have_recovery_handlers",
       "inactive_e2e_tests": "All other @skip scenarios remain disabled",
       "phases_completed": [],
       "test_results": {
@@ -144,6 +155,6 @@
     "status": "approved",
     "reviewed_by": "software-crafter-reviewer",
     "reviewed_at": "2026-01-28T00:00:00Z",
-    "notes": "Step 01-01: 8-phase structure verified. All phases present with turn_count:0. Schema compliant. Self-contained context. Clear acceptance criteria. No dependencies (first step). APPROVED."
+    "notes": "Step 03-05: 8-phase structure verified. All phases present with turn_count:0. Schema compliant. Depends on 02-01, 02-02, 02-03, 02-04, 02-05, 03-04 (correct). Comprehensive failure mode registry with 7 modes clearly specified. Template placeholder pattern for context variables defined. Extensibility validation for new modes included. APPROVED."
   }
 }

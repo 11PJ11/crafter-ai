@@ -1,44 +1,50 @@
 {
-  "step_id": "01-01",
-  "step_name": "Create recovery_suggestions data structure in step file",
+  "step_id": "03-03",
+  "step_name": "Integrate recovery suggestions with validation error messages",
   "project_id": "des-us005",
-  "phase_id": "01",
-  "phase_name": "Core Recovery Infrastructure",
-  "description": "Add recovery_suggestions array field to step file JSON structure. Defines the data model for persisting recovery guidance. Structure: step_file['state']['recovery_suggestions'] = [list of strings]. Each suggestion is a narrative string combining WHY + HOW + actionable guidance.",
-  "acceptance_criteria": "recovery_suggestions field added to step file state; Field is JSON array of strings (not just comments); Structure persists across step file read/write cycles; Backward compatible with existing step files",
-  "required_acceptance_test": "test_scenario_004_recovery_suggestions_stored_in_step_file",
-  "test_scenario_coverage": "AC-005.2 - Suggestions stored in step file",
-  "dependencies": [],
-  "estimated_hours": 2,
+  "phase_id": "03",
+  "phase_name": "Recovery Guidance Formatting and Integration",
+  "description": "Enhance validation error messages (AC-005.4) with inline fix guidance. Current State: 'FAILED: Section TDD_14_PHASES not found'. Enhanced State: 'FAILED: Section TDD_14_PHASES not found. FIX: Add TDD_14_PHASES section with all 14 phases enumerated (PREPARE through COMMIT).' Implementation: Extend ValidationResult to include recovery_guidance field; Generate fix guidance for each validation failure type; Append 'FIX:' prefix to guidance; Include section/phase name for context; Include positioning hints for phase insertions",
+  "acceptance_criteria": "Validation errors include 'FIX:' guidance; Fix guidance is specific (not generic 'fix it'); Phase insertions include positioning hints (after, between); Guidance explains what to add and why; Guidance is inline in error message",
+  "required_acceptance_test": "test_scenario_007_validation_error_includes_inline_fix_guidance",
+  "test_scenario_coverage": "AC-005.4 - Validation error fix guidance",
+  "dependencies": [
+    "02-03"
+  ],
+  "estimated_hours": 3,
   "tdd_cycle": {
     "acceptance_test": {
-      "scenario_name": "Recovery Suggestions Stored in Step File",
+      "scenario_name": "Validation Error Includes Inline Fix Guidance",
       "test_file": "features/recovery_guidance.feature",
       "test_file_format": "feature",
-      "scenario_index": 0,
+      "scenario_index": 7,
       "initially_ignored": true,
       "is_walking_skeleton": false,
       "mapped_scenario": {
-        "description": "When step file is read/written, recovery_suggestions array persists with WHY+HOW+actionable content",
-        "scenario_function": "test_scenario_004_recovery_suggestions_stored_in_step_file",
-        "scenario_description": "Verify recovery_suggestions field in step file state",
+        "description": "When validation fails, error message includes 'FIX:' guidance with specific steps",
+        "scenario_function": "test_scenario_007_validation_error_includes_inline_fix_guidance",
+        "scenario_description": "Verify validation error includes inline fix guidance",
         "mapping_type": "feature"
       }
     },
     "expected_unit_tests": [
-      "test_step_file_accepts_recovery_suggestions_field",
-      "test_recovery_suggestions_persists_on_write_read_cycle",
-      "test_recovery_suggestions_field_is_json_array",
-      "test_recovery_suggestions_backward_compatible_with_existing_step_files"
+      "test_validation_error_includes_fix_guidance",
+      "test_fix_guidance_is_specific_not_generic",
+      "test_fix_guidance_includes_section_or_phase_name",
+      "test_phase_insertion_guidance_includes_positioning_hints",
+      "test_fix_guidance_explains_why_element_needed",
+      "test_fix_guidance_inline_in_error_message"
     ],
     "mock_boundaries": {
-      "allowed_ports": [],
+      "allowed_ports": [
+        "IValidator"
+      ],
       "forbidden_domain_classes": [],
       "in_memory_adapters": []
     },
     "tdd_phase_tracking": {
       "current_phase": "PREPARE",
-      "active_e2e_test": "test_scenario_004_recovery_suggestions_stored_in_step_file",
+      "active_e2e_test": "test_scenario_007_validation_error_includes_inline_fix_guidance",
       "inactive_e2e_tests": "All other @skip scenarios remain disabled",
       "phases_completed": [],
       "test_results": {
@@ -144,6 +150,6 @@
     "status": "approved",
     "reviewed_by": "software-crafter-reviewer",
     "reviewed_at": "2026-01-28T00:00:00Z",
-    "notes": "Step 01-01: 8-phase structure verified. All phases present with turn_count:0. Schema compliant. Self-contained context. Clear acceptance criteria. No dependencies (first step). APPROVED."
+    "notes": "Step 03-03: 8-phase structure verified. All phases present with turn_count:0. Schema compliant. Depends on 02-03 (correct). Validation error inline fix guidance with 'FIX:' prefix clearly specified. Positioning hints for phase insertions defined. Mock boundaries include IValidator port. APPROVED."
   }
 }

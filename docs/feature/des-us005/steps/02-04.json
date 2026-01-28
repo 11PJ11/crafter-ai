@@ -1,77 +1,158 @@
 {
   "step_id": "02-04",
-  "task_specification": {
-    "task_id": "US005-02-04",
-    "title": "Detect stale execution and timeout failures",
-    "description": "Implement detection for stale phases (IN_PROGRESS too long) and timeout-related failures.\n\nFailure Modes:\n1. stale_execution: IN_PROGRESS phase not updated for > 1 hour\n2. timeout_failure: Phase exceeded timeout threshold\n\nDetection Mechanism:\n- Compare phase start time to current time\n- Check if started_at + timeout > current_time\n\nRecovery Suggestions Generated:\n1. WHY: Stale state indicates agent failure to update or timeout\n2. HOW: Manual phase reset or extended timeout\n3. Actionable: Specific time threshold and reset command",
-    "acceptance_criteria": [
-      "Detects stale IN_PROGRESS phases (threshold: 1 hour)",
-      "Extracts time since last update",
-      "Generates recovery suggestions addressing stale state",
-      "Includes timestamp information in suggestions"
-    ]
-  },
+  "step_name": "Detect stale execution and timeout failures",
+  "project_id": "des-us005",
   "phase_id": "02",
   "phase_name": "Failure Detection and Classification",
-  "required_acceptance_test": "test_scenario_001_crash_recovery_provides_recovery_suggestions (extended)",
+  "description": "Implement detection for stale phases (IN_PROGRESS too long) and timeout-related failures. Failure Modes: 1) stale_execution: IN_PROGRESS phase not updated for > 1 hour; 2) timeout_failure: Phase exceeded timeout threshold. Detection Mechanism: Compare phase start time to current time; Check if started_at + timeout > current_time. Recovery Suggestions Generated: 1) WHY: Stale state indicates agent failure to update or timeout; 2) HOW: Manual phase reset or extended timeout; 3) Actionable: Specific time threshold and reset command",
+  "acceptance_criteria": "Detects stale IN_PROGRESS phases (threshold: 1 hour); Extracts time since last update; Generates recovery suggestions addressing stale state; Includes timestamp information in suggestions",
+  "required_acceptance_test": "test_scenario_001_crash_recovery_provides_recovery_suggestions",
   "test_scenario_coverage": "AC-005.1 - Extended crash detection for timeouts",
   "dependencies": [
     "02-01"
   ],
   "estimated_hours": 2,
   "tdd_cycle": {
-    "phase_1_prepare": {
-      "status": "NOT_EXECUTED",
-      "description": "Remove @skip from target acceptance test scenario"
+    "acceptance_test": {
+      "scenario_name": "Detect Stale Phase IN_PROGRESS",
+      "test_file": "features/recovery_guidance.feature",
+      "test_file_format": "feature",
+      "scenario_index": 1,
+      "initially_ignored": true,
+      "is_walking_skeleton": false,
+      "mapped_scenario": {
+        "description": "When phase IN_PROGRESS exceeds timeout threshold, stale execution recovery suggestions generated",
+        "scenario_function": "test_scenario_001_crash_recovery_provides_recovery_suggestions",
+        "scenario_description": "Verify stale execution detection and recovery generation",
+        "mapping_type": "feature"
+      }
     },
-    "phase_2_red_acceptance": {
-      "status": "NOT_EXECUTED",
-      "description": "Run acceptance test - MUST fail for valid reason"
+    "expected_unit_tests": [
+      "test_detect_stale_in_progress_phase_over_1_hour",
+      "test_detect_phase_exceeded_timeout_threshold",
+      "test_extract_time_since_last_update",
+      "test_generate_stale_execution_recovery_suggestions",
+      "test_stale_suggestions_include_timestamp_information"
+    ],
+    "mock_boundaries": {
+      "allowed_ports": [
+        "IStepFileRepository",
+        "ITimeProvider"
+      ],
+      "forbidden_domain_classes": [],
+      "in_memory_adapters": [
+        "InMemoryStepFileRepository",
+        "MockTimeProvider"
+      ]
     },
-    "phase_3_red_unit": {
-      "status": "NOT_EXECUTED",
-      "description": "Write unit test that fails for CORRECT reason"
+    "tdd_phase_tracking": {
+      "current_phase": "PREPARE",
+      "active_e2e_test": "test_scenario_001_crash_recovery_provides_recovery_suggestions",
+      "inactive_e2e_tests": "All other @skip scenarios remain disabled",
+      "phases_completed": [],
+      "test_results": {
+        "total": null,
+        "passed": null,
+        "failed": null,
+        "skipped": null
+      }
     },
-    "phase_4_green_unit": {
-      "status": "NOT_EXECUTED",
-      "description": "Implement MINIMAL code to pass unit test"
-    },
-    "phase_5_check": {
-      "status": "NOT_EXECUTED",
-      "description": "Check if acceptance test passes now"
-    },
-    "phase_6_green_acceptance": {
-      "status": "NOT_EXECUTED",
-      "description": "Run ALL tests - unit + acceptance"
-    },
-    "phase_7_review": {
-      "status": "NOT_EXECUTED",
-      "description": "Mandatory peer review of implementation quality"
-    },
-    "phase_8_refactor": {
-      "status": "NOT_EXECUTED",
-      "description": "Progressive refactoring L1-L4 with validation"
-    },
-    "phase_9_post_refactor_review": {
-      "status": "NOT_EXECUTED",
-      "description": "Review after refactoring complete"
-    },
-    "phase_10_final_validate": {
-      "status": "NOT_EXECUTED",
-      "description": "Run ALL tests before commit"
-    },
-    "phase_11_commit": {
-      "status": "NOT_EXECUTED",
-      "description": "Commit this step's work with detailed message"
-    }
+    "phase_execution_log": [
+      {
+        "phase_name": "PREPARE",
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "outcome": null,
+        "notes": null,
+        "blocked_by": null,
+        "turn_count": 0
+      },
+      {
+        "phase_name": "RED_ACCEPTANCE",
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "outcome": null,
+        "notes": null,
+        "blocked_by": null,
+        "turn_count": 0
+      },
+      {
+        "phase_name": "RED_UNIT",
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "outcome": null,
+        "notes": null,
+        "blocked_by": null,
+        "turn_count": 0
+      },
+      {
+        "phase_name": "GREEN",
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "outcome": null,
+        "notes": "Combines implementation (GREEN_UNIT) + acceptance validation (GREEN_ACCEPTANCE). Green acceptance is consequence of green unit.",
+        "blocked_by": null,
+        "turn_count": 0
+      },
+      {
+        "phase_name": "REVIEW",
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "outcome": null,
+        "notes": "Expanded scope: covers both implementation quality AND post-refactoring quality",
+        "blocked_by": null,
+        "turn_count": 0
+      },
+      {
+        "phase_name": "REFACTOR_CONTINUOUS",
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "outcome": null,
+        "notes": "Combines L1 (naming clarity) + L2 (complexity reduction) + L3 (class responsibilities and organization)",
+        "blocked_by": null,
+        "turn_count": 0
+      },
+      {
+        "phase_name": "REFACTOR_L4",
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "outcome": null,
+        "notes": "Architecture patterns - OPTIONAL (can use CHECKPOINT_PENDING or NOT_APPLICABLE prefix for skip)",
+        "blocked_by": null,
+        "turn_count": 0
+      },
+      {
+        "phase_name": "COMMIT",
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "outcome": null,
+        "notes": "Absorbs FINAL_VALIDATE (metadata checks only)",
+        "blocked_by": null,
+        "turn_count": 0
+      }
+    ]
+  },
+  "quality_gates": {
+    "acceptance_test_must_fail_first": true,
+    "unit_tests_must_fail_first": true,
+    "no_mocks_inside_hexagon": true,
+    "business_language_required": true,
+    "refactor_level": 4,
+    "in_memory_test_ratio_target": 0.8,
+    "validation_after_each_phase": true
   },
   "validation": {
-    "approved": true,
-    "quality_gates": [
-      "Unit tests passing for stale execution detection",
-      "Acceptance test scenario passing",
-      "No regressions in existing tests",
-      "Code review approval"
-    ]
+    "status": "approved",
+    "reviewed_by": "software-crafter-reviewer",
+    "reviewed_at": "2026-01-28T00:00:00Z",
+    "notes": "Step 02-04: 8-phase structure verified. All phases present with turn_count:0. Schema compliant. Depends on 02-01 (correct). Stale execution and timeout detection clearly defined with 1-hour threshold. Mock boundaries include ITimeProvider for testing. APPROVED."
   }
 }
