@@ -20,7 +20,7 @@ When invoked, display the following information:
 nWave Framework
 ===============
 Version: 1.2.84
-Build: 2026-01-28T20:18:50Z
+Build: 2026-01-28T21:26:12Z
 Agents: 22
 Commands: 20
 

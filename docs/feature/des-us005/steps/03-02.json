@@ -1,44 +1,51 @@
 {
-  "step_id": "01-01",
-  "step_name": "Create recovery_suggestions data structure in step file",
+  "step_id": "03-02",
+  "step_name": "Include transcript path in crash recovery suggestions",
   "project_id": "des-us005",
-  "phase_id": "01",
-  "phase_name": "Core Recovery Infrastructure",
-  "description": "Add recovery_suggestions array field to step file JSON structure. Defines the data model for persisting recovery guidance. Structure: step_file['state']['recovery_suggestions'] = [list of strings]. Each suggestion is a narrative string combining WHY + HOW + actionable guidance.",
-  "acceptance_criteria": "recovery_suggestions field added to step file state; Field is JSON array of strings (not just comments); Structure persists across step file read/write cycles; Backward compatible with existing step files",
-  "required_acceptance_test": "test_scenario_004_recovery_suggestions_stored_in_step_file",
-  "test_scenario_coverage": "AC-005.2 - Suggestions stored in step file",
-  "dependencies": [],
+  "phase_id": "03",
+  "phase_name": "Recovery Guidance Formatting and Integration",
+  "description": "Enhance crash recovery suggestions with specific transcript file path for debugging agent behavior. Implementation: Accept transcript_path parameter in recovery suggestion generation; Include path in at least one WHY suggestion (evidence of error); Format as actionable reference: 'Check agent transcript at {path}'. Example: 'Check agent transcript at /tmp/transcripts/session-12345.log for specific error details that prevented phase completion.' Integration Points: SubagentStop hook receives transcript_path; Pass to RecoveryGuidanceHandler.handle_failure(); Persist path reference in step file for future reference",
+  "acceptance_criteria": "Transcript path included in recovery suggestions; Path is specific and absolute (not generic); Path is formatted as actionable reference; Path persists in step file JSON",
+  "required_acceptance_test": "test_scenario_006_recovery_suggestions_include_transcript_path",
+  "test_scenario_coverage": "AC-005.3 - Actionable transcript references",
+  "dependencies": [
+    "03-01"
+  ],
   "estimated_hours": 2,
   "tdd_cycle": {
     "acceptance_test": {
-      "scenario_name": "Recovery Suggestions Stored in Step File",
+      "scenario_name": "Include Transcript Path in Recovery Suggestions",
       "test_file": "features/recovery_guidance.feature",
       "test_file_format": "feature",
-      "scenario_index": 0,
+      "scenario_index": 6,
       "initially_ignored": true,
       "is_walking_skeleton": false,
       "mapped_scenario": {
-        "description": "When step file is read/written, recovery_suggestions array persists with WHY+HOW+actionable content",
-        "scenario_function": "test_scenario_004_recovery_suggestions_stored_in_step_file",
-        "scenario_description": "Verify recovery_suggestions field in step file state",
+        "description": "When recovery suggestion generated with transcript_path, suggestion includes specific absolute path as actionable reference",
+        "scenario_function": "test_scenario_006_recovery_suggestions_include_transcript_path",
+        "scenario_description": "Verify transcript path included in recovery suggestions",
         "mapping_type": "feature"
       }
     },
     "expected_unit_tests": [
-      "test_step_file_accepts_recovery_suggestions_field",
-      "test_recovery_suggestions_persists_on_write_read_cycle",
-      "test_recovery_suggestions_field_is_json_array",
-      "test_recovery_suggestions_backward_compatible_with_existing_step_files"
+      "test_recovery_suggestion_includes_transcript_path",
+      "test_transcript_path_is_specific_not_generic",
+      "test_transcript_path_is_absolute_path",
+      "test_transcript_path_formatted_as_actionable_reference",
+      "test_transcript_path_persists_in_step_file_json"
     ],
     "mock_boundaries": {
-      "allowed_ports": [],
+      "allowed_ports": [
+        "IStepFileRepository"
+      ],
       "forbidden_domain_classes": [],
-      "in_memory_adapters": []
+      "in_memory_adapters": [
+        "InMemoryStepFileRepository"
+      ]
     },
     "tdd_phase_tracking": {
       "current_phase": "PREPARE",
-      "active_e2e_test": "test_scenario_004_recovery_suggestions_stored_in_step_file",
+      "active_e2e_test": "test_scenario_006_recovery_suggestions_include_transcript_path",
       "inactive_e2e_tests": "All other @skip scenarios remain disabled",
       "phases_completed": [],
       "test_results": {
@@ -144,6 +151,6 @@
     "status": "approved",
     "reviewed_by": "software-crafter-reviewer",
     "reviewed_at": "2026-01-28T00:00:00Z",
-    "notes": "Step 01-01: 8-phase structure verified. All phases present with turn_count:0. Schema compliant. Self-contained context. Clear acceptance criteria. No dependencies (first step). APPROVED."
+    "notes": "Step 03-02: 8-phase structure verified. All phases present with turn_count:0. Schema compliant. Depends on 03-01 (correct). Transcript path integration clearly specified with absolute path and actionable reference format. Mock boundaries include IStepFileRepository port. APPROVED."
   }
 }
