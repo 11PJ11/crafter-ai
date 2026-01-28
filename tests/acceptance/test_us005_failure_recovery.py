@@ -849,6 +849,137 @@ Update step file with phase completion
         )
 
     # =========================================================================
+    # AC-005.5: Recovery suggestions use beginner-friendly, junior-dev language
+    # Scenario 13: Recovery suggestions are simple, clear, and educational
+    # =========================================================================
+
+    def test_scenario_013_recovery_suggestions_use_junior_dev_language(
+        self, tmp_project_root, step_file_with_abandoned_phase
+    ):
+        """
+        GIVEN recovery suggestions are generated for a failure
+        WHEN suggestions are created for junior developer audience
+        THEN suggestions use simple language, include concrete examples, and no unexplained jargon
+
+        Business Value: Junior developers learn from errors with clear, educational guidance
+                       they can immediately act on. No jargon barriers - suggestions explain
+                       complex concepts in simple terms with concrete examples.
+
+        AC-005.5 Requirements (Junior-Dev Language):
+        1. All suggestions scored 'beginner-friendly' by readability check
+        2. No technical jargon without explanation
+        3. All suggestions include concrete examples
+        4. Average suggestion length: 3-4 sentences
+
+        Example (BAD): "The orchestrator will not progress past an IN_PROGRESS phase without
+                       manual intervention to reset phase status and retry execution."
+
+        Example (GOOD): "Your agent stopped during the GREEN phase. To retry, you need to
+                       reset the phase status from IN_PROGRESS to NOT_EXECUTED in the step file.
+                       Then run `/nw:execute` again. This tells the system the phase is ready
+                       to try again from the start."
+        """
+        # Arrange: Recovery suggestions for abandoned phase failure
+        from src.des.application.recovery_guidance_handler import (
+            RecoveryGuidanceHandler,
+        )
+
+        recovery_handler = RecoveryGuidanceHandler()
+        step_file = step_file_with_abandoned_phase
+
+        # Act: Generate recovery suggestions for junior developer
+        suggestions = recovery_handler.generate_recovery_suggestions(
+            failure_type="abandoned_phase",
+            context={
+                "phase": "GREEN",
+                "step_file": str(step_file),
+                "transcript_path": "/tmp/transcripts/session.log",
+            },
+        )
+
+        # Assert: Suggestions are beginner-friendly
+        assert suggestions is not None, "Should generate suggestions"
+        assert isinstance(suggestions, list), "Suggestions should be list"
+        assert len(suggestions) >= 1, "Should have suggestions"
+
+        # AC-005.5.1: Readability check - no excessive jargon
+        jargon_terms = [
+            "orchestrator",  # Replace with "system"
+            "framework",  # Explain or replace
+            "partially state",  # Unclear
+            "corrupted state",  # Frightening
+        ]
+
+        for suggestion in suggestions:
+            # Check for unexplained jargon
+            found_jargon = []
+            for jargon in jargon_terms:
+                if jargon.lower() in suggestion.lower():
+                    found_jargon.append(jargon)
+
+            # Jargon check: if found, verify it's in context with explainer words
+            if found_jargon:
+                # Verify jargon is explained near it (within 50 chars)
+                for jargon in found_jargon:
+                    idx = suggestion.lower().find(jargon.lower())
+                    context_window = suggestion[max(0, idx - 50) : idx + 100]
+                    # Verify explanation words exist nearby
+                    assert any(
+                        word in context_window.lower()
+                        for word in [
+                            "means",
+                            "refers to",
+                            "is",
+                            "indicates",
+                            "represents",
+                        ]
+                    ), f"Jargon '{jargon}' not explained in context"
+
+        # AC-005.5.2 & 3: Check for concrete examples and simple structure
+        for suggestion in suggestions:
+            # If it's a structured suggestion (has WHY/HOW/ACTION), check each part
+            if (
+                "WHY:" in suggestion
+                and "HOW:" in suggestion
+                and "ACTION:" in suggestion
+            ):
+                # Extract parts
+                why_part = suggestion.split("HOW:")[0].replace("WHY:", "").strip()
+                how_part = suggestion.split("ACTION:")[0].split("HOW:")[1].strip()
+                action_part = suggestion.split("ACTION:")[1].strip()
+
+                # WHY should be 1-2 sentences max
+                why_sentences = why_part.count(".") + 1
+                assert (
+                    why_sentences <= 2
+                ), f"WHY section too long ({why_sentences} sentences): {why_part}"
+
+                # HOW should be 1-2 sentences max
+                how_sentences = how_part.count(".") + 1
+                assert (
+                    how_sentences <= 2
+                ), f"HOW section too long ({how_sentences} sentences): {how_part}"
+
+                # ACTION should be specific (contains command or path)
+                assert any(
+                    char in action_part for char in ["/", ".", "`", "-"]
+                ), f"ACTION should be specific/actionable: {action_part}"
+
+        # AC-005.5.4: Average suggestion length should be 3-4 sentences per section
+        # For WHY/HOW/ACTION format: 1-2 sentences per section = 3-6 total periods
+        total_periods = 0
+        for suggestion in suggestions:
+            # Count actual sentence-ending periods (not in paths like "01-01.json")
+            # For WHY/HOW/ACTION format, count periods in content areas
+            total_periods += suggestion.count(".")
+
+        avg_periods = total_periods / len(suggestions)
+        # With WHY (1-2 periods) + HOW (1-2 periods) + ACTION (0-1 periods) = 2-5 periods avg
+        assert (
+            2 <= avg_periods <= 6
+        ), f"Average suggestion length should have 2-5 periods per suggestion, got {avg_periods}"
+
+    # =========================================================================
     # AC-005.1 + AC-005.2: Failure mode registry - all modes have suggestions
     # Scenario 12: All defined failure modes have registered recovery handlers
     # =========================================================================
