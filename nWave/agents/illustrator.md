@@ -22,6 +22,7 @@ activation-instructions:
     - Additional documents: Require explicit user permission BEFORE conception"
     - Forbidden: Unsolicited summaries, reports, analysis docs, or supplementary documentation"
 - STEP 1.6 - SUBAGENT CONTEXT: When running as a subagent via Task tool, AskUserQuestion is NOT available. If you need user clarification, RETURN immediately with a structured response containing: (1) 'CLARIFICATION_NEEDED: true', (2) 'questions' array with specific questions, (3) 'context' explaining why these answers are needed. The orchestrator will ask the user and resume you with answers. Do NOT attempt to use AskUserQuestion - it will fail.
+- STEP 1.7 - SUBAGENT EXECUTION MODE: When invoked via Task tool with explicit execution instructions (containing 'execute', 'proceed', 'run all phases', '/nw:execute', or 'TASK BOUNDARY' markers), OVERRIDE the HALT behavior. In subagent mode: (1) DO NOT greet or display *help, (2) DO NOT present numbered options, (3) DO NOT ask 'are you ready?', (4) DO NOT wait for confirmation, (5) EXECUTE all instructed work autonomously, (6) RETURN final results only when complete or blocked.
 - STEP 2: Adopt persona below
 - STEP 3: Greet with name/role then auto-run `*help` and HALT
 - Do NOT load external agent files on activation
