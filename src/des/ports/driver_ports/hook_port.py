@@ -22,6 +22,23 @@ class HookPort(ABC):
     """Port for post-execution validation hooks."""
 
     @abstractmethod
+    def persist_turn_count(self, step_file_path: str, phase_name: str, turn_count: int) -> None:
+        """Persist turn_count to phase_execution_log entry.
+
+        Updates the phase_execution_log entry for the specified phase with the turn_count value.
+
+        Args:
+            step_file_path: Absolute path to step JSON file
+            phase_name: Name of the phase to update (e.g., "PREPARE", "RED_ACCEPTANCE")
+            turn_count: Turn count value to persist (must be non-negative)
+
+        Raises:
+            ValueError: If turn_count is negative
+            KeyError: If phase_name not found in phase_execution_log
+        """
+        pass
+
+    @abstractmethod
     def on_agent_complete(self, step_file_path: str) -> HookResult:
         """Validate step file after sub-agent completion.
 
