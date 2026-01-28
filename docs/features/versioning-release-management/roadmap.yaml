@@ -109,9 +109,9 @@ phases:
             location: nWave/core/versioning/domain/core_content_identifier.py
         dependencies: []
         acceptance_criteria:
-          - "~/.claude/agents/nw/..." is_core_content returns True
-          - "~/.claude/agents/my-custom-agent/..." is_core_content returns False
-          - "~/.claude/commands/nw/..." is_core_content returns True
+          - "~/.claude/agents/nw/... is_core_content returns True"
+          - "~/.claude/agents/my-custom-agent/... is_core_content returns False"
+          - "~/.claude/commands/nw/... is_core_content returns True"
 
   # ============================================================================
   # PHASE 2: Port Interfaces

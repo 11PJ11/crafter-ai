@@ -1,3 +1,1 @@
-"""
-Unit tests for versioning feature components.
-"""
+"""Unit tests for versioning module."""
