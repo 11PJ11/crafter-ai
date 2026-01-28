@@ -28,6 +28,7 @@ SOURCE:
 """
 
 import pytest
+from src.des.application.recovery_guidance_handler import RecoveryGuidanceHandler
 
 
 class TestFailureRecoveryGuidance:
@@ -362,7 +363,6 @@ class TestFailureRecoveryGuidance:
     # Scenario 6: Recovery suggestions include transcript file path
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_006_recovery_suggestions_include_transcript_path(
         self, tmp_project_root, step_file_with_abandoned_phase
     ):
@@ -378,25 +378,23 @@ class TestFailureRecoveryGuidance:
         Expected: "Check agent transcript at {transcript_path} for errors"
         """
         # Arrange: Known transcript path
-        _transcript_path = "/tmp/agent-transcripts/session-12345.log"
+        transcript_path = "/tmp/agent-transcripts/session-12345.log"
 
         # Act: Recovery handler generates suggestions with transcript path
-        # recovery_handler = RecoveryGuidanceHandler()
-        # suggestions = recovery_handler.generate_recovery_suggestions(
-        #     failure_type="agent_crash",
-        #     context={
-        #         "transcript_path": transcript_path,
-        #         "phase": "GREEN_UNIT",
-        #     },
-        # )
+        recovery_handler = RecoveryGuidanceHandler()
+        suggestions = recovery_handler.generate_recovery_suggestions(
+            failure_type="agent_crash",
+            context={
+                "transcript_path": transcript_path,
+                "phase": "GREEN",
+            },
+        )
 
         # Assert: Suggestions include specific transcript path
-        # transcript_suggestion_found = any(
-        #     transcript_path in s for s in suggestions
-        # )
-        # assert transcript_suggestion_found, (
-        #     f"Suggestions must include specific transcript path: {transcript_path}"
-        # )
+        transcript_suggestion_found = any(transcript_path in s for s in suggestions)
+        assert (
+            transcript_suggestion_found
+        ), f"Suggestions must include specific transcript path: {transcript_path}"
 
     # =========================================================================
     # AC-005.4: Validation errors include fix guidance in error message
