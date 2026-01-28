@@ -61,11 +61,12 @@ class TestTemplateValidation:
     ):
         """Should catch multiple unresolved variables."""
         content = """
-        Content with {{SCHEMA_VAR1}} and {{SCHEMA_VAR2}}.
+        Content with {{SCHEMA_VAR_ONE}} and {{SCHEMA_VAR_TWO}}.
         """
 
         with pytest.raises(
-            ValueError, match=r"SCHEMA_VAR1.*SCHEMA_VAR2|SCHEMA_VAR2.*SCHEMA_VAR1"
+            ValueError,
+            match=r"SCHEMA_VAR_ONE.*SCHEMA_VAR_TWO|SCHEMA_VAR_TWO.*SCHEMA_VAR_ONE",
         ):
             command_processor.validate_template_resolution(content, "test.md")
 
