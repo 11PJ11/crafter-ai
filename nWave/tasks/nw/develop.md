@@ -90,10 +90,17 @@ Execute a **complete DEVELOP wave** that orchestrates:
 1. **Phase 1-2**: Baseline Creation + Review (measurement baseline)
 2. **Phase 3-4**: Roadmap Creation + Dual Review (strategic planning)
 3. **Phase 5-6**: Split into Atomic Steps + Review Each Step (task decomposition)
-4. **Phase 7**: Execute All Steps (14-phase TDD per step)
+4. **Phase 7**: Execute All Steps (TDD cycle per step - see canonical schema)
 5. **Phase 7.5**: Mutation Testing (test quality validation)
 6. **Phase 8**: Finalize (archival and cleanup)
 7. **Phase 9**: Report Completion
+
+### TDD Cycle Definition
+
+The TDD cycle phases are defined in the canonical schema at `nWave/templates/step-tdd-cycle-schema.json`.
+**Do not hardcode phase counts or names here** - they are the single source of truth embedded at build time.
+
+{{SCHEMA_TDD_PHASES}}
 
 ### Key Features
 
@@ -198,7 +205,7 @@ Task(
 Task(
   subagent_type="software-crafter",
   prompt=BOUNDARY_TEMPLATE.format(
-      task_description="Execute step {step_id} with 14-phase TDD",
+      task_description="Execute step {step_id} with complete TDD cycle",
       actual_command='/nw:execute @software-crafter "{step_file}"'
   ),
   description="Execute step 01-03"
@@ -445,7 +452,7 @@ STEP 7: Phase 5 - Split into Atomic Steps (with skip)
   ↓
 STEP 8: Phase 6 - Review Each Step File (retry max 2 per file)
   ↓
-STEP 9: Phase 7 - Execute All Steps (14-phase TDD per step)
+STEP 9: Phase 7 - Execute All Steps (Complete TDD cycle per step)
   ↓
 STEP 10: Phase 7.5 - Mutation Testing (quality gate)
   ↓
@@ -1020,33 +1027,19 @@ Before generating steps, you MUST:
 4. Exception: Infrastructure steps may use "N/A - infrastructure"
 
 YOUR TASK: Transform each roadmap step into a complete task JSON file that:
-1. Includes the 14-phase TDD cycle structure
+1. Includes the complete TDD cycle structure (see canonical schema)
 2. Contains self-contained context
 3. Has clear acceptance criteria
 4. Maps all dependencies
 5. References the specific acceptance test scenario it implements
 
-MANDATORY 14 TDD PHASES (include in each step file):
-1. PREPARE - Remove @skip tags, verify scenario setup
-2. RED_ACCEPTANCE - Run acceptance test, expect FAIL
-3. RED_UNIT - Write failing unit tests
-4. GREEN_UNIT - Implement minimum code to pass
-5. CHECK_ACCEPTANCE - Verify unit implementation
-6. GREEN_ACCEPTANCE - Run acceptance test, expect PASS
-7. REVIEW - Self-review (SOLID, coverage, acceptance criteria)
-8. REFACTOR_L1 - Naming clarity
-9. REFACTOR_L2 - Method extraction
-10. REFACTOR_L3 - Class responsibilities
-11. REFACTOR_L4 - Architecture patterns
-12. POST_REFACTOR_REVIEW - Self-review (tests pass, quality improved)
-13. FINAL_VALIDATE - Full test suite validation
-14. COMMIT - Commit with detailed message
+{{MANDATORY_PHASES}}
 
 Read the canonical schema from: nWave/templates/step-tdd-cycle-schema.json
 
 DELIVERABLES:
 - Create JSON file for each step in docs/feature/{project_id}/steps/
-- Validate each file has correct 14-phase structure
+- Validate each file has correct TDD cycle structure (from canonical schema)
 - Return when all step files are generated
 ''',
        description="Split roadmap into atomic steps"
@@ -1177,13 +1170,13 @@ DELIVERABLES:
 
 ---
 
-### STEP 9: Phase 7 - Execute All Steps (14-Phase TDD per Step)
+### STEP 9: Phase 7 - Execute All Steps (Complete TDD Cycle per Step)
 
 #### Cross-Instance Phase Coordination
 
 Each Task invocation (representing a new agent instance) updates phase_execution_log with its progress. Instance 1 marks PREPARE as EXECUTED. Instance 2 reads this log, sees PREPARE is done, and executes RED_ACCEPTANCE (marking it EXECUTED). Instance 3 reads both completed phases and executes RED_UNIT. This phase-aware coordination through JSON allows /nw:develop to orchestrate work across multiple instances without shared session state.
 
-**Objective**: Execute all atomic steps in dependency order using complete 14-phase TDD.
+**Objective**: Execute all atomic steps in dependency order using the complete TDD cycle (from canonical schema).
 
 **Actions**:
 
@@ -1216,7 +1209,7 @@ Each Task invocation (representing a new agent instance) updates phase_execution
 3. **Execute each step in order**:
    ```python
    print(f"\n{'='*60}")
-   print(f"Executing {len(sorted_step_files)} steps with 14-phase TDD")
+   print(f"Executing {len(sorted_step_files)} steps with complete TDD cycle")
    print(f"{'='*60}\n")
 
    completed_steps = []
@@ -1248,7 +1241,7 @@ Each Task invocation (representing a new agent instance) updates phase_execution
        # This clean separation prevents context degradation and ensures each instance
        # operates with full clarity of prior progress.
 
-       # Execute step with 14-phase TDD using Task tool delegation
+       # Execute step with complete TDD cycle using Task tool delegation
        print(f"Invoking: Task tool with @software-crafter for step {step_id}")
 
        # CRITICAL: Do NOT pass /nw:execute to agent - they cannot execute it
@@ -1264,7 +1257,7 @@ You are a software-crafter agent executing atomic task {step_id}.
 ═══════════════════════════════════════════════════════════
 ⚠️  TASK BOUNDARY - READ BEFORE EXECUTING
 ═══════════════════════════════════════════════════════════
-YOUR ONLY TASK: Execute step {step_id} through all 14 TDD phases
+YOUR ONLY TASK: Execute step {step_id} through all TDD phases (defined in canonical schema)
 STEP FILE: {step_file}
 FORBIDDEN ACTIONS:
   ❌ DO NOT execute other steps
@@ -1277,21 +1270,11 @@ STEP CONTENT:
 {json.dumps(step_content, indent=2)}
 ```
 
-EXECUTE THESE 14 TDD PHASES IN ORDER:
-1. PREPARE - Remove @skip tags, verify scenario setup
-2. RED_ACCEPTANCE - Run acceptance test, expect FAIL
-3. RED_UNIT - Write failing unit tests
-4. GREEN_UNIT - Implement minimum code to pass
-5. CHECK_ACCEPTANCE - Verify unit implementation
-6. GREEN_ACCEPTANCE - Run acceptance test, expect PASS
-7. REVIEW - Self-review using criteria below
-8. REFACTOR_L1 - Naming clarity improvements
-9. REFACTOR_L2 - Method extraction
-10. REFACTOR_L3 - Class responsibilities
-11. REFACTOR_L4 - Architecture patterns
-12. POST_REFACTOR_REVIEW - Self-review using criteria below
-13. FINAL_VALIDATE - Full test suite validation
-14. COMMIT - Commit with detailed message
+EXECUTE ALL TDD PHASES IN ORDER (from canonical schema):
+
+Reference the current TDD phases from `nWave/templates/step-tdd-cycle-schema.json`.
+The phases are embedded at build time - do not hardcode them here.
+See the "TDD Cycle Definition" section above for the current phase list.
 
 INLINE REVIEW CRITERIA (Phases 7 and 12):
 - SOLID principles followed
@@ -1307,11 +1290,11 @@ After EACH phase, UPDATE the step file:
 - Commit after green phases
 
 DELIVERABLES:
-- Complete all 14 phases
+- Complete all TDD phases (from canonical schema)
 - Update step file with execution results
 - Return when COMMIT phase completes with PASS
 ''',
-           description=f"Execute step {step_id} with 14-phase TDD"
+           description=f"Execute step {step_id} with complete TDD cycle"
        )
 
        # Verify completion by checking step file for COMMIT/PASS
@@ -1369,7 +1352,7 @@ DELIVERABLES:
    ```
 
 **Success Criteria**:
-- All steps executed with 14-phase TDD
+- All steps executed with complete TDD cycle
 - All steps have COMMIT phase with outcome == "PASS"
 - All commits created (one per step)
 - No steps failed
@@ -2667,7 +2650,7 @@ Develop a complete feature from natural language description:
 4. Reviews roadmap (Software Crafter)
 5. Splits into atomic steps (`docs/feature/user-authentication/steps/*.json`)
 6. Reviews each step file (N reviews, one per step)
-7. Executes all steps with 14-phase TDD (2N reviews: REVIEW + POST-REFACTOR per step)
+7. Executes all steps with complete TDD cycle (2N reviews: REVIEW + POST-REFACTOR per step)
 8. Finalizes and archives to `docs/evolution/`
 9. Reports completion
 
@@ -2788,7 +2771,7 @@ rm -rf docs/feature/user-authentication/
 /nw:execute @software-crafter "docs/feature/order-management/steps/01-02.json"
 ```
 
-**Explanation**: The `/nw:execute` command now provides the complete 14-phase TDD execution for a single step that `/nw:develop --step` used to provide.
+**Explanation**: The `/nw:execute` command now provides the complete TDD cycle execution for a single step that `/nw:develop --step` used to provide.
 
 ---
 
