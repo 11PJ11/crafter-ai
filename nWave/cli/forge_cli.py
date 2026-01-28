@@ -8,15 +8,109 @@ HEXAGONAL ARCHITECTURE:
 - This is a DRIVING ADAPTER (outside the hexagon)
 - Invokes BuildService application service
 - Formats output and prompts for user interaction
+
+Step 05-07: User accepts install after successful build
+- handle_install_response() processes user input to install prompt
+- Accepts "Y", "y", or empty string (default) as acceptance
+- Invokes InstallService when user accepts
 """
 
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING, Tuple
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Optional, Tuple
 
 if TYPE_CHECKING:
     from nWave.core.versioning.application.build_service import BuildResult
+    from nWave.core.versioning.application.install_service import FileSystemProtocol
+
+
+@dataclass(frozen=True)
+class InstallResponseResult:
+    """
+    Result of handling install response.
+
+    Attributes:
+        install_invoked: True if install command was invoked
+        success: True if installation succeeded
+        message: Human-readable result message
+        installed_version: Version that was installed (if successful)
+        installation_performed: True if files were actually copied
+        exit_code: CLI exit code (0 for success, non-zero for error)
+        dist_cleaned: True if dist/ was cleaned after install
+    """
+
+    install_invoked: bool
+    success: bool
+    message: str
+    installed_version: Optional[str] = None
+    installation_performed: bool = False
+    exit_code: int = 0
+    dist_cleaned: bool = False
+
+
+def handle_install_response(
+    user_response: str,
+    build_result: "BuildResult",
+    install_file_system: "FileSystemProtocol",
+) -> InstallResponseResult:
+    """
+    Handle user response to install prompt after successful build.
+
+    Accepts:
+    - "Y", "y", "" (empty - default) as acceptance -> invokes install
+    - "n", "N", "no", "No", "NO" as decline -> skips install
+
+    Args:
+        user_response: User input string
+        build_result: Result from BuildService.build()
+        install_file_system: File system adapter for installation
+
+    Returns:
+        InstallResponseResult with install status
+    """
+    normalized_response = user_response.strip().lower()
+
+    is_acceptance = normalized_response in ("y", "yes", "")
+    is_decline = normalized_response in ("n", "no")
+
+    if is_decline:
+        return InstallResponseResult(
+            install_invoked=False,
+            success=True,
+            message="Installation skipped.",
+            installed_version=None,
+            installation_performed=False,
+            exit_code=0,
+            dist_cleaned=False,
+        )
+
+    if is_acceptance:
+        install_file_system.copy_dist_to_claude()
+        installed_version = install_file_system.get_installed_file("VERSION")
+        if installed_version:
+            installed_version = installed_version.strip()
+
+        return InstallResponseResult(
+            install_invoked=True,
+            success=True,
+            message="Installation complete.",
+            installed_version=installed_version or build_result.version,
+            installation_performed=True,
+            exit_code=0,
+            dist_cleaned=False,
+        )
+
+    return InstallResponseResult(
+        install_invoked=False,
+        success=False,
+        message=f"Invalid response: '{user_response}'. Expected Y or n.",
+        installed_version=None,
+        installation_performed=False,
+        exit_code=1,
+        dist_cleaned=False,
+    )
 
 
 def format_build_output(result: "BuildResult") -> Tuple[str, str]:
