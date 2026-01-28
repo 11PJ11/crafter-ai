@@ -26,27 +26,12 @@ from scripts.validation.validate_steps import (  # noqa: E402
 )
 
 
+# Import from single source of truth
+from nWave.constants.tdd_phases import REQUIRED_PHASES as CORRECT_PHASE_NAMES, PHASE_COUNT
+
 # =============================================================================
 # Test Constants - Expected Format
 # =============================================================================
-
-# Correct phase names (14 total)
-CORRECT_PHASE_NAMES = [
-    "PREPARE",
-    "RED_ACCEPTANCE",
-    "RED_UNIT",
-    "GREEN_UNIT",
-    "CHECK_ACCEPTANCE",
-    "GREEN_ACCEPTANCE",
-    "REVIEW",
-    "REFACTOR_L1",
-    "REFACTOR_L2",
-    "REFACTOR_L3",
-    "REFACTOR_L4",
-    "POST_REFACTOR_REVIEW",
-    "FINAL_VALIDATE",
-    "COMMIT",
-]
 
 # WRONG phase names that should be detected and rejected
 WRONG_PHASE_NAMES = [
@@ -68,7 +53,7 @@ WRONG_PHASE_NAMES = [
 
 
 def create_valid_phase_execution_log() -> List[Dict[str, Any]]:
-    """Create a valid phase_execution_log with all 14 phases."""
+    """Create a valid phase_execution_log with all 8 phases (schema v2.0)."""
     return [
         {
             "phase_name": phase_name,
@@ -135,7 +120,7 @@ def valid_step_file(tmp_path) -> Path:
 def step_with_wrong_phase_names(tmp_path) -> Path:
     """Create step file with WRONG phase names (old format)."""
     data = create_valid_step_file()
-    # Replace phase names with wrong format
+    # Replace phase names with wrong format - use 8-phase structure with some wrong names
     wrong_phases = [
         {"phase_name": "PREPARE", "phase_index": 0, "status": "NOT_EXECUTED"},
         {
@@ -152,29 +137,11 @@ def step_with_wrong_phase_names(tmp_path) -> Path:
             "phase_name": "GREEN (Unit)",
             "phase_index": 3,
             "status": "NOT_EXECUTED",
-        },  # WRONG
-        {
-            "phase_name": "CHECK (Acceptance)",
-            "phase_index": 4,
-            "status": "NOT_EXECUTED",
-        },  # WRONG
-        {
-            "phase_name": "GREEN (Acceptance)",
-            "phase_index": 5,
-            "status": "NOT_EXECUTED",
-        },  # WRONG
-        {"phase_name": "REVIEW", "phase_index": 6, "status": "NOT_EXECUTED"},
-        {"phase_name": "REFACTOR_L1", "phase_index": 7, "status": "NOT_EXECUTED"},
-        {"phase_name": "REFACTOR_L2", "phase_index": 8, "status": "NOT_EXECUTED"},
-        {"phase_name": "REFACTOR_L3", "phase_index": 9, "status": "NOT_EXECUTED"},
-        {"phase_name": "REFACTOR_L4", "phase_index": 10, "status": "NOT_EXECUTED"},
-        {
-            "phase_name": "POST_REFACTOR_REVIEW",
-            "phase_index": 11,
-            "status": "NOT_EXECUTED",
-        },
-        {"phase_name": "FINAL_VALIDATE", "phase_index": 12, "status": "NOT_EXECUTED"},
-        {"phase_name": "COMMIT", "phase_index": 13, "status": "NOT_EXECUTED"},
+        },  # WRONG - should be GREEN
+        {"phase_name": "REVIEW", "phase_index": 4, "status": "NOT_EXECUTED"},
+        {"phase_name": "REFACTOR_CONTINUOUS", "phase_index": 5, "status": "NOT_EXECUTED"},
+        {"phase_name": "REFACTOR_L4", "phase_index": 6, "status": "NOT_EXECUTED"},
+        {"phase_name": "COMMIT", "phase_index": 7, "status": "NOT_EXECUTED"},
     ]
     data["tdd_cycle"]["phase_execution_log"] = wrong_phases
     step_file = tmp_path / "wrong-phases.json"
@@ -226,15 +193,14 @@ def step_missing_tdd_cycle(tmp_path) -> Path:
 
 @pytest.fixture
 def step_with_incomplete_phases(tmp_path) -> Path:
-    """Create step file with less than 14 phases."""
+    """Create step file with less than 8 phases."""
     data = create_valid_step_file()
-    # Only include 5 phases instead of 14
+    # Only include 4 phases instead of 8
     data["tdd_cycle"]["phase_execution_log"] = [
         {"phase_name": "PREPARE", "phase_index": 0, "status": "NOT_EXECUTED"},
         {"phase_name": "RED_ACCEPTANCE", "phase_index": 1, "status": "NOT_EXECUTED"},
         {"phase_name": "RED_UNIT", "phase_index": 2, "status": "NOT_EXECUTED"},
-        {"phase_name": "GREEN_UNIT", "phase_index": 3, "status": "NOT_EXECUTED"},
-        {"phase_name": "COMMIT", "phase_index": 4, "status": "NOT_EXECUTED"},
+        {"phase_name": "COMMIT", "phase_index": 3, "status": "NOT_EXECUTED"},
     ]
     step_file = tmp_path / "incomplete-phases.json"
     step_file.write_text(json.dumps(data, indent=2))
@@ -273,15 +239,15 @@ def step_with_invalid_status(tmp_path) -> Path:
 
 
 class TestRequiredPhasesConstant:
-    """Verify REQUIRED_PHASES constant matches expected format."""
+    """Verify REQUIRED_PHASES constant matches expected format (8-phase schema v2.0)."""
 
-    def test_has_exactly_14_phases(self):
-        """Should define exactly 14 TDD phases."""
-        assert len(REQUIRED_PHASES) == 14
+    def test_has_exactly_8_phases(self):
+        """Should define exactly 8 TDD phases (schema v2.0)."""
+        assert len(REQUIRED_PHASES) == PHASE_COUNT
 
     def test_phases_match_expected_format(self):
         """Should match documented phase names exactly."""
-        assert REQUIRED_PHASES == CORRECT_PHASE_NAMES
+        assert REQUIRED_PHASES == list(CORRECT_PHASE_NAMES)
 
     def test_no_parentheses_in_phase_names(self):
         """Phase names should NOT contain parentheses."""
@@ -293,14 +259,11 @@ class TestRequiredPhasesConstant:
         """Multi-word phase names should use underscore separator."""
         multi_word_phases = [p for p in REQUIRED_PHASES if "_" in p]
         assert len(multi_word_phases) > 0, "Should have phases with underscores"
-        # Verify specific expected underscored phases
+        # Verify specific expected underscored phases (8-phase schema v2.0)
         assert "RED_ACCEPTANCE" in REQUIRED_PHASES
         assert "RED_UNIT" in REQUIRED_PHASES
-        assert "GREEN_UNIT" in REQUIRED_PHASES
-        assert "CHECK_ACCEPTANCE" in REQUIRED_PHASES
-        assert "GREEN_ACCEPTANCE" in REQUIRED_PHASES
-        assert "POST_REFACTOR_REVIEW" in REQUIRED_PHASES
-        assert "FINAL_VALIDATE" in REQUIRED_PHASES
+        assert "REFACTOR_CONTINUOUS" in REQUIRED_PHASES
+        assert "REFACTOR_L4" in REQUIRED_PHASES
 
     def test_no_hyphens_in_phase_names(self):
         """Phase names should NOT use hyphens as separators."""
@@ -328,13 +291,13 @@ class TestValidStepFileValidation:
         assert is_valid is True
         assert len(issues) == 0
 
-    def test_valid_phase_execution_log_has_14_phases(self):
-        """Valid phase_execution_log should have exactly 14 phases."""
+    def test_valid_phase_execution_log_has_8_phases(self):
+        """Valid phase_execution_log should have exactly 8 phases (schema v2.0)."""
         log = create_valid_phase_execution_log()
         issues = validate_phase_execution_log(log, "test.json")
 
         assert len(issues) == 0
-        assert len(log) == 14
+        assert len(log) == PHASE_COUNT
 
     def test_valid_phase_execution_log_has_correct_indices(self):
         """Each phase should have correct phase_index matching position."""
@@ -363,7 +326,7 @@ class TestWrongPhaseNameDetection:
 
         # Verify specific wrong phases detected
         missing_phases = [i for i in issues if "Missing phase:" in i]
-        assert len(missing_phases) >= 5, "Should detect multiple missing phases"
+        assert len(missing_phases) >= 3, "Should detect multiple missing phases"
 
     def test_detects_missing_red_acceptance(self, step_with_wrong_phase_names):
         """Should detect missing RED_ACCEPTANCE when 'RED (Acceptance)' used."""
@@ -372,21 +335,19 @@ class TestWrongPhaseNameDetection:
         assert is_valid is False
         assert any("RED_ACCEPTANCE" in issue for issue in issues)
 
-    def test_detects_missing_green_acceptance(self, step_with_wrong_phase_names):
-        """Should detect missing GREEN_ACCEPTANCE when 'GREEN (Acceptance)' used."""
+    def test_detects_missing_green(self, step_with_wrong_phase_names):
+        """Should detect missing GREEN when 'GREEN (Unit)' used (8-phase schema)."""
         is_valid, issues = validate_step_file(step_with_wrong_phase_names)
 
         assert is_valid is False
-        assert any("GREEN_ACCEPTANCE" in issue for issue in issues)
+        assert any("GREEN" in issue for issue in issues)
 
     @pytest.mark.parametrize(
         "wrong_name,correct_name",
         [
             ("RED (Acceptance)", "RED_ACCEPTANCE"),
             ("RED (Unit)", "RED_UNIT"),
-            ("GREEN (Unit)", "GREEN_UNIT"),
-            ("CHECK (Acceptance)", "CHECK_ACCEPTANCE"),
-            ("GREEN (Acceptance)", "GREEN_ACCEPTANCE"),
+            ("GREEN (Unit)", "GREEN"),
         ],
     )
     def test_wrong_name_not_recognized(self, tmp_path, wrong_name, correct_name):
@@ -469,12 +430,12 @@ class TestMissingTddCycleDetection:
 class TestIncompletePhaseLogDetection:
     """Tests for detecting incomplete phase_execution_log."""
 
-    def test_rejects_less_than_14_phases(self, step_with_incomplete_phases):
-        """Should reject phase_execution_log with fewer than 14 phases."""
+    def test_rejects_less_than_8_phases(self, step_with_incomplete_phases):
+        """Should reject phase_execution_log with fewer than 8 phases (schema v2.0)."""
         is_valid, issues = validate_step_file(step_with_incomplete_phases)
 
         assert is_valid is False
-        assert any("expected 14" in issue for issue in issues)
+        assert any(f"expected {PHASE_COUNT}" in issue for issue in issues)
 
     def test_identifies_missing_phase_names(self, step_with_incomplete_phases):
         """Should identify which phases are missing."""
@@ -483,7 +444,7 @@ class TestIncompletePhaseLogDetection:
         assert is_valid is False
         # Should detect all missing phases
         missing_phase_issues = [i for i in issues if "Missing phase:" in i]
-        assert len(missing_phase_issues) >= 9  # 14 - 5 = 9 missing
+        assert len(missing_phase_issues) >= 4  # 8 - 4 = 4 missing
 
 
 # =============================================================================

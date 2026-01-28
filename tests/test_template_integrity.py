@@ -44,10 +44,11 @@ class TestCanonicalTemplateValidity:
         assert isinstance(canonical_template, dict)
         assert "tdd_cycle" in canonical_template
 
-    def test_canonical_has_14_phases(self, canonical_template):
-        """Canonical template must have exactly 14 phases."""
+    def test_canonical_has_8_phases(self, canonical_template):
+        """Canonical template must have exactly 8 phases (schema v2.0)."""
+        from nWave.constants.tdd_phases import PHASE_COUNT
         phases = canonical_template.get("tdd_cycle", {}).get("phase_execution_log", [])
-        assert len(phases) == 14, f"Expected 14 phases, found {len(phases)}"
+        assert len(phases) == PHASE_COUNT, f"Expected {PHASE_COUNT} phases, found {len(phases)}"
 
     def test_canonical_phase_names_match_validator(self, canonical_template):
         """Phase names in template must match validator constants."""
@@ -99,7 +100,7 @@ class TestCanonicalTemplateValidity:
             assert section in canonical_template, f"Missing required section: {section}"
 
     def test_canonical_phase_indices_sequential(self, canonical_template):
-        """Phase indices must be sequential 0-13."""
+        """Phase indices must be sequential 0-7 (schema v2.0)."""
         phases = canonical_template.get("tdd_cycle", {}).get("phase_execution_log", [])
 
         for i, phase in enumerate(phases):
@@ -188,11 +189,12 @@ class TestValidatorSchemaAlignment:
     """Verify validator constants match the canonical template."""
 
     def test_validator_phases_count(self):
-        """Validator must define exactly 14 phases."""
+        """Validator must define exactly 8 phases (schema v2.0)."""
         from scripts.validation.validate_steps import REQUIRED_PHASES
+        from nWave.constants.tdd_phases import PHASE_COUNT
 
-        assert len(REQUIRED_PHASES) == 14, (
-            f"Validator should have 14 phases, has {len(REQUIRED_PHASES)}"
+        assert len(REQUIRED_PHASES) == PHASE_COUNT, (
+            f"Validator should have {PHASE_COUNT} phases, has {len(REQUIRED_PHASES)}"
         )
 
     def test_validator_phases_uppercase_underscore(self):

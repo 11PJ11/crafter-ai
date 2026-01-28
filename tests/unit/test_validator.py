@@ -31,7 +31,8 @@ class TestExecutionLogValidator:
             }
         ]
 
-        errors = validator.validate(phase_log)
+        # skip_schema_validation=True to test only phase state rules, not completeness
+        errors = validator.validate(phase_log, skip_schema_validation=True)
 
         assert len(errors) == 1
         assert "IN_PROGRESS" in errors[0]
@@ -51,7 +52,8 @@ class TestExecutionLogValidator:
             }
         ]
 
-        errors = validator.validate(phase_log)
+        # skip_schema_validation=True to test only phase state rules, not completeness
+        errors = validator.validate(phase_log, skip_schema_validation=True)
 
         assert len(errors) == 0
 
@@ -67,7 +69,8 @@ class TestExecutionLogValidator:
             }
         ]
 
-        errors = validator.validate(phase_log)
+        # skip_schema_validation=True to test only phase state rules, not completeness
+        errors = validator.validate(phase_log, skip_schema_validation=True)
 
         assert len(errors) == 0
 
@@ -83,7 +86,8 @@ class TestExecutionLogValidator:
             }
         ]
 
-        errors = validator.validate(phase_log)
+        # skip_schema_validation=True to test only phase state rules, not completeness
+        errors = validator.validate(phase_log, skip_schema_validation=True)
 
         assert len(errors) == 1
         assert "SKIPPED" in errors[0]
@@ -103,7 +107,8 @@ class TestExecutionLogValidator:
             }
         ]
 
-        errors = validator.validate(phase_log)
+        # skip_schema_validation=True to test only phase state rules, not completeness
+        errors = validator.validate(phase_log, skip_schema_validation=True)
 
         assert len(errors) == 1
         assert "EXECUTED" in errors[0]
@@ -126,7 +131,8 @@ class TestExecutionLogValidator:
             },
         ]
 
-        errors = validator.validate(phase_log)
+        # skip_schema_validation=True to test only phase state rules, not completeness
+        errors = validator.validate(phase_log, skip_schema_validation=True)
 
         assert len(errors) == 1
         assert "NOT_EXECUTED" in errors[0]
@@ -178,7 +184,8 @@ class TestExecutionLogValidator:
             },
         ]
 
-        errors = validator.validate(phase_log)
+        # skip_schema_validation=True to test only phase state rules, not completeness
+        errors = validator.validate(phase_log, skip_schema_validation=True)
 
         assert len(errors) == 0
 
@@ -203,7 +210,8 @@ class TestExecutionLogValidator:
             },
         ]
 
-        errors = validator.validate(phase_log)
+        # skip_schema_validation=True to test only phase state rules, not completeness
+        errors = validator.validate(phase_log, skip_schema_validation=True)
 
         assert len(errors) == 3
         assert any("IN_PROGRESS" in e for e in errors)

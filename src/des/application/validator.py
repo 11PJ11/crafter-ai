@@ -319,13 +319,22 @@ class ExecutionLogValidator:
     - REFACTOR_CONTINUOUS phase present (merged L1+L2+L3)
     """
 
-    def validate(self, phase_log: List[dict], schema_version: str = "1.0") -> List[str]:
+    def validate(
+        self,
+        phase_log: List[dict],
+        schema_version: str = "1.0",
+        skip_schema_validation: bool = False
+    ) -> List[str]:
         """
         Validate phase execution log for state violations and schema compliance.
 
         Checks:
         1. Correct number of phases for schema version (8 for v2.0, 14 for v1.0)
+           - SKIPPED if phase_log is empty (no execution log found in prompt)
+           - SKIPPED if skip_schema_validation is True
         2. Required phases present for schema version
+           - SKIPPED if phase_log is empty
+           - SKIPPED if skip_schema_validation is True
         3. No IN_PROGRESS phases (abandoned state)
         4. EXECUTED phases must have outcome field (PASS/FAIL)
         5. SKIPPED phases must have blocked_by reason
@@ -334,38 +343,48 @@ class ExecutionLogValidator:
         Args:
             phase_log: List of phase execution records
             schema_version: Schema version (default "1.0" for backward compatibility)
+            skip_schema_validation: If True, skip phase count/presence validation.
+                Useful for unit tests that only test individual phase state rules.
 
         Returns:
             List of error messages (empty if all valid)
         """
         errors = []
 
-        # Validate phase count matches schema version
-        if schema_version == "2.0":
-            expected_phases = 8
-            required_phases = {"PREPARE", "RED_ACCEPTANCE", "RED_UNIT", "GREEN",
-                             "REVIEW", "REFACTOR_CONTINUOUS", "REFACTOR_L4", "COMMIT"}
-        else:
-            expected_phases = 14
-            required_phases = {"PREPARE", "RED_ACCEPTANCE", "RED_UNIT", "GREEN_UNIT",
-                             "CHECK_ACCEPTANCE", "GREEN_ACCEPTANCE", "REVIEW",
-                             "REFACTOR_L1", "REFACTOR_L2", "REFACTOR_L3", "REFACTOR_L4",
-                             "POST_REFACTOR_REVIEW", "FINAL_VALIDATE", "COMMIT"}
+        # Skip phase count and presence validation if phase_log is empty
+        # This happens when no EXECUTION_LOG_* sections are found in the prompt
+        # (prompts don't always include execution logs, especially before execution starts)
+        if not phase_log:
+            return errors
 
-        # Check phase count
-        if len(phase_log) != expected_phases:
-            errors.append(
-                f"INVALID: Phase log has {len(phase_log)} phases for schema v{schema_version}, "
-                f"expected {expected_phases} phases"
-            )
+        # Skip schema-level validation if requested (for unit testing individual rules)
+        if not skip_schema_validation:
+            # Validate phase count matches schema version
+            if schema_version == "2.0":
+                expected_phases = 8
+                required_phases = {"PREPARE", "RED_ACCEPTANCE", "RED_UNIT", "GREEN",
+                                 "REVIEW", "REFACTOR_CONTINUOUS", "REFACTOR_L4", "COMMIT"}
+            else:
+                expected_phases = 14
+                required_phases = {"PREPARE", "RED_ACCEPTANCE", "RED_UNIT", "GREEN_UNIT",
+                                 "CHECK_ACCEPTANCE", "GREEN_ACCEPTANCE", "REVIEW",
+                                 "REFACTOR_L1", "REFACTOR_L2", "REFACTOR_L3", "REFACTOR_L4",
+                                 "POST_REFACTOR_REVIEW", "FINAL_VALIDATE", "COMMIT"}
 
-        # Check for required phases
-        present_phases = {phase.get("phase_name") for phase in phase_log if phase.get("phase_name")}
-        missing_phases = required_phases - present_phases
-        if missing_phases:
-            errors.append(
-                f"INCOMPLETE: Missing required phases for schema v{schema_version}: {', '.join(sorted(missing_phases))}"
-            )
+            # Check phase count
+            if len(phase_log) != expected_phases:
+                errors.append(
+                    f"INVALID: Phase log has {len(phase_log)} phases for schema v{schema_version}, "
+                    f"expected {expected_phases} phases"
+                )
+
+            # Check for required phases
+            present_phases = {phase.get("phase_name") for phase in phase_log if phase.get("phase_name")}
+            missing_phases = required_phases - present_phases
+            if missing_phases:
+                errors.append(
+                    f"INCOMPLETE: Missing required phases for schema v{schema_version}: {', '.join(sorted(missing_phases))}"
+                )
 
         for phase in phase_log:
             phase_name = phase.get("phase_name", "unknown")

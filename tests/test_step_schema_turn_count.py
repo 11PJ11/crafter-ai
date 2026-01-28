@@ -39,8 +39,9 @@ class TestStepSchemaTurnCountField:
         """
         phase_log = schema_data["tdd_cycle"]["phase_execution_log"]
 
-        # Should have 14 phases
-        assert len(phase_log) == 14, f"Expected 14 phases, got {len(phase_log)}"
+        # Should have 8 phases (schema v2.0)
+        from nWave.constants.tdd_phases import PHASE_COUNT
+        assert len(phase_log) == PHASE_COUNT, f"Expected {PHASE_COUNT} phases, got {len(phase_log)}"
 
         # Each phase should have turn_count field
         for phase in phase_log:
@@ -79,7 +80,7 @@ class TestStepSchemaTurnCountField:
         AC3: Existing step files remain compatible (turn_count optional or defaults to 0)
 
         Verify backward compatibility:
-        - turn_count field can be null (optional)
+        - turn_count field can be null or 0 (both valid defaults)
         - Missing turn_count doesn't break validation
         - Schema provides sensible defaults
         """
@@ -87,14 +88,15 @@ class TestStepSchemaTurnCountField:
         with open(schema_path, "r") as f:
             schema_data = json.load(f)
 
-        # Verify all phases have turn_count as null (optional)
+        # Verify all phases have turn_count as null or 0 (both valid defaults)
         phase_log = schema_data["tdd_cycle"]["phase_execution_log"]
         for phase in phase_log:
             turn_count = phase.get("turn_count")
-            # Should be null in template for backward compatibility
+            # Should be null or 0 in template for backward compatibility
+            # 0 means "not executed" which is semantically correct
             assert (
-                turn_count is None
-            ), f"Phase {phase['phase_name']} turn_count should default to null for compatibility"
+                turn_count is None or turn_count == 0
+            ), f"Phase {phase['phase_name']} turn_count should default to null or 0 for compatibility, got {turn_count}"
 
     def test_turn_count_semantic_meaning(self, schema_data):
         """
