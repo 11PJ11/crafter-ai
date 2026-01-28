@@ -408,7 +408,7 @@ Feature: Create Official Release
     And the output displays the PR number and URL
     And the output indicates "PR created. Pipeline running..."
 
-  @skip
+  # ACTIVE - Step 07-02: Release command fails on main branch
   Scenario: Release command fails on main branch
     Given Paola is on the main branch
     When Paola runs the /nw:forge:release command through the CLI entry point
@@ -416,7 +416,7 @@ Feature: Create Official Release
     And no PR is created
     And the CLI exit code is non-zero
 
-  @skip
+  # ACTIVE - Step 07-03: Release command fails on feature branch
   Scenario: Release command fails on feature branch
     Given Paola is on a feature/test branch
     When Paola runs the /nw:forge:release command through the CLI entry point
@@ -424,7 +424,7 @@ Feature: Create Official Release
     And no PR is created
     And the CLI exit code is non-zero
 
-  @skip
+  # ACTIVE - Step 07-04: Permission denied for non-admin user
   Scenario: Permission denied for non-admin user
     Given Oscar does not have repository write access configured
     And the git branch is "development"
