@@ -1,0 +1,185 @@
+{
+  "task_specification": {
+    "task_id": "06-02",
+    "phase_id": "06",
+    "name": "Verify code coverage and complexity metrics",
+    "description": "Execute coverage analysis on turn discipline code. Verify coverage >=90% for new code. Analyze cyclomatic complexity of new functions and methods (target: <2.5 average, no function exceeds 4). Document metrics.",
+    "acceptance_test_scenario": "Quality gates validation",
+    "acceptance_criteria": [
+      "GIVEN turn discipline implementation complete",
+      "WHEN coverage analysis runs: pytest --cov=src/des --cov-report=term-missing",
+      "THEN code coverage >=90% AND cyclomatic complexity average <2.5 AND no function CC exceeds 4"
+    ],
+    "requires": [
+      "06-01"
+    ],
+    "estimated_hours": 2
+  },
+  "tdd_cycle": {
+    "phases": [
+      {
+        "phase_number": 1,
+        "phase_name": "PREPARE",
+        "description": "Remove @skip tags, verify scenario setup",
+        "checks": [
+          "Coverage tool configured: pytest-cov installed",
+          "Cyclomatic complexity tool identified: radon or similar",
+          "Turn discipline code location identified: src/des/",
+          "Quality gates criteria confirmed: >=90% coverage, <2.5 avg CC, no function >4 CC"
+        ]
+      },
+      {
+        "phase_number": 2,
+        "phase_name": "RED_ACCEPTANCE",
+        "description": "Run acceptance test, expect FAIL",
+        "checks": [
+          "Test discovered: quality gates validation test",
+          "Run coverage: pytest --cov=src/des --cov-report=term-missing",
+          "Run complexity: radon cc src/des -s",
+          "Verify metrics meet gates (initially may not)"
+        ]
+      },
+      {
+        "phase_number": 3,
+        "phase_name": "RED_UNIT",
+        "description": "Write failing unit tests",
+        "checks": [
+          "Unit test file created: tests/unit/test_quality_gates.py",
+          "Test: Coverage for turn discipline modules >=90%",
+          "Test: Average cyclomatic complexity <2.5",
+          "Test: No function has CC >4",
+          "Test: Coverage report generated with missing lines identified",
+          "Test may pass (coverage and complexity achieved in implementation)"
+        ]
+      },
+      {
+        "phase_number": 4,
+        "phase_name": "GREEN_UNIT",
+        "description": "Implement minimum code to pass",
+        "checks": [
+          "Run coverage analysis: pytest --cov=src/des --cov-report=term-missing",
+          "Identify any coverage gaps (<90%)",
+          "Add tests for untested code paths if needed",
+          "Run complexity analysis: radon cc src/des -s",
+          "Identify any functions with high complexity",
+          "Refactor if needed to reduce complexity",
+          "All unit tests PASS"
+        ]
+      },
+      {
+        "phase_number": 5,
+        "phase_name": "CHECK_ACCEPTANCE",
+        "description": "Verify unit implementation",
+        "checks": [
+          "Coverage metric verified: >=90%",
+          "Complexity metric verified: <2.5 average, no function >4",
+          "All modules analyzed",
+          "Gap analysis complete (if any gaps exist)"
+        ]
+      },
+      {
+        "phase_number": 6,
+        "phase_name": "GREEN_ACCEPTANCE",
+        "description": "Run acceptance test, expect PASS",
+        "checks": [
+          "Acceptance test PASSES: coverage >=90%, complexity within limits",
+          "Quality gates confirmed met"
+        ]
+      },
+      {
+        "phase_number": 7,
+        "phase_name": "REVIEW",
+        "description": "Self-review (SOLID, coverage, acceptance criteria)",
+        "checks": [
+          "SOLID review: Code complexity appropriate for responsibility",
+          "Test coverage >=90% verified",
+          "Acceptance criteria met: coverage and complexity metrics pass",
+          "No security issues with metrics",
+          "Code quality verified through objective metrics"
+        ]
+      },
+      {
+        "phase_number": 8,
+        "phase_name": "REFACTOR_L1",
+        "description": "Naming clarity improvements",
+        "checks": [
+          "Code naming reflects business logic (clarity maintained)",
+          "Complexity comes from logic, not obscure code",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 9,
+        "phase_name": "REFACTOR_L2",
+        "description": "Method extraction",
+        "checks": [
+          "Complex logic extracted to methods if CC too high",
+          "Each method focused on single concern",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 10,
+        "phase_name": "REFACTOR_L3",
+        "description": "Class responsibilities",
+        "checks": [
+          "Each class has clear single responsibility",
+          "Complexity not from mixed concerns",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 11,
+        "phase_name": "REFACTOR_L4",
+        "description": "Architecture patterns",
+        "checks": [
+          "Architecture supports low complexity",
+          "Patterns applied appropriately",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 12,
+        "phase_name": "POST_REFACTOR_REVIEW",
+        "description": "Self-review (tests pass, quality improved)",
+        "checks": [
+          "All tests PASS",
+          "Coverage >=90%",
+          "Complexity within limits",
+          "Code quality improved through refactoring if needed"
+        ]
+      },
+      {
+        "phase_number": 13,
+        "phase_name": "FINAL_VALIDATE",
+        "description": "Full test suite validation",
+        "checks": [
+          "Full test suite executes: pytest tests/",
+          "Coverage report generated: pytest --cov=src/des --cov-report=html",
+          "Coverage >=90% confirmed",
+          "Complexity analysis: radon cc src/des -s",
+          "Complexity <2.5 avg confirmed"
+        ]
+      },
+      {
+        "phase_number": 14,
+        "phase_name": "COMMIT",
+        "description": "Commit with detailed message",
+        "checks": [
+          "Commit message format: 'test(quality): Verify code coverage >=90% and complexity metrics'",
+          "All tests still pass",
+          "Clean working directory"
+        ]
+      }
+    ],
+    "tdd_phase_tracking": {
+      "current_phase": "PREPARE",
+      "phase_execution_log": []
+    }
+  },
+  "validation": {
+    "status": "approved",
+    "notes": "Integration step: Quality gates validation and metrics verification",
+    "approval_date": "2026-01-28T15:33:57.296549+00:00"
+  }
+}

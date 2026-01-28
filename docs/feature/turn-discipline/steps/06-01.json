@@ -1,0 +1,183 @@
+{
+  "task_specification": {
+    "task_id": "06-01",
+    "phase_id": "06",
+    "name": "Full integration testing across all 12 scenarios",
+    "description": "Run complete end-to-end integration testing covering all 12 scenarios (001-010, 013-014) in sequential and concurrent execution patterns. Verify no regressions in existing US-003 tests (100% pass rate) and new turn discipline tests moving from SKIP to GREEN.",
+    "acceptance_test_scenario": "Integration testing (all scenarios 001-010, 013-014)",
+    "acceptance_criteria": [
+      "GIVEN all 12 turn discipline acceptance test scenarios",
+      "WHEN pytest tests/acceptance/test_us006_turn_discipline.py executes",
+      "THEN all 12 tests PASS AND existing US-003 tests remain at 100% pass rate (10/10 passing)"
+    ],
+    "requires": [
+      "05-04"
+    ],
+    "estimated_hours": 3
+  },
+  "tdd_cycle": {
+    "phases": [
+      {
+        "phase_number": 1,
+        "phase_name": "PREPARE",
+        "description": "Remove @skip tags, verify scenario setup",
+        "checks": [
+          "All 12 acceptance tests located: test_scenario_001 through 010, 013, 014",
+          "@skip tags removed from all 12 tests",
+          "Only these 12 tests active (others remain skipped)",
+          "Existing US-003 test file identified (regression check baseline)"
+        ]
+      },
+      {
+        "phase_number": 2,
+        "phase_name": "RED_ACCEPTANCE",
+        "description": "Run acceptance test, expect FAIL",
+        "checks": [
+          "Test discovered: integration test covering all 12 scenarios",
+          "All 12 tests should initially pass (implementation complete from previous steps)",
+          "Existing tests should pass (regression check)"
+        ]
+      },
+      {
+        "phase_number": 3,
+        "phase_name": "RED_UNIT",
+        "description": "Write failing unit tests",
+        "checks": [
+          "Unit test file created: tests/unit/test_integration_all_scenarios.py",
+          "Test: All 12 acceptance tests pass",
+          "Test: Existing US-003 tests (10 tests) pass",
+          "Test: Sequential execution: all tests pass in order",
+          "Test: No state leakage between tests (each independent)",
+          "All tests should pass (existing implementation complete)"
+        ]
+      },
+      {
+        "phase_number": 4,
+        "phase_name": "GREEN_UNIT",
+        "description": "Implement minimum code to pass",
+        "checks": [
+          "Run full test suite: pytest tests/",
+          "All 12 turn discipline scenarios PASS",
+          "Existing US-003 tests PASS (10/10)",
+          "Integration tests PASS",
+          "Sequential execution verified",
+          "No state leakage detected"
+        ]
+      },
+      {
+        "phase_number": 5,
+        "phase_name": "CHECK_ACCEPTANCE",
+        "description": "Verify unit implementation",
+        "checks": [
+          "All 12 scenarios pass individually",
+          "All 12 scenarios pass when run together",
+          "Existing 10 US-003 tests pass (regression check)",
+          "No interference between turn discipline and existing tests"
+        ]
+      },
+      {
+        "phase_number": 6,
+        "phase_name": "GREEN_ACCEPTANCE",
+        "description": "Run acceptance test, expect PASS",
+        "checks": [
+          "Acceptance test PASSES: all 12 scenarios pass with 100% existing test pass rate",
+          "pytest tests/acceptance/test_us006_turn_discipline.py shows all 12 PASS",
+          "pytest tests/acceptance/test_us003_*.py shows 10/10 PASS (no regressions)"
+        ]
+      },
+      {
+        "phase_number": 7,
+        "phase_name": "REVIEW",
+        "description": "Self-review (SOLID, coverage, acceptance criteria)",
+        "checks": [
+          "SOLID review: Integration testing covers all scenarios",
+          "Test coverage verified: all 12 scenarios exercised",
+          "Acceptance criteria met: all 12 PASS, no regressions",
+          "No security issues with integration test",
+          "Test isolation verified (no state leakage)"
+        ]
+      },
+      {
+        "phase_number": 8,
+        "phase_name": "REFACTOR_L1",
+        "description": "Naming clarity improvements",
+        "checks": [
+          "Test names clearly identify scenarios (test_scenario_001, etc.)",
+          "Integration test naming clear",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 9,
+        "phase_name": "REFACTOR_L2",
+        "description": "Method extraction",
+        "checks": [
+          "Common setup extracted to fixtures",
+          "Test helper methods focused on single concern",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 10,
+        "phase_name": "REFACTOR_L3",
+        "description": "Class responsibilities",
+        "checks": [
+          "Test class organized logically",
+          "Setup/teardown clear",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 11,
+        "phase_name": "REFACTOR_L4",
+        "description": "Architecture patterns",
+        "checks": [
+          "Follows AAA pattern (Arrange, Act, Assert)",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 12,
+        "phase_name": "POST_REFACTOR_REVIEW",
+        "description": "Self-review (tests pass, quality improved)",
+        "checks": [
+          "All 12 scenarios PASS",
+          "All existing tests PASS",
+          "Code quality maintained",
+          "No regressions detected"
+        ]
+      },
+      {
+        "phase_number": 13,
+        "phase_name": "FINAL_VALIDATE",
+        "description": "Full test suite validation",
+        "checks": [
+          "Full test suite executes: pytest tests/",
+          "12 turn discipline tests: PASS",
+          "10 existing US-003 tests: PASS",
+          "100% pass rate confirmed",
+          "No new warnings or errors"
+        ]
+      },
+      {
+        "phase_number": 14,
+        "phase_name": "COMMIT",
+        "description": "Commit with detailed message",
+        "checks": [
+          "Commit message format: 'test(integration): Full integration testing - all 12 scenarios PASS, zero regressions'",
+          "All tests still pass",
+          "Clean working directory"
+        ]
+      }
+    ],
+    "tdd_phase_tracking": {
+      "current_phase": "PREPARE",
+      "phase_execution_log": []
+    }
+  },
+  "validation": {
+    "status": "approved",
+    "notes": "Integration step: Comprehensive testing across all turn discipline scenarios",
+    "approval_date": "2026-01-28T15:33:57.296549+00:00"
+  }
+}

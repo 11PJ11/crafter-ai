@@ -1,0 +1,186 @@
+{
+  "task_specification": {
+    "task_id": "01-04",
+    "phase_id": "01",
+    "name": "Create turn counting unit tests",
+    "description": "Write unit tests for turn counter initialization, increment logic, and persistence. Achieve >=85% coverage for turn counting code.",
+    "acceptance_test_scenario": "Infrastructure step (supports scenarios 001-005)",
+    "acceptance_criteria": [
+      "GIVEN turn counting implementation",
+      "WHEN unit tests execute",
+      "THEN all edge cases covered (zero turns, multiple invocations, persistence)"
+    ],
+    "requires": [
+      "01-03"
+    ],
+    "estimated_hours": 2
+  },
+  "tdd_cycle": {
+    "phases": [
+      {
+        "phase_number": 1,
+        "phase_name": "PREPARE",
+        "description": "Remove @skip tags, verify scenario setup",
+        "checks": [
+          "Turn counting implementation completed (01-01, 01-02, 01-03)",
+          "Test file structure prepared: tests/unit/test_turn_count_coverage.py",
+          "Coverage tool configured (pytest-cov or similar)",
+          "Edge cases identified for comprehensive testing"
+        ]
+      },
+      {
+        "phase_number": 2,
+        "phase_name": "RED_ACCEPTANCE",
+        "description": "Run acceptance test, expect FAIL",
+        "checks": [
+          "Coverage measurement test created",
+          "Test checks coverage >=85% for turn counting code",
+          "Test fails because coverage not yet reached"
+        ]
+      },
+      {
+        "phase_number": 3,
+        "phase_name": "RED_UNIT",
+        "description": "Write failing unit tests",
+        "checks": [
+          "Test: turn_count initializes to 0 at phase start",
+          "Test: turn_count increments by 1 on single tool invocation",
+          "Test: turn_count increments correctly on multiple invocations (1, 2, 3, etc.)",
+          "Test: turn_count persists to step file correctly",
+          "Test: step file backward compatibility with missing turn_count",
+          "Test: turn_count resets for new phase after completion",
+          "Test: edge case - zero turns recorded (no tool invocations)",
+          "Test: edge case - many turns (10+) handled correctly",
+          "All tests should pass (or existing tests already passing)"
+        ]
+      },
+      {
+        "phase_number": 4,
+        "phase_name": "GREEN_UNIT",
+        "description": "Implement minimum code to pass",
+        "checks": [
+          "All turn counting tests written and passing",
+          "Coverage measured: pytest --cov=src/des --cov-report=term-missing",
+          "Coverage >=85% for turn counting modules",
+          "All edge cases tested and passing"
+        ]
+      },
+      {
+        "phase_number": 5,
+        "phase_name": "CHECK_ACCEPTANCE",
+        "description": "Verify unit implementation",
+        "checks": [
+          "Coverage report verified: >=85% for turn counting",
+          "All edge cases covered by tests",
+          "No code paths untested",
+          "Coverage report shows line-by-line coverage"
+        ]
+      },
+      {
+        "phase_number": 6,
+        "phase_name": "GREEN_ACCEPTANCE",
+        "description": "Run acceptance test, expect PASS",
+        "checks": [
+          "Acceptance test PASSES: coverage >=85%",
+          "test_turn_count_coverage_meets_target PASSES"
+        ]
+      },
+      {
+        "phase_number": 7,
+        "phase_name": "REVIEW",
+        "description": "Self-review (SOLID, coverage, acceptance criteria)",
+        "checks": [
+          "SOLID review: Tests have single responsibility (test specific behavior)",
+          "Test coverage >=85% for turn counting code (verified)",
+          "Acceptance criteria met: all edge cases covered",
+          "No security issues with test data",
+          "Test names are clear and descriptive"
+        ]
+      },
+      {
+        "phase_number": 8,
+        "phase_name": "REFACTOR_L1",
+        "description": "Naming clarity improvements",
+        "checks": [
+          "Test names follow pattern: test_<behavior>_<condition>_<expectation>",
+          "Variable names in tests are clear and descriptive",
+          "Comments removed from tests (should be self-documenting)",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 9,
+        "phase_name": "REFACTOR_L2",
+        "description": "Method extraction",
+        "checks": [
+          "Test setup extracted to fixtures if needed",
+          "Common test patterns extracted to helper methods",
+          "Test methods kept focused on single behavior",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 10,
+        "phase_name": "REFACTOR_L3",
+        "description": "Class responsibilities",
+        "checks": [
+          "Test class organized logically by behavior tested",
+          "Setup/teardown clear and cohesive",
+          "No mixing of unrelated test concerns",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 11,
+        "phase_name": "REFACTOR_L4",
+        "description": "Architecture patterns",
+        "checks": [
+          "Tests follow AAA pattern (Arrange, Act, Assert)",
+          "No anti-patterns in test code",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 12,
+        "phase_name": "POST_REFACTOR_REVIEW",
+        "description": "Self-review (tests pass, quality improved)",
+        "checks": [
+          "All tests PASS",
+          "Coverage >=85% maintained",
+          "Code quality of test suite improved",
+          "No regressions"
+        ]
+      },
+      {
+        "phase_number": 13,
+        "phase_name": "FINAL_VALIDATE",
+        "description": "Full test suite validation",
+        "checks": [
+          "Full test suite executes: pytest tests/",
+          "Coverage report generated: pytest --cov=src/des --cov-report=html",
+          "Coverage >=85% verified",
+          "No new warnings or errors"
+        ]
+      },
+      {
+        "phase_number": 14,
+        "phase_name": "COMMIT",
+        "description": "Commit with detailed message",
+        "checks": [
+          "Commit message format: 'test(turn-count): Comprehensive turn counting unit tests with 85%+ coverage'",
+          "All tests still pass",
+          "Clean working directory"
+        ]
+      }
+    ],
+    "tdd_phase_tracking": {
+      "current_phase": "PREPARE",
+      "phase_execution_log": []
+    }
+  },
+  "validation": {
+    "status": "approved",
+    "notes": "Infrastructure step: Comprehensive test coverage for turn counting foundation",
+    "approval_date": "2026-01-28T15:33:57.296549+00:00"
+  }
+}

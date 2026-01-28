@@ -1,0 +1,182 @@
+{
+  "task_specification": {
+    "task_id": "03-02",
+    "phase_id": "03",
+    "name": "Scenario 010: Add TIMEOUT_INSTRUCTION to /nw:develop command",
+    "description": "Extend prompt generation for /nw:develop command to include TIMEOUT_INSTRUCTION section with same structure and content as /nw:execute. Both commands are production workflows requiring full DES validation.",
+    "acceptance_test_scenario": "test_scenario_010_develop_command_also_includes_timeout_instruction",
+    "acceptance_criteria": [
+      "GIVEN /nw:develop command with step file",
+      "WHEN orchestrator renders full prompt",
+      "THEN prompt contains 'TIMEOUT_INSTRUCTION' header AND '50' in prompt (turn budget)"
+    ],
+    "requires": [
+      "03-01"
+    ],
+    "estimated_hours": 2
+  },
+  "tdd_cycle": {
+    "phases": [
+      {
+        "phase_number": 1,
+        "phase_name": "PREPARE",
+        "description": "Remove @skip tags, verify scenario setup",
+        "checks": [
+          "Acceptance test file located: tests/acceptance/test_us006_turn_discipline.py",
+          "@skip tag removed from test_scenario_010",
+          "/nw:develop command implementation located",
+          "Prompt template structure reviewed for both /nw:execute and /nw:develop"
+        ]
+      },
+      {
+        "phase_number": 2,
+        "phase_name": "RED_ACCEPTANCE",
+        "description": "Run acceptance test, expect FAIL",
+        "checks": [
+          "Test discovered: test_scenario_010_develop_command_also_includes_timeout_instruction",
+          "Test invokes /nw:develop command",
+          "Test fails: /nw:develop prompt does not contain TIMEOUT_INSTRUCTION"
+        ]
+      },
+      {
+        "phase_number": 3,
+        "phase_name": "RED_UNIT",
+        "description": "Write failing unit tests",
+        "checks": [
+          "Unit test file created: tests/unit/test_develop_command_timeout_instruction.py",
+          "Test: /nw:develop command renders TIMEOUT_INSTRUCTION section",
+          "Test: /nw:develop prompt contains TIMEOUT_INSTRUCTION header",
+          "Test: /nw:develop prompt contains turn budget (50)",
+          "Test: /nw:develop TIMEOUT_INSTRUCTION has same structure as /nw:execute",
+          "All tests fail (/nw:develop prompt not yet updated)"
+        ]
+      },
+      {
+        "phase_number": 4,
+        "phase_name": "GREEN_UNIT",
+        "description": "Implement minimum code to pass",
+        "checks": [
+          "Locate /nw:develop command prompt template",
+          "Add TIMEOUT_INSTRUCTION section to /nw:develop template",
+          "Copy same content structure as /nw:execute (header, budget, checkpoints, early exit, logging)",
+          "Ensure validation applies to /nw:develop prompts",
+          "All unit tests PASS"
+        ]
+      },
+      {
+        "phase_number": 5,
+        "phase_name": "CHECK_ACCEPTANCE",
+        "description": "Verify unit implementation",
+        "checks": [
+          "/nw:develop template modification verified",
+          "TIMEOUT_INSTRUCTION section rendering verified",
+          "Content parity verified: /nw:develop matches /nw:execute structure",
+          "Validation applied to both commands"
+        ]
+      },
+      {
+        "phase_number": 6,
+        "phase_name": "GREEN_ACCEPTANCE",
+        "description": "Run acceptance test, expect PASS",
+        "checks": [
+          "Acceptance test PASSES: /nw:develop contains TIMEOUT_INSTRUCTION and turn budget",
+          "test_scenario_010_develop_command_also_includes_timeout_instruction PASSES"
+        ]
+      },
+      {
+        "phase_number": 7,
+        "phase_name": "REVIEW",
+        "description": "Self-review (SOLID, coverage, acceptance criteria)",
+        "checks": [
+          "SOLID review: Template extension focused on single concern",
+          "Test coverage >80% for /nw:develop changes",
+          "Acceptance criteria met: both commands have TIMEOUT_INSTRUCTION",
+          "No security issues",
+          "Template consistency verified"
+        ]
+      },
+      {
+        "phase_number": 8,
+        "phase_name": "REFACTOR_L1",
+        "description": "Naming clarity improvements",
+        "checks": [
+          "Template variable names consistent between /nw:execute and /nw:develop",
+          "Section references clear",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 9,
+        "phase_name": "REFACTOR_L2",
+        "description": "Method extraction",
+        "checks": [
+          "TIMEOUT_INSTRUCTION rendering extracted to shared method",
+          "Both /nw:execute and /nw:develop templates call same rendering method",
+          "Eliminates duplication",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 10,
+        "phase_name": "REFACTOR_L3",
+        "description": "Class responsibilities",
+        "checks": [
+          "Prompt builder maintains clear responsibility",
+          "TIMEOUT_INSTRUCTION rendering cohesive",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 11,
+        "phase_name": "REFACTOR_L4",
+        "description": "Architecture patterns",
+        "checks": [
+          "Follows existing command prompt pattern",
+          "Shared rendering method follows DRY principle",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 12,
+        "phase_name": "POST_REFACTOR_REVIEW",
+        "description": "Self-review (tests pass, quality improved)",
+        "checks": [
+          "All unit tests PASS",
+          "Acceptance test PASSES",
+          "Code quality improved (DRY principle applied)",
+          "No regressions in /nw:execute or /nw:develop"
+        ]
+      },
+      {
+        "phase_number": 13,
+        "phase_name": "FINAL_VALIDATE",
+        "description": "Full test suite validation",
+        "checks": [
+          "Full test suite executes: pytest tests/",
+          "Coverage >=80% for command templates",
+          "No new warnings or errors",
+          "Scenarios 001-009 still pass"
+        ]
+      },
+      {
+        "phase_number": 14,
+        "phase_name": "COMMIT",
+        "description": "Commit with detailed message",
+        "checks": [
+          "Commit message format: 'feat(timeout-instruction-010): Add TIMEOUT_INSTRUCTION to /nw:develop command'",
+          "All tests still pass",
+          "Clean working directory"
+        ]
+      }
+    ],
+    "tdd_phase_tracking": {
+      "current_phase": "PREPARE",
+      "phase_execution_log": []
+    }
+  },
+  "validation": {
+    "status": "approved",
+    "notes": "Feature step: Scenario 010 - TIMEOUT_INSTRUCTION in /nw:develop",
+    "approval_date": "2026-01-28T15:33:57.296549+00:00"
+  }
+}
