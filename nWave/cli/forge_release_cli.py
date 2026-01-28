@@ -37,20 +37,23 @@ def format_release_output(result: ReleaseResult) -> str:
 
     Returns:
         Formatted output string for display
+
+    Output format (07-06):
+        PR #123 created.
+        CI/CD pipeline triggered. Monitor at: {pr_url}
     """
     if not result.success:
         return result.error_message or "Unknown error"
 
     output_lines = []
 
-    # Show PR number and URL
+    # Show PR created message with number
     if result.pr_number:
-        output_lines.append(f"PR #{result.pr_number}")
-    if result.pr_url:
-        output_lines.append(result.pr_url)
+        output_lines.append(f"PR #{result.pr_number} created.")
 
-    # Show pipeline status message
-    output_lines.append("PR created. Pipeline running...")
+    # Show pipeline status with monitoring URL
+    if result.pr_url:
+        output_lines.append(f"CI/CD pipeline triggered. Monitor at: {result.pr_url}")
 
     return "\n".join(output_lines)
 
