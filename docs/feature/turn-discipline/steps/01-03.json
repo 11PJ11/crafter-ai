@@ -1,0 +1,184 @@
+{
+  "task_specification": {
+    "task_id": "01-03",
+    "phase_id": "01",
+    "name": "Add turn count persistence to step file",
+    "description": "Update on_agent_complete() hook to persist turn_count to step file's phase_execution_log. Ensure backward compatibility with existing step files.",
+    "acceptance_test_scenario": "Infrastructure step (supports scenarios 001-005)",
+    "acceptance_criteria": [
+      "GIVEN phase execution completes",
+      "WHEN hook processes completion",
+      "THEN turn_count written to step file phase_execution_log"
+    ],
+    "requires": [
+      "01-02"
+    ],
+    "estimated_hours": 2
+  },
+  "tdd_cycle": {
+    "phases": [
+      {
+        "phase_number": 1,
+        "phase_name": "PREPARE",
+        "description": "Remove @skip tags, verify scenario setup",
+        "checks": [
+          "on_agent_complete() hook located and understood",
+          "phase_execution_log structure reviewed",
+          "Step file persistence mechanism understood",
+          "Backward compatibility requirements identified"
+        ]
+      },
+      {
+        "phase_number": 2,
+        "phase_name": "RED_ACCEPTANCE",
+        "description": "Run acceptance test, expect FAIL",
+        "checks": [
+          "Acceptance test verifies turn_count persisted to step file",
+          "Test fails because turn_count not yet written to phase_execution_log"
+        ]
+      },
+      {
+        "phase_number": 3,
+        "phase_name": "RED_UNIT",
+        "description": "Write failing unit tests",
+        "checks": [
+          "Unit test file created: tests/unit/test_turn_count_persistence.py",
+          "Test: on_agent_complete() reads current turn_count",
+          "Test: turn_count written to phase_execution_log entry",
+          "Test: step file updated with new turn_count value",
+          "Test: backward compatibility - old step files without turn_count still load",
+          "All tests fail (persistence logic not implemented)"
+        ]
+      },
+      {
+        "phase_number": 4,
+        "phase_name": "GREEN_UNIT",
+        "description": "Implement minimum code to pass",
+        "checks": [
+          "Modify on_agent_complete() to access current turn_count",
+          "Retrieve phase_execution_log from step file",
+          "Add turn_count field to current phase's log entry",
+          "Persist updated step file",
+          "Implement backward compatibility check for old files",
+          "All unit tests PASS"
+        ]
+      },
+      {
+        "phase_number": 5,
+        "phase_name": "CHECK_ACCEPTANCE",
+        "description": "Verify unit implementation",
+        "checks": [
+          "Persistence timing verified: happens at phase completion",
+          "turn_count value verified: matches counter from hook",
+          "Step file format verified: turn_count in correct location",
+          "Backward compatibility verified: old files don't error",
+          "Test with new and old step files both work"
+        ]
+      },
+      {
+        "phase_number": 6,
+        "phase_name": "GREEN_ACCEPTANCE",
+        "description": "Run acceptance test, expect PASS",
+        "checks": [
+          "Acceptance test PASSES: turn_count persisted to step file",
+          "test_turn_count_written_to_step_file PASSES"
+        ]
+      },
+      {
+        "phase_number": 7,
+        "phase_name": "REVIEW",
+        "description": "Self-review (SOLID, coverage, acceptance criteria)",
+        "checks": [
+          "SOLID review: Responsibility of persistence logic is clear",
+          "Test coverage >85% for persistence code",
+          "Acceptance criteria met: turn_count written to phase_execution_log",
+          "No security issues with file persistence",
+          "Backward compatibility thoroughly tested"
+        ]
+      },
+      {
+        "phase_number": 8,
+        "phase_name": "REFACTOR_L1",
+        "description": "Naming clarity improvements",
+        "checks": [
+          "Variable and method names are clear and descriptive",
+          "Comments removed (should be self-documenting code)",
+          "Backward compatibility logic has clear naming",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 9,
+        "phase_name": "REFACTOR_L2",
+        "description": "Method extraction",
+        "checks": [
+          "Persistence logic extracted to clear method if needed",
+          "Backward compatibility check extracted to separate helper if needed",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 10,
+        "phase_name": "REFACTOR_L3",
+        "description": "Class responsibilities",
+        "checks": [
+          "on_agent_complete() hook maintains clear responsibility",
+          "File persistence logic cohesive with existing hook logic",
+          "No additional class extraction needed",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 11,
+        "phase_name": "REFACTOR_L4",
+        "description": "Architecture patterns",
+        "checks": [
+          "No new patterns needed for persistence logic",
+          "Follows existing hook pattern architecture",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 12,
+        "phase_name": "POST_REFACTOR_REVIEW",
+        "description": "Self-review (tests pass, quality improved)",
+        "checks": [
+          "All unit tests PASS",
+          "Acceptance test PASSES",
+          "Code quality maintained",
+          "No regressions in hook execution or file persistence"
+        ]
+      },
+      {
+        "phase_number": 13,
+        "phase_name": "FINAL_VALIDATE",
+        "description": "Full test suite validation",
+        "checks": [
+          "Full test suite executes: pytest tests/",
+          "Coverage >=85% for persistence code",
+          "No new warnings or errors",
+          "Existing persistence tests still pass"
+        ]
+      },
+      {
+        "phase_number": 14,
+        "phase_name": "COMMIT",
+        "description": "Commit with detailed message",
+        "checks": [
+          "Commit message format: 'feat(turn-count): Persist turn_count to step file on phase completion'",
+          "All tests still pass",
+          "Clean working directory"
+        ]
+      }
+    ],
+    "tdd_phase_tracking": {
+      "current_phase": "PREPARE",
+      "phase_execution_log": []
+    }
+  },
+  "validation": {
+    "status": "approved",
+    "notes": "Infrastructure step: Turn count persistence to step file",
+    "approval_date": "2026-01-28T15:33:57.296549+00:00"
+  }
+}

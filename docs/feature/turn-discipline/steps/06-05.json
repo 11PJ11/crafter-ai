@@ -1,0 +1,182 @@
+{
+  "task_specification": {
+    "task_id": "06-05",
+    "phase_id": "06",
+    "name": "Update evolution documentation with lessons learned",
+    "description": "Update docs/evolution/ with turn discipline implementation notes, including design decisions, trade-offs considered, performance characteristics, and recommendations for future enhancements. Add metrics from final quality gates.",
+    "acceptance_test_scenario": "Documentation step",
+    "acceptance_criteria": [
+      "GIVEN all implementation phases complete",
+      "WHEN evolution documentation updated",
+      "THEN documentation includes: design decisions, trade-offs, performance metrics, lessons learned, recommendations"
+    ],
+    "requires": [
+      "06-04"
+    ],
+    "estimated_hours": 2
+  },
+  "tdd_cycle": {
+    "phases": [
+      {
+        "phase_number": 1,
+        "phase_name": "PREPARE",
+        "description": "Remove @skip tags, verify scenario setup",
+        "checks": [
+          "Evolution documentation location identified: docs/evolution/",
+          "Turn discipline implementation complete with all metrics",
+          "Design decisions and trade-offs compiled",
+          "Performance characteristics measured"
+        ]
+      },
+      {
+        "phase_number": 2,
+        "phase_name": "RED_ACCEPTANCE",
+        "description": "Run acceptance test, expect FAIL",
+        "checks": [
+          "Test discovered: evolution documentation update test",
+          "Test checks for update to evolution file",
+          "Test verifies required sections present",
+          "Test may initially fail (updates not yet made)"
+        ]
+      },
+      {
+        "phase_number": 3,
+        "phase_name": "RED_UNIT",
+        "description": "Write failing unit tests",
+        "checks": [
+          "Unit test file created: tests/unit/test_evolution_documentation.py",
+          "Test: Evolution file updated with turn discipline section",
+          "Test: Design decisions documented",
+          "Test: Trade-offs section present",
+          "Test: Performance metrics included",
+          "Test: Lessons learned section present",
+          "Test: Recommendations for future included"
+        ]
+      },
+      {
+        "phase_number": 4,
+        "phase_name": "GREEN_UNIT",
+        "description": "Implement minimum code to pass",
+        "checks": [
+          "Locate docs/evolution/turn-discipline.md or update existing evolution doc",
+          "Add design decisions section: schema extension, turn counting, monitoring",
+          "Document trade-offs: turn budget (50 vs other values), threshold percentages (50%, 75%, 90%)",
+          "Include performance metrics: coverage >=90%, complexity <2.5",
+          "Write lessons learned: what worked, what challenges emerged",
+          "Add recommendations: future enhancements, scaling considerations"
+        ]
+      },
+      {
+        "phase_number": 5,
+        "phase_name": "CHECK_ACCEPTANCE",
+        "description": "Verify unit implementation",
+        "checks": [
+          "Evolution documentation location verified",
+          "All required sections present",
+          "Metrics from quality gates included",
+          "Recommendations actionable and future-focused"
+        ]
+      },
+      {
+        "phase_number": 6,
+        "phase_name": "GREEN_ACCEPTANCE",
+        "description": "Run acceptance test, expect PASS",
+        "checks": [
+          "Acceptance test PASSES: evolution doc updated with all required sections",
+          "Documentation completeness verified"
+        ]
+      },
+      {
+        "phase_number": 7,
+        "phase_name": "REVIEW",
+        "description": "Self-review (SOLID, coverage, acceptance criteria)",
+        "checks": [
+          "SOLID review: Documentation clear and comprehensive",
+          "Acceptance criteria met: all five required sections present",
+          "Metrics accurate and from quality gates",
+          "Recommendations based on implementation experience"
+        ]
+      },
+      {
+        "phase_number": 8,
+        "phase_name": "REFACTOR_L1",
+        "description": "Naming clarity improvements",
+        "checks": [
+          "Section headings clearly describe content",
+          "Decision rationale clear for each choice",
+          "Metrics presented clearly with context"
+        ]
+      },
+      {
+        "phase_number": 9,
+        "phase_name": "REFACTOR_L2",
+        "description": "Method extraction",
+        "checks": [
+          "Complex decisions broken into understandable subsections",
+          "Trade-offs section organized by decision point",
+          "Lessons grouped by category (technical, process, learning)"
+        ]
+      },
+      {
+        "phase_number": 10,
+        "phase_name": "REFACTOR_L3",
+        "description": "Class responsibilities",
+        "checks": [
+          "Document structure logical: overview \u2192 decisions \u2192 trade-offs \u2192 metrics \u2192 lessons \u2192 recommendations",
+          "No redundancy between sections",
+          "Flow from implementation to future planning"
+        ]
+      },
+      {
+        "phase_number": 11,
+        "phase_name": "REFACTOR_L4",
+        "description": "Architecture patterns",
+        "checks": [
+          "Evolution documentation follows established patterns",
+          "Consistent with other evolution docs"
+        ]
+      },
+      {
+        "phase_number": 12,
+        "phase_name": "POST_REFACTOR_REVIEW",
+        "description": "Self-review (tests pass, quality improved)",
+        "checks": [
+          "All sections clear and complete",
+          "Metrics verified from quality gates",
+          "Content quality appropriate for evolution document",
+          "No gaps in documentation"
+        ]
+      },
+      {
+        "phase_number": 13,
+        "phase_name": "FINAL_VALIDATE",
+        "description": "Full test suite validation",
+        "checks": [
+          "Evolution documentation completeness verified",
+          "All sections present and accurate",
+          "Metrics match quality gate results",
+          "Document renders correctly in markdown"
+        ]
+      },
+      {
+        "phase_number": 14,
+        "phase_name": "COMMIT",
+        "description": "Commit with detailed message",
+        "checks": [
+          "Commit message format: 'docs(evolution): Add turn discipline implementation notes with design decisions and lessons learned'",
+          "Documentation file committed",
+          "Clean working directory"
+        ]
+      }
+    ],
+    "tdd_phase_tracking": {
+      "current_phase": "PREPARE",
+      "phase_execution_log": []
+    }
+  },
+  "validation": {
+    "status": "approved",
+    "notes": "Documentation step: Evolution documentation for turn discipline feature",
+    "approval_date": "2026-01-28T15:33:57.296549+00:00"
+  }
+}

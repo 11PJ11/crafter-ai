@@ -1,0 +1,185 @@
+{
+  "task_specification": {
+    "task_id": "05-01",
+    "phase_id": "05",
+    "name": "Create timeout monitor domain object",
+    "description": "Implement TimeoutMonitor domain object to track phase execution time, manage threshold configuration, and determine when thresholds are crossed. Accept timeout_budget (minutes), timeout_thresholds (minute markers), and track elapsed time.",
+    "acceptance_test_scenario": "Infrastructure step (supports scenarios 013-014)",
+    "acceptance_criteria": [
+      "GIVEN timeout_budget=40 minutes, thresholds=[20, 30, 36]",
+      "WHEN elapsed time updates",
+      "THEN monitor identifies when thresholds crossed (50%, 75%, 90%)"
+    ],
+    "requires": [
+      "04-02"
+    ],
+    "estimated_hours": 2
+  },
+  "tdd_cycle": {
+    "phases": [
+      {
+        "phase_number": 1,
+        "phase_name": "PREPARE",
+        "description": "Remove @skip tags, verify scenario setup",
+        "checks": [
+          "Domain model directory identified: src/des/domain/",
+          "Timeout monitoring requirements reviewed",
+          "Threshold calculation logic understood (50%, 75%, 90% of budget)"
+        ]
+      },
+      {
+        "phase_number": 2,
+        "phase_name": "RED_ACCEPTANCE",
+        "description": "Run acceptance test, expect FAIL",
+        "checks": [
+          "Acceptance test for TimeoutMonitor created",
+          "Test instantiates with budget and thresholds",
+          "Test fails because TimeoutMonitor class not yet implemented"
+        ]
+      },
+      {
+        "phase_number": 3,
+        "phase_name": "RED_UNIT",
+        "description": "Write failing unit tests",
+        "checks": [
+          "Unit test file created: tests/unit/test_timeout_monitor.py",
+          "Test: TimeoutMonitor initializes with timeout_budget",
+          "Test: TimeoutMonitor stores timeout_thresholds",
+          "Test: TimeoutMonitor tracks start_time",
+          "Test: TimeoutMonitor calculates elapsed_time correctly",
+          "Test: TimeoutMonitor identifies threshold crossings (20, 30, 36 minutes)",
+          "Test: TimeoutMonitor.is_threshold_crossed(threshold) returns correct boolean",
+          "All tests fail (class not yet implemented)"
+        ]
+      },
+      {
+        "phase_number": 4,
+        "phase_name": "GREEN_UNIT",
+        "description": "Implement minimum code to pass",
+        "checks": [
+          "Create TimeoutMonitor class in src/des/domain/timeout_monitor.py",
+          "Add __init__(timeout_budget, timeout_thresholds)",
+          "Add start_time property (capture current time on initialization)",
+          "Add elapsed_time property (calculate seconds elapsed)",
+          "Add is_threshold_crossed(threshold_minutes) method",
+          "Track which thresholds have been crossed (avoid duplicate warnings)",
+          "All unit tests PASS"
+        ]
+      },
+      {
+        "phase_number": 5,
+        "phase_name": "CHECK_ACCEPTANCE",
+        "description": "Verify unit implementation",
+        "checks": [
+          "TimeoutMonitor initialization verified",
+          "Threshold crossing logic verified: 20 min (50%), 30 min (75%), 36 min (90%)",
+          "Elapsed time calculation verified correct",
+          "Threshold tracking prevents duplicate warnings"
+        ]
+      },
+      {
+        "phase_number": 6,
+        "phase_name": "GREEN_ACCEPTANCE",
+        "description": "Run acceptance test, expect PASS",
+        "checks": [
+          "Acceptance test PASSES: TimeoutMonitor created and tracks thresholds",
+          "Test with 40-minute budget correctly identifies 50%, 75%, 90% crossings"
+        ]
+      },
+      {
+        "phase_number": 7,
+        "phase_name": "REVIEW",
+        "description": "Self-review (SOLID, coverage, acceptance criteria)",
+        "checks": [
+          "SOLID review: TimeoutMonitor has single responsibility (track time and thresholds)",
+          "Test coverage >85% for TimeoutMonitor",
+          "Acceptance criteria met: thresholds identified correctly",
+          "No security issues with time tracking",
+          "Domain object appropriately isolated from infrastructure"
+        ]
+      },
+      {
+        "phase_number": 8,
+        "phase_name": "REFACTOR_L1",
+        "description": "Naming clarity improvements",
+        "checks": [
+          "Class name TimeoutMonitor is clear and descriptive",
+          "Method names self-documenting (is_threshold_crossed, elapsed_time)",
+          "Property names clear (start_time, timeout_budget)",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 9,
+        "phase_name": "REFACTOR_L2",
+        "description": "Method extraction",
+        "checks": [
+          "Threshold calculation logic extracted to helper method if needed",
+          "Elapsed time calculation focused on single concern",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 10,
+        "phase_name": "REFACTOR_L3",
+        "description": "Class responsibilities",
+        "checks": [
+          "TimeoutMonitor focused on monitoring responsibility",
+          "No mixing of concerns (time tracking, warnings, configuration)",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 11,
+        "phase_name": "REFACTOR_L4",
+        "description": "Architecture patterns",
+        "checks": [
+          "Follows domain object patterns",
+          "Immutable or value-like properties",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 12,
+        "phase_name": "POST_REFACTOR_REVIEW",
+        "description": "Self-review (tests pass, quality improved)",
+        "checks": [
+          "All unit tests PASS",
+          "Acceptance test PASSES",
+          "Code quality maintained",
+          "No regressions"
+        ]
+      },
+      {
+        "phase_number": 13,
+        "phase_name": "FINAL_VALIDATE",
+        "description": "Full test suite validation",
+        "checks": [
+          "Full test suite executes: pytest tests/",
+          "Coverage >=85% for TimeoutMonitor",
+          "No new warnings or errors",
+          "Existing tests still pass"
+        ]
+      },
+      {
+        "phase_number": 14,
+        "phase_name": "COMMIT",
+        "description": "Commit with detailed message",
+        "checks": [
+          "Commit message format: 'feat(timeout-monitor): Create TimeoutMonitor domain object'",
+          "All tests still pass",
+          "Clean working directory"
+        ]
+      }
+    ],
+    "tdd_phase_tracking": {
+      "current_phase": "PREPARE",
+      "phase_execution_log": []
+    }
+  },
+  "validation": {
+    "status": "approved",
+    "notes": "Infrastructure step: TimeoutMonitor domain object foundation",
+    "approval_date": "2026-01-28T15:33:57.296549+00:00"
+  }
+}

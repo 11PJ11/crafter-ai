@@ -1,0 +1,183 @@
+{
+  "task_specification": {
+    "task_id": "01-02",
+    "phase_id": "01",
+    "name": "Implement basic turn counter in hooks",
+    "description": "Add turn_count tracking in SubagentStopHook. Increment counter on each tool invocation within a phase. Initialize counter to 0 at phase start.",
+    "acceptance_test_scenario": "Infrastructure step (supports scenarios 001-005)",
+    "acceptance_criteria": [
+      "GIVEN phase execution starts",
+      "WHEN tool invocations occur",
+      "THEN turn_count increments by 1 per invocation"
+    ],
+    "requires": [
+      "01-01"
+    ],
+    "estimated_hours": 3
+  },
+  "tdd_cycle": {
+    "phases": [
+      {
+        "phase_number": 1,
+        "phase_name": "PREPARE",
+        "description": "Remove @skip tags, verify scenario setup",
+        "checks": [
+          "SubagentStopHook implementation located",
+          "Understand phase lifecycle and tool invocation flow",
+          "Identify where phase execution starts (initialize counter)",
+          "Identify where tool invocations are counted (increment counter)"
+        ]
+      },
+      {
+        "phase_number": 2,
+        "phase_name": "RED_ACCEPTANCE",
+        "description": "Run acceptance test, expect FAIL",
+        "checks": [
+          "Infrastructure acceptance test exists",
+          "Test simulates multiple tool invocations within a phase",
+          "Test fails because turn_count is not incremented"
+        ]
+      },
+      {
+        "phase_number": 3,
+        "phase_name": "RED_UNIT",
+        "description": "Write failing unit tests",
+        "checks": [
+          "Unit test file created: tests/unit/test_turn_counter.py",
+          "Test: turn counter initializes to 0 at phase start",
+          "Test: turn counter increments by 1 on first tool invocation",
+          "Test: turn counter increments correctly after multiple invocations (1, 2, 3...)",
+          "Test: turn counter resets for new phase execution",
+          "All tests fail (turn_count logic not implemented)"
+        ]
+      },
+      {
+        "phase_number": 4,
+        "phase_name": "GREEN_UNIT",
+        "description": "Implement minimum code to pass",
+        "checks": [
+          "Add turn_count instance variable to SubagentStopHook",
+          "Initialize turn_count=0 when phase execution starts",
+          "Implement increment logic in on_tool_call() hook method",
+          "Increment turn_count by 1 on each tool invocation",
+          "All unit tests PASS"
+        ]
+      },
+      {
+        "phase_number": 5,
+        "phase_name": "CHECK_ACCEPTANCE",
+        "description": "Verify unit implementation",
+        "checks": [
+          "Turn counter initialization timing verified: happens at phase start",
+          "Turn counter increment logic verified: happens on each tool call",
+          "Edge case handling checked: first invocation increments to 1, not 0",
+          "Multiple invocations verified: counter shows 1, 2, 3, etc."
+        ]
+      },
+      {
+        "phase_number": 6,
+        "phase_name": "GREEN_ACCEPTANCE",
+        "description": "Run acceptance test, expect PASS",
+        "checks": [
+          "Acceptance test PASSES: turn_count increments correctly",
+          "test_turn_counter_increments_on_tool_invocation PASSES"
+        ]
+      },
+      {
+        "phase_number": 7,
+        "phase_name": "REVIEW",
+        "description": "Self-review (SOLID, coverage, acceptance criteria)",
+        "checks": [
+          "SOLID review: Single Responsibility - turn counter only tracks counts",
+          "Test coverage >85% for turn counter implementation",
+          "Acceptance criteria met: turn_count increments by 1 per invocation",
+          "No security issues with counter",
+          "Thread safety considered if parallel execution possible"
+        ]
+      },
+      {
+        "phase_number": 8,
+        "phase_name": "REFACTOR_L1",
+        "description": "Naming clarity improvements",
+        "checks": [
+          "Variable name 'turn_count' is clear and intention-revealing",
+          "Method name 'increment_turn_count()' is clear",
+          "Comments removed (code should be self-documenting)",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 9,
+        "phase_name": "REFACTOR_L2",
+        "description": "Method extraction",
+        "checks": [
+          "Turn counter increment logic is simple (counter += 1), no extraction needed",
+          "Initialization logic is clear",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 10,
+        "phase_name": "REFACTOR_L3",
+        "description": "Class responsibilities",
+        "checks": [
+          "SubagentStopHook has clear single responsibility with turn counting added",
+          "Turn counter is cohesive with hook's existing responsibilities",
+          "No need to extract separate counter class",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 11,
+        "phase_name": "REFACTOR_L4",
+        "description": "Architecture patterns",
+        "checks": [
+          "No design patterns needed for simple counter",
+          "Implementation follows existing hook patterns",
+          "All tests still pass"
+        ]
+      },
+      {
+        "phase_number": 12,
+        "phase_name": "POST_REFACTOR_REVIEW",
+        "description": "Self-review (tests pass, quality improved)",
+        "checks": [
+          "All unit tests PASS",
+          "Acceptance test PASSES",
+          "Code quality maintained",
+          "No regressions in hook execution"
+        ]
+      },
+      {
+        "phase_number": 13,
+        "phase_name": "FINAL_VALIDATE",
+        "description": "Full test suite validation",
+        "checks": [
+          "Full test suite executes: pytest tests/",
+          "Coverage >=85% for turn counter code",
+          "No new warnings or errors",
+          "Existing hook tests still pass"
+        ]
+      },
+      {
+        "phase_number": 14,
+        "phase_name": "COMMIT",
+        "description": "Commit with detailed message",
+        "checks": [
+          "Commit message format: 'feat(turn-counter): Implement basic turn counter in SubagentStopHook'",
+          "All tests still pass",
+          "Clean working directory"
+        ]
+      }
+    ],
+    "tdd_phase_tracking": {
+      "current_phase": "PREPARE",
+      "phase_execution_log": []
+    }
+  },
+  "validation": {
+    "status": "approved",
+    "notes": "Infrastructure step: Turn counter implementation core logic",
+    "approval_date": "2026-01-28T15:33:57.296549+00:00"
+  }
+}
