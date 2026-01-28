@@ -179,3 +179,312 @@ class TestVersionServiceUpdateAvailableDetection:
 
         # THEN: update_available is False
         assert result.update_available is False
+
+
+# ============================================================================
+# Step 03-04: Daily auto-check updates watermark when stale
+# ============================================================================
+
+
+class TestVersionServiceChecksGitHubWhenWatermarkStale:
+    """
+    Step 03-04: Test that VersionService checks GitHub when watermark is stale.
+
+    Acceptance criteria: System checks GitHub Releases when watermark is stale (>24h)
+    """
+
+    def test_version_service_checks_github_when_watermark_stale(self):
+        """VersionService should call GitHub API when watermark is stale (>24h)."""
+        from datetime import timedelta
+        from nWave.core.versioning.application.version_service import VersionService
+
+        # GIVEN: A stale watermark (25 hours old)
+        stale_timestamp = datetime.now(timezone.utc) - timedelta(hours=25)
+        stale_watermark = Watermark(
+            last_check=stale_timestamp,
+            latest_version=Version("1.2.0"),
+        )
+
+        mock_file_system = Mock()
+        mock_file_system.read_version.return_value = Version("1.2.3")
+        mock_file_system.read_watermark.return_value = stale_watermark
+
+        mock_github = Mock()
+        mock_github.get_latest_release.return_value = ReleaseInfo(
+            version=Version("1.3.0"),
+            checksum="abc123",
+            download_url="https://example.com/release.zip",
+        )
+
+        version_service = VersionService(
+            github_api=mock_github,
+            file_system=mock_file_system,
+        )
+
+        # WHEN: check_version is called
+        result = version_service.check_version()
+
+        # THEN: GitHub API was called (because watermark is stale)
+        mock_github.get_latest_release.assert_called_once()
+
+        # AND: The result contains the latest version from GitHub
+        assert result.latest_version == Version("1.3.0")
+
+    def test_watermark_is_stale_after_24_hours(self):
+        """Watermark is considered stale after 24 hours."""
+        from datetime import timedelta
+
+        # GIVEN: A watermark from 25 hours ago
+        stale_timestamp = datetime.now(timezone.utc) - timedelta(hours=25)
+        watermark = Watermark(
+            last_check=stale_timestamp,
+            latest_version=Version("1.2.0"),
+        )
+
+        # THEN: Watermark is stale
+        assert watermark.is_stale is True
+
+        # GIVEN: A watermark from 23 hours ago
+        fresh_timestamp = datetime.now(timezone.utc) - timedelta(hours=23)
+        fresh_watermark = Watermark(
+            last_check=fresh_timestamp,
+            latest_version=Version("1.2.0"),
+        )
+
+        # THEN: Watermark is NOT stale
+        assert fresh_watermark.is_stale is False
+
+    def test_version_service_updates_watermark_after_check(self):
+        """VersionService should update watermark with new timestamp after GitHub check."""
+        from datetime import timedelta
+        from nWave.core.versioning.application.version_service import VersionService
+
+        # GIVEN: A stale watermark
+        stale_timestamp = datetime.now(timezone.utc) - timedelta(hours=25)
+        stale_watermark = Watermark(
+            last_check=stale_timestamp,
+            latest_version=Version("1.2.0"),
+        )
+
+        mock_file_system = Mock()
+        mock_file_system.read_version.return_value = Version("1.2.3")
+        mock_file_system.read_watermark.return_value = stale_watermark
+
+        mock_github = Mock()
+        mock_github.get_latest_release.return_value = ReleaseInfo(
+            version=Version("1.3.0"),
+            checksum="abc123",
+            download_url="https://example.com/release.zip",
+        )
+
+        version_service = VersionService(
+            github_api=mock_github,
+            file_system=mock_file_system,
+        )
+
+        timestamp_before = datetime.now(timezone.utc)
+
+        # WHEN: check_version is called
+        result = version_service.check_version()
+
+        timestamp_after = datetime.now(timezone.utc)
+
+        # THEN: FileSystemPort.write_watermark was called
+        mock_file_system.write_watermark.assert_called_once()
+
+        # AND: The new watermark has updated timestamp (not the old stale one)
+        written_watermark = mock_file_system.write_watermark.call_args[0][0]
+        assert written_watermark.last_check > stale_timestamp
+        assert timestamp_before <= written_watermark.last_check <= timestamp_after
+
+        # AND: The new watermark contains latest_version from GitHub
+        assert written_watermark.latest_version == Version("1.3.0")
+
+
+# ============================================================================
+# Step 03-06: Handle missing VERSION file gracefully
+# ============================================================================
+
+
+class TestVersionServiceHandlesMissingVersionFile:
+    """Test that VersionService propagates FileNotFoundError when VERSION file is missing."""
+
+    def test_version_service_handles_missing_version_file(self):
+        """
+        VersionService should raise FileNotFoundError when FileSystemPort cannot find VERSION file.
+
+        Port-boundary test: FileSystemPort is mocked to simulate missing file.
+        No mocks inside hexagon - we test the service's error propagation behavior.
+        """
+        from nWave.core.versioning.application.version_service import VersionService
+
+        # GIVEN: FileSystemPort raises FileNotFoundError (simulating missing VERSION file)
+        mock_file_system = Mock()
+        mock_file_system.read_version.side_effect = FileNotFoundError(
+            "VERSION file not found"
+        )
+
+        mock_github = Mock()
+        # GitHub should never be called since VERSION file check fails first
+
+        version_service = VersionService(
+            github_api=mock_github,
+            file_system=mock_file_system,
+        )
+
+        # WHEN/THEN: check_version raises FileNotFoundError
+        with pytest.raises(FileNotFoundError) as exc_info:
+            version_service.check_version()
+
+        # AND: The error message indicates VERSION file is missing
+        assert "VERSION" in str(exc_info.value)
+
+        # AND: GitHub API was NOT called (early failure due to missing VERSION)
+        mock_github.get_latest_release.assert_not_called()
+
+
+# ============================================================================
+# Step 03-07: Handle GitHub API rate limit gracefully
+# ============================================================================
+
+
+class TestVersionServiceHandlesRateLimitGracefully:
+    """
+    Test that VersionService handles GitHub API rate limiting (HTTP 403) gracefully.
+
+    Scenario: Handle GitHub API rate limit gracefully
+    Given Marco has nWave v1.2.3 installed
+    And the GitHub API returns HTTP 403 with rate limit headers
+    When checking version
+    Then the output displays "nWave v1.2.3 (Unable to check for updates)"
+    And no error is thrown
+    """
+
+    def test_version_service_handles_rate_limit_gracefully(self):
+        """
+        VersionService should catch RateLimitError and return graceful offline result.
+
+        Port-boundary test: GitHubAPIPort is mocked to raise RateLimitError.
+        No mocks inside hexagon - real Version and Watermark domain objects used.
+        """
+        from nWave.core.versioning.application.version_service import VersionService
+
+        # GIVEN: FileSystemPort returns v1.2.3
+        mock_file_system = Mock()
+        mock_file_system.read_version.return_value = Version("1.2.3")
+
+        # AND: GitHubAPIPort raises RateLimitError (HTTP 403)
+        mock_github = Mock()
+        mock_github.get_latest_release.side_effect = RateLimitError(
+            "GitHub API rate limit exceeded",
+            retry_after=3600  # 1 hour until rate limit resets
+        )
+
+        version_service = VersionService(
+            github_api=mock_github,
+            file_system=mock_file_system,
+        )
+
+        # WHEN: check_version is called
+        result = version_service.check_version()
+
+        # THEN: No exception is raised (graceful handling)
+        # AND: Result contains local version
+        assert result.local_version == Version("1.2.3")
+        assert result.installed_version == Version("1.2.3")  # Alias
+
+        # AND: Result indicates offline/unable to check status
+        assert result.is_offline is True
+        assert result.remote_version is None
+        assert result.latest_version is None  # Alias
+
+        # AND: No update is available (cannot determine)
+        assert result.update_available is False
+
+        # AND: No error message is set (graceful degradation)
+        assert result.error_message is None
+
+    def test_version_service_rate_limit_does_not_update_watermark(self):
+        """
+        VersionService should NOT update watermark when rate limited.
+
+        When GitHub returns HTTP 403, we don't have valid latest version info,
+        so watermark should remain unchanged.
+        """
+        from nWave.core.versioning.application.version_service import VersionService
+
+        # GIVEN: FileSystemPort returns v1.2.3
+        mock_file_system = Mock()
+        mock_file_system.read_version.return_value = Version("1.2.3")
+
+        # AND: GitHubAPIPort raises RateLimitError
+        mock_github = Mock()
+        mock_github.get_latest_release.side_effect = RateLimitError(
+            "GitHub API rate limit exceeded"
+        )
+
+        version_service = VersionService(
+            github_api=mock_github,
+            file_system=mock_file_system,
+        )
+
+        # WHEN: check_version is called
+        result = version_service.check_version()
+
+        # THEN: write_watermark was NOT called (no valid data to write)
+        mock_file_system.write_watermark.assert_not_called()
+
+    def test_version_service_formats_rate_limit_display_message(self):
+        """
+        VersionCheckResult should format rate limit status correctly.
+
+        Display message: "nWave v1.2.3 (Unable to check for updates)"
+        """
+        from nWave.core.versioning.application.version_service import (
+            VersionCheckResult,
+        )
+
+        # GIVEN: A result from rate-limited check
+        result = VersionCheckResult(
+            local_version=Version("1.2.3"),
+            remote_version=None,
+            is_offline=True,
+        )
+
+        # WHEN: format_display_message is called
+        message = result.format_display_message()
+
+        # THEN: Message shows unable to check (same as offline)
+        assert message == "nWave v1.2.3 (Unable to check for updates)"
+
+    def test_version_service_rate_limit_with_retry_after(self):
+        """
+        VersionService handles RateLimitError with retry_after information.
+
+        The retry_after value indicates when the rate limit will reset,
+        but for now we just gracefully degrade without using this info.
+        """
+        from nWave.core.versioning.application.version_service import VersionService
+
+        # GIVEN: FileSystemPort returns v1.2.3
+        mock_file_system = Mock()
+        mock_file_system.read_version.return_value = Version("1.2.3")
+
+        # AND: GitHubAPIPort raises RateLimitError with retry_after
+        mock_github = Mock()
+        mock_github.get_latest_release.side_effect = RateLimitError(
+            "GitHub API rate limit exceeded",
+            retry_after=1800  # 30 minutes
+        )
+
+        version_service = VersionService(
+            github_api=mock_github,
+            file_system=mock_file_system,
+        )
+
+        # WHEN: check_version is called
+        result = version_service.check_version()
+
+        # THEN: Graceful degradation (same as rate limit without retry_after)
+        assert result.is_offline is True
+        assert result.local_version == Version("1.2.3")

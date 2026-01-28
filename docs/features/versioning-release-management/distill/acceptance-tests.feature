@@ -56,7 +56,7 @@ Feature: Check Installed Version
     And no error is thrown
     And the CLI exit code is 0
 
-  @skip
+  # ACTIVE - Step 03-04: Stale watermark triggers GitHub check
   Scenario: Daily auto-check updates watermark when stale
     Given Elena has nWave v1.2.3 installed in the test ~/.claude/ directory
     And the watermark file shows last_check was 25 hours ago
@@ -75,7 +75,7 @@ Feature: Check Installed Version
     Then no GitHub API call is made
     And the output displays "nWave v1.2.3 (update available: v1.3.0)"
 
-  @skip
+  # ACTIVE - Step 03-06: Handle missing VERSION file gracefully
   Scenario: Handle missing VERSION file gracefully
     Given a user has an incomplete installation in the test ~/.claude/ directory
     And the VERSION file does not exist
@@ -83,7 +83,7 @@ Feature: Check Installed Version
     Then an error displays "VERSION file not found. nWave may be corrupted."
     And the CLI exit code is non-zero
 
-  @skip
+  # ACTIVE - Step 03-07: Rate limit handling
   Scenario: Handle GitHub API rate limit gracefully
     Given Marco has nWave v1.2.3 installed in the test ~/.claude/ directory
     And the GitHub API returns HTTP 403 with rate limit headers
