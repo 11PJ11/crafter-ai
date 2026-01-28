@@ -401,7 +401,6 @@ class TestFailureRecoveryGuidance:
     # Scenario 7: Validation error message includes inline fix guidance
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_007_validation_error_includes_inline_fix_guidance(
         self, tmp_project_root
     ):
@@ -416,25 +415,76 @@ class TestFailureRecoveryGuidance:
 
         Error Format:
         "MISSING: Mandatory section 'BOUNDARY_RULES' not found.
-         Fix: Add BOUNDARY_RULES section with ALLOWED and FORBIDDEN file patterns."
+         FIX: Add BOUNDARY_RULES section with ALLOWED and FORBIDDEN file patterns."
         """
-        # Arrange: Prompt missing BOUNDARY_RULES
-        _prompt_missing_boundary_rules = """
-        <!-- DES-VALIDATION: required -->
-        # All sections present EXCEPT BOUNDARY_RULES
+        # Arrange: Create validator and prompt missing BOUNDARY_RULES
+        from src.des.application.validator import TemplateValidator
+
+        prompt_missing_boundary_rules = """
+# DES_METADATA
+Step: 01-01.json
+Command: /nw:develop
+
+# AGENT_IDENTITY
+Agent: software-crafter
+
+# TASK_CONTEXT
+Implement UserRepository with proper dependency injection
+
+# TDD_14_PHASES
+All 14 phases listed
+
+# QUALITY_GATES
+G1-G6 defined
+
+# OUTCOME_RECORDING
+Update step file with phase completion
+
+# TIMEOUT_INSTRUCTION
+50 turns max
         """
 
         # Act: Validation fails
-        # validation_result = des_validator.validate_prompt(prompt_missing_boundary_rules)
+        validator = TemplateValidator()
+        validation_result = validator.validate_prompt(prompt_missing_boundary_rules)
 
-        # Assert: Error message includes inline fix guidance
-        # assert validation_result.status == "FAILED"
-        # assert "BOUNDARY_RULES" in validation_result.error_message
-        # assert "Fix:" in validation_result.error_message or "fix" in validation_result.error_message.lower()
-        # assert any(
-        #     keyword in validation_result.error_message.lower()
-        #     for keyword in ["add", "include", "update"]
-        # )
+        # Assert: Error message includes inline fix guidance with FIX: prefix
+        assert (
+            validation_result.status == "FAILED"
+        ), "Validation should fail for missing BOUNDARY_RULES"
+        assert "BOUNDARY_RULES" in str(
+            validation_result.errors
+        ), "Error should mention BOUNDARY_RULES"
+        assert (
+            validation_result.recovery_guidance is not None
+        ), "Should have recovery guidance"
+
+        # Check that recovery guidance includes FIX: formatted guidance
+        guidance_text = " ".join(validation_result.recovery_guidance)
+        assert (
+            "FIX:" in guidance_text
+            or "Fix:" in guidance_text
+            or "fix:" in guidance_text
+        ), "Recovery guidance should include 'FIX:' prefix formatting"
+
+        # Check that guidance is specific and actionable
+        assert any(
+            keyword in guidance_text.lower()
+            for keyword in ["add", "include", "update", "section", "boundary"]
+        ), "Recovery guidance should mention how to add the section"
+
+        # Verify guidance explains what BOUNDARY_RULES is for
+        assert any(
+            pattern in guidance_text.lower()
+            for pattern in [
+                "file patterns",
+                "allowed",
+                "forbidden",
+                "scope",
+                "files can be modified",
+                "specify which",
+            ]
+        ), "Guidance should explain what BOUNDARY_RULES contains"
 
     # =========================================================================
     # AC-005.4: Validation errors include fix guidance in error message
