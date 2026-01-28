@@ -47,7 +47,48 @@ class SubagentStopHook:
 
     Validates step file state and ensures all expected phases completed
     without being abandoned or left in incomplete state.
+    Provides turn_count persistence for tracking phase execution turns.
     """
+
+    def persist_turn_count(self, step_file_path: str, phase_name: str, turn_count: int) -> None:
+        """Persist turn_count to phase_execution_log entry.
+
+        Updates the phase_execution_log entry for the specified phase with the turn_count value.
+        Writes changes immediately to the step file.
+
+        Args:
+            step_file_path: Path to the step JSON file
+            phase_name: Name of the phase to update (e.g., "PREPARE", "RED_ACCEPTANCE")
+            turn_count: Turn count value to persist (must be non-negative)
+
+        Raises:
+            ValueError: If turn_count is negative
+            KeyError: If phase_name not found in phase_execution_log
+        """
+        if turn_count < 0:
+            raise ValueError(f"turn_count must be non-negative, got {turn_count}")
+
+        # Load step file
+        with open(step_file_path, "r") as f:
+            step_data = json.load(f)
+
+        # Get phase_execution_log
+        phase_log = step_data.get("tdd_cycle", {}).get("phase_execution_log", [])
+
+        # Find and update phase entry
+        phase_found = False
+        for phase in phase_log:
+            if phase.get("phase_name") == phase_name:
+                phase["turn_count"] = turn_count
+                phase_found = True
+                break
+
+        if not phase_found:
+            raise KeyError(f"Phase {phase_name} not found in phase_execution_log")
+
+        # Write updated step file
+        with open(step_file_path, "w") as f:
+            json.dump(step_data, f, indent=2)
 
     def on_agent_complete(self, step_file_path: str) -> HookResult:
         """Validate step file after agent completion.
