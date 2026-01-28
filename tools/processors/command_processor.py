@@ -85,6 +85,27 @@ class CommandProcessor:
             # Return original content if processing fails
             return content
 
+    def validate_template_resolution(self, content: str, file_path: str) -> None:
+        """
+        Ensure all template variables were resolved.
+
+        Raises:
+            ValueError: If unresolved template variables are found
+
+        Args:
+            content: Processed content to validate
+            file_path: Path to file being processed (for error messages)
+        """
+        unresolved_pattern = r"\{\{SCHEMA_[A-Z_]+\}\}"
+        matches = re.findall(unresolved_pattern, content)
+
+        if matches:
+            unique_matches = sorted(set(matches))
+            raise ValueError(
+                f"Unresolved template variables in {file_path}: {unique_matches}\n"
+                f"Check that TemplateProcessor initialized correctly and all variables are defined."
+            )
+
     def process_embed_injections(self, content: str) -> str:
         """
         Process BUILD:INJECT markers and replace with embed file content.
@@ -322,6 +343,9 @@ class CommandProcessor:
 
             # Process template variables SECOND (after embeds, before other transforms)
             task_content = self.process_template_variables(task_content)
+
+            # Validate template resolution (ensures no unprocessed variables remain)
+            self.validate_template_resolution(task_content, str(task_file))
 
             # Get command and wave information
             task_name = task_file.name
