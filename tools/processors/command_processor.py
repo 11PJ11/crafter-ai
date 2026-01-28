@@ -15,6 +15,7 @@ import sys
 
 sys.path.append(str(Path(__file__).parent.parent))
 from utils.dependency_resolver import DependencyResolver
+from processors.template_processor import TemplateProcessor
 
 
 class CommandProcessor:
@@ -25,6 +26,64 @@ class CommandProcessor:
         self.output_dir = Path(output_dir)
         self.file_manager = file_manager
         self.dependency_resolver = DependencyResolver(source_dir, file_manager)
+
+        # Initialize template processor for schema variable substitution
+        schema_path = self.source_dir / "templates" / "step-tdd-cycle-schema.json"
+        try:
+            self.template_processor = TemplateProcessor(schema_path)
+            logging.info(f"TemplateProcessor initialized with schema: {schema_path}")
+        except Exception as e:
+            logging.warning(f"Could not initialize TemplateProcessor: {e}")
+            self.template_processor = None
+
+    def process_template_variables(self, content: str) -> str:
+        """
+        Process template variables using canonical schema.
+
+        Replaces template variables like {{SCHEMA_TDD_PHASES}} with actual values
+        from the canonical schema. This ensures documentation reflects the current
+        schema without manual synchronization.
+
+        Args:
+            content: Content containing template variable placeholders
+
+        Returns:
+            str: Content with template variables replaced by actual values
+        """
+        if not self.template_processor:
+            logging.debug(
+                "TemplateProcessor not initialized, skipping template processing"
+            )
+            return content
+
+        try:
+            # Get template variables from schema
+            variables = self.template_processor.extract_variables_dict()
+
+            # Replace all template variables
+            processed = content
+            for var_name, var_value in variables.items():
+                placeholder = f"{{{{{var_name}}}}}"
+                if placeholder in processed:
+                    logging.debug(f"Replacing template variable: {var_name}")
+                    processed = processed.replace(placeholder, var_value)
+
+            # Log any unprocessed template variables (potential issues)
+            import re
+
+            unprocessed = re.findall(r"\{\{[A-Z_]+\}\}", processed)
+            if unprocessed:
+                unique_unprocessed = set(unprocessed)
+                logging.warning(
+                    f"Found unprocessed template variables: {unique_unprocessed}"
+                )
+
+            return processed
+
+        except Exception as e:
+            logging.error(f"Error processing template variables: {e}")
+            # Return original content if processing fails
+            return content
 
     def process_embed_injections(self, content: str) -> str:
         """
@@ -260,6 +319,9 @@ class CommandProcessor:
 
             # Process BUILD:INJECT markers FIRST (before any other processing)
             task_content = self.process_embed_injections(task_content)
+
+            # Process template variables SECOND (after embeds, before other transforms)
+            task_content = self.process_template_variables(task_content)
 
             # Get command and wave information
             task_name = task_file.name
