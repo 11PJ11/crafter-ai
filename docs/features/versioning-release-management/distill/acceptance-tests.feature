@@ -434,7 +434,7 @@ Feature: Create Official Release
     And no PR is created
     And the CLI exit code is non-zero
 
-  @skip
+  # ACTIVE - Step 07-05: Release fails with uncommitted changes
   Scenario: Release fails with uncommitted changes
     Given Matteo has repository admin access configured
     And the git branch is "development"

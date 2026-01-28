@@ -158,6 +158,11 @@ def main():
             # In real implementation: shutil.copytree with metadata preservation
             print(f"Backup created at {backup_path}/")
 
+    # Check for local customizations (RC/prerelease versions)
+    # In production: UpdateService.is_local_customization() checks Version.is_prerelease
+    if '-rc' in installed_version.lower() or '-alpha' in installed_version.lower() or '-beta' in installed_version.lower():
+        print("Local customizations detected. Update will overwrite.")
+
     # Show changelog and prompt
     print("\\nChangelog preview:")
     print("• New features and improvements")

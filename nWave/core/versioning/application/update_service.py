@@ -107,6 +107,16 @@ class UpdateService:
     DEFAULT_OWNER = "anthropics"
     DEFAULT_REPO = "claude-code"
 
+    # nWave core content directories that are replaced during update
+    # User content in other directories (agents/my-custom/, commands/my-cmd/) is preserved
+    NW_CONTENT_SUBDIRECTORIES = [
+        ("agents", "nw"),
+        ("commands", "nw"),
+        ("templates", "nw"),
+        ("data", "nw"),
+        ("checklists", "nw"),
+    ]
+
     def __init__(
         self,
         file_system: FileSystemProtocol,
@@ -349,30 +359,20 @@ class UpdateService:
         Args:
             archive_path: Path to the downloaded release archive
         """
-        # Define nWave core content directories to replace
+        # Build nWave core content directories from class constant
         nw_directories = [
-            self._nwave_home / "agents" / "nw",
-            self._nwave_home / "commands" / "nw",
-            self._nwave_home / "templates" / "nw",
-            self._nwave_home / "data" / "nw",
-            self._nwave_home / "checklists" / "nw",
+            self._nwave_home / parent / subdir
+            for parent, subdir in self.NW_CONTENT_SUBDIRECTORIES
         ]
 
-        # TODO: In full implementation:
-        # 1. Extract archive to temp location
-        # 2. For each nw_directory, if it exists in extracted content:
-        #    - Verify it's core content using self._content_identifier
-        #    - Replace the directory using self._file_system.replace_directory()
-
-        # For now, replace existing nw directories
+        # Replace existing nw directories with content from archive
+        # NOTE: Full implementation will extract archive first and replace from extracted content
         for nw_dir in nw_directories:
             if nw_dir.exists():
                 # Build path relative to nwave_home for CoreContentIdentifier
                 # Append trailing slash so pattern /nw/ matches directory paths
                 relative_path = f"~/.claude/{nw_dir.relative_to(self._nwave_home)}/"
                 if self._content_identifier.is_core_content(relative_path):
-                    # TODO: Replace with content from archive
-                    # self._file_system.replace_directory(archive_nw_dir, nw_dir)
                     self._file_system.replace_directory(archive_path, nw_dir)
 
     def _write_version(self, version: Version) -> None:
