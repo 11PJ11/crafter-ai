@@ -172,7 +172,7 @@ python3 ~/.claude/scripts/validate_steps_complete.py {project-id}
 4. Instruct user to complete all steps before re-running /nw:finalize
 
 **Resolution path**:
-1. Execute all incomplete steps through full 14-phase TDD
+1. Execute all incomplete steps through full complete TDD cycle
 2. Ensure each step reaches COMMIT phase with outcome=PASS
 3. Re-run /nw:finalize after all steps complete
 
@@ -201,11 +201,11 @@ Correct step file structure includes:
 - task_id: Task identifier (e.g., '01-01') - NOT step_id!
 - project_id: Project identifier
 - state: Current task state with status field
-- tdd_cycle.phase_execution_log: Array of 14 phases tracking execution progress
+- tdd_cycle.phase_execution_log: Array of phases tracking execution progress
 - execution_result: Results from task execution
 
-The 14 TDD phases to look for in phase_execution_log:
-PREPARE, RED_ACCEPTANCE, RED_UNIT, GREEN_UNIT, CHECK_ACCEPTANCE, GREEN_ACCEPTANCE, REVIEW, REFACTOR_L1, REFACTOR_L2, REFACTOR_L3, REFACTOR_L4, POST_REFACTOR_REVIEW, FINAL_VALIDATE, COMMIT
+The TDD phases to look for in phase_execution_log (from canonical schema):
+{{SCHEMA_PHASE_NAMES}}
 
 Note: If you encounter step files with wrong format (step_id instead of task_id, or missing tdd_cycle.phase_execution_log), flag this in the summary as a format compliance issue.
 

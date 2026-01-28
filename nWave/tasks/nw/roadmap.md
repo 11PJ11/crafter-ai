@@ -702,9 +702,9 @@ The roadmap defines WHAT needs to be done. The `/nw:split` command determines HO
 
 | Type | Description | TDD Phases | Example |
 |------|-------------|------------|---------|
-| `atdd` | Acceptance Test Driven Development | All 14 phases | Feature implementation |
-| `research` | Investigation, analysis, documentation | Phases 0,6-13 (skip RED/GREEN) | Requirements analysis |
-| `infrastructure` | Setup, configuration, tooling | Phases 0,6-13 (skip RED/GREEN) | CI/CD pipeline setup |
+| `atdd` | Acceptance Test Driven Development | All phases (from canonical schema) | Feature implementation |
+| `research` | Investigation, analysis, documentation | Partial phases (skip RED/GREEN) | Requirements analysis |
+| `infrastructure` | Setup, configuration, tooling | Partial phases (skip RED/GREEN) | CI/CD pipeline setup |
 
 **Field Descriptions:**
 

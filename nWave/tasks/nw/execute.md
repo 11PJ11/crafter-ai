@@ -15,7 +15,7 @@ Task(
 
 ### Why This Works:
 - ✅ Step file contains ALL context (self_contained_context, acceptance_criteria, quality_gates)
-- ✅ Agent has internal knowledge of 14-phase TDD
+- ✅ Agent has internal knowledge of complete TDD cycle
 - ✅ No conversation context needed
 - ✅ Deterministic execution
 
@@ -180,23 +180,11 @@ The step file follows the canonical schema. Key structure:
 - quality_gates: TDD quality requirements
 - phase_validation_rules: Commit acceptance rules
 
-## MANDATORY 14-PHASE TDD CYCLE
+## MANDATORY TDD CYCLE
 
-Each step file contains `tdd_cycle.phase_execution_log` with EXACTLY these 14 phases:
-1. PREPARE - Remove @skip tags, verify scenario setup
-2. RED_ACCEPTANCE - Run acceptance test, expect FAIL
-3. RED_UNIT - Write failing unit tests
-4. GREEN_UNIT - Implement minimum code to pass unit tests
-5. CHECK_ACCEPTANCE - Verify unit implementation
-6. GREEN_ACCEPTANCE - Run acceptance test, expect PASS
-7. REVIEW - Perform self-review (see INLINE REVIEW CRITERIA below)
-8. REFACTOR_L1 - Naming clarity improvements
-9. REFACTOR_L2 - Method extraction
-10. REFACTOR_L3 - Class responsibilities
-11. REFACTOR_L4 - Architecture patterns
-12. POST_REFACTOR_REVIEW - Perform post-refactor self-review (see INLINE REVIEW CRITERIA below)
-13. FINAL_VALIDATE - Full test suite validation
-14. COMMIT - Commit with detailed message
+Each step file contains `tdd_cycle.phase_execution_log` with all phases from the canonical schema:
+
+{{SCHEMA_TDD_PHASES}}
 
 ## CM-D: Walking Skeleton Principle
 
@@ -535,7 +523,7 @@ The phases are (0-13):
 
 #### TDD Checkpoint Commit Strategy
 
-The 14-phase TDD cycle supports **4 strategic checkpoint commits** for improved rollback capability and git history clarity:
+The complete TDD cycle cycle supports **4 strategic checkpoint commits** for improved rollback capability and git history clarity:
 
 ##### Checkpoint 1: GREEN (After Phase 5 - GREEN_ACCEPTANCE)
 **When**: All acceptance tests passing, implementation complete
