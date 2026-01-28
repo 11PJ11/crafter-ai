@@ -114,8 +114,10 @@ def main() -> int:
 
         return 0
 
-    except FileNotFoundError as e:
-        print(f"ERROR: {e}", file=sys.stderr)
+    except FileNotFoundError:
+        # Step 03-06: Handle missing VERSION file gracefully
+        # Display user-friendly error message indicating corrupted installation
+        print("VERSION file not found. nWave may be corrupted.", file=sys.stderr)
         return 1
 
     except (NetworkError, RateLimitError):
@@ -143,8 +145,9 @@ def _handle_offline_degradation() -> int:
         version = file_system.read_version()
         print(f"nWave v{version} (Unable to check for updates)")
         return 0
-    except FileNotFoundError as e:
-        print(f"ERROR: {e}", file=sys.stderr)
+    except FileNotFoundError:
+        # Step 03-06: Handle missing VERSION file gracefully
+        print("VERSION file not found. nWave may be corrupted.", file=sys.stderr)
         return 1
 
 

@@ -191,3 +191,64 @@ def test_display_version_when_up_to_date(
     )
 
     assert expected_output in stdout, diagnostic
+
+
+# ============================================================================
+# Step 03-06: Handle missing VERSION file gracefully
+# ============================================================================
+
+
+@pytest.mark.usefixtures("clean_test_environment")
+def test_handle_missing_version_file_gracefully(
+    clean_test_environment,
+    mock_github_response,
+    run_version_command,
+    cli_result,
+    scenario_context,
+):
+    """
+    Scenario: Handle missing VERSION file gracefully
+
+    Given a user has an incomplete installation in the test ~/.claude/ directory
+    And the VERSION file does not exist
+    When the user runs the /nw:version command through the CLI entry point
+    Then an error displays "VERSION file not found. nWave may be corrupted."
+    And the CLI exit code is non-zero
+    """
+    # GIVEN: A user has an incomplete installation (no VERSION file)
+    scenario_context["persona"] = "anonymous_user"
+    # Do NOT create VERSION file - this is the incomplete installation scenario
+    # Ensure VERSION file does not exist
+    version_file = clean_test_environment["version_file"]
+    if version_file.exists():
+        version_file.unlink()
+    assert not version_file.exists(), "VERSION file should NOT exist for this test"
+
+    # AND: Configure mock GitHub (even though it won't be called due to early failure)
+    mock_github_response["latest_version"] = "1.3.0"
+
+    # WHEN: The user runs /nw:version command
+    result = run_version_command()
+    cli_result.update(result)
+
+    # THEN: An error displays "VERSION file not found. nWave may be corrupted."
+    expected_error = "VERSION file not found. nWave may be corrupted."
+    stdout = cli_result["stdout"]
+    stderr = cli_result["stderr"]
+    combined_output = stdout + stderr
+
+    diagnostic = (
+        f"Expected error '{expected_error}' not found in output:\n"
+        f"STDOUT: {stdout!r}\n"
+        f"STDERR: {stderr!r}\n"
+        f"Return code: {cli_result['returncode']}"
+    )
+
+    assert expected_error in combined_output, diagnostic
+
+    # AND: The CLI exit code is non-zero
+    assert cli_result["returncode"] != 0, (
+        f"Expected non-zero exit code, got {cli_result['returncode']}\n"
+        f"STDOUT: {stdout!r}\n"
+        f"STDERR: {stderr!r}"
+    )
