@@ -341,94 +341,11 @@ Each generated task file contains all information needed for completion, enablin
 
 ### `--regenerate-step {step-id}` (Optional)
 
-Regenerates a single step file after review rejection, incorporating feedback without affecting other approved steps.
+Regenerates single step file with feedback after review rejection. Used in `/nw:develop` automatic retry (max 2 attempts).
 
-**Usage**:
-```bash
-/nw:split @software-crafter "{project-id}" --regenerate-step {step-id} --feedback "{feedback}"
-```
+## Benefits
 
-**Purpose**:
-- Regenerate rejected step file with reviewer feedback
-- Preserve all other approved steps unchanged
-- Part of automatic retry logic in `/nw:develop` orchestration
-
-**Parameters**:
-- `{step-id}`: Step identifier to regenerate (e.g., "01-02", "02-03")
-- `--feedback "{feedback}"`: Rejection reason from review (required)
-
-**Examples**:
-```bash
-# Regenerate step 01-02 with feedback
-/nw:split @software-crafter "auth-upgrade" --regenerate-step 01-02 --feedback "Missing acceptance criteria for error handling"
-
-# Regenerate step 02-01 with technical feedback
-/nw:split @software-crafter "shopping-cart" --regenerate-step 02-01 --feedback "Dependencies not specified - requires step 01-03"
-
-# Regenerate step 01-05 with context feedback
-/nw:split @solution-architect "microservices" --regenerate-step 01-05 --feedback "Self-contained context insufficient - missing architecture decisions from phase 1"
-```
-
-**Behavior**:
-1. **Loads existing steps**: Reads all step files from `docs/feature/{project-id}/steps/`
-2. **Preserves approved steps**: Keeps all steps except the one being regenerated
-3. **Incorporates feedback**: Uses feedback to improve regenerated step
-4. **Maintains consistency**: Ensures dependency references remain valid
-5. **Updates single file**: Only writes the regenerated step file
-
-**Integration with `/nw:develop` Orchestration**:
-
-This parameter is automatically invoked during Phase 6 (Review Each Step File) when using `/nw:develop`:
-
-```
-Phase 6: Review Step Files
-  ↓
-Step 01-02 Review → REJECTED
-  ↓
-Automatic retry (attempt 1 of 2):
-  Invoke: /nw:split @software-crafter "{project-id}"
-          --regenerate-step 01-02
-          --feedback "{rejection-reason}"
-  ↓
-Re-review Step 01-02
-  ↓
-If approved → continue
-If rejected → attempt 2
-  ↓
-If rejected after 2 attempts → STOP, manual intervention required
-```
-
-**Validation**:
-- Step ID must exist in original roadmap
-- Feedback must be non-empty
-- Project directory must exist
-- Other step files must be valid JSON
-
-**Error Handling**:
-```bash
-# Invalid step ID
-ERROR: Step 01-99 not found in roadmap
-
-# Missing feedback
-ERROR: --feedback parameter required when using --regenerate-step
-
-# No existing steps
-ERROR: No step files found in docs/feature/{project-id}/steps/
-```
-
-**Notes**:
-- **Idempotent**: Can be called multiple times safely
-- **Atomic**: Either completes fully or fails without partial updates
-- **Context preservation**: Maintains self-contained context requirement
-- **Review loop**: Part of 2-attempt retry strategy in orchestration
-
-## Key Benefits
-
-- **Context Preservation**: Each task is self-contained with all required information
-- **Parallel Execution**: Sub-agents can work on tasks independently
-- **Progress Tracking**: Individual task state management
-- **Quality Consistency**: Each task starts from clean context
-- **Scalability**: Handle complex projects without context overflow
+Self-contained tasks enable parallel execution, clean context per task, granular progress tracking.
 
 ## Complete Workflow Integration
 
@@ -523,14 +440,9 @@ The following section documents what the invoked agent will do. **You (the coord
 
 ### Self-Containment and Instance Isolation
 
-Each generated step file is self-contained because it will be executed by a FRESH agent instance that has no prior context. The instance cannot ask 'what was in the previous file?' or reference session memory. Therefore, self_contained_context must include ALL background needed: architecture documents, dependency outputs, business context, technical constraints. The instance reads this file and has everything needed to execute completely independently.
+Each step file is self-contained for FRESH agent instances with no prior context. Include ALL background: architecture, dependency outputs, business context, technical constraints.
 
-**Processing Steps:**
-1. Parse the roadmap.yaml file
-2. Extract and enrich each step with complete context
-3. Ensure all dependencies are explicitly documented
-4. Include all necessary background information
-5. Generate atomic task files for sub-agent execution
+**Processing**: Parse roadmap → Enrich with context → Document dependencies → Generate atomic task files.
 
 **Generated Atomic Task Schema with TDD Cycle:**
 
@@ -583,12 +495,10 @@ Each file (`{phase:02d}-{step:02d}.json`) is a complete, executable unit with em
       "in_memory_adapters": ["ANALYZED: available test adapters"]
     },
     "phase_execution_log": [
-      // MANDATORY: All 14 phases (copy from step-tdd-cycle-schema.json):
-      // PREPARE, RED_ACCEPTANCE, RED_UNIT, GREEN_UNIT, CHECK_ACCEPTANCE,
-      // GREEN_ACCEPTANCE, REVIEW, REFACTOR_L1, REFACTOR_L2, REFACTOR_L3,
-      // REFACTOR_L4, POST_REFACTOR_REVIEW, FINAL_VALIDATE, COMMIT
-      // For ATDD: all 14 phases with status "NOT_EXECUTED"
-      // For research/infrastructure: phases 1-5 with status "SKIPPED", blocked_by "NOT_APPLICABLE:..."
+      // MANDATORY: All phases from canonical schema (copy from step-tdd-cycle-schema.json):
+      // {{SCHEMA_PHASE_NAMES}}
+      // For ATDD: all {{PHASE_COUNT}} phases with status "NOT_EXECUTED"
+      // For research/infrastructure: phases 1-3 with status "SKIPPED", blocked_by "NOT_APPLICABLE:..."
     ]
   },
   "quality_gates": {
@@ -630,7 +540,7 @@ Each file (`{phase:02d}-{step:02d}.json`) is a complete, executable unit with em
 
 **If you generate a file with any of these patterns, DELETE IT and regenerate using the template below.**
 
-**NOTE ON INSTANCE EXECUTION**: The step file generated by /nw:split will be executed by multiple independent agent instances (one per phase, or grouped phases). Each instance loads this JSON file completely, executes one or more phases, and updates phase_execution_log with detailed results. No instance shares context with another. The step file is the only mechanism connecting these instances.
+**Instance Execution**: Multiple agent instances execute phases independently. Step JSON file is the only state mechanism.
 
 ### TDD Cycle Template Embedding
 
@@ -675,227 +585,83 @@ Each file (`{phase:02d}-{step:02d}.json`) is a complete, executable unit with em
     "phase_execution_log": [
       {
         "phase_name": "PREPARE",
-        "phase_index": 0,
         "status": "NOT_EXECUTED",
         "started_at": null,
         "ended_at": null,
-        "duration_minutes": null,
         "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
-        "history": []
+        "turn_count": 0
       },
       {
         "phase_name": "RED_ACCEPTANCE",
-        "phase_index": 1,
         "status": "NOT_EXECUTED",
         "started_at": null,
         "ended_at": null,
-        "duration_minutes": null,
         "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
-        "history": []
+        "turn_count": 0
       },
       {
         "phase_name": "RED_UNIT",
-        "phase_index": 2,
         "status": "NOT_EXECUTED",
         "started_at": null,
         "ended_at": null,
-        "duration_minutes": null,
         "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
         "notes": null,
         "blocked_by": null,
-        "history": []
+        "turn_count": 0
       },
       {
-        "phase_name": "GREEN_UNIT",
-        "phase_index": 3,
+        "phase_name": "GREEN",
         "status": "NOT_EXECUTED",
         "started_at": null,
         "ended_at": null,
-        "duration_minutes": null,
         "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
-        "notes": null,
+        "notes": "Combines: GREEN_UNIT + CHECK_ACCEPTANCE + GREEN_ACCEPTANCE",
         "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "CHECK_ACCEPTANCE",
-        "phase_index": 4,
-        "status": "NOT_EXECUTED",
-        "started_at": null,
-        "ended_at": null,
-        "duration_minutes": null,
-        "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
-        "notes": null,
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "GREEN_ACCEPTANCE",
-        "phase_index": 5,
-        "status": "NOT_EXECUTED",
-        "started_at": null,
-        "ended_at": null,
-        "duration_minutes": null,
-        "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
-        "notes": null,
-        "blocked_by": null,
-        "history": []
+        "turn_count": 0
       },
       {
         "phase_name": "REVIEW",
-        "phase_index": 6,
         "status": "NOT_EXECUTED",
         "started_at": null,
         "ended_at": null,
-        "duration_minutes": null,
         "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
-        "notes": null,
+        "notes": "Covers both implementation AND post-refactoring quality",
         "blocked_by": null,
-        "history": []
+        "turn_count": 0
       },
       {
-        "phase_name": "REFACTOR_L1",
-        "phase_index": 7,
+        "phase_name": "REFACTOR_CONTINUOUS",
         "status": "NOT_EXECUTED",
         "started_at": null,
         "ended_at": null,
-        "duration_minutes": null,
         "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
-        "notes": null,
+        "notes": "Combines: L1 (naming) + L2 (complexity) + L3 (organization)",
         "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "REFACTOR_L2",
-        "phase_index": 8,
-        "status": "NOT_EXECUTED",
-        "started_at": null,
-        "ended_at": null,
-        "duration_minutes": null,
-        "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
-        "notes": null,
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "REFACTOR_L3",
-        "phase_index": 9,
-        "status": "NOT_EXECUTED",
-        "started_at": null,
-        "ended_at": null,
-        "duration_minutes": null,
-        "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
-        "notes": null,
-        "blocked_by": null,
-        "history": []
+        "turn_count": 0
       },
       {
         "phase_name": "REFACTOR_L4",
-        "phase_index": 10,
         "status": "NOT_EXECUTED",
         "started_at": null,
         "ended_at": null,
-        "duration_minutes": null,
         "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
-        "notes": null,
+        "notes": "Architecture patterns (optional - use NOT_APPLICABLE or CHECKPOINT_PENDING for skip)",
         "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "POST_REFACTOR_REVIEW",
-        "phase_index": 11,
-        "status": "NOT_EXECUTED",
-        "started_at": null,
-        "ended_at": null,
-        "duration_minutes": null,
-        "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
-        "notes": null,
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "FINAL_VALIDATE",
-        "phase_index": 12,
-        "status": "NOT_EXECUTED",
-        "started_at": null,
-        "ended_at": null,
-        "duration_minutes": null,
-        "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
-        "notes": null,
-        "blocked_by": null,
-        "history": []
+        "turn_count": 0
       },
       {
         "phase_name": "COMMIT",
-        "phase_index": 13,
         "status": "NOT_EXECUTED",
         "started_at": null,
         "ended_at": null,
-        "duration_minutes": null,
         "outcome": null,
-        "outcome_details": null,
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
-        "notes": null,
+        "notes": "Absorbs FINAL_VALIDATE (metadata checks only)",
         "blocked_by": null,
-        "history": []
+        "turn_count": 0
       }
     ]
   },
@@ -977,16 +743,10 @@ Each file (`{phase:02d}-{step:02d}.json`) is a complete, executable unit with em
     "PREPARE",
     "RED_ACCEPTANCE",
     "RED_UNIT",
-    "GREEN_UNIT",
-    "CHECK_ACCEPTANCE",
-    "GREEN_ACCEPTANCE",
+    "GREEN",
     "REVIEW",
-    "REFACTOR_L1",
-    "REFACTOR_L2",
-    "REFACTOR_L3",
+    "REFACTOR_CONTINUOUS",
     "REFACTOR_L4",
-    "POST_REFACTOR_REVIEW",
-    "FINAL_VALIDATE",
     "COMMIT",
     "COMPLETED"
   ],
@@ -994,17 +754,11 @@ Each file (`{phase:02d}-{step:02d}.json`) is a complete, executable unit with em
     "NOT_STARTED": ["PREPARE"],
     "PREPARE": ["RED_ACCEPTANCE"],
     "RED_ACCEPTANCE": ["RED_UNIT", "PREPARE"],
-    "RED_UNIT": ["GREEN_UNIT"],
-    "GREEN_UNIT": ["CHECK_ACCEPTANCE"],
-    "CHECK_ACCEPTANCE": ["RED_UNIT", "GREEN_ACCEPTANCE"],
-    "GREEN_ACCEPTANCE": ["REVIEW"],
-    "REVIEW": ["REFACTOR_L1", "REVIEW"],
-    "REFACTOR_L1": ["REFACTOR_L2"],
-    "REFACTOR_L2": ["REFACTOR_L3"],
-    "REFACTOR_L3": ["REFACTOR_L4"],
-    "REFACTOR_L4": ["POST_REFACTOR_REVIEW"],
-    "POST_REFACTOR_REVIEW": ["FINAL_VALIDATE", "REFACTOR_L1"],
-    "FINAL_VALIDATE": ["COMMIT"],
+    "RED_UNIT": ["GREEN"],
+    "GREEN": ["REVIEW"],
+    "REVIEW": ["REFACTOR_CONTINUOUS", "REVIEW"],
+    "REFACTOR_CONTINUOUS": ["REFACTOR_L4"],
+    "REFACTOR_L4": ["COMMIT", "REFACTOR_CONTINUOUS"],
     "COMMIT": ["COMPLETED"]
   },
   "failure_classification": {
@@ -1065,19 +819,13 @@ Each file (`{phase:02d}-{step:02d}.json`) is a complete, executable unit with em
   "task_specification": {
     "commit_policy": "Commit ONLY after ALL 14 PHASES complete. AUTO-PUSH after commit.",
     "mandatory_phases": [
-      "PREPARE - Remove @skip, verify only 1 scenario enabled",
+      "PREPARE - Remove @skip, verify scenario setup",
       "RED_ACCEPTANCE - Test must FAIL initially",
       "RED_UNIT - Write failing unit tests",
-      "GREEN_UNIT - Implement minimum code to pass",
-      "CHECK_ACCEPTANCE - Verify unit tests pass",
-      "GREEN_ACCEPTANCE - All tests PASS",
-      "REVIEW - Self-review: SOLID, coverage, acceptance criteria (MANDATORY)",
-      "REFACTOR_L1 - Naming clarity",
-      "REFACTOR_L2 - Method extraction",
-      "REFACTOR_L3 - Class responsibilities",
-      "REFACTOR_L4 - Architecture patterns",
-      "POST_REFACTOR_REVIEW - Self-review: tests pass, quality improved (MANDATORY)",
-      "FINAL_VALIDATE - Document full test results (MANDATORY)",
+      "GREEN - Implement minimum code + verify acceptance",
+      "REVIEW - Self-review: SOLID, coverage, acceptance criteria, refactoring (MANDATORY)",
+      "REFACTOR_CONTINUOUS - Progressive refactoring: L1 (naming) + L2 (complexity) + L3 (organization)",
+      "REFACTOR_L4 - Architecture patterns (OPTIONAL)",
       "COMMIT - Commit with detailed message"
     ]
   }
@@ -1085,117 +833,15 @@ Each file (`{phase:02d}-{step:02d}.json`) is a complete, executable unit with em
 ```
 <!-- EMBED_END:nWave/templates/step-tdd-cycle-schema.json -->
 
-**Merge Algorithm**:
+**Merge**: Preserve existing fields, add tdd_cycle/quality_gates/phase_validation_rules from template. User-defined values take precedence.
 
-```
-MERGE(existing_step, tdd_template):
-  1. PRESERVE all existing fields from existing_step
-  2. ADD tdd_cycle section from template (INCLUDING phase_execution_log)
-  3. ADD quality_gates section from template
-  4. ADD phase_validation_rules section from template
-  5. ADD TDD state fields to state section
-  6. IF conflict on field name:
-     - existing_step value takes precedence
-     - Log warning: "Field {name} conflict, keeping existing value"
-  7. NEVER overwrite: task_id, project_id, task_specification, dependencies
-  8. ALWAYS add: tdd_cycle, quality_gates, phase_validation_rules (if not present)
-```
+### Phase Pre-Population Rule
 
-**Conflict Resolution Priority**:
-1. User-defined values (highest)
-2. Existing step schema values
-3. TDD template defaults (lowest)
-
-### Phase Pre-Population Rule (MANDATORY)
-
-**CRITICAL**: Every generated step file MUST include the complete `phase_execution_log` with all phases (from canonical schema) pre-populated with status `NOT_EXECUTED`.
-
-This is **NON-NEGOTIABLE**. The agent executing the step cannot add phases - they must already exist. The agent can only UPDATE existing phase entries.
-
-**Required Phases** (from canonical schema: {{PHASE_COUNT}} total):
-{{CORRECT_PHASE_NAMES}}
-
-**Each Phase Entry Schema**:
-```json
-{
-  "phase_name": "PREPARE",
-  "phase_index": 0,
-  "status": "NOT_EXECUTED",
-  "started_at": null,
-  "ended_at": null,
-  "duration_minutes": null,
-  "outcome": null,
-  "outcome_details": null,
-  "artifacts_created": [],
-  "artifacts_modified": [],
-  "test_results": {"total": null, "passed": null, "failed": null, "skipped": null},
-  "notes": null,
-  "blocked_by": null,
-  "history": []
-}
-```
-
-**Per-Step Validation (MANDATORY)**:
-
-**CRITICAL**: After writing EACH step file, you MUST validate immediately:
-
-```bash
-# Validate EACH step file right after writing it
-python3 ~/.claude/scripts/validate_step_file.py docs/feature/{project-id}/steps/{step-id}.json
-
-# If validation fails:
-# 1. DO NOT proceed to next step
-# 2. Fix the step file immediately
-# 3. Re-validate until it passes
-```
-
-**Common Validation Failures to Avoid**:
-- ❌ Wrong phase names: "RED (Acceptance)" → ✅ Use "RED_ACCEPTANCE"
-- ❌ Missing `tdd_cycle.phase_execution_log` → ✅ Copy from schema template
-- ❌ Less than 14 phases → ✅ Include ALL 14 phases
-- ❌ Wrong fields: `step_id`, `phase_id` → ✅ Use `task_id`, no `phase_id`
-
-**Single Source of Truth**: `nWave/templates/step-tdd-cycle-schema.json`
-
-**Post-Generation Verification (MANDATORY)**:
-
-After generating ALL step files, run validation on entire directory:
-
-```bash
-python3 ~/.claude/scripts/validate_step_file.py --all docs/feature/{project-id}/steps/
-```
-
-**Manual Checklist** (for each step file):
-- [ ] `phase_execution_log` exists in `tdd_cycle` section
-- [ ] Exactly 14 entries present
-- [ ] All entries have `status: "NOT_EXECUTED"` (or `SKIPPED` for research steps)
-- [ ] All entries have correct `phase_index` (0-13)
-- [ ] All entries have correct `phase_name` matching the 14 required phases
-- [ ] No duplicate phase names
-- [ ] Sequential order matches phase_index
-
-**If Validation Script Fails**:
-- DO NOT proceed to /nw:execute
-- Fix the step file(s) with missing/invalid phase_execution_log
-- Re-run validation until it passes
-- Error message will indicate specific issues
-
-**If Validation Script Not Available**:
-- Run from nwave project: `python3 scripts/validate_step_file.py --all <steps_dir>`
-- Or manually verify each step file has the complete tdd_cycle structure
-
-**CRITICAL**: Step files WITHOUT phase_execution_log will cause /nw:execute to fail.
-The executing agent can only UPDATE existing phase entries, not create new ones.
+Pre-populate complete `phase_execution_log` with all phases ({{PHASE_COUNT}} total) from canonical schema, status `NOT_EXECUTED`. Validate after generation: `python3 ~/.claude/scripts/validate_step_file.py --all docs/feature/{project-id}/steps/`
 
 ### Step Generation Rules
 
-1. **One Scenario = One Step**: For ATDD steps, each maps exactly ONE acceptance test scenario
-2. **First Step Walking Skeleton**: Step 01-01 has `is_walking_skeleton: true` (if ATDD)
-3. **Test File Agnostic**: Supports .feature, .cs, .py, .js, .java, .ts, etc.
-4. **Mock Boundaries from Architecture**: Analyze docs/architecture to populate allowed_ports
-5. **TDD Phase Tracking**: Initialize all 14 phases in `tdd_cycle.phase_execution_log` with status `"NOT_EXECUTED"`
-6. **Step Type Handling**: Process `step_type` from roadmap (atdd, research, infrastructure)
-7. **Integration Step Required (CM-B)**: At least one step must wire component into entry point
+One scenario per step (ATDD), first step is walking skeleton, initialize all phases from canonical schema with `NOT_EXECUTED`, analyze architecture for mock boundaries, require integration step (CM-B).
 
 ---
 
@@ -1262,92 +908,17 @@ steps:
 
 ### Split Validation
 
-When generating step files, verify:
+Verify at least one step has `step_type: integration` or targets entry point. If none found, warn user to add integration step to wire component into system.
 
-```bash
-# Check if any step has integration type or targets entry point
-grep -l "step_type.*integration\|entry_point\|orchestrator" docs/feature/{project-id}/steps/*.json
+### Step Type Processing
 
-# If no results: WARN user about missing integration step
-```
+**ATDD**: All phases from canonical schema enabled (status: NOT_EXECUTED). Validate `suggested_scenario` against test files.
 
-### Missing Integration Step Response
-
-If no integration step found:
-
-```
-⚠️ WARNING: No integration step detected in roadmap
-
-The roadmap has {N} steps but none wire the component into the system entry point.
-
-After completing all steps:
-- Component will exist and pass all tests
-- But users cannot invoke it (not connected to system)
-
-Recommended Action:
-1. Add an integration step to roadmap before splitting
-2. Or document that integration is handled externally
-
-Example integration step:
-  - step_id: "{N+1}-01"
-    name: "Wire {component} into {entry_point}"
-    step_type: "integration"
-```
-
-### Step Type Processing (COME - How to Execute)
-
-The split command enriches roadmap steps based on their `step_type`:
-
-**ATDD Steps** (`step_type: "atdd"`):
-- Full 14-phase TDD cycle required
-- Validate `suggested_scenario` against actual test files
-- If test file not found: Create placeholder or request test creation
-- All TDD phases enabled (status: "NOT_EXECUTED")
-
-**Research Steps** (`step_type: "research"`):
-- TDD phases 1-5 (RED_ACCEPTANCE through GREEN_ACCEPTANCE) set to "SKIPPED"
-- `blocked_by: "NOT_APPLICABLE: Research step without acceptance test"`
-- Only PREPARE, REVIEW, REFACTOR, FINAL_VALIDATE, COMMIT phases active
-- No acceptance test mapping required
-
-**Infrastructure Steps** (`step_type: "infrastructure"`):
-- TDD phases 1-5 set to "SKIPPED"
-- `blocked_by: "NOT_APPLICABLE: Infrastructure step without acceptance test"`
-- Focus on PREPARE, execution, REVIEW, and COMMIT phases
-- May include verification scripts instead of tests
+**Research/Infrastructure**: Phases 1-3 (RED_ACCEPTANCE, RED_UNIT, GREEN) SKIPPED with blocked_by="NOT_APPLICABLE". Other phases enabled.
 
 ### Suggested Scenario Validation
 
-When processing ATDD steps with `suggested_scenario`:
-
-1. **File Existence Check**:
-   ```
-   IF test_file exists:
-     Validate scenario_name or scenario_index
-   ELSE IF test creation is pending:
-     Mark scenario as "pending_creation"
-     Set tdd_cycle.acceptance_test.initially_ignored: true
-   ELSE:
-     WARN: "Test file not found: {test_file}"
-     Request user decision: create placeholder or provide path
-   ```
-
-2. **Scenario Validation** (format-dependent):
-   - `.feature`: Parse Gherkin, find matching Scenario/Scenario Outline
-   - `.py`: Find test function matching name pattern
-   - `.cs`: Find [Test] or [Fact] method with matching name
-   - `.js/.ts`: Find test()/it() with matching description
-   - `.java`: Find @Test method with matching name
-
-3. **Validation Failure Handling**:
-   ```
-   IF scenario not found in test_file:
-     WARN: "Scenario '{scenario_name}' not found in {test_file}"
-     OPTIONS:
-       1. Create scenario stub (if test creation: "flexible")
-       2. Update roadmap with correct scenario
-       3. Proceed with placeholder (execution will create test)
-   ```
+Validate test_file existence, scenario_name/index match. If not found: warn and request user decision (create stub, update roadmap, or placeholder).
 
 ### Non-ATDD Step File Schema
 
@@ -1383,14 +954,9 @@ For research/infrastructure steps, the generated JSON differs:
       "is_walking_skeleton": false
     },
     "phase_execution_log": [
-      {"phase_name": "PREPARE", "status": "NOT_EXECUTED", ...},
-      {"phase_name": "RED_ACCEPTANCE", "status": "SKIPPED", "blocked_by": "NOT_APPLICABLE: Research step"},
-      {"phase_name": "RED_UNIT", "status": "SKIPPED", "blocked_by": "NOT_APPLICABLE: Research step"},
-      {"phase_name": "GREEN_UNIT", "status": "SKIPPED", "blocked_by": "NOT_APPLICABLE: Research step"},
-      {"phase_name": "CHECK_ACCEPTANCE", "status": "SKIPPED", "blocked_by": "NOT_APPLICABLE: Research step"},
-      {"phase_name": "GREEN_ACCEPTANCE", "status": "SKIPPED", "blocked_by": "NOT_APPLICABLE: Research step"},
-      {"phase_name": "REVIEW", "status": "NOT_EXECUTED", ...},
-      ...
+      // All 8 phases from canonical schema
+      // Research steps: phases 1-3 SKIPPED with blocked_by="NOT_APPLICABLE: Research step"
+      // PREPARE, REVIEW, COMMIT remain NOT_EXECUTED
     ]
   }
 }
@@ -1411,22 +977,9 @@ Feature: Order Management
 - `test_file`: Path to acceptance test file
 - `scenario_index`: 0-based index within test file
 
-### 14-Phase TDD Enforcement
+### TDD Phase Enforcement
 
-**CRITICAL**: All generated step files MUST include the 14-phase tracking structure, pre-populated at generation time.
-
-The phase_execution_log is embedded in the step JSON to persist state across multiple agent instances. Instance 1 (PREPARE phase) starts with all phases in NOT_EXECUTED status, executes PREPARE, updates the log, and writes the file. Instance 2 reads this file, sees PREPARE is EXECUTED in the log, skips PREPARE, and executes RED_ACCEPTANCE. This JSON-based state handoff continues through all 14 phases, with each instance reading prior results from the log and adding its own.
-
-**Phase Execution Requirements**:
-1. Each phase MUST be pre-populated in `phase_execution_log` at step file creation (by /nw:split)
-2. The executing agent can only UPDATE existing phase entries, not add new ones
-3. `current_phase` must track progress through the 14 phases
-4. Commit is BLOCKED until all 14 phases have status "EXECUTED" or valid "SKIPPED"
-5. Pre-commit hook validates phase completeness before allowing commit
-6. Each phase log entry fields:
-   - `phase_name`: Name of the phase (e.g., "PREPARE", "RED_ACCEPTANCE")
-   - `phase_index`: Sequential index (0-13)
-   - `status`: "NOT_EXECUTED" | "IN_PROGRESS" | "EXECUTED" | "SKIPPED"
+**All phases from canonical schema** pre-populated at generation. Agents UPDATE existing entries only. Commit blocked until all phases EXECUTED or valid SKIPPED. See canonical schema for phase structure.
    - `started_at`: ISO 8601 timestamp when phase started
    - `ended_at`: ISO 8601 timestamp when phase completed
    - `duration_minutes`: Time spent in phase
@@ -1455,152 +1008,21 @@ The phase_execution_log is embedded in the step JSON to persist state across mul
 {
   "tdd_cycle": {
     "tdd_phase_tracking": {
-      "current_phase": "GREEN_ACCEPTANCE",
+      "current_phase": "GREEN",
       "active_e2e_test": "Place new order - 01-01",
       "inactive_e2e_tests": "All other @skip scenarios remain disabled",
-      "phases_completed": ["PREPARE", "RED_ACCEPTANCE", "RED_UNIT", "GREEN_UNIT", "CHECK_ACCEPTANCE", "GREEN_ACCEPTANCE"]
+      "phases_completed": ["PREPARE", "RED_ACCEPTANCE", "RED_UNIT", "GREEN"]
     },
     "phase_execution_log": [
-      {
-        "phase_name": "PREPARE",
-        "phase_index": 0,
-        "status": "EXECUTED",
-        "started_at": "2024-01-15T10:00:00Z",
-        "ended_at": "2024-01-15T10:05:00Z",
-        "duration_minutes": 5,
-        "outcome": "PASS",
-        "outcome_details": "Removed @skip from scenario 'Place new order'",
-        "artifacts_created": [],
-        "artifacts_modified": ["tests/acceptance/order_management.feature"],
-        "test_results": {"total": 1, "passed": 0, "failed": 0, "skipped": 1},
-        "notes": "1 scenario enabled, 3 scenarios remain skipped",
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "RED_ACCEPTANCE",
-        "phase_index": 1,
-        "status": "EXECUTED",
-        "started_at": "2024-01-15T10:05:00Z",
-        "ended_at": "2024-01-15T10:08:00Z",
-        "duration_minutes": 3,
-        "outcome": "PASS",
-        "outcome_details": "Test failed as expected - OrderService not implemented",
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": 1, "passed": 0, "failed": 1, "skipped": 0},
-        "notes": "Valid RED: 'OrderService' is not defined",
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "RED_UNIT",
-        "phase_index": 2,
-        "status": "EXECUTED",
-        "started_at": "2024-01-15T10:08:00Z",
-        "ended_at": "2024-01-15T10:20:00Z",
-        "duration_minutes": 12,
-        "outcome": "PASS",
-        "outcome_details": "3 failing unit tests written for OrderService.PlaceOrder",
-        "artifacts_created": ["tests/unit/OrderServiceTests.cs"],
-        "artifacts_modified": [],
-        "test_results": {"total": 3, "passed": 0, "failed": 3, "skipped": 0},
-        "notes": "Valid RED: NotImplementedException in all tests",
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "GREEN_UNIT",
-        "phase_index": 3,
-        "status": "EXECUTED",
-        "started_at": "2024-01-15T10:20:00Z",
-        "ended_at": "2024-01-15T10:38:00Z",
-        "duration_minutes": 18,
-        "outcome": "PASS",
-        "outcome_details": "Implemented minimum OrderService logic",
-        "artifacts_created": ["src/OrderService.cs"],
-        "artifacts_modified": [],
-        "test_results": {"total": 3, "passed": 3, "failed": 0, "skipped": 0},
-        "notes": "All unit tests now passing",
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "CHECK_ACCEPTANCE",
-        "phase_index": 4,
-        "status": "EXECUTED",
-        "started_at": "2024-01-15T10:38:00Z",
-        "ended_at": "2024-01-15T10:40:00Z",
-        "duration_minutes": 2,
-        "outcome": "PASS",
-        "outcome_details": "Unit tests verified before acceptance check",
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": 3, "passed": 3, "failed": 0, "skipped": 0},
-        "notes": "Checkpoint - units green before E2E",
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "GREEN_ACCEPTANCE",
-        "phase_index": 5,
-        "status": "EXECUTED",
-        "started_at": "2024-01-15T10:40:00Z",
-        "ended_at": "2024-01-15T10:45:00Z",
-        "duration_minutes": 5,
-        "outcome": "PASS",
-        "outcome_details": "Acceptance test passes - order placement working E2E",
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {"total": 4, "passed": 4, "failed": 0, "skipped": 0},
-        "notes": "1/1 acceptance + 3/3 unit tests passing",
-        "blocked_by": null,
-        "history": []
-      }
+      // Example: Phases 0-3 marked EXECUTED with timestamps, outcomes, artifacts
+      // Phases 4-7 marked NOT_EXECUTED or SKIPPED (checkpoint pattern)
+      // Complete structure: see canonical schema at nWave/templates/step-tdd-cycle-schema.json
     ]
   }
 }
 ```
 
-**NOTE**: The example above shows only phases 0-5. A complete step file MUST have all 14 phases (PREPARE through COMMIT). See the embedded schema for the complete structure.
-
-**14-Phase Command Mapping**:
-
-Each step file generated by `/nw:split` is designed to be executed through the 14-phase TDD workflow using `/nw:develop` and related commands:
-
-| Phase | Phase Name | Command | Invoked By |
-|-------|------------|---------|------------|
-| 0 | PREPARE | Internal TDD loop | `/nw:develop {feature} --step {step-id}` |
-| 1 | RED_ACCEPTANCE | Internal TDD loop | `/nw:develop {feature} --step {step-id}` |
-| 2 | RED_UNIT | Internal TDD loop | `/nw:develop {feature} --step {step-id}` |
-| 3 | GREEN_UNIT | Internal TDD loop | `/nw:develop {feature} --step {step-id}` |
-| 4 | CHECK_ACCEPTANCE | Internal TDD loop | `/nw:develop {feature} --step {step-id}` |
-| 5 | GREEN_ACCEPTANCE | Internal TDD loop | `/nw:develop {feature} --step {step-id}` |
-| 6 | REVIEW | Explicit invocation | `/nw:review @software-crafter-reviewer implementation {step-file}` |
-| 7 | REFACTOR_L1 | Explicit invocation | `/nw:refactor --level 1` |
-| 8 | REFACTOR_L2 | Explicit invocation | `/nw:refactor --level 2` |
-| 9 | REFACTOR_L3 | Explicit invocation | `/nw:refactor --level 3` |
-| 10 | REFACTOR_L4 | Explicit invocation | `/nw:refactor --level 4` OR `/nw:mikado --goal "{goal}"` |
-| 11 | POST_REFACTOR_REVIEW | Explicit invocation | `/nw:review @software-crafter-reviewer refactored_implementation {step-file}` |
-| 12 | FINAL_VALIDATE | Internal TDD loop | `/nw:develop {feature} --step {step-id}` |
-| 13 | COMMIT | Explicit git commit | `git commit -m "feat({feature}): {scenario} - step {step-id}"` |
-
-**NOTE**: Pre-commit hook validates all 14 phases before allowing commit. The hook is installed in the target project by `/nw:develop`.
-
-**Alternative: Fully Automated Execution**:
-
-Instead of manually invoking each phase, use:
-```bash
-/nw:execute @software-crafter "{step-file}"
-```
-
-This will automatically:
-- Execute phases 1-6, 10 through the TDD loop
-- Invoke `/nw:review` for phases 7 and 9
-- Invoke `/nw:refactor` or `/nw:mikado` for phase 8
-- Commit for phase 11 if all validations pass
-
-**Merge Algorithm Update**: When embedding the TDD template, ensure `tdd_phase_tracking` from `nWave/templates/step-tdd-cycle-schema.json` is included in the merged step file.
+**Execution**: Steps execute via `/nw:execute @software-crafter "{step-file}"` using all phases from canonical schema. Pre-commit hook validates phase completion.
 
 ### Folder Structure Created:
 ```
@@ -1614,34 +1036,9 @@ docs/feature/
 │       └── ...
 ```
 
-### Processing Logic:
+### Processing
 
-1. **Context Enrichment**: For each step in roadmap:
-   - Add complete background information
-   - Include all technical context needed
-   - List relevant files and resources
-   - Document completed prerequisites
-
-2. **Instruction Expansion**: Transform brief roadmap items into:
-   - Detailed step-by-step instructions
-   - Specific tool and command references
-   - Clear output expectations
-   - Concrete acceptance criteria
-
-3. **Dependency Resolution**:
-   - Map all inter-step dependencies
-   - Identify which steps can run in parallel
-   - Document blocking relationships
-
-4. **Agent Assignment**:
-   - Auto-select appropriate agent based on task type
-   - Or use explicitly specified agent
-   - Include agent-specific context
-
-5. **File Generation**:
-   - Create atomic JSON file per step
-   - Ensure complete self-containment
-   - No references requiring external context
+Enrich roadmap steps with context, expand instructions, resolve dependencies, assign agents, generate self-contained JSON files.
 
 ## Output Artifacts
 
@@ -1651,41 +1048,4 @@ docs/feature/
 
 ## Notes
 
-### Context Degradation Prevention
-
-This two-command system solves the critical problem of context degradation in long-running LLM conversations:
-
-1. **DW-ROADMAP** → Expert agent creates comprehensive plan with full context
-2. **DW-SPLIT** → Transforms plan into atomic, self-contained tasks
-
-### Key Benefits of Atomic Task Architecture
-
-**For Sub-Agents:**
-- Start with clean context for each task
-- No accumulated confusion from previous steps
-- Consistent quality across all tasks
-- Can execute in parallel without interference
-
-**For Project Management:**
-- Track progress at granular level
-- Identify bottlenecks quickly
-- Reassign tasks between agents easily
-- Maintain audit trail of all changes
-
-**For Quality:**
-- Each task executed at peak LLM performance
-- No context overflow errors
-- Reduced hallucination risk
-- Consistent output quality
-
-### Implementation Flow
-
-```
-Goal → Expert Agent (ROADMAP) → Comprehensive Plan
-                ↓
-        Agent (SPLIT) → Atomic Tasks
-                ↓
-     Sub-Agents Execute Tasks (Clean Context Each Time)
-```
-
-This architecture enables complex projects to be completed with consistent quality, as each sub-agent operates at maximum effectiveness without the burden of accumulated context.
+Atomic tasks prevent context degradation - each agent starts fresh. Roadmap → Split → Execute with clean context per task.
