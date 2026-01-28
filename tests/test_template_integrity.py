@@ -44,14 +44,26 @@ class TestCanonicalTemplateValidity:
         assert isinstance(canonical_template, dict)
         assert "tdd_cycle" in canonical_template
 
-    def test_canonical_has_14_phases(self, canonical_template):
-        """Canonical template must have exactly 14 phases."""
+    def test_canonical_has_correct_phase_count(self, canonical_template):
+        """Canonical template must have correct phase count for its schema version."""
+        schema_version = canonical_template.get("schema_version", "1.0")
+        expected_count = 8 if schema_version == "2.0" else 14
         phases = canonical_template.get("tdd_cycle", {}).get("phase_execution_log", [])
-        assert len(phases) == 14, f"Expected 14 phases, found {len(phases)}"
+        assert len(phases) == expected_count, (
+            f"Expected {expected_count} phases for schema v{schema_version}, found {len(phases)}"
+        )
 
     def test_canonical_phase_names_match_validator(self, canonical_template):
-        """Phase names in template must match validator constants."""
-        from scripts.validation.validate_steps import REQUIRED_PHASES
+        """Phase names in template must match validator constants for schema version."""
+        from scripts.validation.validate_steps import (
+            REQUIRED_PHASES_V1,
+            REQUIRED_PHASES_V2,
+        )
+
+        schema_version = canonical_template.get("schema_version", "1.0")
+        expected_phases = (
+            REQUIRED_PHASES_V2 if schema_version == "2.0" else REQUIRED_PHASES_V1
+        )
 
         template_phases = [
             p["phase_name"]
@@ -60,10 +72,10 @@ class TestCanonicalTemplateValidity:
             )
         ]
 
-        assert template_phases == REQUIRED_PHASES, (
-            f"Template phases don't match validator.\n"
+        assert template_phases == expected_phases, (
+            f"Template phases don't match validator for schema v{schema_version}.\n"
             f"Template: {template_phases}\n"
-            f"Validator: {REQUIRED_PHASES}"
+            f"Validator: {expected_phases}"
         )
 
     def test_canonical_phases_use_uppercase_underscore(self, canonical_template):
@@ -99,13 +111,35 @@ class TestCanonicalTemplateValidity:
             assert section in canonical_template, f"Missing required section: {section}"
 
     def test_canonical_phase_indices_sequential(self, canonical_template):
-        """Phase indices must be sequential 0-13."""
+        """Phase indices must be sequential starting from 0 (if present)."""
+        schema_version = canonical_template.get("schema_version", "1.0")
         phases = canonical_template.get("tdd_cycle", {}).get("phase_execution_log", [])
 
-        for i, phase in enumerate(phases):
-            assert phase.get("phase_index") == i, (
-                f"Phase {phase.get('phase_name')} has wrong index: "
-                f"expected {i}, got {phase.get('phase_index')}"
+        # Check if phase_index is used in the template
+        has_phase_index = any("phase_index" in phase for phase in phases)
+
+        if has_phase_index:
+            # If phase_index is present, validate it's sequential
+            for i, phase in enumerate(phases):
+                assert phase.get("phase_index") == i, (
+                    f"Phase {phase.get('phase_name')} has wrong index: "
+                    f"expected {i}, got {phase.get('phase_index')}"
+                )
+        else:
+            # If no phase_index, just verify phases are in correct order by name
+            from scripts.validation.validate_steps import (
+                REQUIRED_PHASES_V1,
+                REQUIRED_PHASES_V2,
+            )
+
+            expected_phases = (
+                REQUIRED_PHASES_V2 if schema_version == "2.0" else REQUIRED_PHASES_V1
+            )
+            actual_phase_names = [p.get("phase_name") for p in phases]
+            assert actual_phase_names == expected_phases, (
+                f"Phases not in correct order.\n"
+                f"Expected: {expected_phases}\n"
+                f"Actual: {actual_phase_names}"
             )
 
 
@@ -145,18 +179,23 @@ class TestSplitMdEmbeddedTemplate:
 
     def test_split_md_references_correct_phases(self, split_md_content):
         """split.md must reference correct phase names in examples."""
-        from scripts.validation.validate_steps import REQUIRED_PHASES
+        from scripts.validation.validate_steps import (
+            REQUIRED_PHASES_V1,
+            REQUIRED_PHASES_V2,
+        )
 
         # Extract phase_name values from embedded JSON
         pattern = r'"phase_name":\s*"([A-Z_]+)"'
         matches = re.findall(pattern, split_md_content)
 
         if matches:
-            # All found phase names should be valid
-            invalid = set(matches) - set(REQUIRED_PHASES) - {"NOT_STARTED", "COMPLETED"}
+            # All found phase names should be valid in either v1.0 or v2.0
+            valid_phases = set(REQUIRED_PHASES_V1 + REQUIRED_PHASES_V2)
+            invalid = set(matches) - valid_phases - {"NOT_STARTED", "COMPLETED"}
             assert not invalid, (
                 f"Invalid phase names found in split.md: {invalid}\n"
-                f"Valid names are: {REQUIRED_PHASES}"
+                f"Valid names (v1.0): {REQUIRED_PHASES_V1}\n"
+                f"Valid names (v2.0): {REQUIRED_PHASES_V2}"
             )
 
     def test_split_md_has_format_validation_section(self, split_md_content):
@@ -222,30 +261,46 @@ class TestCrossFileConsistency:
     """Verify consistency across all related files."""
 
     def test_template_and_validator_in_sync(self):
-        """Template phases must match validator phases exactly."""
-        from scripts.validation.validate_steps import REQUIRED_PHASES
+        """Template phases must match validator phases for schema version."""
+        from scripts.validation.validate_steps import (
+            REQUIRED_PHASES_V1,
+            REQUIRED_PHASES_V2,
+        )
 
         with open(CANONICAL_TEMPLATE, encoding="utf-8") as f:
             template = json.load(f)
+
+        schema_version = template.get("schema_version", "1.0")
+        expected_phases = (
+            REQUIRED_PHASES_V2 if schema_version == "2.0" else REQUIRED_PHASES_V1
+        )
 
         template_phases = [
             p["phase_name"]
             for p in template.get("tdd_cycle", {}).get("phase_execution_log", [])
         ]
 
-        assert template_phases == REQUIRED_PHASES, (
-            "Template and validator are out of sync!\n"
+        assert template_phases == expected_phases, (
+            f"Template and validator are out of sync for schema v{schema_version}!\n"
             f"Template: {template_phases}\n"
-            f"Validator: {REQUIRED_PHASES}\n"
+            f"Validator: {expected_phases}\n"
             "Update one to match the other."
         )
 
     def test_mandatory_phases_list_matches(self):
         """mandatory_phases in template must use correct phase names."""
-        from scripts.validation.validate_steps import REQUIRED_PHASES
+        from scripts.validation.validate_steps import (
+            REQUIRED_PHASES_V1,
+            REQUIRED_PHASES_V2,
+        )
 
         with open(CANONICAL_TEMPLATE, encoding="utf-8") as f:
             template = json.load(f)
+
+        schema_version = template.get("schema_version", "1.0")
+        valid_phases = (
+            REQUIRED_PHASES_V2 if schema_version == "2.0" else REQUIRED_PHASES_V1
+        )
 
         mandatory_phases = template.get("task_specification", {}).get(
             "mandatory_phases", []
@@ -255,7 +310,7 @@ class TestCrossFileConsistency:
         for entry in mandatory_phases:
             # Extract phase name (before the " - " description)
             phase_name = entry.split(" - ")[0].strip()
-            assert phase_name in REQUIRED_PHASES, (
+            assert phase_name in valid_phases, (
                 f"Invalid phase in mandatory_phases: '{phase_name}'\n"
-                f"Valid phases: {REQUIRED_PHASES}"
+                f"Valid phases for schema v{schema_version}: {valid_phases}"
             )

@@ -26,8 +26,8 @@ from typing import Any, Dict, List, Tuple
 # Version - Must match nWave/framework-catalog.yaml version
 __version__ = "1.2.26"
 
-# Required TDD phases (14 total)
-REQUIRED_PHASES = [
+# Required TDD phases for schema v1.0 (14 phases - legacy)
+REQUIRED_PHASES_V1 = [
     "PREPARE",
     "RED_ACCEPTANCE",
     "RED_UNIT",
@@ -43,6 +43,21 @@ REQUIRED_PHASES = [
     "FINAL_VALIDATE",
     "COMMIT",
 ]
+
+# Required TDD phases for schema v2.0 (8 phases - current)
+REQUIRED_PHASES_V2 = [
+    "PREPARE",
+    "RED_ACCEPTANCE",
+    "RED_UNIT",
+    "GREEN",
+    "REVIEW",
+    "REFACTOR_CONTINUOUS",
+    "REFACTOR_L4",
+    "COMMIT",
+]
+
+# Default to v1.0 for backward compatibility
+REQUIRED_PHASES = REQUIRED_PHASES_V1
 
 # Required top-level fields in step files
 REQUIRED_FIELDS = [
@@ -63,22 +78,42 @@ REQUIRED_TDD_FIELDS = [
 
 
 def validate_phase_execution_log(
-    phase_log: List[Dict[str, Any]], file_path: str
+    phase_log: List[Dict[str, Any]], file_path: str, schema_version: str = "1.0"
 ) -> List[str]:
-    """Validate phase_execution_log has all 14 phases properly structured."""
+    """Validate phase_execution_log has all required phases properly structured.
+
+    Supports both schema v1.0 (14 phases) and v2.0 (8 phases).
+
+    Args:
+        phase_log: List of phase execution log entries
+        file_path: Path to step file (for error messages)
+        schema_version: Schema version ("1.0" or "2.0")
+
+    Returns:
+        List of validation issues (empty if valid)
+    """
     issues: List[str] = []
 
     if not phase_log:
         issues.append("phase_execution_log is empty or missing")
         return issues
 
-    if len(phase_log) != 14:
-        issues.append(f"phase_execution_log has {len(phase_log)} phases, expected 14")
+    # Select required phases based on schema version
+    required_phases = (
+        REQUIRED_PHASES_V2 if schema_version == "2.0" else REQUIRED_PHASES_V1
+    )
+    expected_count = 8 if schema_version == "2.0" else 14
+
+    if len(phase_log) != expected_count:
+        issues.append(
+            f"phase_execution_log has {len(phase_log)} phases, expected {expected_count} "
+            f"for schema v{schema_version}"
+        )
 
     # Build lookup by phase name
     phase_lookup = {p.get("phase_name"): p for p in phase_log}
 
-    for i, expected_phase in enumerate(REQUIRED_PHASES):
+    for i, expected_phase in enumerate(required_phases):
         entry = phase_lookup.get(expected_phase)
 
         if not entry:
@@ -161,9 +196,14 @@ def validate_step_file(file_path: Path) -> Tuple[bool, List[str]]:
         if field not in tdd_cycle:
             issues.append(f"Missing tdd_cycle.{field}")
 
-    # Validate phase_execution_log
+    # Detect schema version (default to 1.0 for backward compatibility)
+    schema_version = data.get("schema_version", "1.0")
+
+    # Validate phase_execution_log with schema-aware validation
     phase_log = tdd_cycle.get("phase_execution_log", [])
-    phase_issues = validate_phase_execution_log(phase_log, str(file_path))
+    phase_issues = validate_phase_execution_log(
+        phase_log, str(file_path), schema_version
+    )
     issues.extend(phase_issues)
 
     # Check quality_gates exists

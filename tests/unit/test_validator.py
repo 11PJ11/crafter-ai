@@ -1,214 +1,21 @@
 """
 Unit tests for DES template validation components.
 
-Tests ExecutionLogValidator, MandatorySectionChecker, TDDPhaseValidator,
+Tests MandatorySectionChecker, TDDPhaseValidator, DESMarkerValidator,
 and TemplateValidator orchestrator using business-focused test naming.
+
+NOTE: ExecutionLogValidator tests have been moved to SubagentStopHook tests.
+Execution log validation happens POST-execution in the hook, not PRE-invocation
+in template validation. See tests/des/unit/application/test_hooks.py
 """
 
 from src.des.application.validator import (
     ValidationResult,
-    ExecutionLogValidator,
     MandatorySectionChecker,
     TDDPhaseValidator,
     DESMarkerValidator,
     TemplateValidator,
 )
-
-
-class TestExecutionLogValidator:
-    """ExecutionLogValidator unit tests - validates phase execution state transitions."""
-
-    def test_detect_abandoned_in_progress_phase(self):
-        """Validator detects when phase is left in IN_PROGRESS state."""
-        validator = ExecutionLogValidator()
-
-        phase_log = [
-            {
-                "phase_name": "RED_ACCEPTANCE",
-                "status": "IN_PROGRESS",
-                "started_at": "2025-01-13T10:30:00Z",
-                "outcome": None,
-            }
-        ]
-
-        errors = validator.validate(phase_log)
-
-        assert len(errors) == 1
-        assert "IN_PROGRESS" in errors[0]
-        assert "RED_ACCEPTANCE" in errors[0]
-        assert "abandoned" in errors[0].lower()
-
-    def test_allow_executed_phase_with_pass_outcome(self):
-        """Validator accepts EXECUTED phase with outcome=PASS."""
-        validator = ExecutionLogValidator()
-
-        phase_log = [
-            {
-                "phase_name": "RED_ACCEPTANCE",
-                "status": "EXECUTED",
-                "outcome": "PASS",
-                "duration_minutes": 2,
-            }
-        ]
-
-        errors = validator.validate(phase_log)
-
-        assert len(errors) == 0
-
-    def test_allow_skipped_phase_with_blocked_by_reason(self):
-        """Validator accepts SKIPPED phase that has blocked_by reason."""
-        validator = ExecutionLogValidator()
-
-        phase_log = [
-            {
-                "phase_name": "RED_UNIT",
-                "status": "SKIPPED",
-                "blocked_by": "Acceptance test still failing - not yet ready for unit tests",
-            }
-        ]
-
-        errors = validator.validate(phase_log)
-
-        assert len(errors) == 0
-
-    def test_reject_skipped_phase_without_blocked_by_reason(self):
-        """Validator rejects SKIPPED phase missing blocked_by reason."""
-        validator = ExecutionLogValidator()
-
-        phase_log = [
-            {
-                "phase_name": "REFACTOR_L1",
-                "status": "SKIPPED",
-                # Missing blocked_by field
-            }
-        ]
-
-        errors = validator.validate(phase_log)
-
-        assert len(errors) == 1
-        assert "SKIPPED" in errors[0]
-        assert "REFACTOR_L1" in errors[0]
-        assert "blocked_by" in errors[0].lower()
-
-    def test_detect_executed_phase_without_outcome(self):
-        """Validator detects EXECUTED phase missing outcome field."""
-        validator = ExecutionLogValidator()
-
-        phase_log = [
-            {
-                "phase_name": "GREEN_UNIT",
-                "status": "EXECUTED",
-                "duration_minutes": 15,
-                # Missing outcome field
-            }
-        ]
-
-        errors = validator.validate(phase_log)
-
-        assert len(errors) == 1
-        assert "EXECUTED" in errors[0]
-        assert "outcome" in errors[0].lower()
-        assert "GREEN_UNIT" in errors[0]
-
-    def test_reject_done_task_with_not_executed_phases(self):
-        """Validator rejects task marked DONE but has NOT_EXECUTED phases."""
-        validator = ExecutionLogValidator()
-
-        phase_log = [
-            {
-                "phase_name": "RED_ACCEPTANCE",
-                "status": "EXECUTED",
-                "outcome": "PASS",
-            },
-            {
-                "phase_name": "RED_UNIT",
-                "status": "NOT_EXECUTED",
-            },
-        ]
-
-        errors = validator.validate(phase_log)
-
-        assert len(errors) == 1
-        assert "NOT_EXECUTED" in errors[0]
-        assert "RED_UNIT" in errors[0]
-
-    def test_generate_recovery_guidance_for_validation_errors(self):
-        """Validator generates actionable recovery guidance for errors."""
-        validator = ExecutionLogValidator()
-
-        phase_log = [
-            {
-                "phase_name": "RED_ACCEPTANCE",
-                "status": "IN_PROGRESS",
-            }
-        ]
-
-        errors = validator.validate(phase_log)
-        guidance = validator.get_recovery_guidance(errors)
-
-        assert guidance is not None
-        assert isinstance(guidance, list)
-        assert len(guidance) > 0
-        guidance_str = " ".join(guidance)
-        assert "Complete" in guidance_str or "Rollback" in guidance_str
-        assert "RED_ACCEPTANCE" in guidance_str
-
-    def test_allow_multiple_executed_phases_with_outcomes(self):
-        """Validator accepts multiple EXECUTED phases with valid outcomes."""
-        validator = ExecutionLogValidator()
-
-        phase_log = [
-            {
-                "phase_name": "PREPARE",
-                "status": "EXECUTED",
-                "outcome": "PASS",
-                "duration_minutes": 1,
-            },
-            {
-                "phase_name": "RED_ACCEPTANCE",
-                "status": "EXECUTED",
-                "outcome": "PASS",
-                "duration_minutes": 2,
-            },
-            {
-                "phase_name": "RED_UNIT",
-                "status": "EXECUTED",
-                "outcome": "PASS",
-                "duration_minutes": 5,
-            },
-        ]
-
-        errors = validator.validate(phase_log)
-
-        assert len(errors) == 0
-
-    def test_combine_multiple_validation_errors(self):
-        """Validator combines multiple validation errors into single list."""
-        validator = ExecutionLogValidator()
-
-        phase_log = [
-            {
-                "phase_name": "PREPARE",
-                "status": "IN_PROGRESS",  # Error 1: abandoned phase
-            },
-            {
-                "phase_name": "RED_UNIT",
-                "status": "SKIPPED",
-                # Error 2: missing blocked_by
-            },
-            {
-                "phase_name": "GREEN_UNIT",
-                "status": "EXECUTED",
-                # Error 3: missing outcome
-            },
-        ]
-
-        errors = validator.validate(phase_log)
-
-        assert len(errors) == 3
-        assert any("IN_PROGRESS" in e for e in errors)
-        assert any("SKIPPED" in e for e in errors)
-        assert any("EXECUTED" in e for e in errors)
 
 
 class TestMandatorySectionChecker:
