@@ -120,14 +120,26 @@ class InstallationFileSystemAdapter:
         return [str(p) for p in self._dist_dir.rglob("*") if p.is_file()]
 
 
+def _is_smoke_test_forced_failure() -> bool:
+    """Check if smoke test should be forced to fail (for testing)."""
+    return os.getenv("NWAVE_FORCE_SMOKE_FAILURE", "false").lower() == "true"
+
+
 def _create_smoke_test_runner(nwave_home: Path) -> Callable[[], bool]:
     """
     Create a smoke test runner that executes /nw:version.
 
     The smoke test validates the installation by running the version
     command and checking for successful execution.
+
+    In test mode with NWAVE_FORCE_SMOKE_FAILURE=true, the smoke test
+    will always fail to simulate corrupted installation.
     """
     def run_smoke_test() -> bool:
+        # If forced failure is set, return False immediately
+        if _is_smoke_test_forced_failure():
+            return False
+
         # Find version_cli.py
         cli_path = Path(__file__).parent / "version_cli.py"
 
