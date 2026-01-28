@@ -97,8 +97,7 @@ Execute a **complete DEVELOP wave** that orchestrates:
 
 ### TDD Cycle Definition
 
-The TDD cycle phases are defined in the canonical schema at `nWave/templates/step-tdd-cycle-schema.json`.
-**Do not hardcode phase counts or names here** - they are the single source of truth embedded at build time.
+Phases from canonical schema `nWave/templates/step-tdd-cycle-schema.json` (single source of truth, embedded at build time):
 
 {{SCHEMA_TDD_PHASES}}
 
@@ -153,7 +152,7 @@ pre-commit --version  # If missing: pip install pre-commit
 
 ## Instance Isolation in Develop Orchestration
 
-The /nw:develop command orchestrates MULTIPLE Task tool invocations, each creating a distinct agent instance. The command coordinates these instances by managing the shared step file. Instance 1 (RED_ACCEPTANCE phase) loads the step, executes, updates it with results, and terminates. Instance 2 (RED_UNIT phase) loads the updated step, reads what Instance 1 did, continues execution, updates the step again. This chain of instances (each independent, each reading prior results) executes the complete 14-phase TDD cycle.
+Orchestrates multiple Task invocations. Each instance loads step file, executes phases, updates results, terminates. Instances chain via shared step file to complete TDD cycle.
 
 ## CRITICAL: Orchestration Protocol
 
@@ -242,166 +241,7 @@ Task(
 
 ### Pre-Requisite: TDD Phase Validation Hook Installation
 
-Before executing the main phases, the orchestrator **MUST** verify and install TDD validation hooks using the cross-platform Python installer script.
-
-> ⚠️ **MANDATORY**: Hook installation is required for the TDD workflow to function correctly.
-
-#### Quick Installation (Recommended)
-
-**Option A: Download and run installer script**
-
-```bash
-# Download the installer from nwave repository
-curl -sSL https://raw.githubusercontent.com/11PJ11/crafter-ai/master/scripts/install_nwave_target_hooks.py -o install_nwave_target_hooks.py
-
-# Run the installer
-python3 install_nwave_target_hooks.py
-```
-
-**Option B: Run directly from nwave installation**
-
-```bash
-# If nwave is installed locally
-python3 ~/.claude/scripts/install_nwave_target_hooks.py
-```
-
-#### Ensuring Latest Script Versions
-
-**CRITICAL**: The orchestrator MUST check and update scripts before running. Outdated scripts can cause format validation failures.
-
-```python
-import subprocess
-import re
-from pathlib import Path
-
-def check_and_update_scripts():
-    """Check script versions and update if outdated."""
-    scripts_dir = Path.home() / ".claude" / "scripts"
-
-    # Get framework version from catalog (or from installed manifest)
-    manifest_path = Path.home() / ".claude" / "nwave-manifest.txt"
-    if manifest_path.exists():
-        manifest = manifest_path.read_text()
-        match = re.search(r'Version:\s*(\d+\.\d+\.\d+)', manifest)
-        framework_version = match.group(1) if match else "0.0.0"
-    else:
-        framework_version = "0.0.0"
-
-    # Check each utility script
-    scripts_to_check = [
-        "install_nwave_target_hooks.py",
-        "validate_step_file.py"
-    ]
-
-    outdated = []
-    for script_name in scripts_to_check:
-        script_path = scripts_dir / script_name
-        if script_path.exists():
-            content = script_path.read_text()
-            match = re.search(r'__version__\s*=\s*["\'](\d+\.\d+\.\d+)["\']', content)
-            script_version = match.group(1) if match else "0.0.0"
-            if script_version < framework_version:
-                outdated.append(f"{script_name}: {script_version} < {framework_version}")
-
-    if outdated:
-        print("⚠️ Outdated scripts detected:")
-        for msg in outdated:
-            print(f"  - {msg}")
-        print("\n🔄 Re-run: bash ~/.claude/scripts/install-nwave.sh")
-        print("   Or download latest from: https://github.com/11PJ11/crafter-ai")
-        return False
-
-    print("✅ All scripts up-to-date")
-    return True
-
-# Run at startup
-check_and_update_scripts()
-```
-
-#### What the Installer Does
-
-The `install_nwave_target_hooks.py` script:
-
-1. **Checks prerequisites**: Python 3.8+, git repository, pre-commit framework
-2. **Installs pre-commit** if not present: `pip install pre-commit`
-3. **Creates hook scripts** in `scripts/hooks/`:
-   - `nwave-tdd-validator.py` - Pre-commit hook for TDD phase validation
-   - `nwave-bypass-detector.py` - Post-commit hook for audit logging
-4. **Updates `.pre-commit-config.yaml`** with nWave hook configuration
-5. **Runs `pre-commit install`** to activate hooks
-6. **Verifies installation** and reports status
-
-#### Installer Options
-
-```bash
-# Standard installation
-python3 install_nwave_target_hooks.py
-
-# Verify-only mode (no changes)
-python3 install_nwave_target_hooks.py --verify-only
-
-# Force reinstallation
-python3 install_nwave_target_hooks.py --force
-
-# Specify target directory
-python3 install_nwave_target_hooks.py --path /path/to/project
-```
-
-#### Orchestrator Hook Verification
-
-**CRITICAL**: Before proceeding with Phase 1, verify hooks are installed:
-
-```python
-import subprocess
-import sys
-
-def verify_nwave_hooks_installed():
-    """Verify nWave hooks are installed. Block if not."""
-    # Run verification
-    result = subprocess.run(
-        [sys.executable, "install_nwave_target_hooks.py", "--verify-only"],
-        capture_output=True, text=True, check=False
-    )
-
-    if result.returncode != 0:
-        print("❌ BLOCKER: nWave TDD hooks are NOT installed!")
-        print("Run: python3 install_nwave_target_hooks.py")
-        print("\nCannot proceed without TDD validation hooks.")
-        return False
-
-    print("✅ nWave TDD hooks verified")
-    return True
-
-# MANDATORY CHECK - Do not skip
-if not verify_nwave_hooks_installed():
-    raise SystemExit("Hook installation required. Run installer first.")
-```
-
-#### User Prompt for Installation
-
-If hooks are not installed, prompt the user:
-
-```
-╔═══════════════════════════════════════════════════════════════════╗
-║  nWave TDD Hooks Required                                          ║
-╠═══════════════════════════════════════════════════════════════════╣
-║  The TDD validation hooks are NOT installed in this project.       ║
-║                                                                    ║
-║  These hooks:                                                      ║
-║  ✓ Enforce TDD phase completion before commits                     ║
-║  ✓ Log all commits for audit purposes                              ║
-║  ✓ Work cross-platform (Windows, Mac, Linux)                       ║
-║                                                                    ║
-║  [1] Install hooks now (Recommended)                               ║
-║  [2] Skip - I'll install manually later                            ║
-╚═══════════════════════════════════════════════════════════════════╝
-```
-
-Use `AskUserQuestion` tool with these options. If user selects [1], run:
-
-```python
-subprocess.run([sys.executable, "install_nwave_target_hooks.py"], check=True)
-```
+**MANDATORY**: Install hooks before execution. Run `python3 ~/.claude/scripts/install_nwave_target_hooks.py` (or `--verify-only` to check). If not installed, prompt user to install or skip.
 
 ---
 
@@ -1174,9 +1014,9 @@ DELIVERABLES:
 
 #### Cross-Instance Phase Coordination
 
-Each Task invocation (representing a new agent instance) updates phase_execution_log with its progress. Instance 1 marks PREPARE as EXECUTED. Instance 2 reads this log, sees PREPARE is done, and executes RED_ACCEPTANCE (marking it EXECUTED). Instance 3 reads both completed phases and executes RED_UNIT. This phase-aware coordination through JSON allows /nw:develop to orchestrate work across multiple instances without shared session state.
+Instances update phase_execution_log, next instance reads prior progress, continues from incomplete phases. JSON-based coordination, no shared session state.
 
-**Objective**: Execute all atomic steps in dependency order using the complete TDD cycle (from canonical schema).
+**Objective**: Execute steps in dependency order using complete TDD cycle (canonical schema).
 
 **Actions**:
 
