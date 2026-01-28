@@ -495,9 +495,8 @@ class TestFailureRecoveryGuidance:
     # Scenario 9: Recovery suggestion explains WHY error occurred
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_009_recovery_suggestion_explains_why_error_occurred(
-        self, tmp_project_root, step_file_with_abandoned_phase
+        self, tmp_project_root
     ):
         """
         GIVEN agent crash detected during RED_UNIT phase
@@ -513,36 +512,43 @@ class TestFailureRecoveryGuidance:
         - Minimum 1 sentence describing WHY the error occurred
         - Helps junior developers understand failure patterns
         """
-        # Arrange: Step file with RED_UNIT abandoned
-        _step_file = step_file_with_abandoned_phase
-
         # Act: Recovery handler generates suggestions with explanatory text
-        # recovery_handler = RecoveryGuidanceHandler()
-        # suggestions = recovery_handler.generate_recovery_suggestions(
-        #     failure_type="abandoned_phase",
-        #     context={"phase": "RED_UNIT"},
-        # )
+        from src.des.application.recovery_guidance_handler import (
+            RecoveryGuidanceHandler,
+        )
+
+        recovery_handler = RecoveryGuidanceHandler()
+        suggestions = recovery_handler.generate_recovery_suggestions(
+            failure_type="abandoned_phase",
+            context={"phase": "RED_UNIT"},
+        )
 
         # Assert: At least one suggestion explains WHY
-        # why_explanation_found = any(
-        #     any(keyword in s.lower() for keyword in [
-        #         "because", "this occurs when", "indicating", "this means",
-        #         "this typically", "the agent"
-        #     ])
-        #     for s in suggestions
-        # )
-        # assert why_explanation_found, (
-        #     "At least one suggestion must explain WHY the error occurred"
-        # )
+        why_explanation_found = any(
+            any(
+                keyword in s.lower()
+                for keyword in [
+                    "because",
+                    "this occurs when",
+                    "indicating",
+                    "this means",
+                    "this typically",
+                    "the agent",
+                ]
+            )
+            for s in suggestions
+        )
+        assert (
+            why_explanation_found
+        ), "At least one suggestion must explain WHY the error occurred"
 
     # =========================================================================
     # AC-005.5: Recovery suggestions include explanatory text (WHY and HOW)
     # Scenario 10: Recovery suggestion explains HOW the fix resolves issue
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_010_recovery_suggestion_explains_how_fix_resolves_issue(
-        self, tmp_project_root, step_file_with_abandoned_phase
+        self, tmp_project_root
     ):
         """
         GIVEN silent completion detected (agent returned without updating state)
@@ -558,36 +564,45 @@ class TestFailureRecoveryGuidance:
         - Minimum 1 sentence describing HOW the fix resolves the issue
         - Helps junior developers learn recovery patterns
         """
-        # Arrange: Step file with silent completion
-        _step_file = step_file_with_abandoned_phase
-
         # Act: Recovery handler generates suggestions with HOW explanation
-        # recovery_handler = RecoveryGuidanceHandler()
-        # suggestions = recovery_handler.generate_recovery_suggestions(
-        #     failure_type="silent_completion",
-        #     context={"step_file": "steps/01-01.json"},
-        # )
+        from src.des.application.recovery_guidance_handler import (
+            RecoveryGuidanceHandler,
+        )
+
+        recovery_handler = RecoveryGuidanceHandler()
+        suggestions = recovery_handler.generate_recovery_suggestions(
+            failure_type="silent_completion",
+            context={"step_file": "steps/01-01.json"},
+        )
 
         # Assert: At least one suggestion explains HOW fix works
-        # how_explanation_found = any(
-        #     any(keyword in s.lower() for keyword in [
-        #         "allows", "ensures", "this will", "resolves", "fixes",
-        #         "so that", "enabling", "to recover"
-        #     ])
-        #     for s in suggestions
-        # )
-        # assert how_explanation_found, (
-        #     "At least one suggestion must explain HOW the fix resolves the issue"
-        # )
+        how_explanation_found = any(
+            any(
+                keyword in s.lower()
+                for keyword in [
+                    "allows",
+                    "ensures",
+                    "this will",
+                    "resolves",
+                    "fixes",
+                    "so that",
+                    "enabling",
+                    "to recover",
+                ]
+            )
+            for s in suggestions
+        )
+        assert (
+            how_explanation_found
+        ), "At least one suggestion must explain HOW the fix resolves the issue"
 
     # =========================================================================
     # AC-005.5: Combined WHY + HOW in recovery suggestion
     # Scenario 11: Complete educational recovery suggestion with context
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_011_complete_educational_recovery_suggestion(
-        self, tmp_project_root, step_file_with_abandoned_phase
+        self, tmp_project_root
     ):
         """
         GIVEN validation error for missing OUTCOME_RECORDING section
@@ -605,26 +620,30 @@ class TestFailureRecoveryGuidance:
         - Provides specific fix instructions (HOW)
         - Minimum 1 sentence for each aspect
         """
-        # Arrange: Validation failure for missing OUTCOME_RECORDING
-
         # Act: Recovery guidance generated
-        # recovery_guidance = des_validator.generate_recovery_guidance(
-        #     error_type="missing_section",
-        #     section_name="OUTCOME_RECORDING",
-        # )
+        from src.des.application.recovery_guidance_handler import (
+            RecoveryGuidanceHandler,
+        )
+
+        recovery_handler = RecoveryGuidanceHandler()
+        recovery_guidance = recovery_handler.generate_recovery_suggestions(
+            failure_type="missing_section",
+            context={"section_name": "OUTCOME_RECORDING"},
+        )
 
         # Assert: Guidance includes both WHY and HOW
-        # why_keywords = ["because", "required", "needed", "purpose", "ensures"]
-        # how_keywords = ["add", "include", "update", "with", "section"]
-        #
-        # has_why = any(kw in recovery_guidance.lower() for kw in why_keywords)
-        # has_how = any(kw in recovery_guidance.lower() for kw in how_keywords)
-        #
-        # assert has_why, "Recovery guidance must explain WHY the element is needed"
-        # assert has_how, "Recovery guidance must explain HOW to fix the issue"
-        # assert len(recovery_guidance.split(".")) >= 2, (
-        #     "Recovery guidance must have at least 2 sentences (WHY + HOW)"
-        # )
+        why_keywords = ["because", "required", "needed", "purpose", "ensures"]
+        how_keywords = ["add", "include", "update", "with", "section"]
+
+        guidance_text = " ".join(recovery_guidance).lower()
+        has_why = any(kw in guidance_text for kw in why_keywords)
+        has_how = any(kw in guidance_text for kw in how_keywords)
+
+        assert has_why, "Recovery guidance must explain WHY the element is needed"
+        assert has_how, "Recovery guidance must explain HOW to fix the issue"
+        assert (
+            len(recovery_guidance) >= 2
+        ), "Recovery guidance must have at least 2 suggestions (WHY + HOW)"
 
     # =========================================================================
     # AC-005.1: Timeout failure detection with recovery suggestions

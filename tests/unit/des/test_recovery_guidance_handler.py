@@ -402,3 +402,112 @@ class TestMissingPhaseDetection:
         assert (
             has_purpose_explanation
         ), "Suggestions should explain why the phase is required"
+
+
+class TestTimeoutFailureDetection:
+    """Test detection and recovery guidance for timeout failures."""
+
+    def test_generate_suggestions_for_timeout_failure(self):
+        """Should generate recovery suggestions for timeout_failure failure mode."""
+        handler = RecoveryGuidanceHandler()
+        suggestions = handler.generate_recovery_suggestions(
+            failure_type="timeout_failure",
+            context={
+                "configured_timeout_minutes": "30",
+                "actual_runtime_minutes": "35",
+            },
+        )
+
+        assert suggestions is not None
+        assert isinstance(suggestions, list)
+        assert len(suggestions) >= 2
+        assert all(isinstance(s, str) for s in suggestions)
+
+    def test_timeout_failure_suggestions_include_timeout_context(self):
+        """Recovery suggestions for timeout_failure should reference timeout values."""
+        handler = RecoveryGuidanceHandler()
+        configured_timeout = "30"
+        actual_runtime = "35"
+        suggestions = handler.generate_recovery_suggestions(
+            failure_type="timeout_failure",
+            context={
+                "configured_timeout_minutes": configured_timeout,
+                "actual_runtime_minutes": actual_runtime,
+            },
+        )
+
+        # Both timeout values should appear in suggestions
+        has_configured = any(configured_timeout in s for s in suggestions)
+        has_actual = any(actual_runtime in s for s in suggestions)
+        assert (
+            has_configured
+        ), f"Configured timeout '{configured_timeout}' not found in suggestions"
+        assert has_actual, f"Actual runtime '{actual_runtime}' not found in suggestions"
+
+    def test_timeout_failure_suggestions_include_why_how_action(self):
+        """Suggestions for timeout_failure should include WHY, HOW, and ACTION components."""
+        handler = RecoveryGuidanceHandler()
+        suggestions = handler.generate_recovery_suggestions(
+            failure_type="timeout_failure",
+            context={
+                "configured_timeout_minutes": "30",
+                "actual_runtime_minutes": "35",
+            },
+        )
+
+        suggestion_text = "\n".join(suggestions)
+        assert "WHY:" in suggestion_text, "Missing 'WHY:' component in suggestions"
+        assert "HOW:" in suggestion_text, "Missing 'HOW:' component in suggestions"
+        assert (
+            "ACTION:" in suggestion_text
+        ), "Missing 'ACTION:' component in suggestions"
+
+    def test_timeout_failure_suggests_optimization(self):
+        """Recovery suggestions for timeout_failure should suggest optimization approaches."""
+        handler = RecoveryGuidanceHandler()
+        suggestions = handler.generate_recovery_suggestions(
+            failure_type="timeout_failure",
+            context={
+                "configured_timeout_minutes": "30",
+                "actual_runtime_minutes": "35",
+            },
+        )
+
+        suggestion_text = "\n".join(suggestions).lower()
+        optimization_keywords = [
+            "optimize",
+            "performance",
+            "profile",
+            "improve",
+            "reduce",
+            "simplify",
+        ]
+        has_optimization = any(
+            keyword in suggestion_text for keyword in optimization_keywords
+        )
+        assert has_optimization, f"No optimization keywords found in suggestions. Expected one of: {optimization_keywords}"
+
+    def test_timeout_failure_suggests_threshold_adjustment(self):
+        """Recovery suggestions for timeout_failure should suggest timeout threshold adjustment."""
+        handler = RecoveryGuidanceHandler()
+        suggestions = handler.generate_recovery_suggestions(
+            failure_type="timeout_failure",
+            context={
+                "configured_timeout_minutes": "30",
+                "actual_runtime_minutes": "35",
+            },
+        )
+
+        suggestion_text = "\n".join(suggestions).lower()
+        threshold_keywords = [
+            "increase",
+            "threshold",
+            "timeout",
+            "extend",
+            "raise",
+            "adjust",
+        ]
+        has_threshold = any(
+            keyword in suggestion_text for keyword in threshold_keywords
+        )
+        assert has_threshold, f"No threshold adjustment keywords found in suggestions. Expected one of: {threshold_keywords}"

@@ -10,6 +10,37 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 
 
+class SuggestionFormatter:
+    """
+    Formats recovery suggestions with WHY + HOW + actionable structure.
+
+    Ensures consistent formatting across all recovery suggestions to improve
+    readability and help junior developers understand:
+    - WHY: Educational explanation of failure cause
+    - HOW: Specific steps to fix the issue
+    - ACTIONABLE: Command or file path to execute fix
+    """
+
+    def format_suggestion(
+        self,
+        why_text: str,
+        how_text: str,
+        actionable_command: str,
+    ) -> str:
+        """
+        Format a recovery suggestion with WHY, HOW, and actionable elements.
+
+        Args:
+            why_text: Explanation of why the error occurred
+            how_text: Explanation of how the fix resolves the issue
+            actionable_command: Specific command or action to take
+
+        Returns:
+            Formatted suggestion string combining all components
+        """
+        return f"WHY: {why_text}\n\nHOW: {how_text}\n\nACTION: {actionable_command}"
+
+
 class RecoveryGuidanceHandler:
     """
     Handles recovery guidance generation for various failure scenarios.
@@ -75,12 +106,26 @@ class RecoveryGuidanceHandler:
         "missing_phase": {
             "description": "TDD phase missing from implementation",
             "suggestions": [
-                "WHY: The {phase} phase is a required step in the 14-phase TDD cycle - it serves a critical purpose in the development workflow.\n"
+                "WHY: The {phase} phase is a required step in the TDD cycle - it serves a critical purpose in the development workflow.\n"
                 "HOW: Add the missing phase to the phase_execution_log by following the 14-phase sequence defined in the nWave methodology.\n"
                 "ACTION: Review the step file to locate where {phase} should be inserted in the TDD cycle sequence, then add its execution record with appropriate status and outcomes.",
                 "WHY: Each TDD phase is necessary for ensuring proper code quality, testing rigor, and refactoring discipline - skipping phases creates gaps in the development process.\n"
-                "HOW: Consult the 14-phase TDD template to understand what {phase} requires and why it is important for your feature implementation.\n"
+                "HOW: Consult the TDD template to understand what {phase} requires and why it is important for your feature implementation.\n"
                 "ACTION: Add the {phase} phase to your development workflow to ensure complete coverage of all required development steps and quality validations.",
+            ],
+        },
+        "timeout_failure": {
+            "description": "Task execution exceeded configured timeout threshold",
+            "suggestions": [
+                "WHY: The task execution took {actual_runtime_minutes} minutes, exceeding the configured timeout threshold of {configured_timeout_minutes} minutes. This typically occurs when the implementation is inefficient or the timeout is set too low for task complexity.\n"
+                "HOW: Optimizing the implementation for better performance can reduce execution time and prevent timeouts.\n"
+                "ACTION: Review agent transcript at {transcript_path} to identify performance bottlenecks, then optimize code to reduce execution time below {configured_timeout_minutes} minutes.",
+                "WHY: The configured timeout of {configured_timeout_minutes} minutes may be insufficient for task requirements. Actual runtime was {actual_runtime_minutes} minutes, indicating the timeout should be extended.\n"
+                "HOW: Increasing the timeout threshold allows more complex tasks to complete without interruption.\n"
+                "ACTION: Adjust the timeout configuration to {actual_runtime_minutes} minutes or higher based on measured task execution time.",
+                "WHY: Timeout failures prevent task completion and require manual intervention to retry, impacting development workflow efficiency.\n"
+                "HOW: Profiling the implementation and simplifying logic improves performance and prevents future timeouts.\n"
+                "ACTION: Profile code execution to identify slow operations, then refactor to reduce runtime below {configured_timeout_minutes} minutes.",
             ],
         },
     }

@@ -1,0 +1,85 @@
+project_id: recovery-suggestion-formatting
+created_at: "2026-01-28T22:40:00Z"
+description: >
+  Phase 3 of US005 Failure Recovery feature.
+  Implement recovery suggestion formatting with WHY + HOW + Actionable structure
+  and integration with validation errors and transcript paths.
+
+baseline:
+  phase_context: "US005 Phase 3 - Recovery Suggestion Formatting & Integration"
+  predecessor_phases:
+    - "Phase 1: Core recovery infrastructure (COMPLETED)"
+    - "Phase 2: Missing artifacts detection (COMPLETED)"
+
+  measurements:
+    - metric_name: "existing_step_files"
+      current_value: 5
+      target_value: 5
+      methodology: "Count of 03-XX.json files in tests/feature/des-us005/steps/"
+      evidence: "03-01.json through 03-05.json verified"
+
+    - metric_name: "schema_version"
+      current_value: "2.0"
+      target_value: "2.0"
+      methodology: "Grep schema_version field in step files"
+      evidence: "All step files use 8-phase schema v2.0"
+
+    - metric_name: "phase_count"
+      current_value: 8
+      target_value: 8
+      methodology: "Count phase_name entries in phase_execution_log"
+      evidence: "PREPARE → RED_ACCEPTANCE → RED_UNIT → GREEN → REVIEW → REFACTOR_CONTINUOUS → REFACTOR_L4 → COMMIT"
+
+    - metric_name: "step_acceptance_criteria_count"
+      current_value: 5
+      target_value: 5
+      methodology: "Count acceptance_criteria arrays across all step files"
+      evidence: "Each step 03-01 through 03-05 has acceptance criteria"
+
+    - metric_name: "integration_points"
+      current_value: 3
+      target_value: 3
+      methodology: "Count major integration points across steps"
+      evidence: |
+        1. WHY + HOW + Actionable formatting (03-01, 03-02)
+        2. Validation error integration (03-03)
+        3. Suggestion quality & test suite (03-04, 03-05)
+
+  quality_gates:
+    - gate_name: "Schema compliance"
+      status: "PASS"
+      evidence: "All steps use v2.0 schema with 8 phases"
+
+    - gate_name: "Acceptance criteria completeness"
+      status: "PASS"
+      evidence: "All 5 steps have clear acceptance criteria"
+
+    - gate_name: "Task specification structure"
+      status: "PASS"
+      evidence: "All steps follow standard task specification format"
+
+  risk_assessment:
+    - risk: "Suggestion formatting consistency across diverse failure types"
+      severity: "MEDIUM"
+      mitigation: "Step 03-04 includes formatting standardization"
+
+    - risk: "Integration with existing validation error messages"
+      severity: "MEDIUM"
+      mitigation: "Step 03-03 specifically addresses validation integration"
+
+    - risk: "Transcript path availability during agent crashes"
+      severity: "LOW"
+      mitigation: "Step 03-02 includes crash recovery path inclusion"
+
+  dependencies:
+    - "Phase 1 infrastructure (recovery handlers, suggestion generation)"
+    - "Phase 2 detection logic (failure identification)"
+    - "Existing US005 steps 01-01 through 02-05"
+    - "Test suite with acceptance test scenarios"
+
+validation:
+  status: "approved"
+  reviewed_by: "devop-orchestrator"
+  reviewed_at: "2026-01-28T22:40:00Z"
+  attempt: 1
+  notes: "Baseline documents existing Phase 3 artifact structure ready for execution. All schema compliance checks PASSED."

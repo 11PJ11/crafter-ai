@@ -1,0 +1,152 @@
+project_id: recovery-suggestion-formatting
+created_at: "2026-01-28T22:40:00Z"
+description: >
+  Implementation roadmap for Phase 3 of US005 Failure Recovery.
+  Focus: Recovery suggestion formatting with WHY + HOW + Actionable structure
+  and integration with validation errors.
+
+roadmap:
+  overview: |
+    Phase 3 implements the presentation layer for failure recovery guidance.
+    Users see clearly formatted, actionable suggestions that explain:
+    1. WHY the failure happened
+    2. HOW to fix it
+    3. Actionable command/path to execute the fix
+
+  phases:
+    - phase_id: "03"
+      name: "Recovery Suggestion Formatting & Integration"
+      description: "Implement WHY/HOW/Actionable formatting and integrate with validation errors"
+
+      steps:
+        - step_id: "03-01"
+          name: "Format recovery suggestions with WHY + HOW + Actionable structure"
+          description: |
+            Implement suggestion formatting that includes all three components:
+            1. WHY: Educational explanation of failure cause and implications
+            2. HOW: Specific steps to fix the issue
+            3. Actionable: Command or file path to execute fix
+          acceptance_criteria:
+            - "WHY clause explains failure mode clearly"
+            - "HOW clause describes mechanism of fix"
+            - "Actionable element includes command or path"
+            - "Suggestions are readable and junior-dev appropriate"
+            - "All suggestions follow consistent format"
+          suggested_agent: "software-crafter"
+          dependencies: []
+          estimated_effort: "medium"
+
+        - step_id: "03-02"
+          name: "Include transcript path in crash recovery suggestions"
+          description: |
+            Enhance crash recovery suggestions with specific transcript file path for debugging.
+            When an agent crashes, users get the transcript location to understand what went wrong.
+          acceptance_criteria:
+            - "Transcript path included in at least one suggestion"
+            - "Path formatted as actionable reference"
+            - "Crash detection triggers transcript inclusion"
+            - "Multiple failure types each include transcript path"
+          suggested_agent: "software-crafter"
+          dependencies: ["03-01"]
+          estimated_effort: "small"
+
+        - step_id: "03-03"
+          name: "Integrate recovery suggestions with validation error messages"
+          description: |
+            Enhance validation error messages with inline fix guidance.
+            Current: "FAILED: Section TDD_PHASES not found"
+            Enhanced: "FAILED: Section TDD_PHASES not found.
+                      FIX: Add TDD_PHASES section with all phases enumerated"
+          acceptance_criteria:
+            - "Validation errors include FIX guidance"
+            - "Fix guidance is specific to the failure"
+            - "Suggestions include positioning hints"
+            - "Error messages remain readable (<200 chars)"
+          suggested_agent: "software-crafter"
+          dependencies: ["03-01"]
+          estimated_effort: "medium"
+
+        - step_id: "03-04"
+          name: "Polish suggestion quality (junior-dev appropriate language)"
+          description: |
+            Ensure all recovery suggestions are written for junior developers.
+            Use simple language, provide context, avoid jargon, include examples.
+          acceptance_criteria:
+            - "All suggestions scored 'beginner-friendly' by readability check"
+            - "No technical jargon without explanation"
+            - "All suggestions include concrete examples"
+            - "Average suggestion length: 3-4 sentences"
+          suggested_agent: "software-crafter"
+          dependencies: ["03-01", "03-02", "03-03"]
+          estimated_effort: "medium"
+
+        - step_id: "03-05"
+          name: "Create comprehensive recovery suggestion test suite"
+          description: |
+            Implement unit and acceptance tests for recovery suggestions.
+            Validate formatting, content quality, actionability, and integration.
+          acceptance_criteria:
+            - "Unit tests for WHY/HOW/Actionable formatting"
+            - "Acceptance tests for full recovery flow"
+            - "Test coverage >80% for suggestion code"
+            - "All edge cases covered (timeout, crash, missing artifacts, etc)"
+            - "Test assertions validate junior-dev readability"
+          suggested_agent: "software-crafter"
+          dependencies: ["03-01", "03-02", "03-03", "03-04"]
+          estimated_effort: "large"
+
+  integration_points:
+    - "Recovery suggestions displayed during step execution failures"
+    - "Validation error messages enhanced with fix guidance"
+    - "Crash recovery enhanced with transcript path inclusion"
+    - "All suggestions follow consistent WHY + HOW + Actionable format"
+
+  quality_gates:
+    - "All suggestions follow WHY + HOW + Actionable format (mandatory)"
+    - "Suggestion quality passes junior-developer readability check (mandatory)"
+    - "Test coverage >80% for all suggestion code (mandatory)"
+    - "Integration with validation errors verified (mandatory)"
+    - "Mutation testing score >75% (optional, can defer)"
+
+  technical_decisions:
+    - decision: "WHY + HOW + Actionable format"
+      rationale: "Balances educational value with actionability"
+      alternatives: "Just show command, but loses learning opportunity"
+
+    - decision: "Transcript path in crash suggestions"
+      rationale: "Enables debugging without accessing internal logs"
+      alternatives: "Require user to manually find logs, but harder for users"
+
+    - decision: "Validation error integration"
+      rationale: "Reduces friction - users see fix immediately"
+      alternatives: "Separate fix documentation, but requires user search"
+
+  risks:
+    - risk: "Suggestion length exceeding readability (>4 sentences)"
+      severity: "MEDIUM"
+      mitigation: "Step 03-04 includes readability checks and polish pass"
+
+    - risk: "Transcript paths not available in all failure modes"
+      severity: "LOW"
+      mitigation: "Step 03-02 includes fallback guidance when path unavailable"
+
+    - risk: "Jargon in suggestions not appropriate for junior devs"
+      severity: "MEDIUM"
+      mitigation: "Step 03-04 specifically polishes for junior-dev audience"
+
+validation:
+  status: "approved"
+  reviewed_by: "devop-orchestrator"
+  reviewed_at: "2026-01-28T22:40:00Z"
+  reviewer_agent: "software-crafter-reviewer"
+  attempt: 1
+  notes: |
+    Roadmap review APPROVED:
+    ✓ Clear 5-step implementation path
+    ✓ Well-defined acceptance criteria for each step
+    ✓ Dependencies properly mapped
+    ✓ Technical decisions documented with rationale
+    ✓ Aligned with existing Phase 3 (03-01 through 03-05) structure
+    ✓ Risks identified and mitigated
+    ✓ Quality gates appropriate and measurable
+    Ready for Phase 5 (split into steps - already done)

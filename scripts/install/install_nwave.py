@@ -569,8 +569,8 @@ def show_help():
     - nWave command interface for workflow orchestration
     - ATDD (Acceptance Test Driven Development) integration
     - Outside-In TDD with double-loop architecture
-    - Quality validation network with Level 1-6 refactoring
-    - 8-phase TDD enforcement (optimized from 14 phases with schema versioning)
+    - Quality validation network with continuous refactoring
+    - 8-phase TDD enforcement with schema versioning
 
 {Colors.BLUE}INSTALLATION LOCATION:{Colors.NC}
     ~/.claude/agents/nw/    # nWave agent specifications
