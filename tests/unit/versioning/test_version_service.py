@@ -488,3 +488,194 @@ class TestVersionServiceHandlesRateLimitGracefully:
         # THEN: Graceful degradation (same as rate limit without retry_after)
         assert result.is_offline is True
         assert result.local_version == Version("1.2.3")
+
+
+# ============================================================================
+# Step 03-05: Skip update check when watermark is fresh
+# ============================================================================
+
+
+class TestVersionServiceSkipsGitHubWhenWatermarkFresh:
+    """
+    Step 03-05: Test that VersionService skips GitHub API when watermark is fresh.
+
+    Acceptance criteria:
+    - No GitHub API call is made when watermark is fresh (<24h)
+    - Output displays "nWave v1.2.3 (update available: v1.3.0)" using cached data
+    """
+
+    def test_version_service_skips_github_when_watermark_fresh(self):
+        """VersionService should NOT call GitHub API when watermark is fresh (<24h)."""
+        from datetime import timedelta
+        from nWave.core.versioning.application.version_service import VersionService
+
+        # GIVEN: A fresh watermark (1 hour old)
+        fresh_timestamp = datetime.now(timezone.utc) - timedelta(hours=1)
+        fresh_watermark = Watermark(
+            last_check=fresh_timestamp,
+            latest_version=Version("1.3.0"),
+        )
+
+        mock_file_system = Mock()
+        mock_file_system.read_version.return_value = Version("1.2.3")
+        mock_file_system.read_watermark.return_value = fresh_watermark
+
+        mock_github = Mock()
+        mock_github.get_latest_release.return_value = ReleaseInfo(
+            version=Version("1.4.0"),  # Different to detect if called
+            checksum="abc123",
+            download_url="https://example.com/release.zip",
+        )
+
+        version_service = VersionService(
+            github_api=mock_github,
+            file_system=mock_file_system,
+        )
+
+        # WHEN: check_version is called
+        result = version_service.check_version()
+
+        # THEN: GitHub API was NOT called (watermark is fresh)
+        mock_github.get_latest_release.assert_not_called()
+
+    def test_version_service_uses_cached_latest_version(self):
+        """VersionService should use cached latest_version from fresh watermark."""
+        from datetime import timedelta
+        from nWave.core.versioning.application.version_service import VersionService
+
+        # GIVEN: A fresh watermark with cached latest_version "1.3.0"
+        fresh_timestamp = datetime.now(timezone.utc) - timedelta(hours=1)
+        fresh_watermark = Watermark(
+            last_check=fresh_timestamp,
+            latest_version=Version("1.3.0"),
+        )
+
+        mock_file_system = Mock()
+        mock_file_system.read_version.return_value = Version("1.2.3")
+        mock_file_system.read_watermark.return_value = fresh_watermark
+
+        mock_github = Mock()
+
+        version_service = VersionService(
+            github_api=mock_github,
+            file_system=mock_file_system,
+        )
+
+        # WHEN: check_version is called
+        result = version_service.check_version()
+
+        # THEN: Result uses cached latest_version from watermark
+        assert result.latest_version == Version("1.3.0")
+        assert result.remote_version == Version("1.3.0")
+
+    def test_watermark_is_not_stale_within_24_hours(self):
+        """Watermark is NOT stale within 24 hours boundary."""
+        from datetime import timedelta
+
+        # Test various fresh timestamps (all <24h)
+        fresh_cases = [
+            (1, "1 hour ago"),
+            (12, "12 hours ago"),
+            (23, "23 hours ago"),
+            (23.9, "23.9 hours ago"),  # Just under 24h
+        ]
+
+        for hours, description in fresh_cases:
+            fresh_timestamp = datetime.now(timezone.utc) - timedelta(hours=hours)
+            watermark = Watermark(
+                last_check=fresh_timestamp,
+                latest_version=Version("1.0.0"),
+            )
+
+            # THEN: Watermark is NOT stale
+            assert watermark.is_stale is False, f"Failed for {description}"
+
+    def test_version_service_does_not_write_watermark_when_fresh(self):
+        """VersionService should NOT update watermark when it is fresh."""
+        from datetime import timedelta
+        from nWave.core.versioning.application.version_service import VersionService
+
+        # GIVEN: A fresh watermark
+        fresh_timestamp = datetime.now(timezone.utc) - timedelta(hours=1)
+        fresh_watermark = Watermark(
+            last_check=fresh_timestamp,
+            latest_version=Version("1.3.0"),
+        )
+
+        mock_file_system = Mock()
+        mock_file_system.read_version.return_value = Version("1.2.3")
+        mock_file_system.read_watermark.return_value = fresh_watermark
+
+        mock_github = Mock()
+
+        version_service = VersionService(
+            github_api=mock_github,
+            file_system=mock_file_system,
+        )
+
+        # WHEN: check_version is called
+        result = version_service.check_version()
+
+        # THEN: write_watermark was NOT called (no need to update fresh watermark)
+        mock_file_system.write_watermark.assert_not_called()
+
+    def test_version_service_detects_update_available_from_cache(self):
+        """VersionService should detect update available from cached watermark data."""
+        from datetime import timedelta
+        from nWave.core.versioning.application.version_service import VersionService
+
+        # GIVEN: Fresh watermark with cached version > installed version
+        fresh_timestamp = datetime.now(timezone.utc) - timedelta(hours=1)
+        fresh_watermark = Watermark(
+            last_check=fresh_timestamp,
+            latest_version=Version("1.3.0"),
+        )
+
+        mock_file_system = Mock()
+        mock_file_system.read_version.return_value = Version("1.2.3")
+        mock_file_system.read_watermark.return_value = fresh_watermark
+
+        mock_github = Mock()
+
+        version_service = VersionService(
+            github_api=mock_github,
+            file_system=mock_file_system,
+        )
+
+        # WHEN: check_version is called
+        result = version_service.check_version()
+
+        # THEN: Update available is detected using cached data
+        assert result.update_available is True
+        assert result.local_version == Version("1.2.3")
+        assert result.latest_version == Version("1.3.0")
+
+    def test_version_service_formats_message_from_cache(self):
+        """VersionService result formats display message correctly from cached data."""
+        from datetime import timedelta
+        from nWave.core.versioning.application.version_service import VersionService
+
+        # GIVEN: Fresh watermark with cached data
+        fresh_timestamp = datetime.now(timezone.utc) - timedelta(hours=1)
+        fresh_watermark = Watermark(
+            last_check=fresh_timestamp,
+            latest_version=Version("1.3.0"),
+        )
+
+        mock_file_system = Mock()
+        mock_file_system.read_version.return_value = Version("1.2.3")
+        mock_file_system.read_watermark.return_value = fresh_watermark
+
+        mock_github = Mock()
+
+        version_service = VersionService(
+            github_api=mock_github,
+            file_system=mock_file_system,
+        )
+
+        # WHEN: check_version and format
+        result = version_service.check_version()
+        message = result.format_display_message()
+
+        # THEN: Message shows update available using cached data
+        assert message == "nWave v1.2.3 (update available: v1.3.0)"

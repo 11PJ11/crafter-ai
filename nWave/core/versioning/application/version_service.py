@@ -3,9 +3,10 @@ VersionService - Application service for version check operations.
 
 Orchestrates version checking through ports:
 1. Reads installed version from FileSystemPort
-2. Fetches latest version from GitHubAPIPort
-3. Updates watermark via FileSystemPort
-4. Returns VersionCheckResult with comparison
+2. Checks watermark freshness (<24h = skip GitHub)
+3. Fetches latest version from GitHubAPIPort (if watermark stale or missing)
+4. Updates watermark via FileSystemPort (only when GitHub called)
+5. Returns VersionCheckResult with comparison
 
 HEXAGONAL ARCHITECTURE:
 - This is an APPLICATION SERVICE (inside the hexagon)
@@ -16,6 +17,11 @@ OFFLINE HANDLING (Step 03-03):
 - NetworkError and RateLimitError are caught gracefully
 - Returns result with is_offline=True when network unavailable
 - No exceptions propagated for network issues
+
+FRESH WATERMARK OPTIMIZATION (Step 03-05):
+- When watermark is fresh (<24 hours old), skip GitHub API call
+- Use cached latest_version from watermark instead
+- Reduces API calls and improves response time
 """
 
 from __future__ import annotations
@@ -131,9 +137,11 @@ class VersionService:
 
     Orchestrates the version check workflow:
     1. Read installed version from file system
-    2. Fetch latest version from GitHub API
-    3. Update watermark with check timestamp and latest version
-    4. Return comparison result
+    2. Read watermark and check if fresh (<24 hours old)
+    3. If fresh, use cached latest_version from watermark (skip GitHub)
+    4. If stale or missing, fetch latest from GitHub API
+    5. Update watermark with new data (only when GitHub called)
+    6. Return comparison result
 
     Handles network errors gracefully - returns is_offline=True instead
     of raising exceptions for NetworkError or RateLimitError.
@@ -185,9 +193,11 @@ class VersionService:
 
         Workflow:
         1. Read installed version from VERSION file
-        2. Fetch latest release from GitHub API (graceful on network error)
-        3. Update watermark file with timestamp and latest version (if online)
-        4. Return comparison result
+        2. Read watermark and check freshness
+        3. If watermark is fresh (<24h), use cached latest_version (skip GitHub)
+        4. If watermark is stale or missing, fetch from GitHub API
+        5. Update watermark file with timestamp and latest version (if GitHub called)
+        6. Return comparison result
 
         Returns:
             VersionCheckResult with installed, latest versions and update flag.
@@ -203,12 +213,48 @@ class VersionService:
         # Step 1: Read installed version
         installed_version = self._read_local_version()
 
-        # Step 2: Fetch latest release from GitHub (with graceful error handling)
+        # Step 2: Check watermark freshness
+        watermark = self._read_watermark()
+        if watermark is not None and not watermark.is_stale:
+            # Watermark is fresh - use cached latest_version, skip GitHub API
+            return VersionCheckResult(
+                local_version=installed_version,
+                remote_version=watermark.latest_version,
+                is_offline=False,
+            )
+
+        # Step 3: Watermark is stale or missing - fetch from GitHub
+        return self._fetch_from_github_and_update_watermark(installed_version)
+
+    def _read_watermark(self) -> Optional[Watermark]:
+        """
+        Read watermark from file system if available.
+
+        Returns:
+            Optional[Watermark]: The watermark if found, None otherwise.
+        """
+        if self._file_system is None:
+            return None
+        return self._file_system.read_watermark()
+
+    def _fetch_from_github_and_update_watermark(
+        self, installed_version: Version
+    ) -> VersionCheckResult:
+        """
+        Fetch latest version from GitHub and update watermark.
+
+        Args:
+            installed_version: The locally installed version
+
+        Returns:
+            VersionCheckResult with latest version from GitHub.
+            If network unavailable, is_offline=True and remote_version=None.
+        """
         try:
             release_info = self._github_api.get_latest_release(self._owner, self._repo)
             latest_version = release_info.version
 
-            # Step 3: Update watermark (only if online)
+            # Update watermark with new data
             if self._file_system is not None:
                 watermark = Watermark(
                     last_check=datetime.now(timezone.utc),

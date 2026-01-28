@@ -66,7 +66,7 @@ Feature: Check Installed Version
     And the watermark file is updated with new timestamp
     And the watermark file contains latest_version "1.3.0"
 
-  @skip
+  # ACTIVE - Step 03-05: Skip update check when watermark is fresh
   Scenario: Skip update check when watermark is fresh
     Given Marco has nWave v1.2.3 installed in the test ~/.claude/ directory
     And the watermark file shows last_check was 1 hour ago
