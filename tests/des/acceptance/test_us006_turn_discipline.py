@@ -363,7 +363,6 @@ class TestTurnDisciplineValidation:
     These tests verify validation correctly handles its presence/absence.
     """
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_008_missing_timeout_instruction_blocks_invocation(
         self, tmp_project_root, minimal_step_file
     ):
