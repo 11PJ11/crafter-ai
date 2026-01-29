@@ -237,7 +237,6 @@ class TestTurnDisciplineInclusion:
             "(save progress, update step file, set phase to IN_PROGRESS)"
         )
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_005_timeout_instruction_requires_turn_count_logging(
         self, tmp_project_root, minimal_step_file, des_orchestrator
     ):

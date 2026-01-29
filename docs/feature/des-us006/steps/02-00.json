@@ -1,0 +1,80 @@
+{
+  "task_id": "02-00",
+  "step_name": "Create render_full_prompt() public entry point",
+  "project_id": "des-us006",
+  "phase_id": "02",
+  "acceptance_test_scenario": "test_scenario_001",
+  "description": "Create public method render_full_prompt() that acceptance tests invoke. This method delegates to internal render_prompt() and adds TIMEOUT_INSTRUCTION section for VALIDATION_COMMANDS. This is the CRITICAL MISSING STEP that enables external access to the feature. Without this step, ALL 12 acceptance tests fail with AttributeError because tests call des_orchestrator.render_full_prompt() which does not exist in DESOrchestrator class.",
+  "acceptance_criteria": [
+    "render_full_prompt(command, agent, step_file, project_root) method created",
+    "Method signature matches test usage exactly",
+    "Method delegates to internal render_prompt() for base prompt generation",
+    "Method integrates TIMEOUT_INSTRUCTION section for VALIDATION_COMMANDS",
+    "Returns complete prompt string with all DES sections",
+    "Acceptance test test_scenario_001 can call method without AttributeError",
+    "Entry point is properly documented as public API"
+  ],
+  "dependencies": [
+    "01-05"
+  ],
+  "suggested_agent": "software-crafter",
+  "estimated_hours": 2,
+  "notes": "CRITICAL FIX RC-01: This step was MISSING from original roadmap, causing external validity failure. All acceptance tests would fail with AttributeError because they call render_full_prompt() which didn't exist. This step creates the public entry point that tests and users invoke.",
+  "tdd_cycle": {
+    "acceptance_test": {
+      "scenario_name": "test_scenario_001_des_validated_prompt_includes_timeout_instruction_section",
+      "test_file": "tests/des/acceptance/test_us006_turn_discipline.py",
+      "test_file_format": "py_pytest",
+      "scenario_index": 1,
+      "initially_ignored": true,
+      "is_walking_skeleton": false,
+      "mapped_scenario": {
+        "description": "Validates TIMEOUT_INSTRUCTION section is present in prompt",
+        "scenario_function": "test_scenario_001_des_validated_prompt_includes_timeout_instruction_section",
+        "scenario_description": "Section presence",
+        "mapping_type": "feature",
+        "notes": "Makes tests 001-005 GREEN by creating accessible entry point"
+      }
+    },
+    "expected_unit_tests": [
+      "test_render_full_prompt_method_exists",
+      "test_render_full_prompt_accepts_correct_parameters",
+      "test_render_full_prompt_calls_render_prompt_internally",
+      "test_render_full_prompt_returns_string",
+      "test_render_full_prompt_includes_timeout_for_validation_commands",
+      "test_render_full_prompt_no_timeout_for_other_commands"
+    ],
+    "mock_boundaries": {
+      "allowed_ports": [],
+      "forbidden_domain_classes": [],
+      "in_memory_adapters": []
+    },
+    "tdd_phase_tracking": {
+      "current_phase": "NOT_STARTED",
+      "active_e2e_test": "@pytest.mark.skip removed from test_scenario_001",
+      "inactive_e2e_tests": "All other @pytest.mark.skip scenarios remain disabled",
+      "phases_completed": [],
+      "test_results": {
+        "total": null,
+        "passed": null,
+        "failed": null,
+        "skipped": null
+      }
+    },
+    "phase_execution_log": []
+  },
+  "quality_gates": {
+    "acceptance_tests_pass": false,
+    "unit_tests_pass": false,
+    "mutation_score_threshold": 75,
+    "code_coverage_threshold": 80,
+    "solid_principles_followed": false,
+    "port_boundary_compliance": false
+  },
+  "validation": {
+    "status": "approved",
+    "reviewed_by": "software-crafter-reviewer",
+    "reviewed_at": "2026-01-29T12:20:42.080528+00:00",
+    "review_summary": "Format validation PASSED - all required fields present and correct. File complies with canonical schema v2.0.0. No HIGH severity violations found. File ready for execution."
+  }
+}

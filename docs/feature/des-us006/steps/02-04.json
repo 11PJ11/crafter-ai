@@ -1,0 +1,74 @@
+{
+  "task_id": "02-04",
+  "step_name": "Verify research commands have NO TIMEOUT_INSTRUCTION",
+  "project_id": "des-us006",
+  "phase_id": "02",
+  "acceptance_test_scenario": "test_scenario_007",
+  "description": "Validate that /nw:research commands do NOT receive TIMEOUT_INSTRUCTION section. Research commands bypass DES validation and should not have turn discipline overhead.",
+  "acceptance_criteria": [
+    "render_prompt() with command='/nw:research' does NOT generate TIMEOUT_INSTRUCTION",
+    "/nw:research NOT in VALIDATION_COMMANDS constant",
+    "test_scenario_007 GREEN: Research commands have no timeout instruction"
+  ],
+  "dependencies": [
+    "02-01"
+  ],
+  "suggested_agent": "software-crafter",
+  "estimated_hours": 1,
+  "parallel_execution_group": "command-validation-tests",
+  "execution_notes": "Can execute in parallel with steps 02-02, 02-03 after 02-01 completes",
+  "tdd_cycle": {
+    "acceptance_test": {
+      "scenario_name": "test_scenario_007_research_command_has_no_timeout_instruction",
+      "test_file": "tests/des/acceptance/test_us006_turn_discipline.py",
+      "test_file_format": "py_pytest",
+      "scenario_index": 7,
+      "initially_ignored": true,
+      "is_walking_skeleton": false,
+      "mapped_scenario": {
+        "description": "Validates /nw:research does NOT receive TIMEOUT_INSTRUCTION",
+        "scenario_function": "test_scenario_007_research_command_has_no_timeout_instruction",
+        "scenario_description": "Research no timeout",
+        "mapping_type": "feature",
+        "notes": "Exploratory commands should not have turn discipline overhead"
+      }
+    },
+    "expected_unit_tests": [
+      "test_research_command_not_in_validation_commands",
+      "test_research_command_no_timeout_instruction",
+      "test_research_prompt_structure_excludes_timeout"
+    ],
+    "mock_boundaries": {
+      "allowed_ports": [],
+      "forbidden_domain_classes": [],
+      "in_memory_adapters": []
+    },
+    "tdd_phase_tracking": {
+      "current_phase": "NOT_STARTED",
+      "active_e2e_test": "@pytest.mark.skip removed from test_scenario_007",
+      "inactive_e2e_tests": "All other @pytest.mark.skip scenarios remain disabled",
+      "phases_completed": [],
+      "test_results": {
+        "total": null,
+        "passed": null,
+        "failed": null,
+        "skipped": null
+      }
+    },
+    "phase_execution_log": []
+  },
+  "quality_gates": {
+    "acceptance_tests_pass": false,
+    "unit_tests_pass": false,
+    "mutation_score_threshold": 75,
+    "code_coverage_threshold": 80,
+    "solid_principles_followed": false,
+    "port_boundary_compliance": false
+  },
+  "validation": {
+    "status": "approved",
+    "reviewed_by": "software-crafter-reviewer",
+    "reviewed_at": "2026-01-29T12:20:42.080528+00:00",
+    "review_summary": "Format validation PASSED - all required fields present and correct. File complies with canonical schema v2.0.0. No HIGH severity violations found. File ready for execution."
+  }
+}

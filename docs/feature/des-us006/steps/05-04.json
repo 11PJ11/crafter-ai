@@ -1,0 +1,71 @@
+{
+  "task_id": "05-04",
+  "step_name": "Create production readiness checklist and sign-off",
+  "project_id": "des-us006",
+  "phase_id": "05",
+  "acceptance_test_scenario": "N/A - infrastructure",
+  "description": "Document production readiness with comprehensive checklist covering all quality gates. Get sign-off from software-crafter-reviewer.",
+  "acceptance_criteria": [
+    "Production readiness checklist created in docs/feature/des-us006/",
+    "All quality gates documented: tests, coverage, performance, documentation",
+    "No known bugs or regressions",
+    "Deployment plan documented (feature flag strategy if applicable)",
+    "Rollback plan documented",
+    "Sign-off obtained from software-crafter-reviewer"
+  ],
+  "dependencies": [
+    "05-03"
+  ],
+  "suggested_agent": "software-crafter",
+  "estimated_hours": 2,
+  "tdd_cycle": {
+    "acceptance_test": {
+      "scenario_name": "N/A - production readiness documentation",
+      "test_file": "tests/des/acceptance/test_us006_turn_discipline.py",
+      "test_file_format": "py_pytest",
+      "scenario_index": 0,
+      "initially_ignored": false,
+      "is_walking_skeleton": false,
+      "mapped_scenario": {
+        "description": "Infrastructure documentation - production readiness",
+        "scenario_function": "",
+        "scenario_description": "Production readiness checklist",
+        "mapping_type": "infrastructure",
+        "notes": "Final sign-off documentation for production deployment"
+      }
+    },
+    "expected_unit_tests": [],
+    "mock_boundaries": {
+      "allowed_ports": [],
+      "forbidden_domain_classes": [],
+      "in_memory_adapters": []
+    },
+    "tdd_phase_tracking": {
+      "current_phase": "NOT_STARTED",
+      "active_e2e_test": "All 12 acceptance tests must remain GREEN",
+      "inactive_e2e_tests": "None",
+      "phases_completed": [],
+      "test_results": {
+        "total": null,
+        "passed": null,
+        "failed": null,
+        "skipped": null
+      }
+    },
+    "phase_execution_log": []
+  },
+  "quality_gates": {
+    "acceptance_tests_pass": false,
+    "unit_tests_pass": false,
+    "mutation_score_threshold": 75,
+    "code_coverage_threshold": 80,
+    "solid_principles_followed": false,
+    "port_boundary_compliance": false
+  },
+  "validation": {
+    "status": "approved",
+    "reviewed_by": "software-crafter-reviewer",
+    "reviewed_at": "2026-01-29T12:20:42.080528+00:00",
+    "review_summary": "Format validation PASSED - all required fields present and correct. File complies with canonical schema v2.0.0. No HIGH severity violations found. File ready for execution."
+  }
+}
