@@ -660,19 +660,175 @@ def validate_before_task_invocation(prompt: str, step_file_path: str = None) -> 
 
 ## Layer 3: Execution Lifecycle Management
 
-### 4.3 Turn Limit Enforcement and Timeout Strategy
+### 4.3 Prompt Structure: TIMEOUT_INSTRUCTION Section
 
 Since Claude Code Task tool has no built-in timeout and **max_turns is NOT available** (CLI-only parameter), we rely on prompt-based discipline with proactive warning thresholds and extension request capabilities.
 
 > ⚠️ **CRITICAL CORRECTION:** The original design assumed `max_turns` was available for Task tool. Empirical testing confirmed this is FALSE - max_turns is a CLI flag only, not a Task tool parameter.
 
-#### Turn Discipline Framework
+#### TIMEOUT_INSTRUCTION Section Specification
 
-The DES implements a three-tier turn discipline framework:
+The TIMEOUT_INSTRUCTION section is a **mandatory component** of all DES-validated prompts for command-origin Task invocations. This section implements turn discipline through agent self-regulation.
 
-1. **Base Budget**: 50 turns per step execution (standard allocation)
+**When Included:**
+- ✅ **REQUIRED:** All Task invocations with `<!-- DES-VALIDATION: required -->` marker
+- ✅ **REQUIRED:** Commands: `/nw:execute`, `/nw:develop` (for sub-tasks)
+- ❌ **NOT INCLUDED:** Ad-hoc Task invocations without DES markers
+- ❌ **NOT INCLUDED:** Commands: `/nw:review`, `/nw:research` (non-validated commands)
+
+**Required Elements (AC-US-006-02):**
+
+The TIMEOUT_INSTRUCTION section must contain exactly 4 required elements:
+
+1. **Base Turn Budget**: Standard allocation (50 turns for step execution)
+   - Clearly states the initial turn budget
+   - Establishes baseline expectations for completion
+   - Example: "Base Turn Budget: 50 turns (standard allocation for step execution)"
+
 2. **Warning Thresholds**: Progressive warnings at 60%, 80%, and 95% of budget
-3. **Extension Protocol**: Explicit mechanism for requesting additional turns when needed
+   - Three specific checkpoints with exact turn numbers
+   - Each warning escalates in severity and urgency
+   - Includes recommended actions at each threshold
+   - Example:
+     ```
+     - Turn 30 (60%): "⚠️ PROGRESS CHECK: 30/50 turns used."
+     - Turn 40 (80%): "⚠️ TIME WARNING: 40/50 turns used."
+     - Turn 48 (95%): "🚨 CRITICAL: 48/50 turns used."
+     ```
+
+3. **Extension Request Protocol**: Mechanism for requesting additional turns when needed
+   - Structured format for extension requests
+   - Required fields: requested_turns, reason, current_phase, estimated_completion_turn, critical_path
+   - Documented in step file execution_result.extension_request
+   - Includes at least 3 realistic examples (test debugging, complex refactoring, build issues)
+   - Example structure:
+     ```json
+     {
+       "extension_request": {
+         "requested_turns": 20,
+         "reason": "Specific justification",
+         "current_phase": "PHASE_NAME",
+         "estimated_completion_turn": 65,
+         "critical_path": "Work requiring extension"
+       }
+     }
+     ```
+
+4. **Early Exit Protocol**: Procedure for graceful termination when completion is not feasible
+   - Clear steps for saving progress
+   - Setting phase to IN_PROGRESS with detailed notes
+   - Setting task state to PARTIAL with recovery_suggestions
+   - Explicit instruction to return immediately
+   - Lists prohibited behaviors (infinite loops, ignoring warnings, etc.)
+
+**Acceptance Criteria Reference:**
+
+This specification satisfies the following acceptance criteria from US-006:
+
+- **AC-US-006-01**: TIMEOUT_INSTRUCTION section included in validated prompts
+- **AC-US-006-02**: Section contains 4 required elements with examples
+- **AC-US-006-03**: Warning thresholds at 60%, 80%, 95% with actionable guidance
+- **AC-US-006-04**: Extension request protocol with structured format and 3+ examples
+- **AC-US-006-05**: Early exit protocol with step-by-step procedure
+
+**Example TIMEOUT_INSTRUCTION Section Output:**
+
+The following shows a complete TIMEOUT_INSTRUCTION section as it appears in a rendered prompt:
+
+```markdown
+## TIMEOUT_INSTRUCTION
+
+**Base Turn Budget:** 50 turns (standard allocation for step execution)
+
+**Warning Thresholds:**
+
+You will receive internal progress warnings at:
+- **Turn 30 (60% of budget)**: "⚠️ PROGRESS CHECK: 30/50 turns used. Expected completion by turn 40."
+- **Turn 40 (80% of budget)**: "⚠️ TIME WARNING: 40/50 turns used. Consider extension request or early exit."
+- **Turn 48 (95% of budget)**: "🚨 CRITICAL: 48/50 turns used. Complete current phase and exit OR request extension NOW."
+
+**Extension Request Protocol:**
+
+If you need additional turns beyond the 50-turn base budget:
+
+1. **Assess Progress**: Determine exact work remaining
+2. **Request Extension**: Include in step file update:
+   ```json
+   {
+     "execution_result": {
+       "extension_request": {
+         "requested_turns": 20,
+         "reason": "Complex integration test debugging requires additional investigation",
+         "current_phase": "GREEN_UNIT",
+         "estimated_completion_turn": 65,
+         "critical_path": "Debugging async timeout in payment gateway integration"
+       }
+     }
+   }
+   ```
+3. **Continue Work**: Proceed with extended budget after request
+
+**Extension Request Examples:**
+
+Example 1 - Test Debugging:
+```json
+{
+  "extension_request": {
+    "requested_turns": 15,
+    "reason": "Unit test failures require investigating mock setup and state isolation",
+    "current_phase": "GREEN_UNIT",
+    "estimated_completion_turn": 60,
+    "critical_path": "Fix 3 failing unit tests related to state management"
+  }
+}
+```
+
+Example 2 - Complex Refactoring:
+```json
+{
+  "extension_request": {
+    "requested_turns": 25,
+    "reason": "Refactoring L3-L4 discovered tight coupling requiring broader architectural changes",
+    "current_phase": "REFACTOR_L3",
+    "estimated_completion_turn": 70,
+    "critical_path": "Extract repository interface and update 5 dependent classes"
+  }
+}
+```
+
+Example 3 - Build/Environment Issues:
+```json
+{
+  "extension_request": {
+    "requested_turns": 10,
+    "reason": "Dependency resolution conflicts in package manager require careful debugging",
+    "current_phase": "PREPARE",
+    "estimated_completion_turn": 58,
+    "critical_path": "Resolve conflicting versions of logging framework"
+  }
+}
+```
+
+**Early Exit Protocol:**
+
+If extension is not viable or you cannot complete reasonably:
+1. Save all current progress to step file
+2. Set current phase to IN_PROGRESS with detailed notes
+3. Return with status: "PARTIAL_COMPLETION"
+4. Include remaining work in execution_result.recovery_suggestions
+
+**DO NOT:**
+- Loop indefinitely trying to fix unfixable issues
+- Continue past your scope without extension request
+- Ignore progress warnings
+- Request extension without clear justification
+```
+
+This example demonstrates all 4 required elements integrated into a complete, ready-to-use prompt section.
+
+#### Turn Discipline Implementation
+
+The DES implements turn discipline through three coordinated mechanisms:
 
 #### Mechanism 1: Prompt-Based Turn Awareness (PRIMARY)
 

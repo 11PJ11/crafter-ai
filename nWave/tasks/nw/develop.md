@@ -90,10 +90,16 @@ Execute a **complete DEVELOP wave** that orchestrates:
 1. **Phase 1-2**: Baseline Creation + Review (measurement baseline)
 2. **Phase 3-4**: Roadmap Creation + Dual Review (strategic planning)
 3. **Phase 5-6**: Split into Atomic Steps + Review Each Step (task decomposition)
-4. **Phase 7**: Execute All Steps (14-phase TDD per step)
+4. **Phase 7**: Execute All Steps (TDD cycle per step - see canonical schema)
 5. **Phase 7.5**: Mutation Testing (test quality validation)
 6. **Phase 8**: Finalize (archival and cleanup)
 7. **Phase 9**: Report Completion
+
+### TDD Cycle Definition
+
+Phases from canonical schema `nWave/templates/step-tdd-cycle-schema.json` (single source of truth, embedded at build time):
+
+{{SCHEMA_TDD_PHASES}}
 
 ### Key Features
 
@@ -146,7 +152,7 @@ pre-commit --version  # If missing: pip install pre-commit
 
 ## Instance Isolation in Develop Orchestration
 
-The /nw:develop command orchestrates MULTIPLE Task tool invocations, each creating a distinct agent instance. The command coordinates these instances by managing the shared step file. Instance 1 (RED_ACCEPTANCE phase) loads the step, executes, updates it with results, and terminates. Instance 2 (RED_UNIT phase) loads the updated step, reads what Instance 1 did, continues execution, updates the step again. This chain of instances (each independent, each reading prior results) executes the complete 14-phase TDD cycle.
+Orchestrates multiple Task invocations. Each instance loads step file, executes phases, updates results, terminates. Instances chain via shared step file to complete TDD cycle.
 
 ## CRITICAL: Orchestration Protocol
 
@@ -198,7 +204,7 @@ Task(
 Task(
   subagent_type="software-crafter",
   prompt=BOUNDARY_TEMPLATE.format(
-      task_description="Execute step {step_id} with 14-phase TDD",
+      task_description="Execute step {step_id} with complete TDD cycle",
       actual_command='/nw:execute @software-crafter "{step_file}"'
   ),
   description="Execute step 01-03"
@@ -235,166 +241,7 @@ Task(
 
 ### Pre-Requisite: TDD Phase Validation Hook Installation
 
-Before executing the main phases, the orchestrator **MUST** verify and install TDD validation hooks using the cross-platform Python installer script.
-
-> ⚠️ **MANDATORY**: Hook installation is required for the TDD workflow to function correctly.
-
-#### Quick Installation (Recommended)
-
-**Option A: Download and run installer script**
-
-```bash
-# Download the installer from nwave repository
-curl -sSL https://raw.githubusercontent.com/11PJ11/crafter-ai/master/scripts/install_nwave_target_hooks.py -o install_nwave_target_hooks.py
-
-# Run the installer
-python3 install_nwave_target_hooks.py
-```
-
-**Option B: Run directly from nwave installation**
-
-```bash
-# If nwave is installed locally
-python3 ~/.claude/scripts/install_nwave_target_hooks.py
-```
-
-#### Ensuring Latest Script Versions
-
-**CRITICAL**: The orchestrator MUST check and update scripts before running. Outdated scripts can cause format validation failures.
-
-```python
-import subprocess
-import re
-from pathlib import Path
-
-def check_and_update_scripts():
-    """Check script versions and update if outdated."""
-    scripts_dir = Path.home() / ".claude" / "scripts"
-
-    # Get framework version from catalog (or from installed manifest)
-    manifest_path = Path.home() / ".claude" / "nwave-manifest.txt"
-    if manifest_path.exists():
-        manifest = manifest_path.read_text()
-        match = re.search(r'Version:\s*(\d+\.\d+\.\d+)', manifest)
-        framework_version = match.group(1) if match else "0.0.0"
-    else:
-        framework_version = "0.0.0"
-
-    # Check each utility script
-    scripts_to_check = [
-        "install_nwave_target_hooks.py",
-        "validate_step_file.py"
-    ]
-
-    outdated = []
-    for script_name in scripts_to_check:
-        script_path = scripts_dir / script_name
-        if script_path.exists():
-            content = script_path.read_text()
-            match = re.search(r'__version__\s*=\s*["\'](\d+\.\d+\.\d+)["\']', content)
-            script_version = match.group(1) if match else "0.0.0"
-            if script_version < framework_version:
-                outdated.append(f"{script_name}: {script_version} < {framework_version}")
-
-    if outdated:
-        print("⚠️ Outdated scripts detected:")
-        for msg in outdated:
-            print(f"  - {msg}")
-        print("\n🔄 Re-run: bash ~/.claude/scripts/install-nwave.sh")
-        print("   Or download latest from: https://github.com/11PJ11/crafter-ai")
-        return False
-
-    print("✅ All scripts up-to-date")
-    return True
-
-# Run at startup
-check_and_update_scripts()
-```
-
-#### What the Installer Does
-
-The `install_nwave_target_hooks.py` script:
-
-1. **Checks prerequisites**: Python 3.8+, git repository, pre-commit framework
-2. **Installs pre-commit** if not present: `pip install pre-commit`
-3. **Creates hook scripts** in `scripts/hooks/`:
-   - `nwave-tdd-validator.py` - Pre-commit hook for TDD phase validation
-   - `nwave-bypass-detector.py` - Post-commit hook for audit logging
-4. **Updates `.pre-commit-config.yaml`** with nWave hook configuration
-5. **Runs `pre-commit install`** to activate hooks
-6. **Verifies installation** and reports status
-
-#### Installer Options
-
-```bash
-# Standard installation
-python3 install_nwave_target_hooks.py
-
-# Verify-only mode (no changes)
-python3 install_nwave_target_hooks.py --verify-only
-
-# Force reinstallation
-python3 install_nwave_target_hooks.py --force
-
-# Specify target directory
-python3 install_nwave_target_hooks.py --path /path/to/project
-```
-
-#### Orchestrator Hook Verification
-
-**CRITICAL**: Before proceeding with Phase 1, verify hooks are installed:
-
-```python
-import subprocess
-import sys
-
-def verify_nwave_hooks_installed():
-    """Verify nWave hooks are installed. Block if not."""
-    # Run verification
-    result = subprocess.run(
-        [sys.executable, "install_nwave_target_hooks.py", "--verify-only"],
-        capture_output=True, text=True, check=False
-    )
-
-    if result.returncode != 0:
-        print("❌ BLOCKER: nWave TDD hooks are NOT installed!")
-        print("Run: python3 install_nwave_target_hooks.py")
-        print("\nCannot proceed without TDD validation hooks.")
-        return False
-
-    print("✅ nWave TDD hooks verified")
-    return True
-
-# MANDATORY CHECK - Do not skip
-if not verify_nwave_hooks_installed():
-    raise SystemExit("Hook installation required. Run installer first.")
-```
-
-#### User Prompt for Installation
-
-If hooks are not installed, prompt the user:
-
-```
-╔═══════════════════════════════════════════════════════════════════╗
-║  nWave TDD Hooks Required                                          ║
-╠═══════════════════════════════════════════════════════════════════╣
-║  The TDD validation hooks are NOT installed in this project.       ║
-║                                                                    ║
-║  These hooks:                                                      ║
-║  ✓ Enforce TDD phase completion before commits                     ║
-║  ✓ Log all commits for audit purposes                              ║
-║  ✓ Work cross-platform (Windows, Mac, Linux)                       ║
-║                                                                    ║
-║  [1] Install hooks now (Recommended)                               ║
-║  [2] Skip - I'll install manually later                            ║
-╚═══════════════════════════════════════════════════════════════════╝
-```
-
-Use `AskUserQuestion` tool with these options. If user selects [1], run:
-
-```python
-subprocess.run([sys.executable, "install_nwave_target_hooks.py"], check=True)
-```
+**MANDATORY**: Install hooks before execution. Run `python3 ~/.claude/scripts/install_nwave_target_hooks.py` (or `--verify-only` to check). If not installed, prompt user to install or skip.
 
 ---
 
@@ -445,7 +292,7 @@ STEP 7: Phase 5 - Split into Atomic Steps (with skip)
   ↓
 STEP 8: Phase 6 - Review Each Step File (retry max 2 per file)
   ↓
-STEP 9: Phase 7 - Execute All Steps (14-phase TDD per step)
+STEP 9: Phase 7 - Execute All Steps (Complete TDD cycle per step)
   ↓
 STEP 10: Phase 7.5 - Mutation Testing (quality gate)
   ↓
@@ -705,8 +552,6 @@ DELIVERABLES:
 **Actions**:
 
 1. **Execute review with retry loop** (embedded script):
-
-   See [Enforcement Scripts](#enforcement-scripts-embedded-python) section for complete `execute_review_with_retry()` implementation.
 
    ```python
    approved, attempts, final_status, rejection_reasons = execute_review_with_retry(
@@ -1020,33 +865,19 @@ Before generating steps, you MUST:
 4. Exception: Infrastructure steps may use "N/A - infrastructure"
 
 YOUR TASK: Transform each roadmap step into a complete task JSON file that:
-1. Includes the 14-phase TDD cycle structure
+1. Includes the complete TDD cycle structure (see canonical schema)
 2. Contains self-contained context
 3. Has clear acceptance criteria
 4. Maps all dependencies
 5. References the specific acceptance test scenario it implements
 
-MANDATORY 14 TDD PHASES (include in each step file):
-1. PREPARE - Remove @skip tags, verify scenario setup
-2. RED_ACCEPTANCE - Run acceptance test, expect FAIL
-3. RED_UNIT - Write failing unit tests
-4. GREEN_UNIT - Implement minimum code to pass
-5. CHECK_ACCEPTANCE - Verify unit implementation
-6. GREEN_ACCEPTANCE - Run acceptance test, expect PASS
-7. REVIEW - Self-review (SOLID, coverage, acceptance criteria)
-8. REFACTOR_L1 - Naming clarity
-9. REFACTOR_L2 - Method extraction
-10. REFACTOR_L3 - Class responsibilities
-11. REFACTOR_L4 - Architecture patterns
-12. POST_REFACTOR_REVIEW - Self-review (tests pass, quality improved)
-13. FINAL_VALIDATE - Full test suite validation
-14. COMMIT - Commit with detailed message
+{{MANDATORY_PHASES}}
 
 Read the canonical schema from: nWave/templates/step-tdd-cycle-schema.json
 
 DELIVERABLES:
 - Create JSON file for each step in docs/feature/{project_id}/steps/
-- Validate each file has correct 14-phase structure
+- Validate each file has correct TDD cycle structure (from canonical schema)
 - Return when all step files are generated
 ''',
        description="Split roadmap into atomic steps"
@@ -1177,13 +1008,13 @@ DELIVERABLES:
 
 ---
 
-### STEP 9: Phase 7 - Execute All Steps (14-Phase TDD per Step)
+### STEP 9: Phase 7 - Execute All Steps (Complete TDD Cycle per Step)
 
 #### Cross-Instance Phase Coordination
 
-Each Task invocation (representing a new agent instance) updates phase_execution_log with its progress. Instance 1 marks PREPARE as EXECUTED. Instance 2 reads this log, sees PREPARE is done, and executes RED_ACCEPTANCE (marking it EXECUTED). Instance 3 reads both completed phases and executes RED_UNIT. This phase-aware coordination through JSON allows /nw:develop to orchestrate work across multiple instances without shared session state.
+Instances update phase_execution_log, next instance reads prior progress, continues from incomplete phases. JSON-based coordination, no shared session state.
 
-**Objective**: Execute all atomic steps in dependency order using complete 14-phase TDD.
+**Objective**: Execute steps in dependency order using complete TDD cycle (canonical schema).
 
 **Actions**:
 
@@ -1216,7 +1047,7 @@ Each Task invocation (representing a new agent instance) updates phase_execution
 3. **Execute each step in order**:
    ```python
    print(f"\n{'='*60}")
-   print(f"Executing {len(sorted_step_files)} steps with 14-phase TDD")
+   print(f"Executing {len(sorted_step_files)} steps with complete TDD cycle")
    print(f"{'='*60}\n")
 
    completed_steps = []
@@ -1248,7 +1079,7 @@ Each Task invocation (representing a new agent instance) updates phase_execution
        # This clean separation prevents context degradation and ensures each instance
        # operates with full clarity of prior progress.
 
-       # Execute step with 14-phase TDD using Task tool delegation
+       # Execute step with complete TDD cycle using Task tool delegation
        print(f"Invoking: Task tool with @software-crafter for step {step_id}")
 
        # CRITICAL: Do NOT pass /nw:execute to agent - they cannot execute it
@@ -1264,7 +1095,7 @@ You are a software-crafter agent executing atomic task {step_id}.
 ═══════════════════════════════════════════════════════════
 ⚠️  TASK BOUNDARY - READ BEFORE EXECUTING
 ═══════════════════════════════════════════════════════════
-YOUR ONLY TASK: Execute step {step_id} through all 14 TDD phases
+YOUR ONLY TASK: Execute step {step_id} through all TDD phases (defined in canonical schema)
 STEP FILE: {step_file}
 FORBIDDEN ACTIONS:
   ❌ DO NOT execute other steps
@@ -1277,21 +1108,11 @@ STEP CONTENT:
 {json.dumps(step_content, indent=2)}
 ```
 
-EXECUTE THESE 14 TDD PHASES IN ORDER:
-1. PREPARE - Remove @skip tags, verify scenario setup
-2. RED_ACCEPTANCE - Run acceptance test, expect FAIL
-3. RED_UNIT - Write failing unit tests
-4. GREEN_UNIT - Implement minimum code to pass
-5. CHECK_ACCEPTANCE - Verify unit implementation
-6. GREEN_ACCEPTANCE - Run acceptance test, expect PASS
-7. REVIEW - Self-review using criteria below
-8. REFACTOR_L1 - Naming clarity improvements
-9. REFACTOR_L2 - Method extraction
-10. REFACTOR_L3 - Class responsibilities
-11. REFACTOR_L4 - Architecture patterns
-12. POST_REFACTOR_REVIEW - Self-review using criteria below
-13. FINAL_VALIDATE - Full test suite validation
-14. COMMIT - Commit with detailed message
+EXECUTE ALL TDD PHASES IN ORDER (from canonical schema):
+
+Reference the current TDD phases from `nWave/templates/step-tdd-cycle-schema.json`.
+The phases are embedded at build time - do not hardcode them here.
+See the "TDD Cycle Definition" section above for the current phase list.
 
 INLINE REVIEW CRITERIA (Phases 7 and 12):
 - SOLID principles followed
@@ -1307,11 +1128,11 @@ After EACH phase, UPDATE the step file:
 - Commit after green phases
 
 DELIVERABLES:
-- Complete all 14 phases
+- Complete all TDD phases (from canonical schema)
 - Update step file with execution results
 - Return when COMMIT phase completes with PASS
 ''',
-           description=f"Execute step {step_id} with 14-phase TDD"
+           description=f"Execute step {step_id} with complete TDD cycle"
        )
 
        # Verify completion by checking step file for COMMIT/PASS
@@ -1369,7 +1190,7 @@ DELIVERABLES:
    ```
 
 **Success Criteria**:
-- All steps executed with 14-phase TDD
+- All steps executed with complete TDD cycle
 - All steps have COMMIT phase with outcome == "PASS"
 - All commits created (one per step)
 - No steps failed
@@ -1609,7 +1430,7 @@ You are a devop agent finalizing and archiving a completed feature.
 ═══════════════════════════════════════════════════════════
 YOUR ONLY TASK: Finalize and archive project {project_id}
 INPUT DIRECTORY: docs/feature/{project_id}/
-OUTPUT FILE: docs/evolution/{project_id}-evolution.md
+OUTPUT FILE: docs/evolution/{yyyy-MM-dd}-{project_id}.md
 FORBIDDEN ACTIONS:
   ❌ DO NOT continue to any other phase
 REQUIRED: Return control to orchestrator after completion
@@ -1844,812 +1665,6 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"""
 
 ---
 
-## Enforcement Scripts (Embedded Python)
-
-The following Python scripts are executed at runtime by the devop orchestrator to **enforce** workflow compliance. These are NOT external files - they are embedded in this command specification and executed inline.
-
-### Script Locations
-
-| Script | Invoked At | Purpose |
-|--------|-----------|---------|
-| `check_artifact_skip()` | STEP 3, 5, 8 | Validate skip logic for baseline/roadmap/steps |
-| `validate_all_steps_approved()` | STEP 10 | Block execution if steps not approved |
-| `topological_sort_steps()` | STEP 10 | Sort steps by dependencies (Kahn's algorithm) |
-| `validate_commits_for_completed_steps()` | STEP 11 | Verify commits before finalize |
-| `execute_review_with_retry()` | STEP 4, 6, 7, 9 | Retry loop for reviews (max 2 attempts) |
-| `load_or_create_progress_state()` | Start of command | Resume capability and progress tracking |
-
----
-
-### Script 1: Artifact Skip Logic Validation
-
-**Purpose**: Verify if an artifact can be skipped (exists AND approved).
-
-**Invoked At**: STEP 3 (baseline), STEP 5 (roadmap), STEP 8 (steps)
-
-```python
-def check_artifact_skip(artifact_path, artifact_type):
-    """
-    Verify if an artifact can be skipped.
-
-    Args:
-        artifact_path: Path to the artifact file (YAML or JSON)
-        artifact_type: Human-readable type name ("Baseline", "Roadmap", etc.)
-
-    Returns:
-        tuple: (should_skip: bool, reason: str, validation_status: str)
-
-    Examples:
-        >>> check_artifact_skip('docs/feature/auth/baseline.yaml', 'Baseline')
-        (True, 'Baseline exists and approved - skipping creation', 'approved')
-
-        >>> check_artifact_skip('docs/feature/auth/baseline.yaml', 'Baseline')
-        (False, 'Baseline exists but not yet approved - needs review', 'complete')
-    """
-    import os
-    import yaml
-    import json
-
-    # Check if file exists
-    if not os.path.exists(artifact_path):
-        return False, f"{artifact_type} not found at {artifact_path}", "missing"
-
-    # Load artifact data
-    try:
-        if artifact_path.endswith('.yaml') or artifact_path.endswith('.yml'):
-            with open(artifact_path, 'r') as f:
-                data = yaml.safe_load(f)
-            # For YAML artifacts (baseline, roadmap), validation is nested
-            if 'baseline' in data:
-                validation = data['baseline'].get('validation', {})
-            elif 'roadmap' in data:
-                validation = data['roadmap'].get('validation', {})
-            else:
-                validation = data.get('validation', {})
-        else:  # JSON
-            with open(artifact_path, 'r') as f:
-                data = json.load(f)
-            validation = data.get('validation', {})
-    except Exception as e:
-        return False, f"Error reading {artifact_type}: {str(e)}", "error"
-
-    # Check validation status
-    status = validation.get('status', 'pending')
-
-    if status == 'approved':
-        return True, f"{artifact_type} exists and approved - skipping creation", "approved"
-    elif status == 'complete':
-        return False, f"{artifact_type} exists but not yet approved - needs review", "complete"
-    elif status == 'draft':
-        return False, f"{artifact_type} exists but is draft - needs completion", "draft"
-    elif status == 'pending':
-        return False, f"{artifact_type} exists but validation pending", "pending"
-    else:
-        return False, f"{artifact_type} exists with unknown status: {status}", status
-```
-
-**Usage Example** (in STEP 3):
-```python
-baseline_path = f'docs/feature/{project_id}/baseline.yaml'
-should_skip, reason, status = check_artifact_skip(baseline_path, 'Baseline')
-
-if should_skip:
-    print(f"✓ {reason}")
-    # Load existing baseline and proceed to Phase 2
-    with open(baseline_path, 'r') as f:
-        baseline_data = yaml.safe_load(f)
-else:
-    print(f"⚠ {reason}")
-    if status == 'missing':
-        # Create new baseline
-        pass
-    elif status in ['complete', 'draft', 'pending']:
-        # Skip creation, go directly to review
-        pass
-```
-
----
-
-### Script 2: Multi-Artifact Approval Status Validation
-
-**Purpose**: Verify that ALL step files are approved before execution.
-
-**Invoked At**: STEP 10 (before execute all steps)
-
-```python
-def validate_all_steps_approved(steps_directory):
-    """
-    Verify that all step files are approved before execution.
-
-    Args:
-        steps_directory: Path to directory containing step JSON files
-
-    Returns:
-        tuple: (all_approved: bool, unapproved_steps: list, error_message: str)
-
-    Example:
-        >>> validate_all_steps_approved('docs/feature/auth/steps/')
-        (False, [{'step_id': '01-02', ...}], 'ERROR: Cannot execute...')
-    """
-    import os
-    import json
-    import glob
-
-    if not os.path.exists(steps_directory):
-        return False, [], f"Steps directory not found: {steps_directory}"
-
-    step_files = sorted(glob.glob(os.path.join(steps_directory, '*.json')))
-
-    if not step_files:
-        return False, [], f"No step files found in {steps_directory}"
-
-    unapproved_steps = []
-
-    for step_file in step_files:
-        try:
-            with open(step_file, 'r') as f:
-                step_data = json.load(f)
-        except Exception as e:
-            unapproved_steps.append({
-                'step_id': os.path.basename(step_file).replace('.json', ''),
-                'file': os.path.basename(step_file),
-                'status': 'error',
-                'reason': f'Error reading file: {str(e)}'
-            })
-            continue
-
-        step_id = step_data.get('task_specification', {}).get('task_id', 'unknown')
-        validation = step_data.get('validation', {})
-        status = validation.get('status', 'pending')
-
-        if status != 'approved':
-            unapproved_steps.append({
-                'step_id': step_id,
-                'file': os.path.basename(step_file),
-                'status': status,
-                'reason': validation.get('notes', 'No reason provided')
-            })
-
-    if unapproved_steps:
-        error_lines = [
-            f"ERROR: Cannot execute steps - {len(unapproved_steps)} steps not approved:",
-            ""
-        ]
-        for step_info in unapproved_steps:
-            error_lines.append(f"  • Step {step_info['step_id']} ({step_info['file']})")
-            error_lines.append(f"    Status: {step_info['status']}")
-            error_lines.append(f"    Reason: {step_info['reason']}")
-            error_lines.append("")
-
-        error_lines.append("BLOCKER: All step files must be approved before execution.")
-        error_lines.append("Run Phase 6 (review each step file) to approve pending steps.")
-
-        return False, unapproved_steps, "\n".join(error_lines)
-
-    return True, [], f"✓ All {len(step_files)} step files approved"
-```
-
-**Usage Example** (in STEP 10):
-```python
-all_approved, unapproved, message = validate_all_steps_approved(
-    f'docs/feature/{project_id}/steps/'
-)
-
-if not all_approved:
-    print(message)
-    exit(1)  # BLOCK execution
-else:
-    print(message)
-    print(f"Proceeding to execute {len(glob.glob(f'docs/feature/{project_id}/steps/*.json'))} steps...")
-```
-
----
-
-### Script 3: Topological Sort for Dependency Order
-
-**Purpose**: Sort step files respecting the `requires` field using Kahn's algorithm.
-
-**Invoked At**: STEP 10 (before iterating over steps)
-
-```python
-def topological_sort_steps(steps_directory):
-    """
-    Sort step files based on dependencies ('requires' field) using Kahn's algorithm.
-
-    Args:
-        steps_directory: Path to directory containing step JSON files
-
-    Returns:
-        tuple: (sorted_files: list, error: str | None)
-
-    Example:
-        >>> topological_sort_steps('docs/feature/auth/steps/')
-        (['docs/.../01-01.json', 'docs/.../01-02.json', ...], None)
-    """
-    import os
-    import json
-    import glob
-    from collections import defaultdict, deque
-
-    step_files = glob.glob(os.path.join(steps_directory, '*.json'))
-
-    if not step_files:
-        return [], "No step files found in directory"
-
-    # Build dependency graph
-    graph = defaultdict(list)  # step_id -> [dependent_step_ids]
-    in_degree = defaultdict(int)  # step_id -> count of dependencies
-    step_id_to_file = {}  # step_id -> file_path
-
-    for step_file in step_files:
-        try:
-            with open(step_file, 'r') as f:
-                step_data = json.load(f)
-        except Exception as e:
-            return [], f"Error reading {step_file}: {str(e)}"
-
-        step_id = step_data['task_specification']['task_id']
-        step_id_to_file[step_id] = step_file
-        requires = step_data['task_specification'].get('requires', [])
-
-        # Initialize in-degree for this step
-        if step_id not in in_degree:
-            in_degree[step_id] = 0
-
-        # Add edges for dependencies
-        for required_step in requires:
-            graph[required_step].append(step_id)
-            in_degree[step_id] += 1
-
-    # Kahn's algorithm for topological sort
-    queue = deque([step_id for step_id in step_id_to_file.keys() if in_degree[step_id] == 0])
-    sorted_step_ids = []
-
-    while queue:
-        current = queue.popleft()
-        sorted_step_ids.append(current)
-
-        for dependent in graph[current]:
-            in_degree[dependent] -= 1
-            if in_degree[dependent] == 0:
-                queue.append(dependent)
-
-    # Check for cycles
-    if len(sorted_step_ids) != len(step_id_to_file):
-        remaining = set(step_id_to_file.keys()) - set(sorted_step_ids)
-        cycle_info = []
-        for step_id in remaining:
-            try:
-                with open(step_id_to_file[step_id], 'r') as f:
-                    requires = json.load(f)['task_specification'].get('requires', [])
-                cycle_info.append(f"  • {step_id} requires: {requires}")
-            except:
-                cycle_info.append(f"  • {step_id} (error reading dependencies)")
-
-        error = (
-            f"ERROR: Circular dependency detected in steps!\n"
-            f"\n"
-            f"Steps involved in cycle:\n" +
-            "\n".join(cycle_info) +
-            f"\n\n"
-            f"Fix the 'requires' field in step files to remove circular dependencies."
-        )
-        return [], error
-
-    # Convert sorted step IDs to file paths
-    sorted_files = [step_id_to_file[step_id] for step_id in sorted_step_ids]
-
-    return sorted_files, None
-```
-
-**Usage Example** (in STEP 10):
-```python
-sorted_step_files, error = topological_sort_steps(f'docs/feature/{project_id}/steps/')
-
-if error:
-    print(error)
-    exit(1)  # BLOCK execution
-else:
-    print(f"✓ Steps sorted by dependency order:")
-    for i, step_file in enumerate(sorted_step_files, 1):
-        print(f"  {i}. {os.path.basename(step_file)}")
-
-    # Proceed with execution in this order
-    for step_file in sorted_step_files:
-        # Execute step...
-        pass
-```
-
----
-
-### Script 4: Git Commits Validation for Completed Steps
-
-**Purpose**: Verify that each completed step has a corresponding git commit.
-
-**Invoked At**: STEP 11 (pre-finalize validation)
-
-```python
-def validate_commits_for_completed_steps(steps_directory):
-    """
-    Verify that each completed step has a corresponding git commit.
-
-    Args:
-        steps_directory: Path to directory containing step JSON files
-
-    Returns:
-        tuple: (all_committed: bool, missing_commits: list, error_message: str)
-
-    Example:
-        >>> validate_commits_for_completed_steps('docs/feature/auth/steps/')
-        (False, [{'step_id': '01-02', ...}], 'ERROR: Cannot finalize...')
-    """
-    import os
-    import json
-    import glob
-    import subprocess
-
-    step_files = glob.glob(os.path.join(steps_directory, '*.json'))
-
-    if not step_files:
-        return True, [], "No step files to validate"
-
-    missing_commits = []
-
-    for step_file in step_files:
-        try:
-            with open(step_file, 'r') as f:
-                step_data = json.load(f)
-        except Exception as e:
-            missing_commits.append({
-                'step_id': os.path.basename(step_file).replace('.json', ''),
-                'file': os.path.basename(step_file),
-                'reason': f'Error reading file: {str(e)}'
-            })
-            continue
-
-        step_id = step_data.get('task_specification', {}).get('task_id', 'unknown')
-
-        # Check if step is marked as completed
-        tdd_phases = step_data.get('tdd_cycle', {}).get('tdd_phase_tracking', {})
-        phase_log = tdd_phases.get('phase_execution_log', [])
-
-        commit_phase = next((p for p in phase_log if p['phase_name'] == 'COMMIT'), None)
-
-        if not commit_phase:
-            # Step not completed yet - skip validation
-            continue
-
-        if commit_phase.get('outcome') != 'PASS':
-            missing_commits.append({
-                'step_id': step_id,
-                'file': os.path.basename(step_file),
-                'reason': 'COMMIT phase exists but outcome != PASS'
-            })
-            continue
-
-        # Check if commit exists in git history
-        notes = commit_phase.get('notes', {})
-        commit_hash = notes.get('commit_hash') if isinstance(notes, dict) else None
-
-        if not commit_hash:
-            missing_commits.append({
-                'step_id': step_id,
-                'file': os.path.basename(step_file),
-                'reason': 'COMMIT phase marked PASS but no commit_hash recorded'
-            })
-            continue
-
-        # Verify commit exists in git
-        try:
-            result = subprocess.run(
-                ['git', 'cat-file', '-e', commit_hash],
-                capture_output=True,
-                text=True,
-                timeout=5
-            )
-            if result.returncode != 0:
-                missing_commits.append({
-                    'step_id': step_id,
-                    'file': os.path.basename(step_file),
-                    'reason': f'Commit hash {commit_hash[:7]} not found in git history'
-                })
-        except subprocess.TimeoutExpired:
-            missing_commits.append({
-                'step_id': step_id,
-                'file': os.path.basename(step_file),
-                'reason': 'Git verification timeout'
-            })
-        except Exception as e:
-            missing_commits.append({
-                'step_id': step_id,
-                'file': os.path.basename(step_file),
-                'reason': f'Error verifying commit: {str(e)}'
-            })
-
-    if missing_commits:
-        error_lines = [
-            f"ERROR: Cannot finalize - {len(missing_commits)} completed steps missing commits:",
-            ""
-        ]
-        for commit_info in missing_commits:
-            error_lines.append(f"  • Step {commit_info['step_id']} ({commit_info['file']})")
-            error_lines.append(f"    Reason: {commit_info['reason']}")
-            error_lines.append("")
-
-        error_lines.append("BLOCKER: All completed steps must have corresponding git commits.")
-        error_lines.append("Re-run failed steps or create missing commits before finalize.")
-
-        return False, missing_commits, "\n".join(error_lines)
-
-    return True, [], "✓ All completed steps have git commits"
-```
-
-**Usage Example** (in STEP 11):
-```python
-all_committed, missing, message = validate_commits_for_completed_steps(
-    f'docs/feature/{project_id}/steps/'
-)
-
-if not all_committed:
-    print(message)
-    exit(1)  # BLOCK finalize
-else:
-    print(message)
-    print("Proceeding to finalize...")
-```
-
----
-
-### Script 5: Review Retry Loop Logic
-
-**Purpose**: Implement automatic retry with max 2 attempts for review rejections.
-
-**Invoked At**: STEP 4, 6, 7, 9 (all review phases)
-
-```python
-def execute_review_with_retry(reviewer_agent, artifact_type, artifact_path,
-                              project_description, project_id, max_attempts=2,
-                              regenerate_command=None):
-    """
-    Execute review with automatic retry on rejection.
-
-    Args:
-        reviewer_agent: Agent to perform review (e.g., '@software-crafter-reviewer')
-        artifact_type: Type of artifact ('Baseline', 'Roadmap', 'Step 01-02', etc.)
-        artifact_path: Path to artifact file
-        project_description: Original feature description (for regeneration context)
-        project_id: Project identifier
-        max_attempts: Maximum review attempts (default: 2)
-        regenerate_command: Command to regenerate artifact (if applicable)
-
-    Returns:
-        tuple: (approved: bool, attempts_used: int, final_status: str, rejection_reasons: list)
-
-    Example:
-        >>> execute_review_with_retry('@software-crafter-reviewer', 'Baseline',
-        ...                           'docs/feature/auth/baseline.yaml',
-        ...                           'user authentication', 'auth', 2)
-        (True, 1, 'approved', [])
-    """
-    import subprocess
-    import json
-    import yaml
-    import os
-    import time
-
-    rejection_reasons = []
-
-    for attempt in range(1, max_attempts + 1):
-        print(f"\n{'='*60}")
-        print(f"Review Attempt {attempt}/{max_attempts}: {artifact_type}")
-        print(f"{'='*60}\n")
-
-        # Invoke review command
-        review_cmd = f'/nw:review {reviewer_agent} {artifact_type.lower().replace(" ", "-")} "{artifact_path}"'
-        print(f"Invoking: {review_cmd}")
-
-        # Delegate to reviewer sub-agent via Task tool
-        # Extract agent type from reviewer_agent (e.g., '@software-crafter-reviewer' -> 'software-crafter-reviewer')
-        agent_type = reviewer_agent.lstrip('@')
-
-        task_result = Task(
-            subagent_type=agent_type,
-            prompt=review_cmd,
-            description=f"Review {artifact_type}"
-        )
-
-        print("Review completed via sub-agent delegation")
-
-        # Read artifact after review
-        try:
-            if artifact_path.endswith('.yaml') or artifact_path.endswith('.yml'):
-                with open(artifact_path, 'r') as f:
-                    artifact_data = yaml.safe_load(f)
-                # Navigate to validation section
-                if 'baseline' in artifact_data:
-                    validation = artifact_data['baseline'].get('validation', {})
-                elif 'roadmap' in artifact_data:
-                    validation = artifact_data['roadmap'].get('validation', {})
-                else:
-                    validation = artifact_data.get('validation', {})
-            else:  # JSON
-                with open(artifact_path, 'r') as f:
-                    artifact_data = json.load(f)
-                validation = artifact_data.get('validation', {})
-        except Exception as e:
-            print(f"⚠ Error reading artifact after review: {str(e)}")
-            if attempt < max_attempts:
-                continue
-            else:
-                return False, attempt, 'error_reading_artifact', rejection_reasons
-
-        review_status = validation.get('status', 'pending')
-        review_notes = validation.get('notes', '')
-
-        if review_status == 'approved':
-            print(f"\n✓ {artifact_type} APPROVED (attempt {attempt})")
-            return True, attempt, 'approved', rejection_reasons
-
-        elif review_status in ['rejected', 'needs_revision']:
-            rejection_reason = review_notes or 'No specific reason provided'
-            rejection_reasons.append({
-                'attempt': attempt,
-                'reason': rejection_reason
-            })
-
-            print(f"\n⚠ {artifact_type} REJECTED (attempt {attempt})")
-            print(f"Rejection reason: {rejection_reason}")
-
-            if attempt < max_attempts:
-                print(f"\nRegenerating {artifact_type} with feedback...")
-
-                # Regenerate artifact with feedback
-                if regenerate_command:
-                    # Use custom regenerate command (for steps)
-                    regen_cmd = f'{regenerate_command} --feedback "{rejection_reason}"'
-                else:
-                    # Use standard regeneration based on artifact type
-                    if artifact_type == 'Baseline':
-                        regen_cmd = f'/nw:baseline "{project_description}" --regenerate --feedback "{rejection_reason}"'
-                    elif artifact_type == 'Roadmap':
-                        regen_cmd = f'/nw:roadmap @solution-architect "{project_description}" --regenerate --feedback "{rejection_reason}"'
-                    else:
-                        print(f"⚠ No regeneration command available for {artifact_type}")
-                        continue
-
-                print(f"Invoking: {regen_cmd}")
-                # Delegate regeneration to appropriate sub-agent via Task tool
-                if artifact_type == 'Baseline':
-                    regen_agent = 'software-crafter'
-                elif artifact_type == 'Roadmap':
-                    regen_agent = 'solution-architect'
-                else:
-                    regen_agent = 'software-crafter'  # Default
-
-                task_result = Task(
-                    subagent_type=regen_agent,
-                    prompt=regen_cmd,
-                    description=f"Regenerate {artifact_type} with feedback"
-                )
-
-                print(f"\n{artifact_type} regenerated. Proceeding to attempt {attempt + 1}...")
-            else:
-                # Max attempts reached
-                print(f"\n❌ {artifact_type} rejected after {max_attempts} attempts")
-                return False, attempt, 'rejected_max_attempts', rejection_reasons
-
-        else:
-            print(f"\n⚠ Unknown review status: {review_status}")
-            if attempt == max_attempts:
-                return False, attempt, f'unknown_status_{review_status}', rejection_reasons
-
-    # Should not reach here
-    return False, max_attempts, 'unexpected_end', rejection_reasons
-```
-
-**Usage Example** (in STEP 4):
-```python
-approved, attempts, status, reasons = execute_review_with_retry(
-    reviewer_agent='@software-crafter-reviewer',
-    artifact_type='Baseline',
-    artifact_path=f'docs/feature/{project_id}/baseline.yaml',
-    project_description=feature_description,
-    project_id=project_id,
-    max_attempts=2
-)
-
-if not approved:
-    print("\n" + "="*60)
-    print("ERROR: Baseline review failed after 2 attempts")
-    print("="*60)
-    print("\nRejection history:")
-    for rejection in reasons:
-        print(f"\nAttempt {rejection['attempt']}:")
-        print(f"  {rejection['reason']}")
-
-    print("\nManual intervention required:")
-    print("1. Review rejection feedback above")
-    print("2. Fix baseline.yaml manually")
-    print("3. Re-run: /nw:develop \"{feature_description}\"")
-
-    exit(1)
-else:
-    print(f"\n✓ Baseline approved after {attempts} attempt(s)")
-```
-
----
-
-### Script 6: Progress Tracking and Resume Detection
-
-**Purpose**: Track workflow progress and enable resume from interruptions.
-
-**Invoked At**: Beginning of command and each phase
-
-```python
-def load_or_create_progress_state(project_id):
-    """
-    Load workflow progress state or create new one.
-
-    Args:
-        project_id: Project identifier
-
-    Returns:
-        dict: Progress state with structure:
-            {
-                'project_id': str,
-                'started_at': str (ISO datetime),
-                'last_updated': str (ISO datetime),
-                'completed_phases': list of str,
-                'current_phase': str | None,
-                'failed_phase': str | None,
-                'failure_reason': str | None,
-                'completed_steps': list of str,
-                'failed_step': str | None,
-                'skip_flags': {'baseline': bool, 'roadmap': bool, 'split': bool},
-                'orchestration_complete': bool
-            }
-
-    Example:
-        >>> load_or_create_progress_state('user-authentication')
-        {
-            'project_id': 'user-authentication',
-            'started_at': '2025-01-13T10:30:00',
-            'completed_phases': ['Phase 1: Baseline Creation'],
-            ...
-        }
-    """
-    import os
-    import json
-    from datetime import datetime
-
-    progress_file = f'docs/feature/{project_id}/.develop-progress.json'
-
-    if os.path.exists(progress_file):
-        with open(progress_file, 'r') as f:
-            state = json.load(f)
-
-        print(f"\n✓ Found existing progress state (last updated: {state['last_updated']})")
-        print(f"  Completed phases: {', '.join(state['completed_phases'])}")
-
-        if state.get('failed_phase'):
-            print(f"  ⚠ Previous run failed at: {state['failed_phase']}")
-            print(f"  Failure reason: {state.get('failure_reason', 'Unknown')}")
-
-        if state.get('orchestration_complete'):
-            print(f"  ✓ Orchestration already complete")
-
-        return state
-    else:
-        # Create new progress state
-        state = {
-            'project_id': project_id,
-            'started_at': datetime.now().isoformat(),
-            'last_updated': datetime.now().isoformat(),
-            'completed_phases': [],
-            'current_phase': None,
-            'failed_phase': None,
-            'failure_reason': None,
-            'completed_steps': [],
-            'failed_step': None,
-            'skip_flags': {
-                'baseline': False,
-                'roadmap': False,
-                'split': False
-            },
-            'orchestration_complete': False
-        }
-
-        # Create progress file
-        os.makedirs(os.path.dirname(progress_file), exist_ok=True)
-        with open(progress_file, 'w') as f:
-            json.dump(state, f, indent=2)
-
-        print(f"\n✓ Created new progress state")
-        return state
-
-
-def update_progress_state(project_id, **updates):
-    """
-    Update workflow progress state.
-
-    Args:
-        project_id: Project identifier
-        **updates: Fields to update in progress state
-
-    Example:
-        >>> update_progress_state('user-auth', current_phase='Phase 3: Roadmap Creation')
-        >>> update_progress_state('user-auth', completed_steps=['01-01', '01-02'])
-    """
-    import os
-    import json
-    from datetime import datetime
-
-    progress_file = f'docs/feature/{project_id}/.develop-progress.json'
-
-    if not os.path.exists(progress_file):
-        print(f"⚠ Progress file not found, creating new state")
-        load_or_create_progress_state(project_id)
-
-    with open(progress_file, 'r') as f:
-        state = json.load(f)
-
-    # Update fields
-    state.update(updates)
-    state['last_updated'] = datetime.now().isoformat()
-
-    # Write back
-    with open(progress_file, 'w') as f:
-        json.dump(state, f, indent=2)
-
-
-def mark_phase_complete(project_id, phase_name):
-    """
-    Mark a phase as completed.
-
-    Args:
-        project_id: Project identifier
-        phase_name: Name of completed phase
-
-    Example:
-        >>> mark_phase_complete('user-auth', 'Phase 1: Baseline Creation')
-    """
-    import os
-    import json
-    from datetime import datetime
-
-    progress_file = f'docs/feature/{project_id}/.develop-progress.json'
-
-    with open(progress_file, 'r') as f:
-        state = json.load(f)
-
-    if phase_name not in state['completed_phases']:
-        state['completed_phases'].append(phase_name)
-
-    state['current_phase'] = None
-    state['last_updated'] = datetime.now().isoformat()
-
-    with open(progress_file, 'w') as f:
-        json.dump(state, f, indent=2)
-
-    print(f"✓ Phase '{phase_name}' marked complete")
-```
-
-**Usage Example** (at command start):
-```python
-progress = load_or_create_progress_state(project_id)
-
-# Before each phase
-if 'Phase 1: Baseline Creation' in progress['completed_phases']:
-    print("✓ Phase 1 already complete - skipping")
-else:
-    print("Starting Phase 1: Baseline Creation...")
-    update_progress_state(project_id, current_phase='Phase 1: Baseline Creation')
-    # Execute Phase 1...
-    mark_phase_complete(project_id, 'Phase 1: Baseline Creation')
-```
-
----
-
 ## Usage Examples
 
 ### Example 1: Complete Feature Development
@@ -2667,7 +1682,7 @@ Develop a complete feature from natural language description:
 4. Reviews roadmap (Software Crafter)
 5. Splits into atomic steps (`docs/feature/user-authentication/steps/*.json`)
 6. Reviews each step file (N reviews, one per step)
-7. Executes all steps with 14-phase TDD (2N reviews: REVIEW + POST-REFACTOR per step)
+7. Executes all steps with complete TDD cycle (2N reviews: REVIEW + POST-REFACTOR per step)
 8. Finalizes and archives to `docs/evolution/`
 9. Reports completion
 
@@ -2756,14 +1771,6 @@ rm -rf docs/feature/user-authentication/
 
 ## Breaking Changes and Migration
 
-### Breaking Change Summary
-
-**⚠️ BREAKING CHANGE**: Complete redesign of `/nw:develop` command.
-
-**REMOVED Functionality**:
-- ❌ `/nw:develop {feature} --step {id}` syntax
-- ❌ Granular single step execution via develop command
-
 **NEW Functionality**:
 - ✅ `/nw:develop "{description}"` for complete wave orchestration
 - ✅ Automatic baseline → roadmap → split → execute-all → finalize
@@ -2778,32 +1785,16 @@ rm -rf docs/feature/user-authentication/
 
 #### Scenario 1: Single Step Execution with 11-Phase TDD
 
-**OLD** (no longer works):
-```bash
-/nw:develop order-management --step 01-02
-```
-
 **NEW** (use `/nw:execute` instead):
 ```bash
 /nw:execute @software-crafter "docs/feature/order-management/steps/01-02.json"
 ```
 
-**Explanation**: The `/nw:execute` command now provides the complete 14-phase TDD execution for a single step that `/nw:develop --step` used to provide.
+**Explanation**: The `/nw:execute` command now provides the complete TDD cycle execution for a single step that `/nw:develop --step` used to provide.
 
 ---
 
 #### Scenario 2: Manual Granular Workflow Control
-
-**OLD** (manual multi-command workflow):
-```bash
-/nw:baseline "goal description"
-/nw:roadmap @solution-architect "goal description"
-/nw:split @devop "project-id"
-/nw:develop feature-name --step 01-01  # ❌ NO LONGER WORKS
-/nw:develop feature-name --step 01-02  # ❌ NO LONGER WORKS
-/nw:develop feature-name --step 01-03  # ❌ NO LONGER WORKS
-/nw:finalize @devop "project-id"
-```
 
 **NEW** (two options):
 
@@ -2828,22 +1819,6 @@ rm -rf docs/feature/user-authentication/
 
 #### Scenario 3: Complete Feature Development
 
-**OLD** (manual orchestration required):
-```bash
-# User had to manually run each command:
-/nw:baseline "implement shopping cart"
-# ... wait ...
-/nw:roadmap @solution-architect "implement shopping cart"
-# ... wait ...
-/nw:split @devop "shopping-cart"
-# ... wait ...
-/nw:develop shopping-cart --step 01-01
-# ... wait ...
-/nw:develop shopping-cart --step 01-02
-# ... (repeat for all steps) ...
-/nw:finalize @devop "shopping-cart"
-```
-
 **NEW** (single command):
 ```bash
 /nw:develop "Implement shopping cart with checkout validation"
@@ -2853,12 +1828,6 @@ rm -rf docs/feature/user-authentication/
 ---
 
 ### Quality Gates Comparison
-
-**OLD Workflow** (manual):
-- User manually invoked reviews (optional, often skipped)
-- No enforcement of review approvals
-- No automatic retry on rejection
-- Easy to skip quality checks
 
 **NEW Workflow** (automatic):
 - **Mandatory reviews**: 3 + 3N per feature (enforced)
@@ -2975,7 +1944,7 @@ The second test exercises component logic but NOT system wiring.
 
 ## Next Wave
 
-**After DEVELOP completes**: `/nw:demo "{project-id}"` → DEMO wave
+**After DEVELOP completes**: `/nw:deliver "{project-id}"` → DELIVER wave
 **Handoff**: feature-completion-coordinator
 
 **Before pushing to remote**:

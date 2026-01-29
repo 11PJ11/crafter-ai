@@ -19,14 +19,14 @@ When invoked, display the following information:
 ```
 nWave Framework
 ===============
-Version: 1.2.84
-Build: 2026-01-28T13:35:36Z
+Version: 1.2.85
+Build: 2026-01-28T21:26:12Z
 Agents: 22
 Commands: 20
 
 Key Features:
 - Task tool delegation for sub-commands
-- 14-phase TDD methodology (single source: step-tdd-cycle-schema.json)
+- Complete TDD cycle methodology (single source: step-tdd-cycle-schema.json)
 - step_type support (atdd, research, infrastructure)
 
 Verification Markers:
@@ -38,7 +38,7 @@ Verification Markers:
 
 To verify you have the latest version:
 
-1. **Check 14 TDD Phases**: The execute command should reference `step-tdd-cycle-schema.json` as single source of truth
+1. **Check TDD Cycle**: The execute command should reference `step-tdd-cycle-schema.json` as single source of truth
 2. **Check Task Delegation**: The develop command should use `Task(subagent_type=..., prompt='/nw:...')` pattern
 3. **Check Agent Count**: Should have 22 agents and 20 commands
 

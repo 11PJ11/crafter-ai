@@ -15,7 +15,7 @@ Task(
 
 ### Why This Works:
 - ✅ Step file contains ALL context (self_contained_context, acceptance_criteria, quality_gates)
-- ✅ Agent has internal knowledge of 14-phase TDD
+- ✅ Agent has internal knowledge of complete TDD cycle
 - ✅ No conversation context needed
 - ✅ Deterministic execution
 
@@ -180,107 +180,22 @@ The step file follows the canonical schema. Key structure:
 - quality_gates: TDD quality requirements
 - phase_validation_rules: Commit acceptance rules
 
-## MANDATORY 14-PHASE TDD CYCLE
+## MANDATORY TDD CYCLE
 
-Each step file contains `tdd_cycle.phase_execution_log` with EXACTLY these 14 phases:
-1. PREPARE - Remove @skip tags, verify scenario setup
-2. RED_ACCEPTANCE - Run acceptance test, expect FAIL
-3. RED_UNIT - Write failing unit tests
-4. GREEN_UNIT - Implement minimum code to pass unit tests
-5. CHECK_ACCEPTANCE - Verify unit implementation
-6. GREEN_ACCEPTANCE - Run acceptance test, expect PASS
-7. REVIEW - Perform self-review (see INLINE REVIEW CRITERIA below)
-8. REFACTOR_L1 - Naming clarity improvements
-9. REFACTOR_L2 - Method extraction
-10. REFACTOR_L3 - Class responsibilities
-11. REFACTOR_L4 - Architecture patterns
-12. POST_REFACTOR_REVIEW - Perform post-refactor self-review (see INLINE REVIEW CRITERIA below)
-13. FINAL_VALIDATE - Full test suite validation
-14. COMMIT - Commit with detailed message
+Each step file contains `tdd_cycle.phase_execution_log` with all phases from the canonical schema:
+
+{{SCHEMA_TDD_PHASES}}
 
 ## CM-D: Walking Skeleton Principle
 
-**CRITICAL**: Before implementing component logic, verify system wiring exists.
-
-### Pre-Execution Wiring Check
-
-In the **PREPARE** phase, before removing @skip tags, verify:
-
-1. **Entry point exists** - The system entry point module exists (even if empty/stubbed)
-2. **Acceptance test invokes entry point** - At least one acceptance test imports the entry point
-3. **Wiring is present** - Component is called from entry point (or will be added in this step)
-
-If acceptance tests directly import internal components instead of entry points, **STOP** and report:
-
-```
-WIRING CHECK FAILED
-
-Issue: Acceptance test imports internal component directly
-Evidence: from des.validator import TemplateValidator (should be from des.orchestrator)
-
-Required Action:
-- This step should add integration OR
-- A prior step should have added integration
-
-If no integration step exists in roadmap, this is a ROADMAP GAP that must be addressed.
-```
-
-### Why This Matters
-
-A step that:
-- Implements component logic
-- Has acceptance tests passing
-- But component is never called from entry point
-
-...produces a feature that WORKS IN TESTS but DOESN'T WORK FOR USERS.
-
-### Verification Commands
-
-```bash
-# Check what acceptance tests import
-grep "^from\|^import" tests/acceptance/test_*.py | grep -v "pytest\|fixture"
-
-# Verify entry point references component
-grep "ComponentName" src/entry_point/*.py
-```
+In PREPARE phase, verify: entry point exists, acceptance tests invoke entry point (not internal components), component wired into system. If tests import components directly → STOP, report wiring gap.
 
 ## INLINE REVIEW CRITERIA (Phases 7 and 12)
 
-Since agents cannot invoke /nw:review, perform self-review with these criteria:
-
-### Phase 7 (REVIEW) Checklist:
-- [ ] Implementation follows SOLID principles
-- [ ] Test coverage is adequate (aim for >80%)
-- [ ] Acceptance criteria from task_specification are met
-- [ ] Code is readable and maintainable
-- [ ] No obvious security vulnerabilities (OWASP Top 10)
-- [ ] No hardcoded secrets or credentials
-
-### Phase 12 (POST_REFACTOR_REVIEW) Checklist:
-- [ ] Refactoring did not break existing tests
-- [ ] Refactoring improved code quality (naming, structure)
-- [ ] No new duplication introduced
-- [ ] Architecture patterns applied correctly
-- [ ] All tests still pass after refactoring
-
-Record review findings in step file under `tdd_cycle.phase_execution_log[N].notes`
+Phase 7: SOLID principles, coverage >80%, acceptance criteria met, no security vulnerabilities. Phase 12: Tests pass after refactoring, quality improved, no new duplication. Record findings in phase_execution_log[N].notes.
 
 ## Your responsibilities:
-1. READ the canonical schema first
-2. Load the step file and validate it has the correct 14-phase structure
-3. Update state to IN_PROGRESS
-4. Execute EACH PHASE in order, updating phase_execution_log as you go:
-   - Set status: IN_PROGRESS while working, then EXECUTED or SKIPPED
-   - Record duration_minutes, outcome, outcome_details, notes
-5. Execute TDD checkpoint commits:
-   - After phase 5 (GREEN_ACCEPTANCE): Mark phases 6-13 SKIPPED with CHECKPOINT_PENDING, commit
-   - After phase 6 (REVIEW): Update phase 6 to EXECUTED, mark 7-13 SKIPPED, commit
-   - After phase 10 (REFACTOR_L4): Update 7-10 to EXECUTED, mark 11-13 SKIPPED, commit
-   - After phase 12 (FINAL_VALIDATE): Update 11-13 to EXECUTED, commit and push
-6. Execute the task following the detailed_instructions
-7. Validate all acceptance_criteria are met
-8. Update state to DONE with execution_result
-9. Update the step file with your results
+Read canonical schema, validate step file has correct phase structure, execute each phase in order (update phase_execution_log after each), execute 4 checkpoint commits (see table above), validate acceptance criteria, update state to DONE.
 
 ## WRONG FORMATS TO REJECT
 
@@ -389,29 +304,7 @@ Each invocation of the Task tool creates a NEW, INDEPENDENT agent instance. The 
 
 ## Complete Workflow Integration
 
-These commands work together to form a complete workflow:
-
-```bash
-# Step 1: Create comprehensive plan
-/nw:roadmap @solution-architect "Migrate authentication system"
-
-# Step 2: Decompose into atomic tasks
-/nw:split @solution-architect "auth-migration"
-
-# Step 3: Execute first research task
-/nw:execute @researcher "docs/feature/auth-migration/steps/01-01.json"
-
-# Step 4: Review before implementation
-/nw:review @software-crafter task "docs/feature/auth-migration/steps/02-01.json"
-
-# Step 5: Execute implementation
-/nw:execute @software-crafter "docs/feature/auth-migration/steps/02-01.json"
-
-# Step 6: Finalize when all tasks complete
-/nw:finalize @devop "auth-migration"
-```
-
-For details on each command, see respective sections.
+roadmap → split → execute (per step) → review → finalize. See respective command documentation.
 
 ## State Transitions
 
@@ -535,243 +428,28 @@ The phases are (0-13):
 
 #### TDD Checkpoint Commit Strategy
 
-The 14-phase TDD cycle supports **4 strategic checkpoint commits** for improved rollback capability and git history clarity:
+4 strategic checkpoints for rollback capability:
 
-##### Checkpoint 1: GREEN (After Phase 5 - GREEN_ACCEPTANCE)
-**When**: All acceptance tests passing, implementation complete
-**Phases Complete**: 0-5 (PREPARE through GREEN_ACCEPTANCE)
-**Phases Pending**: 6-13 (REVIEW through COMMIT)
+| Checkpoint | After Phase | Commit Prefix | Push? |
+|------------|-------------|---------------|-------|
+| 1. GREEN | 5 (GREEN_ACCEPTANCE) | `feat({step-id}): GREEN` | No |
+| 2. REVIEW | 6 (REVIEW) | `review({step-id})` | No |
+| 3. REFACTOR | 10 (REFACTOR_L4) | `refactor({step-id})` | No |
+| 4. FINAL | 12 (FINAL_VALIDATE) | `test({step-id})` | Yes |
 
-**Pre-Checkpoint Checklist**:
-- [ ] All acceptance tests: PASS
-- [ ] All unit tests: PASS
-- [ ] Implementation meets acceptance criteria
-- [ ] No failing tests
-
-**Commit Message Template**:
-```
-feat({step-id}): GREEN - acceptance tests passing
-
-- Implemented minimal solution for {feature-name}
-- All acceptance tests: PASS ({X} scenarios)
-- Unit tests: PASS ({Y} tests)
-
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
-```
-
-**Phase Log Actions**:
-1. Mark phases 6-13 as SKIPPED with:
-   ```json
-   "blocked_by": "CHECKPOINT_PENDING: Will complete in REFACTOR checkpoint"
-   ```
-2. Commit implementation files + step file
-3. **DO NOT PUSH** - checkpoint is local only
+**Each checkpoint**: Mark pending phases SKIPPED with `blocked_by: "CHECKPOINT_PENDING"`, commit step file + implementation, verify tests pass.
 
 ---
 
-##### Checkpoint 2: REVIEW (After Phase 6 - REVIEW)
-**When**: Self-review complete, SOLID principles verified
-**Phases Complete**: 0-6 (PREPARE through REVIEW)
-**Phases Pending**: 7-13 (REFACTOR_L1 through COMMIT)
+##### Checkpoint Rollback
 
-**Pre-Checkpoint Checklist**:
-- [ ] SOLID principles followed
-- [ ] Test coverage >80% verified
-- [ ] No security vulnerabilities (OWASP Top 10)
-- [ ] Code readable and maintainable
-- [ ] Acceptance criteria met
+`git reset HEAD~1` then edit step file: change completed phases back to SKIPPED with `blocked_by: "CHECKPOINT_PENDING"`, re-execute from that phase.
 
-**Commit Message Template**:
-```
-review({step-id}): SOLID principles and coverage verified
+##### Checkpoint Rules
 
-Self-review checklist:
-- ✅ SOLID principles followed
-- ✅ Test coverage {Z%} (threshold: >80%)
-- ✅ No security vulnerabilities
-- ✅ Code readable and maintainable
+Use CHECKPOINT_PENDING (not DEFERRED), mark pending phases SKIPPED, push only after FINAL, update step file after each commit.
 
-All acceptance criteria met.
-
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
-```
-
-**Phase Log Actions**:
-1. Mark phases 7-13 as SKIPPED with:
-   ```json
-   "blocked_by": "CHECKPOINT_PENDING: Will complete in REFACTOR checkpoint"
-   ```
-2. Commit reviewed code + step file
-3. **DO NOT PUSH** - checkpoint is local only
-
----
-
-##### Checkpoint 3: REFACTOR (After Phase 10 - REFACTOR_L4)
-**When**: All 4 refactoring levels complete
-**Phases Complete**: 0-10 (PREPARE through REFACTOR_L4)
-**Phases Pending**: 11-13 (POST_REFACTOR_REVIEW through COMMIT)
-
-**Pre-Checkpoint Checklist**:
-- [ ] All tests still passing after refactoring
-- [ ] L1 (Naming clarity) complete
-- [ ] L2 (Method extraction) complete
-- [ ] L3 (Class responsibilities) complete
-- [ ] L4 (Architecture patterns) complete
-- [ ] Code quality improved vs GREEN checkpoint
-
-**Commit Message Template**:
-```
-refactor({step-id}): L4 architecture patterns applied
-
-Refactoring progression:
-- L1: Naming clarity (variables, methods, classes)
-- L2: Method extraction (DRY, single responsibility)
-- L3: Class responsibilities (cohesion, coupling)
-- L4: Architecture patterns (hexagonal, SOLID)
-
-All tests passing.
-
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
-```
-
-**Phase Log Actions**:
-1. Update phases 6-10: SKIPPED → EXECUTED with outcomes
-2. Mark phases 11-13 as SKIPPED with:
-   ```json
-   "blocked_by": "CHECKPOINT_PENDING: Will complete in FINAL checkpoint"
-   ```
-3. Commit refactored files + step file
-4. **DO NOT PUSH** - checkpoint is local only
-
----
-
-##### Checkpoint 4: FINAL (After Phase 12 - FINAL_VALIDATE)
-**When**: All 14 phases complete, ready for merge
-**Phases Complete**: 0-13 (ALL PHASES)
-**Phases Pending**: None
-
-**Pre-Checkpoint Checklist**:
-- [ ] POST_REFACTOR_REVIEW: PASS
-- [ ] FINAL_VALIDATE: All tests passing
-- [ ] Coverage meets threshold (>80%)
-- [ ] No test failures or warnings
-- [ ] Step file completely updated
-
-**Commit Message Template**:
-```
-test({step-id}): Full validation - READY FOR MERGE
-
-TDD cycle complete:
-- All 14 phases EXECUTED
-- Acceptance tests: {X} passed
-- Unit tests: {Y} passed
-- Coverage: {Z%}
-
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
-```
-
-**Phase Log Actions**:
-1. Update phases 11-13: SKIPPED → EXECUTED with outcomes
-2. Commit final changes + step file
-3. **PUSH TO REMOTE**: `git push origin {branch}`
-
----
-
-##### CRITICAL: Checkpoint Rollback Procedure
-
-If you need to rollback to a previous checkpoint:
-
-**Rollback to GREEN from REVIEW**:
-```bash
-git reset HEAD~1  # Undo REVIEW commit
-
-# Edit step file:
-# - Phase 6: Change EXECUTED back to SKIPPED
-# - Phases 7-13: Already SKIPPED (no change needed)
-# - Update blocked_by: "CHECKPOINT_PENDING: Will complete in REVIEW checkpoint"
-
-# Re-execute from phase 6 (REVIEW)
-```
-
-**Rollback to REVIEW from REFACTOR**:
-```bash
-git reset HEAD~1  # Undo REFACTOR commit
-
-# Edit step file:
-# - Phases 7-10: Change EXECUTED back to SKIPPED
-# - Update blocked_by: "CHECKPOINT_PENDING: Will complete in REFACTOR checkpoint"
-
-# Re-execute from phase 7 (REFACTOR_L1)
-```
-
-**Rollback to REFACTOR from FINAL**:
-```bash
-git reset HEAD~1  # Undo FINAL commit
-
-# Edit step file:
-# - Phases 11-13: Change EXECUTED back to SKIPPED
-# - Update blocked_by: "CHECKPOINT_PENDING: Will complete in FINAL checkpoint"
-
-# Re-execute from phase 11 (POST_REFACTOR_REVIEW)
-```
-
----
-
-##### WARNING: Common Mistakes
-
-❌ **DO NOT** forget to mark pending phases as SKIPPED
-   → Hook will block: "Phase REVIEW: NOT_EXECUTED"
-
-❌ **DO NOT** push after GREEN, REVIEW, or REFACTOR checkpoints
-   → Only FINAL checkpoint pushes
-
-❌ **DO NOT** use DEFERRED: instead of CHECKPOINT_PENDING:
-   → DEFERRED blocks commit, CHECKPOINT_PENDING allows it
-
-❌ **DO NOT** manually edit git history after checkpoint
-   → Phase log becomes inconsistent with commits
-
-✅ **DO** verify all tests pass before each checkpoint
-✅ **DO** update step file immediately after commit
-✅ **DO** follow commit message templates for consistency
-
-When an agent instance begins execution, it examines phase_execution_log to understand which phases completed in prior instances. Each log entry shows what prior instances accomplished. The current instance may CONTINUE from where the previous left off (if resuming an interrupted phase) or ADVANCE to the next incomplete phase. The phase log serves as a timeline of execution across all instances working on this step.
-
-#### Before Starting a Phase
-
-1. READ the step file
-2. LOCATE the phase entry in `tdd_cycle.phase_execution_log` by `phase_name`
-3. UPDATE the entry:
-   ```json
-   {
-     "status": "IN_PROGRESS",
-     "started_at": "2024-01-15T10:00:00Z"
-   }
-   ```
-4. SAVE the step file (atomic write: temp file + rename)
-
-#### After Completing a Phase
-
-5. UPDATE the entry:
-   ```json
-   {
-     "status": "EXECUTED",
-     "ended_at": "2024-01-15T10:05:00Z",
-     "duration_minutes": 5,
-     "outcome": "PASS",
-     "outcome_details": "Test failed as expected with NotImplementedException",
-     "artifacts_created": ["tests/unit/OrderServiceTests.cs"],
-     "artifacts_modified": [],
-     "test_results": {
-       "total": 3,
-       "passed": 0,
-       "failed": 3,
-       "skipped": 0
-     },
-     "notes": "All 3 unit tests failing as expected - ready for GREEN"
-   }
-   ```
-6. SAVE the step file IMMEDIATELY (before starting next phase)
+Instances read phase_execution_log to understand prior progress, continue from incomplete phases. Before each phase: update entry to IN_PROGRESS with timestamp. After: update to EXECUTED/SKIPPED with outcome, duration, artifacts. Save step file after EACH phase (no batching).
 
 #### If Phase Cannot Be Completed
 

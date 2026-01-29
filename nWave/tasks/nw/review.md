@@ -187,7 +187,7 @@ Perform a comprehensive {artifact-type} review of: {artifact-path}
 Correct step file structure includes:
 - task_id: Task identifier (e.g., '01-01') - NOT step_id!
 - project_id: Project identifier
-- tdd_cycle.phase_execution_log: Array of EXACTLY 14 phases (MANDATORY)
+- tdd_cycle.phase_execution_log: Array of phases as defined in canonical schema (MANDATORY)
 - quality_gates: TDD quality requirements
 - phase_validation_rules: Commit acceptance rules
 
@@ -196,12 +196,11 @@ Correct step file structure includes:
 ❌ 'step_id' instead of 'task_id' → REJECT
 ❌ 'phase_id' at top level → REJECT
 ❌ 'tdd_phase' at top level without 'tdd_cycle.phase_execution_log' → REJECT
-❌ Less than 14 phases in phase_execution_log → REJECT
+❌ Fewer phases than defined in canonical schema → REJECT
 ❌ Phase names with parentheses like 'RED (Acceptance)' → REJECT
 ❌ Phase names with spaces like 'REFACTOR L1' → REJECT
 
-Correct 14 phase names (UPPERCASE_UNDERSCORE):
-PREPARE, RED_ACCEPTANCE, RED_UNIT, GREEN_UNIT, CHECK_ACCEPTANCE, GREEN_ACCEPTANCE, REVIEW, REFACTOR_L1, REFACTOR_L2, REFACTOR_L3, REFACTOR_L4, POST_REFACTOR_REVIEW, FINAL_VALIDATE, COMMIT
+{{CORRECT_PHASE_NAMES}}
 
 Review Types:
 - baseline: Review quantitative measurement baseline for metric accuracy, baseline validity, and measurement methodology

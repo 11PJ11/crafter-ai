@@ -105,7 +105,8 @@ class MandatorySectionChecker:
             errors: List of error messages from validation
 
         Returns:
-            List of recovery guidance strings for all missing sections
+            List of recovery guidance strings for all missing sections,
+            each prefixed with "FIX: " to integrate inline with error messages.
         """
         if not errors:
             return None
@@ -118,7 +119,8 @@ class MandatorySectionChecker:
                     if section in error:
                         guidance = self.RECOVERY_GUIDANCE_MAP.get(section)
                         if guidance:
-                            guidance_items.append(guidance)
+                            # Append FIX: prefix for inline error message integration (AC-005.4)
+                            guidance_items.append(f"FIX: {guidance}")
                         break
 
         if guidance_items:
@@ -430,7 +432,8 @@ class ExecutionLogValidator:
             errors: List of error messages from validate()
 
         Returns:
-            List of recovery steps for fixing errors
+            List of recovery steps for fixing errors, each prefixed with "FIX: "
+            for inline integration with error messages (AC-005.4)
         """
         if not errors:
             return None
@@ -445,7 +448,7 @@ class ExecutionLogValidator:
                     if len(parts) > 1:
                         phase_name = parts[1].split(" ")[0]
                         guidance_items.append(
-                            f"Complete or rollback the IN_PROGRESS phase {phase_name}"
+                            f"FIX: Complete or rollback the IN_PROGRESS phase {phase_name}"
                         )
             elif "SKIPPED" in error and "blocked_by" in error.lower():
                 if "Phase" in error:
@@ -453,7 +456,7 @@ class ExecutionLogValidator:
                     if len(parts) > 1:
                         phase_name = parts[1].split(" ")[0]
                         guidance_items.append(
-                            f"Add blocked_by reason explaining why phase {phase_name} was skipped"
+                            f"FIX: Add blocked_by reason explaining why phase {phase_name} was skipped"
                         )
             elif "EXECUTED" in error and "outcome" in error.lower():
                 if "Phase" in error:
@@ -461,11 +464,11 @@ class ExecutionLogValidator:
                     if len(parts) > 1:
                         phase_name = parts[1].split(" ")[0]
                         guidance_items.append(
-                            f"Add outcome field (PASS/FAIL) to phase {phase_name}"
+                            f"FIX: Add outcome field (PASS/FAIL) to phase {phase_name}"
                         )
             elif "NOT_EXECUTED" in error:
                 guidance_items.append(
-                    "Cannot complete task with NOT_EXECUTED phases. "
+                    "FIX: Cannot complete task with NOT_EXECUTED phases. "
                     "All required phases must be EXECUTED or explicitly SKIPPED with reason"
                 )
 
