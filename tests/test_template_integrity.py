@@ -35,9 +35,9 @@ class TestCanonicalTemplateValidity:
 
     def test_canonical_template_exists(self):
         """Canonical template file must exist."""
-        assert CANONICAL_TEMPLATE.exists(), (
-            f"Canonical template not found: {CANONICAL_TEMPLATE}"
-        )
+        assert (
+            CANONICAL_TEMPLATE.exists()
+        ), f"Canonical template not found: {CANONICAL_TEMPLATE}"
 
     def test_canonical_template_is_valid_json(self, canonical_template):
         """Canonical template must be valid JSON."""
@@ -49,9 +49,9 @@ class TestCanonicalTemplateValidity:
         from nWave.constants.tdd_phases import PHASE_COUNT
 
         phases = canonical_template.get("tdd_cycle", {}).get("phase_execution_log", [])
-        assert len(phases) == PHASE_COUNT, (
-            f"Expected {PHASE_COUNT} phases, found {len(phases)}"
-        )
+        assert (
+            len(phases) == PHASE_COUNT
+        ), f"Expected {PHASE_COUNT} phases, found {len(phases)}"
 
     def test_canonical_phase_names_match_validator(self, canonical_template):
         """Phase names in template must match validator constants."""
@@ -77,13 +77,13 @@ class TestCanonicalTemplateValidity:
         for phase in phases:
             phase_name = phase.get("phase_name", "")
             # Must be uppercase
-            assert phase_name == phase_name.upper(), (
-                f"Phase name not uppercase: {phase_name}"
-            )
+            assert (
+                phase_name == phase_name.upper()
+            ), f"Phase name not uppercase: {phase_name}"
             # Must not contain parentheses
-            assert "(" not in phase_name and ")" not in phase_name, (
-                f"Phase name contains parentheses: {phase_name}"
-            )
+            assert (
+                "(" not in phase_name and ")" not in phase_name
+            ), f"Phase name contains parentheses: {phase_name}"
             # Must use underscores (if multi-word)
             if len(phase_name) > 10:  # Multi-word phases
                 assert "_" in phase_name or phase_name in [
@@ -165,9 +165,9 @@ class TestSplitMdEmbeddedTemplate:
 
     def test_split_md_has_format_validation_section(self, split_md_content):
         """split.md must have FORMAT VALIDATION section."""
-        assert "FORMAT VALIDATION" in split_md_content, (
-            "split.md missing FORMAT VALIDATION section"
-        )
+        assert (
+            "FORMAT VALIDATION" in split_md_content
+        ), "split.md missing FORMAT VALIDATION section"
 
     def test_split_md_documents_wrong_patterns(self, split_md_content):
         """split.md must document rejection of wrong patterns."""
@@ -177,15 +177,15 @@ class TestSplitMdEmbeddedTemplate:
         ]
 
         for pattern in required_rejections:
-            assert pattern in split_md_content, (
-                f"split.md should document rejection of '{pattern}'"
-            )
+            assert (
+                pattern in split_md_content
+            ), f"split.md should document rejection of '{pattern}'"
 
     def test_split_md_references_single_source_of_truth(self, split_md_content):
         """split.md must reference the canonical schema file."""
-        assert "step-tdd-cycle-schema.json" in split_md_content, (
-            "split.md should reference step-tdd-cycle-schema.json as source of truth"
-        )
+        assert (
+            "step-tdd-cycle-schema.json" in split_md_content
+        ), "split.md should reference step-tdd-cycle-schema.json as source of truth"
 
 
 class TestValidatorSchemaAlignment:
@@ -196,9 +196,9 @@ class TestValidatorSchemaAlignment:
         from scripts.validation.validate_steps import REQUIRED_PHASES
         from nWave.constants.tdd_phases import PHASE_COUNT
 
-        assert len(REQUIRED_PHASES) == PHASE_COUNT, (
-            f"Validator should have {PHASE_COUNT} phases, has {len(REQUIRED_PHASES)}"
-        )
+        assert (
+            len(REQUIRED_PHASES) == PHASE_COUNT
+        ), f"Validator should have {PHASE_COUNT} phases, has {len(REQUIRED_PHASES)}"
 
     def test_validator_phases_uppercase_underscore(self):
         """Validator phase names must use UPPERCASE_UNDERSCORE format."""
@@ -218,9 +218,9 @@ class TestValidatorSchemaAlignment:
 
         # Must NOT require step_id or phase_id
         assert "step_id" not in REQUIRED_FIELDS, "Validator should not require step_id"
-        assert "phase_id" not in REQUIRED_FIELDS, (
-            "Validator should not require phase_id"
-        )
+        assert (
+            "phase_id" not in REQUIRED_FIELDS
+        ), "Validator should not require phase_id"
 
 
 class TestCrossFileConsistency:

@@ -276,9 +276,9 @@ class TestMissingSectionDetection:
 
         # Section name should appear in at least one suggestion
         has_section_reference = any(section_name in s for s in suggestions)
-        assert has_section_reference, (
-            f"Section name '{section_name}' not found in suggestions"
-        )
+        assert (
+            has_section_reference
+        ), f"Section name '{section_name}' not found in suggestions"
 
         # At least one suggestion should provide actionable guidance
         has_actionable_guidance = any(
@@ -303,9 +303,9 @@ class TestMissingSectionDetection:
         suggestion_text = "\n".join(suggestions)
         assert "WHY:" in suggestion_text, "Missing 'WHY:' component in suggestions"
         assert "HOW:" in suggestion_text, "Missing 'HOW:' component in suggestions"
-        assert "ACTION:" in suggestion_text, (
-            "Missing 'ACTION:' component in suggestions"
-        )
+        assert (
+            "ACTION:" in suggestion_text
+        ), "Missing 'ACTION:' component in suggestions"
 
     def test_missing_section_suggestions_vary_by_section_name(self):
         """Different section names should produce variations in recovery guidance."""
@@ -362,9 +362,9 @@ class TestMissingPhaseDetection:
 
         # Phase name should appear in at least one suggestion
         has_phase_reference = any(phase_name in s for s in suggestions)
-        assert has_phase_reference, (
-            f"Phase name '{phase_name}' not found in suggestions"
-        )
+        assert (
+            has_phase_reference
+        ), f"Phase name '{phase_name}' not found in suggestions"
 
     def test_missing_phase_suggestions_include_why_how_action(self):
         """Suggestions for missing_phase should include WHY, HOW, and ACTION components."""
@@ -379,9 +379,9 @@ class TestMissingPhaseDetection:
         suggestion_text = "\n".join(suggestions)
         assert "WHY:" in suggestion_text, "Missing 'WHY:' component in suggestions"
         assert "HOW:" in suggestion_text, "Missing 'HOW:' component in suggestions"
-        assert "ACTION:" in suggestion_text, (
-            "Missing 'ACTION:' component in suggestions"
-        )
+        assert (
+            "ACTION:" in suggestion_text
+        ), "Missing 'ACTION:' component in suggestions"
 
     def test_missing_phase_explains_purpose(self):
         """Recovery suggestions for missing_phase should explain why the phase is needed."""
@@ -399,9 +399,9 @@ class TestMissingPhaseDetection:
             keyword in suggestion_text
             for keyword in ["needed", "required", "purpose", "important", "critical"]
         )
-        assert has_purpose_explanation, (
-            "Suggestions should explain why the phase is required"
-        )
+        assert (
+            has_purpose_explanation
+        ), "Suggestions should explain why the phase is required"
 
 
 class TestTimeoutFailureDetection:
@@ -439,9 +439,9 @@ class TestTimeoutFailureDetection:
         # Both timeout values should appear in suggestions
         has_configured = any(configured_timeout in s for s in suggestions)
         has_actual = any(actual_runtime in s for s in suggestions)
-        assert has_configured, (
-            f"Configured timeout '{configured_timeout}' not found in suggestions"
-        )
+        assert (
+            has_configured
+        ), f"Configured timeout '{configured_timeout}' not found in suggestions"
         assert has_actual, f"Actual runtime '{actual_runtime}' not found in suggestions"
 
     def test_timeout_failure_suggestions_include_why_how_action(self):
@@ -458,9 +458,9 @@ class TestTimeoutFailureDetection:
         suggestion_text = "\n".join(suggestions)
         assert "WHY:" in suggestion_text, "Missing 'WHY:' component in suggestions"
         assert "HOW:" in suggestion_text, "Missing 'HOW:' component in suggestions"
-        assert "ACTION:" in suggestion_text, (
-            "Missing 'ACTION:' component in suggestions"
-        )
+        assert (
+            "ACTION:" in suggestion_text
+        ), "Missing 'ACTION:' component in suggestions"
 
     def test_timeout_failure_suggests_optimization(self):
         """Recovery suggestions for timeout_failure should suggest optimization approaches."""
@@ -485,9 +485,7 @@ class TestTimeoutFailureDetection:
         has_optimization = any(
             keyword in suggestion_text for keyword in optimization_keywords
         )
-        assert has_optimization, (
-            f"No optimization keywords found in suggestions. Expected one of: {optimization_keywords}"
-        )
+        assert has_optimization, f"No optimization keywords found in suggestions. Expected one of: {optimization_keywords}"
 
     def test_timeout_failure_suggests_threshold_adjustment(self):
         """Recovery suggestions for timeout_failure should suggest timeout threshold adjustment."""
@@ -512,6 +510,4 @@ class TestTimeoutFailureDetection:
         has_threshold = any(
             keyword in suggestion_text for keyword in threshold_keywords
         )
-        assert has_threshold, (
-            f"No threshold adjustment keywords found in suggestions. Expected one of: {threshold_keywords}"
-        )
+        assert has_threshold, f"No threshold adjustment keywords found in suggestions. Expected one of: {threshold_keywords}"

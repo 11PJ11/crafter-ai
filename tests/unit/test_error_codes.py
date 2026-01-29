@@ -116,5 +116,7 @@ class TestErrorCodesImportability:
 
         for name, value in codes.items():
             # Value should be uppercase with underscores (snake_case)
-            assert value == value.upper(), f"Error code {name} value should be uppercase"
+            assert (
+                value == value.upper()
+            ), f"Error code {name} value should be uppercase"
             assert " " not in value, f"Error code {name} should not contain spaces"

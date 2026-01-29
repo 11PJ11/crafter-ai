@@ -140,9 +140,9 @@ class TestCommitMsgHook:
 
         assert result.returncode != EXIT_SUCCESS, "Hook accepted invalid commit message"
         output = result.stdout + result.stderr
-        assert "Conventional Commits" in output, (
-            "Hook should mention Conventional Commits in error message"
-        )
+        assert (
+            "Conventional Commits" in output
+        ), "Hook should mention Conventional Commits in error message"
 
     def test_commit_msg_hook_accepts_scoped_commits(self, commit_msg_script, tmp_path):
         """Verify hook accepts scoped conventional commits (e.g., fix(auth): message)."""

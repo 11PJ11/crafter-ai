@@ -127,9 +127,9 @@ class TestInstallNwavePreflightIntegration:
 
         # ASSERT
         assert exit_code != 0, "Should return non-zero exit code on preflight failure"
-        assert not check_source_called, (
-            "check_source should NOT be called when preflight fails"
-        )
+        assert (
+            not check_source_called
+        ), "check_source should NOT be called when preflight fails"
 
     def test_install_nwave_uses_format_error_for_failures(self):
         """

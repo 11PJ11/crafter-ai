@@ -163,6 +163,6 @@ class TestBackupCleanup:
             deleted_count = manager.cleanup_old_backups(retention_days=30)
 
             # ASSERT
-            assert deleted_count == 3, (
-                f"Expected 3 backups deleted, got {deleted_count}"
-            )
+            assert (
+                deleted_count == 3
+            ), f"Expected 3 backups deleted, got {deleted_count}"

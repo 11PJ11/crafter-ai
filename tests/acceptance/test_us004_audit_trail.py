@@ -89,9 +89,9 @@ class TestAuditTrailForComplianceVerification:
 
             # Assert: Audit log contains timestamped entries
             audit_entries = audit_log.read_entries_for_step(step_file)
-            assert len(audit_entries) >= 2, (
-                "At least 2 phase transition events should be logged"
-            )
+            assert (
+                len(audit_entries) >= 2
+            ), "At least 2 phase transition events should be logged"
 
             # Verify ISO 8601 timestamp format for each entry
             for entry in audit_entries:
@@ -102,9 +102,9 @@ class TestAuditTrailForComplianceVerification:
                 assert isinstance(timestamp, str), "Timestamp not a string"
                 assert "T" in timestamp, "Timestamp missing 'T' separator"
                 assert timestamp.endswith("Z"), "Timestamp not ending with 'Z' (UTC)"
-                assert len(timestamp) == 24, (
-                    f"ISO 8601 timestamp should be 24 chars, got {len(timestamp)}: {timestamp}"
-                )
+                assert (
+                    len(timestamp) == 24
+                ), f"ISO 8601 timestamp should be 24 chars, got {len(timestamp)}: {timestamp}"
 
                 # Should be parseable as ISO 8601
                 try:
@@ -164,9 +164,9 @@ class TestAuditTrailForComplianceVerification:
             # Capture content hash of original entries
             original_hash = audit_log.compute_hash_of_entries(0, 5)
             initial_count = audit_log.entry_count()
-            assert initial_count == 5, (
-                f"Expected 5 initial entries, got {initial_count}"
-            )
+            assert (
+                initial_count == 5
+            ), f"Expected 5 initial entries, got {initial_count}"
 
             # Act: Add 3 new entries
             new_entries = [
@@ -191,12 +191,12 @@ class TestAuditTrailForComplianceVerification:
 
             # Assert: Original entries unchanged (hash matches)
             current_hash = audit_log.compute_hash_of_entries(0, 5)
-            assert current_hash == original_hash, (
-                "Original entries were modified - immutability violated"
-            )
-            assert audit_log.entry_count() == 8, (
-                f"Expected 8 entries (5 original + 3 new), got {audit_log.entry_count()}"
-            )
+            assert (
+                current_hash == original_hash
+            ), "Original entries were modified - immutability violated"
+            assert (
+                audit_log.entry_count() == 8
+            ), f"Expected 8 entries (5 original + 3 new), got {audit_log.entry_count()}"
 
             # Verify new entries are present
             all_entries = audit_log.get_entries()

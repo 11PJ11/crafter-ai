@@ -83,9 +83,9 @@ class TestUpdateCliDisplaysUpdateComplete:
 
         # Check that "Update complete." was printed
         print_calls = [str(call) for call in mock_print.call_args_list]
-        assert any("Update complete" in call for call in print_calls), (
-            f"Expected 'Update complete.' in output, got: {print_calls}"
-        )
+        assert any(
+            "Update complete" in call for call in print_calls
+        ), f"Expected 'Update complete.' in output, got: {print_calls}"
 
 
 class TestUpdateCliExitsWithZeroOnSuccess:
@@ -669,9 +669,9 @@ class TestUpdateCliAcceptsYConfirmation:
         )
 
         # Assert: VERSION file was updated to 2.0.0
-        assert version_file.read_text().strip() == "2.0.0", (
-            f"VERSION file should be 2.0.0, got: {version_file.read_text()}"
-        )
+        assert (
+            version_file.read_text().strip() == "2.0.0"
+        ), f"VERSION file should be 2.0.0, got: {version_file.read_text()}"
 
     def test_update_cli_major_update_exits_zero_on_y(self, tmp_path):
         """
@@ -761,6 +761,6 @@ class TestUpdateCliAcceptsYConfirmation:
         )
 
         # Assert: Update also completed
-        assert "Update complete" in result.stdout, (
-            f"Expected 'Update complete.' after warning.\nSTDOUT: {result.stdout}"
-        )
+        assert (
+            "Update complete" in result.stdout
+        ), f"Expected 'Update complete.' after warning.\nSTDOUT: {result.stdout}"

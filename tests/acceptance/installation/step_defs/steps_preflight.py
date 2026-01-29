@@ -8,7 +8,6 @@ CRITICAL: Hexagonal boundary enforcement - tests invoke CLI entry points ONLY.
 Cross-platform compatible (Windows, macOS, Linux).
 """
 
-
 from pytest_bdd import scenarios, given, when, then, parsers
 
 # Load scenarios from feature files
@@ -136,17 +135,15 @@ def build_phase_begins(cli_result, assert_output):
 @then(parsers.parse('the installation log should contain "{text}"'))
 def log_contains_text(text, file_assertions):
     """Verify installation log contains expected text."""
-    assert file_assertions.log_contains(text), (
-        f"Expected '{text}' in log file"
-    )
+    assert file_assertions.log_contains(text), f"Expected '{text}' in log file"
 
 
 @then("the installation should be blocked")
 def installation_blocked(cli_result, assert_output):
     """Verify installation was blocked (non-zero exit)."""
-    assert cli_result["returncode"] != 0, (
-        f"Expected non-zero exit code, got {cli_result['returncode']}"
-    )
+    assert (
+        cli_result["returncode"] != 0
+    ), f"Expected non-zero exit code, got {cli_result['returncode']}"
 
 
 @then("no build artifacts should be created")
@@ -154,9 +151,9 @@ def no_build_artifacts(file_assertions):
     """Verify no installation artifacts were created."""
     # In a blocked installation, we shouldn't have installed agents/commands
     # Note: This checks the isolated test directory
-    assert file_assertions.agent_count() == 0 or file_assertions.agent_count() < 10, (
-        "Build artifacts were created when installation should have been blocked"
-    )
+    assert (
+        file_assertions.agent_count() == 0 or file_assertions.agent_count() < 10
+    ), "Build artifacts were created when installation should have been blocked"
 
 
 @then("the error should appear before any build output")
@@ -181,9 +178,7 @@ def error_before_build(cli_result):
             error_pos = all_output.find("[ERROR]")
             build_pos = all_output.find(indicator)
             if error_pos >= 0 and build_pos >= 0:
-                assert error_pos < build_pos, (
-                    "Build output appeared before error"
-                )
+                assert error_pos < build_pos, "Build output appeared before error"
 
 
 @then("the installation log should contain timestamp entries")
@@ -193,10 +188,9 @@ def log_contains_timestamps(file_assertions):
         content = file_assertions.claude_home["log_file"].read_text()
         # Look for timestamp patterns like [2026-01-29 10:30:45] or 2026-01-29T10:30:45
         import re
+
         timestamp_pattern = r"\d{4}-\d{2}-\d{2}"
-        assert re.search(timestamp_pattern, content), (
-            "No timestamp found in log file"
-        )
+        assert re.search(timestamp_pattern, content), "No timestamp found in log file"
 
 
 @then("the log should record each pre-flight check result")

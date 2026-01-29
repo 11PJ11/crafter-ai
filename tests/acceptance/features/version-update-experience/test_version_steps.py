@@ -320,9 +320,9 @@ def verify_output_contains(cli_result, expected_output):
 @then(parsers.parse("the command exits with code {exit_code:d}"))
 def verify_exit_code(cli_result, exit_code):
     """Verify command exit code."""
-    assert cli_result["returncode"] == exit_code, (
-        f"Expected exit code {exit_code}, got {cli_result['returncode']}\nSTDERR: {cli_result['stderr']}"
-    )
+    assert (
+        cli_result["returncode"] == exit_code
+    ), f"Expected exit code {exit_code}, got {cli_result['returncode']}\nSTDERR: {cli_result['stderr']}"
 
 
 @then("I see an update banner showing:")
@@ -341,27 +341,27 @@ def verify_update_banner(cli_result, pytestconfig):
 def verify_changelog_highlight(cli_result, highlight_text):
     """Verify specific changelog highlight is shown."""
     output = cli_result["stdout"]
-    assert highlight_text in output, (
-        f"Expected highlight '{highlight_text}' not found in output:\n{output}"
-    )
+    assert (
+        highlight_text in output
+    ), f"Expected highlight '{highlight_text}' not found in output:\n{output}"
 
 
 @then("I see a link to check releases manually")
 def verify_manual_check_link(cli_result):
     """Verify manual check URL is provided on network failure."""
     output = cli_result["stdout"]
-    assert "github.com" in output and "releases" in output, (
-        "Manual release check URL not provided"
-    )
+    assert (
+        "github.com" in output and "releases" in output
+    ), "Manual release check URL not provided"
 
 
 @then(parsers.parse('the update banner includes "{warning_text}"'))
 def verify_breaking_change_warning(cli_result, warning_text):
     """Verify breaking change warning is displayed."""
     output = cli_result["stdout"]
-    assert warning_text in output, (
-        f"Expected breaking change warning '{warning_text}' not found in output:\n{output}"
-    )
+    assert (
+        warning_text in output
+    ), f"Expected breaking change warning '{warning_text}' not found in output:\n{output}"
 
 
 @then("the banner is styled with red/bold formatting")
@@ -370,27 +370,27 @@ def verify_banner_styling(cli_result):
     output = cli_result["stdout"]
     # In real implementation with rich library, this would check for ANSI codes
     # For minimal test, verify warning symbol present
-    assert "⚠️" in output or "BREAKING" in output, (
-        "Breaking change visual indicator not found"
-    )
+    assert (
+        "⚠️" in output or "BREAKING" in output
+    ), "Breaking change visual indicator not found"
 
 
 @then("changelog highlights show breaking changes prominently")
 def verify_breaking_changes_prominent(cli_result):
     """Verify breaking changes are shown prominently in highlights."""
     output = cli_result["stdout"]
-    assert "BREAKING CHANGES" in output or "breaking" in output.lower(), (
-        "Breaking changes not prominently displayed in highlights"
-    )
+    assert (
+        "BREAKING CHANGES" in output or "breaking" in output.lower()
+    ), "Breaking changes not prominently displayed in highlights"
 
 
 @then("no breaking change warning is shown")
 def verify_no_breaking_change_warning(cli_result):
     """Verify no breaking change warning for minor/patch updates."""
     output = cli_result["stdout"]
-    assert "BREAKING CHANGES" not in output, (
-        "Breaking change warning shown for non-major version update"
-    )
+    assert (
+        "BREAKING CHANGES" not in output
+    ), "Breaking change warning shown for non-major version update"
 
 
 @then("changelog shows only feature additions and fixes")
@@ -398,9 +398,9 @@ def verify_changelog_features_fixes_only(cli_result):
     """Verify changelog contains features/fixes but no breaking changes."""
     output = cli_result["stdout"]
     # Should have changelog content but no breaking change warnings
-    assert "Changelog highlights" in output or "•" in output or "*" in output, (
-        "Changelog highlights not shown"
-    )
-    assert "BREAKING" not in output, (
-        "Breaking change content found in non-breaking update"
-    )
+    assert (
+        "Changelog highlights" in output or "•" in output or "*" in output
+    ), "Changelog highlights not shown"
+    assert (
+        "BREAKING" not in output
+    ), "Breaking change content found in non-breaking update"

@@ -463,9 +463,9 @@ def run_update_command(test_installation, cli_result, cli_environment, mock_gith
 @when("I see the confirmation prompt")
 def see_confirmation_prompt(cli_result):
     """Verify confirmation prompt is displayed."""
-    assert "Proceed with update? (Y/N)" in cli_result["stdout"], (
-        "Confirmation prompt not shown"
-    )
+    assert (
+        "Proceed with update? (Y/N)" in cli_result["stdout"]
+    ), "Confirmation prompt not shown"
 
 
 @when(parsers.parse("I respond with {response}"))
@@ -553,14 +553,14 @@ def verify_output_contains(cli_result, expected_text):
 
     # Handle path patterns that use ~ shorthand - check for key part of message
     if expected_text.startswith("Backup created at ~/"):
-        assert "Backup created at" in output, (
-            f"Expected backup creation message not found in output:\n{output}"
-        )
+        assert (
+            "Backup created at" in output
+        ), f"Expected backup creation message not found in output:\n{output}"
     # Handle permission denied message with ~ path shorthand
     elif expected_text.startswith("Permission denied: Cannot write to ~/"):
-        assert "Permission denied: Cannot write to" in output, (
-            f"Expected permission denied message not found in output:\n{output}"
-        )
+        assert (
+            "Permission denied: Cannot write to" in output
+        ), f"Expected permission denied message not found in output:\n{output}"
     # Handle disk space message with [SIZE] placeholder
     elif "[SIZE]" in expected_text:
         # Replace [SIZE] with regex pattern to match any number
@@ -569,22 +569,22 @@ def verify_output_contains(cli_result, expected_text):
 
         pattern = expected_text.replace("[SIZE]", r"\d+")
         pattern = pattern.replace("(", r"\(").replace(")", r"\)")
-        assert re.search(pattern, output), (
-            f"Expected disk space message not found in output:\n{output}"
-        )
+        assert re.search(
+            pattern, output
+        ), f"Expected disk space message not found in output:\n{output}"
     else:
-        assert expected_text in output, (
-            f"Expected text '{expected_text}' not found in output:\n{output}"
-        )
+        assert (
+            expected_text in output
+        ), f"Expected text '{expected_text}' not found in output:\n{output}"
 
 
 @then(parsers.parse("a backup is created at {backup_pattern}"))
 def verify_backup_created(cli_result, backup_pattern):
     """Verify backup creation message."""
     # Pattern like ~/.claude_bck_YYYYMMDD/
-    assert "Backup created at" in cli_result["stdout"], (
-        "Backup creation message not shown"
-    )
+    assert (
+        "Backup created at" in cli_result["stdout"]
+    ), "Backup creation message not shown"
 
 
 @then("I see the changelog preview")
@@ -598,9 +598,9 @@ def verify_changelog_preview(cli_result):
 @then(parsers.parse('I am prompted "{prompt_text}"'))
 def verify_prompt_shown(cli_result, prompt_text):
     """Verify specific prompt text is shown."""
-    assert prompt_text in cli_result["stdout"], (
-        f"Expected prompt '{prompt_text}' not found"
-    )
+    assert (
+        prompt_text in cli_result["stdout"]
+    ), f"Expected prompt '{prompt_text}' not found"
 
 
 @then(parsers.parse("nWave {version} is installed"))
@@ -622,9 +622,9 @@ def verify_version_file_content(test_installation, version):
 def verify_error_message(cli_result, error_message):
     """Verify error message is displayed."""
     output = cli_result["stdout"] + cli_result["stderr"]
-    assert error_message in output, (
-        f"Expected error message '{error_message}' not found in output:\n{output}"
-    )
+    assert (
+        error_message in output
+    ), f"Expected error message '{error_message}' not found in output:\n{output}"
 
 
 @then("the corrupted download is deleted")
@@ -634,17 +634,17 @@ def verify_corrupted_download_deleted(cli_result):
     # The actual cleanup is handled by the CLI script
     # Either explicit cleanup message or no leftover files mentioned
     # The corruption handling path should not leave temp files
-    assert cli_result["returncode"] != 0, (
-        "Command should have failed with non-zero exit code"
-    )
+    assert (
+        cli_result["returncode"] != 0
+    ), "Command should have failed with non-zero exit code"
 
 
 @then("I see key changes in the summary")
 def verify_summary_changes(cli_result):
     """Verify update summary shows key changes."""
-    assert "Key changes:" in cli_result["stdout"] or "•" in cli_result["stdout"], (
-        "Key changes summary not shown"
-    )
+    assert (
+        "Key changes:" in cli_result["stdout"] or "•" in cli_result["stdout"]
+    ), "Key changes summary not shown"
 
 
 @then("no changes are made to the installation")
@@ -657,9 +657,9 @@ def verify_no_changes_made(test_installation):
     # Verify content is actually unchanged by comparing with original
     original_version = test_installation.get("original_version")
     if original_version:
-        assert current_version == original_version, (
-            f"Version changed from {original_version} to {current_version}"
-        )
+        assert (
+            current_version == original_version
+        ), f"Version changed from {original_version} to {current_version}"
 
 
 @then("no changes are made")
@@ -667,17 +667,17 @@ def verify_no_changes_made_simple(test_installation):
     """Verify installation remains unchanged (simplified assertion)."""
     # For permission/disk space scenarios, verify version file is unchanged
     version_file = test_installation["version_file"]
-    assert version_file.exists(), (
-        "Version file should still exist after failed operation"
-    )
+    assert (
+        version_file.exists()
+    ), "Version file should still exist after failed operation"
     current_version = version_file.read_text().strip()
     assert len(current_version) > 0, "Version file content should not be empty"
     # Verify content is actually unchanged by comparing with original
     original_version = test_installation.get("original_version")
     if original_version:
-        assert current_version == original_version, (
-            f"Version changed from {original_version} to {current_version}"
-        )
+        assert (
+            current_version == original_version
+        ), f"Version changed from {original_version} to {current_version}"
 
 
 @then("the backup directory is deleted")
@@ -685,17 +685,17 @@ def verify_backup_deleted(cli_result):
     """Verify backup cleanup on cancellation."""
     # Verify no backup error messages in output (backup was cleaned up successfully)
     output = cli_result["stdout"] + cli_result["stderr"]
-    assert "backup error" not in output.lower(), (
-        f"Backup cleanup error detected in output: {output}"
-    )
+    assert (
+        "backup error" not in output.lower()
+    ), f"Backup cleanup error detected in output: {output}"
 
 
 @then("no backup is created")
 def verify_no_backup_created(cli_result):
     """Verify no backup was created."""
-    assert "Backup created" not in cli_result["stdout"], (
-        "Backup was created when it should not have been"
-    )
+    assert (
+        "Backup created" not in cli_result["stdout"]
+    ), "Backup was created when it should not have been"
 
 
 @then(parsers.parse("the system automatically restores from {backup_path}"))
@@ -704,9 +704,9 @@ def verify_automatic_restore(cli_result, backup_path):
     _backup_path = (
         backup_path  # Intentionally unused - kept for step definition signature
     )
-    assert "Restored from backup" in cli_result["stdout"], (
-        "Automatic restore message not shown"
-    )
+    assert (
+        "Restored from backup" in cli_result["stdout"]
+    ), "Automatic restore message not shown"
 
 
 @then(parsers.parse("nWave {version} remains installed"))
@@ -715,9 +715,9 @@ def verify_version_remains(test_installation, version):
     _version_file = test_installation["version_file"]
     if _version_file.exists():
         current = _version_file.read_text().strip()
-        assert current == version, (
-            f"Version changed to {current}, expected {version} to remain"
-        )
+        assert (
+            current == version
+        ), f"Version changed to {current}, expected {version} to remain"
 
 
 # ============================================================================
@@ -731,9 +731,9 @@ def verify_specific_backup_deleted(test_installation, backup_path):
     # Backups are in nwave_home.parent (same as where create_test_backups puts them)
     backup_parent = test_installation["nwave_home"].parent
     backup_dir = backup_parent / backup_path.strip("~/").strip("/")
-    assert not backup_dir.exists(), (
-        f"Backup directory {backup_dir} should have been deleted but still exists"
-    )
+    assert (
+        not backup_dir.exists()
+    ), f"Backup directory {backup_dir} should have been deleted but still exists"
 
 
 @then(parsers.parse("{backup_path} is preserved"))
@@ -742,17 +742,17 @@ def verify_specific_backup_preserved(test_installation, backup_path):
     # Backups are in nwave_home.parent (same as where create_test_backups puts them)
     backup_parent = test_installation["nwave_home"].parent
     backup_dir = backup_parent / backup_path.strip("~/").strip("/")
-    assert backup_dir.exists(), (
-        f"Backup directory {backup_dir} should be preserved but was deleted"
-    )
+    assert (
+        backup_dir.exists()
+    ), f"Backup directory {backup_dir} should be preserved but was deleted"
 
 
 @then(parsers.parse("a new backup {backup_pattern} is created"))
 def verify_new_backup_created(cli_result, backup_pattern):
     """Verify new backup was created."""
-    assert "Backup created" in cli_result["stdout"], (
-        "New backup creation message not found"
-    )
+    assert (
+        "Backup created" in cli_result["stdout"]
+    ), "New backup creation message not found"
 
 
 @then(parsers.parse('the log contains warning "{warning_message}"'))
@@ -785,9 +785,9 @@ def verify_other_backups_cleaned(cli_result):
     """Verify other old backups were removed."""
     # Verify no cleanup error in output - cleanup completed without issues
     output = cli_result["stdout"] + cli_result["stderr"]
-    assert "cleanup failed" not in output.lower(), (
-        f"Backup cleanup failure detected: {output}"
-    )
+    assert (
+        "cleanup failed" not in output.lower()
+    ), f"Backup cleanup failure detected: {output}"
 
 
 @then("backups older than 30 days are cleaned up")
@@ -795,18 +795,18 @@ def verify_old_backups_cleaned(cli_result):
     """Verify retention policy enforcement."""
     # Verify cleanup completed - no retention policy errors
     output = cli_result["stdout"] + cli_result["stderr"]
-    assert "retention" not in output.lower() or "error" not in output.lower(), (
-        f"Retention policy error detected: {output}"
-    )
+    assert (
+        "retention" not in output.lower() or "error" not in output.lower()
+    ), f"Retention policy error detected: {output}"
 
 
 @then(parsers.parse("cleanup completes within {seconds:d} seconds"))
 def verify_cleanup_performance(cli_result, seconds):
     """Verify cleanup performance requirement."""
     # Verify no timeout occurred - command completed
-    assert cli_result["returncode"] != 124, (
-        f"Cleanup timed out (expected completion within {seconds}s)"
-    )
+    assert (
+        cli_result["returncode"] != 124
+    ), f"Cleanup timed out (expected completion within {seconds}s)"
 
 
 @then(parsers.parse('I see "Cleaned up {count} old backups"'))
@@ -814,9 +814,9 @@ def verify_cleanup_summary(cli_result, count):
     """Verify cleanup summary message."""
     output = cli_result["stdout"]
     # Verify cleanup summary or success indication in output
-    assert "clean" in output.lower() or cli_result["returncode"] == EXIT_SUCCESS, (
-        f"Cleanup summary not found in output: {output}"
-    )
+    assert (
+        "clean" in output.lower() or cli_result["returncode"] == EXIT_SUCCESS
+    ), f"Cleanup summary not found in output: {output}"
 
 
 @then("I see cleanup summary for old backups")
@@ -827,17 +827,17 @@ def verify_cleanup_summary_generic(cli_result):
     import re
 
     pattern = r"Cleaned up \d+ old backup"
-    assert re.search(pattern, output), (
-        f"Cleanup summary not found in output. Expected pattern like 'Cleaned up N old backup(s)':\n{output}"
-    )
+    assert re.search(
+        pattern, output
+    ), f"Cleanup summary not found in output. Expected pattern like 'Cleaned up N old backup(s)':\n{output}"
 
 
 @then(parsers.parse("the command exits with code {exit_code:d}"))
 def verify_update_exit_code(cli_result, exit_code):
     """Verify command exit code for update/cleanup scenarios."""
-    assert cli_result["returncode"] == exit_code, (
-        f"Expected exit code {exit_code}, got {cli_result['returncode']}\nSTDERR: {cli_result['stderr']}"
-    )
+    assert (
+        cli_result["returncode"] == exit_code
+    ), f"Expected exit code {exit_code}, got {cli_result['returncode']}\nSTDERR: {cli_result['stderr']}"
 
 
 # ============================================================================
@@ -864,9 +864,9 @@ def version_file_contains(test_installation, version):
 def verify_warning_displays(cli_result, warning_message):
     """Verify warning message is displayed."""
     output = cli_result["stdout"] + cli_result["stderr"]
-    assert warning_message in output, (
-        f"Expected warning '{warning_message}' not found in output:\n{output}"
-    )
+    assert (
+        warning_message in output
+    ), f"Expected warning '{warning_message}' not found in output:\n{output}"
 
 
 @then("Francesca can choose to proceed or cancel")

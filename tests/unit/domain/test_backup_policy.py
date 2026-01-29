@@ -142,18 +142,18 @@ class TestBackupPolicyRotationAfterUpdate:
         to_delete = policy.get_backups_to_delete(existing_backups)
 
         # ASSERT
-        assert len(to_delete) == 1, (
-            f"With 4 backups and max 3, should delete exactly 1 to keep 3. Got {len(to_delete)}"
-        )
-        assert to_delete[0] == Path("~/.claude.backup.20260124120000"), (
-            "Should delete the oldest backup (20260124)"
-        )
+        assert (
+            len(to_delete) == 1
+        ), f"With 4 backups and max 3, should delete exactly 1 to keep 3. Got {len(to_delete)}"
+        assert to_delete[0] == Path(
+            "~/.claude.backup.20260124120000"
+        ), "Should delete the oldest backup (20260124)"
 
         # Verify 3 remain after deletion
         remaining = [b for b in existing_backups if b not in to_delete]
-        assert len(remaining) == 3, (
-            f"Exactly 3 backups should remain, got {len(remaining)}"
-        )
+        assert (
+            len(remaining) == 3
+        ), f"Exactly 3 backups should remain, got {len(remaining)}"
 
     def test_backup_policy_deletes_2_when_5_exist_and_max_is_3(self):
         """
@@ -180,17 +180,17 @@ class TestBackupPolicyRotationAfterUpdate:
         to_delete = policy.get_backups_to_delete(existing_backups)
 
         # ASSERT
-        assert len(to_delete) == 2, (
-            f"With 5 backups and max 3, should delete exactly 2 to keep 3. Got {len(to_delete)}"
-        )
+        assert (
+            len(to_delete) == 2
+        ), f"With 5 backups and max 3, should delete exactly 2 to keep 3. Got {len(to_delete)}"
         assert to_delete[0] == Path("~/.claude.backup.20260123120000")
         assert to_delete[1] == Path("~/.claude.backup.20260124120000")
 
         # Verify 3 remain after deletion
         remaining = [b for b in existing_backups if b not in to_delete]
-        assert len(remaining) == 3, (
-            f"Exactly 3 backups should remain, got {len(remaining)}"
-        )
+        assert (
+            len(remaining) == 3
+        ), f"Exactly 3 backups should remain, got {len(remaining)}"
 
 
 class TestBackupPolicyPathGeneration:

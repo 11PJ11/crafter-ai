@@ -157,13 +157,19 @@ class TestClaudeCodeContextOutputsJsonError:
             formatter.format_dependency_error("yaml", "PyYAML"),
         ]
 
-        required_fields = {"error_code", "message", "remediation", "recoverable", "timestamp"}
+        required_fields = {
+            "error_code",
+            "message",
+            "remediation",
+            "recoverable",
+            "timestamp",
+        }
 
         for error_json in errors:
             parsed = json.loads(error_json)
-            assert set(parsed.keys()) == required_fields, (
-                f"Missing or extra fields in JSON: {set(parsed.keys())} vs {required_fields}"
-            )
+            assert (
+                set(parsed.keys()) == required_fields
+            ), f"Missing or extra fields in JSON: {set(parsed.keys())} vs {required_fields}"
 
 
 class TestFormatErrorModeSelection:
@@ -176,7 +182,9 @@ class TestFormatErrorModeSelection:
         from unittest.mock import patch
 
         # Test Claude Code context
-        with patch("scripts.install.output_formatter.is_claude_code_context", return_value=True):
+        with patch(
+            "scripts.install.output_formatter.is_claude_code_context", return_value=True
+        ):
             result = format_error(
                 error_code=ENV_NO_VENV,
                 message="No virtual environment detected",
@@ -189,7 +197,10 @@ class TestFormatErrorModeSelection:
             assert "error_code" in parsed
 
         # Test Terminal context
-        with patch("scripts.install.output_formatter.is_claude_code_context", return_value=False):
+        with patch(
+            "scripts.install.output_formatter.is_claude_code_context",
+            return_value=False,
+        ):
             result = format_error(
                 error_code=ENV_NO_VENV,
                 message="No virtual environment detected",

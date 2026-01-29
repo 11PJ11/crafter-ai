@@ -16,12 +16,12 @@ class TestStepSchemaExtensions:
 
         # Check each phase has extensions_granted field
         for phase in schema["tdd_cycle"]["phase_execution_log"]:
-            assert "extensions_granted" in phase, (
-                f"Phase {phase['phase_name']} missing extensions_granted field"
-            )
-            assert isinstance(phase["extensions_granted"], list), (
-                f"Phase {phase['phase_name']} extensions_granted must be a list"
-            )
+            assert (
+                "extensions_granted" in phase
+            ), f"Phase {phase['phase_name']} missing extensions_granted field"
+            assert isinstance(
+                phase["extensions_granted"], list
+            ), f"Phase {phase['phase_name']} extensions_granted must be a list"
 
     def test_extension_record_structure(self):
         """Verify ExtensionRecord has required fields."""
@@ -46,12 +46,12 @@ class TestStepSchemaExtensions:
 
         # Validate structure
         for field_name, field_type in required_fields.items():
-            assert field_name in sample_extension, (
-                f"ExtensionRecord missing field: {field_name}"
-            )
-            assert isinstance(sample_extension[field_name], field_type), (
-                f"ExtensionRecord field {field_name} has wrong type"
-            )
+            assert (
+                field_name in sample_extension
+            ), f"ExtensionRecord missing field: {field_name}"
+            assert isinstance(
+                sample_extension[field_name], field_type
+            ), f"ExtensionRecord field {field_name} has wrong type"
 
     def test_extensions_granted_initialized_empty(self):
         """Verify extensions_granted starts as empty list."""
@@ -60,6 +60,6 @@ class TestStepSchemaExtensions:
             schema = json.load(f)
 
         for phase in schema["tdd_cycle"]["phase_execution_log"]:
-            assert phase["extensions_granted"] == [], (
-                f"Phase {phase['phase_name']} extensions_granted should initialize as empty list"
-            )
+            assert (
+                phase["extensions_granted"] == []
+            ), f"Phase {phase['phase_name']} extensions_granted should initialize as empty list"

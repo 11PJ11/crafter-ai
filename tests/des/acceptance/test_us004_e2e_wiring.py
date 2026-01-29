@@ -148,9 +148,9 @@ class TestE2EExecuteCommandWiring:
         )
 
         # AND: Timeout warnings emitted when thresholds crossed
-        assert hasattr(result, "timeout_warnings"), (
-            "Result missing timeout_warnings field"
-        )
+        assert hasattr(
+            result, "timeout_warnings"
+        ), "Result missing timeout_warnings field"
         assert len(result.timeout_warnings) >= 3, (
             f"Expected at least 3 timeout warnings (50%, 75%, 90%), "
             f"got {len(result.timeout_warnings)}"
@@ -158,9 +158,9 @@ class TestE2EExecuteCommandWiring:
 
         # Verify warnings contain threshold information
         warnings_text = " ".join([w.lower() for w in result.timeout_warnings])
-        assert any(threshold in warnings_text for threshold in ["50%", "75%", "90%"]), (
-            "Warnings should mention threshold percentages (50%, 75%, 90%)"
-        )
+        assert any(
+            threshold in warnings_text for threshold in ["50%", "75%", "90%"]
+        ), "Warnings should mention threshold percentages (50%, 75%, 90%)"
 
         # Extension API testing COMMENTED OUT - OUT_OF_SCOPE for US-006
         # Extension API functionality will be implemented in a future user story.
@@ -194,16 +194,17 @@ class TestE2EExecuteCommandWiring:
 
         # AND: EXTERNAL VALIDITY PROVEN
         # All features executed in actual command invocation path
-        assert result.execution_path == "DESOrchestrator.execute_step", (
-            "Test must validate features execute in real orchestrator path"
-        )
+        assert (
+            result.execution_path == "DESOrchestrator.execute_step"
+        ), "Test must validate features execute in real orchestrator path"
 
-        assert result.features_validated == [
-            "turn_counting",
-            "timeout_monitoring",
-        ], (
-            "Both features should be validated in execution path (extension_api is OUT_OF_SCOPE for US-006)"
-        )
+        assert (
+            result.features_validated
+            == [
+                "turn_counting",
+                "timeout_monitoring",
+            ]
+        ), "Both features should be validated in execution path (extension_api is OUT_OF_SCOPE for US-006)"
 
 
 class TestE2EDevelopCommandWiring:
@@ -325,9 +326,9 @@ class TestE2EDevelopCommandWiring:
         )
 
         # AND: Timeout warnings emitted when thresholds crossed (SAME WARNING SYSTEM)
-        assert hasattr(result, "timeout_warnings"), (
-            "Result missing timeout_warnings field"
-        )
+        assert hasattr(
+            result, "timeout_warnings"
+        ), "Result missing timeout_warnings field"
         assert len(result.timeout_warnings) >= 3, (
             f"Expected at least 3 timeout warnings (50%, 75%, 90%), "
             f"got {len(result.timeout_warnings)}"
@@ -335,9 +336,9 @@ class TestE2EDevelopCommandWiring:
 
         # Verify warnings contain threshold information (SAME VALIDATION)
         warnings_text = " ".join([w.lower() for w in result.timeout_warnings])
-        assert any(threshold in warnings_text for threshold in ["50%", "75%", "90%"]), (
-            "Warnings should mention threshold percentages (50%, 75%, 90%)"
-        )
+        assert any(
+            threshold in warnings_text for threshold in ["50%", "75%", "90%"]
+        ), "Warnings should mention threshold percentages (50%, 75%, 90%)"
 
         # AND: Extension request API is callable and updates limits (SAME API)
         # Simulate requesting 10-minute extension
@@ -352,22 +353,22 @@ class TestE2EDevelopCommandWiring:
         )
 
         assert extension_result.approved is True, "Extension request should be approved"
-        assert extension_result.new_total_extensions == 10, (
-            f"Expected new_total_extensions=10, got {extension_result.new_total_extensions}"
-        )
+        assert (
+            extension_result.new_total_extensions == 10
+        ), f"Expected new_total_extensions=10, got {extension_result.new_total_extensions}"
 
         # Verify extension persisted to step file (SAME PERSISTENCE)
         step_data = in_memory_filesystem.read_json(minimal_step_file)
 
-        assert step_data["tdd_cycle"]["total_extensions_minutes"] == 10, (
-            "Extension should be persisted to step file total_extensions_minutes"
-        )
+        assert (
+            step_data["tdd_cycle"]["total_extensions_minutes"] == 10
+        ), "Extension should be persisted to step file total_extensions_minutes"
 
         # AND: EXTERNAL VALIDITY PROVEN FOR /nw:develop COMMAND
         # All features executed in actual /nw:develop command invocation path
-        assert result.execution_path == "DESOrchestrator.execute_step", (
-            "Test must validate features execute in real orchestrator path"
-        )
+        assert (
+            result.execution_path == "DESOrchestrator.execute_step"
+        ), "Test must validate features execute in real orchestrator path"
 
         assert result.features_validated == [
             "turn_counting",

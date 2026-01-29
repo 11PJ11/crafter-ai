@@ -256,7 +256,15 @@ class TestInstallationVerifierEssentialCommands:
         commands_dir.mkdir(parents=True)
 
         # Create essential command files
-        essential_files = ["commit.md", "review.md", "develop.md", "discuss.md", "design.md", "distill.md", "deliver.md"]
+        essential_files = [
+            "commit.md",
+            "review.md",
+            "develop.md",
+            "discuss.md",
+            "design.md",
+            "distill.md",
+            "deliver.md",
+        ]
         for filename in essential_files:
             (commands_dir / filename).write_text(f"# {filename}")
 
@@ -342,12 +350,22 @@ class TestInstallationVerifierFullVerification:
             (agents_dir / f"agent{i}.md").write_text(f"# Agent {i}")
 
         # Create all essential command files
-        essential_files = ["commit.md", "review.md", "develop.md", "discuss.md", "design.md", "distill.md", "deliver.md"]
+        essential_files = [
+            "commit.md",
+            "review.md",
+            "develop.md",
+            "discuss.md",
+            "design.md",
+            "distill.md",
+            "deliver.md",
+        ]
         for filename in essential_files:
             (commands_dir / filename).write_text(f"# {filename}")
 
         # Create manifest
-        (config_dir / "nwave-manifest.txt").write_text("nWave Framework Installation Manifest")
+        (config_dir / "nwave-manifest.txt").write_text(
+            "nWave Framework Installation Manifest"
+        )
 
         verifier = InstallationVerifier(claude_config_dir=config_dir)
 
@@ -403,7 +421,15 @@ class TestInstallationVerifierFullVerification:
         commands_dir.mkdir(parents=True)
 
         # Create all essential command files but no manifest
-        essential_files = ["commit.md", "review.md", "develop.md", "discuss.md", "design.md", "distill.md", "deliver.md"]
+        essential_files = [
+            "commit.md",
+            "review.md",
+            "develop.md",
+            "discuss.md",
+            "design.md",
+            "distill.md",
+            "deliver.md",
+        ]
         for filename in essential_files:
             (commands_dir / filename).write_text(f"# {filename}")
 
@@ -600,9 +626,9 @@ class TestInstallNwaveCallsVerifier:
 
         # ASSERT - Check that verification counts are displayed
         all_logs = " ".join(logged_messages)
-        assert "41" in all_logs or "agent" in all_logs.lower(), (
-            "Verification result should display agent count from verifier"
-        )
+        assert (
+            "41" in all_logs or "agent" in all_logs.lower()
+        ), "Verification result should display agent count from verifier"
 
     def test_install_nwave_logs_verification_outcome(self):
         """
@@ -664,9 +690,7 @@ class TestInstallNwaveCallsVerifier:
                                     exit_code = main()
 
         # ASSERT
-        assert exit_code == 0, (
-            "Successful verification should result in exit code 0"
-        )
+        assert exit_code == 0, "Successful verification should result in exit code 0"
 
     def test_install_nwave_exit_code_on_verification_failure(self):
         """
@@ -726,6 +750,6 @@ class TestInstallNwaveCallsVerifier:
                                 exit_code = main()
 
         # ASSERT
-        assert exit_code != 0, (
-            "Verification failure should result in non-zero exit code"
-        )
+        assert (
+            exit_code != 0
+        ), "Verification failure should result in non-zero exit code"

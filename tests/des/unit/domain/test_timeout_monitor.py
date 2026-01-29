@@ -198,9 +198,9 @@ class TestTimeoutMonitorEdgeCases:
         elapsed = monitor.get_elapsed_seconds()
 
         # Then: Should return negative value
-        assert elapsed == -300, (
-            f"Expected -300 seconds for future timestamp, got {elapsed}"
-        )
+        assert (
+            elapsed == -300
+        ), f"Expected -300 seconds for future timestamp, got {elapsed}"
 
     def test_raises_error_for_invalid_timestamp_format(self, mocked_time_provider):
         """TimeoutMonitor raises ValueError for invalid timestamp format."""

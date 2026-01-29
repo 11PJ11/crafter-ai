@@ -28,7 +28,12 @@ class TestVerifyNwaveScriptExists:
         THEN: The script file exists at scripts/install/verify_nwave.py
         """
         # ARRANGE
-        script_path = Path(__file__).parent.parent.parent / "scripts" / "install" / "verify_nwave.py"
+        script_path = (
+            Path(__file__).parent.parent.parent
+            / "scripts"
+            / "install"
+            / "verify_nwave.py"
+        )
 
         # ASSERT
         assert script_path.exists(), f"verify_nwave.py should exist at {script_path}"
@@ -143,12 +148,22 @@ class TestVerifyNwaveFullInstallation:
             (agents_dir / f"agent{i}.md").write_text(f"# Agent {i}")
 
         # Create all essential command files
-        essential_files = ["commit.md", "review.md", "develop.md", "discuss.md", "design.md", "distill.md", "deliver.md"]
+        essential_files = [
+            "commit.md",
+            "review.md",
+            "develop.md",
+            "discuss.md",
+            "design.md",
+            "distill.md",
+            "deliver.md",
+        ]
         for filename in essential_files:
             (commands_dir / filename).write_text(f"# {filename}")
 
         # Create manifest
-        (config_dir / "nwave-manifest.txt").write_text("nWave Framework Installation Manifest")
+        (config_dir / "nwave-manifest.txt").write_text(
+            "nWave Framework Installation Manifest"
+        )
 
         # ACT
         result = run_verification(claude_config_dir=config_dir)
@@ -176,12 +191,22 @@ class TestVerifyNwaveFullInstallation:
         commands_dir.mkdir(parents=True)
 
         # Create all essential command files
-        essential_files = ["commit.md", "review.md", "develop.md", "discuss.md", "design.md", "distill.md", "deliver.md"]
+        essential_files = [
+            "commit.md",
+            "review.md",
+            "develop.md",
+            "discuss.md",
+            "design.md",
+            "distill.md",
+            "deliver.md",
+        ]
         for filename in essential_files:
             (commands_dir / filename).write_text(f"# {filename}")
 
         # Create manifest
-        (config_dir / "nwave-manifest.txt").write_text("nWave Framework Installation Manifest")
+        (config_dir / "nwave-manifest.txt").write_text(
+            "nWave Framework Installation Manifest"
+        )
 
         # ACT
         exit_code = main(args=[], claude_config_dir=config_dir)
@@ -253,7 +278,15 @@ class TestVerifyNwaveMissingFiles:
         commands_dir.mkdir(parents=True)
 
         # Create all essential command files but no manifest
-        essential_files = ["commit.md", "review.md", "develop.md", "discuss.md", "design.md", "distill.md", "deliver.md"]
+        essential_files = [
+            "commit.md",
+            "review.md",
+            "develop.md",
+            "discuss.md",
+            "design.md",
+            "distill.md",
+            "deliver.md",
+        ]
         for filename in essential_files:
             (commands_dir / filename).write_text(f"# {filename}")
 
@@ -282,7 +315,14 @@ class TestVerifyNwaveEssentialCommands:
         commands_dir.mkdir(parents=True)
 
         # Create all except develop.md
-        for filename in ["commit.md", "review.md", "discuss.md", "design.md", "distill.md", "deliver.md"]:
+        for filename in [
+            "commit.md",
+            "review.md",
+            "discuss.md",
+            "design.md",
+            "distill.md",
+            "deliver.md",
+        ]:
             (commands_dir / filename).write_text(f"# {filename}")
 
         # ACT
@@ -305,7 +345,14 @@ class TestVerifyNwaveEssentialCommands:
         commands_dir.mkdir(parents=True)
 
         # Create all except commit.md
-        for filename in ["develop.md", "review.md", "discuss.md", "design.md", "distill.md", "deliver.md"]:
+        for filename in [
+            "develop.md",
+            "review.md",
+            "discuss.md",
+            "design.md",
+            "distill.md",
+            "deliver.md",
+        ]:
             (commands_dir / filename).write_text(f"# {filename}")
 
         # ACT
@@ -328,7 +375,14 @@ class TestVerifyNwaveEssentialCommands:
         commands_dir.mkdir(parents=True)
 
         # Create all except review.md
-        for filename in ["develop.md", "commit.md", "discuss.md", "design.md", "distill.md", "deliver.md"]:
+        for filename in [
+            "develop.md",
+            "commit.md",
+            "discuss.md",
+            "design.md",
+            "distill.md",
+            "deliver.md",
+        ]:
             (commands_dir / filename).write_text(f"# {filename}")
 
         # ACT
@@ -357,12 +411,22 @@ class TestVerifyNwaveSchemaTemplate:
         commands_dir.mkdir(parents=True)
 
         # Create essential command files
-        essential_files = ["commit.md", "review.md", "develop.md", "discuss.md", "design.md", "distill.md", "deliver.md"]
+        essential_files = [
+            "commit.md",
+            "review.md",
+            "develop.md",
+            "discuss.md",
+            "design.md",
+            "distill.md",
+            "deliver.md",
+        ]
         for filename in essential_files:
             (commands_dir / filename).write_text(f"# {filename}")
 
         # Create manifest
-        (config_dir / "nwave-manifest.txt").write_text("nWave Framework Installation Manifest")
+        (config_dir / "nwave-manifest.txt").write_text(
+            "nWave Framework Installation Manifest"
+        )
 
         # ACT
         result = run_verification(claude_config_dir=config_dir)
@@ -388,12 +452,22 @@ class TestVerifyNwaveOutputModes:
         commands_dir.mkdir(parents=True)
 
         # Create essential command files
-        essential_files = ["commit.md", "review.md", "develop.md", "discuss.md", "design.md", "distill.md", "deliver.md"]
+        essential_files = [
+            "commit.md",
+            "review.md",
+            "develop.md",
+            "discuss.md",
+            "design.md",
+            "distill.md",
+            "deliver.md",
+        ]
         for filename in essential_files:
             (commands_dir / filename).write_text(f"# {filename}")
 
         # Create manifest
-        (config_dir / "nwave-manifest.txt").write_text("nWave Framework Installation Manifest")
+        (config_dir / "nwave-manifest.txt").write_text(
+            "nWave Framework Installation Manifest"
+        )
 
         # ACT
         main(args=["--json"], claude_config_dir=config_dir)
@@ -420,19 +494,31 @@ class TestVerifyNwaveOutputModes:
         commands_dir.mkdir(parents=True)
 
         # Create essential command files
-        essential_files = ["commit.md", "review.md", "develop.md", "discuss.md", "design.md", "distill.md", "deliver.md"]
+        essential_files = [
+            "commit.md",
+            "review.md",
+            "develop.md",
+            "discuss.md",
+            "design.md",
+            "distill.md",
+            "deliver.md",
+        ]
         for filename in essential_files:
             (commands_dir / filename).write_text(f"# {filename}")
 
         # Create manifest
-        (config_dir / "nwave-manifest.txt").write_text("nWave Framework Installation Manifest")
+        (config_dir / "nwave-manifest.txt").write_text(
+            "nWave Framework Installation Manifest"
+        )
 
         # ACT
         main(args=[], claude_config_dir=config_dir)
         captured = capsys.readouterr()
 
         # ASSERT - Output should be human-readable (contains verification keywords)
-        assert "verification" in captured.out.lower() or "success" in captured.out.lower()
+        assert (
+            "verification" in captured.out.lower() or "success" in captured.out.lower()
+        )
 
     def test_verify_nwave_verbose_output_includes_details(self, tmp_path, capsys):
         """
@@ -454,12 +540,22 @@ class TestVerifyNwaveOutputModes:
             (agents_dir / f"agent{i}.md").write_text(f"# Agent {i}")
 
         # Create essential command files
-        essential_files = ["commit.md", "review.md", "develop.md", "discuss.md", "design.md", "distill.md", "deliver.md"]
+        essential_files = [
+            "commit.md",
+            "review.md",
+            "develop.md",
+            "discuss.md",
+            "design.md",
+            "distill.md",
+            "deliver.md",
+        ]
         for filename in essential_files:
             (commands_dir / filename).write_text(f"# {filename}")
 
         # Create manifest
-        (config_dir / "nwave-manifest.txt").write_text("nWave Framework Installation Manifest")
+        (config_dir / "nwave-manifest.txt").write_text(
+            "nWave Framework Installation Manifest"
+        )
 
         # ACT
         main(args=["--verbose"], claude_config_dir=config_dir)
@@ -473,7 +569,9 @@ class TestVerifyNwaveOutputModes:
 class TestVerifyNwaveRemediationOutput:
     """Test remediation output when verification fails."""
 
-    def test_verify_nwave_provides_remediation_for_missing_files(self, tmp_path, capsys):
+    def test_verify_nwave_provides_remediation_for_missing_files(
+        self, tmp_path, capsys
+    ):
         """
         GIVEN: An installation with missing files
         WHEN: main() is called
@@ -521,6 +619,9 @@ class TestVerifyNwaveRemediationOutput:
         try:
             output_json = json.loads(captured.out)
             assert output_json.get("success") is False
-            assert "missing_files" in output_json or "missing_essential_files" in output_json
+            assert (
+                "missing_files" in output_json
+                or "missing_essential_files" in output_json
+            )
         except json.JSONDecodeError:
             pytest.fail("Output should be valid JSON")

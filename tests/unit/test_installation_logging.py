@@ -115,9 +115,9 @@ class TestLogTimestampFormat:
         after_time = datetime.now()
         # Allow 2 second tolerance due to second truncation in log format
         tolerance = timedelta(seconds=2)
-        assert (before_time - tolerance) <= log_time <= (after_time + tolerance), (
-            f"Timestamp should be current. before={before_time}, log={log_time}, after={after_time}"
-        )
+        assert (
+            (before_time - tolerance) <= log_time <= (after_time + tolerance)
+        ), f"Timestamp should be current. before={before_time}, log={log_time}, after={after_time}"
 
 
 class TestLogLevelInfo:
@@ -242,7 +242,9 @@ class TestLogPersistence:
 
         # ASSERT
         log_content = log_file.read_text()
-        assert "First installation attempt" in log_content, "Old log should be preserved"
+        assert (
+            "First installation attempt" in log_content
+        ), "Old log should be preserved"
         assert (
             "Second installation attempt" in log_content
         ), "New log should be appended"
@@ -297,7 +299,9 @@ class TestLogFormatParseable:
         lines = log_content.strip().split("\n")
 
         # Pattern: [YYYY-MM-DD HH:MM:SS] LEVEL: MESSAGE
-        log_pattern = r"^\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\] (INFO|WARN|ERROR|STEP): .+$"
+        log_pattern = (
+            r"^\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\] (INFO|WARN|ERROR|STEP): .+$"
+        )
 
         for line in lines:
             assert re.match(
@@ -335,7 +339,9 @@ class TestLogFormatParseable:
 class TestNWaveInstallerLogging:
     """Test NWaveInstaller uses logging appropriately."""
 
-    def test_installer_creates_log_file_at_config_directory(self, tmp_path, monkeypatch):
+    def test_installer_creates_log_file_at_config_directory(
+        self, tmp_path, monkeypatch
+    ):
         """
         GIVEN: NWaveInstaller is instantiated
         WHEN: Not in dry-run mode
@@ -348,7 +354,9 @@ class TestNWaveInstallerLogging:
         def mock_get_claude_config_dir():
             return tmp_path / ".claude"
 
-        monkeypatch.setattr(PathUtils, "get_claude_config_dir", mock_get_claude_config_dir)
+        monkeypatch.setattr(
+            PathUtils, "get_claude_config_dir", mock_get_claude_config_dir
+        )
 
         # ACT
         installer = NWaveInstaller(dry_run=False)
@@ -371,7 +379,9 @@ class TestNWaveInstallerLogging:
         def mock_get_claude_config_dir():
             return tmp_path / ".claude"
 
-        monkeypatch.setattr(PathUtils, "get_claude_config_dir", mock_get_claude_config_dir)
+        monkeypatch.setattr(
+            PathUtils, "get_claude_config_dir", mock_get_claude_config_dir
+        )
 
         # ACT
         installer = NWaveInstaller(dry_run=True)
@@ -437,8 +447,13 @@ class TestVerifyNwaveLogging:
 
         # Create essential files
         essential_files = [
-            "commit.md", "review.md", "develop.md",
-            "discuss.md", "design.md", "distill.md", "deliver.md"
+            "commit.md",
+            "review.md",
+            "develop.md",
+            "discuss.md",
+            "design.md",
+            "distill.md",
+            "deliver.md",
         ]
         for f in essential_files:
             (commands_dir / f).write_text(f"# {f}")
@@ -449,7 +464,9 @@ class TestVerifyNwaveLogging:
         def mock_get_claude_config_dir():
             return config_dir
 
-        monkeypatch.setattr(PathUtils, "get_claude_config_dir", mock_get_claude_config_dir)
+        monkeypatch.setattr(
+            PathUtils, "get_claude_config_dir", mock_get_claude_config_dir
+        )
 
         # ACT
         exit_code = main(args=["--verbose"], claude_config_dir=config_dir)

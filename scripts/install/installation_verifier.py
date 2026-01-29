@@ -156,7 +156,9 @@ class InstallationVerifier:
         else:
             issues = []
             if missing_essential:
-                issues.append(f"missing essential files: {', '.join(missing_essential)}")
+                issues.append(
+                    f"missing essential files: {', '.join(missing_essential)}"
+                )
             if not manifest_exists:
                 issues.append("manifest file not found")
             message = f"Verification failed: {'; '.join(issues)}."

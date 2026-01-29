@@ -74,6 +74,6 @@ def missing_modules_reported(cli_result, mock_dependencies):
     if missing:
         all_output = f"{cli_result['stdout']}\n{cli_result['stderr']}"
         for module in missing:
-            assert module in all_output or "Missing" in all_output, (
-                f"Missing module '{module}' not reported in output"
-            )
+            assert (
+                module in all_output or "Missing" in all_output
+            ), f"Missing module '{module}' not reported in output"

@@ -13,8 +13,6 @@ for pipeline status reporting.
 import json
 from unittest.mock import patch
 
-import pytest
-
 
 class TestCIFormatterDisablesANSIColors:
     """Verify CI mode disables ANSI color codes in output."""
@@ -86,7 +84,9 @@ class TestCIFormatterVerboseOutputByDefault:
         )
 
         # Verbose output should include error code
-        assert ENV_NO_VENV in result, "CI output must include error code for verbose logs"
+        assert (
+            ENV_NO_VENV in result
+        ), "CI output must include error code for verbose logs"
         # Should include message
         assert "No virtual environment detected" in result
         # Should include remediation
@@ -130,7 +130,9 @@ class TestCIFormatterDisablesInteractivePrompts:
         formatter = CIFormatter()
 
         # CI formatter should explicitly disable interactive mode
-        assert formatter.interactive is False, "CI mode must disable interactive prompts"
+        assert (
+            formatter.interactive is False
+        ), "CI mode must disable interactive prompts"
 
     def test_ci_formatter_is_not_interactive(self):
         """CIFormatter.is_interactive() must return False."""
@@ -139,9 +141,9 @@ class TestCIFormatterDisablesInteractivePrompts:
         formatter = CIFormatter()
 
         # Explicit method check
-        assert formatter.is_interactive() is False, (
-            "CI formatter must never be interactive"
-        )
+        assert (
+            formatter.is_interactive() is False
+        ), "CI formatter must never be interactive"
 
     def test_ci_formatter_confirm_action_returns_default_without_prompt(self):
         """CI mode confirm_action must return default without prompting."""
@@ -169,7 +171,6 @@ class TestCIFormatterExitCodes:
     def test_ci_mode_returns_non_zero_exit_code_on_failure(self):
         """CI mode must return non-zero exit code for errors."""
         from scripts.install.output_formatter import CIFormatter
-        from scripts.install.error_codes import ENV_NO_VENV
 
         formatter = CIFormatter()
         exit_code = formatter.get_exit_code(success=False)
@@ -199,9 +200,11 @@ class TestCIFormatterExitCodes:
         )
 
         # Should mention exit status for CI pipeline clarity
-        assert "exit" in result.lower() or "status" in result.lower() or "code" in result.lower(), (
-            "CI error output should reference exit status/code for pipeline clarity"
-        )
+        assert (
+            "exit" in result.lower()
+            or "status" in result.lower()
+            or "code" in result.lower()
+        ), "CI error output should reference exit status/code for pipeline clarity"
 
 
 class TestCIFormatterClassStructure:
@@ -211,41 +214,41 @@ class TestCIFormatterClassStructure:
         """CIFormatter class must be defined in output_formatter module."""
         from scripts.install import output_formatter
 
-        assert hasattr(output_formatter, "CIFormatter"), (
-            "CIFormatter class must be defined in output_formatter module"
-        )
+        assert hasattr(
+            output_formatter, "CIFormatter"
+        ), "CIFormatter class must be defined in output_formatter module"
 
     def test_ci_formatter_has_format_ci_error_method(self):
         """CIFormatter must have format_ci_error method."""
         from scripts.install.output_formatter import CIFormatter
 
-        assert hasattr(CIFormatter, "format_ci_error"), (
-            "CIFormatter must have format_ci_error method"
-        )
+        assert hasattr(
+            CIFormatter, "format_ci_error"
+        ), "CIFormatter must have format_ci_error method"
 
     def test_ci_formatter_has_get_exit_code_method(self):
         """CIFormatter must have get_exit_code method."""
         from scripts.install.output_formatter import CIFormatter
 
-        assert hasattr(CIFormatter, "get_exit_code"), (
-            "CIFormatter must have get_exit_code method"
-        )
+        assert hasattr(
+            CIFormatter, "get_exit_code"
+        ), "CIFormatter must have get_exit_code method"
 
     def test_ci_formatter_has_confirm_action_method(self):
         """CIFormatter must have confirm_action method."""
         from scripts.install.output_formatter import CIFormatter
 
-        assert hasattr(CIFormatter, "confirm_action"), (
-            "CIFormatter must have confirm_action method"
-        )
+        assert hasattr(
+            CIFormatter, "confirm_action"
+        ), "CIFormatter must have confirm_action method"
 
     def test_ci_formatter_has_is_interactive_method(self):
         """CIFormatter must have is_interactive method."""
         from scripts.install.output_formatter import CIFormatter
 
-        assert hasattr(CIFormatter, "is_interactive"), (
-            "CIFormatter must have is_interactive method"
-        )
+        assert hasattr(
+            CIFormatter, "is_interactive"
+        ), "CIFormatter must have is_interactive method"
 
 
 class TestCIFormatterIntegrationWithContextDetector:
@@ -256,8 +259,13 @@ class TestCIFormatterIntegrationWithContextDetector:
         from scripts.install.output_formatter import format_error
         from scripts.install.error_codes import ENV_NO_VENV
 
-        with patch("scripts.install.output_formatter.is_claude_code_context", return_value=False):
-            with patch("scripts.install.output_formatter.is_ci_environment", return_value=True):
+        with patch(
+            "scripts.install.output_formatter.is_claude_code_context",
+            return_value=False,
+        ):
+            with patch(
+                "scripts.install.output_formatter.is_ci_environment", return_value=True
+            ):
                 result = format_error(
                     error_code=ENV_NO_VENV,
                     message="No virtual environment detected",
@@ -266,7 +274,9 @@ class TestCIFormatterIntegrationWithContextDetector:
                 )
 
                 # Should be CI format (no ANSI colors)
-                assert "\033[" not in result, "CI context should produce colorless output"
+                assert (
+                    "\033[" not in result
+                ), "CI context should produce colorless output"
                 # Should include error details
                 assert "virtual environment" in result.lower()
 
@@ -275,8 +285,12 @@ class TestCIFormatterIntegrationWithContextDetector:
         from scripts.install.output_formatter import format_error
         from scripts.install.error_codes import ENV_NO_VENV
 
-        with patch("scripts.install.output_formatter.is_claude_code_context", return_value=True):
-            with patch("scripts.install.output_formatter.is_ci_environment", return_value=True):
+        with patch(
+            "scripts.install.output_formatter.is_claude_code_context", return_value=True
+        ):
+            with patch(
+                "scripts.install.output_formatter.is_ci_environment", return_value=True
+            ):
                 result = format_error(
                     error_code=ENV_NO_VENV,
                     message="No virtual environment detected",

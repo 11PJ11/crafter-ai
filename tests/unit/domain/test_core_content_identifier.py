@@ -56,9 +56,9 @@ class TestCoreContentIdentifierShould:
 
         result = identifier.is_core_content("~/.claude/templates/nw/step-template.yaml")
 
-        assert result is True, (
-            "templates/nw/ paths should be classified as core content"
-        )
+        assert (
+            result is True
+        ), "templates/nw/ paths should be classified as core content"
 
     def test_root_level_files_classification(self):
         """Root-level files like CLAUDE.md are user content."""

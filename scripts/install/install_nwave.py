@@ -528,7 +528,9 @@ class NWaveInstaller:
             )
             return True
         else:
-            error_count = len(result.missing_essential_files) + (0 if schema_valid else 1)
+            error_count = len(result.missing_essential_files) + (
+                0 if schema_valid else 1
+            )
             if not result.manifest_exists:
                 error_count += 1
             self.logger.error(

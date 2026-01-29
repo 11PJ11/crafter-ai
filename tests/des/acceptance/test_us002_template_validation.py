@@ -398,9 +398,9 @@ class TestPreInvocationTemplateValidation:
 
         # Assert: Validation passes AND completes quickly
         assert validation_result.status == "PASSED"
-        assert duration_ms < 500, (
-            f"Validation took {duration_ms}ms, exceeds 500ms budget"
-        )
+        assert (
+            duration_ms < 500
+        ), f"Validation took {duration_ms}ms, exceeds 500ms budget"
         assert validation_result.task_invocation_allowed is True
 
     # =========================================================================

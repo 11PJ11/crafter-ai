@@ -390,9 +390,7 @@ class TestIsContainerEnvironmentDocker:
         with patch.object(Path, "exists", return_value=True):
             # Also ensure KUBERNETES_SERVICE_HOST is not set
             clean_env = {
-                k: v
-                for k, v in os.environ.items()
-                if k != "KUBERNETES_SERVICE_HOST"
+                k: v for k, v in os.environ.items() if k != "KUBERNETES_SERVICE_HOST"
             }
             with patch.dict(os.environ, clean_env, clear=True):
                 assert is_container_environment() is True
@@ -421,9 +419,7 @@ class TestIsContainerEnvironmentNone:
 
         with patch.object(Path, "exists", return_value=False):
             clean_env = {
-                k: v
-                for k, v in os.environ.items()
-                if k != "KUBERNETES_SERVICE_HOST"
+                k: v for k, v in os.environ.items() if k != "KUBERNETES_SERVICE_HOST"
             }
             with patch.dict(os.environ, clean_env, clear=True):
                 assert is_container_environment() is False

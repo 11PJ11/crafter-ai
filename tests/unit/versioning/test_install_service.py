@@ -350,18 +350,18 @@ def test_forge_install_preserves_user_agents(file_system_with_user_content):
     service.install()
 
     # Then: User's custom agent remains untouched
-    assert fs.file_exists_in_claude("agents/my-agent/agent.md"), (
-        "User agent should not be deleted"
-    )
+    assert fs.file_exists_in_claude(
+        "agents/my-agent/agent.md"
+    ), "User agent should not be deleted"
     preserved_content = fs.get_installed_file("agents/my-agent/agent.md")
-    assert preserved_content == original_content, (
-        "User agent content should not be modified"
-    )
+    assert (
+        preserved_content == original_content
+    ), "User agent content should not be modified"
 
     # And: nWave agent IS installed
-    assert fs.file_exists_in_claude("agents/nw/software-crafter.md"), (
-        "nWave agent should be installed"
-    )
+    assert fs.file_exists_in_claude(
+        "agents/nw/software-crafter.md"
+    ), "nWave agent should be installed"
 
 
 def test_forge_install_preserves_user_commands(file_system_with_user_content):
@@ -388,18 +388,18 @@ def test_forge_install_preserves_user_commands(file_system_with_user_content):
     service.install()
 
     # Then: User's custom command remains untouched
-    assert fs.file_exists_in_claude("commands/my-command/command.md"), (
-        "User command should not be deleted"
-    )
+    assert fs.file_exists_in_claude(
+        "commands/my-command/command.md"
+    ), "User command should not be deleted"
     preserved_content = fs.get_installed_file("commands/my-command/command.md")
-    assert preserved_content == original_content, (
-        "User command content should not be modified"
-    )
+    assert (
+        preserved_content == original_content
+    ), "User command content should not be modified"
 
     # And: nWave command IS installed
-    assert fs.file_exists_in_claude("commands/nw/version.md"), (
-        "nWave command should be installed"
-    )
+    assert fs.file_exists_in_claude(
+        "commands/nw/version.md"
+    ), "nWave command should be installed"
 
 
 def test_core_content_identifier_distinguishes_content():
@@ -517,9 +517,9 @@ def test_forge_install_validates_dist_contents(empty_dist_file_system):
 
     # Verify dist/ is considered to exist but without required files
     assert fs.dist_directory_exists() is True, "dist/ directory should exist"
-    assert fs.dist_has_required_files() is False, (
-        "Empty dist/ should lack required files"
-    )
+    assert (
+        fs.dist_has_required_files() is False
+    ), "Empty dist/ should lack required files"
     assert fs.list_dist_files() == [], "Empty dist/ should have no files"
 
 
@@ -559,15 +559,15 @@ def test_forge_install_shows_rebuild_error():
     )
 
     # Validate the error message follows business language standards
-    assert "Invalid distribution" in expected_error, (
-        "Error should indicate invalid dist"
-    )
-    assert "missing required files" in expected_error, (
-        "Error should mention missing files"
-    )
-    assert "Rebuild with /nw:forge" in expected_error, (
-        "Error should provide recovery action"
-    )
+    assert (
+        "Invalid distribution" in expected_error
+    ), "Error should indicate invalid dist"
+    assert (
+        "missing required files" in expected_error
+    ), "Error should mention missing files"
+    assert (
+        "Rebuild with /nw:forge" in expected_error
+    ), "Error should provide recovery action"
 
 
 # ============================================================================
@@ -594,19 +594,19 @@ def test_forge_install_fails_on_missing_dist(nonexistent_dist_file_system):
     dist_exists = fs.dist_directory_exists()
 
     # THEN: The check returns False
-    assert dist_exists is False, (
-        "dist_directory_exists() should return False when dist/ is missing"
-    )
+    assert (
+        dist_exists is False
+    ), "dist_directory_exists() should return False when dist/ is missing"
 
     # AND: list_dist_files should return empty
-    assert fs.list_dist_files() == [], (
-        "No files should be listed when dist/ doesn't exist"
-    )
+    assert (
+        fs.list_dist_files() == []
+    ), "No files should be listed when dist/ doesn't exist"
 
     # AND: required files check should also fail
-    assert fs.dist_has_required_files() is False, (
-        "Missing dist/ cannot have required files"
-    )
+    assert (
+        fs.dist_has_required_files() is False
+    ), "Missing dist/ cannot have required files"
 
 
 def test_forge_install_shows_build_first_error():
@@ -624,13 +624,13 @@ def test_forge_install_shows_build_first_error():
     expected_error = "No distribution found. Run /nw:forge first to build."
 
     # Validate the error message follows business language standards
-    assert "No distribution found" in expected_error, (
-        "Error should indicate no dist found"
-    )
+    assert (
+        "No distribution found" in expected_error
+    ), "Error should indicate no dist found"
     assert "/nw:forge" in expected_error, "Error should reference forge command"
-    assert "first to build" in expected_error, (
-        "Error should explain build is needed first"
-    )
+    assert (
+        "first to build" in expected_error
+    ), "Error should explain build is needed first"
 
 
 def test_claude_dir_unchanged_on_missing_dist(nonexistent_dist_file_system):
@@ -663,9 +663,9 @@ def test_claude_dir_unchanged_on_missing_dist(nonexistent_dist_file_system):
 
     # AND: If we DON'T call copy_dist_to_claude (which CLI won't when validation fails)
     # the existing files remain untouched
-    assert fs.get_installed_file("VERSION") == "0.9.0-existing-installation", (
-        "Pre-existing VERSION should remain unchanged"
-    )
-    assert fs.get_installed_file("agents/nw/old-agent.md") == "# Old Agent", (
-        "Pre-existing agent should remain unchanged"
-    )
+    assert (
+        fs.get_installed_file("VERSION") == "0.9.0-existing-installation"
+    ), "Pre-existing VERSION should remain unchanged"
+    assert (
+        fs.get_installed_file("agents/nw/old-agent.md") == "# Old Agent"
+    ), "Pre-existing agent should remain unchanged"

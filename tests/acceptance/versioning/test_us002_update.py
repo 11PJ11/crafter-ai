@@ -123,9 +123,9 @@ class TestNetworkFailureDuringDownloadLeavesInstallationUnchanged:
 
         # Assert: VERSION file unchanged
         assert result.success is False
-        assert version_file.read_text().strip() == "1.2.3", (
-            "VERSION file should still contain original version 1.2.3"
-        )
+        assert (
+            version_file.read_text().strip() == "1.2.3"
+        ), "VERSION file should still contain original version 1.2.3"
 
     def test_network_failure_returns_original_version_in_result(self, tmp_path):
         """
@@ -169,9 +169,9 @@ class TestNetworkFailureDuringDownloadLeavesInstallationUnchanged:
 
         # Assert: Previous version preserved in result
         assert result.success is False
-        assert result.previous_version == Version("1.2.3"), (
-            f"previous_version should be 1.2.3, got {result.previous_version}"
-        )
+        assert result.previous_version == Version(
+            "1.2.3"
+        ), f"previous_version should be 1.2.3, got {result.previous_version}"
 
     def test_network_failure_cleans_up_partial_download_files(self, tmp_path):
         """
@@ -228,6 +228,6 @@ class TestNetworkFailureDuringDownloadLeavesInstallationUnchanged:
         # Assert: Partial file should be cleaned up
         assert result.success is False
         if partial_file_path:
-            assert not partial_file_path.exists(), (
-                f"Partial download file should be cleaned up: {partial_file_path}"
-            )
+            assert (
+                not partial_file_path.exists()
+            ), f"Partial download file should be cleaned up: {partial_file_path}"

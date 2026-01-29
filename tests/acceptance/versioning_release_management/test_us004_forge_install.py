@@ -219,9 +219,9 @@ def test_successful_installation_with_smoke_test(
     # Contents of dist/ are copied to the test ~/.claude/ directory
     installed_version = claude_dir / "VERSION"
     assert installed_version.exists(), f"VERSION file not copied. {diagnostic}"
-    assert installed_version.read_text() == "1.2.3-rc.main.20260127.1", (
-        f"VERSION mismatch. {diagnostic}"
-    )
+    assert (
+        installed_version.read_text() == "1.2.3-rc.main.20260127.1"
+    ), f"VERSION mismatch. {diagnostic}"
 
     # nWave-prefixed content in ~/.claude/agents/nw/ is replaced
     agents_nw = claude_dir / "agents" / "nw" / "software-crafter.md"
@@ -232,9 +232,9 @@ def test_successful_installation_with_smoke_test(
     assert commands_nw.exists(), f"commands/nw/ content not installed. {diagnostic}"
 
     # Success message displays "Installation complete."
-    assert "Installation complete." in stdout, (
-        f"Success message not found. {diagnostic}"
-    )
+    assert (
+        "Installation complete." in stdout
+    ), f"Success message not found. {diagnostic}"
 
     # CLI should return success (exit code 0)
     assert returncode == 0, f"Expected exit code 0, got {returncode}. {diagnostic}"
@@ -399,9 +399,9 @@ def test_installation_fails_when_dist_missing_required_files(
 
     # GIVEN: Greta has a dist/ directory that exists but is empty
     assert dist_dir.exists(), "dist/ directory should exist"
-    assert not (dist_dir / "VERSION").exists(), (
-        "dist/VERSION should NOT exist (empty dist)"
-    )
+    assert not (
+        dist_dir / "VERSION"
+    ).exists(), "dist/VERSION should NOT exist (empty dist)"
     assert not list(dist_dir.iterdir()), "dist/ should be empty"
 
     # Capture initial state of ~/.claude/ to verify it's unchanged
@@ -431,14 +431,14 @@ def test_installation_fails_when_dist_missing_required_files(
     expected_error = (
         "Invalid distribution: missing required files. Rebuild with /nw:forge."
     )
-    assert expected_error in stderr, (
-        f"Expected error message not found in stderr. {diagnostic}"
-    )
+    assert (
+        expected_error in stderr
+    ), f"Expected error message not found in stderr. {diagnostic}"
 
     # CLI exit code is non-zero
-    assert returncode != 0, (
-        f"Expected non-zero exit code, got {returncode}. {diagnostic}"
-    )
+    assert (
+        returncode != 0
+    ), f"Expected non-zero exit code, got {returncode}. {diagnostic}"
 
     # Test ~/.claude/ directory is unchanged
     final_claude_contents = set()
@@ -599,20 +599,20 @@ def test_smoke_test_failure_reports_error(
 
     # Installation proceeds - files should be copied
     installed_version = claude_dir / "VERSION"
-    assert installed_version.exists(), (
-        f"VERSION file should be copied despite smoke failure. {diagnostic}"
-    )
-    assert installed_version.read_text() == "1.2.3-rc.main.20260127.1", (
-        f"VERSION mismatch. {diagnostic}"
-    )
+    assert (
+        installed_version.exists()
+    ), f"VERSION file should be copied despite smoke failure. {diagnostic}"
+    assert (
+        installed_version.read_text() == "1.2.3-rc.main.20260127.1"
+    ), f"VERSION mismatch. {diagnostic}"
 
     # A warning displays the specific message
     expected_message = (
         "Installation complete but smoke test failed. Verify with /nw:version."
     )
-    assert expected_message in stdout, (
-        f"Expected warning message not found. {diagnostic}"
-    )
+    assert (
+        expected_message in stdout
+    ), f"Expected warning message not found. {diagnostic}"
 
     # CLI should still return success (installation completed, just smoke test failed)
     assert returncode == 0, f"Expected exit code 0, got {returncode}. {diagnostic}"
@@ -773,20 +773,20 @@ def test_installation_fails_when_dist_directory_does_not_exist(
 
     # The error displays the expected message
     expected_error = "No distribution found. Run /nw:forge first to build."
-    assert expected_error in stderr, (
-        f"Expected error message not found in stderr. {diagnostic}"
-    )
+    assert (
+        expected_error in stderr
+    ), f"Expected error message not found in stderr. {diagnostic}"
 
     # The test ~/.claude/ directory is unchanged
     assert version_file.read_text() == original_version, (
         f"VERSION file should not change. Original: {original_version!r}, "
         f"Current: {version_file.read_text()!r}. {diagnostic}"
     )
-    assert existing_agent.read_text() == original_agent_content, (
-        f"Existing agent file should not change. {diagnostic}"
-    )
+    assert (
+        existing_agent.read_text() == original_agent_content
+    ), f"Existing agent file should not change. {diagnostic}"
 
     # The CLI exit code is non-zero
-    assert returncode != 0, (
-        f"Expected non-zero exit code, got {returncode}. {diagnostic}"
-    )
+    assert (
+        returncode != 0
+    ), f"Expected non-zero exit code, got {returncode}. {diagnostic}"

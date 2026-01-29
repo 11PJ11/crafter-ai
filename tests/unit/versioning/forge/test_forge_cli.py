@@ -113,12 +113,12 @@ class TestForgeCLIAcceptsNResponse:
         )
 
         # Assert
-        assert result.install_invoked is False, (
-            "Expected 'n' response to NOT invoke installation"
-        )
-        assert result.installation_performed is False, (
-            "Expected no installation when user declines"
-        )
+        assert (
+            result.install_invoked is False
+        ), "Expected 'n' response to NOT invoke installation"
+        assert (
+            result.installation_performed is False
+        ), "Expected no installation when user declines"
 
     def test_forge_cli_accepts_uppercase_n_response(self):
         """
@@ -150,9 +150,9 @@ class TestForgeCLIAcceptsNResponse:
         )
 
         # Assert
-        assert result.install_invoked is False, (
-            "Expected 'N' (uppercase) response to NOT invoke installation"
-        )
+        assert (
+            result.install_invoked is False
+        ), "Expected 'N' (uppercase) response to NOT invoke installation"
 
     def test_forge_cli_accepts_no_word_response(self):
         """
@@ -184,9 +184,9 @@ class TestForgeCLIAcceptsNResponse:
         )
 
         # Assert
-        assert result.install_invoked is False, (
-            "Expected 'no' response to NOT invoke installation"
-        )
+        assert (
+            result.install_invoked is False
+        ), "Expected 'no' response to NOT invoke installation"
 
 
 class TestNoInstallOnDecline:
@@ -221,9 +221,9 @@ class TestNoInstallOnDecline:
         )
 
         # Assert
-        assert mock_file_system.installation_completed is False, (
-            "Expected NO file copy operation when user declines"
-        )
+        assert (
+            mock_file_system.installation_completed is False
+        ), "Expected NO file copy operation when user declines"
 
     def test_exit_code_zero_on_decline(self):
         """
@@ -254,9 +254,9 @@ class TestNoInstallOnDecline:
         )
 
         # Assert
-        assert result.exit_code == 0, (
-            f"Expected exit code 0 for successful decline, got {result.exit_code}"
-        )
+        assert (
+            result.exit_code == 0
+        ), f"Expected exit code 0 for successful decline, got {result.exit_code}"
 
 
 class TestDistPreservedOnDecline:
@@ -292,12 +292,12 @@ class TestDistPreservedOnDecline:
 
         # Assert: This is a negative test - we ensure nothing was modified
         # The build result still indicates the distribution was created
-        assert build_result.distribution_created is True, (
-            "Expected distribution to remain in dist/ after decline"
-        )
-        assert result.dist_cleaned is False, (
-            "Expected dist/ to NOT be cleaned on decline"
-        )
+        assert (
+            build_result.distribution_created is True
+        ), "Expected distribution to remain in dist/ after decline"
+        assert (
+            result.dist_cleaned is False
+        ), "Expected dist/ to NOT be cleaned on decline"
 
 
 # =============================================================================
@@ -338,9 +338,9 @@ class TestForgeCLIAcceptsYResponse:
         )
 
         # Assert
-        assert result.install_invoked is True, (
-            "Expected 'Y' response to invoke installation"
-        )
+        assert (
+            result.install_invoked is True
+        ), "Expected 'Y' response to invoke installation"
 
     def test_forge_cli_accepts_lowercase_y_response(self):
         """
@@ -372,9 +372,9 @@ class TestForgeCLIAcceptsYResponse:
         )
 
         # Assert
-        assert result.install_invoked is True, (
-            "Expected 'y' (lowercase) response to invoke installation"
-        )
+        assert (
+            result.install_invoked is True
+        ), "Expected 'y' (lowercase) response to invoke installation"
 
     def test_forge_cli_accepts_empty_response_as_yes(self):
         """
@@ -406,9 +406,9 @@ class TestForgeCLIAcceptsYResponse:
         )
 
         # Assert
-        assert result.install_invoked is True, (
-            "Expected empty response (default Y) to invoke installation"
-        )
+        assert (
+            result.install_invoked is True
+        ), "Expected empty response (default Y) to invoke installation"
 
 
 class TestForgeCLIInvokesInstallCommand:
@@ -445,9 +445,9 @@ class TestForgeCLIInvokesInstallCommand:
         )
 
         # Assert
-        assert mock_file_system.installation_completed is True, (
-            "Expected install service to copy files to ~/.claude/"
-        )
+        assert (
+            mock_file_system.installation_completed is True
+        ), "Expected install service to copy files to ~/.claude/"
 
 
 class TestDistributionInstalledOnAccept:
@@ -487,6 +487,6 @@ class TestDistributionInstalledOnAccept:
         # Assert
         assert result.install_invoked is True, "Expected installation to be invoked"
         assert result.success is True, "Expected installation to succeed"
-        assert mock_file_system.installation_completed is True, (
-            "Expected file system to show installation completed"
-        )
+        assert (
+            mock_file_system.installation_completed is True
+        ), "Expected file system to show installation completed"

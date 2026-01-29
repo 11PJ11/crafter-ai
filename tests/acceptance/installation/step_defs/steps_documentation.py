@@ -28,9 +28,9 @@ INSTALLATION_GUIDE = PROJECT_ROOT / "docs" / "installation" / "installation-guid
 @given("the installation guide exists at docs/installation/installation-guide.md")
 def installation_guide_exists():
     """Verify installation guide exists."""
-    assert INSTALLATION_GUIDE.exists(), (
-        f"Installation guide not found at {INSTALLATION_GUIDE}"
-    )
+    assert (
+        INSTALLATION_GUIDE.exists()
+    ), f"Installation guide not found at {INSTALLATION_GUIDE}"
 
 
 @given("I have a fresh machine with Python installed")
@@ -133,9 +133,7 @@ def prerequisites_include(text):
     content = INSTALLATION_GUIDE.read_text()
 
     # Look in prerequisites section or general content
-    assert text.lower() in content.lower(), (
-        f"Prerequisites don't include '{text}'"
-    )
+    assert text.lower() in content.lower(), f"Prerequisites don't include '{text}'"
 
 
 @then(parsers.parse('the prerequisites should NOT state "{text}" as minimum'))
@@ -155,9 +153,9 @@ def prerequisites_not_state(text):
             f"Python >= {text.split()[-1]}",
         ]
         for pattern in problematic_patterns:
-            assert pattern not in content, (
-                f"Documentation incorrectly states '{pattern}'"
-            )
+            assert (
+                pattern not in content
+            ), f"Documentation incorrectly states '{pattern}'"
 
 
 @then(parsers.parse('the quick start should include "{text}"'))
@@ -187,9 +185,7 @@ def quick_start_not_bare_command(text):
         if stripped.startswith(text) and "pipenv" not in stripped:
             # Allow if it's clearly part of explanation, not instruction
             if not stripped.startswith("#") and not stripped.startswith("```"):
-                pytest.fail(
-                    f"Quick start shows bare '{text}' without pipenv context"
-                )
+                pytest.fail(f"Quick start shows bare '{text}' without pipenv context")
 
 
 @then("the guide should mention pipenv is required")
@@ -197,9 +193,9 @@ def guide_mentions_pipenv():
     """Verify guide mentions pipenv requirement."""
     content = INSTALLATION_GUIDE.read_text().lower()
     assert "pipenv" in content, "Guide doesn't mention pipenv"
-    assert "required" in content or "prerequisite" in content, (
-        "Guide doesn't indicate pipenv is required"
-    )
+    assert (
+        "required" in content or "prerequisite" in content
+    ), "Guide doesn't indicate pipenv is required"
 
 
 @then("the guide should explain how to install pipenv")
@@ -208,8 +204,7 @@ def guide_explains_pipenv_install():
     content = INSTALLATION_GUIDE.read_text()
 
     has_pipenv_install = (
-        "pip install pipenv" in content
-        or "pip3 install pipenv" in content
+        "pip install pipenv" in content or "pip3 install pipenv" in content
     )
     assert has_pipenv_install, "Guide doesn't explain how to install pipenv"
 
@@ -231,9 +226,9 @@ def guide_shows_pipenv_commands():
 def section_addresses_error(error_type):
     """Verify troubleshooting section addresses specific error."""
     content = INSTALLATION_GUIDE.read_text()
-    assert error_type.lower() in content.lower(), (
-        f"Troubleshooting doesn't address '{error_type}'"
-    )
+    assert (
+        error_type.lower() in content.lower()
+    ), f"Troubleshooting doesn't address '{error_type}'"
 
 
 @then("each error should have a solution with pipenv commands")
@@ -251,6 +246,6 @@ def errors_have_pipenv_solutions():
     has_pipenv_solution = "pipenv" in content
 
     if has_troubleshooting:
-        assert has_pipenv_solution, (
-            "Troubleshooting section doesn't include pipenv solutions"
-        )
+        assert (
+            has_pipenv_solution
+        ), "Troubleshooting section doesn't include pipenv solutions"

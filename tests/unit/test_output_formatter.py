@@ -5,7 +5,6 @@ ANSI color support, and human-readable error messages for various error types.
 """
 
 import pytest
-from unittest.mock import patch
 
 
 class TestTerminalErrorStructure:
@@ -117,7 +116,6 @@ class TestMissingDependencyError:
     def test_missing_dependency_error_shows_module_name_in_terminal(self):
         """Missing dependency error must include the module name."""
         from scripts.install.output_formatter import TerminalFormatter
-        from scripts.install.error_codes import DEP_MISSING
 
         formatter = TerminalFormatter()
         result = formatter.format_dependency_error(
@@ -134,7 +132,6 @@ class TestMissingDependencyError:
     def test_missing_dependency_error_includes_package_name(self):
         """Missing dependency error must include the pip package name."""
         from scripts.install.output_formatter import TerminalFormatter
-        from scripts.install.error_codes import DEP_MISSING
 
         formatter = TerminalFormatter()
         result = formatter.format_dependency_error(

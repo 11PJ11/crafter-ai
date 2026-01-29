@@ -30,7 +30,9 @@ def previous_log_exists(partial_installation_builder):
 
 
 @given("an installation has been attempted")
-def installation_attempted(run_installer, cli_result, mock_venv_status, execution_environment):
+def installation_attempted(
+    run_installer, cli_result, mock_venv_status, execution_environment
+):
     """Perform an installation attempt."""
     # Run installer (may succeed or fail, we just need log output)
     run_installer()
@@ -59,9 +61,7 @@ def examine_log_file(file_assertions, cli_result):
 def log_file_exists_at_path(path, file_assertions):
     """Verify log file exists at specified path."""
     # The path uses ~ which we need to expand
-    assert file_assertions.log_exists(), (
-        "Log file not found at expected location"
-    )
+    assert file_assertions.log_exists(), "Log file not found at expected location"
 
 
 @then("the log file should contain timestamped entries")
@@ -76,18 +76,16 @@ def log_has_timestamps(file_assertions):
         r"\d{2}:\d{2}:\d{2}",  # Time: 10:30:45
     ]
 
-    has_timestamp = any(
-        re.search(pattern, content) for pattern in timestamp_patterns
-    )
+    has_timestamp = any(re.search(pattern, content) for pattern in timestamp_patterns)
     assert has_timestamp, f"No timestamps found in log:\n{content[:500]}"
 
 
 @then(parsers.parse('the log should contain "{text}"'))
 def log_contains_text(text, file_assertions):
     """Verify log file contains expected text."""
-    assert file_assertions.log_contains(text), (
-        f"Expected '{text}' not found in log file"
-    )
+    assert file_assertions.log_contains(
+        text
+    ), f"Expected '{text}' not found in log file"
 
 
 @then("the log file should contain the error")
@@ -97,9 +95,7 @@ def log_contains_error(file_assertions):
     content = file_assertions.claude_home["log_file"].read_text()
 
     has_error = (
-        "ERROR" in content
-        or "error" in content.lower()
-        or "failed" in content.lower()
+        "ERROR" in content or "error" in content.lower() or "failed" in content.lower()
     )
     assert has_error, f"No error information in log:\n{content[:500]}"
 
@@ -117,7 +113,8 @@ def log_entry_has_timestamp(file_assertions):
 
     if error_lines:
         has_timestamp = any(
-            re.search(r"\d{4}-\d{2}-\d{2}", line) or re.search(r"\d{2}:\d{2}:\d{2}", line)
+            re.search(r"\d{4}-\d{2}-\d{2}", line)
+            or re.search(r"\d{2}:\d{2}:\d{2}", line)
             for line in error_lines
         )
         assert has_timestamp, f"Error entries missing timestamps:\n{error_lines}"
@@ -145,9 +142,7 @@ def log_has_check_result(check_type, file_assertions):
     assert file_assertions.log_exists(), "Log file not found"
     content = file_assertions.claude_home["log_file"].read_text().lower()
 
-    assert check_type.lower() in content, (
-        f"Check type '{check_type}' not found in log"
-    )
+    assert check_type.lower() in content, f"Check type '{check_type}' not found in log"
 
 
 @then("the new log entries should be appended")
@@ -169,9 +164,9 @@ def previous_entries_preserved(file_assertions):
     content = file_assertions.claude_home["log_file"].read_text()
 
     # Check for content from the previous log (setup in Given step)
-    assert "Previous installation attempt" in content, (
-        "Previous log entries were not preserved"
-    )
+    assert (
+        "Previous installation attempt" in content
+    ), "Previous log entries were not preserved"
 
 
 @then("each log entry should have a consistent format")
@@ -191,7 +186,7 @@ def log_format_consistent(cli_result):
     # Common patterns: [timestamp] LEVEL: message or timestamp - level - message
     format_patterns = [
         r"^\[?\d{4}-\d{2}-\d{2}",  # Starts with date
-        r"^\d{4}-\d{2}-\d{2}",      # ISO date format
+        r"^\d{4}-\d{2}-\d{2}",  # ISO date format
         r"^\[\d{2}:\d{2}:\d{2}\]",  # Time in brackets
     ]
 
@@ -202,9 +197,9 @@ def log_format_consistent(cli_result):
 
     # At least 50% of lines should have consistent format
     format_ratio = formatted_lines / len(lines) if lines else 0
-    assert format_ratio >= 0.5, (
-        f"Log format inconsistent: only {formatted_lines}/{len(lines)} lines formatted"
-    )
+    assert (
+        format_ratio >= 0.5
+    ), f"Log format inconsistent: only {formatted_lines}/{len(lines)} lines formatted"
 
 
 @then("the format should include timestamp")
@@ -228,9 +223,9 @@ def format_includes_level(cli_result):
     levels = ["DEBUG", "INFO", "WARN", "WARNING", "ERROR", "CRITICAL"]
     has_level = any(level in log_content.upper() for level in levels)
     # Also accept lowercase or mixed case
-    assert has_level or any(level.lower() in log_content.lower() for level in levels), (
-        "Log format doesn't include log level indicators"
-    )
+    assert has_level or any(
+        level.lower() in log_content.lower() for level in levels
+    ), "Log format doesn't include log level indicators"
 
 
 @then("the format should include message")
@@ -243,7 +238,12 @@ def format_includes_message(cli_result):
     # Log should have meaningful text beyond just timestamps and levels
     # Remove timestamps and level indicators to check for message content
     content_stripped = re.sub(r"\d{4}-\d{2}-\d{2}|\d{2}:\d{2}:\d{2}", "", log_content)
-    content_stripped = re.sub(r"INFO|WARN|ERROR|DEBUG|WARNING|CRITICAL", "", content_stripped, flags=re.IGNORECASE)
+    content_stripped = re.sub(
+        r"INFO|WARN|ERROR|DEBUG|WARNING|CRITICAL",
+        "",
+        content_stripped,
+        flags=re.IGNORECASE,
+    )
 
     # Should still have meaningful content
     has_message = len(content_stripped.strip()) > 20

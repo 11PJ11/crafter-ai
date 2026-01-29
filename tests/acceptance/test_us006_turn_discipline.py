@@ -73,9 +73,9 @@ class TestTurnDisciplineInclusion:
         )
 
         # THEN: Prompt contains TIMEOUT_INSTRUCTION section
-        assert "TIMEOUT_INSTRUCTION" in prompt, (
-            "TIMEOUT_INSTRUCTION section missing - agents cannot self-regulate without turn discipline"
-        )
+        assert (
+            "TIMEOUT_INSTRUCTION" in prompt
+        ), "TIMEOUT_INSTRUCTION section missing - agents cannot self-regulate without turn discipline"
 
         # Verify section is properly formatted with header marker
         assert (
@@ -328,9 +328,9 @@ class TestTurnDisciplineNonValidationCommands:
         )
 
         # THEN: No TIMEOUT_INSTRUCTION section
-        assert "TIMEOUT_INSTRUCTION" not in prompt, (
-            "Ad-hoc tasks should not have TIMEOUT_INSTRUCTION - no turn discipline needed"
-        )
+        assert (
+            "TIMEOUT_INSTRUCTION" not in prompt
+        ), "Ad-hoc tasks should not have TIMEOUT_INSTRUCTION - no turn discipline needed"
 
     @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_007_research_command_has_no_timeout_instruction(
@@ -356,9 +356,9 @@ class TestTurnDisciplineNonValidationCommands:
         )
 
         # THEN: No TIMEOUT_INSTRUCTION section
-        assert "TIMEOUT_INSTRUCTION" not in prompt, (
-            "Research commands should not have TIMEOUT_INSTRUCTION - exploratory only"
-        )
+        assert (
+            "TIMEOUT_INSTRUCTION" not in prompt
+        ), "Research commands should not have TIMEOUT_INSTRUCTION - exploratory only"
 
 
 class TestTurnDisciplineValidation:
@@ -426,17 +426,17 @@ class TestTurnDisciplineValidation:
         result = validator.validate(incomplete_prompt)
 
         # THEN: Validation fails with specific error
-        assert not result.is_valid, (
-            "Validation should FAIL when TIMEOUT_INSTRUCTION is missing"
-        )
+        assert (
+            not result.is_valid
+        ), "Validation should FAIL when TIMEOUT_INSTRUCTION is missing"
 
-        assert any("TIMEOUT_INSTRUCTION" in error for error in result.errors), (
-            "Error message must identify TIMEOUT_INSTRUCTION as the missing section"
-        )
+        assert any(
+            "TIMEOUT_INSTRUCTION" in error for error in result.errors
+        ), "Error message must identify TIMEOUT_INSTRUCTION as the missing section"
 
-        assert any("MISSING" in error.upper() for error in result.errors), (
-            "Error should indicate the section is MISSING, not incomplete"
-        )
+        assert any(
+            "MISSING" in error.upper() for error in result.errors
+        ), "Error should indicate the section is MISSING, not incomplete"
 
 
 class TestTurnDisciplineContent:
@@ -534,9 +534,9 @@ class TestTurnDisciplineContent:
         )
 
         # THEN: TIMEOUT_INSTRUCTION present
-        assert "TIMEOUT_INSTRUCTION" in prompt, (
-            "/nw:develop command must include TIMEOUT_INSTRUCTION like /nw:execute"
-        )
+        assert (
+            "TIMEOUT_INSTRUCTION" in prompt
+        ), "/nw:develop command must include TIMEOUT_INSTRUCTION like /nw:execute"
 
         # Verify it has the same structure as execute command
         assert "50" in prompt, "Turn budget must be specified for develop command"
@@ -584,9 +584,9 @@ class TestTurnDisciplineContent:
         )
 
         # THEN: Warnings emitted for crossed thresholds
-        assert len(result.warnings_emitted) > 0, (
-            "Should emit warnings for crossed thresholds"
-        )
+        assert (
+            len(result.warnings_emitted) > 0
+        ), "Should emit warnings for crossed thresholds"
 
         # Verify 50% threshold warning (20 minutes)
         threshold_20_warning = next(
@@ -597,12 +597,12 @@ class TestTurnDisciplineContent:
             ),
             None,
         )
-        assert threshold_20_warning is not None, (
-            "Should emit warning for 20-minute (50%) threshold"
-        )
-        assert "elapsed" in threshold_20_warning.lower(), (
-            "Warning should include elapsed time"
-        )
+        assert (
+            threshold_20_warning is not None
+        ), "Should emit warning for 20-minute (50%) threshold"
+        assert (
+            "elapsed" in threshold_20_warning.lower()
+        ), "Warning should include elapsed time"
 
     @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_014_agent_receives_timeout_warnings_in_prompt(
@@ -656,9 +656,9 @@ class TestTurnDisciplineContent:
             (w for w in result.warnings_emitted if "30" in w),  # 30 min = 75% of 40
             None,
         )
-        assert warning_75pct is not None, (
-            "Should emit warning for 30-minute (75%) threshold"
-        )
+        assert (
+            warning_75pct is not None
+        ), "Should emit warning for 30-minute (75%) threshold"
 
         # Verify warning format includes required elements
         assert (

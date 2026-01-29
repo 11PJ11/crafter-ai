@@ -53,7 +53,13 @@ def nwave_fully_installed(isolated_claude_home, partial_installation_builder):
         (agents_dir / name).write_text(f"# {name.replace('.md', '').title()}")
 
     # Create essential command files
-    essential_commands = ["discuss.md", "design.md", "distill.md", "develop.md", "deliver.md"]
+    essential_commands = [
+        "discuss.md",
+        "design.md",
+        "distill.md",
+        "develop.md",
+        "deliver.md",
+    ]
     for cmd in essential_commands:
         (commands_dir / cmd).write_text(f"# {cmd.replace('.md', '').title()}")
 
@@ -155,10 +161,9 @@ def agent_count_reported(cli_result):
     """Verify agent count is reported in output."""
     all_output = f"{cli_result['stdout']}\n{cli_result['stderr']}"
     # Look for patterns like "Agents installed: 28" or "28 agent files"
-    has_count = (
-        re.search(r"[Aa]gents?\s*(installed)?:?\s*\d+", all_output)
-        or re.search(r"\d+\s*agent", all_output)
-    )
+    has_count = re.search(
+        r"[Aa]gents?\s*(installed)?:?\s*\d+", all_output
+    ) or re.search(r"\d+\s*agent", all_output)
     assert has_count, f"Agent count not reported in output:\n{all_output}"
 
 
@@ -182,10 +187,9 @@ def agent_count_minimum(cli_result):
 def command_count_reported(cli_result):
     """Verify command count is reported in output."""
     all_output = f"{cli_result['stdout']}\n{cli_result['stderr']}"
-    has_count = (
-        re.search(r"[Cc]ommands?\s*(installed)?:?\s*\d+", all_output)
-        or re.search(r"\d+\s*command", all_output)
-    )
+    has_count = re.search(
+        r"[Cc]ommands?\s*(installed)?:?\s*\d+", all_output
+    ) or re.search(r"\d+\s*command", all_output)
     assert has_count, f"Command count not reported in output:\n{all_output}"
 
 
@@ -198,9 +202,9 @@ def manifest_exists_at_path(path, file_assertions):
 @then("the verification should fail")
 def verification_fails(cli_result):
     """Verify that verification failed."""
-    assert cli_result["returncode"] != 0, (
-        f"Expected non-zero exit code, got {cli_result['returncode']}"
-    )
+    assert (
+        cli_result["returncode"] != 0
+    ), f"Expected non-zero exit code, got {cli_result['returncode']}"
 
 
 @then(parsers.parse('the error should list "{item}" as missing'))
@@ -212,9 +216,9 @@ def error_lists_missing_item(item, cli_result, assert_output):
 @then("the script should be present")
 def script_is_present(cli_result):
     """Verify verification script exists."""
-    assert cli_result.get("script_exists", False), (
-        f"Verification script not found at {cli_result.get('script_path')}"
-    )
+    assert cli_result.get(
+        "script_exists", False
+    ), f"Verification script not found at {cli_result.get('script_path')}"
 
 
 @then("the script should be executable")
@@ -249,9 +253,9 @@ def missing_commands_reported(cli_result, file_assertions):
     """Verify missing commands are reported if any are missing."""
     all_output = f"{cli_result['stdout']}\n{cli_result['stderr']}"
     if file_assertions.command_count() < 5:
-        assert "missing" in all_output.lower() or "Missing" in all_output, (
-            "Missing commands not reported"
-        )
+        assert (
+            "missing" in all_output.lower() or "Missing" in all_output
+        ), "Missing commands not reported"
 
 
 @then(parsers.parse('the error should mention "{text}"'))
