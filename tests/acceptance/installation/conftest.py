@@ -11,7 +11,6 @@ Cross-platform compatible (Windows, macOS, Linux).
 
 import json
 import os
-import platform
 import subprocess
 import sys
 from pathlib import Path
@@ -96,6 +95,26 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers",
         "ac10: AC-10 Documentation Accuracy",
+    )
+    config.addinivalue_line(
+        "markers",
+        "ac11: AC-11 CI Environment Detection",
+    )
+    config.addinivalue_line(
+        "markers",
+        "ac12: AC-12 CI Mode Output Behavior",
+    )
+    config.addinivalue_line(
+        "markers",
+        "ac13: AC-13 CI Exit Codes",
+    )
+    config.addinivalue_line(
+        "markers",
+        "ac14: AC-14 Container Environment Detection",
+    )
+    config.addinivalue_line(
+        "markers",
+        "ac15: AC-15 CI and Container Combined Detection",
     )
 
 
@@ -312,6 +331,158 @@ def output_context():
             return {"NWAVE_OUTPUT_CONTEXT": self._context}
 
     return OutputContextController()
+
+
+# ============================================================================
+# CI/CD Environment Simulation Fixtures
+# ============================================================================
+
+
+@pytest.fixture
+def ci_environment(execution_environment):
+    """
+    Fixture to simulate CI environment.
+
+    Returns a controller to configure CI environment variables.
+    Tests use this to simulate GitHub Actions, GitLab CI, Jenkins, etc.
+    """
+
+    class CIEnvironmentController:
+        """Controller for CI environment simulation."""
+
+        # Standard CI environment variables
+        CI_VARS = {
+            "github_actions": {"GITHUB_ACTIONS": "true", "CI": "true"},
+            "gitlab_ci": {"GITLAB_CI": "true", "CI": "true"},
+            "jenkins": {"JENKINS_URL": "http://jenkins.local", "CI": "true"},
+            "circleci": {"CIRCLECI": "true", "CI": "true"},
+            "travis": {"TRAVIS": "true", "CI": "true"},
+            "azure_devops": {"TF_BUILD": "True", "CI": "true"},
+            "generic_ci": {"CI": "true"},
+        }
+
+        def __init__(self, env: Dict[str, str]):
+            self._env = env
+            self._active_ci: Optional[str] = None
+
+        def set_ci_platform(self, ci_platform: str):
+            """
+            Set CI platform environment variables.
+
+            Args:
+                ci_platform: One of 'github_actions', 'gitlab_ci', 'jenkins',
+                             'circleci', 'travis', 'azure_devops', 'generic_ci'
+            """
+            if ci_platform not in self.CI_VARS:
+                raise ValueError(f"Unknown CI platform: {ci_platform}")
+
+            # Clear any existing CI variables
+            self.clear_ci()
+
+            # Set new CI variables
+            for var, value in self.CI_VARS[ci_platform].items():
+                self._env[var] = value
+            self._active_ci = ci_platform
+
+        def clear_ci(self):
+            """Remove all CI environment variables."""
+            all_ci_vars = set()
+            for vars_dict in self.CI_VARS.values():
+                all_ci_vars.update(vars_dict.keys())
+
+            for var in all_ci_vars:
+                self._env.pop(var, None)
+            self._active_ci = None
+
+        @property
+        def is_ci(self) -> bool:
+            """Return True if CI environment is configured."""
+            return self._active_ci is not None
+
+        @property
+        def ci_platform_name(self) -> Optional[str]:
+            """Return the active CI platform name."""
+            return self._active_ci
+
+        def get_env_vars(self) -> Dict[str, str]:
+            """Get the current CI environment variables."""
+            if not self._active_ci:
+                return {}
+            return self.CI_VARS.get(self._active_ci, {}).copy()
+
+    return CIEnvironmentController(execution_environment)
+
+
+@pytest.fixture
+def container_environment(execution_environment):
+    """
+    Fixture to simulate container environment (Docker, Kubernetes, etc.).
+
+    Note: Real container detection checks /.dockerenv or /proc/1/cgroup.
+    For testing, we use environment variables that the installer will check.
+    """
+
+    class ContainerEnvironmentController:
+        """Controller for container environment simulation."""
+
+        CONTAINER_VARS = {
+            "docker": {"NWAVE_TEST_CONTAINER": "docker"},
+            "kubernetes": {
+                "NWAVE_TEST_CONTAINER": "kubernetes",
+                "KUBERNETES_SERVICE_HOST": "10.0.0.1",
+            },
+            "podman": {"NWAVE_TEST_CONTAINER": "podman"},
+        }
+
+        def __init__(self, env: Dict[str, str]):
+            self._env = env
+            self._container_type: Optional[str] = None
+
+        def set_container_type(self, container_type: str):
+            """
+            Set container environment variables.
+
+            Args:
+                container_type: One of 'docker', 'kubernetes', 'podman'
+            """
+            if container_type not in self.CONTAINER_VARS:
+                raise ValueError(f"Unknown container type: {container_type}")
+
+            # Clear any existing container variables
+            self.clear_container()
+
+            # Set new container variables
+            for var, value in self.CONTAINER_VARS[container_type].items():
+                self._env[var] = value
+            self._container_type = container_type
+
+        def clear_container(self):
+            """Remove all container environment variables."""
+            all_container_vars = set()
+            for vars_dict in self.CONTAINER_VARS.values():
+                all_container_vars.update(vars_dict.keys())
+
+            for var in all_container_vars:
+                self._env.pop(var, None)
+            self._container_type = None
+
+        @property
+        def is_container(self) -> bool:
+            """Return True if container environment is configured."""
+            return self._container_type is not None
+
+        @property
+        def container_type(self) -> Optional[str]:
+            """Return the active container type."""
+            return self._container_type
+
+        def get_env_vars(self) -> Dict[str, str]:
+            """Get the current container environment variables."""
+            if not self._container_type:
+                return {}
+            return self.CONTAINER_VARS.get(self._container_type, {}).copy()
+
+    return ContainerEnvironmentController(execution_environment)
 
 
 # ============================================================================

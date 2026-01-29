@@ -25,7 +25,12 @@ This document provides an overview of all acceptance test scenarios for the Inst
 | AC-08 | Standalone Verification Command | 5 | @skip |
 | AC-09 | Installation Logging | 6 | @skip |
 | AC-10 | Documentation Accuracy | 5 | @skip |
-| **Total** | | **44** | |
+| AC-11 | CI Environment Detection | 4 | @skip |
+| AC-12 | CI Mode Output Behavior | 3 | @skip |
+| AC-13 | CI Exit Codes | 2 | @skip |
+| AC-14 | Container Environment Detection | 2 | @skip |
+| AC-15 | CI and Container Combined Detection | 2 | @skip |
+| **Total** | | **57** | |
 
 ---
 
@@ -111,6 +116,25 @@ This document provides an overview of all acceptance test scenarios for the Inst
 4. Documentation mentions pipenv requirement
 5. Troubleshooting section addresses common errors
 
+### 07_ci_environment.feature
+
+**Purpose:** Validate CI/CD environment detection and behavior adaptation
+
+**Scenarios:**
+1. CI detection via GITHUB_ACTIONS environment variable
+2. CI detection via GITLAB_CI environment variable
+3. CI detection via generic CI environment variable
+4. CI detection via JENKINS_URL environment variable
+5. CI mode disables ANSI color codes in output
+6. CI mode enables verbose output by default
+7. CI mode disables interactive prompts
+8. CI mode returns non-zero exit code on failure
+9. CI mode returns zero exit code on success
+10. Container environment triggers warning but not block
+11. Kubernetes container environment is detected
+12. CI inside container shows both contexts
+13. Non-CI non-container environment uses default behavior
+
 ---
 
 ## Error Code Reference
@@ -135,7 +159,8 @@ This document provides an overview of all acceptance test scenarios for the Inst
 | @requires_venv | Needs active virtual environment |
 | @requires_no_pipenv | Needs pipenv to be unavailable |
 | @manual | Requires manual verification |
-| @ac01 - @ac10 | Acceptance criteria mapping |
+| @ac01 - @ac10 | Acceptance criteria mapping (core installation) |
+| @ac11 - @ac15 | Acceptance criteria mapping (CI/container detection) |
 
 ---
 
@@ -185,6 +210,12 @@ Tests use environment variables to simulate conditions:
 - `NWAVE_TEST_NO_PIPENV=1` - Simulate pipenv not installed
 - `NWAVE_TEST_MISSING_DEPS=yaml,requests` - Simulate missing dependencies
 - `NWAVE_OUTPUT_CONTEXT=terminal|claude_code` - Set output format
+- `CI=true` - Simulate generic CI environment
+- `GITHUB_ACTIONS=true` - Simulate GitHub Actions CI
+- `GITLAB_CI=true` - Simulate GitLab CI
+- `JENKINS_URL=http://...` - Simulate Jenkins CI
+- `NWAVE_TEST_CONTAINER=docker|kubernetes|podman` - Simulate container environment
+- `KUBERNETES_SERVICE_HOST=...` - Simulate Kubernetes environment
 
 ### Test Isolation
 
