@@ -141,9 +141,9 @@ def log_contains_text(text, file_assertions):
 @then("the installation should be blocked")
 def installation_blocked(cli_result, assert_output):
     """Verify installation was blocked (non-zero exit)."""
-    assert (
-        cli_result["returncode"] != 0
-    ), f"Expected non-zero exit code, got {cli_result['returncode']}"
+    assert cli_result["returncode"] != 0, (
+        f"Expected non-zero exit code, got {cli_result['returncode']}"
+    )
 
 
 @then("no build artifacts should be created")
@@ -151,9 +151,9 @@ def no_build_artifacts(file_assertions):
     """Verify no installation artifacts were created."""
     # In a blocked installation, we shouldn't have installed agents/commands
     # Note: This checks the isolated test directory
-    assert (
-        file_assertions.agent_count() == 0 or file_assertions.agent_count() < 10
-    ), "Build artifacts were created when installation should have been blocked"
+    assert file_assertions.agent_count() == 0 or file_assertions.agent_count() < 10, (
+        "Build artifacts were created when installation should have been blocked"
+    )
 
 
 @then("the error should appear before any build output")

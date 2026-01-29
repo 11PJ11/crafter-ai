@@ -8,7 +8,7 @@ understand and resolve execution failures through educational context.
 import json
 import re
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 
 
 class JuniorDevFormatter:
@@ -377,7 +377,9 @@ class RecoveryGuidanceHandler:
             List of recovery suggestions as strings with actionable guidance
         """
         if failure_type not in self.FAILURE_MODE_TEMPLATES:
-            return [f"Unknown failure mode: {failure_type}. Please consult documentation."]
+            return [
+                f"Unknown failure mode: {failure_type}. Please consult documentation."
+            ]
 
         template = self.FAILURE_MODE_TEMPLATES[failure_type]
         suggestion_templates = template["suggestions"]
@@ -390,7 +392,9 @@ class RecoveryGuidanceHandler:
                 # Common fields
                 "phase": context.get("phase", "UNKNOWN_PHASE"),
                 "step_file": context.get("step_file", "unknown_step_file.json"),
-                "transcript_path": context.get("transcript_path", "/path/to/transcript.log"),
+                "transcript_path": context.get(
+                    "transcript_path", "/path/to/transcript.log"
+                ),
                 "section_name": context.get("section_name", "section"),
                 # Timeout failure fields
                 "configured_timeout_minutes": context.get("configured_timeout_minutes", "30"),

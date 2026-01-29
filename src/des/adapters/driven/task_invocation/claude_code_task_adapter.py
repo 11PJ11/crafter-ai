@@ -4,6 +4,7 @@ ClaudeCodeTaskAdapter - production task invocation implementation.
 Provides integration with the actual Claude Code Task tool for invoking
 sub-agents in production environments.
 """
+
 from typing import Dict, Any
 from src.des.ports.driven_ports.task_invocation_port import TaskInvocationPort
 

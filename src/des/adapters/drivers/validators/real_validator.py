@@ -21,7 +21,7 @@ class RealTemplateValidator(ValidatorPort):
         "QUALITY_GATES",
         "OUTCOME_RECORDING",
         "BOUNDARY_RULES",
-        "TIMEOUT_INSTRUCTION"
+        "TIMEOUT_INSTRUCTION",
     ]
 
     MANDATORY_PHASES = [
@@ -38,7 +38,7 @@ class RealTemplateValidator(ValidatorPort):
         "REFACTOR_L4",
         "POST_REFACTOR_REVIEW",
         "FINAL_VALIDATE",
-        "COMMIT"
+        "COMMIT",
     ]
 
     def validate_prompt(self, prompt: str) -> ValidationResult:
@@ -77,7 +77,7 @@ class RealTemplateValidator(ValidatorPort):
             errors=all_errors,
             task_invocation_allowed=task_invocation_allowed,
             duration_ms=duration_ms,
-            recovery_guidance=recovery_guidance
+            recovery_guidance=recovery_guidance,
         )
 
     def _validate_sections(self, prompt: str) -> List[str]:
@@ -92,13 +92,15 @@ class RealTemplateValidator(ValidatorPort):
     def _validate_phases(self, prompt: str) -> List[str]:
         """Validate that all 14 TDD phases are mentioned."""
         # Check for shorthand pattern first
-        if re.search(r"(?i)all\s+14\s+phases?\s+(listed|mentioned|included|present)", prompt):
+        if re.search(
+            r"(?i)all\s+14\s+phases?\s+(listed|mentioned|included|present)", prompt
+        ):
             return []
 
         errors = []
         for phase in self.MANDATORY_PHASES:
             phase_lines = []
-            for line in prompt.split('\n'):
+            for line in prompt.split("\n"):
                 if phase in line:
                     phase_lines.append(line.strip())
 
@@ -106,9 +108,13 @@ class RealTemplateValidator(ValidatorPort):
             if phase_lines:
                 for line in phase_lines:
                     # Skip if it's a "MISSING" comment
-                    if (re.search(rf"\(.*\b{phase}\b.*\)", line) or
-                        re.search(rf"\b(without|missing|no)\s+{phase}\b", line, re.IGNORECASE) or
-                        re.search(rf"# MISSING:\s*{phase}", line)):
+                    if (
+                        re.search(rf"\(.*\b{phase}\b.*\)", line)
+                        or re.search(
+                            rf"\b(without|missing|no)\s+{phase}\b", line, re.IGNORECASE
+                        )
+                        or re.search(rf"# MISSING:\s*{phase}", line)
+                    ):
                         continue
                     if phase in line:
                         found = True
@@ -128,21 +134,37 @@ class RealTemplateValidator(ValidatorPort):
                 for section in self.MANDATORY_SECTIONS:
                     if section in error:
                         if section == "DES_METADATA":
-                            guidance_items.append("Add DES_METADATA section with step file path and command name")
+                            guidance_items.append(
+                                "Add DES_METADATA section with step file path and command name"
+                            )
                         elif section == "AGENT_IDENTITY":
-                            guidance_items.append("Add AGENT_IDENTITY section specifying which agent executes this step")
+                            guidance_items.append(
+                                "Add AGENT_IDENTITY section specifying which agent executes this step"
+                            )
                         elif section == "TASK_CONTEXT":
-                            guidance_items.append("Add TASK_CONTEXT section describing what needs to be implemented")
+                            guidance_items.append(
+                                "Add TASK_CONTEXT section describing what needs to be implemented"
+                            )
                         elif section == "TDD_14_PHASES":
-                            guidance_items.append("Add TDD_14_PHASES section listing all 14 phases")
+                            guidance_items.append(
+                                "Add TDD_14_PHASES section listing all 14 phases"
+                            )
                         elif section == "QUALITY_GATES":
-                            guidance_items.append("Add QUALITY_GATES section defining validation criteria (G1-G6)")
+                            guidance_items.append(
+                                "Add QUALITY_GATES section defining validation criteria (G1-G6)"
+                            )
                         elif section == "OUTCOME_RECORDING":
-                            guidance_items.append("Add OUTCOME_RECORDING section describing how to track phase completion")
+                            guidance_items.append(
+                                "Add OUTCOME_RECORDING section describing how to track phase completion"
+                            )
                         elif section == "BOUNDARY_RULES":
-                            guidance_items.append("Add BOUNDARY_RULES section specifying which files can be modified")
+                            guidance_items.append(
+                                "Add BOUNDARY_RULES section specifying which files can be modified"
+                            )
                         elif section == "TIMEOUT_INSTRUCTION":
-                            guidance_items.append("Add TIMEOUT_INSTRUCTION section with turn budget guidance")
+                            guidance_items.append(
+                                "Add TIMEOUT_INSTRUCTION section with turn budget guidance"
+                            )
                         break
 
         return guidance_items if guidance_items else None

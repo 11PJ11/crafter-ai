@@ -33,7 +33,7 @@ class TurnLimitConfig:
         limit_map = {
             "quick": self.quick,
             "standard": self.standard,
-            "complex": self.complex
+            "complex": self.complex,
         }
         return limit_map.get(task_type, self.standard)
 
@@ -79,11 +79,7 @@ class ConfigLoader:
         if quick <= 0 or standard <= 0 or complex_limit <= 0:
             raise ValueError("Turn limits must be positive integers")
 
-        return TurnLimitConfig(
-            quick=quick,
-            standard=standard,
-            complex=complex_limit
-        )
+        return TurnLimitConfig(quick=quick, standard=standard, complex=complex_limit)
 
     def get_default_config(self) -> TurnLimitConfig:
         """Provide default turn limit configuration.
@@ -91,8 +87,4 @@ class ConfigLoader:
         Returns:
             TurnLimitConfig with sensible defaults for each task type
         """
-        return TurnLimitConfig(
-            quick=20,
-            standard=50,
-            complex=100
-        )
+        return TurnLimitConfig(quick=20, standard=50, complex=100)

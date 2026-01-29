@@ -17,6 +17,7 @@ with open(roadmap_path) as f:
 steps_dir = Path(__file__).parent / "steps"
 steps_dir.mkdir(exist_ok=True)
 
+
 # 14-phase template
 def create_phase_log_entry(phase_name, phase_index):
     return {
@@ -30,81 +31,97 @@ def create_phase_log_entry(phase_name, phase_index):
         "outcome_details": None,
         "artifacts_created": [],
         "artifacts_modified": [],
-        "test_results": {"total": None, "passed": None, "failed": None, "skipped": None},
+        "test_results": {
+            "total": None,
+            "passed": None,
+            "failed": None,
+            "skipped": None,
+        },
         "notes": None,
         "blocked_by": None,
-        "history": []
+        "history": [],
     }
+
 
 # 14 mandatory phases
 phases = [
-    "PREPARE", "RED_ACCEPTANCE", "RED_UNIT", "GREEN_UNIT",
-    "CHECK_ACCEPTANCE", "GREEN_ACCEPTANCE", "REVIEW",
-    "REFACTOR_L1", "REFACTOR_L2", "REFACTOR_L3", "REFACTOR_L4",
-    "POST_REFACTOR_REVIEW", "FINAL_VALIDATE", "COMMIT"
+    "PREPARE",
+    "RED_ACCEPTANCE",
+    "RED_UNIT",
+    "GREEN_UNIT",
+    "CHECK_ACCEPTANCE",
+    "GREEN_ACCEPTANCE",
+    "REVIEW",
+    "REFACTOR_L1",
+    "REFACTOR_L2",
+    "REFACTOR_L3",
+    "REFACTOR_L4",
+    "POST_REFACTOR_REVIEW",
+    "FINAL_VALIDATE",
+    "COMMIT",
 ]
 
 # Extract all steps from all phases
 all_steps = []
-for phase in roadmap['roadmap']['phases']:
-    for group in phase['parallel_groups']:
-        for step in group['steps']:
-            all_steps.append({
-                'phase_id': phase['phase_id'],
-                'phase_name': phase['name'],
-                'group_id': group['group_id'],
-                'step': step
-            })
+for phase in roadmap["roadmap"]["phases"]:
+    for group in phase["parallel_groups"]:
+        for step in group["steps"]:
+            all_steps.append(
+                {
+                    "phase_id": phase["phase_id"],
+                    "phase_name": phase["name"],
+                    "group_id": group["group_id"],
+                    "step": step,
+                }
+            )
 
 print(f"Total steps found: {len(all_steps)}")
 
 # Generate step files
 for idx, step_data in enumerate(all_steps, 1):
-    step = step_data['step']
-    step_id = step['step_id']
+    step = step_data["step"]
+    step_id = step["step_id"]
 
     # Create step file content
     step_file = {
         "task_id": step_id,  # Use step_id as task_id
-        "task_description": step['description'].strip(),
-        "scenario": step['scenario'],
-        "scenario_line": step['scenario_line'],
-        "agent": step['agent'],
-        "estimated_complexity": step['estimated_complexity'],
-        "phase_id": step_data['phase_id'],
-        "phase_name": step_data['phase_name'],
-        "group_id": step_data['group_id'],
-        "requires": step.get('depends_on', []),
-        "acceptance_criteria": step['acceptance_criteria'],
-
+        "task_description": step["description"].strip(),
+        "scenario": step["scenario"],
+        "scenario_line": step["scenario_line"],
+        "agent": step["agent"],
+        "estimated_complexity": step["estimated_complexity"],
+        "phase_id": step_data["phase_id"],
+        "phase_name": step_data["phase_name"],
+        "group_id": step_data["group_id"],
+        "requires": step.get("depends_on", []),
+        "acceptance_criteria": step["acceptance_criteria"],
         # TDD cycle configuration
         "tdd_cycle": {
             "acceptance_test": {
-                "scenario_name": step['scenario'],
+                "scenario_name": step["scenario"],
                 "test_file": "tests/acceptance/acceptance-tests.feature",
                 "test_file_format": "feature",
                 "scenario_index": idx - 1,
                 "initially_ignored": True,
-                "is_walking_skeleton": False
+                "is_walking_skeleton": False,
             },
             "expected_unit_tests": [],
             "mock_boundaries": {
                 "allowed_ports": [],
                 "forbidden_domain_classes": [],
-                "in_memory_adapters": []
+                "in_memory_adapters": [],
             },
             "tdd_phase_tracking": {
                 "current_phase": "NOT_STARTED",
                 "active_e2e_test": "",
                 "inactive_e2e_tests": "All other @skip scenarios remain disabled",
-                "phases_completed": []
+                "phases_completed": [],
             },
             "phase_execution_log": [
                 create_phase_log_entry(phase_name, i)
                 for i, phase_name in enumerate(phases)
-            ]
+            ],
         },
-
         # Quality gates
         "quality_gates": {
             "acceptance_test_must_fail_first": True,
@@ -117,16 +134,15 @@ for idx, step_data in enumerate(all_steps, 1):
             "validation_after_each_review": True,
             "validation_after_each_refactor": True,
             "all_14_phases_mandatory": True,
-            "phase_documentation_required": True
+            "phase_documentation_required": True,
         },
-
         # Commit policy
-        "commit_policy": "Commit ONLY after ALL 14 PHASES complete. AUTO-PUSH after commit."
+        "commit_policy": "Commit ONLY after ALL 14 PHASES complete. AUTO-PUSH after commit.",
     }
 
     # Write step file
     output_file = steps_dir / f"{step_id}.json"
-    with open(output_file, 'w') as f:
+    with open(output_file, "w") as f:
         json.dump(step_file, f, indent=2)
 
     print(f"{idx}. Created: {output_file.name}")

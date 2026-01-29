@@ -31,10 +31,7 @@ from nWave.core.versioning.ports.checksum_port import ChecksumMismatchError
 from nWave.core.versioning.ports.download_port import NetworkError
 
 if TYPE_CHECKING:
-    from nWave.core.versioning.ports.checksum_port import ChecksumPort
-    from nWave.core.versioning.ports.download_port import DownloadPort
-    from nWave.core.versioning.ports.file_system_port import FileSystemPort
-    from nWave.core.versioning.ports.github_api_port import GitHubAPIPort
+    pass
 
 
 @dataclass(frozen=True)
@@ -281,7 +278,7 @@ class UpdateService:
                 backup_path=backup_path,
             )
 
-        except NetworkError as e:
+        except NetworkError:
             # Clean up partial download on network failure
             self._cleanup_partial_download(download_path)
             return UpdateResult(
@@ -290,7 +287,7 @@ class UpdateService:
                 backup_path=backup_path,
                 error_message="Download failed: network error. Your nWave installation is unchanged.",
             )
-        except ChecksumMismatchError as e:
+        except ChecksumMismatchError:
             # Clean up corrupted download
             self._cleanup_partial_download(download_path)
             return UpdateResult(

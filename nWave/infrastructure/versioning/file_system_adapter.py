@@ -80,9 +80,7 @@ class FileSystemAdapter(FileSystemPort):
             ValueError: If VERSION content is not valid semver
         """
         if not self.version_file.exists():
-            raise FileNotFoundError(
-                f"VERSION file not found at {self.version_file}"
-            )
+            raise FileNotFoundError(f"VERSION file not found at {self.version_file}")
 
         content = self.version_file.read_text().strip()
         return Version(content)

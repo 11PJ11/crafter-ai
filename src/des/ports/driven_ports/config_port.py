@@ -4,6 +4,7 @@ ConfigPort interface for configuration management in DES.
 Defines the contract for accessing configuration values, abstracting away
 the configuration source (environment variables, in-memory, etc.).
 """
+
 from abc import ABC, abstractmethod
 
 

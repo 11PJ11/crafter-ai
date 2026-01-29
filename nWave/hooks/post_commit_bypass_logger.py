@@ -19,7 +19,6 @@ import re
 import subprocess
 import sys
 from datetime import datetime
-from pathlib import Path
 from typing import Dict, List, Optional
 
 
@@ -35,7 +34,7 @@ def get_git_info() -> Dict[str, str]:
         "email": "unknown",
         "branch": "unknown",
         "commit_hash": "unknown",
-        "commit_message": ""
+        "commit_message": "",
     }
 
     try:
@@ -164,7 +163,7 @@ def log_bypass(step_files: List[str], reason: str) -> None:
             "commit_hash": git_info["commit_hash"],
             "commit_message": git_info["commit_message"],
             "step_files": step_files,
-            "severity": "WARNING"
+            "severity": "WARNING",
         }
 
         # Ensure directory exists
@@ -176,16 +175,16 @@ def log_bypass(step_files: List[str], reason: str) -> None:
             f.write(json.dumps(log_entry) + "\n")
 
         # Print warning to stderr
-        print(f"\n{'='*60}", file=sys.stderr)
+        print(f"\n{'=' * 60}", file=sys.stderr)
         print("  WARNING: Pre-commit validation was bypassed!", file=sys.stderr)
-        print(f"{'='*60}", file=sys.stderr)
+        print(f"{'=' * 60}", file=sys.stderr)
         print(f"  Reason: {reason}", file=sys.stderr)
         print(f"  User: {git_info['user']} <{git_info['email']}>", file=sys.stderr)
         print(f"  Branch: {git_info['branch']}", file=sys.stderr)
         print(f"  Commit: {git_info['commit_hash']}", file=sys.stderr)
         print(f"  Step files: {', '.join(step_files)}", file=sys.stderr)
         print(f"\n  This bypass has been logged to: {BYPASS_LOG_FILE}", file=sys.stderr)
-        print(f"{'='*60}\n", file=sys.stderr)
+        print(f"{'=' * 60}\n", file=sys.stderr)
 
     except Exception as e:
         print(f"Warning: Could not log bypass: {e}", file=sys.stderr)
@@ -215,7 +214,9 @@ def main() -> int:
 
     if marker is None:
         # No marker found - pre-commit hook was bypassed
-        log_bypass(step_files, "Pre-commit hook bypassed (--no-verify or hook not installed)")
+        log_bypass(
+            step_files, "Pre-commit hook bypassed (--no-verify or hook not installed)"
+        )
     elif not marker.get("validation_passed", False):
         # Marker exists but validation failed - this shouldn't happen normally
         # (pre-commit would block), so likely a race condition or manual file edit
@@ -229,7 +230,7 @@ def main() -> int:
         if unvalidated:
             log_bypass(
                 list(unvalidated),
-                f"Step files committed without validation: {', '.join(unvalidated)}"
+                f"Step files committed without validation: {', '.join(unvalidated)}",
             )
 
     # Clean up marker

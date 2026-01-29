@@ -99,24 +99,24 @@ class TestFailureRecoveryGuidance:
         assert len(suggestions) >= 1, "Should have at least one suggestion"
 
         # Assert: Suggestions contain actionable elements
-        assert any(
-            "transcript" in s.lower() for s in suggestions
-        ), "Should mention transcript"
-        assert any(
-            "NOT_EXECUTED" in s for s in suggestions
-        ), "Should reference phase status"
-        assert any(
-            "/nw:execute" in s or "execute" in s.lower() for s in suggestions
-        ), "Should mention execution"
+        assert any("transcript" in s.lower() for s in suggestions), (
+            "Should mention transcript"
+        )
+        assert any("NOT_EXECUTED" in s for s in suggestions), (
+            "Should reference phase status"
+        )
+        assert any("/nw:execute" in s or "execute" in s.lower() for s in suggestions), (
+            "Should mention execution"
+        )
 
         # Assert: Step file updated with recovery suggestions
         assert updated_step is not None, "Should return updated step"
-        assert (
-            "recovery_suggestions" in updated_step
-        ), "Should include recovery_suggestions"
-        assert isinstance(
-            updated_step["recovery_suggestions"], list
-        ), "recovery_suggestions should be list"
+        assert "recovery_suggestions" in updated_step, (
+            "Should include recovery_suggestions"
+        )
+        assert isinstance(updated_step["recovery_suggestions"], list), (
+            "recovery_suggestions should be list"
+        )
 
     # =========================================================================
     # AC-005.1: Every failure mode has associated recovery suggestions
@@ -177,27 +177,27 @@ class TestFailureRecoveryGuidance:
         assert len(suggestions) >= 3, "Should have at least 3 suggestions"
 
         # Assert: Suggestions contain specific elements for silent completion
-        assert any(
-            "transcript" in s.lower() for s in suggestions
-        ), "Should mention transcript location"
-        assert any(
-            "OUTCOME_RECORDING" in s for s in suggestions
-        ), "Should explain OUTCOME_RECORDING"
-        assert any(
-            "manually update" in s.lower() for s in suggestions
-        ), "Should mention manual update"
+        assert any("transcript" in s.lower() for s in suggestions), (
+            "Should mention transcript location"
+        )
+        assert any("OUTCOME_RECORDING" in s for s in suggestions), (
+            "Should explain OUTCOME_RECORDING"
+        )
+        assert any("manually update" in s.lower() for s in suggestions), (
+            "Should mention manual update"
+        )
 
         # Assert: Step file updated with recovery suggestions
         assert updated_step is not None, "Should return updated state"
-        assert (
-            "recovery_suggestions" in updated_step
-        ), "Should include recovery_suggestions"
-        assert isinstance(
-            updated_step["recovery_suggestions"], list
-        ), "recovery_suggestions should be list"
-        assert (
-            len(updated_step["recovery_suggestions"]) >= 3
-        ), "Should have 3+ suggestions"
+        assert "recovery_suggestions" in updated_step, (
+            "Should include recovery_suggestions"
+        )
+        assert isinstance(updated_step["recovery_suggestions"], list), (
+            "recovery_suggestions should be list"
+        )
+        assert len(updated_step["recovery_suggestions"]) >= 3, (
+            "Should have 3+ suggestions"
+        )
 
     # =========================================================================
     # AC-005.1: Every failure mode has associated recovery suggestions
@@ -698,9 +698,9 @@ Update step file with phase completion
             )
             for s in suggestions
         )
-        assert (
-            why_explanation_found
-        ), "At least one suggestion must explain WHY the error occurred"
+        assert why_explanation_found, (
+            "At least one suggestion must explain WHY the error occurred"
+        )
 
     # =========================================================================
     # AC-005.5: Recovery suggestions include explanatory text (WHY and HOW)
@@ -752,9 +752,9 @@ Update step file with phase completion
             )
             for s in suggestions
         )
-        assert (
-            how_explanation_found
-        ), "At least one suggestion must explain HOW the fix resolves the issue"
+        assert how_explanation_found, (
+            "At least one suggestion must explain HOW the fix resolves the issue"
+        )
 
     # =========================================================================
     # AC-005.5: Combined WHY + HOW in recovery suggestion
@@ -801,9 +801,9 @@ Update step file with phase completion
 
         assert has_why, "Recovery guidance must explain WHY the element is needed"
         assert has_how, "Recovery guidance must explain HOW to fix the issue"
-        assert (
-            len(recovery_guidance) >= 2
-        ), "Recovery guidance must have at least 2 suggestions (WHY + HOW)"
+        assert len(recovery_guidance) >= 2, (
+            "Recovery guidance must have at least 2 suggestions (WHY + HOW)"
+        )
 
     # =========================================================================
     # AC-005.1: Timeout failure detection with recovery suggestions
@@ -884,18 +884,18 @@ Update step file with phase completion
         # Assert: Recovery suggestions meet acceptance criteria
         assert suggestions is not None, "Should generate recovery suggestions"
         assert isinstance(suggestions, list), "Suggestions should be a list"
-        assert (
-            len(suggestions) >= 3
-        ), f"Should have 3+ suggestions, got {len(suggestions)}"
+        assert len(suggestions) >= 3, (
+            f"Should have 3+ suggestions, got {len(suggestions)}"
+        )
 
         # AC-005.1: Every suggestion addresses timeout context
         joined_suggestions = " ".join(suggestions)
-        assert (
-            str(configured_timeout_minutes) in joined_suggestions
-        ), "Should include configured timeout (30 minutes)"
-        assert (
-            str(actual_runtime_minutes) in joined_suggestions
-        ), "Should include actual runtime (35 minutes)"
+        assert str(configured_timeout_minutes) in joined_suggestions, (
+            "Should include configured timeout (30 minutes)"
+        )
+        assert str(actual_runtime_minutes) in joined_suggestions, (
+            "Should include actual runtime (35 minutes)"
+        )
 
         # AC-005.3: Suggestions are actionable with specific guidance
         # Should include optimization approach
@@ -950,15 +950,15 @@ Update step file with phase completion
 
         # Assert: Step file updated with recovery suggestions
         assert updated_step is not None, "Should return updated state"
-        assert (
-            "recovery_suggestions" in updated_step
-        ), "Should include recovery_suggestions"
-        assert isinstance(
-            updated_step["recovery_suggestions"], list
-        ), "recovery_suggestions should be list"
-        assert (
-            len(updated_step["recovery_suggestions"]) >= 3
-        ), "Should have 3+ suggestions in step file"
+        assert "recovery_suggestions" in updated_step, (
+            "Should include recovery_suggestions"
+        )
+        assert isinstance(updated_step["recovery_suggestions"], list), (
+            "recovery_suggestions should be list"
+        )
+        assert len(updated_step["recovery_suggestions"]) >= 3, (
+            "Should have 3+ suggestions in step file"
+        )
 
     # =========================================================================
     # AC-005.5: Recovery suggestions use beginner-friendly, junior-dev language

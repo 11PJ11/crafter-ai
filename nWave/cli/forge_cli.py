@@ -162,21 +162,17 @@ def main() -> int:
     Returns:
         Exit code: 0 for success, non-zero for error
     """
-    from datetime import date
 
-    from nWave.core.versioning.application.build_service import BuildService
     from nWave.infrastructure.versioning.git_adapter import GitAdapter
 
     try:
         # Create adapters
-        git_adapter = GitAdapter()
+        _git_adapter = GitAdapter()  # noqa: F841 - Reserved for future use
 
         # TODO: Create real adapters for test_runner and file_system
         # For now, this will fail until adapters are implemented
 
-        raise NotImplementedError(
-            "Forge CLI not fully implemented - adapters needed"
-        )
+        raise NotImplementedError("Forge CLI not fully implemented - adapters needed")
 
     except Exception as e:
         print(f"ERROR: {e}", file=sys.stderr)

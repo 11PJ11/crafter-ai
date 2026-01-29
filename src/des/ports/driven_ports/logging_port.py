@@ -4,6 +4,7 @@ LoggingPort interface for structured logging in DES.
 Defines the contract for logging validation results, hook executions, and errors
 throughout the DES lifecycle.
 """
+
 from abc import ABC, abstractmethod
 from typing import Any, Dict
 

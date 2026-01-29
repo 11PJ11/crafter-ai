@@ -44,9 +44,9 @@ class TestGetLatestReleaseMethodDefined:
 
         method = getattr(GitHubAPIPort, "get_latest_release", None)
         assert method is not None
-        assert getattr(
-            method, "__isabstractmethod__", False
-        ), "get_latest_release must be decorated with @abstractmethod"
+        assert getattr(method, "__isabstractmethod__", False), (
+            "get_latest_release must be decorated with @abstractmethod"
+        )
 
     def test_get_latest_release_accepts_owner_repo_parameters(self):
         """get_latest_release must accept owner and repo parameters."""
@@ -85,9 +85,9 @@ class TestReturnTypeIncludesVersion:
         from typing import get_type_hints
 
         hints = get_type_hints(ReleaseInfo)
-        assert (
-            hints.get("version") == Version
-        ), "ReleaseInfo.version must be typed as Version"
+        assert hints.get("version") == Version, (
+            "ReleaseInfo.version must be typed as Version"
+        )
 
 
 class TestReturnTypeIncludesChecksum:
@@ -119,9 +119,9 @@ class TestReturnTypeIncludesDownloadUrl:
         import dataclasses
 
         field_names = [f.name for f in dataclasses.fields(ReleaseInfo)]
-        assert (
-            "download_url" in field_names
-        ), "ReleaseInfo must have 'download_url' field"
+        assert "download_url" in field_names, (
+            "ReleaseInfo must have 'download_url' field"
+        )
 
     def test_release_info_download_url_is_string_type(self):
         """ReleaseInfo.download_url must be of type str."""
@@ -129,9 +129,9 @@ class TestReturnTypeIncludesDownloadUrl:
         from typing import get_type_hints
 
         hints = get_type_hints(ReleaseInfo)
-        assert (
-            hints.get("download_url") is str
-        ), "ReleaseInfo.download_url must be typed as str"
+        assert hints.get("download_url") is str, (
+            "ReleaseInfo.download_url must be typed as str"
+        )
 
 
 class TestNetworkErrorExceptionDefined:
@@ -147,9 +147,9 @@ class TestNetworkErrorExceptionDefined:
         """NetworkError must be a subclass of Exception."""
         from nWave.core.versioning.ports.github_api_port import NetworkError
 
-        assert issubclass(
-            NetworkError, Exception
-        ), "NetworkError must inherit from Exception"
+        assert issubclass(NetworkError, Exception), (
+            "NetworkError must inherit from Exception"
+        )
 
     def test_network_error_can_be_raised(self):
         """NetworkError must be raisable with a message."""
@@ -174,9 +174,9 @@ class TestRateLimitErrorExceptionDefined:
         """RateLimitError must be a subclass of Exception."""
         from nWave.core.versioning.ports.github_api_port import RateLimitError
 
-        assert issubclass(
-            RateLimitError, Exception
-        ), "RateLimitError must inherit from Exception"
+        assert issubclass(RateLimitError, Exception), (
+            "RateLimitError must inherit from Exception"
+        )
 
     def test_rate_limit_error_can_be_raised(self):
         """RateLimitError must be raisable with a message."""

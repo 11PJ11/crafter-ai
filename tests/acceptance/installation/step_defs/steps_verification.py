@@ -202,9 +202,9 @@ def manifest_exists_at_path(path, file_assertions):
 @then("the verification should fail")
 def verification_fails(cli_result):
     """Verify that verification failed."""
-    assert (
-        cli_result["returncode"] != 0
-    ), f"Expected non-zero exit code, got {cli_result['returncode']}"
+    assert cli_result["returncode"] != 0, (
+        f"Expected non-zero exit code, got {cli_result['returncode']}"
+    )
 
 
 @then(parsers.parse('the error should list "{item}" as missing'))
@@ -216,9 +216,9 @@ def error_lists_missing_item(item, cli_result, assert_output):
 @then("the script should be present")
 def script_is_present(cli_result):
     """Verify verification script exists."""
-    assert cli_result.get(
-        "script_exists", False
-    ), f"Verification script not found at {cli_result.get('script_path')}"
+    assert cli_result.get("script_exists", False), (
+        f"Verification script not found at {cli_result.get('script_path')}"
+    )
 
 
 @then("the script should be executable")
@@ -253,9 +253,9 @@ def missing_commands_reported(cli_result, file_assertions):
     """Verify missing commands are reported if any are missing."""
     all_output = f"{cli_result['stdout']}\n{cli_result['stderr']}"
     if file_assertions.command_count() < 5:
-        assert (
-            "missing" in all_output.lower() or "Missing" in all_output
-        ), "Missing commands not reported"
+        assert "missing" in all_output.lower() or "Missing" in all_output, (
+            "Missing commands not reported"
+        )
 
 
 @then(parsers.parse('the error should mention "{text}"'))

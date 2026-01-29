@@ -276,9 +276,9 @@ class TestBuildServiceReportsFailureCount:
 
         # Assert
         expected_message = "Build failed: 3 test failures. Fix tests before building."
-        assert (
-            result.error_message == expected_message
-        ), f"Expected error message '{expected_message}', got: {result.error_message}"
+        assert result.error_message == expected_message, (
+            f"Expected error message '{expected_message}', got: {result.error_message}"
+        )
 
 
 class TestDistUnchangedOnTestFailure:
@@ -321,9 +321,9 @@ class TestDistUnchangedOnTestFailure:
 
         # Assert
         mock_file_system.create_distribution.assert_not_called()
-        assert (
-            result.distribution_created is False
-        ), "Expected distribution_created to be False when tests fail"
+        assert result.distribution_created is False, (
+            "Expected distribution_created to be False when tests fail"
+        )
         assert result.version is None, "Expected version to be None when build fails"
 
 
@@ -374,9 +374,9 @@ class TestBuildServiceIncrementsCounterSameDay:
         result = service.build()
 
         # Assert
-        assert (
-            result.version == "1.2.3-rc.main.20260127.2"
-        ), f"Expected counter to increment from .1 to .2, got: {result.version}"
+        assert result.version == "1.2.3-rc.main.20260127.2", (
+            f"Expected counter to increment from .1 to .2, got: {result.version}"
+        )
 
 
 class TestBuildServiceDetectsExistingBuild:
@@ -497,9 +497,9 @@ class TestBuildServiceResetsCounterOnNewDay:
         result = service.build()
 
         # Assert
-        assert (
-            result.version == "1.2.3-rc.main.20260128.1"
-        ), f"Expected counter to reset to .1 on new day, got: {result.version}"
+        assert result.version == "1.2.3-rc.main.20260128.1", (
+            f"Expected counter to reset to .1 on new day, got: {result.version}"
+        )
 
 
 class TestBuildServiceDetectsDateChange:
@@ -544,9 +544,9 @@ class TestBuildServiceDetectsDateChange:
         result = service.build()
 
         # Assert - counter resets to 1, NOT continues from 5
-        assert (
-            result.version == "1.2.3-rc.main.20260128.1"
-        ), f"Expected counter to reset to .1 (not continue from .5), got: {result.version}"
+        assert result.version == "1.2.3-rc.main.20260128.1", (
+            f"Expected counter to reset to .1 (not continue from .5), got: {result.version}"
+        )
 
 
 class TestRCVersionParseExtractsDate:

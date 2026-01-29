@@ -67,7 +67,7 @@ class RealSubagentStopHook(HookPort):
         Returns:
             HookResult indicating validation success/failure and any issues found
         """
-        with open(step_file_path, 'r') as f:
+        with open(step_file_path, "r") as f:
             step_data = json.load(f)
 
         result = HookResult(validation_status="PASSED", hook_fired=True)
@@ -111,15 +111,21 @@ class RealSubagentStopHook(HookPort):
 
         # Check for timeout exceeded
         duration_minutes = step_data.get("tdd_cycle", {}).get("duration_minutes")
-        total_extensions_minutes = step_data.get("tdd_cycle", {}).get("total_extensions_minutes")
-        timeout_info = self._detect_timeout_exceeded(phase_log, duration_minutes, total_extensions_minutes)
+        total_extensions_minutes = step_data.get("tdd_cycle", {}).get(
+            "total_extensions_minutes"
+        )
+        timeout_info = self._detect_timeout_exceeded(
+            phase_log, duration_minutes, total_extensions_minutes
+        )
         if timeout_info["timeout_exceeded"]:
             result.timeout_exceeded = True
             errors.append(("TIMEOUT_EXCEEDED", timeout_info))
 
         # If any errors found, populate comprehensive failure details
         if errors:
-            self._populate_aggregated_failures(result, errors, step_file_path, step_data)
+            self._populate_aggregated_failures(
+                result, errors, step_file_path, step_data
+            )
             return result
 
         return result
@@ -161,7 +167,9 @@ class RealSubagentStopHook(HookPort):
                     invalid_skips.append(phase_name)
         return invalid_skips
 
-    def _detect_turn_limit_exceeded(self, phase_log: List[dict], max_turns: Optional[int]) -> List[dict]:
+    def _detect_turn_limit_exceeded(
+        self, phase_log: List[dict], max_turns: Optional[int]
+    ) -> List[dict]:
         """Detect phases where turn_count exceeds max_turns limit."""
         if max_turns is None:
             return []
@@ -173,18 +181,28 @@ class RealSubagentStopHook(HookPort):
 
             if turn_count is not None and turn_count > phase_max_turns:
                 phase_name = phase.get("phase_name", "UNKNOWN")
-                exceeded.append({
-                    "phase_name": phase_name,
-                    "turn_count": turn_count,
-                    "max_turns": phase_max_turns
-                })
+                exceeded.append(
+                    {
+                        "phase_name": phase_name,
+                        "turn_count": turn_count,
+                        "max_turns": phase_max_turns,
+                    }
+                )
         return exceeded
 
-    def _detect_timeout_exceeded(self, phase_log: List[dict], duration_minutes: Optional[int],
-                                  total_extensions_minutes: Optional[int]) -> dict:
+    def _detect_timeout_exceeded(
+        self,
+        phase_log: List[dict],
+        duration_minutes: Optional[int],
+        total_extensions_minutes: Optional[int],
+    ) -> dict:
         """Detect if total execution duration exceeded configured time limit."""
         if duration_minutes is None:
-            return {"timeout_exceeded": False, "actual_seconds": 0, "expected_seconds": 0}
+            return {
+                "timeout_exceeded": False,
+                "actual_seconds": 0,
+                "expected_seconds": 0,
+            }
 
         base_seconds = duration_minutes * 60
         extension_seconds = (total_extensions_minutes or 0) * 60
@@ -203,11 +221,16 @@ class RealSubagentStopHook(HookPort):
             "actual_seconds": actual_seconds,
             "expected_seconds": expected_seconds,
             "actual_minutes": actual_seconds // 60,
-            "expected_minutes": expected_seconds // 60
+            "expected_minutes": expected_seconds // 60,
         }
 
-    def _populate_aggregated_failures(self, result: HookResult, errors: List[tuple],
-                                      step_file_path: str, step_data: dict) -> None:
+    def _populate_aggregated_failures(
+        self,
+        result: HookResult,
+        errors: List[tuple],
+        step_file_path: str,
+        step_data: dict,
+    ) -> None:
         """Update HookResult with aggregated validation failures and recovery suggestions."""
         result.validation_status = "FAILED"
 
@@ -218,28 +241,40 @@ class RealSubagentStopHook(HookPort):
             if error_type == "ABANDONED_PHASE":
                 count = len(error_data)
                 total_errors += count
-                error_details.append(f"{count} abandoned phase(s): {', '.join(error_data)}")
+                error_details.append(
+                    f"{count} abandoned phase(s): {', '.join(error_data)}"
+                )
             elif error_type == "MISSING_OUTCOME":
                 count = len(error_data)
                 total_errors += count
-                error_details.append(f"{count} incomplete phase(s): {', '.join(error_data)}")
+                error_details.append(
+                    f"{count} incomplete phase(s): {', '.join(error_data)}"
+                )
             elif error_type == "INVALID_SKIP":
                 count = len(error_data)
                 total_errors += count
-                error_details.append(f"{count} invalid skip(s): {', '.join(error_data)}")
+                error_details.append(
+                    f"{count} invalid skip(s): {', '.join(error_data)}"
+                )
             elif error_type == "SILENT_COMPLETION":
                 total_errors += 1
-                error_details.append(f"Silent completion ({error_data} phases NOT_EXECUTED)")
+                error_details.append(
+                    f"Silent completion ({error_data} phases NOT_EXECUTED)"
+                )
             elif error_type == "TURN_LIMIT_EXCEEDED":
                 count = len(error_data)
                 total_errors += count
                 phase_names = [p["phase_name"] for p in error_data]
-                error_details.append(f"{count} phase(s) exceeded turn limit: {', '.join(phase_names)}")
+                error_details.append(
+                    f"{count} phase(s) exceeded turn limit: {', '.join(phase_names)}"
+                )
             elif error_type == "TIMEOUT_EXCEEDED":
                 total_errors += 1
                 actual = error_data["actual_minutes"]
                 expected = error_data["expected_minutes"]
-                error_details.append(f"Execution timeout exceeded ({actual}min > {expected}min)")
+                error_details.append(
+                    f"Execution timeout exceeded ({actual}min > {expected}min)"
+                )
 
         result.error_count = total_errors
         result.error_type = "MULTIPLE_ERRORS" if len(errors) > 1 else errors[0][0]
@@ -247,9 +282,13 @@ class RealSubagentStopHook(HookPort):
         if len(errors) == 1:
             error_type, error_data = errors[0]
             if error_type == "ABANDONED_PHASE":
-                result.error_message = f"Phase {error_data[0]} left IN_PROGRESS (abandoned)"
+                result.error_message = (
+                    f"Phase {error_data[0]} left IN_PROGRESS (abandoned)"
+                )
             elif error_type == "MISSING_OUTCOME":
-                result.error_message = f"Phase {error_data[0]} marked EXECUTED but missing outcome"
+                result.error_message = (
+                    f"Phase {error_data[0]} marked EXECUTED but missing outcome"
+                )
             elif error_type == "INVALID_SKIP":
                 result.error_message = f"Phase {error_data[0]} marked SKIPPED but missing blocked_by reason"
             elif error_type == "SILENT_COMPLETION":
@@ -267,7 +306,9 @@ class RealSubagentStopHook(HookPort):
                     f"({error_data['expected_minutes']}min)"
                 )
         else:
-            result.error_message = f"{total_errors} validation error(s) found: {'; '.join(error_details)}"
+            result.error_message = (
+                f"{total_errors} validation error(s) found: {'; '.join(error_details)}"
+            )
 
         result.recovery_suggestions = self._generate_recovery_suggestions(errors)
         self._update_step_file_state(step_file_path, step_data, result.error_message)
@@ -280,7 +321,7 @@ class RealSubagentStopHook(HookPort):
             return [
                 "Re-execute step with verbose logging to identify early exit cause",
                 "Review agent logs for error or exception that prevented work",
-                "Verify step file is writable and accessible to agent"
+                "Verify step file is writable and accessible to agent",
             ]
 
         suggestions.append(
@@ -293,7 +334,9 @@ class RealSubagentStopHook(HookPort):
                     suggestions.append(
                         f"Reset {phase} phase status to NOT_EXECUTED since it was left IN_PROGRESS without completion."
                     )
-                suggestions.append("Run `/nw:execute` again to resume from the first incomplete phase.")
+                suggestions.append(
+                    "Run `/nw:execute` again to resume from the first incomplete phase."
+                )
             elif error_type == "MISSING_OUTCOME":
                 for phase in error_data:
                     suggestions.append(
@@ -313,7 +356,9 @@ class RealSubagentStopHook(HookPort):
                         f"Increase max_turns limit from {max_turns} to at least {turn_count + 10} "
                         f"to accommodate {phase_name} phase complexity."
                     )
-                suggestions.append("Break step into smaller, simpler sub-tasks to reduce turn count per phase.")
+                suggestions.append(
+                    "Break step into smaller, simpler sub-tasks to reduce turn count per phase."
+                )
             elif error_type == "TIMEOUT_EXCEEDED":
                 actual_min = error_data["actual_minutes"]
                 expected_min = error_data["expected_minutes"]
@@ -321,15 +366,23 @@ class RealSubagentStopHook(HookPort):
                 suggestions.append(
                     f"Request time extension of at least {additional_min} minutes to accommodate step complexity."
                 )
-                suggestions.append("Break step into smaller sub-tasks to reduce execution time per step.")
-                suggestions.append("Simplify step requirements or reduce scope to fit within time limit.")
+                suggestions.append(
+                    "Break step into smaller sub-tasks to reduce execution time per step."
+                )
+                suggestions.append(
+                    "Simplify step requirements or reduce scope to fit within time limit."
+                )
 
         if len(suggestions) < 3:
-            suggestions.append("Update step file manually with correct phase states based on transcript review.")
+            suggestions.append(
+                "Update step file manually with correct phase states based on transcript review."
+            )
 
         return suggestions
 
-    def _update_step_file_state(self, step_file_path: str, step_data: dict, failure_reason: str) -> None:
+    def _update_step_file_state(
+        self, step_file_path: str, step_data: dict, failure_reason: str
+    ) -> None:
         """Update step file state to FAILED with failure reason."""
         if "state" not in step_data:
             step_data["state"] = {}
@@ -337,5 +390,5 @@ class RealSubagentStopHook(HookPort):
         step_data["state"]["status"] = "FAILED"
         step_data["state"]["failure_reason"] = failure_reason
 
-        with open(step_file_path, 'w') as f:
+        with open(step_file_path, "w") as f:
             json.dump(step_data, f, indent=2)

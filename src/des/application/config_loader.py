@@ -11,6 +11,7 @@ from typing import Dict, Optional
 
 class ConfigValidationError(Exception):
     """Raised when configuration validation fails."""
+
     pass
 
 
@@ -26,11 +27,7 @@ class ConfigLoader:
     Defaults to standard (50) if type not specified.
     """
 
-    DEFAULT_TURN_LIMITS = {
-        'quick': 20,
-        'standard': 50,
-        'complex': 100
-    }
+    DEFAULT_TURN_LIMITS = {"quick": 20, "standard": 50, "complex": 100}
 
     def __init__(self, config_path: str):
         """
@@ -60,13 +57,13 @@ class ConfigLoader:
             return self.DEFAULT_TURN_LIMITS.copy()
 
         try:
-            with open(self.config_path, 'r') as f:
+            with open(self.config_path, "r") as f:
                 config = json.load(f)
-        except (json.JSONDecodeError, IOError) as e:
+        except (json.JSONDecodeError, IOError):
             # Gracefully handle malformed or unreadable files
             return self.DEFAULT_TURN_LIMITS.copy()
 
-        turn_limits = config.get('turn_limits', {})
+        turn_limits = config.get("turn_limits", {})
 
         # Validate all turn limits are positive integers
         for task_type, limit in turn_limits.items():
@@ -89,6 +86,8 @@ class ConfigLoader:
         """
         if task_type is None or task_type not in self.turn_limits:
             # Default fallback to standard
-            return self.turn_limits.get('standard', self.DEFAULT_TURN_LIMITS['standard'])
+            return self.turn_limits.get(
+                "standard", self.DEFAULT_TURN_LIMITS["standard"]
+            )
 
         return self.turn_limits[task_type]

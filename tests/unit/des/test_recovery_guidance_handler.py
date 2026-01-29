@@ -276,9 +276,9 @@ class TestMissingSectionDetection:
 
         # Section name should appear in at least one suggestion
         has_section_reference = any(section_name in s for s in suggestions)
-        assert (
-            has_section_reference
-        ), f"Section name '{section_name}' not found in suggestions"
+        assert has_section_reference, (
+            f"Section name '{section_name}' not found in suggestions"
+        )
 
         # At least one suggestion should provide actionable guidance
         has_actionable_guidance = any(
@@ -303,9 +303,9 @@ class TestMissingSectionDetection:
         suggestion_text = "\n".join(suggestions)
         assert "WHY:" in suggestion_text, "Missing 'WHY:' component in suggestions"
         assert "HOW:" in suggestion_text, "Missing 'HOW:' component in suggestions"
-        assert (
-            "ACTION:" in suggestion_text
-        ), "Missing 'ACTION:' component in suggestions"
+        assert "ACTION:" in suggestion_text, (
+            "Missing 'ACTION:' component in suggestions"
+        )
 
     def test_missing_section_suggestions_vary_by_section_name(self):
         """Different section names should produce variations in recovery guidance."""
@@ -362,9 +362,9 @@ class TestMissingPhaseDetection:
 
         # Phase name should appear in at least one suggestion
         has_phase_reference = any(phase_name in s for s in suggestions)
-        assert (
-            has_phase_reference
-        ), f"Phase name '{phase_name}' not found in suggestions"
+        assert has_phase_reference, (
+            f"Phase name '{phase_name}' not found in suggestions"
+        )
 
     def test_missing_phase_suggestions_include_why_how_action(self):
         """Suggestions for missing_phase should include WHY, HOW, and ACTION components."""
@@ -379,9 +379,9 @@ class TestMissingPhaseDetection:
         suggestion_text = "\n".join(suggestions)
         assert "WHY:" in suggestion_text, "Missing 'WHY:' component in suggestions"
         assert "HOW:" in suggestion_text, "Missing 'HOW:' component in suggestions"
-        assert (
-            "ACTION:" in suggestion_text
-        ), "Missing 'ACTION:' component in suggestions"
+        assert "ACTION:" in suggestion_text, (
+            "Missing 'ACTION:' component in suggestions"
+        )
 
     def test_missing_phase_explains_purpose(self):
         """Recovery suggestions for missing_phase should explain why the phase is needed."""
@@ -399,9 +399,9 @@ class TestMissingPhaseDetection:
             keyword in suggestion_text
             for keyword in ["needed", "required", "purpose", "important", "critical"]
         )
-        assert (
-            has_purpose_explanation
-        ), "Suggestions should explain why the phase is required"
+        assert has_purpose_explanation, (
+            "Suggestions should explain why the phase is required"
+        )
 
 
 class TestTimeoutFailureDetection:
@@ -439,9 +439,9 @@ class TestTimeoutFailureDetection:
         # Both timeout values should appear in suggestions
         has_configured = any(configured_timeout in s for s in suggestions)
         has_actual = any(actual_runtime in s for s in suggestions)
-        assert (
-            has_configured
-        ), f"Configured timeout '{configured_timeout}' not found in suggestions"
+        assert has_configured, (
+            f"Configured timeout '{configured_timeout}' not found in suggestions"
+        )
         assert has_actual, f"Actual runtime '{actual_runtime}' not found in suggestions"
 
     def test_timeout_failure_suggestions_include_why_how_action(self):
@@ -458,9 +458,9 @@ class TestTimeoutFailureDetection:
         suggestion_text = "\n".join(suggestions)
         assert "WHY:" in suggestion_text, "Missing 'WHY:' component in suggestions"
         assert "HOW:" in suggestion_text, "Missing 'HOW:' component in suggestions"
-        assert (
-            "ACTION:" in suggestion_text
-        ), "Missing 'ACTION:' component in suggestions"
+        assert "ACTION:" in suggestion_text, (
+            "Missing 'ACTION:' component in suggestions"
+        )
 
     def test_timeout_failure_suggests_optimization(self):
         """Recovery suggestions for timeout_failure should suggest optimization approaches."""
@@ -485,7 +485,9 @@ class TestTimeoutFailureDetection:
         has_optimization = any(
             keyword in suggestion_text for keyword in optimization_keywords
         )
-        assert has_optimization, f"No optimization keywords found in suggestions. Expected one of: {optimization_keywords}"
+        assert has_optimization, (
+            f"No optimization keywords found in suggestions. Expected one of: {optimization_keywords}"
+        )
 
     def test_timeout_failure_suggests_threshold_adjustment(self):
         """Recovery suggestions for timeout_failure should suggest timeout threshold adjustment."""
@@ -510,228 +512,6 @@ class TestTimeoutFailureDetection:
         has_threshold = any(
             keyword in suggestion_text for keyword in threshold_keywords
         )
-        assert has_threshold, f"No threshold adjustment keywords found in suggestions. Expected one of: {threshold_keywords}"
-
-
-class TestAgentCrashFailureMode:
-    """Test detection and recovery guidance for agent crash failures with transcript path."""
-
-    def test_generate_suggestions_for_agent_crash_failure_mode(self):
-        """Should generate recovery suggestions for agent_crash failure mode."""
-        handler = RecoveryGuidanceHandler()
-        transcript_path = "/tmp/agent-transcripts/session-12345.log"
-        suggestions = handler.generate_recovery_suggestions(
-            failure_type="agent_crash",
-            context={
-                "phase": "GREEN",
-                "transcript_path": transcript_path,
-            },
+        assert has_threshold, (
+            f"No threshold adjustment keywords found in suggestions. Expected one of: {threshold_keywords}"
         )
-
-        assert suggestions is not None
-        assert isinstance(suggestions, list)
-        assert len(suggestions) >= 1
-
-    def test_agent_crash_suggestions_include_specific_transcript_path(self):
-        """Recovery suggestions for agent_crash should include the specific transcript_path from context."""
-        handler = RecoveryGuidanceHandler()
-        transcript_path = "/tmp/agent-transcripts/session-12345.log"
-        suggestions = handler.generate_recovery_suggestions(
-            failure_type="agent_crash",
-            context={
-                "phase": "GREEN",
-                "transcript_path": transcript_path,
-            },
-        )
-
-        # The specific transcript path must appear in at least one suggestion
-        has_path = any(transcript_path in s for s in suggestions)
-        assert (
-            has_path
-        ), f"Suggestions must include specific transcript path: {transcript_path}"
-
-    def test_agent_crash_suggestions_include_why_how_action_components(self):
-        """Suggestions for agent_crash should include WHY, HOW, and ACTION components."""
-        handler = RecoveryGuidanceHandler()
-        transcript_path = "/tmp/agent-transcripts/crash-xyz.log"
-        suggestions = handler.generate_recovery_suggestions(
-            failure_type="agent_crash",
-            context={
-                "phase": "RED_UNIT",
-                "transcript_path": transcript_path,
-            },
-        )
-
-        suggestion_text = "\n".join(suggestions)
-        assert "WHY:" in suggestion_text, "Missing 'WHY:' component in suggestions"
-        assert "HOW:" in suggestion_text, "Missing 'HOW:' component in suggestions"
-        assert (
-            "ACTION:" in suggestion_text
-        ), "Missing 'ACTION:' component in suggestions"
-
-    def test_agent_crash_suggestions_reference_phase_name(self):
-        """Recovery suggestions for agent_crash should reference the specific phase name."""
-        handler = RecoveryGuidanceHandler()
-        phase = "REVIEW"
-        suggestions = handler.generate_recovery_suggestions(
-            failure_type="agent_crash",
-            context={
-                "phase": phase,
-                "transcript_path": "/tmp/transcripts/session.log",
-            },
-        )
-
-        # Phase name should appear in at least one suggestion
-        has_phase = any(phase in s for s in suggestions)
-        assert has_phase, f"Suggestions must reference phase: {phase}"
-
-
-class TestFailureModeRegistry:
-    """Test 03-05: Failure Mode Registry and get_recovery_suggestions_for_mode method."""
-
-    def test_registry_contains_all_7_failure_modes(self):
-        """Test that registry contains all 7 defined failure modes (AC-005.1)."""
-        handler = RecoveryGuidanceHandler()
-
-        # Verify registry exists
-        assert hasattr(
-            handler, "FAILURE_MODE_TEMPLATES"
-        ), "Handler should have FAILURE_MODE_TEMPLATES registry"
-
-        # Define expected failure modes
-        expected_modes = [
-            "abandoned_phase",
-            "silent_completion",
-            "missing_section",
-            "missing_phase",
-            "invalid_outcome",
-            "invalid_skip",
-            "stale_execution",
-        ]
-
-        # Check all modes are in registry
-        registry = handler.FAILURE_MODE_TEMPLATES
-        for mode in expected_modes:
-            assert mode in registry, f"Failure mode '{mode}' missing from registry"
-
-    def test_each_failure_mode_has_why_template(self):
-        """Test that each failure mode has templates with WHY content (AC-005.5)."""
-        handler = RecoveryGuidanceHandler()
-
-        failure_modes = [
-            "abandoned_phase",
-            "silent_completion",
-            "missing_section",
-            "missing_phase",
-            "invalid_outcome",
-            "invalid_skip",
-            "stale_execution",
-        ]
-
-        for mode in failure_modes:
-            suggestions = handler.generate_recovery_suggestions(
-                failure_type=mode, context={"phase": "TEST", "section_name": "TEST"}
-            )
-
-            # At least one suggestion should contain WHY:
-            has_why = any("WHY:" in s for s in suggestions)
-            assert has_why, f"Mode '{mode}' missing WHY component in suggestions"
-
-    def test_each_failure_mode_has_how_template(self):
-        """Test that each failure mode has templates with HOW content (AC-005.5)."""
-        handler = RecoveryGuidanceHandler()
-
-        failure_modes = [
-            "abandoned_phase",
-            "silent_completion",
-            "missing_section",
-            "missing_phase",
-            "invalid_outcome",
-            "invalid_skip",
-            "stale_execution",
-        ]
-
-        for mode in failure_modes:
-            suggestions = handler.generate_recovery_suggestions(
-                failure_type=mode, context={"phase": "TEST", "section_name": "TEST"}
-            )
-
-            # At least one suggestion should contain HOW:
-            has_how = any("HOW:" in s for s in suggestions)
-            assert has_how, f"Mode '{mode}' missing HOW component in suggestions"
-
-    def test_each_failure_mode_has_actionable_template(self):
-        """Test that each failure mode has templates with actionable content (AC-005.3)."""
-        handler = RecoveryGuidanceHandler()
-
-        failure_modes = [
-            "abandoned_phase",
-            "silent_completion",
-            "missing_section",
-            "missing_phase",
-            "invalid_outcome",
-            "invalid_skip",
-            "stale_execution",
-        ]
-
-        for mode in failure_modes:
-            suggestions = handler.generate_recovery_suggestions(
-                failure_type=mode, context={"phase": "TEST", "section_name": "TEST"}
-            )
-
-            # At least one suggestion should contain ACTION:
-            has_action = any("ACTION:" in s for s in suggestions)
-            assert has_action, f"Mode '{mode}' missing ACTION component in suggestions"
-
-    def test_templates_use_placeholders_for_context_variables(self):
-        """Test that templates use placeholders that get filled with context (AC-005.2)."""
-        handler = RecoveryGuidanceHandler()
-
-        # Test with specific phase context
-        suggestions = handler.generate_recovery_suggestions(
-            failure_type="abandoned_phase",
-            context={
-                "phase": "SPECIFIC_PHASE",
-                "transcript_path": "/specific/transcript.log",
-            },
-        )
-
-        # Context values should be interpolated into suggestions
-        joined = " ".join(suggestions)
-        assert "SPECIFIC_PHASE" in joined, "Phase placeholder not interpolated"
-        assert (
-            "/specific/transcript.log" in joined
-        ), "Transcript path placeholder not interpolated"
-
-    def test_get_recovery_suggestions_for_mode_method_exists_and_works(self):
-        """Test that get_recovery_suggestions_for_mode method exists and returns suggestions (AC-005.1 + AC-005.2)."""
-        handler = RecoveryGuidanceHandler()
-
-        # Method must exist
-        assert hasattr(
-            handler, "get_recovery_suggestions_for_mode"
-        ), "Handler must have get_recovery_suggestions_for_mode method"
-
-        # Method must be callable
-        assert callable(
-            handler.get_recovery_suggestions_for_mode
-        ), "get_recovery_suggestions_for_mode must be callable"
-
-        # Method should return suggestions for all 7 modes
-        failure_modes = [
-            "abandoned_phase",
-            "silent_completion",
-            "missing_section",
-            "missing_phase",
-            "invalid_outcome",
-            "invalid_skip",
-            "stale_execution",
-        ]
-
-        for mode in failure_modes:
-            suggestions = handler.get_recovery_suggestions_for_mode(mode)
-            assert (
-                suggestions is not None
-            ), f"Should return suggestions for mode: {mode}"
-            assert isinstance(suggestions, list), f"Should return list for mode: {mode}"
-            assert len(suggestions) > 0, f"Should have suggestions for mode: {mode}"

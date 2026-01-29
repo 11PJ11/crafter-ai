@@ -24,7 +24,7 @@ class RealFileSystem(FileSystemPort):
             FileNotFoundError: If file doesn't exist
             JSONDecodeError: If file is not valid JSON
         """
-        with open(path, 'r', encoding='utf-8') as f:
+        with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
 
     def write_json(self, path: Path, data: dict) -> None:
@@ -34,7 +34,7 @@ class RealFileSystem(FileSystemPort):
             path: Absolute path to target JSON file
             data: Dictionary to write as JSON
         """
-        with open(path, 'w', encoding='utf-8') as f:
+        with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
 
     def exists(self, path: Path) -> bool:

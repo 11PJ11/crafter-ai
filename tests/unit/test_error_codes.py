@@ -58,9 +58,9 @@ class TestErrorCodesDefinitions:
         ]
 
         for code_name in required_codes:
-            assert hasattr(
-                error_codes, code_name
-            ), f"Error code {code_name} must be defined"
+            assert hasattr(error_codes, code_name), (
+                f"Error code {code_name} must be defined"
+            )
 
     def test_error_codes_not_empty(self):
         """Error code values must not be empty strings."""
@@ -116,7 +116,7 @@ class TestErrorCodesImportability:
 
         for name, value in codes.items():
             # Value should be uppercase with underscores (snake_case)
-            assert (
-                value == value.upper()
-            ), f"Error code {name} value should be uppercase"
+            assert value == value.upper(), (
+                f"Error code {name} value should be uppercase"
+            )
             assert " " not in value, f"Error code {name} should not contain spaces"

@@ -10,7 +10,7 @@ Defines standardized event categories:
 
 from dataclasses import dataclass, asdict
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 
 class EventType(Enum):
@@ -65,7 +65,7 @@ class AuditEvent:
         return {k: v for k, v in data.items() if v is not None}
 
     @staticmethod
-    def from_dict(data: Dict[str, Any]) -> 'AuditEvent':
+    def from_dict(data: Dict[str, Any]) -> "AuditEvent":
         """Create AuditEvent from dictionary.
 
         Args:

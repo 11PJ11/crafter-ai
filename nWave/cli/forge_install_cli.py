@@ -21,10 +21,10 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Optional
+from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
-    from nWave.core.versioning.application.install_service import InstallResult
+    pass
 
 
 def _is_test_mode() -> bool:
@@ -135,6 +135,7 @@ def _create_smoke_test_runner(nwave_home: Path) -> Callable[[], bool]:
     In test mode with NWAVE_FORCE_SMOKE_FAILURE=true, the smoke test
     will always fail to simulate corrupted installation.
     """
+
     def run_smoke_test() -> bool:
         # If forced failure is set, return False immediately
         if _is_smoke_test_forced_failure():
@@ -179,12 +180,17 @@ def main() -> int:
 
         # Validate dist/ exists
         if not dist_dir.exists():
-            print("No distribution found. Run /nw:forge first to build.", file=sys.stderr)
+            print(
+                "No distribution found. Run /nw:forge first to build.", file=sys.stderr
+            )
             return 1
 
         # Validate dist/ has required structure
         if not (dist_dir / "VERSION").exists():
-            print("Invalid distribution: missing required files. Rebuild with /nw:forge.", file=sys.stderr)
+            print(
+                "Invalid distribution: missing required files. Rebuild with /nw:forge.",
+                file=sys.stderr,
+            )
             return 1
 
         # Create file system adapter

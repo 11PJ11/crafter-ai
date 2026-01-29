@@ -68,17 +68,17 @@ class TestCommandOriginFiltering:
         )
 
         # THEN: Prompt contains DES validation markers
-        assert (
-            "<!-- DES-VALIDATION: required -->" in prompt
-        ), "DES validation marker missing - Gate 1 validation will not trigger"
+        assert "<!-- DES-VALIDATION: required -->" in prompt, (
+            "DES validation marker missing - Gate 1 validation will not trigger"
+        )
 
-        assert (
-            f"<!-- DES-STEP-FILE: {step_file} -->" in prompt
-        ), "Step file marker missing - SubagentStop hook cannot locate step file"
+        assert f"<!-- DES-STEP-FILE: {step_file} -->" in prompt, (
+            "Step file marker missing - SubagentStop hook cannot locate step file"
+        )
 
-        assert (
-            "<!-- DES-ORIGIN: command:/nw:execute -->" in prompt
-        ), "Origin marker missing - audit trail cannot track command source"
+        assert "<!-- DES-ORIGIN: command:/nw:execute -->" in prompt, (
+            "Origin marker missing - audit trail cannot track command source"
+        )
 
     def test_ad_hoc_task_bypasses_des_validation(self, des_orchestrator):
         """
@@ -105,17 +105,17 @@ class TestCommandOriginFiltering:
         )
 
         # THEN: No DES markers present
-        assert (
-            "<!-- DES-VALIDATION: required -->" not in prompt
-        ), "Ad-hoc tasks should not trigger DES validation"
+        assert "<!-- DES-VALIDATION: required -->" not in prompt, (
+            "Ad-hoc tasks should not trigger DES validation"
+        )
 
-        assert (
-            "<!-- DES-STEP-FILE:" not in prompt
-        ), "Ad-hoc tasks have no step file association"
+        assert "<!-- DES-STEP-FILE:" not in prompt, (
+            "Ad-hoc tasks have no step file association"
+        )
 
-        assert (
-            "<!-- DES-ORIGIN:" not in prompt
-        ), "Ad-hoc tasks have no command origin tracking"
+        assert "<!-- DES-ORIGIN:" not in prompt, (
+            "Ad-hoc tasks have no command origin tracking"
+        )
 
     def test_research_command_skips_full_validation(self, des_orchestrator):
         """
@@ -145,14 +145,14 @@ class TestCommandOriginFiltering:
         # THEN: NO DES validation markers (validation_level = "none")
         # Architecture decision (v1.6.0, line 417): Research commands bypass ALL validation
         # Research commands grouped with ad-hoc tasks - no markers, no overhead
-        assert (
-            "<!-- DES-VALIDATION:" not in prompt
-        ), "Research commands must have NO DES-VALIDATION marker (validation_level='none')"
+        assert "<!-- DES-VALIDATION:" not in prompt, (
+            "Research commands must have NO DES-VALIDATION marker (validation_level='none')"
+        )
 
         # No step file required for research
-        assert (
-            "<!-- DES-STEP-FILE:" not in prompt
-        ), "Research commands do not use step files"
+        assert "<!-- DES-STEP-FILE:" not in prompt, (
+            "Research commands do not use step files"
+        )
 
     def test_develop_command_includes_des_validation_marker(
         self, in_memory_filesystem, des_orchestrator
@@ -190,14 +190,14 @@ class TestCommandOriginFiltering:
         )
 
         # THEN: Full DES validation required (same as execute)
-        assert (
-            "<!-- DES-VALIDATION: required -->" in prompt
-        ), "Develop command requires full DES validation"
+        assert "<!-- DES-VALIDATION: required -->" in prompt, (
+            "Develop command requires full DES validation"
+        )
 
-        assert (
-            f"<!-- DES-STEP-FILE: {step_file} -->" in prompt
-        ), "Develop command must reference step file for state tracking"
+        assert f"<!-- DES-STEP-FILE: {step_file} -->" in prompt, (
+            "Develop command must reference step file for state tracking"
+        )
 
-        assert (
-            "<!-- DES-ORIGIN: command:/nw:develop -->" in prompt
-        ), "Origin must be tracked for audit trail"
+        assert "<!-- DES-ORIGIN: command:/nw:develop -->" in prompt, (
+            "Origin must be tracked for audit trail"
+        )

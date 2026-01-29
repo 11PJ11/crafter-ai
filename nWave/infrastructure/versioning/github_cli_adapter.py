@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import re
 import subprocess
-from dataclasses import dataclass
 from typing import Optional
 
 from nWave.core.versioning.ports.github_cli_port import (
@@ -36,9 +35,7 @@ class GitHubCLIAdapter(GitHubCLIPort):
         ...     print(f"PR #{result.pr_number}: {result.pr_url}")
     """
 
-    def create_pr(
-        self, base_branch: str, head_branch: str, title: str
-    ) -> PRResult:
+    def create_pr(self, base_branch: str, head_branch: str, title: str) -> PRResult:
         """
         Create a pull request from head branch to base branch.
 

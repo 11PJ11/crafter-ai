@@ -63,7 +63,9 @@ def _create_mock_github_adapter():
 
         def get_latest_release(self, owner: str, repo: str) -> ReleaseInfo:
             """Return mock release info from environment."""
-            is_reachable = os.getenv("NWAVE_MOCK_GITHUB_REACHABLE", "true").lower() == "true"
+            is_reachable = (
+                os.getenv("NWAVE_MOCK_GITHUB_REACHABLE", "true").lower() == "true"
+            )
 
             if not is_reachable:
                 raise NetworkError("Mock: GitHub API unreachable")
@@ -97,7 +99,10 @@ def main() -> int:
         if _is_test_mode():
             github_api = _create_mock_github_adapter()
         else:
-            from nWave.infrastructure.versioning.github_api_adapter import GitHubAPIAdapter
+            from nWave.infrastructure.versioning.github_api_adapter import (
+                GitHubAPIAdapter,
+            )
+
             github_api = GitHubAPIAdapter()
 
         # Create service and check version

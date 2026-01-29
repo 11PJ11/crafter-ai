@@ -7,7 +7,6 @@ Supports ISO 8601 timestamps, event categorization, and daily log rotation.
 
 import hashlib
 import json
-import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -49,11 +48,13 @@ class AuditLogger:
         """Load existing entry hashes from current log file."""
         if self.current_log_file.exists():
             try:
-                with open(self.current_log_file, 'r') as f:
+                with open(self.current_log_file, "r") as f:
                     for line in f:
                         if line.strip():
                             entry = json.loads(line)
-                            content = json.dumps(entry, sort_keys=True, separators=(',', ':'))
+                            content = json.dumps(
+                                entry, sort_keys=True, separators=(",", ":")
+                            )
                             entry_hash = hashlib.sha256(content.encode()).hexdigest()
                             self._entry_hashes.append(entry_hash)
             except Exception:
@@ -70,19 +71,19 @@ class AuditLogger:
             IOError: If append operation fails
         """
         # Ensure timestamp is ISO 8601 format
-        if 'timestamp' not in event:
-            event['timestamp'] = self._get_iso_timestamp()
+        if "timestamp" not in event:
+            event["timestamp"] = self._get_iso_timestamp()
 
         # Serialize to JSONL format (one JSON object per line)
-        json_line = json.dumps(event, separators=(',', ':'), sort_keys=True)
+        json_line = json.dumps(event, separators=(",", ":"), sort_keys=True)
 
         # Calculate hash for immutability tracking
         entry_hash = hashlib.sha256(json_line.encode()).hexdigest()
         self._entry_hashes.append(entry_hash)
 
         # Append to log file
-        with open(self.current_log_file, 'a') as f:
-            f.write(json_line + '\n')
+        with open(self.current_log_file, "a") as f:
+            f.write(json_line + "\n")
 
     def _get_iso_timestamp(self) -> str:
         """Get current timestamp in ISO 8601 format with millisecond precision.
@@ -90,7 +91,7 @@ class AuditLogger:
         Format: YYYY-MM-DDTHH:MM:SS.sssZ (e.g., 2026-01-27T14:30:45.123Z)
         """
         now = datetime.now(timezone.utc)
-        iso_string = now.strftime('%Y-%m-%dT%H:%M:%S')
+        iso_string = now.strftime("%Y-%m-%dT%H:%M:%S")
         milliseconds = now.microsecond // 1000
         return f"{iso_string}.{milliseconds:03d}Z"
 
@@ -105,7 +106,7 @@ class AuditLogger:
             SHA256 hash of combined entry hashes
         """
         selected_hashes = self._entry_hashes[start_idx:end_idx]
-        combined = ''.join(selected_hashes)
+        combined = "".join(selected_hashes)
         return hashlib.sha256(combined.encode()).hexdigest()
 
     def entry_count(self) -> int:
@@ -124,11 +125,11 @@ class AuditLogger:
         entries = []
         if self.current_log_file.exists():
             try:
-                with open(self.current_log_file, 'r') as f:
+                with open(self.current_log_file, "r") as f:
                     for line in f:
                         if line.strip():
                             entry = json.loads(line)
-                            if entry.get('step_path') == step_path:
+                            if entry.get("step_path") == step_path:
                                 entries.append(entry)
             except Exception:
                 pass
@@ -143,7 +144,7 @@ class AuditLogger:
         entries = []
         if self.current_log_file.exists():
             try:
-                with open(self.current_log_file, 'r') as f:
+                with open(self.current_log_file, "r") as f:
                     for line in f:
                         if line.strip():
                             entry = json.loads(line)
@@ -183,9 +184,5 @@ def log_audit_event(event_type: str, **kwargs) -> None:
     logger = get_audit_logger()
     logger.rotate_if_needed()
 
-    event = {
-        'timestamp': logger._get_iso_timestamp(),
-        'event': event_type,
-        **kwargs
-    }
+    event = {"timestamp": logger._get_iso_timestamp(), "event": event_type, **kwargs}
     logger.append(event)

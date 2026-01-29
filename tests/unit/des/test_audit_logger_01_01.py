@@ -66,9 +66,9 @@ class TestAuditLoggerTimestamps:
             assert isinstance(timestamp, str), "Timestamp not a string"
             assert "T" in timestamp, "Missing T separator"
             assert timestamp.endswith("Z"), "Not ending with Z (UTC)"
-            assert (
-                len(timestamp) == 24
-            ), f"Expected length 24, got {len(timestamp)}: {timestamp}"
+            assert len(timestamp) == 24, (
+                f"Expected length 24, got {len(timestamp)}: {timestamp}"
+            )
 
     def test_audit_logger_timestamp_has_millisecond_precision(self):
         """Test that timestamp includes milliseconds."""
@@ -221,9 +221,9 @@ class TestAuditLoggerContentHashing:
 
             # But total entries hash should be different
             hash_0_3 = logger.compute_hash_of_entries(0, 3)
-            assert (
-                hash_0_3 != hash_0_2_before
-            ), "Total hash should change with new entry"
+            assert hash_0_3 != hash_0_2_before, (
+                "Total hash should change with new entry"
+            )
 
     def test_audit_logger_hash_is_sha256(self):
         """Test that computed hash is valid SHA256."""

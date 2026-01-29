@@ -2,9 +2,11 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import List, Optional
 
+
 @dataclass
 class HookResult:
     """Result from hook validation."""
+
     validation_status: str
     hook_fired: bool = True
     abandoned_phases: List[str] = field(default_factory=list)
@@ -17,6 +19,7 @@ class HookResult:
     not_executed_phases: int = 0
     turn_limit_exceeded: bool = False
     timeout_exceeded: bool = False
+
 
 class HookPort(ABC):
     """Port for post-execution validation hooks."""

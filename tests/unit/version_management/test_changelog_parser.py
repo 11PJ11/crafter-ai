@@ -40,9 +40,9 @@ class TestChangelogParserShould:
 
         breaking_changes = parser.extract_breaking_changes(changelog)
 
-        assert (
-            breaking_changes == []
-        ), "Should return empty list when no breaking changes"
+        assert breaking_changes == [], (
+            "Should return empty list when no breaking changes"
+        )
 
     def test_detect_breaking_changes_by_conventional_commits_marker(self):
         """Detect breaking changes using conventional commits ! marker."""

@@ -28,9 +28,9 @@ INSTALLATION_GUIDE = PROJECT_ROOT / "docs" / "installation" / "installation-guid
 @given("the installation guide exists at docs/installation/installation-guide.md")
 def installation_guide_exists():
     """Verify installation guide exists."""
-    assert (
-        INSTALLATION_GUIDE.exists()
-    ), f"Installation guide not found at {INSTALLATION_GUIDE}"
+    assert INSTALLATION_GUIDE.exists(), (
+        f"Installation guide not found at {INSTALLATION_GUIDE}"
+    )
 
 
 @given("I have a fresh machine with Python installed")
@@ -153,9 +153,9 @@ def prerequisites_not_state(text):
             f"Python >= {text.split()[-1]}",
         ]
         for pattern in problematic_patterns:
-            assert (
-                pattern not in content
-            ), f"Documentation incorrectly states '{pattern}'"
+            assert pattern not in content, (
+                f"Documentation incorrectly states '{pattern}'"
+            )
 
 
 @then(parsers.parse('the quick start should include "{text}"'))
@@ -193,9 +193,9 @@ def guide_mentions_pipenv():
     """Verify guide mentions pipenv requirement."""
     content = INSTALLATION_GUIDE.read_text().lower()
     assert "pipenv" in content, "Guide doesn't mention pipenv"
-    assert (
-        "required" in content or "prerequisite" in content
-    ), "Guide doesn't indicate pipenv is required"
+    assert "required" in content or "prerequisite" in content, (
+        "Guide doesn't indicate pipenv is required"
+    )
 
 
 @then("the guide should explain how to install pipenv")
@@ -226,9 +226,9 @@ def guide_shows_pipenv_commands():
 def section_addresses_error(error_type):
     """Verify troubleshooting section addresses specific error."""
     content = INSTALLATION_GUIDE.read_text()
-    assert (
-        error_type.lower() in content.lower()
-    ), f"Troubleshooting doesn't address '{error_type}'"
+    assert error_type.lower() in content.lower(), (
+        f"Troubleshooting doesn't address '{error_type}'"
+    )
 
 
 @then("each error should have a solution with pipenv commands")
@@ -246,6 +246,6 @@ def errors_have_pipenv_solutions():
     has_pipenv_solution = "pipenv" in content
 
     if has_troubleshooting:
-        assert (
-            has_pipenv_solution
-        ), "Troubleshooting section doesn't include pipenv solutions"
+        assert has_pipenv_solution, (
+            "Troubleshooting section doesn't include pipenv solutions"
+        )

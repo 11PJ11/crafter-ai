@@ -337,9 +337,9 @@ class TestPostExecutionStateValidation:
         for suggestion in hook_result.recovery_suggestions:
             assert len(suggestion) >= 20, "Suggestion too short to be actionable"
             assert suggestion[0].isupper(), "Suggestion should start with capital"
-            assert suggestion.rstrip().endswith(
-                (".", "`", '"')
-            ), "Suggestion should end properly"
+            assert suggestion.rstrip().endswith((".", "`", '"')), (
+                "Suggestion should end properly"
+            )
 
         # FORMAT REQUIREMENT 2: At least one suggestion explains WHY error occurred
         why_patterns = ["because", "since", "left in", "was not", "missing", "without"]

@@ -167,9 +167,9 @@ class TestClaudeCodeContextOutputsJsonError:
 
         for error_json in errors:
             parsed = json.loads(error_json)
-            assert (
-                set(parsed.keys()) == required_fields
-            ), f"Missing or extra fields in JSON: {set(parsed.keys())} vs {required_fields}"
+            assert set(parsed.keys()) == required_fields, (
+                f"Missing or extra fields in JSON: {set(parsed.keys())} vs {required_fields}"
+            )
 
 
 class TestFormatErrorModeSelection:
@@ -219,46 +219,46 @@ class TestClaudeCodeFormatterModuleImportability:
         """ClaudeCodeFormatter class must be defined."""
         from scripts.install import output_formatter
 
-        assert hasattr(
-            output_formatter, "ClaudeCodeFormatter"
-        ), "ClaudeCodeFormatter class must be defined"
+        assert hasattr(output_formatter, "ClaudeCodeFormatter"), (
+            "ClaudeCodeFormatter class must be defined"
+        )
 
     def test_claude_code_formatter_has_format_json_error(self):
         """ClaudeCodeFormatter must have format_json_error method."""
         from scripts.install.output_formatter import ClaudeCodeFormatter
 
-        assert hasattr(
-            ClaudeCodeFormatter, "format_json_error"
-        ), "format_json_error method must be defined"
+        assert hasattr(ClaudeCodeFormatter, "format_json_error"), (
+            "format_json_error method must be defined"
+        )
 
     def test_claude_code_formatter_has_format_venv_error(self):
         """ClaudeCodeFormatter must have format_venv_error method."""
         from scripts.install.output_formatter import ClaudeCodeFormatter
 
-        assert hasattr(
-            ClaudeCodeFormatter, "format_venv_error"
-        ), "format_venv_error method must be defined"
+        assert hasattr(ClaudeCodeFormatter, "format_venv_error"), (
+            "format_venv_error method must be defined"
+        )
 
     def test_claude_code_formatter_has_format_pipenv_error(self):
         """ClaudeCodeFormatter must have format_pipenv_error method."""
         from scripts.install.output_formatter import ClaudeCodeFormatter
 
-        assert hasattr(
-            ClaudeCodeFormatter, "format_pipenv_error"
-        ), "format_pipenv_error method must be defined"
+        assert hasattr(ClaudeCodeFormatter, "format_pipenv_error"), (
+            "format_pipenv_error method must be defined"
+        )
 
     def test_claude_code_formatter_has_format_dependency_error(self):
         """ClaudeCodeFormatter must have format_dependency_error method."""
         from scripts.install.output_formatter import ClaudeCodeFormatter
 
-        assert hasattr(
-            ClaudeCodeFormatter, "format_dependency_error"
-        ), "format_dependency_error method must be defined"
+        assert hasattr(ClaudeCodeFormatter, "format_dependency_error"), (
+            "format_dependency_error method must be defined"
+        )
 
     def test_format_error_function_defined(self):
         """format_error function must be defined at module level."""
         from scripts.install import output_formatter
 
-        assert hasattr(
-            output_formatter, "format_error"
-        ), "format_error function must be defined"
+        assert hasattr(output_formatter, "format_error"), (
+            "format_error function must be defined"
+        )

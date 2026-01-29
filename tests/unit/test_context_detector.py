@@ -185,17 +185,17 @@ class TestModuleImportability:
         ]
 
         for func_name in required_functions:
-            assert hasattr(
-                context_detector, func_name
-            ), f"Function {func_name} must be defined"
+            assert hasattr(context_detector, func_name), (
+                f"Function {func_name} must be defined"
+            )
 
     def test_execution_context_enum_defined(self):
         """ExecutionContext enum must be defined."""
         from scripts.install import context_detector
 
-        assert hasattr(
-            context_detector, "ExecutionContext"
-        ), "ExecutionContext enum must be defined"
+        assert hasattr(context_detector, "ExecutionContext"), (
+            "ExecutionContext enum must be defined"
+        )
 
     def test_ci_and_container_functions_defined(self):
         """CI and container detection functions must be defined."""
@@ -208,9 +208,9 @@ class TestModuleImportability:
         ]
 
         for func_name in required_functions:
-            assert hasattr(
-                context_detector, func_name
-            ), f"Function {func_name} must be defined"
+            assert hasattr(context_detector, func_name), (
+                f"Function {func_name} must be defined"
+            )
 
 
 class TestIsCIEnvironmentGitHubActions:

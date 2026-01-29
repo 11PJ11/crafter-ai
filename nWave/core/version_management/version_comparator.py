@@ -40,9 +40,9 @@ class VersionComparator:
             Major version number as integer
         """
         # Remove 'v' prefix if present
-        version_clean = version.lstrip('v')
+        version_clean = version.lstrip("v")
 
         # Split and get first component
-        major_str = version_clean.split('.')[0]
+        major_str = version_clean.split(".")[0]
 
         return int(major_str)

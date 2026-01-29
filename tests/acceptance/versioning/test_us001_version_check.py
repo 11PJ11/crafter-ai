@@ -69,9 +69,9 @@ class TestDisplayVersionWithUpdateAvailable:
         timestamp_after = datetime.now(timezone.utc)
 
         # THEN: Output displays "nWave v1.2.3 (update available: v1.3.0)"
-        assert (
-            "nWave v1.2.3 (update available: v1.3.0)" in output
-        ), f"Expected version output not found. Got: {output}"
+        assert "nWave v1.2.3 (update available: v1.3.0)" in output, (
+            f"Expected version output not found. Got: {output}"
+        )
 
         # AND: Watermark file is updated with current timestamp
         watermark_file = test_installation["watermark_file"]
@@ -86,9 +86,9 @@ class TestDisplayVersionWithUpdateAvailable:
         )
 
         # AND: Watermark file contains latest_version "1.3.0"
-        assert (
-            watermark_content["latest_version"] == "1.3.0"
-        ), f"Expected latest_version '1.3.0', got '{watermark_content['latest_version']}'"
+        assert watermark_content["latest_version"] == "1.3.0", (
+            f"Expected latest_version '1.3.0', got '{watermark_content['latest_version']}'"
+        )
 
 
 class TestDailyAutoCheckUpdatesWatermarkWhenStale:
@@ -170,9 +170,9 @@ class TestDailyAutoCheckUpdatesWatermarkWhenStale:
 
         # THEN: The system checks GitHub Releases (API was called)
         github_call_count_after = getattr(mock_github_adapter, "_call_count", 0)
-        assert (
-            github_call_count_after > github_call_count_before
-        ), "Expected GitHub API to be called when watermark is stale"
+        assert github_call_count_after > github_call_count_before, (
+            "Expected GitHub API to be called when watermark is stale"
+        )
 
         # AND: The watermark file is updated with new timestamp
         updated_watermark_content = json.loads(watermark_file.read_text())
@@ -180,15 +180,15 @@ class TestDailyAutoCheckUpdatesWatermarkWhenStale:
             updated_watermark_content["last_check"]
         )
 
-        assert (
-            updated_timestamp > stale_timestamp
-        ), f"Watermark timestamp {updated_timestamp} should be newer than stale {stale_timestamp}"
+        assert updated_timestamp > stale_timestamp, (
+            f"Watermark timestamp {updated_timestamp} should be newer than stale {stale_timestamp}"
+        )
         assert timestamp_before <= updated_timestamp <= timestamp_after, (
             f"Watermark timestamp {updated_timestamp} not within expected range "
             f"[{timestamp_before}, {timestamp_after}]"
         )
 
         # AND: The watermark file contains latest_version "1.3.0"
-        assert (
-            updated_watermark_content["latest_version"] == "1.3.0"
-        ), f"Expected latest_version '1.3.0', got '{updated_watermark_content['latest_version']}'"
+        assert updated_watermark_content["latest_version"] == "1.3.0", (
+            f"Expected latest_version '1.3.0', got '{updated_watermark_content['latest_version']}'"
+        )

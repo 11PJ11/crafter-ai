@@ -173,9 +173,9 @@ class TestForgeReleaseCLIPipelineStatus:
         output = format_release_output(result)
 
         # Assert - exact format "PR #123 created."
-        assert (
-            "PR #123 created." in output
-        ), f"Expected 'PR #123 created.' in output, got: {output!r}"
+        assert "PR #123 created." in output, (
+            f"Expected 'PR #123 created.' in output, got: {output!r}"
+        )
 
     def test_format_release_output_shows_pipeline_monitor_url(self):
         """
@@ -197,9 +197,9 @@ class TestForgeReleaseCLIPipelineStatus:
 
         # Assert - exact format "CI/CD pipeline triggered. Monitor at: {url}"
         expected_message = "CI/CD pipeline triggered. Monitor at: https://github.com/owner/repo/pull/456"
-        assert (
-            expected_message in output
-        ), f"Expected '{expected_message}' in output, got: {output!r}"
+        assert expected_message in output, (
+            f"Expected '{expected_message}' in output, got: {output!r}"
+        )
 
 
 # ============================================================================

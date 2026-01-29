@@ -70,9 +70,9 @@ class TestUpdateServiceCreatesBackupBeforeUpdate:
         # Assert: Backup created BEFORE download
         assert "backup" in call_order, "Backup should be created"
         assert "download" in call_order, "Download should occur"
-        assert call_order.index("backup") < call_order.index(
-            "download"
-        ), "Backup must happen before download"
+        assert call_order.index("backup") < call_order.index("download"), (
+            "Backup must happen before download"
+        )
 
 
 class TestUpdateServiceDownloadsReleaseAsset:
@@ -248,12 +248,12 @@ class TestUpdateServiceUpdatesVersionFile:
         result = service.update()
 
         # Assert: Update succeeded and VERSION file was written
-        assert (
-            result.success is True
-        ), f"Update should succeed, got: {result.error_message}"
-        assert (
-            version_file.read_text().strip() == "1.3.0"
-        ), "VERSION file should contain 1.3.0"
+        assert result.success is True, (
+            f"Update should succeed, got: {result.error_message}"
+        )
+        assert version_file.read_text().strip() == "1.3.0", (
+            "VERSION file should contain 1.3.0"
+        )
 
 
 # ============================================================================
@@ -320,15 +320,15 @@ class TestUpdateServiceHandlesNetworkFailure:
 
         # Assert
         assert result.success is False, "Update should fail on network error"
-        assert (
-            "Download failed" in result.error_message
-        ), f"Error message should start with 'Download failed', got: {result.error_message}"
-        assert (
-            "network error" in result.error_message.lower()
-        ), f"Error message should mention 'network error', got: {result.error_message}"
-        assert (
-            "unchanged" in result.error_message.lower()
-        ), f"Error message should indicate installation is 'unchanged', got: {result.error_message}"
+        assert "Download failed" in result.error_message, (
+            f"Error message should start with 'Download failed', got: {result.error_message}"
+        )
+        assert "network error" in result.error_message.lower(), (
+            f"Error message should mention 'network error', got: {result.error_message}"
+        )
+        assert "unchanged" in result.error_message.lower(), (
+            f"Error message should indicate installation is 'unchanged', got: {result.error_message}"
+        )
 
     def test_partial_files_cleaned_up_on_network_failure(self, tmp_path):
         """
@@ -385,9 +385,9 @@ class TestUpdateServiceHandlesNetworkFailure:
         # Assert
         assert result.success is False
         assert partial_file_path is not None, "Download should have been attempted"
-        assert (
-            not partial_file_path.exists()
-        ), f"Partial file should be cleaned up: {partial_file_path}"
+        assert not partial_file_path.exists(), (
+            f"Partial file should be cleaned up: {partial_file_path}"
+        )
 
     def test_installation_unchanged_on_network_failure(self, tmp_path):
         """
@@ -439,15 +439,15 @@ class TestUpdateServiceHandlesNetworkFailure:
         # Assert
         assert result.success is False
         assert result.previous_version == Version("1.2.3")
-        assert (
-            version_file.read_text().strip() == "1.2.3"
-        ), "VERSION file should still contain 1.2.3"
-        assert (
-            agents_dir / "test_agent.md"
-        ).exists(), "Original installation files should be preserved"
-        assert (
-            agents_dir / "test_agent.md"
-        ).read_text() == "agent content", "Original file content should be unchanged"
+        assert version_file.read_text().strip() == "1.2.3", (
+            "VERSION file should still contain 1.2.3"
+        )
+        assert (agents_dir / "test_agent.md").exists(), (
+            "Original installation files should be preserved"
+        )
+        assert (agents_dir / "test_agent.md").read_text() == "agent content", (
+            "Original file content should be unchanged"
+        )
 
 
 # ============================================================================
@@ -486,9 +486,9 @@ class TestUpdateServiceDetectsMajorVersionChange:
         is_major_change = service.is_major_version_change(current, target)
 
         # Assert
-        assert (
-            is_major_change is True
-        ), "1.3.0 -> 2.0.0 should be a major version change"
+        assert is_major_change is True, (
+            "1.3.0 -> 2.0.0 should be a major version change"
+        )
 
     def test_update_service_detects_minor_version_not_major(self):
         """
@@ -518,9 +518,9 @@ class TestUpdateServiceDetectsMajorVersionChange:
         is_major_change = service.is_major_version_change(current, target)
 
         # Assert
-        assert (
-            is_major_change is False
-        ), "1.2.3 -> 1.3.0 should NOT be a major version change"
+        assert is_major_change is False, (
+            "1.2.3 -> 1.3.0 should NOT be a major version change"
+        )
 
     def test_update_service_detects_patch_version_not_major(self):
         """
@@ -550,9 +550,9 @@ class TestUpdateServiceDetectsMajorVersionChange:
         is_major_change = service.is_major_version_change(current, target)
 
         # Assert
-        assert (
-            is_major_change is False
-        ), "1.2.3 -> 1.2.4 should NOT be a major version change"
+        assert is_major_change is False, (
+            "1.2.3 -> 1.2.4 should NOT be a major version change"
+        )
 
 
 class TestVersionComparisonDetectsMajorBump:
@@ -651,10 +651,11 @@ class TestUpdateServicePreservesUserContent:
 
         # Verify UpdateService has access to CoreContentIdentifier for selective replacement
         # This test will FAIL until UpdateService is updated to use CoreContentIdentifier
-        assert (
-            hasattr(service, "_content_identifier")
-            or hasattr(service, "_core_content_identifier")
-        ), "UpdateService should have CoreContentIdentifier as dependency for selective content replacement"
+        assert hasattr(service, "_content_identifier") or hasattr(
+            service, "_core_content_identifier"
+        ), (
+            "UpdateService should have CoreContentIdentifier as dependency for selective content replacement"
+        )
 
     def test_update_service_preserves_user_agents(self, tmp_path):
         """
@@ -721,9 +722,9 @@ class TestUpdateServicePreservesUserContent:
 
         # Assert: User agent path should NOT be in replaced_paths
         str(custom_agent_dir)
-        assert not any(
-            "my-custom-agent" in p for p in replaced_paths
-        ), f"User agent directory should NOT be replaced. Replaced paths: {replaced_paths}"
+        assert not any("my-custom-agent" in p for p in replaced_paths), (
+            f"User agent directory should NOT be replaced. Replaced paths: {replaced_paths}"
+        )
 
     def test_update_service_preserves_user_commands(self, tmp_path):
         """
@@ -790,9 +791,9 @@ class TestUpdateServicePreservesUserContent:
         ), "User command content should be unchanged"
 
         # Assert: User command path should NOT be in replaced_paths
-        assert not any(
-            "my-custom-command" in p for p in replaced_paths
-        ), f"User command directory should NOT be replaced. Replaced paths: {replaced_paths}"
+        assert not any("my-custom-command" in p for p in replaced_paths), (
+            f"User command directory should NOT be replaced. Replaced paths: {replaced_paths}"
+        )
 
     def test_update_service_replaces_nw_content(self, tmp_path):
         """
@@ -854,12 +855,12 @@ class TestUpdateServicePreservesUserContent:
             service.update()
 
         # Assert: nWave content paths SHOULD be in replaced_paths
-        assert any(
-            "agents/nw" in p or "agents\\nw" in p for p in replaced_paths
-        ), f"nWave agents directory SHOULD be replaced. Replaced paths: {replaced_paths}"
-        assert any(
-            "commands/nw" in p or "commands\\nw" in p for p in replaced_paths
-        ), f"nWave commands directory SHOULD be replaced. Replaced paths: {replaced_paths}"
+        assert any("agents/nw" in p or "agents\\nw" in p for p in replaced_paths), (
+            f"nWave agents directory SHOULD be replaced. Replaced paths: {replaced_paths}"
+        )
+        assert any("commands/nw" in p or "commands\\nw" in p for p in replaced_paths), (
+            f"nWave commands directory SHOULD be replaced. Replaced paths: {replaced_paths}"
+        )
 
 
 # ============================================================================
@@ -913,9 +914,9 @@ class TestUpdateServiceDetectsRCVersion:
         is_rc = service.is_local_customization()
 
         # Assert
-        assert (
-            is_rc is True
-        ), "RC version 1.2.3-rc.main.20260127.1 should be detected as local customization"
+        assert is_rc is True, (
+            "RC version 1.2.3-rc.main.20260127.1 should be detected as local customization"
+        )
 
     def test_update_service_stable_version_not_rc(self):
         """
@@ -946,9 +947,9 @@ class TestUpdateServiceDetectsRCVersion:
         is_rc = service.is_local_customization()
 
         # Assert
-        assert (
-            is_rc is False
-        ), "Stable version 1.2.3 should NOT be detected as local customization"
+        assert is_rc is False, (
+            "Stable version 1.2.3 should NOT be detected as local customization"
+        )
 
     def test_update_service_returns_customization_warning(self):
         """
@@ -983,9 +984,9 @@ class TestUpdateServiceDetectsRCVersion:
         warnings = service.get_update_warnings()
 
         # Assert
-        assert any(
-            "Local customizations detected" in w for w in warnings
-        ), f"Expected 'Local customizations detected' warning, got: {warnings}"
+        assert any("Local customizations detected" in w for w in warnings), (
+            f"Expected 'Local customizations detected' warning, got: {warnings}"
+        )
 
 
 # ============================================================================
@@ -1045,15 +1046,15 @@ class TestUpdateServiceDetectsAlreadyUpToDate:
         result = service.update()
 
         # Assert: Result indicates up to date
-        assert (
-            result.success is True
-        ), "Should succeed (already up to date is a success state)"
-        assert (
-            result.error_message == "Already up to date"
-        ), f"Error message should be 'Already up to date', got: {result.error_message}"
-        assert (
-            result.previous_version == current_version
-        ), "Previous version should match"
+        assert result.success is True, (
+            "Should succeed (already up to date is a success state)"
+        )
+        assert result.error_message == "Already up to date", (
+            f"Error message should be 'Already up to date', got: {result.error_message}"
+        )
+        assert result.previous_version == current_version, (
+            "Previous version should match"
+        )
 
     def test_no_backup_on_up_to_date(self):
         """
@@ -1234,20 +1235,20 @@ class TestUpdateServiceProceedsOnMajorConfirmation:
         result = service.update()
 
         # Assert: Update succeeded to v2.0.0
-        assert (
-            result.success is True
-        ), f"Update should succeed, got: {result.error_message}"
-        assert result.new_version == Version(
-            "2.0.0"
-        ), f"New version should be 2.0.0, got: {result.new_version}"
-        assert result.previous_version == Version(
-            "1.3.0"
-        ), f"Previous version should be 1.3.0, got: {result.previous_version}"
+        assert result.success is True, (
+            f"Update should succeed, got: {result.error_message}"
+        )
+        assert result.new_version == Version("2.0.0"), (
+            f"New version should be 2.0.0, got: {result.new_version}"
+        )
+        assert result.previous_version == Version("1.3.0"), (
+            f"Previous version should be 1.3.0, got: {result.previous_version}"
+        )
 
         # Assert: VERSION file was written with new version
-        assert (
-            version_file.read_text().strip() == "2.0.0"
-        ), f"VERSION file should contain 2.0.0, got: {version_file.read_text()}"
+        assert version_file.read_text().strip() == "2.0.0", (
+            f"VERSION file should contain 2.0.0, got: {version_file.read_text()}"
+        )
 
     def test_update_service_major_version_backup_created(self, tmp_path):
         """

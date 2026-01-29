@@ -34,13 +34,12 @@ from typing import TYPE_CHECKING, Optional, Protocol
 from nWave.core.versioning.domain.version import Version
 from nWave.core.versioning.domain.watermark import Watermark
 from nWave.core.versioning.ports.github_api_port import (
-    GitHubAPIPort,
     NetworkError,
     RateLimitError,
 )
 
 if TYPE_CHECKING:
-    from nWave.core.versioning.ports.file_system_port import FileSystemPort
+    pass
 
 
 @dataclass(frozen=True)

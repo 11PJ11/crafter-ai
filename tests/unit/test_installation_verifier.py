@@ -626,9 +626,9 @@ class TestInstallNwaveCallsVerifier:
 
         # ASSERT - Check that verification counts are displayed
         all_logs = " ".join(logged_messages)
-        assert (
-            "41" in all_logs or "agent" in all_logs.lower()
-        ), "Verification result should display agent count from verifier"
+        assert "41" in all_logs or "agent" in all_logs.lower(), (
+            "Verification result should display agent count from verifier"
+        )
 
     def test_install_nwave_logs_verification_outcome(self):
         """
@@ -750,6 +750,6 @@ class TestInstallNwaveCallsVerifier:
                                 exit_code = main()
 
         # ASSERT
-        assert (
-            exit_code != 0
-        ), "Verification failure should result in non-zero exit code"
+        assert exit_code != 0, (
+            "Verification failure should result in non-zero exit code"
+        )

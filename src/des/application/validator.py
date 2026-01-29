@@ -44,7 +44,9 @@ class ValidationResult:
     errors: List[str]
     task_invocation_allowed: bool
     duration_ms: float
-    recovery_guidance: List[str] = None  # Actionable guidance for fixing validation errors
+    recovery_guidance: List[str] = (
+        None  # Actionable guidance for fixing validation errors
+    )
 
 
 class MandatorySectionChecker:
@@ -56,14 +58,14 @@ class MandatorySectionChecker:
     """
 
     MANDATORY_SECTIONS = [
-        "DES_METADATA",       # Step metadata and command
-        "AGENT_IDENTITY",     # Which agent executes this step
-        "TASK_CONTEXT",       # What needs to be implemented
-        "TDD_14_PHASES",      # All 14 TDD phases to execute
-        "QUALITY_GATES",      # Quality validation criteria
+        "DES_METADATA",  # Step metadata and command
+        "AGENT_IDENTITY",  # Which agent executes this step
+        "TASK_CONTEXT",  # What needs to be implemented
+        "TDD_14_PHASES",  # All 14 TDD phases to execute
+        "QUALITY_GATES",  # Quality validation criteria
         "OUTCOME_RECORDING",  # How to track progress
-        "BOUNDARY_RULES",     # Scope and file modifications allowed
-        "TIMEOUT_INSTRUCTION" # Turn budget and exit conditions
+        "BOUNDARY_RULES",  # Scope and file modifications allowed
+        "TIMEOUT_INSTRUCTION",  # Turn budget and exit conditions
     ]
 
     # Recovery guidance for each mandatory section
@@ -75,7 +77,7 @@ class MandatorySectionChecker:
         "QUALITY_GATES": "Add QUALITY_GATES section defining validation criteria (G1-G6)",
         "OUTCOME_RECORDING": "Add OUTCOME_RECORDING section describing how to track phase completion",
         "BOUNDARY_RULES": "Add BOUNDARY_RULES section specifying which files can be modified",
-        "TIMEOUT_INSTRUCTION": "Add TIMEOUT_INSTRUCTION section with turn budget guidance"
+        "TIMEOUT_INSTRUCTION": "Add TIMEOUT_INSTRUCTION section with turn budget guidance",
     }
 
     def validate(self, prompt: str) -> List[str]:
@@ -145,32 +147,32 @@ class TDDPhaseValidator:
 
     # Schema v1.0: Legacy 14-phase TDD cycle
     MANDATORY_PHASES_V1 = [
-        "PREPARE",               # Enable test, verify setup
-        "RED_ACCEPTANCE",        # E2E test fails before implementation
-        "RED_UNIT",              # Unit tests fail before code
-        "GREEN_UNIT",            # Minimal code to pass unit tests
-        "CHECK_ACCEPTANCE",      # Check E2E progress
-        "GREEN_ACCEPTANCE",      # E2E tests pass
-        "REVIEW",                # Peer review of implementation
-        "REFACTOR_L1",           # Readability refactoring
-        "REFACTOR_L2",           # Complexity reduction
-        "REFACTOR_L3",           # Responsibility organization
-        "REFACTOR_L4",           # Abstraction refinement
+        "PREPARE",  # Enable test, verify setup
+        "RED_ACCEPTANCE",  # E2E test fails before implementation
+        "RED_UNIT",  # Unit tests fail before code
+        "GREEN_UNIT",  # Minimal code to pass unit tests
+        "CHECK_ACCEPTANCE",  # Check E2E progress
+        "GREEN_ACCEPTANCE",  # E2E tests pass
+        "REVIEW",  # Peer review of implementation
+        "REFACTOR_L1",  # Readability refactoring
+        "REFACTOR_L2",  # Complexity reduction
+        "REFACTOR_L3",  # Responsibility organization
+        "REFACTOR_L4",  # Abstraction refinement
         "POST_REFACTOR_REVIEW",  # Review refactoring changes
-        "FINAL_VALIDATE",        # Document test results
-        "COMMIT"                 # Create git commit
+        "FINAL_VALIDATE",  # Document test results
+        "COMMIT",  # Create git commit
     ]
 
     # Schema v2.0: Optimized 8-phase TDD cycle (US-005-03)
     MANDATORY_PHASES_V2 = [
-        "PREPARE",               # Enable test, verify setup
-        "RED_ACCEPTANCE",        # E2E test fails before implementation
-        "RED_UNIT",              # Unit tests fail before code
-        "GREEN",                 # Implementation + acceptance validation (merged)
-        "REVIEW",                # Peer review (expanded scope)
-        "REFACTOR_CONTINUOUS",   # L1+L2+L3 refactoring (merged)
-        "REFACTOR_L4",           # Architecture patterns (optional)
-        "COMMIT"                 # Create git commit
+        "PREPARE",  # Enable test, verify setup
+        "RED_ACCEPTANCE",  # E2E test fails before implementation
+        "RED_UNIT",  # Unit tests fail before code
+        "GREEN",  # Implementation + acceptance validation (merged)
+        "REVIEW",  # Peer review (expanded scope)
+        "REFACTOR_CONTINUOUS",  # L1+L2+L3 refactoring (merged)
+        "REFACTOR_L4",  # Architecture patterns (optional)
+        "COMMIT",  # Create git commit
     ]
 
     # Default to v1.0 for backward compatibility
@@ -225,10 +227,14 @@ class TDDPhaseValidator:
         # Select appropriate phase list
         if schema_version == "2.0":
             phases_to_validate = self.MANDATORY_PHASES_V2
-            shorthand_pattern = r"(?i)all\s+8\s+phases?\s+(listed|mentioned|included|present)"
+            shorthand_pattern = (
+                r"(?i)all\s+8\s+phases?\s+(listed|mentioned|included|present)"
+            )
         else:
             phases_to_validate = self.MANDATORY_PHASES_V1
-            shorthand_pattern = r"(?i)all\s+14\s+phases?\s+(listed|mentioned|included|present)"
+            shorthand_pattern = (
+                r"(?i)all\s+14\s+phases?\s+(listed|mentioned|included|present)"
+            )
 
         # Check for shorthand pattern first
         if re.search(shorthand_pattern, prompt):
@@ -242,7 +248,7 @@ class TDDPhaseValidator:
 
             # Find all lines with the phase
             phase_lines = []
-            for line in prompt.split('\n'):
+            for line in prompt.split("\n"):
                 if phase in line:
                     phase_lines.append(line.strip())
 
@@ -251,9 +257,15 @@ class TDDPhaseValidator:
             if phase_lines:
                 for line in phase_lines:
                     # Skip if it's a "MISSING" comment about this phase or descriptive text mentioning it
-                    if (re.search(rf"\(.*\b{phase}\b.*\)", line) or  # (missing COMMIT) format
-                        re.search(rf"\b(without|missing|no)\s+{phase}\b", line, re.IGNORECASE) or  # descriptive text
-                        re.search(rf"# MISSING:\s*{phase}", line)):  # comment format
+                    if (
+                        re.search(
+                            rf"\(.*\b{phase}\b.*\)", line
+                        )  # (missing COMMIT) format
+                        or re.search(
+                            rf"\b(without|missing|no)\s+{phase}\b", line, re.IGNORECASE
+                        )  # descriptive text
+                        or re.search(rf"# MISSING:\s*{phase}", line)
+                    ):  # comment format
                         continue
                     # Phase found in non-missing context
                     if phase in line:
@@ -289,7 +301,7 @@ class DESMarkerValidator:
         errors = []
 
         # Pattern for DES-VALIDATION marker: <!-- DES-VALIDATION: value -->
-        pattern = r'<!--\s*DES-VALIDATION\s*:\s*(\w+)\s*-->'
+        pattern = r"<!--\s*DES-VALIDATION\s*:\s*(\w+)\s*-->"
         match = re.search(pattern, prompt)
 
         if not match:
@@ -301,8 +313,10 @@ class DESMarkerValidator:
         value = match.group(1).strip()
 
         # Value MUST be exactly 'required' (case-sensitive)
-        if value != 'required':
-            errors.append(f"INVALID_MARKER: DES-VALIDATION value must be 'required', got '{value}'")
+        if value != "required":
+            errors.append(
+                f"INVALID_MARKER: DES-VALIDATION value must be 'required', got '{value}'"
+            )
 
         return errors
 
@@ -325,7 +339,7 @@ class ExecutionLogValidator:
         self,
         phase_log: List[dict],
         schema_version: str = "1.0",
-        skip_schema_validation: bool = False
+        skip_schema_validation: bool = False,
     ) -> List[str]:
         """
         Validate phase execution log for state violations and schema compliance.
@@ -364,14 +378,34 @@ class ExecutionLogValidator:
             # Validate phase count matches schema version
             if schema_version == "2.0":
                 expected_phases = 8
-                required_phases = {"PREPARE", "RED_ACCEPTANCE", "RED_UNIT", "GREEN",
-                                 "REVIEW", "REFACTOR_CONTINUOUS", "REFACTOR_L4", "COMMIT"}
+                required_phases = {
+                    "PREPARE",
+                    "RED_ACCEPTANCE",
+                    "RED_UNIT",
+                    "GREEN",
+                    "REVIEW",
+                    "REFACTOR_CONTINUOUS",
+                    "REFACTOR_L4",
+                    "COMMIT",
+                }
             else:
                 expected_phases = 14
-                required_phases = {"PREPARE", "RED_ACCEPTANCE", "RED_UNIT", "GREEN_UNIT",
-                                 "CHECK_ACCEPTANCE", "GREEN_ACCEPTANCE", "REVIEW",
-                                 "REFACTOR_L1", "REFACTOR_L2", "REFACTOR_L3", "REFACTOR_L4",
-                                 "POST_REFACTOR_REVIEW", "FINAL_VALIDATE", "COMMIT"}
+                required_phases = {
+                    "PREPARE",
+                    "RED_ACCEPTANCE",
+                    "RED_UNIT",
+                    "GREEN_UNIT",
+                    "CHECK_ACCEPTANCE",
+                    "GREEN_ACCEPTANCE",
+                    "REVIEW",
+                    "REFACTOR_L1",
+                    "REFACTOR_L2",
+                    "REFACTOR_L3",
+                    "REFACTOR_L4",
+                    "POST_REFACTOR_REVIEW",
+                    "FINAL_VALIDATE",
+                    "COMMIT",
+                }
 
             # Check phase count
             if len(phase_log) != expected_phases:
@@ -381,7 +415,11 @@ class ExecutionLogValidator:
                 )
 
             # Check for required phases
-            present_phases = {phase.get("phase_name") for phase in phase_log if phase.get("phase_name")}
+            present_phases = {
+                phase.get("phase_name")
+                for phase in phase_log
+                if phase.get("phase_name")
+            }
             missing_phases = required_phases - present_phases
             if missing_phases:
                 errors.append(
@@ -522,19 +560,27 @@ class TemplateValidator:
         # Extract and parse phase_execution_log from prompt
         execution_log_data = self._extract_execution_log_from_prompt(prompt)
         # Validate with schema-aware logic
-        execution_log_errors = self.execution_log_validator.validate(execution_log_data, schema_version)
+        execution_log_errors = self.execution_log_validator.validate(
+            execution_log_data, schema_version
+        )
 
         # Combine all errors (marker first, then sections, then phases, then execution log)
-        all_errors = marker_errors + section_errors + phase_errors + execution_log_errors
+        all_errors = (
+            marker_errors + section_errors + phase_errors + execution_log_errors
+        )
 
         # Generate recovery guidance for errors
         recovery_guidance = []
         if section_errors:
-            section_guidance = self.section_checker.get_recovery_guidance(section_errors)
+            section_guidance = self.section_checker.get_recovery_guidance(
+                section_errors
+            )
             if section_guidance:
                 recovery_guidance.extend(section_guidance)
         if execution_log_errors:
-            log_guidance = self.execution_log_validator.get_recovery_guidance(execution_log_errors)
+            log_guidance = self.execution_log_validator.get_recovery_guidance(
+                execution_log_errors
+            )
             if log_guidance:
                 recovery_guidance.extend(log_guidance)
 
@@ -554,7 +600,7 @@ class TemplateValidator:
             errors=all_errors,
             task_invocation_allowed=task_invocation_allowed,
             duration_ms=duration_ms,
-            recovery_guidance=recovery_guidance
+            recovery_guidance=recovery_guidance,
         )
 
     def _extract_execution_log_from_prompt(self, prompt: str) -> List[dict]:
@@ -635,18 +681,17 @@ class TemplateValidator:
             # Split by status keywords: EXECUTED, SKIPPED, IN_PROGRESS, NOT_EXECUTED
             statuses = ["EXECUTED", "SKIPPED", "IN_PROGRESS", "NOT_EXECUTED"]
             for status in statuses:
-                pattern = status + r":\s+([A-Z0-9_,\s\-]+?)(?=\n|$|EXECUTED|SKIPPED|IN_PROGRESS|NOT_EXECUTED)"
+                pattern = (
+                    status
+                    + r":\s+([A-Z0-9_,\s\-]+?)(?=\n|$|EXECUTED|SKIPPED|IN_PROGRESS|NOT_EXECUTED)"
+                )
                 matches = re.findall(pattern, section_content)
                 for match in matches:
                     # Split phase names by comma
-                    phase_names = [
-                        p.strip()
-                        for p in match.split(",")
-                        if p.strip()
-                    ]
+                    phase_names = [p.strip() for p in match.split(",") if p.strip()]
                     for phase_name in phase_names:
                         # Allow hyphens and numbers in phase names (e.g., REFACTOR_L1-L4)
-                        if phase_name and re.match(r'^[A-Z0-9_\-]+$', phase_name):
+                        if phase_name and re.match(r"^[A-Z0-9_\-]+$", phase_name):
                             phase_log.append(
                                 {"phase_name": phase_name, "status": status}
                             )

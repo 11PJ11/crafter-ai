@@ -127,26 +127,26 @@ class TestBackupRotationMaintainsExactly3Copies:
         result = service.update()
 
         # Assert
-        assert (
-            result.success is True
-        ), f"Update should succeed, got error: {result.error_message}"
+        assert result.success is True, (
+            f"Update should succeed, got error: {result.error_message}"
+        )
 
         # Verify backup was created
         assert result.backup_path is not None, "New backup should be created"
         mock_file_system.create_backup.assert_called_once()
 
         # Verify oldest backup was identified for deletion
-        assert (
-            len(deleted_backups) == 1
-        ), f"Expected 1 backup deleted, got {len(deleted_backups)}"
-        assert (
-            deleted_backups[0] == tmp_path / ".claude.backup.20260124120000"
-        ), f"Oldest backup should be deleted, got {deleted_backups[0]}"
+        assert len(deleted_backups) == 1, (
+            f"Expected 1 backup deleted, got {len(deleted_backups)}"
+        )
+        assert deleted_backups[0] == tmp_path / ".claude.backup.20260124120000", (
+            f"Oldest backup should be deleted, got {deleted_backups[0]}"
+        )
 
         # Verify exactly 3 backups remain
-        assert (
-            len(current_backups) == 3
-        ), f"Expected 3 backups remaining, got {len(current_backups)}"
+        assert len(current_backups) == 3, (
+            f"Expected 3 backups remaining, got {len(current_backups)}"
+        )
 
     def test_backup_policy_identifies_oldest_for_deletion(self):
         """
@@ -174,9 +174,9 @@ class TestBackupRotationMaintainsExactly3Copies:
 
         # Assert
         assert len(to_delete) == 1, f"Expected 1 backup to delete, got {len(to_delete)}"
-        assert to_delete[0] == Path(
-            "~/.claude.backup.20260124120000"
-        ), f"Oldest backup should be identified for deletion, got {to_delete[0]}"
+        assert to_delete[0] == Path("~/.claude.backup.20260124120000"), (
+            f"Oldest backup should be identified for deletion, got {to_delete[0]}"
+        )
 
     def test_exactly_3_backups_remain_after_rotation(self, tmp_path):
         """
@@ -252,21 +252,21 @@ class TestBackupRotationMaintainsExactly3Copies:
         # Assert
         assert result.success is True
         assert len(new_backup_created) == 1, "One new backup should be created"
-        assert (
-            len(current_backups) == 3
-        ), f"Exactly 3 backups should remain after rotation, got {len(current_backups)}"
+        assert len(current_backups) == 3, (
+            f"Exactly 3 backups should remain after rotation, got {len(current_backups)}"
+        )
 
         # Verify the oldest one was deleted and newest kept
         backup_names = [b.name for b in current_backups]
-        assert (
-            ".claude.backup.20260124120000" not in backup_names
-        ), "Oldest backup should be deleted"
-        assert (
-            ".claude.backup.20260125120000" in backup_names
-        ), "Second oldest backup should remain"
-        assert (
-            ".claude.backup.20260126120000" in backup_names
-        ), "Previous newest backup should remain"
+        assert ".claude.backup.20260124120000" not in backup_names, (
+            "Oldest backup should be deleted"
+        )
+        assert ".claude.backup.20260125120000" in backup_names, (
+            "Second oldest backup should remain"
+        )
+        assert ".claude.backup.20260126120000" in backup_names, (
+            "Previous newest backup should remain"
+        )
 
     def test_new_backup_created_with_current_timestamp(self, tmp_path):
         """
@@ -321,15 +321,15 @@ class TestBackupRotationMaintainsExactly3Copies:
 
         # Verify backup path format
         backup_name = result.backup_path.name
-        assert backup_name.startswith(
-            ".claude.backup."
-        ), f"Backup should start with '.claude.backup.', got {backup_name}"
+        assert backup_name.startswith(".claude.backup."), (
+            f"Backup should start with '.claude.backup.', got {backup_name}"
+        )
 
         # Extract and validate timestamp
         timestamp_str = backup_name.split(".")[-1]
-        assert (
-            len(timestamp_str) == 14
-        ), f"Timestamp should be 14 chars (YYYYMMDDHHMMSS), got {len(timestamp_str)}"
+        assert len(timestamp_str) == 14, (
+            f"Timestamp should be 14 chars (YYYYMMDDHHMMSS), got {len(timestamp_str)}"
+        )
 
         # Parse timestamp and verify it's within expected range
         backup_time = datetime.strptime(timestamp_str, "%Y%m%d%H%M%S")
@@ -337,4 +337,6 @@ class TestBackupRotationMaintainsExactly3Copies:
             before_time.replace(microsecond=0)
             <= backup_time
             <= after_time.replace(microsecond=0)
-        ), f"Backup timestamp {backup_time} should be between {before_time} and {after_time}"
+        ), (
+            f"Backup timestamp {backup_time} should be between {before_time} and {after_time}"
+        )

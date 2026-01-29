@@ -53,7 +53,7 @@ class BackupManager:
 
         # Find all backup directories
         for item in self.backup_parent_dir.iterdir():
-            if item.is_dir() and item.name.startswith('.claude_bck_'):
+            if item.is_dir() and item.name.startswith(".claude_bck_"):
                 try:
                     # Determine age from oldest file in backup
                     oldest_mtime = self._get_oldest_file_mtime(item)
@@ -85,7 +85,7 @@ class BackupManager:
         oldest_mtime = time.time()
 
         # Check all files recursively
-        for file_path in directory.rglob('*'):
+        for file_path in directory.rglob("*"):
             if file_path.is_file():
                 file_mtime = file_path.stat().st_mtime
                 oldest_mtime = min(oldest_mtime, file_mtime)
@@ -109,6 +109,7 @@ class BackupManager:
         """
         if backup_name is None:
             from datetime import datetime
+
             backup_name = f".claude_bck_{datetime.now().strftime('%Y%m%d')}"
 
         backup_path = self.backup_parent_dir / backup_name

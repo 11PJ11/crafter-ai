@@ -83,9 +83,9 @@ def log_has_timestamps(file_assertions):
 @then(parsers.parse('the log should contain "{text}"'))
 def log_contains_text(text, file_assertions):
     """Verify log file contains expected text."""
-    assert file_assertions.log_contains(
-        text
-    ), f"Expected '{text}' not found in log file"
+    assert file_assertions.log_contains(text), (
+        f"Expected '{text}' not found in log file"
+    )
 
 
 @then("the log file should contain the error")
@@ -164,9 +164,9 @@ def previous_entries_preserved(file_assertions):
     content = file_assertions.claude_home["log_file"].read_text()
 
     # Check for content from the previous log (setup in Given step)
-    assert (
-        "Previous installation attempt" in content
-    ), "Previous log entries were not preserved"
+    assert "Previous installation attempt" in content, (
+        "Previous log entries were not preserved"
+    )
 
 
 @then("each log entry should have a consistent format")
@@ -197,9 +197,9 @@ def log_format_consistent(cli_result):
 
     # At least 50% of lines should have consistent format
     format_ratio = formatted_lines / len(lines) if lines else 0
-    assert (
-        format_ratio >= 0.5
-    ), f"Log format inconsistent: only {formatted_lines}/{len(lines)} lines formatted"
+    assert format_ratio >= 0.5, (
+        f"Log format inconsistent: only {formatted_lines}/{len(lines)} lines formatted"
+    )
 
 
 @then("the format should include timestamp")
@@ -223,9 +223,9 @@ def format_includes_level(cli_result):
     levels = ["DEBUG", "INFO", "WARN", "WARNING", "ERROR", "CRITICAL"]
     has_level = any(level in log_content.upper() for level in levels)
     # Also accept lowercase or mixed case
-    assert has_level or any(
-        level.lower() in log_content.lower() for level in levels
-    ), "Log format doesn't include log level indicators"
+    assert has_level or any(level.lower() in log_content.lower() for level in levels), (
+        "Log format doesn't include log level indicators"
+    )
 
 
 @then("the format should include message")

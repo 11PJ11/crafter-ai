@@ -82,9 +82,9 @@ class TestUpdateServiceChecksumValidationFailure:
 
         # Assert
         assert result.success is False, "Update should fail on checksum mismatch"
-        assert (
-            "checksum" in result.error_message.lower()
-        ), f"Error message should mention 'checksum', got: {result.error_message}"
+        assert "checksum" in result.error_message.lower(), (
+            f"Error message should mention 'checksum', got: {result.error_message}"
+        )
 
     def test_version_file_unchanged_on_checksum_failure(self, tmp_path):
         """
@@ -128,9 +128,9 @@ class TestUpdateServiceChecksumValidationFailure:
 
         # Assert
         assert result.success is False
-        assert (
-            version_file.read_text().strip() == "1.2.3"
-        ), "VERSION file should still contain 1.2.3 after checksum failure"
+        assert version_file.read_text().strip() == "1.2.3", (
+            "VERSION file should still contain 1.2.3 after checksum failure"
+        )
 
     def test_installation_unchanged_on_checksum_failure(self, tmp_path):
         """
@@ -231,6 +231,6 @@ class TestUpdateServiceChecksumValidationFailure:
 
         # Assert
         error_lower = result.error_message.lower()
-        assert (
-            "corrupted" in error_lower or "mismatch" in error_lower
-        ), f"Error should mention corruption/mismatch: {result.error_message}"
+        assert "corrupted" in error_lower or "mismatch" in error_lower, (
+            f"Error should mention corruption/mismatch: {result.error_message}"
+        )

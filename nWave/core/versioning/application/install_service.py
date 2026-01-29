@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable, Optional, Protocol
 
 if TYPE_CHECKING:
-    from nWave.core.versioning.domain.version import Version
+    pass
 
 
 @dataclass(frozen=True)
@@ -144,7 +144,6 @@ class InstallService:
         import subprocess
         import sys
         import os
-        from pathlib import Path
 
         # Find version_cli.py relative to this module
         cli_path = Path(__file__).parent.parent.parent.parent / "cli" / "version_cli.py"

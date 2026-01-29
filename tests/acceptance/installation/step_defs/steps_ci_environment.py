@@ -162,9 +162,9 @@ def output_plain_text(cli_result):
     # Check for common formatting characters that shouldn't be in CI output
     formatting_chars = ["\x1b", "\033", "\r"]  # ANSI escapes and carriage returns
     for char in formatting_chars:
-        assert (
-            char not in all_output
-        ), f"Found formatting character {repr(char)} in CI output"
+        assert char not in all_output, (
+            f"Found formatting character {repr(char)} in CI output"
+        )
 
 
 @then("the output should include detailed progress information")
@@ -195,9 +195,9 @@ def installation_steps_logged(cli_result):
     # Major steps that should be visible in verbose mode
     expected_steps = ["pre-flight", "build", "install"]
     for step in expected_steps:
-        assert (
-            step.lower() in all_output.lower()
-        ), f"Installation step '{step}' not found in output"
+        assert step.lower() in all_output.lower(), (
+            f"Installation step '{step}' not found in output"
+        )
 
 
 @then("no interactive prompt should appear")
@@ -207,18 +207,18 @@ def no_interactive_prompt(cli_result):
     # Prompts typically end with ? or [y/N]
     prompt_indicators = ["[y/N]", "[Y/n]", "? (", "Press Enter", "Confirm:"]
     for indicator in prompt_indicators:
-        assert (
-            indicator not in all_output
-        ), f"Found interactive prompt indicator '{indicator}' in CI output"
+        assert indicator not in all_output, (
+            f"Found interactive prompt indicator '{indicator}' in CI output"
+        )
 
 
 @then("the installer should proceed with default behavior")
 def installer_proceeds_default(cli_result):
     """Verify installer proceeded without waiting for input."""
     # In CI mode, the installer should complete (not hang waiting for input)
-    assert (
-        cli_result["returncode"] is not None
-    ), "Installer did not complete - may have hung waiting for input"
+    assert cli_result["returncode"] is not None, (
+        "Installer did not complete - may have hung waiting for input"
+    )
 
 
 @then("failure details should be in stdout for CI log capture")
@@ -240,7 +240,7 @@ def success_confirmation_in_stdout(cli_result):
     stdout = cli_result["stdout"]
     success_indicators = ["success", "complete", "installed"]
     assert any(ind.lower() in stdout.lower() for ind in success_indicators), (
-        f"Expected success confirmation in stdout:\n" f"STDOUT: {stdout!r}"
+        f"Expected success confirmation in stdout:\nSTDOUT: {stdout!r}"
     )
 
 
@@ -263,9 +263,9 @@ def installation_continues(cli_result):
     # Check that installation progressed past pre-flight
     all_output = f"{cli_result['stdout']}\n{cli_result['stderr']}"
     progress_indicators = ["build", "install", "copy"]
-    assert any(
-        ind.lower() in all_output.lower() for ind in progress_indicators
-    ), "Installation appears to have been blocked"
+    assert any(ind.lower() in all_output.lower() for ind in progress_indicators), (
+        "Installation appears to have been blocked"
+    )
 
 
 @then(parsers.parse("the exit code should be {code:d} if otherwise successful"))
@@ -279,9 +279,9 @@ def output_indicates_container(cli_result):
     """Verify output indicates container environment detection."""
     all_output = f"{cli_result['stdout']}\n{cli_result['stderr']}"
     container_indicators = ["container", "docker", "kubernetes", "podman"]
-    assert any(
-        ind.lower() in all_output.lower() for ind in container_indicators
-    ), "Container environment indication not found in output"
+    assert any(ind.lower() in all_output.lower() for ind in container_indicators), (
+        "Container environment indication not found in output"
+    )
 
 
 @then("a warning about unsupported configuration should appear")
@@ -289,9 +289,9 @@ def warning_unsupported_config(cli_result):
     """Verify warning about unsupported configuration."""
     all_output = f"{cli_result['stdout']}\n{cli_result['stderr']}"
     warning_text = ["warning", "unsupported", "not officially supported", "caution"]
-    assert any(
-        w.lower() in all_output.lower() for w in warning_text
-    ), "Expected warning about unsupported configuration"
+    assert any(w.lower() in all_output.lower() for w in warning_text), (
+        "Expected warning about unsupported configuration"
+    )
 
 
 @then("installation should not be blocked")
@@ -301,9 +301,9 @@ def installation_not_blocked(cli_result):
     # Here we check that either it succeeded or progressed past initial checks
     all_output = f"{cli_result['stdout']}\n{cli_result['stderr']}"
     blocked_indicators = ["blocked", "cannot proceed", "stopping"]
-    assert not any(
-        ind.lower() in all_output.lower() for ind in blocked_indicators
-    ), "Installation appears to have been blocked"
+    assert not any(ind.lower() in all_output.lower() for ind in blocked_indicators), (
+        "Installation appears to have been blocked"
+    )
 
 
 @then("container environment should be detected")
@@ -311,9 +311,9 @@ def container_environment_detected(cli_result):
     """Verify container environment was detected."""
     all_output = f"{cli_result['stdout']}\n{cli_result['stderr']}"
     container_indicators = ["container", "docker", "running in"]
-    assert any(
-        ind.lower() in all_output.lower() for ind in container_indicators
-    ), "Container environment detection not found"
+    assert any(ind.lower() in all_output.lower() for ind in container_indicators), (
+        "Container environment detection not found"
+    )
 
 
 @then("both contexts should be logged")
@@ -338,9 +338,9 @@ def normal_terminal_mode(cli_result):
     # or at least won't have CI-specific indicators
     all_output = f"{cli_result['stdout']}\n{cli_result['stderr']}"
     ci_mode_indicators = ["CI mode enabled", "Running in CI environment"]
-    assert not any(
-        ind in all_output for ind in ci_mode_indicators
-    ), "CI mode appears to be active when it should not be"
+    assert not any(ind in all_output for ind in ci_mode_indicators), (
+        "CI mode appears to be active when it should not be"
+    )
 
 
 @then("color output should be allowed if terminal supports it")

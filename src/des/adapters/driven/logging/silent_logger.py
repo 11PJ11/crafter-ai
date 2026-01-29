@@ -4,6 +4,7 @@ SilentLogger adapter - test logging implementation.
 Provides a no-op logging implementation for testing environments where
 log output is not needed or desired.
 """
+
 from typing import Any, Dict
 from src.des.ports.driven_ports.logging_port import LoggingPort
 

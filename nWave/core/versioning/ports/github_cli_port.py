@@ -75,9 +75,7 @@ class GitHubCLIPort(ABC):
     """
 
     @abstractmethod
-    def create_pr(
-        self, base_branch: str, head_branch: str, title: str
-    ) -> PRResult:
+    def create_pr(self, base_branch: str, head_branch: str, title: str) -> PRResult:
         """
         Create a pull request from head branch to base branch.
 

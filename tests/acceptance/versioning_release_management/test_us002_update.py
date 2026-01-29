@@ -253,15 +253,15 @@ def test_successful_update_with_backup_creation(
 
     # AND: The VERSION file now contains "1.3.0"
     version_content = clean_test_environment["version_file"].read_text().strip()
-    assert (
-        version_content == "1.3.0"
-    ), f"VERSION file should contain '1.3.0', got '{version_content}'. {diagnostic}"
+    assert version_content == "1.3.0", (
+        f"VERSION file should contain '1.3.0', got '{version_content}'. {diagnostic}"
+    )
 
     # AND: Output displays "Update complete."
     expected_output = "Update complete."
-    assert (
-        expected_output in stdout
-    ), f"Expected '{expected_output}' not found in output. {diagnostic}"
+    assert expected_output in stdout, (
+        f"Expected '{expected_output}' not found in output. {diagnostic}"
+    )
 
     # AND: Exit code is 0 (success)
     assert returncode == 0, f"Expected exit code 0, got {returncode}. {diagnostic}"
@@ -500,12 +500,12 @@ def test_non_nwave_user_content_is_preserved_during_update(
     )
 
     # THEN: Her custom agent at ~/.claude/agents/my-custom-agent/ remains untouched
-    assert env[
-        "custom_agent"
-    ].exists(), f"Custom agent directory should still exist. {diagnostic}"
-    assert env[
-        "custom_agent_file"
-    ].exists(), f"Custom agent file should still exist. {diagnostic}"
+    assert env["custom_agent"].exists(), (
+        f"Custom agent directory should still exist. {diagnostic}"
+    )
+    assert env["custom_agent_file"].exists(), (
+        f"Custom agent file should still exist. {diagnostic}"
+    )
     custom_agent_content_after = env["custom_agent_file"].read_text()
     assert custom_agent_content_after == custom_agent_content_before, (
         f"Custom agent content should be unchanged.\n"
@@ -515,12 +515,12 @@ def test_non_nwave_user_content_is_preserved_during_update(
     )
 
     # AND: Her custom command at ~/.claude/commands/my-custom-command/ remains untouched
-    assert env[
-        "custom_command"
-    ].exists(), f"Custom command directory should still exist. {diagnostic}"
-    assert env[
-        "custom_command_file"
-    ].exists(), f"Custom command file should still exist. {diagnostic}"
+    assert env["custom_command"].exists(), (
+        f"Custom command directory should still exist. {diagnostic}"
+    )
+    assert env["custom_command_file"].exists(), (
+        f"Custom command file should still exist. {diagnostic}"
+    )
     custom_command_content_after = env["custom_command_file"].read_text()
     assert custom_command_content_after == custom_command_content_before, (
         f"Custom command content should be unchanged.\n"
@@ -532,23 +532,23 @@ def test_non_nwave_user_content_is_preserved_during_update(
     # AND: Only nWave-prefixed content in ~/.claude/agents/nw/ is replaced
     # In test mode, we verify that nw content WOULD be replaced by checking
     # that the update was successful and nw directories are still present
-    assert env[
-        "nw_agents"
-    ].exists(), f"nWave agents directory should exist after update. {diagnostic}"
+    assert env["nw_agents"].exists(), (
+        f"nWave agents directory should exist after update. {diagnostic}"
+    )
 
     # AND: Only nWave-prefixed content in ~/.claude/commands/nw/ is replaced
-    assert env[
-        "nw_commands"
-    ].exists(), f"nWave commands directory should exist after update. {diagnostic}"
+    assert env["nw_commands"].exists(), (
+        f"nWave commands directory should exist after update. {diagnostic}"
+    )
 
     # AND: Update completed successfully
     assert returncode == 0, f"Expected exit code 0, got {returncode}. {diagnostic}"
 
     # AND: VERSION file updated to 1.3.0
     version_content = env["version_file"].read_text().strip()
-    assert (
-        version_content == "1.3.0"
-    ), f"VERSION file should contain '1.3.0', got '{version_content}'. {diagnostic}"
+    assert version_content == "1.3.0", (
+        f"VERSION file should contain '1.3.0', got '{version_content}'. {diagnostic}"
+    )
 
 
 # ============================================================================
@@ -792,9 +792,9 @@ def test_major_version_update_proceeds_with_confirmation(
 
     # AND: Output displays "Update complete."
     expected_output = "Update complete."
-    assert (
-        expected_output in stdout
-    ), f"Expected '{expected_output}' not found in output. {diagnostic}"
+    assert expected_output in stdout, (
+        f"Expected '{expected_output}' not found in output. {diagnostic}"
+    )
 
 
 # ============================================================================

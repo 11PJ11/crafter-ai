@@ -4,6 +4,7 @@ StructuredLogger adapter - production logging implementation.
 Provides structured JSON logging for validation results, hook executions,
 and errors in the DES system.
 """
+
 import json
 import sys
 from datetime import datetime
@@ -39,9 +40,9 @@ class StructuredLogger(LoggingPort):
         log_entry = {
             "timestamp": datetime.utcnow().isoformat(),
             "event": "validation_result",
-            "is_valid": getattr(result, 'is_valid', None),
-            "errors": getattr(result, 'errors', []),
-            "context": context
+            "is_valid": getattr(result, "is_valid", None),
+            "errors": getattr(result, "errors", []),
+            "context": context,
         }
         self._write_log(log_entry)
 
@@ -56,9 +57,9 @@ class StructuredLogger(LoggingPort):
         log_entry = {
             "timestamp": datetime.utcnow().isoformat(),
             "event": "hook_execution",
-            "success": getattr(result, 'success', None),
-            "message": getattr(result, 'message', ''),
-            "step_file": step_file
+            "success": getattr(result, "success", None),
+            "message": getattr(result, "message", ""),
+            "step_file": step_file,
         }
         self._write_log(log_entry)
 
@@ -75,7 +76,7 @@ class StructuredLogger(LoggingPort):
             "event": "error",
             "error_type": type(error).__name__,
             "error_message": str(error),
-            "context": context
+            "context": context,
         }
         self._write_log(log_entry)
 
@@ -87,5 +88,5 @@ class StructuredLogger(LoggingPort):
             log_entry: The log entry to write
         """
         json_log = json.dumps(log_entry)
-        self.output_stream.write(json_log + '\n')
+        self.output_stream.write(json_log + "\n")
         self.output_stream.flush()

@@ -165,9 +165,9 @@ class TestFileSystemPortErrorHandling:
         read_version_doc = FileSystemPort.read_version.__doc__ or ""
 
         # ASSERT
-        assert (
-            "FileNotFoundError" in read_version_doc
-        ), "read_version must document FileNotFoundError in docstring"
+        assert "FileNotFoundError" in read_version_doc, (
+            "read_version must document FileNotFoundError in docstring"
+        )
 
     def test_permission_error_handling(self):
         """
@@ -183,9 +183,9 @@ class TestFileSystemPortErrorHandling:
         write_watermark_doc = FileSystemPort.write_watermark.__doc__ or ""
 
         # ASSERT
-        assert (
-            "PermissionError" in create_backup_doc
-        ), "create_backup must document PermissionError in docstring"
-        assert (
-            "PermissionError" in write_watermark_doc
-        ), "write_watermark must document PermissionError in docstring"
+        assert "PermissionError" in create_backup_doc, (
+            "create_backup must document PermissionError in docstring"
+        )
+        assert "PermissionError" in write_watermark_doc, (
+            "write_watermark must document PermissionError in docstring"
+        )

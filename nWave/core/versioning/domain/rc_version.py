@@ -95,7 +95,9 @@ class RCVersion:
             ValueError: If the string is not a valid RC version format
         """
         if not rc_version_string:
-            raise ValueError(f"Invalid RC version: '{rc_version_string}' - version string cannot be empty")
+            raise ValueError(
+                f"Invalid RC version: '{rc_version_string}' - version string cannot be empty"
+            )
 
         match = cls._RC_PATTERN.match(rc_version_string)
         if not match:

@@ -425,9 +425,9 @@ def semantic_release_runs_alt(git_repo):
 @then("the commit is accepted")
 def verify_commit_accepted(git_result):
     """Verify commit was successful."""
-    assert (
-        git_result["returncode"] == 0
-    ), f"Commit was rejected:\n{git_result['stderr']}"
+    assert git_result["returncode"] == 0, (
+        f"Commit was rejected:\n{git_result['stderr']}"
+    )
 
 
 @then("no error is shown")
@@ -446,26 +446,26 @@ def verify_commit_in_log(git_repo):
         text=True,
     )
 
-    assert (
-        result.returncode == 0 and result.stdout.strip()
-    ), "No commits found in git log"
+    assert result.returncode == 0 and result.stdout.strip(), (
+        "No commits found in git log"
+    )
 
 
 @then("the commit is rejected")
 def verify_commit_rejected(git_result):
     """Verify commit was rejected by hook."""
-    assert (
-        git_result["returncode"] != 0
-    ), "Commit was accepted when it should have been rejected"
+    assert git_result["returncode"] != 0, (
+        "Commit was accepted when it should have been rejected"
+    )
 
 
 @then(parsers.parse('I see error "{error_text}"'))
 def verify_error_message(git_result, error_text):
     """Verify specific error message is shown."""
     output = git_result["stdout"] + git_result["stderr"]
-    assert (
-        error_text in output
-    ), f"Expected error '{error_text}' not found in:\n{output}"
+    assert error_text in output, (
+        f"Expected error '{error_text}' not found in:\n{output}"
+    )
 
 
 @then(parsers.parse('I see "{text}"'))
@@ -507,9 +507,9 @@ def verify_commit_not_in_log(git_repo):
 
     last_message = last_commit_result.stdout.strip()
     # The invalid message should NOT be in the log
-    assert (
-        "invalid commit message" not in last_message.lower()
-    ), f"Rejected commit should not appear in git log, but found: {last_message}"
+    assert "invalid commit message" not in last_message.lower(), (
+        f"Rejected commit should not appear in git log, but found: {last_message}"
+    )
 
 
 # ============================================================================
@@ -522,9 +522,9 @@ def verify_push_succeeds(git_result):
     """Verify push was successful."""
     # In real scenario with remote, would check returncode
     # For test with fake remote, verify hook didn't block
-    assert (
-        "VERSION file missing" not in git_result["stderr"]
-    ), "Push was blocked by validation error"
+    assert "VERSION file missing" not in git_result["stderr"], (
+        "Push was blocked by validation error"
+    )
 
 
 @then("all commits reach the remote")
@@ -542,9 +542,9 @@ def verify_commits_pushed(git_result):
     ]
 
     for error in hook_errors:
-        assert (
-            error not in combined_output
-        ), f"Pre-push validation blocked the push with error: {error}"
+        assert error not in combined_output, (
+            f"Pre-push validation blocked the push with error: {error}"
+        )
 
     # Note: Actual push to remote fails due to fake URL, which is expected in test
     # The important assertion is that pre-push validation passed
@@ -553,9 +553,9 @@ def verify_commits_pushed(git_result):
 @then("the push is rejected")
 def verify_push_rejected(git_result):
     """Verify push was blocked by pre-push hook."""
-    assert (
-        git_result["returncode"] != 0
-    ), "Push succeeded when it should have been rejected"
+    assert git_result["returncode"] != 0, (
+        "Push succeeded when it should have been rejected"
+    )
 
 
 @then(parsers.parse('I see suggested action "{action}"'))
@@ -569,9 +569,9 @@ def verify_suggested_action(git_result, action):
 def verify_no_commits_pushed(git_result):
     """Verify push was blocked, no commits sent."""
     # Verify that pre-push hook blocked the push (non-zero return code)
-    assert (
-        git_result["returncode"] != 0
-    ), "Push should have been blocked by pre-push validation, but it succeeded"
+    assert git_result["returncode"] != 0, (
+        "Push should have been blocked by pre-push validation, but it succeeded"
+    )
 
     # Verify there's a validation error in the output
     combined_output = git_result["stdout"] + git_result["stderr"]
@@ -585,9 +585,9 @@ def verify_no_commits_pushed(git_result):
     has_validation_error = any(
         indicator in combined_output for indicator in validation_indicators
     )
-    assert (
-        has_validation_error
-    ), f"Push was blocked but no validation error found in output:\n{combined_output}"
+    assert has_validation_error, (
+        f"Push was blocked but no validation error found in output:\n{combined_output}"
+    )
 
 
 # ============================================================================
@@ -682,23 +682,23 @@ def verify_github_release_created(git_repo):
     """Verify GitHub Release would be created."""
     # Verify GitHub Actions workflow exists for releases
     workflow_path = git_repo["repo_dir"] / ".github" / "workflows" / "release.yml"
-    assert (
-        workflow_path.exists()
-    ), "GitHub Actions release workflow not found at .github/workflows/release.yml"
+    assert workflow_path.exists(), (
+        "GitHub Actions release workflow not found at .github/workflows/release.yml"
+    )
 
     workflow_content = workflow_path.read_text()
-    assert (
-        "semantic-release" in workflow_content
-    ), "Release workflow does not include semantic-release execution"
+    assert "semantic-release" in workflow_content, (
+        "Release workflow does not include semantic-release execution"
+    )
 
     # Verify .releaserc has GitHub plugin
     releaserc = git_repo["repo_dir"] / ".releaserc"
     assert releaserc.exists(), "Release configuration (.releaserc) not found"
 
     releaserc_content = releaserc.read_text()
-    assert (
-        "@semantic-release/github" in releaserc_content
-    ), "GitHub plugin not configured in .releaserc - required for creating GitHub releases"
+    assert "@semantic-release/github" in releaserc_content, (
+        "GitHub plugin not configured in .releaserc - required for creating GitHub releases"
+    )
 
 
 @then(parsers.parse('release notes include {section} section with "{content}"'))
@@ -730,9 +730,9 @@ def verify_release_notes_section(git_repo, section, content):
     }
 
     commit_type = section_to_type.get(section)
-    assert (
-        commit_type is not None
-    ), f"Unknown section '{section}' - expected one of: {list(section_to_type.keys())}"
+    assert commit_type is not None, (
+        f"Unknown section '{section}' - expected one of: {list(section_to_type.keys())}"
+    )
 
     # Verify the commit type is mapped to the expected section
     actual_section = get_section_for_commit_type(config, commit_type)
@@ -767,18 +767,18 @@ def verify_changelog_section(git_repo, section):
 
     # Verify changelog plugin is configured
     changelog_config = get_plugin_config(config, "@semantic-release/changelog")
-    assert (
-        changelog_config is not None
-    ), "Changelog plugin (@semantic-release/changelog) not configured in .releaserc"
+    assert changelog_config is not None, (
+        "Changelog plugin (@semantic-release/changelog) not configured in .releaserc"
+    )
 
     if section == "BREAKING CHANGES":
         # Breaking changes are automatically handled by conventionalcommits preset
         notes_config = get_plugin_config(
             config, "@semantic-release/release-notes-generator"
         )
-        assert (
-            notes_config is not None
-        ), "Release notes generator not configured - required for BREAKING CHANGES section"
+        assert notes_config is not None, (
+            "Release notes generator not configured - required for BREAKING CHANGES section"
+        )
 
         preset = notes_config.get("preset", "angular")
         assert preset == "conventionalcommits", (
@@ -811,9 +811,9 @@ def verify_breaking_change_prominent(git_repo):
     notes_config = get_plugin_config(
         config, "@semantic-release/release-notes-generator"
     )
-    assert (
-        notes_config is not None
-    ), "Release notes generator not configured - required for release notes content"
+    assert notes_config is not None, (
+        "Release notes generator not configured - required for release notes content"
+    )
 
     preset = notes_config.get("preset", "angular")
     assert preset == "conventionalcommits", (

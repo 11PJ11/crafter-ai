@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING, Optional, Protocol
 from nWave.core.versioning.domain.rc_version import RCVersion
 
 if TYPE_CHECKING:
-    from pathlib import Path
+    pass
 
 
 @dataclass(frozen=True)

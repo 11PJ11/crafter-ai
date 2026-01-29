@@ -51,9 +51,9 @@ class TestDownloadMethodDefined:
 
         method = getattr(DownloadPort, "download", None)
         assert method is not None
-        assert getattr(
-            method, "__isabstractmethod__", False
-        ), "download must be decorated with @abstractmethod"
+        assert getattr(method, "__isabstractmethod__", False), (
+            "download must be decorated with @abstractmethod"
+        )
 
 
 class TestDownloadAcceptsUrlAndDestination:
@@ -92,9 +92,9 @@ class TestDownloadAcceptsUrlAndDestination:
         from pathlib import Path
 
         hints = get_type_hints(DownloadPort.download)
-        assert (
-            hints.get("destination") == Path
-        ), "destination parameter must be typed as Path"
+        assert hints.get("destination") == Path, (
+            "destination parameter must be typed as Path"
+        )
 
 
 class TestNetworkErrorExceptionDefined:
@@ -110,9 +110,9 @@ class TestNetworkErrorExceptionDefined:
         """NetworkError must be a subclass of Exception."""
         from nWave.core.versioning.ports.download_port import NetworkError
 
-        assert issubclass(
-            NetworkError, Exception
-        ), "NetworkError must inherit from Exception"
+        assert issubclass(NetworkError, Exception), (
+            "NetworkError must inherit from Exception"
+        )
 
     def test_network_error_can_be_raised(self):
         """NetworkError must be raisable with a message."""
@@ -134,9 +134,9 @@ class TestProgressCallbackSupported:
         sig = inspect.signature(DownloadPort.download)
         params = list(sig.parameters.keys())
 
-        assert (
-            "progress_callback" in params
-        ), "Method must have 'progress_callback' parameter for large file progress"
+        assert "progress_callback" in params, (
+            "Method must have 'progress_callback' parameter for large file progress"
+        )
 
     def test_progress_callback_is_optional(self):
         """progress_callback parameter should be optional (have default value)."""
@@ -148,9 +148,9 @@ class TestProgressCallbackSupported:
         assert param is not None
         assert param.default is not inspect.Parameter.empty or str(
             param.annotation
-        ).startswith(
-            "Optional"
-        ), "progress_callback must be optional (have default value or Optional type)"
+        ).startswith("Optional"), (
+            "progress_callback must be optional (have default value or Optional type)"
+        )
 
     def test_progress_callback_type_hint_is_callable(self):
         """progress_callback should be typed as Optional[Callable[[int, int], None]]."""
@@ -168,6 +168,6 @@ class TestProgressCallbackSupported:
         origin = get_origin(callback_hint)
         if origin is typing.Union:
             args = get_args(callback_hint)
-            assert (
-                type(None) in args
-            ), "progress_callback must be Optional (include None in Union)"
+            assert type(None) in args, (
+                "progress_callback must be Optional (include None in Union)"
+            )

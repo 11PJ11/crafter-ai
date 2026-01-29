@@ -239,38 +239,38 @@ class TestModuleImportability:
         """TerminalFormatter class must be defined."""
         from scripts.install import output_formatter
 
-        assert hasattr(
-            output_formatter, "TerminalFormatter"
-        ), "TerminalFormatter class must be defined"
+        assert hasattr(output_formatter, "TerminalFormatter"), (
+            "TerminalFormatter class must be defined"
+        )
 
     def test_terminal_formatter_has_format_terminal_error(self):
         """TerminalFormatter must have format_terminal_error method."""
         from scripts.install.output_formatter import TerminalFormatter
 
-        assert hasattr(
-            TerminalFormatter, "format_terminal_error"
-        ), "format_terminal_error method must be defined"
+        assert hasattr(TerminalFormatter, "format_terminal_error"), (
+            "format_terminal_error method must be defined"
+        )
 
     def test_terminal_formatter_has_format_dependency_error(self):
         """TerminalFormatter must have format_dependency_error method."""
         from scripts.install.output_formatter import TerminalFormatter
 
-        assert hasattr(
-            TerminalFormatter, "format_dependency_error"
-        ), "format_dependency_error method must be defined"
+        assert hasattr(TerminalFormatter, "format_dependency_error"), (
+            "format_dependency_error method must be defined"
+        )
 
     def test_terminal_formatter_has_format_permission_error(self):
         """TerminalFormatter must have format_permission_error method."""
         from scripts.install.output_formatter import TerminalFormatter
 
-        assert hasattr(
-            TerminalFormatter, "format_permission_error"
-        ), "format_permission_error method must be defined"
+        assert hasattr(TerminalFormatter, "format_permission_error"), (
+            "format_permission_error method must be defined"
+        )
 
     def test_terminal_formatter_has_format_venv_error(self):
         """TerminalFormatter must have format_venv_error method."""
         from scripts.install.output_formatter import TerminalFormatter
 
-        assert hasattr(
-            TerminalFormatter, "format_venv_error"
-        ), "format_venv_error method must be defined"
+        assert hasattr(TerminalFormatter, "format_venv_error"), (
+            "format_venv_error method must be defined"
+        )

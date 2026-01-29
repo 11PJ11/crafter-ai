@@ -5,13 +5,13 @@ from .command_template_validator import (
     ValidationResult,
     ValidationViolation,
     SeverityLevel,
-    validate_command
+    validate_command,
 )
 
 __all__ = [
-    'CommandTemplateValidator',
-    'ValidationResult',
-    'ValidationViolation',
-    'SeverityLevel',
-    'validate_command'
+    "CommandTemplateValidator",
+    "ValidationResult",
+    "ValidationViolation",
+    "SeverityLevel",
+    "validate_command",
 ]

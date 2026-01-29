@@ -16,7 +16,7 @@ import re
 import socket
 import urllib.error
 import urllib.request
-from typing import Optional, Any
+from typing import Optional
 
 from nWave.core.versioning.domain.version import Version
 from nWave.core.versioning.ports.github_api_port import (
@@ -139,6 +139,7 @@ class GitHubAPIAdapter(GitHubAPIPort):
         if reset_timestamp:
             try:
                 import time
+
                 return max(0, int(reset_timestamp) - int(time.time()))
             except ValueError:
                 return None

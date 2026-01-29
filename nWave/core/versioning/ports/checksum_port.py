@@ -54,7 +54,7 @@ class ChecksumMismatchError(Exception):
         self,
         message: str,
         expected_checksum: Optional[str] = None,
-        actual_checksum: Optional[str] = None
+        actual_checksum: Optional[str] = None,
     ) -> None:
         """
         Create a ChecksumMismatchError.

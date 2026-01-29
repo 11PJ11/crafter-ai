@@ -65,8 +65,9 @@ class TimeoutMonitor:
         elapsed_minutes = self.get_elapsed_seconds() / 60
 
         # Find all crossed thresholds
-        crossed = [threshold for threshold in duration_minutes
-                   if threshold <= elapsed_minutes]
+        crossed = [
+            threshold for threshold in duration_minutes if threshold <= elapsed_minutes
+        ]
 
         # Return in ascending order
         return sorted(crossed)

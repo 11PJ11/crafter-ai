@@ -1,4 +1,5 @@
 """Version management for nWave framework."""
+
 from pathlib import Path
 
 

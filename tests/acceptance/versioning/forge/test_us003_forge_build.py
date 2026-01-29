@@ -86,31 +86,31 @@ class TestSuccessfulBuildWithInstallPromptOnMainBranch:
         cli_result["prompt"] = prompt
 
         # THEN: The dist/ directory is cleaned before build
-        assert (
-            in_memory_file_system_for_forge.dist_was_cleaned
-        ), "Expected dist/ directory to be cleaned before build"
+        assert in_memory_file_system_for_forge.dist_was_cleaned, (
+            "Expected dist/ directory to be cleaned before build"
+        )
 
         # AND: The build process runs all tests first
-        assert (
-            mock_test_runner.was_called
-        ), "Expected test runner to be called during build"
+        assert mock_test_runner.was_called, (
+            "Expected test runner to be called during build"
+        )
 
         # AND: dist/ is created with the built distribution
-        assert (
-            in_memory_file_system_for_forge.dist_exists
-        ), "Expected dist/ directory to contain built distribution"
+        assert in_memory_file_system_for_forge.dist_exists, (
+            "Expected dist/ directory to contain built distribution"
+        )
 
         # AND: The version is set to "1.2.3-rc.main.20260127.1"
         actual_version = in_memory_file_system_for_forge.get_dist_version()
         expected_version = "1.2.3-rc.main.20260127.1"
-        assert (
-            actual_version == expected_version
-        ), f"Expected version '{expected_version}', got '{actual_version}'"
+        assert actual_version == expected_version, (
+            f"Expected version '{expected_version}', got '{actual_version}'"
+        )
 
         # AND: The prompt displays "Install: [Y/n]"
-        assert (
-            "Install: [Y/n]" in prompt
-        ), f"Expected prompt to contain 'Install: [Y/n]', got: {prompt}"
+        assert "Install: [Y/n]" in prompt, (
+            f"Expected prompt to contain 'Install: [Y/n]', got: {prompt}"
+        )
 
 
 class TestBuildFailsWhenTestsFail:
@@ -180,26 +180,26 @@ class TestBuildFailsWhenTestsFail:
         cli_result["returncode"] = 0 if result.success else 1
 
         # THEN: The build process runs tests first
-        assert (
-            mock_test_runner.was_called
-        ), "Expected test runner to be called during build"
+        assert mock_test_runner.was_called, (
+            "Expected test runner to be called during build"
+        )
 
         # AND: The build aborts with exit code non-zero
         assert result.success is False, "Expected build to fail when tests fail"
-        assert (
-            cli_result["returncode"] != 0
-        ), "Expected non-zero exit code when build fails"
+        assert cli_result["returncode"] != 0, (
+            "Expected non-zero exit code when build fails"
+        )
 
         # AND: The error displays "Build failed: 3 test failures. Fix tests before building."
         expected_error = "Build failed: 3 test failures. Fix tests before building."
-        assert (
-            expected_error in result.error_message
-        ), f"Expected error message '{expected_error}', got: {result.error_message}"
+        assert expected_error in result.error_message, (
+            f"Expected error message '{expected_error}', got: {result.error_message}"
+        )
 
         # AND: The dist/ directory is not modified
-        assert (
-            not in_memory_file_system_for_forge.dist_was_modified
-        ), "Expected dist/ directory to NOT be modified when build fails"
+        assert not in_memory_file_system_for_forge.dist_was_modified, (
+            "Expected dist/ directory to NOT be modified when build fails"
+        )
 
 
 class TestRCCounterIncrementsOnSameDayBuilds:
@@ -282,9 +282,9 @@ class TestRCCounterIncrementsOnSameDayBuilds:
         )
 
         # AND: The previous dist/ contents are cleaned before the new build
-        assert (
-            in_memory_file_system_for_forge.dist_was_cleaned
-        ), "Expected dist/ directory to be cleaned before the new build"
+        assert in_memory_file_system_for_forge.dist_was_cleaned, (
+            "Expected dist/ directory to be cleaned before the new build"
+        )
 
 
 # ACTIVE - Step 05-04: RC counter resets on new day
@@ -443,23 +443,23 @@ class TestUserDeclinesInstallAfterSuccessfulBuild:
         cli_result["returncode"] = install_result.exit_code
 
         # THEN: The dist/ directory contains the built distribution
-        assert (
-            in_memory_file_system_for_forge.dist_exists
-        ), "Expected dist/ directory to contain built distribution"
+        assert in_memory_file_system_for_forge.dist_exists, (
+            "Expected dist/ directory to contain built distribution"
+        )
         assert result.success is True, "Expected build to succeed"
 
         # AND: No installation to ~/.claude/ occurs
-        assert (
-            install_result.installation_performed is False
-        ), "Expected no installation when user declines"
-        assert (
-            in_memory_install_file_system.installation_completed is False
-        ), "Expected no files copied to ~/.claude/ when user declines"
+        assert install_result.installation_performed is False, (
+            "Expected no installation when user declines"
+        )
+        assert in_memory_install_file_system.installation_completed is False, (
+            "Expected no files copied to ~/.claude/ when user declines"
+        )
 
         # AND: The CLI exits with success code
-        assert (
-            cli_result["returncode"] == 0
-        ), f"Expected exit code 0 (success), got {cli_result['returncode']}"
+        assert cli_result["returncode"] == 0, (
+            f"Expected exit code 0 (success), got {cli_result['returncode']}"
+        )
 
 
 # ACTIVE - Step 05-07: User accepts install after successful build
@@ -543,14 +543,14 @@ class TestUserAcceptsInstallAfterSuccessfulBuild:
         )
 
         # THEN: The /nw:forge:install command is invoked
-        assert (
-            install_result.install_invoked
-        ), "Expected /nw:forge:install to be invoked when user responds 'Y'"
+        assert install_result.install_invoked, (
+            "Expected /nw:forge:install to be invoked when user responds 'Y'"
+        )
 
         # AND: The distribution is installed to ~/.claude/
-        assert (
-            in_memory_install_file_system.installation_completed
-        ), "Expected distribution to be installed to ~/.claude/"
+        assert in_memory_install_file_system.installation_completed, (
+            "Expected distribution to be installed to ~/.claude/"
+        )
         # Note: The installed_version is verified in unit tests.
         # The acceptance test focuses on the user-visible behavior:
         # 1. User says "Y" -> install is invoked
@@ -637,6 +637,6 @@ class TestFeatureBranchNameIncludedInRCVersion:
             f"Expected branch name 'feature/new-agent' to be normalized to 'feature-new-agent' "
             f"in version string, got: {actual_version}"
         )
-        assert (
-            "/" not in actual_version
-        ), f"Expected no '/' characters in version string, got: {actual_version}"
+        assert "/" not in actual_version, (
+            f"Expected no '/' characters in version string, got: {actual_version}"
+        )

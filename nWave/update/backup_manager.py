@@ -43,9 +43,7 @@ class BackupManager:
         backup_dir = Path(backup_dir)
 
         if not backup_dir.exists():
-            raise FileNotFoundError(
-                f"Backup directory not found: {backup_dir}"
-            )
+            raise FileNotFoundError(f"Backup directory not found: {backup_dir}")
 
         # Copy files from backup to installation, preserving permissions
         # Using copy2 to preserve metadata (including permissions)

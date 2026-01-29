@@ -120,7 +120,7 @@ def check_transcript_accessibility(transcript_path: str | None) -> dict:
         "line_count": None,
         "first_entry_sample": None,
         "last_entry_sample": None,
-        "error": None
+        "error": None,
     }
 
     if not transcript_path:
@@ -150,7 +150,7 @@ def check_transcript_accessibility(transcript_path: str | None) -> dict:
                         "keys": list(first.keys()),
                         "type": first.get("type"),
                     }
-                except:
+                except Exception:
                     result["first_entry_sample"] = {"raw": lines[0][:200]}
 
                 # Sample last entry
@@ -160,7 +160,7 @@ def check_transcript_accessibility(transcript_path: str | None) -> dict:
                         "keys": list(last.keys()),
                         "type": last.get("type"),
                     }
-                except:
+                except Exception:
                     result["last_entry_sample"] = {"raw": lines[-1][:200]}
 
         result["readable"] = True
@@ -198,7 +198,6 @@ def main():
     discovery_record = {
         "discovery_timestamp": timestamp,
         "discovery_version": "1.0",
-
         # Raw input analysis
         "stdin": {
             "raw_length": len(raw_input),
@@ -206,32 +205,30 @@ def main():
             "parse_error": parse_error,
             "parsed_successfully": parsed_input is not None,
         },
-
         # Parsed input (if successful)
         "hook_input": parsed_input,
-
         # Schema discovery
         "schema_discovery": {
             "top_level_keys": list(parsed_input.keys()) if parsed_input else [],
-            "key_types": {
-                k: type(v).__name__
-                for k, v in (parsed_input or {}).items()
-            },
+            "key_types": {k: type(v).__name__ for k, v in (parsed_input or {}).items()},
         },
-
         # Environment analysis
         "environment": env_vars,
-
         # Transcript analysis
         "transcript": transcript_info,
-
         # Key questions answered
         "questions_answered": {
-            "Q1_fields_present": list(parsed_input.keys()) if parsed_input else "UNKNOWN - parse failed",
+            "Q1_fields_present": list(parsed_input.keys())
+            if parsed_input
+            else "UNKNOWN - parse failed",
             "Q2_prompt_included": "prompt" in (parsed_input or {}),
-            "Q3_transcript_accessible": transcript_info.get("readable", False) if transcript_info else False,
-            "Q4_step_file_identifiable": _check_step_file_identifiable(parsed_input, transcript_info),
-        }
+            "Q3_transcript_accessible": transcript_info.get("readable", False)
+            if transcript_info
+            else False,
+            "Q4_step_file_identifiable": _check_step_file_identifiable(
+                parsed_input, transcript_info
+            ),
+        },
     }
 
     # Write to discovery log (append mode, one JSON per line)
@@ -254,7 +251,9 @@ def main():
     sys.exit(0)
 
 
-def _check_step_file_identifiable(parsed_input: dict | None, transcript_info: dict | None) -> str:
+def _check_step_file_identifiable(
+    parsed_input: dict | None, transcript_info: dict | None
+) -> str:
     """Check if we can identify which step file was being processed."""
     if not parsed_input:
         return "UNKNOWN - no parsed input"
@@ -275,42 +274,42 @@ def _write_summary(path: Path, record: dict) -> None:
     """Write human-readable summary of discovery."""
     summary = f"""# SubagentStop Hook Discovery Summary
 
-**Timestamp:** {record['discovery_timestamp']}
+**Timestamp:** {record["discovery_timestamp"]}
 
 ## Questions Answered
 
 | Question | Answer |
 |----------|--------|
-| Q1: Fields present | {record['questions_answered']['Q1_fields_present']} |
-| Q2: Prompt included | {record['questions_answered']['Q2_prompt_included']} |
-| Q3: Transcript accessible | {record['questions_answered']['Q3_transcript_accessible']} |
-| Q4: Step file identifiable | {record['questions_answered']['Q4_step_file_identifiable']} |
+| Q1: Fields present | {record["questions_answered"]["Q1_fields_present"]} |
+| Q2: Prompt included | {record["questions_answered"]["Q2_prompt_included"]} |
+| Q3: Transcript accessible | {record["questions_answered"]["Q3_transcript_accessible"]} |
+| Q4: Step file identifiable | {record["questions_answered"]["Q4_step_file_identifiable"]} |
 
 ## Hook Input Schema
 
-**Top-level keys:** {record['schema_discovery']['top_level_keys']}
+**Top-level keys:** {record["schema_discovery"]["top_level_keys"]}
 
 **Key types:**
 ```json
-{json.dumps(record['schema_discovery']['key_types'], indent=2)}
+{json.dumps(record["schema_discovery"]["key_types"], indent=2)}
 ```
 
 ## Raw Input Sample
 
 ```
-{record['stdin']['raw_sample'][:500]}
+{record["stdin"]["raw_sample"][:500]}
 ```
 
 ## Environment Variables
 
 ```json
-{json.dumps(record['environment'], indent=2)}
+{json.dumps(record["environment"], indent=2)}
 ```
 
 ## Transcript Analysis
 
 ```json
-{json.dumps(record['transcript'], indent=2) if record['transcript'] else 'N/A'}
+{json.dumps(record["transcript"], indent=2) if record["transcript"] else "N/A"}
 ```
 
 ---

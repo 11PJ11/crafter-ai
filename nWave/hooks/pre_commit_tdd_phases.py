@@ -21,8 +21,7 @@ import subprocess
 import sys
 import tempfile
 from datetime import datetime
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Tuple, Any
 
 
 # Required TDD phases - support both v1.0 (14 phases) and v2.0 (8 phases)
@@ -208,55 +207,103 @@ def validate_step_file(file_path: str) -> Tuple[bool, List[Dict[str, Any]], str]
         with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
     except json.JSONDecodeError as e:
-        return False, [{"phase": "N/A", "status": "ERROR", "issue": f"Invalid JSON: {e}"}], "1.0"
+        return (
+            False,
+            [{"phase": "N/A", "status": "ERROR", "issue": f"Invalid JSON: {e}"}],
+            "1.0",
+        )
     except FileNotFoundError:
-        return False, [{"phase": "N/A", "status": "ERROR", "issue": "File not found"}], "1.0"
+        return (
+            False,
+            [{"phase": "N/A", "status": "ERROR", "issue": "File not found"}],
+            "1.0",
+        )
     except Exception as e:
-        return False, [{"phase": "N/A", "status": "ERROR", "issue": f"Cannot read file: {e}"}], "1.0"
+        return (
+            False,
+            [{"phase": "N/A", "status": "ERROR", "issue": f"Cannot read file: {e}"}],
+            "1.0",
+        )
 
     # Detect schema version (v1.0 = 14 phases, v2.0 = 8 phases)
     schema_version = detect_schema_version(data)
-    required_phases = REQUIRED_PHASES_V2 if schema_version == "2.0" else REQUIRED_PHASES_V1
+    required_phases = (
+        REQUIRED_PHASES_V2 if schema_version == "2.0" else REQUIRED_PHASES_V1
+    )
 
     # REJECT OLD/WRONG FORMAT PATTERNS
     if "step_id" in data:
-        return False, [{
-            "phase": "N/A",
-            "status": "WRONG_FORMAT",
-            "issue": "Found 'step_id' - use 'task_id'. This is an obsolete format."
-        }], schema_version
+        return (
+            False,
+            [
+                {
+                    "phase": "N/A",
+                    "status": "WRONG_FORMAT",
+                    "issue": "Found 'step_id' - use 'task_id'. This is an obsolete format.",
+                }
+            ],
+            schema_version,
+        )
     if "phase_id" in data:
         expected_phases = len(required_phases)
-        return False, [{
-            "phase": "N/A",
-            "status": "WRONG_FORMAT",
-            "issue": f"Found 'phase_id' - this field should not exist. Each step has ALL {expected_phases} phases (schema v{schema_version})."
-        }], schema_version
+        return (
+            False,
+            [
+                {
+                    "phase": "N/A",
+                    "status": "WRONG_FORMAT",
+                    "issue": f"Found 'phase_id' - this field should not exist. Each step has ALL {expected_phases} phases (schema v{schema_version}).",
+                }
+            ],
+            schema_version,
+        )
     if "tdd_phase" in data and "tdd_cycle" not in data:
-        return False, [{
-            "phase": "N/A",
-            "status": "WRONG_FORMAT",
-            "issue": "Found 'tdd_phase' at top level. Phases must be in tdd_cycle.phase_execution_log."
-        }], schema_version
+        return (
+            False,
+            [
+                {
+                    "phase": "N/A",
+                    "status": "WRONG_FORMAT",
+                    "issue": "Found 'tdd_phase' at top level. Phases must be in tdd_cycle.phase_execution_log.",
+                }
+            ],
+            schema_version,
+        )
 
     # Get phase execution log
     phase_log = data.get("tdd_cycle", {}).get("phase_execution_log", [])
 
     if not phase_log:
         # Check old location for backwards compatibility
-        phase_log = data.get("tdd_cycle", {}).get("tdd_phase_tracking", {}).get("phase_execution_log", [])
+        phase_log = (
+            data.get("tdd_cycle", {})
+            .get("tdd_phase_tracking", {})
+            .get("phase_execution_log", [])
+        )
 
     if not phase_log:
-        return False, [{"phase": "N/A", "status": "MISSING", "issue": "No phase_execution_log found - file may need migration"}], schema_version
+        return (
+            False,
+            [
+                {
+                    "phase": "N/A",
+                    "status": "MISSING",
+                    "issue": "No phase_execution_log found - file may need migration",
+                }
+            ],
+            schema_version,
+        )
 
     # Check if we have correct number of phases for schema version
     expected_count = len(required_phases)
     if len(phase_log) < expected_count:
-        issues.append({
-            "phase": "N/A",
-            "status": "INCOMPLETE",
-            "issue": f"Schema v{schema_version}: Expected {expected_count} phases, found {len(phase_log)} - file may need migration"
-        })
+        issues.append(
+            {
+                "phase": "N/A",
+                "status": "INCOMPLETE",
+                "issue": f"Schema v{schema_version}: Expected {expected_count} phases, found {len(phase_log)} - file may need migration",
+            }
+        )
 
     # Build lookup by phase name
     phase_lookup = {p.get("phase_name"): p for p in phase_log}
@@ -267,12 +314,14 @@ def validate_step_file(file_path: str) -> Tuple[bool, List[Dict[str, Any]], str]
         entry = phase_lookup.get(phase_name)
 
         if not entry:
-            issues.append({
-                "phase": phase_name,
-                "phase_index": i,
-                "status": "MISSING",
-                "issue": "Phase not found in log"
-            })
+            issues.append(
+                {
+                    "phase": phase_name,
+                    "phase_index": i,
+                    "status": "MISSING",
+                    "issue": "Phase not found in log",
+                }
+            )
             continue
 
         status = entry.get("status", "NOT_EXECUTED")
@@ -296,67 +345,81 @@ def validate_step_file(file_path: str) -> Tuple[bool, List[Dict[str, Any]], str]
 
                     # Only add gap error if not already in issues
                     if not any(iss.get("phase") == gap_phase for iss in issues):
-                        issues.append({
-                            "phase": gap_phase,
-                            "phase_index": j,
-                            "status": "SKIPPED_GAP",
-                            "issue": f"Phase skipped (gap between {required_phases[last_executed_index]} and {phase_name})"
-                        })
+                        issues.append(
+                            {
+                                "phase": gap_phase,
+                                "phase_index": j,
+                                "status": "SKIPPED_GAP",
+                                "issue": f"Phase skipped (gap between {required_phases[last_executed_index]} and {phase_name})",
+                            }
+                        )
             last_executed_index = i
 
             # Validate that EXECUTED phases have outcome with valid value
             outcome = entry.get("outcome")
             if not outcome:
-                issues.append({
-                    "phase": phase_name,
-                    "phase_index": i,
-                    "status": "INCOMPLETE",
-                    "issue": "EXECUTED phase missing outcome (PASS/FAIL)"
-                })
+                issues.append(
+                    {
+                        "phase": phase_name,
+                        "phase_index": i,
+                        "status": "INCOMPLETE",
+                        "issue": "EXECUTED phase missing outcome (PASS/FAIL)",
+                    }
+                )
             elif outcome not in ["PASS", "FAIL"]:
-                issues.append({
-                    "phase": phase_name,
-                    "phase_index": i,
-                    "status": "INVALID_OUTCOME",
-                    "issue": f"Invalid outcome '{outcome}' - must be PASS or FAIL"
-                })
+                issues.append(
+                    {
+                        "phase": phase_name,
+                        "phase_index": i,
+                        "status": "INVALID_OUTCOME",
+                        "issue": f"Invalid outcome '{outcome}' - must be PASS or FAIL",
+                    }
+                )
 
         elif status == "IN_PROGRESS":
-            issues.append({
-                "phase": phase_name,
-                "phase_index": i,
-                "status": "IN_PROGRESS",
-                "issue": "Phase left in progress (incomplete execution)"
-            })
+            issues.append(
+                {
+                    "phase": phase_name,
+                    "phase_index": i,
+                    "status": "IN_PROGRESS",
+                    "issue": "Phase left in progress (incomplete execution)",
+                }
+            )
 
         elif status == "NOT_EXECUTED":
-            issues.append({
-                "phase": phase_name,
-                "phase_index": i,
-                "status": "NOT_EXECUTED",
-                "issue": "Phase not executed"
-            })
+            issues.append(
+                {
+                    "phase": phase_name,
+                    "phase_index": i,
+                    "status": "NOT_EXECUTED",
+                    "issue": "Phase not executed",
+                }
+            )
 
         elif status == "SKIPPED":
             # Validate SKIPPED has proper blocked_by
             is_valid_skip, skip_message = validate_skipped_phase(entry)
             if not is_valid_skip:
-                issues.append({
-                    "phase": phase_name,
-                    "phase_index": i,
-                    "status": "INVALID_SKIP",
-                    "issue": skip_message,
-                    "blocked_by": entry.get("blocked_by", "")
-                })
+                issues.append(
+                    {
+                        "phase": phase_name,
+                        "phase_index": i,
+                        "status": "INVALID_SKIP",
+                        "issue": skip_message,
+                        "blocked_by": entry.get("blocked_by", ""),
+                    }
+                )
 
         else:
             # Unknown status
-            issues.append({
-                "phase": phase_name,
-                "phase_index": i,
-                "status": status,
-                "issue": f"Unknown status: {status}"
-            })
+            issues.append(
+                {
+                    "phase": phase_name,
+                    "phase_index": i,
+                    "status": status,
+                    "issue": f"Unknown status: {status}",
+                }
+            )
 
     return len(issues) == 0, issues, schema_version
 
@@ -371,7 +434,7 @@ def write_validation_marker(step_files: List[str], passed: bool) -> None:
             "timestamp": datetime.utcnow().isoformat() + "Z",
             "step_files_validated": step_files,
             "validation_passed": passed,
-            "hook_version": "2.0.0"
+            "hook_version": "2.0.0",
         }
 
         # Use atomic write pattern: write to temp, then rename
@@ -382,7 +445,7 @@ def write_validation_marker(step_files: List[str], passed: bool) -> None:
         # Write to temp file first
         fd, temp_path = tempfile.mkstemp(dir=marker_dir, suffix=".tmp")
         try:
-            with os.fdopen(fd, 'w', encoding='utf-8') as f:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
                 json.dump(marker_data, f, indent=2)
             # Atomic rename
             os.replace(temp_path, VALIDATION_MARKER_FILE)
@@ -417,10 +480,10 @@ def log_bypass_attempt(reason: str, files: List[str], issues: List[Dict]) -> Non
                 {
                     "phase": iss.get("phase"),
                     "status": iss.get("status"),
-                    "issue": iss.get("issue")
+                    "issue": iss.get("issue"),
                 }
                 for iss in issues[:5]  # Limit to first 5 issues
-            ]
+            ],
         }
 
         # Ensure directory exists
@@ -434,7 +497,9 @@ def log_bypass_attempt(reason: str, files: List[str], issues: List[Dict]) -> Non
         pass  # Silent fail - logging is best effort
 
 
-def print_validation_result(file_path: str, is_valid: bool, issues: List[Dict], schema_version: str = "1.0") -> None:
+def print_validation_result(
+    file_path: str, is_valid: bool, issues: List[Dict], schema_version: str = "1.0"
+) -> None:
     """Print validation result for a file."""
     print(f"\n  Checking: {file_path}")
 
@@ -454,7 +519,7 @@ def print_validation_result(file_path: str, is_valid: bool, issues: List[Dict], 
                 blocked_by = issue.get("blocked_by", "")
                 print(f"    [FAIL] {phase}: {status} - {issue_text}")
                 if blocked_by:
-                    print(f"           blocked_by: \"{blocked_by}\"")
+                    print(f'           blocked_by: "{blocked_by}"')
             else:
                 print(f"    [WARN] {phase}: {status} - {issue_text}")
 
@@ -479,11 +544,23 @@ def print_failure_summary(failed_files: List[Dict]) -> None:
         invalid_skip = [i for i in issues if i.get("status") == "INVALID_SKIP"]
         missing = [i for i in issues if i.get("status") == "MISSING"]
         gaps = [i for i in issues if i.get("status") == "SKIPPED_GAP"]
-        other = [i for i in issues if i.get("status") not in
-                 ["NOT_EXECUTED", "IN_PROGRESS", "INVALID_SKIP", "MISSING", "SKIPPED_GAP"]]
+        other = [
+            i
+            for i in issues
+            if i.get("status")
+            not in [
+                "NOT_EXECUTED",
+                "IN_PROGRESS",
+                "INVALID_SKIP",
+                "MISSING",
+                "SKIPPED_GAP",
+            ]
+        ]
 
         if in_progress:
-            print(f"    IN_PROGRESS (abandoned): {', '.join(i['phase'] for i in in_progress)}")
+            print(
+                f"    IN_PROGRESS (abandoned): {', '.join(i['phase'] for i in in_progress)}"
+            )
         if not_executed:
             print(f"    NOT_EXECUTED: {', '.join(i['phase'] for i in not_executed)}")
         if invalid_skip:
@@ -496,13 +573,20 @@ def print_failure_summary(failed_files: List[Dict]) -> None:
             print(f"    GAPS: {', '.join(i['phase'] for i in gaps)}")
         if other:
             for iss in other:
-                print(f"    {iss.get('status', '?')}: {iss.get('phase', '?')} - {iss.get('issue', '')}")
+                print(
+                    f"    {iss.get('status', '?')}: {iss.get('phase', '?')} - {iss.get('issue', '')}"
+                )
 
         # Suggest resume point
         all_phases_with_issues = [i["phase"] for i in issues if i.get("phase") != "N/A"]
         if all_phases_with_issues:
             # Find first incomplete phase by index
-            first_issue = min(issues, key=lambda x: x.get("phase_index", 999) if x.get("phase") != "N/A" else 999)
+            first_issue = min(
+                issues,
+                key=lambda x: x.get("phase_index", 999)
+                if x.get("phase") != "N/A"
+                else 999,
+            )
             if first_issue.get("phase") != "N/A":
                 print(f"    Resume from: {first_issue['phase']}")
 
@@ -548,10 +632,7 @@ def main() -> int:
 
         if not is_valid:
             all_valid = False
-            failed_files.append({
-                "file": file_path,
-                "issues": issues
-            })
+            failed_files.append({"file": file_path, "issues": issues})
             all_issues.extend(issues)
 
     # Write validation marker
@@ -564,9 +645,7 @@ def main() -> int:
     else:
         # Log the failure (for bypass detection)
         log_bypass_attempt(
-            "TDD phase validation failed",
-            [f["file"] for f in failed_files],
-            all_issues
+            "TDD phase validation failed", [f["file"] for f in failed_files], all_issues
         )
 
         # Print detailed failure summary

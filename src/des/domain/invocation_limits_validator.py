@@ -11,10 +11,9 @@ BUSINESS VALUE:
 - Enforce discipline: Require explicit limit configuration per TDD methodology
 """
 
-import json
 from pathlib import Path
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import List
 
 
 @dataclass
@@ -26,6 +25,7 @@ class InvocationLimitsResult:
         errors: List of validation error messages
         guidance: List of actionable guidance for fixing errors
     """
+
     is_valid: bool
     errors: List[str] = field(default_factory=list)
     guidance: List[str] = field(default_factory=list)
@@ -54,7 +54,10 @@ class InvocationLimitsValidator:
                        If None, uses RealFileSystem for production use.
         """
         if filesystem is None:
-            from src.des.adapters.driven.filesystem.real_filesystem import RealFileSystem
+            from src.des.adapters.driven.filesystem.real_filesystem import (
+                RealFileSystem,
+            )
+
             filesystem = RealFileSystem()
         self._filesystem = filesystem
 
@@ -85,7 +88,7 @@ class InvocationLimitsValidator:
             errors.append("MISSING: max_turns not configured in step file")
             guidance.append(
                 "Add 'max_turns' field to tdd_cycle section with a positive integer value. "
-                "Example: \"max_turns\": 50"
+                'Example: "max_turns": 50'
             )
         elif not isinstance(max_turns, int) or max_turns <= 0:
             errors.append(
@@ -102,7 +105,7 @@ class InvocationLimitsValidator:
             errors.append("MISSING: duration_minutes not configured in step file")
             guidance.append(
                 "Add 'duration_minutes' field to tdd_cycle section with a positive integer value. "
-                "Example: \"duration_minutes\": 30"
+                'Example: "duration_minutes": 30'
             )
         elif not isinstance(duration_minutes, int) or duration_minutes <= 0:
             errors.append(
@@ -115,15 +118,14 @@ class InvocationLimitsValidator:
 
         # Add general guidance if any errors found
         if errors:
-            guidance.insert(0,
+            guidance.insert(
+                0,
                 "Configure turn and timeout limits in step file under tdd_cycle section. "
-                "These limits enforce TDD discipline and prevent unbounded execution."
+                "These limits enforce TDD discipline and prevent unbounded execution.",
             )
 
         is_valid = len(errors) == 0
 
         return InvocationLimitsResult(
-            is_valid=is_valid,
-            errors=errors,
-            guidance=guidance
+            is_valid=is_valid, errors=errors, guidance=guidance
         )

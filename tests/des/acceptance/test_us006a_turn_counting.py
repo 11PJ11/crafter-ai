@@ -166,18 +166,18 @@ class TestTurnCountingIntegration:
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: Turn limit exceeded detected
-        assert hasattr(
-            hook_result, "turn_limit_exceeded"
-        ), "HookResult missing turn_limit_exceeded field"
-        assert (
-            hook_result.turn_limit_exceeded is True
-        ), "turn_limit_exceeded should be True when turn count exceeds max_turns"
+        assert hasattr(hook_result, "turn_limit_exceeded"), (
+            "HookResult missing turn_limit_exceeded field"
+        )
+        assert hook_result.turn_limit_exceeded is True, (
+            "turn_limit_exceeded should be True when turn count exceeds max_turns"
+        )
 
         # Assert: Phase identified in error message
         assert hook_result.error_message is not None
-        assert (
-            "GREEN_UNIT" in hook_result.error_message
-        ), "Error message should identify which phase exceeded limit"
+        assert "GREEN_UNIT" in hook_result.error_message, (
+            "Error message should identify which phase exceeded limit"
+        )
         assert (
             "65" in hook_result.error_message
             or "exceeded" in hook_result.error_message.lower()
@@ -185,9 +185,9 @@ class TestTurnCountingIntegration:
 
         # Assert: Recovery suggestions provided
         assert hook_result.recovery_suggestions is not None
-        assert (
-            len(hook_result.recovery_suggestions) >= 2
-        ), "At least 2 recovery suggestions expected (increase limit, simplify step)"
+        assert len(hook_result.recovery_suggestions) >= 2, (
+            "At least 2 recovery suggestions expected (increase limit, simplify step)"
+        )
 
         # Verify suggestions include key guidance
         suggestions_text = " ".join(hook_result.recovery_suggestions).lower()
@@ -244,12 +244,12 @@ class TestTurnCountingIntegration:
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
 
         # Assert: Timeout exceeded detected
-        assert hasattr(
-            hook_result, "timeout_exceeded"
-        ), "HookResult missing timeout_exceeded field"
-        assert (
-            hook_result.timeout_exceeded is True
-        ), "timeout_exceeded should be True when duration exceeds limit"
+        assert hasattr(hook_result, "timeout_exceeded"), (
+            "HookResult missing timeout_exceeded field"
+        )
+        assert hook_result.timeout_exceeded is True, (
+            "timeout_exceeded should be True when duration exceeds limit"
+        )
 
         # Assert: Error message identifies timeout and duration
         assert hook_result.error_message is not None
@@ -266,9 +266,9 @@ class TestTurnCountingIntegration:
 
         # Assert: Recovery suggestions provided
         assert hook_result.recovery_suggestions is not None
-        assert (
-            len(hook_result.recovery_suggestions) >= 2
-        ), "At least 2 recovery suggestions expected (request extension, simplify step)"
+        assert len(hook_result.recovery_suggestions) >= 2, (
+            "At least 2 recovery suggestions expected (request extension, simplify step)"
+        )
 
         # Verify suggestions include key guidance
         suggestions_text = " ".join(hook_result.recovery_suggestions).lower()

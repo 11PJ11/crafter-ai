@@ -25,12 +25,14 @@ from src.des.ports.driven_ports.filesystem_port import FileSystemPort
 from src.des.ports.driven_ports.time_provider_port import TimeProvider
 from src.des.domain.turn_counter import TurnCounter
 from src.des.domain.timeout_monitor import TimeoutMonitor
-from src.des.domain.invocation_limits_validator import InvocationLimitsValidator, InvocationLimitsResult
+from src.des.domain.invocation_limits_validator import (
+    InvocationLimitsValidator,
+    InvocationLimitsResult,
+)
 from src.des.adapters.driven.logging.audit_logger import log_audit_event
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
-import json
 
 
 @dataclass
@@ -46,10 +48,13 @@ class ExecuteStepResult:
         execution_path: Execution path identifier for validation (e.g., "DESOrchestrator.execute_step")
         features_validated: List of DES features validated during execution
     """
+
     turn_count: int
     phase_name: str = "PREPARE"
     status: str = "COMPLETED"
-    warnings_emitted: list[str] = field(default_factory=list)  # Deprecated, use timeout_warnings
+    warnings_emitted: list[str] = field(
+        default_factory=list
+    )  # Deprecated, use timeout_warnings
     timeout_warnings: list[str] = field(default_factory=list)
     execution_path: str = "DESOrchestrator.execute_step"
     features_validated: list[str] = field(default_factory=list)
@@ -73,7 +78,7 @@ class DESOrchestrator:
         hook: HookPort,
         validator: ValidatorPort,
         filesystem: FileSystemPort,
-        time_provider: TimeProvider
+        time_provider: TimeProvider,
     ):
         """Initialize with injected ports.
 
@@ -111,9 +116,9 @@ class DESOrchestrator:
 
         # Check multiple possible locations for schema_version
         schema_version = (
-            step_data.get("schema_version") or
-            step_data.get("tdd_cycle", {}).get("schema_version") or
-            "1.0"  # Default to v1.0 if not found (14-phase legacy)
+            step_data.get("schema_version")
+            or step_data.get("tdd_cycle", {}).get("schema_version")
+            or "1.0"  # Default to v1.0 if not found (14-phase legacy)
         )
 
         return schema_version
@@ -145,7 +150,9 @@ class DESOrchestrator:
             DESOrchestrator instance with default dependencies configured
         """
         from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
-        from src.des.adapters.drivers.validators.real_validator import RealTemplateValidator
+        from src.des.adapters.drivers.validators.real_validator import (
+            RealTemplateValidator,
+        )
         from src.des.adapters.driven.filesystem.real_filesystem import RealFileSystem
         from src.des.adapters.driven.time.system_time import SystemTimeProvider
 
@@ -158,7 +165,7 @@ class DESOrchestrator:
             hook=hook,
             validator=validator,
             filesystem=filesystem,
-            time_provider=time_provider
+            time_provider=time_provider,
         )
 
     def validate_prompt(self, prompt: str) -> ValidationResult:
@@ -180,9 +187,7 @@ class DESOrchestrator:
         return result
 
     def validate_invocation_limits(
-        self,
-        step_file: str,
-        project_root: Path | str
+        self, step_file: str, project_root: Path | str
     ) -> InvocationLimitsResult:
         """
         Validate turn and timeout limits configuration before sub-agent invocation.
@@ -220,7 +225,6 @@ class DESOrchestrator:
         if command in self.VALIDATION_COMMANDS:
             return "full"
         return "none"
-
 
     def _generate_des_markers(self, command: str | None, step_file: str | None) -> str:
         """
@@ -286,10 +290,7 @@ class DESOrchestrator:
 
         # Log TASK_INVOCATION_STARTED for audit trail
         log_audit_event(
-            "TASK_INVOCATION_STARTED",
-            command=command,
-            step_path=step_file,
-            agent=agent
+            "TASK_INVOCATION_STARTED", command=command, step_path=step_file, agent=agent
         )
 
         validation_level = self._get_validation_level(command)
@@ -307,7 +308,7 @@ class DESOrchestrator:
                 command=command,
                 step_path=step_file,
                 status="VALIDATED",
-                outcome="success"
+                outcome="success",
             )
 
             # Add timeout warnings if threshold monitoring is enabled
@@ -323,61 +324,9 @@ class DESOrchestrator:
         # Research and other commands bypass DES validation
         return ""
 
-    def render_full_prompt(
-        self,
-        command: str,
-        agent: str,
-        step_file: str,
-        project_root: str | Path,
+    def prepare_ad_hoc_prompt(
+        self, prompt: str, project_root: str | None = None
     ) -> str:
-        """
-        Render complete Task prompt with all DES sections including TIMEOUT_INSTRUCTION.
-
-        This method is used by acceptance tests to validate the complete prompt structure.
-        It returns a full prompt that would be sent to the Task tool for execution.
-
-        Args:
-            command: Command type (/nw:execute, /nw:develop)
-            agent: Target agent identifier (e.g., @software-crafter)
-            step_file: Path to step file relative to project_root
-            project_root: Project root directory path
-
-        Returns:
-            Complete prompt with all DES sections including TIMEOUT_INSTRUCTION
-
-        Raises:
-            ValueError: If command is not a validation command
-        """
-        from src.des.domain.timeout_instruction_template import TimeoutInstructionTemplate
-
-        validation_level = self._get_validation_level(command)
-        if validation_level != "full":
-            raise ValueError(
-                f"render_full_prompt only supports validation commands, got: {command}"
-            )
-
-        # Generate DES markers
-        des_markers = self._generate_des_markers(command, step_file)
-
-        # Generate TIMEOUT_INSTRUCTION section
-        template = TimeoutInstructionTemplate()
-        timeout_instruction = template.render()
-
-        # Combine all sections
-        # In a real implementation, this would include:
-        # - DES_METADATA
-        # - AGENT_IDENTITY
-        # - TASK_CONTEXT
-        # - TDD_8_PHASES
-        # - QUALITY_GATES
-        # - OUTCOME_RECORDING
-        # - BOUNDARY_RULES
-        # - TIMEOUT_INSTRUCTION
-        #
-        # For now, return minimal prompt with TIMEOUT_INSTRUCTION to satisfy tests
-        return f"{des_markers}\n\n{timeout_instruction}"
-
-    def prepare_ad_hoc_prompt(self, prompt: str, project_root: str | None = None) -> str:
         """
         Prepare ad-hoc prompt without DES validation markers.
 
@@ -414,7 +363,7 @@ class DESOrchestrator:
         project_root: Path | str,
         simulated_iterations: int = 0,
         timeout_thresholds: list[int] | None = None,
-        mocked_elapsed_times: list[int] | None = None
+        mocked_elapsed_times: list[int] | None = None,
     ) -> ExecuteStepResult:
         """
         Execute step with TurnCounter and TimeoutMonitor integration.
@@ -454,7 +403,9 @@ class DESOrchestrator:
         if timeout_thresholds:
             started_at = current_phase.get("started_at")
             if started_at:
-                timeout_monitor = TimeoutMonitor(started_at=started_at, time_provider=self._time_provider)
+                timeout_monitor = TimeoutMonitor(
+                    started_at=started_at, time_provider=self._time_provider
+                )
 
         self._restore_turn_count(counter, current_phase, phase_name)
 
@@ -477,9 +428,13 @@ class DESOrchestrator:
                     for threshold in timeout_thresholds:
                         if mocked_elapsed_minutes >= threshold:
                             # Calculate percentage if duration_minutes configured
-                            duration_minutes = step_data.get("tdd_cycle", {}).get("duration_minutes")
+                            duration_minutes = step_data.get("tdd_cycle", {}).get(
+                                "duration_minutes"
+                            )
                             if duration_minutes:
-                                percentage = int((mocked_elapsed_minutes / duration_minutes) * 100)
+                                percentage = int(
+                                    (mocked_elapsed_minutes / duration_minutes) * 100
+                                )
                                 warning = (
                                     f"TIMEOUT WARNING: Phase {phase_name} "
                                     f"{percentage}% elapsed ({mocked_elapsed_minutes}/{duration_minutes} minutes). "
@@ -501,7 +456,9 @@ class DESOrchestrator:
                 if i % 5 == 0 or i == 0:
                     crossed = timeout_monitor.check_thresholds(timeout_thresholds)
                     for threshold in crossed:
-                        warning = self._format_timeout_warning(threshold, timeout_monitor)
+                        warning = self._format_timeout_warning(
+                            threshold, timeout_monitor
+                        )
                         if warning not in warnings:
                             warnings.append(warning)
 
@@ -509,7 +466,9 @@ class DESOrchestrator:
                         features_validated.append("timeout_monitoring")
 
         final_turn_count = counter.get_current_turn(phase_name)
-        self._persist_turn_count(step_file_path, step_data, current_phase, final_turn_count)
+        self._persist_turn_count(
+            step_file_path, step_data, current_phase, final_turn_count
+        )
 
         # Deduplicate features_validated
         features_validated = list(dict.fromkeys(features_validated))
@@ -521,7 +480,7 @@ class DESOrchestrator:
             warnings_emitted=warnings,  # Deprecated field
             timeout_warnings=warnings,
             execution_path="DESOrchestrator.execute_step",
-            features_validated=features_validated
+            features_validated=features_validated,
         )
 
     def _resolve_step_file_path(self, project_root: Path | str, step_file: str) -> Path:
@@ -544,13 +503,17 @@ class DESOrchestrator:
 
         return current_phase
 
-    def _restore_turn_count(self, counter: TurnCounter, current_phase: dict, phase_name: str) -> None:
+    def _restore_turn_count(
+        self, counter: TurnCounter, current_phase: dict, phase_name: str
+    ) -> None:
         """Restore existing turn count from phase data if resuming execution."""
         existing_turn_count = current_phase.get("turn_count", 0)
         for _ in range(existing_turn_count):
             counter.increment_turn(phase_name)
 
-    def _execute_iterations(self, counter: TurnCounter, phase_name: str, iterations: int) -> None:
+    def _execute_iterations(
+        self, counter: TurnCounter, phase_name: str, iterations: int
+    ) -> None:
         """Execute simulated agent call iterations, incrementing turn count."""
         for _ in range(iterations):
             counter.increment_turn(phase_name)
@@ -560,7 +523,7 @@ class DESOrchestrator:
         step_file_path: Path,
         step_data: dict,
         current_phase: dict,
-        turn_count: int
+        turn_count: int,
     ) -> None:
         """Persist turn count to step file using injected filesystem."""
         current_phase["turn_count"] = turn_count
@@ -585,7 +548,6 @@ class DESOrchestrator:
             f"Elapsed time: {elapsed_minutes}m"
         )
 
-
     def _persist_step_file(self, step_file_path: Path, step_data: dict) -> None:
         """Persist step data to file using injected filesystem.
 
@@ -600,7 +562,7 @@ class DESOrchestrator:
         step_file: str,
         project_root: str | Path,
         timeout_thresholds: list[int],
-        timeout_budget_minutes: int | None
+        timeout_budget_minutes: int | None,
     ) -> str:
         """Generate timeout warnings for agent prompt context.
 
@@ -627,7 +589,9 @@ class DESOrchestrator:
             return ""
 
         # Initialize TimeoutMonitor
-        monitor = TimeoutMonitor(started_at=started_at, time_provider=self._time_provider)
+        monitor = TimeoutMonitor(
+            started_at=started_at, time_provider=self._time_provider
+        )
 
         # Check thresholds
         crossed_thresholds = monitor.check_thresholds(timeout_thresholds)
@@ -654,239 +618,3 @@ class DESOrchestrator:
             warning_parts.append(f"has been running for {elapsed_minutes} minutes.")
 
         return " ".join(warning_parts)
-
-    # ========================================================================
-    # Token-Minimal Architecture Methods (Schema v2.0 - Roadmap + Execution Status)
-    # ========================================================================
-    # Added 2026-01-29: Support for step-less workflow using roadmap.yaml + execution-status.yaml
-    # Eliminates 4.8M tokens from step files while preserving TDD cycle tracking
-    # See: /home/alexd/.claude/plans/purrfect-swinging-rain.md
-
-    def load_roadmap(self, project_id: str) -> dict:
-        """
-        Load roadmap.yaml for project (schema v2.0 enhanced format).
-
-        Loads the roadmap ONCE by orchestrator, which then extracts task context
-        for sub-agents. Sub-agents receive extracted context (~5k tokens), not
-        entire roadmap (~102k tokens), saving 1.52M tokens across 16 steps.
-
-        Args:
-            project_id: Project identifier (e.g., "des-us007-boundary-rules")
-
-        Returns:
-            Roadmap dictionary with schema_version, tdd_phases, execution_config,
-            and phases array containing steps
-
-        Raises:
-            FileNotFoundError: If roadmap file does not exist
-            ValueError: If roadmap missing required fields (schema_version, tdd_phases)
-        """
-        import yaml
-
-        roadmap_path = Path(f"docs/feature/{project_id}/roadmap.yaml")
-
-        if not roadmap_path.exists():
-            raise FileNotFoundError(f"Roadmap not found: {roadmap_path}")
-
-        with open(roadmap_path, "r") as f:
-            roadmap = yaml.safe_load(f)
-
-        # Validate required fields for schema v2.0
-        if "schema_version" not in roadmap:
-            raise ValueError(f"Roadmap missing schema_version field: {roadmap_path}")
-
-        if roadmap["schema_version"] != "2.0":
-            raise ValueError(
-                f"Roadmap schema version {roadmap['schema_version']} not supported. "
-                f"Expected 2.0 for token-minimal architecture."
-            )
-
-        if "tdd_phases" not in roadmap:
-            raise ValueError(f"Roadmap missing tdd_phases array: {roadmap_path}")
-
-        if "execution_config" not in roadmap:
-            raise ValueError(f"Roadmap missing execution_config: {roadmap_path}")
-
-        return roadmap
-
-    def load_execution_status(self, project_id: str) -> dict:
-        """
-        Load execution-status.yaml for project.
-
-        Lightweight state tracker (8k tokens) that replaces individual step files.
-        Contains current execution pointer, completed steps log, and phase checkpoint
-        for current step.
-
-        Args:
-            project_id: Project identifier (e.g., "des-us007-boundary-rules")
-
-        Returns:
-            Execution status dictionary with current, completed_steps, step_checkpoint
-
-        Raises:
-            FileNotFoundError: If execution-status file does not exist
-            ValueError: If execution-status missing required fields
-        """
-        import yaml
-
-        exec_status_path = Path(f"docs/feature/{project_id}/execution-status.yaml")
-
-        if not exec_status_path.exists():
-            raise FileNotFoundError(f"Execution status not found: {exec_status_path}")
-
-        with open(exec_status_path, "r") as f:
-            exec_status = yaml.safe_load(f)
-
-        # Validate required fields
-        if "execution_status" not in exec_status:
-            raise ValueError(f"Execution status missing execution_status wrapper: {exec_status_path}")
-
-        status = exec_status["execution_status"]
-
-        if "schema_version" not in status:
-            raise ValueError(f"Execution status missing schema_version: {exec_status_path}")
-
-        if status["schema_version"] != "1.0":
-            raise ValueError(
-                f"Execution status schema version {status['schema_version']} not supported. "
-                f"Expected 1.0 for token-minimal architecture."
-            )
-
-        return exec_status
-
-    def find_step_in_roadmap(self, roadmap: dict, step_id: str) -> dict | None:
-        """
-        Find step definition in roadmap by step_id.
-
-        Searches through all phases to find the step with matching step_id.
-        Returns None if step not found.
-
-        Args:
-            roadmap: Roadmap dictionary (from load_roadmap)
-            step_id: Step identifier (e.g., "01-01", "02-03")
-
-        Returns:
-            Step dictionary with step_id, name, description, acceptance_criteria, etc.
-            Returns None if step not found.
-        """
-        for phase in roadmap.get("phases", []):
-            for step in phase.get("steps", []):
-                if step.get("step_id") == step_id:
-                    return step
-
-        return None
-
-    def extract_task_context(self, roadmap: dict, step_id: str) -> dict:
-        """
-        Extract task context from roadmap for sub-agent invocation.
-
-        CRITICAL OPTIMIZATION: Orchestrator loads roadmap once (102k tokens),
-        extracts task context (~5k tokens), passes to sub-agent. Sub-agent receives
-        self-contained context, does NOT load roadmap.
-
-        Token savings: 102k - 5k = 97k per step × 16 steps = 1.52M tokens saved.
-
-        Args:
-            roadmap: Roadmap dictionary (from load_roadmap)
-            step_id: Step identifier to extract context for
-
-        Returns:
-            Task context dictionary with:
-            - step_id: Step identifier
-            - name: Step name
-            - description: Step description
-            - acceptance_criteria: Criteria for completion
-            - test_file: Path to acceptance test file
-            - scenario_line: Line number of test scenario
-            - acceptance_test_scenario: Test function name
-            - quality_gates: TDD quality requirements
-            - deliverables: Expected outputs
-            - tdd_phases: 8-phase list (from roadmap)
-            - execution_config: Timeout and turn count settings
-
-        Raises:
-            ValueError: If step_id not found in roadmap
-        """
-        step_def = self.find_step_in_roadmap(roadmap, step_id)
-
-        if step_def is None:
-            raise ValueError(
-                f"Step {step_id} not found in roadmap. "
-                f"Available steps: {self._list_available_steps(roadmap)}"
-            )
-
-        # Extract self-contained task context
-        task_context = {
-            "step_id": step_def["step_id"],
-            "name": step_def["name"],
-            "description": step_def["description"],
-            "acceptance_criteria": step_def.get("acceptance_criteria", []),
-            "test_file": step_def.get("test_file"),
-            "scenario_line": step_def.get("scenario_line"),
-            "acceptance_test_scenario": step_def.get("acceptance_test_scenario"),
-            "quality_gates": step_def.get("quality_gates", {}),
-            "deliverables": step_def.get("deliverables", []),
-            "implementation_notes": step_def.get("implementation_notes", ""),
-            "dependencies": step_def.get("dependencies", []),
-            "estimated_hours": step_def.get("estimated_hours", 0),
-            "suggested_agent": step_def.get("suggested_agent", "software-crafter"),
-
-            # TDD phase definitions (from roadmap - loaded once)
-            "tdd_phases": roadmap.get("tdd_phases", []),
-
-            # Execution configuration (from roadmap)
-            "execution_config": roadmap.get("execution_config", {})
-        }
-
-        return task_context
-
-    def update_execution_status(
-        self,
-        project_id: str,
-        exec_status: dict
-    ) -> None:
-        """
-        Update execution-status.yaml with new state.
-
-        Persists execution state after phase completion or step completion.
-        Sub-agents call this after EACH phase to enable phase-level resume.
-
-        Args:
-            project_id: Project identifier
-            exec_status: Updated execution status dictionary (from load_execution_status)
-
-        Raises:
-            FileNotFoundError: If execution-status file does not exist
-        """
-        import yaml
-        from datetime import datetime
-
-        exec_status_path = Path(f"docs/feature/{project_id}/execution-status.yaml")
-
-        if not exec_status_path.exists():
-            raise FileNotFoundError(f"Execution status not found: {exec_status_path}")
-
-        # Update timestamp
-        exec_status["execution_status"]["updated_at"] = datetime.now().isoformat()
-
-        # Write updated status
-        with open(exec_status_path, "w") as f:
-            yaml.dump(exec_status, f, default_flow_style=False, sort_keys=False)
-
-    def _list_available_steps(self, roadmap: dict) -> list[str]:
-        """
-        List all available step IDs in roadmap.
-
-        Helper method for error messages when step not found.
-
-        Args:
-            roadmap: Roadmap dictionary
-
-        Returns:
-            List of step_id strings (e.g., ["01-01", "01-02", "02-01"])
-        """
-        step_ids = []
-        for phase in roadmap.get("phases", []):
-            for step in phase.get("steps", []):
-                step_ids.append(step.get("step_id", "unknown"))
-        return step_ids

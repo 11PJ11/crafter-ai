@@ -704,9 +704,9 @@ def assert_output():
 
             assert field in data, f"JSON field '{field}' not found in: {data}"
             if value is not None:
-                assert (
-                    data[field] == value
-                ), f"JSON field '{field}' has value {data[field]!r}, expected {value!r}"
+                assert data[field] == value, (
+                    f"JSON field '{field}' has value {data[field]!r}, expected {value!r}"
+                )
 
     return OutputAssertions()
 

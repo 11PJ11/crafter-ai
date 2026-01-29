@@ -56,14 +56,14 @@ class ChangelogParser:
         changes = []
 
         # Find BREAKING CHANGES section
-        pattern = r'##\s*BREAKING\s+CHANGES\s*\n((?:\*.*\n?)+)'
+        pattern = r"##\s*BREAKING\s+CHANGES\s*\n((?:\*.*\n?)+)"
         matches = re.finditer(pattern, changelog, re.IGNORECASE)
 
         for match in matches:
             section_content = match.group(1)
 
             # Extract bullet points, remove conventional commit markers
-            bullet_pattern = r'\*\s*(?:\w+!:\s*)?(.+)'
+            bullet_pattern = r"\*\s*(?:\w+!:\s*)?(.+)"
             bullets = re.findall(bullet_pattern, section_content)
 
             changes.extend([bullet.strip() for bullet in bullets])
@@ -82,7 +82,7 @@ class ChangelogParser:
         changes = []
 
         # Find conventional commits with ! marker
-        pattern = r'\*\s*\w+!:\s*(.+)'
+        pattern = r"\*\s*\w+!:\s*(.+)"
         matches = re.findall(pattern, changelog)
 
         changes.extend([match.strip() for match in matches])

@@ -51,9 +51,9 @@ class TestSuggestionFormatterBasics:
 
         suggestion = formatter.format_suggestion(why_text, how_text, actionable)
 
-        assert (
-            "ACTION:" in suggestion or "ACTIONABLE:" in suggestion
-        ), "Suggestion must contain actionable element"
+        assert "ACTION:" in suggestion or "ACTIONABLE:" in suggestion, (
+            "Suggestion must contain actionable element"
+        )
         assert actionable in suggestion, "Must include provided actionable command"
 
     def test_format_suggestion_structure_consistent(self):
@@ -75,9 +75,9 @@ class TestSuggestionFormatterBasics:
         for suggestion in formatted:
             assert "WHY:" in suggestion, f"Missing WHY in: {suggestion}"
             assert "HOW:" in suggestion, f"Missing HOW in: {suggestion}"
-            assert (
-                "ACTION:" in suggestion or "ACTIONABLE:" in suggestion
-            ), f"Missing actionable in: {suggestion}"
+            assert "ACTION:" in suggestion or "ACTIONABLE:" in suggestion, (
+                f"Missing actionable in: {suggestion}"
+            )
 
     def test_format_suggestion_preserves_text_content(self):
         """Formatting should preserve all provided text content."""
@@ -105,12 +105,12 @@ class TestSuggestionFormatterBasics:
         suggestion = formatter.format_suggestion(why_text, how_text, actionable)
 
         # Total length should be reasonable for junior developers (<500 chars)
-        assert (
-            len(suggestion) < 500
-        ), f"Suggestion too long ({len(suggestion)} chars). Should be readable."
-        assert (
-            len(suggestion) > 50
-        ), f"Suggestion too short ({len(suggestion)} chars). Should have substance."
+        assert len(suggestion) < 500, (
+            f"Suggestion too long ({len(suggestion)} chars). Should be readable."
+        )
+        assert len(suggestion) > 50, (
+            f"Suggestion too short ({len(suggestion)} chars). Should have substance."
+        )
 
 
 class TestTimeoutFailureFormatting:
@@ -126,12 +126,12 @@ class TestTimeoutFailureFormatting:
 
         suggestion = formatter.format_suggestion(why_text, how_text, actionable)
 
-        assert (
-            "35" in suggestion or "timeout" in suggestion.lower()
-        ), "Should reference actual runtime"
-        assert (
-            "30" in suggestion or "threshold" in suggestion.lower()
-        ), "Should reference configured timeout"
+        assert "35" in suggestion or "timeout" in suggestion.lower(), (
+            "Should reference actual runtime"
+        )
+        assert "30" in suggestion or "threshold" in suggestion.lower(), (
+            "Should reference configured timeout"
+        )
 
     def test_timeout_suggestion_recommends_optimization_or_adjustment(self):
         """Timeout suggestion should recommend either optimization or adjustment."""
@@ -153,9 +153,9 @@ class TestTimeoutFailureFormatting:
             for word in ["increase", "threshold", "adjust", "extend", "raise"]
         )
 
-        assert (
-            has_optimization or has_adjustment
-        ), "Should recommend either optimization or threshold adjustment"
+        assert has_optimization or has_adjustment, (
+            "Should recommend either optimization or threshold adjustment"
+        )
 
     def test_timeout_suggestion_includes_actionable_command(self):
         """Timeout suggestion should include specific executable command."""
@@ -229,9 +229,9 @@ class TestSuggestionFormatterIntegration:
         handler = RecoveryGuidanceHandler()
 
         # Handler should have format_suggestion method
-        assert hasattr(
-            handler, "format_suggestion"
-        ), "RecoveryGuidanceHandler must have format_suggestion method"
+        assert hasattr(handler, "format_suggestion"), (
+            "RecoveryGuidanceHandler must have format_suggestion method"
+        )
 
     def test_recovery_handler_format_suggestion_works(self):
         """RecoveryGuidanceHandler.format_suggestion should format correctly."""

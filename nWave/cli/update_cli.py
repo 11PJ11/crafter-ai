@@ -64,7 +64,9 @@ def _create_mock_github_adapter():
 
         def get_latest_release(self, owner: str, repo: str) -> ReleaseInfo:
             """Return mock release info from environment."""
-            is_reachable = os.getenv("NWAVE_MOCK_GITHUB_REACHABLE", "true").lower() == "true"
+            is_reachable = (
+                os.getenv("NWAVE_MOCK_GITHUB_REACHABLE", "true").lower() == "true"
+            )
 
             if not is_reachable:
                 raise NetworkError("Mock: GitHub API unreachable")
@@ -129,7 +131,11 @@ def format_update_result(result: "UpdateResult") -> str:
     Returns:
         Formatted string for display
     """
-    if result.success and result.new_version and result.new_version != result.previous_version:
+    if (
+        result.success
+        and result.new_version
+        and result.new_version != result.previous_version
+    ):
         return "Update complete."
     elif result.success and result.error_message == "Already up to date":
         return f"Already up to date (v{result.previous_version})."
@@ -140,7 +146,9 @@ def format_update_result(result: "UpdateResult") -> str:
 
 def _display_major_version_warning(current_version, latest_version) -> None:
     """Display warning message for major version changes."""
-    print(f"Major version change detected ({current_version.major}.x to {latest_version.major}.x). This may break existing workflows.")
+    print(
+        f"Major version change detected ({current_version.major}.x to {latest_version.major}.x). This may break existing workflows."
+    )
     print("Continue? [y/N]")
 
 
@@ -178,7 +186,9 @@ def main() -> int:
             download = _create_mock_download_adapter()
             checksum = _create_mock_checksum_adapter()
         else:
-            from nWave.infrastructure.versioning.github_api_adapter import GitHubAPIAdapter
+            from nWave.infrastructure.versioning.github_api_adapter import (
+                GitHubAPIAdapter,
+            )
             from nWave.infrastructure.versioning.download_adapter import DownloadAdapter
             from nWave.infrastructure.versioning.checksum_adapter import ChecksumAdapter
 

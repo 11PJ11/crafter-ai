@@ -85,9 +85,9 @@ class TestLogTimestampFormat:
         log_content = log_file.read_text()
         # Timestamp pattern: [YYYY-MM-DD HH:MM:SS]
         timestamp_pattern = r"\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]"
-        assert re.search(
-            timestamp_pattern, log_content
-        ), f"Log should contain timestamp. Content: {log_content}"
+        assert re.search(timestamp_pattern, log_content), (
+            f"Log should contain timestamp. Content: {log_content}"
+        )
 
     def test_log_timestamp_is_current_time(self, tmp_path):
         """
@@ -115,9 +115,9 @@ class TestLogTimestampFormat:
         after_time = datetime.now()
         # Allow 2 second tolerance due to second truncation in log format
         tolerance = timedelta(seconds=2)
-        assert (
-            (before_time - tolerance) <= log_time <= (after_time + tolerance)
-        ), f"Timestamp should be current. before={before_time}, log={log_time}, after={after_time}"
+        assert (before_time - tolerance) <= log_time <= (after_time + tolerance), (
+            f"Timestamp should be current. before={before_time}, log={log_time}, after={after_time}"
+        )
 
 
 class TestLogLevelInfo:
@@ -242,12 +242,12 @@ class TestLogPersistence:
 
         # ASSERT
         log_content = log_file.read_text()
-        assert (
-            "First installation attempt" in log_content
-        ), "Old log should be preserved"
-        assert (
-            "Second installation attempt" in log_content
-        ), "New log should be appended"
+        assert "First installation attempt" in log_content, (
+            "Old log should be preserved"
+        )
+        assert "Second installation attempt" in log_content, (
+            "New log should be appended"
+        )
 
     def test_multiple_log_entries_preserved(self, tmp_path):
         """
@@ -304,9 +304,9 @@ class TestLogFormatParseable:
         )
 
         for line in lines:
-            assert re.match(
-                log_pattern, line
-            ), f"Log line does not match expected format: {line}"
+            assert re.match(log_pattern, line), (
+                f"Log line does not match expected format: {line}"
+            )
 
     def test_log_entries_can_be_parsed_into_components(self, tmp_path):
         """

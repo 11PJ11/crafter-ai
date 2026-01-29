@@ -62,11 +62,15 @@ class Version:
             ValueError: If the version string is invalid
         """
         if not version_string:
-            raise ValueError(f"Invalid version: '{version_string}' - version string cannot be empty")
+            raise ValueError(
+                f"Invalid version: '{version_string}' - version string cannot be empty"
+            )
 
         match = self._SEMVER_PATTERN.match(version_string)
         if not match:
-            raise ValueError(f"Invalid version: '{version_string}' - must be in format major.minor.patch[-prerelease]")
+            raise ValueError(
+                f"Invalid version: '{version_string}' - must be in format major.minor.patch[-prerelease]"
+            )
 
         object.__setattr__(self, "major", int(match.group("major")))
         object.__setattr__(self, "minor", int(match.group("minor")))

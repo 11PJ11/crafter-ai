@@ -70,9 +70,9 @@ def error_is_human_readable(cli_result):
         or "required" in all_output.lower()
     )
 
-    assert (
-        has_clear_message
-    ), f"Error output doesn't appear human-readable:\n{all_output}"
+    assert has_clear_message, (
+        f"Error output doesn't appear human-readable:\n{all_output}"
+    )
 
 
 @then("the output should be valid JSON")
@@ -96,9 +96,9 @@ def json_field_value(field, value, cli_result):
     elif value.lower() == "false":
         expected = False
 
-    assert (
-        data[field] == expected
-    ), f"JSON field '{field}' has value {data[field]!r}, expected {expected!r}"
+    assert data[field] == expected, (
+        f"JSON field '{field}' has value {data[field]!r}, expected {expected!r}"
+    )
 
 
 @then(parsers.parse('the JSON should contain field "{field}"'))
@@ -116,9 +116,9 @@ def json_field_contains(field, substring, cli_result):
     data = json.loads(output)
 
     assert field in data, f"JSON field '{field}' not found in: {data}"
-    assert substring in str(
-        data[field]
-    ), f"JSON field '{field}' ({data[field]!r}) doesn't contain '{substring}'"
+    assert substring in str(data[field]), (
+        f"JSON field '{field}' ({data[field]!r}) doesn't contain '{substring}'"
+    )
 
 
 @then(parsers.parse('the JSON should contain field "{field}" as array'))
@@ -128,9 +128,9 @@ def json_field_is_array(field, cli_result):
     data = json.loads(output)
 
     assert field in data, f"JSON field '{field}' not found in: {data}"
-    assert isinstance(
-        data[field], list
-    ), f"JSON field '{field}' is not an array: {type(data[field])}"
+    assert isinstance(data[field], list), (
+        f"JSON field '{field}' is not an array: {type(data[field])}"
+    )
 
 
 @then(parsers.parse('the JSON "{field}" array should contain "{item}"'))
@@ -141,9 +141,9 @@ def json_array_contains(field, item, cli_result):
 
     assert field in data, f"JSON field '{field}' not found in: {data}"
     assert isinstance(data[field], list), f"JSON field '{field}' is not an array"
-    assert (
-        item in data[field]
-    ), f"JSON array '{field}' doesn't contain '{item}': {data[field]}"
+    assert item in data[field], (
+        f"JSON array '{field}' doesn't contain '{item}': {data[field]}"
+    )
 
 
 @then("each condition should produce the expected error code")
