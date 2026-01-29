@@ -10,7 +10,6 @@ Cross-platform compatible (Windows, macOS, Linux).
 
 import re
 
-import pytest
 from pytest_bdd import scenarios, given, when, then, parsers
 
 # Load scenarios from feature files
@@ -193,7 +192,7 @@ def command_count_reported(cli_result):
 @then(parsers.parse('the manifest file should exist at "{path}"'))
 def manifest_exists_at_path(path, file_assertions):
     """Verify manifest file exists at specified path."""
-    assert file_assertions.manifest_exists(), f"Manifest file not found"
+    assert file_assertions.manifest_exists(), "Manifest file not found"
 
 
 @then("the verification should fail")

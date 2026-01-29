@@ -8,7 +8,6 @@ CRITICAL: Hexagonal boundary enforcement - tests invoke CLI entry points ONLY.
 Cross-platform compatible (Windows, macOS, Linux).
 """
 
-import pytest
 from pytest_bdd import scenarios, given, when, then, parsers
 
 # Load scenarios from feature files

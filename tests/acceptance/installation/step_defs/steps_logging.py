@@ -60,7 +60,7 @@ def log_file_exists_at_path(path, file_assertions):
     """Verify log file exists at specified path."""
     # The path uses ~ which we need to expand
     assert file_assertions.log_exists(), (
-        f"Log file not found at expected location"
+        "Log file not found at expected location"
     )
 
 
@@ -136,7 +136,7 @@ def log_has_preflight_entries(file_assertions):
         or "preflight" in content
         or "validating" in content
     )
-    assert has_preflight, f"No pre-flight check entries in log"
+    assert has_preflight, "No pre-flight check entries in log"
 
 
 @then(parsers.parse('the log should contain "{check_type}" check result'))
