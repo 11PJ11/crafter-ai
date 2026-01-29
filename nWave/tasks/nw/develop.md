@@ -109,10 +109,11 @@ Phases from canonical schema `nWave/templates/step-tdd-cycle-schema.json` (singl
 - **Single Command**: One command executes entire wave (`/nw:develop "{description}"`)
 - **Smart Skip Logic**: Skips creation if artifacts exist AND are approved
 - **Mandatory Quality Gates**: 3 + 3N reviews per feature (N = number of steps)
+- **Mutation Testing Gate**: 75% kill rate threshold BEFORE finalize (prevents "Testing Theatre")
 - **Automatic Retry**: Max 2 attempts for each rejected review
-- **Stop on Failure**: Immediate stop if review rejected after 2 attempts
+- **Stop on Failure**: Immediate stop if review rejected after 2 attempts or mutation gate fails
 - **Progress Tracking**: Resume capability via `.develop-progress.json`
-- **Zero-Tolerance Validation**: All tests must pass, all reviews must approve
+- **Zero-Tolerance Validation**: All tests must pass, all reviews must approve, mutation threshold met
 
 ### Target Project Prerequisites
 
@@ -315,9 +316,11 @@ STEP 3: Phase 1 - Roadmap Creation + Review (with skip, retry max 2)
   ↓
 STEP 4: Phase 2 - Execute-All Steps (8-phase TDD cycle per step, roadmap context extraction)
   ↓
-STEP 5: Phase 3 - Finalize (read execution-status.yaml, archive, cleanup)
+STEP 5: Phase 2.5 - Mutation Testing Gate (75% kill rate threshold, BLOCKS finalize if fail)
   ↓
-STEP 6: Phase 4 - Report Completion
+STEP 6: Phase 3 - Finalize (read execution-status.yaml, archive, cleanup)
+  ↓
+STEP 7: Phase 4 - Report Completion
 ```
 
 **Eliminated Phases** (Saved 5.1M tokens):
@@ -1769,7 +1772,7 @@ rm -rf docs/feature/user-authentication/
 
 # Wave 5: DEVELOP (THIS COMMAND - fully automated)
 /nw:develop "Implement user authentication with JWT tokens"
-# Automatically: baseline → roadmap → split → execute all → finalize
+# Automatically: roadmap → execute all → mutation testing gate → finalize
 
 # Wave 6: DELIVER
 /nw:deliver "user-authentication"
@@ -1797,7 +1800,8 @@ rm -rf docs/feature/user-authentication/
 
 **NEW Functionality**:
 - ✅ `/nw:develop "{description}"` for complete wave orchestration
-- ✅ Automatic baseline → roadmap → split → execute-all → finalize
+- ✅ Automatic roadmap → execute-all → mutation testing gate → finalize
+- ✅ Mutation testing quality gate (75% kill rate) prevents "Testing Theatre"
 - ✅ Mandatory quality gates (3 + 3N reviews per feature)
 - ✅ Smart skip logic for approved artifacts
 - ✅ Automatic retry (max 2 attempts per review)
