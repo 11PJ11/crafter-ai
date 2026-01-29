@@ -311,7 +311,55 @@ class RecoveryGuidanceHandler:
                 "ACTION: After reviewing {transcript_path}, reset {phase} to NOT_EXECUTED and run `/nw:execute` again.",
             ],
         },
+        "invalid_skip": {
+            "description": "Phase marked SKIPPED without blocked_by reason",
+            "suggestions": [
+                "WHY: Your step file marks {phase} as SKIPPED but doesn't explain why it was skipped.\n"
+                "HOW: Add a blocked_by field that references which dependency blocks this phase.\n"
+                "ACTION: Update state.tdd_cycle.{phase} with blocked_by: 'dependency-name' to document why it was skipped.",
+                "WHY: Without knowing why a phase is skipped, you can't tell when it's safe to unskip it.\n"
+                "HOW: Record which prerequisite or dependency is blocking this phase from execution.\n"
+                "ACTION: Add blocked_by field to {phase} with the specific reason or dependency preventing execution.",
+            ],
+        },
+        "stale_execution": {
+            "description": "IN_PROGRESS phase older than configured threshold",
+            "suggestions": [
+                "WHY: Your {phase} has been stuck IN_PROGRESS for over {stale_threshold_hours} hours.\n"
+                "HOW: This likely means the agent crashed or abandoned the work without updating the state.\n"
+                "ACTION: Check {transcript_path} to see what happened, then reset {phase} to NOT_EXECUTED and retry.",
+                "WHY: A phase that's been stuck for {stale_threshold_hours}+ hours won't complete on its own.\n"
+                "HOW: Reset it to NOT_EXECUTED so the system can retry from a clean state.\n"
+                "ACTION: Update state.tdd_cycle.{phase}.status to 'NOT_EXECUTED', then run `/nw:execute` again.",
+                "WHY: Stale execution blocks your whole workflow from continuing to the next phase.\n"
+                "HOW: Clearing the stale state lets the system progress instead of waiting forever.\n"
+                "ACTION: After reviewing {transcript_path}, force-reset {phase} to NOT_EXECUTED in your step file.",
+            ],
+        },
     }
+
+    def get_recovery_suggestions_for_mode(
+        self,
+        failure_mode: str,
+    ) -> List[str]:
+        """
+        Get recovery suggestion templates for a specific failure mode.
+
+        This method provides access to the pre-defined recovery guidance templates
+        for each failure mode, without context variable interpolation.
+
+        Args:
+            failure_mode: Type of failure mode (e.g., 'abandoned_phase', 'silent_completion')
+
+        Returns:
+            List of recovery suggestion template strings for the specified mode.
+            Returns empty list if mode not found.
+        """
+        if failure_mode not in self.FAILURE_MODE_TEMPLATES:
+            return []
+
+        template = self.FAILURE_MODE_TEMPLATES[failure_mode]
+        return template.get("suggestions", [])
 
     def generate_recovery_suggestions(
         self,
@@ -337,12 +385,19 @@ class RecoveryGuidanceHandler:
         # Format suggestions with context values, providing defaults for optional fields
         suggestions = []
         for suggestion_template in suggestion_templates:
-            # Create a safe format context with defaults
+            # Create a safe format context with defaults for all possible placeholders
             safe_context = {
+                # Common fields
                 "phase": context.get("phase", "UNKNOWN_PHASE"),
                 "step_file": context.get("step_file", "unknown_step_file.json"),
                 "transcript_path": context.get("transcript_path", "/path/to/transcript.log"),
                 "section_name": context.get("section_name", "section"),
+                # Timeout failure fields
+                "configured_timeout_minutes": context.get("configured_timeout_minutes", "30"),
+                "actual_runtime_minutes": context.get("actual_runtime_minutes", "35"),
+                "phase_start": context.get("phase_start", "2026-01-01T00:00:00Z"),
+                # Stale execution fields
+                "stale_threshold_hours": context.get("stale_threshold_hours", "24"),
             }
             # Add any other context values not in defaults
             for key, value in context.items():

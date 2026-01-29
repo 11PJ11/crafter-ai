@@ -1096,7 +1096,6 @@ Update step file with phase completion
     # Scenario 12: All defined failure modes have registered recovery handlers
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_012_all_failure_modes_have_recovery_handlers(self):
         """
         GIVEN the defined failure mode registry
@@ -1117,7 +1116,7 @@ Update step file with phase completion
         7. stale_execution - IN_PROGRESS phase older than threshold
         """
         # Arrange: List of all defined failure modes
-        _defined_failure_modes = [
+        defined_failure_modes = [
             "abandoned_phase",
             "silent_completion",
             "missing_section",
@@ -1128,13 +1127,13 @@ Update step file with phase completion
         ]
 
         # Act: Check each failure mode has recovery handler
-        # recovery_handler = RecoveryGuidanceHandler()
+        recovery_handler = RecoveryGuidanceHandler()
 
         # Assert: Each mode has suggestions
-        # for mode in defined_failure_modes:
-        #     suggestions = recovery_handler.get_recovery_suggestions_for_mode(mode)
-        #     assert suggestions is not None, f"No recovery handler for mode: {mode}"
-        #     assert len(suggestions) > 0, f"Empty suggestions for mode: {mode}"
+        for mode in defined_failure_modes:
+            suggestions = recovery_handler.get_recovery_suggestions_for_mode(mode)
+            assert suggestions is not None, f"No recovery handler for mode: {mode}"
+            assert len(suggestions) > 0, f"Empty suggestions for mode: {mode}"
 
 
 # =============================================================================
