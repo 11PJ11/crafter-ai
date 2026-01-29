@@ -687,7 +687,9 @@ class TestInstallNwaveCallsVerifier:
                                     # ACT
                                     from scripts.install.install_nwave import main
 
-                                    with patch.object(sys, "argv", ["install_nwave.py"]):
+                                    with patch.object(
+                                        sys, "argv", ["install_nwave.py"]
+                                    ):
                                         exit_code = main()
 
         # ASSERT

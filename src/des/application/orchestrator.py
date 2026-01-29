@@ -349,7 +349,9 @@ class DESOrchestrator:
         Raises:
             ValueError: If command is not a validation command
         """
-        from src.des.domain.timeout_instruction_template import TimeoutInstructionTemplate
+        from src.des.domain.timeout_instruction_template import (
+            TimeoutInstructionTemplate,
+        )
 
         validation_level = self._get_validation_level(command)
         if validation_level != "full":
