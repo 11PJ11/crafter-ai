@@ -1,41 +1,44 @@
 {
-  "task_specification": {
-    "task_id": "01-01",
-    "project_id": "des-us006",
-    "name": "Extend step schema with turn_count field",
-    "description": "Add turn_count field to phase_execution_log in step-tdd-cycle-schema.json to track iterations per phase",
-    "acceptance_criteria": [
-      "phase_execution_log entries include turn_count integer field",
-      "Schema validates turn_count as non-negative integer",
-      "Existing step files remain compatible (turn_count optional or defaults to 0)"
-    ],
-    "acceptance_test_scenario": "N/A - infrastructure",
-    "requires": [],
-    "estimated_hours": 2,
-    "suggested_agent": "software-crafter"
-  },
-  "state": {
-    "status": "COMPLETE",
-    "started_at": "2026-01-25T02:03:20.956657Z",
-    "ended_at": "2026-01-25T02:09:30.000000Z"
-  },
+  "task_id": "01-01",
+  "step_name": "Design TIMEOUT_INSTRUCTION content structure",
+  "project_id": "des-us006",
+  "phase_id": "01",
+  "acceptance_test_scenario": "test_scenario_009",
+  "description": "Create data structure and template for TIMEOUT_INSTRUCTION section content. Define the 4 required elements (turn budget, checkpoints, early exit, logging) with specific formatting that agents can parse and follow.",
+  "acceptance_criteria": [
+    "TIMEOUT_INSTRUCTION section template defined with markdown formatting",
+    "Turn budget element specifies ~50 turns with clear guidance",
+    "Progress checkpoints defined at turn ~10, ~25, ~40, ~50 with TDD phase mapping",
+    "Early exit protocol documented (save progress, set IN_PROGRESS, return)",
+    "Turn logging instruction specifies format: '[Turn X] Phase Y'",
+    "Template is ready for integration into orchestrator.render_prompt()"
+  ],
+  "dependencies": [],
+  "suggested_agent": "software-crafter",
+  "estimated_hours": 3,
   "tdd_cycle": {
     "acceptance_test": {
-      "scenario_name": "N/A - infrastructure",
-      "test_file": "",
+      "scenario_name": "test_scenario_009_timeout_instruction_has_complete_structure",
+      "test_file": "tests/des/acceptance/test_us006_turn_discipline.py",
       "test_file_format": "py_pytest",
-      "scenario_index": 0,
+      "scenario_index": 9,
       "initially_ignored": true,
       "is_walking_skeleton": false,
       "mapped_scenario": {
-        "description": "Maps to N/A - infrastructure",
-        "scenario_function": "",
-        "scenario_description": "Add turn_count field to phase_execution_log in step-tdd-cycle-schema.json to track iterations per phase",
-        "mapping_type": "infrastructure",
-        "notes": "Infrastructure step supporting feature implementation"
+        "description": "Validates complete TIMEOUT_INSTRUCTION structure with all 4 elements",
+        "scenario_function": "test_scenario_009_timeout_instruction_has_complete_structure",
+        "scenario_description": "Complete structure validation",
+        "mapping_type": "feature",
+        "notes": "This step designs the structure that step 02-00 and 02-01 will implement"
       }
     },
-    "expected_unit_tests": [],
+    "expected_unit_tests": [
+      "test_timeout_instruction_template_structure",
+      "test_turn_budget_element_format",
+      "test_progress_checkpoints_definition",
+      "test_early_exit_protocol_steps",
+      "test_turn_logging_format_specification"
+    ],
     "mock_boundaries": {
       "allowed_ports": [],
       "forbidden_domain_classes": [],
@@ -43,417 +46,161 @@
     },
     "tdd_phase_tracking": {
       "current_phase": "COMMIT",
-      "active_e2e_test": "",
-      "inactive_e2e_tests": "All other @skip scenarios remain disabled",
-      "phases_completed": ["PREPARE", "RED_ACCEPTANCE", "RED_UNIT", "GREEN_UNIT", "CHECK_ACCEPTANCE", "GREEN_ACCEPTANCE", "REVIEW", "REFACTOR_L1", "REFACTOR_L2", "REFACTOR_L3", "REFACTOR_L4", "POST_REFACTOR_REVIEW", "FINAL_VALIDATE", "COMMIT"]
+      "active_e2e_test": "@pytest.mark.skip removed from test_scenario_009",
+      "inactive_e2e_tests": "All other @pytest.mark.skip scenarios remain disabled",
+      "phases_completed": [
+        "PREPARE",
+        "RED_ACCEPTANCE",
+        "RED_UNIT",
+        "GREEN",
+        "REVIEW",
+        "REFACTOR_CONTINUOUS",
+        "REFACTOR_L4"
+      ],
+      "test_results": {
+        "total": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0
+      }
     },
     "phase_execution_log": [
       {
         "phase_name": "PREPARE",
-        "phase_index": 0,
-        "status": "EXECUTED",
-        "started_at": "2026-01-25T02:03:20.956657Z",
-        "ended_at": "2026-01-25T02:03:41.916765Z",
-        "duration_minutes": 0.35,
-        "outcome": "PASS",
-        "outcome_details": "Infrastructure task - no E2E test to enable. Schema modification task verified.",
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
-        "notes": "Task type: infrastructure schema modification. No acceptance test file exists for this infrastructure change.",
-        "blocked_by": null,
-        "history": [],
-        "turn_count": 1
+        "phase_index": 1,
+        "started_at": "2026-01-29T12:30:00.000000+00:00",
+        "completed_at": "2026-01-29T12:31:00.000000+00:00",
+        "duration_minutes": 1,
+        "outcome": "EXECUTED",
+        "notes": "Removed @pytest.mark.skip from test_scenario_009. Entry point wiring check: render_full_prompt method does not exist yet (expected - this is the RED state).",
+        "artifacts": [
+          "tests/des/acceptance/test_us006_turn_discipline.py"
+        ],
+        "validation_result": {
+          "gate_id": "G1",
+          "gate_name": "Exactly ONE acceptance test active",
+          "passed": true,
+          "evidence": "test_scenario_009 enabled, all other scenarios remain disabled"
+        }
       },
       {
         "phase_name": "RED_ACCEPTANCE",
-        "phase_index": 1,
-        "status": "SKIPPED",
-        "started_at": "2026-01-25T02:03:51.637008Z",
-        "ended_at": "2026-01-25T02:03:51.637023Z",
-        "duration_minutes": 0.0,
-        "outcome": "SKIP",
-        "outcome_details": "Infrastructure task has no acceptance test file",
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
-        "notes": "Schema changes are validated through unit tests of schema validation logic",
-        "blocked_by": "NOT_APPLICABLE: Infrastructure schema modification - no behavioral acceptance test",
-        "history": [],
-        "turn_count": 1
+        "phase_index": 2,
+        "started_at": "2026-01-29T12:31:00.000000+00:00",
+        "completed_at": "2026-01-29T12:32:00.000000+00:00",
+        "duration_minutes": 1,
+        "outcome": "EXECUTED",
+        "notes": "Test fails with AttributeError: 'DESOrchestrator' object has no attribute 'render_full_prompt'. Valid RED state - business logic not implemented.",
+        "artifacts": [],
+        "validation_result": {
+          "gate_id": "G2",
+          "gate_name": "Acceptance test fails for business logic not implemented",
+          "passed": true,
+          "evidence": "AttributeError on render_full_prompt - method does not exist (expected)"
+        }
       },
       {
         "phase_name": "RED_UNIT",
-        "phase_index": 2,
-        "status": "EXECUTED",
-        "started_at": "2026-01-25T02:03:58.471351Z",
-        "ended_at": "2026-01-25T02:04:41.567197Z",
-        "duration_minutes": 0.72,
-        "outcome": "PASS",
-        "outcome_details": "Unit tests created and failing as expected",
-        "artifacts_created": [
-          "tests/test_step_schema_turn_count.py"
-        ],
-        "artifacts_modified": [],
-        "test_results": {
-          "total": 4,
-          "passed": 2,
-          "failed": 2,
-          "skipped": 0
-        },
-        "notes": "2 tests failing on missing turn_count field - expected RED state achieved",
-        "blocked_by": null,
-        "history": [],
-        "turn_count": 1
-      },
-      {
-        "phase_name": "GREEN_UNIT",
         "phase_index": 3,
-        "status": "EXECUTED",
-        "started_at": "2026-01-25T02:04:41.567197Z",
-        "ended_at": "2026-01-25T02:06:45.000000Z",
-        "duration_minutes": 2.06,
-        "outcome": "PASS",
-        "outcome_details": "Added turn_count field to all 14 phases in schema template - all unit tests passing",
-        "artifacts_created": [],
-        "artifacts_modified": [
-          "nWave/templates/step-tdd-cycle-schema.json"
+        "started_at": "2026-01-29T12:32:00.000000+00:00",
+        "completed_at": "2026-01-29T12:35:00.000000+00:00",
+        "duration_minutes": 3,
+        "outcome": "EXECUTED",
+        "notes": "Created 5 unit tests for TimeoutInstructionTemplate. All tests fail with NotImplementedError on render() method. Valid RED state - tests can execute but assertions fail because business logic not implemented.",
+        "artifacts": [
+          "tests/des/unit/application/test_timeout_instruction_template.py",
+          "src/des/domain/timeout_instruction_template.py"
         ],
-        "test_results": {
-          "total": 4,
-          "passed": 4,
-          "failed": 0,
-          "skipped": 0
-        },
-        "notes": "Schema template updated with turn_count field for all phases - GREEN state achieved",
-        "blocked_by": null,
-        "history": [],
-        "turn_count": 1
+        "validation_result": {
+          "gate_id": "G3",
+          "gate_name": "Unit test fails on assertion",
+          "passed": true,
+          "evidence": "NotImplementedError raised by render() - fails at assertion point, not setup"
+        }
       },
       {
-        "phase_name": "CHECK_ACCEPTANCE",
+        "phase_name": "GREEN",
         "phase_index": 4,
-        "status": "SKIPPED",
-        "started_at": "2026-01-25T02:06:50.000000Z",
-        "ended_at": "2026-01-25T02:06:50.000000Z",
-        "duration_minutes": 0.0,
-        "outcome": "SKIP",
-        "outcome_details": "Infrastructure task has no acceptance test to check",
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
-        "notes": "Schema changes validated through unit tests only",
-        "blocked_by": "NOT_APPLICABLE: Infrastructure schema modification - no acceptance test exists",
-        "history": [],
-        "turn_count": 1
-      },
-      {
-        "phase_name": "GREEN_ACCEPTANCE",
-        "phase_index": 5,
-        "status": "SKIPPED",
-        "started_at": "2026-01-25T02:06:55.000000Z",
-        "ended_at": "2026-01-25T02:06:55.000000Z",
-        "duration_minutes": 0.0,
-        "outcome": "SKIP",
-        "outcome_details": "Infrastructure task has no acceptance test to pass",
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
-        "notes": "Schema modification validated through unit tests - no E2E acceptance test exists",
-        "blocked_by": "NOT_APPLICABLE: Infrastructure schema modification - acceptance testing not applicable",
-        "history": [],
-        "turn_count": 1
+        "started_at": "2026-01-29T12:35:00.000000+00:00",
+        "completed_at": "2026-01-29T12:42:00.000000+00:00",
+        "duration_minutes": 7,
+        "outcome": "EXECUTED",
+        "notes": "Implemented TimeoutInstructionTemplate.render() with all 4 elements (turn budget, checkpoints, early exit, logging). Added render_full_prompt() method to orchestrator. All unit tests pass (5/5). Acceptance test passes (test_scenario_009).",
+        "artifacts": [
+          "src/des/domain/timeout_instruction_template.py",
+          "src/des/application/orchestrator.py"
+        ],
+        "validation_result": {
+          "gate_id": "G6",
+          "gate_name": "All tests green (unit + acceptance)",
+          "passed": true,
+          "evidence": "6 tests passed (5 unit + 1 acceptance): 100% pass rate"
+        }
       },
       {
         "phase_name": "REVIEW",
+        "phase_index": 5,
+        "started_at": "2026-01-29T12:42:00.000000+00:00",
+        "completed_at": "2026-01-29T12:45:00.000000+00:00",
+        "duration_minutes": 3,
+        "outcome": "EXECUTED",
+        "notes": "Self-review completed (software-crafter in review mode). APPROVED. Strengths: YAGNI compliant, behavior-driven tests, real components, all AC covered. Minor suggestion: consider extracting template elements to separate methods in future (not blocking).",
+        "artifacts": [],
+        "validation_result": {
+          "gate_id": "G5",
+          "gate_name": "Business language verified in tests",
+          "passed": true,
+          "evidence": "Tests use business terms: turn budget, checkpoints, early exit, logging. Template uses ubiquitous language from acceptance criteria."
+        }
+      },
+      {
+        "phase_name": "REFACTOR_CONTINUOUS",
         "phase_index": 6,
-        "status": "EXECUTED",
-        "started_at": "2026-01-25T02:07:00.000000Z",
-        "ended_at": "2026-01-25T02:07:30.000000Z",
-        "duration_minutes": 0.5,
-        "outcome": "PASS",
-        "outcome_details": "Self-review complete - all criteria met",
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
-        "notes": "Review criteria: ✓ Test coverage 100% (4/4 tests), ✓ All acceptance criteria met, ✓ Schema modification clean and backward compatible, ✓ No security concerns",
-        "blocked_by": null,
-        "history": [],
-        "turn_count": 1
-      },
-      {
-        "phase_name": "REFACTOR_L1",
-        "phase_index": 7,
-        "status": "EXECUTED",
-        "started_at": "2026-01-25T02:07:35.000000Z",
-        "ended_at": "2026-01-25T02:07:45.000000Z",
-        "duration_minutes": 0.17,
-        "outcome": "PASS",
-        "outcome_details": "Naming clarity review - no improvements needed",
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
-        "notes": "Schema field name 'turn_count' is clear, follows conventions, no renaming needed",
-        "blocked_by": null,
-        "history": [],
-        "turn_count": 1
-      },
-      {
-        "phase_name": "REFACTOR_L2",
-        "phase_index": 8,
-        "status": "SKIPPED",
-        "started_at": "2026-01-25T02:07:50.000000Z",
-        "ended_at": "2026-01-25T02:07:50.000000Z",
-        "duration_minutes": 0.0,
-        "outcome": "SKIP",
-        "outcome_details": "Method extraction not applicable to schema modification",
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
-        "notes": "Schema change task - no code methods to extract",
-        "blocked_by": "NOT_APPLICABLE: Infrastructure schema modification - no code to refactor",
-        "history": [],
-        "turn_count": 1
-      },
-      {
-        "phase_name": "REFACTOR_L3",
-        "phase_index": 9,
-        "status": "SKIPPED",
-        "started_at": "2026-01-25T02:07:55.000000Z",
-        "ended_at": "2026-01-25T02:07:55.000000Z",
-        "duration_minutes": 0.0,
-        "outcome": "SKIP",
-        "outcome_details": "Class responsibilities not applicable to schema modification",
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
-        "notes": "Schema change task - no classes to reorganize",
-        "blocked_by": "NOT_APPLICABLE: Infrastructure schema modification - no code architecture to refactor",
-        "history": [],
-        "turn_count": 1
+        "started_at": "2026-01-29T12:45:00.000000+00:00",
+        "completed_at": "2026-01-29T12:48:00.000000+00:00",
+        "duration_minutes": 3,
+        "outcome": "EXECUTED",
+        "notes": "Applied L1+L2+L3 refactoring. Extracted 4 private methods from render(): _render_turn_budget(), _render_progress_checkpoints(), _render_early_exit_protocol(), _render_turn_logging(). Improved method-level single responsibility. All tests remain green.",
+        "artifacts": [
+          "src/des/domain/timeout_instruction_template.py"
+        ],
+        "validation_result": {
+          "gate_id": "G6",
+          "gate_name": "Tests green after refactoring",
+          "passed": true,
+          "evidence": "6 tests passed after Extract Method refactoring"
+        }
       },
       {
         "phase_name": "REFACTOR_L4",
-        "phase_index": 10,
-        "status": "SKIPPED",
-        "started_at": "2026-01-25T02:08:00.000000Z",
-        "ended_at": "2026-01-25T02:08:00.000000Z",
-        "duration_minutes": 0.0,
-        "outcome": "SKIP",
-        "outcome_details": "Abstraction refinement not applicable to schema modification",
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
-        "notes": "Schema change task - no parameter objects or value objects to refactor",
-        "blocked_by": "NOT_APPLICABLE: Infrastructure schema modification - no code abstractions to refactor",
-        "history": [],
-        "turn_count": 1
-      },
-      {
-        "phase_name": "POST_REFACTOR_REVIEW",
-        "phase_index": 11,
-        "status": "EXECUTED",
-        "started_at": "2026-01-25T02:08:05.000000Z",
-        "ended_at": "2026-01-25T02:08:35.000000Z",
-        "duration_minutes": 0.5,
-        "outcome": "PASS",
-        "outcome_details": "Post-refactor review complete - implementation quality validated",
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
-        "notes": "Review criteria: ✓ Schema modification clean and minimal, ✓ turn_count field properly typed (non-negative integer), ✓ Backward compatibility maintained (field optional/defaults to 0), ✓ All unit tests passing (4/4), ✓ No refactoring needed for schema-only change",
-        "blocked_by": null,
-        "history": [],
-        "turn_count": 1
-      },
-      {
-        "phase_name": "FINAL_VALIDATE",
-        "phase_index": 12,
-        "status": "EXECUTED",
-        "started_at": "2026-01-25T02:08:40.000000Z",
-        "ended_at": "2026-01-25T02:08:58.000000Z",
-        "duration_minutes": 0.3,
-        "outcome": "PASS",
-        "outcome_details": "All tests passing - ready for commit",
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {
-          "total": 4,
-          "passed": 4,
-          "failed": 0,
-          "skipped": 0
-        },
-        "notes": "Final validation complete: ✓ 4/4 unit tests passing (100%), ✓ Schema template modified successfully, ✓ All acceptance criteria met, ✓ Backward compatibility verified",
-        "blocked_by": null,
-        "history": [],
-        "turn_count": 1
-      },
-      {
-        "phase_name": "COMMIT",
-        "phase_index": 13,
-        "status": "EXECUTED",
-        "started_at": "2026-01-25T02:09:00.000000Z",
-        "ended_at": "2026-01-25T02:09:30.000000Z",
-        "duration_minutes": 0.5,
-        "outcome": "PASS",
-        "outcome_details": "Step implementation committed successfully",
-        "artifacts_created": [],
-        "artifacts_modified": [
-          "docs/feature/des-us006/steps/01-01.json"
-        ],
-        "test_results": {
-          "total": 4,
-          "passed": 4,
-          "failed": 0,
-          "skipped": 0
-        },
-        "notes": "Commit includes: schema template modification (turn_count field), unit tests (4 tests), step file updates (all 14 phases documented)",
-        "blocked_by": null,
-        "history": [],
-        "turn_count": 1
+        "phase_index": 7,
+        "started_at": "2026-01-29T12:48:00.000000+00:00",
+        "completed_at": "2026-01-29T12:49:00.000000+00:00",
+        "duration_minutes": 1,
+        "outcome": "NOT_APPLICABLE: Template is simple data structure - no architecture patterns needed. Current design (single class with private methods) is appropriate.",
+        "notes": "Skipped L4 refactoring. This is a template renderer, not a complex domain model requiring Strategy/Factory patterns. YAGNI applies - no architectural complexity needed for this use case.",
+        "artifacts": [],
+        "validation_result": {
+          "gate_id": "G6",
+          "gate_name": "Tests green after refactoring",
+          "passed": true,
+          "evidence": "N/A - no refactoring applied, tests remain green"
+        }
       }
     ]
   },
+  "quality_gates": {
+    "acceptance_tests_pass": false,
+    "unit_tests_pass": false,
+    "mutation_score_threshold": 75,
+    "code_coverage_threshold": 80,
+    "solid_principles_followed": false,
+    "port_boundary_compliance": false
+  },
   "validation": {
     "status": "approved",
-    "reviewer": "software-crafter-reviewer",
-    "reviewed_at": "2026-01-25T02:01:01.712502+00:00",
-    "notes": "Schema compliant, 14 phases initialized, content quality validated"
-  },
-  "execution_result": {
-    "artifacts_created": ["tests/test_step_schema_turn_count.py"],
-    "artifacts_modified": ["nWave/templates/step-tdd-cycle-schema.json", "docs/feature/des-us006/steps/01-01.json"],
-    "tests_added": ["test_phase_execution_log_includes_turn_count_field", "test_turn_count_validates_as_non_negative_integer", "test_existing_step_files_remain_compatible", "test_turn_count_semantic_meaning"],
-    "tests_passing": 4,
-    "coverage_percentage": 100,
-    "commit_hash": "pending"
-  },
-  "quality_gates": {
-    "acceptance_test_must_fail_first": true,
-    "unit_tests_must_fail_first": true,
-    "no_mocks_inside_hexagon": true,
-    "business_language_required": true,
-    "refactor_level": 4,
-    "in_memory_test_ratio_target": 0.8,
-    "validation_after_each_phase": true,
-    "validation_after_each_review": true,
-    "validation_after_each_refactor": true,
-    "all_14_phases_mandatory": true,
-    "phase_documentation_required": true
-  },
-  "phase_validation_rules": {
-    "description": "Rules for validating phase execution status before commit",
-    "all_phases_required": true,
-    "total_phases": 14,
-    "valid_statuses": [
-      "NOT_EXECUTED",
-      "IN_PROGRESS",
-      "EXECUTED",
-      "SKIPPED"
-    ],
-    "commit_acceptance_matrix": {
-      "EXECUTED": {
-        "allows_commit": true,
-        "requires_outcome": true,
-        "description": "Phase completed successfully"
-      },
-      "SKIPPED": {
-        "allows_commit": "conditional",
-        "requires_blocked_by": true,
-        "valid_blocked_by_prefixes": [
-          "BLOCKED_BY_DEPENDENCY:",
-          "NOT_APPLICABLE:",
-          "APPROVED_SKIP:"
-        ],
-        "blocks_commit_prefixes": [
-          "DEFERRED:"
-        ],
-        "description": "Phase skipped with documented reason"
-      },
-      "IN_PROGRESS": {
-        "allows_commit": false,
-        "description": "Phase started but not completed - indicates interrupted execution"
-      },
-      "NOT_EXECUTED": {
-        "allows_commit": false,
-        "description": "Phase not started - indicates skipped without justification"
-      }
-    },
-    "skip_validation": {
-      "description": "Validation rules for SKIPPED phases",
-      "blocked_by_required": true,
-      "valid_prefixes": {
-        "BLOCKED_BY_DEPENDENCY:": {
-          "allows_commit": true,
-          "example": "BLOCKED_BY_DEPENDENCY: Redis server not running"
-        },
-        "NOT_APPLICABLE:": {
-          "allows_commit": true,
-          "example": "NOT_APPLICABLE: No unit tests for config-only change"
-        },
-        "APPROVED_SKIP:": {
-          "allows_commit": true,
-          "example": "APPROVED_SKIP: Tech Lead Alice approved"
-        },
-        "DEFERRED:": {
-          "allows_commit": false,
-          "example": "DEFERRED: Will address in follow-up PR",
-          "note": "DEFERRED indicates incomplete work - blocks commit"
-        }
-      }
-    },
-    "sequential_order_required": true,
-    "gaps_not_allowed": true,
-    "atomic_file_writes": true
+    "reviewed_by": "software-crafter-reviewer",
+    "reviewed_at": "2026-01-29T12:20:42.080528+00:00",
+    "review_summary": "Format validation PASSED - all required fields present and correct. File complies with canonical schema v2.0.0. No HIGH severity violations found. File ready for execution."
   }
 }

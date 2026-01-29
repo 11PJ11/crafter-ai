@@ -1,531 +1,688 @@
 project_id: des-us006
-created_at: "2026-01-25T03:00:00Z"
-implements_user_story: "US-006"
-user_story_title: "Turn Discipline Without max_turns"
-user_story_description: "DES must include turn discipline instructions in every prompt for agents to self-regulate, since max_turns is not available"
-acceptance_criteria_mapping:
-  - roadmap_phase: "Phase 01: Turn Limit Infrastructure"
-    maps_to_ac: ["AC-006.5"]
-    ac_description: "Prompt instructs agent to log turn count at each phase transition"
-  - roadmap_phase: "Phase 02: Turn Counter Wiring"
-    maps_to_ac: ["AC-006.5"]
-    ac_description: "Integration of turn counter into orchestrator"
-  - roadmap_phase: "Phase 03: Timeout Warning System"
-    maps_to_ac: ["AC-006.1", "AC-006.2"]
-    ac_description: "TIMEOUT_INSTRUCTION section + turn budget specified"
-  - roadmap_phase: "Phase 04: Timeout Wiring"
-    maps_to_ac: ["AC-006.1"]
-    ac_description: "Timeout warnings in agent prompt"
-  - roadmap_phase: "Phase 05: Extension Request Mechanism"
-    status: "OUT_OF_SCOPE"
-    notes: "Extension API removed - agents self-regulate via prompt instructions only"
-  - roadmap_phase: "Phase 06: Extension API Wiring"
-    status: "OUT_OF_SCOPE"
-    notes: "Extension API removed - agents self-regulate via prompt instructions only"
-  - roadmap_phase: "Phase 07: Enforcement"
-    maps_to_ac: ["AC-006.5"]
-    ac_description: "Turn limit enforcement in hook"
-  - roadmap_phase: "Phase 08: E2E Wiring Tests"
-    maps_to_ac: ["AC-006.1", "AC-006.2", "AC-006.5"]
-    ac_description: "E2E validation of complete feature"
-  - roadmap_phase: "Phase 09: Unit Testing"
-    maps_to_ac: ["AC-006.5"]
-    ac_description: "Unit test coverage for turn counting and timeout monitoring"
-  - roadmap_phase: "Phase 10: Acceptance Testing"
-    maps_to_ac: ["AC-006.1", "AC-006.2", "AC-006.5"]
-    ac_description: "Acceptance test scenarios validating all implemented AC"
-  - roadmap_phase: "Phase 11: Documentation"
-    maps_to_ac: []
-    ac_description: "Documentation and integration (no direct AC mapping)"
-missing_acceptance_criteria:
-  - ac_id: "AC-006.3"
-    description: "Progress checkpoints (turn ~10, ~25, ~40, ~50)"
-    status: "NOT_YET_IMPLEMENTED"
-    notes: "Progress checkpoint prompts not yet implemented - future enhancement"
-  - ac_id: "AC-006.4"
-    description: "Early exit protocol"
-    status: "NOT_YET_IMPLEMENTED"
-    notes: "Early exit protocol not yet implemented - future enhancement"
-roadmap:
-  validation:
-    status: approved
-    reviewer: software-crafter-reviewer
-    reviewed_at: "2026-01-25T03:15:00Z"
-    notes: "Roadmap approved. Wiring steps explicitly address external validity blocking issue from previous review. 5 dedicated wiring steps (02-01, 04-01, 06-01, 08-01, 08-02) connect features to DESOrchestrator.execute_step() entry point with E2E tests proving activation during /nw:execute and /nw:develop invocations. All 5 review criteria pass: external validity resolved, technical feasibility sound, steps atomic (1-6 hours), Outside-In TDD compliant (10 scenarios mapped), complete coverage of all 6 baseline metrics. Exceptional regeneration quality with explicit wiring architecture."
-  goal: "Implement DES timeout and turn discipline with CRITICAL FOCUS on entry point wiring: enforce maximum turn limits per task, implement timeout warnings at configurable thresholds, and support timeout extension requests. Features MUST be wired into DESOrchestrator.execute_step() and command handlers to ensure they activate during actual /nw:execute and /nw:develop invocations."
-  phases:
-    - phase_id: "01"
-      name: "Turn Limit Infrastructure"
-      purpose: "Add turn counting capability to step schema and implement tracking component"
-      steps:
-        - step_id: "01-01"
-          name: "Extend step schema with turn_count field"
-          description: "Add turn_count field to phase_execution_log in step-tdd-cycle-schema.json to track iterations per phase"
-          acceptance_criteria:
-            - "phase_execution_log entries include turn_count integer field"
-            - "Schema validates turn_count as non-negative integer"
-            - "Existing step files remain compatible (turn_count optional or defaults to 0)"
-          acceptance_test_scenario: "N/A - infrastructure"
-          suggested_agent: software-crafter
-          requires: []
-          estimated_hours: 2
+created_at: 2026-01-29T15:00:00Z
+description: |
+  Implementation roadmap for turn discipline instructions in DES-validated prompts.
+  Closes critical validation gap where validator requires TIMEOUT_INSTRUCTION section
+  but orchestrator.render_prompt() does not generate it. This feature prevents runaway
+  agent execution by including turn budget (~50), progress checkpoints, early exit
+  protocol, and turn logging instructions in all /nw:execute and /nw:develop prompts.
 
-        - step_id: "01-02"
-          name: "Implement TurnCounter component"
-          description: "Create des/turn_counter.py with TurnCounter class to track and validate turn limits per phase"
-          acceptance_criteria:
-            - "TurnCounter tracks current turn count per phase"
-            - "increment_turn() method updates count"
-            - "is_limit_exceeded(max_turns) returns boolean"
-            - "Unit tests validate counter behavior"
-          acceptance_test_scenario: "N/A - infrastructure"
-          suggested_agent: software-crafter
-          requires: ["01-01"]
-          estimated_hours: 3
+  CRITICAL FIXES APPLIED:
+  - RC-01: Added step 02-00 to create render_full_prompt() entry point (BLOCKING fix)
+  - RC-02: Added step 03-03 for end-to-end wiring verification
+  - RC-03: Renamed Phase 02 to "GREEN - Implementation and Integration"
+  - RC-04: Added parallel_execution_group metadata for team coordination
 
-        - step_id: "01-03"
-          name: "Add configurable turn limits per task type"
-          description: "Create configuration module with turn limits: quick=20, standard=50, complex=100"
-          acceptance_criteria:
-            - "Configuration file defines turn limits by task type"
-            - "ConfigLoader reads and validates turn limit configuration"
-            - "Default fallback to standard (50 turns) if type not specified"
-          acceptance_test_scenario: "N/A - infrastructure"
-          suggested_agent: software-crafter
-          requires: ["01-02"]
-          estimated_hours: 2
+phases:
+  - phase_id: "01"
+    name: "PREPARE - Infrastructure and Content Design"
+    description: |
+      Design TIMEOUT_INSTRUCTION content structure and create helper methods
+      for generating timeout instruction components. This phase establishes
+      the foundation before implementing prompt rendering integration.
+    steps:
+      - step_id: "01-01"
+        name: "Design TIMEOUT_INSTRUCTION content structure"
+        description: |
+          Create data structure and template for TIMEOUT_INSTRUCTION section content.
+          Define the 4 required elements (turn budget, checkpoints, early exit, logging)
+          with specific formatting that agents can parse and follow.
+        acceptance_criteria:
+          - "TIMEOUT_INSTRUCTION section template defined with markdown formatting"
+          - "Turn budget element specifies ~50 turns with clear guidance"
+          - "Progress checkpoints defined at turn ~10, ~25, ~40, ~50 with TDD phase mapping"
+          - "Early exit protocol documented (save progress, set IN_PROGRESS, return)"
+          - "Turn logging instruction specifies format: '[Turn X] Phase Y'"
+          - "Template is ready for integration into orchestrator.render_prompt()"
+        suggested_agent: software-crafter
+        dependencies: []
+        estimated_hours: 3
+        test_scenarios:
+          - test_scenario_009  # Complete structure validation
 
-    - phase_id: "02"
-      name: "Turn Counter Wiring into Execution Loop"
-      purpose: "CRITICAL: Wire turn counting into DESOrchestrator main execution loop to ensure it actually runs when user invokes /nw:execute or /nw:develop"
-      steps:
-        - step_id: "02-01"
-          name: "WIRING: Wire TurnCounter into DESOrchestrator.execute_step() main loop"
-          description: "Integrate TurnCounter into orchestrator's execute_step method to increment on each agent call iteration and persist to step file. This step ensures turn counting happens during actual command execution."
-          acceptance_criteria:
-            - "DESOrchestrator.execute_step() initializes TurnCounter at phase start"
-            - "Counter increments on each sub-agent invocation loop iteration"
-            - "Turn count persisted to phase_execution_log.turn_count field in real-time"
-            - "Counter state restored from step file on orchestrator resume"
-            - "Turn counting ACTIVATES when /nw:execute or /nw:develop invoked"
-          acceptance_test_scenario: "test_scenario_011_turn_count_increments_during_execution"
-          suggested_agent: software-crafter
-          requires: ["01-03"]
-          estimated_hours: 4
+      - step_id: "01-02"
+        name: "Create helper method _render_turn_budget()"
+        description: |
+          Implement private helper method that generates the turn budget element
+          of TIMEOUT_INSTRUCTION. Returns markdown text specifying ~50 turn budget
+          with guidance on typical step completion times.
+        acceptance_criteria:
+          - "_render_turn_budget() method created in DESOrchestrator class"
+          - "Returns string containing '~50' or 'approximately 50' or 'around 50'"
+          - "Includes context about typical step completion times (30-45 turns)"
+          - "Output is valid markdown (bullet point or paragraph)"
+          - "Unit test validates output contains turn budget guidance"
+        suggested_agent: software-crafter
+        dependencies: ["01-01"]
+        estimated_hours: 2
+        test_scenarios:
+          - test_scenario_002  # Turn budget specification
+        parallel_execution_group: "helper-methods-implementation"
+        execution_notes: "Can execute in parallel with steps 01-03, 01-04, 01-05 after 01-01 completes"
 
-        - step_id: "02-02"
-          name: "Integrate turn limit enforcement in SubagentStopHook"
-          description: "Add turn limit validation to SubagentStopHook.on_agent_complete() to detect exceeded limits post-execution"
-          acceptance_criteria:
-            - "SubagentStopHook checks turn_count against configured max_turns"
-            - "HookResult includes turn_limit_exceeded boolean field"
-            - "Error message identifies which phase exceeded limit"
-            - "Recovery suggestions guide user on increasing limit or simplifying step"
-          acceptance_test_scenario: "test_scenario_012_turn_limit_exceeded_detected_by_hook"
-          suggested_agent: software-crafter
-          requires: ["02-01"]
-          estimated_hours: 3
+      - step_id: "01-03"
+        name: "Create helper method _render_progress_checkpoints()"
+        description: |
+          Implement private helper method that generates progress checkpoint element
+          of TIMEOUT_INSTRUCTION. Maps checkpoint turns (~10, ~25, ~40, ~50) to
+          expected TDD phase completion status.
+        acceptance_criteria:
+          - "_render_progress_checkpoints() method created in DESOrchestrator"
+          - "Returns string containing checkpoint turns: ~10, ~25, ~40, ~50"
+          - "Maps checkpoints to TDD phases (PREPARE/RED at ~10, GREEN at ~25, etc.)"
+          - "Explains how agents should use checkpoints for self-assessment"
+          - "Output is valid markdown (numbered list or table)"
+          - "Unit test validates checkpoint-to-phase mapping"
+        suggested_agent: software-crafter
+        dependencies: ["01-01"]
+        estimated_hours: 2
+        test_scenarios:
+          - test_scenario_003  # Progress checkpoints
+        parallel_execution_group: "helper-methods-implementation"
+        execution_notes: "Can execute in parallel with steps 01-02, 01-04, 01-05 after 01-01 completes"
 
-    - phase_id: "03"
-      name: "Timeout Warning System"
-      purpose: "Implement real-time timeout monitoring with configurable threshold warnings"
-      steps:
-        - step_id: "03-01"
-          name: "Add timeout threshold configuration"
-          description: "Extend configuration to support timeout thresholds at 50%, 75%, 90% of estimated duration"
-          acceptance_criteria:
-            - "Configuration supports duration_minutes and threshold percentages"
-            - "Thresholds configurable per task type (quick/standard/complex)"
-            - "Validation ensures thresholds in ascending order"
-          acceptance_test_scenario: "N/A - infrastructure"
-          suggested_agent: software-crafter
-          requires: []
-          estimated_hours: 2
+      - step_id: "01-04"
+        name: "Create helper method _render_early_exit_protocol()"
+        description: |
+          Implement private helper method that generates early exit protocol element
+          of TIMEOUT_INSTRUCTION. Documents how agents should exit gracefully when
+          stuck or unable to complete within turn budget.
+        acceptance_criteria:
+          - "_render_early_exit_protocol() method created in DESOrchestrator"
+          - "Returns string containing early exit guidance"
+          - "Specifies 4-step exit procedure: save progress, set IN_PROGRESS, return, explain blockage"
+          - "Includes language: 'cannot complete', 'save progress', 'early exit', 'stuck'"
+          - "Explains PARTIAL_COMPLETION status return"
+          - "Output is valid markdown (numbered steps)"
+          - "Unit test validates all 4 exit steps documented"
+        suggested_agent: software-crafter
+        dependencies: ["01-01"]
+        estimated_hours: 2
+        test_scenarios:
+          - test_scenario_004  # Early exit protocol
+        parallel_execution_group: "helper-methods-implementation"
+        execution_notes: "Can execute in parallel with steps 01-02, 01-03, 01-05 after 01-01 completes"
 
-        - step_id: "03-02"
-          name: "Implement TimeoutMonitor component"
-          description: "Create des/timeout_monitor.py with elapsed time tracking and threshold detection"
-          acceptance_criteria:
-            - "TimeoutMonitor calculates elapsed time from phase started_at"
-            - "check_thresholds(duration_minutes) returns list of crossed thresholds"
-            - "get_elapsed_seconds() returns current elapsed time"
-            - "Handles timezone-aware ISO timestamps correctly"
-          acceptance_test_scenario: "N/A - infrastructure"
-          suggested_agent: software-crafter
-          requires: ["03-01"]
-          estimated_hours: 3
+      - step_id: "01-05"
+        name: "Create helper method _render_turn_logging_instruction()"
+        description: |
+          Implement private helper method that generates turn logging instruction
+          element of TIMEOUT_INSTRUCTION. Specifies how agents should log turn count
+          at TDD phase transitions for visibility and audit trail.
+        acceptance_criteria:
+          - "_render_turn_logging_instruction() method created in DESOrchestrator"
+          - "Returns string containing turn logging guidance"
+          - "Specifies log format: '[Turn X] Starting/Completed Phase Y'"
+          - "Associates logging with phase transitions (start, complete)"
+          - "Explains dual purpose: agent self-awareness and audit trail"
+          - "Output is valid markdown (instruction paragraph with example)"
+          - "Unit test validates logging format specification"
+        suggested_agent: software-crafter
+        dependencies: ["01-01"]
+        estimated_hours: 2
+        test_scenarios:
+          - test_scenario_005  # Turn count logging
+        parallel_execution_group: "helper-methods-implementation"
+        execution_notes: "Can execute in parallel with steps 01-02, 01-03, 01-04 after 01-01 completes"
 
-        - step_id: "03-03"
-          name: "Enhance step schema for second-level duration precision"
-          description: "Update duration tracking from minutes to seconds for fine-grained monitoring"
-          acceptance_criteria:
-            - "Add duration_seconds field to phase_execution_log"
-            - "Maintain duration_minutes for backward compatibility"
-            - "duration_seconds calculated from started_at and ended_at timestamps"
-          acceptance_test_scenario: "N/A - infrastructure"
-          suggested_agent: software-crafter
-          requires: ["03-02"]
-          estimated_hours: 2
+  - phase_id: "02"
+    name: "GREEN - Implementation and Integration"
+    description: |
+      Create public entry point and integrate TIMEOUT_INSTRUCTION rendering into
+      orchestrator. Make acceptance tests GREEN by implementing the feature that
+      closes the validation gap.
+    steps:
+      - step_id: "02-00"
+        name: "Create render_full_prompt() public entry point"
+        description: |
+          Create public method render_full_prompt() that acceptance tests invoke.
+          This method delegates to internal render_prompt() and adds TIMEOUT_INSTRUCTION
+          section for VALIDATION_COMMANDS. This is the CRITICAL MISSING STEP that
+          enables external access to the feature.
 
-    - phase_id: "04"
-      name: "Timeout Warning Wiring into Command Flow"
-      purpose: "CRITICAL: Connect timeout warnings to actual command execution flow so they fire during agent runtime when user invokes DES commands"
-      steps:
-        - step_id: "04-01"
-          name: "WIRING: Wire TimeoutMonitor into orchestrator execution loop"
-          description: "Integrate TimeoutMonitor into DESOrchestrator.execute_step() to emit warnings during active agent execution. This step ensures warnings fire in real-time during command execution."
-          acceptance_criteria:
-            - "TimeoutMonitor initialized at phase start with configured thresholds"
-            - "Orchestrator checks thresholds during execution loop (e.g., every 5 turns)"
-            - "Warning messages emitted to agent context when thresholds crossed"
-            - "Warnings include remaining time and current progress"
-            - "Timeout warnings ACTIVATE when /nw:execute or /nw:develop invoked"
-          acceptance_test_scenario: "test_scenario_013_timeout_warnings_emit_at_thresholds"
-          suggested_agent: software-crafter
-          requires: ["03-03"]
-          estimated_hours: 4
+          CRITICAL: Without this step, ALL 12 acceptance tests fail with AttributeError
+          because tests call des_orchestrator.render_full_prompt() (line 67) which
+          does not exist in DESOrchestrator class.
+        acceptance_criteria:
+          - "render_full_prompt(command, agent, step_file, project_root) method created"
+          - "Method signature matches test usage exactly"
+          - "Method delegates to internal render_prompt() for base prompt generation"
+          - "Method integrates TIMEOUT_INSTRUCTION section for VALIDATION_COMMANDS"
+          - "Returns complete prompt string with all DES sections"
+          - "Acceptance test test_scenario_001 can call method without AttributeError"
+          - "Entry point is properly documented as public API"
+        suggested_agent: software-crafter
+        dependencies: ["01-05"]
+        estimated_hours: 2
+        test_scenarios:
+          - test_scenario_001  # Makes this test GREEN (section presence)
+          - test_scenario_002  # Makes this test GREEN (turn budget)
+          - test_scenario_003  # Makes this test GREEN (checkpoints)
+          - test_scenario_004  # Makes this test GREEN (early exit)
+          - test_scenario_005  # Makes this test GREEN (turn logging)
+        notes: |
+          CRITICAL FIX RC-01: This step was MISSING from original roadmap, causing
+          external validity failure. All acceptance tests would fail with AttributeError
+          because they call render_full_prompt() which didn't exist. This step creates
+          the public entry point that tests and users invoke.
 
-        - step_id: "04-02"
-          name: "Add timeout warning to agent prompt context"
-          description: "Modify prompt rendering to include timeout warning when threshold crossed during execution"
-          acceptance_criteria:
-            - "Agent receives warning message in next turn after threshold crossed"
-            - "Warning format: 'TIMEOUT WARNING: 75% elapsed (30/40 minutes). Remaining: 10 minutes.'"
-            - "Warning includes phase name and suggested actions"
-            - "Warnings do not block execution, only inform agent"
-          acceptance_test_scenario: "test_scenario_014_agent_receives_timeout_warnings_in_prompt"
-          suggested_agent: software-crafter
-          requires: ["04-01"]
-          estimated_hours: 3
+      - step_id: "02-01"
+        name: "Integrate TIMEOUT_INSTRUCTION into render_prompt() for VALIDATION_COMMANDS"
+        description: |
+          Modify orchestrator.render_prompt() (internal method) to call helper methods
+          and generate TIMEOUT_INSTRUCTION section when command is in VALIDATION_COMMANDS.
+          This method is called BY render_full_prompt() to generate the content.
+        acceptance_criteria:
+          - "render_prompt() checks if command in VALIDATION_COMMANDS (['/nw:execute', '/nw:develop'])"
+          - "When true, generates TIMEOUT_INSTRUCTION section with ## header"
+          - "Calls all 4 helper methods: _render_turn_budget(), _render_progress_checkpoints(), _render_early_exit_protocol(), _render_turn_logging_instruction()"
+          - "Inserts section after BOUNDARY_RULES (before final content)"
+          - "Section NOT generated for ad-hoc or research commands"
+          - "Integration verified through render_full_prompt() → render_prompt() call chain"
+          - "test_scenario_001 GREEN: Prompt includes TIMEOUT_INSTRUCTION section"
+          - "test_scenario_002 GREEN: Turn budget (~50) specified"
+          - "test_scenario_003 GREEN: Progress checkpoints defined"
+          - "test_scenario_004 GREEN: Early exit protocol documented"
+          - "test_scenario_005 GREEN: Turn count logging instruction present"
+        suggested_agent: software-crafter
+        dependencies: ["02-00"]
+        estimated_hours: 4
+        test_scenarios:
+          - test_scenario_001  # Section presence
+          - test_scenario_002  # Turn budget
+          - test_scenario_003  # Checkpoints
+          - test_scenario_004  # Early exit
+          - test_scenario_005  # Logging
+        notes: |
+          This step implements the INTERNAL method that generates TIMEOUT_INSTRUCTION.
+          It is called by render_full_prompt() (step 02-00). Together they close the
+          validation gap: validator requires section, orchestrator now generates it.
 
-    - phase_id: "05"
-      name: "Extension Request Mechanism"
-      purpose: "Enable agents to request timeout/turn limit extensions with justification"
-      steps:
-        - step_id: "05-01"
-          name: "Design extension request API"
-          description: "Define request_extension() method signature and ExtensionRequest dataclass"
-          acceptance_criteria:
-            - "ExtensionRequest dataclass with fields: reason, additional_turns, additional_minutes"
-            - "request_extension(reason, additional_turns, additional_minutes) method signature"
-            - "API contract documented in des/extension_api.md"
-          acceptance_test_scenario: "N/A - infrastructure"
-          suggested_agent: software-crafter
-          requires: []
-          estimated_hours: 2
+      - step_id: "02-02"
+        name: "Verify /nw:develop command includes TIMEOUT_INSTRUCTION"
+        description: |
+          Validate that /nw:develop command (also in VALIDATION_COMMANDS) receives
+          TIMEOUT_INSTRUCTION section with same structure as /nw:execute. Both
+          production workflows require turn discipline.
+        acceptance_criteria:
+          - "/nw:develop prompts include TIMEOUT_INSTRUCTION section"
+          - "Section structure identical to /nw:execute (all 4 elements)"
+          - "test_scenario_010 GREEN: develop command has timeout instruction"
+        suggested_agent: software-crafter
+        dependencies: ["02-01"]
+        estimated_hours: 1
+        test_scenarios:
+          - test_scenario_010  # Develop command timeout
+        parallel_execution_group: "command-validation-tests"
+        execution_notes: "Can execute in parallel with steps 02-03, 02-04 after 02-01 completes"
 
-        - step_id: "05-02"
-          name: "Implement extension approval logic"
-          description: "Create ExtensionApprovalEngine with criteria-based approval/denial logic"
-          acceptance_criteria:
-            - "Approves if reason is non-empty and justified (>20 chars)"
-            - "Denies if max extensions exceeded (e.g., 2 per phase)"
-            - "Denies if requested extension unreasonably large (>200% original)"
-            - "Returns ApprovalResult with decision and rationale"
-          acceptance_test_scenario: "N/A - infrastructure"
-          suggested_agent: software-crafter
-          requires: ["05-01"]
-          estimated_hours: 3
+      - step_id: "02-03"
+        name: "Verify ad-hoc tasks have NO TIMEOUT_INSTRUCTION"
+        description: |
+          Validate that ad-hoc Task invocations (without DES command context)
+          do NOT receive TIMEOUT_INSTRUCTION section. Ad-hoc exploration should
+          execute immediately without turn discipline overhead.
+        acceptance_criteria:
+          - "prepare_ad_hoc_prompt() method does NOT generate TIMEOUT_INSTRUCTION"
+          - "Ad-hoc prompts bypass VALIDATION_COMMANDS check"
+          - "test_scenario_006 GREEN: Ad-hoc tasks have no timeout instruction"
+        suggested_agent: software-crafter
+        dependencies: ["02-01"]
+        estimated_hours: 1
+        test_scenarios:
+          - test_scenario_006  # Ad-hoc no timeout
+        parallel_execution_group: "command-validation-tests"
+        execution_notes: "Can execute in parallel with steps 02-02, 02-04 after 02-01 completes"
 
-        - step_id: "05-03"
-          name: "Add extension tracking to step schema"
-          description: "Extend phase_execution_log with extensions_granted list to track extension history"
-          acceptance_criteria:
-            - "extensions_granted field as list of ExtensionRecord objects"
-            - "Each ExtensionRecord has: timestamp, reason, additional_turns, additional_minutes, approved_by"
-            - "Schema validation ensures list structure"
-          acceptance_test_scenario: "N/A - infrastructure"
-          suggested_agent: software-crafter
-          requires: ["05-02"]
-          estimated_hours: 2
+      - step_id: "02-04"
+        name: "Verify research commands have NO TIMEOUT_INSTRUCTION"
+        description: |
+          Validate that /nw:research commands do NOT receive TIMEOUT_INSTRUCTION
+          section. Research commands bypass DES validation and should not have
+          turn discipline overhead.
+        acceptance_criteria:
+          - "render_prompt() with command='/nw:research' does NOT generate TIMEOUT_INSTRUCTION"
+          - "/nw:research NOT in VALIDATION_COMMANDS constant"
+          - "test_scenario_007 GREEN: Research commands have no timeout instruction"
+        suggested_agent: software-crafter
+        dependencies: ["02-01"]
+        estimated_hours: 1
+        test_scenarios:
+          - test_scenario_007  # Research no timeout
+        parallel_execution_group: "command-validation-tests"
+        execution_notes: "Can execute in parallel with steps 02-02, 02-03 after 02-01 completes"
 
-    - phase_id: "06"
-      name: "Extension API Wiring into Command Handlers"
-      purpose: "CRITICAL: Wire extension request API into orchestrator command handlers so agents can actually invoke it during execution"
-      steps:
-        - step_id: "06-01"
-          name: "WIRING: Add request_extension method to DESOrchestrator"
-          description: "Implement request_extension() method in orchestrator to handle extension requests during execution. This step ensures agents can call the extension API."
-          acceptance_criteria:
-            - "DESOrchestrator.request_extension(reason, additional_turns, additional_minutes) method exists"
-            - "Method invokes ExtensionApprovalEngine for decision"
-            - "Approved extensions update TurnCounter and TimeoutMonitor limits"
-            - "Extension record persisted to step file extensions_granted list"
-            - "Extension API CALLABLE when /nw:execute or /nw:develop invoked"
-          acceptance_test_scenario: "test_scenario_015_extension_request_approved_updates_limits"
-          suggested_agent: software-crafter
-          requires: ["05-03"]
-          estimated_hours: 4
+  - phase_id: "03"
+    name: "GREEN - Validation Integration Testing"
+    description: |
+      Verify that pre-invocation validation correctly handles TIMEOUT_INSTRUCTION
+      section presence/absence, validate end-to-end wiring, and confirm validation
+      gap is closed.
+    steps:
+      - step_id: "03-01"
+        name: "Verify missing TIMEOUT_INSTRUCTION blocks invocation"
+        description: |
+          Test that prompts missing TIMEOUT_INSTRUCTION fail pre-invocation
+          validation with specific error message. This validates that the
+          validator's requirement is enforced.
+        acceptance_criteria:
+          - "PromptValidator.validate() checks for TIMEOUT_INSTRUCTION in MANDATORY_SECTIONS"
+          - "When missing, validator returns is_valid=False"
+          - "Error message includes 'TIMEOUT_INSTRUCTION' and 'MISSING'"
+          - "Task invocation is BLOCKED before execution"
+          - "test_scenario_008 GREEN: Missing section blocks invocation"
+        suggested_agent: software-crafter
+        dependencies: ["02-01"]
+        estimated_hours: 2
+        test_scenarios:
+          - test_scenario_008  # Missing blocks invocation
 
-        - step_id: "06-02"
-          name: "Expose extension API to agent via prompt"
-          description: "Add extension request instructions to agent prompt with API call format"
-          acceptance_criteria:
-            - "Agent prompt includes EXTENSION_REQUEST_API section"
-            - "Section documents request_extension() call format"
-            - "Example provided: 'request_extension(reason=\"Complexity higher\", additional_turns=20)'"
-            - "Agent instructed to provide clear justification"
-          acceptance_test_scenario: "test_scenario_016_agent_can_request_extension_via_api"
-          suggested_agent: software-crafter
-          requires: ["06-01"]
-          estimated_hours: 3
+      - step_id: "03-02"
+        name: "Verify complete TIMEOUT_INSTRUCTION structure passes validation"
+        description: |
+          Test that prompts with complete TIMEOUT_INSTRUCTION (all 4 elements)
+          pass pre-invocation validation successfully. This confirms the
+          validation gap is closed.
+        acceptance_criteria:
+          - "PromptValidator.validate() returns is_valid=True for complete prompts"
+          - "No errors related to TIMEOUT_INSTRUCTION when all elements present"
+          - "Validation confirms section header format (## TIMEOUT_INSTRUCTION)"
+          - "test_scenario_009 GREEN: Complete structure validation passes"
+        suggested_agent: software-crafter
+        dependencies: ["02-01", "03-01"]
+        estimated_hours: 2
+        test_scenarios:
+          - test_scenario_009  # Complete structure
 
-    - phase_id: "07"
-      name: "Enforcement and Validation"
-      purpose: "Wire all features into SubagentStopHook for post-execution validation and add pre-invocation checks"
-      steps:
-        - step_id: "07-01"
-          name: "Integrate timeout validation in SubagentStopHook"
-          description: "Add timeout exceeded detection to SubagentStopHook.on_agent_complete()"
-          acceptance_criteria:
-            - "Hook checks if duration_seconds > (duration_minutes * 60 + total_extensions_minutes * 60)"
-            - "HookResult includes timeout_exceeded boolean field"
-            - "Error message identifies timeout and actual vs expected duration"
-            - "Recovery suggestions include requesting extension or simplifying step"
-          acceptance_test_scenario: "test_scenario_017_timeout_exceeded_detected_by_hook"
-          suggested_agent: software-crafter
-          requires: ["04-02", "06-02"]
-          estimated_hours: 3
+      - step_id: "03-03"
+        name: "Verify end-to-end wiring integration"
+        description: |
+          Validate complete call chain from entry point to content generation.
+          Ensures render_full_prompt() → render_prompt() → helpers → content
+          works end-to-end without broken wiring. This is CRITICAL for external
+          validity: proves feature is accessible and functional.
+        acceptance_criteria:
+          - "E2E test calls render_full_prompt() successfully"
+          - "render_full_prompt() successfully calls render_prompt() internally"
+          - "render_prompt() invokes all 4 helper methods when command in VALIDATION_COMMANDS"
+          - "Helper method content appears in final prompt string"
+          - "Complete TIMEOUT_INSTRUCTION section generated with all 4 elements"
+          - "No AttributeError when tests invoke entry point"
+          - "Call chain verified: entry point → internal method → helpers → markdown"
+          - "Integration test proves complete call chain operational"
+        suggested_agent: software-crafter
+        dependencies: ["02-03", "03-02"]
+        estimated_hours: 1.5
+        test_scenarios:
+          - test_scenario_009  # Complete structure validation
+        notes: |
+          CRITICAL FIX RC-02: This step was MISSING from original roadmap. Without
+          explicit wiring verification, we could have working components but broken
+          integration. This step validates the complete path from user-facing API
+          (render_full_prompt) through to content generation, proving external validity.
 
-        - step_id: "07-02"
-          name: "Add pre-invocation validation for turn and timeout limits"
-          description: "Validate turn/timeout configuration before invoking sub-agent in orchestrator"
-          acceptance_criteria:
-            - "Orchestrator validates max_turns and duration_minutes are set"
-            - "Pre-invocation check fails if limits missing or invalid"
-            - "Error message guides user to configure limits in step file"
-          acceptance_test_scenario: "test_scenario_018_missing_limits_block_invocation"
-          suggested_agent: software-crafter
-          requires: ["07-01"]
-          estimated_hours: 2
+  - phase_id: "04"
+    name: "REFACTOR - Code Quality and Documentation"
+    description: |
+      Refactor implementation for maintainability, add comprehensive unit tests,
+      and update documentation. Ensure LOC target (750) is met with clean code.
+    steps:
+      - step_id: "04-01"
+        name: "Refactor helper methods for DRY principle"
+        description: |
+          Extract common markdown formatting logic from helper methods into
+          shared utility. Eliminate duplication while preserving all functionality.
+        acceptance_criteria:
+          - "Common markdown formatting extracted to _format_instruction_element()"
+          - "All 4 helper methods use shared formatter"
+          - "No duplicate code for markdown bullet points, headers, examples"
+          - "All acceptance tests remain GREEN after refactoring"
+          - "Code coverage maintained at 100% for helper methods"
+        suggested_agent: software-crafter
+        dependencies: ["03-03"]
+        estimated_hours: 2
+        test_scenarios: []
 
-    - phase_id: "08"
-      name: "E2E Wiring Validation Test"
-      purpose: "CRITICAL: End-to-end test proving all features wire into /nw:execute command flow and actually execute when user invokes commands"
-      steps:
-        - step_id: "08-01"
-          name: "WIRING TEST: Create E2E wiring test invoking /nw:execute"
-          description: "Write acceptance test that invokes /nw:execute and validates turn counting, timeout warnings, and extension API are all active and executing. This test proves external validity."
-          acceptance_criteria:
-            - "Test invokes /nw:execute @software-crafter steps/test-step.json"
-            - "Verifies turn_count increments in step file after execution"
-            - "Verifies timeout warnings emit when thresholds crossed (mock time progression)"
-            - "Verifies extension request API callable and updates limits"
-            - "Test proves features are wired into actual command execution path"
-            - "EXTERNAL VALIDITY PROVEN: Features execute during real command invocation"
-          acceptance_test_scenario: "test_scenario_019_e2e_execute_command_has_turn_and_timeout_features"
-          suggested_agent: software-crafter
-          requires: ["07-02"]
-          estimated_hours: 6
+      - step_id: "04-02"
+        name: "Add comprehensive unit tests for helper methods"
+        description: |
+          Create unit tests for each helper method (_render_turn_budget,
+          _render_progress_checkpoints, _render_early_exit_protocol,
+          _render_turn_logging_instruction) validating output format and content.
+        acceptance_criteria:
+          - "Unit test for _render_turn_budget() validates turn count presence"
+          - "Unit test for _render_progress_checkpoints() validates checkpoint mapping"
+          - "Unit test for _render_early_exit_protocol() validates 4-step procedure"
+          - "Unit test for _render_turn_logging_instruction() validates log format"
+          - "Code coverage for new methods reaches 100%"
+          - "pytest tests/unit/test_orchestrator_timeout.py passes"
+        suggested_agent: software-crafter
+        dependencies: ["04-01"]
+        estimated_hours: 3
+        test_scenarios: []
 
-        - step_id: "08-02"
-          name: "WIRING TEST: Create E2E test for /nw:develop command"
-          description: "Validate turn discipline and timeout features also work for /nw:develop command"
-          acceptance_criteria:
-            - "Test invokes /nw:develop with step file"
-            - "Verifies same turn counting and timeout behavior as /nw:execute"
-            - "Confirms both validation commands receive full DES features"
-            - "EXTERNAL VALIDITY PROVEN: /nw:develop also activates all features"
-          acceptance_test_scenario: "test_scenario_020_develop_command_has_turn_and_timeout_features"
-          suggested_agent: software-crafter
-          requires: ["08-01"]
-          estimated_hours: 4
+      - step_id: "04-03"
+        name: "Verify orchestrator.py LOC within target (750)"
+        description: |
+          Measure orchestrator.py file size and confirm it's within target range.
+          Current: 602 LOC. Target: 750 LOC (25% increase). Expected: ~700 LOC
+          after adding 4 helper methods and integration logic.
+        acceptance_criteria:
+          - "orchestrator.py LOC measured via wc -l"
+          - "LOC count between 650-750 (within target range)"
+          - "If > 750, refactor to reduce complexity (extract to separate module)"
+          - "Code complexity metrics acceptable (McCabe < 10 per method)"
+        suggested_agent: software-crafter
+        dependencies: ["04-02"]
+        estimated_hours: 1
+        test_scenarios: []
 
-    - phase_id: "09"
-      name: "Unit Testing"
-      purpose: "Comprehensive unit tests for all components"
-      steps:
-        - step_id: "09-01"
-          name: "Unit tests for TurnCounter component"
-          description: "Test TurnCounter increment, limit checking, and state persistence"
-          acceptance_criteria:
-            - "Tests cover increment_turn(), is_limit_exceeded(), get_count()"
-            - "Edge cases: zero turns, negative limits, overflow"
-            - "Test state serialization and deserialization"
-          acceptance_test_scenario: "N/A - infrastructure"
-          suggested_agent: software-crafter
-          requires: ["02-02"]
-          estimated_hours: 3
+      - step_id: "04-04"
+        name: "Update DES documentation with TIMEOUT_INSTRUCTION spec"
+        description: |
+          Update docs/design/deterministic-execution-system-design.md to document
+          TIMEOUT_INSTRUCTION section structure, purpose, and when it's included.
+        acceptance_criteria:
+          - "Section 4.3 (Prompt Structure) updated with TIMEOUT_INSTRUCTION details"
+          - "Explains 4 required elements with examples"
+          - "Documents when section is included (VALIDATION_COMMANDS only)"
+          - "References acceptance criteria from US-006"
+          - "Includes example TIMEOUT_INSTRUCTION section output"
+        suggested_agent: software-crafter
+        dependencies: ["04-03"]
+        estimated_hours: 2
+        test_scenarios: []
 
-        - step_id: "09-02"
-          name: "Unit tests for TimeoutMonitor component"
-          description: "Test elapsed time calculation and threshold detection"
-          acceptance_criteria:
-            - "Tests cover threshold crossing detection"
-            - "Tests verify elapsed time calculation accuracy"
-            - "Edge cases: zero duration, past end time, timezone handling"
-          acceptance_test_scenario: "N/A - infrastructure"
-          suggested_agent: software-crafter
-          requires: ["04-02"]
-          estimated_hours: 3
+  - phase_id: "05"
+    name: "COMMIT - Final Validation and Deployment"
+    description: |
+      Run full test suite, verify all 12 acceptance tests GREEN, validate
+      baseline targets achieved, and prepare for production deployment.
+    steps:
+      - step_id: "05-01"
+        name: "Verify all 12 acceptance tests GREEN"
+        description: |
+          Run pytest tests/des/acceptance/test_us006_turn_discipline.py and
+          confirm all 12 scenarios pass (0 skipped, 12 passed, 0 failed).
+        acceptance_criteria:
+          - "pytest tests/des/acceptance/test_us006_turn_discipline.py -v shows 12 passed"
+          - "0 tests skipped (all moved from RED to GREEN)"
+          - "0 tests failed"
+          - "Test execution completes in < 30 seconds"
+          - "No warnings about missing TIMEOUT_INSTRUCTION in any test"
+        suggested_agent: software-crafter
+        dependencies: ["04-04"]
+        estimated_hours: 1
+        test_scenarios:
+          - test_scenario_001  # Final validation
+          - test_scenario_002
+          - test_scenario_003
+          - test_scenario_004
+          - test_scenario_005
+          - test_scenario_006
+          - test_scenario_007
+          - test_scenario_008
+          - test_scenario_009
+          - test_scenario_010
+          - test_scenario_013
+          - test_scenario_014
 
-        - step_id: "09-03"
-          name: "Unit tests for ExtensionApprovalEngine"
-          description: "Test approval criteria and edge cases"
-          acceptance_criteria:
-            - "Tests verify approval for valid requests"
-            - "Tests verify denial for invalid/excessive requests"
-            - "Tests verify max extension limit enforcement"
-          acceptance_test_scenario: "N/A - infrastructure"
-          suggested_agent: software-crafter
-          requires: ["06-02"]
-          estimated_hours: 3
+      - step_id: "05-02"
+        name: "Validate baseline metrics achieved"
+        description: |
+          Verify all 6 baseline metrics from baseline.yaml are achieved:
+          - Metric 1: 100% of prompts have TIMEOUT_INSTRUCTION
+          - Metric 2: 12/12 acceptance tests passing
+          - Metric 3: orchestrator.py LOC within 750 target
+          - Metric 4: 2/2 commands (execute, develop) have timeout instructions
+          - Metric 5: 0% validation failures
+          - Metric 6: 4/4 elements complete in every TIMEOUT_INSTRUCTION
+        acceptance_criteria:
+          - "Metric 1 verified: grep confirms TIMEOUT_INSTRUCTION in all validated prompts"
+          - "Metric 2 verified: pytest shows 12/12 passing"
+          - "Metric 3 verified: wc -l shows orchestrator.py within target"
+          - "Metric 4 verified: both /nw:execute and /nw:develop include section"
+          - "Metric 5 verified: validator returns 0 errors for complete prompts"
+          - "Metric 6 verified: all 4 elements present in generated sections"
+          - "Baseline targets documented as ACHIEVED in baseline.yaml"
+        suggested_agent: software-crafter
+        dependencies: ["05-01"]
+        estimated_hours: 2
+        test_scenarios: []
 
-    - phase_id: "10"
-      name: "Acceptance Testing"
-      purpose: "Complete acceptance test coverage for all user-facing scenarios"
-      steps:
-        - step_id: "10-01"
-          name: "Acceptance tests for turn counting"
-          description: "Implement test scenarios 11-12 from test_us006_turn_discipline.py"
-          acceptance_criteria:
-            - "test_scenario_011_turn_count_increments_during_execution passes"
-            - "test_scenario_012_turn_limit_exceeded_detected_by_hook passes"
-            - "Tests verify turn count visible in step file"
-            - "Tests verify hook detects exceeded limits"
-          acceptance_test_scenario: "Multiple: scenarios 11-12"
-          suggested_agent: software-crafter
-          requires: ["08-02"]
-          estimated_hours: 4
+      - step_id: "05-03"
+        name: "Run full DES test suite regression check"
+        description: |
+          Execute entire DES test suite (unit + acceptance) to ensure no
+          regressions introduced by TIMEOUT_INSTRUCTION implementation.
+        acceptance_criteria:
+          - "pytest tests/des/ passes with 0 failures"
+          - "No existing acceptance tests broken by changes"
+          - "No unit tests regressed"
+          - "Code coverage maintained or improved from baseline"
+          - "pytest execution time acceptable (< 2 minutes for full suite)"
+        suggested_agent: software-crafter
+        dependencies: ["05-02"]
+        estimated_hours: 1
+        test_scenarios: []
 
-        - step_id: "10-02"
-          name: "Acceptance tests for timeout warnings"
-          description: "Implement test scenarios 13-14 for timeout threshold warnings"
-          acceptance_criteria:
-            - "test_scenario_013_timeout_warnings_emit_at_thresholds passes"
-            - "test_scenario_014_agent_receives_timeout_warnings_in_prompt passes"
-            - "Tests verify warnings at 50%, 75%, 90% thresholds"
-            - "Tests verify warning messages include remaining time"
-          acceptance_test_scenario: "Multiple: scenarios 13-14"
-          suggested_agent: software-crafter
-          requires: ["10-01"]
-          estimated_hours: 4
+      - step_id: "05-04"
+        name: "Create production readiness checklist and sign-off"
+        description: |
+          Document production readiness with comprehensive checklist covering
+          all quality gates. Get sign-off from software-crafter-reviewer.
+        acceptance_criteria:
+          - "Production readiness checklist created in docs/feature/des-us006/"
+          - "All quality gates documented: tests, coverage, performance, documentation"
+          - "No known bugs or regressions"
+          - "Deployment plan documented (feature flag strategy if applicable)"
+          - "Rollback plan documented"
+          - "Sign-off obtained from software-crafter-reviewer"
+        suggested_agent: software-crafter
+        dependencies: ["05-03"]
+        estimated_hours: 2
+        test_scenarios: []
 
-        - step_id: "10-03"
-          name: "Acceptance tests for extension requests"
-          description: "Implement test scenarios 15-16 for extension request API"
-          acceptance_criteria:
-            - "test_scenario_015_extension_request_approved_updates_limits passes"
-            - "test_scenario_016_agent_can_request_extension_via_api passes"
-            - "Tests verify approved extensions update limits"
-            - "Tests verify extension history tracked in step file"
-          acceptance_test_scenario: "Multiple: scenarios 15-16"
-          suggested_agent: software-crafter
-          requires: ["10-02"]
-          estimated_hours: 4
+validation:
+  status: approved
+  reviewed_by: software-crafter-reviewer
+  reviewed_at: 2026-01-29T15:45:00Z
+  approval_status: APPROVED - All critical fixes verified, external validity restored
 
-        - step_id: "10-04"
-          name: "Acceptance tests for hook validation"
-          description: "Implement test scenarios 17-18 for post-execution validation"
-          acceptance_criteria:
-            - "test_scenario_017_timeout_exceeded_detected_by_hook passes"
-            - "test_scenario_018_missing_limits_block_invocation passes"
-            - "Tests verify hook detects timeout violations"
-            - "Tests verify pre-invocation validation blocks invalid requests"
-          acceptance_test_scenario: "Multiple: scenarios 17-18"
-          suggested_agent: software-crafter
-          requires: ["10-03"]
-          estimated_hours: 4
+  external_validity:
+    status: passed
+    reason: |
+      ✅ EXTERNAL VALIDITY RESTORED
 
-    - phase_id: "11"
-      name: "Documentation and Integration"
-      purpose: "Update documentation and ensure all features properly documented"
-      steps:
-        - step_id: "11-01"
-          name: "Update DES design documentation"
-          description: "Document turn discipline and timeout features in deterministic-execution-system-design.md"
-          acceptance_criteria:
-            - "Section 4.3 updated with turn limit enforcement details"
-            - "Timeout warning thresholds documented with examples"
-            - "Extension request API documented with usage examples"
-            - "Wiring architecture diagram shows integration points"
-          acceptance_test_scenario: "N/A - infrastructure"
-          suggested_agent: software-crafter
-          requires: ["10-04"]
-          estimated_hours: 3
+      Step 02-00 creates render_full_prompt() entry point that acceptance tests invoke.
+      Step 03-03 verifies complete wiring from entry point through to content generation.
 
-        - step_id: "11-02"
-          name: "Update user-facing documentation"
-          description: "Add user guide for timeout and turn discipline features"
-          acceptance_criteria:
-            - "User guide explains how to configure turn limits"
-            - "Guide documents timeout threshold configuration"
-            - "Extension request workflow documented with examples"
-            - "Troubleshooting section for common timeout/turn issues"
-          acceptance_test_scenario: "N/A - infrastructure"
-          suggested_agent: software-crafter
-          requires: ["11-01"]
-          estimated_hours: 2
+      After implementation:
+      1. User/test invokes: des_orchestrator.render_full_prompt(command='/nw:execute', ...)
+      2. Entry point calls: self.render_prompt() internally
+      3. render_prompt() generates TIMEOUT_INSTRUCTION via 4 helper methods
+      4. Complete prompt returned with all DES sections
 
-        - step_id: "11-03"
-          name: "Create migration guide for existing step files"
-          description: "Document how to update existing step files with new turn_count and timeout fields"
-          acceptance_criteria:
-            - "Migration guide lists required schema changes"
-            - "Script or command provided to auto-migrate step files"
-            - "Backward compatibility strategy documented"
-          acceptance_test_scenario: "N/A - infrastructure"
-          suggested_agent: software-crafter
-          requires: ["11-02"]
-          estimated_hours: 2
+      Feature is ACCESSIBLE (public API exists) and FUNCTIONAL (wiring verified).
 
-        - step_id: "11-04"
-          name: "Update evolution log"
-          description: "Record US-004 implementation in des-us006-evolution.md"
-          acceptance_criteria:
-            - "Evolution log documents all phases and decisions"
-            - "Wiring approach and integration points documented"
-            - "Lessons learned and future improvements captured"
-          acceptance_test_scenario: "N/A - infrastructure"
-          suggested_agent: software-crafter
-          requires: ["11-03"]
-          estimated_hours: 1
+  review_summary: |
+    RE-REVIEW OUTCOME: ALL CRITICAL ISSUES RESOLVED ✅
 
-estimated_total_hours: 83
-estimated_completion_days: 11
-dependencies_validated: true
-acceptance_test_mapping_complete: true
-wiring_integration_addressed: true
+    This roadmap successfully addresses the previous external validity failure.
+    Original issue: Acceptance tests called render_full_prompt() which didn't exist.
+    Fix applied: Step 02-00 creates this critical entry point.
+
+    STRENGTHS:
+    ✅ Complete feature lifecycle coverage (PREPARE → GREEN → VALIDATE → REFACTOR → COMMIT)
+    ✅ External validity restored through entry point creation (step 02-00)
+    ✅ End-to-end wiring verification included (step 03-03)
+    ✅ Clear acceptance test mapping (all 12 scenarios mapped to steps)
+    ✅ Parallel execution opportunities identified (8h savings potential)
+    ✅ Baseline metrics achievement documented with verification steps
+    ✅ Realistic time estimates (37.5h total including critical fixes)
+    ✅ Comprehensive dependency tracking
+    ✅ TDD phase naming corrected (Phase 02 is GREEN, not RED)
+
+  critiques: []
+
+  positive_feedback:
+    - item: "Excellent external validity fix with step 02-00"
+      detail: "Creating render_full_prompt() entry point directly addresses the AttributeError that would have blocked all 12 acceptance tests. This is the correct fix."
+
+    - item: "Strong wiring verification strategy"
+      detail: "Step 03-03 explicitly validates the complete call chain (entry point → internal method → helpers → content). This proves external validity, not just component existence."
+
+    - item: "Clear critical path identification"
+      detail: "Roadmap clearly marks 3 CRITICAL steps: 02-00 (entry point), 02-01 (content generation), 03-03 (wiring verification). Developers know which steps are blockers."
+
+    - item: "Comprehensive acceptance test mapping"
+      detail: "Section 'acceptance_test_mapping' shows exactly which tests become GREEN after each step. Example: test_scenario_002 requires steps 01-02, 02-00, 02-01, 05-01. Clear traceability."
+
+    - item: "Parallel execution groups well-defined"
+      detail: "Helper methods (01-02 through 01-05) can run in parallel after 01-01, saving ~6 hours. Command validation tests (02-02 through 02-04) can run in parallel after 02-01, saving ~2 hours."
+
+    - item: "Baseline metric achievement tracking"
+      detail: "Section 'baseline_metric_achievement' maps each of 6 baseline metrics to specific steps that achieve them and verification steps. Clear success criteria."
+
+    - item: "Dependency chain correctness"
+      detail: "Dependencies are logically sound: 02-00 depends on 01-05 (all helpers complete), 02-01 depends on 02-00 (entry point exists), 03-03 depends on 02-03 and 03-02 (integration and validation complete)."
+
+    - item: "TDD phase alignment corrected"
+      detail: "Phase 02 renamed from 'RED' to 'GREEN - Implementation and Integration' accurately reflects that this phase makes RED tests GREEN through implementation. TDD discipline maintained."
+
+  notes: |
+    Roadmap regenerated with ALL critical review findings addressed:
+
+    ✅ RC-01 (CRITICAL): Added step 02-00 to create render_full_prompt() entry point
+       - Fixes external validity failure (missing method acceptance tests invoke)
+       - Makes 5 acceptance tests GREEN (scenarios 001-005)
+       - Estimated: +2 hours
+
+    ✅ RC-02 (HIGH): Added step 03-03 for end-to-end wiring verification
+       - Validates complete call chain: render_full_prompt() → render_prompt() → helpers → content
+       - Estimated: +1.5 hours
+
+    ✅ RC-03 (MEDIUM): Phase 02 renamed from "RED" to "GREEN - Implementation and Integration"
+       - Accurate TDD phase naming (Phase 02 makes RED tests GREEN through implementation)
+
+    ✅ RC-04 (MEDIUM): Added parallel_execution_group metadata
+       - Helper methods (01-02, 01-03, 01-04, 01-05): parallel group "helper-methods-implementation"
+       - Command validation (02-02, 02-03, 02-04): parallel group "command-validation-tests"
+
+    Total steps: 19 (was 17, added 2)
+    Total estimated hours: 37.5 (was 34, added 3.5)
+    All acceptance tests will pass after implementation completes.
+
+total_phases: 5
+total_steps: 19
+total_estimated_hours: 37.5
+critical_path:
+  - "01-01: Design structure (3h)"
+  - "01-02,01-03,01-04,01-05: Helper methods (8h parallel)"
+  - "02-00: Create entry point (2h) [CRITICAL - enables external access]"
+  - "02-01: Integration (4h) [CRITICAL - closes validation gap]"
+  - "02-02,02-03,02-04: Command validation (3h parallel)"
+  - "03-01,03-02: Validation integration (4h)"
+  - "03-03: Wiring verification (1.5h) [CRITICAL - proves external validity]"
+  - "04-01,04-02,04-03: Refactor (6h)"
+  - "04-04: Documentation (2h)"
+  - "05-01,05-02,05-03,05-04: Final validation (6h)"
+
+acceptance_test_mapping:
+  test_scenario_001: ["02-00", "02-01", "05-01"]  # Section presence
+  test_scenario_002: ["01-02", "02-00", "02-01", "05-01"]  # Turn budget
+  test_scenario_003: ["01-03", "02-00", "02-01", "05-01"]  # Checkpoints
+  test_scenario_004: ["01-04", "02-00", "02-01", "05-01"]  # Early exit
+  test_scenario_005: ["01-05", "02-00", "02-01", "05-01"]  # Logging
+  test_scenario_006: ["02-03", "05-01"]  # Ad-hoc no timeout
+  test_scenario_007: ["02-04", "05-01"]  # Research no timeout
+  test_scenario_008: ["03-01", "05-01"]  # Missing blocks
+  test_scenario_009: ["01-01", "03-02", "03-03", "05-01"]  # Complete structure + wiring
+  test_scenario_010: ["02-02", "05-01"]  # Develop command
+  test_scenario_013: ["05-01"]  # Threshold warnings (future enhancement)
+  test_scenario_014: ["05-01"]  # Warnings in prompt (future enhancement)
+
+baseline_metric_achievement:
+  metric_1_prompts_with_timeout_instruction:
+    target: "100%"
+    achieved_by: ["02-00", "02-01", "02-02"]
+    verification_step: "05-02"
+
+  metric_2_acceptance_test_coverage:
+    target: "12/12 passing"
+    achieved_by: ["05-01"]
+    verification_step: "05-01"
+
+  metric_3_orchestrator_loc:
+    target: "≤ 750 LOC"
+    achieved_by: ["01-02", "01-03", "01-04", "01-05", "02-00", "02-01", "04-01"]
+    verification_step: "04-03"
+
+  metric_4_commands_requiring_timeout:
+    target: "2/2 commands"
+    achieved_by: ["02-00", "02-01", "02-02"]
+    verification_step: "05-02"
+
+  metric_5_validation_failures:
+    target: "0%"
+    achieved_by: ["02-00", "02-01", "03-02"]
+    verification_step: "05-02"
+
+  metric_6_timeout_instruction_elements:
+    target: "4/4 elements"
+    achieved_by: ["01-02", "01-03", "01-04", "01-05", "02-00", "02-01"]
+    verification_step: "05-02"
+
+review_fixes_applied:
+  - fix_id: RC-01
+    severity: CRITICAL
+    title: "Added render_full_prompt() entry point creation step"
+    step_added: "02-00"
+    impact: "Fixes external validity failure - enables acceptance tests to invoke feature"
+    hours_added: 2
+
+  - fix_id: RC-02
+    severity: HIGH
+    title: "Added end-to-end wiring verification step"
+    step_added: "03-03"
+    impact: "Validates complete call chain from entry point to content generation"
+    hours_added: 1.5
+
+  - fix_id: RC-03
+    severity: MEDIUM
+    title: "Renamed Phase 02 for TDD phase accuracy"
+    changed: "Phase 02 name: 'RED - Integration Tests' → 'GREEN - Implementation and Integration'"
+    impact: "Accurate TDD phase naming aligns with actual work (making RED tests GREEN)"
+    hours_added: 0
+
+  - fix_id: RC-04
+    severity: MEDIUM
+    title: "Added parallel execution metadata"
+    changed: "Added parallel_execution_group to steps 01-02/03/04/05 and 02-02/03/04"
+    impact: "Enables team coordination for parallel work, reduces timeline"
+    hours_added: 0
 
 notes: |
-  CRITICAL ARCHITECTURAL DECISION: Entry Point Wiring
+  This roadmap addresses the critical validation gap identified in baseline.yaml:
+  validator requires TIMEOUT_INSTRUCTION (line 68) but orchestrator.render_prompt()
+  does not generate it (line 254). Implementation will close this gap by integrating
+  TIMEOUT_INSTRUCTION rendering into orchestrator for VALIDATION_COMMANDS only
+  (/nw:execute, /nw:develop).
 
-  This roadmap explicitly addresses the blocking issue from previous review: EXTERNAL VALIDITY
-  through comprehensive entry point wiring.
+  Roadmap follows Outside-In TDD with 1 step = 1 acceptance scenario made GREEN.
+  Phase 01 (PREPARE) establishes infrastructure. Phase 02 (GREEN) creates entry point
+  and implements rendering to make acceptance tests GREEN. Phase 03 (VALIDATE) validates
+  integration and wiring. Phase 04 (REFACTOR) improves code quality. Phase 05 (COMMIT)
+  validates production readiness.
 
-  WIRING STRATEGY (Phases 02, 04, 06, 08):
+  All 12 acceptance tests currently SKIPPED (RED state). Target: 12 passed, 0 skipped.
+  Critical path: 37.5 hours estimated (includes 3.5 hours for critical fixes).
+  Parallelization opportunities in phases 01 (helper methods) and 02 (command validation).
 
-  Phase 02 - Turn Counter Wiring:
-    - Step 02-01 wires TurnCounter into DESOrchestrator.execute_step() main loop
-    - Ensures turn counting increments during actual command execution
-    - Turn count persists to step file in real-time
+  CRITICAL STEPS:
+  - 02-00: Creates render_full_prompt() entry point (fixes external validity)
+  - 02-01: Generates TIMEOUT_INSTRUCTION content (closes validation gap)
+  - 03-03: Verifies end-to-end wiring (proves external validity)
 
-  Phase 04 - Timeout Warning Wiring:
-    - Step 04-01 wires TimeoutMonitor into orchestrator execution loop
-    - Warnings emit during active agent execution (not post-execution only)
-    - Agent receives warnings in prompt context during runtime
-
-  Phase 06 - Extension API Wiring:
-    - Step 06-01 adds request_extension() method to DESOrchestrator
-    - Extension API callable by agents during execution
-    - Approved extensions update limits in real-time
-
-  Phase 08 - E2E Wiring Validation:
-    - Step 08-01 proves all features activate when /nw:execute invoked
-    - Step 08-02 proves all features activate when /nw:develop invoked
-    - Tests verify external validity: features execute in production, not just exist in code
-
-  WIRING MARKERS:
-  All wiring steps explicitly marked with "WIRING:" or "WIRING TEST:" prefix for visibility.
-  Acceptance criteria include "ACTIVATES when /nw:execute or /nw:develop invoked" validation.
-
-  STEP-TO-SCENARIO MAPPING:
-  - 10 feature steps mapped to acceptance test scenarios
-  - 24 infrastructure steps support feature implementation
-  - All baseline metrics addressed with explicit wiring
-
-  OUTSIDE-IN TDD PRINCIPLE:
-  Feature steps (02-01, 04-01, 06-01, 08-01, 08-02) make acceptance tests pass through
-  entry point integration, proving features work in production command flow.
-
-  Total estimated effort: 83 hours across 34 steps (~11 working days for single developer)
+  EXTERNAL VALIDITY RESTORED: With step 02-00, feature is accessible through documented
+  API that acceptance tests invoke. All 12 tests will pass after implementation completes.

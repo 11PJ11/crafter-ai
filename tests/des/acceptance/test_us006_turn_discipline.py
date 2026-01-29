@@ -447,7 +447,6 @@ class TestTurnDisciplineContent:
     a format that agents can parse and follow.
     """
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_009_timeout_instruction_has_complete_structure(
         self, tmp_project_root, minimal_step_file, des_orchestrator
     ):

@@ -1,45 +1,46 @@
 {
-  "task_specification": {
-    "task_id": "04-02",
-    "project_id": "des-us006",
-    "name": "Add timeout warning to agent prompt context",
-    "description": "Modify prompt rendering to include timeout warning when threshold crossed during execution",
-    "acceptance_criteria": [
-      "Agent receives warning message in next turn after threshold crossed",
-      "Warning format: 'TIMEOUT WARNING: 75% elapsed (30/40 minutes). Remaining: 10 minutes.'",
-      "Warning includes phase name and suggested actions",
-      "Warnings do not block execution, only inform agent"
-    ],
-    "acceptance_test_scenario": "test_scenario_014_agent_receives_timeout_warnings_in_prompt",
-    "requires": [
-      "04-01"
-    ],
-    "estimated_hours": 3,
-    "suggested_agent": "software-crafter"
-  },
-  "state": {
-    "status": "DONE",
-    "started_at": "2026-01-25T15:00:07.408810+00:00",
-    "ended_at": "2026-01-25T18:06:35.800000+00:00",
-    "completed_at": "2026-01-25T18:06:35.800000+00:00"
-  },
+  "task_id": "04-02",
+  "step_name": "Add comprehensive unit tests for helper methods",
+  "project_id": "des-us006",
+  "phase_id": "04",
+  "acceptance_test_scenario": "N/A - infrastructure",
+  "description": "Create unit tests for each helper method (_render_turn_budget, _render_progress_checkpoints, _render_early_exit_protocol, _render_turn_logging_instruction) validating output format and content.",
+  "acceptance_criteria": [
+    "Unit test for _render_turn_budget() validates turn count presence",
+    "Unit test for _render_progress_checkpoints() validates checkpoint mapping",
+    "Unit test for _render_early_exit_protocol() validates 4-step procedure",
+    "Unit test for _render_turn_logging_instruction() validates log format",
+    "Code coverage for new methods reaches 100%",
+    "pytest tests/unit/test_orchestrator_timeout.py passes"
+  ],
+  "dependencies": [
+    "04-01"
+  ],
+  "suggested_agent": "software-crafter",
+  "estimated_hours": 3,
   "tdd_cycle": {
     "acceptance_test": {
-      "scenario_name": "test_scenario_014_agent_receives_timeout_warnings_in_prompt",
-      "test_file": "",
+      "scenario_name": "N/A - infrastructure step",
+      "test_file": "tests/des/acceptance/test_us006_turn_discipline.py",
       "test_file_format": "py_pytest",
       "scenario_index": 0,
-      "initially_ignored": true,
+      "initially_ignored": false,
       "is_walking_skeleton": false,
       "mapped_scenario": {
-        "description": "Maps to test_scenario_014_agent_receives_timeout_warnings_in_prompt",
-        "scenario_function": "test_scenario_014_agent_receives_timeout_warnings_in_prompt",
-        "scenario_description": "Modify prompt rendering to include timeout warning when threshold crossed during execution",
-        "mapping_type": "feature",
-        "notes": "Feature step mapped to acceptance test scenario"
+        "description": "Infrastructure step - adds unit test coverage",
+        "scenario_function": "",
+        "scenario_description": "Unit test coverage",
+        "mapping_type": "infrastructure",
+        "notes": "Comprehensive unit tests for all helper methods"
       }
     },
-    "expected_unit_tests": [],
+    "expected_unit_tests": [
+      "test_render_turn_budget_output",
+      "test_render_progress_checkpoints_output",
+      "test_render_early_exit_protocol_output",
+      "test_render_turn_logging_instruction_output",
+      "test_all_methods_100_percent_coverage"
+    ],
     "mock_boundaries": {
       "allowed_ports": [],
       "forbidden_domain_classes": [],
@@ -47,413 +48,30 @@
     },
     "tdd_phase_tracking": {
       "current_phase": "NOT_STARTED",
-      "active_e2e_test": "",
-      "inactive_e2e_tests": "All other @skip scenarios remain disabled",
-      "phases_completed": []
-    },
-    "phase_execution_log": [
-      {
-        "phase_name": "PREPARE",
-        "phase_index": 0,
-        "status": "EXECUTED",
-        "started_at": "2026-01-25T17:21:14.250667+00:00",
-        "ended_at": "2026-01-25T17:21:14.250667+00:00",
-        "duration_minutes": 2,
-        "outcome": "PASS",
-        "outcome_details": "Created acceptance test for timeout warnings in prompt context",
-        "artifacts_created": [
-          "tests/test_scenario_014_agent_receives_timeout_warnings_in_prompt.py"
-        ],
-        "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
-        "notes": "Acceptance test validates warnings injected into agent prompt",
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "RED_ACCEPTANCE",
-        "phase_index": 1,
-        "status": "EXECUTED",
-        "started_at": "2026-01-25T17:21:14.250667+00:00",
-        "ended_at": "2026-01-25T17:21:14.250667+00:00",
-        "duration_minutes": 2,
-        "outcome": "PASS",
-        "outcome_details": "Test fails correctly: render_prompt() missing timeout_thresholds and timeout_budget_minutes parameters",
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {
-          "total": 1,
-          "passed": 0,
-          "failed": 1,
-          "skipped": 0
-        },
-        "notes": "TypeError: render_prompt() got unexpected keyword argument timeout_thresholds",
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "RED_UNIT",
-        "phase_index": 2,
-        "status": "EXECUTED",
-        "started_at": "2026-01-25T17:21:14.250667+00:00",
-        "ended_at": "2026-01-25T17:28:30.150000+00:00",
-        "duration_minutes": 7,
-        "outcome": "PASS",
-        "outcome_details": "Created 7 unit tests for timeout warning functionality in render_prompt()",
-        "artifacts_created": ["tests/unit/des/test_orchestrator_prompt_warnings.py"],
-        "artifacts_modified": [],
-        "test_results": {
-          "total": 7,
-          "passed": 0,
-          "failed": 7,
-          "skipped": 0
-        },
-        "notes": "All unit tests failing as expected - testing parameter acceptance, warning generation, percentage/remaining time inclusion",
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "GREEN_UNIT",
-        "phase_index": 3,
-        "status": "EXECUTED",
-        "started_at": "2026-01-25T17:28:30.150000+00:00",
-        "ended_at": "2026-01-25T17:45:22.300000+00:00",
-        "duration_minutes": 17,
-        "outcome": "PASS",
-        "outcome_details": "Implemented timeout warning detection and prompt injection in render_prompt()",
-        "artifacts_created": [],
-        "artifacts_modified": ["des/orchestrator.py"],
-        "test_results": {
-          "total": 7,
-          "passed": 7,
-          "failed": 0,
-          "skipped": 0
-        },
-        "notes": "Added timeout_thresholds and timeout_budget_minutes parameters, implemented warning generation logic",
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "CHECK_ACCEPTANCE",
-        "phase_index": 4,
-        "status": "EXECUTED",
-        "started_at": "2026-01-25T17:45:22.300000+00:00",
-        "ended_at": "2026-01-25T17:47:10.450000+00:00",
-        "duration_minutes": 2,
-        "outcome": "PASS",
-        "outcome_details": "Acceptance test now passing - timeout warnings successfully injected into prompt",
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {
-          "total": 1,
-          "passed": 1,
-          "failed": 0,
-          "skipped": 0
-        },
-        "notes": "Verified complete workflow: step file with started_at → threshold detection → warning in prompt",
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "GREEN_ACCEPTANCE",
-        "phase_index": 5,
-        "status": "EXECUTED",
-        "started_at": "2026-01-25T17:47:10.450000+00:00",
-        "ended_at": "2026-01-25T17:49:05.600000+00:00",
-        "duration_minutes": 2,
-        "outcome": "PASS",
-        "outcome_details": "All tests passing - 7 unit tests + 1 acceptance test",
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {
-          "total": 8,
-          "passed": 8,
-          "failed": 0,
-          "skipped": 0
-        },
-        "notes": "Complete test suite validates timeout warning feature end-to-end",
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "REVIEW",
-        "phase_index": 6,
-        "status": "EXECUTED",
-        "started_at": "2026-01-25T17:49:05.600000+00:00",
-        "ended_at": "2026-01-25T17:54:18.750000+00:00",
-        "duration_minutes": 5,
-        "outcome": "PASS",
-        "outcome_details": "Self-review completed - SOLID principles followed, test coverage adequate, acceptance criteria met",
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
-        "notes": "Implementation follows open/closed principle, timeout logic properly encapsulated, no security issues",
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "REFACTOR_L1",
-        "phase_index": 7,
-        "status": "EXECUTED",
-        "started_at": "2026-01-25T17:54:18.750000+00:00",
-        "ended_at": "2026-01-25T17:56:42.900000+00:00",
-        "duration_minutes": 2,
-        "outcome": "PASS",
-        "outcome_details": "Naming clarity improvements - timeout-related variables use clear business terminology",
-        "artifacts_created": [],
-        "artifacts_modified": ["des/orchestrator.py"],
-        "test_results": {
-          "total": 8,
-          "passed": 8,
-          "failed": 0,
-          "skipped": 0
-        },
-        "notes": "Variable names clearly indicate timeout warning functionality",
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "REFACTOR_L2",
-        "phase_index": 8,
-        "status": "EXECUTED",
-        "started_at": "2026-01-25T17:56:42.900000+00:00",
-        "ended_at": "2026-01-25T17:58:15.050000+00:00",
-        "duration_minutes": 2,
-        "outcome": "PASS",
-        "outcome_details": "Method extraction - timeout warning logic encapsulated in helper methods",
-        "artifacts_created": [],
-        "artifacts_modified": ["des/orchestrator.py"],
-        "test_results": {
-          "total": 8,
-          "passed": 8,
-          "failed": 0,
-          "skipped": 0
-        },
-        "notes": "Warning generation logic extracted for clarity and reusability",
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "REFACTOR_L3",
-        "phase_index": 9,
-        "status": "EXECUTED",
-        "started_at": "2026-01-25T17:58:15.050000+00:00",
-        "ended_at": "2026-01-25T17:59:30.200000+00:00",
-        "duration_minutes": 1,
-        "outcome": "PASS",
-        "outcome_details": "Class responsibilities validated - timeout monitoring properly separated",
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {
-          "total": 8,
-          "passed": 8,
-          "failed": 0,
-          "skipped": 0
-        },
-        "notes": "Single responsibility maintained across components",
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "REFACTOR_L4",
-        "phase_index": 10,
-        "status": "EXECUTED",
-        "started_at": "2026-01-25T17:59:30.200000+00:00",
-        "ended_at": "2026-01-25T18:00:45.350000+00:00",
-        "duration_minutes": 1,
-        "outcome": "PASS",
-        "outcome_details": "Architecture patterns validated - timeout monitoring follows observer pattern",
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {
-          "total": 8,
-          "passed": 8,
-          "failed": 0,
-          "skipped": 0
-        },
-        "notes": "Design patterns appropriately applied for timeout monitoring",
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "POST_REFACTOR_REVIEW",
-        "phase_index": 11,
-        "status": "EXECUTED",
-        "started_at": "2026-01-25T18:00:45.350000+00:00",
-        "ended_at": "2026-01-25T18:03:22.500000+00:00",
-        "duration_minutes": 3,
-        "outcome": "PASS",
-        "outcome_details": "Post-refactor review passed - all tests passing, code quality improved",
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {
-          "total": 8,
-          "passed": 8,
-          "failed": 0,
-          "skipped": 0
-        },
-        "notes": "Refactoring maintained functionality while improving code organization",
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "FINAL_VALIDATE",
-        "phase_index": 12,
-        "status": "EXECUTED",
-        "started_at": "2026-01-25T18:03:22.500000+00:00",
-        "ended_at": "2026-01-25T18:05:10.650000+00:00",
-        "duration_minutes": 2,
-        "outcome": "PASS",
-        "outcome_details": "Full test suite validation completed - all 8 tests passing",
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {
-          "total": 8,
-          "passed": 8,
-          "failed": 0,
-          "skipped": 0
-        },
-        "notes": "Complete feature validated - timeout warnings working end-to-end",
-        "blocked_by": null,
-        "history": []
-      },
-      {
-        "phase_name": "COMMIT",
-        "phase_index": 13,
-        "status": "EXECUTED",
-        "started_at": "2026-01-25T18:05:10.650000+00:00",
-        "ended_at": "2026-01-25T18:06:35.800000+00:00",
-        "duration_minutes": 1,
-        "outcome": "PASS",
-        "outcome_details": "Changes committed successfully",
-        "artifacts_created": [],
-        "artifacts_modified": [],
-        "test_results": {
-          "total": null,
-          "passed": null,
-          "failed": null,
-          "skipped": null
-        },
-        "notes": "Commit hash: c0378bc - feat(des-us006): add timeout warning to agent prompt context",
-        "blocked_by": null,
-        "history": []
+      "active_e2e_test": "All 12 acceptance tests must remain GREEN",
+      "inactive_e2e_tests": "None",
+      "phases_completed": [],
+      "test_results": {
+        "total": null,
+        "passed": null,
+        "failed": null,
+        "skipped": null
       }
-    ]
+    },
+    "phase_execution_log": []
+  },
+  "quality_gates": {
+    "acceptance_tests_pass": false,
+    "unit_tests_pass": false,
+    "mutation_score_threshold": 75,
+    "code_coverage_threshold": 100,
+    "solid_principles_followed": false,
+    "port_boundary_compliance": false
   },
   "validation": {
     "status": "approved",
-    "reviewer": "software-crafter-reviewer",
-    "reviewed_at": "2026-01-25T02:01:01.712502+00:00",
-    "notes": "Schema compliant, 14 phases initialized, content quality validated"
-  },
-  "execution_result": {
-    "artifacts_created": [
-      "tests/test_scenario_014_agent_receives_timeout_warnings_in_prompt.py",
-      "tests/unit/des/test_orchestrator_prompt_warnings.py"
-    ],
-    "artifacts_modified": [
-      "des/orchestrator.py"
-    ],
-    "tests_added": [
-      "test_render_prompt_accepts_timeout_parameters",
-      "test_render_prompt_loads_warnings_from_step_file",
-      "test_warning_includes_percentage_elapsed",
-      "test_warning_includes_remaining_time",
-      "test_warning_includes_phase_name",
-      "test_no_warning_when_no_threshold_crossed",
-      "test_no_warning_when_no_timeout_thresholds_provided",
-      "test_agent_receives_timeout_warnings_in_prompt"
-    ],
-    "tests_passing": 8,
-    "coverage_percentage": null,
-    "commit_hash": "c0378bc"
-  },
-  "quality_gates": {
-    "acceptance_test_must_fail_first": true,
-    "unit_tests_must_fail_first": true,
-    "no_mocks_inside_hexagon": true,
-    "business_language_required": true,
-    "refactor_level": 4,
-    "in_memory_test_ratio_target": 0.8,
-    "validation_after_each_phase": true,
-    "validation_after_each_review": true,
-    "validation_after_each_refactor": true,
-    "all_14_phases_mandatory": true,
-    "phase_documentation_required": true
-  },
-  "phase_validation_rules": {
-    "description": "Rules for validating phase execution status before commit",
-    "all_phases_required": true,
-    "total_phases": 14,
-    "valid_statuses": [
-      "NOT_EXECUTED",
-      "IN_PROGRESS",
-      "EXECUTED",
-      "SKIPPED"
-    ],
-    "commit_acceptance_matrix": {
-      "EXECUTED": {
-        "allows_commit": true,
-        "requires_outcome": true,
-        "description": "Phase completed successfully"
-      },
-      "SKIPPED": {
-        "allows_commit": "conditional",
-        "requires_blocked_by": true,
-        "valid_blocked_by_prefixes": [
-          "BLOCKED_BY_DEPENDENCY:",
-          "NOT_APPLICABLE:",
-          "APPROVED_SKIP:"
-        ],
-        "blocks_commit_prefixes": [
-          "DEFERRED:"
-        ],
-        "description": "Phase skipped with documented reason"
-      },
-      "IN_PROGRESS": {
-        "allows_commit": false,
-        "description": "Phase started but not completed - indicates interrupted execution"
-      },
-      "NOT_EXECUTED": {
-        "allows_commit": false,
-        "description": "Phase not started - indicates skipped without justification"
-      }
-    },
-    "skip_validation": {
-      "description": "Validation rules for SKIPPED phases",
-      "blocked_by_required": true,
-      "valid_prefixes": {
-        "BLOCKED_BY_DEPENDENCY:": {
-          "allows_commit": true,
-          "example": "BLOCKED_BY_DEPENDENCY: Redis server not running"
-        },
-        "NOT_APPLICABLE:": {
-          "allows_commit": true,
-          "example": "NOT_APPLICABLE: No unit tests for config-only change"
-        },
-        "APPROVED_SKIP:": {
-          "allows_commit": true,
-          "example": "APPROVED_SKIP: Tech Lead Alice approved"
-        },
-        "DEFERRED:": {
-          "allows_commit": false,
-          "example": "DEFERRED: Will address in follow-up PR",
-          "note": "DEFERRED indicates incomplete work - blocks commit"
-        }
-      }
-    },
-    "sequential_order_required": true,
-    "gaps_not_allowed": true,
-    "atomic_file_writes": true
+    "reviewed_by": "software-crafter-reviewer",
+    "reviewed_at": "2026-01-29T12:20:42.080528+00:00",
+    "review_summary": "Format validation PASSED - all required fields present and correct. File complies with canonical schema v2.0.0. No HIGH severity violations found. File ready for execution."
   }
 }
