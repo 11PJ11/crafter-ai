@@ -147,9 +147,8 @@ class TestVerifyNwaveFullInstallation:
         for i in range(5):
             (agents_dir / f"agent{i}.md").write_text(f"# Agent {i}")
 
-        # Create all essential command files
+        # Create all essential command files (matching InstallationVerifier.ESSENTIAL_COMMANDS)
         essential_files = [
-            "commit.md",
             "review.md",
             "develop.md",
             "discuss.md",
@@ -171,7 +170,7 @@ class TestVerifyNwaveFullInstallation:
         # ASSERT
         assert result.success is True
         assert result.agent_file_count >= 5
-        assert result.command_file_count >= 7
+        assert result.command_file_count >= 6
         assert result.manifest_exists is True
         assert result.missing_essential_files == []
 
@@ -190,9 +189,8 @@ class TestVerifyNwaveFullInstallation:
         agents_dir.mkdir(parents=True)
         commands_dir.mkdir(parents=True)
 
-        # Create all essential command files
+        # Create all essential command files (matching InstallationVerifier.ESSENTIAL_COMMANDS)
         essential_files = [
-            "commit.md",
             "review.md",
             "develop.md",
             "discuss.md",
@@ -231,7 +229,7 @@ class TestVerifyNwaveMissingFiles:
         commands_dir = config_dir / "commands" / "nw"
         commands_dir.mkdir(parents=True)
 
-        # Only create some files (missing commit.md, review.md)
+        # Only create some files (missing design.md, review.md)
         (commands_dir / "develop.md").write_text("# Develop command")
         (commands_dir / "discuss.md").write_text("# Discuss command")
 
@@ -240,7 +238,7 @@ class TestVerifyNwaveMissingFiles:
 
         # ASSERT
         assert result.success is False
-        assert "commit.md" in result.missing_essential_files
+        assert "design.md" in result.missing_essential_files
         assert "review.md" in result.missing_essential_files
 
     def test_verify_nwave_missing_files_exit_code_nonzero(self, tmp_path):
@@ -279,7 +277,6 @@ class TestVerifyNwaveMissingFiles:
 
         # Create all essential command files but no manifest
         essential_files = [
-            "commit.md",
             "review.md",
             "develop.md",
             "discuss.md",
@@ -314,9 +311,8 @@ class TestVerifyNwaveEssentialCommands:
         commands_dir = config_dir / "commands" / "nw"
         commands_dir.mkdir(parents=True)
 
-        # Create all except develop.md
+        # Create all except develop.md (using ESSENTIAL_COMMANDS list)
         for filename in [
-            "commit.md",
             "review.md",
             "discuss.md",
             "design.md",
@@ -331,11 +327,11 @@ class TestVerifyNwaveEssentialCommands:
         # ASSERT
         assert "develop.md" in result.missing_essential_files
 
-    def test_verify_nwave_checks_commit_command(self, tmp_path):
+    def test_verify_nwave_checks_distill_command(self, tmp_path):
         """
-        GIVEN: Installation without commit.md
+        GIVEN: Installation without distill.md
         WHEN: run_verification() is called
-        THEN: commit.md is reported as missing
+        THEN: distill.md is reported as missing
         """
         from scripts.install.verify_nwave import run_verification
 
@@ -344,13 +340,12 @@ class TestVerifyNwaveEssentialCommands:
         commands_dir = config_dir / "commands" / "nw"
         commands_dir.mkdir(parents=True)
 
-        # Create all except commit.md
+        # Create all except distill.md
         for filename in [
             "develop.md",
             "review.md",
             "discuss.md",
             "design.md",
-            "distill.md",
             "deliver.md",
         ]:
             (commands_dir / filename).write_text(f"# {filename}")
@@ -359,7 +354,7 @@ class TestVerifyNwaveEssentialCommands:
         result = run_verification(claude_config_dir=config_dir)
 
         # ASSERT
-        assert "commit.md" in result.missing_essential_files
+        assert "distill.md" in result.missing_essential_files
 
     def test_verify_nwave_checks_review_command(self, tmp_path):
         """
@@ -374,10 +369,9 @@ class TestVerifyNwaveEssentialCommands:
         commands_dir = config_dir / "commands" / "nw"
         commands_dir.mkdir(parents=True)
 
-        # Create all except review.md
+        # Create all except review.md (using ESSENTIAL_COMMANDS list)
         for filename in [
             "develop.md",
-            "commit.md",
             "discuss.md",
             "design.md",
             "distill.md",
@@ -410,9 +404,8 @@ class TestVerifyNwaveSchemaTemplate:
         agents_dir.mkdir(parents=True)
         commands_dir.mkdir(parents=True)
 
-        # Create essential command files
+        # Create essential command files (matching InstallationVerifier.ESSENTIAL_COMMANDS)
         essential_files = [
-            "commit.md",
             "review.md",
             "develop.md",
             "discuss.md",
@@ -451,9 +444,8 @@ class TestVerifyNwaveOutputModes:
         commands_dir = config_dir / "commands" / "nw"
         commands_dir.mkdir(parents=True)
 
-        # Create essential command files
+        # Create essential command files (matching InstallationVerifier.ESSENTIAL_COMMANDS)
         essential_files = [
-            "commit.md",
             "review.md",
             "develop.md",
             "discuss.md",
@@ -493,9 +485,8 @@ class TestVerifyNwaveOutputModes:
         commands_dir = config_dir / "commands" / "nw"
         commands_dir.mkdir(parents=True)
 
-        # Create essential command files
+        # Create essential command files (matching InstallationVerifier.ESSENTIAL_COMMANDS)
         essential_files = [
-            "commit.md",
             "review.md",
             "develop.md",
             "discuss.md",
@@ -539,9 +530,8 @@ class TestVerifyNwaveOutputModes:
         for i in range(3):
             (agents_dir / f"agent{i}.md").write_text(f"# Agent {i}")
 
-        # Create essential command files
+        # Create essential command files (matching InstallationVerifier.ESSENTIAL_COMMANDS)
         essential_files = [
-            "commit.md",
             "review.md",
             "develop.md",
             "discuss.md",

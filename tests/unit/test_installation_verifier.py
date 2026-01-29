@@ -59,7 +59,7 @@ class TestVerificationResultDataclass:
             agent_file_count=0,
             command_file_count=0,
             manifest_exists=False,
-            missing_essential_files=["commit.md", "review.md"],
+            missing_essential_files=["design.md", "review.md"],
             error_code=VERIFY_FAILED,
             message="Verification failed: missing essential files.",
         )
@@ -67,7 +67,7 @@ class TestVerificationResultDataclass:
         # ASSERT
         assert result.success is False
         assert result.error_code == VERIFY_FAILED
-        assert "commit.md" in result.missing_essential_files
+        assert "design.md" in result.missing_essential_files
         assert "review.md" in result.missing_essential_files
 
 
@@ -157,11 +157,11 @@ class TestInstallationVerifierCommandFiles:
         commands_dir.mkdir(parents=True)
 
         # Create sample command files
-        (commands_dir / "commit.md").write_text("# Commit command")
         (commands_dir / "review.md").write_text("# Review command")
         (commands_dir / "develop.md").write_text("# Develop command")
         (commands_dir / "discuss.md").write_text("# Discuss command")
         (commands_dir / "design.md").write_text("# Design command")
+        (commands_dir / "distill.md").write_text("# Distill command")
 
         verifier = InstallationVerifier(claude_config_dir=tmp_path / ".claude")
 
@@ -255,9 +255,8 @@ class TestInstallationVerifierEssentialCommands:
         commands_dir = tmp_path / ".claude" / "commands" / "nw"
         commands_dir.mkdir(parents=True)
 
-        # Create essential command files
+        # Create essential command files (matching InstallationVerifier.ESSENTIAL_COMMANDS)
         essential_files = [
-            "commit.md",
             "review.md",
             "develop.md",
             "discuss.md",
@@ -288,7 +287,7 @@ class TestInstallationVerifierEssentialCommands:
         commands_dir = tmp_path / ".claude" / "commands" / "nw"
         commands_dir.mkdir(parents=True)
 
-        # Create only some essential files (missing commit.md, review.md)
+        # Create only some essential files (missing design.md, review.md)
         (commands_dir / "develop.md").write_text("# Develop command")
         (commands_dir / "discuss.md").write_text("# Discuss command")
 
@@ -298,7 +297,7 @@ class TestInstallationVerifierEssentialCommands:
         missing = verifier.verify_essential_commands()
 
         # ASSERT
-        assert "commit.md" in missing
+        assert "design.md" in missing
         assert "review.md" in missing
         assert "develop.md" not in missing
 
@@ -321,9 +320,9 @@ class TestInstallationVerifierEssentialCommands:
         missing = verifier.verify_essential_commands()
 
         # ASSERT
-        # Should contain at least the core essential files
-        assert len(missing) >= 5
-        assert "commit.md" in missing
+        # Should contain all 6 essential files (review, develop, discuss, design, distill, deliver)
+        assert len(missing) == 6
+        assert "review.md" in missing
         assert "develop.md" in missing
 
 
@@ -349,9 +348,8 @@ class TestInstallationVerifierFullVerification:
         for i in range(5):
             (agents_dir / f"agent{i}.md").write_text(f"# Agent {i}")
 
-        # Create all essential command files
+        # Create all essential command files (matching InstallationVerifier.ESSENTIAL_COMMANDS)
         essential_files = [
-            "commit.md",
             "review.md",
             "develop.md",
             "discuss.md",
@@ -375,7 +373,7 @@ class TestInstallationVerifierFullVerification:
         # ASSERT
         assert result.success is True
         assert result.agent_file_count == 5
-        assert result.command_file_count == 7
+        assert result.command_file_count == 6
         assert result.manifest_exists is True
         assert result.missing_essential_files == []
         assert result.error_code is None
@@ -422,7 +420,6 @@ class TestInstallationVerifierFullVerification:
 
         # Create all essential command files but no manifest
         essential_files = [
-            "commit.md",
             "review.md",
             "develop.md",
             "discuss.md",
@@ -712,7 +709,7 @@ class TestInstallNwaveCallsVerifier:
             agent_file_count=0,
             command_file_count=0,
             manifest_exists=False,
-            missing_essential_files=["commit.md", "review.md"],
+            missing_essential_files=["design.md", "review.md"],
             error_code=VERIFY_FAILED,
             message="Verification failed: missing essential files.",
         )
