@@ -90,9 +90,7 @@ class ValidationErrorDetector:
 
         return errors
 
-    def detect_phase_sequence_errors(
-        self, tdd_cycle: Dict[str, Any]
-    ) -> List[str]:
+    def detect_phase_sequence_errors(self, tdd_cycle: Dict[str, Any]) -> List[str]:
         """
         Detect invalid phase execution sequences.
 
@@ -151,7 +149,7 @@ class ValidationErrorDetector:
                 if phase_expected_index < expected_index:
                     errors.append(
                         f"Invalid phase sequence: {phase_name} appears after "
-                        f"{valid_sequence[expected_index-1]} (invalid order)"
+                        f"{valid_sequence[expected_index - 1]} (invalid order)"
                     )
                 else:
                     expected_index = phase_expected_index + 1
@@ -296,7 +294,7 @@ class ValidationErrorDetector:
         for i, phase in enumerate(phases):
             phase_name = phase.get("phase_name", "UNKNOWN")
             status = phase.get("status", "NOT_EXECUTED")
-            outcome = phase.get("outcome")
+            _outcome = phase.get("outcome")  # noqa: F841 - Reserved for future use
 
             if status == "EXECUTED":
                 # Valid if in correct sequence (don't require outcome for this test)

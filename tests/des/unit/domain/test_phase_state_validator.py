@@ -65,9 +65,9 @@ class TestPhaseStateValidator:
         assert errors is not None, "Should detect invalid state"
         assert isinstance(errors, list), "Errors should be a list"
         assert len(errors) > 0, "Should have at least one error"
-        assert any(
-            "outcome" in err.lower() and "EXECUTED" in err for err in errors
-        ), "Should mention EXECUTED and missing outcome"
+        assert any("outcome" in err.lower() and "EXECUTED" in err for err in errors), (
+            "Should mention EXECUTED and missing outcome"
+        )
 
     def test_detect_skipped_phase_without_blocked_by(self):
         """

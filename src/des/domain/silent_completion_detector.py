@@ -16,7 +16,7 @@ DOMAIN LANGUAGE:
 - Recovery Guidance: WHY/HOW/ACTION structured recovery instructions
 """
 
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any
 
 
 class SilentCompletionDetector:
@@ -62,8 +62,7 @@ class SilentCompletionDetector:
 
         # Check if all phases are NOT_EXECUTED
         not_executed_count = sum(
-            1 for phase in phase_execution_log
-            if phase.get("status") == "NOT_EXECUTED"
+            1 for phase in phase_execution_log if phase.get("status") == "NOT_EXECUTED"
         )
 
         all_not_executed = not_executed_count == len(phase_execution_log)
@@ -141,12 +140,14 @@ class SilentCompletionDetector:
                     "not working",
                 ]
                 if any(indicator in outcome_lower for indicator in failure_indicators):
-                    mismatches.append({
-                        "phase_name": phase_name,
-                        "status": status,
-                        "outcome": outcome,
-                        "mismatch_type": "status_outcome_contradiction",
-                    })
+                    mismatches.append(
+                        {
+                            "phase_name": phase_name,
+                            "status": status,
+                            "outcome": outcome,
+                            "mismatch_type": "status_outcome_contradiction",
+                        }
+                    )
 
         return mismatches
 
@@ -185,12 +186,12 @@ class SilentCompletionDetector:
 
         # Suggestion 2: OUTCOME_RECORDING requirement (HOW explanation)
         suggestions.append(
-            f"WHY: The system doesn't know what phases were completed if the agent doesn't update them. "
-            f"This is critical for tracking progress and resuming from the right place.\n\n"
-            f"HOW: Your prompt must include an OUTCOME_RECORDING section with clear instructions "
-            f"to update the step file after each phase completes.\n\n"
-            f"ACTION: Verify your prompt template includes OUTCOME_RECORDING section with "
-            f"instructions to update phase_execution_log status and outcome fields."
+            "WHY: The system doesn't know what phases were completed if the agent doesn't update them. "
+            "This is critical for tracking progress and resuming from the right place.\n\n"
+            "HOW: Your prompt must include an OUTCOME_RECORDING section with clear instructions "
+            "to update the step file after each phase completes.\n\n"
+            "ACTION: Verify your prompt template includes OUTCOME_RECORDING section with "
+            "instructions to update phase_execution_log status and outcome fields."
         )
 
         # Suggestion 3: Manual update process (ACTION-focused)
@@ -229,20 +230,17 @@ class SilentCompletionDetector:
         guidance = (
             f"SILENT COMPLETION DETECTED: Agent finished but didn't update the step file "
             f"({phase_count} phases still NOT_EXECUTED).\n\n"
-
             f"WHY THIS HAPPENED:\n"
             f"Your agent completed execution but made no updates to the phase_execution_log. "
             f"This typically indicates either:\n"
             f"1. Agent encountered an early error and couldn't proceed to OUTCOME_RECORDING\n"
             f"2. Agent completed work but OUTCOME_RECORDING section was missing from your prompt\n"
             f"3. Agent crashed or timed out before reaching the status update phase\n\n"
-
             f"HOW TO FIX:\n"
             f"1. Review the agent transcript ({transcript_path}) to understand what happened\n"
             f"2. Check if your prompt includes OUTCOME_RECORDING section with clear update instructions\n"
             f"3. Manually update phase statuses based on transcript evidence\n"
             f"4. If transcript shows errors, fix them and retry execution\n\n"
-
             f"ACTION STEPS:\n"
             f"Step 1: `cat {transcript_path}` - Review agent execution history\n"
             f"Step 2: For each completed phase, update the step file with status and outcome\n"

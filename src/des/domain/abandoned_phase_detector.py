@@ -10,7 +10,7 @@ DOMAIN LANGUAGE:
 - Recovery Suggestion: Actionable guidance (WHY/HOW/ACTION) for junior developers
 """
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from typing import Dict, Any, Optional
 from dataclasses import dataclass
 
@@ -73,7 +73,9 @@ class AbandonedPhaseDetector:
         if not started_at:
             return False
 
-        elapsed_minutes = self._calculate_elapsed_minutes_for_timestamp(started_at, current_time)
+        elapsed_minutes = self._calculate_elapsed_minutes_for_timestamp(
+            started_at, current_time
+        )
         if elapsed_minutes is None or elapsed_minutes <= timeout_minutes:
             return False
 
@@ -112,8 +114,12 @@ class AbandonedPhaseDetector:
         if not started_at:
             return False
 
-        elapsed_minutes = self._calculate_elapsed_minutes_for_timestamp(started_at, current_time)
-        return elapsed_minutes is not None and elapsed_minutes > stalled_threshold_minutes
+        elapsed_minutes = self._calculate_elapsed_minutes_for_timestamp(
+            started_at, current_time
+        )
+        return (
+            elapsed_minutes is not None and elapsed_minutes > stalled_threshold_minutes
+        )
 
     def detect_abandoned_phases(
         self,
@@ -138,19 +144,21 @@ class AbandonedPhaseDetector:
             if self.is_abandoned(phase, timeout_minutes, current_time):
                 phase_name = phase.get("phase_name", "UNKNOWN")
                 started_at_str = phase.get("started_at")
-                elapsed_minutes = self._calculate_elapsed_minutes(started_at_str, current_time)
-
-                abandoned_phases.append(
-                    (phase_name, "timeout", elapsed_minutes)
+                elapsed_minutes = self._calculate_elapsed_minutes(
+                    started_at_str, current_time
                 )
-            elif self.is_abandoned_by_stalled_turn_count(phase, timeout_minutes, current_time):
+
+                abandoned_phases.append((phase_name, "timeout", elapsed_minutes))
+            elif self.is_abandoned_by_stalled_turn_count(
+                phase, timeout_minutes, current_time
+            ):
                 phase_name = phase.get("phase_name", "UNKNOWN")
                 started_at_str = phase.get("started_at")
-                elapsed_minutes = self._calculate_elapsed_minutes(started_at_str, current_time)
-
-                abandoned_phases.append(
-                    (phase_name, "stalled_turns", elapsed_minutes)
+                elapsed_minutes = self._calculate_elapsed_minutes(
+                    started_at_str, current_time
                 )
+
+                abandoned_phases.append((phase_name, "stalled_turns", elapsed_minutes))
 
         return abandoned_phases
 

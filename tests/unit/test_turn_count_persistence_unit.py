@@ -74,9 +74,9 @@ class TestTurnCountPersistenceUnit:
             p for p in phase_log if p.get("phase_name") == "RED_ACCEPTANCE"
         ][0]
 
-        assert (
-            red_acceptance_phase.get("turn_count") == 5
-        ), "turn_count not persisted to phase"
+        assert red_acceptance_phase.get("turn_count") == 5, (
+            "turn_count not persisted to phase"
+        )
 
     def test_persist_turn_count_all_phases(self, hook, tmp_path):
         """
@@ -271,6 +271,6 @@ class TestTurnCountPersistenceUnit:
             step_data = json.load(f)
 
         prepare = step_data.get("tdd_cycle", {}).get("phase_execution_log", [0])[0]
-        assert (
-            prepare.get("turn_count") == 7
-        ), "turn_count should be overwritten, not accumulated"
+        assert prepare.get("turn_count") == 7, (
+            "turn_count should be overwritten, not accumulated"
+        )

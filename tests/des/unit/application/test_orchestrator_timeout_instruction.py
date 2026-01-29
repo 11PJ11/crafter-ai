@@ -88,9 +88,9 @@ class TestOrchestratorTimeoutInstruction:
 
         # THEN
         turn_budget_patterns = ["50 turn", "approximately 50", "~50", "around 50"]
-        assert any(
-            pattern in prompt.lower() for pattern in turn_budget_patterns
-        ), "Turn budget (~50) not found in TIMEOUT_INSTRUCTION"
+        assert any(pattern in prompt.lower() for pattern in turn_budget_patterns), (
+            "Turn budget (~50) not found in TIMEOUT_INSTRUCTION"
+        )
 
     def test_render_full_prompt_timeout_includes_progress_checkpoints(
         self, des_orchestrator, tmp_project_root, minimal_step_file
@@ -246,12 +246,12 @@ class TestPrepareAdHocPrompt:
         )
 
         # THEN
-        assert (
-            "TIMEOUT_INSTRUCTION" not in result
-        ), "Ad-hoc prompts should not include TIMEOUT_INSTRUCTION"
-        assert (
-            result == prompt_text
-        ), "Ad-hoc prompts should be returned as-is (pass-through)"
+        assert "TIMEOUT_INSTRUCTION" not in result, (
+            "Ad-hoc prompts should not include TIMEOUT_INSTRUCTION"
+        )
+        assert result == prompt_text, (
+            "Ad-hoc prompts should be returned as-is (pass-through)"
+        )
 
     def test_ad_hoc_bypasses_validation_commands_check(self, des_orchestrator):
         """
@@ -270,15 +270,15 @@ class TestPrepareAdHocPrompt:
         result = des_orchestrator.prepare_ad_hoc_prompt(prompt=prompt_text)
 
         # THEN
-        assert (
-            "<!-- DES-VALIDATION:" not in result
-        ), "Ad-hoc prompts should not have DES validation markers"
-        assert (
-            "<!-- DES-STEP-FILE:" not in result
-        ), "Ad-hoc prompts should not reference step files"
-        assert (
-            "<!-- DES-ORIGIN:" not in result
-        ), "Ad-hoc prompts should not have DES origin markers"
+        assert "<!-- DES-VALIDATION:" not in result, (
+            "Ad-hoc prompts should not have DES validation markers"
+        )
+        assert "<!-- DES-STEP-FILE:" not in result, (
+            "Ad-hoc prompts should not reference step files"
+        )
+        assert "<!-- DES-ORIGIN:" not in result, (
+            "Ad-hoc prompts should not have DES origin markers"
+        )
 
     def test_ad_hoc_prompt_structure_excludes_timeout(self, des_orchestrator):
         """
@@ -305,15 +305,15 @@ class TestPrepareAdHocPrompt:
 
         # THEN
         # Should not contain any TIMEOUT_INSTRUCTION elements
-        assert (
-            "turn" not in result.lower() or "return" in result.lower()
-        ), "Should not mention turn budgets (but 'return' in prompt is OK)"
-        assert (
-            "checkpoint" not in result.lower()
-        ), "Should not mention progress checkpoints"
-        assert (
-            "early exit" not in result.lower()
-        ), "Should not mention early exit protocol"
+        assert "turn" not in result.lower() or "return" in result.lower(), (
+            "Should not mention turn budgets (but 'return' in prompt is OK)"
+        )
+        assert "checkpoint" not in result.lower(), (
+            "Should not mention progress checkpoints"
+        )
+        assert "early exit" not in result.lower(), (
+            "Should not mention early exit protocol"
+        )
 
         # Should be exact pass-through
         assert result == prompt_text, "Ad-hoc prompt should be returned unchanged"

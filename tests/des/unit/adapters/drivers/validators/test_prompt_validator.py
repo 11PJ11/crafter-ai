@@ -27,12 +27,12 @@ class TestPromptValidatorTimeoutInstruction:
         validator = PromptValidator()
 
         # Verify TIMEOUT_INSTRUCTION is in MANDATORY_SECTIONS
-        assert hasattr(
-            validator, "MANDATORY_SECTIONS"
-        ), "Validator should have MANDATORY_SECTIONS attribute"
-        assert (
-            "TIMEOUT_INSTRUCTION" in validator.MANDATORY_SECTIONS
-        ), "TIMEOUT_INSTRUCTION should be in MANDATORY_SECTIONS list"
+        assert hasattr(validator, "MANDATORY_SECTIONS"), (
+            "Validator should have MANDATORY_SECTIONS attribute"
+        )
+        assert "TIMEOUT_INSTRUCTION" in validator.MANDATORY_SECTIONS, (
+            "TIMEOUT_INSTRUCTION should be in MANDATORY_SECTIONS list"
+        )
 
     def test_validator_returns_invalid_when_timeout_missing(self):
         """
@@ -79,9 +79,9 @@ class TestPromptValidatorTimeoutInstruction:
         validator = PromptValidator()
         result = validator.validate(incomplete_prompt)
 
-        assert (
-            not result.is_valid
-        ), "Validation should FAIL when TIMEOUT_INSTRUCTION is missing"
+        assert not result.is_valid, (
+            "Validation should FAIL when TIMEOUT_INSTRUCTION is missing"
+        )
 
     def test_validator_error_message_includes_timeout_instruction(self):
         """
@@ -121,9 +121,9 @@ class TestPromptValidatorTimeoutInstruction:
         validator = PromptValidator()
         result = validator.validate(incomplete_prompt)
 
-        assert any(
-            "TIMEOUT_INSTRUCTION" in error for error in result.errors
-        ), f"Error message should identify TIMEOUT_INSTRUCTION as missing. Errors: {result.errors}"
+        assert any("TIMEOUT_INSTRUCTION" in error for error in result.errors), (
+            f"Error message should identify TIMEOUT_INSTRUCTION as missing. Errors: {result.errors}"
+        )
 
     def test_validator_error_message_includes_missing(self):
         """
@@ -145,9 +145,9 @@ class TestPromptValidatorTimeoutInstruction:
         validator = PromptValidator()
         result = validator.validate(incomplete_prompt)
 
-        assert any(
-            "MISSING" in error.upper() for error in result.errors
-        ), f"Error should indicate section is MISSING. Errors: {result.errors}"
+        assert any("MISSING" in error.upper() for error in result.errors), (
+            f"Error should indicate section is MISSING. Errors: {result.errors}"
+        )
 
     def test_validator_passes_when_timeout_instruction_present(self):
         """
@@ -197,7 +197,9 @@ class TestPromptValidatorTimeoutInstruction:
         validator = PromptValidator()
         result = validator.validate(complete_prompt)
 
-        assert result.is_valid, f"Validation should PASS with TIMEOUT_INSTRUCTION present. Errors: {result.errors}"
-        assert (
-            len(result.errors) == 0
-        ), f"Should have no errors. Errors: {result.errors}"
+        assert result.is_valid, (
+            f"Validation should PASS with TIMEOUT_INSTRUCTION present. Errors: {result.errors}"
+        )
+        assert len(result.errors) == 0, (
+            f"Should have no errors. Errors: {result.errors}"
+        )

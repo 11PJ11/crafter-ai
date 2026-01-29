@@ -98,10 +98,14 @@ class JuniorDevFormatter:
         result = re.sub(r"\bframework\b", "system", result, flags=re.IGNORECASE)
 
         # Simplify "partially state" to something clearer
-        result = re.sub(r"partially\s+state", "incomplete state", result, flags=re.IGNORECASE)
+        result = re.sub(
+            r"partially\s+state", "incomplete state", result, flags=re.IGNORECASE
+        )
 
         # Replace "corrupted state" with "broken state"
-        result = re.sub(r"corrupted\s+state", "broken state", result, flags=re.IGNORECASE)
+        result = re.sub(
+            r"corrupted\s+state", "broken state", result, flags=re.IGNORECASE
+        )
 
         # Keep IN_PROGRESS, NOT_EXECUTED but ensure they're explained
         # (will be done in _add_educational_context)
@@ -146,15 +150,13 @@ class JuniorDevFormatter:
         # Explain IN_PROGRESS
         if "IN_PROGRESS" in result:
             result = result.replace(
-                "IN_PROGRESS",
-                "IN_PROGRESS (stuck in the middle, not completed)"
+                "IN_PROGRESS", "IN_PROGRESS (stuck in the middle, not completed)"
             )
 
         # Explain NOT_EXECUTED
         if "NOT_EXECUTED" in result:
             result = result.replace(
-                "NOT_EXECUTED",
-                "NOT_EXECUTED (ready to run again from the start)"
+                "NOT_EXECUTED", "NOT_EXECUTED (ready to run again from the start)"
             )
 
         return result
@@ -397,7 +399,9 @@ class RecoveryGuidanceHandler:
                 ),
                 "section_name": context.get("section_name", "section"),
                 # Timeout failure fields
-                "configured_timeout_minutes": context.get("configured_timeout_minutes", "30"),
+                "configured_timeout_minutes": context.get(
+                    "configured_timeout_minutes", "30"
+                ),
                 "actual_runtime_minutes": context.get("actual_runtime_minutes", "35"),
                 "phase_start": context.get("phase_start", "2026-01-01T00:00:00Z"),
                 # Stale execution fields

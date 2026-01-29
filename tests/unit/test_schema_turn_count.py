@@ -33,9 +33,9 @@ class TestSchemaTurnCountField:
     def test_phase_execution_log_schema_exists(self, schema):
         """Test that phase_execution_log is defined in schema."""
         assert "tdd_cycle" in schema, "tdd_cycle not in schema"
-        assert (
-            "phase_execution_log" in schema["tdd_cycle"]
-        ), "phase_execution_log not in tdd_cycle"
+        assert "phase_execution_log" in schema["tdd_cycle"], (
+            "phase_execution_log not in tdd_cycle"
+        )
 
     def test_turn_count_field_exists_in_schema(self, schema):
         """Test that turn_count field is defined in phase_execution_log schema."""
@@ -68,9 +68,9 @@ class TestSchemaTurnCountField:
         }
 
         # Verify turn_count is integer
-        assert isinstance(
-            test_phase_entry["turn_count"], int
-        ), "turn_count must be integer"
+        assert isinstance(test_phase_entry["turn_count"], int), (
+            "turn_count must be integer"
+        )
         assert test_phase_entry["turn_count"] >= 0, "turn_count must be non-negative"
 
     def test_turn_count_field_optional_with_default_zero(self):
@@ -107,12 +107,12 @@ class TestSchemaTurnCountField:
                 "outcome": "PASS",
                 "turn_count": value,
             }
-            assert isinstance(
-                test_entry["turn_count"], int
-            ), f"turn_count {value} not integer"
-            assert (
-                test_entry["turn_count"] >= 0
-            ), f"turn_count {value} should be non-negative"
+            assert isinstance(test_entry["turn_count"], int), (
+                f"turn_count {value} not integer"
+            )
+            assert test_entry["turn_count"] >= 0, (
+                f"turn_count {value} should be non-negative"
+            )
 
     def test_turn_count_field_rejects_invalid_types(self):
         """Test that turn_count field rejects non-integer types."""
@@ -120,9 +120,9 @@ class TestSchemaTurnCountField:
 
         for value in invalid_values:
             if not isinstance(value, int):
-                assert not isinstance(
-                    value, int
-                ), f"Value {value} ({type(value)}) should not be integer"
+                assert not isinstance(value, int), (
+                    f"Value {value} ({type(value)}) should not be integer"
+                )
 
 
 if __name__ == "__main__":

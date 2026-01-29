@@ -38,12 +38,12 @@ class TestResearchCommandValidation:
             f"{self.RESEARCH_COMMAND} should NOT be in VALIDATION_COMMANDS - "
             "it's an exploratory command that bypasses validation"
         )
-        assert (
-            self.EXECUTE_COMMAND in validation_commands
-        ), f"Sanity check: {self.EXECUTE_COMMAND} should be in VALIDATION_COMMANDS"
-        assert (
-            self.DEVELOP_COMMAND in validation_commands
-        ), f"Sanity check: {self.DEVELOP_COMMAND} should be in VALIDATION_COMMANDS"
+        assert self.EXECUTE_COMMAND in validation_commands, (
+            f"Sanity check: {self.EXECUTE_COMMAND} should be in VALIDATION_COMMANDS"
+        )
+        assert self.DEVELOP_COMMAND in validation_commands, (
+            f"Sanity check: {self.DEVELOP_COMMAND} should be in VALIDATION_COMMANDS"
+        )
 
     def test_research_command_no_timeout_instruction(
         self, des_orchestrator, tmp_project_root
@@ -67,15 +67,15 @@ class TestResearchCommandValidation:
         )
 
         # THEN
-        assert (
-            self.TIMEOUT_INSTRUCTION_SECTION not in prompt
-        ), "Research commands should not have TIMEOUT_INSTRUCTION section"
-        assert (
-            f"## {self.TIMEOUT_INSTRUCTION_SECTION}" not in prompt
-        ), "Research commands should not have TIMEOUT_INSTRUCTION header"
-        assert (
-            f"# {self.TIMEOUT_INSTRUCTION_SECTION}" not in prompt
-        ), "Research commands should not have TIMEOUT_INSTRUCTION header"
+        assert self.TIMEOUT_INSTRUCTION_SECTION not in prompt, (
+            "Research commands should not have TIMEOUT_INSTRUCTION section"
+        )
+        assert f"## {self.TIMEOUT_INSTRUCTION_SECTION}" not in prompt, (
+            "Research commands should not have TIMEOUT_INSTRUCTION header"
+        )
+        assert f"# {self.TIMEOUT_INSTRUCTION_SECTION}" not in prompt, (
+            "Research commands should not have TIMEOUT_INSTRUCTION header"
+        )
 
     def test_research_prompt_structure_excludes_timeout(
         self, des_orchestrator, tmp_project_root
@@ -152,12 +152,12 @@ class TestResearchCommandValidation:
         )
 
         # Should not have DES validation markers
-        assert (
-            "<!-- DES-VALIDATION: required -->" not in prompt
-        ), "Research commands should not have DES validation markers"
-        assert (
-            "<!-- DES-STEP-FILE:" not in prompt
-        ), "Research commands should not reference step files"
+        assert "<!-- DES-VALIDATION: required -->" not in prompt, (
+            "Research commands should not have DES validation markers"
+        )
+        assert "<!-- DES-STEP-FILE:" not in prompt, (
+            "Research commands should not reference step files"
+        )
 
     def test_render_full_prompt_rejects_research_command(
         self, des_orchestrator, tmp_project_root

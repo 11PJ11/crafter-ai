@@ -55,7 +55,7 @@ class TimeoutInstructionTemplate:
         """Render turn budget element (~50 turns)."""
         return self._format_instruction_element(
             header="Turn Budget",
-            content="Aim to complete this task within approximately 50 turns."
+            content="Aim to complete this task within approximately 50 turns.",
         )
 
     def _render_progress_checkpoints(self) -> str:
@@ -66,8 +66,7 @@ class TimeoutInstructionTemplate:
 - Turn ~40: REFACTOR phases should be complete
 - Turn ~50: COMMIT phase starting (on track for completion)"""
         return self._format_instruction_element(
-            header="Progress Checkpoints",
-            content=content
+            header="Progress Checkpoints", content=content
         )
 
     def _render_early_exit_protocol(self) -> str:
@@ -78,8 +77,7 @@ class TimeoutInstructionTemplate:
 3. Return with status explaining what's blocking completion
 4. Do not continue if stuck - request human guidance"""
         return self._format_instruction_element(
-            header="Early Exit Protocol",
-            content=content
+            header="Early Exit Protocol", content=content
         )
 
     def _render_turn_logging(self) -> str:
@@ -89,7 +87,4 @@ class TimeoutInstructionTemplate:
 - Example: `[Turn 32] Completed REFACTOR_L2 phase`
 
 This helps track execution pacing and identify phases consuming excessive turns."""
-        return self._format_instruction_element(
-            header="Turn Logging",
-            content=content
-        )
+        return self._format_instruction_element(header="Turn Logging", content=content)

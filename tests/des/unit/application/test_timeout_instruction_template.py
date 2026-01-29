@@ -28,15 +28,15 @@ class TestTimeoutInstructionTemplateStructure:
 
         # THEN
         assert "TIMEOUT_INSTRUCTION" in content, "Section header missing"
-        assert content.strip().startswith(
-            "## TIMEOUT_INSTRUCTION"
-        ), "Content should start with markdown section header"
+        assert content.strip().startswith("## TIMEOUT_INSTRUCTION"), (
+            "Content should start with markdown section header"
+        )
 
         # Verify all 4 elements present (high-level check)
         assert "50" in content and "turn" in content.lower(), "Turn budget missing"
-        assert any(
-            marker in content for marker in ["~10", "~25", "~40"]
-        ), "Progress checkpoints missing"
+        assert any(marker in content for marker in ["~10", "~25", "~40"]), (
+            "Progress checkpoints missing"
+        )
         assert (
             "early exit" in content.lower() or "cannot complete" in content.lower()
         ), "Early exit protocol missing"
@@ -101,9 +101,9 @@ class TestProgressCheckpointsDefinition:
             "~25" in content or "turn 25" in content.lower(),
             "~40" in content or "turn 40" in content.lower(),
         ]
-        assert any(
-            checkpoint_indicators
-        ), "Progress checkpoints missing. Expected checkpoints at turn ~10, ~25, ~40"
+        assert any(checkpoint_indicators), (
+            "Progress checkpoints missing. Expected checkpoints at turn ~10, ~25, ~40"
+        )
 
         # Checkpoints should map to TDD phases
         phase_terms = ["prepare", "red", "green", "refactor", "commit"]
@@ -257,7 +257,9 @@ class TestRenderEarlyExitProtocolHelper:
 
         # Should have numbered list format
         has_numbered_list = "1." in protocol and "2." in protocol
-        assert has_numbered_list, "Early exit protocol should use markdown numbered list format (1., 2., 3., 4.)"
+        assert has_numbered_list, (
+            "Early exit protocol should use markdown numbered list format (1., 2., 3., 4.)"
+        )
 
 
 class TestTurnLoggingFormatSpecification:

@@ -22,7 +22,9 @@ class MockedSubagentStopHook(HookPort):
         self.last_step_file_path = None
         self.persist_turn_count_calls = []
 
-    def persist_turn_count(self, step_file_path: str, phase_name: str, turn_count: int) -> None:
+    def persist_turn_count(
+        self, step_file_path: str, phase_name: str, turn_count: int
+    ) -> None:
         """Record persist_turn_count call for testing (no actual file I/O).
 
         Args:
@@ -36,11 +38,13 @@ class MockedSubagentStopHook(HookPort):
         if turn_count < 0:
             raise ValueError(f"turn_count must be non-negative, got {turn_count}")
 
-        self.persist_turn_count_calls.append({
-            "step_file_path": step_file_path,
-            "phase_name": phase_name,
-            "turn_count": turn_count
-        })
+        self.persist_turn_count_calls.append(
+            {
+                "step_file_path": step_file_path,
+                "phase_name": phase_name,
+                "turn_count": turn_count,
+            }
+        )
 
     def on_agent_complete(self, step_file_path: str) -> HookResult:
         """Return predefined result without file I/O.

@@ -347,31 +347,31 @@ class TestFailureRecoveryGuidance:
         # Assert: Step file updated with FAILED status
         updated_step_data = json.loads(step_file.read_text())
         assert "state" in updated_step_data, "Step file should have state object"
-        assert (
-            "recovery_suggestions" in updated_step_data["state"]
-        ), "Step file should have recovery_suggestions"
+        assert "recovery_suggestions" in updated_step_data["state"], (
+            "Step file should have recovery_suggestions"
+        )
 
         # Assert: Recovery suggestions include transcript path
         joined_suggestions = " ".join(suggestions)
-        assert (
-            "transcript" in joined_suggestions.lower()
-        ), "Suggestions should reference transcript for debugging"
+        assert "transcript" in joined_suggestions.lower(), (
+            "Suggestions should reference transcript for debugging"
+        )
 
         # Assert: Suggestions are actionable
-        assert any(
-            "/nw:execute" in s or "execute" in s.lower() for s in suggestions
-        ), "Suggestions should include execution command"
-        assert any(
-            "NOT_EXECUTED" in s for s in suggestions
-        ), "Suggestions should reference phase status reset"
+        assert any("/nw:execute" in s or "execute" in s.lower() for s in suggestions), (
+            "Suggestions should include execution command"
+        )
+        assert any("NOT_EXECUTED" in s for s in suggestions), (
+            "Suggestions should reference phase status reset"
+        )
 
         # Assert: Recovery handler doesn't crash orchestrator
-        assert (
-            updated_state is not None
-        ), "Handler should return result without crashing"
-        assert isinstance(
-            updated_state, dict
-        ), "Handler should return dict for orchestrator to process"
+        assert updated_state is not None, (
+            "Handler should return result without crashing"
+        )
+        assert isinstance(updated_state, dict), (
+            "Handler should return dict for orchestrator to process"
+        )
 
     # =========================================================================
     # AC-005.2: Suggestions stored in step file `recovery_suggestions` array
@@ -504,9 +504,9 @@ class TestFailureRecoveryGuidance:
 
         # Assert: Suggestions include specific transcript path
         transcript_suggestion_found = any(transcript_path in s for s in suggestions)
-        assert (
-            transcript_suggestion_found
-        ), f"Suggestions must include specific transcript path: {transcript_path}"
+        assert transcript_suggestion_found, (
+            f"Suggestions must include specific transcript path: {transcript_path}"
+        )
 
     # =========================================================================
     # AC-005.4: Validation errors include fix guidance in error message
@@ -561,15 +561,15 @@ Update step file with phase completion
         validation_result = validator.validate_prompt(prompt_missing_boundary_rules)
 
         # Assert: Error message includes inline fix guidance with FIX: prefix
-        assert (
-            validation_result.status == "FAILED"
-        ), "Validation should fail for missing BOUNDARY_RULES"
-        assert "BOUNDARY_RULES" in str(
-            validation_result.errors
-        ), "Error should mention BOUNDARY_RULES"
-        assert (
-            validation_result.recovery_guidance is not None
-        ), "Should have recovery guidance"
+        assert validation_result.status == "FAILED", (
+            "Validation should fail for missing BOUNDARY_RULES"
+        )
+        assert "BOUNDARY_RULES" in str(validation_result.errors), (
+            "Error should mention BOUNDARY_RULES"
+        )
+        assert validation_result.recovery_guidance is not None, (
+            "Should have recovery guidance"
+        )
 
         # Check that recovery guidance includes FIX: formatted guidance
         guidance_text = " ".join(validation_result.recovery_guidance)
@@ -1062,20 +1062,20 @@ Update step file with phase completion
 
                 # WHY should be 1-2 sentences max
                 why_sentences = why_part.count(".") + 1
-                assert (
-                    why_sentences <= 2
-                ), f"WHY section too long ({why_sentences} sentences): {why_part}"
+                assert why_sentences <= 2, (
+                    f"WHY section too long ({why_sentences} sentences): {why_part}"
+                )
 
                 # HOW should be 1-2 sentences max
                 how_sentences = how_part.count(".") + 1
-                assert (
-                    how_sentences <= 2
-                ), f"HOW section too long ({how_sentences} sentences): {how_part}"
+                assert how_sentences <= 2, (
+                    f"HOW section too long ({how_sentences} sentences): {how_part}"
+                )
 
                 # ACTION should be specific (contains command or path)
-                assert any(
-                    char in action_part for char in ["/", ".", "`", "-"]
-                ), f"ACTION should be specific/actionable: {action_part}"
+                assert any(char in action_part for char in ["/", ".", "`", "-"]), (
+                    f"ACTION should be specific/actionable: {action_part}"
+                )
 
         # AC-005.5.4: Average suggestion length should be 3-4 sentences per section
         # For WHY/HOW/ACTION format: 1-2 sentences per section = 3-6 total periods
@@ -1087,9 +1087,9 @@ Update step file with phase completion
 
         avg_periods = total_periods / len(suggestions)
         # With WHY (1-2 periods) + HOW (1-2 periods) + ACTION (0-1 periods) = 2-5 periods avg
-        assert (
-            2 <= avg_periods <= 6
-        ), f"Average suggestion length should have 2-5 periods per suggestion, got {avg_periods}"
+        assert 2 <= avg_periods <= 6, (
+            f"Average suggestion length should have 2-5 periods per suggestion, got {avg_periods}"
+        )
 
     # =========================================================================
     # AC-005.1 + AC-005.2: Failure mode registry - all modes have suggestions

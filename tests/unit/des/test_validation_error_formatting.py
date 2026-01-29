@@ -290,9 +290,9 @@ missing
                 action in guidance_text
                 for action in ["Add ", "Update ", "Include ", "Ensure "]
             )
-            assert (
-                has_fix_prefix or has_action_format
-            ), f"Guidance should have FIX: prefix or action format. Got: {guidance_text}"
+            assert has_fix_prefix or has_action_format, (
+                f"Guidance should have FIX: prefix or action format. Got: {guidance_text}"
+            )
 
     def test_fix_guidance_matches_missing_section_name(self):
         """FIX guidance should specifically reference the section name that's missing."""
@@ -308,6 +308,6 @@ Step: 01-01.json
 
         if validation_result.recovery_guidance:
             guidance_text = " ".join(validation_result.recovery_guidance)
-            assert (
-                "BOUNDARY_RULES" in guidance_text
-            ), "Guidance should mention the specific missing section: BOUNDARY_RULES"
+            assert "BOUNDARY_RULES" in guidance_text, (
+                "Guidance should mention the specific missing section: BOUNDARY_RULES"
+            )

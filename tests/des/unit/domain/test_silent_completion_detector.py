@@ -74,9 +74,9 @@ class TestDetectAllPhasesNotExecuted:
         is_silent = detector.is_silent_completion(phase_log, task_state)
 
         # Assert
-        assert (
-            is_silent is True
-        ), "Should detect all phases NOT_EXECUTED as silent completion"
+        assert is_silent is True, (
+            "Should detect all phases NOT_EXECUTED as silent completion"
+        )
 
 
 class TestDistinguishSilentCompletionFromNormalUnstarted:
@@ -109,9 +109,9 @@ class TestDistinguishSilentCompletionFromNormalUnstarted:
             "completed_at": None,
         }
         is_silent = detector.is_silent_completion(phase_log, task_state_unstarted)
-        assert (
-            is_silent is False
-        ), "Normal unstarted task should NOT be detected as silent completion"
+        assert is_silent is False, (
+            "Normal unstarted task should NOT be detected as silent completion"
+        )
 
         # Act & Assert: Silent completion state (task ran but no updates)
         task_state_completed = {
@@ -120,9 +120,9 @@ class TestDistinguishSilentCompletionFromNormalUnstarted:
             "completed_at": "2026-01-28T10:15:00Z",
         }
         is_silent = detector.is_silent_completion(phase_log, task_state_completed)
-        assert (
-            is_silent is True
-        ), "Task with completed_at but all phases NOT_EXECUTED should be silent completion"
+        assert is_silent is True, (
+            "Task with completed_at but all phases NOT_EXECUTED should be silent completion"
+        )
 
 
 class TestGenerate3OrMoreSilentCompletionSuggestions:
@@ -158,9 +158,9 @@ class TestGenerate3OrMoreSilentCompletionSuggestions:
         # Assert
         assert suggestions is not None, "Should generate suggestions"
         assert isinstance(suggestions, list), "Suggestions should be list"
-        assert (
-            len(suggestions) >= 3
-        ), f"Should have 3+ suggestions, got {len(suggestions)}: {suggestions}"
+        assert len(suggestions) >= 3, (
+            f"Should have 3+ suggestions, got {len(suggestions)}: {suggestions}"
+        )
 
 
 class TestSilentCompletionSuggestionsIncludeTranscriptPath:
@@ -200,9 +200,9 @@ class TestSilentCompletionSuggestionsIncludeTranscriptPath:
         )
 
         # Assert
-        assert any(
-            transcript_path in s for s in suggestions
-        ), f"Suggestions should include transcript path: {transcript_path}"
+        assert any(transcript_path in s for s in suggestions), (
+            f"Suggestions should include transcript path: {transcript_path}"
+        )
 
 
 class TestSilentCompletionExplainsOutcomeRecordingRequirement:
@@ -237,9 +237,9 @@ class TestSilentCompletionExplainsOutcomeRecordingRequirement:
         suggestions = detector.generate_recovery_suggestions(phase_log, task_state)
 
         # Assert
-        assert any(
-            "OUTCOME_RECORDING" in s for s in suggestions
-        ), "Suggestions should explain OUTCOME_RECORDING requirement"
+        assert any("OUTCOME_RECORDING" in s for s in suggestions), (
+            "Suggestions should explain OUTCOME_RECORDING requirement"
+        )
 
 
 class TestDetectMissingOutcomeField:
@@ -278,15 +278,15 @@ class TestDetectMissingOutcomeField:
         missing_outcome_phases = detector.detect_missing_outcomes(phase_log)
 
         # Assert
-        assert (
-            "RED_ACCEPTANCE" in missing_outcome_phases
-        ), "Should detect RED_ACCEPTANCE as missing outcome"
-        assert (
-            "PREPARE" not in missing_outcome_phases
-        ), "Should not include PREPARE (has outcome)"
-        assert (
-            "RED_UNIT" not in missing_outcome_phases
-        ), "Should not include RED_UNIT (status is NOT_EXECUTED)"
+        assert "RED_ACCEPTANCE" in missing_outcome_phases, (
+            "Should detect RED_ACCEPTANCE as missing outcome"
+        )
+        assert "PREPARE" not in missing_outcome_phases, (
+            "Should not include PREPARE (has outcome)"
+        )
+        assert "RED_UNIT" not in missing_outcome_phases, (
+            "Should not include RED_UNIT (status is NOT_EXECUTED)"
+        )
 
 
 class TestDetectStatusOutcomeMismatch:
@@ -324,12 +324,12 @@ class TestDetectStatusOutcomeMismatch:
         mismatches = detector.detect_status_mismatches(phase_log)
 
         # Assert
-        assert (
-            len(mismatches) >= 1
-        ), f"Should detect at least 1 mismatch, found {mismatches}"
-        assert any(
-            m["phase_name"] == "RED_ACCEPTANCE" for m in mismatches
-        ), "Should include RED_ACCEPTANCE mismatch"
+        assert len(mismatches) >= 1, (
+            f"Should detect at least 1 mismatch, found {mismatches}"
+        )
+        assert any(m["phase_name"] == "RED_ACCEPTANCE" for m in mismatches), (
+            "Should include RED_ACCEPTANCE mismatch"
+        )
 
 
 class TestProvidesRecoveryGuidance:
@@ -402,9 +402,9 @@ class TestHandlesPartialPhaseLog:
         is_silent = detector.is_silent_completion(phase_log, task_state)
 
         # Assert
-        assert (
-            is_silent is True
-        ), "Should detect silent completion with partial phase log"
+        assert is_silent is True, (
+            "Should detect silent completion with partial phase log"
+        )
 
 
 class TestDistinguishRealVsFalsePositives:
@@ -468,4 +468,6 @@ class TestDistinguishRealVsFalsePositives:
                 phase_log_partial_progress, task_state_with_progress
             )
             is False
-        ), "Should NOT flag task with at least one EXECUTED phase as silent completion (false positive)"
+        ), (
+            "Should NOT flag task with at least one EXECUTED phase as silent completion (false positive)"
+        )

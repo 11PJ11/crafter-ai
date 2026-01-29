@@ -109,9 +109,9 @@ class TestAbandonedPhaseDetector:
             current_time=base_time,
         )
 
-        assert (
-            is_abandoned is True
-        ), "Phase IN_PROGRESS for 25 min with no turn change should be abandoned"
+        assert is_abandoned is True, (
+            "Phase IN_PROGRESS for 25 min with no turn change should be abandoned"
+        )
 
     # =========================================================================
     # Test 4: test_provides_recovery_message_for_abandoned

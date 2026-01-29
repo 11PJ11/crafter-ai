@@ -57,9 +57,9 @@ class TestValidationErrorDetector:
         assert errors is not None, "Should detect missing fields"
         assert isinstance(errors, list), "Errors should be a list"
         assert len(errors) > 0, "Should have at least one error"
-        assert any(
-            "acceptance_criteria" in err.lower() for err in errors
-        ), "Should identify missing acceptance_criteria"
+        assert any("acceptance_criteria" in err.lower() for err in errors), (
+            "Should identify missing acceptance_criteria"
+        )
 
     def test_detects_invalid_phase_sequences(self):
         """
@@ -91,9 +91,9 @@ class TestValidationErrorDetector:
         assert errors is not None, "Should detect phase sequence errors"
         assert isinstance(errors, list), "Errors should be a list"
         assert len(errors) > 0, "Should have at least one sequence error"
-        assert any(
-            "COMMIT" in err or "sequence" in err.lower() for err in errors
-        ), "Should mention COMMIT or sequence violation"
+        assert any("COMMIT" in err or "sequence" in err.lower() for err in errors), (
+            "Should mention COMMIT or sequence violation"
+        )
 
     def test_detects_missing_acceptance_criteria(self):
         """
@@ -154,9 +154,9 @@ class TestValidationErrorDetector:
         assert len(fix_guidance) > 0, "Guidance should not be empty"
 
         # Guidance should be specific and mention the field
-        assert (
-            "acceptance_criteria" in fix_guidance
-        ), "Should mention the specific field"
+        assert "acceptance_criteria" in fix_guidance, (
+            "Should mention the specific field"
+        )
         # Guidance should include action keywords
         assert any(
             keyword in fix_guidance.lower()
@@ -215,6 +215,6 @@ class TestValidationErrorDetector:
         assert len(results["valid_phases"]) >= 3, "First 3 phases should be valid"
 
         # Check that incomplete phase is reported separately
-        assert (
-            len(results["incomplete_phases"]) >= 1
-        ), "Should identify incomplete phase"
+        assert len(results["incomplete_phases"]) >= 1, (
+            "Should identify incomplete phase"
+        )

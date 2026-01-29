@@ -25,7 +25,9 @@ class HookPort(ABC):
     """Port for post-execution validation hooks."""
 
     @abstractmethod
-    def persist_turn_count(self, step_file_path: str, phase_name: str, turn_count: int) -> None:
+    def persist_turn_count(
+        self, step_file_path: str, phase_name: str, turn_count: int
+    ) -> None:
         """Persist turn_count to phase_execution_log entry.
 
         Updates the phase_execution_log entry for the specified phase with the turn_count value.

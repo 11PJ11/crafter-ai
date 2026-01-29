@@ -8,7 +8,7 @@ Detects invalid phase states:
 Generates recovery suggestions to guide developers toward correct state.
 """
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 
 
 class PhaseStateValidator:
@@ -56,7 +56,9 @@ class PhaseStateValidator:
         # Validate SKIPPED state
         elif status == "SKIPPED":
             blocked_by = phase.get("blocked_by")
-            if blocked_by is None or (isinstance(blocked_by, str) and not blocked_by.strip()):
+            if blocked_by is None or (
+                isinstance(blocked_by, str) and not blocked_by.strip()
+            ):
                 errors.append(
                     f"Invalid phase state: {phase_name} is SKIPPED but missing blocked_by reason. "
                     f"SKIPPED phases must explain why they were skipped (e.g., CHECKPOINT_PENDING, NOT_APPLICABLE)."
@@ -64,9 +66,7 @@ class PhaseStateValidator:
 
         return errors
 
-    def generate_recovery_suggestions(
-        self, phase: Dict[str, Any]
-    ) -> List[str]:
+    def generate_recovery_suggestions(self, phase: Dict[str, Any]) -> List[str]:
         """
         Generate recovery suggestions for invalid phase state.
 
@@ -87,7 +87,9 @@ class PhaseStateValidator:
 
         elif status == "SKIPPED":
             blocked_by = phase.get("blocked_by")
-            if blocked_by is None or (isinstance(blocked_by, str) and not blocked_by.strip()):
+            if blocked_by is None or (
+                isinstance(blocked_by, str) and not blocked_by.strip()
+            ):
                 suggestions = self._generate_skipped_state_suggestions(phase_name)
 
         return suggestions

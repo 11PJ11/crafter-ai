@@ -90,9 +90,9 @@ class TestTurnCountPersistence:
 
         # THEN: Hook should validate turn_count is present (validation passes)
         # and turn_count values should be present in phase_execution_log
-        assert (
-            result.validation_status == "PASSED"
-        ), "Hook validation should pass when turn_count present"
+        assert result.validation_status == "PASSED", (
+            "Hook validation should pass when turn_count present"
+        )
 
         with open(step_file_with_turn_count, "r") as f:
             step_data = json.load(f)
@@ -101,15 +101,15 @@ class TestTurnCountPersistence:
 
         # Verify first phase has turn_count = 3
         assert len(phase_log) >= 1
-        assert (
-            phase_log[0].get("turn_count") == 3
-        ), "First phase turn_count should be in log"
+        assert phase_log[0].get("turn_count") == 3, (
+            "First phase turn_count should be in log"
+        )
 
         # Verify second phase has turn_count = 5
         assert len(phase_log) >= 2
-        assert (
-            phase_log[1].get("turn_count") == 5
-        ), "Second phase turn_count should be in log"
+        assert phase_log[1].get("turn_count") == 5, (
+            "Second phase turn_count should be in log"
+        )
 
     def test_backward_compatibility_old_step_files(
         self, hook, step_file_without_turn_count
@@ -128,9 +128,9 @@ class TestTurnCountPersistence:
         result = hook.on_agent_complete(str(step_file_without_turn_count))
 
         # THEN: Should not fail (validation passes for old format)
-        assert (
-            result.validation_status == "PASSED"
-        ), "Backward compatibility broken - old files should still validate"
+        assert result.validation_status == "PASSED", (
+            "Backward compatibility broken - old files should still validate"
+        )
 
     def test_turn_count_persisted_with_correct_value(
         self, hook, step_file_with_turn_count
@@ -157,9 +157,9 @@ class TestTurnCountPersistence:
         for phase in phase_log:
             phase_name = phase.get("phase_name")
             if phase_name in expected_turn_counts:
-                assert (
-                    phase.get("turn_count") == expected_turn_counts[phase_name]
-                ), f"Phase {phase_name} turn_count mismatch"
+                assert phase.get("turn_count") == expected_turn_counts[phase_name], (
+                    f"Phase {phase_name} turn_count mismatch"
+                )
 
     def test_multiple_phases_turn_count_persisted(self, hook, tmp_path):
         """
@@ -203,7 +203,7 @@ class TestTurnCountPersistence:
 
         for i, phase in enumerate(phase_log):
             assert "turn_count" in phase, f"Phase {i} missing turn_count field"
-            assert isinstance(
-                phase.get("turn_count"), int
-            ), f"Phase {i} turn_count not integer"
+            assert isinstance(phase.get("turn_count"), int), (
+                f"Phase {i} turn_count not integer"
+            )
             assert phase.get("turn_count") == i + 1, f"Phase {i} turn_count incorrect"
