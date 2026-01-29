@@ -124,7 +124,6 @@ class TestTurnDisciplineInclusion:
             "Agents need explicit budget to know when to exit gracefully."
         )
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_003_timeout_instruction_defines_progress_checkpoints(
         self, tmp_project_root, minimal_step_file, des_orchestrator
     ):
