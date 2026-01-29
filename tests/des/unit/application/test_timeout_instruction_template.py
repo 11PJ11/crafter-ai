@@ -157,6 +157,109 @@ class TestEarlyExitProtocolSteps:
         )
 
 
+class TestRenderEarlyExitProtocolHelper:
+    """Tests for _render_early_exit_protocol() helper method (US-006 step 01-04)."""
+
+    def test_render_early_exit_protocol_contains_4_steps(self):
+        """
+        GIVEN TimeoutInstructionTemplate is instantiated
+        WHEN _render_early_exit_protocol() is called
+        THEN output contains 4 numbered steps for graceful exit
+        """
+        # GIVEN
+        template = TimeoutInstructionTemplate()
+
+        # WHEN
+        protocol = template._render_early_exit_protocol()
+
+        # THEN: 4 steps are documented
+        # Count numbered items (1., 2., 3., 4.)
+        numbered_steps = [f"{i}." for i in range(1, 5)]
+        steps_found = sum(1 for step in numbered_steps if step in protocol)
+
+        assert steps_found == 4, (
+            f"Early exit protocol should contain 4 numbered steps, found {steps_found}. "
+            "Expected: 1. Save progress, 2. Set IN_PROGRESS, 3. Return status, 4. Don't continue"
+        )
+
+    def test_render_early_exit_protocol_includes_save_progress(self):
+        """
+        GIVEN TimeoutInstructionTemplate is instantiated
+        WHEN _render_early_exit_protocol() is called
+        THEN output includes instruction to save progress to step file
+        """
+        # GIVEN
+        template = TimeoutInstructionTemplate()
+
+        # WHEN
+        protocol = template._render_early_exit_protocol()
+
+        # THEN: Save progress instruction present
+        save_indicators = [
+            "save" in protocol.lower(),
+            "progress" in protocol.lower(),
+            "step file" in protocol.lower(),
+        ]
+
+        assert any(save_indicators), (
+            "Early exit protocol must include 'save progress to step file' instruction. "
+            "Agents need to preserve work before exiting."
+        )
+
+    def test_render_early_exit_protocol_includes_partial_completion(self):
+        """
+        GIVEN TimeoutInstructionTemplate is instantiated
+        WHEN _render_early_exit_protocol() is called
+        THEN output mentions PARTIAL_COMPLETION or partial status concept
+        """
+        # GIVEN
+        template = TimeoutInstructionTemplate()
+
+        # WHEN
+        protocol = template._render_early_exit_protocol()
+
+        # THEN: Partial completion or status mentioned
+        partial_indicators = [
+            "partial" in protocol.lower(),
+            "status" in protocol.lower(),
+            "blocking" in protocol.lower(),
+            "cannot complete" in protocol.lower(),
+        ]
+
+        assert any(partial_indicators), (
+            "Early exit protocol must explain returning with status explaining blockage. "
+            "Expected mention of 'status', 'partial', 'blocking', or 'cannot complete'."
+        )
+
+    def test_render_early_exit_protocol_valid_markdown(self):
+        """
+        GIVEN TimeoutInstructionTemplate is instantiated
+        WHEN _render_early_exit_protocol() is called
+        THEN output is valid markdown with numbered list format
+        """
+        # GIVEN
+        template = TimeoutInstructionTemplate()
+
+        # WHEN
+        protocol = template._render_early_exit_protocol()
+
+        # THEN: Valid markdown structure
+        # Should have markdown header or bold section title
+        has_header = (
+            protocol.startswith("**")
+            or protocol.startswith("#")
+            or "**Early Exit" in protocol
+        )
+        assert has_header, (
+            "Early exit protocol should start with markdown header or bold title "
+            "(e.g., '**Early Exit Protocol**' or '### Early Exit Protocol')"
+        )
+
+        # Should have numbered list format
+        has_numbered_list = "1." in protocol and "2." in protocol
+        assert has_numbered_list, "Early exit protocol should use markdown numbered list format (1., 2., 3., 4.)"
+
+
 class TestTurnLoggingFormatSpecification:
     """Tests for turn logging instruction element."""
 

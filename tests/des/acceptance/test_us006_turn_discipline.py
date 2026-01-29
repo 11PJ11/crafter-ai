@@ -180,7 +180,6 @@ class TestTurnDisciplineInclusion:
             "(e.g., 'Turn ~10: PREPARE and RED phases complete')"
         )
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_004_timeout_instruction_documents_early_exit_protocol(
         self, tmp_project_root, minimal_step_file, des_orchestrator
     ):

@@ -1,0 +1,160 @@
+{
+  "task_id": "01-04",
+  "step_name": "Create helper method _render_early_exit_protocol()",
+  "project_id": "des-us006",
+  "phase_id": "01",
+  "acceptance_test_scenario": "test_scenario_004",
+  "description": "Implement private helper method that generates early exit protocol element of TIMEOUT_INSTRUCTION. Documents how agents should exit gracefully when stuck or unable to complete within turn budget.",
+  "acceptance_criteria": [
+    "_render_early_exit_protocol() method created in DESOrchestrator",
+    "Returns string containing early exit guidance",
+    "Specifies 4-step exit procedure: save progress, set IN_PROGRESS, return, explain blockage",
+    "Includes language: 'cannot complete', 'save progress', 'early exit', 'stuck'",
+    "Explains PARTIAL_COMPLETION status return",
+    "Output is valid markdown (numbered steps)",
+    "Unit test validates all 4 exit steps documented"
+  ],
+  "dependencies": [
+    "01-01"
+  ],
+  "suggested_agent": "software-crafter",
+  "estimated_hours": 2,
+  "parallel_execution_group": "helper-methods-implementation",
+  "execution_notes": "Can execute in parallel with steps 01-02, 01-03, 01-05 after 01-01 completes",
+  "tdd_cycle": {
+    "acceptance_test": {
+      "scenario_name": "test_scenario_004_timeout_instruction_documents_early_exit_protocol",
+      "test_file": "tests/des/acceptance/test_us006_turn_discipline.py",
+      "test_file_format": "py_pytest",
+      "scenario_index": 4,
+      "initially_ignored": true,
+      "is_walking_skeleton": false,
+      "mapped_scenario": {
+        "description": "Validates early exit protocol is documented in TIMEOUT_INSTRUCTION",
+        "scenario_function": "test_scenario_004_timeout_instruction_documents_early_exit_protocol",
+        "scenario_description": "Early exit protocol",
+        "mapping_type": "feature",
+        "notes": "Becomes GREEN after steps 01-04, 02-00, 02-01, 05-01 complete"
+      }
+    },
+    "expected_unit_tests": [
+      "test_render_early_exit_protocol_contains_4_steps",
+      "test_render_early_exit_protocol_includes_save_progress",
+      "test_render_early_exit_protocol_includes_partial_completion",
+      "test_render_early_exit_protocol_valid_markdown"
+    ],
+    "mock_boundaries": {
+      "allowed_ports": [],
+      "forbidden_domain_classes": [],
+      "in_memory_adapters": []
+    },
+    "tdd_phase_tracking": {
+      "current_phase": "REVIEW",
+      "active_e2e_test": "@pytest.mark.skip removed from test_scenario_004",
+      "inactive_e2e_tests": "All other @pytest.mark.skip scenarios remain disabled",
+      "phases_completed": ["PREPARE", "RED_ACCEPTANCE", "RED_UNIT", "GREEN"],
+      "test_results": {
+        "total": 10,
+        "passed": 10,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    "phase_execution_log": [
+      {
+        "phase_name": "PREPARE",
+        "status": "EXECUTED",
+        "started_at": "2026-01-29T13:45:00Z",
+        "ended_at": "2026-01-29T13:46:00Z",
+        "outcome": "SUCCESS: Removed @pytest.mark.skip from test_scenario_004. Verified all other scenarios remain disabled.",
+        "notes": "Enabled test_scenario_004_timeout_instruction_documents_early_exit_protocol",
+        "blocked_by": null,
+        "turn_count": 1
+      },
+      {
+        "phase_name": "RED_ACCEPTANCE",
+        "status": "EXECUTED",
+        "started_at": "2026-01-29T13:46:00Z",
+        "ended_at": "2026-01-29T13:47:00Z",
+        "outcome": "DISCOVERED: Implementation already exists from step 01-01. Test passes immediately. The _render_early_exit_protocol() method was created during 01-01 REFACTOR_CONTINUOUS phase as part of Extract Method refactoring.",
+        "notes": "Step 01-01 implemented all 4 helper methods (_render_turn_budget, _render_progress_checkpoints, _render_early_exit_protocol, _render_turn_logging) during refactoring. This step's AC are already satisfied. This is valid in parallel execution where dependency (01-01) completed more than minimal work.",
+        "blocked_by": null,
+        "turn_count": 1
+      },
+      {
+        "phase_name": "RED_UNIT",
+        "status": "EXECUTED",
+        "started_at": "2026-01-29T13:47:00Z",
+        "ended_at": "2026-01-29T13:50:00Z",
+        "outcome": "Added 4 focused unit tests for _render_early_exit_protocol() helper method. All tests PASS immediately because implementation exists from step 01-01. Tests validate: 4-step structure, save progress instruction, partial completion status, valid markdown formatting.",
+        "notes": "Created TestRenderEarlyExitProtocolHelper class with 4 unit tests as specified in acceptance criteria. Tests are more focused than existing TestEarlyExitProtocolSteps which tests through full template.",
+        "blocked_by": null,
+        "turn_count": 1
+      },
+      {
+        "phase_name": "GREEN",
+        "status": "EXECUTED",
+        "started_at": "2026-01-29T13:50:00Z",
+        "ended_at": "2026-01-29T13:51:00Z",
+        "outcome": "No implementation needed - _render_early_exit_protocol() method already exists and fully satisfies all acceptance criteria. All unit tests (4/4) and acceptance test (1/1) pass. Total: 5/5 tests passing.",
+        "notes": "Implementation from step 01-01 REFACTOR_CONTINUOUS phase already provides: 4-step numbered protocol, save progress instruction, IN_PROGRESS state guidance, return with status explanation, human guidance request.",
+        "blocked_by": null,
+        "turn_count": 1
+      },
+      {
+        "phase_name": "REVIEW",
+        "status": "EXECUTED",
+        "started_at": "2026-01-29T13:51:00Z",
+        "ended_at": "2026-01-29T13:54:00Z",
+        "outcome": "APPROVED. Self-review (software-crafter in review mode) completed. Strengths: YAGNI compliant (only 4 specified tests), behavior-driven (tests business logic not implementation), real components (no mocks), 100% AC coverage. No issues identified.",
+        "notes": "Tests validate: 4-step protocol structure, save progress instruction, partial completion status explanation, valid markdown formatting. Implementation from step 01-01 already satisfies all requirements.",
+        "blocked_by": null,
+        "turn_count": 1
+      },
+      {
+        "phase_name": "REFACTOR_CONTINUOUS",
+        "status": "EXECUTED",
+        "started_at": "2026-01-29T13:54:00Z",
+        "ended_at": "2026-01-29T13:55:00Z",
+        "outcome": "No refactoring needed. Test code already follows L1+L2+L3: L1 (naming) - business-focused method names, L2 (complexity) - simple single-responsibility methods, L3 (organization) - well-organized TestRenderEarlyExitProtocolHelper class. All tests remain green (10/10).",
+        "notes": "Tests are already clean and follow best practices. Implementation code (_render_early_exit_protocol method) was refactored in step 01-01 during REFACTOR_CONTINUOUS phase.",
+        "blocked_by": null,
+        "turn_count": 1
+      },
+      {
+        "phase_name": "REFACTOR_L4",
+        "status": "SKIPPED",
+        "started_at": "2026-01-29T13:55:00Z",
+        "ended_at": "2026-01-29T13:55:30Z",
+        "outcome": null,
+        "notes": "Architecture patterns - OPTIONAL (can use CHECKPOINT_PENDING or NOT_APPLICABLE prefix for skip)",
+        "blocked_by": "NOT_APPLICABLE: This step only added unit tests for validation. No architectural patterns needed for simple unit test code. Tests use straightforward Given-When-Then structure appropriate for their purpose.",
+        "turn_count": 1
+      },
+      {
+        "phase_name": "COMMIT",
+        "status": "NOT_EXECUTED",
+        "started_at": null,
+        "ended_at": null,
+        "outcome": null,
+        "notes": "Absorbs FINAL_VALIDATE (metadata checks only)",
+        "blocked_by": null,
+        "turn_count": 0
+      }
+    ]
+  },
+  "quality_gates": {
+    "acceptance_tests_pass": false,
+    "unit_tests_pass": false,
+    "mutation_score_threshold": 75,
+    "code_coverage_threshold": 80,
+    "solid_principles_followed": false,
+    "port_boundary_compliance": false
+  },
+  "validation": {
+    "status": "approved",
+    "reviewed_by": "software-crafter-reviewer",
+    "reviewed_at": "2026-01-29T12:20:42.080528+00:00",
+    "review_summary": "Format validation PASSED - all required fields present and correct. File complies with canonical schema v2.0.0. No HIGH severity violations found. File ready for execution."
+  }
+}
