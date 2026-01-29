@@ -196,20 +196,24 @@ class TestFormatErrorModeSelection:
             parsed = json.loads(result)
             assert "error_code" in parsed
 
-        # Test Terminal context
+        # Test Terminal context (must mock both is_claude_code_context AND is_ci_environment)
         with patch(
             "scripts.install.output_formatter.is_claude_code_context",
             return_value=False,
         ):
-            result = format_error(
-                error_code=ENV_NO_VENV,
-                message="No virtual environment detected",
-                remediation="Run 'pipenv shell'",
-                recoverable=True,
-            )
+            with patch(
+                "scripts.install.output_formatter.is_ci_environment",
+                return_value=False,
+            ):
+                result = format_error(
+                    error_code=ENV_NO_VENV,
+                    message="No virtual environment detected",
+                    remediation="Run 'pipenv shell'",
+                    recoverable=True,
+                )
 
-            # Should be terminal format with [ERROR] prefix
-            assert "[ERROR]" in result
+                # Should be terminal format with [ERROR] prefix
+                assert "[ERROR]" in result
 
 
 class TestClaudeCodeFormatterModuleImportability:

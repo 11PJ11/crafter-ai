@@ -680,11 +680,15 @@ class TestInstallNwaveCallsVerifier:
                             with patch(
                                 "scripts.install.install_nwave.NWaveInstaller.create_manifest"
                             ):
-                                # ACT
-                                from scripts.install.install_nwave import main
+                                with patch(
+                                    "scripts.install.install_nwave.NWaveInstaller._validate_schema_template",
+                                    return_value=True,
+                                ):
+                                    # ACT
+                                    from scripts.install.install_nwave import main
 
-                                with patch.object(sys, "argv", ["install_nwave.py"]):
-                                    exit_code = main()
+                                    with patch.object(sys, "argv", ["install_nwave.py"]):
+                                        exit_code = main()
 
         # ASSERT
         assert exit_code == 0, "Successful verification should result in exit code 0"
