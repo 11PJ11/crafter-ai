@@ -98,3 +98,8 @@
 {"command":"/nw:execute","event":"TASK_INVOCATION_VALIDATED","outcome":"success","status":"VALIDATED","step_path":"test_step.json","timestamp":"2026-01-28T15:13:21.925Z"}
 {"agent":"@software-crafter","command":"/nw:execute","event":"TASK_INVOCATION_STARTED","step_path":"test_step.json","timestamp":"2026-01-28T15:13:23.916Z"}
 {"command":"/nw:execute","event":"TASK_INVOCATION_VALIDATED","outcome":"success","status":"VALIDATED","step_path":"test_step.json","timestamp":"2026-01-28T15:13:23.919Z"}
+{"agent":"@software-crafter","command":"/nw:execute","event":"TASK_INVOCATION_STARTED","step_path":"steps/01-01.json","timestamp":"2026-01-28T20:38:39.493Z"}
+{"command":"/nw:execute","event":"TASK_INVOCATION_VALIDATED","outcome":"success","status":"VALIDATED","step_path":"steps/01-01.json","timestamp":"2026-01-28T20:38:39.495Z"}
+{"agent":null,"command":"/nw:research","event":"TASK_INVOCATION_STARTED","step_path":null,"timestamp":"2026-01-28T20:38:39.518Z"}
+{"agent":"@software-crafter","command":"/nw:develop","event":"TASK_INVOCATION_STARTED","step_path":"steps/01-01.json","timestamp":"2026-01-28T20:38:39.528Z"}
+{"command":"/nw:develop","event":"TASK_INVOCATION_VALIDATED","outcome":"success","status":"VALIDATED","step_path":"steps/01-01.json","timestamp":"2026-01-28T20:38:39.538Z"}
