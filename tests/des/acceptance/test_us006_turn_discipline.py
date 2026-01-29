@@ -502,7 +502,6 @@ class TestTurnDisciplineContent:
         )
         assert logging_present, "Turn logging instruction missing"
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_010_develop_command_also_includes_timeout_instruction(
         self, tmp_project_root, minimal_step_file, des_orchestrator
     ):
