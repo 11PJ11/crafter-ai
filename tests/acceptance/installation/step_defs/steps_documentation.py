@@ -164,7 +164,14 @@ def prerequisites_not_state(text):
 def quick_start_includes(text):
     """Verify quick start section includes specified text."""
     content = INSTALLATION_GUIDE.read_text()
-    assert text in content, f"Quick start doesn't include '{text}'"
+
+    # Handle "or" pattern in text (e.g., "pipenv run" or "pipenv shell")
+    if '" or "' in text:
+        options = [opt.strip('"') for opt in text.split('" or "')]
+        found = any(opt in content for opt in options)
+        assert found, f"Quick start doesn't include any of: {options}"
+    else:
+        assert text in content, f"Quick start doesn't include '{text}'"
 
 
 @then(parsers.parse('the quick start should NOT show bare "{text}"'))

@@ -39,11 +39,21 @@ Colors.strip_on_windows()
 
 
 class Logger:
-    """Cross-platform logger with color support."""
+    """Cross-platform logger with color support.
 
-    def __init__(self, log_file: Optional[Path] = None):
-        """Initialize logger with optional log file."""
+    Supports both console and file logging. When silent=True, logs only to file
+    without console output (useful for JSON output modes).
+    """
+
+    def __init__(self, log_file: Optional[Path] = None, silent: bool = False):
+        """Initialize logger with optional log file.
+
+        Args:
+            log_file: Path to log file. If None, only console logging is enabled.
+            silent: If True, suppress console output (log to file only).
+        """
         self.log_file = log_file
+        self.silent = silent
         if log_file:
             log_file.parent.mkdir(parents=True, exist_ok=True)
 
@@ -53,7 +63,8 @@ class Logger:
         console_msg = f"{color}[{timestamp}] {level}: {message}{Colors.NC}"
         log_msg = f"[{timestamp}] {level}: {message}"
 
-        print(console_msg)
+        if not self.silent:
+            print(console_msg)
 
         if self.log_file:
             try:

@@ -2,20 +2,55 @@
 
 This guide helps you install the nWave ATDD framework to your global Claude config directory, making 13 specialized agents (+ 13 reviewer agents) available across all your projects.
 
-## Quick Start
+## Prerequisites
 
-### All Platforms (Python - Recommended)
+Before installing nWave, ensure you have:
+
+- **Python 3.8 or higher** (tested on Python 3.8, 3.9, 3.10, 3.11, 3.12)
+- **pipenv** (required for virtual environment and dependency management)
+
+### Installing pipenv
+
+If pipenv is not installed, install it first:
 
 ```bash
-# From repository root
-python3 scripts/install/install_nwave.py
-
-# Or download the standalone installer
-curl -O https://github.com/11PJ11/crafter-ai/releases/latest/download/install-nwave-claude-code.py
-python3 install-nwave-claude-code.py
+# Install pipenv globally
+pip install pipenv
+# Or using pip3
+pip3 install pipenv
 ```
 
-**Prerequisites**: Python 3.11 or higher
+## Quick Start
+
+### All Platforms (Using pipenv - Recommended)
+
+```bash
+# Clone the repository
+git clone https://github.com/11PJ11/crafter-ai.git
+cd crafter-ai
+
+# Install dependencies in virtual environment
+pipenv install --dev
+
+# Run the installer
+pipenv run python scripts/install/install_nwave.py
+
+# Or activate the shell and run directly
+pipenv shell
+python scripts/install/install_nwave.py
+```
+
+### Standalone Installer (Alternative)
+
+```bash
+# Download the standalone installer
+curl -O https://github.com/11PJ11/crafter-ai/releases/latest/download/install-nwave-claude-code.py
+
+# Run within pipenv environment
+pipenv run python install-nwave-claude-code.py
+```
+
+**Prerequisites**: Python 3.8 or higher, pipenv required
 
 ## What Gets Installed
 
@@ -185,6 +220,54 @@ All 26 agents (13 primary + 13 reviewers) are available globally:
 
 ## Troubleshooting
 
+### ModuleNotFoundError
+
+If you see `ModuleNotFoundError: No module named 'xxx'`:
+
+```bash
+# Ensure you're running within pipenv virtual environment
+pipenv install --dev
+pipenv run python scripts/install/install_nwave.py
+
+# Or check if dependencies are installed
+pipenv run pip list
+
+# If packages are missing, reinstall
+pipenv install --dev
+```
+
+### Not in Virtual Environment
+
+If you see errors about not being in a virtual environment:
+
+```bash
+# Always use pipenv to manage your environment
+pipenv install --dev
+
+# Run commands using pipenv run
+pipenv run python scripts/install/install_nwave.py
+
+# Or activate the shell
+pipenv shell
+python scripts/install/install_nwave.py
+```
+
+### Pipenv Issues
+
+If pipenv commands fail:
+
+```bash
+# Ensure pipenv is installed
+pip install pipenv
+
+# Clear and recreate the virtual environment
+pipenv --rm
+pipenv install --dev
+
+# Verify pipenv is working
+pipenv --version
+```
+
 ### Permission Issues
 
 If you encounter permission errors:
@@ -204,7 +287,9 @@ If the script can't find the framework source:
 ```bash
 # Ensure you're running from the nwave project directory
 cd /path/to/nwave
-./install-nwave.sh
+
+# Use pipenv to run the installer
+pipenv run python scripts/install/install_nwave.py
 ```
 
 ### Existing Installation
@@ -221,6 +306,7 @@ If installation validation fails:
 
 - Check the installation log: `~/.claude/nwave-install.log`
 - Verify source framework is complete
+- Ensure you ran within pipenv environment: `pipenv run ...`
 - Use `--restore` to rollback
 - Report issues with log details
 

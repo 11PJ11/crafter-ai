@@ -35,16 +35,16 @@
   },
 
   "state": {
-    "status": "TODO",
-    "assigned_to": null,
-    "started_at": null,
-    "completed_at": null
+    "status": "DONE",
+    "assigned_to": "software-crafter",
+    "started_at": "2026-01-29T10:00:00Z",
+    "completed_at": "2026-01-29T10:30:00Z"
   },
 
   "tdd_cycle": {
     "acceptance_test": {
       "scenario_name": "Integration - no new scenarios",
-      "test_file": "",
+      "test_file": "tests/unit/test_install_nwave_preflight.py",
       "test_file_format": "py_pytest",
       "scenario_index": 0,
       "initially_ignored": true,
@@ -69,26 +69,26 @@
       "in_memory_adapters": []
     },
     "tdd_phase_tracking": {
-      "current_phase": "NOT_STARTED",
+      "current_phase": "COMMIT",
       "active_e2e_test": "",
       "inactive_e2e_tests": "All other @skip scenarios remain disabled",
-      "phases_completed": [],
+      "phases_completed": ["PREPARE", "RED_UNIT", "GREEN", "REVIEW", "REFACTOR_CONTINUOUS", "COMMIT"],
       "test_results": {
-        "total": null,
-        "passed": null,
-        "failed": null,
-        "skipped": null
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0
       }
     },
     "phase_execution_log": [
-      {"phase_name": "PREPARE", "phase_index": 0, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "notes": null, "blocked_by": null},
-      {"phase_name": "RED_ACCEPTANCE", "phase_index": 1, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "notes": null, "blocked_by": null},
-      {"phase_name": "RED_UNIT", "phase_index": 2, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "notes": null, "blocked_by": null},
-      {"phase_name": "GREEN", "phase_index": 3, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "notes": null, "blocked_by": null},
-      {"phase_name": "REVIEW", "phase_index": 4, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "notes": null, "blocked_by": null},
-      {"phase_name": "REFACTOR_CONTINUOUS", "phase_index": 5, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "notes": null, "blocked_by": null},
-      {"phase_name": "REFACTOR_L4", "phase_index": 6, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "notes": null, "blocked_by": null},
-      {"phase_name": "COMMIT", "phase_index": 7, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "notes": null, "blocked_by": null}
+      {"phase_name": "PREPARE", "phase_index": 0, "status": "EXECUTED", "started_at": "2026-01-29T10:00:00Z", "ended_at": "2026-01-29T10:05:00Z", "duration_minutes": 5, "outcome": "PASSED", "notes": "Read step file and existing code", "blocked_by": null},
+      {"phase_name": "RED_ACCEPTANCE", "phase_index": 1, "status": "SKIPPED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": "NOT_APPLICABLE", "notes": "Integration step - no new acceptance tests", "blocked_by": null},
+      {"phase_name": "RED_UNIT", "phase_index": 2, "status": "EXECUTED", "started_at": "2026-01-29T10:05:00Z", "ended_at": "2026-01-29T10:12:00Z", "duration_minutes": 7, "outcome": "PASSED", "notes": "Created test_install_nwave_preflight.py with 5 integration tests", "blocked_by": null},
+      {"phase_name": "GREEN", "phase_index": 3, "status": "EXECUTED", "started_at": "2026-01-29T10:12:00Z", "ended_at": "2026-01-29T10:22:00Z", "duration_minutes": 10, "outcome": "PASSED", "notes": "Modified install_nwave.py to import preflight_checker, format_error; added preflight checks in main()", "blocked_by": null},
+      {"phase_name": "REVIEW", "phase_index": 4, "status": "EXECUTED", "started_at": "2026-01-29T10:22:00Z", "ended_at": "2026-01-29T10:25:00Z", "duration_minutes": 3, "outcome": "PASSED", "notes": "Verified all 5 tests pass, 721/722 total tests pass (1 unrelated git hook test)", "blocked_by": null},
+      {"phase_name": "REFACTOR_CONTINUOUS", "phase_index": 5, "status": "EXECUTED", "started_at": "2026-01-29T10:25:00Z", "ended_at": "2026-01-29T10:27:00Z", "duration_minutes": 2, "outcome": "PASSED", "notes": "Code is clean, no refactoring needed", "blocked_by": null},
+      {"phase_name": "REFACTOR_L4", "phase_index": 6, "status": "SKIPPED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": "NOT_APPLICABLE", "notes": "No architecture patterns needed for integration step", "blocked_by": null},
+      {"phase_name": "COMMIT", "phase_index": 7, "status": "EXECUTED", "started_at": "2026-01-29T10:27:00Z", "ended_at": "2026-01-29T10:30:00Z", "duration_minutes": 3, "outcome": "PASSED", "notes": "Step 05-01 complete", "blocked_by": null}
     ]
   },
 

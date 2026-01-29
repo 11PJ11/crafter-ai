@@ -10,7 +10,7 @@ Feature: Documentation Accuracy
   # AC-10: Documentation Accuracy
   # ==========================================================================
 
-  @skip @ac10 @manual
+  @ac10 @manual
   Scenario: Quick start commands work on virgin machine
     Given I have a fresh machine with Python installed
     And pipenv is installed via "pip install pipenv"
@@ -21,28 +21,28 @@ Feature: Documentation Accuracy
     Then each command should succeed
     And nWave should be installed successfully
 
-  @skip @ac10
+  @ac10
   Scenario: Prerequisites are correctly stated
     Given I read the installation guide prerequisites
     Then the prerequisites should include "Python 3.8 or higher"
     And the prerequisites should include "pipenv"
     And the prerequisites should NOT state "Python 3.11" as minimum
 
-  @skip @ac10
+  @ac10
   Scenario: Quick start section includes virtual environment setup
     Given I read the quick start section
     Then the quick start should include "pipenv install"
     And the quick start should include "pipenv run" or "pipenv shell"
     And the quick start should NOT show bare "python3 scripts/install/install_nwave.py"
 
-  @skip @ac10
+  @ac10
   Scenario: Documentation mentions pipenv requirement
     Given I read the installation guide
     Then the guide should mention pipenv is required
     And the guide should explain how to install pipenv
     And the guide should show pipenv commands for installation
 
-  @skip @ac10
+  @ac10
   Scenario: Troubleshooting section addresses common errors
     Given I read the troubleshooting section
     Then the section should address "ModuleNotFoundError"

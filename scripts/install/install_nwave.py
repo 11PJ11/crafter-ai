@@ -13,16 +13,34 @@ import subprocess
 import sys
 from pathlib import Path
 
-from install_utils import (
-    BackupManager,
-    Colors,
-    Logger,
-    ManifestWriter,
-    PathUtils,
-    VersionUtils,
-)
+# Support both standalone execution and package import
+try:
+    from scripts.install.install_utils import (
+        BackupManager,
+        Colors,
+        Logger,
+        ManifestWriter,
+        PathUtils,
+        VersionUtils,
+    )
+    from scripts.install.preflight_checker import PreflightChecker
+    from scripts.install.output_formatter import format_error
+    from scripts.install.installation_verifier import InstallationVerifier
+except ImportError:
+    # Fallback for standalone execution from scripts/install directory
+    from install_utils import (  # noqa: F401
+        BackupManager,
+        Colors,
+        Logger,
+        ManifestWriter,
+        PathUtils,
+        VersionUtils,
+    )
+    from preflight_checker import PreflightChecker  # noqa: F401
+    from output_formatter import format_error  # noqa: F401
+    from installation_verifier import InstallationVerifier  # noqa: F401
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 
 class NWaveInstaller:
@@ -460,45 +478,32 @@ class NWaveInstaller:
             return False
 
     def validate_installation(self) -> bool:
-        """Validate installation."""
+        """Validate installation using shared InstallationVerifier.
+
+        Uses the InstallationVerifier module for consistent verification logic
+        between standalone verification and post-build verification.
+
+        Returns:
+            True if verification passed, False otherwise.
+        """
         self.logger.info("Validating installation...")
 
-        errors = 0
+        # Use shared InstallationVerifier for consistent verification
+        verifier = InstallationVerifier(claude_config_dir=self.claude_config_dir)
+        result = verifier.run_verification()
 
-        # Check agents directory
-        agents_dir = self.claude_config_dir / "agents" / "nw"
-        if not agents_dir.exists():
-            self.logger.error("Missing DW agents directory")
-            errors += 1
+        # Validate schema template (additional check specific to installer)
+        schema_valid = self._validate_schema_template()
 
-        # Check commands directory
-        commands_dir = self.claude_config_dir / "commands" / "nw"
-        if not commands_dir.exists():
-            self.logger.error("Missing DW commands directory")
-            errors += 1
-
-        # Check essential DW commands
-        essential_commands = ["discuss", "design", "distill", "develop", "deliver"]
-        for cmd in essential_commands:
-            cmd_file = commands_dir / f"{cmd}.md"
-            if not cmd_file.exists():
-                self.logger.error(f"Missing essential DW command: {cmd}.md")
-                errors += 1
-
-        # Validate schema template
-        if not self._validate_schema_template():
-            errors += 1
-
-        # Count installed files
-        total_agents = PathUtils.count_files(agents_dir, "*.md")
-        total_commands = PathUtils.count_files(
-            self.claude_config_dir / "commands", "*.md"
-        )
-
+        # Log verification results
         self.logger.info("Installation summary:")
-        self.logger.info(f"  - Agents installed: {total_agents}")
-        self.logger.info(f"  - Commands installed: {total_commands}")
+        self.logger.info(f"  - Agents installed: {result.agent_file_count}")
+        self.logger.info(f"  - Commands installed: {result.command_file_count}")
         self.logger.info(f"  - Installation directory: {self.claude_config_dir}")
+        self.logger.info(f"  - Manifest exists: {result.manifest_exists}")
+
+        agents_dir = self.claude_config_dir / "agents" / "nw"
+        commands_dir = self.claude_config_dir / "commands" / "nw"
 
         if agents_dir.exists():
             self.logger.info("  - nWave agents: Available")
@@ -506,17 +511,28 @@ class NWaveInstaller:
         if commands_dir.exists():
             self.logger.info("  - nWave commands: Available")
 
-        if total_agents < 10:
-            self.logger.warn(f"Expected 10+ agents, found {total_agents}")
+        if result.agent_file_count < 10:
+            self.logger.warn(f"Expected 10+ agents, found {result.agent_file_count}")
 
-        if errors == 0:
+        # Report missing essential files
+        if result.missing_essential_files:
+            for missing_file in result.missing_essential_files:
+                self.logger.error(f"Missing essential command: {missing_file}")
+
+        # Determine overall success
+        overall_success = result.success and schema_valid
+
+        if overall_success:
             self.logger.info(
                 f"Installation validation: {Colors.GREEN}PASSED{Colors.NC}"
             )
             return True
         else:
+            error_count = len(result.missing_essential_files) + (0 if schema_valid else 1)
+            if not result.manifest_exists:
+                error_count += 1
             self.logger.error(
-                f"Installation validation: {Colors.RED}FAILED{Colors.NC} ({errors} errors)"
+                f"Installation validation: {Colors.RED}FAILED{Colors.NC} ({error_count} errors)"
             )
             return False
 
@@ -602,6 +618,23 @@ def main():
     if args.help:
         show_help()
         return 0
+
+    # Run preflight checks BEFORE any build or installation actions
+    # This validates the environment is suitable for installation
+    preflight = PreflightChecker()
+    preflight_results = preflight.run_all_checks()
+
+    if preflight.has_blocking_failures(preflight_results):
+        # Display formatted error for each failed check
+        for failed_check in preflight.get_failed_checks(preflight_results):
+            error_message = format_error(
+                error_code=failed_check.error_code,
+                message=failed_check.message,
+                remediation=failed_check.remediation or "No remediation available.",
+                recoverable=False,
+            )
+            print(error_message)
+        return 1
 
     installer = NWaveInstaller(dry_run=args.dry_run, force_rebuild=args.force_rebuild)
 
