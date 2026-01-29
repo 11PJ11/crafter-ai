@@ -1,0 +1,104 @@
+{
+  "schema_version": "2.0",
+  "task_id": "03-03",
+  "project_id": "installation-environment-detection",
+  "step_type": "atdd",
+  "execution_agent": "software-crafter",
+
+  "self_contained_context": {
+    "background": "CI environments require specific output formatting: no ANSI colors (breaks log parsing), verbose output by default (no interactive prompts), and proper exit codes for pipeline integration.",
+    "prerequisites": [
+      "01-01: Error Codes Module must be complete",
+      "01-02: Context Detector - Terminal/Claude Detection must be complete",
+      "01-03: Context Detector - CI/Container Detection must be complete",
+      "03-01: Terminal Error Formatting must be complete",
+      "03-02: Claude Code JSON Formatting must be complete"
+    ],
+    "relevant_files": [
+      "scripts/install/error_codes.py",
+      "scripts/install/context_detector.py",
+      "scripts/install/output_formatter.py",
+      "tests/unit/test_output_formatter.py"
+    ],
+    "technical_context": "Extend output_formatter.py with CI-specific formatting. When context_detector.is_ci_environment() returns true: disable ANSI colors, enable verbose output, disable interactive prompts. Add format_ci_error() method and proper exit code handling."
+  },
+
+  "task_specification": {
+    "name": "CI Mode Output Formatting",
+    "description": "Extend output_formatter.py with CI-specific formatting: no ANSI colors, verbose output by default, no interactive prompts.",
+    "motivation": "CI pipelines need clean output for log parsing and proper exit codes for build status reporting.",
+    "detailed_instructions": "1. Add format_ci_error() function to output_formatter.py. 2. Disable ANSI colors when in CI mode. 3. Enable verbose output by default. 4. Disable interactive prompts. 5. Ensure proper exit codes (0 for success, non-zero for failure). 6. Create tests/unit/test_output_formatter_ci.py.",
+    "acceptance_criteria": "CI mode disables ANSI color codes in output; CI mode enables verbose output by default; CI mode disables interactive prompts; CI mode returns non-zero exit code on failure; CI mode returns zero exit code on success",
+    "estimated_hours": 1
+  },
+
+  "dependencies": {
+    "requires": ["03-02", "01-03"],
+    "blocking": ["05-01"]
+  },
+
+  "state": {
+    "status": "TODO",
+    "assigned_to": null,
+    "started_at": null,
+    "completed_at": null
+  },
+
+  "tdd_cycle": {
+    "acceptance_test": {
+      "scenario_name": "CI mode disables ANSI color codes in output",
+      "test_file": "tests/acceptance/installation/test_output_formatter_ci.feature",
+      "test_file_format": "py_pytest",
+      "scenario_index": 0,
+      "initially_ignored": true,
+      "is_walking_skeleton": false,
+      "mapped_scenario": {
+        "description": "Validates CI mode disables ANSI colors",
+        "scenario_function": "test_ci_mode_disables_ansi_colors",
+        "scenario_description": "CI mode disables ANSI color codes in output",
+        "mapping_type": "feature",
+        "notes": "First of 5 scenarios for CI formatting"
+      }
+    },
+    "expected_unit_tests": [
+      "test_format_ci_error_no_colors",
+      "test_ci_mode_verbose_default",
+      "test_ci_mode_no_interactive_prompts",
+      "test_ci_mode_exit_code_failure",
+      "test_ci_mode_exit_code_success"
+    ],
+    "mock_boundaries": {
+      "allowed_ports": [],
+      "forbidden_domain_classes": ["OutputFormatter"],
+      "in_memory_adapters": []
+    },
+    "tdd_phase_tracking": {
+      "current_phase": "NOT_STARTED",
+      "active_e2e_test": "",
+      "inactive_e2e_tests": "All other @skip scenarios remain disabled",
+      "phases_completed": [],
+      "test_results": {
+        "total": null,
+        "passed": null,
+        "failed": null,
+        "skipped": null
+      }
+    },
+    "phase_execution_log": [
+      {"phase_name": "PREPARE", "phase_index": 0, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "notes": null, "blocked_by": null},
+      {"phase_name": "RED_ACCEPTANCE", "phase_index": 1, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "notes": null, "blocked_by": null},
+      {"phase_name": "RED_UNIT", "phase_index": 2, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "notes": null, "blocked_by": null},
+      {"phase_name": "GREEN", "phase_index": 3, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "notes": null, "blocked_by": null},
+      {"phase_name": "REVIEW", "phase_index": 4, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "notes": null, "blocked_by": null},
+      {"phase_name": "REFACTOR_CONTINUOUS", "phase_index": 5, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "notes": null, "blocked_by": null},
+      {"phase_name": "REFACTOR_L4", "phase_index": 6, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "notes": null, "blocked_by": null},
+      {"phase_name": "COMMIT", "phase_index": 7, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "notes": null, "blocked_by": null}
+    ]
+  },
+
+  "quality_gates": {
+    "test_coverage_minimum": 80,
+    "all_acceptance_tests_pass": true,
+    "no_linting_errors": true
+  }
+}

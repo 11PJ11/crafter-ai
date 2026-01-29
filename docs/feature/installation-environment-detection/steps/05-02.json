@@ -1,0 +1,101 @@
+{
+  "schema_version": "2.0",
+  "task_id": "05-02",
+  "project_id": "installation-environment-detection",
+  "step_type": "atdd",
+  "execution_agent": "software-crafter",
+
+  "self_contained_context": {
+    "background": "The installer needs comprehensive logging for troubleshooting and audit purposes. Logs should persist across installation attempts.",
+    "prerequisites": [
+      "04-02: Standalone Verification Script must be complete",
+      "05-01: Installer Pre-flight Integration must be complete"
+    ],
+    "relevant_files": [
+      "scripts/install/install_nwave.py",
+      "scripts/install/verify_nwave.py"
+    ],
+    "technical_context": "Integrate Python logging module into installer and verifier. Log to ~/.claude/nwave-install.log with timestamps, log levels (DEBUG, INFO, WARNING, ERROR), and structured format. Configure log rotation to prevent unbounded growth. Log all preflight results, build steps, and verification outcomes."
+  },
+
+  "task_specification": {
+    "name": "Installation Logging",
+    "description": "Integrate comprehensive logging into installer and verifier. Log to ~/.claude/nwave-install.log with timestamps, levels, and parseable format. Preserve logs across attempts.",
+    "motivation": "Persistent logs enable troubleshooting of failed installations and provide audit trail for successful builds.",
+    "detailed_instructions": "1. Configure Python logging in install_nwave.py and verify_nwave.py. 2. Set log file path to ~/.claude/nwave-install.log. 3. Use structured log format with timestamp, level, message. 4. Log preflight results, build steps, verification outcomes. 5. Ensure logs persist across installation attempts (append mode). 6. Add log rotation to prevent unbounded growth.",
+    "acceptance_criteria": "Log file is created at standard location; Successful actions are logged with timestamp; Errors are logged with detail; Pre-flight check results are logged; Log persists across installation attempts; Log format is parseable",
+    "estimated_hours": 1
+  },
+
+  "dependencies": {
+    "requires": ["05-01", "04-02"],
+    "blocking": ["05-03"]
+  },
+
+  "state": {
+    "status": "TODO",
+    "assigned_to": null,
+    "started_at": null,
+    "completed_at": null
+  },
+
+  "tdd_cycle": {
+    "acceptance_test": {
+      "scenario_name": "Log file is created at standard location",
+      "test_file": "tests/acceptance/installation/test_installation_logging.feature",
+      "test_file_format": "py_pytest",
+      "scenario_index": 0,
+      "initially_ignored": true,
+      "is_walking_skeleton": false,
+      "mapped_scenario": {
+        "description": "Validates log file creation at standard location",
+        "scenario_function": "test_log_file_created_at_standard_location",
+        "scenario_description": "Log file is created at standard location",
+        "mapping_type": "feature",
+        "notes": "First of 6 scenarios for installation logging"
+      }
+    },
+    "expected_unit_tests": [
+      "test_log_file_location",
+      "test_log_timestamp_format",
+      "test_log_level_info",
+      "test_log_level_error",
+      "test_log_preflight_results",
+      "test_log_persistence_across_attempts",
+      "test_log_format_parseable"
+    ],
+    "mock_boundaries": {
+      "allowed_ports": ["logging"],
+      "forbidden_domain_classes": [],
+      "in_memory_adapters": []
+    },
+    "tdd_phase_tracking": {
+      "current_phase": "NOT_STARTED",
+      "active_e2e_test": "",
+      "inactive_e2e_tests": "All other @skip scenarios remain disabled",
+      "phases_completed": [],
+      "test_results": {
+        "total": null,
+        "passed": null,
+        "failed": null,
+        "skipped": null
+      }
+    },
+    "phase_execution_log": [
+      {"phase_name": "PREPARE", "phase_index": 0, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "notes": null, "blocked_by": null},
+      {"phase_name": "RED_ACCEPTANCE", "phase_index": 1, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "notes": null, "blocked_by": null},
+      {"phase_name": "RED_UNIT", "phase_index": 2, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "notes": null, "blocked_by": null},
+      {"phase_name": "GREEN", "phase_index": 3, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "notes": null, "blocked_by": null},
+      {"phase_name": "REVIEW", "phase_index": 4, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "notes": null, "blocked_by": null},
+      {"phase_name": "REFACTOR_CONTINUOUS", "phase_index": 5, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "notes": null, "blocked_by": null},
+      {"phase_name": "REFACTOR_L4", "phase_index": 6, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "notes": null, "blocked_by": null},
+      {"phase_name": "COMMIT", "phase_index": 7, "status": "NOT_EXECUTED", "started_at": null, "ended_at": null, "duration_minutes": null, "outcome": null, "notes": null, "blocked_by": null}
+    ]
+  },
+
+  "quality_gates": {
+    "test_coverage_minimum": 80,
+    "all_acceptance_tests_pass": true,
+    "no_linting_errors": true
+  }
+}
