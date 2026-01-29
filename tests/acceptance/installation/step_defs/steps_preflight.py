@@ -8,9 +8,7 @@ CRITICAL: Hexagonal boundary enforcement - tests invoke CLI entry points ONLY.
 Cross-platform compatible (Windows, macOS, Linux).
 """
 
-import sys
 
-import pytest
 from pytest_bdd import scenarios, given, when, then, parsers
 
 # Load scenarios from feature files
@@ -168,8 +166,8 @@ def error_before_build(cli_result):
     stderr = cli_result["stderr"]
     all_output = f"{stderr}\n{stdout}"
 
-    # Look for error indicators
-    has_error = (
+    # Look for error indicators (used for pre-build error check)
+    _has_error = (  # noqa: F841
         "[ERROR]" in all_output
         or "Virtual environment required" in all_output
         or "pipenv is required" in all_output
@@ -184,7 +182,7 @@ def error_before_build(cli_result):
             build_pos = all_output.find(indicator)
             if error_pos >= 0 and build_pos >= 0:
                 assert error_pos < build_pos, (
-                    f"Build output appeared before error"
+                    "Build output appeared before error"
                 )
 
 
