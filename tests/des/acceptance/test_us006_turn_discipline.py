@@ -82,7 +82,6 @@ class TestTurnDisciplineInclusion:
             "## TIMEOUT_INSTRUCTION" in prompt or "# TIMEOUT_INSTRUCTION" in prompt
         ), "TIMEOUT_INSTRUCTION must be a proper section header (## or #)"
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_002_timeout_instruction_specifies_turn_budget(
         self, tmp_project_root, minimal_step_file, des_orchestrator
     ):
