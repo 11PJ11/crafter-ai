@@ -32,9 +32,9 @@ class TestBoundaryRulesTemplateRendering:
         result = template.render()
 
         # THEN: Section header present
-        assert (
-            "## BOUNDARY_RULES" in result
-        ), "Section header '## BOUNDARY_RULES' must be present for DES validation"
+        assert "## BOUNDARY_RULES" in result, (
+            "Section header '## BOUNDARY_RULES' must be present for DES validation"
+        )
 
     def test_render_includes_allowed_subsection(self):
         """
@@ -52,9 +52,9 @@ class TestBoundaryRulesTemplateRendering:
         result = template.render()
 
         # THEN: ALLOWED subsection present
-        assert (
-            "ALLOWED" in result
-        ), "ALLOWED subsection must be present to define permitted agent actions"
+        assert "ALLOWED" in result, (
+            "ALLOWED subsection must be present to define permitted agent actions"
+        )
 
     def test_render_includes_forbidden_subsection(self):
         """
@@ -72,9 +72,9 @@ class TestBoundaryRulesTemplateRendering:
         result = template.render()
 
         # THEN: FORBIDDEN subsection present
-        assert (
-            "FORBIDDEN" in result
-        ), "FORBIDDEN subsection must be present to prevent scope creep"
+        assert "FORBIDDEN" in result, (
+            "FORBIDDEN subsection must be present to prevent scope creep"
+        )
 
     def test_render_returns_multiline_string(self):
         """
@@ -116,9 +116,9 @@ class TestBoundaryRulesTemplateRendering:
         allowed_pos = result.find("ALLOWED")
         forbidden_pos = result.find("FORBIDDEN")
 
-        assert (
-            header_pos < allowed_pos
-        ), "Section header must appear before ALLOWED subsection"
-        assert (
-            header_pos < forbidden_pos
-        ), "Section header must appear before FORBIDDEN subsection"
+        assert header_pos < allowed_pos, (
+            "Section header must appear before ALLOWED subsection"
+        )
+        assert header_pos < forbidden_pos, (
+            "Section header must appear before FORBIDDEN subsection"
+        )
