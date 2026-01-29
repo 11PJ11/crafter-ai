@@ -654,3 +654,239 @@ class DESOrchestrator:
             warning_parts.append(f"has been running for {elapsed_minutes} minutes.")
 
         return " ".join(warning_parts)
+
+    # ========================================================================
+    # Token-Minimal Architecture Methods (Schema v2.0 - Roadmap + Execution Status)
+    # ========================================================================
+    # Added 2026-01-29: Support for step-less workflow using roadmap.yaml + execution-status.yaml
+    # Eliminates 4.8M tokens from step files while preserving TDD cycle tracking
+    # See: /home/alexd/.claude/plans/purrfect-swinging-rain.md
+
+    def load_roadmap(self, project_id: str) -> dict:
+        """
+        Load roadmap.yaml for project (schema v2.0 enhanced format).
+
+        Loads the roadmap ONCE by orchestrator, which then extracts task context
+        for sub-agents. Sub-agents receive extracted context (~5k tokens), not
+        entire roadmap (~102k tokens), saving 1.52M tokens across 16 steps.
+
+        Args:
+            project_id: Project identifier (e.g., "des-us007-boundary-rules")
+
+        Returns:
+            Roadmap dictionary with schema_version, tdd_phases, execution_config,
+            and phases array containing steps
+
+        Raises:
+            FileNotFoundError: If roadmap file does not exist
+            ValueError: If roadmap missing required fields (schema_version, tdd_phases)
+        """
+        import yaml
+
+        roadmap_path = Path(f"docs/feature/{project_id}/roadmap.yaml")
+
+        if not roadmap_path.exists():
+            raise FileNotFoundError(f"Roadmap not found: {roadmap_path}")
+
+        with open(roadmap_path, "r") as f:
+            roadmap = yaml.safe_load(f)
+
+        # Validate required fields for schema v2.0
+        if "schema_version" not in roadmap:
+            raise ValueError(f"Roadmap missing schema_version field: {roadmap_path}")
+
+        if roadmap["schema_version"] != "2.0":
+            raise ValueError(
+                f"Roadmap schema version {roadmap['schema_version']} not supported. "
+                f"Expected 2.0 for token-minimal architecture."
+            )
+
+        if "tdd_phases" not in roadmap:
+            raise ValueError(f"Roadmap missing tdd_phases array: {roadmap_path}")
+
+        if "execution_config" not in roadmap:
+            raise ValueError(f"Roadmap missing execution_config: {roadmap_path}")
+
+        return roadmap
+
+    def load_execution_status(self, project_id: str) -> dict:
+        """
+        Load execution-status.yaml for project.
+
+        Lightweight state tracker (8k tokens) that replaces individual step files.
+        Contains current execution pointer, completed steps log, and phase checkpoint
+        for current step.
+
+        Args:
+            project_id: Project identifier (e.g., "des-us007-boundary-rules")
+
+        Returns:
+            Execution status dictionary with current, completed_steps, step_checkpoint
+
+        Raises:
+            FileNotFoundError: If execution-status file does not exist
+            ValueError: If execution-status missing required fields
+        """
+        import yaml
+
+        exec_status_path = Path(f"docs/feature/{project_id}/execution-status.yaml")
+
+        if not exec_status_path.exists():
+            raise FileNotFoundError(f"Execution status not found: {exec_status_path}")
+
+        with open(exec_status_path, "r") as f:
+            exec_status = yaml.safe_load(f)
+
+        # Validate required fields
+        if "execution_status" not in exec_status:
+            raise ValueError(f"Execution status missing execution_status wrapper: {exec_status_path}")
+
+        status = exec_status["execution_status"]
+
+        if "schema_version" not in status:
+            raise ValueError(f"Execution status missing schema_version: {exec_status_path}")
+
+        if status["schema_version"] != "1.0":
+            raise ValueError(
+                f"Execution status schema version {status['schema_version']} not supported. "
+                f"Expected 1.0 for token-minimal architecture."
+            )
+
+        return exec_status
+
+    def find_step_in_roadmap(self, roadmap: dict, step_id: str) -> dict | None:
+        """
+        Find step definition in roadmap by step_id.
+
+        Searches through all phases to find the step with matching step_id.
+        Returns None if step not found.
+
+        Args:
+            roadmap: Roadmap dictionary (from load_roadmap)
+            step_id: Step identifier (e.g., "01-01", "02-03")
+
+        Returns:
+            Step dictionary with step_id, name, description, acceptance_criteria, etc.
+            Returns None if step not found.
+        """
+        for phase in roadmap.get("phases", []):
+            for step in phase.get("steps", []):
+                if step.get("step_id") == step_id:
+                    return step
+
+        return None
+
+    def extract_task_context(self, roadmap: dict, step_id: str) -> dict:
+        """
+        Extract task context from roadmap for sub-agent invocation.
+
+        CRITICAL OPTIMIZATION: Orchestrator loads roadmap once (102k tokens),
+        extracts task context (~5k tokens), passes to sub-agent. Sub-agent receives
+        self-contained context, does NOT load roadmap.
+
+        Token savings: 102k - 5k = 97k per step × 16 steps = 1.52M tokens saved.
+
+        Args:
+            roadmap: Roadmap dictionary (from load_roadmap)
+            step_id: Step identifier to extract context for
+
+        Returns:
+            Task context dictionary with:
+            - step_id: Step identifier
+            - name: Step name
+            - description: Step description
+            - acceptance_criteria: Criteria for completion
+            - test_file: Path to acceptance test file
+            - scenario_line: Line number of test scenario
+            - acceptance_test_scenario: Test function name
+            - quality_gates: TDD quality requirements
+            - deliverables: Expected outputs
+            - tdd_phases: 8-phase list (from roadmap)
+            - execution_config: Timeout and turn count settings
+
+        Raises:
+            ValueError: If step_id not found in roadmap
+        """
+        step_def = self.find_step_in_roadmap(roadmap, step_id)
+
+        if step_def is None:
+            raise ValueError(
+                f"Step {step_id} not found in roadmap. "
+                f"Available steps: {self._list_available_steps(roadmap)}"
+            )
+
+        # Extract self-contained task context
+        task_context = {
+            "step_id": step_def["step_id"],
+            "name": step_def["name"],
+            "description": step_def["description"],
+            "acceptance_criteria": step_def.get("acceptance_criteria", []),
+            "test_file": step_def.get("test_file"),
+            "scenario_line": step_def.get("scenario_line"),
+            "acceptance_test_scenario": step_def.get("acceptance_test_scenario"),
+            "quality_gates": step_def.get("quality_gates", {}),
+            "deliverables": step_def.get("deliverables", []),
+            "implementation_notes": step_def.get("implementation_notes", ""),
+            "dependencies": step_def.get("dependencies", []),
+            "estimated_hours": step_def.get("estimated_hours", 0),
+            "suggested_agent": step_def.get("suggested_agent", "software-crafter"),
+
+            # TDD phase definitions (from roadmap - loaded once)
+            "tdd_phases": roadmap.get("tdd_phases", []),
+
+            # Execution configuration (from roadmap)
+            "execution_config": roadmap.get("execution_config", {})
+        }
+
+        return task_context
+
+    def update_execution_status(
+        self,
+        project_id: str,
+        exec_status: dict
+    ) -> None:
+        """
+        Update execution-status.yaml with new state.
+
+        Persists execution state after phase completion or step completion.
+        Sub-agents call this after EACH phase to enable phase-level resume.
+
+        Args:
+            project_id: Project identifier
+            exec_status: Updated execution status dictionary (from load_execution_status)
+
+        Raises:
+            FileNotFoundError: If execution-status file does not exist
+        """
+        import yaml
+        from datetime import datetime
+
+        exec_status_path = Path(f"docs/feature/{project_id}/execution-status.yaml")
+
+        if not exec_status_path.exists():
+            raise FileNotFoundError(f"Execution status not found: {exec_status_path}")
+
+        # Update timestamp
+        exec_status["execution_status"]["updated_at"] = datetime.now().isoformat()
+
+        # Write updated status
+        with open(exec_status_path, "w") as f:
+            yaml.dump(exec_status, f, default_flow_style=False, sort_keys=False)
+
+    def _list_available_steps(self, roadmap: dict) -> list[str]:
+        """
+        List all available step IDs in roadmap.
+
+        Helper method for error messages when step not found.
+
+        Args:
+            roadmap: Roadmap dictionary
+
+        Returns:
+            List of step_id strings (e.g., ["01-01", "01-02", "02-01"])
+        """
+        step_ids = []
+        for phase in roadmap.get("phases", []):
+            for step in phase.get("steps", []):
+                step_ids.append(step.get("step_id", "unknown"))
+        return step_ids

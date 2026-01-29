@@ -1,4 +1,4 @@
-# DW-EXECUTE: Atomic Task Execution Engine
+# DW-EXECUTE: Atomic Task Execution Engine (Schema v2.0 - Token-Minimal Architecture)
 
 ---
 ## ORCHESTRATOR INVOCATION PROTOCOL (MANDATORY)
@@ -7,57 +7,62 @@
 
 ### CORRECT Pattern (minimal prompt):
 ```python
+# NEW ARCHITECTURE: Orchestrator extracts context, passes to sub-agent
 Task(
     subagent_type="software-crafter",
-    prompt="Execute: docs/feature/auth-upgrade/steps/01-01.json"
+    prompt="Execute: des-us007-boundary-rules step 01-01"
 )
 ```
 
 ### Why This Works:
-- ✅ Step file contains ALL context (self_contained_context, acceptance_criteria, quality_gates)
-- ✅ Agent has internal knowledge of complete TDD cycle
+- ✅ Orchestrator loads roadmap.yaml ONCE (102k tokens)
+- ✅ Orchestrator extracts task context (~5k tokens) and passes to sub-agent
+- ✅ Sub-agent does NOT load roadmap (saves 97k tokens per step)
+- ✅ Agent has internal knowledge of complete TDD cycle (8 phases)
 - ✅ No conversation context needed
 - ✅ Deterministic execution
 
 ### WRONG Patterns (avoid):
 ```python
-# ❌ Including acceptance criteria (already in step file)
-Task(prompt="Execute step 01-01. Acceptance criteria: [long list from step file]")
+# ❌ Including extracted context in prompt (orchestrator already passes it)
+Task(prompt="Execute step 01-01. Context: {extracted_context}")
 
-# ❌ Listing 14 phases (agent already knows this)
-Task(prompt="Execute using 14 phases: 1. PREPARE, 2. RED_ACCEPTANCE...")
+# ❌ Listing 8 phases (agent already knows this)
+Task(prompt="Execute using 8 phases: 1. PREPARE, 2. RED_ACCEPTANCE...")
 
-# ❌ Boundary warnings (step file has phase_validation_rules)
-Task(prompt="Execute 01-01. CRITICAL: Don't forget POST_REFACTOR_REVIEW!")
+# ❌ Old step file path format (no longer used)
+Task(prompt="Execute: docs/feature/auth-upgrade/steps/01-01.json")
 
 # ❌ Any context from current conversation
 Task(prompt="Execute 01-01. As we discussed earlier, the SISTER constraint...")
 ```
 
 ### Key Principle:
-**Command invocation = Step file path ONLY**
+**Command invocation = Project ID + Step ID ONLY**
 
-The step file is self-contained. Your prompt should not duplicate what's already in the file.
+The orchestrator handles context extraction. Your prompt should not duplicate what the orchestrator provides.
 
 ---
 
-## AGENT PROMPT REINFORCEMENT (Command-Specific Guidance)
+## AGENT PROMPT REINFORCEMENT (Command-Specific Guidance - NEW ARCHITECTURE)
 
 Reinforce command-specific principles extracted from THIS file (execute.md):
 
-### Recommended Prompt Template:
+### Recommended Prompt Template (Schema v2.0):
 ```python
 Task(
     subagent_type="software-crafter",
-    prompt="""Execute: docs/feature/auth-upgrade/steps/01-01.json
+    prompt="""Execute: des-us007-boundary-rules step 01-01
 
 CRITICAL (from execute.md):
-- Save step file after EACH phase (no batching)
+- DO NOT load roadmap.yaml (orchestrator provides extracted context)
+- Save execution-status.yaml after EACH phase (no batching)
 - Verify entry point wiring in PREPARE phase (Walking Skeleton - CM-D)
 - DEFERRED blocks commit (use NOT_APPLICABLE or APPROVED_SKIP)
-- Read canonical schema first: nWave/templates/step-tdd-cycle-schema.json
+- Read canonical schema first: nWave/templates/step-tdd-cycle-schema.json (8 phases)
 
 AVOID:
+- ❌ Loading roadmap.yaml (causes 102k token waste per step)
 - ❌ Batching phase updates (causes incomplete state tracking)
 - ❌ Skipping wiring check (features exist but don't work for users)
 - ❌ Using DEFERRED: prefix (blocks commit)
@@ -69,12 +74,12 @@ AVOID:
 - **Source**: Extracted from execute.md (not conversation context)
 - **Deterministic**: Same principles every time you invoke execute
 - **Reinforcing**: Prevents common boundary violations
-- **Token-efficient**: ~100 tokens vs 1000s in rework
+- **Token-efficient**: ~100 tokens vs 1000s in rework (plus 97k saved by not loading roadmap)
 
 ### What NOT to Add:
 ```python
 # ❌ WRONG - This uses orchestrator's conversation context
-Task(prompt="""Execute: 01-01.json
+Task(prompt="""Execute: 01-01
 
 Based on our earlier analysis, the SISTER constraint affects 20% of tests.
 The tier 2 tests at 532 seconds are the main bottleneck.
@@ -107,11 +112,11 @@ If agent unavailable:
 - Return error: "Agent '{agent-name}' is not currently available. Available agents: {list}"
 - Suggest alternative agents if applicable
 
-### STEP 3: Extract Step File Path
+### STEP 3: Extract Project ID and Step ID (NEW ARCHITECTURE)
 
-Extract the second argument (step file path):
-- Example: `"docs/feature/auth-upgrade/steps/01-01.json"`
-- Ensure path is absolute or resolve relative to working directory
+Extract the second and third arguments:
+- Second argument: Project ID (e.g., `"des-us007-boundary-rules"`)
+- Third argument: Step ID (e.g., `"01-01"`)
 
 ### Parameter Parsing Rules
 
@@ -121,31 +126,61 @@ Apply these rules to ALL extracted parameters:
 3. Validate parameter is non-empty after stripping
 4. Reject if extra parameters provided beyond expected count
 
-Example for execute.md:
-- Input: `/nw:execute  @researcher   "steps/01-01.json"`
+Example for execute.md (NEW ARCHITECTURE):
+- Input: `/nw:execute  @software-crafter  "des-us007-boundary-rules"  "01-01"`
 - After parsing:
-  - agent_name = "researcher" (whitespace trimmed)
-  - step_file_path = "steps/01-01.json" (quotes removed)
-- Input: `/nw:execute @researcher "steps/01-01.json" extra`
-- Error: "Too many parameters. Expected 2, got 3"
+  - agent_name = "software-crafter" (whitespace trimmed)
+  - project_id = "des-us007-boundary-rules" (quotes removed)
+  - step_id = "01-01" (quotes removed)
+- Input: `/nw:execute @software-crafter "des-us007" "01-01" extra`
+- Error: "Too many parameters. Expected 3, got 4"
 
-### STEP 4: Pre-Invocation Validation Checklist
+### STEP 4: Pre-Invocation Validation Checklist (NEW ARCHITECTURE)
 
 Before invoking Task tool, verify ALL items:
 - [ ] Agent name extracted and validated (not empty)
 - [ ] Agent name in valid agent list
 - [ ] Agent availability confirmed
-- [ ] All file paths are absolute (resolve relative paths to absolute)
-- [ ] Referenced files exist and are readable
+- [ ] Project ID extracted and validated (kebab-case format)
+- [ ] Step ID extracted and validated (format: XX-XX)
+- [ ] Roadmap file exists at `docs/feature/{project-id}/roadmap.yaml`
+- [ ] Execution status file exists at `docs/feature/{project-id}/execution-status.yaml`
+- [ ] Step ID exists in roadmap (orchestrator verifies via `find_step_in_roadmap()`)
 - [ ] Parameters contain no secrets or credentials
-- [ ] Parameters within reasonable bounds (e.g., paths < 500 chars)
+- [ ] Parameters within reasonable bounds (e.g., IDs < 100 chars)
 - [ ] No user input still has surrounding quotes
 
 **ONLY proceed to Task tool invocation if ALL items above are checked.**
 
 If any check fails, return specific error and stop.
 
-### STEP 5: Invoke Agent Using Task Tool
+### STEP 5: Context Extraction and Agent Invocation (NEW ARCHITECTURE)
+
+**CRITICAL OPTIMIZATION**: Orchestrator loads roadmap ONCE, extracts task context, passes to sub-agent.
+Token savings: 102k - 5k = 97k per step × 16 steps = 1.52M tokens saved.
+
+**Orchestrator Actions BEFORE invoking Task tool**:
+
+```python
+# 1. Load roadmap (102k tokens - done ONCE by orchestrator)
+roadmap = orchestrator.load_roadmap(project_id)
+
+# 2. Load execution status (8k tokens)
+exec_status = orchestrator.load_execution_status(project_id)
+
+# 3. Extract task context (~5k tokens - this is what sub-agent receives)
+task_context = orchestrator.extract_task_context(roadmap, step_id)
+
+# task_context contains:
+# - step_id, name, description
+# - acceptance_criteria (from roadmap)
+# - test_file, scenario_line, acceptance_test_scenario
+# - quality_gates (TDD requirements)
+# - deliverables, implementation_notes
+# - dependencies, estimated_hours, suggested_agent
+# - tdd_phases (8 phases from roadmap)
+# - execution_config (timeout settings)
+```
 
 **MANDATORY**: Use the Task tool to invoke the specified agent. Do NOT attempt to execute the task yourself.
 
@@ -154,70 +189,105 @@ Invoke the Task tool with this exact pattern:
 ```
 Task: "You are the {agent-name} agent.
 
-Your specific role for this command: Execute atomic tasks with complete state tracking and result capture
+Your specific role for this command: Execute atomic tasks with complete state tracking via execution-status.yaml
 
 Task type: execute
 
-Read and execute the atomic task specified in: {step-file-path}
+PROJECT: {project-id}
+STEP: {step-id}
 
-## CRITICAL: READ THE CANONICAL SCHEMA FIRST
+## TASK CONTEXT (EXTRACTED FROM ROADMAP - DO NOT LOAD ROADMAP)
 
-**BEFORE processing the step file:**
-1. Read the canonical schema: `~/.claude/templates/step-tdd-cycle-schema.json` (or from repo: `nWave/templates/step-tdd-cycle-schema.json`)
-2. Understand the exact structure expected for phase_execution_log updates
-3. Validate the step file has the correct format before proceeding
+The orchestrator has extracted the following self-contained context for you:
 
-## STEP FILE FORMAT REFERENCE
+**Step ID**: {task_context[step_id]}
+**Name**: {task_context[name]}
+**Description**: {task_context[description]}
 
-The step file follows the canonical schema. Key structure:
-- task_id: The task identifier (e.g., '01-01') - NOT step_id!
-- project_id: Project identifier
-- self_contained_context: All background and context needed
-- task_specification: What to do and acceptance criteria
-- dependencies: Prerequisites (must already be complete)
-- state: Current task state
-- tdd_cycle.phase_execution_log: Array of 14 phases to track progress (MANDATORY)
-- quality_gates: TDD quality requirements
-- phase_validation_rules: Commit acceptance rules
+**Acceptance Criteria**:
+{task_context[acceptance_criteria]}
 
-## MANDATORY TDD CYCLE
+**Test File**: {task_context[test_file]}
+**Scenario Line**: {task_context[scenario_line]}
+**Acceptance Test Scenario**: {task_context[acceptance_test_scenario]}
 
-Each step file contains `tdd_cycle.phase_execution_log` with all phases from the canonical schema:
+**Quality Gates**:
+{task_context[quality_gates]}
 
-{{SCHEMA_TDD_PHASES}}
+**Deliverables**:
+{task_context[deliverables]}
+
+**Implementation Notes**:
+{task_context[implementation_notes]}
+
+**Dependencies** (must be complete before execution):
+{task_context[dependencies]}
+
+**Estimated Hours**: {task_context[estimated_hours]}
+
+## MANDATORY TDD PHASES (from roadmap)
+
+Execute these 8 phases in order:
+{format_tdd_phases(task_context[tdd_phases])}
+
+## EXECUTION CONFIGURATION
+
+{task_context[execution_config]}
+
+## STATE TRACKING VIA execution-status.yaml
+
+**CRITICAL**: DO NOT load roadmap.yaml (context provided above).
+**READ/WRITE ONLY**: docs/feature/{project-id}/execution-status.yaml
+
+Your responsibilities:
+1. Load current state from execution-status.yaml
+2. Resume from current phase (or start at PREPARE if new step)
+3. Execute each phase in order
+4. Update execution-status.yaml after EACH phase (no batching)
+5. Track turn count for timeout monitoring
+6. Update execution-status.yaml with outcomes
 
 ## CM-D: Walking Skeleton Principle
 
 In PREPARE phase, verify: entry point exists, acceptance tests invoke entry point (not internal components), component wired into system. If tests import components directly → STOP, report wiring gap.
 
-## INLINE REVIEW CRITERIA (Phases 7 and 12)
+## INLINE REVIEW CRITERIA (Phase 4: REVIEW)
 
-Phase 7: SOLID principles, coverage >80%, acceptance criteria met, no security vulnerabilities. Phase 12: Tests pass after refactoring, quality improved, no new duplication. Record findings in phase_execution_log[N].notes.
+SOLID principles, coverage >80%, acceptance criteria met, no security vulnerabilities. Also validate post-refactoring quality: tests pass, quality improved, no new duplication. Record findings in execution-status.yaml.
 
-## Your responsibilities:
-Read canonical schema, validate step file has correct phase structure, execute each phase in order (update phase_execution_log after each), execute 4 checkpoint commits (see table above), validate acceptance criteria, update state to DONE.
+## EXECUTION-STATUS.YAML STRUCTURE
 
-## WRONG FORMATS TO REJECT
-
-If you encounter these in the step file, STOP and report the error:
-❌ 'step_id' instead of 'task_id'
-❌ 'phase_id' at top level
-❌ 'tdd_phase' at top level without 'tdd_cycle.phase_execution_log'
-❌ Less than 14 phases in phase_execution_log
-❌ Phase names with parentheses like 'RED (Acceptance)'
-❌ Phase names with spaces like 'REFACTOR L1'
+```yaml
+execution_status:
+  current:
+    step_id: "{step-id}"
+    phase_index: 3  # Current phase (0-7)
+    phase_name: "GREEN"
+    started_at: "2026-01-29T15:00:00Z"
+    turn_count: 12
+  step_checkpoint:
+    step_id: "{step-id}"
+    phases:
+      - phase_index: 0
+        phase_name: "PREPARE"
+        status: "COMPLETED"  # or IN_PROGRESS, SKIPPED
+        outcome: "PASS"  # or FAIL
+        duration_minutes: 10
+        turn_count: 3
+      # ... (8 phases total)
+```
 
 If you encounter issues:
-- Update state to FAILED with failure_reason
-- Include recovery_suggestions in execution_result
+- Update execution_status.current with failure reason
 - Set can_retry appropriately
-
-Commit the updated step file after execution."
+- Return error to orchestrator"
 ```
 
 **Parameter Substitution**:
-- Replace `{agent-name}` with the extracted agent name (e.g., "researcher")
-- Replace `{step-file-path}` with the absolute path to the step file
+- Replace `{agent-name}` with the extracted agent name (e.g., "software-crafter")
+- Replace `{project-id}` with the project ID (e.g., "des-us007-boundary-rules")
+- Replace `{step-id}` with the step ID (e.g., "01-01")
+- Replace `{task_context[...]}` with values from extracted context
 
 ### Agent Registry
 
@@ -233,17 +303,22 @@ Each agent has specific capabilities:
 - **acceptance-designer**: Test definition, acceptance criteria, BDD
 - **devop**: Deployment, operations, infrastructure, lifecycle management
 
-### Example Invocations
+### Example Invocations (NEW ARCHITECTURE)
 
 **For researcher agent**:
 ```
 Task: "You are the researcher agent.
 
-Your specific role for this command: Execute atomic tasks with complete state tracking and result capture
+Your specific role for this command: Execute atomic tasks with complete state tracking via execution-status.yaml
 
 Task type: execute
 
-Read and execute the atomic task specified in: /mnt/c/Repositories/Projects/nwave/docs/feature/auth-upgrade/steps/01-01.json
+PROJECT: auth-upgrade
+STEP: 01-01
+
+## TASK CONTEXT (EXTRACTED FROM ROADMAP - DO NOT LOAD ROADMAP)
+
+[Orchestrator provides ~5k extracted context here]
 
 [... rest of instructions ...]"
 ```
@@ -252,24 +327,32 @@ Read and execute the atomic task specified in: /mnt/c/Repositories/Projects/nwav
 ```
 Task: "You are the software-crafter agent.
 
-Your specific role for this command: Execute atomic tasks with complete state tracking and result capture
+Your specific role for this command: Execute atomic tasks with complete state tracking via execution-status.yaml
 
 Task type: execute
 
-Read and execute the atomic task specified in: /mnt/c/Repositories/Projects/nwave/docs/feature/auth-upgrade/steps/02-01.json
+PROJECT: des-us007-boundary-rules
+STEP: 02-01
+
+## TASK CONTEXT (EXTRACTED FROM ROADMAP - DO NOT LOAD ROADMAP)
+
+[Orchestrator provides ~5k extracted context here]
 
 [... rest of instructions ...]"
 ```
 
-### Error Handling
+### Error Handling (NEW ARCHITECTURE)
 
 **Invalid Agent Name**:
 - If agent name is not in the valid list, respond with error:
   "Invalid agent name: {name}. Must be one of: researcher, software-crafter, solution-architect, product-owner, acceptance-designer, devop"
 
-**Missing Step File**:
-- If step file path is not provided or file doesn't exist, respond with error:
-  "Step file not found: {path}. Please provide valid path to step JSON file."
+**Missing Project Files**:
+- If roadmap.yaml not found: "Roadmap not found at docs/feature/{project-id}/roadmap.yaml"
+- If execution-status.yaml not found: "Execution status not found at docs/feature/{project-id}/execution-status.yaml"
+
+**Step Not Found in Roadmap**:
+- If step ID doesn't exist in roadmap: "Step {step-id} not found in roadmap. Available steps: {list_available_steps()}"
 
 **Dependency Not Met**:
 - If the invoked agent reports dependency failures, explain the blocking tasks to the user
@@ -282,24 +365,27 @@ Executes a self-contained atomic task by invoking the specified agent with compl
 
 Designed to work with clean context, ensuring consistent quality by giving each agent a fresh start with all necessary information contained in the step file.
 
-## Agent Instance Isolation Model
+## Agent Instance Isolation Model (NEW ARCHITECTURE)
 
-Each invocation of the Task tool creates a NEW, INDEPENDENT agent instance. The instance loads the step JSON file, reads all context and prior progress, executes work, updates the step file with results, and terminates. No session state is retained between invocations. State is preserved through the JSON step file, not through agent memory. This isolation ensures clean execution without context degradation from previous instances.
+Each invocation of the Task tool creates a NEW, INDEPENDENT agent instance. The instance receives extracted context from orchestrator (~5k tokens), reads execution-status.yaml for prior progress, executes work, updates execution-status.yaml with results, and terminates. No session state is retained between invocations. State is preserved through execution-status.yaml, not through agent memory. The agent does NOT load the roadmap (orchestrator already extracted context). This isolation ensures clean execution without context degradation from previous instances.
 
-## Usage Examples
+## Usage Examples (NEW ARCHITECTURE - Schema v2.0)
 
 ```bash
 # Execute a research task
-/nw:execute @researcher "docs/feature/auth-upgrade/steps/01-01.json"
+/nw:execute @researcher "auth-upgrade" "01-01"
 
 # Execute implementation task
-/nw:execute @software-crafter "docs/feature/auth-upgrade/steps/02-01.json"
+/nw:execute @software-crafter "des-us007-boundary-rules" "02-01"
 
 # Execute testing task
-/nw:execute @devop "docs/feature/auth-upgrade/steps/04-01.json"
+/nw:execute @devop "auth-upgrade" "04-01"
 
 # Override the suggested agent
-/nw:execute @solution-architect "docs/feature/auth-upgrade/steps/01-02.json"
+/nw:execute @solution-architect "des-us007-boundary-rules" "01-02"
+
+# OLD SIGNATURE (DEPRECATED - DO NOT USE):
+# /nw:execute @software-crafter "docs/feature/auth-upgrade/steps/01-01.json"
 ```
 
 ## Complete Workflow Integration
@@ -316,10 +402,11 @@ TODO → IN_PROGRESS → DONE
       RETRY   REWORK
 ```
 
-## Context Files Required
+## Context Files Required (NEW ARCHITECTURE)
 
-- Step file (JSON) with complete task specification
-- Any files referenced in step's `relevant_files` field
+- `docs/feature/{project-id}/roadmap.yaml` - Loaded by orchestrator (schema v2.0)
+- `docs/feature/{project-id}/execution-status.yaml` - Read/written by sub-agent (schema v1.0)
+- Any files referenced in step's `deliverables` field
 
 ---
 
@@ -408,48 +495,55 @@ ACCEPTANCE CRITERIA:
 Execute this task and provide outputs as specified.
 ```
 
-### State Management Across Instances
+### State Management Across Instances (NEW ARCHITECTURE)
 
-The executing agent does not have access to previous invocations' memory. All prior execution state (from previous agent instances) is captured in the step JSON file. The agent READS the complete step file at start, sees what prior instances accomplished (via phase_execution_log), continues from that point, and UPDATES the same step file with new results. This JSON-based state management allows clean handoff between instances without context pollution.
+The executing agent does not have access to previous invocations' memory. All prior execution state (from previous agent instances) is captured in execution-status.yaml. The agent READS execution-status.yaml at start, sees what prior instances accomplished (via step_checkpoint.phases), continues from that point, and UPDATES execution-status.yaml with new results. This YAML-based state management allows clean handoff between instances without context pollution. The agent receives task context from orchestrator (~5k tokens) and does NOT load roadmap.yaml (102k tokens).
 
-### MANDATORY: Phase Tracking Protocol
+### MANDATORY: Phase Tracking Protocol (NEW ARCHITECTURE - 8 Phases)
 
-The step file contains a pre-populated `phase_execution_log` with all 14 TDD phases.
-You MUST update each phase as you execute it. **DO NOT BATCH UPDATES** - save the step file after each phase.
+The execution-status.yaml contains `step_checkpoint.phases` with 8 TDD phases (schema v2.0).
+You MUST update each phase as you execute it. **DO NOT BATCH UPDATES** - save execution-status.yaml after each phase.
 
-#### The 14 TDD Phases (Execute in Order)
+#### The 8 TDD Phases (Execute in Order) - Schema v2.0
 
-**Single Source of Truth**: See `nWave/templates/step-tdd-cycle-schema.json` → `task_specification.mandatory_phases`
+**Single Source of Truth**: See `nWave/templates/step-tdd-cycle-schema.json` (schema v2.0)
 
-The phases are (0-13):
-`PREPARE` → `RED_ACCEPTANCE` → `RED_UNIT` → `GREEN_UNIT` → `CHECK_ACCEPTANCE` → `GREEN_ACCEPTANCE` → `REVIEW` → `REFACTOR_L1` → `REFACTOR_L2` → `REFACTOR_L3` → `REFACTOR_L4` → `POST_REFACTOR_REVIEW` → `FINAL_VALIDATE` → `COMMIT`
+The phases are (0-7):
+1. **PREPARE** - Remove @skip decorators, verify only 1 scenario enabled
+2. **RED_ACCEPTANCE** - Run acceptance test, expect FAIL for valid reason
+3. **RED_UNIT** - Write failing unit tests before implementation
+4. **GREEN** - Implement minimum code to pass all tests (combines GREEN_UNIT + GREEN_ACCEPTANCE validation)
+5. **REVIEW** - Quality review: SOLID, coverage, acceptance criteria, post-refactoring quality (expanded scope)
+6. **REFACTOR_CONTINUOUS** - Progressive refactoring: L1 (naming) + L2 (complexity) + L3 (organization)
+7. **REFACTOR_L4** - Architecture patterns (OPTIONAL - can use CHECKPOINT_PENDING or NOT_APPLICABLE)
+8. **COMMIT** - Final validate + commit (absorbs FINAL_VALIDATE metadata checks)
 
-**For non-ATDD steps** (research, infrastructure): Phases 1-5 are pre-set to `SKIPPED` with `blocked_by: "NOT_APPLICABLE"`.
+**For non-ATDD steps** (research, infrastructure): Phases 1-4 may be pre-set to `SKIPPED` with `blocked_by: "NOT_APPLICABLE"`.
 
-#### TDD Checkpoint Commit Strategy
+#### TDD Checkpoint Commit Strategy (Schema v2.0 - 8 Phases)
 
 4 strategic checkpoints for rollback capability:
 
 | Checkpoint | After Phase | Commit Prefix | Push? |
 |------------|-------------|---------------|-------|
-| 1. GREEN | 5 (GREEN_ACCEPTANCE) | `feat({step-id}): GREEN` | No |
-| 2. REVIEW | 6 (REVIEW) | `review({step-id})` | No |
-| 3. REFACTOR | 10 (REFACTOR_L4) | `refactor({step-id})` | No |
-| 4. FINAL | 12 (FINAL_VALIDATE) | `test({step-id})` | Yes |
+| 1. GREEN | 3 (GREEN) | `feat({step-id}): GREEN` | No |
+| 2. REVIEW | 4 (REVIEW) | `review({step-id})` | No |
+| 3. REFACTOR | 6 (REFACTOR_L4) | `refactor({step-id})` | No |
+| 4. FINAL | 7 (COMMIT) | `feat({step-id}): DONE` | Yes |
 
-**Each checkpoint**: Mark pending phases SKIPPED with `blocked_by: "CHECKPOINT_PENDING"`, commit step file + implementation, verify tests pass.
+**Each checkpoint**: Mark pending phases SKIPPED with `blocked_by: "CHECKPOINT_PENDING"`, commit execution-status.yaml + implementation, verify tests pass.
 
 ---
 
-##### Checkpoint Rollback
+##### Checkpoint Rollback (NEW ARCHITECTURE)
 
-`git reset HEAD~1` then edit step file: change completed phases back to SKIPPED with `blocked_by: "CHECKPOINT_PENDING"`, re-execute from that phase.
+`git reset HEAD~1` then edit execution-status.yaml: change completed phases back to SKIPPED with `blocked_by: "CHECKPOINT_PENDING"`, re-execute from that phase.
 
-##### Checkpoint Rules
+##### Checkpoint Rules (NEW ARCHITECTURE)
 
-Use CHECKPOINT_PENDING (not DEFERRED), mark pending phases SKIPPED, push only after FINAL, update step file after each commit.
+Use CHECKPOINT_PENDING (not DEFERRED), mark pending phases SKIPPED, push only after FINAL, update execution-status.yaml after each commit.
 
-Instances read phase_execution_log to understand prior progress, continue from incomplete phases. Before each phase: update entry to IN_PROGRESS with timestamp. After: update to EXECUTED/SKIPPED with outcome, duration, artifacts. Save step file after EACH phase (no batching).
+Instances read execution-status.yaml step_checkpoint.phases to understand prior progress, continue from incomplete phases. Before each phase: update entry to IN_PROGRESS with timestamp. After: update to COMPLETED/SKIPPED with outcome, duration, notes. Save execution-status.yaml after EACH phase (no batching).
 
 #### If Phase Cannot Be Completed
 
@@ -505,30 +599,30 @@ These are CRITICAL violations that will cause the pre-commit hook to block commi
 - **Missing outcome** - EXECUTED phases must have outcome (PASS/FAIL)
 - **Invalid SKIPPED reason** - SKIPPED without blocked_by or with DEFERRED prefix
 
-#### Validation Before COMMIT Phase
+#### Validation Before COMMIT Phase (Schema v2.0 - 8 Phases)
 
-Before executing the COMMIT phase, verify:
-- [ ] All 13 previous phases have status "EXECUTED" or valid "SKIPPED"
+Before executing the COMMIT phase (phase 7), verify:
+- [ ] All 7 previous phases (0-6) have status "COMPLETED" or valid "SKIPPED"
 - [ ] No phase has status "IN_PROGRESS" or "NOT_EXECUTED"
-- [ ] All EXECUTED phases have outcome field set
+- [ ] All COMPLETED phases have outcome field set
 - [ ] All SKIPPED phases have blocked_by with valid prefix
 - [ ] No SKIPPED phases have DEFERRED prefix (blocks commit)
 
 ```python
-# Validation pseudo-code
-for phase in phase_execution_log:
-    if phase.status == "NOT_EXECUTED":
-        ERROR: "Phase {phase.phase_name} not executed"
-    elif phase.status == "IN_PROGRESS":
-        ERROR: "Phase {phase.phase_name} left in progress"
-    elif phase.status == "SKIPPED":
-        if not phase.blocked_by:
+# Validation pseudo-code (NEW ARCHITECTURE)
+for phase in execution_status["step_checkpoint"]["phases"]:
+    if phase["status"] == "NOT_EXECUTED":
+        ERROR: f"Phase {phase['phase_name']} not executed"
+    elif phase["status"] == "IN_PROGRESS":
+        ERROR: f"Phase {phase['phase_name']} left in progress"
+    elif phase["status"] == "SKIPPED":
+        if not phase.get("blocked_by"):
             ERROR: "SKIPPED without reason"
-        if phase.blocked_by.startswith("DEFERRED:"):
+        if phase["blocked_by"].startswith("DEFERRED:"):
             ERROR: "DEFERRED phases block commit"
-    elif phase.status == "EXECUTED":
-        if not phase.outcome:
-            ERROR: "EXECUTED without outcome"
+    elif phase["status"] == "COMPLETED":
+        if not phase.get("outcome"):
+            ERROR: "COMPLETED without outcome"
 ```
 
 #### 3. POST-EXECUTION PHASE
@@ -700,53 +794,45 @@ Track performance for optimization:
 }
 ```
 
-### Integration with Other Commands
+### Integration with Other Commands (NEW ARCHITECTURE)
 
-**Pre-execution Review**:
+**Pre-execution Review** (roadmap review):
 ```bash
-# Review before execution
-/nw:review @software-crafter task "steps/02-01.json"
-# The review updates the step file with critiques
-# Execute only if review.ready_for_execution = true
-/nw:execute @software-crafter "steps/02-01.json"
+# Review roadmap before execution
+/nw:review @software-crafter-reviewer roadmap "docs/feature/des-us007/roadmap.yaml"
+# The review validates step definitions
+# Execute steps after roadmap approved
+/nw:execute @software-crafter "des-us007" "02-01"
 ```
 
-**Reading Previous Reviews**:
-The execute command checks for existing reviews in the step file:
-```json
-{
-  "reviews": [
-    {
-      "reviewer": "@software-crafter",
-      "ready_for_execution": true,
-      "critiques": []
-    }
-  ]
-}
-```
-If `ready_for_execution` is false, execution is blocked until issues are resolved.
-
-**Post-execution Review**:
+**Post-execution Review** (implementation review):
 ```bash
 # Execute task
-/nw:execute @researcher "steps/01-01.json"
-# Review implementation
-/nw:review @product-owner implementation "steps/01-01.json"
+/nw:execute @researcher "auth-upgrade" "01-01"
+# Review implementation (checks execution-status.yaml for completion)
+/nw:review @software-crafter-reviewer implementation "docs/feature/auth-upgrade/execution-status.yaml"
 ```
 
 **Retry After Failure**:
 ```bash
-# Initial attempt fails
-/nw:execute @data-engineer "steps/03-01.json"
-# Update context and retry
-/nw:execute @data-engineer "steps/03-01.json" --retry
+# Initial attempt fails (orchestrator detects via execution-status.yaml)
+/nw:execute @software-crafter "des-us007" "03-01"
+# Fix issues, retry (agent resumes from last completed phase)
+/nw:execute @software-crafter "des-us007" "03-01"
 ```
 
-## Output Artifacts
+**OLD INTEGRATION PATTERN (DEPRECATED)**:
+```bash
+# ❌ DO NOT USE - step files no longer exist
+/nw:execute @software-crafter "steps/02-01.json"
+```
 
-- Updated step file with execution results
-- Any outputs specified in acceptance criteria
-- Execution logs in `docs/feature/{project-id}/logs/{timestamp}-{task-id}.log`
+## Output Artifacts (NEW ARCHITECTURE)
+
+- Updated execution-status.yaml with phase completion tracking
+- Any outputs specified in acceptance criteria (deliverables)
+- Git commits at TDD checkpoints (GREEN, REVIEW, REFACTOR, FINAL)
+- Execution logs in `docs/feature/{project-id}/logs/{timestamp}-{step-id}.log` (optional)
 
 ## Notes
 
@@ -758,15 +844,27 @@ Each execution starts with a clean context, ensuring:
 3. **Predictable behavior** regardless of execution order
 4. **Maximum LLM performance** without context degradation
 
-### Parallel Execution Support
+### Parallel Execution Support (NEW ARCHITECTURE)
 
-Multiple execute commands can run simultaneously for non-dependent tasks:
+**IMPORTANT**: With execution-status.yaml as single state file, parallel execution requires careful coordination to avoid conflicts. Each step updates the same execution-status.yaml file.
+
+**Sequential execution recommended** (safest approach):
 ```bash
-# These can run in parallel
-/nw:execute @researcher "steps/01-01.json" &
-/nw:execute @researcher "steps/01-02.json" &
-/nw:execute @software-crafter "steps/02-01.json" &
+# Execute steps in dependency order
+/nw:execute @researcher "auth-upgrade" "01-01"  # Wait for completion
+/nw:execute @researcher "auth-upgrade" "01-02"  # Then execute next
+/nw:execute @software-crafter "auth-upgrade" "02-01"  # Then execute next
 ```
+
+**Parallel execution possible** (requires file locking):
+```bash
+# Only for truly independent steps with no shared dependencies
+/nw:execute @researcher "auth-upgrade" "01-01" &
+/nw:execute @researcher "auth-upgrade" "01-02" &
+# WARNING: May cause execution-status.yaml write conflicts
+```
+
+**Note**: The old architecture used separate step files (parallel-safe). The new architecture uses shared execution-status.yaml (requires coordination). Trade-off accepted for 94% token reduction.
 
 ### State Machine Integrity
 
