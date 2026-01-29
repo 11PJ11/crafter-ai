@@ -151,13 +151,25 @@ If any check fails, return specific error and stop.
 Before any finalization work begins, verify the critical invariant:
 
 ```
-∀ step ∈ docs/feature/{project-id}/steps/*.json:
-    step.tdd_cycle.phase_execution_log[COMMIT].outcome == "PASS"
+∀ step ∈ execution-status.yaml['steps']:
+    step.status == "DONE" AND
+    step.phases[COMMIT].outcome == "PASS"
 ```
 
-**Execute validation**:
+**Execute validation** (Schema v2.0):
 ```bash
-python3 ~/.claude/scripts/validate_steps_complete.py {project-id}
+# Read execution status file (not individual step files)
+python3 -c "
+import yaml
+with open('docs/feature/{project-id}/execution-status.yaml') as f:
+    status = yaml.safe_load(f)
+    incomplete = [s for s in status['steps'] if s['status'] != 'DONE']
+    if incomplete:
+        print(f'BLOCKED: {len(incomplete)} incomplete steps')
+        for step in incomplete:
+            print(f'  - {step[\"step_id\"]}: {step[\"status\"]}')
+        exit(1)
+"
 ```
 
 **Exit codes**:
@@ -193,26 +205,45 @@ Task type: finalize
 
 Finalize and archive the completed feature: {project-id}
 
-## STEP FILE FORMAT REFERENCE
+## EXECUTION STATUS FILE FORMAT REFERENCE (Schema v2.0)
 
-For reading step files, understand the canonical schema at `~/.claude/templates/step-tdd-cycle-schema.json`.
+For reading execution status, understand the structure at `docs/feature/{project-id}/execution-status.yaml`.
 
-Correct step file structure includes:
-- task_id: Task identifier (e.g., '01-01') - NOT step_id!
-- project_id: Project identifier
-- state: Current task state with status field
-- tdd_cycle.phase_execution_log: Array of phases tracking execution progress
-- execution_result: Results from task execution
+**Schema v2.0 Structure** (NOT step files):
+```yaml
+project_id: "project-name"
+schema_version: "2.0"
+steps:
+  - step_id: "01-01"
+    status: "DONE"  # TODO, IN_PROGRESS, DONE
+    started_at: "2026-01-29T10:00:00Z"
+    completed_at: "2026-01-29T11:30:00Z"
+    phases:
+      - phase_name: "PREPARE"
+        outcome: "PASS"
+        duration_minutes: 3
+      - phase_name: "RED_ACCEPTANCE"
+        outcome: "PASS"
+        duration_minutes: 5
+      # ... all 8 phases
+```
 
-The TDD phases to look for in phase_execution_log (from canonical schema):
-{{SCHEMA_PHASE_NAMES}}
+The TDD phases to look for in phases array (Schema v2.0):
+- PREPARE
+- RED_ACCEPTANCE
+- RED_UNIT
+- GREEN
+- REVIEW
+- REFACTOR_CONTINUOUS
+- REFACTOR_L4
+- COMMIT
 
-Note: If you encounter step files with wrong format (step_id instead of task_id, or missing tdd_cycle.phase_execution_log), flag this in the summary as a format compliance issue.
+**Migration Note**: If you encounter OLD step files (*.json), flag this as a schema v1.x artifact requiring migration to v2.0.
 
 Your responsibilities:
 1. Load project data from docs/feature/{project-id}/
-2. Read roadmap.yaml and all step JSON files (understanding the canonical format)
-3. Analyze execution history and completion metrics from phase_execution_log
+2. Read roadmap.yaml and execution-status.yaml (Schema v2.0 - NO step JSON files)
+3. Analyze execution history and completion metrics from execution-status.yaml
 4. Create comprehensive summary document
 5. Archive to docs/evolution/ with date-feature naming (YYYY-MM-DD-{feature-name}.md)
 6. Clean up temporary workflow files after user approval
@@ -221,26 +252,26 @@ CRITICAL: DO NOT COMMIT OR DELETE FILES - REQUEST APPROVAL FIRST
 
 Processing Steps:
 
-PHASE 1 - GATHER:
+PHASE 1 - GATHER (Schema v2.0):
 
-Finalize is invoked as a single agent instance that loads and analyzes the complete project history. The instance reads all step JSON files (which contain phase_execution_log from all prior instances), reads the roadmap, and synthesizes this information into a comprehensive summary. The finalize instance has NO direct memory of prior execution instances. It only knows what it can read from the persistent files: step JSON with detailed phase logs, roadmap with original plan, and any other documentation created.
+Finalize is invoked as a single agent instance that loads and analyzes the complete project history. The instance reads execution-status.yaml (which contains all phase execution data), reads the roadmap, and synthesizes this information into a comprehensive summary. The finalize instance has NO direct memory of prior execution instances. It only knows what it can read from the persistent files: execution-status.yaml with phase logs, roadmap with original plan, and any other documentation created.
 
 - Read docs/feature/{project-id}/roadmap.yaml
-- Read all docs/feature/{project-id}/steps/*.json files
-- Extract data from tdd_cycle.phase_execution_log for each step
+- Read docs/feature/{project-id}/execution-status.yaml (NOT step/*.json files)
+- Extract data from execution_status.steps[].phases array for each step
 - Collect completion metrics, execution times, review feedback
 - Identify key achievements and decisions
 
-### Reading Multi-Instance Execution History
+### Reading Multi-Instance Execution History (Schema v2.0)
 
-The finalize instance reads phase_execution_log from each step JSON. This log shows every instance's contributions: what phases executed, how long each took, what artifacts created/modified, what test results, what decisions made. Each phase log entry is a snapshot of one instance's work. By reading all phase entries across all step files, the finalize instance reconstructs the complete execution history without needing memory of individual instances.
+The finalize instance reads execution-status.yaml which contains all phase data for all steps. This file shows every instance's contributions: what phases executed, how long each took, what outcomes, what decisions made. Each step entry contains its complete phase array. By reading execution-status.yaml, the finalize instance reconstructs the complete execution history without needing memory of individual instances.
 
-PHASE 2 - ANALYZE:
-- Calculate completion statistics from phase_execution_log entries
+PHASE 2 - ANALYZE (Schema v2.0):
+- Calculate completion statistics from execution_status.steps[].phases entries
 - Identify completed vs skipped phases across all steps
-- Extract execution times and token usage
+- Extract execution times (no token tracking in v2.0 - simplified)
 - Document critical decisions made
-- Summarize review outcomes
+- Summarize review outcomes (from REVIEW phase outcomes)
 - Note deviations from plan
 
 PHASE 3 - SUMMARIZE:
@@ -346,7 +377,7 @@ Creates permanent record in docs/evolution/ and removes temporary workflow artif
 /nw:finalize @data-engineer "analytics-pipeline"
 ```
 
-## Complete Workflow Integration
+## Complete Workflow Integration (Schema v2.0)
 
 These commands work together to form a complete workflow:
 
@@ -354,28 +385,27 @@ These commands work together to form a complete workflow:
 # Step 1: Create comprehensive plan
 /nw:roadmap @solution-architect "Migrate authentication system"
 
-# Step 2: Decompose into atomic tasks
-/nw:split @solution-architect "auth-migration"
+# Step 2: Execute first research task (NEW SIGNATURE - Schema v2.0)
+/nw:execute @researcher "auth-migration" "01-01"
 
-# Step 3: Execute first research task
-/nw:execute @researcher "docs/feature/auth-migration/steps/01-01.json"
+# Step 3: Execute implementation tasks (review is now inline during execution)
+/nw:execute @software-crafter "auth-migration" "02-01"
+/nw:execute @software-crafter "auth-migration" "02-02"
 
-# Step 4: Review before implementation
-/nw:review @software-crafter task "docs/feature/auth-migration/steps/02-01.json"
-
-# Step 5: Execute implementation
-/nw:execute @software-crafter "docs/feature/auth-migration/steps/02-01.json"
-
-# Step 6: Finalize when all tasks complete
+# Step 4: Finalize when all tasks complete
 /nw:finalize @devop "auth-migration"
 ```
 
+**Eliminated Steps** (Schema v2.0):
+- ❌ `/nw:split` - No longer needed, context extracted directly from roadmap
+- ❌ `/nw:review` for individual steps - Review now inline during execution (REVIEW phase)
+
 For details on each command, see respective sections.
 
-## Context Files Required
+## Context Files Required (Schema v2.0)
 
 - docs/feature/{project-id}/roadmap.yaml - Original roadmap
-- docs/feature/{project-id}/steps/*.json - All step tracking files
+- docs/feature/{project-id}/execution-status.yaml - Execution tracking (replaces step/*.json)
 
 ---
 
@@ -616,16 +646,16 @@ Start: {date}
 
 **IMPORTANT: Only proceed after user confirms summary is acceptable**
 
-**Remove Workflow Artifacts**:
+**Remove Workflow Artifacts** (Schema v2.0):
 ```python
-1. Delete docs/feature/{project-id}/steps/ directory
+1. Delete docs/feature/{project-id}/execution-status.yaml
 2. Delete docs/feature/{project-id}/roadmap.yaml
 3. Delete docs/feature/{project-id}/ directory (if empty)
 4. Verify cleanup completed
 ```
 
-**Files to Remove**:
-- `docs/feature/{project-id}/steps/*.json` - All step tracking files
+**Files to Remove** (Schema v2.0):
+- `docs/feature/{project-id}/execution-status.yaml` - Execution tracking file
 - `docs/feature/{project-id}/roadmap.yaml` - Original roadmap
 - `docs/feature/{project-id}/` - Project workflow directory
 
@@ -633,6 +663,8 @@ Start: {date}
 - `docs/evolution/YYYY-MM-DD-{project-id}.md` - Permanent archive (date-feature format)
 - Any deliverable artifacts referenced in summary
 - Production code and documentation
+
+**Migration Note**: If legacy `steps/*.json` files exist, delete them as well (Schema v1.x artifacts).
 
 ### Folder Structure After Finalization
 

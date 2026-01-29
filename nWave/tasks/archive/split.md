@@ -1,3 +1,11 @@
+# ARCHIVED: Obsolete in Schema v2.0
+
+**Archive Date**: 2026-01-29
+**Reason**: Step files eliminated in Schema v2.0 - execution tracking moved to execution-status.yaml
+**Replacement**: Context extraction from roadmap.yaml directly in execute command
+
+---
+
 # DW-SPLIT: Atomic Task Generation from Roadmap with TDD Cycle Embedding
 
 ---

@@ -65,9 +65,9 @@ When orchestrating these commands, you MUST read the command file and translate:
 
 | Command | Read From | Agent Type |
 |---------|-----------|------------|
-| `/nw:baseline` | `nWave/tasks/nw/baseline.md` | researcher |
+| `/nw:baseline` | DEPRECATED (Schema v2.0) | N/A |
 | `/nw:roadmap` | `nWave/tasks/nw/roadmap.md` | solution-architect |
-| `/nw:split` | `nWave/tasks/nw/split.md` | software-crafter |
+| `/nw:split` | DEPRECATED (Schema v2.0) | N/A |
 | `/nw:execute` | `nWave/tasks/nw/execute.md` | varies by step |
 | `/nw:review` | `nWave/tasks/nw/review.md` | *-reviewer variant |
 
@@ -87,13 +87,16 @@ The DEVELOP wave orchestrator automates the complete feature development lifecyc
 
 Execute a **complete DEVELOP wave** that orchestrates:
 
-1. **Phase 1-2**: Baseline Creation + Review (measurement baseline)
-2. **Phase 3-4**: Roadmap Creation + Dual Review (strategic planning)
-3. **Phase 5-6**: Split into Atomic Steps + Review Each Step (task decomposition)
-4. **Phase 7**: Execute All Steps (TDD cycle per step - see canonical schema)
-5. **Phase 7.5**: Mutation Testing (test quality validation)
-6. **Phase 8**: Finalize (archival and cleanup)
-7. **Phase 9**: Report Completion
+1. **Phase 1**: Roadmap Creation + Review (strategic planning with 8-phase TDD)
+2. **Phase 2**: Execute All Steps (8-phase TDD cycle per step - see canonical schema)
+2. **Phase 2.5**: Mutation Testing (test quality validation)
+3. **Phase 3**: Finalize (archival and cleanup)
+4. **Phase 4**: Report Completion
+
+**Eliminated Phases** (Token-Minimal Architecture):
+- ❌ Baseline Creation (eliminated - write-only artifact, saved 300k tokens)
+- ❌ Split into Step Files (eliminated - context now in roadmap.yaml, saved 4.8M tokens)
+- ❌ Individual Step File Reviews (eliminated - validation moved to execution)
 
 ### TDD Cycle Definition
 
@@ -147,6 +150,34 @@ pre-commit --version  # If missing: pip install pre-commit
 ```
 
 **Migration**: For single-step execution, use `/nw:execute` instead (see Migration Guide below).
+
+---
+
+## Token Usage Comparison (Schema v1.x vs v2.0)
+
+**Example Project**: des-us006 (35 steps, moderate complexity)
+
+### Schema v1.x (OLD - DEPRECATED):
+```
+Baseline.yaml:           300k tokens (write-only, rarely read)
+Roadmap.yaml:            102k tokens
+Step files (35 steps):   4.8M tokens (35 × 137k avg)
+                         ─────────────
+TOTAL:                   5.2M tokens
+```
+
+### Schema v2.0 (NEW - CURRENT):
+```
+Roadmap.yaml:            102k tokens (contains all step context)
+Execution-status.yaml:   175k tokens (35 × 5k avg)
+Context extraction:      5k tokens/step (extracted on-demand from roadmap)
+                         ─────────────
+TOTAL:                   ~310k tokens (277k static + 5k per execution)
+```
+
+**Savings**: **4.9M tokens (94% reduction)**
+
+**Key Insight**: Step files were write-only artifacts. Orchestrator now extracts context directly from roadmap, eliminating the intermediary.
 
 ---
 
@@ -254,24 +285,24 @@ The command accepts a single parameter:
   - Example: "Add shopping cart with checkout validation"
   - Example: "Optimize database query performance for product listings"
 
-### Output Artifacts
+### Output Artifacts (Schema v2.0)
 
 The orchestrator generates the following artifacts:
 
 ```
 docs/feature/{project-id}/
-├── baseline.yaml                    # Phase 1 output
-├── roadmap.yaml                     # Phase 3 output
-├── steps/
-│   ├── 01-01.json                  # Phase 5 output (per step)
-│   ├── 01-02.json
-│   └── ...
-├── .develop-progress.json          # Progress tracking
-└── (archived to docs/evolution/    # Phase 8 output
+├── roadmap.yaml                     # Phase 1 output (contains all step context)
+├── execution-status.yaml            # Phase 2 output (step execution tracking)
+├── .develop-progress.json           # Progress tracking
+└── (archived to docs/evolution/     # Phase 3 output
      after finalization)
 ```
 
-### Orchestration Flow
+**Eliminated Artifacts** (Token savings):
+- ❌ baseline.yaml (300k tokens - write-only artifact)
+- ❌ steps/*.json (4.8M tokens - replaced by execution-status.yaml at 5k tokens/step)
+
+### Orchestration Flow (Schema v2.0 - Token-Minimal Architecture)
 
 ```
 INPUT: "{feature-description}"
@@ -280,28 +311,21 @@ STEP 1: Extract + Validate Input
   ↓
 STEP 2: Derive Project ID (kebab-case)
   ↓
-STEP 3: Phase 1 - Baseline Creation (with skip)
+STEP 3: Phase 1 - Roadmap Creation + Review (with skip, retry max 2)
   ↓
-STEP 4: Phase 2 - Review Baseline (retry max 2)
+STEP 4: Phase 2 - Execute-All Steps (8-phase TDD cycle per step, roadmap context extraction)
   ↓
-STEP 5: Phase 3 - Roadmap Creation (with skip)
+STEP 5: Phase 3 - Finalize (read execution-status.yaml, archive, cleanup)
   ↓
-STEP 6: Phase 4 - Review Roadmap - Software Crafter (retry max 2)
-  ↓
-STEP 7: Phase 5 - Split into Atomic Steps (with skip)
-  ↓
-STEP 8: Phase 6 - Review Each Step File (retry max 2 per file)
-  ↓
-STEP 9: Phase 7 - Execute All Steps (Complete TDD cycle per step)
-  ↓
-STEP 10: Phase 7.5 - Mutation Testing (quality gate)
-  ↓
-STEP 11: Phase 8 - Finalize
-  ↓
-STEP 11.5: Post-Finalize Commit and Push
-  ↓
-STEP 12: Phase 9 - Report Completion
+STEP 6: Phase 4 - Report Completion
 ```
+
+**Eliminated Phases** (Saved 5.1M tokens):
+- ❌ STEP 3-4: Baseline Creation + Review (eliminated - write-only artifact, 300k tokens)
+- ❌ STEP 7-8: Split into Steps + Review Each Step (eliminated - step files, 4.8M tokens)
+- ❌ STEP 10: Mutation Testing (deferred to future enhancement)
+
+**Architecture Change**: Orchestrator extracts context from roadmap.yaml (~5k tokens per step) and passes to sub-agents via Task tool. No intermediate step files created.
 
 ---
 

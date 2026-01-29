@@ -179,11 +179,17 @@ Expected location: docs/feature/{project-id}/baseline.yaml
 
 WHAT TO DO:
 
-Option 1: Create baseline using command (RECOMMENDED)
-  /nw:baseline "{goal-description}"
+⚠️ Schema v2.0: Baseline files eliminated. Add measurement data directly to roadmap:
 
-Option 2: Create baseline.yaml manually
-  See baseline specification at: nWave/templates/baseline-template.yaml
+  In roadmap.yaml, add measurement_gate section:
+    measurement_gate:
+      gate_type: "baseline"
+      baseline_measurements:
+        current_performance: "15 minutes test execution"
+        target_performance: "3 minutes test execution"
+      rejected_simple_alternatives:
+        - alternative: "Upgrade CI runner"
+          reason: "Cost prohibitive"
 
 WHY IS THIS REQUIRED?
 
@@ -466,7 +472,7 @@ Produces a token-efficient master plan designed to be split into self-contained,
 /nw:roadmap @product-owner "Implement multi-tenant support"
 ```
 
-## Complete Workflow Integration
+## Complete Workflow Integration (Schema v2.0)
 
 These commands work together to form a complete workflow:
 
@@ -474,21 +480,20 @@ These commands work together to form a complete workflow:
 # Step 1: Create comprehensive plan
 /nw:roadmap @solution-architect "Migrate authentication system"
 
-# Step 2: Decompose into atomic tasks
-/nw:split @solution-architect "auth-migration"
+# Step 2: Execute first research task (NEW SIGNATURE - Schema v2.0)
+/nw:execute @researcher "auth-migration" "01-01"
 
-# Step 3: Execute first research task
-/nw:execute @researcher "docs/feature/auth-migration/steps/01-01.json"
+# Step 3: Execute implementation tasks (review is now inline during execution)
+/nw:execute @software-crafter "auth-migration" "02-01"
+/nw:execute @software-crafter "auth-migration" "02-02"
 
-# Step 4: Review before implementation
-/nw:review @software-crafter task "docs/feature/auth-migration/steps/02-01.json"
-
-# Step 5: Execute implementation
-/nw:execute @software-crafter "docs/feature/auth-migration/steps/02-01.json"
-
-# Step 6: Finalize when all tasks complete
+# Step 4: Finalize when all tasks complete
 /nw:finalize @devop "auth-migration"
 ```
+
+**Eliminated Steps** (Schema v2.0):
+- ❌ `/nw:split` - No longer needed, context extracted directly from roadmap
+- ❌ `/nw:review` for individual steps - Review now inline during execution (REVIEW phase)
 
 For details on each command, see respective sections.
 
@@ -551,8 +556,26 @@ project:
   name: "Human Readable Project Name"
   goal: "Clear description of end goal"
   methodology: "standard"  # or "mikado" for complex refactoring
+  schema_version: "2.0"  # REQUIRED: Schema version for 8-phase TDD
   created: "2024-01-01T00:00:00Z"
   estimated_duration: "2 weeks"  # human estimate
+
+# TDD Phases Configuration (Schema v2.0)
+tdd_phases:
+  - PREPARE
+  - RED_ACCEPTANCE
+  - RED_UNIT
+  - GREEN
+  - REVIEW
+  - REFACTOR_CONTINUOUS
+  - REFACTOR_L4
+  - COMMIT
+
+# Execution Configuration (Schema v2.0)
+execution_config:
+  context_extraction_method: "from_roadmap"  # No step files needed
+  status_tracking_file: "execution-status.yaml"
+  token_budget_per_step: 5000  # Extracted context limit
 
 phases:
   - number: 1
@@ -684,11 +707,15 @@ phases:
         estimated_hours: 8
         step_type: "atdd"  # ATDD step
         suggested_agent: "software-crafter"
-        suggested_scenario:
-          test_file: "tests/acceptance/auth.feature"
-          scenario_name: "User logs in via OAuth2"
-          scenario_index: 0
-          test_format: "feature"  # Optional: auto-detected from extension
+        # Schema v2.0: Per-step execution fields
+        test_file: "tests/acceptance/auth.feature"
+        scenario_line: 12  # Line number where scenario starts
+        scenario_name: "User logs in via OAuth2"
+        quality_gates:
+          acceptance_test_must_fail_first: true
+          unit_tests_must_fail_first: true
+          no_mocks_inside_hexagon: true
+          refactor_level: 4
         acceptance_criteria:
           - "User can authenticate via OAuth2 provider"
           - "JWT token generated after successful login"
@@ -756,14 +783,58 @@ The compact roadmap template is embedded below for direct use without external f
 
 ## Notes
 
-### Design Philosophy
+### Design Philosophy (Schema v2.0)
 
-The roadmap is designed to be the **single source of truth** that gets transformed into atomic, self-contained tasks. The expert agent creating the roadmap should:
+The roadmap is designed to be the **single source of truth** for step execution. In Schema v2.0, there are NO intermediate step files - the orchestrator extracts context directly from the roadmap. The expert agent creating the roadmap should:
 
-1. **Include all context** needed for each step
+1. **Include all context** needed for each step (agents receive this via context extraction)
 2. **Avoid forward references** to information in later steps
 3. **Make dependencies explicit** rather than implicit
 4. **Design for parallel execution** where possible
+5. **Include per-step execution fields** (test_file, scenario_line, quality_gates)
+
+### Context Extraction Pattern (Schema v2.0)
+
+**How Orchestrator Passes Context to Sub-Agents:**
+
+```python
+# Step 1: Read roadmap
+roadmap = read_yaml(f"docs/feature/{project_id}/roadmap.yaml")
+
+# Step 2: Extract context for specific step
+phase_idx = int(step_id.split('-')[0]) - 1
+step_idx = int(step_id.split('-')[1]) - 1
+step_context = roadmap['phases'][phase_idx]['steps'][step_idx]
+
+# Step 3: Build prompt with extracted context
+Task(
+    subagent_type="software-crafter",
+    prompt=f"""Execute step {step_id}: {step_context['name']}
+
+    DESCRIPTION:
+    {step_context['description']}
+
+    MOTIVATION:
+    {step_context['motivation']}
+
+    ACCEPTANCE CRITERIA:
+    {chr(10).join(f'- {ac}' for ac in step_context['acceptance_criteria'])}
+
+    TEST FILE: {step_context.get('test_file', 'N/A')}
+    SCENARIO LINE: {step_context.get('scenario_line', 'N/A')}
+
+    QUALITY GATES:
+    - Acceptance test must fail first: {step_context['quality_gates']['acceptance_test_must_fail_first']}
+    - No mocks inside hexagon: {step_context['quality_gates']['no_mocks_inside_hexagon']}
+    - Refactor level: {step_context['quality_gates']['refactor_level']}
+
+    Execute using 8-phase TDD cycle (PREPARE, RED_ACCEPTANCE, RED_UNIT, GREEN, REVIEW, REFACTOR_CONTINUOUS, REFACTOR_L4, COMMIT).
+    """
+)
+```
+
+**Token Budget**: ~5k tokens per step (extracted on-demand, not stored)
+**Result**: 94% token reduction vs step files (5.2M → 310k for 35-step project)
 
 ### Integration with Mikado Method
 
