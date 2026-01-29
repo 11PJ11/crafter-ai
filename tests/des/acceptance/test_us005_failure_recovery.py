@@ -314,7 +314,6 @@ class TestFailureRecoveryGuidance:
     # Scenario 5: Recovery suggestions contain executable commands
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_005_recovery_suggestions_contain_actionable_commands(
         self, tmp_project_root, step_file_with_abandoned_phase
     ):
@@ -336,27 +335,26 @@ class TestFailureRecoveryGuidance:
         _step_file = step_file_with_abandoned_phase
 
         # Act: Recovery handler generates suggestions
-        # recovery_handler = RecoveryGuidanceHandler()
-        # suggestions = recovery_handler.generate_recovery_suggestions(
-        #     failure_type="abandoned_phase",
-        #     context={
-        #         "phase": "REFACTOR_L2",
-        #         "step_file": "steps/01-01.json",
-        #     },
-        # )
+        recovery_handler = RecoveryGuidanceHandler()
+        suggestions = recovery_handler.generate_recovery_suggestions(
+            failure_type="abandoned_phase",
+            context={
+                "phase": "REFACTOR_L2",
+                "step_file": "steps/01-01.json",
+                "transcript_path": "/tmp/transcripts/session.log",
+            },
+        )
 
         # Assert: Suggestions contain actionable elements
-        # actionable_command_found = any(
-        #     "/nw:execute" in s or "/nw:develop" in s for s in suggestions
-        # )
-        # file_path_found = any(
-        #     "steps/" in s or ".json" in s for s in suggestions
-        # )
-        # phase_name_found = any("REFACTOR_L2" in s for s in suggestions)
-        #
-        # assert actionable_command_found, "Suggestions must include executable commands"
-        # assert file_path_found, "Suggestions must include file paths"
-        # assert phase_name_found, "Suggestions must reference the failed phase"
+        actionable_command_found = any(
+            "/nw:execute" in s or "/nw:develop" in s for s in suggestions
+        )
+        file_path_found = any("steps/" in s or ".json" in s for s in suggestions)
+        phase_name_found = any("REFACTOR_L2" in s for s in suggestions)
+
+        assert actionable_command_found, "Suggestions must include executable commands"
+        assert file_path_found, "Suggestions must include file paths"
+        assert phase_name_found, "Suggestions must reference the failed phase"
 
     # =========================================================================
     # AC-005.3: Suggestions are actionable (specific commands or file paths)
