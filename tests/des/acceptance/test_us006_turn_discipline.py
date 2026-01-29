@@ -39,6 +39,7 @@ class TestTurnDisciplineInclusion:
     to enable agent self-regulation without programmatic turn limits.
     """
 
+    # PREPARE phase: Remove @pytest.mark.skip to enable test
     def test_scenario_001_des_validated_prompt_includes_timeout_instruction_section(
         self, tmp_project_root, minimal_step_file, des_orchestrator
     ):
