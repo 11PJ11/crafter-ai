@@ -418,19 +418,29 @@ class NWaveInstaller:
         templates_target = self.claude_config_dir / "templates"
         templates_target.mkdir(parents=True, exist_ok=True)
 
-        # Install canonical schema
-        schema_file = "step-tdd-cycle-schema.json"
-        source_schema = templates_source / schema_file
+        if not templates_source.exists():
+            self.logger.warn(
+                f"Templates source directory not found: {templates_source}"
+            )
+            return
 
-        if source_schema.exists():
-            import shutil
+        import shutil
 
-            shutil.copy2(source_schema, templates_target / schema_file)
-            self.logger.info(f"Installed canonical schema: {schema_file}")
+        # Install ALL template files (.json, .yaml, .yml)
+        template_patterns = ["*.json", "*.yaml", "*.yml"]
+        installed_count = 0
 
-        copied_templates = PathUtils.count_files(templates_target, "*.json")
-        if copied_templates > 0:
-            self.logger.info(f"Total {copied_templates} template(s) installed")
+        for pattern in template_patterns:
+            for template_file in templates_source.glob(pattern):
+                if template_file.is_file():
+                    shutil.copy2(template_file, templates_target / template_file.name)
+                    self.logger.info(f"Installed template: {template_file.name}")
+                    installed_count += 1
+
+        if installed_count > 0:
+            self.logger.info(f"Total {installed_count} template(s) installed")
+        else:
+            self.logger.warn("No template files found to install")
 
     def _validate_schema_template(self) -> bool:
         """Validate TDD cycle schema template has required fields."""
