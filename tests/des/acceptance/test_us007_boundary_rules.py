@@ -44,7 +44,6 @@ class TestBoundaryRulesInclusion:
     # Scenario 1: Step execution prompt includes BOUNDARY_RULES section
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_001_step_execution_prompt_includes_boundary_rules_section(
         self, tmp_project_root, minimal_step_file, des_orchestrator
     ):
@@ -77,14 +76,14 @@ class TestBoundaryRulesInclusion:
         )
 
         # THEN: Prompt contains BOUNDARY_RULES section
-        assert "BOUNDARY_RULES" in prompt, (
-            "BOUNDARY_RULES section missing - agents cannot know their scope limitations"
-        )
+        assert (
+            "BOUNDARY_RULES" in prompt
+        ), "BOUNDARY_RULES section missing - agents cannot know their scope limitations"
 
         # Verify section is properly formatted with header marker
-        assert "## BOUNDARY_RULES" in prompt or "# BOUNDARY_RULES" in prompt, (
-            "BOUNDARY_RULES must be a proper section header (## or #)"
-        )
+        assert (
+            "## BOUNDARY_RULES" in prompt or "# BOUNDARY_RULES" in prompt
+        ), "BOUNDARY_RULES must be a proper section header (## or #)"
 
 
 class TestAllowedActionEnumeration:
@@ -139,9 +138,9 @@ class TestAllowedActionEnumeration:
         assert "ALLOWED" in prompt, "ALLOWED section missing from BOUNDARY_RULES"
 
         # Verify step file is in allowed list
-        assert "step" in prompt.lower() and "file" in prompt.lower(), (
-            "Step file should be in ALLOWED list"
-        )
+        assert (
+            "step" in prompt.lower() and "file" in prompt.lower()
+        ), "Step file should be in ALLOWED list"
 
         # Verify target files are specified (could be patterns or explicit paths)
         allowed_patterns_found = any(
@@ -220,9 +219,9 @@ class TestAllowedActionEnumeration:
         )
 
         # Verify test file patterns included
-        assert "test_user_repository" in prompt.lower() or "test" in prompt.lower(), (
-            "ALLOWED patterns must include test files from step scope."
-        )
+        assert (
+            "test_user_repository" in prompt.lower() or "test" in prompt.lower()
+        ), "ALLOWED patterns must include test files from step scope."
 
 
 class TestForbiddenActionEnumeration:
@@ -289,9 +288,9 @@ class TestForbiddenActionEnumeration:
             phrase in prompt.lower()
             for phrase in ["other file", "unrelated", "outside scope", "not in scope"]
         )
-        assert unrelated_forbidden, (
-            "FORBIDDEN must include reference to files outside scope"
-        )
+        assert (
+            unrelated_forbidden
+        ), "FORBIDDEN must include reference to files outside scope"
 
     @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_005_forbidden_includes_continuation_to_next_step(
@@ -749,17 +748,17 @@ class TestBoundaryRulesCompleteness:
         )
 
         # THEN: BOUNDARY_RULES present
-        assert "BOUNDARY_RULES" in prompt, (
-            "/nw:develop command must include BOUNDARY_RULES like /nw:execute"
-        )
+        assert (
+            "BOUNDARY_RULES" in prompt
+        ), "/nw:develop command must include BOUNDARY_RULES like /nw:execute"
 
         # Verify it has same structure
-        assert "ALLOWED" in prompt, (
-            "ALLOWED section must be present for develop command"
-        )
-        assert "FORBIDDEN" in prompt, (
-            "FORBIDDEN section must be present for develop command"
-        )
+        assert (
+            "ALLOWED" in prompt
+        ), "ALLOWED section must be present for develop command"
+        assert (
+            "FORBIDDEN" in prompt
+        ), "FORBIDDEN section must be present for develop command"
 
 
 class TestBoundaryRulesValidation:
@@ -826,17 +825,17 @@ class TestBoundaryRulesValidation:
         result = validator.validate(incomplete_prompt)
 
         # THEN: Validation fails with specific error
-        assert not result.is_valid, (
-            "Validation should FAIL when BOUNDARY_RULES is missing"
-        )
+        assert (
+            not result.is_valid
+        ), "Validation should FAIL when BOUNDARY_RULES is missing"
 
-        assert any("BOUNDARY_RULES" in error for error in result.errors), (
-            "Error message must identify BOUNDARY_RULES as the missing section"
-        )
+        assert any(
+            "BOUNDARY_RULES" in error for error in result.errors
+        ), "Error message must identify BOUNDARY_RULES as the missing section"
 
-        assert any("MISSING" in error.upper() for error in result.errors), (
-            "Error should indicate the section is MISSING, not incomplete"
-        )
+        assert any(
+            "MISSING" in error.upper() for error in result.errors
+        ), "Error should indicate the section is MISSING, not incomplete"
 
 
 # =============================================================================

@@ -352,6 +352,7 @@ class DESOrchestrator:
         from src.des.domain.timeout_instruction_template import (
             TimeoutInstructionTemplate,
         )
+        from src.des.templates.boundary_rules_template import BoundaryRulesTemplate
 
         validation_level = self._get_validation_level(command)
         if validation_level != "full":
@@ -362,9 +363,13 @@ class DESOrchestrator:
         # Generate DES markers
         des_markers = self._generate_des_markers(command, step_file)
 
+        # Generate BOUNDARY_RULES section
+        boundary_rules_template = BoundaryRulesTemplate()
+        boundary_rules = boundary_rules_template.render()
+
         # Generate TIMEOUT_INSTRUCTION section
-        template = TimeoutInstructionTemplate()
-        timeout_instruction = template.render()
+        timeout_template = TimeoutInstructionTemplate()
+        timeout_instruction = timeout_template.render()
 
         # Combine all sections
         # In a real implementation, this would include:
@@ -377,8 +382,8 @@ class DESOrchestrator:
         # - BOUNDARY_RULES
         # - TIMEOUT_INSTRUCTION
         #
-        # For now, return minimal prompt with TIMEOUT_INSTRUCTION to satisfy tests
-        return f"{des_markers}\n\n{timeout_instruction}"
+        # For now, return minimal prompt with BOUNDARY_RULES and TIMEOUT_INSTRUCTION to satisfy tests
+        return f"{des_markers}\n\n{boundary_rules}\n{timeout_instruction}"
 
     def prepare_ad_hoc_prompt(
         self, prompt: str, project_root: str | None = None
