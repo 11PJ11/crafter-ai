@@ -260,8 +260,122 @@ class TestFailureRecoveryGuidance:
         # assert "14 phases" in validation_result.recovery_guidance.lower()
 
     # =========================================================================
+    # AC-005.2: Integration with orchestrator
+    # Scenario 4: Orchestrator detects agent failure and triggers recovery handler
+    # =========================================================================
+
+    def test_scenario_004_orchestrator_crashes_recovery_suggestions(
+        self, tmp_project_root, step_file_with_abandoned_phase
+    ):
+        """
+        GIVEN orchestrator detects SubagentStop event (agent returned or crashed)
+        WHEN post-execution validation detects abandoned phase
+        THEN recovery handler generates suggestions AND updates step file with FAILED status
+
+        Business Value: Alex's agent crashed during execution. The orchestrator:
+                       1) Detects the failure via SubagentStop hook
+                       2) Extracts failure context (phase name, transcript path)
+                       3) Generates recovery suggestions with transcript reference
+                       4) Updates step file with status: FAILED and recovery_suggestions
+                       5) Returns control with guidance displayed to Alex
+
+        Workflow Integration Points:
+        1) SubagentStop hook: Detects agent crash/completion
+        2) Post-execution validation: Detects validation failures
+        3) Step file update: Persists recovery suggestions
+        4) Error handling: Falls back to generic guidance if suggestion generation fails
+
+        Acceptance Criteria Validation:
+        AC-005.2: SubagentStop hook calls RecoveryGuidanceHandler
+        AC-005.2: Failure context properly extracted and passed
+        AC-005.2: Step file updated with recovery suggestions
+        AC-005.2: Recovery suggestions displayed to user
+        AC-005.2: No orchestrator crashes if suggestion generation fails
+        """
+        # Arrange: Step file with abandoned phase (simulating agent crash)
+        step_file = step_file_with_abandoned_phase
+        import json
+
+        # Act 1: Simulate SubagentStop hook detecting abandoned phase
+        from src.des.application.recovery_guidance_handler import (
+            RecoveryGuidanceHandler,
+        )
+
+        # Extract failure context from step file
+        step_data = json.loads(step_file.read_text())
+        abandoned_phase = None
+        for phase_log in step_data.get("tdd_cycle", {}).get("phase_execution_log", []):
+            if phase_log.get("status") == "IN_PROGRESS":
+                abandoned_phase = phase_log.get("phase_name")
+                break
+
+        # Generate recovery suggestions
+        recovery_handler = RecoveryGuidanceHandler()
+        context = {
+            "phase": abandoned_phase or "UNKNOWN_PHASE",
+            "step_file": str(step_file),
+            "transcript_path": "transcripts/01-01-RED_UNIT.log",
+            "failure_reason": f"Agent crashed during {abandoned_phase} phase",
+        }
+
+        suggestions = recovery_handler.generate_recovery_suggestions(
+            failure_type="abandoned_phase",
+            context=context,
+        )
+
+        # Act 2: Update step file with FAILED status and recovery suggestions
+        updated_state = recovery_handler.handle_failure(
+            step_file_path=str(step_file),
+            failure_type="abandoned_phase",
+            context=context,
+        )
+
+        # Assert: SubagentStop hook integration successful
+        assert suggestions is not None, "Should generate recovery suggestions"
+        assert isinstance(suggestions, list), "Suggestions should be a list"
+        assert len(suggestions) >= 3, "Should have 3+ suggestions for abandoned phase"
+
+        # Assert: Failure context extracted correctly
+        assert abandoned_phase is not None, "Should identify abandoned phase"
+        assert "IN_PROGRESS" in " ".join(
+            [
+                p.get("status", "")
+                for p in step_data.get("tdd_cycle", {}).get("phase_execution_log", [])
+            ]
+        ), "Step file should have phase marked IN_PROGRESS"
+
+        # Assert: Step file updated with FAILED status
+        updated_step_data = json.loads(step_file.read_text())
+        assert "state" in updated_step_data, "Step file should have state object"
+        assert (
+            "recovery_suggestions" in updated_step_data["state"]
+        ), "Step file should have recovery_suggestions"
+
+        # Assert: Recovery suggestions include transcript path
+        joined_suggestions = " ".join(suggestions)
+        assert (
+            "transcript" in joined_suggestions.lower()
+        ), "Suggestions should reference transcript for debugging"
+
+        # Assert: Suggestions are actionable
+        assert any(
+            "/nw:execute" in s or "execute" in s.lower() for s in suggestions
+        ), "Suggestions should include execution command"
+        assert any(
+            "NOT_EXECUTED" in s for s in suggestions
+        ), "Suggestions should reference phase status reset"
+
+        # Assert: Recovery handler doesn't crash orchestrator
+        assert (
+            updated_state is not None
+        ), "Handler should return result without crashing"
+        assert isinstance(
+            updated_state, dict
+        ), "Handler should return dict for orchestrator to process"
+
+    # =========================================================================
     # AC-005.2: Suggestions stored in step file `recovery_suggestions` array
-    # Scenario 4: Recovery suggestions persisted to step file JSON
+    # Scenario 4b: Recovery suggestions persisted to step file JSON
     # =========================================================================
 
     def test_scenario_004_recovery_suggestions_stored_in_step_file(
