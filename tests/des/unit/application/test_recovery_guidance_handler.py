@@ -370,3 +370,121 @@ class TestRecoveryGuidanceErrorHandling:
         assert suggestions is not None
         assert isinstance(suggestions, list)
         assert len(suggestions) > 0
+
+
+class TestJuniorDevFormatter:
+    """Tests for JuniorDevFormatter - formats suggestions for junior developer audience."""
+
+    def test_junior_dev_formatter_exists(self):
+        """JuniorDevFormatter class should be instantiable."""
+        from src.des.application.recovery_guidance_handler import JuniorDevFormatter
+
+        formatter = JuniorDevFormatter()
+        assert formatter is not None
+        assert isinstance(formatter, JuniorDevFormatter)
+
+    def test_simplifies_technical_terms(self):
+        """Should replace technical jargon with simple explanations."""
+        from src.des.application.recovery_guidance_handler import JuniorDevFormatter
+
+        formatter = JuniorDevFormatter()
+
+        # Test that formatter has method to simplify terms
+        assert hasattr(formatter, "format_suggestion")
+        assert callable(formatter.format_suggestion)
+
+        # Format a suggestion with technical language
+        formatted = formatter.format_suggestion(
+            raw_why="The orchestrator failed to progress past phase.",
+            raw_how="Reset the phase state in the step file.",
+            raw_action="Update the JSON status field.",
+        )
+
+        # Should simplify "orchestrator" to "system"
+        assert "system" in formatted.lower() or "agent" in formatted.lower()
+        assert "orchestrator" not in formatted.lower()
+
+    def test_adds_educational_context(self):
+        """Should add educational explanations for why errors occur."""
+        from src.des.application.recovery_guidance_handler import JuniorDevFormatter
+
+        formatter = JuniorDevFormatter()
+
+        formatted = formatter.format_suggestion(
+            raw_why="Phase stuck in IN_PROGRESS.",
+            raw_how="Reset to NOT_EXECUTED.",
+            raw_action="Update step file.",
+        )
+
+        # Should explain WHY with educational context
+        assert "WHY:" in formatted
+        assert len(formatted) > 50  # Substantive explanation expected
+
+    def test_converts_error_codes_to_explanations(self):
+        """Should convert cryptic error codes to human-readable explanations."""
+        from src.des.application.recovery_guidance_handler import JuniorDevFormatter
+
+        formatter = JuniorDevFormatter()
+
+        # Test with technical error code
+        formatted = formatter.format_suggestion(
+            raw_why="IN_PROGRESS state detected.",
+            raw_how="Reset phase status.",
+            raw_action="Change status in JSON.",
+        )
+
+        # Should explain what IN_PROGRESS means
+        assert "IN_PROGRESS" in formatted
+        # Should have explanation words nearby
+        context = formatted.lower()
+        assert any(
+            word in context for word in ["means", "indicates", "stuck", "incomplete"]
+        )
+
+    def test_formats_with_step_by_step_guidance(self):
+        """Should format suggestions with clear step-by-step actions."""
+        from src.des.application.recovery_guidance_handler import JuniorDevFormatter
+
+        formatter = JuniorDevFormatter()
+
+        formatted = formatter.format_suggestion(
+            raw_why="Agent stopped unexpectedly.",
+            raw_how="Review transcript and retry.",
+            raw_action="Run recovery command.",
+        )
+
+        # Should have structured WHY/HOW/ACTION format
+        assert "WHY:" in formatted
+        assert "HOW:" in formatted
+        assert "ACTION:" in formatted
+
+        # Action should be specific/actionable
+        action_part = formatted.split("ACTION:")[1] if "ACTION:" in formatted else ""
+        assert any(char in action_part for char in ["/", ".", "`", "-"])
+
+    def test_handles_all_failure_modes(self):
+        """Should handle formatting for all defined failure modes."""
+        from src.des.application.recovery_guidance_handler import JuniorDevFormatter
+
+        formatter = JuniorDevFormatter()
+
+        failure_modes = [
+            "abandoned_phase",
+            "silent_completion",
+            "missing_section",
+            "invalid_outcome",
+            "missing_phase",
+            "timeout_failure",
+            "agent_crash",
+        ]
+
+        for mode in failure_modes:
+            formatted = formatter.format_suggestion(
+                raw_why=f"Error in {mode}.",
+                raw_how="Fix the issue.",
+                raw_action="Take action.",
+            )
+
+            assert formatted is not None
+            assert isinstance(formatted, str)
+            assert len(formatted) > 20  # Non-trivial suggestion

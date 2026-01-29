@@ -6,8 +6,177 @@ understand and resolve execution failures through educational context.
 """
 
 import json
+import re
 from pathlib import Path
 from typing import List, Dict, Any, Optional
+
+
+class JuniorDevFormatter:
+    """
+    Formats recovery suggestions with junior developer-friendly language.
+
+    Transforms technical recovery guidance into accessible, educational content
+    by simplifying jargon, adding explanations, and structuring guidance with
+    WHY (understanding), HOW (process), and ACTION (specific steps).
+
+    Features:
+    - Replaces technical jargon with simple explanations
+    - Adds educational context explaining WHY errors occur
+    - Converts error codes to human-readable descriptions
+    - Formats with structured WHY/HOW/ACTION guidance
+    - Maintains actionable commands and file paths
+    """
+
+    # Mapping of technical terms to beginner-friendly explanations
+    TERM_EXPLANATIONS = {
+        "orchestrator": "system",
+        "state": "current condition",
+        "partially": "some but not all",
+        "corrupted": "damaged or broken",
+        "IN_PROGRESS": "stuck in the middle",
+        "NOT_EXECUTED": "ready to run again",
+        "EXECUTED": "completed",
+        "SKIPPED": "intentionally skipped",
+    }
+
+    def __init__(self):
+        """Initialize JuniorDevFormatter."""
+        pass
+
+    def format_suggestion(
+        self,
+        raw_why: str,
+        raw_how: str,
+        raw_action: str,
+    ) -> str:
+        """
+        Format a recovery suggestion for junior developer audience.
+
+        Transforms raw technical guidance into beginner-friendly structured text
+        with WHY (explanation), HOW (process), and ACTION (specific steps).
+
+        Args:
+            raw_why: Technical explanation of why error occurred
+            raw_how: Technical explanation of how to fix
+            raw_action: Technical action or command
+
+        Returns:
+            Formatted suggestion string with junior-developer friendly language,
+            structured as WHY / HOW / ACTION sections
+        """
+        # Simplify technical terms
+        simplified_why = self._simplify_language(raw_why)
+        simplified_how = self._simplify_language(raw_how)
+        simplified_action = self._simplify_language(raw_action)
+
+        # Add educational context
+        educational_why = self._add_educational_context(simplified_why)
+        educational_how = self._add_educational_context(simplified_how)
+
+        # Format as structured suggestion
+        return f"WHY: {educational_why}\n\nHOW: {educational_how}\n\nACTION: {simplified_action}"
+
+    def _simplify_language(self, text: str) -> str:
+        """
+        Replace technical jargon with simple explanations.
+
+        Scans text for known technical terms and replaces or explains them
+        in beginner-friendly language.
+
+        Args:
+            text: Text potentially containing technical jargon
+
+        Returns:
+            Text with simplified language
+        """
+        result = text
+
+        # Replace orchestrator with system
+        result = re.sub(r"\borchestrator\b", "system", result, flags=re.IGNORECASE)
+
+        # Replace framework with "system" or explain
+        result = re.sub(r"\bframework\b", "system", result, flags=re.IGNORECASE)
+
+        # Simplify "partially state" to something clearer
+        result = re.sub(r"partially\s+state", "incomplete state", result, flags=re.IGNORECASE)
+
+        # Replace "corrupted state" with "broken state"
+        result = re.sub(r"corrupted\s+state", "broken state", result, flags=re.IGNORECASE)
+
+        # Keep IN_PROGRESS, NOT_EXECUTED but ensure they're explained
+        # (will be done in _add_educational_context)
+
+        return result
+
+    def _add_educational_context(self, text: str) -> str:
+        """
+        Add educational explanations for technical terms in text.
+
+        When technical terms appear, ensures they're explained or contextualized
+        for junior developers.
+
+        Args:
+            text: Text potentially containing unexplained terms
+
+        Returns:
+            Text with added educational context
+        """
+        result = text
+
+        # Explain status codes with context
+        result = self._explain_status_codes(result)
+
+        # Replace technical terms with explanations
+        result = self._replace_technical_terms(result)
+
+        return result
+
+    def _explain_status_codes(self, text: str) -> str:
+        """
+        Explain TDD phase status codes with beginner-friendly context.
+
+        Args:
+            text: Text potentially containing status codes
+
+        Returns:
+            Text with status code explanations
+        """
+        result = text
+
+        # Explain IN_PROGRESS
+        if "IN_PROGRESS" in result:
+            result = result.replace(
+                "IN_PROGRESS",
+                "IN_PROGRESS (stuck in the middle, not completed)"
+            )
+
+        # Explain NOT_EXECUTED
+        if "NOT_EXECUTED" in result:
+            result = result.replace(
+                "NOT_EXECUTED",
+                "NOT_EXECUTED (ready to run again from the start)"
+            )
+
+        return result
+
+    def _replace_technical_terms(self, text: str) -> str:
+        """
+        Replace technical jargon with beginner-friendly alternatives.
+
+        Args:
+            text: Text potentially containing technical terms
+
+        Returns:
+            Text with technical terms replaced
+        """
+        result = text
+
+        # Replace "state" with "current condition" for clarity
+        if "state" in result.lower() and "condition" not in result.lower():
+            result = result.replace("state", "current condition")
+            result = result.replace("State", "Current condition")
+
+        return result
 
 
 class SuggestionFormatter:
