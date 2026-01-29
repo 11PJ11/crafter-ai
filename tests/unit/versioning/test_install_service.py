@@ -62,7 +62,7 @@ class InMemoryFileSystemAdapter:
         dist_prefix = str(self._dist_dir)
         for path, content in list(self._files.items()):
             if path.startswith(dist_prefix):
-                relative = path[len(dist_prefix) :].lstrip("/")
+                relative = path[len(dist_prefix) :].lstrip("/\\")
                 target_path = str(self._nwave_home / relative)
                 self._files[target_path] = content
 
@@ -294,7 +294,7 @@ class InMemoryFileSystemAdapterWithUserContent(InMemoryFileSystemAdapter):
         dist_files = {}
         for path, content in list(self._files.items()):
             if path.startswith(dist_prefix):
-                relative = path[len(dist_prefix) :].lstrip("/")
+                relative = path[len(dist_prefix) :].lstrip("/\\")
                 dist_files[relative] = content
 
         # Copy dist files to ~/.claude/ (this preserves existing user files)

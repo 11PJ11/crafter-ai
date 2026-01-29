@@ -229,8 +229,8 @@ class TestBackupPolicyPathGeneration:
         # ACT
         backup_path = policy.generate_backup_path(timestamp)
 
-        # ASSERT
-        path_str = str(backup_path)
+        # ASSERT - Use as_posix() to get consistent forward-slash format
+        path_str = backup_path.as_posix()
         assert path_str.startswith("~/.claude.backup.")
         assert path_str.endswith("20261231235959")
         assert len("20261231235959") == 14  # YYYYMMDDHHMMSS
@@ -250,9 +250,9 @@ class TestBackupPolicyPathGeneration:
         # ACT
         backup_path = policy.generate_backup_path()
 
-        # ASSERT
+        # ASSERT - Use as_posix() to get consistent forward-slash format
         after = datetime.now().replace(microsecond=0)
-        path_str = str(backup_path)
+        path_str = backup_path.as_posix()
         assert path_str.startswith("~/.claude.backup.")
 
         # Extract timestamp from path and verify it's between before and after

@@ -4,7 +4,7 @@ CoreContentIdentifier - nWave vs user content classification.
 Business capability: Identify nWave-managed content for safe updates.
 
 Classification Rules:
-- Paths with '/nw/' directory segment are nWave core content
+- Paths with '/nw/' or '\\nw\\' directory segment are nWave core content
 - User content (custom agents, commands, root-level files) is preserved during updates
 - Only paths within ~/.claude/ structure are considered for classification
 """
@@ -30,18 +30,18 @@ class CoreContentIdentifier:
     - ~/.claude/CLAUDE.md
     """
 
-    # Pattern to detect nw/ directory segment in path
-    _NW_DIRECTORY_PATTERN: Pattern[str] = re.compile(r"/nw/")
+    # Pattern to detect nw/ or nw\ directory segment in path (cross-platform)
+    _NW_DIRECTORY_PATTERN: Pattern[str] = re.compile(r"[/\\]nw[/\\]")
 
-    # Pattern to detect valid ~/.claude/ structure
-    _CLAUDE_DIR_PATTERN: Pattern[str] = re.compile(r"(^~?/.*)?\.claude/")
+    # Pattern to detect valid ~/.claude/ or ~\.claude\ structure (cross-platform)
+    _CLAUDE_DIR_PATTERN: Pattern[str] = re.compile(r"(^~?[/\\].*)?\.claude[/\\]")
 
     def is_core_content(self, path: str) -> bool:
         """
         Determine if path represents nWave-managed core content.
 
-        Core content is identified by the presence of '/nw/' directory
-        segment within a valid ~/.claude/ structure.
+        Core content is identified by the presence of '/nw/' or '\\nw\\'
+        directory segment within a valid ~/.claude/ structure.
 
         Args:
             path: File or directory path to classify
@@ -59,5 +59,5 @@ class CoreContentIdentifier:
         return bool(self._CLAUDE_DIR_PATTERN.search(path))
 
     def _has_nw_directory_segment(self, path: str) -> bool:
-        """Check if path contains '/nw/' directory segment."""
+        """Check if path contains '/nw/' or '\\nw\\' directory segment."""
         return bool(self._NW_DIRECTORY_PATTERN.search(path))
