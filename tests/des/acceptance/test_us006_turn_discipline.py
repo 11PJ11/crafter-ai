@@ -327,7 +327,6 @@ class TestTurnDisciplineNonValidationCommands:
             "Ad-hoc tasks should not have TIMEOUT_INSTRUCTION - no turn discipline needed"
         )
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_007_research_command_has_no_timeout_instruction(
         self, tmp_project_root, des_orchestrator
     ):
