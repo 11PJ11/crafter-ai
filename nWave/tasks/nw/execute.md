@@ -5,86 +5,101 @@
 
 **When YOU (orchestrator) delegate this command to an agent via Task tool:**
 
-### CORRECT Pattern (minimal prompt):
+### CRITICAL: You MUST Extract Full Context from Roadmap
+
+**The orchestrator (YOU) is responsible for:**
+1. Loading roadmap.yaml ONCE (102k tokens)
+2. Extracting step definition context (~5k tokens)
+3. Passing complete context explicitly to sub-agent
+4. Sub-agent receives context and does NOT load roadmap (saves 97k tokens per step)
+
+### CORRECT Pattern (full context extraction):
 ```python
-# NEW ARCHITECTURE: Orchestrator extracts context, passes to sub-agent
+# STEP 1: Read roadmap to find step definition
+roadmap_content = Read("docs/feature/{project-id}/roadmap.yaml")
+
+# STEP 2: Extract step context (search for step_id: "{step-id}")
+# Extract: name, description, acceptance_criteria, test_file, scenario_line,
+#          acceptance_test_scenario, dependencies, estimated_hours,
+#          implementation_notes, quality_gates
+
+# STEP 3: Pass extracted context explicitly to agent
 Task(
     subagent_type="software-crafter",
-    prompt="Execute: des-us007-boundary-rules step 01-01"
+    prompt="""You are the software-crafter agent.
+
+Task type: execute
+PROJECT: {project-id}
+STEP: {step-id}
+
+## TASK CONTEXT (EXTRACTED FROM ROADMAP - DO NOT LOAD ROADMAP)
+
+**Step ID**: {step_id}
+**Name**: {name}
+**Description**: {description}
+
+**Acceptance Criteria**:
+{acceptance_criteria}
+
+**Test File**: {test_file}
+**Scenario Line**: {scenario_line}
+**Acceptance Test Scenario**: {acceptance_test_scenario}
+
+**Quality Gates**:
+{quality_gates}
+
+**Implementation Notes**:
+{implementation_notes}
+
+**Dependencies**: {dependencies}
+**Estimated Hours**: {estimated_hours}
+
+## MANDATORY TDD PHASES
+
+Execute these 8 phases in order:
+0. PREPARE - Remove @skip decorators, verify only 1 scenario enabled
+1. RED_ACCEPTANCE - Run acceptance test, expect FAIL for valid reason
+2. RED_UNIT - Write failing unit tests before implementation
+3. GREEN - Implement minimum code to pass all tests
+4. REVIEW - Quality review: SOLID, coverage, criteria
+5. REFACTOR_CONTINUOUS - L1 (naming) + L2 (complexity) + L3 (organization)
+6. REFACTOR_L4 - Architecture patterns (OPTIONAL)
+7. COMMIT - Final validate + commit
+
+## STATE TRACKING
+
+**CRITICAL**: DO NOT load roadmap.yaml (context provided above).
+**READ/WRITE ONLY**: docs/feature/{project-id}/execution-status.yaml
+
+Update execution-status.yaml after EACH phase (no batching)."""
 )
 ```
 
 ### Why This Works:
 - ✅ Orchestrator loads roadmap.yaml ONCE (102k tokens)
-- ✅ Orchestrator extracts task context (~5k tokens) and passes to sub-agent
-- ✅ Sub-agent does NOT load roadmap (saves 97k tokens per step)
-- ✅ Agent has internal knowledge of complete TDD cycle (8 phases)
-- ✅ No conversation context needed
+- ✅ Orchestrator extracts task context (~5k tokens) and passes explicitly
+- ✅ Sub-agent receives full context, does NOT load roadmap (saves 97k tokens per step)
+- ✅ Agent has all information needed to execute
+- ✅ No ambiguity about what to do
 - ✅ Deterministic execution
 
 ### WRONG Patterns (avoid):
 ```python
-# ❌ Including extracted context in prompt (orchestrator already passes it)
-Task(prompt="Execute step 01-01. Context: {extracted_context}")
+# ❌ WRONG - Minimal prompt without context (agent forced to load roadmap)
+Task(prompt="Execute: des-us007-boundary-rules step 01-01")
 
-# ❌ Listing 8 phases (agent already knows this)
-Task(prompt="Execute using 8 phases: 1. PREPARE, 2. RED_ACCEPTANCE...")
+# ❌ WRONG - Including conversation context instead of roadmap context
+Task(prompt="""Execute 01-01. As we discussed earlier, focus on parallelization.""")
 
-# ❌ Old step file path format (no longer used)
+# ❌ WRONG - Old step file path format (no longer used)
 Task(prompt="Execute: docs/feature/auth-upgrade/steps/01-01.json")
-
-# ❌ Any context from current conversation
-Task(prompt="Execute 01-01. As we discussed earlier, the SISTER constraint...")
 ```
 
 ### Key Principle:
-**Command invocation = Project ID + Step ID ONLY**
+**Orchestrator extracts and passes ALL context explicitly. Agent receives self-contained prompt.**
 
-The orchestrator handles context extraction. Your prompt should not duplicate what the orchestrator provides.
-
----
-
-## AGENT PROMPT REINFORCEMENT (Command-Specific Guidance - NEW ARCHITECTURE)
-
-Reinforce command-specific principles extracted from THIS file (execute.md):
-
-### Recommended Prompt Template (Schema v2.0):
-```python
-Task(
-    subagent_type="software-crafter",
-    prompt="""Execute: des-us007-boundary-rules step 01-01
-
-CRITICAL (from execute.md):
-- DO NOT load roadmap.yaml (orchestrator provides extracted context)
-- Save execution-status.yaml after EACH phase (no batching)
-- Verify entry point wiring in PREPARE phase (Walking Skeleton - CM-D)
-- DEFERRED blocks commit (use NOT_APPLICABLE or APPROVED_SKIP)
-- Read canonical schema first: nWave/templates/step-tdd-cycle-schema.json (8 phases)
-
-AVOID:
-- ❌ Loading roadmap.yaml (causes 102k token waste per step)
-- ❌ Batching phase updates (causes incomplete state tracking)
-- ❌ Skipping wiring check (features exist but don't work for users)
-- ❌ Using DEFERRED: prefix (blocks commit)
-- ❌ Leaving phases IN_PROGRESS (indicates abandoned execution)"""
-)
-```
-
-### Why Add This Guidance:
-- **Source**: Extracted from execute.md (not conversation context)
-- **Deterministic**: Same principles every time you invoke execute
-- **Reinforcing**: Prevents common boundary violations
-- **Token-efficient**: ~100 tokens vs 1000s in rework (plus 97k saved by not loading roadmap)
-
-### What NOT to Add:
-```python
-# ❌ WRONG - This uses orchestrator's conversation context
-Task(prompt="""Execute: 01-01
-
-Based on our earlier analysis, the SISTER constraint affects 20% of tests.
-The tier 2 tests at 532 seconds are the main bottleneck.
-Focus on parallelization as we discussed.""")
-```
+The token savings (97k per step) ONLY work if orchestrator does the extraction.
+If agent has to load roadmap, we waste tokens.
 
 ---
 
@@ -162,24 +177,53 @@ Token savings: 102k - 5k = 97k per step × 16 steps = 1.52M tokens saved.
 **Orchestrator Actions BEFORE invoking Task tool**:
 
 ```python
-# 1. Load roadmap (102k tokens - done ONCE by orchestrator)
-roadmap = orchestrator.load_roadmap(project_id)
+# 1. Use Grep to find step definition location in roadmap
+grep_result = Grep(
+    pattern=f'step_id: "{step_id}"',
+    path=f"docs/feature/{project_id}/roadmap.yaml",
+    output_mode="content",
+    context_lines=50  # Get surrounding context
+)
 
-# 2. Load execution status (8k tokens)
-exec_status = orchestrator.load_execution_status(project_id)
+# 2. Read the step section from roadmap
+# Extract from grep results:
+# - name: (string)
+# - description: (multi-line string after >)
+# - acceptance_criteria: (list of strings)
+# - test_file: (string)
+# - scenario_line: (number)
+# - acceptance_test_scenario: (string)
+# - quality_gates: (dict with acceptance_test_must_fail_first, etc.)
+# - implementation_notes: (multi-line string after >)
+# - dependencies: (list of step IDs)
+# - estimated_hours: (number)
+# - suggested_agent: (string)
 
-# 3. Extract task context (~5k tokens - this is what sub-agent receives)
-task_context = orchestrator.extract_task_context(roadmap, step_id)
+# 3. Read TDD phases from roadmap header (once, reuse for all steps)
+# Located in tdd_phases section at top of roadmap
 
-# task_context contains:
-# - step_id, name, description
-# - acceptance_criteria (from roadmap)
-# - test_file, scenario_line, acceptance_test_scenario
-# - quality_gates (TDD requirements)
-# - deliverables, implementation_notes
-# - dependencies, estimated_hours, suggested_agent
-# - tdd_phases (8 phases from roadmap)
-# - execution_config (timeout settings)
+# 4. Read execution config from roadmap header
+# Located in execution_config section
+
+# Result: ~5k tokens of extracted context to pass to agent
+```
+
+**Extraction Example**:
+
+```
+Step found at line 360:
+  - step_id: "03-01"
+    name: "Create ScopeValidator class with git diff integration"
+    description: >
+      Implement ScopeValidator in src/des/validation/scope_validator.py...
+    acceptance_criteria:
+      - "ScopeValidator executes git diff command successfully"
+      - "Modified file list extracted from git output"
+    test_file: "tests/des/acceptance/test_us007_boundary_rules.py"
+    scenario_line: 357
+    ...
+
+Extract these fields and format into agent prompt below.
 ```
 
 **MANDATORY**: Use the Task tool to invoke the specified agent. Do NOT attempt to execute the task yourself.
