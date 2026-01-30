@@ -70,3 +70,4 @@ env/
 
 # DES audit logs (local only)
 .des/
+/mutants/
