@@ -88,6 +88,58 @@ language = detect_project_language('.')
 | C# | Stryker.NET | `dotnet tool install -g dotnet-stryker` | `dotnet stryker` |
 | Go | go-mutesting | `go install github.com/zimmski/go-mutesting/cmd/go-mutesting@latest` | `go-mutesting ./...` |
 
+### STEP 2.5: Scope Completeness Check (MANDATORY)
+
+Before configuring mutation testing, the orchestrator MUST discover the
+complete implementation scope. This prevents partial testing that creates
+false confidence (e.g., testing 1 of 3 implementation files and reporting
+aggregate 100% when actual coverage is 33%).
+
+**DISCOVERY METHOD** (in priority order):
+
+1. **FROM execution-status.yaml** (most reliable — actual files modified):
+   ```
+   Read completed_steps[*].files_modified.implementation
+   Deduplicate into file list
+   ```
+
+2. **FROM roadmap.yaml implementation_scope** (declared scope):
+   ```
+   Read implementation_scope.source_directories
+   Use: find {dir} -name "*.py" -not -path "*__pycache__*" -not -name "__init__.py"
+   ```
+
+3. **FROM git history** (fallback):
+   ```
+   Use: git log --all --grep="{project-id}" --format=%H
+   Then: git diff --name-only {first}^ {last} | grep "^src/"
+   ```
+
+**VALIDATION RULES**:
+
+**Rule 1 — COMPLETENESS**:
+Every discovered implementation file MUST have mutation testing coverage.
+Missing file = BLOCK (create config, then continue).
+
+**Rule 2 — SANITY**:
+Expected mutants = implementation_lines x 0.05 to 0.10
+- If actual_mutants < expected_min x 0.5: WARN "Mutant count seems low — verify scope"
+- If actual_mutants < expected_min x 0.25: BLOCK "Mutant count too low — likely missing files"
+
+**Rule 3 — PER-COMPONENT**:
+Report mutation score per implementation file, not just aggregate.
+Each component's score must be visible in the mutation report.
+
+**MUTATION ARTIFACTS LOCATION**:
+All mutation testing configs and session files go in:
+```
+docs/feature/{project-id}/mutation/
+├── cosmic-ray-{component}.toml    # Per-component configs
+├── {component}-session.sqlite     # Session databases (gitignored)
+└── mutation-report.md             # Final report
+```
+These are ephemeral quality gate artifacts, disposed during `/nw:finalize`.
+
 ### STEP 3: Pre-Invocation Validation Checklist
 
 Before invoking Task tool, verify ALL items:
@@ -96,6 +148,10 @@ Before invoking Task tool, verify ALL items:
 - [ ] Test suite exists and passes
 - [ ] Source code paths identified
 - [ ] Threshold configured (default: 75%)
+- [ ] Implementation scope discovered (file list populated)
+- [ ] ALL implementation files covered by mutation config
+- [ ] Expected mutant range calculated and logged
+- [ ] Per-component reporting configured
 
 ### STEP 4: Invoke Software-Crafter Agent Using Task Tool
 
@@ -141,7 +197,7 @@ EXECUTION STEPS:
    - Categorize mutants by file/module
 
 4. CREATE MUTATION REPORT
-   Write to docs/feature/{project_id}/mutation-report.md:
+   Write to docs/feature/{project_id}/mutation/mutation-report.md:
 
    ```markdown
    # Mutation Testing Report
@@ -151,16 +207,26 @@ EXECUTION STEPS:
    **Language**: {language}
    **Tool**: {mutation_tool}
 
-   ## Summary
+   ## Scope Completeness
 
-   | Metric | Value |
-   |--------|-------|
-   | Total Mutants | {total} |
-   | Killed | {killed} |
-   | Survived | {survived} |
-   | Mutation Score | {score}% |
-   | Threshold | {threshold}% |
-   | **Status** | {PASS/FAIL} |
+   - Implementation files discovered: {N}
+   - Implementation files tested: {N} (100%)
+   - Expected mutant range: {min}-{max}
+   - Actual mutants: {actual} (within range: YES/NO)
+
+   ## Per-Component Results
+
+   | Component | Lines | Mutants | Killed | Score | Status |
+   |-----------|-------|---------|--------|-------|--------|
+   | {file1}   | {L}   | {M}    | {K}    | {S}%  | PASS/WARN |
+   | {file2}   | {L}   | {M}    | {K}    | {S}%  | PASS/WARN |
+   | **TOTAL** | {L}   | {M}    | {K}    | {S}%  | PASS/FAIL |
+
+   Threshold enforcement:
+   - AGGREGATE score must meet threshold ({threshold}%)
+   - ANY individual component below threshold triggers WARNING
+   - Security-critical components (validators, auth, access control) must meet
+     threshold INDIVIDUALLY — aggregate pass does not compensate
 
    ## Surviving Mutants Analysis
 

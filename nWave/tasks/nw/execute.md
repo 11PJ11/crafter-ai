@@ -561,8 +561,30 @@ The phases are (0-7):
 6. **REFACTOR_CONTINUOUS** - Progressive refactoring: L1 (naming) + L2 (complexity) + L3 (organization)
 7. **REFACTOR_L4** - Architecture patterns (OPTIONAL - can use CHECKPOINT_PENDING or NOT_APPLICABLE)
 8. **COMMIT** - Final validate + commit (absorbs FINAL_VALIDATE metadata checks)
+   - **COMMIT phase MUST also record files_modified** in execution-status.yaml (see below)
 
 **For non-ATDD steps** (research, infrastructure): Phases 1-4 may be pre-set to `SKIPPED` with `blocked_by: "NOT_APPLICABLE"`.
+
+#### COMMIT Phase: files_modified Tracking (MANDATORY)
+
+After creating the git commit, record files modified in execution-status.yaml:
+
+1. Run: `git diff --name-only HEAD~1`
+2. Categorize files:
+   - **implementation**: files under `src/` or `lib/` (excluding `__init__.py`)
+   - **tests**: files under `tests/`
+3. Update execution-status.yaml `completed_steps` entry:
+   ```yaml
+   files_modified:
+     implementation:
+       - "src/des/templates/boundary_rules_template.py"
+     tests:
+       - "tests/des/unit/test_boundary_rules_template.py"
+   ```
+
+**Why**: This data is used by the orchestrator during mutation testing (Phase 2.5)
+to discover the complete implementation scope. Without it, mutation testing may
+miss implementation files, creating false confidence in test quality.
 
 #### TDD Checkpoint Commit Strategy (Schema v2.0 - 8 Phases)
 

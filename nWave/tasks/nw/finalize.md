@@ -650,14 +650,40 @@ Start: {date}
 ```python
 1. Delete docs/feature/{project-id}/execution-status.yaml
 2. Delete docs/feature/{project-id}/roadmap.yaml
-3. Delete docs/feature/{project-id}/ directory (if empty)
-4. Verify cleanup completed
+3. Delete docs/feature/{project-id}/mutation/ directory (quality gate artifacts)
+4. Delete docs/feature/{project-id}/ directory (if empty)
+5. Verify cleanup completed
 ```
 
 **Files to Remove** (Schema v2.0):
 - `docs/feature/{project-id}/execution-status.yaml` - Execution tracking file
 - `docs/feature/{project-id}/roadmap.yaml` - Original roadmap
+- `docs/feature/{project-id}/mutation/` - Quality gate artifacts (configs, sessions, report)
 - `docs/feature/{project-id}/` - Project workflow directory
+
+**Quality Gate Artifact Cleanup** (mutation/ directory):
+
+The `mutation/` directory contains ephemeral quality gate artifacts that are
+NOT project configuration. They are specific to THIS feature's scope and are
+not reusable across features. The directory includes:
+- `cosmic-ray-{component}.toml` — Per-component mutation testing configs
+- `{component}-session.sqlite` — Session databases (binary, gitignored)
+- `mutation-report.md` — Final report
+
+**WHAT IS PRESERVED** in evolution document:
+- Per-component mutation scores (table format)
+- Scope completeness confirmation
+- Surviving mutant count and analysis summary
+- Overall pass/fail status
+
+**WHAT IS DISPOSED** with mutation/ directory:
+- cosmic-ray-*.toml config files
+- *-session.sqlite databases
+- Intermediate mutation analysis files
+
+The evolution document captures the mutation testing RESULTS while the
+disposable artifacts (configs, sessions) are cleaned up with the rest
+of the feature directory.
 
 **Files to Preserve**:
 - `docs/evolution/YYYY-MM-DD-{project-id}.md` - Permanent archive (date-feature format)

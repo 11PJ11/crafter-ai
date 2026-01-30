@@ -28,6 +28,11 @@ execution_status:
     #   phases_executed: 8  # Number of phases completed
     #   commit_sha: "abc123def"  # Git commit hash
     #   duration_minutes: 85  # Total execution time
+    #   files_modified:              # Actual files changed by this step
+    #     implementation:            # src/ files (mutation testing targets)
+    #       - "src/des/templates/boundary_rules_template.py"
+    #     tests:                     # test files
+    #       - "tests/des/unit/test_boundary_rules_template.py"
 
   # Phase checkpoint for current step (enables phase-level resume)
   step_checkpoint:
@@ -61,6 +66,10 @@ execution_status:
 # 4. Update after EACH phase execution (no batching)
 # 5. Move completed step to completed_steps array when all phases done
 # 6. Clear step_checkpoint when step completes
+# 7. In COMMIT phase: populate files_modified using git diff --name-only HEAD~1
+#    - implementation: files under src/ or lib/ (excluding __init__.py)
+#    - tests: files under tests/
+#    - Orchestrator uses this data for mutation testing scope discovery
 
 # Integration with TDD Cycle:
 # - Phase 0 (PREPARE): Remove @skip, verify setup

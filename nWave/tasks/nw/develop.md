@@ -942,7 +942,7 @@ Instances update phase_execution_log, next instance reads prior progress, contin
            EXIT
 
    print(f"\n✅ All {len(sorted_step_files)} steps completed successfully")
-   print("Proceeding to Phase 7.5 (mutation testing)...")
+   print("Proceeding to Phase 2.5 (mutation testing)...")
 
    mark_phase_complete(project_id, 'Phase 7: Execute All Steps')
    ```
@@ -956,7 +956,7 @@ Instances update phase_execution_log, next instance reads prior progress, contin
 
 ---
 
-### STEP 10: Phase 7.5 - Mutation Testing (Quality Gate)
+### STEP 10: Phase 2.5 - Mutation Testing (Quality Gate)
 
 **Objective**: Validate test suite quality through mutation testing before finalize.
 
@@ -964,7 +964,128 @@ Instances update phase_execution_log, next instance reads prior progress, contin
 
 **MANDATORY**: Mutation testing is NOT optional. It is the guarantee of test quality and MUST pass before finalization.
 
-**Actions**:
+**LESSON LEARNED**: Quality gate scope MUST equal implementation scope. Partial testing creates false confidence, which is MORE dangerous than no testing. The orchestrator must discover ALL implementation files before running mutation testing.
+
+**Mutation artifacts location**: `docs/feature/{project-id}/mutation/` (ephemeral — disposed during finalization)
+
+---
+
+#### Phase 2.5a: Scope Discovery (MANDATORY — before running mutation tests)
+
+**Objective**: Discover ALL implementation files that must be mutation-tested.
+
+```
+SCOPE DISCOVERY (MANDATORY before mutation testing):
+
+1. Collect implementation scope from TWO sources:
+
+   SOURCE A — Declared scope (from roadmap.yaml):
+     Read implementation_scope.source_directories
+     Example: ["src/des/"]
+
+   SOURCE B — Actual scope (from execution-status.yaml):
+     For each completed_step, collect files_modified.implementation
+     Deduplicate into a single list
+     Example: ["src/des/templates/boundary_rules_template.py",
+               "src/des/application/boundary_rules_generator.py",
+               "src/des/validation/scope_validator.py"]
+
+2. Cross-validate:
+   - Every file in SOURCE B must be under a directory in SOURCE A
+   - If mismatch: WARN (agent modified files outside declared scope)
+
+3. Build implementation file list:
+   - Use SOURCE B (actual files) as the definitive scope
+   - If SOURCE B is empty (e.g., files_modified not tracked):
+     Fall back to SOURCE A directories + git log discovery:
+       git log --all --grep="{project-id}" --format=%H
+       git diff --name-only {first}^ {last} | grep "^src/"
+
+4. Count implementation lines per file:
+   - Use: wc -l <file> (excluding blank/comment lines)
+   - Calculate expected mutant range: total_lines × 0.05 to total_lines × 0.10
+
+5. Log scope discovery results:
+   SCOPE DISCOVERY:
+     Implementation files: N
+     Total implementation lines: M
+     Expected mutants: X-Y (at 5-10 per 100 lines)
+     Files:
+       - src/module/file1.py (55 lines)
+       - src/module/file2.py (119 lines)
+       - src/module/file3.py (214 lines)
+```
+
+#### Phase 2.5b: Scope Validation (MANDATORY — blocks if incomplete)
+
+**Objective**: Ensure mutation testing config covers EVERY implementation file.
+
+```
+SCOPE VALIDATION (MANDATORY — blocks mutation testing if incomplete):
+
+1. Create mutation testing workspace:
+   mkdir -p docs/feature/{project-id}/mutation/
+
+2. For EACH discovered implementation file, create a per-file config:
+   - Config path: docs/feature/{project-id}/mutation/cosmic-ray-{component-name}.toml
+   - module-path = "{implementation-file-path}"
+   - test-command = "pytest -x {matching-test-file}"
+   - Map test file: src/module/foo.py → tests/module/unit/test_foo.py
+
+3. If file-to-test mapping is ambiguous:
+   - Use directory-level test command: "pytest -x tests/{module}/"
+
+4. BLOCK CONDITIONS (mutation testing CANNOT proceed):
+   - No implementation files discovered (empty scope)
+   - Implementation scope has 0 lines of code
+   - Scope discovery found files but no config created
+```
+
+#### Phase 2.5c: Per-Component Execution and Reporting (MANDATORY)
+
+**Objective**: Run mutation testing per file and report per-component scores.
+
+```
+PER-COMPONENT REPORTING (MANDATORY — prevents aggregate hiding):
+
+1. Run mutation testing PER implementation file:
+   For each config in docs/feature/{project-id}/mutation/cosmic-ray-*.toml:
+     cosmic-ray init {config} {session}.sqlite
+     cosmic-ray exec {config} {session}.sqlite
+     cr-report {session}.sqlite
+
+2. Collect per-component results and report BOTH aggregate AND per-component:
+
+   MUTATION TESTING RESULTS:
+   ┌─────────────────────────────────┬─────────┬────────┬─────────┬────────┐
+   │ Component                       │ Mutants │ Killed │ Score   │ Status │
+   ├─────────────────────────────────┼─────────┼────────┼─────────┼────────┤
+   │ file1.py                        │ 12      │ 12     │ 100.0%  │ ✅     │
+   │ file2.py                        │ 17      │ 16     │ 94.1%   │ ✅     │
+   │ file3.py                        │ 47      │ 36     │ 76.6%   │ ⚠️     │
+   ├─────────────────────────────────┼─────────┼────────┼─────────┼────────┤
+   │ AGGREGATE                       │ 76      │ 64     │ 84.2%   │ ✅     │
+   └─────────────────────────────────┴─────────┴────────┴─────────┴────────┘
+
+3. SANITY CHECK — After mutation testing:
+   - If actual_mutants < expected_min × 0.5: WARN "Mutant count seems low"
+   - If actual_mutants < expected_min × 0.25: BLOCK "Likely missing files"
+
+4. Threshold enforcement:
+   - AGGREGATE score must meet threshold (80%)
+   - ANY component below threshold triggers WARNING with explanation
+   - Security-critical components (validators, auth, access control) must meet
+     threshold INDIVIDUALLY — aggregate pass does not compensate
+   - BLOCK if aggregate < threshold
+   - WARN if any component < threshold (even if aggregate passes)
+
+5. Create mutation report at:
+   docs/feature/{project-id}/mutation/mutation-report.md
+```
+
+---
+
+**Actions** (existing mutation testing logic follows):
 
 1. **Detect project language**:
    ```python
@@ -1126,7 +1247,7 @@ Instances update phase_execution_log, next instance reads prior progress, contin
    else:
        print(f"✅ Mutation score {mutation_score}% meets threshold {MUTATION_THRESHOLD}%")
 
-   mark_phase_complete(project_id, 'Phase 7.5: Mutation Testing')
+   mark_phase_complete(project_id, 'Phase 2.5: Mutation Testing')
    print("Proceeding to Phase 8 (finalize)...")
    ```
 
@@ -1766,7 +1887,7 @@ The second test exercises component logic but NOT system wiring.
 - [ ] **Phase 3-4**: Roadmap created OR skipped (if approved), dual reviewed and approved
 - [ ] **Phase 5-6**: Steps created OR skipped (if all approved), each reviewed and approved
 - [ ] **Phase 7**: All steps executed with 14-phase TDD, all commits created
-- [ ] **Phase 7.5**: Mutation testing passed (>= 75% kill rate) or documented skip
+- [ ] **Phase 2.5**: Mutation testing passed (>= 75% kill rate) or documented skip
 - [ ] **Phase 8**: Finalize executed, evolution document created
 - [ ] **Phase 9**: Completion report displayed
 

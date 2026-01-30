@@ -39,6 +39,18 @@ phases:
         scenario: "{feature-file}::{scenario-name}"
         criteria: "{criteria}"
 
+# Implementation scope declaration (MANDATORY)
+# Orchestrator uses this during mutation testing to validate complete coverage
+# Set by solution-architect during /nw:roadmap, reviewed during roadmap review
+implementation_scope:
+  source_directories:
+    - "src/{module}/"         # All implementation source code
+  test_directories:
+    - "tests/{module}/"       # All test code
+  excluded_patterns:          # Files to exclude from mutation scope
+    - "__init__.py"           # Empty init files (no logic to mutate)
+    - "__pycache__/**"
+
 # Dependency summary (optional but recommended for complex roadmaps)
 dependencies:
   "{step-1}": ["{dep-ids}"]
