@@ -402,3 +402,115 @@ class TestScopeValidatorPatternMatching:
             # Assert: Violation detected (path doesn't match exactly)
             assert result.has_violations is True
             assert "src/repositories/UserRepository.py" in result.out_of_scope_files
+
+
+class TestStepFileImplicitAllowlist:
+    """Test step file modification is implicitly allowed regardless of patterns."""
+
+    def test_step_file_modification_always_allowed(self, tmp_path):
+        """
+        GIVEN step file with restricted allowed_patterns (**/UserRepository*)
+        WHEN git diff shows step file itself was modified
+        THEN validation passes (step file implicitly allowed)
+        """
+        # Arrange
+        step_file = tmp_path / "steps" / "01-01.json"
+        step_file.parent.mkdir(parents=True, exist_ok=True)
+        step_file.write_text(
+            json.dumps(
+                {
+                    "scope": {
+                        "allowed_patterns": [
+                            "**/UserRepository*"
+                        ],  # Step file not in patterns
+                        "target_files": ["src/repositories/UserRepository.py"],
+                    }
+                }
+            )
+        )
+        validator = ScopeValidator()
+
+        # Mock git showing step file modified
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = Mock(stdout=f"{str(step_file)}\n", returncode=0)
+
+            # Act
+            result = validator.validate_scope(
+                step_file_path=str(step_file), project_root=tmp_path
+            )
+
+            # Assert: Step file modification is allowed
+            assert result.has_violations is False
+            assert str(step_file) not in result.out_of_scope_files
+
+    def test_step_file_plus_out_of_scope_file_detects_violation(self, tmp_path):
+        """
+        GIVEN step file with restricted patterns
+        WHEN git diff shows step file AND out-of-scope file
+        THEN step file passes, out-of-scope file detected
+        """
+        # Arrange
+        step_file = tmp_path / "steps" / "01-01.json"
+        step_file.parent.mkdir(parents=True, exist_ok=True)
+        step_file.write_text(
+            json.dumps(
+                {
+                    "scope": {
+                        "allowed_patterns": ["**/UserRepository*"],
+                        "target_files": ["src/repositories/UserRepository.py"],
+                    }
+                }
+            )
+        )
+        validator = ScopeValidator()
+
+        # Mock git showing step file + out-of-scope file
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = Mock(
+                stdout=f"{str(step_file)}\nsrc/services/OrderService.py\n",
+                returncode=0,
+            )
+
+            # Act
+            result = validator.validate_scope(
+                step_file_path=str(step_file), project_root=tmp_path
+            )
+
+            # Assert: OrderService violation, step file allowed
+            assert result.has_violations is True
+            assert "src/services/OrderService.py" in result.out_of_scope_files
+            assert str(step_file) not in result.out_of_scope_files
+
+    def test_step_file_implicitly_allowed_even_with_no_patterns(self, tmp_path):
+        """
+        GIVEN step file with empty allowed_patterns
+        WHEN git diff shows step file modified
+        THEN validation passes (step file always implicitly allowed)
+        """
+        # Arrange
+        step_file = tmp_path / "steps" / "01-01.json"
+        step_file.parent.mkdir(parents=True, exist_ok=True)
+        step_file.write_text(
+            json.dumps(
+                {
+                    "scope": {
+                        "allowed_patterns": [],  # Empty patterns
+                        "target_files": [],
+                    }
+                }
+            )
+        )
+        validator = ScopeValidator()
+
+        # Mock git showing step file modified
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = Mock(stdout=f"{str(step_file)}\n", returncode=0)
+
+            # Act
+            result = validator.validate_scope(
+                step_file_path=str(step_file), project_root=tmp_path
+            )
+
+            # Assert: Step file allowed even with empty patterns
+            assert result.has_violations is False
+            assert str(step_file) not in result.out_of_scope_files

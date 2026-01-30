@@ -301,7 +301,7 @@ docs/feature/{project-id}/
 
 **Eliminated Artifacts** (Token savings):
 - ❌ baseline.yaml (300k tokens - write-only artifact)
-- ❌ steps/*.json (4.8M tokens - replaced by execution-status.yaml at 5k tokens/step)
+- ❌ steps/*.json (4.8M tokens - step context now extracted from roadmap.yaml on-demand)
 
 ### Orchestration Flow (Schema v2.0 - Token-Minimal Architecture)
 
@@ -858,76 +858,48 @@ Instances update phase_execution_log, next instance reads prior progress, contin
            completed_steps.append(step_id)
            continue
 
-       # Between Task invocations, the step file is the ONLY persistence mechanism.
+       # Between Task invocations, execution-status.yaml is the ONLY persistence mechanism.
        # No intermediate working files, session variables, or agent memory carries forward.
-       # When Instance 2 starts, it loads the step file written by Instance 1, sees all
-       # prior accomplishments in structured JSON, and knows exactly where to continue.
+       # When Instance 2 starts, it reads execution-status.yaml written by Instance 1,
+       # sees all prior accomplishments in step_checkpoint.phases, and continues from there.
        # This clean separation prevents context degradation and ensures each instance
        # operates with full clarity of prior progress.
 
        # Execute step with complete TDD cycle using Task tool delegation
        print(f"Invoking: Task tool with @software-crafter for step {step_id}")
 
-       # CRITICAL: Do NOT pass /nw:execute to agent - they cannot execute it
-       # Read the step file content and embed complete instructions inline
-       with open(step_file, 'r') as f:
-           step_content = json.load(f)
+       # CRITICAL: Extract step context from roadmap (Schema v2.0 - Token-Minimal Architecture)
+       # Orchestrator loads roadmap ONCE, extracts ~5k context, passes to sub-agent
+       # Sub-agent does NOT load roadmap (saves 97k tokens per step)
 
-       task_result = Task(
-           subagent_type="software-crafter",
-           prompt=f'''
-You are a software-crafter agent executing atomic task {step_id}.
-
-═══════════════════════════════════════════════════════════
-⚠️  TASK BOUNDARY - READ BEFORE EXECUTING
-═══════════════════════════════════════════════════════════
-YOUR ONLY TASK: Execute step {step_id} through all TDD phases (defined in canonical schema)
-STEP FILE: {step_file}
-FORBIDDEN ACTIONS:
-  ❌ DO NOT execute other steps
-  ❌ DO NOT continue the workflow
-REQUIRED: Return control to orchestrator after completion
-═══════════════════════════════════════════════════════════
-
-STEP CONTENT:
-```json
-{json.dumps(step_content, indent=2)}
-```
-
-EXECUTE ALL TDD PHASES IN ORDER (from canonical schema):
-
-Reference the current TDD phases from `nWave/templates/step-tdd-cycle-schema.json`.
-The phases are embedded at build time - do not hardcode them here.
-See the "TDD Cycle Definition" section above for the current phase list.
-
-INLINE REVIEW CRITERIA (Phases 7 and 12):
-- SOLID principles followed
-- Test coverage adequate (>80%)
-- Acceptance criteria met
-- Code readable and maintainable
-- No security vulnerabilities
-- Refactoring did not break tests
-
-After EACH phase, UPDATE the step file:
-- Set phase status to EXECUTED or SKIPPED
-- Record duration_minutes, outcome, outcome_details
-- Commit after green phases
-
-DELIVERABLES:
-- Complete all TDD phases (from canonical schema)
-- Update step file with execution results
-- Return when COMMIT phase completes with PASS
-''',
-           description=f"Execute step {step_id} with complete TDD cycle"
+       # Use Grep to find step definition in roadmap
+       import subprocess
+       grep_result = subprocess.run(
+           ['grep', '-A', '50', f'step_id: "{step_id}"', f'docs/feature/{project_id}/roadmap.yaml'],
+           capture_output=True, text=True
        )
+       step_context_raw = grep_result.stdout
 
-       # Verify completion by checking step file for COMMIT/PASS
-       with open(step_file, 'r') as f:
-           updated_step_data = json.load(f)
+       # Extract fields from YAML (simplified extraction - production would parse YAML properly)
+       # For now, delegate to /nw:execute which handles proper extraction
 
-       tdd_tracking_after = updated_step_data.get('tdd_cycle', {}).get('tdd_phase_tracking', {})
-       phase_log_after = tdd_tracking_after.get('phase_execution_log', [])
-       commit_phase_after = next((p for p in phase_log_after if p['phase_name'] == 'COMMIT'), None)
+       # Invoke using /nw:execute skill which handles context extraction
+       from skills import execute_skill
+       execute_skill(agent="software-crafter", project_id=project_id, step_id=step_id)
+
+       # Note: The above is pseudocode. In actual implementation, orchestrator would:
+       # 1. Parse roadmap YAML to extract step definition
+       # 2. Format extracted context into prompt
+       # 3. Pass to Task tool with explicit context (see execute.md for full template)
+
+       # Verify completion by checking execution-status.yaml for COMMIT/PASS
+       with open(f'docs/feature/{project_id}/execution-status.yaml', 'r') as f:
+           import yaml
+           updated_exec_status = yaml.safe_load(f)
+
+       checkpoint = updated_exec_status.get('execution_status', {}).get('step_checkpoint', {})
+       phases = checkpoint.get('phases', [])
+       commit_phase_after = next((p for p in phases if p['phase_name'] == 'COMMIT'), None)
 
        if commit_phase_after and commit_phase_after.get('outcome') == 'PASS':
            print(f"✓ Step {step_id} completed successfully")
@@ -1376,21 +1348,23 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"""
 
 2. **Count final statistics**:
    ```python
-   baseline_path = f'docs/feature/{project_id}/baseline.yaml'
    roadmap_path = f'docs/feature/{project_id}/roadmap.yaml'
-   steps_dir = f'docs/feature/{project_id}/steps'
+   exec_status_path = f'docs/feature/{project_id}/execution-status.yaml'
 
-   step_files = glob.glob(os.path.join(steps_dir, '*.json'))
+   # Count steps from execution-status.yaml (Schema v2.0)
+   with open(exec_status_path, 'r') as f:
+       exec_status = yaml.safe_load(f)
+
+   step_count = len(exec_status.get('execution_status', {}).get('completed_steps', []))
 
    # Count commits
    commit_count = len(progress.get('completed_steps', []))
 
-   # Count reviews
+   # Count reviews (Schema v2.0 - no step file reviews)
    total_reviews = (
        1 +  # Baseline review
        1 +  # Roadmap review (Software Crafter)
-       len(step_files) +  # Step file reviews
-       (commit_count * 2)  # TDD phase reviews (REVIEW + POST-REFACTOR REVIEW per step)
+       (commit_count * 2)  # TDD phase reviews (REVIEW + REFACTOR per step)
    )
    ```
 
@@ -1409,16 +1383,15 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"""
        print(f"  ✓ {phase}")
    print()
    print("Artifacts Created:")
-   print(f"  - Baseline: docs/feature/{project_id}/baseline.yaml")
    print(f"  - Roadmap: docs/feature/{project_id}/roadmap.yaml")
-   print(f"  - Steps: {len(step_files)} atomic steps")
+   print(f"  - Execution Status: docs/feature/{project_id}/execution-status.yaml")
+   print(f"  - Steps Completed: {step_count}")
    print(f"  - Commits: {commit_count} (one per step)")
    print()
    print("Quality Gates Passed:")
    print(f"  - Total reviews: {total_reviews}")
    print(f"    • 1 baseline review")
-   print(f"    • 2 roadmap reviews (business + technical)")
-   print(f"    • {len(step_files)} step file reviews")
+   print(f"    • 1 roadmap review (Software Crafter)")
    print(f"    • {commit_count * 2} TDD phase reviews ({commit_count} steps × 2 reviews)")
    print()
    print("💾 All changes committed locally (not pushed)")
@@ -1461,18 +1434,19 @@ Develop a complete feature from natural language description:
 /nw:develop "Implement user authentication with JWT tokens and session management"
 ```
 
-**What happens**:
-1. Creates baseline measurement (`docs/feature/user-authentication/baseline.yaml`)
-2. Reviews baseline (1 review)
-3. Creates roadmap (`docs/feature/user-authentication/roadmap.yaml`)
-4. Reviews roadmap (Software Crafter)
-5. Splits into atomic steps (`docs/feature/user-authentication/steps/*.json`)
-6. Reviews each step file (N reviews, one per step)
-7. Executes all steps with complete TDD cycle (2N reviews: REVIEW + POST-REFACTOR per step)
-8. Finalizes and archives to `docs/evolution/`
-9. Reports completion
+**What happens** (Schema v2.0):
+1. Creates roadmap (`docs/feature/user-authentication/roadmap.yaml`)
+2. Reviews roadmap (Software Crafter)
+3. Executes all steps with complete TDD cycle (2N reviews: REVIEW + REFACTOR per step)
+   - Orchestrator extracts context from roadmap for each step (~5k tokens)
+   - Sub-agents execute without loading roadmap (saves 97k tokens per step)
+   - Progress tracked in execution-status.yaml
+4. Finalizes and archives to `docs/evolution/`
+5. Reports completion
 
-**Total quality gates**: 3 + 3N reviews (where N = number of steps)
+**Total quality gates**: 1 + 2N reviews (where N = number of steps)
+
+**Token savings**: ~95% reduction (baseline + split eliminated, roadmap context extracted on-demand)
 
 ---
 
@@ -1570,14 +1544,14 @@ rm -rf docs/feature/user-authentication/
 
 ### Migration Guide
 
-#### Scenario 1: Single Step Execution with 11-Phase TDD
+#### Scenario 1: Single Step Execution with 8-Phase TDD
 
 **NEW** (use `/nw:execute` instead):
 ```bash
-/nw:execute @software-crafter "docs/feature/order-management/steps/01-02.json"
+/nw:execute @software-crafter "order-management" "01-02"
 ```
 
-**Explanation**: The `/nw:execute` command now provides the complete TDD cycle execution for a single step that `/nw:develop --step` used to provide.
+**Explanation**: The `/nw:execute` command now provides the complete TDD cycle execution for a single step. It extracts step context from roadmap.yaml (Schema v2.0).
 
 ---
 
@@ -1593,14 +1567,14 @@ rm -rf docs/feature/user-authentication/
 
 **Option B - Manual Granular Control** (advanced):
 ```bash
-/nw:baseline "goal description"
 /nw:roadmap @solution-architect "goal description"
-/nw:split @devop "project-id"
-/nw:execute @software-crafter "docs/feature/{id}/steps/01-01.json"  # ✅ NEW
-/nw:execute @software-crafter "docs/feature/{id}/steps/01-02.json"  # ✅ NEW
-/nw:execute @software-crafter "docs/feature/{id}/steps/01-03.json"  # ✅ NEW
+/nw:execute @software-crafter "project-id" "01-01"  # ✅ NEW (Schema v2.0)
+/nw:execute @software-crafter "project-id" "01-02"  # ✅ NEW (Schema v2.0)
+/nw:execute @software-crafter "project-id" "01-03"  # ✅ NEW (Schema v2.0)
 /nw:finalize @devop "project-id"
 ```
+
+**Note**: baseline and split commands eliminated in Schema v2.0 (token-minimal architecture)
 
 ---
 
@@ -1693,14 +1667,13 @@ The second test exercises component logic but NOT system wiring.
 
 ---
 
-## Context Files Required
+## Context Files Required (Schema v2.0)
 
 - None initially - command creates all artifacts
 - After creation:
-  - `docs/feature/{project-id}/baseline.yaml`
-  - `docs/feature/{project-id}/roadmap.yaml`
-  - `docs/feature/{project-id}/steps/*.json`
-  - `docs/feature/{project-id}/.develop-progress.json` (progress tracking)
+  - `docs/feature/{project-id}/roadmap.yaml` (contains all step definitions)
+  - `docs/feature/{project-id}/execution-status.yaml` (lightweight state tracking)
+  - `docs/feature/{project-id}/.develop-progress.json` (orchestrator progress tracking)
 
 ---
 
@@ -1720,7 +1693,7 @@ The second test exercises component logic but NOT system wiring.
 
 - [ ] All quality gates passed (3 + 3N reviews)
 - [ ] All artifacts created and approved
-- [ ] All step files executed successfully
+- [ ] All steps executed successfully (tracked in execution-status.yaml)
 - [ ] All commits created (one per step, local only)
 - [ ] No failing tests
 - [ ] Mutation testing gate passed (>= 75% or documented skip)
