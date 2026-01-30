@@ -17,7 +17,6 @@ from pathlib import Path
 try:
     from scripts.install.install_utils import (
         BackupManager,
-        Colors,
         Logger,
         ManifestWriter,
         PathUtils,
@@ -26,11 +25,11 @@ try:
     from scripts.install.preflight_checker import PreflightChecker
     from scripts.install.output_formatter import format_error
     from scripts.install.installation_verifier import InstallationVerifier
+    from scripts.install.rich_console import ConsoleFactory, RichLogger
 except ImportError:
     # Fallback for standalone execution from scripts/install directory
     from install_utils import (  # noqa: F401
         BackupManager,
-        Colors,
         Logger,
         ManifestWriter,
         PathUtils,
@@ -39,6 +38,14 @@ except ImportError:
     from preflight_checker import PreflightChecker  # noqa: F401
     from output_formatter import format_error  # noqa: F401
     from installation_verifier import InstallationVerifier  # noqa: F401
+    from rich_console import ConsoleFactory, RichLogger  # noqa: F401
+
+# ANSI color codes for terminal output (fallback when Rich unavailable)
+_ANSI_GREEN = "\033[0;32m"
+_ANSI_RED = "\033[0;31m"
+_ANSI_YELLOW = "\033[1;33m"
+_ANSI_BLUE = "\033[0;34m"
+_ANSI_NC = "\033[0m"  # No Color
 
 __version__ = "1.2.0"
 
@@ -58,6 +65,11 @@ class NWaveInstaller:
         log_file = self.claude_config_dir / "nwave-install.log"
         self.logger = Logger(log_file if not dry_run else None)
 
+        # Create Rich logger for enhanced visual output
+        self.rich_logger = ConsoleFactory.create_logger(
+            log_file if not dry_run else None
+        )
+
         self.backup_manager = BackupManager(self.logger, "install")
 
     def run_embedding(self) -> bool:
@@ -67,31 +79,30 @@ class NWaveInstaller:
         if not embed_script.exists():
             return True  # Not critical
 
-        self.logger.info("Running source embedding to update embedded content...")
+        with self.rich_logger.progress_spinner("Running source embedding..."):
+            try:
+                result = subprocess.run(
+                    [sys.executable, str(embed_script)],
+                    cwd=self.project_root,
+                    capture_output=True,
+                    text=True,
+                    timeout=60,
+                )
 
-        try:
-            result = subprocess.run(
-                [sys.executable, str(embed_script)],
-                cwd=self.project_root,
-                capture_output=True,
-                text=True,
-                timeout=60,
-            )
-
-            if result.returncode == 0:
-                self.logger.info("Source embedding completed")
+                if result.returncode == 0:
+                    self.logger.info("Source embedding completed")
+                    return True
+                else:
+                    self.logger.warn(
+                        "Source embedding had issues, continuing anyway..."
+                    )
+                    return True
+            except Exception as e:
+                self.logger.warn(f"Source embedding failed: {e}, continuing anyway...")
                 return True
-            else:
-                self.logger.warn("Source embedding had issues, continuing anyway...")
-                return True
-        except Exception as e:
-            self.logger.warn(f"Source embedding failed: {e}, continuing anyway...")
-            return True
 
     def build_framework(self) -> bool:
         """Build the IDE bundle."""
-        self.logger.info("Building IDE bundle...")
-
         build_script = self.project_root / "scripts" / "build-ide-bundle.sh"
 
         if not build_script.exists():
@@ -101,44 +112,46 @@ class NWaveInstaller:
                 self.logger.error(f"Build script not found at: {build_script}")
                 return False
 
-            try:
-                result = subprocess.run(
-                    [sys.executable, str(build_script)],
-                    cwd=self.project_root,
-                    capture_output=True,
-                    text=True,
-                )
+            with self.rich_logger.progress_spinner("Building IDE bundle..."):
+                try:
+                    result = subprocess.run(
+                        [sys.executable, str(build_script)],
+                        cwd=self.project_root,
+                        capture_output=True,
+                        text=True,
+                    )
 
-                if result.returncode == 0:
-                    self.logger.info("Build completed successfully")
-                    return True
-                else:
-                    self.logger.error("Build failed")
-                    self.logger.error(result.stderr)
+                    if result.returncode == 0:
+                        self.logger.info("Build completed successfully")
+                        return True
+                    else:
+                        self.logger.error("Build failed")
+                        self.logger.error(result.stderr)
+                        return False
+                except Exception as e:
+                    self.logger.error(f"Build failed: {e}")
                     return False
-            except Exception as e:
-                self.logger.error(f"Build failed: {e}")
-                return False
         else:
             # Run shell script
-            try:
-                result = subprocess.run(
-                    ["bash", str(build_script)],
-                    cwd=self.project_root,
-                    capture_output=True,
-                    text=True,
-                )
+            with self.rich_logger.progress_spinner("Building IDE bundle..."):
+                try:
+                    result = subprocess.run(
+                        ["bash", str(build_script)],
+                        cwd=self.project_root,
+                        capture_output=True,
+                        text=True,
+                    )
 
-                # Look for success indicators
-                if "Build completed" in result.stdout or "✅" in result.stdout:
-                    self.logger.info("Build completed successfully")
-                    return True
-                else:
-                    self.logger.error("Build failed")
+                    # Look for success indicators
+                    if "Build completed" in result.stdout or "✅" in result.stdout:
+                        self.logger.info("Build completed successfully")
+                        return True
+                    else:
+                        self.logger.error("Build failed")
+                        return False
+                except Exception as e:
+                    self.logger.error(f"Build failed: {e}")
                     return False
-            except Exception as e:
-                self.logger.error(f"Build failed: {e}")
-                return False
 
     def check_source(self) -> bool:
         """Check if source framework exists, build if necessary."""
@@ -281,17 +294,18 @@ class NWaveInstaller:
         # Create target directories
         self.claude_config_dir.mkdir(parents=True, exist_ok=True)
 
-        # Install agents
-        self._install_agents()
+        with self.rich_logger.progress_spinner("Installing framework files..."):
+            # Install agents
+            self._install_agents()
 
-        # Install commands
-        self._install_commands()
+            # Install commands
+            self._install_commands()
 
-        # Install utility scripts
-        self._install_utility_scripts()
+            # Install utility scripts
+            self._install_utility_scripts()
 
-        # Install templates
-        self._install_templates()
+            # Install templates
+            self._install_templates()
 
         return True
 
@@ -496,30 +510,63 @@ class NWaveInstaller:
         Returns:
             True if verification passed, False otherwise.
         """
-        self.logger.info("Validating installation...")
+        with self.rich_logger.progress_spinner("Validating installation..."):
+            # Use shared InstallationVerifier for consistent verification
+            verifier = InstallationVerifier(claude_config_dir=self.claude_config_dir)
+            result = verifier.run_verification()
 
-        # Use shared InstallationVerifier for consistent verification
-        verifier = InstallationVerifier(claude_config_dir=self.claude_config_dir)
-        result = verifier.run_verification()
+            # Validate schema template (additional check specific to installer)
+            schema_valid = self._validate_schema_template()
 
-        # Validate schema template (additional check specific to installer)
-        schema_valid = self._validate_schema_template()
+        # Count templates
+        templates_dir = self.claude_config_dir / "templates"
+        template_count = PathUtils.count_files(templates_dir, "*.json")
+        template_count += PathUtils.count_files(templates_dir, "*.yaml")
 
-        # Log verification results
-        self.logger.info("Installation summary:")
-        self.logger.info(f"  - Agents installed: {result.agent_file_count}")
-        self.logger.info(f"  - Commands installed: {result.command_file_count}")
-        self.logger.info(f"  - Installation directory: {self.claude_config_dir}")
-        self.logger.info(f"  - Manifest exists: {result.manifest_exists}")
+        # Display validation results as Rich table
+        status_ok = (
+            "[green]OK[/green]" if isinstance(self.rich_logger, RichLogger) else "OK"
+        )
+        status_fail = (
+            "[red]FAIL[/red]" if isinstance(self.rich_logger, RichLogger) else "FAIL"
+        )
 
-        agents_dir = self.claude_config_dir / "agents" / "nw"
-        commands_dir = self.claude_config_dir / "commands" / "nw"
+        validation_rows = [
+            [
+                "Agents",
+                status_ok if result.agent_file_count > 0 else status_fail,
+                str(result.agent_file_count),
+            ],
+            [
+                "Commands",
+                status_ok if result.command_file_count > 0 else status_fail,
+                str(result.command_file_count),
+            ],
+            [
+                "Templates",
+                status_ok if template_count > 0 else status_fail,
+                str(template_count),
+            ],
+            [
+                "Manifest",
+                status_ok if result.manifest_exists else status_fail,
+                "Yes" if result.manifest_exists else "No",
+            ],
+            [
+                "Schema",
+                status_ok if schema_valid else status_fail,
+                "v2.0" if schema_valid else "Invalid",
+            ],
+        ]
 
-        if agents_dir.exists():
-            self.logger.info("  - nWave agents: Available")
+        self.rich_logger.table(
+            headers=["Component", "Status", "Count"],
+            rows=validation_rows,
+            title="Validation Results",
+        )
 
-        if commands_dir.exists():
-            self.logger.info("  - nWave commands: Available")
+        # Log additional details
+        self.logger.info(f"Installation directory: {self.claude_config_dir}")
 
         if result.agent_file_count < 10:
             self.logger.warn(f"Expected 10+ agents, found {result.agent_file_count}")
@@ -533,9 +580,7 @@ class NWaveInstaller:
         overall_success = result.success and schema_valid
 
         if overall_success:
-            self.logger.info(
-                f"Installation validation: {Colors.GREEN}PASSED{Colors.NC}"
-            )
+            self.logger.info(f"Installation validation: {_ANSI_GREEN}PASSED{_ANSI_NC}")
             return True
         else:
             error_count = len(result.missing_essential_files) + (
@@ -544,7 +589,7 @@ class NWaveInstaller:
             if not result.manifest_exists:
                 error_count += 1
             self.logger.error(
-                f"Installation validation: {Colors.RED}FAILED{Colors.NC} ({error_count} errors)"
+                f"Installation validation: {_ANSI_RED}FAILED{_ANSI_NC} ({error_count} errors)"
             )
             return False
 
@@ -563,36 +608,85 @@ class NWaveInstaller:
         )
 
 
+def show_title_panel(rich_logger: RichLogger, dry_run: bool = False) -> None:
+    """Display styled title panel when installer starts.
+
+    Args:
+        rich_logger: RichLogger instance for styled output.
+        dry_run: Whether running in dry-run mode.
+    """
+    mode_indicator = " [DRY RUN]" if dry_run else ""
+    title_content = f"""nWave Framework Installation Script v{__version__}{mode_indicator}
+
+Cross-platform installer for the nWave methodology framework.
+Installs specialized agents and commands to global Claude config directory."""
+
+    rich_logger.panel(content=title_content, title="nWave Installer", style="blue")
+
+
+def show_installation_summary(rich_logger: RichLogger, claude_config_dir: Path) -> None:
+    """Display installation summary panel at end of successful install.
+
+    Args:
+        rich_logger: RichLogger instance for styled output.
+        claude_config_dir: Path to Claude config directory.
+    """
+    # Count installed components
+    agents_count = PathUtils.count_files(claude_config_dir / "agents" / "nw", "*.md")
+    commands_count = PathUtils.count_files(
+        claude_config_dir / "commands" / "nw", "*.md"
+    )
+    templates_count = PathUtils.count_files(claude_config_dir / "templates", "*.json")
+    templates_count += PathUtils.count_files(claude_config_dir / "templates", "*.yaml")
+
+    summary_content = f"""Framework Version: {__version__}
+Installation Location: {claude_config_dir}
+Agents Installed: {agents_count}
+Commands Installed: {commands_count}
+Templates Installed: {templates_count}
+
+Available Commands:
+  /nw:discuss  - Requirements gathering and business analysis
+  /nw:design   - Architecture design with visual representation
+  /nw:distill  - Acceptance test creation and business validation
+  /nw:develop  - Outside-In TDD implementation with refactoring
+  /nw:deliver  - Production readiness validation"""
+
+    rich_logger.panel(
+        content=summary_content, title="Installation Complete", style="green"
+    )
+
+
 def show_help():
     """Show help message."""
-    help_text = f"""{Colors.BLUE}nWave Framework Installation Script for Cross-Platform{Colors.NC}
+    help_text = f"""{_ANSI_BLUE}nWave Framework Installation Script for Cross-Platform{_ANSI_NC}
 
-{Colors.BLUE}DESCRIPTION:{Colors.NC}
+{_ANSI_BLUE}DESCRIPTION:{_ANSI_NC}
     Installs the nWave methodology framework to your global Claude config directory.
     This makes all specialized agents and commands available across all projects.
 
-{Colors.BLUE}USAGE:{Colors.NC}
+{_ANSI_BLUE}USAGE:{_ANSI_NC}
     python install_nwave.py [OPTIONS]
 
-{Colors.BLUE}OPTIONS:{Colors.NC}
+{_ANSI_BLUE}OPTIONS:{_ANSI_NC}
     --backup-only     Create backup of existing nWave installation without installing
     --restore         Restore from the most recent backup
     --force-rebuild   Force rebuild of distribution before installation (ensures fresh source)
     --dry-run         Show what would be installed without making any changes
     --help            Show this help message
 
-{Colors.BLUE}EXAMPLES:{Colors.NC}
+{_ANSI_BLUE}EXAMPLES:{_ANSI_NC}
     python install_nwave.py                    # Install nWave framework
     python install_nwave.py --force-rebuild    # Rebuild and install with latest sources
     python install_nwave.py --dry-run          # Show what would be installed
     python install_nwave.py --backup-only      # Create backup only
     python install_nwave.py --restore          # Restore from latest backup
 
-{Colors.BLUE}TROUBLESHOOTING:{Colors.NC}
+{_ANSI_BLUE}TROUBLESHOOTING:{_ANSI_NC}
     If installation doesn't pick up recent changes, use --force-rebuild:
     python install_nwave.py --force-rebuild
 
-{Colors.BLUE}WHAT GETS INSTALLED:{Colors.NC}
+{_ANSI_BLUE}WHAT GETS INSTALLED:{_ANSI_NC}
     - nWave specialized agents (DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER methodology)
     - nWave command interface for workflow orchestration
     - ATDD (Acceptance Test Driven Development) integration
@@ -600,7 +694,7 @@ def show_help():
     - Quality validation network with continuous refactoring
     - 8-phase TDD enforcement with schema versioning
 
-{Colors.BLUE}INSTALLATION LOCATION:{Colors.NC}
+{_ANSI_BLUE}INSTALLATION LOCATION:{_ANSI_NC}
     ~/.claude/agents/nw/    # nWave agent specifications
     ~/.claude/commands/nw/  # nWave command integrations
     ~/.claude/templates/    # TDD cycle schema templates
@@ -631,6 +725,12 @@ def main():
         show_help()
         return 0
 
+    # Create Rich logger for title panel (before installer is created)
+    title_logger = ConsoleFactory.create_logger()
+
+    # Show title panel at startup
+    show_title_panel(title_logger, dry_run=args.dry_run)
+
     # Run preflight checks BEFORE any build or installation actions
     # This validates the environment is suitable for installation
     preflight = PreflightChecker()
@@ -650,12 +750,9 @@ def main():
 
     installer = NWaveInstaller(dry_run=args.dry_run, force_rebuild=args.force_rebuild)
 
-    installer.logger.info("nWave Framework Installation Script")
-    installer.logger.info("=" * 38)
-
     if args.dry_run:
         installer.logger.info(
-            f"{Colors.YELLOW}DRY RUN MODE{Colors.NC} - No changes will be made"
+            f"{_ANSI_YELLOW}DRY RUN MODE{_ANSI_NC} - No changes will be made"
         )
 
     # Handle backup-only mode
@@ -687,40 +784,16 @@ def main():
         installer.create_manifest()
 
         print()
-        installer.logger.info(
-            f"{Colors.GREEN}✅ nWave Framework installed successfully!{Colors.NC}"
-        )
-        print()
-        installer.logger.info("Framework Components Installed:")
-        installer.logger.info(
-            "- nWave specialized agents (DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER)"
-        )
-        installer.logger.info("- nWave command interface for workflow orchestration")
-        installer.logger.info("- ATDD and Outside-In TDD integration")
+        # Show installation summary panel
+        show_installation_summary(installer.rich_logger, installer.claude_config_dir)
+
         print()
         installer.logger.info("Next steps:")
         installer.logger.info("1. Navigate to any project directory")
         installer.logger.info(
             "2. Use nWave commands to orchestrate development workflow"
         )
-        installer.logger.info("3. Access agents through the dw category in Claude Code")
-        print()
-        installer.logger.info("nWave methodology available:")
-        installer.logger.info(
-            f"- {Colors.BLUE}/nw:discuss{Colors.NC} - Requirements gathering and business analysis"
-        )
-        installer.logger.info(
-            f"- {Colors.BLUE}/nw:design{Colors.NC} - Architecture design with visual representation"
-        )
-        installer.logger.info(
-            f"- {Colors.BLUE}/nw:distill{Colors.NC} - Acceptance test creation and business validation"
-        )
-        installer.logger.info(
-            f"- {Colors.BLUE}/nw:develop{Colors.NC} - Outside-In TDD implementation with refactoring"
-        )
-        installer.logger.info(
-            f"- {Colors.BLUE}/nw:deliver{Colors.NC} - Production readiness validation"
-        )
+        installer.logger.info("3. Access agents through the nw category in Claude Code")
         print()
         installer.logger.info("Documentation: https://github.com/11PJ11/crafter-ai")
         return 0

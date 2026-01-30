@@ -16,34 +16,22 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 
-# Color codes for terminal output
-class Colors:
-    """Cross-platform ANSI color codes."""
-
-    RED = "\033[0;31m"
-    GREEN = "\033[0;32m"
-    YELLOW = "\033[1;33m"
-    BLUE = "\033[0;34m"
-    CYAN = "\033[0;36m"
-    NC = "\033[0m"  # No Color
-
-    @classmethod
-    def strip_on_windows(cls):
-        """Strip colors on Windows if not in terminal."""
-        if sys.platform == "win32" and not sys.stdout.isatty():
-            cls.RED = cls.GREEN = cls.YELLOW = cls.BLUE = cls.CYAN = cls.NC = ""
-
-
-# Initialize color stripping for Windows
-Colors.strip_on_windows()
-
-
 class Logger:
     """Cross-platform logger with color support.
 
     Supports both console and file logging. When silent=True, logs only to file
     without console output (useful for JSON output modes).
+
+    This is a lightweight logger that uses ANSI color codes directly.
+    For Rich console features, use rich_console.RichLogger instead.
     """
+
+    # ANSI color codes for terminal output
+    _GREEN = "\033[0;32m"
+    _YELLOW = "\033[1;33m"
+    _RED = "\033[0;31m"
+    _BLUE = "\033[0;34m"
+    _NC = "\033[0m"  # No Color
 
     def __init__(self, log_file: Optional[Path] = None, silent: bool = False):
         """Initialize logger with optional log file.
@@ -54,13 +42,30 @@ class Logger:
         """
         self.log_file = log_file
         self.silent = silent
+
+        # Disable colors on Windows if not in terminal
+        self._use_colors = True
+        if sys.platform == "win32" and not sys.stdout.isatty():
+            self._use_colors = False
+
         if log_file:
             log_file.parent.mkdir(parents=True, exist_ok=True)
 
-    def _log(self, level: str, message: str, color: str = Colors.NC):
+    def _get_color(self, color: str) -> str:
+        """Get color code, or empty string if colors disabled."""
+        if self._use_colors:
+            return color
+        return ""
+
+    def _log(self, level: str, message: str, color: str = ""):
         """Internal logging method."""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        console_msg = f"{color}[{timestamp}] {level}: {message}{Colors.NC}"
+
+        if color and self._use_colors:
+            console_msg = f"{color}[{timestamp}] {level}: {message}{self._NC}"
+        else:
+            console_msg = f"[{timestamp}] {level}: {message}"
+
         log_msg = f"[{timestamp}] {level}: {message}"
 
         if not self.silent:
@@ -75,19 +80,19 @@ class Logger:
 
     def info(self, message: str):
         """Log info message."""
-        self._log("INFO", message, Colors.GREEN)
+        self._log("INFO", message, self._GREEN)
 
     def warn(self, message: str):
         """Log warning message."""
-        self._log("WARN", message, Colors.YELLOW)
+        self._log("WARN", message, self._YELLOW)
 
     def error(self, message: str):
         """Log error message."""
-        self._log("ERROR", message, Colors.RED)
+        self._log("ERROR", message, self._RED)
 
     def step(self, message: str):
         """Log step message."""
-        self._log("STEP", message, Colors.BLUE)
+        self._log("STEP", message, self._BLUE)
 
 
 class PathUtils:

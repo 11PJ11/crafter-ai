@@ -16,7 +16,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Tuple
 
-from install_utils import Colors, Logger, PathUtils
+from install_utils import Logger, PathUtils
+
+# ANSI color codes for terminal output (replaces legacy Colors class)
+_ANSI_BLUE = "\033[0;34m"
+_ANSI_NC = "\033[0m"  # No Color
 
 __version__ = "1.0.0"
 
@@ -516,18 +520,18 @@ echo "Current state backup available at: $CURRENT_BACKUP"
 
 def show_help():
     """Show help message."""
-    help_text = f"""{Colors.BLUE}nWave Enhanced Backup System{Colors.NC}
+    help_text = f"""{_ANSI_BLUE}nWave Enhanced Backup System{_ANSI_NC}
 
-{Colors.BLUE}USAGE:{Colors.NC}
+{_ANSI_BLUE}USAGE:{_ANSI_NC}
     python enhanced_backup_system.py {{backup|restore|list|status}} [TIMESTAMP]
 
-{Colors.BLUE}COMMANDS:{Colors.NC}
+{_ANSI_BLUE}COMMANDS:{_ANSI_NC}
     backup          Create comprehensive backup before nWave installation
     restore TIMESTAMP  Restore from specific backup
     list           List available backups
     status         Show backup system status
 
-{Colors.BLUE}EXAMPLES:{Colors.NC}
+{_ANSI_BLUE}EXAMPLES:{_ANSI_NC}
     python enhanced_backup_system.py backup                    # Create backup
     python enhanced_backup_system.py restore 20250914_143022   # Restore specific backup
     python enhanced_backup_system.py list                      # Show available backups

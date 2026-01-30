@@ -38,12 +38,26 @@ import sys
 from pathlib import Path
 from typing import List, Optional
 
-from scripts.install.context_detector import is_claude_code_context
-from scripts.install.installation_verifier import (
-    InstallationVerifier,
-    VerificationResult,
-)
-from scripts.install.install_utils import Colors, Logger, PathUtils
+try:
+    from scripts.install.context_detector import is_claude_code_context
+    from scripts.install.installation_verifier import (
+        InstallationVerifier,
+        VerificationResult,
+    )
+    from scripts.install.install_utils import Logger, PathUtils
+except ImportError:
+    from context_detector import is_claude_code_context
+    from installation_verifier import (
+        InstallationVerifier,
+        VerificationResult,
+    )
+    from install_utils import Logger, PathUtils
+
+# ANSI color codes for terminal output (replaces legacy Colors class)
+_ANSI_GREEN = "\033[0;32m"
+_ANSI_RED = "\033[0;31m"
+_ANSI_YELLOW = "\033[1;33m"
+_ANSI_NC = "\033[0m"  # No Color
 
 
 def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
@@ -105,10 +119,10 @@ def format_terminal_output(
     lines = []
 
     if result.success:
-        prefix = f"{Colors.GREEN}[SUCCESS]{Colors.NC}"
+        prefix = f"{_ANSI_GREEN}[SUCCESS]{_ANSI_NC}"
         lines.append(f"{prefix} nWave installation verification passed.")
     else:
-        prefix = f"{Colors.RED}[FAILED]{Colors.NC}"
+        prefix = f"{_ANSI_RED}[FAILED]{_ANSI_NC}"
         lines.append(f"{prefix} nWave installation verification failed.")
 
     if verbose or not result.success:
@@ -119,18 +133,18 @@ def format_terminal_output(
 
         if result.missing_essential_files:
             lines.append("")
-            lines.append(f"  {Colors.YELLOW}Missing essential files:{Colors.NC}")
+            lines.append(f"  {_ANSI_YELLOW}Missing essential files:{_ANSI_NC}")
             for filename in result.missing_essential_files:
                 lines.append(f"    - {filename}")
             lines.append("")
             lines.append(
-                f"  {Colors.YELLOW}[FIX]{Colors.NC} Re-run the nWave installer to restore missing files."
+                f"  {_ANSI_YELLOW}[FIX]{_ANSI_NC} Re-run the nWave installer to restore missing files."
             )
 
         if not result.manifest_exists:
             lines.append("")
             lines.append(
-                f"  {Colors.YELLOW}[FIX]{Colors.NC} Re-run the nWave installer to create the manifest."
+                f"  {_ANSI_YELLOW}[FIX]{_ANSI_NC} Re-run the nWave installer to create the manifest."
             )
 
     return "\n".join(lines)

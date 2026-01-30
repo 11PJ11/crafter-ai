@@ -7,17 +7,41 @@ name = "pypi"
 pyyaml = ">=6.0"
 packaging = ">=21.0"
 exceptiongroup = "*"
+rich = "*"
 
 [dev-packages]
+# Testing
+mutmut = "*"
 pytest = ">=7.0.0"
 pytest-bdd = ">=7.0.0"
+pytest-describe-it = "*"
+pytest-html = "*"
 pytest-cov = ">=4.0.0"
+pytest-pspec = "*"
+pytest-mock = "*"
+pytest-describe = "*"
+pytest-watch = "*"
+
+# Code Quality
 ruff = ">=0.3.0"
 mypy = ">=0.991"
+
+# Security
+bandit = {extras = ["toml"], version = "*"}
+detect-secrets = "*"
+
+# Git & Release
+python-semantic-release = "*"
+commitizen = "*"
+pre-commit = ">=3.0.0"
+
+# Reporting
+fpdf2 = "*"
+
+# CLI Utilities
 click = ">=8.0.0"
 colorama = ">=0.4.0"
 tqdm = ">=4.64.0"
-pre-commit = ">=3.0.0"
 
 [scripts]
 # Core CI/CD commands

@@ -13,14 +13,32 @@ import subprocess
 import sys
 from pathlib import Path
 
-from install_utils import (
-    BackupManager,
-    Colors,
-    Logger,
-    ManifestWriter,
-    PathUtils,
-    confirm_action,
-)
+try:
+    from scripts.install.install_utils import (
+        BackupManager,
+        Logger,
+        ManifestWriter,
+        PathUtils,
+        confirm_action,
+    )
+    from scripts.install.rich_console import ConsoleFactory, RichLogger
+except ImportError:
+    from install_utils import (
+        BackupManager,
+        Logger,
+        ManifestWriter,
+        PathUtils,
+        confirm_action,
+    )
+    from rich_console import ConsoleFactory, RichLogger
+
+# ANSI color codes for terminal output (fallback when Rich unavailable)
+_ANSI_GREEN = "\033[0;32m"
+_ANSI_RED = "\033[0;31m"
+_ANSI_YELLOW = "\033[1;33m"
+_ANSI_BLUE = "\033[0;34m"
+_ANSI_CYAN = "\033[0;36m"
+_ANSI_NC = "\033[0m"  # No Color
 
 __version__ = "1.1.0"
 
@@ -52,6 +70,11 @@ class NWaveUpdater:
 
         log_file = self.claude_config_dir / "nwave-update.log"
         self.logger = Logger(log_file if not dry_run else None)
+
+        # Create Rich logger for enhanced visual output
+        self.rich_logger = ConsoleFactory.create_logger(
+            log_file if not dry_run else None
+        )
 
         self.backup_manager = BackupManager(self.logger, "update")
 
@@ -123,7 +146,7 @@ class NWaveUpdater:
                     lines = manifest_content.splitlines()[:10]
                     self.logger.info("Current installation details:")
                     for line in lines:
-                        print(f"{Colors.CYAN}{line}{Colors.NC}")
+                        print(f"{_ANSI_CYAN}{line}{_ANSI_NC}")
                 except Exception:
                     pass
         else:
@@ -178,9 +201,8 @@ Restoration Command:
 
     def build_framework(self) -> bool:
         """Build new nWave framework bundle."""
-        self.logger.step("Building new nWave framework bundle...")
-
         if self.dry_run:
+            self.logger.step("Building new nWave framework bundle...")
             self.logger.info("[DRY RUN] Would execute build process")
             return True
 
@@ -188,59 +210,63 @@ Restoration Command:
         if not build_script.exists():
             build_script = self.project_root / "scripts" / "build-ide-bundle.sh"
 
-        self.logger.info("Executing build process...")
-
-        try:
-            if build_script.suffix == ".py":
-                result = subprocess.run(
-                    [sys.executable, str(build_script)],
-                    cwd=self.project_root,
-                    capture_output=True,
-                    text=True,
-                )
-            else:
-                result = subprocess.run(
-                    ["bash", str(build_script)],
-                    cwd=self.project_root,
-                    capture_output=True,
-                    text=True,
-                )
-
-            if (
-                result.returncode == 0
-                or "Build completed" in result.stdout
-                or "✅" in result.stdout
-            ):
-                self.logger.info("✅ Framework bundle built successfully")
-
-                # Verify build output
-                dist_ide = self.project_root / "dist" / "ide"
-                if dist_ide.exists():
-                    agent_count = PathUtils.count_files(dist_ide / "agents", "*.md")
-                    command_count = PathUtils.count_files(dist_ide / "commands", "*.md")
-
-                    self.logger.info(
-                        f"Build verification - Agents: {agent_count}, Commands: {command_count}"
+        with self.rich_logger.progress_spinner(
+            "Building new nWave framework bundle..."
+        ):
+            try:
+                if build_script.suffix == ".py":
+                    result = subprocess.run(
+                        [sys.executable, str(build_script)],
+                        cwd=self.project_root,
+                        capture_output=True,
+                        text=True,
                     )
                 else:
-                    self.logger.error(f"Build output directory not found: {dist_ide}")
+                    result = subprocess.run(
+                        ["bash", str(build_script)],
+                        cwd=self.project_root,
+                        capture_output=True,
+                        text=True,
+                    )
+
+                if (
+                    result.returncode == 0
+                    or "Build completed" in result.stdout
+                    or "✅" in result.stdout
+                ):
+                    self.logger.info("Framework bundle built successfully")
+
+                    # Verify build output
+                    dist_ide = self.project_root / "dist" / "ide"
+                    if dist_ide.exists():
+                        agent_count = PathUtils.count_files(dist_ide / "agents", "*.md")
+                        command_count = PathUtils.count_files(
+                            dist_ide / "commands", "*.md"
+                        )
+
+                        self.logger.info(
+                            f"Build verification - Agents: {agent_count}, Commands: {command_count}"
+                        )
+                    else:
+                        self.logger.error(
+                            f"Build output directory not found: {dist_ide}"
+                        )
+                        return False
+
+                    return True
+                else:
+                    self.logger.error("Framework build failed")
+                    self.logger.error(result.stderr)
                     return False
 
-                return True
-            else:
-                self.logger.error("Framework build failed")
-                self.logger.error(result.stderr)
+            except Exception as e:
+                self.logger.error(f"Framework build failed: {e}")
                 return False
-
-        except Exception as e:
-            self.logger.error(f"Framework build failed: {e}")
-            return False
 
     def uninstall_current(self) -> bool:
         """Uninstall current nWave installation."""
-        self.logger.step("Uninstalling current nWave installation...")
-
         if self.dry_run:
+            self.logger.step("Uninstalling current nWave installation...")
             self.logger.info("[DRY RUN] Would execute uninstallation process")
             return True
 
@@ -253,42 +279,45 @@ Restoration Command:
         if self.backup_before_update:
             uninstall_options.append("--backup")
 
-        self.logger.info("Executing uninstallation process...")
+        with self.rich_logger.progress_spinner(
+            "Uninstalling current nWave installation..."
+        ):
+            try:
+                if uninstall_script.suffix == ".py":
+                    result = subprocess.run(
+                        [sys.executable, str(uninstall_script)] + uninstall_options,
+                        cwd=self.script_dir,
+                        capture_output=True,
+                        text=True,
+                    )
+                else:
+                    result = subprocess.run(
+                        ["bash", str(uninstall_script)] + uninstall_options,
+                        cwd=self.script_dir,
+                        capture_output=True,
+                        text=True,
+                    )
 
-        try:
-            if uninstall_script.suffix == ".py":
-                result = subprocess.run(
-                    [sys.executable, str(uninstall_script)] + uninstall_options,
-                    cwd=self.script_dir,
-                    capture_output=True,
-                    text=True,
-                )
-            else:
-                result = subprocess.run(
-                    ["bash", str(uninstall_script)] + uninstall_options,
-                    cwd=self.script_dir,
-                    capture_output=True,
-                    text=True,
-                )
+                if (
+                    result.returncode == 0
+                    or "uninstalled successfully" in result.stdout
+                ):
+                    self.logger.info("Previous installation uninstalled successfully")
+                    return True
+                else:
+                    self.logger.warn(
+                        "Uninstallation reported issues, but continuing with installation"
+                    )
+                    return True
 
-            if result.returncode == 0 or "uninstalled successfully" in result.stdout:
-                self.logger.info("✅ Previous installation uninstalled successfully")
-                return True
-            else:
-                self.logger.warn(
-                    "Uninstallation reported issues, but continuing with installation"
-                )
-                return True
-
-        except Exception as e:
-            self.logger.error(f"Uninstallation failed: {e}")
-            return False
+            except Exception as e:
+                self.logger.error(f"Uninstallation failed: {e}")
+                return False
 
     def install_new_framework(self) -> bool:
         """Install new nWave framework."""
-        self.logger.step("Installing new nWave framework...")
-
         if self.dry_run:
+            self.logger.step("Installing new nWave framework...")
             self.logger.info("[DRY RUN] Would execute installation process")
             return True
 
@@ -296,79 +325,105 @@ Restoration Command:
         if not install_script.exists():
             install_script = self.script_dir.parent / "install-nwave.sh"
 
-        self.logger.info("Executing installation process...")
-
-        try:
-            if install_script.suffix == ".py":
-                result = subprocess.run(
-                    [sys.executable, str(install_script)],
-                    cwd=self.script_dir,
-                    capture_output=True,
-                    text=True,
-                )
-            else:
-                result = subprocess.run(
-                    ["bash", str(install_script)],
-                    cwd=self.script_dir,
-                    capture_output=True,
-                    text=True,
-                )
-
-            if result.returncode == 0 or "installed successfully" in result.stdout:
-                self.logger.info("✅ New framework installed successfully")
-                return True
-            else:
-                self.logger.error("Framework installation failed")
-                self.logger.error(result.stderr)
-
-                # Provide recovery guidance
-                if self.backup_before_update:
-                    self.logger.error("Update failed. You can restore from backup:")
-                    self.logger.error(
-                        f"  Backup location: {self.backup_manager.backup_dir}"
+        with self.rich_logger.progress_spinner("Installing new nWave framework..."):
+            try:
+                if install_script.suffix == ".py":
+                    result = subprocess.run(
+                        [sys.executable, str(install_script)],
+                        cwd=self.script_dir,
+                        capture_output=True,
+                        text=True,
                     )
-                    self.logger.error("  See backup manifest for restoration commands")
+                else:
+                    result = subprocess.run(
+                        ["bash", str(install_script)],
+                        cwd=self.script_dir,
+                        capture_output=True,
+                        text=True,
+                    )
 
+                if result.returncode == 0 or "installed successfully" in result.stdout:
+                    self.logger.info("New framework installed successfully")
+                    return True
+                else:
+                    self.logger.error("Framework installation failed")
+                    self.logger.error(result.stderr)
+
+                    # Provide recovery guidance
+                    if self.backup_before_update:
+                        self.logger.error("Update failed. You can restore from backup:")
+                        self.logger.error(
+                            f"  Backup location: {self.backup_manager.backup_dir}"
+                        )
+                        self.logger.error(
+                            "  See backup manifest for restoration commands"
+                        )
+
+                    return False
+
+            except Exception as e:
+                self.logger.error(f"Framework installation failed: {e}")
                 return False
-
-        except Exception as e:
-            self.logger.error(f"Framework installation failed: {e}")
-            return False
 
     def validate_update(self) -> bool:
         """Validate successful update."""
-        self.logger.step("Validating successful update...")
+        with self.rich_logger.progress_spinner("Validating successful update..."):
+            validation_errors = 0
 
-        validation_errors = 0
+            # Check that new installation exists
+            agents_dir = self.claude_config_dir / "agents" / "nw"
+            commands_dir = self.claude_config_dir / "commands" / "nw"
 
-        # Check that new installation exists
-        agents_dir = self.claude_config_dir / "agents" / "nw"
-        commands_dir = self.claude_config_dir / "commands" / "nw"
+            if not agents_dir.exists():
+                validation_errors += 1
 
-        if not agents_dir.exists():
-            self.logger.error("Agents directory missing after update")
-            validation_errors += 1
+            if not commands_dir.exists():
+                validation_errors += 1
 
-        if not commands_dir.exists():
-            self.logger.error("Commands directory missing after update")
-            validation_errors += 1
+            # Check manifest
+            manifest_file = self.claude_config_dir / "nwave-manifest.txt"
+            manifest_exists = manifest_file.exists()
+            if not manifest_exists:
+                validation_errors += 1
 
-        # Check manifest
-        manifest_file = self.claude_config_dir / "nwave-manifest.txt"
-        if not manifest_file.exists():
-            self.logger.warn("Installation manifest missing")
-            validation_errors += 1
+            # Count installed components
+            agent_count = PathUtils.count_files(agents_dir, "*.md")
+            command_count = PathUtils.count_files(commands_dir, "*.md")
 
-        # Count installed components
-        agent_count = PathUtils.count_files(agents_dir, "*.md")
-        command_count = PathUtils.count_files(commands_dir, "*.md")
+        # Display validation results as Rich table
+        status_ok = (
+            "[green]OK[/green]" if isinstance(self.rich_logger, RichLogger) else "OK"
+        )
+        status_fail = (
+            "[red]FAIL[/red]" if isinstance(self.rich_logger, RichLogger) else "FAIL"
+        )
 
-        self.logger.info(
-            f"Installation verification - Agents: {agent_count}, Commands: {command_count}"
+        validation_rows = [
+            [
+                "Agents",
+                status_ok if agents_dir.exists() else status_fail,
+                str(agent_count),
+            ],
+            [
+                "Commands",
+                status_ok if commands_dir.exists() else status_fail,
+                str(command_count),
+            ],
+            [
+                "Manifest",
+                status_ok if manifest_exists else status_fail,
+                "Yes" if manifest_exists else "No",
+            ],
+        ]
+
+        self.rich_logger.table(
+            headers=["Component", "Status", "Count"],
+            rows=validation_rows,
+            title="Update Validation Results",
         )
 
         if validation_errors == 0:
-            self.logger.info("✅ Update validation successful")
+            self.logger.info("Update validation successful")
             return True
         else:
             self.logger.error(
@@ -382,28 +437,28 @@ Restoration Command:
             return True
 
         print()
-        print(f"{Colors.YELLOW}nWave FRAMEWORK UPDATE{Colors.NC}")
-        print(f"{Colors.YELLOW}========================={Colors.NC}")
+        print(f"{_ANSI_YELLOW}nWave FRAMEWORK UPDATE{_ANSI_NC}")
+        print(f"{_ANSI_YELLOW}========================={_ANSI_NC}")
         print()
-        print(f"{Colors.YELLOW}This will:{Colors.NC}")
+        print(f"{_ANSI_YELLOW}This will:{_ANSI_NC}")
         print(
-            f"{Colors.YELLOW}  1. Build new framework from current source code{Colors.NC}"
+            f"{_ANSI_YELLOW}  1. Build new framework from current source code{_ANSI_NC}"
         )
-        print(f"{Colors.YELLOW}  2. Uninstall existing nWave installation{Colors.NC}")
-        print(f"{Colors.YELLOW}  3. Install newly built framework{Colors.NC}")
+        print(f"{_ANSI_YELLOW}  2. Uninstall existing nWave installation{_ANSI_NC}")
+        print(f"{_ANSI_YELLOW}  3. Install newly built framework{_ANSI_NC}")
         print()
 
         if self.backup_before_update:
             print(
-                f"{Colors.GREEN}✅ Comprehensive backup will be created before update{Colors.NC}"
+                f"{_ANSI_GREEN}✅ Comprehensive backup will be created before update{_ANSI_NC}"
             )
             print(
-                f"{Colors.GREEN}   Location: {self.backup_manager.backup_dir}{Colors.NC}"
+                f"{_ANSI_GREEN}   Location: {self.backup_manager.backup_dir}{_ANSI_NC}"
             )
         else:
-            print(f"{Colors.RED}⚠️  No backup will be created{Colors.NC}")
+            print(f"{_ANSI_RED}⚠️  No backup will be created{_ANSI_NC}")
             print(
-                f"{Colors.RED}   To create backup, cancel and run with --backup option{Colors.NC}"
+                f"{_ANSI_RED}   To create backup, cancel and run with --backup option{_ANSI_NC}"
             )
 
         print()
@@ -428,11 +483,64 @@ Restoration Command:
         )
 
 
+def show_title_panel(rich_logger: RichLogger, dry_run: bool = False) -> None:
+    """Display styled title panel when updater starts.
+
+    Args:
+        rich_logger: RichLogger instance for styled output.
+        dry_run: Whether running in dry-run mode.
+    """
+    mode_indicator = " [DRY RUN]" if dry_run else ""
+    title_content = f"""nWave Framework Update Script v{__version__}{mode_indicator}
+
+Orchestrates complete nWave framework update process:
+1. Build new framework bundle from source
+2. Uninstall existing nWave installation
+3. Install newly built framework bundle"""
+
+    rich_logger.panel(content=title_content, title="nWave Updater", style="blue")
+
+
+def show_update_summary(
+    rich_logger: RichLogger, claude_config_dir: Path, backup_dir: Path = None
+) -> None:
+    """Display update summary panel at end of successful update.
+
+    Args:
+        rich_logger: RichLogger instance for styled output.
+        claude_config_dir: Path to Claude config directory.
+        backup_dir: Path to backup directory (if created).
+    """
+    # Count installed components
+    agents_count = PathUtils.count_files(claude_config_dir / "agents" / "nw", "*.md")
+    commands_count = PathUtils.count_files(
+        claude_config_dir / "commands" / "nw", "*.md"
+    )
+
+    backup_info = (
+        f"Backup Location: {backup_dir}" if backup_dir else "Backup: Not created"
+    )
+
+    summary_content = f"""Framework Version: {__version__}
+Installation Location: {claude_config_dir}
+Agents Installed: {agents_count}
+Commands Installed: {commands_count}
+{backup_info}
+
+Update Process Completed:
+  1. Framework bundle built from latest source
+  2. Previous installation cleanly removed
+  3. New framework installation validated
+  4. All nWave components operational"""
+
+    rich_logger.panel(content=summary_content, title="Update Complete", style="green")
+
+
 def show_help():
     """Show help message."""
-    help_text = f"""{Colors.BLUE}nWave Framework Update Script for Cross-Platform{Colors.NC}
+    help_text = f"""{_ANSI_BLUE}nWave Framework Update Script for Cross-Platform{_ANSI_NC}
 
-{Colors.BLUE}DESCRIPTION:{Colors.NC}
+{_ANSI_BLUE}DESCRIPTION:{_ANSI_NC}
     Orchestrates complete nWave framework update process:
     1. Builds new framework bundle from source
     2. Uninstalls existing nWave installation
@@ -440,35 +548,35 @@ def show_help():
 
     This provides a seamless update experience while preserving configuration.
 
-{Colors.BLUE}USAGE:{Colors.NC}
+{_ANSI_BLUE}USAGE:{_ANSI_NC}
     python update_nwave.py [OPTIONS]
 
-{Colors.BLUE}OPTIONS:{Colors.NC}
+{_ANSI_BLUE}OPTIONS:{_ANSI_NC}
     --backup         Create comprehensive backup before update (recommended)
     --force          Skip confirmation prompts and force update
     --dry-run        Show what would be done without executing
     --help           Show this help message
 
-{Colors.BLUE}EXAMPLES:{Colors.NC}
+{_ANSI_BLUE}EXAMPLES:{_ANSI_NC}
     python update_nwave.py                # Interactive update with confirmations
     python update_nwave.py --backup       # Update with comprehensive backup
     python update_nwave.py --force --backup # Automated update with backup
     python update_nwave.py --dry-run      # Preview update process
 
-{Colors.BLUE}UPDATE PROCESS:{Colors.NC}
+{_ANSI_BLUE}UPDATE PROCESS:{_ANSI_NC}
     Step 1: Pre-update validation and backup
     Step 2: Build new framework bundle (dist/ide/)
     Step 3: Uninstall current nWave installation
     Step 4: Install new framework bundle
     Step 5: Validate successful update
 
-{Colors.BLUE}BACKUP STRATEGY:{Colors.NC}
+{_ANSI_BLUE}BACKUP STRATEGY:{_ANSI_NC}
     - Comprehensive pre-update backup created
     - Individual component backups during uninstall/install
     - Full rollback capability if update fails
     - Backup location: ~/.claude/backups/nwave-update-<timestamp>/
 
-{Colors.BLUE}IMPORTANT:{Colors.NC}
+{_ANSI_BLUE}IMPORTANT:{_ANSI_NC}
     - Requires Python 3.7+ for build process
     - Preserves Claude Code settings and other configurations
     - Creates detailed update log for troubleshooting
@@ -499,16 +607,19 @@ def main():
         show_help()
         return 0
 
+    # Create Rich logger for title panel (before updater is created)
+    title_logger = ConsoleFactory.create_logger()
+
+    # Show title panel at startup
+    show_title_panel(title_logger, dry_run=args.dry_run)
+
     updater = NWaveUpdater(
         backup_before_update=args.backup, force=args.force, dry_run=args.dry_run
     )
 
-    updater.logger.info("nWave Framework Update Process")
-    updater.logger.info("=" * 33)
-
     if args.dry_run:
         updater.logger.info(
-            f"{Colors.YELLOW}🔍 DRY RUN MODE{Colors.NC} - No changes will be made"
+            f"{_ANSI_YELLOW}DRY RUN MODE{_ANSI_NC} - No changes will be made"
         )
         print()
 
@@ -520,7 +631,7 @@ def main():
 
     if not updater.confirm_update():
         print()
-        print(f"{Colors.YELLOW}Update cancelled by user.{Colors.NC}")
+        print(f"{_ANSI_YELLOW}Update cancelled by user.{_ANSI_NC}")
         return 0
 
     updater.create_update_backup()
@@ -538,24 +649,13 @@ def main():
     if updater.validate_update():
         updater.create_update_report()
 
-        # Success message
         print()
-        updater.logger.info("🎉 nWave FRAMEWORK UPDATE COMPLETED SUCCESSFULLY!")
-        print()
-        updater.logger.info("Summary:")
-        updater.logger.info("- Framework bundle built from latest source")
-        updater.logger.info("- Previous installation cleanly removed")
-        updater.logger.info("- New framework installation validated")
-        updater.logger.info("- All nWave components operational")
-
-        if args.backup:
-            print()
-            updater.logger.info("💾 Update backup available at:")
-            updater.logger.info(f"   {updater.backup_manager.backup_dir}")
-            updater.logger.info("   Contains complete pre-update state for recovery")
+        # Show update summary panel
+        backup_dir = updater.backup_manager.backup_dir if args.backup else None
+        show_update_summary(updater.rich_logger, updater.claude_config_dir, backup_dir)
 
         print()
-        updater.logger.info("🚀 Updated nWave framework ready for use!")
+        updater.logger.info("Updated nWave framework ready for use!")
         updater.logger.info(
             "   Try: /nw:discuss, /nw:design, /nw:develop, /nw:deliver commands"
         )

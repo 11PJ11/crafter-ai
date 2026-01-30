@@ -22,7 +22,10 @@ import shutil
 import sys
 from typing import List, Optional
 
-from scripts.install.error_codes import DEP_MISSING, ENV_NO_PIPENV, ENV_NO_VENV
+try:
+    from scripts.install.error_codes import DEP_MISSING, ENV_NO_PIPENV, ENV_NO_VENV
+except ImportError:
+    from error_codes import DEP_MISSING, ENV_NO_PIPENV, ENV_NO_VENV
 
 
 # Required modules for nWave installer functionality

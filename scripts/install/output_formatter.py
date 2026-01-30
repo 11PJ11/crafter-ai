@@ -10,6 +10,9 @@ Terminal Format:
     - [FIX]: Actionable step to resolve the issue
     - [THEN]: Next step after applying the fix
 
+    When Rich is available and use_colors=True, errors are displayed in styled
+    panels with visible borders. Otherwise, ANSI color codes are used.
+
 Claude Code Format:
     JSON output with fields for machine parsing:
     - error_code: Machine-readable error identifier
@@ -37,46 +40,141 @@ Usage:
     json_formatter = ClaudeCodeFormatter()
 """
 
+import io
 import json
+import sys
 from datetime import datetime
 
-from scripts.install.context_detector import is_ci_environment, is_claude_code_context
-from scripts.install.error_codes import DEP_MISSING, ENV_NO_PIPENV, ENV_NO_VENV
-from scripts.install.install_utils import Colors
+try:
+    from scripts.install.context_detector import (
+        is_ci_environment,
+        is_claude_code_context,
+    )
+    from scripts.install.error_codes import DEP_MISSING, ENV_NO_PIPENV, ENV_NO_VENV
+except ImportError:
+    from context_detector import is_ci_environment, is_claude_code_context
+    from error_codes import DEP_MISSING, ENV_NO_PIPENV, ENV_NO_VENV
+
+# Try to import Rich for enhanced terminal output
+try:
+    from rich.console import Console
+    from rich.panel import Panel
+    from rich.text import Text
+
+    RICH_AVAILABLE = True
+except ImportError:
+    RICH_AVAILABLE = False
+    Console = None  # type: ignore
+    Panel = None  # type: ignore
+    Text = None  # type: ignore
+
+
+# ANSI color codes for terminal output (fallback when Rich unavailable)
+_ANSI_RED = "\033[0;31m"
+_ANSI_GREEN = "\033[0;32m"
+_ANSI_YELLOW = "\033[1;33m"
+_ANSI_NC = "\033[0m"  # No Color
 
 
 class TerminalFormatter:
     """Formats error messages for terminal output with [ERROR]/[FIX]/[THEN] structure.
 
-    The formatter provides human-readable error messages with optional ANSI color
-    support for enhanced terminal visibility.
+    The formatter provides human-readable error messages with Rich panel support
+    when available, falling back to ANSI colors otherwise.
+
+    When Rich is available and use_colors=True:
+    - Errors are displayed in styled panels with visible borders
+    - Colors match error severity (red/yellow/green)
+
+    When Rich is unavailable or use_colors=False:
+    - Falls back to ANSI color codes or plain text
 
     Attributes:
-        use_colors: Whether to include ANSI color codes in output.
+        use_colors: Whether to include styling in output.
+        _use_rich: Internal flag indicating if Rich should be used.
     """
 
     def __init__(self, use_colors: bool = True):
         """Initialize the TerminalFormatter.
 
         Args:
-            use_colors: If True, include ANSI color codes in output.
+            use_colors: If True, include styling in output (Rich or ANSI).
                        Defaults to True for interactive terminals.
         """
         self.use_colors = use_colors
+        # Use Rich only if: available, colors enabled, and stdout is a TTY
+        self._use_rich = RICH_AVAILABLE and use_colors and sys.stdout.isatty()
 
     def _color(self, text: str, color: str) -> str:
         """Apply color to text if colors are enabled.
 
+        When Rich is available and use_colors=True, returns Rich markup.
+        Otherwise falls back to ANSI codes when use_colors=True,
+        or plain text when use_colors=False.
+
         Args:
             text: The text to colorize.
-            color: The ANSI color code to apply.
+            color: The ANSI color code to apply (or Rich style via mapping).
 
         Returns:
-            Colored text if colors enabled, otherwise plain text.
+            Styled text appropriate for the current context.
         """
-        if self.use_colors:
-            return f"{color}{text}{Colors.NC}"
-        return text
+        if not self.use_colors:
+            return text
+
+        if self._use_rich:
+            # Map ANSI codes to Rich styles
+            style_map = {
+                _ANSI_RED: "bold red",
+                _ANSI_YELLOW: "bold yellow",
+                _ANSI_GREEN: "bold green",
+            }
+            style = style_map.get(color, "")
+            return f"[{style}]{text}[/{style}]" if style else text
+
+        # Fallback to ANSI codes
+        return f"{color}{text}{_ANSI_NC}"
+
+    def _format_with_rich_panel(
+        self,
+        error_message: str,
+        fix_action: str,
+        then_action: str,
+    ) -> str:
+        """Format error as a Rich panel string.
+
+        Creates a styled panel with the [ERROR]/[FIX]/[THEN] structure
+        and returns it as a string for consistent return type.
+
+        Args:
+            error_message: Human-readable description of the error.
+            fix_action: Actionable step to resolve the error.
+            then_action: What to do after applying the fix.
+
+        Returns:
+            String representation of the Rich panel output.
+        """
+        # Create styled text content for the panel
+        content = Text()
+        content.append("[ERROR]", style="bold red")
+        content.append(f" {error_message}\n\n")
+        content.append("[FIX]", style="bold yellow")
+        content.append(f" {fix_action}\n\n")
+        content.append("[THEN]", style="bold green")
+        content.append(f" {then_action}")
+
+        # Create panel with red border for errors
+        panel = Panel(
+            content,
+            border_style="red",
+            padding=(0, 1),
+        )
+
+        # Capture panel output as string
+        string_io = io.StringIO()
+        console = Console(file=string_io, force_terminal=True, width=80)
+        console.print(panel)
+        return string_io.getvalue().rstrip()
 
     def format_terminal_error(
         self,
@@ -90,6 +188,10 @@ class TerminalFormatter:
         Creates a human-readable error message with clear sections for
         the error description, remediation action, and next steps.
 
+        When Rich is available and colors are enabled, displays the error
+        in a styled panel with visible borders. Otherwise falls back to
+        ANSI-colored or plain text output.
+
         Args:
             error_code: The error code identifier (e.g., ENV_NO_VENV).
             error_message: Human-readable description of the error.
@@ -99,9 +201,14 @@ class TerminalFormatter:
         Returns:
             Formatted error message string with [ERROR]/[FIX]/[THEN] sections.
         """
-        error_prefix = self._color("[ERROR]", Colors.RED)
-        fix_prefix = self._color("[FIX]", Colors.YELLOW)
-        then_prefix = self._color("[THEN]", Colors.GREEN)
+        # Use Rich panel when available for styled output
+        if self._use_rich:
+            return self._format_with_rich_panel(error_message, fix_action, then_action)
+
+        # Fallback to ANSI or plain text
+        error_prefix = self._color("[ERROR]", _ANSI_RED)
+        fix_prefix = self._color("[FIX]", _ANSI_YELLOW)
+        then_prefix = self._color("[THEN]", _ANSI_GREEN)
 
         lines = [
             f"{error_prefix} {error_message}",
@@ -174,6 +281,93 @@ class TerminalFormatter:
             fix_action="Run 'pipenv shell' to activate the virtual environment",
             then_action="Re-run the installer script inside the virtual environment",
         )
+
+    def format_preflight_error_panel(
+        self,
+        title: str,
+        errors: list,
+    ) -> str:
+        """Format preflight check errors in a styled panel.
+
+        Creates a Rich panel (when available) containing multiple preflight
+        check failures with clear visual hierarchy. Falls back to plain text
+        formatting when Rich is unavailable or colors are disabled.
+
+        Args:
+            title: The panel title (e.g., "Preflight Check Failed").
+            errors: List of error dictionaries with 'error', 'fix', and 'then' keys.
+                   Each dict should contain:
+                   - error: The error description
+                   - fix: The remediation action
+                   - then: The next step after fixing
+
+        Returns:
+            Formatted string containing all preflight errors in a panel.
+
+        Example:
+            errors = [
+                {
+                    "error": "No virtual environment detected",
+                    "fix": "Run 'pipenv shell'",
+                    "then": "Re-run the installer"
+                },
+                {
+                    "error": "Missing dependency: yaml",
+                    "fix": "Run 'pipenv install PyYAML'",
+                    "then": "Re-run the installer"
+                }
+            ]
+            result = formatter.format_preflight_error_panel("Preflight Check Failed", errors)
+        """
+        if not errors:
+            return ""
+
+        if self._use_rich:
+            # Create Rich panel with multiple errors
+            content = Text()
+
+            for i, err in enumerate(errors):
+                if i > 0:
+                    content.append("\n" + "-" * 40 + "\n\n")
+
+                content.append("[ERROR]", style="bold red")
+                content.append(f" {err.get('error', 'Unknown error')}\n\n")
+                content.append("[FIX]", style="bold yellow")
+                content.append(f" {err.get('fix', 'No fix available')}\n\n")
+                content.append("[THEN]", style="bold green")
+                content.append(f" {err.get('then', 'Re-run the installer')}")
+
+            panel = Panel(
+                content,
+                title=title,
+                border_style="red",
+                padding=(0, 1),
+            )
+
+            # Capture panel output as string
+            string_io = io.StringIO()
+            console = Console(file=string_io, force_terminal=True, width=80)
+            console.print(panel)
+            return string_io.getvalue().rstrip()
+
+        # Fallback to plain text formatting
+        lines = [f"=== {title} ===", ""]
+
+        for i, err in enumerate(errors):
+            if i > 0:
+                lines.append("-" * 40)
+                lines.append("")
+
+            error_prefix = self._color("[ERROR]", _ANSI_RED)
+            fix_prefix = self._color("[FIX]", _ANSI_YELLOW)
+            then_prefix = self._color("[THEN]", _ANSI_GREEN)
+
+            lines.append(f"{error_prefix} {err.get('error', 'Unknown error')}")
+            lines.append(f"{fix_prefix} {err.get('fix', 'No fix available')}")
+            lines.append(f"{then_prefix} {err.get('then', 'Re-run the installer')}")
+            lines.append("")
+
+        return "\n".join(lines).rstrip()
 
 
 class ClaudeCodeFormatter:

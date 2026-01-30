@@ -23,8 +23,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional
 
-from scripts.install.error_codes import VERIFY_FAILED
-from scripts.install.install_utils import PathUtils
+try:
+    from scripts.install.error_codes import VERIFY_FAILED
+    from scripts.install.install_utils import PathUtils
+except ImportError:
+    from error_codes import VERIFY_FAILED
+    from install_utils import PathUtils
 
 
 @dataclass

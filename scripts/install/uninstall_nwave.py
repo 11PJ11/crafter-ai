@@ -12,14 +12,31 @@ import argparse
 import shutil
 import sys
 
-from install_utils import (
-    BackupManager,
-    Colors,
-    Logger,
-    ManifestWriter,
-    PathUtils,
-    confirm_action,
-)
+try:
+    from scripts.install.install_utils import (
+        BackupManager,
+        Logger,
+        ManifestWriter,
+        PathUtils,
+        confirm_action,
+    )
+    from scripts.install.rich_console import ConsoleFactory, RichLogger
+except ImportError:
+    from install_utils import (
+        BackupManager,
+        Logger,
+        ManifestWriter,
+        PathUtils,
+        confirm_action,
+    )
+    from rich_console import ConsoleFactory, RichLogger
+
+# ANSI color codes for terminal output (fallback when Rich unavailable)
+_ANSI_GREEN = "\033[0;32m"
+_ANSI_RED = "\033[0;31m"
+_ANSI_YELLOW = "\033[1;33m"
+_ANSI_BLUE = "\033[0;34m"
+_ANSI_NC = "\033[0m"  # No Color
 
 __version__ = "1.1.0"
 
@@ -48,6 +65,11 @@ class NWaveUninstaller:
         self.claude_config_dir = PathUtils.get_claude_config_dir()
         log_file = self.claude_config_dir / "nwave-uninstall.log"
         self.logger = Logger(log_file if not dry_run else None)
+
+        # Create Rich logger for enhanced visual output
+        self.rich_logger = ConsoleFactory.create_logger(
+            log_file if not dry_run else None
+        )
 
         self.backup_manager = BackupManager(self.logger, "uninstall")
 
@@ -88,10 +110,8 @@ class NWaveUninstaller:
         if not installation_found:
             self.logger.info("No nWave installation found")
             print()
-            print(
-                f"{Colors.YELLOW}No nWave framework installation detected.{Colors.NC}"
-            )
-            print(f"{Colors.YELLOW}Nothing to uninstall.{Colors.NC}")
+            print(f"{_ANSI_YELLOW}No nWave framework installation detected.{_ANSI_NC}")
+            print(f"{_ANSI_YELLOW}Nothing to uninstall.{_ANSI_NC}")
             return False
 
         return True
@@ -103,28 +123,26 @@ class NWaveUninstaller:
 
         print()
         print(
-            f"{Colors.RED}WARNING: This will completely remove the framework installation from your system.{Colors.NC}"
+            f"{_ANSI_RED}WARNING: This will completely remove the framework installation from your system.{_ANSI_NC}"
         )
         print()
-        print(f"{Colors.YELLOW}The following will be removed:{Colors.NC}")
-        print(f"{Colors.YELLOW}  - All nWave agents{Colors.NC}")
-        print(f"{Colors.YELLOW}  - All nWave commands{Colors.NC}")
-        print(f"{Colors.YELLOW}  - Configuration files and manifest{Colors.NC}")
-        print(f"{Colors.YELLOW}  - Installation logs and backup directories{Colors.NC}")
+        print(f"{_ANSI_YELLOW}The following will be removed:{_ANSI_NC}")
+        print(f"{_ANSI_YELLOW}  - All nWave agents{_ANSI_NC}")
+        print(f"{_ANSI_YELLOW}  - All nWave commands{_ANSI_NC}")
+        print(f"{_ANSI_YELLOW}  - Configuration files and manifest{_ANSI_NC}")
+        print(f"{_ANSI_YELLOW}  - Installation logs and backup directories{_ANSI_NC}")
         print()
 
         if self.backup_before_removal:
-            print(
-                f"{Colors.GREEN}A backup will be created before removal at:{Colors.NC}"
-            )
-            print(f"{Colors.GREEN}  {self.backup_manager.backup_dir}{Colors.NC}")
+            print(f"{_ANSI_GREEN}A backup will be created before removal at:{_ANSI_NC}")
+            print(f"{_ANSI_GREEN}  {self.backup_manager.backup_dir}{_ANSI_NC}")
             print()
         else:
             print(
-                f"{Colors.RED}WARNING: No backup will be created. This action cannot be undone.{Colors.NC}"
+                f"{_ANSI_RED}WARNING: No backup will be created. This action cannot be undone.{_ANSI_NC}"
             )
             print(
-                f"{Colors.RED}To create a backup, cancel and run with --backup option.{Colors.NC}"
+                f"{_ANSI_RED}To create a backup, cancel and run with --backup option.{_ANSI_NC}"
             )
             print()
 
@@ -146,24 +164,23 @@ class NWaveUninstaller:
                 self.logger.info("[DRY RUN] Would remove agents/nw directory")
             return
 
-        self.logger.info("Removing nWave agents...")
+        with self.rich_logger.progress_spinner("Removing nWave agents..."):
+            agents_nw_dir = self.claude_config_dir / "agents" / "nw"
+            if agents_nw_dir.exists():
+                shutil.rmtree(agents_nw_dir)
+                self.logger.info("Removed agents/nw directory")
 
-        agents_nw_dir = self.claude_config_dir / "agents" / "nw"
-        if agents_nw_dir.exists():
-            shutil.rmtree(agents_nw_dir)
-            self.logger.info("Removed agents/nw directory")
-
-        # Remove parent agents directory if empty
-        agents_dir = self.claude_config_dir / "agents"
-        if agents_dir.exists():
-            try:
-                if not any(agents_dir.iterdir()):
-                    agents_dir.rmdir()
-                    self.logger.info("Removed empty agents directory")
-                else:
+            # Remove parent agents directory if empty
+            agents_dir = self.claude_config_dir / "agents"
+            if agents_dir.exists():
+                try:
+                    if not any(agents_dir.iterdir()):
+                        agents_dir.rmdir()
+                        self.logger.info("Removed empty agents directory")
+                    else:
+                        self.logger.info("Kept agents directory (contains other files)")
+                except OSError:
                     self.logger.info("Kept agents directory (contains other files)")
-            except OSError:
-                self.logger.info("Kept agents directory (contains other files)")
 
     def remove_commands(self) -> None:
         """Remove nWave commands."""
@@ -174,24 +191,25 @@ class NWaveUninstaller:
                 self.logger.info("[DRY RUN] Would remove commands/nw directory")
             return
 
-        self.logger.info("Removing nWave commands...")
+        with self.rich_logger.progress_spinner("Removing nWave commands..."):
+            commands_nw_dir = self.claude_config_dir / "commands" / "nw"
+            if commands_nw_dir.exists():
+                shutil.rmtree(commands_nw_dir)
+                self.logger.info("Removed commands/nw directory")
 
-        commands_nw_dir = self.claude_config_dir / "commands" / "nw"
-        if commands_nw_dir.exists():
-            shutil.rmtree(commands_nw_dir)
-            self.logger.info("Removed commands/nw directory")
-
-        # Remove parent commands directory if empty
-        commands_dir = self.claude_config_dir / "commands"
-        if commands_dir.exists():
-            try:
-                if not any(commands_dir.iterdir()):
-                    commands_dir.rmdir()
-                    self.logger.info("Removed empty commands directory")
-                else:
+            # Remove parent commands directory if empty
+            commands_dir = self.claude_config_dir / "commands"
+            if commands_dir.exists():
+                try:
+                    if not any(commands_dir.iterdir()):
+                        commands_dir.rmdir()
+                        self.logger.info("Removed empty commands directory")
+                    else:
+                        self.logger.info(
+                            "Kept commands directory (contains other files)"
+                        )
+                except OSError:
                     self.logger.info("Kept commands directory (contains other files)")
-            except OSError:
-                self.logger.info("Kept commands directory (contains other files)")
 
     def remove_config_files(self) -> None:
         """Remove nWave configuration files."""
@@ -199,15 +217,14 @@ class NWaveUninstaller:
             self.logger.info("[DRY RUN] Would remove nWave configuration files...")
             return
 
-        self.logger.info("Removing nWave configuration files...")
+        with self.rich_logger.progress_spinner("Removing nWave configuration files..."):
+            config_files = ["nwave-manifest.txt", "nwave-install.log"]
 
-        config_files = ["nwave-manifest.txt", "nwave-install.log"]
-
-        for config_file in config_files:
-            file_path = self.claude_config_dir / config_file
-            if file_path.exists():
-                file_path.unlink()
-                self.logger.info(f"Removed {config_file}")
+            for config_file in config_files:
+                file_path = self.claude_config_dir / config_file
+                if file_path.exists():
+                    file_path.unlink()
+                    self.logger.info(f"Removed {config_file}")
 
     def remove_backups(self) -> None:
         """Remove nWave backup directories."""
@@ -215,31 +232,30 @@ class NWaveUninstaller:
             self.logger.info("[DRY RUN] Would remove nWave backup directories...")
             return
 
-        self.logger.info("Removing nWave backup directories...")
+        with self.rich_logger.progress_spinner("Removing nWave backup directories..."):
+            backup_count = 0
+            backups_dir = self.claude_config_dir / "backups"
 
-        backup_count = 0
-        backups_dir = self.claude_config_dir / "backups"
+            if backups_dir.exists():
+                for backup_dir in backups_dir.glob("nwave-*"):
+                    if backup_dir.is_dir():
+                        # Skip the backup we just created during this uninstall
+                        if (
+                            self.backup_before_removal
+                            and backup_dir == self.backup_manager.backup_dir
+                        ):
+                            self.logger.info(
+                                f"Preserving current uninstall backup: {backup_dir.name}"
+                            )
+                            continue
 
-        if backups_dir.exists():
-            for backup_dir in backups_dir.glob("nwave-*"):
-                if backup_dir.is_dir():
-                    # Skip the backup we just created during this uninstall
-                    if (
-                        self.backup_before_removal
-                        and backup_dir == self.backup_manager.backup_dir
-                    ):
-                        self.logger.info(
-                            f"Preserving current uninstall backup: {backup_dir.name}"
-                        )
-                        continue
+                        shutil.rmtree(backup_dir)
+                        backup_count += 1
 
-                    shutil.rmtree(backup_dir)
-                    backup_count += 1
-
-        if backup_count > 0:
-            self.logger.info(f"Removed {backup_count} old nWave backup directories")
-        else:
-            self.logger.info("No old nWave backup directories found")
+            if backup_count > 0:
+                self.logger.info(f"Removed {backup_count} old nWave backup directories")
+            else:
+                self.logger.info("No old nWave backup directories found")
 
     def validate_removal(self) -> bool:
         """Validate complete removal."""
@@ -247,38 +263,59 @@ class NWaveUninstaller:
             self.logger.info("[DRY RUN] Would validate complete removal")
             return True
 
-        self.logger.info("Validating complete removal...")
+        with self.rich_logger.progress_spinner("Validating complete removal..."):
+            agents_nw_dir = self.claude_config_dir / "agents" / "nw"
+            commands_nw_dir = self.claude_config_dir / "commands" / "nw"
+            manifest_file = self.claude_config_dir / "nwave-manifest.txt"
+            install_log = self.claude_config_dir / "nwave-install.log"
 
-        errors = 0
+            agents_removed = not agents_nw_dir.exists()
+            commands_removed = not commands_nw_dir.exists()
+            manifest_removed = not manifest_file.exists()
+            log_removed = not install_log.exists()
 
-        agents_nw_dir = self.claude_config_dir / "agents" / "nw"
-        if agents_nw_dir.exists():
-            self.logger.error("nWave agents directory still exists")
-            errors += 1
+        # Display validation results as Rich table
+        status_ok = (
+            "[green]Removed[/green]"
+            if isinstance(self.rich_logger, RichLogger)
+            else "Removed"
+        )
+        status_fail = (
+            "[red]Exists[/red]"
+            if isinstance(self.rich_logger, RichLogger)
+            else "Exists"
+        )
 
-        commands_nw_dir = self.claude_config_dir / "commands" / "nw"
-        if commands_nw_dir.exists():
-            self.logger.error("nWave commands directory still exists")
-            errors += 1
+        validation_rows = [
+            ["Agents", status_ok if agents_removed else status_fail],
+            ["Commands", status_ok if commands_removed else status_fail],
+            ["Manifest", status_ok if manifest_removed else status_fail],
+            ["Install Log", status_ok if log_removed else status_fail],
+        ]
 
-        manifest_file = self.claude_config_dir / "nwave-manifest.txt"
-        if manifest_file.exists():
-            self.logger.error("nWave manifest file still exists")
-            errors += 1
+        self.rich_logger.table(
+            headers=["Component", "Status"],
+            rows=validation_rows,
+            title="Uninstall Validation Results",
+        )
 
-        install_log = self.claude_config_dir / "nwave-install.log"
-        if install_log.exists():
-            self.logger.error("nWave installation log still exists")
-            errors += 1
+        errors = sum(
+            [
+                not agents_removed,
+                not commands_removed,
+                not manifest_removed,
+                not log_removed,
+            ]
+        )
 
         if errors == 0:
             self.logger.info(
-                f"Uninstallation validation: {Colors.GREEN}PASSED{Colors.NC}"
+                f"Uninstallation validation: {_ANSI_GREEN}PASSED{_ANSI_NC}"
             )
             return True
         else:
             self.logger.error(
-                f"Uninstallation validation: {Colors.RED}FAILED{Colors.NC} ({errors} errors)"
+                f"Uninstallation validation: {_ANSI_RED}FAILED{_ANSI_NC} ({errors} errors)"
             )
             return False
 
@@ -299,36 +336,83 @@ class NWaveUninstaller:
         )
 
 
+def show_title_panel(rich_logger: RichLogger, dry_run: bool = False) -> None:
+    """Display styled title panel when uninstaller starts.
+
+    Args:
+        rich_logger: RichLogger instance for styled output.
+        dry_run: Whether running in dry-run mode.
+    """
+    mode_indicator = " [DRY RUN]" if dry_run else ""
+    title_content = f"""nWave Framework Uninstallation Script v{__version__}{mode_indicator}
+
+Completely removes the nWave methodology framework from
+your global Claude config directory."""
+
+    rich_logger.panel(content=title_content, title="nWave Uninstaller", style="red")
+
+
+def show_uninstall_summary(rich_logger: RichLogger, backup_dir=None) -> None:
+    """Display uninstallation summary panel at end of successful uninstall.
+
+    Args:
+        rich_logger: RichLogger instance for styled output.
+        backup_dir: Path to backup directory (if created).
+    """
+    backup_info = (
+        f"Backup Location: {backup_dir}\nBackup contains complete pre-removal state"
+        if backup_dir
+        else "Backup: Not created"
+    )
+
+    summary_content = f"""Framework Removed Successfully
+
+Components Removed:
+  - All nWave agents
+  - All nWave commands
+  - Configuration files
+  - Installation logs
+  - Old backup directories
+
+{backup_info}
+
+The framework has been completely removed from your system."""
+
+    rich_logger.panel(
+        content=summary_content, title="Uninstall Complete", style="green"
+    )
+
+
 def show_help():
     """Show help message."""
-    help_text = f"""{Colors.BLUE}nWave Framework Uninstallation Script for Cross-Platform{Colors.NC}
+    help_text = f"""{_ANSI_BLUE}nWave Framework Uninstallation Script for Cross-Platform{_ANSI_NC}
 
-{Colors.BLUE}DESCRIPTION:{Colors.NC}
+{_ANSI_BLUE}DESCRIPTION:{_ANSI_NC}
     Completely removes the nWave ATDD agent framework from your global Claude config directory.
     This removes all specialized agents, commands, configuration files, logs, and backups.
 
-{Colors.BLUE}USAGE:{Colors.NC}
+{_ANSI_BLUE}USAGE:{_ANSI_NC}
     python uninstall_nwave.py [OPTIONS]
 
-{Colors.BLUE}OPTIONS:{Colors.NC}
+{_ANSI_BLUE}OPTIONS:{_ANSI_NC}
     --backup         Create backup before removal (recommended)
     --force          Skip confirmation prompts
     --dry-run        Show what would be removed without making any changes
     --help           Show this help message
 
-{Colors.BLUE}EXAMPLES:{Colors.NC}
+{_ANSI_BLUE}EXAMPLES:{_ANSI_NC}
     python uninstall_nwave.py              # Interactive uninstall with confirmation
     python uninstall_nwave.py --dry-run    # Show what would be removed
     python uninstall_nwave.py --backup     # Create backup before removal
     python uninstall_nwave.py --force      # Uninstall without confirmation prompts
 
-{Colors.BLUE}WHAT GETS REMOVED:{Colors.NC}
+{_ANSI_BLUE}WHAT GETS REMOVED:{_ANSI_NC}
     - All nWave agents in agents/nw/ directory
     - All DW commands in commands/nw/ directory
     - nWave configuration files (manifest)
     - nWave installation logs and backup directories
 
-{Colors.BLUE}IMPORTANT:{Colors.NC}
+{_ANSI_BLUE}IMPORTANT:{_ANSI_NC}
     This action cannot be undone unless you use --backup option.
 """
     print(help_text)
@@ -356,16 +440,19 @@ def main():
         show_help()
         return 0
 
+    # Create Rich logger for title panel (before uninstaller is created)
+    title_logger = ConsoleFactory.create_logger()
+
+    # Show title panel at startup
+    show_title_panel(title_logger, dry_run=args.dry_run)
+
     uninstaller = NWaveUninstaller(
         backup_before_removal=args.backup, force=args.force, dry_run=args.dry_run
     )
 
-    uninstaller.logger.info("Framework Uninstallation Script")
-    uninstaller.logger.info("=" * 31)
-
     if args.dry_run:
         uninstaller.logger.info(
-            f"{Colors.YELLOW}DRY RUN MODE{Colors.NC} - No changes will be made"
+            f"{_ANSI_YELLOW}DRY RUN MODE{_ANSI_NC} - No changes will be made"
         )
 
     # Check for installation
@@ -375,7 +462,7 @@ def main():
     # Confirm removal
     if not uninstaller.confirm_removal():
         print()
-        print(f"{Colors.YELLOW}Uninstallation cancelled by user.{Colors.NC}")
+        print(f"{_ANSI_YELLOW}Uninstallation cancelled by user.{_ANSI_NC}")
         return 0
 
     # Create backup
@@ -394,25 +481,10 @@ def main():
 
     uninstaller.create_uninstall_report()
 
-    # Success message
     print()
-    uninstaller.logger.info("✅ Framework uninstalled successfully!")
-    print()
-    uninstaller.logger.info("Summary:")
-    uninstaller.logger.info("- All nWave agents removed")
-    uninstaller.logger.info("- All nWave commands removed")
-    uninstaller.logger.info("- Configuration files cleaned")
-    uninstaller.logger.info("- Backup directories removed")
-
-    if args.backup:
-        print()
-        uninstaller.logger.info("💾 Backup available at:")
-        uninstaller.logger.info(f"   {uninstaller.backup_manager.backup_dir}")
-
-    print()
-    uninstaller.logger.info(
-        "The framework has been completely removed from your system."
-    )
+    # Show uninstall summary panel
+    backup_dir = uninstaller.backup_manager.backup_dir if args.backup else None
+    show_uninstall_summary(uninstaller.rich_logger, backup_dir)
 
     return 0
 
