@@ -153,6 +153,18 @@ class AuditLogger:
                 pass
         return entries
 
+    def get_entries_by_type(self, event_type: str) -> List[Dict[str, Any]]:
+        """Get audit entries filtered by event type.
+
+        Args:
+            event_type: Event type to filter by (e.g., 'SCOPE_VIOLATION')
+
+        Returns:
+            List of audit entries matching the event type
+        """
+        all_entries = self.get_entries()
+        return [entry for entry in all_entries if entry.get("event") == event_type]
+
     def rotate_if_needed(self) -> None:
         """Rotate log file if date has changed (daily rotation)."""
         new_log_file = self._get_log_file()

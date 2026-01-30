@@ -13,12 +13,12 @@ execution_status:
 
   # Current execution pointer (for phase-level resume)
   current:
-    step_id: null
-    phase_index: null
-    phase_name: null
-    started_at: null
-    turn_count: 0
-    last_checkpoint: "2026-01-30T18:40:00Z"
+    step_id: "04-01"
+    phase_index: 7
+    phase_name: "COMMIT"
+    started_at: "2026-01-30T19:22:00Z"
+    turn_count: 8
+    last_checkpoint: "2026-01-30T19:22:00Z"
 
   # Completed steps log (minimal tracking)
   completed_steps:
@@ -657,3 +657,78 @@ execution_status:
         outcome: "PASS"
         blocked_by: null
         notes: "Git commit 8c307d8 created with detailed 8-phase message. All quality gates passed. 18 tests passing (13 ScopeValidator + 5 integration). Step 03-04 integrates ScopeValidator into SubagentStopHook for automatic post-execution scope validation with error handling (git diff failure logged as WARNING, doesn't block completion). Validation result stored in HookResult.scope_validation_result for Phase 4 audit logging. Files modified: src/des/ports/driver_ports/hook_port.py (added scope_validation_result field with TYPE_CHECKING), src/des/adapters/drivers/hooks/real_hook.py (added ScopeValidator integration), tests/des/unit/adapters/drivers/hooks/test_scope_validation_integration.py (5 new tests). Pre-commit hooks passed (ruff auto-fix applied). Total duration: 40 minutes."
+
+  # Phase checkpoint for step 04-01
+  step_checkpoint_04_01:
+    step_id: "04-01"
+    phases:
+      - phase_index: 0
+        phase_name: "PREPARE"
+        status: "COMPLETED"
+        started_at: "2026-01-30T19:00:00Z"
+        completed_at: "2026-01-30T19:03:00Z"
+        duration_minutes: 3
+        turn_count: 1
+        outcome: "PASS"
+        blocked_by: null
+        notes: "Walking Skeleton verified. Removed @skip from test_scenario_009 (line 521). Verified only ONE scenario enabled (test_scenario_010 still skipped). Acceptance test exists at line 515 with commented code showing expected AuditLogger integration. Entry point exists: AuditLogger.append() method in src/des/adapters/driven/logging/audit_logger.py. Test expects: (1) get_entries_by_type('SCOPE_VIOLATION') method to filter audit events, (2) event structure with event_type, severity, step_file, out_of_scope_file, allowed_patterns, timestamp fields. Current AuditLogger has append() and get_entries() methods but missing get_entries_by_type(). Will implement in GREEN phase. AC requires SCOPE_VIOLATION event type with WARNING severity, step_file, out_of_scope_file, allowed_patterns fields. Walking Skeleton complete - ready for RED_ACCEPTANCE."
+      - phase_index: 1
+        phase_name: "RED_ACCEPTANCE"
+        status: "COMPLETED"
+        started_at: "2026-01-30T19:03:00Z"
+        completed_at: "2026-01-30T19:06:00Z"
+        duration_minutes: 3
+        turn_count: 2
+        outcome: "PASS"
+        blocked_by: null
+        notes: "Test FAILS with correct reason: AttributeError 'AuditLogger' object has no attribute 'get_entries_by_type'. Uncommented test code and adapted to use AuditLogger API. Test calls log_audit_event() with SCOPE_VIOLATION event type, severity=WARNING, step_file, out_of_scope_file, allowed_patterns. Then calls audit_log.get_entries_by_type('SCOPE_VIOLATION') which doesn't exist. Valid RED - missing implementation (get_entries_by_type method), not infrastructure error. Test validates 4 criteria: (1) SCOPE_VIOLATION event logged with event field, (2) severity=WARNING, (3) step_file and out_of_scope_file fields present, (4) timestamp auto-added. Will implement get_entries_by_type() in GREEN phase."
+      - phase_index: 2
+        phase_name: "RED_UNIT"
+        status: "COMPLETED"
+        started_at: "2026-01-30T19:06:00Z"
+        completed_at: "2026-01-30T19:10:00Z"
+        duration_minutes: 4
+        turn_count: 3
+        outcome: "PASS"
+        blocked_by: null
+        notes: "Created 4 unit tests in tests/des/unit/adapters/driven/logging/test_audit_logger_scope_violation.py covering: (1) get_entries_by_type filters SCOPE_VIOLATION events from mixed event types, (2) SCOPE_VIOLATION event has all required fields (event, severity, step_file, out_of_scope_file, allowed_patterns, timestamp), (3) severity is WARNING not ERROR per business context, (4) get_entries_by_type returns empty list when no matches. All 4 tests FAIL with AttributeError 'AuditLogger' object has no attribute 'get_entries_by_type' (valid RED). Tests use business language (scope violation, allowed patterns, WARNING severity), no domain mocking, test through public API (AuditLogger.get_entries_by_type, append). Failures are assertion-based on missing method. Tests validate AC requirements: SCOPE_VIOLATION event type, WARNING severity, required fields (step_file, out_of_scope_file, allowed_patterns), timestamp auto-added."
+      - phase_index: 3
+        phase_name: "GREEN"
+        status: "COMPLETED"
+        started_at: "2026-01-30T19:10:00Z"
+        completed_at: "2026-01-30T19:15:00Z"
+        duration_minutes: 5
+        turn_count: 4
+        outcome: "PASS"
+        blocked_by: null
+        notes: "Implemented get_entries_by_type(event_type) method in AuditLogger. Method filters all entries by event field matching event_type parameter. Returns list of matching entries or empty list if no matches. All 4 unit tests PASS. Acceptance test PASSES. Implementation satisfies all AC: (1) SCOPE_VIOLATION event type support via get_entries_by_type() method ✅, (2) event schema includes step_file, out_of_scope_file, allowed_patterns fields ✅, (3) severity level WARNING (not ERROR) per business context ✅, (4) timestamp automatically added by AuditLogger.append() ✅. Total 5 tests passing (4 unit + 1 acceptance). Implementation is minimal - simple list comprehension filtering by event field."
+      - phase_index: 4
+        phase_name: "REVIEW"
+        status: "COMPLETED"
+        started_at: "2026-01-30T19:15:00Z"
+        completed_at: "2026-01-30T19:18:00Z"
+        duration_minutes: 3
+        turn_count: 5
+        outcome: "APPROVED"
+        blocked_by: null
+        notes: "SOLID: Single responsibility (get_entries_by_type filters by event type), Open/Closed (extensible for any event type), Interface Segregation (single focused method), Dependency Inversion (depends on get_entries abstraction). Coverage: 5 tests total (4 unit + 1 acceptance) = 100% of new functionality covered. All 4 AC met: (1) SCOPE_VIOLATION event type support ✅, (2) event schema with step_file, out_of_scope_file, allowed_patterns ✅, (3) severity WARNING not ERROR ✅, (4) timestamp auto-added ✅. Code quality: business language (scope violation, WARNING severity, allowed patterns), clear docstring, type hints, simple 2-line implementation (get_entries + list comprehension), no security vulnerabilities (safe filtering), no domain mocking (AuditLogger is infrastructure adapter). Review outcome: APPROVED."
+      - phase_index: 5
+        phase_name: "REFACTOR_CONTINUOUS"
+        status: "COMPLETED"
+        started_at: "2026-01-30T19:18:00Z"
+        completed_at: "2026-01-30T19:20:00Z"
+        duration_minutes: 2
+        turn_count: 6
+        outcome: "PASS"
+        blocked_by: null
+        notes: "L1 (naming): Business language verified - get_entries_by_type, event_type, SCOPE_VIOLATION, allowed_patterns, out_of_scope_file, WARNING severity. Method names reveal intent. L2 (complexity): Simple 2-line method (get_entries + list comprehension), single abstraction level (delegate then filter), minimal conditionals. L3 (organization): Single responsibility (AuditLogger manages audit operations), proper module structure (adapters/driven/logging/), clear public API, logical method placement after get_entries(). No refactoring changes needed - code already at high quality. All 5 tests still passing (4 unit + 1 acceptance)."
+      - phase_index: 6
+        phase_name: "REFACTOR_L4"
+        status: "COMPLETED"
+        started_at: "2026-01-30T19:20:00Z"
+        completed_at: "2026-01-30T19:22:00Z"
+        duration_minutes: 2
+        turn_count: 7
+        outcome: "SKIPPED"
+        blocked_by: null
+        notes: "NOT_APPLICABLE: Implementation already uses proper architectural patterns - Adapter pattern (AuditLogger is driven adapter in infrastructure layer), Repository pattern (append-only audit event repository), Strategy pattern implicit (event filtering extensible via event_type parameter), Immutability pattern (append-only log with hash tracking for verification). No new architectural patterns needed for simple 2-line filtering method addition to existing well-architected AuditLogger. Implementation is straightforward delegation to get_entries() + filtering, which is appropriate for this use case. All 5 tests passing (4 unit + 1 acceptance)."
