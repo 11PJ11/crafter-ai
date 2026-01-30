@@ -1,6 +1,6 @@
 # Command-Agent Auto-Activation Mapping
 
-<!-- version: 1.5.52 -->
+<!-- version: 1.5.53 -->
 
 ## Configuration Status: ✅ COMPLETE
 
@@ -58,7 +58,6 @@ All DW commands are now configured to automatically trigger specialized agent te
 
 - **`/nw:start`** → `nWave-core-team-team`, `product-owner` (Riley)
 - **`/nw:roadmap`** → Specified agent (via @agent parameter)
-- **`/nw:split`** → `software-crafter` (Crafty) - Default agent for TDD step generation with 14-phase enforcement
 - **`/nw:execute`** → Specified agent (via @agent parameter)
 - **`/nw:review`** → Specified reviewer agent (via @agent parameter)
 - **`/nw:finalize`** → `devop`, `feature-completion-coordinator`
@@ -102,7 +101,7 @@ All DW commands are now configured to automatically trigger specialized agent te
 
 ## Validation Status
 
-- ✅ **18/18** commands configured for auto-agent activation
+- ✅ **17/17** commands configured for auto-agent activation
 - ✅ **3/17** commands have explicit context-free implementation patterns
 - ✅ **16 specialized agents** available for domain-specific work
 - ✅ **Main instance isolation** preserved across all command flows
