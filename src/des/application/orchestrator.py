@@ -349,6 +349,7 @@ class DESOrchestrator:
         Raises:
             ValueError: If command is not a validation command
         """
+        from src.des.application.boundary_rules_generator import BoundaryRulesGenerator
         from src.des.domain.timeout_instruction_template import (
             TimeoutInstructionTemplate,
         )
@@ -363,9 +364,13 @@ class DESOrchestrator:
         # Generate DES markers
         des_markers = self._generate_des_markers(command, step_file)
 
-        # Generate BOUNDARY_RULES section
+        # Generate BOUNDARY_RULES section with scope-based patterns
+        step_file_path = self._resolve_step_file_path(project_root, step_file)
+        generator = BoundaryRulesGenerator(step_file_path=step_file_path)
+        allowed_patterns = generator.generate_allowed_patterns()
+
         boundary_rules_template = BoundaryRulesTemplate()
-        boundary_rules = boundary_rules_template.render()
+        boundary_rules = boundary_rules_template.render(allowed_patterns=allowed_patterns)
 
         # Generate TIMEOUT_INSTRUCTION section
         timeout_template = TimeoutInstructionTemplate()

@@ -164,7 +164,6 @@ class TestAllowedActionEnumeration:
         )
         assert test_allowed, "Test files must be in ALLOWED list for TDD workflow"
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_003_allowed_patterns_match_step_target_files(
         self, tmp_project_root, des_orchestrator
     ):

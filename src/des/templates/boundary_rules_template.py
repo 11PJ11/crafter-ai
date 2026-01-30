@@ -16,19 +16,32 @@ class BoundaryRulesTemplate:
     3. FORBIDDEN subsection (prohibited actions and scope expansion)
     """
 
-    def render(self) -> str:
+    def render(self, allowed_patterns: list[str] | None = None) -> str:
         """
         Render the complete BOUNDARY_RULES section.
+
+        Args:
+            allowed_patterns: List of allowed file patterns from BoundaryRulesGenerator.
+                            If None, uses generic patterns.
 
         Returns:
             str: Markdown-formatted section with header, ALLOWED, and FORBIDDEN subsections
         """
-        return """## BOUNDARY_RULES
-
-**ALLOWED**:
+        if allowed_patterns:
+            # Format patterns as bullet list
+            pattern_bullets = "\n".join(f"- {pattern}" for pattern in allowed_patterns)
+            allowed_section = f"""**ALLOWED**:
+{pattern_bullets}
+- Modify step file to record phase outcomes and state changes"""
+        else:
+            allowed_section = """**ALLOWED**:
 - Modify step file to record phase outcomes and state changes
 - Modify task implementation files as specified in step scope
-- Modify test files matching the feature being implemented
+- Modify test files matching the feature being implemented"""
+
+        return f"""## BOUNDARY_RULES
+
+{allowed_section}
 
 **FORBIDDEN**:
 - Modify other step files or tasks outside current assignment
