@@ -13,12 +13,12 @@ execution_status:
 
   # Current execution pointer (for phase-level resume)
   current:
-    step_id: null
-    phase_index: null
-    phase_name: null
-    started_at: null
-    turn_count: 0
-    last_checkpoint: "2026-01-30T19:25:00Z"
+    step_id: "04-02"
+    phase_index: 7
+    phase_name: "COMMIT"
+    started_at: "2026-01-30T20:08:00Z"
+    turn_count: 8
+    last_checkpoint: "2026-01-30T20:08:00Z"
 
   # Completed steps log (minimal tracking)
   completed_steps:
@@ -662,6 +662,81 @@ execution_status:
         outcome: "PASS"
         blocked_by: null
         notes: "Git commit 8c307d8 created with detailed 8-phase message. All quality gates passed. 18 tests passing (13 ScopeValidator + 5 integration). Step 03-04 integrates ScopeValidator into SubagentStopHook for automatic post-execution scope validation with error handling (git diff failure logged as WARNING, doesn't block completion). Validation result stored in HookResult.scope_validation_result for Phase 4 audit logging. Files modified: src/des/ports/driver_ports/hook_port.py (added scope_validation_result field with TYPE_CHECKING), src/des/adapters/drivers/hooks/real_hook.py (added ScopeValidator integration), tests/des/unit/adapters/drivers/hooks/test_scope_validation_integration.py (5 new tests). Pre-commit hooks passed (ruff auto-fix applied). Total duration: 40 minutes."
+
+  # Phase checkpoint for step 04-02
+  step_checkpoint_04_02:
+    step_id: "04-02"
+    phases:
+      - phase_index: 0
+        phase_name: "PREPARE"
+        status: "COMPLETED"
+        started_at: "2026-01-30T19:30:00Z"
+        completed_at: "2026-01-30T19:35:00Z"
+        duration_minutes: 5
+        turn_count: 1
+        outcome: "PASS"
+        blocked_by: null
+        notes: "Walking Skeleton verified. Disabled test_scenario_008, verified only ONE scenario enabled (test_scenario_009 at line 521). Acceptance test exists and validates SubagentStopHook integration with AuditLogger for SCOPE_VIOLATION logging. Entry point exists: SubagentStopHook.on_agent_complete() already calls ScopeValidator (lines 131-149) and comment at line 149 says 'violations are logged to audit in Phase 4, not here'. This is exactly what step 04-02 implements! Current hook stores scope_validation_result in HookResult but does NOT log violations to AuditLogger. AC requires: (1) SubagentStopHook calls AuditLogger.append() for each violation, (2) event includes out_of_scope_file, step_file, allowed_patterns, (3) severity=WARNING, (4) event_type=SCOPE_VIOLATION. AuditLogger API exists from step 04-01 with append() and get_entries_by_type() methods. Ready for RED_ACCEPTANCE."
+      - phase_index: 1
+        phase_name: "RED_ACCEPTANCE"
+        status: "COMPLETED"
+        started_at: "2026-01-30T19:35:00Z"
+        completed_at: "2026-01-30T19:40:00Z"
+        duration_minutes: 5
+        turn_count: 2
+        outcome: "SPECIAL_CASE"
+        blocked_by: null
+        notes: "Test PASSES but only validates AuditLogger API layer (from step 04-01). Test at line 559 says 'Simulate what SubagentStopHook will do in Phase 4' and calls audit_log.append() directly to validate event structure. This tests infrastructure API, not integration. Step 04-02 AC requires actual SubagentStopHook integration: hook must call AuditLogger.append() when scope_result.has_violations is True, iterating over out_of_scope_files and logging one event per violation. Current hook (real_hook.py lines 131-149) runs ScopeValidator, stores result, logs WARNING if validation_skipped, but does NOT log violations to audit (comment line 149 confirms this). Will write unit tests in RED_UNIT to drive hook integration. This is an infrastructure integration step without direct E2E validation."
+      - phase_index: 2
+        phase_name: "RED_UNIT"
+        status: "COMPLETED"
+        started_at: "2026-01-30T19:40:00Z"
+        completed_at: "2026-01-30T19:48:00Z"
+        duration_minutes: 8
+        turn_count: 3
+        outcome: "PASS"
+        blocked_by: null
+        notes: "Created 4 unit tests in tests/des/unit/adapters/drivers/hooks/test_audit_logging_integration.py covering: (1) hook logs SCOPE_VIOLATION to AuditLogger when violations detected, (2) each violation logged separately (one event per out_of_scope_file), (3) no audit events when no violations (has_violations=False), (4) allowed_patterns included in audit event for debugging context. All 4 tests FAIL with AssertionError on mock_audit_logger.append.assert_called_once() showing 0 calls (valid RED - implementation missing, not infrastructure error). Tests use business language (scope violation, allowed patterns, out_of_scope_file, audit trail), mock AuditLogger and ScopeValidator at infrastructure boundaries (correct per port-boundary policy), test through public API (RealSubagentStopHook.on_agent_complete()). Tests drive implementation: after scope validation (lines 131-149), check if scope_result.has_violations, then iterate over out_of_scope_files and call get_audit_logger().append() with event containing event, severity, step_file, out_of_scope_file, allowed_patterns."
+      - phase_index: 3
+        phase_name: "GREEN"
+        status: "COMPLETED"
+        started_at: "2026-01-30T19:48:00Z"
+        completed_at: "2026-01-30T19:55:00Z"
+        duration_minutes: 7
+        turn_count: 4
+        outcome: "PASS"
+        blocked_by: null
+        notes: "Implemented audit logging integration in SubagentStopHook. Added import of get_audit_logger from audit_logger module (line 4). After scope validation (lines 131-149), added code block to check if scope_result.has_violations (line 151). If violations exist, get audit logger and extract allowed_patterns from step_data.scope. Iterate over scope_result.out_of_scope_files and call audit_logger.append() with event dict containing event=SCOPE_VIOLATION, severity=WARNING, step_file=step_file_path, out_of_scope_file=file, allowed_patterns=patterns. Fixed test mock patch location from audit_logger module to real_hook module (where get_audit_logger is imported). All 4 unit tests PASS. Acceptance test PASSES. All 9 hook tests PASS (4 new audit logging + 5 existing scope validation). Implementation satisfies all 4 AC: (1) SubagentStopHook calls AuditLogger.append() for each violation ✅, (2) audit entry includes out_of_scope_file ✅, (3) audit entry includes step_file for context ✅, (4) allowed_patterns included for debugging ✅."
+      - phase_index: 4
+        phase_name: "REVIEW"
+        status: "COMPLETED"
+        started_at: "2026-01-30T19:55:00Z"
+        completed_at: "2026-01-30T20:00:00Z"
+        duration_minutes: 5
+        turn_count: 5
+        outcome: "APPROVED"
+        blocked_by: null
+        notes: "SOLID: Single responsibility (hook orchestrates post-execution validations - cohesive), Open/Closed (extensible via new validators/audit event types), Dependency Inversion (depends on get_audit_logger abstraction, ScopeValidator abstraction). Coverage: 9 tests total (4 audit logging + 5 scope validation) = 100% of audit integration covered. All 4 AC met: (1) hook calls AuditLogger.append() for each violation ✅ lines 151-161 iterate over out_of_scope_files, (2) event includes out_of_scope_file ✅ event dict field, (3) event includes step_file ✅ event dict field, (4) allowed_patterns included ✅ event dict field from step_data.scope. Code quality: business language (scope violation, audit trail, WARNING severity, allowed patterns), clear comment explains integration phase, type-safe dict construction, proper error handling (violations logged but don't block completion). No security vulnerabilities - AuditLogger handles file I/O safely, no injection risks. Port-boundary policy: tests mock get_audit_logger and ScopeValidator at infrastructure boundaries (correct). Review outcome: APPROVED ✅."
+      - phase_index: 5
+        phase_name: "REFACTOR_CONTINUOUS"
+        status: "COMPLETED"
+        started_at: "2026-01-30T20:00:00Z"
+        completed_at: "2026-01-30T20:05:00Z"
+        duration_minutes: 5
+        turn_count: 6
+        outcome: "PASS"
+        blocked_by: null
+        notes: "L1 (naming): Business language verified - scope_result.has_violations, out_of_scope_file, allowed_patterns, get_audit_logger, SCOPE_VIOLATION, WARNING severity, audit trail. Comment explains WHY (Phase 4.2 integration). Variable names reveal intent. L2 (complexity): Simple 11-line addition (lines 151-161), single abstraction level (check → get logger → extract → iterate → log), minimal conditionals (one if-check), clear loop structure. L3 (organization): Hook maintains single responsibility (post-execution validation orchestration with scope + audit), proper module structure (adapters/drivers/hooks/), clear separation of concerns (ScopeValidator validates, AuditLogger logs, SubagentStopHook orchestrates), logical placement (audit logging immediately after scope validation). No refactoring changes needed - code already at high quality. All 9 tests still passing (4 audit logging + 5 scope validation)."
+      - phase_index: 6
+        phase_name: "REFACTOR_L4"
+        status: "COMPLETED"
+        started_at: "2026-01-30T20:05:00Z"
+        completed_at: "2026-01-30T20:08:00Z"
+        duration_minutes: 3
+        turn_count: 7
+        outcome: "SKIPPED"
+        blocked_by: null
+        notes: "NOT_APPLICABLE: Implementation already uses proper architectural patterns - Adapter pattern (RealSubagentStopHook adapts HookPort interface), Dependency Inversion (depends on get_audit_logger abstraction via function import, ScopeValidator abstraction via class import), Composition (composes multiple validators: scope, turn limit, timeout, plus audit logger), Strategy pattern implicit (validators pluggable), Template Method implicit (on_agent_complete defines validation sequence). Audit logging integration is straightforward delegation - hook calls get_audit_logger().append() when violations detected, which is appropriate pattern for infrastructure orchestration. No new architectural patterns needed for simple audit integration feature. All 9 tests passing (4 audit logging + 5 scope validation)."
 
   # Phase checkpoint for step 04-01
   step_checkpoint_04_01:
