@@ -209,3 +209,81 @@ class TestBoundaryRulesTemplateRendering:
             "FORBIDDEN should cover configuration or deployment files - "
             "common sources of scope creep"
         )
+
+    def test_forbidden_includes_continuation_prohibition(self):
+        """
+        GIVEN BoundaryRulesTemplate instance
+        WHEN render() is called
+        THEN FORBIDDEN section prohibits continuing to next step
+
+        Business Context:
+        After completing step 01-01, an agent might think it's efficient
+        to continue to step 01-02. This violates the principle of returning
+        control to Marcus for explicit next-step initiation.
+        """
+        template = BoundaryRulesTemplate()
+
+        # WHEN: Render the template
+        result = template.render()
+
+        # THEN: Continuation to next step forbidden
+        continuation_forbidden = any(
+            phrase in result.lower()
+            for phrase in ["next step", "continue to", "subsequent step"]
+        )
+        assert continuation_forbidden, (
+            "FORBIDDEN must prohibit continuing to next step - "
+            "agent must return control after completion"
+        )
+
+    def test_forbidden_emphasizes_return_control_immediately(self):
+        """
+        GIVEN BoundaryRulesTemplate instance
+        WHEN render() is called
+        THEN FORBIDDEN section emphasizes RETURN CONTROL IMMEDIATELY (caps)
+
+        Business Context:
+        Strong emphasis needed to prevent agents from autonomously continuing.
+        CAPS indicates critical instruction that must not be ignored.
+        """
+        template = BoundaryRulesTemplate()
+
+        # WHEN: Render the template
+        result = template.render()
+
+        # THEN: Strong emphasis on returning control
+        has_caps_emphasis = "RETURN CONTROL IMMEDIATELY" in result
+        assert has_caps_emphasis, (
+            "FORBIDDEN must emphasize 'RETURN CONTROL IMMEDIATELY' in CAPS - "
+            "critical instruction requires visual emphasis"
+        )
+
+    def test_forbidden_mentions_explicit_marcus_initiation(self):
+        """
+        GIVEN BoundaryRulesTemplate instance
+        WHEN render() is called
+        THEN FORBIDDEN section mentions Marcus in context of next step initiation
+
+        Business Context:
+        Clarifies the workflow: Marcus (user) controls step progression,
+        not the agent. Agent completes current step and halts.
+        """
+        template = BoundaryRulesTemplate()
+
+        # WHEN: Render the template
+        result = template.render()
+
+        # THEN: Mentions Marcus in continuation context
+        # Look in FORBIDDEN section specifically
+        forbidden_section_start = result.find("**FORBIDDEN**:")
+        forbidden_section = (
+            result[forbidden_section_start:]
+            if forbidden_section_start != -1
+            else result
+        )
+
+        mentions_marcus_workflow = "marcus" in forbidden_section.lower()
+        assert mentions_marcus_workflow, (
+            "FORBIDDEN section should mention Marcus in context of step initiation - "
+            "clarifies user-controlled workflow (Marcus explicitly starts next step)"
+        )

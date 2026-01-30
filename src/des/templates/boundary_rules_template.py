@@ -45,7 +45,7 @@ class BoundaryRulesTemplate:
 - Modify unrelated source files outside scope (e.g., AuthService when working on UserRepository)
 - Modify configuration files unless explicitly in scope
 - Modify production deployment files
-- Continue to next step after completion - return control immediately
+- Continue to next step after completion - RETURN CONTROL IMMEDIATELY. Marcus will explicitly start the next step when ready.
 """
 
         return f"""## BOUNDARY_RULES

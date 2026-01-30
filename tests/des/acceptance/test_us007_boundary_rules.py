@@ -294,7 +294,6 @@ class TestForbiddenActionEnumeration:
             unrelated_forbidden
         ), "FORBIDDEN must include reference to files outside scope"
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_005_forbidden_includes_continuation_to_next_step(
         self, tmp_project_root, minimal_step_file, des_orchestrator
     ):
