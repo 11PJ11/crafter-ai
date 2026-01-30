@@ -60,9 +60,9 @@ class TestBoundaryRulesGeneratorShouldGenerateAllowedPatterns:
         patterns = generator.generate_allowed_patterns()
 
         # THEN: Target files are in allowed patterns
-        assert any(
-            "UserRepository" in pattern for pattern in patterns
-        ), "Target files should be in ALLOWED patterns"
+        assert any("UserRepository" in pattern for pattern in patterns), (
+            "Target files should be in ALLOWED patterns"
+        )
 
     def test_include_test_files_from_scope(self, tmp_path):
         """Test files from scope.test_files should be in ALLOWED patterns."""
@@ -129,9 +129,9 @@ class TestBoundaryRulesGeneratorShouldGenerateAllowedPatterns:
         # THEN: Generic patterns are used
         expected_defaults = ["steps/**/*.json", "src/**/*", "tests/**/*"]
         for expected in expected_defaults:
-            assert (
-                expected in patterns
-            ), f"Default pattern {expected} should be in allowed patterns"
+            assert expected in patterns, (
+                f"Default pattern {expected} should be in allowed patterns"
+            )
 
     def test_log_warning_when_scope_missing(self, tmp_path, caplog):
         """WARNING should be logged when scope field is missing."""
@@ -182,9 +182,9 @@ class TestBoundaryRulesGeneratorShouldConvertToGlobPatterns:
         patterns = generator.generate_allowed_patterns()
 
         # THEN: Pattern is converted to glob format
-        assert any(
-            "**/UserRepository*" in pattern for pattern in patterns
-        ), "Target files should be converted to glob patterns like **/UserRepository*"
+        assert any("**/UserRepository*" in pattern for pattern in patterns), (
+            "Target files should be converted to glob patterns like **/UserRepository*"
+        )
 
     def test_convert_interface_file_to_glob_pattern(self, tmp_path):
         """Interface files should be converted to glob patterns"""
@@ -207,9 +207,9 @@ class TestBoundaryRulesGeneratorShouldConvertToGlobPatterns:
         patterns = generator.generate_allowed_patterns()
 
         # THEN: Interface pattern is converted to glob format
-        assert any(
-            "**/IUserRepository*" in pattern for pattern in patterns
-        ), "Interface files should be converted to glob patterns like **/IUserRepository*"
+        assert any("**/IUserRepository*" in pattern for pattern in patterns), (
+            "Interface files should be converted to glob patterns like **/IUserRepository*"
+        )
 
     def test_glob_pattern_matches_both_source_and_test_files(self, tmp_path):
         """Glob patterns should match both implementation and test files"""
@@ -237,6 +237,6 @@ class TestBoundaryRulesGeneratorShouldConvertToGlobPatterns:
         # - tests/unit/test_UserRepository.py (unit test)
         # - tests/integration/UserRepository_integration.py (integration test)
         glob_pattern = next(p for p in patterns if "**/UserRepository*" in p)
-        assert (
-            glob_pattern == "**/UserRepository*"
-        ), "Glob pattern should be flexible to match both source and test files"
+        assert glob_pattern == "**/UserRepository*", (
+            "Glob pattern should be flexible to match both source and test files"
+        )
