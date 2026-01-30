@@ -22,6 +22,15 @@ from src.des.validation.scope_validator import ScopeValidator
 class TestScopeValidatorGitIntegration:
     """Test git diff execution and error handling."""
 
+    def test_git_timeout_configured_to_5_seconds(self):
+        """
+        GIVEN ScopeValidator initialized
+        WHEN checking git timeout configuration
+        THEN timeout is exactly 5 seconds (not mutated to other values)
+        """
+        validator = ScopeValidator()
+        assert validator.git_timeout == 5
+
     def test_executes_git_diff_command_successfully(self, tmp_path):
         """
         GIVEN ScopeValidator initialized
@@ -138,6 +147,29 @@ class TestScopeValidatorGitIntegration:
                 "unavailable" in result.reason.lower()
                 or "failed" in result.reason.lower()
             )
+
+    def test_empty_lines_in_git_output_all_files_still_processed(self, tmp_path):
+        """
+        GIVEN git output with empty lines interspersed
+        WHEN validate_scope processes modified files
+        THEN all files are processed (continue skips empty, doesn't break loop)
+        """
+        step_file = tmp_path / "step.json"
+        step_file.write_text(json.dumps({"scope": {"allowed_patterns": ["**/User*"]}}))
+        validator = ScopeValidator()
+
+        with patch("subprocess.run") as mock_run:
+            # Git output: in-scope file, empty lines, out-of-scope file
+            mock_run.return_value = Mock(
+                stdout="src/UserRepo.py\n\n\nsrc/OrderService.py\n\n", returncode=0
+            )
+
+            result = validator.validate_scope(str(step_file), tmp_path)
+
+            # Must detect OrderService (second file after empty lines)
+            # This proves continue (not break) was used
+            assert result.has_violations is True
+            assert "src/OrderService.py" in result.out_of_scope_files
 
 
 class TestScopeValidatorPatternMatching:
@@ -402,6 +434,77 @@ class TestScopeValidatorPatternMatching:
             # Assert: Violation detected (path doesn't match exactly)
             assert result.has_violations is True
             assert "src/repositories/UserRepository.py" in result.out_of_scope_files
+
+    def test_file_matches_pattern_returns_true_not_inverted(self):
+        """
+        GIVEN file matches allowed pattern
+        WHEN _file_matches_any_pattern called
+        THEN returns True (not inverted to False with 'not')
+        """
+        validator = ScopeValidator()
+
+        # Test positive case explicitly
+        matches = validator._file_matches_any_pattern(
+            "src/repositories/UserRepository.py", ["**/UserRepository*"]
+        )
+        assert matches is True  # Explicit True check (not just truthy)
+
+        # Test negative case explicitly
+        no_match = validator._file_matches_any_pattern(
+            "src/services/OrderService.py", ["**/UserRepository*"]
+        )
+        assert no_match is False  # Explicit False check (not just falsy)
+
+
+class TestViolationMessageFormatting:
+    """Test violation message formatting with specific file counts."""
+
+    def test_single_violation_uses_singular_message_format(self, tmp_path):
+        """
+        GIVEN exactly 1 out-of-scope file
+        WHEN building violation message
+        THEN message uses singular format (not plural)
+        """
+        step_file = tmp_path / "step.json"
+        step_file.write_text(json.dumps({"scope": {"allowed_patterns": ["**/User*"]}}))
+        validator = ScopeValidator()
+
+        with patch("subprocess.run") as mock_run:
+            # Exactly 1 out-of-scope file
+            mock_run.return_value = Mock(stdout="src/OrderService.py\n", returncode=0)
+
+            result = validator.validate_scope(str(step_file), tmp_path)
+
+            # Verify singular format used (not plural)
+            assert result.has_violations is True
+            assert result.violation_message.startswith("Scope violation:")
+            assert "src/OrderService.py" in result.violation_message
+            assert "modified outside allowed patterns" in result.violation_message
+
+    def test_multiple_violations_use_plural_message_format(self, tmp_path):
+        """
+        GIVEN exactly 2 out-of-scope files
+        WHEN building violation message
+        THEN message uses plural format with count and file list
+        """
+        step_file = tmp_path / "step.json"
+        step_file.write_text(json.dumps({"scope": {"allowed_patterns": ["**/User*"]}}))
+        validator = ScopeValidator()
+
+        with patch("subprocess.run") as mock_run:
+            # Exactly 2 out-of-scope files
+            mock_run.return_value = Mock(
+                stdout="src/OrderService.py\nsrc/PaymentService.py\n", returncode=0
+            )
+
+            result = validator.validate_scope(str(step_file), tmp_path)
+
+            # Verify plural format used (not singular)
+            assert result.has_violations is True
+            assert result.violation_message.startswith("Scope violations:")
+            assert "2 files" in result.violation_message
+            assert "src/OrderService.py" in result.violation_message
+            assert "src/PaymentService.py" in result.violation_message
 
 
 class TestStepFileImplicitAllowlist:
