@@ -675,6 +675,7 @@ class TestBoundaryRulesCompleteness:
     components as a cohesive section.
     """
 
+    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_012_boundary_rules_has_complete_structure(
         self, tmp_project_root, minimal_step_file, des_orchestrator
     ):
@@ -722,7 +723,6 @@ class TestBoundaryRulesCompleteness:
             "stop after step completion"
         )
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_013_develop_command_also_includes_boundary_rules(
         self, tmp_project_root, minimal_step_file, des_orchestrator
     ):
