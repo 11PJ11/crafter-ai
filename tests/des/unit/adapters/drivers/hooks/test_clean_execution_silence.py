@@ -37,11 +37,14 @@ class TestCleanExecutionSilence:
         )
 
         # Mock ScopeValidator to return clean result
-        with patch(
-            "src.des.adapters.drivers.hooks.real_hook.ScopeValidator"
-        ) as mock_validator_class, patch(
-            "src.des.adapters.drivers.hooks.real_hook.get_audit_logger"
-        ) as mock_get_audit_logger:
+        with (
+            patch(
+                "src.des.adapters.drivers.hooks.real_hook.ScopeValidator"
+            ) as mock_validator_class,
+            patch(
+                "src.des.adapters.drivers.hooks.real_hook.get_audit_logger"
+            ) as mock_get_audit_logger,
+        ):
             mock_validator = Mock()
             mock_validator_class.return_value = mock_validator
 
@@ -75,11 +78,12 @@ class TestCleanExecutionSilence:
             '{"scope": {"allowed_patterns": ["**/UserRepository*"]}, "phases": []}'
         )
 
-        with patch(
-            "src.des.adapters.drivers.hooks.real_hook.ScopeValidator"
-        ) as mock_validator_class, patch(
-            "src.des.adapters.drivers.hooks.real_hook.logger"
-        ) as mock_logger:
+        with (
+            patch(
+                "src.des.adapters.drivers.hooks.real_hook.ScopeValidator"
+            ) as mock_validator_class,
+            patch("src.des.adapters.drivers.hooks.real_hook.logger") as mock_logger,
+        ):
             mock_validator = Mock()
             mock_validator_class.return_value = mock_validator
 
@@ -111,11 +115,12 @@ class TestCleanExecutionSilence:
             '{"scope": {"allowed_patterns": ["**/UserRepository*"]}, "phases": []}'
         )
 
-        with patch(
-            "src.des.adapters.drivers.hooks.real_hook.ScopeValidator"
-        ) as mock_validator_class, patch(
-            "src.des.adapters.drivers.hooks.real_hook.logger"
-        ) as mock_logger:
+        with (
+            patch(
+                "src.des.adapters.drivers.hooks.real_hook.ScopeValidator"
+            ) as mock_validator_class,
+            patch("src.des.adapters.drivers.hooks.real_hook.logger") as mock_logger,
+        ):
             mock_validator = Mock()
             mock_validator_class.return_value = mock_validator
 
@@ -147,13 +152,15 @@ class TestCleanExecutionSilence:
             '{"scope": {"allowed_patterns": ["**/UserRepository*"]}, "phases": []}'
         )
 
-        with patch(
-            "src.des.adapters.drivers.hooks.real_hook.ScopeValidator"
-        ) as mock_validator_class, patch(
-            "src.des.adapters.drivers.hooks.real_hook.get_audit_logger"
-        ) as mock_get_audit_logger, patch(
-            "src.des.adapters.drivers.hooks.real_hook.logger"
-        ) as mock_logger:
+        with (
+            patch(
+                "src.des.adapters.drivers.hooks.real_hook.ScopeValidator"
+            ) as mock_validator_class,
+            patch(
+                "src.des.adapters.drivers.hooks.real_hook.get_audit_logger"
+            ) as mock_get_audit_logger,
+            patch("src.des.adapters.drivers.hooks.real_hook.logger") as mock_logger,
+        ):
             mock_validator = Mock()
             mock_validator_class.return_value = mock_validator
 

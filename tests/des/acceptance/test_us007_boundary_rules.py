@@ -645,20 +645,20 @@ class TestScopeViolationAuditLogging:
 
         # Assert: All violations logged separately
         log_entries = audit_log.get_entries_by_type("SCOPE_VIOLATION")
-        assert (
-            len(log_entries) >= 3
-        ), f"Expected at least 3 entries, got {len(log_entries)}"
+        assert len(log_entries) >= 3, (
+            f"Expected at least 3 entries, got {len(log_entries)}"
+        )
 
         logged_files = [entry["out_of_scope_file"] for entry in log_entries]
-        assert any(
-            "OrderService" in f for f in logged_files
-        ), "OrderService violation not logged"
-        assert any(
-            "PaymentService" in f for f in logged_files
-        ), "PaymentService violation not logged"
-        assert any(
-            "database.yml" in f for f in logged_files
-        ), "database.yml violation not logged"
+        assert any("OrderService" in f for f in logged_files), (
+            "OrderService violation not logged"
+        )
+        assert any("PaymentService" in f for f in logged_files), (
+            "PaymentService violation not logged"
+        )
+        assert any("database.yml" in f for f in logged_files), (
+            "database.yml violation not logged"
+        )
 
     @pytest.mark.skip(reason="Temporarily disabled - focusing on scenario 014")
     def test_scenario_011_no_violations_no_warning_logs(
@@ -715,9 +715,9 @@ class TestScopeViolationAuditLogging:
         # Assert: No NEW violation entries added (clean execution)
         entries_after = len(audit_log.get_entries_by_type("SCOPE_VIOLATION"))
         new_entries = entries_after - entries_before
-        assert (
-            new_entries == 0
-        ), f"Expected 0 NEW SCOPE_VIOLATION entries for clean execution, got {new_entries} (before: {entries_before}, after: {entries_after})"
+        assert new_entries == 0, (
+            f"Expected 0 NEW SCOPE_VIOLATION entries for clean execution, got {new_entries} (before: {entries_before}, after: {entries_after})"
+        )
 
 
 class TestBoundaryRulesCompleteness:
