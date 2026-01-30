@@ -13,12 +13,12 @@ execution_status:
 
   # Current execution pointer (for phase-level resume)
   current:
-    step_id: "02-01"
-    phase_index: 0
-    phase_name: "PREPARE"
-    started_at: "2026-01-30T10:30:00Z"
-    turn_count: 1
-    last_checkpoint: "2026-01-30T10:30:00Z"
+    step_id: null
+    phase_index: null
+    phase_name: null
+    started_at: null
+    turn_count: 0
+    last_checkpoint: "2026-01-30T10:42:00Z"
 
   # Completed steps log (minimal tracking)
   completed_steps:
@@ -37,6 +37,11 @@ execution_status:
       phases_executed: 8
       commit_sha: "3b75a11103cacacc413cf28a6d23bbd3dc643384"
       duration_minutes: 9
+    - step_id: "02-01"
+      completed_at: "2026-01-30T10:42:00Z"
+      phases_executed: 8
+      commit_sha: "d96eaf733486c8db761ba2d5b9deb60e09838f39"
+      duration_minutes: 12
 
   # Phase checkpoint for current step (enables phase-level resume)
   step_checkpoint:
@@ -113,72 +118,12 @@ execution_status:
         blocked_by: null
         notes: "NOT_APPLICABLE: Implementation already uses proper architectural patterns - Dependency Inversion (Path abstraction in generator), Composition (orchestrator composes generator + template), Single Responsibility Principle (each class has one clear job). No new patterns needed for this scope-reading feature. All 12 tests passing."
       - phase_index: 7
-        phase_name: "RED_ACCEPTANCE"
-        status: "COMPLETED"
-        started_at: "2026-01-30T10:16:00Z"
-        completed_at: "2026-01-30T10:17:00Z"
-        duration_minutes: 1
-        turn_count: 3
-        outcome: "ALREADY_GREEN"
-        blocked_by: null
-        notes: "Test already PASSES - step 01-01 implementation handles both /nw:execute and /nw:develop commands. render_full_prompt() calls BoundaryRulesTemplate.render() for all validation commands. All assertions pass: BOUNDARY_RULES present, ALLOWED present, FORBIDDEN present."
-      - phase_index: 2
-        phase_name: "RED_UNIT"
-        status: "COMPLETED"
-        started_at: "2026-01-30T10:17:00Z"
-        completed_at: "2026-01-30T10:18:00Z"
-        duration_minutes: 1
-        turn_count: 4
-        outcome: "ALREADY_GREEN"
-        blocked_by: null
-        notes: "All 6 unit tests already pass - no new unit tests needed. Existing tests cover: BoundaryRulesTemplate rendering (5 tests) + orchestrator timeout instruction for develop command (1 test). Tests verify: section header, ALLOWED subsection, FORBIDDEN subsection, multiline structure, proper ordering, timeout instruction for /nw:develop."
-      - phase_index: 3
-        phase_name: "GREEN"
-        status: "COMPLETED"
-        started_at: "2026-01-30T10:18:00Z"
-        completed_at: "2026-01-30T10:19:00Z"
-        duration_minutes: 1
-        turn_count: 5
-        outcome: "PASS"
-        blocked_by: null
-        notes: "All tests already GREEN - no implementation changes needed. Acceptance test passes: BOUNDARY_RULES present for /nw:develop, ALLOWED present, FORBIDDEN present. Unit tests pass: 6/6 passing (5 BoundaryRulesTemplate + 1 orchestrator develop timeout)."
-      - phase_index: 4
-        phase_name: "REVIEW"
-        status: "COMPLETED"
-        started_at: "2026-01-30T10:19:00Z"
-        completed_at: "2026-01-30T10:20:00Z"
-        duration_minutes: 1
-        turn_count: 6
-        outcome: "APPROVED"
-        blocked_by: null
-        notes: "SOLID: Single responsibility, composition for extensibility. Coverage: 100% (6 unit + 1 acceptance). AC met: all 3 criteria verified (develop includes BOUNDARY_RULES, identical structure to execute, shared template rendering). Security: command whitelist validation, safe template rendering. Quality: clear docstrings, type hints, follows orchestrator patterns, proper error handling."
-      - phase_index: 5
-        phase_name: "REFACTOR_CONTINUOUS"
-        status: "COMPLETED"
-        started_at: "2026-01-30T10:20:00Z"
-        completed_at: "2026-01-30T10:21:00Z"
-        duration_minutes: 1
-        turn_count: 7
-        outcome: "PASS"
-        blocked_by: null
-        notes: "L1: Business language verified (render_full_prompt, VALIDATION_COMMANDS, boundary_rules_template). L2: Simple method (60 lines total, 25 lines logic), no complexity, sequential flow. L3: Proper module organization (orchestrator, templates separation), single responsibility per class. No refactoring changes needed - code already at high quality. All tests still passing (6 unit + 1 acceptance)."
-      - phase_index: 6
-        phase_name: "REFACTOR_L4"
-        status: "COMPLETED"
-        started_at: "2026-01-30T10:21:00Z"
-        completed_at: "2026-01-30T10:22:00Z"
-        duration_minutes: 1
-        turn_count: 7
-        outcome: "SKIPPED"
-        blocked_by: null
-        notes: "NOT_APPLICABLE: Implementation already uses proper architectural patterns - Template Method pattern (BoundaryRulesTemplate), Composition over Inheritance (orchestrator composes templates), Dependency Inversion (imports at runtime). No new patterns needed for this validation-only change. All tests passing (6 unit + 1 acceptance)."
-      - phase_index: 7
         phase_name: "COMMIT"
         status: "COMPLETED"
-        started_at: "2026-01-30T10:22:00Z"
-        completed_at: "2026-01-30T10:24:00Z"
-        duration_minutes: 2
-        turn_count: 8
+        started_at: "2026-01-30T10:41:00Z"
+        completed_at: "2026-01-30T10:42:00Z"
+        duration_minutes: 1
+        turn_count: 7
         outcome: "PASS"
         blocked_by: null
-        notes: "Git commit 3b75a11 created with detailed 8-phase message. All quality gates passed. 7 tests passing (6 unit + 1 acceptance). Step 01-03 validates that step 01-01 implementation already handles both /nw:execute and /nw:develop commands via VALIDATION_COMMANDS list."
+        notes: "Git commit d96eaf7 created with detailed 8-phase message. All quality gates passed. 12 tests passing (6 generator + 5 template + 1 acceptance). Step 02-01 validates that BoundaryRulesGenerator reads step scope and generates allowed patterns, orchestrator integrates generator during render_full_prompt(), and patterns appear in ALLOWED section. Pre-commit hooks passed (ruff auto-fix applied)."
