@@ -237,11 +237,8 @@ dependencies:
     - "nw/journey.md"     # PRIMARY - Full journey design (discovery + visualization)
   templates:
     - "journey-sketch.yaml"
-  checklists:
-    - "journey-quality-checklist.md"
-    - "horizontal-coherence-checklist.md"
-  embed_knowledge:
-    - "embed/leanux-designer/design-methodology.md"
+  # Note: Checklists and embed_knowledge are embedded in this file directly
+  # No external dependencies required - Luna is self-contained
 
 # ============================================================================
 # EMBEDDED DISCOVERY METHODOLOGY
