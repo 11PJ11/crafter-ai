@@ -567,6 +567,10 @@ class NWaveInstaller:
 
         # Log additional details
         self.logger.info(f"Installation directory: {self.claude_config_dir}")
+        self.logger.info(
+            f"Verified: {result.agent_file_count} agents, "
+            f"{result.command_file_count} commands"
+        )
 
         if result.agent_file_count < 10:
             self.logger.warn(f"Expected 10+ agents, found {result.agent_file_count}")
