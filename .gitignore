@@ -67,3 +67,6 @@ output/
 venv/
 env/
 .mutmut-cache
+
+# DES audit logs (local only)
+.des/
