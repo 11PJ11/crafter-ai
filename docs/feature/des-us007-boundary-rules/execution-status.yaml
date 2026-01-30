@@ -13,12 +13,12 @@ execution_status:
 
   # Current execution pointer (for phase-level resume)
   current:
-    step_id: "04-01"
-    phase_index: 7
-    phase_name: "COMMIT"
-    started_at: "2026-01-30T19:22:00Z"
-    turn_count: 8
-    last_checkpoint: "2026-01-30T19:22:00Z"
+    step_id: null
+    phase_index: null
+    phase_name: null
+    started_at: null
+    turn_count: 0
+    last_checkpoint: "2026-01-30T19:25:00Z"
 
   # Completed steps log (minimal tracking)
   completed_steps:
@@ -27,6 +27,11 @@ execution_status:
       phases_executed: 8
       commit_sha: "e85466e025d0f196fe7a468ba50aa6edb2d9ca38"
       duration_minutes: 10
+    - step_id: "04-01"
+      completed_at: "2026-01-30T19:25:00Z"
+      phases_executed: 8
+      commit_sha: "c3451bf9430d49f5e370d410df563336ba67e421"
+      duration_minutes: 25
     - step_id: "01-02"
       completed_at: "2026-01-30T10:10:00Z"
       phases_executed: 8
@@ -732,3 +737,13 @@ execution_status:
         outcome: "SKIPPED"
         blocked_by: null
         notes: "NOT_APPLICABLE: Implementation already uses proper architectural patterns - Adapter pattern (AuditLogger is driven adapter in infrastructure layer), Repository pattern (append-only audit event repository), Strategy pattern implicit (event filtering extensible via event_type parameter), Immutability pattern (append-only log with hash tracking for verification). No new architectural patterns needed for simple 2-line filtering method addition to existing well-architected AuditLogger. Implementation is straightforward delegation to get_entries() + filtering, which is appropriate for this use case. All 5 tests passing (4 unit + 1 acceptance)."
+      - phase_index: 7
+        phase_name: "COMMIT"
+        status: "COMPLETED"
+        started_at: "2026-01-30T19:22:00Z"
+        completed_at: "2026-01-30T19:25:00Z"
+        duration_minutes: 3
+        turn_count: 8
+        outcome: "PASS"
+        blocked_by: null
+        notes: "Git commit c3451bf created with detailed 8-phase message. All quality gates passed. 5 tests passing (4 unit + 1 acceptance). Step 04-01 implements SCOPE_VIOLATION event type support in AuditLogger: added get_entries_by_type(event_type) method that filters audit entries by event field. Simple 2-line implementation (delegate to get_entries() + list comprehension). Event schema supports: event, severity, step_file, out_of_scope_file, allowed_patterns, timestamp (auto-added). Files modified: src/des/adapters/driven/logging/audit_logger.py (added get_entries_by_type method), tests/des/unit/adapters/driven/logging/test_audit_logger_scope_violation.py (created 4 unit tests), tests/des/acceptance/test_us007_boundary_rules.py (uncommented test_scenario_009). Pre-commit hooks passed (ruff auto-fix applied). Total duration: 25 minutes."
