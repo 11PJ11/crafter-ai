@@ -960,7 +960,9 @@ Instances update phase_execution_log, next instance reads prior progress, contin
 
 **Objective**: Validate test suite quality through mutation testing before finalize.
 
-**Gate Threshold**: 75% mutation kill rate (configurable per project)
+**Gate Threshold**: 80% mutation kill rate (industry standard, configurable per project)
+
+**MANDATORY**: Mutation testing is NOT optional. It is the guarantee of test quality and MUST pass before finalization.
 
 **Actions**:
 
@@ -999,10 +1001,14 @@ Instances update phase_execution_log, next instance reads prior progress, contin
    ```python
    MUTATION_TOOLS = {
        'python': {
-           'tool': 'mutmut',
-           'install': 'pip install mutmut',
-           'run': 'mutmut run --paths-to-mutate={src}',
-           'report': 'mutmut results',
+           'tool': 'cosmic-ray',
+           'fallback': 'mutmut',
+           'install': 'pip install cosmic-ray',
+           'config_file': 'cosmic-ray.toml',
+           'init': 'cosmic-ray init cosmic-ray.toml session.sqlite',
+           'run': 'cosmic-ray exec cosmic-ray.toml session.sqlite',
+           'report': 'cr-report session.sqlite',
+           'note': 'Cosmic Ray recommended for src/ layout projects. Falls back to mutmut if config fails.',
        },
        'java-maven': {
            'tool': 'pitest',
@@ -1043,9 +1049,13 @@ Instances update phase_execution_log, next instance reads prior progress, contin
    }
 
    if language not in MUTATION_TOOLS:
-       print(f"⚠️  No mutation testing tool configured for {language}")
-       print("Skipping mutation testing (manual review required)")
-       mutation_score = None
+       print(f"❌ No mutation testing tool configured for {language}")
+       print(f"Supported languages: {', '.join(MUTATION_TOOLS.keys())}")
+       print("\nMutation testing is MANDATORY. Options:")
+       print("  1. Add mutation testing tool configuration for {language}")
+       print("  2. Create .mutation-config.yaml with tool specification")
+       print("  3. Contact team for language-specific mutation testing setup")
+       EXIT
    else:
        tool_config = MUTATION_TOOLS[language]
        print(f"Using {tool_config['tool']} for mutation testing")
@@ -1061,7 +1071,7 @@ Instances update phase_execution_log, next instance reads prior progress, contin
 
        # Check if tool is installed
        check_cmd = {
-           'python': 'mutmut --version',
+           'python': 'cosmic-ray --version',
            'java-maven': 'mvn --version',
            'java-gradle': 'gradle --version',
            'javascript': 'npx stryker --version',
@@ -1093,17 +1103,15 @@ Instances update phase_execution_log, next instance reads prior progress, contin
 
 4. **Evaluate against threshold**:
    ```python
-   MUTATION_THRESHOLD = 75  # Configurable per project
+   MUTATION_THRESHOLD = 80  # Industry standard (configurable per project)
 
    if mutation_score is None:
-       if language == 'unknown':
-           print("⚠️  Language not detected, mutation testing skipped")
-           print("Manual test quality review required before finalize")
-           # Allow proceed with warning
-       else:
-           print(f"❌ Mutation testing failed: {error}")
-           print("Fix the issue and re-run, or document justification")
-           EXIT
+       print(f"❌ Mutation testing failed: {error}")
+       print("\nMutation testing is MANDATORY. You must:")
+       print("  1. Fix the tool installation/configuration issue")
+       print("  2. Re-run /nw:develop to continue from this phase")
+       print("\nDo NOT skip mutation testing - it is the guarantee of test quality.")
+       EXIT
    elif mutation_score < MUTATION_THRESHOLD:
        print(f"❌ Mutation score {mutation_score}% below threshold {MUTATION_THRESHOLD}%")
        print("\nSurviving mutants indicate gaps in test coverage.")
@@ -1142,16 +1150,89 @@ Instances update phase_execution_log, next instance reads prior progress, contin
                    f.write(f"- {mutant['file']}:{mutant['line']} - {mutant['mutation']}\n")
    ```
 
+6. **Cosmic Ray Setup for Python Projects** (Recommended):
+
+   **Why Cosmic Ray**:
+   - Native support for src/ layout (no import path issues)
+   - Actively maintained (460K+ downloads/month, May 2024 release)
+   - Academic validation (IEEE, ACM, arXiv papers 2024-2025)
+   - Comprehensive mutation operators
+
+   **Setup Steps**:
+   ```python
+   # Step 1: Install Cosmic Ray
+   subprocess.run(['pip', 'install', 'cosmic-ray'], check=True)
+
+   # Step 2: Create cosmic-ray.toml configuration
+   config_content = f'''[cosmic-ray]
+module-path = "src/{project_module}/"
+timeout = 10.0
+excluded-modules = []
+test-command = "pytest -x tests/{project_module}/"
+
+[cosmic-ray.distributor]
+name = "local"
+
+[cosmic-ray.execution-engine]
+name = "local"
+'''
+
+   with open('cosmic-ray.toml', 'w') as f:
+       f.write(config_content)
+
+   # Step 3: Initialize session
+   subprocess.run([
+       'cosmic-ray', 'init', 'cosmic-ray.toml', 'session.sqlite'
+   ], check=True)
+
+   # Step 4: Execute mutations
+   subprocess.run([
+       'cosmic-ray', 'exec', 'cosmic-ray.toml', 'session.sqlite'
+   ], check=True, timeout=1800)
+
+   # Step 5: Generate report
+   result = subprocess.run([
+       'cr-report', 'session.sqlite'
+   ], capture_output=True, text=True, check=True)
+
+   # Step 6: Parse mutation score
+   # Output format: "total jobs: X\ncomplete: X (100.00%)\nsurviving mutants: Y (Z.ZZ%)"
+   for line in result.stdout.split('\n'):
+       if 'surviving mutants:' in line:
+           # Extract percentage
+           match = re.search(r'\((\d+\.\d+)%\)', line)
+           if match:
+               survival_rate = float(match.group(1))
+               mutation_score = 100.0 - survival_rate
+               break
+   ```
+
+   **Fallback to mutmut** (if Cosmic Ray fails):
+   ```python
+   try:
+       # Try Cosmic Ray first
+       mutation_score = run_cosmic_ray(project_module)
+   except Exception as e:
+       print(f"⚠️  Cosmic Ray failed: {e}")
+       print("Falling back to mutmut...")
+       mutation_score = run_mutmut_fallback(project_module)
+   ```
+
 **Success Criteria**:
 - Language detected or explicitly configured
 - Mutation testing tool executed successfully
-- Mutation score >= 75% threshold
+- Mutation score >= 80% threshold (industry standard)
 - Mutation report created
 - Progress state updated
 
-**Skip Conditions**:
-- Unknown language with no mutation tool available (proceeds with warning)
-- Project explicitly opts out via `.mutation-config.yaml` with documented justification
+**MANDATORY - NO SKIP CONDITIONS**:
+Mutation testing is NOT optional. There are no valid reasons to skip it:
+- If language not detected → configure tool manually in .mutation-config.yaml
+- If tool fails → fix installation/configuration
+- If score < 80% → add tests to kill surviving mutants
+- "Time constraints" is NOT a valid reason to skip
+
+Mutation testing is the guarantee that tests are high quality, not just passing.
 
 ---
 
