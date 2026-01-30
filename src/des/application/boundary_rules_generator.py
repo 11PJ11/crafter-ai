@@ -44,10 +44,16 @@ class BoundaryRulesGenerator:
         Returns:
             List of allowed file patterns including:
             - Step file path
-            - target_files from scope
-            - test_files from scope
-            - allowed_patterns from scope
+            - target_files from scope (converted to glob patterns)
+            - test_files from scope (converted to glob patterns)
+            - allowed_patterns from scope (used as-is)
             - Default patterns if scope missing
+
+        Pattern Conversion:
+            Exact paths are converted to flexible glob patterns:
+            - "src/repositories/UserRepository.py" -> "**/UserRepository*"
+            - Enables matching both source and test files
+            - Supports glob syntax: **, *, exact paths
         """
         self._load_step_file()
 
@@ -65,19 +71,46 @@ class BoundaryRulesGenerator:
             patterns.extend(self.DEFAULT_PATTERNS)
             return patterns
 
-        # Add target files
+        # Add target files (converted to glob patterns)
         target_files = scope.get("target_files", [])
-        patterns.extend(target_files)
+        for target_file in target_files:
+            patterns.append(self._convert_to_glob_pattern(target_file))
 
-        # Add test files
+        # Add test files (converted to glob patterns)
         test_files = scope.get("test_files", [])
-        patterns.extend(test_files)
+        for test_file in test_files:
+            patterns.append(self._convert_to_glob_pattern(test_file))
 
-        # Add custom allowed patterns
+        # Add custom allowed patterns (used as-is)
         allowed_patterns = scope.get("allowed_patterns", [])
         patterns.extend(allowed_patterns)
 
         return patterns
+
+    def _convert_to_glob_pattern(self, file_path: str) -> str:
+        """
+        Convert exact file path to flexible glob pattern.
+
+        Extracts the class/module name from the path and creates a pattern
+        that matches files with that name in any directory.
+
+        Args:
+            file_path: Exact file path like "src/repositories/UserRepository.py"
+
+        Returns:
+            Glob pattern like "**/UserRepository*"
+
+        Examples:
+            "src/repositories/UserRepository.py" -> "**/UserRepository*"
+            "src/repositories/interfaces/IUserRepository.py" -> "**/IUserRepository*"
+            "tests/unit/test_user_repository.py" -> "**/test_user_repository*"
+        """
+        # Extract filename from path
+        path = Path(file_path)
+        filename = path.stem  # Gets filename without extension
+
+        # Create glob pattern
+        return f"**/{filename}*"
 
     def _load_step_file(self) -> None:
         """Load step file JSON data."""

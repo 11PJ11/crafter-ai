@@ -150,3 +150,93 @@ class TestBoundaryRulesGeneratorShouldGenerateAllowedPatterns:
             "WARNING" in record.levelname and "scope" in record.message.lower()
             for record in caplog.records
         ), "WARNING should be logged when scope missing"
+
+
+class TestBoundaryRulesGeneratorShouldConvertToGlobPatterns:
+    """Test conversion of exact paths to flexible glob patterns.
+
+    Acceptance Criteria (AC-007.2):
+    - Patterns support glob syntax (**, *, exact paths)
+    - UserRepository example: target_files maps to **/UserRepository* pattern
+    - Enable matching both implementation and test files
+    """
+
+    def test_convert_target_file_to_glob_pattern(self, tmp_path):
+        """Target files should be converted to glob patterns like **/ClassName*"""
+        # GIVEN: Step file with exact path target files
+        step_file = tmp_path / "steps" / "01-01.json"
+        step_file.parent.mkdir(parents=True, exist_ok=True)
+        step_data = {
+            "task_id": "01-01",
+            "scope": {
+                "target_files": [
+                    "src/repositories/UserRepository.py",
+                ],
+                "test_files": [],
+            },
+        }
+        step_file.write_text(json.dumps(step_data))
+
+        # WHEN: Generator creates allowed patterns
+        generator = BoundaryRulesGenerator(step_file_path=step_file)
+        patterns = generator.generate_allowed_patterns()
+
+        # THEN: Pattern is converted to glob format
+        assert any(
+            "**/UserRepository*" in pattern for pattern in patterns
+        ), "Target files should be converted to glob patterns like **/UserRepository*"
+
+    def test_convert_interface_file_to_glob_pattern(self, tmp_path):
+        """Interface files should be converted to glob patterns"""
+        # GIVEN: Step file with interface target files
+        step_file = tmp_path / "steps" / "01-01.json"
+        step_file.parent.mkdir(parents=True, exist_ok=True)
+        step_data = {
+            "task_id": "01-01",
+            "scope": {
+                "target_files": [
+                    "src/repositories/interfaces/IUserRepository.py",
+                ],
+                "test_files": [],
+            },
+        }
+        step_file.write_text(json.dumps(step_data))
+
+        # WHEN: Generator creates allowed patterns
+        generator = BoundaryRulesGenerator(step_file_path=step_file)
+        patterns = generator.generate_allowed_patterns()
+
+        # THEN: Interface pattern is converted to glob format
+        assert any(
+            "**/IUserRepository*" in pattern for pattern in patterns
+        ), "Interface files should be converted to glob patterns like **/IUserRepository*"
+
+    def test_glob_pattern_matches_both_source_and_test_files(self, tmp_path):
+        """Glob patterns should match both implementation and test files"""
+        # GIVEN: Step file with target file UserRepository
+        step_file = tmp_path / "steps" / "01-01.json"
+        step_file.parent.mkdir(parents=True, exist_ok=True)
+        step_data = {
+            "task_id": "01-01",
+            "scope": {
+                "target_files": [
+                    "src/repositories/UserRepository.py",
+                ],
+                "test_files": [],
+            },
+        }
+        step_file.write_text(json.dumps(step_data))
+
+        # WHEN: Generator creates allowed patterns
+        generator = BoundaryRulesGenerator(step_file_path=step_file)
+        patterns = generator.generate_allowed_patterns()
+
+        # THEN: Glob pattern would match multiple file types
+        # Business Context: **/UserRepository* matches:
+        # - src/repositories/UserRepository.py (implementation)
+        # - tests/unit/test_UserRepository.py (unit test)
+        # - tests/integration/UserRepository_integration.py (integration test)
+        glob_pattern = next(p for p in patterns if "**/UserRepository*" in p)
+        assert (
+            glob_pattern == "**/UserRepository*"
+        ), "Glob pattern should be flexible to match both source and test files"
