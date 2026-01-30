@@ -79,19 +79,29 @@ class TestTerminalErrorWithColors:
 
     def test_format_terminal_error_with_colors_enabled(self):
         """Terminal error output includes ANSI color codes when colors enabled."""
-        from scripts.install.output_formatter import TerminalFormatter
+        from unittest.mock import patch
+
         from scripts.install.error_codes import ENV_NO_VENV
 
-        formatter = TerminalFormatter(use_colors=True)
-        result = formatter.format_terminal_error(
-            error_code=ENV_NO_VENV,
-            error_message="No virtual environment detected",
-            fix_action="Create a virtual environment",
-            then_action="Run the installer",
-        )
+        # Mock Colors to ensure ANSI codes are present (on Windows CI they get stripped)
+        with patch("scripts.install.output_formatter.Colors") as mock_colors:
+            mock_colors.RED = "\033[0;31m"
+            mock_colors.GREEN = "\033[0;32m"
+            mock_colors.YELLOW = "\033[1;33m"
+            mock_colors.NC = "\033[0m"
 
-        # Should contain ANSI escape codes
-        assert "\033[" in result
+            from scripts.install.output_formatter import TerminalFormatter
+
+            formatter = TerminalFormatter(use_colors=True)
+            result = formatter.format_terminal_error(
+                error_code=ENV_NO_VENV,
+                error_message="No virtual environment detected",
+                fix_action="Create a virtual environment",
+                then_action="Run the installer",
+            )
+
+            # Should contain ANSI escape codes
+            assert "\033[" in result
 
     def test_format_terminal_error_without_colors(self):
         """Terminal error output excludes ANSI color codes when colors disabled."""
