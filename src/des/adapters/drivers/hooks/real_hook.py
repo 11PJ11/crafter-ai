@@ -1,8 +1,13 @@
 """Production implementation of post-execution hook adapter."""
 
 from src.des.ports.driver_ports.hook_port import HookPort, HookResult
+from src.des.validation.scope_validator import ScopeValidator
 import json
+import logging
+from pathlib import Path
 from typing import List, Optional
+
+logger = logging.getLogger(__name__)
 
 
 class RealSubagentStopHook(HookPort):
@@ -122,6 +127,26 @@ class RealSubagentStopHook(HookPort):
         if timeout_info["timeout_exceeded"]:
             result.timeout_exceeded = True
             errors.append(("TIMEOUT_EXCEEDED", timeout_info))
+
+        # Run scope validation post-execution
+        project_root = Path(step_file_path).parent.parent
+        scope_validator = ScopeValidator()
+        scope_result = scope_validator.validate_scope(
+            step_file_path=step_file_path,
+            project_root=project_root,
+            git_diff_files=None
+        )
+
+        # Store validation result for audit logging (Phase 4)
+        result.scope_validation_result = scope_result
+
+        # Handle validation_skipped (git failure) - log WARNING but don't block
+        if scope_result.validation_skipped:
+            logger.warning(
+                f"Scope validation skipped: {scope_result.reason}. "
+                f"Step completion continues normally."
+            )
+        # Note: violations are logged to audit in Phase 4, not here
 
         # If any errors found, populate comprehensive failure details
         if errors:

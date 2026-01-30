@@ -6,19 +6,19 @@ execution_status:
   # Schema metadata
   schema_version: "1.0"
   created_at: "2026-01-29T19:35:00Z"
-  updated_at: "2026-01-30T15:30:00Z"
+  updated_at: "2026-01-30T17:55:00Z"
 
   # Project identification
   project_id: "des-us007-boundary-rules"
 
   # Current execution pointer (for phase-level resume)
   current:
-    step_id: "03-03"
-    phase_index: 7
-    phase_name: "COMMIT"
-    started_at: "2026-01-30T17:50:00Z"
-    turn_count: 8
-    last_checkpoint: "2026-01-30T17:50:00Z"
+    step_id: "03-04"
+    phase_index: 6
+    phase_name: "REFACTOR_L4"
+    started_at: "2026-01-30T18:35:00Z"
+    turn_count: 7
+    last_checkpoint: "2026-01-30T18:35:00Z"
 
   # Completed steps log (minimal tracking)
   completed_steps:
@@ -67,6 +67,11 @@ execution_status:
       phases_executed: 8
       commit_sha: "91161a3"
       duration_minutes: 30
+    - step_id: "03-03"
+      completed_at: "2026-01-30T17:55:00Z"
+      phases_executed: 8
+      commit_sha: "2f464bb"
+      duration_minutes: 35
 
   # Phase checkpoint for current step (enables phase-level resume)
   step_checkpoint:
@@ -467,6 +472,16 @@ execution_status:
         outcome: "SKIPPED"
         blocked_by: null
         notes: "NOT_APPLICABLE: Implementation already uses proper architectural patterns - Dataclass pattern (ScopeValidationResult encapsulates result), Strategy pattern implicit (pattern matching extensible via fnmatch - could swap for regex), Single Responsibility Principle (each method focused), Dependency Inversion (subprocess abstraction not concrete git), Guard Clause pattern (early continue for step file and empty lines). Step file implicit allowlist implemented as guard clause, which is appropriate for simple check. No new patterns needed for this simple feature enhancement. All 13 unit tests passing. Acceptance test passing."
+      - phase_index: 7
+        phase_name: "COMMIT"
+        status: "COMPLETED"
+        started_at: "2026-01-30T17:50:00Z"
+        completed_at: "2026-01-30T17:55:00Z"
+        duration_minutes: 5
+        turn_count: 8
+        outcome: "PASS"
+        blocked_by: null
+        notes: "Git commit 2f464bb created with detailed 8-phase message. All quality gates passed. 14 tests passing (13 unit + 1 acceptance). Step 03-03 implements step file implicit allowlist: guard clause added before pattern matching to check if modified_file == step_file_path. Step file modifications skip pattern matching and are always allowed. Comment explains business rationale. Pre-commit hooks passed (ruff auto-format applied). Total duration: 35 minutes."
 
   # Phase checkpoint for step 03-02
   step_checkpoint_03_02:
@@ -552,3 +567,78 @@ execution_status:
         outcome: "PASS"
         blocked_by: null
         notes: "Git commit 91161a3 created with detailed 8-phase message. All quality gates passed. 11 tests passing (10 unit + 1 acceptance). Step 03-02 validates in-scope file modifications pass validation using fnmatch pattern matching from step 03-01. Added ScopeValidator export to validation/__init__.py. Created 5 comprehensive unit tests for pattern matching edge cases: multiple patterns, nested directories, wildcards, exact matching. Pre-commit hooks passed (ruff auto-format applied). Total duration: 30 minutes (special case - no implementation needed, only comprehensive test coverage added)."
+
+  # Phase checkpoint for step 03-04
+  step_checkpoint_03_04:
+    step_id: "03-04"
+    phases:
+      - phase_index: 0
+        phase_name: "PREPARE"
+        status: "COMPLETED"
+        started_at: "2026-01-30T18:00:00Z"
+        completed_at: "2026-01-30T18:05:00Z"
+        duration_minutes: 5
+        turn_count: 1
+        outcome: "PASS"
+        blocked_by: null
+        notes: "Infrastructure step - no direct acceptance test. Walking Skeleton verified: SubagentStopHook exists in src/des/adapters/drivers/hooks/real_hook.py with on_agent_complete() method. Entry point exists for integration. ScopeValidator exists in src/des/validation/scope_validator.py with validate_scope() method. Hook currently validates step file state (abandoned phases, silent completion, turn limits, timeouts) but does NOT invoke ScopeValidator. AC requires: (1) SubagentStopHook invokes ScopeValidator post-execution, (2) validation runs automatically without user interaction, (3) git diff failure logged as WARNING doesn't block step completion, (4) validation_skipped=True allows step to complete with WARNING log. Will write unit tests to drive hook integration in RED_UNIT phase."
+      - phase_index: 1
+        phase_name: "RED_ACCEPTANCE"
+        status: "COMPLETED"
+        started_at: "2026-01-30T18:05:00Z"
+        completed_at: "2026-01-30T18:08:00Z"
+        duration_minutes: 3
+        turn_count: 2
+        outcome: "SKIPPED"
+        blocked_by: null
+        notes: "Infrastructure step - no direct acceptance test (test_file: null in roadmap). Scenario 009 and 010 test audit logging (Phase 4), not hook integration. This step integrates ScopeValidator into SubagentStopHook, which is infrastructure plumbing. No failing acceptance test expected - skipping to RED_UNIT to write unit tests that drive hook implementation. Quality gate acceptance_test_must_fail_first set to false in roadmap for infrastructure steps."
+      - phase_index: 2
+        phase_name: "RED_UNIT"
+        status: "COMPLETED"
+        started_at: "2026-01-30T18:08:00Z"
+        completed_at: "2026-01-30T18:15:00Z"
+        duration_minutes: 7
+        turn_count: 3
+        outcome: "PASS"
+        blocked_by: null
+        notes: "Created 5 unit tests in tests/des/unit/adapters/drivers/hooks/test_scope_validation_integration.py covering: (1) hook invokes ScopeValidator.validate_scope() post-execution, (2) validation runs automatically without user interaction, (3) git diff failure logged as WARNING doesn't block step completion, (4) validation_skipped=True allows step to complete with WARNING log, (5) validation result stored in HookResult for Phase 4 audit logging. All 5 tests FAIL with AttributeError: real_hook module does not have ScopeValidator attribute (valid RED - missing import and integration). Tests use business language (scope validation, out_of_scope_files, validation_skipped), no domain mocking (mocks ScopeValidator at infrastructure boundary), test through public API (hook.on_agent_complete()). Tests drive implementation requirements: import ScopeValidator, invoke validate_scope(), handle validation_skipped with WARNING log, store result in HookResult.scope_validation_result field."
+      - phase_index: 3
+        phase_name: "GREEN"
+        status: "COMPLETED"
+        started_at: "2026-01-30T18:15:00Z"
+        completed_at: "2026-01-30T18:25:00Z"
+        duration_minutes: 10
+        turn_count: 4
+        outcome: "PASS"
+        blocked_by: null
+        notes: "Implemented scope validation integration in SubagentStopHook. Added scope_validation_result field to HookResult dataclass (src/des/ports/driver_ports/hook_port.py) with TYPE_CHECKING import to avoid circular dependency. Updated RealSubagentStopHook.on_agent_complete() (src/des/adapters/drivers/hooks/real_hook.py) to: (1) import ScopeValidator and logger, (2) instantiate ScopeValidator after all existing validations, (3) call validate_scope() with step_file_path, project_root, git_diff_files=None, (4) store result in result.scope_validation_result for Phase 4 audit logging, (5) handle validation_skipped with WARNING log but don't block step completion. All 18 scope validation tests PASS (13 existing ScopeValidator tests + 5 new integration tests). Implementation satisfies all 5 AC: hook invokes validator post-execution, validation runs automatically, git diff failure logged as WARNING doesn't block, validation_skipped allows completion with WARNING, result stored for audit. No domain mocking - tests mock ScopeValidator at infrastructure boundary (correct per port-boundary policy)."
+      - phase_index: 4
+        phase_name: "REVIEW"
+        status: "COMPLETED"
+        started_at: "2026-01-30T18:25:00Z"
+        completed_at: "2026-01-30T18:30:00Z"
+        duration_minutes: 5
+        turn_count: 5
+        outcome: "APPROVED"
+        blocked_by: null
+        notes: "SOLID: Single responsibility (hook validates step file state AND scope - cohesive), Open/Closed (extensible via new validators), Dependency Inversion (depends on ScopeValidator abstraction via import, not concrete implementation details). Coverage: 18 tests total (13 ScopeValidator + 5 hook integration) = 100% of new integration code covered. All 5 AC met: (1) SubagentStopHook invokes ScopeValidator post-execution ✅ validate_scope() called after existing validations, (2) validation runs automatically without user interaction ✅ no user prompts, (3) git diff failure logged as WARNING doesn't block step completion ✅ logger.warning() called, validation_status remains PASSED, (4) validation_skipped=True allows step to complete with WARNING log ✅ if-check handles validation_skipped, (5) validation result stored for Phase 4 audit logging ✅ result.scope_validation_result field populated. Code quality: business language (scope validation, validation_skipped, out_of_scope_files), clear comments explaining Phase 4 handoff, type hints (TYPE_CHECKING import avoids circular dependency), proper error handling (validation_skipped doesn't throw exception). No security vulnerabilities - ScopeValidator already handles subprocess safely with timeout. No domain mocking - tests mock ScopeValidator which is infrastructure boundary (correct per port-boundary policy). Review outcome: APPROVED."
+      - phase_index: 5
+        phase_name: "REFACTOR_CONTINUOUS"
+        status: "COMPLETED"
+        started_at: "2026-01-30T18:30:00Z"
+        completed_at: "2026-01-30T18:35:00Z"
+        duration_minutes: 5
+        turn_count: 6
+        outcome: "PASS"
+        blocked_by: null
+        notes: "L1 (naming): Business language verified - scope_validation_result, validation_skipped, ScopeValidator, on_agent_complete, project_root. Method/variable names reveal intent (validate_scope, scope_result, validation_skipped). Comment explains WHY result stored (Phase 4 audit logging). L2 (complexity): Simple 13-line addition to existing method, single abstraction level (create validator, call validate_scope, store result, handle skipped case), minimal conditionals (one if-check for validation_skipped). Integration code is straightforward, no complex logic. L3 (organization): Hook retains single responsibility (post-execution validation) with scope validation as cohesive addition. Proper module structure maintained (adapters/drivers/hooks/ for infrastructure). Clear separation of concerns - hook orchestrates validations, ScopeValidator performs scope checking. TYPE_CHECKING import pattern keeps port definition clean (no circular dependency). No refactoring changes needed - code already at high quality. All 18 tests still passing (13 ScopeValidator + 5 integration)."
+      - phase_index: 6
+        phase_name: "REFACTOR_L4"
+        status: "COMPLETED"
+        started_at: "2026-01-30T18:35:00Z"
+        completed_at: "2026-01-30T18:38:00Z"
+        duration_minutes: 3
+        turn_count: 7
+        outcome: "SKIPPED"
+        blocked_by: null
+        notes: "NOT_APPLICABLE: Implementation already uses proper architectural patterns - Adapter pattern (RealSubagentStopHook adapts HookPort interface), Dependency Inversion (hook depends on ScopeValidator abstraction via import, ScopeValidator depends on subprocess abstraction), Composition (hook composes multiple validators), Strategy pattern implicit (validators are pluggable). Integration uses TYPE_CHECKING pattern to avoid circular dependencies (forward reference to ScopeValidationResult). No new architectural patterns needed for simple integration feature - hook already well-architected as adapter, integration is straightforward delegation. All 18 tests passing (13 ScopeValidator + 5 integration)."
