@@ -39,12 +39,17 @@ class BoundaryRulesTemplate:
 - Modify task implementation files as specified in step scope
 - Modify test files matching the feature being implemented"""
 
+        forbidden_section = """**FORBIDDEN**:
+- Modify other step files or tasks outside current assignment
+- Modify files not specified in step scope or allowed patterns
+- Modify unrelated source files outside scope (e.g., AuthService when working on UserRepository)
+- Modify configuration files unless explicitly in scope
+- Modify production deployment files
+- Continue to next step after completion - return control immediately
+"""
+
         return f"""## BOUNDARY_RULES
 
 {allowed_section}
 
-**FORBIDDEN**:
-- Modify other step files or tasks outside current assignment
-- Modify files not specified in step scope or allowed patterns
-- Continue to next step after completion - return control immediately
-"""
+{forbidden_section}"""

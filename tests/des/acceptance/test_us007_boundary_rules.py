@@ -237,7 +237,6 @@ class TestForbiddenActionEnumeration:
     # Scenario 4: FORBIDDEN section specifies prohibited actions
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_004_boundary_rules_enumerate_forbidden_actions(
         self, tmp_project_root, minimal_step_file, des_orchestrator
     ):
@@ -259,6 +258,9 @@ class TestForbiddenActionEnumeration:
         - Production deployment files
         """
         # GIVEN: /nw:execute command with step file
+        step_data = _create_step_file_for_user_repository()
+        minimal_step_file.write_text(json.dumps(step_data, indent=2))
+
         command = "/nw:execute"
         step_file_path = str(minimal_step_file.relative_to(tmp_project_root))
 

@@ -32,9 +32,9 @@ class TestBoundaryRulesTemplateRendering:
         result = template.render()
 
         # THEN: Section header present
-        assert "## BOUNDARY_RULES" in result, (
-            "Section header '## BOUNDARY_RULES' must be present for DES validation"
-        )
+        assert (
+            "## BOUNDARY_RULES" in result
+        ), "Section header '## BOUNDARY_RULES' must be present for DES validation"
 
     def test_render_includes_allowed_subsection(self):
         """
@@ -52,9 +52,9 @@ class TestBoundaryRulesTemplateRendering:
         result = template.render()
 
         # THEN: ALLOWED subsection present
-        assert "ALLOWED" in result, (
-            "ALLOWED subsection must be present to define permitted agent actions"
-        )
+        assert (
+            "ALLOWED" in result
+        ), "ALLOWED subsection must be present to define permitted agent actions"
 
     def test_render_includes_forbidden_subsection(self):
         """
@@ -72,9 +72,9 @@ class TestBoundaryRulesTemplateRendering:
         result = template.render()
 
         # THEN: FORBIDDEN subsection present
-        assert "FORBIDDEN" in result, (
-            "FORBIDDEN subsection must be present to prevent scope creep"
-        )
+        assert (
+            "FORBIDDEN" in result
+        ), "FORBIDDEN subsection must be present to prevent scope creep"
 
     def test_render_returns_multiline_string(self):
         """
@@ -116,9 +116,96 @@ class TestBoundaryRulesTemplateRendering:
         allowed_pos = result.find("ALLOWED")
         forbidden_pos = result.find("FORBIDDEN")
 
-        assert header_pos < allowed_pos, (
-            "Section header must appear before ALLOWED subsection"
+        assert (
+            header_pos < allowed_pos
+        ), "Section header must appear before ALLOWED subsection"
+        assert (
+            header_pos < forbidden_pos
+        ), "Section header must appear before FORBIDDEN subsection"
+
+    def test_forbidden_includes_other_step_files_prohibition(self):
+        """
+        GIVEN BoundaryRulesTemplate instance
+        WHEN render() is called
+        THEN FORBIDDEN section explicitly mentions 'other step files'
+
+        Business Context:
+        Priya saw an agent modify step 02-03.json while working on 01-01.json,
+        causing merge conflicts. Explicit prohibition against other step files
+        prevents such scope violations.
+        """
+        template = BoundaryRulesTemplate()
+
+        # WHEN: Render the template
+        result = template.render()
+
+        # THEN: Other step files explicitly forbidden
+        other_steps_forbidden = any(
+            phrase in result.lower()
+            for phrase in ["other step", "different step", "other task"]
         )
-        assert header_pos < forbidden_pos, (
-            "Section header must appear before FORBIDDEN subsection"
+        assert other_steps_forbidden, (
+            "FORBIDDEN must explicitly mention 'other step files' or similar - "
+            "agents should not modify steps outside their assignment"
+        )
+
+    def test_forbidden_includes_unrelated_files_prohibition(self):
+        """
+        GIVEN BoundaryRulesTemplate instance
+        WHEN render() is called
+        THEN FORBIDDEN section mentions files outside scope/unrelated files
+
+        Business Context:
+        An agent "improved" AuthService while working on UserRepository,
+        causing unintended side effects. Generic prohibition prevents
+        modifications to files not in scope.
+        """
+        template = BoundaryRulesTemplate()
+
+        # WHEN: Render the template
+        result = template.render()
+
+        # THEN: Unrelated files forbidden
+        unrelated_forbidden = any(
+            phrase in result.lower()
+            for phrase in ["other file", "unrelated", "outside scope", "not in scope"]
+        )
+        assert unrelated_forbidden, (
+            "FORBIDDEN must include reference to files outside scope or unrelated files - "
+            "prevents well-intentioned but out-of-scope modifications"
+        )
+
+    def test_forbidden_includes_comprehensive_categories(self):
+        """
+        GIVEN BoundaryRulesTemplate instance
+        WHEN render() is called
+        THEN FORBIDDEN section covers: config files, production deployment
+
+        Business Context:
+        Generic prohibitions prevent common scope expansion patterns:
+        - Modifying config files unless explicitly in scope
+        - Production deployment changes
+        """
+        template = BoundaryRulesTemplate()
+
+        # WHEN: Render the template
+        result = template.render()
+        result_lower = result.lower()
+
+        # THEN: Comprehensive categories covered
+        # Note: At least one of these patterns should be present
+        config_or_deployment = any(
+            phrase in result_lower
+            for phrase in [
+                "config",
+                "configuration",
+                "deployment",
+                "production",
+                "not specified",
+                "not in scope",
+            ]
+        )
+        assert config_or_deployment, (
+            "FORBIDDEN should cover configuration or deployment files - "
+            "common sources of scope creep"
         )
