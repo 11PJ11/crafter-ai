@@ -253,3 +253,152 @@ class TestScopeValidatorPatternMatching:
             assert len(result.out_of_scope_files) == 2
             assert "src/services/OrderService.py" in result.out_of_scope_files
             assert "src/controllers/PaymentController.py" in result.out_of_scope_files
+
+    def test_multiple_patterns_any_match_passes(self, tmp_path):
+        """
+        GIVEN step allows multiple patterns: **/UserRepository*, **/test_user_repository*
+        WHEN git diff shows files matching different patterns
+        THEN all files pass validation (each matches at least one pattern)
+        """
+        # Arrange
+        step_file = tmp_path / "step.json"
+        step_file.write_text(
+            json.dumps(
+                {
+                    "scope": {
+                        "allowed_patterns": [
+                            "**/UserRepository*",
+                            "**/test_user_repository*",
+                        ],
+                        "target_files": [
+                            "src/repositories/UserRepository.py",
+                            "tests/unit/test_user_repository.py",
+                        ],
+                    }
+                }
+            )
+        )
+        validator = ScopeValidator()
+
+        # Mock git showing files matching different patterns
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = Mock(
+                stdout="src/repositories/UserRepository.py\ntests/unit/test_user_repository.py\n",
+                returncode=0,
+            )
+
+            # Act
+            result = validator.validate_scope(
+                step_file_path=str(step_file), project_root=tmp_path
+            )
+
+            # Assert: All files pass (each matches at least one pattern)
+            assert result.has_violations is False
+            assert len(result.out_of_scope_files) == 0
+
+    def test_glob_pattern_matches_nested_directories(self, tmp_path):
+        """
+        GIVEN step allows **/ UserRepository* pattern
+        WHEN git diff shows UserRepository in deeply nested path
+        THEN validation passes (** matches any directory depth)
+        """
+        # Arrange
+        step_file = tmp_path / "step.json"
+        step_file.write_text(
+            json.dumps(
+                {
+                    "scope": {
+                        "allowed_patterns": ["**/UserRepository*"],
+                        "target_files": ["src/repositories/UserRepository.py"],
+                    }
+                }
+            )
+        )
+        validator = ScopeValidator()
+
+        # Mock git showing file in deeply nested path
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = Mock(
+                stdout="src/deep/nested/path/to/repositories/UserRepository.py\n",
+                returncode=0,
+            )
+
+            # Act
+            result = validator.validate_scope(
+                step_file_path=str(step_file), project_root=tmp_path
+            )
+
+            # Assert: Nested path matches pattern
+            assert result.has_violations is False
+            assert len(result.out_of_scope_files) == 0
+
+    def test_wildcard_suffix_matches_extensions(self, tmp_path):
+        """
+        GIVEN step allows **/UserRepository* pattern (ends with *)
+        WHEN git diff shows UserRepository files with different extensions
+        THEN all extensions pass validation (* matches any suffix)
+        """
+        # Arrange
+        step_file = tmp_path / "step.json"
+        step_file.write_text(
+            json.dumps(
+                {
+                    "scope": {
+                        "allowed_patterns": ["**/UserRepository*"],
+                        "target_files": ["src/repositories/UserRepository.py"],
+                    }
+                }
+            )
+        )
+        validator = ScopeValidator()
+
+        # Mock git showing files with different extensions
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = Mock(
+                stdout="src/repositories/UserRepository.py\nsrc/repositories/UserRepositoryTest.cs\n",
+                returncode=0,
+            )
+
+            # Act
+            result = validator.validate_scope(
+                step_file_path=str(step_file), project_root=tmp_path
+            )
+
+            # Assert: Both files match pattern (suffix wildcard)
+            assert result.has_violations is False
+            assert len(result.out_of_scope_files) == 0
+
+    def test_partial_name_match_fails_without_wildcard(self, tmp_path):
+        """
+        GIVEN step allows UserRepository.py (exact, no wildcards)
+        WHEN git diff shows src/repositories/UserRepository.py (different path)
+        THEN validation detects violation (exact match required without wildcards)
+        """
+        # Arrange
+        step_file = tmp_path / "step.json"
+        step_file.write_text(
+            json.dumps(
+                {
+                    "scope": {
+                        "allowed_patterns": ["UserRepository.py"],  # No wildcards
+                        "target_files": ["src/repositories/UserRepository.py"],
+                    }
+                }
+            )
+        )
+        validator = ScopeValidator()
+
+        # Mock git showing file with path prefix
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = Mock(
+                stdout="src/repositories/UserRepository.py\n", returncode=0
+            )
+
+            # Act
+            result = validator.validate_scope(
+                step_file_path=str(step_file), project_root=tmp_path
+            )
+
+            # Assert: Violation detected (path doesn't match exactly)
+            assert result.has_violations is True
+            assert "src/repositories/UserRepository.py" in result.out_of_scope_files
