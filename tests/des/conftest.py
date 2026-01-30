@@ -83,14 +83,26 @@ def minimal_step_file(tmp_project_root):
     """
     Temporary step file for testing hook validation.
 
-    Provides a Path object pointing to a temporary JSON step file in the
-    test project root. Tests can write step data to this file and validate
-    hook behavior against it.
+    Creates a minimal JSON step file in the test project root with basic
+    step data. Tests can read this file or override its contents.
 
     Returns:
-        pathlib.Path: Path to temporary step.json file
+        pathlib.Path: Path to temporary step.json file with minimal content
     """
+    import json
+
     step_file = tmp_project_root / "step.json"
+    minimal_step_data = {
+        "id": "01-01",
+        "phase": "RED",
+        "status": "pending",
+        "description": "Test step for DES validation",
+        "scope": {
+            "files": ["src/test_module.py"],
+            "test_files": ["tests/test_module.py"],
+        },
+    }
+    step_file.write_text(json.dumps(minimal_step_data, indent=2))
     return step_file
 
 
