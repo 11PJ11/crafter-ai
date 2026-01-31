@@ -26,13 +26,13 @@ repos:
         pass_filenames: false
         stages: [pre-commit]
 
-      # Phase 1: Run pytest test suite (post-commit to avoid blocking)
+      # Phase 1: Run pytest test suite (pre-commit to block failing tests)
       - id: pytest-validation
         name: Pytest Test Validation
         entry: python3 scripts/hooks/validate_tests.py
         language: system
         pass_filenames: false
-        stages: [post-commit]
+        stages: [pre-commit]
         files: ^(tests/|src/des/).*\.py$
 
       # Phase 2: Documentation version validation

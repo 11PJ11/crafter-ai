@@ -70,6 +70,9 @@ class AuditLogger:
         Raises:
             IOError: If append operation fails
         """
+        # Ensure log directory exists (handles cases where temp dirs were cleaned up)
+        self.log_dir.mkdir(parents=True, exist_ok=True)
+
         # Ensure timestamp is ISO 8601 format
         if "timestamp" not in event:
             event["timestamp"] = self._get_iso_timestamp()
@@ -127,7 +130,7 @@ class AuditLogger:
             try:
                 with open(self.current_log_file, "r") as f:
                     for line in f:
-                        if not line.strip():
+                        if line.strip():
                             entry = json.loads(line)
                             if entry.get("step_path") == step_path:
                                 entries.append(entry)
