@@ -9,7 +9,7 @@ execution_status:
     phase_name: "COMMIT"
     started_at: "2026-01-31T00:00:00Z"
     turn_count: 7
-    status: "IN_PROGRESS"
+    status: "COMPLETED"
 
   step_checkpoint:
     step_id: "04-02"
@@ -63,6 +63,14 @@ execution_status:
         blocked_by: "NOT_APPLICABLE: Simple test verification step - no architectural patterns needed. Implementation from step 04-01 already uses proper delegation pattern (orchestrator → detector). This step only enabled acceptance test scenario 002 to verify clean path. No complex state management, no multiple strategies, no complex object creation."
         started_at: "2026-01-31T00:00:00Z"
         duration_minutes: 1
+      - phase_index: 7
+        phase_name: "COMMIT"
+        status: "COMPLETED"
+        outcome: "PASS"
+        started_at: "2026-01-31T00:00:00Z"
+        duration_minutes: 1
+        notes: "Final commit created - all 8 phases complete, all tests passing (13/13: 8 acceptance + 5 unit orchestrator). Implementation requirements already met from step 04-01."
+        commit_hash: "00e7be5"
       - phase_index: 0
         phase_name: "PREPARE"
         status: "COMPLETED"
@@ -129,6 +137,24 @@ execution_status:
         commit_hash: "32f573e"
 
   previous_checkpoints:
+    step_04_02:
+      step_id: "04-02"
+      phases:
+        - phase_index: 0
+          phase_name: "PREPARE"
+          status: "COMPLETED"
+          outcome: "PASS"
+          started_at: "2026-01-31T00:00:00Z"
+          duration_minutes: 1
+          notes: "Uncommented Act and Assert sections in test_scenario_002. Changed Act to use orchestrator.execute_step_with_stale_check() method. Assertions verify blocked=False and execute_result is populated. Scenarios 001-007, 010 enabled. Scenarios 008, 009, 011 remain disabled for future steps."
+        - phase_index: 7
+          phase_name: "COMMIT"
+          status: "COMPLETED"
+          outcome: "PASS"
+          started_at: "2026-01-31T00:00:00Z"
+          duration_minutes: 1
+          notes: "Final commit created - all 8 phases complete, all tests passing (13/13: 8 acceptance + 5 unit orchestrator). Implementation requirements already met from step 04-01."
+          commit_hash: "00e7be5"
     step_03_02:
       step_id: "03-02"
     phases:
@@ -414,3 +440,11 @@ execution_status:
         tests:
           - "tests/des/unit/application/test_orchestrator_stale_check.py"
           - "tests/des/acceptance/test_us008_stale_detection.py"
+    - step_id: "04-02"
+      completed_at: "2026-01-31T00:00:00Z"
+      total_duration_minutes: 7
+      files_modified:
+        implementation: []
+        tests:
+          - "tests/des/acceptance/test_us008_stale_detection.py"
+      notes: "Step requirements already implemented in previous steps (04-01). No new implementation needed. Only enabled acceptance test to verify existing clean path functionality: execute_step_with_stale_check returns blocked=False when no stale steps exist."
