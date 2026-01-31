@@ -50,6 +50,53 @@ CONVENTIONAL_COMMIT_PATTERN = re.compile(
 )
 
 
+def extract_subject(commit_message: str) -> str:
+    """
+    Extract the subject portion of a commit message.
+
+    The subject is everything after 'type(scope): ' or 'type: '.
+
+    Args:
+        commit_message: Full commit message
+
+    Returns:
+        Subject portion of the message
+    """
+    # Split on first ': ' occurrence
+    parts = commit_message.split(": ", 1)
+    if len(parts) == 2:
+        return parts[1].strip()
+    return ""
+
+
+def validate_subject_case(subject: str) -> tuple[bool, str]:
+    """
+    Validate that subject starts with lowercase letter.
+
+    Matches commitlint rule: subject-case: [2, 'always', 'lower-case']
+
+    Args:
+        subject: The subject portion of commit message (after type/scope)
+
+    Returns:
+        Tuple of (is_valid, error_message)
+    """
+    if not subject:
+        return False, "Subject is empty"
+
+    first_char = subject[0]
+
+    # Allow non-alphabetic first characters (numbers, special chars)
+    if not first_char.isalpha():
+        return True, ""
+
+    # First alphabetic character must be lowercase
+    if first_char.isupper():
+        return False, f"subject must start with lowercase letter (found '{first_char}')"
+
+    return True, ""
+
+
 def validate_commit_message(commit_msg_file: Path) -> bool:
     """
     Validate that the commit message follows Conventional Commits format.
@@ -73,11 +120,34 @@ def validate_commit_message(commit_msg_file: Path) -> bool:
         print_error_message("", "Commit message is empty")
         return False
 
-    if CONVENTIONAL_COMMIT_PATTERN.match(first_line):
-        return True
+    if not CONVENTIONAL_COMMIT_PATTERN.match(first_line):
+        print_error_message(first_line, "Does not follow Conventional Commits format")
+        return False
 
-    print_error_message(first_line, "Does not follow Conventional Commits format")
-    return False
+    # Validate subject case (must start with lowercase)
+    subject = extract_subject(first_line)
+    is_valid, error_msg = validate_subject_case(subject)
+
+    if not is_valid:
+        print("")
+        print(f"❌ COMMIT REJECTED - {error_msg}")
+        print("")
+        print("Your commit message:")
+        print(f"  {first_line}")
+        print("")
+        print(
+            "The subject must start with a lowercase letter to match CI/CD requirements."
+        )
+        print("")
+        print("Examples:")
+        print("  ✅ feat: add user authentication")
+        print("  ✅ fix: resolve timeout issue")
+        print("  ❌ feat: Add user authentication  (uppercase 'A')")
+        print("  ❌ fix: Resolve timeout issue     (uppercase 'R')")
+        print("")
+        return False
+
+    return True
 
 
 def print_error_message(commit_msg: str, reason: str) -> None:
