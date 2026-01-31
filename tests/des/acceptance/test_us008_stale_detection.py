@@ -631,7 +631,6 @@ class TestSessionScopedStaleDetection:
     # Edge Case: Multiple stale executions detected simultaneously
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_010_multiple_stale_executions_all_reported(
         self, tmp_project_root
     ):
@@ -672,16 +671,19 @@ class TestSessionScopedStaleDetection:
             )
 
         # Act: Run stale detection
-        # from src.des.stale_detector import StaleExecutionDetector
-        # detector = StaleExecutionDetector(project_root=tmp_project_root)
-        # stale_results = detector.scan_for_stale_executions()
+        from src.des.application.stale_execution_detector import (
+            StaleExecutionDetector,
+        )
+
+        detector = StaleExecutionDetector(project_root=tmp_project_root)
+        stale_result = detector.scan_for_stale_executions()
 
         # Assert: All 3 stale steps reported
-        # assert len(stale_results) == 3
-        # step_files = [r.step_file for r in stale_results]
-        # assert any("01-01" in s for s in step_files)
-        # assert any("02-01" in s for s in step_files)
-        # assert any("03-01" in s for s in step_files)
+        assert len(stale_result.stale_executions) == 3
+        step_files = [se.step_file for se in stale_result.stale_executions]
+        assert any("01-01" in s for s in step_files)
+        assert any("02-01" in s for s in step_files)
+        assert any("03-01" in s for s in step_files)
 
     # =========================================================================
     # Edge Case: Step file with corrupted JSON
