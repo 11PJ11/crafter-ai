@@ -20,6 +20,8 @@ import pytest
 from datetime import datetime, timedelta
 import json
 
+from src.des.application.stale_execution_detector import StaleExecutionDetector
+
 
 class TestSessionScopedStaleDetection:
     """E2E acceptance tests for US-008: Session-scoped stale execution detection."""
@@ -378,7 +380,6 @@ class TestSessionScopedStaleDetection:
     # Scenario 6: Resolve stale step and continue with new execution
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_006_resolve_stale_step_unblocks_new_execution(
         self, tmp_project_root
     ):
@@ -398,13 +399,16 @@ class TestSessionScopedStaleDetection:
         Pre-execution scan passes - no stale phases found.
         New execution starts on step 02-01.
         """
-        # Arrange: Create already-resolved step (ABANDONED status)
+        # Arrange: Create already-resolved step
+        # Step is IN_PROGRESS but the current phase is ABANDONED (not IN_PROGRESS)
+        # This simulates a step that was abandoned after crash/timeout
         resolved_step_path = tmp_project_root / "steps" / "01-01.json"
+        old_timestamp = (datetime.now() - timedelta(minutes=45)).isoformat()
         resolved_step_data = {
             "task_id": "01-01",
             "project_id": "test-project",
             "state": {
-                "status": "ABANDONED",
+                "status": "IN_PROGRESS",  # Step overall is IN_PROGRESS
                 "failure_reason": "Agent crashed during RED_UNIT phase",
                 "recovery_suggestions": [
                     "Review agent transcript for error details",
@@ -419,7 +423,8 @@ class TestSessionScopedStaleDetection:
                     {"phase_name": "RED_ACCEPTANCE", "status": "EXECUTED"},
                     {
                         "phase_name": "RED_UNIT",
-                        "status": "ABANDONED",
+                        "status": "ABANDONED",  # Phase is ABANDONED, not IN_PROGRESS
+                        "started_at": old_timestamp,
                         "abandoned_reason": "Agent crashed - manually resolved",
                     },
                 ]
@@ -438,15 +443,14 @@ class TestSessionScopedStaleDetection:
         }
         target_step_path.write_text(json.dumps(target_step_data, indent=2))
 
-        # Act: Execute new step (should pass since stale step is resolved)
-        # from src.des.application.orchestrator import DESOrchestrator
-        # orchestrator = DESOrchestrator(project_root=tmp_project_root)
-        # result = orchestrator.execute_step("steps/02-01.json")
+        # Act: Run pre-execution scan (should pass since stale step is resolved)
+        detector = StaleExecutionDetector(project_root=tmp_project_root)
+        result = detector.scan_for_stale_executions()
 
-        # Assert: Execution proceeds (resolved step not flagged)
-        # assert result.blocked is False
-        # assert result.stale_check_passed is True
-        # assert result.execution_started is True
+        # Assert: No stale executions detected (ABANDONED status not flagged)
+        assert result.is_blocked is False
+        assert len(result.stale_executions) == 0
+        assert result.alert_message == ""
 
     # =========================================================================
     # AC-008.4: User can resolve stale step
