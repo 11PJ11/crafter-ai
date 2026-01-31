@@ -453,7 +453,6 @@ class TestSessionScopedStaleDetection:
     # Scenario 7: Mark stale step as ABANDONED with recovery suggestions
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_007_mark_step_abandoned_updates_state_correctly(
         self, tmp_project_root
     ):
@@ -496,20 +495,27 @@ class TestSessionScopedStaleDetection:
         stale_step_path.write_text(json.dumps(stale_step_data, indent=2))
 
         # Act: Resolve the stale step
-        # from src.des.stale_resolver import StaleResolver
-        # resolver = StaleResolver(project_root=tmp_project_root)
-        # resolution_result = resolver.mark_abandoned(
-        #     step_file="steps/01-01.json",
-        #     reason="Agent crashed during RED_ACCEPTANCE phase"
-        # )
+        from src.des.application.stale_resolver import StaleResolver
+
+        resolver = StaleResolver(project_root=tmp_project_root)
+        resolver.mark_abandoned(
+            step_file="steps/01-01.json",
+            reason="Agent crashed during RED_ACCEPTANCE phase",
+        )
 
         # Assert: Step file properly updated
-        # updated_step = json.loads(stale_step_path.read_text())
-        # assert updated_step["state"]["status"] == "ABANDONED"
-        # assert "Agent crashed" in updated_step["state"]["failure_reason"]
-        # assert len(updated_step["state"]["recovery_suggestions"]) >= 1
-        # assert any("transcript" in s for s in updated_step["state"]["recovery_suggestions"])
-        # assert updated_step["tdd_cycle"]["phase_execution_log"][1]["status"] == "ABANDONED"
+        updated_step = json.loads(stale_step_path.read_text())
+        assert updated_step["state"]["status"] == "ABANDONED"
+        assert "Agent crashed" in updated_step["state"]["failure_reason"]
+        assert len(updated_step["state"]["recovery_suggestions"]) >= 1
+        assert any(
+            "transcript" in s.lower()
+            for s in updated_step["state"]["recovery_suggestions"]
+        )
+        assert (
+            updated_step["tdd_cycle"]["phase_execution_log"][1]["status"] == "ABANDONED"
+        )
+        assert "abandoned_at" in updated_step["state"]
 
     # =========================================================================
     # AC-008.5: No external dependencies - pure file scanning
