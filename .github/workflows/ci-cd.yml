@@ -744,6 +744,13 @@ jobs:
 
           echo "message=$TRUNCATED" >> $GITHUB_OUTPUT
 
+      - name: Get current timestamp
+        id: timestamp
+        run: |
+          CURRENT_TIMESTAMP=$(date +%s)
+          echo "unix=$CURRENT_TIMESTAMP" >> $GITHUB_OUTPUT
+          echo "Current Unix timestamp: $CURRENT_TIMESTAMP"
+
       - name: Send RED notification (failure)
         if: steps.notification-type.outputs.type == 'failure'
         uses: slackapi/slack-github-action@v2.0.0
@@ -815,7 +822,7 @@ jobs:
                   "elements": [
                     {
                       "type": "mrkdwn",
-                      "text": "⏱️ Failed at: <!date^${{ github.event.repository.updated_at }}^{date_short_pretty} {time}|timestamp>"
+                      "text": "⏱️ Failed at: <!date^${{ steps.timestamp.outputs.unix }}^{date_short_pretty} at {time}|timestamp>"
                     }
                   ]
                 }

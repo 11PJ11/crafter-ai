@@ -9,8 +9,8 @@ def test_red_green_notification_flow():
     Test to verify GREEN notification after fixing RED.
 
     Flow:
-    1. THIS COMMIT: Test fails → RED notification with state tracking
-    2. Next commit: Test fixed → GREEN notification with recovery time
-    3. Final commit: Test file removed → Back to normal
+    1. Previous commit: Test failed → RED notification with state tracking
+    2. THIS COMMIT: Test fixed → GREEN notification with recovery time + timestamp fix
+    3. Next commit: Test file removed → Back to normal
     """
-    assert False, "🔴 RED TEST: Intentional failure to test state tracking"
+    assert True, "✅ GREEN TEST: Fixed to trigger GREEN notification with recovery time"
