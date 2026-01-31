@@ -1,21 +1,25 @@
 # Slack Notifications Testing Procedures
 
-**Version**: 1.0
+**Version**: 2.0
 **Date**: 2026-01-31
+**Feature**: RED (failure) + GREEN (recovery) Notifications
 **Related**: [slack-notifications-setup.md](slack-notifications-setup.md)
 
 ---
 
 ## Testing Overview
 
-This document provides comprehensive testing procedures for validating Slack notifications for CI/CD pipeline failures.
+This document provides comprehensive testing procedures for validating the "Back to Green" notification system.
 
 **Test Objectives**:
-- Verify notification delivery to Slack channel
-- Validate notification content accuracy
+- Verify RED notification on pipeline failure
+- Verify GREEN notification on pipeline recovery (failure → success)
+- Verify NO notification when staying green (success → success)
+- Validate state tracking across workflow runs
+- Confirm author mapping (git username → Slack user ID)
+- Test failed jobs parsing and display
+- Validate recovery time calculation
 - Confirm security measures (secret sanitization)
-- Test branch filtering logic
-- Validate error handling and recovery
 
 ---
 

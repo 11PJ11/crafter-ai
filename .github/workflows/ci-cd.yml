@@ -570,10 +570,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     # Run on BOTH failure AND success (to detect RED→GREEN transitions)
+    # Now triggers on ALL branches - @mentions ensure no spam (each dev gets notified for their branches only)
     if: |
       always() &&
-      !cancelled() &&
-      (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/installer')
+      !cancelled()
     needs: [commitlint, code-quality, file-quality, security-checks, framework-validation, test, agent-sync, build, release]
 
     steps:
