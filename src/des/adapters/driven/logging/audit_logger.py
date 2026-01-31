@@ -175,11 +175,21 @@ class AuditLogger:
 
 
 # Global audit logger instance
+# TECHNICAL DEBT: Consider refactoring to dependency injection pattern
+# Current singleton pattern works but reduces testability and flexibility.
+# Future improvement: Inject AuditLogger through constructor parameters.
+# See: Progressive Refactoring Level 4 (Abstraction Refinement)
 _audit_logger: Optional[AuditLogger] = None
 
 
 def get_audit_logger() -> AuditLogger:
-    """Get the global audit logger instance."""
+    """Get the global audit logger instance.
+
+    Note:
+        This singleton pattern is functional but could be improved with
+        dependency injection for better testability and flexibility.
+        Consider refactoring when making broader architectural changes.
+    """
     global _audit_logger
     if _audit_logger is None:
         _audit_logger = AuditLogger()
