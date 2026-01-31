@@ -171,18 +171,33 @@ class TestSessionScopedStaleDetection:
             "project_id": "test-project",
             "workflow_type": "tdd_cycle",
             "state": {"status": "TODO"},
+            "tdd_cycle": {
+                "phase_execution_log": [
+                    {"phase_name": "PREPARE", "status": "NOT_EXECUTED", "turn_count": 0}
+                ]
+            },
         }
         target_step_path.write_text(json.dumps(target_step_data, indent=2))
 
         # Act: Execute step (pre-execution stale check should pass)
-        # from src.des.application.orchestrator import DESOrchestrator
-        # orchestrator = DESOrchestrator(project_root=tmp_project_root)
-        # result = orchestrator.execute_step("steps/01-01.json")
+        from src.des.application.orchestrator import DESOrchestrator
 
-        # Assert: Execution proceeds normally
-        # assert result.blocked is False
-        # assert result.stale_check_passed is True
-        # assert result.execution_started is True
+        orchestrator = DESOrchestrator.create_with_defaults()
+        result = orchestrator.execute_step_with_stale_check(
+            command="/nw:execute",
+            agent="@software-crafter",
+            step_file="steps/01-01.json",
+            project_root=tmp_project_root,
+        )
+
+        # Assert: Execution proceeds normally (not blocked, proceeds with execution)
+        assert result.blocked is False, (
+            "Execution should not be blocked when no stale steps"
+        )
+        assert result.execute_result is not None, (
+            "execute_result should be populated when not blocked"
+        )
+        assert result.stale_alert is None, "No stale alert should be present when clean"
 
     # =========================================================================
     # AC-008.2: Stale threshold is configurable (default 30 minutes)
