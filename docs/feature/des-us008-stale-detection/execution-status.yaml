@@ -5,10 +5,11 @@ execution_status:
 
   current:
     step_id: "02-01"
-    phase_index: 0
-    phase_name: "PREPARE"
+    phase_index: 7
+    phase_name: "COMMIT"
     started_at: "2026-01-31T00:00:00Z"
     turn_count: 1
+    status: "COMPLETED"
 
   step_checkpoint:
     step_id: "02-01"
@@ -67,8 +68,12 @@ execution_status:
         duration_minutes: 1
       - phase_index: 7
         phase_name: "COMMIT"
-        status: "IN_PROGRESS"
+        status: "COMPLETED"
+        outcome: "PASS"
         started_at: "2026-01-31T00:00:00Z"
+        duration_minutes: 2
+        notes: "Final commit created - all 8 phases complete, all tests passing (18/18: 3 acceptance + 15 unit)"
+        commit_hash: "f787ad5"
 
   completed_steps:
     - step_id: "01-01"
@@ -88,4 +93,13 @@ execution_status:
           - "src/des/domain/stale_detection_result.py"
         tests:
           - "tests/des/unit/test_stale_detection_result.py"
+          - "tests/des/acceptance/test_us008_stale_detection.py"
+    - step_id: "02-01"
+      completed_at: "2026-01-31T00:00:00Z"
+      total_duration_minutes: 14
+      files_modified:
+        implementation:
+          - "src/des/application/stale_execution_detector.py"
+        tests:
+          - "tests/des/unit/test_stale_execution_detector.py"
           - "tests/des/acceptance/test_us008_stale_detection.py"
