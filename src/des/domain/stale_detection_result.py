@@ -9,6 +9,8 @@ Business Rules:
 - Alert message format: 'Stale execution found: {step_file}, phase {phase_name} ({age} min)'
 - Supports multiple stale executions
 - Encapsulates stale_executions list to prevent external modification
+- Collects warnings for corrupted/malformed step files during scan
+- Warnings include file_path and error message for debugging
 
 Usage:
     stale1 = StaleExecution(step_file="steps/01-01.json", phase_name="RED_UNIT",
@@ -22,7 +24,7 @@ Usage:
         print(result.alert_message)
 """
 
-from typing import List
+from typing import List, Dict, Any
 from src.des.domain.stale_execution import StaleExecution
 
 
@@ -35,6 +37,7 @@ class StaleDetectionResult:
 
     Attributes:
         stale_executions: List of detected StaleExecution instances (immutable copy)
+        warnings: List of warnings for corrupted/malformed step files
 
     Properties:
         is_blocked: True if any stale executions exist, False otherwise
@@ -54,18 +57,21 @@ class StaleDetectionResult:
         'Stale execution found: steps/01-01.json, phase RED_UNIT (45 min)'
     """
 
-    def __init__(self, stale_executions: List[StaleExecution]):
+    def __init__(self, stale_executions: List[StaleExecution], warnings: List[Dict[str, Any]] = None):
         """
-        Initialize StaleDetectionResult with list of stale executions.
+        Initialize StaleDetectionResult with list of stale executions and warnings.
 
         Args:
             stale_executions: List of StaleExecution instances detected during scan
+            warnings: List of warning dicts for corrupted files (default: empty list)
+                     Each warning dict has keys: file_path, error
 
         Note:
-            List is copied to prevent external modification (encapsulation)
+            Lists are copied to prevent external modification (encapsulation)
         """
         # Create defensive copy to prevent external modification
         self._stale_executions = list(stale_executions)
+        self._warnings = list(warnings) if warnings else []
 
     @property
     def stale_executions(self) -> List[StaleExecution]:
@@ -79,6 +85,20 @@ class StaleDetectionResult:
             Prevent external modification by returning copy
         """
         return list(self._stale_executions)
+
+    @property
+    def warnings(self) -> List[Dict[str, Any]]:
+        """
+        Get immutable copy of warnings list.
+
+        Returns:
+            List of warning dicts (defensive copy)
+            Each warning dict has keys: file_path, error
+
+        Business Rule:
+            Prevent external modification by returning copy
+        """
+        return list(self._warnings)
 
     @property
     def is_blocked(self) -> bool:

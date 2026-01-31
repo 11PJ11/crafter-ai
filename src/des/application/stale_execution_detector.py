@@ -98,12 +98,13 @@ class StaleExecutionDetector:
             - Missing fields: skips phase, continues scan
         """
         stale_executions = []
+        warnings = []
 
         steps_dir = self.project_root / "steps"
 
         # Handle missing steps directory gracefully
         if not steps_dir.exists():
-            return StaleDetectionResult(stale_executions=[])
+            return StaleDetectionResult(stale_executions=[], warnings=[])
 
         # Scan all .json files in steps directory
         for step_file in steps_dir.glob("*.json"):
@@ -111,11 +112,16 @@ class StaleExecutionDetector:
                 stale_execution = self._check_step_file_for_staleness(step_file)
                 if stale_execution:
                     stale_executions.append(stale_execution)
-            except (json.JSONDecodeError, KeyError, ValueError):
-                # Skip corrupted or malformed files
+            except (json.JSONDecodeError, KeyError, ValueError) as e:
+                # Collect warning for corrupted or malformed file
+                relative_path = f"steps/{step_file.name}"
+                warnings.append({
+                    "file_path": relative_path,
+                    "error": str(e)
+                })
                 continue
 
-        return StaleDetectionResult(stale_executions=stale_executions)
+        return StaleDetectionResult(stale_executions=stale_executions, warnings=warnings)
 
     def _check_step_file_for_staleness(self, step_file: Path) -> StaleExecution | None:
         """

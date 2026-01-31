@@ -16,7 +16,6 @@ WAVE: DISTILL (Acceptance Test Creation)
 STATUS: RED (Outside-In TDD - awaiting DEVELOP wave implementation)
 """
 
-import pytest
 from datetime import datetime, timedelta
 import json
 
@@ -718,7 +717,6 @@ class TestSessionScopedStaleDetection:
     # Edge Case: Step file with corrupted JSON
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_011_corrupted_step_file_gracefully_handled(
         self, tmp_project_root
     ):
@@ -757,13 +755,21 @@ class TestSessionScopedStaleDetection:
         )
 
         # Act: Run stale detection
-        # from src.des.stale_detector import StaleExecutionDetector
-        # detector = StaleExecutionDetector(project_root=tmp_project_root)
-        # stale_results, warnings = detector.scan_for_stale_executions()
+        from src.des.application.stale_execution_detector import StaleExecutionDetector
+
+        detector = StaleExecutionDetector(project_root=tmp_project_root)
+        result = detector.scan_for_stale_executions()
 
         # Assert: Scan completes, reports warning for corrupted file
-        # assert len(stale_results) == 1  # Valid stale file detected
-        # assert "02-01" in stale_results[0].step_file
-        # assert len(warnings) == 1  # Corrupted file warning
-        # assert "01-01.json" in warnings[0].file_path
-        # assert "JSON" in warnings[0].message or "parse" in warnings[0].message.lower()
+        assert len(result.stale_executions) == 1  # Valid stale file detected
+        assert "02-01" in result.stale_executions[0].step_file
+
+        # Check warnings were logged
+        assert hasattr(result, "warnings")
+        assert len(result.warnings) == 1  # Corrupted file warning
+        assert "01-01.json" in result.warnings[0]["file_path"]
+        # Error message should indicate JSON parsing issue
+        error_msg = result.warnings[0]["error"].lower()
+        assert any(
+            keyword in error_msg for keyword in ["json", "parse", "expecting", "decode"]
+        )

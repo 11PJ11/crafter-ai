@@ -525,4 +525,55 @@ class TestStaleExecutionDetectorEdgeCases:
         # Should detect valid stale file, ignore corrupted file
         assert result.is_blocked is True
         assert len(result.stale_executions) == 1
-        assert "02-01" in result.stale_executions[0].step_file
+
+    def test_scan_collects_warning_for_corrupted_json_file(self, tmp_path):
+        """
+        GIVEN one step file has corrupted JSON
+        WHEN scan_for_stale_executions runs
+        THEN result includes warning with file_path and error message
+        """
+        steps_dir = tmp_path / "steps"
+        steps_dir.mkdir()
+
+        # Create corrupted JSON file
+        (steps_dir / "01-01.json").write_text("{ invalid json content")
+
+        detector = StaleExecutionDetector(project_root=tmp_path)
+        result = detector.scan_for_stale_executions()
+
+        # Should collect warning for corrupted file
+        assert hasattr(result, "warnings")
+        assert len(result.warnings) == 1
+        assert result.warnings[0]["file_path"] == "steps/01-01.json"
+        # Error message should indicate JSON parsing issue
+        error_msg = result.warnings[0]["error"].lower()
+        assert any(
+            keyword in error_msg for keyword in ["json", "parse", "expecting", "decode"]
+        )
+
+    def test_scan_collects_multiple_warnings_for_multiple_corrupted_files(
+        self, tmp_path
+    ):
+        """
+        GIVEN multiple step files have corrupted JSON
+        WHEN scan_for_stale_executions runs
+        THEN result includes all warnings with file paths
+        """
+        steps_dir = tmp_path / "steps"
+        steps_dir.mkdir()
+
+        # Create 3 corrupted JSON files
+        (steps_dir / "01-01.json").write_text("{ invalid json")
+        (steps_dir / "02-02.json").write_text("not json at all")
+        (steps_dir / "03-03.json").write_text('{"incomplete": ')
+
+        detector = StaleExecutionDetector(project_root=tmp_path)
+        result = detector.scan_for_stale_executions()
+
+        # Should collect warnings for all corrupted files
+        assert hasattr(result, "warnings")
+        assert len(result.warnings) == 3
+        file_paths = [w["file_path"] for w in result.warnings]
+        assert "steps/01-01.json" in file_paths
+        assert "steps/02-02.json" in file_paths
+        assert "steps/03-03.json" in file_paths
