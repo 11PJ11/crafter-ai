@@ -583,7 +583,8 @@ jobs:
           # Navigate to: Settings > Secrets and variables > Actions > New repository secret
           # Name: SLACK_WEBHOOK_URL
           # Value: Your Slack Incoming Webhook URL (https://hooks.slack.com/services/T.../B.../XXX)
-          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           payload: |
             {
               "blocks": [
