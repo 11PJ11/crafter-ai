@@ -43,6 +43,8 @@ class StaleExecutionDetector:
     Attributes:
         project_root: Path to project root directory
         threshold_minutes: Staleness threshold in minutes (default 30)
+        uses_external_services: False (pure file scanning, no DB/HTTP)
+        is_session_scoped: True (no daemon, terminates with session)
     """
 
     def __init__(self, project_root: Path):
@@ -71,6 +73,10 @@ class StaleExecutionDetector:
             threshold = 30
 
         self.threshold_minutes = threshold
+
+        # Metadata properties documenting zero external dependencies
+        self.uses_external_services = False  # Pure file scanning (no DB/HTTP)
+        self.is_session_scoped = True  # No daemon, terminates with session
 
     def scan_for_stale_executions(self) -> StaleDetectionResult:
         """

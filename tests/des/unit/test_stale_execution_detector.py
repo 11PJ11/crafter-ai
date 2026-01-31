@@ -90,6 +90,24 @@ class TestStaleExecutionDetectorInitialization:
         detector = StaleExecutionDetector(project_root=tmp_path)
         assert detector.threshold_minutes == 30
 
+    def test_detector_uses_external_services_is_false(self, tmp_path):
+        """
+        GIVEN StaleExecutionDetector is initialized
+        WHEN checking uses_external_services property
+        THEN it returns False (pure file scanning, no DB/HTTP/external services)
+        """
+        detector = StaleExecutionDetector(project_root=tmp_path)
+        assert detector.uses_external_services is False
+
+    def test_detector_is_session_scoped_is_true(self, tmp_path):
+        """
+        GIVEN StaleExecutionDetector is initialized
+        WHEN checking is_session_scoped property
+        THEN it returns True (no daemon, terminates with session)
+        """
+        detector = StaleExecutionDetector(project_root=tmp_path)
+        assert detector.is_session_scoped is True
+
 
 class TestStaleExecutionDetectorScanningLogic:
     """Test core scanning and detection logic."""
