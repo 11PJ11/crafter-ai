@@ -67,3 +67,23 @@ class StaleExecution:
                 f"age_minutes must be >= 0, got {self.age_minutes}. "
                 "Negative age is invalid in the domain."
             )
+
+    @property
+    def message(self) -> str:
+        """
+        Format alert message with resolution instructions.
+
+        Returns:
+            Formatted alert message including step file, phase name, age, and resolution instructions
+
+        Format:
+            'Stale execution found: {step_file}, phase {phase_name} ({age} min). Resolve before proceeding.'
+
+        Business Rule:
+            Alert message must guide user to resolve the stale execution before proceeding
+        """
+        return (
+            f"Stale execution found: {self.step_file}, "
+            f"phase {self.phase_name} ({self.age_minutes} min). "
+            "Resolve before proceeding."
+        )

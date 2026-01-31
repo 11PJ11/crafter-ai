@@ -95,17 +95,23 @@ class TestSessionScopedStaleDetection:
         target_step_path.write_text(json.dumps(target_step_data, indent=2))
 
         # Act: Attempt to execute new step (pre-execution stale check should run)
-        # from src.des.application.orchestrator import DESOrchestrator
-        # orchestrator = DESOrchestrator(project_root=tmp_project_root)
-        # result = orchestrator.execute_step("steps/02-01.json")
+        from src.des.application.orchestrator import DESOrchestrator
+
+        orchestrator = DESOrchestrator.create_with_defaults()
+        result = orchestrator.execute_step_with_stale_check(
+            command="/nw:execute",
+            agent="@software-crafter",
+            step_file="steps/02-01.json",
+            project_root=tmp_project_root,
+        )
 
         # Assert: Execution blocked with stale alert
-        # assert result.blocked is True
-        # assert result.blocking_reason == "STALE_EXECUTION_DETECTED"
-        # assert "01-01.json" in result.stale_alert.step_file
-        # assert "RED_UNIT" in result.stale_alert.phase_name
-        # assert result.stale_alert.age_minutes >= 45
-        # assert "Resolve before proceeding" in result.stale_alert.message
+        assert result.blocked is True
+        assert result.blocking_reason == "STALE_EXECUTION_DETECTED"
+        assert "01-01.json" in result.stale_alert.step_file
+        assert "RED_UNIT" in result.stale_alert.phase_name
+        assert result.stale_alert.age_minutes >= 45
+        assert "Resolve before proceeding" in result.stale_alert.message
 
     # =========================================================================
     # AC-008.1: Stale check runs automatically before each /nw:execute invocation
