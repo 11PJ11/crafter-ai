@@ -54,6 +54,42 @@ class TestStaleExecutionDetectorInitialization:
         detector = StaleExecutionDetector(project_root=tmp_path)
         assert detector.threshold_minutes == 10
 
+    def test_detector_falls_back_to_default_when_env_var_invalid_non_integer(
+        self, tmp_path, monkeypatch
+    ):
+        """
+        GIVEN DES_STALE_THRESHOLD_MINUTES="invalid" (non-integer string)
+        WHEN StaleExecutionDetector is initialized
+        THEN threshold falls back to 30 minutes default
+        """
+        monkeypatch.setenv("DES_STALE_THRESHOLD_MINUTES", "invalid")
+        detector = StaleExecutionDetector(project_root=tmp_path)
+        assert detector.threshold_minutes == 30
+
+    def test_detector_falls_back_to_default_when_env_var_empty_string(
+        self, tmp_path, monkeypatch
+    ):
+        """
+        GIVEN DES_STALE_THRESHOLD_MINUTES="" (empty string)
+        WHEN StaleExecutionDetector is initialized
+        THEN threshold falls back to 30 minutes default
+        """
+        monkeypatch.setenv("DES_STALE_THRESHOLD_MINUTES", "")
+        detector = StaleExecutionDetector(project_root=tmp_path)
+        assert detector.threshold_minutes == 30
+
+    def test_detector_falls_back_to_default_when_env_var_negative(
+        self, tmp_path, monkeypatch
+    ):
+        """
+        GIVEN DES_STALE_THRESHOLD_MINUTES="-5" (negative integer)
+        WHEN StaleExecutionDetector is initialized
+        THEN threshold falls back to 30 minutes default
+        """
+        monkeypatch.setenv("DES_STALE_THRESHOLD_MINUTES", "-5")
+        detector = StaleExecutionDetector(project_root=tmp_path)
+        assert detector.threshold_minutes == 30
+
 
 class TestStaleExecutionDetectorScanningLogic:
     """Test core scanning and detection logic."""

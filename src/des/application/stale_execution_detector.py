@@ -54,12 +54,23 @@ class StaleExecutionDetector:
 
         Configuration:
             Reads DES_STALE_THRESHOLD_MINUTES environment variable.
-            Defaults to 30 minutes if not set.
+            Defaults to 30 minutes if not set or invalid.
+            Validates that threshold is a positive integer.
         """
         self.project_root = Path(project_root)
-        self.threshold_minutes = int(
-            os.environ.get("DES_STALE_THRESHOLD_MINUTES", "30")
-        )
+
+        # Read and validate threshold from environment variable
+        env_value = os.environ.get("DES_STALE_THRESHOLD_MINUTES", "30")
+        try:
+            threshold = int(env_value)
+            # Validate positive threshold
+            if threshold <= 0:
+                threshold = 30
+        except ValueError:
+            # Fall back to default on parsing error
+            threshold = 30
+
+        self.threshold_minutes = threshold
 
     def scan_for_stale_executions(self) -> StaleDetectionResult:
         """

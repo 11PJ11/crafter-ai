@@ -247,7 +247,6 @@ class TestSessionScopedStaleDetection:
     # Scenario 4: Custom threshold via environment variable
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_004_custom_threshold_via_environment_variable(
         self, tmp_project_root, monkeypatch
     ):
@@ -294,15 +293,16 @@ class TestSessionScopedStaleDetection:
         target_step_data = {"task_id": "02-01", "state": {"status": "TODO"}}
         target_step_path.write_text(json.dumps(target_step_data, indent=2))
 
-        # Act: Execute with custom 10-minute threshold
-        # from src.des.application.orchestrator import DESOrchestrator
-        # orchestrator = DESOrchestrator(project_root=tmp_project_root)
-        # result = orchestrator.execute_step("steps/02-01.json")
+        # Act: Detect stale executions with custom 10-minute threshold
+        from src.des.application.stale_execution_detector import StaleExecutionDetector
+
+        detector = StaleExecutionDetector(project_root=tmp_project_root)
+        result = detector.scan_for_stale_executions()
 
         # Assert: Execution blocked (15 min > 10 min threshold)
-        # assert result.blocked is True
-        # assert result.blocking_reason == "STALE_EXECUTION_DETECTED"
-        # assert result.threshold_minutes == 10
+        assert result.is_blocked is True
+        assert len(result.stale_executions) == 1
+        assert result.stale_executions[0].step_file == "steps/01-01.json"
 
     # =========================================================================
     # AC-008.3: Detection blocks execution with clear alert
