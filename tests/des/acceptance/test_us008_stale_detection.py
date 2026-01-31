@@ -110,7 +110,6 @@ class TestSessionScopedStaleDetection:
     # Scenario 2: Clean start when no stale executions exist
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_002_clean_start_when_no_stale_executions(self, tmp_project_root):
         """
         GIVEN no step files have IN_PROGRESS phases
