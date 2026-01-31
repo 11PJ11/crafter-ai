@@ -114,6 +114,10 @@ class DESOrchestrator:
         self._subagent_lifecycle_completed = False
         self._step_file_path: Optional[Path] = None
 
+    # ========================================================================
+    # Schema Version Detection
+    # ========================================================================
+
     def detect_schema_version(self, step_file_path: Path) -> str:
         """
         Detect schema version from step file.
@@ -156,6 +160,10 @@ class DESOrchestrator:
             return 8
         else:
             return 14  # Default to 14 for v1.0 and unknown versions
+
+    # ========================================================================
+    # Factory Methods
+    # ========================================================================
 
     @classmethod
     def create_with_defaults(cls) -> "DESOrchestrator":
@@ -205,6 +213,10 @@ class DESOrchestrator:
         self._subagent_lifecycle_completed = True
         return result
 
+    # ========================================================================
+    # Validation
+    # ========================================================================
+
     def validate_invocation_limits(
         self, step_file: str, project_root: Path | str
     ) -> InvocationLimitsResult:
@@ -244,6 +256,10 @@ class DESOrchestrator:
         if command in self.VALIDATION_COMMANDS:
             return "full"
         return "none"
+
+    # ========================================================================
+    # Prompt Rendering
+    # ========================================================================
 
     def _generate_des_markers(self, command: str | None, step_file: str | None) -> str:
         """
@@ -425,6 +441,10 @@ class DESOrchestrator:
         # Ad-hoc prompts bypass DES validation - return as-is
         return prompt
 
+    # ========================================================================
+    # Hook Integration
+    # ========================================================================
+
     def on_subagent_complete(self, step_file_path: str) -> HookResult:
         """
         Invoke SubagentStopHook after sub-agent completion.
@@ -439,6 +459,10 @@ class DESOrchestrator:
             HookResult with validation status and any errors found
         """
         return self._hook.on_agent_complete(step_file_path)
+
+    # ========================================================================
+    # Step Execution
+    # ========================================================================
 
     def execute_step_with_stale_check(
         self,
@@ -509,6 +533,10 @@ class DESOrchestrator:
             stale_alert=None,
             execute_result=execute_result,
         )
+
+    # ========================================================================
+    # Timeout Warning Helpers
+    # ========================================================================
 
     def _build_timeout_warning(
         self,
@@ -667,6 +695,10 @@ class DESOrchestrator:
             features_validated=features_validated,
         )
 
+    # ========================================================================
+    # File Operations
+    # ========================================================================
+
     def _resolve_step_file_path(self, project_root: Path | str, step_file: str) -> Path:
         """Convert project_root and step_file to absolute path."""
         if isinstance(project_root, str):
@@ -686,6 +718,10 @@ class DESOrchestrator:
             current_phase["status"] = "IN_PROGRESS"
 
         return current_phase
+
+    # ========================================================================
+    # TurnCounter Operations
+    # ========================================================================
 
     def _restore_turn_count(
         self, counter: TurnCounter, current_phase: dict, phase_name: str
