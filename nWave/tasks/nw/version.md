@@ -19,10 +19,10 @@ When invoked, display the following information:
 ```
 nWave Framework
 ===============
-Version: 1.2.85
-Build: 2026-01-30T23:13:56Z
-Agents: 22
-Commands: 20
+Version: 1.6.1
+Build: 2026-01-31T15:43:02Z
+Agents: 24
+Commands: 21
 
 Key Features:
 - Task tool delegation for sub-commands
@@ -40,7 +40,7 @@ To verify you have the latest version:
 
 1. **Check TDD Cycle**: The execute command should reference `step-tdd-cycle-schema.json` as single source of truth
 2. **Check Task Delegation**: The develop command should use `Task(subagent_type=..., prompt='/nw:...')` pattern
-3. **Check Agent Count**: Should have 22 agents and 20 commands
+3. **Check Agent Count**: Should have 24 agents and 21 commands (v1.6.0 includes Luna & Eclipse)
 
 ## Quick Test
 

@@ -70,3 +70,12 @@ env/
 
 # DES audit logs (local only)
 .des/
+/mutants/
+
+# Mutation testing artifacts
+.mutmut-cache
+*.sqlite
+cosmic-ray.toml
+mutation-run.log
+mutation-test.log
+cosmic-ray-exec.log

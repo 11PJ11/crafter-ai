@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
+
+if TYPE_CHECKING:
+    from src.des.validation.scope_validator import ScopeValidationResult
 
 
 @dataclass
@@ -19,6 +22,7 @@ class HookResult:
     not_executed_phases: int = 0
     turn_limit_exceeded: bool = False
     timeout_exceeded: bool = False
+    scope_validation_result: Optional["ScopeValidationResult"] = None
 
 
 class HookPort(ABC):

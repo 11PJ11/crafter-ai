@@ -480,21 +480,37 @@ class NWaveInstaller:
                 return False
 
             schema_version = schema.get("schema_version")
-            if schema_version != "2.0":
-                self.logger.warn(
-                    f"Schema version is {schema_version}, expected 2.0 (8-phase TDD optimization)"
-                )
 
-            # Check phase count
+            # Validate schema version and phase count
+            valid_schemas = {
+                "2.0": {"phases": 8, "description": "8-phase TDD optimization"},
+                "3.0": {
+                    "phases": 7,
+                    "description": "7-phase TDD (L4-L6 moved to orchestrator)",
+                },
+            }
+
+            if schema_version not in valid_schemas:
+                self.logger.warn(
+                    f"Schema version is {schema_version}, expected 2.0 or 3.0"
+                )
+                return False
+
+            # Check phase count matches schema version
             phase_exec_log = schema.get("tdd_cycle", {}).get("phase_execution_log", [])
-            if len(phase_exec_log) != 8:
+            expected_phases = valid_schemas[schema_version]["phases"]
+
+            if len(phase_exec_log) != expected_phases:
                 self.logger.error(
-                    f"Schema has {len(phase_exec_log)} phases, expected 8 (v2.0). "
+                    f"Schema has {len(phase_exec_log)} phases, expected {expected_phases} for v{schema_version}. "
                     f"Installation source may be stale."
                 )
                 return False
 
-            self.logger.info(f"  - TDD cycle schema: v{schema_version} with 8 phases ✓")
+            schema_desc = valid_schemas[schema_version]["description"]
+            self.logger.info(
+                f"  - TDD cycle schema: v{schema_version} with {expected_phases} phases ({schema_desc}) ✓"
+            )
             return True
 
         except Exception as e:

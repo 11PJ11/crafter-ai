@@ -1,8 +1,14 @@
 """Production implementation of post-execution hook adapter."""
 
 from src.des.ports.driver_ports.hook_port import HookPort, HookResult
+from src.des.validation.scope_validator import ScopeValidator
+from src.des.adapters.driven.logging.audit_logger import get_audit_logger
 import json
+import logging
+from pathlib import Path
 from typing import List, Optional
+
+logger = logging.getLogger(__name__)
 
 
 class RealSubagentStopHook(HookPort):
@@ -122,6 +128,39 @@ class RealSubagentStopHook(HookPort):
         if timeout_info["timeout_exceeded"]:
             result.timeout_exceeded = True
             errors.append(("TIMEOUT_EXCEEDED", timeout_info))
+
+        # Run scope validation post-execution
+        project_root = Path(step_file_path).parent.parent
+        scope_validator = ScopeValidator()
+        scope_result = scope_validator.validate_scope(
+            step_file_path=step_file_path,
+            project_root=project_root,
+            git_diff_files=None
+        )
+
+        # Store validation result for audit logging (Phase 4)
+        result.scope_validation_result = scope_result
+
+        # Handle validation_skipped (git failure) - log WARNING but don't block
+        if scope_result.validation_skipped:
+            logger.warning(
+                f"Scope validation skipped: {scope_result.reason}. "
+                f"Step completion continues normally."
+            )
+
+        # Log scope violations to audit trail (Phase 4.2: Audit Integration)
+        if scope_result.has_violations:
+            audit_logger = get_audit_logger()
+            allowed_patterns = step_data.get("scope", {}).get("allowed_patterns", [])
+
+            for out_of_scope_file in scope_result.out_of_scope_files:
+                audit_logger.append({
+                    "event": "SCOPE_VIOLATION",
+                    "severity": "WARNING",
+                    "step_file": step_file_path,
+                    "out_of_scope_file": out_of_scope_file,
+                    "allowed_patterns": allowed_patterns
+                })
 
         # If any errors found, populate comprehensive failure details
         if errors:

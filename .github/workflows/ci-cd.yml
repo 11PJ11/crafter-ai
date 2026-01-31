@@ -89,7 +89,13 @@ jobs:
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             commitlint --from "${{ github.event.pull_request.base.sha }}" --to "${{ github.event.pull_request.head.sha }}" --verbose
           elif [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
-            commitlint --from "${{ github.event.before }}" --to "${{ github.sha }}" --verbose
+            # Validate that 'before' commit exists in repository
+            if git cat-file -e "${{ github.event.before }}" 2>/dev/null; then
+              commitlint --from "${{ github.event.before }}" --to "${{ github.sha }}" --verbose
+            else
+              echo "::warning::Commit ${{ github.event.before }} not found (likely due to force push/amend). Validating HEAD commit only."
+              git log -1 --format=%B | commitlint --verbose
+            fi
           else
             git log -1 --format=%B | commitlint --verbose
           fi

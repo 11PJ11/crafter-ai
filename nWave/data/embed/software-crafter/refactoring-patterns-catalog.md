@@ -382,6 +382,236 @@ Use line count as a signal to investigate, not a rule to enforce. Extract Method
 
 ---
 
+## Test Code Refactoring Patterns
+
+### Overview
+
+Test code requires same refactoring discipline as production code. These patterns extend classical refactoring techniques to test contexts, addressing test-specific code smells while preserving test behavior.
+
+**Key Principle**: Tests are executable specifications - refactoring should improve clarity without changing verified behavior.
+
+---
+
+### Pattern 1: Extract Test Helper
+
+**Context**: Duplicated test setup code across 3+ tests obscures test intent.
+
+**Problem**: Changes to setup require modifying multiple tests. Test bodies are cluttered with scaffolding that hides business logic being tested.
+
+**Solution**: Extract common setup into business-meaningful helper methods.
+
+**Mechanics**:
+1. Identify duplicated setup pattern (objects, mocks, data)
+2. Choose descriptive helper name revealing business context (e.g., `CreatePremiumCustomer()`)
+3. Extract to method, parameterize variations
+4. Replace duplicated code with helper calls
+5. Run tests - verify all pass
+
+**Example**:
+```typescript
+// Before: Duplicated setup
+it('applies discount', () => {
+    const customer = { type: 'premium', yearsActive: 5 };
+    const result = processor.processOrder(customer, order);
+    expect(result.discountAmount).toBe(150);
+});
+
+// After: Extract helper
+function createPremiumCustomer() {
+    return { type: 'premium', yearsActive: 5 };
+}
+
+it('applies 15% discount for premium customers', () => {
+    const result = processor.processOrder(createPremiumCustomer(), order);
+    expect(result.discountAmount).toBe(150);
+});
+```
+
+**When to Use**: Setup appears in 3+ tests, setup >5 lines, or setup has clear business meaning.
+
+---
+
+### Pattern 2: Replace Mystery Guest
+
+**Context**: Test depends on external files or hidden state not visible in test code.
+
+**Problem**: Tests fail for unclear reasons when external dependencies change. Test intent is obscure - reader must find external files to understand test.
+
+**Solution**: Inline test data as constants or make dependencies explicit in test setup.
+
+**Mechanics**:
+1. Identify external dependency (file, database, environment variable)
+2. Copy essential data inline as test constant
+3. Replace file/DB read with inline constant
+4. Run test - verify behavior unchanged
+5. Remove external dependency file if no longer needed
+
+**Example**:
+```csharp
+// Before: Mystery Guest
+[Fact]
+public void ImportOrder_ValidFile_CreatesOrder()
+{
+    var data = File.ReadAllText("test-data/order.json");  // Where? What's in it?
+    var result = _importer.ImportOrder(data);
+    Assert.Equal("ORD-123", result.OrderId);
+}
+
+// After: Explicit Setup
+[Fact]
+public void ImportOrder_ValidOrderJson_CreatesOrderWithCorrectId()
+{
+    const string VALID_ORDER_JSON = @"{
+        ""orderId"": ""ORD-123"",
+        ""items"": [{ ""sku"": ""ABC"", ""quantity"": 1 }]
+    }";
+    var result = _importer.ImportOrder(VALID_ORDER_JSON);
+    Assert.Equal("ORD-123", result.OrderId);
+}
+```
+
+**When to Use**: Test reads files, queries DB in test, or depends on environment config. NOT for integration tests deliberately testing file/DB operations.
+
+---
+
+### Pattern 3: Split Eager Test
+
+**Context**: Single test method verifies multiple unrelated behaviors.
+
+**Problem**: Test failures don't clearly identify which behavior is broken. Violates single responsibility principle for tests.
+
+**Solution**: Split into focused tests, one per business scenario.
+
+**Mechanics**:
+1. Identify distinct behaviors being tested (count assertions)
+2. Extract each arrange/act/assert cycle to separate test method
+3. Name each test to describe specific behavior
+4. Verify each test runs independently
+5. Remove original eager test
+
+**Example**:
+```python
+# Before: Eager Test
+def test_process_order():
+    result = processor.process_order(customer, order)
+    assert result.discount == 150  # Testing discount
+    assert result.shipping == 0    # Testing shipping
+    assert result.tax == 42.5      # Testing tax
+
+# After: Focused Tests
+def test_applies_15_percent_discount_for_premium_customers():
+    result = processor.process_order(premium_customer(), order)
+    assert result.discount == 150
+
+def test_provides_free_shipping_for_premium_customers():
+    result = processor.process_order(premium_customer(), order)
+    assert result.shipping == 0
+
+def test_calculates_tax_on_discounted_amount():
+    result = processor.process_order(premium_customer(), order)
+    assert result.tax == 42.5
+```
+
+**When to Use**: Test has multiple assertions testing different concerns, test name uses "And", or test failure doesn't clearly identify broken behavior.
+
+---
+
+### Pattern 4: Parameterize Conditional Test Logic
+
+**Context**: Test contains if/switch statements or loops making it non-deterministic.
+
+**Problem**: Tests with conditional logic are harder to understand and may not execute same assertions every run.
+
+**Solution**: Replace with parameterized tests using test framework features.
+
+**Mechanics**:
+1. Extract test cases into data structure (list of tuples/objects)
+2. Use framework parameterization ([Theory], pytest.mark.parametrize, it.each)
+3. Convert conditional logic to parameterized inputs
+4. Verify all parameter combinations execute
+5. Remove conditional logic
+
+**Example**:
+```python
+# Before: Conditional Logic
+def test_discount_calculation():
+    for customer_type, expected in [('regular', 0.0), ('premium', 0.15)]:
+        customer = Customer(type=customer_type)
+        result = processor.process_order(customer, order)
+        if expected > 0:
+            assert result.discount == 1000 * expected
+
+# After: Parameterized
+@pytest.mark.parametrize("customer_type,expected_rate", [
+    ("regular", 0.0),
+    ("premium", 0.15),
+])
+def test_applies_correct_discount_by_customer_tier(customer_type, expected_rate):
+    customer = Customer(type=customer_type)
+    result = processor.process_order(customer, order)
+    assert result.discount == 1000 * expected_rate
+```
+
+**When to Use**: Test has if/switch/loops, or multiple similar tests differ only in input values.
+
+---
+
+### Pattern 5: Split Test Class
+
+**Context**: Test class contains 15+ tests covering multiple unrelated features.
+
+**Problem**: Hard to locate specific test, slow test execution, merge conflicts on test class file.
+
+**Solution**: Split by feature into focused test classes with single responsibility.
+
+**Mechanics**:
+1. Group tests by feature/concern they test
+2. Create new test class per feature with descriptive name
+3. Move related tests to appropriate class
+4. Verify tests still run and pass
+5. Remove empty original class
+
+**Example**: See systematic-refactoring-guide.md for complete example (UserServiceTests → UserRepository, UserNotificationService, UserProfileImageService, UserPaymentService)
+
+**When to Use**: Test class >15 tests, tests cover multiple features, or finding specific test is difficult.
+
+---
+
+### Pattern 6: Inline General Fixture
+
+**Context**: Shared test fixture (SetUp/beforeEach) creates objects only some tests need.
+
+**Problem**: Over-setup clutters tests with irrelevant initialization. Changes to fixture break unrelated tests.
+
+**Solution**: Replace with per-test setup methods providing only what each test needs.
+
+**Mechanics**:
+1. Identify which tests use which fixture objects
+2. Create focused helper methods per test concern
+3. Replace fixture object references with helper calls
+4. Remove unused objects from fixture
+5. Verify tests pass
+
+**Example**: See test-refactoring-guide.md for complete example (General Fixture → Per-Test Setup)
+
+**When to Use**: SetUp creates many objects, some tests don't use all objects, or fixture changes break unrelated tests.
+
+---
+
+### Integration with TDD Cycle
+
+Apply these test refactoring patterns during **Phase 5 (REFACTOR_CONTINUOUS)** of 7-phase TDD:
+
+1. **After GREEN**: Production code passes, tests pass
+2. **Refactor production code**: Apply L1-L3 to source code
+3. **Refactor test code**: Apply these patterns to test code
+4. **Verify all tests GREEN**: Run full test suite
+5. **Commit**: Save refactored production + test code together
+
+**Safety**: Never refactor tests at same time as production code. Refactor production → tests green → refactor tests → tests still green.
+
+---
+
 ## Full Citations
 
 [1] Fowler, Martin. "Extract Function". Refactoring.com Catalog. https://refactoring.com/catalog/extractFunction.html. Accessed 2025-10-09.

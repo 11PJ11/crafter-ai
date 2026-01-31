@@ -2,8 +2,8 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "TDD Cycle Extension for Step Files",
   "description": "Template to embed in step JSON files during /nw:split compilation. This schema extends existing step files without overwriting their content.",
-  "version": "2.0.0",
-  "schema_version": "2.0",
+  "version": "3.0.0",
+  "schema_version": "3.0",
   "tdd_cycle": {
     "acceptance_test": {
       "scenario_name": "",
@@ -129,22 +129,8 @@
         "extensions_granted": []
       },
       {
-        "phase_name": "REFACTOR_L4",
-        "phase_index": 6,
-        "status": "NOT_EXECUTED",
-        "started_at": null,
-        "ended_at": null,
-        "duration_minutes": null,
-        "duration_seconds": null,
-        "turn_count": 0,
-        "outcome": null,
-        "notes": "Architecture patterns - OPTIONAL (can use CHECKPOINT_PENDING or NOT_APPLICABLE prefix for skip)",
-        "blocked_by": null,
-        "extensions_granted": []
-      },
-      {
         "phase_name": "COMMIT",
-        "phase_index": 7,
+        "phase_index": 6,
         "status": "NOT_EXECUTED",
         "started_at": null,
         "ended_at": null,
@@ -163,18 +149,18 @@
     "unit_tests_must_fail_first": true,
     "no_mocks_inside_hexagon": true,
     "business_language_required": true,
-    "refactor_level": 4,
+    "refactor_level": 3,
     "in_memory_test_ratio_target": 0.8,
     "validation_after_each_phase": true,
     "validation_after_each_review": true,
     "validation_after_each_refactor": true,
-    "all_8_phases_mandatory": true,
+    "all_7_phases_mandatory": true,
     "phase_documentation_required": true
   },
   "phase_validation_rules": {
     "description": "Rules for validating phase execution status before commit",
     "all_phases_required": true,
-    "total_phases": 8,
+    "total_phases": 7,
     "valid_statuses": [
       "NOT_EXECUTED",
       "IN_PROGRESS",
@@ -231,10 +217,9 @@
           "note": "Used for TDD checkpoint commits (GREEN, REVIEW, REFACTOR, FINAL)",
           "usage": "Allows intermediate commits during TDD cycle",
           "checkpoints": [
-            "GREEN checkpoint (phases 0-3 complete, 4-7 pending)",
-            "REVIEW checkpoint (phases 0-4 complete, 5-7 pending)",
-            "REFACTOR checkpoint (phases 0-6 complete, 7 pending)",
-            "FINAL checkpoint (all 8 phases complete)"
+            "GREEN checkpoint (phases 0-3 complete, 4-6 pending)",
+            "REVIEW checkpoint (phases 0-4 complete, 5-6 pending)",
+            "FINAL checkpoint (all 7 phases complete)"
           ]
         },
         "DEFERRED:": {
@@ -256,7 +241,6 @@
     "GREEN",
     "REVIEW",
     "REFACTOR_CONTINUOUS",
-    "REFACTOR_L4",
     "COMMIT",
     "COMPLETED"
   ],
@@ -282,11 +266,7 @@
       "REVIEW"
     ],
     "REFACTOR_CONTINUOUS": [
-      "REFACTOR_L4"
-    ],
-    "REFACTOR_L4": [
-      "COMMIT",
-      "REFACTOR_CONTINUOUS"
+      "COMMIT"
     ],
     "COMMIT": [
       "COMPLETED"
@@ -348,7 +328,7 @@
     }
   },
   "task_specification": {
-    "commit_policy": "Commit ONLY after ALL 8 PHASES complete. AUTO-PUSH after commit.",
+    "commit_policy": "Commit ONLY after ALL 7 PHASES complete. AUTO-PUSH after commit.",
     "mandatory_phases": [
       "PREPARE - Remove @skip, verify only 1 scenario enabled",
       "RED_ACCEPTANCE - Test must FAIL initially",
@@ -356,8 +336,8 @@
       "GREEN - Implement minimum code + verify acceptance (green acceptance is consequence of green unit)",
       "REVIEW - Self-review: SOLID, coverage, acceptance criteria, refactoring quality (MANDATORY, covers both implementation AND post-refactoring)",
       "REFACTOR_CONTINUOUS - Progressive refactoring: L1 (naming) + L2 (complexity) + L3 (organization)",
-      "REFACTOR_L4 - Architecture patterns (OPTIONAL: can use CHECKPOINT_PENDING or NOT_APPLICABLE for skip)",
       "COMMIT - Commit with detailed message (absorbs FINAL_VALIDATE metadata checks)"
-    ]
+    ],
+    "l4_l6_architecture_refactoring": "Moved to orchestrator Phase 2.25 - runs ONCE after all steps complete, delegated to @software-crafter via /nw:refactor"
   }
 }

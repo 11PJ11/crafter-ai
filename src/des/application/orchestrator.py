@@ -29,6 +29,8 @@ from src.des.domain.invocation_limits_validator import (
     InvocationLimitsValidator,
     InvocationLimitsResult,
 )
+from src.des.application.stale_execution_detector import StaleExecutionDetector
+from src.des.domain.stale_execution import StaleExecution
 from src.des.adapters.driven.logging.audit_logger import log_audit_event
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -58,6 +60,23 @@ class ExecuteStepResult:
     timeout_warnings: list[str] = field(default_factory=list)
     execution_path: str = "DESOrchestrator.execute_step"
     features_validated: list[str] = field(default_factory=list)
+
+
+@dataclass
+class ExecuteStepWithStaleCheckResult:
+    """Result from execute_step_with_stale_check() method execution.
+
+    Attributes:
+        blocked: True if execution was blocked due to stale detection
+        blocking_reason: Reason for blocking (e.g., "STALE_EXECUTION_DETECTED")
+        stale_alert: StaleExecution object with alert details (if blocked)
+        execute_result: ExecuteStepResult from normal execution (if not blocked)
+    """
+
+    blocked: bool
+    blocking_reason: Optional[str] = None
+    stale_alert: Optional["StaleExecution"] = None
+    execute_result: Optional[ExecuteStepResult] = None
 
 
 class DESOrchestrator:
@@ -420,6 +439,76 @@ class DESOrchestrator:
             HookResult with validation status and any errors found
         """
         return self._hook.on_agent_complete(step_file_path)
+
+    def execute_step_with_stale_check(
+        self,
+        command: str,
+        agent: str,
+        step_file: str,
+        project_root: Path | str,
+        simulated_iterations: int = 0,
+        timeout_thresholds: list[int] | None = None,
+        mocked_elapsed_times: list[int] | None = None,
+    ) -> ExecuteStepWithStaleCheckResult:
+        """
+        Execute step with pre-execution stale detection check.
+
+        This method integrates stale execution detection into the orchestrator's
+        execution workflow. Before executing a step, it scans for stale IN_PROGRESS
+        phases and blocks execution if any are found.
+
+        Args:
+            command: Command type (/nw:execute, /nw:develop)
+            agent: Target agent identifier (e.g., @software-crafter)
+            step_file: Path to step JSON file (relative to project_root)
+            project_root: Project root directory path
+            simulated_iterations: Number of iterations to simulate (for testing)
+            timeout_thresholds: List of threshold values in minutes for timeout warnings
+            mocked_elapsed_times: List of mocked elapsed times in seconds for testing timeout simulation
+
+        Returns:
+            ExecuteStepWithStaleCheckResult with blocked flag, blocking_reason, stale_alert, and execute_result
+        """
+        # Resolve project root to Path
+        if isinstance(project_root, str):
+            project_root = Path(project_root)
+
+        # Step 1: Create StaleExecutionDetector instance
+        detector = StaleExecutionDetector(project_root=project_root)
+
+        # Step 2: Scan for stale executions before executing step
+        scan_result = detector.scan_for_stale_executions()
+
+        # Step 3: Check if execution is blocked
+        if scan_result.is_blocked:
+            # Step 4: Return blocked result with alert and resolution instructions
+            # Get first stale execution for alert
+            first_stale = scan_result.stale_executions[0] if scan_result.stale_executions else None
+
+            return ExecuteStepWithStaleCheckResult(
+                blocked=True,
+                blocking_reason="STALE_EXECUTION_DETECTED",
+                stale_alert=first_stale,
+                execute_result=None,
+            )
+
+        # Step 5: If not blocked, proceed with normal execution
+        execute_result = self.execute_step(
+            command=command,
+            agent=agent,
+            step_file=step_file,
+            project_root=project_root,
+            simulated_iterations=simulated_iterations,
+            timeout_thresholds=timeout_thresholds,
+            mocked_elapsed_times=mocked_elapsed_times,
+        )
+
+        return ExecuteStepWithStaleCheckResult(
+            blocked=False,
+            blocking_reason=None,
+            stale_alert=None,
+            execute_result=execute_result,
+        )
 
     def execute_step(
         self,

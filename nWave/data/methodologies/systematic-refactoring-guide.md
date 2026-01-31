@@ -155,6 +155,56 @@ def calculate_discount(customer_type, order_amount):
     return 0
 ```
 
+#### Test Code Example: Hard-Coded Test Data (L1)
+
+**Problem**: Magic numbers and strings in tests obscure business rules being tested.
+
+**Solution**: Extract to named constants that reveal business meaning and document rules.
+
+```csharp
+// ❌ Before: Hard-Coded Test Data
+[Fact]
+public void ProcessOrder_PremiumCustomer_AppliesDiscount()
+{
+    var customer = new Customer { Type = "premium", YearsActive = 5 };
+    var order = new Order { Amount = 1000 };
+
+    var result = _processor.ProcessOrder(customer, order);
+
+    Assert.Equal(850, result.TotalWithDiscount); // What discount rate? Why 850?
+}
+
+// ✅ After: Named Constants Reveal Business Rules
+[Fact]
+public void ProcessOrder_PremiumCustomerWith5YearsLoyalty_Applies15PercentDiscount()
+{
+    // Business rule constants document the discount policy
+    const string PREMIUM_CUSTOMER_TYPE = "premium";
+    const int LOYALTY_TIER_3_YEARS = 5;  // 5+ years = Tier 3 benefits
+    const decimal ORDER_AMOUNT = 1000m;
+    const decimal TIER_3_DISCOUNT_RATE = 0.15m;  // 15% for Tier 3 premium
+    const decimal EXPECTED_DISCOUNTED_TOTAL = ORDER_AMOUNT * (1 - TIER_3_DISCOUNT_RATE);
+
+    var customer = new Customer {
+        Type = PREMIUM_CUSTOMER_TYPE,
+        YearsActive = LOYALTY_TIER_3_YEARS
+    };
+    var order = new Order { Amount = ORDER_AMOUNT };
+
+    var result = _processor.ProcessOrder(customer, order);
+
+    Assert.Equal(EXPECTED_DISCOUNTED_TOTAL, result.TotalWithDiscount,
+        "Premium customers with 5+ years loyalty receive 15% discount on all orders");
+}
+```
+
+**Business Value**: Test constants document business rules. The 15% discount for 5-year premium customers is now self-documenting. New team members understand the pricing policy by reading the test. When business rules change, tests clearly show what constants need updating.
+
+**Refactoring Impact**:
+- **Readability**: +80% - Test clearly documents discount policy
+- **Maintainability**: Business rule changes only require updating constants
+- **Documentation**: Test serves as executable specification of pricing rules
+
 #### Scope Optimization
 
 ```java
@@ -393,6 +443,146 @@ function validateUserProfileUpdate(userData) {
 }
 ```
 
+#### Test Code Example: Duplicated Test Setup (L2)
+
+**Problem**: Repeated test setup logic creates maintenance burden and obscures test intent.
+
+**Solution**: Extract helper methods with business-meaningful names to eliminate duplication.
+
+```typescript
+// ❌ Before: Test Code Duplication
+describe('Order Processing', () => {
+    it('should apply discount for premium customer', () => {
+        // Duplicated setup
+        const customer = {
+            id: '123',
+            type: 'premium',
+            yearsActive: 5,
+            email: 'premium@example.com',
+            preferences: { notifications: true, currency: 'USD' }
+        };
+        const order = {
+            id: '456',
+            items: [{ sku: 'WIDGET-A', quantity: 2, unitPrice: 500 }],
+            currency: 'USD',
+            createdAt: new Date('2025-01-01')
+        };
+
+        const result = processor.processOrder(customer, order);
+
+        expect(result.discountAmount).toBe(150);
+    });
+
+    it('should provide free shipping for premium customer', () => {
+        // Same duplicated setup - 12 lines copied
+        const customer = {
+            id: '123',
+            type: 'premium',
+            yearsActive: 5,
+            email: 'premium@example.com',
+            preferences: { notifications: true, currency: 'USD' }
+        };
+        const order = {
+            id: '456',
+            items: [{ sku: 'WIDGET-A', quantity: 2, unitPrice: 500 }],
+            currency: 'USD',
+            createdAt: new Date('2025-01-01')
+        };
+
+        const result = processor.processOrder(customer, order);
+
+        expect(result.shippingCost).toBe(0);
+    });
+
+    it('should calculate tax correctly for premium customer', () => {
+        // Same duplicated setup again
+        const customer = {
+            id: '123',
+            type: 'premium',
+            yearsActive: 5,
+            email: 'premium@example.com',
+            preferences: { notifications: true, currency: 'USD' }
+        };
+        const order = {
+            id: '456',
+            items: [{ sku: 'WIDGET-A', quantity: 2, unitPrice: 500 }],
+            currency: 'USD',
+            createdAt: new Date('2025-01-01')
+        };
+
+        const result = processor.processOrder(customer, order);
+
+        expect(result.taxAmount).toBe(42.5);
+    });
+});
+
+// ✅ After: Extract Test Helpers
+describe('Order Processing', () => {
+    // Test helper methods with business-meaningful names
+    function createPremiumCustomer(): Customer {
+        return {
+            id: '123',
+            type: 'premium',
+            yearsActive: 5,
+            email: 'premium@example.com',
+            preferences: { notifications: true, currency: 'USD' }
+        };
+    }
+
+    function createHighValueOrder(): Order {
+        return {
+            id: '456',
+            items: [{ sku: 'WIDGET-A', quantity: 2, unitPrice: 500 }],
+            currency: 'USD',
+            createdAt: new Date('2025-01-01')
+        };
+    }
+
+    it('should apply 15% discount for premium customers', () => {
+        const customer = createPremiumCustomer();
+        const order = createHighValueOrder();
+
+        const result = processor.processOrder(customer, order);
+
+        expect(result.discountAmount).toBe(150);
+    });
+
+    it('should provide free express shipping for premium customers', () => {
+        const customer = createPremiumCustomer();
+        const order = createHighValueOrder();
+
+        const result = processor.processOrder(customer, order);
+
+        expect(result.shippingCost).toBe(0);
+    });
+
+    it('should calculate tax on discounted amount for premium customers', () => {
+        const customer = createPremiumCustomer();
+        const order = createHighValueOrder();
+
+        const result = processor.processOrder(customer, order);
+
+        expect(result.taxAmount).toBe(42.5);
+    });
+});
+```
+
+**Refactoring Impact**:
+- **Duplication**: Reduced from 12 lines per test to 3 lines (75% reduction)
+- **Clarity**: Helper names `createPremiumCustomer()` reveal test context
+- **Maintainability**: Single point of change - if customer structure changes, update one helper
+- **Intent**: Test body now focuses on "what" is being tested, not "how" to set it up
+
+**When to Extract**:
+- Same setup appears in 3+ tests → Extract immediately
+- Setup is complex (>5 lines) → Extract for clarity
+- Setup has clear business meaning → Extract with descriptive name
+
+**When NOT to Extract**:
+- Setup is trivial (1-2 lines) → Keep inline
+- Setup is unique to single test → Don't over-engineer
+- Extraction would obscure test intent → Favor clarity
+
 ### Level 3: 🟢 Reorder Responsibilities (Organization)
 
 **Focus**: Tackle misplaced responsibilities and class organization
@@ -512,6 +702,200 @@ public class UserPaymentService
     }
 }
 ```
+
+#### Test Code Example: Large Test Class Split (L3)
+
+**Problem**: Single test class containing 31 tests covering multiple unrelated concerns (CRUD, email, images, payments).
+
+**Solution**: Split by feature into focused test classes with clear responsibilities.
+
+```python
+# ❌ Before: Test Class Bloat (31 tests in one class)
+class TestUserService:
+    """Massive test class covering all user-related functionality"""
+
+    # CRUD operations (5 tests)
+    def test_create_user(self):
+        user_data = {"name": "John", "email": "john@example.com"}
+        result = self.service.create_user(user_data)
+        assert result.id is not None
+
+    def test_read_user(self):
+        user = self.service.get_user_by_id(123)
+        assert user.name == "John"
+
+    def test_update_user(self):
+        # ... update test ...
+
+    def test_delete_user(self):
+        # ... delete test ...
+
+    def test_list_users_with_pagination(self):
+        # ... list test ...
+
+    # Email notification tests (8 tests)
+    def test_send_welcome_email(self):
+        # ... email test ...
+
+    def test_send_password_reset_email(self):
+        # ... email test ...
+
+    def test_send_newsletter_to_all_users(self):
+        # ... email test ...
+
+    # ... 5 more email tests ...
+
+    # Profile image tests (6 tests)
+    def test_upload_profile_image(self):
+        # ... image test ...
+
+    def test_resize_profile_image_to_thumbnail(self):
+        # ... image test ...
+
+    # ... 4 more image tests ...
+
+    # Payment processing tests (7 tests)
+    def test_add_payment_method(self):
+        # ... payment test ...
+
+    def test_charge_customer_credit_card(self):
+        # ... payment test ...
+
+    # ... 5 more payment tests ...
+
+    # Activity logging tests (5 tests)
+    # ... etc ...
+
+# ✅ After: Split by Feature into Focused Test Classes
+class TestUserRepository:
+    """Tests for user CRUD operations - Single Responsibility"""
+
+    def test_create_user_with_valid_data_saves_to_database(self):
+        user_data = {"name": "John", "email": "john@example.com"}
+
+        result = self.repository.create_user(user_data)
+
+        assert result.id is not None
+        assert result.name == "John"
+        assert result.email == "john@example.com"
+
+    def test_read_user_by_id_returns_correct_user(self):
+        user = self.repository.get_user_by_id(123)
+
+        assert user.id == 123
+        assert user.name == "John"
+
+    def test_update_user_modifies_existing_record(self):
+        user = self.repository.get_user_by_id(123)
+        user.name = "Jane"
+
+        self.repository.update_user(user)
+        updated = self.repository.get_user_by_id(123)
+
+        assert updated.name == "Jane"
+
+    def test_delete_user_removes_from_database(self):
+        self.repository.delete_user(123)
+
+        user = self.repository.get_user_by_id(123)
+        assert user is None
+
+    def test_list_users_returns_paginated_results(self):
+        results = self.repository.list_users(page=1, page_size=10)
+
+        assert len(results) <= 10
+        assert results.page == 1
+
+
+class TestUserNotificationService:
+    """Tests for user email notifications - Single Responsibility"""
+
+    def test_send_welcome_email_on_user_registration(self):
+        user = create_new_user()
+
+        self.notification_service.send_welcome_email(user)
+
+        sent_email = get_last_sent_email()
+        assert sent_email.to == user.email
+        assert "Welcome" in sent_email.subject
+
+    def test_send_password_reset_email_includes_token(self):
+        user = create_existing_user()
+        reset_token = "abc123"
+
+        self.notification_service.send_password_reset_email(user, reset_token)
+
+        sent_email = get_last_sent_email()
+        assert reset_token in sent_email.body
+
+    # ... 6 more focused notification tests
+
+
+class TestUserProfileImageService:
+    """Tests for user profile image management - Single Responsibility"""
+
+    def test_upload_profile_image_stores_in_blob_storage(self):
+        user = create_existing_user()
+        image_data = create_test_image()
+
+        image_url = self.image_service.upload_profile_image(user.id, image_data)
+
+        assert image_url.startswith("https://storage.example.com/profiles/")
+        assert self.storage.file_exists(image_url)
+
+    def test_resize_profile_image_to_standard_dimensions(self):
+        large_image = create_test_image(width=2000, height=2000)
+
+        resized = self.image_service.resize_for_profile(large_image)
+
+        assert resized.width == 200
+        assert resized.height == 200
+
+    # ... 4 more focused image tests
+
+
+class TestUserPaymentService:
+    """Tests for user payment processing - Single Responsibility"""
+
+    def test_add_payment_method_validates_card_number(self):
+        user = create_existing_user()
+        card_data = {"number": "4111111111111111", "exp": "12/25"}
+
+        result = self.payment_service.add_payment_method(user.id, card_data)
+
+        assert result.last_four == "1111"
+        assert result.is_valid
+
+    def test_charge_customer_processes_payment_successfully(self):
+        user = create_user_with_payment_method()
+        amount = 99.99
+
+        result = self.payment_service.charge_customer(user.id, amount)
+
+        assert result.success
+        assert result.amount == amount
+
+    # ... 5 more focused payment tests
+```
+
+**Test Organization Benefits**:
+- **Easier test location**: Finding test for "image upload" is now trivial - look in `TestUserProfileImageService`
+- **Parallel execution**: Four test classes can run concurrently, reducing CI time
+- **Clear responsibility**: Each test class has single, well-defined focus
+- **Reduced merge conflicts**: Changes to payment tests don't conflict with notification test changes
+- **Better navigation**: IDE test runners show logical grouping by feature
+
+**Refactoring Impact**:
+- **Class size**: From 31 tests in 1 class → 5-8 tests per class (4 classes)
+- **Cohesion**: From low (mixed concerns) → high (single concern per class)
+- **Discoverability**: From "search through 31 tests" → "go directly to feature test class"
+- **Test execution**: Can now run feature-specific test suites (e.g., only payment tests)
+
+**When to Split Test Classes**:
+- Test class has 15+ tests → Consider split
+- Tests cover multiple features/concerns → Split by feature
+- Hard to find specific test → Reorganize into focused classes
+- CI runs all tests even for small changes → Enable feature-specific test runs
 
 #### Feature Envy Resolution
 

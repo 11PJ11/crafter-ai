@@ -56,15 +56,14 @@ STEP: {step-id}
 
 ## MANDATORY TDD PHASES
 
-Execute these 8 phases in order:
+Execute these 7 phases in order:
 0. PREPARE - Remove @skip decorators, verify only 1 scenario enabled
 1. RED_ACCEPTANCE - Run acceptance test, expect FAIL for valid reason
 2. RED_UNIT - Write failing unit tests before implementation
 3. GREEN - Implement minimum code to pass all tests
 4. REVIEW - Quality review: SOLID, coverage, criteria
-5. REFACTOR_CONTINUOUS - L1 (naming) + L2 (complexity) + L3 (organization)
-6. REFACTOR_L4 - Architecture patterns (OPTIONAL)
-7. COMMIT - Final validate + commit
+5. REFACTOR_CONTINUOUS - L1 (naming) + L2 (complexity) + L3 (organization) [fast-path if <30 LOC]
+6. COMMIT - Final validate + commit
 
 ## STATE TRACKING
 
@@ -271,7 +270,7 @@ The orchestrator has extracted the following self-contained context for you:
 
 ## MANDATORY TDD PHASES (from roadmap)
 
-Execute these 8 phases in order:
+Execute these 7 phases in order:
 {format_tdd_phases(task_context[tdd_phases])}
 
 ## EXECUTION CONFIGURATION
@@ -318,7 +317,7 @@ execution_status:
         outcome: "PASS"  # or FAIL
         duration_minutes: 10
         turn_count: 3
-      # ... (8 phases total)
+      # ... (7 phases total)
 ```
 
 If you encounter issues:
@@ -543,37 +542,59 @@ Execute this task and provide outputs as specified.
 
 The executing agent does not have access to previous invocations' memory. All prior execution state (from previous agent instances) is captured in execution-status.yaml. The agent READS execution-status.yaml at start, sees what prior instances accomplished (via step_checkpoint.phases), continues from that point, and UPDATES execution-status.yaml with new results. This YAML-based state management allows clean handoff between instances without context pollution. The agent receives task context from orchestrator (~5k tokens) and does NOT load roadmap.yaml (102k tokens).
 
-### MANDATORY: Phase Tracking Protocol (NEW ARCHITECTURE - 8 Phases)
+### MANDATORY: Phase Tracking Protocol (7 Phases - Schema v3.0)
 
-The execution-status.yaml contains `step_checkpoint.phases` with 8 TDD phases (schema v2.0).
+The execution-status.yaml contains `step_checkpoint.phases` with 7 TDD phases (schema v3.0).
 You MUST update each phase as you execute it. **DO NOT BATCH UPDATES** - save execution-status.yaml after each phase.
 
-#### The 8 TDD Phases (Execute in Order) - Schema v2.0
+#### The 7 TDD Phases (Execute in Order) - Schema v3.0
 
-**Single Source of Truth**: See `nWave/templates/step-tdd-cycle-schema.json` (schema v2.0)
+**Single Source of Truth**: See `nWave/templates/step-tdd-cycle-schema.json` (schema v3.0)
 
-The phases are (0-7):
-1. **PREPARE** - Remove @skip decorators, verify only 1 scenario enabled
-2. **RED_ACCEPTANCE** - Run acceptance test, expect FAIL for valid reason
-3. **RED_UNIT** - Write failing unit tests before implementation
-4. **GREEN** - Implement minimum code to pass all tests (combines GREEN_UNIT + GREEN_ACCEPTANCE validation)
-5. **REVIEW** - Quality review: SOLID, coverage, acceptance criteria, post-refactoring quality (expanded scope)
-6. **REFACTOR_CONTINUOUS** - Progressive refactoring: L1 (naming) + L2 (complexity) + L3 (organization)
-7. **REFACTOR_L4** - Architecture patterns (OPTIONAL - can use CHECKPOINT_PENDING or NOT_APPLICABLE)
-8. **COMMIT** - Final validate + commit (absorbs FINAL_VALIDATE metadata checks)
+The phases are (0-6):
+0. **PREPARE** - Remove @skip decorators, verify only 1 scenario enabled
+1. **RED_ACCEPTANCE** - Run acceptance test, expect FAIL for valid reason
+2. **RED_UNIT** - Write failing unit tests before implementation
+3. **GREEN** - Implement minimum code to pass all tests (combines GREEN_UNIT + GREEN_ACCEPTANCE validation)
+4. **REVIEW** - Quality review: SOLID, coverage, acceptance criteria, post-refactoring quality (expanded scope)
+5. **REFACTOR_CONTINUOUS** - Progressive refactoring: L1 (naming) + L2 (complexity) + L3 (organization). Fast-path: if GREEN produced <30 LOC, quick scan only (2-3 min).
+6. **COMMIT** - Final validate + commit (absorbs FINAL_VALIDATE metadata checks)
+   - **COMMIT phase MUST also record files_modified** in execution-status.yaml (see below)
+
+**NOTE**: L4-L6 architecture refactoring has been moved to orchestrator Phase 2.25 (runs once after all steps complete).
 
 **For non-ATDD steps** (research, infrastructure): Phases 1-4 may be pre-set to `SKIPPED` with `blocked_by: "NOT_APPLICABLE"`.
 
-#### TDD Checkpoint Commit Strategy (Schema v2.0 - 8 Phases)
+#### COMMIT Phase: files_modified Tracking (MANDATORY)
 
-4 strategic checkpoints for rollback capability:
+After creating the git commit, record files modified in execution-status.yaml:
+
+1. Run: `git diff --name-only HEAD~1`
+2. Categorize files:
+   - **implementation**: files under `src/` or `lib/` (excluding `__init__.py`)
+   - **tests**: files under `tests/`
+3. Update execution-status.yaml `completed_steps` entry:
+   ```yaml
+   files_modified:
+     implementation:
+       - "src/des/templates/boundary_rules_template.py"
+     tests:
+       - "tests/des/unit/test_boundary_rules_template.py"
+   ```
+
+**Why**: This data is used by the orchestrator during mutation testing (Phase 2.5)
+to discover the complete implementation scope. Without it, mutation testing may
+miss implementation files, creating false confidence in test quality.
+
+#### TDD Checkpoint Commit Strategy (Schema v3.0 - 7 Phases)
+
+3 strategic checkpoints for rollback capability:
 
 | Checkpoint | After Phase | Commit Prefix | Push? |
 |------------|-------------|---------------|-------|
 | 1. GREEN | 3 (GREEN) | `feat({step-id}): GREEN` | No |
 | 2. REVIEW | 4 (REVIEW) | `review({step-id})` | No |
-| 3. REFACTOR | 6 (REFACTOR_L4) | `refactor({step-id})` | No |
-| 4. FINAL | 7 (COMMIT) | `feat({step-id}): DONE` | Yes |
+| 3. FINAL | 6 (COMMIT) | `feat({step-id}): DONE` | Yes |
 
 **Each checkpoint**: Mark pending phases SKIPPED with `blocked_by: "CHECKPOINT_PENDING"`, commit execution-status.yaml + implementation, verify tests pass.
 
@@ -875,7 +896,7 @@ Track performance for optimization:
 
 - Updated execution-status.yaml with phase completion tracking
 - Any outputs specified in acceptance criteria (deliverables)
-- Git commits at TDD checkpoints (GREEN, REVIEW, REFACTOR, FINAL)
+- Git commits at TDD checkpoints (GREEN, REVIEW, FINAL)
 - Execution logs in `docs/feature/{project-id}/logs/{timestamp}-{step-id}.log` (optional)
 
 ## Notes

@@ -11,7 +11,9 @@ rich = "*"
 
 [dev-packages]
 # Testing
-mutmut = "*"
+# Mutation Testing (MANDATORY for /nw:develop)
+cosmic-ray = ">=8.4.0"  # Recommended: native src/ layout support
+mutmut = "*"            # Fallback: simpler but has import path issues
 pytest = ">=7.0.0"
 pytest-bdd = ">=7.0.0"
 pytest-describe-it = "*"

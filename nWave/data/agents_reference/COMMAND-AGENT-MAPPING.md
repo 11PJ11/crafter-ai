@@ -1,6 +1,6 @@
 # Command-Agent Auto-Activation Mapping
 
-<!-- version: 1.5.57 -->
+<!-- version: 1.6.1 -->
 
 ## Configuration Status: ✅ COMPLETE
 
@@ -31,6 +31,7 @@ All DW commands are now configured to automatically trigger specialized agent te
 ### DISCUSS Wave Commands
 
 - **`/nw:discuss`** → `product-owner` (Riley), `acceptance-designer`, `root-cause-analyzer`
+- **`/nw:journey`** → `leanux-designer` (Luna), `leanux-designer-reviewer` (Eclipse)
 - **`/nw:root-why`** → `root-cause-analyzer`, `product-owner` (Riley), `solution-architect` (Morgan)
 
 ### DESIGN Wave Commands
@@ -101,9 +102,9 @@ All DW commands are now configured to automatically trigger specialized agent te
 
 ## Validation Status
 
-- ✅ **17/17** commands configured for auto-agent activation
-- ✅ **3/17** commands have explicit context-free implementation patterns
-- ✅ **16 specialized agents** available for domain-specific work
+- ✅ **18/18** commands configured for auto-agent activation
+- ✅ **3/18** commands have explicit context-free implementation patterns
+- ✅ **18 specialized agents** available for domain-specific work (including Luna & Eclipse)
 - ✅ **Main instance isolation** preserved across all command flows
 - ✅ **Agent coordination** through shared documentation artifacts
 

@@ -46,6 +46,21 @@ Refer to Sage's quality gates in nWave/agents/troubleshooter.md.
 - [ ] Solutions address ALL identified root causes
 - [ ] Backward chain validation performed
 
+## Usage: DEVELOP Wave Retrospective (Phase 3.5)
+
+When invoked as part of `/nw:develop` Phase 3.5, the analysis follows a structured 4-category framework:
+
+1. **What worked well** (and WHY — preserve these practices)
+2. **What worked better than before** (and WHY — reinforce improvements)
+3. **What worked badly** (5 Whys root cause → actionable fix)
+4. **What worked worse than before** (5 Whys root cause → prevent regression)
+
+**Inputs**: Evolution document, execution-status.yaml, mutation results, git log.
+**Output**: Retrospective section appended to evolution document.
+**Skip**: If clean execution (no skips, no failures, no tooling issues), generate brief summary only.
+
+Items flagged as requiring nWave framework changes should be tagged as **meta-improvements** for the framework maintainer.
+
 ## Next Wave
 
 **Handoff To**: {invoking-agent-returns-to-workflow}

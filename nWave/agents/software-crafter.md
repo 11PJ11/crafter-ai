@@ -73,8 +73,8 @@ persona:
 # 8-PHASE TDD METHODOLOGY - MANDATORY WORKFLOW
 # ═══════════════════════════════════════════════════════════════════════════════
 
-eight_phase_tdd_methodology:
-  description: "Mandatory 8-phase TDD loop for all feature development - enforced at step execution level - optimized for speed and token efficiency"
+seven_phase_tdd_methodology:
+  description: "Mandatory 7-phase TDD loop for all feature development - enforced at step execution level - optimized for speed and token efficiency. L4-L6 architecture refactoring moved to orchestrator Phase 2.25 (runs once after all steps complete)."
 
   phase_command_mapping:
     phase_1_prepare:
@@ -128,57 +128,57 @@ eight_phase_tdd_methodology:
         - "Architecture violations"
         - "Domain mock violations (G4)"
         - "Business language violations"
-        - "Refactoring quality improvements (after REFACTOR_CONTINUOUS and REFACTOR_L4 complete)"
+        - "Refactoring quality improvements (after REFACTOR_CONTINUOUS complete)"
         - "Test stability after refactoring"
       blocker_policy: "ANY defect found (even minor) BLOCKS approval until resolved"
       duration_target: "15-20 min"
       note: "Single comprehensive review replaces both REVIEW and POST-REFACTOR REVIEW from 14-phase cycle"
 
-    phase_6_refactor_continuous:
+    phase_5_refactor_continuous:
       name: "REFACTOR_CONTINUOUS"
       command: "*refactor (for progressive refactoring)"
-      description: "Continuous refactoring covering L1 + L2 + L3 (naming, complexity, organization)"
+      description: "Continuous refactoring covering L1 + L2 + L3 (naming, complexity, organization) applied to BOTH production code AND test code"
       scope: "Combines three refactoring levels executed together"
       gate: "G6 - Tests green after refactoring"
+      fast_path:
+        condition: "GREEN phase produced < 30 LOC of new production code"
+        action: "Quick scan for obvious naming/duplication issues (2-3 min max)"
+        outcome: "Mark COMPLETED with note 'fast-path: <30 LOC'"
+        rationale: "Small implementations rarely benefit from full L1+L2+L3 analysis"
       levels:
         L1: "Naming clarity (business language in variables, methods, classes)"
         L2: "Complexity reduction (method extraction, single responsibility at method level)"
         L3: "Class responsibilities and organization (single responsibility at class level, module structure)"
+      test_refactoring_examples:
+        L1_test_examples:
+          - "Obscure Test → Clear Intent: Rename Test1() to ProcessOrder_PremiumCustomer_AppliesDiscount()"
+          - "Hard-Coded Test Data → Named Constants: Extract magic numbers (1000, 0.15) to PREMIUM_ORDER_AMOUNT, TIER_3_DISCOUNT_RATE"
+          - "Dead Test Code → Remove: Delete commented assertions and unused test helpers"
+        L2_test_examples:
+          - "Eager Test → Focused Tests: Split ProcessOrderTest() into separate tests per concern (discount, shipping, tax)"
+          - "Test Duplication → Extract Helpers: Extract CreatePremiumCustomer(), CreateHighValueOrder() from repeated setup"
+          - "Conditional Logic → Parameterized: Replace if/switch with [InlineData] or pytest.mark.parametrize"
+        L3_test_examples:
+          - "Mystery Guest → Explicit Setup: Inline external file dependencies into test constants"
+          - "Test Class Bloat → Split Classes: Split UserServiceTests (31 tests) into UserAuthTests, UserProfileTests, etc."
+          - "General Fixture → Per-Test Setup: Move shared fixture to test-specific setup methods"
       validation: "Run ALL tests after refactoring complete"
       rollback_protocol: "Revert if any test fails, retry with smaller steps"
-      duration_target: "10-20 min"
-      note: "Merges REFACTOR_L1 + L2 + L3 from 14-phase cycle for efficiency"
+      duration_target: "10-20 min (fast-path: 2-3 min)"
+      note: "Merges REFACTOR_L1 + L2 + L3 from 14-phase cycle for efficiency. APPLIES TO TEST CODE AS WELL AS PRODUCTION CODE. L4-L6 architecture refactoring moved to orchestrator Phase 2.25."
 
-    phase_7_refactor_l4:
-      name: "REFACTOR_L4"
-      command: "*refactor (for architecture patterns)"
-      command_complex: "*mikado (for complex refactoring roadmaps)"
-      description: "Architecture patterns refactoring (OPTIONAL - can be skipped with justification)"
-      scope: "Type-driven design, domain patterns, architectural improvements"
-      gate: "G6 - Tests green after refactoring"
-      levels:
-        L4: "Architecture patterns (domain types, invalid states unrepresentable, design patterns)"
-      skip_criteria:
-        REQUIRED: ["New patterns needed", "Pattern modifications", "Cross-cutting concerns", "Integration changes"]
-        OPTIONAL: ["Bug fixes", "Trivial features (<50 LOC)", "Refactoring within patterns", "Test-only changes"]
-      skip_justification_prefix: "CHECKPOINT_PENDING: {reason}" or "NOT_APPLICABLE: {reason}"
-      validation: "Run ALL tests after refactoring"
-      rollback_protocol: "Revert if any test fails"
-      duration_target: "10-15 min"
-      note: "Optional phase - use CHECKPOINT_PENDING or NOT_APPLICABLE prefix for skip"
-
-    phase_8_commit:
+    phase_6_commit:
       name: "COMMIT"
-      command: "/nw:git commit (with 8-phase validation)"
+      command: "/nw:git commit (with 7-phase validation)"
       description: "Commit this step's work with detailed message (absorbs FINAL_VALIDATE metadata checks)"
-      validation: "Pre-commit hook validates all 8 phases documented"
+      validation: "Pre-commit hook validates all 7 phases documented"
       pre_commit_checks:
-        - "All 8 phases present in phase_execution_log"
+        - "All 7 phases present in phase_execution_log"
         - "All phases have EXECUTED or SKIPPED status with justification"
         - "Acceptance test passes"
         - "Unit tests pass"
         - "REVIEW phase approved"
-      message_format: "feat({feature}): {scenario} - step {step-id}\n\n- Acceptance test: {scenario}\n- Unit tests: {count} new\n- Refactoring level: Continuous + L4 {status}\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+      message_format: "feat({feature}): {scenario} - step {step-id}\n\n- Acceptance test: {scenario}\n- Unit tests: {count} new\n- Refactoring: L1+L2+L3 continuous\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
       push_policy: "NO PUSH until /nw:finalize"
       duration_target: "5 min"
       note: "Absorbs FINAL_VALIDATE checks (metadata-only validation)"
@@ -186,21 +186,20 @@ eight_phase_tdd_methodology:
   enforcement_mechanism:
     template_integration:
       - "Step file template includes tdd_phase_tracking section"
-      - "phase_execution_log array tracks each phase execution (8 phases in schema v2.0)"
+      - "phase_execution_log array tracks each phase execution (7 phases in schema v3.0)"
       - "Each log entry: phase_name, phase_index, timestamp, duration_minutes, outcome, notes, artifacts, validation_result"
       - "schema_version field enables backward compatibility with 14-phase cycle"
 
     validation_function:
       location: "nWave/tasks/nw/develop.md"
-      purpose: "Python function validates all 8 phases complete before commit"
+      purpose: "Python function validates all 7 phases complete before commit"
       checks:
-        - "All 8 phases present in log"
+        - "All 7 phases present in log"
         - "All phases have EXECUTED or SKIPPED status with proper justification"
         - "SKIPPED phases use valid prefixes (CHECKPOINT_PENDING, NOT_APPLICABLE, etc.)"
         - "Commit policy field present"
         - "REVIEW phase documented and approved"
         - "REFACTOR_CONTINUOUS documents techniques used (L1+L2+L3)"
-        - "REFACTOR_L4 skipped with justification OR executed with outcome"
 
     pre_commit_hook:
       location: ".git/hooks/pre-commit"
@@ -208,27 +207,22 @@ eight_phase_tdd_methodology:
       bypass: "Only with --no-verify for emergency (logged for audit)"
 
   workflow_diagram: |
-    1. PREPARE      → Remove @skip, enable 1 scenario
-                      ↓
-    2. RED (Accept) → Run tests, verify FAIL
-                      ↓
-    3. RED (Unit)   → Write failing unit tests
-                      ↓
-    4. GREEN (Unit) → Implement minimum code
-                      ↓
-    5. CHECK        → Verify unit tests PASS
-                      ↓ (if acceptance FAILS → back to 3)
-    6. GREEN (Accept)→ Verify acceptance test PASS
-                      ↓
-    7. REVIEW       → /nw:review @software-crafter-reviewer
-                      ↓ (wait for approval, max 2 iterations)
-    8. REFACTOR     → *refactor L1→L4 OR *mikado for complex
-                      ↓ (run tests after each level)
-    9. POST-REVIEW  → /nw:review @software-crafter-reviewer
-                      ↓ (wait for approval, max 2 iterations)
-    10. VALIDATE    → Document full test results
-                      ↓
-    11. COMMIT      → git commit + update step file
+    0. PREPARE        → Remove @skip, enable 1 scenario
+                        ↓
+    1. RED (Accept)   → Run tests, verify FAIL
+                        ↓
+    2. RED (Unit)     → Write failing unit tests
+                        ↓
+    3. GREEN          → Implement minimum code + verify acceptance PASS
+                        ↓
+    4. REVIEW         → /nw:review @software-crafter-reviewer (max 2 iterations)
+                        ↓
+    5. REFACTOR (L1-3)→ *refactor L1+L2+L3 (fast-path if <30 LOC)
+                        ↓ (run tests after refactoring)
+    6. COMMIT         → git commit + update step file
+
+    NOTE: L4-L6 architecture refactoring runs at orchestrator Phase 2.25
+          (once after all steps complete, delegated to @software-crafter)
 
   integration_with_commands:
     develop_command:
@@ -317,6 +311,7 @@ dependencies:
     - embed/software-crafter/outside-in-tdd-methodology.md
     - embed/software-crafter/property-based-mutation-testing.md
     - embed/software-crafter/refactoring-patterns-catalog.md
+    - embed/software-crafter/test-refactoring-guide.md
 
 # ============================================================================
 # EMBEDDED KNOWLEDGE (injected at build time from embed/)
@@ -338,6 +333,10 @@ dependencies:
 <!-- BUILD:INJECT:END -->
 
 <!-- BUILD:INJECT:START:nWave/data/embed/software-crafter/refactoring-patterns-catalog.md -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
+
+<!-- BUILD:INJECT:START:nWave/data/embed/software-crafter/test-refactoring-guide.md -->
 <!-- Content will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 
@@ -387,6 +386,10 @@ core_tdd_methodology:
       refactor_phase: "Improve design while keeping tests green"
       continuous_improvement:
         - "Refactor both production code AND test code for better design"
+        - "CRITICAL: Apply L1 (naming), L2 (complexity), L3 (organization) to test code using test_refactoring_examples"
+        - "Detect test code smells: Obscure Test, Hard-Coded Test Data, Eager Test, Test Duplication, Mystery Guest, Test Class Bloat"
+        - "Use same atomic transformations (Rename, Extract, Move, Safe Delete) on test code as production code"
+        - "Test refactoring is NOT optional - it's part of the refactor phase discipline"
         - "Focus on making code easy to extend and modify"
         - "Apply design patterns and principles to improve structure"
         - "Ensure code reveals business intent through naming and structure"
@@ -1131,6 +1134,72 @@ atomic_transformations:
       - "Commit after successful deletion"
     code_smell_targets: ["Dead Code", "Speculative Generality"]
 
+test_code_smells:
+  description: "Test-specific code smells mapped to refactoring levels L1-L3"
+
+  l1_readability_smells:
+    obscure_test:
+      name: "Obscure Test"
+      problem: "Test name doesn't reveal business scenario being tested"
+      detection: "Generic names like Test1(), ProcessOrderTest(), or names requiring reading test body"
+      solution: "Rename to Given_When_Then or should_do_expected_thing_when_condition format"
+      example_before: "public void Test1() { /* ... */ }"
+      example_after: "public void ProcessOrder_PremiumCustomer_AppliesCorrectDiscount() { /* ... */ }"
+
+    hard_coded_test_data:
+      name: "Hard-Coded Test Data"
+      problem: "Magic numbers and strings obscure business rules being tested"
+      detection: "Numbers like 1000, 0.15, strings without explanation in test code"
+      solution: "Extract to named constants that reveal business meaning"
+      example_before: "Assert.Equal(850, result.Total); // What discount?"
+      example_after: "const decimal EXPECTED_TOTAL = 1000 * (1 - 0.15m); Assert.Equal(EXPECTED_TOTAL, result.Total);"
+
+    assertion_roulette:
+      name: "Assertion Roulette"
+      problem: "Multiple assertions without messages make failures unclear"
+      detection: "Multiple Assert.* calls without message parameter"
+      solution: "Add descriptive message to each assertion explaining expected business outcome"
+
+  l2_complexity_smells:
+    eager_test:
+      name: "Eager Test"
+      problem: "Single test verifies multiple unrelated behaviors"
+      detection: "Multiple arrange/act/assert cycles or assertions testing different concerns"
+      solution: "Split into focused tests, one per business scenario"
+      example_before: "ProcessOrderTest() { /* tests discount AND shipping AND tax */ }"
+      example_after: "ProcessOrder_AppliesDiscount(), ProcessOrder_CalculatesShipping(), ProcessOrder_CalculatesTax()"
+
+    test_code_duplication:
+      name: "Test Code Duplication"
+      problem: "Repeated test setup logic across multiple tests"
+      detection: "Same object creation, mock setup, or data builders copied in multiple tests"
+      solution: "Extract helper methods: CreatePremiumCustomer(), CreateHighValueOrder()"
+
+    conditional_test_logic:
+      name: "Conditional Test Logic"
+      problem: "if/switch statements in test code make tests non-deterministic"
+      detection: "if, switch, for loops in test methods"
+      solution: "Replace with parameterized tests ([Theory], pytest.mark.parametrize)"
+
+  l3_organization_smells:
+    mystery_guest:
+      name: "Mystery Guest"
+      problem: "Test depends on external files or hidden dependencies"
+      detection: "File.ReadAllText, database queries, external config in tests"
+      solution: "Inline test data or make dependency explicit in test setup"
+
+    test_class_bloat:
+      name: "Test Class Bloat"
+      problem: "Single test class contains tests for multiple unrelated concerns"
+      detection: "Test class with 15+ tests covering different features"
+      solution: "Split by feature: UserServiceTests → UserAuthTests, UserProfileTests, UserNotificationTests"
+
+    general_fixture:
+      name: "General Fixture"
+      problem: "Shared fixture used by tests with different needs"
+      detection: "SetUp method creates data used by only some tests"
+      solution: "Move to per-test setup methods or test-specific fixtures"
+
 progressive_refactoring_levels:
   description: "Bottom-up progressive refactoring approach with mandatory sequence"
 
@@ -1144,6 +1213,13 @@ progressive_refactoring_levels:
     primary_transformations:
       ["Rename", "Extract (variables/constants)", "Safe Delete"]
     quality_impact: "80% of readability improvement value"
+    test_refactoring_examples:
+      - "Obscure Test → Test name reveals business scenario (Test1 → ProcessOrder_PremiumCustomer_AppliesDiscount)"
+      - "Hard-Coded Test Data → Named constants for test values (850 → EXPECTED_DISCOUNTED_TOTAL)"
+      - "Assertion Roulette → Descriptive assertion messages"
+      - "Dead Test Code → Remove commented assertions and unused test helpers"
+    test_smells_addressed:
+      ["Obscure Test", "Hard-Coded Test Data", "Assertion Roulette"]
 
   level_2_complexity:
     name: "Complexity Reduction (Simplification)"
@@ -1154,6 +1230,13 @@ progressive_refactoring_levels:
       ["Long Method", "Duplicate Code", "Complex Conditionals"]
     primary_transformations: ["Extract (methods)", "Move (common code)"]
     quality_impact: "20% additional readability improvement"
+    test_refactoring_examples:
+      - "Eager Test → Split into focused tests (one per business scenario)"
+      - "Test Code Duplication → Extract test helper methods (CreatePremiumCustomer, CreateHighValueOrder)"
+      - "Conditional Test Logic → Parameterized tests ([Theory], pytest.mark.parametrize)"
+      - "Complex Test Setup → Extract arrange helpers"
+    test_smells_addressed:
+      ["Eager Test", "Test Code Duplication", "Conditional Test Logic"]
 
   level_3_responsibilities:
     name: "Responsibility Organization"
@@ -1171,6 +1254,13 @@ progressive_refactoring_levels:
       ]
     primary_transformations: ["Move", "Extract (classes)"]
     quality_impact: "Structural improvement foundation"
+    test_refactoring_examples:
+      - "Test Class Bloat → Split test class by concern (UserServiceTests → UserAuthTests, UserProfileTests)"
+      - "Mystery Guest → Inline external dependencies into test setup"
+      - "General Fixture → Per-test setup methods"
+      - "Test organization → Group tests by feature/scenario"
+    test_smells_addressed:
+      ["Test Class Bloat", "Mystery Guest", "General Fixture"]
 
   level_4_abstractions:
     name: "Abstraction Refinement"

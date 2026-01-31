@@ -111,6 +111,10 @@ class ScopeValidator:
             if not modified_file.strip():
                 continue  # Skip empty lines
 
+            # Step file is implicitly allowed (agent must update phase outcomes)
+            if modified_file == step_file_path:
+                continue  # Skip pattern matching for step file
+
             if not self._file_matches_any_pattern(modified_file, allowed_patterns):
                 out_of_scope_files.append(modified_file)
 

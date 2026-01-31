@@ -82,7 +82,7 @@ repos:
 
   # Standard hooks from pre-commit repository
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
         exclude: ^(dist/|\.git/)
@@ -97,7 +97,7 @@ repos:
 
   # Python linting and formatting with Ruff (replaces black, flake8, isort)
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.3.0
+    rev: v0.14.14
     hooks:
       - id: ruff
         args: [--fix]
