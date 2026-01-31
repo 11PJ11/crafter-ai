@@ -30,9 +30,16 @@ class ClaudeCodeTaskAdapter(TaskInvocationPort):
             - success: bool
             - output: str (if successful)
             - error: str (if failed)
+
+        Raises:
+            NotImplementedError: Production Task tool integration pending.
+                                Use MockedTaskAdapter for testing.
+
+        Note:
+            This adapter is a placeholder for future Claude Code Task tool integration.
+            Current implementation intentionally raises NotImplementedError to prevent
+            accidental use in production before integration is complete.
         """
-        # TODO: Integrate with actual Task tool when available
-        # For now, raise NotImplementedError to indicate production integration needed
         raise NotImplementedError(
             "ClaudeCodeTaskAdapter requires integration with actual Task tool. "
             "Use MockedTaskAdapter for testing."

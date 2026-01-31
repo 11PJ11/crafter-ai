@@ -16,7 +16,7 @@ WAVE: DISTILL (Acceptance Test Creation)
 STATUS: RED (Outside-In TDD - awaiting DEVELOP wave implementation)
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import json
 
 from src.des.application.stale_execution_detector import StaleExecutionDetector
@@ -50,7 +50,9 @@ class TestSessionScopedStaleDetection:
         """
         # Arrange: Create stale step file with IN_PROGRESS phase from 45 min ago
         stale_step_path = tmp_project_root / "steps" / "01-01.json"
-        stale_timestamp = (datetime.now() - timedelta(minutes=45)).isoformat()
+        stale_timestamp = (
+            datetime.now(timezone.utc) - timedelta(minutes=45)
+        ).isoformat()
 
         stale_step_data = {
             "task_id": "01-01",
@@ -139,7 +141,10 @@ class TestSessionScopedStaleDetection:
             "task_id": "00-01",
             "project_id": "test-project",
             "workflow_type": "tdd_cycle",
-            "state": {"status": "DONE", "completed_at": datetime.now().isoformat()},
+            "state": {
+                "status": "DONE",
+                "completed_at": datetime.now(timezone.utc).isoformat(),
+            },
             "tdd_cycle": {
                 "phase_execution_log": [
                     {"phase_name": "PREPARE", "status": "EXECUTED"},
@@ -220,7 +225,9 @@ class TestSessionScopedStaleDetection:
         """
         # Arrange: Create step with recent IN_PROGRESS (15 min ago - within threshold)
         recent_step_path = tmp_project_root / "steps" / "01-01.json"
-        recent_timestamp = (datetime.now() - timedelta(minutes=15)).isoformat()
+        recent_timestamp = (
+            datetime.now(timezone.utc) - timedelta(minutes=15)
+        ).isoformat()
 
         recent_step_data = {
             "task_id": "01-01",
@@ -289,7 +296,9 @@ class TestSessionScopedStaleDetection:
 
         # Create step with 15-minute-old IN_PROGRESS (exceeds 10-min threshold)
         stale_step_path = tmp_project_root / "steps" / "01-01.json"
-        stale_timestamp = (datetime.now() - timedelta(minutes=15)).isoformat()
+        stale_timestamp = (
+            datetime.now(timezone.utc) - timedelta(minutes=15)
+        ).isoformat()
 
         stale_step_data = {
             "task_id": "01-01",
@@ -346,7 +355,9 @@ class TestSessionScopedStaleDetection:
         """
         # Arrange: Create stale step with specific phase
         stale_step_path = tmp_project_root / "steps" / "03-02.json"
-        stale_timestamp = (datetime.now() - timedelta(minutes=60)).isoformat()
+        stale_timestamp = (
+            datetime.now(timezone.utc) - timedelta(minutes=60)
+        ).isoformat()
 
         stale_step_data = {
             "task_id": "03-02",
@@ -423,7 +434,7 @@ class TestSessionScopedStaleDetection:
         # Step is IN_PROGRESS but the current phase is ABANDONED (not IN_PROGRESS)
         # This simulates a step that was abandoned after crash/timeout
         resolved_step_path = tmp_project_root / "steps" / "01-01.json"
-        old_timestamp = (datetime.now() - timedelta(minutes=45)).isoformat()
+        old_timestamp = (datetime.now(timezone.utc) - timedelta(minutes=45)).isoformat()
         resolved_step_data = {
             "task_id": "01-01",
             "project_id": "test-project",
@@ -435,7 +446,7 @@ class TestSessionScopedStaleDetection:
                     "Reset RED_UNIT phase status to NOT_EXECUTED",
                     "Run `/nw:execute` again to resume from RED_UNIT",
                 ],
-                "abandoned_at": datetime.now().isoformat(),
+                "abandoned_at": datetime.now(timezone.utc).isoformat(),
             },
             "tdd_cycle": {
                 "phase_execution_log": [
@@ -497,7 +508,9 @@ class TestSessionScopedStaleDetection:
         """
         # Arrange: Create stale step
         stale_step_path = tmp_project_root / "steps" / "01-01.json"
-        stale_timestamp = (datetime.now() - timedelta(minutes=45)).isoformat()
+        stale_timestamp = (
+            datetime.now(timezone.utc) - timedelta(minutes=45)
+        ).isoformat()
 
         stale_step_data = {
             "task_id": "01-01",
@@ -573,7 +586,9 @@ class TestSessionScopedStaleDetection:
         (tmp_project_root / "steps" / "01-01.json").write_text(json.dumps(step1_data))
 
         # Step 2: Stale IN_PROGRESS
-        stale_timestamp = (datetime.now() - timedelta(minutes=45)).isoformat()
+        stale_timestamp = (
+            datetime.now(timezone.utc) - timedelta(minutes=45)
+        ).isoformat()
         step2_data = {
             "task_id": "02-01",
             "state": {"status": "IN_PROGRESS", "started_at": stale_timestamp},
@@ -679,7 +694,9 @@ class TestSessionScopedStaleDetection:
             ("02-01", "GREEN_UNIT"),
             ("03-01", "REFACTOR_L1"),
         ]:
-            stale_timestamp = (datetime.now() - timedelta(minutes=45)).isoformat()
+            stale_timestamp = (
+                datetime.now(timezone.utc) - timedelta(minutes=45)
+            ).isoformat()
             step_data = {
                 "task_id": step_num,
                 "project_id": "test-project",
@@ -736,7 +753,9 @@ class TestSessionScopedStaleDetection:
         (tmp_project_root / "steps" / "01-01.json").write_text("{ invalid json content")
 
         # Valid stale file
-        stale_timestamp = (datetime.now() - timedelta(minutes=45)).isoformat()
+        stale_timestamp = (
+            datetime.now(timezone.utc) - timedelta(minutes=45)
+        ).isoformat()
         valid_stale_data = {
             "task_id": "02-01",
             "state": {"status": "IN_PROGRESS", "started_at": stale_timestamp},

@@ -14,9 +14,21 @@ class TestTurnCountPersistence:
     """Test suite for turn_count persistence in on_agent_complete() hook."""
 
     @pytest.fixture
-    def hook(self):
-        """Create hook instance."""
-        return RealSubagentStopHook()
+    def hook(self, tmp_path):
+        """Create fresh hook instance with isolated audit logger."""
+        # Reset the global audit logger singleton to use test-specific directory
+        from src.des.adapters.driven.logging.audit_logger import AuditLogger
+        import src.des.adapters.driven.logging.audit_logger as audit_module
+
+        # Create audit logger in test's tmp_path to ensure isolation
+        test_audit_dir = tmp_path / "audit"
+        audit_module._audit_logger = AuditLogger(log_dir=str(test_audit_dir))
+
+        hook = RealSubagentStopHook()
+        yield hook
+
+        # Teardown: Reset singleton to None
+        audit_module._audit_logger = None
 
     @pytest.fixture
     def step_file_with_turn_count(self, tmp_path):

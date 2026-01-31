@@ -4,7 +4,7 @@ Tests the orchestrator's integration with StaleExecutionDetector to block
 execution when stale IN_PROGRESS phases are detected.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import json
 
 from src.des.application.orchestrator import DESOrchestrator
@@ -59,7 +59,9 @@ class TestOrchestratorStaleCheckIntegration:
         # Arrange: Create stale step file
         stale_step = tmp_path / "steps" / "01-01.json"
         stale_step.parent.mkdir(parents=True, exist_ok=True)
-        stale_timestamp = (datetime.now() - timedelta(minutes=45)).isoformat()
+        stale_timestamp = (
+            datetime.now(timezone.utc) - timedelta(minutes=45)
+        ).isoformat()
         stale_data = {
             "task_id": "01-01",
             "project_id": "test-project",
@@ -116,7 +118,9 @@ class TestOrchestratorStaleCheckIntegration:
         # Arrange: Create stale step file
         stale_step = tmp_path / "steps" / "01-01.json"
         stale_step.parent.mkdir(parents=True, exist_ok=True)
-        stale_timestamp = (datetime.now() - timedelta(minutes=45)).isoformat()
+        stale_timestamp = (
+            datetime.now(timezone.utc) - timedelta(minutes=45)
+        ).isoformat()
         stale_data = {
             "task_id": "01-01",
             "project_id": "test-project",
@@ -171,7 +175,9 @@ class TestOrchestratorStaleCheckIntegration:
         # Arrange: Create stale step file
         stale_step = tmp_path / "steps" / "01-01.json"
         stale_step.parent.mkdir(parents=True, exist_ok=True)
-        stale_timestamp = (datetime.now() - timedelta(minutes=50)).isoformat()
+        stale_timestamp = (
+            datetime.now(timezone.utc) - timedelta(minutes=50)
+        ).isoformat()
         stale_data = {
             "task_id": "01-01",
             "project_id": "test-project",
@@ -228,7 +234,9 @@ class TestOrchestratorStaleCheckIntegration:
         # Arrange: Create stale step file
         stale_step = tmp_path / "steps" / "01-01.json"
         stale_step.parent.mkdir(parents=True, exist_ok=True)
-        stale_timestamp = (datetime.now() - timedelta(minutes=45)).isoformat()
+        stale_timestamp = (
+            datetime.now(timezone.utc) - timedelta(minutes=45)
+        ).isoformat()
         stale_data = {
             "task_id": "01-01",
             "project_id": "test-project",

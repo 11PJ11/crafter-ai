@@ -510,6 +510,39 @@ class DESOrchestrator:
             execute_result=execute_result,
         )
 
+    def _build_timeout_warning(
+        self,
+        phase_name: str,
+        elapsed_minutes: int,
+        threshold: int,
+        duration_minutes: int | None = None,
+    ) -> str:
+        """Build formatted timeout warning message.
+
+        Args:
+            phase_name: Name of the phase being executed
+            elapsed_minutes: Minutes elapsed since phase start
+            threshold: Threshold value that was crossed
+            duration_minutes: Total duration budget (optional)
+
+        Returns:
+            Formatted warning string with percentage and remaining time if duration provided
+        """
+        if duration_minutes:
+            percentage = int((elapsed_minutes / duration_minutes) * 100)
+            remaining = duration_minutes - elapsed_minutes
+            return (
+                f"TIMEOUT WARNING: Phase {phase_name} "
+                f"{percentage}% elapsed ({elapsed_minutes}/{duration_minutes} minutes). "
+                f"Remaining: {remaining} minutes."
+            )
+        else:
+            return (
+                f"TIMEOUT WARNING: Phase has been running for {elapsed_minutes} minutes "
+                f"(crossed {threshold}-minute threshold). "
+                f"Elapsed time: {elapsed_minutes}m"
+            )
+
     def execute_step(
         self,
         command: str,
@@ -582,25 +615,15 @@ class DESOrchestrator:
                     # Check which thresholds are crossed by mocked time
                     for threshold in timeout_thresholds:
                         if mocked_elapsed_minutes >= threshold:
-                            # Calculate percentage if duration_minutes configured
                             duration_minutes = step_data.get("tdd_cycle", {}).get(
                                 "duration_minutes"
                             )
-                            if duration_minutes:
-                                percentage = int(
-                                    (mocked_elapsed_minutes / duration_minutes) * 100
-                                )
-                                warning = (
-                                    f"TIMEOUT WARNING: Phase {phase_name} "
-                                    f"{percentage}% elapsed ({mocked_elapsed_minutes}/{duration_minutes} minutes). "
-                                    f"Remaining: {duration_minutes - mocked_elapsed_minutes} minutes."
-                                )
-                            else:
-                                warning = (
-                                    f"TIMEOUT WARNING: Phase has been running for {mocked_elapsed_minutes} minutes "
-                                    f"(crossed {threshold}-minute threshold). "
-                                    f"Elapsed time: {mocked_elapsed_minutes}m"
-                                )
+                            warning = self._build_timeout_warning(
+                                phase_name=phase_name,
+                                elapsed_minutes=mocked_elapsed_minutes,
+                                threshold=threshold,
+                                duration_minutes=duration_minutes,
+                            )
                             if warning not in warnings:
                                 warnings.append(warning)
 
@@ -610,9 +633,15 @@ class DESOrchestrator:
                 # Use real TimeoutMonitor only when mocked times NOT provided
                 if i % 5 == 0 or i == 0:
                     crossed = timeout_monitor.check_thresholds(timeout_thresholds)
+                    duration_minutes = step_data.get("tdd_cycle", {}).get(
+                        "duration_minutes"
+                    )
                     for threshold in crossed:
                         warning = self._format_timeout_warning(
-                            threshold, timeout_monitor
+                            threshold=threshold,
+                            monitor=timeout_monitor,
+                            phase_name=phase_name,
+                            duration_minutes=duration_minutes,
                         )
                         if warning not in warnings:
                             warnings.append(warning)
@@ -684,12 +713,20 @@ class DESOrchestrator:
         current_phase["turn_count"] = turn_count
         self._filesystem.write_json(step_file_path, step_data)
 
-    def _format_timeout_warning(self, threshold: int, monitor: TimeoutMonitor) -> str:
+    def _format_timeout_warning(
+        self,
+        threshold: int,
+        monitor: TimeoutMonitor,
+        phase_name: str = "current phase",
+        duration_minutes: int | None = None,
+    ) -> str:
         """Format timeout warning message with threshold and elapsed time.
 
         Args:
             threshold: Threshold value in minutes that was crossed
             monitor: TimeoutMonitor instance for elapsed time calculation
+            phase_name: Name of the phase being executed (default: "current phase")
+            duration_minutes: Total duration budget in minutes (optional)
 
         Returns:
             Formatted warning message string
@@ -697,10 +734,11 @@ class DESOrchestrator:
         elapsed_seconds = monitor.get_elapsed_seconds()
         elapsed_minutes = int(elapsed_seconds / 60)
 
-        return (
-            f"TIMEOUT WARNING: Phase has been running for {elapsed_minutes} minutes "
-            f"(crossed {threshold}-minute threshold). "
-            f"Elapsed time: {elapsed_minutes}m"
+        return self._build_timeout_warning(
+            phase_name=phase_name,
+            elapsed_minutes=elapsed_minutes,
+            threshold=threshold,
+            duration_minutes=duration_minutes,
         )
 
     def _persist_step_file(self, step_file_path: Path, step_data: dict) -> None:
@@ -753,23 +791,17 @@ class DESOrchestrator:
         if not crossed_thresholds:
             return ""
 
-        # Generate warning with percentage, remaining time, and phase name
+        # Generate warning using shared helper
         elapsed_seconds = monitor.get_elapsed_seconds()
         elapsed_minutes = int(elapsed_seconds / 60)
-
         phase_name = current_phase["phase_name"]
 
-        # Calculate percentage and remaining time if budget provided
-        warning_parts = [f"TIMEOUT WARNING: Phase {phase_name}"]
+        # Use first crossed threshold for warning message
+        first_threshold = crossed_thresholds[0]
 
-        if timeout_budget_minutes:
-            percentage = int((elapsed_minutes / timeout_budget_minutes) * 100)
-            remaining = timeout_budget_minutes - elapsed_minutes
-            warning_parts.append(
-                f"{percentage}% elapsed ({elapsed_minutes}/{timeout_budget_minutes} minutes). "
-                f"Remaining: {remaining} minutes."
-            )
-        else:
-            warning_parts.append(f"has been running for {elapsed_minutes} minutes.")
-
-        return " ".join(warning_parts)
+        return self._build_timeout_warning(
+            phase_name=phase_name,
+            elapsed_minutes=elapsed_minutes,
+            threshold=first_threshold,
+            duration_minutes=timeout_budget_minutes,
+        )

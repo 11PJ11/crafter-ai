@@ -127,7 +127,7 @@ class AuditLogger:
             try:
                 with open(self.current_log_file, "r") as f:
                     for line in f:
-                        if not line.strip():
+                        if line.strip():
                             entry = json.loads(line)
                             if entry.get("step_path") == step_path:
                                 entries.append(entry)

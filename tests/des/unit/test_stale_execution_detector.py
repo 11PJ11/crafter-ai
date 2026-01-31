@@ -17,7 +17,7 @@ TEST STRATEGY: Classical TDD (real domain objects, no mocking inside hexagon)
 """
 
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from src.des.application.stale_execution_detector import StaleExecutionDetector
 
 
@@ -138,7 +138,10 @@ class TestStaleExecutionDetectorScanningLogic:
 
         completed_step = {
             "task_id": "01-01",
-            "state": {"status": "DONE", "completed_at": datetime.now().isoformat()},
+            "state": {
+                "status": "DONE",
+                "completed_at": datetime.now(timezone.utc).isoformat(),
+            },
         }
         (steps_dir / "01-01.json").write_text(json.dumps(completed_step))
 
@@ -158,7 +161,9 @@ class TestStaleExecutionDetectorScanningLogic:
         steps_dir = tmp_path / "steps"
         steps_dir.mkdir()
 
-        stale_timestamp = (datetime.now() - timedelta(minutes=45)).isoformat()
+        stale_timestamp = (
+            datetime.now(timezone.utc) - timedelta(minutes=45)
+        ).isoformat()
         stale_step = {
             "task_id": "01-01",
             "state": {"status": "IN_PROGRESS", "started_at": stale_timestamp},
@@ -193,7 +198,9 @@ class TestStaleExecutionDetectorScanningLogic:
         steps_dir = tmp_path / "steps"
         steps_dir.mkdir()
 
-        recent_timestamp = (datetime.now() - timedelta(minutes=15)).isoformat()
+        recent_timestamp = (
+            datetime.now(timezone.utc) - timedelta(minutes=15)
+        ).isoformat()
         recent_step = {
             "task_id": "01-01",
             "state": {"status": "IN_PROGRESS", "started_at": recent_timestamp},
@@ -224,7 +231,9 @@ class TestStaleExecutionDetectorScanningLogic:
         steps_dir = tmp_path / "steps"
         steps_dir.mkdir()
 
-        stale_timestamp = (datetime.now() - timedelta(minutes=45)).isoformat()
+        stale_timestamp = (
+            datetime.now(timezone.utc) - timedelta(minutes=45)
+        ).isoformat()
 
         # First stale step
         stale_step_1 = {
@@ -275,7 +284,9 @@ class TestStaleExecutionDetectorScanningLogic:
         steps_dir = tmp_path / "steps"
         steps_dir.mkdir()
 
-        stale_timestamp = (datetime.now() - timedelta(minutes=15)).isoformat()
+        stale_timestamp = (
+            datetime.now(timezone.utc) - timedelta(minutes=15)
+        ).isoformat()
         stale_step = {
             "task_id": "01-01",
             "state": {"status": "IN_PROGRESS", "started_at": stale_timestamp},
@@ -326,7 +337,9 @@ class TestStaleExecutionDetectorStaleDetectionResult:
         steps_dir = tmp_path / "steps"
         steps_dir.mkdir()
 
-        stale_timestamp = (datetime.now() - timedelta(minutes=45)).isoformat()
+        stale_timestamp = (
+            datetime.now(timezone.utc) - timedelta(minutes=45)
+        ).isoformat()
         stale_step = {
             "task_id": "01-01",
             "state": {"status": "IN_PROGRESS", "started_at": stale_timestamp},
@@ -365,7 +378,9 @@ class TestStaleExecutionDetectorThresholdBoundaries:
         steps_dir.mkdir()
 
         # Create phase that is exactly 30 minutes old
-        exactly_at_threshold = (datetime.now() - timedelta(minutes=30)).isoformat()
+        exactly_at_threshold = (
+            datetime.now(timezone.utc) - timedelta(minutes=30)
+        ).isoformat()
         step_at_boundary = {
             "task_id": "01-01",
             "state": {"status": "IN_PROGRESS", "started_at": exactly_at_threshold},
@@ -399,7 +414,9 @@ class TestStaleExecutionDetectorThresholdBoundaries:
         steps_dir.mkdir()
 
         # Create phase that is 31 minutes old (1 minute over threshold)
-        one_over_threshold = (datetime.now() - timedelta(minutes=31)).isoformat()
+        one_over_threshold = (
+            datetime.now(timezone.utc) - timedelta(minutes=31)
+        ).isoformat()
         step_over_boundary = {
             "task_id": "02-01",
             "state": {"status": "IN_PROGRESS", "started_at": one_over_threshold},
@@ -503,7 +520,9 @@ class TestStaleExecutionDetectorEdgeCases:
         (steps_dir / "01-01.json").write_text("{ invalid json content")
 
         # Create valid stale file
-        stale_timestamp = (datetime.now() - timedelta(minutes=45)).isoformat()
+        stale_timestamp = (
+            datetime.now(timezone.utc) - timedelta(minutes=45)
+        ).isoformat()
         valid_step = {
             "task_id": "02-01",
             "state": {"status": "IN_PROGRESS", "started_at": stale_timestamp},
