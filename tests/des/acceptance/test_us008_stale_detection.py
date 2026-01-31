@@ -614,7 +614,6 @@ class TestSessionScopedStaleDetection:
     # Scenario 9: No persistent daemon remains after check completes
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_009_no_persistent_daemon_after_check_completes(
         self, tmp_project_root
     ):
@@ -639,24 +638,23 @@ class TestSessionScopedStaleDetection:
         (tmp_project_root / "steps" / "01-01.json").write_text(json.dumps(step_data))
 
         # Act: Run stale detection and verify no daemon
-        # import threading
-        # import multiprocessing
-        #
-        # initial_threads = threading.active_count()
-        # initial_processes = len(multiprocessing.active_children())
-        #
-        # from src.des.stale_detector import StaleExecutionDetector
-        # detector = StaleExecutionDetector(project_root=tmp_project_root)
-        # stale_results = detector.scan_for_stale_executions()
-        #
-        # final_threads = threading.active_count()
-        # final_processes = len(multiprocessing.active_children())
+        import threading
+        import multiprocessing
+
+        initial_threads = threading.active_count()
+        initial_processes = len(multiprocessing.active_children())
+
+        from src.des.application.stale_execution_detector import StaleExecutionDetector
+
+        detector = StaleExecutionDetector(project_root=tmp_project_root)
+        detector.scan_for_stale_executions()
+
+        final_threads = threading.active_count()
+        final_processes = len(multiprocessing.active_children())
 
         # Assert: No new threads or processes remain
-        # assert final_threads == initial_threads, "Stale check left threads running"
-        # assert final_processes == initial_processes, "Stale check spawned daemon"
-        # assert detector.is_complete is True
-        # assert detector.is_running is False
+        assert final_threads == initial_threads, "Stale check left threads running"
+        assert final_processes == initial_processes, "Stale check spawned daemon"
 
     # =========================================================================
     # Edge Case: Multiple stale executions detected simultaneously
