@@ -181,7 +181,6 @@ class TestSessionScopedStaleDetection:
     # Scenario 3: Recent IN_PROGRESS phase within threshold not flagged as stale
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_003_recent_in_progress_within_threshold_not_stale(
         self, tmp_project_root
     ):
@@ -232,14 +231,15 @@ class TestSessionScopedStaleDetection:
         }
         target_step_path.write_text(json.dumps(target_step_data, indent=2))
 
-        # Act: Execute new step with default 30-minute threshold
-        # from src.des.application.orchestrator import DESOrchestrator
-        # orchestrator = DESOrchestrator(project_root=tmp_project_root)
-        # result = orchestrator.execute_step("steps/02-01.json")
+        # Act: Scan for stale executions with default 30-minute threshold
+        from src.des.application.stale_execution_detector import StaleExecutionDetector
+
+        detector = StaleExecutionDetector(project_root=tmp_project_root)
+        result = detector.scan_for_stale_executions()
 
         # Assert: Execution proceeds (15 min < 30 min threshold)
-        # assert result.blocked is False
-        # assert result.stale_check_passed is True
+        assert result.is_blocked is False
+        assert len(result.stale_executions) == 0
         # Note: The 15-min-old IN_PROGRESS is still active, not stale
 
     # =========================================================================

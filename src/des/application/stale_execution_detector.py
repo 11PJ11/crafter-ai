@@ -138,7 +138,7 @@ class StaleExecutionDetector:
 
                 age_minutes = self._calculate_age_minutes(started_at)
 
-                if age_minutes >= self.threshold_minutes:
+                if age_minutes > self.threshold_minutes:
                     # Stale phase found - return StaleExecution
                     relative_path = f"steps/{step_file.name}"
                     return StaleExecution(

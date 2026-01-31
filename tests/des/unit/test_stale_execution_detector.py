@@ -297,6 +297,79 @@ class TestStaleExecutionDetectorStaleDetectionResult:
         assert isinstance(result.stale_executions[0], StaleExecution)
 
 
+class TestStaleExecutionDetectorThresholdBoundaries:
+    """Test threshold boundary conditions (age > threshold, not >=)."""
+
+    def test_phase_exactly_at_threshold_not_flagged_as_stale(self, tmp_path):
+        """
+        GIVEN step with IN_PROGRESS phase started exactly 30 minutes ago
+        AND threshold is 30 minutes
+        WHEN scan_for_stale_executions is called
+        THEN step is NOT flagged as stale (30 == 30, need > not >=)
+        """
+        steps_dir = tmp_path / "steps"
+        steps_dir.mkdir()
+
+        # Create phase that is exactly 30 minutes old
+        exactly_at_threshold = (datetime.now() - timedelta(minutes=30)).isoformat()
+        step_at_boundary = {
+            "task_id": "01-01",
+            "state": {"status": "IN_PROGRESS", "started_at": exactly_at_threshold},
+            "tdd_cycle": {
+                "phase_execution_log": [
+                    {
+                        "phase_name": "GREEN_UNIT",
+                        "status": "IN_PROGRESS",
+                        "started_at": exactly_at_threshold,
+                    }
+                ]
+            },
+        }
+        (steps_dir / "01-01.json").write_text(json.dumps(step_at_boundary))
+
+        detector = StaleExecutionDetector(project_root=tmp_path)
+        result = detector.scan_for_stale_executions()
+
+        # Should NOT be stale (boundary is exclusive, not inclusive)
+        assert result.is_blocked is False
+        assert len(result.stale_executions) == 0
+
+    def test_phase_one_minute_over_threshold_flagged_as_stale(self, tmp_path):
+        """
+        GIVEN step with IN_PROGRESS phase started 31 minutes ago
+        AND threshold is 30 minutes
+        WHEN scan_for_stale_executions is called
+        THEN step IS flagged as stale (31 > 30)
+        """
+        steps_dir = tmp_path / "steps"
+        steps_dir.mkdir()
+
+        # Create phase that is 31 minutes old (1 minute over threshold)
+        one_over_threshold = (datetime.now() - timedelta(minutes=31)).isoformat()
+        step_over_boundary = {
+            "task_id": "02-01",
+            "state": {"status": "IN_PROGRESS", "started_at": one_over_threshold},
+            "tdd_cycle": {
+                "phase_execution_log": [
+                    {
+                        "phase_name": "REFACTOR_L1",
+                        "status": "IN_PROGRESS",
+                        "started_at": one_over_threshold,
+                    }
+                ]
+            },
+        }
+        (steps_dir / "02-01.json").write_text(json.dumps(step_over_boundary))
+
+        detector = StaleExecutionDetector(project_root=tmp_path)
+        result = detector.scan_for_stale_executions()
+
+        # Should be stale (31 > 30)
+        assert result.is_blocked is True
+        assert len(result.stale_executions) == 1
+        assert result.stale_executions[0].age_minutes >= 31
+
+
 class TestStaleExecutionDetectorEdgeCases:
     """Test edge cases and error handling."""
 
