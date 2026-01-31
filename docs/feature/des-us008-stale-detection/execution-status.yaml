@@ -67,8 +67,12 @@ execution_status:
         duration_minutes: 1
       - phase_index: 7
         phase_name: "COMMIT"
-        status: "IN_PROGRESS"
+        status: "COMPLETED"
+        outcome: "PASS"
         started_at: "2026-01-31T00:00:00Z"
+        duration_minutes: 2
+        notes: "Final commit created - all 8 phases complete, all tests passing (16/16)"
+        commit_hash: "7294b25"
       - phase_index: 0
         phase_name: "PREPARE"
         status: "COMPLETED"
@@ -139,4 +143,13 @@ execution_status:
           - "src/des/domain/stale_execution.py"
         tests:
           - "tests/des/unit/test_stale_execution.py"
+          - "tests/des/acceptance/test_us008_stale_detection.py"
+    - step_id: "01-02"
+      completed_at: "2026-01-31T00:00:00Z"
+      total_duration_minutes: 12
+      files_modified:
+        implementation:
+          - "src/des/domain/stale_detection_result.py"
+        tests:
+          - "tests/des/unit/test_stale_detection_result.py"
           - "tests/des/acceptance/test_us008_stale_detection.py"
