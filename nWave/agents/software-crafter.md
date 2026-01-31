@@ -137,17 +137,30 @@ eight_phase_tdd_methodology:
     phase_6_refactor_continuous:
       name: "REFACTOR_CONTINUOUS"
       command: "*refactor (for progressive refactoring)"
-      description: "Continuous refactoring covering L1 + L2 + L3 (naming, complexity, organization)"
+      description: "Continuous refactoring covering L1 + L2 + L3 (naming, complexity, organization) applied to BOTH production code AND test code"
       scope: "Combines three refactoring levels executed together"
       gate: "G6 - Tests green after refactoring"
       levels:
         L1: "Naming clarity (business language in variables, methods, classes)"
         L2: "Complexity reduction (method extraction, single responsibility at method level)"
         L3: "Class responsibilities and organization (single responsibility at class level, module structure)"
+      test_refactoring_examples:
+        L1_test_examples:
+          - "Obscure Test → Clear Intent: Rename Test1() to ProcessOrder_PremiumCustomer_AppliesDiscount()"
+          - "Hard-Coded Test Data → Named Constants: Extract magic numbers (1000, 0.15) to PREMIUM_ORDER_AMOUNT, TIER_3_DISCOUNT_RATE"
+          - "Dead Test Code → Remove: Delete commented assertions and unused test helpers"
+        L2_test_examples:
+          - "Eager Test → Focused Tests: Split ProcessOrderTest() into separate tests per concern (discount, shipping, tax)"
+          - "Test Duplication → Extract Helpers: Extract CreatePremiumCustomer(), CreateHighValueOrder() from repeated setup"
+          - "Conditional Logic → Parameterized: Replace if/switch with [InlineData] or pytest.mark.parametrize"
+        L3_test_examples:
+          - "Mystery Guest → Explicit Setup: Inline external file dependencies into test constants"
+          - "Test Class Bloat → Split Classes: Split UserServiceTests (31 tests) into UserAuthTests, UserProfileTests, etc."
+          - "General Fixture → Per-Test Setup: Move shared fixture to test-specific setup methods"
       validation: "Run ALL tests after refactoring complete"
       rollback_protocol: "Revert if any test fails, retry with smaller steps"
       duration_target: "10-20 min"
-      note: "Merges REFACTOR_L1 + L2 + L3 from 14-phase cycle for efficiency"
+      note: "Merges REFACTOR_L1 + L2 + L3 from 14-phase cycle for efficiency. APPLIES TO TEST CODE AS WELL AS PRODUCTION CODE."
 
     phase_7_refactor_l4:
       name: "REFACTOR_L4"
@@ -387,6 +400,10 @@ core_tdd_methodology:
       refactor_phase: "Improve design while keeping tests green"
       continuous_improvement:
         - "Refactor both production code AND test code for better design"
+        - "CRITICAL: Apply L1 (naming), L2 (complexity), L3 (organization) to test code using test_refactoring_examples"
+        - "Detect test code smells: Obscure Test, Hard-Coded Test Data, Eager Test, Test Duplication, Mystery Guest, Test Class Bloat"
+        - "Use same atomic transformations (Rename, Extract, Move, Safe Delete) on test code as production code"
+        - "Test refactoring is NOT optional - it's part of the refactor phase discipline"
         - "Focus on making code easy to extend and modify"
         - "Apply design patterns and principles to improve structure"
         - "Ensure code reveals business intent through naming and structure"
@@ -1131,6 +1148,72 @@ atomic_transformations:
       - "Commit after successful deletion"
     code_smell_targets: ["Dead Code", "Speculative Generality"]
 
+test_code_smells:
+  description: "Test-specific code smells mapped to refactoring levels L1-L3"
+
+  l1_readability_smells:
+    obscure_test:
+      name: "Obscure Test"
+      problem: "Test name doesn't reveal business scenario being tested"
+      detection: "Generic names like Test1(), ProcessOrderTest(), or names requiring reading test body"
+      solution: "Rename to Given_When_Then or should_do_expected_thing_when_condition format"
+      example_before: "public void Test1() { /* ... */ }"
+      example_after: "public void ProcessOrder_PremiumCustomer_AppliesCorrectDiscount() { /* ... */ }"
+
+    hard_coded_test_data:
+      name: "Hard-Coded Test Data"
+      problem: "Magic numbers and strings obscure business rules being tested"
+      detection: "Numbers like 1000, 0.15, strings without explanation in test code"
+      solution: "Extract to named constants that reveal business meaning"
+      example_before: "Assert.Equal(850, result.Total); // What discount?"
+      example_after: "const decimal EXPECTED_TOTAL = 1000 * (1 - 0.15m); Assert.Equal(EXPECTED_TOTAL, result.Total);"
+
+    assertion_roulette:
+      name: "Assertion Roulette"
+      problem: "Multiple assertions without messages make failures unclear"
+      detection: "Multiple Assert.* calls without message parameter"
+      solution: "Add descriptive message to each assertion explaining expected business outcome"
+
+  l2_complexity_smells:
+    eager_test:
+      name: "Eager Test"
+      problem: "Single test verifies multiple unrelated behaviors"
+      detection: "Multiple arrange/act/assert cycles or assertions testing different concerns"
+      solution: "Split into focused tests, one per business scenario"
+      example_before: "ProcessOrderTest() { /* tests discount AND shipping AND tax */ }"
+      example_after: "ProcessOrder_AppliesDiscount(), ProcessOrder_CalculatesShipping(), ProcessOrder_CalculatesTax()"
+
+    test_code_duplication:
+      name: "Test Code Duplication"
+      problem: "Repeated test setup logic across multiple tests"
+      detection: "Same object creation, mock setup, or data builders copied in multiple tests"
+      solution: "Extract helper methods: CreatePremiumCustomer(), CreateHighValueOrder()"
+
+    conditional_test_logic:
+      name: "Conditional Test Logic"
+      problem: "if/switch statements in test code make tests non-deterministic"
+      detection: "if, switch, for loops in test methods"
+      solution: "Replace with parameterized tests ([Theory], pytest.mark.parametrize)"
+
+  l3_organization_smells:
+    mystery_guest:
+      name: "Mystery Guest"
+      problem: "Test depends on external files or hidden dependencies"
+      detection: "File.ReadAllText, database queries, external config in tests"
+      solution: "Inline test data or make dependency explicit in test setup"
+
+    test_class_bloat:
+      name: "Test Class Bloat"
+      problem: "Single test class contains tests for multiple unrelated concerns"
+      detection: "Test class with 15+ tests covering different features"
+      solution: "Split by feature: UserServiceTests → UserAuthTests, UserProfileTests, UserNotificationTests"
+
+    general_fixture:
+      name: "General Fixture"
+      problem: "Shared fixture used by tests with different needs"
+      detection: "SetUp method creates data used by only some tests"
+      solution: "Move to per-test setup methods or test-specific fixtures"
+
 progressive_refactoring_levels:
   description: "Bottom-up progressive refactoring approach with mandatory sequence"
 
@@ -1144,6 +1227,13 @@ progressive_refactoring_levels:
     primary_transformations:
       ["Rename", "Extract (variables/constants)", "Safe Delete"]
     quality_impact: "80% of readability improvement value"
+    test_refactoring_examples:
+      - "Obscure Test → Test name reveals business scenario (Test1 → ProcessOrder_PremiumCustomer_AppliesDiscount)"
+      - "Hard-Coded Test Data → Named constants for test values (850 → EXPECTED_DISCOUNTED_TOTAL)"
+      - "Assertion Roulette → Descriptive assertion messages"
+      - "Dead Test Code → Remove commented assertions and unused test helpers"
+    test_smells_addressed:
+      ["Obscure Test", "Hard-Coded Test Data", "Assertion Roulette"]
 
   level_2_complexity:
     name: "Complexity Reduction (Simplification)"
@@ -1154,6 +1244,13 @@ progressive_refactoring_levels:
       ["Long Method", "Duplicate Code", "Complex Conditionals"]
     primary_transformations: ["Extract (methods)", "Move (common code)"]
     quality_impact: "20% additional readability improvement"
+    test_refactoring_examples:
+      - "Eager Test → Split into focused tests (one per business scenario)"
+      - "Test Code Duplication → Extract test helper methods (CreatePremiumCustomer, CreateHighValueOrder)"
+      - "Conditional Test Logic → Parameterized tests ([Theory], pytest.mark.parametrize)"
+      - "Complex Test Setup → Extract arrange helpers"
+    test_smells_addressed:
+      ["Eager Test", "Test Code Duplication", "Conditional Test Logic"]
 
   level_3_responsibilities:
     name: "Responsibility Organization"
@@ -1171,6 +1268,13 @@ progressive_refactoring_levels:
       ]
     primary_transformations: ["Move", "Extract (classes)"]
     quality_impact: "Structural improvement foundation"
+    test_refactoring_examples:
+      - "Test Class Bloat → Split test class by concern (UserServiceTests → UserAuthTests, UserProfileTests)"
+      - "Mystery Guest → Inline external dependencies into test setup"
+      - "General Fixture → Per-test setup methods"
+      - "Test organization → Group tests by feature/scenario"
+    test_smells_addressed:
+      ["Test Class Bloat", "Mystery Guest", "General Fixture"]
 
   level_4_abstractions:
     name: "Abstraction Refinement"

@@ -36,6 +36,7 @@ Progressive refactoring hierarchy: Readability (L1-2) → Structure (L3-4) → D
   - Level 1-2 (Readability/Complexity): Dead code, comments, naming, method extraction, duplication elimination
   - Level 3-4 (Organization/Abstraction): Class responsibilities, parameter objects, data clumps, primitive obsession
   - Level 5-6 (Design Patterns/SOLID): Strategy pattern, State pattern, SOLID principles, architectural patterns
+- Test refactoring procedures: Apply L1-6 hierarchy to test code (naming clarity, complexity reduction, organization, abstractions, patterns, SOLID); detect test code smells (Obscure Test, Eager Test, Test Duplication, Mystery Guest); use same atomic transformations on test code
 - Mikado Method procedures (if applicable): Goal definition, exploration cycle, tree visualization, discovery-tracking commits, execution sequencing
 - Quality gate checks to perform before/after each level: All tests passing (100% required), code quality metrics collected, no regressions
 - Test execution procedures: Build command, test command, expected output validation
@@ -61,7 +62,7 @@ Progressive refactoring hierarchy: Readability (L1-2) → Structure (L3-4) → D
 ✅ "Measure quality before and after each level using: [COMPLETE MEASUREMENT PROCEDURES WITH BASH COMMANDS]"
 ✅ "Coordinate with prior refactoring instances by reading [COORDINATION PROCEDURE]"
 ✅ "Validate all tests passing (100% required) using: [COMPLETE TEST EXECUTION PROCEDURE]"
-✅ "Provide these refactoring outputs: src/*, refactoring-log.md, quality-metrics-report.md"
+✅ "Provide these refactoring outputs: src/* (production code), tests/* (test code), refactoring-log.md, quality-metrics-report.md"
 
 ## Refactoring Across Agent Instances
 
@@ -69,7 +70,8 @@ The /nw:refactor command may be invoked as a new agent instance (via Task tool) 
 
 ## Context Files Required
 
-- src/\* - Codebase to analyze and refactor
+- src/* - Production codebase to analyze and refactor
+- tests/* - Test codebase to analyze and refactor
 
 ## Previous Artifacts (Wave Handoff)
 
@@ -111,7 +113,8 @@ Refer to Crafty's quality gates in nWave/agents/software-crafter.md (Refactoring
 
 # Expected outputs (reference only):
 
-# - src/\* (refactored implementation)
+# - src/* (refactored production code)
+# - tests/* (refactored test code)
 
 # - docs/refactoring/refactoring-log.md
 
