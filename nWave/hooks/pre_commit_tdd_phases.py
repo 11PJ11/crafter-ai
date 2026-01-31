@@ -24,7 +24,7 @@ from datetime import datetime
 from typing import Dict, List, Tuple, Any
 
 
-# Required TDD phases - support both v1.0 (14 phases) and v2.0 (8 phases)
+# Required TDD phases - support both v1.0 (14 phases) and v2.0 (7 phases)
 REQUIRED_PHASES_V1 = [
     "PREPARE",
     "RED_ACCEPTANCE",
@@ -49,7 +49,6 @@ REQUIRED_PHASES_V2 = [
     "GREEN",
     "REVIEW",
     "REFACTOR_CONTINUOUS",
-    "REFACTOR_L4",
     "COMMIT",
 ]
 
@@ -225,7 +224,7 @@ def validate_step_file(file_path: str) -> Tuple[bool, List[Dict[str, Any]], str]
             "1.0",
         )
 
-    # Detect schema version (v1.0 = 14 phases, v2.0 = 8 phases)
+    # Detect schema version (v1.0 = 14 phases, v2.0 = 7 phases)
     schema_version = detect_schema_version(data)
     required_phases = (
         REQUIRED_PHASES_V2 if schema_version == "2.0" else REQUIRED_PHASES_V1
@@ -504,7 +503,7 @@ def print_validation_result(
     print(f"\n  Checking: {file_path}")
 
     if is_valid:
-        phase_count = 8 if schema_version == "2.0" else 14
+        phase_count = 7 if schema_version == "2.0" else 14
         print(f"    [OK] All {phase_count} phases completed (schema v{schema_version})")
     else:
         for issue in issues:

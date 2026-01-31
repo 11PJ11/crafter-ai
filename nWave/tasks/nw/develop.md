@@ -87,11 +87,12 @@ The DEVELOP wave orchestrator automates the complete feature development lifecyc
 
 Execute a **complete DEVELOP wave** that orchestrates:
 
-1. **Phase 1**: Roadmap Creation + Review (strategic planning with 8-phase TDD)
-2. **Phase 2**: Execute All Steps (8-phase TDD cycle per step - see canonical schema)
-2. **Phase 2.5**: Mutation Testing (test quality validation)
-3. **Phase 3**: Finalize (archival and cleanup)
-4. **Phase 4**: Report Completion
+1. **Phase 1**: Roadmap Creation + Review (strategic planning with 7-phase TDD)
+2. **Phase 2**: Execute All Steps (7-phase TDD cycle per step - see canonical schema v3.0)
+3. **Phase 2.25**: Architecture Refactoring (FG) + Mutation Testing (BG) — PARALLEL
+4. **Phase 3**: Finalize + Cleanup (archival)
+5. **Phase 3.5**: Retrospective (5 Whys via @troubleshooter)
+6. **Phase 4**: Report Completion
 
 **Eliminated Phases** (Token-Minimal Architecture):
 - ❌ Baseline Creation (eliminated - write-only artifact, saved 300k tokens)
@@ -314,19 +315,20 @@ STEP 2: Derive Project ID (kebab-case)
   ↓
 STEP 3: Phase 1 - Roadmap Creation + Review (with skip, retry max 2)
   ↓
-STEP 4: Phase 2 - Execute-All Steps (8-phase TDD cycle per step, roadmap context extraction)
+STEP 4: Phase 2 - Execute-All Steps (7-phase TDD cycle per step, roadmap context extraction)
   ↓
-STEP 5: Phase 2.5 - Mutation Testing Gate (75% kill rate threshold, BLOCKS finalize if fail)
+STEP 5: Phase 2.25 - Architecture Refactoring (FG) + Mutation Testing (BG) — PARALLEL
   ↓
-STEP 6: Phase 3 - Finalize (read execution-status.yaml, archive, cleanup)
+STEP 6: Phase 3 - Finalize + Cleanup (read execution-status.yaml, archive)
   ↓
-STEP 7: Phase 4 - Report Completion
+STEP 7: Phase 3.5 - Retrospective (5 Whys Root Cause Analysis)
+  ↓
+STEP 8: Phase 4 - Report Completion
 ```
 
 **Eliminated Phases** (Saved 5.1M tokens):
 - ❌ STEP 3-4: Baseline Creation + Review (eliminated - write-only artifact, 300k tokens)
 - ❌ STEP 7-8: Split into Steps + Review Each Step (eliminated - step files, 4.8M tokens)
-- ❌ STEP 10: Mutation Testing (deferred to future enhancement)
 
 **Architecture Change**: Orchestrator extracts context from roadmap.yaml (~5k tokens per step) and passes to sub-agents via Task tool. No intermediate step files created.
 
@@ -942,7 +944,7 @@ Instances update phase_execution_log, next instance reads prior progress, contin
            EXIT
 
    print(f"\n✅ All {len(sorted_step_files)} steps completed successfully")
-   print("Proceeding to Phase 2.5 (mutation testing)...")
+   print("Proceeding to Phase 2.25 (architecture refactoring + mutation testing)...")
 
    mark_phase_complete(project_id, 'Phase 7: Execute All Steps')
    ```
@@ -956,9 +958,11 @@ Instances update phase_execution_log, next instance reads prior progress, contin
 
 ---
 
-### STEP 10: Phase 2.5 - Mutation Testing (Quality Gate)
+### STEP 5: Phase 2.25 - Architecture Refactoring + Mutation Testing (PARALLEL)
 
-**Objective**: Validate test suite quality through mutation testing before finalize.
+**Objective**: Two independent tasks run concurrently after all steps complete:
+1. **[FOREGROUND]** Architecture refactoring (L4-L6) via @software-crafter
+2. **[BACKGROUND]** Mutation testing quality gate
 
 **Gate Threshold**: 80% mutation kill rate (industry standard, configurable per project)
 
@@ -970,7 +974,95 @@ Instances update phase_execution_log, next instance reads prior progress, contin
 
 ---
 
-#### Phase 2.5a: Scope Discovery (MANDATORY — before running mutation tests)
+#### Phase 2.25-PRE: Virtual Environment Setup (MANDATORY for Python)
+
+**Objective**: Ensure mutation testing tools are available without PEP 668 conflicts.
+
+```python
+# MANDATORY: Set up mutation testing virtual environment
+# PEP 668 blocks pip install in externally-managed environments (Ubuntu 24.04+, Debian 12+)
+# This venv is REQUIRED for cosmic-ray and other mutation testing tools.
+
+import subprocess, os
+
+VENV_DIR = ".venv-mutation"
+
+if not os.path.exists(VENV_DIR):
+    print(f"Creating mutation testing virtual environment: {VENV_DIR}")
+    subprocess.run(['python3', '-m', 'venv', VENV_DIR], check=True)
+    subprocess.run([f'{VENV_DIR}/bin/pip', 'install', 'cosmic-ray'], check=True)
+    print(f"✅ cosmic-ray installed in {VENV_DIR}")
+else:
+    print(f"✅ Reusing existing mutation venv: {VENV_DIR}")
+
+# Verify installation
+result = subprocess.run([f'{VENV_DIR}/bin/cosmic-ray', '--version'], capture_output=True, text=True)
+print(f"cosmic-ray version: {result.stdout.strip()}")
+
+# Add to .gitignore if not present
+gitignore = '.gitignore'
+if os.path.exists(gitignore):
+    with open(gitignore, 'r') as f:
+        content = f.read()
+    if '.venv-mutation/' not in content:
+        with open(gitignore, 'a') as f:
+            f.write('\n# Mutation testing virtual environment\n.venv-mutation/\n')
+        print("Added .venv-mutation/ to .gitignore")
+```
+
+**IMPORTANT**: All cosmic-ray commands in subsequent phases MUST use the venv binary:
+- `.venv-mutation/bin/cosmic-ray init ...`
+- `.venv-mutation/bin/cosmic-ray exec ...`
+- `.venv-mutation/bin/cr-report ...`
+
+---
+
+#### Phase 2.25-ARCH: Architecture Refactoring Pass (FOREGROUND)
+
+**Objective**: L4-L6 architecture refactoring applied once to the entire implementation.
+
+```python
+# Invoke @software-crafter for architecture refactoring
+# This runs in FOREGROUND while mutation testing runs in BACKGROUND
+
+task_result = Task(
+    subagent_type="software-crafter",
+    prompt=f'''
+You are a software crafter performing architecture refactoring (L4-L6) on the
+completed implementation for project {project_id}.
+
+═══════════════════════════════════════════════════════════
+⚠️  TASK BOUNDARY - READ BEFORE EXECUTING
+═══════════════════════════════════════════════════════════
+YOUR ONLY TASK: Apply L4-L6 refactoring to implementation files
+SCOPE: Only files modified by this project (see execution-status.yaml)
+FORBIDDEN: DO NOT continue to any other phase
+REQUIRED: Return control to orchestrator after completion
+═══════════════════════════════════════════════════════════
+
+REFACTORING LEVELS:
+  L4: Architecture patterns (domain types, invalid states unrepresentable)
+  L5: Cross-cutting concerns (error handling patterns, logging strategy)
+  L6: SOLID principles at module level
+
+SKIP CONDITION:
+  If the implementation is already clean and no L4-L6 patterns apply,
+  report "SKIPPED: Implementation clean, no L4-L6 improvements needed"
+
+DELIVERABLES:
+  - Refactored implementation files (if changes needed)
+  - Single commit: refactor({project_id}): L4-L6 architecture improvements
+  - Brief summary of changes made (or skip justification)
+
+IMPORTANT: Run ALL tests after refactoring. If any test fails, REVERT and report.
+''',
+    description=f"L4-L6 architecture refactoring for {project_id}"
+)
+```
+
+---
+
+#### Phase 2.25-MUT-a: Scope Discovery (MANDATORY — before running mutation tests)
 
 **Objective**: Discover ALL implementation files that must be mutation-tested.
 
@@ -1016,7 +1108,7 @@ SCOPE DISCOVERY (MANDATORY before mutation testing):
        - src/module/file3.py (214 lines)
 ```
 
-#### Phase 2.5b: Scope Validation (MANDATORY — blocks if incomplete)
+#### Phase 2.25-MUT-b: Scope Validation (MANDATORY — blocks if incomplete)
 
 **Objective**: Ensure mutation testing config covers EVERY implementation file.
 
@@ -1041,18 +1133,22 @@ SCOPE VALIDATION (MANDATORY — blocks mutation testing if incomplete):
    - Scope discovery found files but no config created
 ```
 
-#### Phase 2.5c: Per-Component Execution and Reporting (MANDATORY)
+#### Phase 2.25-MUT-c: Per-Component Execution and Reporting (BACKGROUND)
 
 **Objective**: Run mutation testing per file and report per-component scores.
 
 ```
 PER-COMPONENT REPORTING (MANDATORY — prevents aggregate hiding):
 
-1. Run mutation testing PER implementation file:
+1. Launch mutation testing PER implementation file IN BACKGROUND:
    For each config in docs/feature/{project-id}/mutation/cosmic-ray-*.toml:
-     cosmic-ray init {config} {session}.sqlite
-     cosmic-ray exec {config} {session}.sqlite
-     cr-report {session}.sqlite
+     .venv-mutation/bin/cosmic-ray init {config} {session}.sqlite
+     .venv-mutation/bin/cosmic-ray exec {config} {session}.sqlite  # run_in_background=True
+     .venv-mutation/bin/cr-report {session}.sqlite
+
+   PARALLEL EXECUTION: Launch all cosmic-ray exec commands as background jobs.
+   The orchestrator can proceed to Phase 2.25-ARCH while mutation runs.
+   Collect results after architecture refactoring completes (or after skip).
 
 2. Collect per-component results and report BOTH aggregate AND per-component:
 
@@ -1192,7 +1288,7 @@ PER-COMPONENT REPORTING (MANDATORY — prevents aggregate hiding):
 
        # Check if tool is installed
        check_cmd = {
-           'python': 'cosmic-ray --version',
+           'python': '.venv-mutation/bin/cosmic-ray --version',
            'java-maven': 'mvn --version',
            'java-gradle': 'gradle --version',
            'javascript': 'npx stryker --version',
@@ -1247,8 +1343,8 @@ PER-COMPONENT REPORTING (MANDATORY — prevents aggregate hiding):
    else:
        print(f"✅ Mutation score {mutation_score}% meets threshold {MUTATION_THRESHOLD}%")
 
-   mark_phase_complete(project_id, 'Phase 2.5: Mutation Testing')
-   print("Proceeding to Phase 8 (finalize)...")
+   mark_phase_complete(project_id, 'Phase 2.25: Architecture Refactoring + Mutation Testing')
+   print("Proceeding to Phase 3 (finalize)...")
    ```
 
 5. **Create mutation report** (for documentation):
@@ -1281,8 +1377,9 @@ PER-COMPONENT REPORTING (MANDATORY — prevents aggregate hiding):
 
    **Setup Steps**:
    ```python
-   # Step 1: Install Cosmic Ray
-   subprocess.run(['pip', 'install', 'cosmic-ray'], check=True)
+   # Step 1: Install Cosmic Ray in virtual environment (PEP 668 safe)
+   # NOTE: Venv setup is handled by Phase 2.25-PRE (see above).
+   # All commands below use .venv-mutation/bin/ prefix.
 
    # Step 2: Create cosmic-ray.toml configuration
    config_content = f'''[cosmic-ray]
@@ -1303,17 +1400,17 @@ name = "local"
 
    # Step 3: Initialize session
    subprocess.run([
-       'cosmic-ray', 'init', 'cosmic-ray.toml', 'session.sqlite'
+       '.venv-mutation/bin/cosmic-ray', 'init', 'cosmic-ray.toml', 'session.sqlite'
    ], check=True)
 
-   # Step 4: Execute mutations
+   # Step 4: Execute mutations (use run_in_background for parallel execution)
    subprocess.run([
-       'cosmic-ray', 'exec', 'cosmic-ray.toml', 'session.sqlite'
-   ], check=True, timeout=1800)
+       '.venv-mutation/bin/cosmic-ray', 'exec', 'cosmic-ray.toml', 'session.sqlite'
+   ], check=True, timeout=300)  # 5 min per-file timeout
 
    # Step 5: Generate report
    result = subprocess.run([
-       'cr-report', 'session.sqlite'
+       '.venv-mutation/bin/cr-report', 'session.sqlite'
    ], capture_output=True, text=True, check=True)
 
    # Step 6: Parse mutation score
@@ -1357,7 +1454,7 @@ Mutation testing is the guarantee that tests are high quality, not just passing.
 
 ---
 
-### STEP 11: Phase 8 - Finalize
+### STEP 6: Phase 3 - Finalize + Cleanup
 
 **Objective**: Archive results and clean up workflow files.
 
@@ -1445,7 +1542,7 @@ DELIVERABLES:
    if os.path.exists(f'docs/feature/{project_id}/.develop-progress.json'):
        INFO: "Progress tracking file archived"
 
-   mark_phase_complete(project_id, 'Phase 8: Finalize')
+   mark_phase_complete(project_id, 'Phase 3: Finalize + Cleanup')
    ```
 
 **Success Criteria**:
@@ -1456,7 +1553,7 @@ DELIVERABLES:
 
 ---
 
-### STEP 11.5: Post-Finalize Commit and Push
+### STEP 6.5: Post-Finalize Commit and Push
 
 **Objective**: Archive User Story completion with evolution document and cleanup results.
 
@@ -1537,7 +1634,97 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"""
 
 ---
 
-### STEP 12: Phase 9 - Report Completion
+### STEP 7: Phase 3.5 - Retrospective (5 Whys Root Cause Analysis)
+
+**Objective**: Structured analysis of the DEVELOP wave execution to surface actionable improvements.
+
+**Skip Condition**: If ALL of the following are true, generate a brief "clean execution" summary only:
+- All steps completed without skips or phase failures
+- No mutation testing failures or threshold warnings
+- No tooling issues or manual interventions required
+
+**Actions**:
+
+1. **Gather execution data**:
+   ```python
+   # Inputs for retrospective analysis
+   evolution_doc = glob.glob(f'docs/evolution/*{project_id}*.md')[0]
+   exec_status_path = f'docs/feature/{project_id}/execution-status.yaml'
+
+   # Count metrics
+   with open(exec_status_path, 'r') as f:
+       exec_status = yaml.safe_load(f)
+
+   completed_steps = exec_status.get('execution_status', {}).get('completed_steps', [])
+   skipped_phases = []
+   for step in completed_steps:
+       for phase in step.get('phases', []):
+           if phase.get('status') == 'SKIPPED':
+               skipped_phases.append(f"{step['step_id']}/{phase['phase_name']}")
+
+   # Check for issues
+   has_issues = (
+       len(skipped_phases) > 0 or
+       progress.get('mutation_warnings', []) or
+       progress.get('tooling_issues', []) or
+       progress.get('retry_count', 0) > 0
+   )
+   ```
+
+2. **If issues found, invoke @troubleshooter for 5 Whys analysis**:
+   ```python
+   if has_issues:
+       task_result = Task(
+           subagent_type="troubleshooter",
+           prompt=f'''
+   Perform a structured retrospective on the DEVELOP wave execution for {project_id}.
+
+   ANALYSIS FRAMEWORK (4 categories):
+   1. What worked well (and WHY — preserve these practices)
+   2. What worked better than before (and WHY — reinforce improvements)
+   3. What worked badly (apply 5 Whys root cause analysis for EACH finding)
+   4. What worked worse than before (apply 5 Whys root cause analysis for EACH finding)
+
+   For each "badly" or "worse" finding:
+   - Apply Toyota 5 Whys to identify root cause
+   - Provide concrete remediation recommendation
+   - Flag if the fix requires nWave framework changes (meta-improvement)
+
+   INPUT DATA:
+   - Evolution document: {evolution_doc}
+   - Execution status: {exec_status_path}
+   - Skipped phases: {skipped_phases}
+   - Git log: run `git log --oneline --grep="{project_id}"`
+
+   OUTPUT: Structured retrospective report to append to evolution document.
+   ''',
+           description=f"Retrospective analysis for {project_id}"
+       )
+   ```
+
+3. **Append retrospective to evolution document**:
+   ```python
+   with open(evolution_doc, 'a') as f:
+       f.write('\n\n## Retrospective\n\n')
+       f.write(task_result if has_issues else '### Clean Execution\nAll phases completed without issues.\n')
+
+   # Commit the updated evolution document
+   subprocess.run(['git', 'add', evolution_doc], check=True)
+   subprocess.run(['git', 'commit', '-m',
+       f'docs({project_id}): add retrospective to evolution document'], check=True)
+   ```
+
+   mark_phase_complete(project_id, 'Phase 3.5: Retrospective')
+
+**Success Criteria**:
+- Retrospective analysis completed (or clean execution noted)
+- Evolution document updated with retrospective section
+- Root cause chains documented for each problem found
+- Meta-improvement recommendations flagged
+
+---
+
+### STEP 8: Phase 4 - Report Completion
 
 **Objective**: Provide comprehensive summary of DEVELOP wave execution.
 
@@ -1707,7 +1894,7 @@ rm -rf docs/feature/user-authentication/
 
 # Wave 5: DEVELOP (THIS COMMAND - fully automated)
 /nw:develop "Implement user authentication with JWT tokens"
-# Automatically: roadmap → execute all → mutation testing gate → finalize
+# Automatically: roadmap → execute all → architecture refactoring + mutation testing → retrospective → finalize
 
 # Wave 6: DELIVER
 /nw:deliver "user-authentication"
@@ -1735,7 +1922,7 @@ rm -rf docs/feature/user-authentication/
 
 **NEW Functionality**:
 - ✅ `/nw:develop "{description}"` for complete wave orchestration
-- ✅ Automatic roadmap → execute-all → mutation testing gate → finalize
+- ✅ Automatic roadmap → execute-all → architecture refactoring + mutation testing → retrospective → finalize
 - ✅ Mutation testing quality gate (75% kill rate) prevents "Testing Theatre"
 - ✅ Mandatory quality gates (3 + 3N reviews per feature)
 - ✅ Smart skip logic for approved artifacts
@@ -1887,9 +2074,10 @@ The second test exercises component logic but NOT system wiring.
 - [ ] **Phase 3-4**: Roadmap created OR skipped (if approved), dual reviewed and approved
 - [ ] **Phase 5-6**: Steps created OR skipped (if all approved), each reviewed and approved
 - [ ] **Phase 7**: All steps executed with 14-phase TDD, all commits created
-- [ ] **Phase 2.5**: Mutation testing passed (>= 75% kill rate) or documented skip
-- [ ] **Phase 8**: Finalize executed, evolution document created
-- [ ] **Phase 9**: Completion report displayed
+- [ ] **Phase 2.25**: Architecture refactoring complete (or skipped), mutation testing passed (>= 75% kill rate)
+- [ ] **Phase 3**: Finalize executed, evolution document created
+- [ ] **Phase 3.5**: Retrospective completed (or clean execution noted)
+- [ ] **Phase 4**: Completion report displayed
 
 ### Overall Success Criteria
 

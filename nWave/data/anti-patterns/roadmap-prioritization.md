@@ -152,3 +152,30 @@ review_dimensions:
 ```
 
 **Prevention:** Priority Validation dimension (Q1-Q4)
+
+---
+
+### Anti-Pattern 6: Scenario-Driven Over-Decomposition
+
+**Warning**: Creating one implementation step per acceptance test scenario leads to 30-50% no-op steps where the GREEN phase adds zero production code.
+
+**Symptoms**:
+- Step count >> production file count (ratio > 2.5:1)
+- Multiple steps targeting the same production file
+- Steps named "Verify X works" or "Validate Y behavior"
+- GREEN phase completes instantly because code already exists
+- REFACTOR_CONTINUOUS frequently skipped ("no refactoring needed")
+
+**Root Cause**: Confusing test scenarios (what to verify) with implementation units (what to build). Acceptance test scenarios describe BEHAVIORS to validate, not units of work to implement.
+
+**Real Example (US-008)**: 13 steps for 4 production files (ratio 3.25). 5 of 13 steps (38%) were no-ops where all production code already existed from prior steps.
+
+**Fix**: Group steps by implementation unit. One step = one cohesive unit of production code. Multiple acceptance criteria can be verified within a single step.
+
+**Detection During Review**:
+```
+steps_count / estimated_production_files > 2.5 → FLAG
+validation_only_steps / total_steps > 0.20 → REJECT
+```
+
+**Prevention**: Apply decomposition principle #6 from roadmap.md: "Decompose by IMPLEMENTATION UNIT, not by test scenario"

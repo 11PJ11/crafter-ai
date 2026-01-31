@@ -381,10 +381,10 @@ public class OrderTests
 
 ## Integration with TDD
 
-Apply test refactoring during **Phase 6 (REFACTOR_CONTINUOUS)** of 8-phase TDD cycle:
+Apply test refactoring during **Phase 5 (REFACTOR_CONTINUOUS)** of 7-phase TDD cycle:
 
 ```
-PREPARE → RED(A) → RED(U) → GREEN → REVIEW → REFACTOR_CONTINUOUS → REFACTOR_L4 → COMMIT
+PREPARE → RED(A) → RED(U) → GREEN → REVIEW → REFACTOR_CONTINUOUS → COMMIT
                                                       ↑
                                     Apply L1+L2+L3 to tests here
 ```

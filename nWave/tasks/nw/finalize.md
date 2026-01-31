@@ -225,7 +225,7 @@ steps:
       - phase_name: "RED_ACCEPTANCE"
         outcome: "PASS"
         duration_minutes: 5
-      # ... all 8 phases
+      # ... all 7 phases
 ```
 
 The TDD phases to look for in phases array (Schema v2.0):
@@ -235,7 +235,6 @@ The TDD phases to look for in phases array (Schema v2.0):
 - GREEN
 - REVIEW
 - REFACTOR_CONTINUOUS
-- REFACTOR_L4
 - COMMIT
 
 **Migration Note**: If you encounter OLD step files (*.json), flag this as a schema v1.x artifact requiring migration to v2.0.

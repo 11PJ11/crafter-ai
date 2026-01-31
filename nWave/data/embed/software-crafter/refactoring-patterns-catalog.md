@@ -600,7 +600,7 @@ def test_applies_correct_discount_by_customer_tier(customer_type, expected_rate)
 
 ### Integration with TDD Cycle
 
-Apply these test refactoring patterns during **Phase 6 (REFACTOR_CONTINUOUS)** of 8-phase TDD:
+Apply these test refactoring patterns during **Phase 5 (REFACTOR_CONTINUOUS)** of 7-phase TDD:
 
 1. **After GREEN**: Production code passes, tests pass
 2. **Refactor production code**: Apply L1-L3 to source code

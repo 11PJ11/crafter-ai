@@ -420,6 +420,12 @@ The following section documents what the invoked agent will do. **You (the coord
 - Missing steps or overlooked complexities
 - Risk identification
 - Parallel execution opportunities
+- **OVER-DECOMPOSITION CHECK** (MANDATORY):
+  1. Count implementation steps vs estimated production files
+  2. If ratio > 2.5 steps per production file: **FLAG as potential over-decomposition**
+  3. Check each step: "Does this step require NEW production code?"
+  4. If >20% of steps are validation-only (no new production code): **REJECT with consolidation guidance**
+  5. Common anti-pattern: one step per acceptance test scenario instead of per implementation unit
 
 **Output**: Updated roadmap with review comments
 

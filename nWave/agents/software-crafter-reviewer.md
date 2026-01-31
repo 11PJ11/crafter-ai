@@ -126,12 +126,12 @@ external_validity_validation:
 # 8-PHASE TDD VALIDATION - REVIEW SPECIALIST REQUIREMENTS
 # ═══════════════════════════════════════════════════════════════════════════════
 
-eight_phase_validation_protocol:
-  description: "Reviewer validates complete 8-phase TDD execution before granting approval - optimized cycle with merged phases"
+seven_phase_validation_protocol:
+  description: "Reviewer validates complete 7-phase TDD execution before granting approval - optimized cycle with merged phases. L4-L6 architecture refactoring moved to orchestrator Phase 2.25."
 
   validation_dimensions:
     phase_completeness:
-      description: "All 8 phases must be present in phase_execution_log"
+      description: "All 7 phases must be present in phase_execution_log"
       mandatory_phases:
         - "PREPARE"
         - "RED_ACCEPTANCE"
@@ -139,11 +139,10 @@ eight_phase_validation_protocol:
         - "GREEN"
         - "REVIEW"
         - "REFACTOR_CONTINUOUS"
-        - "REFACTOR_L4"
         - "COMMIT"
-      check: "Count logged phases == 8"
+      check: "Count logged phases == 7"
       severity: "BLOCKER if any phase missing"
-      note: "GREEN merges GREEN_UNIT + CHECK_ACCEPTANCE + GREEN_ACCEPTANCE; REVIEW expands to cover post-refactoring; REFACTOR_CONTINUOUS merges L1+L2+L3; REFACTOR_L4 is optional (can use CHECKPOINT_PENDING or NOT_APPLICABLE)"
+      note: "GREEN merges GREEN_UNIT + CHECK_ACCEPTANCE + GREEN_ACCEPTANCE; REVIEW expands to cover post-refactoring; REFACTOR_CONTINUOUS merges L1+L2+L3. L4-L6 architecture refactoring runs at orchestrator level after all steps complete."
 
     phase_outcomes:
       description: "All phases must have PASS outcome"
@@ -164,24 +163,18 @@ eight_phase_validation_protocol:
       note: "Single REVIEW replaces both REVIEW and POST-REFACTOR REVIEW from 14-phase cycle - executed after refactoring completes"
 
     refactoring_level_validation:
-      description: "REFACTOR phases must document techniques used"
+      description: "REFACTOR_CONTINUOUS must document techniques used"
       refactor_continuous_validation:
         phase: "REFACTOR_CONTINUOUS"
         check: "phase_execution_log entry contains techniques used (L1: naming, L2: complexity, L3: organization)"
-        expected_format: "L1+L2+L3 or specific techniques applied"
+        expected_format: "L1+L2+L3 or specific techniques applied, or 'fast-path: <30 LOC' for small implementations"
         severity: "HIGH if not documented"
-      refactor_l4_validation:
-        phase: "REFACTOR_L4"
-        check: "phase_execution_log entry shows EXECUTED with L4 patterns OR SKIPPED with valid prefix"
-        valid_skip_prefixes: ["CHECKPOINT_PENDING:", "NOT_APPLICABLE:", "APPROVED_SKIP:"]
-        expected_format: "L4 patterns applied OR skip justification"
-        severity: "HIGH if neither documented nor properly skipped"
 
     commit_policy_validation:
-      description: "task_specification.commit_policy must reference 8 phases"
-      check: "commit_policy field contains '8 PHASES'"
+      description: "task_specification.commit_policy must reference 7 phases"
+      check: "commit_policy field contains '7 PHASES'"
       severity: "MEDIUM if missing or incorrect"
-      note: "Optimized cycle reduces from 14 phases to 8 phases for speed and token efficiency"
+      note: "Optimized cycle reduces from 14 phases to 7 phases. L4-L6 runs at orchestrator level."
 
     phase_execution_documentation:
       description: "Each phase log entry must be complete"
@@ -229,34 +222,34 @@ eight_phase_validation_protocol:
       blocker_if_rejected: "Cannot proceed to REFACTOR until approved"
 
     phase_9_post_refactor_review:
-      when_invoked: "After REFACTOR, before FINAL VALIDATE"
+      when_invoked: "After REFACTOR, before COMMIT"
       defect_tolerance: "ZERO - ALL defects must be resolved, no exceptions"
       iteration_purpose: "For defect resolution ONLY, not for accepting with known issues"
       reviewer_checks:
-        - "Refactoring level achieved (L1-L4)"
+        - "Refactoring level achieved (L1-L3)"
         - "All tests still passing"
         - "Code quality improved"
         - "No regression introduced"
         - "Business logic preserved"
       approval_criteria:
         - "ZERO defects of ANY severity (critical, high, medium, low, or minor)"
-        - "Refactoring completed to at least L1"
+        - "Refactoring completed to at least L1 (or fast-path: <30 LOC)"
         - "All tests passing after refactoring"
         - "Code readability improved"
         - "No new code smells introduced"
       blocker_policy: "ANY defect found (even minor) BLOCKS approval until resolved"
-      blocker_if_rejected: "Cannot proceed to FINAL VALIDATE until approved"
+      blocker_if_rejected: "Cannot proceed to COMMIT until approved"
 
-  critique_dimensions_for_8_phase:
+  critique_dimensions_for_7_phase:
     phase_tracking_audit:
       check: "Step file contains complete phase_execution_log"
       examples:
         violation: "Missing phase_execution_log in step file"
-        correction: "Add tdd_cycle.phase_execution_log array with all 8 phases"
+        correction: "Add tdd_cycle.phase_execution_log array with all 7 phases"
 
     sequential_execution_validation:
       check: "Phases executed in correct order based on timestamps"
-      expected_sequence: "PREPARE → RED_ACCEPTANCE → RED_UNIT → GREEN → REVIEW → REFACTOR_CONTINUOUS → REFACTOR_L4 → COMMIT"
+      expected_sequence: "PREPARE → RED_ACCEPTANCE → RED_UNIT → GREEN → REVIEW → REFACTOR_CONTINUOUS → COMMIT"
       examples:
         violation: "REFACTOR_CONTINUOUS executed before REVIEW phase"
         correction: "Ensure REVIEW phase (4) completes before REFACTOR_CONTINUOUS phase (5)"
@@ -270,7 +263,7 @@ eight_phase_validation_protocol:
 
     test_pass_discipline:
       check: "All phases after GREEN show 100% test pass rate"
-      critical_phases: ["GREEN", "REFACTOR_CONTINUOUS", "REFACTOR_L4", "COMMIT"]
+      critical_phases: ["GREEN", "REFACTOR_CONTINUOUS", "COMMIT"]
       examples:
         violation: "REFACTOR_CONTINUOUS phase shows 95% test pass rate (1 test failing)"
         correction: "BLOCKER - Fix failing test before proceeding. Refactoring must maintain 100% green bar."
@@ -278,9 +271,9 @@ eight_phase_validation_protocol:
   approval_decision_logic:
     approved:
       conditions:
-        - "All 11 phases present in log"
+        - "All 7 phases present in log"
         - "All phases have PASS outcome"
-        - "Both REVIEW phases approved"
+        - "REVIEW phase approved"
         - "REFACTOR level documented (≥L1)"
         - "All quality gates satisfied"
         - "100% tests passing"

@@ -556,7 +556,7 @@ project:
   name: "Human Readable Project Name"
   goal: "Clear description of end goal"
   methodology: "standard"  # or "mikado" for complex refactoring
-  schema_version: "2.0"  # REQUIRED: Schema version for 8-phase TDD
+  schema_version: "2.0"  # REQUIRED: Schema version for 7-phase TDD
   created: "2024-01-01T00:00:00Z"
   estimated_duration: "2 weeks"  # human estimate
 
@@ -568,7 +568,6 @@ tdd_phases:
   - GREEN
   - REVIEW
   - REFACTOR_CONTINUOUS
-  - REFACTOR_L4
   - COMMIT
 
 # Execution Configuration (Schema v2.0)
@@ -670,6 +669,20 @@ mikado_integration:  # Only if methodology: "mikado"
    - Avoid redundant descriptions
    - Keep acceptance criteria concise
 
+6. **Step Decomposition Principles** (ANTI-OVER-DECOMPOSITION):
+   - **Rule**: Decompose by IMPLEMENTATION UNIT, not by test scenario
+   - Each step MUST produce NEW production code (not just test validation)
+   - If a step only validates existing behavior, MERGE it with the producing step
+   - Target ratio: **<= 2.5 steps per production file**
+   - Detection: If `steps_count / production_files > 2.5`, likely over-decomposed
+   - Acceptance test scenarios ≠ implementation steps
+   - **Merge candidates**:
+     - Steps that only add tests for already-implemented behavior
+     - Steps that validate non-functional properties (metadata, stateless, no-daemon)
+     - Steps that test error handling already implemented in a prior step
+   - **Example (BAD)**: 13 steps for 4 production files (ratio 3.25, 38% no-op steps)
+   - **Example (GOOD)**: 7 steps for 4 production files (ratio 1.75, 0% no-op steps)
+
 ### Example Minimal Roadmap:
 
 ```yaml
@@ -715,7 +728,7 @@ phases:
           acceptance_test_must_fail_first: true
           unit_tests_must_fail_first: true
           no_mocks_inside_hexagon: true
-          refactor_level: 4
+          refactor_level: 3
         acceptance_criteria:
           - "User can authenticate via OAuth2 provider"
           - "JWT token generated after successful login"
@@ -828,7 +841,7 @@ Task(
     - No mocks inside hexagon: {step_context['quality_gates']['no_mocks_inside_hexagon']}
     - Refactor level: {step_context['quality_gates']['refactor_level']}
 
-    Execute using 8-phase TDD cycle (PREPARE, RED_ACCEPTANCE, RED_UNIT, GREEN, REVIEW, REFACTOR_CONTINUOUS, REFACTOR_L4, COMMIT).
+    Execute using 7-phase TDD cycle (PREPARE, RED_ACCEPTANCE, RED_UNIT, GREEN, REVIEW, REFACTOR_CONTINUOUS, COMMIT).
     """
 )
 ```

@@ -28,10 +28,10 @@ The same forces that degrade production code quality also affect test code:
 
 ### Integration with TDD Refactor Phase
 
-Test refactoring is integrated into the **8-phase TDD cycle** at Phase 6 (REFACTOR_CONTINUOUS):
+Test refactoring is integrated into the **7-phase TDD cycle** at Phase 5 (REFACTOR_CONTINUOUS):
 
 ```
-PREPARE → RED(Acceptance) → RED(Unit) → GREEN → REVIEW → REFACTOR_CONTINUOUS → REFACTOR_L4 → COMMIT
+PREPARE → RED(Acceptance) → RED(Unit) → GREEN → REVIEW → REFACTOR_CONTINUOUS → COMMIT
 ```
 
 **During REFACTOR_CONTINUOUS (L1+L2+L3):**

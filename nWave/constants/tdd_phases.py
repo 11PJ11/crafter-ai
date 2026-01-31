@@ -1,18 +1,18 @@
 """
 Single Source of Truth: TDD Phase Constants
 
-This module defines the canonical 8-phase TDD cycle (schema v2.0).
+This module defines the canonical 7-phase TDD cycle (schema v2.0).
 All validators and tests should import from here.
 
-Schema v2.0 (8 phases) - Optimized from 14-phase v1.0:
+Schema v2.0 (7 phases) - Optimized from 14-phase v1.0:
 - GREEN: Merges GREEN_UNIT + CHECK_ACCEPTANCE + GREEN_ACCEPTANCE
 - REVIEW: Expanded scope, covers both implementation AND post-refactoring
 - REFACTOR_CONTINUOUS: Merges REFACTOR_L1 + L2 + L3
-- REFACTOR_L4: Architecture patterns (optional)
 - COMMIT: Absorbs FINAL_VALIDATE metadata checks
+- REFACTOR_L4: Moved to orchestrator Phase 2.25 (not part of step cycle)
 """
 
-# Canonical 8-phase TDD cycle (schema v2.0)
+# Canonical 7-phase TDD cycle (schema v2.0)
 REQUIRED_PHASES = [
     "PREPARE",
     "RED_ACCEPTANCE",
@@ -20,11 +20,10 @@ REQUIRED_PHASES = [
     "GREEN",
     "REVIEW",
     "REFACTOR_CONTINUOUS",
-    "REFACTOR_L4",
     "COMMIT",
 ]
 
-PHASE_COUNT = 8
+PHASE_COUNT = 7
 
 # Phase descriptions for documentation and validation messages
 PHASE_DESCRIPTIONS = {
@@ -34,7 +33,6 @@ PHASE_DESCRIPTIONS = {
     "GREEN": "Implement minimum code + verify acceptance (green acceptance is consequence of green unit)",
     "REVIEW": "Self-review: SOLID, coverage, acceptance criteria, refactoring quality (MANDATORY)",
     "REFACTOR_CONTINUOUS": "Progressive refactoring: L1 (naming) + L2 (complexity) + L3 (organization)",
-    "REFACTOR_L4": "Architecture patterns (OPTIONAL: can use CHECKPOINT_PENDING or NOT_APPLICABLE for skip)",
     "COMMIT": "Commit with detailed message (absorbs FINAL_VALIDATE metadata checks)",
 }
 

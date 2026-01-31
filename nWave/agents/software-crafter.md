@@ -73,8 +73,8 @@ persona:
 # 8-PHASE TDD METHODOLOGY - MANDATORY WORKFLOW
 # ═══════════════════════════════════════════════════════════════════════════════
 
-eight_phase_tdd_methodology:
-  description: "Mandatory 8-phase TDD loop for all feature development - enforced at step execution level - optimized for speed and token efficiency"
+seven_phase_tdd_methodology:
+  description: "Mandatory 7-phase TDD loop for all feature development - enforced at step execution level - optimized for speed and token efficiency. L4-L6 architecture refactoring moved to orchestrator Phase 2.25 (runs once after all steps complete)."
 
   phase_command_mapping:
     phase_1_prepare:
@@ -128,18 +128,23 @@ eight_phase_tdd_methodology:
         - "Architecture violations"
         - "Domain mock violations (G4)"
         - "Business language violations"
-        - "Refactoring quality improvements (after REFACTOR_CONTINUOUS and REFACTOR_L4 complete)"
+        - "Refactoring quality improvements (after REFACTOR_CONTINUOUS complete)"
         - "Test stability after refactoring"
       blocker_policy: "ANY defect found (even minor) BLOCKS approval until resolved"
       duration_target: "15-20 min"
       note: "Single comprehensive review replaces both REVIEW and POST-REFACTOR REVIEW from 14-phase cycle"
 
-    phase_6_refactor_continuous:
+    phase_5_refactor_continuous:
       name: "REFACTOR_CONTINUOUS"
       command: "*refactor (for progressive refactoring)"
       description: "Continuous refactoring covering L1 + L2 + L3 (naming, complexity, organization) applied to BOTH production code AND test code"
       scope: "Combines three refactoring levels executed together"
       gate: "G6 - Tests green after refactoring"
+      fast_path:
+        condition: "GREEN phase produced < 30 LOC of new production code"
+        action: "Quick scan for obvious naming/duplication issues (2-3 min max)"
+        outcome: "Mark COMPLETED with note 'fast-path: <30 LOC'"
+        rationale: "Small implementations rarely benefit from full L1+L2+L3 analysis"
       levels:
         L1: "Naming clarity (business language in variables, methods, classes)"
         L2: "Complexity reduction (method extraction, single responsibility at method level)"
@@ -159,39 +164,21 @@ eight_phase_tdd_methodology:
           - "General Fixture → Per-Test Setup: Move shared fixture to test-specific setup methods"
       validation: "Run ALL tests after refactoring complete"
       rollback_protocol: "Revert if any test fails, retry with smaller steps"
-      duration_target: "10-20 min"
-      note: "Merges REFACTOR_L1 + L2 + L3 from 14-phase cycle for efficiency. APPLIES TO TEST CODE AS WELL AS PRODUCTION CODE."
+      duration_target: "10-20 min (fast-path: 2-3 min)"
+      note: "Merges REFACTOR_L1 + L2 + L3 from 14-phase cycle for efficiency. APPLIES TO TEST CODE AS WELL AS PRODUCTION CODE. L4-L6 architecture refactoring moved to orchestrator Phase 2.25."
 
-    phase_7_refactor_l4:
-      name: "REFACTOR_L4"
-      command: "*refactor (for architecture patterns)"
-      command_complex: "*mikado (for complex refactoring roadmaps)"
-      description: "Architecture patterns refactoring (OPTIONAL - can be skipped with justification)"
-      scope: "Type-driven design, domain patterns, architectural improvements"
-      gate: "G6 - Tests green after refactoring"
-      levels:
-        L4: "Architecture patterns (domain types, invalid states unrepresentable, design patterns)"
-      skip_criteria:
-        REQUIRED: ["New patterns needed", "Pattern modifications", "Cross-cutting concerns", "Integration changes"]
-        OPTIONAL: ["Bug fixes", "Trivial features (<50 LOC)", "Refactoring within patterns", "Test-only changes"]
-      skip_justification_prefix: "CHECKPOINT_PENDING: {reason}" or "NOT_APPLICABLE: {reason}"
-      validation: "Run ALL tests after refactoring"
-      rollback_protocol: "Revert if any test fails"
-      duration_target: "10-15 min"
-      note: "Optional phase - use CHECKPOINT_PENDING or NOT_APPLICABLE prefix for skip"
-
-    phase_8_commit:
+    phase_6_commit:
       name: "COMMIT"
-      command: "/nw:git commit (with 8-phase validation)"
+      command: "/nw:git commit (with 7-phase validation)"
       description: "Commit this step's work with detailed message (absorbs FINAL_VALIDATE metadata checks)"
-      validation: "Pre-commit hook validates all 8 phases documented"
+      validation: "Pre-commit hook validates all 7 phases documented"
       pre_commit_checks:
-        - "All 8 phases present in phase_execution_log"
+        - "All 7 phases present in phase_execution_log"
         - "All phases have EXECUTED or SKIPPED status with justification"
         - "Acceptance test passes"
         - "Unit tests pass"
         - "REVIEW phase approved"
-      message_format: "feat({feature}): {scenario} - step {step-id}\n\n- Acceptance test: {scenario}\n- Unit tests: {count} new\n- Refactoring level: Continuous + L4 {status}\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+      message_format: "feat({feature}): {scenario} - step {step-id}\n\n- Acceptance test: {scenario}\n- Unit tests: {count} new\n- Refactoring: L1+L2+L3 continuous\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
       push_policy: "NO PUSH until /nw:finalize"
       duration_target: "5 min"
       note: "Absorbs FINAL_VALIDATE checks (metadata-only validation)"
@@ -199,21 +186,20 @@ eight_phase_tdd_methodology:
   enforcement_mechanism:
     template_integration:
       - "Step file template includes tdd_phase_tracking section"
-      - "phase_execution_log array tracks each phase execution (8 phases in schema v2.0)"
+      - "phase_execution_log array tracks each phase execution (7 phases in schema v3.0)"
       - "Each log entry: phase_name, phase_index, timestamp, duration_minutes, outcome, notes, artifacts, validation_result"
       - "schema_version field enables backward compatibility with 14-phase cycle"
 
     validation_function:
       location: "nWave/tasks/nw/develop.md"
-      purpose: "Python function validates all 8 phases complete before commit"
+      purpose: "Python function validates all 7 phases complete before commit"
       checks:
-        - "All 8 phases present in log"
+        - "All 7 phases present in log"
         - "All phases have EXECUTED or SKIPPED status with proper justification"
         - "SKIPPED phases use valid prefixes (CHECKPOINT_PENDING, NOT_APPLICABLE, etc.)"
         - "Commit policy field present"
         - "REVIEW phase documented and approved"
         - "REFACTOR_CONTINUOUS documents techniques used (L1+L2+L3)"
-        - "REFACTOR_L4 skipped with justification OR executed with outcome"
 
     pre_commit_hook:
       location: ".git/hooks/pre-commit"
@@ -221,27 +207,22 @@ eight_phase_tdd_methodology:
       bypass: "Only with --no-verify for emergency (logged for audit)"
 
   workflow_diagram: |
-    1. PREPARE      → Remove @skip, enable 1 scenario
-                      ↓
-    2. RED (Accept) → Run tests, verify FAIL
-                      ↓
-    3. RED (Unit)   → Write failing unit tests
-                      ↓
-    4. GREEN (Unit) → Implement minimum code
-                      ↓
-    5. CHECK        → Verify unit tests PASS
-                      ↓ (if acceptance FAILS → back to 3)
-    6. GREEN (Accept)→ Verify acceptance test PASS
-                      ↓
-    7. REVIEW       → /nw:review @software-crafter-reviewer
-                      ↓ (wait for approval, max 2 iterations)
-    8. REFACTOR     → *refactor L1→L4 OR *mikado for complex
-                      ↓ (run tests after each level)
-    9. POST-REVIEW  → /nw:review @software-crafter-reviewer
-                      ↓ (wait for approval, max 2 iterations)
-    10. VALIDATE    → Document full test results
-                      ↓
-    11. COMMIT      → git commit + update step file
+    0. PREPARE        → Remove @skip, enable 1 scenario
+                        ↓
+    1. RED (Accept)   → Run tests, verify FAIL
+                        ↓
+    2. RED (Unit)     → Write failing unit tests
+                        ↓
+    3. GREEN          → Implement minimum code + verify acceptance PASS
+                        ↓
+    4. REVIEW         → /nw:review @software-crafter-reviewer (max 2 iterations)
+                        ↓
+    5. REFACTOR (L1-3)→ *refactor L1+L2+L3 (fast-path if <30 LOC)
+                        ↓ (run tests after refactoring)
+    6. COMMIT         → git commit + update step file
+
+    NOTE: L4-L6 architecture refactoring runs at orchestrator Phase 2.25
+          (once after all steps complete, delegated to @software-crafter)
 
   integration_with_commands:
     develop_command:
