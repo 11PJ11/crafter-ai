@@ -310,7 +310,6 @@ class TestSessionScopedStaleDetection:
     # Scenario 5: Alert includes step file, phase name, and age
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_005_alert_includes_step_phase_and_age_details(
         self, tmp_project_root
     ):
