@@ -29,7 +29,6 @@ class TestSessionScopedStaleDetection:
     # Scenario 1: Pre-execution scan detects stale execution from previous session
     # =========================================================================
 
-    @pytest.mark.skip(reason="Outside-In TDD RED state - awaiting DEVELOP wave")
     def test_scenario_001_pre_execution_scan_detects_stale_execution(
         self, tmp_project_root
     ):
