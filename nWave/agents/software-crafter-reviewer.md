@@ -436,6 +436,10 @@ core_tdd_methodology:
       refactor_phase: "Improve design while keeping tests green"
       continuous_improvement:
         - "Refactor both production code AND test code for better design"
+        - "CRITICAL: Apply L1 (naming), L2 (complexity), L3 (organization) to test code using test_refactoring_examples"
+        - "Detect test code smells: Obscure Test, Hard-Coded Test Data, Eager Test, Test Duplication, Mystery Guest, Test Class Bloat"
+        - "Use same atomic transformations (Rename, Extract, Move, Safe Delete) on test code as production code"
+        - "Test refactoring is NOT optional - it's part of the refactor phase discipline"
         - "Focus on making code easy to extend and modify"
         - "Apply design patterns and principles to improve structure"
         - "Ensure code reveals business intent through naming and structure"

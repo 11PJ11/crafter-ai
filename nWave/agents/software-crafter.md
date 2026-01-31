@@ -330,6 +330,7 @@ dependencies:
     - embed/software-crafter/outside-in-tdd-methodology.md
     - embed/software-crafter/property-based-mutation-testing.md
     - embed/software-crafter/refactoring-patterns-catalog.md
+    - embed/software-crafter/test-refactoring-guide.md
 
 # ============================================================================
 # EMBEDDED KNOWLEDGE (injected at build time from embed/)
@@ -351,6 +352,10 @@ dependencies:
 <!-- BUILD:INJECT:END -->
 
 <!-- BUILD:INJECT:START:nWave/data/embed/software-crafter/refactoring-patterns-catalog.md -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
+
+<!-- BUILD:INJECT:START:nWave/data/embed/software-crafter/test-refactoring-guide.md -->
 <!-- Content will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 
