@@ -34,6 +34,7 @@ on:
     branches:
       - master
       - develop
+      - installer
     tags:
       - 'v*'
   pull_request:
@@ -559,3 +560,381 @@ jobs:
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ===========================================================================
+  # NOTIFICATION: SLACK ALERTS - RED on failure, GREEN on recovery
+  # ===========================================================================
+
+  notify-slack:
+    name: "Slack Notification"
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    # Run on BOTH failure AND success (to detect RED→GREEN transitions)
+    # Now triggers on ALL branches - @mentions ensure no spam (each dev gets notified for their branches only)
+    if: |
+      always() &&
+      !cancelled()
+    needs: [commitlint, code-quality, file-quality, security-checks, framework-validation, test, agent-sync, build, release]
+
+    steps:
+      - name: Checkout (for state tracking script)
+        uses: actions/checkout@v4
+
+      - name: Determine current status
+        id: current-status
+        run: |
+          # Check if any job failed
+          NEEDS_CONTEXT='${{ toJson(needs) }}'
+          echo "Needs context: $NEEDS_CONTEXT"
+
+          if echo "$NEEDS_CONTEXT" | jq -e '.[] | select(.result == "failure")' > /dev/null; then
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "Current run: FAILURE"
+          else
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "Current run: SUCCESS"
+          fi
+
+      - name: Load previous run state
+        id: previous-state
+        uses: actions/cache/restore@v4
+        with:
+          path: .pipeline-state
+          key: pipeline-state-${{ github.ref }}-never-match
+          restore-keys: |
+            pipeline-state-${{ github.ref }}-
+
+      - name: Determine notification type
+        id: notification-type
+        run: |
+          CURRENT="${{ steps.current-status.outputs.status }}"
+
+          # Load previous status
+          if [ -f .pipeline-state/status.txt ]; then
+            PREVIOUS=$(cat .pipeline-state/status.txt)
+            echo "Previous run status: $PREVIOUS"
+          else
+            PREVIOUS="unknown"
+            echo "No previous run status found"
+          fi
+
+          echo "Current: $CURRENT, Previous: $PREVIOUS"
+
+          # Determine notification type based on state transition
+          if [[ "$CURRENT" == "failure" ]]; then
+            echo "type=failure" >> $GITHUB_OUTPUT
+            echo "should_notify=true" >> $GITHUB_OUTPUT
+            echo "Will send RED notification"
+          elif [[ "$CURRENT" == "success" && "$PREVIOUS" == "failure" ]]; then
+            echo "type=back_to_green" >> $GITHUB_OUTPUT
+            echo "should_notify=true" >> $GITHUB_OUTPUT
+            echo "Will send GREEN notification (recovery)"
+          else
+            echo "type=none" >> $GITHUB_OUTPUT
+            echo "should_notify=false" >> $GITHUB_OUTPUT
+            echo "No notification needed (already green)"
+          fi
+
+      - name: Parse failed jobs
+        id: failed-jobs
+        if: steps.current-status.outputs.status == 'failure'
+        run: |
+          NEEDS_CONTEXT='${{ toJson(needs) }}'
+
+          # Extract failed job names
+          FAILED_JOBS=$(echo "$NEEDS_CONTEXT" | jq -r '
+            to_entries
+            | map(select(.value.result == "failure"))
+            | map("• " + .key)
+            | join("\n")
+          ')
+
+          if [ -z "$FAILED_JOBS" ]; then
+            FAILED_JOBS="• Multiple jobs failed"
+          fi
+
+          echo "Failed jobs:"
+          echo "$FAILED_JOBS"
+
+          # Store for Slack payload (escape for JSON)
+          echo "jobs<<EOF" >> $GITHUB_OUTPUT
+          echo "$FAILED_JOBS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Load failure metadata for GREEN notification
+        id: failure-metadata
+        if: steps.notification-type.outputs.type == 'back_to_green'
+        run: |
+          if [ -f .pipeline-state/failure-time.txt ]; then
+            FAILURE_TIME=$(cat .pipeline-state/failure-time.txt)
+            echo "failure_time=$FAILURE_TIME" >> $GITHUB_OUTPUT
+
+            # Calculate time since failure
+            CURRENT_TIME=$(date +%s)
+            TIME_DIFF=$((CURRENT_TIME - FAILURE_TIME))
+
+            # Format time difference (smart: 5 min, 18 minutes, 2h 34m, 1d 3h)
+            if [ $TIME_DIFF -lt 60 ]; then
+              TIME_DISPLAY="${TIME_DIFF} sec"
+            elif [ $TIME_DIFF -lt 3600 ]; then
+              MINUTES=$((TIME_DIFF / 60))
+              if [ $MINUTES -eq 1 ]; then
+                TIME_DISPLAY="1 minute"
+              else
+                TIME_DISPLAY="${MINUTES} minutes"
+              fi
+            elif [ $TIME_DIFF -lt 86400 ]; then
+              HOURS=$((TIME_DIFF / 3600))
+              MINUTES=$(((TIME_DIFF % 3600) / 60))
+              TIME_DISPLAY="${HOURS}h ${MINUTES}m"
+            else
+              DAYS=$((TIME_DIFF / 86400))
+              HOURS=$(((TIME_DIFF % 86400) / 3600))
+              TIME_DISPLAY="${DAYS}d ${HOURS}h"
+            fi
+
+            echo "time_since_failure=$TIME_DISPLAY" >> $GITHUB_OUTPUT
+          else
+            echo "time_since_failure=unknown" >> $GITHUB_OUTPUT
+          fi
+
+          # Load failed jobs from previous RED notification
+          if [ -f .pipeline-state/failed-jobs.txt ]; then
+            FAILED_JOBS=$(cat .pipeline-state/failed-jobs.txt | sed 's/^• /• /; s/$/ ✅ now passing/')
+            echo "previously_failed<<EOF" >> $GITHUB_OUTPUT
+            echo "$FAILED_JOBS" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "previously_failed=• All jobs ✅ now passing" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Map git author to Slack user ID
+        id: slack-author
+        run: |
+          GIT_AUTHOR="${{ github.actor }}"
+
+          # Author mapping (git username → Slack user ID)
+          case "$GIT_AUTHOR" in
+            "undeadgrishnackh")
+              SLACK_USER="<@U05HX4GEVGR>"  # michele.brissoni@brix.consulting
+              ;;
+            "11PJ11")
+              SLACK_USER="<@U07G5FJBN85>"  # alessandro.digioia@brix.consulting
+              ;;
+            *)
+              SLACK_USER="$GIT_AUTHOR"  # Fallback to plaintext
+              echo "::warning::Author mapping missing for '$GIT_AUTHOR'"
+              ;;
+          esac
+
+          echo "author=$SLACK_USER" >> $GITHUB_OUTPUT
+          echo "Slack author: $SLACK_USER"
+
+      - name: Truncate commit message
+        id: commit-msg
+        run: |
+          MSG="${{ github.event.head_commit.message }}"
+          FIRST_LINE=$(echo "$MSG" | head -1)
+
+          if [ ${#FIRST_LINE} -gt 100 ]; then
+            TRUNCATED="${FIRST_LINE:0:97}..."
+          else
+            TRUNCATED="$FIRST_LINE"
+          fi
+
+          echo "message=$TRUNCATED" >> $GITHUB_OUTPUT
+
+      - name: Get current timestamp
+        id: timestamp
+        run: |
+          CURRENT_TIMESTAMP=$(date +%s)
+          echo "unix=$CURRENT_TIMESTAMP" >> $GITHUB_OUTPUT
+          echo "Current Unix timestamp: $CURRENT_TIMESTAMP"
+
+      - name: Send RED notification (failure)
+        if: steps.notification-type.outputs.type == 'failure'
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          webhook-type: incoming-webhook
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "🔴 Pipeline Failed: ${{ github.workflow }}",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Branch:*\n${{ github.ref_name }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Author:*\n${{ steps.slack-author.outputs.author }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "📝 *${{ steps.commit-msg.outputs.message }}*\nCommit: `${{ github.sha }}`"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*❌ Failed Jobs:*\n${{ steps.failed-jobs.outputs.jobs }}"
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Run"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                      "style": "danger"
+                    },
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Commit"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "⏱️ Failed at: <!date^${{ steps.timestamp.outputs.unix }}^{date_short_pretty} at {time}|timestamp>"
+                    }
+                  ]
+                }
+              ]
+            }
+
+      - name: Send GREEN notification (recovery)
+        if: steps.notification-type.outputs.type == 'back_to_green'
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          webhook-type: incoming-webhook
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "✅ Pipeline Recovered: ${{ github.workflow }}",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Branch:*\n${{ github.ref_name }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Fixed by:*\n${{ steps.slack-author.outputs.author }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "📝 *${{ steps.commit-msg.outputs.message }}*\nCommit: `${{ github.sha }}`"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "🎉 *Back to green* after ${{ steps.failure-metadata.outputs.time_since_failure }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Previously failed:*\n${{ steps.failure-metadata.outputs.previously_failed }}"
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Run"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                      "style": "primary"
+                    },
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Commit"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "🟢 All systems healthy"
+                    }
+                  ]
+                }
+              ]
+            }
+
+      - name: Save current state for next run
+        if: always()
+        run: |
+          mkdir -p .pipeline-state
+          echo "${{ steps.current-status.outputs.status }}" > .pipeline-state/status.txt
+
+          # If failure, save metadata for future GREEN notification
+          if [[ "${{ steps.current-status.outputs.status }}" == "failure" ]]; then
+            date +%s > .pipeline-state/failure-time.txt
+            echo "${{ steps.failed-jobs.outputs.jobs }}" > .pipeline-state/failed-jobs.txt
+          fi
+
+          # If success, clear failure metadata
+          if [[ "${{ steps.current-status.outputs.status }}" == "success" ]]; then
+            rm -f .pipeline-state/failure-time.txt
+            rm -f .pipeline-state/failed-jobs.txt
+          fi
+
+      - name: Cache current state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .pipeline-state
+          key: pipeline-state-${{ github.ref }}-${{ github.run_id }}
