@@ -6,11 +6,11 @@ This test will intentionally fail, then be fixed to trigger both notification ty
 
 def test_red_green_notification_flow():
     """
-    Intentional failure to test RED notification.
+    Test to verify GREEN notification after fixing RED.
 
-    Expected flow:
-    1. This test fails → RED notification sent to #cicd with @mention
-    2. Test gets fixed → GREEN notification sent showing recovery
-    3. Test file removed → Back to normal
+    Flow:
+    1. Previous commit: Test failed → RED notification sent
+    2. This commit: Test fixed → GREEN notification with recovery time
+    3. Next commit: Test file removed → Back to normal
     """
-    assert False, "🔴 RED TEST: Intentional failure to test notification system"
+    assert True, "✅ GREEN TEST: Test fixed to trigger GREEN notification"
