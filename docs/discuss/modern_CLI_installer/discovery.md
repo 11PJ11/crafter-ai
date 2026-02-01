@@ -482,4 +482,106 @@ Solution Testing and Market Viability phases will occur after US-001 through US-
 
 ---
 
-*Discovery conducted following 4-phase methodology: Problem Validation, Opportunity Mapping, Solution Testing, Market Viability. Evidence grounded in competitive research from docs/research/modern_CLI_installer/.*
+---
+
+## 8. Real User Feedback: Alpha Testing Interview
+
+**Date**: 2026-01-31
+**Interviewee**: Mike (Product Owner / Technical Lead)
+**Context**: First-hand experience installing nWave alpha version
+
+### Interview Findings
+
+#### Q1: First Impression of Terminal Output
+**Answer**: "All of them" - the alpha installation exhibited ALL four anti-patterns:
+- Wall of text (overwhelming)
+- Too minimal (unclear what's happening)
+- Confusing structure (couldn't follow the flow)
+- Technical jargon (not user-friendly)
+
+**Severity**: CRITICAL - Every major UX anti-pattern present simultaneously.
+
+#### Q2: Shock Moment
+**Answer**: "At the start because the doc said to run a python command that went immediately in error because the reality was that I had to run it inside a pipenv shell"
+
+**Root Cause**: Documentation assumed environment state that wasn't true. User hit immediate failure before installation even began.
+
+**Severity**: CRITICAL - Pre-flight environment validation completely missing.
+
+#### Q3: Recovery Path
+**Answer**: "I'm a tech guy, so I figured out by myself. Nevertheless the error shouldn't be happening. We gotta provide the right command to start the installation and the installation should have a proper welcome with logo, and a seamless flow with modern TUI with emoji and spinners to showcase a sense of progress and to cluster information in a meaningful way."
+
+**Key Requirements Identified**:
+1. Correct command in documentation (prevent the error)
+2. Proper welcome with branded logo
+3. Seamless flow with modern TUI
+4. Emoji for visual hierarchy
+5. Spinners for progress feedback
+6. Meaningful information clustering
+
+#### Q4: UX Reference Preference
+**Answer**: "Astro/Vite - playful, branded, celebratory"
+
+**Design Direction**: ASCII art, emoji, "Houston we have liftoff!" energy. NOT minimal Homebrew style.
+
+#### Q5: Priority Feature
+**Answer**: "Pre-flight check - verify environment before starting"
+
+**Implication**: Detect Python version, pipenv/venv state, permissions BEFORE failing. Would have prevented the shock moment entirely.
+
+#### Q6: Post-Install Gaps
+**Answer**: "I had no doctor to understand if the installation was working, then I didn't know how to go into Claude and see if there was working and which version we installed"
+
+**Missing Elements**:
+1. No doctor command to verify installation health
+2. No verification that nWave was properly integrated with Claude
+3. No version visibility after installation
+
+#### Q7: Emotional Journey
+**Answer**: "Curious → Shocked → Motivated to fix it"
+
+**Insight**: The poor experience directly motivated this discovery effort and the modern_CLI_installer epic.
+
+---
+
+### Impact on User Stories
+
+Based on alpha testing feedback, the following adjustments are recommended:
+
+| Story | Original Priority | Adjusted Priority | Reason |
+|-------|------------------|-------------------|--------|
+| US-000 (NEW) | N/A | **P0 - CRITICAL** | Pre-flight environment check - prevents shock moment |
+| US-005 | P1 | **P0** | Branded first-run experience - essential, not nice-to-have |
+| US-002 | P0 | P0 (confirmed) | Doctor command - explicitly requested |
+
+### New User Story: US-000 (Pre-flight Check)
+
+**US-000: Pre-flight Environment Validation**
+> As a user about to install nWave, I want the installer to verify my environment is ready so that I don't hit confusing errors.
+
+Acceptance Criteria:
+- Check Python version (3.10+ required)
+- Detect if running in pipenv/venv/conda environment
+- Verify write permissions for install location
+- Check for conflicting installations
+- Display clear, actionable messages for each failed check
+- Suggest exact commands to fix issues
+- Allow `--skip-checks` for advanced users
+
+**This story becomes the FIRST implementation priority based on real user feedback.**
+
+---
+
+### Design Principles Derived from Feedback
+
+1. **Never fail silently** - Every operation shows clear status
+2. **Prevent errors, don't just report them** - Pre-flight checks
+3. **Astro energy** - Playful, branded, celebratory, not sterile
+4. **Information clustering** - Group related info, don't dump walls of text
+5. **Progress visibility** - Spinners, progress bars, emoji status indicators
+6. **Verification at every step** - User always knows "did it work?"
+7. **Version transparency** - Always show what version is installed/running
+
+---
+
+*Discovery conducted following 4-phase methodology: Problem Validation, Opportunity Mapping, Solution Testing, Market Viability. Evidence grounded in competitive research from docs/research/modern_CLI_installer/ and real user alpha testing interview.*
