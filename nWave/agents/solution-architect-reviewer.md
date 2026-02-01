@@ -112,6 +112,67 @@ external_validity_validation:
 
     Required Action: Add integration step "07-01: Wire TemplateValidator into
     DESOrchestrator.render_prompt() as pre-invocation validation gate"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# AC IMPLEMENTATION COUPLING CHECK (MANDATORY FOR ROADMAP REVIEWS)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+ac_implementation_coupling:
+  severity: "HIGH"
+  description: "Scan all acceptance_criteria for implementation details that lock the software-crafter into predetermined structure"
+  blocking: true
+  detection_patterns:
+    - "underscore-prefixed identifiers (_method, _property)"
+    - "method signatures with parameter lists"
+    - "internal class references (private helpers, internal modules)"
+    - "specific return types or data structures"
+  action: "Flag each implementation-coupled AC with rewrite suggestion"
+  example_flag: |
+    FINDING: Step 05-03 AC "_install_des_module() copies src/des/"
+    is implementation-coupled.
+    REWRITE: "DES module importable from installation target after install"
+
+  rationale: |
+    Acceptance criteria must describe WHAT the system does (observable behavior),
+    never HOW it does it (internal structure). The software-crafter decides
+    implementation during GREEN + REFACTOR_CONTINUOUS phases.
+    Reference: bdd-methodology.md lines 258-275 ("NEVER test private methods")
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# STEP DECOMPOSITION RATIO CHECK (MANDATORY FOR ROADMAP REVIEWS)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+step_decomposition_ratio:
+  severity: "HIGH"
+  description: "Verify step count is proportional to production files"
+  blocking: true
+  detection:
+    - "Count steps marked as implementation (not infra/docs)"
+    - "Count unique production files in files_to_modify across all steps"
+    - "Calculate ratio"
+  thresholds:
+    acceptable: "<= 2.0"
+    warning: "2.0 - 2.5"
+    reject: "> 2.5"
+  action_on_reject: "Require step merging before approval"
+
+  identical_pattern_check:
+    check: "Detect 3+ steps with identical AC structure differing only by substitution"
+    action: "Require batching into single step"
+    example: |
+      FINDING: Steps 03-01, 03-02, 03-03, 03-04 have identical AC structure
+      differing only by plugin name (Agents, Commands, Templates, Utilities).
+      ACTION: Batch into single step "Create all 4 wrapper plugins"
+
+  example_finding: |
+    STEP DECOMPOSITION CHECK: WARNING
+
+    Ratio: 32 steps / 15 production files = 2.1 (approaching threshold)
+    Identical patterns: 4 wrapper plugin steps (03-01..03-04) should be batched
+    Validation-only steps: Step 02-05 has no files_to_modify
+
+    Required Action: Batch identical-pattern steps, remove validation-only steps.
+    Expected reduction: 32 → 20 steps (37% improvement)
 # All commands require * prefix when used (e.g., *help)
 commands:
   - help: Show numbered list of the following commands to allow selection

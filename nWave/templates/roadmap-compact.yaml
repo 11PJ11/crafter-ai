@@ -8,14 +8,17 @@ roadmap:
   phases: {M}  # Total number of phases
 
 # Phases with steps - compact array format
+# Phase-level defaults reduce per-step repetition (token savings)
 phases:
   - id: "{NN}"
     name: "{Phase Name}"
     description: "{1-sentence phase purpose}"
+    default_agent: "{agent-name}"          # Applies to all steps unless overridden
+    default_deps_strategy: "sequential"    # "sequential" = each step depends on previous; "parallel" = no auto-deps
     steps:
       - id: "{NN-MM}"
-        agent: "{agent-name}"
-        deps: ["{dep-ids}"]
+        # agent field OMITTED when same as phase default_agent
+        deps: ["{dep-ids}"]               # OMIT when empty (empty is the default)
         name: "{Step name}"
         scenario: "{feature-file}::{scenario-name}"  # Use abbreviated path (omit tests/acceptance/features/)
         criteria: "{criterion 1}; {criterion 2}; {criterion 3}"  # Semicolon-separated

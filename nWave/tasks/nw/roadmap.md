@@ -112,120 +112,13 @@ Extract the second argument (goal description):
 - Example: `"Migrate monolith to microservices"`
 - This is the high-level objective the roadmap will plan for
 
-### STEP 3.5: Baseline File Validation Gate (BLOCKING)
+### STEP 3.5: Baseline Validation (Schema v2.0)
 
-**This gate BLOCKS roadmap creation until baseline measurement file exists.**
+<!-- Baseline file validation gate removed in Schema v2.0 -->
+<!-- Baseline files eliminated as write-only artifacts (300k token savings) -->
+<!-- All measurement data now embedded directly in roadmap via measurement_gate section -->
 
-#### 3.5.1: Derive Project ID
-
-Convert goal description to kebab-case project ID:
-- "Optimize test execution time" -> "optimize-test-execution-time"
-- "Migrate to microservices" -> "migrate-to-microservices"
-
-Rules:
-- Lowercase all characters
-- Replace spaces with hyphens
-- Remove special characters except hyphens
-- Collapse multiple hyphens to single hyphen
-
-#### 3.5.2: Check Baseline File Existence
-
-Expected path: `docs/feature/{project-id}/baseline.yaml`
-
-Use the Read tool to check if file exists:
-- If file exists AND is valid YAML: Proceed to 3.5.3
-- If file exists but invalid YAML: Return syntax error
-- If file NOT found: Return blocking error (3.5.4)
-
-#### 3.5.3: Validate Baseline Structure
-
-Check required fields based on baseline type:
-
-For `performance_optimization`:
-- [ ] `baseline.measurements.baseline_metric.value` is a number
-- [ ] `baseline.measurements.breakdown` has >= 2 categories
-- [ ] `baseline.measurements.bottleneck_ranking` is present
-- [ ] `baseline.target.evidence_achievable` is non-empty
-- [ ] No placeholder values detected
-
-For `process_improvement`:
-- [ ] At least one evidence section present (incident_references OR failure_modes OR stakeholder_input)
-- [ ] `simplest_alternatives_considered` has >= 1 alternative
-
-For `feature_development`:
-- [ ] `current_state.description` is non-empty
-- [ ] `simplest_alternatives_considered` has >= 1 alternative
-
-If validation fails, return specific error:
-```
-BASELINE VALIDATION FAILED
-
-File: docs/feature/{project-id}/baseline.yaml
-Issue: {specific validation failure}
-
-Please fix the baseline file and retry.
-```
-
-#### 3.5.4: Blocking Error (File Not Found)
-
-If baseline file does not exist, return this error and STOP:
-
-```
-================================================================================
-ROADMAP BLOCKED: Baseline measurement file not found
-================================================================================
-
-Expected location: docs/feature/{project-id}/baseline.yaml
-
-WHAT TO DO:
-
-⚠️ Schema v2.0: Baseline files eliminated. Add measurement data directly to roadmap:
-
-  In roadmap.yaml, add measurement_gate section:
-    measurement_gate:
-      gate_type: "baseline"
-      baseline_measurements:
-        current_performance: "15 minutes test execution"
-        target_performance: "3 minutes test execution"
-      rejected_simple_alternatives:
-        - alternative: "Upgrade CI runner"
-          reason: "Cost prohibitive"
-
-WHY IS THIS REQUIRED?
-
-  Roadmaps created without measurement data often address the wrong problem.
-  This gate ensures:
-  - The problem is quantified BEFORE solution design
-  - The LARGEST bottleneck is identified
-  - Quick wins are considered BEFORE complex solutions
-
-  Reference: Incident ROADMAP-2025-12-03-001
-
-FOR PROCESS IMPROVEMENTS (non-performance):
-  Create baseline with type: "process_improvement"
-  Include incident references or failure mode evidence
-  Timing metrics are NOT required for process improvements
-
-================================================================================
-```
-
-#### 3.5.5: Pass Baseline Data to Agent
-
-If baseline validation passes, extract key data for agent:
-
-```
-Baseline Summary (from docs/feature/{project-id}/baseline.yaml):
-- Type: {baseline.type}
-- Problem: {baseline.problem_statement.summary}
-- Largest Bottleneck: {baseline.measurements.bottleneck_ranking[0].component} ({baseline.measurements.bottleneck_ranking[0].impact})
-- Quick Win Identified: {baseline.quick_wins[0].action} (Effort: {effort}, Impact: {expected_impact})
-- Target: {baseline.target.current} -> {baseline.target.proposed} ({baseline.target.improvement_factor} improvement)
-
-The roadmap MUST address the largest bottleneck first.
-Quick wins should be Phase 1 before complex solutions.
-```
-
-Include this summary in the Task tool prompt after "Task type: roadmap".
+**Schema v2.0**: Baseline files are no longer required as separate artifacts. The orchestrator (develop.md) embeds measurement data directly in the roadmap creation prompt. If measurement context is available, it is passed inline to the architect agent.
 
 ### Parameter Parsing Rules
 
@@ -523,7 +416,10 @@ The invoked agent must accomplish (Reference Only):
 - [ ] Unique project ID in kebab-case
 - [ ] All phases numbered sequentially
 - [ ] Each step contains enough information to be self-contained
-- [ ] Acceptance criteria are specific and measurable
+- [ ] Acceptance criteria are specific, measurable, and BEHAVIORAL (no private methods, no internal structure)
+- [ ] Step decomposition ratio <= 2.5 (steps / production files)
+- [ ] No 3+ identical-pattern steps (must be batched)
+- [ ] No validation-only steps (validation belongs in REVIEW phase)
 - [ ] Dependencies properly mapped between steps
 - [ ] Time estimates provided for planning
 - [ ] File saved as `docs/feature/{project-id}/roadmap.yaml`

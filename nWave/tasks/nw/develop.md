@@ -744,6 +744,161 @@ DELIVERABLES:
 
 ---
 
+### STEP 5.5: Roadmap Quality Gate (Automated — Zero Token Cost)
+
+**Objective**: Deterministic rule-based validation of roadmap quality BEFORE reviewer sees it. Catches implementation-coupled AC, over-decomposition, and identical-pattern steps.
+
+**Key Properties**:
+- Runs in orchestrator context (no agent invocation = zero token cost)
+- Rule-based and deterministic (not LLM judgment = consistent)
+- Catches issues BEFORE the reviewer (faster feedback loop)
+- Findings fed back to architect for one revision pass (max 1 cycle)
+
+**Actions**:
+
+1. **Run automated validation** (embedded script):
+   ```python
+   def validate_roadmap_quality(roadmap_path, project_id):
+       """
+       Automated post-processing validation for roadmap quality.
+       Runs AFTER architect creates roadmap, BEFORE reviewer evaluates it.
+       Zero token cost (no agent invocation).
+       """
+       import yaml, re
+
+       with open(roadmap_path, 'r') as f:
+           roadmap = yaml.safe_load(f)
+
+       findings = []
+
+       # ── CHECK 1: AC Implementation Coupling ──────────────────────
+       # Detect underscore-prefixed identifiers in acceptance criteria
+       underscore_pattern = re.compile(r'_[a-z]\w*\(')  # _method_name(
+       internal_pattern = re.compile(r'context\.\w+\._')  # context.obj._private
+
+       for phase in roadmap.get('phases', []):
+           for step in phase.get('steps', []):
+               for ac in step.get('acceptance_criteria', step.get('criteria', '').split(';')):
+                   ac = ac.strip() if isinstance(ac, str) else str(ac)
+                   if underscore_pattern.search(ac):
+                       findings.append({
+                           'severity': 'HIGH',
+                           'check': 'AC_IMPLEMENTATION_COUPLING',
+                           'step': step.get('step_id', step.get('id', '?')),
+                           'criterion': ac,
+                           'reason': 'References private method (underscore prefix)'
+                       })
+                   if internal_pattern.search(ac):
+                       findings.append({
+                           'severity': 'HIGH',
+                           'check': 'AC_IMPLEMENTATION_COUPLING',
+                           'step': step.get('step_id', step.get('id', '?')),
+                           'criterion': ac,
+                           'reason': 'References internal object property'
+                       })
+
+       # ── CHECK 2: Step Decomposition Ratio ────────────────────────
+       all_steps = []
+       all_files = set()
+       for phase in roadmap.get('phases', []):
+           for step in phase.get('steps', []):
+               all_steps.append(step)
+               for f in step.get('files_to_modify', []):
+                   all_files.add(f)
+
+       if all_files:
+           ratio = len(all_steps) / len(all_files)
+           if ratio > 2.5:
+               findings.append({
+                   'severity': 'HIGH',
+                   'check': 'STEP_DECOMPOSITION_RATIO',
+                   'ratio': f'{ratio:.1f}',
+                   'steps': len(all_steps),
+                   'files': len(all_files),
+                   'reason': f'Ratio {ratio:.1f} exceeds 2.5 threshold'
+               })
+
+       # ── CHECK 3: Identical Pattern Detection ─────────────────────
+       from collections import Counter
+       ac_templates = []
+       for step in all_steps:
+           normalized = []
+           criteria = step.get('acceptance_criteria', [])
+           if isinstance(criteria, str):
+               criteria = [c.strip() for c in criteria.split(';')]
+           for ac in criteria:
+               norm = re.sub(r'[A-Z][a-z]+Plugin', 'XPlugin', str(ac))
+               norm = re.sub(r'install_\w+_impl', 'install_X_impl', norm)
+               norm = re.sub(r"'[a-z]+'", "'X'", norm)
+               normalized.append(norm)
+           ac_templates.append(tuple(sorted(normalized)))
+
+       template_counts = Counter(ac_templates)
+       for template, count in template_counts.items():
+           if count >= 3:
+               matching_steps = [
+                   s.get('step_id', s.get('id', '?'))
+                   for s, t in zip(all_steps, ac_templates)
+                   if t == template
+               ]
+               findings.append({
+                   'severity': 'HIGH',
+                   'check': 'IDENTICAL_PATTERN_UNBATCHED',
+                   'count': count,
+                   'steps': matching_steps,
+                   'reason': f'{count} steps with identical AC structure should be batched'
+               })
+
+       # ── CHECK 4: Validation-Only Steps (No-Op Detection) ────────
+       for step in all_steps:
+           files = step.get('files_to_modify', [])
+           name_lower = step.get('name', '').lower()
+           if not files and any(kw in name_lower for kw in ['validate', 'verify', 'check', 'confirm']):
+               findings.append({
+                   'severity': 'MEDIUM',
+                   'check': 'VALIDATION_ONLY_STEP',
+                   'step': step.get('step_id', step.get('id', '?')),
+                   'name': step.get('name'),
+                   'reason': 'Step has no files_to_modify and name suggests validation-only'
+               })
+
+       return findings
+   ```
+
+2. **Evaluate findings and act**:
+   ```python
+   # After solution-architect creates roadmap.yaml:
+   findings = validate_roadmap_quality(
+       f'docs/feature/{project_id}/roadmap.yaml',
+       project_id
+   )
+
+   high_findings = [f for f in findings if f['severity'] == 'HIGH']
+
+   if high_findings:
+       print(f"\n{'='*60}")
+       print(f"ROADMAP QUALITY GATE: {len(high_findings)} HIGH severity findings")
+       print(f"{'='*60}\n")
+
+       for f in high_findings:
+           print(f"[{f['check']}] {f.get('step', 'global')}: {f['reason']}")
+
+       print(f"\nReturning roadmap to architect for revision...")
+       # Re-invoke architect with findings as feedback (max 1 revision cycle)
+       # If architect doesn't fix HIGH findings, reviewer will catch them (defense in depth)
+   else:
+       print(f"✓ Roadmap quality gate passed (0 HIGH findings)")
+       # Proceed directly to reviewer
+   ```
+
+**Success Criteria**:
+- Automated validation executed against roadmap.yaml
+- HIGH findings reported to user
+- If HIGH findings: architect re-invoked with feedback (max 1 revision)
+- If no HIGH findings: proceed to reviewer
+
+---
+
 ### STEP 6: Phase 4 - Review Roadmap - Software Crafter (with Retry)
 
 **Objective**: Validate roadmap technical feasibility and implementation approach.
