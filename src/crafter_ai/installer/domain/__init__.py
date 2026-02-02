@@ -17,6 +17,7 @@ from .check_result import CheckResult, CheckSeverity
 from .health_checker import HealthChecker
 from .health_result import HealthResult, HealthStatus
 
+
 __all__ = [
     "ArtifactRegistry",
     "BumpType",

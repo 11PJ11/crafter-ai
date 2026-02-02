@@ -5,7 +5,8 @@ Provides a no-op logging implementation for testing environments where
 log output is not needed or desired.
 """
 
-from typing import Any, Dict
+from typing import Any
+
 from src.des.ports.driven_ports.logging_port import LoggingPort
 
 
@@ -17,7 +18,7 @@ class SilentLogger(LoggingPort):
     where log output would clutter test results or is unnecessary.
     """
 
-    def log_validation_result(self, result: Any, context: Dict[str, Any]) -> None:
+    def log_validation_result(self, result: Any, context: dict[str, Any]) -> None:
         """
         No-op implementation of log_validation_result.
 
@@ -37,7 +38,7 @@ class SilentLogger(LoggingPort):
         """
         pass
 
-    def log_error(self, error: Exception, context: Dict[str, Any]) -> None:
+    def log_error(self, error: Exception, context: dict[str, Any]) -> None:
         """
         No-op implementation of log_error.
 

@@ -11,9 +11,8 @@ BUSINESS VALUE:
 - Enforce discipline: Require explicit limit configuration per TDD methodology
 """
 
-from pathlib import Path
 from dataclasses import dataclass, field
-from typing import List
+from pathlib import Path
 
 
 @dataclass
@@ -27,8 +26,8 @@ class InvocationLimitsResult:
     """
 
     is_valid: bool
-    errors: List[str] = field(default_factory=list)
-    guidance: List[str] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
+    guidance: list[str] = field(default_factory=list)
 
 
 class InvocationLimitsValidator:

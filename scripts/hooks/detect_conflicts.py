@@ -8,6 +8,7 @@ Suggests manual review before commit.
 import subprocess
 import sys
 
+
 # Color codes
 RED = "\033[0;31m"
 YELLOW = "\033[1;33m"

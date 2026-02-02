@@ -1,9 +1,8 @@
 """Validation and error detection for release packages."""
 
 import json
-from pathlib import Path
-from typing import Dict, List, Optional
 from dataclasses import dataclass
+from pathlib import Path
 
 
 class MissingArtifactsValidator:
@@ -14,7 +13,7 @@ class MissingArtifactsValidator:
         """Error for missing artifacts."""
 
         platform: str
-        missing_files: List[str]
+        missing_files: list[str]
         remediation: str
 
     PLATFORM_REQUIREMENTS = {
@@ -43,14 +42,12 @@ class MissingArtifactsValidator:
     def __init__(self, dist_dir: Path):
         self.dist_dir = Path(dist_dir)
 
-    def validate_platform_artifacts(
-        self, platform: str
-    ) -> Optional[MissingArtifactError]:
+    def validate_platform_artifacts(self, platform: str) -> MissingArtifactError | None:
         """Check if all platform artifacts exist."""
         required = self.PLATFORM_REQUIREMENTS.get(platform, [])
         missing = []
 
-        for artifact in required:
+        for _artifact in required:
             _archive_name = (
                 f"nwave-{platform}-*.zip"  # Placeholder for future validation
             )
@@ -66,10 +63,10 @@ class MissingArtifactsValidator:
 
         return None
 
-    def validate_all_platforms(self) -> List[MissingArtifactError]:
+    def validate_all_platforms(self) -> list[MissingArtifactError]:
         """Validate all platform artifacts."""
         errors = []
-        for platform in self.PLATFORM_REQUIREMENTS.keys():
+        for platform in self.PLATFORM_REQUIREMENTS:
             error = self.validate_platform_artifacts(platform)
             if error:
                 errors.append(error)
@@ -91,7 +88,7 @@ class ChecksumMismatchValidator:
     def __init__(self, checksums_file: Path):
         self.checksums_file = Path(checksums_file)
 
-    def load_checksums(self) -> Dict[str, str]:
+    def load_checksums(self) -> dict[str, str]:
         """Load checksums from checksums file."""
         if not self.checksums_file.exists():
             raise FileNotFoundError(f"Checksums file not found: {self.checksums_file}")
@@ -101,7 +98,7 @@ class ChecksumMismatchValidator:
 
     def verify_checksum(
         self, filename: str, file_path: Path, expected_checksum: str
-    ) -> Optional[ChecksumMismatchError]:
+    ) -> ChecksumMismatchError | None:
         """Verify a file's checksum."""
         import hashlib
 
@@ -127,7 +124,7 @@ class ChecksumMismatchValidator:
 
         return None
 
-    def verify_all_checksums(self, archive_dir: Path) -> List[ChecksumMismatchError]:
+    def verify_all_checksums(self, archive_dir: Path) -> list[ChecksumMismatchError]:
         """Verify all checksums in the checksums file."""
         checksums = self.load_checksums()
         errors = []
@@ -151,8 +148,8 @@ class VersionConflictValidator:
 
         configuration_version: str
         tag_version: str
-        archive_versions: List[str]
-        resolution_steps: List[str]
+        archive_versions: list[str]
+        resolution_steps: list[str]
 
     def __init__(self, project_root: Path):
         self.project_root = Path(project_root)
@@ -174,7 +171,7 @@ class VersionConflictValidator:
 
         return version
 
-    def get_git_tag_version(self) -> Optional[str]:
+    def get_git_tag_version(self) -> str | None:
         """Get version from latest git tag."""
         import subprocess
 
@@ -196,7 +193,7 @@ class VersionConflictValidator:
 
         return None
 
-    def validate_version_consistency(self) -> Optional[VersionConflictError]:
+    def validate_version_consistency(self) -> VersionConflictError | None:
         """Validate that versions are consistent."""
         config_version = self.get_configuration_version()
         tag_version = self.get_git_tag_version()
@@ -221,9 +218,7 @@ class VersionConflictValidator:
 
         return None
 
-    def validate_archive_versions(
-        self, dist_dir: Path
-    ) -> Optional[VersionConflictError]:
+    def validate_archive_versions(self, dist_dir: Path) -> VersionConflictError | None:
         """Validate that archive versions match configuration."""
         config_version = self.get_configuration_version()
         archive_versions = []

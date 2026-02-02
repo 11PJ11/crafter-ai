@@ -18,6 +18,7 @@ TEST STRATEGY: Classical TDD (real domain objects, no mocking inside hexagon)
 
 import json
 from datetime import datetime, timedelta, timezone
+
 from src.des.application.stale_execution_detector import StaleExecutionDetector
 
 

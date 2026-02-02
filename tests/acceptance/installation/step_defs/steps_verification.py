@@ -10,7 +10,8 @@ Cross-platform compatible (Windows, macOS, Linux).
 
 import re
 
-from pytest_bdd import scenarios, given, when, then, parsers
+from pytest_bdd import given, parsers, scenarios, then, when
+
 
 # Load scenarios from feature files
 scenarios("../features/04_post_installation.feature")

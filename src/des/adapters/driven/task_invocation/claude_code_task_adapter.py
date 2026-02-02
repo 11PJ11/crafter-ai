@@ -5,7 +5,8 @@ Provides integration with the actual Claude Code Task tool for invoking
 sub-agents in production environments.
 """
 
-from typing import Dict, Any
+from typing import Any
+
 from src.des.ports.driven_ports.task_invocation_port import TaskInvocationPort
 
 
@@ -17,7 +18,7 @@ class ClaudeCodeTaskAdapter(TaskInvocationPort):
     sub-agents and return their results.
     """
 
-    def invoke_task(self, prompt: str, agent: str) -> Dict[str, Any]:
+    def invoke_task(self, prompt: str, agent: str) -> dict[str, Any]:
         """
         Invoke a sub-agent task using the Claude Code Task tool.
 

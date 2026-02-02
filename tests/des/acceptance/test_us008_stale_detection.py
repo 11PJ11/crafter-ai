@@ -16,8 +16,8 @@ WAVE: DISTILL (Acceptance Test Creation)
 STATUS: RED (Outside-In TDD - awaiting DEVELOP wave implementation)
 """
 
-from datetime import datetime, timedelta, timezone
 import json
+from datetime import datetime, timedelta, timezone
 
 from src.des.application.stale_execution_detector import StaleExecutionDetector
 
@@ -652,8 +652,8 @@ class TestSessionScopedStaleDetection:
         (tmp_project_root / "steps" / "01-01.json").write_text(json.dumps(step_data))
 
         # Act: Run stale detection and verify no daemon
-        import threading
         import multiprocessing
+        import threading
 
         initial_threads = threading.active_count()
         initial_processes = len(multiprocessing.active_children())

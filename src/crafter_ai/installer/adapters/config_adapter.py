@@ -131,7 +131,7 @@ class FileConfigAdapter:
         """
         config_file = self.get_config_dir() / "config.yaml"
         if config_file.exists():
-            with open(config_file, "r") as f:
+            with open(config_file) as f:
                 loaded: Any = yaml.safe_load(f)
                 self._config = loaded if loaded else {}
         else:

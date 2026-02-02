@@ -42,7 +42,6 @@ import os
 import sys
 from enum import Enum
 from pathlib import Path
-from typing import Optional
 
 
 # CI platform environment variable mappings
@@ -154,7 +153,7 @@ def is_ci_environment() -> bool:
     return any(bool(os.environ.get(var, "")) for var in ci_env_vars)
 
 
-def get_ci_platform() -> Optional[str]:
+def get_ci_platform() -> str | None:
     """Get the specific CI platform if running in a CI environment.
 
     Identifies the CI platform based on environment variables in order

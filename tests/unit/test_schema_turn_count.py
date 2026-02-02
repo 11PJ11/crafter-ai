@@ -4,9 +4,10 @@ Unit tests for turn_count field in phase_execution_log schema.
 Infrastructure step: Validates schema accepts turn_count integer field.
 """
 
-import pytest
 import json
 from pathlib import Path
+
+import pytest
 
 
 class TestSchemaTurnCountField:
@@ -27,7 +28,7 @@ class TestSchemaTurnCountField:
     @pytest.fixture
     def schema(self, schema_file_path):
         """Load schema from file."""
-        with open(schema_file_path, "r") as f:
+        with open(schema_file_path) as f:
             return json.load(f)
 
     def test_phase_execution_log_schema_exists(self, schema):

@@ -4,8 +4,9 @@ Unit tests for turn_count persistence functionality.
 Tests the implementation of turn_count persistence in SubagentStopHook.
 """
 
-import pytest
 import json
+
+import pytest
 from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
 
 
@@ -66,13 +67,13 @@ class TestTurnCountPersistenceUnit:
         )
 
         # THEN: Step file updated with turn_count in RED_ACCEPTANCE phase
-        with open(temp_step_file, "r") as f:
+        with open(temp_step_file) as f:
             step_data = json.load(f)
 
         phase_log = step_data.get("tdd_cycle", {}).get("phase_execution_log", [])
-        red_acceptance_phase = [
+        red_acceptance_phase = next(
             p for p in phase_log if p.get("phase_name") == "RED_ACCEPTANCE"
-        ][0]
+        )
 
         assert red_acceptance_phase.get("turn_count") == 5, (
             "turn_count not persisted to phase"
@@ -125,14 +126,14 @@ class TestTurnCountPersistenceUnit:
         hook.persist_turn_count(str(step_file), phase_name="RED_UNIT", turn_count=6)
 
         # THEN: All phases updated
-        with open(step_file, "r") as f:
+        with open(step_file) as f:
             step_data = json.load(f)
 
         phase_log = step_data.get("tdd_cycle", {}).get("phase_execution_log", [])
 
-        prepare = [p for p in phase_log if p.get("phase_name") == "PREPARE"][0]
-        red_acc = [p for p in phase_log if p.get("phase_name") == "RED_ACCEPTANCE"][0]
-        red_unit = [p for p in phase_log if p.get("phase_name") == "RED_UNIT"][0]
+        prepare = next(p for p in phase_log if p.get("phase_name") == "PREPARE")
+        red_acc = next(p for p in phase_log if p.get("phase_name") == "RED_ACCEPTANCE")
+        red_unit = next(p for p in phase_log if p.get("phase_name") == "RED_UNIT")
 
         assert prepare.get("turn_count") == 2, "PREPARE turn_count incorrect"
         assert red_acc.get("turn_count") == 4, "RED_ACCEPTANCE turn_count incorrect"
@@ -168,11 +169,11 @@ class TestTurnCountPersistenceUnit:
         hook.persist_turn_count(str(temp_step_file), phase_name="PREPARE", turn_count=3)
 
         # THEN: File written to disk (verify by re-reading)
-        with open(temp_step_file, "r") as f:
+        with open(temp_step_file) as f:
             step_data = json.load(f)
 
         phase_log = step_data.get("tdd_cycle", {}).get("phase_execution_log", [])
-        prepare = [p for p in phase_log if p.get("phase_name") == "PREPARE"][0]
+        prepare = next(p for p in phase_log if p.get("phase_name") == "PREPARE")
 
         assert prepare.get("turn_count") == 3, "Changes not persisted to disk"
 
@@ -229,7 +230,7 @@ class TestTurnCountPersistenceUnit:
         hook.persist_turn_count(str(step_file), phase_name="PREPARE", turn_count=1)
 
         # THEN: File updated successfully with new field
-        with open(step_file, "r") as f:
+        with open(step_file) as f:
             step_data = json.load(f)
 
         prepare = step_data.get("tdd_cycle", {}).get("phase_execution_log", [0])[0]
@@ -267,7 +268,7 @@ class TestTurnCountPersistenceUnit:
         hook.persist_turn_count(str(step_file), phase_name="PREPARE", turn_count=7)
 
         # THEN: turn_count updated to 7 (not 3+7=10)
-        with open(step_file, "r") as f:
+        with open(step_file) as f:
             step_data = json.load(f)
 
         prepare = step_data.get("tdd_cycle", {}).get("phase_execution_log", [0])[0]

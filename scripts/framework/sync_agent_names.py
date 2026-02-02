@@ -18,19 +18,18 @@ Exit Codes:
 import argparse
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
 
 import yaml
 
 
-def load_catalog_agents(catalog_path: Path) -> Dict[str, dict]:
+def load_catalog_agents(catalog_path: Path) -> dict[str, dict]:
     """
     Load agent definitions from framework-catalog.yaml.
 
     Returns:
         Dict mapping canonical agent names (with underscores) to their metadata
     """
-    with open(catalog_path, "r", encoding="utf-8") as f:
+    with open(catalog_path, encoding="utf-8") as f:
         catalog = yaml.safe_load(f)
 
     agents = catalog.get("agents", {})
@@ -54,7 +53,7 @@ def expected_filename(canonical_name: str) -> str:
     return f"{canonical_name}.md"
 
 
-def scan_agent_files(agents_dir: Path) -> List[Path]:
+def scan_agent_files(agents_dir: Path) -> list[Path]:
     """
     Scan nWave/agents/ directory for all .md files.
 
@@ -69,8 +68,8 @@ def scan_agent_files(agents_dir: Path) -> List[Path]:
 
 
 def find_mismatches(
-    catalog_agents: Dict[str, dict], agents_dir: Path
-) -> List[Tuple[str, Path, str]]:
+    catalog_agents: dict[str, dict], agents_dir: Path
+) -> list[tuple[str, Path, str]]:
     """
     Find agent files that don't match canonical names.
 
@@ -80,7 +79,7 @@ def find_mismatches(
     mismatches = []
     existing_files = {f.name: f for f in scan_agent_files(agents_dir)}
 
-    for canonical_name in catalog_agents.keys():
+    for canonical_name in catalog_agents:
         expected_file = expected_filename(canonical_name)
 
         if expected_file not in existing_files:
@@ -99,7 +98,7 @@ def find_mismatches(
 
 
 def rename_agent_files(
-    mismatches: List[Tuple[str, Path, str]], agents_dir: Path
+    mismatches: list[tuple[str, Path, str]], agents_dir: Path
 ) -> int:
     """
     Rename agent files to match canonical names.
@@ -111,7 +110,7 @@ def rename_agent_files(
     """
     renamed_count = 0
 
-    for canonical_name, current_path, expected_filename in mismatches:
+    for _canonical_name, current_path, expected_filename in mismatches:
         new_path = agents_dir / expected_filename
         reviewer_current = agents_dir / f"{current_path.stem}-reviewer.md"
         reviewer_new = agents_dir / f"{Path(expected_filename).stem}-reviewer.md"

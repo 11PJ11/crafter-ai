@@ -74,8 +74,9 @@ class TestGetCurrentBranchMethodDefined:
         THEN: It should return str
         """
         # ARRANGE
-        from nWave.core.versioning.ports.git_port import GitPort
         from typing import get_type_hints
+
+        from nWave.core.versioning.ports.git_port import GitPort
 
         # ACT
         hints = get_type_hints(GitPort.get_current_branch)
@@ -123,8 +124,9 @@ class TestHasUncommittedChangesMethodDefined:
         THEN: It should return bool
         """
         # ARRANGE
-        from nWave.core.versioning.ports.git_port import GitPort
         from typing import get_type_hints
+
+        from nWave.core.versioning.ports.git_port import GitPort
 
         # ACT
         hints = get_type_hints(GitPort.has_uncommitted_changes)
@@ -172,9 +174,10 @@ class TestGetRepoRootMethodDefined:
         THEN: It should return Path
         """
         # ARRANGE
-        from nWave.core.versioning.ports.git_port import GitPort
         from pathlib import Path
         from typing import get_type_hints
+
+        from nWave.core.versioning.ports.git_port import GitPort
 
         # ACT
         hints = get_type_hints(GitPort.get_repo_root)

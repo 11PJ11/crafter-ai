@@ -27,8 +27,9 @@ WAVE: DISTILL (Acceptance Test Creation)
 STATUS: RED (Outside-In TDD - awaiting DEVELOP wave implementation)
 """
 
-import pytest
 import json
+
+import pytest
 
 
 class TestBoundaryRulesInclusion:
@@ -616,8 +617,8 @@ class TestScopeViolationAuditLogging:
         ]
 
         # Act: Simulate what SubagentStopHook will do
-        from src.des.validation.scope_validator import ScopeValidator
         from src.des.adapters.driven.logging.audit_logger import get_audit_logger
+        from src.des.validation.scope_validator import ScopeValidator
 
         validator = ScopeValidator()
         audit_log = get_audit_logger()
@@ -683,8 +684,8 @@ class TestScopeViolationAuditLogging:
         _in_scope_files = ["src/repositories/UserRepository.py"]
 
         # Act: Run scope validation
-        from src.des.validation import ScopeValidator
         from src.des.adapters.driven.logging.audit_logger import get_audit_logger
+        from src.des.validation import ScopeValidator
 
         validator = ScopeValidator()
         audit_log = get_audit_logger()

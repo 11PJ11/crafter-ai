@@ -7,14 +7,16 @@ with wave assignments and embedded dependencies.
 
 import logging
 import re
+import sys
 from pathlib import Path
-from typing import Dict, Optional, Any
+from typing import Any
+
 import yaml
 
-import sys
 
 sys.path.append(str(Path(__file__).parent.parent))
 from utils.dependency_resolver import DependencyResolver
+
 from processors.template_processor import TemplateProcessor
 
 
@@ -162,8 +164,8 @@ class CommandProcessor:
         return result
 
     def get_command_info_from_config(
-        self, task_name: str, config: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, task_name: str, config: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Extract command information from framework-catalog.yaml.
 
@@ -198,7 +200,7 @@ class CommandProcessor:
             "outputs": [],
         }
 
-    def get_wave_info(self, wave_name: str, config: Dict[str, Any]) -> Dict[str, Any]:
+    def get_wave_info(self, wave_name: str, config: dict[str, Any]) -> dict[str, Any]:
         """
         Get wave information from configuration.
 
@@ -219,7 +221,7 @@ class CommandProcessor:
         return {"name": wave_name, "index": -1, "total_phases": len(wave_phases)}
 
     def generate_command_frontmatter(
-        self, task_name: str, command_info: Dict[str, Any]
+        self, task_name: str, command_info: dict[str, Any]
     ) -> str:
         """
         Generate Claude Code compatible YAML frontmatter for slash commands.
@@ -260,7 +262,7 @@ class CommandProcessor:
             return ""
 
     def generate_command_header(
-        self, task_name: str, command_info: Dict[str, Any], wave_info: Dict[str, Any]
+        self, task_name: str, command_info: dict[str, Any], wave_info: dict[str, Any]
     ) -> str:
         """
         Generate command header with metadata.
@@ -321,7 +323,7 @@ class CommandProcessor:
         # In the future, we could parse for dependency references and embed them
         return task_content
 
-    def generate_command_content(self, task_file: Path, config: Dict[str, Any]) -> str:
+    def generate_command_content(self, task_file: Path, config: dict[str, Any]) -> str:
         """
         Generate complete command content with Claude Code compatible YAML frontmatter.
 
@@ -368,7 +370,7 @@ class CommandProcessor:
             logging.error(f"Error generating command content for {task_file}: {e}")
             raise
 
-    def process_task(self, task_file: Path, config: Dict[str, Any]) -> bool:
+    def process_task(self, task_file: Path, config: dict[str, Any]) -> bool:
         """
         Process a single task file into a command.
 
@@ -404,8 +406,8 @@ class CommandProcessor:
             return False
 
     def get_command_info(
-        self, task_file: Path, config: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
+        self, task_file: Path, config: dict[str, Any]
+    ) -> dict[str, Any] | None:
         """
         Extract command information for configuration generation.
 

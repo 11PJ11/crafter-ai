@@ -95,8 +95,9 @@ class TestLogTimestampFormat:
         WHEN: A message is logged
         THEN: The timestamp reflects the current time (within 2 second tolerance)
         """
-        from scripts.install.install_utils import Logger
         from datetime import timedelta
+
+        from scripts.install.install_utils import Logger
 
         # ARRANGE
         log_file = tmp_path / "test.log"

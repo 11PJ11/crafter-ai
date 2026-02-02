@@ -4,8 +4,8 @@ Tests the orchestrator's integration with StaleExecutionDetector to block
 execution when stale IN_PROGRESS phases are detected.
 """
 
-from datetime import datetime, timedelta, timezone
 import json
+from datetime import datetime, timedelta, timezone
 
 from src.des.application.orchestrator import DESOrchestrator
 

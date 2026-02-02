@@ -403,11 +403,13 @@ class TestIsContainerEnvironmentKubernetes:
         """is_container_environment() returns True when KUBERNETES_SERVICE_HOST is set."""
         from scripts.install.context_detector import is_container_environment
 
-        with patch.object(Path, "exists", return_value=False):
-            with patch.dict(
+        with (
+            patch.object(Path, "exists", return_value=False),
+            patch.dict(
                 os.environ, {"KUBERNETES_SERVICE_HOST": "10.0.0.1"}, clear=False
-            ):
-                assert is_container_environment() is True
+            ),
+        ):
+            assert is_container_environment() is True
 
 
 class TestIsContainerEnvironmentNone:
@@ -435,14 +437,16 @@ class TestCIInsideContainer:
             is_container_environment,
         )
 
-        with patch.object(Path, "exists", return_value=True):
-            with patch.dict(
+        with (
+            patch.object(Path, "exists", return_value=True),
+            patch.dict(
                 os.environ,
                 {"GITHUB_ACTIONS": "true", "KUBERNETES_SERVICE_HOST": "10.0.0.1"},
                 clear=False,
-            ):
-                assert is_ci_environment() is True
-                assert is_container_environment() is True
+            ),
+        ):
+            assert is_ci_environment() is True
+            assert is_container_environment() is True
 
 
 class TestDefaultNonCINonContainer:

@@ -30,10 +30,9 @@ MANDATORY TDD PHASES - Schema v2.0 (8 phases):
 5. REVIEW, 6. REFACTOR_CONTINUOUS, 7. REFACTOR_L4, 8. COMMIT
 """
 
-import time
 import re
+import time
 from dataclasses import dataclass
-from typing import List
 
 
 @dataclass
@@ -41,10 +40,10 @@ class ValidationResult:
     """Result of template validation."""
 
     status: str  # "PASSED" or "FAILED"
-    errors: List[str]
+    errors: list[str]
     task_invocation_allowed: bool
     duration_ms: float
-    recovery_guidance: List[str] = (
+    recovery_guidance: list[str] = (
         None  # Actionable guidance for fixing validation errors
     )
 
@@ -80,7 +79,7 @@ class MandatorySectionChecker:
         "TIMEOUT_INSTRUCTION": "Add TIMEOUT_INSTRUCTION section with turn budget guidance",
     }
 
-    def validate(self, prompt: str) -> List[str]:
+    def validate(self, prompt: str) -> list[str]:
         """
         Validate that all mandatory sections are present in prompt.
 
@@ -99,7 +98,7 @@ class MandatorySectionChecker:
 
         return errors
 
-    def get_recovery_guidance(self, errors: List[str]) -> List[str]:
+    def get_recovery_guidance(self, errors: list[str]) -> list[str]:
         """
         Generate actionable recovery guidance for validation errors.
 
@@ -201,7 +200,7 @@ class TDDPhaseValidator:
         # Default to v1.0
         return "1.0"
 
-    def validate(self, prompt: str) -> List[str]:
+    def validate(self, prompt: str) -> list[str]:
         """
         Validate that all required TDD phases are mentioned in prompt.
 
@@ -337,10 +336,10 @@ class ExecutionLogValidator:
 
     def validate(
         self,
-        phase_log: List[dict],
+        phase_log: list[dict],
         schema_version: str = "1.0",
         skip_schema_validation: bool = False,
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Validate phase execution log for state violations and schema compliance.
 
@@ -462,7 +461,7 @@ class ExecutionLogValidator:
 
         return errors
 
-    def get_recovery_guidance(self, errors: List[str]) -> List[str]:
+    def get_recovery_guidance(self, errors: list[str]) -> list[str]:
         """
         Generate actionable recovery guidance for validation errors.
 
@@ -603,7 +602,7 @@ class TemplateValidator:
             recovery_guidance=recovery_guidance,
         )
 
-    def _extract_execution_log_from_prompt(self, prompt: str) -> List[dict]:
+    def _extract_execution_log_from_prompt(self, prompt: str) -> list[dict]:
         """
         Extract and parse phase execution log from prompt text.
 

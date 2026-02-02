@@ -4,8 +4,9 @@ Unit tests for RecoveryGuidanceHandler.
 Tests the core recovery guidance generation and persistence functionality.
 """
 
-import pytest
 import json
+
+import pytest
 from src.des.application.recovery_guidance_handler import RecoveryGuidanceHandler
 
 

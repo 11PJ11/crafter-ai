@@ -6,9 +6,8 @@ for the nWave IDE bundle generation system.
 """
 
 import logging
-from pathlib import Path
-from typing import Optional, List
 import shutil
+from pathlib import Path
 
 
 class FileManager:
@@ -17,7 +16,7 @@ class FileManager:
     def __init__(self, dry_run: bool = False):
         self.dry_run = dry_run
 
-    def read_file(self, file_path: Path) -> Optional[str]:
+    def read_file(self, file_path: Path) -> str | None:
         """
         Read content from a file.
 
@@ -38,7 +37,7 @@ class FileManager:
                 logging.error(f"Path is not a file: {file_path}")
                 return None
 
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 content = f.read()
 
             logging.debug(f"Read file: {file_path} ({len(content)} chars)")
@@ -166,7 +165,7 @@ class FileManager:
 
     def list_files(
         self, directory: Path, pattern: str = "*", recursive: bool = False
-    ) -> List[Path]:
+    ) -> list[Path]:
         """
         List files in a directory matching a pattern.
 

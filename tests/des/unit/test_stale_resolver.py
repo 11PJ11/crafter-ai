@@ -13,9 +13,10 @@ Coverage:
 """
 
 import json
-import pytest
 from datetime import datetime, timedelta
 from pathlib import Path
+
+import pytest
 from src.des.application.stale_resolver import StaleResolver
 
 

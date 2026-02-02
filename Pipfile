@@ -45,9 +45,9 @@ test-coverage = "python -m pytest tests/ -q --cov=src --cov=scripts --cov-report
 mutation-test = "mutmut run"
 build = "python tools/build.py"
 # Linting and formatting
-lint = "ruff check scripts/ tools/ tests/"
-format = "ruff format scripts/ tools/ tests/"
-format-check = "ruff format --check scripts/ tools/ tests/"
+lint = "ruff check src/ scripts/ tools/ tests/"
+format = "ruff format src/ scripts/ tools/ tests/"
+format-check = "ruff format --check src/ scripts/ tools/ tests/"
 # Validation
 validate = "python scripts/local_ci.py"
 validate-fast = "python scripts/local_ci.py --fast"

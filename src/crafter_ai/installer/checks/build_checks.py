@@ -8,8 +8,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from crafter_ai.installer.domain.check_result import CheckResult, CheckSeverity
 from crafter_ai.installer.domain.check_registry import CheckRegistry
+from crafter_ai.installer.domain.check_result import CheckResult, CheckSeverity
 
 
 def check_pyproject_exists() -> CheckResult:

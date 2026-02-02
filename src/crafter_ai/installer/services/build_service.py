@@ -156,7 +156,8 @@ class BuildService:
 
         # Check for blocking failures
         blocking_failures = [
-            r for r in pre_flight_results
+            r
+            for r in pre_flight_results
             if not r.passed and r.severity == CheckSeverity.BLOCKING
         ]
 

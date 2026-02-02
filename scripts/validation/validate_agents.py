@@ -7,11 +7,11 @@ Validates all agents against AGENT_TEMPLATE.yaml v1.2
 # Version - Must match nWave/framework-catalog.yaml version
 __version__ = "1.2.26"
 
-import sys
 import re
-from pathlib import Path
+import sys
 from datetime import datetime
-from typing import Dict
+from pathlib import Path
+
 
 # Configuration
 TEMPLATE_VERSION = "1.2"
@@ -113,14 +113,14 @@ def check_safety_layers(content: str) -> bool:
     )
 
 
-def validate_agent(agent_file: Path) -> Dict[str, any]:
+def validate_agent(agent_file: Path) -> dict[str, any]:
     """Validate a single agent file"""
     agent_name = agent_file.stem
 
     print(f"Validating: {agent_name}...")
 
     # Read file content
-    with open(agent_file, "r", encoding="utf-8") as f:
+    with open(agent_file, encoding="utf-8") as f:
         content = f.read()
 
     # Initialize checks
@@ -135,14 +135,13 @@ def validate_agent(agent_file: Path) -> Dict[str, any]:
     }
 
     # Check Contract Framework
-    if check_section_exists(content, "contract"):
-        if (
-            check_subsection_exists(content, "contract", "inputs")
-            and check_subsection_exists(content, "contract", "outputs")
-            and check_subsection_exists(content, "contract", "side_effects")
-            and check_subsection_exists(content, "contract", "error_handling")
-        ):
-            checks["contract"] = True
+    if check_section_exists(content, "contract") and (
+        check_subsection_exists(content, "contract", "inputs")
+        and check_subsection_exists(content, "contract", "outputs")
+        and check_subsection_exists(content, "contract", "side_effects")
+        and check_subsection_exists(content, "contract", "error_handling")
+    ):
+        checks["contract"] = True
 
     # Check Safety Framework
     checks["safety"] = check_safety_layers(content)
@@ -151,30 +150,26 @@ def validate_agent(agent_file: Path) -> Dict[str, any]:
     checks["testing"] = check_testing_layers(content)
 
     # Check Observability Framework
-    if check_section_exists(content, "observability_framework"):
-        if (
-            check_subsection_exists(
-                content, "observability_framework", "structured_logging"
-            )
-            and check_subsection_exists(content, "observability_framework", "metrics")
-            and check_subsection_exists(content, "observability_framework", "alerting")
-        ):
-            checks["observability"] = True
+    if check_section_exists(content, "observability_framework") and (
+        check_subsection_exists(
+            content, "observability_framework", "structured_logging"
+        )
+        and check_subsection_exists(content, "observability_framework", "metrics")
+        and check_subsection_exists(content, "observability_framework", "alerting")
+    ):
+        checks["observability"] = True
 
     # Check Error Recovery Framework
-    if check_section_exists(content, "error_recovery_framework"):
-        if (
-            check_subsection_exists(
-                content, "error_recovery_framework", "retry_strategies"
-            )
-            and check_subsection_exists(
-                content, "error_recovery_framework", "circuit_breakers"
-            )
-            and check_subsection_exists(
-                content, "error_recovery_framework", "degraded_mode"
-            )
-        ):
-            checks["error_recovery"] = True
+    if check_section_exists(content, "error_recovery_framework") and (
+        check_subsection_exists(content, "error_recovery_framework", "retry_strategies")
+        and check_subsection_exists(
+            content, "error_recovery_framework", "circuit_breakers"
+        )
+        and check_subsection_exists(
+            content, "error_recovery_framework", "degraded_mode"
+        )
+    ):
+        checks["error_recovery"] = True
 
     # Check YAML Frontmatter
     checks["frontmatter"] = check_frontmatter(content)
@@ -206,7 +201,7 @@ def validate_agent(agent_file: Path) -> Dict[str, any]:
     }
 
 
-def generate_report(results: Dict):
+def generate_report(results: dict):
     """Generate markdown compliance report"""
     timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
 

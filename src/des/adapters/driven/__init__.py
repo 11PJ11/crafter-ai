@@ -22,24 +22,25 @@ from src.des.adapters.driven.task_invocation.mocked_task_adapter import (
 )
 from src.des.adapters.driven.time.system_time import SystemTimeProvider
 
+
 # Backward compatibility aliases
 RealFilesystem = RealFileSystem
 SystemTime = SystemTimeProvider
 
 __all__ = [
+    # Task invocation adapters
+    "ClaudeCodeTaskAdapter",
     # Config adapters
     "EnvironmentConfigAdapter",
     "InMemoryConfigAdapter",
+    "MockedTaskAdapter",
     # Filesystem adapters
     "RealFileSystem",
     "RealFilesystem",  # Backward compatibility
     # Logging adapters
     "SilentLogger",
     "StructuredLogger",
-    # Task invocation adapters
-    "ClaudeCodeTaskAdapter",
-    "MockedTaskAdapter",
+    "SystemTime",  # Backward compatibility
     # Time adapters
     "SystemTimeProvider",
-    "SystemTime",  # Backward compatibility
 ]

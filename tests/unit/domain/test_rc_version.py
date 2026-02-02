@@ -13,7 +13,6 @@ Acceptance criteria:
 from datetime import date
 
 import pytest
-
 from nWave.core.versioning.domain.rc_version import RCVersion
 
 

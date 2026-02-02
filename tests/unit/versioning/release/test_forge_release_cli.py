@@ -11,7 +11,6 @@ Test coverage:
 """
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -19,9 +18,9 @@ class ReleaseResult:
     """Result of release operation from ReleaseService."""
 
     success: bool
-    pr_number: Optional[int]
-    pr_url: Optional[str]
-    error_message: Optional[str] = None
+    pr_number: int | None
+    pr_url: str | None
+    error_message: str | None = None
 
 
 class TestForgeReleaseCLIShowsPRInfo:

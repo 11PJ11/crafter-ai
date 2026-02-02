@@ -5,10 +5,10 @@ This test validates that timeout warnings are injected into the agent's prompt
 context on the next turn after a threshold is crossed during execution.
 """
 
-from datetime import timedelta
-from pathlib import Path
 import json
 import tempfile
+from datetime import timedelta
+from pathlib import Path
 
 
 class TestScenario014AgentReceivesTimeoutWarningsInPrompt:

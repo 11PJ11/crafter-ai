@@ -49,7 +49,7 @@ class TestSubagentStopHookClass:
 
     def test_on_agent_complete_returns_hook_result(self):
         """on_agent_complete should return HookResult object."""
-        from src.des.application.hooks import SubagentStopHook, HookResult
+        from src.des.application.hooks import HookResult, SubagentStopHook
 
         hook = SubagentStopHook()
 

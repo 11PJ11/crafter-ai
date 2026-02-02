@@ -69,8 +69,8 @@ class TestSuccessfulBuildWithInstallPromptOnMainBranch:
 
         # WHEN: Alessandro runs the /nw:forge command through CLI entry point
         # Import BuildService from application layer
-        from nWave.core.versioning.application.build_service import BuildService
         from nWave.cli.forge_cli import format_build_output
+        from nWave.core.versioning.application.build_service import BuildService
 
         build_service = BuildService(
             git=mock_git_adapter,
@@ -163,8 +163,8 @@ class TestBuildFailsWhenTestsFail:
         mock_date_provider.configure(today=date(2026, 1, 27))
 
         # WHEN: Benedetta runs the /nw:forge command through CLI entry point
-        from nWave.core.versioning.application.build_service import BuildService
         from nWave.cli.forge_cli import format_build_output
+        from nWave.core.versioning.application.build_service import BuildService
 
         build_service = BuildService(
             git=mock_git_adapter,
@@ -174,7 +174,7 @@ class TestBuildFailsWhenTestsFail:
         )
 
         result = build_service.build()
-        output, prompt = format_build_output(result)
+        output, _prompt = format_build_output(result)
 
         cli_result["output"] = output
         cli_result["returncode"] = 0 if result.success else 1
@@ -257,8 +257,8 @@ class TestRCCounterIncrementsOnSameDayBuilds:
         mock_test_runner.configure(tests_pass=True, failure_count=0)
 
         # WHEN: Carlo runs the /nw:forge command through CLI entry point
-        from nWave.core.versioning.application.build_service import BuildService
         from nWave.cli.forge_cli import format_build_output
+        from nWave.core.versioning.application.build_service import BuildService
 
         build_service = BuildService(
             git=mock_git_adapter,
@@ -342,8 +342,8 @@ class TestRCCounterResetsOnNewDay:
         mock_test_runner.configure(tests_pass=True, failure_count=0)
 
         # WHEN: Carlo runs the /nw:forge command through CLI entry point
-        from nWave.core.versioning.application.build_service import BuildService
         from nWave.cli.forge_cli import format_build_output
+        from nWave.core.versioning.application.build_service import BuildService
 
         build_service = BuildService(
             git=mock_git_adapter,
@@ -417,8 +417,8 @@ class TestUserDeclinesInstallAfterSuccessfulBuild:
         mock_date_provider.configure(today=date(2026, 1, 27))
 
         # WHEN: Alessandro runs the /nw:forge command through CLI entry point
-        from nWave.core.versioning.application.build_service import BuildService
         from nWave.cli.forge_cli import format_build_output, handle_install_response
+        from nWave.core.versioning.application.build_service import BuildService
 
         build_service = BuildService(
             git=mock_git_adapter,
@@ -515,11 +515,11 @@ class TestUserAcceptsInstallAfterSuccessfulBuild:
         # (configured via in_memory_install_file_system fixture)
 
         # WHEN: Alessandro runs the /nw:forge command through CLI entry point
-        from nWave.core.versioning.application.build_service import BuildService
         from nWave.cli.forge_cli import (
             format_build_output,
             handle_install_response,
         )
+        from nWave.core.versioning.application.build_service import BuildService
 
         build_service = BuildService(
             git=mock_git_adapter,
@@ -607,8 +607,8 @@ class TestFeatureBranchNameIncludedInRCVersion:
         mock_date_provider.configure(today=date(2026, 1, 27))
 
         # WHEN: Daniela runs the /nw:forge command through CLI entry point
-        from nWave.core.versioning.application.build_service import BuildService
         from nWave.cli.forge_cli import format_build_output
+        from nWave.core.versioning.application.build_service import BuildService
 
         build_service = BuildService(
             git=mock_git_adapter,

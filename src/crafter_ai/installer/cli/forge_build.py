@@ -6,21 +6,23 @@ Displays pre-flight checks, version analysis, build progress, and success summar
 
 import os
 from pathlib import Path
-from typing import Optional
 
 import typer
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
+from crafter_ai.installer.adapters.build_adapter import SubprocessBuildAdapter
 from crafter_ai.installer.domain.artifact_registry import ArtifactRegistry
 from crafter_ai.installer.domain.candidate_version import BumpType, CandidateVersion
 from crafter_ai.installer.domain.check_executor import CheckExecutor
 from crafter_ai.installer.domain.check_result import CheckResult
-from crafter_ai.installer.adapters.build_adapter import SubprocessBuildAdapter
 from crafter_ai.installer.services.build_service import BuildResult, BuildService
 from crafter_ai.installer.services.version_bump_service import VersionBumpService
-from crafter_ai.installer.services.wheel_validation_service import WheelValidationService
+from crafter_ai.installer.services.wheel_validation_service import (
+    WheelValidationService,
+)
+
 
 console = Console()
 
@@ -73,10 +75,7 @@ def display_pre_flight_results(results: list[CheckResult]) -> None:
     table.add_column("Details")
 
     for check in results:
-        if check.passed:
-            status = "[green]\u2713[/green]"
-        else:
-            status = "[red]\u2717[/red]"
+        status = "[green]✓[/green]" if check.passed else "[red]✗[/red]"
 
         table.add_row(check.name, status, check.message)
 
@@ -110,9 +109,7 @@ def display_success_summary(result: BuildResult) -> None:
     wheel_name = result.wheel_path.name if result.wheel_path else "unknown"
     version = result.version or "unknown"
     package_name = (
-        result.validation_result.package_name
-        if result.validation_result
-        else "unknown"
+        result.validation_result.package_name if result.validation_result else "unknown"
     )
 
     summary = (
@@ -154,7 +151,7 @@ def build(
         "--install",
         help="Automatically install after successful build.",
     ),
-    force_version: Optional[str] = typer.Option(
+    force_version: str | None = typer.Option(
         None,
         "--force-version",
         help="Override auto-calculated version with specified version.",

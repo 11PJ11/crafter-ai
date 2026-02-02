@@ -13,7 +13,6 @@ import argparse
 import re
 import sys
 from pathlib import Path
-from typing import List, Tuple
 
 
 class VersionTagger:
@@ -30,13 +29,13 @@ class VersionTagger:
         """Check if content already has a version tag"""
         return bool(self.version_pattern.search(content))
 
-    def add_version_tag(self, file_path: Path) -> Tuple[bool, str]:
+    def add_version_tag(self, file_path: Path) -> tuple[bool, str]:
         """
         Add version tag to file if it doesn't have one.
         Returns (modified, message)
         """
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 content = f.read()
 
             if self.has_version_tag(content):
@@ -75,7 +74,7 @@ class VersionTagger:
         except Exception as e:
             return False, f"Error processing {file_path}: {e}"
 
-    def process_files(self, file_patterns: List[str]) -> dict:
+    def process_files(self, file_patterns: list[str]) -> dict:
         """
         Process multiple file patterns.
         Returns statistics dictionary.
@@ -83,7 +82,7 @@ class VersionTagger:
         stats = {"total": 0, "modified": 0, "skipped": 0, "errors": 0}
 
         for pattern in file_patterns:
-            for file_path in Path(".").glob(pattern):
+            for file_path in Path().glob(pattern):
                 if not file_path.is_file():
                     continue
 
@@ -93,13 +92,12 @@ class VersionTagger:
                 if modified:
                     stats["modified"] += 1
                     print(f"✓ {message}")
+                elif "Error" in message:
+                    stats["errors"] += 1
+                    print(f"✗ {message}", file=sys.stderr)
                 else:
-                    if "Error" in message:
-                        stats["errors"] += 1
-                        print(f"✗ {message}", file=sys.stderr)
-                    else:
-                        stats["skipped"] += 1
-                        print(f"  {message}")
+                    stats["skipped"] += 1
+                    print(f"  {message}")
 
         return stats
 

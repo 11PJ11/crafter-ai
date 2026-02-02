@@ -7,20 +7,18 @@ Used as pre-commit hook entry point.
 """
 
 import sys
-from typing import Dict, Tuple
 
 
 # Import validators
 try:
-    from scripts.validation import validate_formatter_env
-    from scripts.validation import validate_readme_index
+    from scripts.validation import validate_formatter_env, validate_readme_index
     # Agent, command, and step validators are standalone scripts
 except ImportError:
     import validate_formatter_env
     import validate_readme_index
 
 
-def run_all_validators(skip_slow: bool = False) -> Tuple[bool, Dict[str, dict]]:
+def run_all_validators(skip_slow: bool = False) -> tuple[bool, dict[str, dict]]:
     """
     Run all validators and collect results.
 
@@ -60,7 +58,7 @@ def run_all_validators(skip_slow: bool = False) -> Tuple[bool, Dict[str, dict]]:
     return all_passed, results
 
 
-def print_summary(all_passed: bool, results: Dict[str, dict]) -> None:
+def print_summary(all_passed: bool, results: dict[str, dict]) -> None:
     """Print validation summary."""
     print("\n" + "=" * 60)
     print("VALIDATION SUMMARY")

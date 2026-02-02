@@ -18,7 +18,7 @@ STATUS: RED (Outside-In TDD - awaiting DEVELOP wave implementation)
 """
 
 import json
-from typing import Protocol, Optional
+from typing import Protocol
 
 
 # =============================================================================
@@ -37,8 +37,8 @@ class SubagentStopHookResult(Protocol):
     incomplete_phases: list[str]  # Phases with EXECUTED but no outcome
     invalid_skips: list[str]  # Phases with SKIPPED but no blocked_by
     error_count: int
-    error_type: Optional[str]  # e.g., "ABANDONED_PHASE", "SILENT_COMPLETION"
-    error_message: Optional[str]
+    error_type: str | None  # e.g., "ABANDONED_PHASE", "SILENT_COMPLETION"
+    error_message: str | None
     recovery_suggestions: list[str]  # Minimum 3 if FAILED
 
 

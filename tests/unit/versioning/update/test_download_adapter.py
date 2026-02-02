@@ -7,9 +7,9 @@ HEXAGONAL ARCHITECTURE:
 - Tests verify adapter correctly implements port contract
 """
 
+import tempfile
 from pathlib import Path
 from unittest.mock import patch
-import tempfile
 
 import pytest
 
@@ -24,6 +24,7 @@ class TestDownloadAdapterFetchesFile:
         THEN: File is downloaded to destination path
         """
         import os
+
         from nWave.infrastructure.versioning.download_adapter import DownloadAdapter
 
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -53,8 +54,9 @@ class TestDownloadAdapterHandlesNetworkError:
         If not available, test is skipped.
         """
         import os
-        from nWave.infrastructure.versioning.download_adapter import DownloadAdapter
+
         from nWave.core.versioning.ports.download_port import NetworkError
+        from nWave.infrastructure.versioning.download_adapter import DownloadAdapter
 
         # Skip if requests not installed
         try:

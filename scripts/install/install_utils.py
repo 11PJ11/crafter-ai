@@ -13,7 +13,6 @@ import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Tuple
 
 
 class Logger:
@@ -33,7 +32,7 @@ class Logger:
     _BLUE = "\033[0;34m"
     _NC = "\033[0m"  # No Color
 
-    def __init__(self, log_file: Optional[Path] = None, silent: bool = False):
+    def __init__(self, log_file: Path | None = None, silent: bool = False):
         """Initialize logger with optional log file.
 
         Args:
@@ -116,7 +115,7 @@ class PathUtils:
 
     @staticmethod
     def copy_tree_with_filter(
-        src: Path, dst: Path, exclude_patterns: Optional[List[str]] = None
+        src: Path, dst: Path, exclude_patterns: list[str] | None = None
     ) -> int:
         """
         Copy directory tree with optional exclusion patterns.
@@ -159,8 +158,8 @@ class PathUtils:
 
     @staticmethod
     def find_newest_file(
-        directory: Path, patterns: Optional[List[str]] = None
-    ) -> Optional[Path]:
+        directory: Path, patterns: list[str] | None = None
+    ) -> Path | None:
         """Find newest file in directory matching patterns."""
         patterns = patterns or ["*.md", "*.py", "*.json"]
         newest = None
@@ -195,7 +194,7 @@ class BackupManager:
         self.timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
         self.backup_dir = self.backup_root / f"nwave-{backup_type}-{self.timestamp}"
 
-    def create_backup(self, dry_run: bool = False) -> Optional[Path]:
+    def create_backup(self, dry_run: bool = False) -> Path | None:
         """
         Create backup of current nWave installation.
 
@@ -265,7 +264,7 @@ class VersionUtils:
     """Version comparison utilities."""
 
     @staticmethod
-    def parse_version(version_str: str) -> Tuple[int, ...]:
+    def parse_version(version_str: str) -> tuple[int, ...]:
         """Parse semver string to tuple of integers."""
         try:
             return tuple(int(x) for x in version_str.split("."))
@@ -314,7 +313,7 @@ class ManifestWriter:
 
     @staticmethod
     def write_install_manifest(
-        claude_config_dir: Path, backup_dir: Optional[Path], script_dir: Path
+        claude_config_dir: Path, backup_dir: Path | None, script_dir: Path
     ):
         """Write installation manifest."""
         manifest_path = claude_config_dir / "nwave-manifest.txt"
@@ -355,7 +354,7 @@ For help: https://github.com/11PJ11/crafter-ai
         manifest_path.write_text(content, encoding="utf-8")
 
     @staticmethod
-    def write_uninstall_report(claude_config_dir: Path, backup_dir: Optional[Path]):
+    def write_uninstall_report(claude_config_dir: Path, backup_dir: Path | None):
         """Write uninstallation report."""
         report_path = claude_config_dir / "framework-uninstall-report.txt"
 
@@ -389,7 +388,7 @@ Uninstall Summary:
 
     @staticmethod
     def write_update_report(
-        claude_config_dir: Path, backup_dir: Optional[Path], backup_created: bool
+        claude_config_dir: Path, backup_dir: Path | None, backup_created: bool
     ):
         """Write update report."""
         report_path = claude_config_dir / "nwave-update-report.txt"

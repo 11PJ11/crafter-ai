@@ -11,8 +11,8 @@ Step 05-01: Installer Pre-flight Integration
 import sys
 from unittest.mock import MagicMock, patch
 
-from scripts.install.preflight_checker import CheckResult
 from scripts.install.error_codes import ENV_NO_VENV
+from scripts.install.preflight_checker import CheckResult
 
 
 class TestInstallNwavePreflightIntegration:
@@ -111,18 +111,20 @@ class TestInstallNwavePreflightIntegration:
             mock_checker.get_failed_checks.return_value = [failed_result]
             mock_preflight_class.return_value = mock_checker
 
-            with patch(
-                "scripts.install.install_nwave.NWaveInstaller.check_source",
-                side_effect=track_check_source,
+            with (
+                patch(
+                    "scripts.install.install_nwave.NWaveInstaller.check_source",
+                    side_effect=track_check_source,
+                ),
+                patch("scripts.install.install_nwave.format_error") as mock_format,
             ):
-                with patch("scripts.install.install_nwave.format_error") as mock_format:
-                    mock_format.return_value = "Formatted error message"
+                mock_format.return_value = "Formatted error message"
 
-                    # ACT
-                    from scripts.install.install_nwave import main
+                # ACT
+                from scripts.install.install_nwave import main
 
-                    with patch.object(sys, "argv", ["install_nwave.py"]):
-                        exit_code = main()
+                with patch.object(sys, "argv", ["install_nwave.py"]):
+                    exit_code = main()
 
         # ASSERT
         assert exit_code != 0, "Should return non-zero exit code on preflight failure"

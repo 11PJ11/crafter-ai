@@ -15,8 +15,8 @@ Exit codes:
 
 import subprocess
 import sys
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 
 def get_staged_files():

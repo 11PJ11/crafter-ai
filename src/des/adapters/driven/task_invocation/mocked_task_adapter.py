@@ -5,7 +5,8 @@ Provides a mocked task invocation adapter for testing environments,
 returning predefined results instead of invoking actual tasks.
 """
 
-from typing import Dict, Any, List, Optional
+from typing import Any
+
 from src.des.ports.driven_ports.task_invocation_port import TaskInvocationPort
 
 
@@ -19,8 +20,8 @@ class MockedTaskAdapter(TaskInvocationPort):
 
     def __init__(
         self,
-        predefined_result: Optional[Dict[str, Any]] = None,
-        results_queue: Optional[List[Dict[str, Any]]] = None,
+        predefined_result: dict[str, Any] | None = None,
+        results_queue: list[dict[str, Any]] | None = None,
     ):
         """
         Initialize the mocked task adapter.
@@ -33,7 +34,7 @@ class MockedTaskAdapter(TaskInvocationPort):
         self.results_queue = results_queue or []
         self.invocation_count = 0
 
-    def invoke_task(self, prompt: str, agent: str) -> Dict[str, Any]:
+    def invoke_task(self, prompt: str, agent: str) -> dict[str, Any]:
         """
         Return a predefined task result without actual invocation.
 

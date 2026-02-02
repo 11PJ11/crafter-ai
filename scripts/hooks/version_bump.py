@@ -11,6 +11,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+
 # Color codes
 GREEN = "\033[0;32m"
 YELLOW = "\033[1;33m"

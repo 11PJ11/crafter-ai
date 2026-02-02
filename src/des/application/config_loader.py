@@ -6,7 +6,6 @@ Loads and validates configuration including turn limits by task type.
 
 import json
 from pathlib import Path
-from typing import Dict, Optional
 
 
 class ConfigValidationError(Exception):
@@ -42,7 +41,7 @@ class ConfigLoader:
         self.config_path = Path(config_path)
         self.turn_limits = self._load_turn_limits()
 
-    def _load_turn_limits(self) -> Dict[str, int]:
+    def _load_turn_limits(self) -> dict[str, int]:
         """
         Load turn limits from config file with validation.
 
@@ -57,9 +56,9 @@ class ConfigLoader:
             return self.DEFAULT_TURN_LIMITS.copy()
 
         try:
-            with open(self.config_path, "r") as f:
+            with open(self.config_path) as f:
                 config = json.load(f)
-        except (json.JSONDecodeError, IOError):
+        except (OSError, json.JSONDecodeError):
             # Gracefully handle malformed or unreadable files
             return self.DEFAULT_TURN_LIMITS.copy()
 
@@ -74,7 +73,7 @@ class ConfigLoader:
 
         return turn_limits
 
-    def get_turn_limit(self, task_type: Optional[str]) -> int:
+    def get_turn_limit(self, task_type: str | None) -> int:
         """
         Get turn limit for task type.
 

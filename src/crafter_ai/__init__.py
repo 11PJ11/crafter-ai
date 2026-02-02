@@ -10,4 +10,4 @@ __version__ = "0.1.0"
 __author__ = "Mike"
 __email__ = "mike@example.com"
 
-__all__ = ["__version__", "__author__", "__email__"]
+__all__ = ["__author__", "__email__", "__version__"]

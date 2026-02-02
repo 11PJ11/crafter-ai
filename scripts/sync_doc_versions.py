@@ -8,16 +8,17 @@ markdown documents with **Version**: fields to match.
 
 import re
 import sys
-import yaml
-from pathlib import Path
 from datetime import date
+from pathlib import Path
+
+import yaml
 
 
 def get_framework_version():
     """Get version from framework-catalog.yaml."""
     catalog_path = Path(__file__).parent.parent / "nWave" / "framework-catalog.yaml"
 
-    with open(catalog_path, "r") as f:
+    with open(catalog_path) as f:
         catalog = yaml.safe_load(f)
 
     return catalog["version"]

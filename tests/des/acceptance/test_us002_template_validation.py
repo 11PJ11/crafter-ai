@@ -46,6 +46,7 @@ class TestPreInvocationTemplateValidation:
         8. TIMEOUT_INSTRUCTION
         """
         import time
+
         from src.des.application.validator import TemplateValidator
 
         # Arrange: Create prompt with all 8 mandatory sections
@@ -389,6 +390,7 @@ class TestPreInvocationTemplateValidation:
 
         # Act: Measure validation performance
         import time
+
         from src.des.application.validator import TemplateValidator
 
         validator = TemplateValidator()

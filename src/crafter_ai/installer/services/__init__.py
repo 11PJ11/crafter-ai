@@ -10,6 +10,7 @@ from crafter_ai.installer.services.wheel_validation_service import (
     WheelValidationService,
 )
 
+
 __all__ = [
     "AutoRepairService",
     "BuildResult",

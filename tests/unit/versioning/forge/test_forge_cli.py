@@ -13,15 +13,13 @@ HEXAGONAL ARCHITECTURE:
 - Formats output for user display
 """
 
-from typing import Optional
-
 
 class MockInstallFileSystem:
     """In-memory mock for install file system operations."""
 
     def __init__(self):
         self._installation_completed = False
-        self._installed_version: Optional[str] = None
+        self._installed_version: str | None = None
 
     def copy_dist_to_claude(self) -> None:
         self._installation_completed = True
@@ -29,7 +27,7 @@ class MockInstallFileSystem:
     def file_exists_in_claude(self, relative_path: str) -> bool:
         return self._installation_completed
 
-    def get_installed_file(self, relative_path: str) -> Optional[str]:
+    def get_installed_file(self, relative_path: str) -> str | None:
         if relative_path == "VERSION" and self._installed_version:
             return self._installed_version
         return None
@@ -68,7 +66,7 @@ class TestForgeCLIPromptsForInstall:
         )
 
         # Act
-        output, prompt = format_build_output(build_result)
+        _output, prompt = format_build_output(build_result)
 
         # Assert
         assert "Install: [Y/n]" in prompt

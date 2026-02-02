@@ -11,6 +11,7 @@ Tests core functionality of the RecoveryGuidanceHandler class including:
 """
 
 import json
+
 from src.des.application.recovery_guidance_handler import (
     RecoveryGuidanceHandler,
     SuggestionFormatter,

@@ -15,7 +15,6 @@ Test Strategy:
 import json
 from unittest.mock import patch
 
-
 from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
 from src.des.validation.scope_validator import ScopeValidationResult
 
@@ -129,31 +128,29 @@ class TestScopeValidationIntegration:
         # Act: ScopeValidator returns validation_skipped=True (git failure)
         hook = RealSubagentStopHook()
 
-        with patch(
-            "src.des.adapters.drivers.hooks.real_hook.ScopeValidator"
-        ) as MockValidator:
-            with patch(
-                "src.des.adapters.drivers.hooks.real_hook.logger"
-            ) as mock_logger:
-                mock_validator_instance = MockValidator.return_value
-                mock_validator_instance.validate_scope.return_value = (
-                    ScopeValidationResult(
-                        has_violations=False,
-                        validation_skipped=True,
-                        reason="Git command timeout after 5 seconds",
-                    )
-                )
+        with (
+            patch(
+                "src.des.adapters.drivers.hooks.real_hook.ScopeValidator"
+            ) as MockValidator,
+            patch("src.des.adapters.drivers.hooks.real_hook.logger") as mock_logger,
+        ):
+            mock_validator_instance = MockValidator.return_value
+            mock_validator_instance.validate_scope.return_value = ScopeValidationResult(
+                has_violations=False,
+                validation_skipped=True,
+                reason="Git command timeout after 5 seconds",
+            )
 
-                result = hook.on_agent_complete(str(step_file))
+            result = hook.on_agent_complete(str(step_file))
 
-                # Assert: WARNING logged but step completes successfully
-                mock_logger.warning.assert_called_once()
-                warning_call = mock_logger.warning.call_args[0][0]
-                assert "Scope validation skipped" in warning_call
-                assert "Git command timeout" in warning_call
+            # Assert: WARNING logged but step completes successfully
+            mock_logger.warning.assert_called_once()
+            warning_call = mock_logger.warning.call_args[0][0]
+            assert "Scope validation skipped" in warning_call
+            assert "Git command timeout" in warning_call
 
-                # Step completion NOT blocked
-                assert result.validation_status == "PASSED"
+            # Step completion NOT blocked
+            assert result.validation_status == "PASSED"
 
     def test_validation_skipped_allows_step_completion_with_warning_log(self, tmp_path):
         """
@@ -178,31 +175,29 @@ class TestScopeValidationIntegration:
         # Act
         hook = RealSubagentStopHook()
 
-        with patch(
-            "src.des.adapters.drivers.hooks.real_hook.ScopeValidator"
-        ) as MockValidator:
-            with patch(
-                "src.des.adapters.drivers.hooks.real_hook.logger"
-            ) as mock_logger:
-                mock_validator_instance = MockValidator.return_value
-                mock_validator_instance.validate_scope.return_value = (
-                    ScopeValidationResult(
-                        has_violations=False,
-                        validation_skipped=True,
-                        reason="Git command unavailable in environment",
-                    )
-                )
+        with (
+            patch(
+                "src.des.adapters.drivers.hooks.real_hook.ScopeValidator"
+            ) as MockValidator,
+            patch("src.des.adapters.drivers.hooks.real_hook.logger") as mock_logger,
+        ):
+            mock_validator_instance = MockValidator.return_value
+            mock_validator_instance.validate_scope.return_value = ScopeValidationResult(
+                has_violations=False,
+                validation_skipped=True,
+                reason="Git command unavailable in environment",
+            )
 
-                result = hook.on_agent_complete(str(step_file))
+            result = hook.on_agent_complete(str(step_file))
 
-                # Assert: WARNING logged with specific reason
-                mock_logger.warning.assert_called_once()
-                warning_call = mock_logger.warning.call_args[0][0]
-                assert "validation skipped" in warning_call.lower()
-                assert "unavailable in environment" in warning_call.lower()
+            # Assert: WARNING logged with specific reason
+            mock_logger.warning.assert_called_once()
+            warning_call = mock_logger.warning.call_args[0][0]
+            assert "validation skipped" in warning_call.lower()
+            assert "unavailable in environment" in warning_call.lower()
 
-                # Step completes normally
-                assert result.validation_status == "PASSED"
+            # Step completes normally
+            assert result.validation_status == "PASSED"
 
     def test_validation_result_stored_for_audit_logging(self, tmp_path):
         """

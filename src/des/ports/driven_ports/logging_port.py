@@ -6,7 +6,7 @@ throughout the DES lifecycle.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict
+from typing import Any
 
 
 class LoggingPort(ABC):
@@ -18,7 +18,7 @@ class LoggingPort(ABC):
     """
 
     @abstractmethod
-    def log_validation_result(self, result: Any, context: Dict[str, Any]) -> None:
+    def log_validation_result(self, result: Any, context: dict[str, Any]) -> None:
         """
         Log the result of a validation operation.
 
@@ -40,7 +40,7 @@ class LoggingPort(ABC):
         pass
 
     @abstractmethod
-    def log_error(self, error: Exception, context: Dict[str, Any]) -> None:
+    def log_error(self, error: Exception, context: dict[str, Any]) -> None:
         """
         Log an error that occurred during DES execution.
 

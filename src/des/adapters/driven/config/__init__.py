@@ -7,4 +7,5 @@ from src.des.adapters.driven.config.in_memory_config_adapter import (
     InMemoryConfigAdapter,
 )
 
+
 __all__ = ["EnvironmentConfigAdapter", "InMemoryConfigAdapter"]

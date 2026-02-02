@@ -15,8 +15,8 @@ class TestClaudeCodeJsonErrorStructure:
 
     def test_format_json_error_structure(self):
         """JSON error output must include all required fields."""
-        from scripts.install.output_formatter import ClaudeCodeFormatter
         from scripts.install.error_codes import ENV_NO_VENV
+        from scripts.install.output_formatter import ClaudeCodeFormatter
 
         formatter = ClaudeCodeFormatter()
         result = formatter.format_json_error(
@@ -38,8 +38,8 @@ class TestClaudeCodeJsonErrorStructure:
 
     def test_format_json_all_required_fields(self):
         """JSON output must have correct field types and values."""
-        from scripts.install.output_formatter import ClaudeCodeFormatter
         from scripts.install.error_codes import ENV_NO_VENV
+        from scripts.install.output_formatter import ClaudeCodeFormatter
 
         formatter = ClaudeCodeFormatter()
         result = formatter.format_json_error(
@@ -66,8 +66,8 @@ class TestClaudeCodeJsonErrorStructure:
 
     def test_format_json_timestamp_iso8601(self):
         """JSON timestamp must be in ISO 8601 format."""
-        from scripts.install.output_formatter import ClaudeCodeFormatter
         from scripts.install.error_codes import ENV_NO_VENV
+        from scripts.install.output_formatter import ClaudeCodeFormatter
 
         formatter = ClaudeCodeFormatter()
         result = formatter.format_json_error(
@@ -93,8 +93,8 @@ class TestClaudeCodeContextOutputsJsonError:
 
     def test_claude_code_context_outputs_json_error_for_missing_venv(self):
         """Claude Code context must output JSON error for missing venv."""
-        from scripts.install.output_formatter import ClaudeCodeFormatter
         from scripts.install.error_codes import ENV_NO_VENV
+        from scripts.install.output_formatter import ClaudeCodeFormatter
 
         formatter = ClaudeCodeFormatter()
         result = formatter.format_venv_error()
@@ -110,8 +110,8 @@ class TestClaudeCodeContextOutputsJsonError:
 
     def test_claude_code_context_outputs_json_error_for_missing_pipenv(self):
         """Claude Code context must output JSON error for missing pipenv."""
-        from scripts.install.output_formatter import ClaudeCodeFormatter
         from scripts.install.error_codes import ENV_NO_PIPENV
+        from scripts.install.output_formatter import ClaudeCodeFormatter
 
         formatter = ClaudeCodeFormatter()
         result = formatter.format_pipenv_error()
@@ -126,8 +126,8 @@ class TestClaudeCodeContextOutputsJsonError:
 
     def test_claude_code_context_outputs_json_error_for_missing_dependency(self):
         """Claude Code context must output JSON error for missing dependency."""
-        from scripts.install.output_formatter import ClaudeCodeFormatter
         from scripts.install.error_codes import DEP_MISSING
+        from scripts.install.output_formatter import ClaudeCodeFormatter
 
         formatter = ClaudeCodeFormatter()
         result = formatter.format_dependency_error(
@@ -177,9 +177,10 @@ class TestFormatErrorModeSelection:
 
     def test_format_error_selects_mode(self):
         """format_error should use context detector to select output mode."""
-        from scripts.install.output_formatter import format_error
-        from scripts.install.error_codes import ENV_NO_VENV
         from unittest.mock import patch
+
+        from scripts.install.error_codes import ENV_NO_VENV
+        from scripts.install.output_formatter import format_error
 
         # Test Claude Code context
         with patch(
@@ -197,23 +198,25 @@ class TestFormatErrorModeSelection:
             assert "error_code" in parsed
 
         # Test Terminal context (must mock both is_claude_code_context AND is_ci_environment)
-        with patch(
-            "scripts.install.output_formatter.is_claude_code_context",
-            return_value=False,
-        ):
-            with patch(
+        with (
+            patch(
+                "scripts.install.output_formatter.is_claude_code_context",
+                return_value=False,
+            ),
+            patch(
                 "scripts.install.output_formatter.is_ci_environment",
                 return_value=False,
-            ):
-                result = format_error(
-                    error_code=ENV_NO_VENV,
-                    message="No virtual environment detected",
-                    remediation="Run 'pipenv shell'",
-                    recoverable=True,
-                )
+            ),
+        ):
+            result = format_error(
+                error_code=ENV_NO_VENV,
+                message="No virtual environment detected",
+                remediation="Run 'pipenv shell'",
+                recoverable=True,
+            )
 
-                # Should be terminal format with [ERROR] prefix
-                assert "[ERROR]" in result
+            # Should be terminal format with [ERROR] prefix
+            assert "[ERROR]" in result
 
 
 class TestClaudeCodeFormatterModuleImportability:

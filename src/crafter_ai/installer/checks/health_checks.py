@@ -4,15 +4,16 @@ This module provides health checks that verify the crafter-ai installation
 and environment are properly configured.
 """
 
+import importlib.metadata as importlib_metadata
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-import importlib.metadata as importlib_metadata
 import platformdirs
 
 from crafter_ai.installer.domain.health_checker import HealthChecker
 from crafter_ai.installer.domain.health_result import HealthResult, HealthStatus
+
 
 PACKAGE_NAME = "crafter-ai"
 

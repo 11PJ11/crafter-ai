@@ -12,6 +12,7 @@ from pathlib import Path
 
 from crafter_ai.installer.domain.check_result import CheckResult, CheckSeverity
 
+
 # PEP 427 wheel filename pattern: {distribution}-{version}(-{build tag})?-{python tag}-{abi tag}-{platform tag}.whl
 # Simplified pattern for common wheels
 WHEEL_FILENAME_PATTERN = re.compile(

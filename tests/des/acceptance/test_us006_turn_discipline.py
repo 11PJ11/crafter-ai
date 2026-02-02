@@ -549,11 +549,11 @@ class TestTurnDisciplineContent:
         import json
 
         step_file = minimal_step_file
-        with open(step_file, "r") as f:
+        with open(step_file) as f:
             step_data = json.load(f)
 
         # Set phase start time 25 minutes ago (crossed 50% threshold at 20 min)
-        from datetime import datetime, timezone, timedelta
+        from datetime import datetime, timedelta, timezone
 
         started_at = (datetime.now(timezone.utc) - timedelta(minutes=25)).isoformat()
 
@@ -610,10 +610,10 @@ class TestTurnDisciplineContent:
         """
         # GIVEN: Step file with execution that crossed threshold
         import json
-        from datetime import datetime, timezone, timedelta
+        from datetime import datetime, timedelta, timezone
 
         step_file = minimal_step_file
-        with open(step_file, "r") as f:
+        with open(step_file) as f:
             step_data = json.load(f)
 
         # Set phase start time 32 minutes ago (crossed 75% of 40-min budget)

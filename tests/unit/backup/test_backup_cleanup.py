@@ -4,10 +4,11 @@ Unit tests for backup cleanup functionality (30-day retention policy).
 CRITICAL: Tests follow hexagonal architecture - BackupManager is part of domain.
 """
 
-from pathlib import Path
+import os
 import tempfile
 import time
-import os
+from pathlib import Path
+
 from nWave.infrastructure.backup_manager import BackupManager
 
 

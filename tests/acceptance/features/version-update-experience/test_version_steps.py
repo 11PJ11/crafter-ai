@@ -15,7 +15,8 @@ import subprocess
 import sys
 
 import pytest
-from pytest_bdd import scenarios, given, when, then, parsers
+from pytest_bdd import given, parsers, scenarios, then, when
+
 
 # Constants for clarity and maintainability
 SUBPROCESS_TIMEOUT = 10

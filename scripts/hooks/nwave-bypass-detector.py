@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """nWave Bypass Detector - Post-commit hook."""
 
-import sys
-import os
 import json
-from pathlib import Path
+import os
+import sys
 from datetime import datetime
+from pathlib import Path
 
 
 def main():

@@ -11,13 +11,13 @@ NO MOCKS inside hexagon - uses real domain objects (Version, Watermark).
 Mocks ONLY at port boundaries (GitHubAPIPort, FileSystemPort).
 """
 
-import pytest
 from datetime import datetime, timezone
 from unittest.mock import Mock
 
+import pytest
 from nWave.core.versioning.domain.version import Version
 from nWave.core.versioning.domain.watermark import Watermark
-from nWave.core.versioning.ports.github_api_port import ReleaseInfo, RateLimitError
+from nWave.core.versioning.ports.github_api_port import RateLimitError, ReleaseInfo
 
 
 class TestVersionServiceReturnsInstalledVersion:
@@ -196,6 +196,7 @@ class TestVersionServiceChecksGitHubWhenWatermarkStale:
     def test_version_service_checks_github_when_watermark_stale(self):
         """VersionService should call GitHub API when watermark is stale (>24h)."""
         from datetime import timedelta
+
         from nWave.core.versioning.application.version_service import VersionService
 
         # GIVEN: A stale watermark (25 hours old)
@@ -257,6 +258,7 @@ class TestVersionServiceChecksGitHubWhenWatermarkStale:
     def test_version_service_updates_watermark_after_check(self):
         """VersionService should update watermark with new timestamp after GitHub check."""
         from datetime import timedelta
+
         from nWave.core.versioning.application.version_service import VersionService
 
         # GIVEN: A stale watermark
@@ -507,6 +509,7 @@ class TestVersionServiceSkipsGitHubWhenWatermarkFresh:
     def test_version_service_skips_github_when_watermark_fresh(self):
         """VersionService should NOT call GitHub API when watermark is fresh (<24h)."""
         from datetime import timedelta
+
         from nWave.core.versioning.application.version_service import VersionService
 
         # GIVEN: A fresh watermark (1 hour old)
@@ -541,6 +544,7 @@ class TestVersionServiceSkipsGitHubWhenWatermarkFresh:
     def test_version_service_uses_cached_latest_version(self):
         """VersionService should use cached latest_version from fresh watermark."""
         from datetime import timedelta
+
         from nWave.core.versioning.application.version_service import VersionService
 
         # GIVEN: A fresh watermark with cached latest_version "1.3.0"
@@ -593,6 +597,7 @@ class TestVersionServiceSkipsGitHubWhenWatermarkFresh:
     def test_version_service_does_not_write_watermark_when_fresh(self):
         """VersionService should NOT update watermark when it is fresh."""
         from datetime import timedelta
+
         from nWave.core.versioning.application.version_service import VersionService
 
         # GIVEN: A fresh watermark
@@ -622,6 +627,7 @@ class TestVersionServiceSkipsGitHubWhenWatermarkFresh:
     def test_version_service_detects_update_available_from_cache(self):
         """VersionService should detect update available from cached watermark data."""
         from datetime import timedelta
+
         from nWave.core.versioning.application.version_service import VersionService
 
         # GIVEN: Fresh watermark with cached version > installed version
@@ -653,6 +659,7 @@ class TestVersionServiceSkipsGitHubWhenWatermarkFresh:
     def test_version_service_formats_message_from_cache(self):
         """VersionService result formats display message correctly from cached data."""
         from datetime import timedelta
+
         from nWave.core.versioning.application.version_service import VersionService
 
         # GIVEN: Fresh watermark with cached data

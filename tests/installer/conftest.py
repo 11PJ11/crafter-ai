@@ -183,7 +183,7 @@ class MockGitAdapter:
         self._latest_tag: str | None = None
         self._current_branch: str = "main"
 
-    def get_commits_since_tag(self, tag: str) -> list[str]:  # noqa: ARG002
+    def get_commits_since_tag(self, tag: str) -> list[str]:
         """Return pre-configured commits."""
         return self._commits
 
@@ -259,7 +259,7 @@ class MockPipxAdapter:
         self._should_fail: bool = False
         self._failure_message: str = "pipx operation failed"
 
-    def install(self, package: str, force: bool = False) -> bool:  # noqa: ARG002
+    def install(self, package: str, force: bool = False) -> bool:
         """Simulate package installation."""
         if self._should_fail:
             raise RuntimeError(self._failure_message)

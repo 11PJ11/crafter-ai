@@ -13,7 +13,6 @@ PR review, allowing her to decide whether to accept or reject the work.
 import json
 from unittest.mock import Mock, patch
 
-
 from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
 from src.des.validation.scope_validator import ScopeValidationResult
 

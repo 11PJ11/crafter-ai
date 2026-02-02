@@ -10,12 +10,13 @@ Exit codes:
     1 - Validation failed (phases incomplete)
 """
 
-import sys
 import json
 import re
 import subprocess
+import sys
 from pathlib import Path
-from typing import List, Dict, Any, Tuple
+from typing import Any
+
 
 # Required TDD phases in order (14 total)
 REQUIRED_PHASES = [
@@ -43,7 +44,7 @@ VALID_SKIP_PREFIXES = [
 ]
 
 
-def get_staged_step_files() -> List[str]:
+def get_staged_step_files() -> list[str]:
     """Get list of step files staged for commit."""
     try:
         result = subprocess.run(
@@ -66,7 +67,7 @@ def get_staged_step_files() -> List[str]:
         return []
 
 
-def validate_skipped_phase(entry: Dict[str, Any]) -> Tuple[bool, str]:
+def validate_skipped_phase(entry: dict[str, Any]) -> tuple[bool, str]:
     """Validate that a SKIPPED phase has proper justification."""
     blocked_by = entry.get("blocked_by", "")
 
@@ -80,12 +81,12 @@ def validate_skipped_phase(entry: Dict[str, Any]) -> Tuple[bool, str]:
     return False, f"SKIPPED phase has invalid blocked_by: {blocked_by}"
 
 
-def validate_step_file(file_path: str) -> Tuple[bool, List[Dict[str, Any]]]:
+def validate_step_file(file_path: str) -> tuple[bool, list[dict[str, Any]]]:
     """Validate a step file has all TDD phases properly executed."""
-    issues: List[Dict[str, Any]] = []
+    issues: list[dict[str, Any]] = []
 
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             data = json.load(f)
     except json.JSONDecodeError as e:
         return False, [{"phase": "N/A", "issue": f"Invalid JSON: {e}"}]
@@ -107,7 +108,7 @@ def validate_step_file(file_path: str) -> Tuple[bool, List[Dict[str, Any]]]:
     # Build lookup by phase name
     phase_lookup = {p.get("phase_name"): p for p in phase_log}
 
-    for i, phase_name in enumerate(REQUIRED_PHASES):
+    for _i, phase_name in enumerate(REQUIRED_PHASES):
         entry = phase_lookup.get(phase_name)
 
         if not entry:
@@ -160,7 +161,7 @@ def get_staged_progress_file() -> bool:
         return False
 
 
-def validate_progress_file(step_files: List[str]) -> Tuple[bool, List[str]]:
+def validate_progress_file(step_files: list[str]) -> tuple[bool, list[str]]:
     """Validate progress file consistency with step files.
 
     Args:
@@ -169,7 +170,7 @@ def validate_progress_file(step_files: List[str]) -> Tuple[bool, List[str]]:
     Returns:
         Tuple of (is_valid, list of issues)
     """
-    issues: List[str] = []
+    issues: list[str] = []
 
     # Find progress file (could be in docs/feature/{project}/ or root)
     progress_paths = [
@@ -198,7 +199,7 @@ def validate_progress_file(step_files: List[str]) -> Tuple[bool, List[str]]:
         return True, []
 
     try:
-        with open(progress_file, "r", encoding="utf-8") as f:
+        with open(progress_file, encoding="utf-8") as f:
             progress = json.load(f)
     except (json.JSONDecodeError, Exception) as e:
         return False, [f"Cannot read progress file: {e}"]

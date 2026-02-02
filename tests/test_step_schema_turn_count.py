@@ -8,8 +8,9 @@ Tests verify that:
 """
 
 import json
-import pytest
 from pathlib import Path
+
+import pytest
 
 
 class TestStepSchemaTurnCountField:
@@ -28,7 +29,7 @@ class TestStepSchemaTurnCountField:
     @pytest.fixture
     def schema_data(self, schema_path):
         """Load schema data"""
-        with open(schema_path, "r") as f:
+        with open(schema_path) as f:
             return json.load(f)
 
     def test_phase_execution_log_includes_turn_count_field(self, schema_data):
@@ -88,7 +89,7 @@ class TestStepSchemaTurnCountField:
         - Schema provides sensible defaults
         """
         # Load schema
-        with open(schema_path, "r") as f:
+        with open(schema_path) as f:
             schema_data = json.load(f)
 
         # Verify all phases have turn_count as null or 0 (both valid defaults)

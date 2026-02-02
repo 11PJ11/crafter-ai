@@ -5,15 +5,14 @@ import zipfile
 from pathlib import Path
 
 import pytest
-
 from scripts.framework.release_packager import (
-    BuildValidator,
-    VersionReader,
     ArchiveCreator,
+    BuildValidator,
     ChecksumGenerator,
+    Platform,
     ReadmeGenerator,
     ReleasePackager,
-    Platform,
+    VersionReader,
 )
 
 

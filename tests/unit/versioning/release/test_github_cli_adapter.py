@@ -11,7 +11,6 @@ Test coverage:
 """
 
 from dataclasses import dataclass
-from typing import Optional
 from unittest.mock import Mock, patch
 
 
@@ -20,9 +19,9 @@ class PRResult:
     """Result of PR creation operation."""
 
     success: bool
-    pr_number: Optional[int]
-    pr_url: Optional[str]
-    error_message: Optional[str] = None
+    pr_number: int | None
+    pr_url: str | None
+    error_message: str | None = None
 
 
 class TestGitHubCLIAdapterCreatesPR:

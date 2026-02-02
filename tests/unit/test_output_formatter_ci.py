@@ -19,8 +19,8 @@ class TestCIFormatterDisablesANSIColors:
 
     def test_ci_mode_disables_ansi_color_codes_in_output(self):
         """CI mode output must NOT contain ANSI escape sequences."""
-        from scripts.install.output_formatter import CIFormatter
         from scripts.install.error_codes import ENV_NO_VENV
+        from scripts.install.output_formatter import CIFormatter
 
         formatter = CIFormatter()
         result = formatter.format_ci_error(
@@ -52,8 +52,8 @@ class TestCIFormatterDisablesANSIColors:
 
     def test_ci_formatter_error_structure_readable_without_colors(self):
         """CI error output must be human-readable plain text."""
-        from scripts.install.output_formatter import CIFormatter
         from scripts.install.error_codes import DEP_MISSING
+        from scripts.install.output_formatter import CIFormatter
 
         formatter = CIFormatter()
         result = formatter.format_ci_error(
@@ -73,8 +73,8 @@ class TestCIFormatterVerboseOutputByDefault:
 
     def test_ci_mode_enables_verbose_output_by_default(self):
         """CI mode must include verbose error details by default."""
-        from scripts.install.output_formatter import CIFormatter
         from scripts.install.error_codes import ENV_NO_VENV
+        from scripts.install.output_formatter import CIFormatter
 
         formatter = CIFormatter()
         result = formatter.format_ci_error(
@@ -94,8 +94,8 @@ class TestCIFormatterVerboseOutputByDefault:
 
     def test_ci_formatter_verbose_includes_timestamp(self):
         """CI verbose output should include timestamp for log correlation."""
-        from scripts.install.output_formatter import CIFormatter
         from scripts.install.error_codes import ENV_NO_VENV
+        from scripts.install.output_formatter import CIFormatter
 
         formatter = CIFormatter()
         result = formatter.format_ci_error(
@@ -189,8 +189,8 @@ class TestCIFormatterExitCodes:
 
     def test_ci_formatter_error_includes_exit_code_in_output(self):
         """CI error output should include exit code for pipeline clarity."""
-        from scripts.install.output_formatter import CIFormatter
         from scripts.install.error_codes import ENV_NO_VENV
+        from scripts.install.output_formatter import CIFormatter
 
         formatter = CIFormatter()
         result = formatter.format_ci_error(
@@ -256,48 +256,51 @@ class TestCIFormatterIntegrationWithContextDetector:
 
     def test_format_error_uses_ci_formatter_in_ci_environment(self):
         """format_error should use CI formatting when in CI environment."""
-        from scripts.install.output_formatter import format_error
         from scripts.install.error_codes import ENV_NO_VENV
+        from scripts.install.output_formatter import format_error
 
-        with patch(
-            "scripts.install.output_formatter.is_claude_code_context",
-            return_value=False,
-        ):
-            with patch(
+        with (
+            patch(
+                "scripts.install.output_formatter.is_claude_code_context",
+                return_value=False,
+            ),
+            patch(
                 "scripts.install.output_formatter.is_ci_environment", return_value=True
-            ):
-                result = format_error(
-                    error_code=ENV_NO_VENV,
-                    message="No virtual environment detected",
-                    remediation="Run 'pipenv shell'",
-                    recoverable=True,
-                )
+            ),
+        ):
+            result = format_error(
+                error_code=ENV_NO_VENV,
+                message="No virtual environment detected",
+                remediation="Run 'pipenv shell'",
+                recoverable=True,
+            )
 
-                # Should be CI format (no ANSI colors)
-                assert "\033[" not in result, (
-                    "CI context should produce colorless output"
-                )
-                # Should include error details
-                assert "virtual environment" in result.lower()
+            # Should be CI format (no ANSI colors)
+            assert "\033[" not in result, "CI context should produce colorless output"
+            # Should include error details
+            assert "virtual environment" in result.lower()
 
     def test_format_error_priority_claude_code_over_ci(self):
         """Claude Code context should take priority over CI context."""
-        from scripts.install.output_formatter import format_error
         from scripts.install.error_codes import ENV_NO_VENV
+        from scripts.install.output_formatter import format_error
 
-        with patch(
-            "scripts.install.output_formatter.is_claude_code_context", return_value=True
-        ):
-            with patch(
+        with (
+            patch(
+                "scripts.install.output_formatter.is_claude_code_context",
+                return_value=True,
+            ),
+            patch(
                 "scripts.install.output_formatter.is_ci_environment", return_value=True
-            ):
-                result = format_error(
-                    error_code=ENV_NO_VENV,
-                    message="No virtual environment detected",
-                    remediation="Run 'pipenv shell'",
-                    recoverable=True,
-                )
+            ),
+        ):
+            result = format_error(
+                error_code=ENV_NO_VENV,
+                message="No virtual environment detected",
+                remediation="Run 'pipenv shell'",
+                recoverable=True,
+            )
 
-                # Claude Code format should take priority (JSON output)
-                parsed = json.loads(result)
-                assert "error_code" in parsed
+            # Claude Code format should take priority (JSON output)
+            parsed = json.loads(result)
+            assert "error_code" in parsed

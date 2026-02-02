@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Optional
+
 
 if TYPE_CHECKING:
     from src.des.validation.scope_validator import ScopeValidationResult
@@ -12,13 +13,13 @@ class HookResult:
 
     validation_status: str
     hook_fired: bool = True
-    abandoned_phases: List[str] = field(default_factory=list)
-    incomplete_phases: List[str] = field(default_factory=list)
-    invalid_skips: List[str] = field(default_factory=list)
+    abandoned_phases: list[str] = field(default_factory=list)
+    incomplete_phases: list[str] = field(default_factory=list)
+    invalid_skips: list[str] = field(default_factory=list)
     error_count: int = 0
-    error_type: Optional[str] = None
-    error_message: Optional[str] = None
-    recovery_suggestions: List[str] = field(default_factory=list)
+    error_type: str | None = None
+    error_message: str | None = None
+    recovery_suggestions: list[str] = field(default_factory=list)
     not_executed_phases: int = 0
     turn_limit_exceeded: bool = False
     timeout_exceeded: bool = False

@@ -7,8 +7,9 @@ HEXAGONAL BOUNDARY ENFORCEMENT:
 - Mocking allowed only at port boundaries (GitHubAPIPort, FileSystemPort)
 """
 
-import pytest
 from pathlib import Path
+
+import pytest
 
 
 @pytest.fixture(scope="function")
@@ -69,7 +70,7 @@ def mock_github_adapter():
             self,
             latest_version: str,
             checksum: str = "abc123",
-            download_url: str = None,
+            download_url: str | None = None,
         ):
             self.latest_version = latest_version
             self.checksum = checksum
@@ -79,12 +80,12 @@ def mock_github_adapter():
             )
 
         def get_latest_release(self, owner: str, repo: str):
+            from nWave.core.versioning.domain.version import Version
             from nWave.core.versioning.ports.github_api_port import (
-                ReleaseInfo,
                 NetworkError,
                 RateLimitError,
+                ReleaseInfo,
             )
-            from nWave.core.versioning.domain.version import Version
 
             if self.should_raise_network_error:
                 raise NetworkError("Network unavailable")

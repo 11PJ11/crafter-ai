@@ -4,7 +4,8 @@ Tests the timeout monitoring logic that tracks elapsed time from phase start
 and detects when duration thresholds are crossed.
 """
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
+
 import pytest
 from src.des.domain.timeout_monitor import TimeoutMonitor
 

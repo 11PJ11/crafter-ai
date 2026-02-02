@@ -11,7 +11,7 @@ HEXAGONAL ARCHITECTURE:
 - Tests verify correct branch retrieval
 """
 
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 
 class TestGitAdapterGetCurrentBranch:

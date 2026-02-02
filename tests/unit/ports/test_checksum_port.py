@@ -8,10 +8,11 @@ These tests verify the port interface contract:
 - ChecksumMismatchError exception type defined
 """
 
-import pytest
-from abc import ABC
 import inspect
+from abc import ABC
 from pathlib import Path
+
+import pytest
 
 
 class TestChecksumPortIsAbstract:
@@ -62,8 +63,9 @@ class TestCalculateSha256MethodDefined:
 
     def test_calculate_sha256_file_path_typed_as_path(self):
         """calculate_sha256 file_path parameter must be typed as Path."""
-        from nWave.core.versioning.ports.checksum_port import ChecksumPort
         from typing import get_type_hints
+
+        from nWave.core.versioning.ports.checksum_port import ChecksumPort
 
         hints = get_type_hints(ChecksumPort.calculate_sha256)
         assert hints.get("file_path") == Path, (
@@ -72,8 +74,9 @@ class TestCalculateSha256MethodDefined:
 
     def test_calculate_sha256_returns_string(self):
         """calculate_sha256 must return a string (hex digest)."""
-        from nWave.core.versioning.ports.checksum_port import ChecksumPort
         from typing import get_type_hints
+
+        from nWave.core.versioning.ports.checksum_port import ChecksumPort
 
         hints = get_type_hints(ChecksumPort.calculate_sha256)
         assert hints.get("return") is str, (
@@ -122,16 +125,18 @@ class TestVerifyMethodDefined:
 
     def test_verify_file_path_typed_as_path(self):
         """verify file_path parameter must be typed as Path."""
-        from nWave.core.versioning.ports.checksum_port import ChecksumPort
         from typing import get_type_hints
+
+        from nWave.core.versioning.ports.checksum_port import ChecksumPort
 
         hints = get_type_hints(ChecksumPort.verify)
         assert hints.get("file_path") == Path, "verify file_path must be typed as Path"
 
     def test_verify_expected_checksum_typed_as_string(self):
         """verify expected_checksum parameter must be typed as str."""
-        from nWave.core.versioning.ports.checksum_port import ChecksumPort
         from typing import get_type_hints
+
+        from nWave.core.versioning.ports.checksum_port import ChecksumPort
 
         hints = get_type_hints(ChecksumPort.verify)
         assert hints.get("expected_checksum") is str, (
@@ -140,8 +145,9 @@ class TestVerifyMethodDefined:
 
     def test_verify_returns_bool(self):
         """verify must return a boolean indicating match status."""
-        from nWave.core.versioning.ports.checksum_port import ChecksumPort
         from typing import get_type_hints
+
+        from nWave.core.versioning.ports.checksum_port import ChecksumPort
 
         hints = get_type_hints(ChecksumPort.verify)
         assert hints.get("return") is bool, (

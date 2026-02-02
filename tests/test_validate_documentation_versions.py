@@ -10,14 +10,15 @@ Comprehensive Outside-In TDD test suite covering:
 Test isolation: Each test uses temporary git repository, no shared state.
 """
 
+import os
+import subprocess
+import sys
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
 import pytest
 import yaml
-import subprocess
-from pathlib import Path
-from typing import Dict
-import sys
-import os
-from unittest.mock import patch, MagicMock
+
 
 # Add scripts directory to Python path and import module with dashes in name
 scripts_dir = Path(__file__).parent.parent / "scripts" / "validation"
@@ -25,6 +26,7 @@ sys.path.insert(0, str(scripts_dir))
 
 # Import module with dashes using importlib
 import importlib.util  # noqa: E402
+
 
 spec = importlib.util.spec_from_file_location(
     "validate_documentation_versions",
@@ -1566,7 +1568,7 @@ class TestReportStructureDetailed:
 # =============================================================================
 
 
-def report_error_dict(error: ValidationError) -> Dict:
+def report_error_dict(error: ValidationError) -> dict:
     """Convert ValidationError to dict for assertion checking"""
     return {
         "error_type": error.error_type,

@@ -10,7 +10,7 @@ import pytest
 from typer.testing import CliRunner
 
 
-def pytest_ignore_collect(collection_path, config):  # noqa: ARG001
+def pytest_ignore_collect(collection_path, config):
     """Skip collection of test files that may have import issues in mutation testing."""
     path_str = str(collection_path)
 
@@ -53,7 +53,7 @@ def in_memory_filesystem():
     Returns:
         InMemoryFileSystem: Fresh in-memory filesystem instance
     """
-    from tests.des.adapters import InMemoryFileSystem  # noqa: PLC0415
+    from tests.des.adapters import InMemoryFileSystem
 
     return InMemoryFileSystem()
 
@@ -66,7 +66,7 @@ def real_filesystem():
     Returns:
         RealFileSystem: Filesystem that performs actual disk operations
     """
-    from src.des.adapters import RealFileSystem  # noqa: PLC0415
+    from src.des.adapters import RealFileSystem
 
     return RealFileSystem()
 
@@ -79,7 +79,7 @@ def mocked_time_provider():
     Returns:
         MockedTimeProvider: Time provider starting at 2026-01-26T10:00:00Z
     """
-    from tests.des.adapters import MockedTimeProvider  # noqa: PLC0415
+    from tests.des.adapters import MockedTimeProvider
 
     return MockedTimeProvider(datetime(2026, 1, 26, 10, 0, 0, tzinfo=timezone.utc))
 
@@ -92,7 +92,7 @@ def mocked_hook():
     Returns:
         MockedSubagentStopHook: Hook that returns predefined results
     """
-    from tests.des.adapters import MockedSubagentStopHook  # noqa: PLC0415
+    from tests.des.adapters import MockedSubagentStopHook
 
     return MockedSubagentStopHook()
 
@@ -105,7 +105,7 @@ def mocked_validator():
     Returns:
         MockedTemplateValidator: Validator returning passing results by default
     """
-    from tests.des.adapters import MockedTemplateValidator  # noqa: PLC0415
+    from tests.des.adapters import MockedTemplateValidator
 
     return MockedTemplateValidator()
 
@@ -126,7 +126,7 @@ def des_orchestrator(
     Returns:
         DESOrchestrator: Configured orchestrator with mocked dependencies
     """
-    from src.des.application.orchestrator import DESOrchestrator  # noqa: PLC0415
+    from src.des.application.orchestrator import DESOrchestrator
 
     return DESOrchestrator(
         hook=mocked_hook,
@@ -152,7 +152,7 @@ def scenario_des_orchestrator(
     Returns:
         DESOrchestrator: Configured orchestrator with real filesystem
     """
-    from src.des.application.orchestrator import DESOrchestrator  # noqa: PLC0415
+    from src.des.application.orchestrator import DESOrchestrator
 
     return DESOrchestrator(
         hook=mocked_hook,

@@ -8,7 +8,9 @@ Each reviewer agent is optimized for cost-efficient review operations.
 __version__ = "1.2.26"
 
 import re
+import sys
 from pathlib import Path
+
 
 # Define agent mappings and review focus descriptions
 AGENTS = {
@@ -42,7 +44,7 @@ def create_reviewer_agent(base_agent_name, review_description):
         return False
 
     # Read the base agent file
-    with open(base_path, "r", encoding="utf-8") as f:
+    with open(base_path, encoding="utf-8") as f:
         content = f.read()
 
     # Update YAML frontmatter
@@ -138,4 +140,4 @@ def main():
 
 
 if __name__ == "__main__":
-    exit(0 if main() else 1)
+    sys.exit(0 if main() else 1)

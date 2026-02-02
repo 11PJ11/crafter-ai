@@ -16,11 +16,11 @@ Usage:
         # Handle failures
 """
 
-from dataclasses import dataclass
 import importlib.util
 import shutil
 import sys
-from typing import List, Optional
+from dataclasses import dataclass
+
 
 try:
     from scripts.install.error_codes import DEP_MISSING, ENV_NO_PIPENV, ENV_NO_VENV
@@ -29,7 +29,7 @@ except ImportError:
 
 
 # Required modules for nWave installer functionality
-REQUIRED_MODULES: List[str] = [
+REQUIRED_MODULES: list[str] = [
     "yaml",  # For configuration file parsing (PyYAML)
     "pathlib",  # For path handling (stdlib, but verify availability)
 ]
@@ -47,9 +47,9 @@ class CheckResult:
     """
 
     passed: bool
-    error_code: Optional[str]
+    error_code: str | None
     message: str
-    remediation: Optional[str]
+    remediation: str | None
 
 
 def is_virtual_environment() -> bool:
@@ -155,7 +155,7 @@ class DependencyCheck:
         Returns:
             CheckResult with pass/fail status and list of missing modules.
         """
-        missing_modules: List[str] = []
+        missing_modules: list[str] = []
 
         for module_name in REQUIRED_MODULES:
             spec = importlib.util.find_spec(module_name)
@@ -210,7 +210,7 @@ class PreflightChecker:
             DependencyCheck(),
         ]
 
-    def run_all_checks(self, skip_checks: bool = False) -> List[CheckResult]:
+    def run_all_checks(self, skip_checks: bool = False) -> list[CheckResult]:
         """Run all preflight checks.
 
         Args:
@@ -221,7 +221,7 @@ class PreflightChecker:
         Returns:
             List of CheckResult objects, one per check executed.
         """
-        results: List[CheckResult] = []
+        results: list[CheckResult] = []
 
         for check in self._checks:
             # Virtual environment check is ALWAYS run and cannot be skipped
@@ -233,7 +233,7 @@ class PreflightChecker:
 
         return results
 
-    def has_blocking_failures(self, results: List[CheckResult]) -> bool:
+    def has_blocking_failures(self, results: list[CheckResult]) -> bool:
         """Check if any results contain blocking failures.
 
         Args:
@@ -244,7 +244,7 @@ class PreflightChecker:
         """
         return any(not result.passed for result in results)
 
-    def get_failed_checks(self, results: List[CheckResult]) -> List[CheckResult]:
+    def get_failed_checks(self, results: list[CheckResult]) -> list[CheckResult]:
         """Get only the failed check results.
 
         Args:

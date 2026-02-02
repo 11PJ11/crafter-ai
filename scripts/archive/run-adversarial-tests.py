@@ -18,7 +18,8 @@ import json
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any
+
 
 # Test results
 test_results = {
@@ -403,7 +404,7 @@ AGENT_TYPE_MAPPING = {
 # =============================================================================
 
 
-def generate_test_plan(agent_name: str, agent_type: str) -> Dict[str, Any]:
+def generate_test_plan(agent_name: str, agent_type: str) -> dict[str, Any]:
     """Generate test plan for a specific agent"""
     plan = {
         "agent_name": agent_name,
@@ -479,7 +480,7 @@ def generate_test_plan(agent_name: str, agent_type: str) -> Dict[str, Any]:
 # =============================================================================
 
 
-def generate_markdown_report(test_plans: Dict[str, Any], output_file: Path):
+def generate_markdown_report(test_plans: dict[str, Any], output_file: Path):
     """Generate markdown test report"""
     timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
 
@@ -670,7 +671,7 @@ Agent-type-specific output validation tests:
         )
 
 
-def generate_json_report(test_plans: Dict[str, Any], output_file: Path):
+def generate_json_report(test_plans: dict[str, Any], output_file: Path):
     """Generate JSON test report"""
     report = {
         "metadata": {
@@ -687,7 +688,7 @@ def generate_json_report(test_plans: Dict[str, Any], output_file: Path):
 
     # Calculate statistics
     stats_by_type = {}
-    for agent_name, plan in test_plans.items():
+    for _agent_name, plan in test_plans.items():
         agent_type = plan["agent_type"]
         if agent_type not in stats_by_type:
             stats_by_type[agent_type] = {

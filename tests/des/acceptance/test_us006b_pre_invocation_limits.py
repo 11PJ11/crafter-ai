@@ -133,7 +133,7 @@ class TestPreInvocationLimitsValidation:
 
         import json
 
-        with open(minimal_step_file, "r") as f:
+        with open(minimal_step_file) as f:
             step_data = json.load(f)
 
         # Set invalid limits
@@ -192,7 +192,7 @@ class TestPreInvocationLimitsValidation:
 
         import json
 
-        with open(minimal_step_file, "r") as f:
+        with open(minimal_step_file) as f:
             step_data = json.load(f)
 
         # Set valid limits

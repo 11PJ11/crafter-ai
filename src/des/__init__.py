@@ -29,17 +29,27 @@ New code should import from the specific layer packages:
 """
 
 # Re-export all key classes for backward compatibility
-from src.des.domain import (
-    TimeoutMonitor,
-    TurnCounter,
-    InvocationLimitsValidator,
-    InvocationLimitsResult,
+from src.des.adapters.driven import (
+    ClaudeCodeTaskAdapter,
+    EnvironmentConfigAdapter,
+    InMemoryConfigAdapter,
+    MockedTaskAdapter,
+    RealFileSystem,
+    SilentLogger,
+    StructuredLogger,
+    SystemTimeProvider,
 )
-from src.des.application.orchestrator import DESOrchestrator
+from src.des.adapters.drivers import RealSubagentStopHook, RealTemplateValidator
 from src.des.application.config_loader import ConfigLoader
 from src.des.application.hooks import SubagentStopHook
+from src.des.application.orchestrator import DESOrchestrator
 from src.des.application.validator import TDDPhaseValidator
-from src.des.ports.driver_ports import HookPort, ValidatorPort
+from src.des.domain import (
+    InvocationLimitsResult,
+    InvocationLimitsValidator,
+    TimeoutMonitor,
+    TurnCounter,
+)
 from src.des.ports.driven_ports import (
     ConfigPort,
     FileSystemPort,
@@ -47,17 +57,8 @@ from src.des.ports.driven_ports import (
     TaskInvocationPort,
     TimeProvider,
 )
-from src.des.adapters.drivers import RealSubagentStopHook, RealTemplateValidator
-from src.des.adapters.driven import (
-    EnvironmentConfigAdapter,
-    InMemoryConfigAdapter,
-    RealFileSystem,
-    SilentLogger,
-    StructuredLogger,
-    ClaudeCodeTaskAdapter,
-    MockedTaskAdapter,
-    SystemTimeProvider,
-)
+from src.des.ports.driver_ports import HookPort, ValidatorPort
+
 
 # Backward compatibility aliases
 RealHook = RealSubagentStopHook
@@ -66,38 +67,38 @@ RealFilesystem = RealFileSystem
 SystemTime = SystemTimeProvider
 
 __all__ = [
-    # Domain
-    "TimeoutMonitor",
-    "TurnCounter",
-    "InvocationLimitsValidator",
-    "InvocationLimitsResult",
-    # Application
-    "DESOrchestrator",
+    "ClaudeCodeTaskAdapter",
     "ConfigLoader",
-    "SubagentStopHook",
-    "TDDPhaseValidator",
-    # Driver ports
-    "HookPort",
-    "ValidatorPort",
     # Driven ports
     "ConfigPort",
+    # Application
+    "DESOrchestrator",
+    # Driven adapters
+    "EnvironmentConfigAdapter",
     "FileSystemPort",
+    # Driver ports
+    "HookPort",
+    "InMemoryConfigAdapter",
+    "InvocationLimitsResult",
+    "InvocationLimitsValidator",
     "LoggingPort",
-    "TaskInvocationPort",
-    "TimeProvider",
+    "MockedTaskAdapter",
+    "RealFilesystem",
+    # Backward compatibility aliases
+    "RealHook",
     # Driver adapters
     "RealSubagentStopHook",
     "RealTemplateValidator",
-    # Backward compatibility aliases
-    "RealHook",
     "RealValidator",
-    # Driven adapters
-    "EnvironmentConfigAdapter",
-    "InMemoryConfigAdapter",
-    "RealFilesystem",
     "SilentLogger",
     "StructuredLogger",
-    "ClaudeCodeTaskAdapter",
-    "MockedTaskAdapter",
+    "SubagentStopHook",
     "SystemTime",
+    "TDDPhaseValidator",
+    "TaskInvocationPort",
+    "TimeProvider",
+    # Domain
+    "TimeoutMonitor",
+    "TurnCounter",
+    "ValidatorPort",
 ]

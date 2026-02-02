@@ -1,6 +1,7 @@
 """Unit tests for TurnCounter component."""
 
 import sys
+
 from src.des.domain.turn_counter import TurnCounter
 
 

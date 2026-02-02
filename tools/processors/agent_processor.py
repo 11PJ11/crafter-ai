@@ -7,11 +7,12 @@ extracts and embeds dependencies, and generates IDE-compatible agent files.
 
 import logging
 import re
+import sys
 from pathlib import Path
-from typing import Dict, Optional, Any
+from typing import Any
+
 import yaml
 
-import sys
 
 sys.path.append(str(Path(__file__).parent.parent))
 from utils.dependency_resolver import DependencyResolver
@@ -26,7 +27,7 @@ class AgentProcessor:
         self.file_manager = file_manager
         self.dependency_resolver = DependencyResolver(source_dir, file_manager)
 
-    def extract_yaml_block(self, content: str) -> tuple[Optional[Dict[str, Any]], str]:
+    def extract_yaml_block(self, content: str) -> tuple[dict[str, Any] | None, str]:
         """
         Extract YAML configuration block from agent markdown file.
 
@@ -113,7 +114,7 @@ class AgentProcessor:
 
         return result
 
-    def process_dependencies(self, yaml_config: Dict[str, Any]) -> str:
+    def process_dependencies(self, yaml_config: dict[str, Any]) -> str:
         """
         Process and embed dependencies based on agent configuration.
 
@@ -168,7 +169,7 @@ class AgentProcessor:
         return "\n".join(embedded_content)
 
     def generate_frontmatter(
-        self, agent_file: Path, yaml_config: Dict[str, Any]
+        self, agent_file: Path, yaml_config: dict[str, Any]
     ) -> str:
         """
         Generate Claude Code compatible YAML frontmatter.
@@ -212,7 +213,7 @@ class AgentProcessor:
             logging.error(f"Failed to generate frontmatter: {e}")
             return ""
 
-    def rebuild_yaml_block(self, yaml_config: Dict[str, Any]) -> str:
+    def rebuild_yaml_block(self, yaml_config: dict[str, Any]) -> str:
         """
         Rebuild the YAML configuration block with resolved paths.
 
@@ -329,7 +330,7 @@ class AgentProcessor:
             logging.error(f"Error processing agent {agent_file}: {e}")
             raise
 
-    def get_agent_info(self, agent_file: Path) -> Optional[Dict[str, Any]]:
+    def get_agent_info(self, agent_file: Path) -> dict[str, Any] | None:
         """
         Extract agent information for configuration generation.
 

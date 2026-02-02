@@ -7,7 +7,7 @@ Renames nWave to nWave across all framework files
 import argparse
 import re
 from pathlib import Path
-from typing import Dict, Tuple
+
 
 # Replacement patterns (order matters - most specific first!)
 REPLACEMENTS = [
@@ -41,7 +41,7 @@ def should_process_file(file_path: Path) -> bool:
 
 def apply_replacements(
     content: str, file_path: Path, dry_run: bool, verbose: bool
-) -> Tuple[str, int]:
+) -> tuple[str, int]:
     """Apply all replacement patterns to content."""
     modified_content = content
     total_replacements = 0
@@ -59,7 +59,7 @@ def apply_replacements(
 
 def rename_files_in_directory(
     root_dir: Path, dry_run: bool = False, verbose: bool = False
-) -> Dict[str, int]:
+) -> dict[str, int]:
     """Process all eligible files in directory tree."""
     stats = {"files_processed": 0, "files_modified": 0, "total_replacements": 0}
 
@@ -68,7 +68,7 @@ def rename_files_in_directory(
             continue
 
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 original_content = f.read()
 
             modified_content, replacements = apply_replacements(

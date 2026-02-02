@@ -16,7 +16,7 @@ DOMAIN LANGUAGE:
 - Recovery Guidance: WHY/HOW/ACTION structured recovery instructions
 """
 
-from typing import Dict, List, Any
+from typing import Any
 
 
 class SilentCompletionDetector:
@@ -33,8 +33,8 @@ class SilentCompletionDetector:
 
     def is_silent_completion(
         self,
-        phase_execution_log: List[Dict[str, Any]],
-        task_state: Dict[str, Any],
+        phase_execution_log: list[dict[str, Any]],
+        task_state: dict[str, Any],
     ) -> bool:
         """
         Check if a task exhibits silent completion failure pattern.
@@ -71,8 +71,8 @@ class SilentCompletionDetector:
 
     def detect_missing_outcomes(
         self,
-        phase_execution_log: List[Dict[str, Any]],
-    ) -> List[str]:
+        phase_execution_log: list[dict[str, Any]],
+    ) -> list[str]:
         """
         Detect phases marked EXECUTED but missing outcome field.
 
@@ -101,8 +101,8 @@ class SilentCompletionDetector:
 
     def detect_status_mismatches(
         self,
-        phase_execution_log: List[Dict[str, Any]],
-    ) -> List[Dict[str, Any]]:
+        phase_execution_log: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
         """
         Detect phases where status contradicts outcome description.
 
@@ -153,10 +153,10 @@ class SilentCompletionDetector:
 
     def generate_recovery_suggestions(
         self,
-        phase_execution_log: List[Dict[str, Any]],
-        task_state: Dict[str, Any],
+        phase_execution_log: list[dict[str, Any]],
+        task_state: dict[str, Any],
         transcript_path: str = "/path/to/transcript.log",
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Generate recovery suggestions for silent completion failure.
 
@@ -208,8 +208,8 @@ class SilentCompletionDetector:
 
     def get_recovery_guidance(
         self,
-        phase_execution_log: List[Dict[str, Any]],
-        task_state: Dict[str, Any],
+        phase_execution_log: list[dict[str, Any]],
+        task_state: dict[str, Any],
         transcript_path: str = "/path/to/transcript.log",
     ) -> str:
         """

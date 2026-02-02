@@ -21,7 +21,7 @@ def remove_frontmatter(file_path: Path) -> bool:
         bool: True if frontmatter was removed, False otherwise
     """
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             content = f.read()
 
         # Check if file starts with YAML frontmatter (---)

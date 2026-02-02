@@ -10,8 +10,8 @@ These tests drive implementation for Step US-005-03 schema versioning in validat
 """
 
 from src.des.application.validator import (
-    TDDPhaseValidator,
     ExecutionLogValidator,
+    TDDPhaseValidator,
 )
 
 

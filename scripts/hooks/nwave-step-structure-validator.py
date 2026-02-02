@@ -12,9 +12,9 @@ Exit codes:
     1 - Structure validation failed
 """
 
-import sys
 import json
-from typing import List, Tuple
+import sys
+
 
 __version__ = "1.2.26"
 
@@ -38,12 +38,12 @@ REQUIRED_PHASES = [
 REQUIRED_FIELDS = ["task_id", "project_id", "tdd_cycle"]
 
 
-def validate_step_structure(file_path: str) -> Tuple[bool, List[str]]:
+def validate_step_structure(file_path: str) -> tuple[bool, list[str]]:
     """Validate step file has required structure."""
-    issues: List[str] = []
+    issues: list[str] = []
 
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             data = json.load(f)
     except json.JSONDecodeError as e:
         return False, [f"Invalid JSON: {e}"]

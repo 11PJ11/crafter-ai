@@ -5,9 +5,9 @@ FileSystemAdapter implements FileSystemPort for reading/writing files.
 """
 
 import json
-import pytest
 from datetime import datetime, timezone
 
+import pytest
 from nWave.core.versioning.domain.version import Version
 from nWave.core.versioning.domain.watermark import Watermark
 

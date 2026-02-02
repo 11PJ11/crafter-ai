@@ -6,7 +6,7 @@ specific implementation (Claude Code Task tool, mock for testing, etc.).
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any
+from typing import Any
 
 
 class TaskInvocationPort(ABC):
@@ -19,7 +19,7 @@ class TaskInvocationPort(ABC):
     """
 
     @abstractmethod
-    def invoke_task(self, prompt: str, agent: str) -> Dict[str, Any]:
+    def invoke_task(self, prompt: str, agent: str) -> dict[str, Any]:
         """
         Invoke a sub-agent task.
 

@@ -7,10 +7,10 @@ HEXAGONAL BOUNDARY ENFORCEMENT:
 - No direct imports from nWave.core.* in test code
 """
 
-import pytest
-from pathlib import Path
 from datetime import date
-from typing import List, Optional
+from pathlib import Path
+
+import pytest
 
 
 @pytest.fixture(scope="function")
@@ -46,13 +46,13 @@ def mock_git_adapter():
         def __init__(self):
             self.current_branch = "main"
             self._uncommitted_changes = False
-            self._repo_root: Optional[Path] = None
+            self._repo_root: Path | None = None
 
         def configure(
             self,
             branch: str = "main",
             uncommitted_changes: bool = False,
-            repo_root: Path = None,
+            repo_root: Path | None = None,
         ):
             self.current_branch = branch
             self._uncommitted_changes = uncommitted_changes
@@ -140,10 +140,10 @@ def in_memory_file_system_for_forge(test_repository):
         def __init__(self, test_dirs):
             self._test_dirs = test_dirs
             self._pyproject_version = "1.2.3"
-            self._dist_contents: List[str] = []
-            self._dist_version: Optional[str] = None
+            self._dist_contents: list[str] = []
+            self._dist_version: str | None = None
             self._was_cleaned = False
-            self._previous_build_version: Optional[str] = None
+            self._previous_build_version: str | None = None
 
         def configure(self, base_version: str = "1.2.3"):
             self._pyproject_version = base_version
@@ -154,7 +154,7 @@ def in_memory_file_system_for_forge(test_repository):
             self._dist_version = version
             self._dist_contents = ["VERSION", "nWave/", "agents/", "commands/"]
 
-        def get_previous_build_version(self) -> Optional[str]:
+        def get_previous_build_version(self) -> str | None:
             """Get previous build version if one exists."""
             return self._previous_build_version
 
@@ -180,7 +180,7 @@ def in_memory_file_system_for_forge(test_repository):
             ]
             return True
 
-        def get_dist_version(self) -> Optional[str]:
+        def get_dist_version(self) -> str | None:
             """Get version from dist/VERSION."""
             return self._dist_version
 
@@ -227,8 +227,8 @@ def in_memory_install_file_system(tmp_path):
         def __init__(self, target_dir: Path):
             self._target_dir = target_dir
             self._installation_completed = False
-            self._installed_version: Optional[str] = None
-            self._dist_contents: List[str] = []
+            self._installed_version: str | None = None
+            self._dist_contents: list[str] = []
 
         def copy_dist_to_claude(self) -> None:
             """Copy dist/ contents to ~/.claude/."""
@@ -238,7 +238,7 @@ def in_memory_install_file_system(tmp_path):
             """Check if file exists in ~/.claude/."""
             return self._installation_completed
 
-        def get_installed_file(self, relative_path: str) -> Optional[str]:
+        def get_installed_file(self, relative_path: str) -> str | None:
             """Get content of installed file."""
             if relative_path == "VERSION" and self._installed_version:
                 return self._installed_version
@@ -248,7 +248,7 @@ def in_memory_install_file_system(tmp_path):
             """Set the installed version (for testing)."""
             self._installed_version = version
 
-        def list_dist_files(self) -> List[str]:
+        def list_dist_files(self) -> list[str]:
             """List all files in dist/."""
             return self._dist_contents
 
@@ -258,7 +258,7 @@ def in_memory_install_file_system(tmp_path):
             return self._installation_completed
 
         @property
-        def installed_version(self) -> Optional[str]:
+        def installed_version(self) -> str | None:
             """Get the installed version."""
             return self._installed_version
 

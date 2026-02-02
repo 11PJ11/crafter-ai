@@ -11,8 +11,8 @@ Business Rules:
 - Multiple stale executions supported
 """
 
-from src.des.domain.stale_execution import StaleExecution
 from src.des.domain.stale_detection_result import StaleDetectionResult
+from src.des.domain.stale_execution import StaleExecution
 
 
 class TestStaleDetectionResultShould:

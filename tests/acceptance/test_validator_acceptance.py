@@ -7,6 +7,7 @@ correctly identifies violations in non-compliant command files.
 import sys
 from pathlib import Path
 
+
 # Add scripts validators to Python path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 

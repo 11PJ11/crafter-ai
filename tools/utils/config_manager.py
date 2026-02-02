@@ -5,12 +5,13 @@ Manages nWave configuration loading, parsing, and IDE config generation.
 Handles the central framework-catalog.yaml file and generates IDE-compatible configuration.
 """
 
-import logging
-from pathlib import Path
-from typing import Dict, List, Optional, Any
-import yaml
 import json
+import logging
 from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+import yaml
 
 
 class ConfigManager:
@@ -29,7 +30,7 @@ class ConfigManager:
                 self._config = {}
                 return
 
-            with open(self.config_file, "r", encoding="utf-8") as f:
+            with open(self.config_file, encoding="utf-8") as f:
                 self._config = yaml.safe_load(f) or {}
 
             logging.info(f"Loaded configuration from: {self.config_file}")
@@ -42,7 +43,7 @@ class ConfigManager:
             logging.error(f"Error loading configuration: {e}")
             self._config = {}
 
-    def get_config(self) -> Dict[str, Any]:
+    def get_config(self) -> dict[str, Any]:
         """
         Get the complete configuration dictionary.
 
@@ -51,7 +52,7 @@ class ConfigManager:
         """
         return self._config or {}
 
-    def get_section(self, section_name: str) -> Dict[str, Any]:
+    def get_section(self, section_name: str) -> dict[str, Any]:
         """
         Get a specific configuration section.
 
@@ -63,7 +64,7 @@ class ConfigManager:
         """
         return self._config.get(section_name, {})
 
-    def get_methodology_info(self) -> Dict[str, Any]:
+    def get_methodology_info(self) -> dict[str, Any]:
         """
         Get methodology information.
 
@@ -78,7 +79,7 @@ class ConfigManager:
             "wave_phases": self._config.get("wave_phases", []),
         }
 
-    def get_agents_config(self) -> Dict[str, Any]:
+    def get_agents_config(self) -> dict[str, Any]:
         """
         Get agents configuration.
 
@@ -87,7 +88,7 @@ class ConfigManager:
         """
         return self.get_section("agents")
 
-    def get_commands_config(self) -> Dict[str, Any]:
+    def get_commands_config(self) -> dict[str, Any]:
         """
         Get commands configuration.
 
@@ -96,7 +97,7 @@ class ConfigManager:
         """
         return self.get_section("commands")
 
-    def get_workflows_config(self) -> Dict[str, Any]:
+    def get_workflows_config(self) -> dict[str, Any]:
         """
         Get workflows configuration.
 
@@ -105,7 +106,7 @@ class ConfigManager:
         """
         return self.get_section("workflows")
 
-    def get_teams_config(self) -> Dict[str, Any]:
+    def get_teams_config(self) -> dict[str, Any]:
         """
         Get agent teams configuration.
 
@@ -114,7 +115,7 @@ class ConfigManager:
         """
         return self.get_section("agent_teams")
 
-    def get_quality_gates(self) -> Dict[str, Any]:
+    def get_quality_gates(self) -> dict[str, Any]:
         """
         Get quality gates configuration.
 
@@ -123,7 +124,7 @@ class ConfigManager:
         """
         return self.get_section("quality_gates")
 
-    def get_checklists_config(self) -> Dict[str, Any]:
+    def get_checklists_config(self) -> dict[str, Any]:
         """
         Get checklists configuration.
 
@@ -132,7 +133,7 @@ class ConfigManager:
         """
         return self.get_section("checklists")
 
-    def get_templates_config(self) -> Dict[str, Any]:
+    def get_templates_config(self) -> dict[str, Any]:
         """
         Get templates configuration.
 
@@ -141,7 +142,7 @@ class ConfigManager:
         """
         return self.get_section("templates")
 
-    def get_knowledge_base_config(self) -> Dict[str, Any]:
+    def get_knowledge_base_config(self) -> dict[str, Any]:
         """
         Get knowledge base configuration.
 
@@ -150,7 +151,7 @@ class ConfigManager:
         """
         return self.get_section("knowledge_base")
 
-    def get_task_types_config(self) -> Dict[str, Any]:
+    def get_task_types_config(self) -> dict[str, Any]:
         """
         Get task types configuration with timeout thresholds.
 
@@ -159,7 +160,7 @@ class ConfigManager:
         """
         return self.get_section("task_types")
 
-    def get_task_type_config(self, task_type: str) -> Optional[Dict[str, Any]]:
+    def get_task_type_config(self, task_type: str) -> dict[str, Any] | None:
         """
         Get configuration for a specific task type.
 
@@ -172,7 +173,7 @@ class ConfigManager:
         task_types = self.get_task_types_config()
         return task_types.get(task_type)
 
-    def validate_threshold_ordering(self, thresholds: Dict[str, int]) -> List[str]:
+    def validate_threshold_ordering(self, thresholds: dict[str, int]) -> list[str]:
         """
         Validate that threshold percentages are in ascending order.
 
@@ -212,7 +213,7 @@ class ConfigManager:
 
         return errors
 
-    def get_integration_config(self) -> Dict[str, Any]:
+    def get_integration_config(self) -> dict[str, Any]:
         """
         Get integration configuration.
 
@@ -221,7 +222,7 @@ class ConfigManager:
         """
         return self.get_section("integration")
 
-    def get_agent_by_name(self, agent_name: str) -> Optional[Dict[str, Any]]:
+    def get_agent_by_name(self, agent_name: str) -> dict[str, Any] | None:
         """
         Get configuration for a specific agent.
 
@@ -234,7 +235,7 @@ class ConfigManager:
         agents = self.get_agents_config()
         return agents.get(agent_name)
 
-    def get_command_by_name(self, command_name: str) -> Optional[Dict[str, Any]]:
+    def get_command_by_name(self, command_name: str) -> dict[str, Any] | None:
         """
         Get configuration for a specific command.
 
@@ -247,7 +248,7 @@ class ConfigManager:
         commands = self.get_commands_config()
         return commands.get(command_name)
 
-    def get_agents_by_wave(self, wave_name: str) -> List[Dict[str, Any]]:
+    def get_agents_by_wave(self, wave_name: str) -> list[dict[str, Any]]:
         """
         Get all agents assigned to a specific wave.
 
@@ -268,7 +269,7 @@ class ConfigManager:
 
         return sorted(wave_agents, key=lambda x: x.get("priority", 99))
 
-    def get_commands_by_wave(self, wave_name: str) -> List[Dict[str, Any]]:
+    def get_commands_by_wave(self, wave_name: str) -> list[dict[str, Any]]:
         """
         Get all commands associated with a specific wave.
 
@@ -289,7 +290,7 @@ class ConfigManager:
 
         return wave_commands
 
-    def validate_configuration(self) -> List[str]:
+    def validate_configuration(self) -> list[str]:
         """
         Validate the configuration for completeness and consistency.
 
@@ -334,7 +335,7 @@ class ConfigManager:
 
         return errors
 
-    def generate_ide_config(self, build_stats: Dict[str, Any]) -> Dict[str, Any]:
+    def generate_ide_config(self, build_stats: dict[str, Any]) -> dict[str, Any]:
         """
         Generate IDE-compatible configuration.
 
@@ -372,7 +373,7 @@ class ConfigManager:
 
         return ide_config
 
-    def _generate_agents_index(self) -> Dict[str, Any]:
+    def _generate_agents_index(self) -> dict[str, Any]:
         """Generate agents index for IDE config."""
         agents = self.get_agents_config()
         agents_index = {}
@@ -387,7 +388,7 @@ class ConfigManager:
 
         return agents_index
 
-    def _generate_commands_index(self) -> Dict[str, Any]:
+    def _generate_commands_index(self) -> dict[str, Any]:
         """Generate commands index for IDE config."""
         commands = self.get_commands_config()
         commands_index = {}
@@ -403,7 +404,7 @@ class ConfigManager:
 
         return commands_index
 
-    def _generate_teams_index(self) -> Dict[str, Any]:
+    def _generate_teams_index(self) -> dict[str, Any]:
         """Generate teams index for IDE config."""
         teams = self.get_teams_config()
         teams_index = {}
@@ -418,7 +419,7 @@ class ConfigManager:
 
         return teams_index
 
-    def _generate_workflows_index(self) -> Dict[str, Any]:
+    def _generate_workflows_index(self) -> dict[str, Any]:
         """Generate workflows index for IDE config."""
         workflows = self.get_workflows_config()
         workflows_index = {}

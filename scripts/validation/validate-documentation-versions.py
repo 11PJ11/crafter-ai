@@ -17,15 +17,16 @@ Exit Codes:
 # Version - Must match nWave/framework-catalog.yaml version
 __version__ = "1.2.81"
 
-import sys
 import json
-import yaml
-import subprocess
 import re
-from pathlib import Path
-from typing import Dict, List, Optional
+import subprocess
+import sys
 from dataclasses import dataclass
+from pathlib import Path
+
+import yaml
 from packaging import version
+
 
 # =============================================================================
 # Data Models
@@ -49,11 +50,11 @@ class ValidationError:
 
     error_type: str  # "VERSION_NOT_BUMPED" | "DEPENDENT_OUTDATED" | "INVALID_VERSION"
     file: str
-    current_version: Optional[str]
-    expected_version: Optional[str] = None
+    current_version: str | None
+    expected_version: str | None = None
     reason: str = ""
-    sections_to_update: List[SectionUpdate] = None
-    required_actions: List[str] = None
+    sections_to_update: list[SectionUpdate] = None
+    required_actions: list[str] = None
 
     def __post_init__(self):
         if self.sections_to_update is None:
@@ -68,8 +69,8 @@ class TrackedFile:
 
     path: str
     version_format: str
-    version_field: Optional[str]
-    triggers_update: List[Dict]
+    version_field: str | None
+    triggers_update: list[dict]
     description: str = ""
 
 
@@ -82,10 +83,10 @@ class VersionParser:
     """Parse version strings from different file formats"""
 
     @staticmethod
-    def parse_yaml_version(file_path: Path, field: str = "version") -> Optional[str]:
+    def parse_yaml_version(file_path: Path, field: str = "version") -> str | None:
         """Extract version from YAML file"""
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 data = yaml.safe_load(f)
                 return data.get(field)
         except Exception as e:
@@ -96,10 +97,10 @@ class VersionParser:
             return None
 
     @staticmethod
-    def parse_markdown_version(file_path: Path) -> Optional[str]:
+    def parse_markdown_version(file_path: Path) -> str | None:
         """Extract version from Markdown HTML comment"""
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 # Only check first 2000 characters for performance
                 content = f.read(2000)
                 match = re.search(
@@ -114,10 +115,10 @@ class VersionParser:
             return None
 
     @staticmethod
-    def parse_markdown_header_version(file_path: Path) -> Optional[str]:
+    def parse_markdown_header_version(file_path: Path) -> str | None:
         """Extract version from Markdown header format: **Version**: X.Y.Z"""
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 # Only check first 2000 characters for performance
                 content = f.read(2000)
                 match = re.search(
@@ -133,8 +134,8 @@ class VersionParser:
 
     @staticmethod
     def parse_version(
-        file_path: Path, format_type: str, field: Optional[str] = None
-    ) -> Optional[str]:
+        file_path: Path, format_type: str, field: str | None = None
+    ) -> str | None:
         """Parse version based on file format"""
         if format_type == "yaml":
             return VersionParser.parse_yaml_version(file_path, field or "version")
@@ -184,7 +185,7 @@ class SourceChangeAnalyzer:
     """Analyze semantic changes in source files to guide documentation updates"""
 
     @staticmethod
-    def get_yaml_diff(file_path: str) -> Dict:
+    def get_yaml_diff(file_path: str) -> dict:
         """
         Compare current YAML with HEAD version and identify semantic changes.
         Returns dict with added, removed, modified items.
@@ -205,7 +206,7 @@ class SourceChangeAnalyzer:
             return changes
 
         try:
-            with open(current_path, "r", encoding="utf-8") as f:
+            with open(current_path, encoding="utf-8") as f:
                 current_data = yaml.safe_load(f) or {}
         except Exception:
             return changes
@@ -266,7 +267,7 @@ class SourceChangeAnalyzer:
         return changes
 
     @staticmethod
-    def has_meaningful_changes(changes: Dict) -> bool:
+    def has_meaningful_changes(changes: dict) -> bool:
         """Check if there are meaningful changes to report"""
         return any(
             changes.get(key)
@@ -282,7 +283,7 @@ class SourceChangeAnalyzer:
         )
 
     @staticmethod
-    def generate_update_guidance(changes: Dict, source_file: str) -> List[str]:
+    def generate_update_guidance(changes: dict, source_file: str) -> list[str]:
         """Generate specific update instructions based on detected changes"""
         guidance = []
 
@@ -334,7 +335,7 @@ class GitHelper:
     """Helper methods for Git operations"""
 
     @staticmethod
-    def get_staged_files() -> List[str]:
+    def get_staged_files() -> list[str]:
         """Get list of staged files"""
         result = subprocess.run(
             ["git", "diff", "--cached", "--name-only"],
@@ -359,8 +360,8 @@ class GitHelper:
 
     @staticmethod
     def get_version_from_head(
-        file_path: str, format_type: str, field: Optional[str] = None
-    ) -> Optional[str]:
+        file_path: str, format_type: str, field: str | None = None
+    ) -> str | None:
         """Get version from HEAD commit (previous version)"""
         result = subprocess.run(
             ["git", "show", f"HEAD:{file_path}"],
@@ -403,10 +404,10 @@ class DocumentationVersionValidator:
     def __init__(self, dependency_map_path: str = ".dependency-map.yaml"):
         self.dependency_map_path = Path(dependency_map_path)
         self.dependency_map = self._load_dependency_map()
-        self.errors: List[ValidationError] = []
-        self.version_cache: Dict[str, str] = {}
+        self.errors: list[ValidationError] = []
+        self.version_cache: dict[str, str] = {}
 
-    def _load_dependency_map(self) -> Dict:
+    def _load_dependency_map(self) -> dict:
         """Load and validate dependency map"""
         if not self.dependency_map_path.exists():
             print(
@@ -416,13 +417,13 @@ class DocumentationVersionValidator:
             sys.exit(2)
 
         try:
-            with open(self.dependency_map_path, "r", encoding="utf-8") as f:
+            with open(self.dependency_map_path, encoding="utf-8") as f:
                 return yaml.safe_load(f)
         except Exception as e:
             print(f"ERROR: Failed to load dependency map: {e}", file=sys.stderr)
             sys.exit(2)
 
-    def _get_current_version(self, tracked_file: TrackedFile) -> Optional[str]:
+    def _get_current_version(self, tracked_file: TrackedFile) -> str | None:
         """Get current version from working tree"""
         if tracked_file.path in self.version_cache:
             return self.version_cache[tracked_file.path]
@@ -563,7 +564,7 @@ class DocumentationVersionValidator:
 
         return len(self.errors) == 0
 
-    def _parse_tracked_files(self) -> List[TrackedFile]:
+    def _parse_tracked_files(self) -> list[TrackedFile]:
         """Parse tracked files from dependency map"""
         tracked = []
         for file_config in self.dependency_map.get("tracked_files", []):
@@ -578,7 +579,7 @@ class DocumentationVersionValidator:
             )
         return tracked
 
-    def generate_error_report(self) -> Dict:
+    def generate_error_report(self) -> dict:
         """Generate LLM-interpretable error report"""
         # Separate errors by type
         version_not_bumped = [
@@ -590,8 +591,8 @@ class DocumentationVersionValidator:
         invalid_version = [e for e in self.errors if e.error_type == "INVALID_VERSION"]
 
         # Analyze semantic changes for source files
-        source_changes_map: Dict[str, Dict] = {}
-        all_update_guidance: List[str] = []
+        source_changes_map: dict[str, dict] = {}
+        all_update_guidance: list[str] = []
 
         for error in version_not_bumped:
             if error.file.endswith(".yaml") or error.file.endswith(".yml"):
@@ -627,12 +628,8 @@ class DocumentationVersionValidator:
         resolution_steps.append(f"{step_num + 1}. Retry commit")
 
         # Build LLM guidance
-        files_to_read = list(
-            set(e.file for e in version_not_bumped if e.current_version)
-        )
-        files_to_edit = list(
-            set(e.file for e in version_not_bumped + dependent_outdated)
-        )
+        files_to_read = list({e.file for e in version_not_bumped if e.current_version})
+        files_to_edit = list({e.file for e in version_not_bumped + dependent_outdated})
 
         # Build version_not_bumped errors with semantic changes
         version_not_bumped_errors = []
@@ -658,7 +655,7 @@ class DocumentationVersionValidator:
         for e in dependent_outdated:
             # Extract source file from reason (format: "Dependency X updated to Y")
             source_file = None
-            for src in source_changes_map.keys():
+            for src in source_changes_map:
                 if src in e.reason:
                     source_file = src
                     break

@@ -7,11 +7,11 @@ Validates all agents against AGENT_TEMPLATE.yaml v1.2
 # Version - Must match nWave/framework-catalog.yaml version
 __version__ = "1.2.26"
 
-import sys
 import re
-from pathlib import Path
+import sys
 from datetime import datetime
-from typing import Dict
+from pathlib import Path
+
 
 # Configuration
 TEMPLATE_VERSION = "1.2"
@@ -125,14 +125,14 @@ def check_agent_metrics(content: str) -> bool:
     )
 
 
-def validate_agent(agent_file: Path) -> Dict[str, any]:
+def validate_agent(agent_file: Path) -> dict[str, any]:
     """Validate a single agent file"""
     agent_name = agent_file.stem
 
     print(f"Validating: {agent_name}...")
 
     # Read file content
-    with open(agent_file, "r", encoding="utf-8") as f:
+    with open(agent_file, encoding="utf-8") as f:
         content = f.read()
 
     # Initialize checks
@@ -166,7 +166,7 @@ def validate_agent(agent_file: Path) -> Dict[str, any]:
     }
 
 
-def generate_report(results: Dict):
+def generate_report(results: dict):
     """Generate markdown compliance report"""
     timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
 

@@ -9,8 +9,9 @@ Tests validate that execute_step() supports:
 These unit tests drive implementation for Step 08-01 E2E wiring test.
 """
 
-import pytest
 from pathlib import Path
+
+import pytest
 from src.des.application.orchestrator import ExecuteStepResult
 
 

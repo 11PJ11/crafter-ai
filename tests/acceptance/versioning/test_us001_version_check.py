@@ -52,8 +52,8 @@ class TestDisplayVersionWithUpdateAvailable:
 
         # WHEN: Marco runs the /nw:version command through CLI entry point
         # Import here to avoid contaminating namespace
-        from nWave.core.versioning.application.version_service import VersionService
         from nWave.cli.version_cli import format_version_output
+        from nWave.core.versioning.application.version_service import VersionService
 
         version_service = VersionService(
             github_api=mock_github_adapter,
@@ -153,8 +153,8 @@ class TestDailyAutoCheckUpdatesWatermarkWhenStale:
         timestamp_before = datetime.now(timezone.utc)
 
         # WHEN: Elena runs the /nw:version command through CLI entry point
-        from nWave.core.versioning.application.version_service import VersionService
         from nWave.cli.version_cli import format_version_output
+        from nWave.core.versioning.application.version_service import VersionService
 
         version_service = VersionService(
             github_api=mock_github_adapter,

@@ -8,8 +8,9 @@ These tests verify that:
 """
 
 import json
-import pytest
 from pathlib import Path
+
+import pytest
 
 
 class TestCommitlintConfiguration:
@@ -44,7 +45,7 @@ class TestCommitlintConfiguration:
         if not config_file.exists():
             pytest.skip("JSON config not used (using JS config)")
 
-        with open(config_file, "r") as f:
+        with open(config_file) as f:
             config = json.load(f)
 
         assert isinstance(config, dict), "Commitlint config must be a dictionary"
@@ -56,7 +57,7 @@ class TestCommitlintConfiguration:
         if not config_file.exists():
             pytest.skip("JSON config not used (using JS config)")
 
-        with open(config_file, "r") as f:
+        with open(config_file) as f:
             config = json.load(f)
 
         # Check for conventional commits extension
@@ -65,4 +66,4 @@ class TestCommitlintConfiguration:
         if isinstance(extends, list):
             assert "@commitlint/config-conventional" in extends
         else:
-            assert "@commitlint/config-conventional" == extends
+            assert extends == "@commitlint/config-conventional"
