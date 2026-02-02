@@ -14,6 +14,10 @@ from crafter_ai.installer.services.release_readiness_service import (
     ReleaseReadinessResult,
     ReleaseReadinessService,
 )
+from crafter_ai.installer.services.release_report_service import (
+    ReleaseReport,
+    ReleaseReportService,
+)
 from crafter_ai.installer.services.wheel_validation_service import (
     WheelValidationResult,
     WheelValidationService,
@@ -29,6 +33,8 @@ __all__ = [
     "InstallService",
     "ReleaseReadinessResult",
     "ReleaseReadinessService",
+    "ReleaseReport",
+    "ReleaseReportService",
     "RepairResult",
     "WheelValidationResult",
     "WheelValidationService",
