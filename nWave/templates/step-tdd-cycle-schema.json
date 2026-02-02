@@ -70,7 +70,13 @@
         "outcome": null,
         "notes": null,
         "blocked_by": null,
-        "extensions_granted": []
+        "extensions_granted": [],
+        "decision_gates": {
+          "proceed_if_any": ["test_fails_expected", "test_skipped_fixture", "test_disabled"],
+          "block_if_any": ["test_passes_unexpected", "import_error", "syntax_error"],
+          "max_investigation_minutes": 5,
+          "efficiency_directive": "If test skipped/missing: log reason, mark PASS, proceed to RED_UNIT. Focus on implementation, not investigation."
+        }
       },
       {
         "phase_name": "RED_UNIT",
@@ -84,7 +90,13 @@
         "outcome": null,
         "notes": null,
         "blocked_by": null,
-        "extensions_granted": []
+        "extensions_granted": [],
+        "decision_gates": {
+          "proceed_if_any": ["tests_created_failing"],
+          "block_if_any": ["no_tests_created", "tests_passing_immediately"],
+          "max_investigation_minutes": 2,
+          "efficiency_directive": "Create failing tests immediately. Do not read documentation."
+        }
       },
       {
         "phase_name": "GREEN",
@@ -98,7 +110,13 @@
         "outcome": null,
         "notes": "Combines implementation (GREEN_UNIT) + acceptance validation (GREEN_ACCEPTANCE). Green acceptance is consequence of green unit.",
         "blocked_by": null,
-        "extensions_granted": []
+        "extensions_granted": [],
+        "decision_gates": {
+          "proceed_if_any": ["all_tests_passing"],
+          "block_if_any": ["tests_still_failing_after_3_attempts"],
+          "max_investigation_minutes": 10,
+          "efficiency_directive": "Implement minimum code to pass tests. Do not over-engineer."
+        }
       },
       {
         "phase_name": "REVIEW",
