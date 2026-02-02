@@ -355,7 +355,11 @@ class ReleaseReadinessService:
             )
 
     def check_readme_bundled(self, wheel_path: Path) -> CheckResult:
-        """Check that README file is bundled in the wheel.
+        """Check that README content is bundled in the wheel.
+
+        Modern wheels may include README as:
+        1. A separate file in dist-info (README, README.md, README.rst, etc.)
+        2. Embedded in METADATA file after the headers (Description field)
 
         Args:
             wheel_path: Path to the wheel file.
@@ -366,12 +370,12 @@ class ReleaseReadinessService:
         try:
             with zipfile.ZipFile(wheel_path, "r") as zf:
                 names = zf.namelist()
-                # Look for README in dist-info directory
-                has_readme = any(
+                # Method 1: Look for README file in dist-info directory
+                has_readme_file = any(
                     "README" in name.upper() and ".dist-info/" in name for name in names
                 )
 
-                if has_readme:
+                if has_readme_file:
                     return CheckResult(
                         id="readme_bundled",
                         name="README Bundled",
@@ -379,15 +383,43 @@ class ReleaseReadinessService:
                         severity=CheckSeverity.BLOCKING,
                         message="README file is bundled in wheel",
                     )
-                else:
-                    return CheckResult(
-                        id="readme_bundled",
-                        name="README Bundled",
-                        passed=False,
-                        severity=CheckSeverity.BLOCKING,
-                        message="README file not found in wheel",
-                        remediation="Add README.md and include it in wheel via pyproject.toml",
+
+                # Method 2: Check for embedded description in METADATA
+                metadata_file = None
+                for name in names:
+                    if name.endswith(".dist-info/METADATA"):
+                        metadata_file = name
+                        break
+
+                if metadata_file:
+                    content = zf.read(metadata_file).decode("utf-8")
+                    # METADATA format: headers end with blank line, then description
+                    # If file is large (>2KB) it likely contains embedded description
+                    # Also check for Description-Content-Type header
+                    has_description_type = "description-content-type:" in content.lower()
+                    # Look for content after headers (blank line followed by content)
+                    parts = content.split("\n\n", 1)
+                    has_description_content = (
+                        len(parts) > 1 and len(parts[1].strip()) > 100
                     )
+
+                    if has_description_type and has_description_content:
+                        return CheckResult(
+                            id="readme_bundled",
+                            name="README Bundled",
+                            passed=True,
+                            severity=CheckSeverity.BLOCKING,
+                            message="README content embedded in wheel METADATA",
+                        )
+
+                return CheckResult(
+                    id="readme_bundled",
+                    name="README Bundled",
+                    passed=False,
+                    severity=CheckSeverity.BLOCKING,
+                    message="README file not found in wheel",
+                    remediation="Add README.md and include it in wheel via pyproject.toml",
+                )
 
         except Exception as e:
             return CheckResult(
@@ -502,7 +534,7 @@ class ReleaseReadinessService:
                     key, _, value = line.partition(":")
                     key = key.strip().lower()
                     value = value.strip()
-                    # Map common metadata fields
+                    # Map common metadata fields (supporting both legacy and modern formats)
                     if key == "name":
                         metadata["name"] = value
                     elif key == "version":
@@ -511,7 +543,17 @@ class ReleaseReadinessService:
                         metadata["summary"] = value
                     elif key == "author":
                         metadata["author"] = value
+                    elif key == "author-email" and "author" not in metadata:
+                        # Modern format: Author-email: Name <email>
+                        # Extract just the name part before the angle bracket
+                        if "<" in value:
+                            metadata["author"] = value.split("<")[0].strip()
+                        else:
+                            metadata["author"] = value
                     elif key == "license":
+                        metadata["license"] = value
+                    elif key == "license-expression" and "license" not in metadata:
+                        # Modern format: License-Expression: MIT
                         metadata["license"] = value
 
         return metadata
