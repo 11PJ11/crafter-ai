@@ -9,6 +9,7 @@ from crafter_ai.installer.ports.backup_port import (
 )
 from crafter_ai.installer.ports.build_port import BuildError, BuildPort
 from crafter_ai.installer.ports.config_port import ConfigPort
+from crafter_ai.installer.ports.filesystem_port import FileSystemPort
 from crafter_ai.installer.ports.git_port import GitPort
 from crafter_ai.installer.ports.pipx_port import (
     InstalledPackage,
@@ -26,6 +27,7 @@ __all__ = [
     "BuildPort",
     "CleanupResult",
     "ConfigPort",
+    "FileSystemPort",
     "GitPort",
     "InstallResult",
     "InstalledPackage",

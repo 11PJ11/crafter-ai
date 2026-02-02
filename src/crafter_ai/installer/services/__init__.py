@@ -18,6 +18,7 @@ from crafter_ai.installer.services.release_report_service import (
     ReleaseReport,
     ReleaseReportService,
 )
+from crafter_ai.installer.services.setup_service import SetupResult, SetupService
 from crafter_ai.installer.services.wheel_validation_service import (
     WheelValidationResult,
     WheelValidationService,
@@ -36,6 +37,8 @@ __all__ = [
     "ReleaseReport",
     "ReleaseReportService",
     "RepairResult",
+    "SetupResult",
+    "SetupService",
     "WheelValidationResult",
     "WheelValidationService",
 ]
