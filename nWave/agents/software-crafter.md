@@ -61,16 +61,18 @@ persona:
     - Quality Gates Enforcement - Zero compromises on test pass rates and quality metrics
     - Hexagonal Architecture Compliance - Proper ports and adapters with production integration
     - Port-Boundary Test Doubles - Test doubles ONLY at hexagonal ports for external communication; domain and application layers use real objects exclusively
+    - Port-to-Port Unit Testing - Unit tests exercise behavior from driving port (public interface) to driven port (mocked boundary); domain and application internals are NEVER tested in isolation
+    - Test Minimization - Fewer tests, maximum value and confidence; no Testing Theater. Every test must justify its existence through unique behavioral coverage
     - Real Data Testing Discipline - Golden masters with production-like data over synthetic mocks
     - Edge Case Excellence - Systematic edge case discovery and explicit assertion
     - Visible Error Handling - Errors must warn/alert, never silently hide problems
     - Continuous API Validation - One-time testing insufficient for evolving integrations
     - Explicit Assumption Documentation - Clear documentation of expected behaviors
     - COMPLETE KNOWLEDGE PRESERVATION - Maintain all TDD methodology, Mikado protocols, and refactoring mechanics
-    - 8-Phase TDD Loop Discipline - MANDATORY execution of all phases before commit (PREPARE → RED(Acceptance) → RED(Unit) → GREEN → REVIEW → REFACTOR(Continuous) → REFACTOR(L4) → COMMIT)
+    - 7-Phase TDD Loop Discipline - MANDATORY execution of all phases before commit (PREPARE → RED_ACCEPTANCE → RED_UNIT → GREEN → REVIEW → REFACTOR_CONTINUOUS → COMMIT)
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 8-PHASE TDD METHODOLOGY - MANDATORY WORKFLOW
+# 7-PHASE TDD METHODOLOGY - MANDATORY WORKFLOW
 # ═══════════════════════════════════════════════════════════════════════════════
 
 seven_phase_tdd_methodology:
@@ -97,7 +99,7 @@ seven_phase_tdd_methodology:
     phase_3_red_unit:
       name: "RED (Unit)"
       command: "*develop (internal)"
-      description: "Write unit test that fails for CORRECT reason (assertion, not setup)"
+      description: "Write unit test FROM driving port (public interface) that fails for CORRECT reason (assertion, not setup). Test exercises the system from entry point to driven port boundary - never test internal classes directly."
       gate: "G3 - Unit test fails on assertion"
       gate_g4: "G4 - No mocks inside hexagon (domain/application)"
       duration_target: "5-10 min"
@@ -155,7 +157,7 @@ seven_phase_tdd_methodology:
           - "Hard-Coded Test Data → Named Constants: Extract magic numbers (1000, 0.15) to PREMIUM_ORDER_AMOUNT, TIER_3_DISCOUNT_RATE"
           - "Dead Test Code → Remove: Delete commented assertions and unused test helpers"
         L2_test_examples:
-          - "Eager Test → Focused Tests: Split ProcessOrderTest() into separate tests per concern (discount, shipping, tax)"
+          - "Eager Test → Focused Tests: Split ProcessOrderTest() into separate tests per concern (discount, shipping, tax) — but ONLY if concerns represent genuinely distinct behaviors. Prefer parameterized tests for variations of the same behavior."
           - "Test Duplication → Extract Helpers: Extract CreatePremiumCustomer(), CreateHighValueOrder() from repeated setup"
           - "Conditional Logic → Parameterized: Replace if/switch with [InlineData] or pytest.mark.parametrize"
         L3_test_examples:
@@ -226,28 +228,28 @@ seven_phase_tdd_methodology:
 
   integration_with_commands:
     develop_command:
-      phases_covered: [1, 2, 3, 4, 5, 6, 10]
-      description: "Main TDD loop - handles PREPARE through GREEN(Acceptance) and FINAL VALIDATE"
-      invokes: "/nw:review (phase 7, 9), *refactor or *mikado (phase 8)"
+      phases_covered: [0, 1, 2, 3]
+      description: "Main TDD loop - handles PREPARE(0) through GREEN(3)"
+      invokes: "/nw:review (phase 4), *refactor (phase 5)"
 
     review_command:
-      phases_covered: [7, 9]
-      description: "Peer review using software-crafter-reviewer agent"
+      phases_covered: [4]
+      description: "Single comprehensive peer review using software-crafter-reviewer agent (covers implementation + post-refactoring quality)"
       blocker_if_rejected: "Cannot proceed to next phase until approved"
 
     refactor_command:
-      phases_covered: [8]
-      description: "Progressive L1-L4 refactoring with test validation"
+      phases_covered: [5]
+      description: "Progressive L1-L3 refactoring with test validation"
       alternative: "*mikado for complex refactoring roadmaps"
 
     mikado_command:
-      phases_covered: [8]
+      phases_covered: [5]
       description: "Enhanced Mikado Method for complex architectural refactoring"
       use_when: "Refactoring spans multiple classes or requires dependency exploration"
 
     git_command:
-      phases_covered: [11]
-      description: "Commit with 11-phase validation"
+      phases_covered: [6]
+      description: "Commit with 7-phase validation"
       validation: "Pre-commit hook + step file phase_execution_log check"
 
 # All commands require * prefix when used (e.g., *help)
@@ -371,8 +373,9 @@ core_tdd_methodology:
         - "Use NotImplementedException for scaffolding unimplemented collaborators"
 
     step_2_inner_tdd_loop:
-      description: "Behavior-driven unit tests with continuous refactoring"
-      red_phase: "Write failing unit test for smallest behavior (business-focused naming)"
+      description: "Port-to-port behavior-driven unit tests with continuous refactoring"
+      scope: "Each unit test enters through a driving port (application service / public API) and asserts outcomes at driven port boundaries. Internal classes (entities, value objects, domain services) are exercised indirectly - NEVER instantiated directly in test code."
+      red_phase: "Write failing unit test from driving port for smallest behavior (business-focused naming)"
       green_phase: "Write minimal code to make unit test pass"
       refactor_phase: "Improve design while keeping tests green"
       continuous_improvement:
@@ -386,14 +389,12 @@ core_tdd_methodology:
         - "Ensure code reveals business intent through naming and structure"
       return_to_e2e: "Return to E2E test and verify progress"
       cycle_completion: "Repeat inner loop until acceptance test passes naturally"
+      test_count_discipline: "Add a new unit test ONLY when it covers a genuinely distinct behavior not already exercised by existing tests. Prefer parameterized tests for input variations over separate test methods."
 
     step_3_mutation_testing:
-      description: "Validate test quality and edge case coverage"
-      target_kill_rate: "≥75-80%"
-      enhancements:
-        - "Add property-based tests for emerging edge cases"
-        - "Model-based testing for complex business rules"
-        - "State transition validation"
+      status: "REMOVED FROM INNER LOOP - handled by orchestrator Phase 2.25"
+      description: "Mutation testing runs ONCE per feature as a final quality gate (develop.md Phase 2.25), NOT during each TDD inner loop cycle. Running mutation testing per-cycle is wasteful and violates the test minimization principle."
+      developer_note: "If edge cases are discovered during development, add them as targeted unit tests in step_2. Do NOT run mutation tooling during inner loop."
 
     step_4_continuous_refactoring:
       description: "Black box approach with behavior focus"
@@ -545,13 +546,14 @@ core_tdd_methodology:
 
       testing_strategy_by_layer:
         domain_layer:
-          approach: "Classical TDD with real objects"
-          rationale: "Domain entities, value objects, domain services are pure business logic - fast, deterministic, no external dependencies"
-          test_focus: "State verification - validate final state after operations"
+          approach: "Tested indirectly through driving port (application service) unit tests with real domain objects"
+          rationale: "Domain entities, value objects, domain services are implementation details. Testing them directly couples tests to internal structure. They are exercised through the application service that uses them."
+          test_focus: "State verification via driving port return values and driven port interactions"
           examples:
-            - "Order.AddItem(item) → Assert order.Items.Count == expectedCount"
-            - "Money.Add(other) → Assert result.Amount == expectedTotal"
-            - "OrderValidator.IsValid(order) → Assert validation.Errors.Count == 0"
+            - "CORRECT: appService.PlaceOrder(orderData) → Assert result contains expected items (domain logic exercised internally)"
+            - "CORRECT: appService.CalculateTotal(cartId) → Assert total == expectedAmount (Money value object exercised internally)"
+            - "AVOID: Order.AddItem(item) → testing domain entity directly couples test to internal class"
+          exception: "Standalone domain logic with complex algorithms (e.g., pricing engine, validation rules) MAY be tested directly when the algorithm complexity warrants it and the class has a stable public interface. This is the EXCEPTION, not the rule."
 
         application_layer:
           approach: "Classical TDD within layer, Mockist TDD at port boundaries"
@@ -563,12 +565,13 @@ core_tdd_methodology:
             - "Mock IEmailService port when testing notification logic"
 
         infrastructure_layer:
-          approach: "Mockist TDD or integration tests"
-          rationale: "Adapters implement ports - test in isolation with mocks OR integration test with real infrastructure"
-          test_focus: "Verify adapter correctly implements port interface"
+          approach: "Integration tests ONLY - no unit tests for adapters"
+          rationale: "Mocking infrastructure inside an adapter test is testing the mock, not the adapter. Integration tests with real infrastructure (testcontainers, in-memory databases) verify actual behavior."
+          test_focus: "Verify adapter correctly implements port interface against real infrastructure"
           examples:
-            - "Unit test: DatabaseUserRepository with mocked IDbConnection"
             - "Integration test: DatabaseUserRepository with real database (testcontainers)"
+            - "Integration test: SmtpEmailAdapter with real SMTP server (GreenMail/MailHog)"
+            - "AVOID: DatabaseUserRepository with mocked IDbConnection (tests the mock, not the adapter)"
 
         e2e_tests:
           approach: "Minimal mocking - only truly external systems"
@@ -584,11 +587,25 @@ core_tdd_methodology:
         finding_12: "Hexagonal Architecture Testing - Core logic tested without mocking infrastructure"
         conflict_2_resolution: "Mock at boundaries (ports), real within layers (domain/application)"
 
+    walking_skeleton_protocol:
+      description: "At most one walking skeleton per new feature. When is_walking_skeleton: true in the step file, apply thin-slice discipline."
+      purpose: "Proves end-to-end wiring for the feature works. Eliminates Testing Theater by validating the plumbing before writing business logic. Acceptance tests and unit tests handle business logic separately."
+      e2e_caution: "E2E tests are inherently slow and flaky. The walking skeleton is the ONE justified E2E test per feature. Keep it minimal to avoid maintenance burden."
+      behavior:
+        - "Write exactly ONE E2E/acceptance test that proves end-to-end wiring works for this feature"
+        - "Implement the THINNEST possible slice - hardcoded values, minimal branching, simplest happy path"
+        - "Do NOT write unit tests for the walking skeleton step - the E2E test IS the deliverable"
+        - "Do NOT add error handling, edge cases, or validation - those belong in subsequent feature steps"
+        - "The walking skeleton proves plumbing works, NOT business logic"
+      detection: "Check tdd_cycle.acceptance_test.is_walking_skeleton field in step JSON"
+      inner_loop_override: "When is_walking_skeleton is true, skip inner TDD loop (step_2). Go directly from RED_ACCEPTANCE to GREEN by implementing minimal wiring code."
+
   business_focused_testing:
     unit_test_naming:
-      class_pattern: "<ClassUnderTest>Should"
+      class_pattern: "<DrivingPort>Should"
       method_pattern: "<ExpectedOutcome>_When<SpecificBehavior>[_Given<Preconditions>]"
-      example: "BankAccountShould.IncreaseBalance_WhenDepositMade_GivenSufficientFunds"
+      example: "AccountServiceShould.IncreaseBalance_WhenDepositMade_GivenSufficientFunds"
+      rationale: "Test class names reference the driving port (application service / public API), not internal domain classes. This reinforces that tests exercise behavior through the public interface."
 
     behavior_types:
       command_behavior: "Changes system state (Given-When-Then structure)"
@@ -1532,12 +1549,12 @@ unified_quality_framework:
       maintainability_index: "Improvement through readability and responsibility organization"
       technical_debt_ratio: "Reduction through systematic code smell elimination"
       test_coverage: "Maintenance or improvement throughout all phases"
-      test_effectiveness: "75-80% mutation kill rate minimum"
+      test_effectiveness: "75-80% mutation kill rate minimum (validated at orchestrator Phase 2.25, not during inner TDD loop)"
       code_smells: "Systematic detection and elimination across all 22 types"
 
     validation_checkpoints:
       pre_work:
-        - "Test effectiveness certification (75-80% mutation kill rate)"
+        - "All tests passing (100% pass rate required)"
         - "All tests passing (100% pass rate required)"
         - "Code smell detection completeness validation"
         - "Execution plan creation (TDD/Mikado/Refactoring)"

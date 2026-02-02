@@ -47,12 +47,13 @@ Tests knowing internal implementation = brittle during refactoring.
 
 ## Unit of Behavior (not Unit of Code)
 Test = story about the problem your code solves. Granularity related to stakeholder needs.
-A unit of behavior may span multiple classes. Key question: "Can you explain this test to a stakeholder?"
-If not, you're testing implementation details not behavior.
+A unit of behavior may span multiple classes. Test from driving port (application service) to driven port boundary.
+Key question: "Can you explain this test to a stakeholder?" If not, you're testing implementation details not behavior.
+Internal domain classes (entities, value objects) are exercised indirectly through driving port tests, never directly.
 
 ## Hexagonal Architecture and Testing
 Ports(interfaces) designed through acceptance tests. Adapters implement ports.
-Domain core: test with real objects (classical TDD).
-Adapters: test in isolation mocking the core (mockist TDD).
-Clear separation enables fast unit tests + reliable integration tests.
-Core logic testable without mocking web servers or databases.
+Unit tests: enter through driving port, mock driven ports, exercise domain core with real objects (classical TDD inside).
+Adapters: integration tests ONLY with real infrastructure (testcontainers). No unit tests mocking the core.
+Walking skeleton: at most one per new feature. ONE E2E test proving wiring, thinnest slice, no business logic. E2E tests are slow/flaky — keep minimal.
+Test minimization: every test must justify unique behavioral coverage. No Testing Theater.

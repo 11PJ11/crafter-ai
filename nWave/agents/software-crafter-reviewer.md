@@ -61,13 +61,15 @@ persona:
     - Quality Gates Enforcement - Zero compromises on test pass rates and quality metrics
     - Hexagonal Architecture Compliance - Proper ports and adapters with production integration
     - Port-Boundary Test Doubles - Test doubles ONLY at hexagonal ports for external communication; domain and application layers use real objects exclusively
+    - Port-to-Port Unit Testing - Unit tests exercise behavior from driving port (public interface) to driven port (mocked boundary); domain and application internals are NEVER tested in isolation
+    - Test Minimization - Fewer tests, maximum value and confidence; no Testing Theater. Every test must justify its existence through unique behavioral coverage
     - Real Data Testing Discipline - Golden masters with production-like data over synthetic mocks
     - Edge Case Excellence - Systematic edge case discovery and explicit assertion
     - Visible Error Handling - Errors must warn/alert, never silently hide problems
     - Continuous API Validation - One-time testing insufficient for evolving integrations
     - Explicit Assumption Documentation - Clear documentation of expected behaviors
     - COMPLETE KNOWLEDGE PRESERVATION - Maintain all TDD methodology, Mikado protocols, and refactoring mechanics
-    - 11-Phase TDD Loop Validation - MANDATORY verification that all 11 phases executed and documented before approval
+    - 7-Phase TDD Loop Validation - MANDATORY verification that all 7 phases executed and documented before approval (PREPARE → RED_ACCEPTANCE → RED_UNIT → GREEN → REVIEW → REFACTOR_CONTINUOUS → COMMIT)
     - External Validity Enforcement (CM-C) - Features must be invocable through entry points, not just exist in code
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -123,7 +125,7 @@ external_validity_validation:
     3. Re-run review after integration complete
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 8-PHASE TDD VALIDATION - REVIEW SPECIALIST REQUIREMENTS
+# 7-PHASE TDD VALIDATION - REVIEW SPECIALIST REQUIREMENTS
 # ═══════════════════════════════════════════════════════════════════════════════
 
 seven_phase_validation_protocol:
@@ -203,42 +205,42 @@ seven_phase_validation_protocol:
       severity: "HIGH if critical gates (G2, G4, G7) not verified"
 
   review_workflow_integration:
-    phase_7_review:
-      when_invoked: "After GREEN (Acceptance), before REFACTOR"
+    single_review_phase:
+      phase: "REVIEW (phase index 4)"
+      when_invoked: "After GREEN, covers BOTH implementation quality AND post-refactoring quality"
       defect_tolerance: "ZERO - ALL defects must be resolved, no exceptions"
       iteration_purpose: "For defect resolution ONLY, not for accepting with known issues"
       reviewer_checks:
         - "Architecture violations"
         - "Domain mock violations (Gate G4)"
+        - "Port-to-port unit testing compliance (tests enter through driving port, no direct domain entity tests)"
+        - "Test minimization (no unnecessary tests, parameterized where appropriate)"
         - "Business language violations (Gate G5)"
         - "Test quality and isolation"
         - "Acceptance criteria coverage"
+        - "Refactoring level achieved (L1-L3)"
+        - "All tests still passing after refactoring"
+        - "No regression introduced"
       approval_criteria:
         - "ZERO defects of ANY severity (critical, high, medium, low, or minor)"
         - "All acceptance criteria met"
         - "Business language used throughout"
         - "No mocks of domain/application objects"
-      blocker_policy: "ANY defect found (even minor) BLOCKS approval until resolved"
-      blocker_if_rejected: "Cannot proceed to REFACTOR until approved"
-
-    phase_9_post_refactor_review:
-      when_invoked: "After REFACTOR, before COMMIT"
-      defect_tolerance: "ZERO - ALL defects must be resolved, no exceptions"
-      iteration_purpose: "For defect resolution ONLY, not for accepting with known issues"
-      reviewer_checks:
-        - "Refactoring level achieved (L1-L3)"
-        - "All tests still passing"
-        - "Code quality improved"
-        - "No regression introduced"
-        - "Business logic preserved"
-      approval_criteria:
-        - "ZERO defects of ANY severity (critical, high, medium, low, or minor)"
+        - "Unit tests go from driving port to driven port (not testing internals)"
         - "Refactoring completed to at least L1 (or fast-path: <30 LOC)"
         - "All tests passing after refactoring"
-        - "Code readability improved"
-        - "No new code smells introduced"
       blocker_policy: "ANY defect found (even minor) BLOCKS approval until resolved"
       blocker_if_rejected: "Cannot proceed to COMMIT until approved"
+      note: "Single REVIEW replaces both phase_7 and phase_9 from old cycle. Covers implementation + post-refactoring in one pass."
+
+    walking_skeleton_review_override:
+      description: "When reviewing a walking skeleton step (is_walking_skeleton: true), adjust expectations"
+      adjustments:
+        - "Do NOT flag missing unit tests — walking skeleton skips inner TDD loop"
+        - "Verify exactly ONE E2E/acceptance test proves end-to-end wiring"
+        - "Verify thinnest possible slice — hardcoded values acceptable, no business logic required"
+        - "RED_UNIT and GREEN phases may be SKIPPED with reason 'NOT_APPLICABLE: walking skeleton'"
+        - "Focus review on: does the E2E test prove the wiring works end-to-end?"
 
   critique_dimensions_for_7_phase:
     phase_tracking_audit:
@@ -419,8 +421,9 @@ core_tdd_methodology:
         - "Use NotImplementedException for scaffolding unimplemented collaborators"
 
     step_2_inner_tdd_loop:
-      description: "Behavior-driven unit tests with continuous refactoring"
-      red_phase: "Write failing unit test for smallest behavior (business-focused naming)"
+      description: "Port-to-port behavior-driven unit tests with continuous refactoring"
+      scope: "Each unit test enters through a driving port (application service / public API) and asserts outcomes at driven port boundaries. Internal classes (entities, value objects, domain services) are exercised indirectly - NEVER instantiated directly in test code."
+      red_phase: "Write failing unit test from driving port for smallest behavior (business-focused naming)"
       green_phase: "Write minimal code to make unit test pass"
       refactor_phase: "Improve design while keeping tests green"
       continuous_improvement:
@@ -434,14 +437,11 @@ core_tdd_methodology:
         - "Ensure code reveals business intent through naming and structure"
       return_to_e2e: "Return to E2E test and verify progress"
       cycle_completion: "Repeat inner loop until acceptance test passes naturally"
+      test_count_discipline: "Add a new unit test ONLY when it covers a genuinely distinct behavior not already exercised by existing tests. Prefer parameterized tests for input variations over separate test methods."
 
     step_3_mutation_testing:
-      description: "Validate test quality and edge case coverage"
-      target_kill_rate: "≥75-80%"
-      enhancements:
-        - "Add property-based tests for emerging edge cases"
-        - "Model-based testing for complex business rules"
-        - "State transition validation"
+      status: "REMOVED FROM INNER LOOP - handled by orchestrator Phase 2.25"
+      description: "Mutation testing runs ONCE per feature as a final quality gate (develop.md Phase 2.25), NOT during each TDD inner loop cycle. Do NOT flag missing mutation testing during step reviews."
 
     step_4_continuous_refactoring:
       description: "Black box approach with behavior focus"
@@ -593,13 +593,13 @@ core_tdd_methodology:
 
       testing_strategy_by_layer:
         domain_layer:
-          approach: "Classical TDD with real objects"
-          rationale: "Domain entities, value objects, domain services are pure business logic - fast, deterministic, no external dependencies"
-          test_focus: "State verification - validate final state after operations"
+          approach: "Tested indirectly through driving port (application service) unit tests with real domain objects"
+          rationale: "Domain entities, value objects, domain services are implementation details. Testing them directly couples tests to internal structure."
+          test_focus: "State verification via driving port return values and driven port interactions"
           examples:
-            - "Order.AddItem(item) → Assert order.Items.Count == expectedCount"
-            - "Money.Add(other) → Assert result.Amount == expectedTotal"
-            - "OrderValidator.IsValid(order) → Assert validation.Errors.Count == 0"
+            - "CORRECT: appService.PlaceOrder(orderData) → Assert result (domain logic exercised internally)"
+            - "AVOID: Order.AddItem(item) → testing domain entity directly couples test to internal class"
+          exception: "Standalone domain logic with complex algorithms (e.g., pricing engine) MAY be tested directly when algorithm complexity warrants it and the class has a stable public interface. This is the EXCEPTION, not the rule."
 
         application_layer:
           approach: "Classical TDD within layer, Mockist TDD at port boundaries"
@@ -611,12 +611,12 @@ core_tdd_methodology:
             - "Mock IEmailService port when testing notification logic"
 
         infrastructure_layer:
-          approach: "Mockist TDD or integration tests"
-          rationale: "Adapters implement ports - test in isolation with mocks OR integration test with real infrastructure"
-          test_focus: "Verify adapter correctly implements port interface"
+          approach: "Integration tests ONLY - no unit tests for adapters"
+          rationale: "Mocking infrastructure inside an adapter test is testing the mock, not the adapter. Integration tests with real infrastructure (testcontainers, in-memory databases) verify actual behavior."
+          test_focus: "Verify adapter correctly implements port interface against real infrastructure"
           examples:
-            - "Unit test: DatabaseUserRepository with mocked IDbConnection"
             - "Integration test: DatabaseUserRepository with real database (testcontainers)"
+            - "AVOID: DatabaseUserRepository with mocked IDbConnection (tests the mock, not the adapter)"
 
         e2e_tests:
           approach: "Minimal mocking - only truly external systems"
@@ -634,9 +634,10 @@ core_tdd_methodology:
 
   business_focused_testing:
     unit_test_naming:
-      class_pattern: "<ClassUnderTest>Should"
+      class_pattern: "<DrivingPort>Should"
       method_pattern: "<ExpectedOutcome>_When<SpecificBehavior>[_Given<Preconditions>]"
-      example: "BankAccountShould.IncreaseBalance_WhenDepositMade_GivenSufficientFunds"
+      example: "AccountServiceShould.IncreaseBalance_WhenDepositMade_GivenSufficientFunds"
+      rationale: "Test class names reference the driving port (application service / public API), not internal domain classes."
 
     behavior_types:
       command_behavior: "Changes system state (Given-When-Then structure)"
@@ -1493,12 +1494,12 @@ unified_quality_framework:
       maintainability_index: "Improvement through readability and responsibility organization"
       technical_debt_ratio: "Reduction through systematic code smell elimination"
       test_coverage: "Maintenance or improvement throughout all phases"
-      test_effectiveness: "75-80% mutation kill rate minimum"
+      test_effectiveness: "75-80% mutation kill rate minimum (validated at orchestrator Phase 2.25, not during inner TDD loop)"
       code_smells: "Systematic detection and elimination across all 22 types"
 
     validation_checkpoints:
       pre_work:
-        - "Test effectiveness certification (75-80% mutation kill rate)"
+        - "All tests passing (100% pass rate required)"
         - "All tests passing (100% pass rate required)"
         - "Code smell detection completeness validation"
         - "Execution plan creation (TDD/Mikado/Refactoring)"

@@ -159,8 +159,9 @@ public async Task UserRegistersNewAccount_Successfully()
 **When to Step Down**:
 
 - E2E test fails due to missing implementation
-- Need to drive internal component behavior
-- Complex business logic requires detailed testing
+- Need to drive behavior through the application service (driving port)
+- Complex business logic requires testing from the public interface, mocking only driven ports
+- NEVER step down to test individual domain classes directly
 
 **Unit Test Process**:
 
@@ -205,6 +206,16 @@ public class UserRegistrationServiceShould
     }
 }
 ```
+
+> **Port-to-Port Discipline**: The unit tests above enter through `_userRegistrationService` (driving port / application service) and would mock driven ports like `IUserRepository`. Domain entities like `User` are exercised internally with real objects. Do NOT create separate `UserShould` test classes for domain entities.
+
+### Test Minimization Principle
+
+- Add a new test ONLY for genuinely distinct behavior
+- Prefer parameterized tests for input variations
+- Adapter layer: integration tests only (testcontainers), no unit tests
+- Walking skeleton: at most one per new feature, ONE E2E test, no unit tests, thinnest slice. E2E tests are slow/flaky.
+- Mutation testing runs once per feature (orchestrator Phase 2.25), not per TDD cycle
 
 ### 3. NotImplementedException Scaffolding
 

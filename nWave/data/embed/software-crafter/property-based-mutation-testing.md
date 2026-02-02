@@ -1,5 +1,7 @@
 # Property-Based Testing and Mutation Testing Knowledge
 
+> **DEFERRED TO PHASE 2.25**: Mutation testing runs ONCE per feature as a final quality gate at orchestrator Phase 2.25 (after all steps complete). Do NOT run mutation testing during the inner TDD loop. This knowledge is reference material for Phase 2.25 execution only.
+
 ## Property-Based Testing (PBT)
 Instead of examples ("given X, expect Y"), write properties ("for all valid inputs, condition Z holds").
 Framework generates hundreds/thousands of inputs checking property. Dramatically expands test coverage.

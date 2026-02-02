@@ -12,6 +12,7 @@
       "scenario_index": 0,
       "initially_ignored": true,
       "is_walking_skeleton": false,
+      "is_walking_skeleton_behavior": "When true: at most one per feature. ONE E2E test proving wiring. Skip inner TDD loop. Thinnest slice. No business logic testing. E2E tests are slow/flaky — keep minimal.",
       "mapped_scenario": {
         "description": "The specific acceptance test scenario this step makes pass (RED \u2192 GREEN)",
         "scenario_function": "",
@@ -26,6 +27,7 @@
       }
     },
     "expected_unit_tests": [],
+    "expected_unit_tests_note": "Each entry is a BEHAVIOR tested from the driving port (application service / public API). Not per-class tests. Prefer fewer behavior-focused tests over many granular class-level tests.",
     "mock_boundaries": {
       "allowed_ports": [],
       "forbidden_domain_classes": [],
