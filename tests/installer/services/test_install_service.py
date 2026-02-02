@@ -5,6 +5,7 @@ This module tests the InstallService that orchestrates the install journey:
 2. Release readiness validation
 3. Backup creation
 4. Pipx installation
+5. Verification (post-install health checks)
 """
 
 from pathlib import Path
@@ -15,6 +16,8 @@ import pytest
 from crafter_ai.installer.domain.check_executor import CheckExecutor
 from crafter_ai.installer.domain.check_registry import CheckRegistry
 from crafter_ai.installer.domain.check_result import CheckResult, CheckSeverity
+from crafter_ai.installer.domain.health_checker import HealthChecker
+from crafter_ai.installer.domain.health_result import HealthResult, HealthStatus
 from crafter_ai.installer.ports.backup_port import BackupPort, BackupResult
 from crafter_ai.installer.ports.pipx_port import InstallResult as PipxInstallResult
 from crafter_ai.installer.ports.pipx_port import PipxPort
@@ -22,6 +25,7 @@ from crafter_ai.installer.services.install_service import (
     InstallPhase,
     InstallResult,
     InstallService,
+    VerificationResult,
 )
 from crafter_ai.installer.services.release_readiness_service import (
     ReleaseReadinessResult,
@@ -100,18 +104,63 @@ def mock_release_readiness_service() -> MagicMock:
 
 
 @pytest.fixture
+def mock_health_checker() -> MagicMock:
+    """Create a mock HealthChecker with all checks passing."""
+    from datetime import datetime, timezone
+
+    mock = create_autospec(HealthChecker, instance=True)
+    mock.check_all.return_value = [
+        HealthResult(
+            component="python-environment",
+            status=HealthStatus.HEALTHY,
+            message="Python 3.12 environment is healthy",
+            details={"version": "3.12.0"},
+            timestamp=datetime.now(timezone.utc),
+        ),
+        HealthResult(
+            component="package-installation",
+            status=HealthStatus.HEALTHY,
+            message="crafter-ai 1.2.3 is installed",
+            details={"version": "1.2.3"},
+            timestamp=datetime.now(timezone.utc),
+        ),
+    ]
+    mock.is_healthy.return_value = True
+    mock.get_unhealthy.return_value = []
+    return mock
+
+
+@pytest.fixture
 def install_service(
     mock_pipx_port: MagicMock,
     mock_backup_port: MagicMock,
     mock_check_executor: MagicMock,
     mock_release_readiness_service: MagicMock,
 ) -> InstallService:
-    """Create an InstallService with all mocked dependencies."""
+    """Create an InstallService with all mocked dependencies (no health_checker)."""
     return InstallService(
         pipx_port=mock_pipx_port,
         backup_port=mock_backup_port,
         check_executor=mock_check_executor,
         release_readiness_service=mock_release_readiness_service,
+    )
+
+
+@pytest.fixture
+def install_service_with_health_checker(
+    mock_pipx_port: MagicMock,
+    mock_backup_port: MagicMock,
+    mock_check_executor: MagicMock,
+    mock_release_readiness_service: MagicMock,
+    mock_health_checker: MagicMock,
+) -> InstallService:
+    """Create an InstallService with health_checker for verification tests."""
+    return InstallService(
+        pipx_port=mock_pipx_port,
+        backup_port=mock_backup_port,
+        check_executor=mock_check_executor,
+        release_readiness_service=mock_release_readiness_service,
+        health_checker=mock_health_checker,
     )
 
 
@@ -479,8 +528,280 @@ class TestInstallPhaseEnum:
     """Test InstallPhase enum."""
 
     def test_install_phase_has_all_required_phases(self) -> None:
-        """InstallPhase enum has all four required phases."""
+        """InstallPhase enum has all five required phases (including VERIFICATION)."""
         assert hasattr(InstallPhase, "PREFLIGHT")
         assert hasattr(InstallPhase, "READINESS")
         assert hasattr(InstallPhase, "BACKUP")
         assert hasattr(InstallPhase, "INSTALL")
+        assert hasattr(InstallPhase, "VERIFICATION")
+
+
+class TestVerificationResultDataclass:
+    """Test VerificationResult dataclass."""
+
+    def test_verification_result_contains_required_fields(self) -> None:
+        """VerificationResult has all required fields per contract."""
+        from datetime import datetime, timezone
+
+        result = VerificationResult(
+            healthy=True,
+            health_status=HealthStatus.HEALTHY,
+            checks=[
+                HealthResult(
+                    component="test",
+                    status=HealthStatus.HEALTHY,
+                    message="OK",
+                    details=None,
+                    timestamp=datetime.now(timezone.utc),
+                )
+            ],
+            warnings=[],
+        )
+
+        assert hasattr(result, "healthy")
+        assert hasattr(result, "health_status")
+        assert hasattr(result, "checks")
+        assert hasattr(result, "warnings")
+
+    def test_verification_result_is_immutable(self) -> None:
+        """VerificationResult should be immutable (frozen dataclass)."""
+        result = VerificationResult(
+            healthy=True,
+            health_status=HealthStatus.HEALTHY,
+            checks=[],
+            warnings=[],
+        )
+
+        with pytest.raises(AttributeError):
+            result.healthy = False  # type: ignore[misc]
+
+
+class TestInstallServiceVerifyMethod:
+    """Test InstallService.verify() method."""
+
+    def test_verify_returns_healthy_when_all_checks_pass(
+        self,
+        install_service_with_health_checker: InstallService,
+        mock_health_checker: MagicMock,
+    ) -> None:
+        """verify() returns HEALTHY when all health checks pass."""
+        install_path = Path("/home/user/.local/bin/crafter-ai")
+
+        result = install_service_with_health_checker.verify(install_path)
+
+        assert result.healthy is True
+        assert result.health_status == HealthStatus.HEALTHY
+        assert len(result.checks) == 2
+        assert len(result.warnings) == 0
+        mock_health_checker.check_all.assert_called_once()
+
+    def test_verify_returns_degraded_when_non_critical_checks_fail(
+        self,
+        install_service_with_health_checker: InstallService,
+        mock_health_checker: MagicMock,
+    ) -> None:
+        """verify() returns DEGRADED when non-critical checks fail."""
+        from datetime import datetime, timezone
+
+        mock_health_checker.check_all.return_value = [
+            HealthResult(
+                component="python-environment",
+                status=HealthStatus.HEALTHY,
+                message="Python 3.12 is healthy",
+                details=None,
+                timestamp=datetime.now(timezone.utc),
+            ),
+            HealthResult(
+                component="update-available",
+                status=HealthStatus.DEGRADED,
+                message="Update available: 1.2.3 -> 1.3.0",
+                details=None,
+                timestamp=datetime.now(timezone.utc),
+            ),
+        ]
+        mock_health_checker.is_healthy.return_value = False
+        mock_health_checker.get_unhealthy.return_value = [
+            HealthResult(
+                component="update-available",
+                status=HealthStatus.DEGRADED,
+                message="Update available",
+                details=None,
+                timestamp=datetime.now(timezone.utc),
+            )
+        ]
+
+        install_path = Path("/home/user/.local/bin/crafter-ai")
+
+        result = install_service_with_health_checker.verify(install_path)
+
+        assert result.healthy is True  # DEGRADED is still usable
+        assert result.health_status == HealthStatus.DEGRADED
+        assert len(result.warnings) > 0
+
+    def test_verify_returns_unhealthy_when_critical_checks_fail(
+        self,
+        install_service_with_health_checker: InstallService,
+        mock_health_checker: MagicMock,
+    ) -> None:
+        """verify() returns UNHEALTHY when critical checks fail."""
+        from datetime import datetime, timezone
+
+        mock_health_checker.check_all.return_value = [
+            HealthResult(
+                component="package-installation",
+                status=HealthStatus.UNHEALTHY,
+                message="crafter-ai package is not installed",
+                details=None,
+                timestamp=datetime.now(timezone.utc),
+            ),
+        ]
+        mock_health_checker.is_healthy.return_value = False
+        mock_health_checker.get_unhealthy.return_value = [
+            HealthResult(
+                component="package-installation",
+                status=HealthStatus.UNHEALTHY,
+                message="Not installed",
+                details=None,
+                timestamp=datetime.now(timezone.utc),
+            )
+        ]
+
+        install_path = Path("/home/user/.local/bin/crafter-ai")
+
+        result = install_service_with_health_checker.verify(install_path)
+
+        assert result.healthy is False
+        assert result.health_status == HealthStatus.UNHEALTHY
+
+
+class TestInstallServiceWithVerificationPhase:
+    """Test InstallService.install() with verification phase."""
+
+    def test_install_includes_verification_phase_on_success(
+        self,
+        install_service_with_health_checker: InstallService,
+        mock_health_checker: MagicMock,
+    ) -> None:
+        """install() includes VERIFICATION phase when install succeeds."""
+        wheel_path = Path("dist/crafter_ai-1.2.3-py3-none-any.whl")
+
+        result = install_service_with_health_checker.install(wheel_path)
+
+        assert result.success is True
+        assert InstallPhase.VERIFICATION in result.phases_completed
+
+    def test_install_result_has_health_status_after_verification(
+        self,
+        install_service_with_health_checker: InstallService,
+        mock_health_checker: MagicMock,
+    ) -> None:
+        """InstallResult has health_status field after verification."""
+        wheel_path = Path("dist/crafter_ai-1.2.3-py3-none-any.whl")
+
+        result = install_service_with_health_checker.install(wheel_path)
+
+        assert hasattr(result, "health_status")
+        assert result.health_status == HealthStatus.HEALTHY
+
+    def test_install_result_has_verification_warnings(
+        self,
+        install_service_with_health_checker: InstallService,
+        mock_health_checker: MagicMock,
+    ) -> None:
+        """InstallResult has verification_warnings field."""
+        from datetime import datetime, timezone
+
+        mock_health_checker.check_all.return_value = [
+            HealthResult(
+                component="update-available",
+                status=HealthStatus.DEGRADED,
+                message="Update available: 1.2.3 -> 1.3.0",
+                details=None,
+                timestamp=datetime.now(timezone.utc),
+            ),
+        ]
+        mock_health_checker.is_healthy.return_value = False
+        mock_health_checker.get_unhealthy.return_value = [
+            HealthResult(
+                component="update-available",
+                status=HealthStatus.DEGRADED,
+                message="Update available: 1.2.3 -> 1.3.0",
+                details=None,
+                timestamp=datetime.now(timezone.utc),
+            )
+        ]
+
+        wheel_path = Path("dist/crafter_ai-1.2.3-py3-none-any.whl")
+
+        result = install_service_with_health_checker.install(wheel_path)
+
+        assert hasattr(result, "verification_warnings")
+        assert len(result.verification_warnings) > 0
+
+    def test_verification_skipped_when_install_fails(
+        self,
+        install_service_with_health_checker: InstallService,
+        mock_pipx_port: MagicMock,
+        mock_health_checker: MagicMock,
+    ) -> None:
+        """Verification is skipped when pipx install fails."""
+        mock_pipx_port.install.return_value = PipxInstallResult(
+            success=False,
+            version=None,
+            install_path=None,
+            error_message="pipx install failed",
+        )
+
+        wheel_path = Path("dist/crafter_ai-1.2.3-py3-none-any.whl")
+
+        result = install_service_with_health_checker.install(wheel_path)
+
+        assert result.success is False
+        assert InstallPhase.VERIFICATION not in result.phases_completed
+        mock_health_checker.check_all.assert_not_called()
+
+    def test_phases_completed_includes_verification(
+        self,
+        install_service_with_health_checker: InstallService,
+    ) -> None:
+        """phases_completed includes all five phases including VERIFICATION."""
+        wheel_path = Path("dist/crafter_ai-1.2.3-py3-none-any.whl")
+
+        result = install_service_with_health_checker.install(wheel_path)
+
+        assert len(result.phases_completed) == 5
+        assert InstallPhase.PREFLIGHT in result.phases_completed
+        assert InstallPhase.READINESS in result.phases_completed
+        assert InstallPhase.BACKUP in result.phases_completed
+        assert InstallPhase.INSTALL in result.phases_completed
+        assert InstallPhase.VERIFICATION in result.phases_completed
+
+
+class TestInstallServiceWithoutHealthChecker:
+    """Test InstallService behavior when health_checker is not provided."""
+
+    def test_install_without_health_checker_skips_verification(
+        self,
+        install_service: InstallService,
+    ) -> None:
+        """install() skips verification when health_checker not provided."""
+        wheel_path = Path("dist/crafter_ai-1.2.3-py3-none-any.whl")
+
+        result = install_service.install(wheel_path)
+
+        assert result.success is True
+        # Without health_checker, VERIFICATION phase should not be present
+        assert InstallPhase.VERIFICATION not in result.phases_completed
+        assert len(result.phases_completed) == 4
+
+    def test_install_without_health_checker_has_none_health_status(
+        self,
+        install_service: InstallService,
+    ) -> None:
+        """InstallResult has None health_status when health_checker not provided."""
+        wheel_path = Path("dist/crafter_ai-1.2.3-py3-none-any.whl")
+
+        result = install_service.install(wheel_path)
+
+        assert result.health_status is None
+        assert result.verification_warnings == []
