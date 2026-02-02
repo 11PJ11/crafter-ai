@@ -1,0 +1,126 @@
+# Version Sync Quality Gate
+# Validates that version numbers are consistent across pyproject.toml and related files
+#
+# This workflow prevents version drift between package configuration and any
+# version-dependent specifications (agent specs, documentation, etc.)
+
+name: Version Sync Check
+
+on:
+  pull_request:
+    branches: [master, main]
+    paths:
+      - 'pyproject.toml'
+      - 'src/crafter_ai/__init__.py'
+      - '**/*.yaml'
+      - '**/*.yml'
+  push:
+    branches: [master, main]
+    paths:
+      - 'pyproject.toml'
+      - 'src/crafter_ai/__init__.py'
+
+jobs:
+  version-sync:
+    name: Validate Version Consistency
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install toml parser
+        run: pip install toml
+
+      - name: Extract and validate versions
+        id: version-check
+        run: |
+          set -e
+
+          # Extract version from pyproject.toml
+          PYPROJECT_VERSION=$(python -c "
+          import toml
+          data = toml.load('pyproject.toml')
+          print(data['project']['version'])
+          ")
+          echo "pyproject_version=$PYPROJECT_VERSION" >> $GITHUB_OUTPUT
+          echo "::notice::pyproject.toml version: $PYPROJECT_VERSION"
+
+          # Extract version from __init__.py if it exists
+          INIT_FILE="src/crafter_ai/__init__.py"
+          if [ -f "$INIT_FILE" ]; then
+            INIT_VERSION=$(python -c "
+          import re
+          with open('$INIT_FILE', 'r') as f:
+              content = f.read()
+          match = re.search(r'__version__\s*=\s*['\"]([^'\"]+)['\"]', content)
+          if match:
+              print(match.group(1))
+          else:
+              print('NOT_FOUND')
+          ")
+
+            if [ "$INIT_VERSION" != "NOT_FOUND" ]; then
+              echo "init_version=$INIT_VERSION" >> $GITHUB_OUTPUT
+              echo "::notice::__init__.py version: $INIT_VERSION"
+
+              if [ "$PYPROJECT_VERSION" != "$INIT_VERSION" ]; then
+                echo "::error::Version mismatch! pyproject.toml ($PYPROJECT_VERSION) != __init__.py ($INIT_VERSION)"
+                exit 1
+              fi
+            fi
+          fi
+
+          # Check for version in any agent spec YAML files under src/
+          echo "Checking agent spec files for version consistency..."
+          MISMATCH_FOUND=false
+
+          for yaml_file in $(find src -name "*.yaml" -o -name "*.yml" 2>/dev/null || true); do
+            if [ -f "$yaml_file" ]; then
+              YAML_VERSION=$(python -c "
+          import yaml
+          try:
+              with open('$yaml_file', 'r') as f:
+                  data = yaml.safe_load(f)
+              if isinstance(data, dict) and 'version' in data:
+                  print(data['version'])
+              else:
+                  print('NO_VERSION_KEY')
+          except Exception:
+              print('PARSE_ERROR')
+          " 2>/dev/null || echo "PARSE_ERROR")
+
+              if [ "$YAML_VERSION" != "NO_VERSION_KEY" ] && [ "$YAML_VERSION" != "PARSE_ERROR" ]; then
+                echo "::notice::$yaml_file version: $YAML_VERSION"
+                if [ "$PYPROJECT_VERSION" != "$YAML_VERSION" ]; then
+                  echo "::error::Version mismatch in $yaml_file! pyproject.toml ($PYPROJECT_VERSION) != $yaml_file ($YAML_VERSION)"
+                  MISMATCH_FOUND=true
+                fi
+              fi
+            fi
+          done
+
+          if [ "$MISMATCH_FOUND" = true ]; then
+            exit 1
+          fi
+
+          echo "::notice::All version checks passed!"
+          echo "version=$PYPROJECT_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Report version
+        run: |
+          echo "## Version Sync Check Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Source | Version |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|---------|" >> $GITHUB_STEP_SUMMARY
+          echo "| pyproject.toml | ${{ steps.version-check.outputs.pyproject_version }} |" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ steps.version-check.outputs.init_version }}" ]; then
+            echo "| __init__.py | ${{ steps.version-check.outputs.init_version }} |" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All versions are synchronized." >> $GITHUB_STEP_SUMMARY

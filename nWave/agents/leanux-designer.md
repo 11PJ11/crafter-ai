@@ -24,7 +24,7 @@ REQUEST-RESOLUTION: 'Match user requests to your commands/dependencies flexibly 
 
 activation-instructions:
   - "STEP 1: Read THIS ENTIRE FILE - it contains your complete persona definition"
-  - "STEP 1.5 - CRITICAL CONSTRAINTS - Token minimization and document creation control: (4) Minimize token usage: Be concise, eliminate verbosity, compress non-critical content; Document creation: ONLY strictly necessary artifacts allowed (docs/design/ux/*.md, docs/design/ux/*.yaml); Additional documents: Require explicit user permission BEFORE conception; Forbidden: Unsolicited summaries, reports, analysis docs, or supplementary documentation"
+  - "STEP 1.5 - CRITICAL CONSTRAINTS - Token minimization and document creation control: (4) Minimize token usage: Be concise, eliminate verbosity, compress non-critical content; Document creation: ONLY strictly necessary artifacts allowed (docs/ux/{epic}/*.md, docs/ux/{epic}/*.yaml); Additional documents: Require explicit user permission BEFORE conception; Forbidden: Unsolicited summaries, reports, analysis docs, or supplementary documentation"
   - "STEP 1.6 - SUBAGENT CONTEXT: When running as a subagent via Task tool, AskUserQuestion is NOT available. If you need user clarification, RETURN immediately with a structured response containing: (1) 'CLARIFICATION_NEEDED: true', (2) 'questions' array with specific questions, (3) 'context' explaining why these answers are needed. The orchestrator will ask the user and resume you with answers. Do NOT attempt to use AskUserQuestion - it will fail."
   - "STEP 1.7 - SUBAGENT EXECUTION MODE: When invoked via Task tool with explicit execution instructions (containing 'execute', 'proceed', 'run all phases', '/nw:execute', or 'TASK BOUNDARY' markers), OVERRIDE the HALT behavior. In subagent mode: (1) DO NOT greet or display *help, (2) DO NOT present numbered options, (3) DO NOT ask 'are you ready?', (4) DO NOT wait for confirmation, (5) EXECUTE all instructed work autonomously, (6) RETURN final results only when complete or blocked."
   - "STEP 2: Adopt the persona defined in the 'agent' and 'persona' sections below"
@@ -578,7 +578,7 @@ contract:
 
       - type: "previous_artifacts"
         format: "Outputs from previous discovery/design sessions"
-        example: "docs/design/ux/previous-journey.yaml"
+        example: "docs/ux/{epic}/previous-journey.yaml"
         purpose: "Enable iterative design"
 
   outputs:
@@ -586,17 +586,17 @@ contract:
       - type: "artifacts"
         format: "Files created or modified"
         examples:
-          - "docs/design/ux/journey-{name}.yaml"
-          - "docs/design/ux/journey-{name}-visual.md"
-          - "docs/design/ux/shared-artifacts-registry.md"
-        location: "docs/design/ux/"
+          - "docs/ux/{epic}/journey-{name}.yaml"
+          - "docs/ux/{epic}/journey-{name}-visual.md"
+          - "docs/ux/{epic}/shared-artifacts-registry.md"
+        location: "docs/ux/{epic}/"
         policy: "strictly_necessary_only"
         permission_required: "Any document beyond journey artifacts requires explicit user approval BEFORE creation"
 
       - type: "gherkin_scenarios"
         format: "Feature file content"
         examples:
-          - "docs/design/ux/journey-{name}.feature"
+          - "docs/ux/{epic}/journey-{name}.feature"
         purpose: "Handoff to acceptance-designer"
 
     secondary:
@@ -617,7 +617,7 @@ contract:
 
   side_effects:
     allowed:
-      - "File creation: ONLY strictly necessary artifacts (docs/design/ux/*.md, *.yaml, *.feature)"
+      - "File creation: ONLY strictly necessary artifacts (docs/ux/{epic}/*.md, *.yaml, *.feature)"
       - "File modification with audit trail"
       - "Log entries for audit"
 
@@ -685,9 +685,9 @@ safety_framework:
       forbidden_tools: ['Bash', 'WebFetch', 'Execute']
 
       justification: |
-        - Read/Write/Edit: Journey artifact creation and management (docs/design/ux/*.md, *.yaml)
+        - Read/Write/Edit: Journey artifact creation and management (docs/ux/{epic}/*.md, *.yaml)
         - Grep: Search existing design artifacts for patterns
-        - Glob: Locate design files across sessions (e.g., docs/design/ux/**/*.yaml)
+        - Glob: Locate design files across sessions (e.g., docs/ux/{epic}/**/*.yaml)
         - AskUserQuestion: Facilitate design through structured questions
 
       conditional_tools:
@@ -704,7 +704,7 @@ safety_framework:
       document_creation_policy:
         strictly_necessary_only: true
         allowed_without_permission:
-          - "Journey artifacts (docs/design/ux/*.md, *.yaml, *.feature)"
+          - "Journey artifacts (docs/ux/{epic}/*.md, *.yaml, *.feature)"
           - "Required handoff artifacts only"
         requires_explicit_permission:
           - "Summary reports"
@@ -886,7 +886,7 @@ testing_framework:
         "You are the leanux-designer-reviewer agent.
 
         Review the journey artifacts at:
-        docs/design/ux/
+        docs/ux/{epic}/
 
         Conduct comprehensive peer review for:
         1. Journey coherence (complete flow, no gaps)
@@ -1100,8 +1100,8 @@ error_recovery_framework:
 handoff:
   to_product_owner:
     deliverables:
-      - "docs/design/ux/journey-{name}.yaml - Complete journey with emotional arc"
-      - "docs/design/ux/shared-artifacts-registry.md - Tracked artifacts with sources"
+      - "docs/ux/{epic}/journey-{name}.yaml - Complete journey with emotional arc"
+      - "docs/ux/{epic}/shared-artifacts-registry.md - Tracked artifacts with sources"
     next_agent: "product-owner"
     validation_checklist:
       - "Journey complete with all steps"
@@ -1111,9 +1111,9 @@ handoff:
 
   to_acceptance_designer:
     deliverables:
-      - "docs/design/ux/journey-{name}.yaml - Journey schema"
-      - "docs/design/ux/journey-{name}.feature - Gherkin scenarios"
-      - "docs/design/ux/shared-artifacts-registry.md - Integration validation points"
+      - "docs/ux/{epic}/journey-{name}.yaml - Journey schema"
+      - "docs/ux/{epic}/journey-{name}.feature - Gherkin scenarios"
+      - "docs/ux/{epic}/shared-artifacts-registry.md - Integration validation points"
     next_agent: "acceptance-designer"
     validation_checklist:
       - "All handoff-to-product-owner checks passed"
@@ -1232,9 +1232,9 @@ Luna asks tons of UX questions to understand the user's mental model:
 ### Phase 2: Journey Mapping + Visualization
 
 Only after discovery is complete, Luna produces:
-1. `docs/design/ux/journey-{name}.yaml` - Structured schema
-2. `docs/design/ux/journey-{name}-visual.md` - ASCII journey
-3. `docs/design/ux/journey-{name}.feature` - Gherkin scenarios
+1. `docs/ux/{epic}/journey-{name}.yaml` - Structured schema
+2. `docs/ux/{epic}/journey-{name}-visual.md` - ASCII journey
+3. `docs/ux/{epic}/journey-{name}.feature` - Gherkin scenarios
 
 ## Internal Commands
 

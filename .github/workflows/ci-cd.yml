@@ -5,7 +5,7 @@
 # Architecture: Optimized parallel execution with intelligent grouping
 #
 # Stage 1 - Fast Checks (parallel, ~1 min):
-#   - commitlint: Conventional commits validation
+#   - gitlint: Conventional commits validation (Python-based)
 #   - code-quality: Ruff lint + format
 #   - file-quality: Whitespace, EOF, YAML, JSON syntax
 #   - security: Merge conflicts, private keys, shell prevention
@@ -48,7 +48,6 @@ permissions:
 
 env:
   PYTHON_DEFAULT: '3.12'
-  NODE_VERSION: '20'
   CACHE_VERSION: v3
   PYTHONIOENCODING: 'utf-8'
   PYTHONUTF8: '1'
@@ -71,34 +70,27 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-python@v5
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          python-version: ${{ env.PYTHON_DEFAULT }}
 
-      - name: Cache npm dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: npm-commitlint-${{ env.CACHE_VERSION }}
-          restore-keys: npm-commitlint-
-
-      - name: Install commitlint
-        run: npm install -g @commitlint/cli@19.6.1 @commitlint/config-conventional@19.6.0
+      - name: Install gitlint
+        run: pip install gitlint
 
       - name: Validate commit messages
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            commitlint --from "${{ github.event.pull_request.base.sha }}" --to "${{ github.event.pull_request.head.sha }}" --verbose
+            gitlint --commits "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
           elif [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
             # Validate that 'before' commit exists in repository
             if git cat-file -e "${{ github.event.before }}" 2>/dev/null; then
-              commitlint --from "${{ github.event.before }}" --to "${{ github.sha }}" --verbose
+              gitlint --commits "${{ github.event.before }}..${{ github.sha }}"
             else
               echo "::warning::Commit ${{ github.event.before }} not found (likely due to force push/amend). Validating HEAD commit only."
-              git log -1 --format=%B | commitlint --verbose
+              gitlint
             fi
           else
-            git log -1 --format=%B | commitlint --verbose
+            gitlint
           fi
 
   code-quality:

@@ -1,0 +1,27 @@
+# Gitlint configuration
+# Matches CI commitlint rules: @commitlint/config-conventional
+# Docs: https://jorisroovers.com/gitlint/configuration/
+
+[general]
+# Enable conventional commit rules
+contrib = contrib-title-conventional-commits
+
+# Ignore rules that conflict with our workflow
+# B6: Body message is missing - we allow short commits without body
+ignore = B6
+
+# Verbosity
+verbosity = 2
+
+[title-max-length]
+# Max header length: 100 characters (matches commitlint)
+line-length = 100
+
+[contrib-title-conventional-commits]
+# Conventional commit types allowed
+types = feat,fix,docs,style,refactor,perf,test,build,ci,chore,revert
+
+# Title regex - enforce lowercase after colon
+# Pattern: type(scope): lowercase subject
+[title-match-regex]
+regex = ^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?: [a-z].*$

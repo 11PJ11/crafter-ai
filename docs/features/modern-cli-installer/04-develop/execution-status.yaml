@@ -1,0 +1,843 @@
+# Execution Status: modern-cli-installer
+# Schema Version: 2.0
+# Created: 2026-02-01
+# Last Updated: 2026-02-02
+# Orchestrator: Vera
+
+execution_status:
+  project_id: "modern-cli-installer"
+  roadmap_file: "roadmap.yaml"
+  current_phase: "02"
+  current_step: "03-01"
+  overall_status: "in_progress"
+  last_completed_step: "02-09"
+
+  # Roadmap was reviewed and approved by software-crafter-reviewer
+  roadmap_review:
+    status: "approved"
+    reviewer: "software-crafter-reviewer"
+    reviewed_at: "2026-02-01"
+    conditions_addressed:
+      - "Split step 03-05 into 03-05a (3h) and 03-05b (2h)"
+      - "Added step 00-05 for test infrastructure"
+      - "Added FileSystemPort requirement to step 04-05"
+      - "Added implicit_prerequisites documentation"
+
+  # External blockers
+  blockers: []  # CLEARED: PyPI token provided by Mike on 2026-02-01
+
+  # Steps that can proceed immediately (no blockers)
+  ready_for_execution:
+    - "00-01"  # pyproject.toml - no dependencies
+    - "00-02"  # PyPI secrets - UNBLOCKED (token provided)
+    - "00-04"  # version sync gate - depends only on 00-01
+    - "00-05"  # test infrastructure - depends only on 00-01
+
+# Phase tracking
+phases:
+  - phase_id: "00"
+    name: "Sprint 0 Prerequisites"
+    status: "completed"
+    steps_total: 5
+    steps_completed: 5
+
+  - phase_id: "01"
+    name: "Infrastructure - Shared Frameworks"
+    status: "completed"
+    steps_total: 8
+    steps_completed: 8
+
+  - phase_id: "02"
+    name: "Journey 1 - Build Local Candidate"
+    status: "completed"
+    steps_total: 9
+    steps_completed: 9
+
+  - phase_id: "03"
+    name: "Journey 2 - Install Local Candidate"
+    status: "in_progress"
+    blocked_by: null
+    steps_total: 10
+    steps_completed: 0
+
+  - phase_id: "04"
+    name: "Journey 3 - PyPI Install"
+    status: "blocked"
+    blocked_by: "Phase 01"
+    steps_total: 8
+    steps_completed: 0
+
+  - phase_id: "05"
+    name: "Cross-Cutting Concerns"
+    status: "blocked"
+    blocked_by: "Phase 03, Phase 04"
+    steps_total: 4
+    steps_completed: 0
+
+  - phase_id: "06"
+    name: "Horizontal Coherence and E2E Validation"
+    status: "blocked"
+    blocked_by: "Phase 02, Phase 03, Phase 04"
+    steps_total: 5
+    steps_completed: 0
+
+# Step-level tracking
+steps:
+  # ═══════════════════════════════════════════════════════════
+  # PHASE 00: Sprint 0 Prerequisites
+  # ═══════════════════════════════════════════════════════════
+  - step_id: "00-01"
+    name: "Create pyproject.toml with package configuration"
+    phase: "00"
+    status: "completed"
+    dependencies: []
+    estimated_hours: 2
+    started_at: "2026-02-01T10:00:00Z"
+    completed_at: "2026-02-02T10:15:00Z"
+    tdd_phases:
+      - phase: "PREPARE"
+        status: "completed"
+        completed_at: "2026-02-02T10:00:00Z"
+        notes: "Repository state verified, updated for crafter-ai package"
+      - phase: "RED_ACCEPTANCE"
+        status: "skipped"
+        reason: "NOT_APPLICABLE: infrastructure step has no acceptance test"
+      - phase: "RED_UNIT"
+        status: "completed"
+        completed_at: "2026-02-02T10:05:00Z"
+        notes: "Created unit tests for CLI --version command"
+        artifacts_created:
+          - "tests/unit/cli/__init__.py"
+          - "tests/unit/cli/test_version.py"
+      - phase: "GREEN"
+        status: "completed"
+        completed_at: "2026-02-02T10:10:00Z"
+        artifacts_created:
+          - "pyproject.toml (updated with hatchling build system)"
+          - "src/crafter_ai/__init__.py"
+          - "src/crafter_ai/cli.py"
+        validation_commands:
+          - command: "pip install -e '.[dev]'"
+            result: "SUCCESS - crafter-ai 0.1.0 installed"
+          - command: "pytest tests/unit/cli/test_version.py -v"
+            result: "PASSED - 3 tests passed"
+          - command: "crafter-ai --version"
+            result: "crafter-ai version 0.1.0"
+      - phase: "REVIEW"
+        status: "completed"
+        completed_at: "2026-02-02T10:12:00Z"
+        acceptance_criteria:
+          - criterion: "pyproject.toml exists at repository root"
+            status: "PASS"
+          - criterion: "[build-system] configured with hatchling>=1.21.0"
+            status: "PASS"
+          - criterion: "[project] with name=crafter-ai, version=0.1.0"
+            status: "PASS"
+          - criterion: "[project.scripts] with crafter-ai entry point"
+            status: "PASS"
+          - criterion: "Dependencies: rich, typer, pydantic, httpx, platformdirs"
+            status: "PASS"
+          - criterion: "requires-python >= 3.10"
+            status: "PASS"
+          - criterion: "pip install -e '.[dev]' succeeds"
+            status: "PASS"
+          - criterion: "Unit tests for --version pass"
+            status: "PASS"
+          - criterion: "crafter-ai --version shows 0.1.0"
+            status: "PASS"
+      - phase: "REFACTOR_CONTINUOUS"
+        status: "skipped"
+        reason: "NOT_APPLICABLE: initial configuration, no refactoring needed"
+
+  - step_id: "00-02"
+    name: "Configure PyPI secrets in GitHub"
+    phase: "00"
+    status: "completed"
+    dependencies: ["00-01"]
+    estimated_hours: 1
+    started_at: "2026-02-02T06:38:00Z"
+    completed_at: "2026-02-02T06:38:03Z"
+    tdd_phases:
+      - phase: "PREPARE"
+        status: "completed"
+        notes: "PyPI token provided by Mike"
+      - phase: "RED_ACCEPTANCE"
+        status: "skipped"
+        reason: "NOT_APPLICABLE: infrastructure step"
+      - phase: "RED_UNIT"
+        status: "skipped"
+        reason: "NOT_APPLICABLE: infrastructure step"
+      - phase: "GREEN"
+        status: "completed"
+        completed_at: "2026-02-02T06:38:03Z"
+        notes: "Secrets configured via gh secret set"
+        validation_commands:
+          - command: "gh secret list"
+            result: "PYPI_API_TOKEN, TEST_PYPI_API_TOKEN, SLACK_WEBHOOK_URL confirmed"
+      - phase: "REVIEW"
+        status: "completed"
+        acceptance_criteria:
+          - criterion: "PYPI_API_TOKEN secret configured"
+            status: "PASS"
+          - criterion: "TEST_PYPI_API_TOKEN secret configured"
+            status: "PASS"
+      - phase: "REFACTOR_CONTINUOUS"
+        status: "skipped"
+        reason: "NOT_APPLICABLE: infrastructure step"
+      - phase: "COMMIT"
+        status: "skipped"
+        reason: "NOT_APPLICABLE: no code changes, secrets only"
+
+  - step_id: "00-03"
+    name: "Add TestPyPI publishing workflow to CI"
+    phase: "00"
+    status: "completed"
+    dependencies: ["00-01", "00-02"]
+    estimated_hours: 3
+    started_at: "2026-02-02T07:00:00Z"
+    completed_at: "2026-02-02T10:30:00Z"
+    tdd_phases:
+      - phase: "PREPARE"
+        status: "completed"
+        completed_at: "2026-02-02T07:05:00Z"
+        notes: "Verified pyproject.toml with hatchling build, existing CI workflow structure, GitHub secrets configured"
+      - phase: "RED_ACCEPTANCE"
+        status: "skipped"
+        reason: "NOT_APPLICABLE: infrastructure step"
+      - phase: "RED_UNIT"
+        status: "skipped"
+        reason: "NOT_APPLICABLE: infrastructure step"
+      - phase: "GREEN"
+        status: "completed"
+        completed_at: "2026-02-02T10:25:00Z"
+        artifacts_created:
+          - ".github/workflows/testpypi-publish.yml"
+        notes: "Workflow created with build, publish-testpypi, and test-install jobs"
+      - phase: "REVIEW"
+        status: "completed"
+        acceptance_criteria:
+          - criterion: "PR-level TestPyPI validation workflow added"
+            status: "PASS"
+          - criterion: "Wheel builds on PR"
+            status: "PASS"
+          - criterion: "Publishes to TestPyPI with unique dev version"
+            status: "PASS"
+          - criterion: "E2E install test validates pipx install from TestPyPI"
+            status: "PASS"
+      - phase: "REFACTOR_CONTINUOUS"
+        status: "skipped"
+        reason: "NOT_APPLICABLE: workflow file"
+      - phase: "COMMIT"
+        status: "completed"
+        completed_at: "2026-02-02T10:30:00Z"
+
+  - step_id: "00-04"
+    name: "Add version sync quality gate to CI"
+    phase: "00"
+    status: "completed"
+    dependencies: ["00-01"]
+    estimated_hours: 2
+    started_at: "2026-02-02T11:00:00Z"
+    completed_at: "2026-02-02T11:15:00Z"
+    tdd_phases:
+      - phase: "PREPARE"
+        status: "completed"
+        notes: "Verified pyproject.toml structure and existing CI workflows"
+      - phase: "RED_ACCEPTANCE"
+        status: "skipped"
+        reason: "NOT_APPLICABLE: infrastructure step"
+      - phase: "RED_UNIT"
+        status: "skipped"
+        reason: "NOT_APPLICABLE: infrastructure step"
+      - phase: "GREEN"
+        status: "completed"
+        completed_at: "2026-02-02T11:10:00Z"
+        artifacts_created:
+          - ".github/workflows/version-sync-check.yml"
+        notes: "Workflow validates pyproject.toml version matches __init__.py and agent spec files"
+      - phase: "REVIEW"
+        status: "completed"
+        acceptance_criteria:
+          - criterion: "CI validates agent spec versions match pyproject.toml"
+            status: "PASS"
+          - criterion: "Prevents version drift between components"
+            status: "PASS"
+          - criterion: "Blocks PR on version mismatch"
+            status: "PASS"
+      - phase: "REFACTOR_CONTINUOUS"
+        status: "skipped"
+        reason: "NOT_APPLICABLE: workflow file"
+
+  - step_id: "00-05"
+    name: "Create test directory structure and pytest configuration"
+    phase: "00"
+    status: "completed"
+    dependencies: ["00-01"]
+    estimated_hours: 1
+    started_at: "2026-02-02T11:15:00Z"
+    completed_at: "2026-02-02T11:30:00Z"
+    tdd_phases:
+      - phase: "PREPARE"
+        status: "completed"
+        notes: "Verified existing tests directory structure and pytest config in pyproject.toml"
+      - phase: "RED_ACCEPTANCE"
+        status: "skipped"
+        reason: "NOT_APPLICABLE: infrastructure step"
+      - phase: "RED_UNIT"
+        status: "skipped"
+        reason: "NOT_APPLICABLE: infrastructure step"
+      - phase: "GREEN"
+        status: "completed"
+        completed_at: "2026-02-02T11:25:00Z"
+        artifacts_created:
+          - "tests/installer/__init__.py"
+          - "tests/installer/conftest.py"
+          - "tests/cli/__init__.py"
+          - "tests/cli/conftest.py"
+        notes: "Created test directories with port mocking fixtures for hexagonal architecture"
+        validation_commands:
+          - command: "python -c 'from tests.installer.conftest import InMemoryFileSystemAdapter'"
+            result: "SUCCESS - All imports validated"
+      - phase: "REVIEW"
+        status: "completed"
+        acceptance_criteria:
+          - criterion: "tests/installer/ directory exists"
+            status: "PASS"
+          - criterion: "tests/cli/ directory exists"
+            status: "PASS"
+          - criterion: "pytest configuration in pyproject.toml [tool.pytest]"
+            status: "PASS (already existed)"
+          - criterion: "conftest.py with common fixtures for port mocking"
+            status: "PASS"
+          - criterion: "Test dependencies in pyproject.toml"
+            status: "PASS (already existed: pytest, pytest-bdd, pytest-cov)"
+      - phase: "REFACTOR_CONTINUOUS"
+        status: "skipped"
+        reason: "NOT_APPLICABLE: initial infrastructure"
+
+  # ═══════════════════════════════════════════════════════════
+  # PHASE 01: Infrastructure - Shared Frameworks
+  # ═══════════════════════════════════════════════════════════
+  - step_id: "01-01"
+    name: "Create CheckResult domain object and CheckSeverity enum"
+    phase: "01"
+    status: "completed"
+    dependencies: ["00-01"]
+    estimated_hours: 2
+    started_at: "2026-02-02T12:20:00Z"
+    completed_at: "2026-02-02T12:25:00Z"
+    artifacts_created:
+      - "src/crafter_ai/installer/domain/check_result.py"
+      - "tests/installer/domain/test_check_result.py"
+    test_result: "PASS: 9 tests"
+    commit_hash: "2c66e82"
+
+  - step_id: "01-02"
+    name: "Create CheckRegistry and CheckExecutor for pre-flight checks"
+    phase: "01"
+    status: "completed"
+    dependencies: ["01-01"]
+    estimated_hours: 3
+    started_at: "2026-02-02T12:30:00Z"
+    completed_at: "2026-02-02T12:35:00Z"
+    artifacts_created:
+      - "src/crafter_ai/installer/domain/check_registry.py"
+      - "src/crafter_ai/installer/domain/check_executor.py"
+      - "tests/installer/domain/test_check_registry_executor.py"
+    test_result: "PASS: 11 tests"
+    commit_hash: "6ffcf2c"
+
+  - step_id: "01-03"
+    name: "Create core pre-flight checks"
+    phase: "01"
+    status: "completed"
+    dependencies: ["01-02"]
+    estimated_hours: 3
+    started_at: "2026-02-02T12:40:00Z"
+    completed_at: "2026-02-02T12:50:00Z"
+    artifacts_created:
+      - "src/crafter_ai/installer/checks/core_checks.py"
+      - "tests/installer/checks/test_core_checks.py"
+    test_result: "PASS: 11 tests"
+    commit_hash: "0df1e2e"
+
+  - step_id: "01-04"
+    name: "Create HealthStatus enum and HealthChecker for doctor framework"
+    phase: "01"
+    status: "completed"
+    dependencies: ["01-01"]
+    estimated_hours: 3
+    started_at: "2026-02-02T12:55:00Z"
+    completed_at: "2026-02-02T13:05:00Z"
+    artifacts_created:
+      - "src/crafter_ai/installer/domain/health_result.py"
+      - "src/crafter_ai/installer/domain/health_checker.py"
+      - "tests/installer/domain/test_health_checker.py"
+    test_result: "PASS: 15 tests"
+    commit_hash: "fdb91b7"
+
+  - step_id: "01-05"
+    name: "Create doctor health checks"
+    phase: "01"
+    status: "completed"
+    dependencies: ["01-04"]
+    estimated_hours: 4
+    started_at: "2026-02-02T13:10:00Z"
+    completed_at: "2026-02-02T13:25:00Z"
+    artifacts_created:
+      - "src/crafter_ai/installer/checks/health_checks.py"
+      - "tests/installer/checks/test_health_checks.py"
+    test_result: "PASS: 14 tests"
+    commit_hash: "cd1b3f2"
+
+  - step_id: "01-06"
+    name: "Create ArtifactRegistry for shared artifact values"
+    phase: "01"
+    status: "completed"
+    dependencies: ["01-01"]
+    estimated_hours: 3
+    started_at: "2026-02-02T13:30:00Z"
+    completed_at: "2026-02-02T13:40:00Z"
+    artifacts_created:
+      - "src/crafter_ai/installer/domain/artifact_registry.py"
+      - "tests/installer/domain/test_artifact_registry.py"
+    test_result: "PASS: 19 tests"
+    commit_hash: "e72fdab"
+
+  - step_id: "01-07"
+    name: "Create ConfigPort and ConfigAdapter for installer configuration"
+    phase: "01"
+    status: "completed"
+    dependencies: []
+    estimated_hours: 3
+    started_at: "2026-02-02T13:45:00Z"
+    completed_at: "2026-02-02T13:55:00Z"
+    artifacts_created:
+      - "src/crafter_ai/installer/ports/config_port.py"
+      - "src/crafter_ai/installer/adapters/config_adapter.py"
+      - "tests/installer/adapters/test_config_adapter.py"
+    test_result: "PASS: 17 tests"
+    commit_hash: "43092a0"
+
+  - step_id: "01-08"
+    name: "Create URL configuration management"
+    phase: "01"
+    status: "completed"
+    dependencies: []
+    estimated_hours: 2
+    started_at: "2026-02-02T14:00:00Z"
+    completed_at: "2026-02-02T14:10:00Z"
+    artifacts_created:
+      - "src/crafter_ai/installer/config/urls.py"
+      - "tests/installer/config/test_urls.py"
+    test_result: "PASS: 19 tests"
+    commit_hash: "b4378b1"
+
+  # ═══════════════════════════════════════════════════════════
+  # PHASE 02: Journey 1 - Build Local Candidate
+  # ═══════════════════════════════════════════════════════════
+  - step_id: "02-01"
+    name: "Create build-specific pre-flight checks"
+    phase: "02"
+    status: "completed"
+    dependencies: ["01-03"]
+    estimated_hours: 3
+    started_at: "2026-02-02T14:30:00Z"
+    completed_at: "2026-02-02T14:40:00Z"
+    artifacts_created:
+      - "src/crafter_ai/installer/checks/build_checks.py"
+      - "tests/installer/checks/test_build_checks.py"
+    test_result: "PASS: 16 tests"
+    commit_hash: "fbab383"
+
+  - step_id: "02-02"
+    name: "Create GitPort and GitAdapter for commit analysis"
+    phase: "02"
+    status: "completed"
+    dependencies: []
+    estimated_hours: 2
+    started_at: "2026-02-02T14:45:00Z"
+    completed_at: "2026-02-02T14:55:00Z"
+    artifacts_created:
+      - "src/crafter_ai/installer/ports/git_port.py"
+      - "src/crafter_ai/installer/adapters/git_adapter.py"
+      - "tests/installer/adapters/test_git_adapter.py"
+    test_result: "PASS: 15 tests"
+    commit_hash: "e1c0199"
+
+  - step_id: "02-03"
+    name: "Create CandidateVersion domain object"
+    phase: "02"
+    status: "completed"
+    dependencies: ["01-01"]
+    estimated_hours: 3
+    started_at: "2026-02-02T15:00:00Z"
+    completed_at: "2026-02-02T15:10:00Z"
+    artifacts_created:
+      - "src/crafter_ai/installer/domain/candidate_version.py"
+      - "tests/installer/domain/test_candidate_version.py"
+    test_result: "PASS: 24 tests"
+    commit_hash: "7121de3"
+
+  - step_id: "02-04"
+    name: "Create VersionBumpService for conventional commit analysis"
+    phase: "02"
+    status: "completed"
+    dependencies: ["02-02", "02-03"]
+    estimated_hours: 4
+    started_at: "2026-02-02T15:15:00Z"
+    completed_at: "2026-02-02T15:25:00Z"
+    artifacts_created:
+      - "src/crafter_ai/installer/services/version_bump_service.py"
+      - "tests/installer/services/test_version_bump_service.py"
+    test_result: "PASS: 21 tests"
+    commit_hash: "3172666"
+
+  - step_id: "02-05"
+    name: "Create BuildPort and BuildAdapter for wheel building"
+    phase: "02"
+    status: "completed"
+    dependencies: []
+    estimated_hours: 3
+    started_at: "2026-02-02T15:30:00Z"
+    completed_at: "2026-02-02T15:40:00Z"
+    artifacts_created:
+      - "src/crafter_ai/installer/ports/build_port.py"
+      - "src/crafter_ai/installer/adapters/build_adapter.py"
+      - "tests/installer/adapters/test_build_adapter.py"
+    test_result: "PASS: 28 tests"
+    commit_hash: "3d6a879"
+
+  - step_id: "02-06"
+    name: "Create wheel validation service"
+    phase: "02"
+    status: "completed"
+    dependencies: ["01-06"]
+    estimated_hours: 4
+    started_at: "2026-02-02T15:45:00Z"
+    completed_at: "2026-02-02T15:55:00Z"
+    artifacts_created:
+      - "src/crafter_ai/installer/services/wheel_validation_service.py"
+      - "tests/installer/services/test_wheel_validation_service.py"
+    test_result: "PASS: 18 tests"
+    commit_hash: "8547f2c"
+
+  - step_id: "02-07"
+    name: "Create BuildService orchestrating build journey"
+    phase: "02"
+    status: "completed"
+    dependencies: ["02-01", "02-04", "02-05", "02-06"]
+    estimated_hours: 4
+    started_at: "2026-02-02T16:00:00Z"
+    completed_at: "2026-02-02T16:10:00Z"
+    artifacts_created:
+      - "src/crafter_ai/installer/services/build_service.py"
+      - "tests/installer/services/test_build_service.py"
+    test_result: "PASS: 16 tests"
+    commit_hash: "393fb3f"
+
+  - step_id: "02-08"
+    name: "Create forge:build CLI command"
+    phase: "02"
+    status: "completed"
+    dependencies: ["02-07"]
+    estimated_hours: 4
+    started_at: "2026-02-02T16:15:00Z"
+    completed_at: "2026-02-02T16:25:00Z"
+    artifacts_created:
+      - "src/crafter_ai/installer/cli/forge_build.py"
+      - "src/crafter_ai/installer/cli/__init__.py"
+      - "tests/installer/cli/test_forge_build.py"
+      - "tests/installer/cli/__init__.py"
+    test_result: "PASS: 16 tests"
+    commit_hash: "9f15195"
+
+  - step_id: "02-09"
+    name: "Create auto-repair for missing build package"
+    phase: "02"
+    status: "completed"
+    dependencies: ["02-01", "02-08"]
+    estimated_hours: 2
+    started_at: "2026-02-02T16:30:00Z"
+    completed_at: "2026-02-02T16:40:00Z"
+    artifacts_created:
+      - "src/crafter_ai/installer/services/auto_repair_service.py"
+      - "tests/installer/services/test_auto_repair_service.py"
+    test_result: "PASS: 16 tests"
+    commit_hash: "1d10dc1"
+
+  # ═══════════════════════════════════════════════════════════
+  # PHASE 03: Journey 2 - Install Local Candidate
+  # ═══════════════════════════════════════════════════════════
+  - step_id: "03-01"
+    name: "Create install-specific pre-flight checks"
+    phase: "03"
+    status: "pending"
+    dependencies: ["01-03"]
+    estimated_hours: 3
+    tdd_phases: []
+
+  - step_id: "03-02"
+    name: "Create PipxPort and PipxAdapter"
+    phase: "03"
+    status: "pending"
+    dependencies: []
+    estimated_hours: 3
+    tdd_phases: []
+
+  - step_id: "03-03"
+    name: "Create release readiness validation service"
+    phase: "03"
+    status: "pending"
+    dependencies: ["02-06"]
+    estimated_hours: 4
+    tdd_phases: []
+
+  - step_id: "03-04"
+    name: "Create BackupPort and BackupAdapter"
+    phase: "03"
+    status: "pending"
+    dependencies: []
+    estimated_hours: 3
+    tdd_phases: []
+
+  - step_id: "03-05a"
+    name: "Create InstallService core orchestration"
+    phase: "03"
+    status: "pending"
+    dependencies: ["03-01", "03-02", "03-03", "03-04"]
+    estimated_hours: 3
+    tdd_phases: []
+
+  - step_id: "03-05b"
+    name: "Create InstallService verification orchestration"
+    phase: "03"
+    status: "pending"
+    dependencies: ["03-05a", "01-05"]
+    estimated_hours: 2
+    tdd_phases: []
+
+  - step_id: "03-06"
+    name: "Create release report generator"
+    phase: "03"
+    status: "pending"
+    dependencies: ["03-05b"]
+    estimated_hours: 3
+    tdd_phases: []
+
+  - step_id: "03-07"
+    name: "Create forge:install CLI command"
+    phase: "03"
+    status: "pending"
+    dependencies: ["03-05b", "03-06"]
+    estimated_hours: 4
+    tdd_phases: []
+
+  - step_id: "03-08"
+    name: "Create auto-chain to build when no wheel found"
+    phase: "03"
+    status: "pending"
+    dependencies: ["03-01", "03-07", "02-08"]
+    estimated_hours: 2
+    tdd_phases: []
+
+  - step_id: "03-09"
+    name: "Create multiple wheel selection prompt"
+    phase: "03"
+    status: "pending"
+    dependencies: ["03-07"]
+    estimated_hours: 2
+    tdd_phases: []
+
+  # ═══════════════════════════════════════════════════════════
+  # PHASE 04: Journey 3 - PyPI Install
+  # ═══════════════════════════════════════════════════════════
+  - step_id: "04-01"
+    name: "Create PyPI-specific pre-flight checks"
+    phase: "04"
+    status: "pending"
+    dependencies: ["01-03"]
+    estimated_hours: 2
+    tdd_phases: []
+
+  - step_id: "04-02"
+    name: "Create upgrade detection service"
+    phase: "04"
+    status: "pending"
+    dependencies: ["01-07", "03-04"]
+    estimated_hours: 4
+    tdd_phases: []
+
+  - step_id: "04-03"
+    name: "Create framework installation progress display"
+    phase: "04"
+    status: "pending"
+    dependencies: ["03-05b"]
+    estimated_hours: 3
+    tdd_phases: []
+
+  - step_id: "04-04"
+    name: "Create welcome and celebration display"
+    phase: "04"
+    status: "pending"
+    dependencies: ["01-08"]
+    estimated_hours: 2
+    tdd_phases: []
+
+  - step_id: "04-05"
+    name: "Create nw setup command for post-install agent setup"
+    phase: "04"
+    status: "pending"
+    dependencies: ["03-05b"]
+    estimated_hours: 4
+    tdd_phases: []
+    notes: "Must use FileSystemPort for all directory/file operations"
+
+  - step_id: "04-06"
+    name: "Create nw doctor CLI command"
+    phase: "04"
+    status: "pending"
+    dependencies: ["01-05"]
+    estimated_hours: 3
+    tdd_phases: []
+
+  - step_id: "04-07"
+    name: "Create nw version command"
+    phase: "04"
+    status: "pending"
+    dependencies: ["01-06"]
+    estimated_hours: 2
+    tdd_phases: []
+
+  - step_id: "04-08"
+    name: "Create install-nwave CI mode support"
+    phase: "04"
+    status: "pending"
+    dependencies: ["04-04", "04-05"]
+    estimated_hours: 2
+    tdd_phases: []
+
+  # ═══════════════════════════════════════════════════════════
+  # PHASE 05: Cross-Cutting Concerns
+  # ═══════════════════════════════════════════════════════════
+  - step_id: "05-01"
+    name: "Create RollbackService for automatic and manual rollback"
+    phase: "05"
+    status: "pending"
+    dependencies: ["03-04"]
+    estimated_hours: 4
+    tdd_phases: []
+
+  - step_id: "05-02"
+    name: "Create nw rollback CLI command"
+    phase: "05"
+    status: "pending"
+    dependencies: ["05-01"]
+    estimated_hours: 2
+    tdd_phases: []
+
+  - step_id: "05-03"
+    name: "Create integration checkpoint display"
+    phase: "05"
+    status: "pending"
+    dependencies: ["01-06"]
+    estimated_hours: 2
+    tdd_phases: []
+
+  - step_id: "05-04"
+    name: "Integrate upgrade detection into install flows"
+    phase: "05"
+    status: "pending"
+    dependencies: ["04-02", "03-05b"]
+    estimated_hours: 3
+    tdd_phases: []
+
+  # ═══════════════════════════════════════════════════════════
+  # PHASE 06: Horizontal Coherence and E2E Validation
+  # ═══════════════════════════════════════════════════════════
+  - step_id: "06-01"
+    name: "Validate pre-flight format consistency across journeys"
+    phase: "06"
+    status: "pending"
+    dependencies: ["02-08", "03-07", "04-08"]
+    estimated_hours: 2
+    tdd_phases: []
+
+  - step_id: "06-02"
+    name: "Validate doctor format consistency between Journey 2 and 3"
+    phase: "06"
+    status: "pending"
+    dependencies: ["03-07", "04-06"]
+    estimated_hours: 2
+    tdd_phases: []
+
+  - step_id: "06-03"
+    name: "Validate artifact flow from build to install to doctor"
+    phase: "06"
+    status: "pending"
+    dependencies: ["05-03"]
+    estimated_hours: 2
+    tdd_phases: []
+
+  - step_id: "06-04"
+    name: "Create TestPyPI E2E validation test"
+    phase: "06"
+    status: "pending"
+    dependencies: ["04-08"]
+    estimated_hours: 4
+    tdd_phases: []
+
+  - step_id: "06-05"
+    name: "Create TestPyPI CI quality gate"
+    phase: "06"
+    status: "pending"
+    dependencies: ["06-04"]
+    estimated_hours: 3
+    tdd_phases: []
+
+# Summary statistics
+summary:
+  total_steps: 41
+  completed_steps: 22
+  in_progress_steps: 0
+  blocked_steps: 0
+  pending_steps: 19
+  estimated_total_hours: 116
+  estimated_remaining_hours: 55
+
+# Handover notes for next session
+handover:
+  created_by: "Vera"
+  created_at: "2026-02-01"
+  notes: |
+    ## Session Handover: modern-cli-installer DEVELOP Wave
+
+    ### Current State
+    - Roadmap: APPROVED (all reviewer conditions addressed)
+    - Execution: READY TO START
+
+    ### External Blocker
+    - Step 00-02 (PyPI secrets) waiting for Mike to provide tokens
+    - Once tokens available, unblock 00-02 and 00-03
+
+    ### Recommended Execution Order (Phase 00)
+    1. Start 00-01 (pyproject.toml) immediately
+    2. In parallel after 00-01: execute 00-04 and 00-05
+    3. When Mike provides tokens: execute 00-02
+    4. After 00-01 + 00-02: execute 00-03
+
+    ### To Resume
+    Run: /nw:develop "modern-cli-installer"
+    - Orchestrator will detect approved roadmap (skip creation)
+    - Orchestrator will read this execution-status.yaml
+    - Orchestrator will begin Phase 00 execution
+
+    ### Acceptance Tests Location
+    docs/features/modern-cli-installer/03-distill/
+    - features/*.feature (Gherkin scenarios)
+    - e2e-scenarios/*.py (pytest-bdd step definitions)
+
+    ### Key Documents
+    - Roadmap: docs/features/modern-cli-installer/04-develop/roadmap.yaml
+    - Platform Review: docs/features/modern-cli-installer/02-design/platform-readiness-review.md
+    - UX Journeys: docs/features/modern-cli-installer/02-design/ux-journeys/

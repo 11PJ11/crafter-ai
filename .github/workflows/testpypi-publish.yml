@@ -1,0 +1,195 @@
+# =============================================================================
+# TestPyPI Validation Workflow for crafter-ai
+# =============================================================================
+#
+# Purpose: Validate wheel builds and TestPyPI publishing on every PR
+#
+# Jobs:
+#   1. build: Build wheel using hatchling with unique dev version
+#   2. publish-testpypi: Publish to TestPyPI for validation
+#   3. test-install: Validate pipx installation from TestPyPI
+#
+# Triggers: Pull requests to main/master branches
+#
+# =============================================================================
+
+name: TestPyPI Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+  id-token: write  # Required for trusted publishing to TestPyPI
+
+env:
+  PYTHON_VERSION: '3.10'
+
+jobs:
+  # ===========================================================================
+  # JOB 1: Build wheel with unique dev version
+  # ===========================================================================
+  build:
+    name: "Build Wheel"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      dev_version: ${{ steps.version.outputs.dev_version }}
+      full_version: ${{ steps.version.outputs.full_version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install build hatchling
+
+      - name: Generate unique dev version
+        id: version
+        run: |
+          # Extract base version from pyproject.toml
+          BASE_VERSION=$(python -c "
+          import tomllib
+          with open('pyproject.toml', 'rb') as f:
+              data = tomllib.load(f)
+          print(data['project']['version'])
+          ")
+
+          # Generate dev suffix: YYYYMMDDHHMMSS
+          DEV_SUFFIX=$(date -u +%Y%m%d%H%M%S)
+
+          # Full dev version: base.devYYYYMMDDHHMMSS
+          FULL_VERSION="${BASE_VERSION}.dev${DEV_SUFFIX}"
+
+          echo "Base version: $BASE_VERSION"
+          echo "Dev suffix: $DEV_SUFFIX"
+          echo "Full version: $FULL_VERSION"
+
+          echo "dev_version=$DEV_SUFFIX" >> $GITHUB_OUTPUT
+          echo "full_version=$FULL_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Update version for dev build
+        run: |
+          # Temporarily update pyproject.toml with dev version
+          python -c "
+          import re
+
+          with open('pyproject.toml', 'r') as f:
+              content = f.read()
+
+          # Replace version line
+          content = re.sub(
+              r'^version = \"[^\"]+\"',
+              'version = \"${{ steps.version.outputs.full_version }}\"',
+              content,
+              flags=re.MULTILINE
+          )
+
+          with open('pyproject.toml', 'w') as f:
+              f.write(content)
+
+          print('Updated pyproject.toml to version: ${{ steps.version.outputs.full_version }}')
+          "
+
+      - name: Build wheel and sdist
+        run: python -m build
+
+      - name: List built artifacts
+        run: ls -la dist/
+
+      - name: Upload distribution artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+          retention-days: 1
+
+  # ===========================================================================
+  # JOB 2: Publish to TestPyPI
+  # ===========================================================================
+  publish-testpypi:
+    name: "Publish to TestPyPI"
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/project/crafter-ai/
+
+    steps:
+      - name: Download distribution artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: List artifacts to publish
+        run: ls -la dist/
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          skip-existing: true
+          verbose: true
+
+  # ===========================================================================
+  # JOB 3: Test installation from TestPyPI
+  # ===========================================================================
+  test-install:
+    name: "Test pipx Install"
+    needs: publish-testpypi
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install pipx
+        run: |
+          python -m pip install --upgrade pip
+          pip install pipx
+          pipx ensurepath
+
+      - name: Wait for TestPyPI index to update
+        run: |
+          echo "Waiting 30 seconds for TestPyPI index to propagate..."
+          sleep 30
+
+      - name: Install crafter-ai from TestPyPI
+        run: |
+          # Install from TestPyPI with PyPI as fallback for dependencies
+          pipx install crafter-ai==${{ needs.build.outputs.full_version }} \
+            --pip-args="--index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/"
+
+      - name: Verify installation
+        run: |
+          echo "Testing crafter-ai --version..."
+          crafter-ai --version
+
+          echo ""
+          echo "TestPyPI installation validated successfully!"
+          echo "Version: ${{ needs.build.outputs.full_version }}"
+
+      - name: Installation summary
+        run: |
+          echo "## TestPyPI Installation Test" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Package**: crafter-ai" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${{ needs.build.outputs.full_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **TestPyPI URL**: https://test.pypi.org/project/crafter-ai/" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: Installation and version check passed" >> $GITHUB_STEP_SUMMARY

@@ -1,7 +1,9 @@
 # Pre-commit hooks configuration for nWave Framework
-# Install: pip install pre-commit && pre-commit install
+# Install: pip install pre-commit && pre-commit install --hook-type commit-msg
 # Manual run: pre-commit run --all-files
 # Testing Framework: 5-Layer (Unit, Integration, Adversarial, Peer Review, Mutation Testing)
+#
+# IMPORTANT: Run `pre-commit install --hook-type commit-msg` to enable gitlint
 
 repos:
   # Local hooks for nWave framework
@@ -109,6 +111,49 @@ repos:
         files: ^(scripts/|tools/|tests/).*\.py$
         exclude: \.json$
         stages: [pre-commit]
+
+# ═══════════════════════════════════════════════════════════════════════════
+# nWave TDD Hooks - Auto-installed by /nw:develop
+# Version: 1.2.26
+# ═══════════════════════════════════════════════════════════════════════════
+  - repo: local
+    hooks:
+      - id: nwave-step-structure-validation
+        name: nWave Step Structure Validation
+        entry: python scripts/hooks/nwave-step-structure-validator.py
+        language: python
+        stages: [pre-commit]
+        files: (^|/)steps/\d+-\d+\.json$
+        description: Validates step files have phase_execution_log structure
+
+      - id: nwave-tdd-phase-validation
+        name: nWave TDD Phase Validation
+        entry: python scripts/hooks/nwave-tdd-validator.py
+        language: python
+        stages: [pre-commit]
+        always_run: true
+        pass_filenames: false
+        description: Validates TDD phase completion before allowing commits
+
+      - id: nwave-bypass-detector
+        name: nWave Bypass Detector
+        entry: python scripts/hooks/nwave-bypass-detector.py
+        language: python
+        stages: [post-commit]
+        always_run: true
+        pass_filenames: false
+        description: Logs any bypass attempts for audit purposes
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Gitlint - Conventional Commits Validation (Python-based)
+# Matches CI: commitlint subject-case rule
+# ═══════════════════════════════════════════════════════════════════════════
+  - repo: https://github.com/jorisroovers/gitlint
+    rev: v0.19.1
+    hooks:
+      - id: gitlint
+        name: Gitlint (Conventional Commits)
+        stages: [commit-msg]
 
 # Configuration
 default_stages: [pre-commit]

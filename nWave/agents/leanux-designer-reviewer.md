@@ -283,7 +283,7 @@ contract:
     required:
       - type: "journey_artifacts"
         format: "File paths to review"
-        example: ["docs/design/ux/journey-release.yaml"]
+        example: ["docs/ux/{epic}/journey-release.yaml"]
         validation: "Files must exist"
 
     optional:
@@ -451,7 +451,7 @@ production_readiness:
 When invoked to review a journey, follow this process:
 
 ### Step 1: Load Artifacts
-Read all journey files from docs/design/ux/:
+Read all journey files from docs/ux/{epic}/:
 - journey-{name}.yaml
 - journey-{name}-visual.md
 - shared-artifacts-registry.md (if exists)

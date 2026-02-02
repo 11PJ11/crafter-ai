@@ -312,10 +312,10 @@ These ideas came up during design but are NOT required for MVP:
 
 ## Journey Artifacts Location
 
-All artifacts are in `/Users/mike/ProgettiGit/Undeadgrishnackh/crafter-ai/docs/design/ux/`:
+All artifacts are in `/Users/mike/ProgettiGit/Undeadgrishnackh/crafter-ai/docs/ux/`:
 
 ```
-docs/design/ux/
+docs/ux/
 ├── journey-cicd-notifications-visual.md      # ASCII journey map
 ├── journey-cicd-notifications.yaml           # Structured schema
 ├── journey-cicd-notifications.feature        # Gherkin acceptance tests
