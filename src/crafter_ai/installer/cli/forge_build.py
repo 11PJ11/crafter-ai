@@ -214,12 +214,21 @@ def build(
     ci_mode = is_ci_mode()
     should_prompt = not ci_mode and not no_prompt and not install
 
+    def run_install(wheel_path: Path) -> None:
+        """Run the install command with the built wheel."""
+        # Late import to avoid circular dependency
+        from crafter_ai.installer.cli.forge_install import install as forge_install
+
+        console.print("\n[cyan]Starting installation...[/cyan]\n")
+        forge_install(wheel=wheel_path, force=False, no_verify=False, no_prompt=True)
+
     if install:
-        # Auto-install (implementation not yet done, just skip prompt)
-        console.print("[yellow]Auto-install not yet implemented.[/yellow]")
+        # Auto-install after build
+        if result.wheel_path:
+            run_install(result.wheel_path)
     elif should_prompt:
         do_install = typer.confirm("Install locally now?", default=True)
-        if do_install:
-            console.print("[yellow]Install not yet implemented.[/yellow]")
+        if do_install and result.wheel_path:
+            run_install(result.wheel_path)
 
     raise typer.Exit(code=0)
