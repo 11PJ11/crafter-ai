@@ -5,7 +5,7 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 
 meta:
-  generated_at: "2026-02-02T18:00:00Z"
+  generated_at: "2026-02-02T22:50:00Z"
   project: "modern-cli-installer"
   phase: "03"
   phase_name: "Journey 2 - Install Local Candidate"
@@ -14,62 +14,59 @@ meta:
 # STEP CONTRACT
 # ─────────────────────────────────────────────────────────────────────────────
 step:
-  id: "03-01"
-  name: "Create install-specific pre-flight checks"
+  id: "03-09"
+  name: "Create multiple wheel selection prompt"
   agent: "software-crafter"
-  estimated_hours: 3
+  estimated_hours: 2
   dependencies_satisfied: true
-  user_stories: ["US-020"]
-  scenario: "journey_2_install.feature::Pre-flight validates wheel exists"
+  user_stories: ["US-029"]
+  scenario: "journey_2_install.feature::User can select from multiple wheels in dist/"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # INPUT: What the agent receives (READ-ONLY context)
 # ─────────────────────────────────────────────────────────────────────────────
 input:
-  source_file: "src/crafter_ai/installer/checks/install_checks.py"
-  test_file: "tests/installer/checks/test_install_checks.py"
+  source_file: "src/crafter_ai/installer/cli/forge_install.py"
+  test_file: "tests/installer/cli/test_forge_install.py"
 
   existing_code:
-    check_result: "src/crafter_ai/installer/domain/check_result.py"
-    check_registry: "src/crafter_ai/installer/domain/check_registry.py"
-    core_checks: "src/crafter_ai/installer/checks/core_checks.py"
-    build_checks: "src/crafter_ai/installer/checks/build_checks.py"
+    forge_install: "src/crafter_ai/installer/cli/forge_install.py"
 
   requirements:
-    install_checks:
-      - "wheel_exists check: validates .whl file exists in dist/ directory"
-      - "wheel_exists returns fixable=True with fix_command to chain to forge:build"
-      - "wheel_format check: validates wheel filename follows PEP 427 format"
-      - "pipx_isolation check: validates pipx can create isolated virtual env"
-      - "install_path_resolved check: confirms target installation path is accessible"
-      - "All checks return CheckResult with consistent format from check_result.py"
-      - "All checks registered for 'install-local' journey in CheckRegistry"
+    wheel_selection:
+      - "When multiple wheels exist in dist/ and no --wheel specified"
+      - "Display numbered list of available wheels with version and date"
+      - "Prompt: 'Multiple wheels found. Select one [1-N]'"
+      - "User enters number to select wheel"
+      - "In CI mode: auto-select newest wheel (by modification time)"
 
-    check_patterns:
-      - "Follow same patterns as core_checks.py and build_checks.py"
-      - "Each check is a function returning CheckResult"
-      - "Register checks using @check_registry.register('install-local') decorator"
-      - "Use CheckSeverity.BLOCKING for critical checks"
-      - "Use CheckSeverity.WARNING for non-blocking checks"
+    display_format:
+      - "1. crafter_ai-0.1.0-py3-none-any.whl (2026-02-02 10:30)"
+      - "2. crafter_ai-0.0.9-py3-none-any.whl (2026-02-01 14:20)"
+      - "Most recent wheel listed first"
+      - "Show file size in human-readable format"
+
+    edge_cases:
+      - "Single wheel: use it directly (no prompt)"
+      - "No wheels: trigger auto-chain build (existing behavior)"
+      - "Invalid selection: re-prompt or show error"
+      - "CI mode: auto-select newest, log which was selected"
 
   test_requirements:
-    - "Test wheel_exists returns PASS when wheel file present in dist/"
-    - "Test wheel_exists returns FAIL with fixable=True when no wheel"
-    - "Test wheel_format returns PASS for valid PEP 427 wheel name"
-    - "Test wheel_format returns FAIL for invalid wheel name format"
-    - "Test pipx_isolation returns PASS when pipx can create venv"
-    - "Test pipx_isolation returns FAIL when pipx unavailable or broken"
-    - "Test install_path_resolved returns PASS when path writable"
-    - "Test install_path_resolved returns FAIL when path not accessible"
-    - "Test all checks are registered for 'install-local' journey"
-    - "Mock filesystem operations - no actual file creation"
-    - "Mock subprocess for pipx checks"
+    - "Test single wheel skips selection prompt"
+    - "Test multiple wheels displays numbered list"
+    - "Test user selection returns correct wheel"
+    - "Test invalid selection shows error"
+    - "Test CI mode auto-selects newest"
+    - "Test --no-prompt auto-selects newest"
+    - "Test list sorted by modification time (newest first)"
+    - "Mock filesystem for wheel listing"
 
   architecture_notes:
-    - "Infrastructure layer - checks module"
-    - "Uses CheckResult from domain layer"
-    - "Uses CheckRegistry for registration"
-    - "No external dependencies beyond standard library and existing code"
+    - "Extends existing forge_install.py"
+    - "Modifies wheel resolution logic"
+    - "Uses Rich for formatted display"
+    - "Minimal changes to existing flow"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # CONSTRAINTS: Rules the agent MUST follow
@@ -80,10 +77,9 @@ constraints:
   fail_fast: true
 
   allowed_actions:
-    - "Read existing check_result, check_registry, core_checks, build_checks for patterns"
-    - "Create source file at input.source_file"
-    - "Create test file at input.test_file"
-    - "Update checks/__init__.py to export new checks"
+    - "Read existing forge_install.py"
+    - "Modify source file at input.source_file"
+    - "Add tests to input.test_file"
     - "Run pytest on test file"
     - "Commit changes"
 
@@ -92,28 +88,16 @@ constraints:
     - "DO NOT read execution-status.yaml"
     - "DO NOT modify WIP.yaml (orchestrator does this)"
     - "DO NOT implement other steps"
-    - "DO NOT add external dependencies"
-    - "DO NOT create files outside allowed paths"
-    - "DO NOT modify existing check files (core_checks.py, build_checks.py)"
+    - "DO NOT break existing tests"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # OUTPUT: What the agent must deliver (AGENT FILLS THIS SECTION)
 # ─────────────────────────────────────────────────────────────────────────────
 output:
-  status: success
-  artifacts_created:
-    - src/crafter_ai/installer/checks/install_checks.py
-    - src/crafter_ai/installer/checks/__init__.py
-    - tests/installer/checks/test_install_checks.py
-  test_command: "python -m pytest tests/installer/checks/test_install_checks.py -v"
-  test_result: "PASS: 16 tests"
-  commit_hash: "b8b49df"
-  commit_message: "feat(modern-cli-installer): add install-specific pre-flight checks - step 03-01"
-  notes: |
-    Implementation complete with 4 install-specific checks:
-    - check_wheel_exists(): validates .whl in dist/, fixable=True with fix_command="forge build"
-    - check_wheel_format(): validates PEP 427 wheel filename format
-    - check_pipx_isolation(): validates pipx venv capability via subprocess
-    - check_install_path_resolved(): validates ~/.local/bin accessible and writable
-    - create_install_check_registry(): factory function for CheckRegistry
-    Reviewer: APPROVED by software-crafter-reviewer
+  status: pending
+  artifacts_created: []
+  test_command: ""
+  test_result: ""
+  commit_hash: ""
+  commit_message: ""
+  notes: ""
