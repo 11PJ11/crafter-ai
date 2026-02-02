@@ -166,7 +166,7 @@ output:
     result: "8 failed"
     failure_reason: "NotImplementedError in CLI layer - service layer integration complete, CLI layer implementation required in subsequent step"
 
-  commit_hash: "pending"
+  commit_hash: "dad160f"
   commit_message: "feat(installer): integrate upgrade detection into InstallService - step 05-04"
   notes: "Service layer integration complete. UpgradePath enum, detect_upgrade_path(), should_create_backup(), get_upgrade_message(), and ci_mode parameter all implemented and tested. E2E failures are in CLI layer which is outside scope of this step."
 
