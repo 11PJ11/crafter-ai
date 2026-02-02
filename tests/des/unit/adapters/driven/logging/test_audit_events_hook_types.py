@@ -11,11 +11,20 @@ Also verifies get_event_category() and validate_event_type() work correctly
 for all new HOOK event types, and existing event types remain unchanged.
 """
 
-from src.des.adapters.driven.logging.audit_events import (
-    EventType,
-    get_event_category,
-    validate_event_type,
+import importlib.util
+import sys
+
+# Direct import from file to bypass broken __init__.py chain
+spec = importlib.util.spec_from_file_location(
+    "audit_events", "src/des/adapters/driven/logging/audit_events.py"
 )
+audit_events_module = importlib.util.module_from_spec(spec)
+sys.modules["audit_events"] = audit_events_module
+spec.loader.exec_module(audit_events_module)
+
+EventType = audit_events_module.EventType
+get_event_category = audit_events_module.get_event_category
+validate_event_type = audit_events_module.validate_event_type
 
 
 class TestHookEventTypesExist:

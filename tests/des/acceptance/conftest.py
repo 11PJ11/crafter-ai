@@ -30,24 +30,34 @@ class AuditLogReader:
     """Helper for reading and verifying audit log entries."""
 
     def __init__(self, audit_log_path: Path):
-        self.audit_log_path = audit_log_path
+        # audit_log_path is the directory where logs are stored
+        # AuditLogger creates date-specific files like audit-2026-02-02.log
+        self.audit_log_dir = (
+            audit_log_path.parent
+            if audit_log_path.name == "audit.log"
+            else audit_log_path
+        )
 
     def get_all_entries(self) -> List[Dict[str, Any]]:
-        """Read all audit log entries."""
-        if not self.audit_log_path.exists():
+        """Read all audit log entries from all date-specific log files."""
+        entries = []
+
+        if not self.audit_log_dir.exists():
             return []
 
-        entries = []
-        with open(self.audit_log_path, "r") as f:
-            for line in f:
-                line = line.strip()
-                if line:
-                    entries.append(json.loads(line))
+        # Read all audit-*.log files in the directory
+        for log_file in self.audit_log_dir.glob("audit-*.log"):
+            with open(log_file, "r") as f:
+                for line in f:
+                    line = line.strip()
+                    if line:
+                        entries.append(json.loads(line))
         return entries
 
     def get_entries_by_type(self, event_type: str) -> List[Dict[str, Any]]:
         """Filter audit log entries by event type."""
-        return [e for e in self.get_all_entries() if e.get("event_type") == event_type]
+        # Note: Events are stored with 'event' field, not 'event_type'
+        return [e for e in self.get_all_entries() if e.get("event") == event_type]
 
     def contains_event_type(self, event_type: str) -> bool:
         """Check if audit log contains at least one entry of given type."""
@@ -55,8 +65,9 @@ class AuditLogReader:
 
     def clear(self):
         """Clear audit log for test isolation."""
-        if self.audit_log_path.exists():
-            self.audit_log_path.unlink()
+        if self.audit_log_dir.exists():
+            for log_file in self.audit_log_dir.glob("audit-*.log"):
+                log_file.unlink()
 
 
 @pytest.fixture
@@ -140,13 +151,26 @@ def clean_des_environment(temp_home, audit_log_reader):
 
 
 @pytest.fixture
-def enable_audit_logging(des_config_path):
-    """Configure audit logging to be enabled."""
+def enable_audit_logging(des_config_path, audit_log_path):
+    """Configure audit logging to be enabled and initialize audit logger with correct path."""
     des_config_path.parent.mkdir(parents=True, exist_ok=True)
     config_content = """# DES Configuration
 audit_logging_enabled: true  # Enable comprehensive audit trail
 """
     des_config_path.write_text(config_content)
+
+    # Initialize global audit logger with test-specific path
+    # IMPORTANT: Must reset singleton and configure before any tests use it
+    import src.des.adapters.driven.logging.audit_logger as audit_logger_module
+
+    audit_logger_module._audit_logger = None  # Reset singleton
+    # Use parent directory of audit_log_path (which is ~/.claude/des/logs/audit.log)
+    # So we pass ~/.claude/des/logs as the log directory
+    audit_logger_module._audit_logger = audit_logger_module.AuditLogger(
+        log_dir=str(audit_log_path.parent)
+    )
+
+    return des_config_path
 
 
 @pytest.fixture
@@ -269,3 +293,11 @@ def cli_runner():
 def context():
     """Provide test context dictionary for sharing state between steps."""
     return {}
+
+
+@pytest.fixture
+def stub_adapter_exists():
+    """Verify production stub hook adapter exists at expected path."""
+    adapter_file = Path("src/des/adapters/drivers/hooks/claude_code_hook_adapter.py")
+    assert adapter_file.exists(), f"Production stub adapter not found at {adapter_file}"
+    return adapter_file

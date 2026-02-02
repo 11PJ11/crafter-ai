@@ -32,9 +32,11 @@ from src.des.domain.invocation_limits_validator import (
 from src.des.application.stale_execution_detector import StaleExecutionDetector
 from src.des.domain.stale_execution import StaleExecution
 from src.des.adapters.driven.logging.audit_logger import log_audit_event
+from src.des.adapters.driven.logging.audit_events import AuditEvent, EventType
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
+import re
 
 
 @dataclass
@@ -209,6 +211,47 @@ class DESOrchestrator:
             ValidationResult with status, errors, and task_invocation_allowed flag
         """
         result = self._validator.validate_prompt(prompt)
+
+        # Extract step_path from DES-STEP-FILE marker
+        step_path = None
+        step_match = re.search(r'<!-- DES-STEP-FILE:\s*(.*?)\s*-->', prompt)
+        if step_match:
+            step_path = step_match.group(1)
+
+        # Extract agent_name from prompt
+        agent_name = None
+        agent_match = re.search(r'@([\w-]+)\s+agent', prompt)
+        if agent_match:
+            agent_name = agent_match.group(1)
+
+        # Get timestamp from TimeProvider
+        timestamp = self._time_provider.now_utc().isoformat()
+
+        # Create audit event based on validation result
+        if result.task_invocation_allowed:
+            # HOOK_PRE_TASK_PASSED event
+            event = AuditEvent(
+                timestamp=timestamp,
+                event=EventType.HOOK_PRE_TASK_PASSED.value,
+                step_path=step_path,
+                extra_context={"agent": agent_name} if agent_name else None
+            )
+        else:
+            # HOOK_PRE_TASK_BLOCKED event
+            rejection_reason = str(result.errors) if result.errors else "Validation failed"
+            event = AuditEvent(
+                timestamp=timestamp,
+                event=EventType.HOOK_PRE_TASK_BLOCKED.value,
+                step_path=step_path,
+                rejection_reason=rejection_reason,
+                extra_context={"agent": agent_name} if agent_name else None
+            )
+
+        # Log the audit event
+        from src.des.adapters.driven.logging.audit_logger import get_audit_logger
+        logger = get_audit_logger()
+        logger.append(event.to_dict())
+
         # Mark lifecycle as completed after validation
         self._subagent_lifecycle_completed = True
         return result
