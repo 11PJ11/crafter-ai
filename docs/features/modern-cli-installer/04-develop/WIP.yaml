@@ -5,21 +5,22 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 
 meta:
-  generated_at: "2026-02-03T06:00:00Z"
+  generated_at: "2026-02-03T09:00:00Z"
   project: "modern-cli-installer"
-  phase: "05"
-  phase_name: "Cross-Cutting Concerns"
+  phase: "06"
+  phase_name: "Horizontal Coherence and E2E Validation"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # STEP CONTRACT
 # ─────────────────────────────────────────────────────────────────────────────
 step:
-  id: "05-04"
-  name: "Integrate upgrade detection into install flows"
+  id: "06-05"
+  name: "Create TestPyPI CI quality gate"
   agent: "software-crafter"
   estimated_hours: 3
   dependencies_satisfied: true
-  user_stories: ["US-041"]
+  user_stories: []
+  type: "infrastructure"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # CRITICAL: OUTSIDE-IN TDD ENFORCEMENT
@@ -28,147 +29,152 @@ tdd_approach:
   method: "OUTSIDE-IN"
 
   driving_test:
-    file: "docs/features/modern-cli-installer/03-distill/e2e-scenarios/test_journey_3_pypi.py"
-    function: "test_reinstall_same_version_prompts_confirmation"
-    feature_file: "docs/features/modern-cli-installer/03-distill/features/journey_3_pypi.feature"
-    scenario: "Reinstall same version prompts confirmation"
+    file: "docs/features/modern-cli-installer/03-distill/e2e-scenarios/test_testpypi_coherence.py"
+    function: "test_pr_cannot_merge_without_testpypi_validation_passing"
+    feature_file: "docs/features/modern-cli-installer/03-distill/features/testpypi_coherence.feature"
+    scenario: "PR cannot merge without TestPyPI validation passing"
 
   execution_order:
     step_1:
       action: "Run the E2E test FIRST"
-      command: "pytest docs/features/modern-cli-installer/03-distill/e2e-scenarios/test_journey_3_pypi.py -k 'upgrade or reinstall' -v --tb=short 2>&1 | head -100"
-      expected: "FAIL (missing integration or NotImplementedError)"
+      command: "pytest docs/features/modern-cli-installer/03-distill/e2e-scenarios/ -k 'testpypi' -v --tb=short 2>&1 | head -100"
+      expected: "FAIL (missing test or NotImplementedError)"
       purpose: "See the failing test that will drive implementation"
 
     step_2:
-      action: "Write unit tests for InstallService upgrade integration"
-      file: "tests/installer/services/test_install_service_upgrade.py"
-      purpose: "Define expected upgrade path behavior through tests"
+      action: "Update TestPyPI workflow with quality gate checks"
+      file: ".github/workflows/testpypi-publish.yml"
+      purpose: "Add twine check, retry logic, failure diagnostics"
 
     step_3:
-      action: "Extend InstallService with upgrade detection"
-      file: "src/crafter_ai/installer/services/install_service.py"
-      purpose: "Make unit tests pass"
+      action: "Create quality gate service for local validation"
+      file: "src/crafter_ai/installer/services/quality_gate_service.py"
+      purpose: "Service to validate quality gate requirements"
 
     step_4:
+      action: "Create unit tests for quality gate service"
+      file: "tests/installer/services/test_quality_gate_service.py"
+      purpose: "Test quality gate logic"
+
+    step_5:
       action: "Run E2E test again"
-      command: "pytest docs/features/modern-cli-installer/03-distill/e2e-scenarios/test_journey_3_pypi.py -k 'upgrade or reinstall' -v --tb=short 2>&1 | head -100"
-      expected: "Test progresses further (may still fail on CLI prompts)"
-      purpose: "Verify service integration"
+      command: "pytest tests/installer/services/test_quality_gate_service.py -v --tb=short 2>&1 | head -100"
+      expected: "Tests pass"
+      purpose: "Verify quality gate service works"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # INPUT: What the agent receives (READ-ONLY context)
 # ─────────────────────────────────────────────────────────────────────────────
 input:
-  source_file: "src/crafter_ai/installer/services/install_service.py"
-  test_file: "tests/installer/services/test_install_service_upgrade.py"
+  source_file: "src/crafter_ai/installer/services/quality_gate_service.py"
+  test_file: "tests/installer/services/test_quality_gate_service.py"
 
   existing_code:
-    upgrade_detection: "src/crafter_ai/installer/services/upgrade_detection_service.py"
-    install_service: "src/crafter_ai/installer/services/install_service.py"
-    backup_port: "src/crafter_ai/installer/ports/backup_port.py"
+    testpypi_workflow: ".github/workflows/testpypi-publish.yml"
+    testpypi_validation_script: "scripts/testpypi_validation.py"
+    health_checker: "src/crafter_ai/installer/domain/health_checker.py"
 
   e2e_scenarios:
-    - "journey_3_pypi.feature::Upgrade from older version"
-    - "journey_3_pypi.feature::Fresh install on clean system"
-    - "journey_3_pypi.feature::Reinstall same version prompts confirmation"
-    - "journey_3_pypi.feature::Downgrade warning"
-    - "journey_3_pypi.feature::CI mode auto-upgrades without prompts"
+    - "testpypi_coherence.feature::PR cannot merge without TestPyPI validation passing"
+    - "testpypi_coherence.feature::CI gate shows clear failure diagnostics"
 
   requirements:
-    upgrade_path_enum:
-      - "Add UpgradePath enum to InstallService: FRESH_INSTALL, UPGRADE, REINSTALL, DOWNGRADE"
+    workflow_enhancement:
+      - "Add twine check step after wheel build"
+      - "Add retry with exponential backoff for TestPyPI upload (3 attempts)"
+      - "Add retry with backoff for test-install (2 attempts)"
+      - "Use testpypi_validation.py script with --version flag"
+      - "Add clear failure summary with suggested fix in GitHub Step Summary"
+      - "Ensure workflow is a required status check for PRs"
 
-    install_service_integration:
-      - "Add detect_upgrade_path(target_version: str) -> UpgradePath method"
-      - "Add should_create_backup(upgrade_path: UpgradePath) -> bool method"
-      - "Add get_upgrade_message(upgrade_path: UpgradePath, from_ver: str, to_ver: str) -> str"
-      - "Modify install() to use upgrade path detection"
+    quality_gate_service:
+      - "QualityGateService class validates all gate requirements"
+      - "validate_wheel_build() - returns GateResult with pass/fail"
+      - "validate_twine_check() - returns GateResult with pass/fail"
+      - "validate_testpypi_upload() - returns GateResult with pass/fail"
+      - "validate_testpypi_install() - returns GateResult with pass/fail"
+      - "validate_doctor_healthy() - returns GateResult with pass/fail"
+      - "validate_all() - runs all checks, returns overall result"
+      - "get_failure_diagnostics() - returns detailed failure message with fix"
 
-    upgrade_path_behaviors:
-      - "FRESH_INSTALL: should_create_backup returns False, message shows '(fresh install)'"
-      - "UPGRADE: should_create_backup returns True, message shows 'Upgrading from X to Y'"
-      - "REINSTALL: should_create_backup returns True (after confirmation), message asks for confirmation"
-      - "DOWNGRADE: should_create_backup returns True (after confirmation), message warns about downgrade"
+    gate_result_dataclass:
+      - "GateResult dataclass with: check_name, passed, message, suggested_fix"
+      - "QualityGateResult dataclass with: passed, gate_results, summary"
 
-    ci_mode_support:
-      - "Add ci_mode parameter to install()"
-      - "CI mode: auto-proceed for UPGRADE, skip prompts"
-      - "CI mode: auto-proceed for REINSTALL without prompt"
-      - "CI mode: still warn for DOWNGRADE but proceed"
+    retry_behavior:
+      - "Exponential backoff: 30s, 60s, 120s for uploads"
+      - "Linear backoff: 30s, 60s for installs"
+      - "Max 3 retries for transient failures"
+      - "Clear logging of retry attempts"
 
   test_requirements:
-    - "Test detect_upgrade_path returns FRESH_INSTALL when no existing version"
-    - "Test detect_upgrade_path returns UPGRADE when target > installed"
-    - "Test detect_upgrade_path returns REINSTALL when target == installed"
-    - "Test detect_upgrade_path returns DOWNGRADE when target < installed"
-    - "Test should_create_backup returns False for FRESH_INSTALL"
-    - "Test should_create_backup returns True for UPGRADE"
-    - "Test should_create_backup returns True for REINSTALL (after confirm)"
-    - "Test get_upgrade_message formats correctly for each path"
-    - "Test CI mode auto-proceeds for UPGRADE"
-    - "Mock UpgradeDetectionService for isolated testing"
+    - "Test all 5 gate validations individually"
+    - "Test validate_all() aggregation"
+    - "Test failure diagnostics generation"
+    - "Test GateResult and QualityGateResult dataclasses"
+    - "Test suggested_fix is populated on failure"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # CONSTRAINTS: Rules the agent MUST follow
 # ─────────────────────────────────────────────────────────────────────────────
 constraints:
-  max_tool_calls: 35
+  max_tool_calls: 40
   must_run_tests: true
   fail_fast: true
 
   mandatory_sequence:
-    - "1. Run E2E upgrade tests FIRST (see them fail)"
-    - "2. Write unit tests for upgrade integration"
-    - "3. Extend InstallService to make unit tests pass"
-    - "4. Run E2E test again (verify progress)"
-    - "5. Run all unit tests"
-    - "6. Commit changes"
+    - "1. Run E2E testpypi tests FIRST (see them fail)"
+    - "2. Create QualityGateService with GateResult dataclass"
+    - "3. Create unit tests for QualityGateService"
+    - "4. Update testpypi-publish.yml workflow with twine check and retries"
+    - "5. Add failure diagnostics to workflow"
+    - "6. Run tests (should pass)"
+    - "7. Commit changes"
 
   allowed_actions:
-    - "Read existing UpgradeDetectionService"
-    - "Read existing InstallService"
-    - "Read E2E test files"
-    - "Extend InstallService with upgrade path detection"
-    - "Create test_install_service_upgrade.py unit tests"
-    - "Run pytest on unit tests"
-    - "Run pytest on E2E tests"
+    - "Read existing testpypi workflow"
+    - "Read testpypi_validation.py script"
+    - "Create quality_gate_service.py"
+    - "Create test_quality_gate_service.py"
+    - "Update testpypi-publish.yml workflow"
+    - "Run pytest on tests"
     - "Commit changes"
 
   forbidden_actions:
     - "DO NOT skip running E2E test first"
-    - "DO NOT modify UpgradeDetectionService"
+    - "DO NOT modify scripts/testpypi_validation.py"
     - "DO NOT read roadmap.yaml or execution-status.yaml"
-    - "DO NOT implement CLI prompts (service layer only)"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # OUTPUT: What the agent must deliver (AGENT FILLS THIS SECTION)
 # ─────────────────────────────────────────────────────────────────────────────
 output:
-  status: complete
+  status: completed
 
   e2e_test_before:
-    command: "pytest docs/features/modern-cli-installer/03-distill/e2e-scenarios/test_journey_3_pypi.py -k 'upgrade or reinstall' -v --tb=short"
-    result: "8 failed"
-    failure_reason: "NotImplementedError in CLI layer (FrameworkInstaller.install, step definitions) - expected, outside scope of service layer step"
+    command: "pytest docs/features/modern-cli-installer/03-distill/e2e-scenarios/ -k 'testpypi' -v --tb=short"
+    result: "FAILED"
+    failure_reason: "41 tests selected, all FAILED with NotImplementedError (expected for Outside-In TDD)"
 
   artifacts_created:
-    - "tests/installer/services/test_install_service_upgrade.py"
-    - "src/crafter_ai/installer/services/install_service.py (modified)"
+    - "src/crafter_ai/installer/services/quality_gate_service.py"
+    - "tests/installer/services/test_quality_gate_service.py"
+    - ".github/workflows/testpypi-publish.yml (enhanced)"
 
   unit_test_result:
-    command: "pytest tests/installer/services/test_install_service_upgrade.py -v"
-    tests_passed: 23
+    command: "pytest tests/installer/services/test_quality_gate_service.py -v --tb=short"
+    tests_passed: 27
     tests_failed: 0
+    tests_skipped: 0
 
   e2e_test_after:
-    command: "pytest docs/features/modern-cli-installer/03-distill/e2e-scenarios/test_journey_3_pypi.py -k 'upgrade or reinstall' -v --tb=short"
-    result: "8 failed"
-    failure_reason: "NotImplementedError in CLI layer - service layer integration complete, CLI layer implementation required in subsequent step"
+    command: "pytest tests/installer/services/test_quality_gate_service.py -v --tb=short"
+    result: "PASSED"
+    failure_reason: "N/A - 27 passed"
 
-  commit_hash: "dad160f"
-  commit_message: "feat(installer): integrate upgrade detection into InstallService - step 05-04"
-  notes: "Service layer integration complete. UpgradePath enum, detect_upgrade_path(), should_create_backup(), get_upgrade_message(), and ci_mode parameter all implemented and tested. E2E failures are in CLI layer which is outside scope of this step."
+  commit_hash: "d41a396"
+  commit_message: "feat(installer): add TestPyPI CI quality gate service - step 06-05"
+  notes: "QualityGateService with GateResult/QualityGateResult dataclasses. Workflow enhanced with twine check, retry logic (exponential backoff), and failure diagnostics."
 
 # ─────────────────────────────────────────────────────────────────────────────
 # SUCCESS CRITERIA
@@ -177,17 +183,23 @@ success_criteria:
   - criterion: "E2E test ran BEFORE implementation"
     validation: "output.e2e_test_before.result is not empty"
 
-  - criterion: "UpgradePath enum added to InstallService"
-    validation: "InstallService module contains UpgradePath enum"
+  - criterion: "QualityGateService created"
+    validation: "src/crafter_ai/installer/services/quality_gate_service.py exists"
 
-  - criterion: "detect_upgrade_path method implemented"
-    validation: "InstallService has detect_upgrade_path method"
+  - criterion: "GateResult and QualityGateResult dataclasses exist"
+    validation: "Dataclasses defined with required fields"
 
-  - criterion: "should_create_backup method implemented"
-    validation: "InstallService has should_create_backup method"
+  - criterion: "All 5 gate validations implemented"
+    validation: "validate_wheel_build, validate_twine_check, validate_testpypi_upload, validate_testpypi_install, validate_doctor_healthy"
 
-  - criterion: "Unit tests pass"
+  - criterion: "Workflow has twine check step"
+    validation: "testpypi-publish.yml contains twine check"
+
+  - criterion: "Workflow has retry logic"
+    validation: "testpypi-publish.yml contains retry with backoff"
+
+  - criterion: "Failure diagnostics in workflow"
+    validation: "Workflow writes failure summary with suggested fix to GITHUB_STEP_SUMMARY"
+
+  - criterion: "Tests created and pass"
     validation: "output.unit_test_result.tests_failed == 0"
-
-  - criterion: "CI mode support added"
-    validation: "install() method accepts ci_mode parameter"

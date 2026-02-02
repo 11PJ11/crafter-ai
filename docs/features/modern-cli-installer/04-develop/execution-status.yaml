@@ -7,10 +7,10 @@
 execution_status:
   project_id: "modern-cli-installer"
   roadmap_file: "roadmap.yaml"
-  current_phase: "05"
-  current_step: "06-01"
-  overall_status: "in_progress"
-  last_completed_step: "05-04"
+  current_phase: "06"
+  current_step: "COMPLETE"
+  overall_status: "completed"
+  last_completed_step: "06-05"
 
   # Roadmap was reviewed and approved by software-crafter-reviewer
   roadmap_review:
@@ -76,10 +76,10 @@ phases:
 
   - phase_id: "06"
     name: "Horizontal Coherence and E2E Validation"
-    status: "ready"
+    status: "completed"
     blocked_by: null
     steps_total: 5
-    steps_completed: 0
+    steps_completed: 5
 
 # Step-level tracking
 steps:
@@ -978,42 +978,78 @@ steps:
   - step_id: "06-01"
     name: "Validate pre-flight format consistency across journeys"
     phase: "06"
-    status: "pending"
+    status: "completed"
     dependencies: ["02-08", "03-07", "04-08"]
     estimated_hours: 2
-    tdd_phases: []
+    approach: "OUTSIDE-IN TDD"
+    artifacts_created:
+      - "src/crafter_ai/installer/services/preflight_format_validator.py"
+      - "tests/installer/services/test_preflight_format_validator.py"
+    test_result: "PASS: 19 tests"
+    commit_hash: "f5182b9"
+    reviewer: "software-crafter-reviewer"
+    review_status: "APPROVED"
 
   - step_id: "06-02"
     name: "Validate doctor format consistency between Journey 2 and 3"
     phase: "06"
-    status: "pending"
+    status: "completed"
     dependencies: ["03-07", "04-06"]
     estimated_hours: 2
-    tdd_phases: []
+    approach: "OUTSIDE-IN TDD"
+    artifacts_created:
+      - "src/crafter_ai/installer/services/doctor_format_validator.py"
+      - "tests/installer/services/test_doctor_format_validator.py"
+    test_result: "PASS: 22 tests"
+    commit_hash: "98a8755"
+    reviewer: "software-crafter-reviewer"
+    review_status: "APPROVED"
 
   - step_id: "06-03"
     name: "Validate artifact flow from build to install to doctor"
     phase: "06"
-    status: "pending"
+    status: "completed"
     dependencies: ["05-03"]
     estimated_hours: 2
-    tdd_phases: []
+    approach: "OUTSIDE-IN TDD"
+    artifacts_created:
+      - "src/crafter_ai/installer/services/artifact_flow_validator.py"
+      - "tests/installer/services/test_artifact_flow_validator.py"
+    test_result: "PASS: 27 tests"
+    commit_hash: "9a814c1"
+    reviewer: "software-crafter-reviewer"
+    review_status: "APPROVED"
 
   - step_id: "06-04"
     name: "Create TestPyPI E2E validation test"
     phase: "06"
-    status: "pending"
+    status: "completed"
     dependencies: ["04-08"]
     estimated_hours: 4
-    tdd_phases: []
+    approach: "OUTSIDE-IN TDD"
+    artifacts_created:
+      - "scripts/testpypi_validation.py"
+      - "tests/e2e/test_testpypi_validation.py"
+    test_result: "PASS: 15 tests passed, 2 skipped (CI-only)"
+    commit_hash: "19bc4c8"
+    reviewer: "software-crafter-reviewer"
+    review_status: "APPROVED"
 
   - step_id: "06-05"
     name: "Create TestPyPI CI quality gate"
     phase: "06"
-    status: "pending"
+    status: "completed"
     dependencies: ["06-04"]
     estimated_hours: 3
-    tdd_phases: []
+    approach: "OUTSIDE-IN TDD"
+    artifacts_created:
+      - "src/crafter_ai/installer/services/quality_gate_service.py"
+      - "tests/installer/services/test_quality_gate_service.py"
+      - ".github/workflows/testpypi-publish.yml (enhanced)"
+    test_result: "PASS: 27 tests"
+    commit_hash: "d41a396"
+    reviewer: "software-crafter-reviewer"
+    review_status: "APPROVED"
 
 # Summary statistics
 summary:
