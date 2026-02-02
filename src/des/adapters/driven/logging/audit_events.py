@@ -38,6 +38,12 @@ class EventType(Enum):
     # VALIDATION events
     VALIDATION_REJECTED = "VALIDATION_REJECTED"
 
+    # HOOK events
+    HOOK_PRE_TASK_PASSED = "HOOK_PRE_TASK_PASSED"
+    HOOK_PRE_TASK_BLOCKED = "HOOK_PRE_TASK_BLOCKED"
+    HOOK_SUBAGENT_STOP_PASSED = "HOOK_SUBAGENT_STOP_PASSED"
+    HOOK_SUBAGENT_STOP_FAILED = "HOOK_SUBAGENT_STOP_FAILED"
+
 
 @dataclass
 class AuditEvent:
@@ -108,5 +114,7 @@ def get_event_category(event_type: str) -> str:
         return "COMMIT"
     elif event_type.startswith("VALIDATION"):
         return "VALIDATION"
+    elif event_type.startswith("HOOK"):
+        return "HOOK"
     else:
         return "UNKNOWN"
