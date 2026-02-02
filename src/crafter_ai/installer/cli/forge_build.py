@@ -13,6 +13,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 from crafter_ai.installer.adapters.build_adapter import SubprocessBuildAdapter
+from crafter_ai.installer.checks.build_checks import create_build_check_registry
 from crafter_ai.installer.domain.artifact_registry import ArtifactRegistry
 from crafter_ai.installer.domain.candidate_version import BumpType, CandidateVersion
 from crafter_ai.installer.domain.check_executor import CheckExecutor
@@ -39,7 +40,8 @@ def create_build_service() -> BuildService:
     Returns:
         Configured BuildService instance.
     """
-    check_executor = CheckExecutor()
+    registry = create_build_check_registry()
+    check_executor = CheckExecutor(registry)
     build_port = SubprocessBuildAdapter()
     version_bump_service = VersionBumpService()
     wheel_validation_service = WheelValidationService()
