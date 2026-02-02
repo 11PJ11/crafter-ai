@@ -5,81 +5,85 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 
 meta:
-  generated_at: "2026-02-02T16:30:00Z"
+  generated_at: "2026-02-02T18:00:00Z"
   project: "modern-cli-installer"
-  phase: "02"
-  phase_name: "Journey 1 - Build Local Candidate"
+  phase: "03"
+  phase_name: "Journey 2 - Install Local Candidate"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # STEP CONTRACT
 # ─────────────────────────────────────────────────────────────────────────────
 step:
-  id: "02-09"
-  name: "Create auto-repair for missing build package"
+  id: "03-01"
+  name: "Create install-specific pre-flight checks"
   agent: "software-crafter"
-  estimated_hours: 2
+  estimated_hours: 3
   dependencies_satisfied: true
+  user_stories: ["US-020"]
+  scenario: "journey_2_install.feature::Pre-flight validates wheel exists"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # INPUT: What the agent receives (READ-ONLY context)
 # ─────────────────────────────────────────────────────────────────────────────
 input:
-  source_file: "src/crafter_ai/installer/services/auto_repair_service.py"
-  test_file: "tests/installer/services/test_auto_repair_service.py"
+  source_file: "src/crafter_ai/installer/checks/install_checks.py"
+  test_file: "tests/installer/checks/test_install_checks.py"
 
   existing_code:
     check_result: "src/crafter_ai/installer/domain/check_result.py"
+    check_registry: "src/crafter_ai/installer/domain/check_registry.py"
+    core_checks: "src/crafter_ai/installer/checks/core_checks.py"
     build_checks: "src/crafter_ai/installer/checks/build_checks.py"
-    forge_build: "src/crafter_ai/installer/cli/forge_build.py"
 
   requirements:
-    auto_repair_service:
-      - "AutoRepairService class for handling fixable check failures"
-      - "Method: can_repair(check_result: CheckResult) -> bool"
-      - "Method: repair(check_result: CheckResult, console: Console) -> RepairResult"
-      - "RepairResult frozen dataclass with: success, message, command_output"
-      - "repair() prompts 'Install it now? [Y/n]' using Rich prompt"
-      - "On Y: runs fix_command via subprocess, shows spinner during install"
-      - "On n: returns RepairResult(success=False, message='User declined')"
-      - "Shows success message with installed version on completion"
-      - "CI mode (CI=true env) auto-accepts repairs without prompting"
+    install_checks:
+      - "wheel_exists check: validates .whl file exists in dist/ directory"
+      - "wheel_exists returns fixable=True with fix_command to chain to forge:build"
+      - "wheel_format check: validates wheel filename follows PEP 427 format"
+      - "pipx_isolation check: validates pipx can create isolated virtual env"
+      - "install_path_resolved check: confirms target installation path is accessible"
+      - "All checks return CheckResult with consistent format from check_result.py"
+      - "All checks registered for 'install-local' journey in CheckRegistry"
 
-    integration_with_cli:
-      - "forge_build.py should use AutoRepairService for fixable failures"
-      - "After successful repair, re-run the failed check to verify"
-      - "Continue with remaining pre-flight checks after repair"
+    check_patterns:
+      - "Follow same patterns as core_checks.py and build_checks.py"
+      - "Each check is a function returning CheckResult"
+      - "Register checks using @check_registry.register('install-local') decorator"
+      - "Use CheckSeverity.BLOCKING for critical checks"
+      - "Use CheckSeverity.WARNING for non-blocking checks"
 
   test_requirements:
-    - "Test can_repair returns True for fixable checks"
-    - "Test can_repair returns False for non-fixable checks"
-    - "Test repair prompts user and runs fix_command on Y"
-    - "Test repair returns declined result on n"
-    - "Test repair shows spinner during command execution"
-    - "Test repair returns success with command output on success"
-    - "Test repair returns failure with error on command failure"
-    - "Test CI mode auto-accepts without prompting"
-    - "Mock subprocess calls - no actual pip install"
-    - "Mock Rich Console for prompt testing"
+    - "Test wheel_exists returns PASS when wheel file present in dist/"
+    - "Test wheel_exists returns FAIL with fixable=True when no wheel"
+    - "Test wheel_format returns PASS for valid PEP 427 wheel name"
+    - "Test wheel_format returns FAIL for invalid wheel name format"
+    - "Test pipx_isolation returns PASS when pipx can create venv"
+    - "Test pipx_isolation returns FAIL when pipx unavailable or broken"
+    - "Test install_path_resolved returns PASS when path writable"
+    - "Test install_path_resolved returns FAIL when path not accessible"
+    - "Test all checks are registered for 'install-local' journey"
+    - "Mock filesystem operations - no actual file creation"
+    - "Mock subprocess for pipx checks"
 
   architecture_notes:
-    - "Application service for interactive repair flow"
-    - "Uses Rich Console for prompts and spinners"
-    - "Subprocess execution for fix_command"
-    - "Integrates with CLI layer, not domain layer"
+    - "Infrastructure layer - checks module"
+    - "Uses CheckResult from domain layer"
+    - "Uses CheckRegistry for registration"
+    - "No external dependencies beyond standard library and existing code"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # CONSTRAINTS: Rules the agent MUST follow
 # ─────────────────────────────────────────────────────────────────────────────
 constraints:
-  max_tool_calls: 15
+  max_tool_calls: 20
   must_run_tests: true
   fail_fast: true
 
   allowed_actions:
-    - "Read existing check_result and build_checks for patterns"
+    - "Read existing check_result, check_registry, core_checks, build_checks for patterns"
     - "Create source file at input.source_file"
     - "Create test file at input.test_file"
-    - "Update services/__init__.py"
+    - "Update checks/__init__.py to export new checks"
     - "Run pytest on test file"
     - "Commit changes"
 
@@ -90,7 +94,7 @@ constraints:
     - "DO NOT implement other steps"
     - "DO NOT add external dependencies"
     - "DO NOT create files outside allowed paths"
-    - "DO NOT modify forge_build.py (integration comes in future step)"
+    - "DO NOT modify existing check files (core_checks.py, build_checks.py)"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # OUTPUT: What the agent must deliver (AGENT FILLS THIS SECTION)
@@ -98,19 +102,18 @@ constraints:
 output:
   status: success
   artifacts_created:
-    - src/crafter_ai/installer/services/auto_repair_service.py
-    - src/crafter_ai/installer/services/__init__.py
-    - tests/installer/services/test_auto_repair_service.py
-  test_command: "python -m pytest tests/installer/services/test_auto_repair_service.py -v"
+    - src/crafter_ai/installer/checks/install_checks.py
+    - src/crafter_ai/installer/checks/__init__.py
+    - tests/installer/checks/test_install_checks.py
+  test_command: "python -m pytest tests/installer/checks/test_install_checks.py -v"
   test_result: "PASS: 16 tests"
-  commit_hash: "1d10dc1976e9ffadb5a4aa24a8ab1644b962343c"
-  commit_message: "feat(modern-cli-installer): add AutoRepairService for fixable check failures - step 02-09"
+  commit_hash: "b8b49df"
+  commit_message: "feat(modern-cli-installer): add install-specific pre-flight checks - step 03-01"
   notes: |
-    Implementation complete. Created:
-    - AutoRepairService class with can_repair() and repair() methods
-    - RepairResult frozen dataclass with success, message, command_output
-    - Interactive prompt 'Install it now? [Y/n]' using Rich Console
-    - CI mode detection (CI=true env) for auto-accepting without prompt
-    - Spinner feedback during command execution
-    - Graceful subprocess error handling
-    All tests pass, pre-commit hooks pass.
+    Implementation complete with 4 install-specific checks:
+    - check_wheel_exists(): validates .whl in dist/, fixable=True with fix_command="forge build"
+    - check_wheel_format(): validates PEP 427 wheel filename format
+    - check_pipx_isolation(): validates pipx venv capability via subprocess
+    - check_install_path_resolved(): validates ~/.local/bin accessible and writable
+    - create_install_check_registry(): factory function for CheckRegistry
+    Reviewer: APPROVED by software-crafter-reviewer
