@@ -70,7 +70,6 @@ def test_failed_post_execution_gate():
     pass
 
 
-@pytest.mark.skip("Not implemented yet")
 @scenario(
     "test_hook_enforcement.feature",
     "DES configuration loads from YAML file with defaults",
@@ -79,7 +78,6 @@ def test_config_loads_with_defaults():
     pass
 
 
-@pytest.mark.skip("Not implemented yet")
 @scenario(
     "test_hook_enforcement.feature",
     "DES configuration falls back to safe defaults when file is invalid",
@@ -88,7 +86,6 @@ def test_config_fallback_to_defaults():
     pass
 
 
-@pytest.mark.skip("Not implemented yet")
 @scenario(
     "test_hook_enforcement.feature",
     "Hook adapter can check audit logging configuration",
@@ -599,7 +596,7 @@ def invoke_on_agent_complete_failure(context):
 @when("I load DESConfig")
 def load_config(context):
     """Load DESConfig through configuration adapter."""
-    from des.adapters.driven.config.des_config import DESConfig
+    from src.des.adapters.driven.config.des_config import DESConfig
 
     try:
         config = DESConfig()
@@ -612,7 +609,7 @@ def load_config(context):
 @when("hook adapter loads DESConfig")
 def adapter_loads_config(context):
     """Hook adapter loads configuration."""
-    from des.adapters.driven.config.des_config import DESConfig
+    from src.des.adapters.driven.config.des_config import DESConfig
 
     config = DESConfig()
     context["adapter_config"] = config

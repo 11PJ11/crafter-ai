@@ -181,6 +181,7 @@ def disable_audit_logging(des_config_path):
 audit_logging_enabled: false  # Disable audit logging
 """
     des_config_path.write_text(config_content)
+    return des_config_path
 
 
 @pytest.fixture
