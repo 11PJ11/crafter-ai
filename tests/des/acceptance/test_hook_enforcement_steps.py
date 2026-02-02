@@ -14,8 +14,9 @@ ONE-AT-A-TIME IMPLEMENTATION STRATEGY:
 
 import json
 import subprocess
-from pytest_bdd import scenario, given, when, then, parsers
+
 import pytest
+from pytest_bdd import given, parsers, scenario, then, when
 
 
 # =============================================================================
@@ -308,10 +309,12 @@ def audit_enabled(enable_audit_logging):
 
 
 @given("audit logging is disabled in config")
-def audit_disabled(disable_audit_logging):
-    """Disable audit logging via fixture."""
+def audit_disabled(disable_audit_logging, audit_log_reader):
+    """Disable audit logging via fixture and clear existing entries for test isolation."""
     # Fixture configures audit logging as disabled - verify configuration succeeded
     assert disable_audit_logging is not None
+    # Clear any existing audit log entries from previous tests to ensure isolation
+    audit_log_reader.clear()
 
 
 @given("TimeProvider is configured to return fixed UTC timestamp")
@@ -531,10 +534,10 @@ def invoke_validate_prompt_invalid(
     context, mocked_hook, in_memory_filesystem, mocked_time_provider
 ):
     """Invoke validate_prompt with invalid task prompt."""
-    from src.des.application.orchestrator import DESOrchestrator
     from src.des.adapters.drivers.validators.mocked_validator import (
         MockedTemplateValidator,
     )
+    from src.des.application.orchestrator import DESOrchestrator
     from src.des.ports.driver_ports.validator_port import ValidationResult
 
     # Create validator that returns failure for invalid prompts
