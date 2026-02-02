@@ -3,6 +3,9 @@ Unit tests for DES template validation components.
 
 Tests ExecutionLogValidator, MandatorySectionChecker, TDDPhaseValidator,
 and TemplateValidator orchestrator using business-focused test naming.
+
+Uses Single Source of Truth pattern: TDD phases loaded from canonical template
+(nWave/templates/step-tdd-cycle-schema.json) instead of hardcoding.
 """
 
 from src.des.application.validator import (
@@ -12,6 +15,10 @@ from src.des.application.validator import (
     TDDPhaseValidator,
     TemplateValidator,
     ValidationResult,
+)
+from src.des.application.tdd_template_loader import (
+    get_valid_tdd_phases,
+    get_expected_phase_count,
 )
 
 
@@ -230,7 +237,7 @@ class TestMandatorySectionChecker:
         # DES_METADATA
         # AGENT_IDENTITY
         # TASK_CONTEXT
-        # TDD_14_PHASES
+        # TDD_7_PHASES
         # QUALITY_GATES
         # OUTCOME_RECORDING
         # BOUNDARY_RULES
@@ -249,7 +256,7 @@ class TestMandatorySectionChecker:
         # DES_METADATA
         # AGENT_IDENTITY
         # TASK_CONTEXT
-        # TDD_14_PHASES
+        # TDD_7_PHASES
         # QUALITY_GATES
         # OUTCOME_RECORDING
         # BOUNDARY_RULES
@@ -279,27 +286,27 @@ class TestMandatorySectionChecker:
 
 
 class TestTDDPhaseValidator:
-    """TDDPhaseValidator unit tests."""
+    """TDDPhaseValidator unit tests - uses Single Source of Truth."""
 
-    def test_pass_when_all_14_phases_mentioned(self):
-        """Validator passes when all 14 phases are present."""
+    def test_pass_when_all_canonical_phases_mentioned(self):
+        """Validator passes when all canonical phases are present.
+
+        Loads phase list from canonical template (Single Source of Truth).
+        """
         validator = TDDPhaseValidator()
 
-        prompt = """
-        1. PREPARE
-        2. RED_ACCEPTANCE
-        3. RED_UNIT
-        4. GREEN_UNIT
-        5. CHECK_ACCEPTANCE
-        6. GREEN_ACCEPTANCE
-        7. REVIEW
-        8. REFACTOR_L1
-        9. REFACTOR_L2
-        10. REFACTOR_L3
-        11. REFACTOR_L4
-        12. POST_REFACTOR_REVIEW
-        13. FINAL_VALIDATE
-        14. COMMIT
+        # Load canonical phases from template
+        canonical_phases = get_valid_tdd_phases()
+        phase_count = get_expected_phase_count()
+
+        # Build prompt dynamically from canonical template with schema version indicator
+        phase_list = "\n".join(
+            [f"        {i}. {phase}" for i, phase in enumerate(canonical_phases, 1)]
+        )
+        prompt = f"""
+        # TDD_{phase_count}_PHASES
+        Execute all {phase_count} phases (schema v3.0):
+{phase_list}
         """
 
         errors = validator.validate(prompt)
@@ -307,30 +314,32 @@ class TestTDDPhaseValidator:
         assert len(errors) == 0
 
     def test_detect_missing_tdd_phase(self):
-        """Validator detects when TDD phase is missing."""
+        """Validator detects when TDD phase is missing.
+
+        Uses canonical template to build test case, excluding one phase.
+        """
         validator = TDDPhaseValidator()
 
-        prompt = """
-        1. PREPARE
-        2. RED_ACCEPTANCE
-        3. RED_UNIT
-        4. GREEN_UNIT
-        5. CHECK_ACCEPTANCE
-        6. GREEN_ACCEPTANCE
-        7. REVIEW
-        8. REFACTOR_L1
-        9. REFACTOR_L2
-        10. REFACTOR_L3
-        11. REFACTOR_L4
-        12. POST_REFACTOR_REVIEW
-        13. FINAL_VALIDATE
-        (missing COMMIT)
+        # Load canonical phases from template
+        canonical_phases = get_valid_tdd_phases()
+        phase_count = get_expected_phase_count()
+
+        # Build prompt with all phases except the last one (COMMIT) with schema version indicator
+        incomplete_phases = canonical_phases[:-1]
+        phase_list = "\n".join(
+            [f"        {i}. {phase}" for i, phase in enumerate(incomplete_phases, 1)]
+        )
+        prompt = f"""
+        # TDD_{phase_count}_PHASES
+        Execute {phase_count} phases (schema v3.0):
+{phase_list}
+        (missing {canonical_phases[-1]})
         """
 
         errors = validator.validate(prompt)
 
         assert len(errors) == 1
-        assert "COMMIT" in errors[0]
+        assert canonical_phases[-1] in errors[0]  # Should mention missing phase
         assert "INCOMPLETE" in errors[0]
 
 
@@ -372,37 +381,37 @@ class TestDESMarkerValidator:
 
 
 class TestTemplateValidator:
-    """TemplateValidator orchestrator unit tests."""
+    """TemplateValidator orchestrator unit tests - uses Single Source of Truth."""
 
     def test_return_passed_status_for_valid_prompt(self):
-        """Validator returns PASSED status for completely valid prompt."""
+        """Validator returns PASSED status for completely valid prompt.
+
+        Builds prompt dynamically from canonical template.
+        """
         validator = TemplateValidator()
 
-        prompt = """
+        # Load canonical phases from template
+        canonical_phases = get_valid_tdd_phases()
+        phase_count = get_expected_phase_count()
+
+        # Build phase list dynamically with schema version indicator
+        phase_list = "\n".join(
+            [f"        {i}. {phase}" for i, phase in enumerate(canonical_phases, 1)]
+        )
+
+        prompt = f"""
         <!-- DES-VALIDATION: required -->
         # DES_METADATA
         # AGENT_IDENTITY
         # TASK_CONTEXT
-        # TDD_14_PHASES
+        # TDD_{phase_count}_PHASES
+        Execute all {phase_count} phases (schema v3.0):
         # QUALITY_GATES
         # OUTCOME_RECORDING
         # BOUNDARY_RULES
         # TIMEOUT_INSTRUCTION
 
-        1. PREPARE
-        2. RED_ACCEPTANCE
-        3. RED_UNIT
-        4. GREEN_UNIT
-        5. CHECK_ACCEPTANCE
-        6. GREEN_ACCEPTANCE
-        7. REVIEW
-        8. REFACTOR_L1
-        9. REFACTOR_L2
-        10. REFACTOR_L3
-        11. REFACTOR_L4
-        12. POST_REFACTOR_REVIEW
-        13. FINAL_VALIDATE
-        14. COMMIT
+{phase_list}
         """
 
         result = validator.validate_prompt(prompt)
@@ -434,34 +443,34 @@ class TestTemplateValidator:
         assert result.task_invocation_allowed is False
 
     def test_allow_invocation_when_validation_passes(self):
-        """Validator allows task invocation when validation passes."""
+        """Validator allows task invocation when validation passes.
+
+        Uses canonical template to build valid prompt.
+        """
         validator = TemplateValidator()
 
-        prompt = """
+        # Load canonical phases from template
+        canonical_phases = get_valid_tdd_phases()
+        phase_count = get_expected_phase_count()
+
+        # Build phase list dynamically with schema version indicator
+        phase_list = "\n".join(
+            [f"        {i}. {phase}" for i, phase in enumerate(canonical_phases, 1)]
+        )
+
+        prompt = f"""
         <!-- DES-VALIDATION: required -->
         # DES_METADATA
         # AGENT_IDENTITY
         # TASK_CONTEXT
-        # TDD_14_PHASES
+        # TDD_{phase_count}_PHASES
+        Execute all {phase_count} phases (schema v3.0):
         # QUALITY_GATES
         # OUTCOME_RECORDING
         # BOUNDARY_RULES
         # TIMEOUT_INSTRUCTION
 
-        1. PREPARE
-        2. RED_ACCEPTANCE
-        3. RED_UNIT
-        4. GREEN_UNIT
-        5. CHECK_ACCEPTANCE
-        6. GREEN_ACCEPTANCE
-        7. REVIEW
-        8. REFACTOR_L1
-        9. REFACTOR_L2
-        10. REFACTOR_L3
-        11. REFACTOR_L4
-        12. POST_REFACTOR_REVIEW
-        13. FINAL_VALIDATE
-        14. COMMIT
+{phase_list}
         """
 
         result = validator.validate_prompt(prompt)
@@ -493,34 +502,34 @@ class TestTemplateValidator:
         assert len(result.recovery_guidance) > 0
 
     def test_measure_validation_duration(self):
-        """Validator measures validation execution time."""
+        """Validator measures validation execution time.
+
+        Uses canonical template to build valid prompt.
+        """
         validator = TemplateValidator()
 
-        prompt = """
+        # Load canonical phases from template
+        canonical_phases = get_valid_tdd_phases()
+        phase_count = get_expected_phase_count()
+
+        # Build phase list dynamically with schema version indicator
+        phase_list = "\n".join(
+            [f"        {i}. {phase}" for i, phase in enumerate(canonical_phases, 1)]
+        )
+
+        prompt = f"""
         <!-- DES-VALIDATION: required -->
         # DES_METADATA
         # AGENT_IDENTITY
         # TASK_CONTEXT
-        # TDD_14_PHASES
+        # TDD_{phase_count}_PHASES
+        Execute all {phase_count} phases (schema v3.0):
         # QUALITY_GATES
         # OUTCOME_RECORDING
         # BOUNDARY_RULES
         # TIMEOUT_INSTRUCTION
 
-        1. PREPARE
-        2. RED_ACCEPTANCE
-        3. RED_UNIT
-        4. GREEN_UNIT
-        5. CHECK_ACCEPTANCE
-        6. GREEN_ACCEPTANCE
-        7. REVIEW
-        8. REFACTOR_L1
-        9. REFACTOR_L2
-        10. REFACTOR_L3
-        11. REFACTOR_L4
-        12. POST_REFACTOR_REVIEW
-        13. FINAL_VALIDATE
-        14. COMMIT
+{phase_list}
         """
 
         result = validator.validate_prompt(prompt)

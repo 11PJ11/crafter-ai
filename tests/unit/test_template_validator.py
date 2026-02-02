@@ -62,7 +62,7 @@ class TestMandatorySectionChecker:
         # TASK_CONTEXT
         Implement UserRepository
 
-        # TDD_14_PHASES
+        # TDD_7_PHASES
         PREPARE, RED_ACCEPTANCE, RED_UNIT, GREEN_UNIT
 
         # QUALITY_GATES
@@ -97,7 +97,7 @@ class TestMandatorySectionChecker:
         # TASK_CONTEXT
         Implement UserRepository
 
-        # TDD_14_PHASES
+        # TDD_7_PHASES
         PREPARE, RED_ACCEPTANCE
 
         # QUALITY_GATES
@@ -134,7 +134,7 @@ class TestMandatorySectionChecker:
         checker = MandatorySectionChecker()
         errors = checker.validate(prompt)
 
-        assert len(errors) >= 5  # Missing TDD_14_PHASES, QUALITY_GATES, etc.
+        assert len(errors) >= 5  # Missing TDD_7_PHASES, QUALITY_GATES, etc.
 
 
 class TestTDDPhaseValidator:
@@ -145,7 +145,7 @@ class TestTDDPhaseValidator:
         from src.des.application.validator import TDDPhaseValidator
 
         prompt = """
-        # TDD_14_PHASES
+        # TDD_7_PHASES
         Execute in order:
         1. PREPARE
         2. RED_ACCEPTANCE
@@ -173,7 +173,7 @@ class TestTDDPhaseValidator:
         from src.des.application.validator import TDDPhaseValidator
 
         prompt = """
-        # TDD_14_PHASES
+        # TDD_7_PHASES
         1. PREPARE
         2. RED_ACCEPTANCE
         3. RED_UNIT
@@ -200,7 +200,7 @@ class TestTDDPhaseValidator:
         from src.des.application.validator import TDDPhaseValidator
 
         prompt = """
-        # TDD_14_PHASES
+        # TDD_7_PHASES
         1. PREPARE
         2. RED_ACCEPTANCE
         3. RED_UNIT
@@ -233,7 +233,7 @@ class TestTemplateValidator:
         # TASK_CONTEXT
         Implement UserRepository
 
-        # TDD_14_PHASES
+        # TDD_7_PHASES
         1. PREPARE
         2. RED_ACCEPTANCE
         3. RED_UNIT
@@ -302,7 +302,7 @@ class TestTemplateValidator:
         # TASK_CONTEXT
         Implement UserRepository
 
-        # TDD_14_PHASES
+        # TDD_7_PHASES
         1. PREPARE
         2. RED_ACCEPTANCE
         3. RED_UNIT

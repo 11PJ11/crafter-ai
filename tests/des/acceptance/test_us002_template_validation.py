@@ -39,7 +39,7 @@ class TestPreInvocationTemplateValidation:
         1. DES_METADATA
         2. AGENT_IDENTITY
         3. TASK_CONTEXT
-        4. TDD_14_PHASES
+        4. TDD_7_PHASES
         5. QUALITY_GATES
         6. OUTCOME_RECORDING
         7. BOUNDARY_RULES
@@ -64,7 +64,7 @@ class TestPreInvocationTemplateValidation:
         # TASK_CONTEXT
         Implement UserRepository
 
-        # TDD_14_PHASES
+        # TDD_7_PHASES
         Execute in order:
         1. PREPARE
         2. RED_ACCEPTANCE
@@ -140,7 +140,7 @@ class TestPreInvocationTemplateValidation:
         # TASK_CONTEXT
         Implement OrderService
 
-        # TDD_14_PHASES
+        # TDD_7_PHASES
         Execute in order:
         1. PREPARE
         2. RED_ACCEPTANCE
@@ -215,7 +215,7 @@ class TestPreInvocationTemplateValidation:
         # TASK_CONTEXT
         Implement PaymentService
 
-        # TDD_14_PHASES
+        # TDD_7_PHASES
         All 14 phases listed (PREPARE through COMMIT)
 
         # QUALITY_GATES
@@ -282,7 +282,7 @@ class TestPreInvocationTemplateValidation:
         # TASK_CONTEXT
         Implement InventoryService
 
-        # TDD_14_PHASES
+        # TDD_7_PHASES
         Execute in order:
         1. PREPARE
         2. RED_ACCEPTANCE
@@ -364,7 +364,7 @@ class TestPreInvocationTemplateValidation:
         # TASK_CONTEXT
         Implement ShippingService with carrier integration
 
-        # TDD_14_PHASES
+        # TDD_7_PHASES
         Execute all 14 phases in order:
         PREPARE, RED_ACCEPTANCE, RED_UNIT, GREEN_UNIT, CHECK_ACCEPTANCE,
         GREEN_ACCEPTANCE, REVIEW, REFACTOR_L1, REFACTOR_L2, REFACTOR_L3,
@@ -436,7 +436,7 @@ class TestPreInvocationTemplateValidation:
         # TASK_CONTEXT
         Test malformed marker handling
 
-        # TDD_14_PHASES
+        # TDD_7_PHASES
         PREPARE, RED_ACCEPTANCE, RED_UNIT, GREEN_UNIT, CHECK_ACCEPTANCE, GREEN_ACCEPTANCE,
         REVIEW, REFACTOR_L1, REFACTOR_L2, REFACTOR_L3, REFACTOR_L4, POST_REFACTOR_REVIEW, FINAL_VALIDATE, COMMIT
 
@@ -519,7 +519,7 @@ class TestOrchestratorIntegration:
         # TASK_CONTEXT
         Implement feature
 
-        # TDD_14_PHASES
+        # TDD_7_PHASES
         1. PREPARE
         2. RED_ACCEPTANCE
         3. RED_UNIT
@@ -645,7 +645,7 @@ class TestOrchestratorSubagentStopHook:
         # TASK_CONTEXT
         Integration test for subagent lifecycle
 
-        # TDD_14_PHASES
+        # TDD_7_PHASES
         All 14 phases listed
 
         # QUALITY_GATES

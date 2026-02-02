@@ -58,7 +58,7 @@ class TestPromptValidatorTimeoutInstruction:
         ## TASK_CONTEXT
         Implement feature X
 
-        ## TDD_14_PHASES
+        ## TDD_7_PHASES
         PREPARE, RED_ACCEPTANCE, RED_UNIT, GREEN_UNIT, CHECK_ACCEPTANCE,
         GREEN_ACCEPTANCE, REVIEW, REFACTOR_L1, REFACTOR_L2, REFACTOR_L3,
         REFACTOR_L4, POST_REFACTOR_REVIEW, FINAL_VALIDATE, COMMIT
@@ -105,7 +105,7 @@ class TestPromptValidatorTimeoutInstruction:
         ## TASK_CONTEXT
         Test task
 
-        ## TDD_14_PHASES
+        ## TDD_7_PHASES
         Phases here
 
         ## QUALITY_GATES
@@ -172,7 +172,7 @@ class TestPromptValidatorTimeoutInstruction:
         ## TASK_CONTEXT
         Implement feature X
 
-        ## TDD_14_PHASES
+        ## TDD_7_PHASES
         PREPARE, RED_ACCEPTANCE, RED_UNIT, GREEN_UNIT, CHECK_ACCEPTANCE,
         GREEN_ACCEPTANCE, REVIEW, REFACTOR_L1, REFACTOR_L2, REFACTOR_L3,
         REFACTOR_L4, POST_REFACTOR_REVIEW, FINAL_VALIDATE, COMMIT

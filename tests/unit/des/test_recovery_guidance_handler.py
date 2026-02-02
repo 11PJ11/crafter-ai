@@ -263,7 +263,7 @@ class TestMissingSectionDetection:
     def test_generate_suggestions_for_missing_section_with_section_name(self):
         """Should include specific section name in recovery suggestions for missing_section."""
         handler = RecoveryGuidanceHandler()
-        section_name = "TDD_14_PHASES"
+        section_name = "TDD_7_PHASES"
         suggestions = handler.generate_recovery_suggestions(
             failure_type="missing_section",
             context={
@@ -314,7 +314,7 @@ class TestMissingSectionDetection:
 
         suggestions_tdd = handler.generate_recovery_suggestions(
             failure_type="missing_section",
-            context={"section_name": "TDD_14_PHASES"},
+            context={"section_name": "TDD_7_PHASES"},
         )
 
         suggestions_boundary = handler.generate_recovery_suggestions(
@@ -323,7 +323,7 @@ class TestMissingSectionDetection:
         )
 
         # Both should mention their respective section names
-        assert any("TDD_14_PHASES" in s for s in suggestions_tdd)
+        assert any("TDD_7_PHASES" in s for s in suggestions_tdd)
         assert any("BOUNDARY_RULES" in s for s in suggestions_boundary)
 
         # Suggestions should be distinct based on section name

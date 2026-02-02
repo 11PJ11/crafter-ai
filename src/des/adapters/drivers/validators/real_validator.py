@@ -17,7 +17,7 @@ class RealTemplateValidator(ValidatorPort):
         "DES_METADATA",
         "AGENT_IDENTITY",
         "TASK_CONTEXT",
-        "TDD_14_PHASES",
+        "TDD_7_PHASES",  # Schema v3.0: 7-phase canonical TDD cycle
         "QUALITY_GATES",
         "OUTCOME_RECORDING",
         "BOUNDARY_RULES",
@@ -28,18 +28,22 @@ class RealTemplateValidator(ValidatorPort):
         "PREPARE",
         "RED_ACCEPTANCE",
         "RED_UNIT",
-        "GREEN_UNIT",
-        "CHECK_ACCEPTANCE",
-        "GREEN_ACCEPTANCE",
-        "REVIEW",
-        "REFACTOR_L1",
-        "REFACTOR_L2",
-        "REFACTOR_L3",
-        "REFACTOR_L4",
-        "POST_REFACTOR_REVIEW",
-        "FINAL_VALIDATE",
-        "COMMIT",
+        "GREEN",  # Merged GREEN_UNIT + GREEN_ACCEPTANCE
+        "REVIEW",  # Expanded scope (includes POST_REFACTOR_REVIEW)
+        "REFACTOR_CONTINUOUS",  # Merged L1+L2+L3
+        "COMMIT",  # Absorbs FINAL_VALIDATE
     ]
+
+    RECOVERY_GUIDANCE_MAP = {
+        "DES_METADATA": "Add DES_METADATA section with step file path and command name",
+        "AGENT_IDENTITY": "Add AGENT_IDENTITY section specifying which agent executes this step",
+        "TASK_CONTEXT": "Add TASK_CONTEXT section describing what needs to be implemented",
+        "TDD_7_PHASES": "Add TDD_7_PHASES section listing all 7 phases: PREPARE, RED_ACCEPTANCE, RED_UNIT, GREEN, REVIEW, REFACTOR_CONTINUOUS, COMMIT",
+        "QUALITY_GATES": "Add QUALITY_GATES section defining validation criteria (G1-G6)",
+        "OUTCOME_RECORDING": "Add OUTCOME_RECORDING section describing how to track phase completion",
+        "BOUNDARY_RULES": "Add BOUNDARY_RULES section specifying which files can be modified",
+        "TIMEOUT_INSTRUCTION": "Add TIMEOUT_INSTRUCTION section with turn budget guidance",
+    }
 
     def validate_prompt(self, prompt: str) -> ValidationResult:
         """Validate prompt for mandatory sections and TDD phases.
@@ -89,11 +93,11 @@ class RealTemplateValidator(ValidatorPort):
                 errors.append(f"MISSING: Mandatory section '{section}' not found")
         return errors
 
-    def _validate_phases(self, prompt: str) -> list[str]:
-        """Validate that all 14 TDD phases are mentioned."""
+    def _validate_phases(self, prompt: str) -> List[str]:
+        """Validate that all 7 TDD phases (schema v3.0) are mentioned."""
         # Check for shorthand pattern first
         if re.search(
-            r"(?i)all\s+14\s+phases?\s+(listed|mentioned|included|present)", prompt
+            r"(?i)all\s+7\s+phases?\s+(listed|mentioned|included|present)", prompt
         ):
             return []
 
@@ -133,38 +137,9 @@ class RealTemplateValidator(ValidatorPort):
             if "MISSING: Mandatory section" in error:
                 for section in self.MANDATORY_SECTIONS:
                     if section in error:
-                        if section == "DES_METADATA":
-                            guidance_items.append(
-                                "Add DES_METADATA section with step file path and command name"
-                            )
-                        elif section == "AGENT_IDENTITY":
-                            guidance_items.append(
-                                "Add AGENT_IDENTITY section specifying which agent executes this step"
-                            )
-                        elif section == "TASK_CONTEXT":
-                            guidance_items.append(
-                                "Add TASK_CONTEXT section describing what needs to be implemented"
-                            )
-                        elif section == "TDD_14_PHASES":
-                            guidance_items.append(
-                                "Add TDD_14_PHASES section listing all 14 phases"
-                            )
-                        elif section == "QUALITY_GATES":
-                            guidance_items.append(
-                                "Add QUALITY_GATES section defining validation criteria (G1-G6)"
-                            )
-                        elif section == "OUTCOME_RECORDING":
-                            guidance_items.append(
-                                "Add OUTCOME_RECORDING section describing how to track phase completion"
-                            )
-                        elif section == "BOUNDARY_RULES":
-                            guidance_items.append(
-                                "Add BOUNDARY_RULES section specifying which files can be modified"
-                            )
-                        elif section == "TIMEOUT_INSTRUCTION":
-                            guidance_items.append(
-                                "Add TIMEOUT_INSTRUCTION section with turn budget guidance"
-                            )
+                        guidance = self.RECOVERY_GUIDANCE_MAP.get(section)
+                        if guidance:
+                            guidance_items.append(guidance)
                         break
 
         return guidance_items if guidance_items else None

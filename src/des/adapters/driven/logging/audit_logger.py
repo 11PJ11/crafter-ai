@@ -24,12 +24,16 @@ class AuditLogger:
     - Event categorization (TASK_INVOCATION, PHASE, SUBAGENT_STOP, COMMIT)
     """
 
-    def __init__(self, log_dir: str = ".des/audit"):
+    def __init__(self, log_dir: str | Path | None = None):
         """Initialize audit logger.
 
         Args:
-            log_dir: Directory for audit log files (default: .des/audit)
+            log_dir: Directory for audit log files (default: ~/.claude/des/logs)
         """
+        if log_dir is None:
+            home_dir = Path.home()
+            log_dir = home_dir / ".claude" / "des" / "logs"
+
         self.log_dir = Path(log_dir)
         self.log_dir.mkdir(parents=True, exist_ok=True)
         self.current_log_file = self._get_log_file()

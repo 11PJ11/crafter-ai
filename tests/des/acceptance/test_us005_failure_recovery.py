@@ -208,19 +208,19 @@ class TestFailureRecoveryGuidance:
         self, tmp_project_root
     ):
         """
-        GIVEN orchestrator produced prompt missing TDD_14_PHASES section
+        GIVEN orchestrator produced prompt missing TDD_7_PHASES section
         WHEN pre-invocation validation fails
         THEN error includes recovery suggestion to fix the template
 
         Business Value: Alex's orchestrator produced incomplete prompt.
                        Instead of "validation failed", he gets specific guidance:
-                       "Update the prompt template to include TDD_14_PHASES section
+                       "Update the prompt template to include TDD_7_PHASES section
                        with all 14 phases enumerated."
 
         Failure Mode: Pre-invocation validation failure (missing section)
         Expected: Error message includes actionable fix guidance
         """
-        # Arrange: Prompt missing TDD_14_PHASES section
+        # Arrange: Prompt missing TDD_7_PHASES section
         _incomplete_prompt = """
         <!-- DES-VALIDATION: required -->
         <!-- DES-STEP-FILE: steps/01-01.json -->
@@ -234,7 +234,7 @@ class TestFailureRecoveryGuidance:
         # TASK_CONTEXT
         Implement UserRepository
 
-        # MISSING: TDD_14_PHASES section
+        # MISSING: TDD_7_PHASES section
 
         # QUALITY_GATES
         G1-G6 defined
@@ -254,7 +254,7 @@ class TestFailureRecoveryGuidance:
 
         # Assert: Error includes recovery suggestion
         # assert validation_result.status == "FAILED"
-        # assert "TDD_14_PHASES" in validation_result.error_message
+        # assert "TDD_7_PHASES" in validation_result.error_message
         # assert validation_result.recovery_guidance is not None
         # assert "template" in validation_result.recovery_guidance.lower()
         # assert "14 phases" in validation_result.recovery_guidance.lower()
@@ -543,7 +543,7 @@ Agent: software-crafter
 # TASK_CONTEXT
 Implement UserRepository with proper dependency injection
 
-# TDD_14_PHASES
+# TDD_7_PHASES
 All 14 phases listed
 
 # QUALITY_GATES
@@ -622,7 +622,7 @@ Update step file with phase completion
         _prompt_missing_phase = """
         <!-- DES-VALIDATION: required -->
 
-        # TDD_14_PHASES
+        # TDD_7_PHASES
         Execute in order:
         1. PREPARE
         2. RED_ACCEPTANCE

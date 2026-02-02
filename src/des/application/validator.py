@@ -7,6 +7,7 @@ before Task invocation, preventing incomplete instructions from reaching sub-age
 Schema Version Support (US-005-03):
 - v1.0: 14-phase TDD cycle (legacy)
 - v2.0: 8-phase TDD cycle (optimized)
+- v3.0: 7-phase TDD cycle (canonical, L4-L6 moved to orchestrator Phase 2.25)
 
 Auto-detects schema version from step file to validate correct phase set.
 
@@ -14,7 +15,7 @@ MANDATORY SECTIONS (8):
 1. DES_METADATA
 2. AGENT_IDENTITY
 3. TASK_CONTEXT
-4. TDD_PHASES (14 or 8 depending on schema version)
+4. TDD_PHASES (14, 8, or 7 depending on schema version)
 5. QUALITY_GATES
 6. OUTCOME_RECORDING
 7. BOUNDARY_RULES
@@ -28,6 +29,12 @@ MANDATORY TDD PHASES - Schema v1.0 (14 phases):
 MANDATORY TDD PHASES - Schema v2.0 (8 phases):
 1. PREPARE, 2. RED_ACCEPTANCE, 3. RED_UNIT, 4. GREEN
 5. REVIEW, 6. REFACTOR_CONTINUOUS, 7. REFACTOR_L4, 8. COMMIT
+
+MANDATORY TDD PHASES - Schema v3.0 (7 phases):
+1. PREPARE, 2. RED_ACCEPTANCE, 3. RED_UNIT, 4. GREEN (merged GREEN_UNIT + GREEN_ACCEPTANCE)
+5. REVIEW (expanded scope, includes POST_REFACTOR_REVIEW), 6. REFACTOR_CONTINUOUS (merged L1+L2+L3)
+7. COMMIT (absorbs FINAL_VALIDATE)
+Note: L4-L6 refactoring moved to orchestrator Phase 2.25 (runs once after all steps)
 """
 
 import re
@@ -60,7 +67,7 @@ class MandatorySectionChecker:
         "DES_METADATA",  # Step metadata and command
         "AGENT_IDENTITY",  # Which agent executes this step
         "TASK_CONTEXT",  # What needs to be implemented
-        "TDD_14_PHASES",  # All 14 TDD phases to execute
+        "TDD_7_PHASES",  # All 7 TDD phases to execute (schema v3.0 canonical)
         "QUALITY_GATES",  # Quality validation criteria
         "OUTCOME_RECORDING",  # How to track progress
         "BOUNDARY_RULES",  # Scope and file modifications allowed
@@ -72,7 +79,7 @@ class MandatorySectionChecker:
         "DES_METADATA": "Add DES_METADATA section with step file path and command name",
         "AGENT_IDENTITY": "Add AGENT_IDENTITY section specifying which agent executes this step",
         "TASK_CONTEXT": "Add TASK_CONTEXT section describing what needs to be implemented",
-        "TDD_14_PHASES": "Add TDD_14_PHASES section listing all 14 phases: PREPARE, RED_ACCEPTANCE, RED_UNIT, GREEN_UNIT, CHECK_ACCEPTANCE, GREEN_ACCEPTANCE, REVIEW, REFACTOR_L1, REFACTOR_L2, REFACTOR_L3, REFACTOR_L4, POST_REFACTOR_REVIEW, FINAL_VALIDATE, COMMIT",
+        "TDD_7_PHASES": "Add TDD_7_PHASES section listing all 7 phases: PREPARE, RED_ACCEPTANCE, RED_UNIT, GREEN, REVIEW, REFACTOR_CONTINUOUS, COMMIT",
         "QUALITY_GATES": "Add QUALITY_GATES section defining validation criteria (G1-G6)",
         "OUTCOME_RECORDING": "Add OUTCOME_RECORDING section describing how to track phase completion",
         "BOUNDARY_RULES": "Add BOUNDARY_RULES section specifying which files can be modified",
@@ -174,6 +181,18 @@ class TDDPhaseValidator:
         "COMMIT",  # Create git commit
     ]
 
+    # Schema v3.0: Canonical 7-phase TDD cycle (from step-tdd-cycle-schema.json v3.0)
+    MANDATORY_PHASES_V3 = [
+        "PREPARE",  # Enable test, verify setup
+        "RED_ACCEPTANCE",  # E2E test fails before implementation
+        "RED_UNIT",  # Unit tests fail before code
+        "GREEN",  # Merged GREEN_UNIT + GREEN_ACCEPTANCE
+        "REVIEW",  # Expanded scope (includes POST_REFACTOR_REVIEW)
+        "REFACTOR_CONTINUOUS",  # Merged L1+L2+L3
+        "COMMIT",  # Absorbs FINAL_VALIDATE
+    ]
+    # Note: REFACTOR_L4-L6 moved to orchestrator Phase 2.25 (runs once after all steps)
+
     # Default to v1.0 for backward compatibility
     MANDATORY_PHASES = MANDATORY_PHASES_V1
 
@@ -182,17 +201,22 @@ class TDDPhaseValidator:
         Detect schema version from prompt text.
 
         Looks for version indicators in the prompt:
-        - "schema_version: 2.0" or "schema_v2.0"
-        - "8-phase" or "8 phases"
-        - "v2.0" in context of TDD phases
+        - "schema_version: 3.0" or "schema_v3.0" or "v3.0" -> v3.0
+        - "7-phase" or "7 phases" -> v3.0
+        - "schema_version: 2.0" or "schema_v2.0" or "v2.0" -> v2.0
+        - "8-phase" or "8 phases" -> v2.0
         - Default to v1.0 if not found
 
         Args:
             prompt: The full prompt text
 
         Returns:
-            Schema version string ("1.0" or "2.0")
+            Schema version string ("1.0", "2.0", or "3.0")
         """
+        # Check for explicit v3.0 indicators (highest priority)
+        if re.search(r"(?i)(schema_version.*?3\.0|7[\s-]phase|v3\.0|7 phases)", prompt):
+            return "3.0"
+
         # Check for explicit v2.0 indicators
         if re.search(r"(?i)(schema_version.*?2\.0|8[\s-]phase|v2\.0|8 phases)", prompt):
             return "2.0"
@@ -204,13 +228,13 @@ class TDDPhaseValidator:
         """
         Validate that all required TDD phases are mentioned in prompt.
 
-        Auto-detects schema version (v1.0 for 14 phases, v2.0 for 8 phases)
+        Auto-detects schema version (v1.0 for 14 phases, v2.0 for 8 phases, v3.0 for 7 phases)
         and validates appropriate phase set.
 
         Detects phases by looking for patterns:
         - Numbered list items (e.g., "1. PREPARE")
         - Phase names in text (e.g., "PREPARE")
-        - Shorthand references like "All 14 phases listed" or "All 8 phases listed"
+        - Shorthand references like "All 14 phases listed", "All 8 phases listed", or "All 7 phases listed"
 
         But excludes comments mentioning missing phases (e.g., "# MISSING: REFACTOR_L3")
 
@@ -224,7 +248,12 @@ class TDDPhaseValidator:
         schema_version = self.detect_schema_version_from_prompt(prompt)
 
         # Select appropriate phase list
-        if schema_version == "2.0":
+        if schema_version == "3.0":
+            phases_to_validate = self.MANDATORY_PHASES_V3
+            shorthand_pattern = (
+                r"(?i)all\s+7\s+phases?\s+(listed|mentioned|included|present)"
+            )
+        elif schema_version == "2.0":
             phases_to_validate = self.MANDATORY_PHASES_V2
             shorthand_pattern = (
                 r"(?i)all\s+8\s+phases?\s+(listed|mentioned|included|present)"
@@ -344,7 +373,7 @@ class ExecutionLogValidator:
         Validate phase execution log for state violations and schema compliance.
 
         Checks:
-        1. Correct number of phases for schema version (8 for v2.0, 14 for v1.0)
+        1. Correct number of phases for schema version (7 for v3.0, 8 for v2.0, 14 for v1.0)
            - SKIPPED if phase_log is empty (no execution log found in prompt)
            - SKIPPED if skip_schema_validation is True
         2. Required phases present for schema version
@@ -375,7 +404,18 @@ class ExecutionLogValidator:
         # Skip schema-level validation if requested (for unit testing individual rules)
         if not skip_schema_validation:
             # Validate phase count matches schema version
-            if schema_version == "2.0":
+            if schema_version == "3.0":
+                expected_phases = 7
+                required_phases = {
+                    "PREPARE",
+                    "RED_ACCEPTANCE",
+                    "RED_UNIT",
+                    "GREEN",
+                    "REVIEW",
+                    "REFACTOR_CONTINUOUS",
+                    "COMMIT",
+                }
+            elif schema_version == "2.0":
                 expected_phases = 8
                 required_phases = {
                     "PREPARE",
