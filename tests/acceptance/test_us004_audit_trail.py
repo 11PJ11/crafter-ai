@@ -39,9 +39,10 @@ DEVELOP WAVE MAPPING:
 - Scenario 010: Integration test (complete end-to-end)
 """
 
-import pytest
 import tempfile
 from datetime import datetime
+
+import pytest
 from src.des.adapters.driven.logging.audit_logger import AuditLogger
 
 

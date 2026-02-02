@@ -21,7 +21,7 @@ import subprocess
 from dataclasses import dataclass, field
 from fnmatch import fnmatch
 from pathlib import Path
-from typing import List, Optional, Tuple
+
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ class ScopeValidationResult:
     """
 
     has_violations: bool
-    out_of_scope_files: List[str] = field(default_factory=list)
+    out_of_scope_files: list[str] = field(default_factory=list)
     violation_message: str = ""
     violation_severity: str = "WARNING"
     validation_skipped: bool = False
@@ -69,7 +69,7 @@ class ScopeValidator:
         self,
         step_file_path: str,
         project_root: Path,
-        git_diff_files: Optional[List[str]] = None,
+        git_diff_files: list[str] | None = None,
     ) -> ScopeValidationResult:
         """
         Validate modified files against allowed patterns.
@@ -130,7 +130,7 @@ class ScopeValidator:
         else:
             return ScopeValidationResult(has_violations=False)
 
-    def _load_allowed_patterns(self, step_file_path: str) -> List[str]:
+    def _load_allowed_patterns(self, step_file_path: str) -> list[str]:
         """
         Load allowed file patterns from step file.
 
@@ -140,7 +140,7 @@ class ScopeValidator:
         Returns:
             List of glob patterns (e.g., **/UserRepository*)
         """
-        with open(step_file_path, "r") as f:
+        with open(step_file_path) as f:
             step_data = json.load(f)
 
         scope = step_data.get("scope", {})
@@ -148,7 +148,7 @@ class ScopeValidator:
 
         return allowed_patterns
 
-    def _get_modified_files_from_git(self) -> Tuple[Optional[List[str]], str]:
+    def _get_modified_files_from_git(self) -> tuple[list[str] | None, str]:
         """
         Execute git diff to get modified files.
 
@@ -179,7 +179,7 @@ class ScopeValidator:
             return (None, "Git command unavailable in environment")
 
     def _file_matches_any_pattern(
-        self, file_path: str, allowed_patterns: List[str]
+        self, file_path: str, allowed_patterns: list[str]
     ) -> bool:
         """
         Check if file matches any allowed pattern.
@@ -191,12 +191,9 @@ class ScopeValidator:
         Returns:
             True if file matches at least one pattern
         """
-        for pattern in allowed_patterns:
-            if fnmatch(file_path, pattern):
-                return True
-        return False
+        return any(fnmatch(file_path, pattern) for pattern in allowed_patterns)
 
-    def _build_violation_message(self, out_of_scope_files: List[str]) -> str:
+    def _build_violation_message(self, out_of_scope_files: list[str]) -> str:
         """
         Build human-readable violation message.
 

@@ -9,12 +9,13 @@ Orchestrates validation checks before allowing commits.
 import sys
 from pathlib import Path
 
+
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 try:
-    from scripts.validation.coordinator import run_all_validators, print_summary
+    from scripts.validation.coordinator import print_summary, run_all_validators
 except ImportError:
     print("❌ Cannot import validation coordinator")
     print("Ensure scripts/validation/ module is in PYTHONPATH")

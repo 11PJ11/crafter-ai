@@ -7,10 +7,10 @@ HEXAGONAL ARCHITECTURE:
 - Tests verify CLI correctly invokes UpdateService and formats output
 """
 
-from pathlib import Path
-from unittest.mock import patch
 import os
 import sys
+from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 

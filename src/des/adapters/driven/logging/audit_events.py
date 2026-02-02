@@ -8,9 +8,9 @@ Defines standardized event categories:
 - COMMIT: Git commit events
 """
 
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class EventType(Enum):
@@ -51,17 +51,17 @@ class AuditEvent:
 
     timestamp: str  # ISO 8601 format: YYYY-MM-DDTHH:MM:SS.sssZ
     event: str  # Event type from EventType enum
-    step_path: Optional[str] = None  # Path to the step file
-    phase_name: Optional[str] = None  # Name of the TDD phase
-    status: Optional[str] = None  # Phase status: IN_PROGRESS, EXECUTED, SKIPPED
-    outcome: Optional[str] = None  # Success or failure outcome
-    duration_minutes: Optional[float] = None  # Duration of phase/event
-    reason: Optional[str] = None  # Reason for failure/rejection
-    commit_hash: Optional[str] = None  # Git commit hash (for COMMIT events)
-    rejection_reason: Optional[str] = None  # Detailed rejection reason
-    extra_context: Optional[Dict[str, Any]] = None  # Additional contextual data
+    step_path: str | None = None  # Path to the step file
+    phase_name: str | None = None  # Name of the TDD phase
+    status: str | None = None  # Phase status: IN_PROGRESS, EXECUTED, SKIPPED
+    outcome: str | None = None  # Success or failure outcome
+    duration_minutes: float | None = None  # Duration of phase/event
+    reason: str | None = None  # Reason for failure/rejection
+    commit_hash: str | None = None  # Git commit hash (for COMMIT events)
+    rejection_reason: str | None = None  # Detailed rejection reason
+    extra_context: dict[str, Any] | None = None  # Additional contextual data
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization.
 
         Excludes None values for cleaner JSONL output.
@@ -71,7 +71,7 @@ class AuditEvent:
         return {k: v for k, v in data.items() if v is not None}
 
     @staticmethod
-    def from_dict(data: Dict[str, Any]) -> "AuditEvent":
+    def from_dict(data: dict[str, Any]) -> "AuditEvent":
         """Create AuditEvent from dictionary.
 
         Args:

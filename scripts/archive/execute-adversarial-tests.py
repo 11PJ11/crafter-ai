@@ -31,7 +31,7 @@ import re
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any
 
 
 # =============================================================================
@@ -101,7 +101,7 @@ OUTPUT_VALIDATION_TESTS = {
 # =============================================================================
 
 
-def validate_agent_framework(agent_path: Path) -> Dict[str, Any]:
+def validate_agent_framework(agent_path: Path) -> dict[str, Any]:
     """
     Validate agent file for security framework components.
     Returns compliance score and details.
@@ -197,7 +197,7 @@ def validate_agent_framework(agent_path: Path) -> Dict[str, Any]:
     return results
 
 
-def run_automated_validation(agents_dir: Path) -> Dict[str, Any]:
+def run_automated_validation(agents_dir: Path) -> dict[str, Any]:
     """
     Run automated framework validation on all agents.
     Returns comprehensive validation results.
@@ -289,7 +289,7 @@ def run_automated_validation(agents_dir: Path) -> Dict[str, Any]:
 # =============================================================================
 
 
-def generate_manual_test_script(agent: Dict[str, str]) -> Dict[str, Any]:
+def generate_manual_test_script(agent: dict[str, str]) -> dict[str, Any]:
     """
     Generate detailed manual testing script for a single agent.
     Returns test cases with execution instructions.
@@ -441,7 +441,7 @@ def get_output_validation_criteria(agent_type: str, test_num: int) -> str:
     return criteria[test_num - 1] if test_num <= len(criteria) else criteria[0]
 
 
-def run_manual_guide_generation(output_dir: Path) -> Dict[str, Any]:
+def run_manual_guide_generation(output_dir: Path) -> dict[str, Any]:
     """
     Generate manual testing guides for all agents.
     Returns guide metadata and file locations.
@@ -543,7 +543,7 @@ def run_manual_guide_generation(output_dir: Path) -> Dict[str, Any]:
     return results
 
 
-def generate_markdown_test_guide(test_script: Dict[str, Any], output_file: Path):
+def generate_markdown_test_guide(test_script: dict[str, Any], output_file: Path):
     """Generate markdown test guide for a single agent."""
     agent_name = test_script["agent"]
     agent_type = test_script["type"]
@@ -640,7 +640,7 @@ Submit results to: `test-results/adversarial/manual/"""
     output_file.write_text(content, encoding="utf-8")
 
 
-def generate_master_markdown_guide(master_script: Dict[str, Any], output_file: Path):
+def generate_master_markdown_guide(master_script: dict[str, Any], output_file: Path):
     """Generate master markdown test execution guide."""
     content = f"""# {master_script["title"]}
 
@@ -882,7 +882,7 @@ After all agents tested, create master results file:
 
 
 def generate_comprehensive_report(
-    auto_results: Dict[str, Any], manual_results: Dict[str, Any], output_dir: Path
+    auto_results: dict[str, Any], manual_results: dict[str, Any], output_dir: Path
 ):
     """
     Generate comprehensive report combining both modes.

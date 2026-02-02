@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Optional
 
 
 @dataclass
@@ -8,10 +7,10 @@ class ValidationResult:
     """Result of template validation."""
 
     status: str
-    errors: List[str]
+    errors: list[str]
     task_invocation_allowed: bool
     duration_ms: float
-    recovery_guidance: Optional[List[str]] = None
+    recovery_guidance: list[str] | None = None
 
 
 class ValidatorPort(ABC):

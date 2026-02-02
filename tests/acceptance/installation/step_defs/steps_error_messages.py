@@ -10,7 +10,8 @@ Cross-platform compatible (Windows, macOS, Linux).
 
 import json
 
-from pytest_bdd import scenarios, given, then, parsers
+from pytest_bdd import given, parsers, scenarios, then
+
 
 # Load scenarios from feature files
 scenarios("../features/02_error_messages.feature")

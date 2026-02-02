@@ -8,7 +8,7 @@ understand and resolve execution failures through educational context.
 import json
 import re
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Any
 
 
 class JuniorDevFormatter:
@@ -343,7 +343,7 @@ class RecoveryGuidanceHandler:
     def get_recovery_suggestions_for_mode(
         self,
         failure_mode: str,
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Get recovery suggestion templates for a specific failure mode.
 
@@ -366,8 +366,8 @@ class RecoveryGuidanceHandler:
     def generate_recovery_suggestions(
         self,
         failure_type: str,
-        context: Dict[str, Any],
-    ) -> List[str]:
+        context: dict[str, Any],
+    ) -> list[str]:
         """
         Generate recovery suggestions for a specific failure type.
 
@@ -440,8 +440,8 @@ class RecoveryGuidanceHandler:
         self,
         step_file_path: str,
         failure_type: str,
-        context: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        context: dict[str, Any],
+    ) -> dict[str, Any]:
         """
         Handle a failure by generating and persisting recovery suggestions to step file.
 

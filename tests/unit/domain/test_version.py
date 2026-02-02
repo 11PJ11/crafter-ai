@@ -9,7 +9,6 @@ Acceptance criteria:
 """
 
 import pytest
-
 from nWave.core.versioning.domain.version import Version
 
 

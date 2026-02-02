@@ -18,7 +18,8 @@ import json
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, Tuple
+from typing import Any
+
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +73,7 @@ class SchemaRollbackHandler:
     """Handles schema migration and rollback between v1.0 and v2.0."""
 
     @staticmethod
-    def count_failures(step_data: Dict[str, Any]) -> int:
+    def count_failures(step_data: dict[str, Any]) -> int:
         """
         Count the number of FAILED phases in step file.
 
@@ -84,7 +85,7 @@ class SchemaRollbackHandler:
         return failed_count
 
     @staticmethod
-    def should_rollback(step_data: Dict[str, Any]) -> bool:
+    def should_rollback(step_data: dict[str, Any]) -> bool:
         """
         Determine if step should be rolled back to v1.0 schema.
 
@@ -151,7 +152,7 @@ class SchemaRollbackHandler:
         return v1_phases
 
     @staticmethod
-    def rollback_to_v1(step_data: Dict[str, Any]) -> Dict[str, Any]:
+    def rollback_to_v1(step_data: dict[str, Any]) -> dict[str, Any]:
         """
         Rollback step file from v2.0 to v1.0 schema.
 
@@ -193,7 +194,7 @@ class SchemaRollbackHandler:
         return step_data
 
     @staticmethod
-    def handle_step_failure(step_file_path: Path) -> Tuple[bool, str]:
+    def handle_step_failure(step_file_path: Path) -> tuple[bool, str]:
         """
         Handle step failure by checking rollback conditions.
 
@@ -212,7 +213,7 @@ class SchemaRollbackHandler:
         """
         try:
             # Load step file
-            with open(step_file_path, "r", encoding="utf-8") as f:
+            with open(step_file_path, encoding="utf-8") as f:
                 step_data = json.load(f)
 
             # Check if rollback should trigger

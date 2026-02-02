@@ -8,7 +8,7 @@ Detects invalid phase states:
 Generates recovery suggestions to guide developers toward correct state.
 """
 
-from typing import List, Dict, Any
+from typing import Any
 
 
 class PhaseStateValidator:
@@ -29,7 +29,7 @@ class PhaseStateValidator:
         "AWAITING_CLARIFICATION",
     ]
 
-    def validate_phase_state(self, phase: Dict[str, Any]) -> List[str]:
+    def validate_phase_state(self, phase: dict[str, Any]) -> list[str]:
         """
         Validate a phase's state and required fields.
 
@@ -66,7 +66,7 @@ class PhaseStateValidator:
 
         return errors
 
-    def generate_recovery_suggestions(self, phase: Dict[str, Any]) -> List[str]:
+    def generate_recovery_suggestions(self, phase: dict[str, Any]) -> list[str]:
         """
         Generate recovery suggestions for invalid phase state.
 
@@ -94,7 +94,7 @@ class PhaseStateValidator:
 
         return suggestions
 
-    def _generate_executed_state_suggestions(self, phase_name: str) -> List[str]:
+    def _generate_executed_state_suggestions(self, phase_name: str) -> list[str]:
         """
         Generate suggestions for EXECUTED phase missing outcome.
 
@@ -133,7 +133,7 @@ class PhaseStateValidator:
             ),
         ]
 
-    def _generate_skipped_state_suggestions(self, phase_name: str) -> List[str]:
+    def _generate_skipped_state_suggestions(self, phase_name: str) -> list[str]:
         """
         Generate suggestions for SKIPPED phase missing blocked_by.
 

@@ -6,9 +6,9 @@ This script tests the path security validation mechanism that would be
 implemented in a dependency resolver.
 """
 
-from pathlib import Path
 import re
 import sys
+from pathlib import Path
 
 
 def get_project_root() -> Path:
@@ -31,10 +31,7 @@ def resolve_path(path_str: str) -> Path:
     path_str = path_str.strip()
     project_root = get_project_root()
 
-    if path_str.startswith("/"):
-        full_path = Path(path_str)
-    else:
-        full_path = project_root / path_str
+    full_path = Path(path_str) if path_str.startswith("/") else project_root / path_str
 
     return full_path
 
@@ -49,7 +46,7 @@ def process_includes(file_path: str, verbose: bool = False) -> tuple[bool, list[
     project_root = get_project_root()
 
     try:
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             content = f.read()
     except FileNotFoundError:
         return False, [f"File not found: {file_path}"]
@@ -77,16 +74,14 @@ def process_includes(file_path: str, verbose: bool = False) -> tuple[bool, list[
             errors.append(error_msg)
             if verbose:
                 print(f"  [BLOCKED] {error_msg}")
-        else:
-            # Check if file exists
-            if not include_path.exists():
-                error_msg = f"File not found: {include_path_str}"
-                errors.append(error_msg)
-                if verbose:
-                    print(f"  [NOT FOUND] {error_msg}")
-            else:
-                if verbose:
-                    print(f"  [OK] Would include {include_path}")
+        # Check if file exists
+        elif not include_path.exists():
+            error_msg = f"File not found: {include_path_str}"
+            errors.append(error_msg)
+            if verbose:
+                print(f"  [NOT FOUND] {error_msg}")
+        elif verbose:
+            print(f"  [OK] Would include {include_path}")
 
     return len(errors) == 0, errors
 

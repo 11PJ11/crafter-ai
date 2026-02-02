@@ -11,10 +11,10 @@ and external consumers.
 """
 
 from dataclasses import dataclass
-from typing import List
+
 from src.des.application.validator import (
-    TemplateValidator,
     MandatorySectionChecker,
+    TemplateValidator,
 )
 
 
@@ -23,7 +23,7 @@ class ValidationResult:
     """Simplified validation result for PromptValidator."""
 
     is_valid: bool
-    errors: List[str]
+    errors: list[str]
 
 
 class PromptValidator:
@@ -50,7 +50,7 @@ class PromptValidator:
         self._section_checker = MandatorySectionChecker()
 
     @property
-    def MANDATORY_SECTIONS(self) -> List[str]:
+    def MANDATORY_SECTIONS(self) -> list[str]:
         """
         Get list of mandatory sections that must be present in prompts.
 

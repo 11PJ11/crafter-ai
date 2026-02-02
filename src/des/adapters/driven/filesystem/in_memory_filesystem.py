@@ -1,7 +1,7 @@
 """Test implementation of filesystem adapter."""
 
 from pathlib import Path
-from typing import Dict
+
 from src.des.ports.driven_ports.filesystem_port import FileSystemPort
 
 
@@ -14,7 +14,7 @@ class InMemoryFileSystem(FileSystemPort):
 
     def __init__(self):
         """Initialize empty in-memory filesystem."""
-        self._files: Dict[Path, dict] = {}
+        self._files: dict[Path, dict] = {}
 
     def read_json(self, path: Path) -> dict:
         """Read JSON from in-memory storage.

@@ -10,6 +10,7 @@ Tests configuration support for:
 
 import tempfile
 from pathlib import Path
+
 import yaml
 from tools.utils.config_manager import ConfigManager
 

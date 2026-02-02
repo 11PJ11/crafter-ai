@@ -4,8 +4,10 @@ Root pytest configuration for all tests.
 Provides shared fixtures accessible to both acceptance and scenario tests.
 """
 
-import pytest
 from datetime import datetime, timezone
+
+import pytest
+from typer.testing import CliRunner
 
 
 def pytest_ignore_collect(collection_path, config):
@@ -158,3 +160,19 @@ def scenario_des_orchestrator(
         filesystem=real_filesystem,
         time_provider=mocked_time_provider,
     )
+
+
+# ============================================================================
+# crafter-ai CLI Fixtures
+# ============================================================================
+
+
+@pytest.fixture
+def cli_runner() -> CliRunner:
+    """
+    Provide a CLI test runner for testing Typer commands.
+
+    Returns:
+        CliRunner: Typer CLI test runner for isolated command testing
+    """
+    return CliRunner()

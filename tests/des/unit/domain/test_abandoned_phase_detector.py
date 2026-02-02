@@ -7,8 +7,9 @@ left in IN_PROGRESS state (abandoned) and provides recovery mechanisms.
 COVERAGE TARGET: 100% of AbandonedPhaseDetector functionality
 """
 
+from datetime import datetime, timedelta, timezone
+
 import pytest
-from datetime import datetime, timezone, timedelta
 
 
 class TestAbandonedPhaseDetector:

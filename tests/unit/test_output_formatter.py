@@ -12,8 +12,8 @@ class TestTerminalErrorStructure:
 
     def test_terminal_error_format_uses_error_fix_then_structure(self):
         """Terminal error output must use [ERROR]/[FIX]/[THEN] prefix structure."""
-        from scripts.install.output_formatter import TerminalFormatter
         from scripts.install.error_codes import ENV_NO_VENV
+        from scripts.install.output_formatter import TerminalFormatter
 
         formatter = TerminalFormatter()
         result = formatter.format_terminal_error(
@@ -30,8 +30,8 @@ class TestTerminalErrorStructure:
 
     def test_terminal_error_format_includes_error_message(self):
         """Terminal error output must include the error message after [ERROR]."""
-        from scripts.install.output_formatter import TerminalFormatter
         from scripts.install.error_codes import ENV_NO_VENV
+        from scripts.install.output_formatter import TerminalFormatter
 
         formatter = TerminalFormatter()
         result = formatter.format_terminal_error(
@@ -45,8 +45,8 @@ class TestTerminalErrorStructure:
 
     def test_terminal_error_format_includes_fix_action(self):
         """Terminal error output must include the fix action after [FIX]."""
-        from scripts.install.output_formatter import TerminalFormatter
         from scripts.install.error_codes import ENV_NO_VENV
+        from scripts.install.output_formatter import TerminalFormatter
 
         formatter = TerminalFormatter()
         result = formatter.format_terminal_error(
@@ -60,8 +60,8 @@ class TestTerminalErrorStructure:
 
     def test_terminal_error_format_includes_then_action(self):
         """Terminal error output must include the then action after [THEN]."""
-        from scripts.install.output_formatter import TerminalFormatter
         from scripts.install.error_codes import ENV_NO_VENV
+        from scripts.install.output_formatter import TerminalFormatter
 
         formatter = TerminalFormatter()
         result = formatter.format_terminal_error(
@@ -96,8 +96,8 @@ class TestTerminalErrorWithColors:
 
     def test_format_terminal_error_without_colors(self):
         """Terminal error output excludes ANSI color codes when colors disabled."""
-        from scripts.install.output_formatter import TerminalFormatter
         from scripts.install.error_codes import ENV_NO_VENV
+        from scripts.install.output_formatter import TerminalFormatter
 
         formatter = TerminalFormatter(use_colors=False)
         result = formatter.format_terminal_error(
@@ -390,7 +390,7 @@ class TestColorMethodRichMapping:
 
     def test_color_method_returns_plain_text_when_colors_disabled(self):
         """_color should return plain text when use_colors=False."""
-        from scripts.install.output_formatter import TerminalFormatter, _ANSI_RED
+        from scripts.install.output_formatter import _ANSI_RED, TerminalFormatter
 
         formatter = TerminalFormatter(use_colors=False)
         result = formatter._color("[ERROR]", _ANSI_RED)
@@ -400,7 +400,7 @@ class TestColorMethodRichMapping:
 
     def test_color_method_returns_ansi_when_rich_not_available(self):
         """_color should return ANSI codes when Rich not available or not TTY."""
-        from scripts.install.output_formatter import TerminalFormatter, _ANSI_RED
+        from scripts.install.output_formatter import _ANSI_RED, TerminalFormatter
 
         # use_colors=True but _use_rich will be False in non-TTY test environment
         formatter = TerminalFormatter(use_colors=True)
@@ -417,6 +417,7 @@ class TestClaudeCodeFormatterUnchanged:
     def test_claude_code_formatter_returns_valid_json(self):
         """ClaudeCodeFormatter must return valid JSON."""
         import json
+
         from scripts.install.output_formatter import ClaudeCodeFormatter
 
         formatter = ClaudeCodeFormatter()

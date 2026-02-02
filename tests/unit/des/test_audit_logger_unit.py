@@ -8,7 +8,6 @@ import json
 import tempfile
 from datetime import datetime
 
-
 from src.des.adapters.driven.logging.audit_logger import AuditLogger
 
 
@@ -44,7 +43,7 @@ class TestAuditLoggerAppendOnlySemantics:
             assert logger.entry_count() == 1
 
             # Verify file contains the entry
-            with open(logger.current_log_file, "r") as f:
+            with open(logger.current_log_file) as f:
                 lines = f.readlines()
             assert len(lines) == 1
             parsed = json.loads(lines[0])
@@ -74,7 +73,7 @@ class TestAuditLoggerAppendOnlySemantics:
             logger.append({"timestamp": "2026-01-27T14:30:00.000Z", "event": "EVENT_1"})
             logger.append({"timestamp": "2026-01-27T14:30:01.000Z", "event": "EVENT_2"})
 
-            with open(logger.current_log_file, "r") as f:
+            with open(logger.current_log_file) as f:
                 lines = f.readlines()
 
             assert len(lines) == 2
@@ -165,7 +164,7 @@ class TestAuditLoggerTimestamps:
             logger.append(event)
 
             # Read from file to check timestamp was added
-            with open(logger.current_log_file, "r") as f:
+            with open(logger.current_log_file) as f:
                 line = f.read()
 
             parsed = json.loads(line)

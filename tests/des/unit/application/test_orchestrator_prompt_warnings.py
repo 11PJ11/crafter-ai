@@ -5,7 +5,7 @@ Tests that timeout warnings are properly injected into agent prompt context
 when thresholds are crossed during execution.
 """
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 

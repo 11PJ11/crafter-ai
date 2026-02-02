@@ -8,7 +8,6 @@ import re
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import List, Dict, Optional, Tuple
 
 
 class SeverityLevel(Enum):
@@ -28,9 +27,9 @@ class ValidationViolation:
     category: str
     severity: SeverityLevel
     message: str
-    location: Optional[str] = None
-    line_number: Optional[int] = None
-    remediation: Optional[str] = None
+    location: str | None = None
+    line_number: int | None = None
+    remediation: str | None = None
 
 
 @dataclass
@@ -50,11 +49,11 @@ class ValidationResult:
 
     command_file: str
     compliance_status: str = "NOT_EVALUATED"  # COMPLIANT, NON_COMPLIANT, BLOCKED
-    violations: List[ValidationViolation] = field(default_factory=list)
-    size_metrics: Optional[SizeMetrics] = None
-    embedded_workflows: Dict[str, List[str]] = field(default_factory=dict)
+    violations: list[ValidationViolation] = field(default_factory=list)
+    size_metrics: SizeMetrics | None = None
+    embedded_workflows: dict[str, list[str]] = field(default_factory=dict)
     approval_decision: str = "NOT_EVALUATED"
-    feedback: List[str] = field(default_factory=list)
+    feedback: list[str] = field(default_factory=list)
 
     def is_approved(self) -> bool:
         """Check if validation results in approval."""
@@ -184,7 +183,7 @@ class CommandTemplateValidator:
             within_range=within_range,
         )
 
-    def _validate_structure(self) -> List[ValidationViolation]:
+    def _validate_structure(self) -> list[ValidationViolation]:
         """Validate command structure."""
         violations = []
 
@@ -217,7 +216,7 @@ class CommandTemplateValidator:
 
     def _detect_workflow_duplication(
         self,
-    ) -> Tuple[List[ValidationViolation], Dict[str, List[str]]]:
+    ) -> tuple[list[ValidationViolation], dict[str, list[str]]]:
         """Detect embedded workflows."""
         violations = []
         embedded_workflows = {}
@@ -295,7 +294,7 @@ class CommandTemplateValidator:
 
         return violations, embedded_workflows
 
-    def _validate_delegation_principle(self) -> List[ValidationViolation]:
+    def _validate_delegation_principle(self) -> list[ValidationViolation]:
         """Validate delegation principle is followed."""
         violations = []
 
@@ -314,7 +313,7 @@ class CommandTemplateValidator:
 
         return violations
 
-    def _validate_context_bundling(self) -> List[ValidationViolation]:
+    def _validate_context_bundling(self) -> list[ValidationViolation]:
         """Validate context files are explicitly bundled."""
         violations = []
 
@@ -344,7 +343,7 @@ class CommandTemplateValidator:
 
         return violations
 
-    def _validate_invocation_pattern(self) -> List[ValidationViolation]:
+    def _validate_invocation_pattern(self) -> list[ValidationViolation]:
         """Validate agent invocation pattern."""
         violations = []
 
@@ -381,7 +380,7 @@ class CommandTemplateValidator:
         else:
             return "CONDITIONALLY_APPROVED"
 
-    def _generate_feedback(self, result: ValidationResult) -> List[str]:
+    def _generate_feedback(self, result: ValidationResult) -> list[str]:
         """Generate actionable feedback."""
         feedback = []
 
@@ -455,7 +454,7 @@ class CommandTemplateValidator:
         if result.violations:
             lines.extend(["VIOLATIONS:", *[f"  {fb}" for fb in result.feedback], ""])
         else:
-            lines.extend(result.feedback + [""])
+            lines.extend([*result.feedback, ""])
 
         lines.append("=" * 70)
         return "\n".join(lines)

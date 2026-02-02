@@ -25,7 +25,7 @@ import os
 import shutil
 import sys
 from datetime import datetime
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 
 # Required TDD phases in order (14 total)
@@ -47,7 +47,7 @@ REQUIRED_PHASES = [
 ]
 
 
-def create_phase_skeleton() -> List[Dict[str, Any]]:
+def create_phase_skeleton() -> list[dict[str, Any]]:
     """Create the pre-populated phase skeleton with all 14 phases."""
     return [
         {
@@ -75,7 +75,7 @@ def create_phase_skeleton() -> List[Dict[str, Any]]:
     ]
 
 
-def needs_migration(step_data: Dict[str, Any]) -> Tuple[bool, str]:
+def needs_migration(step_data: dict[str, Any]) -> tuple[bool, str]:
     """
     Check if a step file needs migration.
 
@@ -115,7 +115,7 @@ def needs_migration(step_data: Dict[str, Any]) -> Tuple[bool, str]:
     return False, "Already compliant"
 
 
-def migrate_step_file(step_data: Dict[str, Any]) -> Dict[str, Any]:
+def migrate_step_file(step_data: dict[str, Any]) -> dict[str, Any]:
     """
     Migrate a step file to include pre-populated 14-phase skeleton.
 
@@ -222,7 +222,7 @@ def migrate_step_file(step_data: Dict[str, Any]) -> Dict[str, Any]:
     return step_data
 
 
-def find_step_files(base_path: str = ".") -> List[str]:
+def find_step_files(base_path: str = ".") -> list[str]:
     """Find all step files in the project."""
     patterns = [
         os.path.join(base_path, "docs/feature/*/steps/*.json"),
@@ -296,7 +296,7 @@ def main() -> int:
 
         try:
             # Load step file
-            with open(step_file, "r", encoding="utf-8") as f:
+            with open(step_file, encoding="utf-8") as f:
                 step_data = json.load(f)
 
             # Check if migration needed

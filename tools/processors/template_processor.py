@@ -18,7 +18,7 @@ Template Variables:
 import json
 import re
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any
 
 
 class TemplateProcessor:
@@ -30,15 +30,15 @@ class TemplateProcessor:
         self.schema = self._load_schema()
         self.template_variables = self._extract_variables()
 
-    def _load_schema(self) -> Dict[str, Any]:
+    def _load_schema(self) -> dict[str, Any]:
         """Load and validate canonical schema."""
         if not self.schema_path.exists():
             raise FileNotFoundError(f"Schema not found: {self.schema_path}")
 
-        with open(self.schema_path, "r") as f:
+        with open(self.schema_path) as f:
             return json.load(f)
 
-    def _extract_variables(self) -> Dict[str, str]:
+    def _extract_variables(self) -> dict[str, str]:
         """Extract template variables from canonical schema."""
         variables = {}
 
@@ -81,7 +81,7 @@ class TemplateProcessor:
 
         return variables
 
-    def _build_phase_list(self, phase_log: List[Dict]) -> str:
+    def _build_phase_list(self, phase_log: list[dict]) -> str:
         """Build formatted TDD phase list from schema."""
         lines = [
             "## TDD Phases (from canonical schema)",
@@ -110,7 +110,7 @@ class TemplateProcessor:
 
         return "\n".join(lines)
 
-    def _format_mandatory_phases(self, mandatory: List[str]) -> str:
+    def _format_mandatory_phases(self, mandatory: list[str]) -> str:
         """Format mandatory phases list from schema."""
         lines = [
             "### Mandatory TDD Phases",
@@ -124,17 +124,17 @@ class TemplateProcessor:
 
         return "\n".join(lines)
 
-    def _build_phase_sequence(self, phase_log: List[Dict]) -> str:
+    def _build_phase_sequence(self, phase_log: list[dict]) -> str:
         """Build arrow-separated phase sequence."""
         phase_names = [phase.get("phase_name", "UNKNOWN") for phase in phase_log]
         return " → ".join(phase_names)
 
-    def _build_phase_names_list(self, phase_log: List[Dict]) -> str:
+    def _build_phase_names_list(self, phase_log: list[dict]) -> str:
         """Build comma-separated list of phase names."""
         phase_names = [phase.get("phase_name", "UNKNOWN") for phase in phase_log]
         return ", ".join(phase_names)
 
-    def _build_correct_phase_names(self, phase_log: List[Dict]) -> str:
+    def _build_correct_phase_names(self, phase_log: list[dict]) -> str:
         """Build formatted phase names list for validation."""
         lines = ["Correct phase names (UPPERCASE_UNDERSCORE):", ""]
         for i, phase in enumerate(phase_log, 1):
@@ -143,7 +143,7 @@ class TemplateProcessor:
 
         return "\n".join(lines)
 
-    def _build_json_template(self, phase_log: List[Dict]) -> str:
+    def _build_json_template(self, phase_log: list[dict]) -> str:
         """Build complete JSON template with all phases pre-populated."""
         lines = [
             "```json",
@@ -179,7 +179,7 @@ class TemplateProcessor:
 
         return "\n".join(lines)
 
-    def process_file(self, input_path: Path, output_path: Path = None) -> str:
+    def process_file(self, input_path: Path, output_path: Path | None = None) -> str:
         """
         Process template variables in a Markdown file.
 
@@ -193,7 +193,7 @@ class TemplateProcessor:
         if not input_path.exists():
             raise FileNotFoundError(f"Input file not found: {input_path}")
 
-        with open(input_path, "r") as f:
+        with open(input_path) as f:
             content = f.read()
 
         # Replace all template variables
@@ -210,11 +210,11 @@ class TemplateProcessor:
 
         return processed
 
-    def extract_variables_dict(self) -> Dict[str, str]:
+    def extract_variables_dict(self) -> dict[str, str]:
         """Return dictionary of all template variables for inspection."""
         return self.template_variables.copy()
 
-    def validate_file(self, file_path: Path) -> tuple[bool, List[str]]:
+    def validate_file(self, file_path: Path) -> tuple[bool, list[str]]:
         """
         Validate that file has no unprocessed template variables.
 
@@ -224,7 +224,7 @@ class TemplateProcessor:
         Returns:
             (is_valid: bool, unprocessed_vars: List[str])
         """
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             content = f.read()
 
         # Find any remaining template variables

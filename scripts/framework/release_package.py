@@ -17,8 +17,8 @@ from pathlib import Path
 
 from scripts.framework.release_packager import ReleasePackager
 from scripts.framework.release_validation import (
-    MissingArtifactsValidator,
     ChecksumMismatchValidator,
+    MissingArtifactsValidator,
     VersionConflictValidator,
 )
 

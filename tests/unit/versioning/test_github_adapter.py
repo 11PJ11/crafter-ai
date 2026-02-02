@@ -5,15 +5,15 @@ GitHubAPIAdapter implements GitHubAPIPort to fetch release info from GitHub API.
 """
 
 import json
-import pytest
-from unittest.mock import Mock, patch, MagicMock
 import urllib.error
+from unittest.mock import MagicMock, Mock, patch
 
+import pytest
 from nWave.core.versioning.domain.version import Version
 from nWave.core.versioning.ports.github_api_port import (
-    ReleaseInfo,
     NetworkError,
     RateLimitError,
+    ReleaseInfo,
 )
 
 
@@ -128,8 +128,9 @@ class TestGitHubAdapterRaisesRateLimitError:
         """
         Adapter should parse X-RateLimit-Reset header to determine retry_after.
         """
-        from nWave.infrastructure.versioning.github_api_adapter import GitHubAPIAdapter
         import time
+
+        from nWave.infrastructure.versioning.github_api_adapter import GitHubAPIAdapter
 
         # Future timestamp (1 hour from now)
         future_timestamp = int(time.time()) + 3600

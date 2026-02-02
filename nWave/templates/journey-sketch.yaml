@@ -143,17 +143,17 @@ common_artifacts:
 
 output_files:
   journey_yaml:
-    pattern: "docs/design/ux/journey-{name}.yaml"
+    pattern: "docs/ux/{epic}/journey-{name}.yaml"
     description: "Structured journey schema"
 
   journey_visual:
-    pattern: "docs/design/ux/journey-{name}-visual.md"
+    pattern: "docs/ux/{epic}/journey-{name}-visual.md"
     description: "ASCII art journey with TUI mockups"
 
   journey_gherkin:
-    pattern: "docs/design/ux/journey-{name}.feature"
+    pattern: "docs/ux/{epic}/journey-{name}.feature"
     description: "Gherkin scenarios for E2E testing"
 
   artifact_registry:
-    pattern: "docs/design/ux/shared-artifacts-registry.md"
+    pattern: "docs/ux/{epic}/shared-artifacts-registry.md"
     description: "Shared artifact tracking (updated per journey)"

@@ -10,9 +10,10 @@ CRITICAL: All fixtures support hexagonal boundary enforcement.
 Tests interact with the system through CLI entry points (driving ports) only.
 """
 
-import pytest
-from pathlib import Path
 import os
+from pathlib import Path
+
+import pytest
 
 
 # ============================================================================
@@ -159,7 +160,7 @@ def cli_executor(isolated_home):
     through CLI entry points, never importing core domain directly.
     """
 
-    def execute_cli(script_path: Path, env: dict = None, timeout: int = 10):
+    def execute_cli(script_path: Path, env: dict | None = None, timeout: int = 10):
         """
         Execute CLI script and return result.
 
@@ -230,14 +231,14 @@ def version_file_builder(isolated_home):
             self.home_dir = home_dir
             self.default_location = home_dir / ".claude" / "nwave-version.txt"
 
-        def create(self, version: str, location: Path = None):
+        def create(self, version: str, location: Path | None = None):
             """Create VERSION file with specified version."""
             target = location or self.default_location
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(version)
             return target
 
-        def read(self, location: Path = None):
+        def read(self, location: Path | None = None):
             """Read VERSION file content."""
             target = location or self.default_location
             if target.exists():
@@ -340,14 +341,14 @@ def assert_cli_output():
 
     class OutputAssertions:
         @staticmethod
-        def contains(output: str, expected: str, message: str = None):
+        def contains(output: str, expected: str, message: str | None = None):
             """Assert output contains expected text."""
             assert expected in output, (
                 message or f"Expected '{expected}' not found in output:\n{output}"
             )
 
         @staticmethod
-        def matches_pattern(output: str, pattern: str, message: str = None):
+        def matches_pattern(output: str, pattern: str, message: str | None = None):
             """Assert output matches regex pattern."""
             import re
 
@@ -356,7 +357,7 @@ def assert_cli_output():
             )
 
         @staticmethod
-        def exit_code_is(result: dict, expected_code: int, message: str = None):
+        def exit_code_is(result: dict, expected_code: int, message: str | None = None):
             """Assert command exit code."""
             actual = result["returncode"]
             assert actual == expected_code, (
@@ -396,7 +397,9 @@ def performance_timer():
                 return self.end_time - self.start_time
             return None
 
-        def assert_completed_within(self, max_seconds: float, message: str = None):
+        def assert_completed_within(
+            self, max_seconds: float, message: str | None = None
+        ):
             """Assert operation completed within time limit."""
             elapsed = self.elapsed_seconds()
             assert elapsed is not None, "Timer not started or stopped"

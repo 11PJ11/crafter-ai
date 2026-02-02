@@ -29,6 +29,7 @@ def mocked_time_provider():
         MockedTimeProvider: Time provider starting at 2026-01-26T10:00:00Z
     """
     from datetime import datetime, timezone
+
     from tests.des.adapters import MockedTimeProvider
 
     return MockedTimeProvider(datetime(2026, 1, 26, 10, 0, 0, tzinfo=timezone.utc))

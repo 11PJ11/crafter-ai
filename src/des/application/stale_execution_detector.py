@@ -28,9 +28,9 @@ import json
 import os
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List
-from src.des.domain.stale_execution import StaleExecution
+
 from src.des.domain.stale_detection_result import StaleDetectionResult
+from src.des.domain.stale_execution import StaleExecution
 
 
 class StaleExecutionDetector:
@@ -115,13 +115,12 @@ class StaleExecutionDetector:
             except (json.JSONDecodeError, KeyError, ValueError) as e:
                 # Collect warning for corrupted or malformed file
                 relative_path = f"steps/{step_file.name}"
-                warnings.append({
-                    "file_path": relative_path,
-                    "error": str(e)
-                })
+                warnings.append({"file_path": relative_path, "error": str(e)})
                 continue
 
-        return StaleDetectionResult(stale_executions=stale_executions, warnings=warnings)
+        return StaleDetectionResult(
+            stale_executions=stale_executions, warnings=warnings
+        )
 
     def _check_step_file_for_staleness(self, step_file: Path) -> StaleExecution | None:
         """

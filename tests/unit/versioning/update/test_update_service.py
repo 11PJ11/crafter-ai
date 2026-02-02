@@ -16,7 +16,6 @@ Test coverage for step 04-01:
 
 from unittest.mock import MagicMock, patch
 
-
 # Domain objects - REAL, never mocked
 from nWave.core.versioning.domain.version import Version
 

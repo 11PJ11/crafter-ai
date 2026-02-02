@@ -26,9 +26,10 @@ Scenario from acceptance-tests.feature (line 188):
 from pathlib import Path
 from unittest.mock import MagicMock
 
+from nWave.core.versioning.domain.backup_policy import BackupPolicy
+
 # Domain objects - REAL, never mocked
 from nWave.core.versioning.domain.version import Version
-from nWave.core.versioning.domain.backup_policy import BackupPolicy
 
 
 class TestBackupRotationMaintainsExactly3Copies:
@@ -274,8 +275,9 @@ class TestBackupRotationMaintainsExactly3Copies:
         WHEN: Backup is created
         THEN: Backup path includes current timestamp in format YYYYMMDDHHMMSS
         """
-        from nWave.core.versioning.application.update_service import UpdateService
         from datetime import datetime
+
+        from nWave.core.versioning.application.update_service import UpdateService
 
         # Arrange
         claude_dir = tmp_path / ".claude"

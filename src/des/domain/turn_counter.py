@@ -1,14 +1,12 @@
 """Turn counter for tracking and validating turn limits per DES phase."""
 
-from typing import Dict
-
 
 class TurnCounter:
     """Tracks turn count for each DES phase and validates against limits."""
 
     def __init__(self) -> None:
         """Initialize turn counter with empty phase tracking."""
-        self._turn_counts: Dict[str, int] = {}
+        self._turn_counts: dict[str, int] = {}
 
     def get_current_turn(self, phase: str) -> int:
         """Get current turn count for specified phase.
@@ -51,7 +49,7 @@ class TurnCounter:
         """
         self._turn_counts[phase] = 0
 
-    def to_dict(self) -> Dict[str, int]:
+    def to_dict(self) -> dict[str, int]:
         """Serialize counter state to dictionary.
 
         Returns:
@@ -59,7 +57,7 @@ class TurnCounter:
         """
         return dict(self._turn_counts)
 
-    def from_dict(self, state: Dict[str, int]) -> None:
+    def from_dict(self, state: dict[str, int]) -> None:
         """Restore counter state from dictionary.
 
         Args:

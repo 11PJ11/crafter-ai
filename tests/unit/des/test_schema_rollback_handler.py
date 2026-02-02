@@ -15,9 +15,9 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from src.des.application.schema_rollback_handler import (
-    SchemaRollbackHandler,
     PHASES_V1_FULL,
     PHASES_V2_OPTIMIZED,
+    SchemaRollbackHandler,
 )
 
 

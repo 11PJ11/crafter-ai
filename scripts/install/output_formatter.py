@@ -45,6 +45,7 @@ import json
 import sys
 from datetime import datetime
 
+
 try:
     from scripts.install.context_detector import (
         is_ci_environment,

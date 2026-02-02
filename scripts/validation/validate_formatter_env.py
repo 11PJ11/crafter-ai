@@ -6,12 +6,11 @@ Checks that code formatting tools (ruff, mypy) are available.
 Converted from shell scripts for cross-platform compatibility.
 """
 
-import sys
 import shutil
-from typing import Tuple, List
+import sys
 
 
-def check_tool_available(tool_name: str) -> Tuple[bool, str]:
+def check_tool_available(tool_name: str) -> tuple[bool, str]:
     """
     Check if a tool is available in PATH.
 
@@ -25,7 +24,7 @@ def check_tool_available(tool_name: str) -> Tuple[bool, str]:
         return False, f"{tool_name} not found in PATH"
 
 
-def validate_formatter_environment() -> Tuple[bool, List[str]]:
+def validate_formatter_environment() -> tuple[bool, list[str]]:
     """
     Validate that all required formatting tools are available.
 

@@ -8,7 +8,8 @@ and errors in the DES system.
 import json
 import sys
 from datetime import datetime
-from typing import Any, Dict, TextIO
+from typing import Any, TextIO
+
 from src.des.ports.driven_ports.logging_port import LoggingPort
 
 
@@ -20,7 +21,7 @@ class StructuredLogger(LoggingPort):
     in JSON format for easy parsing and analysis.
     """
 
-    def __init__(self, output_stream: TextIO = None):
+    def __init__(self, output_stream: TextIO | None = None):
         """
         Initialize the structured logger.
 
@@ -29,7 +30,7 @@ class StructuredLogger(LoggingPort):
         """
         self.output_stream = output_stream or sys.stdout
 
-    def log_validation_result(self, result: Any, context: Dict[str, Any]) -> None:
+    def log_validation_result(self, result: Any, context: dict[str, Any]) -> None:
         """
         Log a validation result as structured JSON.
 
@@ -63,7 +64,7 @@ class StructuredLogger(LoggingPort):
         }
         self._write_log(log_entry)
 
-    def log_error(self, error: Exception, context: Dict[str, Any]) -> None:
+    def log_error(self, error: Exception, context: dict[str, Any]) -> None:
         """
         Log an error as structured JSON.
 
@@ -80,7 +81,7 @@ class StructuredLogger(LoggingPort):
         }
         self._write_log(log_entry)
 
-    def _write_log(self, log_entry: Dict[str, Any]) -> None:
+    def _write_log(self, log_entry: dict[str, Any]) -> None:
         """
         Write a log entry as JSON to the output stream.
 

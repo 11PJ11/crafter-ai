@@ -135,7 +135,7 @@ Scout owns the flow, Luna provides design consultation. Respects Scout's leaders
 ### LeanUX Designer Outputs
 
 ```yaml
-# docs/design/ux/
+# docs/ux/
   user-journey-map.md          # Complete journey with emotional annotations
   journey-e2e-scenarios.md     # Gherkin scenarios for horizontal integration
   tui-prototype-specs.md       # CLI/TUI interaction specifications
@@ -530,7 +530,7 @@ DEVELOP Phase:
 **Recommendation: Dual-format schema that generates both visual and Gherkin**
 
 ```yaml
-# docs/design/ux/journey-sketch.yaml
+# docs/ux/journey-sketch.yaml
 
 journey:
   name: "Release nWave"

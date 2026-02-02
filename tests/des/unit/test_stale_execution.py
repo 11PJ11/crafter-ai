@@ -10,8 +10,9 @@ Business Rules:
 - All fields required for complete stale execution representation
 """
 
-import pytest
 from dataclasses import FrozenInstanceError
+
+import pytest
 
 
 class TestStaleExecutionCreation:

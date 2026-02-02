@@ -12,8 +12,8 @@ class TestVersionCliFormatsOutput:
 
     def test_version_cli_formats_output_with_update_indicator(self):
         """CLI should format 'nWave v1.2.3 (update available: v1.3.0)'."""
-        from nWave.core.versioning.application.version_service import VersionCheckResult
         from nWave.cli.version_cli import format_version_output
+        from nWave.core.versioning.application.version_service import VersionCheckResult
 
         # GIVEN: VersionCheckResult with update available (local < remote)
         result = VersionCheckResult(
@@ -29,8 +29,8 @@ class TestVersionCliFormatsOutput:
 
     def test_version_cli_formats_up_to_date_output(self):
         """CLI should format 'nWave v1.3.0 (up to date)' when no update."""
-        from nWave.core.versioning.application.version_service import VersionCheckResult
         from nWave.cli.version_cli import format_version_output
+        from nWave.core.versioning.application.version_service import VersionCheckResult
 
         # GIVEN: VersionCheckResult without update available (local == remote)
         result = VersionCheckResult(
@@ -112,8 +112,8 @@ class TestVersionCliFormatsUnableToCheckOnRateLimit:
         """
         CLI should format rate-limited result as "nWave v1.2.3 (Unable to check for updates)".
         """
-        from nWave.core.versioning.application.version_service import VersionCheckResult
         from nWave.cli.version_cli import format_version_output
+        from nWave.core.versioning.application.version_service import VersionCheckResult
 
         # GIVEN: VersionCheckResult indicating rate limit (is_offline=True)
         result = VersionCheckResult(

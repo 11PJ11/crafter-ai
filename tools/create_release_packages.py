@@ -27,13 +27,14 @@ import tarfile
 from datetime import datetime
 from pathlib import Path
 
+
 __version__ = "1.0.0"
 
 
 class ReleasePackager:
     """Creates distributable release packages."""
 
-    def __init__(self, version: str = None, output_dir: Path = None):
+    def __init__(self, version: str | None = None, output_dir: Path | None = None):
         """Initialize packager."""
         self.script_dir = Path(__file__).parent
         self.project_root = self.script_dir.parent

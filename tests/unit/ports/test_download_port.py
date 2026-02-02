@@ -14,9 +14,10 @@ Acceptance Criteria:
 - Supports progress callback for large files
 """
 
-import pytest
-from abc import ABC
 import inspect
+from abc import ABC
+
+import pytest
 
 
 class TestDownloadPortIsAbstract:
@@ -79,17 +80,19 @@ class TestDownloadAcceptsUrlAndDestination:
 
     def test_download_url_is_string_type(self):
         """download url parameter should be typed as str."""
-        from nWave.core.versioning.ports.download_port import DownloadPort
         from typing import get_type_hints
+
+        from nWave.core.versioning.ports.download_port import DownloadPort
 
         hints = get_type_hints(DownloadPort.download)
         assert hints.get("url") is str, "url parameter must be typed as str"
 
     def test_download_destination_is_path_type(self):
         """download destination parameter should be typed as Path."""
-        from nWave.core.versioning.ports.download_port import DownloadPort
-        from typing import get_type_hints
         from pathlib import Path
+        from typing import get_type_hints
+
+        from nWave.core.versioning.ports.download_port import DownloadPort
 
         hints = get_type_hints(DownloadPort.download)
         assert hints.get("destination") == Path, (
@@ -154,9 +157,10 @@ class TestProgressCallbackSupported:
 
     def test_progress_callback_type_hint_is_callable(self):
         """progress_callback should be typed as Optional[Callable[[int, int], None]]."""
-        from nWave.core.versioning.ports.download_port import DownloadPort
-        from typing import get_type_hints, get_origin, get_args
         import typing
+        from typing import get_args, get_origin, get_type_hints
+
+        from nWave.core.versioning.ports.download_port import DownloadPort
 
         hints = get_type_hints(DownloadPort.download)
         callback_hint = hints.get("progress_callback")

@@ -15,7 +15,7 @@ Failure modes detected:
 - Partially-valid step files with mixed valid/invalid state
 """
 
-from typing import List, Dict, Any
+from typing import Any
 
 
 class ValidationErrorDetector:
@@ -69,7 +69,7 @@ class ValidationErrorDetector:
         "COMMIT",
     ]
 
-    def detect_errors(self, step: Dict[str, Any]) -> List[str]:
+    def detect_errors(self, step: dict[str, Any]) -> list[str]:
         """
         Detect validation errors in a step file.
 
@@ -90,7 +90,7 @@ class ValidationErrorDetector:
 
         return errors
 
-    def detect_phase_sequence_errors(self, tdd_cycle: Dict[str, Any]) -> List[str]:
+    def detect_phase_sequence_errors(self, tdd_cycle: dict[str, Any]) -> list[str]:
         """
         Detect invalid phase execution sequences.
 
@@ -112,7 +112,7 @@ class ValidationErrorDetector:
         valid_sequence = self._get_valid_phase_sequence(phase_names)
         return self._check_phase_ordering(phase_names, valid_sequence)
 
-    def _validate_phase_log_structure(self, tdd_cycle: Dict[str, Any]) -> List[str]:
+    def _validate_phase_log_structure(self, tdd_cycle: dict[str, Any]) -> list[str]:
         """Validate that phase_execution_log exists and is not empty."""
         if "phase_execution_log" not in tdd_cycle:
             return ["Missing phase_execution_log in tdd_cycle"]
@@ -123,7 +123,7 @@ class ValidationErrorDetector:
 
         return []
 
-    def _get_valid_phase_sequence(self, phase_names: List[str]) -> List[str]:
+    def _get_valid_phase_sequence(self, phase_names: list[str]) -> list[str]:
         """Detect schema version and return appropriate valid phase sequence."""
         # Detect schema version (8-phase or 14-phase)
         schema_version = "1.0"  # Default to v1.0
@@ -137,8 +137,8 @@ class ValidationErrorDetector:
         )
 
     def _check_phase_ordering(
-        self, phase_names: List[str], valid_sequence: List[str]
-    ) -> List[str]:
+        self, phase_names: list[str], valid_sequence: list[str]
+    ) -> list[str]:
         """Validate that phases appear in correct order."""
         errors = []
         expected_index = 0
@@ -156,7 +156,7 @@ class ValidationErrorDetector:
 
         return errors
 
-    def detect_acceptance_criteria_errors(self, step: Dict[str, Any]) -> List[str]:
+    def detect_acceptance_criteria_errors(self, step: dict[str, Any]) -> list[str]:
         """
         Detect missing or incomplete acceptance criteria.
 
@@ -266,7 +266,7 @@ class ValidationErrorDetector:
             "Ensure all required fields are present and have valid values."
         )
 
-    def validate_partial_state(self, step: Dict[str, Any]) -> Dict[str, List[str]]:
+    def validate_partial_state(self, step: dict[str, Any]) -> dict[str, list[str]]:
         """
         Analyze partially valid step file, distinguishing valid from invalid portions.
 
@@ -294,7 +294,7 @@ class ValidationErrorDetector:
         for i, phase in enumerate(phases):
             phase_name = phase.get("phase_name", "UNKNOWN")
             status = phase.get("status", "NOT_EXECUTED")
-            _outcome = phase.get("outcome")  # noqa: F841 - Reserved for future use
+            _outcome = phase.get("outcome")
 
             if status == "EXECUTED":
                 # Valid if in correct sequence (don't require outcome for this test)

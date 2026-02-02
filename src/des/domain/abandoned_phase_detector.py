@@ -10,9 +10,9 @@ DOMAIN LANGUAGE:
 - Recovery Suggestion: Actionable guidance (WHY/HOW/ACTION) for junior developers
 """
 
-from datetime import datetime, timezone
-from typing import Dict, Any, Optional
 from dataclasses import dataclass
+from datetime import datetime, timezone
+from typing import Any
 
 
 @dataclass
@@ -21,7 +21,7 @@ class PhaseAbandonmentCheck:
 
     is_abandoned: bool
     reason: str  # "timeout", "stalled_turns", "in_progress_no_start", etc.
-    time_since_start_minutes: Optional[float]
+    time_since_start_minutes: float | None
     message: str
 
 
@@ -46,9 +46,9 @@ class AbandonedPhaseDetector:
 
     def is_abandoned(
         self,
-        phase: Dict[str, Any],
+        phase: dict[str, Any],
         timeout_minutes: int = DEFAULT_TIMEOUT_MINUTES,
-        current_time: Optional[datetime] = None,
+        current_time: datetime | None = None,
     ) -> bool:
         """
         Check if a phase is abandoned due to timeout.
@@ -84,9 +84,9 @@ class AbandonedPhaseDetector:
 
     def is_abandoned_by_stalled_turn_count(
         self,
-        phase: Dict[str, Any],
+        phase: dict[str, Any],
         stalled_threshold_minutes: int = DEFAULT_STALLED_THRESHOLD_MINUTES,
-        current_time: Optional[datetime] = None,
+        current_time: datetime | None = None,
     ) -> bool:
         """
         Check if a phase is abandoned due to stalled turn count.
@@ -125,7 +125,7 @@ class AbandonedPhaseDetector:
         self,
         phase_execution_log: list,
         timeout_minutes: int = DEFAULT_TIMEOUT_MINUTES,
-        current_time: Optional[datetime] = None,
+        current_time: datetime | None = None,
     ) -> list:
         """
         Scan phase execution log and identify all abandoned phases.
@@ -164,7 +164,7 @@ class AbandonedPhaseDetector:
 
     def generate_recovery_message(
         self,
-        phase: Dict[str, Any],
+        phase: dict[str, Any],
         reason: str = "timeout",
         step_file_path: str = "steps/unknown.json",
     ) -> str:
@@ -200,7 +200,7 @@ class AbandonedPhaseDetector:
 
         return f"WHY: {why}\n\nHOW: {how}\n\nACTION: {action}"
 
-    def _has_stalled_progress_indicators(self, phase: Dict[str, Any]) -> bool:
+    def _has_stalled_progress_indicators(self, phase: dict[str, Any]) -> bool:
         """Check if phase has indicators of stalled progress."""
         status = phase.get("status", "")
         turn_count = phase.get("turn_count", 0)
@@ -208,7 +208,7 @@ class AbandonedPhaseDetector:
         # Stalled if IN_PROGRESS with no progress
         return status == "IN_PROGRESS" and turn_count == 0
 
-    def _parse_timestamp(self, timestamp_str: Optional[str]) -> Optional[datetime]:
+    def _parse_timestamp(self, timestamp_str: str | None) -> datetime | None:
         """
         Parse ISO format timestamp string to datetime.
 
@@ -232,7 +232,7 @@ class AbandonedPhaseDetector:
         self,
         started_at: datetime,
         current_time: datetime,
-    ) -> Optional[float]:
+    ) -> float | None:
         """
         Calculate minutes elapsed since started_at timestamp.
 
@@ -251,9 +251,9 @@ class AbandonedPhaseDetector:
 
     def _calculate_elapsed_minutes(
         self,
-        started_at_str: Optional[str],
-        current_time: Optional[datetime] = None,
-    ) -> Optional[float]:
+        started_at_str: str | None,
+        current_time: datetime | None = None,
+    ) -> float | None:
         """
         Calculate minutes elapsed since started_at timestamp (legacy method).
 

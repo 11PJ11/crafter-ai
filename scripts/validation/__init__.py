@@ -13,10 +13,10 @@ All validators are coordinated by coordinator.py
 
 __version__ = "1.0.0"
 __all__ = [
+    "coordinator",
     "validate_agents",
     "validate_commands",
-    "validate_steps",
     "validate_formatter_env",
     "validate_readme_index",
-    "coordinator",
+    "validate_steps",
 ]

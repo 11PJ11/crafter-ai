@@ -13,6 +13,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+
 # Support both standalone execution and package import
 try:
     from scripts.install.install_utils import (
@@ -22,23 +23,23 @@ try:
         PathUtils,
         VersionUtils,
     )
-    from scripts.install.preflight_checker import PreflightChecker
-    from scripts.install.output_formatter import format_error
     from scripts.install.installation_verifier import InstallationVerifier
+    from scripts.install.output_formatter import format_error
+    from scripts.install.preflight_checker import PreflightChecker
     from scripts.install.rich_console import ConsoleFactory, RichLogger
 except ImportError:
     # Fallback for standalone execution from scripts/install directory
-    from install_utils import (  # noqa: F401
+    from install_utils import (
         BackupManager,
         Logger,
         ManifestWriter,
         PathUtils,
         VersionUtils,
     )
-    from preflight_checker import PreflightChecker  # noqa: F401
-    from output_formatter import format_error  # noqa: F401
-    from installation_verifier import InstallationVerifier  # noqa: F401
-    from rich_console import ConsoleFactory, RichLogger  # noqa: F401
+    from installation_verifier import InstallationVerifier
+    from output_formatter import format_error
+    from preflight_checker import PreflightChecker
+    from rich_console import ConsoleFactory, RichLogger
 
 # ANSI color codes for terminal output (fallback when Rich unavailable)
 _ANSI_GREEN = "\033[0;32m"
@@ -163,9 +164,7 @@ class NWaveInstaller:
         # Force rebuild if requested
         if self.force_rebuild:
             self.logger.info("Force rebuild requested, rebuilding framework...")
-            if not self.build_framework():
-                return False
-            return True
+            return self.build_framework()
 
         # Check if dist/ide exists
         if not self.framework_source.exists():
@@ -469,7 +468,7 @@ class NWaveInstaller:
         try:
             import json
 
-            with open(schema_file, "r") as f:
+            with open(schema_file) as f:
                 schema = json.load(f)
 
             # Check for schema_version field

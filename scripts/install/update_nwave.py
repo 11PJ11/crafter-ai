@@ -13,6 +13,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+
 try:
     from scripts.install.install_utils import (
         BackupManager,
@@ -285,14 +286,14 @@ Restoration Command:
             try:
                 if uninstall_script.suffix == ".py":
                     result = subprocess.run(
-                        [sys.executable, str(uninstall_script)] + uninstall_options,
+                        [sys.executable, str(uninstall_script), *uninstall_options],
                         cwd=self.script_dir,
                         capture_output=True,
                         text=True,
                     )
                 else:
                     result = subprocess.run(
-                        ["bash", str(uninstall_script)] + uninstall_options,
+                        ["bash", str(uninstall_script), *uninstall_options],
                         cwd=self.script_dir,
                         capture_output=True,
                         text=True,
@@ -502,7 +503,7 @@ Orchestrates complete nWave framework update process:
 
 
 def show_update_summary(
-    rich_logger: RichLogger, claude_config_dir: Path, backup_dir: Path = None
+    rich_logger: RichLogger, claude_config_dir: Path, backup_dir: Path | None = None
 ) -> None:
     """Display update summary panel at end of successful update.
 

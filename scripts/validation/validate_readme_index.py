@@ -8,10 +8,9 @@ Deterministically ensures README navigation stays in sync with reality.
 
 import sys
 from pathlib import Path
-from typing import Set, List, Tuple
 
 
-def scan_actual_docs(docs_dir: Path = Path("docs")) -> Set[Path]:
+def scan_actual_docs(docs_dir: Path = Path("docs")) -> set[Path]:
     """
     Scan the actual documentation files.
 
@@ -30,7 +29,7 @@ def scan_actual_docs(docs_dir: Path = Path("docs")) -> Set[Path]:
     return md_files
 
 
-def extract_readme_links(readme_path: Path = Path("docs/README.md")) -> Set[Path]:
+def extract_readme_links(readme_path: Path = Path("docs/README.md")) -> set[Path]:
     """
     Extract all markdown links from README.md.
 
@@ -44,7 +43,7 @@ def extract_readme_links(readme_path: Path = Path("docs/README.md")) -> Set[Path
 
     links = set()
 
-    with open(readme_path, "r", encoding="utf-8") as f:
+    with open(readme_path, encoding="utf-8") as f:
         content = f.read()
 
     # Find markdown links [text](path)
@@ -57,7 +56,7 @@ def extract_readme_links(readme_path: Path = Path("docs/README.md")) -> Set[Path
     return links
 
 
-def validate_readme_index() -> Tuple[bool, List[str]]:
+def validate_readme_index() -> tuple[bool, list[str]]:
     """
     Validate README index against actual files.
 

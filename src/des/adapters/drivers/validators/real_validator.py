@@ -1,9 +1,9 @@
 """Production implementation of template validator adapter."""
 
-from src.des.ports.driver_ports.validator_port import ValidatorPort, ValidationResult
-import time
 import re
-from typing import List
+import time
+
+from src.des.ports.driver_ports.validator_port import ValidationResult, ValidatorPort
 
 
 class RealTemplateValidator(ValidatorPort):
@@ -80,7 +80,7 @@ class RealTemplateValidator(ValidatorPort):
             recovery_guidance=recovery_guidance,
         )
 
-    def _validate_sections(self, prompt: str) -> List[str]:
+    def _validate_sections(self, prompt: str) -> list[str]:
         """Validate that all mandatory sections are present."""
         errors = []
         for section in self.MANDATORY_SECTIONS:
@@ -89,7 +89,7 @@ class RealTemplateValidator(ValidatorPort):
                 errors.append(f"MISSING: Mandatory section '{section}' not found")
         return errors
 
-    def _validate_phases(self, prompt: str) -> List[str]:
+    def _validate_phases(self, prompt: str) -> list[str]:
         """Validate that all 14 TDD phases are mentioned."""
         # Check for shorthand pattern first
         if re.search(
@@ -125,7 +125,7 @@ class RealTemplateValidator(ValidatorPort):
 
         return errors
 
-    def _generate_recovery_guidance(self, errors: List[str]) -> List[str]:
+    def _generate_recovery_guidance(self, errors: list[str]) -> list[str]:
         """Generate actionable recovery guidance for validation errors."""
         guidance_items = []
 

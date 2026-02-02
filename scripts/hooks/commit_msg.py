@@ -20,6 +20,7 @@ import re
 import sys
 from pathlib import Path
 
+
 # Exit codes for clarity and maintainability
 EXIT_SUCCESS = 0
 EXIT_FAILURE = 1

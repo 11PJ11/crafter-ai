@@ -12,6 +12,7 @@ import argparse
 import shutil
 import sys
 
+
 try:
     from scripts.install.install_utils import (
         BackupManager,

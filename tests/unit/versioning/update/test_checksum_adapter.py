@@ -7,8 +7,8 @@ HEXAGONAL ARCHITECTURE:
 - Tests verify adapter correctly calculates and validates SHA256 checksums
 """
 
-from pathlib import Path
 import tempfile
+from pathlib import Path
 
 
 class TestChecksumAdapterValidatesSHA256:

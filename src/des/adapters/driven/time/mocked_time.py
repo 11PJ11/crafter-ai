@@ -1,6 +1,7 @@
 """Test implementation of time provider adapter."""
 
 from datetime import datetime, timedelta, timezone
+
 from src.des.ports.driven_ports.time_provider_port import TimeProvider
 
 
@@ -11,7 +12,7 @@ class MockedTimeProvider(TimeProvider):
     Allows advancing time programmatically for timeout testing.
     """
 
-    def __init__(self, fixed_time: datetime = None):
+    def __init__(self, fixed_time: datetime | None = None):
         """Initialize with optional fixed time.
 
         Args:

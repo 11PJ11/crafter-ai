@@ -10,7 +10,8 @@ Cross-platform compatible (Windows, macOS, Linux).
 
 import re
 
-from pytest_bdd import scenarios, given, when, then, parsers
+from pytest_bdd import given, parsers, scenarios, then, when
+
 
 # Load scenarios from feature files
 scenarios("../features/07_ci_environment.feature")
@@ -163,7 +164,7 @@ def output_plain_text(cli_result):
     formatting_chars = ["\x1b", "\033", "\r"]  # ANSI escapes and carriage returns
     for char in formatting_chars:
         assert char not in all_output, (
-            f"Found formatting character {repr(char)} in CI output"
+            f"Found formatting character {char!r} in CI output"
         )
 
 

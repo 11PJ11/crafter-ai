@@ -301,10 +301,10 @@ shared_artifacts:
 
 | Artifact | Path | Description |
 |----------|------|-------------|
-| Visual Journey | `docs/design/ux/journey-{name}-visual.md` | ASCII art with annotations |
-| Journey Schema | `docs/design/ux/journey-{name}.yaml` | Structured YAML schema |
-| Gherkin Scenarios | `docs/design/ux/journey-{name}.feature` | E2E acceptance tests |
-| Artifact Registry | `docs/design/ux/shared-artifacts-registry.md` | Updated tracking |
+| Visual Journey | `docs/ux/{epic}/journey-{name}-visual.md` | ASCII art with annotations |
+| Journey Schema | `docs/ux/{epic}/journey-{name}.yaml` | Structured YAML schema |
+| Gherkin Scenarios | `docs/ux/{epic}/journey-{name}.feature` | E2E acceptance tests |
+| Artifact Registry | `docs/ux/{epic}/shared-artifacts-registry.md` | Updated tracking |
 
 ## Quality Gates
 

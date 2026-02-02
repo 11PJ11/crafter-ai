@@ -18,7 +18,7 @@ import argparse
 import subprocess
 import sys
 from pathlib import Path
-from typing import List
+
 
 try:
     from colorama import Fore, Style, init
@@ -71,7 +71,7 @@ class LocalCIValidator:
             print(f"{Fore.CYAN}ℹ{Style.RESET_ALL} {text}")
 
     def run_command(
-        self, command: List[str], check_name: str, cwd: Path = None
+        self, command: list[str], check_name: str, cwd: Path | None = None
     ) -> bool:
         """
         Run a command and track success/failure.

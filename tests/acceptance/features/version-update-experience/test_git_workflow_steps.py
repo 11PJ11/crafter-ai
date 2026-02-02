@@ -6,9 +6,10 @@ Focus on git command behavior and hook validation.
 """
 
 import json
-import pytest
-from pytest_bdd import scenarios, given, when, then, parsers
 import subprocess
+
+import pytest
+from pytest_bdd import given, parsers, scenarios, then, when
 
 
 # Load scenarios

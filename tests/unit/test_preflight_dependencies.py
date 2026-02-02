@@ -8,10 +8,10 @@ These tests validate dependency verification before build phase begins.
 The check must report ALL missing modules, not just the first one found.
 """
 
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from scripts.install.error_codes import DEP_MISSING
-from scripts.install.preflight_checker import DependencyCheck, REQUIRED_MODULES
+from scripts.install.preflight_checker import REQUIRED_MODULES, DependencyCheck
 
 
 class TestDependencyCheck:

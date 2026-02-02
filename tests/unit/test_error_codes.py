@@ -13,10 +13,10 @@ class TestErrorCodesUniqueness:
     def test_error_codes_are_unique(self):
         """All error code values must be unique to prevent confusion."""
         from scripts.install.error_codes import (
-            ENV_NO_VENV,
-            ENV_NO_PIPENV,
-            DEP_MISSING,
             BUILD_FAILED,
+            DEP_MISSING,
+            ENV_NO_PIPENV,
+            ENV_NO_VENV,
             VERIFY_FAILED,
         )
 
@@ -30,10 +30,10 @@ class TestErrorCodesTypes:
     def test_error_codes_are_strings(self):
         """Error codes must be strings for machine-readable JSON output."""
         from scripts.install.error_codes import (
-            ENV_NO_VENV,
-            ENV_NO_PIPENV,
-            DEP_MISSING,
             BUILD_FAILED,
+            DEP_MISSING,
+            ENV_NO_PIPENV,
+            ENV_NO_VENV,
             VERIFY_FAILED,
         )
 
@@ -65,10 +65,10 @@ class TestErrorCodesDefinitions:
     def test_error_codes_not_empty(self):
         """Error code values must not be empty strings."""
         from scripts.install.error_codes import (
-            ENV_NO_VENV,
-            ENV_NO_PIPENV,
-            DEP_MISSING,
             BUILD_FAILED,
+            DEP_MISSING,
+            ENV_NO_PIPENV,
+            ENV_NO_VENV,
             VERIFY_FAILED,
         )
 
@@ -99,10 +99,10 @@ class TestErrorCodesImportability:
     def test_error_codes_have_consistent_naming(self):
         """Error codes should follow consistent naming convention."""
         from scripts.install.error_codes import (
-            ENV_NO_VENV,
-            ENV_NO_PIPENV,
-            DEP_MISSING,
             BUILD_FAILED,
+            DEP_MISSING,
+            ENV_NO_PIPENV,
+            ENV_NO_VENV,
             VERIFY_FAILED,
         )
 

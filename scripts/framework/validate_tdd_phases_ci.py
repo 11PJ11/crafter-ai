@@ -44,7 +44,7 @@ import json
 import os
 import sys
 from datetime import datetime
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 
 # Required TDD phases in order (14 total)
@@ -80,7 +80,7 @@ BLOCKS_COMMIT_PREFIXES = [
 
 def validate_step_file(
     file_path: str, strict: bool = False
-) -> Tuple[bool, List[Dict[str, Any]]]:
+) -> tuple[bool, list[dict[str, Any]]]:
     """
     Validate a single step file for TDD phase completeness.
 
@@ -91,10 +91,10 @@ def validate_step_file(
     Returns:
         Tuple of (is_valid, list_of_issues)
     """
-    issues: List[Dict[str, Any]] = []
+    issues: list[dict[str, Any]] = []
 
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             data = json.load(f)
     except json.JSONDecodeError as e:
         return False, [{"severity": "ERROR", "issue": f"Invalid JSON: {e}"}]
@@ -262,7 +262,7 @@ def validate_step_file(
     return error_count == 0, issues
 
 
-def find_step_files(base_path: str = ".") -> List[str]:
+def find_step_files(base_path: str = ".") -> list[str]:
     """Find all step files in the project."""
     patterns = [
         os.path.join(base_path, "docs/feature/*/steps/*.json"),

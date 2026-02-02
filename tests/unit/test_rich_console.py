@@ -143,30 +143,34 @@ class TestConsoleFactoryContextDetection:
         from scripts.install.rich_console import ConsoleFactory, RichLogger
 
         # Mock at context_detector module level since it's imported dynamically
-        with patch(
-            "scripts.install.context_detector.is_claude_code_context",
-            return_value=False,
-        ):
-            with patch(
+        with (
+            patch(
+                "scripts.install.context_detector.is_claude_code_context",
+                return_value=False,
+            ),
+            patch(
                 "scripts.install.context_detector.is_ci_environment", return_value=False
-            ):
-                logger = ConsoleFactory.create_logger()
-                assert isinstance(logger, RichLogger)
+            ),
+        ):
+            logger = ConsoleFactory.create_logger()
+            assert isinstance(logger, RichLogger)
 
     def test_console_factory_returns_plain_for_ci(self) -> None:
         """Verify factory returns PlainLogger for CI environment."""
         from scripts.install.rich_console import ConsoleFactory, PlainLogger
 
         # Mock at context_detector module level since it's imported dynamically
-        with patch(
-            "scripts.install.context_detector.is_claude_code_context",
-            return_value=False,
-        ):
-            with patch(
+        with (
+            patch(
+                "scripts.install.context_detector.is_claude_code_context",
+                return_value=False,
+            ),
+            patch(
                 "scripts.install.context_detector.is_ci_environment", return_value=True
-            ):
-                logger = ConsoleFactory.create_logger()
-                assert isinstance(logger, PlainLogger)
+            ),
+        ):
+            logger = ConsoleFactory.create_logger()
+            assert isinstance(logger, PlainLogger)
 
     def test_console_factory_returns_silent_for_claude(self) -> None:
         """Verify factory returns SilentLogger for Claude Code context."""

@@ -9,7 +9,7 @@ import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class AuditLogger:
@@ -33,7 +33,7 @@ class AuditLogger:
         self.log_dir = Path(log_dir)
         self.log_dir.mkdir(parents=True, exist_ok=True)
         self.current_log_file = self._get_log_file()
-        self._entry_hashes: List[str] = []
+        self._entry_hashes: list[str] = []
         self._load_existing_hashes()
 
     def _get_log_file(self) -> Path:
@@ -48,7 +48,7 @@ class AuditLogger:
         """Load existing entry hashes from current log file."""
         if self.current_log_file.exists():
             try:
-                with open(self.current_log_file, "r") as f:
+                with open(self.current_log_file) as f:
                     for line in f:
                         if line.strip():
                             entry = json.loads(line)
@@ -61,7 +61,7 @@ class AuditLogger:
                 # If file is corrupted, start fresh
                 self._entry_hashes = []
 
-    def append(self, event: Dict[str, Any]) -> None:
+    def append(self, event: dict[str, Any]) -> None:
         """Append a new event to the audit log (append-only operation).
 
         Args:
@@ -116,7 +116,7 @@ class AuditLogger:
         """Get total number of entries in audit log."""
         return len(self._entry_hashes)
 
-    def read_entries_for_step(self, step_path: str) -> List[Dict[str, Any]]:
+    def read_entries_for_step(self, step_path: str) -> list[dict[str, Any]]:
         """Read audit entries for a specific step.
 
         Args:
@@ -128,7 +128,7 @@ class AuditLogger:
         entries = []
         if self.current_log_file.exists():
             try:
-                with open(self.current_log_file, "r") as f:
+                with open(self.current_log_file) as f:
                     for line in f:
                         if line.strip():
                             entry = json.loads(line)
@@ -138,7 +138,7 @@ class AuditLogger:
                 pass
         return entries
 
-    def get_entries(self) -> List[Dict[str, Any]]:
+    def get_entries(self) -> list[dict[str, Any]]:
         """Get all entries from current log file.
 
         Returns:
@@ -147,7 +147,7 @@ class AuditLogger:
         entries = []
         if self.current_log_file.exists():
             try:
-                with open(self.current_log_file, "r") as f:
+                with open(self.current_log_file) as f:
                     for line in f:
                         if line.strip():
                             entry = json.loads(line)
@@ -156,7 +156,7 @@ class AuditLogger:
                 pass
         return entries
 
-    def get_entries_by_type(self, event_type: str) -> List[Dict[str, Any]]:
+    def get_entries_by_type(self, event_type: str) -> list[dict[str, Any]]:
         """Get audit entries filtered by event type.
 
         Args:
@@ -182,7 +182,7 @@ class AuditLogger:
 # Current singleton pattern works but reduces testability and flexibility.
 # Future improvement: Inject AuditLogger through constructor parameters.
 # See: Progressive Refactoring Level 4 (Abstraction Refinement)
-_audit_logger: Optional[AuditLogger] = None
+_audit_logger: AuditLogger | None = None
 
 
 def get_audit_logger() -> AuditLogger:

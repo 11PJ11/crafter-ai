@@ -28,7 +28,6 @@ USAGE:
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List
 
 
 class StaleResolver:
@@ -81,7 +80,9 @@ class StaleResolver:
         # Update state
         step_data["state"]["status"] = "ABANDONED"
         step_data["state"]["failure_reason"] = reason
-        step_data["state"]["recovery_suggestions"] = self._generate_recovery_suggestions(reason)
+        step_data["state"]["recovery_suggestions"] = (
+            self._generate_recovery_suggestions(reason)
+        )
         step_data["state"]["abandoned_at"] = datetime.now(timezone.utc).isoformat()
 
         # Update IN_PROGRESS phase to ABANDONED
@@ -93,7 +94,7 @@ class StaleResolver:
         # Save updated step data
         step_path.write_text(json.dumps(step_data, indent=2))
 
-    def _generate_recovery_suggestions(self, reason: str) -> List[str]:
+    def _generate_recovery_suggestions(self, reason: str) -> list[str]:
         """
         Generate actionable recovery suggestions based on failure reason.
 
@@ -107,12 +108,14 @@ class StaleResolver:
             "Review conversation transcript to understand what went wrong",
             "Reset the failed phase and retry with manual intervention",
             "Check for any partial changes that need to be rolled back",
-            "Verify all dependencies and prerequisites are met before retrying"
+            "Verify all dependencies and prerequisites are met before retrying",
         ]
 
         # Add context-specific suggestions based on reason
         if "crash" in reason.lower() or "timeout" in reason.lower():
-            suggestions.insert(1, "Check system resources and connectivity before retry")
+            suggestions.insert(
+                1, "Check system resources and connectivity before retry"
+            )
 
         if "test" in reason.lower():
             suggestions.insert(1, "Review test failures and fix underlying issues")

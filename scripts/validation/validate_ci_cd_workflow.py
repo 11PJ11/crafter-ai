@@ -12,11 +12,12 @@ Usage:
 """
 
 import argparse
+import re
 import subprocess
 import sys
 from pathlib import Path
+
 import yaml
-import re
 
 
 class WorkflowValidator:
@@ -127,7 +128,7 @@ class WorkflowValidator:
             self.warnings.append("Agent sync script not found (skipping)")
             return True
 
-        success, output = self.run_command(
+        success, _output = self.run_command(
             f"python3 {sync_script} --verify", "Agent name synchronization"
         )
 
@@ -190,7 +191,7 @@ class WorkflowValidator:
         """Run pytest test suite."""
         self.log("Running pytest test suite...", "INFO")
 
-        success, output = self.run_command(
+        success, _output = self.run_command(
             "pytest tests/ -v --tb=short -x",  # -x stops on first failure
             "Pytest test suite",
         )

@@ -5,8 +5,9 @@ Infrastructure step 01-03: Validates that on_agent_complete() hook
 persists turn_count to phase_execution_log.
 """
 
-import pytest
 import json
+
+import pytest
 from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
 
 
@@ -17,8 +18,8 @@ class TestTurnCountPersistence:
     def hook(self, tmp_path):
         """Create fresh hook instance with isolated audit logger."""
         # Reset the global audit logger singleton to use test-specific directory
-        from src.des.adapters.driven.logging.audit_logger import AuditLogger
         import src.des.adapters.driven.logging.audit_logger as audit_module
+        from src.des.adapters.driven.logging.audit_logger import AuditLogger
 
         # Create audit logger in test's tmp_path to ensure isolation
         test_audit_dir = tmp_path / "audit"
@@ -106,7 +107,7 @@ class TestTurnCountPersistence:
             "Hook validation should pass when turn_count present"
         )
 
-        with open(step_file_with_turn_count, "r") as f:
+        with open(step_file_with_turn_count) as f:
             step_data = json.load(f)
 
         phase_log = step_data.get("tdd_cycle", {}).get("phase_execution_log", [])
@@ -161,7 +162,7 @@ class TestTurnCountPersistence:
         hook.on_agent_complete(str(step_file_with_turn_count))
 
         # THEN: Verify turn_count values in step file match expected
-        with open(step_file_with_turn_count, "r") as f:
+        with open(step_file_with_turn_count) as f:
             step_data = json.load(f)
 
         phase_log = step_data.get("tdd_cycle", {}).get("phase_execution_log", [])
@@ -208,7 +209,7 @@ class TestTurnCountPersistence:
         hook.on_agent_complete(str(step_file))
 
         # THEN: All phases have turn_count
-        with open(step_file, "r") as f:
+        with open(step_file) as f:
             step_data = json.load(f)
 
         phase_log = step_data.get("tdd_cycle", {}).get("phase_execution_log", [])

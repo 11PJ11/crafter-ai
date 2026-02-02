@@ -6,11 +6,12 @@ with embedded team coordination and collaboration logic.
 """
 
 import logging
+import sys
 from pathlib import Path
-from typing import Dict, Optional, Any
+from typing import Any
+
 import yaml
 
-import sys
 
 sys.path.append(str(Path(__file__).parent.parent))
 from utils.dependency_resolver import DependencyResolver
@@ -25,7 +26,7 @@ class TeamProcessor:
         self.file_manager = file_manager
         self.dependency_resolver = DependencyResolver(source_dir, file_manager)
 
-    def load_team_config(self, team_file: Path) -> Optional[Dict[str, Any]]:
+    def load_team_config(self, team_file: Path) -> dict[str, Any] | None:
         """
         Load team configuration from YAML file.
 
@@ -50,8 +51,8 @@ class TeamProcessor:
             return None
 
     def get_team_info_from_config(
-        self, team_name: str, config: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, team_name: str, config: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Extract team information from main framework-catalog.yaml.
 
@@ -81,7 +82,7 @@ class TeamProcessor:
         }
 
     def generate_team_agent_header(
-        self, team_name: str, team_config: Dict[str, Any], main_config: Dict[str, Any]
+        self, team_name: str, team_config: dict[str, Any], main_config: dict[str, Any]
     ) -> str:
         """
         Generate header for team agent.
@@ -144,7 +145,7 @@ class TeamProcessor:
         except Exception as e:
             return f"ERROR: Failed to load agent '{agent_name}': {e}"
 
-    def generate_team_composition(self, team_config: Dict[str, Any]) -> str:
+    def generate_team_composition(self, team_config: dict[str, Any]) -> str:
         """
         Generate team composition section with embedded full agent content.
 
@@ -206,7 +207,7 @@ class TeamProcessor:
 
         return "\n".join(composition_parts)
 
-    def generate_workflow_coordination(self, team_config: Dict[str, Any]) -> str:
+    def generate_workflow_coordination(self, team_config: dict[str, Any]) -> str:
         """
         Generate workflow coordination section.
 
@@ -246,7 +247,7 @@ class TeamProcessor:
 
         return "\n".join(coord_parts)
 
-    def generate_team_configuration_yaml(self, team_config: Dict[str, Any]) -> str:
+    def generate_team_configuration_yaml(self, team_config: dict[str, Any]) -> str:
         """
         Generate embedded YAML configuration for the team.
 
@@ -275,7 +276,7 @@ class TeamProcessor:
             return "## Team Configuration\n\nConfiguration unavailable.\n"
 
     def generate_team_agent_content(
-        self, team_file: Path, config: Dict[str, Any]
+        self, team_file: Path, config: dict[str, Any]
     ) -> str:
         """
         Generate complete team agent content.
@@ -320,7 +321,7 @@ class TeamProcessor:
             logging.error(f"Error generating team agent content for {team_file}: {e}")
             raise
 
-    def process_team(self, team_file: Path, config: Dict[str, Any]) -> bool:
+    def process_team(self, team_file: Path, config: dict[str, Any]) -> bool:
         """
         Process a single team file into a massive agent.
 
@@ -356,8 +357,8 @@ class TeamProcessor:
             return False
 
     def get_team_info(
-        self, team_file: Path, config: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
+        self, team_file: Path, config: dict[str, Any]
+    ) -> dict[str, Any] | None:
         """
         Extract team information for configuration generation.
 

@@ -6,11 +6,12 @@ that guide multi-phase nWave methodology execution.
 """
 
 import logging
+import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Any
+
 import yaml
 
-import sys
 
 sys.path.append(str(Path(__file__).parent.parent))
 from utils.dependency_resolver import DependencyResolver
@@ -25,7 +26,7 @@ class WorkflowProcessor:
         self.file_manager = file_manager
         self.dependency_resolver = DependencyResolver(source_dir, file_manager)
 
-    def load_workflow_config(self, workflow_file: Path) -> Optional[Dict[str, Any]]:
+    def load_workflow_config(self, workflow_file: Path) -> dict[str, Any] | None:
         """
         Load workflow configuration from YAML file.
 
@@ -50,8 +51,8 @@ class WorkflowProcessor:
             return None
 
     def get_workflow_info_from_config(
-        self, workflow_name: str, config: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, workflow_name: str, config: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Extract workflow information from main framework-catalog.yaml.
 
@@ -85,8 +86,8 @@ class WorkflowProcessor:
     def generate_orchestrator_header(
         self,
         workflow_name: str,
-        workflow_config: Dict[str, Any],
-        main_config: Dict[str, Any],
+        workflow_config: dict[str, Any],
+        main_config: dict[str, Any],
     ) -> str:
         """
         Generate header for orchestrator agent.
@@ -125,7 +126,7 @@ class WorkflowProcessor:
         return "\n".join(header_parts)
 
     def generate_phase_guidance(
-        self, workflow_config: Dict[str, Any], main_config: Dict[str, Any]
+        self, workflow_config: dict[str, Any], main_config: dict[str, Any]
     ) -> str:
         """
         Generate phase guidance section.
@@ -185,8 +186,8 @@ class WorkflowProcessor:
         return "\n".join(guidance_parts)
 
     def get_phase_specific_guidance(
-        self, phase: str, config: Dict[str, Any]
-    ) -> List[str]:
+        self, phase: str, config: dict[str, Any]
+    ) -> list[str]:
         """
         Get specific guidance for a phase.
 
@@ -254,7 +255,7 @@ class WorkflowProcessor:
 
         return guidance
 
-    def generate_workflow_definition(self, workflow_config: Dict[str, Any]) -> str:
+    def generate_workflow_definition(self, workflow_config: dict[str, Any]) -> str:
         """
         Generate embedded workflow definition.
 
@@ -284,7 +285,7 @@ class WorkflowProcessor:
             return "## Workflow Definition\n\n*Workflow definition temporarily unavailable*\n"
 
     def generate_agent_coordination(
-        self, workflow_config: Dict[str, Any], main_config: Dict[str, Any]
+        self, workflow_config: dict[str, Any], main_config: dict[str, Any]
     ) -> str:
         """
         Generate agent coordination section.
@@ -346,7 +347,7 @@ class WorkflowProcessor:
         return "\n".join(coordination_parts)
 
     def generate_orchestrator_content(
-        self, workflow_file: Path, config: Dict[str, Any]
+        self, workflow_file: Path, config: dict[str, Any]
     ) -> str:
         """
         Generate complete orchestrator agent content.
@@ -421,7 +422,7 @@ class WorkflowProcessor:
             )
             raise
 
-    def process_workflow(self, workflow_file: Path, config: Dict[str, Any]) -> bool:
+    def process_workflow(self, workflow_file: Path, config: dict[str, Any]) -> bool:
         """
         Process a single workflow file into an orchestrator agent.
 
@@ -461,8 +462,8 @@ class WorkflowProcessor:
             return False
 
     def get_workflow_info(
-        self, workflow_file: Path, config: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
+        self, workflow_file: Path, config: dict[str, Any]
+    ) -> dict[str, Any] | None:
         """
         Extract workflow information for configuration generation.
 

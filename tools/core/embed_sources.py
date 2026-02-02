@@ -43,7 +43,6 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import List, Optional, Tuple
 
 
 # Marker patterns
@@ -57,7 +56,7 @@ def get_project_root() -> Path:
     return Path(__file__).parent.parent
 
 
-def read_source_file(source_path: str) -> Optional[str]:
+def read_source_file(source_path: str) -> str | None:
     """
     Read a source file relative to project root.
 
@@ -75,7 +74,7 @@ def read_source_file(source_path: str) -> Optional[str]:
         return None
 
     try:
-        with open(full_path, "r", encoding="utf-8") as f:
+        with open(full_path, encoding="utf-8") as f:
             return f.read()
     except Exception as e:
         print(f"  [ERROR] Cannot read {source_path}: {e}", file=sys.stderr)
@@ -153,7 +152,7 @@ def format_as_raw(content: str, source_path: str) -> str:
     return "\n".join(lines)
 
 
-def format_content(content: str, source_path: str, format_type: str) -> Optional[str]:
+def format_content(content: str, source_path: str, format_type: str) -> str | None:
     """
     Format content according to the specified format type.
 
@@ -185,7 +184,7 @@ def format_content(content: str, source_path: str, format_type: str) -> Optional
 
 def process_file(
     file_path: str, dry_run: bool = False, verbose: bool = False
-) -> Tuple[bool, int]:
+) -> tuple[bool, int]:
     """
     Process a single file, replacing embed markers with source content.
 
@@ -201,7 +200,7 @@ def process_file(
         print(f"\nProcessing: {file_path}")
 
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             content = f.read()
     except Exception as e:
         print(f"  [ERROR] Cannot read file: {e}", file=sys.stderr)
@@ -295,7 +294,7 @@ def process_file(
     return True, embeddings_count
 
 
-def find_target_files(paths: List[str]) -> List[str]:
+def find_target_files(paths: list[str]) -> list[str]:
     """
     Find all target files to process.
 

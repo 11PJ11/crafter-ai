@@ -13,9 +13,8 @@ Acceptance criteria:
 import json
 from datetime import datetime, timedelta, timezone
 
-
-from nWave.core.versioning.domain.watermark import Watermark
 from nWave.core.versioning.domain.version import Version
+from nWave.core.versioning.domain.watermark import Watermark
 
 
 class TestWatermarkIsStaleWhenOlderThan24Hours:

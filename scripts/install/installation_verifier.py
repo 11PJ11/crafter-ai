@@ -21,7 +21,7 @@ Usage:
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional
+
 
 try:
     from scripts.install.error_codes import VERIFY_FAILED
@@ -49,8 +49,8 @@ class VerificationResult:
     agent_file_count: int
     command_file_count: int
     manifest_exists: bool
-    missing_essential_files: List[str]
-    error_code: Optional[str]
+    missing_essential_files: list[str]
+    error_code: str | None
     message: str
 
 
@@ -69,7 +69,7 @@ class InstallationVerifier:
     """
 
     # Essential command files that must exist for a valid installation
-    ESSENTIAL_COMMANDS: List[str] = [
+    ESSENTIAL_COMMANDS: list[str] = [
         "review.md",
         "develop.md",
         "discuss.md",
@@ -78,7 +78,7 @@ class InstallationVerifier:
         "deliver.md",
     ]
 
-    def __init__(self, claude_config_dir: Optional[Path] = None):
+    def __init__(self, claude_config_dir: Path | None = None):
         """Initialize InstallationVerifier.
 
         Args:
@@ -116,7 +116,7 @@ class InstallationVerifier:
         """
         return self.manifest_path.exists()
 
-    def verify_essential_commands(self) -> List[str]:
+    def verify_essential_commands(self) -> list[str]:
         """Check for missing essential command files.
 
         Returns:

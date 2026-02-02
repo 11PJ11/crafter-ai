@@ -16,10 +16,10 @@ def test_config_port_interface_defines_required_methods():
     When: Interface is inspected
     Then: All required methods are defined as abstract
     """
-    from src.des.ports.driven_ports.config_port import ConfigPort
-
     # Verify it's an abstract base class
     from abc import ABC
+
+    from src.des.ports.driven_ports.config_port import ConfigPort
 
     assert issubclass(ConfigPort, ABC)
 
@@ -135,10 +135,10 @@ def test_in_memory_config_adapter_implements_config_port():
     When: Class is inspected
     Then: It is an instance of ConfigPort
     """
-    from src.des.ports.driven_ports.config_port import ConfigPort
     from src.des.adapters.driven.config.in_memory_config_adapter import (
         InMemoryConfigAdapter,
     )
+    from src.des.ports.driven_ports.config_port import ConfigPort
 
     config = InMemoryConfigAdapter()
     assert isinstance(config, ConfigPort)
@@ -152,10 +152,10 @@ def test_environment_config_adapter_implements_config_port():
     When: Class is inspected
     Then: It is an instance of ConfigPort
     """
-    from src.des.ports.driven_ports.config_port import ConfigPort
     from src.des.adapters.driven.config.environment_config_adapter import (
         EnvironmentConfigAdapter,
     )
+    from src.des.ports.driven_ports.config_port import ConfigPort
 
     config = EnvironmentConfigAdapter()
     assert isinstance(config, ConfigPort)

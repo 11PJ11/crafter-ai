@@ -24,7 +24,8 @@ Usage:
         print(result.alert_message)
 """
 
-from typing import List, Dict, Any
+from typing import Any
+
 from src.des.domain.stale_execution import StaleExecution
 
 
@@ -57,7 +58,11 @@ class StaleDetectionResult:
         'Stale execution found: steps/01-01.json, phase RED_UNIT (45 min)'
     """
 
-    def __init__(self, stale_executions: List[StaleExecution], warnings: List[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        stale_executions: list[StaleExecution],
+        warnings: list[dict[str, Any]] | None = None,
+    ):
         """
         Initialize StaleDetectionResult with list of stale executions and warnings.
 
@@ -74,7 +79,7 @@ class StaleDetectionResult:
         self._warnings = list(warnings) if warnings else []
 
     @property
-    def stale_executions(self) -> List[StaleExecution]:
+    def stale_executions(self) -> list[StaleExecution]:
         """
         Get immutable copy of stale executions list.
 
@@ -87,7 +92,7 @@ class StaleDetectionResult:
         return list(self._stale_executions)
 
     @property
-    def warnings(self) -> List[Dict[str, Any]]:
+    def warnings(self) -> list[dict[str, Any]]:
         """
         Get immutable copy of warnings list.
 

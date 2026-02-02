@@ -10,6 +10,7 @@ from src.des.ports.driven_ports.logging_port import LoggingPort
 from src.des.ports.driven_ports.task_invocation_port import TaskInvocationPort
 from src.des.ports.driven_ports.time_provider_port import TimeProvider
 
+
 __all__ = [
     "ConfigPort",
     "FileSystemPort",

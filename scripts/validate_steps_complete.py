@@ -14,12 +14,12 @@ import glob
 import json
 import os
 import sys
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 
 def validate_all_steps_complete(
     project_id: str,
-) -> Tuple[bool, List[Dict[str, Any]], str]:
+) -> tuple[bool, list[dict[str, Any]], str]:
     """Verify ALL steps have COMMIT phase with outcome=PASS."""
     steps_dir = f"docs/feature/{project_id}/steps"
 
@@ -35,14 +35,14 @@ def validate_all_steps_complete(
 
     for step_file in step_files:
         try:
-            with open(step_file, "r") as f:
+            with open(step_file) as f:
                 step_data = json.load(f)
         except Exception as e:
             incomplete_steps.append(
                 {
                     "file": os.path.basename(step_file),
                     "task_id": "unknown",
-                    "reason": f"Error reading file: {str(e)}",
+                    "reason": f"Error reading file: {e!s}",
                 }
             )
             continue
@@ -141,7 +141,7 @@ def main() -> None:
     print(f"Validating steps for project: {project_id}")
     print("-" * 50)
 
-    all_complete, incomplete, message = validate_all_steps_complete(project_id)
+    all_complete, _incomplete, message = validate_all_steps_complete(project_id)
     print(message)
 
     if not all_complete:

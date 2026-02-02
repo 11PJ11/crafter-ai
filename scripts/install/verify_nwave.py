@@ -36,22 +36,22 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import List, Optional
+
 
 try:
     from scripts.install.context_detector import is_claude_code_context
+    from scripts.install.install_utils import Logger, PathUtils
     from scripts.install.installation_verifier import (
         InstallationVerifier,
         VerificationResult,
     )
-    from scripts.install.install_utils import Logger, PathUtils
 except ImportError:
     from context_detector import is_claude_code_context
+    from install_utils import Logger, PathUtils
     from installation_verifier import (
         InstallationVerifier,
         VerificationResult,
     )
-    from install_utils import Logger, PathUtils
 
 # ANSI color codes for terminal output (replaces legacy Colors class)
 _ANSI_GREEN = "\033[0;32m"
@@ -60,7 +60,7 @@ _ANSI_YELLOW = "\033[1;33m"
 _ANSI_NC = "\033[0m"  # No Color
 
 
-def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
+def parse_args(args: list[str] | None = None) -> argparse.Namespace:
     """Parse command line arguments.
 
     Args:
@@ -86,7 +86,7 @@ def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
     return parser.parse_args(args)
 
 
-def run_verification(claude_config_dir: Optional[Path] = None) -> VerificationResult:
+def run_verification(claude_config_dir: Path | None = None) -> VerificationResult:
     """Run installation verification.
 
     This function delegates to InstallationVerifier to perform the actual
@@ -181,8 +181,8 @@ def format_json_output(result: VerificationResult, verbose: bool = False) -> str
 
 
 def main(
-    args: Optional[List[str]] = None,
-    claude_config_dir: Optional[Path] = None,
+    args: list[str] | None = None,
+    claude_config_dir: Path | None = None,
 ) -> int:
     """Main entry point for standalone verification.
 

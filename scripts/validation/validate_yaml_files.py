@@ -13,11 +13,11 @@ Exit codes:
     1: One or more YAML files have syntax errors
 """
 
-import sys
-import yaml
-from pathlib import Path
-from typing import List, Tuple
 import argparse
+import sys
+from pathlib import Path
+
+import yaml
 
 
 class YAMLValidator:
@@ -29,7 +29,7 @@ class YAMLValidator:
         self.errors = []
         self.warnings = []
 
-    def find_yaml_files(self) -> List[Path]:
+    def find_yaml_files(self) -> list[Path]:
         """Find all YAML files in the repository"""
         yaml_patterns = ["**/*.yaml", "**/*.yml"]
         exclude_dirs = {
@@ -52,7 +52,7 @@ class YAMLValidator:
 
         return sorted(yaml_files)
 
-    def validate_file(self, file_path: Path) -> Tuple[bool, str]:
+    def validate_file(self, file_path: Path) -> tuple[bool, str]:
         """
         Validate a single YAML file
 
@@ -60,7 +60,7 @@ class YAMLValidator:
             (is_valid, error_message)
         """
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 content = f.read()
 
             # Try to load as single document first
@@ -78,7 +78,7 @@ class YAMLValidator:
                 error_msg = f"{e.context}\n  {error_msg}"
             return False, error_msg
         except Exception as e:
-            return False, f"Unexpected error: {str(e)}"
+            return False, f"Unexpected error: {e!s}"
 
     def validate_all(self) -> bool:
         """

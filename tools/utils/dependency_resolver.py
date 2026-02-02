@@ -9,7 +9,7 @@ BUILD:INCLUDE markers, and BUILD:INJECT coexistence.
 import logging
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Union, Set
+from typing import Any
 
 
 class DependencyResolver:
@@ -32,9 +32,9 @@ class DependencyResolver:
         }
 
         # Track circular references during BUILD:INCLUDE resolution
-        self._include_stack: Set[str] = set()
+        self._include_stack: set[str] = set()
 
-    def parse_build_include_markers(self, content: str) -> List[Dict[str, str]]:
+    def parse_build_include_markers(self, content: str) -> list[dict[str, str]]:
         """
         Parse BUILD:INCLUDE markers from content.
 
@@ -56,7 +56,7 @@ class DependencyResolver:
         return markers
 
     def resolve_build_include_markers(
-        self, content: str, source_file: Optional[Path] = None
+        self, content: str, source_file: Path | None = None
     ) -> str:
         """
         Resolve BUILD:INCLUDE markers by replacing with file content.
@@ -140,8 +140,8 @@ class DependencyResolver:
         return result
 
     def _resolve_include_path(
-        self, file_path: str, source_file: Optional[Path] = None
-    ) -> Optional[Path]:
+        self, file_path: str, source_file: Path | None = None
+    ) -> Path | None:
         """
         Resolve BUILD:INCLUDE file path with security checks.
 
@@ -208,7 +208,7 @@ class DependencyResolver:
 
     def resolve_dependency_path(
         self, dependency_type: str, dependency_name: str
-    ) -> Optional[Path]:
+    ) -> Path | None:
         """
         Resolve the full path to a dependency file.
 
@@ -261,7 +261,7 @@ class DependencyResolver:
 
     def resolve_dependency(
         self, dependency_type: str, dependency_name: str
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Resolve and load content of a dependency.
 
@@ -287,8 +287,8 @@ class DependencyResolver:
         return content
 
     def resolve_placeholders(
-        self, config: Union[Dict[str, Any], List[Any], str]
-    ) -> Union[Dict[str, Any], List[Any], str]:
+        self, config: dict[str, Any] | list[Any] | str
+    ) -> dict[str, Any] | list[Any] | str:
         """
         Resolve {root} placeholders in configuration recursively.
 
@@ -321,7 +321,7 @@ class DependencyResolver:
 
     def get_dependency_metadata(
         self, dependency_type: str, dependency_name: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get metadata about a dependency.
 
@@ -366,8 +366,8 @@ class DependencyResolver:
             }
 
     def validate_dependencies(
-        self, dependencies: Dict[str, List[str]]
-    ) -> Dict[str, List[Dict[str, Any]]]:
+        self, dependencies: dict[str, list[str]]
+    ) -> dict[str, list[dict[str, Any]]]:
         """
         Validate all dependencies in a configuration.
 
@@ -391,8 +391,8 @@ class DependencyResolver:
         return validation_results
 
     def get_missing_dependencies(
-        self, dependencies: Dict[str, List[str]]
-    ) -> List[Dict[str, str]]:
+        self, dependencies: dict[str, list[str]]
+    ) -> list[dict[str, str]]:
         """
         Get list of missing dependencies.
 
@@ -480,8 +480,8 @@ class DependencyResolver:
         return content
 
     def resolve_all_dependencies(
-        self, dependencies: Dict[str, List[str]]
-    ) -> Dict[str, Dict[str, str]]:
+        self, dependencies: dict[str, list[str]]
+    ) -> dict[str, dict[str, str]]:
         """
         Resolve all dependencies and return their content.
 
@@ -515,7 +515,7 @@ class DependencyResolver:
 
         return resolved
 
-    def create_dependency_summary(self, dependencies: Dict[str, List[str]]) -> str:
+    def create_dependency_summary(self, dependencies: dict[str, list[str]]) -> str:
         """
         Create a summary of dependencies for documentation.
 
@@ -563,7 +563,7 @@ class DependencyResolver:
 
     def verify_build_include_and_inject_coexistence(
         self, content: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Verify that BUILD:INCLUDE and BUILD:INJECT mechanisms work together.
 

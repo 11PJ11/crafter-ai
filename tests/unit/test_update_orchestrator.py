@@ -8,9 +8,10 @@ These tests follow Outside-In TDD - they are written BEFORE implementation
 and should FAIL until UpdateOrchestrator is implemented.
 """
 
-import pytest
 from pathlib import Path
 from unittest.mock import Mock
+
+import pytest
 
 
 class TestUpdateOrchestrator:
@@ -23,8 +24,8 @@ class TestUpdateOrchestrator:
         THEN BackupManager.create_backup is called before update proceeds
         """
         # Arrange
-        from scripts.update.update_orchestrator import UpdateOrchestrator
         from scripts.update.backup_manager import BackupManager
+        from scripts.update.update_orchestrator import UpdateOrchestrator
 
         mock_backup_manager = Mock(spec=BackupManager)
         mock_backup_path = tmp_path / ".claude_bck_20260126"
@@ -45,8 +46,8 @@ class TestUpdateOrchestrator:
         THEN output contains "Backup created at ~/.claude_bck_"
         """
         # Arrange
-        from scripts.update.update_orchestrator import UpdateOrchestrator
         from scripts.update.backup_manager import BackupManager
+        from scripts.update.update_orchestrator import UpdateOrchestrator
 
         mock_backup_manager = Mock(spec=BackupManager)
         backup_path = tmp_path / ".claude_bck_20260126"
@@ -69,8 +70,8 @@ class TestUpdateOrchestrator:
         THEN orchestrator raises appropriate error with context
         """
         # Arrange
-        from scripts.update.update_orchestrator import UpdateOrchestrator
         from scripts.update.backup_manager import BackupManager
+        from scripts.update.update_orchestrator import UpdateOrchestrator
 
         mock_backup_manager = Mock(spec=BackupManager)
         mock_backup_manager.create_backup.side_effect = FileNotFoundError(
@@ -92,8 +93,8 @@ class TestUpdateOrchestrator:
         THEN orchestrator stores the dependency correctly
         """
         # Arrange
-        from scripts.update.update_orchestrator import UpdateOrchestrator
         from scripts.update.backup_manager import BackupManager
+        from scripts.update.update_orchestrator import UpdateOrchestrator
 
         mock_backup_manager = Mock(spec=BackupManager)
 
@@ -110,8 +111,8 @@ class TestUpdateOrchestrator:
         THEN backup is created, update proceeds, and version is updated
         """
         # Arrange
-        from scripts.update.update_orchestrator import UpdateOrchestrator
         from scripts.update.backup_manager import BackupManager
+        from scripts.update.update_orchestrator import UpdateOrchestrator
 
         mock_backup_manager = Mock(spec=BackupManager)
         backup_path = tmp_path / ".claude_bck_20260126"
@@ -137,8 +138,8 @@ class TestUpdateOrchestrator:
         THEN BackupManager.create_backup receives correct source directory path
         """
         # Arrange
-        from scripts.update.update_orchestrator import UpdateOrchestrator
         from scripts.update.backup_manager import BackupManager
+        from scripts.update.update_orchestrator import UpdateOrchestrator
 
         mock_backup_manager = Mock(spec=BackupManager)
         backup_path = tmp_path / ".claude_bck_20260126"

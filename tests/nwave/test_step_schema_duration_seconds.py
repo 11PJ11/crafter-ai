@@ -8,8 +8,8 @@ Tests verify that:
 """
 
 import json
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 
 class TestStepSchemaDurationSeconds:
@@ -24,7 +24,7 @@ class TestStepSchemaDurationSeconds:
             / "step-tdd-cycle-schema.json"
         )
 
-        with open(template_path, "r") as f:
+        with open(template_path) as f:
             schema = json.load(f)
 
         # Verify phase_execution_log exists

@@ -4,7 +4,7 @@ Business Value: Enables fine-grained control over execution duration per task co
 """
 
 from dataclasses import dataclass
-from typing import Dict, Any
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -49,7 +49,7 @@ class ConfigLoader:
 
     REQUIRED_TASK_TYPES = {"quick", "standard", "complex"}
 
-    def load_from_dict(self, config_data: Dict[str, Any]) -> TurnLimitConfig:
+    def load_from_dict(self, config_data: dict[str, Any]) -> TurnLimitConfig:
         """Parse turn limits from configuration dictionary.
 
         Args:

@@ -14,7 +14,6 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, Optional
 
 import pytest
 
@@ -264,7 +263,7 @@ def mock_pipenv_status():
         def installed(self) -> bool:
             return self._installed
 
-        def get_env_vars(self) -> Dict[str, str]:
+        def get_env_vars(self) -> dict[str, str]:
             """Get environment variables to simulate pipenv status."""
             if not self._installed:
                 return {"NWAVE_TEST_NO_PIPENV": "1"}
@@ -298,7 +297,7 @@ def mock_dependencies():
         def missing(self) -> list[str]:
             return self._missing.copy()
 
-        def get_env_vars(self) -> Dict[str, str]:
+        def get_env_vars(self) -> dict[str, str]:
             """Get environment variables to simulate dependency status."""
             if self._missing:
                 return {"NWAVE_TEST_MISSING_DEPS": ",".join(self._missing)}
@@ -326,7 +325,7 @@ def output_context():
         def context(self) -> str:
             return self._context
 
-        def get_env_vars(self) -> Dict[str, str]:
+        def get_env_vars(self) -> dict[str, str]:
             """Get environment variables to set output context."""
             return {"NWAVE_OUTPUT_CONTEXT": self._context}
 
@@ -361,9 +360,9 @@ def ci_environment(execution_environment):
             "generic_ci": {"CI": "true"},
         }
 
-        def __init__(self, env: Dict[str, str]):
+        def __init__(self, env: dict[str, str]):
             self._env = env
-            self._active_ci: Optional[str] = None
+            self._active_ci: str | None = None
 
         def set_ci_platform(self, ci_platform: str):
             """
@@ -400,11 +399,11 @@ def ci_environment(execution_environment):
             return self._active_ci is not None
 
         @property
-        def ci_platform_name(self) -> Optional[str]:
+        def ci_platform_name(self) -> str | None:
             """Return the active CI platform name."""
             return self._active_ci
 
-        def get_env_vars(self) -> Dict[str, str]:
+        def get_env_vars(self) -> dict[str, str]:
             """Get the current CI environment variables."""
             if not self._active_ci:
                 return {}
@@ -434,9 +433,9 @@ def container_environment(execution_environment):
             "podman": {"NWAVE_TEST_CONTAINER": "podman"},
         }
 
-        def __init__(self, env: Dict[str, str]):
+        def __init__(self, env: dict[str, str]):
             self._env = env
-            self._container_type: Optional[str] = None
+            self._container_type: str | None = None
 
         def set_container_type(self, container_type: str):
             """
@@ -472,11 +471,11 @@ def container_environment(execution_environment):
             return self._container_type is not None
 
         @property
-        def container_type(self) -> Optional[str]:
+        def container_type(self) -> str | None:
             """Return the active container type."""
             return self._container_type
 
-        def get_env_vars(self) -> Dict[str, str]:
+        def get_env_vars(self) -> dict[str, str]:
             """Get the current container environment variables."""
             if not self._container_type:
                 return {}
@@ -507,10 +506,10 @@ def run_installer(
     """
 
     def _run(
-        args: list[str] = None,
-        env_overrides: Dict[str, str] = None,
+        args: list[str] | None = None,
+        env_overrides: dict[str, str] | None = None,
         timeout: int = SUBPROCESS_TIMEOUT,
-    ) -> Dict:
+    ) -> dict:
         """
         Run the nWave installer script.
 
@@ -585,10 +584,10 @@ def run_verifier(
     """
 
     def _run(
-        args: list[str] = None,
-        env_overrides: Dict[str, str] = None,
+        args: list[str] | None = None,
+        env_overrides: dict[str, str] | None = None,
         timeout: int = SUBPROCESS_TIMEOUT,
-    ) -> Dict:
+    ) -> dict:
         """
         Run the standalone verification script.
 
@@ -655,7 +654,7 @@ def assert_output():
 
     class OutputAssertions:
         @staticmethod
-        def contains(result: Dict, expected: str, in_stderr: bool = False):
+        def contains(result: dict, expected: str, in_stderr: bool = False):
             """Assert output contains expected text."""
             output = result["stderr"] if in_stderr else result["stdout"]
             all_output = f"{result['stdout']}\n{result['stderr']}"
@@ -666,7 +665,7 @@ def assert_output():
             )
 
         @staticmethod
-        def not_contains(result: Dict, unexpected: str):
+        def not_contains(result: dict, unexpected: str):
             """Assert output does not contain unexpected text."""
             all_output = f"{result['stdout']}\n{result['stderr']}"
             assert unexpected not in all_output, (
@@ -676,7 +675,7 @@ def assert_output():
             )
 
         @staticmethod
-        def exit_code(result: Dict, expected: int):
+        def exit_code(result: dict, expected: int):
             """Assert command exit code."""
             assert result["returncode"] == expected, (
                 f"Expected exit code {expected}, got {result['returncode']}\n"
@@ -685,7 +684,7 @@ def assert_output():
             )
 
         @staticmethod
-        def is_valid_json(result: Dict):
+        def is_valid_json(result: dict):
             """Assert output is valid JSON."""
             output = result["stdout"] or result["stderr"]
             try:
@@ -694,7 +693,7 @@ def assert_output():
                 pytest.fail(f"Output is not valid JSON: {e}\nOutput: {output!r}")
 
         @staticmethod
-        def json_has_field(result: Dict, field: str, value=None):
+        def json_has_field(result: dict, field: str, value=None):
             """Assert JSON output has specified field."""
             output = result["stdout"] or result["stderr"]
             try:

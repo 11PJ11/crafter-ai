@@ -14,9 +14,8 @@ Validates all 7 cross-phase acceptance criteria:
 
 import json
 import sys
-from pathlib import Path
 from dataclasses import dataclass
-from typing import List, Tuple
+from pathlib import Path
 
 
 @dataclass
@@ -24,13 +23,13 @@ class ValidationResult:
     test_name: str
     passed: bool
     message: str
-    details: List[str]
+    details: list[str]
 
 
 class CrossPhaseValidator:
     def __init__(self, repo_root: str = "/mnt/c/Repositories/Projects/nwave"):
         self.repo_root = Path(repo_root)
-        self.results: List[ValidationResult] = []
+        self.results: list[ValidationResult] = []
         self.features_dir = self.repo_root / "docs/features/framework-rationalization"
 
     def validate_cross_01_e2e_workflow(self) -> ValidationResult:
@@ -505,7 +504,7 @@ class CrossPhaseValidator:
             details=details,
         )
 
-    def run_all_validations(self) -> Tuple[List[ValidationResult], bool]:
+    def run_all_validations(self) -> tuple[list[ValidationResult], bool]:
         """Run all cross-phase validations."""
         print("=" * 70)
         print("CROSS-PHASE E2E WORKFLOW VALIDATION SUITE")
@@ -542,7 +541,7 @@ class CrossPhaseValidator:
 
         return self.results, all_passed
 
-    def generate_report(self, output_file: str = None) -> str:
+    def generate_report(self, output_file: str | None = None) -> str:
         """Generate a JSON report of validation results."""
         report = {
             "validation_suite": "cross-phase-e2e",
@@ -571,7 +570,7 @@ class CrossPhaseValidator:
 
 def main():
     validator = CrossPhaseValidator()
-    results, all_passed = validator.run_all_validations()
+    _results, all_passed = validator.run_all_validations()
 
     # Generate report
     report_file = "/mnt/c/Repositories/Projects/nwave/test-results/cross-phase-validation-report.json"

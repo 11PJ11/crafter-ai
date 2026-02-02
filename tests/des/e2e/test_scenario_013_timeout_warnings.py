@@ -5,10 +5,10 @@ This test validates that TimeoutMonitor is properly wired into DESOrchestrator
 to emit warnings during active agent execution when time thresholds are crossed.
 """
 
-from datetime import timedelta
-from pathlib import Path
 import json
 import tempfile
+from datetime import timedelta
+from pathlib import Path
 
 
 class TestScenario013TimeoutWarningsEmitAtThresholds:

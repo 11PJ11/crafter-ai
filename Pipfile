@@ -10,8 +10,6 @@ exceptiongroup = "*"
 rich = "*"
 
 [dev-packages]
-# Testing
-# Mutation Testing (MANDATORY for /nw:develop)
 cosmic-ray = ">=8.4.0"  # Recommended: native src/ layout support
 mutmut = "*"            # Fallback: simpler but has import path issues
 pytest = ">=7.0.0"
@@ -23,27 +21,19 @@ pytest-pspec = "*"
 pytest-mock = "*"
 pytest-describe = "*"
 pytest-watch = "*"
-
-# Code Quality
 ruff = ">=0.3.0"
 mypy = ">=0.991"
-
-# Security
 bandit = {extras = ["toml"], version = "*"}
 detect-secrets = "*"
-
-# Git & Release
 python-semantic-release = "*"
 commitizen = "*"
+gitlint = ">=0.19.0"
 pre-commit = ">=3.0.0"
-
-# Reporting
 fpdf2 = "*"
-
-# CLI Utilities
 click = ">=8.0.0"
 colorama = ">=0.4.0"
 tqdm = ">=4.64.0"
+typer = "*"
 
 [scripts]
 # Core CI/CD commands
@@ -55,9 +45,9 @@ test-coverage = "python -m pytest tests/ -q --cov=src --cov=scripts --cov-report
 mutation-test = "mutmut run"
 build = "python tools/build.py"
 # Linting and formatting
-lint = "ruff check scripts/ tools/ tests/"
-format = "ruff format scripts/ tools/ tests/"
-format-check = "ruff format --check scripts/ tools/ tests/"
+lint = "ruff check src/ scripts/ tools/ tests/"
+format = "ruff format src/ scripts/ tools/ tests/"
+format-check = "ruff format --check src/ scripts/ tools/ tests/"
 # Validation
 validate = "python scripts/local_ci.py"
 validate-fast = "python scripts/local_ci.py --fast"

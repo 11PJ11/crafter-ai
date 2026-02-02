@@ -6,12 +6,12 @@ and TemplateValidator orchestrator using business-focused test naming.
 """
 
 from src.des.application.validator import (
-    ValidationResult,
+    DESMarkerValidator,
     ExecutionLogValidator,
     MandatorySectionChecker,
     TDDPhaseValidator,
-    DESMarkerValidator,
     TemplateValidator,
+    ValidationResult,
 )
 
 

@@ -14,9 +14,9 @@ import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Tuple
 
 from install_utils import Logger, PathUtils
+
 
 # ANSI color codes for terminal output (replaces legacy Colors class)
 _ANSI_BLUE = "\033[0;34m"
@@ -61,7 +61,7 @@ class EnhancedBackupSystem:
             self.logger.error(f"Failed to create backup directory structure: {e}")
             return False
 
-    def scan_existing_configuration(self) -> Dict[str, int]:
+    def scan_existing_configuration(self) -> dict[str, int]:
         """Scan existing Claude configuration."""
         self.logger.info("Scanning existing Claude configuration...")
 
@@ -129,7 +129,7 @@ Settings: {"settings.local.json found" if config_summary["config_files"] > 0 els
                 pass
         return count
 
-    def detect_framework_conflicts(self) -> Tuple[bool, List[Dict]]:
+    def detect_framework_conflicts(self) -> tuple[bool, list[dict]]:
         """
         Detect potential framework conflicts.
 
@@ -275,7 +275,7 @@ Settings: {"settings.local.json found" if config_summary["config_files"] > 0 els
         conflicts_detected = False
         if conflict_file.exists():
             try:
-                with open(conflict_file, "r", encoding="utf-8") as f:
+                with open(conflict_file, encoding="utf-8") as f:
                     conflict_data = json.load(f)
                     conflicts_detected = conflict_data.get("conflicts_detected", False)
             except Exception:

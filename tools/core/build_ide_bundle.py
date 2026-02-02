@@ -17,11 +17,11 @@ Options:
 """
 
 import argparse
+import json
 import logging
 import sys
-from pathlib import Path
-import json
 from datetime import datetime
+from pathlib import Path
 
 # Import our processing modules
 from processors.agent_processor import AgentProcessor

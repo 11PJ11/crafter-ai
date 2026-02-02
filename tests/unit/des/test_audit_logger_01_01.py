@@ -8,12 +8,13 @@ Comprehensive unit tests for append-only audit logging with:
 - Daily log rotation
 """
 
-import json
 import hashlib
-import pytest
+import json
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
+
+import pytest
 from src.des.adapters.driven.logging.audit_logger import AuditLogger, log_audit_event
 
 
@@ -250,7 +251,7 @@ class TestAuditLoggerJSONLFormat:
             log_file = logger.current_log_file
             assert log_file.exists(), "Log file not created"
 
-            with open(log_file, "r") as f:
+            with open(log_file) as f:
                 lines = f.readlines()
 
             assert len(lines) == 2, "JSONL should have 2 lines"
@@ -272,8 +273,8 @@ class TestAuditLoggerJSONLFormat:
 
             log_file = logger.current_log_file
 
-            with open(log_file, "r") as f:
-                for i, line in enumerate(f):
+            with open(log_file) as f:
+                for _i, line in enumerate(f):
                     entry = json.loads(line.strip())
                     assert "event" in entry
                     assert "timestamp" in entry
@@ -286,7 +287,7 @@ class TestAuditLoggerJSONLFormat:
 
             log_file = logger.current_log_file
 
-            with open(log_file, "r") as f:
+            with open(log_file) as f:
                 line = f.readline()
 
             # Should not have pretty-printing (no newlines within entry)

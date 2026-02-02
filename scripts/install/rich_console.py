@@ -32,15 +32,15 @@ Usage:
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
+
 
 # Try to import Rich, but gracefully handle if not available
 try:
+    from rich import print as rprint
     from rich.console import Console
     from rich.panel import Panel
     from rich.table import Table
     from rich.text import Text
-    from rich import print as rprint
 
     RICH_AVAILABLE = True
 except ImportError:
@@ -72,7 +72,7 @@ class RichLogger:
     _ANSI_CYAN = "\033[0;36m"
     _ANSI_NC = "\033[0m"
 
-    def __init__(self, log_file: Optional[Path] = None, silent: bool = False):
+    def __init__(self, log_file: Path | None = None, silent: bool = False):
         """Initialize RichLogger.
 
         Args:
@@ -185,7 +185,7 @@ class RichLogger:
             yield
 
     def table(
-        self, headers: List[str], rows: List[List[str]], title: Optional[str] = None
+        self, headers: list[str], rows: list[list[str]], title: str | None = None
     ) -> None:
         """Print a Rich table.
 
@@ -221,7 +221,7 @@ class RichLogger:
             print()
 
     def panel(
-        self, content: str, title: Optional[str] = None, style: str = "blue"
+        self, content: str, title: str | None = None, style: str = "blue"
     ) -> None:
         """Print a Rich panel.
 
@@ -278,7 +278,7 @@ class PlainLogger:
         silent: If True, suppress all console output.
     """
 
-    def __init__(self, log_file: Optional[Path] = None, silent: bool = False):
+    def __init__(self, log_file: Path | None = None, silent: bool = False):
         """Initialize PlainLogger.
 
         Args:
@@ -329,7 +329,7 @@ class PlainLogger:
         yield
 
     def table(
-        self, headers: List[str], rows: List[List[str]], title: Optional[str] = None
+        self, headers: list[str], rows: list[list[str]], title: str | None = None
     ) -> None:
         """Print a plain text table."""
         if self.silent:
@@ -347,7 +347,7 @@ class PlainLogger:
             print(" | ".join(str(cell) for cell in row))
         print()
 
-    def panel(self, content: str, title: Optional[str] = None, style: str = "") -> None:
+    def panel(self, content: str, title: str | None = None, style: str = "") -> None:
         """Print content in a plain text box."""
         if self.silent:
             return
@@ -381,7 +381,7 @@ class SilentLogger:
         log_file: Optional path to log file for persistent logging.
     """
 
-    def __init__(self, log_file: Optional[Path] = None):
+    def __init__(self, log_file: Path | None = None):
         """Initialize SilentLogger.
 
         Args:
@@ -430,12 +430,12 @@ class SilentLogger:
         yield
 
     def table(
-        self, headers: List[str], rows: List[List[str]], title: Optional[str] = None
+        self, headers: list[str], rows: list[list[str]], title: str | None = None
     ) -> None:
         """No-op table for silent logger."""
         pass
 
-    def panel(self, content: str, title: Optional[str] = None, style: str = "") -> None:
+    def panel(self, content: str, title: str | None = None, style: str = "") -> None:
         """No-op panel for silent logger."""
         pass
 
@@ -456,7 +456,7 @@ class ConsoleFactory:
     """
 
     @staticmethod
-    def create_logger(log_file: Optional[Path] = None) -> RichLogger:
+    def create_logger(log_file: Path | None = None) -> RichLogger:
         """Create appropriate logger based on execution context.
 
         Args:
@@ -471,13 +471,13 @@ class ConsoleFactory:
         # Import context detector here to avoid circular imports
         try:
             from scripts.install.context_detector import (
-                is_claude_code_context,
                 is_ci_environment,
+                is_claude_code_context,
             )
         except ImportError:
             # Fallback for standalone execution
             try:
-                from context_detector import is_claude_code_context, is_ci_environment
+                from context_detector import is_ci_environment, is_claude_code_context
             except ImportError:
                 # If context_detector not available, default to RichLogger
                 return RichLogger(log_file=log_file, silent=False)

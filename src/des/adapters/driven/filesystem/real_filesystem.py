@@ -1,8 +1,9 @@
 """Production implementation of filesystem adapter."""
 
-from src.des.ports.driven_ports.filesystem_port import FileSystemPort
-from pathlib import Path
 import json
+from pathlib import Path
+
+from src.des.ports.driven_ports.filesystem_port import FileSystemPort
 
 
 class RealFileSystem(FileSystemPort):
@@ -24,7 +25,7 @@ class RealFileSystem(FileSystemPort):
             FileNotFoundError: If file doesn't exist
             JSONDecodeError: If file is not valid JSON
         """
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             return json.load(f)
 
     def write_json(self, path: Path, data: dict) -> None:

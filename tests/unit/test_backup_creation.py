@@ -8,9 +8,10 @@ These tests follow Outside-In TDD - they are written BEFORE implementation
 and should FAIL until BackupManager is implemented.
 """
 
-import pytest
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
+import pytest
 
 
 class TestBackupManager:

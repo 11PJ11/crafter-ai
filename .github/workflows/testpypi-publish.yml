@@ -1,0 +1,343 @@
+# =============================================================================
+# TestPyPI Validation Workflow for crafter-ai
+# =============================================================================
+#
+# Purpose: Validate wheel builds and TestPyPI publishing on every PR
+#
+# Jobs:
+#   1. build: Build wheel using hatchling with unique dev version
+#   2. publish-testpypi: Publish to TestPyPI for validation (with retry)
+#   3. test-install: Validate pipx installation from TestPyPI (with retry)
+#
+# Quality Gates:
+#   - Wheel build must succeed
+#   - Twine check must pass (validates package metadata)
+#   - TestPyPI upload must succeed (with exponential backoff retry)
+#   - TestPyPI install must succeed (with linear backoff retry)
+#   - Clear failure diagnostics with suggested fixes
+#
+# Triggers: Pull requests to main/master branches
+#
+# =============================================================================
+
+name: TestPyPI Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+  id-token: write  # Required for trusted publishing to TestPyPI
+
+env:
+  PYTHON_VERSION: '3.10'
+
+jobs:
+  # ===========================================================================
+  # JOB 1: Build wheel with unique dev version
+  # ===========================================================================
+  build:
+    name: "Build Wheel"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      dev_version: ${{ steps.version.outputs.dev_version }}
+      full_version: ${{ steps.version.outputs.full_version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install build hatchling twine
+
+      - name: Generate unique dev version
+        id: version
+        run: |
+          # Extract base version from pyproject.toml
+          BASE_VERSION=$(python -c "
+          import tomllib
+          with open('pyproject.toml', 'rb') as f:
+              data = tomllib.load(f)
+          print(data['project']['version'])
+          ")
+
+          # Generate dev suffix: YYYYMMDDHHMMSS
+          DEV_SUFFIX=$(date -u +%Y%m%d%H%M%S)
+
+          # Full dev version: base.devYYYYMMDDHHMMSS
+          FULL_VERSION="${BASE_VERSION}.dev${DEV_SUFFIX}"
+
+          echo "Base version: $BASE_VERSION"
+          echo "Dev suffix: $DEV_SUFFIX"
+          echo "Full version: $FULL_VERSION"
+
+          echo "dev_version=$DEV_SUFFIX" >> $GITHUB_OUTPUT
+          echo "full_version=$FULL_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Update version for dev build
+        run: |
+          # Temporarily update pyproject.toml with dev version
+          python -c "
+          import re
+
+          with open('pyproject.toml', 'r') as f:
+              content = f.read()
+
+          # Replace version line
+          content = re.sub(
+              r'^version = \"[^\"]+\"',
+              'version = \"${{ steps.version.outputs.full_version }}\"',
+              content,
+              flags=re.MULTILINE
+          )
+
+          with open('pyproject.toml', 'w') as f:
+              f.write(content)
+
+          print('Updated pyproject.toml to version: ${{ steps.version.outputs.full_version }}')
+          "
+
+      - name: Build wheel and sdist
+        id: build
+        run: |
+          python -m build
+          echo "build_success=true" >> $GITHUB_OUTPUT
+
+      - name: List built artifacts
+        run: ls -la dist/
+
+      - name: Twine check (validate package metadata)
+        id: twine_check
+        run: |
+          echo "Running twine check on built distributions..."
+          if twine check dist/*; then
+            echo "twine_check_passed=true" >> $GITHUB_OUTPUT
+            echo "Twine check passed: package metadata is valid"
+          else
+            echo "twine_check_passed=false" >> $GITHUB_OUTPUT
+            echo "::error::Twine check failed. See output above for details."
+            exit 1
+          fi
+
+      - name: Upload distribution artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+          retention-days: 1
+
+      - name: Build failure summary
+        if: failure()
+        run: |
+          echo "## Build Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Quality Gate: wheel_build" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** FAILED" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Suggested Fix:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Check pyproject.toml for syntax errors" >> $GITHUB_STEP_SUMMARY
+          echo "- Ensure all required metadata fields are present" >> $GITHUB_STEP_SUMMARY
+          echo "- Run \`python -m build\` locally to debug" >> $GITHUB_STEP_SUMMARY
+          echo "- If twine check failed, run \`twine check dist/*\` locally" >> $GITHUB_STEP_SUMMARY
+
+  # ===========================================================================
+  # JOB 2: Publish to TestPyPI (with retry)
+  # ===========================================================================
+  publish-testpypi:
+    name: "Publish to TestPyPI"
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/project/crafter-ai/
+
+    steps:
+      - name: Download distribution artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: List artifacts to publish
+        run: ls -la dist/
+
+      - name: Publish to TestPyPI (with retry)
+        id: publish
+        env:
+          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        run: |
+          # Retry configuration: exponential backoff 30s, 60s, 120s
+          MAX_RETRIES=3
+          RETRY_COUNT=0
+          BACKOFF_SECONDS=30
+
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            echo "Attempt $((RETRY_COUNT + 1)) of $MAX_RETRIES..."
+
+            if pip install twine && twine upload --repository-url https://test.pypi.org/legacy/ dist/* --skip-existing --verbose; then
+              echo "upload_success=true" >> $GITHUB_OUTPUT
+              echo "retry_count=$RETRY_COUNT" >> $GITHUB_OUTPUT
+              echo "Upload successful!"
+              exit 0
+            fi
+
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+
+            if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+              echo "Upload failed. Retrying in ${BACKOFF_SECONDS} seconds..."
+              sleep $BACKOFF_SECONDS
+              # Exponential backoff: double the wait time
+              BACKOFF_SECONDS=$((BACKOFF_SECONDS * 2))
+            fi
+          done
+
+          echo "upload_success=false" >> $GITHUB_OUTPUT
+          echo "retry_count=$RETRY_COUNT" >> $GITHUB_OUTPUT
+          echo "::error::TestPyPI upload failed after $MAX_RETRIES attempts"
+          exit 1
+
+      - name: Upload failure summary
+        if: failure()
+        run: |
+          echo "## TestPyPI Upload Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Quality Gate: testpypi_upload" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** FAILED after 3 retries with exponential backoff" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Suggested Fix:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Check TEST_PYPI_API_TOKEN secret is valid and has upload permissions" >> $GITHUB_STEP_SUMMARY
+          echo "- Verify the version doesn't already exist on TestPyPI" >> $GITHUB_STEP_SUMMARY
+          echo "- Check TestPyPI status at https://status.python.org/" >> $GITHUB_STEP_SUMMARY
+          echo "- If transient network error, re-run the workflow" >> $GITHUB_STEP_SUMMARY
+
+  # ===========================================================================
+  # JOB 3: Test installation from TestPyPI (with retry)
+  # ===========================================================================
+  test-install:
+    name: "Test pipx Install"
+    needs: publish-testpypi
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install pipx
+        run: |
+          python -m pip install --upgrade pip
+          pip install pipx
+          pipx ensurepath
+
+      - name: Wait for TestPyPI index to update
+        run: |
+          echo "Waiting 30 seconds for TestPyPI index to propagate..."
+          sleep 30
+
+      - name: Install crafter-ai from TestPyPI (with retry)
+        id: install
+        run: |
+          # Retry configuration: linear backoff 30s, 60s
+          MAX_RETRIES=2
+          RETRY_COUNT=0
+          BACKOFF_SECONDS=30
+
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            echo "Attempt $((RETRY_COUNT + 1)) of $MAX_RETRIES..."
+
+            if pipx install crafter-ai==${{ needs.build.outputs.full_version }} \
+              --pip-args="--index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/"; then
+              echo "install_success=true" >> $GITHUB_OUTPUT
+              echo "retry_count=$RETRY_COUNT" >> $GITHUB_OUTPUT
+              echo "Installation successful!"
+              break
+            fi
+
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+
+            if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+              echo "Install failed. Retrying in ${BACKOFF_SECONDS} seconds..."
+              sleep $BACKOFF_SECONDS
+              # Linear backoff: add 30s each time
+              BACKOFF_SECONDS=$((BACKOFF_SECONDS + 30))
+              # Uninstall if partial install
+              pipx uninstall crafter-ai 2>/dev/null || true
+            fi
+          done
+
+          if [ "$RETRY_COUNT" -eq "$MAX_RETRIES" ]; then
+            echo "install_success=false" >> $GITHUB_OUTPUT
+            echo "retry_count=$RETRY_COUNT" >> $GITHUB_OUTPUT
+            echo "::error::TestPyPI install failed after $MAX_RETRIES attempts"
+            exit 1
+          fi
+
+      - name: Verify installation
+        run: |
+          echo "Testing crafter-ai --version..."
+          crafter-ai --version
+
+          echo ""
+          echo "TestPyPI installation validated successfully!"
+          echo "Version: ${{ needs.build.outputs.full_version }}"
+
+      - name: Run validation script
+        run: |
+          echo "Running TestPyPI validation script..."
+          python scripts/testpypi_validation.py --version ${{ needs.build.outputs.full_version }}
+
+      - name: Installation success summary
+        run: |
+          echo "## TestPyPI Installation Test" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### All Quality Gates Passed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Gate | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| wheel_build | :white_check_mark: PASSED |" >> $GITHUB_STEP_SUMMARY
+          echo "| twine_check | :white_check_mark: PASSED |" >> $GITHUB_STEP_SUMMARY
+          echo "| testpypi_upload | :white_check_mark: PASSED |" >> $GITHUB_STEP_SUMMARY
+          echo "| testpypi_install | :white_check_mark: PASSED |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Package**: crafter-ai" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${{ needs.build.outputs.full_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **TestPyPI URL**: https://test.pypi.org/project/crafter-ai/" >> $GITHUB_STEP_SUMMARY
+
+      - name: Install failure summary
+        if: failure()
+        run: |
+          echo "## TestPyPI Install Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Quality Gate: testpypi_install" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** FAILED" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ needs.build.outputs.full_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Suggested Fix:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Wait for TestPyPI index to propagate (may take 1-2 minutes)" >> $GITHUB_STEP_SUMMARY
+          echo "- Check that all dependencies are available on PyPI" >> $GITHUB_STEP_SUMMARY
+          echo "- Verify the version exists on TestPyPI: https://test.pypi.org/project/crafter-ai/" >> $GITHUB_STEP_SUMMARY
+          echo "- Try installing manually:" >> $GITHUB_STEP_SUMMARY
+          echo "  \`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "  pipx install crafter-ai==${{ needs.build.outputs.full_version }} \\" >> $GITHUB_STEP_SUMMARY
+          echo "    --pip-args='--index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/'" >> $GITHUB_STEP_SUMMARY
+          echo "  \`\`\`" >> $GITHUB_STEP_SUMMARY

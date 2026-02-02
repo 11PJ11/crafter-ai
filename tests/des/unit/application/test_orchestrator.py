@@ -407,6 +407,7 @@ class TestOrchestratorHookIntegration:
         THEN it should return a HookResult object
         """
         from pathlib import Path
+
         from src.des.ports.driver_ports.hook_port import HookResult
 
         # Seed in-memory filesystem with minimal step file

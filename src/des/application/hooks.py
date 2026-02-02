@@ -6,7 +6,6 @@ and detect any deviations from expected phase progression.
 
 import json
 from dataclasses import dataclass, field
-from typing import Optional, List
 
 
 @dataclass
@@ -30,13 +29,13 @@ class HookResult:
 
     validation_status: str
     hook_fired: bool = True
-    abandoned_phases: List[str] = field(default_factory=list)
-    incomplete_phases: List[str] = field(default_factory=list)
-    invalid_skips: List[str] = field(default_factory=list)
+    abandoned_phases: list[str] = field(default_factory=list)
+    incomplete_phases: list[str] = field(default_factory=list)
+    invalid_skips: list[str] = field(default_factory=list)
     error_count: int = 0
-    error_type: Optional[str] = None
-    error_message: Optional[str] = None
-    recovery_suggestions: List[str] = field(default_factory=list)
+    error_type: str | None = None
+    error_message: str | None = None
+    recovery_suggestions: list[str] = field(default_factory=list)
     not_executed_phases: int = 0
     turn_limit_exceeded: bool = False
     timeout_exceeded: bool = False
@@ -71,7 +70,7 @@ class SubagentStopHook:
             raise ValueError(f"turn_count must be non-negative, got {turn_count}")
 
         # Load step file
-        with open(step_file_path, "r") as f:
+        with open(step_file_path) as f:
             step_data = json.load(f)
 
         # Get phase_execution_log
@@ -101,7 +100,7 @@ class SubagentStopHook:
         Returns:
             HookResult indicating validation success/failure and any issues found
         """
-        with open(step_file_path, "r") as f:
+        with open(step_file_path) as f:
             step_data = json.load(f)
 
         result = HookResult(validation_status="PASSED", hook_fired=True)
@@ -164,7 +163,7 @@ class SubagentStopHook:
 
         return result
 
-    def _detect_abandoned_phases(self, phase_log: List[dict]) -> List[str]:
+    def _detect_abandoned_phases(self, phase_log: list[dict]) -> list[str]:
         """Detect phases left in IN_PROGRESS state after agent completion.
 
         Args:
@@ -180,7 +179,7 @@ class SubagentStopHook:
                 abandoned.append(phase_name)
         return abandoned
 
-    def _count_not_executed_phases(self, phase_log: List[dict]) -> int:
+    def _count_not_executed_phases(self, phase_log: list[dict]) -> int:
         """Count phases with NOT_EXECUTED status.
 
         Args:
@@ -195,7 +194,7 @@ class SubagentStopHook:
                 count += 1
         return count
 
-    def _detect_silent_completion(self, phase_log: List[dict]) -> bool:
+    def _detect_silent_completion(self, phase_log: list[dict]) -> bool:
         """Detect if all phases are NOT_EXECUTED (silent completion).
 
         Args:
@@ -210,7 +209,7 @@ class SubagentStopHook:
         not_executed_count = self._count_not_executed_phases(phase_log)
         return not_executed_count == len(phase_log)
 
-    def _detect_incomplete_phases(self, phase_log: List[dict]) -> List[str]:
+    def _detect_incomplete_phases(self, phase_log: list[dict]) -> list[str]:
         """Detect phases marked EXECUTED but missing outcome field.
 
         Args:
@@ -226,7 +225,7 @@ class SubagentStopHook:
                 incomplete.append(phase_name)
         return incomplete
 
-    def _detect_invalid_skips(self, phase_log: List[dict]) -> List[str]:
+    def _detect_invalid_skips(self, phase_log: list[dict]) -> list[str]:
         """Detect phases marked SKIPPED but missing blocked_by reason.
 
         Args:
@@ -246,8 +245,8 @@ class SubagentStopHook:
         return invalid_skips
 
     def _detect_turn_limit_exceeded(
-        self, phase_log: List[dict], max_turns: Optional[int]
-    ) -> List[dict]:
+        self, phase_log: list[dict], max_turns: int | None
+    ) -> list[dict]:
         """Detect phases where turn_count exceeds max_turns limit.
 
         Args:
@@ -279,9 +278,9 @@ class SubagentStopHook:
 
     def _detect_timeout_exceeded(
         self,
-        phase_log: List[dict],
-        duration_minutes: Optional[int],
-        total_extensions_minutes: Optional[int],
+        phase_log: list[dict],
+        duration_minutes: int | None,
+        total_extensions_minutes: int | None,
     ) -> dict:
         """Detect if total execution duration exceeded configured time limit.
 
@@ -345,7 +344,7 @@ class SubagentStopHook:
     def _populate_aggregated_failures(
         self,
         result: HookResult,
-        errors: List[tuple],
+        errors: list[tuple],
         step_file_path: str,
         step_data: dict,
     ) -> None:
@@ -444,7 +443,7 @@ class SubagentStopHook:
         # Update step file state to FAILED
         self._update_step_file_state(step_file_path, step_data, result.error_message)
 
-    def _generate_recovery_suggestions(self, errors: List[tuple]) -> List[str]:
+    def _generate_recovery_suggestions(self, errors: list[tuple]) -> list[str]:
         """Generate actionable recovery suggestions based on validation errors.
 
         Args:

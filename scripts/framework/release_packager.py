@@ -1,12 +1,11 @@
 """Release packaging and validation system for nWave Framework."""
 
-import json
 import hashlib
+import json
 import zipfile
-from pathlib import Path
 from dataclasses import dataclass
-from typing import Dict, List, Optional
 from enum import Enum
+from pathlib import Path
 
 
 class Platform(Enum):
@@ -21,8 +20,8 @@ class BuildValidationResult:
     """Result of build output validation."""
 
     valid: bool
-    missing_files: List[str]
-    error_message: Optional[str] = None
+    missing_files: list[str]
+    error_message: str | None = None
 
 
 @dataclass
@@ -285,7 +284,7 @@ class ChecksumGenerator:
         return sha256_hash.hexdigest()
 
     @staticmethod
-    def generate_checksums_file(archive_paths: List[str], output_path: Path) -> str:
+    def generate_checksums_file(archive_paths: list[str], output_path: Path) -> str:
         """Generate checksums file in standard format."""
         checksums = {}
         for archive_path in archive_paths:
@@ -444,7 +443,7 @@ class ReleasePackager:
         self.readme_gen = ReadmeGenerator()
         self.dist_dir = self.project_root / "dist"
 
-    def package_release(self) -> Dict:
+    def package_release(self) -> dict:
         """Execute complete release packaging workflow."""
         # Validate build outputs
         validation = self.builder.validate_build_outputs()

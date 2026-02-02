@@ -7,9 +7,10 @@ These tests verify the port interface contract:
 - Exception types for network and rate limit errors
 """
 
-import pytest
-from abc import ABC
 import inspect
+from abc import ABC
+
+import pytest
 
 
 class TestGitHubApiPortIsAbstract:
@@ -71,8 +72,9 @@ class TestReturnTypeIncludesVersion:
 
     def test_release_info_has_version_field(self):
         """ReleaseInfo must have a version field."""
-        from nWave.core.versioning.ports.github_api_port import ReleaseInfo
         import dataclasses
+
+        from nWave.core.versioning.ports.github_api_port import ReleaseInfo
 
         assert dataclasses.is_dataclass(ReleaseInfo), "ReleaseInfo must be a dataclass"
         field_names = [f.name for f in dataclasses.fields(ReleaseInfo)]
@@ -80,9 +82,10 @@ class TestReturnTypeIncludesVersion:
 
     def test_release_info_version_is_version_type(self):
         """ReleaseInfo.version must be of type Version."""
-        from nWave.core.versioning.ports.github_api_port import ReleaseInfo
-        from nWave.core.versioning.domain.version import Version
         from typing import get_type_hints
+
+        from nWave.core.versioning.domain.version import Version
+        from nWave.core.versioning.ports.github_api_port import ReleaseInfo
 
         hints = get_type_hints(ReleaseInfo)
         assert hints.get("version") == Version, (
@@ -95,16 +98,18 @@ class TestReturnTypeIncludesChecksum:
 
     def test_release_info_has_checksum_field(self):
         """ReleaseInfo must have a checksum field."""
-        from nWave.core.versioning.ports.github_api_port import ReleaseInfo
         import dataclasses
+
+        from nWave.core.versioning.ports.github_api_port import ReleaseInfo
 
         field_names = [f.name for f in dataclasses.fields(ReleaseInfo)]
         assert "checksum" in field_names, "ReleaseInfo must have 'checksum' field"
 
     def test_release_info_checksum_is_string_type(self):
         """ReleaseInfo.checksum must be of type str."""
-        from nWave.core.versioning.ports.github_api_port import ReleaseInfo
         from typing import get_type_hints
+
+        from nWave.core.versioning.ports.github_api_port import ReleaseInfo
 
         hints = get_type_hints(ReleaseInfo)
         assert hints.get("checksum") is str, "ReleaseInfo.checksum must be typed as str"
@@ -115,8 +120,9 @@ class TestReturnTypeIncludesDownloadUrl:
 
     def test_release_info_has_download_url_field(self):
         """ReleaseInfo must have a download_url field."""
-        from nWave.core.versioning.ports.github_api_port import ReleaseInfo
         import dataclasses
+
+        from nWave.core.versioning.ports.github_api_port import ReleaseInfo
 
         field_names = [f.name for f in dataclasses.fields(ReleaseInfo)]
         assert "download_url" in field_names, (
@@ -125,8 +131,9 @@ class TestReturnTypeIncludesDownloadUrl:
 
     def test_release_info_download_url_is_string_type(self):
         """ReleaseInfo.download_url must be of type str."""
-        from nWave.core.versioning.ports.github_api_port import ReleaseInfo
         from typing import get_type_hints
+
+        from nWave.core.versioning.ports.github_api_port import ReleaseInfo
 
         hints = get_type_hints(ReleaseInfo)
         assert hints.get("download_url") is str, (

@@ -15,7 +15,6 @@ import json
 import subprocess
 from unittest.mock import Mock, patch
 
-
 from src.des.validation.scope_validator import ScopeValidator
 
 
@@ -535,7 +534,7 @@ class TestStepFileImplicitAllowlist:
 
         # Mock git showing step file modified
         with patch("subprocess.run") as mock_run:
-            mock_run.return_value = Mock(stdout=f"{str(step_file)}\n", returncode=0)
+            mock_run.return_value = Mock(stdout=f"{step_file!s}\n", returncode=0)
 
             # Act
             result = validator.validate_scope(
@@ -570,7 +569,7 @@ class TestStepFileImplicitAllowlist:
         # Mock git showing step file + out-of-scope file
         with patch("subprocess.run") as mock_run:
             mock_run.return_value = Mock(
-                stdout=f"{str(step_file)}\nsrc/services/OrderService.py\n",
+                stdout=f"{step_file!s}\nsrc/services/OrderService.py\n",
                 returncode=0,
             )
 
@@ -607,7 +606,7 @@ class TestStepFileImplicitAllowlist:
 
         # Mock git showing step file modified
         with patch("subprocess.run") as mock_run:
-            mock_run.return_value = Mock(stdout=f"{str(step_file)}\n", returncode=0)
+            mock_run.return_value = Mock(stdout=f"{step_file!s}\n", returncode=0)
 
             # Act
             result = validator.validate_scope(

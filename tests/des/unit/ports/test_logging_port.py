@@ -17,10 +17,10 @@ def test_logging_port_interface_defines_required_methods():
     When: Interface is inspected
     Then: All required methods are defined as abstract
     """
-    from src.des.ports.driven_ports.logging_port import LoggingPort
-
     # Verify it's an abstract base class
     from abc import ABC
+
+    from src.des.ports.driven_ports.logging_port import LoggingPort
 
     assert issubclass(LoggingPort, ABC)
 
@@ -158,8 +158,8 @@ def test_silent_logger_implements_logging_port():
     When: Class is inspected
     Then: It is an instance of LoggingPort
     """
-    from src.des.ports.driven_ports.logging_port import LoggingPort
     from src.des.adapters.driven.logging.silent_logger import SilentLogger
+    from src.des.ports.driven_ports.logging_port import LoggingPort
 
     logger = SilentLogger()
     assert isinstance(logger, LoggingPort)
@@ -173,8 +173,8 @@ def test_structured_logger_implements_logging_port():
     When: Class is inspected
     Then: It is an instance of LoggingPort
     """
-    from src.des.ports.driven_ports.logging_port import LoggingPort
     from src.des.adapters.driven.logging.structured_logger import StructuredLogger
+    from src.des.ports.driven_ports.logging_port import LoggingPort
 
     logger = StructuredLogger()
     assert isinstance(logger, LoggingPort)

@@ -12,8 +12,8 @@ Tests the integration between DES Orchestrator and RecoveryGuidanceHandler:
 
 import json
 
-from src.des.application.recovery_guidance_handler import RecoveryGuidanceHandler
 from src.des.application.hooks import SubagentStopHook
+from src.des.application.recovery_guidance_handler import RecoveryGuidanceHandler
 
 
 # Test data builders (Compose Method - L3 responsibility organization)

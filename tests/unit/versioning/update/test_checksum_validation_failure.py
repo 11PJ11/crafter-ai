@@ -17,7 +17,6 @@ Acceptance Criteria:
 
 from unittest.mock import MagicMock
 
-
 # Domain objects - REAL, never mocked
 from nWave.core.versioning.domain.version import Version
 
