@@ -13,6 +13,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 from crafter_ai.installer.adapters.build_adapter import SubprocessBuildAdapter
+from crafter_ai.installer.adapters.git_adapter import SubprocessGitAdapter
 from crafter_ai.installer.checks.build_checks import create_build_check_registry
 from crafter_ai.installer.domain.artifact_registry import ArtifactRegistry
 from crafter_ai.installer.domain.candidate_version import BumpType, CandidateVersion
@@ -43,7 +44,8 @@ def create_build_service() -> BuildService:
     registry = create_build_check_registry()
     check_executor = CheckExecutor(registry)
     build_port = SubprocessBuildAdapter()
-    version_bump_service = VersionBumpService()
+    git_port = SubprocessGitAdapter()
+    version_bump_service = VersionBumpService(git_port)
     wheel_validation_service = WheelValidationService()
     artifact_registry = ArtifactRegistry()
 
