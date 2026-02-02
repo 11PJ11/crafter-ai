@@ -70,9 +70,14 @@ class TestAuditLoggingIntegration:
                 hook = RealSubagentStopHook()
                 hook.on_agent_complete(str(step_file))
 
-                # Assert: AuditLogger.append() called with SCOPE_VIOLATION event
-                mock_audit_logger.append.assert_called_once()
-                logged_event = mock_audit_logger.append.call_args[0][0]
+                # Assert: SCOPE_VIOLATION event logged (filter out HOOK_SUBAGENT_STOP events)
+                scope_events = [
+                    call[0][0]
+                    for call in mock_audit_logger.append.call_args_list
+                    if call[0][0]["event"] == "SCOPE_VIOLATION"
+                ]
+                assert len(scope_events) == 1
+                logged_event = scope_events[0]
 
                 assert logged_event["event"] == "SCOPE_VIOLATION"
                 assert logged_event["severity"] == "WARNING"
@@ -134,14 +139,18 @@ class TestAuditLoggingIntegration:
                 hook = RealSubagentStopHook()
                 hook.on_agent_complete(str(step_file))
 
-                # Assert: AuditLogger.append() called 3 times (once per violation)
-                assert mock_audit_logger.append.call_count == 3
+                # Assert: 3 SCOPE_VIOLATION events logged (filter out HOOK_SUBAGENT_STOP)
+                scope_events = [
+                    call[0][0]
+                    for call in mock_audit_logger.append.call_args_list
+                    if call[0][0]["event"] == "SCOPE_VIOLATION"
+                ]
+                assert len(scope_events) == 3
 
                 # Verify each call logged correct file
                 for idx, out_of_scope_file in enumerate(out_of_scope_files):
-                    logged_event = mock_audit_logger.append.call_args_list[idx][0][0]
-                    assert logged_event["event"] == "SCOPE_VIOLATION"
-                    assert logged_event["out_of_scope_file"] == out_of_scope_file
+                    assert scope_events[idx]["event"] == "SCOPE_VIOLATION"
+                    assert scope_events[idx]["out_of_scope_file"] == out_of_scope_file
 
     def test_hook_does_not_log_when_no_violations(self, tmp_path):
         """
@@ -190,8 +199,13 @@ class TestAuditLoggingIntegration:
                 hook = RealSubagentStopHook()
                 hook.on_agent_complete(str(step_file))
 
-                # Assert: AuditLogger.append() NOT called
-                mock_audit_logger.append.assert_not_called()
+                # Assert: No SCOPE_VIOLATION events logged (HOOK_SUBAGENT_STOP may exist)
+                scope_events = [
+                    call[0][0]
+                    for call in mock_audit_logger.append.call_args_list
+                    if call[0][0]["event"] == "SCOPE_VIOLATION"
+                ]
+                assert len(scope_events) == 0
 
     def test_hook_includes_allowed_patterns_in_audit_event(self, tmp_path):
         """
@@ -244,6 +258,11 @@ class TestAuditLoggingIntegration:
                 hook = RealSubagentStopHook()
                 hook.on_agent_complete(str(step_file))
 
-                # Assert: Audit event includes allowed_patterns
-                logged_event = mock_audit_logger.append.call_args[0][0]
-                assert logged_event["allowed_patterns"] == allowed_patterns
+                # Assert: SCOPE_VIOLATION event includes allowed_patterns
+                scope_events = [
+                    call[0][0]
+                    for call in mock_audit_logger.append.call_args_list
+                    if call[0][0]["event"] == "SCOPE_VIOLATION"
+                ]
+                assert len(scope_events) >= 1
+                assert scope_events[0]["allowed_patterns"] == allowed_patterns
