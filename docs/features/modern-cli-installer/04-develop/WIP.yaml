@@ -5,7 +5,7 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 
 meta:
-  generated_at: "2026-02-03T04:00:00Z"
+  generated_at: "2026-02-03T05:30:00Z"
   project: "modern-cli-installer"
   phase: "05"
   phase_name: "Cross-Cutting Concerns"
@@ -14,12 +14,12 @@ meta:
 # STEP CONTRACT
 # ─────────────────────────────────────────────────────────────────────────────
 step:
-  id: "05-01"
-  name: "Create RollbackService for automatic and manual rollback"
+  id: "05-03"
+  name: "Create integration checkpoint display"
   agent: "software-crafter"
-  estimated_hours: 4
+  estimated_hours: 2
   dependencies_satisfied: true
-  user_stories: ["US-040"]
+  user_stories: ["US-003"]
 
 # ─────────────────────────────────────────────────────────────────────────────
 # CRITICAL: OUTSIDE-IN TDD ENFORCEMENT
@@ -28,93 +28,101 @@ tdd_approach:
   method: "OUTSIDE-IN"
 
   driving_test:
-    file: "docs/features/modern-cli-installer/03-distill/e2e-scenarios/test_journey_3_pypi.py"
-    function: "test_automatic_rollback_on_installation_failure"
-    feature_file: "docs/features/modern-cli-installer/03-distill/features/journey_3_pypi.feature"
-    scenario: "Automatic rollback on installation failure"
+    file: "docs/features/modern-cli-installer/03-distill/e2e-scenarios/test_horizontal_coherence.py"
+    function: "test_integration_checkpoint_displays_at_build_to_install_transition"
+    feature_file: "docs/features/modern-cli-installer/03-distill/features/horizontal_coherence.feature"
+    scenario: "Integration checkpoint displays at build-to-install transition"
 
   execution_order:
     step_1:
       action: "Run the E2E test FIRST"
-      command: "pytest docs/features/modern-cli-installer/03-distill/e2e-scenarios/test_journey_3_pypi.py::test_automatic_rollback_on_installation_failure -v"
-      expected: "FAIL (missing RollbackService or assertion failure)"
+      command: "pytest docs/features/modern-cli-installer/03-distill/e2e-scenarios/ -k 'checkpoint' -v --tb=short 2>&1 | head -100"
+      expected: "FAIL (missing CheckpointService or NotImplementedError)"
       purpose: "See the failing test that will drive implementation"
 
     step_2:
-      action: "Write unit tests for RollbackService"
-      file: "tests/installer/services/test_rollback_service.py"
+      action: "Write unit tests for IntegrationCheckpointService"
+      file: "tests/installer/services/test_integration_checkpoint_service.py"
       purpose: "Define expected behavior through tests"
 
     step_3:
-      action: "Implement RollbackService"
-      file: "src/crafter_ai/installer/services/rollback_service.py"
+      action: "Implement IntegrationCheckpointService"
+      file: "src/crafter_ai/installer/services/integration_checkpoint_service.py"
       purpose: "Make unit tests pass"
 
     step_4:
       action: "Run E2E test again"
-      command: "pytest docs/features/modern-cli-installer/03-distill/e2e-scenarios/test_journey_3_pypi.py::test_automatic_rollback_on_installation_failure -v"
-      expected: "Test progresses further (may still fail on CLI wiring)"
+      command: "pytest docs/features/modern-cli-installer/03-distill/e2e-scenarios/ -k 'checkpoint' -v --tb=short 2>&1 | head -100"
+      expected: "Test progresses further (may still fail on full wiring)"
       purpose: "Verify service integration"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # INPUT: What the agent receives (READ-ONLY context)
 # ─────────────────────────────────────────────────────────────────────────────
 input:
-  source_file: "src/crafter_ai/installer/services/rollback_service.py"
-  test_file: "tests/installer/services/test_rollback_service.py"
+  source_file: "src/crafter_ai/installer/services/integration_checkpoint_service.py"
+  test_file: "tests/installer/services/test_integration_checkpoint_service.py"
 
   existing_code:
-    backup_port: "src/crafter_ai/installer/ports/backup_port.py"
-    backup_adapter: "src/crafter_ai/installer/adapters/backup_adapter.py"
-    install_service: "src/crafter_ai/installer/services/install_service.py"
-    health_checker: "src/crafter_ai/installer/domain/health_checker.py"
+    artifact_registry: "src/crafter_ai/installer/domain/artifact_registry.py"
+    wheel_validation: "src/crafter_ai/installer/services/wheel_validation_service.py"
+    progress_display: "src/crafter_ai/installer/services/progress_display_service.py"
 
   e2e_scenarios:
-    - "journey_3_pypi.feature::Automatic rollback on installation failure"
-    - "journey_3_pypi.feature::Manual rollback command"
-    - "journey_3_pypi.feature::Fresh install failure with no backup"
-    - "journey_3_pypi.feature::Rollback with no available backups"
+    - "horizontal_coherence.feature::Integration checkpoint displays at build-to-install transition"
+    - "horizontal_coherence.feature::Integration checkpoint verifies version consistency"
+    - "horizontal_coherence.feature::Integration checkpoint verifies count consistency"
+    - "horizontal_coherence.feature::Integration checkpoint blocks on version mismatch"
 
   requirements:
-    rollback_service:
-      - "RollbackService uses BackupPort via dependency injection"
-      - "auto_rollback(error: Exception) -> RollbackResult"
-      - "  - Triggered on install failure"
-      - "  - Finds most recent backup via BackupPort.list_backups()"
-      - "  - Cleans partial install files before restore"
-      - "  - Restores from backup via BackupPort.restore_backup()"
-      - "  - Returns RollbackResult with success/failure info"
-      - "manual_rollback(backup_path: Path) -> RollbackResult"
-      - "  - For nw rollback command (CLI layer will call this)"
-      - "  - Restores specified backup"
-      - "  - Runs health check after restore"
-      - "list_available_backups() -> list[BackupInfo]"
-      - "  - Returns available backups with timestamps"
-      - "  - Sorted by date (newest first)"
+    checkpoint_service:
+      - "IntegrationCheckpointService uses ArtifactRegistry via dependency injection"
+      - "verify_checkpoint(expected: CheckpointData, actual: CheckpointData) -> CheckpointResult"
+      - "CheckpointData dataclass: version, wheel_path, agent_count, command_count, template_count"
+      - "CheckpointResult dataclass: passed, mismatches list, display_data"
 
-    rollback_result:
-      - "RollbackResult dataclass with:"
-      - "  - success: bool"
-      - "  - restored_version: str | None"
-      - "  - backup_timestamp: datetime | None"
-      - "  - error_message: str | None"
-      - "  - health_status: HealthStatus | None (after restore)"
+    verification_checks:
+      - "Version matches build: compare expected vs actual version strings"
+      - "Wheel path verified: check path exists and matches expected"
+      - "Artifact counts consistent: agent_count, command_count, template_count all match"
+
+    display_format:
+      - "Header: 'INTEGRATION CHECKPOINT' in a box"
+      - "Each check shows: check name + checkmark (if passed) or X (if failed)"
+      - "On mismatch: show 'Expected: X' and 'Found: Y' details"
+      - "Returns display-ready data for CLI to render"
+
+    checkpoint_data:
+      - "CheckpointData frozen dataclass with:"
+      - "  - version: str"
+      - "  - wheel_path: Path | None"
+      - "  - agent_count: int"
+      - "  - command_count: int"
+      - "  - template_count: int"
+
+    checkpoint_result:
+      - "CheckpointResult dataclass with:"
+      - "  - passed: bool (all checks passed)"
+      - "  - mismatches: list[str] (description of each mismatch)"
+      - "  - version_match: bool"
+      - "  - wheel_path_match: bool"
+      - "  - counts_match: bool"
+      - "  - display_lines: list[str] (formatted output lines)"
 
     error_handling:
-      - "No backups available: return error with 'No backups available'"
-      - "Backup restore fails: return error with details"
-      - "Fresh install failure: return specific message 'No previous version to restore'"
+      - "Version mismatch: return detailed mismatch info"
+      - "Wheel path mismatch: return expected vs actual paths"
+      - "Count mismatch: show which count differs and by how much"
 
   test_requirements:
-    - "Test auto_rollback restores from most recent backup"
-    - "Test auto_rollback cleans partial files before restore"
-    - "Test auto_rollback returns success with restored version"
-    - "Test auto_rollback returns error when no backups exist"
-    - "Test manual_rollback restores specified backup"
-    - "Test manual_rollback runs health check after restore"
-    - "Test list_available_backups returns sorted list"
-    - "Test list_available_backups returns empty list when none exist"
-    - "Mock BackupPort for isolated testing"
+    - "Test verify_checkpoint passes when all data matches"
+    - "Test verify_checkpoint fails when version mismatches"
+    - "Test verify_checkpoint fails when wheel_path mismatches"
+    - "Test verify_checkpoint fails when counts mismatch"
+    - "Test display_lines includes 'INTEGRATION CHECKPOINT' header"
+    - "Test display_lines shows checkmarks for passed checks"
+    - "Test display_lines shows X for failed checks"
+    - "Test mismatch details show expected vs actual values"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # CONSTRAINTS: Rules the agent MUST follow
@@ -125,27 +133,28 @@ constraints:
   fail_fast: true
 
   mandatory_sequence:
-    - "1. Run E2E test FIRST (see it fail)"
-    - "2. Write unit tests for RollbackService"
-    - "3. Implement RollbackService to make unit tests pass"
+    - "1. Run E2E checkpoint tests FIRST (see them fail)"
+    - "2. Write unit tests for IntegrationCheckpointService"
+    - "3. Implement IntegrationCheckpointService to make unit tests pass"
     - "4. Run E2E test again (verify progress)"
     - "5. Run all unit tests"
     - "6. Commit changes"
 
   allowed_actions:
-    - "Read existing BackupPort and BackupAdapter"
+    - "Read existing ArtifactRegistry"
     - "Read E2E test files"
-    - "Create RollbackService source file"
-    - "Create RollbackService test file"
+    - "Read progress_display_service.py as pattern reference"
+    - "Create IntegrationCheckpointService source file"
+    - "Create IntegrationCheckpointService test file"
     - "Run pytest on unit tests"
-    - "Run pytest on E2E test"
+    - "Run pytest on E2E tests"
     - "Commit changes"
 
   forbidden_actions:
     - "DO NOT skip running E2E test first"
-    - "DO NOT modify BackupPort or BackupAdapter"
-    - "DO NOT implement CLI command (that's step 05-02)"
+    - "DO NOT modify ArtifactRegistry"
     - "DO NOT read roadmap.yaml or execution-status.yaml"
+    - "DO NOT wire to CLI (this is service layer only)"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # OUTPUT: What the agent must deliver (AGENT FILLS THIS SECTION)
@@ -154,27 +163,27 @@ output:
   status: complete
 
   e2e_test_before:
-    command: "pytest docs/features/modern-cli-installer/03-distill/e2e-scenarios/test_journey_3_pypi.py::test_automatic_rollback_on_installation_failure -v"
-    result: "FAIL"
-    failure_reason: "E2E test infrastructure not fully wired - RollbackService not connected to CLI layer"
+    command: "pytest docs/features/modern-cli-installer/03-distill/e2e-scenarios/ -k 'checkpoint' -v --tb=short"
+    result: "FAILED"
+    failure_reason: "NotImplementedError: Production code needed for JourneyTransitionService and InstallJourney"
 
   artifacts_created:
-    - "src/crafter_ai/installer/services/rollback_service.py"
-    - "tests/installer/services/test_rollback_service.py"
+    - "src/crafter_ai/installer/services/integration_checkpoint_service.py"
+    - "tests/installer/services/test_integration_checkpoint_service.py"
 
   unit_test_result:
-    command: "pytest tests/installer/services/test_rollback_service.py -v"
-    tests_passed: 11
+    command: "pytest tests/installer/services/test_integration_checkpoint_service.py -v"
+    tests_passed: 21
     tests_failed: 0
 
   e2e_test_after:
-    command: "pytest docs/features/modern-cli-installer/03-distill/e2e-scenarios/test_journey_3_pypi.py::test_automatic_rollback_on_installation_failure -v"
-    result: "FAIL"
-    failure_reason: "E2E test expected - CLI layer integration pending (step 05-02)"
+    command: "pytest docs/features/modern-cli-installer/03-distill/e2e-scenarios/ -k 'checkpoint' -v --tb=short"
+    result: "FAILED"
+    failure_reason: "Service layer complete; E2E still needs JourneyTransitionService wiring (separate step)"
 
-  commit_hash: "321b3ab72653e29efdfd83c8358b809347fc5935"
-  commit_message: "feat(installer): add partial file cleanup to rollback service"
-  notes: "RollbackService now cleans partial install files before restore as per WIP requirements"
+  commit_hash: "b4f9db2"
+  commit_message: "feat(installer): add integration checkpoint service for build-to-install verification"
+  notes: "IntegrationCheckpointService complete with CheckpointData and CheckpointResult dataclasses. 21 unit tests pass. E2E tests fail on wiring layer (JourneyTransitionService), not on checkpoint service - this is expected per WIP.yaml scope."
 
 # ─────────────────────────────────────────────────────────────────────────────
 # SUCCESS CRITERIA
@@ -183,11 +192,14 @@ success_criteria:
   - criterion: "E2E test ran BEFORE implementation"
     validation: "output.e2e_test_before.result is not empty"
 
-  - criterion: "RollbackService created with required methods"
-    validation: "src/crafter_ai/installer/services/rollback_service.py exists"
+  - criterion: "IntegrationCheckpointService created with verify_checkpoint method"
+    validation: "src/crafter_ai/installer/services/integration_checkpoint_service.py exists"
+
+  - criterion: "CheckpointData and CheckpointResult dataclasses created"
+    validation: "Dataclasses defined in service module"
 
   - criterion: "Unit tests pass"
     validation: "output.unit_test_result.tests_failed == 0"
 
-  - criterion: "Uses BackupPort via dependency injection"
-    validation: "RollbackService.__init__ accepts BackupPort parameter"
+  - criterion: "Service provides display-ready output"
+    validation: "CheckpointResult.display_lines returns formatted strings"
