@@ -3,6 +3,7 @@
 This module provides the InstallService application service that orchestrates:
 - Pre-flight checks via CheckExecutor
 - Release readiness validation via ReleaseReadinessService
+- Upgrade path detection (FRESH_INSTALL, UPGRADE, REINSTALL, DOWNGRADE)
 - Backup creation via BackupPort
 - Package installation via PipxPort
 - Verification via HealthChecker (post-install health checks)
@@ -10,9 +11,12 @@ This module provides the InstallService application service that orchestrates:
 Used by: forge:install-local CLI command
 """
 
+import re
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
+
+from packaging.version import InvalidVersion, Version
 
 from crafter_ai.installer.domain.check_executor import CheckExecutor
 from crafter_ai.installer.domain.check_result import CheckSeverity
@@ -23,6 +27,21 @@ from crafter_ai.installer.ports.pipx_port import PipxPort
 from crafter_ai.installer.services.release_readiness_service import (
     ReleaseReadinessService,
 )
+
+
+class UpgradePath(Enum):
+    """Upgrade path classification for install scenarios.
+
+    FRESH_INSTALL: No existing version installed.
+    UPGRADE: Target version > installed version.
+    REINSTALL: Target version == installed version.
+    DOWNGRADE: Target version < installed version.
+    """
+
+    FRESH_INSTALL = "fresh_install"
+    UPGRADE = "upgrade"
+    REINSTALL = "reinstall"
+    DOWNGRADE = "downgrade"
 
 
 class InstallPhase(Enum):
@@ -164,19 +183,149 @@ class InstallService:
             warnings=warnings,
         )
 
-    def install(self, wheel_path: Path, force: bool = False) -> InstallResult:
+    def _get_installed_version(self) -> str | None:
+        """Query pipx for the currently installed crafter-ai version.
+
+        Returns:
+            Version string if installed, None if not installed.
+        """
+        packages = self._pipx_port.list_packages()
+        for pkg in packages:
+            if pkg.name == "crafter-ai":
+                return pkg.version
+        return None
+
+    def _extract_version_from_wheel(self, wheel_path: Path) -> str | None:
+        """Extract version from wheel filename.
+
+        Args:
+            wheel_path: Path to wheel file.
+
+        Returns:
+            Version string extracted from filename, or None if extraction fails.
+        """
+        # Wheel filename format: {distribution}-{version}(-{build tag})?-{python}-{abi}-{platform}.whl
+        # Example: crafter_ai-1.3.0-py3-none-any.whl
+        filename = wheel_path.name
+        match = re.match(r"[^-]+-([^-]+)-", filename)
+        if match:
+            return match.group(1)
+        return None
+
+    def _compare_versions(
+        self, installed: str | None, target: str | None
+    ) -> UpgradePath:
+        """Compare installed and target versions.
+
+        Args:
+            installed: Currently installed version, or None.
+            target: Target version to install, or None.
+
+        Returns:
+            UpgradePath classification.
+        """
+        if installed is None:
+            return UpgradePath.FRESH_INSTALL
+
+        if target is None:
+            return UpgradePath.FRESH_INSTALL
+
+        try:
+            installed_ver = Version(installed)
+            target_ver = Version(target)
+
+            if target_ver > installed_ver:
+                return UpgradePath.UPGRADE
+            elif target_ver < installed_ver:
+                return UpgradePath.DOWNGRADE
+            else:
+                return UpgradePath.REINSTALL
+        except InvalidVersion:
+            # If version parsing fails, treat as fresh install
+            return UpgradePath.FRESH_INSTALL
+
+    def detect_upgrade_path(self, target_version: str) -> UpgradePath:
+        """Detect the upgrade path based on installed vs target version.
+
+        Args:
+            target_version: Version to be installed.
+
+        Returns:
+            UpgradePath classification (FRESH_INSTALL, UPGRADE, REINSTALL, DOWNGRADE).
+        """
+        installed_version = self._get_installed_version()
+        return self._compare_versions(installed_version, target_version)
+
+    def should_create_backup(self, upgrade_path: UpgradePath) -> bool:
+        """Determine if a backup should be created for the given upgrade path.
+
+        Args:
+            upgrade_path: The detected upgrade path.
+
+        Returns:
+            True if backup should be created, False otherwise.
+        """
+        # Fresh install doesn't need backup (nothing to back up)
+        # All other paths (UPGRADE, REINSTALL, DOWNGRADE) need backup
+        return upgrade_path != UpgradePath.FRESH_INSTALL
+
+    def get_upgrade_message(
+        self, upgrade_path: UpgradePath, from_ver: str | None, to_ver: str
+    ) -> str:
+        """Get a human-readable message for the upgrade path.
+
+        Args:
+            upgrade_path: The detected upgrade path.
+            from_ver: Currently installed version (None for fresh install).
+            to_ver: Target version to install.
+
+        Returns:
+            Human-readable message describing the upgrade path.
+        """
+        if upgrade_path == UpgradePath.FRESH_INSTALL:
+            return f"Installing crafter-ai {to_ver} (fresh install)"
+
+        if upgrade_path == UpgradePath.UPGRADE:
+            return f"Upgrading crafter-ai from {from_ver} to {to_ver}"
+
+        if upgrade_path == UpgradePath.REINSTALL:
+            return f"crafter-ai {to_ver} is already installed. Reinstall?"
+
+        if upgrade_path == UpgradePath.DOWNGRADE:
+            return f"Warning: Downgrading crafter-ai from {from_ver} to {to_ver} (older version)"
+
+        return f"Installing crafter-ai {to_ver}"
+
+    def install(
+        self, wheel_path: Path, force: bool = False, ci_mode: bool = False
+    ) -> InstallResult:
         """Execute the complete install journey.
 
-        Orchestrates: preflight -> readiness -> backup -> install -> verification
+        Orchestrates: upgrade detection -> preflight -> readiness -> backup -> install -> verification
 
         Args:
             wheel_path: Path to the wheel file to install.
             force: If True, force reinstall even if already installed.
+            ci_mode: If True, auto-proceed without interactive prompts.
 
         Returns:
             InstallResult with complete journey state.
         """
         phases_completed: list[InstallPhase] = []
+
+        # Detect upgrade path before proceeding
+        target_version = self._extract_version_from_wheel(wheel_path)
+        if target_version:
+            upgrade_path = self.detect_upgrade_path(target_version)
+
+            # In CI mode, we auto-proceed for all upgrade paths
+            # For interactive mode, this is where prompts would be handled (CLI layer)
+            # Service layer just detects and reports
+
+            # Create backup if needed (for UPGRADE, REINSTALL, DOWNGRADE)
+            if self.should_create_backup(upgrade_path):
+                # Backup will be handled in Phase 3 below
+                pass
 
         # Phase 1: Preflight checks
         preflight_results = self._check_executor.run_all()
