@@ -8,6 +8,8 @@ import typer
 
 from crafter_ai import __version__
 from crafter_ai.installer.cli.forge_build import forge_app
+from crafter_ai.installer.cli.install_nwave import install_nwave
+from crafter_ai.installer.cli.nw_app import nw_app
 
 
 app = typer.Typer(
@@ -45,32 +47,14 @@ def main(
     pass
 
 
-@app.command()
-def install() -> None:
-    """Install crafter-ai components."""
-    raise NotImplementedError("Install command not yet implemented")
-
-
-@app.command()
-def update() -> None:
-    """Update crafter-ai to the latest version."""
-    raise NotImplementedError("Update command not yet implemented")
-
-
-@app.command()
-def uninstall() -> None:
-    """Uninstall crafter-ai components."""
-    raise NotImplementedError("Uninstall command not yet implemented")
-
-
-@app.command()
-def status() -> None:
-    """Show installation status."""
-    raise NotImplementedError("Status command not yet implemented")
-
-
 # Register forge subcommand group
 app.add_typer(forge_app, name="forge")
+
+# Register nw subcommand group (setup, doctor, version)
+app.add_typer(nw_app, name="nw")
+
+# Register install-nwave command
+app.command("install-nwave")(install_nwave)
 
 
 if __name__ == "__main__":

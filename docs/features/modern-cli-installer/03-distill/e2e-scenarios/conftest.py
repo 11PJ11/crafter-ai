@@ -18,6 +18,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from typer.testing import CliRunner
+
+# Import the production CLI app
+from crafter_ai.cli import app
+
 # Import mock adapters
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent / "fixtures"))
@@ -35,6 +40,9 @@ from mock_filesystem import MockFileSystemAdapter
 from mock_git import MockGitAdapter
 from mock_pipx import MockPipxAdapter
 from mock_build import MockBuildAdapter, MockWheelValidator
+
+# CLI runner for invoking production commands
+cli_runner = CliRunner()
 
 
 # =============================================================================
@@ -403,30 +411,42 @@ def no_previous_install(mock_filesystem: MockFileSystemAdapter):
 
 @when(parsers.parse('the developer runs "{command}"'))
 def developer_runs_command(test_context: TestContext, command: str):
-    """Execute command (simulated)."""
+    """Execute command via production CLI."""
     test_context.command_executed = command
-    # Command execution would be implemented here
-    # For now, just record the command
-    raise NotImplementedError(
-        f"Production code needed: Execute command '{command}' via BuildService/InstallService"
-    )
+    # Parse command into args (remove 'crafter-ai' prefix if present)
+    args = command.replace("crafter-ai ", "").split()
+    result = cli_runner.invoke(app, args)
+    test_context.exit_code = result.exit_code
+    if result.output:
+        test_context.messages.append(result.output)
+    if result.exception and not isinstance(result.exception, SystemExit):
+        test_context.errors.append(str(result.exception))
 
 
 @when(parsers.parse('the user runs "{command}"'))
 def user_runs_command(test_context: TestContext, command: str):
-    """Execute command for user (Journey 3)."""
+    """Execute command for user via production CLI (Journey 3)."""
     test_context.command_executed = command
-    raise NotImplementedError(
-        f"Production code needed: Execute command '{command}' via InstallService"
-    )
+    # Parse command into args (remove 'crafter-ai' prefix if present)
+    args = command.replace("crafter-ai ", "").split()
+    result = cli_runner.invoke(app, args)
+    test_context.exit_code = result.exit_code
+    if result.output:
+        test_context.messages.append(result.output)
+    if result.exception and not isinstance(result.exception, SystemExit):
+        test_context.errors.append(str(result.exception))
 
 
 @when("the pre-flight checks run")
 def preflight_runs(test_context: TestContext):
-    """Run pre-flight checks."""
-    raise NotImplementedError(
-        "Production code needed: Execute PreflightService.run()"
-    )
+    """Run pre-flight checks via production CLI."""
+    # Pre-flight checks are part of install-nwave command
+    # For isolated testing, we run nw doctor which performs similar checks
+    result = cli_runner.invoke(app, ["nw", "doctor"])
+    test_context.exit_code = result.exit_code
+    test_context.preflight_passed = result.exit_code == 0
+    if result.output:
+        test_context.messages.append(result.output)
 
 
 @when("the version resolution runs")
@@ -463,10 +483,13 @@ def summary_displays(test_context: TestContext):
 
 @when("the doctor verification runs")
 def doctor_runs(test_context: TestContext):
-    """Run doctor verification."""
-    raise NotImplementedError(
-        "Production code needed: Execute DoctorService.run()"
-    )
+    """Run doctor verification via production CLI."""
+    result = cli_runner.invoke(app, ["nw", "doctor"])
+    test_context.doctor_ran = True
+    test_context.exit_code = result.exit_code
+    test_context.doctor_status = "healthy" if result.exit_code == 0 else "unhealthy"
+    if result.output:
+        test_context.messages.append(result.output)
 
 
 @when(parsers.parse('the developer types "{input}"'))
@@ -500,56 +523,65 @@ def user_accepts(test_context: TestContext):
 @then("the pre-flight checks should all pass")
 def all_preflight_pass(test_context: TestContext):
     """Assert all pre-flight checks passed."""
-    raise NotImplementedError(
-        "Production code needed: Verify PreflightResult.can_proceed == True"
+    assert test_context.preflight_passed, (
+        f"Pre-flight checks should pass. Exit code: {test_context.exit_code}, "
+        f"Messages: {test_context.messages}"
     )
 
 
 @then(parsers.parse('the check should display "{expected}"'))
 def check_displays(test_context: TestContext, expected: str):
     """Assert check displayed expected message."""
-    raise NotImplementedError(
-        f"Production code needed: Verify check output contains '{expected}'"
+    output = "\n".join(test_context.messages)
+    assert expected in output, (
+        f"Expected '{expected}' in output. Got: {output}"
     )
 
 
 @then(parsers.parse('the pre-flight check should fail for "{check_name}"'))
 def preflight_fails_for(test_context: TestContext, check_name: str):
     """Assert pre-flight failed for specific check."""
-    raise NotImplementedError(
-        f"Production code needed: Verify CheckResult.passed == False for '{check_name}'"
+    assert not test_context.preflight_passed, (
+        f"Pre-flight should fail for '{check_name}'. "
+        f"Exit code: {test_context.exit_code}"
+    )
+    output = "\n".join(test_context.messages)
+    assert check_name.lower() in output.lower(), (
+        f"Expected check '{check_name}' mentioned in output. Got: {output}"
     )
 
 
 @then(parsers.parse('the error should display "{expected}"'))
 def error_displays(test_context: TestContext, expected: str):
     """Assert error message displayed."""
-    raise NotImplementedError(
-        f"Production code needed: Verify error output contains '{expected}'"
+    all_output = "\n".join(test_context.messages + test_context.errors)
+    assert expected in all_output, (
+        f"Expected error '{expected}' in output. Got: {all_output}"
     )
 
 
 @then(parsers.parse('the status should show "{status}"'))
 def status_shows(test_context: TestContext, status: str):
     """Assert status displayed."""
-    raise NotImplementedError(
-        f"Production code needed: Verify status is '{status}'"
+    output = "\n".join(test_context.messages)
+    assert status.lower() in output.lower(), (
+        f"Expected status '{status}' in output. Got: {output}"
     )
 
 
 @then(parsers.parse('exit code should be {code:d} on success'))
 def exit_code_on_success(test_context: TestContext, code: int):
-    """Assert exit code."""
-    raise NotImplementedError(
-        f"Production code needed: Verify exit code is {code}"
+    """Assert exit code on success."""
+    assert test_context.exit_code == code, (
+        f"Expected exit code {code}, got {test_context.exit_code}"
     )
 
 
 @then(parsers.parse("exit code should be {code:d}"))
 def exit_code(test_context: TestContext, code: int):
     """Assert specific exit code."""
-    raise NotImplementedError(
-        f"Production code needed: Verify exit code is {code}"
+    assert test_context.exit_code == code, (
+        f"Expected exit code {code}, got {test_context.exit_code}"
     )
 
 
