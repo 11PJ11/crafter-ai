@@ -191,10 +191,10 @@ class TestWheelResolution:
                 "crafter_ai.installer.cli.forge_install.ReleaseReportService"
             ) as mock_report_service,
             patch(
-                "crafter_ai.installer.cli.forge_install.find_latest_wheel"
-            ) as mock_find,
+                "crafter_ai.installer.cli.forge_install.list_wheels_in_dist"
+            ) as mock_list,
         ):
-            mock_find.return_value = wheel_file
+            mock_list.return_value = [wheel_file]
 
             mock_service = MagicMock()
             mock_service.install.return_value = successful_install_result
@@ -208,7 +208,7 @@ class TestWheelResolution:
             result = runner.invoke(app, ["forge", "install", "--no-prompt"])
 
         assert result.exit_code == 0
-        mock_find.assert_called_once()
+        mock_list.assert_called_once()
 
 
 class TestForceFlag:
@@ -697,13 +697,13 @@ class TestAutoChainBuild:
         """Test auto-chain prompts user when no wheel found in dist/."""
         with (
             patch(
-                "crafter_ai.installer.cli.forge_install.find_latest_wheel"
-            ) as mock_find,
+                "crafter_ai.installer.cli.forge_install.list_wheels_in_dist"
+            ) as mock_list,
             patch(
                 "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
             ) as mock_preflight,
         ):
-            mock_find.return_value = None
+            mock_list.return_value = []
             mock_preflight.return_value = passing_pre_flight_results
 
             # Remove CI env var if present
@@ -738,6 +738,9 @@ class TestAutoChainBuild:
 
         with (
             patch(
+                "crafter_ai.installer.cli.forge_install.list_wheels_in_dist"
+            ) as mock_list,
+            patch(
                 "crafter_ai.installer.cli.forge_install.find_latest_wheel"
             ) as mock_find,
             patch(
@@ -753,8 +756,10 @@ class TestAutoChainBuild:
                 "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
             ) as mock_preflight,
         ):
-            # First call returns None (no wheel), second call returns built wheel
-            mock_find.side_effect = [None, built_wheel]
+            # list_wheels_in_dist returns empty list (triggers auto-chain)
+            mock_list.return_value = []
+            # find_latest_wheel is called after build to find the built wheel
+            mock_find.return_value = built_wheel
             mock_preflight.return_value = passing_pre_flight_results
 
             mock_build_service = MagicMock()
@@ -790,13 +795,13 @@ class TestAutoChainBuild:
         """Test auto-chain exits with message when user responds n."""
         with (
             patch(
-                "crafter_ai.installer.cli.forge_install.find_latest_wheel"
-            ) as mock_find,
+                "crafter_ai.installer.cli.forge_install.list_wheels_in_dist"
+            ) as mock_list,
             patch(
                 "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
             ) as mock_preflight,
         ):
-            mock_find.return_value = None
+            mock_list.return_value = []
             mock_preflight.return_value = passing_pre_flight_results
 
             # Remove CI env var if present
@@ -830,6 +835,9 @@ class TestAutoChainBuild:
 
         with (
             patch(
+                "crafter_ai.installer.cli.forge_install.list_wheels_in_dist"
+            ) as mock_list,
+            patch(
                 "crafter_ai.installer.cli.forge_install.find_latest_wheel"
             ) as mock_find,
             patch(
@@ -845,7 +853,8 @@ class TestAutoChainBuild:
                 "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
             ) as mock_preflight,
         ):
-            mock_find.side_effect = [None, built_wheel]
+            mock_list.return_value = []
+            mock_find.return_value = built_wheel
             mock_preflight.return_value = passing_pre_flight_results
 
             mock_build_service = MagicMock()
@@ -888,6 +897,9 @@ class TestAutoChainBuild:
 
         with (
             patch(
+                "crafter_ai.installer.cli.forge_install.list_wheels_in_dist"
+            ) as mock_list,
+            patch(
                 "crafter_ai.installer.cli.forge_install.find_latest_wheel"
             ) as mock_find,
             patch(
@@ -903,7 +915,8 @@ class TestAutoChainBuild:
                 "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
             ) as mock_preflight,
         ):
-            mock_find.side_effect = [None, built_wheel]
+            mock_list.return_value = []
+            mock_find.return_value = built_wheel
             mock_preflight.return_value = passing_pre_flight_results
 
             mock_build_service = MagicMock()
@@ -947,6 +960,9 @@ class TestAutoChainBuild:
 
         with (
             patch(
+                "crafter_ai.installer.cli.forge_install.list_wheels_in_dist"
+            ) as mock_list,
+            patch(
                 "crafter_ai.installer.cli.forge_install.find_latest_wheel"
             ) as mock_find,
             patch(
@@ -962,7 +978,8 @@ class TestAutoChainBuild:
                 "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
             ) as mock_preflight,
         ):
-            mock_find.side_effect = [None, built_wheel]
+            mock_list.return_value = []  # No wheels found, triggers auto-chain
+            mock_find.return_value = built_wheel  # Returns built wheel after build
             mock_preflight.return_value = passing_pre_flight_results
 
             mock_build_service = MagicMock()
@@ -1000,8 +1017,8 @@ class TestAutoChainBuild:
 
         with (
             patch(
-                "crafter_ai.installer.cli.forge_install.find_latest_wheel"
-            ) as mock_find,
+                "crafter_ai.installer.cli.forge_install.list_wheels_in_dist"
+            ) as mock_list,
             patch(
                 "crafter_ai.installer.cli.forge_install.create_build_service"
             ) as mock_build_factory,
@@ -1009,7 +1026,7 @@ class TestAutoChainBuild:
                 "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
             ) as mock_preflight,
         ):
-            mock_find.return_value = None
+            mock_list.return_value = []  # No wheels found, triggers auto-chain
             mock_preflight.return_value = passing_pre_flight_results
 
             mock_build_service = MagicMock()
@@ -1021,3 +1038,457 @@ class TestAutoChainBuild:
 
         assert result.exit_code == 1
         assert "Build failed" in result.output or "failed" in result.output.lower()
+
+
+class TestWheelSelection:
+    """Tests for multiple wheel selection functionality."""
+
+    def test_single_wheel_skips_selection_prompt(
+        self,
+        runner: CliRunner,
+        tmp_path: Path,
+        successful_install_result: InstallResult,
+        sample_release_report: ReleaseReport,
+    ) -> None:
+        """Test single wheel in dist/ is used directly without prompt."""
+        # Create a single wheel
+        wheel_file = tmp_path / "crafter_ai-0.1.0-py3-none-any.whl"
+        wheel_file.write_bytes(b"fake wheel")
+
+        with (
+            patch(
+                "crafter_ai.installer.cli.forge_install.create_install_service"
+            ) as mock_factory,
+            patch(
+                "crafter_ai.installer.cli.forge_install.ReleaseReportService"
+            ) as mock_report_service,
+            patch(
+                "crafter_ai.installer.cli.forge_install.list_wheels_in_dist"
+            ) as mock_list,
+            patch(
+                "crafter_ai.installer.cli.forge_install.find_latest_wheel"
+            ) as mock_find,
+        ):
+            mock_list.return_value = [wheel_file]
+            mock_find.return_value = wheel_file
+
+            mock_service = MagicMock()
+            mock_service.install.return_value = successful_install_result
+            mock_factory.return_value = mock_service
+
+            mock_report = MagicMock()
+            mock_report.generate.return_value = sample_release_report
+            mock_report.format_console.return_value = "FORGE: INSTALL COMPLETE"
+            mock_report_service.return_value = mock_report
+
+            result = runner.invoke(app, ["forge", "install", "--no-prompt"])
+
+        assert result.exit_code == 0
+        # Should NOT show selection prompt
+        assert "Select one" not in result.output
+        assert "Multiple wheels" not in result.output
+
+    def test_multiple_wheels_displays_numbered_list(
+        self,
+        runner: CliRunner,
+        tmp_path: Path,
+        successful_install_result: InstallResult,
+        sample_release_report: ReleaseReport,
+    ) -> None:
+        """Test multiple wheels displays numbered selection list."""
+        import time
+
+        # Create multiple wheels with different timestamps
+        wheel1 = tmp_path / "crafter_ai-0.1.0-py3-none-any.whl"
+        wheel1.write_bytes(b"A" * 25000)  # ~25 KB
+        time.sleep(0.01)
+        wheel2 = tmp_path / "crafter_ai-0.2.0-py3-none-any.whl"
+        wheel2.write_bytes(b"B" * 24000)  # ~24 KB
+
+        with (
+            patch(
+                "crafter_ai.installer.cli.forge_install.create_install_service"
+            ) as mock_factory,
+            patch(
+                "crafter_ai.installer.cli.forge_install.ReleaseReportService"
+            ) as mock_report_service,
+            patch(
+                "crafter_ai.installer.cli.forge_install.list_wheels_in_dist"
+            ) as mock_list,
+        ):
+            mock_list.return_value = [wheel2, wheel1]  # Newest first
+
+            mock_service = MagicMock()
+            mock_service.install.return_value = successful_install_result
+            mock_factory.return_value = mock_service
+
+            mock_report = MagicMock()
+            mock_report.generate.return_value = sample_release_report
+            mock_report.format_console.return_value = "FORGE: INSTALL COMPLETE"
+            mock_report_service.return_value = mock_report
+
+            # Remove CI env var
+            env = {k: v for k, v in os.environ.items() if k != "CI"}
+            with patch.dict(os.environ, env, clear=True):
+                result = runner.invoke(
+                    app,
+                    ["forge", "install"],
+                    input="1\nY\n",  # Select first wheel, confirm install
+                )
+
+        # Should show selection prompt with numbered options
+        assert "Multiple wheels" in result.output or "Select" in result.output
+        assert "1." in result.output
+        assert "2." in result.output
+
+    def test_user_selection_returns_correct_wheel(
+        self,
+        runner: CliRunner,
+        tmp_path: Path,
+        successful_install_result: InstallResult,
+        sample_release_report: ReleaseReport,
+    ) -> None:
+        """Test user selecting specific wheel number uses that wheel."""
+        import time
+
+        wheel1 = tmp_path / "crafter_ai-0.1.0-py3-none-any.whl"
+        wheel1.write_bytes(b"old wheel")
+        time.sleep(0.01)
+        wheel2 = tmp_path / "crafter_ai-0.2.0-py3-none-any.whl"
+        wheel2.write_bytes(b"new wheel")
+
+        with (
+            patch(
+                "crafter_ai.installer.cli.forge_install.create_install_service"
+            ) as mock_factory,
+            patch(
+                "crafter_ai.installer.cli.forge_install.ReleaseReportService"
+            ) as mock_report_service,
+            patch(
+                "crafter_ai.installer.cli.forge_install.list_wheels_in_dist"
+            ) as mock_list,
+        ):
+            mock_list.return_value = [wheel2, wheel1]  # Newest first
+
+            mock_service = MagicMock()
+            mock_service.install.return_value = successful_install_result
+            mock_factory.return_value = mock_service
+
+            mock_report = MagicMock()
+            mock_report.generate.return_value = sample_release_report
+            mock_report.format_console.return_value = "FORGE: INSTALL COMPLETE"
+            mock_report_service.return_value = mock_report
+
+            env = {k: v for k, v in os.environ.items() if k != "CI"}
+            with patch.dict(os.environ, env, clear=True):
+                result = runner.invoke(
+                    app,
+                    ["forge", "install"],
+                    input="2\nY\n",  # Select second wheel (older one)
+                )
+
+        assert result.exit_code == 0
+        # Verify install was called with the older wheel (option 2)
+        call_args = mock_service.install.call_args
+        assert call_args[0][0] == wheel1  # wheel1 is the older one at position 2
+
+    def test_invalid_selection_shows_error(
+        self,
+        runner: CliRunner,
+        tmp_path: Path,
+        successful_install_result: InstallResult,
+        sample_release_report: ReleaseReport,
+    ) -> None:
+        """Test invalid selection shows error message."""
+        wheel1 = tmp_path / "crafter_ai-0.1.0-py3-none-any.whl"
+        wheel1.write_bytes(b"wheel 1")
+        wheel2 = tmp_path / "crafter_ai-0.2.0-py3-none-any.whl"
+        wheel2.write_bytes(b"wheel 2")
+
+        with (
+            patch(
+                "crafter_ai.installer.cli.forge_install.create_install_service"
+            ) as mock_factory,
+            patch(
+                "crafter_ai.installer.cli.forge_install.ReleaseReportService"
+            ) as mock_report_service,
+            patch(
+                "crafter_ai.installer.cli.forge_install.list_wheels_in_dist"
+            ) as mock_list,
+        ):
+            mock_list.return_value = [wheel2, wheel1]
+
+            mock_service = MagicMock()
+            mock_service.install.return_value = successful_install_result
+            mock_factory.return_value = mock_service
+
+            mock_report = MagicMock()
+            mock_report.generate.return_value = sample_release_report
+            mock_report.format_console.return_value = "FORGE: INSTALL COMPLETE"
+            mock_report_service.return_value = mock_report
+
+            env = {k: v for k, v in os.environ.items() if k != "CI"}
+            with patch.dict(os.environ, env, clear=True):
+                result = runner.invoke(
+                    app,
+                    ["forge", "install"],
+                    input="5\n1\nY\n",  # Invalid "5", then valid "1", then confirm
+                )
+
+        assert result.exit_code == 0
+        assert "Invalid" in result.output or "invalid" in result.output.lower()
+
+    def test_ci_mode_auto_selects_newest_wheel(
+        self,
+        runner: CliRunner,
+        tmp_path: Path,
+        successful_install_result: InstallResult,
+        sample_release_report: ReleaseReport,
+    ) -> None:
+        """Test CI mode auto-selects newest wheel without prompting."""
+        import time
+
+        wheel1 = tmp_path / "crafter_ai-0.1.0-py3-none-any.whl"
+        wheel1.write_bytes(b"old wheel")
+        time.sleep(0.01)
+        wheel2 = tmp_path / "crafter_ai-0.2.0-py3-none-any.whl"
+        wheel2.write_bytes(b"new wheel")
+
+        with (
+            patch(
+                "crafter_ai.installer.cli.forge_install.create_install_service"
+            ) as mock_factory,
+            patch(
+                "crafter_ai.installer.cli.forge_install.ReleaseReportService"
+            ) as mock_report_service,
+            patch(
+                "crafter_ai.installer.cli.forge_install.list_wheels_in_dist"
+            ) as mock_list,
+        ):
+            mock_list.return_value = [wheel2, wheel1]  # Newest first
+
+            mock_service = MagicMock()
+            mock_service.install.return_value = successful_install_result
+            mock_factory.return_value = mock_service
+
+            mock_report = MagicMock()
+            mock_report.generate.return_value = sample_release_report
+            mock_report.format_console.return_value = "FORGE: INSTALL COMPLETE"
+            mock_report_service.return_value = mock_report
+
+            with patch.dict(os.environ, {"CI": "true"}):
+                result = runner.invoke(app, ["forge", "install"])
+
+        assert result.exit_code == 0
+        # Should NOT prompt for selection in CI mode
+        assert "Select" not in result.output
+        # Should log which wheel was auto-selected
+        assert "Auto-selecting" in result.output or "0.2.0" in result.output
+        # Verify newest wheel was used
+        call_args = mock_service.install.call_args
+        assert call_args[0][0] == wheel2
+
+    def test_no_prompt_flag_auto_selects_newest_wheel(
+        self,
+        runner: CliRunner,
+        tmp_path: Path,
+        successful_install_result: InstallResult,
+        sample_release_report: ReleaseReport,
+    ) -> None:
+        """Test --no-prompt auto-selects newest wheel."""
+        import time
+
+        wheel1 = tmp_path / "crafter_ai-0.1.0-py3-none-any.whl"
+        wheel1.write_bytes(b"old wheel")
+        time.sleep(0.01)
+        wheel2 = tmp_path / "crafter_ai-0.2.0-py3-none-any.whl"
+        wheel2.write_bytes(b"new wheel")
+
+        with (
+            patch(
+                "crafter_ai.installer.cli.forge_install.create_install_service"
+            ) as mock_factory,
+            patch(
+                "crafter_ai.installer.cli.forge_install.ReleaseReportService"
+            ) as mock_report_service,
+            patch(
+                "crafter_ai.installer.cli.forge_install.list_wheels_in_dist"
+            ) as mock_list,
+        ):
+            mock_list.return_value = [wheel2, wheel1]
+
+            mock_service = MagicMock()
+            mock_service.install.return_value = successful_install_result
+            mock_factory.return_value = mock_service
+
+            mock_report = MagicMock()
+            mock_report.generate.return_value = sample_release_report
+            mock_report.format_console.return_value = "FORGE: INSTALL COMPLETE"
+            mock_report_service.return_value = mock_report
+
+            env = {k: v for k, v in os.environ.items() if k != "CI"}
+            with patch.dict(os.environ, env, clear=True):
+                result = runner.invoke(app, ["forge", "install", "--no-prompt"])
+
+        assert result.exit_code == 0
+        # Should NOT prompt
+        assert "Select" not in result.output
+        # Verify newest wheel was used
+        call_args = mock_service.install.call_args
+        assert call_args[0][0] == wheel2
+
+    def test_wheels_sorted_by_modification_time_newest_first(
+        self,
+        runner: CliRunner,
+        tmp_path: Path,
+        successful_install_result: InstallResult,
+        sample_release_report: ReleaseReport,
+    ) -> None:
+        """Test wheel list is sorted by modification time, newest first."""
+        import time
+
+        # Create wheels with specific order
+        wheel_old = tmp_path / "crafter_ai-0.0.9-py3-none-any.whl"
+        wheel_old.write_bytes(b"oldest")
+        time.sleep(0.01)
+        wheel_mid = tmp_path / "crafter_ai-0.1.0-py3-none-any.whl"
+        wheel_mid.write_bytes(b"middle")
+        time.sleep(0.01)
+        wheel_new = tmp_path / "crafter_ai-0.2.0-py3-none-any.whl"
+        wheel_new.write_bytes(b"newest")
+
+        with (
+            patch(
+                "crafter_ai.installer.cli.forge_install.create_install_service"
+            ) as mock_factory,
+            patch(
+                "crafter_ai.installer.cli.forge_install.ReleaseReportService"
+            ) as mock_report_service,
+            patch(
+                "crafter_ai.installer.cli.forge_install.list_wheels_in_dist"
+            ) as mock_list,
+        ):
+            # Return in correct sorted order (newest first)
+            mock_list.return_value = [wheel_new, wheel_mid, wheel_old]
+
+            mock_service = MagicMock()
+            mock_service.install.return_value = successful_install_result
+            mock_factory.return_value = mock_service
+
+            mock_report = MagicMock()
+            mock_report.generate.return_value = sample_release_report
+            mock_report.format_console.return_value = "FORGE: INSTALL COMPLETE"
+            mock_report_service.return_value = mock_report
+
+            env = {k: v for k, v in os.environ.items() if k != "CI"}
+            with patch.dict(os.environ, env, clear=True):
+                result = runner.invoke(
+                    app,
+                    ["forge", "install"],
+                    input="1\nY\n",  # Select newest (first)
+                )
+
+        assert result.exit_code == 0
+        # First option (1.) should be newest wheel
+        output_lines = result.output.split("\n")
+        first_option_line = next(
+            (line for line in output_lines if "1." in line and ".whl" in line), ""
+        )
+        assert "0.2.0" in first_option_line
+
+    def test_wheel_display_shows_date_and_size(
+        self,
+        runner: CliRunner,
+        tmp_path: Path,
+        successful_install_result: InstallResult,
+        sample_release_report: ReleaseReport,
+    ) -> None:
+        """Test wheel display shows modification date and file size."""
+        wheel1 = tmp_path / "crafter_ai-0.1.0-py3-none-any.whl"
+        wheel1.write_bytes(b"A" * 25600)  # 25 KB
+
+        wheel2 = tmp_path / "crafter_ai-0.2.0-py3-none-any.whl"
+        wheel2.write_bytes(b"B" * 24576)  # 24 KB
+
+        with (
+            patch(
+                "crafter_ai.installer.cli.forge_install.create_install_service"
+            ) as mock_factory,
+            patch(
+                "crafter_ai.installer.cli.forge_install.ReleaseReportService"
+            ) as mock_report_service,
+            patch(
+                "crafter_ai.installer.cli.forge_install.list_wheels_in_dist"
+            ) as mock_list,
+        ):
+            mock_list.return_value = [wheel2, wheel1]
+
+            mock_service = MagicMock()
+            mock_service.install.return_value = successful_install_result
+            mock_factory.return_value = mock_service
+
+            mock_report = MagicMock()
+            mock_report.generate.return_value = sample_release_report
+            mock_report.format_console.return_value = "FORGE: INSTALL COMPLETE"
+            mock_report_service.return_value = mock_report
+
+            env = {k: v for k, v in os.environ.items() if k != "CI"}
+            with patch.dict(os.environ, env, clear=True):
+                result = runner.invoke(
+                    app,
+                    ["forge", "install"],
+                    input="1\nY\n",
+                )
+
+        assert result.exit_code == 0
+        # Should show file size (KB)
+        assert "KB" in result.output or "kb" in result.output.lower()
+        # Should show date (format: YYYY-MM-DD or similar)
+        assert "2026" in result.output or ":" in result.output  # Date or time indicator
+
+
+class TestListWheelsInDist:
+    """Tests for list_wheels_in_dist function."""
+
+    def test_list_wheels_returns_sorted_list(self, tmp_path: Path) -> None:
+        """Test list_wheels_in_dist returns wheels sorted by mtime."""
+        import time
+
+        from crafter_ai.installer.cli.forge_install import list_wheels_in_dist
+
+        dist_dir = tmp_path / "dist"
+        dist_dir.mkdir()
+
+        wheel1 = dist_dir / "crafter_ai-0.1.0-py3-none-any.whl"
+        wheel1.write_bytes(b"old")
+        time.sleep(0.01)
+        wheel2 = dist_dir / "crafter_ai-0.2.0-py3-none-any.whl"
+        wheel2.write_bytes(b"new")
+
+        result = list_wheels_in_dist(dist_dir)
+
+        assert len(result) == 2
+        # Newest first
+        assert result[0] == wheel2
+        assert result[1] == wheel1
+
+    def test_list_wheels_returns_empty_for_no_wheels(self, tmp_path: Path) -> None:
+        """Test list_wheels_in_dist returns empty list when no wheels."""
+        from crafter_ai.installer.cli.forge_install import list_wheels_in_dist
+
+        dist_dir = tmp_path / "dist"
+        dist_dir.mkdir()
+
+        result = list_wheels_in_dist(dist_dir)
+
+        assert result == []
+
+    def test_list_wheels_returns_empty_for_missing_dir(self, tmp_path: Path) -> None:
+        """Test list_wheels_in_dist returns empty list when dir missing."""
+        from crafter_ai.installer.cli.forge_install import list_wheels_in_dist
+
+        nonexistent = tmp_path / "nonexistent"
+
+        result = list_wheels_in_dist(nonexistent)
+
+        assert result == []

@@ -3,6 +3,7 @@
 This module provides the 'forge install' command for the crafter-ai CLI.
 Displays pre-flight checks, prompts for confirmation, runs install service,
 and displays release report. Includes auto-chain build when no wheel found.
+Supports multiple wheel selection when multiple wheels exist in dist/.
 """
 
 import os
@@ -13,6 +14,7 @@ from typing import Annotated
 import typer
 from rich.console import Console
 from rich.panel import Panel
+from rich.prompt import IntPrompt
 from rich.table import Table
 
 from crafter_ai.installer.adapters.backup_adapter import FileSystemBackupAdapter
@@ -129,6 +131,93 @@ def run_auto_chain_build(no_prompt: bool) -> Path | None:
     return build_result.wheel_path
 
 
+def list_wheels_in_dist(dist_dir: Path | None = None) -> list[Path]:
+    """List all wheel files in dist directory, sorted by modification time.
+
+    Args:
+        dist_dir: Optional directory to search. Defaults to ./dist.
+
+    Returns:
+        List of wheel paths, sorted by modification time (newest first).
+        Empty list if directory doesn't exist or contains no wheels.
+    """
+    search_dir = dist_dir or Path("dist")
+    if not search_dir.exists():
+        return []
+
+    wheels = list(search_dir.glob("*.whl"))
+    if not wheels:
+        return []
+
+    # Sort by modification time, newest first
+    wheels.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+    return wheels
+
+
+def format_wheel_info(wheel_path: Path) -> str:
+    """Format wheel information for display.
+
+    Args:
+        wheel_path: Path to the wheel file.
+
+    Returns:
+        Formatted string with wheel name, date, and size.
+    """
+    stat = wheel_path.stat()
+    mtime = datetime.fromtimestamp(stat.st_mtime)
+    date_str = mtime.strftime("%Y-%m-%d %H:%M")
+
+    # Format size in human-readable format
+    size_bytes = stat.st_size
+    if size_bytes >= 1024 * 1024:
+        size_str = f"{size_bytes / (1024 * 1024):.1f} MB"
+    elif size_bytes >= 1024:
+        size_str = f"{size_bytes / 1024:.1f} KB"
+    else:
+        size_str = f"{size_bytes} B"
+
+    return f"{wheel_path.name} ({date_str}, {size_str})"
+
+
+def prompt_wheel_selection(wheels: list[Path]) -> Path:
+    """Prompt user to select a wheel from multiple options.
+
+    Displays a numbered list of wheels and prompts for selection.
+    In CI mode or with --no-prompt, auto-selects the newest wheel.
+
+    Args:
+        wheels: List of wheel paths (assumed sorted, newest first).
+
+    Returns:
+        Selected wheel path.
+
+    Raises:
+        typer.Exit: If selection is invalid after retries.
+    """
+    # Display numbered list
+    console.print("\n[bold cyan]Multiple wheels found:[/bold cyan]\n")
+    for i, wheel in enumerate(wheels, 1):
+        info = format_wheel_info(wheel)
+        console.print(f"  {i}. {info}")
+    console.print()
+
+    # Get user selection with validation
+    while True:
+        try:
+            selection = IntPrompt.ask(
+                f"Select wheel [1-{len(wheels)}]",
+                default=1,
+            )
+            if 1 <= selection <= len(wheels):
+                return wheels[selection - 1]
+            console.print(
+                f"[red]Invalid selection. Please enter a number between 1 and {len(wheels)}.[/red]"
+            )
+        except (ValueError, KeyboardInterrupt):
+            console.print("[yellow]Selection cancelled.[/yellow]")
+            raise typer.Exit(code=1)
+
+
 def find_latest_wheel(dist_dir: Path | None = None) -> Path | None:
     """Find the latest wheel file in dist directory.
 
@@ -138,17 +227,8 @@ def find_latest_wheel(dist_dir: Path | None = None) -> Path | None:
     Returns:
         Path to the latest wheel file, or None if not found.
     """
-    search_dir = dist_dir or Path("dist")
-    if not search_dir.exists():
-        return None
-
-    wheels = list(search_dir.glob("*.whl"))
-    if not wheels:
-        return None
-
-    # Sort by modification time, newest first
-    wheels.sort(key=lambda p: p.stat().st_mtime, reverse=True)
-    return wheels[0]
+    wheels = list_wheels_in_dist(dist_dir)
+    return wheels[0] if wheels else None
 
 
 def run_pre_flight_checks() -> list[CheckResult]:
@@ -285,8 +365,8 @@ def install(
     # Resolve wheel path
     wheel_path: Path | None = wheel
     if wheel_path is None:
-        wheel_path = find_latest_wheel()
-        if wheel_path is None:
+        wheels = list_wheels_in_dist()
+        if not wheels:
             # Auto-chain: offer to build first
             wheel_path = run_auto_chain_build(no_prompt)
             # After build, find the newly created wheel
@@ -297,6 +377,21 @@ def install(
                     "[bold red]Error:[/bold red] Build succeeded but no wheel found."
                 )
                 raise typer.Exit(code=1)
+        elif len(wheels) == 1:
+            # Single wheel: use it directly
+            wheel_path = wheels[0]
+        else:
+            # Multiple wheels: selection logic
+            ci_mode = is_ci_mode()
+            if ci_mode or no_prompt:
+                # Auto-select newest (first in sorted list)
+                wheel_path = wheels[0]
+                console.print(
+                    f"[cyan]Auto-selected newest wheel:[/cyan] {wheel_path.name}"
+                )
+            else:
+                # Prompt user to select
+                wheel_path = prompt_wheel_selection(wheels)
 
     # Verify wheel exists
     if not wheel_path.exists():
