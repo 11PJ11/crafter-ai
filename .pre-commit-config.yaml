@@ -68,6 +68,7 @@ repos:
         entry: python3 scripts/hooks/check_formatter_available.py
         language: system
         files: ^(scripts/|tools/|tests/).*\.py$
+        exclude: \.json$
         pass_filenames: false
         stages: [pre-commit]
 
@@ -102,9 +103,11 @@ repos:
       - id: ruff
         args: [--fix]
         files: ^(scripts/|tools/|tests/).*\.py$
+        exclude: \.json$
         stages: [pre-commit]
       - id: ruff-format
         files: ^(scripts/|tools/|tests/).*\.py$
+        exclude: \.json$
         stages: [pre-commit]
 
 # Configuration
