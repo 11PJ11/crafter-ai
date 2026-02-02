@@ -81,22 +81,13 @@ dependencies:
     - deliver-wave-checklist.md
     - production-service-integration-checklist.md
   embed_knowledge:
-    - embed/devop/README.md
     - embed/devop/feature-completion-deployment-readiness.md
 ```
 
 # ============================================================================
 # EMBEDDED KNOWLEDGE (injected at build time from embed/)
 # ============================================================================
-<!-- BUILD:INJECT:START:nWave/data/embed/devop/README.md -->
-<!-- Content will be injected here at build time -->
-<!-- BUILD:INJECT:END -->
-
 <!-- BUILD:INJECT:START:nWave/data/embed/devop/feature-completion-deployment-readiness.md -->
-<!-- Content will be injected here at build time -->
-<!-- BUILD:INJECT:END -->
-
-<!-- BUILD:INJECT:START:nWave/data/embed/devop/critique-dimensions.md -->
 <!-- Content will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 

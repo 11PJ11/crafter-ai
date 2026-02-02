@@ -85,10 +85,6 @@ dependencies:
 # ============================================================================
 # EMBEDDED KNOWLEDGE (injected at build time from embed/)
 # ============================================================================
-<!-- BUILD:INJECT:START:nWave/data/embed/visual-architect/critique-dimensions.md -->
-<!-- Content will be injected here at build time -->
-<!-- BUILD:INJECT:END -->
-
 # CORE VISUAL ARCHITECTURE METHODOLOGY
 
 visual_architecture_philosophy:

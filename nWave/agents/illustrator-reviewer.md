@@ -66,6 +66,8 @@ dependencies:
 checklists: - 12-principles-check.md - readability-pass.md - lip-sync-pass.md - export-specs.md
 templates: - style-brief.yaml - shot-card.md - x-sheet.csv - timing-chart.svg
 utils: - naming-convention.md - deliverables-folders.md
+embed_knowledge:
+  - "embed/illustrator/critique-dimensions.md"
 
 # ============================================================================
 # EMBEDDED KNOWLEDGE (injected at build time from embed/)

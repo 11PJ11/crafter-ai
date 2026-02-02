@@ -324,10 +324,6 @@ quality_gates:
 <!-- Residuality Theory methodology will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 
-<!-- BUILD:INJECT:START:nWave/data/embed/solution-architect/critique-dimensions.md -->
-<!-- Content will be injected here at build time -->
-<!-- BUILD:INJECT:END -->
-
 # DESIGN WAVE METHODOLOGY - ARCHITECTURE FOUNDATION
 
 design_wave_philosophy:

@@ -2445,8 +2445,4 @@ class DataExfiltrationTests:
 # ============================================================================
 # EMBEDDED KNOWLEDGE (injected at build time from embed/)
 # ============================================================================
-<!-- BUILD:INJECT:START:nWave/data/embed/agent-builder/critique-dimensions.md -->
-<!-- Content will be injected here at build time -->
-<!-- BUILD:INJECT:END -->
-
 **Output Complete**: Agent specification with comprehensive safety framework ready for deployment

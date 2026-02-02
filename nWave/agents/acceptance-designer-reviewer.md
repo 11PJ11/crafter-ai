@@ -146,16 +146,17 @@ dependencies:
     - methodologies/atdd-patterns.md
     - methodologies/outside-in-tdd-reference.md
   embed_knowledge:
+    - "embed/acceptance-designer/critique-dimensions.md"
     - "embed/acceptance-designer/bdd-methodology.md"
 
 # ============================================================================
 # EMBEDDED BDD KNOWLEDGE (injected at build time from embed/)
 # ============================================================================
-<!-- BUILD:INJECT:START:nWave/data/embed/acceptance-designer/bdd-methodology.md -->
+<!-- BUILD:INJECT:START:nWave/data/embed/acceptance-designer/critique-dimensions.md -->
 <!-- Content will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 
-<!-- BUILD:INJECT:START:nWave/data/embed/acceptance-designer/critique-dimensions.md -->
+<!-- BUILD:INJECT:START:nWave/data/embed/acceptance-designer/bdd-methodology.md -->
 <!-- Content will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 

@@ -306,7 +306,6 @@ dependencies:
     - methodologies/systematic-refactoring-guide.md
     - methodologies/atdd-patterns.md
   embed_knowledge:
-    - embed/software-crafter/README.md
     - embed/software-crafter/mikado-method-progressive-refactoring.md
     - embed/software-crafter/outside-in-tdd-methodology.md
     - embed/software-crafter/property-based-mutation-testing.md
@@ -316,10 +315,6 @@ dependencies:
 # ============================================================================
 # EMBEDDED KNOWLEDGE (injected at build time from embed/)
 # ============================================================================
-<!-- BUILD:INJECT:START:nWave/data/embed/software-crafter/README.md -->
-<!-- Content will be injected here at build time -->
-<!-- BUILD:INJECT:END -->
-
 <!-- BUILD:INJECT:START:nWave/data/embed/software-crafter/mikado-method-progressive-refactoring.md -->
 <!-- Content will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
@@ -337,10 +332,6 @@ dependencies:
 <!-- BUILD:INJECT:END -->
 
 <!-- BUILD:INJECT:START:nWave/data/embed/software-crafter/test-refactoring-guide.md -->
-<!-- Content will be injected here at build time -->
-<!-- BUILD:INJECT:END -->
-
-<!-- BUILD:INJECT:START:nWave/data/embed/software-crafter/critique-dimensions.md -->
 <!-- Content will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 

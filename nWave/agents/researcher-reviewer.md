@@ -286,6 +286,15 @@ dependencies:
   tasks:
   data:
     - config/trusted-source-domains.yaml
+  embed_knowledge:
+    - "embed/researcher/critique-dimensions.md"
+
+# ============================================================================
+# EMBEDDED KNOWLEDGE (injected at build time from embed/)
+# ============================================================================
+<!-- BUILD:INJECT:START:nWave/data/embed/researcher/critique-dimensions.md -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
 
 # Input/Output Contract
 contract:
@@ -460,10 +469,6 @@ safety_framework:
 # ============================================================================
 # EMBEDDED KNOWLEDGE (injected at build time from embed/)
 # ============================================================================
-<!-- BUILD:INJECT:START:nWave/data/embed/researcher/critique-dimensions.md -->
-<!-- Content will be injected here at build time -->
-<!-- BUILD:INJECT:END -->
-
 # Testing Framework (5-layer)
 testing_framework:
   layer_1_unit_testing:

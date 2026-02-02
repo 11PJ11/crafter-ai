@@ -95,10 +95,6 @@ dependencies:
 <!-- Content will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 
-<!-- BUILD:INJECT:START:nWave/data/embed/acceptance-designer/critique-dimensions.md -->
-<!-- Content will be injected here at build time -->
-<!-- BUILD:INJECT:END -->
-
 # ============================================================================
 # DEFINITION OF DONE (DoD) VALIDATION - OWNED BY ACCEPTANCE-DESIGNER
 # ============================================================================

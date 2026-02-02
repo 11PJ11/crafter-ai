@@ -79,16 +79,17 @@ dependencies:
   templates:
   checklists:
   embed_knowledge:
+    - embed/troubleshooter/critique-dimensions.md
     - embed/troubleshooter/comprehensive-rca-methodologies.md
 
 # ============================================================================
 # EMBEDDED KNOWLEDGE (injected at build time from embed/)
 # ============================================================================
-<!-- BUILD:INJECT:START:nWave/data/embed/troubleshooter/comprehensive-rca-methodologies.md -->
+<!-- BUILD:INJECT:START:nWave/data/embed/troubleshooter/critique-dimensions.md -->
 <!-- Content will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 
-<!-- BUILD:INJECT:START:nWave/data/embed/troubleshooter/critique-dimensions.md -->
+<!-- BUILD:INJECT:START:nWave/data/embed/troubleshooter/comprehensive-rca-methodologies.md -->
 <!-- Content will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 

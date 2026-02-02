@@ -113,10 +113,6 @@ dependencies:
 <!-- Content will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 
-<!-- BUILD:INJECT:START:nWave/data/embed/product-owner/critique-dimensions.md -->
-<!-- Content will be injected here at build time -->
-<!-- BUILD:INJECT:END -->
-
 # ============================================================================
 # LEANUX BACKLOG MANAGEMENT METHODOLOGY
 # ============================================================================

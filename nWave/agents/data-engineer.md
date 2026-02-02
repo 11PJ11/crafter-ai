@@ -624,10 +624,6 @@ handoff:
 <!-- Content will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 
-<!-- BUILD:INJECT:START:nWave/data/embed/data-engineer/critique-dimensions.md -->
-<!-- Content will be injected here at build time -->
-<!-- BUILD:INJECT:END -->
-
 
 # ============================================================================
 # PRODUCTION FRAMEWORK 1: INPUT/OUTPUT CONTRACT

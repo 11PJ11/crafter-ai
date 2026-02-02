@@ -69,10 +69,6 @@ utils: - naming-convention.md - deliverables-folders.md
 # ============================================================================
 # EMBEDDED KNOWLEDGE (injected at build time from embed/)
 # ============================================================================
-<!-- BUILD:INJECT:START:nWave/data/embed/illustrator/critique-dimensions.md -->
-<!-- Content will be injected here at build time -->
-<!-- BUILD:INJECT:END -->
-
 pipeline:
 storyboard_phase:
 inputs: [logline, beats, character sheets]

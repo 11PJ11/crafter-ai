@@ -572,6 +572,7 @@ dependencies:
     - research/sql-querying-practical-examples-20251003-165818.md
 
   embed_knowledge:
+    - embed/data-engineer/critique-dimensions.md
     - embed/data-engineer/01-databases-fundamentals.md
     - embed/data-engineer/02-querying-design-security-governance.md
     - embed/data-engineer/03-nosql-querying.md
@@ -609,6 +610,10 @@ handoff:
 # ============================================================================
 # EMBEDDED DATA ENGINEERING KNOWLEDGE (injected at build time from embed/)
 # ============================================================================
+<!-- BUILD:INJECT:START:nWave/data/embed/data-engineer/critique-dimensions.md -->
+<!-- Content will be injected here at build time -->
+<!-- BUILD:INJECT:END -->
+
 <!-- BUILD:INJECT:START:nWave/data/embed/data-engineer/01-databases-fundamentals.md -->
 <!-- Content will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
@@ -622,10 +627,6 @@ handoff:
 <!-- BUILD:INJECT:END -->
 
 <!-- BUILD:INJECT:START:nWave/data/embed/data-engineer/04-comprehensive-overview.md -->
-<!-- Content will be injected here at build time -->
-<!-- BUILD:INJECT:END -->
-
-<!-- BUILD:INJECT:START:nWave/data/embed/data-engineer/critique-dimensions.md -->
 <!-- Content will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 

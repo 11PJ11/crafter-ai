@@ -106,6 +106,8 @@ dependencies:
   data:
     - agents_reference/AGENT_QUICK_REFERENCE.md
     - agents_reference/P1_IMPROVEMENTS_DESIGN.md
+  embed_knowledge:
+    - "embed/agent-builder/critique-dimensions.md"
 
 # ============================================================================
 # EMBEDDED KNOWLEDGE (injected at build time from embed/)

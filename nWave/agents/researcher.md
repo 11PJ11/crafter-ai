@@ -459,10 +459,6 @@ safety_framework:
 # ============================================================================
 # EMBEDDED KNOWLEDGE (injected at build time from embed/)
 # ============================================================================
-<!-- BUILD:INJECT:START:nWave/data/embed/researcher/critique-dimensions.md -->
-<!-- Content will be injected here at build time -->
-<!-- BUILD:INJECT:END -->
-
 # Testing Framework (5-layer)
 testing_framework:
   layer_1_unit_testing:

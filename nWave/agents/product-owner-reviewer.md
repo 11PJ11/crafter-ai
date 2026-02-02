@@ -137,16 +137,17 @@ dependencies:
     - discuss-wave-checklist.md
     - atdd-compliance-checklist.md
   embed_knowledge:
+    - "embed/product-owner/critique-dimensions.md"
     - "embed/product-owner/bdd-methodology.md"
 
 # ============================================================================
 # EMBEDDED BDD KNOWLEDGE (injected at build time from embed/)
 # ============================================================================
-<!-- BUILD:INJECT:START:nWave/data/embed/product-owner/bdd-methodology.md -->
+<!-- BUILD:INJECT:START:nWave/data/embed/product-owner/critique-dimensions.md -->
 <!-- Content will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 
-<!-- BUILD:INJECT:START:nWave/data/embed/product-owner/critique-dimensions.md -->
+<!-- BUILD:INJECT:START:nWave/data/embed/product-owner/bdd-methodology.md -->
 <!-- Content will be injected here at build time -->
 <!-- BUILD:INJECT:END -->
 

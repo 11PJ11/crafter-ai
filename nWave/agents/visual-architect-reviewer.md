@@ -82,6 +82,8 @@ dependencies:
     - design-wave-checklist.md
   data:
     - methodologies/visual-architecture-principles.md
+  embed_knowledge:
+    - "embed/visual-architect/critique-dimensions.md"
 
 # ============================================================================
 # EMBEDDED KNOWLEDGE (injected at build time from embed/)
