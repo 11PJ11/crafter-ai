@@ -684,3 +684,340 @@ class TestHeaderDisplay:
             )
 
         assert "FORGE: INSTALL" in result.output
+
+
+class TestAutoChainBuild:
+    """Tests for auto-chain build when no wheel found."""
+
+    def test_auto_chain_prompts_when_no_wheel_found(
+        self,
+        runner: CliRunner,
+        passing_pre_flight_results: list[CheckResult],
+    ) -> None:
+        """Test auto-chain prompts user when no wheel found in dist/."""
+        with (
+            patch(
+                "crafter_ai.installer.cli.forge_install.find_latest_wheel"
+            ) as mock_find,
+            patch(
+                "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
+            ) as mock_preflight,
+        ):
+            mock_find.return_value = None
+            mock_preflight.return_value = passing_pre_flight_results
+
+            # Remove CI env var if present
+            env = {k: v for k, v in os.environ.items() if k != "CI"}
+            with patch.dict(os.environ, env, clear=True):
+                result = runner.invoke(
+                    app,
+                    ["forge", "install"],
+                    input="n\n",  # User declines build
+                )
+
+        assert "No wheel found" in result.output
+        assert "Build first?" in result.output
+
+    def test_auto_chain_builds_on_y_response(
+        self,
+        runner: CliRunner,
+        tmp_path: Path,
+        successful_install_result: InstallResult,
+        sample_release_report: ReleaseReport,
+        passing_pre_flight_results: list[CheckResult],
+    ) -> None:
+        """Test auto-chain invokes build when user responds Y."""
+        # Create a wheel that will be "built"
+        built_wheel = tmp_path / "crafter_ai-0.3.0-py3-none-any.whl"
+        built_wheel.write_bytes(b"built wheel content")
+
+        mock_build_result = MagicMock()
+        mock_build_result.success = True
+        mock_build_result.wheel_path = built_wheel
+        mock_build_result.version = "0.3.0"
+
+        with (
+            patch(
+                "crafter_ai.installer.cli.forge_install.find_latest_wheel"
+            ) as mock_find,
+            patch(
+                "crafter_ai.installer.cli.forge_install.create_build_service"
+            ) as mock_build_factory,
+            patch(
+                "crafter_ai.installer.cli.forge_install.create_install_service"
+            ) as mock_install_factory,
+            patch(
+                "crafter_ai.installer.cli.forge_install.ReleaseReportService"
+            ) as mock_report_service,
+            patch(
+                "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
+            ) as mock_preflight,
+        ):
+            # First call returns None (no wheel), second call returns built wheel
+            mock_find.side_effect = [None, built_wheel]
+            mock_preflight.return_value = passing_pre_flight_results
+
+            mock_build_service = MagicMock()
+            mock_build_service.execute.return_value = mock_build_result
+            mock_build_factory.return_value = mock_build_service
+
+            mock_install_service = MagicMock()
+            mock_install_service.install.return_value = successful_install_result
+            mock_install_factory.return_value = mock_install_service
+
+            mock_report = MagicMock()
+            mock_report.generate.return_value = sample_release_report
+            mock_report.format_console.return_value = "FORGE: INSTALL COMPLETE"
+            mock_report_service.return_value = mock_report
+
+            # Remove CI env var if present
+            env = {k: v for k, v in os.environ.items() if k != "CI"}
+            with patch.dict(os.environ, env, clear=True):
+                result = runner.invoke(
+                    app,
+                    ["forge", "install"],
+                    input="Y\nY\n",  # Y for build, Y for install
+                )
+
+        assert result.exit_code == 0
+        mock_build_service.execute.assert_called_once()
+
+    def test_auto_chain_exits_on_n_response(
+        self,
+        runner: CliRunner,
+        passing_pre_flight_results: list[CheckResult],
+    ) -> None:
+        """Test auto-chain exits with message when user responds n."""
+        with (
+            patch(
+                "crafter_ai.installer.cli.forge_install.find_latest_wheel"
+            ) as mock_find,
+            patch(
+                "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
+            ) as mock_preflight,
+        ):
+            mock_find.return_value = None
+            mock_preflight.return_value = passing_pre_flight_results
+
+            # Remove CI env var if present
+            env = {k: v for k, v in os.environ.items() if k != "CI"}
+            with patch.dict(os.environ, env, clear=True):
+                result = runner.invoke(
+                    app,
+                    ["forge", "install"],
+                    input="n\n",
+                )
+
+        assert result.exit_code == 1
+        assert "Run forge build first" in result.output
+
+    def test_ci_mode_auto_builds_without_prompt(
+        self,
+        runner: CliRunner,
+        tmp_path: Path,
+        successful_install_result: InstallResult,
+        sample_release_report: ReleaseReport,
+        passing_pre_flight_results: list[CheckResult],
+    ) -> None:
+        """Test CI=true auto-builds without prompting."""
+        built_wheel = tmp_path / "crafter_ai-0.3.0-py3-none-any.whl"
+        built_wheel.write_bytes(b"built wheel content")
+
+        mock_build_result = MagicMock()
+        mock_build_result.success = True
+        mock_build_result.wheel_path = built_wheel
+        mock_build_result.version = "0.3.0"
+
+        with (
+            patch(
+                "crafter_ai.installer.cli.forge_install.find_latest_wheel"
+            ) as mock_find,
+            patch(
+                "crafter_ai.installer.cli.forge_install.create_build_service"
+            ) as mock_build_factory,
+            patch(
+                "crafter_ai.installer.cli.forge_install.create_install_service"
+            ) as mock_install_factory,
+            patch(
+                "crafter_ai.installer.cli.forge_install.ReleaseReportService"
+            ) as mock_report_service,
+            patch(
+                "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
+            ) as mock_preflight,
+        ):
+            mock_find.side_effect = [None, built_wheel]
+            mock_preflight.return_value = passing_pre_flight_results
+
+            mock_build_service = MagicMock()
+            mock_build_service.execute.return_value = mock_build_result
+            mock_build_factory.return_value = mock_build_service
+
+            mock_install_service = MagicMock()
+            mock_install_service.install.return_value = successful_install_result
+            mock_install_factory.return_value = mock_install_service
+
+            mock_report = MagicMock()
+            mock_report.generate.return_value = sample_release_report
+            mock_report.format_console.return_value = "FORGE: INSTALL COMPLETE"
+            mock_report_service.return_value = mock_report
+
+            with patch.dict(os.environ, {"CI": "true"}):
+                result = runner.invoke(app, ["forge", "install"])
+
+        assert result.exit_code == 0
+        mock_build_service.execute.assert_called_once()
+        # Should NOT prompt for build in CI mode
+        assert "Build first?" not in result.output
+
+    def test_no_prompt_flag_auto_builds_without_prompt(
+        self,
+        runner: CliRunner,
+        tmp_path: Path,
+        successful_install_result: InstallResult,
+        sample_release_report: ReleaseReport,
+        passing_pre_flight_results: list[CheckResult],
+    ) -> None:
+        """Test --no-prompt auto-builds without prompting."""
+        built_wheel = tmp_path / "crafter_ai-0.3.0-py3-none-any.whl"
+        built_wheel.write_bytes(b"built wheel content")
+
+        mock_build_result = MagicMock()
+        mock_build_result.success = True
+        mock_build_result.wheel_path = built_wheel
+        mock_build_result.version = "0.3.0"
+
+        with (
+            patch(
+                "crafter_ai.installer.cli.forge_install.find_latest_wheel"
+            ) as mock_find,
+            patch(
+                "crafter_ai.installer.cli.forge_install.create_build_service"
+            ) as mock_build_factory,
+            patch(
+                "crafter_ai.installer.cli.forge_install.create_install_service"
+            ) as mock_install_factory,
+            patch(
+                "crafter_ai.installer.cli.forge_install.ReleaseReportService"
+            ) as mock_report_service,
+            patch(
+                "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
+            ) as mock_preflight,
+        ):
+            mock_find.side_effect = [None, built_wheel]
+            mock_preflight.return_value = passing_pre_flight_results
+
+            mock_build_service = MagicMock()
+            mock_build_service.execute.return_value = mock_build_result
+            mock_build_factory.return_value = mock_build_service
+
+            mock_install_service = MagicMock()
+            mock_install_service.install.return_value = successful_install_result
+            mock_install_factory.return_value = mock_install_service
+
+            mock_report = MagicMock()
+            mock_report.generate.return_value = sample_release_report
+            mock_report.format_console.return_value = "FORGE: INSTALL COMPLETE"
+            mock_report_service.return_value = mock_report
+
+            # Remove CI env var if present
+            env = {k: v for k, v in os.environ.items() if k != "CI"}
+            with patch.dict(os.environ, env, clear=True):
+                result = runner.invoke(app, ["forge", "install", "--no-prompt"])
+
+        assert result.exit_code == 0
+        mock_build_service.execute.assert_called_once()
+        assert "Build first?" not in result.output
+
+    def test_install_uses_newly_built_wheel(
+        self,
+        runner: CliRunner,
+        tmp_path: Path,
+        successful_install_result: InstallResult,
+        sample_release_report: ReleaseReport,
+        passing_pre_flight_results: list[CheckResult],
+    ) -> None:
+        """Test install uses the wheel created by auto-chain build."""
+        built_wheel = tmp_path / "crafter_ai-0.3.0-py3-none-any.whl"
+        built_wheel.write_bytes(b"built wheel content")
+
+        mock_build_result = MagicMock()
+        mock_build_result.success = True
+        mock_build_result.wheel_path = built_wheel
+        mock_build_result.version = "0.3.0"
+
+        with (
+            patch(
+                "crafter_ai.installer.cli.forge_install.find_latest_wheel"
+            ) as mock_find,
+            patch(
+                "crafter_ai.installer.cli.forge_install.create_build_service"
+            ) as mock_build_factory,
+            patch(
+                "crafter_ai.installer.cli.forge_install.create_install_service"
+            ) as mock_install_factory,
+            patch(
+                "crafter_ai.installer.cli.forge_install.ReleaseReportService"
+            ) as mock_report_service,
+            patch(
+                "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
+            ) as mock_preflight,
+        ):
+            mock_find.side_effect = [None, built_wheel]
+            mock_preflight.return_value = passing_pre_flight_results
+
+            mock_build_service = MagicMock()
+            mock_build_service.execute.return_value = mock_build_result
+            mock_build_factory.return_value = mock_build_service
+
+            mock_install_service = MagicMock()
+            mock_install_service.install.return_value = successful_install_result
+            mock_install_factory.return_value = mock_install_service
+
+            mock_report = MagicMock()
+            mock_report.generate.return_value = sample_release_report
+            mock_report.format_console.return_value = "FORGE: INSTALL COMPLETE"
+            mock_report_service.return_value = mock_report
+
+            with patch.dict(os.environ, {"CI": "true"}):
+                result = runner.invoke(app, ["forge", "install"])
+
+        assert result.exit_code == 0
+        # Verify install was called with the built wheel
+        mock_install_service.install.assert_called_once()
+        call_args = mock_install_service.install.call_args
+        assert call_args[0][0] == built_wheel
+
+    def test_chain_aborts_if_build_fails(
+        self,
+        runner: CliRunner,
+        passing_pre_flight_results: list[CheckResult],
+    ) -> None:
+        """Test chain aborts with exit code 1 if build fails."""
+        mock_build_result = MagicMock()
+        mock_build_result.success = False
+        mock_build_result.wheel_path = None
+        mock_build_result.error_message = "Build failed: missing dependency"
+
+        with (
+            patch(
+                "crafter_ai.installer.cli.forge_install.find_latest_wheel"
+            ) as mock_find,
+            patch(
+                "crafter_ai.installer.cli.forge_install.create_build_service"
+            ) as mock_build_factory,
+            patch(
+                "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
+            ) as mock_preflight,
+        ):
+            mock_find.return_value = None
+            mock_preflight.return_value = passing_pre_flight_results
+
+            mock_build_service = MagicMock()
+            mock_build_service.execute.return_value = mock_build_result
+            mock_build_factory.return_value = mock_build_service
+
+            with patch.dict(os.environ, {"CI": "true"}):
+                result = runner.invoke(app, ["forge", "install"])
+
+        assert result.exit_code == 1
+        assert "Build failed" in result.output or "failed" in result.output.lower()
