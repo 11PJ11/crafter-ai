@@ -456,9 +456,38 @@ def install(
             console.print("[yellow]Install cancelled by user.[/yellow]")
             raise typer.Exit(code=0)
 
-    # Create install service and run installation
+    # Create install service and run installation with progress indicator
     service = create_install_service(skip_verification=no_verify)
-    install_result = service.install(wheel_path, force=force)
+
+    # Import InstallPhase for the progress callback
+    from crafter_ai.installer.services.install_service import InstallPhase
+
+    # Phase icons and descriptions for beautiful output
+    phase_info = {
+        InstallPhase.PREFLIGHT: ("🔍", "Pre-flight checks"),
+        InstallPhase.READINESS: ("📋", "Validating wheel readiness"),
+        InstallPhase.BACKUP: ("💾", "Creating backup"),
+        InstallPhase.INSTALL: ("📦", "Installing via pipx"),
+        InstallPhase.VERIFICATION: ("✅", "Verifying installation"),
+    }
+
+    console.print()  # Add spacing
+
+    # Track current status for the spinner
+    status_handle = console.status(
+        "[cyan]⏳ Preparing installation...[/cyan]", spinner="dots"
+    )
+    status_handle.start()
+
+    def on_progress(phase: InstallPhase, message: str) -> None:
+        """Update the spinner with current phase information."""
+        icon, phase_name = phase_info.get(phase, ("•", phase.value))
+        status_handle.update(f"[cyan]{icon} {phase_name}:[/cyan] {message}")
+
+    try:
+        install_result = service.install(wheel_path, force=force, on_progress=on_progress)
+    finally:
+        status_handle.stop()
 
     if not install_result.success:
         display_failure(install_result.error_message or "Unknown error")

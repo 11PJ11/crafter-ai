@@ -12,11 +12,15 @@ Used by: forge:install-local CLI command
 """
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 
 from packaging.version import InvalidVersion, Version
+
+# Type alias for progress callback: (phase: InstallPhase, message: str) -> None
+ProgressCallback = Callable[["InstallPhase", str], None]
 
 from crafter_ai.installer.domain.check_executor import CheckExecutor
 from crafter_ai.installer.domain.check_result import CheckSeverity
@@ -297,7 +301,11 @@ class InstallService:
         return f"Installing crafter-ai {to_ver}"
 
     def install(
-        self, wheel_path: Path, force: bool = False, ci_mode: bool = False
+        self,
+        wheel_path: Path,
+        force: bool = False,
+        ci_mode: bool = False,
+        on_progress: ProgressCallback | None = None,
     ) -> InstallResult:
         """Execute the complete install journey.
 
@@ -307,11 +315,17 @@ class InstallService:
             wheel_path: Path to the wheel file to install.
             force: If True, force reinstall even if already installed.
             ci_mode: If True, auto-proceed without interactive prompts.
+            on_progress: Optional callback for progress updates (phase, message).
 
         Returns:
             InstallResult with complete journey state.
         """
         phases_completed: list[InstallPhase] = []
+
+        def report_progress(phase: InstallPhase, message: str) -> None:
+            """Report progress if callback is provided."""
+            if on_progress:
+                on_progress(phase, message)
 
         # Detect upgrade path before proceeding
         target_version = self._extract_version_from_wheel(wheel_path)
@@ -328,6 +342,7 @@ class InstallService:
                 pass
 
         # Phase 1: Preflight checks
+        report_progress(InstallPhase.PREFLIGHT, "Running pre-flight checks...")
         preflight_results = self._check_executor.run_all()
         phases_completed.append(InstallPhase.PREFLIGHT)
 
@@ -349,6 +364,7 @@ class InstallService:
             )
 
         # Phase 2: Release readiness validation
+        report_progress(InstallPhase.READINESS, "Validating wheel for release readiness...")
         readiness_result = self._release_readiness_service.validate(wheel_path)
         phases_completed.append(InstallPhase.READINESS)
 
@@ -362,6 +378,7 @@ class InstallService:
             )
 
         # Phase 3: Backup (non-blocking - warn but continue on failure)
+        report_progress(InstallPhase.BACKUP, "Creating backup of existing configuration...")
         backup_result = self._backup_port.create_backup(self._nwave_config_path)
         phases_completed.append(InstallPhase.BACKUP)
 
@@ -372,6 +389,10 @@ class InstallService:
             pass
 
         # Phase 4: Install via pipx
+        report_progress(
+            InstallPhase.INSTALL,
+            "Installing via pipx (downloading dependencies, may take 30-60 seconds)...",
+        )
         pipx_result = self._pipx_port.install(wheel_path, force=force)
         phases_completed.append(InstallPhase.INSTALL)
 
@@ -386,6 +407,7 @@ class InstallService:
 
         # Phase 5: Verification (only if health_checker provided)
         if self._health_checker is not None and pipx_result.install_path is not None:
+            report_progress(InstallPhase.VERIFICATION, "Verifying installation health...")
             verification_result = self.verify(pipx_result.install_path)
             phases_completed.append(InstallPhase.VERIFICATION)
 
