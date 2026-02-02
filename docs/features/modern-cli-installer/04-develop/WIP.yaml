@@ -5,110 +5,116 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 
 meta:
-  generated_at: "2026-02-03T03:30:00Z"
+  generated_at: "2026-02-03T04:00:00Z"
   project: "modern-cli-installer"
-  phase: "04"
-  phase_name: "Journey 3 - PyPI Install"
+  phase: "05"
+  phase_name: "Cross-Cutting Concerns"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# STEP CONTRACT - WALKING SKELETON ACTIVATION
+# STEP CONTRACT
 # ─────────────────────────────────────────────────────────────────────────────
 step:
-  id: "04-09"
-  name: "Activate E2E walking skeleton - wire CLI and connect E2E tests"
+  id: "05-01"
+  name: "Create RollbackService for automatic and manual rollback"
   agent: "software-crafter"
-  estimated_hours: 2
+  estimated_hours: 4
   dependencies_satisfied: true
-  user_stories: ["US-030", "US-031", "US-032", "US-033", "US-037"]
+  user_stories: ["US-040"]
 
 # ─────────────────────────────────────────────────────────────────────────────
 # CRITICAL: OUTSIDE-IN TDD ENFORCEMENT
 # ─────────────────────────────────────────────────────────────────────────────
 tdd_approach:
   method: "OUTSIDE-IN"
-  philosophy: |
-    This step bridges bottom-up component development with outside-in validation.
-    Quinn (acceptance-designer) created 42 E2E tests in DISTILL phase.
-    These tests currently fail with "NotImplementedError: Production code needed".
-    Your job is to wire the CLI so tests fail for the RIGHT reason (missing logic).
 
   driving_test:
     file: "docs/features/modern-cli-installer/03-distill/e2e-scenarios/test_journey_3_pypi.py"
-    function: "test_successful_firsttime_installation"
+    function: "test_automatic_rollback_on_installation_failure"
     feature_file: "docs/features/modern-cli-installer/03-distill/features/journey_3_pypi.feature"
-    scenario: "Successful first-time installation"
+    scenario: "Automatic rollback on installation failure"
 
   execution_order:
     step_1:
       action: "Run the E2E test FIRST"
-      command: "pytest docs/features/modern-cli-installer/03-distill/e2e-scenarios/test_journey_3_pypi.py::test_successful_firsttime_installation -v"
-      expected: "FAIL with NotImplementedError: Production code needed"
+      command: "pytest docs/features/modern-cli-installer/03-distill/e2e-scenarios/test_journey_3_pypi.py::test_automatic_rollback_on_installation_failure -v"
+      expected: "FAIL (missing RollbackService or assertion failure)"
       purpose: "See the failing test that will drive implementation"
 
     step_2:
-      action: "Implement CLI wiring to make test progress"
-      deliverables:
-        - "src/crafter_ai/installer/cli/nw_app.py"
-        - "src/crafter_ai/cli.py (modified)"
-      purpose: "Wire commands so CLI is accessible"
+      action: "Write unit tests for RollbackService"
+      file: "tests/installer/services/test_rollback_service.py"
+      purpose: "Define expected behavior through tests"
 
     step_3:
-      action: "Update E2E test fixtures to use production code"
-      file: "docs/features/modern-cli-installer/03-distill/e2e-scenarios/conftest.py"
-      purpose: "Replace NotImplementedError stubs with real service calls"
+      action: "Implement RollbackService"
+      file: "src/crafter_ai/installer/services/rollback_service.py"
+      purpose: "Make unit tests pass"
 
     step_4:
       action: "Run E2E test again"
-      command: "pytest docs/features/modern-cli-installer/03-distill/e2e-scenarios/test_journey_3_pypi.py::test_successful_firsttime_installation -v"
-      expected: "FAIL for RIGHT reason (assertion failure on missing behavior, NOT NotImplementedError)"
-      purpose: "Verify walking skeleton is active"
-
-    step_5:
-      action: "Verify CLI commands are accessible"
-      commands:
-        - "crafter-ai nw --help"
-        - "crafter-ai nw setup --help"
-        - "crafter-ai nw doctor --help"
-        - "crafter-ai nw version --help"
-        - "crafter-ai install-nwave --help"
-      expected: "All commands show help text"
+      command: "pytest docs/features/modern-cli-installer/03-distill/e2e-scenarios/test_journey_3_pypi.py::test_automatic_rollback_on_installation_failure -v"
+      expected: "Test progresses further (may still fail on CLI wiring)"
+      purpose: "Verify service integration"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # INPUT: What the agent receives (READ-ONLY context)
 # ─────────────────────────────────────────────────────────────────────────────
 input:
-  cli_entry_point: "src/crafter_ai/cli.py"
-  nw_app_file: "src/crafter_ai/installer/cli/nw_app.py"
-  e2e_conftest: "docs/features/modern-cli-installer/03-distill/e2e-scenarios/conftest.py"
+  source_file: "src/crafter_ai/installer/services/rollback_service.py"
+  test_file: "tests/installer/services/test_rollback_service.py"
 
-  existing_cli_modules:
-    nw_setup: "src/crafter_ai/installer/cli/nw_setup.py"
-    nw_doctor: "src/crafter_ai/installer/cli/nw_doctor.py"
-    nw_version: "src/crafter_ai/installer/cli/nw_version.py"
-    install_nwave: "src/crafter_ai/installer/cli/install_nwave.py"
+  existing_code:
+    backup_port: "src/crafter_ai/installer/ports/backup_port.py"
+    backup_adapter: "src/crafter_ai/installer/adapters/backup_adapter.py"
+    install_service: "src/crafter_ai/installer/services/install_service.py"
+    health_checker: "src/crafter_ai/installer/domain/health_checker.py"
 
-  e2e_test_files:
-    journey_3: "docs/features/modern-cli-installer/03-distill/e2e-scenarios/test_journey_3_pypi.py"
-    conftest: "docs/features/modern-cli-installer/03-distill/e2e-scenarios/conftest.py"
-    feature: "docs/features/modern-cli-installer/03-distill/features/journey_3_pypi.feature"
+  e2e_scenarios:
+    - "journey_3_pypi.feature::Automatic rollback on installation failure"
+    - "journey_3_pypi.feature::Manual rollback command"
+    - "journey_3_pypi.feature::Fresh install failure with no backup"
+    - "journey_3_pypi.feature::Rollback with no available backups"
 
   requirements:
-    nw_app_wiring:
-      - "Create nw_app Typer group"
-      - "Register setup from nw_setup.py"
-      - "Register doctor from nw_doctor.py"
-      - "Register version from nw_version.py"
+    rollback_service:
+      - "RollbackService uses BackupPort via dependency injection"
+      - "auto_rollback(error: Exception) -> RollbackResult"
+      - "  - Triggered on install failure"
+      - "  - Finds most recent backup via BackupPort.list_backups()"
+      - "  - Cleans partial install files before restore"
+      - "  - Restores from backup via BackupPort.restore_backup()"
+      - "  - Returns RollbackResult with success/failure info"
+      - "manual_rollback(backup_path: Path) -> RollbackResult"
+      - "  - For nw rollback command (CLI layer will call this)"
+      - "  - Restores specified backup"
+      - "  - Runs health check after restore"
+      - "list_available_backups() -> list[BackupInfo]"
+      - "  - Returns available backups with timestamps"
+      - "  - Sorted by date (newest first)"
 
-    cli_integration:
-      - "Import nw_app in cli.py"
-      - "Import install_nwave in cli.py"
-      - "Register: app.add_typer(nw_app, name='nw')"
-      - "Register: app.command('install-nwave')(install_nwave)"
+    rollback_result:
+      - "RollbackResult dataclass with:"
+      - "  - success: bool"
+      - "  - restored_version: str | None"
+      - "  - backup_timestamp: datetime | None"
+      - "  - error_message: str | None"
+      - "  - health_status: HealthStatus | None (after restore)"
 
-    e2e_fixture_update:
-      - "Identify NotImplementedError stubs in conftest.py"
-      - "Replace stubs with calls to real production services"
-      - "Ensure mocks are properly injected for isolation"
+    error_handling:
+      - "No backups available: return error with 'No backups available'"
+      - "Backup restore fails: return error with details"
+      - "Fresh install failure: return specific message 'No previous version to restore'"
+
+  test_requirements:
+    - "Test auto_rollback restores from most recent backup"
+    - "Test auto_rollback cleans partial files before restore"
+    - "Test auto_rollback returns success with restored version"
+    - "Test auto_rollback returns error when no backups exist"
+    - "Test manual_rollback restores specified backup"
+    - "Test manual_rollback runs health check after restore"
+    - "Test list_available_backups returns sorted list"
+    - "Test list_available_backups returns empty list when none exist"
+    - "Mock BackupPort for isolated testing"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # CONSTRAINTS: Rules the agent MUST follow
@@ -119,29 +125,26 @@ constraints:
   fail_fast: true
 
   mandatory_sequence:
-    - "1. Run E2E test FIRST (see it fail with NotImplementedError)"
-    - "2. Create nw_app.py"
-    - "3. Modify cli.py to wire commands"
-    - "4. Update conftest.py to use production code"
-    - "5. Run E2E test again (must fail for different reason)"
-    - "6. Verify CLI --help commands work"
-    - "7. Commit changes"
+    - "1. Run E2E test FIRST (see it fail)"
+    - "2. Write unit tests for RollbackService"
+    - "3. Implement RollbackService to make unit tests pass"
+    - "4. Run E2E test again (verify progress)"
+    - "5. Run all unit tests"
+    - "6. Commit changes"
 
   allowed_actions:
-    - "Read existing CLI modules"
-    - "Read E2E test files and conftest.py"
-    - "Create nw_app.py"
-    - "Modify cli.py"
-    - "Modify conftest.py (only to wire production code)"
-    - "Run pytest on E2E tests"
-    - "Run CLI --help commands"
+    - "Read existing BackupPort and BackupAdapter"
+    - "Read E2E test files"
+    - "Create RollbackService source file"
+    - "Create RollbackService test file"
+    - "Run pytest on unit tests"
+    - "Run pytest on E2E test"
     - "Commit changes"
 
   forbidden_actions:
     - "DO NOT skip running E2E test first"
-    - "DO NOT modify nw_setup.py, nw_doctor.py, nw_version.py, install_nwave.py"
-    - "DO NOT implement new features (only wiring)"
-    - "DO NOT make E2E tests pass (they should still fail, just for right reason)"
+    - "DO NOT modify BackupPort or BackupAdapter"
+    - "DO NOT implement CLI command (that's step 05-02)"
     - "DO NOT read roadmap.yaml or execution-status.yaml"
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -151,56 +154,40 @@ output:
   status: complete
 
   e2e_test_before:
-    command: "pytest docs/features/modern-cli-installer/03-distill/e2e-scenarios/test_journey_3_pypi.py::test_successful_firsttime_installation -v"
-    result: "FAILED"
-    failure_reason: "NotImplementedError: Production code needed"
+    command: "pytest docs/features/modern-cli-installer/03-distill/e2e-scenarios/test_journey_3_pypi.py::test_automatic_rollback_on_installation_failure -v"
+    result: "FAIL"
+    failure_reason: "E2E test infrastructure not fully wired - RollbackService not connected to CLI layer"
 
   artifacts_created:
-    - "src/crafter_ai/installer/cli/nw_app.py"
-    - "src/crafter_ai/cli.py (modified)"
-    - "docs/features/modern-cli-installer/03-distill/e2e-scenarios/conftest.py (modified)"
-    - "docs/features/modern-cli-installer/03-distill/e2e-scenarios/test_journey_3_pypi.py (modified)"
+    - "src/crafter_ai/installer/services/rollback_service.py"
+    - "tests/installer/services/test_rollback_service.py"
+
+  unit_test_result:
+    command: "pytest tests/installer/services/test_rollback_service.py -v"
+    tests_passed: 11
+    tests_failed: 0
 
   e2e_test_after:
-    command: "pytest docs/features/modern-cli-installer/03-distill/e2e-scenarios/test_journey_3_pypi.py::test_successful_firsttime_installation -v"
-    result: "FAILED"
-    failure_reason: "AssertionError: Expected download progress indicator in output (No such command 'pipx')"
+    command: "pytest docs/features/modern-cli-installer/03-distill/e2e-scenarios/test_journey_3_pypi.py::test_automatic_rollback_on_installation_failure -v"
+    result: "FAIL"
+    failure_reason: "E2E test expected - CLI layer integration pending (step 05-02)"
 
-  cli_verification:
-    nw_help: "OK - Shows setup, doctor, version commands"
-    nw_setup_help: "OK - Shows --global, --project, --force options"
-    nw_doctor_help: "OK - Shows --verbose, --check, --fix options"
-    nw_version_help: "OK - Shows --check-updates, --json, --short options"
-    install_nwave_help: "OK - Shows --ci, --yes, --version, --pre options"
-
-  commit_hash: "pending"
-  commit_message: "feat(modern-cli-installer): Activate E2E walking skeleton - step 04-09"
-  notes: |
-    Walking skeleton successfully activated. E2E test now fails for the RIGHT reason:
-    - Before: NotImplementedError (test fixture stubs)
-    - After: AssertionError (real test assertion checking for behavior)
-
-    The test failure shows: "No such command 'pipx'" - this is because the test
-    fixture is calling "crafter-ai pipx install" instead of "crafter-ai install-nwave".
-    This is a legitimate test configuration issue to be fixed in subsequent steps.
-
-    All CLI commands verified working via --help.
+  commit_hash: "321b3ab72653e29efdfd83c8358b809347fc5935"
+  commit_message: "feat(installer): add partial file cleanup to rollback service"
+  notes: "RollbackService now cleans partial install files before restore as per WIP requirements"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # SUCCESS CRITERIA
 # ─────────────────────────────────────────────────────────────────────────────
 success_criteria:
   - criterion: "E2E test ran BEFORE implementation"
-    validation: "output.e2e_test_before.result contains 'NotImplementedError'"
+    validation: "output.e2e_test_before.result is not empty"
 
-  - criterion: "E2E test fails for RIGHT reason after wiring"
-    validation: "output.e2e_test_after.failure_reason does NOT contain 'NotImplementedError'"
+  - criterion: "RollbackService created with required methods"
+    validation: "src/crafter_ai/installer/services/rollback_service.py exists"
 
-  - criterion: "All CLI commands accessible"
-    validation: "All cli_verification fields show help text"
+  - criterion: "Unit tests pass"
+    validation: "output.unit_test_result.tests_failed == 0"
 
-  - criterion: "nw_app.py created"
-    validation: "src/crafter_ai/installer/cli/nw_app.py exists"
-
-  - criterion: "cli.py modified to import and register commands"
-    validation: "cli.py contains 'from crafter_ai.installer.cli.nw_app import nw_app'"
+  - criterion: "Uses BackupPort via dependency injection"
+    validation: "RollbackService.__init__ accepts BackupPort parameter"

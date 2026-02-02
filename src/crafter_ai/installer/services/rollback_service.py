@@ -66,11 +66,32 @@ class RollbackService:
         self._health_checker = health_checker
         self._nwave_path = nwave_path or Path.home() / ".claude"
 
+    def _clean_partial_install_files(self) -> None:
+        """Clean up partial installation files before restore.
+
+        This removes any corrupt or incomplete files from a failed installation
+        to ensure a clean slate before restoring from backup.
+        """
+        partial_markers = [
+            self._nwave_path / ".install_in_progress",
+            self._nwave_path / ".partial_install",
+        ]
+
+        for marker in partial_markers:
+            if marker.exists():
+                marker.unlink()
+
+        partial_dir = self._nwave_path / ".partial"
+        if partial_dir.exists() and partial_dir.is_dir():
+            import shutil
+
+            shutil.rmtree(partial_dir)
+
     def auto_rollback(self, error: Exception) -> RollbackResult:
         """Perform automatic rollback on installation failure.
 
         This method is called when an installation fails. It finds the most
-        recent backup and restores from it.
+        recent backup, cleans partial install files, and restores from backup.
 
         Args:
             error: The exception that caused the installation to fail.
@@ -90,6 +111,8 @@ class RollbackService:
             )
 
         most_recent = backups[0]
+
+        self._clean_partial_install_files()
 
         restore_result = self._backup_port.restore_backup(
             most_recent.path,

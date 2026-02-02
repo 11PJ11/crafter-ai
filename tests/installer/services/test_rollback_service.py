@@ -163,6 +163,49 @@ class TestAutoRollback:
         assert result.success is False
         assert "Permission denied" in result.error_message
 
+    def test_auto_rollback_cleans_partial_files_before_restore(
+        self,
+        mock_backup_port: MagicMock,
+        mock_health_checker: MagicMock,
+        sample_backups: list[BackupInfo],
+        tmp_path: Path,
+    ) -> None:
+        """Auto rollback should clean partial install files before restoring.
+
+        This ensures corrupt partial state is removed before restoring a good backup.
+        """
+        nwave_path = tmp_path / ".claude"
+        nwave_path.mkdir(parents=True)
+
+        partial_marker = nwave_path / ".install_in_progress"
+        partial_marker.touch()
+
+        partial_dir = nwave_path / ".partial"
+        partial_dir.mkdir()
+        (partial_dir / "corrupt_file.txt").write_text("partial data")
+
+        rollback_service = RollbackService(
+            backup_port=mock_backup_port,
+            health_checker=mock_health_checker,
+            nwave_path=nwave_path,
+        )
+
+        mock_backup_port.list_backups.return_value = sample_backups
+        mock_backup_port.restore_backup.return_value = RestoreResult(
+            success=True,
+            restored_path=nwave_path,
+            error_message=None,
+        )
+
+        error = Exception("Installation failed during file copy")
+        result = rollback_service.auto_rollback(error)
+
+        assert result.success is True
+        assert not partial_marker.exists(), "Partial marker should be cleaned"
+        assert not partial_dir.exists(), "Partial directory should be cleaned"
+
+        mock_backup_port.restore_backup.assert_called_once()
+
 
 class TestManualRollback:
     """Tests for manual_rollback method."""
