@@ -11,7 +11,7 @@ Usage:
 Options:
     --source-dir    Source directory (default: nWave)
     --output-dir    Output directory (default: dist/ide)
-    --clean         Clean output directory before build
+    --no-clean      Skip cleaning output directory (default: always clean)
     --verbose       Enable verbose logging
     --dry-run       Show what would be built without creating files
 """
@@ -293,7 +293,9 @@ def main():
         help=f"Output directory for IDE bundles (default: {default_output_dir})",
     )
     parser.add_argument(
-        "--clean", action="store_true", help="Clean output directory before build"
+        "--no-clean",
+        action="store_true",
+        help="Skip cleaning output directory before build (default: always clean to remove stale artifacts)",
     )
     parser.add_argument(
         "--verbose", "-v", action="store_true", help="Enable verbose logging"
@@ -309,8 +311,8 @@ def main():
     # Setup logging
     setup_logging(args.verbose)
 
-    # Clean output directory if requested
-    if args.clean and args.output_dir.exists():
+    # Clean output directory before build (default behavior to remove stale artifacts)
+    if not args.no_clean and args.output_dir.exists():
         import shutil
 
         if not args.dry_run:
