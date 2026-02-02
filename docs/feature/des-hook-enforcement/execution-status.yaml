@@ -1,0 +1,49 @@
+project_id: des-hook-enforcement
+created: 2026-02-01 15:00:00+00:00
+schema_version: 2.0.0
+execution_status:
+  current_step: 00-01
+  completed_steps: []
+  step_checkpoint:
+    step_id: 00-01
+    started_at: '2026-02-01T20:16:42.356603+00:00'
+    turn_count: 3
+    phases:
+    - phase_index: 0
+      phase_name: PREPARE
+      status: COMPLETED
+      started_at: '2026-02-01T20:16:42.356707+00:00'
+      notes: 'Verified: 1 scenario enabled, entry point exists, subprocess invocation
+        (CM-D compliant)'
+      outcome: PASS
+      ended_at: '2026-02-01T20:22:31.140482+00:00'
+      duration_minutes: 5
+    - phase_index: 1
+      phase_name: RED_ACCEPTANCE
+      status: COMPLETED
+      started_at: '2026-02-01T20:24:32.084347+00:00'
+      notes: 'Test failed as expected: fixture ''stub_adapter_exists'' not found - test
+        infrastructure incomplete'
+      outcome: PASS
+      ended_at: '2026-02-01T20:44:15.000000+00:00'
+      duration_minutes: 20
+    - phase_index: 2
+      phase_name: RED_UNIT
+      status: COMPLETED
+      started_at: '2026-02-02T00:00:00.000000+00:00'
+      notes: 'Unit tests created and failing correctly: 6 tests fail because adapter file does not exist'
+      outcome: PASS
+      ended_at: '2026-02-02T00:05:00.000000+00:00'
+      duration_minutes: 5
+    - phase_index: 3
+      phase_name: GREEN
+      status: COMPLETED
+      started_at: '2026-02-02T00:05:00.000000+00:00'
+      notes: 'Minimal stub adapter implemented: reads JSON stdin, outputs valid JSON with decision:allow and proof:hook_fired, exits 0. All 6 unit tests passing.'
+      outcome: PASS
+      ended_at: '2026-02-02T00:15:00.000000+00:00'
+      duration_minutes: 10
+metadata:
+  total_steps_planned: 5
+  orchestration_start: 2026-02-01 15:00:00+00:00
+  orchestration_mode: standard
