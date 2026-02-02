@@ -215,12 +215,19 @@ def step_file_complete(tmp_path):
 
 @pytest.fixture
 def step_file_incomplete(tmp_path):
-    """Create step file with incomplete phases."""
+    """Create step file with incomplete phases (abandoned IN_PROGRESS)."""
     step_file = tmp_path / "step-01-01.json"
     step_data = {
         "step_id": "01-01",
         "description": "Test step",
-        "phases": {"RED": {"status": "PASSED"}, "GREEN": {"status": "IN_PROGRESS"}},
+        "tdd_cycle": {
+            "phase_execution_log": [
+                {"phase_name": "PREPARE", "status": "COMPLETED", "outcome": "PASS"},
+                {"phase_name": "RED_ACCEPTANCE", "status": "IN_PROGRESS"},  # Abandoned!
+            ],
+            "duration_minutes": 30,
+        },
+        "state": {"status": "IN_PROGRESS"},
     }
     step_file.write_text(json.dumps(step_data, indent=2))
     return step_file

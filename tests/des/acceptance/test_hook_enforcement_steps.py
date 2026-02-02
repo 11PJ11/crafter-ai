@@ -54,7 +54,6 @@ def test_invalid_task_produces_blocked_entry():
     pass
 
 
-@pytest.mark.skip("Not implemented yet")
 @scenario(
     "test_hook_enforcement.feature",
     "Successful post-execution gate produces HOOK_SUBAGENT_STOP_PASSED",
@@ -63,7 +62,6 @@ def test_successful_post_execution_gate():
     pass
 
 
-@pytest.mark.skip("Not implemented yet")
 @scenario(
     "test_hook_enforcement.feature",
     "Failed post-execution gate produces HOOK_SUBAGENT_STOP_FAILED",
@@ -581,20 +579,20 @@ def invoke_validate_prompt_invalid(
 @when("I invoke on_agent_complete via RealSubagentStopHook with completed step")
 def invoke_on_agent_complete_success(context):
     """Invoke on_agent_complete through hook entry point."""
-    from des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
+    from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
 
     hook = RealSubagentStopHook()
-    result = hook.on_agent_complete(step_path=str(context["step_file"]))
+    result = hook.on_agent_complete(step_file_path=str(context["step_file"]))
     context["hook_result"] = result
 
 
 @when("I invoke on_agent_complete via RealSubagentStopHook with incomplete step")
 def invoke_on_agent_complete_failure(context):
     """Invoke on_agent_complete with incomplete step."""
-    from des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
+    from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
 
     hook = RealSubagentStopHook()
-    result = hook.on_agent_complete(step_path=str(context["step_file"]))
+    result = hook.on_agent_complete(step_file_path=str(context["step_file"]))
     context["hook_result"] = result
 
 
@@ -926,29 +924,37 @@ def audit_timestamp_utc(audit_log_reader, fixed_utc_time):
 @then("on_agent_complete returns validation success")
 def hook_returns_success(context):
     """Verify on_agent_complete returns success."""
-    assert context["hook_result"]["validation_passed"] is True
+    assert context["hook_result"].validation_status == "PASSED"
 
 
 @then("on_agent_complete returns validation failure")
 def hook_returns_failure(context):
     """Verify on_agent_complete returns failure."""
-    assert context["hook_result"]["validation_passed"] is False
+    assert context["hook_result"].validation_status == "FAILED"
 
 
 @then("audit entry includes step_path")
 def audit_has_step_path_field(audit_log_reader):
     """Verify audit entry includes step_path field."""
-    entries = audit_log_reader.get_all_entries()
-    assert len(entries) > 0
-    assert "step_path" in entries[0]
+    # Get entries of the relevant event type (either PASSED or FAILED)
+    passed_entries = audit_log_reader.get_entries_by_type("HOOK_SUBAGENT_STOP_PASSED")
+    failed_entries = audit_log_reader.get_entries_by_type("HOOK_SUBAGENT_STOP_FAILED")
+    entries = passed_entries + failed_entries
+    assert len(entries) > 0, "No HOOK_SUBAGENT_STOP events found in audit log"
+    assert "step_path" in entries[0], f"step_path not in audit entry: {entries[0]}"
 
 
 @then("audit entry includes phases_validated count")
 def audit_has_phases_count(audit_log_reader):
     """Verify audit entry includes phases_validated count."""
-    entries = audit_log_reader.get_all_entries()
-    assert len(entries) > 0
-    assert "phases_validated" in entries[0]
+    # Get entries of the relevant event type (either PASSED or FAILED)
+    passed_entries = audit_log_reader.get_entries_by_type("HOOK_SUBAGENT_STOP_PASSED")
+    failed_entries = audit_log_reader.get_entries_by_type("HOOK_SUBAGENT_STOP_FAILED")
+    entries = passed_entries + failed_entries
+    assert len(entries) > 0, "No HOOK_SUBAGENT_STOP events found in audit log"
+    assert "phases_validated" in entries[0], (
+        f"phases_validated not in audit entry: {entries[0]}"
+    )
 
 
 @then("audit entry includes validation errors")
@@ -957,12 +963,8 @@ def audit_has_errors(audit_log_reader):
     entries = audit_log_reader.get_all_entries()
     assert len(entries) > 0
     entry = entries[-1]
-    # Check for errors in entry or extra_context
-    assert (
-        "errors" in entry
-        or "reason" in entry
-        or ("extra_context" in entry and "errors" in entry["extra_context"])
-    )
+    # Check for validation_errors field (specific to HOOK_SUBAGENT_STOP_FAILED)
+    assert "validation_errors" in entry and len(entry["validation_errors"]) > 0
 
 
 @then("config file is created at ~/.claude/des/config.yaml")

@@ -3,6 +3,7 @@
 from src.des.ports.driver_ports.hook_port import HookPort, HookResult
 from src.des.validation.scope_validator import ScopeValidator
 from src.des.adapters.driven.logging.audit_logger import get_audit_logger
+from src.des.ports.driven_ports.time_provider_port import TimeProvider
 import json
 import logging
 from pathlib import Path
@@ -162,12 +163,37 @@ class RealSubagentStopHook(HookPort):
                     "allowed_patterns": allowed_patterns
                 })
 
+        # Log audit event based on validation result
+        audit_logger = get_audit_logger()
+        from src.des.adapters.driven.time.system_time import SystemTimeProvider
+        time_provider = SystemTimeProvider()
+        timestamp = time_provider.now_utc().isoformat()
+        phases_validated = len(phase_log)
+
         # If any errors found, populate comprehensive failure details
         if errors:
             self._populate_aggregated_failures(
                 result, errors, step_file_path, step_data
             )
+
+            # Log HOOK_SUBAGENT_STOP_FAILED event
+            audit_logger.append({
+                "event": "HOOK_SUBAGENT_STOP_FAILED",
+                "step_path": step_file_path,
+                "phases_validated": phases_validated,
+                "validation_errors": self._format_validation_errors(errors),
+                "timestamp": timestamp
+            })
+
             return result
+
+        # Log HOOK_SUBAGENT_STOP_PASSED event
+        audit_logger.append({
+            "event": "HOOK_SUBAGENT_STOP_PASSED",
+            "step_path": step_file_path,
+            "phases_validated": phases_validated,
+            "timestamp": timestamp
+        })
 
         return result
 
@@ -264,6 +290,58 @@ class RealSubagentStopHook(HookPort):
             "actual_minutes": actual_seconds // 60,
             "expected_minutes": expected_seconds // 60,
         }
+
+    def _format_validation_errors(self, errors: List[tuple]) -> List[dict]:
+        """Format validation errors for audit logging.
+
+        Args:
+            errors: List of (error_type, error_data) tuples
+
+        Returns:
+            List of error dictionaries with type and details
+        """
+        formatted_errors = []
+
+        for error_type, error_data in errors:
+            if error_type == "ABANDONED_PHASE":
+                formatted_errors.append({
+                    "error_type": error_type,
+                    "phases": error_data,
+                    "count": len(error_data)
+                })
+            elif error_type == "MISSING_OUTCOME":
+                formatted_errors.append({
+                    "error_type": error_type,
+                    "phases": error_data,
+                    "count": len(error_data)
+                })
+            elif error_type == "INVALID_SKIP":
+                formatted_errors.append({
+                    "error_type": error_type,
+                    "phases": error_data,
+                    "count": len(error_data)
+                })
+            elif error_type == "SILENT_COMPLETION":
+                formatted_errors.append({
+                    "error_type": error_type,
+                    "not_executed_count": error_data
+                })
+            elif error_type == "TURN_LIMIT_EXCEEDED":
+                formatted_errors.append({
+                    "error_type": error_type,
+                    "phases": error_data,
+                    "count": len(error_data)
+                })
+            elif error_type == "TIMEOUT_EXCEEDED":
+                formatted_errors.append({
+                    "error_type": error_type,
+                    "actual_seconds": error_data["actual_seconds"],
+                    "expected_seconds": error_data["expected_seconds"],
+                    "actual_minutes": error_data["actual_minutes"],
+                    "expected_minutes": error_data["expected_minutes"]
+                })
+
+        return formatted_errors
 
     def _populate_aggregated_failures(
         self,
