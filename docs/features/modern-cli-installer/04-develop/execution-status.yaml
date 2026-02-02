@@ -62,10 +62,10 @@ phases:
 
   - phase_id: "04"
     name: "Journey 3 - PyPI Install"
-    status: "blocked"
+    status: "in_progress"
     blocked_by: "Phase 01"
     steps_total: 8
-    steps_completed: 0
+    steps_completed: 1
 
   - phase_id: "05"
     name: "Cross-Cutting Concerns"
@@ -750,11 +750,85 @@ steps:
   - step_id: "04-05"
     name: "Create nw setup command for post-install agent setup"
     phase: "04"
-    status: "pending"
+    status: "completed"
     dependencies: ["03-05b"]
     estimated_hours: 4
-    tdd_phases: []
-    notes: "Must use FileSystemPort for all directory/file operations"
+    started_at: "2026-02-02T23:15:00Z"
+    completed_at: "2026-02-02T23:55:00Z"
+    tdd_phases:
+      - phase: "PREPARE"
+        status: "completed"
+        completed_at: "2026-02-02T23:15:00Z"
+        notes: "Verified FileSystemPort Protocol exists, hexagonal architecture in place"
+      - phase: "RED_ACCEPTANCE"
+        status: "skipped"
+        reason: "NOT_APPLICABLE: CLI command step, unit tests drive implementation"
+      - phase: "RED_UNIT"
+        status: "completed"
+        completed_at: "2026-02-02T23:25:00Z"
+        notes: "Created 62 unit tests across adapter, service, and CLI layers"
+        artifacts_created:
+          - "tests/installer/adapters/test_filesystem_adapter.py (22 tests)"
+          - "tests/installer/services/test_setup_service.py (24 tests)"
+          - "tests/installer/cli/test_nw_setup.py (16 tests)"
+      - phase: "GREEN"
+        status: "completed"
+        completed_at: "2026-02-02T23:45:00Z"
+        artifacts_created:
+          - "src/crafter_ai/installer/ports/filesystem_port.py"
+          - "src/crafter_ai/installer/adapters/filesystem_adapter.py"
+          - "src/crafter_ai/installer/services/setup_service.py"
+          - "src/crafter_ai/installer/cli/nw_setup.py"
+        validation_commands:
+          - command: "pytest tests/installer/adapters/test_filesystem_adapter.py -v"
+            result: "PASSED - 22 tests passed"
+          - command: "pytest tests/installer/services/test_setup_service.py -v"
+            result: "PASSED - 24 tests passed"
+          - command: "pytest tests/installer/cli/test_nw_setup.py -v"
+            result: "PASSED - 16 tests passed"
+      - phase: "REVIEW"
+        status: "completed"
+        completed_at: "2026-02-02T23:50:00Z"
+        acceptance_criteria:
+          - criterion: "FileSystemPort Protocol with @runtime_checkable"
+            status: "PASS"
+          - criterion: "RealFileSystemAdapter implements FileSystemPort"
+            status: "PASS"
+          - criterion: "SetupService uses dependency injection for FileSystemPort"
+            status: "PASS"
+          - criterion: "setup_claude_config creates ~/.claude/, commands/, CLAUDE.md"
+            status: "PASS"
+          - criterion: "setup_project_config creates .claude/, CLAUDE.local.md"
+            status: "PASS"
+          - criterion: "verify_setup detects missing components"
+            status: "PASS"
+          - criterion: "--global/-g flag sets up only global config"
+            status: "PASS"
+          - criterion: "--project/-p flag sets up only project config"
+            status: "PASS"
+          - criterion: "--force/-f flag overwrites existing files"
+            status: "PASS"
+          - criterion: "CI mode detected via CI=true/CI=1 environment variable"
+            status: "PASS"
+          - criterion: "Exit codes: 0 on success, non-zero on failure"
+            status: "PASS"
+      - phase: "REFACTOR_CONTINUOUS"
+        status: "skipped"
+        reason: "NOT_APPLICABLE: clean implementation, no refactoring needed"
+      - phase: "COMMIT"
+        status: "completed"
+        completed_at: "2026-02-02T23:55:00Z"
+    artifacts_created:
+      - "src/crafter_ai/installer/ports/filesystem_port.py"
+      - "src/crafter_ai/installer/adapters/filesystem_adapter.py"
+      - "src/crafter_ai/installer/services/setup_service.py"
+      - "src/crafter_ai/installer/cli/nw_setup.py"
+      - "tests/installer/adapters/test_filesystem_adapter.py"
+      - "tests/installer/services/test_setup_service.py"
+      - "tests/installer/cli/test_nw_setup.py"
+    test_result: "PASS: 62 tests (22 adapter + 24 service + 16 CLI)"
+    commit_hash: "09334d1"
+    notes: "Hexagonal architecture: FileSystemPort Protocol at port boundary, SetupService for business logic, CLI command for user interface. InMemoryFileSystemAdapter used in tests for isolation."
 
   - step_id: "04-06"
     name: "Create nw doctor CLI command"
@@ -861,10 +935,10 @@ steps:
 # Summary statistics
 summary:
   total_steps: 41
-  completed_steps: 32
+  completed_steps: 33
   in_progress_steps: 0
   blocked_steps: 0
-  pending_steps: 9
+  pending_steps: 8
   estimated_total_hours: 116
   estimated_remaining_hours: 26
 
