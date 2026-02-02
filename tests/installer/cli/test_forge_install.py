@@ -139,6 +139,7 @@ class TestWheelResolution:
         mock_wheel_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
+        passing_pre_flight_results: list[CheckResult],
     ) -> None:
         """Test command runs with explicit --wheel path."""
         with (
@@ -148,7 +149,12 @@ class TestWheelResolution:
             patch(
                 "crafter_ai.installer.cli.forge_install.ReleaseReportService"
             ) as mock_report_service,
+            patch(
+                "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
+            ) as mock_preflight,
         ):
+            mock_preflight.return_value = passing_pre_flight_results
+
             mock_service = MagicMock()
             mock_service.install.return_value = successful_install_result
             mock_factory.return_value = mock_service
@@ -175,6 +181,7 @@ class TestWheelResolution:
         tmp_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
+        passing_pre_flight_results: list[CheckResult],
     ) -> None:
         """Test command auto-detects wheel in dist/."""
         # Create a fake dist directory with a wheel
@@ -193,8 +200,12 @@ class TestWheelResolution:
             patch(
                 "crafter_ai.installer.cli.forge_install.list_wheels_in_dist"
             ) as mock_list,
+            patch(
+                "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
+            ) as mock_preflight,
         ):
             mock_list.return_value = [wheel_file]
+            mock_preflight.return_value = passing_pre_flight_results
 
             mock_service = MagicMock()
             mock_service.install.return_value = successful_install_result
@@ -220,6 +231,7 @@ class TestForceFlag:
         mock_wheel_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
+        passing_pre_flight_results: list[CheckResult],
     ) -> None:
         """Test --force flag passed to InstallService."""
         with (
@@ -229,7 +241,12 @@ class TestForceFlag:
             patch(
                 "crafter_ai.installer.cli.forge_install.ReleaseReportService"
             ) as mock_report_service,
+            patch(
+                "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
+            ) as mock_preflight,
         ):
+            mock_preflight.return_value = passing_pre_flight_results
+
             mock_service = MagicMock()
             mock_service.install.return_value = successful_install_result
             mock_factory.return_value = mock_service
@@ -262,6 +279,7 @@ class TestForceFlag:
         mock_wheel_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
+        passing_pre_flight_results: list[CheckResult],
     ) -> None:
         """Test -f short flag for --force."""
         with (
@@ -271,7 +289,12 @@ class TestForceFlag:
             patch(
                 "crafter_ai.installer.cli.forge_install.ReleaseReportService"
             ) as mock_report_service,
+            patch(
+                "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
+            ) as mock_preflight,
         ):
+            mock_preflight.return_value = passing_pre_flight_results
+
             mock_service = MagicMock()
             mock_service.install.return_value = successful_install_result
             mock_factory.return_value = mock_service
@@ -306,6 +329,7 @@ class TestNoVerifyFlag:
         runner: CleanCliRunner,
         mock_wheel_path: Path,
         sample_release_report: ReleaseReport,
+        passing_pre_flight_results: list[CheckResult],
     ) -> None:
         """Test --no-verify skips verification phase."""
         # Create install result without verification
@@ -331,7 +355,12 @@ class TestNoVerifyFlag:
             patch(
                 "crafter_ai.installer.cli.forge_install.ReleaseReportService"
             ) as mock_report_service,
+            patch(
+                "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
+            ) as mock_preflight,
         ):
+            mock_preflight.return_value = passing_pre_flight_results
+
             mock_service = MagicMock()
             mock_service.install.return_value = install_result_no_verify
             mock_factory.return_value = mock_service
@@ -369,6 +398,7 @@ class TestPromptBehavior:
         mock_wheel_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
+        passing_pre_flight_results: list[CheckResult],
     ) -> None:
         """Test --no-prompt skips confirmation."""
         with (
@@ -378,7 +408,12 @@ class TestPromptBehavior:
             patch(
                 "crafter_ai.installer.cli.forge_install.ReleaseReportService"
             ) as mock_report_service,
+            patch(
+                "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
+            ) as mock_preflight,
         ):
+            mock_preflight.return_value = passing_pre_flight_results
+
             mock_service = MagicMock()
             mock_service.install.return_value = successful_install_result
             mock_factory.return_value = mock_service
@@ -402,6 +437,7 @@ class TestPromptBehavior:
         mock_wheel_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
+        passing_pre_flight_results: list[CheckResult],
     ) -> None:
         """Test CI=true env var skips confirmation."""
         with (
@@ -411,7 +447,12 @@ class TestPromptBehavior:
             patch(
                 "crafter_ai.installer.cli.forge_install.ReleaseReportService"
             ) as mock_report_service,
+            patch(
+                "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
+            ) as mock_preflight,
         ):
+            mock_preflight.return_value = passing_pre_flight_results
+
             mock_service = MagicMock()
             mock_service.install.return_value = successful_install_result
             mock_factory.return_value = mock_service
@@ -548,6 +589,7 @@ class TestReleaseReportDisplay:
         mock_wheel_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
+        passing_pre_flight_results: list[CheckResult],
     ) -> None:
         """Test displays release report on success."""
         with (
@@ -557,7 +599,12 @@ class TestReleaseReportDisplay:
             patch(
                 "crafter_ai.installer.cli.forge_install.ReleaseReportService"
             ) as mock_report_service,
+            patch(
+                "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
+            ) as mock_preflight,
         ):
+            mock_preflight.return_value = passing_pre_flight_results
+
             mock_service = MagicMock()
             mock_service.install.return_value = successful_install_result
             mock_factory.return_value = mock_service
@@ -587,6 +634,7 @@ class TestExitCodes:
         mock_wheel_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
+        passing_pre_flight_results: list[CheckResult],
     ) -> None:
         """Test exit code 0 on success."""
         with (
@@ -596,7 +644,12 @@ class TestExitCodes:
             patch(
                 "crafter_ai.installer.cli.forge_install.ReleaseReportService"
             ) as mock_report_service,
+            patch(
+                "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
+            ) as mock_preflight,
         ):
+            mock_preflight.return_value = passing_pre_flight_results
+
             mock_service = MagicMock()
             mock_service.install.return_value = successful_install_result
             mock_factory.return_value = mock_service
@@ -1049,6 +1102,7 @@ class TestWheelSelection:
         tmp_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
+        passing_pre_flight_results: list[CheckResult],
     ) -> None:
         """Test single wheel in dist/ is used directly without prompt."""
         # Create a single wheel
@@ -1068,9 +1122,13 @@ class TestWheelSelection:
             patch(
                 "crafter_ai.installer.cli.forge_install.find_latest_wheel"
             ) as mock_find,
+            patch(
+                "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
+            ) as mock_preflight,
         ):
             mock_list.return_value = [wheel_file]
             mock_find.return_value = wheel_file
+            mock_preflight.return_value = passing_pre_flight_results
 
             mock_service = MagicMock()
             mock_service.install.return_value = successful_install_result
@@ -1147,6 +1205,7 @@ class TestWheelSelection:
         tmp_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
+        passing_pre_flight_results: list[CheckResult],
     ) -> None:
         """Test user selecting specific wheel number uses that wheel."""
         import time
@@ -1167,8 +1226,12 @@ class TestWheelSelection:
             patch(
                 "crafter_ai.installer.cli.forge_install.list_wheels_in_dist"
             ) as mock_list,
+            patch(
+                "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
+            ) as mock_preflight,
         ):
             mock_list.return_value = [wheel2, wheel1]  # Newest first
+            mock_preflight.return_value = passing_pre_flight_results
 
             mock_service = MagicMock()
             mock_service.install.return_value = successful_install_result
@@ -1198,6 +1261,7 @@ class TestWheelSelection:
         tmp_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
+        passing_pre_flight_results: list[CheckResult],
     ) -> None:
         """Test invalid selection shows error message."""
         wheel1 = tmp_path / "crafter_ai-0.1.0-py3-none-any.whl"
@@ -1215,8 +1279,12 @@ class TestWheelSelection:
             patch(
                 "crafter_ai.installer.cli.forge_install.list_wheels_in_dist"
             ) as mock_list,
+            patch(
+                "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
+            ) as mock_preflight,
         ):
             mock_list.return_value = [wheel2, wheel1]
+            mock_preflight.return_value = passing_pre_flight_results
 
             mock_service = MagicMock()
             mock_service.install.return_value = successful_install_result
@@ -1244,6 +1312,7 @@ class TestWheelSelection:
         tmp_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
+        passing_pre_flight_results: list[CheckResult],
     ) -> None:
         """Test CI mode auto-selects newest wheel without prompting."""
         import time
@@ -1264,8 +1333,12 @@ class TestWheelSelection:
             patch(
                 "crafter_ai.installer.cli.forge_install.list_wheels_in_dist"
             ) as mock_list,
+            patch(
+                "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
+            ) as mock_preflight,
         ):
             mock_list.return_value = [wheel2, wheel1]  # Newest first
+            mock_preflight.return_value = passing_pre_flight_results
 
             mock_service = MagicMock()
             mock_service.install.return_value = successful_install_result
@@ -1294,6 +1367,7 @@ class TestWheelSelection:
         tmp_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
+        passing_pre_flight_results: list[CheckResult],
     ) -> None:
         """Test --no-prompt auto-selects newest wheel."""
         import time
@@ -1314,8 +1388,12 @@ class TestWheelSelection:
             patch(
                 "crafter_ai.installer.cli.forge_install.list_wheels_in_dist"
             ) as mock_list,
+            patch(
+                "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
+            ) as mock_preflight,
         ):
             mock_list.return_value = [wheel2, wheel1]
+            mock_preflight.return_value = passing_pre_flight_results
 
             mock_service = MagicMock()
             mock_service.install.return_value = successful_install_result
@@ -1343,6 +1421,7 @@ class TestWheelSelection:
         tmp_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
+        passing_pre_flight_results: list[CheckResult],
     ) -> None:
         """Test wheel list is sorted by modification time, newest first."""
         import time
@@ -1367,9 +1446,13 @@ class TestWheelSelection:
             patch(
                 "crafter_ai.installer.cli.forge_install.list_wheels_in_dist"
             ) as mock_list,
+            patch(
+                "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
+            ) as mock_preflight,
         ):
             # Return in correct sorted order (newest first)
             mock_list.return_value = [wheel_new, wheel_mid, wheel_old]
+            mock_preflight.return_value = passing_pre_flight_results
 
             mock_service = MagicMock()
             mock_service.install.return_value = successful_install_result
@@ -1402,6 +1485,7 @@ class TestWheelSelection:
         tmp_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
+        passing_pre_flight_results: list[CheckResult],
     ) -> None:
         """Test wheel display shows modification date and file size."""
         wheel1 = tmp_path / "crafter_ai-0.1.0-py3-none-any.whl"
@@ -1420,8 +1504,12 @@ class TestWheelSelection:
             patch(
                 "crafter_ai.installer.cli.forge_install.list_wheels_in_dist"
             ) as mock_list,
+            patch(
+                "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
+            ) as mock_preflight,
         ):
             mock_list.return_value = [wheel2, wheel1]
+            mock_preflight.return_value = passing_pre_flight_results
 
             mock_service = MagicMock()
             mock_service.install.return_value = successful_install_result

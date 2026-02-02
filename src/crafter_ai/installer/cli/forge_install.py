@@ -19,12 +19,14 @@ from rich.table import Table
 
 from crafter_ai.installer.adapters.backup_adapter import FileSystemBackupAdapter
 from crafter_ai.installer.adapters.build_adapter import SubprocessBuildAdapter
+from crafter_ai.installer.adapters.git_adapter import SubprocessGitAdapter
 from crafter_ai.installer.adapters.pipx_adapter import SubprocessPipxAdapter
+from crafter_ai.installer.checks.build_checks import create_build_check_registry
 from crafter_ai.installer.checks.install_checks import create_install_check_registry
 from crafter_ai.installer.cli.forge_build import forge_app
 from crafter_ai.installer.domain.artifact_registry import ArtifactRegistry
 from crafter_ai.installer.domain.check_executor import CheckExecutor
-from crafter_ai.installer.domain.check_result import CheckResult
+from crafter_ai.installer.domain.check_result import CheckResult, CheckSeverity
 from crafter_ai.installer.domain.health_checker import HealthChecker
 from crafter_ai.installer.services.build_service import BuildService
 from crafter_ai.installer.services.install_service import InstallService
@@ -56,9 +58,11 @@ def create_build_service() -> BuildService:
     Returns:
         Configured BuildService instance.
     """
-    check_executor = CheckExecutor()
+    registry = create_build_check_registry()
+    check_executor = CheckExecutor(registry)
     build_port = SubprocessBuildAdapter()
-    version_bump_service = VersionBumpService()
+    git_port = SubprocessGitAdapter()
+    version_bump_service = VersionBumpService(git_port)
     wheel_validation_service = WheelValidationService()
     artifact_registry = ArtifactRegistry()
 
@@ -261,6 +265,36 @@ def display_pre_flight_results(results: list[CheckResult]) -> None:
     console.print()
 
 
+def get_blocking_failures(results: list[CheckResult]) -> list[CheckResult]:
+    """Get all blocking failures from pre-flight check results.
+
+    Args:
+        results: List of CheckResult objects.
+
+    Returns:
+        List of CheckResult objects that failed with BLOCKING severity.
+    """
+    return [r for r in results if not r.passed and r.severity == CheckSeverity.BLOCKING]
+
+
+def display_blocking_failures(failures: list[CheckResult]) -> None:
+    """Display blocking failure summary with remediation hints.
+
+    Args:
+        failures: List of blocking CheckResult failures.
+    """
+    error_lines = ["[bold red]FORGE: INSTALL BLOCKED[/bold red]\n"]
+    error_lines.append("The following blocking checks failed:\n")
+
+    for failure in failures:
+        error_lines.append(f"  • {failure.name}: {failure.message}")
+        if failure.remediation:
+            error_lines.append(f"    Fix: {failure.remediation}")
+
+    console.print(Panel("\n".join(error_lines), border_style="red"))
+    console.print()
+
+
 def display_header(wheel_path: Path) -> None:
     """Display FORGE: INSTALL header.
 
@@ -404,6 +438,12 @@ def install(
     # Run and display pre-flight checks
     pre_flight_results = run_pre_flight_checks()
     display_pre_flight_results(pre_flight_results)
+
+    # Check for blocking failures - stop if any exist
+    blocking_failures = get_blocking_failures(pre_flight_results)
+    if blocking_failures:
+        display_blocking_failures(blocking_failures)
+        raise typer.Exit(code=1)
 
     # Determine if we should prompt
     ci_mode = is_ci_mode()
