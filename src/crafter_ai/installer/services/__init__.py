@@ -5,6 +5,11 @@ from crafter_ai.installer.services.auto_repair_service import (
     RepairResult,
 )
 from crafter_ai.installer.services.build_service import BuildResult, BuildService
+from crafter_ai.installer.services.install_service import (
+    InstallPhase,
+    InstallResult,
+    InstallService,
+)
 from crafter_ai.installer.services.release_readiness_service import (
     ReleaseReadinessResult,
     ReleaseReadinessService,
@@ -19,6 +24,9 @@ __all__ = [
     "AutoRepairService",
     "BuildResult",
     "BuildService",
+    "InstallPhase",
+    "InstallResult",
+    "InstallService",
     "ReleaseReadinessResult",
     "ReleaseReadinessService",
     "RepairResult",
