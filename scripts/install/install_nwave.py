@@ -21,10 +21,15 @@ try:
         Logger,
         ManifestWriter,
         PathUtils,
-        VersionUtils,
     )
     from scripts.install.installation_verifier import InstallationVerifier
     from scripts.install.output_formatter import format_error
+    from scripts.install.plugins.agents_plugin import AgentsPlugin
+    from scripts.install.plugins.base import InstallContext
+    from scripts.install.plugins.commands_plugin import CommandsPlugin
+    from scripts.install.plugins.registry import PluginRegistry
+    from scripts.install.plugins.templates_plugin import TemplatesPlugin
+    from scripts.install.plugins.utilities_plugin import UtilitiesPlugin
     from scripts.install.preflight_checker import PreflightChecker
     from scripts.install.rich_console import ConsoleFactory, RichLogger
 except ImportError:
@@ -34,10 +39,15 @@ except ImportError:
         Logger,
         ManifestWriter,
         PathUtils,
-        VersionUtils,
     )
     from installation_verifier import InstallationVerifier
     from output_formatter import format_error
+    from plugins.agents_plugin import AgentsPlugin
+    from plugins.base import InstallContext
+    from plugins.commands_plugin import CommandsPlugin
+    from plugins.registry import PluginRegistry
+    from plugins.templates_plugin import TemplatesPlugin
+    from plugins.utilities_plugin import UtilitiesPlugin
     from preflight_checker import PreflightChecker
     from rich_console import ConsoleFactory, RichLogger
 
@@ -262,8 +272,31 @@ class NWaveInstaller:
         self.logger.info(f"Restoration complete from backup: {latest_backup}")
         return True
 
+    def _create_plugin_registry(self) -> PluginRegistry:
+        """Create and configure the plugin registry with all installation plugins.
+
+        Returns:
+            PluginRegistry configured with agents, commands, templates, and utilities plugins.
+        """
+        registry = PluginRegistry()
+        registry.register(AgentsPlugin())
+        registry.register(CommandsPlugin())
+        registry.register(TemplatesPlugin())
+        registry.register(UtilitiesPlugin())
+        return registry
+
     def install_framework(self) -> bool:
-        """Install framework files."""
+        """Install framework files using plugin-based orchestration.
+
+        Uses PluginRegistry to orchestrate installation of all components:
+        - agents (priority 10)
+        - commands (priority 20)
+        - templates (priority 30)
+        - utilities (priority 40)
+
+        Returns:
+            True if all plugins installed successfully, False otherwise.
+        """
         if self.dry_run:
             self.logger.info(
                 f"[DRY RUN] Would install nWave framework to: {self.claude_config_dir}"
@@ -293,167 +326,31 @@ class NWaveInstaller:
         # Create target directories
         self.claude_config_dir.mkdir(parents=True, exist_ok=True)
 
+        # Create plugin registry and install all components
+        registry = self._create_plugin_registry()
+
+        # Create installation context with all required utilities
+        context = InstallContext(
+            claude_dir=self.claude_config_dir,
+            scripts_dir=self.project_root / "scripts" / "install",
+            templates_dir=self.project_root / "nWave" / "templates",
+            logger=self.logger,
+            project_root=self.project_root,
+            framework_source=self.framework_source,
+            dry_run=self.dry_run,
+        )
+
         with self.rich_logger.progress_spinner("Installing framework files..."):
-            # Install agents
-            self._install_agents()
+            # Execute all plugins through registry
+            results = registry.install_all(context)
 
-            # Install commands
-            self._install_commands()
-
-            # Install utility scripts
-            self._install_utility_scripts()
-
-            # Install templates
-            self._install_templates()
+        # Check if any plugin failed
+        for plugin_name, result in results.items():
+            if not result.success:
+                self.logger.error(f"Plugin '{plugin_name}' failed: {result.message}")
+                return False
 
         return True
-
-    def _install_agents(self):
-        """Install agent files."""
-        self.logger.info("Installing agents...")
-
-        source_agent_dir = self.project_root / "nWave" / "agents"
-        dist_agent_dir = self.framework_source / "agents" / "nw"
-        target_agent_dir = self.claude_config_dir / "agents" / "nw"
-
-        target_agent_dir.mkdir(parents=True, exist_ok=True)
-
-        # Count agents
-        dist_agent_count = (
-            PathUtils.count_files(dist_agent_dir, "*.md")
-            if dist_agent_dir.exists()
-            else 0
-        )
-        source_agent_count = (
-            PathUtils.count_files(source_agent_dir, "*.md")
-            if source_agent_dir.exists()
-            else 0
-        )
-
-        # Use dist if it has most agents, otherwise fall back to source
-        if dist_agent_count >= (source_agent_count // 2) and dist_agent_count > 5:
-            self.logger.info(
-                f"Installing from built distribution ({dist_agent_count} agents)..."
-            )
-            PathUtils.copy_tree_with_filter(
-                dist_agent_dir, target_agent_dir, exclude_patterns=["README.md"]
-            )
-        else:
-            self.logger.info(
-                f"Build incomplete ({dist_agent_count}/{source_agent_count} agents), using source files..."
-            )
-            PathUtils.copy_tree_with_filter(
-                source_agent_dir, target_agent_dir, exclude_patterns=["README.md"]
-            )
-
-        copied_agents = PathUtils.count_files(target_agent_dir, "*.md")
-        self.logger.info(f"Installed {copied_agents} agent files")
-
-    def _install_commands(self):
-        """Install command files."""
-        self.logger.info("Installing commands...")
-
-        commands_source = self.framework_source / "commands"
-        commands_target = self.claude_config_dir / "commands"
-
-        if commands_source.exists():
-            import shutil
-
-            for item in commands_source.iterdir():
-                target = commands_target / item.name
-                if item.is_dir():
-                    if target.exists():
-                        shutil.rmtree(target)
-                    shutil.copytree(item, target)
-                else:
-                    shutil.copy2(item, target)
-
-            copied_commands = PathUtils.count_files(commands_target, "*.md")
-            self.logger.info(f"Installed {copied_commands} command files")
-
-            dw_commands_dir = commands_target / "nw"
-            if dw_commands_dir.exists():
-                dw_commands = PathUtils.count_files(dw_commands_dir, "*.md")
-                self.logger.info(f"  - DW commands: {dw_commands} essential commands")
-
-    def _install_utility_scripts(self):
-        """Install utility scripts for target projects."""
-        self.logger.info("Installing utility scripts...")
-
-        scripts_source = self.project_root / "scripts"
-        scripts_target = self.claude_config_dir / "scripts"
-        scripts_target.mkdir(parents=True, exist_ok=True)
-
-        # List of utility scripts to install with version checking
-        utility_scripts = ["install_nwave_target_hooks.py", "validate_step_file.py"]
-
-        installed_count = 0
-        for script_name in utility_scripts:
-            source_script = scripts_source / script_name
-            target_script = scripts_target / script_name
-
-            if not source_script.exists():
-                continue
-
-            source_ver = VersionUtils.extract_version_from_file(source_script)
-            target_ver = (
-                VersionUtils.extract_version_from_file(target_script)
-                if target_script.exists()
-                else "0.0.0"
-            )
-
-            if VersionUtils.compare_versions(source_ver, target_ver) > 0:
-                import shutil
-
-                shutil.copy2(source_script, target_script)
-                self.logger.info(
-                    f"Upgraded {script_name} ({target_ver} → {source_ver})"
-                )
-                installed_count += 1
-            elif not target_script.exists():
-                import shutil
-
-                shutil.copy2(source_script, target_script)
-                self.logger.info(f"Installed {script_name} (v{source_ver})")
-                installed_count += 1
-            else:
-                self.logger.info(f"{script_name} already up-to-date (v{target_ver})")
-
-        if installed_count > 0:
-            total_scripts = PathUtils.count_files(scripts_target, "*.py")
-            self.logger.info(f"Total {total_scripts} utility script(s) installed")
-
-    def _install_templates(self):
-        """Install template files."""
-        self.logger.info("Installing templates...")
-
-        templates_source = self.project_root / "nWave" / "templates"
-        templates_target = self.claude_config_dir / "templates"
-        templates_target.mkdir(parents=True, exist_ok=True)
-
-        if not templates_source.exists():
-            self.logger.warn(
-                f"Templates source directory not found: {templates_source}"
-            )
-            return
-
-        import shutil
-
-        # Install ALL template files (.json, .yaml, .yml)
-        template_patterns = ["*.json", "*.yaml", "*.yml"]
-        installed_count = 0
-
-        for pattern in template_patterns:
-            for template_file in templates_source.glob(pattern):
-                if template_file.is_file():
-                    shutil.copy2(template_file, templates_target / template_file.name)
-                    self.logger.info(f"Installed template: {template_file.name}")
-                    installed_count += 1
-
-        if installed_count > 0:
-            self.logger.info(f"Total {installed_count} template(s) installed")
-        else:
-            self.logger.warn("No template files found to install")
 
     def _validate_schema_template(self) -> bool:
         """Validate TDD cycle schema template has required fields."""
