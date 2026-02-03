@@ -21,6 +21,10 @@ from src.des.adapters.driven.task_invocation.mocked_task_adapter import (
     MockedTaskAdapter,
 )
 from src.des.adapters.driven.time.system_time import SystemTimeProvider
+from src.des.adapters.driven.validation.scope_validator import (
+    ScopeValidationResult,
+    ScopeValidator,
+)
 
 
 # Backward compatibility aliases
@@ -43,4 +47,7 @@ __all__ = [
     "SystemTime",  # Backward compatibility
     # Time adapters
     "SystemTimeProvider",
+    # Validation adapters
+    "ScopeValidationResult",
+    "ScopeValidator",
 ]

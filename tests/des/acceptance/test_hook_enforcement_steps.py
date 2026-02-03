@@ -480,6 +480,8 @@ def orchestrator_raises(context, monkeypatch):
 @when("I invoke Task tool with any prompt")
 def invoke_task_tool(context, stub_adapter_exists):
     """Invoke stub adapter with Task tool JSON."""
+    import os
+
     task_json = {"tool": "Task", "tool_input": {"prompt": "test prompt"}}
 
     result = subprocess.run(
@@ -487,6 +489,7 @@ def invoke_task_tool(context, stub_adapter_exists):
         input=json.dumps(task_json),
         capture_output=True,
         text=True,
+        env=os.environ.copy(),
     )
 
     context["adapter_result"] = result
@@ -612,10 +615,13 @@ def adapter_loads_config(context):
 @when("I invoke hook adapter CLI with pre-task command and valid Task JSON via stdin")
 def invoke_adapter_pre_task_valid(context, hook_adapter_cli, valid_task_json):
     """Invoke hook adapter CLI with pre-task command."""
+    import os
+
     result = subprocess.run(
         ["python3", str(hook_adapter_cli), "pre-task"],
         input=json.dumps(valid_task_json).encode(),
         capture_output=True,
+        env=os.environ.copy(),
     )
     context["cli_result"] = result
 
@@ -623,10 +629,13 @@ def invoke_adapter_pre_task_valid(context, hook_adapter_cli, valid_task_json):
 @when("I invoke hook adapter CLI with pre-task command and invalid Task JSON via stdin")
 def invoke_adapter_pre_task_invalid(context, hook_adapter_cli, invalid_task_json):
     """Invoke hook adapter CLI with invalid task."""
+    import os
+
     result = subprocess.run(
         ["python3", str(hook_adapter_cli), "pre-task"],
         input=json.dumps(invalid_task_json).encode(),
         capture_output=True,
+        env=os.environ.copy(),
     )
     context["cli_result"] = result
 
@@ -634,12 +643,15 @@ def invoke_adapter_pre_task_invalid(context, hook_adapter_cli, invalid_task_json
 @when("I invoke hook adapter CLI with subagent-stop command and step context via stdin")
 def invoke_adapter_subagent_stop(context, hook_adapter_cli):
     """Invoke hook adapter CLI with subagent-stop command."""
+    import os
+
     step_context = {"step_path": str(context["step_file"])}
 
     result = subprocess.run(
         ["python3", str(hook_adapter_cli), "subagent-stop"],
         input=json.dumps(step_context).encode(),
         capture_output=True,
+        env=os.environ.copy(),
     )
     context["cli_result"] = result
 
@@ -647,10 +659,13 @@ def invoke_adapter_subagent_stop(context, hook_adapter_cli):
 @when("I invoke hook adapter CLI with pre-task command and malformed JSON via stdin")
 def invoke_adapter_malformed_json(context, hook_adapter_cli):
     """Invoke hook adapter with malformed JSON."""
+    import os
+
     result = subprocess.run(
         ["python3", str(hook_adapter_cli), "pre-task"],
         input=b"invalid json {",
         capture_output=True,
+        env=os.environ.copy(),
     )
     context["cli_result"] = result
 
@@ -658,8 +673,13 @@ def invoke_adapter_malformed_json(context, hook_adapter_cli):
 @when("I invoke hook adapter CLI with pre-task command and no stdin")
 def invoke_adapter_no_stdin(context, hook_adapter_cli):
     """Invoke hook adapter with no stdin."""
+    import os
+
     result = subprocess.run(
-        ["python3", str(hook_adapter_cli), "pre-task"], input=b"", capture_output=True
+        ["python3", str(hook_adapter_cli), "pre-task"],
+        input=b"",
+        capture_output=True,
+        env=os.environ.copy(),
     )
     context["cli_result"] = result
 
@@ -667,12 +687,15 @@ def invoke_adapter_no_stdin(context, hook_adapter_cli):
 @when("I invoke hook adapter CLI with subagent-stop command via stdin")
 def invoke_adapter_subagent_stop_error(context, hook_adapter_cli):
     """Invoke subagent-stop that will trigger exception."""
+    import os
+
     step_context = {"step_path": "nonexistent.json"}
 
     result = subprocess.run(
         ["python3", str(hook_adapter_cli), "subagent-stop"],
         input=json.dumps(step_context).encode(),
         capture_output=True,
+        env=os.environ.copy(),
     )
     context["cli_result"] = result
 
@@ -682,10 +705,13 @@ def invoke_adapter_subagent_stop_error(context, hook_adapter_cli):
 )
 def invoke_adapter_cross_platform(context, hook_adapter_cli, valid_task_json):
     """Invoke hook adapter to verify cross-platform compatibility."""
+    import os
+
     result = subprocess.run(
         ["python3", str(hook_adapter_cli), "pre-task"],
         input=json.dumps(valid_task_json).encode(),
         capture_output=True,
+        env=os.environ.copy(),
     )
     context["cli_result"] = result
 
@@ -693,8 +719,12 @@ def invoke_adapter_cross_platform(context, hook_adapter_cli, valid_task_json):
 @when("I run installer via python3 scripts/install/install_des_hooks.py --install")
 def run_installer(context, installer_cli):
     """Run installer script."""
+    import os
+
     result = subprocess.run(
-        ["python3", str(installer_cli), "--install"], capture_output=True
+        ["python3", str(installer_cli), "--install"],
+        capture_output=True,
+        env=os.environ.copy(),
     )
     context["installer_result"] = result
 
@@ -702,8 +732,12 @@ def run_installer(context, installer_cli):
 @when("I run installer via python3 scripts/install/install_des_hooks.py --uninstall")
 def run_uninstaller(context, installer_cli):
     """Run uninstaller script."""
+    import os
+
     result = subprocess.run(
-        ["python3", str(installer_cli), "--uninstall"], capture_output=True
+        ["python3", str(installer_cli), "--uninstall"],
+        capture_output=True,
+        env=os.environ.copy(),
     )
     context["installer_result"] = result
 

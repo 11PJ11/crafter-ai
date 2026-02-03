@@ -459,7 +459,7 @@ class ExecutionLogValidator:
                 for phase in phase_log
                 if phase.get("phase_name")
             }
-            missing_phases = required_phases >> present_phases
+            missing_phases = required_phases - present_phases
             if missing_phases:
                 errors.append(
                     f"INCOMPLETE: Missing required phases for schema v{schema_version}: {', '.join(sorted(missing_phases))}"

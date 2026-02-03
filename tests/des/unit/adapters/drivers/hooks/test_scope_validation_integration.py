@@ -15,8 +15,8 @@ Test Strategy:
 import json
 from unittest.mock import patch
 
+from src.des.adapters.driven.validation.scope_validator import ScopeValidationResult
 from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
-from src.des.validation.scope_validator import ScopeValidationResult
 
 
 class TestScopeValidationIntegration:

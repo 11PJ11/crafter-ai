@@ -391,7 +391,7 @@ class TestScopeValidationPostExecution:
         out_of_scope_file.write_text("# Modified by agent out of scope")
 
         # Act: Run post-execution scope validation
-        from src.des.validation.scope_validator import ScopeValidator
+        from src.des.adapters.driven.validation.scope_validator import ScopeValidator
 
         validator = ScopeValidator()
         result = validator.validate_scope(
@@ -444,7 +444,7 @@ class TestScopeValidationPostExecution:
         ]
 
         # Act: Run post-execution scope validation
-        from src.des.validation import ScopeValidator
+        from src.des.adapters.driven.validation.scope_validator import ScopeValidator
 
         validator = ScopeValidator()
         result = validator.validate_scope(
@@ -493,7 +493,7 @@ class TestScopeValidationPostExecution:
         _modified_files = [str(minimal_step_file)]
 
         # Act: Run post-execution scope validation
-        from src.des.validation import ScopeValidator
+        from src.des.adapters.driven.validation.scope_validator import ScopeValidator
 
         validator = ScopeValidator()
         result = validator.validate_scope(
@@ -618,7 +618,7 @@ class TestScopeViolationAuditLogging:
 
         # Act: Simulate what SubagentStopHook will do
         from src.des.adapters.driven.logging.audit_logger import get_audit_logger
-        from src.des.validation.scope_validator import ScopeValidator
+        from src.des.adapters.driven.validation.scope_validator import ScopeValidator
 
         validator = ScopeValidator()
         audit_log = get_audit_logger()
@@ -685,7 +685,7 @@ class TestScopeViolationAuditLogging:
 
         # Act: Run scope validation
         from src.des.adapters.driven.logging.audit_logger import get_audit_logger
-        from src.des.validation import ScopeValidator
+        from src.des.adapters.driven.validation.scope_validator import ScopeValidator
 
         validator = ScopeValidator()
         audit_log = get_audit_logger()
@@ -841,7 +841,7 @@ class TestBoundaryRulesValidation:
         Expected Error:
         "MISSING: Mandatory section 'BOUNDARY_RULES' not found"
         """
-        from src.des.validation import PromptValidator
+        from src.des.application.prompt_validator import PromptValidator
 
         # GIVEN: Prompt missing BOUNDARY_RULES
         incomplete_prompt = """

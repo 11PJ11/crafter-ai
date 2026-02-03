@@ -10,8 +10,8 @@ Clean executions should be silent. Only violations get logged.
 
 from unittest.mock import Mock, patch
 
+from src.des.adapters.driven.validation.scope_validator import ScopeValidationResult
 from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
-from src.des.validation.scope_validator import ScopeValidationResult
 
 
 class TestCleanExecutionSilence:
@@ -165,7 +165,7 @@ class TestCleanExecutionSilence:
             patch(
                 "src.des.adapters.drivers.hooks.real_hook.get_audit_logger"
             ) as mock_get_audit_logger,
-            patch("src.des.adapters.drivers.hooks.real_hook.logger") as mock_logger,
+            patch("src.des.adapters.drivers.hooks.real_hook.logger"),
         ):
             mock_validator = Mock()
             mock_validator_class.return_value = mock_validator

@@ -22,7 +22,7 @@ class TestPromptValidatorTimeoutInstruction:
 
         Business Value: Ensures validator configuration includes TIMEOUT_INSTRUCTION requirement.
         """
-        from src.des.validation import PromptValidator
+        from src.des.application.prompt_validator import PromptValidator
 
         validator = PromptValidator()
 
@@ -42,7 +42,7 @@ class TestPromptValidatorTimeoutInstruction:
 
         Business Value: Prevents agent invocation without turn discipline.
         """
-        from src.des.validation import PromptValidator
+        from src.des.application.prompt_validator import PromptValidator
 
         # Prompt with all sections EXCEPT TIMEOUT_INSTRUCTION
         incomplete_prompt = """
@@ -91,7 +91,7 @@ class TestPromptValidatorTimeoutInstruction:
 
         Business Value: Clear error messages help developers fix validation issues quickly.
         """
-        from src.des.validation import PromptValidator
+        from src.des.application.prompt_validator import PromptValidator
 
         incomplete_prompt = """
         <!-- DES-VALIDATION: required -->
@@ -133,7 +133,7 @@ class TestPromptValidatorTimeoutInstruction:
 
         Business Value: Distinguishes between missing sections and incomplete sections.
         """
-        from src.des.validation import PromptValidator
+        from src.des.application.prompt_validator import PromptValidator
 
         incomplete_prompt = """
         <!-- DES-VALIDATION: required -->
@@ -157,7 +157,7 @@ class TestPromptValidatorTimeoutInstruction:
 
         Business Value: Valid prompts with turn discipline are allowed.
         """
-        from src.des.validation import PromptValidator
+        from src.des.application.prompt_validator import PromptValidator
 
         complete_prompt = """
         <!-- DES-VALIDATION: required -->

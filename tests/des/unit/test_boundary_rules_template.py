@@ -5,7 +5,7 @@ Tests the BOUNDARY_RULES section rendering for US-007, verifying that
 prompts include explicit scope constraints for agents.
 """
 
-from src.des.templates.boundary_rules_template import BoundaryRulesTemplate
+from src.des.application.boundary_rules_template import BoundaryRulesTemplate
 
 
 class TestBoundaryRulesTemplateRendering:

@@ -9,10 +9,11 @@ This module provides test fixtures following hexagonal architecture principles:
 
 import json
 import subprocess
-from pathlib import Path
-from typing import Dict, Any, List
-import pytest
 from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+import pytest
 
 
 class FakeTimeProvider:
@@ -38,7 +39,7 @@ class AuditLogReader:
             else audit_log_path
         )
 
-    def get_all_entries(self) -> List[Dict[str, Any]]:
+    def get_all_entries(self) -> list[dict[str, Any]]:
         """Read all audit log entries from all date-specific log files."""
         entries = []
 
@@ -47,14 +48,14 @@ class AuditLogReader:
 
         # Read all audit-*.log files in the directory
         for log_file in self.audit_log_dir.glob("audit-*.log"):
-            with open(log_file, "r") as f:
+            with open(log_file) as f:
                 for line in f:
                     line = line.strip()
                     if line:
                         entries.append(json.loads(line))
         return entries
 
-    def get_entries_by_type(self, event_type: str) -> List[Dict[str, Any]]:
+    def get_entries_by_type(self, event_type: str) -> list[dict[str, Any]]:
         """Filter audit log entries by event type."""
         # Note: Events are stored with 'event' field, not 'event_type'
         return [e for e in self.get_all_entries() if e.get("event") == event_type]
@@ -174,8 +175,15 @@ audit_logging_enabled: true  # Enable comprehensive audit trail
 
 
 @pytest.fixture
-def disable_audit_logging(des_config_path):
-    """Configure audit logging to be disabled."""
+def disable_audit_logging(des_config_path, audit_log_reader):
+    """Configure audit logging to be disabled.
+
+    Also clears the audit log to ensure test isolation - the test checking
+    that no entries are written should not see entries from previous tests.
+    """
+    # Clear audit log for test isolation
+    audit_log_reader.clear()
+
     des_config_path.parent.mkdir(parents=True, exist_ok=True)
     config_content = """# DES Configuration
 audit_logging_enabled: false  # Disable audit logging
@@ -243,9 +251,9 @@ def valid_task_json():
     """
     # Import template loader to get canonical phase definitions
     from src.des.application.tdd_template_loader import (
-        get_valid_tdd_phases,
         get_expected_phase_count,
         get_schema_version,
+        get_valid_tdd_phases,
     )
 
     phases = get_valid_tdd_phases()
@@ -330,7 +338,7 @@ def installer_cli():
 
 
 def run_cli_command(
-    cli_path: Path, args: List[str], stdin_data: str = None
+    cli_path: Path, args: list[str], stdin_data: str | None = None
 ) -> subprocess.CompletedProcess:
     """
     Helper to run CLI commands with stdin and capture output.
@@ -343,13 +351,16 @@ def run_cli_command(
     Returns:
         CompletedProcess with returncode, stdout, stderr
     """
-    cmd = ["python3", str(cli_path)] + args
+    import os
+
+    cmd = ["python3", str(cli_path), *args]
 
     result = subprocess.run(
         cmd,
         input=stdin_data.encode() if stdin_data else None,
         capture_output=True,
         text=False,
+        env=os.environ.copy(),
     )
 
     return result

@@ -1,7 +1,7 @@
 """Production implementation of post-execution hook adapter."""
 
 from src.des.ports.driver_ports.hook_port import HookPort, HookResult
-from src.des.validation.scope_validator import ScopeValidator
+from src.des.adapters.driven.validation.scope_validator import ScopeValidator
 from src.des.adapters.driven.logging.audit_logger import get_audit_logger
 from src.des.ports.driven_ports.time_provider_port import TimeProvider
 import json

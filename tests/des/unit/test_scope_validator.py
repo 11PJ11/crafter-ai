@@ -15,7 +15,7 @@ import json
 import subprocess
 from unittest.mock import Mock, patch
 
-from src.des.validation.scope_validator import ScopeValidator
+from src.des.adapters.driven.validation.scope_validator import ScopeValidator
 
 
 class TestScopeValidatorGitIntegration:

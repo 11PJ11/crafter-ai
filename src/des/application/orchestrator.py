@@ -245,10 +245,14 @@ class DESOrchestrator:
                 extra_context={"agent": agent_name} if agent_name else None
             )
 
-        # Log the audit event
+        # Log the audit event if audit logging is enabled
+        from src.des.adapters.driven.config.des_config import DESConfig
         from src.des.adapters.driven.logging.audit_logger import get_audit_logger
-        logger = get_audit_logger()
-        logger.append(event.to_dict())
+
+        config = DESConfig()
+        if config.audit_logging_enabled:
+            logger = get_audit_logger()
+            logger.append(event.to_dict())
 
         # Mark lifecycle as completed after validation
         self._subagent_lifecycle_completed = True
@@ -429,7 +433,7 @@ class DESOrchestrator:
         from src.des.domain.timeout_instruction_template import (
             TimeoutInstructionTemplate,
         )
-        from src.des.templates.boundary_rules_template import BoundaryRulesTemplate
+        from src.des.application.boundary_rules_template import BoundaryRulesTemplate
 
         validation_level = self._get_validation_level(command)
         if validation_level != "full":

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional
 
 
 if TYPE_CHECKING:
-    from src.des.validation.scope_validator import ScopeValidationResult
+    from src.des.adapters.driven.validation.scope_validator import ScopeValidationResult
 
 
 @dataclass
