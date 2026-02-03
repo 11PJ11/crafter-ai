@@ -1,0 +1,29 @@
+# Commit-Based Mutation Testing Configuration
+# Approach: Hexagonal Architecture Compatible (files extracted from execution-status.yaml)
+#
+# Implementation files are extracted from execution-status.yaml → files_modified.implementation
+# Tests are NOT mutated but executed to validate the implementation
+#
+# Usage:
+#   .venv-mutation/bin/cosmic-ray init cosmic-ray-feature.toml session.sqlite
+#   .venv-mutation/bin/cosmic-ray exec cosmic-ray-feature.toml session.sqlite
+#   .venv-mutation/bin/cr-report session.sqlite
+
+[cosmic-ray]
+module-path = [
+    "src/des/application/orchestrator.py",
+    "src/des/adapters/drivers/hooks/real_hook.py",
+    "src/des/adapters/driven/config/des_config.py",
+    "src/des/adapters/drivers/hooks/claude_code_hook_adapter.py",
+    "src/des/application/tdd_template_loader.py",
+    "src/des/application/validator.py"
+]
+timeout = 30.0
+excluded-modules = []
+test-command = "pytest -x tests/des/"
+
+[cosmic-ray.distributor]
+name = "local"
+
+[cosmic-ray.execution-engine]
+name = "local"

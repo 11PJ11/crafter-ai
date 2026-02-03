@@ -1,0 +1,12 @@
+# Targeted Mutation Testing - Hook Adapter (Critical Component)
+[cosmic-ray]
+module-path = "src/des/adapters/drivers/hooks/claude_code_hook_adapter.py"
+timeout = 30.0
+excluded-modules = []
+test-command = "pytest -x tests/des/unit/adapters/drivers/hooks/test_claude_code_hook_adapter.py"
+
+[cosmic-ray.distributor]
+name = "local"
+
+[cosmic-ray.execution-engine]
+name = "local"
