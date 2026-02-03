@@ -2,6 +2,7 @@
 
 import re
 import time
+from typing import List
 
 from src.des.ports.driver_ports.validator_port import ValidationResult, ValidatorPort
 

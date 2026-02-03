@@ -7,7 +7,12 @@ Provides shared fixtures accessible to both acceptance and scenario tests.
 from datetime import datetime, timezone
 
 import pytest
-from typer.testing import CliRunner
+
+
+try:
+    from typer.testing import CliRunner
+except ImportError:
+    CliRunner = None
 
 
 def pytest_ignore_collect(collection_path, config):
@@ -168,11 +173,13 @@ def scenario_des_orchestrator(
 
 
 @pytest.fixture
-def cli_runner() -> CliRunner:
+def cli_runner():
     """
     Provide a CLI test runner for testing Typer commands.
 
     Returns:
         CliRunner: Typer CLI test runner for isolated command testing
     """
+    if CliRunner is None:
+        pytest.skip("typer not installed")
     return CliRunner()
