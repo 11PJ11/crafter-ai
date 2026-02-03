@@ -9,8 +9,6 @@ from pathlib import Path
 
 import typer
 from rich.console import Console
-from rich.panel import Panel
-from rich.table import Table
 
 from crafter_ai.installer.adapters.build_adapter import SubprocessBuildAdapter
 from crafter_ai.installer.adapters.git_adapter import SubprocessGitAdapter
@@ -68,78 +66,50 @@ def is_ci_mode() -> bool:
 
 
 def display_pre_flight_results(results: list[CheckResult]) -> None:
-    """Display pre-flight check results in a Rich table.
+    """Display pre-flight check results as plain text lines.
 
     Args:
         results: List of CheckResult objects to display.
     """
-    table = Table(title="Pre-flight Checks", show_header=True)
-    table.add_column("Check", style="cyan")
-    table.add_column("Status", justify="center")
-    table.add_column("Details")
-
     for check in results:
-        status = "[green]✓[/green]" if check.passed else "[red]✗[/red]"
+        status = "[green]\u2713[/green]" if check.passed else "[red]\u2717[/red]"
+        console.print(f"  {status} {check.message}")
 
-        table.add_row(check.name, status, check.message)
-
-    console.print(table)
     console.print()
 
 
 def display_version_info(candidate: CandidateVersion) -> None:
-    """Display version bump information.
+    """Display version bump information as plain text.
 
     Args:
         candidate: CandidateVersion with version details.
     """
-    bump_type_str = candidate.bump_type.value.upper()
+    bump_type_str = candidate.bump_type.value.lower()
     console.print(
-        Panel(
-            f"[bold]Version Bump:[/bold] {candidate.current_version} -> "
-            f"[green]{candidate.next_version}[/green] ({bump_type_str})",
-            title="Version Analysis",
-        )
+        f"  {candidate.current_version} -> "
+        f"[green]{candidate.next_version}[/green] ({bump_type_str})"
     )
     console.print()
 
 
 def display_success_summary(result: BuildResult) -> None:
-    """Display build success summary.
+    """Display build success summary as a single line.
 
     Args:
         result: BuildResult with build outcome.
     """
     wheel_name = result.wheel_path.name if result.wheel_path else "unknown"
-    version = result.version or "unknown"
-    package_name = (
-        result.validation_result.package_name if result.validation_result else "unknown"
-    )
-
-    summary = (
-        f"[bold green]FORGE: BUILD COMPLETE[/bold green]\n\n"
-        f"Wheel: {wheel_name}\n"
-        f"Version: {version}\n"
-        f"Package: {package_name}"
-    )
-
-    console.print(Panel(summary, title="Build Summary", border_style="green"))
+    console.print(f"  {wheel_name}")
     console.print()
 
 
 def display_failure_summary(result: BuildResult) -> None:
-    """Display build failure summary.
+    """Display build failure summary as plain text.
 
     Args:
         result: BuildResult with failure details.
     """
-    console.print(
-        Panel(
-            f"[bold red]FORGE: BUILD FAILED[/bold red]\n\n{result.error_message}",
-            title="Build Failed",
-            border_style="red",
-        )
-    )
+    console.print(f"[bold red]Build failed:[/bold red] {result.error_message}")
     console.print()
 
 

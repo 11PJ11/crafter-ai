@@ -171,7 +171,7 @@ class TestPreFlightDisplay:
 
             result = runner.invoke(app, ["forge", "build", "--no-prompt"])
 
-        assert "pyproject.toml exists" in result.output
+        assert "pyproject.toml found at project root" in result.output
 
     def test_displays_failing_checks_with_x(
         self,
@@ -251,7 +251,7 @@ class TestSuccessSummary:
         successful_build_result: BuildResult,
         candidate_version: CandidateVersion,
     ) -> None:
-        """Test that success shows FORGE: BUILD COMPLETE."""
+        """Test that success summary shows wheel filename."""
 
         with patch(
             "crafter_ai.installer.cli.forge_build.create_build_service"
@@ -263,7 +263,7 @@ class TestSuccessSummary:
 
             result = runner.invoke(app, ["forge", "build", "--no-prompt"])
 
-        assert "FORGE: BUILD COMPLETE" in result.output
+        assert "crafter_ai-0.2.0-py3-none-any.whl" in result.output
 
     def test_displays_wheel_path_in_summary(
         self,
