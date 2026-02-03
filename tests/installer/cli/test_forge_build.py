@@ -310,7 +310,7 @@ class TestInstallPrompt:
             with patch.dict(os.environ, env, clear=True):
                 result = runner.invoke(app, ["forge", "build"], input="n\n")
 
-        assert "Install locally now?" in result.output
+        assert "Install crafter-ai" in result.output
 
     def test_no_prompt_flag_skips_prompt(
         self,
@@ -330,7 +330,7 @@ class TestInstallPrompt:
 
             result = runner.invoke(app, ["forge", "build", "--no-prompt"])
 
-        assert "Install locally now?" not in result.output
+        assert "Install crafter-ai" not in result.output
 
     def test_install_flag_triggers_auto_install_message(
         self,
@@ -351,7 +351,7 @@ class TestInstallPrompt:
             result = runner.invoke(app, ["forge", "build", "--install"])
 
         # --install implies --no-prompt and would trigger install (not implemented yet)
-        assert "Install locally now?" not in result.output
+        assert "Install crafter-ai" not in result.output
 
 
 class TestCIModeDetection:
@@ -376,7 +376,7 @@ class TestCIModeDetection:
             with patch.dict(os.environ, {"CI": "true"}):
                 result = runner.invoke(app, ["forge", "build"])
 
-        assert "Install locally now?" not in result.output
+        assert "Install crafter-ai" not in result.output
 
 
 class TestExitCodes:

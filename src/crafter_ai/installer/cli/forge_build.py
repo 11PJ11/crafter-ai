@@ -239,7 +239,10 @@ def build(
         if result.wheel_path:
             run_install(result.wheel_path)
     elif should_prompt:
-        do_install = typer.confirm("Install locally now?", default=True)
+        version = result.version or "unknown"
+        prompt_text = f"\U0001f4e6 Install crafter-ai {version}? [Y/n]: "
+        answer = console.input(prompt_text)
+        do_install = answer.strip().lower() in ("", "y", "yes")
         if do_install and result.wheel_path:
             run_install(result.wheel_path)
 
