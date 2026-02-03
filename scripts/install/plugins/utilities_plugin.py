@@ -5,6 +5,9 @@ Encapsulates the _install_utility_scripts() method from NWaveInstaller,
 maintaining backward compatibility while enabling plugin-based orchestration.
 """
 
+import shutil
+
+from scripts.install.install_utils import PathUtils, VersionUtils
 from scripts.install.plugins.base import (
     InstallationPlugin,
     InstallContext,
@@ -22,6 +25,10 @@ class UtilitiesPlugin(InstallationPlugin):
     def install(self, context: InstallContext) -> PluginResult:
         """Install utilities into the framework.
 
+        Copies utility scripts from project's scripts directory to the target
+        Claude config directory, using version checking to upgrade only when
+        source version is newer.
+
         Args:
             context: InstallContext with shared installation utilities
 
@@ -29,25 +36,65 @@ class UtilitiesPlugin(InstallationPlugin):
             PluginResult indicating success or failure of installation
         """
         try:
-            # This is where the _install_utility_scripts() logic will be called
-            # For now, return success to satisfy test requirements
-            # The actual implementation will delegate to NWaveInstaller._install_utility_scripts()
-
             context.logger.info("Installing utilities plugin...")
 
-            # Return success result
+            # Determine source and target directories
+            scripts_source = context.project_root / "scripts"
+            scripts_target = context.claude_dir / "scripts"
+            scripts_target.mkdir(parents=True, exist_ok=True)
+
+            # List of utility scripts to install with version checking
+            utility_scripts = ["install_nwave_target_hooks.py", "validate_step_file.py"]
+
+            installed_files = []
+            installed_count = 0
+
+            for script_name in utility_scripts:
+                source_script = scripts_source / script_name
+                target_script = scripts_target / script_name
+
+                if not source_script.exists():
+                    continue
+
+                source_ver = VersionUtils.extract_version_from_file(source_script)
+                target_ver = (
+                    VersionUtils.extract_version_from_file(target_script)
+                    if target_script.exists()
+                    else "0.0.0"
+                )
+
+                if VersionUtils.compare_versions(source_ver, target_ver) > 0:
+                    shutil.copy2(source_script, target_script)
+                    context.logger.info(
+                        f"Upgraded {script_name} ({target_ver} -> {source_ver})"
+                    )
+                    installed_files.append(str(target_script))
+                    installed_count += 1
+                elif not target_script.exists():
+                    shutil.copy2(source_script, target_script)
+                    context.logger.info(f"Installed {script_name} (v{source_ver})")
+                    installed_files.append(str(target_script))
+                    installed_count += 1
+                else:
+                    context.logger.info(
+                        f"{script_name} already up-to-date (v{target_ver})"
+                    )
+
+            total_scripts = PathUtils.count_files(scripts_target, "*.py")
+            context.logger.info(f"Installed {installed_count} utility script(s)")
+
             return PluginResult(
                 success=True,
                 plugin_name=self.name,
-                message="Utilities installed successfully",
-                installed_files=[],
+                message=f"Utilities installed successfully ({total_scripts} scripts)",
+                installed_files=installed_files,
             )
         except Exception as e:
-            context.logger.error(f"Failed to install utilities: {str(e)}")
+            context.logger.error(f"Failed to install utilities: {e!s}")
             return PluginResult(
                 success=False,
                 plugin_name=self.name,
-                message=f"Utilities installation failed: {str(e)}",
+                message=f"Utilities installation failed: {e!s}",
                 errors=[str(e)],
             )
 
@@ -63,17 +110,40 @@ class UtilitiesPlugin(InstallationPlugin):
         try:
             context.logger.info("Verifying utilities installation...")
 
-            # Return success result
+            target_scripts_dir = context.claude_dir / "scripts"
+
+            # Check target directory exists
+            if not target_scripts_dir.exists():
+                return PluginResult(
+                    success=False,
+                    plugin_name=self.name,
+                    message="Utilities verification failed: target directory does not exist",
+                    errors=["Target directory not found"],
+                )
+
+            # Check for utility scripts (primary: .py files)
+            utility_scripts = list(target_scripts_dir.glob("*.py"))
+
+            if not utility_scripts:
+                return PluginResult(
+                    success=False,
+                    plugin_name=self.name,
+                    message="Utilities verification failed: no utility scripts found",
+                    errors=["No .py files in target directory"],
+                )
+
+            context.logger.info(f"Verified {len(utility_scripts)} utility scripts")
+
             return PluginResult(
                 success=True,
                 plugin_name=self.name,
-                message="Utilities verification passed",
+                message=f"Utilities verification passed ({len(utility_scripts)} scripts)",
             )
         except Exception as e:
-            context.logger.error(f"Failed to verify utilities: {str(e)}")
+            context.logger.error(f"Failed to verify utilities: {e!s}")
             return PluginResult(
                 success=False,
                 plugin_name=self.name,
-                message=f"Utilities verification failed: {str(e)}",
+                message=f"Utilities verification failed: {e!s}",
                 errors=[str(e)],
             )

@@ -388,20 +388,48 @@ class TestUtilitiesPlugin:
 
         assert isinstance(result, PluginResult)
 
-    def test_utilities_plugin_install_success(self):
-        """Verify successful utilities plugin installation."""
+    def test_utilities_plugin_install_success(self, tmp_path):
+        """Verify successful utilities plugin installation copies scripts to target."""
         from scripts.install.plugins.utilities_plugin import UtilitiesPlugin
 
         plugin = UtilitiesPlugin()
+
+        # Set up source directory with utility scripts
+        source_scripts = tmp_path / "scripts"
+        source_scripts.mkdir(parents=True)
+        (source_scripts / "install_nwave_target_hooks.py").write_text(
+            '"""Hook installation script."""\n__version__ = "1.0.0"\n'
+        )
+        (source_scripts / "validate_step_file.py").write_text(
+            '"""Step file validation script."""\n__version__ = "1.0.0"\n'
+        )
+
+        # Set up target directory
+        claude_dir = tmp_path / "claude_config"
+        claude_dir.mkdir(parents=True)
+
         context = Mock(spec=InstallContext)
         context.dry_run = False
-        context.project_root = Path("/tmp/test")
+        context.project_root = tmp_path
+        context.claude_dir = claude_dir
         context.logger = Mock()
 
         result = plugin.install(context)
 
+        # Verify result
         assert result.success is True
         assert result.plugin_name == "utilities"
+        assert "installed" in result.message.lower()
+
+        # Verify scripts were actually copied to target
+        target_scripts_dir = claude_dir / "scripts"
+        assert target_scripts_dir.exists(), "Target scripts directory should exist"
+        assert (target_scripts_dir / "install_nwave_target_hooks.py").exists(), (
+            "install_nwave_target_hooks.py should be copied"
+        )
+        assert (target_scripts_dir / "validate_step_file.py").exists(), (
+            "validate_step_file.py should be copied"
+        )
 
     def test_utilities_plugin_verify_returns_plugin_result(self):
         """Verify UtilitiesPlugin.verify() returns PluginResult."""
