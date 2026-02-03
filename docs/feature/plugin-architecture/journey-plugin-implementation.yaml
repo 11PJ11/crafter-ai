@@ -1,0 +1,525 @@
+---
+schema_version: "1.0"
+journey_name: "plugin-system-implementation"
+goal: "Transform nWave installer from monolithic to plugin architecture"
+persona:
+  name: "nWave Development Team"
+  role: "Full Stack (Dev + Architect + PO)"
+  context: "Implementing plugin system across 6 phases"
+
+emotional_arc:
+  start: "Anxious - Will this refactoring work without breaking existing installations?"
+  middle: "Focused - Design is solid, executing methodically"
+  end: "Confident - DES installable, system extensible, zero regressions"
+
+trigger: "Design complete (design.md), Phase 1 infrastructure implemented"
+success_criteria:
+  - "DES module importable after installation (100% success)"
+  - "All integration tests pass (fresh + upgrade scenarios)"
+  - "Zero breaking changes for existing installations"
+  - "Plugin dependency resolution works (topological sort correct)"
+  - "Documentation complete and clear"
+
+# =============================================================================
+# JOURNEY STEPS (6 Milestones)
+# =============================================================================
+
+steps:
+  # ---------------------------------------------------------------------------
+  # Milestone 1: Infrastructure Foundation
+  # ---------------------------------------------------------------------------
+  - id: 1
+    name: "Create Plugin Infrastructure"
+    command: "Phase 1/6 - Create base classes and registry"
+    status: "COMPLETE"
+
+    tui_mockup: |
+      ┌─ Step 1: Create Plugin Infrastructure ─────────────────────┐
+      │ $ Task: Implement base.py, registry.py, tests             │
+      │                                                            │
+      │ ✓ Files created:                                           │
+      │   • scripts/install/plugins/base.py                        │
+      │   • scripts/install/plugins/registry.py                    │
+      │   • tests/install/test_plugin_registry.py                  │
+      │                                                            │
+      │ ✓ Tests: 10/10 passing                                     │
+      │ ✓ Coverage: base.py 89%, registry.py 71%                   │
+      │ ✓ Commit: d86acfa                                          │
+      │                                                            │
+      │ ${version} = "1.2.0" ◄── pyproject.toml                   │
+      │ ${plugin_dir} = "scripts/install/plugins/"                │
+      └────────────────────────────────────────────────────────────┘
+
+    shared_artifacts:
+      - name: "version"
+        source: "pyproject.toml"
+        displayed_as: "${version}"
+        consumers: ["Milestone 1", "Milestone 6"]
+      - name: "plugin_dir"
+        source: "scripts/install/ (hardcoded structure)"
+        displayed_as: "${plugin_dir}"
+        consumers: ["Milestone 1", "Milestone 2"]
+
+    emotional_state:
+      entry: "Uncertain - Is topological sort algorithm correct?"
+      exit: "Relieved - Tests pass, infrastructure validated"
+
+    gherkin: |
+      Scenario: Plugin infrastructure ready
+        Given design.md Phase 1 specification
+        When implementing base.py, registry.py, test suite
+        Then 10/10 tests pass
+        And Kahn's algorithm correctly orders plugins by dependencies
+        And circular dependency detection works
+        And priority ordering validated
+
+  # ---------------------------------------------------------------------------
+  # Milestone 2: Wrapper Plugins
+  # ---------------------------------------------------------------------------
+  - id: 2
+    name: "Create Wrapper Plugins"
+    command: "Phase 2/6 - Wrap existing methods (AgentsPlugin, CommandsPlugin, etc.)"
+    status: "NOT_STARTED"
+
+    tui_mockup: |
+      ┌─ Step 2: Create Wrapper Plugins ───────────────────────────┐
+      │ $ Task: Create 4 wrapper plugins (Agents, Commands, etc.)  │
+      │                                                            │
+      │ ⧗ Files to create:                                         │
+      │   • agents_plugin.py (WRAPPER around _install_agents)      │
+      │   • commands_plugin.py (WRAPPER around _install_commands)  │
+      │   • templates_plugin.py (WRAPPER)                          │
+      │   • utilities_plugin.py (WRAPPER)                          │
+      │                                                            │
+      │ Strategy: WRAPPER PATTERN                                  │
+      │   def install(context):                                    │
+      │       installer._install_agents()  # Call existing method  │
+      │       return PluginResult(success=True)                    │
+      │                                                            │
+      │ ${backup_manager} ◄── install_nwave.py (reused)           │
+      │ ${installation_verifier} ◄── installation_verifier.py     │
+      │                                                            │
+      │ Risk: HIGH (circular imports)                              │
+      │   → Mitigation: Extract module-level functions            │
+      └────────────────────────────────────────────────────────────┘
+
+    shared_artifacts:
+      - name: "backup_manager"
+        source: "install_nwave.py (BackupManager class)"
+        displayed_as: "${backup_manager}"
+        consumers: ["Milestone 2", "Milestone 4"]
+      - name: "installation_verifier"
+        source: "installation_verifier.py"
+        displayed_as: "${installation_verifier}"
+        consumers: ["Milestone 2", "Milestone 5"]
+
+    emotional_state:
+      entry: "Careful - Don't break existing installation logic"
+      exit: "Confident - Wrappers call existing methods correctly"
+
+    user_decision:
+      prompt: "Create all 4 wrapper plugins in this milestone?"
+      options:
+        - input: "yes"
+          next_step: 2
+        - input: "incremental (1 plugin at a time)"
+          next_step: 2
+          note: "Recommended: 4 commits (one per plugin)"
+
+    integration_checkpoint: |
+      ✓ Plugins call existing methods correctly
+      ✓ No behavioral changes (same output)
+      ✓ Circular import prevention validated
+      ✓ Unit tests for each plugin pass
+
+    gherkin: |
+      Scenario: Wrapper plugins preserve existing behavior
+        Given existing _install_agents() method in install_nwave.py
+        When creating AgentsPlugin that calls _install_agents()
+        Then same files installed to same locations
+        And same verification passes
+        And no circular import errors
+
+  # ---------------------------------------------------------------------------
+  # Milestone 3: Switchover to Plugin System
+  # ---------------------------------------------------------------------------
+  - id: 3
+    name: "Switchover to PluginRegistry"
+    command: "Phase 3/6 - Modify install_framework() to use plugin orchestration"
+    status: "NOT_STARTED"
+
+    tui_mockup: |
+      ┌─ Step 3: Switchover to PluginRegistry ─────────────────────┐
+      │ $ Task: Change install_framework() orchestration           │
+      │                                                            │
+      │ BEFORE (install_nwave.py):                                 │
+      │   def install_framework(self):                             │
+      │       self._install_agents()      # Hardcoded              │
+      │       self._install_commands()    # Hardcoded              │
+      │       self._install_templates()   # Hardcoded              │
+      │                                                            │
+      │ AFTER (with plugins):                                      │
+      │   def install_framework(self):                             │
+      │       registry = PluginRegistry()                          │
+      │       registry.register(AgentsPlugin())                    │
+      │       registry.register(CommandsPlugin())                  │
+      │       context = InstallContext(...)                        │
+      │       registry.install_all(context)  # Orchestrated!       │
+      │                                                            │
+      │ ${claude_dir} = ~/.claude ◄── PathUtils                   │
+      │ ${dist_dir} = dist/ide ◄── build pipeline                 │
+      │                                                            │
+      │ Risk: CRITICAL (orchestration path changes)                │
+      │   → Keep existing methods (plugins call them)             │
+      └────────────────────────────────────────────────────────────┘
+
+    shared_artifacts:
+      - name: "claude_dir"
+        source: "PathUtils.get_claude_config_dir() → ~/.claude"
+        displayed_as: "${claude_dir}"
+        consumers: ["Milestone 3", "Milestone 4"]
+      - name: "dist_dir"
+        source: "tools/build.py → dist/ide"
+        displayed_as: "${dist_dir}"
+        consumers: ["Milestone 3", "Milestone 4"]
+
+    emotional_state:
+      entry: "Tense - This is the big change moment"
+      exit: "Relieved - Integration tests pass, no regressions"
+
+    integration_checkpoint: |
+      ✓ Same files installed (path comparison)
+      ✓ Same verification passes
+      ✓ Backup manager still works
+      ✓ No regressions detected (file tree identical)
+
+    gherkin: |
+      Scenario: Switchover preserves installation behavior
+        Given fresh nWave installation directory
+        When running install_nwave.py with plugin orchestration
+        Then same agents/ commands/ templates/ files installed
+        And file tree matches pre-plugin baseline
+        And InstallationVerifier reports same results
+
+  # ---------------------------------------------------------------------------
+  # Milestone 4: DES Plugin Implementation
+  # ---------------------------------------------------------------------------
+  - id: 4
+    name: "Add DES Plugin"
+    command: "Phase 4/6 - Implement DESPlugin (demonstrates extensibility)"
+    status: "NOT_STARTED"
+
+    tui_mockup: |
+      ┌─ Step 4: Add DES Plugin ───────────────────────────────────┐
+      │ $ Task: Create des_plugin.py (NEW component)               │
+      │                                                            │
+      │ ⧗ Files to create:                                         │
+      │   • des_plugin.py (install DES module + scripts)           │
+      │   • nWave/scripts/des/check_stale_phases.py                │
+      │   • nWave/scripts/des/scope_boundary_check.py              │
+      │   • nWave/templates/.pre-commit-config-nwave.yaml          │
+      │   • nWave/templates/.des-audit-README.md                   │
+      │                                                            │
+      │ DES Components:                                            │
+      │   src/des/ → ~/.claude/lib/python/des/ ✓ (exists)         │
+      │   check_stale_phases.py ✗ (must create - MED-01)          │
+      │   scope_boundary_check.py ✗ (must create - MED-01)        │
+      │                                                            │
+      │ ${des_source} = src/des/ ◄── validated (exists)           │
+      │ ${templates_dir} = ~/.claude/templates/                   │
+      │                                                            │
+      │ Decision: Create DES scripts BEFORE implementation         │
+      └────────────────────────────────────────────────────────────┘
+
+    shared_artifacts:
+      - name: "des_source"
+        source: "src/des/ (hexagonal architecture module)"
+        displayed_as: "${des_source}"
+        consumers: ["Milestone 4"]
+        risk: "HIGH - DES scripts missing (prerequisite)"
+      - name: "templates_dir"
+        source: "~/.claude/templates/"
+        displayed_as: "${templates_dir}"
+        consumers: ["Milestone 4"]
+
+    emotional_state:
+      entry: "Excited - Demonstrating zero installer changes needed!"
+      exit: "Proud - DES installed via one registry.register() line"
+
+    user_decision:
+      prompt: "When to create DES scripts?"
+      options:
+        - input: "before_phase_4"
+          next_step: 4
+          note: "RECOMMENDED - Clean implementation"
+        - input: "placeholder_with_todo"
+          next_step: 4
+          note: "Defer to US-009 (DES completion)"
+
+    integration_checkpoint: |
+      ⧗ DES module importable (import test)
+      ⧗ DES scripts executable (chmod +x)
+      ⧗ DES templates installed
+      ⧗ Dependencies respected (DES after utilities)
+
+    gherkin: |
+      Scenario: DES installable as plugin
+        Given wrapper plugins complete (Milestone 2)
+        And PluginRegistry orchestration active (Milestone 3)
+        When creating DESPlugin with dependencies ["templates", "utilities"]
+        And registering DESPlugin in install_framework()
+        Then DES installed AFTER templates and utilities (topo sort)
+        And DES module importable from ~/.claude/lib/python/des/
+        And check_stale_phases.py executable
+
+  # ---------------------------------------------------------------------------
+  # Milestone 5: Testing & Documentation
+  # ---------------------------------------------------------------------------
+  - id: 5
+    name: "Testing & Documentation"
+    command: "Phase 5/6 - Comprehensive test suite + docs"
+    status: "NOT_STARTED"
+
+    tui_mockup: |
+      ┌─ Step 5: Testing & Documentation ──────────────────────────┐
+      │ $ Task: Full test coverage + complete documentation        │
+      │                                                            │
+      │ Testing Strategy:                                          │
+      │   • Unit tests: Each plugin in isolation                   │
+      │   • Integration: Fresh install + upgrade scenarios         │
+      │   • Regression: Compare pre-plugin vs post-plugin          │
+      │   • Adversarial: Error handling, circular deps             │
+      │                                                            │
+      │ Documentation:                                             │
+      │   • docs/installation/installation-guide.md (update)       │
+      │   • docs/reference/des-audit-trail-guide.md (NEW)          │
+      │   • docs/development/plugin-development-guide.md (NEW)     │
+      │                                                            │
+      │ ${test_coverage} >= 80% ◄── pytest-cov                    │
+      │ ${verification_report} ◄── InstallationVerifier           │
+      │                                                            │
+      │ Quality Gate: All tests pass + docs complete               │
+      └────────────────────────────────────────────────────────────┘
+
+    shared_artifacts:
+      - name: "test_coverage"
+        source: "pytest-cov report"
+        displayed_as: "${test_coverage}"
+        consumers: ["Milestone 5"]
+      - name: "verification_report"
+        source: "InstallationVerifier output"
+        displayed_as: "${verification_report}"
+        consumers: ["Milestone 5"]
+
+    emotional_state:
+      entry: "Thorough - Make it robust and clear"
+      exit: "Satisfied - Test coverage high, docs excellent"
+
+    integration_checkpoint: |
+      ⧗ Test suite passes (unit + integration)
+      ⧗ Documentation reviewed
+      ⧗ Backward compatibility validated
+
+    gherkin: |
+      Scenario: Test coverage meets quality gate
+        Given plugin system implementation complete
+        When running pytest with coverage
+        Then test coverage >= 80%
+        And all unit tests pass
+        And all integration tests pass
+        And regression tests show no behavioral changes
+
+  # ---------------------------------------------------------------------------
+  # Milestone 6: Deployment & Rollout
+  # ---------------------------------------------------------------------------
+  - id: 6
+    name: "Deployment & Rollout"
+    command: "Phase 6/6 - Release v1.7.0 with plugin system"
+    status: "NOT_STARTED"
+
+    tui_mockup: |
+      ┌─ Step 6: Deployment & Rollout ─────────────────────────────┐
+      │ $ Task: Release v1.7.0 with backward compatibility         │
+      │                                                            │
+      │ Release Checklist:                                         │
+      │   • Version bump: 1.2.0 → 1.7.0 (minor - new feature)     │
+      │   • CHANGELOG.md updated                                    │
+      │   • Release notes with migration guide                      │
+      │   • Gradual rollout: alpha → beta → stable                │
+      │                                                            │
+      │ ${version} = "1.7.0" ◄── pyproject.toml                   │
+      │ ${release_tag} = v1.7.0 ◄── git tag                       │
+      │                                                            │
+      │ Backward Compatibility:                                     │
+      │   ✓ Existing installations upgrade cleanly                 │
+      │   ✓ DES added without breaking existing setup              │
+      │   ✓ All integration tests pass                             │
+      └────────────────────────────────────────────────────────────┘
+
+    shared_artifacts:
+      - name: "version"
+        source: "pyproject.toml"
+        displayed_as: "${version}"
+        consumers: ["Milestone 6"]
+      - name: "release_tag"
+        source: "git tag"
+        displayed_as: "${release_tag}"
+        consumers: ["Milestone 6"]
+
+    emotional_state:
+      entry: "Confident - Ready for production"
+      exit: "Accomplished - DES available to all users"
+
+    integration_checkpoint: |
+      ⧗ Version bumped to 1.7.0
+      ⧗ CHANGELOG.md complete
+      ⧗ Release notes published
+      ⧗ Alpha/beta rollout complete
+
+    gherkin: |
+      Scenario: Production release successful
+        Given all tests pass
+        And documentation complete
+        And version bumped to 1.7.0
+        When releasing to production
+        Then users can install nWave with DES
+        And existing installations upgrade without issues
+        And no breaking changes reported
+
+# =============================================================================
+# INTEGRATION VALIDATION
+# =============================================================================
+
+integration_validation:
+  shared_artifact_consistency:
+    - artifact: "version"
+      must_match_across: [1, 6]
+      failure_message: "Version mismatch between Milestone 1 and 6"
+    - artifact: "backup_manager"
+      must_match_across: [2, 4]
+      failure_message: "BackupManager reference inconsistent"
+    - artifact: "claude_dir"
+      must_match_across: [3, 4]
+      failure_message: "Installation directory path mismatch"
+
+  cross_step_dependencies:
+    - from_step: 1
+      to_step: 2
+      dependency: "Plugin infrastructure must exist before wrapper plugins"
+      data_flow: ["PluginRegistry", "InstallationPlugin interface"]
+    - from_step: 2
+      to_step: 3
+      dependency: "Wrapper plugins must exist before switchover"
+      data_flow: ["AgentsPlugin", "CommandsPlugin", "TemplatesPlugin", "UtilitiesPlugin"]
+    - from_step: 3
+      to_step: 4
+      dependency: "Plugin orchestration must work before adding DES"
+      data_flow: ["PluginRegistry.install_all()", "InstallContext"]
+
+# =============================================================================
+# SHARED ARTIFACT REGISTRY
+# =============================================================================
+
+shared_artifact_registry:
+  version:
+    source_of_truth: "pyproject.toml"
+    consumers:
+      - "Milestone 1: Current installer version (1.2.0)"
+      - "Milestone 6: Release version (1.7.0)"
+    owner: "Build system"
+    integration_risk: "LOW"
+    validation: "Version comparison semantic versioning"
+
+  claude_dir:
+    source_of_truth: "PathUtils.get_claude_config_dir() → ~/.claude"
+    consumers:
+      - "Milestone 2: Plugin installation path"
+      - "Milestone 3: Switchover installation path"
+      - "Milestone 4: DES installation path"
+    owner: "PathUtils utility"
+    integration_risk: "LOW"
+    validation: "Path existence check"
+
+  backup_manager:
+    source_of_truth: "install_nwave.py (BackupManager class)"
+    consumers:
+      - "Milestone 2: Plugins use for backup"
+      - "Milestone 4: DESPlugin uses for backup"
+    owner: "install_nwave.py"
+    integration_risk: "MEDIUM"
+    risk_explanation: "If BackupManager changes, plugins must adapt"
+    validation: "Unit test BackupManager integration"
+
+  des_source:
+    source_of_truth: "src/des/ (hexagonal architecture module)"
+    consumers:
+      - "Milestone 4: DESPlugin installs to ~/.claude/lib/python/des/"
+    owner: "DES module"
+    integration_risk: "HIGH"
+    risk_explanation: "DES scripts (check_stale_phases.py, scope_boundary_check.py) don't exist yet - MUST CREATE before Milestone 4"
+    validation: "File existence check + import test"
+
+  installation_verifier:
+    source_of_truth: "installation_verifier.py"
+    consumers:
+      - "Milestone 2: Plugins use for verification"
+      - "Milestone 5: Test suite uses for validation"
+    owner: "installation_verifier.py"
+    integration_risk: "LOW"
+    validation: "Verification checks pass"
+
+# =============================================================================
+# COMMON ARTIFACTS TO TRACK
+# =============================================================================
+
+common_artifacts:
+  version:
+    typical_source: "pyproject.toml"
+    common_consumers:
+      - "Installer version display"
+      - "Release notes"
+      - "CHANGELOG.md"
+    risk: "LOW - version mismatch cosmetic only"
+
+  claude_dir:
+    typical_source: "~/.claude (PathUtils)"
+    common_consumers:
+      - "All plugin installations"
+      - "Verification checks"
+      - "Backup operations"
+    risk: "LOW - path always consistent"
+
+  backup_manager:
+    typical_source: "install_nwave.py"
+    common_consumers:
+      - "All plugins that modify files"
+      - "DESPlugin installation"
+    risk: "MEDIUM - changes break plugins"
+
+  des_source:
+    typical_source: "src/des/"
+    common_consumers:
+      - "DESPlugin installation"
+      - "DES verification"
+    risk: "HIGH - missing scripts block implementation"
+
+# =============================================================================
+# OUTPUT FILE PATTERNS
+# =============================================================================
+
+output_files:
+  journey_yaml:
+    pattern: "docs/feature/plugin-architecture/journey-plugin-implementation.yaml"
+    description: "Structured journey schema"
+
+  journey_visual:
+    pattern: "docs/feature/plugin-architecture/journey-plugin-implementation-visual.md"
+    description: "ASCII art journey with TUI mockups"
+
+  handover_document:
+    pattern: "docs/feature/plugin-architecture/handover-to-solution-architect.md"
+    description: "Gap analysis and recommendations (PRIMARY DELIVERABLE)"
+
+  artifact_registry:
+    pattern: "docs/feature/plugin-architecture/shared-artifacts-registry.md"
+    description: "Shared artifact tracking (updated per milestone)"
