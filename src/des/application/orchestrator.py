@@ -173,20 +173,18 @@ class DESOrchestrator:
 
         This class method is used in tests and entry points that don't have
         access to pre-configured dependencies. It creates an orchestrator
-        with real implementations (RealSubagentStopHook, RealTemplateValidator, etc.).
+        with real implementations (RealSubagentStopHook, TemplateValidator, etc.).
 
         Returns:
             DESOrchestrator instance with default dependencies configured
         """
         from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
-        from src.des.adapters.drivers.validators.real_validator import (
-            RealTemplateValidator,
-        )
+        from src.des.application.validator import TemplateValidator
         from src.des.adapters.driven.filesystem.real_filesystem import RealFileSystem
         from src.des.adapters.driven.time.system_time import SystemTimeProvider
 
         hook = RealSubagentStopHook()
-        validator = RealTemplateValidator()
+        validator = TemplateValidator()
         filesystem = RealFileSystem()
         time_provider = SystemTimeProvider()
 

@@ -1,0 +1,11 @@
+[cosmic-ray]
+module-path = "src/des/adapters/drivers/hooks/real_hook.py"
+timeout = 10.0
+excluded-modules = []
+test-command = "pytest -x tests/des/"
+
+[cosmic-ray.distributor]
+name = "local"
+
+[cosmic-ray.execution-engine]
+name = "local"

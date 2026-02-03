@@ -15,16 +15,16 @@ Core Components:
   - TimeoutMonitor: Domain entity for timeout management
   - ConfigPort: Configuration abstractions
   - HookPort/ValidatorPort: Driver port abstractions
-  - RealSubagentStopHook/RealTemplateValidator: Driver implementations
+  - RealSubagentStopHook/TemplateValidator: Driver implementations
   - EnvironmentConfigAdapter/InMemoryConfigAdapter: Driven implementations
 
 For backward compatibility, this module re-exports all key classes and interfaces.
 New code should import from the specific layer packages:
   - from src.des.domain import TimeoutMonitor, TurnCounter
-  - from src.des.application import DESOrchestrator
+  - from src.des.application import DESOrchestrator, TemplateValidator
   - from src.des.ports.driver_ports import HookPort, ValidatorPort
   - from src.des.ports.driven_ports import ConfigPort, FileSystemPort, TimeProvider
-  - from src.des.adapters.drivers import RealSubagentStopHook, RealTemplateValidator
+  - from src.des.adapters.drivers import RealSubagentStopHook
   - from src.des.adapters.driven import EnvironmentConfigAdapter
 """
 
@@ -39,11 +39,11 @@ from src.des.adapters.driven import (
     StructuredLogger,
     SystemTimeProvider,
 )
-from src.des.adapters.drivers import RealSubagentStopHook, RealTemplateValidator
+from src.des.adapters.drivers import RealSubagentStopHook
 from src.des.application.config_loader import ConfigLoader
 from src.des.application.hooks import SubagentStopHook
 from src.des.application.orchestrator import DESOrchestrator
-from src.des.application.validator import TDDPhaseValidator
+from src.des.application.validator import TDDPhaseValidator, TemplateValidator
 from src.des.domain import (
     InvocationLimitsResult,
     InvocationLimitsValidator,
@@ -62,7 +62,7 @@ from src.des.ports.driver_ports import HookPort, ValidatorPort
 
 # Backward compatibility aliases
 RealHook = RealSubagentStopHook
-RealValidator = RealTemplateValidator
+RealValidator = TemplateValidator
 RealFilesystem = RealFileSystem
 SystemTime = SystemTimeProvider
 
@@ -88,7 +88,7 @@ __all__ = [
     "RealHook",
     # Driver adapters
     "RealSubagentStopHook",
-    "RealTemplateValidator",
+    "TemplateValidator",
     "RealValidator",
     "SilentLogger",
     "StructuredLogger",

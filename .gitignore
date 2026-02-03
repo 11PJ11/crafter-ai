@@ -80,3 +80,6 @@ mutation-run.log
 mutation-test.log
 cosmic-ray-exec.log
 CLAUDE.local.md
+
+# Mutation testing virtual environment
+.venv-mutation/

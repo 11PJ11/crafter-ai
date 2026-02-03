@@ -18,7 +18,6 @@ from src.des.adapters.driven import (
 )
 from src.des.adapters.drivers import (
     RealSubagentStopHook,
-    RealTemplateValidator,
 )
 
 
@@ -31,7 +30,6 @@ __all__ = [
     "RealFileSystem",
     # Driver adapters (inbound)
     "RealSubagentStopHook",
-    "RealTemplateValidator",
     "SilentLogger",
     "StructuredLogger",
     "SystemTime",

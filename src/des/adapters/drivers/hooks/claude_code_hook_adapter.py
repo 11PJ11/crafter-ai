@@ -32,7 +32,7 @@ if __name__ == "__main__":
 
 from src.des.application.orchestrator import DESOrchestrator
 from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
-from src.des.adapters.drivers.validators.real_validator import RealTemplateValidator
+from src.des.application.validator import TemplateValidator
 from src.des.adapters.driven.filesystem.real_filesystem import RealFileSystem
 from src.des.adapters.driven.config.des_config import DESConfig
 from src.des.adapters.driven.logging.audit_logger import get_audit_logger
@@ -50,7 +50,7 @@ def create_orchestrator() -> DESOrchestrator:
         DESOrchestrator configured with production dependencies
     """
     hook = RealSubagentStopHook()
-    validator = RealTemplateValidator()
+    validator = TemplateValidator()
     filesystem = RealFileSystem()
     time_provider = SystemTimeProvider()
 
@@ -100,7 +100,7 @@ def handle_pre_task() -> int:
         # Initialize DES components with production implementations
         config = DESConfig()
         hook = RealSubagentStopHook()
-        validator = RealTemplateValidator()
+        validator = TemplateValidator()
         filesystem = RealFileSystem()
         time_provider = SystemTimeProvider()
 

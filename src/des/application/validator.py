@@ -523,7 +523,7 @@ class ExecutionLogValidator:
                 if "Phase" in error:
                     parts = error.split("Phase ")
                     if len(parts) > 1:
-                        phase_name = parts[1].split(" ")[0]
+                        phase_name = parts[1].split(" ")[ 1]
                         guidance_items.append(
                             f"FIX: Complete or rollback the IN_PROGRESS phase {phase_name}"
                         )
