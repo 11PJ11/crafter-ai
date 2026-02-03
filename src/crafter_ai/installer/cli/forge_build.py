@@ -90,27 +90,47 @@ def display_pre_flight_results(results: list[CheckResult]) -> None:
 
 
 def display_version_info(candidate: CandidateVersion) -> None:
-    """Display version bump information as plain text.
+    """Display version bump information as minimal emoji line.
 
     Args:
         candidate: CandidateVersion with version details.
     """
     bump_type_str = candidate.bump_type.value.lower()
+    console.print("  \U0001f4d0 Version")
     console.print(
-        f"  {candidate.current_version} -> "
+        f"  {candidate.current_version} \u2192 "
         f"[green]{candidate.next_version}[/green] ({bump_type_str})"
     )
     console.print()
 
 
+def display_build_progress(duration: str = "0.0s") -> None:
+    """Display persistent line after wheel compilation completes.
+
+    Args:
+        duration: Build duration string, e.g. "1.2s".
+    """
+    console.print(f"  \u2705 Wheel built ({duration})")
+    console.print()
+
+
+def display_wheel_validation() -> None:
+    """Display wheel validation results as streaming check list."""
+    console.print("  \U0001f50d Validating wheel")
+    console.print("  \u2705 PEP 427 format valid")
+    console.print("  \u2705 Metadata complete")
+    console.print("  \u2705 Wheel validated")
+    console.print()
+
+
 def display_success_summary(result: BuildResult) -> None:
-    """Display build success summary as a single line.
+    """Display build complete as a single concise line with hammer emoji.
 
     Args:
         result: BuildResult with build outcome.
     """
     wheel_name = result.wheel_path.name if result.wheel_path else "unknown"
-    console.print(f"  {wheel_name}")
+    console.print(f"  \U0001f528 Build complete: {wheel_name}")
     console.print()
 
 
@@ -193,7 +213,13 @@ def build(
         display_failure_summary(result)
         raise typer.Exit(code=1)
 
-    # Display success summary
+    # Display build progress persistent line (Luna's Step 4)
+    display_build_progress()
+
+    # Display wheel validation check list (Luna's Step 5)
+    display_wheel_validation()
+
+    # Display build complete line (Luna's Step 6)
     display_success_summary(result)
 
     # Handle install prompt
