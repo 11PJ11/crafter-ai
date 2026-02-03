@@ -8,6 +8,45 @@ Validation checklist for DISTILL wave completion focusing on acceptance test cre
 
 ## 🟢 **BASIC Level - Essential DISTILL Wave Requirements**
 
+### Test Directory Structure (MANDATORY)
+
+- [ ] **Feature type determined**
+  - Asked user: "Is this a nWave core feature or a plugin feature?"
+  - Correct directory structure selected based on answer
+
+- [ ] **nWave Core Feature** (if applicable)
+  ```
+  tests/nWave/<feature-name>/acceptance/
+  ├── walking-skeleton.feature
+  ├── milestone-{N}-{description}.feature
+  └── steps/
+      ├── conftest.py
+      └── {domain}_steps.py
+  ```
+
+- [ ] **Plugin Feature** (if applicable)
+  ```
+  tests/plugins/<plugin-name>/<feature-name>/acceptance/
+  ├── walking-skeleton.feature
+  ├── milestone-{N}-{description}.feature
+  └── steps/
+      ├── conftest.py
+      └── {domain}_steps.py
+  ```
+
+### Walking Skeleton (IMPLEMENT FIRST)
+
+- [ ] **Walking skeleton defined before other scenarios**
+  - Minimal E2E path documented in `walking-skeleton.feature`
+  - ONE scenario that proves architecture works end-to-end
+  - Observable outcome (files created, API response, etc.)
+  - Separate file, not mixed with milestone scenarios
+
+- [ ] **Walking skeleton implementation priority**
+  - Walking skeleton is FIRST to be implemented
+  - All other scenarios tagged with `@skip` or `@pending` until walking skeleton passes
+  - Walking skeleton validation before expanding to full suite
+
 ### Acceptance Test Foundation
 
 - [ ] **Given-When-Then format acceptance tests created**
@@ -47,6 +86,39 @@ Validation checklist for DISTILL wave completion focusing on acceptance test cre
 ---
 
 ## 🟡 **INTERMEDIATE Level - Enhanced DISTILL Wave Quality**
+
+### File Organization Standards
+
+- [ ] **Feature files organized by milestone**
+  - `walking-skeleton.feature` - Minimal E2E (always first)
+  - `milestone-{N}-{description}.feature` - Per milestone
+  - `integration-checkpoints.feature` - Cross-milestone validation
+  - `error-handling.feature` - Error scenarios (optional, can be in milestone files)
+
+- [ ] **Step definitions organized by domain**
+  - `conftest.py` - Pytest fixtures and configuration
+  - `{domain}_steps.py` - Domain-specific steps (e.g., `plugin_steps.py`, `installer_steps.py`)
+  - `common_steps.py` - Shared/reusable step definitions
+  - NO per-feature-file step organization
+
+- [ ] **Step reuse enabled across feature files**
+  - Common steps extracted to `common_steps.py`
+  - Domain steps usable by multiple feature files
+  - No duplicate step definitions
+
+### Implementation Order Tagging
+
+- [ ] **Scenarios tagged for implementation order**
+  - `@walking-skeleton` - Implement FIRST
+  - `@priority-critical` - Core functionality
+  - `@priority-high` - Important features
+  - `@priority-medium` - Secondary features
+  - `@priority-low` - Nice-to-have features
+
+- [ ] **Phase tagging for milestone tracking**
+  - `@phase-{N}` - Corresponding implementation phase
+  - `@milestone-{N}` - Corresponding journey milestone
+  - `@integration-checkpoint` - Cross-milestone validation
 
 ### Advanced Acceptance Test Design
 

@@ -61,6 +61,122 @@ Creates executable specifications that bridge business requirements and technica
 ✅ "Structure test scenarios following one-at-a-time strategy: [COMPLETE IMPLEMENTATION PROCEDURE]"
 ✅ "Provide these test deliverables: acceptance-tests.feature, step-definitions.{language}, test-scenarios.md"
 
+## Test Directory Structure
+
+### IMPORTANT: Ask User for Feature Type
+
+Before creating acceptance tests, the orchestrator MUST ask the user:
+
+> "Is this a **nWave core feature** or a **plugin feature**?"
+
+Based on the answer, use the appropriate directory structure.
+
+### Option A: nWave Core Feature
+
+For core nWave features (agents, commands, installer, etc.):
+
+```
+tests/nWave/<feature-name>/acceptance/
+├── walking-skeleton.feature       # Minimal E2E path (implement FIRST)
+├── milestone-1.feature            # Scenarios for milestone 1
+├── milestone-2.feature            # Scenarios for milestone 2
+├── ...
+├── integration-checkpoints.feature # Cross-milestone validation
+└── steps/
+    ├── conftest.py                # Pytest fixtures and configuration
+    ├── plugin_steps.py            # Plugin-related step definitions
+    ├── installer_steps.py         # Installer-related step definitions
+    ├── verification_steps.py      # Verification-related step definitions
+    └── common_steps.py            # Shared step definitions
+```
+
+**Example**: For `plugin-architecture` feature:
+```
+tests/nWave/plugin-architecture/acceptance/
+├── walking-skeleton.feature
+├── milestone-1-infrastructure.feature
+├── milestone-2-wrapper-plugins.feature
+├── milestone-3-switchover.feature
+├── milestone-4-des-plugin.feature
+├── milestone-5-ecosystem.feature
+├── milestone-6-deployment.feature
+├── integration-checkpoints.feature
+└── steps/
+    ├── conftest.py
+    ├── plugin_steps.py
+    ├── installer_steps.py
+    ├── registry_steps.py
+    └── verification_steps.py
+```
+
+### Option B: Plugin Feature
+
+For plugin-specific features (DES, mutation testing, etc.):
+
+```
+tests/plugins/<plugin-name>/<feature-name>/acceptance/
+├── walking-skeleton.feature
+├── milestone-1.feature
+├── milestone-2.feature
+├── ...
+└── steps/
+    ├── conftest.py
+    ├── hook_steps.py              # Hook-related step definitions
+    ├── validation_steps.py        # Validation-related step definitions
+    ├── enforcement_steps.py       # Enforcement-related step definitions
+    └── common_steps.py            # Shared step definitions
+```
+
+**Example**: For DES `hook-enforcement` feature:
+```
+tests/plugins/des/hook-enforcement/acceptance/
+├── walking-skeleton.feature
+├── milestone-1-pretask-hook.feature
+├── milestone-2-validation.feature
+├── milestone-3-enforcement.feature
+└── steps/
+    ├── conftest.py
+    ├── hook_steps.py
+    ├── validation_steps.py
+    ├── enforcement_steps.py
+    └── orchestrator_steps.py
+```
+
+### File Naming Conventions
+
+**Feature Files** (multiple per milestone):
+- `walking-skeleton.feature` - Minimal E2E path (always first)
+- `milestone-{N}-{description}.feature` - Scenarios grouped by milestone
+- `integration-checkpoints.feature` - Cross-milestone validation scenarios
+- `error-handling.feature` - Error path scenarios (optional, can be in milestone files)
+
+**Step Definition Files** (multiple per domain):
+- `conftest.py` - Pytest-bdd fixtures, hooks, and configuration
+- `{domain}_steps.py` - Domain-specific step definitions
+- `common_steps.py` - Shared/reusable step definitions
+
+### Walking Skeleton Priority
+
+**CRITICAL**: The walking skeleton MUST be:
+1. In a **separate file** (`walking-skeleton.feature`)
+2. The **first file created**
+3. The **first test implemented** (before any milestone scenarios)
+4. **Minimal** - ONE scenario proving E2E path works
+
+### Orchestrator Question Template
+
+```
+Before creating acceptance tests, please answer:
+
+**Feature Type**:
+- [ ] nWave core feature (installer, agents, commands, etc.)
+- [ ] Plugin feature (DES, mutation testing, etc.)
+
+If plugin feature:
+- Plugin name: _____________
+- Feature name: _____________
+```
+
 ## Context Files Required
 
 - docs/feature/{feature-name}/discuss/requirements.md - (from DISCUSS wave)
@@ -198,10 +314,70 @@ def test_validation_blocks_invalid_prompt():
 **Handoff To**: software-crafter (DEVELOP wave)
 **Deliverables**: See Quinn's handoff package specification in agent file
 
-# Expected outputs (reference only):
+## Expected Outputs
 
-# - docs/feature/{feature-name}/distill/acceptance-tests.feature
+### For nWave Core Features
 
-# - docs/feature/{feature-name}/distill/step-definitions.{language}
+```
+tests/nWave/{feature-name}/acceptance/
+├── walking-skeleton.feature              # Minimal E2E (implement FIRST)
+├── milestone-{N}-{description}.feature   # Per-milestone scenarios
+├── integration-checkpoints.feature       # Cross-milestone validation
+└── steps/
+    ├── conftest.py                       # Fixtures and configuration
+    └── {domain}_steps.py                 # Domain-specific steps
+```
 
-# - docs/feature/{feature-name}/distill/test-scenarios.md
+### For Plugin Features
+
+```
+tests/plugins/{plugin-name}/{feature-name}/acceptance/
+├── walking-skeleton.feature              # Minimal E2E (implement FIRST)
+├── milestone-{N}-{description}.feature   # Per-milestone scenarios
+└── steps/
+    ├── conftest.py                       # Fixtures and configuration
+    └── {domain}_steps.py                 # Domain-specific steps
+```
+
+### Documentation Artifacts (in docs/feature/)
+
+```
+docs/feature/{feature-name}/distill/
+├── test-scenarios.md                     # Summary of all scenarios
+├── walking-skeleton.md                   # Walking skeleton definition
+└── acceptance-review.md                  # Review feedback and approval
+```
+
+### Implementation Order
+
+1. **Walking Skeleton** - `walking-skeleton.feature` + minimal steps
+2. **Milestone 1** - `milestone-1-*.feature` + domain steps
+3. **Milestone 2** - `milestone-2-*.feature` + additional steps
+4. ... (continue per milestone)
+5. **Integration Checkpoints** - `integration-checkpoints.feature`
+6. **Error Handling** - distributed in milestone files or separate
+
+### Step Definition Organization
+
+Group step definitions by **domain**, not by feature file:
+
+```python
+# steps/plugin_steps.py
+@given('plugin infrastructure exists')
+@given('AgentsPlugin is implemented')
+@when('I register AgentsPlugin with the registry')
+
+# steps/installer_steps.py
+@given('nWave installer is at version "{version}"')
+@when('I run install_nwave.py with full plugin installation')
+
+# steps/verification_steps.py
+@then('AgentsPlugin.verify() returns success')
+@then('all plugins verify successfully')
+
+# steps/common_steps.py (reusable across features)
+@given('a clean installation directory exists')
+@then('no errors are reported')
+```
+
+This organization enables step reuse across multiple feature files.
