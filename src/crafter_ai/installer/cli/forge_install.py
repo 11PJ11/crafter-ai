@@ -237,16 +237,25 @@ def run_pre_flight_checks() -> list[CheckResult]:
 
 
 def display_pre_flight_results(results: list[CheckResult]) -> None:
-    """Display pre-flight check results as plain text lines.
+    """Display pre-flight check results as streaming emoji list.
 
     Args:
         results: List of CheckResult objects to display.
     """
-    console.print("[bold]Pre-flight Checks[/bold]")
+    console.print("  \U0001f50d Pre-flight checks")
     for check in results:
-        status = "[green]OK[/green]" if check.passed else "[red]FAIL[/red]"
-        console.print(f"  {check.name} {status} {check.message}")
-    console.print()
+        if not check.passed and check.severity == CheckSeverity.BLOCKING:
+            console.print(f"  \u274c {check.message}")
+        elif not check.passed and check.severity == CheckSeverity.WARNING:
+            console.print(f"  \u26a0\ufe0f  {check.message}")
+        else:
+            console.print(f"  \u2705 {check.message}")
+
+    all_blocking_passed = all(
+        check.passed for check in results if check.severity == CheckSeverity.BLOCKING
+    )
+    if all_blocking_passed:
+        console.print("  \u2705 Pre-flight passed")
 
 
 def get_blocking_failures(results: list[CheckResult]) -> list[CheckResult]:
@@ -279,14 +288,13 @@ def display_blocking_failures(failures: list[CheckResult]) -> None:
 
 
 def display_header(wheel_path: Path) -> None:
-    """Display install header with wheel name.
+    """Display install header with package emoji.
 
     Args:
         wheel_path: Path to the wheel being installed.
     """
     console.print()
-    console.print(f"[bold cyan]Installing {wheel_path.name}[/bold cyan]")
-    console.print()
+    console.print("[bold]\U0001f4e6 Installing crafter-ai[/bold]")
 
 
 def display_failure(error_message: str) -> None:

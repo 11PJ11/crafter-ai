@@ -710,8 +710,9 @@ class TestHeaderDisplay:
         mock_wheel_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
+        passing_pre_flight_results: list[CheckResult],
     ) -> None:
-        """Test displays FORGE: INSTALL header."""
+        """Test displays install header with package emoji."""
         with (
             patch(
                 "crafter_ai.installer.cli.forge_install.create_install_service"
@@ -719,7 +720,12 @@ class TestHeaderDisplay:
             patch(
                 "crafter_ai.installer.cli.forge_install.ReleaseReportService"
             ) as mock_report_service,
+            patch(
+                "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
+            ) as mock_preflight,
         ):
+            mock_preflight.return_value = passing_pre_flight_results
+
             mock_service = MagicMock()
             mock_service.install.return_value = successful_install_result
             mock_factory.return_value = mock_service
@@ -734,7 +740,7 @@ class TestHeaderDisplay:
                 ["forge", "install", "--wheel", str(mock_wheel_path), "--no-prompt"],
             )
 
-        assert mock_wheel_path.name in result.output
+        assert "Installing crafter-ai" in result.output
 
 
 class TestAutoChainBuild:
