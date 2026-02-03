@@ -31,9 +31,89 @@ class DESPlugin(InstallationPlugin):
         super().__init__(name="des", priority=50)
         self.dependencies = ["templates", "utilities"]
 
+    def validate_prerequisites(self, context: InstallContext) -> PluginResult:
+        """Validate that DES prerequisites exist before installation.
+
+        Checks for:
+        1. DES scripts directory at nWave/scripts/des/
+        2. DES templates at nWave/templates/
+
+        Returns:
+            PluginResult with success=False and clear error message if missing.
+        """
+        errors = []
+
+        # Check for DES scripts directory
+        scripts_dir = self._get_scripts_source_dir(context)
+        if not scripts_dir.exists():
+            errors.append(
+                f"DES scripts not found: nWave/scripts/des/. "
+                f"Ensure prerequisite scripts are created before DES installation."
+            )
+        else:
+            # Check for required script files
+            missing_scripts = []
+            for script_name in self.DES_SCRIPTS:
+                script_path = scripts_dir / script_name
+                if not script_path.exists():
+                    missing_scripts.append(script_name)
+            if missing_scripts:
+                errors.append(
+                    f"Missing DES scripts: {', '.join(missing_scripts)}. "
+                    f"Required scripts: {', '.join(self.DES_SCRIPTS)}"
+                )
+
+        # Check for DES templates
+        templates_dir = context.project_root / "nWave" / "templates" if context.project_root else Path("nWave/templates")
+        missing_templates = []
+        for template_name in self.DES_TEMPLATES:
+            template_path = templates_dir / template_name
+            if not template_path.exists():
+                missing_templates.append(template_name)
+
+        if missing_templates:
+            errors.append(
+                f"DES templates not found: {', '.join(missing_templates)}. "
+                f"Ensure prerequisite templates exist at nWave/templates/ before DES installation."
+            )
+
+        if errors:
+            return PluginResult(
+                success=False,
+                plugin_name="des",
+                message=f"DES prerequisite validation failed: {errors[0]}",
+                errors=errors,
+            )
+
+        return PluginResult(
+            success=True,
+            plugin_name="des",
+            message="DES prerequisites validated successfully",
+        )
+
+    def _get_scripts_source_dir(self, context: InstallContext) -> Path:
+        """Get the source directory for DES scripts."""
+        if context.framework_source:
+            source_dir = context.framework_source / "scripts" / "des"
+            if source_dir.exists():
+                return source_dir
+        if context.project_root:
+            return context.project_root / "nWave" / "scripts" / "des"
+        return Path("nWave/scripts/des")
+
     def install(self, context: InstallContext) -> PluginResult:
-        """Install DES module, scripts, and templates."""
+        """Install DES module, scripts, and templates.
+
+        Validates prerequisites before installation to ensure graceful failure
+        with clear error messages when required files are missing.
+        """
         try:
+            # Validate prerequisites first - fail fast with clear message
+            prereq_result = self.validate_prerequisites(context)
+            if not prereq_result.success:
+                context.logger.error(f"DES prerequisite check failed: {prereq_result.message}")
+                return prereq_result
+
             # Install DES module
             module_result = self._install_des_module(context)
             if not module_result.success:
