@@ -18,7 +18,7 @@ import logging
 from pathlib import Path
 
 import pytest
-from scripts.install.plugins.base import InstallContext, PluginResult
+from scripts.install.plugins.base import InstallContext
 from scripts.install.plugins.des_plugin import DESPlugin
 
 
@@ -89,8 +89,12 @@ def isolated_project_with_scripts_only(tmp_path: Path, project_root: Path) -> Pa
     # Create nWave/scripts/des/ with scripts
     scripts_dir = isolated_root / "nWave" / "scripts" / "des"
     scripts_dir.mkdir(parents=True, exist_ok=True)
-    (scripts_dir / "check_stale_phases.py").write_text("#!/usr/bin/env python3\n# check stale phases\n")
-    (scripts_dir / "scope_boundary_check.py").write_text("#!/usr/bin/env python3\n# scope boundary check\n")
+    (scripts_dir / "check_stale_phases.py").write_text(
+        "#!/usr/bin/env python3\n# check stale phases\n"
+    )
+    (scripts_dir / "scope_boundary_check.py").write_text(
+        "#!/usr/bin/env python3\n# scope boundary check\n"
+    )
 
     # DO NOT create nWave/templates/ with DES templates
     return isolated_root
@@ -161,8 +165,10 @@ class TestDESPluginValidatePrerequisites:
 
         assert not result.success
         # Should mention the path where scripts should be
-        assert "nwave/scripts/des" in result.message.lower() or \
-               "nwave\\scripts\\des" in result.message.lower()
+        assert (
+            "nwave/scripts/des" in result.message.lower()
+            or "nwave\\scripts\\des" in result.message.lower()
+        )
 
     def test_validate_prerequisites_returns_false_when_templates_missing(
         self, context_with_missing_templates: InstallContext
@@ -185,8 +191,19 @@ class TestDESPluginValidatePrerequisites:
 
         assert not result.success
         # Should have some remediation keywords
-        remediation_keywords = ["ensure", "verify", "create", "run", "required", "prerequisite"]
-        all_text = result.message.lower() + " ".join(result.errors).lower() if result.errors else result.message.lower()
+        remediation_keywords = [
+            "ensure",
+            "verify",
+            "create",
+            "run",
+            "required",
+            "prerequisite",
+        ]
+        all_text = (
+            result.message.lower() + " ".join(result.errors).lower()
+            if result.errors
+            else result.message.lower()
+        )
         has_remediation = any(keyword in all_text for keyword in remediation_keywords)
         assert has_remediation, f"No remediation guidance found in: {result.message}"
 
@@ -233,7 +250,9 @@ class TestDESPluginInstallWithMissingPrerequisites:
         assert not result.success
 
         # Check no partial DES files were created
-        des_lib = context_with_missing_prerequisites.claude_dir / "lib" / "python" / "des"
+        des_lib = (
+            context_with_missing_prerequisites.claude_dir / "lib" / "python" / "des"
+        )
         des_scripts = context_with_missing_prerequisites.claude_dir / "scripts"
         des_templates = context_with_missing_prerequisites.claude_dir / "templates"
 
@@ -241,11 +260,19 @@ class TestDESPluginInstallWithMissingPrerequisites:
         if des_lib.exists():
             assert not list(des_lib.iterdir()), "Partial DES module created"
         if des_scripts.exists():
-            des_script_files = [f for f in des_scripts.iterdir() if f.name in DESPlugin.DES_SCRIPTS]
-            assert not des_script_files, f"Partial DES scripts created: {des_script_files}"
+            des_script_files = [
+                f for f in des_scripts.iterdir() if f.name in DESPlugin.DES_SCRIPTS
+            ]
+            assert not des_script_files, (
+                f"Partial DES scripts created: {des_script_files}"
+            )
         if des_templates.exists():
-            des_template_files = [f for f in des_templates.iterdir() if f.name in DESPlugin.DES_TEMPLATES]
-            assert not des_template_files, f"Partial DES templates created: {des_template_files}"
+            des_template_files = [
+                f for f in des_templates.iterdir() if f.name in DESPlugin.DES_TEMPLATES
+            ]
+            assert not des_template_files, (
+                f"Partial DES templates created: {des_template_files}"
+            )
 
     def test_install_fails_when_templates_missing(
         self, context_with_missing_templates: InstallContext
@@ -297,7 +324,9 @@ class TestDESPluginErrorMessageQuality:
         all_text = result.message.lower()
         has_specific_issue = "script" in all_text or "template" in all_text
 
-        assert has_specific_issue, f"Error doesn't identify specific missing item: {result.message}"
+        assert has_specific_issue, (
+            f"Error doesn't identify specific missing item: {result.message}"
+        )
 
 
 # -----------------------------------------------------------------------------
@@ -309,7 +338,10 @@ class TestDESPluginValidatePrerequisitesSuccess:
     """Tests for DESPlugin prerequisite validation when prerequisites exist."""
 
     def test_validate_prerequisites_succeeds_when_all_present(
-        self, project_root: Path, clean_test_directory: Path, test_logger: logging.Logger
+        self,
+        project_root: Path,
+        clean_test_directory: Path,
+        test_logger: logging.Logger,
     ):
         """validate_prerequisites() succeeds when all prerequisites exist."""
         # Use real project root where prerequisites exist

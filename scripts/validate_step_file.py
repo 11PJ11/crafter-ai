@@ -31,7 +31,7 @@ REQUIRED_PHASES = [
 def load_step_file(file_path: Path) -> dict[str, Any] | None:
     """Load and parse a step file."""
     try:
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             return json.load(f)
     except (json.JSONDecodeError, FileNotFoundError) as e:
         print(f"Error loading step file: {e}")
@@ -73,15 +73,11 @@ def validate_phase_log(step_data: dict[str, Any]) -> tuple[bool, list[str]]:
         status = entry.get("status", "")
 
         if status == "SKIPPED" and not entry.get("justification"):
-            errors.append(
-                f"Phase {phase_name} is SKIPPED without justification"
-            )
+            errors.append(f"Phase {phase_name} is SKIPPED without justification")
 
         if outcome not in ["PASS", "SKIP", ""] and status != "SKIPPED":
             if outcome == "FAIL":
-                errors.append(
-                    f"Phase {phase_name} has FAIL outcome - cannot commit"
-                )
+                errors.append(f"Phase {phase_name} has FAIL outcome - cannot commit")
 
     return len(errors) == 0, errors
 

@@ -10,7 +10,7 @@ Domain: Shared/Common Steps
 from pathlib import Path
 
 import pytest
-from pytest_bdd import given, when, then, parsers
+from pytest_bdd import given, parsers, then, when
 
 
 # -----------------------------------------------------------------------------
@@ -53,18 +53,22 @@ def agent_source_available(path: str, project_root: Path):
         pytest.skip(f"Agent source not found: {source_path}")
 
 
-@given(parsers.parse('agent source directory contains at least {count:d} agent .md files'))
+@given(
+    parsers.parse("agent source directory contains at least {count:d} agent .md files")
+)
 def agent_source_has_files(count: int, project_root: Path):
     """Verify agent source has minimum files."""
     agents_dir = project_root / "nWave" / "agents" / "nw"
     if agents_dir.exists():
         agent_files = list(agents_dir.glob("*.md"))
-        assert len(agent_files) >= count, f"Expected >= {count} agent files, found {len(agent_files)}"
+        assert len(agent_files) >= count, (
+            f"Expected >= {count} agent files, found {len(agent_files)}"
+        )
     else:
         pytest.skip(f"Agent directory not found: {agents_dir}")
 
 
-@given(parsers.parse('{plugin_name} is registered'))
+@given(parsers.parse("{plugin_name} is registered"))
 def plugin_is_registered(plugin_name: str, plugin_registry):
     """Register a plugin with the registry."""
     pass
@@ -75,7 +79,9 @@ def agent_source_not_exist(path: str, project_root: Path):
     """Verify agent source files do NOT exist (for error testing)."""
     source_path = project_root / path
     if source_path.exists():
-        pytest.skip(f"Agent source exists - cannot test missing scenario: {source_path}")
+        pytest.skip(
+            f"Agent source exists - cannot test missing scenario: {source_path}"
+        )
 
 
 # -----------------------------------------------------------------------------
@@ -94,7 +100,7 @@ def create_install_context_with_test_dir(install_context):
 # -----------------------------------------------------------------------------
 
 
-@then(parsers.parse('no errors are reported'))
+@then(parsers.parse("no errors are reported"))
 def no_errors_reported():
     """Verify no errors were reported during operation."""
     if hasattr(pytest, "install_error") and pytest.install_error:

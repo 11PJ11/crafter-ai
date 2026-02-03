@@ -1,430 +1,627 @@
----
-feature: plugin-architecture
-version: 1.0.0
-created: 2026-02-01
-methodology: nWave ATDD with Outside-In TDD
-complexity: intermediate
+# Plugin Architecture Implementation Roadmap
+# Feature: Plugin Architecture for nWave Installer
+# Created: 2026-02-03
+# Solution Architect: Morgan
+# Status: DRAFT - Ready for DEVELOP wave
 
-# Quality Gate Validation
-quality_gates:
-  ac_abstraction_level: "All AC describe WHAT the system does, never HOW (no private methods, no internal structure)"
-  step_decomposition_efficiency: "Steps decomposed by implementation unit, not by test scenario"
-  step_to_file_ratio: "7 steps / ~6 production files = 1.17 (target: <= 2.5)"
-  identical_pattern_batching: "Wrapper plugins batched into single step (4 plugins = 1 step)"
+project_id: plugin-architecture
+created_at: "2026-02-03T19:30:00Z"
+description: "Transform nWave installation system from hardcoded approach to modular plugin-based architecture, enabling addition of new features (like DES) without modifying installer code"
+version: "1.0.0"
 
-baseline_measurement:
-  problem_description: "Monolithic installer requires code changes for each new component"
-  current_state: "install_nwave.py contains hardcoded methods for each component (agents, commands, templates, utilities)"
-  impact: "Adding DES requires modifying install_framework() method directly"
-  measurement_data:
-    hardcoded_methods: 4  # _install_agents, _install_commands, _install_templates, _install_utility_scripts
-    installer_lines: 830
-    modification_points: 1  # install_framework() method
-  target_state: "Plugin-based architecture allowing zero-modification component addition"
-  success_criteria:
-    - DES installable via plugin registration (1 line change)
-    - Existing components wrapped as plugins
-    - Dependency resolution automatic via topological sort
-    - Backward compatibility preserved (same file locations, same behavior)
+# Acceptance Test References
+acceptance_tests:
+  location: "tests/nwave/plugin-architecture/acceptance/"
+  feature_files:
+    - walking-skeleton.feature
+    - milestone-1-infrastructure.feature  # COMPLETED
+    - milestone-2-wrapper-plugins.feature
+    - milestone-3-switchover.feature
+    - milestone-4-des-plugin.feature
+    - milestone-5-testing-docs.feature
+    - milestone-6-deployment.feature
+    - integration-checkpoints.feature
 
+# Implementation Scope
 implementation_scope:
-  directories:
-    - scripts/install/plugins/  # New plugin infrastructure
-    - scripts/install/  # Modified install_nwave.py
-    - nWave/scripts/des/  # DES utility scripts (prerequisites)
-    - nWave/templates/  # DES templates (prerequisites)
-  files_created:
-    - scripts/install/plugins/__init__.py
-    - scripts/install/plugins/base.py
-    - scripts/install/plugins/registry.py
-    - scripts/install/plugins/agents_plugin.py
-    - scripts/install/plugins/commands_plugin.py
-    - scripts/install/plugins/templates_plugin.py
-    - scripts/install/plugins/utilities_plugin.py
-    - scripts/install/plugins/des_plugin.py
-  files_modified:
-    - scripts/install/install_nwave.py  # Switchover to PluginRegistry
-  excluded:
-    - tests/  # Test creation handled separately
-    - docs/  # Documentation handled in final step
+  source_directories:
+    - scripts/install/plugins/
+    - scripts/install/install_nwave.py
+    - tests/nwave/plugin-architecture/
+    - nWave/scripts/des/
+    - nWave/templates/
+  test_directories:
+    - tests/nwave/plugin-architecture/acceptance/
+    - tests/nwave/plugin-architecture/unit/
+    - tests/nwave/plugin-architecture/integration/
+  documentation:
+    - docs/feature/plugin-architecture/
+    - docs/installation/installation-guide.md
+    - CHANGELOG.md
 
-migration_strategy:
-  approach: "6-phase incremental migration with backward compatibility"
-  phases:
-    1_infrastructure: "Create plugin base classes and registry (zero installer changes)"
-    2_wrapping: "Wrap existing methods as plugins (call existing logic)"
-    3_switchover: "Modify install_framework() to use PluginRegistry"
-    4_des_plugin: "Add DESPlugin demonstrating extensibility"
-    5_testing: "Comprehensive test suite and validation"
-    6_deployment: "Version bump and documentation"
-  backward_compatibility_guarantee: "Plugins call existing methods; same files installed at same locations"
+# Phase Definitions
+phases:
+  # ===========================================================================
+  # PHASE 01: Walking Skeleton + Wrapper Plugins
+  # Milestone 2 from DISTILL - Proves plugin architecture works E2E
+  # ===========================================================================
+  - phase_id: "01"
+    name: "Walking Skeleton + Wrapper Plugins"
+    description: "Implement walking skeleton (AgentsPlugin E2E) first to prove architecture, then complete all wrapper plugins"
+    milestone_reference: "milestone-2-wrapper-plugins.feature"
+    estimated_hours: 16
 
-steps:
-  # PHASE 1: Infrastructure (1 step)
-  - id: "01-01"
-    phase: 1
-    type: infrastructure
-    title: "Create plugin infrastructure (base classes and registry)"
-    description: "Establish plugin architecture foundation without modifying existing installer"
+    steps:
+      # -----------------------------------------------------------------------
+      # Step 01-01: Walking Skeleton - MUST BE IMPLEMENTED FIRST
+      # Acceptance test: walking-skeleton.feature
+      # -----------------------------------------------------------------------
+      - step_id: "01-01"
+        name: "Walking Skeleton - AgentsPlugin E2E"
+        description: |
+          Implement complete E2E path for AgentsPlugin through plugin infrastructure.
+          This is the MINIMUM viable test proving plugin system works end-to-end.
+          MUST be implemented FIRST before any other wrapper plugins.
+        type: "feature"
+        acceptance_scenario: "walking-skeleton.feature::Install single plugin through complete infrastructure"
+        acceptance_criteria:
+          - "AgentsPlugin.install() copies agent files to target directory"
+          - "Agent files are copied to {test_dir}/.claude/agents/nw/"
+          - "At least 1 agent .md file exists in the target directory"
+          - "AgentsPlugin.verify() returns success with message containing 'Agents verification passed'"
+          - "PluginRegistry discovers and registers AgentsPlugin correctly"
+        suggested_agent: "software-crafter"
+        files_to_modify:
+          - scripts/install/plugins/agents_plugin.py
+          - tests/nwave/plugin-architecture/acceptance/steps/plugin_steps.py
+        files_to_create:
+          - tests/nwave/plugin-architecture/acceptance/conftest.py
+        dependencies: []
+        estimated_hours: 4
+        priority: "critical"
+        notes: |
+          This step implements the actual installation logic in AgentsPlugin.
+          The current implementation is a stub that returns success without doing anything.
+          Must extract install_agents_impl() from install_nwave.py and call it from plugin.
+          Validates: Plugin discovery -> registration -> installation -> verification
 
-    acceptance_criteria:
-      # WHAT the system does (behavioral, observable outcomes)
-      - InstallationPlugin interface available for plugin implementations
-      - PluginRegistry resolves plugin dependencies via topological sort
-      - PluginRegistry detects circular dependencies and raises ValueError
-      - InstallContext carries shared state between plugins (paths, logger, backup_manager, installation_verifier)
-      - PluginResult communicates success/failure with structured data
-      - Existing installer remains unchanged and functional
+      # -----------------------------------------------------------------------
+      # Step 01-02: CommandsPlugin Wrapper
+      # Acceptance test: milestone-2-wrapper-plugins.feature
+      # -----------------------------------------------------------------------
+      - step_id: "01-02"
+        name: "CommandsPlugin Wrapper Implementation"
+        description: |
+          Implement CommandsPlugin wrapper around install_commands_impl().
+          Follows same pattern as AgentsPlugin from walking skeleton.
+        type: "feature"
+        acceptance_scenario: "milestone-2-wrapper-plugins.feature::All wrapper plugins are implemented and functional"
+        acceptance_criteria:
+          - "CommandsPlugin.install() copies command files to {test_dir}/.claude/commands/nw/"
+          - "CommandsPlugin.verify() returns success when commands are installed"
+          - "CommandsPlugin has fallback verification logic (file existence check)"
+          - "No circular import errors when importing CommandsPlugin"
+        suggested_agent: "software-crafter"
+        files_to_modify:
+          - scripts/install/plugins/commands_plugin.py
+          - scripts/install/install_nwave.py
+        dependencies:
+          - "01-01"
+        estimated_hours: 2
+        priority: "high"
 
-    implementation_notes:
-      files_to_create:
-        - scripts/install/plugins/__init__.py
-        - scripts/install/plugins/base.py  # InstallationPlugin, InstallContext, PluginResult
-        - scripts/install/plugins/registry.py  # PluginRegistry with Kahn's algorithm
-      existing_installer: "UNCHANGED - no modifications to install_nwave.py"
-      integration_strategy: "Infrastructure exists but not yet used by installer"
+      # -----------------------------------------------------------------------
+      # Step 01-03: TemplatesPlugin Wrapper
+      # -----------------------------------------------------------------------
+      - step_id: "01-03"
+        name: "TemplatesPlugin Wrapper Implementation"
+        description: |
+          Implement TemplatesPlugin wrapper around install_templates_impl().
+          Follows same pattern as AgentsPlugin.
+        type: "feature"
+        acceptance_scenario: "milestone-2-wrapper-plugins.feature::All wrapper plugins are implemented and functional"
+        acceptance_criteria:
+          - "TemplatesPlugin.install() copies template files to {test_dir}/.claude/templates/"
+          - "TemplatesPlugin.verify() returns success when templates are installed"
+          - "TemplatesPlugin has fallback verification logic"
+          - "No circular import errors"
+        suggested_agent: "software-crafter"
+        files_to_modify:
+          - scripts/install/plugins/templates_plugin.py
+          - scripts/install/install_nwave.py
+        dependencies:
+          - "01-01"
+        estimated_hours: 2
+        priority: "high"
 
-    test_strategy:
-      unit_tests:
-        - "PluginRegistry topological sort with simple dependencies"
-        - "PluginRegistry priority ordering when no dependencies"
-        - "PluginRegistry cycle detection raises ValueError"
-        - "PluginRegistry missing dependency error with clear message"
-      validation:
-        - "install_nwave.py runs successfully (unaffected by new infrastructure)"
+      # -----------------------------------------------------------------------
+      # Step 01-04: UtilitiesPlugin Wrapper
+      # -----------------------------------------------------------------------
+      - step_id: "01-04"
+        name: "UtilitiesPlugin Wrapper Implementation"
+        description: |
+          Implement UtilitiesPlugin wrapper around install_utilities_impl().
+          Follows same pattern as AgentsPlugin.
+        type: "feature"
+        acceptance_scenario: "milestone-2-wrapper-plugins.feature::All wrapper plugins are implemented and functional"
+        acceptance_criteria:
+          - "UtilitiesPlugin.install() copies utility scripts to {test_dir}/.claude/scripts/"
+          - "UtilitiesPlugin.verify() returns success when utilities are installed"
+          - "UtilitiesPlugin has fallback verification logic"
+          - "No circular import errors"
+        suggested_agent: "software-crafter"
+        files_to_modify:
+          - scripts/install/plugins/utilities_plugin.py
+          - scripts/install/install_nwave.py
+        dependencies:
+          - "01-01"
+        estimated_hours: 2
+        priority: "high"
 
-    estimated_time: "3-4 hours"
+      # -----------------------------------------------------------------------
+      # Step 01-05: Multi-Plugin Dependency Resolution
+      # -----------------------------------------------------------------------
+      - step_id: "01-05"
+        name: "Multi-Plugin Dependency Resolution Validation"
+        description: |
+          Validate that all 4 wrapper plugins work together with proper dependency resolution.
+          Tests topological sort with multiple plugins and priority ordering.
+        type: "feature"
+        acceptance_scenario: "milestone-2-wrapper-plugins.feature::Plugin dependency resolution works correctly"
+        acceptance_criteria:
+          - "PluginRegistry.get_installation_order() returns deterministic order"
+          - "Order respects plugin priorities: [agents(10), commands(20), templates(30), utilities(40)]"
+          - "All 4 plugins install successfully when registry.install_all() is called"
+          - "Circular dependency detection raises CircularDependencyError with descriptive message"
+          - "Each plugin has unit tests that pass"
+        suggested_agent: "software-crafter"
+        files_to_modify:
+          - tests/nwave/plugin-architecture/unit/test_wrapper_plugins.py
+          - tests/nwave/plugin-architecture/integration/test_multi_plugin.py
+        dependencies:
+          - "01-02"
+          - "01-03"
+          - "01-04"
+        estimated_hours: 3
+        priority: "high"
+        notes: |
+          This step validates the complete Phase 01 by running all plugins together.
+          Should include both positive tests (successful installation) and negative tests
+          (circular dependency, missing prerequisites).
 
-  # PHASE 2: Wrapping (1 batched step for all 4 wrapper plugins)
-  - id: "02-01"
-    phase: 2
-    type: feature
-    title: "Create wrapper plugins for existing installer methods"
-    description: "Batch creation of 4 wrapper plugins (agents, commands, templates, utilities) that call existing installation logic"
+  # ===========================================================================
+  # PHASE 02: Switchover to Plugin System
+  # Milestone 3 from DISTILL - Modify installer to use PluginRegistry
+  # ===========================================================================
+  - phase_id: "02"
+    name: "Switchover to Plugin System"
+    description: "Modify install_framework() to use PluginRegistry for orchestration, with behavioral equivalence validation"
+    milestone_reference: "milestone-3-switchover.feature"
+    estimated_hours: 12
 
-    acceptance_criteria:
-      # WHAT the system does (behavioral outcomes)
-      - AgentsPlugin installation produces same agent files as existing installer
-      - CommandsPlugin installation produces same command files as existing installer
-      - TemplatesPlugin installation produces same template files as existing installer
-      - UtilitiesPlugin installation produces same utility scripts as existing installer
-      - All plugins verify installation using existing InstallationVerifier
-      - Plugin priority ordering follows dependency requirements (agents=10, commands=20, templates=30, utilities=40)
-      - Existing installer methods remain functional and unchanged
+    steps:
+      # -----------------------------------------------------------------------
+      # Step 02-01: Modify install_framework()
+      # -----------------------------------------------------------------------
+      - step_id: "02-01"
+        name: "Modify install_framework() to use PluginRegistry"
+        description: |
+          Replace hardcoded _install_*() calls in install_framework() with
+          registry.install_all(context). This is the critical switchover point.
+        type: "feature"
+        acceptance_scenario: "milestone-3-switchover.feature::Installer uses PluginRegistry for installation orchestration"
+        acceptance_criteria:
+          - "install_framework() creates PluginRegistry and registers all 4 plugins"
+          - "install_framework() creates InstallContext with all required utilities"
+          - "install_framework() calls registry.install_all(context)"
+          - "BackupManager creates backups before installation"
+          - "Installation completes successfully with all plugins"
+          - "Verification passes for all components"
+        suggested_agent: "software-crafter"
+        files_to_modify:
+          - scripts/install/install_nwave.py
+        dependencies:
+          - "01-05"
+        estimated_hours: 4
+        priority: "critical"
+        notes: |
+          CRITICAL CHANGE: This step modifies the core installer.
+          Must preserve backward compatibility - existing CLI options should work.
+          InstallContext must include: claude_dir, scripts_dir, templates_dir, logger,
+          backup_manager, installation_verifier, framework_source, project_root, rich_logger.
 
-    implementation_notes:
-      files_to_create:
-        - scripts/install/plugins/agents_plugin.py  # Wraps _install_agents()
-        - scripts/install/plugins/commands_plugin.py  # Wraps _install_commands()
-        - scripts/install/plugins/templates_plugin.py  # Wraps _install_templates()
-        - scripts/install/plugins/utilities_plugin.py  # Wraps _install_utility_scripts()
-      wrapper_pattern: "Extract module-level functions from existing class methods to avoid circular imports"
-      circular_import_fix: "import install_agents_impl (function), NOT nWaveInstaller (class)"
-      reuse_strategy: "Plugins call existing logic via module-level functions; preserve all existing backup, validation, error handling"
+      # -----------------------------------------------------------------------
+      # Step 02-02: Behavioral Equivalence Validation
+      # -----------------------------------------------------------------------
+      - step_id: "02-02"
+        name: "Behavioral Equivalence Validation"
+        description: |
+          Create integration test comparing baseline (pre-plugin) vs plugin installation.
+          Validates that switchover produces identical results.
+        type: "feature"
+        acceptance_scenario: "milestone-3-switchover.feature::Behavioral equivalence with monolithic installer"
+        acceptance_criteria:
+          - "Baseline installation captured before switchover"
+          - "Plugin-based installation produces identical file tree"
+          - "File contents are byte-for-byte identical"
+          - "InstallationVerifier output is identical"
+          - "No regressions detected in installation behavior"
+        suggested_agent: "software-crafter"
+        files_to_modify:
+          - tests/nwave/plugin-architecture/integration/test_behavioral_equivalence.py
+        files_to_create:
+          - tests/nwave/plugin-architecture/fixtures/baseline_snapshot.py
+        dependencies:
+          - "02-01"
+        estimated_hours: 4
+        priority: "critical"
+        notes: |
+          Based on GAP-PROCESS-01 from architecture-decisions.md.
+          Test must compare:
+          1. File tree (same files in same locations)
+          2. File contents (byte-for-byte identical)
+          3. Verification output (InstallationVerifier results match)
 
-    test_strategy:
-      unit_tests:
-        - "AgentsPlugin.install() calls install_agents_impl and produces expected files"
-        - "CommandsPlugin.install() calls install_commands_impl and produces expected files"
-        - "TemplatesPlugin.install() calls install_templates_impl and produces expected files"
-        - "UtilitiesPlugin.install() calls install_utility_scripts_impl and produces expected files"
-        - "Each plugin.verify() uses existing InstallationVerifier methods"
-      integration_tests:
-        - "Plugin installation produces identical file trees as direct method calls"
-      validation:
-        - "Existing installer methods still work when called directly"
+      # -----------------------------------------------------------------------
+      # Step 02-03: Rollback Mechanism
+      # -----------------------------------------------------------------------
+      - step_id: "02-03"
+        name: "Rollback Mechanism Implementation"
+        description: |
+          Implement rollback functionality for plugin installation failures.
+          If any plugin fails, restore from backup.
+        type: "feature"
+        acceptance_scenario: "milestone-3-switchover.feature::Plugin installation rolls back on failure"
+        acceptance_criteria:
+          - "BackupManager creates backup before installation starts"
+          - "If plugin installation fails, rollback is triggered automatically"
+          - "Rollback restores system to pre-installation state"
+          - "No partial plugin installations remain after rollback"
+          - "Error is logged with details for debugging"
+        suggested_agent: "software-crafter"
+        files_to_modify:
+          - scripts/install/plugins/registry.py
+          - scripts/install/install_nwave.py
+        dependencies:
+          - "02-01"
+        estimated_hours: 4
+        priority: "high"
+        notes: |
+          Based on GAP-PROCESS-02 from architecture-decisions.md.
+          Rollback procedure should use existing BackupManager functionality.
 
-    estimated_time: "6-8 hours"
+  # ===========================================================================
+  # PHASE 03: DES Plugin Integration
+  # Milestone 4 from DISTILL - Add DES as a plugin
+  # ===========================================================================
+  - phase_id: "03"
+    name: "DES Plugin Integration"
+    description: "Implement DESPlugin to install DES module, scripts, and templates without modifying installer code"
+    milestone_reference: "milestone-4-des-plugin.feature"
+    estimated_hours: 14
 
-  # PHASE 3: Switchover (1 step)
-  - id: "03-01"
-    phase: 3
-    type: refactoring
-    title: "Switchover install_framework() to use PluginRegistry"
-    description: "Modify installer orchestration to use plugin system while preserving existing method implementations"
+    prerequisites:
+      - "DES scripts MUST exist at nWave/scripts/des/ (check_stale_phases.py, scope_boundary_check.py)"
+      - "DES templates MUST exist at nWave/templates/ (.pre-commit-config-nwave.yaml, .des-audit-README.md)"
+      - "See prerequisites.md and architecture-decisions.md GAP-PREREQ-01, GAP-PREREQ-02"
 
-    acceptance_criteria:
-      # WHAT the system does (behavioral outcomes)
-      - Fresh installation produces identical file tree as pre-plugin installer
-      - Upgrade from v1.6.x preserves existing installations and adds new components
-      - BackupManager creates timestamped backups before modifications
-      - InstallationVerifier validates all components using existing checks
-      - Plugin execution order respects dependencies (topological sort)
-      - Version tracking continues to work (upgrade detection, version comparison)
-      - Installation output shows plugin execution progress
+    steps:
+      # -----------------------------------------------------------------------
+      # Step 03-01: Create DES Prerequisites
+      # -----------------------------------------------------------------------
+      - step_id: "03-01"
+        name: "Create DES Plugin Prerequisites"
+        description: |
+          Create DES scripts and templates required by DESPlugin.
+          This is a BLOCKING prerequisite for DESPlugin implementation.
+        type: "infrastructure"
+        acceptance_criteria:
+          - "nWave/scripts/des/check_stale_phases.py created and executable"
+          - "nWave/scripts/des/scope_boundary_check.py created and executable"
+          - "nWave/templates/.pre-commit-config-nwave.yaml created"
+          - "nWave/templates/.des-audit-README.md created"
+          - "All scripts pass syntax validation (python3 -m py_compile)"
+        suggested_agent: "software-crafter"
+        files_to_create:
+          - nWave/scripts/des/check_stale_phases.py
+          - nWave/scripts/des/scope_boundary_check.py
+          - nWave/templates/.pre-commit-config-nwave.yaml
+          - nWave/templates/.des-audit-README.md
+        dependencies:
+          - "02-02"
+        estimated_hours: 4
+        priority: "high"
+        notes: |
+          Implementation specs in architecture-decisions.md GAP-PREREQ-01 and GAP-PREREQ-02.
 
-    implementation_notes:
-      files_to_modify:
-        - scripts/install/install_nwave.py  # Modify install_framework() to use PluginRegistry
-      existing_methods_preserved: "Keep _install_agents(), _install_commands(), _install_templates(), _install_utility_scripts() for plugins to call"
-      context_injection: "Create InstallContext with backup_manager, installation_verifier, rich_logger, framework_source, project_root"
-      execution_change: "install_framework() calls registry.install_all() instead of direct method calls"
+      # -----------------------------------------------------------------------
+      # Step 03-02: Implement DESPlugin
+      # -----------------------------------------------------------------------
+      - step_id: "03-02"
+        name: "Implement DESPlugin"
+        description: |
+          Implement DESPlugin with dependencies on templates and utilities.
+          DES module, scripts, and templates are installed via plugin.
+        type: "feature"
+        acceptance_scenario: "milestone-4-des-plugin.feature::DES plugin installs successfully"
+        acceptance_criteria:
+          - "DESPlugin declares dependencies: ['templates', 'utilities']"
+          - "DES is installed AFTER templates and utilities (dependency resolution)"
+          - "DES module copied to ~/.claude/lib/python/des/"
+          - "DES scripts copied to ~/.claude/scripts/"
+          - "DES templates copied to ~/.claude/templates/"
+          - "Installation completes without modifying install_nwave.py"
+        suggested_agent: "software-crafter"
+        files_to_modify:
+          - scripts/install/plugins/des_plugin.py
+        dependencies:
+          - "03-01"
+        estimated_hours: 4
+        priority: "high"
 
-    test_strategy:
-      integration_tests:
-        - "Fresh install with plugin system vs pre-plugin baseline (identical file trees)"
-        - "Upgrade scenario from v1.6.x to v1.7.0 preserves existing files"
-        - "BackupManager integration: backups created in ~/.claude/backups/"
-        - "InstallationVerifier integration: all existing checks pass"
-      regression_tests:
-        - "Compare installed file locations (must be identical)"
-        - "Compare verification output (same components, same criteria)"
-        - "Version tracking comparison (same upgrade detection logic)"
-      validation:
-        - "Zero behavioral changes in file installation"
-        - "Same error handling and recovery patterns"
+      # -----------------------------------------------------------------------
+      # Step 03-03: DES Import and Script Validation
+      # -----------------------------------------------------------------------
+      - step_id: "03-03"
+        name: "DES Import and Script Execution Validation"
+        description: |
+          Validate that DES module is importable and scripts are executable
+          after DESPlugin installation.
+        type: "feature"
+        acceptance_scenario: "milestone-4-des-plugin.feature::DES module is importable after installation"
+        acceptance_criteria:
+          - "Subprocess import test succeeds: python3 -c 'from des.application import DESOrchestrator'"
+          - "DES scripts have executable permissions (chmod +x)"
+          - "DES scripts execute without import errors"
+          - "DESPlugin.verify() returns success after installation"
+        suggested_agent: "software-crafter"
+        files_to_modify:
+          - scripts/install/plugins/des_plugin.py
+          - tests/nwave/plugin-architecture/integration/test_des_plugin.py
+        dependencies:
+          - "03-02"
+        estimated_hours: 3
+        priority: "high"
 
-    estimated_time: "2-3 hours"
+      # -----------------------------------------------------------------------
+      # Step 03-04: DES Prerequisites Error Handling
+      # -----------------------------------------------------------------------
+      - step_id: "03-04"
+        name: "DESPlugin Graceful Failure on Missing Prerequisites"
+        description: |
+          Ensure DESPlugin fails gracefully when prerequisites are missing,
+          with clear error messages and remediation steps.
+        type: "feature"
+        acceptance_scenario: "milestone-4-des-plugin.feature::DESPlugin fails gracefully when prerequisites missing"
+        acceptance_criteria:
+          - "When DES scripts missing, returns PluginResult(success=False)"
+          - "Error message contains 'DES scripts not found: nWave/scripts/des/'"
+          - "When DES templates missing, error message explains what's missing"
+          - "No partial DES files installed on failure"
+          - "Error logged with clear remediation steps"
+        suggested_agent: "software-crafter"
+        files_to_modify:
+          - scripts/install/plugins/des_plugin.py
+          - tests/nwave/plugin-architecture/unit/test_des_plugin_errors.py
+        dependencies:
+          - "03-02"
+        estimated_hours: 3
+        priority: "medium"
 
-  # PHASE 4: DES Plugin (1 step - demonstrates extensibility)
-  - id: "04-01"
-    phase: 4
-    type: feature
-    title: "Implement DESPlugin with prerequisite scripts and templates"
-    description: "Add DES component via plugin registration, demonstrating zero-modification extensibility"
+  # ===========================================================================
+  # PHASE 04: Testing and Documentation
+  # Milestone 5 from DISTILL - Comprehensive testing
+  # ===========================================================================
+  - phase_id: "04"
+    name: "Testing and Documentation"
+    description: "Comprehensive test coverage, selective installation/uninstallation, upgrade scenarios"
+    milestone_reference: "milestone-5-testing-docs.feature"
+    estimated_hours: 14
 
-    acceptance_criteria:
-      # WHAT the system does (behavioral outcomes)
-      - DES Python module importable from ~/.claude/lib/python/des/
-      - DES utility scripts executable from ~/.claude/scripts/
-      - DES templates available in ~/.claude/templates/
-      - DESPlugin installs after templates and utilities (dependency resolution)
-      - DES module import test succeeds (subprocess verification)
-      - Pre-commit hook templates validate YAML syntax
-      - Audit README template documents JSONL format and query examples
-      - Installer modified with single plugin registration line
+    steps:
+      # -----------------------------------------------------------------------
+      # Step 04-01: Complete Test Coverage
+      # -----------------------------------------------------------------------
+      - step_id: "04-01"
+        name: "Complete Test Coverage (>80%)"
+        description: |
+          Ensure test coverage of plugin system exceeds 80%.
+          Add unit tests for all plugins and integration tests for scenarios.
+        type: "feature"
+        acceptance_scenario: "milestone-5-testing-docs.feature::Full installation with all plugins succeeds"
+        acceptance_criteria:
+          - "pytest-cov reports >80% coverage for scripts/install/plugins/"
+          - "All 5 plugins have unit tests (agents, commands, templates, utilities, des)"
+          - "All unit tests pass"
+          - "All integration tests pass (fresh install + upgrade)"
+          - "All acceptance tests pass"
+        suggested_agent: "software-crafter"
+        files_to_modify:
+          - tests/nwave/plugin-architecture/unit/test_agents_plugin.py
+          - tests/nwave/plugin-architecture/unit/test_commands_plugin.py
+          - tests/nwave/plugin-architecture/unit/test_templates_plugin.py
+          - tests/nwave/plugin-architecture/unit/test_utilities_plugin.py
+          - tests/nwave/plugin-architecture/unit/test_des_plugin.py
+        dependencies:
+          - "03-03"
+        estimated_hours: 6
+        priority: "medium"
 
-    implementation_notes:
-      prerequisites:
-        des_scripts:
-          - nWave/scripts/des/check_stale_phases.py  # Stale phase detection
-          - nWave/scripts/des/scope_boundary_check.py  # Scope boundary validation
-        des_templates:
-          - nWave/templates/.pre-commit-config-nwave.yaml  # Pre-commit configuration
-          - nWave/templates/.des-audit-README.md  # Audit trail documentation
-        prerequisite_status: "MUST be created before this step (see MED-01, MED-02 remediations in design.md)"
-      files_to_create:
-        - scripts/install/plugins/des_plugin.py  # New DESPlugin implementation
-      files_to_modify:
-        - scripts/install/install_nwave.py  # Add registry.register(DESPlugin()) - 1 line
-      des_installation:
-        module_source: "dist/ide/lib/python/des/ OR src/des/ (fallback)"
-        module_target: "~/.claude/lib/python/des/"
-        scripts_source: "nWave/scripts/des/"
-        scripts_target: "~/.claude/scripts/"
-        templates_source: "nWave/templates/"
-        templates_target: "~/.claude/templates/"
-      reuse_strategy: "Use context.backup_manager for backups, context.logger for output, existing verification patterns"
+      # -----------------------------------------------------------------------
+      # Step 04-02: Selective Installation/Uninstallation
+      # -----------------------------------------------------------------------
+      - step_id: "04-02"
+        name: "Selective Installation and Uninstallation"
+        description: |
+          Implement --exclude flag for selective plugin installation
+          and --uninstall flag for removing specific plugins.
+        type: "feature"
+        acceptance_scenario: "milestone-5-testing-docs.feature::Selective installation excludes plugins correctly"
+        acceptance_criteria:
+          - "install_nwave.py --exclude des installs only 4 plugins"
+          - "DES module NOT found at ~/.claude/lib/python/des/ when excluded"
+          - "install_nwave.py --uninstall des removes DES files"
+          - "Other plugins remain installed after selective uninstall"
+          - "Uninstallation blocked when plugin has dependents"
+        suggested_agent: "software-crafter"
+        files_to_modify:
+          - scripts/install/install_nwave.py
+          - scripts/install/plugins/registry.py
+        dependencies:
+          - "04-01"
+        estimated_hours: 4
+        priority: "medium"
 
-    test_strategy:
-      unit_tests:
-        - "DESPlugin.install() copies module to correct location"
-        - "DESPlugin.install() installs scripts with executable permissions"
-        - "DESPlugin.install() installs templates to correct location"
-        - "DESPlugin.verify() confirms module importable via subprocess"
-        - "DESPlugin.verify() confirms scripts present and executable"
-        - "DESPlugin.verify() confirms templates present"
-      integration_tests:
-        - "Full installation includes DES after templates and utilities"
-        - "DES module import succeeds: 'from des.application import DESOrchestrator'"
-        - "check_stale_phases.py executes successfully"
-        - "scope_boundary_check.py executes successfully"
-        - "Pre-commit config valid YAML"
-      dependency_tests:
-        - "DESPlugin installs AFTER TemplatesPlugin (dependency resolution)"
-        - "DESPlugin installs AFTER UtilitiesPlugin (dependency resolution)"
-      validation:
-        - "Zero modifications to core installer beyond plugin registration"
-        - "DES installation reuses existing utilities (BackupManager, Logger)"
+      # -----------------------------------------------------------------------
+      # Step 04-03: Upgrade Scenario Testing
+      # -----------------------------------------------------------------------
+      - step_id: "04-03"
+        name: "Upgrade Scenario Testing"
+        description: |
+          Test upgrade from monolithic installer (v1.2.0) to plugin-based (v1.3.0+).
+          Ensure existing installations are preserved.
+        type: "feature"
+        acceptance_scenario: "milestone-5-testing-docs.feature::Upgrade from monolithic installer preserves existing installation"
+        acceptance_criteria:
+          - "Existing components detected and preserved during upgrade"
+          - "BackupManager creates backup before upgrade"
+          - "DES plugin added without affecting existing components"
+          - "Verification passes for all components after upgrade"
+          - "No existing functionality broken"
+        suggested_agent: "software-crafter"
+        files_to_modify:
+          - tests/nwave/plugin-architecture/integration/test_upgrade_scenarios.py
+        dependencies:
+          - "04-01"
+        estimated_hours: 4
+        priority: "medium"
 
-    estimated_time: "4-5 hours"
+  # ===========================================================================
+  # PHASE 05: Deployment
+  # Milestone 6 from DISTILL - Version bump and production release
+  # ===========================================================================
+  - phase_id: "05"
+    name: "Deployment"
+    description: "Version bump, CHANGELOG update, and end-to-end user journey validation"
+    milestone_reference: "milestone-6-deployment.feature"
+    estimated_hours: 6
 
-  # PHASE 5: Testing and Documentation (1 step)
-  - id: "05-01"
-    phase: 5
-    type: validation
-    title: "Comprehensive testing and documentation"
-    description: "Complete test suite coverage and user/developer documentation"
+    steps:
+      # -----------------------------------------------------------------------
+      # Step 05-01: Version Bump and CHANGELOG
+      # -----------------------------------------------------------------------
+      - step_id: "05-01"
+        name: "Version Bump and CHANGELOG Update"
+        description: |
+          Bump version to 1.7.0 for production release.
+          Update CHANGELOG.md with migration notes.
+        type: "infrastructure"
+        acceptance_scenario: "milestone-6-deployment.feature::Version bump and deployment succeed"
+        acceptance_criteria:
+          - "pyproject.toml version updated to 1.7.0"
+          - "CHANGELOG.md documents changes from 1.2.0 to 1.7.0"
+          - "Release notes include DES feature announcement"
+          - "git tag v1.7.0 created"
+        suggested_agent: "software-crafter"
+        files_to_modify:
+          - pyproject.toml
+          - CHANGELOG.md
+        dependencies:
+          - "04-03"
+        estimated_hours: 2
+        priority: "low"
 
-    acceptance_criteria:
-      # WHAT the system does (behavioral outcomes)
-      - All unit tests pass (plugin infrastructure, individual plugins)
-      - All integration tests pass (fresh install, upgrade scenarios)
-      - All regression tests pass (file tree comparison, behavior validation)
-      - All adversarial tests pass (error handling, edge cases)
-      - Installation guide documents DES components and features
-      - DES audit trail guide explains JSONL format and query examples
-      - Plugin development guide provides contributor instructions
-      - Architecture documentation includes plugin system diagram
+      # -----------------------------------------------------------------------
+      # Step 05-02: End-to-End User Journey Validation
+      # -----------------------------------------------------------------------
+      - step_id: "05-02"
+        name: "End-to-End User Journey Validation"
+        description: |
+          Validate complete user journey from download to DES usage.
+          Ensure production-ready experience.
+        type: "feature"
+        acceptance_scenario: "milestone-6-deployment.feature::End-to-end user journey completes successfully"
+        acceptance_criteria:
+          - "Fresh installation shows '5 plugins' progress messages"
+          - "User sees progress for each plugin: [1/5] to [5/5]"
+          - "Installation completes with 'Installation complete' message"
+          - "Verification table shows all components OK"
+          - "DES is available for production use (/nw:develop creates audit trail)"
+        suggested_agent: "software-crafter"
+        files_to_modify:
+          - tests/nwave/plugin-architecture/e2e/test_user_journey.py
+        dependencies:
+          - "05-01"
+        estimated_hours: 4
+        priority: "low"
+        notes: |
+          This is the final validation before production release.
+          Should be run manually or in CI/CD with clean environment.
 
-    implementation_notes:
-      test_categories:
-        unit_tests:
-          - "PluginRegistry topological sort and dependency resolution"
-          - "Individual plugin install/verify methods"
-          - "Circular dependency detection"
-          - "Missing dependency error handling"
-        integration_tests:
-          - "Fresh install produces expected file tree"
-          - "Upgrade from v1.6.x preserves existing installation"
-          - "BackupManager integration functional"
-          - "InstallationVerifier integration functional"
-        regression_tests:
-          - "File tree comparison: pre-plugin vs post-plugin (identical)"
-          - "Verification output comparison (same components, same checks)"
-          - "Version tracking comparison (same logic)"
-        adversarial_tests:
-          - "Dependency cycle detection and error reporting"
-          - "Plugin install failure handling and rollback"
-          - "Missing dependency clear error messaging"
-      documentation_updates:
-        - docs/installation/installation-guide.md  # Add DES section
-        - docs/reference/des-audit-trail-guide.md  # NEW - audit trail documentation
-        - docs/development/plugin-development-guide.md  # NEW - contributor guide
-        - docs/architecture/plugin-system.md  # NEW - architecture diagram
+# Validation Configuration
+validation:
+  status: "approved"
+  approved_at: "2026-02-03T19:45:00Z"
+  approved_by: "software-crafter-reviewer"
+  review_notes: "Walking skeleton correctly positioned as step 01-01 with critical priority. All steps have atomic file scope, clear acceptance criteria, and correct dependencies."
+  quality_gates:
+    - name: "Walking Skeleton Complete"
+      phase: "01"
+      step: "01-01"
+      criteria: "AgentsPlugin E2E test passes"
+      blocking: true
 
-    test_strategy:
-      validation:
-        - "Test coverage > 90% for plugin infrastructure"
-        - "Zero test failures in CI pipeline"
-        - "Documentation reviewed for completeness and accuracy"
-        - "Migration guide tested with actual v1.6.x installation"
+    - name: "All Wrapper Plugins Functional"
+      phase: "01"
+      step: "01-05"
+      criteria: "All 4 wrapper plugins install correctly via registry"
+      blocking: true
 
-    estimated_time: "4-5 hours"
+    - name: "Switchover Behavioral Equivalence"
+      phase: "02"
+      step: "02-02"
+      criteria: "Plugin-based installation identical to baseline"
+      blocking: true
 
-  # PHASE 6: Deployment (1 step)
-  - id: "06-01"
-    phase: 6
-    type: deployment
-    title: "Version bump, release notes, and gradual rollout"
-    description: "Prepare v1.7.0 release with backward compatibility guarantees"
+    - name: "DES Plugin Operational"
+      phase: "03"
+      step: "03-03"
+      criteria: "DES module importable and scripts executable"
+      blocking: true
 
-    acceptance_criteria:
-      # WHAT the system does (behavioral outcomes)
-      - Version bumped to 1.7.0 in all relevant files
-      - CHANGELOG.md documents new features and migration guidance
-      - Release notes explain plugin architecture and backward compatibility
-      - Gradual rollout plan executed (alpha → beta → stable)
-      - Fresh installations include DES automatically
-      - Existing installations upgrade without breaking changes
-      - Migration guide validates zero breaking changes
+    - name: "Test Coverage Threshold"
+      phase: "04"
+      step: "04-01"
+      criteria: ">80% test coverage for plugin system"
+      blocking: false
 
-    implementation_notes:
-      version_bump:
-        from: "1.6.x"
-        to: "1.7.0"
-        semver_rationale: "Minor version (new feature, backward compatible)"
-      files_to_update:
-        - VERSION
-        - CHANGELOG.md
-        - README.md  # Mention plugin architecture and DES
-      changelog_sections:
-        added:
-          - "Plugin architecture for modular installation system"
-          - "DES (Deterministic Execution System) integration"
-          - "DES utility scripts: check_stale_phases, scope_boundary_check"
-          - "Pre-commit hook templates for nWave projects"
-        changed:
-          - "Installer refactored to use PluginRegistry (backward compatible)"
-        migration:
-          - "No breaking changes - existing installations work unchanged"
-          - "Fresh installs include DES automatically"
-      rollout_plan:
-        alpha: "Internal testing with development team"
-        beta: "Selected early adopters with monitoring"
-        stable: "General availability after beta validation"
+    - name: "Production Ready"
+      phase: "05"
+      step: "05-02"
+      criteria: "E2E user journey completes successfully"
+      blocking: true
 
-    test_strategy:
-      validation:
-        - "Alpha testing: Fresh install and upgrade scenarios"
-        - "Beta testing: Real-world usage validation"
-        - "Stable release: All validation criteria met"
-      backward_compatibility_verification:
-        - "Existing v1.6.x installations upgrade successfully"
-        - "Zero file location changes"
-        - "Zero behavioral changes in core components"
+# Summary Statistics
+summary:
+  total_phases: 5
+  total_steps: 15
+  total_estimated_hours: 62
+  critical_steps: 4
+  high_priority_steps: 8
+  medium_priority_steps: 5
+  low_priority_steps: 2
+  milestone_mapping:
+    milestone_1: "COMPLETED (infrastructure exists)"
+    milestone_2: "Phase 01 (walking skeleton + wrappers)"
+    milestone_3: "Phase 02 (switchover)"
+    milestone_4: "Phase 03 (DES plugin)"
+    milestone_5: "Phase 04 (testing/docs)"
+    milestone_6: "Phase 05 (deployment)"
 
-    estimated_time: "1-2 hours"
-
-handoff_to_distill:
-  architecture_decisions:
-    - Plugin architecture uses wrapper pattern (plugins call existing methods)
-    - Circular imports avoided via module-level function extraction
-    - Backward compatibility guaranteed (same files, same locations, same behavior)
-    - Dependency resolution via topological sort (Kahn's algorithm)
-    - InstallContext carries existing utilities (BackupManager, InstallationVerifier)
-
-  technology_stack:
-    language: Python 3.x
-    installer_framework: Custom (scripts/install/install_nwave.py)
-    plugin_infrastructure: Custom (scripts/install/plugins/)
-    dependency_algorithm: "Kahn's topological sort"
-    testing_framework: pytest
-    existing_utilities_reused:
-      - BackupManager
-      - InstallationVerifier
-      - Rich library (styled output)
-      - Version tracking
-
-  acceptance_test_framework:
-    approach: "Integration tests with file tree comparison"
-    key_scenarios:
-      - Fresh installation produces expected file tree
-      - Upgrade preserves existing files and adds new components
-      - Plugin execution order respects dependencies
-      - DES module importable and functional
-    validation_criteria:
-      - File tree comparison (pre-plugin vs post-plugin)
-      - Verification output comparison
-      - DES module import subprocess test
-      - Backward compatibility verification
-
-  risk_mitigation:
-    circular_imports: "Resolved via module-level function extraction (HIGH-02 fix)"
-    des_source_structure: "Documented prerequisites and build pipeline integration (HIGH-01 fix)"
-    install_context_incomplete: "Added framework_source, project_root, rich_logger fields (HIGH-03 fix)"
-    backward_compatibility: "Plugins call existing methods; same file locations; comprehensive regression tests"
-
-  next_wave_inputs:
-    primary_deliverable: "Roadmap validated and approved for acceptance test creation"
-    architecture_document: "docs/feature/plugin-architecture/design.md"
-    quality_gates_passed:
-      - ac_abstraction_level: true
-      - step_decomposition_efficiency: true
-      - step_to_file_ratio: true  # 1.17 (well below 2.5 threshold)
-      - identical_pattern_batching: true
-
-    acceptance_test_guidance:
-      test_structure: "7 implementation steps → 7 primary acceptance test scenarios"
-      infrastructure_steps: "Step 01-01 (infrastructure) may not map to user-facing scenario"
-      feature_steps: "Steps 02-01 through 06-01 map to observable behavioral scenarios"
-      step_mapping:
-        - step: "01-01"
-          scenario: "Plugin infrastructure validation (internal)"
-          type: infrastructure
-        - step: "02-01"
-          scenario: "Wrapper plugins produce identical installation results"
-          type: feature
-        - step: "03-01"
-          scenario: "Plugin registry orchestration preserves backward compatibility"
-          type: feature
-        - step: "04-01"
-          scenario: "DES plugin installation and verification"
-          type: feature
-        - step: "05-01"
-          scenario: "Comprehensive test suite and documentation validation"
-          type: validation
-        - step: "06-01"
-          scenario: "Version release and deployment validation"
-          type: deployment
-
-metadata:
-  total_steps: 7
-  estimated_total_time: "20-27 hours"
-  production_files_estimate: 6  # 4 wrapper plugins + des_plugin + registry
-  step_to_file_ratio: 1.17  # 7 steps / 6 files = 1.17 (target: <= 2.5)
-  quality_gates_validation:
-    ac_abstraction: "PASS - All AC describe observable outcomes, no private method references"
-    step_decomposition: "PASS - Steps decomposed by implementation unit (infrastructure, wrapper batch, switchover, DES, testing, deployment)"
-    identical_pattern_batching: "PASS - 4 wrapper plugins batched into single step 02-01"
-    no_op_prevention: "PASS - All steps add production code (infrastructure, plugins, switchover, DES, docs, deployment)"
+# Key Architecture Decisions Reference
+architecture_decisions:
+  circular_import_prevention: "Extract module-level functions from install_nwave.py"
+  verification_fallback: "Each plugin has fallback file existence check if InstallationVerifier unavailable"
+  version_strategy: "Incremental: 1.2.1 -> 1.3.0 -> 1.4.0 -> 1.7.0"
+  rollback_strategy: "Use BackupManager to restore on plugin failure"
+  des_prerequisites: "DES scripts and templates created BEFORE Phase 03"

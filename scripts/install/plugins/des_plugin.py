@@ -47,8 +47,8 @@ class DESPlugin(InstallationPlugin):
         scripts_dir = self._get_scripts_source_dir(context)
         if not scripts_dir.exists():
             errors.append(
-                f"DES scripts not found: nWave/scripts/des/. "
-                f"Ensure prerequisite scripts are created before DES installation."
+                "DES scripts not found: nWave/scripts/des/. "
+                "Ensure prerequisite scripts are created before DES installation."
             )
         else:
             # Check for required script files
@@ -64,7 +64,11 @@ class DESPlugin(InstallationPlugin):
                 )
 
         # Check for DES templates
-        templates_dir = context.project_root / "nWave" / "templates" if context.project_root else Path("nWave/templates")
+        templates_dir = (
+            context.project_root / "nWave" / "templates"
+            if context.project_root
+            else Path("nWave/templates")
+        )
         missing_templates = []
         for template_name in self.DES_TEMPLATES:
             template_path = templates_dir / template_name
@@ -111,7 +115,9 @@ class DESPlugin(InstallationPlugin):
             # Validate prerequisites first - fail fast with clear message
             prereq_result = self.validate_prerequisites(context)
             if not prereq_result.success:
-                context.logger.error(f"DES prerequisite check failed: {prereq_result.message}")
+                context.logger.error(
+                    f"DES prerequisite check failed: {prereq_result.message}"
+                )
                 return prereq_result
 
             # Install DES module

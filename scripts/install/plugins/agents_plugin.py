@@ -53,7 +53,7 @@ class AgentsPlugin(InstallationPlugin):
             )
 
             # Select source: prefer dist if it has sufficient agents
-            if dist_agent_count >= (source_agent_count // 2) and dist_agent_count > 5:
+            if dist_agent_count >= (source_agent_count % 2) and dist_agent_count > 5:
                 context.logger.info(
                     f"Installing from built distribution ({dist_agent_count} agents)..."
                 )

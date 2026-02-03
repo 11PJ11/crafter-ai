@@ -10,10 +10,8 @@ This module contains step definitions related to:
 Domain: Plugin Registry Operations
 """
 
-from pathlib import Path
-
 import pytest
-from pytest_bdd import given, when, then, parsers
+from pytest_bdd import given, parsers, then, when
 
 
 # -----------------------------------------------------------------------------
@@ -25,8 +23,8 @@ from pytest_bdd import given, when, then, parsers
 def plugin_infrastructure_operational():
     """Verify Milestone 1 plugin infrastructure is operational."""
     try:
-        from scripts.install.plugins.registry import PluginRegistry
         from scripts.install.plugins.base import InstallationPlugin
+        from scripts.install.plugins.registry import PluginRegistry
 
         assert PluginRegistry is not None
         assert InstallationPlugin is not None
@@ -34,14 +32,14 @@ def plugin_infrastructure_operational():
         pytest.skip(f"Milestone 1 not complete: {e}")
 
 
-@given(parsers.parse('PluginRegistry contains {count:d} registered plugins'))
+@given(parsers.parse("PluginRegistry contains {count:d} registered plugins"))
 def registry_contains_plugins(count: int, plugin_registry):
     """Verify registry contains expected number of plugins."""
     # Will be populated during test
     pytest.expected_plugin_count = count
 
 
-@given(parsers.parse('{plugin_name} has dependencies: {dependencies}'))
+@given(parsers.parse("{plugin_name} has dependencies: {dependencies}"))
 def plugin_has_dependencies(plugin_name: str, dependencies: str):
     """Set plugin dependencies for testing."""
     # Parse dependencies list: "[]" or '["dep1", "dep2"]'
@@ -51,7 +49,7 @@ def plugin_has_dependencies(plugin_name: str, dependencies: str):
     pytest.plugin_dependencies[plugin_name] = deps
 
 
-@given(parsers.parse('{plugin_name} declares dependencies: {dependencies}'))
+@given(parsers.parse("{plugin_name} declares dependencies: {dependencies}"))
 def plugin_declares_dependencies(plugin_name: str, dependencies: str):
     """Set plugin declared dependencies."""
     deps = eval(dependencies) if dependencies != "[]" else []
@@ -60,7 +58,7 @@ def plugin_declares_dependencies(plugin_name: str, dependencies: str):
     pytest.plugin_dependencies[plugin_name] = deps
 
 
-@given(parsers.parse('{plugin_name} declares dependencies on {dependencies}'))
+@given(parsers.parse("{plugin_name} declares dependencies on {dependencies}"))
 def plugin_declares_deps_on(plugin_name: str, dependencies: str):
     """Set plugin dependencies."""
     deps = eval(dependencies) if dependencies != "[]" else []
@@ -69,31 +67,35 @@ def plugin_declares_deps_on(plugin_name: str, dependencies: str):
     pytest.plugin_dependencies[plugin_name] = deps
 
 
-@given(parsers.parse('all {count:d} plugins are registered (agents, commands, templates, utilities, des)'))
+@given(
+    parsers.parse(
+        "all {count:d} plugins are registered (agents, commands, templates, utilities, des)"
+    )
+)
 def all_plugins_registered(count: int):
     """Verify all plugins are registered."""
     pytest.registered_plugin_count = count
 
 
-@given(parsers.parse('all {count:d} plugins are registered'))
+@given(parsers.parse("all {count:d} plugins are registered"))
 def plugins_registered(count: int):
     """Register specified number of plugins."""
     pytest.registered_plugin_count = count
 
 
-@given(parsers.parse('all {count:d} plugins are installed'))
+@given(parsers.parse("all {count:d} plugins are installed"))
 def all_plugins_installed(count: int):
     """Verify all plugins are installed."""
     pytest.installed_plugin_count = count
 
 
-@given(parsers.parse('all {count:d} plugins are operational'))
+@given(parsers.parse("all {count:d} plugins are operational"))
 def all_plugins_operational(count: int):
     """Verify all plugins are operational."""
     pytest.operational_plugin_count = count
 
 
-@given(parsers.parse('all {count:d} wrapper plugins are implemented (Milestone 2)'))
+@given(parsers.parse("all {count:d} wrapper plugins are implemented (Milestone 2)"))
 def wrapper_plugins_implemented(count: int):
     """Verify wrapper plugins are implemented."""
     pytest.wrapper_plugin_count = count
@@ -116,6 +118,7 @@ def des_plugin_implemented():
     """Verify DES plugin is implemented."""
     try:
         from scripts.install.plugins.des_plugin import DESPlugin
+
         assert DESPlugin is not None
     except ImportError:
         pytest.skip("DES plugin not yet implemented")
@@ -170,7 +173,7 @@ def register_both_plugins(plugin_registry):
     pass
 
 
-@when(parsers.parse('I register all {count:d} plugins with PluginRegistry'))
+@when(parsers.parse("I register all {count:d} plugins with PluginRegistry"))
 def register_all_plugins(count: int, plugin_registry):
     """Register all plugins with registry."""
     pass
@@ -189,12 +192,14 @@ def call_get_installation_order(plugin_registry):
 def call_install_plugin(plugin_name: str, plugin_registry, install_context):
     """Call install_plugin on registry."""
     try:
-        pytest.install_result = plugin_registry.install_plugin(plugin_name, install_context)
+        pytest.install_result = plugin_registry.install_plugin(
+            plugin_name, install_context
+        )
     except Exception as e:
         pytest.install_error = e
 
 
-@when(parsers.parse('I call registry.install_all(context) {location}'))
+@when(parsers.parse("I call registry.install_all(context) {location}"))
 def call_install_all(location: str, plugin_registry, install_context):
     """Call install_all on registry."""
     try:
@@ -212,7 +217,7 @@ def call_registry_install_all(plugin_registry, install_context):
         pytest.install_all_error = e
 
 
-@when(parsers.parse('I install all {count:d} plugins'))
+@when(parsers.parse("I install all {count:d} plugins"))
 def install_all_plugins(count: int, plugin_registry, install_context):
     """Install all plugins."""
     pass
@@ -271,7 +276,7 @@ def no_circular_deps():
     pass
 
 
-@then(parsers.parse('the order is {expected_order}'))
+@then(parsers.parse("the order is {expected_order}"))
 def verify_order(expected_order: str):
     """Verify specific installation order."""
     expected = eval(expected_order)
@@ -303,7 +308,7 @@ def no_plugins_installed_on_error():
     pass
 
 
-@then(parsers.parse('all {count:d} plugins install in correct dependency order'))
+@then(parsers.parse("all {count:d} plugins install in correct dependency order"))
 def plugins_install_in_order(count: int):
     """Verify plugins install in correct order."""
     pass

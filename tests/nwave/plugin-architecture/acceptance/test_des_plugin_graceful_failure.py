@@ -209,7 +209,8 @@ def no_partial_des_files_installed():
     # No DES scripts should be installed
     if target_scripts.exists():
         des_scripts = [
-            f for f in target_scripts.iterdir()
+            f
+            for f in target_scripts.iterdir()
             if f.name in ["check_stale_phases.py", "scope_boundary_check.py"]
         ]
         assert len(des_scripts) == 0, f"Partial DES scripts found: {des_scripts}"
@@ -217,7 +218,8 @@ def no_partial_des_files_installed():
     # No DES templates should be installed
     if target_templates.exists():
         des_templates = [
-            f for f in target_templates.iterdir()
+            f
+            for f in target_templates.iterdir()
             if f.name in [".pre-commit-config-nwave.yaml", ".des-audit-README.md"]
         ]
         assert len(des_templates) == 0, f"Partial DES templates found: {des_templates}"

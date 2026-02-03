@@ -12,7 +12,7 @@ Domain: Plugin Infrastructure
 from pathlib import Path
 
 import pytest
-from pytest_bdd import given, when, then, parsers
+from pytest_bdd import given, parsers, then, when
 
 
 # -----------------------------------------------------------------------------
@@ -38,7 +38,12 @@ def plugin_infrastructure_exists(project_root: Path):
 def plugin_infrastructure_with_base_classes(project_root: Path):
     """Verify plugin infrastructure with base classes exists."""
     try:
-        from scripts.install.plugins.base import InstallationPlugin, InstallContext, PluginResult
+        from scripts.install.plugins.base import (
+            InstallationPlugin,
+            InstallContext,
+            PluginResult,
+        )
+
         assert InstallationPlugin is not None
         assert InstallContext is not None
         assert PluginResult is not None
@@ -83,7 +88,9 @@ def registry_implements_topological_sort(project_root: Path):
 
         registry = PluginRegistry()
         assert hasattr(registry, "register"), "PluginRegistry missing register() method"
-        assert hasattr(registry, "get_installation_order"), "Missing get_installation_order()"
+        assert hasattr(registry, "get_installation_order"), (
+            "Missing get_installation_order()"
+        )
     except ImportError:
         pytest.skip("PluginRegistry not yet implemented")
 
@@ -101,8 +108,10 @@ def circular_import_validated():
     """Verify no circular imports exist in plugin infrastructure."""
     try:
         # Attempt to import all plugin modules
-        from scripts.install.plugins import base  # noqa: F401
-        from scripts.install.plugins import registry  # noqa: F401
+        from scripts.install.plugins import (
+            base,  # noqa: F401
+            registry,  # noqa: F401
+        )
         # If we get here, no circular imports
     except ImportError as e:
         if "circular" in str(e).lower():
@@ -115,7 +124,7 @@ def circular_import_validated():
 # -----------------------------------------------------------------------------
 
 
-@when(parsers.parse('I create {plugin_name} wrapper around {method_name}()'))
+@when(parsers.parse("I create {plugin_name} wrapper around {method_name}()"))
 def create_plugin_wrapper(plugin_name: str, method_name: str):
     """Create a plugin wrapper around existing method."""
     # This step is declarative - validates plugin creation approach

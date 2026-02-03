@@ -8,7 +8,6 @@ hardcoded _install_*() calls to using registry.install_all(context).
 """
 
 from pathlib import Path
-from unittest.mock import Mock, patch
 
 import pytest
 from pytest_bdd import given, parsers, scenario, then, when
@@ -90,13 +89,15 @@ def install_framework_uses_registry(project_root: Path):
     content = install_script.read_text()
 
     # Check that PluginRegistry is imported
-    assert "from scripts.install.plugins.registry import PluginRegistry" in content or \
-           "PluginRegistry" in content, \
-           "install_framework() should import and use PluginRegistry"
+    assert (
+        "from scripts.install.plugins.registry import PluginRegistry" in content
+        or "PluginRegistry" in content
+    ), "install_framework() should import and use PluginRegistry"
 
     # Check that registry.install_all is used
-    assert "registry.install_all" in content or "install_all" in content, \
-           "install_framework() should call registry.install_all(context)"
+    assert "registry.install_all" in content or "install_all" in content, (
+        "install_framework() should call registry.install_all(context)"
+    )
 
 
 # -----------------------------------------------------------------------------
@@ -105,12 +106,14 @@ def install_framework_uses_registry(project_root: Path):
 
 
 @when("I run install_nwave.py with plugin orchestration")
-def run_install_with_plugins(clean_test_directory: Path, project_root: Path, test_logger):
+def run_install_with_plugins(
+    clean_test_directory: Path, project_root: Path, test_logger
+):
     """Run install_nwave.py using plugin orchestration."""
-    from scripts.install.plugins.base import InstallContext
-    from scripts.install.plugins.registry import PluginRegistry
     from scripts.install.plugins.agents_plugin import AgentsPlugin
+    from scripts.install.plugins.base import InstallContext
     from scripts.install.plugins.commands_plugin import CommandsPlugin
+    from scripts.install.plugins.registry import PluginRegistry
     from scripts.install.plugins.templates_plugin import TemplatesPlugin
     from scripts.install.plugins.utilities_plugin import UtilitiesPlugin
 
@@ -162,8 +165,9 @@ def all_plugins_installed_in_order():
 
     # Verify execution order (by priority)
     execution_order = pytest.registry.get_execution_order()
-    assert execution_order == expected_plugins, \
+    assert execution_order == expected_plugins, (
         f"Expected order {expected_plugins}, got {execution_order}"
+    )
 
 
 @then("InstallContext provides all required utilities")
@@ -187,7 +191,9 @@ def backup_manager_creates_backups():
     # For this test, we verify the context can hold a backup_manager
     context = pytest.install_context
     # backup_manager is optional in InstallContext, verify it can be set
-    assert hasattr(context, "backup_manager"), "InstallContext should have backup_manager field"
+    assert hasattr(context, "backup_manager"), (
+        "InstallContext should have backup_manager field"
+    )
 
 
 @then("installation completes successfully")
@@ -206,5 +212,6 @@ def verification_passes():
         # Verify each plugin
         plugin = pytest.registry.plugins[plugin_name]
         verify_result = plugin.verify(pytest.install_context)
-        assert verify_result.success, \
+        assert verify_result.success, (
             f"Plugin '{plugin_name}' verification failed: {verify_result.message}"
+        )

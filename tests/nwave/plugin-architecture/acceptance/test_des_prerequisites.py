@@ -145,9 +145,7 @@ def both_scripts_can_be_executed():
             capture_output=True,
             text=True,
         )
-        assert result.returncode == 0, (
-            f"Syntax error in {script.name}: {result.stderr}"
-        )
+        assert result.returncode == 0, f"Syntax error in {script.name}: {result.stderr}"
 
 
 @then("scripts execute without import errors")
@@ -182,9 +180,9 @@ def scripts_output_help_or_status_messages():
         output = result.stdout + result.stderr
         assert len(output) > 0, f"Script {script.name} produced no output"
         # Should contain a status indicator
-        assert any(marker in output for marker in ["✓", "✗", "❌", "⚠️", "OK", "ERROR"]), (
-            f"Script {script.name} has no status indicator in output: {output}"
-        )
+        assert any(
+            marker in output for marker in ["✓", "✗", "❌", "⚠️", "OK", "ERROR"]
+        ), f"Script {script.name} has no status indicator in output: {output}"
 
 
 # -----------------------------------------------------------------------------
@@ -197,7 +195,9 @@ class TestDESPrerequisiteFilesExist:
 
     def test_check_stale_phases_script_exists(self, project_root: Path):
         """check_stale_phases.py exists in nWave/scripts/des/."""
-        script_path = project_root / "nWave" / "scripts" / "des" / "check_stale_phases.py"
+        script_path = (
+            project_root / "nWave" / "scripts" / "des" / "check_stale_phases.py"
+        )
         assert script_path.exists(), f"Script not found: {script_path}"
 
     def test_scope_boundary_check_script_exists(self, project_root: Path):
@@ -225,7 +225,9 @@ class TestDESPrerequisiteSyntaxValidation:
 
     def test_check_stale_phases_passes_syntax_validation(self, project_root: Path):
         """check_stale_phases.py passes python3 -m py_compile."""
-        script_path = project_root / "nWave" / "scripts" / "des" / "check_stale_phases.py"
+        script_path = (
+            project_root / "nWave" / "scripts" / "des" / "check_stale_phases.py"
+        )
         result = subprocess.run(
             [sys.executable, "-m", "py_compile", str(script_path)],
             capture_output=True,
@@ -251,7 +253,9 @@ class TestDESPrerequisiteContent:
 
     def test_check_stale_phases_has_main_function(self, project_root: Path):
         """check_stale_phases.py has main() function."""
-        script_path = project_root / "nWave" / "scripts" / "des" / "check_stale_phases.py"
+        script_path = (
+            project_root / "nWave" / "scripts" / "des" / "check_stale_phases.py"
+        )
         content = script_path.read_text()
         assert "def main():" in content, "Script missing main() function"
         assert "if __name__" in content, "Script missing if __name__ guard"

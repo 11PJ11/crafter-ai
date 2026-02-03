@@ -11,18 +11,18 @@ Organization:
 """
 
 import logging
-import tempfile
 from pathlib import Path
-from typing import Generator
 
 import pytest
 
 # Import step definitions to register them with pytest-bdd
-from . import plugin_steps  # noqa: F401
-from . import installer_steps  # noqa: F401
-from . import registry_steps  # noqa: F401
-from . import verification_steps  # noqa: F401
-from . import common_steps  # noqa: F401
+from . import (
+    common_steps,  # noqa: F401
+    installer_steps,  # noqa: F401
+    plugin_steps,  # noqa: F401
+    registry_steps,  # noqa: F401
+    verification_steps,  # noqa: F401
+)
 
 
 # -----------------------------------------------------------------------------
@@ -82,7 +82,9 @@ def test_logger() -> logging.Logger:
 
 
 @pytest.fixture
-def install_context(clean_test_directory: Path, project_root: Path, test_logger: logging.Logger):
+def install_context(
+    clean_test_directory: Path, project_root: Path, test_logger: logging.Logger
+):
     """
     Create InstallContext for testing.
 
@@ -188,7 +190,9 @@ def installation_verifier():
 # -----------------------------------------------------------------------------
 
 
-def pytest_bdd_step_error(request, feature, scenario, step, step_func, step_func_args, exception):
+def pytest_bdd_step_error(
+    request, feature, scenario, step, step_func, step_func_args, exception
+):
     """Log step errors for debugging."""
     logging.error(f"Step failed: {step.name}")
     logging.error(f"Feature: {feature.name}")

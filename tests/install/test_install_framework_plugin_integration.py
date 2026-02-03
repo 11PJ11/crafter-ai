@@ -12,11 +12,9 @@ These tests validate:
 5. Plugins execute in priority order
 """
 
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-
 from scripts.install.plugins.base import InstallContext, PluginResult
 from scripts.install.plugins.registry import PluginRegistry
 
@@ -26,7 +24,7 @@ def configured_installer(tmp_path):
     """Create an NWaveInstaller with mocked paths and dependencies."""
     from scripts.install.install_nwave import NWaveInstaller
 
-    with patch.object(NWaveInstaller, '__init__', lambda self, *args, **kwargs: None):
+    with patch.object(NWaveInstaller, "__init__", lambda self, *args, **kwargs: None):
         installer = NWaveInstaller()
         installer.dry_run = False
         installer.force_rebuild = False
@@ -55,13 +53,21 @@ class TestInstallFrameworkUsesPluginRegistry:
         """Verify install_framework() creates a PluginRegistry instance."""
         installer = configured_installer
 
-        with patch.object(installer, '_create_plugin_registry') as mock_create:
+        with patch.object(installer, "_create_plugin_registry") as mock_create:
             mock_registry = Mock(spec=PluginRegistry)
             mock_registry.install_all.return_value = {
-                "agents": PluginResult(success=True, plugin_name="agents", message="OK"),
-                "commands": PluginResult(success=True, plugin_name="commands", message="OK"),
-                "templates": PluginResult(success=True, plugin_name="templates", message="OK"),
-                "utilities": PluginResult(success=True, plugin_name="utilities", message="OK"),
+                "agents": PluginResult(
+                    success=True, plugin_name="agents", message="OK"
+                ),
+                "commands": PluginResult(
+                    success=True, plugin_name="commands", message="OK"
+                ),
+                "templates": PluginResult(
+                    success=True, plugin_name="templates", message="OK"
+                ),
+                "utilities": PluginResult(
+                    success=True, plugin_name="utilities", message="OK"
+                ),
             }
             mock_create.return_value = mock_registry
 
@@ -74,13 +80,21 @@ class TestInstallFrameworkUsesPluginRegistry:
         installer = configured_installer
 
         # Patch PluginRegistry to capture registrations
-        with patch('scripts.install.install_nwave.PluginRegistry') as MockRegistry:
+        with patch("scripts.install.install_nwave.PluginRegistry") as MockRegistry:
             mock_registry = Mock()
             mock_registry.install_all.return_value = {
-                "agents": PluginResult(success=True, plugin_name="agents", message="OK"),
-                "commands": PluginResult(success=True, plugin_name="commands", message="OK"),
-                "templates": PluginResult(success=True, plugin_name="templates", message="OK"),
-                "utilities": PluginResult(success=True, plugin_name="utilities", message="OK"),
+                "agents": PluginResult(
+                    success=True, plugin_name="agents", message="OK"
+                ),
+                "commands": PluginResult(
+                    success=True, plugin_name="commands", message="OK"
+                ),
+                "templates": PluginResult(
+                    success=True, plugin_name="templates", message="OK"
+                ),
+                "utilities": PluginResult(
+                    success=True, plugin_name="utilities", message="OK"
+                ),
             }
             MockRegistry.return_value = mock_registry
 
@@ -110,13 +124,21 @@ class TestInstallFrameworkUsesPluginRegistry:
             nonlocal captured_context
             captured_context = context
             return {
-                "agents": PluginResult(success=True, plugin_name="agents", message="OK"),
-                "commands": PluginResult(success=True, plugin_name="commands", message="OK"),
-                "templates": PluginResult(success=True, plugin_name="templates", message="OK"),
-                "utilities": PluginResult(success=True, plugin_name="utilities", message="OK"),
+                "agents": PluginResult(
+                    success=True, plugin_name="agents", message="OK"
+                ),
+                "commands": PluginResult(
+                    success=True, plugin_name="commands", message="OK"
+                ),
+                "templates": PluginResult(
+                    success=True, plugin_name="templates", message="OK"
+                ),
+                "utilities": PluginResult(
+                    success=True, plugin_name="utilities", message="OK"
+                ),
             }
 
-        with patch('scripts.install.install_nwave.PluginRegistry') as MockRegistry:
+        with patch("scripts.install.install_nwave.PluginRegistry") as MockRegistry:
             mock_registry = Mock()
             mock_registry.install_all.side_effect = capture_install_all
             MockRegistry.return_value = mock_registry
@@ -134,13 +156,21 @@ class TestInstallFrameworkUsesPluginRegistry:
         """Verify install_framework() calls registry.install_all(context)."""
         installer = configured_installer
 
-        with patch('scripts.install.install_nwave.PluginRegistry') as MockRegistry:
+        with patch("scripts.install.install_nwave.PluginRegistry") as MockRegistry:
             mock_registry = Mock()
             mock_registry.install_all.return_value = {
-                "agents": PluginResult(success=True, plugin_name="agents", message="OK"),
-                "commands": PluginResult(success=True, plugin_name="commands", message="OK"),
-                "templates": PluginResult(success=True, plugin_name="templates", message="OK"),
-                "utilities": PluginResult(success=True, plugin_name="utilities", message="OK"),
+                "agents": PluginResult(
+                    success=True, plugin_name="agents", message="OK"
+                ),
+                "commands": PluginResult(
+                    success=True, plugin_name="commands", message="OK"
+                ),
+                "templates": PluginResult(
+                    success=True, plugin_name="templates", message="OK"
+                ),
+                "utilities": PluginResult(
+                    success=True, plugin_name="utilities", message="OK"
+                ),
             }
             MockRegistry.return_value = mock_registry
 
@@ -163,14 +193,22 @@ class TestInstallFrameworkPluginExecutionOrder:
         def track_registration(plugin):
             registration_order.append(plugin.name)
 
-        with patch('scripts.install.install_nwave.PluginRegistry') as MockRegistry:
+        with patch("scripts.install.install_nwave.PluginRegistry") as MockRegistry:
             mock_registry = Mock()
             mock_registry.register.side_effect = track_registration
             mock_registry.install_all.return_value = {
-                "agents": PluginResult(success=True, plugin_name="agents", message="OK"),
-                "commands": PluginResult(success=True, plugin_name="commands", message="OK"),
-                "templates": PluginResult(success=True, plugin_name="templates", message="OK"),
-                "utilities": PluginResult(success=True, plugin_name="utilities", message="OK"),
+                "agents": PluginResult(
+                    success=True, plugin_name="agents", message="OK"
+                ),
+                "commands": PluginResult(
+                    success=True, plugin_name="commands", message="OK"
+                ),
+                "templates": PluginResult(
+                    success=True, plugin_name="templates", message="OK"
+                ),
+                "utilities": PluginResult(
+                    success=True, plugin_name="utilities", message="OK"
+                ),
             }
             MockRegistry.return_value = mock_registry
 
@@ -192,7 +230,7 @@ class TestInstallFrameworkDryRunMode:
         installer = configured_installer
         installer.dry_run = True  # Override to test dry_run behavior
 
-        with patch('scripts.install.install_nwave.PluginRegistry') as MockRegistry:
+        with patch("scripts.install.install_nwave.PluginRegistry") as MockRegistry:
             mock_registry = Mock()
             MockRegistry.return_value = mock_registry
 
@@ -205,15 +243,19 @@ class TestInstallFrameworkDryRunMode:
 class TestInstallFrameworkErrorHandling:
     """Tests for error handling in install_framework() with PluginRegistry."""
 
-    def test_install_framework_returns_false_on_plugin_failure(self, configured_installer):
+    def test_install_framework_returns_false_on_plugin_failure(
+        self, configured_installer
+    ):
         """Verify install_framework() returns False when a plugin fails."""
         installer = configured_installer
 
-        with patch('scripts.install.install_nwave.PluginRegistry') as MockRegistry:
+        with patch("scripts.install.install_nwave.PluginRegistry") as MockRegistry:
             mock_registry = Mock()
             # Simulate plugin failure
             mock_registry.install_all.return_value = {
-                "agents": PluginResult(success=True, plugin_name="agents", message="OK"),
+                "agents": PluginResult(
+                    success=True, plugin_name="agents", message="OK"
+                ),
                 "commands": PluginResult(
                     success=False,
                     plugin_name="commands",
