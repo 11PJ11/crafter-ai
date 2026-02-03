@@ -1,23 +1,27 @@
-# DW-MUTATION-TEST: Per-Feature Mutation Testing Quality Gate
+# DW-MUTATION-TEST: Commit-Based Mutation Testing Quality Gate
 
 ---
 
-## ARCHITECTURAL PRINCIPLE: Outside-In TDD Compatibility
+## ARCHITECTURAL PRINCIPLE: Hexagonal Architecture + Outside-In TDD
 
-**CRITICAL**: With outside-in TDD, unit tests are written from the PUBLIC INTERFACE,
-not for individual internal classes. This has major implications for mutation testing:
+**CRITICAL**: Source code is organized by HEXAGONAL ARCHITECTURE (adapters/driven,
+adapters/drivers, application, domain, ports), NOT by feature directories.
 
-| Aspect | OLD Approach (Per-File) | NEW Approach (Per-Feature) |
+Files to mutate are extracted from **commits** (execution-status.yaml), not assumed
+from directory structure. Tests are NOT mutated but executed to validate implementation.
+
+| Aspect | OLD Approach (Per-File) | NEW Approach (Commit-Based) |
 |--------|------------------------|---------------------------|
-| Config | One config per .py file | ONE config per feature |
-| Test mapping | `src/foo.py` → `tests/unit/test_foo.py` | `src/feature/` → `tests/feature/` |
-| Test types | Unit only | Acceptance + Integration + Unit |
+| Config | One config per .py file | ONE config with file list |
+| Source discovery | Assume `src/feature/` directory | Extract from execution-status.yaml |
+| module-path | Directory path | List of specific files |
+| Test types | Unit only | ALL tests (acceptance + integration + unit) |
 | Internal classes | Expects dedicated unit tests | Tests via public interface |
 
-**Why Per-File Fails with Outside-In TDD**:
-- Internal classes have NO dedicated unit tests (correct for outside-in)
-- Per-file configs show 0% kill rate for internal classes (false negative)
-- Mapping `src/internal.py` → `tests/unit/test_internal.py` finds nothing
+**Why Directory-Based Fails with Hexagonal Architecture**:
+- Source files are scattered across adapters/, application/, domain/, ports/
+- No `src/feature/` directory exists — architecture layers span multiple features
+- Only commit history knows which files belong to the current feature
 
 ---
 
@@ -28,12 +32,12 @@ not for individual internal classes. This has major implications for mutation te
 ### Usage
 
 ```bash
-/nw:mutation-test {feature-module} {test-scope}
+/nw:mutation-test {project-id} {test-scope}
 
 # Examples:
-/nw:mutation-test src/des/ tests/des/
-/nw:mutation-test src/auth/ tests/auth/
-/nw:mutation-test src/payment/ tests/payment/
+/nw:mutation-test des-hook-enforcement tests/des/
+/nw:mutation-test auth-upgrade tests/auth/
+/nw:mutation-test payment-gateway tests/payment/
 ```
 
 ### What Orchestrator Must Do
@@ -41,22 +45,22 @@ not for individual internal classes. This has major implications for mutation te
 When delegating this command to an agent via Task tool:
 
 1. **Do NOT pass `/nw:mutation-test`** to the agent - they cannot execute it
-2. **Create a complete agent prompt** with all instructions embedded inline
-3. **Include**: feature module path, test scope path, threshold
-4. **Use SINGLE CONFIG** for entire feature (not per-file configs)
+2. **Extract implementation files** from `docs/feature/{project-id}/execution-status.yaml`
+3. **Create a complete agent prompt** with file list embedded inline
+4. **Use SINGLE CONFIG** with `module-path = [list of files]`
 
 ### Agent Prompt Template
 
 ```text
-You are a software-crafter agent executing per-feature mutation testing.
+You are a software-crafter agent executing commit-based mutation testing.
 
 PROJECT: {project_id}
-FEATURE MODULE: {feature_module}       # e.g., src/des/
+IMPLEMENTATION FILES: {files_list}     # Extracted from execution-status.yaml
 TEST SCOPE: {test_scope}               # e.g., tests/des/
 THRESHOLD: {threshold}% minimum kill rate
 
-YOUR TASK: Execute mutation testing against ALL tests for the feature.
-1. Create ONE cosmic-ray config for entire feature module
+YOUR TASK: Execute mutation testing against ALL tests for the implementation.
+1. Create ONE cosmic-ray config with module-path = [list of specific files]
 2. Run mutation testing with ALL tests (acceptance + integration + unit)
 3. Analyze surviving mutants
 4. Create mutation report with per-file breakdown
@@ -69,7 +73,7 @@ OUTPUT FILE: docs/feature/{project_id}/mutation/mutation-report.md
 - "/nw:mutation-test"
 - "Execute /nw:finalize next"
 - Any skill or command reference
-- Per-file config instructions (OBSOLETE)
+- Directory-based module-path (OBSOLETE — use file list)
 
 ---
 
@@ -144,51 +148,71 @@ Add `.venv-mutation/` to `.gitignore` if not present.
 
 **Background execution**: When running as part of `/nw:develop` Phase 2.25, each `cosmic-ray exec` can be launched as a background job (using `run_in_background`) to run in parallel with architecture refactoring.
 
-### STEP 2.5: Per-Feature Scope Discovery (SIMPLIFIED)
+### STEP 2.5: Commit-Based Scope Discovery (Hexagonal Architecture)
 
-With per-feature mutation testing, scope discovery is dramatically simpler:
+With hexagonal architecture, source files are organized by LAYER (adapters, application,
+domain, ports), NOT by feature. Implementation files must be extracted from commits.
 
 **DISCOVERY METHOD**:
 
-1. **Feature module** (from command argument or roadmap.yaml):
-   ```
-   feature_module = "src/des/"  # Entire feature implementation
+1. **Extract implementation files** from execution-status.yaml:
+   ```python
+   import yaml
+
+   with open(f'docs/feature/{project_id}/execution-status.yaml', 'r') as f:
+       exec_status = yaml.safe_load(f)
+
+   # Collect all implementation files from completed steps
+   implementation_files = []
+   for step in exec_status.get('execution_status', {}).get('completed_steps', []):
+       files = step.get('files_modified', {}).get('implementation', [])
+       implementation_files.extend(files)
+
+   # Deduplicate
+   implementation_files = list(set(implementation_files))
+
+   # Result: ["src/des/adapters/drivers/hooks/hook.py",
+   #          "src/des/application/orchestrator.py", ...]
    ```
 
-2. **Test scope** (from command argument or roadmap.yaml):
+2. **Fallback: Git log discovery** (if files_modified not tracked):
+   ```bash
+   # Find all commits for this project
+   git log --all --grep="{project-id}" --format=%H > /tmp/commits.txt
+
+   # Get first and last commit
+   FIRST=$(tail -1 /tmp/commits.txt)
+   LAST=$(head -1 /tmp/commits.txt)
+
+   # Extract modified implementation files
+   git diff --name-only ${FIRST}^ ${LAST} | grep "^src/" | grep -v "__init__.py"
+   ```
+
+3. **Test scope** (run ALL tests that could exercise the implementation):
    ```
    test_scope = "tests/des/"    # ALL tests: acceptance + integration + unit
    ```
 
-3. **Validate scope exists**:
-   ```bash
-   # Verify implementation files exist
-   find {feature_module} -name "*.py" -not -name "__init__.py" | head -5
-
-   # Verify test files exist
-   find {test_scope} -name "test_*.py" | head -5
-   ```
-
 **VALIDATION RULES**:
 
-**Rule 1 — SCOPE EXISTS**:
-Both `{feature_module}` and `{test_scope}` must contain Python files.
-Empty scope = BLOCK (verify paths are correct).
+**Rule 1 — FILES EXIST**:
+All extracted implementation files must exist on disk.
+Missing files = BLOCK (verify execution-status.yaml is up to date).
 
 **Rule 2 — SANITY CHECK**:
 After mutation run, verify mutant count is reasonable:
-- Count implementation lines: `find {feature_module} -name "*.py" -exec wc -l {} + | tail -1`
+- Count implementation lines: `wc -l {file1} {file2} ... | tail -1`
 - Expected mutants: total_lines × 0.05 to 0.10
-- If actual_mutants < expected × 0.25: WARN "Check if module-path is correct"
+- If actual_mutants < expected × 0.25: WARN "Check if all files extracted"
 
 **Rule 3 — PER-FILE BREAKDOWN**:
 Cosmic-ray automatically provides per-file breakdown in its report.
-No need to create separate configs — one config covers entire feature.
+One config with file list covers entire implementation.
 
 **MUTATION ARTIFACTS LOCATION**:
 ```
 docs/feature/{project-id}/mutation/
-├── cosmic-ray-feature.toml        # ONE config for entire feature
+├── cosmic-ray-feature.toml        # ONE config with file list
 ├── session.sqlite                 # Session database (gitignored)
 └── mutation-report.md             # Final report with per-file breakdown
 ```
@@ -197,7 +221,9 @@ These are ephemeral quality gate artifacts, disposed during `/nw:finalize`.
 ### STEP 3: Pre-Invocation Validation Checklist
 
 Before invoking Task tool, verify ALL items:
-- [ ] Feature module path exists (e.g., `src/des/`)
+- [ ] execution-status.yaml exists at `docs/feature/{project-id}/execution-status.yaml`
+- [ ] Implementation files extracted (non-empty list)
+- [ ] All implementation files exist on disk
 - [ ] Test scope path exists (e.g., `tests/des/`)
 - [ ] Language detected (Python for cosmic-ray)
 - [ ] Mutation venv exists (`.venv-mutation/`)
@@ -209,23 +235,23 @@ Before invoking Task tool, verify ALL items:
 **MANDATORY**: Use the Task tool with complete inline instructions.
 
 ```
-Task: "You are the software-crafter agent executing per-feature mutation testing.
+Task: "You are the software-crafter agent executing commit-based mutation testing.
 
 Project: {project_id}
-Feature Module: {feature_module}
+Implementation Files: {implementation_files}  # Extracted from execution-status.yaml
 Test Scope: {test_scope}
 Threshold: {threshold}%
 
 ═══════════════════════════════════════════════════════════
 ⚠️  TASK BOUNDARY - READ BEFORE EXECUTING
 ═══════════════════════════════════════════════════════════
-YOUR ONLY TASK: Run mutation testing for entire feature module
-INPUT: Feature module + ALL feature tests (acceptance, integration, unit)
+YOUR ONLY TASK: Run mutation testing for implementation files
+INPUT: Implementation file list + ALL tests (acceptance, integration, unit)
 OUTPUT FILE: docs/feature/{project_id}/mutation/mutation-report.md
 FORBIDDEN ACTIONS:
   ❌ DO NOT proceed to finalize
   ❌ DO NOT modify production code
-  ❌ DO NOT create per-file configs (use ONE config for entire feature)
+  ❌ DO NOT use directory-based module-path (use file list)
 REQUIRED: Return control to orchestrator after completion
 ═══════════════════════════════════════════════════════════
 
@@ -235,12 +261,16 @@ EXECUTION STEPS:
    - Check cosmic-ray installed: .venv-mutation/bin/cosmic-ray --version
    - Verify test suite passes: pytest -x {test_scope}
 
-2. CREATE SINGLE FEATURE CONFIG
+2. CREATE COMMIT-BASED CONFIG
    Create docs/feature/{project_id}/mutation/cosmic-ray-feature.toml:
 
    ```toml
    [cosmic-ray]
-   module-path = \"{feature_module}\"
+   module-path = [
+       \"{file1}\",
+       \"{file2}\",
+       \"{file3}\"
+   ]
    timeout = 30.0
    excluded-modules = []
    test-command = \"pytest -x {test_scope}\"
@@ -251,6 +281,9 @@ EXECUTION STEPS:
    [cosmic-ray.execution-engine]
    name = \"local\"
    ```
+
+   NOTE: module-path is a LIST of specific files (not a directory).
+   This ensures ONLY implementation files from this feature are mutated.
 
 3. RUN MUTATION TESTING
    ```bash
@@ -277,14 +310,18 @@ EXECUTION STEPS:
 
    **Project**: {project_id}
    **Date**: {timestamp}
-   **Feature Module**: {feature_module}
+   **Approach**: Commit-Based (hexagonal architecture compatible)
    **Test Scope**: {test_scope} (acceptance + integration + unit)
+
+   ## Implementation Files (from execution-status.yaml)
+
+   {list of files extracted from commits}
 
    ## Configuration
 
-   - Approach: Per-Feature (outside-in TDD compatible)
-   - Config: ONE cosmic-ray config for entire feature
-   - Tests: ALL feature tests (not just unit tests)
+   - Approach: Commit-Based (files extracted from execution-status.yaml)
+   - Config: ONE cosmic-ray config with module-path = [file list]
+   - Tests: ALL tests executed (not just unit tests)
 
    ## Per-File Results (from cosmic-ray)
 
@@ -321,15 +358,19 @@ EXECUTION STEPS:
 ### Python (cosmic-ray) — RECOMMENDED
 
 **Prerequisites**: pytest, cosmic-ray (in .venv-mutation)
-**Config file**: `cosmic-ray-feature.toml` (per-feature)
+**Config file**: `cosmic-ray-feature.toml` (commit-based)
 
 ```toml
-# Per-Feature Configuration (Outside-In TDD Compatible)
+# Commit-Based Configuration (Hexagonal Architecture Compatible)
 [cosmic-ray]
-module-path = "src/{feature}/"           # Entire feature module
+module-path = [
+    "src/des/adapters/drivers/hooks/claude_code_hook_adapter.py",
+    "src/des/adapters/driven/config/des_config.py",
+    "src/des/application/orchestrator.py"
+]
 timeout = 30.0
 excluded-modules = []
-test-command = "pytest -x tests/{feature}/"  # ALL feature tests
+test-command = "pytest -x tests/des/"  # ALL tests for the feature
 
 [cosmic-ray.distributor]
 name = "local"
@@ -339,9 +380,9 @@ name = "local"
 ```
 
 **Why cosmic-ray over mutmut**:
-- Native directory support (module-path can be a directory)
+- Native file list support (module-path can be a list of files)
 - Automatic per-file breakdown in reports
-- Better src/ layout support
+- Better hexagonal architecture support (files scattered across layers)
 - Academic validation (IEEE, ACM papers 2024-2025)
 
 ### Java (PIT)
@@ -383,9 +424,10 @@ module.exports = {
 
 ## Success Criteria
 
-- [ ] Feature module path validated
+- [ ] Implementation files extracted from execution-status.yaml
+- [ ] All implementation files exist on disk
 - [ ] Test scope path validated
-- [ ] Single cosmic-ray config created for feature
+- [ ] Single cosmic-ray config created with file list
 - [ ] Mutation testing executed without errors
 - [ ] Per-file breakdown captured in report
 - [ ] Aggregate score calculated

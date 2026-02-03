@@ -1217,62 +1217,77 @@ IMPORTANT: Run ALL tests after refactoring. If any test fails, REVERT and report
 
 ---
 
-#### Phase 2.25-MUT: Per-Feature Mutation Testing (Outside-In TDD Compatible)
+#### Phase 2.25-MUT: Commit-Based Mutation Testing (Hexagonal Architecture)
 
-**ARCHITECTURAL PRINCIPLE**: With outside-in TDD, unit tests are written from the
-public interface, NOT for individual internal classes. Therefore:
+**ARCHITECTURAL PRINCIPLE**: Source code is organized by hexagonal architecture
+(adapters/driven, adapters/drivers, application, domain, ports), NOT by feature.
+Therefore:
 
-- ❌ **OLD APPROACH**: Per-file configs mapping `src/foo.py` → `tests/unit/test_foo.py`
-- ✅ **NEW APPROACH**: Per-feature config running ALL tests (acceptance + integration + unit)
+- ❌ **WRONG**: Assume `src/feature/` directory structure
+- ✅ **CORRECT**: Extract modified files from commits (execution-status.yaml)
+- ✅ **CORRECT**: Run ALL tests that could exercise those files
 
-**Why This Matters**:
-- Outside-in TDD produces tests at the feature boundary, not class boundary
-- Internal classes may have NO dedicated unit tests (and that's correct)
-- Per-file mutation configs will show 0% kill rate for internal classes (false negative)
-- Per-feature mutation testing validates the ACTUAL test coverage
+**Why Commit-Based**:
+- Hexagonal architecture spreads feature code across multiple directories
+- Only modified/created files need mutation testing (not entire codebase)
+- Tests are NOT mutated, but executed to validate implementation
 
 ---
 
-##### Phase 2.25-MUT-a: Feature Scope Discovery
+##### Phase 2.25-MUT-a: Extract Implementation Files from Commits
 
-**Objective**: Identify the feature's implementation module and test scope.
+**Objective**: Build list of files to mutate from execution-status.yaml.
 
+```python
+# Extract implementation files from completed steps
+import yaml
+
+with open(f'docs/feature/{project_id}/execution-status.yaml', 'r') as f:
+    status = yaml.safe_load(f)
+
+implementation_files = []
+for step in status.get('execution_status', {}).get('completed_steps', []):
+    files = step.get('files_modified', {}).get('implementation', [])
+    implementation_files.extend(files)
+
+# Deduplicate
+implementation_files = list(set(implementation_files))
+
+# Example result:
+# [
+#   "src/des/adapters/drivers/hooks/claude_code_hook_adapter.py",
+#   "src/des/adapters/driven/config/des_config.py",
+#   "src/des/application/orchestrator.py",
+#   "scripts/install/install_des_hooks.py"
+# ]
 ```
-FEATURE SCOPE DISCOVERY (SIMPLIFIED):
 
-1. Identify feature module from roadmap.yaml:
-   implementation_scope:
-     source_module: "src/des/"          # Feature implementation root
-     test_scope: "tests/des/"           # ALL tests for this feature
-
-2. Validate scope exists:
-   - ls -la {source_module}  # Must contain .py files
-   - ls -la {test_scope}     # Must contain test_*.py files
-
-3. Count implementation scope:
-   find {source_module} -name "*.py" -not -name "__init__.py" | wc -l
-   # Expected: N implementation files
-
-4. Log scope discovery:
-   FEATURE SCOPE:
-     Module: src/des/
-     Tests: tests/des/
-     Implementation files: 42
-     Test files: 78 (acceptance + integration + unit)
+**Fallback** (if files_modified not tracked):
+```bash
+# Extract from git commits for this project
+git log --all --grep="{project-id}" --format=%H | head -1 > /tmp/first
+git log --all --grep="{project-id}" --format=%H | tail -1 > /tmp/last
+git diff --name-only $(cat /tmp/first)^ $(cat /tmp/last) | grep "^src/"
 ```
 
-##### Phase 2.25-MUT-b: Single Config Per Feature
+##### Phase 2.25-MUT-b: Create Config with File List
 
-**Objective**: Create ONE cosmic-ray config that mutates the entire feature module.
+**Objective**: Create cosmic-ray config targeting ONLY the modified files.
 
 ```toml
 # docs/feature/{project-id}/mutation/cosmic-ray-feature.toml
 
 [cosmic-ray]
-module-path = "src/{feature}/"           # Entire feature module
+# List of specific files to mutate (from commits)
+module-path = [
+    "src/des/adapters/drivers/hooks/claude_code_hook_adapter.py",
+    "src/des/adapters/driven/config/des_config.py",
+    "src/des/application/orchestrator.py"
+]
 timeout = 30.0
-excluded-modules = ["*test*", "*mock*"]  # Exclude test code
-test-command = "pytest -x tests/{feature}/"  # ALL feature tests
+excluded-modules = []
+# Run ALL tests that could exercise these files
+test-command = "pytest -x tests/"
 
 [cosmic-ray.distributor]
 name = "local"
@@ -1281,36 +1296,23 @@ name = "local"
 name = "local"
 ```
 
-**Key Differences from Old Approach**:
-| Aspect | Old (Per-File) | New (Per-Feature) |
-|--------|----------------|-------------------|
-| Configs | N configs (one per .py file) | 1 config per feature |
-| test-command | `pytest -x tests/unit/test_foo.py` | `pytest -x tests/{feature}/` |
-| Scope | Individual class | Entire feature module |
-| Test types | Unit only | Acceptance + Integration + Unit |
+**Key Points**:
+| Aspect | Description |
+|--------|-------------|
+| module-path | List of specific files from commits (NOT entire directory) |
+| test-command | ALL tests that could exercise the code (`tests/` or `tests/des/`) |
+| Scope | Only files created/modified in this feature |
 
 ##### Phase 2.25-MUT-c: Execution and Reporting
 
-**Objective**: Run mutation testing against ALL feature tests.
+**Objective**: Run mutation testing on commit-extracted files with comprehensive tests.
 
 ```bash
 # 1. Create workspace
 mkdir -p docs/feature/{project-id}/mutation/
 
-# 2. Generate config (from template above)
-cat > docs/feature/{project-id}/mutation/cosmic-ray-feature.toml << EOF
-[cosmic-ray]
-module-path = "src/{feature}/"
-timeout = 30.0
-excluded-modules = []
-test-command = "pytest -x tests/{feature}/"
-
-[cosmic-ray.distributor]
-name = "local"
-
-[cosmic-ray.execution-engine]
-name = "local"
-EOF
+# 2. Generate config from execution-status.yaml (orchestrator does this)
+# See Phase 2.25-MUT-a for file extraction
 
 # 3. Initialize session
 .venv-mutation/bin/cosmic-ray init \
@@ -1327,28 +1329,27 @@ EOF
   docs/feature/{project-id}/mutation/session.sqlite
 ```
 
-**Report Format** (cosmic-ray provides per-file breakdown automatically):
+**Report Format**:
 
 ```
-MUTATION TESTING RESULTS (Per-Feature with File Breakdown):
-┌─────────────────────────────────┬─────────┬────────┬─────────┬────────┐
-│ File                            │ Mutants │ Killed │ Score   │ Status │
-├─────────────────────────────────┼─────────┼────────┼─────────┼────────┤
-│ src/des/application/hooks.py    │ 478     │ 412    │ 86.2%   │ ✅     │
-│ src/des/application/validator.py│ 326     │ 298    │ 91.4%   │ ✅     │
-│ src/des/application/orchestrator│ 500     │ 425    │ 85.0%   │ ✅     │
-│ (... other files ...)           │         │        │         │        │
-├─────────────────────────────────┼─────────┼────────┼─────────┼────────┤
-│ FEATURE TOTAL                   │ 1589    │ 1350   │ 84.9%   │ ✅     │
-└─────────────────────────────────┴─────────┴────────┴─────────┴────────┘
+MUTATION TESTING RESULTS (Commit-Scoped):
+┌───────────────────────────────────────────────────┬─────────┬────────┬─────────┬────────┐
+│ File (from commits)                               │ Mutants │ Killed │ Score   │ Status │
+├───────────────────────────────────────────────────┼─────────┼────────┼─────────┼────────┤
+│ src/des/adapters/drivers/hooks/claude_code_...    │ 89      │ 78     │ 87.6%   │ ✅     │
+│ src/des/adapters/driven/config/des_config.py      │ 46      │ 42     │ 91.3%   │ ✅     │
+│ src/des/application/orchestrator.py               │ 500     │ 425    │ 85.0%   │ ✅     │
+├───────────────────────────────────────────────────┼─────────┼────────┼─────────┼────────┤
+│ TOTAL (3 files from commits)                      │ 635     │ 545    │ 85.8%   │ ✅     │
+└───────────────────────────────────────────────────┴─────────┴────────┴─────────┴────────┘
 
-Threshold: 80% | Result: PASS (84.9% >= 80%)
+Threshold: 80% | Result: PASS (85.8% >= 80%)
 ```
 
 **Threshold Enforcement**:
-- FEATURE TOTAL must meet 80% threshold
-- Individual file scores are informational (identify weak spots)
-- Security-critical modules (validators, auth) flagged if below 90%
+- TOTAL score must meet 80% threshold
+- Individual file scores identify weak spots
+- Security-critical files (validators, auth) flagged if below 90%
 
 ---
 

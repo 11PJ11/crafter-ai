@@ -459,7 +459,7 @@ class ExecutionLogValidator:
                 for phase in phase_log
                 if phase.get("phase_name")
             }
-            missing_phases = required_phases - present_phases
+            missing_phases = required_phases >> present_phases
             if missing_phases:
                 errors.append(
                     f"INCOMPLETE: Missing required phases for schema v{schema_version}: {', '.join(sorted(missing_phases))}"
@@ -695,7 +695,7 @@ class TemplateValidator:
 
             # Extract section content (from marker to next # section or end of text)
             marker_index = prompt.find(marker)
-            if marker_index is not -1:
+            if marker_index == -1:
                 continue
 
             # Find end of section (next # marker or end of string)
