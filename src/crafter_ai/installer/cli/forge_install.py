@@ -2,11 +2,10 @@
 
 This module provides the 'forge install' command for the crafter-ai CLI.
 Displays pre-flight checks, prompts for confirmation, runs install service,
-and displays release report. Includes auto-chain build when no wheel found.
+and displays installation progress. Includes auto-chain build when no wheel found.
 Supports multiple wheel selection when multiple wheels exist in dist/.
 """
 
-import os
 import time
 from datetime import datetime
 from pathlib import Path
@@ -17,61 +16,21 @@ from rich.console import Console
 from rich.prompt import IntPrompt
 
 from crafter_ai.installer.adapters.backup_adapter import FileSystemBackupAdapter
-from crafter_ai.installer.adapters.build_adapter import SubprocessBuildAdapter
-from crafter_ai.installer.adapters.git_adapter import SubprocessGitAdapter
 from crafter_ai.installer.adapters.pipx_adapter import SubprocessPipxAdapter
-from crafter_ai.installer.checks.build_checks import create_build_check_registry
 from crafter_ai.installer.checks.install_checks import create_install_check_registry
-from crafter_ai.installer.cli.forge_build import forge_app
-from crafter_ai.installer.domain.artifact_registry import ArtifactRegistry
+from crafter_ai.installer.cli.forge_build import create_build_service, forge_app
+from crafter_ai.installer.cli.forge_tui import display_pre_flight_results, is_ci_mode
 from crafter_ai.installer.domain.check_executor import CheckExecutor
 from crafter_ai.installer.domain.check_result import CheckResult, CheckSeverity
 from crafter_ai.installer.domain.health_checker import HealthChecker
-from crafter_ai.installer.services.build_service import BuildService
 from crafter_ai.installer.services.install_service import InstallService
 from crafter_ai.installer.services.release_readiness_service import (
     ReleaseReadinessService,
 )
-from crafter_ai.installer.services.release_report_service import ReleaseReportService
-from crafter_ai.installer.services.version_bump_service import VersionBumpService
-from crafter_ai.installer.services.wheel_validation_service import (
-    WheelValidationService,
-)
+from crafter_ai.installer.services.release_report_service import ReleaseReportService  # Kept for test mock compatibility (24+ tests patch this path)
 
 
 console = Console()
-
-
-def is_ci_mode() -> bool:
-    """Check if running in CI environment.
-
-    Returns:
-        True if CI environment variable is set to 'true'.
-    """
-    return os.environ.get("CI", "").lower() == "true"
-
-
-def create_build_service() -> BuildService:
-    """Factory function to create a BuildService with all dependencies.
-
-    Returns:
-        Configured BuildService instance.
-    """
-    registry = create_build_check_registry()
-    check_executor = CheckExecutor(registry)
-    build_port = SubprocessBuildAdapter()
-    git_port = SubprocessGitAdapter()
-    version_bump_service = VersionBumpService(git_port)
-    wheel_validation_service = WheelValidationService()
-    artifact_registry = ArtifactRegistry()
-
-    return BuildService(
-        check_executor=check_executor,
-        build_port=build_port,
-        version_bump_service=version_bump_service,
-        wheel_validation_service=wheel_validation_service,
-        artifact_registry=artifact_registry,
-    )
 
 
 def run_auto_chain_build(no_prompt: bool) -> Path | None:
@@ -235,30 +194,6 @@ def run_pre_flight_checks() -> list[CheckResult]:
     registry = create_install_check_registry()
     check_executor = CheckExecutor(registry)
     return check_executor.run_all()
-
-
-def display_pre_flight_results(results: list[CheckResult]) -> None:
-    """Display pre-flight check results as streaming emoji list.
-
-    Args:
-        results: List of CheckResult objects to display.
-    """
-    console.print("  \U0001f50d Pre-flight checks")
-
-    all_blocking_passed = True
-    for check in results:
-        if not check.passed and check.severity == CheckSeverity.BLOCKING:
-            console.print(f"  \u274c {check.message}")
-            all_blocking_passed = False
-        elif check.severity == CheckSeverity.WARNING:
-            console.print(f"  \u26a0\ufe0f  {check.message}")
-        else:
-            console.print(f"  \u2705 {check.message}")
-
-    if all_blocking_passed:
-        console.print("  \u2705 Pre-flight passed")
-
-    console.print()
 
 
 def get_blocking_failures(results: list[CheckResult]) -> list[CheckResult]:
