@@ -1,4 +1,24 @@
-# DW-MUTATION-TEST: Commit-Based Mutation Testing Quality Gate
+# DW-MUTATION-TEST: Feature-Scoped Mutation Testing Quality Gate
+
+---
+
+## ⚡ PERFORMANCE CRITICAL: Feature-Scoped Testing (NOT Full Test Suite)
+
+**MANDATORY**: Use `scripts/mutation/generate_scoped_configs.py` to create per-component configs with **feature-scoped test commands**.
+
+```bash
+# ✅ CORRECT: Generate feature-scoped configs (10-50x faster)
+python scripts/mutation/generate_scoped_configs.py {project-id}
+
+# ❌ WRONG: Running full test suite per mutant (takes forever)
+test-command = "pytest -x tests/"  # DON'T DO THIS
+```
+
+**Why Feature-Scoped**:
+- Each mutant runs **only tests that exercise that component** (unit + acceptance + integration)
+- **10-50x faster** than running entire test suite per mutant
+- Same accuracy (all relevant test types included)
+- Example: Validator mutation runs validator tests + acceptance tests that use validator (NOT config tests, adapter tests, etc.)
 
 ---
 
@@ -10,13 +30,14 @@ adapters/drivers, application, domain, ports), NOT by feature directories.
 Files to mutate are extracted from **commits** (execution-status.yaml), not assumed
 from directory structure. Tests are NOT mutated but executed to validate implementation.
 
-| Aspect | OLD Approach (Per-File) | NEW Approach (Commit-Based) |
-|--------|------------------------|---------------------------|
-| Config | One config per .py file | ONE config with file list |
-| Source discovery | Assume `src/feature/` directory | Extract from execution-status.yaml |
-| module-path | Directory path | List of specific files |
-| Test types | Unit only | ALL tests (acceptance + integration + unit) |
-| Internal classes | Expects dedicated unit tests | Tests via public interface |
+| Aspect | OLD (Per-File) | v2.0 (Commit-Based, Full Suite) | v2.1 (Feature-Scoped) ✅ |
+|--------|----------------|--------------------------------|-------------------------|
+| Config | One per .py file | ONE with file list | One per component |
+| Source | Assume `src/feature/` | Extract from execution-status.yaml | Extract from execution-status.yaml |
+| module-path | Directory path | List of specific files | One file per config |
+| Test scope | Unit only | **ALL tests** (`tests/`) ❌ SLOW | **Scoped tests** (relevant only) ✅ FAST |
+| Speed | Baseline | 1x (full suite per mutant) | **10-50x faster** |
+| Test types | Unit | All (acceptance + integration + unit) | All (acceptance + integration + unit) |
 
 **Why Directory-Based Fails with Hexagonal Architecture**:
 - Source files are scattered across adapters/, application/, domain/, ports/
@@ -148,12 +169,42 @@ Add `.venv-mutation/` to `.gitignore` if not present.
 
 **Background execution**: When running as part of `/nw:develop` Phase 2.25, each `cosmic-ray exec` can be launched as a background job (using `run_in_background`) to run in parallel with architecture refactoring.
 
-### STEP 2.5: Commit-Based Scope Discovery (Hexagonal Architecture)
+### STEP 2.5: Feature-Scoped Config Generation (Hexagonal Architecture)
 
 With hexagonal architecture, source files are organized by LAYER (adapters, application,
 domain, ports), NOT by feature. Implementation files must be extracted from commits.
 
-**DISCOVERY METHOD**:
+**AUTOMATED APPROACH** (✅ RECOMMENDED):
+
+Use the provided script to automatically generate feature-scoped configs:
+
+```bash
+# Generate per-component configs with scoped test commands
+python scripts/mutation/generate_scoped_configs.py {project-id}
+
+# Output:
+# ✓ src/des/application/validator.py (573 LOC)
+#   Tests: 2 file(s)
+#     - tests/des/unit/application/test_validator.py
+#     - tests/des/acceptance/test_hook_enforcement_steps.py
+#   Config: cosmic-ray-des_application_validator.toml
+#
+# ✓ src/des/adapters/drivers/hooks/claude_code_hook_adapter.py (178 LOC)
+#   Tests: 2 file(s)
+#     - tests/des/unit/adapters/drivers/hooks/test_claude_code_hook_adapter.py
+#     - tests/des/acceptance/test_hook_enforcement_steps.py
+#   Config: cosmic-ray-des_adapters_drivers_hooks_claude_code_hook_adapter.toml
+```
+
+**What the script does**:
+1. Reads `execution-status.yaml` to extract implementation files
+2. For each file, finds its test files:
+   - **Unit tests**: `src/module/foo.py` → `tests/module/unit/test_foo.py`
+   - **Acceptance tests**: All acceptance tests for the feature
+   - **Integration tests**: Integration tests in the module
+3. Generates `cosmic-ray-{component}.toml` with scoped `test-command`
+
+**MANUAL APPROACH** (if script unavailable):
 
 1. **Extract implementation files** from execution-status.yaml:
    ```python
@@ -162,36 +213,18 @@ domain, ports), NOT by feature. Implementation files must be extracted from comm
    with open(f'docs/feature/{project_id}/execution-status.yaml', 'r') as f:
        exec_status = yaml.safe_load(f)
 
-   # Collect all implementation files from completed steps
    implementation_files = []
    for step in exec_status.get('execution_status', {}).get('completed_steps', []):
        files = step.get('files_modified', {}).get('implementation', [])
        implementation_files.extend(files)
 
-   # Deduplicate
    implementation_files = list(set(implementation_files))
-
-   # Result: ["src/des/adapters/drivers/hooks/hook.py",
-   #          "src/des/application/orchestrator.py", ...]
    ```
 
-2. **Fallback: Git log discovery** (if files_modified not tracked):
-   ```bash
-   # Find all commits for this project
-   git log --all --grep="{project-id}" --format=%H > /tmp/commits.txt
-
-   # Get first and last commit
-   FIRST=$(tail -1 /tmp/commits.txt)
-   LAST=$(head -1 /tmp/commits.txt)
-
-   # Extract modified implementation files
-   git diff --name-only ${FIRST}^ ${LAST} | grep "^src/" | grep -v "__init__.py"
-   ```
-
-3. **Test scope** (run ALL tests that could exercise the implementation):
-   ```
-   test_scope = "tests/des/"    # ALL tests: acceptance + integration + unit
-   ```
+2. **Map to test files** (for each implementation file):
+   - Unit test: Follow naming convention
+   - Acceptance tests: Find via feature name
+   - Create config with **scoped** test-command (NOT `pytest -x tests/`)
 
 **VALIDATION RULES**:
 
