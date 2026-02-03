@@ -7,6 +7,7 @@ Supports multiple wheel selection when multiple wheels exist in dist/.
 """
 
 import os
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Annotated
@@ -243,19 +244,21 @@ def display_pre_flight_results(results: list[CheckResult]) -> None:
         results: List of CheckResult objects to display.
     """
     console.print("  \U0001f50d Pre-flight checks")
+
+    all_blocking_passed = True
     for check in results:
         if not check.passed and check.severity == CheckSeverity.BLOCKING:
             console.print(f"  \u274c {check.message}")
-        elif not check.passed and check.severity == CheckSeverity.WARNING:
+            all_blocking_passed = False
+        elif check.severity == CheckSeverity.WARNING:
             console.print(f"  \u26a0\ufe0f  {check.message}")
         else:
             console.print(f"  \u2705 {check.message}")
 
-    all_blocking_passed = all(
-        check.passed for check in results if check.severity == CheckSeverity.BLOCKING
-    )
     if all_blocking_passed:
         console.print("  \u2705 Pre-flight passed")
+
+    console.print()
 
 
 def get_blocking_failures(results: list[CheckResult]) -> list[CheckResult]:
@@ -439,13 +442,15 @@ def install(
     console.print()
     console.print("  \U0001f4be Fresh install, skipping backup")
 
+    install_start = time.time()
     install_result = service.install(wheel_path, force=force)
+    install_duration = f"{time.time() - install_start:.1f}s"
 
     if not install_result.success:
         display_failure(install_result.error_message or "Unknown error")
         raise typer.Exit(code=1)
 
-    console.print("  \u2705 Installed via pipx")
+    console.print(f"  \U0001f4e6 Installed via pipx ({install_duration})")
 
     if install_result.health_status is not None:
         console.print()

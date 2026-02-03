@@ -5,6 +5,7 @@ Displays pre-flight checks, version analysis, build progress, and success summar
 """
 
 import os
+import time
 from pathlib import Path
 
 import typer
@@ -198,10 +199,12 @@ def build(
     console.print()
 
     # Execute build
+    build_start = time.time()
     result = service.execute(
         current_version=current_version,
         output_dir=output_dir,
     )
+    build_duration = f"{time.time() - build_start:.1f}s"
 
     # Display pre-flight results (Luna's Step 2 - before version)
     display_pre_flight_results(result.pre_flight_results)
@@ -214,7 +217,7 @@ def build(
         raise typer.Exit(code=1)
 
     # Display build progress persistent line (Luna's Step 4)
-    display_build_progress()
+    display_build_progress(build_duration)
 
     # Display wheel validation check list (Luna's Step 5)
     display_wheel_validation()
