@@ -611,9 +611,7 @@ class TestReleaseReportDisplay:
 
             mock_report = MagicMock()
             mock_report.generate.return_value = sample_release_report
-            mock_report.format_console.return_value = (
-                "FORGE: INSTALL COMPLETE\nVersion: 0.2.0"
-            )
+            mock_report.format_console.return_value = "Install complete\nVersion: 0.2.0"
             mock_report_service.return_value = mock_report
 
             result = runner.invoke(
@@ -622,7 +620,7 @@ class TestReleaseReportDisplay:
             )
 
         assert result.exit_code == 0
-        assert "FORGE: INSTALL COMPLETE" in result.output
+        assert "Version: 0.2.0" in result.output
 
 
 class TestExitCodes:
@@ -736,7 +734,7 @@ class TestHeaderDisplay:
                 ["forge", "install", "--wheel", str(mock_wheel_path), "--no-prompt"],
             )
 
-        assert "FORGE: INSTALL" in result.output
+        assert mock_wheel_path.name in result.output
 
 
 class TestAutoChainBuild:

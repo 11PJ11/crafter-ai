@@ -13,9 +13,7 @@ from typing import Annotated
 
 import typer
 from rich.console import Console
-from rich.panel import Panel
 from rich.prompt import IntPrompt
-from rich.table import Table
 
 from crafter_ai.installer.adapters.backup_adapter import FileSystemBackupAdapter
 from crafter_ai.installer.adapters.build_adapter import SubprocessBuildAdapter
@@ -116,20 +114,12 @@ def run_auto_chain_build(no_prompt: bool) -> Path | None:
 
     if not build_result.success:
         console.print(
-            Panel(
-                f"[bold red]Build failed:[/bold red] {build_result.error_message}",
-                title="Build Failed",
-                border_style="red",
-            )
+            f"[bold red]Build failed:[/bold red] {build_result.error_message}"
         )
         raise typer.Exit(code=1)
 
     console.print(
-        Panel(
-            f"[bold green]Build complete:[/bold green] {build_result.wheel_path}",
-            title="Build Success",
-            border_style="green",
-        )
+        f"[bold green]Build complete:[/bold green] {build_result.wheel_path}"
     )
 
     return build_result.wheel_path
@@ -247,21 +237,15 @@ def run_pre_flight_checks() -> list[CheckResult]:
 
 
 def display_pre_flight_results(results: list[CheckResult]) -> None:
-    """Display pre-flight check results in a Rich table.
+    """Display pre-flight check results as plain text lines.
 
     Args:
         results: List of CheckResult objects to display.
     """
-    table = Table(title="Pre-flight Checks", show_header=True)
-    table.add_column("Check", style="cyan")
-    table.add_column("Status", justify="center")
-    table.add_column("Details")
-
+    console.print("[bold]Pre-flight Checks[/bold]")
     for check in results:
         status = "[green]OK[/green]" if check.passed else "[red]FAIL[/red]"
-        table.add_row(check.name, status, check.message)
-
-    console.print(table)
+        console.print(f"  {check.name} {status} {check.message}")
     console.print()
 
 
@@ -283,32 +267,25 @@ def display_blocking_failures(failures: list[CheckResult]) -> None:
     Args:
         failures: List of blocking CheckResult failures.
     """
-    error_lines = ["[bold red]FORGE: INSTALL BLOCKED[/bold red]\n"]
-    error_lines.append("The following blocking checks failed:\n")
+    console.print("[bold red]Install blocked[/bold red]")
+    console.print("The following blocking checks failed:")
 
     for failure in failures:
-        error_lines.append(f"  • {failure.name}: {failure.message}")
+        console.print(f"  [red]{failure.name}:[/red] {failure.message}")
         if failure.remediation:
-            error_lines.append(f"    Fix: {failure.remediation}")
+            console.print(f"    Fix: {failure.remediation}")
 
-    console.print(Panel("\n".join(error_lines), border_style="red"))
     console.print()
 
 
 def display_header(wheel_path: Path) -> None:
-    """Display FORGE: INSTALL header.
+    """Display install header with wheel name.
 
     Args:
         wheel_path: Path to the wheel being installed.
     """
     console.print()
-    console.print(
-        Panel(
-            f"[bold cyan]FORGE: INSTALL[/bold cyan]\n\nWheel: {wheel_path.name}",
-            title="Installation",
-            border_style="cyan",
-        )
-    )
+    console.print(f"[bold cyan]Installing {wheel_path.name}[/bold cyan]")
     console.print()
 
 
@@ -318,13 +295,7 @@ def display_failure(error_message: str) -> None:
     Args:
         error_message: Error message to display.
     """
-    console.print(
-        Panel(
-            f"[bold red]FORGE: INSTALL FAILED[/bold red]\n\n{error_message}",
-            title="Installation Failed",
-            border_style="red",
-        )
-    )
+    console.print(f"[bold red]Install failed:[/bold red] {error_message}")
     console.print()
 
 
