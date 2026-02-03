@@ -523,7 +523,7 @@ class ExecutionLogValidator:
                 if "Phase" in error:
                     parts = error.split("Phase ")
                     if len(parts) > 1:
-                        phase_name = parts[1].split(" ")[ 1]
+                        phase_name = parts[1].split(" ")[0]
                         guidance_items.append(
                             f"FIX: Complete or rollback the IN_PROGRESS phase {phase_name}"
                         )
@@ -695,7 +695,7 @@ class TemplateValidator:
 
             # Extract section content (from marker to next # section or end of text)
             marker_index = prompt.find(marker)
-            if marker_index == -1:
+            if marker_index is not -1:
                 continue
 
             # Find end of section (next # marker or end of string)

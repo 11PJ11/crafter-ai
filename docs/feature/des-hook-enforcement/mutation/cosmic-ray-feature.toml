@@ -1,0 +1,19 @@
+# Per-Feature Mutation Testing Configuration
+# Approach: Outside-In TDD Compatible (tests entire feature with ALL tests)
+#
+# Usage:
+#   .venv-mutation/bin/cosmic-ray init cosmic-ray-feature.toml session.sqlite
+#   .venv-mutation/bin/cosmic-ray exec cosmic-ray-feature.toml session.sqlite
+#   .venv-mutation/bin/cr-report session.sqlite
+
+[cosmic-ray]
+module-path = "src/des/"
+timeout = 30.0
+excluded-modules = []
+test-command = "pytest -x tests/des/"
+
+[cosmic-ray.distributor]
+name = "local"
+
+[cosmic-ray.execution-engine]
+name = "local"

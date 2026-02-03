@@ -1,9 +1,40 @@
-# DW-MUTATION-TEST: Mutation Testing Quality Gate
+# DW-MUTATION-TEST: Per-Feature Mutation Testing Quality Gate
 
 ---
+
+## ARCHITECTURAL PRINCIPLE: Outside-In TDD Compatibility
+
+**CRITICAL**: With outside-in TDD, unit tests are written from the PUBLIC INTERFACE,
+not for individual internal classes. This has major implications for mutation testing:
+
+| Aspect | OLD Approach (Per-File) | NEW Approach (Per-Feature) |
+|--------|------------------------|---------------------------|
+| Config | One config per .py file | ONE config per feature |
+| Test mapping | `src/foo.py` → `tests/unit/test_foo.py` | `src/feature/` → `tests/feature/` |
+| Test types | Unit only | Acceptance + Integration + Unit |
+| Internal classes | Expects dedicated unit tests | Tests via public interface |
+
+**Why Per-File Fails with Outside-In TDD**:
+- Internal classes have NO dedicated unit tests (correct for outside-in)
+- Per-file configs show 0% kill rate for internal classes (false negative)
+- Mapping `src/internal.py` → `tests/unit/test_internal.py` finds nothing
+
+---
+
 ## ORCHESTRATOR BRIEFING (MANDATORY)
 
 **CRITICAL ARCHITECTURAL CONSTRAINT**: Sub-agents launched via Task tool have NO ACCESS to the Skill tool. They can ONLY use: Read, Write, Edit, Bash, Glob, Grep.
+
+### Usage
+
+```bash
+/nw:mutation-test {feature-module} {test-scope}
+
+# Examples:
+/nw:mutation-test src/des/ tests/des/
+/nw:mutation-test src/auth/ tests/auth/
+/nw:mutation-test src/payment/ tests/payment/
+```
 
 ### What Orchestrator Must Do
 
@@ -11,26 +42,26 @@ When delegating this command to an agent via Task tool:
 
 1. **Do NOT pass `/nw:mutation-test`** to the agent - they cannot execute it
 2. **Create a complete agent prompt** with all instructions embedded inline
-3. **Include**: project ID, detected language, tool configuration, threshold
-4. **Embed**: mutation tool commands, report structure, quality criteria
+3. **Include**: feature module path, test scope path, threshold
+4. **Use SINGLE CONFIG** for entire feature (not per-file configs)
 
 ### Agent Prompt Template
 
 ```text
-You are a software-crafter agent executing mutation testing.
+You are a software-crafter agent executing per-feature mutation testing.
 
 PROJECT: {project_id}
-LANGUAGE: {detected_language}
-MUTATION_TOOL: {tool_name}
+FEATURE MODULE: {feature_module}       # e.g., src/des/
+TEST SCOPE: {test_scope}               # e.g., tests/des/
 THRESHOLD: {threshold}% minimum kill rate
 
-YOUR TASK: Execute mutation testing to validate test suite quality.
-1. Run mutation testing tool
-2. Analyze surviving mutants
-3. Create mutation report
-4. Evaluate against threshold
+YOUR TASK: Execute mutation testing against ALL tests for the feature.
+1. Create ONE cosmic-ray config for entire feature module
+2. Run mutation testing with ALL tests (acceptance + integration + unit)
+3. Analyze surviving mutants
+4. Create mutation report with per-file breakdown
 
-OUTPUT FILE: docs/feature/{project_id}/mutation-report.md
+OUTPUT FILE: docs/feature/{project_id}/mutation/mutation-report.md
 ```
 
 ### What NOT to Include in Agent Prompts
@@ -38,6 +69,7 @@ OUTPUT FILE: docs/feature/{project_id}/mutation-report.md
 - "/nw:mutation-test"
 - "Execute /nw:finalize next"
 - Any skill or command reference
+- Per-file config instructions (OBSOLETE)
 
 ---
 
@@ -112,171 +144,173 @@ Add `.venv-mutation/` to `.gitignore` if not present.
 
 **Background execution**: When running as part of `/nw:develop` Phase 2.25, each `cosmic-ray exec` can be launched as a background job (using `run_in_background`) to run in parallel with architecture refactoring.
 
-### STEP 2.5: Scope Completeness Check (MANDATORY)
+### STEP 2.5: Per-Feature Scope Discovery (SIMPLIFIED)
 
-Before configuring mutation testing, the orchestrator MUST discover the
-complete implementation scope. This prevents partial testing that creates
-false confidence (e.g., testing 1 of 3 implementation files and reporting
-aggregate 100% when actual coverage is 33%).
+With per-feature mutation testing, scope discovery is dramatically simpler:
 
-**DISCOVERY METHOD** (in priority order):
+**DISCOVERY METHOD**:
 
-1. **FROM execution-status.yaml** (most reliable — actual files modified):
+1. **Feature module** (from command argument or roadmap.yaml):
    ```
-   Read completed_steps[*].files_modified.implementation
-   Deduplicate into file list
+   feature_module = "src/des/"  # Entire feature implementation
    ```
 
-2. **FROM roadmap.yaml implementation_scope** (declared scope):
+2. **Test scope** (from command argument or roadmap.yaml):
    ```
-   Read implementation_scope.source_directories
-   Use: find {dir} -name "*.py" -not -path "*__pycache__*" -not -name "__init__.py"
+   test_scope = "tests/des/"    # ALL tests: acceptance + integration + unit
    ```
 
-3. **FROM git history** (fallback):
-   ```
-   Use: git log --all --grep="{project-id}" --format=%H
-   Then: git diff --name-only {first}^ {last} | grep "^src/"
+3. **Validate scope exists**:
+   ```bash
+   # Verify implementation files exist
+   find {feature_module} -name "*.py" -not -name "__init__.py" | head -5
+
+   # Verify test files exist
+   find {test_scope} -name "test_*.py" | head -5
    ```
 
 **VALIDATION RULES**:
 
-**Rule 1 — COMPLETENESS**:
-Every discovered implementation file MUST have mutation testing coverage.
-Missing file = BLOCK (create config, then continue).
+**Rule 1 — SCOPE EXISTS**:
+Both `{feature_module}` and `{test_scope}` must contain Python files.
+Empty scope = BLOCK (verify paths are correct).
 
-**Rule 2 — SANITY**:
-Expected mutants = implementation_lines x 0.05 to 0.10
-- If actual_mutants < expected_min x 0.5: WARN "Mutant count seems low — verify scope"
-- If actual_mutants < expected_min x 0.25: BLOCK "Mutant count too low — likely missing files"
+**Rule 2 — SANITY CHECK**:
+After mutation run, verify mutant count is reasonable:
+- Count implementation lines: `find {feature_module} -name "*.py" -exec wc -l {} + | tail -1`
+- Expected mutants: total_lines × 0.05 to 0.10
+- If actual_mutants < expected × 0.25: WARN "Check if module-path is correct"
 
-**Rule 3 — PER-COMPONENT**:
-Report mutation score per implementation file, not just aggregate.
-Each component's score must be visible in the mutation report.
+**Rule 3 — PER-FILE BREAKDOWN**:
+Cosmic-ray automatically provides per-file breakdown in its report.
+No need to create separate configs — one config covers entire feature.
 
 **MUTATION ARTIFACTS LOCATION**:
-All mutation testing configs and session files go in:
 ```
 docs/feature/{project-id}/mutation/
-├── cosmic-ray-{component}.toml    # Per-component configs
-├── {component}-session.sqlite     # Session databases (gitignored)
-└── mutation-report.md             # Final report
+├── cosmic-ray-feature.toml        # ONE config for entire feature
+├── session.sqlite                 # Session database (gitignored)
+└── mutation-report.md             # Final report with per-file breakdown
 ```
 These are ephemeral quality gate artifacts, disposed during `/nw:finalize`.
 
 ### STEP 3: Pre-Invocation Validation Checklist
 
 Before invoking Task tool, verify ALL items:
-- [ ] Language detected or explicitly specified
-- [ ] Mutation tool available for the language
-- [ ] Test suite exists and passes
-- [ ] Source code paths identified
-- [ ] Threshold configured (default: 75%)
-- [ ] Implementation scope discovered (file list populated)
-- [ ] ALL implementation files covered by mutation config
-- [ ] Expected mutant range calculated and logged
-- [ ] Per-component reporting configured
+- [ ] Feature module path exists (e.g., `src/des/`)
+- [ ] Test scope path exists (e.g., `tests/des/`)
+- [ ] Language detected (Python for cosmic-ray)
+- [ ] Mutation venv exists (`.venv-mutation/`)
+- [ ] Test suite passes: `pytest -x {test_scope}`
+- [ ] Threshold configured (default: 80%)
 
 ### STEP 4: Invoke Software-Crafter Agent Using Task Tool
 
 **MANDATORY**: Use the Task tool with complete inline instructions.
 
 ```
-Task: "You are the software-crafter agent (Crafty).
-
-Your specific role: Execute mutation testing and create quality report
+Task: "You are the software-crafter agent executing per-feature mutation testing.
 
 Project: {project_id}
-Language: {language}
-Tool: {mutation_tool}
+Feature Module: {feature_module}
+Test Scope: {test_scope}
 Threshold: {threshold}%
 
 ═══════════════════════════════════════════════════════════
 ⚠️  TASK BOUNDARY - READ BEFORE EXECUTING
 ═══════════════════════════════════════════════════════════
-YOUR ONLY TASK: Run mutation testing and analyze results
-INPUT: Project source code and test suite
-OUTPUT FILE: docs/feature/{project_id}/mutation-report.md
+YOUR ONLY TASK: Run mutation testing for entire feature module
+INPUT: Feature module + ALL feature tests (acceptance, integration, unit)
+OUTPUT FILE: docs/feature/{project_id}/mutation/mutation-report.md
 FORBIDDEN ACTIONS:
   ❌ DO NOT proceed to finalize
   ❌ DO NOT modify production code
+  ❌ DO NOT create per-file configs (use ONE config for entire feature)
 REQUIRED: Return control to orchestrator after completion
 ═══════════════════════════════════════════════════════════
 
 EXECUTION STEPS:
 
 1. VERIFY PREREQUISITES
-   - Check mutation tool is installed: {check_command}
-   - If not installed, provide installation instructions and EXIT
-   - Verify test suite passes: {test_command}
+   - Check cosmic-ray installed: .venv-mutation/bin/cosmic-ray --version
+   - Verify test suite passes: pytest -x {test_scope}
 
-2. RUN MUTATION TESTING
-   - Execute: {mutation_command}
-   - Capture output (may take 10-30 minutes for large projects)
-   - Handle timeout gracefully (max 30 minutes)
+2. CREATE SINGLE FEATURE CONFIG
+   Create docs/feature/{project_id}/mutation/cosmic-ray-feature.toml:
 
-3. PARSE RESULTS
-   - Extract mutation score (killed / total mutants)
-   - Identify surviving mutants
-   - Categorize mutants by file/module
+   ```toml
+   [cosmic-ray]
+   module-path = \"{feature_module}\"
+   timeout = 30.0
+   excluded-modules = []
+   test-command = \"pytest -x {test_scope}\"
 
-4. CREATE MUTATION REPORT
+   [cosmic-ray.distributor]
+   name = \"local\"
+
+   [cosmic-ray.execution-engine]
+   name = \"local\"
+   ```
+
+3. RUN MUTATION TESTING
+   ```bash
+   # Initialize session
+   .venv-mutation/bin/cosmic-ray init \\
+     docs/feature/{project_id}/mutation/cosmic-ray-feature.toml \\
+     docs/feature/{project_id}/mutation/session.sqlite
+
+   # Execute mutations (may take 10-30 minutes)
+   .venv-mutation/bin/cosmic-ray exec \\
+     docs/feature/{project_id}/mutation/cosmic-ray-feature.toml \\
+     docs/feature/{project_id}/mutation/session.sqlite
+
+   # Generate report
+   .venv-mutation/bin/cr-report \\
+     docs/feature/{project_id}/mutation/session.sqlite
+   ```
+
+4. PARSE RESULTS AND CREATE REPORT
    Write to docs/feature/{project_id}/mutation/mutation-report.md:
 
    ```markdown
    # Mutation Testing Report
 
    **Project**: {project_id}
-   **Date**: {current_timestamp}
-   **Language**: {language}
-   **Tool**: {mutation_tool}
+   **Date**: {timestamp}
+   **Feature Module**: {feature_module}
+   **Test Scope**: {test_scope} (acceptance + integration + unit)
 
-   ## Scope Completeness
+   ## Configuration
 
-   - Implementation files discovered: {N}
-   - Implementation files tested: {N} (100%)
-   - Expected mutant range: {min}-{max}
-   - Actual mutants: {actual} (within range: YES/NO)
+   - Approach: Per-Feature (outside-in TDD compatible)
+   - Config: ONE cosmic-ray config for entire feature
+   - Tests: ALL feature tests (not just unit tests)
 
-   ## Per-Component Results
+   ## Per-File Results (from cosmic-ray)
 
-   | Component | Lines | Mutants | Killed | Score | Status |
-   |-----------|-------|---------|--------|-------|--------|
-   | {file1}   | {L}   | {M}    | {K}    | {S}%  | PASS/WARN |
-   | {file2}   | {L}   | {M}    | {K}    | {S}%  | PASS/WARN |
-   | **TOTAL** | {L}   | {M}    | {K}    | {S}%  | PASS/FAIL |
+   | File | Mutants | Killed | Survived | Score | Status |
+   |------|---------|--------|----------|-------|--------|
+   | {file1.py} | {M} | {K} | {S} | {P}% | ✅/⚠️ |
+   | {file2.py} | {M} | {K} | {S} | {P}% | ✅/⚠️ |
+   | ... | ... | ... | ... | ... | ... |
+   | **TOTAL** | {M} | {K} | {S} | {P}% | PASS/FAIL |
 
-   Threshold enforcement:
-   - AGGREGATE score must meet threshold ({threshold}%)
-   - ANY individual component below threshold triggers WARNING
-   - Security-critical components (validators, auth, access control) must meet
-     threshold INDIVIDUALLY — aggregate pass does not compensate
+   ## Threshold Evaluation
 
-   ## Surviving Mutants Analysis
+   - Required: {threshold}%
+   - Achieved: {actual_score}%
+   - Status: {PASS if actual >= threshold else FAIL}
 
-   ### By File
+   ## Surviving Mutants
 
-   | File | Survived | Line | Mutation |
-   |------|----------|------|----------|
-   | ... | ... | ... | ... |
-
-   ### Recommendations
-
-   {For each surviving mutant, suggest what test would kill it}
-
-   ## Equivalent Mutants (if any)
-
-   {Document mutants that are semantically equivalent and cannot be killed}
+   {List surviving mutants with file, line, mutation type}
+   {Suggest what test would kill each}
    ```
 
-5. EVALUATE THRESHOLD
+5. EVALUATE AND RETURN
    - If score >= {threshold}%: Report PASS
    - If score < {threshold}%: Report FAIL with recommendations
-
-6. RETURN RESULTS
    - Print summary to console
-   - Report file path
-   - Return pass/fail status
 "
 ```
 
@@ -284,17 +318,31 @@ EXECUTION STEPS:
 
 ## Language-Specific Configuration
 
-### Python (mutmut)
+### Python (cosmic-ray) — RECOMMENDED
 
-**Prerequisites**: pytest, mutmut
-**Config file**: `setup.cfg` or `pyproject.toml`
+**Prerequisites**: pytest, cosmic-ray (in .venv-mutation)
+**Config file**: `cosmic-ray-feature.toml` (per-feature)
 
-```ini
-[mutmut]
-paths_to_mutate=src/
-tests_dir=tests/
-runner=python -m pytest
+```toml
+# Per-Feature Configuration (Outside-In TDD Compatible)
+[cosmic-ray]
+module-path = "src/{feature}/"           # Entire feature module
+timeout = 30.0
+excluded-modules = []
+test-command = "pytest -x tests/{feature}/"  # ALL feature tests
+
+[cosmic-ray.distributor]
+name = "local"
+
+[cosmic-ray.execution-engine]
+name = "local"
 ```
+
+**Why cosmic-ray over mutmut**:
+- Native directory support (module-path can be a directory)
+- Automatic per-file breakdown in reports
+- Better src/ layout support
+- Academic validation (IEEE, ACM papers 2024-2025)
 
 ### Java (PIT)
 
@@ -335,28 +383,34 @@ module.exports = {
 
 ## Success Criteria
 
-- [ ] Language detected correctly
-- [ ] Mutation tool executed without errors
-- [ ] Mutation score calculated
-- [ ] Report created at correct path
+- [ ] Feature module path validated
+- [ ] Test scope path validated
+- [ ] Single cosmic-ray config created for feature
+- [ ] Mutation testing executed without errors
+- [ ] Per-file breakdown captured in report
+- [ ] Aggregate score calculated
 - [ ] Threshold evaluation complete
 
 ## Quality Gate
 
 | Score | Status | Action |
 |-------|--------|--------|
-| >= 75% | PASS | Proceed to finalize |
-| 60-75% | WARN | Review surviving mutants, may proceed with justification |
-| < 60% | FAIL | Add tests before proceeding |
+| >= 80% | PASS | Proceed to finalize |
+| 70-80% | WARN | Review surviving mutants, may proceed with justification |
+| < 70% | FAIL | Add tests before proceeding |
+
+**Note**: Threshold increased from 75% to 80% to reflect outside-in TDD's emphasis
+on comprehensive behavioral tests rather than isolated unit tests.
 
 ## Skip Conditions
 
-Mutation testing may be skipped if:
+Mutation testing may be skipped ONLY if:
 1. Language not supported (no mutation tool available)
-2. Project explicitly opts out via `.mutation-config.yaml`
-3. Test suite is empty or broken
+2. Project explicitly opts out via `.mutation-config.yaml` with documented justification
+3. Test suite is empty or broken (must fix first)
 
-All skips must be documented with justification.
+**Mutation testing is MANDATORY for all Python projects.**
+All skips must be documented with justification and approved by reviewer.
 
 ---
 

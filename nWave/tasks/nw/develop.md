@@ -1217,122 +1217,138 @@ IMPORTANT: Run ALL tests after refactoring. If any test fails, REVERT and report
 
 ---
 
-#### Phase 2.25-MUT-a: Scope Discovery (MANDATORY — before running mutation tests)
+#### Phase 2.25-MUT: Per-Feature Mutation Testing (Outside-In TDD Compatible)
 
-**Objective**: Discover ALL implementation files that must be mutation-tested.
+**ARCHITECTURAL PRINCIPLE**: With outside-in TDD, unit tests are written from the
+public interface, NOT for individual internal classes. Therefore:
 
-```
-SCOPE DISCOVERY (MANDATORY before mutation testing):
+- ❌ **OLD APPROACH**: Per-file configs mapping `src/foo.py` → `tests/unit/test_foo.py`
+- ✅ **NEW APPROACH**: Per-feature config running ALL tests (acceptance + integration + unit)
 
-1. Collect implementation scope from TWO sources:
+**Why This Matters**:
+- Outside-in TDD produces tests at the feature boundary, not class boundary
+- Internal classes may have NO dedicated unit tests (and that's correct)
+- Per-file mutation configs will show 0% kill rate for internal classes (false negative)
+- Per-feature mutation testing validates the ACTUAL test coverage
 
-   SOURCE A — Declared scope (from roadmap.yaml):
-     Read implementation_scope.source_directories
-     Example: ["src/des/"]
+---
 
-   SOURCE B — Actual scope (from execution-status.yaml):
-     For each completed_step, collect files_modified.implementation
-     Deduplicate into a single list
-     Example: ["src/des/templates/boundary_rules_template.py",
-               "src/des/application/boundary_rules_generator.py",
-               "src/des/validation/scope_validator.py"]
+##### Phase 2.25-MUT-a: Feature Scope Discovery
 
-2. Cross-validate:
-   - Every file in SOURCE B must be under a directory in SOURCE A
-   - If mismatch: WARN (agent modified files outside declared scope)
-
-3. Build implementation file list:
-   - Use SOURCE B (actual files) as the definitive scope
-   - If SOURCE B is empty (e.g., files_modified not tracked):
-     Fall back to SOURCE A directories + git log discovery:
-       git log --all --grep="{project-id}" --format=%H
-       git diff --name-only {first}^ {last} | grep "^src/"
-
-4. Count implementation lines per file:
-   - Use: wc -l <file> (excluding blank/comment lines)
-   - Calculate expected mutant range: total_lines × 0.05 to total_lines × 0.10
-
-5. Log scope discovery results:
-   SCOPE DISCOVERY:
-     Implementation files: N
-     Total implementation lines: M
-     Expected mutants: X-Y (at 5-10 per 100 lines)
-     Files:
-       - src/module/file1.py (55 lines)
-       - src/module/file2.py (119 lines)
-       - src/module/file3.py (214 lines)
-```
-
-#### Phase 2.25-MUT-b: Scope Validation (MANDATORY — blocks if incomplete)
-
-**Objective**: Ensure mutation testing config covers EVERY implementation file.
+**Objective**: Identify the feature's implementation module and test scope.
 
 ```
-SCOPE VALIDATION (MANDATORY — blocks mutation testing if incomplete):
+FEATURE SCOPE DISCOVERY (SIMPLIFIED):
 
-1. Create mutation testing workspace:
-   mkdir -p docs/feature/{project-id}/mutation/
+1. Identify feature module from roadmap.yaml:
+   implementation_scope:
+     source_module: "src/des/"          # Feature implementation root
+     test_scope: "tests/des/"           # ALL tests for this feature
 
-2. For EACH discovered implementation file, create a per-file config:
-   - Config path: docs/feature/{project-id}/mutation/cosmic-ray-{component-name}.toml
-   - module-path = "{implementation-file-path}"
-   - test-command = "pytest -x {matching-test-file}"
-   - Map test file: src/module/foo.py → tests/module/unit/test_foo.py
+2. Validate scope exists:
+   - ls -la {source_module}  # Must contain .py files
+   - ls -la {test_scope}     # Must contain test_*.py files
 
-3. If file-to-test mapping is ambiguous:
-   - Use directory-level test command: "pytest -x tests/{module}/"
+3. Count implementation scope:
+   find {source_module} -name "*.py" -not -name "__init__.py" | wc -l
+   # Expected: N implementation files
 
-4. BLOCK CONDITIONS (mutation testing CANNOT proceed):
-   - No implementation files discovered (empty scope)
-   - Implementation scope has 0 lines of code
-   - Scope discovery found files but no config created
+4. Log scope discovery:
+   FEATURE SCOPE:
+     Module: src/des/
+     Tests: tests/des/
+     Implementation files: 42
+     Test files: 78 (acceptance + integration + unit)
 ```
 
-#### Phase 2.25-MUT-c: Per-Component Execution and Reporting (BACKGROUND)
+##### Phase 2.25-MUT-b: Single Config Per Feature
 
-**Objective**: Run mutation testing per file and report per-component scores.
+**Objective**: Create ONE cosmic-ray config that mutates the entire feature module.
+
+```toml
+# docs/feature/{project-id}/mutation/cosmic-ray-feature.toml
+
+[cosmic-ray]
+module-path = "src/{feature}/"           # Entire feature module
+timeout = 30.0
+excluded-modules = ["*test*", "*mock*"]  # Exclude test code
+test-command = "pytest -x tests/{feature}/"  # ALL feature tests
+
+[cosmic-ray.distributor]
+name = "local"
+
+[cosmic-ray.execution-engine]
+name = "local"
+```
+
+**Key Differences from Old Approach**:
+| Aspect | Old (Per-File) | New (Per-Feature) |
+|--------|----------------|-------------------|
+| Configs | N configs (one per .py file) | 1 config per feature |
+| test-command | `pytest -x tests/unit/test_foo.py` | `pytest -x tests/{feature}/` |
+| Scope | Individual class | Entire feature module |
+| Test types | Unit only | Acceptance + Integration + Unit |
+
+##### Phase 2.25-MUT-c: Execution and Reporting
+
+**Objective**: Run mutation testing against ALL feature tests.
+
+```bash
+# 1. Create workspace
+mkdir -p docs/feature/{project-id}/mutation/
+
+# 2. Generate config (from template above)
+cat > docs/feature/{project-id}/mutation/cosmic-ray-feature.toml << EOF
+[cosmic-ray]
+module-path = "src/{feature}/"
+timeout = 30.0
+excluded-modules = []
+test-command = "pytest -x tests/{feature}/"
+
+[cosmic-ray.distributor]
+name = "local"
+
+[cosmic-ray.execution-engine]
+name = "local"
+EOF
+
+# 3. Initialize session
+.venv-mutation/bin/cosmic-ray init \
+  docs/feature/{project-id}/mutation/cosmic-ray-feature.toml \
+  docs/feature/{project-id}/mutation/session.sqlite
+
+# 4. Execute mutations (BACKGROUND)
+.venv-mutation/bin/cosmic-ray exec \
+  docs/feature/{project-id}/mutation/cosmic-ray-feature.toml \
+  docs/feature/{project-id}/mutation/session.sqlite
+
+# 5. Generate report
+.venv-mutation/bin/cr-report \
+  docs/feature/{project-id}/mutation/session.sqlite
+```
+
+**Report Format** (cosmic-ray provides per-file breakdown automatically):
 
 ```
-PER-COMPONENT REPORTING (MANDATORY — prevents aggregate hiding):
+MUTATION TESTING RESULTS (Per-Feature with File Breakdown):
+┌─────────────────────────────────┬─────────┬────────┬─────────┬────────┐
+│ File                            │ Mutants │ Killed │ Score   │ Status │
+├─────────────────────────────────┼─────────┼────────┼─────────┼────────┤
+│ src/des/application/hooks.py    │ 478     │ 412    │ 86.2%   │ ✅     │
+│ src/des/application/validator.py│ 326     │ 298    │ 91.4%   │ ✅     │
+│ src/des/application/orchestrator│ 500     │ 425    │ 85.0%   │ ✅     │
+│ (... other files ...)           │         │        │         │        │
+├─────────────────────────────────┼─────────┼────────┼─────────┼────────┤
+│ FEATURE TOTAL                   │ 1589    │ 1350   │ 84.9%   │ ✅     │
+└─────────────────────────────────┴─────────┴────────┴─────────┴────────┘
 
-1. Launch mutation testing PER implementation file IN BACKGROUND:
-   For each config in docs/feature/{project-id}/mutation/cosmic-ray-*.toml:
-     .venv-mutation/bin/cosmic-ray init {config} {session}.sqlite
-     .venv-mutation/bin/cosmic-ray exec {config} {session}.sqlite  # run_in_background=True
-     .venv-mutation/bin/cr-report {session}.sqlite
-
-   PARALLEL EXECUTION: Launch all cosmic-ray exec commands as background jobs.
-   The orchestrator can proceed to Phase 2.25-ARCH while mutation runs.
-   Collect results after architecture refactoring completes (or after skip).
-
-2. Collect per-component results and report BOTH aggregate AND per-component:
-
-   MUTATION TESTING RESULTS:
-   ┌─────────────────────────────────┬─────────┬────────┬─────────┬────────┐
-   │ Component                       │ Mutants │ Killed │ Score   │ Status │
-   ├─────────────────────────────────┼─────────┼────────┼─────────┼────────┤
-   │ file1.py                        │ 12      │ 12     │ 100.0%  │ ✅     │
-   │ file2.py                        │ 17      │ 16     │ 94.1%   │ ✅     │
-   │ file3.py                        │ 47      │ 36     │ 76.6%   │ ⚠️     │
-   ├─────────────────────────────────┼─────────┼────────┼─────────┼────────┤
-   │ AGGREGATE                       │ 76      │ 64     │ 84.2%   │ ✅     │
-   └─────────────────────────────────┴─────────┴────────┴─────────┴────────┘
-
-3. SANITY CHECK — After mutation testing:
-   - If actual_mutants < expected_min × 0.5: WARN "Mutant count seems low"
-   - If actual_mutants < expected_min × 0.25: BLOCK "Likely missing files"
-
-4. Threshold enforcement:
-   - AGGREGATE score must meet threshold (80%)
-   - ANY component below threshold triggers WARNING with explanation
-   - Security-critical components (validators, auth, access control) must meet
-     threshold INDIVIDUALLY — aggregate pass does not compensate
-   - BLOCK if aggregate < threshold
-   - WARN if any component < threshold (even if aggregate passes)
-
-5. Create mutation report at:
-   docs/feature/{project-id}/mutation/mutation-report.md
+Threshold: 80% | Result: PASS (84.9% >= 80%)
 ```
+
+**Threshold Enforcement**:
+- FEATURE TOTAL must meet 80% threshold
+- Individual file scores are informational (identify weak spots)
+- Security-critical modules (validators, auth) flagged if below 90%
 
 ---
 
