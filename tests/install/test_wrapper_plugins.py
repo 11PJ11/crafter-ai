@@ -7,6 +7,7 @@ installer methods and maintain backward compatibility.
 
 from pathlib import Path
 from unittest.mock import Mock
+
 from scripts.install.plugins import (
     InstallationPlugin,
     InstallContext,
@@ -102,20 +103,45 @@ class TestCommandsPlugin:
 
         assert isinstance(result, PluginResult)
 
-    def test_commands_plugin_install_success(self):
-        """Verify successful commands plugin installation."""
+    def test_commands_plugin_install_success(self, tmp_path):
+        """Verify successful commands plugin installation copies files to target."""
         from scripts.install.plugins.commands_plugin import CommandsPlugin
 
         plugin = CommandsPlugin()
+
+        # Set up source directory with command files
+        source_commands = tmp_path / "framework_source" / "commands" / "nw"
+        source_commands.mkdir(parents=True)
+        (source_commands / "develop.md").write_text("# Develop Command")
+        (source_commands / "design.md").write_text("# Design Command")
+
+        # Set up target directory
+        claude_dir = tmp_path / "claude_config"
+        claude_dir.mkdir(parents=True)
+
         context = Mock(spec=InstallContext)
         context.dry_run = False
-        context.project_root = Path("/tmp/test")
+        context.project_root = tmp_path
+        context.framework_source = tmp_path / "framework_source"
+        context.claude_dir = claude_dir
         context.logger = Mock()
 
         result = plugin.install(context)
 
+        # Verify result
         assert result.success is True
         assert result.plugin_name == "commands"
+        assert "installed" in result.message.lower()
+
+        # Verify files were actually copied to target
+        target_commands_dir = claude_dir / "commands" / "nw"
+        assert target_commands_dir.exists(), "Target commands/nw directory should exist"
+        assert (target_commands_dir / "develop.md").exists(), (
+            "develop.md should be copied"
+        )
+        assert (target_commands_dir / "design.md").exists(), (
+            "design.md should be copied"
+        )
 
     def test_commands_plugin_verify_returns_plugin_result(self):
         """Verify CommandsPlugin.verify() returns PluginResult."""
@@ -129,6 +155,65 @@ class TestCommandsPlugin:
         result = plugin.verify(context)
 
         assert isinstance(result, PluginResult)
+
+    def test_commands_plugin_verify_success_when_files_exist(self, tmp_path):
+        """Verify CommandsPlugin.verify() returns success when command files exist."""
+        from scripts.install.plugins.commands_plugin import CommandsPlugin
+
+        plugin = CommandsPlugin()
+
+        # Set up target directory with command files
+        target_commands = tmp_path / "commands" / "nw"
+        target_commands.mkdir(parents=True)
+        (target_commands / "develop.md").write_text("# Develop Command")
+        (target_commands / "design.md").write_text("# Design Command")
+
+        context = Mock(spec=InstallContext)
+        context.claude_dir = tmp_path
+        context.logger = Mock()
+
+        result = plugin.verify(context)
+
+        assert result.success is True
+        assert result.plugin_name == "commands"
+        assert "2" in result.message or "passed" in result.message.lower()
+
+    def test_commands_plugin_verify_failure_when_no_files(self, tmp_path):
+        """Verify CommandsPlugin.verify() returns failure when no command files exist."""
+        from scripts.install.plugins.commands_plugin import CommandsPlugin
+
+        plugin = CommandsPlugin()
+
+        # Set up empty target directory
+        target_commands = tmp_path / "commands" / "nw"
+        target_commands.mkdir(parents=True)
+
+        context = Mock(spec=InstallContext)
+        context.claude_dir = tmp_path
+        context.logger = Mock()
+
+        result = plugin.verify(context)
+
+        assert result.success is False
+        assert result.plugin_name == "commands"
+        assert result.errors is not None and len(result.errors) > 0
+
+    def test_commands_plugin_verify_failure_when_directory_missing(self, tmp_path):
+        """Verify CommandsPlugin.verify() returns failure when target directory missing."""
+        from scripts.install.plugins.commands_plugin import CommandsPlugin
+
+        plugin = CommandsPlugin()
+
+        # Do not create any directory
+        context = Mock(spec=InstallContext)
+        context.claude_dir = tmp_path
+        context.logger = Mock()
+
+        result = plugin.verify(context)
+
+        assert result.success is False
+        assert result.plugin_name == "commands"
+        assert result.errors is not None and len(result.errors) > 0
 
 
 class TestTemplatesPlugin:
@@ -288,9 +373,9 @@ class TestPluginIntegration:
 
     def test_plugins_execute_in_priority_order(self):
         """Verify plugins execute in correct priority order when no dependencies."""
-        from scripts.install.plugins.registry import PluginRegistry
         from scripts.install.plugins.agents_plugin import AgentsPlugin
         from scripts.install.plugins.commands_plugin import CommandsPlugin
+        from scripts.install.plugins.registry import PluginRegistry
         from scripts.install.plugins.templates_plugin import TemplatesPlugin
         from scripts.install.plugins.utilities_plugin import UtilitiesPlugin
 
