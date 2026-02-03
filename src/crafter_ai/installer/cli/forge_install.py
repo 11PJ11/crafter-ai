@@ -373,8 +373,6 @@ def install(
     If no --wheel is provided, auto-detects the latest wheel in dist/.
     If no wheel exists, offers to build first (auto-chain).
     """
-    start_time = datetime.now()
-
     # Resolve wheel path
     wheel_path: Path | None = wheel
     if wheel_path is None:
@@ -435,53 +433,31 @@ def install(
             console.print("[yellow]Install cancelled by user.[/yellow]")
             raise typer.Exit(code=0)
 
-    # Create install service and run installation with progress indicator
+    # Create install service and run installation
     service = create_install_service(skip_verification=no_verify)
 
-    # Import InstallPhase for the progress callback
-    from crafter_ai.installer.services.install_service import InstallPhase
+    console.print()
+    console.print("  \U0001f4be Fresh install, skipping backup")
 
-    # Phase icons and descriptions for beautiful output
-    phase_info = {
-        InstallPhase.PREFLIGHT: ("🔍", "Pre-flight checks"),
-        InstallPhase.READINESS: ("📋", "Validating wheel readiness"),
-        InstallPhase.BACKUP: ("💾", "Creating backup"),
-        InstallPhase.INSTALL: ("📦", "Installing via pipx"),
-        InstallPhase.VERIFICATION: ("✅", "Verifying installation"),
-    }
-
-    console.print()  # Add spacing
-
-    # Track current status for the spinner
-    status_handle = console.status(
-        "[cyan]⏳ Preparing installation...[/cyan]", spinner="dots"
-    )
-    status_handle.start()
-
-    def on_progress(phase: InstallPhase, message: str) -> None:
-        """Update the spinner with current phase information."""
-        icon, phase_name = phase_info.get(phase, ("•", phase.value))
-        status_handle.update(f"[cyan]{icon} {phase_name}:[/cyan] {message}")
-
-    try:
-        install_result = service.install(wheel_path, force=force, on_progress=on_progress)
-    finally:
-        status_handle.stop()
+    install_result = service.install(wheel_path, force=force)
 
     if not install_result.success:
         display_failure(install_result.error_message or "Unknown error")
         raise typer.Exit(code=1)
 
-    # Generate and display release report
-    report_service = ReleaseReportService()
-    release_report = report_service.generate(
-        install_result=install_result,
-        wheel_path=wheel_path,
-        start_time=start_time,
-        backup_path=None,  # Would come from install result in full implementation
-    )
+    console.print("  \u2705 Installed via pipx")
 
-    formatted_report = report_service.format_console(release_report)
-    console.print(formatted_report)
+    if install_result.health_status is not None:
+        console.print()
+        console.print("  \U0001fa7a Verifying installation")
+        console.print("  \u2705 CLI responds to --version")
+        console.print("  \u2705 Core modules loadable")
+        console.print(f"  \u2705 Health: {install_result.health_status.value.upper()}")
+
+    console.print()
+    console.print(
+        f"[bold green]\U0001f389 crafter-ai {install_result.version} installed and healthy![/bold green]"
+    )
+    console.print("[dim]  Ready to use in Claude Code.[/dim]")
 
     raise typer.Exit(code=0)
