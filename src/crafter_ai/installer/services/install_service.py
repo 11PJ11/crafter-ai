@@ -329,17 +329,10 @@ class InstallService:
 
         # Detect upgrade path before proceeding
         target_version = self._extract_version_from_wheel(wheel_path)
+        needs_backup = False
         if target_version:
             upgrade_path = self.detect_upgrade_path(target_version)
-
-            # In CI mode, we auto-proceed for all upgrade paths
-            # For interactive mode, this is where prompts would be handled (CLI layer)
-            # Service layer just detects and reports
-
-            # Create backup if needed (for UPGRADE, REINSTALL, DOWNGRADE)
-            if self.should_create_backup(upgrade_path):
-                # Backup will be handled in Phase 3 below
-                pass
+            needs_backup = self.should_create_backup(upgrade_path)
 
         # Phase 1: Preflight checks
         report_progress(InstallPhase.PREFLIGHT, "Running pre-flight checks...")
@@ -377,16 +370,14 @@ class InstallService:
                 error_message=f"Release readiness check failed: {'; '.join(readiness_result.blocking_issues)}",
             )
 
-        # Phase 3: Backup (non-blocking - warn but continue on failure)
-        report_progress(InstallPhase.BACKUP, "Creating backup of existing configuration...")
-        backup_result = self._backup_port.create_backup(self._nwave_config_path)
-        phases_completed.append(InstallPhase.BACKUP)
-
-        # Log warning if backup failed, but don't block installation
-        if not backup_result.success:
-            # In a real implementation, we would log this warning
-            # For now, we just continue
-            pass
+        # Phase 3: Backup (non-blocking - only for upgrades/reinstalls, not fresh installs)
+        if needs_backup:
+            report_progress(InstallPhase.BACKUP, "Creating backup of existing configuration...")
+            backup_result = self._backup_port.create_backup(self._nwave_config_path)
+            phases_completed.append(InstallPhase.BACKUP)
+        else:
+            report_progress(InstallPhase.BACKUP, "Fresh install, skipping backup")
+            phases_completed.append(InstallPhase.BACKUP)
 
         # Phase 4: Install via pipx
         report_progress(

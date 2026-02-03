@@ -19,6 +19,7 @@ from crafter_ai.installer.domain.check_result import CheckResult, CheckSeverity
 from crafter_ai.installer.domain.health_checker import HealthChecker
 from crafter_ai.installer.domain.health_result import HealthResult, HealthStatus
 from crafter_ai.installer.ports.backup_port import BackupPort, BackupResult
+from crafter_ai.installer.ports.pipx_port import InstalledPackage
 from crafter_ai.installer.ports.pipx_port import InstallResult as PipxInstallResult
 from crafter_ai.installer.ports.pipx_port import PipxPort
 from crafter_ai.installer.services.install_service import (
@@ -43,6 +44,10 @@ def mock_pipx_port() -> MagicMock:
         install_path=Path("/home/user/.local/bin/crafter-ai"),
         error_message=None,
     )
+    # Simulate an existing installation so upgrade path triggers backup
+    mock.list_packages.return_value = [
+        InstalledPackage(name="crafter-ai", version="1.0.0", path=Path("/venvs/crafter-ai")),
+    ]
     return mock
 
 

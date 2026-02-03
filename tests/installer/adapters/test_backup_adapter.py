@@ -36,7 +36,8 @@ class TestCreateBackup:
         backup_root = tmp_path / "backups"
         source = tmp_path / "source"
         source.mkdir()
-        (source / "test_file.txt").write_text("test content")
+        # Create a file from BACKUP_TARGETS so backup has something to copy
+        (source / "CLAUDE.md").write_text("test content")
 
         adapter = FileSystemBackupAdapter(backup_root=backup_root)
 
@@ -51,19 +52,24 @@ class TestCreateBackup:
         # Format: nwave-YYYYMMDD-HHMMSS
         assert len(result.backup_path.name) == len("nwave-YYYYMMDD-HHMMSS")
 
-    def test_create_backup_copies_all_contents(self, tmp_path: Path) -> None:
-        """create_backup should copy all files and directories from source."""
+    def test_create_backup_copies_nwave_config_contents(self, tmp_path: Path) -> None:
+        """create_backup should copy only nwave-related files and directories."""
         # Arrange
         backup_root = tmp_path / "backups"
         source = tmp_path / "source"
         source.mkdir()
 
-        # Create nested structure
-        (source / "agents").mkdir()
-        (source / "agents" / "agent1.md").write_text("agent content")
+        # Create nwave-specific files (from BACKUP_TARGETS)
         (source / "commands").mkdir()
         (source / "commands" / "cmd1.md").write_text("command content")
-        (source / "manifest.yaml").write_text("manifest: true")
+        (source / "templates").mkdir()
+        (source / "templates" / "tpl1.md").write_text("template content")
+        (source / "CLAUDE.md").write_text("claude config")
+        (source / "nwave-manifest.txt").write_text("manifest: true")
+        # Also create non-backup files that should NOT be copied
+        (source / "history.jsonl").write_text("should not be copied")
+        (source / "projects").mkdir()
+        (source / "projects" / "data.json").write_text("should not be copied")
 
         adapter = FileSystemBackupAdapter(backup_root=backup_root)
 
@@ -73,10 +79,14 @@ class TestCreateBackup:
         # Assert
         assert result.success is True
         backup_path = result.backup_path
-        assert (backup_path / "agents" / "agent1.md").exists()
-        assert (backup_path / "agents" / "agent1.md").read_text() == "agent content"
         assert (backup_path / "commands" / "cmd1.md").exists()
-        assert (backup_path / "manifest.yaml").exists()
+        assert (backup_path / "commands" / "cmd1.md").read_text() == "command content"
+        assert (backup_path / "templates" / "tpl1.md").exists()
+        assert (backup_path / "CLAUDE.md").exists()
+        assert (backup_path / "nwave-manifest.txt").exists()
+        # Non-backup files should NOT be copied
+        assert not (backup_path / "history.jsonl").exists()
+        assert not (backup_path / "projects").exists()
 
     def test_create_backup_returns_success_with_backup_path(
         self, tmp_path: Path
@@ -86,7 +96,7 @@ class TestCreateBackup:
         backup_root = tmp_path / "backups"
         source = tmp_path / "source"
         source.mkdir()
-        (source / "file.txt").write_text("content")
+        (source / "VERSION").write_text("0.1.0")
 
         adapter = FileSystemBackupAdapter(backup_root=backup_root)
 
@@ -134,9 +144,10 @@ class TestRestoreBackup:
         target = tmp_path / "target"
         source.mkdir()
 
-        (source / "agents").mkdir()
-        (source / "agents" / "agent1.md").write_text("agent content")
-        (source / "manifest.yaml").write_text("manifest: true")
+        # Use BACKUP_TARGETS files
+        (source / "commands").mkdir()
+        (source / "commands" / "cmd1.md").write_text("command content")
+        (source / "nwave-manifest.txt").write_text("manifest: true")
 
         adapter = FileSystemBackupAdapter(backup_root=backup_root)
 
@@ -150,9 +161,9 @@ class TestRestoreBackup:
         # Assert
         assert restore_result.success is True
         assert restore_result.restored_path == target
-        assert (target / "agents" / "agent1.md").exists()
-        assert (target / "agents" / "agent1.md").read_text() == "agent content"
-        assert (target / "manifest.yaml").exists()
+        assert (target / "commands" / "cmd1.md").exists()
+        assert (target / "commands" / "cmd1.md").read_text() == "command content"
+        assert (target / "nwave-manifest.txt").exists()
 
     def test_restore_backup_returns_failure_when_backup_not_found(
         self, tmp_path: Path
@@ -190,7 +201,7 @@ class TestListBackups:
         backup_root = tmp_path / "backups"
         source = tmp_path / "source"
         source.mkdir()
-        (source / "file.txt").write_text("content")
+        (source / "VERSION").write_text("0.1.0")
 
         adapter = FileSystemBackupAdapter(backup_root=backup_root)
 
@@ -233,7 +244,7 @@ class TestListBackups:
         backup_root = tmp_path / "backups"
         source = tmp_path / "source"
         source.mkdir()
-        (source / "file.txt").write_text("test content with some bytes")
+        (source / "VERSION").write_text("test content with some bytes")
 
         adapter = FileSystemBackupAdapter(backup_root=backup_root)
         adapter.create_backup(source)
@@ -257,7 +268,7 @@ class TestCleanupOldBackups:
         backup_root = tmp_path / "backups"
         source = tmp_path / "source"
         source.mkdir()
-        (source / "file.txt").write_text("content")
+        (source / "VERSION").write_text("0.1.0")
 
         adapter = FileSystemBackupAdapter(backup_root=backup_root)
 
@@ -298,7 +309,7 @@ class TestCleanupOldBackups:
         backup_root = tmp_path / "backups"
         source = tmp_path / "source"
         source.mkdir()
-        (source / "file.txt").write_text("content")
+        (source / "VERSION").write_text("0.1.0")
 
         adapter = FileSystemBackupAdapter(backup_root=backup_root)
 
@@ -343,7 +354,7 @@ class TestBackupPathFormat:
         backup_root = tmp_path / "backups"
         source = tmp_path / "source"
         source.mkdir()
-        (source / "file.txt").write_text("content")
+        (source / "VERSION").write_text("0.1.0")
 
         adapter = FileSystemBackupAdapter(backup_root=backup_root)
 

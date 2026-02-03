@@ -5,140 +5,73 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 
 meta:
-  generated_at: "2026-02-03T09:00:00Z"
+  generated_at: "2026-02-03T10:00:00Z"
   project: "modern-cli-installer"
-  phase: "06"
-  phase_name: "Horizontal Coherence and E2E Validation"
+  phase: "BUGFIX"
+  phase_name: "Runtime Wiring Bug Fix"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # STEP CONTRACT
 # ─────────────────────────────────────────────────────────────────────────────
 step:
-  id: "06-05"
-  name: "Create TestPyPI CI quality gate"
+  id: "BUGFIX-001"
+  name: "Fix CheckExecutor wiring in forge_build.py"
   agent: "software-crafter"
-  estimated_hours: 3
+  estimated_hours: 0.5
   dependencies_satisfied: true
   user_stories: []
-  type: "infrastructure"
+  type: "bugfix"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# CRITICAL: OUTSIDE-IN TDD ENFORCEMENT
+# BUG DESCRIPTION
 # ─────────────────────────────────────────────────────────────────────────────
-tdd_approach:
-  method: "OUTSIDE-IN"
+bug:
+  symptom: "TypeError: CheckExecutor.__init__() missing 1 required positional argument: 'registry'"
+  location: "src/crafter_ai/installer/cli/forge_build.py:42"
+  root_cause: "create_build_service() calls CheckExecutor() without passing the required registry argument"
 
-  driving_test:
-    file: "docs/features/modern-cli-installer/03-distill/e2e-scenarios/test_testpypi_coherence.py"
-    function: "test_pr_cannot_merge_without_testpypi_validation_passing"
-    feature_file: "docs/features/modern-cli-installer/03-distill/features/testpypi_coherence.feature"
-    scenario: "PR cannot merge without TestPyPI validation passing"
-
-  execution_order:
-    step_1:
-      action: "Run the E2E test FIRST"
-      command: "pytest docs/features/modern-cli-installer/03-distill/e2e-scenarios/ -k 'testpypi' -v --tb=short 2>&1 | head -100"
-      expected: "FAIL (missing test or NotImplementedError)"
-      purpose: "See the failing test that will drive implementation"
-
-    step_2:
-      action: "Update TestPyPI workflow with quality gate checks"
-      file: ".github/workflows/testpypi-publish.yml"
-      purpose: "Add twine check, retry logic, failure diagnostics"
-
-    step_3:
-      action: "Create quality gate service for local validation"
-      file: "src/crafter_ai/installer/services/quality_gate_service.py"
-      purpose: "Service to validate quality gate requirements"
-
-    step_4:
-      action: "Create unit tests for quality gate service"
-      file: "tests/installer/services/test_quality_gate_service.py"
-      purpose: "Test quality gate logic"
-
-    step_5:
-      action: "Run E2E test again"
-      command: "pytest tests/installer/services/test_quality_gate_service.py -v --tb=short 2>&1 | head -100"
-      expected: "Tests pass"
-      purpose: "Verify quality gate service works"
+  error_trace: |
+    File forge_build.py:165 in build
+      service = create_build_service()
+    File forge_build.py:42 in create_build_service
+      check_executor = CheckExecutor()
+    TypeError: CheckExecutor.__init__() missing 1 required positional argument: 'registry'
 
 # ─────────────────────────────────────────────────────────────────────────────
-# INPUT: What the agent receives (READ-ONLY context)
+# FIX SPECIFICATION
 # ─────────────────────────────────────────────────────────────────────────────
-input:
-  source_file: "src/crafter_ai/installer/services/quality_gate_service.py"
-  test_file: "tests/installer/services/test_quality_gate_service.py"
+fix:
+  file: "src/crafter_ai/installer/cli/forge_build.py"
 
-  existing_code:
-    testpypi_workflow: ".github/workflows/testpypi-publish.yml"
-    testpypi_validation_script: "scripts/testpypi_validation.py"
-    health_checker: "src/crafter_ai/installer/domain/health_checker.py"
+  changes:
+    - location: "imports section"
+      add: "from crafter_ai.installer.checks.build_checks import create_build_check_registry"
 
-  e2e_scenarios:
-    - "testpypi_coherence.feature::PR cannot merge without TestPyPI validation passing"
-    - "testpypi_coherence.feature::CI gate shows clear failure diagnostics"
+    - location: "create_build_service() function, line 42"
+      before: "check_executor = CheckExecutor()"
+      after: |
+        registry = create_build_check_registry()
+        check_executor = CheckExecutor(registry)
 
-  requirements:
-    workflow_enhancement:
-      - "Add twine check step after wheel build"
-      - "Add retry with exponential backoff for TestPyPI upload (3 attempts)"
-      - "Add retry with backoff for test-install (2 attempts)"
-      - "Use testpypi_validation.py script with --version flag"
-      - "Add clear failure summary with suggested fix in GitHub Step Summary"
-      - "Ensure workflow is a required status check for PRs"
-
-    quality_gate_service:
-      - "QualityGateService class validates all gate requirements"
-      - "validate_wheel_build() - returns GateResult with pass/fail"
-      - "validate_twine_check() - returns GateResult with pass/fail"
-      - "validate_testpypi_upload() - returns GateResult with pass/fail"
-      - "validate_testpypi_install() - returns GateResult with pass/fail"
-      - "validate_doctor_healthy() - returns GateResult with pass/fail"
-      - "validate_all() - runs all checks, returns overall result"
-      - "get_failure_diagnostics() - returns detailed failure message with fix"
-
-    gate_result_dataclass:
-      - "GateResult dataclass with: check_name, passed, message, suggested_fix"
-      - "QualityGateResult dataclass with: passed, gate_results, summary"
-
-    retry_behavior:
-      - "Exponential backoff: 30s, 60s, 120s for uploads"
-      - "Linear backoff: 30s, 60s for installs"
-      - "Max 3 retries for transient failures"
-      - "Clear logging of retry attempts"
-
-  test_requirements:
-    - "Test all 5 gate validations individually"
-    - "Test validate_all() aggregation"
-    - "Test failure diagnostics generation"
-    - "Test GateResult and QualityGateResult dataclasses"
-    - "Test suggested_fix is populated on failure"
+  validation:
+    command: "crafter-ai forge build --help"
+    expected: "Shows help without TypeError"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# CONSTRAINTS: Rules the agent MUST follow
+# CONSTRAINTS
 # ─────────────────────────────────────────────────────────────────────────────
 constraints:
-  max_tool_calls: 40
+  max_tool_calls: 15
   must_run_tests: true
   fail_fast: true
 
   mandatory_sequence:
-    - "1. Run E2E testpypi tests FIRST (see them fail)"
-    - "2. Create QualityGateService with GateResult dataclass"
-    - "3. Create unit tests for QualityGateService"
-    - "4. Update testpypi-publish.yml workflow with twine check and retries"
-    - "5. Add failure diagnostics to workflow"
-    - "6. Run tests (should pass)"
-    - "7. Commit changes"
-
-  allowed_actions:
-    - "Read existing testpypi workflow"
-    - "Read testpypi_validation.py script"
-    - "Create quality_gate_service.py"
-    - "Create test_quality_gate_service.py"
-    - "Update testpypi-publish.yml workflow"
-    - "Run pytest on tests"
-    - "Commit changes"
+    - "1. Read forge_build.py to confirm bug location"
+    - "2. Add import for create_build_check_registry"
+    - "3. Fix create_build_service() to create registry and pass to CheckExecutor"
+    - "4. Run: crafter-ai forge build --help (verify no TypeError)"
+    - "5. Run: pytest tests/installer/cli/test_forge_build.py -v"
+    - "6. Commit with message: fix(cli): wire CheckRegistry to CheckExecutor in forge build"
 
   forbidden_actions:
     - "DO NOT skip running E2E test first"
@@ -151,55 +84,32 @@ constraints:
 output:
   status: completed
 
-  e2e_test_before:
-    command: "pytest docs/features/modern-cli-installer/03-distill/e2e-scenarios/ -k 'testpypi' -v --tb=short"
-    result: "FAILED"
-    failure_reason: "41 tests selected, all FAILED with NotImplementedError (expected for Outside-In TDD)"
+  fix_applied:
+    file: "src/crafter_ai/installer/cli/forge_build.py"
+    lines_changed: 3
 
-  artifacts_created:
-    - "src/crafter_ai/installer/services/quality_gate_service.py"
-    - "tests/installer/services/test_quality_gate_service.py"
-    - ".github/workflows/testpypi-publish.yml (enhanced)"
+  validation_result:
+    command: "crafter-ai forge build --help"
+    result: "SUCCESS - Help displayed without TypeError"
 
-  unit_test_result:
-    command: "pytest tests/installer/services/test_quality_gate_service.py -v --tb=short"
-    tests_passed: 27
+  test_result:
+    command: "pytest tests/installer/cli/test_forge_build.py -v --tb=short"
+    tests_passed: 16
     tests_failed: 0
-    tests_skipped: 0
 
-  e2e_test_after:
-    command: "pytest tests/installer/services/test_quality_gate_service.py -v --tb=short"
-    result: "PASSED"
-    failure_reason: "N/A - 27 passed"
-
-  commit_hash: "d41a396"
-  commit_message: "feat(installer): add TestPyPI CI quality gate service - step 06-05"
-  notes: "QualityGateService with GateResult/QualityGateResult dataclasses. Workflow enhanced with twine check, retry logic (exponential backoff), and failure diagnostics."
+  commit_hash: "7001e2c"
+  commit_message: "fix(cli): wire CheckRegistry to CheckExecutor in forge build"
+  notes: "Added import for create_build_check_registry, created registry instance, passed to CheckExecutor"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # SUCCESS CRITERIA
 # ─────────────────────────────────────────────────────────────────────────────
 success_criteria:
-  - criterion: "E2E test ran BEFORE implementation"
-    validation: "output.e2e_test_before.result is not empty"
+  - criterion: "crafter-ai forge build --help runs without TypeError"
+    validation: "Command exits cleanly"
 
-  - criterion: "QualityGateService created"
-    validation: "src/crafter_ai/installer/services/quality_gate_service.py exists"
+  - criterion: "Unit tests pass"
+    validation: "pytest tests/installer/cli/test_forge_build.py passes"
 
-  - criterion: "GateResult and QualityGateResult dataclasses exist"
-    validation: "Dataclasses defined with required fields"
-
-  - criterion: "All 5 gate validations implemented"
-    validation: "validate_wheel_build, validate_twine_check, validate_testpypi_upload, validate_testpypi_install, validate_doctor_healthy"
-
-  - criterion: "Workflow has twine check step"
-    validation: "testpypi-publish.yml contains twine check"
-
-  - criterion: "Workflow has retry logic"
-    validation: "testpypi-publish.yml contains retry with backoff"
-
-  - criterion: "Failure diagnostics in workflow"
-    validation: "Workflow writes failure summary with suggested fix to GITHUB_STEP_SUMMARY"
-
-  - criterion: "Tests created and pass"
-    validation: "output.unit_test_result.tests_failed == 0"
+  - criterion: "Changes committed"
+    validation: "commit_hash is populated"

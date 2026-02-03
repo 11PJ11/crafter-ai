@@ -41,14 +41,27 @@ class FileSystemBackupAdapter:
             backup_root = Path.home() / ".claude" / "backups"
         self._backup_root = backup_root
 
-    def create_backup(self, source_path: Path) -> BackupResult:
-        """Create a backup of the source directory.
+    # Only back up these nwave-specific files/directories from ~/.claude
+    BACKUP_TARGETS = [
+        "agents",
+        "CLAUDE.md",
+        "commands",
+        "templates",
+        "scripts",
+        "nwave-manifest.txt",
+        "nwave.update",
+        "nwave-install.log",
+        "VERSION",
+    ]
 
-        Creates a timestamped backup directory and copies all contents
-        from the source path using shutil.copytree().
+    def create_backup(self, source_path: Path) -> BackupResult:
+        """Create a backup of nwave-specific configuration files.
+
+        Only backs up nwave-related files and directories from the source
+        path, not the entire directory (which can be hundreds of GB).
 
         Args:
-            source_path: Path to the directory to backup.
+            source_path: Path to the directory containing nwave config.
 
         Returns:
             BackupResult with success status, backup_path, timestamp, or error.
@@ -69,9 +82,29 @@ class FileSystemBackupAdapter:
 
             # Ensure backup root exists
             self._backup_root.mkdir(parents=True, exist_ok=True)
+            backup_path.mkdir(parents=True, exist_ok=True)
 
-            # Copy source to backup location
-            shutil.copytree(source_path, backup_path)
+            # Selectively copy only nwave-related files/directories
+            copied_count = 0
+            for target in self.BACKUP_TARGETS:
+                target_path = source_path / target
+                dest_path = backup_path / target
+                if target_path.exists():
+                    if target_path.is_dir():
+                        shutil.copytree(target_path, dest_path)
+                    else:
+                        shutil.copy2(target_path, dest_path)
+                    copied_count += 1
+
+            if copied_count == 0:
+                # Nothing to back up - clean up empty dir
+                backup_path.rmdir()
+                return BackupResult(
+                    success=True,
+                    backup_path=None,
+                    timestamp=timestamp,
+                    error_message=None,
+                )
 
             return BackupResult(
                 success=True,
