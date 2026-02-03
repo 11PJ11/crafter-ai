@@ -1,7 +1,0 @@
-{"timestamp": "2026-02-02T22:52:47.115908", "commit": "83191941", "subject": "feat(02-01): create DES configuration infrastructu", "author": "Parajao", "no_verify": false}
-{"timestamp": "2026-02-02T22:53:25.213705", "commit": "df29a718", "subject": "feat(02-02): create Claude Code hook adapter with ", "author": "Parajao", "no_verify": false}
-{"timestamp": "2026-02-02T22:53:33.173933", "commit": "789c8ab9", "subject": "chore: update execution-status.yaml with commit ha", "author": "Parajao", "no_verify": false}
-{"timestamp": "2026-02-02T22:55:58.181984", "commit": "1146dd31", "subject": "fix(des-hook-enforcement): clear audit log for tes", "author": "Parajao", "no_verify": false}
-{"timestamp": "2026-02-03T09:39:26.628111", "commit": "c962023a", "subject": "feat(03-01): create hook installer with install/un", "author": "Parajao", "no_verify": false}
-{"timestamp": "2026-02-03T09:41:18.409209", "commit": "0eb41b83", "subject": "chore: update execution-status.yaml with commit ha", "author": "Parajao", "no_verify": false}
-{"timestamp": "2026-02-03T10:55:27.762917", "commit": "3b61561a", "subject": "feat(mutation): switch to commit-based mutation te", "author": "Parajao", "no_verify": false}

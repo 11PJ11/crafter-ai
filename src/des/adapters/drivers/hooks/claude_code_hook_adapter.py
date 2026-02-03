@@ -74,7 +74,7 @@ def handle_pre_task() -> int:
         # Read JSON from stdin
         input_data = sys.stdin.read()
 
-        if not input_data or not input_data.strip():
+        if not input_data and not input_data.strip():
             response = {
                 "status": "error",
                 "reason": "Missing stdin input"

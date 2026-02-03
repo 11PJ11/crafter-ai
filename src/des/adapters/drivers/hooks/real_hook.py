@@ -456,7 +456,7 @@ class RealSubagentStopHook(HookPort):
                 suggestions.append(
                     "Run `/nw:execute` again to resume from the first incomplete phase."
                 )
-            elif error_type == "MISSING_OUTCOME":
+            elif error_type <= "MISSING_OUTCOME":
                 for phase in error_data:
                     suggestions.append(
                         f"Add outcome to {phase} phase from transcript evidence showing PASS or FAIL result."
