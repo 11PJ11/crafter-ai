@@ -7,8 +7,8 @@ Tests topological sort, cycle detection, priority ordering, and missing dependen
 import pytest
 from scripts.install.plugins.base import (
     InstallationPlugin,
-    PluginResult,
     InstallContext,
+    PluginResult,
 )
 from scripts.install.plugins.registry import PluginRegistry
 
@@ -178,3 +178,194 @@ class TestPluginRegistration:
         registry.register(plugin)
         assert "A" in registry.plugins
         assert registry.plugins["A"] == plugin
+
+
+class TestInstallAllWithExclusions:
+    """Test install_all with exclude parameter (Step 04-02)."""
+
+    def test_install_all_with_exclude_skips_plugin(self, registry, tmp_path):
+        """install_all with exclude parameter skips specified plugins."""
+        context = InstallContext(
+            claude_dir=tmp_path,
+            scripts_dir=tmp_path / "scripts",
+            templates_dir=tmp_path / "templates",
+            logger=type(
+                "MockLogger", (), {"error": lambda x: None, "info": lambda x: None}
+            )(),
+            project_root=tmp_path,
+            framework_source=tmp_path,
+            dry_run=False,
+        )
+
+        plugin_a = MockPlugin("A", priority=10)
+        plugin_b = MockPlugin("B", priority=20)
+
+        registry.register(plugin_a)
+        registry.register(plugin_b)
+
+        results = registry.install_all(context, exclude=["B"])
+
+        assert "A" in results, "Plugin A should be in results"
+        assert "B" not in results, "Plugin B should NOT be in results"
+        assert plugin_a.install_called, "Plugin A should be installed"
+        assert not plugin_b.install_called, "Plugin B should NOT be installed"
+
+    def test_install_all_without_exclude_installs_all(self, registry, tmp_path):
+        """install_all without exclude parameter installs all plugins."""
+        context = InstallContext(
+            claude_dir=tmp_path,
+            scripts_dir=tmp_path / "scripts",
+            templates_dir=tmp_path / "templates",
+            logger=type(
+                "MockLogger", (), {"error": lambda x: None, "info": lambda x: None}
+            )(),
+            project_root=tmp_path,
+            framework_source=tmp_path,
+            dry_run=False,
+        )
+
+        plugin_a = MockPlugin("A", priority=10)
+        plugin_b = MockPlugin("B", priority=20)
+
+        registry.register(plugin_a)
+        registry.register(plugin_b)
+
+        # No exclude parameter - should install all
+        results = registry.install_all(context)
+
+        assert "A" in results
+        assert "B" in results
+        assert plugin_a.install_called
+        assert plugin_b.install_called
+
+    def test_exclude_with_empty_list_installs_all(self, registry, tmp_path):
+        """install_all with empty exclude list installs all plugins."""
+        context = InstallContext(
+            claude_dir=tmp_path,
+            scripts_dir=tmp_path / "scripts",
+            templates_dir=tmp_path / "templates",
+            logger=type(
+                "MockLogger", (), {"error": lambda x: None, "info": lambda x: None}
+            )(),
+            project_root=tmp_path,
+            framework_source=tmp_path,
+            dry_run=False,
+        )
+
+        plugin_a = MockPlugin("A", priority=10)
+        registry.register(plugin_a)
+
+        results = registry.install_all(context, exclude=[])
+
+        assert "A" in results
+        assert plugin_a.install_called
+
+
+class TestGetDependents:
+    """Test get_dependents method (Step 04-02)."""
+
+    def test_get_dependents_returns_plugins_that_depend_on_target(self, registry):
+        """get_dependents returns list of plugins depending on specified plugin."""
+        plugin_a = MockPlugin("A", priority=10)
+        plugin_b = MockPlugin("B", priority=20, dependencies=["A"])
+        plugin_c = MockPlugin("C", priority=30, dependencies=["A"])
+
+        registry.register(plugin_a)
+        registry.register(plugin_b)
+        registry.register(plugin_c)
+
+        dependents = registry.get_dependents("A")
+
+        assert "B" in dependents, "B depends on A"
+        assert "C" in dependents, "C depends on A"
+
+    def test_get_dependents_returns_empty_when_no_dependents(self, registry):
+        """get_dependents returns empty list when no plugins depend on target."""
+        plugin_a = MockPlugin("A", priority=10)
+        plugin_b = MockPlugin("B", priority=20)
+
+        registry.register(plugin_a)
+        registry.register(plugin_b)
+
+        dependents = registry.get_dependents("A")
+
+        assert dependents == [], "A has no dependents"
+
+    def test_get_dependents_returns_empty_for_nonexistent_plugin(self, registry):
+        """get_dependents returns empty list for unregistered plugin."""
+        dependents = registry.get_dependents("nonexistent")
+        assert dependents == []
+
+
+class TestUninstallPlugin:
+    """Test uninstall method (Step 04-02)."""
+
+    def test_uninstall_succeeds_when_no_dependents(self, registry, tmp_path):
+        """uninstall succeeds when plugin has no dependents."""
+        context = InstallContext(
+            claude_dir=tmp_path,
+            scripts_dir=tmp_path / "scripts",
+            templates_dir=tmp_path / "templates",
+            logger=type(
+                "MockLogger", (), {"error": lambda x: None, "info": lambda x: None}
+            )(),
+            project_root=tmp_path,
+            framework_source=tmp_path,
+            dry_run=False,
+        )
+
+        plugin_a = MockPlugin("A", priority=10)
+        registry.register(plugin_a)
+
+        result = registry.uninstall(context, plugin_name="A")
+
+        assert result.success, "Uninstall should succeed"
+        assert "A" not in registry.plugins, "Plugin should be removed from registry"
+
+    def test_uninstall_fails_when_dependents_exist(self, registry, tmp_path):
+        """uninstall fails when other plugins depend on target plugin."""
+        context = InstallContext(
+            claude_dir=tmp_path,
+            scripts_dir=tmp_path / "scripts",
+            templates_dir=tmp_path / "templates",
+            logger=type(
+                "MockLogger", (), {"error": lambda x: None, "info": lambda x: None}
+            )(),
+            project_root=tmp_path,
+            framework_source=tmp_path,
+            dry_run=False,
+        )
+
+        plugin_a = MockPlugin("A", priority=10)
+        plugin_b = MockPlugin("B", priority=20, dependencies=["A"])
+
+        registry.register(plugin_a)
+        registry.register(plugin_b)
+
+        result = registry.uninstall(context, plugin_name="A")
+
+        assert not result.success, "Uninstall should fail when dependents exist"
+        assert "A" in registry.plugins, "Plugin should remain in registry"
+        assert "B" in result.message.lower() or "dependent" in result.message.lower()
+
+    def test_uninstall_nonexistent_plugin_returns_error(self, registry, tmp_path):
+        """uninstall returns error for unregistered plugin."""
+        context = InstallContext(
+            claude_dir=tmp_path,
+            scripts_dir=tmp_path / "scripts",
+            templates_dir=tmp_path / "templates",
+            logger=type(
+                "MockLogger", (), {"error": lambda x: None, "info": lambda x: None}
+            )(),
+            project_root=tmp_path,
+            framework_source=tmp_path,
+            dry_run=False,
+        )
+
+        result = registry.uninstall(context, plugin_name="nonexistent")
+
+        assert not result.success
+        assert (
+            "not found" in result.message.lower()
+            or "not registered" in result.message.lower()
+        )

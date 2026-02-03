@@ -142,7 +142,9 @@ class PluginRegistry:
         """
         return self._topological_sort_kahn()
 
-    def install_all(self, context: InstallContext) -> dict[str, PluginResult]:
+    def install_all(
+        self, context: InstallContext, exclude: list[str] | None = None
+    ) -> dict[str, PluginResult]:
         """Install all plugins in dependency order.
 
         Tracks installed files and plugins for potential rollback.
@@ -150,18 +152,24 @@ class PluginRegistry:
 
         Args:
             context: InstallContext with shared installation utilities
+            exclude: Optional list of plugin names to skip during installation
 
         Returns:
             Dictionary mapping plugin names to their installation results
         """
         results = {}
         order = self.get_execution_order()
+        exclude_set = set(exclude) if exclude else set()
 
         # Reset tracking for this installation session
         self._installed_files = []
         self._installed_plugins = []
 
         for plugin_name in order:
+            # Skip excluded plugins
+            if plugin_name in exclude_set:
+                continue
+
             plugin = self.plugins[plugin_name]
             result = plugin.install(context)
             results[plugin_name] = result
@@ -281,3 +289,65 @@ class PluginRegistry:
             results[plugin_name] = result
 
         return results
+
+    def get_dependents(self, plugin_name: str) -> list[str]:
+        """Get list of plugins that depend on the specified plugin.
+
+        Args:
+            plugin_name: Name of plugin to find dependents for
+
+        Returns:
+            List of plugin names that depend on the specified plugin
+        """
+        dependents = []
+        for name, plugin in self.plugins.items():
+            if plugin_name in plugin.get_dependencies():
+                dependents.append(name)
+        return dependents
+
+    def uninstall(self, context: InstallContext, plugin_name: str) -> PluginResult:
+        """Uninstall a specific plugin.
+
+        Checks for dependent plugins before uninstallation. If other plugins
+        depend on the target plugin, uninstallation is blocked.
+
+        Args:
+            context: InstallContext with shared installation utilities
+            plugin_name: Name of plugin to uninstall
+
+        Returns:
+            PluginResult indicating success or failure with details
+        """
+        # Check if plugin exists
+        if plugin_name not in self.plugins:
+            return PluginResult(
+                success=False,
+                plugin_name=plugin_name,
+                message=f"Plugin '{plugin_name}' not found or not registered",
+            )
+
+        # Check for dependents
+        dependents = self.get_dependents(plugin_name)
+        if dependents:
+            return PluginResult(
+                success=False,
+                plugin_name=plugin_name,
+                message=f"Cannot uninstall '{plugin_name}': dependent plugins exist ({', '.join(dependents)})",
+            )
+
+        # Get plugin and call its uninstall method
+        plugin = self.plugins[plugin_name]
+        if hasattr(plugin, "uninstall"):
+            result = plugin.uninstall(context)
+            if result.success:
+                # Remove from registry on successful uninstall
+                del self.plugins[plugin_name]
+            return result
+        else:
+            # Plugin doesn't have uninstall method - just remove from registry
+            del self.plugins[plugin_name]
+            return PluginResult(
+                success=True,
+                plugin_name=plugin_name,
+                message=f"Plugin '{plugin_name}' uninstalled successfully",
+            )
