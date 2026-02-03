@@ -83,3 +83,6 @@ CLAUDE.local.md
 
 # Mutation testing virtual environment
 .venv-mutation/
+
+# Legacy nWave audit log (consolidated into DES audit system)
+.nwave-audit.log
