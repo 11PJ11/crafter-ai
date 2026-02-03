@@ -245,20 +245,46 @@ class TestTemplatesPlugin:
 
         assert isinstance(result, PluginResult)
 
-    def test_templates_plugin_install_success(self):
-        """Verify successful templates plugin installation."""
+    def test_templates_plugin_install_success(self, tmp_path):
+        """Verify successful templates plugin installation copies files to target."""
         from scripts.install.plugins.templates_plugin import TemplatesPlugin
 
         plugin = TemplatesPlugin()
+
+        # Set up source directory with template files
+        source_templates = tmp_path / "source_templates"
+        source_templates.mkdir(parents=True)
+        (source_templates / "develop.yaml").write_text("# Develop Template")
+        (source_templates / "design.yaml").write_text("# Design Template")
+
+        # Set up target directory
+        claude_dir = tmp_path / "claude_config"
+        claude_dir.mkdir(parents=True)
+
         context = Mock(spec=InstallContext)
         context.dry_run = False
-        context.project_root = Path("/tmp/test")
+        context.project_root = tmp_path
+        context.templates_dir = source_templates
+        context.framework_source = tmp_path / "framework_source"
+        context.claude_dir = claude_dir
         context.logger = Mock()
 
         result = plugin.install(context)
 
+        # Verify result
         assert result.success is True
         assert result.plugin_name == "templates"
+        assert "installed" in result.message.lower()
+
+        # Verify files were actually copied to target
+        target_templates_dir = claude_dir / "templates"
+        assert target_templates_dir.exists(), "Target templates directory should exist"
+        assert (target_templates_dir / "develop.yaml").exists(), (
+            "develop.yaml should be copied"
+        )
+        assert (target_templates_dir / "design.yaml").exists(), (
+            "design.yaml should be copied"
+        )
 
     def test_templates_plugin_verify_returns_plugin_result(self):
         """Verify TemplatesPlugin.verify() returns PluginResult."""
@@ -272,6 +298,65 @@ class TestTemplatesPlugin:
         result = plugin.verify(context)
 
         assert isinstance(result, PluginResult)
+
+    def test_templates_plugin_verify_success_when_files_exist(self, tmp_path):
+        """Verify TemplatesPlugin.verify() returns success when template files exist."""
+        from scripts.install.plugins.templates_plugin import TemplatesPlugin
+
+        plugin = TemplatesPlugin()
+
+        # Set up target directory with template files
+        target_templates = tmp_path / "templates"
+        target_templates.mkdir(parents=True)
+        (target_templates / "develop.yaml").write_text("# Develop Template")
+        (target_templates / "design.yaml").write_text("# Design Template")
+
+        context = Mock(spec=InstallContext)
+        context.claude_dir = tmp_path
+        context.logger = Mock()
+
+        result = plugin.verify(context)
+
+        assert result.success is True
+        assert result.plugin_name == "templates"
+        assert "2" in result.message or "passed" in result.message.lower()
+
+    def test_templates_plugin_verify_failure_when_no_files(self, tmp_path):
+        """Verify TemplatesPlugin.verify() returns failure when no template files exist."""
+        from scripts.install.plugins.templates_plugin import TemplatesPlugin
+
+        plugin = TemplatesPlugin()
+
+        # Set up empty target directory
+        target_templates = tmp_path / "templates"
+        target_templates.mkdir(parents=True)
+
+        context = Mock(spec=InstallContext)
+        context.claude_dir = tmp_path
+        context.logger = Mock()
+
+        result = plugin.verify(context)
+
+        assert result.success is False
+        assert result.plugin_name == "templates"
+        assert result.errors is not None and len(result.errors) > 0
+
+    def test_templates_plugin_verify_failure_when_directory_missing(self, tmp_path):
+        """Verify TemplatesPlugin.verify() returns failure when target directory missing."""
+        from scripts.install.plugins.templates_plugin import TemplatesPlugin
+
+        plugin = TemplatesPlugin()
+
+        # Do not create any directory
+        context = Mock(spec=InstallContext)
+        context.claude_dir = tmp_path
+        context.logger = Mock()
+
+        result = plugin.verify(context)
+
+        assert result.success is False
+        assert result.plugin_name == "templates"
+        assert result.errors is not None and len(result.errors) > 0
 
 
 class TestUtilitiesPlugin:

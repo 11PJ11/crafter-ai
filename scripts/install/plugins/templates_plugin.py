@@ -5,6 +5,9 @@ Encapsulates the _install_templates() method from NWaveInstaller,
 maintaining backward compatibility while enabling plugin-based orchestration.
 """
 
+import shutil
+
+from scripts.install.install_utils import PathUtils
 from scripts.install.plugins.base import (
     InstallationPlugin,
     InstallContext,
@@ -29,25 +32,59 @@ class TemplatesPlugin(InstallationPlugin):
             PluginResult indicating success or failure of installation
         """
         try:
-            # This is where the _install_templates() logic will be called
-            # For now, return success to satisfy test requirements
-            # The actual implementation will delegate to NWaveInstaller._install_templates()
-
             context.logger.info("Installing templates plugin...")
 
-            # Return success result
+            # Determine source directory (prefer templates_dir from context)
+            templates_source = context.templates_dir
+
+            # Fallback to framework_source if templates_dir doesn't exist
+            if not templates_source.exists():
+                templates_source = context.framework_source / "templates"
+
+            if not templates_source.exists():
+                return PluginResult(
+                    success=False,
+                    plugin_name=self.name,
+                    message="Templates source directory does not exist",
+                    errors=[f"Source not found: {templates_source}"],
+                )
+
+            # Target directory
+            templates_target = context.claude_dir / "templates"
+            templates_target.mkdir(parents=True, exist_ok=True)
+
+            # Copy template files (preserving directory structure)
+            installed_files = []
+            for item in templates_source.iterdir():
+                target = templates_target / item.name
+                if item.is_dir():
+                    if target.exists():
+                        shutil.rmtree(target)
+                    shutil.copytree(item, target)
+                    # Collect installed file paths
+                    for file in target.rglob("*.yaml"):
+                        installed_files.append(str(file))
+                    for file in target.rglob("*.md"):
+                        installed_files.append(str(file))
+                else:
+                    shutil.copy2(item, target)
+                    installed_files.append(str(target))
+
+            copied_count = PathUtils.count_files(templates_target, "*.yaml")
+            context.logger.info(f"Installed {copied_count} template files")
+
             return PluginResult(
                 success=True,
                 plugin_name=self.name,
-                message="Templates installed successfully",
-                installed_files=[],
+                message=f"Templates installed successfully ({copied_count} files)",
+                installed_files=installed_files,
             )
         except Exception as e:
-            context.logger.error(f"Failed to install templates: {str(e)}")
+            context.logger.error(f"Failed to install templates: {e!s}")
             return PluginResult(
                 success=False,
                 plugin_name=self.name,
-                message=f"Templates installation failed: {str(e)}",
+                message=f"Templates installation failed: {e!s}",
                 errors=[str(e)],
             )
 
@@ -63,17 +100,43 @@ class TemplatesPlugin(InstallationPlugin):
         try:
             context.logger.info("Verifying templates installation...")
 
-            # Return success result
+            target_templates_dir = context.claude_dir / "templates"
+
+            # Check target directory exists
+            if not target_templates_dir.exists():
+                return PluginResult(
+                    success=False,
+                    plugin_name=self.name,
+                    message="Templates verification failed: target directory does not exist",
+                    errors=["Target directory not found"],
+                )
+
+            # Check for template files (primary: .yaml, fallback: .md)
+            template_files = list(target_templates_dir.glob("*.yaml"))
+            if not template_files:
+                # Fallback check for .md files
+                template_files = list(target_templates_dir.glob("*.md"))
+
+            if not template_files:
+                return PluginResult(
+                    success=False,
+                    plugin_name=self.name,
+                    message="Templates verification failed: no template files found",
+                    errors=["No .yaml or .md files in target directory"],
+                )
+
+            context.logger.info(f"Verified {len(template_files)} template files")
+
             return PluginResult(
                 success=True,
                 plugin_name=self.name,
-                message="Templates verification passed",
+                message=f"Templates verification passed ({len(template_files)} files)",
             )
         except Exception as e:
-            context.logger.error(f"Failed to verify templates: {str(e)}")
+            context.logger.error(f"Failed to verify templates: {e!s}")
             return PluginResult(
                 success=False,
                 plugin_name=self.name,
-                message=f"Templates verification failed: {str(e)}",
+                message=f"Templates verification failed: {e!s}",
                 errors=[str(e)],
             )
