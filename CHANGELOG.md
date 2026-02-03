@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.7.0] - 2026-02-01
+## [1.7.0] - 2026-02-03
 
 ### Added
 - Plugin architecture for modular installation system
