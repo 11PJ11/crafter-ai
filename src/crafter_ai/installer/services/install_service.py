@@ -396,16 +396,27 @@ class InstallService:
                 error_message=f"Pipx install failed: {pipx_result.error_message}",
             )
 
+        # Resolve version and install_path via list_packages() when pipx
+        # stdout doesn't include them (e.g. "already installed" scenario).
+        version = pipx_result.version
+        install_path = pipx_result.install_path
+        if version is None or install_path is None:
+            for pkg in self._pipx_port.list_packages():
+                if pkg.name == "crafter-ai":
+                    version = version or pkg.version
+                    install_path = install_path or pkg.path
+                    break
+
         # Phase 5: Verification (only if health_checker provided)
-        if self._health_checker is not None and pipx_result.install_path is not None:
+        if self._health_checker is not None and install_path is not None:
             report_progress(InstallPhase.VERIFICATION, "Verifying installation health...")
-            verification_result = self.verify(pipx_result.install_path)
+            verification_result = self.verify(install_path)
             phases_completed.append(InstallPhase.VERIFICATION)
 
             return InstallResult(
                 success=True,
-                version=pipx_result.version,
-                install_path=pipx_result.install_path,
+                version=version,
+                install_path=install_path,
                 phases_completed=phases_completed,
                 error_message=None,
                 health_status=verification_result.health_status,
@@ -415,8 +426,8 @@ class InstallService:
         # No verification (health_checker not provided)
         return InstallResult(
             success=True,
-            version=pipx_result.version,
-            install_path=pipx_result.install_path,
+            version=version,
+            install_path=install_path,
             phases_completed=phases_completed,
             error_message=None,
             health_status=None,
