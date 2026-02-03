@@ -4,7 +4,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from .base import InstallContext, InstallationPlugin, PluginResult
+from .base import InstallationPlugin, InstallContext, PluginResult
 
 
 class DESPlugin(InstallationPlugin):
@@ -13,6 +13,18 @@ class DESPlugin(InstallationPlugin):
     Demonstrates extensibility: adding DES requires only plugin registration
     without modifying core installer logic.
     """
+
+    # DES scripts installed to ~/.claude/scripts/
+    DES_SCRIPTS = [
+        "check_stale_phases.py",
+        "scope_boundary_check.py",
+    ]
+
+    # DES templates installed to ~/.claude/templates/
+    DES_TEMPLATES = [
+        ".pre-commit-config-nwave.yaml",
+        ".des-audit-README.md",
+    ]
 
     def __init__(self):
         """Initialize DES plugin with name, priority, and dependencies."""
@@ -100,21 +112,20 @@ class DESPlugin(InstallationPlugin):
     def _install_des_scripts(self, context: InstallContext) -> PluginResult:
         """Install DES utility scripts."""
         try:
-            scripts_to_install = [
-                "check_stale_phases.py",
-                "scope_boundary_check.py",
-            ]
-
             # Use framework source if available, fallback to nWave/scripts/des
             if context.framework_source:
                 source_dir = context.framework_source / "scripts" / "des"
+                if not source_dir.exists():
+                    # Fallback to nWave/scripts/des if framework source doesn't have DES scripts
+                    source_dir = context.project_root / "nWave" / "scripts" / "des"
             else:
                 source_dir = Path("nWave/scripts/des")
 
-            target_dir = context.scripts_dir
+            target_dir = context.claude_dir / "scripts"
+            target_dir.mkdir(parents=True, exist_ok=True)
 
             installed = []
-            for script_name in scripts_to_install:
+            for script_name in self.DES_SCRIPTS:
                 source = source_dir / script_name
                 target = target_dir / script_name
 
@@ -140,16 +151,13 @@ class DESPlugin(InstallationPlugin):
     def _install_des_templates(self, context: InstallContext) -> PluginResult:
         """Install DES templates."""
         try:
-            templates = [
-                ".pre-commit-config-nwave.yaml",
-                ".des-audit-README.md",
-            ]
-
-            source_dir = Path("nWave/templates")
-            target_dir = context.templates_dir
+            # Use project_root for consistent path resolution
+            source_dir = context.project_root / "nWave" / "templates"
+            target_dir = context.claude_dir / "templates"
+            target_dir.mkdir(parents=True, exist_ok=True)
 
             installed = []
-            for template_name in templates:
+            for template_name in self.DES_TEMPLATES:
                 source = source_dir / template_name
                 target = target_dir / template_name
 
@@ -194,16 +202,14 @@ class DESPlugin(InstallationPlugin):
             errors.append(f"DES module verify failed: {e}")
 
         # 2. Verify scripts present
-        expected_scripts = ["check_stale_phases.py", "scope_boundary_check.py"]
-        for script in expected_scripts:
-            script_path = context.scripts_dir / script
+        for script in self.DES_SCRIPTS:
+            script_path = context.claude_dir / "scripts" / script
             if not script_path.exists():
                 errors.append(f"Missing DES script: {script}")
 
         # 3. Verify templates present
-        expected_templates = [".pre-commit-config-nwave.yaml", ".des-audit-README.md"]
-        for template in expected_templates:
-            template_path = context.templates_dir / template
+        for template in self.DES_TEMPLATES:
+            template_path = context.claude_dir / "templates" / template
             if not template_path.exists():
                 errors.append(f"Missing DES template: {template}")
 
