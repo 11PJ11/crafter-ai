@@ -63,6 +63,208 @@ The **DES (Definition of Enforcement System)** is planned as the reference imple
 
 ---
 
+## Architecture Refinements (Post-Journey Analysis)
+
+**Refinement Date**: 2026-02-03
+**Analyst**: Luna (Experience Designer) + Morgan (Solution Architect)
+**Status**: 9 gaps resolved, implementation readiness improved to 8.5/10
+
+### Refinement Summary
+
+Following Luna's comprehensive journey quality validation and Morgan's gap analysis, the plugin system architecture has been refined to address 9 identified gaps and 3 critical decision points. This section documents architectural changes and additions to the original design.
+
+### Key Architectural Enhancements
+
+**1. Version Strategy Clarified (GAP-ARCH-00)**
+- **Issue**: Version discontinuity detected (1.2.0 → 1.7.0 jump) in journey milestones
+- **Resolution**: Incremental semantic versioning strategy defined
+- **Implementation**:
+  ```
+  Phase 1 complete: 1.2.1 (infrastructure patch)
+  Phase 3 complete: 1.3.0 (plugin orchestration minor)
+  Phase 4 complete: 1.4.0 (DES feature minor)
+  Phase 6 complete: 1.7.0 (production marketing version)
+  ```
+- **Impact**: Clear communication of progress, enables intermediate rollback points
+
+**2. Circular Import Prevention Validation (GAP-ARCH-01)**
+- **Issue**: Module-level function extraction pattern documented but not validated
+- **Resolution**: Proof-of-concept requirement added as mandatory prerequisite (PREREQ-2.1)
+- **Validation Strategy**:
+  - Create AgentsPlugin as proof-of-concept
+  - Test: `python3 -c "from scripts.install.plugins.agents_plugin import AgentsPlugin"`
+  - Validate NO circular import error before implementing other plugins
+- **Impact**: De-risks Phase 2, validates core integration strategy (estimated 2-3 hours)
+
+**3. Plugin Verification Fallback Pattern (GAP-ARCH-03)**
+- **Issue**: Verification strategy incomplete if `installation_verifier` unavailable
+- **Resolution**: Fallback pattern added to architecture
+- **Pattern**:
+  ```python
+  def verify(self, context):
+      # PRIMARY: Use existing verifier
+      if context.installation_verifier:
+          return context.installation_verifier._check_agents()
+
+      # FALLBACK: Minimal file existence check
+      target_dir = context.claude_dir / "agents" / "nw"
+      if not target_dir.exists():
+          return PluginResult(success=False, message="Directory not found")
+
+      # Count files, validate threshold
+      agent_files = list(target_dir.glob("*.md"))
+      return PluginResult(
+          success=len(agent_files) >= 10,
+          message=f"Verified {len(agent_files)} agents"
+      )
+  ```
+- **Impact**: Plugins work independently, enables isolated testing, graceful degradation
+
+**4. DES Prerequisites Mandated (GAP-PREREQ-01, GAP-PREREQ-02)**
+- **Issue**: DES scripts and templates don't exist yet, blocking Phase 4
+- **Resolution**: Creation mandated as prerequisites before Phase 4
+- **Required Files**:
+  - `nWave/scripts/des/check_stale_phases.py` (4-6 hours)
+  - `nWave/scripts/des/scope_boundary_check.py` (4-6 hours)
+  - `nWave/templates/.pre-commit-config-nwave.yaml` (1-2 hours)
+  - `nWave/templates/.des-audit-README.md` (1-2 hours)
+- **Impact**: Phase 4 unblocked, DES installation complete on first try
+
+**5. Integration Checkpoint Automation (GAP-PROCESS-01)**
+- **Issue**: Integration checkpoints described but not automated
+- **Resolution**: Test specification created for Phase 3 switchover validation
+- **Test**:
+  ```python
+  def test_switchover_preserves_installation_behavior(tmp_path):
+      """Validate plugin-based installation produces identical results."""
+      # Compare file trees (baseline vs plugin)
+      assert baseline_files == plugin_files
+      # Compare verification results
+      assert baseline_verification == plugin_verification
+      # Compare file contents
+      for file_path in baseline_files:
+          assert baseline_content == plugin_content
+  ```
+- **Impact**: Automated regression detection, increases Phase 3 confidence (4-6 hours)
+
+**6. InstallContext Validation Strategy (GAP-ARCH-02)**
+- **Issue**: InstallContext may be missing fields needed by wrapper plugins
+- **Resolution**: Continuous validation during Phase 2 implementation
+- **Strategy**:
+  - Review ALL utilities used by `_install_*()` methods during wrapper plugin creation
+  - Add missing utilities to InstallContext BEFORE Phase 3 switchover
+  - Potential missing: `build_manager`, `manifest_writer`, `preflight_checker`
+- **Impact**: Prevents mid-implementation surprises (1-2 hours validation)
+
+### Architecture Decision Outcomes
+
+**DECISION-01: DES Script Creation Timing**
+- **Decision**: Create scripts BEFORE Phase 4 (Option A)
+- **Rationale**: Clean implementation without placeholders, unblocks Phase 4, modest effort
+- **Trade-off**: +6 hours to timeline, but prevents technical debt
+
+**DECISION-02: Circular Import Mitigation**
+- **Decision**: Extract module-level functions (Option A)
+- **Rationale**: Clean separation, testable, no runtime overhead, proven pattern
+- **Trade-off**: Requires refactoring (1-2 hours per plugin), but validates before Phase 2 commit
+
+**DECISION-03: Wrapper Plugin Verification**
+- **Decision**: Fallback to minimal file existence check (Option B)
+- **Rationale**: Robustness, independent testing, graceful degradation
+- **Trade-off**: +20 lines per plugin, but significantly improves reliability
+
+### New Architectural Patterns
+
+**PATTERN-01: Module-Level Function Extraction**
+```python
+# install_nwave.py - Refactored for circular import prevention
+def install_agents_impl(target_dir, framework_source, logger, backup_manager, dry_run):
+    """Extracted implementation (module-level function)."""
+    # ... existing 80-line logic moved here ...
+    pass
+
+class nWaveInstaller:
+    def _install_agents(self):
+        """Thin wrapper calling extracted function."""
+        return install_agents_impl(
+            self.claude_dir, self.framework_source, self.rich_logger,
+            self.backup_manager, self.dry_run
+        )
+```
+
+**PATTERN-02: Fallback Verification**
+```python
+class PluginBase:
+    def verify(self, context: InstallContext) -> PluginResult:
+        # PRIMARY: Delegate to installation_verifier
+        if context.installation_verifier:
+            return self._verify_with_verifier(context)
+
+        # FALLBACK: Minimal file existence + count validation
+        return self._verify_fallback(context)
+```
+
+**PATTERN-03: Integration Checkpoint Testing**
+```python
+# Baseline capture before switchover
+baseline_files = capture_installation_state(baseline_installer)
+
+# Plugin installation after switchover
+plugin_files = capture_installation_state(plugin_installer)
+
+# Automated comparison
+assert baseline_files == plugin_files, "Regression detected!"
+```
+
+### Prerequisites Added
+
+**Phase 2 Prerequisites**:
+- PREREQ-2.1: Circular import proof-of-concept (2-3 hours) ⚠️ BLOCKS Phase 2
+- PREREQ-2.2: InstallContext validation (1-2 hours, continuous)
+- PREREQ-2.3: Verification fallback logic definition (2 hours)
+
+**Phase 3 Prerequisites**:
+- PREREQ-3.2: Integration checkpoint test suite (4-6 hours)
+- PREREQ-3.3: Rollback procedure documentation (1 hour)
+
+**Phase 4 Prerequisites**:
+- PREREQ-4.1: DES scripts creation (4-6 hours) ⚠️ BLOCKS Phase 4
+- PREREQ-4.2: DES templates creation (1-2 hours) ⚠️ BLOCKS Phase 4
+- PREREQ-4.4: Build pipeline validation (30 minutes, optional)
+
+**Total Prerequisite Effort**: 16-21 hours (many can be parallelized with phase work)
+
+### Implementation Readiness
+
+**Before Refinement**: 7.5/10
+- Gaps: DES prerequisites missing, circular import unvalidated, integration checkpoints manual
+
+**After Refinement**: 8.5/10
+- ✅ All 9 gaps resolved with implementation guidance
+- ✅ All 3 decision points finalized with rationale
+- ✅ Prerequisites clearly documented with estimated effort
+- ✅ 4 architectural patterns added
+- ✅ Validation strategies defined
+
+**Remaining Work**: Implementation execution (prerequisite creation + phase work)
+
+### Documentation Additions
+
+- **architecture-decisions.md**: Complete gap analysis with architectural rationale
+- **prerequisites.md**: Phase-specific prerequisites checklist with blocking items
+- **design-refinement-summary.md**: Summary of changes and business impact
+- **design.md**: Updated with refinements section
+- **nwave-plugin-system-architecture.md**: This section added
+
+### References
+
+For complete gap analysis, decision rationale, and implementation specifications:
+- See `docs/feature/plugin-architecture/architecture-decisions.md`
+- See `docs/feature/plugin-architecture/prerequisites.md`
+- See `docs/feature/plugin-architecture/design-refinement-summary.md`
+
+---
+
 ## Context and Problem Statement
 
 ### Current State

@@ -73,6 +73,218 @@ def install_framework(self):
 
 ---
 
+## Design Refinements (Post-Journey Analysis)
+
+**Refinement Date**: 2026-02-03
+**Source**: Luna's Journey Quality Validation + Morgan's Gap Analysis
+**Status**: 9 gaps resolved, 3 decision points finalized, implementation readiness: 8.5/10
+
+### Journey Quality Validation Results
+
+Luna's comprehensive journey analysis validated:
+- ✅ **Journey Coherence**: 6-milestone flow complete, no orphan steps
+- ✅ **Emotional Arc**: "Anxious → Focused → Confident" validated as realistic and progressive
+- ✅ **Integration Checkpoints**: Strategically placed at anxiety moments (M3 after "Tense" switchover)
+- ✅ **Shared Artifact Tracking**: Cross-reference matrix created, traceability validated
+- ⚠️ **Version Discontinuity**: Bug detected (1.2.0 → 1.7.0 jump) - resolved with incremental strategy
+
+### Gap Analysis Summary
+
+**9 Gaps Identified and Resolved**:
+
+**Architectural Gaps (3)**:
+1. **GAP-ARCH-00**: Version strategy undefined (1.2.0 → 1.7.0 discontinuity)
+   - **Resolution**: Incremental versioning (1.2.1 → 1.3.0 → 1.4.0 → 1.7.0)
+   - **Status**: RESOLVED - documented in architecture-decisions.md
+
+2. **GAP-ARCH-01**: Circular import prevention not validated
+   - **Resolution**: Extract module-level functions (already documented in HIGH-02 fix)
+   - **Validation Required**: Proof-of-concept for AgentsPlugin BEFORE Phase 2
+   - **Status**: RESOLVED with validation requirement
+
+3. **GAP-ARCH-02**: InstallContext may need additional fields
+   - **Resolution**: Validate during Phase 2, add missing fields as discovered
+   - **Status**: RESOLVED with continuous validation
+
+4. **GAP-ARCH-03**: Plugin verification strategy incomplete
+   - **Resolution**: Implement fallback verification (minimal file existence check)
+   - **Status**: RESOLVED - pattern documented
+
+**Prerequisite Gaps (3)**:
+5. **GAP-PREREQ-01**: DES scripts missing (check_stale_phases.py, scope_boundary_check.py)
+   - **Resolution**: Create scripts BEFORE Phase 4 (Option A from DECISION-01)
+   - **Status**: RESOLVED - implementation specs in architecture-decisions.md, prerequisites.md
+   - **Timeline**: 4-6 hours before Phase 4
+
+6. **GAP-PREREQ-02**: DES templates missing (.pre-commit-config-nwave.yaml, .des-audit-README.md)
+   - **Resolution**: Create templates BEFORE Phase 4
+   - **Status**: RESOLVED - implementation specs in architecture-decisions.md, prerequisites.md
+   - **Timeline**: 1-2 hours before Phase 4
+
+7. **GAP-PREREQ-03**: Build pipeline DES integration unclear
+   - **Resolution**: Validate during Phase 4, DESPlugin has fallback to src/des/
+   - **Status**: RESOLVED - low priority, non-blocking
+
+**Process Gaps (3)**:
+8. **GAP-PROCESS-01**: Integration checkpoint automation missing
+   - **Resolution**: Create automated test suite comparing baseline vs plugin installation
+   - **Status**: RESOLVED - test specification in architecture-decisions.md
+   - **Timeline**: 4-6 hours during Phase 3
+
+9. **GAP-PROCESS-02**: Rollback strategy undefined
+   - **Resolution**: Document rollback procedure using BackupManager
+   - **Status**: RESOLVED - procedure documented in architecture-decisions.md
+   - **Timeline**: 1 hour before Phase 3
+
+10. **GAP-PROCESS-03**: Version bump strategy unclear
+    - **Resolution**: See GAP-ARCH-00 (incremental versioning)
+    - **Status**: RESOLVED
+
+### Critical Decision Points Finalized
+
+**DECISION-01: DES Script Creation Timing**
+- **Decision**: Option A - Create BEFORE Phase 4
+- **Rationale**: Clean implementation, unblocks Phase 4, modest effort (4-6 hours)
+
+**DECISION-02: Circular Import Mitigation**
+- **Decision**: Option A - Extract module-level functions
+- **Rationale**: Clean separation, testable, no runtime overhead, proven pattern
+- **Validation**: Proof-of-concept required BEFORE Phase 2
+
+**DECISION-03: Wrapper Plugin Verification**
+- **Decision**: Option B - Fallback to minimal file existence check
+- **Rationale**: Robustness, independent testing, graceful degradation
+
+### Architectural Patterns Added
+
+**PATTERN-01: Module-Level Function Extraction** (Circular Import Prevention)
+```python
+# install_nwave.py
+def install_agents_impl(target_dir, framework_source, logger, backup_manager, dry_run):
+    """Extracted implementation (module-level function)."""
+    # ... existing logic moved here ...
+    pass
+
+class nWaveInstaller:
+    def _install_agents(self):
+        """Thin wrapper."""
+        return install_agents_impl(self.claude_dir, self.framework_source, ...)
+```
+
+**PATTERN-02: Fallback Verification** (Robustness)
+```python
+class AgentsPlugin:
+    def verify(self, context):
+        # PRIMARY: Use existing verifier
+        if context.installation_verifier:
+            return context.installation_verifier._check_agents()
+
+        # FALLBACK: Minimal file existence check
+        target_dir = context.claude_dir / "agents" / "nw"
+        if not target_dir.exists():
+            return PluginResult(success=False, message=f"Directory not found")
+
+        agent_files = list(target_dir.glob("*.md"))
+        if len(agent_files) < 10:
+            return PluginResult(success=False, message=f"Expected ≥10 agents")
+
+        return PluginResult(success=True, message=f"Verified {len(agent_files)} agents")
+```
+
+### Version Strategy (Semantic Versioning)
+
+**Incremental Versioning Path**:
+```
+Current: 1.2.0 (monolithic installer)
+Phase 1 complete: 1.2.1 (infrastructure only - patch)
+Phase 3 complete: 1.3.0 (plugin orchestration active - minor)
+Phase 4 complete: 1.4.0 (DES available - minor with new feature)
+Phase 6 complete: 1.7.0 (production release - marketing version)
+```
+
+**Semantic Versioning Rationale**:
+- 1.2.0 → 1.2.1: Patch - Infrastructure changes (non-breaking, no user-facing changes)
+- 1.2.1 → 1.3.0: Minor - Plugin orchestration (backward compatible, internal refactoring)
+- 1.3.0 → 1.4.0: Minor - DES feature added (new functionality, backward compatible)
+- 1.4.0 → 1.7.0: Marketing version - Production readiness signal (skipping 1.5.0, 1.6.0)
+
+### New Documentation Artifacts
+
+- **architecture-decisions.md**: Complete gap analysis decisions and rationale
+- **prerequisites.md**: Phase-specific prerequisites checklist with blocking items
+- Journey TUI mockups updated with intermediate versions (1.2.1, 1.3.0, 1.4.0)
+
+### Implementation Readiness Improvement
+
+**Pre-Refinement**: 7.5/10
+- Missing: DES scripts, circular import validation, integration checkpoints
+- Blockers: Phase 4 prerequisites unclear
+
+**Post-Refinement**: 8.5/10
+- ✅ All gaps resolved with clear implementation guidance
+- ✅ All decision points finalized with rationale
+- ✅ Prerequisites clearly documented with timeline estimates
+- ✅ Validation strategies defined (proof-of-concept, integration tests)
+- ✅ Version strategy clarified (incremental semantic versioning)
+- Remaining: Implementation execution (estimated 16-21 hours prerequisite work)
+
+### Impact on Migration Phases
+
+**Phase 2 (Wrapper Plugins)**:
+- **NEW PREREQUISITE**: Circular import proof-of-concept MUST succeed before creating all 4 plugins
+- **NEW REQUIREMENT**: Validate InstallContext completeness during plugin creation
+- **NEW PATTERN**: Implement fallback verification for each plugin
+
+**Phase 3 (Switchover)**:
+- **NEW PREREQUISITE**: Integration checkpoint test suite ready before switchover
+- **NEW SAFETY**: Rollback procedure documented in installation-guide.md
+- **NEW VALIDATION**: Automated file tree comparison test
+
+**Phase 4 (DES Plugin)**:
+- **NEW PREREQUISITE**: DES scripts MUST exist before Phase 4 starts (4-6 hours work)
+- **NEW PREREQUISITE**: DES templates MUST exist before Phase 4 starts (1-2 hours work)
+- **NEW DEPENDENCY**: DESPlugin depends on ["templates", "utilities"] explicitly
+
+**Phase 6 (Deployment)**:
+- **NEW STRATEGY**: Incremental version bumps at each phase milestone
+- **NEW DOCUMENTATION**: CHANGELOG.md with full version history
+- **NEW VALIDATION**: Backward compatibility testing (upgrade scenarios)
+
+### Recommendations Incorporated
+
+**HIGH Priority (8-10 hours)**:
+- ✅ REC-HIGH-01: Circular import validation (proof-of-concept)
+- ✅ REC-HIGH-02: DES scripts creation (check_stale_phases.py, scope_boundary_check.py)
+- ✅ REC-HIGH-03: DES templates creation (.pre-commit-config-nwave.yaml, .des-audit-README.md)
+
+**MEDIUM Priority (6-8 hours)**:
+- ✅ REC-MED-01: Verification fallback logic definition
+- ✅ REC-MED-02: Integration checkpoint test suite creation
+- ✅ REC-MED-03: InstallContext completeness validation
+- ✅ REC-MED-04: Shared artifact registry updates (hardcoded paths documented)
+- ✅ REC-MED-05: claude_dir source clarification (PathUtils, not install_nwave.py)
+
+**LOW Priority (2-3 hours)**:
+- ✅ REC-LOW-01: Rollback procedure documentation
+- ✅ REC-LOW-02: Build pipeline DES integration validation
+- ✅ REC-LOW-03: Version bump strategy definition
+- ✅ REC-LOW-04: Journey TUI mockups version updates
+
+**Total Prerequisite Effort**: 16-21 hours before implementation phases
+
+### Next Immediate Actions
+
+**Before Starting Phase 2**:
+1. ⚠️ Create circular import proof-of-concept (AgentsPlugin) - 2-3 hours
+2. ⚠️ Create DES scripts (can be done in parallel with Phase 2) - 4-6 hours
+3. ⚠️ Create DES templates (can be done in parallel with Phase 2) - 1-2 hours
+4. ✅ Update design.md with refinements - COMPLETE (this section)
+5. ⚠️ Update nwave-plugin-system-architecture.md - NEXT
+
+**Critical Path**: PREREQ-2.1 (circular import proof-of-concept) blocks Phase 2 start
+
+---
+
 ## Architettura Plugin
 
 ### 1. Componenti Fondamentali
