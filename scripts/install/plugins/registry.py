@@ -3,14 +3,17 @@ Plugin registry with topological sort dependency resolution.
 
 Uses Kahn's algorithm for topological sorting to determine plugin
 execution order while respecting dependencies.
+
+Includes rollback mechanism for handling plugin installation failures.
 """
 
-from typing import Dict, List, Set
+import shutil
+from pathlib import Path
 
 from scripts.install.plugins.base import (
     InstallationPlugin,
-    PluginResult,
     InstallContext,
+    PluginResult,
 )
 
 
@@ -19,11 +22,15 @@ class PluginRegistry:
 
     Uses topological sort (Kahn's algorithm) to resolve plugin dependencies
     and detect circular dependencies.
+
+    Provides rollback mechanism to restore system state on installation failure.
     """
 
     def __init__(self):
         """Initialize empty plugin registry."""
-        self.plugins: Dict[str, InstallationPlugin] = {}
+        self.plugins: dict[str, InstallationPlugin] = {}
+        self._installed_files: list[Path | str] = []
+        self._installed_plugins: list[str] = []
 
     def register(self, plugin: InstallationPlugin) -> None:
         """Register a plugin.
@@ -41,9 +48,9 @@ class PluginRegistry:
     def _detect_cycle_dfs(
         self,
         node: str,
-        visited: Set[str],
-        rec_stack: Set[str],
-        graph: Dict[str, List[str]],
+        visited: set[str],
+        rec_stack: set[str],
+        graph: dict[str, list[str]],
     ) -> bool:
         """Detect cycle using depth-first search.
 
@@ -70,7 +77,7 @@ class PluginRegistry:
         rec_stack.remove(node)
         return False
 
-    def _topological_sort_kahn(self) -> List[str]:
+    def _topological_sort_kahn(self) -> list[str]:
         """Topological sort using Kahn's algorithm.
 
         Performs topological sort to determine plugin execution order
@@ -83,8 +90,8 @@ class PluginRegistry:
             ValueError: If circular dependency detected or missing dependency
         """
         # Build adjacency list and in-degree count
-        graph: Dict[str, List[str]] = {}
-        in_degree: Dict[str, int] = {}
+        graph: dict[str, list[str]] = {}
+        in_degree: dict[str, int] = {}
 
         for name in self.plugins:
             graph[name] = []
@@ -124,7 +131,7 @@ class PluginRegistry:
 
         return sorted_order
 
-    def get_execution_order(self) -> List[str]:
+    def get_execution_order(self) -> list[str]:
         """Get plugin execution order respecting dependencies.
 
         Returns:
@@ -135,8 +142,11 @@ class PluginRegistry:
         """
         return self._topological_sort_kahn()
 
-    def install_all(self, context: InstallContext) -> Dict[str, PluginResult]:
+    def install_all(self, context: InstallContext) -> dict[str, PluginResult]:
         """Install all plugins in dependency order.
+
+        Tracks installed files and plugins for potential rollback.
+        Stops on first failure and logs error details for debugging.
 
         Args:
             context: InstallContext with shared installation utilities
@@ -147,18 +157,113 @@ class PluginRegistry:
         results = {}
         order = self.get_execution_order()
 
+        # Reset tracking for this installation session
+        self._installed_files = []
+        self._installed_plugins = []
+
         for plugin_name in order:
             plugin = self.plugins[plugin_name]
             result = plugin.install(context)
             results[plugin_name] = result
 
-            if not result.success:
+            if result.success:
+                # Track successful installation for potential rollback
+                self._installed_plugins.append(plugin_name)
+                if result.installed_files:
+                    self._installed_files.extend(result.installed_files)
+            else:
+                # Log error details for debugging
                 context.logger.error(f"Plugin installation failed: {result.message}")
+                if result.errors:
+                    for error in result.errors:
+                        context.logger.error(f"  - {error}")
                 break
 
         return results
 
-    def verify_all(self, context: InstallContext) -> Dict[str, PluginResult]:
+    def rollback_installation(self, context: InstallContext) -> None:
+        """Rollback installation by removing installed files and restoring backup.
+
+        This method should be called when plugin installation fails to restore
+        the system to its pre-installation state.
+
+        Rollback procedure:
+        1. Remove files installed during this session
+        2. Remove directories created by installed plugins
+        3. Restore from backup if BackupManager is available
+        4. Log rollback actions for debugging
+
+        Args:
+            context: InstallContext with shared installation utilities
+        """
+        context.logger.info("Rolling back plugin installation...")
+
+        # Remove tracked installed files
+        removed_count = 0
+        for file_path in self._installed_files:
+            # Handle both string and Path objects
+            path = Path(file_path) if isinstance(file_path, str) else file_path
+            if path.exists():
+                try:
+                    path.unlink()
+                    removed_count += 1
+                except OSError as e:
+                    context.logger.warn(f"Could not remove file {path}: {e}")
+
+        if removed_count > 0:
+            context.logger.info(f"Removed {removed_count} installed files")
+
+        # Clean up empty directories created by plugins
+        for plugin_name in reversed(self._installed_plugins):
+            plugin_dir = context.claude_dir / plugin_name
+            if plugin_dir.exists() and plugin_dir.is_dir():
+                try:
+                    # Only remove if directory is empty or was created by this plugin
+                    if not any(plugin_dir.iterdir()):
+                        plugin_dir.rmdir()
+                        context.logger.info(f"Removed empty directory: {plugin_dir}")
+                except OSError:
+                    pass  # Directory not empty or cannot be removed
+
+        # Restore from backup if BackupManager is available
+        if context.backup_manager is not None:
+            context.logger.info("Restoring from backup...")
+            backup_dir = context.backup_manager.backup_dir
+            if backup_dir and backup_dir.exists():
+                self._restore_from_backup(context, backup_dir)
+
+        # Clear tracking
+        self._installed_files = []
+        self._installed_plugins = []
+
+        context.logger.info("Rollback complete")
+
+    def _restore_from_backup(self, context: InstallContext, backup_dir: Path) -> None:
+        """Restore files from backup directory.
+
+        Args:
+            context: InstallContext with shared installation utilities
+            backup_dir: Path to backup directory
+        """
+        # Restore agents directory if it exists in backup
+        backup_agents = backup_dir / "agents"
+        if backup_agents.exists():
+            target_agents = context.claude_dir / "agents"
+            if target_agents.exists():
+                shutil.rmtree(target_agents)
+            shutil.copytree(backup_agents, target_agents)
+            context.logger.info("Restored agents directory from backup")
+
+        # Restore commands directory if it exists in backup
+        backup_commands = backup_dir / "commands"
+        if backup_commands.exists():
+            target_commands = context.claude_dir / "commands"
+            if target_commands.exists():
+                shutil.rmtree(target_commands)
+            shutil.copytree(backup_commands, target_commands)
+            context.logger.info("Restored commands directory from backup")
+
+    def verify_all(self, context: InstallContext) -> dict[str, PluginResult]:
         """Verify all plugins in dependency order.
 
         Args:
