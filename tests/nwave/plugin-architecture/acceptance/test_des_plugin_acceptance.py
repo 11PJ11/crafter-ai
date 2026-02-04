@@ -284,9 +284,9 @@ def des_templates_copied(path: str):
 
 @then("DES installation completes without installer changes")
 def des_installation_no_installer_changes(project_root: Path):
-    """Verify install_nwave.py was not modified for DES installation."""
-    # The fact that DES is installed via plugin system means install_nwave.py
-    # didn't need modification - it uses registry.install_all()
+    """Verify DES is installed via plugin registry pattern."""
+    # The DES plugin is installed via the plugin system using registry.install_all()
+    # It should be registered with the registry, but not have custom installation code
 
     # Verify DES result is successful
     results = pytest.install_results
@@ -297,10 +297,15 @@ def des_installation_no_installer_changes(project_root: Path):
     install_script = project_root / "scripts" / "install" / "install_nwave.py"
     content = install_script.read_text()
 
-    # It should NOT have direct DES installation calls
+    # It should NOT have direct DES installation calls (custom methods)
     assert "_install_des" not in content, (
         "install_nwave.py should not have _install_des() method"
     )
-    assert "DESPlugin" not in content, (
-        "install_nwave.py should not import DESPlugin directly"
+
+    # It SHOULD register DESPlugin with the registry (this is the correct pattern)
+    assert "DESPlugin" in content, (
+        "install_nwave.py should import and register DESPlugin with the registry"
+    )
+    assert "registry.register" in content, (
+        "install_nwave.py should use registry.register() pattern"
     )

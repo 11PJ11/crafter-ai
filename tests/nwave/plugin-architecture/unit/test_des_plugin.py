@@ -137,11 +137,12 @@ class TestDESPluginVerifyModuleImport:
         self, install_context: InstallContext, project_root: Path
     ):
         """verify() should succeed when DES module is properly installed."""
+        import json
+        import shutil
+
         plugin = DESPlugin()
 
         # Install DES module properly by copying from source
-        import shutil
-
         source_des = project_root / "src" / "des"
         target_des = install_context.claude_dir / "lib" / "python" / "des"
         target_des.parent.mkdir(parents=True, exist_ok=True)
@@ -158,6 +159,28 @@ class TestDESPluginVerifyModuleImport:
         templates_dir.mkdir(parents=True, exist_ok=True)
         for template in plugin.DES_TEMPLATES:
             (templates_dir / template).touch()
+
+        # Create settings.local.json with hooks
+        lib_path = install_context.claude_dir / "lib" / "python"
+        settings_file = install_context.claude_dir / "settings.local.json"
+        hooks_config = {
+            "hooks": {
+                "PreToolUse": [
+                    {
+                        "matcher": {"tool": "Task"},
+                        "command": f"python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter pretask",
+                        "env": {"PYTHONPATH": str(lib_path)},
+                    }
+                ],
+                "SubagentStop": [
+                    {
+                        "command": f"python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter subagent_stop",
+                        "env": {"PYTHONPATH": str(lib_path)},
+                    }
+                ],
+            }
+        }
+        settings_file.write_text(json.dumps(hooks_config, indent=2))
 
         result = plugin.verify(install_context)
 
@@ -346,11 +369,12 @@ class TestDESPluginVerifyComplete:
         self, install_context: InstallContext, project_root: Path
     ):
         """verify() success message should indicate what was verified."""
+        import json
+        import shutil
+
         plugin = DESPlugin()
 
         # Full proper installation
-        import shutil
-
         source_des = project_root / "src" / "des"
         target_des = install_context.claude_dir / "lib" / "python" / "des"
         target_des.parent.mkdir(parents=True, exist_ok=True)
@@ -365,6 +389,28 @@ class TestDESPluginVerifyComplete:
         templates_dir.mkdir(parents=True, exist_ok=True)
         for template in plugin.DES_TEMPLATES:
             (templates_dir / template).touch()
+
+        # Create settings.local.json with hooks
+        lib_path = install_context.claude_dir / "lib" / "python"
+        settings_file = install_context.claude_dir / "settings.local.json"
+        hooks_config = {
+            "hooks": {
+                "PreToolUse": [
+                    {
+                        "matcher": {"tool": "Task"},
+                        "command": f"python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter pretask",
+                        "env": {"PYTHONPATH": str(lib_path)},
+                    }
+                ],
+                "SubagentStop": [
+                    {
+                        "command": f"python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter subagent_stop",
+                        "env": {"PYTHONPATH": str(lib_path)},
+                    }
+                ],
+            }
+        }
+        settings_file.write_text(json.dumps(hooks_config, indent=2))
 
         result = plugin.verify(install_context)
 

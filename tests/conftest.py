@@ -1,192 +1,30 @@
-"""
-Root pytest configuration for all tests.
+"""Root conftest.py for all tests - ensures test isolation."""
 
-Provides shared fixtures accessible to both acceptance and scenario tests.
-"""
-
-from datetime import datetime, timezone
+import os
+from pathlib import Path
 
 import pytest
 
 
-try:
-    from typer.testing import CliRunner
-except ImportError:
-    CliRunner = None
-
-
-def pytest_ignore_collect(collection_path, config):
-    """Skip collection of test files that may have import issues in mutation testing."""
-    path_str = str(collection_path)
-
-    # Skip specific problematic test files (always)
-    ignore_files = [
-        "test_install_nwave_target_hooks.py",
-        "test_validate_documentation_versions.py",
-    ]
-    for pattern in ignore_files:
-        if pattern in path_str:
-            return True
-
-    # During mutation testing (when running from mutants folder), skip tests
-    # that use subprocess calls or path-dependent file access
-    if "/mutants/" in path_str:
-        mutant_skip_patterns = [
-            "tests/acceptance/versioning_release_management/",
-            "tests/acceptance/features/versioning-release-management/",
-            "tests/nwave/",  # Tests that access nWave templates by path
-            "test_step_schema",  # Schema tests with path dependencies
-            "test_template_integrity",  # Template integrity checks
-            "tests/unit/git_workflow/",  # Git hook tests with path dependencies
-            # Versioning tests with subprocess calls
-            "test_git_adapter_forge.py",
-            "test_update_cli.py",
-            "test_github_cli_adapter.py",
-        ]
-        for pattern in mutant_skip_patterns:
-            if pattern in path_str:
-                return True
-
-    return False
-
-
-@pytest.fixture
-def in_memory_filesystem():
+@pytest.fixture(autouse=True)
+def restore_working_directory():
     """
-    In-memory filesystem for testing without disk I/O.
+    Automatically restore the working directory after each test.
 
-    Returns:
-        InMemoryFileSystem: Fresh in-memory filesystem instance
+    This fixture ensures that tests which change the working directory
+    (e.g., using os.chdir()) don't affect subsequent tests.
+
+    The working directory is restored to the project root, which is
+    determined by finding the directory containing pytest.ini.
     """
-    from tests.des.adapters import InMemoryFileSystem
+    # Save original working directory
+    original_cwd = os.getcwd()
 
-    return InMemoryFileSystem()
+    # Ensure we're in the project root (directory containing pytest.ini)
+    project_root = Path(__file__).parent.parent
+    os.chdir(project_root)
 
+    yield
 
-@pytest.fixture
-def real_filesystem():
-    """
-    Real filesystem for integration tests that need actual disk I/O.
-
-    Returns:
-        RealFileSystem: Filesystem that performs actual disk operations
-    """
-    from src.des.adapters import RealFileSystem
-
-    return RealFileSystem()
-
-
-@pytest.fixture
-def mocked_time_provider():
-    """
-    Mocked time provider with fixed time for deterministic testing.
-
-    Returns:
-        MockedTimeProvider: Time provider starting at 2026-01-26T10:00:00Z
-    """
-    from tests.des.adapters import MockedTimeProvider
-
-    return MockedTimeProvider(datetime(2026, 1, 26, 10, 0, 0, tzinfo=timezone.utc))
-
-
-@pytest.fixture
-def mocked_hook():
-    """
-    Mocked subagent stop hook for testing without real hook behavior.
-
-    Returns:
-        MockedSubagentStopHook: Hook that returns predefined results
-    """
-    from tests.des.adapters import MockedSubagentStopHook
-
-    return MockedSubagentStopHook()
-
-
-@pytest.fixture
-def mocked_validator():
-    """
-    Mocked template validator for testing without real validation.
-
-    Returns:
-        MockedTemplateValidator: Validator returning passing results by default
-    """
-    from tests.des.adapters import MockedTemplateValidator
-
-    return MockedTemplateValidator()
-
-
-@pytest.fixture
-def des_orchestrator(
-    in_memory_filesystem, mocked_hook, mocked_validator, mocked_time_provider
-):
-    """
-    DES orchestrator with all mocked adapters for testing.
-
-    Uses in-memory filesystem, mocked time, mocked hook, and mocked validator for:
-    - Zero real filesystem operations
-    - Deterministic time behavior
-    - Fast test execution (<1 second)
-    - Predictable validation results
-
-    Returns:
-        DESOrchestrator: Configured orchestrator with mocked dependencies
-    """
-    from src.des.application.orchestrator import DESOrchestrator
-
-    return DESOrchestrator(
-        hook=mocked_hook,
-        validator=mocked_validator,
-        filesystem=in_memory_filesystem,
-        time_provider=mocked_time_provider,
-    )
-
-
-@pytest.fixture
-def scenario_des_orchestrator(
-    real_filesystem, mocked_hook, mocked_validator, mocked_time_provider
-):
-    """
-    DES orchestrator for scenario tests that require real filesystem operations.
-
-    Uses real filesystem but keeps mocked time, hook, and validator for:
-    - Actual disk I/O for scenario test file operations
-    - Deterministic time behavior
-    - Predictable validation and hook results
-    - Isolation from external dependencies
-
-    Returns:
-        DESOrchestrator: Configured orchestrator with real filesystem
-    """
-    from src.des.application.orchestrator import DESOrchestrator
-
-    return DESOrchestrator(
-        hook=mocked_hook,
-        validator=mocked_validator,
-        filesystem=real_filesystem,
-        time_provider=mocked_time_provider,
-    )
-
-
-# ============================================================================
-# crafter-ai CLI Fixtures
-# ============================================================================
-
-
-@pytest.fixture
-def cli_runner():
-    """
-    Provide a CLI test runner for testing Typer commands.
-
-    Uses CleanCliRunner which strips ANSI escape codes for CI-compatible
-    assertions. This is necessary because Rich/Typer may emit ANSI codes
-    even when NO_COLOR is set, due to Console being created at module
-    import time.
-
-    Returns:
-        CleanCliRunner: Typer CLI test runner with ANSI stripping.
-    """
-    if CliRunner is None:
-        pytest.skip("typer not installed")
-    from tests.cli.conftest import CleanCliRunner
-
-    return CleanCliRunner()
+    # Restore original working directory after test
+    os.chdir(original_cwd)
