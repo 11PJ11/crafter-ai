@@ -11,9 +11,11 @@ Tests that verify:
 
 from pytest_bdd import scenarios
 
+from .steps.audit_log_steps import *  # noqa: F403
+
 # Import step definitions - must use star imports for pytest-bdd registration
-from .steps.common_steps import *  # noqa: F401, F403
-from .steps.audit_log_steps import *  # noqa: F401, F403
+from .steps.common_steps import *  # noqa: F403
+
 
 # Collect all scenarios from the feature file
 scenarios("bug-2-audit-logs-location.feature")

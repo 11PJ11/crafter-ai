@@ -229,10 +229,10 @@ class DESPlugin(InstallationPlugin):
         import re
 
         # Pattern to match import statements
-        from_pattern = re.compile(r'\bfrom\s+src\.des\b')
-        import_pattern = re.compile(r'\bimport\s+src\.des\b')
+        from_pattern = re.compile(r"\bfrom\s+src\.des\b")
+        import_pattern = re.compile(r"\bimport\s+src\.des\b")
         # Pattern to match src.des. in any context (strings, comments, etc.)
-        general_pattern = re.compile(r'\bsrc\.des\.')
+        general_pattern = re.compile(r"\bsrc\.des\.")
 
         files_modified = 0
         files_skipped = 0
@@ -248,33 +248,37 @@ class DESPlugin(InstallationPlugin):
                 try:
                     py_file.resolve().relative_to(target_dir.resolve())
                 except ValueError:
-                    context.logger.warn(f"Skipping file outside target (security): {py_file}")
+                    context.logger.warn(
+                        f"Skipping file outside target (security): {py_file}"
+                    )
                     files_skipped += 1
                     continue
 
                 # Security: Skip files larger than 10MB to prevent DoS
                 file_size = py_file.stat().st_size
                 if file_size > 10_000_000:  # 10MB limit
-                    context.logger.warn(f"Skipping large file (security): {py_file} ({file_size} bytes)")
+                    context.logger.warn(
+                        f"Skipping large file (security): {py_file} ({file_size} bytes)"
+                    )
                     files_skipped += 1
                     continue
 
                 # Read file content
-                with open(py_file, 'r', encoding='utf-8') as f:
+                with open(py_file, encoding="utf-8") as f:
                     content = f.read()
 
                 # Track if file was modified
                 original_content = content
 
                 # Rewrite import statements
-                content = from_pattern.sub('from des', content)
-                content = import_pattern.sub('import des', content)
+                content = from_pattern.sub("from des", content)
+                content = import_pattern.sub("import des", content)
                 # Rewrite any remaining src.des. references (strings, comments, etc.)
-                content = general_pattern.sub('des.', content)
+                content = general_pattern.sub("des.", content)
 
                 # Write back if modified
                 if content != original_content:
-                    with open(py_file, 'w', encoding='utf-8') as f:
+                    with open(py_file, "w", encoding="utf-8") as f:
                         f.write(content)
                     files_modified += 1
 
@@ -413,7 +417,9 @@ class DESPlugin(InstallationPlugin):
             )
 
             if has_correct_pretask and has_correct_stop:
-                context.logger.info("DES hooks already installed with correct format - skipping")
+                context.logger.info(
+                    "DES hooks already installed with correct format - skipping"
+                )
                 return PluginResult(
                     success=True,
                     plugin_name="des",
@@ -422,11 +428,13 @@ class DESPlugin(InstallationPlugin):
 
             # Remove any existing DES hooks (both old and new format) to prevent duplicates
             config["hooks"]["PreToolUse"] = [
-                h for h in config["hooks"]["PreToolUse"]
+                h
+                for h in config["hooks"]["PreToolUse"]
                 if not self._is_des_hook(h.get("command", ""))
             ]
             config["hooks"]["SubagentStop"] = [
-                h for h in config["hooks"]["SubagentStop"]
+                h
+                for h in config["hooks"]["SubagentStop"]
                 if not self._is_des_hook(h.get("command", ""))
             ]
 
@@ -484,6 +492,7 @@ class DESPlugin(InstallationPlugin):
         # Try to import fcntl for Unix file locking
         try:
             import fcntl
+
             has_fcntl = True
         except ImportError:
             # Windows doesn't have fcntl, fallback to no locking

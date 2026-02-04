@@ -43,7 +43,11 @@ def clean_settings_no_hooks(clean_settings_file: Path, test_context: dict):
     )
 
 
-@given(parsers.parse("settings.local.json contains {count:d} duplicate DES PreToolUse hooks"))
+@given(
+    parsers.parse(
+        "settings.local.json contains {count:d} duplicate DES PreToolUse hooks"
+    )
+)
 def settings_with_n_pretooluse_hooks(
     settings_with_duplicates: Path, count: int, test_context: dict
 ):
@@ -61,7 +65,11 @@ def settings_with_n_pretooluse_hooks(
     )
 
 
-@given(parsers.parse("settings.local.json contains {count:d} duplicate DES SubagentStop hooks"))
+@given(
+    parsers.parse(
+        "settings.local.json contains {count:d} duplicate DES SubagentStop hooks"
+    )
+)
 def settings_with_n_subagent_hooks(
     settings_with_duplicates: Path, count: int, test_context: dict
 ):
@@ -145,7 +153,9 @@ def hooks_installed_then_uninstalled(
 
 
 @when("I install DES hooks")
-def install_des_hooks(temp_claude_dir: Path, install_context, des_plugin, test_context: dict):
+def install_des_hooks(
+    temp_claude_dir: Path, install_context, des_plugin, test_context: dict
+):
     """
     Install DES hooks using the production DESPlugin.
 
@@ -156,7 +166,9 @@ def install_des_hooks(temp_claude_dir: Path, install_context, des_plugin, test_c
     if not settings_file:
         settings_file = temp_claude_dir / "settings.local.json"
         if not settings_file.exists():
-            settings_file.write_text(json.dumps({"permissions": {"allow": []}}, indent=2))
+            settings_file.write_text(
+                json.dumps({"permissions": {"allow": []}}, indent=2)
+            )
         test_context["settings_file"] = settings_file
 
     # Update install_context to use our test settings location
@@ -215,7 +227,11 @@ def install_hooks_new_format(install_context, des_plugin, test_context: dict):
 # -----------------------------------------------------------------------------
 
 
-@then(parsers.parse("settings.local.json should contain exactly {count:d} PreToolUse hook"))
+@then(
+    parsers.parse(
+        "settings.local.json should contain exactly {count:d} PreToolUse hook"
+    )
+)
 def verify_pretooluse_hook_count(count: int, test_context: dict):
     """
     Verify the exact number of PreToolUse hooks.
@@ -232,7 +248,11 @@ def verify_pretooluse_hook_count(count: int, test_context: dict):
     )
 
 
-@then(parsers.parse("settings.local.json should contain exactly {count:d} SubagentStop hook"))
+@then(
+    parsers.parse(
+        "settings.local.json should contain exactly {count:d} SubagentStop hook"
+    )
+)
 def verify_subagent_hook_count(count: int, test_context: dict):
     """
     Verify the exact number of SubagentStop hooks.
@@ -249,7 +269,11 @@ def verify_subagent_hook_count(count: int, test_context: dict):
     )
 
 
-@then(parsers.parse("settings.local.json should contain exactly {count:d} DES PreToolUse hook"))
+@then(
+    parsers.parse(
+        "settings.local.json should contain exactly {count:d} DES PreToolUse hook"
+    )
+)
 def verify_des_pretooluse_hook_count_singular(count: int, test_context: dict):
     """
     Verify the exact number of DES PreToolUse hooks (singular form for grammar).
@@ -259,7 +283,9 @@ def verify_des_pretooluse_hook_count_singular(count: int, test_context: dict):
     verify_des_pretooluse_count(count, test_context)
 
 
-@then(parsers.parse("settings.local.json should contain {count:d} DES PreToolUse hooks"))
+@then(
+    parsers.parse("settings.local.json should contain {count:d} DES PreToolUse hooks")
+)
 def verify_des_pretooluse_count(count: int, test_context: dict):
     """Verify DES PreToolUse hook count (used for uninstall tests)."""
     settings_file = test_context.get("settings_file")
@@ -270,7 +296,9 @@ def verify_des_pretooluse_count(count: int, test_context: dict):
     )
 
 
-@then(parsers.parse("settings.local.json should contain {count:d} DES SubagentStop hooks"))
+@then(
+    parsers.parse("settings.local.json should contain {count:d} DES SubagentStop hooks")
+)
 def verify_des_subagent_count(count: int, test_context: dict):
     """Verify DES SubagentStop hook count."""
     settings_file = test_context.get("settings_file")
@@ -347,7 +375,9 @@ def verify_custom_hook_exists(test_context: dict):
         config = json.load(f)
 
     pre_hooks = config.get("hooks", {}).get("PreToolUse", [])
-    custom_hooks = [h for h in pre_hooks if "custom-write-validator" in h.get("command", "")]
+    custom_hooks = [
+        h for h in pre_hooks if "custom-write-validator" in h.get("command", "")
+    ]
 
     assert len(custom_hooks) == 1, (
         "Custom non-DES hook was not preserved during DES operation"
@@ -406,6 +436,5 @@ def verify_new_command_format(test_context: dict):
             f"but found: {command}"
         )
         assert "src/des" not in command, (
-            f"Hook command should not contain old 'src/des' path, "
-            f"but found: {command}"
+            f"Hook command should not contain old 'src/des' path, but found: {command}"
         )

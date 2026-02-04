@@ -49,6 +49,7 @@ def in_project_directory(project_path: str, tmp_path: Path, test_context: dict):
     # Reset audit logger to pick up new working directory (project isolation)
     try:
         from src.des.adapters.driven.logging.audit_logger import reset_audit_logger
+
         reset_audit_logger()
     except ImportError:
         pass  # DES not installed, test will handle
@@ -68,7 +69,9 @@ def no_audit_config(clean_env, test_context: dict):
 
 
 @given(parsers.parse('environment variable "{var_name}" is set to "{var_value}"'))
-def set_env_variable(var_name: str, var_value: str, clean_env, tmp_path: Path, test_context: dict):
+def set_env_variable(
+    var_name: str, var_value: str, clean_env, tmp_path: Path, test_context: dict
+):
     """
     Set an environment variable for testing.
 
@@ -86,7 +89,7 @@ def set_env_variable(var_name: str, var_value: str, clean_env, tmp_path: Path, t
     test_context[f"env_{var_name}"] = str(actual_path)
 
 
-@given(parsers.parse("a DES config file exists with audit_log_dir set to \"{log_dir}\""))
+@given(parsers.parse('a DES config file exists with audit_log_dir set to "{log_dir}"'))
 def des_config_with_audit_dir(log_dir: str, tmp_path: Path, test_context: dict):
     """
     Create a DES configuration file with audit_log_dir setting.
@@ -124,6 +127,7 @@ def directory_does_not_exist(dir_path: str, test_context: dict):
         full_path = project_dir / dir_path.removeprefix("./")
         if full_path.exists():
             import shutil
+
             shutil.rmtree(full_path)
 
         test_context["target_dir"] = full_path
@@ -142,8 +146,6 @@ def existing_logs_at_path(log_path: str, tmp_path: Path, test_context: dict):
     """
     Create existing audit logs at specified location.
     """
-    expanded_path = Path(log_path).expanduser()
-
     # For safety, we create under tmp_path
     actual_path = tmp_path / "existing-logs"
     actual_path.mkdir(parents=True, exist_ok=True)
@@ -151,7 +153,9 @@ def existing_logs_at_path(log_path: str, tmp_path: Path, test_context: dict):
     # Create a sample log file
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     log_file = actual_path / f"audit-{today}.log"
-    log_file.write_text('{"event": "existing_log", "timestamp": "2026-02-04T00:00:00Z"}\n')
+    log_file.write_text(
+        '{"event": "existing_log", "timestamp": "2026-02-04T00:00:00Z"}\n'
+    )
 
     test_context["existing_log_path"] = actual_path
     test_context["existing_log_file"] = log_file
@@ -182,11 +186,13 @@ def _write_test_audit_event(test_context: dict, project_name: str):
         if project_dir:
             # Use get_audit_logger() which handles project isolation
             logger = get_audit_logger()
-            logger.append({
-                "event": "TEST_EVENT",
-                "project": project_name,
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-            })
+            logger.append(
+                {
+                    "event": "TEST_EVENT",
+                    "project": project_name,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                }
+            )
             test_context[f"{project_name}_event_written"] = True
             test_context[f"{project_name}_logger"] = logger
     except ImportError:
@@ -224,10 +230,12 @@ def write_audit_event(test_context: dict):
     """
     logger = test_context.get("audit_logger")
     if logger:
-        logger.append({
-            "event": "TEST_EVENT",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-        })
+        logger.append(
+            {
+                "event": "TEST_EVENT",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }
+        )
         test_context["event_written"] = True
 
 
@@ -262,15 +270,12 @@ def verify_audit_log_location(expected_path: str, test_context: dict):
         expected_full = Path(expected_path).expanduser()
     elif expected_path.startswith("/"):
         # Check if we have a test mapping
-        env_key = f"env_DES_AUDIT_LOG_DIR"
+        env_key = "env_DES_AUDIT_LOG_DIR"
         if env_key in test_context:
             expected_full = Path(test_context[env_key])
         else:
             configured = test_context.get("configured_log_dir")
-            if configured:
-                expected_full = configured
-            else:
-                expected_full = Path(expected_path)
+            expected_full = configured or Path(expected_path)
     else:
         expected_full = Path(expected_path)
 

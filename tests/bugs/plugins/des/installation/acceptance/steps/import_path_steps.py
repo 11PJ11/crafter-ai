@@ -53,7 +53,9 @@ def pythonpath_no_dev_root(clean_env, project_root: Path, test_context: dict):
     project_root_str = str(project_root)
 
     # Remove project root from PYTHONPATH if present
-    paths = [p for p in current_path.split(os.pathsep) if p and project_root_str not in p]
+    paths = [
+        p for p in current_path.split(os.pathsep) if p and project_root_str not in p
+    ]
     clean_env["PYTHONPATH"] = os.pathsep.join(paths) if paths else ""
 
     test_context["dev_root_excluded"] = True
@@ -136,7 +138,7 @@ def try_import_modules(datatable, test_context: dict):
     import_results = []
 
     # Skip header row if present
-    rows = datatable[1:] if datatable and datatable[0] == ['module_path'] else datatable
+    rows = datatable[1:] if datatable and datatable[0] == ["module_path"] else datatable
 
     for row in rows:
         module_path = row[0] if isinstance(row, list) else row["module_path"]
@@ -162,12 +164,14 @@ except ImportError as e:
             env={"PYTHONPATH": pythonpath},
         )
 
-        import_results.append({
-            "module": module_path,
-            "success": f"SUCCESS:{module_path}" in result.stdout,
-            "stdout": result.stdout,
-            "stderr": result.stderr,
-        })
+        import_results.append(
+            {
+                "module": module_path,
+                "success": f"SUCCESS:{module_path}" in result.stdout,
+                "stdout": result.stdout,
+                "stderr": result.stderr,
+            }
+        )
 
     test_context["module_import_results"] = import_results
 
@@ -183,13 +187,15 @@ def execute_hook_command(test_context: dict):
 
     # Simulate hook invocation
     cmd = [
-        sys.executable, "-m",
+        sys.executable,
+        "-m",
         "des.adapters.drivers.hooks.claude_code_hook_adapter",
-        "pre-task"
+        "pre-task",
     ]
 
     # Provide minimal valid input to stdin
     import json
+
     hook_input = json.dumps({"tool_input": {"prompt": "test prompt"}})
 
     result = subprocess.run(
@@ -336,10 +342,9 @@ def verify_all_imports_success(test_context: dict):
     failed = [r for r in results if not r["success"]]
 
     if failed:
-        failure_details = "\n".join([
-            f"  - {r['module']}: {r['stderr']}"
-            for r in failed
-        ])
+        failure_details = "\n".join(
+            [f"  - {r['module']}: {r['stderr']}" for r in failed]
+        )
         pytest.fail(
             f"BUG DETECTED: {len(failed)} module import(s) failed.\n"
             f"Failed modules:\n{failure_details}\n"
@@ -353,7 +358,6 @@ def verify_hook_no_import_error(test_context: dict):
     Verify hook executed without ImportError.
     """
     stderr = test_context.get("hook_stderr", "")
-    returncode = test_context.get("hook_returncode", 0)
 
     # ImportError would be in stderr
     if "ImportError" in stderr or "ModuleNotFoundError" in stderr:
@@ -384,8 +388,7 @@ def verify_hook_valid_response(test_context: dict):
         stderr = test_context.get("hook_stderr", "")
         if "ImportError" in stderr:
             pytest.fail(
-                f"BUG DETECTED: Hook failed with ImportError.\n"
-                f"Stderr: {stderr}"
+                f"BUG DETECTED: Hook failed with ImportError.\nStderr: {stderr}"
             )
 
 
@@ -394,7 +397,6 @@ def verify_usage_error(test_context: dict):
     """
     Verify command failed with usage error, not ImportError.
     """
-    stdout = test_context.get("command_stdout", "")
     stderr = test_context.get("command_stderr", "")
     returncode = test_context.get("command_returncode", 0)
 
@@ -417,8 +419,7 @@ def verify_not_import_error(test_context: dict):
     stderr = test_context.get("command_stderr", "")
 
     assert "ImportError" not in stderr, (
-        f"BUG DETECTED: Got ImportError when expecting usage error.\n"
-        f"Stderr: {stderr}"
+        f"BUG DETECTED: Got ImportError when expecting usage error.\nStderr: {stderr}"
     )
     assert "ModuleNotFoundError" not in stderr, (
         f"BUG DETECTED: Got ModuleNotFoundError when expecting usage error.\n"
@@ -454,7 +455,11 @@ def verify_pattern_count(count: int, pattern: str, test_context: dict):
         )
 
 
-@then(parsers.parse('I should find {count:d} occurrences of "{pattern}" as a string literal'))
+@then(
+    parsers.parse(
+        'I should find {count:d} occurrences of "{pattern}" as a string literal'
+    )
+)
 def verify_pattern_count_literal(count: int, pattern: str, test_context: dict):
     """
     Verify specific count of pattern occurrences (alias for string literal checks).
@@ -476,7 +481,7 @@ def verify_correct_import_patterns(prefix: str, alt_prefix: str, test_context: d
     )
 
 
-@then("no mixed \"src.des\" and \"des\" prefixes should exist in the same file")
+@then('no mixed "src.des" and "des" prefixes should exist in the same file')
 def verify_no_mixed_imports(test_context: dict):
     """
     Verify no file mixes import styles.
@@ -514,7 +519,7 @@ def verify_init_files(datatable, test_context: dict):
         des_base = Path.home() / ".claude" / "lib" / "python"
 
     # Skip header row if present
-    rows = datatable[1:] if datatable and datatable[0] == ['path'] else datatable
+    rows = datatable[1:] if datatable and datatable[0] == ["path"] else datatable
 
     missing = []
     for row in rows:
@@ -524,7 +529,4 @@ def verify_init_files(datatable, test_context: dict):
         if not full_path.exists():
             missing.append(path)
 
-    assert len(missing) == 0, (
-        f"Missing __init__.py files:\n"
-        f"{chr(10).join(missing)}"
-    )
+    assert len(missing) == 0, f"Missing __init__.py files:\n{chr(10).join(missing)}"

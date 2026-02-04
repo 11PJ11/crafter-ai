@@ -5,46 +5,43 @@ This conftest.py at the acceptance level configures pytest-bdd
 to discover feature files and step definitions.
 """
 
-import pytest
-from pathlib import Path
-
 # Import fixtures from steps/conftest.py to make them available
 from .steps.conftest import (
-    project_root,
     claude_config_dir,
-    installed_des_path,
-    temp_claude_dir,
-    temp_project_dir,
-    test_logger,
+    clean_env,
     clean_settings_file,
+    des_plugin,
+    env_with_audit_log_dir,
+    install_context,
+    installed_des_path,
+    project_root,
     settings_with_duplicates,
     settings_with_mixed_hooks,
     settings_with_old_format_hook,
-    install_context,
-    des_plugin,
-    clean_env,
-    env_with_audit_log_dir,
+    temp_claude_dir,
+    temp_project_dir,
     test_context,
+    test_logger,
 )
 
 
 # Re-export fixtures so they're discoverable
 __all__ = [
-    "project_root",
     "claude_config_dir",
-    "installed_des_path",
-    "temp_claude_dir",
-    "temp_project_dir",
-    "test_logger",
+    "clean_env",
     "clean_settings_file",
+    "des_plugin",
+    "env_with_audit_log_dir",
+    "install_context",
+    "installed_des_path",
+    "project_root",
     "settings_with_duplicates",
     "settings_with_mixed_hooks",
     "settings_with_old_format_hook",
-    "install_context",
-    "des_plugin",
-    "clean_env",
-    "env_with_audit_log_dir",
+    "temp_claude_dir",
+    "temp_project_dir",
     "test_context",
+    "test_logger",
 ]
 
 

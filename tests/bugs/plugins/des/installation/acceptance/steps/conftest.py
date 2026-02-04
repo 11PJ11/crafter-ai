@@ -15,11 +15,14 @@ Organization:
 import json
 import logging
 import os
-import shutil
 from pathlib import Path
 from typing import Any
 
 import pytest
+
+# Helper functions are in helpers.py to avoid circular imports
+from .helpers import count_des_hooks, is_des_hook, scan_for_bad_imports  # noqa: F401
+
 
 # Step definitions are auto-discovered by pytest-bdd from this package
 # No explicit imports needed - pytest-bdd finds them via the steps directory
@@ -198,7 +201,9 @@ def settings_with_old_format_hook(temp_claude_dir: Path) -> Path:
     settings_file = temp_claude_dir / "settings.local.json"
 
     # Old format command (contains claude_code_hook_adapter but different path)
-    old_command = "python3 src/des/adapters/drivers/hooks/claude_code_hook_adapter.py pre-task"
+    old_command = (
+        "python3 src/des/adapters/drivers/hooks/claude_code_hook_adapter.py pre-task"
+    )
 
     config = {
         "permissions": {"allow": []},
@@ -322,8 +327,3 @@ def pytest_bdd_step_error(
     logging.error(f"Feature: {feature.name}")
     logging.error(f"Scenario: {scenario.name}")
     logging.error(f"Exception: {exception}")
-
-
-# Helper functions are in helpers.py to avoid circular imports
-# Import them here for backward compatibility if needed
-from .helpers import count_des_hooks, is_des_hook, scan_for_bad_imports  # noqa: F401

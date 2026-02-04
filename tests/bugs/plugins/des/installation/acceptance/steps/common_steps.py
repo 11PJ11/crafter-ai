@@ -38,7 +38,9 @@ def temp_claude_dir_exists(temp_claude_dir: Path, test_context: dict):
 @given("a temporary project directory exists")
 def temp_project_dir_exists(temp_project_dir: Path, test_context: dict):
     """Ensure temporary project directory exists and store in context."""
-    assert temp_project_dir.exists(), f"Temp project dir not created: {temp_project_dir}"
+    assert temp_project_dir.exists(), (
+        f"Temp project dir not created: {temp_project_dir}"
+    )
     test_context["project_dir"] = temp_project_dir
     test_context["original_cwd"] = os.getcwd()
 
@@ -79,7 +81,9 @@ def check_installation_status(test_context: dict):
     des_path = test_context.get("installed_des_path")
     if des_path:
         test_context["installation_exists"] = des_path.exists()
-        test_context["has_init"] = (des_path / "__init__.py").exists() if des_path.exists() else False
+        test_context["has_init"] = (
+            (des_path / "__init__.py").exists() if des_path.exists() else False
+        )
     else:
         test_context["installation_exists"] = False
         test_context["has_init"] = False
