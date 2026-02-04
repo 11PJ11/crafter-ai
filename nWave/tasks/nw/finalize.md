@@ -56,12 +56,15 @@ CRITICAL (from finalize.md):
 - Archive workflow files (baseline, roadmap, steps) - don't delete
 - Verify ALL steps are DONE before finalizing
 - Update project tracking documents
+- Create reference documentation via /nw:document
+- Update architecture doc statuses from "FUTURE DESIGN" to "IMPLEMENTED"
 
 AVOID:
 - ❌ Finalizing with incomplete steps (check all statuses first)
 - ❌ Deleting workflow files (must archive, not delete)
 - ❌ Skipping evolution document (must capture achievements)
-- ❌ Not updating tracking (leaves stale project state)"""
+- ❌ Not updating tracking (leaves stale project state)
+- ❌ Leaving architecture docs with stale "FUTURE DESIGN" status"""
 )
 ```
 
@@ -431,6 +434,8 @@ The invoked agent must accomplish (Reference Only):
 - [ ] Step files removed
 - [ ] Roadmap file removed
 - [ ] Project folder removed (if empty)
+- [ ] Reference documentation created via /nw:document (or skipped with user approval)
+- [ ] Architecture doc statuses updated to "IMPLEMENTED"
 
 ---
 
@@ -691,6 +696,74 @@ of the feature directory.
 
 **Migration Note**: If legacy `steps/*.json` files exist, delete them as well (Schema v1.x artifacts).
 
+#### 6. DOCUMENTATION PHASE (Post-Cleanup)
+
+**Objective**: Create or update DIVIO-compliant reference documentation for the completed feature.
+
+**Why This Phase Exists**: Features often have architecture documentation created during DESIGN wave that becomes stale after implementation. This phase ensures documentation reflects the IMPLEMENTED state, not the DESIGN state.
+
+**Actions**:
+
+1. **Check for existing architecture docs**:
+   ```bash
+   # Find architecture docs that may need status updates
+   grep -l "FUTURE DESIGN\|NOT IMPLEMENTED\|DRAFT" docs/architecture/*{project-id}* 2>/dev/null
+   ```
+   - If matches found: Flag for status update to "IMPLEMENTED"
+
+2. **Invoke documentarist for reference documentation**:
+   ```python
+   # Orchestrator invokes /nw:document for reference docs
+   # This creates lookup-oriented API documentation
+
+   Task(
+       subagent_type="documentarist",
+       prompt=f"""Create DIVIO-compliant REFERENCE documentation for {project_id}.
+
+   DOCUMENTATION TYPE: reference
+   RESEARCH INPUT: Use evolution document at docs/evolution/YYYY-MM-DD-{project_id}.md
+   OUTPUT LOCATION: docs/reference/{project_id}.md
+
+   Focus on:
+   - API specifications (classes, methods, parameters)
+   - Error conditions and solutions
+   - Usage examples
+   - Cross-references to architecture docs
+
+   Quality Gates:
+   - Type purity >= 80% (reference content only)
+   - Zero collapse anti-patterns
+   - All claims backed by implementation evidence
+   """,
+       description=f"Create reference docs for {project_id}"
+   )
+   ```
+
+3. **Update stale architecture doc statuses**:
+   ```python
+   # For each architecture doc with stale status:
+   # - Update "FUTURE DESIGN" → "IMPLEMENTED"
+   # - Update "NOT IMPLEMENTED" → "IMPLEMENTED"
+   # - Update version to match released version
+   # - Update date to current date
+   ```
+
+4. **Validation checklist**:
+   - [ ] Reference documentation created in docs/reference/
+   - [ ] Architecture doc statuses updated to "IMPLEMENTED"
+   - [ ] Cross-references between docs are valid
+   - [ ] No "FUTURE DESIGN" markers remain for implemented features
+
+**Skip Condition**: If user explicitly requests `--skip-docs`, this phase can be skipped with a warning:
+```
+⚠️ Documentation phase skipped. Remember to run:
+   /nw:document "{project-id}" --type=reference
+```
+
+**Output**:
+- `docs/reference/{project-id}.md` - DIVIO reference documentation
+- Updated architecture docs with "IMPLEMENTED" status
+
 ### Folder Structure After Finalization
 
 ```
@@ -709,7 +782,7 @@ docs/
 
 ---
 
-#### 6. COMMIT AND PUSH EVOLUTION DOCUMENT
+#### 7. COMMIT AND PUSH EVOLUTION DOCUMENT
 
 **Objective**: Create immutable record of User Story completion in git history.
 
@@ -886,7 +959,11 @@ Execute Tasks → Review → All Complete
                           ↓
               Archive + Cleanup
                           ↓
+              Documentation (/nw:document)
+                          ↓
                 Evolution Record
+                          ↓
+                  Commit + Push
 ```
 
 This finalization process ensures clean project closure while maintaining comprehensive historical records for organizational learning and future reference.

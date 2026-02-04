@@ -8,7 +8,7 @@ argument-hint: '[agent] [project-id] - Example: @devop "auth-upgrade"'
 **Wave**: UNKNOWN
 **Description**: Summarize achievements, archive to docs/evolution, clean up feature files
 
-**Expected Outputs**: evolution_document
+**Expected Outputs**: evolution_document, reference_documentation
 
 ## Implementation
 # DW-FINALIZE: Feature Completion, Archive, and Prepare for Push
@@ -41,8 +41,15 @@ YOUR TASK: Archive the completed feature by:
 2. Move/archive workflow files (baseline.yaml, roadmap.yaml, step files)
 3. Update any project tracking documents
 4. Clean up temporary files
+5. Create reference documentation via /nw:document (orchestrator invokes)
+6. Update architecture doc statuses from "FUTURE DESIGN" to "IMPLEMENTED"
 
 [Include evolution document structure and deliverables]
+
+DOCUMENTATION PHASE (Post-Cleanup):
+After cleanup, orchestrator should invoke documentarist for reference docs:
+- /nw:document "{project_id}" --type=reference
+- Update any architecture docs with stale "FUTURE DESIGN" status
 ```
 
 ### What NOT to Include in Agent Prompts
