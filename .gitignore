@@ -72,6 +72,9 @@ env/
 .des/
 /mutants/
 
+# nWave audit logs (local only)
+.nwave-audit.log
+
 # Mutation testing artifacts
 .mutmut-cache
 *.sqlite
