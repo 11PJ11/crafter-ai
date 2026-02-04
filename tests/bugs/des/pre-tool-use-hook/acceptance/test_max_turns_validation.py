@@ -267,43 +267,35 @@ class TestPreToolUseMaxTurnsValidation:
 @pytest.fixture
 def claude_code_hook_stdin(tmp_path):
     """
-    Fixture to invoke Claude Code hook adapter with stdin input.
+    Fixture to invoke Claude Code hook adapter directly (no subprocess).
 
     Returns callable that:
     1. Takes (command, stdin_data)
-    2. Invokes hook adapter
+    2. Invokes hook adapter function directly with mocked stdin/stdout
     3. Returns (exit_code, stdout, stderr)
+
+    Note: Direct function calls are ~10x faster than subprocess invocation.
     """
-    import os
-    import subprocess
-    import sys
-    from pathlib import Path
+    from io import StringIO
+    from unittest.mock import patch
 
     def invoke_hook(command: str, stdin_data: str) -> tuple[int, str, str]:
-        """Invoke hook adapter with stdin input."""
-        # Find project root
-        current_file = Path(__file__).resolve()
-        project_root = current_file.parent.parent.parent.parent.parent.parent
-
-        # Set PYTHONPATH to include src directory where des module is located
-        env = os.environ.copy()
-        src_path = project_root / "src"
-        env["PYTHONPATH"] = str(src_path)
-
-        result = subprocess.run(
-            [
-                sys.executable,
-                "-m",
-                "des.adapters.drivers.hooks.claude_code_hook_adapter",
-                command,
-            ],
-            input=stdin_data,
-            capture_output=True,
-            text=True,
-            env=env,
-            cwd=project_root,
+        """Invoke hook adapter function directly with mocked I/O."""
+        from src.des.adapters.drivers.hooks.claude_code_hook_adapter import (
+            handle_pre_task,
         )
 
-        return result.returncode, result.stdout, result.stderr
+        # Mock stdin with the input data
+        with patch("sys.stdin", StringIO(stdin_data)):
+            # Mock stdout to capture output
+            with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
+                # Call the handler directly
+                exit_code = handle_pre_task()
+                stdout = mock_stdout.getvalue()
+
+        # No stderr in direct calls (only in subprocess)
+        stderr = ""
+
+        return exit_code, stdout, stderr
 
     return invoke_hook
