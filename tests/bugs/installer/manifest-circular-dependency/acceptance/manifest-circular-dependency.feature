@@ -38,9 +38,9 @@ Feature: Installer Manifest Circular Dependency Bug
     And the manifest should list installed components
 
   Scenario: Validation should check existing manifest not create it
-    Given the installer has completed installation
-    And the manifest has been created
-    When the validation step runs
-    Then the validation should find the existing manifest
+    Given the installer is ready to run
+    When I run the nWave installer
+    Then the manifest should be created before the validation step
+    And the validation should find the existing manifest
     And the validation should not attempt to create the manifest
     And the validation should pass

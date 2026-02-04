@@ -699,9 +699,12 @@ def main():
     if not installer.install_framework():
         return 1
 
-    if installer.validate_installation():
-        installer.create_manifest()
+    # Create manifest after installation but before validation
+    # This prevents circular dependency where validation fails because
+    # manifest doesn't exist yet
+    installer.create_manifest()
 
+    if installer.validate_installation():
         print()
         # Show installation summary panel
         show_installation_summary(installer.rich_logger, installer.claude_config_dir)
