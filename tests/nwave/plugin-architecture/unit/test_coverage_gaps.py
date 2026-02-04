@@ -325,8 +325,13 @@ class TestPluginRegistryBackupRestore:
         claude_dir.mkdir(parents=True, exist_ok=True)
 
         backup_mgr = BackupManager(test_logger, "install")
+        # Override all path attributes to use tmp_path for test isolation
         backup_mgr.claude_config_dir = claude_dir
         backup_mgr.backup_root = claude_dir / "backups"
+        # Must also override backup_dir which was calculated in __init__
+        backup_mgr.backup_dir = (
+            backup_mgr.backup_root / f"nwave-install-{backup_mgr.timestamp}"
+        )
 
         # Create original agents directory to backup
         agents_dir = claude_dir / "agents"

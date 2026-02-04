@@ -138,6 +138,18 @@ class TestProgressDisplayServiceCIDetection:
 class TestProgressDisplayServiceDisplayPhaseStart:
     """Tests for display_phase_start() method."""
 
+    @pytest.fixture(autouse=True)
+    def disable_ci_mode(self):
+        """Disable CI mode for Rich console tests.
+
+        GitHub Actions sets CI=true, which causes the service to use
+        _print_ci() instead of the Rich console. This fixture ensures
+        tests that verify Rich console behavior work in both local
+        and CI environments.
+        """
+        with patch.dict(os.environ, {"CI": "false"}):
+            yield
+
     @pytest.fixture
     def mock_console(self) -> MagicMock:
         """Create a mock Rich console."""
@@ -188,6 +200,12 @@ class TestProgressDisplayServiceDisplayPhaseStart:
 
 class TestProgressDisplayServiceDisplayStep:
     """Tests for display_step() method."""
+
+    @pytest.fixture(autouse=True)
+    def disable_ci_mode(self):
+        """Disable CI mode for Rich console tests."""
+        with patch.dict(os.environ, {"CI": "false"}):
+            yield
 
     @pytest.fixture
     def mock_console(self) -> MagicMock:
@@ -341,6 +359,12 @@ class TestProgressDisplayServiceDisplayStep:
 class TestProgressDisplayServiceDisplayPhaseComplete:
     """Tests for display_phase_complete() method."""
 
+    @pytest.fixture(autouse=True)
+    def disable_ci_mode(self):
+        """Disable CI mode for Rich console tests."""
+        with patch.dict(os.environ, {"CI": "false"}):
+            yield
+
     @pytest.fixture
     def mock_console(self) -> MagicMock:
         """Create a mock Rich console."""
@@ -415,6 +439,12 @@ class TestProgressDisplayServiceDisplayPhaseComplete:
 class TestProgressDisplayServiceDisplayOverallProgress:
     """Tests for display_overall_progress() method."""
 
+    @pytest.fixture(autouse=True)
+    def disable_ci_mode(self):
+        """Disable CI mode for Rich console tests."""
+        with patch.dict(os.environ, {"CI": "false"}):
+            yield
+
     @pytest.fixture
     def mock_console(self) -> MagicMock:
         """Create a mock Rich console."""
@@ -473,6 +503,12 @@ class TestProgressDisplayServiceDisplayOverallProgress:
 
 class TestProgressDisplayServiceIntegration:
     """Integration tests for ProgressDisplayService."""
+
+    @pytest.fixture(autouse=True)
+    def disable_ci_mode(self):
+        """Disable CI mode for Rich console tests."""
+        with patch.dict(os.environ, {"CI": "false"}):
+            yield
 
     def test_full_phase_workflow(self) -> None:
         """Test displaying a complete phase workflow."""

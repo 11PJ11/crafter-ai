@@ -54,6 +54,18 @@ class TestCelebrationServiceCIDetection:
 class TestCelebrationServiceDisplayWelcome:
     """Tests for display_welcome() method."""
 
+    @pytest.fixture(autouse=True)
+    def disable_ci_mode(self):
+        """Disable CI mode for Rich console tests.
+
+        GitHub Actions sets CI=true, which causes the service to use
+        _print_ci() instead of the Rich console. This fixture ensures
+        tests that verify Rich console behavior work in both local
+        and CI environments.
+        """
+        with patch.dict(os.environ, {"CI": "false"}):
+            yield
+
     @pytest.fixture
     def mock_console(self) -> MagicMock:
         """Create a mock Rich console."""
@@ -123,6 +135,12 @@ class TestCelebrationServiceDisplayWelcome:
 class TestCelebrationServiceDisplaySuccess:
     """Tests for display_success() method."""
 
+    @pytest.fixture(autouse=True)
+    def disable_ci_mode(self):
+        """Disable CI mode for Rich console tests."""
+        with patch.dict(os.environ, {"CI": "false"}):
+            yield
+
     @pytest.fixture
     def mock_console(self) -> MagicMock:
         """Create a mock Rich console."""
@@ -189,6 +207,12 @@ class TestCelebrationServiceDisplaySuccess:
 
 class TestCelebrationServiceDisplayNextSteps:
     """Tests for display_next_steps() method."""
+
+    @pytest.fixture(autouse=True)
+    def disable_ci_mode(self):
+        """Disable CI mode for Rich console tests."""
+        with patch.dict(os.environ, {"CI": "false"}):
+            yield
 
     @pytest.fixture
     def mock_console(self) -> MagicMock:
@@ -280,6 +304,12 @@ class TestCelebrationServiceDisplayNextSteps:
 
 class TestCelebrationServiceDisplayFailure:
     """Tests for display_failure() method."""
+
+    @pytest.fixture(autouse=True)
+    def disable_ci_mode(self):
+        """Disable CI mode for Rich console tests."""
+        with patch.dict(os.environ, {"CI": "false"}):
+            yield
 
     @pytest.fixture
     def mock_console(self) -> MagicMock:
@@ -389,6 +419,12 @@ class TestCelebrationServiceURLConfiguration:
 
 class TestCelebrationServiceIntegration:
     """Integration tests for CelebrationService."""
+
+    @pytest.fixture(autouse=True)
+    def disable_ci_mode(self):
+        """Disable CI mode for Rich console tests."""
+        with patch.dict(os.environ, {"CI": "false"}):
+            yield
 
     def test_full_success_workflow(self) -> None:
         """Test displaying a complete successful installation workflow."""

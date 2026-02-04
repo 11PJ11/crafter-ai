@@ -4,6 +4,7 @@ This module tests the auto-repair functionality for fixable check failures.
 Tests cover interactive prompts, command execution, and CI mode behavior.
 """
 
+import os
 import subprocess
 from unittest.mock import MagicMock, patch
 
@@ -121,6 +122,17 @@ class TestCanRepair:
 class TestRepairWithPrompt:
     """Tests for AutoRepairService.repair method with interactive prompts."""
 
+    @pytest.fixture(autouse=True)
+    def disable_ci_mode(self):
+        """Disable CI mode for tests that verify interactive prompt behavior.
+
+        GitHub Actions sets CI=true, which causes the service to auto-accept
+        repairs without prompting. This fixture ensures tests that verify
+        prompt behavior work in both local and CI environments.
+        """
+        with patch.dict(os.environ, {"CI": "false"}):
+            yield
+
     def test_repair_prompts_user_and_runs_command_on_yes(self) -> None:
         """repair should prompt user and run fix_command when user says Y."""
         service = AutoRepairService()
@@ -208,6 +220,12 @@ class TestRepairWithPrompt:
 
 class TestRepairCommandExecution:
     """Tests for repair command execution behavior."""
+
+    @pytest.fixture(autouse=True)
+    def disable_ci_mode(self):
+        """Disable CI mode for tests that verify interactive prompt behavior."""
+        with patch.dict(os.environ, {"CI": "false"}):
+            yield
 
     def test_repair_returns_success_with_output_on_success(self) -> None:
         """repair should return success with command output on successful execution."""
