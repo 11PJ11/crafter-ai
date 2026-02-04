@@ -1,5 +1,6 @@
 """DES (Deterministic Execution System) installation plugin."""
 
+import json
 import shutil
 import subprocess
 from pathlib import Path
@@ -12,6 +13,9 @@ class DESPlugin(InstallationPlugin):
 
     Demonstrates extensibility: adding DES requires only plugin registration
     without modifying core installer logic.
+
+    Includes hooks installation that properly preserves all existing settings
+    in settings.local.json (permissions, other hooks, etc.).
     """
 
     # DES scripts installed to ~/.claude/scripts/
@@ -26,10 +30,21 @@ class DESPlugin(InstallationPlugin):
         ".des-audit-README.md",
     ]
 
+    # Hook configuration templates
+    DES_PRETOOLUSE_HOOK = {
+        "matcher": "Task",
+        "command": "python3 src/des/adapters/drivers/hooks/claude_code_hook_adapter.py pre-task",
+    }
+
+    DES_SUBAGENT_STOP_HOOK = {
+        "command": "python3 src/des/adapters/drivers/hooks/claude_code_hook_adapter.py subagent-stop"
+    }
+
     def __init__(self):
         """Initialize DES plugin with name, priority, and dependencies."""
         super().__init__(name="des", priority=50)
         self.dependencies = ["templates", "utilities"]
+        self._original_settings: dict | None = None  # For uninstall restoration
 
     def validate_prerequisites(self, context: InstallContext) -> PluginResult:
         """Validate that DES prerequisites exist before installation.
@@ -135,10 +150,15 @@ class DESPlugin(InstallationPlugin):
             if not templates_result.success:
                 return templates_result
 
+            # Install DES hooks into settings.local.json
+            hooks_result = self._install_des_hooks(context)
+            if not hooks_result.success:
+                return hooks_result
+
             return PluginResult(
                 success=True,
                 plugin_name="des",
-                message="DES installed successfully",
+                message="DES installed successfully (module, scripts, templates, hooks)",
             )
 
         except Exception as e:
@@ -265,6 +285,205 @@ class DESPlugin(InstallationPlugin):
                 message=f"DES templates install failed: {e}",
             )
 
+    def _install_des_hooks(self, context: InstallContext) -> PluginResult:
+        """Install DES hooks into settings.local.json.
+
+        CRITICAL: Preserves ALL existing settings (permissions, other hooks, etc.).
+        Only modifies the hooks.PreToolUse and hooks.SubagentStop arrays.
+        """
+        try:
+            settings_file = context.claude_dir / "settings.local.json"
+
+            # Load existing config (preserve everything)
+            config = self._load_settings(settings_file)
+
+            # Store original for uninstall restoration
+            self._original_settings = json.loads(json.dumps(config))
+
+            # Check if already installed
+            if self._hooks_already_installed(config):
+                context.logger.info("DES hooks already installed - skipping")
+                return PluginResult(
+                    success=True,
+                    plugin_name="des",
+                    message="DES hooks already installed",
+                )
+
+            # Ensure hooks structure exists WITHOUT overwriting other keys
+            if "hooks" not in config:
+                config["hooks"] = {}
+            if "PreToolUse" not in config["hooks"]:
+                config["hooks"]["PreToolUse"] = []
+            if "SubagentStop" not in config["hooks"]:
+                config["hooks"]["SubagentStop"] = []
+
+            # Add DES hooks
+            config["hooks"]["PreToolUse"].append(self.DES_PRETOOLUSE_HOOK)
+            config["hooks"]["SubagentStop"].append(self.DES_SUBAGENT_STOP_HOOK)
+
+            if not context.dry_run:
+                self._save_settings(settings_file, config, context)
+
+            return PluginResult(
+                success=True,
+                plugin_name="des",
+                message="DES hooks installed (preserving existing settings)",
+            )
+
+        except Exception as e:
+            return PluginResult(
+                success=False,
+                plugin_name="des",
+                message=f"DES hooks install failed: {e}",
+            )
+
+    def _load_settings(self, settings_file: Path) -> dict:
+        """Load settings from JSON file, return empty dict if not exists."""
+        if not settings_file.exists():
+            return {}
+
+        try:
+            with open(settings_file, encoding="utf-8") as f:
+                return json.load(f)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON in {settings_file}: {e}")
+
+    def _save_settings(
+        self, settings_file: Path, config: dict, context: InstallContext
+    ) -> None:
+        """Save settings to JSON file with proper formatting."""
+        # Ensure directory exists
+        settings_file.parent.mkdir(parents=True, exist_ok=True)
+
+        # Write with proper formatting
+        with open(settings_file, "w", encoding="utf-8") as f:
+            json.dump(config, f, indent=2)
+            f.write("\n")  # Add trailing newline
+
+        context.logger.info(f"Updated settings at {settings_file}")
+
+    def _hooks_already_installed(self, config: dict) -> bool:
+        """Check if DES hooks are already installed."""
+        if "hooks" not in config:
+            return False
+
+        pre_hooks = config["hooks"].get("PreToolUse", [])
+        has_pre = any(self._is_des_hook(h.get("command", "")) for h in pre_hooks)
+
+        stop_hooks = config["hooks"].get("SubagentStop", [])
+        has_stop = any(self._is_des_hook(h.get("command", "")) for h in stop_hooks)
+
+        return has_pre and has_stop
+
+    def _is_des_hook(self, command: str) -> bool:
+        """Check if command is a DES hook."""
+        return "claude_code_hook_adapter.py" in command
+
+    def uninstall(self, context: InstallContext) -> PluginResult:
+        """Uninstall DES plugin.
+
+        Removes DES hooks from settings.local.json while preserving all other settings.
+        Also removes DES module, scripts, and templates.
+        """
+        try:
+            errors = []
+
+            # 1. Remove DES hooks from settings
+            hooks_result = self._uninstall_des_hooks(context)
+            if not hooks_result.success:
+                errors.append(hooks_result.message)
+
+            # 2. Remove DES module
+            des_module = context.claude_dir / "lib" / "python" / "des"
+            if des_module.exists():
+                shutil.rmtree(des_module)
+                context.logger.info(f"Removed DES module: {des_module}")
+
+            # 3. Remove DES scripts
+            scripts_dir = context.claude_dir / "scripts"
+            for script_name in self.DES_SCRIPTS:
+                script_path = scripts_dir / script_name
+                if script_path.exists():
+                    script_path.unlink()
+                    context.logger.info(f"Removed DES script: {script_name}")
+
+            # 4. Remove DES templates
+            templates_dir = context.claude_dir / "templates"
+            for template_name in self.DES_TEMPLATES:
+                template_path = templates_dir / template_name
+                if template_path.exists():
+                    template_path.unlink()
+                    context.logger.info(f"Removed DES template: {template_name}")
+
+            if errors:
+                return PluginResult(
+                    success=False,
+                    plugin_name="des",
+                    message=f"DES uninstall had errors: {'; '.join(errors)}",
+                    errors=errors,
+                )
+
+            return PluginResult(
+                success=True,
+                plugin_name="des",
+                message="DES uninstalled successfully",
+            )
+
+        except Exception as e:
+            return PluginResult(
+                success=False,
+                plugin_name="des",
+                message=f"DES uninstall failed: {e}",
+            )
+
+    def _uninstall_des_hooks(self, context: InstallContext) -> PluginResult:
+        """Remove DES hooks from settings.local.json.
+
+        Preserves all other settings (permissions, other hooks, etc.).
+        """
+        try:
+            settings_file = context.claude_dir / "settings.local.json"
+
+            if not settings_file.exists():
+                return PluginResult(
+                    success=True,
+                    plugin_name="des",
+                    message="No settings file to clean up",
+                )
+
+            config = self._load_settings(settings_file)
+
+            # Remove only DES hooks, preserve everything else
+            if "hooks" in config:
+                if "PreToolUse" in config["hooks"]:
+                    config["hooks"]["PreToolUse"] = [
+                        h
+                        for h in config["hooks"]["PreToolUse"]
+                        if not self._is_des_hook(h.get("command", ""))
+                    ]
+
+                if "SubagentStop" in config["hooks"]:
+                    config["hooks"]["SubagentStop"] = [
+                        h
+                        for h in config["hooks"]["SubagentStop"]
+                        if not self._is_des_hook(h.get("command", ""))
+                    ]
+
+            self._save_settings(settings_file, config, context)
+
+            return PluginResult(
+                success=True,
+                plugin_name="des",
+                message="DES hooks removed (other settings preserved)",
+            )
+
+        except Exception as e:
+            return PluginResult(
+                success=False,
+                plugin_name="des",
+                message=f"DES hooks uninstall failed: {e}",
+            )
+
     def verify(self, context: InstallContext) -> PluginResult:
         """Verify DES installation."""
         errors = []
@@ -299,6 +518,18 @@ class DESPlugin(InstallationPlugin):
             if not template_path.exists():
                 errors.append(f"Missing DES template: {template}")
 
+        # 4. Verify hooks installed in settings.local.json
+        settings_file = context.claude_dir / "settings.local.json"
+        if settings_file.exists():
+            try:
+                config = self._load_settings(settings_file)
+                if not self._hooks_already_installed(config):
+                    errors.append("DES hooks not found in settings.local.json")
+            except Exception as e:
+                errors.append(f"Could not verify DES hooks: {e}")
+        else:
+            errors.append("settings.local.json not found - DES hooks not installed")
+
         if errors:
             return PluginResult(
                 success=False,
@@ -310,5 +541,5 @@ class DESPlugin(InstallationPlugin):
         return PluginResult(
             success=True,
             plugin_name="des",
-            message="DES verification passed (module, scripts, templates OK)",
+            message="DES verification passed (module, scripts, templates, hooks OK)",
         )

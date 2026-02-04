@@ -27,6 +27,7 @@ try:
     from scripts.install.plugins.agents_plugin import AgentsPlugin
     from scripts.install.plugins.base import InstallContext
     from scripts.install.plugins.commands_plugin import CommandsPlugin
+    from scripts.install.plugins.des_plugin import DESPlugin
     from scripts.install.plugins.registry import PluginRegistry
     from scripts.install.plugins.templates_plugin import TemplatesPlugin
     from scripts.install.plugins.utilities_plugin import UtilitiesPlugin
@@ -45,6 +46,7 @@ except ImportError:
     from plugins.agents_plugin import AgentsPlugin
     from plugins.base import InstallContext
     from plugins.commands_plugin import CommandsPlugin
+    from plugins.des_plugin import DESPlugin
     from plugins.registry import PluginRegistry
     from plugins.templates_plugin import TemplatesPlugin
     from plugins.utilities_plugin import UtilitiesPlugin
@@ -276,13 +278,14 @@ class NWaveInstaller:
         """Create and configure the plugin registry with all installation plugins.
 
         Returns:
-            PluginRegistry configured with agents, commands, templates, and utilities plugins.
+            PluginRegistry configured with agents, commands, templates, utilities, and DES plugins.
         """
         registry = PluginRegistry()
         registry.register(AgentsPlugin())
         registry.register(CommandsPlugin())
         registry.register(TemplatesPlugin())
         registry.register(UtilitiesPlugin())
+        registry.register(DESPlugin())
         return registry
 
     def install_framework(self) -> bool:
