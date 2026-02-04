@@ -30,15 +30,12 @@ class DESPlugin(InstallationPlugin):
         ".des-audit-README.md",
     ]
 
-    # Hook configuration templates
-    DES_PRETOOLUSE_HOOK = {
-        "matcher": "Task",
-        "command": "python3 src/des/adapters/drivers/hooks/claude_code_hook_adapter.py pre-task",
-    }
-
-    DES_SUBAGENT_STOP_HOOK = {
-        "command": "python3 src/des/adapters/drivers/hooks/claude_code_hook_adapter.py subagent-stop"
-    }
+    # Hook command template - {lib_path} is substituted at install time
+    # Uses PYTHONPATH to ensure des module is importable from installed location
+    HOOK_COMMAND_TEMPLATE = (
+        "PYTHONPATH={lib_path} python3 -m "
+        "des.adapters.drivers.hooks.claude_code_hook_adapter {action}"
+    )
 
     def __init__(self):
         """Initialize DES plugin with name, priority, and dependencies."""
@@ -285,11 +282,27 @@ class DESPlugin(InstallationPlugin):
                 message=f"DES templates install failed: {e}",
             )
 
+    def _generate_hook_command(self, context: InstallContext, action: str) -> str:
+        """Generate hook command with correct installed path.
+
+        Args:
+            context: InstallContext with claude_dir
+            action: Hook action (pre-task or subagent-stop)
+
+        Returns:
+            Complete command string with PYTHONPATH set to installed location
+        """
+        lib_path = context.claude_dir / "lib" / "python"
+        return self.HOOK_COMMAND_TEMPLATE.format(lib_path=lib_path, action=action)
+
     def _install_des_hooks(self, context: InstallContext) -> PluginResult:
         """Install DES hooks into settings.local.json.
 
         CRITICAL: Preserves ALL existing settings (permissions, other hooks, etc.).
         Only modifies the hooks.PreToolUse and hooks.SubagentStop arrays.
+
+        Hook commands use PYTHONPATH to point to installed location:
+        ~/.claude/lib/python/des/
         """
         try:
             settings_file = context.claude_dir / "settings.local.json"
@@ -317,9 +330,18 @@ class DESPlugin(InstallationPlugin):
             if "SubagentStop" not in config["hooks"]:
                 config["hooks"]["SubagentStop"] = []
 
+            # Generate hooks with correct installed paths
+            pretooluse_hook = {
+                "matcher": "Task",
+                "command": self._generate_hook_command(context, "pre-task"),
+            }
+            subagent_stop_hook = {
+                "command": self._generate_hook_command(context, "subagent-stop"),
+            }
+
             # Add DES hooks
-            config["hooks"]["PreToolUse"].append(self.DES_PRETOOLUSE_HOOK)
-            config["hooks"]["SubagentStop"].append(self.DES_SUBAGENT_STOP_HOOK)
+            config["hooks"]["PreToolUse"].append(pretooluse_hook)
+            config["hooks"]["SubagentStop"].append(subagent_stop_hook)
 
             if not context.dry_run:
                 self._save_settings(settings_file, config, context)
