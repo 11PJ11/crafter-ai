@@ -464,9 +464,13 @@ def event_type_enum_exists(context):
     """Verify EventType enum can be imported - uses production code."""
     import importlib.util
 
+    # Use absolute path to work correctly even when working directory changes
+    project_root = Path(__file__).parent.parent.parent.parent
+    audit_events_path = project_root / "src" / "des" / "adapters" / "driven" / "logging" / "audit_events.py"
+
     # Direct import from file to bypass broken __init__.py chain
     spec = importlib.util.spec_from_file_location(
-        "audit_events", "src/des/adapters/driven/logging/audit_events.py"
+        "audit_events", str(audit_events_path)
     )
     audit_events = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(audit_events)

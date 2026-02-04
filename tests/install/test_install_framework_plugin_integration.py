@@ -76,7 +76,7 @@ class TestInstallFrameworkUsesPluginRegistry:
             mock_create.assert_called_once()
 
     def test_install_framework_registers_all_four_plugins(self, configured_installer):
-        """Verify all 4 wrapper plugins are registered with the registry."""
+        """Verify all 5 wrapper plugins are registered with the registry."""
         installer = configured_installer
 
         # Patch PluginRegistry to capture registrations
@@ -95,13 +95,16 @@ class TestInstallFrameworkUsesPluginRegistry:
                 "utilities": PluginResult(
                     success=True, plugin_name="utilities", message="OK"
                 ),
+                "des": PluginResult(
+                    success=True, plugin_name="des", message="OK"
+                ),
             }
             MockRegistry.return_value = mock_registry
 
             installer.install_framework()
 
-            # Verify 4 plugins registered
-            assert mock_registry.register.call_count == 4
+            # Verify 5 plugins registered (including DES)
+            assert mock_registry.register.call_count == 5
 
             # Verify each plugin type was registered
             registered_plugins = [
@@ -113,6 +116,7 @@ class TestInstallFrameworkUsesPluginRegistry:
             assert "commands" in plugin_names
             assert "templates" in plugin_names
             assert "utilities" in plugin_names
+            assert "des" in plugin_names
 
     def test_install_framework_creates_install_context(self, configured_installer):
         """Verify InstallContext is created with required fields."""
@@ -209,17 +213,21 @@ class TestInstallFrameworkPluginExecutionOrder:
                 "utilities": PluginResult(
                     success=True, plugin_name="utilities", message="OK"
                 ),
+                "des": PluginResult(
+                    success=True, plugin_name="des", message="OK"
+                ),
             }
             MockRegistry.return_value = mock_registry
 
             installer.install_framework()
 
-            # All 4 plugins should be registered
-            assert len(registration_order) == 4
+            # All 5 plugins should be registered (including DES)
+            assert len(registration_order) == 5
             assert "agents" in registration_order
             assert "commands" in registration_order
             assert "templates" in registration_order
             assert "utilities" in registration_order
+            assert "des" in registration_order
 
 
 class TestInstallFrameworkDryRunMode:

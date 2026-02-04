@@ -43,7 +43,8 @@ class DESHookInstaller:
 
         Merges DES hooks into existing settings.local.json, preserving other hooks.
         Creates settings.local.json if it doesn't exist.
-        Idempotent - detects and avoids duplicate installations.
+        Idempotent - always removes existing DES hooks before adding new ones
+        to ensure latest format is used and prevent duplicates.
 
         Returns:
             bool: True if installation succeeded, False otherwise
@@ -52,9 +53,11 @@ class DESHookInstaller:
             config = self._load_config()
             self._ensure_hooks_structure(config)
 
+            # Always remove existing DES hooks before adding new ones
+            # to ensure idempotency and latest format
             if self._is_installed(config):
-                print("DES hooks already installed")
-                return True
+                print("DES hooks already installed - updating to latest format")
+                self._remove_des_hooks(config)
 
             self._add_des_hooks(config)
             self._save_config(config)
@@ -154,6 +157,10 @@ class DESHookInstaller:
         """
         Check if DES hooks are already installed.
 
+        Returns True if EITHER PreToolUse or SubagentStop has a DES hook.
+        This handles cases where only partial hooks exist (e.g., old format).
+        The install process will clean up and reinstall both properly.
+
         Args:
             config: Configuration dictionary
 
@@ -171,11 +178,15 @@ class DESHookInstaller:
         stop_hooks = config["hooks"].get("SubagentStop", [])
         has_stop = any(self._is_des_hook(h.get("command", "")) for h in stop_hooks)
 
-        return has_pre and has_stop
+        return has_pre or has_stop
 
     def _is_des_hook(self, command: str) -> bool:
         """
         Check if command is a DES hook.
+
+        Detects both old format (direct .py) and new format (python -m):
+        - Old: python3 src/des/.../claude_code_hook_adapter.py
+        - New: python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter
 
         Args:
             command: Hook command string
@@ -183,7 +194,7 @@ class DESHookInstaller:
         Returns:
             bool: True if command is a DES hook
         """
-        return "claude_code_hook_adapter.py" in command
+        return "claude_code_hook_adapter" in command
 
     def _ensure_hooks_structure(self, config: dict):
         """

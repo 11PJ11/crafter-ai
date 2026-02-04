@@ -105,9 +105,20 @@ def des_config_path(claude_config_dir):
 
 
 @pytest.fixture
-def audit_log_path(claude_config_dir):
-    """Return path to audit log file."""
-    logs_dir = claude_config_dir / "des" / "logs"
+def audit_log_path(temp_home, tmp_path, monkeypatch):
+    """Return path to audit log file.
+
+    Uses project-local .nwave/logs/des/ path to match production behavior
+    where audit logger now defaults to project-local directory.
+
+    We set the working directory to tmp_path so the audit logger will
+    use tmp_path/.nwave/logs/des/ for audit logs.
+    """
+    # Change to tmp_path as the current working directory for this test
+    monkeypatch.chdir(tmp_path)
+
+    # Project-local audit log directory (new default behavior)
+    logs_dir = tmp_path / ".nwave" / "logs" / "des"
     logs_dir.mkdir(parents=True, exist_ok=True)
     return logs_dir / "audit.log"
 
@@ -133,6 +144,10 @@ def fake_time_provider(fixed_utc_time):
 @pytest.fixture
 def clean_des_environment(temp_home, audit_log_reader):
     """Clean DES environment before each test."""
+    # Reset audit logger to pick up correct working directory
+    import src.des.adapters.driven.logging.audit_logger as audit_logger_module
+    audit_logger_module.reset_audit_logger()
+
     # Clear audit log
     audit_log_reader.clear()
 
@@ -149,6 +164,8 @@ def clean_des_environment(temp_home, audit_log_reader):
 
     # Cleanup after test
     audit_log_reader.clear()
+    # Reset audit logger after test to avoid state leakage
+    audit_logger_module.reset_audit_logger()
 
 
 @pytest.fixture
@@ -160,16 +177,19 @@ audit_logging_enabled: true  # Enable comprehensive audit trail
 """
     des_config_path.write_text(config_content)
 
-    # Initialize global audit logger with test-specific path
+    # Reset and initialize global audit logger with test-specific path
     # IMPORTANT: Must reset singleton and configure before any tests use it
     import src.des.adapters.driven.logging.audit_logger as audit_logger_module
 
-    audit_logger_module._audit_logger = None  # Reset singleton
-    # Use parent directory of audit_log_path (which is ~/.claude/des/logs/audit.log)
-    # So we pass ~/.claude/des/logs as the log directory
+    audit_logger_module.reset_audit_logger()  # Use the reset function
+    # Use parent directory of audit_log_path (which is now .nwave/logs/des/audit.log)
+    # So we pass .nwave/logs/des as the log directory
     audit_logger_module._audit_logger = audit_logger_module.AuditLogger(
         log_dir=str(audit_log_path.parent)
     )
+    # Track the current working directory
+    from pathlib import Path
+    audit_logger_module._audit_logger_cwd = Path.cwd()
 
     return des_config_path
 
@@ -327,14 +347,17 @@ def invalid_task_json():
 @pytest.fixture
 def hook_adapter_cli():
     """Return path to hook adapter CLI script."""
-    # Adjust path based on actual project structure
-    return Path("src/des/adapters/drivers/hooks/claude_code_hook_adapter.py")
+    # Return absolute path to work correctly even when working directory changes
+    project_root = Path(__file__).parent.parent.parent.parent
+    return project_root / "src" / "des" / "adapters" / "drivers" / "hooks" / "claude_code_hook_adapter.py"
 
 
 @pytest.fixture
 def installer_cli():
     """Return path to installer CLI script."""
-    return Path("scripts/install/install_des_hooks.py")
+    # Return absolute path to work correctly even when working directory changes
+    project_root = Path(__file__).parent.parent.parent.parent
+    return project_root / "scripts" / "install" / "install_des_hooks.py"
 
 
 def run_cli_command(
@@ -386,6 +409,8 @@ def context():
 @pytest.fixture
 def stub_adapter_exists():
     """Verify production stub hook adapter exists at expected path."""
-    adapter_file = Path("src/des/adapters/drivers/hooks/claude_code_hook_adapter.py")
+    # Use absolute path to work correctly even when working directory changes
+    project_root = Path(__file__).parent.parent.parent.parent
+    adapter_file = project_root / "src" / "des" / "adapters" / "drivers" / "hooks" / "claude_code_hook_adapter.py"
     assert adapter_file.exists(), f"Production stub adapter not found at {adapter_file}"
     return adapter_file

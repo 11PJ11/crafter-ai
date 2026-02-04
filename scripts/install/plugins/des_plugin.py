@@ -172,7 +172,11 @@ class DESPlugin(InstallationPlugin):
             if hasattr(context, "dist_dir") and context.dist_dir:
                 source_dir = context.dist_dir / "lib" / "python" / "des"
             else:
-                source_dir = Path("src/des")
+                # Use project_root if available, fallback to current directory
+                if context.project_root:
+                    source_dir = context.project_root / "src" / "des"
+                else:
+                    source_dir = Path("src/des")
 
             if not source_dir.exists():
                 return PluginResult(
