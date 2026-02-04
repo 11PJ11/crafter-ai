@@ -131,3 +131,26 @@ def des_orchestrator(
         filesystem=in_memory_filesystem,
         time_provider=mocked_time_provider,
     )
+
+
+@pytest.fixture
+def scenario_des_orchestrator(mocked_hook, mocked_validator, mocked_time_provider):
+    """
+    DES orchestrator for E2E scenario testing.
+
+    Uses real filesystem for E2E tests (unlike unit tests) to support
+    tempfile-based test scenarios. Still uses mocked time, hook, and validator
+    for deterministic behavior.
+
+    Returns:
+        DESOrchestrator: Configured orchestrator with real filesystem
+    """
+    from src.des.adapters.driven.filesystem.real_filesystem import RealFileSystem
+    from src.des.application.orchestrator import DESOrchestrator
+
+    return DESOrchestrator(
+        hook=mocked_hook,
+        validator=mocked_validator,
+        filesystem=RealFileSystem(),
+        time_provider=mocked_time_provider,
+    )
