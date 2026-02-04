@@ -21,8 +21,8 @@ from crafter_ai.installer.services.release_report_service import ReleaseReport
 
 @pytest.fixture
 def runner() -> CliRunner:
-    """Create a CLI test runner."""
-    return CliRunner()
+    """Create a CLI test runner with ANSI colors disabled."""
+    return CliRunner(env={"NO_COLOR": "1"})
 
 
 @pytest.fixture

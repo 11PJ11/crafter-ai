@@ -20,8 +20,8 @@ from crafter_ai.installer.services.wheel_validation_service import WheelValidati
 
 @pytest.fixture
 def runner() -> CliRunner:
-    """Create a CLI test runner."""
-    return CliRunner()
+    """Create a CLI test runner with ANSI colors disabled."""
+    return CliRunner(env={"NO_COLOR": "1"})
 
 
 @pytest.fixture

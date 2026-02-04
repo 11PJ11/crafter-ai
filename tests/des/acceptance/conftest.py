@@ -355,12 +355,17 @@ def run_cli_command(
 
     cmd = ["python3", str(cli_path), *args]
 
+    # Add project root to PYTHONPATH for subprocess import resolution
+    env = os.environ.copy()
+    project_root = str(Path(__file__).parent.parent.parent.parent)
+    env["PYTHONPATH"] = project_root + os.pathsep + env.get("PYTHONPATH", "")
+
     result = subprocess.run(
         cmd,
         input=stdin_data.encode() if stdin_data else None,
         capture_output=True,
         text=False,
-        env=os.environ.copy(),
+        env=env,
     )
 
     return result

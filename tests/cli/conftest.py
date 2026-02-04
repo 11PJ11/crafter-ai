@@ -41,7 +41,7 @@ def cli_runner_isolated() -> CliRunner:
     Returns:
         CliRunner: Isolated CLI test runner
     """
-    return CliRunner(mix_stderr=False)
+    return CliRunner(env={"NO_COLOR": "1"})
 
 
 # Re-export mock adapters from installer conftest for CLI tests that need them

@@ -20,7 +20,8 @@ from crafter_ai.installer.ports.pipx_port import InstalledPackage, InstallResult
 test_app = typer.Typer()
 test_app.command()(install_nwave)
 
-runner = CliRunner()
+# Use NO_COLOR to disable ANSI escape codes for consistent assertions
+runner = CliRunner(env={"NO_COLOR": "1"})
 
 
 class TestInstallNwaveCommandExists:
