@@ -398,8 +398,13 @@ class DESPlugin(InstallationPlugin):
         return has_pre and has_stop
 
     def _is_des_hook(self, command: str) -> bool:
-        """Check if command is a DES hook."""
-        return "claude_code_hook_adapter.py" in command
+        """Check if command is a DES hook.
+
+        Detects both old format (direct .py) and new format (python -m):
+        - Old: python3 src/des/.../claude_code_hook_adapter.py
+        - New: python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter
+        """
+        return "claude_code_hook_adapter" in command
 
     def uninstall(self, context: InstallContext) -> PluginResult:
         """Uninstall DES plugin.
