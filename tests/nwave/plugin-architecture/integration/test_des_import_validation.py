@@ -58,7 +58,7 @@ def installed_des_context(clean_test_directory, project_root, test_logger):
     This fixture installs all plugins (including DES and its dependencies)
     and returns the InstallContext for validation testing.
 
-    Skips tests if dist/ide doesn't exist (requires local build artifacts).
+    Requires dist/ide to exist (built by CI step or local build_ide_bundle.py).
     """
     from scripts.install.plugins.agents_plugin import AgentsPlugin
     from scripts.install.plugins.base import InstallContext
@@ -70,10 +70,12 @@ def installed_des_context(clean_test_directory, project_root, test_logger):
 
     framework_source = project_root / "dist" / "ide"
 
-    # Skip if dist/ide doesn't exist (build artifacts not present in CI)
+    # Fail clearly if dist/ide doesn't exist
     if not framework_source.exists():
-        pytest.skip(
-            "dist/ide not found - run 'python tools/core/build_ide_bundle.py' first"
+        pytest.fail(
+            f"dist/ide not found at {framework_source}. "
+            "Run 'PYTHONPATH=tools python tools/core/build_ide_bundle.py "
+            "--source-dir nWave --output-dir dist/ide' first."
         )
 
     context = InstallContext(
