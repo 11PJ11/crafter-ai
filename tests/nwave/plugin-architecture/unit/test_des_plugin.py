@@ -168,13 +168,13 @@ class TestDESPluginVerifyModuleImport:
                 "PreToolUse": [
                     {
                         "matcher": {"tool": "Task"},
-                        "command": f"python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter pretask",
+                        "command": "python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter pretask",
                         "env": {"PYTHONPATH": str(lib_path)},
                     }
                 ],
                 "SubagentStop": [
                     {
-                        "command": f"python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter subagent_stop",
+                        "command": "python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter subagent_stop",
                         "env": {"PYTHONPATH": str(lib_path)},
                     }
                 ],
@@ -398,13 +398,13 @@ class TestDESPluginVerifyComplete:
                 "PreToolUse": [
                     {
                         "matcher": {"tool": "Task"},
-                        "command": f"python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter pretask",
+                        "command": "python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter pretask",
                         "env": {"PYTHONPATH": str(lib_path)},
                     }
                 ],
                 "SubagentStop": [
                     {
-                        "command": f"python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter subagent_stop",
+                        "command": "python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter subagent_stop",
                         "env": {"PYTHONPATH": str(lib_path)},
                     }
                 ],
