@@ -292,7 +292,7 @@ def create_pypi_check_registry() -> CheckRegistry:
     """
     registry = CheckRegistry()
     registry.register("pypi-connectivity", check_pypi_connectivity)
-    registry.register("package-exists", lambda: check_package_exists())
-    registry.register("version-available", lambda: check_version_available())
+    registry.register("package-exists", check_package_exists)
+    registry.register("version-available", check_version_available)
     registry.register("pypi-tls", check_pypi_tls)
     return registry

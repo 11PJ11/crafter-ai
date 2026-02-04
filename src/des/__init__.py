@@ -88,7 +88,6 @@ __all__ = [
     "RealHook",
     # Driver adapters
     "RealSubagentStopHook",
-    "TemplateValidator",
     "RealValidator",
     "SilentLogger",
     "StructuredLogger",
@@ -96,6 +95,7 @@ __all__ = [
     "SystemTime",
     "TDDPhaseValidator",
     "TaskInvocationPort",
+    "TemplateValidator",
     "TimeProvider",
     # Domain
     "TimeoutMonitor",

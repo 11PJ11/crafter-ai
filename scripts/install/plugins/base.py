@@ -8,7 +8,7 @@ and PluginResult for structured installation results.
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 
 @dataclass
@@ -18,8 +18,8 @@ class PluginResult:
     success: bool
     plugin_name: str
     message: str = ""
-    errors: List[str] = field(default_factory=list)
-    installed_files: List[Path] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
+    installed_files: list[Path] = field(default_factory=list)
 
     def __str__(self) -> str:
         if self.success:
@@ -42,7 +42,7 @@ class InstallContext:
     rich_logger: Any = None  # RichLogger instance
     dry_run: bool = False
     dist_dir: Path = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class InstallationPlugin(ABC):
@@ -64,7 +64,7 @@ class InstallationPlugin(ABC):
         """
         self.name = name
         self.priority = priority
-        self.dependencies: List[str] = []
+        self.dependencies: list[str] = []
 
     @abstractmethod
     def install(self, context: InstallContext) -> PluginResult:
@@ -90,7 +90,7 @@ class InstallationPlugin(ABC):
         """
         pass
 
-    def get_dependencies(self) -> List[str]:
+    def get_dependencies(self) -> list[str]:
         """Return list of plugin names this plugin depends on.
 
         Dependencies must be resolved before this plugin can install.
@@ -100,7 +100,7 @@ class InstallationPlugin(ABC):
         """
         return self.dependencies
 
-    def set_dependencies(self, deps: List[str]) -> None:
+    def set_dependencies(self, deps: list[str]) -> None:
         """Set plugin dependencies.
 
         Args:

@@ -8,9 +8,9 @@ This ensures when template changes, all consumers update automatically.
 """
 
 import json
-from pathlib import Path
-from typing import List, Dict
 from functools import lru_cache
+from pathlib import Path
+
 
 # Path to canonical template (relative to project root)
 # __file__ = /mnt/c/.../ai-craft/src/des/application/tdd_template_loader.py
@@ -18,7 +18,12 @@ from functools import lru_cache
 # parent.parent = /mnt/c/.../ai-craft/src/des
 # parent.parent.parent = /mnt/c/.../ai-craft/src
 # parent.parent.parent.parent = /mnt/c/.../ai-craft (project root)
-TEMPLATE_PATH = Path(__file__).parent.parent.parent.parent / "nWave" / "templates" / "step-tdd-cycle-schema.json"
+TEMPLATE_PATH = (
+    Path(__file__).parent.parent.parent.parent
+    / "nWave"
+    / "templates"
+    / "step-tdd-cycle-schema.json"
+)
 
 
 @lru_cache(maxsize=1)
@@ -41,7 +46,7 @@ def load_tdd_template() -> dict:
             f"Expected location: nWave/templates/step-tdd-cycle-schema.json"
         )
 
-    with open(TEMPLATE_PATH, 'r') as f:
+    with open(TEMPLATE_PATH) as f:
         return json.load(f)
 
 
@@ -51,7 +56,7 @@ def get_schema_version() -> str:
     return template.get("schema_version", "3.0")
 
 
-def get_valid_tdd_phases() -> List[str]:
+def get_valid_tdd_phases() -> list[str]:
     """
     Get valid TDD phase names from canonical template.
 
@@ -70,7 +75,7 @@ def get_valid_tdd_phases() -> List[str]:
     return execution_phases
 
 
-def get_phase_execution_log_template() -> List[dict]:
+def get_phase_execution_log_template() -> list[dict]:
     """
     Get phase execution log structure from template.
 

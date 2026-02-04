@@ -23,8 +23,9 @@ def test_des_plugin_dependencies():
 
 def test_des_plugin_install_returns_plugin_result(tmp_path):
     """Test DES plugin install returns PluginResult with success=False initially."""
-    from scripts.install.plugins.base import InstallContext
     import logging
+
+    from scripts.install.plugins.base import InstallContext
 
     plugin = DESPlugin()
     context = InstallContext(
@@ -42,8 +43,9 @@ def test_des_plugin_install_returns_plugin_result(tmp_path):
 
 def test_des_plugin_verify_returns_plugin_result(tmp_path):
     """Test DES plugin verify returns PluginResult."""
-    from scripts.install.plugins.base import InstallContext
     import logging
+
+    from scripts.install.plugins.base import InstallContext
 
     plugin = DESPlugin()
     context = InstallContext(

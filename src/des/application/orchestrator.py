@@ -19,24 +19,28 @@ Integration: US-003 Post-Execution Validation
 - Validates step file phase execution state
 """
 
-from src.des.ports.driver_ports.hook_port import HookPort, HookResult
-from src.des.ports.driver_ports.validator_port import ValidatorPort, ValidationResult
-from src.des.ports.driven_ports.filesystem_port import FileSystemPort
-from src.des.ports.driven_ports.time_provider_port import TimeProvider
-from src.des.domain.turn_counter import TurnCounter
-from src.des.domain.timeout_monitor import TimeoutMonitor
-from src.des.domain.invocation_limits_validator import (
-    InvocationLimitsValidator,
-    InvocationLimitsResult,
-)
-from src.des.application.stale_execution_detector import StaleExecutionDetector
-from src.des.domain.stale_execution import StaleExecution
-from src.des.adapters.driven.logging.audit_logger import log_audit_event
-from src.des.adapters.driven.logging.audit_events import AuditEvent, EventType
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
-import re
+from typing import TYPE_CHECKING, Optional
+
+from src.des.adapters.driven.logging.audit_events import AuditEvent, EventType
+from src.des.adapters.driven.logging.audit_logger import log_audit_event
+from src.des.application.stale_execution_detector import StaleExecutionDetector
+from src.des.domain.invocation_limits_validator import (
+    InvocationLimitsResult,
+    InvocationLimitsValidator,
+)
+from src.des.domain.timeout_monitor import TimeoutMonitor
+from src.des.domain.turn_counter import TurnCounter
+from src.des.ports.driven_ports.filesystem_port import FileSystemPort
+from src.des.ports.driven_ports.time_provider_port import TimeProvider
+from src.des.ports.driver_ports.hook_port import HookPort, HookResult
+from src.des.ports.driver_ports.validator_port import ValidationResult, ValidatorPort
+
+
+if TYPE_CHECKING:
+    from src.des.domain.stale_execution import StaleExecution
 
 
 @dataclass
@@ -76,9 +80,9 @@ class ExecuteStepWithStaleCheckResult:
     """
 
     blocked: bool
-    blocking_reason: Optional[str] = None
+    blocking_reason: str | None = None
     stale_alert: Optional["StaleExecution"] = None
-    execute_result: Optional[ExecuteStepResult] = None
+    execute_result: ExecuteStepResult | None = None
 
 
 class DESOrchestrator:
@@ -114,7 +118,7 @@ class DESOrchestrator:
         self._filesystem = filesystem
         self._time_provider = time_provider
         self._subagent_lifecycle_completed = False
-        self._step_file_path: Optional[Path] = None
+        self._step_file_path: Path | None = None
 
     # ========================================================================
     # Schema Version Detection
@@ -178,10 +182,10 @@ class DESOrchestrator:
         Returns:
             DESOrchestrator instance with default dependencies configured
         """
-        from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
-        from src.des.application.validator import TemplateValidator
         from src.des.adapters.driven.filesystem.real_filesystem import RealFileSystem
         from src.des.adapters.driven.time.system_time import SystemTimeProvider
+        from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
+        from src.des.application.validator import TemplateValidator
 
         hook = RealSubagentStopHook()
         validator = TemplateValidator()
@@ -212,13 +216,13 @@ class DESOrchestrator:
 
         # Extract step_path from DES-STEP-FILE marker
         step_path = None
-        step_match = re.search(r'<!-- DES-STEP-FILE:\s*(.*?)\s*-->', prompt)
+        step_match = re.search(r"<!-- DES-STEP-FILE:\s*(.*?)\s*-->", prompt)
         if step_match:
             step_path = step_match.group(1)
 
         # Extract agent_name from prompt
         agent_name = None
-        agent_match = re.search(r'@([\w-]+)\s+agent', prompt)
+        agent_match = re.search(r"@([\w-]+)\s+agent", prompt)
         if agent_match:
             agent_name = agent_match.group(1)
 
@@ -232,17 +236,19 @@ class DESOrchestrator:
                 timestamp=timestamp,
                 event=EventType.HOOK_PRE_TASK_PASSED.value,
                 step_path=step_path,
-                extra_context={"agent": agent_name} if agent_name else None
+                extra_context={"agent": agent_name} if agent_name else None,
             )
         else:
             # HOOK_PRE_TASK_BLOCKED event
-            rejection_reason = str(result.errors) if result.errors else "Validation failed"
+            rejection_reason = (
+                str(result.errors) if result.errors else "Validation failed"
+            )
             event = AuditEvent(
                 timestamp=timestamp,
                 event=EventType.HOOK_PRE_TASK_BLOCKED.value,
                 step_path=step_path,
                 rejection_reason=rejection_reason,
-                extra_context={"agent": agent_name} if agent_name else None
+                extra_context={"agent": agent_name} if agent_name else None,
             )
 
         # Log the audit event if audit logging is enabled
@@ -430,10 +436,10 @@ class DESOrchestrator:
             ValueError: If command is not a validation command
         """
         from src.des.application.boundary_rules_generator import BoundaryRulesGenerator
+        from src.des.application.boundary_rules_template import BoundaryRulesTemplate
         from src.des.domain.timeout_instruction_template import (
             TimeoutInstructionTemplate,
         )
-        from src.des.application.boundary_rules_template import BoundaryRulesTemplate
 
         validation_level = self._get_validation_level(command)
         if validation_level != "full":
@@ -450,7 +456,9 @@ class DESOrchestrator:
         allowed_patterns = generator.generate_allowed_patterns()
 
         boundary_rules_template = BoundaryRulesTemplate()
-        boundary_rules = boundary_rules_template.render(allowed_patterns=allowed_patterns)
+        boundary_rules = boundary_rules_template.render(
+            allowed_patterns=allowed_patterns
+        )
 
         # Generate TIMEOUT_INSTRUCTION section
         timeout_template = TimeoutInstructionTemplate()
@@ -552,7 +560,11 @@ class DESOrchestrator:
         if scan_result.is_blocked:
             # Step 4: Return blocked result with alert and resolution instructions
             # Get first stale execution for alert
-            first_stale = scan_result.stale_executions[0] if scan_result.stale_executions else None
+            first_stale = (
+                scan_result.stale_executions[0]
+                if scan_result.stale_executions
+                else None
+            )
 
             return ExecuteStepWithStaleCheckResult(
                 blocked=True,

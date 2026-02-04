@@ -1,8 +1,9 @@
 """Unit tests for RealSubagentStopHook audit logging."""
 
 import json
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
 
 

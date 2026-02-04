@@ -14,14 +14,14 @@ Schema Evolution:
 These tests drive implementation for Step US-005-03 schema versioning in validator.
 """
 
+from src.des.application.tdd_template_loader import (
+    get_expected_phase_count,
+    get_schema_version,
+    get_valid_tdd_phases,
+)
 from src.des.application.validator import (
     ExecutionLogValidator,
     TDDPhaseValidator,
-)
-from src.des.application.tdd_template_loader import (
-    get_valid_tdd_phases,
-    get_expected_phase_count,
-    get_schema_version,
 )
 
 

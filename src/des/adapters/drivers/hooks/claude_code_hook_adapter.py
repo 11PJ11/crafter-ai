@@ -21,22 +21,21 @@ Protocol:
 
 import json
 import sys
-import os
-from typing import Dict, Any
+from pathlib import Path
+
 
 # Add project root to sys.path for standalone script execution
 if __name__ == "__main__":
-    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../.."))
+    project_root = str(Path(__file__).resolve().parent.parent.parent.parent.parent)
     if project_root not in sys.path:
         sys.path.insert(0, project_root)
 
-from src.des.application.orchestrator import DESOrchestrator
-from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
-from src.des.application.validator import TemplateValidator
-from src.des.adapters.driven.filesystem.real_filesystem import RealFileSystem
 from src.des.adapters.driven.config.des_config import DESConfig
-from src.des.adapters.driven.logging.audit_logger import get_audit_logger
+from src.des.adapters.driven.filesystem.real_filesystem import RealFileSystem
 from src.des.adapters.driven.time.system_time import SystemTimeProvider
+from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
+from src.des.application.orchestrator import DESOrchestrator
+from src.des.application.validator import TemplateValidator
 
 
 def create_orchestrator() -> DESOrchestrator:
@@ -58,7 +57,7 @@ def create_orchestrator() -> DESOrchestrator:
         hook=hook,
         validator=validator,
         filesystem=filesystem,
-        time_provider=time_provider
+        time_provider=time_provider,
     )
 
 
@@ -75,10 +74,7 @@ def handle_pre_task() -> int:
         input_data = sys.stdin.read()
 
         if not input_data and not input_data.strip():
-            response = {
-                "status": "error",
-                "reason": "Missing stdin input"
-            }
+            response = {"status": "error", "reason": "Missing stdin input"}
             print(json.dumps(response))
             return 1
 
@@ -86,10 +82,7 @@ def handle_pre_task() -> int:
         try:
             hook_input = json.loads(input_data)
         except json.JSONDecodeError as e:
-            response = {
-                "status": "error",
-                "reason": f"Invalid JSON: {str(e)}"
-            }
+            response = {"status": "error", "reason": f"Invalid JSON: {e!s}"}
             print(json.dumps(response))
             return 1
 
@@ -98,7 +91,7 @@ def handle_pre_task() -> int:
         prompt = tool_input.get("prompt", "")
 
         # Initialize DES components with production implementations
-        config = DESConfig()
+        DESConfig()
         hook = RealSubagentStopHook()
         validator = TemplateValidator()
         filesystem = RealFileSystem()
@@ -108,7 +101,7 @@ def handle_pre_task() -> int:
             hook=hook,
             validator=validator,
             filesystem=filesystem,
-            time_provider=time_provider
+            time_provider=time_provider,
         )
 
         # Validate prompt
@@ -119,25 +112,20 @@ def handle_pre_task() -> int:
 
         # Return decision
         if validation_result.task_invocation_allowed:
-            response = {
-                "decision": "allow"
-            }
+            response = {"decision": "allow"}
             print(json.dumps(response))
             return 0
         else:
             response = {
                 "decision": "block",
-                "reason": "; ".join(validation_result.errors)
+                "reason": "; ".join(validation_result.errors),
             }
             print(json.dumps(response))
             return 2
 
     except Exception as e:
         # Fail-closed: any error blocks execution
-        response = {
-            "status": "error",
-            "reason": f"Unexpected error: {str(e)}"
-        }
+        response = {"status": "error", "reason": f"Unexpected error: {e!s}"}
         print(json.dumps(response))
         return 1
 
@@ -155,10 +143,7 @@ def handle_subagent_stop() -> int:
         input_data = sys.stdin.read()
 
         if not input_data or not input_data.strip():
-            response = {
-                "status": "error",
-                "reason": "Missing stdin input"
-            }
+            response = {"status": "error", "reason": "Missing stdin input"}
             print(json.dumps(response))
             return 1
 
@@ -166,10 +151,7 @@ def handle_subagent_stop() -> int:
         try:
             hook_input = json.loads(input_data)
         except json.JSONDecodeError as e:
-            response = {
-                "status": "error",
-                "reason": f"Invalid JSON: {str(e)}"
-            }
+            response = {"status": "error", "reason": f"Invalid JSON: {e!s}"}
             print(json.dumps(response))
             return 1
 
@@ -177,7 +159,7 @@ def handle_subagent_stop() -> int:
         step_path = hook_input.get("step_path", "")
 
         # Initialize DES components
-        config = DESConfig()
+        DESConfig()
         hook = RealSubagentStopHook()
 
         # Execute gate validation
@@ -188,25 +170,20 @@ def handle_subagent_stop() -> int:
 
         # Return decision
         if gate_result.validation_status == "PASSED":
-            response = {
-                "decision": "allow"
-            }
+            response = {"decision": "allow"}
             print(json.dumps(response))
             return 0
         else:
             response = {
                 "decision": "block",
-                "reason": f"Gate failed: {gate_result.validation_status}"
+                "reason": f"Gate failed: {gate_result.validation_status}",
             }
             print(json.dumps(response))
             return 2
 
     except Exception as e:
         # Fail-closed: any error blocks execution
-        response = {
-            "status": "error",
-            "reason": f"Unexpected error: {str(e)}"
-        }
+        response = {"status": "error", "reason": f"Unexpected error: {e!s}"}
         print(json.dumps(response))
         return 1
 
@@ -214,10 +191,14 @@ def handle_subagent_stop() -> int:
 def main() -> None:
     """Hook adapter entry point - routes command to appropriate handler."""
     if len(sys.argv) < 2:
-        print(json.dumps({
-            "status": "error",
-            "reason": "Missing command argument (pre-task or subagent-stop)"
-        }))
+        print(
+            json.dumps(
+                {
+                    "status": "error",
+                    "reason": "Missing command argument (pre-task or subagent-stop)",
+                }
+            )
+        )
         sys.exit(1)
 
     command = sys.argv[1]
@@ -227,10 +208,7 @@ def main() -> None:
     elif command == "subagent-stop":
         exit_code = handle_subagent_stop()
     else:
-        print(json.dumps({
-            "status": "error",
-            "reason": f"Unknown command: {command}"
-        }))
+        print(json.dumps({"status": "error", "reason": f"Unknown command: {command}"}))
         exit_code = 1
 
     sys.exit(exit_code)

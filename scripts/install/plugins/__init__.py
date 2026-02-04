@@ -11,9 +11,10 @@ from scripts.install.plugins.base import (
 )
 from scripts.install.plugins.registry import PluginRegistry
 
+
 __all__ = [
-    "InstallationPlugin",
     "InstallContext",
-    "PluginResult",
+    "InstallationPlugin",
     "PluginRegistry",
+    "PluginResult",
 ]

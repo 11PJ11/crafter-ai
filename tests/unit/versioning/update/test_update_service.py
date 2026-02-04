@@ -698,8 +698,8 @@ class TestUpdateServicePreservesUserContent:
 
         # Configure file_system to track which paths are being replaced
         replaced_paths = []
-        mock_file_system.replace_directory.side_effect = (
-            lambda src, dst: replaced_paths.append(str(dst))
+        mock_file_system.replace_directory.side_effect = lambda src, dst: (
+            replaced_paths.append(str(dst))
         )
 
         service = UpdateService(
@@ -767,8 +767,8 @@ class TestUpdateServicePreservesUserContent:
 
         # Configure file_system to track which paths are being replaced
         replaced_paths = []
-        mock_file_system.replace_directory.side_effect = (
-            lambda src, dst: replaced_paths.append(str(dst))
+        mock_file_system.replace_directory.side_effect = lambda src, dst: (
+            replaced_paths.append(str(dst))
         )
 
         service = UpdateService(
@@ -836,8 +836,8 @@ class TestUpdateServicePreservesUserContent:
 
         # Configure file_system to track which paths are being replaced
         replaced_paths = []
-        mock_file_system.replace_directory.side_effect = (
-            lambda src, dst: replaced_paths.append(str(dst))
+        mock_file_system.replace_directory.side_effect = lambda src, dst: (
+            replaced_paths.append(str(dst))
         )
 
         service = UpdateService(

@@ -41,13 +41,13 @@ __all__ = [
     # Filesystem adapters
     "RealFileSystem",
     "RealFilesystem",  # Backward compatibility
+    # Validation adapters
+    "ScopeValidationResult",
+    "ScopeValidator",
     # Logging adapters
     "SilentLogger",
     "StructuredLogger",
     "SystemTime",  # Backward compatibility
     # Time adapters
     "SystemTimeProvider",
-    # Validation adapters
-    "ScopeValidationResult",
-    "ScopeValidator",
 ]

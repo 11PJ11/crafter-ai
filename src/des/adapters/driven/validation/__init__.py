@@ -10,4 +10,5 @@ from src.des.adapters.driven.validation.scope_validator import (
     ScopeValidator,
 )
 
-__all__ = ["ScopeValidator", "ScopeValidationResult"]
+
+__all__ = ["ScopeValidationResult", "ScopeValidator"]

@@ -8,6 +8,10 @@ Uses Single Source of Truth pattern: TDD phases loaded from canonical template
 (nWave/templates/step-tdd-cycle-schema.json) instead of hardcoding.
 """
 
+from src.des.application.tdd_template_loader import (
+    get_expected_phase_count,
+    get_valid_tdd_phases,
+)
 from src.des.application.validator import (
     DESMarkerValidator,
     ExecutionLogValidator,
@@ -15,10 +19,6 @@ from src.des.application.validator import (
     TDDPhaseValidator,
     TemplateValidator,
     ValidationResult,
-)
-from src.des.application.tdd_template_loader import (
-    get_valid_tdd_phases,
-    get_expected_phase_count,
 )
 
 

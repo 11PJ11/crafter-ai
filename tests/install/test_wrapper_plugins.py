@@ -44,14 +44,27 @@ class TestAgentsPlugin:
 
         assert isinstance(result, PluginResult)
 
-    def test_agents_plugin_install_success(self):
+    def test_agents_plugin_install_success(self, tmp_path):
         """Verify successful agents plugin installation."""
         from scripts.install.plugins.agents_plugin import AgentsPlugin
 
         plugin = AgentsPlugin()
+
+        # Set up source directory with agent files
+        source_agents = tmp_path / "nWave" / "agents"
+        source_agents.mkdir(parents=True)
+        (source_agents / "researcher.md").write_text("# Researcher Agent")
+        (source_agents / "software-crafter.md").write_text("# Software Crafter Agent")
+
+        # Set up target directory
+        claude_dir = tmp_path / "claude_config"
+        claude_dir.mkdir(parents=True)
+
         context = Mock(spec=InstallContext)
         context.dry_run = False
-        context.project_root = Path("/tmp/test")
+        context.project_root = tmp_path
+        context.framework_source = tmp_path / "framework_source"
+        context.claude_dir = claude_dir
         context.logger = Mock()
 
         result = plugin.install(context)

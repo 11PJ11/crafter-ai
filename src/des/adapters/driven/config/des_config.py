@@ -9,10 +9,10 @@ Hexagonal Architecture:
 - SAFE DEFAULTS: Audit logging enabled by default for security
 """
 
-import os
 from pathlib import Path
+from typing import Any
+
 import yaml
-from typing import Any, Dict
 
 
 class DESConfig:
@@ -35,7 +35,7 @@ audit_logging_enabled: true
 # Future settings can be added here
 """
 
-    def __init__(self, config_path: Path = None):
+    def __init__(self, config_path: Path | None = None):
         """
         Initialize DESConfig.
 
@@ -49,7 +49,7 @@ audit_logging_enabled: true
         self._config_path = config_path
         self._config_data = self._load_configuration()
 
-    def _load_configuration(self) -> Dict[str, Any]:
+    def _load_configuration(self) -> dict[str, Any]:
         """
         Load configuration from YAML file.
 
@@ -62,7 +62,7 @@ audit_logging_enabled: true
 
         # Try to load existing config file
         try:
-            with open(self._config_path, 'r') as f:
+            with open(self._config_path) as f:
                 config_data = yaml.safe_load(f)
 
             # Handle case where YAML is empty or invalid (returns None)
@@ -79,7 +79,7 @@ audit_logging_enabled: true
             # Any other error - fall back to safe defaults
             return self._get_safe_defaults()
 
-    def _create_default_config(self) -> Dict[str, Any]:
+    def _create_default_config(self) -> dict[str, Any]:
         """
         Create default configuration file with explanatory comments.
 
@@ -95,7 +95,7 @@ audit_logging_enabled: true
         # Return default configuration
         return self._get_safe_defaults()
 
-    def _get_safe_defaults(self) -> Dict[str, Any]:
+    def _get_safe_defaults(self) -> dict[str, Any]:
         """
         Get safe default configuration values.
 

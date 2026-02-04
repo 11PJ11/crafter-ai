@@ -1,13 +1,13 @@
 """Production implementation of post-execution hook adapter."""
 
-from src.des.ports.driver_ports.hook_port import HookPort, HookResult
-from src.des.adapters.driven.validation.scope_validator import ScopeValidator
-from src.des.adapters.driven.logging.audit_logger import get_audit_logger
-from src.des.ports.driven_ports.time_provider_port import TimeProvider
 import json
 import logging
 from pathlib import Path
-from typing import List, Optional
+
+from src.des.adapters.driven.logging.audit_logger import get_audit_logger
+from src.des.adapters.driven.validation.scope_validator import ScopeValidator
+from src.des.ports.driver_ports.hook_port import HookPort, HookResult
+
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ class RealSubagentStopHook(HookPort):
             raise ValueError(f"turn_count must be non-negative, got {turn_count}")
 
         # Load step file
-        with open(step_file_path, "r") as f:
+        with open(step_file_path) as f:
             step_data = json.load(f)
 
         # Get phase_execution_log
@@ -76,7 +76,7 @@ class RealSubagentStopHook(HookPort):
         Returns:
             HookResult indicating validation success/failure and any issues found
         """
-        with open(step_file_path, "r") as f:
+        with open(step_file_path) as f:
             step_data = json.load(f)
 
         result = HookResult(validation_status="PASSED", hook_fired=True)
@@ -136,7 +136,7 @@ class RealSubagentStopHook(HookPort):
         scope_result = scope_validator.validate_scope(
             step_file_path=step_file_path,
             project_root=project_root,
-            git_diff_files=None
+            git_diff_files=None,
         )
 
         # Store validation result for audit logging (Phase 4)
@@ -155,17 +155,20 @@ class RealSubagentStopHook(HookPort):
             allowed_patterns = step_data.get("scope", {}).get("allowed_patterns", [])
 
             for out_of_scope_file in scope_result.out_of_scope_files:
-                audit_logger.append({
-                    "event": "SCOPE_VIOLATION",
-                    "severity": "WARNING",
-                    "step_file": step_file_path,
-                    "out_of_scope_file": out_of_scope_file,
-                    "allowed_patterns": allowed_patterns
-                })
+                audit_logger.append(
+                    {
+                        "event": "SCOPE_VIOLATION",
+                        "severity": "WARNING",
+                        "step_file": step_file_path,
+                        "out_of_scope_file": out_of_scope_file,
+                        "allowed_patterns": allowed_patterns,
+                    }
+                )
 
         # Log audit event based on validation result
         audit_logger = get_audit_logger()
         from src.des.adapters.driven.time.system_time import SystemTimeProvider
+
         time_provider = SystemTimeProvider()
         timestamp = time_provider.now_utc().isoformat()
         phases_validated = len(phase_log)
@@ -177,27 +180,31 @@ class RealSubagentStopHook(HookPort):
             )
 
             # Log HOOK_SUBAGENT_STOP_FAILED event
-            audit_logger.append({
-                "event": "HOOK_SUBAGENT_STOP_FAILED",
-                "step_path": step_file_path,
-                "phases_validated": phases_validated,
-                "validation_errors": self._format_validation_errors(errors),
-                "timestamp": timestamp
-            })
+            audit_logger.append(
+                {
+                    "event": "HOOK_SUBAGENT_STOP_FAILED",
+                    "step_path": step_file_path,
+                    "phases_validated": phases_validated,
+                    "validation_errors": self._format_validation_errors(errors),
+                    "timestamp": timestamp,
+                }
+            )
 
             return result
 
         # Log HOOK_SUBAGENT_STOP_PASSED event
-        audit_logger.append({
-            "event": "HOOK_SUBAGENT_STOP_PASSED",
-            "step_path": step_file_path,
-            "phases_validated": phases_validated,
-            "timestamp": timestamp
-        })
+        audit_logger.append(
+            {
+                "event": "HOOK_SUBAGENT_STOP_PASSED",
+                "step_path": step_file_path,
+                "phases_validated": phases_validated,
+                "timestamp": timestamp,
+            }
+        )
 
         return result
 
-    def _detect_abandoned_phases(self, phase_log: List[dict]) -> List[str]:
+    def _detect_abandoned_phases(self, phase_log: list[dict]) -> list[str]:
         """Detect phases left in IN_PROGRESS state after agent completion."""
         abandoned = []
         for phase in phase_log:
@@ -206,7 +213,7 @@ class RealSubagentStopHook(HookPort):
                 abandoned.append(phase_name)
         return abandoned
 
-    def _count_not_executed_phases(self, phase_log: List[dict]) -> int:
+    def _count_not_executed_phases(self, phase_log: list[dict]) -> int:
         """Count phases with NOT_EXECUTED status."""
         count = 0
         for phase in phase_log:
@@ -214,7 +221,7 @@ class RealSubagentStopHook(HookPort):
                 count += 1
         return count
 
-    def _detect_incomplete_phases(self, phase_log: List[dict]) -> List[str]:
+    def _detect_incomplete_phases(self, phase_log: list[dict]) -> list[str]:
         """Detect phases marked EXECUTED but missing outcome field."""
         incomplete = []
         for phase in phase_log:
@@ -223,7 +230,7 @@ class RealSubagentStopHook(HookPort):
                 incomplete.append(phase_name)
         return incomplete
 
-    def _detect_invalid_skips(self, phase_log: List[dict]) -> List[str]:
+    def _detect_invalid_skips(self, phase_log: list[dict]) -> list[str]:
         """Detect phases marked SKIPPED but missing blocked_by reason."""
         invalid_skips = []
         for phase in phase_log:
@@ -235,8 +242,8 @@ class RealSubagentStopHook(HookPort):
         return invalid_skips
 
     def _detect_turn_limit_exceeded(
-        self, phase_log: List[dict], max_turns: Optional[int]
-    ) -> List[dict]:
+        self, phase_log: list[dict], max_turns: int | None
+    ) -> list[dict]:
         """Detect phases where turn_count exceeds max_turns limit."""
         if max_turns is None:
             return []
@@ -259,9 +266,9 @@ class RealSubagentStopHook(HookPort):
 
     def _detect_timeout_exceeded(
         self,
-        phase_log: List[dict],
-        duration_minutes: Optional[int],
-        total_extensions_minutes: Optional[int],
+        phase_log: list[dict],
+        duration_minutes: int | None,
+        total_extensions_minutes: int | None,
     ) -> dict:
         """Detect if total execution duration exceeded configured time limit."""
         if duration_minutes is None:
@@ -291,7 +298,7 @@ class RealSubagentStopHook(HookPort):
             "expected_minutes": expected_seconds // 60,
         }
 
-    def _format_validation_errors(self, errors: List[tuple]) -> List[dict]:
+    def _format_validation_errors(self, errors: list[tuple]) -> list[dict]:
         """Format validation errors for audit logging.
 
         Args:
@@ -303,50 +310,43 @@ class RealSubagentStopHook(HookPort):
         formatted_errors = []
 
         for error_type, error_data in errors:
-            if error_type == "ABANDONED_PHASE":
-                formatted_errors.append({
-                    "error_type": error_type,
-                    "phases": error_data,
-                    "count": len(error_data)
-                })
-            elif error_type == "MISSING_OUTCOME":
-                formatted_errors.append({
-                    "error_type": error_type,
-                    "phases": error_data,
-                    "count": len(error_data)
-                })
-            elif error_type == "INVALID_SKIP":
-                formatted_errors.append({
-                    "error_type": error_type,
-                    "phases": error_data,
-                    "count": len(error_data)
-                })
+            if error_type in {"ABANDONED_PHASE", "MISSING_OUTCOME", "INVALID_SKIP"}:
+                formatted_errors.append(
+                    {
+                        "error_type": error_type,
+                        "phases": error_data,
+                        "count": len(error_data),
+                    }
+                )
             elif error_type == "SILENT_COMPLETION":
-                formatted_errors.append({
-                    "error_type": error_type,
-                    "not_executed_count": error_data
-                })
+                formatted_errors.append(
+                    {"error_type": error_type, "not_executed_count": error_data}
+                )
             elif error_type == "TURN_LIMIT_EXCEEDED":
-                formatted_errors.append({
-                    "error_type": error_type,
-                    "phases": error_data,
-                    "count": len(error_data)
-                })
+                formatted_errors.append(
+                    {
+                        "error_type": error_type,
+                        "phases": error_data,
+                        "count": len(error_data),
+                    }
+                )
             elif error_type == "TIMEOUT_EXCEEDED":
-                formatted_errors.append({
-                    "error_type": error_type,
-                    "actual_seconds": error_data["actual_seconds"],
-                    "expected_seconds": error_data["expected_seconds"],
-                    "actual_minutes": error_data["actual_minutes"],
-                    "expected_minutes": error_data["expected_minutes"]
-                })
+                formatted_errors.append(
+                    {
+                        "error_type": error_type,
+                        "actual_seconds": error_data["actual_seconds"],
+                        "expected_seconds": error_data["expected_seconds"],
+                        "actual_minutes": error_data["actual_minutes"],
+                        "expected_minutes": error_data["expected_minutes"],
+                    }
+                )
 
         return formatted_errors
 
     def _populate_aggregated_failures(
         self,
         result: HookResult,
-        errors: List[tuple],
+        errors: list[tuple],
         step_file_path: str,
         step_data: dict,
     ) -> None:
@@ -432,7 +432,7 @@ class RealSubagentStopHook(HookPort):
         result.recovery_suggestions = self._generate_recovery_suggestions(errors)
         self._update_step_file_state(step_file_path, step_data, result.error_message)
 
-    def _generate_recovery_suggestions(self, errors: List[tuple]) -> List[str]:
+    def _generate_recovery_suggestions(self, errors: list[tuple]) -> list[str]:
         """Generate actionable recovery suggestions based on validation errors."""
         suggestions = []
 

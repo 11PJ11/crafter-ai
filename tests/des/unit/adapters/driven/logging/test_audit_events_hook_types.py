@@ -14,6 +14,7 @@ for all new HOOK event types, and existing event types remain unchanged.
 import importlib.util
 import sys
 
+
 # Direct import from file to bypass broken __init__.py chain
 spec = importlib.util.spec_from_file_location(
     "audit_events", "src/des/adapters/driven/logging/audit_events.py"

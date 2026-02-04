@@ -19,7 +19,9 @@ from scripts.install.plugins.registry import PluginRegistry
 class MockPlugin:
     """Mock plugin for testing selective installation."""
 
-    def __init__(self, name: str, priority: int = 100, dependencies: list | None = None):
+    def __init__(
+        self, name: str, priority: int = 100, dependencies: list | None = None
+    ):
         self.name = name
         self.priority = priority
         self.dependencies = dependencies or []

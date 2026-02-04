@@ -6,6 +6,7 @@ audit events with proper structure, timestamps from TimeProvider, and relevant c
 """
 
 from unittest.mock import Mock, patch
+
 from src.des.adapters.driven.logging.audit_events import EventType
 
 
@@ -60,8 +61,8 @@ class TestValidatePromptAuditLogging:
         from src.des.adapters.drivers.validators.mocked_validator import (
             MockedTemplateValidator,
         )
-        from src.des.ports.driver_ports.validator_port import ValidationResult
         from src.des.application.orchestrator import DESOrchestrator
+        from src.des.ports.driver_ports.validator_port import ValidationResult
 
         # Create validator that returns failure
         failing_validator = MockedTemplateValidator(
@@ -216,8 +217,8 @@ class TestValidatePromptAuditLogging:
         from src.des.adapters.drivers.validators.mocked_validator import (
             MockedTemplateValidator,
         )
-        from src.des.ports.driver_ports.validator_port import ValidationResult
         from src.des.application.orchestrator import DESOrchestrator
+        from src.des.ports.driver_ports.validator_port import ValidationResult
 
         # Create validator that returns failure
         failing_validator = MockedTemplateValidator(

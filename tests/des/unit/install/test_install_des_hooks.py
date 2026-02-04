@@ -159,7 +159,7 @@ class TestInstallDESHooks:
         claude_dir.mkdir()
 
         # When: run installer
-        result = subprocess.run(
+        subprocess.run(
             [
                 "python3",
                 "scripts/install/install_des_hooks.py",
@@ -189,7 +189,7 @@ class TestInstallDESHooks:
         claude_dir.mkdir()
 
         # When: run installer
-        result = subprocess.run(
+        subprocess.run(
             [
                 "python3",
                 "scripts/install/install_des_hooks.py",
@@ -302,7 +302,7 @@ class TestInstallDESHooks:
         claude_dir.mkdir()
 
         # When: run installer
-        result = subprocess.run(
+        subprocess.run(
             [
                 "python3",
                 "scripts/install/install_des_hooks.py",

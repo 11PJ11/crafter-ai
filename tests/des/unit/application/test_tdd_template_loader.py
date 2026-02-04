@@ -6,11 +6,11 @@ from canonical template instead of hardcoding them.
 """
 
 from src.des.application.tdd_template_loader import (
-    load_tdd_template,
+    get_expected_phase_count,
+    get_phase_execution_log_template,
     get_schema_version,
     get_valid_tdd_phases,
-    get_phase_execution_log_template,
-    get_expected_phase_count,
+    load_tdd_template,
 )
 
 
