@@ -172,23 +172,69 @@ steps:
 
   - id: 6
     phase: "build"
+    name: "IDE Bundle Build"
+    sub_header: "⚙️ Building IDE bundle"
+    spinner_text: "⏳ Processing nWave assets..."
+    resolved_text: "✅ IDE bundle built ({duration})"
+    detail_lines:
+      - "{agent_count} agents, {command_count} commands, {team_count} teams"
+      - "{embed_count} embed injections applied"
+      - "⚠️  {yaml_warning_count} YAML warnings (non-blocking)"
+      - "  {warning_file}: {warning_reason}"  # repeated for each warning, dim text at 6-space indent
+    shared_artifacts:
+      - name: "agent_count"
+        source: "IDE bundle build output (dist/ide/agents/nw/ file count)"
+        displayed_as: "30"
+      - name: "command_count"
+        source: "IDE bundle build output (dist/ide/commands/nw/ file count)"
+        displayed_as: "23"
+      - name: "team_count"
+        source: "IDE bundle build output (agent-teams dir, 0 when missing)"
+        displayed_as: "0"
+      - name: "embed_count"
+        source: "IDE bundle build log (DES embed injection count)"
+        displayed_as: "3"
+    emotional_state:
+      entry: "Second tension (will the IDE bundle build?)"
+      exit: "Relief (all components processed)"
+    design_notes: |
+      The IDE bundle build processes the nWave/ source directory into
+      dist/ide/. It takes ~5.2s. Component counts, embed injection count,
+      and YAML warnings are shown. Warnings are non-blocking;
+      affected agents are still included in the bundle.
+
+      YAML warnings include BOTH YAML parse errors AND missing YAML
+      configuration blocks. Each warning shows the agent filename and
+      the specific reason in dim text at 6-space indent. The warning
+      count must come from the IDE bundle builder's internal log, NOT
+      from its summary output (which currently undercounts to 0).
+
+  - id: 7
+    phase: "build"
     name: "Build Complete"
-    output: "🔨 Build complete: {wheel_filename}"
+    output: "🔨 Build complete"
+    detail_lines:
+      - "{wheel_filename}"
+      - "IDE bundle: {agent_count} agents, {command_count} commands"
     shared_artifacts:
       - name: "wheel_filename"
         source: "BuildResult.wheel_path.name"
         displayed_as: "{wheel_filename}"
     emotional_state:
       entry: "Anticipation of next phase"
-      exit: "Satisfaction, ready for install"
+      exit: "Satisfaction, both artifacts confirmed"
+    design_notes: |
+      Build complete is now a sub-phase header with two dim detail lines.
+      The build produces two artifacts: wheel + IDE bundle. Both must be
+      visible so the user knows what was built before being asked to install.
 
-  - id: 7
+  - id: 8
     phase: "transition"
     name: "Install Confirmation Prompt"
     output: "📦 Install crafter-ai {version}? [Y/n]: "
     interaction: "confirmation_prompt"
     default: "Y (yes)"
-    on_yes: "proceed to step 8"
+    on_yes: "proceed to step 9"
     on_no: "exit with code 0, message: Install skipped."
     shared_artifacts:
       - name: "version"
@@ -203,7 +249,7 @@ steps:
       No box or panel. Just an inline prompt in the stream.
       The version shown here MUST match the version from wheel METADATA.
 
-  - id: 8
+  - id: 9
     phase: "install"
     name: "Install Phase Header"
     output: "📦 Installing crafter-ai"
@@ -211,7 +257,7 @@ steps:
       entry: "Momentum continues, user just confirmed"
       exit: "Oriented in new phase"
 
-  - id: 9
+  - id: 10
     phase: "install"
     name: "Install Pre-flight Checks"
     sub_header: "🔍 Pre-flight checks"
@@ -232,12 +278,17 @@ steps:
         pass_message: "Install path writable"
         fail_message: "Install path not accessible"
         severity: "BLOCKING"
+      - id: "ide-bundle-exists"
+        pass_message: "IDE bundle found ({agent_count} agents, {command_count} commands)"
+        fail_message: "IDE bundle not found in dist/ide/"
+        severity: "BLOCKING"
+        remediation: "Run 'crafter-ai forge build' to generate the IDE bundle"
     summary_on_pass: "Pre-flight passed"
     emotional_state:
       entry: "Slight check-in"
       exit: "Green light, let's go"
 
-  - id: 10
+  - id: 11
     phase: "install"
     name: "Backup"
     condition: "upgrade_path != FRESH_INSTALL"
@@ -250,11 +301,11 @@ steps:
       - name: "backup_path"
         source: "BackupResult.backup_path"
         displayed_as: "{backup_path}"
-        note: "Only shown for upgrade path. Format: ~/.claude/backups/nwave-YYYYMMDD-HHMMSS"
+        note: "Only shown for upgrade path. Format: ~/.claude/backups/nwave-install-YYYYMMDD-HHMMSS"
       - name: "backed_up_items"
         source: "FileSystemBackupAdapter.BACKUP_TARGETS (items that existed)"
         displayed_as: "{backed_up_items}"
-        note: "Comma-separated list of backed-up item types, e.g. 'agents, commands, templates'"
+        note: "Full scope backup: 'agents, commands, templates, scripts, manifest, install log, DES, settings, CLAUDE.md'. Backs up everything nWave touches in ~/.claude/."
     emotional_state:
       entry_upgrade: "Brief concern for existing data"
       exit_upgrade: "Trust (data is explicitly safe, I can see where it went)"
@@ -266,32 +317,88 @@ steps:
       the user exactly where their data went.
       Fresh install: single informational line, no spinner (nothing to do).
 
-  - id: 11
+  - id: 12
     phase: "install"
-    name: "Installation Progress"
-    sub_header: "⚙️ Installing"
+    name: "CLI Installation"
+    sub_header: "⚙️ Installing CLI"
     spinner_text: "⏳ Installing via pipx..."
-    resolved_text: "✅ nWave installed via pipx ({duration})"
+    resolved_text: "✅ nWave CLI installed via pipx ({duration})"
     emotional_state:
-      entry: "Peak tension (the big operation, ~3 seconds)"
-      exit: "Major relief (it worked, and I can see the timing)"
+      entry: "Peak tension (the big CLI operation, ~3 seconds)"
+      exit: "Relief (CLI package installed, timing visible)"
     design_notes: |
-      The sub-header "⚙️ Installing" creates a named container for the
-      operation. The spinner runs during the ~3-second pipx install, filling
-      the silence gap that previously caused anxiety. The closure line uses
-      "nWave" (product brand) and includes duration for transparency.
+      Renamed from "Installing" to "Installing CLI" to distinguish from
+      asset deployment. The spinner runs during the ~3-second pipx install,
+      filling the silence gap. The closure line uses "nWave CLI" to clarify
+      this is the CLI package, not the full asset set.
+
+  - id: 13
+    phase: "install"
+    name: "Asset Deployment"
+    sub_header: "⚙️ Deploying nWave assets"
+    spinner_text: "⏳ Installing to ~/.claude/..."
+    resolved_text: "✅ Assets deployed ({duration})"
+    detail_lines:
+      - "{agent_count} agents → ~/.claude/agents/nw/"
+      - "{command_count} commands → ~/.claude/commands/nw/"
+      - "{template_count} templates → ~/.claude/templates/"
+      - "{script_count} scripts → ~/.claude/scripts/"  # 4 scripts: install_nwave_target_hooks.py, validate_step_file.py, check_stale_phases.py, scope_boundary_check.py
+    shared_artifacts:
+      - name: "deploy_target"
+        source: "Hardcoded: ~/.claude/"
+        displayed_as: "~/.claude/"
+        note: "Must be consistent across deploy detail lines and SBOM asset lines"
+    emotional_state:
+      entry: "Second peak tension (deploying to user's system)"
+      exit: "Transparency (user sees what went where)"
+    design_notes: |
+      NEW section that copies IDE bundle contents to ~/.claude/.
+      Shows four dim detail lines with arrow notation showing what went where.
+      Replaces what install_nwave.py does with Rich panels and tables.
       The ⚙️ emoji means "active operation in progress".
 
-  - id: 12
+  - id: 14
+    phase: "install"
+    name: "Deployment Validation"
+    sub_header: "🔍 Validating deployment"
+    checks:
+      - pass_message: "Agents verified ({agent_count})"
+      - pass_message: "Commands verified ({command_count})"
+      - pass_message: "Templates verified ({template_count})"
+      - pass_message: "Scripts verified ({script_count})"
+      - pass_message: "Manifest created"
+      - pass_message: "Schema validated ({schema_version}, {schema_phases} phases)"
+    summary_on_pass: "Deployment validated"
+    shared_artifacts:
+      - name: "schema_version"
+        source: "TDD cycle schema JSON (step-tdd-cycle-schema.json)"
+        displayed_as: "v3.0"
+      - name: "schema_phases"
+        source: "TDD cycle schema JSON phase count"
+        displayed_as: "7"
+    emotional_state:
+      entry: "Brief validation check"
+      exit: "Growing trust (everything verified)"
+    design_notes: |
+      NEW section that replaces the Rich bordered table from install_nwave.py.
+      Each component category gets a verification line with count as emoji stream.
+      No table borders anywhere. The manifest and schema validation are also here.
+
+  - id: 15
     phase: "install"
     name: "SBOM Manifest"
     sub_header: "📋 What was installed"
-    manifest_items_always:
+    manifest_items_cli_group:
       - "{package_name} {version}"
       - "CLI: {cli_entry_points}"
       - "→ {install_path}"
-    manifest_items_upgrade_only:
-      - "{agent_count} agents, {command_count} commands, {template_count} templates"
+    manifest_items_ide_group:
+      - "{agent_count} agents → ~/.claude/agents/nw/"
+      - "{command_count} commands → ~/.claude/commands/nw/"
+      - "{template_count} templates → ~/.claude/templates/"
+      - "{script_count} scripts → ~/.claude/scripts/"  # 4 scripts: install_nwave_target_hooks.py, validate_step_file.py, check_stale_phases.py, scope_boundary_check.py
+      - "1 config → ~/.claude/agents/nw/config.json"
+      - "1 manifest → ~/.claude/nwave-manifest.txt"
     shared_artifacts:
       - name: "package_name"
         source: "pyproject.toml [project].name"
@@ -306,40 +413,35 @@ steps:
       - name: "install_path"
         source: "pipx list_packages() → InstalledPackage.path"
         displayed_as: "{install_path}"
-      - name: "component_counts"
-        source: "Post-install scan of ~/.claude/ (agents/, commands/, templates/)"
-        displayed_as: "{agent_count} agents, {command_count} commands, {template_count} templates"
-        note: "Only shown for upgrade path where components already exist. For fresh install, nw setup has not yet run."
     emotional_state:
       entry: "Curiosity (what just happened?)"
-      exit: "Trust (I can see exactly what was installed and where)"
+      exit: "Full trust (complete transparency on both CLI and IDE assets)"
     design_notes: |
-      The SBOM manifest answers: "what did this tool just do to my system?"
-      Without it, a silent install that registers CLI commands and modifies
-      paths looks like malware. All items are dim text at 4-space indent.
+      The SBOM is now split into two groups separated by a blank line:
+      CLI package (what pipx installed) and IDE assets (what went to ~/.claude/).
+      Every component category is listed with count and destination.
+      Nothing is compressed or omitted. All items are dim text at 4-space indent.
       No emojis on individual lines; they are informational, not status.
-      The → prefix on install_path mirrors the version transition arrow.
+      The SBOM always shows the full inventory for both fresh and upgrade installs.
 
-      DATA AVAILABILITY NOTE: cli_entry_points are not currently exposed
-      by the pipx adapter. Two options:
-      1. Parse from wheel METADATA (zipfile introspection before install)
-      2. Hardcode known entry points ("crafter-ai, nw")
-      Option 2 is pragmatic for now; option 1 is the clean long-term fix.
-
-  - id: 13
+  - id: 16
     phase: "install"
     name: "Health Verification"
     sub_header: "🩺 Verifying installation"
     checks:
       - pass_message: "CLI responds to --version"
       - pass_message: "Core modules loadable"
+      - pass_message: "nWave assets accessible"
     summary_healthy: "Health: HEALTHY"
     summary_degraded: "Health: DEGRADED"
     emotional_state:
       entry: "Final check"
       exit: "Confident or cautious depending on result"
+    design_notes: |
+      Now includes "nWave assets accessible" check to verify that deployed
+      assets in ~/.claude/ are readable by Claude Code.
 
-  - id: 14
+  - id: 17
     phase: "celebration"
     name: "Celebration"
     healthy_output: |
@@ -351,6 +453,19 @@ steps:
     failed_output: |
       ❌ Installation failed
          {error_message}
+    getting_started:
+      sub_header: "📖 Getting started"
+      condition: "always (both fresh and upgrade installs)"
+      items:
+        - "/nw:discuss  - Requirements gathering and business analysis"
+        - "/nw:design   - Architecture design with visual representation"
+        - "/nw:distill  - Acceptance test creation and business validation"
+        - "/nw:develop  - Outside-In TDD implementation with refactoring"
+        - "/nw:deliver  - Production readiness validation"
+    whats_new:
+      sub_header: "🆕 What's new in {version}"
+      condition: "only when a changelog entry exists for this version"
+      items: "dynamic from changelog"
     shared_artifacts:
       - name: "version"
         source: "Wheel METADATA (via InstallResult.version)"
@@ -359,11 +474,21 @@ steps:
         note: "Product brand name used in user-facing celebration. Package name 'crafter-ai' used in SBOM manifest."
       - name: "health_status"
         source: "HealthChecker result"
+      - name: "available_commands"
+        source: "Deployed commands in ~/.claude/commands/nw/ (parsed from manifest or file scan)"
+        note: "Currently hardcoded to the 5 main wave commands. Could be dynamic from nwave-manifest.txt."
     emotional_state:
       entry: "Anticipation of outcome"
-      exit_healthy: "Joy, satisfaction, ready to go"
-      exit_degraded: "Cautious optimism"
+      exit_healthy: "Joy, satisfaction, clear on what to do next"
+      exit_degraded: "Cautious optimism, still knows available commands"
       exit_failed: "Clarity on what went wrong, path to fix"
+    design_notes: |
+      The celebration is the emotional peak, followed by actionable guidance.
+      The "Getting started" section ALWAYS shows available /nw: commands,
+      because even upgrade users may discover new commands. The "What's new"
+      section is conditional; it only appears when a changelog entry exists
+      for this version. Both sections use dim text at 4-space indent.
+      This replaces the old Rich panel that dumped all commands in a box.
 
 error_states:
   blocking_preflight:
@@ -385,12 +510,39 @@ error_states:
       Fix: {remediation if available}
     exit_code: 1
 
+  ide_bundle_build_failure:
+    pattern: |
+      ❌ IDE bundle build failed
+      Blank line
+      Error: {error_message}
+      Fix: {remediation if available}
+    exit_code: 1
+
   install_failure:
     pattern: |
       ❌ Installation failed
       Blank line
       Error: {error_message}
       Fix: {remediation if available}
+    exit_code: 1
+
+  asset_deployment_failure:
+    pattern: |
+      ❌ Asset deployment failed
+      Blank line
+      Error: {error_message}
+      Fix: {remediation if available}
+    exit_code: 1
+
+  deployment_validation_failure:
+    pattern: |
+      Show all validation checks (pass and fail mixed)
+      Blank line
+      Summary: "Deployment validation failed: {count} check(s) failed"
+      Blank line
+      Repeat ONLY failures with remediation:
+        ❌ {failure.message}
+           Fix: {failure.remediation}
     exit_code: 1
 
 interaction_patterns:
@@ -423,18 +575,25 @@ interaction_patterns:
       console.print("  ✅ {closure_message} ({duration})")
       if detail:
           console.print(f"[dim]    {detail_text}[/dim]")
-    note: "Used by backup (upgrade) and install sections. The section header names the operation; the spinner provides feedback; the closure confirms completion."
+    note: "Used by backup, CLI install, and asset deployment sections. The section header names the operation; the spinner provides feedback; the closure confirms completion."
 
   sbom_manifest:
-    description: "Post-install transparency showing what was installed"
+    description: "Post-install transparency showing what was installed (dual-group format)"
     implementation: |
       console.print("  📋 What was installed")
+      # CLI package group
       console.print(f"[dim]    {package_name} {version}[/dim]")
       console.print(f"[dim]    CLI: {entry_points}[/dim]")
-      if upgrade:
-          console.print(f"[dim]    {agents} agents, {commands} commands, {templates} templates[/dim]")
       console.print(f"[dim]    → {install_path}[/dim]")
-    note: "No emojis on manifest items. All dim text at 4-space indent. Builds trust by showing exactly what changed."
+      console.print()  # blank line separates CLI from IDE assets
+      # IDE assets group
+      console.print(f"[dim]    {agents} agents → ~/.claude/agents/nw/[/dim]")
+      console.print(f"[dim]    {commands} commands → ~/.claude/commands/nw/[/dim]")
+      console.print(f"[dim]    {templates} templates → ~/.claude/templates/[/dim]")
+      console.print(f"[dim]    {script_count} scripts → ~/.claude/scripts/[/dim]")
+      console.print(f"[dim]    1 config → ~/.claude/agents/nw/config.json[/dim]")
+      console.print(f"[dim]    1 manifest → ~/.claude/nwave-manifest.txt[/dim]")
+    note: "No emojis on manifest items. All dim text at 4-space indent. Always shows full inventory for both fresh and upgrade installs."
 
 shared_artifacts:
   version:
@@ -443,10 +602,10 @@ shared_artifacts:
     canonical_runtime_path: "InstallResult.version (parsed from wheel METADATA)"
     consumers:
       - "Step 3: Version display line (via VersionBumpService during build)"
-      - "Step 6: Build complete line (embedded in wheel filename)"
-      - "Step 7: Install confirmation prompt"
-      - "Step 12: SBOM manifest (package identity line)"
-      - "Step 14: Celebration message"
+      - "Step 7: Build complete detail line (embedded in wheel filename)"
+      - "Step 8: Install confirmation prompt"
+      - "Step 15: SBOM manifest (package identity line)"
+      - "Step 17: Celebration message"
     integration_risk: "HIGH"
     risk_explanation: "Version appears in 5 places. The wheel METADATA is the single source. All displays must trace back to it."
     validation: "All 5 displays must show identical version string originating from wheel METADATA"
@@ -454,8 +613,8 @@ shared_artifacts:
   product_name:
     source_of_truth: "Hardcoded string: 'nWave'"
     consumers:
-      - "Step 11: Install closure line ('nWave installed via pipx')"
-      - "Step 14: Celebration message ('nWave {version} installed and healthy!')"
+      - "Step 12: CLI install closure line ('nWave CLI installed via pipx')"
+      - "Step 17: Celebration message ('nWave {version} installed and healthy!')"
     integration_risk: "LOW"
     risk_explanation: "Brand name is intentionally different from package_name. If product renames, update these two locations."
     validation: "Both displays use identical product name string"
@@ -463,15 +622,77 @@ shared_artifacts:
   wheel_filename:
     source_of_truth: "BuildResult.wheel_path.name"
     consumers:
-      - "Step 6: Build complete line"
+      - "Step 7: Build complete detail line"
     integration_risk: "LOW"
     validation: "Filename matches built artifact"
+
+  agent_count:
+    source_of_truth: "IDE bundle build output (dist/ide/agents/nw/ file count)"
+    data_flow: "nWave/ source → build.py → dist/ide/ → install pre-flight → deploy → validation → SBOM"
+    consumers:
+      - "Step 6: IDE bundle detail line"
+      - "Step 7: Build complete detail line"
+      - "Step 10: Install pre-flight check"
+      - "Step 13: Asset deployment detail line"
+      - "Step 14: Deployment validation"
+      - "Step 15: SBOM manifest"
+    integration_risk: "MEDIUM"
+    risk_explanation: "Count appears in 6 places across build and install. Must originate from same build output."
+    validation: "All 6 displays show identical count from IDE bundle build"
+
+  command_count:
+    source_of_truth: "IDE bundle build output (dist/ide/commands/nw/ file count)"
+    data_flow: "nWave/ source → build.py → dist/ide/ → install pre-flight → deploy → validation → SBOM"
+    consumers:
+      - "Step 6: IDE bundle detail line"
+      - "Step 7: Build complete detail line"
+      - "Step 10: Install pre-flight check"
+      - "Step 13: Asset deployment detail line"
+      - "Step 14: Deployment validation"
+      - "Step 15: SBOM manifest"
+    integration_risk: "MEDIUM"
+    risk_explanation: "Count appears in 6 places across build and install. Must originate from same build output."
+    validation: "All 6 displays show identical count from IDE bundle build"
+
+  template_count:
+    source_of_truth: "Post-deployment scan of ~/.claude/templates/"
+    consumers:
+      - "Step 13: Asset deployment detail line"
+      - "Step 14: Deployment validation"
+      - "Step 15: SBOM manifest"
+    integration_risk: "LOW"
+    validation: "Count matches actual file count in ~/.claude/templates/"
+
+  script_count:
+    source_of_truth: "Post-deployment scan of ~/.claude/scripts/"
+    consumers:
+      - "Step 13: Asset deployment detail line"
+      - "Step 14: Deployment validation"
+      - "Step 15: SBOM manifest"
+    integration_risk: "LOW"
+    validation: "Count matches actual file count in ~/.claude/scripts/"
+
+  deploy_target:
+    source_of_truth: "Hardcoded: ~/.claude/"
+    consumers:
+      - "Step 13: Asset deployment detail lines"
+      - "Step 15: SBOM manifest asset lines"
+    integration_risk: "HIGH"
+    risk_explanation: "Deploy target path must be consistent across deployment and SBOM. If hardcoded differently in two places, assets go to wrong location."
+    validation: "All deployment and SBOM paths use identical deploy_target constant"
+
+  schema_version:
+    source_of_truth: "TDD cycle schema JSON (step-tdd-cycle-schema.json)"
+    consumers:
+      - "Step 14: Deployment validation line"
+    integration_risk: "LOW"
+    validation: "Version matches actual deployed schema file"
 
   install_path:
     source_of_truth: "pipx list_packages() → InstalledPackage.path"
     data_flow: "pipx install → pipx list --json → InstalledPackage.path"
     consumers:
-      - "Step 12: SBOM manifest (install location line)"
+      - "Step 15: SBOM manifest (CLI install location line)"
     integration_risk: "MEDIUM"
     risk_explanation: "Install path displayed to user must match actual pipx venv location. If pipx changes its path scheme, the display breaks."
     validation: "Displayed path matches result from pipx list_packages() for crafter-ai"
@@ -479,7 +700,7 @@ shared_artifacts:
   cli_entry_points:
     source_of_truth: "Wheel METADATA [console_scripts] section"
     consumers:
-      - "Step 12: SBOM manifest (CLI commands line)"
+      - "Step 15: SBOM manifest (CLI commands line)"
     integration_risk: "MEDIUM"
     risk_explanation: "Entry points shown in SBOM must match what pipx actually registered. Currently not parsed from wheel; needs implementation."
     validation: "Displayed entry points match wheel METADATA console_scripts entries"
@@ -490,31 +711,18 @@ shared_artifacts:
       3. Parse pipx install stdout which lists registered apps - depends on pipx output format
       Recommendation: Start with option 2, implement option 1 when refactoring pipx adapter.
 
-  component_counts:
-    source_of_truth: "Post-install scan of ~/.claude/ directory"
-    data_flow: "~/.claude/{agents,commands,templates}/ → glob count → display"
-    consumers:
-      - "Step 12: SBOM manifest (component counts line; upgrade path only)"
-    integration_risk: "LOW"
-    risk_explanation: "Counts are informational, not functional. Mismatch is cosmetic."
-    validation: "Counts match actual file counts in ~/.claude/ subdirectories"
-    implementation_note: |
-      Only shown for upgrade path. For fresh install, nw setup has not yet
-      deployed components, so counts would be misleading (showing 0 or
-      pre-existing counts from a different tool).
-
   backup_path:
     source_of_truth: "BackupResult.backup_path"
     consumers:
-      - "Step 10: Backup detail line (upgrade path only)"
+      - "Step 11: Backup detail line (upgrade path only)"
     integration_risk: "LOW"
     validation: "Displayed path matches BackupResult.backup_path and directory exists on disk"
 
   health_status:
     source_of_truth: "HealthChecker result"
     consumers:
-      - "Step 13: Health verification summary"
-      - "Step 14: Celebration message tone (🎉 vs ⚠️)"
+      - "Step 16: Health verification summary"
+      - "Step 17: Celebration message tone (🎉 vs ⚠️)"
     integration_risk: "MEDIUM"
     risk_explanation: "Health status determines celebration variant"
     validation: "Same HealthStatus enum value drives both displays"
@@ -523,7 +731,7 @@ shared_artifacts:
     source_of_truth: "pyproject.toml [project].name"
     consumers:
       - "Step 1: Build header"
-      - "Step 8: Install header"
-      - "Step 12: SBOM manifest (package identity line)"
+      - "Step 9: Install header"
+      - "Step 15: SBOM manifest (package identity line)"
     integration_risk: "LOW"
     validation: "Consistent package name across all three locations"

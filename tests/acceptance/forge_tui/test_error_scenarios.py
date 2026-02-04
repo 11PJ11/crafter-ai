@@ -26,7 +26,7 @@ from crafter_ai.installer.domain.check_result import CheckResult, CheckSeverity
 from crafter_ai.installer.domain.health_result import HealthStatus
 from crafter_ai.installer.services.build_service import BuildResult
 from crafter_ai.installer.services.install_service import InstallPhase, InstallResult
-from crafter_ai.installer.services.wheel_validation_service import WheelValidationResult
+
 
 # Box-drawing characters that MUST NOT appear in the redesigned TUI output.
 FORBIDDEN_BORDER_CHARS = set("╭╮╰╯┏┓┗┛━─┃│┡┩╇╈┼┤├")
@@ -472,8 +472,7 @@ class TestBlockingBuildPreFlight:
             runner, candidate_version, failed_build_result_preflight
         )
         assert "Build blocked: 2 checks failed" in output, (
-            "Missing summary line 'Build blocked: 2 checks failed'.\n"
-            f"Output:\n{output}"
+            f"Missing summary line 'Build blocked: 2 checks failed'.\nOutput:\n{output}"
         )
 
     def test_failures_repeated_below_with_remediation(
@@ -816,8 +815,7 @@ class TestBuildCompilationFailure:
         )
         assert "\u274c" in output, "Missing red X emoji for build failure"
         assert "Build failed" in output, (
-            "Missing 'Build failed' line.\n"
-            f"Output:\n{output}"
+            f"Missing 'Build failed' line.\nOutput:\n{output}"
         )
 
     def test_error_line_shows_failure_reason(
@@ -852,8 +850,7 @@ class TestBuildCompilationFailure:
             runner, candidate_version, failed_build_result_compilation
         )
         assert "Fix:" in output, (
-            "Missing 'Fix:' remediation line for build failure.\n"
-            f"Output:\n{output}"
+            f"Missing 'Fix:' remediation line for build failure.\nOutput:\n{output}"
         )
 
     def test_failure_appears_after_version_display(
@@ -967,8 +964,7 @@ class TestInstallFailure:
         )
         assert "\u274c" in output, "Missing red X emoji for install failure"
         assert "Installation failed" in output, (
-            "Missing 'Installation failed' line.\n"
-            f"Output:\n{output}"
+            f"Missing 'Installation failed' line.\nOutput:\n{output}"
         )
 
     def test_error_line_shows_failure_reason(
@@ -1006,8 +1002,7 @@ class TestInstallFailure:
             runner, mock_wheel_path, install_preflight_all_pass, failed_install_result
         )
         assert "Fix:" in output, (
-            "Missing 'Fix:' remediation line for install failure.\n"
-            f"Output:\n{output}"
+            f"Missing 'Fix:' remediation line for install failure.\nOutput:\n{output}"
         )
 
     def test_no_border_characters(
@@ -1127,9 +1122,7 @@ class TestDegradedHealth:
         output, _code = invoke_install(
             runner, mock_wheel_path, install_preflight_all_pass, degraded_install_result
         )
-        assert "Health: DEGRADED" in output, (
-            "Missing 'Health: DEGRADED' status line"
-        )
+        assert "Health: DEGRADED" in output, "Missing 'Health: DEGRADED' status line"
 
     def test_celebration_uses_warning_emoji_not_party(
         self,

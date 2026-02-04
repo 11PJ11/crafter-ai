@@ -81,6 +81,46 @@ Feature: Forge Build + Install TUI Journey
     Then I see "🔨 Build complete: crafter_ai-0.2.0-py3-none-any.whl"
     And no summary panel or box is displayed
 
+  # ─── IDE BUNDLE BUILD ──────────────────────────────────────────────────
+
+  @build @happy-path @ide-bundle
+  Scenario: IDE bundle build phase appears after wheel validation
+    When I run "crafter-ai forge build"
+    Then I see "⚙️ Building IDE bundle" indented 2 spaces after wheel validation
+    And a spinner "⏳ Processing nWave assets..." appears during bundle build
+    And the spinner resolves to "✅ IDE bundle built" with duration
+    And a dim detail line shows "30 agents, 23 commands, 0 teams"
+    And a dim detail line shows "3 embed injections applied"
+
+  @build @happy-path @ide-bundle
+  Scenario: IDE bundle YAML warnings shown with file and reason
+    Given the nWave source has agents with YAML issues
+    When the IDE bundle build completes
+    Then I see "⚠️  4 YAML warnings (non-blocking)" indented 2 spaces
+    And each warning shows the agent filename and reason in dim at 6-space indent
+    And I see "documentarist-reviewer: YAML parse error" in dim
+    And I see "documentarist: YAML parse error" in dim
+    And I see "illustrator-reviewer: no YAML config block" in dim
+    And I see "illustrator: no YAML config block" in dim
+    And the build is NOT blocked by YAML warnings
+    And the affected agents are still included in the bundle
+
+  @build @happy-path @ide-bundle
+  Scenario: Build complete shows both wheel and IDE bundle
+    When the build succeeds
+    Then I see "🔨 Build complete" as a sub-phase header
+    And I see the wheel filename in dim at 4-space indent
+    And I see "IDE bundle: 30 agents, 23 commands" in dim at 4-space indent
+    And no single-line build complete format is used
+
+  @error @build @ide-bundle
+  Scenario: IDE bundle build failure
+    Given the nWave/ source directory is missing or empty
+    When the IDE bundle build runs
+    Then the spinner resolves to "❌ IDE bundle build failed"
+    And an "Error:" line shows the failure reason
+    And the process exits with code 1
+
   # ─── INSTALL CONFIRMATION PROMPT ─────────────────────────────────────
 
   @build @install @happy-path
@@ -120,6 +160,22 @@ Feature: Forge Build + Install TUI Journey
     And passed checks show "✅" followed by a descriptive message
     And a summary line "✅ Pre-flight passed" appears after all checks
 
+  # ─── INSTALL PRE-FLIGHT: IDE BUNDLE CHECK ──────────────────────────
+
+  @install @happy-path
+  Scenario: Install pre-flight validates IDE bundle exists
+    When I run "crafter-ai forge install"
+    Then I see "✅ IDE bundle found (30 agents, 23 commands)" in the pre-flight checks
+    And the agent and command counts match the build output
+
+  @error @install
+  Scenario: Install blocked when IDE bundle missing
+    Given no IDE bundle exists in dist/ide/
+    When I run "crafter-ai forge install"
+    Then I see "❌ IDE bundle not found in dist/ide/"
+    And the install is blocked
+    And remediation says "Run 'crafter-ai forge build' to generate the IDE bundle"
+
   # ─── BACKUP SECTION ─────────────────────────────────────────────────
 
   @install @happy-path @backup
@@ -142,50 +198,99 @@ Feature: Forge Build + Install TUI Journey
     And no spinner appears for backup
     And no detail line appears for backup
 
-  # ─── INSTALLATION PROGRESS SECTION ─────────────────────────────────
+  # ─── CLI INSTALLATION SECTION ───────────────────────────────────────
 
   @install @happy-path @install-progress
-  Scenario: Install section has header and spinner during pipx install
+  Scenario: CLI install section has header and spinner during pipx install
     When the install phase runs
-    Then I see "⚙️ Installing" indented 2 spaces as a section header
+    Then I see "⚙️ Installing CLI" indented 2 spaces as a section header
     And a spinner appears with text "⏳ Installing via pipx..."
     And the spinner is visible during the pipx install operation
-    And when install completes the spinner resolves to "✅ nWave installed via pipx" with duration
+    And when install completes the spinner resolves to "✅ nWave CLI installed via pipx" with duration
     And no silence gap exists between pre-flight checks and install completion
 
   @install @happy-path @install-progress
-  Scenario: Install closure line uses product brand name
-    When the install phase completes successfully
-    Then the closure line says "nWave installed via pipx" not "crafter-ai installed via pipx"
+  Scenario: CLI install closure line uses product brand name
+    When the CLI install phase completes successfully
+    Then the closure line says "nWave CLI installed via pipx" not "crafter-ai installed via pipx"
     And the duration is shown in parentheses like "(2.9s)"
+
+  # ─── ASSET DEPLOYMENT SECTION ──────────────────────────────────────
+
+  @install @happy-path @asset-deploy
+  Scenario: Asset deployment section appears after CLI install
+    When the CLI install completes via pipx
+    Then I see "⚙️ Deploying nWave assets" indented 2 spaces
+    And a spinner "⏳ Installing to ~/.claude/..." appears during deployment
+    And the spinner resolves to "✅ Assets deployed" with duration
+
+  @install @happy-path @asset-deploy
+  Scenario: Asset deployment shows what went where
+    When asset deployment completes
+    Then I see "30 agents → ~/.claude/agents/nw/" in dim at 4-space indent
+    And I see "23 commands → ~/.claude/commands/nw/" in dim at 4-space indent
+    And I see "17 templates → ~/.claude/templates/" in dim at 4-space indent
+    And I see "4 scripts → ~/.claude/scripts/" in dim at 4-space indent
+
+  @error @install @asset-deploy
+  Scenario: Asset deployment failure
+    When the asset deployment fails
+    Then the spinner resolves to "❌ Asset deployment failed"
+    And an "Error:" line shows the failure reason
+    And a "Fix:" line shows remediation
+
+  # ─── DEPLOYMENT VALIDATION SECTION (replaces Rich table) ───────────
+
+  @install @happy-path @deploy-validation
+  Scenario: Deployment validation displays as emoji stream not Rich table
+    When deployment validation runs
+    Then I see "🔍 Validating deployment" indented 2 spaces
+    And I see "✅ Agents verified (30)"
+    And I see "✅ Commands verified (23)"
+    And I see "✅ Templates verified (17)"
+    And I see "✅ Scripts verified (4)"
+    And I see "✅ Manifest created"
+    And I see "✅ Schema validated (v3.0, 7 phases)"
+    And I see "✅ Deployment validated"
+    And the output contains no Rich Table borders
+    And the output contains no "┏" or "┗" table characters
+
+  @error @install @deploy-validation
+  Scenario: Deployment validation failure
+    Given the deployed command count does not match expected
+    When deployment validation runs
+    Then I see "❌ Commands verification failed (expected 23, found 21)"
+    And a remediation line suggests re-running install
 
   # ─── SBOM MANIFEST SECTION ────────────────────────────────────────
 
-  @install @happy-path @sbom
-  Scenario: SBOM manifest shows what was installed
-    When the install phase completes successfully
+  @install @happy-path @sbom @unified
+  Scenario: SBOM shows complete bill of materials with CLI and IDE assets
+    When the install flow completes successfully
     Then I see "📋 What was installed" indented 2 spaces
-    And I see the package name and version in dim text at 4-space indent
-    And I see CLI entry points in dim text at 4-space indent
-    And I see the install path prefixed with "→" in dim text at 4-space indent
-    And no emojis appear on individual manifest lines
+    And the SBOM contains a CLI package group:
+      | Line                              |
+      | crafter-ai 0.2.0                  |
+      | CLI: crafter-ai, nw              |
+      | → {pipx_install_path}            |
+    And a blank line separates CLI package from IDE assets
+    And the SBOM contains an IDE assets group:
+      | Line                                          |
+      | 30 agents → ~/.claude/agents/nw/             |
+      | 23 commands → ~/.claude/commands/nw/          |
+      | 17 templates → ~/.claude/templates/           |
+      | 4 scripts → ~/.claude/scripts/                |
+      | 1 config → ~/.claude/agents/nw/config.json   |
+      | 1 manifest → ~/.claude/nwave-manifest.txt    |
+    And all SBOM lines are dim text at 4-space indent
+    And no SBOM lines contain emoji
 
-  @install @happy-path @sbom
-  Scenario: SBOM manifest for fresh install omits component counts
-    Given this is a fresh install with no previous version
-    When the SBOM manifest displays
-    Then I see "crafter-ai 0.2.0" as the package identity
-    And I see "CLI: crafter-ai, nw" as the entry points
-    And I see "→" followed by the pipx venv path as the install location
-    And no agent, command, or template counts are shown
-
-  @install @happy-path @sbom
-  Scenario: SBOM manifest for upgrade includes component counts
-    Given this is an upgrade from a previous version
-    And agents, commands, and templates exist in ~/.claude/
-    When the SBOM manifest displays
-    Then I see agent, command, and template counts in dim text
-    And the counts reflect actual files in ~/.claude/ subdirectories
+  @install @happy-path @sbom @unified
+  Scenario: SBOM shows full inventory for both fresh and upgrade installs
+    Given this is a fresh install OR an upgrade install
+    When the SBOM displays
+    Then the IDE assets group always shows all 6 component categories
+    And no component categories are omitted based on install type
 
   @install @happy-path @sbom
   Scenario: SBOM manifest data comes from correct sources
@@ -193,6 +298,8 @@ Feature: Forge Build + Install TUI Journey
     Then the package name originates from pyproject.toml [project].name
     And the version originates from wheel METADATA
     And the install path originates from pipx list_packages()
+    And the agent/command counts originate from IDE bundle build output
+    And the template/script counts originate from post-deploy scan of ~/.claude/
 
   # ─── HEALTH VERIFICATION ──────────────────────────────────────────
 
@@ -203,6 +310,12 @@ Feature: Forge Build + Install TUI Journey
     And individual health checks appear as "✅" lines
     And a summary line shows "✅ Health: HEALTHY" in green
 
+  @install @happy-path
+  Scenario: Health verification includes asset accessibility check
+    When post-install verification runs
+    Then I see "✅ nWave assets accessible" in the health check list
+    And the check verifies that deployed assets in ~/.claude/ are readable
+
   # ─── CELEBRATION MOMENT ──────────────────────────────────────────────
 
   @celebration @happy-path
@@ -212,9 +325,27 @@ Feature: Forge Build + Install TUI Journey
     When the celebration displays
     Then I see "🎉 nWave 0.2.0 installed and healthy!" in bold green
     And I see "Ready to use in Claude Code." in dim on the next line
-    And the celebration is exactly 2 lines
     And the celebration uses "nWave" not "crafter-ai"
     And shared artifact "version" matches the version from the build phase
+
+  @celebration @happy-path
+  Scenario: Getting started section always shows available commands
+    When the celebration displays
+    Then I see "📖 Getting started" indented 2 spaces
+    And I see "/nw:discuss" with description in dim at 4-space indent
+    And I see "/nw:design" with description in dim at 4-space indent
+    And I see "/nw:distill" with description in dim at 4-space indent
+    And I see "/nw:develop" with description in dim at 4-space indent
+    And I see "/nw:deliver" with description in dim at 4-space indent
+    And the getting started section appears for both fresh and upgrade installs
+
+  @celebration @happy-path
+  Scenario: What's new section shown conditionally for upgrades
+    Given a changelog entry exists for version "0.2.0"
+    When the celebration displays
+    Then I see "🆕 What's new in 0.2.0" indented 2 spaces
+    And the section shows notable changes from the changelog in dim at 4-space indent
+    And the section is omitted when no changelog entry exists for this version
 
   @celebration
   Scenario: Degraded installation celebration
@@ -223,6 +354,7 @@ Feature: Forge Build + Install TUI Journey
     Then I see "⚠️" instead of "🎉"
     And the message says "installed with warnings" instead of "installed and healthy"
     And a hint says "Run 'crafter-ai doctor' for details."
+    And the getting started section still appears
 
   # ─── ERROR STATES ────────────────────────────────────────────────────
 
@@ -296,11 +428,12 @@ Feature: Forge Build + Install TUI Journey
 
   # ─── WALKING SKELETON: FULL E2E FLOW ──────────────────────────────
 
-  @walking-skeleton @e2e @horizontal
-  Scenario: Complete build-to-install flow as one continuous journey
+  @walking-skeleton @e2e @horizontal @unified
+  Scenario: Complete unified build-to-install flow with IDE bundle and asset deployment
     Given the project has a valid pyproject.toml with version "0.1.0"
     And the build toolchain is installed
     And the src/ directory exists with valid Python package code
+    And the nWave/ directory exists with 30 agents and 23 commands
     And git working directory has uncommitted changes
     And no previous version of crafter-ai is installed via pipx
 
@@ -334,12 +467,25 @@ Feature: Forge Build + Install TUI Journey
     And I see "✅ Metadata complete"
     And I see "✅ Wheel validated"
 
-    # Step 6: Build complete (single line, no panel)
-    And I see "🔨 Build complete: crafter_ai-0.2.0-py3-none-any.whl"
+    # Step 6: IDE Bundle Build (NEW)
+    And I see "⚙️ Building IDE bundle" indented 2 spaces
+    And a spinner "⏳ Processing nWave assets..." resolves to "✅ IDE bundle built" with duration
+    And I see "30 agents, 23 commands, 0 teams" in dim
+    And I see "3 embed injections applied" in dim
+    And I see "⚠️  4 YAML warnings (non-blocking)"
+    And I see "documentarist-reviewer: YAML parse error" in dim
+    And I see "documentarist: YAML parse error" in dim
+    And I see "illustrator-reviewer: no YAML config block" in dim
+    And I see "illustrator: no YAML config block" in dim
+
+    # Step 7: Build complete (MODIFIED, now shows two artifacts)
+    And I see "🔨 Build complete"
+    And I see "crafter_ai-0.2.0-py3-none-any.whl" in dim
+    And I see "IDE bundle: 30 agents, 23 commands" in dim
 
     # ── TRANSITION: CONFIRMATION PROMPT ──
 
-    # Step 7: Install prompt (version from wheel METADATA)
+    # Step 8: Install prompt (version from wheel METADATA)
     And I see "📦 Install crafter-ai 0.2.0? [Y/n]: "
     And the version "0.2.0" in the prompt matches the wheel METADATA
 
@@ -347,54 +493,83 @@ Feature: Forge Build + Install TUI Journey
 
     # ── INSTALL PHASE ──
 
-    # Step 8: Install header (seamless continuation)
+    # Step 9: Install header (seamless continuation)
     Then I see "📦 Installing crafter-ai" in bold
 
-    # Step 9: Install pre-flight checks
+    # Step 10: Install pre-flight checks (MODIFIED, new IDE bundle check)
     And I see "🔍 Pre-flight checks"
     And I see "✅ Wheel file found"
     And I see "✅ Wheel format valid"
     And I see "✅ pipx environment ready"
     And I see "✅ Install path writable"
+    And I see "✅ IDE bundle found (30 agents, 23 commands)"
     And I see "✅ Pre-flight passed"
 
-    # Step 10: Backup (fresh install, single line)
+    # Step 11: Backup (fresh install, single line)
     And I see "💾 Fresh install, no backup needed"
     And no backup spinner or detail line appears
 
-    # Step 11: Installation progress (spinner fills the silence gap)
-    And I see "⚙️ Installing" as a section header indented 2 spaces
-    And a spinner "⏳ Installing via pipx..." appears during installation
-    And the spinner resolves to "✅ nWave installed via pipx" with duration
+    # Step 12: CLI Installation (RENAMED from "Installing")
+    And I see "⚙️ Installing CLI" as a section header indented 2 spaces
+    And a spinner "⏳ Installing via pipx..." resolves to "✅ nWave CLI installed via pipx" with duration
 
-    # Step 12: SBOM manifest (transparency)
+    # Step 13: Asset Deployment (NEW)
+    And I see "⚙️ Deploying nWave assets"
+    And a spinner "⏳ Installing to ~/.claude/..." resolves to "✅ Assets deployed" with duration
+    And I see "30 agents → ~/.claude/agents/nw/" in dim
+    And I see "23 commands → ~/.claude/commands/nw/" in dim
+    And I see "17 templates → ~/.claude/templates/" in dim
+    And I see "4 scripts → ~/.claude/scripts/" in dim
+
+    # Step 14: Deployment Validation (NEW, replaces Rich table)
+    And I see "🔍 Validating deployment"
+    And I see "✅ Agents verified (30)"
+    And I see "✅ Commands verified (23)"
+    And I see "✅ Templates verified (17)"
+    And I see "✅ Scripts verified (4)"
+    And I see "✅ Manifest created"
+    And I see "✅ Schema validated (v3.0, 7 phases)"
+    And I see "✅ Deployment validated"
+    And the output contains no Rich Table borders
+
+    # Step 15: SBOM manifest (EXPANDED, two groups)
     And I see "📋 What was installed" indented 2 spaces
     And I see "crafter-ai 0.2.0" in dim at 4-space indent
     And I see "CLI: crafter-ai, nw" in dim at 4-space indent
     And I see "→" followed by the pipx install path in dim at 4-space indent
-    And no component counts appear (fresh install, nw setup not yet run)
+    And I see "30 agents → ~/.claude/agents/nw/" in dim
+    And I see "23 commands → ~/.claude/commands/nw/" in dim
+    And I see "17 templates → ~/.claude/templates/" in dim
+    And I see "4 scripts → ~/.claude/scripts/" in dim
+    And I see "1 config → ~/.claude/agents/nw/config.json" in dim
+    And I see "1 manifest → ~/.claude/nwave-manifest.txt" in dim
 
-    # Step 13: Health verification
+    # Step 16: Health verification (MODIFIED, new asset check)
     And I see "🩺 Verifying installation"
     And I see "✅ CLI responds to --version"
     And I see "✅ Core modules loadable"
+    And I see "✅ nWave assets accessible"
     And I see "✅ Health: HEALTHY"
 
     # ── CELEBRATION ──
 
-    # Step 14: The wow moment
+    # Step 17: The wow moment
     And I see "🎉 nWave 0.2.0 installed and healthy!" in bold green
     And I see "Ready to use in Claude Code." in dim
 
+    # Getting started (always shown)
+    And I see "📖 Getting started"
+    And I see "/nw:discuss" in dim
+    And I see "/nw:design" in dim
+    And I see "/nw:distill" in dim
+    And I see "/nw:develop" in dim
+    And I see "/nw:deliver" in dim
+
     # ── SHARED ARTIFACT CONSISTENCY ──
-    And the version "0.2.0" appears consistently in:
-      | Location              | Expected                                        |
-      | Version display       | 0.1.0 → 0.2.0 (minor)                           |
-      | Wheel filename        | crafter_ai-0.2.0-py3-none-any.whl                |
-      | Install prompt        | Install crafter-ai 0.2.0?                        |
-      | SBOM manifest         | crafter-ai 0.2.0                                 |
-      | Celebration           | nWave 0.2.0 installed and healthy!                |
-    And all version displays originate from wheel METADATA as single source of truth
+    And the version "0.2.0" appears consistently across all displays
+    And the agent count "30" appears consistently in build, pre-flight, deploy, validation, and SBOM
+    And the command count "23" appears consistently in build, pre-flight, deploy, validation, and SBOM
+    And the output contains no Rich Table or Panel borders anywhere
 
     # ── EMOTIONAL ARC VALIDATION ──
     And the output reads as a continuous top-to-bottom stream with no visual breaks
@@ -403,46 +578,68 @@ Feature: Forge Build + Install TUI Journey
 
   # ─── WALKING SKELETON: UPGRADE FLOW ──────────────────────────────
 
-  @walking-skeleton @e2e @horizontal @upgrade
-  Scenario: Upgrade install flow with backup and SBOM component counts
+  @walking-skeleton @e2e @horizontal @upgrade @unified
+  Scenario: Upgrade install flow with backup, asset deployment, and complete SBOM
     Given the project has a valid pyproject.toml with version "0.1.0"
     And crafter-ai 0.1.0 is already installed via pipx
     And agents, commands, and templates exist in ~/.claude/
     And a wheel for version 0.2.0 exists in dist/
+    And an IDE bundle exists in dist/ide/
 
     When I run "crafter-ai forge install"
 
-    # Step 8: Install header
+    # Step 9: Install header
     Then I see "📦 Installing crafter-ai" in bold
 
-    # Step 9: Install pre-flight checks
+    # Step 10: Install pre-flight checks (with IDE bundle check)
     And I see "🔍 Pre-flight checks"
+    And I see "✅ IDE bundle found (30 agents, 23 commands)"
     And I see "✅ Pre-flight passed"
 
-    # Step 10: Backup (upgrade path, full section)
+    # Step 11: Backup (upgrade path, full scope)
     And I see "💾 Backing up configuration" as a section header
     And a spinner "⏳ Creating backup..." appears during backup
     And the spinner resolves to "✅ Backup saved" with duration
-    And a dim detail line shows "agents, commands, templates → ~/.claude/backups/nwave-" with timestamp
+    And a dim detail line shows "agents, commands, templates, scripts, manifest, install log, DES, settings, CLAUDE.md → ~/.claude/backups/nwave-install-" with timestamp
 
-    # Step 11: Installation progress
-    And I see "⚙️ Installing" as a section header
+    # Step 12: CLI Installation (renamed)
+    And I see "⚙️ Installing CLI" as a section header
     And a spinner "⏳ Installing via pipx..." fills the silence gap
-    And the spinner resolves to "✅ nWave installed via pipx" with duration
+    And the spinner resolves to "✅ nWave CLI installed via pipx" with duration
 
-    # Step 12: SBOM manifest (upgrade variant with component counts)
+    # Step 13: Asset Deployment (NEW)
+    And I see "⚙️ Deploying nWave assets"
+    And a spinner resolves to "✅ Assets deployed" with duration
+    And I see "30 agents → ~/.claude/agents/nw/" in dim
+    And I see "23 commands → ~/.claude/commands/nw/" in dim
+    And I see "17 templates → ~/.claude/templates/" in dim
+    And I see "4 scripts → ~/.claude/scripts/" in dim
+
+    # Step 14: Deployment Validation (NEW)
+    And I see "🔍 Validating deployment"
+    And I see "✅ Deployment validated"
+
+    # Step 15: SBOM manifest (complete dual-group format)
     And I see "📋 What was installed"
     And I see "crafter-ai 0.2.0" in dim
     And I see "CLI: crafter-ai, nw" in dim
-    And I see agent, command, and template counts in dim
     And I see "→" followed by the pipx install path in dim
+    And I see "30 agents → ~/.claude/agents/nw/" in dim
+    And I see "1 config → ~/.claude/agents/nw/config.json" in dim
+    And I see "1 manifest → ~/.claude/nwave-manifest.txt" in dim
 
-    # Step 13: Health verification
+    # Step 16: Health verification (with asset check)
     And I see "🩺 Verifying installation"
+    And I see "✅ nWave assets accessible"
     And I see "✅ Health: HEALTHY"
 
-    # Step 14: Celebration
+    # Step 17: Celebration
     And I see "🎉 nWave 0.2.0 installed and healthy!" in bold green
+
+    # Getting started (always shown, same as fresh install)
+    And I see "📖 Getting started"
+    And I see "/nw:discuss" in dim
+    And I see "/nw:develop" in dim
     And the process exits with code 0
 
   # ─── SBOM INTEGRATION CONSISTENCY ──────────────────────────────────
@@ -458,3 +655,22 @@ Feature: Forge Build + Install TUI Journey
     When the full install flow completes
     Then the CLI entry points shown in SBOM match the wheel METADATA console_scripts
     And the listed commands are executable from PATH
+
+  @horizontal @integration @sbom
+  Scenario: SBOM agent count matches build and deployment
+    When the full build + install flow completes
+    Then the agent count in SBOM matches the IDE bundle build count (30)
+    And the agent count in SBOM matches the deployment validation count (30)
+    And all three originate from the same IDE bundle build output
+
+  @horizontal @integration @sbom
+  Scenario: SBOM covers every file category deployed to ~/.claude/
+    When the SBOM displays
+    Then every category in the target structure is represented:
+      | Category  | Target                          | Count |
+      | agents    | ~/.claude/agents/nw/           | 30    |
+      | commands  | ~/.claude/commands/nw/          | 23    |
+      | templates | ~/.claude/templates/            | 17    |
+      | scripts   | ~/.claude/scripts/              | 4     |
+      | config    | ~/.claude/agents/nw/config.json | 1     |
+      | manifest  | ~/.claude/nwave-manifest.txt    | 1     |
