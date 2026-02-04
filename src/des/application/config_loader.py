@@ -18,15 +18,18 @@ class ConfigLoader:
     """
     Loads configuration from JSON file with validation.
 
-    Provides turn limits by task type:
-    - quick=20
-    - standard=50
-    - complex=100
+    Provides turn limits by task type (see src/des/config/des_defaults.yaml):
+    - quick=15
+    - background=25
+    - standard=30 (default)
+    - research=35
+    - complex=50
 
-    Defaults to standard (50) if type not specified.
+    Defaults to standard (30) if type not specified.
     """
 
-    DEFAULT_TURN_LIMITS = {"quick": 20, "standard": 50, "complex": 100}
+    # Defaults aligned with src/des/config/des_defaults.yaml
+    DEFAULT_TURN_LIMITS = {"quick": 15, "background": 25, "standard": 30, "research": 35, "complex": 50}
 
     def __init__(self, config_path: str):
         """
@@ -81,7 +84,7 @@ class ConfigLoader:
             task_type: Task type (quick/standard/complex) or None
 
         Returns:
-            Turn limit for task type, or standard default (50) if not found
+            Turn limit for task type, or standard default (30) if not found
         """
         if task_type is None or task_type not in self.turn_limits:
             # Default fallback to standard

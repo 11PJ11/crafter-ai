@@ -2,10 +2,14 @@
 Unit tests for ConfigLoader turn limit configuration.
 
 Tests configuration module that defines turn limits by task type:
-- quick=20
-- standard=50
-- complex=100
-- Default fallback to standard (50) if type not specified
+- quick=15
+- background=25
+- standard=30 (default)
+- research=35
+- complex=50
+- Default fallback to standard (30) if type not specified
+
+See src/des/config/des_defaults.yaml for configuration.
 """
 
 import json
@@ -41,9 +45,9 @@ class TestConfigLoaderTurnLimits:
             Path(config_path).unlink()
 
     def test_default_fallback_to_standard_when_type_not_specified(self):
-        """Default fallback to standard (50 turns) if type not specified."""
+        """Default fallback to standard (30 turns) if type not specified."""
         # Given: Config file with standard turn limit
-        config_data = {"turn_limits": {"standard": 50}}
+        config_data = {"turn_limits": {"standard": 30}}
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump(config_data, f)
@@ -56,8 +60,8 @@ class TestConfigLoaderTurnLimits:
             loader = ConfigLoader(config_path)
 
             # Then: Returns standard fallback value
-            assert loader.get_turn_limit("unknown_type") == 50
-            assert loader.get_turn_limit(None) == 50
+            assert loader.get_turn_limit("unknown_type") == 30
+            assert loader.get_turn_limit(None) == 30
         finally:
             Path(config_path).unlink()
 
@@ -90,7 +94,9 @@ class TestConfigLoaderTurnLimits:
         # When: ConfigLoader initialized with missing file
         loader = ConfigLoader("/nonexistent/path/config.json")
 
-        # Then: Uses built-in defaults
-        assert loader.get_turn_limit("quick") == 20
-        assert loader.get_turn_limit("standard") == 50
-        assert loader.get_turn_limit("complex") == 100
+        # Then: Uses built-in defaults (see src/des/config/des_defaults.yaml)
+        assert loader.get_turn_limit("quick") == 15
+        assert loader.get_turn_limit("background") == 25
+        assert loader.get_turn_limit("standard") == 30
+        assert loader.get_turn_limit("research") == 35
+        assert loader.get_turn_limit("complex") == 50
