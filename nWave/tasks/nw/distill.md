@@ -1,3 +1,20 @@
+---
+description: 'Acceptance test creation and business validation [story-id] - Optional:
+  --test-framework=[cucumber|specflow|pytest-bdd] --integration=[real-services|mocks]'
+argument-hint: '[story-id] - Optional: --test-framework=[cucumber|specflow|pytest-bdd]
+  --integration=[real-services|mocks]'
+---
+
+# /distill Command
+
+**Wave**: DISTILL
+**Description**: Acceptance test creation and business validation
+
+**Wave Progress**: 4/6
+**Primary Agents**: acceptance-designer
+**Expected Outputs**: acceptance_tests, test_scenarios
+
+## Implementation
 # DW-DISTILL: Acceptance Test Creation and Business Validation
 
 **Wave**: DISTILL
@@ -67,7 +84,7 @@ Creates executable specifications that bridge business requirements and technica
 
 Before creating acceptance tests, the orchestrator MUST ask the user:
 
-> "Is this a **nWave core feature** or a **plugin feature**?"
+> "Is this a **nWave core feature**, a **plugin feature**, or **bug testing**?"
 
 Based on the answer, use the appropriate directory structure.
 
@@ -142,6 +159,46 @@ tests/plugins/des/hook-enforcement/acceptance/
     └── orchestrator_steps.py
 ```
 
+### Option C: Bug Testing
+
+For bug-specific acceptance tests (testing bugs before fixing them):
+
+```
+tests/bugs/<context>/<subcontext>/<feature>/acceptance/
+├── bug-1-<description>.feature    # Test for bug 1
+├── bug-2-<description>.feature    # Test for bug 2
+├── bug-3-<description>.feature    # Test for bug 3
+├── ...
+└── steps/
+    ├── conftest.py
+    ├── common_steps.py            # Shared step definitions
+    ├── <domain>_steps.py          # Domain-specific steps
+    └── helpers.py                 # Utility functions
+```
+
+**Example**: For DES installation bugs:
+```
+tests/bugs/plugins/des/installation/acceptance/
+├── walking-skeleton.feature       # OPTIONAL for bugs
+├── bug-1-hook-idempotency.feature
+├── bug-2-audit-logs-location.feature
+├── bug-3-import-paths.feature
+└── steps/
+    ├── conftest.py
+    ├── common_steps.py
+    ├── hook_steps.py
+    ├── audit_log_steps.py
+    ├── import_path_steps.py
+    └── helpers.py
+```
+
+**Key Differences for Bug Testing**:
+- Walking skeleton is **OPTIONAL** (not required for bug tests)
+- Tests should **FAIL when bugs are present** (current state)
+- Tests should **PASS when bugs are fixed** (future state)
+- Context hierarchy: `<context>/<subcontext>/<feature>` (e.g., `plugins/des/installation`)
+- Feature files named: `bug-{N}-{description}.feature`
+
 ### File Naming Conventions
 
 **Feature Files** (multiple per milestone):
@@ -157,24 +214,36 @@ tests/plugins/des/hook-enforcement/acceptance/
 
 ### Walking Skeleton Priority
 
-**CRITICAL**: The walking skeleton MUST be:
+**For Features (nWave core & plugins)**: The walking skeleton MUST be:
 1. In a **separate file** (`walking-skeleton.feature`)
 2. The **first file created**
 3. The **first test implemented** (before any milestone scenarios)
 4. **Minimal** - ONE scenario proving E2E path works
+
+**For Bug Testing**: Walking skeleton is **OPTIONAL**
+- May be useful to verify test infrastructure
+- Not required if bugs are already well-isolated
+- Focus on tests that fail when bugs are present
 
 ### Orchestrator Question Template
 
 ```
 Before creating acceptance tests, please answer:
 
-**Feature Type**:
+**Test Type**:
 - [ ] nWave core feature (installer, agents, commands, etc.)
 - [ ] Plugin feature (DES, mutation testing, etc.)
+- [ ] Bug testing (acceptance tests for bugs before fixing)
 
 If plugin feature:
 - Plugin name: _____________
 - Feature name: _____________
+
+If bug testing:
+- Context: _____________ (e.g., plugins, nWave, tools)
+- Subcontext: _____________ (e.g., des, installer, cli)
+- Feature: _____________ (e.g., installation, hooks, config)
+- Walking skeleton needed? [ ] Yes [ ] No
 ```
 
 ## Context Files Required
@@ -337,6 +406,19 @@ tests/plugins/{plugin-name}/{feature-name}/acceptance/
 └── steps/
     ├── conftest.py                       # Fixtures and configuration
     └── {domain}_steps.py                 # Domain-specific steps
+```
+
+### For Bug Testing
+
+```
+tests/bugs/{context}/{subcontext}/{feature}/acceptance/
+├── walking-skeleton.feature              # OPTIONAL for bugs
+├── bug-{N}-{description}.feature         # One per bug
+└── steps/
+    ├── conftest.py                       # Fixtures and configuration
+    ├── common_steps.py                   # Shared steps
+    ├── {domain}_steps.py                 # Domain-specific steps
+    └── helpers.py                        # Utility functions
 ```
 
 ### Documentation Artifacts (in docs/feature/)
