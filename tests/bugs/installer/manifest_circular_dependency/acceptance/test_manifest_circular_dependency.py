@@ -17,4 +17,4 @@ from .steps.manifest_steps import *  # noqa: F403
 
 
 # Collect all scenarios from the feature file
-scenarios("manifest-circular-dependency.feature")
+scenarios("manifest_circular_dependency.feature")
