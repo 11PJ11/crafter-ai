@@ -7,10 +7,10 @@
 execution_status:
   project_id: "modern-cli-installer"
   roadmap_file: "roadmap.yaml"
-  current_phase: "06"
-  current_step: "COMPLETE"
-  overall_status: "completed"
-  last_completed_step: "06-05"
+  current_phase: "08"
+  current_step: "PLANNED"
+  overall_status: "in_progress"
+  last_completed_step: "07-09"
 
   # Roadmap was reviewed and approved by software-crafter-reviewer
   roadmap_review:
@@ -80,6 +80,28 @@ phases:
     blocked_by: null
     steps_total: 5
     steps_completed: 5
+
+  - phase_id: "07"
+    name: "TUI Redesign - Forge Build + Install Emoji Stream"
+    status: "completed"
+    blocked_by: null
+    steps_total: 9
+    steps_completed: 9
+    notes: |
+      Replaced old mainframe TUI (Rich Tables, Panels, "FORGE:" prefix) with
+      modern emoji streaming interface designed by Luna (leanux-designer).
+      Walking skeleton: 20/20 GREEN. Anti-regression: 51/51 GREEN.
+
+  - phase_id: "08"
+    name: "TUI Error States and Edge Cases"
+    status: "planned"
+    blocked_by: null
+    steps_total: 5
+    steps_completed: 0
+    notes: |
+      Implements Luna's error scenarios from journey-forge-tui-visual.md:
+      blocking pre-flight (build/install), build failure, install failure,
+      degraded health. Requires Quinn's acceptance tests first (DISTILL wave).
 
 # Step-level tracking
 steps:
@@ -1051,15 +1073,118 @@ steps:
     reviewer: "software-crafter-reviewer"
     review_status: "APPROVED"
 
+  # ═══════════════════════════════════════════════════════════
+  # PHASE 07: TUI Redesign - Forge Build + Install Emoji Stream
+  # ═══════════════════════════════════════════════════════════
+  - step_id: "07-01"
+    name: "Strip borders from forge_build.py"
+    phase: "07"
+    status: "completed"
+    test_result: "Walking skeleton tests 18,19 GREEN"
+    commit_hash: "9f815a9"
+
+  - step_id: "07-02"
+    name: "Strip borders from forge_install.py"
+    phase: "07"
+    status: "completed"
+    test_result: "Walking skeleton tests 1,2,20 GREEN"
+    commit_hash: "4039199"
+
+  - step_id: "07-03"
+    name: "Build header and pre-flight emoji stream"
+    phase: "07"
+    status: "completed"
+    test_result: "Walking skeleton tests 3,4 GREEN"
+    commit_hash: "1fe08e3"
+
+  - step_id: "07-04"
+    name: "Version display, build spinner, wheel validation, build complete"
+    phase: "07"
+    status: "completed"
+    test_result: "Walking skeleton tests 5,6,7,8 GREEN"
+    commit_hash: "99591ca"
+
+  - step_id: "07-05"
+    name: "Install prompt redesign with version from wheel METADATA"
+    phase: "07"
+    status: "completed"
+    test_result: "Walking skeleton test 9 GREEN"
+    commit_hash: "9e84d05"
+
+  - step_id: "07-06"
+    name: "Install header and pre-flight emoji stream"
+    phase: "07"
+    status: "completed"
+    test_result: "Walking skeleton tests 10,11 GREEN"
+    commit_hash: "c451d26"
+
+  - step_id: "07-07"
+    name: "Install progress, health verification, celebration emoji stream"
+    phase: "07"
+    status: "completed"
+    test_result: "Walking skeleton tests 12-16 GREEN (19/20 total)"
+    commit_hash: "1eb0673"
+
+  - step_id: "07-08"
+    name: "Fix test marker collision, add duration, align patterns"
+    phase: "07"
+    status: "completed"
+    test_result: "Walking skeleton 20/20 GREEN, build 16/16, install 34/35"
+    commit_hash: "8cd6a79"
+    notes: "Fixed test 17 marker collision, emoji fix, duration on persistent lines, WARNING branch alignment"
+
+  - step_id: "07-09"
+    name: "L1-L4 Refactoring: extract shared TUI components"
+    phase: "07"
+    status: "completed"
+    artifacts_created:
+      - "src/crafter_ai/installer/cli/forge_tui.py"
+    test_result: "71/71 GREEN (20 walking skeleton + 16 build + 35 install)"
+    commit_hash: "6826ab9"
+    notes: "Extracted is_ci_mode() and display_pre_flight_results() to forge_tui.py, fixed pre-existing test_exit_code_1_when_wheel_not_found"
+
+  # ═══════════════════════════════════════════════════════════
+  # PHASE 08: TUI Error States and Edge Cases (PLANNED)
+  # ═══════════════════════════════════════════════════════════
+  # Requires DISTILL wave: Quinn creates acceptance tests first
+  - step_id: "08-01"
+    name: "Blocking pre-flight failure - build"
+    phase: "08"
+    status: "planned"
+    notes: "Luna's error state: Build blocked with remediation hints"
+
+  - step_id: "08-02"
+    name: "Blocking pre-flight failure - install"
+    phase: "08"
+    status: "planned"
+    notes: "Luna's error state: Install blocked with remediation hints"
+
+  - step_id: "08-03"
+    name: "Build compilation failure"
+    phase: "08"
+    status: "planned"
+    notes: "Luna's error state: Build failed with Error/Fix display"
+
+  - step_id: "08-04"
+    name: "Install failure"
+    phase: "08"
+    status: "planned"
+    notes: "Luna's error state: Installation failed with Error/Fix display"
+
+  - step_id: "08-05"
+    name: "Degraded health warning"
+    phase: "08"
+    status: "planned"
+    notes: "Luna's error state: Installed with warnings, conditional celebration"
+
 # Summary statistics
 summary:
-  total_steps: 42
-  completed_steps: 42
+  total_steps: 56
+  completed_steps: 51
   in_progress_steps: 0
   blocked_steps: 0
-  pending_steps: 8
-  estimated_total_hours: 118
-  estimated_remaining_hours: 20
+  pending_steps: 5
+  notes: "Phase 07 (9 steps) completed. Phase 08 (5 steps) planned, awaiting Quinn's acceptance tests."
 
 # UX Gaps to Address (observed by Mike)
 ux_gaps:
@@ -1068,13 +1193,15 @@ ux_gaps:
     description: "No emojis visible in CLI output"
     expected: "Luna's UX design includes emoji indicators"
     priority: "low"
-    phase_to_fix: "TBD"
+    phase_to_fix: "07"
+    status: "RESOLVED by Phase 07 (commits 9f815a9..6826ab9)"
   - id: "UX-002"
     observed: "2026-02-03"
     description: "No spinners during operations"
     expected: "Luna's UX design includes progress spinners"
     priority: "low"
-    phase_to_fix: "TBD"
+    phase_to_fix: "07"
+    status: "RESOLVED by Phase 07 - spinners replaced with persistent lines per Luna's design"
 
 # Handover notes for next session
 handover:
@@ -1084,23 +1211,26 @@ handover:
     ## Session Handover: modern-cli-installer DEVELOP Wave
 
     ### Current State
-    - Phase 00-04: COMPLETED (40 steps)
-    - Phase 05: IN_PROGRESS (Cross-Cutting Concerns)
-    - Phase 06: BLOCKED (waiting on Phase 05)
+    - Phase 00-06: COMPLETED (42 steps, core implementation)
+    - Phase 07: COMPLETED (9 steps, TUI redesign happy path)
+    - Phase 08: PLANNED (5 steps, TUI error states)
 
-    ### CLI Commands Implemented and Wired
-    - crafter-ai forge build ✓
-    - crafter-ai forge install ✓
-    - crafter-ai nw setup ✓
-    - crafter-ai nw doctor ✓
-    - crafter-ai nw version ✓
-    - crafter-ai install-nwave ✓
+    ### Phase 07 Summary (TUI Redesign)
+    Replaced old mainframe TUI with modern emoji streaming interface:
+    - forge_build.py and forge_install.py stripped of Rich Tables/Panels
+    - Emoji streaming display matching Luna's design
+    - Shared TUI components extracted to forge_tui.py
+    - Walking skeleton: 20/20 GREEN, anti-regression: 51/51 GREEN
+    - Commits: 9f815a9, 4039199, 1fe08e3, 99591ca, 9e84d05, c451d26, 1eb0673, 8cd6a79, 6826ab9
 
-    ### Next Steps (Phase 05)
-    1. 05-01: Create RollbackService for automatic and manual rollback
-    2. 05-02: Create nw rollback CLI command
-    3. 05-03: Create integration checkpoint display
-    4. 05-04: Integrate upgrade detection into install flows
+    ### Next Steps (Phase 08 - Error States)
+    DISTILL first: Quinn creates acceptance tests for Luna's 5 error scenarios
+    Then DEVELOP: WIP contract orchestration per scenario
+    1. 08-01: Blocking pre-flight failure (build)
+    2. 08-02: Blocking pre-flight failure (install)
+    3. 08-03: Build compilation failure
+    4. 08-04: Install failure
+    5. 08-05: Degraded health warning
 
     ### To Resume
     Run: /nw:develop "modern-cli-installer"
@@ -1115,5 +1245,4 @@ handover:
 
     ### Key Documents
     - Roadmap: docs/features/modern-cli-installer/04-develop/roadmap.yaml
-    - Platform Review: docs/features/modern-cli-installer/02-design/platform-readiness-review.md
-    - UX Journeys: docs/features/modern-cli-installer/02-design/ux-journeys/
+    - WIP Protocol: docs/features/modern-cli-installer/04-develop/protocols/wip-contract-protocol.md
