@@ -146,6 +146,7 @@ def clean_des_environment(temp_home, audit_log_reader):
     """Clean DES environment before each test."""
     # Reset audit logger to pick up correct working directory
     import src.des.adapters.driven.logging.audit_logger as audit_logger_module
+
     audit_logger_module.reset_audit_logger()
 
     # Clear audit log
@@ -189,6 +190,7 @@ audit_logging_enabled: true  # Enable comprehensive audit trail
     )
     # Track the current working directory
     from pathlib import Path
+
     audit_logger_module._audit_logger_cwd = Path.cwd()
 
     return des_config_path
@@ -331,16 +333,31 @@ Exit on: completion or blocking issue
 """
     return {
         "tool": "Task",
-        "tool_input": {"prompt": valid_prompt},
+        "tool_input": {
+            "prompt": valid_prompt,
+            "max_turns": 30,  # Required per CLAUDE.md
+        },
     }
 
 
 @pytest.fixture
 def invalid_task_json():
-    """Provide invalid Task tool JSON that should be blocked."""
+    """Provide invalid Task tool JSON that should be blocked.
+
+    This prompt has the DES-VALIDATION marker but is missing all mandatory sections,
+    so it should be blocked by prompt validation.
+    """
+    invalid_prompt = """<!-- DES-VALIDATION: required -->
+
+# TASK_CONTEXT
+This prompt is missing most mandatory sections and should be blocked.
+"""
     return {
         "tool": "Task",
-        "tool_input": {"prompt": "/nw:execute step-missing-phases.json"},
+        "tool_input": {
+            "prompt": invalid_prompt,
+            "max_turns": 30,  # Has max_turns but prompt is invalid
+        },
     }
 
 
@@ -349,7 +366,15 @@ def hook_adapter_cli():
     """Return path to hook adapter CLI script."""
     # Return absolute path to work correctly even when working directory changes
     project_root = Path(__file__).parent.parent.parent.parent
-    return project_root / "src" / "des" / "adapters" / "drivers" / "hooks" / "claude_code_hook_adapter.py"
+    return (
+        project_root
+        / "src"
+        / "des"
+        / "adapters"
+        / "drivers"
+        / "hooks"
+        / "claude_code_hook_adapter.py"
+    )
 
 
 @pytest.fixture
@@ -411,6 +436,14 @@ def stub_adapter_exists():
     """Verify production stub hook adapter exists at expected path."""
     # Use absolute path to work correctly even when working directory changes
     project_root = Path(__file__).parent.parent.parent.parent
-    adapter_file = project_root / "src" / "des" / "adapters" / "drivers" / "hooks" / "claude_code_hook_adapter.py"
+    adapter_file = (
+        project_root
+        / "src"
+        / "des"
+        / "adapters"
+        / "drivers"
+        / "hooks"
+        / "claude_code_hook_adapter.py"
+    )
     assert adapter_file.exists(), f"Production stub adapter not found at {adapter_file}"
     return adapter_file

@@ -20,6 +20,7 @@ Protocol:
 """
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -86,10 +87,44 @@ def handle_pre_task() -> int:
             print(json.dumps(response))
             return 1
 
-        # Extract prompt from tool_input
+        # Extract tool_input parameters
         tool_input = hook_input.get("tool_input", {})
         prompt = tool_input.get("prompt", "")
+        max_turns = tool_input.get("max_turns")
 
+        # Validate max_turns parameter (CRITICAL requirement from CLAUDE.md)
+        # This is a tool-level requirement, not DES-specific
+        if max_turns is None:
+            response = {
+                "decision": "block",
+                "reason": "MISSING_MAX_TURNS: The max_turns parameter is required for all Task invocations. "
+                "Add max_turns parameter (e.g., max_turns=30) to prevent unbounded execution.",
+            }
+            print(json.dumps(response))
+            return 2
+
+        # Validate max_turns value is within acceptable range
+        if not isinstance(max_turns, int) or max_turns < 10 or max_turns > 100:
+            response = {
+                "decision": "block",
+                "reason": f"INVALID_MAX_TURNS: max_turns must be an integer between 10 and 100 (got: {max_turns}). "
+                "Recommended values: quick edit=15, background task=25, standard=30, research=35, complex=50.",
+            }
+            print(json.dumps(response))
+            return 2
+
+        # Check if this is a DES task (has DES-VALIDATION marker)
+        # Non-DES tasks (ad-hoc, exploration) should skip prompt validation
+        des_marker_pattern = r"<!--\s*DES-VALIDATION\s*:\s*required\s*-->"
+        is_des_task = bool(re.search(des_marker_pattern, prompt))
+
+        if not is_des_task:
+            # Ad-hoc task: max_turns validated above, no prompt validation needed
+            response = {"decision": "allow"}
+            print(json.dumps(response))
+            return 0
+
+        # DES task: validate prompt structure
         # Initialize DES components with production implementations
         DESConfig()
         hook = RealSubagentStopHook()

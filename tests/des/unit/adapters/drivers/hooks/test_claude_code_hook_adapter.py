@@ -28,7 +28,13 @@ class TestPreTaskHandler:
         """Pre-task with valid JSON and passing validation returns exit 0."""
         # Arrange
         mock_stdin.read.return_value = json.dumps(
-            {"tool": "Task", "tool_input": {"prompt": "/nw:execute step-01-01.json"}}
+            {
+                "tool": "Task",
+                "tool_input": {
+                    "prompt": "/nw:execute step-01-01.json",
+                    "max_turns": 30,  # Required
+                },
+            }
         )
 
         mock_config_instance = Mock()
@@ -63,7 +69,13 @@ class TestPreTaskHandler:
         """Pre-task with valid JSON and failing validation returns exit 2 (BLOCK)."""
         # Arrange
         mock_stdin.read.return_value = json.dumps(
-            {"tool": "Task", "tool_input": {"prompt": "invalid prompt"}}
+            {
+                "tool": "Task",
+                "tool_input": {
+                    "prompt": "<!-- DES-VALIDATION: required -->\ninvalid prompt - missing sections",
+                    "max_turns": 30,  # Has max_turns but prompt is invalid
+                },
+            }
         )
 
         mock_config_instance = Mock()
@@ -242,7 +254,13 @@ class TestAuditLoggingControl:
         """Adapter checks DESConfig.audit_logging_enabled before logging."""
         # Arrange
         mock_stdin.read.return_value = json.dumps(
-            {"tool": "Task", "tool_input": {"prompt": "/nw:execute step-01-01.json"}}
+            {
+                "tool": "Task",
+                "tool_input": {
+                    "prompt": "/nw:execute step-01-01.json",
+                    "max_turns": 30,  # Required
+                },
+            }
         )
 
         mock_config_instance = Mock()
@@ -281,7 +299,13 @@ class TestOutputFormat:
         """Pre-task success outputs valid JSON to stdout."""
         # Arrange
         mock_stdin.read.return_value = json.dumps(
-            {"tool": "Task", "tool_input": {"prompt": "/nw:execute step-01-01.json"}}
+            {
+                "tool": "Task",
+                "tool_input": {
+                    "prompt": "/nw:execute step-01-01.json",
+                    "max_turns": 30,  # Required
+                },
+            }
         )
 
         mock_config_instance = Mock()
