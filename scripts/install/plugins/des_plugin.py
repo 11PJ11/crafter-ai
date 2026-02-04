@@ -199,6 +199,9 @@ class DESPlugin(InstallationPlugin):
                     shutil.rmtree(target_dir)
                 shutil.copytree(source_dir, target_dir)
 
+                # Rewrite import paths from "src.des" to "des"
+                self._rewrite_import_paths(target_dir, context)
+
             return PluginResult(
                 success=True,
                 plugin_name="des",
@@ -211,6 +214,77 @@ class DESPlugin(InstallationPlugin):
                 plugin_name="des",
                 message=f"DES module install failed: {e}",
             )
+
+    def _rewrite_import_paths(self, target_dir: Path, context: InstallContext) -> None:
+        """Rewrite import paths in installed DES module.
+
+        Transforms:
+        - "from src.des." -> "from des."
+        - "import src.des." -> "import des."
+        - "src.des." in any context -> "des."
+
+        This ensures the installed package works without PYTHONPATH pointing
+        to the development source directory.
+        """
+        import re
+
+        # Pattern to match import statements
+        from_pattern = re.compile(r'\bfrom\s+src\.des\b')
+        import_pattern = re.compile(r'\bimport\s+src\.des\b')
+        # Pattern to match src.des. in any context (strings, comments, etc.)
+        general_pattern = re.compile(r'\bsrc\.des\.')
+
+        files_modified = 0
+        files_skipped = 0
+        for py_file in target_dir.rglob("*.py"):
+            try:
+                # Security: Skip symbolic links to prevent path traversal attacks
+                if py_file.is_symlink():
+                    context.logger.warn(f"Skipping symlink (security): {py_file}")
+                    files_skipped += 1
+                    continue
+
+                # Security: Verify path is within target_dir (defense in depth)
+                try:
+                    py_file.resolve().relative_to(target_dir.resolve())
+                except ValueError:
+                    context.logger.warn(f"Skipping file outside target (security): {py_file}")
+                    files_skipped += 1
+                    continue
+
+                # Security: Skip files larger than 10MB to prevent DoS
+                file_size = py_file.stat().st_size
+                if file_size > 10_000_000:  # 10MB limit
+                    context.logger.warn(f"Skipping large file (security): {py_file} ({file_size} bytes)")
+                    files_skipped += 1
+                    continue
+
+                # Read file content
+                with open(py_file, 'r', encoding='utf-8') as f:
+                    content = f.read()
+
+                # Track if file was modified
+                original_content = content
+
+                # Rewrite import statements
+                content = from_pattern.sub('from des', content)
+                content = import_pattern.sub('import des', content)
+                # Rewrite any remaining src.des. references (strings, comments, etc.)
+                content = general_pattern.sub('des.', content)
+
+                # Write back if modified
+                if content != original_content:
+                    with open(py_file, 'w', encoding='utf-8') as f:
+                        f.write(content)
+                    files_modified += 1
+
+            except Exception as e:
+                context.logger.warn(f"Failed to rewrite imports in {py_file}: {e}")
+
+        if files_modified > 0:
+            context.logger.info(f"Rewrote import paths in {files_modified} files")
+        if files_skipped > 0:
+            context.logger.info(f"Skipped {files_skipped} files for security reasons")
 
     def _install_des_scripts(self, context: InstallContext) -> PluginResult:
         """Install DES utility scripts."""
@@ -303,6 +377,9 @@ class DESPlugin(InstallationPlugin):
 
         Hook commands use PYTHONPATH to point to installed location:
         ~/.claude/lib/python/des/
+
+        Replaces any old-format DES hooks with new format to prevent duplicates.
+        Always removes and re-adds DES hooks to ensure latest format is used.
         """
         try:
             settings_file = context.claude_dir / "settings.local.json"
@@ -313,15 +390,6 @@ class DESPlugin(InstallationPlugin):
             # Store original for uninstall restoration
             self._original_settings = json.loads(json.dumps(config))
 
-            # Check if already installed
-            if self._hooks_already_installed(config):
-                context.logger.info("DES hooks already installed - skipping")
-                return PluginResult(
-                    success=True,
-                    plugin_name="des",
-                    message="DES hooks already installed",
-                )
-
             # Ensure hooks structure exists WITHOUT overwriting other keys
             if "hooks" not in config:
                 config["hooks"] = {}
@@ -330,13 +398,45 @@ class DESPlugin(InstallationPlugin):
             if "SubagentStop" not in config["hooks"]:
                 config["hooks"]["SubagentStop"] = []
 
+            # Check if hooks already exist with same format
+            new_pretask_command = self._generate_hook_command(context, "pre-task")
+            new_stop_command = self._generate_hook_command(context, "subagent-stop")
+
+            pre_hooks = config["hooks"]["PreToolUse"]
+            stop_hooks = config["hooks"]["SubagentStop"]
+
+            has_correct_pretask = any(
+                h.get("command") == new_pretask_command for h in pre_hooks
+            )
+            has_correct_stop = any(
+                h.get("command") == new_stop_command for h in stop_hooks
+            )
+
+            if has_correct_pretask and has_correct_stop:
+                context.logger.info("DES hooks already installed with correct format - skipping")
+                return PluginResult(
+                    success=True,
+                    plugin_name="des",
+                    message="DES hooks already installed",
+                )
+
+            # Remove any existing DES hooks (both old and new format) to prevent duplicates
+            config["hooks"]["PreToolUse"] = [
+                h for h in config["hooks"]["PreToolUse"]
+                if not self._is_des_hook(h.get("command", ""))
+            ]
+            config["hooks"]["SubagentStop"] = [
+                h for h in config["hooks"]["SubagentStop"]
+                if not self._is_des_hook(h.get("command", ""))
+            ]
+
             # Generate hooks with correct installed paths
             pretooluse_hook = {
                 "matcher": "Task",
-                "command": self._generate_hook_command(context, "pre-task"),
+                "command": new_pretask_command,
             }
             subagent_stop_hook = {
-                "command": self._generate_hook_command(context, "subagent-stop"),
+                "command": new_stop_command,
             }
 
             # Add DES hooks
@@ -373,19 +473,53 @@ class DESPlugin(InstallationPlugin):
     def _save_settings(
         self, settings_file: Path, config: dict, context: InstallContext
     ) -> None:
-        """Save settings to JSON file with proper formatting."""
+        """Save settings to JSON file with proper formatting and file locking.
+
+        Uses exclusive file locking to prevent race conditions during concurrent
+        modifications (defense in depth).
+        """
         # Ensure directory exists
         settings_file.parent.mkdir(parents=True, exist_ok=True)
 
-        # Write with proper formatting
-        with open(settings_file, "w", encoding="utf-8") as f:
-            json.dump(config, f, indent=2)
-            f.write("\n")  # Add trailing newline
+        # Try to import fcntl for Unix file locking
+        try:
+            import fcntl
+            has_fcntl = True
+        except ImportError:
+            # Windows doesn't have fcntl, fallback to no locking
+            has_fcntl = False
+
+        # Write with proper formatting and optional file locking
+        mode = "r+" if settings_file.exists() else "w"
+        with open(settings_file, mode, encoding="utf-8") as f:
+            try:
+                # Acquire exclusive lock if available (Unix only)
+                if has_fcntl:
+                    fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+
+                # Truncate file if opened in r+ mode
+                if mode == "r+":
+                    f.seek(0)
+                    f.truncate()
+
+                # Write JSON with proper formatting
+                json.dump(config, f, indent=2)
+                f.write("\n")  # Add trailing newline
+
+            finally:
+                # Release lock if acquired
+                if has_fcntl:
+                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 
         context.logger.info(f"Updated settings at {settings_file}")
 
     def _hooks_already_installed(self, config: dict) -> bool:
-        """Check if DES hooks are already installed."""
+        """Check if DES hooks are already installed.
+
+        Returns True if EITHER PreToolUse or SubagentStop has a DES hook.
+        This handles cases where only partial hooks exist (e.g., old format).
+        The install process will clean up and reinstall both properly.
+        """
         if "hooks" not in config:
             return False
 
@@ -395,7 +529,7 @@ class DESPlugin(InstallationPlugin):
         stop_hooks = config["hooks"].get("SubagentStop", [])
         has_stop = any(self._is_des_hook(h.get("command", "")) for h in stop_hooks)
 
-        return has_pre and has_stop
+        return has_pre or has_stop
 
     def _is_des_hook(self, command: str) -> bool:
         """Check if command is a DES hook.

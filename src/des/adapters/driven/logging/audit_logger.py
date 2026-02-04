@@ -7,6 +7,7 @@ Supports ISO 8601 timestamps, event categorization, and daily log rotation.
 
 import hashlib
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -27,18 +28,134 @@ class AuditLogger:
     def __init__(self, log_dir: str | Path | None = None):
         """Initialize audit logger.
 
+        Log directory priority (highest to lowest):
+        1. Explicit log_dir parameter
+        2. DES_AUDIT_LOG_DIR environment variable
+        3. audit_log_dir from .nwave/des-config.json
+        4. Project-local .nwave/logs/des/ (default)
+        5. Global ~/.claude/des/logs/ (fallback)
+
         Args:
-            log_dir: Directory for audit log files (default: ~/.claude/des/logs)
+            log_dir: Directory for audit log files (default: follows priority above)
         """
         if log_dir is None:
-            home_dir = Path.home()
-            log_dir = home_dir / ".claude" / "des" / "logs"
+            log_dir = self._resolve_log_directory()
 
         self.log_dir = Path(log_dir)
         self.log_dir.mkdir(parents=True, exist_ok=True)
         self.current_log_file = self._get_log_file()
         self._entry_hashes: list[str] = []
         self._load_existing_hashes()
+
+    def _resolve_log_directory(self) -> Path:
+        """Resolve audit log directory using configuration hierarchy.
+
+        Priority:
+        1. DES_AUDIT_LOG_DIR environment variable (validated for writability)
+        2. audit_log_dir from .nwave/des-config.json (validated for writability)
+        3. Project-local .nwave/logs/des/ (default)
+        4. Global ~/.claude/des/logs/ (fallback)
+
+        Returns:
+            Path to audit log directory
+        """
+        # Priority 1: Environment variable (with writability validation)
+        env_dir = os.environ.get("DES_AUDIT_LOG_DIR")
+        if env_dir:
+            log_path = Path(env_dir)
+            if self._validate_log_directory(log_path, "DES_AUDIT_LOG_DIR"):
+                return log_path
+            # Fall through to next priority if not writable
+
+        # Priority 2: Config file (with writability validation)
+        config_dir = self._load_config_log_dir()
+        if config_dir:
+            if self._validate_log_directory(config_dir, "config file"):
+                return config_dir
+            # Fall through to next priority if not writable
+
+        # Priority 3: Project-local default
+        project_local = self._get_project_local_dir()
+        if project_local:
+            return project_local
+
+        # Priority 4: Global fallback
+        return Path.home() / ".claude" / "des" / "logs"
+
+    def _validate_log_directory(self, log_path: Path, source: str) -> bool:
+        """Validate that a log directory is writable.
+
+        Args:
+            log_path: Path to validate
+            source: Description of where the path came from (for logging)
+
+        Returns:
+            True if directory is writable, False otherwise
+        """
+        try:
+            # Try to create directory if it doesn't exist
+            log_path.mkdir(parents=True, exist_ok=True)
+
+            # Test writability by creating and removing a test file
+            test_file = log_path / ".write_test"
+            test_file.touch()
+            test_file.unlink()
+            return True
+
+        except (OSError, PermissionError) as e:
+            # Log warning and return False to fall through to next priority
+            import sys
+            print(
+                f"Warning: Audit log directory from {source} is not writable: "
+                f"{log_path} ({e}). Falling back to next priority.",
+                file=sys.stderr
+            )
+            return False
+
+    def _load_config_log_dir(self) -> Path | None:
+        """Load audit_log_dir from .nwave/des-config.json if it exists.
+
+        Returns:
+            Path from config file, or None if not found
+        """
+        config_file = Path.cwd() / ".nwave" / "des-config.json"
+        if not config_file.exists():
+            return None
+
+        try:
+            with open(config_file) as f:
+                config = json.load(f)
+                log_dir = config.get("audit_log_dir")
+                if log_dir:
+                    return Path(log_dir)
+        except (OSError, json.JSONDecodeError, KeyError):
+            pass
+
+        return None
+
+    def _get_project_local_dir(self) -> Path | None:
+        """Get project-local audit log directory.
+
+        Uses project-local directory unless we're clearly in the home directory
+        or a system directory.
+
+        Returns:
+            Project-local log directory, or None if should use global fallback
+        """
+        cwd = Path.cwd()
+        home = Path.home()
+
+        # If we're in home directory itself (not a subdirectory), use global
+        if cwd == home:
+            return None
+
+        # If we're in a system directory, use global
+        system_dirs = ["/", "/usr", "/bin", "/etc", "/var", "/tmp"]
+        if str(cwd) in system_dirs:
+            return None
+
+        # Otherwise, use project-local (includes /tmp/test-project subdirs)
+        return cwd / ".nwave" / "logs" / "des"
 
     def _get_log_file(self) -> Path:
         """Get today's log file path with date-based naming.
@@ -77,6 +194,19 @@ class AuditLogger:
         # Ensure log directory exists (handles cases where temp dirs were cleaned up)
         self.log_dir.mkdir(parents=True, exist_ok=True)
 
+        # Security: Harden file permissions if log file exists
+        # Prevent unauthorized modifications by restricting to owner read/write, group read
+        if self.current_log_file.exists():
+            current_perms = self.current_log_file.stat().st_mode & 0o777
+            # Check if file has group or other write permissions (security risk)
+            if current_perms & 0o022:  # Group or other write bits set
+                try:
+                    self.current_log_file.chmod(0o640)  # rw-r----- (owner rw, group r)
+                except (OSError, PermissionError):
+                    # If we can't change permissions, continue anyway
+                    # (better to have logs than fail)
+                    pass
+
         # Ensure timestamp is ISO 8601 format
         if "timestamp" not in event:
             event["timestamp"] = self._get_iso_timestamp()
@@ -91,6 +221,14 @@ class AuditLogger:
         # Append to log file
         with open(self.current_log_file, "a") as f:
             f.write(json_line + "\n")
+
+        # Security: Set restrictive permissions on newly created log files
+        if not (self.current_log_file.stat().st_mode & 0o777) == 0o640:
+            try:
+                self.current_log_file.chmod(0o640)  # rw-r----- (owner rw, group r)
+            except (OSError, PermissionError):
+                # If we can't change permissions, continue anyway
+                pass
 
     def _get_iso_timestamp(self) -> str:
         """Get current timestamp in ISO 8601 format with millisecond precision.
@@ -187,6 +325,7 @@ class AuditLogger:
 # Future improvement: Inject AuditLogger through constructor parameters.
 # See: Progressive Refactoring Level 4 (Abstraction Refinement)
 _audit_logger: AuditLogger | None = None
+_audit_logger_cwd: Path | None = None
 
 
 def get_audit_logger() -> AuditLogger:
@@ -196,11 +335,34 @@ def get_audit_logger() -> AuditLogger:
         This singleton pattern is functional but could be improved with
         dependency injection for better testability and flexibility.
         Consider refactoring when making broader architectural changes.
+
+    Project isolation:
+        Automatically creates new logger instance when working directory changes
+        to ensure each project gets its own audit trail.
     """
-    global _audit_logger
+    global _audit_logger, _audit_logger_cwd
+    current_cwd = Path.cwd()
+
+    # Reset logger if working directory has changed (project isolation)
+    if _audit_logger_cwd is not None and _audit_logger_cwd != current_cwd:
+        _audit_logger = None
+        _audit_logger_cwd = None
+
     if _audit_logger is None:
         _audit_logger = AuditLogger()
+        _audit_logger_cwd = current_cwd
     return _audit_logger
+
+
+def reset_audit_logger() -> None:
+    """Reset the global audit logger instance.
+
+    Useful for testing and when switching between projects.
+    Forces creation of a new logger with current working directory.
+    """
+    global _audit_logger, _audit_logger_cwd
+    _audit_logger = None
+    _audit_logger_cwd = None
 
 
 def log_audit_event(event_type: str, **kwargs) -> None:
