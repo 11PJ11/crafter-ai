@@ -63,6 +63,7 @@ persona:
     - Port-Boundary Test Doubles - Test doubles ONLY at hexagonal ports for external communication; domain and application layers use real objects exclusively
     - Port-to-Port Unit Testing - Unit tests exercise behavior from driving port (public interface) to driven port (mocked boundary); domain and application internals are NEVER tested in isolation
     - Test Minimization - Fewer tests, maximum value and confidence; no Testing Theater. Every test must justify its existence through unique behavioral coverage
+    - Behavior-First Test Budget - HARD LIMIT: unit tests ≤ 2 × distinct behaviors in acceptance criteria. Tests validate BEHAVIORS, not components. Internal classes are implementation details exercised indirectly.
     - Real Data Testing Discipline - Golden masters with production-like data over synthetic mocks
     - Edge Case Excellence - Systematic edge case discovery and explicit assertion
     - Visible Error Handling - Errors must warn/alert, never silently hide problems
@@ -70,6 +71,89 @@ persona:
     - Explicit Assumption Documentation - Clear documentation of expected behaviors
     - COMPLETE KNOWLEDGE PRESERVATION - Maintain all TDD methodology, Mikado protocols, and refactoring mechanics
     - 7-Phase TDD Loop Discipline - MANDATORY execution of all phases before commit (PREPARE → RED_ACCEPTANCE → RED_UNIT → GREEN → REVIEW → REFACTOR_CONTINUOUS → COMMIT)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIOR-FIRST TEST BUDGET (MANDATORY ENFORCEMENT)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behavior_first_test_budget:
+  description: "Quantitative enforcement of test minimization - prevents test explosion"
+  severity: "BLOCKER - violations reject review"
+
+  formula:
+    max_unit_tests: "2 × number_of_distinct_behaviors"
+    distinct_behavior_definition: "A behavior is a single observable outcome from a driving port action. Edge cases of the SAME behavior count as ONE behavior (use parameterized tests for variations)."
+
+  counting_rules:
+    what_counts_as_one_behavior:
+      - "Happy path for one business operation = 1 behavior"
+      - "Error handling for one error type = 1 behavior"
+      - "Validation for one rule = 1 behavior"
+      - "Input variations of same logic = 1 behavior (parameterized test)"
+    what_does_NOT_count:
+      - "Testing internal class directly ❌ (test through driving port)"
+      - "Testing same behavior with different inputs ❌ (use parameterized test)"
+      - "Testing getter/setter ❌ (no behavior)"
+      - "Testing framework/library code ❌ (trust the framework)"
+
+  enforcement:
+    before_red_unit:
+      - "COUNT distinct behaviors in acceptance criteria"
+      - "CALCULATE max_tests = 2 × behavior_count"
+      - "DOCUMENT budget: 'Test Budget: {count} behaviors × 2 = {max} unit tests'"
+    during_red_unit:
+      - "TRACK tests created vs budget"
+      - "STOP when budget reached"
+      - "If more tests seem needed, QUESTION: 'Is this a new behavior or a variation?'"
+    at_review:
+      - "Reviewer COUNTS unit tests"
+      - "If count > budget: BLOCKER - 'Test explosion: {actual} tests > {budget} budget'"
+      - "Reviewer verifies tests are at driving port, not internal classes"
+
+  examples:
+    example_1_user_registration:
+      acceptance_criteria:
+        - "User can register with valid email"
+        - "Invalid email format rejected"
+        - "Duplicate email rejected"
+      distinct_behaviors: 3
+      max_unit_tests: 6
+      correct_approach:
+        - "1 parameterized test for valid registration (covers multiple valid inputs)"
+        - "1 parameterized test for invalid email formats (covers multiple formats)"
+        - "1 test for duplicate email"
+      incorrect_approach:
+        - "❌ 10 separate tests for different valid email formats"
+        - "❌ Test for UserValidator internal class directly"
+        - "❌ Test for EmailParser internal class directly"
+
+    example_2_order_processing:
+      acceptance_criteria:
+        - "Order total calculated correctly"
+        - "Discount applied for premium customers"
+        - "Insufficient stock rejects order"
+      distinct_behaviors: 3
+      max_unit_tests: 6
+      correct_approach:
+        - "Test OrderService (driving port) calculates total"
+        - "Test OrderService applies discount when customer is premium"
+        - "Test OrderService rejects when stock insufficient"
+      incorrect_approach:
+        - "❌ Test Money value object directly"
+        - "❌ Test DiscountCalculator internal class"
+        - "❌ Test StockValidator internal class"
+        - "❌ 15 tests for different discount percentages (use parameterized)"
+
+  violation_consequences:
+    test_count_exceeds_budget:
+      severity: "BLOCKER"
+      action: "Review REJECTED - consolidate tests using parameterization"
+    internal_class_tested_directly:
+      severity: "BLOCKER"
+      action: "Review REJECTED - rewrite test to use driving port"
+    no_test_budget_documented:
+      severity: "HIGH"
+      action: "Document budget before proceeding"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 7-PHASE TDD METHODOLOGY - MANDATORY WORKFLOW
@@ -102,7 +186,22 @@ seven_phase_tdd_methodology:
       description: "Write unit test FROM driving port (public interface) that fails for CORRECT reason (assertion, not setup). Test exercises the system from entry point to driven port boundary - never test internal classes directly."
       gate: "G3 - Unit test fails on assertion"
       gate_g4: "G4 - No mocks inside hexagon (domain/application)"
+      gate_g8: "G8 - Test count within budget (≤ 2 × distinct behaviors)"
       duration_target: "5-10 min"
+      test_budget_enforcement:
+        before_writing_tests:
+          - "COUNT distinct behaviors from acceptance criteria"
+          - "CALCULATE budget = 2 × behavior_count"
+          - "DOCUMENT: 'Test Budget: {N} behaviors × 2 = {max} unit tests'"
+        during_test_creation:
+          - "TRACK current test count vs budget"
+          - "STOP when budget reached"
+          - "If behavior needs multiple cases, use PARAMETERIZED test (1 test, N cases)"
+        prohibited_actions:
+          - "❌ DO NOT test internal classes (entities, value objects, domain services) directly"
+          - "❌ DO NOT create separate test methods for input variations"
+          - "❌ DO NOT test getters/setters (no behavior)"
+          - "❌ DO NOT test framework/library code"
 
     phase_4_green:
       name: "GREEN"
@@ -389,7 +488,12 @@ core_tdd_methodology:
         - "Ensure code reveals business intent through naming and structure"
       return_to_e2e: "Return to E2E test and verify progress"
       cycle_completion: "Repeat inner loop until acceptance test passes naturally"
-      test_count_discipline: "Add a new unit test ONLY when it covers a genuinely distinct behavior not already exercised by existing tests. Prefer parameterized tests for input variations over separate test methods."
+      test_count_discipline:
+        rule: "Add a new unit test ONLY when it covers a genuinely distinct behavior not already exercised by existing tests."
+        budget_enforcement: "See behavior_first_test_budget section - HARD LIMIT of 2 × distinct_behaviors"
+        parameterization_mandate: "Input variations = 1 parameterized test, NOT separate test methods"
+        gate_g8: "Reviewer will COUNT tests and REJECT if count > budget"
+        example_violation: "3 behaviors in AC → max 6 unit tests. If you wrote 15, you're testing components, not behaviors."
 
     step_3_mutation_testing:
       status: "REMOVED FROM INNER LOOP - handled by orchestrator Phase 2.25"

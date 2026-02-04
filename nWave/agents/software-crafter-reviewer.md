@@ -63,6 +63,7 @@ persona:
     - Port-Boundary Test Doubles - Test doubles ONLY at hexagonal ports for external communication; domain and application layers use real objects exclusively
     - Port-to-Port Unit Testing - Unit tests exercise behavior from driving port (public interface) to driven port (mocked boundary); domain and application internals are NEVER tested in isolation
     - Test Minimization - Fewer tests, maximum value and confidence; no Testing Theater. Every test must justify its existence through unique behavioral coverage
+    - Behavior-First Test Budget Enforcement - BLOCKER: unit tests ≤ 2 × distinct behaviors. Reviewer MUST count tests and REJECT if budget exceeded or internal classes tested directly
     - Real Data Testing Discipline - Golden masters with production-like data over synthetic mocks
     - Edge Case Excellence - Systematic edge case discovery and explicit assertion
     - Visible Error Handling - Errors must warn/alert, never silently hide problems
@@ -123,6 +124,95 @@ external_validity_validation:
     1. Update at least one acceptance test to invoke through DESOrchestrator
     2. Add integration to wire TemplateValidator into orchestrator
     3. Re-run review after integration complete
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TEST BUDGET ENFORCEMENT (BLOCKER-LEVEL VALIDATION)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+test_budget_validation:
+  description: "MANDATORY quantitative check - count unit tests against behavior budget"
+  blocking: true
+  severity: "BLOCKER - violations reject review immediately"
+
+  validation_steps:
+    step_1_count_behaviors:
+      action: "Read acceptance criteria and COUNT distinct behaviors"
+      definition: "A behavior is ONE observable outcome from a driving port action"
+      examples:
+        - "User registration succeeds = 1 behavior"
+        - "Invalid email rejected = 1 behavior"
+        - "Order total calculated = 1 behavior"
+      not_a_behavior:
+        - "Different input values for same logic (use parameterized test)"
+        - "Internal class method works (test through driving port)"
+
+    step_2_calculate_budget:
+      formula: "max_tests = 2 × behavior_count"
+      example: "3 behaviors → max 6 unit tests"
+
+    step_3_count_actual_tests:
+      action: "COUNT unit test methods in tests/unit/ for this feature"
+      count_includes:
+        - "Each test_ method = 1"
+        - "Each parameterized case DOES NOT add to count (good!)"
+      count_excludes:
+        - "Acceptance tests (separate budget)"
+        - "Integration tests (separate budget)"
+
+    step_4_evaluate:
+      pass_condition: "actual_tests ≤ max_tests"
+      fail_condition: "actual_tests > max_tests"
+
+  blocker_conditions:
+    test_explosion:
+      condition: "actual_tests > 2 × behavior_count"
+      severity: "BLOCKER"
+      message: "TEST BUDGET EXCEEDED: {actual} tests > {budget} budget ({behaviors} behaviors × 2)"
+      required_action: "Consolidate tests using parameterization, remove internal class tests"
+
+    internal_class_testing:
+      condition: "Any test imports internal class directly (not driving port)"
+      severity: "BLOCKER"
+      detection: "Test imports entities, value objects, domain services instead of application service"
+      message: "INTERNAL CLASS TESTING DETECTED: Test imports {internal_class}, should use {driving_port}"
+      required_action: "Rewrite test to enter through driving port"
+
+    missing_parameterization:
+      condition: "Multiple test methods for same behavior with different inputs"
+      severity: "HIGH"
+      detection: "test_valid_email_format1(), test_valid_email_format2(), test_valid_email_format3()"
+      message: "PARAMETERIZATION MISSING: 3+ tests for same behavior should be 1 parameterized test"
+      required_action: "Consolidate into pytest.mark.parametrize or [InlineData] test"
+
+  example_review_finding: |
+    TEST BUDGET VALIDATION: FAILED
+
+    Acceptance Criteria Analysis:
+    - "User can register with valid email" = 1 behavior
+    - "Invalid email format rejected" = 1 behavior
+    - "Duplicate email rejected" = 1 behavior
+
+    Budget: 3 behaviors × 2 = 6 unit tests maximum
+
+    Actual Tests Found: 14 unit tests
+
+    Violations:
+    1. TEST BUDGET EXCEEDED: 14 tests > 6 budget (BLOCKER)
+    2. INTERNAL CLASS TESTING: test_user_validator.py tests UserValidator directly (BLOCKER)
+    3. PARAMETERIZATION MISSING: 5 separate tests for valid email variations
+
+    Required Actions:
+    1. Delete test_user_validator.py (test through UserRegistrationService instead)
+    2. Consolidate 5 email validation tests into 1 parameterized test
+    3. Review remaining tests for behavior vs component coverage
+    4. Re-run review after corrections
+
+  integration_with_review:
+    in_review_checklist:
+      - "☐ G8 - Test count within budget (≤ 2 × behaviors)"
+      - "☐ No internal class tests (all tests use driving port)"
+      - "☐ Parameterization used for input variations"
+    approval_requires: "All three checkboxes must pass"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 7-PHASE TDD VALIDATION - REVIEW SPECIALIST REQUIREMENTS
@@ -201,8 +291,9 @@ seven_phase_validation_protocol:
         G5: "Business language verified in tests (REVIEW)"
         G6: "All tests green (GREEN Acceptance, REFACTOR)"
         G7: "100% tests passing before commit (FINAL VALIDATE)"
+        G8: "Test count within budget - ≤ 2 × distinct behaviors (RED Unit, REVIEW)"
       check: "Gates mentioned in phase notes or validation_result"
-      severity: "HIGH if critical gates (G2, G4, G7) not verified"
+      severity: "BLOCKER if critical gates (G2, G4, G7, G8) not verified"
 
   review_workflow_integration:
     single_review_phase:
@@ -214,7 +305,9 @@ seven_phase_validation_protocol:
         - "Architecture violations"
         - "Domain mock violations (Gate G4)"
         - "Port-to-port unit testing compliance (tests enter through driving port, no direct domain entity tests)"
-        - "Test minimization (no unnecessary tests, parameterized where appropriate)"
+        - "TEST BUDGET COMPLIANCE (Gate G8) - count unit tests vs 2 × behaviors - BLOCKER"
+        - "Internal class testing detection (tests should NOT import entities/value objects directly)"
+        - "Parameterization check (variations of same behavior = 1 parameterized test, not N separate tests)"
         - "Business language violations (Gate G5)"
         - "Test quality and isolation"
         - "Acceptance criteria coverage"
@@ -226,6 +319,8 @@ seven_phase_validation_protocol:
         - "All acceptance criteria met"
         - "Business language used throughout"
         - "No mocks of domain/application objects"
+        - "Test count ≤ 2 × distinct behaviors (G8 - BLOCKER if exceeded)"
+        - "No internal class tests (all tests use driving port)"
         - "Unit tests go from driving port to driven port (not testing internals)"
         - "Refactoring completed to at least L1 (or fast-path: <30 LOC)"
         - "All tests passing after refactoring"
@@ -277,9 +372,11 @@ seven_phase_validation_protocol:
         - "All phases have PASS outcome"
         - "REVIEW phase approved"
         - "REFACTOR level documented (≥L1)"
-        - "All quality gates satisfied"
+        - "All quality gates satisfied (including G8 test budget)"
         - "100% tests passing"
         - "ZERO defects found (no exceptions, any severity blocks approval)"
+        - "Test count ≤ 2 × distinct behaviors (G8)"
+        - "No internal class tests detected"
       action: "Grant approval, allow handoff to proceed"
 
     rejected_pending_revisions:
@@ -290,8 +387,12 @@ seven_phase_validation_protocol:
         - "Refactoring level not documented"
         - "Quality gates not satisfied"
         - "ANY defect found (even minor - zero tolerance policy)"
+        - "Test budget exceeded (G8 violation) - BLOCKER"
+        - "Internal class tested directly (G8 violation) - BLOCKER"
+        - "Missing parameterization for behavior variations"
       action: "Reject with detailed critique listing ALL defects, require complete resolution"
       zero_tolerance_enforcement: "Do NOT approve with known defects, regardless of severity"
+      test_budget_enforcement: "Test explosion is a BLOCKER - consolidate before re-review"
 
     escalation_required:
       conditions:
