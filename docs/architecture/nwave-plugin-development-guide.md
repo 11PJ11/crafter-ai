@@ -1,19 +1,19 @@
-# nWave Plugin Development Guide (FUTURE DESIGN)
+# nWave Plugin Development Guide
 
-**Version:** 1.0
-**Date:** 2026-02-03
+**Version:** 1.7.0
+**Date:** 2026-02-04
 **For:** Developers creating new nWave plugins
-**Status:** FUTURE DESIGN - NOT IMPLEMENTED
+**Status:** IMPLEMENTED
 
 ---
 
-> **⚠️ IMPORTANTE: QUESTO È UN DOCUMENTO DI DESIGN, NON L'IMPLEMENTAZIONE ATTUALE**
+> **Plugin System: PRODUCTION READY (v1.7.0)**
 >
-> **Status Attuale (2026-02-03)**: Questo documento descrive come sviluppare plugin per un sistema **non ancora implementato**. Le classi base (`InstallationPlugin`, `PluginRegistry`, `InstallContext`) **non esistono** nel codice attuale.
+> This document describes the implemented plugin architecture. All base classes (`InstallationPlugin`, `PluginRegistry`, `InstallContext`) are available in `scripts/install/plugins/`.
 >
-> **Implementazione Attuale**: L'installer attuale è monolitico. Vedere `docs/architecture/nwave-installer-current-implementation.md` per la documentazione dell'implementazione corrente.
+> **Implementation**: See `scripts/install/plugins/` for 5 production plugins (agents, commands, templates, utilities, des).
 >
-> **Per Implementatori**: Questo documento può essere usato come riferimento per implementare il sistema plugin descritto in `nwave-plugin-system-architecture.md`.
+> **Evolution Document**: See `docs/evolution/2026-02-03-plugin-architecture.md` for implementation history.
 
 ---
 

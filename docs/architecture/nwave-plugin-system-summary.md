@@ -1,18 +1,18 @@
 # nWave Plugin System - Executive Summary
 
-**Version:** 1.0
-**Date:** 2026-02-03
-**Status:** FUTURE DESIGN - NOT IMPLEMENTED
+**Version:** 1.7.0
+**Date:** 2026-02-04
+**Status:** IMPLEMENTED
 
 ---
 
-> **⚠️ IMPORTANTE: QUESTO È UN DOCUMENTO DI DESIGN, NON L'IMPLEMENTAZIONE ATTUALE**
+> **Plugin System: PRODUCTION READY (v1.7.0)**
 >
-> **Status Attuale (2026-02-03)**: Il sistema plugin descritto in questo documento è una proposta di design **NON implementata**. L'installer attuale è monolitico.
+> This plugin system is fully implemented and in production use.
 >
-> **Implementazione Attuale**: Vedere `docs/architecture/nwave-installer-current-implementation.md`
+> **Implementation**: See `scripts/install/plugins/` for production code.
 >
-> **Piano di Implementazione**: Questo design è previsto per implementazione futura.
+> **Evolution Document**: See `docs/evolution/2026-02-03-plugin-architecture.md` for implementation history.
 
 ---
 
