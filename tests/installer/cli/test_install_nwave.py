@@ -9,19 +9,19 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import typer
-from typer.testing import CliRunner
 
 from crafter_ai.installer.cli.install_nwave import install_nwave
 from crafter_ai.installer.domain.check_result import CheckResult, CheckSeverity
 from crafter_ai.installer.ports.pipx_port import InstalledPackage, InstallResult
+from tests.cli.conftest import CleanCliRunner
 
 
 # Create a test app for CLI testing
 test_app = typer.Typer()
 test_app.command()(install_nwave)
 
-# Use NO_COLOR to disable ANSI escape codes for consistent assertions
-runner = CliRunner(env={"NO_COLOR": "1"})
+# Use CleanCliRunner to strip ANSI codes for consistent assertions in CI
+runner = CleanCliRunner()
 
 
 class TestInstallNwaveCommandExists:

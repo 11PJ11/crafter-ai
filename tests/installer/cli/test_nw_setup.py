@@ -10,15 +10,15 @@ from unittest.mock import patch
 
 # Create a test app for CLI testing
 import typer
-from typer.testing import CliRunner
 
 from crafter_ai.installer.cli.nw_setup import setup
+from tests.cli.conftest import CleanCliRunner
 
 
 test_app = typer.Typer()
 test_app.command()(setup)
 
-runner = CliRunner()
+runner = CleanCliRunner()
 
 
 class TestSetupCommandBasic:

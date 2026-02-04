@@ -11,20 +11,20 @@ import sys
 from unittest.mock import MagicMock, patch
 
 import typer
-from typer.testing import CliRunner
 
 from crafter_ai.installer.cli.nw_version import (
     _get_installed_version,
     _is_ci_mode,
     version,
 )
+from tests.cli.conftest import CleanCliRunner
 
 
 # Create a test app for CLI testing
 test_app = typer.Typer()
 test_app.command()(version)
 
-runner = CliRunner()
+runner = CleanCliRunner()
 
 
 class TestVersionCommandBasic:

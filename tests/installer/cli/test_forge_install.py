@@ -10,19 +10,19 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-from typer.testing import CliRunner
 
 from crafter_ai.cli import app
 from crafter_ai.installer.domain.check_result import CheckResult, CheckSeverity
 from crafter_ai.installer.domain.health_result import HealthStatus
 from crafter_ai.installer.services.install_service import InstallPhase, InstallResult
 from crafter_ai.installer.services.release_report_service import ReleaseReport
+from tests.cli.conftest import CleanCliRunner
 
 
 @pytest.fixture
-def runner() -> CliRunner:
-    """Create a CLI test runner with ANSI colors disabled."""
-    return CliRunner(env={"NO_COLOR": "1"})
+def runner() -> CleanCliRunner:
+    """Create a CLI test runner with ANSI stripping for CI compatibility."""
+    return CleanCliRunner()
 
 
 @pytest.fixture
@@ -114,13 +114,13 @@ def sample_release_report(mock_wheel_path: Path) -> ReleaseReport:
 class TestForgeInstallCommandRegistration:
     """Tests for forge install command registration on Typer app."""
 
-    def test_forge_install_command_registered(self, runner: CliRunner) -> None:
+    def test_forge_install_command_registered(self, runner: CleanCliRunner) -> None:
         """Test that forge install command is registered."""
         result = runner.invoke(app, ["forge", "--help"])
         assert result.exit_code == 0
         assert "install" in result.output
 
-    def test_forge_install_help_shows_options(self, runner: CliRunner) -> None:
+    def test_forge_install_help_shows_options(self, runner: CleanCliRunner) -> None:
         """Test that forge install --help shows all options."""
         result = runner.invoke(app, ["forge", "install", "--help"])
         assert result.exit_code == 0
@@ -135,7 +135,7 @@ class TestWheelResolution:
 
     def test_explicit_wheel_path_used(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         mock_wheel_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
@@ -171,7 +171,7 @@ class TestWheelResolution:
 
     def test_auto_detect_wheel_in_dist(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         tmp_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
@@ -216,7 +216,7 @@ class TestForceFlag:
 
     def test_force_flag_passed_to_install_service(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         mock_wheel_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
@@ -258,7 +258,7 @@ class TestForceFlag:
 
     def test_short_force_flag(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         mock_wheel_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
@@ -303,7 +303,7 @@ class TestNoVerifyFlag:
 
     def test_no_verify_skips_verification_phase(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         mock_wheel_path: Path,
         sample_release_report: ReleaseReport,
     ) -> None:
@@ -365,7 +365,7 @@ class TestPromptBehavior:
 
     def test_no_prompt_flag_skips_confirmation(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         mock_wheel_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
@@ -398,7 +398,7 @@ class TestPromptBehavior:
 
     def test_ci_env_skips_confirmation(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         mock_wheel_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
@@ -432,7 +432,7 @@ class TestPromptBehavior:
 
     def test_prompt_appears_when_interactive(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         mock_wheel_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
@@ -474,7 +474,7 @@ class TestPromptBehavior:
 
     def test_user_declines_install(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         mock_wheel_path: Path,
         passing_pre_flight_results: list[CheckResult],
     ) -> None:
@@ -502,7 +502,7 @@ class TestPreFlightDisplay:
 
     def test_displays_pre_flight_results(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         mock_wheel_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
@@ -544,7 +544,7 @@ class TestReleaseReportDisplay:
 
     def test_displays_release_report_on_success(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         mock_wheel_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
@@ -583,7 +583,7 @@ class TestExitCodes:
 
     def test_exit_code_0_on_success(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         mock_wheel_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
@@ -615,7 +615,7 @@ class TestExitCodes:
 
     def test_exit_code_1_on_install_failure(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         mock_wheel_path: Path,
         failed_install_result: InstallResult,
     ) -> None:
@@ -636,7 +636,7 @@ class TestExitCodes:
 
     def test_exit_code_1_when_wheel_not_found(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
     ) -> None:
         """Test exit code 1 when wheel not found."""
         with patch(
@@ -655,7 +655,7 @@ class TestHeaderDisplay:
 
     def test_displays_forge_install_header(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         mock_wheel_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
@@ -691,7 +691,7 @@ class TestAutoChainBuild:
 
     def test_auto_chain_prompts_when_no_wheel_found(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         passing_pre_flight_results: list[CheckResult],
     ) -> None:
         """Test auto-chain prompts user when no wheel found in dist/."""
@@ -720,7 +720,7 @@ class TestAutoChainBuild:
 
     def test_auto_chain_builds_on_y_response(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         tmp_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
@@ -789,7 +789,7 @@ class TestAutoChainBuild:
 
     def test_auto_chain_exits_on_n_response(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         passing_pre_flight_results: list[CheckResult],
     ) -> None:
         """Test auto-chain exits with message when user responds n."""
@@ -818,7 +818,7 @@ class TestAutoChainBuild:
 
     def test_ci_mode_auto_builds_without_prompt(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         tmp_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
@@ -880,7 +880,7 @@ class TestAutoChainBuild:
 
     def test_no_prompt_flag_auto_builds_without_prompt(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         tmp_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
@@ -943,7 +943,7 @@ class TestAutoChainBuild:
 
     def test_install_uses_newly_built_wheel(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         tmp_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
@@ -1006,7 +1006,7 @@ class TestAutoChainBuild:
 
     def test_chain_aborts_if_build_fails(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         passing_pre_flight_results: list[CheckResult],
     ) -> None:
         """Test chain aborts with exit code 1 if build fails."""
@@ -1045,7 +1045,7 @@ class TestWheelSelection:
 
     def test_single_wheel_skips_selection_prompt(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         tmp_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
@@ -1090,7 +1090,7 @@ class TestWheelSelection:
 
     def test_multiple_wheels_displays_numbered_list(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         tmp_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
@@ -1143,7 +1143,7 @@ class TestWheelSelection:
 
     def test_user_selection_returns_correct_wheel(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         tmp_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
@@ -1194,7 +1194,7 @@ class TestWheelSelection:
 
     def test_invalid_selection_shows_error(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         tmp_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
@@ -1240,7 +1240,7 @@ class TestWheelSelection:
 
     def test_ci_mode_auto_selects_newest_wheel(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         tmp_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
@@ -1290,7 +1290,7 @@ class TestWheelSelection:
 
     def test_no_prompt_flag_auto_selects_newest_wheel(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         tmp_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
@@ -1339,7 +1339,7 @@ class TestWheelSelection:
 
     def test_wheels_sorted_by_modification_time_newest_first(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         tmp_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,
@@ -1398,7 +1398,7 @@ class TestWheelSelection:
 
     def test_wheel_display_shows_date_and_size(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         tmp_path: Path,
         successful_install_result: InstallResult,
         sample_release_report: ReleaseReport,

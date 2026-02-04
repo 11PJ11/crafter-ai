@@ -10,7 +10,6 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import typer
-from typer.testing import CliRunner
 
 from crafter_ai.installer.domain.health_result import HealthStatus
 from crafter_ai.installer.ports.backup_port import BackupInfo
@@ -18,12 +17,13 @@ from crafter_ai.installer.services.rollback_service import (
     RollbackResult,
     RollbackService,
 )
+from tests.cli.conftest import CleanCliRunner
 
 
 # Create a test app for CLI testing (will import rollback once implemented)
 test_app = typer.Typer()
 
-runner = CliRunner()
+runner = CleanCliRunner()
 
 
 def _create_backup_info(

@@ -9,19 +9,19 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-from typer.testing import CliRunner
 
 from crafter_ai.cli import app
 from crafter_ai.installer.domain.candidate_version import BumpType, CandidateVersion
 from crafter_ai.installer.domain.check_result import CheckResult, CheckSeverity
 from crafter_ai.installer.services.build_service import BuildResult
 from crafter_ai.installer.services.wheel_validation_service import WheelValidationResult
+from tests.cli.conftest import CleanCliRunner
 
 
 @pytest.fixture
-def runner() -> CliRunner:
-    """Create a CLI test runner with ANSI colors disabled."""
-    return CliRunner(env={"NO_COLOR": "1"})
+def runner() -> CleanCliRunner:
+    """Create a CLI test runner with ANSI stripping for CI compatibility."""
+    return CleanCliRunner()
 
 
 @pytest.fixture
@@ -133,14 +133,14 @@ def failed_build_result(
 class TestForgeCommandRegistration:
     """Tests for forge command registration on Typer app."""
 
-    def test_forge_build_command_registered(self, runner: CliRunner) -> None:
+    def test_forge_build_command_registered(self, runner: CleanCliRunner) -> None:
         """Test that forge build command is registered."""
 
         result = runner.invoke(app, ["forge", "--help"])
         assert result.exit_code == 0
         assert "build" in result.output
 
-    def test_forge_build_help_shows_options(self, runner: CliRunner) -> None:
+    def test_forge_build_help_shows_options(self, runner: CleanCliRunner) -> None:
         """Test that forge build --help shows all options."""
 
         result = runner.invoke(app, ["forge", "build", "--help"])
@@ -155,7 +155,7 @@ class TestPreFlightDisplay:
 
     def test_displays_passing_checks_with_checkmark(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         successful_build_result: BuildResult,
         candidate_version: CandidateVersion,
     ) -> None:
@@ -175,7 +175,7 @@ class TestPreFlightDisplay:
 
     def test_displays_failing_checks_with_x(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         failed_pre_flight_result: BuildResult,
     ) -> None:
         """Test that failing checks show X mark."""
@@ -197,7 +197,7 @@ class TestVersionDisplay:
 
     def test_displays_version_bump_info(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         successful_build_result: BuildResult,
         candidate_version: CandidateVersion,
     ) -> None:
@@ -222,7 +222,7 @@ class TestBuildProgressDisplay:
 
     def test_displays_build_phases(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         successful_build_result: BuildResult,
         candidate_version: CandidateVersion,
     ) -> None:
@@ -247,7 +247,7 @@ class TestSuccessSummary:
 
     def test_displays_forge_build_complete(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         successful_build_result: BuildResult,
         candidate_version: CandidateVersion,
     ) -> None:
@@ -267,7 +267,7 @@ class TestSuccessSummary:
 
     def test_displays_wheel_path_in_summary(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         successful_build_result: BuildResult,
         candidate_version: CandidateVersion,
     ) -> None:
@@ -291,7 +291,7 @@ class TestInstallPrompt:
 
     def test_prompt_appears_when_not_ci(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         successful_build_result: BuildResult,
         candidate_version: CandidateVersion,
     ) -> None:
@@ -314,7 +314,7 @@ class TestInstallPrompt:
 
     def test_no_prompt_flag_skips_prompt(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         successful_build_result: BuildResult,
         candidate_version: CandidateVersion,
     ) -> None:
@@ -334,7 +334,7 @@ class TestInstallPrompt:
 
     def test_install_flag_triggers_auto_install_message(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         successful_build_result: BuildResult,
         candidate_version: CandidateVersion,
     ) -> None:
@@ -359,7 +359,7 @@ class TestCIModeDetection:
 
     def test_ci_env_suppresses_prompts(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         successful_build_result: BuildResult,
         candidate_version: CandidateVersion,
     ) -> None:
@@ -384,7 +384,7 @@ class TestExitCodes:
 
     def test_exit_code_0_on_success(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         successful_build_result: BuildResult,
         candidate_version: CandidateVersion,
     ) -> None:
@@ -404,7 +404,7 @@ class TestExitCodes:
 
     def test_exit_code_1_on_pre_flight_failure(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         failed_pre_flight_result: BuildResult,
     ) -> None:
         """Test exit code 1 on pre-flight failure."""
@@ -422,7 +422,7 @@ class TestExitCodes:
 
     def test_exit_code_1_on_build_failure(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         failed_build_result: BuildResult,
     ) -> None:
         """Test exit code 1 on build failure."""
@@ -444,7 +444,7 @@ class TestForceVersionOption:
 
     def test_force_version_overrides_auto_calculation(
         self,
-        runner: CliRunner,
+        runner: CleanCliRunner,
         successful_build_result: BuildResult,
     ) -> None:
         """Test that --force-version overrides auto-calculation."""

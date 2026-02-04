@@ -177,11 +177,16 @@ def cli_runner():
     """
     Provide a CLI test runner for testing Typer commands.
 
-    Uses NO_COLOR=1 to disable ANSI escape codes for consistent assertions.
+    Uses CleanCliRunner which strips ANSI escape codes for CI-compatible
+    assertions. This is necessary because Rich/Typer may emit ANSI codes
+    even when NO_COLOR is set, due to Console being created at module
+    import time.
 
     Returns:
-        CliRunner: Typer CLI test runner for isolated command testing
+        CleanCliRunner: Typer CLI test runner with ANSI stripping.
     """
     if CliRunner is None:
         pytest.skip("typer not installed")
-    return CliRunner(env={"NO_COLOR": "1"})
+    from tests.cli.conftest import CleanCliRunner
+
+    return CleanCliRunner()

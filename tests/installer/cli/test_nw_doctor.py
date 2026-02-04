@@ -9,7 +9,6 @@ from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
 import typer
-from typer.testing import CliRunner
 
 from crafter_ai.installer.cli.nw_doctor import (
     CHECKMARK,
@@ -25,13 +24,14 @@ from crafter_ai.installer.cli.nw_doctor import (
 )
 from crafter_ai.installer.domain.health_checker import HealthChecker
 from crafter_ai.installer.domain.health_result import HealthResult, HealthStatus
+from tests.cli.conftest import CleanCliRunner
 
 
 # Create a test app for CLI testing
 test_app = typer.Typer()
 test_app.command()(doctor)
 
-runner = CliRunner()
+runner = CleanCliRunner()
 
 
 def _create_health_result(

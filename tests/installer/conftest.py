@@ -9,10 +9,35 @@ Provides port mocking fixtures for hexagonal architecture testing:
 - ConfigPort mocks for configuration without disk I/O
 """
 
+import re
 from pathlib import Path
 from typing import Protocol, runtime_checkable
 
 import pytest
+
+
+# ============================================================================
+# ANSI Escape Code Utilities
+# ============================================================================
+
+# Regex to match ANSI escape sequences
+ANSI_ESCAPE_PATTERN = re.compile(r"\x1b\[[0-9;]*[a-zA-Z]|\x1b\][^\x07]*\x07")
+
+
+def strip_ansi(text: str) -> str:
+    """Remove ANSI escape codes from text.
+
+    Handles:
+    - CSI sequences: ESC [ ... letter (colors, cursor, etc.)
+    - OSC sequences: ESC ] ... BEL (window titles, hyperlinks)
+
+    Args:
+        text: String potentially containing ANSI escape codes.
+
+    Returns:
+        String with all ANSI escape codes removed.
+    """
+    return ANSI_ESCAPE_PATTERN.sub("", text)
 
 
 # ============================================================================
