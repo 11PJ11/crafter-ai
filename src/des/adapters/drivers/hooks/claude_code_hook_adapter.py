@@ -124,7 +124,19 @@ def handle_pre_task() -> int:
             print(json.dumps(response))
             return 0
 
-        # DES task: validate prompt structure
+        # Check for DES-MODE marker (orchestrator vs execution)
+        des_mode_pattern = r"<!--\s*DES-MODE\s*:\s*orchestrator\s*-->"
+        is_orchestrator_mode = bool(re.search(des_mode_pattern, prompt))
+
+        if is_orchestrator_mode:
+            # Orchestrator mode: relaxed validation
+            # Only verify DES markers present, skip 8-section validation
+            # max_turns already validated above
+            response = {"decision": "allow"}
+            print(json.dumps(response))
+            return 0
+
+        # DES task (execution mode): validate full prompt structure
         # Initialize DES components with production implementations
         DESConfig()
         hook = RealSubagentStopHook()

@@ -500,7 +500,12 @@ STEP 8: Phase 4 - Report Completion
    # Instead, read baseline.md and embed instructions inline
    task_result = Task(
        subagent_type="researcher",
-       prompt=f'''
+       max_turns=35,
+       prompt=f'''<!-- DES-VALIDATION: required -->
+<!-- DES-MODE: orchestrator -->
+<!-- DES-STEP-FILE: docs/feature/{project_id}/baseline.yaml -->
+<!-- DES-ORIGIN: command:/nw:develop -->
+
 You are a researcher agent creating a measurement baseline.
 
 ═══════════════════════════════════════════════════════════
@@ -664,7 +669,12 @@ DELIVERABLES:
    # Instead, embed complete roadmap instructions inline
    task_result = Task(
        subagent_type="solution-architect",
-       prompt=f'''
+       max_turns=35,
+       prompt=f'''<!-- DES-VALIDATION: required -->
+<!-- DES-MODE: orchestrator -->
+<!-- DES-STEP-FILE: docs/feature/{project_id}/roadmap.yaml -->
+<!-- DES-ORIGIN: command:/nw:develop -->
+
 You are a solution-architect agent creating an implementation roadmap.
 
 ═══════════════════════════════════════════════════════════
@@ -1182,7 +1192,12 @@ if os.path.exists(gitignore):
 
 task_result = Task(
     subagent_type="software-crafter",
-    prompt=f'''
+    max_turns=50,
+    prompt=f'''<!-- DES-VALIDATION: required -->
+<!-- DES-MODE: orchestrator -->
+<!-- DES-STEP-FILE: docs/feature/{project_id}/execution-status.yaml -->
+<!-- DES-ORIGIN: command:/nw:develop -->
+
 You are a software crafter performing architecture refactoring (L4-L6) on the
 completed implementation for project {project_id}.
 
@@ -1684,7 +1699,12 @@ Mutation testing is the guarantee that tests are high quality, not just passing.
    # Instead, embed complete finalize instructions inline
    task_result = Task(
        subagent_type="devop",
-       prompt=f'''
+       max_turns=30,
+       prompt=f'''<!-- DES-VALIDATION: required -->
+<!-- DES-MODE: orchestrator -->
+<!-- DES-STEP-FILE: docs/feature/{project_id}/evolution.md -->
+<!-- DES-ORIGIN: command:/nw:develop -->
+
 You are a devop agent finalizing and archiving a completed feature.
 
 ═══════════════════════════════════════════════════════════
@@ -1881,7 +1901,12 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"""
    if has_issues:
        task_result = Task(
            subagent_type="troubleshooter",
-           prompt=f'''
+           max_turns=30,
+           prompt=f'''<!-- DES-VALIDATION: required -->
+<!-- DES-MODE: orchestrator -->
+<!-- DES-STEP-FILE: docs/feature/{project_id}/retrospective.md -->
+<!-- DES-ORIGIN: command:/nw:develop -->
+
    Perform a structured retrospective on the DEVELOP wave execution for {project_id}.
 
    ANALYSIS FRAMEWORK (4 categories):

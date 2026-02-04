@@ -26,13 +26,25 @@ roadmap_content = Read("docs/feature/{project-id}/roadmap.yaml")
 # STEP 3: Pass extracted context explicitly to agent
 Task(
     subagent_type="software-crafter",
-    prompt="""You are the software-crafter agent.
+    max_turns=30,
+    prompt="""<!-- DES-VALIDATION: required -->
+<!-- DES-STEP-FILE: docs/feature/{project-id}/steps/{step-id}.json -->
+<!-- DES-ORIGIN: command:/nw:execute -->
+
+# DES_METADATA
+Step: {step-id}.json
+Project: {project-id}
+Command: /nw:execute
+Schema: v2.0
+
+# AGENT_IDENTITY
+You are the software-crafter agent executing a single implementation step.
 
 Task type: execute
 PROJECT: {project-id}
 STEP: {step-id}
 
-## TASK CONTEXT (EXTRACTED FROM ROADMAP - DO NOT LOAD ROADMAP)
+# TASK_CONTEXT
 
 **Step ID**: {step_id}
 **Name**: {name}
@@ -45,18 +57,19 @@ STEP: {step-id}
 **Scenario Line**: {scenario_line}
 **Acceptance Test Scenario**: {acceptance_test_scenario}
 
-**Quality Gates**:
-{quality_gates}
-
 **Implementation Notes**:
 {implementation_notes}
 
 **Dependencies**: {dependencies}
 **Estimated Hours**: {estimated_hours}
 
-## MANDATORY TDD PHASES
+**CRITICAL**: DO NOT load roadmap.yaml (context provided above).
+
+# TDD_7_PHASES
 
 Execute these 7 phases in order:
+(Schema v3.0 - MUST stay in sync with TDDPhaseValidator.MANDATORY_PHASES_V3)
+
 0. PREPARE - Remove @skip decorators, verify only 1 scenario enabled
 1. RED_ACCEPTANCE - Run acceptance test, expect FAIL for valid reason
 2. RED_UNIT - Write failing unit tests before implementation
@@ -65,12 +78,35 @@ Execute these 7 phases in order:
 5. REFACTOR_CONTINUOUS - L1 (naming) + L2 (complexity) + L3 (organization) [fast-path if <30 LOC]
 6. COMMIT - Final validate + commit
 
-## STATE TRACKING
+# QUALITY_GATES
 
-**CRITICAL**: DO NOT load roadmap.yaml (context provided above).
+{quality_gates}
+
+# OUTCOME_RECORDING
+
 **READ/WRITE ONLY**: docs/feature/{project-id}/execution-status.yaml
 
-Update execution-status.yaml after EACH phase (no batching)."""
+Update execution-status.yaml after EACH phase (no batching).
+
+Record in phase_execution_log:
+- phase_name: (e.g., "RED_ACCEPTANCE")
+- outcome: "PASS" | "FAIL" | "SKIP"
+- timestamp: ISO 8601
+- notes: Brief description of what happened
+
+# BOUNDARY_RULES
+
+**Allowed modifications**: Only files within the scope of this step.
+**Forbidden**: Do NOT modify files from other steps or features.
+**Forbidden**: Do NOT continue to other steps after completion.
+
+Scope defined by acceptance criteria above.
+
+# TIMEOUT_INSTRUCTION
+
+Target: 30 turns maximum for this step.
+Checkpoints: 10, 20, 25 turns.
+If stuck or blocked, exit early and report issue in execution-status.yaml."""
 )
 ```
 
