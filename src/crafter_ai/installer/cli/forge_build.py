@@ -14,7 +14,12 @@ from crafter_ai.installer.adapters.build_adapter import SubprocessBuildAdapter
 from crafter_ai.installer.adapters.filesystem_adapter import RealFileSystemAdapter
 from crafter_ai.installer.adapters.git_adapter import SubprocessGitAdapter
 from crafter_ai.installer.checks.build_checks import create_build_check_registry
-from crafter_ai.installer.cli.forge_tui import display_pre_flight_results, is_ci_mode
+from crafter_ai.installer.cli.forge_tui import (
+    display_blocking_failure_summary,
+    display_pre_flight_results,
+    get_blocking_failures,
+    is_ci_mode,
+)
 from crafter_ai.installer.domain.artifact_registry import ArtifactRegistry
 from crafter_ai.installer.domain.candidate_version import BumpType, CandidateVersion
 from crafter_ai.installer.domain.check_executor import CheckExecutor
@@ -215,11 +220,23 @@ def build(
     # Display pre-flight results (Luna's Step 2 - before version)
     display_pre_flight_results(result.pre_flight_results)
 
+    # Check for blocking pre-flight failures
+    blocking_failures = get_blocking_failures(result.pre_flight_results)
+    if blocking_failures:
+        display_blocking_failure_summary("Build", blocking_failures)
+        raise typer.Exit(code=1)
+
     # Display version info (Luna's Step 3 - after pre-flight)
     display_version_info(candidate)
 
     if not result.success:
-        display_failure_summary(result)
+        # Build failed after pre-flight passed (compilation or IDE bundle failure)
+        console.print()
+        console.print(f"  \u274c Build failed")
+        console.print()
+        console.print(f"  Error: {result.error_message}")
+        console.print(f"  Fix: Check pyproject.toml configuration and build logs")
+        console.print()
         raise typer.Exit(code=1)
 
     # Display build progress persistent line (Luna's Step 4)

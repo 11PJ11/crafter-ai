@@ -20,7 +20,12 @@ from crafter_ai.installer.adapters.filesystem_adapter import RealFileSystemAdapt
 from crafter_ai.installer.adapters.pipx_adapter import SubprocessPipxAdapter
 from crafter_ai.installer.checks.install_checks import create_install_check_registry
 from crafter_ai.installer.cli.forge_build import create_build_service, forge_app
-from crafter_ai.installer.cli.forge_tui import display_pre_flight_results, is_ci_mode
+from crafter_ai.installer.cli.forge_tui import (
+    display_blocking_failure_summary,
+    display_pre_flight_results,
+    get_blocking_failures,
+    is_ci_mode,
+)
 from crafter_ai.installer.domain.check_executor import CheckExecutor
 from crafter_ai.installer.domain.check_result import CheckResult, CheckSeverity
 from crafter_ai.installer.domain.health_checker import HealthChecker
@@ -207,33 +212,6 @@ def run_pre_flight_checks() -> list[CheckResult]:
     return check_executor.run_all()
 
 
-def get_blocking_failures(results: list[CheckResult]) -> list[CheckResult]:
-    """Get all blocking failures from pre-flight check results.
-
-    Args:
-        results: List of CheckResult objects.
-
-    Returns:
-        List of CheckResult objects that failed with BLOCKING severity.
-    """
-    return [r for r in results if not r.passed and r.severity == CheckSeverity.BLOCKING]
-
-
-def display_blocking_failures(failures: list[CheckResult]) -> None:
-    """Display blocking failure summary with remediation hints.
-
-    Args:
-        failures: List of blocking CheckResult failures.
-    """
-    console.print("[bold red]Install blocked[/bold red]")
-    console.print("The following blocking checks failed:")
-
-    for failure in failures:
-        console.print(f"  [red]{failure.name}:[/red] {failure.message}")
-        if failure.remediation:
-            console.print(f"    Fix: {failure.remediation}")
-
-    console.print()
 
 
 def display_header(wheel_path: Path) -> None:
@@ -390,7 +368,7 @@ def install(
     # Check for blocking failures - stop if any exist
     blocking_failures = get_blocking_failures(pre_flight_results)
     if blocking_failures:
-        display_blocking_failures(blocking_failures)
+        display_blocking_failure_summary("Install", blocking_failures)
         raise typer.Exit(code=1)
 
     # Determine if we should prompt
@@ -510,24 +488,47 @@ def install(
                 )
 
     if install_result.health_status is not None:
+        from crafter_ai.installer.domain.health_result import HealthStatus
+
         console.print()
         console.print("  🩺 Verifying installation")
         console.print("    ✅ nWave assets accessible")
         console.print("    ✅ Core modules loadable")
         console.print(f"    ✅ CLI responds to --version → {install_result.version}")
+
+        # Display verification warnings if any
+        if install_result.verification_warnings:
+            for warning in install_result.verification_warnings:
+                console.print(f"    ⚠️  {warning}")
+
         console.print(f"    🩻 Health: {install_result.health_status.value.upper()} 👍")
 
     # Check for installation failure (after displaying all available information)
     if not install_result.success:
         console.print()
-        display_failure(install_result.error_message or "Unknown error")
+        console.print(f"  \u274c Installation failed")
+        console.print()
+        console.print(f"  Error: {install_result.error_message or 'Unknown error'}")
+        console.print(f"  Fix: Try 'pipx install --force' or check dependency versions")
+        console.print()
         raise typer.Exit(code=1)
 
+    # Celebration message based on health status
+    from crafter_ai.installer.domain.health_result import HealthStatus
+
     console.print()
-    console.print(
-        f"[bold green]\U0001f389 nWave {install_result.version} installed and healthy![/bold green]"
-    )
-    console.print("[dim]  Ready to use in Claude Code.[/dim]")
+    if install_result.health_status == HealthStatus.DEGRADED:
+        console.print(
+            f"[bold yellow]⚠️ nWave {install_result.version} installed with warnings![/bold yellow]"
+        )
+        console.print(
+            "[dim]  Some features may be limited. Run 'nw doctor' for details.[/dim]"
+        )
+    else:
+        console.print(
+            f"[bold green]\U0001f389 nWave {install_result.version} installed and healthy![/bold green]"
+        )
+        console.print("[dim]  Ready to use in Claude Code.[/dim]")
 
     console.print()
     console.print("  📖 Getting started")
