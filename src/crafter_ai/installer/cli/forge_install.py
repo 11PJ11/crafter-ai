@@ -333,6 +333,13 @@ def install(
     """
     # Display branded header at the start
     console.print()
+    # ASCII art branding
+    console.print("[cyan]        ▄▄▄▄  ▄▄▄  ▄▄▄▄[/cyan]")
+    console.print("[cyan]        ▀███  ███  ███▀[/cyan]")
+    console.print("[cyan]  ████▄  ███  ███  ███  ▀▀█▄ ██ ██ ▄█▀█▄[/cyan]")
+    console.print("[cyan]  ██ ██  ███▄▄███▄▄███ ▄█▀██ ██▄██ ██▄█▀[/cyan]")
+    console.print("[cyan]  ██ ██   ▀████▀████▀  ▀█▄██  ▀█▀  ▀█▄▄▄▄▂▂▁▁[/cyan]  🌊 🌊 🌊")
+    console.print()
     console.print("[bold]🌊 nWave Installation[/bold]")
     console.print("   Orchestrating Agentic-AI for crafters.")
     console.print("   Modern Software Engineering at scale. Confidence at speed.")
