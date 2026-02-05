@@ -46,6 +46,11 @@ class TDDSchemaProtocol(Protocol):
         """Skip reason prefixes that block commit."""
         ...
 
+    @property
+    def terminal_phases(self) -> tuple[str, ...]:
+        """Phases that must complete with PASS outcome (cannot FAIL)."""
+        ...
+
 
 @dataclass(frozen=True)
 class TDDSchema:
@@ -58,6 +63,7 @@ class TDDSchema:
     valid_statuses: tuple[str, ...] = field(default_factory=tuple)
     valid_skip_prefixes: tuple[str, ...] = field(default_factory=tuple)
     blocking_skip_prefixes: tuple[str, ...] = field(default_factory=tuple)
+    terminal_phases: tuple[str, ...] = field(default_factory=tuple)
     schema_version: str = "3.0"
     total_phases: int = 7
 
@@ -133,12 +139,14 @@ class TDDSchemaLoader:
         - valid_skip_prefixes from phase_validation_rules.skip_validation.valid_prefixes
           where allows_commit=True
         - blocking_skip_prefixes from same where allows_commit=False
+        - terminal_phases from phase_validation_rules.terminal_phases.phases
         """
         tdd_phases = self._extract_tdd_phases(raw_data)
         valid_statuses = self._extract_valid_statuses(raw_data)
         valid_skip_prefixes, blocking_skip_prefixes = self._extract_skip_prefixes(
             raw_data
         )
+        terminal_phases = self._extract_terminal_phases(raw_data)
         schema_version = raw_data.get("schema_version", "3.0")
         total_phases = raw_data.get("phase_validation_rules", {}).get("total_phases", 7)
 
@@ -147,6 +155,7 @@ class TDDSchemaLoader:
             valid_statuses=valid_statuses,
             valid_skip_prefixes=valid_skip_prefixes,
             blocking_skip_prefixes=blocking_skip_prefixes,
+            terminal_phases=terminal_phases,
             schema_version=schema_version,
             total_phases=total_phases,
         )
@@ -185,6 +194,19 @@ class TDDSchemaLoader:
                 blocking_prefixes.append(prefix)
 
         return tuple(valid_prefixes), tuple(blocking_prefixes)
+
+    def _extract_terminal_phases(self, raw_data: dict) -> tuple[str, ...]:
+        """Extract terminal phases that must complete with PASS outcome.
+
+        Terminal phases represent successful completion and cannot have FAIL outcome.
+        Example: COMMIT phase must always PASS, as FAIL indicates incomplete work.
+        """
+        terminal_config = (
+            raw_data.get("phase_validation_rules", {})
+            .get("terminal_phases", {})
+        )
+        phases = terminal_config.get("phases", [])
+        return tuple(phases)
 
     def clear_cache(self) -> None:
         """Clear the cached schema, forcing reload on next access."""

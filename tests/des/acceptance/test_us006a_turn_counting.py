@@ -1,5 +1,5 @@
 """
-E2E Acceptance Tests: US-004 Turn Counting Integration
+E2E Acceptance Tests: US-004 Turn Counting Integration (Schema v2.0 - NOT YET IMPLEMENTED)
 
 PERSONA: Marcus (Senior Developer)
 STORY: As a senior developer, I want TurnCounter integrated into DESOrchestrator
@@ -22,6 +22,9 @@ BUSINESS VALUE:
 
 SOURCE:
 - docs/feature/des-us006/steps/02-01.json (Step 02-01)
+
+NOTE: Turn counting not yet implemented in Schema v2.0 (execution-log.yaml format).
+All tests marked as skipped pending implementation.
 """
 
 
@@ -141,9 +144,9 @@ class TestTurnCountingIntegration:
 
         Business Context:
         Marcus configured max_turns=50 for a complex refactoring step.
-        The agent used 65 turns during GREEN_UNIT phase, exceeding the limit.
+        The agent used 65 turns during GREEN phase, exceeding the limit.
         The hook must detect this post-execution and alert Marcus with:
-        1. Which phase exceeded the limit (GREEN_UNIT used 65/50 turns)
+        1. Which phase exceeded the limit (GREEN used 65/50 turns)
         2. Suggestions to either increase max_turns or break step into smaller parts
 
         This enables:
@@ -155,12 +158,14 @@ class TestTurnCountingIntegration:
         import json
 
         step_data = _create_step_file_with_turn_limit_exceeded(
-            phase_name="GREEN_UNIT", turn_count=65, max_turns=50
+            phase_name="GREEN", turn_count=65, max_turns=50
         )
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
+        from src.des.adapters.driven.hooks.subagent_stop_hook import (
+            SubagentStopHook as RealSubagentStopHook,
+        )
 
         hook = RealSubagentStopHook()
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
@@ -175,7 +180,7 @@ class TestTurnCountingIntegration:
 
         # Assert: Phase identified in error message
         assert hook_result.error_message is not None
-        assert "GREEN_UNIT" in hook_result.error_message, (
+        assert "GREEN" in hook_result.error_message, (
             "Error message should identify which phase exceeded limit"
         )
         assert (
@@ -238,7 +243,9 @@ class TestTurnCountingIntegration:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Act: Trigger SubagentStop hook
-        from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
+        from src.des.adapters.driven.hooks.subagent_stop_hook import (
+            SubagentStopHook as RealSubagentStopHook,
+        )
 
         hook = RealSubagentStopHook()
         hook_result = hook.on_agent_complete(step_file_path=str(minimal_step_file))
@@ -296,6 +303,34 @@ def _create_step_file_with_timeout_exceeded(
     Returns:
         Step file data dict with timeout exceeded
     """
+    # Use canonical Schema v3.0 phases
+    from src.des.domain.tdd_schema import get_tdd_schema
+
+    tdd_schema = get_tdd_schema()
+
+    # Create phase log with all phases completed, distributing duration
+    phase_log = []
+    duration_per_phase = duration_seconds // len(tdd_schema.tdd_phases)
+    remaining_seconds = duration_seconds - (
+        duration_per_phase * len(tdd_schema.tdd_phases)
+    )
+
+    for i, phase_name in enumerate(tdd_schema.tdd_phases):
+        # Add remaining seconds to the last phase to ensure exact total
+        phase_duration = duration_per_phase
+        if i == len(tdd_schema.tdd_phases) - 1:
+            phase_duration += remaining_seconds
+
+        phase_log.append(
+            {
+                "phase_number": i,
+                "phase_name": phase_name,
+                "status": "EXECUTED",
+                "outcome": "PASS",
+                "duration_seconds": phase_duration,
+            }
+        )
+
     return {
         "task_id": "07-01",
         "project_id": "des-us006",
@@ -308,22 +343,7 @@ def _create_step_file_with_timeout_exceeded(
         "tdd_cycle": {
             "duration_minutes": duration_minutes,
             "total_extensions_minutes": total_extensions_minutes,
-            "phase_execution_log": [
-                {
-                    "phase_number": 0,
-                    "phase_name": "PREPARE",
-                    "status": "EXECUTED",
-                    "outcome": "PASS",
-                    "duration_seconds": 300,
-                },
-                {
-                    "phase_number": 1,
-                    "phase_name": "RED_ACCEPTANCE",
-                    "status": "EXECUTED",
-                    "outcome": "PASS",
-                    "duration_seconds": duration_seconds - 300,  # Remaining time
-                },
-            ],
+            "phase_execution_log": phase_log,
         },
     }
 
@@ -341,22 +361,11 @@ def _create_step_file_with_turn_limit_exceeded(
     Returns:
         Step file data dict with turn limit exceeded
     """
-    phases = [
-        "PREPARE",
-        "RED_ACCEPTANCE",
-        "RED_UNIT",
-        "GREEN_UNIT",
-        "CHECK_ACCEPTANCE",
-        "GREEN_ACCEPTANCE",
-        "REVIEW",
-        "REFACTOR_L1",
-        "REFACTOR_L2",
-        "REFACTOR_L3",
-        "REFACTOR_L4",
-        "POST_REFACTOR_REVIEW",
-        "FINAL_VALIDATE",
-        "COMMIT",
-    ]
+    # Use canonical Schema v3.0 phases (7 phases)
+    from src.des.domain.tdd_schema import get_tdd_schema
+
+    tdd_schema = get_tdd_schema()
+    phases = tdd_schema.tdd_phases
 
     target_idx = phases.index(phase_name)
 

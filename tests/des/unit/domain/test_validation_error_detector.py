@@ -61,7 +61,7 @@ class TestValidationErrorDetector:
             "Should identify missing acceptance_criteria"
         )
 
-    def test_detects_invalid_phase_sequences(self):
+    def test_detects_invalid_phase_sequences(self, tdd_phases):
         """
         GIVEN a step file with phases in invalid execution order
         WHEN validation detector analyzes the phase sequence
@@ -69,20 +69,27 @@ class TestValidationErrorDetector:
 
         Acceptance Criteria (AC-005.1):
         - Detects invalid phase execution sequences
-        - Example: COMMIT before REVIEW is invalid
-        - Example: REFACTOR_L2 before RED_UNIT is invalid
+        - Example: Terminal phase before REVIEW is invalid
+        - Example: Later phase before earlier phase is invalid
         """
         from src.des.domain.validation_error_detector import ValidationErrorDetector
 
         detector = ValidationErrorDetector()
 
-        # Invalid: COMMIT before REVIEW
+        # Build invalid sequence: put terminal phase (last) too early
+        # Schema: PREPARE, RED_ACCEPTANCE, RED_UNIT, GREEN, REVIEW, REFACTOR_CONTINUOUS, COMMIT
+        terminal_phase = tdd_phases[-1]  # COMMIT
+        review_phase = tdd_phases[-3]  # REVIEW
+
         invalid_phases = {
             "phase_execution_log": [
-                {"phase_name": "PREPARE", "phase_index": 0},
-                {"phase_name": "RED_ACCEPTANCE", "phase_index": 1},
-                {"phase_name": "COMMIT", "phase_index": 2},  # Invalid: too early
-                {"phase_name": "REVIEW", "phase_index": 3},  # Invalid: after COMMIT
+                {"phase_name": tdd_phases[0], "phase_index": 0},
+                {"phase_name": tdd_phases[1], "phase_index": 1},
+                {"phase_name": terminal_phase, "phase_index": 2},  # Invalid: too early
+                {
+                    "phase_name": review_phase,
+                    "phase_index": 3,
+                },  # Invalid: after terminal
             ]
         }
 
@@ -91,9 +98,9 @@ class TestValidationErrorDetector:
         assert errors is not None, "Should detect phase sequence errors"
         assert isinstance(errors, list), "Errors should be a list"
         assert len(errors) > 0, "Should have at least one sequence error"
-        assert any("COMMIT" in err or "sequence" in err.lower() for err in errors), (
-            "Should mention COMMIT or sequence violation"
-        )
+        assert any(
+            terminal_phase in err or "sequence" in err.lower() for err in errors
+        ), f"Should mention {terminal_phase} or sequence violation"
 
     def test_detects_missing_acceptance_criteria(self):
         """
@@ -163,7 +170,7 @@ class TestValidationErrorDetector:
             for keyword in ["add", "include", "update", "with", "should contain"]
         ), "Guidance should include action verbs"
 
-    def test_handles_partial_validation(self):
+    def test_handles_partial_validation(self, tdd_phases):
         """
         GIVEN a step file with some valid and some invalid data
         WHEN validation detector performs partial analysis
@@ -174,32 +181,40 @@ class TestValidationErrorDetector:
         - Reports only actual errors, not assumptions
         - Distinguishes between valid and invalid phases
 
-        Scenario: Phases 1-3 complete (EXECUTED), phase 4 incomplete (IN_PROGRESS),
-                 remaining phases invalid (out of order)
+        Scenario: Phases 0-2 complete (EXECUTED), phase 3 incomplete (IN_PROGRESS),
+                 remaining phases missing
         """
         from src.des.domain.validation_error_detector import ValidationErrorDetector
 
         detector = ValidationErrorDetector()
 
-        # Partially valid step
+        # Build partially valid step using schema phases
         partial_step = {
             "step_id": "02-03",
             "acceptance_criteria": "Detects missing fields",
             "tdd_cycle": {
                 "phase_execution_log": [
-                    {"phase_name": "PREPARE", "status": "EXECUTED", "phase_index": 0},
                     {
-                        "phase_name": "RED_ACCEPTANCE",
+                        "phase_name": tdd_phases[0],
+                        "status": "EXECUTED",
+                        "phase_index": 0,
+                    },
+                    {
+                        "phase_name": tdd_phases[1],
                         "status": "EXECUTED",
                         "phase_index": 1,
                     },
-                    {"phase_name": "RED_UNIT", "status": "EXECUTED", "phase_index": 2},
                     {
-                        "phase_name": "GREEN",
+                        "phase_name": tdd_phases[2],
+                        "status": "EXECUTED",
+                        "phase_index": 2,
+                    },
+                    {
+                        "phase_name": tdd_phases[3],
                         "status": "IN_PROGRESS",
                         "phase_index": 3,
                     },  # Valid, but incomplete
-                    # Missing phases after GREEN
+                    # Missing phases after index 3
                 ]
             },
         }

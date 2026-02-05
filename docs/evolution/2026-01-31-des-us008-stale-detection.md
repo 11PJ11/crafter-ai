@@ -128,14 +128,14 @@ Per-component kill rates:
 ## Workflow Artifacts (Archived)
 
 - `docs/feature/des-us008-stale-detection/roadmap.yaml` (11 steps across 5 phases)
-- `docs/feature/des-us008-stale-detection/execution-status.yaml` (13 completed steps)
+- `docs/feature/des-us008-stale-detection/execution-log.yaml` (13 completed steps)
 - `docs/feature/des-us008-stale-detection/mutation/mutation-report.md` (82.84% kill rate)
 
 ## Integration Points
 
 - **DES Orchestrator**: Pre-execution stale check hook
 - **Environment Variables**: `DES_STALE_THRESHOLD_MINUTES` (optional override)
-- **Execution Status Files**: Reads IN_PROGRESS phases from `docs/feature/{project-id}/execution-status.yaml`
+- **Execution Status Files**: Reads IN_PROGRESS phases from `docs/feature/{project-id}/execution-log.yaml`
 
 ## Acceptance Criteria Validation
 

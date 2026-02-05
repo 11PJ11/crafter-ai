@@ -7,7 +7,7 @@ Tests the implementation of turn_count persistence in SubagentStopHook.
 import json
 
 import pytest
-from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
+from src.des.adapters.driven.hooks.subagent_stop_hook import SubagentStopHook
 
 
 class TestTurnCountPersistenceUnit:
@@ -16,7 +16,7 @@ class TestTurnCountPersistenceUnit:
     @pytest.fixture
     def hook(self):
         """Create hook instance."""
-        return RealSubagentStopHook()
+        return SubagentStopHook()
 
     @pytest.fixture
     def temp_step_file(self, tmp_path):

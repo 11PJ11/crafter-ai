@@ -43,6 +43,9 @@ if TYPE_CHECKING:
     from src.des.domain.stale_execution import StaleExecution
 
 
+# _StubHook removed - using SubagentStopHook (driven adapter) instead
+
+
 @dataclass
 class ExecuteStepResult:
     """Result from execute_step() method execution.
@@ -177,17 +180,18 @@ class DESOrchestrator:
 
         This class method is used in tests and entry points that don't have
         access to pre-configured dependencies. It creates an orchestrator
-        with real implementations (RealSubagentStopHook, TemplateValidator, etc.).
+        with real implementations (SubagentStopHook, TemplateValidator, etc.).
 
         Returns:
             DESOrchestrator instance with default dependencies configured
         """
         from src.des.adapters.driven.filesystem.real_filesystem import RealFileSystem
+        from src.des.adapters.driven.hooks.subagent_stop_hook import SubagentStopHook
         from src.des.adapters.driven.time.system_time import SystemTimeProvider
-        from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
         from src.des.application.validator import TemplateValidator
 
-        hook = RealSubagentStopHook()
+        # Schema v2.0: SubagentStopHook validates from execution-log.yaml
+        hook = SubagentStopHook()
         validator = TemplateValidator()
         filesystem = RealFileSystem()
         time_provider = SystemTimeProvider()
@@ -526,10 +530,14 @@ class DESOrchestrator:
         Invoke SubagentStopHook after sub-agent completion.
 
         This is the entry point for post-execution validation (US-003).
-        Delegates to SubagentStopHook to validate step file state.
+        Delegates to SubagentStopHook to validate step completion from execution-log.yaml.
+
+        Schema v2.0: The parameter name is legacy from v1.x. In v2.0, this receives
+        a compound path encoding: "{execution_log_path}?project_id={id}&step_id={id}"
 
         Args:
-            step_file_path: Path to the step JSON file to validate
+            step_file_path: Compound path with execution-log location and metadata
+                           (Schema v2.0 workaround - see SubagentStopHook docstring)
 
         Returns:
             HookResult with validation status and any errors found

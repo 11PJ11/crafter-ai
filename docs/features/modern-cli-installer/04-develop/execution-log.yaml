@@ -1105,7 +1105,7 @@ handover:
     ### To Resume
     Run: /nw:develop "modern-cli-installer"
     - Orchestrator will detect approved roadmap (skip creation)
-    - Orchestrator will read this execution-status.yaml
+    - Orchestrator will read this execution-log.yaml
     - Orchestrator will begin Phase 00 execution
 
     ### Acceptance Tests Location

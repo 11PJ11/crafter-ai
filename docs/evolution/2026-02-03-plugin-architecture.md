@@ -211,7 +211,7 @@ python install_nwave.py --dry-run
 
 - docs/feature/plugin-architecture/roadmap.yaml - Implementation roadmap (17 steps, 5 phases)
 - docs/feature/plugin-architecture/architecture-decisions.md - Gap analysis and decisions
-- docs/feature/plugin-architecture/execution-status.yaml - Step completion tracking
+- docs/feature/plugin-architecture/execution-log.yaml - Step completion tracking
 - docs/feature/plugin-architecture/mutation/mutation-report.md - Mutation testing results
 
 ### Implementation Files

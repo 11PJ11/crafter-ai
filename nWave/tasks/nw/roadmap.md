@@ -469,7 +469,7 @@ tdd_phases:
 # Execution Configuration (Schema v2.0)
 execution_config:
   context_extraction_method: "from_roadmap"  # No step files needed
-  status_tracking_file: "execution-status.yaml"
+  status_tracking_file: "execution-log.yaml"
   token_budget_per_step: 5000  # Extracted context limit
 
 phases:

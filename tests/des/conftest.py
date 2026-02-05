@@ -107,6 +107,7 @@ def valid_prompt_v3(tdd_phases):
         # Prompt missing TIMEOUT_INSTRUCTION (for testing validation errors)
         prompt = valid_prompt_v3(exclude_sections=['TIMEOUT_INSTRUCTION'])
     """
+
     def _generate(exclude_sections=None):
         if exclude_sections is None:
             exclude_sections = []
@@ -115,31 +116,31 @@ def valid_prompt_v3(tdd_phases):
         phases_text = ", ".join(tdd_phases)
 
         sections = {
-            'DES_VALIDATION_MARKER': '<!-- DES-VALIDATION: required -->',
-            'DES_METADATA': """## DES_METADATA
+            "DES_VALIDATION_MARKER": "<!-- DES-VALIDATION: required -->",
+            "DES_METADATA": """## DES_METADATA
 step_id: test-01-01
 project_id: test-project
 step_file: steps/test-01-01.json""",
-            'AGENT_IDENTITY': """## AGENT_IDENTITY
+            "AGENT_IDENTITY": """## AGENT_IDENTITY
 You are @software-crafter executing this step.""",
-            'TASK_CONTEXT': """## TASK_CONTEXT
+            "TASK_CONTEXT": """## TASK_CONTEXT
 Implement test feature with complete TDD cycle.""",
-            'TDD_7_PHASES': f"""## TDD_7_PHASES
+            "TDD_7_PHASES": f"""## TDD_7_PHASES
 Execute all {len(tdd_phases)} phases from schema:
 {phases_text}""",
-            'QUALITY_GATES': """## QUALITY_GATES
+            "QUALITY_GATES": """## QUALITY_GATES
 G1: All tests pass
 G2: No code smells
 G3: Coverage >= 80%
 G4: No security vulnerabilities
 G5: Documentation complete
 G6: Commit message descriptive""",
-            'OUTCOME_RECORDING': """## OUTCOME_RECORDING
+            "OUTCOME_RECORDING": """## OUTCOME_RECORDING
 Record phase outcomes in step file:
 - EXECUTED phases: record outcome (PASS/FAIL)
 - SKIPPED phases: record reason with valid prefix
 - Update phase_execution_log after each phase""",
-            'BOUNDARY_RULES': """## BOUNDARY_RULES
+            "BOUNDARY_RULES": """## BOUNDARY_RULES
 ALLOWED:
 - Modify implementation files in scope
 - Create/modify test files
@@ -149,11 +150,11 @@ FORBIDDEN:
 - Modify files outside scope
 - Skip mandatory phases without valid reason
 - Commit without all phases complete""",
-            'TIMEOUT_INSTRUCTION': """## TIMEOUT_INSTRUCTION
+            "TIMEOUT_INSTRUCTION": """## TIMEOUT_INSTRUCTION
 Turn budget: approximately 50 turns
 Progress checkpoints: ~10, ~25, ~40, ~50
 Early exit protocol: Save progress if stuck
-Turn logging: Log turn count at phase transitions"""
+Turn logging: Log turn count at phase transitions""",
         }
 
         # Build prompt with only non-excluded sections
@@ -184,6 +185,7 @@ def prompt_missing_phase_v3(tdd_phases):
         # Prompt missing REFACTOR_CONTINUOUS phase
         prompt = prompt_missing_phase_v3(missing_phase='REFACTOR_CONTINUOUS')
     """
+
     def _generate(missing_phase):
         # Filter out the missing phase
         phases_with_missing = [p for p in tdd_phases if p != missing_phase]

@@ -82,7 +82,9 @@ class TestPreInvocationTemplateValidation:
         Missing Phase: REFACTOR_CONTINUOUS (one of 7 mandatory phases from schema v3.0)
         """
         # Arrange: Create prompt missing REFACTOR_CONTINUOUS phase from template
-        prompt_missing_phase = prompt_missing_phase_v3(missing_phase='REFACTOR_CONTINUOUS')
+        prompt_missing_phase = prompt_missing_phase_v3(
+            missing_phase="REFACTOR_CONTINUOUS"
+        )
 
         # Act: Run pre-invocation validation
         from src.des.application.validator import TemplateValidator
@@ -184,7 +186,7 @@ class TestPreInvocationTemplateValidation:
         """
         # Arrange: Create prompt with multiple issues (missing section + missing phase)
         # Build phase list excluding REFACTOR_CONTINUOUS
-        phases_missing_refactor = [p for p in tdd_phases if p != 'REFACTOR_CONTINUOUS']
+        phases_missing_refactor = [p for p in tdd_phases if p != "REFACTOR_CONTINUOUS"]
         phases_text = ", ".join(phases_missing_refactor)
 
         _prompt_with_multiple_errors = f"""<!-- DES-VALIDATION: required -->

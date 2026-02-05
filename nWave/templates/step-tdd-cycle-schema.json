@@ -251,7 +251,12 @@
     },
     "sequential_order_required": true,
     "gaps_not_allowed": true,
-    "atomic_file_writes": true
+    "atomic_file_writes": true,
+    "terminal_phases": {
+      "description": "Phases that must complete with PASS outcome (cannot be FAIL)",
+      "phases": ["COMMIT"],
+      "rationale": "COMMIT is terminal - represents successful step completion. FAIL outcome indicates implementation incomplete."
+    }
   },
   "valid_tdd_phases": [
     "NOT_STARTED",

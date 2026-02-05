@@ -99,7 +99,7 @@ constraints:
   # Forbidden actions (blacklist) - CRITICAL for preventing drift
   forbidden_actions:
     - "DO NOT read roadmap.yaml"
-    - "DO NOT read execution-status.yaml"
+    - "DO NOT read execution-log.yaml"
     - "DO NOT modify WIP.yaml (orchestrator does this)"
     - "DO NOT implement other steps"
     - "DO NOT add external dependencies"
@@ -123,7 +123,7 @@ output:
 ┌─────────────────────────────────────────────────────────────────────┐
 │ ORCHESTRATOR                                                        │
 ├─────────────────────────────────────────────────────────────────────┤
-│ 1. Read execution-status.yaml                                       │
+│ 1. Read execution-log.yaml                                       │
 │ 2. Identify next step (check dependencies satisfied)                │
 │ 3. Extract step context from roadmap.yaml (~5k tokens)              │
 │ 4. Generate WIP.yaml with input/constraints/empty output            │
@@ -164,7 +164,7 @@ output:
 │ 1. Read WIP.yaml output section                                     │
 │ 2. VERIFY tests pass (run pytest independently)                     │
 │ 3. If verified:                                                     │
-│    - Update execution-status.yaml (step completed)                  │
+│    - Update execution-log.yaml (step completed)                  │
 │    - Update summary statistics                                      │
 │    - Generate next WIP.yaml (overwrite)                             │
 │ 4. If failed:                                                       │
@@ -178,7 +178,7 @@ output:
 ```
 docs/features/{feature-name}/04-develop/
 ├── roadmap.yaml           # Strategic (all steps)
-├── execution-status.yaml  # Tactical (progress tracking)
+├── execution-log.yaml  # Tactical (progress tracking)
 ├── WIP.yaml               # Operational (current step only)
 └── protocols/             # Experimental protocols
     └── wip-contract-protocol.md
@@ -202,7 +202,7 @@ docs/features/{feature-name}/04-develop/
 This protocol **extends** v2.0, not replaces it:
 
 1. **roadmap.yaml** - Unchanged (source of truth for all steps)
-2. **execution-status.yaml** - Unchanged (progress tracking)
+2. **execution-log.yaml** - Unchanged (progress tracking)
 3. **WIP.yaml** - NEW (extracted context + completion contract)
 
 The context extraction protocol in develop.md remains valid. WIP.yaml is the **physical manifestation** of that extracted context.

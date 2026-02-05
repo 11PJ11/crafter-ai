@@ -34,7 +34,7 @@ tdd_phases:
 
 execution_config:
   context_extraction_method: "from_roadmap"
-  status_tracking_file: "execution-status.yaml"
+  status_tracking_file: "execution-log.yaml"
   token_budget_per_step: 5000
   acceptance_test_location: "docs/features/modern-cli-installer/03-distill"
 

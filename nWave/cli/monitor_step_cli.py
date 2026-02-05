@@ -41,7 +41,7 @@ def get_phase_symbol(status):
         return f"{GRAY}⏳{RESET}"
 
 def monitor_step(agent_id):
-    exec_status_path = Path("docs/feature/des-hook-enforcement/execution-status.yaml")
+    exec_status_path = Path("docs/feature/des-hook-enforcement/execution-log.yaml")
     agent_output_path = Path(f"/tmp/claude/-mnt-c-Repositories-Projects-ai-craft/tasks/{agent_id}.output")
 
     last_phase_count = 0
@@ -137,7 +137,7 @@ def monitor_step(agent_id):
                 last_phase_count = completed
 
         except FileNotFoundError:
-            print(f"{RED}❌ execution-status.yaml not found{RESET}")
+            print(f"{RED}❌ execution-log.yaml not found{RESET}")
         except Exception as e:
             print(f"{RED}❌ Error: {e}{RESET}")
 

@@ -26,7 +26,7 @@ Schema v1.0 suffered from severe token bloat:
 
 Schema v2.0 eliminates redundant artifacts and consolidates execution state:
 - **Single source of truth**: `roadmap.yaml` (310k tokens for 25 steps)
-- **Minimal state tracking**: `execution-status.yaml` (8k tokens)
+- **Minimal state tracking**: `execution-log.yaml` (8k tokens)
 - **Context extraction**: Dynamic extraction from roadmap during execution
 - **Eliminated artifacts**: baseline.yaml, step/*.json files, split command
 
@@ -95,11 +95,11 @@ Redundant content:  129k tokens (67%)
 
 ## New Components
 
-### 1. execution-status.yaml (8k tokens)
+### 1. execution-log.yaml (8k tokens)
 
 **Purpose**: Minimal state tracking for multi-step execution orchestration.
 
-**Location**: `docs/feature/{project-id}/execution-status.yaml`
+**Location**: `docs/feature/{project-id}/execution-log.yaml`
 
 **Structure**:
 ```yaml
@@ -159,11 +159,11 @@ completion_summary:
 
 ### Phase 2: Step File Elimination (2026-01-28)
 - ✅ Removed step file generation from split command
-- ✅ Implemented execution-status.yaml as replacement
+- ✅ Implemented execution-log.yaml as replacement
 - ✅ Updated execute command to extract context from roadmap
 - ✅ Deleted step-template.json
 
-**Commit**: `chore(des-us007): Phase 2 - Eliminate step files, use execution-status.yaml`
+**Commit**: `chore(des-us007): Phase 2 - Eliminate step files, use execution-log.yaml`
 
 ### Phase 3: Validation & Testing (2026-01-29)
 - ✅ Validated Schema v2.0 with real feature execution
@@ -197,7 +197,7 @@ completion_summary:
 # Context extracted directly from roadmap during execution
 ```
 
-**Migration Path**: Existing projects with step files continue to work (backward compatible), but new projects use execution-status.yaml only.
+**Migration Path**: Existing projects with step files continue to work (backward compatible), but new projects use execution-log.yaml only.
 
 ### 2. Split Command
 
@@ -294,8 +294,8 @@ measurement_gate:
 
 ✅ **Execute Command**: Successfully extracts context from roadmap
 ✅ **8-Phase TDD**: All phases execute correctly with Schema v2.0
-✅ **Dependency Tracking**: execution-status.yaml tracks dependencies accurately
-✅ **Error Recovery**: Checkpoint pattern works with execution-status.yaml
+✅ **Dependency Tracking**: execution-log.yaml tracks dependencies accurately
+✅ **Error Recovery**: Checkpoint pattern works with execution-log.yaml
 ✅ **Backward Compatibility**: Legacy step files still supported
 
 ### Performance Validation
@@ -337,7 +337,7 @@ docs/feature/auth-upgrade/
 ```
 docs/feature/auth-upgrade/
 ├── roadmap.yaml            (310k tokens) ✅ Single source of truth
-└── execution-status.yaml   (8k tokens)   ✅ Minimal state tracking
+└── execution-log.yaml   (8k tokens)   ✅ Minimal state tracking
 ```
 
 **Total**: 318k tokens, 2 artifact types, 2 files

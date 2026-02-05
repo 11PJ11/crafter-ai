@@ -79,7 +79,7 @@ constraints:
 
   forbidden_actions:
     - "DO NOT read roadmap.yaml"
-    - "DO NOT read execution-status.yaml"
+    - "DO NOT read execution-log.yaml"
     - "DO NOT modify WIP.yaml (orchestrator does this)"
     - "DO NOT implement other steps"
     - "DO NOT add external dependencies"

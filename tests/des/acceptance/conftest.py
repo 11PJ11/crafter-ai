@@ -228,17 +228,20 @@ def existing_hooks_in_settings(settings_local_json_path):
 
 
 @pytest.fixture
-def step_file_complete(tmp_path):
-    """Create step file with all phases complete."""
+def step_file_complete(tmp_path, tdd_phases):
+    """Create step file (JSON) with all phases complete for RealSubagentStopHook API."""
     step_file = tmp_path / "step-01-01.json"
+
+    # Build phase_execution_log with all 7 phases from schema
+    phase_log = []
+    for phase in tdd_phases:
+        phase_log.append({"phase_name": phase, "status": "EXECUTED", "outcome": "PASS"})
+
     step_data = {
         "step_id": "01-01",
         "description": "Test step",
-        "phases": {
-            "RED": {"status": "PASSED"},
-            "GREEN": {"status": "PASSED"},
-            "REFACTOR": {"status": "PASSED"},
-        },
+        "tdd_cycle": {"phase_execution_log": phase_log},
+        "state": {"status": "COMPLETE"},
     }
     step_file.write_text(json.dumps(step_data, indent=2))
     return step_file
@@ -262,6 +265,61 @@ def step_file_incomplete(tmp_path):
     }
     step_file.write_text(json.dumps(step_data, indent=2))
     return step_file
+
+
+@pytest.fixture
+def execution_log_complete(tmp_path, tdd_phases):
+    """Create execution-log.yaml with all phases complete (Schema v2.0 append-only format)."""
+    from datetime import datetime, timezone
+
+    import yaml
+
+    log_file = tmp_path / "execution-log.yaml"
+    timestamp = datetime(2026, 1, 26, 10, 0, 0, tzinfo=timezone.utc).isoformat()
+
+    # Build events for all 7 phases from schema
+    events = []
+    for phase in tdd_phases:
+        # Format: "step_id|phase|status|data|timestamp"
+        events.append(f"01-01|{phase}|EXECUTED|PASS|{timestamp}")
+
+    log_data = {
+        "project_id": "test-project",
+        "created_at": timestamp,
+        "total_steps": 1,
+        "events": events,
+    }
+
+    log_file.write_text(yaml.dump(log_data, default_flow_style=False))
+    return log_file
+
+
+@pytest.fixture
+def execution_log_incomplete(tmp_path, tdd_phases):
+    """Create execution-log.yaml with incomplete phases (Schema v2.0 append-only format)."""
+    from datetime import datetime, timezone
+
+    import yaml
+
+    log_file = tmp_path / "execution-log.yaml"
+    timestamp = datetime(2026, 1, 26, 10, 0, 0, tzinfo=timezone.utc).isoformat()
+
+    # Build events with only first 2 phases (missing remaining phases)
+    events = [
+        f"01-01|{tdd_phases[0]}|EXECUTED|PASS|{timestamp}",  # PREPARE
+        f"01-01|{tdd_phases[1]}|EXECUTED|PASS|{timestamp}",  # RED_ACCEPTANCE
+        # Missing: RED_UNIT, GREEN, REVIEW, REFACTOR_CONTINUOUS, COMMIT
+    ]
+
+    log_data = {
+        "project_id": "test-project",
+        "created_at": timestamp,
+        "total_steps": 1,
+        "events": events,
+    }
+
+    log_file.write_text(yaml.dump(log_data, default_flow_style=False))
+    return log_file
 
 
 @pytest.fixture
@@ -315,7 +373,7 @@ Acceptance Criteria:
 - Code quality validated
 
 # OUTCOME_RECORDING
-Update execution-status.yaml after each phase.
+Update execution-log.yaml after each phase.
 Track phase completion in step file.
 
 # BOUNDARY_RULES

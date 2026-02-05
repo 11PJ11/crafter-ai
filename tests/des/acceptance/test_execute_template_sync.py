@@ -54,11 +54,14 @@ class TestExecuteTemplateSync:
             if match:
                 extracted_phases.append(match.group(1))
 
+        # Convert list to tuple for comparison with schema (which returns tuple)
+        extracted_phases = tuple(extracted_phases)
+
         # Assert: Phases match canonical source exactly
         assert extracted_phases == canonical_phases, f"""
 execute.md TDD phases do NOT match validator source of truth!
 
-Expected (from TDDPhaseValidator.MANDATORY_PHASES_V3):
+Expected (from TDDPhaseValidator.MANDATORY_PHASES - schema v3.0):
 {canonical_phases}
 
 Found in execute.md:
@@ -66,7 +69,7 @@ Found in execute.md:
 
 ACTION REQUIRED:
 Update nWave/tasks/nw/execute.md TDD_7_PHASES section to match
-TDDPhaseValidator.MANDATORY_PHASES_V3.
+TDDPhaseValidator.MANDATORY_PHASES (loaded from step-tdd-cycle-schema.json).
 
 The validator is the single source of truth.
 """

@@ -55,7 +55,7 @@ When invoked as part of `/nw:develop` Phase 3.5, the analysis follows a structur
 3. **What worked badly** (5 Whys root cause → actionable fix)
 4. **What worked worse than before** (5 Whys root cause → prevent regression)
 
-**Inputs**: Evolution document, execution-status.yaml, mutation results, git log.
+**Inputs**: Evolution document, execution-log.yaml, mutation results, git log.
 **Output**: Retrospective section appended to evolution document.
 **Skip**: If clean execution (no skips, no failures, no tooling issues), generate brief summary only.
 

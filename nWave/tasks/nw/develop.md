@@ -294,7 +294,7 @@ The orchestrator generates the following artifacts:
 ```
 docs/feature/{project-id}/
 ├── roadmap.yaml                     # Phase 1 output (contains all step context)
-├── execution-status.yaml            # Phase 2 output (step execution tracking)
+├── execution-log.yaml            # Phase 2 output (step execution tracking)
 ├── .develop-progress.json           # Progress tracking
 └── (archived to docs/evolution/     # Phase 3 output
      after finalization)
@@ -319,7 +319,7 @@ STEP 4: Phase 2 - Execute-All Steps (7-phase TDD cycle per step, roadmap context
   ↓
 STEP 5: Phase 2.25 - Architecture Refactoring (FG) + Mutation Testing (BG) — PARALLEL
   ↓
-STEP 6: Phase 3 - Finalize + Cleanup (read execution-status.yaml, archive)
+STEP 6: Phase 3 - Finalize + Cleanup (read execution-log.yaml, archive)
   ↓
 STEP 7: Phase 3.5 - Retrospective (5 Whys Root Cause Analysis)
   ↓
@@ -1025,9 +1025,9 @@ Instances update phase_execution_log, next instance reads prior progress, contin
            completed_steps.append(step_id)
            continue
 
-       # Between Task invocations, execution-status.yaml is the ONLY persistence mechanism.
+       # Between Task invocations, execution-log.yaml is the ONLY persistence mechanism.
        # No intermediate working files, session variables, or agent memory carries forward.
-       # When Instance 2 starts, it reads execution-status.yaml written by Instance 1,
+       # When Instance 2 starts, it reads execution-log.yaml written by Instance 1,
        # sees all prior accomplishments in step_checkpoint.phases, and continues from there.
        # This clean separation prevents context degradation and ensures each instance
        # operates with full clarity of prior progress.
@@ -1059,8 +1059,8 @@ Instances update phase_execution_log, next instance reads prior progress, contin
        # 2. Format extracted context into prompt
        # 3. Pass to Task tool with explicit context (see execute.md for full template)
 
-       # Verify completion by checking execution-status.yaml for COMMIT/PASS
-       with open(f'docs/feature/{project_id}/execution-status.yaml', 'r') as f:
+       # Verify completion by checking execution-log.yaml for COMMIT/PASS
+       with open(f'docs/feature/{project_id}/execution-log.yaml', 'r') as f:
            import yaml
            updated_exec_status = yaml.safe_load(f)
 
@@ -1195,7 +1195,7 @@ task_result = Task(
     max_turns=50,
     prompt=f'''<!-- DES-VALIDATION: required -->
 <!-- DES-MODE: orchestrator -->
-<!-- DES-STEP-FILE: docs/feature/{project_id}/execution-status.yaml -->
+<!-- DES-STEP-FILE: docs/feature/{project_id}/execution-log.yaml -->
 <!-- DES-ORIGIN: command:/nw:develop -->
 
 You are a software crafter performing architecture refactoring (L4-L6) on the
@@ -1205,7 +1205,7 @@ completed implementation for project {project_id}.
 ⚠️  TASK BOUNDARY - READ BEFORE EXECUTING
 ═══════════════════════════════════════════════════════════
 YOUR ONLY TASK: Apply L4-L6 refactoring to implementation files
-SCOPE: Only files modified by this project (see execution-status.yaml)
+SCOPE: Only files modified by this project (see execution-log.yaml)
 FORBIDDEN: DO NOT continue to any other phase
 REQUIRED: Return control to orchestrator after completion
 ═══════════════════════════════════════════════════════════
@@ -1239,7 +1239,7 @@ IMPORTANT: Run ALL tests after refactoring. If any test fails, REVERT and report
 Therefore:
 
 - ❌ **WRONG**: Assume `src/feature/` directory structure
-- ✅ **CORRECT**: Extract modified files from commits (execution-status.yaml)
+- ✅ **CORRECT**: Extract modified files from commits (execution-log.yaml)
 - ✅ **CORRECT**: Run ALL tests that could exercise those files
 
 **Why Commit-Based**:
@@ -1251,13 +1251,13 @@ Therefore:
 
 ##### Phase 2.25-MUT-a: Extract Implementation Files from Commits
 
-**Objective**: Build list of files to mutate from execution-status.yaml.
+**Objective**: Build list of files to mutate from execution-log.yaml.
 
 ```python
 # Extract implementation files from completed steps
 import yaml
 
-with open(f'docs/feature/{project_id}/execution-status.yaml', 'r') as f:
+with open(f'docs/feature/{project_id}/execution-log.yaml', 'r') as f:
     status = yaml.safe_load(f)
 
 implementation_files = []
@@ -1300,7 +1300,7 @@ python scripts/mutation/generate_scoped_configs.py {project-id}
 ```
 
 **What the script does**:
-1. Reads `execution-status.yaml` to extract implementation files
+1. Reads `execution-log.yaml` to extract implementation files
 2. Maps each file to its test files:
    - **Unit tests**: Direct tests for the component (naming convention)
    - **Acceptance tests**: E2E tests from the feature
@@ -1874,7 +1874,7 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"""
    ```python
    # Inputs for retrospective analysis
    evolution_doc = glob.glob(f'docs/evolution/*{project_id}*.md')[0]
-   exec_status_path = f'docs/feature/{project_id}/execution-status.yaml'
+   exec_status_path = f'docs/feature/{project_id}/execution-log.yaml'
 
    # Count metrics
    with open(exec_status_path, 'r') as f:
@@ -1968,9 +1968,9 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"""
 2. **Count final statistics**:
    ```python
    roadmap_path = f'docs/feature/{project_id}/roadmap.yaml'
-   exec_status_path = f'docs/feature/{project_id}/execution-status.yaml'
+   exec_status_path = f'docs/feature/{project_id}/execution-log.yaml'
 
-   # Count steps from execution-status.yaml (Schema v2.0)
+   # Count steps from execution-log.yaml (Schema v2.0)
    with open(exec_status_path, 'r') as f:
        exec_status = yaml.safe_load(f)
 
@@ -2003,7 +2003,7 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"""
    print()
    print("Artifacts Created:")
    print(f"  - Roadmap: docs/feature/{project_id}/roadmap.yaml")
-   print(f"  - Execution Status: docs/feature/{project_id}/execution-status.yaml")
+   print(f"  - Execution Status: docs/feature/{project_id}/execution-log.yaml")
    print(f"  - Steps Completed: {step_count}")
    print(f"  - Commits: {commit_count} (one per step)")
    print()
@@ -2059,7 +2059,7 @@ Develop a complete feature from natural language description:
 3. Executes all steps with complete TDD cycle (2N reviews: REVIEW + REFACTOR per step)
    - Orchestrator extracts context from roadmap for each step (~5k tokens)
    - Sub-agents execute without loading roadmap (saves 97k tokens per step)
-   - Progress tracked in execution-status.yaml
+   - Progress tracked in execution-log.yaml
 4. Finalizes and archives to `docs/evolution/`
 5. Reports completion
 
@@ -2291,7 +2291,7 @@ The second test exercises component logic but NOT system wiring.
 - None initially - command creates all artifacts
 - After creation:
   - `docs/feature/{project-id}/roadmap.yaml` (contains all step definitions)
-  - `docs/feature/{project-id}/execution-status.yaml` (lightweight state tracking)
+  - `docs/feature/{project-id}/execution-log.yaml` (lightweight state tracking)
   - `docs/feature/{project-id}/.develop-progress.json` (orchestrator progress tracking)
 
 ---
@@ -2313,7 +2313,7 @@ The second test exercises component logic but NOT system wiring.
 
 - [ ] All quality gates passed (3 + 3N reviews)
 - [ ] All artifacts created and approved
-- [ ] All steps executed successfully (tracked in execution-status.yaml)
+- [ ] All steps executed successfully (tracked in execution-log.yaml)
 - [ ] All commits created (one per step, local only)
 - [ ] No failing tests
 - [ ] Mutation testing gate passed (>= 75% or documented skip)

@@ -154,7 +154,7 @@ If any check fails, return specific error and stop.
 Before any finalization work begins, verify the critical invariant:
 
 ```
-∀ step ∈ execution-status.yaml['steps']:
+∀ step ∈ execution-log.yaml['steps']:
     step.status == "DONE" AND
     step.phases[COMMIT].outcome == "PASS"
 ```
@@ -164,7 +164,7 @@ Before any finalization work begins, verify the critical invariant:
 # Read execution status file (not individual step files)
 python3 -c "
 import yaml
-with open('docs/feature/{project-id}/execution-status.yaml') as f:
+with open('docs/feature/{project-id}/execution-log.yaml') as f:
     status = yaml.safe_load(f)
     incomplete = [s for s in status['steps'] if s['status'] != 'DONE']
     if incomplete:
@@ -210,7 +210,7 @@ Finalize and archive the completed feature: {project-id}
 
 ## EXECUTION STATUS FILE FORMAT REFERENCE (Schema v2.0)
 
-For reading execution status, understand the structure at `docs/feature/{project-id}/execution-status.yaml`.
+For reading execution status, understand the structure at `docs/feature/{project-id}/execution-log.yaml`.
 
 **Schema v2.0 Structure** (NOT step files):
 ```yaml
@@ -244,8 +244,8 @@ The TDD phases to look for in phases array (Schema v2.0):
 
 Your responsibilities:
 1. Load project data from docs/feature/{project-id}/
-2. Read roadmap.yaml and execution-status.yaml (Schema v2.0 - NO step JSON files)
-3. Analyze execution history and completion metrics from execution-status.yaml
+2. Read roadmap.yaml and execution-log.yaml (Schema v2.0 - NO step JSON files)
+3. Analyze execution history and completion metrics from execution-log.yaml
 4. Create comprehensive summary document
 5. Archive to docs/evolution/ with date-feature naming (YYYY-MM-DD-{feature-name}.md)
 6. Clean up temporary workflow files after user approval
@@ -256,17 +256,17 @@ Processing Steps:
 
 PHASE 1 - GATHER (Schema v2.0):
 
-Finalize is invoked as a single agent instance that loads and analyzes the complete project history. The instance reads execution-status.yaml (which contains all phase execution data), reads the roadmap, and synthesizes this information into a comprehensive summary. The finalize instance has NO direct memory of prior execution instances. It only knows what it can read from the persistent files: execution-status.yaml with phase logs, roadmap with original plan, and any other documentation created.
+Finalize is invoked as a single agent instance that loads and analyzes the complete project history. The instance reads execution-log.yaml (which contains all phase execution data), reads the roadmap, and synthesizes this information into a comprehensive summary. The finalize instance has NO direct memory of prior execution instances. It only knows what it can read from the persistent files: execution-log.yaml with phase logs, roadmap with original plan, and any other documentation created.
 
 - Read docs/feature/{project-id}/roadmap.yaml
-- Read docs/feature/{project-id}/execution-status.yaml (NOT step/*.json files)
+- Read docs/feature/{project-id}/execution-log.yaml (NOT step/*.json files)
 - Extract data from execution_status.steps[].phases array for each step
 - Collect completion metrics, execution times, review feedback
 - Identify key achievements and decisions
 
 ### Reading Multi-Instance Execution History (Schema v2.0)
 
-The finalize instance reads execution-status.yaml which contains all phase data for all steps. This file shows every instance's contributions: what phases executed, how long each took, what outcomes, what decisions made. Each step entry contains its complete phase array. By reading execution-status.yaml, the finalize instance reconstructs the complete execution history without needing memory of individual instances.
+The finalize instance reads execution-log.yaml which contains all phase data for all steps. This file shows every instance's contributions: what phases executed, how long each took, what outcomes, what decisions made. Each step entry contains its complete phase array. By reading execution-log.yaml, the finalize instance reconstructs the complete execution history without needing memory of individual instances.
 
 PHASE 2 - ANALYZE (Schema v2.0):
 - Calculate completion statistics from execution_status.steps[].phases entries
@@ -407,7 +407,7 @@ For details on each command, see respective sections.
 ## Context Files Required (Schema v2.0)
 
 - docs/feature/{project-id}/roadmap.yaml - Original roadmap
-- docs/feature/{project-id}/execution-status.yaml - Execution tracking (replaces step/*.json)
+- docs/feature/{project-id}/execution-log.yaml - Execution tracking (replaces step/*.json)
 
 ---
 
@@ -652,7 +652,7 @@ Start: {date}
 
 **Remove Workflow Artifacts** (Schema v2.0):
 ```python
-1. Delete docs/feature/{project-id}/execution-status.yaml
+1. Delete docs/feature/{project-id}/execution-log.yaml
 2. Delete docs/feature/{project-id}/roadmap.yaml
 3. Delete docs/feature/{project-id}/mutation/ directory (quality gate artifacts)
 4. Delete docs/feature/{project-id}/ directory (if empty)
@@ -660,7 +660,7 @@ Start: {date}
 ```
 
 **Files to Remove** (Schema v2.0):
-- `docs/feature/{project-id}/execution-status.yaml` - Execution tracking file
+- `docs/feature/{project-id}/execution-log.yaml` - Execution tracking file
 - `docs/feature/{project-id}/roadmap.yaml` - Original roadmap
 - `docs/feature/{project-id}/mutation/` - Quality gate artifacts (configs, sessions, report)
 - `docs/feature/{project-id}/` - Project workflow directory

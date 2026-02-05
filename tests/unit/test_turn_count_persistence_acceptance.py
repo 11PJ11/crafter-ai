@@ -8,7 +8,7 @@ persists turn_count to phase_execution_log.
 import json
 
 import pytest
-from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
+from src.des.adapters.driven.hooks.subagent_stop_hook import SubagentStopHook
 
 
 class TestTurnCountPersistence:
@@ -25,7 +25,7 @@ class TestTurnCountPersistence:
         test_audit_dir = tmp_path / "audit"
         audit_module._audit_logger = AuditLogger(log_dir=str(test_audit_dir))
 
-        hook = RealSubagentStopHook()
+        hook = SubagentStopHook()
         yield hook
 
         # Teardown: Reset singleton to None

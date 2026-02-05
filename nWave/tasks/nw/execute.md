@@ -84,9 +84,9 @@ Execute these 7 phases in order:
 
 # OUTCOME_RECORDING
 
-**READ/WRITE ONLY**: docs/feature/{project-id}/execution-status.yaml
+**READ/WRITE ONLY**: docs/feature/{project-id}/execution-log.yaml
 
-Update execution-status.yaml after EACH phase (no batching).
+Update execution-log.yaml after EACH phase (no batching).
 
 Record in phase_execution_log:
 - phase_name: (e.g., "RED_ACCEPTANCE")
@@ -106,7 +106,7 @@ Scope defined by acceptance criteria above.
 
 Target: 30 turns maximum for this step.
 Checkpoints: 10, 20, 25 turns.
-If stuck or blocked, exit early and report issue in execution-status.yaml."""
+If stuck or blocked, exit early and report issue in execution-log.yaml."""
 )
 ```
 
@@ -194,7 +194,7 @@ Before invoking Task tool, verify ALL items:
 - [ ] Project ID extracted and validated (kebab-case format)
 - [ ] Step ID extracted and validated (format: XX-XX)
 - [ ] Roadmap file exists at `docs/feature/{project-id}/roadmap.yaml`
-- [ ] Execution status file exists at `docs/feature/{project-id}/execution-status.yaml`
+- [ ] Execution status file exists at `docs/feature/{project-id}/execution-log.yaml`
 - [ ] Step ID exists in roadmap (orchestrator verifies via `find_step_in_roadmap()`)
 - [ ] Parameters contain no secrets or credentials
 - [ ] Parameters within reasonable bounds (e.g., IDs < 100 chars)
@@ -268,7 +268,7 @@ Invoke the Task tool with this exact pattern:
 ```
 Task: "You are the {agent-name} agent.
 
-Your specific role for this command: Execute atomic tasks with complete state tracking via execution-status.yaml
+Your specific role for this command: Execute atomic tasks with complete state tracking via execution-log.yaml
 
 Task type: execute
 
@@ -313,18 +313,18 @@ Execute these 7 phases in order:
 
 {task_context[execution_config]}
 
-## STATE TRACKING VIA execution-status.yaml
+## STATE TRACKING VIA execution-log.yaml
 
 **CRITICAL**: DO NOT load roadmap.yaml (context provided above).
-**READ/WRITE ONLY**: docs/feature/{project-id}/execution-status.yaml
+**READ/WRITE ONLY**: docs/feature/{project-id}/execution-log.yaml
 
 Your responsibilities:
-1. Load current state from execution-status.yaml
+1. Load current state from execution-log.yaml
 2. Resume from current phase (or start at PREPARE if new step)
 3. Execute each phase in order
-4. Update execution-status.yaml after EACH phase (no batching)
+4. Update execution-log.yaml after EACH phase (no batching)
 5. Track turn count for timeout monitoring
-6. Update execution-status.yaml with outcomes
+6. Update execution-log.yaml with outcomes
 
 ## CM-D: Walking Skeleton Principle
 
@@ -332,7 +332,7 @@ In PREPARE phase, verify: entry point exists, acceptance tests invoke entry poin
 
 ## INLINE REVIEW CRITERIA (Phase 4: REVIEW)
 
-SOLID principles, coverage >80%, acceptance criteria met, no security vulnerabilities. Also validate post-refactoring quality: tests pass, quality improved, no new duplication. Record findings in execution-status.yaml.
+SOLID principles, coverage >80%, acceptance criteria met, no security vulnerabilities. Also validate post-refactoring quality: tests pass, quality improved, no new duplication. Record findings in execution-log.yaml.
 
 ## EXECUTION-STATUS.YAML STRUCTURE
 
@@ -388,7 +388,7 @@ Each agent has specific capabilities:
 ```
 Task: "You are the researcher agent.
 
-Your specific role for this command: Execute atomic tasks with complete state tracking via execution-status.yaml
+Your specific role for this command: Execute atomic tasks with complete state tracking via execution-log.yaml
 
 Task type: execute
 
@@ -406,7 +406,7 @@ STEP: 01-01
 ```
 Task: "You are the software-crafter agent.
 
-Your specific role for this command: Execute atomic tasks with complete state tracking via execution-status.yaml
+Your specific role for this command: Execute atomic tasks with complete state tracking via execution-log.yaml
 
 Task type: execute
 
@@ -428,7 +428,7 @@ STEP: 02-01
 
 **Missing Project Files**:
 - If roadmap.yaml not found: "Roadmap not found at docs/feature/{project-id}/roadmap.yaml"
-- If execution-status.yaml not found: "Execution status not found at docs/feature/{project-id}/execution-status.yaml"
+- If execution-log.yaml not found: "Execution status not found at docs/feature/{project-id}/execution-log.yaml"
 
 **Step Not Found in Roadmap**:
 - If step ID doesn't exist in roadmap: "Step {step-id} not found in roadmap. Available steps: {list_available_steps()}"
@@ -446,7 +446,7 @@ Designed to work with clean context, ensuring consistent quality by giving each 
 
 ## Agent Instance Isolation Model (NEW ARCHITECTURE)
 
-Each invocation of the Task tool creates a NEW, INDEPENDENT agent instance. The instance receives extracted context from orchestrator (~5k tokens), reads execution-status.yaml for prior progress, executes work, updates execution-status.yaml with results, and terminates. No session state is retained between invocations. State is preserved through execution-status.yaml, not through agent memory. The agent does NOT load the roadmap (orchestrator already extracted context). This isolation ensures clean execution without context degradation from previous instances.
+Each invocation of the Task tool creates a NEW, INDEPENDENT agent instance. The instance receives extracted context from orchestrator (~5k tokens), reads execution-log.yaml for prior progress, executes work, updates execution-log.yaml with results, and terminates. No session state is retained between invocations. State is preserved through execution-log.yaml, not through agent memory. The agent does NOT load the roadmap (orchestrator already extracted context). This isolation ensures clean execution without context degradation from previous instances.
 
 ## Usage Examples (NEW ARCHITECTURE - Schema v2.0)
 
@@ -484,7 +484,7 @@ TODO → IN_PROGRESS → DONE
 ## Context Files Required (NEW ARCHITECTURE)
 
 - `docs/feature/{project-id}/roadmap.yaml` - Loaded by orchestrator (schema v2.0)
-- `docs/feature/{project-id}/execution-status.yaml` - Read/written by sub-agent (schema v1.0)
+- `docs/feature/{project-id}/execution-log.yaml` - Read/written by sub-agent (schema v1.0)
 - Any files referenced in step's `deliverables` field
 
 ---
@@ -576,12 +576,12 @@ Execute this task and provide outputs as specified.
 
 ### State Management Across Instances (NEW ARCHITECTURE)
 
-The executing agent does not have access to previous invocations' memory. All prior execution state (from previous agent instances) is captured in execution-status.yaml. The agent READS execution-status.yaml at start, sees what prior instances accomplished (via step_checkpoint.phases), continues from that point, and UPDATES execution-status.yaml with new results. This YAML-based state management allows clean handoff between instances without context pollution. The agent receives task context from orchestrator (~5k tokens) and does NOT load roadmap.yaml (102k tokens).
+The executing agent does not have access to previous invocations' memory. All prior execution state (from previous agent instances) is captured in execution-log.yaml. The agent READS execution-log.yaml at start, sees what prior instances accomplished (via step_checkpoint.phases), continues from that point, and UPDATES execution-log.yaml with new results. This YAML-based state management allows clean handoff between instances without context pollution. The agent receives task context from orchestrator (~5k tokens) and does NOT load roadmap.yaml (102k tokens).
 
 ### MANDATORY: Phase Tracking Protocol (7 Phases - Schema v3.0)
 
-The execution-status.yaml contains `step_checkpoint.phases` with 7 TDD phases (schema v3.0).
-You MUST update each phase as you execute it. **DO NOT BATCH UPDATES** - save execution-status.yaml after each phase.
+The execution-log.yaml contains `step_checkpoint.phases` with 7 TDD phases (schema v3.0).
+You MUST update each phase as you execute it. **DO NOT BATCH UPDATES** - save execution-log.yaml after each phase.
 
 #### The 7 TDD Phases (Execute in Order) - Schema v3.0
 
@@ -595,7 +595,7 @@ The phases are (0-6):
 4. **REVIEW** - Quality review: SOLID, coverage, acceptance criteria, post-refactoring quality (expanded scope)
 5. **REFACTOR_CONTINUOUS** - Progressive refactoring: L1 (naming) + L2 (complexity) + L3 (organization). Fast-path: if GREEN produced <30 LOC, quick scan only (2-3 min).
 6. **COMMIT** - Final validate + commit (absorbs FINAL_VALIDATE metadata checks)
-   - **COMMIT phase MUST also record files_modified** in execution-status.yaml (see below)
+   - **COMMIT phase MUST also record files_modified** in execution-log.yaml (see below)
 
 **NOTE**: L4-L6 architecture refactoring has been moved to orchestrator Phase 2.25 (runs once after all steps complete).
 
@@ -603,13 +603,13 @@ The phases are (0-6):
 
 #### COMMIT Phase: files_modified Tracking (MANDATORY)
 
-After creating the git commit, record files modified in execution-status.yaml:
+After creating the git commit, record files modified in execution-log.yaml:
 
 1. Run: `git diff --name-only HEAD~1`
 2. Categorize files:
    - **implementation**: files under `src/` or `lib/` (excluding `__init__.py`)
    - **tests**: files under `tests/`
-3. Update execution-status.yaml `completed_steps` entry:
+3. Update execution-log.yaml `completed_steps` entry:
    ```yaml
    files_modified:
      implementation:
@@ -632,19 +632,19 @@ miss implementation files, creating false confidence in test quality.
 | 2. REVIEW | 4 (REVIEW) | `review({step-id})` | No |
 | 3. FINAL | 6 (COMMIT) | `feat({step-id}): DONE` | Yes |
 
-**Each checkpoint**: Mark pending phases SKIPPED with `blocked_by: "CHECKPOINT_PENDING"`, commit execution-status.yaml + implementation, verify tests pass.
+**Each checkpoint**: Mark pending phases SKIPPED with `blocked_by: "CHECKPOINT_PENDING"`, commit execution-log.yaml + implementation, verify tests pass.
 
 ---
 
 ##### Checkpoint Rollback (NEW ARCHITECTURE)
 
-`git reset HEAD~1` then edit execution-status.yaml: change completed phases back to SKIPPED with `blocked_by: "CHECKPOINT_PENDING"`, re-execute from that phase.
+`git reset HEAD~1` then edit execution-log.yaml: change completed phases back to SKIPPED with `blocked_by: "CHECKPOINT_PENDING"`, re-execute from that phase.
 
 ##### Checkpoint Rules (NEW ARCHITECTURE)
 
-Use CHECKPOINT_PENDING (not DEFERRED), mark pending phases SKIPPED, push only after FINAL, update execution-status.yaml after each commit.
+Use CHECKPOINT_PENDING (not DEFERRED), mark pending phases SKIPPED, push only after FINAL, update execution-log.yaml after each commit.
 
-Instances read execution-status.yaml step_checkpoint.phases to understand prior progress, continue from incomplete phases. Before each phase: update entry to IN_PROGRESS with timestamp. After: update to COMPLETED/SKIPPED with outcome, duration, notes. Save execution-status.yaml after EACH phase (no batching).
+Instances read execution-log.yaml step_checkpoint.phases to understand prior progress, continue from incomplete phases. Before each phase: update entry to IN_PROGRESS with timestamp. After: update to COMPLETED/SKIPPED with outcome, duration, notes. Save execution-log.yaml after EACH phase (no batching).
 
 #### If Phase Cannot Be Completed
 
@@ -910,13 +910,13 @@ Track performance for optimization:
 ```bash
 # Execute task
 /nw:execute @researcher "auth-upgrade" "01-01"
-# Review implementation (checks execution-status.yaml for completion)
-/nw:review @software-crafter-reviewer implementation "docs/feature/auth-upgrade/execution-status.yaml"
+# Review implementation (checks execution-log.yaml for completion)
+/nw:review @software-crafter-reviewer implementation "docs/feature/auth-upgrade/execution-log.yaml"
 ```
 
 **Retry After Failure**:
 ```bash
-# Initial attempt fails (orchestrator detects via execution-status.yaml)
+# Initial attempt fails (orchestrator detects via execution-log.yaml)
 /nw:execute @software-crafter "des-us007" "03-01"
 # Fix issues, retry (agent resumes from last completed phase)
 /nw:execute @software-crafter "des-us007" "03-01"
@@ -930,7 +930,7 @@ Track performance for optimization:
 
 ## Output Artifacts (NEW ARCHITECTURE)
 
-- Updated execution-status.yaml with phase completion tracking
+- Updated execution-log.yaml with phase completion tracking
 - Any outputs specified in acceptance criteria (deliverables)
 - Git commits at TDD checkpoints (GREEN, REVIEW, FINAL)
 - Execution logs in `docs/feature/{project-id}/logs/{timestamp}-{step-id}.log` (optional)
@@ -947,7 +947,7 @@ Each execution starts with a clean context, ensuring:
 
 ### Parallel Execution Support (NEW ARCHITECTURE)
 
-**IMPORTANT**: With execution-status.yaml as single state file, parallel execution requires careful coordination to avoid conflicts. Each step updates the same execution-status.yaml file.
+**IMPORTANT**: With execution-log.yaml as single state file, parallel execution requires careful coordination to avoid conflicts. Each step updates the same execution-log.yaml file.
 
 **Sequential execution recommended** (safest approach):
 ```bash
@@ -962,10 +962,10 @@ Each execution starts with a clean context, ensuring:
 # Only for truly independent steps with no shared dependencies
 /nw:execute @researcher "auth-upgrade" "01-01" &
 /nw:execute @researcher "auth-upgrade" "01-02" &
-# WARNING: May cause execution-status.yaml write conflicts
+# WARNING: May cause execution-log.yaml write conflicts
 ```
 
-**Note**: The old architecture used separate step files (parallel-safe). The new architecture uses shared execution-status.yaml (requires coordination). Trade-off accepted for 94% token reduction.
+**Note**: The old architecture used separate step files (parallel-safe). The new architecture uses shared execution-log.yaml (requires coordination). Trade-off accepted for 94% token reduction.
 
 ### State Machine Integrity
 

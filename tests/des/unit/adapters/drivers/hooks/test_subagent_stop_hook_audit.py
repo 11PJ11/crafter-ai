@@ -1,78 +1,74 @@
-"""Unit tests for RealSubagentStopHook audit logging."""
+"""Unit tests for SubagentStopHook audit logging (Schema v2.0)."""
 
-import json
 from unittest.mock import Mock, patch
 
 import pytest
-from src.des.adapters.drivers.hooks.real_hook import RealSubagentStopHook
+import yaml
+from src.des.adapters.driven.hooks.subagent_stop_hook import SubagentStopHook
 
 
 @pytest.fixture
-def valid_step_file(tmp_path):
-    """Create step file with all phases complete."""
-    step_file = tmp_path / "step-01-01.json"
-    step_data = {
-        "step_id": "01-01",
-        "description": "Test step",
-        "tdd_cycle": {
-            "phase_execution_log": [
-                {"phase_name": "PREPARE", "status": "COMPLETED", "outcome": "PASS"},
-                {
-                    "phase_name": "RED_ACCEPTANCE",
-                    "status": "COMPLETED",
-                    "outcome": "PASS",
-                },
-                {"phase_name": "RED_UNIT", "status": "COMPLETED", "outcome": "PASS"},
-                {"phase_name": "GREEN", "status": "COMPLETED", "outcome": "PASS"},
-                {"phase_name": "REVIEW", "status": "COMPLETED", "outcome": "PASS"},
-                {
-                    "phase_name": "REFACTOR_CONTINUOUS",
-                    "status": "COMPLETED",
-                    "outcome": "PASS",
-                },
-                {"phase_name": "COMMIT", "status": "COMPLETED", "outcome": "PASS"},
-            ],
-            "duration_minutes": 60,
-        },
-        "state": {"status": "DONE"},
+def valid_execution_log(tmp_path, tdd_phases):
+    """Create execution-log.yaml with all phases complete."""
+    log_file = tmp_path / "execution-log.yaml"
+
+    events = []
+    for phase in tdd_phases:
+        events.append(f"01-01|{phase}|EXECUTED|PASS|2026-02-02T10:00:00+00:00")
+
+    log_data = {
+        "project_id": "test-project",
+        "created_at": "2026-02-02T09:00:00+00:00",
+        "total_steps": 1,
+        "events": events,
     }
-    step_file.write_text(json.dumps(step_data, indent=2))
-    return step_file
+
+    log_file.write_text(yaml.dump(log_data, default_flow_style=False))
+    return log_file
 
 
 @pytest.fixture
-def invalid_step_file(tmp_path):
-    """Create step file with abandoned phase."""
-    step_file = tmp_path / "step-01-02.json"
-    step_data = {
-        "step_id": "01-02",
-        "description": "Test step",
-        "tdd_cycle": {
-            "phase_execution_log": [
-                {"phase_name": "PREPARE", "status": "COMPLETED", "outcome": "PASS"},
-                {"phase_name": "RED_ACCEPTANCE", "status": "IN_PROGRESS"},
-            ],
-            "duration_minutes": 60,
-        },
-        "state": {"status": "IN_PROGRESS"},
+def invalid_execution_log(tmp_path):
+    """Create execution-log.yaml with incomplete phases."""
+    log_file = tmp_path / "execution-log.yaml"
+
+    # Only 2 phases, missing remaining 5
+    events = [
+        "01-02|PREPARE|EXECUTED|PASS|2026-02-02T10:00:00+00:00",
+        "01-02|RED_ACCEPTANCE|EXECUTED|PASS|2026-02-02T10:05:00+00:00",
+    ]
+
+    log_data = {
+        "project_id": "test-project",
+        "created_at": "2026-02-02T09:00:00+00:00",
+        "total_steps": 1,
+        "events": events,
     }
-    step_file.write_text(json.dumps(step_data, indent=2))
-    return step_file
+
+    log_file.write_text(yaml.dump(log_data, default_flow_style=False))
+    return log_file
 
 
-class TestRealSubagentStopHookAudit:
-    """Test audit logging in RealSubagentStopHook."""
+class TestSubagentStopHookAudit:
+    """Test audit logging in SubagentStopHook (Schema v2.0).
 
-    @patch("src.des.adapters.drivers.hooks.real_hook.get_audit_logger")
+    Tests verify that SubagentStopHook logs HOOK_SUBAGENT_STOP_PASSED and
+    HOOK_SUBAGENT_STOP_FAILED events to AuditLogger when validating step completion.
+    """
+
+    @patch("src.des.adapters.driven.hooks.subagent_stop_hook.get_audit_logger")
     def test_logs_hook_subagent_stop_passed_on_success(
-        self, mock_get_audit_logger, valid_step_file
+        self, mock_get_audit_logger, valid_execution_log
     ):
         """Verify HOOK_SUBAGENT_STOP_PASSED logged when validation succeeds."""
         mock_audit_logger = Mock()
         mock_get_audit_logger.return_value = mock_audit_logger
 
-        hook = RealSubagentStopHook()
-        result = hook.on_agent_complete(step_file_path=str(valid_step_file))
+        hook = SubagentStopHook()
+
+        # Build compound path (Schema v2.0 format)
+        compound_path = f"{valid_execution_log}?project_id=test-project&step_id=01-01"
+        result = hook.on_agent_complete(step_file_path=compound_path)
 
         # Verify validation succeeded
         assert result.validation_status == "PASSED"
@@ -90,16 +86,19 @@ class TestRealSubagentStopHookAudit:
 
         assert audit_entry["event"] == "HOOK_SUBAGENT_STOP_PASSED"
 
-    @patch("src.des.adapters.drivers.hooks.real_hook.get_audit_logger")
+    @patch("src.des.adapters.driven.hooks.subagent_stop_hook.get_audit_logger")
     def test_logs_hook_subagent_stop_failed_on_failure(
-        self, mock_get_audit_logger, invalid_step_file
+        self, mock_get_audit_logger, invalid_execution_log
     ):
         """Verify HOOK_SUBAGENT_STOP_FAILED logged when validation fails."""
         mock_audit_logger = Mock()
         mock_get_audit_logger.return_value = mock_audit_logger
 
-        hook = RealSubagentStopHook()
-        result = hook.on_agent_complete(step_file_path=str(invalid_step_file))
+        hook = SubagentStopHook()
+
+        # Build compound path (Schema v2.0 format)
+        compound_path = f"{invalid_execution_log}?project_id=test-project&step_id=01-02"
+        result = hook.on_agent_complete(step_file_path=compound_path)
 
         # Verify validation failed
         assert result.validation_status == "FAILED"
@@ -117,16 +116,19 @@ class TestRealSubagentStopHookAudit:
 
         assert audit_entry["event"] == "HOOK_SUBAGENT_STOP_FAILED"
 
-    @patch("src.des.adapters.drivers.hooks.real_hook.get_audit_logger")
+    @patch("src.des.adapters.driven.hooks.subagent_stop_hook.get_audit_logger")
     def test_includes_step_id_in_audit_entry(
-        self, mock_get_audit_logger, valid_step_file
+        self, mock_get_audit_logger, valid_execution_log
     ):
         """Verify step_id included in audit entry."""
         mock_audit_logger = Mock()
         mock_get_audit_logger.return_value = mock_audit_logger
 
-        hook = RealSubagentStopHook()
-        hook.on_agent_complete(step_file_path=str(valid_step_file))
+        hook = SubagentStopHook()
+
+        # Build compound path (Schema v2.0 format)
+        compound_path = f"{valid_execution_log}?project_id=test-project&step_id=01-01"
+        hook.on_agent_complete(step_file_path=compound_path)
 
         # Find HOOK_SUBAGENT_STOP event in calls
         hook_calls = [
@@ -136,20 +138,22 @@ class TestRealSubagentStopHookAudit:
         ]
         assert len(hook_calls) == 1, "Expected exactly one HOOK_SUBAGENT_STOP event"
         audit_entry = hook_calls[0]
-        # step_id is extracted from filename without extension
-        expected_step_id = valid_step_file.stem
-        assert audit_entry["step_id"] == expected_step_id
+        # Schema v2.0: step_id comes from compound path parameter
+        assert audit_entry["step_id"] == "01-01"
 
-    @patch("src.des.adapters.drivers.hooks.real_hook.get_audit_logger")
+    @patch("src.des.adapters.driven.hooks.subagent_stop_hook.get_audit_logger")
     def test_includes_phases_validated_count(
-        self, mock_get_audit_logger, valid_step_file
+        self, mock_get_audit_logger, valid_execution_log
     ):
         """Verify phases_validated count included in audit entry."""
         mock_audit_logger = Mock()
         mock_get_audit_logger.return_value = mock_audit_logger
 
-        hook = RealSubagentStopHook()
-        hook.on_agent_complete(step_file_path=str(valid_step_file))
+        hook = SubagentStopHook()
+
+        # Build compound path (Schema v2.0 format)
+        compound_path = f"{valid_execution_log}?project_id=test-project&step_id=01-01"
+        hook.on_agent_complete(step_file_path=compound_path)
 
         # Find HOOK_SUBAGENT_STOP event in calls
         hook_calls = [
@@ -161,16 +165,19 @@ class TestRealSubagentStopHookAudit:
         audit_entry = hook_calls[0]
         assert audit_entry["phases_validated"] == 7  # All 7 phases
 
-    @patch("src.des.adapters.drivers.hooks.real_hook.get_audit_logger")
+    @patch("src.des.adapters.driven.hooks.subagent_stop_hook.get_audit_logger")
     def test_includes_validation_errors_on_failure(
-        self, mock_get_audit_logger, invalid_step_file
+        self, mock_get_audit_logger, invalid_execution_log
     ):
         """Verify validation errors included when validation fails."""
         mock_audit_logger = Mock()
         mock_get_audit_logger.return_value = mock_audit_logger
 
-        hook = RealSubagentStopHook()
-        hook.on_agent_complete(step_file_path=str(invalid_step_file))
+        hook = SubagentStopHook()
+
+        # Build compound path (Schema v2.0 format)
+        compound_path = f"{invalid_execution_log}?project_id=test-project&step_id=01-02"
+        hook.on_agent_complete(step_file_path=compound_path)
 
         # Find HOOK_SUBAGENT_STOP_FAILED event in calls (may have SCOPE_VIOLATION calls too)
         hook_calls = [
@@ -186,10 +193,10 @@ class TestRealSubagentStopHookAudit:
         assert "validation_errors" in audit_entry
         assert len(audit_entry["validation_errors"]) > 0
 
-    @patch("src.des.adapters.driven.time.system_time.SystemTimeProvider")
-    @patch("src.des.adapters.drivers.hooks.real_hook.get_audit_logger")
+    @patch("src.des.adapters.driven.hooks.subagent_stop_hook.SystemTimeProvider")
+    @patch("src.des.adapters.driven.hooks.subagent_stop_hook.get_audit_logger")
     def test_uses_time_provider_for_timestamp(
-        self, mock_get_audit_logger, mock_system_time_provider, valid_step_file
+        self, mock_get_audit_logger, mock_system_time_provider, valid_execution_log
     ):
         """Verify SystemTimeProvider used for timestamp."""
         mock_audit_logger = Mock()
@@ -205,8 +212,11 @@ class TestRealSubagentStopHookAudit:
         mock_provider_instance.now_utc.return_value = mock_datetime
         mock_system_time_provider.return_value = mock_provider_instance
 
-        hook = RealSubagentStopHook()
-        hook.on_agent_complete(step_file_path=str(valid_step_file))
+        hook = SubagentStopHook()
+
+        # Build compound path (Schema v2.0 format)
+        compound_path = f"{valid_execution_log}?project_id=test-project&step_id=01-01"
+        hook.on_agent_complete(step_file_path=compound_path)
 
         # Verify SystemTimeProvider was instantiated and now_utc called
         mock_system_time_provider.assert_called_once()

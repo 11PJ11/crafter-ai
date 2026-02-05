@@ -27,13 +27,13 @@ test-command = "pytest -x tests/"  # DON'T DO THIS
 **CRITICAL**: Source code is organized by HEXAGONAL ARCHITECTURE (adapters/driven,
 adapters/drivers, application, domain, ports), NOT by feature directories.
 
-Files to mutate are extracted from **commits** (execution-status.yaml), not assumed
+Files to mutate are extracted from **commits** (execution-log.yaml), not assumed
 from directory structure. Tests are NOT mutated but executed to validate implementation.
 
 | Aspect | OLD (Per-File) | v2.0 (Commit-Based, Full Suite) | v2.1 (Feature-Scoped) ✅ |
 |--------|----------------|--------------------------------|-------------------------|
 | Config | One per .py file | ONE with file list | One per component |
-| Source | Assume `src/feature/` | Extract from execution-status.yaml | Extract from execution-status.yaml |
+| Source | Assume `src/feature/` | Extract from execution-log.yaml | Extract from execution-log.yaml |
 | module-path | Directory path | List of specific files | One file per config |
 | Test scope | Unit only | **ALL tests** (`tests/`) ❌ SLOW | **Scoped tests** (relevant only) ✅ FAST |
 | Speed | Baseline | 1x (full suite per mutant) | **10-50x faster** |
@@ -66,7 +66,7 @@ from directory structure. Tests are NOT mutated but executed to validate impleme
 When delegating this command to an agent via Task tool:
 
 1. **Do NOT pass `/nw:mutation-test`** to the agent - they cannot execute it
-2. **Extract implementation files** from `docs/feature/{project-id}/execution-status.yaml`
+2. **Extract implementation files** from `docs/feature/{project-id}/execution-log.yaml`
 3. **Create a complete agent prompt** with file list embedded inline
 4. **Use SINGLE CONFIG** with `module-path = [list of files]`
 
@@ -76,7 +76,7 @@ When delegating this command to an agent via Task tool:
 You are a software-crafter agent executing commit-based mutation testing.
 
 PROJECT: {project_id}
-IMPLEMENTATION FILES: {files_list}     # Extracted from execution-status.yaml
+IMPLEMENTATION FILES: {files_list}     # Extracted from execution-log.yaml
 TEST SCOPE: {test_scope}               # e.g., tests/des/
 THRESHOLD: {threshold}% minimum kill rate
 
@@ -197,7 +197,7 @@ python scripts/mutation/generate_scoped_configs.py {project-id}
 ```
 
 **What the script does**:
-1. Reads `execution-status.yaml` to extract implementation files
+1. Reads `execution-log.yaml` to extract implementation files
 2. For each file, finds its test files:
    - **Unit tests**: `src/module/foo.py` → `tests/module/unit/test_foo.py`
    - **Acceptance tests**: All acceptance tests for the feature
@@ -206,11 +206,11 @@ python scripts/mutation/generate_scoped_configs.py {project-id}
 
 **MANUAL APPROACH** (if script unavailable):
 
-1. **Extract implementation files** from execution-status.yaml:
+1. **Extract implementation files** from execution-log.yaml:
    ```python
    import yaml
 
-   with open(f'docs/feature/{project_id}/execution-status.yaml', 'r') as f:
+   with open(f'docs/feature/{project_id}/execution-log.yaml', 'r') as f:
        exec_status = yaml.safe_load(f)
 
    implementation_files = []
@@ -230,7 +230,7 @@ python scripts/mutation/generate_scoped_configs.py {project-id}
 
 **Rule 1 — FILES EXIST**:
 All extracted implementation files must exist on disk.
-Missing files = BLOCK (verify execution-status.yaml is up to date).
+Missing files = BLOCK (verify execution-log.yaml is up to date).
 
 **Rule 2 — SANITY CHECK**:
 After mutation run, verify mutant count is reasonable:
@@ -254,7 +254,7 @@ These are ephemeral quality gate artifacts, disposed during `/nw:finalize`.
 ### STEP 3: Pre-Invocation Validation Checklist
 
 Before invoking Task tool, verify ALL items:
-- [ ] execution-status.yaml exists at `docs/feature/{project-id}/execution-status.yaml`
+- [ ] execution-log.yaml exists at `docs/feature/{project-id}/execution-log.yaml`
 - [ ] Implementation files extracted (non-empty list)
 - [ ] All implementation files exist on disk
 - [ ] Test scope path exists (e.g., `tests/des/`)
@@ -271,7 +271,7 @@ Before invoking Task tool, verify ALL items:
 Task: "You are the software-crafter agent executing commit-based mutation testing.
 
 Project: {project_id}
-Implementation Files: {implementation_files}  # Extracted from execution-status.yaml
+Implementation Files: {implementation_files}  # Extracted from execution-log.yaml
 Test Scope: {test_scope}
 Threshold: {threshold}%
 
@@ -346,13 +346,13 @@ EXECUTION STEPS:
    **Approach**: Commit-Based (hexagonal architecture compatible)
    **Test Scope**: {test_scope} (acceptance + integration + unit)
 
-   ## Implementation Files (from execution-status.yaml)
+   ## Implementation Files (from execution-log.yaml)
 
    {list of files extracted from commits}
 
    ## Configuration
 
-   - Approach: Commit-Based (files extracted from execution-status.yaml)
+   - Approach: Commit-Based (files extracted from execution-log.yaml)
    - Config: ONE cosmic-ray config with module-path = [file list]
    - Tests: ALL tests executed (not just unit tests)
 
@@ -457,7 +457,7 @@ module.exports = {
 
 ## Success Criteria
 
-- [ ] Implementation files extracted from execution-status.yaml
+- [ ] Implementation files extracted from execution-log.yaml
 - [ ] All implementation files exist on disk
 - [ ] Test scope path validated
 - [ ] Single cosmic-ray config created with file list

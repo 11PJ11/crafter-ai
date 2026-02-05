@@ -118,7 +118,7 @@ def test_orchestrator_context_extraction():
         return False
 
     # Test 2: Load execution status
-    print("TEST 2: Load execution-status.yaml (8k tokens)")
+    print("TEST 2: Load execution-log.yaml (8k tokens)")
     print("-" * 80)
     try:
         exec_status = orchestrator.load_execution_status(project_id)
