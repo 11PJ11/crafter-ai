@@ -121,6 +121,9 @@ class DeploymentValidationService:
     def _count_files(self, target_dir: Path, subdir: str) -> int:
         """Count files in a subdirectory under target_dir.
 
+        Only counts regular files with expected extensions, excludes directories
+        and hidden files.
+
         Args:
             target_dir: Root target directory (~/.claude/).
             subdir: Relative subdirectory path (e.g. 'agents/nw').
@@ -131,7 +134,15 @@ class DeploymentValidationService:
         subdir_path = target_dir / subdir
         if not self._filesystem.exists(subdir_path):
             return 0
-        return len(self._filesystem.list_dir(subdir_path))
+
+        items = self._filesystem.list_dir(subdir_path)
+        # Count only files with expected extensions (exclude directories and hidden files)
+        # Expected extensions: .md (agents/commands), .yaml/.json (templates), .py (scripts)
+        valid_extensions = {'.md', '.yaml', '.json', '.py'}
+        return len([
+            item for item in items
+            if item.suffix in valid_extensions and not item.name.startswith('.')
+        ])
 
     def _write_manifest(
         self,
