@@ -519,8 +519,16 @@ def install(
 
     console.print()
     console.print(
-        f"[bold green]\U0001f389 crafter-ai {install_result.version} installed and healthy![/bold green]"
+        f"[bold green]\U0001f389 nWave {install_result.version} installed and healthy![/bold green]"
     )
     console.print("[dim]  Ready to use in Claude Code.[/dim]")
+
+    console.print()
+    console.print("  📖 Getting started")
+    console.print("[dim]    /nw:discuss  - Requirements gathering and business analysis[/dim]")
+    console.print("[dim]    /nw:design   - Architecture design with visual representation[/dim]")
+    console.print("[dim]    /nw:distill  - Acceptance test creation and business validation[/dim]")
+    console.print("[dim]    /nw:develop  - Outside-In TDD implementation with refactoring[/dim]")
+    console.print("[dim]    /nw:deliver  - Production readiness validation[/dim]")
 
     raise typer.Exit(code=0)
