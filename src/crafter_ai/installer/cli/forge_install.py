@@ -325,7 +325,8 @@ def install(
     # Display branded header at the start
     console.print()
     console.print("[bold]🌊 nWave Installation[/bold]")
-    console.print("   Modern CLI Development Framework")
+    console.print("   Orchestrating Agentic-AI for crafters.")
+    console.print("   Modern Software Engineering at scale. Confidence at speed.")
     console.print()
 
     # Resolve wheel path
