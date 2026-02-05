@@ -131,6 +131,12 @@ def display_success_summary(result: BuildResult) -> None:
     """
     wheel_name = result.wheel_path.name if result.wheel_path else "unknown"
     console.print(f"  \U0001f528 Build complete: {wheel_name}")
+    if result.ide_bundle_result is not None:
+        console.print(
+            f"  IDE bundle: {result.ide_bundle_result.agent_count} agents, "
+            f"{result.ide_bundle_result.command_count} commands",
+            style="dim",
+        )
     console.print()
 
 
