@@ -20,6 +20,7 @@ Protocol:
 """
 
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -180,6 +181,10 @@ def handle_pre_task() -> int:
 def handle_subagent_stop() -> int:
     """Handle subagent-stop command: validate step completion.
 
+    Supports two input formats:
+    - Schema v1: {"step_path": "path/to/step.json"} (backward compatibility)
+    - Schema v2: {"executionLogPath": "/abs/path", "projectId": "...", "stepId": "..."}
+
     Returns:
         0 if gate passes
         1 if error occurs (fail-closed)
@@ -202,8 +207,40 @@ def handle_subagent_stop() -> int:
             print(json.dumps(response))
             return 1
 
-        # Extract step path
+        # Schema v2.0 input (preferred)
+        execution_log_path = hook_input.get("executionLogPath")
+        project_id = hook_input.get("projectId")
+        step_id = hook_input.get("stepId")
+
+        # Schema v1.0 input (backward compatibility)
         step_path = hook_input.get("step_path", "")
+
+        # Validate input format
+        if execution_log_path and project_id and step_id:
+            # Schema v2.0: Validate absolute path
+            if not os.path.isabs(execution_log_path):
+                response = {
+                    "status": "error",
+                    "reason": f"Schema v2.0: executionLogPath must be absolute (got: {execution_log_path})"
+                }
+                print(json.dumps(response))
+                return 1
+
+            # TODO: Implement append-only execution-log.yaml validation
+            # For now, convert to v1 format for backward compatibility
+            # Extract step file path from execution_log_path directory
+            # This is temporary until full v2.0 workflow is implemented
+            step_path = f"docs/feature/{project_id}/steps/{step_id}.json"
+
+        elif not step_path:
+            # Neither v1 nor v2 format provided
+            response = {
+                "status": "error",
+                "reason": "Missing required input. Provide either: "
+                "(v2) executionLogPath+projectId+stepId OR (v1) step_path"
+            }
+            print(json.dumps(response))
+            return 1
 
         # Initialize DES components
         DESConfig()
@@ -227,16 +264,19 @@ def handle_subagent_stop() -> int:
             if hasattr(gate_result, 'recovery_suggestions') and gate_result.recovery_suggestions:
                 recovery_steps = "\n".join([f"  {i+1}. {suggestion}" for i, suggestion in enumerate(gate_result.recovery_suggestions)])
 
+            # Use step_id in notification if available (Schema v2.0), otherwise step_path (v1.0)
+            step_identifier = f"Step: {project_id}/{step_id}" if step_id else f"Step file: {step_path}"
+
             notification = f"""🚨 STOP HOOK VALIDATION FAILED 🚨
 
-Step file: {step_path}
+{step_identifier}
 Status: {gate_result.validation_status}
 Error: {error_summary}
 
 RECOVERY REQUIRED:
 {recovery_steps}
 
-The step file has been marked as FAILED. You MUST address these issues before proceeding."""
+The step has been marked as FAILED. You MUST address these issues before proceeding."""
 
             response = {
                 "decision": "block",

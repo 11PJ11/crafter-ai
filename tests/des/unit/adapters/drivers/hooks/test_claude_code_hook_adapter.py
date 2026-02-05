@@ -634,6 +634,97 @@ class TestSubagentStopHandler:
         output = json.loads(mock_stdout.getvalue())
         assert output["status"] == "error"
 
+    @patch("sys.stdin")
+    @patch("sys.stdout", new_callable=StringIO)
+    @patch(
+        "src.des.adapters.drivers.hooks.claude_code_hook_adapter.RealSubagentStopHook"
+    )
+    @patch("src.des.adapters.drivers.hooks.claude_code_hook_adapter.DESConfig")
+    def test_handle_subagent_stop_with_schema_v2_input_accepts_execution_log_path(
+        self, mock_config, mock_hook_class, mock_stdout, mock_stdin
+    ):
+        """SubagentStop accepts Schema v2.0 input (executionLogPath, projectId, stepId)."""
+        # Arrange - Schema v2.0 input format
+        mock_stdin.read.return_value = json.dumps(
+            {
+                "executionLogPath": "/abs/path/to/execution-log.yaml",
+                "projectId": "audit-log-refactor",
+                "stepId": "01-01",
+            }
+        )
+
+        mock_config_instance = Mock()
+        mock_config_instance.audit_logging_enabled = True
+        mock_config.return_value = mock_config_instance
+
+        mock_hook = Mock()
+        mock_result = Mock()
+        mock_result.validation_status = "PASSED"
+        mock_hook.on_agent_complete.return_value = mock_result
+        mock_hook_class.return_value = mock_hook
+
+        # Act
+        from src.des.adapters.drivers.hooks.claude_code_hook_adapter import (
+            handle_subagent_stop,
+        )
+
+        exit_code = handle_subagent_stop()
+
+        # Assert
+        assert exit_code == 0
+        output = json.loads(mock_stdout.getvalue())
+        assert output["decision"] == "allow"
+
+    @patch("sys.stdin")
+    @patch("sys.stdout", new_callable=StringIO)
+    def test_handle_subagent_stop_with_relative_execution_log_path_returns_error(
+        self, mock_stdout, mock_stdin
+    ):
+        """SubagentStop rejects relative paths in executionLogPath (Schema v2.0 requirement)."""
+        # Arrange - Schema v2.0 with RELATIVE path (invalid)
+        mock_stdin.read.return_value = json.dumps(
+            {
+                "executionLogPath": "docs/feature/project/execution-log.yaml",  # Relative!
+                "projectId": "audit-log-refactor",
+                "stepId": "01-01",
+            }
+        )
+
+        # Act
+        from src.des.adapters.drivers.hooks.claude_code_hook_adapter import (
+            handle_subagent_stop,
+        )
+
+        exit_code = handle_subagent_stop()
+
+        # Assert
+        assert exit_code == 1  # Fail-closed on invalid input
+        output = json.loads(mock_stdout.getvalue())
+        assert output["status"] == "error"
+        assert "absolute" in output["reason"].lower()
+
+    @patch("sys.stdin")
+    @patch("sys.stdout", new_callable=StringIO)
+    def test_handle_subagent_stop_missing_both_formats_returns_error(
+        self, mock_stdout, mock_stdin
+    ):
+        """SubagentStop returns error when neither v1 nor v2 format provided."""
+        # Arrange - Missing both step_path (v1) and executionLogPath+projectId+stepId (v2)
+        mock_stdin.read.return_value = json.dumps({"some_other_field": "value"})
+
+        # Act
+        from src.des.adapters.drivers.hooks.claude_code_hook_adapter import (
+            handle_subagent_stop,
+        )
+
+        exit_code = handle_subagent_stop()
+
+        # Assert
+        assert exit_code == 1  # Fail-closed on invalid input
+        output = json.loads(mock_stdout.getvalue())
+        assert output["status"] == "error"
+        assert "required input" in output["reason"].lower()
+
 
 class TestAuditLoggingControl:
     """Test audit logging control via DESConfig."""

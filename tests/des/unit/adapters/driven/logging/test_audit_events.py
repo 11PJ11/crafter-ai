@@ -5,7 +5,6 @@ Tests verify that AuditEvent correctly uses feature_name and step_id
 instead of the deprecated step_path field.
 """
 
-import pytest
 from des.adapters.driven.logging.audit_events import AuditEvent
 
 
