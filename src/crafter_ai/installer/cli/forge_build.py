@@ -11,13 +11,20 @@ import typer
 from rich.console import Console
 
 from crafter_ai.installer.adapters.build_adapter import SubprocessBuildAdapter
+from crafter_ai.installer.adapters.filesystem_adapter import RealFileSystemAdapter
 from crafter_ai.installer.adapters.git_adapter import SubprocessGitAdapter
 from crafter_ai.installer.checks.build_checks import create_build_check_registry
 from crafter_ai.installer.cli.forge_tui import display_pre_flight_results, is_ci_mode
 from crafter_ai.installer.domain.artifact_registry import ArtifactRegistry
 from crafter_ai.installer.domain.candidate_version import BumpType, CandidateVersion
 from crafter_ai.installer.domain.check_executor import CheckExecutor
+from crafter_ai.installer.domain.ide_bundle_build_result import IdeBundleBuildResult
+from crafter_ai.installer.domain.ide_bundle_constants import (
+    DEFAULT_OUTPUT_DIR,
+    DEFAULT_SOURCE_DIR,
+)
 from crafter_ai.installer.services.build_service import BuildResult, BuildService
+from crafter_ai.installer.services.ide_bundle_build_service import IdeBundleBuildService
 from crafter_ai.installer.services.version_bump_service import VersionBumpService
 from crafter_ai.installer.services.wheel_validation_service import (
     WheelValidationService,
@@ -46,6 +53,8 @@ def create_build_service() -> BuildService:
     version_bump_service = VersionBumpService(git_port)
     wheel_validation_service = WheelValidationService()
     artifact_registry = ArtifactRegistry()
+    filesystem = RealFileSystemAdapter()
+    ide_bundle_build_service = IdeBundleBuildService(filesystem=filesystem)
 
     return BuildService(
         check_executor=check_executor,
@@ -53,6 +62,7 @@ def create_build_service() -> BuildService:
         version_bump_service=version_bump_service,
         wheel_validation_service=wheel_validation_service,
         artifact_registry=artifact_registry,
+        ide_bundle_build_service=ide_bundle_build_service,
     )
 
 
@@ -87,6 +97,29 @@ def display_wheel_validation() -> None:
     console.print("  \u2705 PEP 427 format valid")
     console.print("  \u2705 Metadata complete")
     console.print("  \u2705 Wheel validated")
+    console.print()
+
+
+def display_ide_bundle_build(result: IdeBundleBuildResult, duration: str) -> None:
+    """Display IDE bundle build progress and completion.
+
+    Args:
+        result: IdeBundleBuildResult with build details.
+        duration: Build duration string, e.g. "0.3s".
+    """
+    console.print("  ⚙️ Building IDE bundle")
+    console.print(f"  {result.agent_count} agents", style="dim")
+    console.print(f"  {result.command_count} commands", style="dim")
+    console.print(f"  {result.team_count} teams", style="dim")
+
+    if result.embed_injection_count > 0:
+        console.print(f"  {result.embed_injection_count} embeds injected", style="dim")
+
+    if result.yaml_warnings:
+        for warning in result.yaml_warnings:
+            console.print(f"  ⚠️ {warning}", style="yellow")
+
+    console.print(f"  ✅ IDE bundle built ({duration})")
     console.print()
 
 
@@ -188,7 +221,11 @@ def build(
     # Display wheel validation check list (Luna's Step 5)
     display_wheel_validation()
 
-    # Display build complete line (Luna's Step 6)
+    # Display IDE bundle build if available (Luna's Step 6)
+    if result.ide_bundle_result is not None:
+        display_ide_bundle_build(result.ide_bundle_result, duration="0.3s")
+
+    # Display build complete line (Luna's Step 7)
     display_success_summary(result)
 
     # Handle install prompt

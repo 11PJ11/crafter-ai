@@ -987,14 +987,176 @@ phases:
         dependencies: ["09-03", "09-05", "09-06", "09-07"]
         estimated_hours: 4
 
+  # ==========================================================================
+  # PHASE 10: Full Installation Journey (Walking Skeleton Integration)
+  # ==========================================================================
+  # Connect backend services (Phase 09) to CLI rendering layer (forge_build.py,
+  # forge_install.py) to implement Luna's complete TUI design with spinners.
+  # Each step makes 1-2 walking skeleton tests pass (from 10 RED → 0 RED).
+  #
+  # Walking skeleton: tests/acceptance/forge_tui/test_walking_skeleton.py
+  # Luna's design: docs/ux/modern-cli-installer/journey-forge-tui-visual.md
+  # ==========================================================================
+
+  - id: "10"
+    name: "Full Installation Journey (Walking Skeleton Integration)"
+    description: |
+      Wire Phase 09 backend services into the forge CLI rendering layer and
+      implement the 6 missing TUI sections from Luna's design. Makes all 10 RED
+      walking skeleton tests pass by connecting BuildService/InstallService to
+      the terminal output with proper spinners, component counts, and SBOM.
+    user_stories: ["US-020", "US-021", "US-022", "US-023"]
+    depends_on: ["09"]
+    deliverables:
+      - "IDE bundle build section in forge_build.py with spinner"
+      - "Asset deployment section in forge_install.py with spinner"
+      - "Deployment validation section with per-component checks"
+      - "SBOM manifest dual-group format (CLI + IDE assets)"
+      - "nWave brand in celebration, Getting started section"
+      - "All 25 walking skeleton tests GREEN"
+    steps:
+
+      - id: "10-01"
+        name: "Add IDE bundle build section to forge_build.py"
+        scenario: "tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_ide_bundle_build_output"
+        criteria: |
+          - Wire IdeBundleBuildService into create_build_service() factory
+          - Add section header: "⚙️ Building IDE bundle" after wheel validation
+          - Add spinner: "⏳ Processing nWave assets..." during build
+          - Spinner resolves to: "✅ IDE bundle built ({duration})"
+          - Show detail lines: agent count, command count, team count
+          - Show embed injection count if > 0
+          - Show YAML warnings if any (with file names)
+          - Walking skeleton test test_ide_bundle_build_output passes
+        dependencies: ["09-04"]
+        estimated_hours: 2
+
+      - id: "10-02"
+        name: "Add IDE bundle artifact line to build complete"
+        scenario: "tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_build_complete_shows_two_artifacts"
+        criteria: |
+          - In build complete section, after wheel filename line
+          - Add dim detail line: "IDE bundle: {agent_count} agents, {command_count} commands"
+          - Extract counts from BuildResult.ide_bundle_result
+          - Walking skeleton test test_build_complete_shows_two_artifacts passes
+        dependencies: ["10-01"]
+        estimated_hours: 1
+
+      - id: "10-03"
+        name: "Add asset deployment section to forge_install.py"
+        scenario: "tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_asset_deployment_output"
+        criteria: |
+          - Wire AssetDeploymentService into create_install_service() factory
+          - Add section header: "⚙️ Deploying nWave assets" after pipx install
+          - Add spinner: "⏳ Installing to ~/.claude/..." during deployment
+          - Spinner resolves to: "✅ Assets deployed ({duration})"
+          - Show 4 detail lines with arrow notation (agents, commands, templates, scripts → paths)
+          - Extract counts from InstallResult.asset_deployment_result
+          - Walking skeleton test test_asset_deployment_output passes
+        dependencies: ["09-05"]
+        estimated_hours: 2
+
+      - id: "10-04"
+        name: "Add deployment validation section to forge_install.py"
+        scenario: "tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_deployment_validation_output"
+        criteria: |
+          - Wire DeploymentValidationService into create_install_service() factory
+          - Add section header: "🔍 Validating deployment" after asset deployment
+          - Show 6 check lines (agents, commands, templates, scripts, manifest, schema)
+          - Each check: "✅ {category} verified ({count})" or "❌ {category} verification failed"
+          - Summary line: "✅ Deployment validated" or "❌ Deployment validation failed"
+          - Extract results from InstallResult.deployment_validation_result
+          - Walking skeleton test test_deployment_validation_output passes
+        dependencies: ["10-03", "09-06"]
+        estimated_hours: 2
+
+      - id: "10-05"
+        name: "Add SBOM manifest section to forge_install.py"
+        scenario: "tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_sbom_dual_group_format"
+        criteria: |
+          - Add section header: "📋 What was installed" after deployment validation
+          - Group 1 (CLI package): version, entry points, install path (3 dim lines)
+          - Blank line separator
+          - Group 2 (IDE assets): 6 dim lines with counts and paths (agents, commands, templates, scripts, config, manifest)
+          - Extract CLI data from InstallResult (version, install_path)
+          - Extract IDE data from InstallResult.asset_deployment_result
+          - Walking skeleton test test_sbom_dual_group_format passes
+        dependencies: ["10-04"]
+        estimated_hours: 2
+
+      - id: "10-06"
+        name: "Add nWave assets health check to forge_install.py"
+        scenario: "tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_health_includes_asset_check"
+        criteria: |
+          - In health verification section, add check line after "Core modules loadable"
+          - Add: "✅ nWave assets accessible" (verifies ~/.claude/ assets are readable)
+          - This may require a new HealthChecker check or inline verification
+          - Walking skeleton test test_health_includes_asset_check passes
+        dependencies: ["10-05"]
+        estimated_hours: 1
+
+      - id: "10-07"
+        name: "Change celebration brand to nWave"
+        scenario: "tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_celebration_uses_nwave_brand"
+        criteria: |
+          - In celebration line, replace "crafter-ai" with "nWave"
+          - Change: "🎉 crafter-ai {version} installed and healthy!"
+          - To: "🎉 nWave {version} installed and healthy!"
+          - Keep package name "crafter-ai" in SBOM and other technical references
+          - Walking skeleton test test_celebration_uses_nwave_brand passes
+        dependencies: ["10-06"]
+        estimated_hours: 0.5
+
+      - id: "10-08"
+        name: "Add Getting started section to forge_install.py"
+        scenario: "tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_getting_started_section"
+        criteria: |
+          - Add section header: "📖 Getting started" after celebration
+          - Show 5 dim lines with /nw: commands and descriptions
+          - Commands: /nw:discuss, /nw:design, /nw:distill, /nw:develop, /nw:deliver
+          - Format: "/nw:discuss  - Requirements gathering and business analysis"
+          - Walking skeleton test test_getting_started_section passes
+        dependencies: ["10-07"]
+        estimated_hours: 1
+
+      - id: "10-09"
+        name: "Ensure version consistency across all displays"
+        scenario: "tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_version_consistency_across_all_displays"
+        criteria: |
+          - Verify version from wheel METADATA appears in 5 locations
+          - 1. Version display line (0.1.0 → 0.2.0)
+          - 2. Wheel filename (crafter_ai-0.2.0-py3-none-any.whl)
+          - 3. Install prompt (Install crafter-ai 0.2.0?)
+          - 4. SBOM (crafter-ai 0.2.0 or crafter_ai 0.2.0)
+          - 5. Celebration (nWave 0.2.0 installed and healthy!)
+          - All must use InstallResult.version (single source of truth)
+          - Walking skeleton test test_version_consistency_across_all_displays passes
+        dependencies: ["10-08"]
+        estimated_hours: 1
+
+      - id: "10-10"
+        name: "Verify full 17-step continuous stream ordering"
+        scenario: "tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_output_reads_as_continuous_stream"
+        criteria: |
+          - All 25 ordered markers from Luna's design appear in correct sequence
+          - Build: header, preflight, version, wheel, validation, IDE bundle, complete
+          - Prompt: Install crafter-ai 0.2.0?
+          - Install: header, preflight, backup, CLI install, deploy, validation, SBOM, health
+          - Celebrate: celebration, getting started
+          - No missing markers, no out-of-order markers
+          - Walking skeleton test test_output_reads_as_continuous_stream passes
+          - ALL 25 walking skeleton tests GREEN (0 failures)
+        dependencies: ["10-09"]
+        estimated_hours: 1
+
 # ==============================================================================
 # SUMMARY
 # ==============================================================================
 
 summary:
-  total_phases: 8
-  total_steps: 57
-  estimated_total_hours: 155
+  total_phases: 10
+  total_steps: 67
+  estimated_total_hours: 168.5
 
   phase_breakdown:
     - phase: "00"
@@ -1032,13 +1194,31 @@ summary:
       name: "Horizontal Coherence"
       steps: 5
       hours: 13
-      type: "validation"
+    - phase: "07"
+      name: "TUI Redesign Happy Path"
+      steps: 7
+      hours: 20
+      type: "feature"
+    - phase: "08"
+      name: "TUI Error States"
+      steps: 5
+      hours: 13
+      type: "feature"
+      status: "planned"
     - phase: "09"
       name: "Unified Install Pipeline Integration"
       steps: 8
       hours: 21
       type: "feature"
-      notes: "Walking skeleton: constants -> infrastructure -> 4 services -> 2 integrations"
+      status: "completed"
+      notes: "Backend services: constants -> infrastructure -> 4 services -> 2 integrations"
+    - phase: "10"
+      name: "Full Installation Journey (Walking Skeleton Integration)"
+      steps: 10
+      hours: 13.5
+      type: "validation"
+      status: "in_progress"
+      notes: "Wire backend services to CLI layer: 10 RED tests → 0 RED (all 25 GREEN)"
 
   p0_coverage:
     total_p0_stories: 23

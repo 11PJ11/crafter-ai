@@ -33,9 +33,11 @@ from crafter_ai.cli import app
 from crafter_ai.installer.domain.candidate_version import BumpType, CandidateVersion
 from crafter_ai.installer.domain.check_result import CheckResult, CheckSeverity
 from crafter_ai.installer.domain.health_result import HealthStatus
+from crafter_ai.installer.domain.ide_bundle_build_result import IdeBundleBuildResult
 from crafter_ai.installer.services.build_service import BuildResult
 from crafter_ai.installer.services.install_service import InstallPhase, InstallResult
 from crafter_ai.installer.services.wheel_validation_service import WheelValidationResult
+
 
 # ============================================================================
 # Box-drawing characters that MUST NOT appear in the redesigned TUI output.
@@ -137,6 +139,17 @@ def successful_build_result(
             errors=[],
         ),
         error_message=None,
+        ide_bundle_result=IdeBundleBuildResult(
+            success=True,
+            output_dir=Path("dist/ide"),
+            agent_count=30,
+            command_count=23,
+            template_count=5,
+            script_count=2,
+            team_count=3,
+            yaml_warnings=[],
+            embed_injection_count=0,
+        ),
     )
 
 
@@ -366,8 +379,7 @@ class TestWalkingSkeletonBuildToInstall:
 
         first_line = non_blank_lines[0]
         assert "\U0001f528" in first_line, (
-            f"First non-blank line should contain hammer emoji.\n"
-            f"Got: '{first_line}'"
+            f"First non-blank line should contain hammer emoji.\nGot: '{first_line}'"
         )
         assert "Building crafter-ai" in first_line, (
             f"First non-blank line should contain 'Building crafter-ai'.\n"
@@ -670,9 +682,9 @@ class TestWalkingSkeletonBuildToInstall:
 
         # Accept either the new "nWave CLI installed via pipx" or
         # the transitional "Installed via pipx" text
-        assert "Installed via pipx" in output or "nWave CLI installed via pipx" in output, (
-            "Missing persistent line for CLI install after spinner."
-        )
+        assert (
+            "Installed via pipx" in output or "nWave CLI installed via pipx" in output
+        ), "Missing persistent line for CLI install after spinner."
 
     def test_asset_deployment_output(
         self,
@@ -763,17 +775,14 @@ class TestWalkingSkeletonBuildToInstall:
         )
 
         assert "What was installed" in output, (
-            "Missing SBOM manifest header.\n"
-            "Step 15 specifies: 'What was installed'"
+            "Missing SBOM manifest header.\nStep 15 specifies: 'What was installed'"
         )
         # CLI group marker
         assert "crafter-ai 0.2.0" in output or "crafter_ai 0.2.0" in output, (
             "Missing CLI package identity in SBOM."
         )
         # IDE assets group marker (at least one deploy target line)
-        assert "~/.claude/" in output, (
-            "Missing IDE assets deploy target in SBOM."
-        )
+        assert "~/.claude/" in output, "Missing IDE assets deploy target in SBOM."
 
     def test_health_includes_asset_check(
         self,
@@ -827,9 +836,7 @@ class TestWalkingSkeletonBuildToInstall:
             install_pre_flight_results,
         )
 
-        assert "\U0001f389" in output, (
-            "Missing party popper emoji in celebration."
-        )
+        assert "\U0001f389" in output, "Missing party popper emoji in celebration."
         assert "nWave 0.2.0 installed and healthy!" in output, (
             "Celebration should use 'nWave' brand name, not 'crafter-ai'.\n"
             "Step 17 specifies: 'nWave {version} installed and healthy!'"
@@ -937,31 +944,31 @@ class TestWalkingSkeletonBuildToInstall:
 
         # Define ordered markers that must appear in sequence
         ordered_markers = [
-            "Building crafter-ai",          # Step 1: Build header
-            "Pre-flight checks",            # Step 2: Build pre-flight
-            "Pre-flight passed",            # Step 2: Build pre-flight summary
-            "\U0001f4d0",                   # Step 3: Version display (ruler emoji)
-            "Wheel built",                  # Step 4: Compilation persistent line
-            "Validating wheel",             # Step 5: Wheel validation
-            "Building IDE bundle",          # Step 6: IDE bundle build (NEW)
-            "IDE bundle built",             # Step 6: IDE bundle completion (NEW)
-            "Build complete",               # Step 7: Build complete
-            "Install crafter-ai 0.2.0?",   # Step 8: Install prompt
-            "Installing crafter-ai",        # Step 9: Install header
-            "Wheel file found",             # Step 10: Install pre-flight
-            "IDE bundle found",             # Step 10: IDE bundle check (NEW)
-            "Fresh install",                # Step 11: Backup skip
-            "Installed via pipx",           # Step 12: CLI install
-            "Deploying nWave assets",       # Step 13: Asset deployment (NEW)
-            "Assets deployed",              # Step 13: Deploy completion (NEW)
-            "Validating deployment",        # Step 14: Deploy validation (NEW)
-            "Deployment validated",         # Step 14: Validation summary (NEW)
-            "What was installed",           # Step 15: SBOM (EXPANDED)
-            "Verifying installation",       # Step 16: Health verification
-            "nWave assets accessible",      # Step 16: Asset check (NEW)
-            "Health: HEALTHY",              # Step 16: Health summary
-            "installed and healthy!",       # Step 17: Celebration
-            "Getting started",              # Step 17: Getting started (NEW)
+            "Building crafter-ai",  # Step 1: Build header
+            "Pre-flight checks",  # Step 2: Build pre-flight
+            "Pre-flight passed",  # Step 2: Build pre-flight summary
+            "\U0001f4d0",  # Step 3: Version display (ruler emoji)
+            "Wheel built",  # Step 4: Compilation persistent line
+            "Validating wheel",  # Step 5: Wheel validation
+            "Building IDE bundle",  # Step 6: IDE bundle build (NEW)
+            "IDE bundle built",  # Step 6: IDE bundle completion (NEW)
+            "Build complete",  # Step 7: Build complete
+            "Install crafter-ai 0.2.0?",  # Step 8: Install prompt
+            "Installing crafter-ai",  # Step 9: Install header
+            "Wheel file found",  # Step 10: Install pre-flight
+            "IDE bundle found",  # Step 10: IDE bundle check (NEW)
+            "Fresh install",  # Step 11: Backup skip
+            "Installed via pipx",  # Step 12: CLI install
+            "Deploying nWave assets",  # Step 13: Asset deployment (NEW)
+            "Assets deployed",  # Step 13: Deploy completion (NEW)
+            "Validating deployment",  # Step 14: Deploy validation (NEW)
+            "Deployment validated",  # Step 14: Validation summary (NEW)
+            "What was installed",  # Step 15: SBOM (EXPANDED)
+            "Verifying installation",  # Step 16: Health verification
+            "nWave assets accessible",  # Step 16: Asset check (NEW)
+            "Health: HEALTHY",  # Step 16: Health summary
+            "installed and healthy!",  # Step 17: Celebration
+            "Getting started",  # Step 17: Getting started (NEW)
         ]
 
         last_pos = -1
@@ -1000,9 +1007,7 @@ class TestWalkingSkeletonBuildToInstall:
         assert "Version Analysis" not in output, (
             "Old 'Version Analysis' panel title found."
         )
-        assert "Version Bump:" not in output, (
-            "Old 'Version Bump:' label found."
-        )
+        assert "Version Bump:" not in output, "Old 'Version Bump:' label found."
 
     def test_no_build_summary_panel(
         self,
@@ -1021,9 +1026,7 @@ class TestWalkingSkeletonBuildToInstall:
             install_pre_flight_results,
         )
 
-        assert "Build Summary" not in output, (
-            "Old 'Build Summary' panel title found."
-        )
+        assert "Build Summary" not in output, "Old 'Build Summary' panel title found."
 
     def test_no_installation_panel(
         self,
