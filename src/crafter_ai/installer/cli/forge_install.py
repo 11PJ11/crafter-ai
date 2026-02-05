@@ -471,24 +471,24 @@ def install(
         # Extract counts from deployment result for display
         if install_result.asset_deployment_result is not None:
             deployment = install_result.asset_deployment_result
-            console.print(f"  ✅ Agents verified ({deployment.agents_deployed})")
-            console.print(f"  ✅ Commands verified ({deployment.commands_deployed})")
-            console.print(f"  ✅ Templates verified ({deployment.templates_deployed})")
-            console.print(f"  ✅ Scripts verified ({deployment.scripts_deployed})")
+            console.print(f"    ✅ Agents verified ({deployment.agents_deployed})")
+            console.print(f"    ✅ Commands verified ({deployment.commands_deployed})")
+            console.print(f"    ✅ Templates verified ({deployment.templates_deployed})")
+            console.print(f"    ✅ Scripts verified ({deployment.scripts_deployed})")
 
-        console.print("  ✅ Manifest created")
+        console.print("    ✅ Manifest created")
 
         # Show schema validation with version and phase count
         if validation.schema_version and validation.schema_phases:
             console.print(
-                f"  ✅ Schema validated ({validation.schema_version}, {validation.schema_phases} phases)"
+                f"    ✅ Schema validated ({validation.schema_version}, {validation.schema_phases} phases)"
             )
 
         # Show validation summary (pass or fail)
         if validation.valid:
-            console.print("  ✅ Deployment validated")
+            console.print("    ✅ Deployment validated")
         else:
-            console.print("  ❌ Deployment validation failed")
+            console.print("    ❌ Deployment validation failed")
             if validation.mismatches:
                 console.print()
                 console.print("  [bold red]Validation errors:[/bold red]")
