@@ -44,18 +44,18 @@ def mock_filesystem() -> InMemoryFileSystemAdapter:
 def populated_ide_bundle(mock_filesystem: InMemoryFileSystemAdapter) -> Path:
     """Set up dist/ide/ with correct component counts from design YAML."""
     bundle = Path("dist/ide")
-    mock_filesystem.mkdir(bundle / "agents" / "nw", parents=True)
-    mock_filesystem.mkdir(bundle / "commands" / "nw", parents=True)
+    mock_filesystem.mkdir(bundle / "agents", parents=True)
+    mock_filesystem.mkdir(bundle / "tasks" / "nw", parents=True)
     mock_filesystem.mkdir(bundle / "templates", parents=True)
     mock_filesystem.mkdir(bundle / "scripts", parents=True)
 
     for i in range(EXPECTED_AGENT_COUNT):
         mock_filesystem.write_text(
-            bundle / "agents" / "nw" / f"agent_{i}.md", f"agent {i}"
+            bundle / "agents" / f"agent_{i}.md", f"agent {i}"
         )
     for i in range(EXPECTED_COMMAND_COUNT):
         mock_filesystem.write_text(
-            bundle / "commands" / "nw" / f"cmd_{i}.md", f"command {i}"
+            bundle / "tasks" / "nw" / f"cmd_{i}.md", f"command {i}"
         )
     for i in range(EXPECTED_TEMPLATE_COUNT):
         mock_filesystem.write_text(

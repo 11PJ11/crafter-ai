@@ -81,19 +81,19 @@ def mock_filesystem() -> InMemoryFileSystemAdapter:
 def populated_nwave_source(mock_filesystem: InMemoryFileSystemAdapter) -> Path:
     """Set up nWave/ source with correct component counts from design YAML."""
     source = DEFAULT_SOURCE_DIR
-    mock_filesystem.mkdir(source / "agents" / "nw", parents=True)
-    mock_filesystem.mkdir(source / "commands" / "nw", parents=True)
+    mock_filesystem.mkdir(source / "agents", parents=True)
+    mock_filesystem.mkdir(source / "tasks" / "nw", parents=True)
     mock_filesystem.mkdir(source / "templates", parents=True)
     mock_filesystem.mkdir(source / "scripts", parents=True)
 
     for i in range(EXPECTED_AGENT_COUNT):
         mock_filesystem.write_text(
-            source / "agents" / "nw" / f"agent_{i}.md",
+            source / "agents" / f"agent_{i}.md",
             f"# Agent {i}\nagent content",
         )
     for i in range(EXPECTED_COMMAND_COUNT):
         mock_filesystem.write_text(
-            source / "commands" / "nw" / f"cmd_{i}.md",
+            source / "tasks" / "nw" / f"cmd_{i}.md",
             f"# Command {i}\ncommand content",
         )
     for i in range(EXPECTED_TEMPLATE_COUNT):
@@ -114,18 +114,18 @@ def populated_nwave_source(mock_filesystem: InMemoryFileSystemAdapter) -> Path:
 def populated_ide_bundle(mock_filesystem: InMemoryFileSystemAdapter) -> Path:
     """Set up dist/ide/ bundle with correct component counts."""
     bundle = DEFAULT_OUTPUT_DIR
-    mock_filesystem.mkdir(bundle / "agents" / "nw", parents=True)
-    mock_filesystem.mkdir(bundle / "commands" / "nw", parents=True)
+    mock_filesystem.mkdir(bundle / "agents", parents=True)
+    mock_filesystem.mkdir(bundle / "tasks" / "nw", parents=True)
     mock_filesystem.mkdir(bundle / "templates", parents=True)
     mock_filesystem.mkdir(bundle / "scripts", parents=True)
 
     for i in range(EXPECTED_AGENT_COUNT):
         mock_filesystem.write_text(
-            bundle / "agents" / "nw" / f"agent_{i}.md", f"agent {i}"
+            bundle / "agents" / f"agent_{i}.md", f"agent {i}"
         )
     for i in range(EXPECTED_COMMAND_COUNT):
         mock_filesystem.write_text(
-            bundle / "commands" / "nw" / f"cmd_{i}.md", f"command {i}"
+            bundle / "tasks" / "nw" / f"cmd_{i}.md", f"command {i}"
         )
     for i in range(EXPECTED_TEMPLATE_COUNT):
         mock_filesystem.write_text(
@@ -459,12 +459,12 @@ class TestAgentCountConsistentAcrossPipeline:
         """Agent count is consistent across build, deploy, and validation services."""
         # Verify source has correct count
         source_agents = mock_filesystem.list_dir(
-            populated_nwave_source / "agents" / "nw"
+            populated_nwave_source / "agents"
         )
         assert len(source_agents) == EXPECTED_AGENT_COUNT
 
         # Verify bundle has correct count
-        bundle_agents = mock_filesystem.list_dir(populated_ide_bundle / "agents" / "nw")
+        bundle_agents = mock_filesystem.list_dir(populated_ide_bundle / "agents")
         assert len(bundle_agents) == EXPECTED_AGENT_COUNT
 
         # Deploy to target, then validate agent count matches
@@ -507,12 +507,12 @@ class TestCommandCountConsistentAcrossPipeline:
     ) -> None:
         """Command count is consistent across source, bundle, and validation."""
         source_commands = mock_filesystem.list_dir(
-            populated_nwave_source / "commands" / "nw"
+            populated_nwave_source / "tasks" / "nw"
         )
         assert len(source_commands) == EXPECTED_COMMAND_COUNT
 
         bundle_commands = mock_filesystem.list_dir(
-            populated_ide_bundle / "commands" / "nw"
+            populated_ide_bundle / "tasks" / "nw"
         )
         assert len(bundle_commands) == EXPECTED_COMMAND_COUNT
 

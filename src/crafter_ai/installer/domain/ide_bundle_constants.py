@@ -31,7 +31,7 @@ DEFAULT_DEPLOY_TARGET = Path.home() / ".claude"
 
 # --- Subdirectory layout within the bundle ---
 
-AGENTS_SUBDIR = "agents/nw"
-COMMANDS_SUBDIR = "commands/nw"
+AGENTS_SUBDIR = "agents"
+COMMANDS_SUBDIR = "tasks/nw"
 TEMPLATES_SUBDIR = "templates"
 SCRIPTS_SUBDIR = "scripts"

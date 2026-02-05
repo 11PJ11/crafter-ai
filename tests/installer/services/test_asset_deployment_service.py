@@ -54,21 +54,21 @@ def mock_filesystem() -> InMemoryFileSystemAdapter:
 def ide_bundle_dir(mock_filesystem: InMemoryFileSystemAdapter) -> Path:
     """Set up a mock IDE bundle source directory with correct component counts."""
     source = Path("dist/ide")
-    mock_filesystem.mkdir(source / "agents" / "nw", parents=True)
-    mock_filesystem.mkdir(source / "commands" / "nw", parents=True)
+    mock_filesystem.mkdir(source / "agents", parents=True)
+    mock_filesystem.mkdir(source / "tasks" / "nw", parents=True)
     mock_filesystem.mkdir(source / "templates", parents=True)
     mock_filesystem.mkdir(source / "scripts", parents=True)
 
     # Create agent files (30 agents from design YAML)
     for i in range(EXPECTED_AGENT_COUNT):
         mock_filesystem.write_text(
-            source / "agents" / "nw" / f"agent_{i}.md", f"agent {i}"
+            source / "agents" / f"agent_{i}.md", f"agent {i}"
         )
 
     # Create command files (23 commands from design YAML)
     for i in range(EXPECTED_COMMAND_COUNT):
         mock_filesystem.write_text(
-            source / "commands" / "nw" / f"cmd_{i}.md", f"command {i}"
+            source / "tasks" / "nw" / f"cmd_{i}.md", f"command {i}"
         )
 
     # Create template files (17 templates from design YAML)
@@ -83,7 +83,7 @@ def ide_bundle_dir(mock_filesystem: InMemoryFileSystemAdapter) -> Path:
 
     # Include config.json as part of the bundle
     mock_filesystem.write_text(
-        source / "agents" / "nw" / "config.json", '{"version": "1.0"}'
+        source / "agents" / "config.json", '{"version": "1.0"}'
     )
 
     return source

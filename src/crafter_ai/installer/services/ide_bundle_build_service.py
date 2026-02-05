@@ -106,11 +106,17 @@ class IdeBundleBuildService:
         self._filesystem.mkdir(dst_path, parents=True)
 
         files = self._filesystem.list_dir(src_path)
+        file_count = 0
         for src_file in files:
             dst_file = dst_path / src_file.name
-            self._filesystem.copy_file(src_file, dst_file)
+            try:
+                self._filesystem.copy_file(src_file, dst_file)
+                file_count += 1
+            except (IsADirectoryError, PermissionError):
+                # Skip directories and files we can't copy
+                continue
 
-        return len(files)
+        return file_count
 
     def _count_teams(self, source_dir: Path) -> int:
         """Count team files, returning 0 if teams/ directory is missing.

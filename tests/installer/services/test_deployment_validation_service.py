@@ -57,8 +57,8 @@ def deployed_filesystem(
 ) -> Path:
     """Create a correctly deployed filesystem structure with correct counts."""
     target = tmp_path / ".claude"
-    agents_dir = target / "agents" / "nw"
-    commands_dir = target / "commands" / "nw"
+    agents_dir = target / "agents"
+    commands_dir = target / "tasks" / "nw"
     templates_dir = target / "templates"
     scripts_dir = target / "scripts"
 

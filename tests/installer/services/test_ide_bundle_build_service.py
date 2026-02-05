@@ -47,22 +47,22 @@ def nwave_source_dir(mock_filesystem: InMemoryFileSystemAdapter) -> Path:
     """Set up a mock nWave source directory with correct component counts."""
     source = Path("nWave")
     mock_filesystem.mkdir(source, parents=True)
-    mock_filesystem.mkdir(source / "agents" / "nw", parents=True)
-    mock_filesystem.mkdir(source / "commands" / "nw", parents=True)
+    mock_filesystem.mkdir(source / "agents", parents=True)
+    mock_filesystem.mkdir(source / "tasks" / "nw", parents=True)
     mock_filesystem.mkdir(source / "templates", parents=True)
     mock_filesystem.mkdir(source / "scripts", parents=True)
 
     # Create agent files (30 agents from design YAML)
     for i in range(EXPECTED_AGENT_COUNT):
         mock_filesystem.write_text(
-            source / "agents" / "nw" / f"agent_{i}.md",
+            source / "agents" / f"agent_{i}.md",
             f"# Agent {i}\nagent content",
         )
 
     # Create command files (23 commands from design YAML)
     for i in range(EXPECTED_COMMAND_COUNT):
         mock_filesystem.write_text(
-            source / "commands" / "nw" / f"cmd_{i}.md",
+            source / "tasks" / "nw" / f"cmd_{i}.md",
             f"# Command {i}\ncommand content",
         )
 
