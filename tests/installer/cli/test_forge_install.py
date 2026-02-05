@@ -620,7 +620,7 @@ class TestReleaseReportDisplay:
             )
 
         assert result.exit_code == 0
-        assert "crafter-ai 0.2.0 installed and healthy!" in result.output
+        assert "nWave 0.2.0 installed and healthy!" in result.output
 
 
 class TestExitCodes:

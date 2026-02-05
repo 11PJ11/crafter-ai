@@ -1,5 +1,5 @@
 meta:
-  generated_at: "2026-02-05T17:00:00Z"
+  generated_at: "2026-02-05T18:30:00Z"
   generated_by: "vera-orchestrator"
   project: "modern-cli-installer"
   phase: "10"
@@ -7,59 +7,60 @@ meta:
   schema_version: "0.2"
 
 step:
-  id: "10-05"
-  name: "Add SBOM dual-group format section to forge_install.py"
+  id: "10-07"
+  name: "Update celebration to use nWave brand and add Getting started section"
   agent: "software-crafter"
-  estimated_hours: 2
-  dependencies_satisfied: true  # 10-04 completed
+  estimated_hours: 1.5
+  dependencies_satisfied: true  # 10-06 completed
 
 input:
   source_file: "src/crafter_ai/installer/cli/forge_install.py"
-  test_file: "tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_sbom_dual_group_format"
+  test_files:
+    - "tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_celebration_uses_nwave_brand"
+    - "tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_getting_started_section"
 
   requirements:
-    sbom_section_location:
-      - "In install() function after deployment validation (after line ~491)"
-      - "Add blank line before SBOM section"
-      - "Add section header: console.print('  📋 What was installed')"
+    celebration_section:
+      - "In install() function after health check (currently around line 519)"
+      - "Change from: 🎉 crafter-ai {version} installed and healthy!"
+      - "Change to: 🎉 nWave {version} installed and healthy!"
+      - "Keep: 'Ready to use in Claude Code.' on next line"
 
-    cli_package_group:
-      - "Show package name and version: console.print(f'[dim]    crafter-ai {install_result.version}[/dim]')"
-      - "Show CLI entry points: console.print('[dim]    CLI: crafter-ai, nw[/dim]')"
-      - "Show install path: console.print('[dim]    → ~/.local/pipx/venvs/crafter-ai[/dim]')"
-      - "Add blank line to separate CLI from IDE assets"
-
-    ide_assets_group:
-      - "Show agent count: console.print(f'[dim]    {deployment.agents_deployed} agents → ~/.claude/agents/nw/[/dim]')"
-      - "Show command count: console.print(f'[dim]    {deployment.commands_deployed} commands → ~/.claude/commands/nw/[/dim]')"
-      - "Show template count: console.print(f'[dim]    {deployment.templates_deployed} templates → ~/.claude/templates/[/dim]')"
-      - "Show script count: console.print(f'[dim]    {deployment.scripts_deployed} scripts → ~/.claude/scripts/[/dim]')"
-      - "Show config: console.print('[dim]    1 config → ~/.claude/agents/nw/config.json[/dim]')"
-      - "Show manifest: console.print('[dim]    1 manifest → ~/.claude/nwave-manifest.txt[/dim]')"
-      - "Extract counts from install_result.asset_deployment_result"
+    getting_started_section:
+      - "Add after the celebration lines"
+      - "Add blank line first"
+      - "Add header: console.print('  📖 Getting started')"
+      - "List main nWave commands with descriptions (dim style):"
+      - "  console.print('[dim]    /nw:discuss  - Requirements gathering and business analysis[/dim]')"
+      - "  console.print('[dim]    /nw:design   - Architecture design with visual representation[/dim]')"
+      - "  console.print('[dim]    /nw:distill  - Acceptance test creation and business validation[/dim]')"
+      - "  console.print('[dim]    /nw:develop  - Outside-In TDD implementation with refactoring[/dim]')"
+      - "  console.print('[dim]    /nw:deliver  - Production readiness validation[/dim]')"
 
   test_requirements:
-    - "Walking skeleton test test_sbom_dual_group_format must pass"
-    - "Test expects: 'What was installed' in output"
-    - "Test expects: 'crafter-ai' or 'crafter_ai' with version in output"
-    - "Test expects: '~/.claude/' in output (IDE assets marker)"
-    - "Test location: tests/acceptance/forge_tui/test_walking_skeleton.py line 778"
+    - "Test test_celebration_uses_nwave_brand must pass"
+    - "Test expects: '🎉' (party popper emoji) in output"
+    - "Test expects: 'nWave 0.2.0 installed and healthy!' in output"
+    - "Test expects: 'Ready to use in Claude Code.' in output"
+    - "Test test_getting_started_section must pass"
+    - "Test expects: 'Getting started' in output"
+    - "Test expects: '/nw:discuss' in output"
 
   architecture_notes:
-    - "SBOM section goes AFTER deployment validation and BEFORE health check"
-    - "Two groups: CLI package (what pipx installed) + IDE assets (what went to ~/.claude/)"
-    - "Blank line separates the two groups"
-    - "All lines use [dim] style for visual hierarchy"
-    - "→ notation shows destination paths"
-    - "Counts come from install_result.asset_deployment_result"
+    - "Celebration section goes AFTER health check and BEFORE failure check"
+    - "Use 'nWave' as the product brand name (not 'crafter-ai' package name)"
+    - "Getting started shows the 5 main workflow commands (DISCUSS → DESIGN → DISTILL → DEVELOP → DELIVER)"
+    - "All command lines use [dim] style for visual hierarchy"
+    - "Command descriptions are short (one line each)"
 
   luna_design_reference:
-    - "docs/ux/modern-cli-installer/journey-forge-tui-visual.md lines 149-168"
-    - "SBOM format: header, CLI group (3 lines), blank line, IDE assets (6 lines)"
-    - "Config and manifest are hardcoded as '1' (always present)"
+    - "docs/ux/modern-cli-installer/journey-forge-tui-visual.md lines 192-200"
+    - "Celebration format: emoji + 'nWave {version} installed and healthy!'"
+    - "Getting started: 📖 header + 5 command lines in dim"
+    - "Note: 🆕 What's new section is optional (for upgrades with changelog)"
 
 constraints:
-  max_tool_calls: 20
+  max_tool_calls: 15
   must_run_tests: true
   fail_fast: true
   forbidden_actions:
@@ -68,33 +69,11 @@ constraints:
     - "DO NOT read roadmap.yaml or execution-log.yaml"
 
 output:
-  status: "BLOCKED"
+  status: "success"
   artifacts_created:
-    - "src/crafter_ai/installer/cli/forge_install.py (lines 491-511 added SBOM section)"
-    - "tests/acceptance/forge_tui/test_walking_skeleton.py (removed obsolete ReleaseReportService mock)"
-  test_command: "pytest tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_sbom_dual_group_format -v"
-  test_result: "PASSED"
-  commit_hash: "NOT_COMMITTED"
-  commit_message: |
-    feat(installer): add SBOM dual-group format to forge install
-
-    - Added SBOM section after deployment validation
-    - CLI package group: crafter-ai version, CLI entry points, install path
-    - IDE assets group: agents, commands, templates, scripts, config, manifest
-    - Removed obsolete ReleaseReportService mock from walking skeleton test
-    - Test test_sbom_dual_group_format now passes
-
-    Step 10-05: SBOM section displays what was installed (CLI + IDE assets)
-
-    Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
-  notes: |
-    BLOCKED BY PRE-COMMIT HOOK:
-    - Target test (test_sbom_dual_group_format) PASSES ✓
-    - Step 10-05 implementation COMPLETE ✓
-    - BUT: Pre-commit hook blocks due to 80 failing tests in tests/installer/cli/test_forge_install.py
-    - These tests fail because they try to mock 'ReleaseReportService' which doesn't exist in forge_install.py
-    - ReleaseReportService appears to be from an older design that was removed/never implemented
-    - According to WIP constraints: "DO NOT implement other steps (10-06 through 10-10)"
-    - These ReleaseReportService tests are unrelated to step 10-05 (SBOM display)
-    - Recommendation: Fix ReleaseReportService tests in separate step OR remove obsolete tests
-    - Current blocker: Cannot commit without --no-verify which bypasses quality gates
+    - "src/crafter_ai/installer/cli/forge_install.py"
+  test_command: "pytest tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_celebration_uses_nwave_brand tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_getting_started_section -v"
+  test_result: "2 passed in 0.35s"
+  commit_hash: "b0979c2"
+  commit_message: "feat(forge-install): update celebration to use nWave brand and add Getting started section"
+  notes: "Changed celebration from 'crafter-ai' to 'nWave' product brand. Added Getting started section with 5 main nWave commands (discuss, design, distill, develop, deliver). All command lines use [dim] style for visual hierarchy."

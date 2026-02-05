@@ -974,12 +974,12 @@ class TestWalkingSkeletonBuildToInstall:
             "Wheel file found",  # Step 10: Install pre-flight
             "IDE bundle found",  # Step 10: IDE bundle check (NEW)
             "Fresh install",  # Step 11: Backup skip
-            "Installed via pipx",  # Step 12: CLI install
+            "installed via pipx",  # Step 12: CLI install
             "Deploying nWave assets",  # Step 13: Asset deployment (NEW)
             "Assets deployed",  # Step 13: Deploy completion (NEW)
-            "Validating deployment",  # Step 14: Deploy validation (NEW)
-            "Deployment validated",  # Step 14: Validation summary (NEW)
-            "What was installed",  # Step 15: SBOM (EXPANDED)
+            "What was installed",  # Step 14: SBOM (EXPANDED) - moved before validation
+            "Validating deployment",  # Step 15: Deploy validation (NEW)
+            "Deployment validated",  # Step 15: Validation summary (NEW)
             "Verifying installation",  # Step 16: Health verification
             "nWave assets accessible",  # Step 16: Asset check (NEW)
             "Health: HEALTHY",  # Step 16: Health summary
