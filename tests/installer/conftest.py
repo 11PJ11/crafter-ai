@@ -69,6 +69,10 @@ class FileSystemPort(Protocol):
         """List directory contents."""
         ...
 
+    def copy_file(self, src: Path, dst: Path) -> None:
+        """Copy a file from source to destination."""
+        ...
+
 
 @runtime_checkable
 class GitPort(Protocol):
@@ -189,6 +193,18 @@ class InMemoryFileSystemAdapter:
                     results.append(Path(dir_path))
 
         return results
+
+    def copy_file(self, src: Path, dst: Path) -> None:
+        """Copy a file from source to destination in memory."""
+        src_str = str(src)
+        if src_str not in self._files:
+            raise FileNotFoundError(f"Source file not found: {src}")
+        self._files[str(dst)] = self._files[src_str]
+        # Ensure parent directories exist for destination
+        parent = dst.parent
+        while parent != parent.parent:
+            self._directories.add(str(parent))
+            parent = parent.parent
 
     # Test helper methods
     def _set_file(self, path: str, content: str) -> None:
