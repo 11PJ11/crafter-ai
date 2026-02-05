@@ -118,10 +118,10 @@ class TestRealSubagentStopHookAudit:
         assert audit_entry["event"] == "HOOK_SUBAGENT_STOP_FAILED"
 
     @patch("src.des.adapters.drivers.hooks.real_hook.get_audit_logger")
-    def test_includes_step_path_in_audit_entry(
+    def test_includes_step_id_in_audit_entry(
         self, mock_get_audit_logger, valid_step_file
     ):
-        """Verify step_path included in audit entry."""
+        """Verify step_id included in audit entry."""
         mock_audit_logger = Mock()
         mock_get_audit_logger.return_value = mock_audit_logger
 
@@ -136,7 +136,9 @@ class TestRealSubagentStopHookAudit:
         ]
         assert len(hook_calls) == 1, "Expected exactly one HOOK_SUBAGENT_STOP event"
         audit_entry = hook_calls[0]
-        assert audit_entry["step_path"] == str(valid_step_file)
+        # step_id is extracted from filename without extension
+        expected_step_id = valid_step_file.stem
+        assert audit_entry["step_id"] == expected_step_id
 
     @patch("src.des.adapters.drivers.hooks.real_hook.get_audit_logger")
     def test_includes_phases_validated_count(

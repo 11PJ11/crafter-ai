@@ -7,6 +7,85 @@ Provides shared fixtures with mocked adapters for deterministic testing.
 import pytest
 
 
+# =============================================================================
+# TDD Schema Fixtures (Single Source of Truth)
+# =============================================================================
+
+
+@pytest.fixture(scope="session")
+def tdd_schema():
+    """
+    TDD schema loaded from step-tdd-cycle-schema.json.
+
+    This is the SINGLE SOURCE OF TRUTH for all TDD-related test data.
+    No hardcoded phase names or statuses in tests - use this fixture.
+
+    Returns:
+        TDDSchema: Immutable schema data container with:
+            - tdd_phases: Ordered tuple of phase names
+            - valid_statuses: Valid phase execution statuses
+            - valid_skip_prefixes: Skip prefixes that allow commit
+            - blocking_skip_prefixes: Skip prefixes that block commit
+    """
+    from src.des.domain.tdd_schema import get_tdd_schema
+
+    return get_tdd_schema()
+
+
+@pytest.fixture(scope="session")
+def tdd_phases(tdd_schema):
+    """
+    List of TDD phase names from schema for parametrized tests.
+
+    Usage:
+        @pytest.mark.parametrize("phase", tdd_phases)
+        def test_something_with_phase(phase):
+            ...
+
+    Returns:
+        tuple[str, ...]: ('PREPARE', 'RED_ACCEPTANCE', ..., 'COMMIT')
+    """
+    return tdd_schema.tdd_phases
+
+
+@pytest.fixture(scope="session")
+def valid_skip_prefixes(tdd_schema):
+    """
+    Skip prefixes that allow commit, from schema.
+
+    Returns:
+        tuple[str, ...]: ('BLOCKED_BY_DEPENDENCY:', 'NOT_APPLICABLE:', ...)
+    """
+    return tdd_schema.valid_skip_prefixes
+
+
+@pytest.fixture(scope="session")
+def blocking_skip_prefixes(tdd_schema):
+    """
+    Skip prefixes that block commit, from schema.
+
+    Returns:
+        tuple[str, ...]: ('DEFERRED:', ...)
+    """
+    return tdd_schema.blocking_skip_prefixes
+
+
+@pytest.fixture(scope="session")
+def valid_statuses(tdd_schema):
+    """
+    Valid phase execution statuses from schema.
+
+    Returns:
+        tuple[str, ...]: ('NOT_EXECUTED', 'IN_PROGRESS', 'EXECUTED', 'SKIPPED')
+    """
+    return tdd_schema.valid_statuses
+
+
+# =============================================================================
+# Filesystem Fixtures
+# =============================================================================
+
+
 @pytest.fixture
 def in_memory_filesystem():
     """

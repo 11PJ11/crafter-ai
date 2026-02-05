@@ -909,15 +909,15 @@ def audit_has_subagent_stop_failed(audit_log_reader):
     assert audit_log_reader.contains_event_type("HOOK_SUBAGENT_STOP_FAILED")
 
 
-@then("audit entry includes step_path from task prompt")
-def audit_has_step_path(audit_log_reader):
-    """Verify audit entry includes step_path."""
+@then("audit entry includes step_id from task prompt")
+def audit_has_step_id(audit_log_reader):
+    """Verify audit entry includes step_id."""
     entries = audit_log_reader.get_all_entries()
     assert len(entries) > 0
-    # Look for step_path in extra_context or as top-level field
+    # Look for step_id in extra_context or as top-level field
     entry = entries[-1]  # Most recent entry
-    assert "step_path" in entry or (
-        "extra_context" in entry and "step_path" in entry["extra_context"]
+    assert "step_id" in entry or (
+        "extra_context" in entry and "step_id" in entry["extra_context"]
     )
 
 
@@ -981,15 +981,15 @@ def hook_returns_failure(context):
     assert context["hook_result"].validation_status == "FAILED"
 
 
-@then("audit entry includes step_path")
-def audit_has_step_path_field(audit_log_reader):
-    """Verify audit entry includes step_path field."""
+@then("audit entry includes step_id")
+def audit_has_step_id_field(audit_log_reader):
+    """Verify audit entry includes step_id field."""
     # Get entries of the relevant event type (either PASSED or FAILED)
     passed_entries = audit_log_reader.get_entries_by_type("HOOK_SUBAGENT_STOP_PASSED")
     failed_entries = audit_log_reader.get_entries_by_type("HOOK_SUBAGENT_STOP_FAILED")
     entries = passed_entries + failed_entries
     assert len(entries) > 0, "No HOOK_SUBAGENT_STOP events found in audit log"
-    assert "step_path" in entries[0], f"step_path not in audit entry: {entries[0]}"
+    assert "step_id" in entries[0], f"step_id not in audit entry: {entries[0]}"
 
 
 @then("audit entry includes phases_validated count")

@@ -42,7 +42,7 @@ Feature: Hook Enforcement
     When I invoke validate_prompt via DESOrchestrator with valid task prompt
     Then validate_prompt returns task_invocation_allowed True
     And audit log contains HOOK_PRE_TASK_PASSED entry
-    And audit entry includes step_path from task prompt
+    And audit entry includes step_id from task prompt
     And audit entry includes agent name from task prompt
     And audit entry timestamp is UTC from TimeProvider
 
@@ -53,7 +53,7 @@ Feature: Hook Enforcement
     When I invoke validate_prompt via DESOrchestrator with invalid task prompt
     Then validate_prompt returns task_invocation_allowed False
     And audit log contains HOOK_PRE_TASK_BLOCKED entry
-    And audit entry includes step_path from task prompt
+    And audit entry includes step_id from task prompt
     And audit entry includes agent name from task prompt
     And audit entry includes rejection reason
     And audit entry timestamp is UTC from TimeProvider
@@ -67,7 +67,7 @@ Feature: Hook Enforcement
     When I invoke on_agent_complete via RealSubagentStopHook with completed step
     Then on_agent_complete returns validation success
     And audit log contains HOOK_SUBAGENT_STOP_PASSED entry
-    And audit entry includes step_path
+    And audit entry includes step_id
     And audit entry includes phases_validated count
     And audit entry timestamp is UTC from TimeProvider
 
@@ -79,7 +79,7 @@ Feature: Hook Enforcement
     When I invoke on_agent_complete via RealSubagentStopHook with incomplete step
     Then on_agent_complete returns validation failure
     And audit log contains HOOK_SUBAGENT_STOP_FAILED entry
-    And audit entry includes step_path
+    And audit entry includes step_id
     And audit entry includes phases_validated count
     And audit entry includes validation errors
     And audit entry timestamp is UTC from TimeProvider

@@ -1,0 +1,25 @@
+# Execution Log Template (Append-Only)
+#
+# Orchestrator copies this file to docs/feature/{project-id}/execution-log.yaml
+# and populates the header fields.
+#
+# Design:
+# - Header: Written ONCE by orchestrator when feature starts
+# - Events: APPEND-ONLY by agent after each phase (NO re-reads!)
+#
+# Event Format: step_id|phase|status|data|timestamp
+# - step_id: Step identifier (e.g., "01-01")
+# - phase: TDD phase name from step-tdd-cycle-schema.json
+# - status: EXECUTED or SKIPPED
+# - data: PASS/FAIL for EXECUTED, PREFIX:reason for SKIPPED
+# - timestamp: ISO 8601 format
+#
+# Token Efficiency: ~15 tokens per event vs ~500 for nested structures
+
+project_id: ""        # Set by orchestrator (e.g., "auth-upgrade")
+created_at: ""        # ISO 8601 timestamp
+total_steps: 0        # Number of steps from roadmap.yaml
+
+# Event log (append-only)
+# Agent appends one line per phase: echo '  - "step|phase|status|data|ts"' >> file
+events: []

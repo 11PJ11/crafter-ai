@@ -51,7 +51,8 @@ class AuditEvent:
 
     timestamp: str  # ISO 8601 format: YYYY-MM-DDTHH:MM:SS.sssZ
     event: str  # Event type from EventType enum
-    step_path: str | None = None  # Path to the step file
+    feature_name: str | None = None  # Feature name from step file
+    step_id: str | None = None  # Step identifier (e.g., "01-02")
     phase_name: str | None = None  # Name of the TDD phase
     status: str | None = None  # Phase status: IN_PROGRESS, EXECUTED, SKIPPED
     outcome: str | None = None  # Success or failure outcome

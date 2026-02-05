@@ -49,7 +49,7 @@ class ExecuteStepResult:
 
     Attributes:
         turn_count: Total number of turns (iterations) executed
-        phase_name: Name of the phase being executed
+        phase_name: Name of the phase being executed (required, loaded from step file)
         status: Execution status (e.g., "COMPLETED", "IN_PROGRESS")
         warnings_emitted: List of timeout warnings emitted during execution (deprecated, use timeout_warnings)
         timeout_warnings: List of timeout warning strings emitted during execution
@@ -58,7 +58,7 @@ class ExecuteStepResult:
     """
 
     turn_count: int
-    phase_name: str = "PREPARE"
+    phase_name: str  # Required - loaded from step file, no hardcoded default
     status: str = "COMPLETED"
     warnings_emitted: list[str] = field(
         default_factory=list
@@ -214,11 +214,26 @@ class DESOrchestrator:
         """
         result = self._validator.validate_prompt(prompt)
 
-        # Extract step_path from DES-STEP-FILE marker
-        step_path = None
-        step_match = re.search(r"<!-- DES-STEP-FILE:\s*(.*?)\s*-->", prompt)
-        if step_match:
-            step_path = step_match.group(1)
+        # Extract feature_name from DES-PROJECT-ID marker (Schema v2.0)
+        feature_name = None
+        project_match = re.search(r"<!-- DES-PROJECT-ID:\s*(.*?)\s*-->", prompt)
+        if project_match:
+            feature_name = project_match.group(1)
+
+        # Extract step_id from DES-STEP-ID marker (Schema v2.0)
+        step_id = None
+        step_id_match = re.search(r"<!-- DES-STEP-ID:\s*(.*?)\s*-->", prompt)
+        if step_id_match:
+            step_id = step_id_match.group(1)
+
+        # Fallback: extract from DES-STEP-FILE marker for backward compatibility
+        if not step_id:
+            step_match = re.search(r"<!-- DES-STEP-FILE:\s*(.*?)\s*-->", prompt)
+            if step_match:
+                # Extract step_id from path (e.g., "steps/01-01.json" -> "01-01")
+                import os
+                step_path = step_match.group(1)
+                step_id = os.path.splitext(os.path.basename(step_path))[0]
 
         # Extract agent_name from prompt
         agent_name = None
@@ -235,7 +250,8 @@ class DESOrchestrator:
             event = AuditEvent(
                 timestamp=timestamp,
                 event=EventType.HOOK_PRE_TASK_PASSED.value,
-                step_path=step_path,
+                feature_name=feature_name,
+                step_id=step_id,
                 extra_context={"agent": agent_name} if agent_name else None,
             )
         else:
@@ -246,7 +262,8 @@ class DESOrchestrator:
             event = AuditEvent(
                 timestamp=timestamp,
                 event=EventType.HOOK_PRE_TASK_BLOCKED.value,
-                step_path=step_path,
+                feature_name=feature_name,
+                step_id=step_id,
                 rejection_reason=rejection_reason,
                 extra_context={"agent": agent_name} if agent_name else None,
             )
@@ -374,9 +391,15 @@ class DESOrchestrator:
         if not command:
             raise ValueError("Command cannot be None or empty")
 
+        # Extract step_id from step_file path for audit logging
+        step_id_from_file = None
+        if step_file:
+            import os
+            step_id_from_file = os.path.splitext(os.path.basename(step_file))[0]
+
         # Log TASK_INVOCATION_STARTED for audit trail
         log_audit_event(
-            "TASK_INVOCATION_STARTED", command=command, step_path=step_file, agent=agent
+            "TASK_INVOCATION_STARTED", command=command, step_id=step_id_from_file, agent=agent
         )
 
         validation_level = self._get_validation_level(command)
@@ -392,7 +415,7 @@ class DESOrchestrator:
             log_audit_event(
                 "TASK_INVOCATION_VALIDATED",
                 command=command,
-                step_path=step_file,
+                step_id=step_id_from_file,
                 status="VALIDATED",
                 outcome="success",
             )

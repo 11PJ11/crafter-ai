@@ -2,6 +2,7 @@
 
 import json
 import logging
+import os
 from pathlib import Path
 
 from src.des.adapters.driven.logging.audit_logger import get_audit_logger
@@ -173,6 +174,9 @@ class RealSubagentStopHook(HookPort):
         timestamp = time_provider.now_utc().isoformat()
         phases_validated = len(phase_log)
 
+        # Extract step_id from step_file_path (filename without extension)
+        step_id = os.path.splitext(os.path.basename(step_file_path))[0]
+
         # If any errors found, populate comprehensive failure details
         if errors:
             self._populate_aggregated_failures(
@@ -183,7 +187,7 @@ class RealSubagentStopHook(HookPort):
             audit_logger.append(
                 {
                     "event": "HOOK_SUBAGENT_STOP_FAILED",
-                    "step_path": step_file_path,
+                    "step_id": step_id,
                     "phases_validated": phases_validated,
                     "validation_errors": self._format_validation_errors(errors),
                     "timestamp": timestamp,
@@ -196,7 +200,7 @@ class RealSubagentStopHook(HookPort):
         audit_logger.append(
             {
                 "event": "HOOK_SUBAGENT_STOP_PASSED",
-                "step_path": step_file_path,
+                "step_id": step_id,
                 "phases_validated": phases_validated,
                 "timestamp": timestamp,
             }

@@ -47,7 +47,7 @@ class TestValidatePromptAuditLogging:
 
             assert event_dict["event"] == EventType.HOOK_PRE_TASK_PASSED.value
             assert event_dict["timestamp"] is not None
-            assert event_dict["step_path"] == "steps/01-01.json"
+            assert event_dict["step_id"] == "01-01"
 
     def test_validate_prompt_logs_hook_pre_task_blocked_when_validation_fails(
         self, in_memory_filesystem, mocked_hook, mocked_time_provider
@@ -143,11 +143,11 @@ class TestValidatePromptAuditLogging:
             # Convert to comparable format
             assert event_dict["timestamp"] == expected_timestamp.isoformat()
 
-    def test_validate_prompt_extracts_step_path_from_prompt(self, des_orchestrator):
+    def test_validate_prompt_extracts_step_id_from_prompt(self, des_orchestrator):
         """
         GIVEN prompt containing DES-STEP-FILE marker
         WHEN validate_prompt logs audit event
-        THEN step_path is extracted from marker
+        THEN step_id is extracted from marker (filename without extension)
         """
         # Arrange
         prompt_with_step = """
@@ -169,7 +169,7 @@ class TestValidatePromptAuditLogging:
             call_args = mock_logger.append.call_args
             event_dict = call_args[0][0]
 
-            assert event_dict["step_path"] == "steps/02-03.json"
+            assert event_dict["step_id"] == "02-03"
 
     def test_validate_prompt_includes_agent_name_in_audit_event(self, des_orchestrator):
         """
@@ -328,5 +328,5 @@ class TestValidatePromptAuditLogging:
             # Verify required fields
             assert "timestamp" in event_dict
             assert "event" in event_dict
-            assert "step_path" in event_dict
+            assert "step_id" in event_dict
             # rejection_reason is optional (only for BLOCKED events)
