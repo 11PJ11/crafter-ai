@@ -466,7 +466,15 @@ def event_type_enum_exists(context):
 
     # Use absolute path to work correctly even when working directory changes
     project_root = Path(__file__).parent.parent.parent.parent
-    audit_events_path = project_root / "src" / "des" / "adapters" / "driven" / "logging" / "audit_events.py"
+    audit_events_path = (
+        project_root
+        / "src"
+        / "des"
+        / "adapters"
+        / "driven"
+        / "logging"
+        / "audit_events.py"
+    )
 
     # Direct import from file to bypass broken __init__.py chain
     spec = importlib.util.spec_from_file_location(
@@ -1054,8 +1062,32 @@ def stdout_decision_allow(context):
 
 @then("adapter exits with code 2")
 def adapter_exits_two(context):
-    """Verify adapter exits with code 2 (BLOCK)."""
+    """Verify adapter exits with code 2 (BLOCK) - basic exit code check only."""
     assert context["cli_result"].returncode == 2
+
+
+@then("adapter exits with code 2 and includes context injection")
+def adapter_exits_two_with_context_injection(context):
+    """Verify adapter exits with code 2 (BLOCK) and includes hookSpecificOutput for SubagentStop hook."""
+    assert context["cli_result"].returncode == 2
+
+    # Parse JSON output
+    output = json.loads(context["cli_result"].stdout)
+
+    # Verify context injection structure (end-to-end) - ONLY for SubagentStop hook
+    assert "hookSpecificOutput" in output, (
+        "hookSpecificOutput should exist when validation fails"
+    )
+    assert "additionalContext" in output["hookSpecificOutput"], (
+        "additionalContext should exist"
+    )
+    assert "systemMessage" in output, "systemMessage should exist at top level"
+
+    # Verify non-empty content
+    assert len(output["hookSpecificOutput"]["additionalContext"]) > 0, (
+        "additionalContext must be non-empty"
+    )
+    assert len(output["systemMessage"]) > 0, "systemMessage must be non-empty"
 
 
 @then("stdout contains JSON with decision block")

@@ -151,7 +151,7 @@ Feature: Hook Enforcement
     And TimeProvider returns fixed UTC timestamp
     And step file has incomplete phases
     When I invoke hook adapter CLI with subagent-stop command and step context via stdin
-    Then adapter exits with code 2
+    Then adapter exits with code 2 and includes context injection
     And audit log contains HOOK_SUBAGENT_STOP_FAILED entry
     And audit entry includes validation errors
     And audit entry timestamp is UTC from TimeProvider

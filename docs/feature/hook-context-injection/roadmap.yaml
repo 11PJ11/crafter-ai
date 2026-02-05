@@ -1,0 +1,175 @@
+project_id: hook-context-injection
+created_at: '2026-02-05T11:24:00Z'
+description: Implement orchestrator notification via SubagentStop hook context injection
+validation:
+  status: complete  # Ready for review
+
+phases:
+  - phase_id: "01"
+    name: Context Injection Foundation
+    description: Implement basic context injection mechanism in hook adapter to notify orchestrator of validation failures
+    steps:
+      - step_id: "01-01"
+        name: Add context injection to SubagentStop hook handler
+        description: Modify handle_subagent_stop() to build and return hookSpecificOutput with additionalContext and systemMessage
+        acceptance_criteria:
+          - When validation fails, response JSON includes hookSpecificOutput object
+          - additionalContext is multi-line with error summary, numbered recovery steps, and step file path
+          - systemMessage is single-line, concise, user-friendly
+          - Exit code 2 behavior unchanged (backward compatible)
+          - Exit code 0 behavior unchanged (no context injection on success)
+        files_to_modify:
+          - src/des/adapters/drivers/hooks/claude_code_hook_adapter.py
+        test_files:
+          - tests/des/unit/adapters/drivers/hooks/test_claude_code_hook_adapter.py
+        dependencies: []
+        estimated_complexity: medium
+
+      - step_id: "01-02"
+        name: Update unit test for context injection structure
+        description: Update existing test_handle_subagent_stop_with_failing_gate_returns_exit_2 to verify hookSpecificOutput structure
+        acceptance_criteria:
+          - Test verifies exit code 2 still returned on validation failure
+          - Test parses JSON output and asserts hookSpecificOutput exists
+          - Test verifies both additionalContext and systemMessage are strings
+          - Test verifies decision field is still block
+          - All existing assertions remain passing
+        files_to_modify:
+          - tests/des/unit/adapters/drivers/hooks/test_claude_code_hook_adapter.py
+        test_files:
+          - tests/des/unit/adapters/drivers/hooks/test_claude_code_hook_adapter.py
+        dependencies:
+          - "01-01"
+        estimated_complexity: low
+
+      - step_id: "01-03"
+        name: Add dedicated unit test for context injection content
+        description: Create new test_handle_subagent_stop_failure_includes_context_injection to verify content details
+        acceptance_criteria:
+          - Test verifies additionalContext contains error_message text
+          - Test verifies additionalContext contains recovery suggestions as numbered list
+          - Test verifies additionalContext includes step file path
+          - Test verifies systemMessage is concise (under 100 characters)
+          - Test verifies systemMessage does NOT contain detailed recovery steps
+        files_to_modify:
+          - tests/des/unit/adapters/drivers/hooks/test_claude_code_hook_adapter.py
+        test_files:
+          - tests/des/unit/adapters/drivers/hooks/test_claude_code_hook_adapter.py
+        dependencies:
+          - "01-02"
+        estimated_complexity: medium
+
+  - phase_id: "02"
+    name: Acceptance Test Integration
+    description: Update acceptance tests to verify context injection works end-to-end
+    steps:
+      - step_id: "02-01"
+        name: Update acceptance test for JSON output parsing
+        description: Modify test_subagent_stop_blocks() to parse and verify hookSpecificOutput fields
+        acceptance_criteria:
+          - Test invokes hook adapter via subprocess (existing behavior)
+          - Test captures stdout and parses as JSON (existing behavior)
+          - Test verifies exit code is 2 on validation failure (existing behavior)
+          - Test verifies hookSpecificOutput object exists in parsed JSON
+          - Test verifies hookSpecificOutput.additionalContext exists and is non-empty
+          - Test verifies hookSpecificOutput.systemMessage exists and is non-empty
+        files_to_modify:
+          - tests/des/acceptance/test_hook_enforcement_steps.py
+        test_files:
+          - tests/des/acceptance/test_hook_enforcement_steps.py
+        dependencies:
+          - "01-03"
+        estimated_complexity: low
+
+  - phase_id: "03"
+    name: Message Content Verification
+    description: Verify the quality and format of injected context messages
+    steps:
+      - step_id: "03-01"
+        name: Add test for multi-line additionalContext format
+        description: Verify additionalContext follows multi-line format with error summary, numbered recovery steps, step file path
+        acceptance_criteria:
+          - Test verifies additionalContext contains newline characters
+          - Test verifies recovery suggestions are numbered
+          - Test verifies step file path appears in additionalContext
+          - Test verifies error summary appears at beginning
+          - Test verifies all recovery suggestions from gate_result are included
+        files_to_modify:
+          - tests/des/unit/adapters/drivers/hooks/test_claude_code_hook_adapter.py
+        test_files:
+          - tests/des/unit/adapters/drivers/hooks/test_claude_code_hook_adapter.py
+        dependencies:
+          - "01-03"
+        estimated_complexity: low
+
+      - step_id: "03-02"
+        name: Add test for systemMessage conciseness constraint
+        description: Verify systemMessage is user-friendly, concise, single-line without detailed recovery steps
+        acceptance_criteria:
+          - Test verifies systemMessage contains no newline characters
+          - Test verifies systemMessage length is under 100 characters
+          - Test verifies systemMessage references validation failure
+          - Test verifies systemMessage does NOT contain numbered recovery steps
+          - Test verifies systemMessage is human-readable and actionable
+        files_to_modify:
+          - tests/des/unit/adapters/drivers/hooks/test_claude_code_hook_adapter.py
+        test_files:
+          - tests/des/unit/adapters/drivers/hooks/test_claude_code_hook_adapter.py
+        dependencies:
+          - "03-01"
+        estimated_complexity: low
+
+  - phase_id: "04"
+    name: Edge Cases and Backward Compatibility
+    description: Ensure implementation handles edge cases and maintains backward compatibility
+    steps:
+      - step_id: "04-01"
+        name: Add test for success case (no context injection)
+        description: Verify that when validation succeeds (exit 0), no hookSpecificOutput is included
+        acceptance_criteria:
+          - Test creates mock gate_result with validation_status PASSED
+          - Test verifies exit code is 0
+          - Test verifies JSON response has decision allow
+          - Test verifies hookSpecificOutput field does NOT exist in response
+          - Test verifies no additionalContext or systemMessage in response
+        files_to_modify:
+          - tests/des/unit/adapters/drivers/hooks/test_claude_code_hook_adapter.py
+        test_files:
+          - tests/des/unit/adapters/drivers/hooks/test_claude_code_hook_adapter.py
+        dependencies:
+          - "03-02"
+        estimated_complexity: low
+
+      - step_id: "04-02"
+        name: Add test for empty recovery_suggestions
+        description: Verify graceful handling when gate_result.recovery_suggestions is empty or None
+        acceptance_criteria:
+          - Test creates mock gate_result with empty recovery_suggestions list
+          - Test verifies hookSpecificOutput.additionalContext exists and is non-empty
+          - Test verifies additionalContext contains error_message even without recovery suggestions
+          - Test verifies systemMessage is still generated
+          - Test verifies no crash or exception occurs
+        files_to_modify:
+          - tests/des/unit/adapters/drivers/hooks/test_claude_code_hook_adapter.py
+        test_files:
+          - tests/des/unit/adapters/drivers/hooks/test_claude_code_hook_adapter.py
+        dependencies:
+          - "04-01"
+        estimated_complexity: low
+
+      - step_id: "04-03"
+        name: Verify all existing tests still pass
+        description: Run full test suite to ensure no regressions
+        acceptance_criteria:
+          - test_handle_pre_task_with_valid_json_and_passing_validation_returns_exit_0 passes
+          - test_handle_pre_task_with_valid_json_and_failing_validation_returns_exit_2 passes
+          - test_handle_pre_task_with_invalid_json_returns_exit_1_with_error passes
+          - test_handle_subagent_stop_with_passing_gate_returns_exit_0 passes
+          - All audit logging tests pass
+          - All output format tests pass
+        files_to_modify: []
+        test_files:
+          - tests/des/unit/adapters/drivers/hooks/test_claude_code_hook_adapter.py
+        dependencies:
+          - "04-02"
+        estimated_complexity: low

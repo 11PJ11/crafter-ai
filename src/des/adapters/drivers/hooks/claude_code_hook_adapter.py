@@ -221,9 +221,31 @@ def handle_subagent_stop() -> int:
             print(json.dumps(response))
             return 0
         else:
+            # Build rich notification for orchestrator
+            error_summary = gate_result.error_message if hasattr(gate_result, 'error_message') else f"Validation status: {gate_result.validation_status}"
+            recovery_steps = ""
+            if hasattr(gate_result, 'recovery_suggestions') and gate_result.recovery_suggestions:
+                recovery_steps = "\n".join([f"  {i+1}. {suggestion}" for i, suggestion in enumerate(gate_result.recovery_suggestions)])
+
+            notification = f"""🚨 STOP HOOK VALIDATION FAILED 🚨
+
+Step file: {step_path}
+Status: {gate_result.validation_status}
+Error: {error_summary}
+
+RECOVERY REQUIRED:
+{recovery_steps}
+
+The step file has been marked as FAILED. You MUST address these issues before proceeding."""
+
             response = {
                 "decision": "block",
                 "reason": f"Gate failed: {gate_result.validation_status}",
+                "hookSpecificOutput": {
+                    "hookEventName": "SubagentStop",
+                    "additionalContext": notification
+                },
+                "systemMessage": f"⚠️ Validation failed: {error_summary}"
             }
             print(json.dumps(response))
             return 2
