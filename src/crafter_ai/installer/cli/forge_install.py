@@ -413,10 +413,7 @@ def install(
 
     install_duration = f"{time.time() - install_start:.1f}s"
 
-    if not install_result.success:
-        display_failure(install_result.error_message or "Unknown error")
-        raise typer.Exit(code=1)
-
+    # Always show CLI completion (even if later validation fails)
     console.print(f"  ✅ nWave CLI installed via pipx ({install_duration})")
 
     # Asset deployment section
@@ -473,7 +470,14 @@ def install(
                 f"  ✅ Schema validated ({validation.schema_version}, {validation.schema_phases} phases)"
             )
 
-        console.print("  ✅ Deployment validated")
+        # Show validation summary (pass or fail)
+        if validation.is_valid:
+            console.print("  ✅ Deployment validated")
+        else:
+            console.print("  ❌ Deployment validation failed")
+            if validation.validation_errors:
+                for error in validation.validation_errors:
+                    console.print(f"     {error}", style="red")
 
     if install_result.health_status is not None:
         console.print()
@@ -481,6 +485,12 @@ def install(
         console.print("  \u2705 CLI responds to --version")
         console.print("  \u2705 Core modules loadable")
         console.print(f"  \u2705 Health: {install_result.health_status.value.upper()}")
+
+    # Check for installation failure (after displaying all available information)
+    if not install_result.success:
+        console.print()
+        display_failure(install_result.error_message or "Unknown error")
+        raise typer.Exit(code=1)
 
     console.print()
     console.print(
