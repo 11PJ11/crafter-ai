@@ -33,6 +33,9 @@ from crafter_ai.installer.services.wheel_validation_service import (
 
 console = Console()
 
+# Spinner style for all build operations (configurable)
+SPINNER_STYLE = "aesthetic"  # Options: aesthetic, dots, earth, runner
+
 forge_app = typer.Typer(
     name="forge",
     help="Build and release commands for crafter-ai.",
@@ -208,6 +211,8 @@ def build(
     result = service.execute(
         current_version=current_version,
         output_dir=output_dir,
+        console=console,
+        spinner_style=SPINNER_STYLE,
     )
     build_duration = f"{time.time() - build_start:.1f}s"
 

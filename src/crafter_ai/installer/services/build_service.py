@@ -15,8 +15,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from crafter_ai.installer.domain.artifact_registry import ArtifactRegistry
+
+if TYPE_CHECKING:
+    from rich.console import Console
 from crafter_ai.installer.domain.candidate_version import CandidateVersion
 from crafter_ai.installer.domain.check_executor import CheckExecutor
 from crafter_ai.installer.domain.check_result import CheckResult, CheckSeverity
@@ -154,6 +158,8 @@ class BuildService:
         current_version: str,
         output_dir: Path,
         prerelease: str | None = None,
+        console: "Console | None" = None,
+        spinner_style: str = "aesthetic",
     ) -> BuildResult:
         """Execute the complete build journey.
 
@@ -163,6 +169,8 @@ class BuildService:
             current_version: Current version string.
             output_dir: Directory for wheel output.
             prerelease: Optional prerelease suffix.
+            console: Optional Rich console for displaying spinners.
+            spinner_style: Spinner style (aesthetic, dots, earth, runner).
 
         Returns:
             BuildResult with complete journey state.
@@ -192,7 +200,11 @@ class BuildService:
 
         # Step 3: Build wheel
         try:
-            wheel_path = self.build_wheel(output_dir)
+            if console is not None:
+                with console.status("⏳ Compiling wheel...", spinner=spinner_style):
+                    wheel_path = self.build_wheel(output_dir)
+            else:
+                wheel_path = self.build_wheel(output_dir)
         except BuildError as e:
             return BuildResult(
                 success=False,
@@ -223,10 +235,17 @@ class BuildService:
         # Step 5.5: Build IDE bundle (optional)
         ide_bundle_result: IdeBundleBuildResult | None = None
         if self._ide_bundle_build_service is not None:
-            ide_bundle_result = self._ide_bundle_build_service.build(
-                source_dir=DEFAULT_SOURCE_DIR,
-                output_dir=DEFAULT_OUTPUT_DIR,
-            )
+            if console is not None:
+                with console.status("⏳ Processing nWave assets...", spinner=spinner_style):
+                    ide_bundle_result = self._ide_bundle_build_service.build(
+                        source_dir=DEFAULT_SOURCE_DIR,
+                        output_dir=DEFAULT_OUTPUT_DIR,
+                    )
+            else:
+                ide_bundle_result = self._ide_bundle_build_service.build(
+                    source_dir=DEFAULT_SOURCE_DIR,
+                    output_dir=DEFAULT_OUTPUT_DIR,
+                )
             if not ide_bundle_result.success:
                 return BuildResult(
                     success=False,
