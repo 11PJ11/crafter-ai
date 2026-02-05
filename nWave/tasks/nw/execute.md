@@ -82,17 +82,35 @@ Execute these 7 phases in order:
 
 {quality_gates}
 
-# OUTCOME_RECORDING
+# OUTCOME_RECORDING (Schema v2.0 - Append-Only Format)
 
 **WRITE ONLY (APPEND-ONLY)**: docs/feature/{project-id}/execution-log.yaml
 
-Update execution-log.yaml after EACH phase (no batching).
+**CRITICAL**: Use the new Schema v2.0 append-only format (pipe-delimited events).
 
-Record in phase_execution_log:
-- phase_name: (e.g., "RED_ACCEPTANCE")
-- outcome: "PASS" | "FAIL" | "SKIP"
-- timestamp: ISO 8601
-- notes: Brief description of what happened
+After EACH phase completion, append ONE event line using Bash:
+```bash
+timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+echo '  - "{step-id}|{phase}|{status}|{data}|'$timestamp'"' >> docs/feature/{project-id}/execution-log.yaml
+```
+
+**Event Format**: "step_id|phase|status|data|timestamp"
+- **step_id**: Step identifier (e.g., "01-01")
+- **phase**: Phase name (PREPARE, RED_ACCEPTANCE, RED_UNIT, GREEN, REVIEW, REFACTOR_CONTINUOUS, COMMIT)
+- **status**: EXECUTED or SKIPPED
+- **data**:
+  - For EXECUTED: outcome (PASS, FAIL, UNEXPECTED_GREEN)
+  - For SKIPPED: reason with prefix (e.g., "NOT_APPLICABLE:Acceptance tests sufficient")
+- **timestamp**: ISO 8601 UTC format (use `date -u` command above)
+
+**Examples**:
+```yaml
+  - "01-01|PREPARE|EXECUTED|PASS|2026-02-05T22:00:00Z"
+  - "01-01|RED_UNIT|SKIPPED|NOT_APPLICABLE:Acceptance tests provide complete coverage|2026-02-05T22:02:00Z"
+  - "01-01|COMMIT|EXECUTED|PASS|2026-02-05T22:08:00Z"
+```
+
+**NEVER re-read execution-log.yaml** - pure append-only mode (orchestrator provides state in prompt)
 
 # BOUNDARY_RULES
 
@@ -313,18 +331,17 @@ Execute these 7 phases in order:
 
 {task_context[execution_config]}
 
-## STATE TRACKING VIA execution-log.yaml
+## STATE TRACKING VIA execution-log.yaml (Schema v2.0)
 
 **CRITICAL**: DO NOT load roadmap.yaml (context provided above).
 **WRITE ONLY (APPEND-ONLY)**: docs/feature/{project-id}/execution-log.yaml
 
 Your responsibilities:
-1. Load current state from execution-log.yaml
-2. Resume from current phase (or start at PREPARE if new step)
-3. Execute each phase in order
-4. Update execution-log.yaml after EACH phase (no batching)
-5. Track turn count for timeout monitoring
-6. Update execution-log.yaml with outcomes
+1. **DO NOT read execution-log.yaml** - orchestrator provides current state in this prompt
+2. Execute each phase in order (PREPARE → RED_ACCEPTANCE → ... → COMMIT)
+3. **Append ONE event line** after EACH phase (no batching, no re-reading)
+4. Use correct UTC timestamp: `timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")`
+5. Use correct event format: `"{step-id}|{phase}|{status}|{data}|{timestamp}"`
 
 ## CM-D: Walking Skeleton Principle
 
@@ -334,31 +351,36 @@ In PREPARE phase, verify: entry point exists, acceptance tests invoke entry poin
 
 SOLID principles, coverage >80%, acceptance criteria met, no security vulnerabilities. Also validate post-refactoring quality: tests pass, quality improved, no new duplication. Record findings in execution-log.yaml.
 
-## EXECUTION-STATUS.YAML STRUCTURE
+## EXECUTION-LOG.YAML STRUCTURE (Schema v2.0 - Append-Only)
+
+**File Format**: Simple append-only event log (pipe-delimited strings)
 
 ```yaml
-execution_status:
-  current:
-    step_id: "{step-id}"
-    phase_index: 3  # Current phase (0-7)
-    phase_name: "GREEN"
-    started_at: "2026-01-29T15:00:00Z"
-    turn_count: 12
-  step_checkpoint:
-    step_id: "{step-id}"
-    phases:
-      - phase_index: 0
-        phase_name: "PREPARE"
-        status: "COMPLETED"  # or IN_PROGRESS, SKIPPED
-        outcome: "PASS"  # or FAIL
-        duration_minutes: 10
-        turn_count: 3
-      # ... (7 phases total)
+# Header (written once by orchestrator)
+project_id: audit-log-refactor
+created_at: '2026-02-05T13:50:00Z'
+total_steps: 25
+
+# Events (APPEND-ONLY by agent - one line per phase)
+events:
+  - "01-01|PREPARE|EXECUTED|PASS|2026-02-05T22:00:00Z"
+  - "01-01|RED_ACCEPTANCE|EXECUTED|UNEXPECTED_GREEN|2026-02-05T22:01:00Z"
+  - "01-01|RED_UNIT|SKIPPED|NOT_APPLICABLE:Acceptance tests sufficient|2026-02-05T22:02:00Z"
+  - "01-01|GREEN|EXECUTED|PASS|2026-02-05T22:03:00Z"
+  - "01-01|REVIEW|EXECUTED|PASS|2026-02-05T22:05:00Z"
+  - "01-01|REFACTOR_CONTINUOUS|SKIPPED|APPROVED_SKIP:Clean code <30 LOC|2026-02-05T22:06:00Z"
+  - "01-01|COMMIT|EXECUTED|PASS|2026-02-05T22:08:00Z"
+  # Next step starts here
+  - "01-02|PREPARE|EXECUTED|PASS|2026-02-05T22:10:00Z"
 ```
 
+**Token Efficiency**: ~15 tokens per event (vs ~500 tokens nested format)
+- 7 phases × 15 tokens = 105 tokens/step (vs 3,500 tokens)
+- 98% reduction in token usage
+
 If you encounter issues:
-- Update execution_status.current with failure reason
-- Set can_retry appropriately
+- Append event with status=EXECUTED and data=FAIL
+- Include error details in the data field (e.g., "FAIL:Tests not passing - missing import")
 - Return error to orchestrator"
 ```
 
@@ -486,11 +508,13 @@ TODO → IN_PROGRESS → DONE
       RETRY   REWORK
 ```
 
-## Context Files Required (NEW ARCHITECTURE)
+## Context Files Required (Schema v2.0 Architecture)
 
-- `docs/feature/{project-id}/roadmap.yaml` - Loaded by orchestrator (schema v2.0)
-- `docs/feature/{project-id}/execution-log.yaml` - Read/written by sub-agent (schema v1.0)
+- `docs/feature/{project-id}/roadmap.yaml` - Loaded by orchestrator ONCE (provides step context)
+- `docs/feature/{project-id}/execution-log.yaml` - **WRITE-ONLY** by sub-agent (append-only Schema v2.0)
 - Any files referenced in step's `deliverables` field
+
+**CRITICAL**: Agent NEVER reads execution-log.yaml - orchestrator reads and passes state in prompt
 
 ---
 
@@ -579,20 +603,27 @@ ACCEPTANCE CRITERIA:
 Execute this task and provide outputs as specified.
 ```
 
-### State Management Across Instances (NEW ARCHITECTURE)
+### State Management Across Instances (Schema v2.0 Architecture)
 
 The executing agent does not have access to previous invocations' memory. All prior execution state is passed by orchestrator in the invocation prompt:
-- **Orchestrator reads** execution-log.yaml to extract current state
-- **Orchestrator passes** step_checkpoint.phases as context in prompt
-- **Agent receives** prior progress via prompt (no file read needed)
-- **Agent appends** new events to execution-log.yaml (WRITE-ONLY, append mode)
+- **Orchestrator reads** execution-log.yaml events list to extract current state
+- **Orchestrator filters** events by step_id and determines completed phases
+- **Orchestrator passes** phase completion status as context in prompt
+- **Agent receives** prior progress via prompt (NO file read needed)
+- **Agent appends** new events to execution-log.yaml (WRITE-ONLY, append mode, never reads)
+
+**Append-Only Format Benefits**:
+- Agent never re-reads file (pure append using Bash echo)
+- ~15 tokens per event (vs ~500 nested format)
+- Orchestrator reads once, filters by step_id with simple grep
+- 98% token reduction: 105 tokens/step vs 3,500 tokens/step
 
 This YAML-based state management allows clean handoff between instances without context pollution. The agent receives task context from orchestrator (~5k tokens) and does NOT load roadmap.yaml (102k tokens) nor execution-log.yaml (saves token waste on rereads).
 
-### MANDATORY: Phase Tracking Protocol (7 Phases - Schema v3.0)
+### MANDATORY: Phase Tracking Protocol (7 Phases - Schema v3.0 + v2.0 Format)
 
-The execution-log.yaml contains `step_checkpoint.phases` with 7 TDD phases (schema v3.0).
-You MUST update each phase as you execute it. **DO NOT BATCH UPDATES** - save execution-log.yaml after each phase.
+The execution-log.yaml uses append-only event format (Schema v2.0) with 7 TDD phases (Schema v3.0).
+You MUST append ONE event after EACH phase. **DO NOT BATCH UPDATES** - append immediately after each phase completes.
 
 #### The 7 TDD Phases (Execute in Order) - Schema v3.0
 
@@ -612,22 +643,31 @@ The phases are (0-6):
 
 **For non-ATDD steps** (research, infrastructure): Phases 1-4 may be pre-set to `SKIPPED` with `blocked_by: "NOT_APPLICABLE"`.
 
-#### COMMIT Phase: files_modified Tracking (MANDATORY)
+#### COMMIT Phase: files_modified Tracking (MANDATORY - Schema v2.0)
 
-After creating the git commit, record files modified in execution-log.yaml:
+After creating the git commit, record files modified as separate events in execution-log.yaml:
 
 1. Run: `git diff --name-only HEAD~1`
-2. Categorize files:
-   - **implementation**: files under `src/` or `lib/` (excluding `__init__.py`)
-   - **tests**: files under `tests/`
-3. Update execution-log.yaml `completed_steps` entry:
-   ```yaml
-   files_modified:
-     implementation:
-       - "src/des/templates/boundary_rules_template.py"
-     tests:
-       - "tests/des/unit/test_boundary_rules_template.py"
+2. For each modified file, append a FILES_MODIFIED event:
+   ```bash
+   timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+   # For implementation files (src/ or lib/, excluding __init__.py)
+   echo '  - "{step-id}|FILES_MODIFIED|implementation|src/des/file.py|'$timestamp'"' >> execution-log.yaml
+   # For test files (tests/)
+   echo '  - "{step-id}|FILES_MODIFIED|tests|tests/des/test_file.py|'$timestamp'"' >> execution-log.yaml
    ```
+
+**Example events**:
+```yaml
+events:
+  - "01-01|COMMIT|EXECUTED|PASS|2026-02-05T22:08:00Z"
+  - "01-01|FILES_MODIFIED|implementation|src/des/adapters/driven/logging/audit_events.py|2026-02-05T22:08:00Z"
+  - "01-01|FILES_MODIFIED|tests|tests/des/unit/adapters/driven/logging/test_audit_events.py|2026-02-05T22:08:00Z"
+```
+
+**Format**: `"{step-id}|FILES_MODIFIED|{category}|{file-path}|{timestamp}"`
+- **category**: "implementation" or "tests" or "documentation"
+- **file-path**: Full path relative to project root
 
 **Why**: This data is used by the orchestrator during mutation testing (Phase 2.5)
 to discover the complete implementation scope. Without it, mutation testing may
@@ -643,19 +683,27 @@ miss implementation files, creating false confidence in test quality.
 | 2. REVIEW | 4 (REVIEW) | `review({step-id})` | No |
 | 3. FINAL | 6 (COMMIT) | `feat({step-id}): DONE` | Yes |
 
-**Each checkpoint**: Mark pending phases SKIPPED with `blocked_by: "CHECKPOINT_PENDING"`, commit execution-log.yaml + implementation, verify tests pass.
+**Each checkpoint**: Append SKIPPED events for pending phases with `CHECKPOINT_PENDING` reason, commit execution-log.yaml + implementation, verify tests pass.
+
+**Example checkpoint events** (after GREEN phase):
+```yaml
+  - "01-01|GREEN|EXECUTED|PASS|2026-02-05T22:03:00Z"
+  - "01-01|REVIEW|SKIPPED|CHECKPOINT_PENDING:Saving GREEN checkpoint|2026-02-05T22:03:00Z"
+  - "01-01|REFACTOR_CONTINUOUS|SKIPPED|CHECKPOINT_PENDING:Saving GREEN checkpoint|2026-02-05T22:03:00Z"
+  - "01-01|COMMIT|SKIPPED|CHECKPOINT_PENDING:Saving GREEN checkpoint|2026-02-05T22:03:00Z"
+```
 
 ---
 
-##### Checkpoint Rollback (NEW ARCHITECTURE)
+##### Checkpoint Rollback (Schema v2.0)
 
-`git reset HEAD~1` then edit execution-log.yaml: change completed phases back to SKIPPED with `blocked_by: "CHECKPOINT_PENDING"`, re-execute from that phase.
+`git reset HEAD~1` then manually remove checkpoint events from execution-log.yaml (delete lines with CHECKPOINT_PENDING), re-execute from incomplete phase.
 
-##### Checkpoint Rules (NEW ARCHITECTURE)
+##### Checkpoint Rules (Schema v2.0)
 
-Use CHECKPOINT_PENDING (not DEFERRED), mark pending phases SKIPPED, push only after FINAL, update execution-log.yaml after each commit.
+Use CHECKPOINT_PENDING (not DEFERRED), append SKIPPED events for pending phases, push only after FINAL, commit execution-log.yaml after each checkpoint.
 
-**Orchestrator** reads execution-log.yaml step_checkpoint.phases, passes prior progress to agent via prompt. **Agent** receives state, continues from incomplete phases. Before each phase: APPEND entry to execution-log.yaml with IN_PROGRESS and timestamp. After: APPEND update to COMPLETED/SKIPPED with outcome, duration, notes. Save execution-log.yaml after EACH phase (no batching). **CRITICAL**: Agent NEVER reads execution-log.yaml - only writes in append mode.
+**Orchestrator** reads execution-log.yaml events, filters by step_id, passes prior progress to agent via prompt. **Agent** receives state, continues from incomplete phases. Agent appends ONE event per phase completion. **CRITICAL**: Agent NEVER reads execution-log.yaml - only appends using Bash echo.
 
 #### If Phase Cannot Be Completed
 
