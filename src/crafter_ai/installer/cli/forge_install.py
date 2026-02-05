@@ -476,8 +476,19 @@ def install(
         else:
             console.print("  ❌ Deployment validation failed")
             if validation.mismatches:
+                console.print()
+                console.print("  [bold red]Validation errors:[/bold red]")
                 for error in validation.mismatches:
-                    console.print(f"     {error}", style="red")
+                    console.print(f"    • {error}", style="red")
+                console.print()
+                console.print(
+                    "  [yellow]Expected counts defined in:[/yellow] "
+                    "src/crafter_ai/installer/domain/ide_bundle_constants.py"
+                )
+                console.print(
+                    "  [yellow]Actual counts found in:[/yellow] "
+                    f"{install_result.asset_deployment_result.target_path if install_result.asset_deployment_result else '~/.claude'}"
+                )
 
     if install_result.health_status is not None:
         console.print()
