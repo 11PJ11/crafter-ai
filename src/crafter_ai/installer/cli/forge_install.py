@@ -59,10 +59,12 @@ def run_auto_chain_build(no_prompt: bool) -> Path | None:
     if should_prompt:
         proceed = typer.confirm("No wheel found. Build first?", default=True)
         if not proceed:
-            console.print("[yellow]Run forge build first[/yellow]")
+            console.print("  ⚠️  Run forge build first")
             raise typer.Exit(code=1)
     else:
-        console.print("[cyan]No wheel found. Auto-building...[/cyan]")
+        console.print()
+        console.print("  📦 No wheel found, building first...")
+        console.print()
 
     # Execute build
     from crafter_ai import __version__
@@ -75,17 +77,16 @@ def run_auto_chain_build(no_prompt: bool) -> Path | None:
     build_result = build_service.execute(
         current_version=current_version,
         output_dir=output_dir,
+        console=console,
+        spinner_style=SPINNER_STYLE,
     )
 
     if not build_result.success:
-        console.print(
-            f"[bold red]Build failed:[/bold red] {build_result.error_message}"
-        )
+        console.print(f"  ❌ Build failed: {build_result.error_message}")
         raise typer.Exit(code=1)
 
-    console.print(
-        f"[bold green]Build complete:[/bold green] {build_result.wheel_path}"
-    )
+    console.print(f"  ✅ Wheel ready: {build_result.wheel_path.name}")
+    console.print()
 
     return build_result.wheel_path
 
