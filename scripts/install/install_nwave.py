@@ -565,6 +565,7 @@ Commands Installed: {commands_count}
 Templates Installed: {templates_count}
 
 Available Commands:
+  /nw:discover - Evidence-based product discovery and market validation
   /nw:discuss  - Requirements gathering and business analysis
   /nw:design   - Architecture design with visual representation
   /nw:distill  - Acceptance test creation and business validation
@@ -606,12 +607,12 @@ def show_help():
     python install_nwave.py --force-rebuild
 
 {_ANSI_BLUE}WHAT GETS INSTALLED:{_ANSI_NC}
-    - nWave specialized agents (DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER methodology)
+    - nWave specialized agents (DISCOVER→DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER methodology)
     - nWave command interface for workflow orchestration
     - ATDD (Acceptance Test Driven Development) integration
     - Outside-In TDD with double-loop architecture
     - Quality validation network with continuous refactoring
-    - 8-phase TDD enforcement with schema versioning
+    - 7-phase TDD enforcement with schema versioning
 
 {_ANSI_BLUE}INSTALLATION LOCATION:{_ANSI_NC}
     ~/.claude/agents/nw/    # nWave agent specifications
