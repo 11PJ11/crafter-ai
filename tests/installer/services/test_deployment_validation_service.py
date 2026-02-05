@@ -5,107 +5,39 @@ expectations: agent count, command count, template count, script count.
 It also writes a manifest file and validates schema version.
 
 Unit test strategy: Each test instantiates DeploymentValidationService,
-calls its validate() method, and asserts outcomes. The service stub raises
-NotImplementedError until implemented, proving the contract and enabling
-Outside-In TDD.
-
-These tests use the InMemoryFileSystemAdapter from conftest.py to
-avoid real filesystem operations.
+calls its validate() method, and asserts outcomes. Tests use the
+InMemoryFileSystemAdapter from conftest.py to avoid real filesystem operations.
 """
 
 from __future__ import annotations
 
-from dataclasses import FrozenInstanceError, dataclass
+from dataclasses import FrozenInstanceError
 from pathlib import Path
 
 import pytest
 
+from crafter_ai.installer.domain.deployment_validation_result import (
+    DeploymentValidationResult,
+)
+from crafter_ai.installer.domain.ide_bundle_constants import (
+    EXPECTED_AGENT_COUNT,
+    EXPECTED_COMMAND_COUNT,
+    EXPECTED_SCHEMA_PHASES,
+    EXPECTED_SCHEMA_VERSION,
+    EXPECTED_SCRIPT_COUNT,
+    EXPECTED_TEMPLATE_COUNT,
+)
+from crafter_ai.installer.services.deployment_validation_service import (
+    DeploymentValidationService,
+)
 from tests.installer.conftest import InMemoryFileSystemAdapter
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Shared Constants (source of truth: journey-forge-tui.yaml)
+# Shared Constants
 # ═══════════════════════════════════════════════════════════════════════════════
 
-EXPECTED_AGENT_COUNT = 30
-EXPECTED_COMMAND_COUNT = 23
-EXPECTED_TEMPLATE_COUNT = 17
-EXPECTED_SCRIPT_COUNT = 4
-EXPECTED_SCHEMA_VERSION = "v3.0"
-EXPECTED_SCHEMA_PHASES = 7
 DEPLOY_TARGET = Path.home() / ".claude"
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Result stub (until production class exists)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
-@dataclass(frozen=True)
-class DeploymentValidationResult:
-    """Immutable result of deployment validation.
-
-    Attributes:
-        valid: Whether all validations passed.
-        agent_count_match: Whether deployed agent count matches expected.
-        command_count_match: Whether deployed command count matches expected.
-        template_count_match: Whether deployed template count matches expected.
-        script_count_match: Whether deployed script count matches expected.
-        manifest_written: Whether manifest file was written successfully.
-        schema_version: Schema version from manifest, if available.
-        schema_phases: Number of phases in schema (from design: 7).
-        mismatches: List of mismatch descriptions.
-    """
-
-    valid: bool
-    agent_count_match: bool
-    command_count_match: bool
-    template_count_match: bool
-    script_count_match: bool
-    manifest_written: bool
-    schema_version: str | None
-    schema_phases: int | None
-    mismatches: list[str]
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Service Stub (NotImplementedError pattern for Outside-In TDD)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
-class DeploymentValidationService:
-    """Service for validating deployed assets match bundle expectations.
-
-    Compares filesystem counts against expected values, writes manifest,
-    and validates schema version.
-    """
-
-    def __init__(self, filesystem: InMemoryFileSystemAdapter) -> None:
-        self._filesystem = filesystem
-
-    def validate(
-        self,
-        target_dir: Path,
-        expected_agents: int,
-        expected_commands: int,
-        expected_templates: int,
-        expected_scripts: int,
-    ) -> DeploymentValidationResult:
-        """Validate deployed assets match expected counts.
-
-        Args:
-            target_dir: Path to ~/.claude/ target directory.
-            expected_agents: Expected agent file count.
-            expected_commands: Expected command file count.
-            expected_templates: Expected template file count.
-            expected_scripts: Expected script file count.
-
-        Returns:
-            DeploymentValidationResult with match status and mismatches.
-        """
-        raise NotImplementedError(
-            "DeploymentValidationService.validate() not yet implemented"
-        )
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -153,12 +85,7 @@ def deployed_filesystem(
 
 
 class TestDeploymentValidationService:
-    """Tests for deployment validation service behavior.
-
-    Each test calls the service's validate() method. The service raises
-    NotImplementedError until implemented, which proves the contract.
-    When the developer implements validate(), the tests will pass naturally.
-    """
+    """Tests for deployment validation service behavior."""
 
     def test_validates_agent_count_matches_bundle(
         self,
@@ -168,21 +95,16 @@ class TestDeploymentValidationService:
         """Deployed agent count (30) should match expected from bundle."""
         service = DeploymentValidationService(filesystem=mock_filesystem)
 
-        # Verify fixture has correct count
-        agents_dir = deployed_filesystem / "agents" / "nw"
-        deployed_count = len(mock_filesystem.list_dir(agents_dir))
-        assert deployed_count == EXPECTED_AGENT_COUNT
+        result = service.validate(
+            target_dir=deployed_filesystem,
+            expected_agents=EXPECTED_AGENT_COUNT,
+            expected_commands=EXPECTED_COMMAND_COUNT,
+            expected_templates=EXPECTED_TEMPLATE_COUNT,
+            expected_scripts=EXPECTED_SCRIPT_COUNT,
+        )
 
-        with pytest.raises(
-            NotImplementedError, match="DeploymentValidationService.validate"
-        ):
-            service.validate(
-                target_dir=deployed_filesystem,
-                expected_agents=EXPECTED_AGENT_COUNT,
-                expected_commands=EXPECTED_COMMAND_COUNT,
-                expected_templates=EXPECTED_TEMPLATE_COUNT,
-                expected_scripts=EXPECTED_SCRIPT_COUNT,
-            )
+        assert result.agent_count_match is True
+        assert result.valid is True
 
     def test_validates_command_count_matches_bundle(
         self,
@@ -192,20 +114,15 @@ class TestDeploymentValidationService:
         """Deployed command count (23) should match expected from bundle."""
         service = DeploymentValidationService(filesystem=mock_filesystem)
 
-        commands_dir = deployed_filesystem / "commands" / "nw"
-        deployed_count = len(mock_filesystem.list_dir(commands_dir))
-        assert deployed_count == EXPECTED_COMMAND_COUNT
+        result = service.validate(
+            target_dir=deployed_filesystem,
+            expected_agents=EXPECTED_AGENT_COUNT,
+            expected_commands=EXPECTED_COMMAND_COUNT,
+            expected_templates=EXPECTED_TEMPLATE_COUNT,
+            expected_scripts=EXPECTED_SCRIPT_COUNT,
+        )
 
-        with pytest.raises(
-            NotImplementedError, match="DeploymentValidationService.validate"
-        ):
-            service.validate(
-                target_dir=deployed_filesystem,
-                expected_agents=EXPECTED_AGENT_COUNT,
-                expected_commands=EXPECTED_COMMAND_COUNT,
-                expected_templates=EXPECTED_TEMPLATE_COUNT,
-                expected_scripts=EXPECTED_SCRIPT_COUNT,
-            )
+        assert result.command_count_match is True
 
     def test_validates_template_count(
         self,
@@ -215,22 +132,15 @@ class TestDeploymentValidationService:
         """Template count (17) should be validated from filesystem scan."""
         service = DeploymentValidationService(filesystem=mock_filesystem)
 
-        templates_dir = deployed_filesystem / "templates"
-        deployed_count = len(mock_filesystem.list_dir(templates_dir))
-        assert deployed_count == EXPECTED_TEMPLATE_COUNT, (
-            f"Design YAML specifies {EXPECTED_TEMPLATE_COUNT} templates"
+        result = service.validate(
+            target_dir=deployed_filesystem,
+            expected_agents=EXPECTED_AGENT_COUNT,
+            expected_commands=EXPECTED_COMMAND_COUNT,
+            expected_templates=EXPECTED_TEMPLATE_COUNT,
+            expected_scripts=EXPECTED_SCRIPT_COUNT,
         )
 
-        with pytest.raises(
-            NotImplementedError, match="DeploymentValidationService.validate"
-        ):
-            service.validate(
-                target_dir=deployed_filesystem,
-                expected_agents=EXPECTED_AGENT_COUNT,
-                expected_commands=EXPECTED_COMMAND_COUNT,
-                expected_templates=EXPECTED_TEMPLATE_COUNT,
-                expected_scripts=EXPECTED_SCRIPT_COUNT,
-            )
+        assert result.template_count_match is True
 
     def test_validates_script_count(
         self,
@@ -240,22 +150,15 @@ class TestDeploymentValidationService:
         """Script count (4) should be validated from filesystem scan."""
         service = DeploymentValidationService(filesystem=mock_filesystem)
 
-        scripts_dir = deployed_filesystem / "scripts"
-        deployed_count = len(mock_filesystem.list_dir(scripts_dir))
-        assert deployed_count == EXPECTED_SCRIPT_COUNT, (
-            f"Design YAML specifies {EXPECTED_SCRIPT_COUNT} scripts"
+        result = service.validate(
+            target_dir=deployed_filesystem,
+            expected_agents=EXPECTED_AGENT_COUNT,
+            expected_commands=EXPECTED_COMMAND_COUNT,
+            expected_templates=EXPECTED_TEMPLATE_COUNT,
+            expected_scripts=EXPECTED_SCRIPT_COUNT,
         )
 
-        with pytest.raises(
-            NotImplementedError, match="DeploymentValidationService.validate"
-        ):
-            service.validate(
-                target_dir=deployed_filesystem,
-                expected_agents=EXPECTED_AGENT_COUNT,
-                expected_commands=EXPECTED_COMMAND_COUNT,
-                expected_templates=EXPECTED_TEMPLATE_COUNT,
-                expected_scripts=EXPECTED_SCRIPT_COUNT,
-            )
+        assert result.script_count_match is True
 
     def test_validates_schema_version(
         self,
@@ -265,19 +168,15 @@ class TestDeploymentValidationService:
         """Schema version should be v3.0 per design YAML."""
         service = DeploymentValidationService(filesystem=mock_filesystem)
 
-        with pytest.raises(
-            NotImplementedError, match="DeploymentValidationService.validate"
-        ):
-            service.validate(
-                target_dir=deployed_filesystem,
-                expected_agents=EXPECTED_AGENT_COUNT,
-                expected_commands=EXPECTED_COMMAND_COUNT,
-                expected_templates=EXPECTED_TEMPLATE_COUNT,
-                expected_scripts=EXPECTED_SCRIPT_COUNT,
-            )
+        result = service.validate(
+            target_dir=deployed_filesystem,
+            expected_agents=EXPECTED_AGENT_COUNT,
+            expected_commands=EXPECTED_COMMAND_COUNT,
+            expected_templates=EXPECTED_TEMPLATE_COUNT,
+            expected_scripts=EXPECTED_SCRIPT_COUNT,
+        )
 
-        # When implemented, result.schema_version should be EXPECTED_SCHEMA_VERSION
-        assert EXPECTED_SCHEMA_VERSION == "v3.0", "Schema version must be v3.0"
+        assert result.schema_version == EXPECTED_SCHEMA_VERSION
 
     def test_validates_schema_phases(
         self,
@@ -287,19 +186,15 @@ class TestDeploymentValidationService:
         """Schema should have 7 phases per design YAML."""
         service = DeploymentValidationService(filesystem=mock_filesystem)
 
-        with pytest.raises(
-            NotImplementedError, match="DeploymentValidationService.validate"
-        ):
-            service.validate(
-                target_dir=deployed_filesystem,
-                expected_agents=EXPECTED_AGENT_COUNT,
-                expected_commands=EXPECTED_COMMAND_COUNT,
-                expected_templates=EXPECTED_TEMPLATE_COUNT,
-                expected_scripts=EXPECTED_SCRIPT_COUNT,
-            )
+        result = service.validate(
+            target_dir=deployed_filesystem,
+            expected_agents=EXPECTED_AGENT_COUNT,
+            expected_commands=EXPECTED_COMMAND_COUNT,
+            expected_templates=EXPECTED_TEMPLATE_COUNT,
+            expected_scripts=EXPECTED_SCRIPT_COUNT,
+        )
 
-        # When implemented, result.schema_phases should be EXPECTED_SCHEMA_PHASES
-        assert EXPECTED_SCHEMA_PHASES == 7, "Schema must have 7 phases"
+        assert result.schema_phases == EXPECTED_SCHEMA_PHASES
 
     def test_validation_on_empty_target(
         self,
@@ -310,19 +205,18 @@ class TestDeploymentValidationService:
         service = DeploymentValidationService(filesystem=mock_filesystem)
         empty_target = tmp_path / ".claude-empty"
 
-        # Target does not exist
         assert not mock_filesystem.exists(empty_target)
 
-        with pytest.raises(
-            NotImplementedError, match="DeploymentValidationService.validate"
-        ):
-            service.validate(
-                target_dir=empty_target,
-                expected_agents=EXPECTED_AGENT_COUNT,
-                expected_commands=EXPECTED_COMMAND_COUNT,
-                expected_templates=EXPECTED_TEMPLATE_COUNT,
-                expected_scripts=EXPECTED_SCRIPT_COUNT,
-            )
+        result = service.validate(
+            target_dir=empty_target,
+            expected_agents=EXPECTED_AGENT_COUNT,
+            expected_commands=EXPECTED_COMMAND_COUNT,
+            expected_templates=EXPECTED_TEMPLATE_COUNT,
+            expected_scripts=EXPECTED_SCRIPT_COUNT,
+        )
+
+        assert result.valid is False
+        assert len(result.mismatches) > 0
 
     def test_validation_result_is_frozen_dataclass(self) -> None:
         """DeploymentValidationResult should be immutable (frozen dataclass)."""

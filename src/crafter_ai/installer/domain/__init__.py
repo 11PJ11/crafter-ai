@@ -5,6 +5,7 @@ This package contains pure domain objects with no external dependencies.
 
 from .artifact_registry import ArtifactRegistry
 from .asset_deployment_result import AssetDeploymentResult
+from .deployment_validation_result import DeploymentValidationResult
 from .candidate_version import (
     BumpType,
     CandidateVersion,
@@ -40,6 +41,7 @@ __all__ = [
     "AGENTS_SUBDIR",
     "ArtifactRegistry",
     "AssetDeploymentResult",
+    "DeploymentValidationResult",
     "BumpType",
     "COMMANDS_SUBDIR",
     "CandidateVersion",

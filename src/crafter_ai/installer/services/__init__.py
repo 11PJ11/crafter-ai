@@ -3,6 +3,9 @@
 from crafter_ai.installer.services.asset_deployment_service import (
     AssetDeploymentService,
 )
+from crafter_ai.installer.services.deployment_validation_service import (
+    DeploymentValidationService,
+)
 from crafter_ai.installer.services.auto_repair_service import (
     AutoRepairService,
     RepairResult,
@@ -33,6 +36,7 @@ from crafter_ai.installer.services.wheel_validation_service import (
 
 __all__ = [
     "AssetDeploymentService",
+    "DeploymentValidationService",
     "AutoRepairService",
     "BuildResult",
     "BuildService",
