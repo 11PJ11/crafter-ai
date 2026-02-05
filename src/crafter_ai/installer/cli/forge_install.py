@@ -340,8 +340,8 @@ def install(
     console.print("[cyan]  ██ ██  ███▄▄███▄▄███ ▄█▀██ ██▄██ ██▄█▀[/cyan]")
     console.print("[cyan]  ██ ██   ▀████▀████▀  ▀█▄██  ▀█▀  ▀█▄▄▄▄▂▂▁▁[/cyan]  🌊 🌊 🌊")
     console.print()
-    console.print("   Orchestrating Agentic-AI for crafters.")
-    console.print("   Modern Software Engineering at scale. Confidence at speed.")
+    console.print(" Orchestrated Agentic-AI code assistant for crafters.")
+    console.print(" Modern Software Engineering at scale. Confidence at speed.")
     console.print()
 
     # Resolve wheel path
