@@ -178,12 +178,146 @@ def handle_pre_task() -> int:
         return 1
 
 
+def _verify_step_from_append_only_log(
+    log_path: str, project_id: str, step_id: str
+) -> tuple[bool, str, list[str]]:
+    """Verify step completion from append-only execution-log.yaml.
+
+    Args:
+        log_path: Absolute path to execution-log.yaml
+        project_id: Project identifier (must match log file)
+        step_id: Step identifier to validate
+
+    Returns:
+        Tuple of (is_valid, error_message, recovery_suggestions)
+    """
+    from src.des.domain.tdd_schema import get_tdd_schema
+    import yaml
+
+    schema = get_tdd_schema()
+
+    # Read execution log
+    try:
+        with open(log_path, "r", encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+    except FileNotFoundError:
+        return (
+            False,
+            f"Execution log not found: {log_path}",
+            ["Create execution-log.yaml file", "Run orchestrator to initialize log"],
+        )
+    except yaml.YAMLError as e:
+        return (
+            False,
+            f"Invalid YAML in execution log: {e}",
+            ["Fix YAML syntax errors in execution-log.yaml"],
+        )
+
+    # Verify project_id matches
+    log_project_id = data.get("project_id")
+    if log_project_id != project_id:
+        return (
+            False,
+            f"Project ID mismatch: expected '{project_id}', found '{log_project_id}'",
+            [
+                f"Verify you're working on project '{project_id}'",
+                "Check DES-PROJECT-ID marker in prompt",
+            ],
+        )
+
+    # Extract events for this step
+    events = data.get("events", [])
+    step_events = {}
+
+    for event_str in events:
+        # Format: "step_id|phase|status|data|timestamp"
+        parts = event_str.split("|")
+        if len(parts) >= 5 and parts[0] == step_id:
+            phase_name = parts[1]
+            status = parts[2]
+            outcome_data = parts[3]
+            step_events[phase_name] = {"status": status, "data": outcome_data}
+
+    # Validate all required phases are present
+    missing_phases = []
+    invalid_phases = []
+    recovery_suggestions = []
+
+    for phase in schema.tdd_phases:
+        if phase not in step_events:
+            missing_phases.append(phase)
+            continue
+
+        event = step_events[phase]
+        status = event["status"]
+        data = event["data"]
+
+        # Validate EXECUTED phases
+        if status == "EXECUTED":
+            if data not in ["PASS", "FAIL"]:
+                invalid_phases.append(
+                    f"{phase}: Invalid outcome '{data}' (must be PASS or FAIL)"
+                )
+            elif phase == "COMMIT" and data != "PASS":
+                invalid_phases.append(f"{phase}: COMMIT must have outcome PASS")
+
+        # Validate SKIPPED phases
+        elif status == "SKIPPED":
+            # Check if skip reason has valid prefix
+            valid_prefix_found = any(
+                data.startswith(prefix) for prefix in schema.valid_skip_prefixes
+            )
+            if not valid_prefix_found:
+                invalid_phases.append(
+                    f"{phase}: Invalid skip reason '{data}' (must start with: {', '.join(schema.valid_skip_prefixes)})"
+                )
+
+            # Check if skip reason blocks commit
+            blocking_prefix_found = any(
+                data.startswith(prefix) for prefix in schema.blocking_skip_prefixes
+            )
+            if blocking_prefix_found:
+                invalid_phases.append(
+                    f"{phase}: Skip reason '{data}' blocks commit (DEFERRED not allowed)"
+                )
+
+        # Invalid status
+        elif status not in schema.valid_statuses:
+            invalid_phases.append(
+                f"{phase}: Invalid status '{status}' (must be: {', '.join(schema.valid_statuses)})"
+            )
+
+    # Build error message and recovery suggestions
+    if missing_phases or invalid_phases:
+        error_parts = []
+        if missing_phases:
+            error_parts.append(f"Missing phases: {', '.join(missing_phases)}")
+            recovery_suggestions.extend(
+                [
+                    f"Append events for missing phases: {', '.join(missing_phases)}",
+                    "Format: step_id|phase|status|data|timestamp",
+                ]
+            )
+
+        if invalid_phases:
+            error_parts.append(f"Invalid phases: {'; '.join(invalid_phases)}")
+            recovery_suggestions.extend(
+                [
+                    "Fix invalid phase entries in execution-log.yaml",
+                    "Ensure EXECUTED phases have PASS/FAIL outcome",
+                    "Ensure SKIPPED phases have valid reason prefix",
+                ]
+            )
+
+        return False, "; ".join(error_parts), recovery_suggestions
+
+    return True, "", []
+
+
 def handle_subagent_stop() -> int:
     """Handle subagent-stop command: validate step completion.
 
-    Supports two input formats:
-    - Schema v1: {"step_path": "path/to/step.json"} (backward compatibility)
-    - Schema v2: {"executionLogPath": "/abs/path", "projectId": "...", "stepId": "..."}
+    Schema v2.0 ONLY: {"executionLogPath": "/abs/path", "projectId": "...", "stepId": "..."}
 
     Returns:
         0 if gate passes
@@ -207,85 +341,65 @@ def handle_subagent_stop() -> int:
             print(json.dumps(response))
             return 1
 
-        # Schema v2.0 input (preferred)
+        # Schema v2.0 input (ONLY format supported)
         execution_log_path = hook_input.get("executionLogPath")
         project_id = hook_input.get("projectId")
         step_id = hook_input.get("stepId")
 
-        # Schema v1.0 input (backward compatibility)
-        step_path = hook_input.get("step_path", "")
-
         # Validate input format
-        if execution_log_path and project_id and step_id:
-            # Schema v2.0: Validate absolute path
-            if not os.path.isabs(execution_log_path):
-                response = {
-                    "status": "error",
-                    "reason": f"Schema v2.0: executionLogPath must be absolute (got: {execution_log_path})"
-                }
-                print(json.dumps(response))
-                return 1
-
-            # TODO: Implement append-only execution-log.yaml validation
-            # For now, convert to v1 format for backward compatibility
-            # Extract step file path from execution_log_path directory
-            # This is temporary until full v2.0 workflow is implemented
-            step_path = f"docs/feature/{project_id}/steps/{step_id}.json"
-
-        elif not step_path:
-            # Neither v1 nor v2 format provided
+        if not (execution_log_path and project_id and step_id):
             response = {
                 "status": "error",
-                "reason": "Missing required input. Provide either: "
-                "(v2) executionLogPath+projectId+stepId OR (v1) step_path"
+                "reason": "Missing required fields: executionLogPath, projectId, and stepId are all required"
             }
             print(json.dumps(response))
             return 1
 
-        # Initialize DES components
-        DESConfig()
-        hook = RealSubagentStopHook()
+        # Validate absolute path
+        if not os.path.isabs(execution_log_path):
+            response = {
+                "status": "error",
+                "reason": f"executionLogPath must be absolute (got: {execution_log_path})"
+            }
+            print(json.dumps(response))
+            return 1
 
-        # Execute gate validation
-        gate_result = hook.on_agent_complete(step_path)
+        # Verify step from append-only log
+        is_valid, error_message, recovery_suggestions = _verify_step_from_append_only_log(
+            execution_log_path, project_id, step_id
+        )
 
-        # Audit logging is handled by RealSubagentStopHook.on_agent_complete()
-        # No manual logging needed here - hook creates proper AuditEvent
-
-        # Return decision
-        if gate_result.validation_status == "PASSED":
+        # Return decision based on validation
+        if is_valid:
             response = {"decision": "allow"}
             print(json.dumps(response))
             return 0
         else:
-            # Build rich notification for orchestrator
-            error_summary = gate_result.error_message if hasattr(gate_result, 'error_message') else f"Validation status: {gate_result.validation_status}"
-            recovery_steps = ""
-            if hasattr(gate_result, 'recovery_suggestions') and gate_result.recovery_suggestions:
-                recovery_steps = "\n".join([f"  {i+1}. {suggestion}" for i, suggestion in enumerate(gate_result.recovery_suggestions)])
-
-            # Use step_id in notification if available (Schema v2.0), otherwise step_path (v1.0)
-            step_identifier = f"Step: {project_id}/{step_id}" if step_id else f"Step file: {step_path}"
+            # Build recovery steps for notification
+            recovery_steps = "\n".join(
+                [f"  {i+1}. {suggestion}" for i, suggestion in enumerate(recovery_suggestions)]
+            )
 
             notification = f"""🚨 STOP HOOK VALIDATION FAILED 🚨
 
-{step_identifier}
-Status: {gate_result.validation_status}
-Error: {error_summary}
+Step: {project_id}/{step_id}
+Execution Log: {execution_log_path}
+Status: FAILED
+Error: {error_message}
 
 RECOVERY REQUIRED:
 {recovery_steps}
 
-The step has been marked as FAILED. You MUST address these issues before proceeding."""
+The step validation failed. You MUST fix these issues before proceeding."""
 
             response = {
                 "decision": "block",
-                "reason": f"Gate failed: {gate_result.validation_status}",
+                "reason": f"Append-only log validation failed: {error_message}",
                 "hookSpecificOutput": {
                     "hookEventName": "SubagentStop",
                     "additionalContext": notification
                 },
-                "systemMessage": f"⚠️ Validation failed: {error_summary}"
+                "systemMessage": f"⚠️ Validation failed: {error_message}"
             }
             print(json.dumps(response))
             return 2

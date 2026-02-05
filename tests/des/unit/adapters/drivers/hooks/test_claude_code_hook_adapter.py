@@ -146,522 +146,40 @@ class TestPreTaskHandler:
         assert output["status"] == "error"
 
 
-class TestSubagentStopHandler:
-    """Test subagent-stop command handling."""
+class TestAppendOnlyLogValidation:
+    """Test append-only execution-log.yaml validation (Schema v2.0)."""
 
     @patch("sys.stdin")
     @patch("sys.stdout", new_callable=StringIO)
-    @patch(
-        "src.des.adapters.drivers.hooks.claude_code_hook_adapter.RealSubagentStopHook"
-    )
-    @patch("src.des.adapters.drivers.hooks.claude_code_hook_adapter.DESConfig")
-    def test_handle_subagent_stop_with_passing_gate_returns_exit_0(
-        self, mock_config, mock_hook_class, mock_stdout, mock_stdin
+    def test_valid_append_only_log_with_all_phases_executed_returns_allow(
+        self, mock_stdout, mock_stdin, tmp_path
     ):
-        """SubagentStop with passing gate returns exit 0."""
+        """Valid execution-log.yaml with all phases EXECUTED/PASS returns allow."""
+        # Create execution log
+        log_file = tmp_path / "execution-log.yaml"
+        log_file.write_text(
+            """project_id: test-project
+created_at: '2026-02-05T14:00:00Z'
+total_steps: 1
+events:
+  - "01-01|PREPARE|EXECUTED|PASS|2026-02-05T14:01:00Z"
+  - "01-01|RED_ACCEPTANCE|EXECUTED|PASS|2026-02-05T14:02:00Z"
+  - "01-01|RED_UNIT|EXECUTED|PASS|2026-02-05T14:03:00Z"
+  - "01-01|GREEN|EXECUTED|PASS|2026-02-05T14:04:00Z"
+  - "01-01|REVIEW|EXECUTED|PASS|2026-02-05T14:05:00Z"
+  - "01-01|REFACTOR_CONTINUOUS|EXECUTED|PASS|2026-02-05T14:06:00Z"
+  - "01-01|COMMIT|EXECUTED|PASS|2026-02-05T14:07:00Z"
+"""
+        )
+
         # Arrange
-        mock_stdin.read.return_value = json.dumps({"step_path": "/path/to/step.json"})
-
-        mock_config_instance = Mock()
-        mock_config_instance.audit_logging_enabled = True
-        mock_config.return_value = mock_config_instance
-
-        mock_hook = Mock()
-        mock_result = Mock()
-        mock_result.validation_status = "PASSED"
-        mock_hook.on_agent_complete.return_value = mock_result
-        mock_hook_class.return_value = mock_hook
-
-        # Act
-        from src.des.adapters.drivers.hooks.claude_code_hook_adapter import (
-            handle_subagent_stop,
-        )
-
-        exit_code = handle_subagent_stop()
-
-        # Assert
-        assert exit_code == 0
-
-    @patch("sys.stdin")
-    @patch("sys.stdout", new_callable=StringIO)
-    @patch(
-        "src.des.adapters.drivers.hooks.claude_code_hook_adapter.RealSubagentStopHook"
-    )
-    @patch("src.des.adapters.drivers.hooks.claude_code_hook_adapter.DESConfig")
-    def test_handle_subagent_stop_with_failing_gate_returns_exit_2(
-        self, mock_config, mock_hook_class, mock_stdout, mock_stdin
-    ):
-        """SubagentStop with failing gate returns exit 2 (BLOCKS orchestrator)."""
-        # Arrange
-        mock_stdin.read.return_value = json.dumps({"step_path": "/path/to/step.json"})
-
-        mock_config_instance = Mock()
-        mock_config_instance.audit_logging_enabled = True
-        mock_config.return_value = mock_config_instance
-
-        mock_hook = Mock()
-        mock_result = Mock()
-        mock_result.validation_status = "FAILED"
-        mock_result.error_message = "Phase RED_TEST left IN_PROGRESS (abandoned)"
-        mock_result.recovery_suggestions = [
-            "Review agent transcript for error details",
-            "Reset RED_TEST phase status to NOT_EXECUTED",
-            "Run /nw:execute again to resume",
-        ]
-        mock_hook.on_agent_complete.return_value = mock_result
-        mock_hook_class.return_value = mock_hook
-
-        # Act
-        from src.des.adapters.drivers.hooks.claude_code_hook_adapter import (
-            handle_subagent_stop,
-        )
-
-        exit_code = handle_subagent_stop()
-
-        # Assert
-        assert exit_code == 2
-        output = json.loads(mock_stdout.getvalue())
-
-        # Verify context injection structure
-        assert "hookSpecificOutput" in output, (
-            "hookSpecificOutput should exist when validation fails"
-        )
-        assert "additionalContext" in output["hookSpecificOutput"], (
-            "additionalContext should exist in hookSpecificOutput"
-        )
-        assert "systemMessage" in output, (
-            "systemMessage should exist at top level when validation fails"
-        )
-
-        # Verify field types
-        assert isinstance(output["hookSpecificOutput"]["additionalContext"], str), (
-            "additionalContext must be a string"
-        )
-        assert isinstance(output["systemMessage"], str), (
-            "systemMessage must be a string"
-        )
-
-        # Verify backward compatibility
-        assert output["decision"] == "block", (
-            "decision must still be 'block' for validation failures"
-        )
-
-    @patch("sys.stdin")
-    @patch("sys.stdout", new_callable=StringIO)
-    @patch(
-        "src.des.adapters.drivers.hooks.claude_code_hook_adapter.RealSubagentStopHook"
-    )
-    @patch("src.des.adapters.drivers.hooks.claude_code_hook_adapter.DESConfig")
-    def test_handle_subagent_stop_failure_includes_context_injection(
-        self, mock_config, mock_hook_class, mock_stdout, mock_stdin
-    ):
-        """SubagentStop failure includes detailed context injection for orchestrator."""
-        # Arrange
-        step_path = "/path/to/step.json"
-        mock_stdin.read.return_value = json.dumps({"step_path": step_path})
-
-        mock_config_instance = Mock()
-        mock_config_instance.audit_logging_enabled = True
-        mock_config.return_value = mock_config_instance
-
-        mock_hook = Mock()
-        mock_result = Mock()
-        mock_result.validation_status = "FAILED"
-        mock_result.error_message = "Phase RED_TEST left IN_PROGRESS (abandoned)"
-        mock_result.recovery_suggestions = [
-            "Review agent transcript for error details",
-            "Reset RED_TEST phase status to NOT_EXECUTED",
-            "Run /nw:execute again to resume",
-        ]
-        mock_hook.on_agent_complete.return_value = mock_result
-        mock_hook_class.return_value = mock_hook
-
-        # Act
-        from src.des.adapters.drivers.hooks.claude_code_hook_adapter import (
-            handle_subagent_stop,
-        )
-
-        exit_code = handle_subagent_stop()
-
-        # Assert
-        assert exit_code == 2
-        output = json.loads(mock_stdout.getvalue())
-
-        # Verify additionalContext content
-        additional_context = output["hookSpecificOutput"]["additionalContext"]
-        assert "Phase RED_TEST left IN_PROGRESS (abandoned)" in additional_context
-        assert step_path in additional_context, (
-            "Step file path must appear in additionalContext"
-        )
-        assert "1. Review agent transcript" in additional_context, (
-            "Recovery suggestions must be numbered"
-        )
-        assert "2. Reset RED_TEST phase status" in additional_context
-        assert "3. Run /nw:execute again" in additional_context
-
-        # Verify systemMessage content
-        system_message = output["systemMessage"]
-        assert len(system_message) < 100, (
-            "systemMessage must be concise (under 100 chars)"
-        )
-        assert (
-            "Phase RED_TEST" in system_message or "Validation failed" in system_message
-        )
-        assert "1." not in system_message, (
-            "systemMessage must NOT contain numbered recovery steps"
-        )
-        assert "\n" not in system_message, "systemMessage must be single-line"
-
-    @patch("sys.stdin")
-    @patch("sys.stdout", new_callable=StringIO)
-    @patch(
-        "src.des.adapters.drivers.hooks.claude_code_hook_adapter.RealSubagentStopHook"
-    )
-    @patch("src.des.adapters.drivers.hooks.claude_code_hook_adapter.DESConfig")
-    def test_handle_subagent_stop_additionalcontext_multiline_format(
-        self, mock_config, mock_hook_class, mock_stdout, mock_stdin
-    ):
-        """SubagentStop additionalContext follows multi-line format specification."""
-        # Arrange
-        step_path = "/docs/feature/project/steps/01-02.json"
-        error_msg = "Phase GREEN_UNIT abandoned (left IN_PROGRESS)"
-        recovery_suggestions = [
-            "First recovery step",
-            "Second recovery step",
-            "Third recovery step",
-        ]
-
-        mock_stdin.read.return_value = json.dumps({"step_path": step_path})
-
-        mock_config_instance = Mock()
-        mock_config_instance.audit_logging_enabled = True
-        mock_config.return_value = mock_config_instance
-
-        mock_hook = Mock()
-        mock_result = Mock()
-        mock_result.validation_status = "FAILED"
-        mock_result.error_message = error_msg
-        mock_result.recovery_suggestions = recovery_suggestions
-        mock_hook.on_agent_complete.return_value = mock_result
-        mock_hook_class.return_value = mock_hook
-
-        # Act
-        from src.des.adapters.drivers.hooks.claude_code_hook_adapter import (
-            handle_subagent_stop,
-        )
-
-        exit_code = handle_subagent_stop()
-
-        # Assert
-        assert exit_code == 2
-        output = json.loads(mock_stdout.getvalue())
-        additional_context = output["hookSpecificOutput"]["additionalContext"]
-
-        # Verify multi-line format
-        assert "\n" in additional_context, (
-            "additionalContext must be multi-line (contain newlines)"
-        )
-        lines = additional_context.split("\n")
-        assert len(lines) > 5, (
-            "additionalContext should have multiple lines (header, error, recovery steps)"
-        )
-
-        # Verify error summary appears early
-        assert error_msg in additional_context, (
-            "Error message must appear in additionalContext"
-        )
-        # Error should appear in first few lines
-        error_line_index = next(i for i, line in enumerate(lines) if error_msg in line)
-        assert error_line_index < 10, "Error summary should appear near the beginning"
-
-        # Verify numbered recovery suggestions
-        assert "1. First recovery step" in additional_context, (
-            "First suggestion must be numbered with '1.'"
-        )
-        assert "2. Second recovery step" in additional_context, (
-            "Second suggestion must be numbered with '2.'"
-        )
-        assert "3. Third recovery step" in additional_context, (
-            "Third suggestion must be numbered with '3.'"
-        )
-
-        # Verify all suggestions are included
-        for suggestion in recovery_suggestions:
-            assert suggestion in additional_context, (
-                f"Recovery suggestion '{suggestion}' must appear in additionalContext"
-            )
-
-        # Verify step file path appears
-        assert step_path in additional_context, (
-            "Step file path must appear in additionalContext"
-        )
-
-    @patch("sys.stdin")
-    @patch("sys.stdout", new_callable=StringIO)
-    @patch(
-        "src.des.adapters.drivers.hooks.claude_code_hook_adapter.RealSubagentStopHook"
-    )
-    @patch("src.des.adapters.drivers.hooks.claude_code_hook_adapter.DESConfig")
-    def test_handle_subagent_stop_systemmessage_conciseness(
-        self, mock_config, mock_hook_class, mock_stdout, mock_stdin
-    ):
-        """SubagentStop systemMessage is concise, single-line, user-friendly."""
-        # Arrange
-        step_path = "/docs/feature/project/steps/01-03.json"
-        error_msg = "Phase COMMIT failed validation checks"
-        recovery_suggestions = [
-            "Review commit message format for compliance with conventional commits",
-            "Ensure all files are properly staged before committing",
-            "Check pre-commit hooks configuration and fix any issues",
-        ]
-
-        mock_stdin.read.return_value = json.dumps({"step_path": step_path})
-
-        mock_config_instance = Mock()
-        mock_config_instance.audit_logging_enabled = True
-        mock_config.return_value = mock_config_instance
-
-        mock_hook = Mock()
-        mock_result = Mock()
-        mock_result.validation_status = "FAILED"
-        mock_result.error_message = error_msg
-        mock_result.recovery_suggestions = recovery_suggestions
-        mock_hook.on_agent_complete.return_value = mock_result
-        mock_hook_class.return_value = mock_hook
-
-        # Act
-        from src.des.adapters.drivers.hooks.claude_code_hook_adapter import (
-            handle_subagent_stop,
-        )
-
-        exit_code = handle_subagent_stop()
-
-        # Assert
-        assert exit_code == 2
-        output = json.loads(mock_stdout.getvalue())
-        system_message = output["systemMessage"]
-
-        # Verify conciseness (under 100 characters)
-        assert len(system_message) < 100, (
-            f"systemMessage must be under 100 chars (got {len(system_message)})"
-        )
-
-        # Verify single-line (no newlines)
-        assert "\n" not in system_message, (
-            "systemMessage must be single-line (no newlines)"
-        )
-        assert "\r" not in system_message, (
-            "systemMessage must not contain carriage returns"
-        )
-
-        # Verify references validation failure
-        assert "fail" in system_message.lower() or "error" in system_message.lower(), (
-            "systemMessage should reference failure/error"
-        )
-
-        # Verify does NOT contain numbered recovery steps
-        assert "1." not in system_message, (
-            "systemMessage must NOT contain numbered list '1.'"
-        )
-        assert "2." not in system_message, (
-            "systemMessage must NOT contain numbered list '2.'"
-        )
-        assert "3." not in system_message, (
-            "systemMessage must NOT contain numbered list '3.'"
-        )
-
-        # Verify does NOT contain detailed recovery instructions
-        for suggestion in recovery_suggestions:
-            # System message should NOT include full suggestion text
-            assert suggestion not in system_message, (
-                f"systemMessage should not include full recovery suggestion: '{suggestion}'"
-            )
-
-        # Verify human-readable (contains spaces and typical sentence structure)
-        assert " " in system_message, (
-            "systemMessage should be human-readable with spaces"
-        )
-        assert len(system_message.split()) >= 3, (
-            "systemMessage should contain at least 3 words"
-        )
-
-    @patch("sys.stdin")
-    @patch("sys.stdout", new_callable=StringIO)
-    @patch(
-        "src.des.adapters.drivers.hooks.claude_code_hook_adapter.RealSubagentStopHook"
-    )
-    @patch("src.des.adapters.drivers.hooks.claude_code_hook_adapter.DESConfig")
-    def test_handle_subagent_stop_success_no_context_injection(
-        self, mock_config, mock_hook_class, mock_stdout, mock_stdin
-    ):
-        """SubagentStop success case does NOT include context injection fields."""
-        # Arrange
-        step_path = "/docs/feature/project/steps/01-01.json"
-        mock_stdin.read.return_value = json.dumps({"step_path": step_path})
-
-        mock_config_instance = Mock()
-        mock_config_instance.audit_logging_enabled = True
-        mock_config.return_value = mock_config_instance
-
-        mock_hook = Mock()
-        mock_result = Mock()
-        mock_result.validation_status = "PASSED"  # Success case
-        # Note: error_message and recovery_suggestions should NOT be present on success
-        mock_hook.on_agent_complete.return_value = mock_result
-        mock_hook_class.return_value = mock_hook
-
-        # Act
-        from src.des.adapters.drivers.hooks.claude_code_hook_adapter import (
-            handle_subagent_stop,
-        )
-
-        exit_code = handle_subagent_stop()
-
-        # Assert
-        assert exit_code == 0, "Exit code must be 0 for successful validation"
-        output = json.loads(mock_stdout.getvalue())
-
-        # Verify success response structure
-        assert output["decision"] == "allow", (
-            "Decision must be 'allow' for successful validation"
-        )
-
-        # Verify NO context injection on success
-        assert "hookSpecificOutput" not in output, (
-            "hookSpecificOutput must NOT exist when validation passes"
-        )
-        assert "additionalContext" not in output, (
-            "additionalContext must NOT exist when validation passes"
-        )
-        assert "systemMessage" not in output, (
-            "systemMessage must NOT exist when validation passes"
-        )
-
-        # Verify minimal success response (only decision field required)
-        assert "decision" in output, "decision field is required"
-        # Reason is optional on success, hookSpecificOutput should not be present
-
-    @patch("sys.stdin")
-    @patch("sys.stdout", new_callable=StringIO)
-    @patch(
-        "src.des.adapters.drivers.hooks.claude_code_hook_adapter.RealSubagentStopHook"
-    )
-    @patch("src.des.adapters.drivers.hooks.claude_code_hook_adapter.DESConfig")
-    def test_handle_subagent_stop_empty_recovery_suggestions(
-        self, mock_config, mock_hook_class, mock_stdout, mock_stdin
-    ):
-        """SubagentStop handles empty recovery_suggestions gracefully without crashing."""
-        # Arrange
-        step_path = "/docs/feature/project/steps/01-04.json"
-        error_msg = "Step file missing required metadata"
-
-        mock_stdin.read.return_value = json.dumps({"step_path": step_path})
-
-        mock_config_instance = Mock()
-        mock_config_instance.audit_logging_enabled = True
-        mock_config.return_value = mock_config_instance
-
-        mock_hook = Mock()
-        mock_result = Mock()
-        mock_result.validation_status = "FAILED"
-        mock_result.error_message = error_msg
-        mock_result.recovery_suggestions = []  # Empty list (edge case)
-        mock_hook.on_agent_complete.return_value = mock_result
-        mock_hook_class.return_value = mock_hook
-
-        # Act
-        from src.des.adapters.drivers.hooks.claude_code_hook_adapter import (
-            handle_subagent_stop,
-        )
-
-        exit_code = handle_subagent_stop()
-
-        # Assert - no crash/exception should occur
-        assert exit_code == 2, "Exit code must still be 2 for validation failure"
-        output = json.loads(mock_stdout.getvalue())
-
-        # Verify context injection still works with empty recovery_suggestions
-        assert "hookSpecificOutput" in output, (
-            "hookSpecificOutput must exist even with empty recovery_suggestions"
-        )
-        assert "additionalContext" in output["hookSpecificOutput"], (
-            "additionalContext must exist"
-        )
-        assert "systemMessage" in output, "systemMessage must exist"
-
-        # Verify additionalContext is non-empty and contains error message
-        additional_context = output["hookSpecificOutput"]["additionalContext"]
-        assert len(additional_context) > 0, (
-            "additionalContext must not be empty even without recovery suggestions"
-        )
-        assert error_msg in additional_context, (
-            "additionalContext must contain error_message"
-        )
-        assert step_path in additional_context, (
-            "additionalContext must contain step file path"
-        )
-
-        # Verify systemMessage is still generated
-        system_message = output["systemMessage"]
-        assert len(system_message) > 0, "systemMessage must not be empty"
-        assert error_msg in system_message or "fail" in system_message.lower(), (
-            "systemMessage should reference the error"
-        )
-
-        # Verify decision is still 'block'
-        assert output["decision"] == "block", (
-            "Decision must be 'block' for validation failure"
-        )
-
-    @patch("sys.stdin")
-    @patch("sys.stdout", new_callable=StringIO)
-    def test_handle_subagent_stop_with_invalid_json_returns_exit_1(
-        self, mock_stdout, mock_stdin
-    ):
-        """SubagentStop with invalid JSON returns exit 1 (fail-closed)."""
-        # Arrange
-        mock_stdin.read.return_value = "not json"
-
-        # Act
-        from src.des.adapters.drivers.hooks.claude_code_hook_adapter import (
-            handle_subagent_stop,
-        )
-
-        exit_code = handle_subagent_stop()
-
-        # Assert
-        assert exit_code == 1
-        output = json.loads(mock_stdout.getvalue())
-        assert output["status"] == "error"
-
-    @patch("sys.stdin")
-    @patch("sys.stdout", new_callable=StringIO)
-    @patch(
-        "src.des.adapters.drivers.hooks.claude_code_hook_adapter.RealSubagentStopHook"
-    )
-    @patch("src.des.adapters.drivers.hooks.claude_code_hook_adapter.DESConfig")
-    def test_handle_subagent_stop_with_schema_v2_input_accepts_execution_log_path(
-        self, mock_config, mock_hook_class, mock_stdout, mock_stdin
-    ):
-        """SubagentStop accepts Schema v2.0 input (executionLogPath, projectId, stepId)."""
-        # Arrange - Schema v2.0 input format
         mock_stdin.read.return_value = json.dumps(
             {
-                "executionLogPath": "/abs/path/to/execution-log.yaml",
-                "projectId": "audit-log-refactor",
+                "executionLogPath": str(log_file),
+                "projectId": "test-project",
                 "stepId": "01-01",
             }
         )
-
-        mock_config_instance = Mock()
-        mock_config_instance.audit_logging_enabled = True
-        mock_config.return_value = mock_config_instance
-
-        mock_hook = Mock()
-        mock_result = Mock()
-        mock_result.validation_status = "PASSED"
-        mock_hook.on_agent_complete.return_value = mock_result
-        mock_hook_class.return_value = mock_hook
 
         # Act
         from src.des.adapters.drivers.hooks.claude_code_hook_adapter import (
@@ -677,15 +195,28 @@ class TestSubagentStopHandler:
 
     @patch("sys.stdin")
     @patch("sys.stdout", new_callable=StringIO)
-    def test_handle_subagent_stop_with_relative_execution_log_path_returns_error(
-        self, mock_stdout, mock_stdin
+    def test_log_with_missing_phases_returns_block(
+        self, mock_stdout, mock_stdin, tmp_path
     ):
-        """SubagentStop rejects relative paths in executionLogPath (Schema v2.0 requirement)."""
-        # Arrange - Schema v2.0 with RELATIVE path (invalid)
+        """Log missing required phases returns block with recovery suggestions."""
+        # Create incomplete execution log (missing COMMIT)
+        log_file = tmp_path / "execution-log.yaml"
+        log_file.write_text(
+            """project_id: test-project
+created_at: '2026-02-05T14:00:00Z'
+total_steps: 1
+events:
+  - "01-01|PREPARE|EXECUTED|PASS|2026-02-05T14:01:00Z"
+  - "01-01|RED_ACCEPTANCE|EXECUTED|PASS|2026-02-05T14:02:00Z"
+  - "01-01|RED_UNIT|EXECUTED|PASS|2026-02-05T14:03:00Z"
+"""
+        )
+
+        # Arrange
         mock_stdin.read.return_value = json.dumps(
             {
-                "executionLogPath": "docs/feature/project/execution-log.yaml",  # Relative!
-                "projectId": "audit-log-refactor",
+                "executionLogPath": str(log_file),
+                "projectId": "test-project",
                 "stepId": "01-01",
             }
         )
@@ -698,19 +229,42 @@ class TestSubagentStopHandler:
         exit_code = handle_subagent_stop()
 
         # Assert
-        assert exit_code == 1  # Fail-closed on invalid input
+        assert exit_code == 2  # Block
         output = json.loads(mock_stdout.getvalue())
-        assert output["status"] == "error"
-        assert "absolute" in output["reason"].lower()
+        assert output["decision"] == "block"
+        assert "Missing phases" in output["reason"]
 
     @patch("sys.stdin")
     @patch("sys.stdout", new_callable=StringIO)
-    def test_handle_subagent_stop_missing_both_formats_returns_error(
-        self, mock_stdout, mock_stdin
+    def test_log_with_valid_skip_reasons_returns_allow(
+        self, mock_stdout, mock_stdin, tmp_path
     ):
-        """SubagentStop returns error when neither v1 nor v2 format provided."""
-        # Arrange - Missing both step_path (v1) and executionLogPath+projectId+stepId (v2)
-        mock_stdin.read.return_value = json.dumps({"some_other_field": "value"})
+        """Log with valid skip reasons (APPROVED_SKIP, NOT_APPLICABLE) returns allow."""
+        # Create execution log with valid skips
+        log_file = tmp_path / "execution-log.yaml"
+        log_file.write_text(
+            """project_id: test-project
+created_at: '2026-02-05T14:00:00Z'
+total_steps: 1
+events:
+  - "01-01|PREPARE|EXECUTED|PASS|2026-02-05T14:01:00Z"
+  - "01-01|RED_ACCEPTANCE|SKIPPED|NOT_APPLICABLE: Config-only change|2026-02-05T14:02:00Z"
+  - "01-01|RED_UNIT|SKIPPED|APPROVED_SKIP: Tech lead approved|2026-02-05T14:03:00Z"
+  - "01-01|GREEN|EXECUTED|PASS|2026-02-05T14:04:00Z"
+  - "01-01|REVIEW|EXECUTED|PASS|2026-02-05T14:05:00Z"
+  - "01-01|REFACTOR_CONTINUOUS|EXECUTED|PASS|2026-02-05T14:06:00Z"
+  - "01-01|COMMIT|EXECUTED|PASS|2026-02-05T14:07:00Z"
+"""
+        )
+
+        # Arrange
+        mock_stdin.read.return_value = json.dumps(
+            {
+                "executionLogPath": str(log_file),
+                "projectId": "test-project",
+                "stepId": "01-01",
+            }
+        )
 
         # Act
         from src.des.adapters.drivers.hooks.claude_code_hook_adapter import (
@@ -720,10 +274,120 @@ class TestSubagentStopHandler:
         exit_code = handle_subagent_stop()
 
         # Assert
-        assert exit_code == 1  # Fail-closed on invalid input
+        assert exit_code == 0
         output = json.loads(mock_stdout.getvalue())
-        assert output["status"] == "error"
-        assert "required input" in output["reason"].lower()
+        assert output["decision"] == "allow"
+
+    @patch("sys.stdin")
+    @patch("sys.stdout", new_callable=StringIO)
+    def test_log_with_deferred_skip_reason_returns_block(
+        self, mock_stdout, mock_stdin, tmp_path
+    ):
+        """Log with DEFERRED skip reason (blocks commit) returns block."""
+        # Create execution log with blocking skip
+        log_file = tmp_path / "execution-log.yaml"
+        log_file.write_text(
+            """project_id: test-project
+created_at: '2026-02-05T14:00:00Z'
+total_steps: 1
+events:
+  - "01-01|PREPARE|EXECUTED|PASS|2026-02-05T14:01:00Z"
+  - "01-01|RED_ACCEPTANCE|EXECUTED|PASS|2026-02-05T14:02:00Z"
+  - "01-01|RED_UNIT|SKIPPED|DEFERRED: Will add tests later|2026-02-05T14:03:00Z"
+  - "01-01|GREEN|EXECUTED|PASS|2026-02-05T14:04:00Z"
+  - "01-01|REVIEW|EXECUTED|PASS|2026-02-05T14:05:00Z"
+  - "01-01|REFACTOR_CONTINUOUS|EXECUTED|PASS|2026-02-05T14:06:00Z"
+  - "01-01|COMMIT|EXECUTED|PASS|2026-02-05T14:07:00Z"
+"""
+        )
+
+        # Arrange
+        mock_stdin.read.return_value = json.dumps(
+            {
+                "executionLogPath": str(log_file),
+                "projectId": "test-project",
+                "stepId": "01-01",
+            }
+        )
+
+        # Act
+        from src.des.adapters.drivers.hooks.claude_code_hook_adapter import (
+            handle_subagent_stop,
+        )
+
+        exit_code = handle_subagent_stop()
+
+        # Assert
+        assert exit_code == 2  # Block
+        output = json.loads(mock_stdout.getvalue())
+        assert output["decision"] == "block"
+        assert "DEFERRED" in output["reason"] or "blocks commit" in output["reason"]
+
+    @patch("sys.stdin")
+    @patch("sys.stdout", new_callable=StringIO)
+    def test_log_with_project_id_mismatch_returns_block(
+        self, mock_stdout, mock_stdin, tmp_path
+    ):
+        """Log with mismatched project_id returns block."""
+        # Create execution log with different project_id
+        log_file = tmp_path / "execution-log.yaml"
+        log_file.write_text(
+            """project_id: different-project
+created_at: '2026-02-05T14:00:00Z'
+total_steps: 1
+events:
+  - "01-01|PREPARE|EXECUTED|PASS|2026-02-05T14:01:00Z"
+"""
+        )
+
+        # Arrange
+        mock_stdin.read.return_value = json.dumps(
+            {
+                "executionLogPath": str(log_file),
+                "projectId": "test-project",
+                "stepId": "01-01",
+            }
+        )
+
+        # Act
+        from src.des.adapters.drivers.hooks.claude_code_hook_adapter import (
+            handle_subagent_stop,
+        )
+
+        exit_code = handle_subagent_stop()
+
+        # Assert
+        assert exit_code == 2  # Block
+        output = json.loads(mock_stdout.getvalue())
+        assert output["decision"] == "block"
+        assert "mismatch" in output["reason"].lower()
+
+    @patch("sys.stdin")
+    @patch("sys.stdout", new_callable=StringIO)
+    def test_log_file_not_found_returns_block(self, mock_stdout, mock_stdin, tmp_path):
+        """Non-existent log file returns block with helpful recovery suggestions."""
+        # Arrange
+        non_existent_path = tmp_path / "nonexistent.yaml"
+        mock_stdin.read.return_value = json.dumps(
+            {
+                "executionLogPath": str(non_existent_path),
+                "projectId": "test-project",
+                "stepId": "01-01",
+            }
+        )
+
+        # Act
+        from src.des.adapters.drivers.hooks.claude_code_hook_adapter import (
+            handle_subagent_stop,
+        )
+
+        exit_code = handle_subagent_stop()
+
+        # Assert
+        assert exit_code == 2  # Block
+        output = json.loads(mock_stdout.getvalue())
+        assert output["decision"] == "block"
+        assert "not found" in output["reason"].lower()
 
 
 class TestAuditLoggingControl:
@@ -859,12 +523,8 @@ class TestClaudeCodeProtocolContract:
 
     @patch("sys.stdin")
     @patch("sys.stdout", new_callable=StringIO)
-    @patch(
-        "src.des.adapters.drivers.hooks.claude_code_hook_adapter.RealSubagentStopHook"
-    )
-    @patch("src.des.adapters.drivers.hooks.claude_code_hook_adapter.DESConfig")
     def test_subagent_stop_failure_conforms_to_claude_code_protocol(
-        self, mock_config, mock_hook_class, mock_stdout, mock_stdin
+        self, mock_stdout, mock_stdin, tmp_path
     ):
         """SubagentStop failure response conforms to Claude Code hooks protocol.
 
@@ -877,21 +537,21 @@ class TestClaudeCodeProtocolContract:
 
         This test verifies our implementation matches the documented protocol.
         """
-        # Arrange
-        step_path = "/test/step.json"
-        mock_stdin.read.return_value = json.dumps({"step_path": step_path})
+        # Arrange: Create execution-log.yaml with missing phases (validation failure)
+        log_file = tmp_path / "execution-log.yaml"
+        log_file.write_text("""project_id: test-project
+created_at: '2026-02-05T14:00:00Z'
+total_steps: 1
+events:
+  - "01-01|PREPARE|EXECUTED|PASS|2026-02-05T14:01:00Z"
+  - "01-01|RED_ACCEPTANCE|EXECUTED|PASS|2026-02-05T14:02:00Z"
+""")
 
-        mock_config_instance = Mock()
-        mock_config_instance.audit_logging_enabled = True
-        mock_config.return_value = mock_config_instance
-
-        mock_hook = Mock()
-        mock_result = Mock()
-        mock_result.validation_status = "FAILED"
-        mock_result.error_message = "Test error"
-        mock_result.recovery_suggestions = ["Fix 1", "Fix 2"]
-        mock_hook.on_agent_complete.return_value = mock_result
-        mock_hook_class.return_value = mock_hook
+        mock_stdin.read.return_value = json.dumps({
+            "executionLogPath": str(log_file),
+            "projectId": "test-project",
+            "stepId": "01-01",
+        })
 
         # Act
         from src.des.adapters.drivers.hooks.claude_code_hook_adapter import (
@@ -953,12 +613,8 @@ class TestClaudeCodeProtocolContract:
 
     @patch("sys.stdin")
     @patch("sys.stdout", new_callable=StringIO)
-    @patch(
-        "src.des.adapters.drivers.hooks.claude_code_hook_adapter.RealSubagentStopHook"
-    )
-    @patch("src.des.adapters.drivers.hooks.claude_code_hook_adapter.DESConfig")
     def test_subagent_stop_success_conforms_to_minimal_protocol(
-        self, mock_config, mock_hook_class, mock_stdout, mock_stdin
+        self, mock_stdout, mock_stdin, tmp_path
     ):
         """SubagentStop success response conforms to minimal Claude Code protocol.
 
@@ -969,18 +625,26 @@ class TestClaudeCodeProtocolContract:
 
         Minimal response: {"decision": "allow"}
         """
-        # Arrange
-        mock_stdin.read.return_value = json.dumps({"step_path": "/test/step.json"})
+        # Arrange: Create execution-log.yaml with all phases complete (validation success)
+        log_file = tmp_path / "execution-log.yaml"
+        log_file.write_text("""project_id: test-project
+created_at: '2026-02-05T14:00:00Z'
+total_steps: 1
+events:
+  - "01-01|PREPARE|EXECUTED|PASS|2026-02-05T14:01:00Z"
+  - "01-01|RED_ACCEPTANCE|EXECUTED|PASS|2026-02-05T14:02:00Z"
+  - "01-01|RED_UNIT|EXECUTED|PASS|2026-02-05T14:03:00Z"
+  - "01-01|GREEN|EXECUTED|PASS|2026-02-05T14:04:00Z"
+  - "01-01|REVIEW|EXECUTED|PASS|2026-02-05T14:05:00Z"
+  - "01-01|REFACTOR_CONTINUOUS|EXECUTED|PASS|2026-02-05T14:06:00Z"
+  - "01-01|COMMIT|EXECUTED|PASS|2026-02-05T14:07:00Z"
+""")
 
-        mock_config_instance = Mock()
-        mock_config_instance.audit_logging_enabled = True
-        mock_config.return_value = mock_config_instance
-
-        mock_hook = Mock()
-        mock_result = Mock()
-        mock_result.validation_status = "PASSED"
-        mock_hook.on_agent_complete.return_value = mock_result
-        mock_hook_class.return_value = mock_hook
+        mock_stdin.read.return_value = json.dumps({
+            "executionLogPath": str(log_file),
+            "projectId": "test-project",
+            "stepId": "01-01",
+        })
 
         # Act
         from src.des.adapters.drivers.hooks.claude_code_hook_adapter import (
