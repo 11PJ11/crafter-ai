@@ -322,6 +322,12 @@ def install(
     If no --wheel is provided, auto-detects the latest wheel in dist/.
     If no wheel exists, offers to build first (auto-chain).
     """
+    # Display branded header at the start
+    console.print()
+    console.print("[bold]🌊 nWave Installation[/bold]")
+    console.print("   Modern CLI Development Framework")
+    console.print()
+
     # Resolve wheel path
     wheel_path: Path | None = wheel
     if wheel_path is None:
