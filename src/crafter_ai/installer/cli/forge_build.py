@@ -19,10 +19,6 @@ from crafter_ai.installer.domain.artifact_registry import ArtifactRegistry
 from crafter_ai.installer.domain.candidate_version import BumpType, CandidateVersion
 from crafter_ai.installer.domain.check_executor import CheckExecutor
 from crafter_ai.installer.domain.ide_bundle_build_result import IdeBundleBuildResult
-from crafter_ai.installer.domain.ide_bundle_constants import (
-    DEFAULT_OUTPUT_DIR,
-    DEFAULT_SOURCE_DIR,
-)
 from crafter_ai.installer.services.build_service import BuildResult, BuildService
 from crafter_ai.installer.services.ide_bundle_build_service import IdeBundleBuildService
 from crafter_ai.installer.services.version_bump_service import VersionBumpService

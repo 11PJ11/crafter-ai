@@ -10,6 +10,7 @@ All services and tests that reference these values must import from this module.
 
 from pathlib import Path
 
+
 # --- Expected artifact counts (source: journey-forge-tui.yaml) ---
 
 EXPECTED_AGENT_COUNT = 30

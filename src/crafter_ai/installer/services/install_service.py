@@ -19,6 +19,7 @@ from pathlib import Path
 
 from packaging.version import InvalidVersion, Version
 
+
 # Type alias for progress callback: (phase: InstallPhase, message: str) -> None
 ProgressCallback = Callable[["InstallPhase", str], None]
 

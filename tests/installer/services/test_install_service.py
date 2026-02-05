@@ -19,9 +19,8 @@ from crafter_ai.installer.domain.check_result import CheckResult, CheckSeverity
 from crafter_ai.installer.domain.health_checker import HealthChecker
 from crafter_ai.installer.domain.health_result import HealthResult, HealthStatus
 from crafter_ai.installer.ports.backup_port import BackupPort, BackupResult
-from crafter_ai.installer.ports.pipx_port import InstalledPackage
+from crafter_ai.installer.ports.pipx_port import InstalledPackage, PipxPort
 from crafter_ai.installer.ports.pipx_port import InstallResult as PipxInstallResult
-from crafter_ai.installer.ports.pipx_port import PipxPort
 from crafter_ai.installer.services.install_service import (
     InstallPhase,
     InstallResult,

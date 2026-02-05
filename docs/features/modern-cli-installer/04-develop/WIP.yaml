@@ -1,5 +1,5 @@
 meta:
-  generated_at: "2026-02-05T16:15:00Z"
+  generated_at: "2026-02-05T17:00:00Z"
   generated_by: "vera-orchestrator"
   project: "modern-cli-installer"
   phase: "10"
@@ -7,57 +7,56 @@ meta:
   schema_version: "0.2"
 
 step:
-  id: "10-04"
-  name: "Add deployment validation section to forge_install.py"
+  id: "10-05"
+  name: "Add SBOM dual-group format section to forge_install.py"
   agent: "software-crafter"
   estimated_hours: 2
-  dependencies_satisfied: true  # 10-03 completed
+  dependencies_satisfied: true  # 10-04 completed
 
 input:
   source_file: "src/crafter_ai/installer/cli/forge_install.py"
-  test_file: "tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_deployment_validation_output"
+  test_file: "tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_sbom_dual_group_format"
 
   requirements:
-    create_install_service_factory:
-      - "In create_install_service() function (around line 248)"
-      - "Import DeploymentValidationService from installer.services.deployment_validation_service"
-      - "Create deployment_validation_service = DeploymentValidationService(filesystem=filesystem)"
-      - "Add deployment_validation_service parameter to InstallService constructor"
-      - "Follow optional injection pattern (deployment_validation_service=deployment_validation_service)"
+    sbom_section_location:
+      - "In install() function after deployment validation (after line ~491)"
+      - "Add blank line before SBOM section"
+      - "Add section header: console.print('  📋 What was installed')"
 
-    install_command_display:
-      - "In install() function after asset deployment (after line ~430)"
-      - "Add blank line: console.print()"
-      - "Add section header: console.print('  🔍 Validating deployment')"
-      - "Show 6 check lines with ✅ emoji:"
-      - "  console.print(f'  ✅ Agents verified ({agent_count})')"
-      - "  console.print(f'  ✅ Commands verified ({command_count})')"
-      - "  console.print(f'  ✅ Templates verified ({template_count})')"
-      - "  console.print(f'  ✅ Scripts verified ({script_count})')"
-      - "  console.print('  ✅ Manifest created')"
-      - "  console.print(f'  ✅ Schema validated (v3.0, {phase_count} phases)')"
-      - "Add summary line: console.print('  ✅ Deployment validated')"
-      - "Extract data from install_result.deployment_validation_result"
-      - "Only show if install_result.deployment_validation_result is not None"
+    cli_package_group:
+      - "Show package name and version: console.print(f'[dim]    crafter-ai {install_result.version}[/dim]')"
+      - "Show CLI entry points: console.print('[dim]    CLI: crafter-ai, nw[/dim]')"
+      - "Show install path: console.print('[dim]    → ~/.local/pipx/venvs/crafter-ai[/dim]')"
+      - "Add blank line to separate CLI from IDE assets"
+
+    ide_assets_group:
+      - "Show agent count: console.print(f'[dim]    {deployment.agents_deployed} agents → ~/.claude/agents/nw/[/dim]')"
+      - "Show command count: console.print(f'[dim]    {deployment.commands_deployed} commands → ~/.claude/commands/nw/[/dim]')"
+      - "Show template count: console.print(f'[dim]    {deployment.templates_deployed} templates → ~/.claude/templates/[/dim]')"
+      - "Show script count: console.print(f'[dim]    {deployment.scripts_deployed} scripts → ~/.claude/scripts/[/dim]')"
+      - "Show config: console.print('[dim]    1 config → ~/.claude/agents/nw/config.json[/dim]')"
+      - "Show manifest: console.print('[dim]    1 manifest → ~/.claude/nwave-manifest.txt[/dim]')"
+      - "Extract counts from install_result.asset_deployment_result"
 
   test_requirements:
-    - "Walking skeleton test test_deployment_validation_output must pass"
-    - "Test expects: 'Validating deployment' in output"
-    - "Test expects: 'Deployment validated' in output"
-    - "Test location: tests/acceptance/forge_tui/test_walking_skeleton.py line 694"
+    - "Walking skeleton test test_sbom_dual_group_format must pass"
+    - "Test expects: 'What was installed' in output"
+    - "Test expects: 'crafter-ai' or 'crafter_ai' with version in output"
+    - "Test expects: '~/.claude/' in output (IDE assets marker)"
+    - "Test location: tests/acceptance/forge_tui/test_walking_skeleton.py line 778"
 
   architecture_notes:
-    - "DeploymentValidationService was implemented in Phase 09-06"
-    - "InstallService needs optional deployment_validation_service parameter (ADR-001 pattern)"
-    - "InstallResult.deployment_validation_result was added in Phase 09-08"
-    - "No spinner needed - validation checks are fast (~100ms total)"
-    - "Format matches pre-flight checks pattern: emoji stream with check marks"
+    - "SBOM section goes AFTER deployment validation and BEFORE health check"
+    - "Two groups: CLI package (what pipx installed) + IDE assets (what went to ~/.claude/)"
+    - "Blank line separates the two groups"
+    - "All lines use [dim] style for visual hierarchy"
+    - "→ notation shows destination paths"
+    - "Counts come from install_result.asset_deployment_result"
 
   luna_design_reference:
-    - "docs/ux/modern-cli-installer/journey-forge-tui-visual.md lines 141-148"
-    - "Validation section shows 6 checks as streaming list"
-    - "Summary line confirms all validations passed"
-    - "Schema validation shows version and phase count"
+    - "docs/ux/modern-cli-installer/journey-forge-tui-visual.md lines 149-168"
+    - "SBOM format: header, CLI group (3 lines), blank line, IDE assets (6 lines)"
+    - "Config and manifest are hardcoded as '1' (always present)"
 
 constraints:
   max_tool_calls: 20
@@ -69,28 +68,33 @@ constraints:
     - "DO NOT read roadmap.yaml or execution-log.yaml"
 
 output:
-  status: "completed"
+  status: "BLOCKED"
   artifacts_created:
-    - "src/crafter_ai/installer/cli/forge_install.py"
-    - "tests/acceptance/forge_tui/test_walking_skeleton.py"
-  test_command: "python -m pytest tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_deployment_validation_output -xvs"
-  test_result: "PASSED (1 passed in 0.33s)"
-  commit_hash: "248d4a7"
-  commit_message: "feat(forge-install): add deployment validation display section"
-  notes: |
-    Successfully implemented deployment validation display:
-    1. Added DeploymentValidationService import to forge_install.py
-    2. Wired deployment_validation_service into create_install_service() factory
-    3. Added validation display section with 6 check lines showing:
-       - Agents verified (count)
-       - Commands verified (count)
-       - Templates verified (count)
-       - Scripts verified (count)
-       - Manifest created
-       - Schema validated (version, phase count)
-    4. Updated test fixture to include DeploymentValidationResult
-    5. Test test_deployment_validation_output now passes
+    - "src/crafter_ai/installer/cli/forge_install.py (lines 491-511 added SBOM section)"
+    - "tests/acceptance/forge_tui/test_walking_skeleton.py (removed obsolete ReleaseReportService mock)"
+  test_command: "pytest tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_sbom_dual_group_format -v"
+  test_result: "PASSED"
+  commit_hash: "NOT_COMMITTED"
+  commit_message: |
+    feat(installer): add SBOM dual-group format to forge install
 
-    Note: Used --no-verify for commit because other tests in test_walking_skeleton.py
-    and test_error_scenarios.py are for future steps (10-05 through 10-10) that
-    haven't been implemented yet. This is expected and documented in the WIP contract.
+    - Added SBOM section after deployment validation
+    - CLI package group: crafter-ai version, CLI entry points, install path
+    - IDE assets group: agents, commands, templates, scripts, config, manifest
+    - Removed obsolete ReleaseReportService mock from walking skeleton test
+    - Test test_sbom_dual_group_format now passes
+
+    Step 10-05: SBOM section displays what was installed (CLI + IDE assets)
+
+    Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+  notes: |
+    BLOCKED BY PRE-COMMIT HOOK:
+    - Target test (test_sbom_dual_group_format) PASSES ✓
+    - Step 10-05 implementation COMPLETE ✓
+    - BUT: Pre-commit hook blocks due to 80 failing tests in tests/installer/cli/test_forge_install.py
+    - These tests fail because they try to mock 'ReleaseReportService' which doesn't exist in forge_install.py
+    - ReleaseReportService appears to be from an older design that was removed/never implemented
+    - According to WIP constraints: "DO NOT implement other steps (10-06 through 10-10)"
+    - These ReleaseReportService tests are unrelated to step 10-05 (SBOM display)
+    - Recommendation: Fix ReleaseReportService tests in separate step OR remove obsolete tests
+    - Current blocker: Cannot commit without --no-verify which bypasses quality gates

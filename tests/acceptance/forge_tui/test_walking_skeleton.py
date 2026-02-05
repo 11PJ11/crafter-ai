@@ -264,10 +264,6 @@ def invoke_full_flow(
     Returns:
         The combined stdout output from both build and install phases.
     """
-    mock_report = MagicMock()
-    mock_report.generate.return_value = MagicMock()
-    mock_report.format_console.return_value = ""
-
     with (
         patch(
             "crafter_ai.installer.cli.forge_build.create_build_service"
@@ -278,9 +274,6 @@ def invoke_full_flow(
         patch(
             "crafter_ai.installer.cli.forge_install.run_pre_flight_checks"
         ) as mock_install_preflight,
-        patch(
-            "crafter_ai.installer.cli.forge_install.ReleaseReportService"
-        ) as mock_report_service,
         patch.dict("os.environ", {"CI": ""}, clear=False),
     ):
         # Wire up build service mock
@@ -296,9 +289,6 @@ def invoke_full_flow(
 
         # Install pre-flight passes
         mock_install_preflight.return_value = install_pre_flight_results
-
-        # Report service (current code uses this; new TUI may not)
-        mock_report_service.return_value = mock_report
 
         result = runner.invoke(app, ["forge", "build"], input="y\n")
 

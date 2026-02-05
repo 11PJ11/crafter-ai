@@ -35,8 +35,8 @@ from crafter_ai.installer.services.release_readiness_service import (
     ReleaseReadinessService,
 )
 from crafter_ai.installer.services.release_report_service import (
-    ReleaseReportService,
-)  # Kept for test mock compatibility (24+ tests patch this path)
+    ReleaseReportService,  # Kept for test mock compatibility (80+ tests patch this path)
+)
 
 
 console = Console()
@@ -490,6 +490,28 @@ def install(
                     f"  [yellow]Actual counts:[/yellow] "
                     f"{install_result.asset_deployment_result.target_path if install_result.asset_deployment_result else '~/.claude'}"
                 )
+
+    # SBOM (Software Bill of Materials) section
+    console.print()
+    console.print("  📋 What was installed")
+
+    # CLI package group
+    console.print(f"[dim]    crafter-ai {install_result.version}[/dim]")
+    console.print("[dim]    CLI: crafter-ai, nw[/dim]")
+    console.print("[dim]    → ~/.local/pipx/venvs/crafter-ai[/dim]")
+
+    # Blank line to separate CLI from IDE assets
+    console.print()
+
+    # IDE assets group
+    if install_result.asset_deployment_result is not None:
+        deployment = install_result.asset_deployment_result
+        console.print(f"[dim]    {deployment.agents_deployed} agents → ~/.claude/agents/nw/[/dim]")
+        console.print(f"[dim]    {deployment.commands_deployed} commands → ~/.claude/commands/nw/[/dim]")
+        console.print(f"[dim]    {deployment.templates_deployed} templates → ~/.claude/templates/[/dim]")
+        console.print(f"[dim]    {deployment.scripts_deployed} scripts → ~/.claude/scripts/[/dim]")
+    console.print("[dim]    1 config → ~/.claude/agents/nw/config.json[/dim]")
+    console.print("[dim]    1 manifest → ~/.claude/nwave-manifest.txt[/dim]")
 
     if install_result.health_status is not None:
         console.print()

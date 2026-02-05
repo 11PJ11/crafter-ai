@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING
 
 from crafter_ai.installer.domain.artifact_registry import ArtifactRegistry
 
+
 if TYPE_CHECKING:
     from rich.console import Console
 from crafter_ai.installer.domain.candidate_version import CandidateVersion
@@ -158,7 +159,7 @@ class BuildService:
         current_version: str,
         output_dir: Path,
         prerelease: str | None = None,
-        console: "Console | None" = None,
+        console: Console | None = None,
         spinner_style: str = "aesthetic",
     ) -> BuildResult:
         """Execute the complete build journey.

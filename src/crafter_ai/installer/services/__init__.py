@@ -3,14 +3,14 @@
 from crafter_ai.installer.services.asset_deployment_service import (
     AssetDeploymentService,
 )
-from crafter_ai.installer.services.deployment_validation_service import (
-    DeploymentValidationService,
-)
 from crafter_ai.installer.services.auto_repair_service import (
     AutoRepairService,
     RepairResult,
 )
 from crafter_ai.installer.services.build_service import BuildResult, BuildService
+from crafter_ai.installer.services.deployment_validation_service import (
+    DeploymentValidationService,
+)
 from crafter_ai.installer.services.ide_bundle_build_service import (
     IdeBundleBuildService,
 )
@@ -36,10 +36,10 @@ from crafter_ai.installer.services.wheel_validation_service import (
 
 __all__ = [
     "AssetDeploymentService",
-    "DeploymentValidationService",
     "AutoRepairService",
     "BuildResult",
     "BuildService",
+    "DeploymentValidationService",
     "IdeBundleBuildService",
     "InstallPhase",
     "InstallResult",

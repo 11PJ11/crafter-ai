@@ -19,6 +19,7 @@ from crafter_ai.installer.domain.ide_bundle_constants import (
 )
 from crafter_ai.installer.ports.filesystem_port import FileSystemPort
 
+
 CHECK_ID = "ide-bundle-exists"
 CHECK_NAME = "IDE Bundle Exists"
 REMEDIATION = "Run 'forge build' to create the IDE bundle"
