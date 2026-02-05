@@ -63,10 +63,17 @@ class CleanResult:
         Returns:
             CleanResult with ANSI codes stripped from output.
         """
+        # Try to get stderr if separately captured, otherwise use empty string
+        try:
+            stderr = strip_ansi(result.stderr) if result.stderr else ""
+        except ValueError:
+            # stderr not separately captured (mix_stderr=True or default)
+            stderr = ""
+
         return cls(
             exit_code=result.exit_code,
             output=strip_ansi(result.output),
-            stderr=strip_ansi(result.stderr) if result.stderr else "",
+            stderr=stderr,
             exception=result.exception,
             _original=result,
         )
