@@ -410,7 +410,7 @@ def install(
         display_failure(install_result.error_message or "Unknown error")
         raise typer.Exit(code=1)
 
-    console.print(f"  ✅ CLI installed via pipx ({install_duration})")
+    console.print(f"  ✅ nWave CLI installed via pipx ({install_duration})")
 
     # Asset deployment section
     if install_result.asset_deployment_result is not None:
