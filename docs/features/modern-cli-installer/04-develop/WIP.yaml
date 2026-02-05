@@ -1,5 +1,5 @@
 meta:
-  generated_at: "2026-02-05T15:30:00Z"
+  generated_at: "2026-02-05T16:15:00Z"
   generated_by: "vera-orchestrator"
   project: "modern-cli-installer"
   phase: "10"
@@ -7,64 +7,57 @@ meta:
   schema_version: "0.2"
 
 step:
-  id: "10-03"
-  name: "Add asset deployment section to forge_install.py"
+  id: "10-04"
+  name: "Add deployment validation section to forge_install.py"
   agent: "software-crafter"
   estimated_hours: 2
-  dependencies_satisfied: true  # 10-02 completed
+  dependencies_satisfied: true  # 10-03 completed
 
 input:
   source_file: "src/crafter_ai/installer/cli/forge_install.py"
-  test_file: "tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_asset_deployment_output"
+  test_file: "tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_deployment_validation_output"
 
   requirements:
     create_install_service_factory:
       - "In create_install_service() function (around line 248)"
-      - "Import AssetDeploymentService from installer.services.asset_deployment_service"
-      - "Import RealFileSystemAdapter from installer.adapters.filesystem_adapter"
-      - "Create filesystem = RealFileSystemAdapter()"
-      - "Create asset_deployment_service = AssetDeploymentService(filesystem=filesystem)"
-      - "Add asset_deployment_service parameter to InstallService constructor"
-      - "Follow optional injection pattern (asset_deployment_service=asset_deployment_service)"
+      - "Import DeploymentValidationService from installer.services.deployment_validation_service"
+      - "Create deployment_validation_service = DeploymentValidationService(filesystem=filesystem)"
+      - "Add deployment_validation_service parameter to InstallService constructor"
+      - "Follow optional injection pattern (deployment_validation_service=deployment_validation_service)"
 
     install_command_display:
-      - "In install() function after pipx install (after line 388)"
+      - "In install() function after asset deployment (after line ~430)"
       - "Add blank line: console.print()"
-      - "Add section header: console.print('  ⚙️ Deploying nWave assets')"
-      - "Add spinner: with console.status('⏳ Installing to ~/.claude/...', spinner=SPINNER_STYLE):"
-      - "Call asset deployment during spinner (if service has asset_deployment_service)"
-      - "After spinner, print: console.print(f'  ✅ Assets deployed ({duration})')"
-      - "Show 4 detail lines with dim style:"
-      - "  console.print(f'  {agent_count} agents → ~/.claude/agents/nw', style='dim')"
-      - "  console.print(f'  {command_count} commands → ~/.claude/commands/nw', style='dim')"
-      - "  console.print(f'  {template_count} templates → ~/.claude/templates', style='dim')"
-      - "  console.print(f'  {script_count} scripts → ~/.claude/scripts', style='dim')"
-      - "Extract counts from install_result.asset_deployment_result"
-      - "Only show if install_result.asset_deployment_result is not None"
-
-    spinner_style:
-      - "Import SPINNER_STYLE from forge_build at top of file"
-      - "Or define SPINNER_STYLE = 'aesthetic' in forge_install.py"
+      - "Add section header: console.print('  🔍 Validating deployment')"
+      - "Show 6 check lines with ✅ emoji:"
+      - "  console.print(f'  ✅ Agents verified ({agent_count})')"
+      - "  console.print(f'  ✅ Commands verified ({command_count})')"
+      - "  console.print(f'  ✅ Templates verified ({template_count})')"
+      - "  console.print(f'  ✅ Scripts verified ({script_count})')"
+      - "  console.print('  ✅ Manifest created')"
+      - "  console.print(f'  ✅ Schema validated (v3.0, {phase_count} phases)')"
+      - "Add summary line: console.print('  ✅ Deployment validated')"
+      - "Extract data from install_result.deployment_validation_result"
+      - "Only show if install_result.deployment_validation_result is not None"
 
   test_requirements:
-    - "Walking skeleton test test_asset_deployment_output must pass"
-    - "Test expects: 'Deploying nWave assets' in output"
-    - "Test expects: 'Assets deployed' in output"
-    - "Test location: tests/acceptance/forge_tui/test_walking_skeleton.py line 672"
+    - "Walking skeleton test test_deployment_validation_output must pass"
+    - "Test expects: 'Validating deployment' in output"
+    - "Test expects: 'Deployment validated' in output"
+    - "Test location: tests/acceptance/forge_tui/test_walking_skeleton.py line 694"
 
   architecture_notes:
-    - "AssetDeploymentService was implemented in Phase 09-05"
-    - "InstallService needs optional asset_deployment_service parameter (ADR-001 pattern)"
-    - "InstallResult.asset_deployment_result was added in Phase 09-08"
-    - "Follow same spinner pattern as forge_build.py (BuildService.execute)"
-    - "Arrow notation (→) shows source → destination mapping"
-    - "Paths shown should match actual deployment targets (~/.claude/...)"
+    - "DeploymentValidationService was implemented in Phase 09-06"
+    - "InstallService needs optional deployment_validation_service parameter (ADR-001 pattern)"
+    - "InstallResult.deployment_validation_result was added in Phase 09-08"
+    - "No spinner needed - validation checks are fast (~100ms total)"
+    - "Format matches pre-flight checks pattern: emoji stream with check marks"
 
   luna_design_reference:
-    - "docs/ux/modern-cli-installer/journey-forge-tui-visual.md lines 166-175"
-    - "Asset deployment shows spinner during copy operations"
-    - "Resolves to persistent line with duration"
-    - "Detail lines use dim style to de-emphasize vs main completion line"
+    - "docs/ux/modern-cli-installer/journey-forge-tui-visual.md lines 141-148"
+    - "Validation section shows 6 checks as streaming list"
+    - "Summary line confirms all validations passed"
+    - "Schema validation shows version and phase count"
 
 constraints:
   max_tool_calls: 20
@@ -76,27 +69,10 @@ constraints:
     - "DO NOT read roadmap.yaml or execution-log.yaml"
 
 output:
-  status: "SUCCESS"
-  artifacts_created:
-    - "src/crafter_ai/installer/cli/forge_install.py (modified)"
-    - "tests/acceptance/forge_tui/test_walking_skeleton.py (modified)"
-  test_command: "pytest tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_asset_deployment_output -xvs"
-  test_result: "PASSED"
-  commit_hash: "pending"
-  commit_message: "feat(forge-install): add asset deployment display section"
-  notes: |
-    Step 10-03 completed successfully.
-
-    Changes implemented:
-    1. Wired AssetDeploymentService into create_install_service() factory
-    2. Added asset deployment display section to install() function:
-       - Header: "Deploying nWave assets"
-       - Spinner with aesthetic style
-       - Completion line with duration
-       - Detail lines showing deployment counts (agents/commands/templates/scripts)
-    3. Updated test fixture to include asset_deployment_result
-
-    Target test passes: test_asset_deployment_output validates section present.
-
-    Other test failures are EXPECTED - they test future steps (10-04 through 10-10)
-    which are explicitly forbidden by the WIP contract constraints.
+  status: null
+  artifacts_created: []
+  test_command: null
+  test_result: null
+  commit_hash: null
+  commit_message: null
+  notes: null

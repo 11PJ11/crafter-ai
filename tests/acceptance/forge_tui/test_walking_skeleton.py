@@ -159,6 +159,9 @@ def successful_install_result() -> InstallResult:
     from crafter_ai.installer.domain.asset_deployment_result import (
         AssetDeploymentResult,
     )
+    from crafter_ai.installer.domain.deployment_validation_result import (
+        DeploymentValidationResult,
+    )
 
     return InstallResult(
         success=True,
@@ -181,6 +184,17 @@ def successful_install_result() -> InstallResult:
             templates_deployed=5,
             scripts_deployed=2,
             target_path=Path.home() / ".claude",
+        ),
+        deployment_validation_result=DeploymentValidationResult(
+            valid=True,
+            agent_count_match=True,
+            command_count_match=True,
+            template_count_match=True,
+            script_count_match=True,
+            manifest_written=True,
+            schema_version="v3.0",
+            schema_phases=7,
+            mismatches=[],
         ),
     )
 

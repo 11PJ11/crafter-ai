@@ -27,6 +27,9 @@ from crafter_ai.installer.domain.health_checker import HealthChecker
 from crafter_ai.installer.services.asset_deployment_service import (
     AssetDeploymentService,
 )
+from crafter_ai.installer.services.deployment_validation_service import (
+    DeploymentValidationService,
+)
 from crafter_ai.installer.services.install_service import InstallService
 from crafter_ai.installer.services.release_readiness_service import (
     ReleaseReadinessService,
@@ -274,6 +277,9 @@ def create_install_service(skip_verification: bool = False) -> InstallService:
     filesystem = RealFileSystemAdapter()
     asset_deployment_service = AssetDeploymentService(filesystem=filesystem)
 
+    # Create deployment validation service
+    deployment_validation_service = DeploymentValidationService(filesystem=filesystem)
+
     return InstallService(
         pipx_port=pipx_port,
         backup_port=backup_port,
@@ -281,6 +287,7 @@ def create_install_service(skip_verification: bool = False) -> InstallService:
         release_readiness_service=release_readiness_service,
         health_checker=health_checker,
         asset_deployment_service=asset_deployment_service,
+        deployment_validation_service=deployment_validation_service,
     )
 
 
@@ -442,6 +449,31 @@ def install(
             f"  {deployment.scripts_deployed} scripts → ~/.claude/scripts",
             style="dim",
         )
+
+    # Deployment validation section
+    if install_result.deployment_validation_result is not None:
+        console.print()
+        console.print("  🔍 Validating deployment")
+
+        validation = install_result.deployment_validation_result
+
+        # Extract counts from deployment result for display
+        if install_result.asset_deployment_result is not None:
+            deployment = install_result.asset_deployment_result
+            console.print(f"  ✅ Agents verified ({deployment.agents_deployed})")
+            console.print(f"  ✅ Commands verified ({deployment.commands_deployed})")
+            console.print(f"  ✅ Templates verified ({deployment.templates_deployed})")
+            console.print(f"  ✅ Scripts verified ({deployment.scripts_deployed})")
+
+        console.print("  ✅ Manifest created")
+
+        # Show schema validation with version and phase count
+        if validation.schema_version and validation.schema_phases:
+            console.print(
+                f"  ✅ Schema validated ({validation.schema_version}, {validation.schema_phases} phases)"
+            )
+
+        console.print("  ✅ Deployment validated")
 
     if install_result.health_status is not None:
         console.print()
