@@ -482,11 +482,10 @@ def install(
                     console.print(f"    • {error}", style="red")
                 console.print()
                 console.print(
-                    "  [yellow]Expected counts defined in:[/yellow] "
-                    "src/crafter_ai/installer/domain/ide_bundle_constants.py"
+                    f"  [yellow]Expected counts:[/yellow] nWave bundle {install_result.version}"
                 )
                 console.print(
-                    "  [yellow]Actual counts found in:[/yellow] "
+                    f"  [yellow]Actual counts:[/yellow] "
                     f"{install_result.asset_deployment_result.target_path if install_result.asset_deployment_result else '~/.claude'}"
                 )
 
