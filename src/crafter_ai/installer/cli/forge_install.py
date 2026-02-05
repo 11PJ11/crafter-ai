@@ -505,10 +505,11 @@ def install(
 
     if install_result.health_status is not None:
         console.print()
-        console.print("  \U0001fa7a Verifying installation")
-        console.print("  \u2705 CLI responds to --version")
-        console.print("  \u2705 Core modules loadable")
-        console.print(f"  \u2705 Health: {install_result.health_status.value.upper()}")
+        console.print("  🩺 Verifying installation")
+        console.print("    ✅ nWave assets accessible")
+        console.print("    ✅ Core modules loadable")
+        console.print(f"    ✅ CLI responds to --version → {install_result.version}")
+        console.print(f"    🩻 Health: {install_result.health_status.value.upper()} 👍")
 
     # Check for installation failure (after displaying all available information)
     if not install_result.success:
