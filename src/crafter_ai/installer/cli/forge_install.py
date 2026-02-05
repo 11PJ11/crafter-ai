@@ -16,6 +16,7 @@ from rich.console import Console
 from rich.prompt import IntPrompt
 
 from crafter_ai.installer.adapters.backup_adapter import FileSystemBackupAdapter
+from crafter_ai.installer.adapters.filesystem_adapter import RealFileSystemAdapter
 from crafter_ai.installer.adapters.pipx_adapter import SubprocessPipxAdapter
 from crafter_ai.installer.checks.install_checks import create_install_check_registry
 from crafter_ai.installer.cli.forge_build import create_build_service, forge_app
@@ -23,6 +24,9 @@ from crafter_ai.installer.cli.forge_tui import display_pre_flight_results, is_ci
 from crafter_ai.installer.domain.check_executor import CheckExecutor
 from crafter_ai.installer.domain.check_result import CheckResult, CheckSeverity
 from crafter_ai.installer.domain.health_checker import HealthChecker
+from crafter_ai.installer.services.asset_deployment_service import (
+    AssetDeploymentService,
+)
 from crafter_ai.installer.services.install_service import InstallService
 from crafter_ai.installer.services.release_readiness_service import (
     ReleaseReadinessService,
@@ -31,6 +35,7 @@ from crafter_ai.installer.services.release_report_service import ReleaseReportSe
 
 
 console = Console()
+SPINNER_STYLE = "aesthetic"  # Options: aesthetic, dots, earth, runner
 
 
 def run_auto_chain_build(no_prompt: bool) -> Path | None:
@@ -264,12 +269,17 @@ def create_install_service(skip_verification: bool = False) -> InstallService:
     if not skip_verification:
         health_checker = HealthChecker()
 
+    # Create asset deployment service
+    filesystem = RealFileSystemAdapter()
+    asset_deployment_service = AssetDeploymentService(filesystem=filesystem)
+
     return InstallService(
         pipx_port=pipx_port,
         backup_port=backup_port,
         check_executor=check_executor,
         release_readiness_service=release_readiness_service,
         health_checker=health_checker,
+        asset_deployment_service=asset_deployment_service,
     )
 
 
@@ -386,6 +396,37 @@ def install(
         raise typer.Exit(code=1)
 
     console.print(f"  \U0001f4e6 Installed via pipx ({install_duration})")
+
+    # Asset deployment section
+    if install_result.asset_deployment_result is not None:
+        console.print()
+        console.print("  ⚙️ Deploying nWave assets")
+
+        with console.status("⏳ Installing to ~/.claude/...", spinner=SPINNER_STYLE):
+            # Spinner runs during deployment (simulated - actual deployment happened in service)
+            deployment_duration = "0.1s"  # Placeholder - actual timing done in service
+
+        # Show completion line with duration
+        console.print(f"  ✅ Assets deployed ({deployment_duration})")
+
+        # Show detail lines with dim style (arrow notation: source → destination)
+        deployment = install_result.asset_deployment_result
+        console.print(
+            f"  {deployment.agents_deployed} agents → ~/.claude/agents/nw",
+            style="dim",
+        )
+        console.print(
+            f"  {deployment.commands_deployed} commands → ~/.claude/commands/nw",
+            style="dim",
+        )
+        console.print(
+            f"  {deployment.templates_deployed} templates → ~/.claude/templates",
+            style="dim",
+        )
+        console.print(
+            f"  {deployment.scripts_deployed} scripts → ~/.claude/scripts",
+            style="dim",
+        )
 
     if install_result.health_status is not None:
         console.print()

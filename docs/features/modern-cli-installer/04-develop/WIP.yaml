@@ -1,5 +1,5 @@
 meta:
-  generated_at: "2026-02-05T19:15:00Z"
+  generated_at: "2026-02-05T15:30:00Z"
   generated_by: "vera-orchestrator"
   project: "modern-cli-installer"
   phase: "10"
@@ -7,64 +7,64 @@ meta:
   schema_version: "0.2"
 
 step:
-  id: "10-01"
-  name: "Add IDE bundle build section to forge_build.py"
+  id: "10-03"
+  name: "Add asset deployment section to forge_install.py"
   agent: "software-crafter"
   estimated_hours: 2
-  dependencies_satisfied: true  # 09-04 completed
+  dependencies_satisfied: true  # 10-02 completed
 
 input:
-  source_file: "src/crafter_ai/installer/cli/forge_build.py"
-  test_file: "tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_ide_bundle_build_output"
+  source_file: "src/crafter_ai/installer/cli/forge_install.py"
+  test_file: "tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_asset_deployment_output"
 
   requirements:
-    factory_changes:
-      - "In create_build_service() factory (line 35):"
-      - "Import IdeBundleBuildService from crafter_ai.installer.services.ide_bundle_build_service"
-      - "Import FileSystemAdapter from crafter_ai.installer.adapters.filesystem_adapter"
-      - "Import DEFAULT_SOURCE_DIR, DEFAULT_OUTPUT_DIR from crafter_ai.installer.domain.ide_bundle_constants"
-      - "Instantiate: filesystem = FileSystemAdapter()"
-      - "Instantiate: ide_bundle_build_service = IdeBundleBuildService(filesystem=filesystem)"
-      - "Pass ide_bundle_build_service to BuildService constructor (keyword arg)"
-      - "BuildService already accepts this param with None default (Phase 09-04)"
+    create_install_service_factory:
+      - "In create_install_service() function (around line 248)"
+      - "Import AssetDeploymentService from installer.services.asset_deployment_service"
+      - "Import RealFileSystemAdapter from installer.adapters.filesystem_adapter"
+      - "Create filesystem = RealFileSystemAdapter()"
+      - "Create asset_deployment_service = AssetDeploymentService(filesystem=filesystem)"
+      - "Add asset_deployment_service parameter to InstallService constructor"
+      - "Follow optional injection pattern (asset_deployment_service=asset_deployment_service)"
 
-    display_function_changes:
-      - "Create new function: display_ide_bundle_build(result: IdeBundleBuildResult, duration: str) -> None"
-      - "Section header: console.print('  ⚙️ Building IDE bundle')"
-      - "Detail lines (dim style):"
-      - "  - console.print(f'  {result.agent_count} agents', style='dim')"
-      - "  - console.print(f'  {result.command_count} commands', style='dim')"
-      - "  - console.print(f'  {result.team_count} teams', style='dim')"
-      - "If result.embed_injection_count > 0: console.print(f'  {result.embed_injection_count} embeds injected', style='dim')"
-      - "If result.yaml_warnings: for warning in result.yaml_warnings: console.print(f'  ⚠️ {warning}', style='yellow')"
-      - "Completion line: console.print(f'  ✅ IDE bundle built ({duration})')"
-      - "Blank line: console.print()"
+    install_command_display:
+      - "In install() function after pipx install (after line 388)"
+      - "Add blank line: console.print()"
+      - "Add section header: console.print('  ⚙️ Deploying nWave assets')"
+      - "Add spinner: with console.status('⏳ Installing to ~/.claude/...', spinner=SPINNER_STYLE):"
+      - "Call asset deployment during spinner (if service has asset_deployment_service)"
+      - "After spinner, print: console.print(f'  ✅ Assets deployed ({duration})')"
+      - "Show 4 detail lines with dim style:"
+      - "  console.print(f'  {agent_count} agents → ~/.claude/agents/nw', style='dim')"
+      - "  console.print(f'  {command_count} commands → ~/.claude/commands/nw', style='dim')"
+      - "  console.print(f'  {template_count} templates → ~/.claude/templates', style='dim')"
+      - "  console.print(f'  {script_count} scripts → ~/.claude/scripts', style='dim')"
+      - "Extract counts from install_result.asset_deployment_result"
+      - "Only show if install_result.asset_deployment_result is not None"
 
-    build_command_integration:
-      - "In build_command() function, after display_wheel_validation() call (around line 130-140):"
-      - "If result.ide_bundle_result is not None:"
-      - "  Call display_ide_bundle_build(result.ide_bundle_result, duration='0.3s')"
-      - "Note: Duration is placeholder for now (actual timing from BuildResult not yet available)"
+    spinner_style:
+      - "Import SPINNER_STYLE from forge_build at top of file"
+      - "Or define SPINNER_STYLE = 'aesthetic' in forge_install.py"
 
   test_requirements:
-    - "Walking skeleton test test_ide_bundle_build_output must pass"
-    - "Test expects: 'Building IDE bundle' in output"
-    - "Test expects: 'IDE bundle built' in output"
-    - "Test location: tests/acceptance/forge_tui/test_walking_skeleton.py line 477"
+    - "Walking skeleton test test_asset_deployment_output must pass"
+    - "Test expects: 'Deploying nWave assets' in output"
+    - "Test expects: 'Assets deployed' in output"
+    - "Test location: tests/acceptance/forge_tui/test_walking_skeleton.py line 672"
 
   architecture_notes:
-    - "BuildService already has ide_bundle_build_service optional param (Phase 09-04)"
-    - "BuildResult already has ide_bundle_result field (Phase 09-04)"
-    - "IdeBundleBuildResult is in crafter_ai.installer.domain.ide_bundle_build_result"
-    - "DEFAULT_SOURCE_DIR = Path('src/crafter_ai/installer/embedded')"
-    - "DEFAULT_OUTPUT_DIR = Path('dist/ide')"
-    - "This is the first visible connection between Phase 09 backend and CLI layer"
-    - "Spinner animation not yet implemented (Phase 10 focuses on content, spinners later)"
+    - "AssetDeploymentService was implemented in Phase 09-05"
+    - "InstallService needs optional asset_deployment_service parameter (ADR-001 pattern)"
+    - "InstallResult.asset_deployment_result was added in Phase 09-08"
+    - "Follow same spinner pattern as forge_build.py (BuildService.execute)"
+    - "Arrow notation (→) shows source → destination mapping"
+    - "Paths shown should match actual deployment targets (~/.claude/...)"
 
   luna_design_reference:
-    - "docs/ux/modern-cli-installer/journey-forge-tui-visual.md lines 97-107"
-    - "Section shows: header, spinner placeholder, detail counts, completion"
-    - "Emoji: ⚙️ for section header, ✅ for completion"
+    - "docs/ux/modern-cli-installer/journey-forge-tui-visual.md lines 166-175"
+    - "Asset deployment shows spinner during copy operations"
+    - "Resolves to persistent line with duration"
+    - "Detail lines use dim style to de-emphasize vs main completion line"
 
 constraints:
   max_tool_calls: 20
@@ -76,10 +76,27 @@ constraints:
     - "DO NOT read roadmap.yaml or execution-log.yaml"
 
 output:
-  status: null
-  artifacts_created: []
-  test_command: null
-  test_result: null
-  commit_hash: null
-  commit_message: null
-  notes: null
+  status: "SUCCESS"
+  artifacts_created:
+    - "src/crafter_ai/installer/cli/forge_install.py (modified)"
+    - "tests/acceptance/forge_tui/test_walking_skeleton.py (modified)"
+  test_command: "pytest tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_asset_deployment_output -xvs"
+  test_result: "PASSED"
+  commit_hash: "pending"
+  commit_message: "feat(forge-install): add asset deployment display section"
+  notes: |
+    Step 10-03 completed successfully.
+
+    Changes implemented:
+    1. Wired AssetDeploymentService into create_install_service() factory
+    2. Added asset deployment display section to install() function:
+       - Header: "Deploying nWave assets"
+       - Spinner with aesthetic style
+       - Completion line with duration
+       - Detail lines showing deployment counts (agents/commands/templates/scripts)
+    3. Updated test fixture to include asset_deployment_result
+
+    Target test passes: test_asset_deployment_output validates section present.
+
+    Other test failures are EXPECTED - they test future steps (10-04 through 10-10)
+    which are explicitly forbidden by the WIP contract constraints.

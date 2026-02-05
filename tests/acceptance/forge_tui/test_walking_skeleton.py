@@ -156,6 +156,10 @@ def successful_build_result(
 @pytest.fixture
 def successful_install_result() -> InstallResult:
     """Successful install with HEALTHY status."""
+    from crafter_ai.installer.domain.asset_deployment_result import (
+        AssetDeploymentResult,
+    )
+
     return InstallResult(
         success=True,
         version="0.2.0",
@@ -170,6 +174,14 @@ def successful_install_result() -> InstallResult:
         error_message=None,
         health_status=HealthStatus.HEALTHY,
         verification_warnings=[],
+        asset_deployment_result=AssetDeploymentResult(
+            success=True,
+            agents_deployed=30,
+            commands_deployed=23,
+            templates_deployed=5,
+            scripts_deployed=2,
+            target_path=Path.home() / ".claude",
+        ),
     )
 
 
