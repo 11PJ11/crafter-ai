@@ -5,105 +5,35 @@ copying agents, commands, templates, scripts to dist/ide/, counting
 components, tracking YAML warnings and embed injections.
 
 Unit test strategy: Each test instantiates IdeBundleBuildService, calls
-its build() method, and asserts outcomes. The service stub raises
-NotImplementedError until implemented, proving the contract and enabling
-Outside-In TDD.
-
-These tests use the InMemoryFileSystemAdapter from conftest.py to
-avoid real filesystem operations.
+its build() method, and asserts outcomes through the IdeBundleBuildResult
+domain object. Tests use the InMemoryFileSystemAdapter from conftest.py
+to avoid real filesystem operations.
 """
 
 from __future__ import annotations
 
-from dataclasses import FrozenInstanceError, dataclass
+from dataclasses import FrozenInstanceError
 from pathlib import Path
 
 import pytest
 
+from crafter_ai.installer.domain.ide_bundle_build_result import IdeBundleBuildResult
+from crafter_ai.installer.domain.ide_bundle_constants import (
+    EXPECTED_AGENT_COUNT,
+    EXPECTED_COMMAND_COUNT,
+    EXPECTED_SCRIPT_COUNT,
+    EXPECTED_TEAM_COUNT,
+    EXPECTED_TEMPLATE_COUNT,
+)
+from crafter_ai.installer.services.ide_bundle_build_service import (
+    IdeBundleBuildService,
+)
 from tests.installer.conftest import InMemoryFileSystemAdapter
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# Shared Constants (source of truth: journey-forge-tui.yaml)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-EXPECTED_AGENT_COUNT = 30
-EXPECTED_COMMAND_COUNT = 23
-EXPECTED_TEMPLATE_COUNT = 17
-EXPECTED_SCRIPT_COUNT = 4
-EXPECTED_SCHEMA_VERSION = "v3.0"
-EXPECTED_SCHEMA_PHASES = 7
-EXPECTED_TEAM_COUNT = 0
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Result stub (until production class exists)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
-@dataclass(frozen=True)
-class IdeBundleBuildResult:
-    """Immutable result of the IDE bundle build.
-
-    Attributes:
-        success: Whether the build completed successfully.
-        output_dir: Path to dist/ide/ output directory.
-        agent_count: Number of agent files processed.
-        command_count: Number of command files processed.
-        template_count: Number of template files processed.
-        script_count: Number of script files processed.
-        team_count: Number of team files processed.
-        yaml_warnings: List of non-blocking YAML parse warnings.
-        embed_injection_count: Number of embed injections performed.
-        error_message: Error message if build failed.
-    """
-
-    success: bool
-    output_dir: Path | None
-    agent_count: int
-    command_count: int
-    template_count: int
-    script_count: int
-    team_count: int
-    yaml_warnings: list[str]
-    embed_injection_count: int
-    error_message: str | None = None
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Service Stub (NotImplementedError pattern for Outside-In TDD)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
-class IdeBundleBuildService:
-    """Service for building IDE bundle from nWave/ source directory.
-
-    Scans nWave/ for agents, commands, templates, scripts, and copies
-    them to dist/ide/. Counts components and tracks YAML warnings.
-    """
-
-    def __init__(self, filesystem: InMemoryFileSystemAdapter) -> None:
-        self._filesystem = filesystem
-
-    def build(self, source_dir: Path, output_dir: Path) -> IdeBundleBuildResult:
-        """Build IDE bundle from source directory.
-
-        Args:
-            source_dir: Path to nWave/ source directory.
-            output_dir: Path to dist/ide/ output directory.
-
-        Returns:
-            IdeBundleBuildResult with component counts and status.
-
-        Raises:
-            FileNotFoundError: If source_dir does not exist.
-        """
-        raise NotImplementedError("IdeBundleBuildService.build() not yet implemented")
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 # Fixtures
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 
 
 @pytest.fixture
@@ -153,18 +83,13 @@ def nwave_source_dir(mock_filesystem: InMemoryFileSystemAdapter) -> Path:
     return source
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 # Tests
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 
 
 class TestIdeBundleBuildService:
-    """Tests for IDE bundle build service behavior.
-
-    Each test calls the service's build() method. The service raises
-    NotImplementedError until implemented, which proves the contract.
-    When the developer implements build(), the tests will pass naturally.
-    """
+    """Tests for IDE bundle build service behavior."""
 
     def test_build_produces_dist_ide_directory(
         self,
@@ -175,9 +100,10 @@ class TestIdeBundleBuildService:
         service = IdeBundleBuildService(filesystem=mock_filesystem)
         output_dir = Path("dist/ide")
 
-        # Service call proves the contract; NotImplementedError is expected
-        with pytest.raises(NotImplementedError, match="IdeBundleBuildService.build"):
-            service.build(source_dir=nwave_source_dir, output_dir=output_dir)
+        result = service.build(source_dir=nwave_source_dir, output_dir=output_dir)
+
+        assert result.success is True
+        assert result.output_dir == output_dir
 
     def test_build_counts_agents_from_source(
         self,
@@ -188,15 +114,9 @@ class TestIdeBundleBuildService:
         service = IdeBundleBuildService(filesystem=mock_filesystem)
         output_dir = Path("dist/ide")
 
-        # Verify the source has the expected count (fixture validation)
-        source_agents = mock_filesystem.list_dir(nwave_source_dir / "agents" / "nw")
-        assert len(source_agents) == EXPECTED_AGENT_COUNT, (
-            f"Test fixture should have {EXPECTED_AGENT_COUNT} agents, "
-            f"found {len(source_agents)}"
-        )
+        result = service.build(source_dir=nwave_source_dir, output_dir=output_dir)
 
-        with pytest.raises(NotImplementedError, match="IdeBundleBuildService.build"):
-            service.build(source_dir=nwave_source_dir, output_dir=output_dir)
+        assert result.agent_count == EXPECTED_AGENT_COUNT
 
     def test_build_counts_commands_from_source(
         self,
@@ -207,11 +127,9 @@ class TestIdeBundleBuildService:
         service = IdeBundleBuildService(filesystem=mock_filesystem)
         output_dir = Path("dist/ide")
 
-        source_commands = mock_filesystem.list_dir(nwave_source_dir / "commands" / "nw")
-        assert len(source_commands) == EXPECTED_COMMAND_COUNT
+        result = service.build(source_dir=nwave_source_dir, output_dir=output_dir)
 
-        with pytest.raises(NotImplementedError, match="IdeBundleBuildService.build"):
-            service.build(source_dir=nwave_source_dir, output_dir=output_dir)
+        assert result.command_count == EXPECTED_COMMAND_COUNT
 
     def test_build_counts_templates_from_source(
         self,
@@ -222,14 +140,9 @@ class TestIdeBundleBuildService:
         service = IdeBundleBuildService(filesystem=mock_filesystem)
         output_dir = Path("dist/ide")
 
-        source_templates = mock_filesystem.list_dir(nwave_source_dir / "templates")
-        assert len(source_templates) == EXPECTED_TEMPLATE_COUNT, (
-            f"Design YAML specifies {EXPECTED_TEMPLATE_COUNT} templates, "
-            f"found {len(source_templates)}"
-        )
+        result = service.build(source_dir=nwave_source_dir, output_dir=output_dir)
 
-        with pytest.raises(NotImplementedError, match="IdeBundleBuildService.build"):
-            service.build(source_dir=nwave_source_dir, output_dir=output_dir)
+        assert result.template_count == EXPECTED_TEMPLATE_COUNT
 
     def test_build_counts_scripts_from_source(
         self,
@@ -240,14 +153,9 @@ class TestIdeBundleBuildService:
         service = IdeBundleBuildService(filesystem=mock_filesystem)
         output_dir = Path("dist/ide")
 
-        source_scripts = mock_filesystem.list_dir(nwave_source_dir / "scripts")
-        assert len(source_scripts) == EXPECTED_SCRIPT_COUNT, (
-            f"Design YAML specifies {EXPECTED_SCRIPT_COUNT} scripts, "
-            f"found {len(source_scripts)}"
-        )
+        result = service.build(source_dir=nwave_source_dir, output_dir=output_dir)
 
-        with pytest.raises(NotImplementedError, match="IdeBundleBuildService.build"):
-            service.build(source_dir=nwave_source_dir, output_dir=output_dir)
+        assert result.script_count == EXPECTED_SCRIPT_COUNT
 
     def test_build_team_count_zero_when_dir_missing(
         self,
@@ -258,14 +166,9 @@ class TestIdeBundleBuildService:
         service = IdeBundleBuildService(filesystem=mock_filesystem)
         output_dir = Path("dist/ide")
 
-        # teams/ directory is intentionally not created in the fixture
-        teams_dir = nwave_source_dir / "teams"
-        assert not mock_filesystem.exists(teams_dir), (
-            "teams/ should not exist to test default behavior"
-        )
+        result = service.build(source_dir=nwave_source_dir, output_dir=output_dir)
 
-        with pytest.raises(NotImplementedError, match="IdeBundleBuildService.build"):
-            service.build(source_dir=nwave_source_dir, output_dir=output_dir)
+        assert result.team_count == 0
 
     def test_build_fails_when_source_missing(
         self,
@@ -276,11 +179,10 @@ class TestIdeBundleBuildService:
         missing_source = Path("nonexistent/nWave")
         output_dir = Path("dist/ide")
 
-        # Source directory does not exist
-        assert not mock_filesystem.exists(missing_source)
+        result = service.build(source_dir=missing_source, output_dir=output_dir)
 
-        with pytest.raises(NotImplementedError, match="IdeBundleBuildService.build"):
-            service.build(source_dir=missing_source, output_dir=output_dir)
+        assert result.success is False
+        assert result.error_message is not None
 
     def test_build_result_is_frozen_dataclass(self) -> None:
         """IdeBundleBuildResult should be immutable (frozen dataclass)."""

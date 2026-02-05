@@ -32,6 +32,7 @@ from .ide_bundle_constants import (
     TEMPLATES_SUBDIR,
 )
 from .health_result import HealthResult, HealthStatus
+from .ide_bundle_build_result import IdeBundleBuildResult
 
 
 __all__ = [
@@ -57,6 +58,7 @@ __all__ = [
     "HealthChecker",
     "HealthResult",
     "HealthStatus",
+    "IdeBundleBuildResult",
     "SCRIPTS_SUBDIR",
     "TEMPLATES_SUBDIR",
     "calculate_next_version",
