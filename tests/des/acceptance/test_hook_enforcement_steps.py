@@ -661,9 +661,15 @@ def invoke_adapter_pre_task_invalid(context, hook_adapter_cli, invalid_task_json
 
 @when("I invoke hook adapter CLI with subagent-stop command and step context via stdin")
 def invoke_adapter_subagent_stop(context, hook_adapter_cli):
-    """Invoke hook adapter CLI with subagent-stop command."""
+    """Invoke hook adapter CLI with subagent-stop command (Schema v2.0)."""
 
-    step_context = {"step_path": str(context["step_file"])}
+    # Schema v2.0: executionLogPath, projectId, stepId
+    # Note: Tests use step files for now, but production uses execution-log.yaml
+    step_context = {
+        "executionLogPath": str(context["step_file"]),  # For test compatibility
+        "projectId": "test-project",
+        "stepId": "01-01"
+    }
 
     result = subprocess.run(
         ["python3", str(hook_adapter_cli), "subagent-stop"],
@@ -702,9 +708,14 @@ def invoke_adapter_no_stdin(context, hook_adapter_cli):
 
 @when("I invoke hook adapter CLI with subagent-stop command via stdin")
 def invoke_adapter_subagent_stop_error(context, hook_adapter_cli):
-    """Invoke subagent-stop that will trigger exception."""
+    """Invoke subagent-stop that will trigger exception (Schema v2.0)."""
 
-    step_context = {"step_path": "nonexistent.json"}
+    # Schema v2.0: executionLogPath, projectId, stepId
+    step_context = {
+        "executionLogPath": "nonexistent.json",
+        "projectId": "test-project",
+        "stepId": "01-01"
+    }
 
     result = subprocess.run(
         ["python3", str(hook_adapter_cli), "subagent-stop"],

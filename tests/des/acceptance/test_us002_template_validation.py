@@ -26,7 +26,7 @@ class TestPreInvocationTemplateValidation:
     # Scenario 4: Complete prompt passes validation
     # =========================================================================
 
-    def test_complete_prompt_passes_all_validation_checks(self):
+    def test_complete_prompt_passes_all_validation_checks(self, valid_prompt_v3):
         """
         GIVEN orchestrator generates prompt for step with all 8 mandatory sections
         WHEN pre-invocation validation runs
@@ -39,7 +39,7 @@ class TestPreInvocationTemplateValidation:
         1. DES_METADATA
         2. AGENT_IDENTITY
         3. TASK_CONTEXT
-        4. TDD_7_PHASES
+        4. TDD_7_PHASES (7 phases from schema v3.0)
         5. QUALITY_GATES
         6. OUTCOME_RECORDING
         7. BOUNDARY_RULES
@@ -49,54 +49,8 @@ class TestPreInvocationTemplateValidation:
 
         from src.des.application.validator import TemplateValidator
 
-        # Arrange: Create prompt with all 8 mandatory sections
-        prompt_with_all_sections = """
-        <!-- DES-VALIDATION: required -->
-        <!-- DES-STEP-FILE: steps/01-01.json -->
-
-        # DES_METADATA
-        Step: 01-01.json
-        Command: /nw:execute
-
-        # AGENT_IDENTITY
-        Agent: software-crafter
-
-        # TASK_CONTEXT
-        Implement UserRepository
-
-        # TDD_7_PHASES
-        Execute in order:
-        1. PREPARE
-        2. RED_ACCEPTANCE
-        3. RED_UNIT
-        4. GREEN_UNIT
-        5. CHECK_ACCEPTANCE
-        6. GREEN_ACCEPTANCE
-        7. REVIEW
-        8. REFACTOR_L1
-        9. REFACTOR_L2
-        10. REFACTOR_L3
-        11. REFACTOR_L4
-        12. POST_REFACTOR_REVIEW
-        13. FINAL_VALIDATE
-        14. COMMIT
-
-        # QUALITY_GATES
-        G1: Exactly one test active
-        G2: Test fails for business logic
-        G3: Test fails on assertion
-        G5: Business language used
-        G6: All tests green
-
-        # OUTCOME_RECORDING
-        Update step file after each phase
-
-        # BOUNDARY_RULES
-        Modify only: **/UserRepository*, **/test_user*
-
-        # TIMEOUT_INSTRUCTION
-        Target: 50 turns. Exit early if stuck.
-        """
+        # Arrange: Create prompt with all 8 mandatory sections from template
+        prompt_with_all_sections = valid_prompt_v3()
 
         # Act: Run pre-invocation validation
         start_time = time.perf_counter()
@@ -111,64 +65,24 @@ class TestPreInvocationTemplateValidation:
         assert duration_ms < 500  # AC-002.5
 
     # =========================================================================
-    # AC-002.2: All 14 TDD phases must be explicitly mentioned
+    # AC-002.2: All 7 TDD phases (v3.0) must be explicitly mentioned
     # Scenario 5: Missing TDD phase blocks Task invocation
     # =========================================================================
 
-    def test_missing_tdd_phase_blocks_task_invocation(self):
+    def test_missing_tdd_phase_blocks_task_invocation(self, prompt_missing_phase_v3):
         """
-        GIVEN orchestrator generates prompt missing REFACTOR_L3 phase
+        GIVEN orchestrator generates prompt missing REFACTOR_CONTINUOUS phase
         WHEN pre-invocation validation runs
         THEN validation FAILS with specific error naming missing phase
 
-        Business Value: Priya ensures all 14 TDD phases are communicated to
-                       sub-agents, preventing "I didn't know about L3 refactoring"
+        Business Value: Priya ensures all 7 TDD phases (v3.0) are communicated to
+                       sub-agents, preventing "I didn't know about refactoring"
                        excuses during PR review.
 
-        Missing Phase: REFACTOR_L3 (one of 14 mandatory phases)
+        Missing Phase: REFACTOR_CONTINUOUS (one of 7 mandatory phases from schema v3.0)
         """
-        # Arrange: Create prompt missing REFACTOR_L3 phase
-        prompt_missing_phase = """
-        <!-- DES-VALIDATION: required -->
-
-        # DES_METADATA
-        Step: 01-02.json
-
-        # AGENT_IDENTITY
-        Agent: software-crafter
-
-        # TASK_CONTEXT
-        Implement OrderService
-
-        # TDD_7_PHASES
-        Execute in order:
-        1. PREPARE
-        2. RED_ACCEPTANCE
-        3. RED_UNIT
-        4. GREEN_UNIT
-        5. CHECK_ACCEPTANCE
-        6. GREEN_ACCEPTANCE
-        7. REVIEW
-        8. REFACTOR_L1
-        9. REFACTOR_L2
-        # MISSING: REFACTOR_L3
-        10. REFACTOR_L4
-        11. POST_REFACTOR_REVIEW
-        12. FINAL_VALIDATE
-        13. COMMIT
-
-        # QUALITY_GATES
-        G1-G6 defined
-
-        # OUTCOME_RECORDING
-        Update step file
-
-        # BOUNDARY_RULES
-        Scope defined
-
-        # TIMEOUT_INSTRUCTION
-        50 turns
-        """
+        # Arrange: Create prompt missing REFACTOR_CONTINUOUS phase from template
+        prompt_missing_phase = prompt_missing_phase_v3(missing_phase='REFACTOR_CONTINUOUS')
 
         # Act: Run pre-invocation validation
         from src.des.application.validator import TemplateValidator
@@ -179,7 +93,7 @@ class TestPreInvocationTemplateValidation:
         # Assert: Validation fails with specific error
         assert validation_result.status == "FAILED"
         assert (
-            "INCOMPLETE: TDD phase 'REFACTOR_L3' not mentioned"
+            "INCOMPLETE: TDD phase 'REFACTOR_CONTINUOUS' not mentioned"
             in validation_result.errors
         )
         assert validation_result.task_invocation_allowed is False
@@ -253,63 +167,53 @@ class TestPreInvocationTemplateValidation:
     # Scenario 7: Multiple validation errors reported together
     # =========================================================================
 
-    def test_multiple_validation_errors_reported_together(self):
+    def test_multiple_validation_errors_reported_together(self, tdd_phases):
         """
-        GIVEN orchestrator generates prompt with 3 issues (missing section + 2 missing phases)
+        GIVEN orchestrator generates prompt with 2 issues (missing section + missing phase)
         WHEN pre-invocation validation runs
-        THEN validation FAILS with all 3 errors listed AND Task NOT invoked
+        THEN validation FAILS with all errors listed AND Task NOT invoked
 
         Business Value: Priya sees ALL validation failures in one pass, enabling
                        complete fix without multiple trial-and-error cycles.
 
-        Issues:
+        Issues (v3.0):
         1. Missing BOUNDARY_RULES section
-        2. Missing GREEN_ACCEPTANCE phase
-        3. Missing POST_REFACTOR_REVIEW phase
+        2. Missing REFACTOR_CONTINUOUS phase
 
-        Expected: All 3 errors returned together, Task invocation blocked
+        Expected: All errors returned together, Task invocation blocked
         """
-        # Arrange: Create prompt with multiple issues
-        _prompt_with_multiple_errors = """
-        <!-- DES-VALIDATION: required -->
+        # Arrange: Create prompt with multiple issues (missing section + missing phase)
+        # Build phase list excluding REFACTOR_CONTINUOUS
+        phases_missing_refactor = [p for p in tdd_phases if p != 'REFACTOR_CONTINUOUS']
+        phases_text = ", ".join(phases_missing_refactor)
 
-        # DES_METADATA
-        Step: 01-04.json
+        _prompt_with_multiple_errors = f"""<!-- DES-VALIDATION: required -->
 
-        # AGENT_IDENTITY
-        Agent: software-crafter
+## DES_METADATA
+step_id: test-01-04
+project_id: test-project
+step_file: steps/test-01-04.json
 
-        # TASK_CONTEXT
-        Implement InventoryService
+## AGENT_IDENTITY
+You are @software-crafter executing this step.
 
-        # TDD_7_PHASES
-        Execute in order:
-        1. PREPARE
-        2. RED_ACCEPTANCE
-        3. RED_UNIT
-        4. GREEN_UNIT
-        5. CHECK_ACCEPTANCE
-        # MISSING: GREEN_ACCEPTANCE
-        6. REVIEW
-        7. REFACTOR_L1
-        8. REFACTOR_L2
-        9. REFACTOR_L3
-        10. REFACTOR_L4
-        # MISSING: POST_REFACTOR_REVIEW
-        11. FINAL_VALIDATE
-        12. COMMIT
+## TASK_CONTEXT
+Implement InventoryService with validation.
 
-        # QUALITY_GATES
-        G1-G6 defined
+## TDD_7_PHASES
+Execute all {len(tdd_phases)} phases from schema:
+{phases_text}
 
-        # OUTCOME_RECORDING
-        Update step file
+## QUALITY_GATES
+G1: All tests pass
+G2: No code smells
+G3: Coverage >= 80%
 
-        # MISSING: BOUNDARY_RULES section entirely
+## OUTCOME_RECORDING
+Record phase outcomes in step file
 
-        # TIMEOUT_INSTRUCTION
-        50 turns
-        """
+## TIMEOUT_INSTRUCTION
+Turn budget: approximately 50 turns"""
 
         # Act: Run pre-invocation validation
         from src.des.application.validator import TemplateValidator
@@ -317,19 +221,15 @@ class TestPreInvocationTemplateValidation:
         validator = TemplateValidator()
         validation_result = validator.validate_prompt(_prompt_with_multiple_errors)
 
-        # Assert: All 3 errors reported together, Task NOT invoked
+        # Assert: All errors reported together, Task NOT invoked
         assert validation_result.status == "FAILED"
-        assert len(validation_result.errors) == 3
+        assert len(validation_result.errors) == 2
         assert (
             "MISSING: Mandatory section 'BOUNDARY_RULES' not found"
             in validation_result.errors
         )
         assert (
-            "INCOMPLETE: TDD phase 'GREEN_ACCEPTANCE' not mentioned"
-            in validation_result.errors
-        )
-        assert (
-            "INCOMPLETE: TDD phase 'POST_REFACTOR_REVIEW' not mentioned"
+            "INCOMPLETE: TDD phase 'REFACTOR_CONTINUOUS' not mentioned"
             in validation_result.errors
         )
         assert validation_result.task_invocation_allowed is False
@@ -339,9 +239,9 @@ class TestPreInvocationTemplateValidation:
     # Scenario 4 (Performance Aspect): Fast validation for smooth workflow
     # =========================================================================
 
-    def test_validation_completes_within_performance_budget(self):
+    def test_validation_completes_within_performance_budget(self, valid_prompt_v3):
         """
-        GIVEN complete prompt with all 8 sections and 14 phases
+        GIVEN complete prompt with all 8 sections and 7 phases (v3.0)
         WHEN pre-invocation validation runs
         THEN validation completes in less than 500 milliseconds
 
@@ -350,43 +250,8 @@ class TestPreInvocationTemplateValidation:
 
         Performance Requirement: < 500ms validation time (AC-002.5)
         """
-        # Arrange: Create complete, valid prompt
-        _complete_prompt = """
-        <!-- DES-VALIDATION: required -->
-        <!-- DES-STEP-FILE: steps/01-05.json -->
-
-        # DES_METADATA
-        Step: 01-05.json, Command: /nw:execute
-
-        # AGENT_IDENTITY
-        Agent: software-crafter
-
-        # TASK_CONTEXT
-        Implement ShippingService with carrier integration
-
-        # TDD_7_PHASES
-        Execute all 14 phases in order:
-        PREPARE, RED_ACCEPTANCE, RED_UNIT, GREEN_UNIT, CHECK_ACCEPTANCE,
-        GREEN_ACCEPTANCE, REVIEW, REFACTOR_L1, REFACTOR_L2, REFACTOR_L3,
-        REFACTOR_L4, POST_REFACTOR_REVIEW, FINAL_VALIDATE, COMMIT
-
-        # QUALITY_GATES
-        G1: One test active
-        G2: Test fails for business logic
-        G3: Test fails on assertion
-        G5: Business language
-        G6: All tests green
-
-        # OUTCOME_RECORDING
-        Update step file phase_execution_log after each phase completion
-
-        # BOUNDARY_RULES
-        Allowed: **/ShippingService*, **/test_shipping*
-        Forbidden: Other files, other steps
-
-        # TIMEOUT_INSTRUCTION
-        Target: 50 turns. Checkpoints: 10, 25, 40. Exit early if stuck.
-        """
+        # Arrange: Create complete, valid prompt from template
+        _complete_prompt = valid_prompt_v3()
 
         # Act: Measure validation performance
         import time
@@ -485,7 +350,7 @@ class TestOrchestratorIntegration:
     """
 
     def test_orchestrator_validates_prompt_via_entry_point(
-        self, in_memory_filesystem, mocked_hook, mocked_time_provider
+        self, in_memory_filesystem, mocked_hook, mocked_time_provider, valid_prompt_v3
     ):
         """
         GIVEN a complete prompt with all mandatory sections
@@ -506,47 +371,7 @@ class TestOrchestratorIntegration:
             time_provider=mocked_time_provider,
         )
 
-        complete_prompt = """
-        <!-- DES-VALIDATION: required -->
-        <!-- DES-STEP-FILE: steps/01-01.json -->
-
-        # DES_METADATA
-        Step: 01-01.json
-
-        # AGENT_IDENTITY
-        Agent: software-crafter
-
-        # TASK_CONTEXT
-        Implement feature
-
-        # TDD_7_PHASES
-        1. PREPARE
-        2. RED_ACCEPTANCE
-        3. RED_UNIT
-        4. GREEN_UNIT
-        5. CHECK_ACCEPTANCE
-        6. GREEN_ACCEPTANCE
-        7. REVIEW
-        8. REFACTOR_L1
-        9. REFACTOR_L2
-        10. REFACTOR_L3
-        11. REFACTOR_L4
-        12. POST_REFACTOR_REVIEW
-        13. FINAL_VALIDATE
-        14. COMMIT
-
-        # QUALITY_GATES
-        G1-G6
-
-        # OUTCOME_RECORDING
-        Update step file
-
-        # BOUNDARY_RULES
-        Modify only allowed files
-
-        # TIMEOUT_INSTRUCTION
-        50 turns
-        """
+        complete_prompt = valid_prompt_v3()
 
         # Act: Invoke validation through ENTRY POINT
         result = orchestrator.validate_prompt(complete_prompt)

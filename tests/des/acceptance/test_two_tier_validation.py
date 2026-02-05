@@ -154,7 +154,7 @@ You are a researcher.
         """
         # Get canonical TDD phases from single source of truth
         validator = TDDPhaseValidator()
-        tdd_phases = ", ".join(validator.MANDATORY_PHASES_V3)
+        tdd_phases = ", ".join(validator.MANDATORY_PHASES)
 
         hook_input = {
             "tool": "Task",

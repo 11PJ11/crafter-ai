@@ -547,11 +547,13 @@ events:
   - "01-01|RED_ACCEPTANCE|EXECUTED|PASS|2026-02-05T14:02:00Z"
 """)
 
-        mock_stdin.read.return_value = json.dumps({
-            "executionLogPath": str(log_file),
-            "projectId": "test-project",
-            "stepId": "01-01",
-        })
+        mock_stdin.read.return_value = json.dumps(
+            {
+                "executionLogPath": str(log_file),
+                "projectId": "test-project",
+                "stepId": "01-01",
+            }
+        )
 
         # Act
         from src.des.adapters.drivers.hooks.claude_code_hook_adapter import (
@@ -640,11 +642,13 @@ events:
   - "01-01|COMMIT|EXECUTED|PASS|2026-02-05T14:07:00Z"
 """)
 
-        mock_stdin.read.return_value = json.dumps({
-            "executionLogPath": str(log_file),
-            "projectId": "test-project",
-            "stepId": "01-01",
-        })
+        mock_stdin.read.return_value = json.dumps(
+            {
+                "executionLogPath": str(log_file),
+                "projectId": "test-project",
+                "stepId": "01-01",
+            }
+        )
 
         # Act
         from src.des.adapters.drivers.hooks.claude_code_hook_adapter import (

@@ -149,7 +149,7 @@ class TestPromptValidatorTimeoutInstruction:
             f"Error should indicate section is MISSING. Errors: {result.errors}"
         )
 
-    def test_validator_passes_when_timeout_instruction_present(self):
+    def test_validator_passes_when_timeout_instruction_present(self, valid_prompt_v3):
         """
         GIVEN prompt with TIMEOUT_INSTRUCTION section
         WHEN PromptValidator.validate() is called
@@ -159,40 +159,7 @@ class TestPromptValidatorTimeoutInstruction:
         """
         from src.des.application.prompt_validator import PromptValidator
 
-        complete_prompt = """
-        <!-- DES-VALIDATION: required -->
-        <!-- DES-STEP-FILE: steps/01-01.json -->
-
-        ## DES_METADATA
-        step_id: 01-01
-
-        ## AGENT_IDENTITY
-        You are software-crafter
-
-        ## TASK_CONTEXT
-        Implement feature X
-
-        ## TDD_7_PHASES
-        PREPARE, RED_ACCEPTANCE, RED_UNIT, GREEN_UNIT, CHECK_ACCEPTANCE,
-        GREEN_ACCEPTANCE, REVIEW, REFACTOR_L1, REFACTOR_L2, REFACTOR_L3,
-        REFACTOR_L4, POST_REFACTOR_REVIEW, FINAL_VALIDATE, COMMIT
-
-        ## QUALITY_GATES
-        G1-G6 definitions here
-
-        ## OUTCOME_RECORDING
-        Record outcomes in step file
-
-        ## BOUNDARY_RULES
-        ALLOWED: step file modifications
-        FORBIDDEN: other file modifications
-
-        ## TIMEOUT_INSTRUCTION
-        Turn budget: approximately 50 turns
-        Progress checkpoints: ~10, ~25, ~40, ~50
-        Early exit protocol: Save progress if stuck
-        Turn logging: Log turn count at phase transitions
-        """
+        complete_prompt = valid_prompt_v3()
 
         validator = PromptValidator()
         result = validator.validate(complete_prompt)

@@ -22,16 +22,16 @@ class TestExecuteTemplateSync:
         """
         GIVEN execute.md template file
         WHEN we extract the TDD_7_PHASES section
-        THEN the phases MUST match TDDPhaseValidator.MANDATORY_PHASES_V3 exactly
+        THEN the phases MUST match TDDPhaseValidator.MANDATORY_PHASES exactly
 
-        Source of Truth: TDDPhaseValidator.MANDATORY_PHASES_V3
+        Source of Truth: TDDPhaseValidator.MANDATORY_PHASES (from schema v3.0)
         Template File: nWave/tasks/nw/execute.md
 
         This test prevents drift between template and validator.
         """
         # Arrange: Get canonical phases from validator (single source of truth)
         validator = TDDPhaseValidator()
-        canonical_phases = validator.MANDATORY_PHASES_V3
+        canonical_phases = validator.MANDATORY_PHASES
 
         # Act: Read execute.md and extract TDD phases
         with open("nWave/tasks/nw/execute.md") as f:

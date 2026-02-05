@@ -1,0 +1,489 @@
+project_id: audit-log-refactor
+created_at: '2026-02-05T13:30:00Z'
+description: Refactor audit log to use feature_name and step_id instead of step_path for better traceability
+
+phases:
+  - phase_id: "01"
+    name: Data Model Refactoring
+    description: Update AuditEvent and AuditLogger to support feature_name and step_id fields instead of step_path
+    steps:
+      - step_id: "01-01"
+        name: Update AuditEvent dataclass with new fields
+        description: Replace step_path field with feature_name and step_id in AuditEvent dataclass definition
+        acceptance_criteria:
+          - AuditEvent dataclass has feature_name field (str | None)
+          - AuditEvent dataclass has step_id field (str | None)
+          - step_path field is removed from AuditEvent dataclass
+          - AuditEvent serializes to dictionary containing feature_name and step_id keys
+          - AuditEvent deserializes from dictionary containing feature_name and step_id keys
+          - AuditEvent serialization excludes None-valued feature_name and step_id fields
+        files_to_modify:
+          - src/des/adapters/driven/logging/audit_events.py
+        test_files:
+          - tests/des/unit/adapters/driven/logging/test_audit_events.py
+        dependencies: []
+        estimated_complexity: low
+
+      - step_id: "01-02"
+        name: Update AuditLogger.read_entries_for_step() method signature
+        description: Refactor read_entries_for_step() to accept feature_name and step_id instead of step_path
+        acceptance_criteria:
+          - read_entries_for_step() accepts feature_name and step_id as parameters
+          - Audit entries filtered by feature_name AND step_id fields
+          - Empty list returned when feature_name or step_id is None
+          - All matching entries returned when both feature_name and step_id match
+          - Legacy step_path field ignored in filtering
+        files_to_modify:
+          - src/des/adapters/driven/logging/audit_logger.py
+        test_files:
+          - tests/unit/des/test_audit_logger_unit.py
+        dependencies:
+          - "01-01"
+        estimated_complexity: low
+
+      - step_id: "01-03"
+        name: Update log_audit_event() helper function signature
+        description: Modify log_audit_event() to accept feature_name and step_id keyword arguments
+        acceptance_criteria:
+          - Function signature includes feature_name and step_id parameters
+          - Parameters are optional (default to None)
+          - Function passes feature_name and step_id to event dictionary
+          - step_path parameter removed from function signature
+          - Timestamp generation unchanged
+          - Event type handling unchanged
+        files_to_modify:
+          - src/des/adapters/driven/logging/audit_logger.py
+        test_files:
+          - tests/unit/des/test_audit_logger_unit.py
+        dependencies:
+          - "01-02"
+        estimated_complexity: low
+
+  - phase_id: "02"
+    name: RealSubagentStopHook Refactoring
+    description: Update RealSubagentStopHook to extract and log feature_name and step_id instead of step_path
+    steps:
+      - step_id: "02-01"
+        name: Add helper method to extract feature_name and step_id from step file
+        description: Create _extract_step_identifiers() method to parse feature_name and step_id from step data
+        acceptance_criteria:
+          - feature_name extracted from step JSON file root level
+          - step_id extracted from step JSON file root level
+          - Tuple (feature_name, step_id) returned on successful extraction
+          - None returned for missing feature_name field
+          - None returned for missing step_id field
+          - Tuple (None, None) returned when step file cannot be read
+          - Step file loaded using existing file I/O patterns
+        files_to_modify:
+          - src/des/adapters/drivers/hooks/real_hook.py
+        test_files:
+          - tests/des/unit/adapters/drivers/hooks/test_real_hook.py
+        dependencies: []
+        estimated_complexity: low
+
+      - step_id: "02-02"
+        name: Update HOOK_SUBAGENT_STOP_FAILED audit logging
+        description: Replace step_path with feature_name and step_id in HOOK_SUBAGENT_STOP_FAILED event
+        acceptance_criteria:
+          - feature_name extracted from step file data before logging HOOK_SUBAGENT_STOP_FAILED
+          - step_id extracted from step file data before logging HOOK_SUBAGENT_STOP_FAILED
+          - HOOK_SUBAGENT_STOP_FAILED event contains feature_name field
+          - HOOK_SUBAGENT_STOP_FAILED event contains step_id field
+          - HOOK_SUBAGENT_STOP_FAILED event does NOT contain step_path field
+          - phases_validated field unchanged
+          - validation_errors field unchanged
+          - timestamp field unchanged
+          - Event logged when validation fails (existing behavior)
+        files_to_modify:
+          - src/des/adapters/drivers/hooks/real_hook.py
+        test_files:
+          - tests/des/unit/adapters/drivers/hooks/test_real_hook_audit.py
+        dependencies:
+          - "02-01"
+          - "01-03"
+        estimated_complexity: low
+
+      - step_id: "02-03"
+        name: Update HOOK_SUBAGENT_STOP_PASSED audit logging
+        description: Replace step_path with feature_name and step_id in HOOK_SUBAGENT_STOP_PASSED event
+        acceptance_criteria:
+          - audit_logger.append() receives feature_name instead of step_path
+          - audit_logger.append() receives step_id instead of step_path
+          - phases_validated field unchanged
+          - timestamp field unchanged
+          - Event logged when validation passes (existing behavior)
+        files_to_modify:
+          - src/des/adapters/drivers/hooks/real_hook.py
+        test_files:
+          - tests/des/unit/adapters/drivers/hooks/test_real_hook_audit.py
+        dependencies:
+          - "02-02"
+        estimated_complexity: low
+
+      - step_id: "02-04"
+        name: Update SCOPE_VIOLATION audit logging
+        description: Replace step_file field with feature_name and step_id in SCOPE_VIOLATION events
+        acceptance_criteria:
+          - Scope violation logging uses feature_name instead of step_file
+          - Scope violation logging uses step_id instead of step_file
+          - severity field unchanged (WARNING)
+          - out_of_scope_file field unchanged
+          - allowed_patterns field unchanged
+          - Event logged for each out-of-scope file (existing behavior)
+        files_to_modify:
+          - src/des/adapters/drivers/hooks/real_hook.py
+        test_files:
+          - tests/des/unit/adapters/drivers/hooks/test_real_hook_scope_violations.py
+        dependencies:
+          - "02-03"
+        estimated_complexity: low
+
+  - phase_id: "03"
+    name: DESOrchestrator Refactoring
+    description: Update DESOrchestrator to extract and log feature_name and step_id in task invocation events
+    steps:
+      - step_id: "03-01"
+        name: Add helper method to extract feature_name and step_id from DES markers
+        description: Create _extract_step_identifiers() method to parse feature_name and step_id from prompt DES markers
+        acceptance_criteria:
+          - step_file path extracted from DES-STEP-FILE marker in prompt string
+          - feature_name extracted from step file JSON root level
+          - step_id extracted from step file JSON root level
+          - Tuple (feature_name, step_id) returned on successful extraction
+          - Tuple (None, None) returned when DES-STEP-FILE marker missing from prompt
+          - Tuple (None, None) returned when step file cannot be read
+          - None returned for individual missing fields in step JSON
+        files_to_modify:
+          - src/des/application/orchestrator.py
+        test_files:
+          - tests/des/unit/application/test_orchestrator_step_extraction.py
+        dependencies: []
+        estimated_complexity: medium
+
+      - step_id: "03-02"
+        name: Update validate_prompt() HOOK_PRE_TASK_PASSED audit logging
+        description: Replace step_path with feature_name and step_id in HOOK_PRE_TASK_PASSED event
+        acceptance_criteria:
+          - feature_name and step_id extracted from prompt before logging HOOK_PRE_TASK_PASSED
+          - HOOK_PRE_TASK_PASSED event contains feature_name field
+          - HOOK_PRE_TASK_PASSED event contains step_id field
+          - HOOK_PRE_TASK_PASSED event does NOT contain step_path field
+          - timestamp field unchanged
+          - event field unchanged (HOOK_PRE_TASK_PASSED)
+          - extra_context field unchanged (agent name)
+          - Event logged when validation passes (existing behavior)
+        files_to_modify:
+          - src/des/application/orchestrator.py
+        test_files:
+          - tests/des/unit/application/test_orchestrator_validate_prompt_audit.py
+        dependencies:
+          - "03-01"
+          - "01-01"
+        estimated_complexity: low
+
+      - step_id: "03-03"
+        name: Update validate_prompt() HOOK_PRE_TASK_BLOCKED audit logging
+        description: Replace step_path with feature_name and step_id in HOOK_PRE_TASK_BLOCKED event
+        acceptance_criteria:
+          - AuditEvent receives feature_name instead of step_path
+          - AuditEvent receives step_id instead of step_path
+          - timestamp field unchanged
+          - event field unchanged (HOOK_PRE_TASK_BLOCKED)
+          - rejection_reason field unchanged
+          - extra_context field unchanged (agent name)
+          - Event logged when validation fails (existing behavior)
+        files_to_modify:
+          - src/des/application/orchestrator.py
+        test_files:
+          - tests/des/unit/application/test_orchestrator_validate_prompt_audit.py
+        dependencies:
+          - "03-02"
+        estimated_complexity: low
+
+      - step_id: "03-04"
+        name: Update render_prompt() TASK_INVOCATION_STARTED audit logging
+        description: Replace step_path with feature_name and step_id in TASK_INVOCATION_STARTED event
+        acceptance_criteria:
+          - feature_name and step_id extracted from step_file parameter before logging
+          - TASK_INVOCATION_STARTED event contains feature_name field
+          - TASK_INVOCATION_STARTED event contains step_id field
+          - TASK_INVOCATION_STARTED event does NOT contain step_path field
+          - command field unchanged
+          - agent field unchanged
+          - Event logged when render_prompt() invoked (existing behavior)
+        files_to_modify:
+          - src/des/application/orchestrator.py
+        test_files:
+          - tests/des/unit/application/test_orchestrator_render_prompt_audit.py
+        dependencies:
+          - "03-03"
+          - "01-03"
+        estimated_complexity: low
+
+      - step_id: "03-05"
+        name: Update render_prompt() TASK_INVOCATION_VALIDATED audit logging
+        description: Replace step_path with feature_name and step_id in TASK_INVOCATION_VALIDATED event
+        acceptance_criteria:
+          - TASK_INVOCATION_VALIDATED event contains feature_name field
+          - TASK_INVOCATION_VALIDATED event contains step_id field
+          - TASK_INVOCATION_VALIDATED event does NOT contain step_path field
+          - command field unchanged
+          - status field unchanged (VALIDATED)
+          - outcome field unchanged (success)
+          - Event logged when validation_level is full (existing behavior)
+        files_to_modify:
+          - src/des/application/orchestrator.py
+        test_files:
+          - tests/des/unit/application/test_orchestrator_render_prompt_audit.py
+        dependencies:
+          - "03-04"
+        estimated_complexity: low
+
+  - phase_id: "04"
+    name: Test Updates - Unit Tests
+    description: Update all unit tests to verify feature_name and step_id instead of step_path
+    steps:
+      - step_id: "04-01"
+        name: Update test_audit_logger_unit.py assertions
+        description: Replace step_path assertions with feature_name and step_id assertions
+        acceptance_criteria:
+          - All assertions checking step_path field updated to check feature_name
+          - All assertions checking step_path field updated to check step_id
+          - Test data fixtures include feature_name and step_id values
+          - Test data fixtures exclude step_path values
+          - All tests pass with refactored AuditLogger
+        files_to_modify:
+          - tests/unit/des/test_audit_logger_unit.py
+        test_files:
+          - tests/unit/des/test_audit_logger_unit.py
+        dependencies:
+          - "01-02"
+          - "01-03"
+        estimated_complexity: low
+
+      - step_id: "04-02"
+        name: Update test_audit_logger_01_01.py assertions
+        description: Replace step_path assertions with feature_name and step_id assertions
+        acceptance_criteria:
+          - All assertions checking step_path value "steps/01-01.json" updated
+          - Assertions verify feature_name extracted from step file path pattern
+          - Assertions verify step_id is "01-01"
+          - Test data fixtures match expected feature_name and step_id format
+          - All tests pass with refactored AuditLogger
+        files_to_modify:
+          - tests/unit/des/test_audit_logger_01_01.py
+        test_files:
+          - tests/unit/des/test_audit_logger_01_01.py
+        dependencies:
+          - "04-01"
+        estimated_complexity: low
+
+      - step_id: "04-03"
+        name: Update test_orchestrator_validate_prompt_audit.py assertions
+        description: Replace step_path assertions with feature_name and step_id assertions
+        acceptance_criteria:
+          - All assertions checking event_dict step_path updated to check feature_name
+          - All assertions checking event_dict step_path updated to check step_id
+          - Test fixtures create step files with feature_name and step_id fields
+          - All tests pass with refactored orchestrator
+        files_to_modify:
+          - tests/des/unit/application/test_orchestrator_validate_prompt_audit.py
+        test_files:
+          - tests/des/unit/application/test_orchestrator_validate_prompt_audit.py
+        dependencies:
+          - "03-03"
+        estimated_complexity: low
+
+      - step_id: "04-04"
+        name: Update test_real_hook_audit.py assertions
+        description: Replace step_path assertions with feature_name and step_id assertions
+        acceptance_criteria:
+          - Assertions checking audit_entry step_path updated to check feature_name
+          - Assertions checking audit_entry step_path updated to check step_id
+          - Test fixtures create step files with feature_name and step_id fields
+          - Valid step file fixture includes feature_name at root level
+          - Valid step file fixture includes step_id at root level
+          - All tests pass with refactored RealSubagentStopHook
+        files_to_modify:
+          - tests/des/unit/adapters/drivers/hooks/test_real_hook_audit.py
+        test_files:
+          - tests/des/unit/adapters/drivers/hooks/test_real_hook_audit.py
+        dependencies:
+          - "02-03"
+        estimated_complexity: low
+
+  - phase_id: "05"
+    name: Test Updates - Acceptance Tests
+    description: Update acceptance tests to verify feature_name and step_id in audit logs
+    steps:
+      - step_id: "05-01"
+        name: Update test_us004_audit_trail.py assertions
+        description: Replace step_path verification with feature_name and step_id verification
+        acceptance_criteria:
+          - Test fixtures create step files with feature_name and step_id fields
+          - Assertions verify audit events contain feature_name field
+          - Assertions verify audit events contain step_id field
+          - Assertions verify feature_name matches expected project name
+          - Assertions verify step_id matches expected step identifier
+          - All acceptance tests pass
+        files_to_modify:
+          - tests/des/acceptance/test_us004_audit_trail.py
+        test_files:
+          - tests/des/acceptance/test_us004_audit_trail.py
+        dependencies:
+          - "04-04"
+        estimated_complexity: medium
+
+      - step_id: "05-02"
+        name: Update test_us008_stale_detection.py step file creation
+        description: Update stale step file fixtures to include feature_name and step_id
+        acceptance_criteria:
+          - stale_step_data fixture includes feature_name field
+          - stale_step_data fixture includes step_id field
+          - Feature name follows project naming convention
+          - Step ID follows "XX-YY" format
+          - All stale detection tests pass unchanged
+        files_to_modify:
+          - tests/des/acceptance/test_us008_stale_detection.py
+        test_files:
+          - tests/des/acceptance/test_us008_stale_detection.py
+        dependencies:
+          - "05-01"
+        estimated_complexity: low
+
+      - step_id: "05-03"
+        name: Update test_hook_enforcement.feature step definitions
+        description: Update Gherkin feature file to reference feature_name and step_id in audit scenarios
+        acceptance_criteria:
+          - Feature file examples reference feature_name instead of step_path
+          - Feature file examples reference step_id instead of step_path
+          - Step definitions in test_hook_enforcement_steps.py updated to match
+          - Scenario examples use realistic feature_name values
+          - Scenario examples use realistic step_id values ("01-01", "02-03", etc.)
+        files_to_modify:
+          - tests/des/acceptance/test_hook_enforcement.feature
+          - tests/des/acceptance/test_hook_enforcement_steps.py
+        test_files:
+          - tests/des/acceptance/test_hook_enforcement_steps.py
+        dependencies:
+          - "05-02"
+        estimated_complexity: medium
+
+  - phase_id: "06"
+    name: Documentation Updates
+    description: Update documentation to reflect audit log schema change
+    steps:
+      - step_id: "06-01"
+        name: Update audit-trail-compliance-verification.md examples
+        description: Replace step_path examples with feature_name and step_id in documentation
+        acceptance_criteria:
+          - All code examples show feature_name instead of step_path
+          - All code examples show step_id instead of step_path
+          - Example audit event JSON reflects new schema (feature_name, step_id, no step_path)
+          - Example audit log API calls use feature_name and step_id parameters
+          - Documentation explains feature_name and step_id are extracted from step file root level
+          - Documentation notes this is a breaking change from previous schema
+        files_to_modify:
+          - docs/reference/audit-trail-compliance-verification.md
+        test_files: []
+        dependencies:
+          - "05-03"
+        estimated_complexity: low
+
+      - step_id: "06-02"
+        name: Update .des-audit-README.md template
+        description: Replace step_path references with feature_name and step_id in audit log README template
+        acceptance_criteria:
+          - Template examples show feature_name field in audit events
+          - Template examples show step_id field in audit events
+          - Template explains feature_name is extracted from step file root
+          - Template explains step_id is extracted from step file root
+          - Template documents audit log format version change
+          - Template provides migration guidance for reading old logs
+        files_to_modify:
+          - nWave/templates/.des-audit-README.md
+        test_files: []
+        dependencies:
+          - "06-01"
+        estimated_complexity: low
+
+      - step_id: "06-03"
+        name: Create evolution document for audit log schema change
+        description: Document the audit log refactoring decision and rationale in docs/evolution/
+        acceptance_criteria:
+          - Evolution document created with date-stamped filename
+          - Document explains motivation (step files no longer exist in new architecture)
+          - Document shows before/after audit event format comparison
+          - Document lists all affected components
+          - Document includes test coverage summary
+          - Document notes backward compatibility considerations
+        files_to_modify:
+          - docs/evolution/2026-02-05-audit-log-refactor.md
+        test_files: []
+        dependencies:
+          - "06-02"
+        estimated_complexity: low
+
+  - phase_id: "07"
+    name: Integration Verification
+    description: Run full test suite and verify all audit logging works end-to-end
+    steps:
+      - step_id: "07-01"
+        name: Run complete unit test suite
+        description: Execute all unit tests to verify refactoring did not break existing functionality
+        acceptance_criteria:
+          - All tests in tests/unit/des/ pass
+          - All tests in tests/des/unit/ pass
+          - No new test failures introduced
+          - No test skips or warnings introduced
+          - Test execution time comparable to baseline
+        files_to_modify: []
+        test_files:
+          - tests/unit/des/
+          - tests/des/unit/
+        dependencies:
+          - "04-04"
+        estimated_complexity: low
+
+      - step_id: "07-02"
+        name: Run complete acceptance test suite
+        description: Execute all acceptance tests to verify end-to-end audit logging
+        acceptance_criteria:
+          - All tests in tests/des/acceptance/ pass
+          - Audit log files created with feature_name and step_id fields
+          - No step_path fields present in newly created audit logs
+          - All audit events traceable by feature_name and step_id
+          - No test failures or errors
+        files_to_modify: []
+        test_files:
+          - tests/des/acceptance/
+        dependencies:
+          - "05-03"
+        estimated_complexity: low
+
+      - step_id: "07-03"
+        name: Manual smoke test with real step execution
+        description: Execute a real DES step and verify audit log format manually
+        acceptance_criteria:
+          - Create test step file with feature_name and step_id
+          - Execute step through DESOrchestrator
+          - Verify audit log contains TASK_INVOCATION_STARTED with feature_name and step_id
+          - Verify audit log contains HOOK_SUBAGENT_STOP_PASSED/FAILED with feature_name and step_id
+          - Verify no step_path fields present in audit log
+          - Verify audit log is human-readable and traceable
+        files_to_modify: []
+        test_files: []
+        dependencies:
+          - "07-02"
+        estimated_complexity: low
+
+validation:
+  status: approved
+  reviewed_by:
+    - software-crafter-reviewer
+  approved: true
+  review_date: '2026-02-05T13:45:00Z'
+  review_notes: |
+    APPROVED with strong technical quality. Atomic steps, correct dependencies,
+    comprehensive test coverage. Borderline AC findings acceptable (public method
+    contracts). Ready for implementation.
