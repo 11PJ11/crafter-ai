@@ -1,5 +1,8 @@
 """Services package for installer application services."""
 
+from crafter_ai.installer.services.asset_deployment_service import (
+    AssetDeploymentService,
+)
 from crafter_ai.installer.services.auto_repair_service import (
     AutoRepairService,
     RepairResult,
@@ -29,6 +32,7 @@ from crafter_ai.installer.services.wheel_validation_service import (
 
 
 __all__ = [
+    "AssetDeploymentService",
     "AutoRepairService",
     "BuildResult",
     "BuildService",

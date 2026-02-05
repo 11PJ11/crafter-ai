@@ -5,9 +5,8 @@ copying agents, commands, templates, scripts, and config to their
 correct destinations under the Claude configuration directory.
 
 Unit test strategy: Each test instantiates AssetDeploymentService, calls
-its deploy() method, and asserts outcomes. The service stub raises
-NotImplementedError until implemented, proving the contract and enabling
-Outside-In TDD.
+its deploy() method, and asserts outcomes via the AssetDeploymentResult
+domain value object.
 
 These tests use the InMemoryFileSystemAdapter from conftest.py to
 avoid real filesystem operations.
@@ -15,86 +14,29 @@ avoid real filesystem operations.
 
 from __future__ import annotations
 
-from dataclasses import FrozenInstanceError, dataclass
+from dataclasses import FrozenInstanceError
 from pathlib import Path
 
 import pytest
 
+from crafter_ai.installer.domain.asset_deployment_result import AssetDeploymentResult
+from crafter_ai.installer.domain.ide_bundle_constants import (
+    EXPECTED_AGENT_COUNT,
+    EXPECTED_COMMAND_COUNT,
+    EXPECTED_SCRIPT_COUNT,
+    EXPECTED_TEMPLATE_COUNT,
+)
+from crafter_ai.installer.services.asset_deployment_service import (
+    AssetDeploymentService,
+)
 from tests.installer.conftest import InMemoryFileSystemAdapter
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Shared Constants (source of truth: journey-forge-tui.yaml)
+# Shared Constants
 # ═══════════════════════════════════════════════════════════════════════════════
 
-EXPECTED_AGENT_COUNT = 30
-EXPECTED_COMMAND_COUNT = 23
-EXPECTED_TEMPLATE_COUNT = 17
-EXPECTED_SCRIPT_COUNT = 4
-EXPECTED_SCHEMA_VERSION = "v3.0"
-EXPECTED_SCHEMA_PHASES = 7
 DEPLOY_TARGET = Path.home() / ".claude"
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Result stub (until production class exists)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
-@dataclass(frozen=True)
-class AssetDeploymentResult:
-    """Immutable result of asset deployment.
-
-    Attributes:
-        success: Whether deployment completed successfully.
-        agents_deployed: Number of agent files deployed.
-        commands_deployed: Number of command files deployed.
-        templates_deployed: Number of template files deployed.
-        scripts_deployed: Number of script files deployed.
-        target_path: Deployment target directory (e.g. ~/.claude/).
-        error_message: Error message if deployment failed.
-    """
-
-    success: bool
-    agents_deployed: int
-    commands_deployed: int
-    templates_deployed: int
-    scripts_deployed: int
-    target_path: Path
-    error_message: str | None = None
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Service Stub (NotImplementedError pattern for Outside-In TDD)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
-class AssetDeploymentService:
-    """Service for deploying IDE bundle assets to ~/.claude/.
-
-    Copies agents, commands, templates, scripts from dist/ide/
-    to their correct destinations under the Claude config directory.
-    """
-
-    def __init__(self, filesystem: InMemoryFileSystemAdapter) -> None:
-        self._filesystem = filesystem
-
-    def deploy(self, source_dir: Path, target_dir: Path) -> AssetDeploymentResult:
-        """Deploy IDE bundle assets to target directory.
-
-        Args:
-            source_dir: Path to dist/ide/ bundle directory.
-            target_dir: Path to ~/.claude/ target directory.
-
-        Returns:
-            AssetDeploymentResult with deployment counts and status.
-
-        Raises:
-            PermissionError: If target directory is not writable.
-        """
-        raise NotImplementedError(
-            "AssetDeploymentService.deploy() not yet implemented"
-        )
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -137,9 +79,7 @@ def ide_bundle_dir(mock_filesystem: InMemoryFileSystemAdapter) -> Path:
 
     # Create script files (4 scripts from design YAML)
     for i in range(EXPECTED_SCRIPT_COUNT):
-        mock_filesystem.write_text(
-            source / "scripts" / f"script_{i}.py", f"script {i}"
-        )
+        mock_filesystem.write_text(source / "scripts" / f"script_{i}.py", f"script {i}")
 
     # Include config.json as part of the bundle
     mock_filesystem.write_text(
@@ -157,9 +97,8 @@ def ide_bundle_dir(mock_filesystem: InMemoryFileSystemAdapter) -> Path:
 class TestAssetDeploymentService:
     """Tests for asset deployment service behavior.
 
-    Each test calls the service's deploy() method. The service raises
-    NotImplementedError until implemented, which proves the contract.
-    When the developer implements deploy(), the tests will pass naturally.
+    Each test calls the service's deploy() method and asserts outcomes
+    through the AssetDeploymentResult domain value object.
     """
 
     def test_deploys_agents_to_claude_agents_nw(
@@ -170,15 +109,10 @@ class TestAssetDeploymentService:
         """Agents should be deployed to ~/.claude/agents/nw/."""
         service = AssetDeploymentService(filesystem=mock_filesystem)
 
-        # Verify source has agents (fixture validation)
-        source_agents = mock_filesystem.list_dir(ide_bundle_dir / "agents" / "nw")
-        # Includes config.json, so count is EXPECTED_AGENT_COUNT + 1
-        assert len(source_agents) >= EXPECTED_AGENT_COUNT
+        result = service.deploy(source_dir=ide_bundle_dir, target_dir=DEPLOY_TARGET)
 
-        with pytest.raises(
-            NotImplementedError, match="AssetDeploymentService.deploy"
-        ):
-            service.deploy(source_dir=ide_bundle_dir, target_dir=DEPLOY_TARGET)
+        # Fixture adds config.json to agents/nw, so count >= EXPECTED_AGENT_COUNT
+        assert result.agents_deployed >= EXPECTED_AGENT_COUNT
 
     def test_deploys_commands_to_claude_commands_nw(
         self,
@@ -188,13 +122,9 @@ class TestAssetDeploymentService:
         """Commands should be deployed to ~/.claude/commands/nw/."""
         service = AssetDeploymentService(filesystem=mock_filesystem)
 
-        source_commands = mock_filesystem.list_dir(ide_bundle_dir / "commands" / "nw")
-        assert len(source_commands) == EXPECTED_COMMAND_COUNT
+        result = service.deploy(source_dir=ide_bundle_dir, target_dir=DEPLOY_TARGET)
 
-        with pytest.raises(
-            NotImplementedError, match="AssetDeploymentService.deploy"
-        ):
-            service.deploy(source_dir=ide_bundle_dir, target_dir=DEPLOY_TARGET)
+        assert result.commands_deployed == EXPECTED_COMMAND_COUNT
 
     def test_deploys_templates_to_claude_templates(
         self,
@@ -204,15 +134,11 @@ class TestAssetDeploymentService:
         """Templates should be deployed to ~/.claude/templates/ (17 templates)."""
         service = AssetDeploymentService(filesystem=mock_filesystem)
 
-        source_templates = mock_filesystem.list_dir(ide_bundle_dir / "templates")
-        assert len(source_templates) == EXPECTED_TEMPLATE_COUNT, (
+        result = service.deploy(source_dir=ide_bundle_dir, target_dir=DEPLOY_TARGET)
+
+        assert result.templates_deployed == EXPECTED_TEMPLATE_COUNT, (
             f"Design YAML specifies {EXPECTED_TEMPLATE_COUNT} templates"
         )
-
-        with pytest.raises(
-            NotImplementedError, match="AssetDeploymentService.deploy"
-        ):
-            service.deploy(source_dir=ide_bundle_dir, target_dir=DEPLOY_TARGET)
 
     def test_deploys_scripts_to_claude_scripts(
         self,
@@ -222,15 +148,11 @@ class TestAssetDeploymentService:
         """Scripts should be deployed to ~/.claude/scripts/ (4 scripts)."""
         service = AssetDeploymentService(filesystem=mock_filesystem)
 
-        source_scripts = mock_filesystem.list_dir(ide_bundle_dir / "scripts")
-        assert len(source_scripts) == EXPECTED_SCRIPT_COUNT, (
+        result = service.deploy(source_dir=ide_bundle_dir, target_dir=DEPLOY_TARGET)
+
+        assert result.scripts_deployed == EXPECTED_SCRIPT_COUNT, (
             f"Design YAML specifies {EXPECTED_SCRIPT_COUNT} scripts"
         )
-
-        with pytest.raises(
-            NotImplementedError, match="AssetDeploymentService.deploy"
-        ):
-            service.deploy(source_dir=ide_bundle_dir, target_dir=DEPLOY_TARGET)
 
     def test_deploy_target_is_claude_directory(
         self,
@@ -241,10 +163,10 @@ class TestAssetDeploymentService:
         service = AssetDeploymentService(filesystem=mock_filesystem)
         expected_target = Path.home() / ".claude"
 
-        with pytest.raises(
-            NotImplementedError, match="AssetDeploymentService.deploy"
-        ):
-            service.deploy(source_dir=ide_bundle_dir, target_dir=expected_target)
+        result = service.deploy(source_dir=ide_bundle_dir, target_dir=expected_target)
+
+        assert result.target_path == expected_target
+        assert result.success is True
 
     def test_deployment_accepts_custom_target(
         self,
@@ -256,10 +178,9 @@ class TestAssetDeploymentService:
         service = AssetDeploymentService(filesystem=mock_filesystem)
         custom_target = tmp_path / ".claude-test"
 
-        with pytest.raises(
-            NotImplementedError, match="AssetDeploymentService.deploy"
-        ):
-            service.deploy(source_dir=ide_bundle_dir, target_dir=custom_target)
+        result = service.deploy(source_dir=ide_bundle_dir, target_dir=custom_target)
+
+        assert result.success is True
 
     def test_deployment_fails_on_missing_source(
         self,
@@ -271,10 +192,10 @@ class TestAssetDeploymentService:
 
         assert not mock_filesystem.exists(missing_source)
 
-        with pytest.raises(
-            NotImplementedError, match="AssetDeploymentService.deploy"
-        ):
-            service.deploy(source_dir=missing_source, target_dir=DEPLOY_TARGET)
+        result = service.deploy(source_dir=missing_source, target_dir=DEPLOY_TARGET)
+
+        assert result.success is False
+        assert result.error_message is not None
 
     def test_deployment_result_is_frozen_dataclass(self) -> None:
         """AssetDeploymentResult should be immutable (frozen dataclass)."""

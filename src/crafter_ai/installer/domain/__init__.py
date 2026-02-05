@@ -4,6 +4,7 @@ This package contains pure domain objects with no external dependencies.
 """
 
 from .artifact_registry import ArtifactRegistry
+from .asset_deployment_result import AssetDeploymentResult
 from .candidate_version import (
     BumpType,
     CandidateVersion,
@@ -38,6 +39,7 @@ from .ide_bundle_build_result import IdeBundleBuildResult
 __all__ = [
     "AGENTS_SUBDIR",
     "ArtifactRegistry",
+    "AssetDeploymentResult",
     "BumpType",
     "COMMANDS_SUBDIR",
     "CandidateVersion",
