@@ -4,6 +4,8 @@ ValidationErrorDetector: Domain service for detecting validation errors in step 
 Detects validation failures for missing mandatory sections and TDD phases,
 generating specific recovery guidance explaining WHY and HOW to fix each error.
 
+Uses canonical 7-phase TDD cycle from step-tdd-cycle-schema.json v3.0 (single source of truth).
+
 Implements AC-005.1 and AC-005.4:
 - AC-005.1: Identifies missing required step file fields and invalid phase sequences
 - AC-005.4: Provides specific guidance on what to fix for each validation error
@@ -27,6 +29,8 @@ class ValidationErrorDetector:
     2. Invalid phase sequences (out-of-order execution)
     3. Missing acceptance criteria details
     4. Incomplete phase documentation
+
+    Uses canonical 7-phase TDD cycle from schema (single source of truth).
     """
 
     # Required fields that every step file must have
@@ -39,35 +43,12 @@ class ValidationErrorDetector:
         "tdd_cycle",
     ]
 
-    # Valid phase sequence for 8-phase TDD cycle (v2.0)
-    VALID_PHASE_SEQUENCE_V2 = [
-        "PREPARE",
-        "RED_ACCEPTANCE",
-        "RED_UNIT",
-        "GREEN",
-        "REVIEW",
-        "REFACTOR_CONTINUOUS",
-        "REFACTOR_L4",
-        "COMMIT",
-    ]
+    def __init__(self):
+        """Initialize detector with schema loader."""
+        from src.des.domain.tdd_schema import get_tdd_schema
 
-    # Valid phase sequence for 14-phase TDD cycle (v1.0)
-    VALID_PHASE_SEQUENCE_V1 = [
-        "PREPARE",
-        "RED_ACCEPTANCE",
-        "RED_UNIT",
-        "GREEN_UNIT",
-        "CHECK_ACCEPTANCE",
-        "GREEN_ACCEPTANCE",
-        "REVIEW",
-        "REFACTOR_L1",
-        "REFACTOR_L2",
-        "REFACTOR_L3",
-        "REFACTOR_L4",
-        "POST_REFACTOR_REVIEW",
-        "FINAL_VALIDATE",
-        "COMMIT",
-    ]
+        self._schema = get_tdd_schema()
+        self.VALID_PHASE_SEQUENCE = self._schema.tdd_phases
 
     def detect_errors(self, step: dict[str, Any]) -> list[str]:
         """
@@ -123,18 +104,9 @@ class ValidationErrorDetector:
 
         return []
 
-    def _get_valid_phase_sequence(self, phase_names: list[str]) -> list[str]:
-        """Detect schema version and return appropriate valid phase sequence."""
-        # Detect schema version (8-phase or 14-phase)
-        schema_version = "1.0"  # Default to v1.0
-        if len(phase_names) <= 8:
-            schema_version = "2.0"  # 8-phase or fewer → likely v2.0
-
-        return (
-            self.VALID_PHASE_SEQUENCE_V2
-            if schema_version == "2.0"
-            else self.VALID_PHASE_SEQUENCE_V1
-        )
+    def _get_valid_phase_sequence(self, phase_names: list[str]) -> tuple[str, ...]:
+        """Return canonical 7-phase TDD cycle from schema."""
+        return self.VALID_PHASE_SEQUENCE
 
     def _check_phase_ordering(
         self, phase_names: list[str], valid_sequence: list[str]
