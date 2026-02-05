@@ -1,44 +1,55 @@
 """Integration tests for the unified 17-step forge install pipeline.
 
 Purpose: Test component boundary collaborations with real service method
-calls. Services that don't exist yet raise NotImplementedError, proving
-the contract. When the developer implements the service, the test goes
-GREEN. This is Outside-In TDD.
-
-These tests validate cross-component interactions that unit tests cannot
-catch: BuildService coordinating with IdeBundleBuildService, InstallService
-coordinating with AssetDeploymentService, CheckExecutor running the IDE
-bundle check, and deployment validation against filesystem state.
+calls. All services are now implemented; stubs have been replaced with
+production imports. Tests validate cross-component interactions that
+unit tests cannot catch.
 
 Marker: @pytest.mark.integration
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Protocol, runtime_checkable
+from typing import TYPE_CHECKING
 
 import pytest
 
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+from crafter_ai.installer.checks.ide_bundle_exists_check import IdeBundleExistsCheck
+from crafter_ai.installer.domain.asset_deployment_result import AssetDeploymentResult
 from crafter_ai.installer.domain.check_executor import CheckExecutor
 from crafter_ai.installer.domain.check_registry import CheckRegistry
-from crafter_ai.installer.domain.check_result import CheckResult, CheckSeverity
+from crafter_ai.installer.domain.check_result import CheckSeverity
+from crafter_ai.installer.domain.ide_bundle_build_result import IdeBundleBuildResult
+from crafter_ai.installer.domain.ide_bundle_constants import (
+    DEFAULT_DEPLOY_TARGET,
+    DEFAULT_OUTPUT_DIR,
+    DEFAULT_SOURCE_DIR,
+    EXPECTED_AGENT_COUNT,
+    EXPECTED_COMMAND_COUNT,
+    EXPECTED_SCHEMA_PHASES,
+    EXPECTED_SCHEMA_VERSION,
+    EXPECTED_SCRIPT_COUNT,
+    EXPECTED_TEAM_COUNT,
+    EXPECTED_TEMPLATE_COUNT,
+)
+from crafter_ai.installer.services.asset_deployment_service import (
+    AssetDeploymentService,
+)
+from crafter_ai.installer.services.deployment_validation_service import (
+    DeploymentValidationService,
+)
+from crafter_ai.installer.services.ide_bundle_build_service import IdeBundleBuildService
 from tests.installer.conftest import InMemoryFileSystemAdapter
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Shared Constants (source of truth: journey-forge-tui.yaml)
+# Test-only Constants (not in production constants module)
 # ═══════════════════════════════════════════════════════════════════════════════
 
-EXPECTED_AGENT_COUNT = 30
-EXPECTED_COMMAND_COUNT = 23
-EXPECTED_TEMPLATE_COUNT = 17
-EXPECTED_SCRIPT_COUNT = 4
-EXPECTED_SCHEMA_VERSION = "v3.0"
-EXPECTED_SCHEMA_PHASES = 7
-EXPECTED_TEAM_COUNT = 0  # teams/ dir missing by default
-DEPLOY_TARGET = Path.home() / ".claude"
 TEST_VERSION = "1.3.0"
 
 EXPECTED_BACKUP_ITEM_COUNT = 9
@@ -56,163 +67,6 @@ BACKUP_TARGETS = [
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Result Dataclasses (stubs until production classes exist)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
-@dataclass(frozen=True)
-class IdeBundleBuildResult:
-    """Stub for IDE bundle build result until production class exists."""
-
-    success: bool
-    output_dir: Path | None
-    agent_count: int
-    command_count: int
-    template_count: int
-    script_count: int
-    team_count: int
-    yaml_warnings: list[str]
-    embed_injection_count: int
-    error_message: str | None = None
-
-
-@dataclass(frozen=True)
-class AssetDeploymentResult:
-    """Stub for asset deployment result until production class exists."""
-
-    success: bool
-    agents_deployed: int
-    commands_deployed: int
-    templates_deployed: int
-    scripts_deployed: int
-    target_path: Path
-    error_message: str | None = None
-
-
-@dataclass(frozen=True)
-class DeploymentValidationResult:
-    """Stub for deployment validation result until production class exists."""
-
-    valid: bool
-    agent_count_match: bool
-    command_count_match: bool
-    template_count_match: bool
-    script_count_match: bool
-    manifest_written: bool
-    schema_version: str | None
-    schema_phases: int | None
-    mismatches: list[str]
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Service Stubs (NotImplementedError pattern for Outside-In TDD)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
-class IdeBundleBuildService:
-    """Service for building IDE bundle from nWave/ source directory.
-
-    Scans nWave/ for agents, commands, templates, scripts, and copies
-    them to dist/ide/. Counts components and tracks YAML warnings.
-    """
-
-    def __init__(self, filesystem: InMemoryFileSystemAdapter) -> None:
-        self._filesystem = filesystem
-
-    def build(self, source_dir: Path, output_dir: Path) -> IdeBundleBuildResult:
-        """Build IDE bundle from source directory.
-
-        Args:
-            source_dir: Path to nWave/ source directory.
-            output_dir: Path to dist/ide/ output directory.
-
-        Returns:
-            IdeBundleBuildResult with component counts and status.
-        """
-        raise NotImplementedError("IdeBundleBuildService.build() not yet implemented")
-
-
-class AssetDeploymentService:
-    """Service for deploying IDE bundle assets to ~/.claude/.
-
-    Copies agents, commands, templates, scripts from dist/ide/
-    to their correct destinations under the Claude config directory.
-    """
-
-    def __init__(self, filesystem: InMemoryFileSystemAdapter) -> None:
-        self._filesystem = filesystem
-
-    def deploy(self, source_dir: Path, target_dir: Path) -> AssetDeploymentResult:
-        """Deploy IDE bundle assets to target directory.
-
-        Args:
-            source_dir: Path to dist/ide/ bundle directory.
-            target_dir: Path to ~/.claude/ target directory.
-
-        Returns:
-            AssetDeploymentResult with deployment counts and status.
-        """
-        raise NotImplementedError("AssetDeploymentService.deploy() not yet implemented")
-
-
-class DeploymentValidationService:
-    """Service for validating deployed assets match bundle expectations.
-
-    Compares filesystem counts against expected values, writes manifest,
-    and validates schema version.
-    """
-
-    def __init__(self, filesystem: InMemoryFileSystemAdapter) -> None:
-        self._filesystem = filesystem
-
-    def validate(
-        self,
-        target_dir: Path,
-        expected_agents: int,
-        expected_commands: int,
-        expected_templates: int,
-        expected_scripts: int,
-    ) -> DeploymentValidationResult:
-        """Validate deployed assets match expected counts.
-
-        Args:
-            target_dir: Path to ~/.claude/ target directory.
-            expected_agents: Expected agent file count.
-            expected_commands: Expected command file count.
-            expected_templates: Expected template file count.
-            expected_scripts: Expected script file count.
-
-        Returns:
-            DeploymentValidationResult with match status and mismatches.
-        """
-        raise NotImplementedError(
-            "DeploymentValidationService.validate() not yet implemented"
-        )
-
-
-class IdeBundleExistsCheck:
-    """Pre-flight check for IDE bundle existence in dist/ide/.
-
-    Returns BLOCKING failure if dist/ide/ is missing or empty,
-    with remediation to run 'forge build'.
-    """
-
-    def __init__(self, filesystem: InMemoryFileSystemAdapter, bundle_dir: Path) -> None:
-        self._filesystem = filesystem
-        self._bundle_dir = bundle_dir
-
-    def execute(self) -> CheckResult:
-        """Check whether the IDE bundle exists and has content.
-
-        Returns:
-            CheckResult with pass/fail and remediation if needed.
-        """
-        raise NotImplementedError(
-            "IdeBundleExistsCheck.execute() not yet implemented"
-        )
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
 # Fixtures
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -226,7 +80,7 @@ def mock_filesystem() -> InMemoryFileSystemAdapter:
 @pytest.fixture
 def populated_nwave_source(mock_filesystem: InMemoryFileSystemAdapter) -> Path:
     """Set up nWave/ source with correct component counts from design YAML."""
-    source = Path("nWave")
+    source = DEFAULT_SOURCE_DIR
     mock_filesystem.mkdir(source / "agents" / "nw", parents=True)
     mock_filesystem.mkdir(source / "commands" / "nw", parents=True)
     mock_filesystem.mkdir(source / "templates", parents=True)
@@ -259,7 +113,7 @@ def populated_nwave_source(mock_filesystem: InMemoryFileSystemAdapter) -> Path:
 @pytest.fixture
 def populated_ide_bundle(mock_filesystem: InMemoryFileSystemAdapter) -> Path:
     """Set up dist/ide/ bundle with correct component counts."""
-    bundle = Path("dist/ide")
+    bundle = DEFAULT_OUTPUT_DIR
     mock_filesystem.mkdir(bundle / "agents" / "nw", parents=True)
     mock_filesystem.mkdir(bundle / "commands" / "nw", parents=True)
     mock_filesystem.mkdir(bundle / "templates", parents=True)
@@ -278,9 +132,7 @@ def populated_ide_bundle(mock_filesystem: InMemoryFileSystemAdapter) -> Path:
             bundle / "templates" / f"tpl_{i}.yaml", f"template: {i}"
         )
     for i in range(EXPECTED_SCRIPT_COUNT):
-        mock_filesystem.write_text(
-            bundle / "scripts" / f"script_{i}.py", f"script {i}"
-        )
+        mock_filesystem.write_text(bundle / "scripts" / f"script_{i}.py", f"script {i}")
 
     return bundle
 
@@ -306,14 +158,21 @@ class TestBuildServiceProducesIdeBundleResult:
     ) -> None:
         """Build service delegates to IdeBundleBuildService for IDE bundle."""
         ide_builder = IdeBundleBuildService(filesystem=mock_filesystem)
-        output_dir = Path("dist/ide")
+        output_dir = DEFAULT_OUTPUT_DIR
 
-        # The service call must happen; NotImplementedError proves the contract
-        with pytest.raises(NotImplementedError, match="IdeBundleBuildService.build"):
-            ide_builder.build(
-                source_dir=populated_nwave_source,
-                output_dir=output_dir,
-            )
+        result = ide_builder.build(
+            source_dir=populated_nwave_source,
+            output_dir=output_dir,
+        )
+
+        assert result.success is True
+        assert result.output_dir == output_dir
+        assert result.agent_count == EXPECTED_AGENT_COUNT
+        assert result.command_count == EXPECTED_COMMAND_COUNT
+        assert result.template_count == EXPECTED_TEMPLATE_COUNT
+        assert result.script_count == EXPECTED_SCRIPT_COUNT
+        assert result.team_count == EXPECTED_TEAM_COUNT
+        assert result.error_message is None
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -337,11 +196,18 @@ class TestInstallServiceCoordinatesAssetDeployment:
         """After pipx install succeeds, install service triggers asset deployment."""
         deployer = AssetDeploymentService(filesystem=mock_filesystem)
 
-        with pytest.raises(NotImplementedError, match="AssetDeploymentService.deploy"):
-            deployer.deploy(
-                source_dir=populated_ide_bundle,
-                target_dir=DEPLOY_TARGET,
-            )
+        result = deployer.deploy(
+            source_dir=populated_ide_bundle,
+            target_dir=DEFAULT_DEPLOY_TARGET,
+        )
+
+        assert result.success is True
+        assert result.agents_deployed == EXPECTED_AGENT_COUNT
+        assert result.commands_deployed == EXPECTED_COMMAND_COUNT
+        assert result.templates_deployed == EXPECTED_TEMPLATE_COUNT
+        assert result.scripts_deployed == EXPECTED_SCRIPT_COUNT
+        assert result.target_path == DEFAULT_DEPLOY_TARGET
+        assert result.error_message is None
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -362,7 +228,7 @@ class TestPreflightCascadeBuildAndInstall:
         mock_filesystem: InMemoryFileSystemAdapter,
     ) -> None:
         """Install pre-flight checks should include IDE bundle existence check."""
-        bundle_dir = Path("dist/ide")
+        bundle_dir = DEFAULT_OUTPUT_DIR
         ide_check = IdeBundleExistsCheck(
             filesystem=mock_filesystem, bundle_dir=bundle_dir
         )
@@ -373,14 +239,13 @@ class TestPreflightCascadeBuildAndInstall:
 
         executor = CheckExecutor(registry=registry)
 
-        # Running the check will hit NotImplementedError from the service stub
+        # dist/ide/ does not exist, so check returns BLOCKING failure
         results = executor.run_all()
 
-        # CheckExecutor wraps exceptions in a failed CheckResult
         assert len(results) == 1
         ide_result = results[0]
         assert ide_result.id == "ide-bundle-exists"
-        assert ide_result.passed is False  # Exception means failure
+        assert ide_result.passed is False
         assert ide_result.severity == CheckSeverity.BLOCKING
 
 
@@ -405,22 +270,22 @@ class TestSbomDualGroupFromRealResults:
         populated_ide_bundle: Path,
     ) -> None:
         """SBOM generation depends on results from both build and deploy services."""
-        # Both services must be callable (even if they raise NotImplementedError)
         ide_builder = IdeBundleBuildService(filesystem=mock_filesystem)
         deployer = AssetDeploymentService(filesystem=mock_filesystem)
 
-        # Service calls establish the contract for SBOM input
-        with pytest.raises(NotImplementedError, match="IdeBundleBuildService"):
-            ide_builder.build(
-                source_dir=populated_nwave_source,
-                output_dir=Path("dist/ide"),
-            )
+        build_result = ide_builder.build(
+            source_dir=populated_nwave_source,
+            output_dir=DEFAULT_OUTPUT_DIR,
+        )
+        assert build_result.success is True
+        assert isinstance(build_result, IdeBundleBuildResult)
 
-        with pytest.raises(NotImplementedError, match="AssetDeploymentService"):
-            deployer.deploy(
-                source_dir=populated_ide_bundle,
-                target_dir=DEPLOY_TARGET,
-            )
+        deploy_result = deployer.deploy(
+            source_dir=populated_ide_bundle,
+            target_dir=DEFAULT_DEPLOY_TARGET,
+        )
+        assert deploy_result.success is True
+        assert isinstance(deploy_result, AssetDeploymentResult)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -439,20 +304,36 @@ class TestDeploymentValidationAgainstFileStructure:
     def test_deployment_validation_against_file_structure(
         self,
         mock_filesystem: InMemoryFileSystemAdapter,
+        populated_ide_bundle: Path,
     ) -> None:
         """Deployment validation compares filesystem counts against bundle expectations."""
-        validator = DeploymentValidationService(filesystem=mock_filesystem)
+        # First deploy assets to create the target directory structure
+        deployer = AssetDeploymentService(filesystem=mock_filesystem)
+        deploy_result = deployer.deploy(
+            source_dir=populated_ide_bundle,
+            target_dir=DEFAULT_DEPLOY_TARGET,
+        )
+        assert deploy_result.success is True
 
-        with pytest.raises(
-            NotImplementedError, match="DeploymentValidationService.validate"
-        ):
-            validator.validate(
-                target_dir=DEPLOY_TARGET,
-                expected_agents=EXPECTED_AGENT_COUNT,
-                expected_commands=EXPECTED_COMMAND_COUNT,
-                expected_templates=EXPECTED_TEMPLATE_COUNT,
-                expected_scripts=EXPECTED_SCRIPT_COUNT,
-            )
+        # Now validate the deployed assets
+        validator = DeploymentValidationService(filesystem=mock_filesystem)
+        validation_result = validator.validate(
+            target_dir=DEFAULT_DEPLOY_TARGET,
+            expected_agents=EXPECTED_AGENT_COUNT,
+            expected_commands=EXPECTED_COMMAND_COUNT,
+            expected_templates=EXPECTED_TEMPLATE_COUNT,
+            expected_scripts=EXPECTED_SCRIPT_COUNT,
+        )
+
+        assert validation_result.valid is True
+        assert validation_result.agent_count_match is True
+        assert validation_result.command_count_match is True
+        assert validation_result.template_count_match is True
+        assert validation_result.script_count_match is True
+        assert validation_result.manifest_written is True
+        assert validation_result.schema_version == EXPECTED_SCHEMA_VERSION
+        assert validation_result.schema_phases == EXPECTED_SCHEMA_PHASES
+        assert validation_result.mismatches == []
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -507,7 +388,7 @@ class TestHealthCheckIncludesAssetVerification:
     ) -> None:
         """Post-install health check should verify nWave assets are accessible."""
         # Simulate deployed assets in the in-memory filesystem
-        target = DEPLOY_TARGET
+        target = DEFAULT_DEPLOY_TARGET
         mock_filesystem.mkdir(target / "agents" / "nw", parents=True)
         for i in range(EXPECTED_AGENT_COUNT):
             mock_filesystem.write_text(
@@ -583,21 +464,26 @@ class TestAgentCountConsistentAcrossPipeline:
         assert len(source_agents) == EXPECTED_AGENT_COUNT
 
         # Verify bundle has correct count
-        bundle_agents = mock_filesystem.list_dir(
-            populated_ide_bundle / "agents" / "nw"
-        )
+        bundle_agents = mock_filesystem.list_dir(populated_ide_bundle / "agents" / "nw")
         assert len(bundle_agents) == EXPECTED_AGENT_COUNT
 
-        # Validation service accepts the count as expected parameter
+        # Deploy to target, then validate agent count matches
+        deployer = AssetDeploymentService(filesystem=mock_filesystem)
+        deploy_result = deployer.deploy(
+            source_dir=populated_ide_bundle,
+            target_dir=DEFAULT_DEPLOY_TARGET,
+        )
+        assert deploy_result.agents_deployed == EXPECTED_AGENT_COUNT
+
         validator = DeploymentValidationService(filesystem=mock_filesystem)
-        with pytest.raises(NotImplementedError):
-            validator.validate(
-                target_dir=DEPLOY_TARGET,
-                expected_agents=EXPECTED_AGENT_COUNT,
-                expected_commands=EXPECTED_COMMAND_COUNT,
-                expected_templates=EXPECTED_TEMPLATE_COUNT,
-                expected_scripts=EXPECTED_SCRIPT_COUNT,
-            )
+        validation_result = validator.validate(
+            target_dir=DEFAULT_DEPLOY_TARGET,
+            expected_agents=EXPECTED_AGENT_COUNT,
+            expected_commands=EXPECTED_COMMAND_COUNT,
+            expected_templates=EXPECTED_TEMPLATE_COUNT,
+            expected_scripts=EXPECTED_SCRIPT_COUNT,
+        )
+        assert validation_result.agent_count_match is True
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -650,25 +536,26 @@ class TestDeployTargetPathConsistency:
         populated_ide_bundle: Path,
     ) -> None:
         """Deploy target path should be ~/.claude/ for both deploy and validation."""
-        expected_target = Path.home() / ".claude"
-
         deployer = AssetDeploymentService(filesystem=mock_filesystem)
         validator = DeploymentValidationService(filesystem=mock_filesystem)
 
-        # Both services accept the same target path
-        with pytest.raises(NotImplementedError):
-            deployer.deploy(
-                source_dir=populated_ide_bundle,
-                target_dir=expected_target,
-            )
-        with pytest.raises(NotImplementedError):
-            validator.validate(
-                target_dir=expected_target,
-                expected_agents=EXPECTED_AGENT_COUNT,
-                expected_commands=EXPECTED_COMMAND_COUNT,
-                expected_templates=EXPECTED_TEMPLATE_COUNT,
-                expected_scripts=EXPECTED_SCRIPT_COUNT,
-            )
+        # Deploy to target
+        deploy_result = deployer.deploy(
+            source_dir=populated_ide_bundle,
+            target_dir=DEFAULT_DEPLOY_TARGET,
+        )
+        assert deploy_result.success is True
+        assert deploy_result.target_path == DEFAULT_DEPLOY_TARGET
+
+        # Validate same target
+        validation_result = validator.validate(
+            target_dir=DEFAULT_DEPLOY_TARGET,
+            expected_agents=EXPECTED_AGENT_COUNT,
+            expected_commands=EXPECTED_COMMAND_COUNT,
+            expected_templates=EXPECTED_TEMPLATE_COUNT,
+            expected_scripts=EXPECTED_SCRIPT_COUNT,
+        )
+        assert validation_result.valid is True
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -691,7 +578,7 @@ class TestIdeBundleCheckBlocksInstallWhenMissing:
     ) -> None:
         """IDE bundle check should return BLOCKING failure when dist/ide/ is absent."""
         # dist/ide/ does NOT exist in the empty filesystem
-        bundle_dir = Path("dist/ide")
+        bundle_dir = DEFAULT_OUTPUT_DIR
         assert not mock_filesystem.exists(bundle_dir)
 
         ide_check = IdeBundleExistsCheck(

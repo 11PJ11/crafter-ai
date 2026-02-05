@@ -6,9 +6,12 @@ This module provides the BuildService application service that orchestrates:
 - Wheel building via BuildPort
 - Wheel validation via WheelValidationService
 - Artifact registration via ArtifactRegistry
+- IDE bundle building via IdeBundleBuildService (optional)
 
 Used by: forge:build CLI command
 """
+
+from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -17,7 +20,13 @@ from crafter_ai.installer.domain.artifact_registry import ArtifactRegistry
 from crafter_ai.installer.domain.candidate_version import CandidateVersion
 from crafter_ai.installer.domain.check_executor import CheckExecutor
 from crafter_ai.installer.domain.check_result import CheckResult, CheckSeverity
+from crafter_ai.installer.domain.ide_bundle_build_result import IdeBundleBuildResult
+from crafter_ai.installer.domain.ide_bundle_constants import (
+    DEFAULT_OUTPUT_DIR,
+    DEFAULT_SOURCE_DIR,
+)
 from crafter_ai.installer.ports.build_port import BuildError, BuildPort
+from crafter_ai.installer.services.ide_bundle_build_service import IdeBundleBuildService
 from crafter_ai.installer.services.version_bump_service import VersionBumpService
 from crafter_ai.installer.services.wheel_validation_service import (
     WheelValidationResult,
@@ -36,6 +45,7 @@ class BuildResult:
         pre_flight_results: List of pre-flight check results.
         validation_result: Wheel validation result, None if build didn't reach validation.
         error_message: Error message if build failed, None if successful.
+        ide_bundle_result: IDE bundle build result, None if not requested or not reached.
     """
 
     success: bool
@@ -44,6 +54,7 @@ class BuildResult:
     pre_flight_results: list[CheckResult]
     validation_result: WheelValidationResult | None
     error_message: str | None
+    ide_bundle_result: IdeBundleBuildResult | None = None
 
 
 class BuildService:
@@ -54,6 +65,7 @@ class BuildService:
     2. Version determination - calculating next version from commits
     3. Wheel building - creating the wheel artifact
     4. Wheel validation - verifying the built wheel
+    5. IDE bundle building - creating IDE assets (optional)
 
     On success, stores artifacts in the registry for downstream consumers.
     """
@@ -65,6 +77,7 @@ class BuildService:
         version_bump_service: VersionBumpService,
         wheel_validation_service: WheelValidationService,
         artifact_registry: ArtifactRegistry,
+        ide_bundle_build_service: IdeBundleBuildService | None = None,
     ) -> None:
         """Initialize BuildService with dependencies.
 
@@ -74,12 +87,15 @@ class BuildService:
             version_bump_service: Service for determining version bumps.
             wheel_validation_service: Service for validating wheel files.
             artifact_registry: Registry for storing build artifacts.
+            ide_bundle_build_service: Optional service for building IDE bundles.
+                When None (default), IDE bundle step is skipped.
         """
         self._check_executor = check_executor
         self._build_port = build_port
         self._version_bump_service = version_bump_service
         self._wheel_validation_service = wheel_validation_service
         self._artifact_registry = artifact_registry
+        self._ide_bundle_build_service = ide_bundle_build_service
 
     def run_pre_flight_checks(self) -> list[CheckResult]:
         """Run all pre-flight checks.
@@ -204,6 +220,24 @@ class BuildService:
         self._artifact_registry.set(ArtifactRegistry.WHEEL_PATH, wheel_path)
         self._artifact_registry.set(ArtifactRegistry.VERSION, candidate.next_version)
 
+        # Step 5.5: Build IDE bundle (optional)
+        ide_bundle_result: IdeBundleBuildResult | None = None
+        if self._ide_bundle_build_service is not None:
+            ide_bundle_result = self._ide_bundle_build_service.build(
+                source_dir=DEFAULT_SOURCE_DIR,
+                output_dir=DEFAULT_OUTPUT_DIR,
+            )
+            if not ide_bundle_result.success:
+                return BuildResult(
+                    success=False,
+                    wheel_path=wheel_path,
+                    version=candidate.next_version,
+                    pre_flight_results=pre_flight_results,
+                    validation_result=validation_result,
+                    error_message=f"IDE bundle build failed: {ide_bundle_result.error_message}",
+                    ide_bundle_result=ide_bundle_result,
+                )
+
         return BuildResult(
             success=True,
             wheel_path=wheel_path,
@@ -211,4 +245,5 @@ class BuildService:
             pre_flight_results=pre_flight_results,
             validation_result=validation_result,
             error_message=None,
+            ide_bundle_result=ide_bundle_result,
         )
