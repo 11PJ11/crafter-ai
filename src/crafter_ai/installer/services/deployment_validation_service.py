@@ -17,12 +17,12 @@ from crafter_ai.installer.domain.deployment_validation_result import (
     DeploymentValidationResult,
 )
 from crafter_ai.installer.domain.ide_bundle_constants import (
-    AGENTS_SUBDIR,
-    COMMANDS_SUBDIR,
+    DEPLOY_AGENTS_SUBDIR,
+    DEPLOY_COMMANDS_SUBDIR,
+    DEPLOY_SCRIPTS_SUBDIR,
+    DEPLOY_TEMPLATES_SUBDIR,
     EXPECTED_SCHEMA_PHASES,
     EXPECTED_SCHEMA_VERSION,
-    SCRIPTS_SUBDIR,
-    TEMPLATES_SUBDIR,
 )
 from crafter_ai.installer.ports.filesystem_port import FileSystemPort
 
@@ -66,10 +66,10 @@ class DeploymentValidationService:
         Returns:
             DeploymentValidationResult with match status and mismatches.
         """
-        actual_agents = self._count_files(target_dir, AGENTS_SUBDIR)
-        actual_commands = self._count_files(target_dir, COMMANDS_SUBDIR)
-        actual_templates = self._count_files(target_dir, TEMPLATES_SUBDIR)
-        actual_scripts = self._count_files(target_dir, SCRIPTS_SUBDIR)
+        actual_agents = self._count_files(target_dir, DEPLOY_AGENTS_SUBDIR)
+        actual_commands = self._count_files(target_dir, DEPLOY_COMMANDS_SUBDIR)
+        actual_templates = self._count_files(target_dir, DEPLOY_TEMPLATES_SUBDIR)
+        actual_scripts = self._count_files(target_dir, DEPLOY_SCRIPTS_SUBDIR)
 
         agent_match = actual_agents == expected_agents
         command_match = actual_commands == expected_commands
@@ -126,7 +126,7 @@ class DeploymentValidationService:
 
         Args:
             target_dir: Root target directory (~/.claude/).
-            subdir: Relative subdirectory path (e.g. 'agents/nw').
+            subdir: Relative subdirectory path (e.g. 'agents/nw', 'commands/nw').
 
         Returns:
             Number of files found, or 0 if directory does not exist.
@@ -138,11 +138,14 @@ class DeploymentValidationService:
         items = self._filesystem.list_dir(subdir_path)
         # Count only files with expected extensions (exclude directories and hidden files)
         # Expected extensions: .md (agents/commands), .yaml/.json (templates), .py (scripts)
-        valid_extensions = {'.md', '.yaml', '.json', '.py'}
-        return len([
-            item for item in items
-            if item.suffix in valid_extensions and not item.name.startswith('.')
-        ])
+        valid_extensions = {".md", ".yaml", ".json", ".py"}
+        return len(
+            [
+                item
+                for item in items
+                if item.suffix in valid_extensions and not item.name.startswith(".")
+            ]
+        )
 
     def _write_manifest(
         self,

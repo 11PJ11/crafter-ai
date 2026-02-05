@@ -388,7 +388,9 @@ class InstallService:
             )
 
         # Phase 2: Release readiness validation
-        report_progress(InstallPhase.READINESS, "Validating wheel for release readiness...")
+        report_progress(
+            InstallPhase.READINESS, "Validating wheel for release readiness..."
+        )
         readiness_result = self._release_readiness_service.validate(wheel_path)
         phases_completed.append(InstallPhase.READINESS)
 
@@ -403,7 +405,9 @@ class InstallService:
 
         # Phase 3: Backup (non-blocking - only for upgrades/reinstalls, not fresh installs)
         if needs_backup:
-            report_progress(InstallPhase.BACKUP, "Creating backup of existing configuration...")
+            report_progress(
+                InstallPhase.BACKUP, "Creating backup of existing configuration..."
+            )
             backup_result = self._backup_port.create_backup(self._nwave_config_path)
             phases_completed.append(InstallPhase.BACKUP)
         else:
@@ -497,7 +501,9 @@ class InstallService:
 
         # Phase 5: Verification (only if health_checker provided)
         if self._health_checker is not None and install_path is not None:
-            report_progress(InstallPhase.VERIFICATION, "Verifying installation health...")
+            report_progress(
+                InstallPhase.VERIFICATION, "Verifying installation health..."
+            )
             verification_result = self.verify(install_path)
             phases_completed.append(InstallPhase.VERIFICATION)
 

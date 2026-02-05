@@ -13,10 +13,10 @@ from pathlib import Path
 
 from crafter_ai.installer.domain.ide_bundle_build_result import IdeBundleBuildResult
 from crafter_ai.installer.domain.ide_bundle_constants import (
-    AGENTS_SUBDIR,
-    COMMANDS_SUBDIR,
-    SCRIPTS_SUBDIR,
-    TEMPLATES_SUBDIR,
+    BUILD_AGENTS_SUBDIR,
+    BUILD_COMMANDS_SUBDIR,
+    BUILD_SCRIPTS_SUBDIR,
+    BUILD_TEMPLATES_SUBDIR,
 )
 from crafter_ai.installer.ports.filesystem_port import FileSystemPort
 
@@ -66,10 +66,12 @@ class IdeBundleBuildService:
 
         self._filesystem.mkdir(output_dir, parents=True)
 
-        agent_count = self._copy_subdir(source_dir, output_dir, AGENTS_SUBDIR)
-        command_count = self._copy_subdir(source_dir, output_dir, COMMANDS_SUBDIR)
-        template_count = self._copy_subdir(source_dir, output_dir, TEMPLATES_SUBDIR)
-        script_count = self._copy_subdir(source_dir, output_dir, SCRIPTS_SUBDIR)
+        agent_count = self._copy_subdir(source_dir, output_dir, BUILD_AGENTS_SUBDIR)
+        command_count = self._copy_subdir(source_dir, output_dir, BUILD_COMMANDS_SUBDIR)
+        template_count = self._copy_subdir(
+            source_dir, output_dir, BUILD_TEMPLATES_SUBDIR
+        )
+        script_count = self._copy_subdir(source_dir, output_dir, BUILD_SCRIPTS_SUBDIR)
         team_count = self._count_teams(source_dir)
 
         return IdeBundleBuildResult(
@@ -84,9 +86,7 @@ class IdeBundleBuildService:
             embed_injection_count=0,
         )
 
-    def _copy_subdir(
-        self, source_dir: Path, output_dir: Path, subdir: str
-    ) -> int:
+    def _copy_subdir(self, source_dir: Path, output_dir: Path, subdir: str) -> int:
         """Copy files from a source subdirectory to the output.
 
         Args:

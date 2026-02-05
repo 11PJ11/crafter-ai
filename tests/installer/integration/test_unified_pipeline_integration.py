@@ -84,7 +84,7 @@ def populated_nwave_source(mock_filesystem: InMemoryFileSystemAdapter) -> Path:
     mock_filesystem.mkdir(source / "agents", parents=True)
     mock_filesystem.mkdir(source / "tasks" / "nw", parents=True)
     mock_filesystem.mkdir(source / "templates", parents=True)
-    mock_filesystem.mkdir(source / "scripts", parents=True)
+    mock_filesystem.mkdir(source / "scripts" / "des", parents=True)
 
     for i in range(EXPECTED_AGENT_COUNT):
         mock_filesystem.write_text(
@@ -103,7 +103,7 @@ def populated_nwave_source(mock_filesystem: InMemoryFileSystemAdapter) -> Path:
         )
     for i in range(EXPECTED_SCRIPT_COUNT):
         mock_filesystem.write_text(
-            source / "scripts" / f"script_{i}.py",
+            source / "scripts" / "des" / f"script_{i}.py",
             f"# script {i}",
         )
 
@@ -112,17 +112,15 @@ def populated_nwave_source(mock_filesystem: InMemoryFileSystemAdapter) -> Path:
 
 @pytest.fixture
 def populated_ide_bundle(mock_filesystem: InMemoryFileSystemAdapter) -> Path:
-    """Set up dist/ide/ bundle with correct component counts."""
+    """Set up dist/ide/ bundle with BUILD structure (will be transformed during deploy)."""
     bundle = DEFAULT_OUTPUT_DIR
     mock_filesystem.mkdir(bundle / "agents", parents=True)
     mock_filesystem.mkdir(bundle / "tasks" / "nw", parents=True)
     mock_filesystem.mkdir(bundle / "templates", parents=True)
-    mock_filesystem.mkdir(bundle / "scripts", parents=True)
+    mock_filesystem.mkdir(bundle / "scripts" / "des", parents=True)
 
     for i in range(EXPECTED_AGENT_COUNT):
-        mock_filesystem.write_text(
-            bundle / "agents" / f"agent_{i}.md", f"agent {i}"
-        )
+        mock_filesystem.write_text(bundle / "agents" / f"agent_{i}.md", f"agent {i}")
     for i in range(EXPECTED_COMMAND_COUNT):
         mock_filesystem.write_text(
             bundle / "tasks" / "nw" / f"cmd_{i}.md", f"command {i}"
@@ -132,7 +130,9 @@ def populated_ide_bundle(mock_filesystem: InMemoryFileSystemAdapter) -> Path:
             bundle / "templates" / f"tpl_{i}.yaml", f"template: {i}"
         )
     for i in range(EXPECTED_SCRIPT_COUNT):
-        mock_filesystem.write_text(bundle / "scripts" / f"script_{i}.py", f"script {i}")
+        mock_filesystem.write_text(
+            bundle / "scripts" / "des" / f"script_{i}.py", f"script {i}"
+        )
 
     return bundle
 
@@ -458,9 +458,7 @@ class TestAgentCountConsistentAcrossPipeline:
     ) -> None:
         """Agent count is consistent across build, deploy, and validation services."""
         # Verify source has correct count
-        source_agents = mock_filesystem.list_dir(
-            populated_nwave_source / "agents"
-        )
+        source_agents = mock_filesystem.list_dir(populated_nwave_source / "agents")
         assert len(source_agents) == EXPECTED_AGENT_COUNT
 
         # Verify bundle has correct count

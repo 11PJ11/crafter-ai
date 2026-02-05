@@ -55,10 +55,17 @@ def mock_filesystem() -> InMemoryFileSystemAdapter:
 def deployed_filesystem(
     mock_filesystem: InMemoryFileSystemAdapter, tmp_path: Path
 ) -> Path:
-    """Create a correctly deployed filesystem structure with correct counts."""
+    """Create a correctly deployed filesystem structure with DEPLOY paths.
+
+    Uses the correct deployment structure:
+    - agents/nw/ (not flat agents/)
+    - commands/nw/ (not tasks/nw/)
+    - templates/ (flat)
+    - scripts/ (flat)
+    """
     target = tmp_path / ".claude"
-    agents_dir = target / "agents"
-    commands_dir = target / "tasks" / "nw"
+    agents_dir = target / "agents" / "nw"
+    commands_dir = target / "commands" / "nw"
     templates_dir = target / "templates"
     scripts_dir = target / "scripts"
 

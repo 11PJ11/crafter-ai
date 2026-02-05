@@ -690,13 +690,17 @@ class TestExitCodes:
         runner: CleanCliRunner,
     ) -> None:
         """Test exit code 1 when wheel not found."""
-        with patch(
-            "crafter_ai.installer.cli.forge_install.find_latest_wheel"
-        ) as mock_find, patch(
-            "crafter_ai.installer.cli.forge_install.list_wheels_in_dist"
-        ) as mock_list, patch(
-            "crafter_ai.installer.cli.forge_install.run_auto_chain_build"
-        ) as mock_auto_chain:
+        with (
+            patch(
+                "crafter_ai.installer.cli.forge_install.find_latest_wheel"
+            ) as mock_find,
+            patch(
+                "crafter_ai.installer.cli.forge_install.list_wheels_in_dist"
+            ) as mock_list,
+            patch(
+                "crafter_ai.installer.cli.forge_install.run_auto_chain_build"
+            ) as mock_auto_chain,
+        ):
             mock_find.return_value = None
             mock_list.return_value = []
             mock_auto_chain.return_value = None

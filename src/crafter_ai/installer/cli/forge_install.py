@@ -34,7 +34,9 @@ from crafter_ai.installer.services.install_service import InstallService
 from crafter_ai.installer.services.release_readiness_service import (
     ReleaseReadinessService,
 )
-from crafter_ai.installer.services.release_report_service import ReleaseReportService  # Kept for test mock compatibility (24+ tests patch this path)
+from crafter_ai.installer.services.release_report_service import (
+    ReleaseReportService,
+)  # Kept for test mock compatibility (24+ tests patch this path)
 
 
 console = Console()
@@ -428,22 +430,22 @@ def install(
         # Show completion line with duration
         console.print(f"  ✅ Assets deployed ({deployment_duration})")
 
-        # Show detail lines with dim style (arrow notation: source → destination)
+        # Show detail lines with destination paths
         deployment = install_result.asset_deployment_result
         console.print(
-            f"  {deployment.agents_deployed} agents → ~/.claude/agents/nw",
+            f"  {deployment.agents_deployed} agents deployed to ~/.claude/agents/nw",
             style="dim",
         )
         console.print(
-            f"  {deployment.commands_deployed} commands → ~/.claude/commands/nw",
+            f"  {deployment.commands_deployed} commands deployed to ~/.claude/commands/nw",
             style="dim",
         )
         console.print(
-            f"  {deployment.templates_deployed} templates → ~/.claude/templates",
+            f"  {deployment.templates_deployed} templates deployed to ~/.claude/templates",
             style="dim",
         )
         console.print(
-            f"  {deployment.scripts_deployed} scripts → ~/.claude/scripts",
+            f"  {deployment.scripts_deployed} scripts deployed to ~/.claude/scripts",
             style="dim",
         )
 

@@ -50,9 +50,7 @@ def populated_ide_bundle(mock_filesystem: InMemoryFileSystemAdapter) -> Path:
     mock_filesystem.mkdir(bundle / "scripts", parents=True)
 
     for i in range(EXPECTED_AGENT_COUNT):
-        mock_filesystem.write_text(
-            bundle / "agents" / f"agent_{i}.md", f"agent {i}"
-        )
+        mock_filesystem.write_text(bundle / "agents" / f"agent_{i}.md", f"agent {i}")
     for i in range(EXPECTED_COMMAND_COUNT):
         mock_filesystem.write_text(
             bundle / "tasks" / "nw" / f"cmd_{i}.md", f"command {i}"

@@ -52,39 +52,39 @@ def mock_filesystem() -> InMemoryFileSystemAdapter:
 
 @pytest.fixture
 def ide_bundle_dir(mock_filesystem: InMemoryFileSystemAdapter) -> Path:
-    """Set up a mock IDE bundle source directory with correct component counts."""
+    """Set up a mock IDE bundle source directory with BUILD structure.
+
+    The bundle uses BUILD paths (agents/, tasks/nw/, scripts/des/) which
+    will be transformed to DEPLOY paths during deployment (agents/nw/,
+    commands/nw/, scripts/).
+    """
     source = Path("dist/ide")
     mock_filesystem.mkdir(source / "agents", parents=True)
     mock_filesystem.mkdir(source / "tasks" / "nw", parents=True)
     mock_filesystem.mkdir(source / "templates", parents=True)
-    mock_filesystem.mkdir(source / "scripts", parents=True)
+    mock_filesystem.mkdir(source / "scripts" / "des", parents=True)
 
-    # Create agent files (30 agents from design YAML)
+    # Create agent files (30 agents from design YAML, flat in agents/)
     for i in range(EXPECTED_AGENT_COUNT):
-        mock_filesystem.write_text(
-            source / "agents" / f"agent_{i}.md", f"agent {i}"
-        )
+        mock_filesystem.write_text(source / "agents" / f"agent_{i}.md", f"agent {i}")
 
-    # Create command files (23 commands from design YAML)
+    # Create command files (23 commands from design YAML, in tasks/nw/)
     for i in range(EXPECTED_COMMAND_COUNT):
         mock_filesystem.write_text(
             source / "tasks" / "nw" / f"cmd_{i}.md", f"command {i}"
         )
 
-    # Create template files (17 templates from design YAML)
+    # Create template files (16 templates from design YAML)
     for i in range(EXPECTED_TEMPLATE_COUNT):
         mock_filesystem.write_text(
             source / "templates" / f"tpl_{i}.yaml", f"template: {i}"
         )
 
-    # Create script files (4 scripts from design YAML)
+    # Create script files (2 scripts from design YAML, in scripts/des/)
     for i in range(EXPECTED_SCRIPT_COUNT):
-        mock_filesystem.write_text(source / "scripts" / f"script_{i}.py", f"script {i}")
-
-    # Include config.json as part of the bundle
-    mock_filesystem.write_text(
-        source / "agents" / "config.json", '{"version": "1.0"}'
-    )
+        mock_filesystem.write_text(
+            source / "scripts" / "des" / f"script_{i}.py", f"script {i}"
+        )
 
     return source
 
@@ -106,32 +106,37 @@ class TestAssetDeploymentService:
         mock_filesystem: InMemoryFileSystemAdapter,
         ide_bundle_dir: Path,
     ) -> None:
-        """Agents should be deployed to ~/.claude/agents/nw/."""
+        """Agents should be deployed from dist/ide/agents/ to ~/.claude/agents/nw/."""
         service = AssetDeploymentService(filesystem=mock_filesystem)
 
         result = service.deploy(source_dir=ide_bundle_dir, target_dir=DEPLOY_TARGET)
 
-        # Fixture adds config.json to agents/nw, so count >= EXPECTED_AGENT_COUNT
-        assert result.agents_deployed >= EXPECTED_AGENT_COUNT
+        assert result.agents_deployed == EXPECTED_AGENT_COUNT
+        # Verify files are actually in the nw/ subdirectory
+        deployed_path = DEPLOY_TARGET / "agents" / "nw"
+        assert mock_filesystem.exists(deployed_path)
 
     def test_deploys_commands_to_claude_commands_nw(
         self,
         mock_filesystem: InMemoryFileSystemAdapter,
         ide_bundle_dir: Path,
     ) -> None:
-        """Commands should be deployed to ~/.claude/commands/nw/."""
+        """Commands should be deployed from dist/ide/tasks/nw/ to ~/.claude/commands/nw/."""
         service = AssetDeploymentService(filesystem=mock_filesystem)
 
         result = service.deploy(source_dir=ide_bundle_dir, target_dir=DEPLOY_TARGET)
 
         assert result.commands_deployed == EXPECTED_COMMAND_COUNT
+        # Verify files are in commands/nw/, NOT tasks/nw/
+        deployed_path = DEPLOY_TARGET / "commands" / "nw"
+        assert mock_filesystem.exists(deployed_path)
 
     def test_deploys_templates_to_claude_templates(
         self,
         mock_filesystem: InMemoryFileSystemAdapter,
         ide_bundle_dir: Path,
     ) -> None:
-        """Templates should be deployed to ~/.claude/templates/ (17 templates)."""
+        """Templates should be deployed to ~/.claude/templates/ (16 templates)."""
         service = AssetDeploymentService(filesystem=mock_filesystem)
 
         result = service.deploy(source_dir=ide_bundle_dir, target_dir=DEPLOY_TARGET)
@@ -145,7 +150,7 @@ class TestAssetDeploymentService:
         mock_filesystem: InMemoryFileSystemAdapter,
         ide_bundle_dir: Path,
     ) -> None:
-        """Scripts should be deployed to ~/.claude/scripts/ (4 scripts)."""
+        """Scripts should be deployed from dist/ide/scripts/des/ to ~/.claude/scripts/ (2 scripts)."""
         service = AssetDeploymentService(filesystem=mock_filesystem)
 
         result = service.deploy(source_dir=ide_bundle_dir, target_dir=DEPLOY_TARGET)
@@ -153,6 +158,9 @@ class TestAssetDeploymentService:
         assert result.scripts_deployed == EXPECTED_SCRIPT_COUNT, (
             f"Design YAML specifies {EXPECTED_SCRIPT_COUNT} scripts"
         )
+        # Verify files are in scripts/ (flat), not scripts/des/
+        deployed_path = DEPLOY_TARGET / "scripts"
+        assert mock_filesystem.exists(deployed_path)
 
     def test_deploy_target_is_claude_directory(
         self,

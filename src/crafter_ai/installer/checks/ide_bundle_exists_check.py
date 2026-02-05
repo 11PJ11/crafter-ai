@@ -14,8 +14,8 @@ from pathlib import Path
 
 from crafter_ai.installer.domain.check_result import CheckResult, CheckSeverity
 from crafter_ai.installer.domain.ide_bundle_constants import (
-    AGENTS_SUBDIR,
-    COMMANDS_SUBDIR,
+    BUILD_AGENTS_SUBDIR,
+    BUILD_COMMANDS_SUBDIR,
 )
 from crafter_ai.installer.ports.filesystem_port import FileSystemPort
 
@@ -43,18 +43,14 @@ class IdeBundleExistsCheck:
             CheckResult with pass/fail, component counts, and remediation.
         """
         if not self._filesystem.exists(self._bundle_dir):
-            return self._blocking_failure(
-                f"IDE bundle not found at {self._bundle_dir}"
-            )
+            return self._blocking_failure(f"IDE bundle not found at {self._bundle_dir}")
 
         contents = self._filesystem.list_dir(self._bundle_dir)
         if not contents:
-            return self._blocking_failure(
-                f"IDE bundle at {self._bundle_dir} is empty"
-            )
+            return self._blocking_failure(f"IDE bundle at {self._bundle_dir} is empty")
 
-        agent_count = self._count_items_in(AGENTS_SUBDIR)
-        command_count = self._count_items_in(COMMANDS_SUBDIR)
+        agent_count = self._count_items_in(BUILD_AGENTS_SUBDIR)
+        command_count = self._count_items_in(BUILD_COMMANDS_SUBDIR)
 
         return CheckResult(
             id=CHECK_ID,

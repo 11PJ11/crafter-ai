@@ -13,10 +13,14 @@ from pathlib import Path
 
 from crafter_ai.installer.domain.asset_deployment_result import AssetDeploymentResult
 from crafter_ai.installer.domain.ide_bundle_constants import (
-    AGENTS_SUBDIR,
-    COMMANDS_SUBDIR,
-    SCRIPTS_SUBDIR,
-    TEMPLATES_SUBDIR,
+    BUILD_AGENTS_SUBDIR,
+    BUILD_COMMANDS_SUBDIR,
+    BUILD_SCRIPTS_SUBDIR,
+    BUILD_TEMPLATES_SUBDIR,
+    DEPLOY_AGENTS_SUBDIR,
+    DEPLOY_COMMANDS_SUBDIR,
+    DEPLOY_SCRIPTS_SUBDIR,
+    DEPLOY_TEMPLATES_SUBDIR,
 )
 from crafter_ai.installer.ports.filesystem_port import FileSystemPort
 
@@ -39,8 +43,9 @@ class AssetDeploymentService:
     def deploy(self, source_dir: Path, target_dir: Path) -> AssetDeploymentResult:
         """Deploy IDE bundle assets to target directory.
 
-        Copies files from source subdirectories (agents/nw, commands/nw,
-        templates, scripts) to matching subdirectories under target_dir.
+        Copies files from source subdirectories (agents, tasks/nw, templates,
+        scripts/des) to their correct destinations in ~/.claude/ (agents/nw,
+        commands/nw, templates, scripts).
 
         Args:
             source_dir: Path to dist/ide/ bundle directory.
@@ -62,12 +67,19 @@ class AssetDeploymentService:
 
         self._filesystem.mkdir(target_dir, parents=True)
 
-        agents_deployed = self._copy_subdir(source_dir, target_dir, AGENTS_SUBDIR)
-        commands_deployed = self._copy_subdir(source_dir, target_dir, COMMANDS_SUBDIR)
-        templates_deployed = self._copy_subdir(
-            source_dir, target_dir, TEMPLATES_SUBDIR
+        # Deploy with source → destination path transformation
+        agents_deployed = self._copy_subdir(
+            source_dir, target_dir, BUILD_AGENTS_SUBDIR, DEPLOY_AGENTS_SUBDIR
         )
-        scripts_deployed = self._copy_subdir(source_dir, target_dir, SCRIPTS_SUBDIR)
+        commands_deployed = self._copy_subdir(
+            source_dir, target_dir, BUILD_COMMANDS_SUBDIR, DEPLOY_COMMANDS_SUBDIR
+        )
+        templates_deployed = self._copy_subdir(
+            source_dir, target_dir, BUILD_TEMPLATES_SUBDIR, DEPLOY_TEMPLATES_SUBDIR
+        )
+        scripts_deployed = self._copy_subdir(
+            source_dir, target_dir, BUILD_SCRIPTS_SUBDIR, DEPLOY_SCRIPTS_SUBDIR
+        )
 
         return AssetDeploymentResult(
             success=True,
@@ -79,20 +91,23 @@ class AssetDeploymentService:
         )
 
     def _copy_subdir(
-        self, source_dir: Path, target_dir: Path, subdir: str
+        self, source_dir: Path, target_dir: Path, source_subdir: str, dest_subdir: str
     ) -> int:
-        """Copy files from a source subdirectory to the target.
+        """Copy files from a source subdirectory to a destination subdirectory.
+
+        Transforms paths during deployment (e.g., dist/ide/agents/ → ~/.claude/agents/nw/).
 
         Args:
             source_dir: Root source directory (dist/ide/).
             target_dir: Root target directory (~/.claude/).
-            subdir: Relative subdirectory path (e.g. 'agents/nw').
+            source_subdir: Relative source path (e.g. 'agents').
+            dest_subdir: Relative destination path (e.g. 'agents/nw').
 
         Returns:
             Number of files copied.
         """
-        src_path = source_dir / subdir
-        dst_path = target_dir / subdir
+        src_path = source_dir / source_subdir
+        dst_path = target_dir / dest_subdir
 
         if not self._filesystem.exists(src_path):
             return 0

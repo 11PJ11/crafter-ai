@@ -396,7 +396,9 @@ class ReleaseReadinessService:
                     # METADATA format: headers end with blank line, then description
                     # If file is large (>2KB) it likely contains embedded description
                     # Also check for Description-Content-Type header
-                    has_description_type = "description-content-type:" in content.lower()
+                    has_description_type = (
+                        "description-content-type:" in content.lower()
+                    )
                     # Look for content after headers (blank line followed by content)
                     parts = content.split("\n\n", 1)
                     has_description_content = (

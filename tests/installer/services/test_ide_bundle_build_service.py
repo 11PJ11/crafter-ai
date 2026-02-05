@@ -50,7 +50,7 @@ def nwave_source_dir(mock_filesystem: InMemoryFileSystemAdapter) -> Path:
     mock_filesystem.mkdir(source / "agents", parents=True)
     mock_filesystem.mkdir(source / "tasks" / "nw", parents=True)
     mock_filesystem.mkdir(source / "templates", parents=True)
-    mock_filesystem.mkdir(source / "scripts", parents=True)
+    mock_filesystem.mkdir(source / "scripts" / "des", parents=True)
 
     # Create agent files (30 agents from design YAML)
     for i in range(EXPECTED_AGENT_COUNT):
@@ -66,17 +66,17 @@ def nwave_source_dir(mock_filesystem: InMemoryFileSystemAdapter) -> Path:
             f"# Command {i}\ncommand content",
         )
 
-    # Create template files (17 templates from design YAML)
+    # Create template files (16 templates from design YAML)
     for i in range(EXPECTED_TEMPLATE_COUNT):
         mock_filesystem.write_text(
             source / "templates" / f"template_{i}.yaml",
             f"template: {i}",
         )
 
-    # Create script files (4 scripts from design YAML)
+    # Create script files (2 scripts from design YAML, in des/ subdirectory)
     for i in range(EXPECTED_SCRIPT_COUNT):
         mock_filesystem.write_text(
-            source / "scripts" / f"script_{i}.py",
+            source / "scripts" / "des" / f"script_{i}.py",
             f"# script {i}",
         )
 
@@ -149,7 +149,7 @@ class TestIdeBundleBuildService:
         mock_filesystem: InMemoryFileSystemAdapter,
         nwave_source_dir: Path,
     ) -> None:
-        """Build should count 4 scripts from nWave/scripts/ scan."""
+        """Build should count 2 scripts from nWave/scripts/des/ scan."""
         service = IdeBundleBuildService(filesystem=mock_filesystem)
         output_dir = Path("dist/ide")
 

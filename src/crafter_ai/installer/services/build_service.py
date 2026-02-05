@@ -236,7 +236,9 @@ class BuildService:
         ide_bundle_result: IdeBundleBuildResult | None = None
         if self._ide_bundle_build_service is not None:
             if console is not None:
-                with console.status("⏳ Processing nWave assets...", spinner=spinner_style):
+                with console.status(
+                    "⏳ Processing nWave assets...", spinner=spinner_style
+                ):
                     ide_bundle_result = self._ide_bundle_build_service.build(
                         source_dir=DEFAULT_SOURCE_DIR,
                         output_dir=DEFAULT_OUTPUT_DIR,

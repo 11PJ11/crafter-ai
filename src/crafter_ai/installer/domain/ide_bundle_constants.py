@@ -29,9 +29,25 @@ DEFAULT_SOURCE_DIR = Path("nWave")
 DEFAULT_OUTPUT_DIR = Path("dist/ide")
 DEFAULT_DEPLOY_TARGET = Path.home() / ".claude"
 
-# --- Subdirectory layout within the bundle ---
+# --- Build subdirectory layout (source paths in nWave/) ---
+# These paths are used by IdeBundleBuildService to scan nWave/ source
 
-AGENTS_SUBDIR = "agents"
-COMMANDS_SUBDIR = "tasks/nw"
-TEMPLATES_SUBDIR = "templates"
-SCRIPTS_SUBDIR = "scripts"
+BUILD_AGENTS_SUBDIR = "agents"
+BUILD_COMMANDS_SUBDIR = "tasks/nw"
+BUILD_TEMPLATES_SUBDIR = "templates"
+BUILD_SCRIPTS_SUBDIR = "scripts/des"  # Scripts live in nested des/ subdirectory
+
+# --- Deployment subdirectory layout (destination paths in ~/.claude/) ---
+# These paths are used by AssetDeploymentService for final deployment
+
+DEPLOY_AGENTS_SUBDIR = "agents/nw"
+DEPLOY_COMMANDS_SUBDIR = "commands/nw"
+DEPLOY_TEMPLATES_SUBDIR = "templates"
+DEPLOY_SCRIPTS_SUBDIR = "scripts"
+
+# --- Legacy constants (deprecated, use BUILD_* or DEPLOY_* instead) ---
+
+AGENTS_SUBDIR = BUILD_AGENTS_SUBDIR
+COMMANDS_SUBDIR = BUILD_COMMANDS_SUBDIR
+TEMPLATES_SUBDIR = BUILD_TEMPLATES_SUBDIR
+SCRIPTS_SUBDIR = BUILD_SCRIPTS_SUBDIR

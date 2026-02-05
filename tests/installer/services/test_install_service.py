@@ -46,7 +46,9 @@ def mock_pipx_port() -> MagicMock:
     )
     # Simulate an existing installation so upgrade path triggers backup
     mock.list_packages.return_value = [
-        InstalledPackage(name="crafter-ai", version="1.0.0", path=Path("/venvs/crafter-ai")),
+        InstalledPackage(
+            name="crafter-ai", version="1.0.0", path=Path("/venvs/crafter-ai")
+        ),
     ]
     return mock
 
