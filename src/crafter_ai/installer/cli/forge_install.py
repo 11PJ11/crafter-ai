@@ -392,18 +392,25 @@ def install(
     # Create install service and run installation
     service = create_install_service(skip_verification=no_verify)
 
+    # Backup section (currently skipped for fresh installs)
     console.print()
-    console.print("  \U0001f4be Fresh install, skipping backup")
+    console.print("  💾 Fresh install, skipping backup")
 
+    # CLI Install section with spinner
+    console.print()
+    console.print("  ⚙️ Installing CLI")
     install_start = time.time()
-    install_result = service.install(wheel_path, force=force)
+
+    with console.status("  ⏳ Installing via pipx...", spinner=SPINNER_STYLE):
+        install_result = service.install(wheel_path, force=force)
+
     install_duration = f"{time.time() - install_start:.1f}s"
 
     if not install_result.success:
         display_failure(install_result.error_message or "Unknown error")
         raise typer.Exit(code=1)
 
-    console.print(f"  \U0001f4e6 Installed via pipx ({install_duration})")
+    console.print(f"  ✅ CLI installed via pipx ({install_duration})")
 
     # Asset deployment section
     if install_result.asset_deployment_result is not None:
