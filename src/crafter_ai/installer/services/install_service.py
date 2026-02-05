@@ -22,12 +22,29 @@ from packaging.version import InvalidVersion, Version
 # Type alias for progress callback: (phase: InstallPhase, message: str) -> None
 ProgressCallback = Callable[["InstallPhase", str], None]
 
+from crafter_ai.installer.domain.asset_deployment_result import AssetDeploymentResult
 from crafter_ai.installer.domain.check_executor import CheckExecutor
 from crafter_ai.installer.domain.check_result import CheckSeverity
+from crafter_ai.installer.domain.deployment_validation_result import (
+    DeploymentValidationResult,
+)
 from crafter_ai.installer.domain.health_checker import HealthChecker
 from crafter_ai.installer.domain.health_result import HealthResult, HealthStatus
+from crafter_ai.installer.domain.ide_bundle_constants import (
+    DEFAULT_OUTPUT_DIR,
+    EXPECTED_AGENT_COUNT,
+    EXPECTED_COMMAND_COUNT,
+    EXPECTED_SCRIPT_COUNT,
+    EXPECTED_TEMPLATE_COUNT,
+)
 from crafter_ai.installer.ports.backup_port import BackupPort
 from crafter_ai.installer.ports.pipx_port import PipxPort
+from crafter_ai.installer.services.asset_deployment_service import (
+    AssetDeploymentService,
+)
+from crafter_ai.installer.services.deployment_validation_service import (
+    DeploymentValidationService,
+)
 from crafter_ai.installer.services.release_readiness_service import (
     ReleaseReadinessService,
 )
@@ -55,6 +72,8 @@ class InstallPhase(Enum):
     READINESS: Validate wheel is PyPI-ready.
     BACKUP: Create backup of existing installation.
     INSTALL: Install via pipx.
+    ASSET_DEPLOYMENT: Deploy IDE bundle assets to ~/.claude/.
+    DEPLOYMENT_VALIDATION: Validate deployed assets match expected counts.
     VERIFICATION: Run post-install health checks.
     """
 
@@ -62,6 +81,8 @@ class InstallPhase(Enum):
     READINESS = "readiness"
     BACKUP = "backup"
     INSTALL = "install"
+    ASSET_DEPLOYMENT = "asset_deployment"
+    DEPLOYMENT_VALIDATION = "deployment_validation"
     VERIFICATION = "verification"
 
 
@@ -94,6 +115,8 @@ class InstallResult:
         error_message: Error message if install failed, None if successful.
         health_status: Health status after verification, None if not verified.
         verification_warnings: Warnings from verification, empty if not verified.
+        asset_deployment_result: Result of asset deployment, None if skipped.
+        deployment_validation_result: Result of deployment validation, None if skipped.
     """
 
     success: bool
@@ -103,6 +126,8 @@ class InstallResult:
     error_message: str | None
     health_status: HealthStatus | None = None
     verification_warnings: list[str] = field(default_factory=list)
+    asset_deployment_result: AssetDeploymentResult | None = None
+    deployment_validation_result: DeploymentValidationResult | None = None
 
 
 # Default path for nwave configuration
@@ -128,6 +153,8 @@ class InstallService:
         release_readiness_service: ReleaseReadinessService,
         nwave_config_path: Path | None = None,
         health_checker: HealthChecker | None = None,
+        asset_deployment_service: AssetDeploymentService | None = None,
+        deployment_validation_service: DeploymentValidationService | None = None,
     ) -> None:
         """Initialize InstallService with dependencies.
 
@@ -138,6 +165,8 @@ class InstallService:
             release_readiness_service: Service for validating release readiness.
             nwave_config_path: Optional path to nwave config (defaults to ~/.claude).
             health_checker: Optional health checker for verification phase.
+            asset_deployment_service: Optional service for deploying IDE bundle assets.
+            deployment_validation_service: Optional service for validating deployment.
         """
         self._pipx_port = pipx_port
         self._backup_port = backup_port
@@ -145,6 +174,8 @@ class InstallService:
         self._release_readiness_service = release_readiness_service
         self._nwave_config_path = nwave_config_path or NWAVE_CONFIG_PATH
         self._health_checker = health_checker
+        self._asset_deployment_service = asset_deployment_service
+        self._deployment_validation_service = deployment_validation_service
 
     def verify(self, install_path: Path) -> VerificationResult:
         """Run post-install health checks.
@@ -407,6 +438,63 @@ class InstallService:
                     install_path = install_path or pkg.path
                     break
 
+        # Phase 4.5: Asset deployment (only if asset_deployment_service provided)
+        asset_deployment_result: AssetDeploymentResult | None = None
+        deployment_validation_result: DeploymentValidationResult | None = None
+
+        if self._asset_deployment_service is not None:
+            report_progress(
+                InstallPhase.ASSET_DEPLOYMENT,
+                "Deploying IDE bundle assets to ~/.claude/...",
+            )
+            asset_deployment_result = self._asset_deployment_service.deploy(
+                source_dir=DEFAULT_OUTPUT_DIR,
+                target_dir=self._nwave_config_path,
+            )
+
+            if not asset_deployment_result.success:
+                return InstallResult(
+                    success=False,
+                    version=version,
+                    install_path=install_path,
+                    phases_completed=phases_completed,
+                    error_message=f"Asset deployment failed: {asset_deployment_result.error_message}",
+                    asset_deployment_result=asset_deployment_result,
+                )
+
+            phases_completed.append(InstallPhase.ASSET_DEPLOYMENT)
+
+            # Phase 4.6: Deployment validation (only if validation service provided
+            # AND asset deployment succeeded)
+            if self._deployment_validation_service is not None:
+                report_progress(
+                    InstallPhase.DEPLOYMENT_VALIDATION,
+                    "Validating deployed assets...",
+                )
+                deployment_validation_result = (
+                    self._deployment_validation_service.validate(
+                        target_dir=self._nwave_config_path,
+                        expected_agents=EXPECTED_AGENT_COUNT,
+                        expected_commands=EXPECTED_COMMAND_COUNT,
+                        expected_templates=EXPECTED_TEMPLATE_COUNT,
+                        expected_scripts=EXPECTED_SCRIPT_COUNT,
+                    )
+                )
+
+                if not deployment_validation_result.valid:
+                    mismatch_detail = "; ".join(deployment_validation_result.mismatches)
+                    return InstallResult(
+                        success=False,
+                        version=version,
+                        install_path=install_path,
+                        phases_completed=phases_completed,
+                        error_message=f"Deployment validation failed: {mismatch_detail}",
+                        asset_deployment_result=asset_deployment_result,
+                        deployment_validation_result=deployment_validation_result,
+                    )
+
+                phases_completed.append(InstallPhase.DEPLOYMENT_VALIDATION)
+
         # Phase 5: Verification (only if health_checker provided)
         if self._health_checker is not None and install_path is not None:
             report_progress(InstallPhase.VERIFICATION, "Verifying installation health...")
@@ -421,6 +509,8 @@ class InstallService:
                 error_message=None,
                 health_status=verification_result.health_status,
                 verification_warnings=verification_result.warnings,
+                asset_deployment_result=asset_deployment_result,
+                deployment_validation_result=deployment_validation_result,
             )
 
         # No verification (health_checker not provided)
@@ -432,4 +522,6 @@ class InstallService:
             error_message=None,
             health_status=None,
             verification_warnings=[],
+            asset_deployment_result=asset_deployment_result,
+            deployment_validation_result=deployment_validation_result,
         )
