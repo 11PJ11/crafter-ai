@@ -84,7 +84,7 @@ Execute these 7 phases in order:
 
 # OUTCOME_RECORDING
 
-**READ/WRITE ONLY**: docs/feature/{project-id}/execution-log.yaml
+**WRITE ONLY (APPEND-ONLY)**: docs/feature/{project-id}/execution-log.yaml
 
 Update execution-log.yaml after EACH phase (no batching).
 
@@ -316,7 +316,7 @@ Execute these 7 phases in order:
 ## STATE TRACKING VIA execution-log.yaml
 
 **CRITICAL**: DO NOT load roadmap.yaml (context provided above).
-**READ/WRITE ONLY**: docs/feature/{project-id}/execution-log.yaml
+**WRITE ONLY (APPEND-ONLY)**: docs/feature/{project-id}/execution-log.yaml
 
 Your responsibilities:
 1. Load current state from execution-log.yaml
@@ -446,7 +446,12 @@ Designed to work with clean context, ensuring consistent quality by giving each 
 
 ## Agent Instance Isolation Model (NEW ARCHITECTURE)
 
-Each invocation of the Task tool creates a NEW, INDEPENDENT agent instance. The instance receives extracted context from orchestrator (~5k tokens), reads execution-log.yaml for prior progress, executes work, updates execution-log.yaml with results, and terminates. No session state is retained between invocations. State is preserved through execution-log.yaml, not through agent memory. The agent does NOT load the roadmap (orchestrator already extracted context). This isolation ensures clean execution without context degradation from previous instances.
+Each invocation of the Task tool creates a NEW, INDEPENDENT agent instance. The instance receives:
+- Extracted step context from orchestrator (~5k tokens)
+- Current execution state passed in prompt (orchestrator reads execution-log.yaml)
+- NEVER reads execution-log.yaml itself (WRITE-ONLY for agent)
+
+The agent executes work, APPENDS events to execution-log.yaml (append-only), and terminates. No session state is retained between invocations. State is preserved through execution-log.yaml by orchestrator, not by agent reads. The agent does NOT load the roadmap (orchestrator already extracted context). This isolation ensures clean execution without context degradation from previous instances.
 
 ## Usage Examples (NEW ARCHITECTURE - Schema v2.0)
 
@@ -576,7 +581,13 @@ Execute this task and provide outputs as specified.
 
 ### State Management Across Instances (NEW ARCHITECTURE)
 
-The executing agent does not have access to previous invocations' memory. All prior execution state (from previous agent instances) is captured in execution-log.yaml. The agent READS execution-log.yaml at start, sees what prior instances accomplished (via step_checkpoint.phases), continues from that point, and UPDATES execution-log.yaml with new results. This YAML-based state management allows clean handoff between instances without context pollution. The agent receives task context from orchestrator (~5k tokens) and does NOT load roadmap.yaml (102k tokens).
+The executing agent does not have access to previous invocations' memory. All prior execution state is passed by orchestrator in the invocation prompt:
+- **Orchestrator reads** execution-log.yaml to extract current state
+- **Orchestrator passes** step_checkpoint.phases as context in prompt
+- **Agent receives** prior progress via prompt (no file read needed)
+- **Agent appends** new events to execution-log.yaml (WRITE-ONLY, append mode)
+
+This YAML-based state management allows clean handoff between instances without context pollution. The agent receives task context from orchestrator (~5k tokens) and does NOT load roadmap.yaml (102k tokens) nor execution-log.yaml (saves token waste on rereads).
 
 ### MANDATORY: Phase Tracking Protocol (7 Phases - Schema v3.0)
 
@@ -644,7 +655,7 @@ miss implementation files, creating false confidence in test quality.
 
 Use CHECKPOINT_PENDING (not DEFERRED), mark pending phases SKIPPED, push only after FINAL, update execution-log.yaml after each commit.
 
-Instances read execution-log.yaml step_checkpoint.phases to understand prior progress, continue from incomplete phases. Before each phase: update entry to IN_PROGRESS with timestamp. After: update to COMPLETED/SKIPPED with outcome, duration, notes. Save execution-log.yaml after EACH phase (no batching).
+**Orchestrator** reads execution-log.yaml step_checkpoint.phases, passes prior progress to agent via prompt. **Agent** receives state, continues from incomplete phases. Before each phase: APPEND entry to execution-log.yaml with IN_PROGRESS and timestamp. After: APPEND update to COMPLETED/SKIPPED with outcome, duration, notes. Save execution-log.yaml after EACH phase (no batching). **CRITICAL**: Agent NEVER reads execution-log.yaml - only writes in append mode.
 
 #### If Phase Cannot Be Completed
 

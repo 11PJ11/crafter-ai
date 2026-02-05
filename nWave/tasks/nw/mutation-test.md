@@ -210,15 +210,17 @@ python scripts/mutation/generate_scoped_configs.py {project-id}
    ```python
    import yaml
 
+   # NOTE: Orchestrator READ - legge per estrarre file mutation targets (lecito)
+   # TODO: Ottimizzare con grep 'files_modified:' se file > 100KB
    with open(f'docs/feature/{project_id}/execution-log.yaml', 'r') as f:
-       exec_status = yaml.safe_load(f)
+       exec_status = yaml.safe_load(f)  # Carica tutto (OK per ora)
 
    implementation_files = []
    for step in exec_status.get('execution_status', {}).get('completed_steps', []):
        files = step.get('files_modified', {}).get('implementation', [])
        implementation_files.extend(files)
 
-   implementation_files = list(set(implementation_files))
+   implementation_files = list(set(implementation_files))  # Deduplica
    ```
 
 2. **Map to test files** (for each implementation file):

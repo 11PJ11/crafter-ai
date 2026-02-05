@@ -7,6 +7,24 @@
 > ⚠️ **IMPORTANT**: This command is executed by the **main Claude instance**, NOT by a specialized agent. The main instance orchestrates the workflow by delegating to specialized agents (researcher, software-crafter, solution-architect, etc.) via the Task tool.
 
 ---
+
+## 📋 execution-log.yaml Usage Pattern
+
+**Orchestrator (questo comando)**: ✅ **READ** per resume/tracking
+- Legge execution-log.yaml per verificare completamento step
+- Legge per estrarre file modificati (mutation testing)
+- Pattern corrente: yaml.safe_load() - carica tutto (OK per file < 200KB)
+- Ottimizzazione futura: tail + parse incrementale per progetti > 35 step
+
+**Sub-agents (via Task tool)**: ✅ **WRITE-ONLY** (append mode)
+- Agent riceve stato corrente via prompt (orchestratore lo estrae)
+- Agent appende eventi a execution-log.yaml
+- Agent NON legge mai il file (risparmio token)
+
+**Format attuale**: Schema v1.0 (nested YAML, ~5KB per step completato)
+**Format futuro**: Schema v2.0 append-only (~15 caratteri per evento)
+
+---
 ## 🚨 CRITICAL: ORCHESTRATOR BRIEFING (MANDATORY)
 
 **Sub-agents launched via Task tool have NO ACCESS to the Skill tool.**
@@ -1060,9 +1078,11 @@ Instances update phase_execution_log, next instance reads prior progress, contin
        # 3. Pass to Task tool with explicit context (see execute.md for full template)
 
        # Verify completion by checking execution-log.yaml for COMMIT/PASS
+       # NOTE: Orchestrator READ - legge per tracking/resume (lecito)
+       # TODO: Ottimizzare con tail + parse incrementale se file > 100KB
        with open(f'docs/feature/{project_id}/execution-log.yaml', 'r') as f:
            import yaml
-           updated_exec_status = yaml.safe_load(f)
+           updated_exec_status = yaml.safe_load(f)  # Carica tutto (OK per ora, file < 200KB)
 
        checkpoint = updated_exec_status.get('execution_status', {}).get('step_checkpoint', {})
        phases = checkpoint.get('phases', [])
