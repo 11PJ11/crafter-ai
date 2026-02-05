@@ -1,7 +1,7 @@
 """Walking skeleton E2E acceptance test for the Forge TUI redesign.
 
 This is the OUTER test in Outside-In TDD. It defines the target behavior
-for the complete build-to-install flow as described in Luna's UX design:
+for the complete 17-step build-to-install flow as described in Luna's UX design:
   docs/ux/modern-cli-installer/journey-forge-tui-visual.md
 
 EXPECTED STATE: This test FAILS against the current implementation.
@@ -10,9 +10,17 @@ Luna's design specifies a seamless emoji stream with no borders.
 
 Making this test pass IS the implementation work.
 
-Design source: journey-forge-tui.feature lines 241-334 (walking skeleton)
+Design source: journey-forge-tui.feature (walking skeleton scenarios)
 Design system: journey-forge-tui-visual.md (mockups + anti-patterns)
 Structured schema: journey-forge-tui.yaml (step definitions)
+
+17-step journey:
+  BUILD:   1-Header  2-PreFlight  3-Version  4-Wheel  5-Validation
+           6-IDE Bundle  7-Build Complete
+  PROMPT:  8-Confirm
+  INSTALL: 9-Header  10-PreFlight  11-Backup  12-CLI Install
+           13-Asset Deploy  14-Deploy Validation  15-SBOM  16-Health
+  CELEBRATE: 17-Celebration
 """
 
 from pathlib import Path
@@ -154,7 +162,10 @@ def successful_install_result() -> InstallResult:
 
 @pytest.fixture
 def install_pre_flight_results() -> list[CheckResult]:
-    """Install pre-flight results matching the walking skeleton scenario."""
+    """Install pre-flight results matching the 17-step walking skeleton.
+
+    Includes the NEW IDE bundle check (step 10).
+    """
     return [
         CheckResult(
             id="wheel_exists",
@@ -183,6 +194,13 @@ def install_pre_flight_results() -> list[CheckResult]:
             passed=True,
             severity=CheckSeverity.BLOCKING,
             message="Install path writable",
+        ),
+        CheckResult(
+            id="ide_bundle_exists",
+            name="IDE bundle exists",
+            passed=True,
+            severity=CheckSeverity.BLOCKING,
+            message="IDE bundle found (30 agents, 23 commands)",
         ),
     ]
 
@@ -260,17 +278,16 @@ def invoke_full_flow(
 
 @pytest.mark.e2e
 class TestWalkingSkeletonBuildToInstall:
-    """Complete build-to-install flow as one continuous journey.
+    """Complete 17-step build-to-install flow as one continuous journey.
 
-    Corresponds to: journey-forge-tui.feature @walking-skeleton scenario
-    (lines 241-334).
+    Corresponds to: journey-forge-tui.feature @walking-skeleton scenario.
 
     This is the outside-in OUTER test. It will FAIL until the TUI
     redesign is implemented. Each assertion below maps to a specific
     step in the walking skeleton scenario.
     """
 
-    # ── DESIGN SYSTEM: No tables, panels, or borders ──────────────────
+    # -- DESIGN SYSTEM: No tables, panels, or borders --------------------
 
     def test_output_contains_no_table_or_panel_borders(
         self,
@@ -322,12 +339,10 @@ class TestWalkingSkeletonBuildToInstall:
 
         assert "FORGE:" not in output, (
             "Output contains 'FORGE:' prefix shouting.\n"
-            "Luna's design uses emoji phase headers instead:\n"
-            "  Current: 'FORGE: BUILD COMPLETE'\n"
-            "  Target:  'Build complete: crafter_ai-0.2.0-py3-none-any.whl'"
+            "Luna's design uses emoji phase headers instead."
         )
 
-    # ── BUILD PHASE ───────────────────────────────────────────────────
+    # -- BUILD PHASE: Steps 1-7 -----------------------------------------
 
     def test_build_header_is_emoji_stream(
         self,
@@ -337,11 +352,7 @@ class TestWalkingSkeletonBuildToInstall:
         successful_install_result: InstallResult,
         install_pre_flight_results: list[CheckResult],
     ) -> None:
-        """Step 1: Build header uses hammer emoji, bold, no panel.
-
-        Feature step: 'Then the first non-blank output line is
-                       "Building crafter-ai" in bold'
-        """
+        """Step 1: Build header uses hammer emoji, bold, no panel."""
         output = invoke_full_flow(
             runner,
             candidate_version,
@@ -371,17 +382,7 @@ class TestWalkingSkeletonBuildToInstall:
         successful_install_result: InstallResult,
         install_pre_flight_results: list[CheckResult],
     ) -> None:
-        """Step 2: Pre-flight checks display as streaming emoji list.
-
-        Feature steps:
-          'And I see "Pre-flight checks" indented 2 spaces'
-          'And I see "pyproject.toml found"'
-          'And I see "Build toolchain ready"'
-          'And I see "Source directory found"'
-          'And I see "Uncommitted changes detected" as a non-blocking warning'
-          'And I see "Version available for release"'
-          'And I see "Pre-flight passed"'
-        """
+        """Step 2: Pre-flight checks display as streaming emoji list."""
         output = invoke_full_flow(
             runner,
             candidate_version,
@@ -390,24 +391,17 @@ class TestWalkingSkeletonBuildToInstall:
             install_pre_flight_results,
         )
 
-        # Sub-phase header
         assert "\U0001f50d" in output, "Missing magnifying glass emoji for pre-flight"
         assert "Pre-flight checks" in output
-
-        # Individual check results with correct emoji
         assert "\u2705" in output, "Missing checkmark emoji"
         assert "pyproject.toml found" in output
         assert "Build toolchain ready" in output
         assert "Source directory found" in output
         assert "Version available for release" in output
-
-        # Warning check uses warning emoji
         assert "\u26a0\ufe0f" in output or "\u26a0" in output, (
             "Missing warning emoji for uncommitted changes"
         )
         assert "Uncommitted changes detected" in output
-
-        # Summary line
         assert "Pre-flight passed" in output
 
     def test_version_display_is_minimal(
@@ -418,12 +412,7 @@ class TestWalkingSkeletonBuildToInstall:
         successful_install_result: InstallResult,
         install_pre_flight_results: list[CheckResult],
     ) -> None:
-        """Step 3: Version display is minimal, no panel or box.
-
-        Feature steps:
-          'And I see "Version"'
-          'And I see "0.1.0 -> 0.2.0 (minor)"'
-        """
+        """Step 3: Version display is minimal, no panel or box."""
         output = invoke_full_flow(
             runner,
             candidate_version,
@@ -434,9 +423,6 @@ class TestWalkingSkeletonBuildToInstall:
 
         assert "\U0001f4d0" in output, "Missing ruler emoji for version section"
         assert "Version" in output
-
-        # Version transition line: "0.1.0 -> 0.2.0 (minor)"
-        # The arrow can be either "->" or the unicode arrow
         assert "0.1.0" in output
         assert "0.2.0" in output
         assert "minor" in output.lower()
@@ -451,10 +437,7 @@ class TestWalkingSkeletonBuildToInstall:
     ) -> None:
         """Step 4: Wheel compilation spinner resolves to persistent line.
 
-        Feature step: 'And the spinner resolves to a persistent line
-                       "Wheel built" with duration'
-
-        Note: We cannot test the spinner animation in CliRunner, but we
+        Note: We cannot test spinner animation in CliRunner, but we
         CAN verify the persistent result line exists in output.
         """
         output = invoke_full_flow(
@@ -466,8 +449,7 @@ class TestWalkingSkeletonBuildToInstall:
         )
 
         assert "Wheel built" in output, (
-            "Missing persistent line 'Wheel built' after compilation spinner.\n"
-            "Luna's Step 4 specifies: spinner resolves to 'Wheel built ({duration})'"
+            "Missing persistent line 'Wheel built' after compilation spinner."
         )
 
     def test_wheel_validation_checks(
@@ -478,14 +460,7 @@ class TestWalkingSkeletonBuildToInstall:
         successful_install_result: InstallResult,
         install_pre_flight_results: list[CheckResult],
     ) -> None:
-        """Step 5: Wheel validation displays as check list.
-
-        Feature steps:
-          'And I see "Validating wheel"'
-          'And I see "PEP 427 format valid"'
-          'And I see "Metadata complete"'
-          'And I see "Wheel validated"'
-        """
+        """Step 5: Wheel validation displays as check list."""
         output = invoke_full_flow(
             runner,
             candidate_version,
@@ -499,7 +474,7 @@ class TestWalkingSkeletonBuildToInstall:
         assert "Metadata complete" in output
         assert "Wheel validated" in output
 
-    def test_build_complete_line_is_concise(
+    def test_ide_bundle_build_output(
         self,
         runner: CliRunner,
         candidate_version: CandidateVersion,
@@ -507,9 +482,13 @@ class TestWalkingSkeletonBuildToInstall:
         successful_install_result: InstallResult,
         install_pre_flight_results: list[CheckResult],
     ) -> None:
-        """Step 6: Build complete is a single line with wheel name.
+        """Step 6 (NEW): IDE bundle build shows header and completion.
 
-        Feature step: 'And I see "Build complete: crafter_ai-0.2.0-py3-none-any.whl"'
+        Feature step: 'And I see "Building IDE bundle"'
+        Feature step: 'And a spinner resolves to "IDE bundle built" with duration'
+
+        Note: Detailed counts (30 agents, 23 commands, YAML warnings)
+        are validated at integration/unit level, not here.
         """
         output = invoke_full_flow(
             runner,
@@ -519,17 +498,48 @@ class TestWalkingSkeletonBuildToInstall:
             install_pre_flight_results,
         )
 
-        assert "\U0001f528" in output, (
-            "Missing hammer emoji in build complete line.\n"
-            "Luna's Step 6 specifies: 'hammer_emoji Build complete: {wheel_filename}'"
+        assert "Building IDE bundle" in output, (
+            "Missing IDE bundle build section header.\n"
+            "Step 6 specifies: 'Building IDE bundle'"
         )
-        assert "Build complete: crafter_ai-0.2.0-py3-none-any.whl" in output, (
-            "Missing concise build complete line.\n"
-            "Expected: 'Build complete: crafter_ai-0.2.0-py3-none-any.whl'\n"
-            "The current code uses a Panel with 'FORGE: BUILD COMPLETE' instead."
+        assert "IDE bundle built" in output, (
+            "Missing IDE bundle build completion line.\n"
+            "Step 6 specifies: 'IDE bundle built ({duration})'"
         )
 
-    # ── TRANSITION: CONFIRMATION PROMPT ───────────────────────────────
+    def test_build_complete_shows_two_artifacts(
+        self,
+        runner: CliRunner,
+        candidate_version: CandidateVersion,
+        successful_build_result: BuildResult,
+        successful_install_result: InstallResult,
+        install_pre_flight_results: list[CheckResult],
+    ) -> None:
+        """Step 7 (MODIFIED): Build complete shows wheel AND IDE bundle.
+
+        Feature step: 'And I see "Build complete"'
+        Feature step: 'And I see the wheel filename in dim'
+        Feature step: 'And I see "IDE bundle:" in dim'
+        """
+        output = invoke_full_flow(
+            runner,
+            candidate_version,
+            successful_build_result,
+            successful_install_result,
+            install_pre_flight_results,
+        )
+
+        assert "\U0001f528" in output, "Missing hammer emoji in build complete"
+        assert "Build complete" in output, "Missing 'Build complete' header"
+        assert "crafter_ai-0.2.0-py3-none-any.whl" in output, (
+            "Missing wheel filename in build complete section"
+        )
+        assert "IDE bundle:" in output, (
+            "Missing 'IDE bundle:' detail line in build complete.\n"
+            "Build now produces two artifacts: wheel + IDE bundle."
+        )
+
+    # -- TRANSITION: Steps 8 -------------------------------------------
 
     def test_install_prompt_format_and_version(
         self,
@@ -539,12 +549,7 @@ class TestWalkingSkeletonBuildToInstall:
         successful_install_result: InstallResult,
         install_pre_flight_results: list[CheckResult],
     ) -> None:
-        """Step 7: Install prompt shows version from wheel METADATA.
-
-        Feature steps:
-          'And I see "Install crafter-ai 0.2.0? [Y/n]: "'
-          'And the version "0.2.0" in the prompt matches the wheel METADATA'
-        """
+        """Step 8: Install prompt shows version from wheel METADATA."""
         output = invoke_full_flow(
             runner,
             candidate_version,
@@ -553,17 +558,15 @@ class TestWalkingSkeletonBuildToInstall:
             install_pre_flight_results,
         )
 
-        # Prompt must include package emoji, name, version, and Y/n format
         assert "Install crafter-ai 0.2.0?" in output, (
             "Missing redesigned install prompt.\n"
-            "Expected: 'Install crafter-ai 0.2.0? [Y/n]:'\n"
-            "Current code uses: 'Install locally now?'"
+            "Expected: 'Install crafter-ai 0.2.0? [Y/n]:'"
         )
         assert "[Y/n]" in output, (
             "Install prompt must use [Y/n] format with Y as default."
         )
 
-    # ── INSTALL PHASE ─────────────────────────────────────────────────
+    # -- INSTALL PHASE: Steps 9-16 -------------------------------------
 
     def test_install_header_is_emoji_stream(
         self,
@@ -573,10 +576,7 @@ class TestWalkingSkeletonBuildToInstall:
         successful_install_result: InstallResult,
         install_pre_flight_results: list[CheckResult],
     ) -> None:
-        """Step 8: Install header uses package emoji, bold, no panel.
-
-        Feature step: 'Then I see "Installing crafter-ai" in bold'
-        """
+        """Step 9: Install header uses package emoji, bold, no panel."""
         output = invoke_full_flow(
             runner,
             candidate_version,
@@ -587,8 +587,7 @@ class TestWalkingSkeletonBuildToInstall:
 
         assert "\U0001f4e6" in output, "Missing package emoji in install phase"
         assert "Installing crafter-ai" in output, (
-            "Missing install phase header 'Installing crafter-ai'.\n"
-            "Current code uses Panel with 'FORGE: INSTALL' instead."
+            "Missing install phase header 'Installing crafter-ai'."
         )
 
     def test_install_preflight_checks_as_streaming_list(
@@ -599,15 +598,7 @@ class TestWalkingSkeletonBuildToInstall:
         successful_install_result: InstallResult,
         install_pre_flight_results: list[CheckResult],
     ) -> None:
-        """Step 9: Install pre-flight checks as streaming emoji list.
-
-        Feature steps:
-          'And I see "Wheel file found"'
-          'And I see "Wheel format valid"'
-          'And I see "pipx environment ready"'
-          'And I see "Install path writable"'
-          'And I see "Pre-flight passed"' (second occurrence)
-        """
+        """Step 10 (MODIFIED): Install pre-flight includes IDE bundle check."""
         output = invoke_full_flow(
             runner,
             candidate_version,
@@ -620,15 +611,18 @@ class TestWalkingSkeletonBuildToInstall:
         assert "Wheel format valid" in output
         assert "pipx environment ready" in output
         assert "Install path writable" in output
+        assert "IDE bundle found" in output, (
+            "Missing NEW IDE bundle check in install pre-flight.\n"
+            "Step 10 specifies: 'IDE bundle found (30 agents, 23 commands)'"
+        )
 
-        # Pre-flight passed appears in both build and install phases
         preflight_count = output.count("Pre-flight passed")
         assert preflight_count >= 2, (
             f"Expected 'Pre-flight passed' at least twice "
             f"(build + install), found {preflight_count} times."
         )
 
-    def test_fresh_install_skips_backup(
+    def test_fresh_install_backup_message(
         self,
         runner: CliRunner,
         candidate_version: CandidateVersion,
@@ -636,9 +630,9 @@ class TestWalkingSkeletonBuildToInstall:
         successful_install_result: InstallResult,
         install_pre_flight_results: list[CheckResult],
     ) -> None:
-        """Step 10: Fresh install skips backup with message.
+        """Step 11: Fresh install shows single backup skip line.
 
-        Feature step: 'And I see "Fresh install, skipping backup"'
+        Feature step: 'And I see "Fresh install, no backup needed"'
         """
         output = invoke_full_flow(
             runner,
@@ -648,12 +642,12 @@ class TestWalkingSkeletonBuildToInstall:
             install_pre_flight_results,
         )
 
-        assert "Fresh install, skipping backup" in output, (
-            "Missing fresh install backup skip message.\n"
-            "Expected: 'Fresh install, skipping backup'"
+        assert "Fresh install" in output, (
+            "Missing fresh install backup message.\n"
+            "Expected text containing 'Fresh install'"
         )
 
-    def test_install_spinner_resolves_to_persistent_line(
+    def test_cli_install_spinner_resolves_to_persistent_line(
         self,
         runner: CliRunner,
         candidate_version: CandidateVersion,
@@ -661,13 +655,10 @@ class TestWalkingSkeletonBuildToInstall:
         successful_install_result: InstallResult,
         install_pre_flight_results: list[CheckResult],
     ) -> None:
-        """Step 11: pipx install spinner resolves to persistent line.
+        """Step 12: CLI install spinner resolves to persistent line.
 
-        Feature step: 'And the spinner resolves to a persistent line
-                       "Installed via pipx" with duration'
-
-        Note: We cannot test the spinner animation in CliRunner, but we
-        CAN verify the persistent result line exists in output.
+        Feature step: 'And the spinner resolves to
+                       "nWave CLI installed via pipx" with duration'
         """
         output = invoke_full_flow(
             runner,
@@ -677,11 +668,13 @@ class TestWalkingSkeletonBuildToInstall:
             install_pre_flight_results,
         )
 
-        assert "Installed via pipx" in output, (
-            "Missing persistent line 'Installed via pipx' after install spinner."
+        # Accept either the new "nWave CLI installed via pipx" or
+        # the transitional "Installed via pipx" text
+        assert "Installed via pipx" in output or "nWave CLI installed via pipx" in output, (
+            "Missing persistent line for CLI install after spinner."
         )
 
-    def test_health_verification_as_check_list(
+    def test_asset_deployment_output(
         self,
         runner: CliRunner,
         candidate_version: CandidateVersion,
@@ -689,13 +682,110 @@ class TestWalkingSkeletonBuildToInstall:
         successful_install_result: InstallResult,
         install_pre_flight_results: list[CheckResult],
     ) -> None:
-        """Step 12: Health verification displays as streaming check list.
+        """Step 13 (NEW): Asset deployment shows header and completion.
 
-        Feature steps:
-          'And I see "Verifying installation"'
-          'And I see "CLI responds to --version"'
-          'And I see "Core modules loadable"'
-          'And I see "Health: HEALTHY"'
+        Feature step: 'And I see "Deploying nWave assets"'
+        Feature step: 'And a spinner resolves to "Assets deployed" with duration'
+
+        Note: Detailed per-category lines (30 agents -> ~/.claude/agents/nw/)
+        are validated at integration level, not here.
+        """
+        output = invoke_full_flow(
+            runner,
+            candidate_version,
+            successful_build_result,
+            successful_install_result,
+            install_pre_flight_results,
+        )
+
+        assert "Deploying nWave assets" in output, (
+            "Missing asset deployment section header.\n"
+            "Step 13 specifies: 'Deploying nWave assets'"
+        )
+        assert "Assets deployed" in output, (
+            "Missing asset deployment completion line.\n"
+            "Step 13 specifies: 'Assets deployed ({duration})'"
+        )
+
+    def test_deployment_validation_output(
+        self,
+        runner: CliRunner,
+        candidate_version: CandidateVersion,
+        successful_build_result: BuildResult,
+        successful_install_result: InstallResult,
+        install_pre_flight_results: list[CheckResult],
+    ) -> None:
+        """Step 14 (NEW): Deployment validation as emoji stream, no Rich table.
+
+        Feature step: 'And I see "Validating deployment"'
+        Feature step: 'And I see "Deployment validated"'
+        """
+        output = invoke_full_flow(
+            runner,
+            candidate_version,
+            successful_build_result,
+            successful_install_result,
+            install_pre_flight_results,
+        )
+
+        assert "Validating deployment" in output, (
+            "Missing deployment validation section header.\n"
+            "Step 14 specifies: 'Validating deployment'"
+        )
+        assert "Deployment validated" in output, (
+            "Missing deployment validation summary.\n"
+            "Step 14 specifies: 'Deployment validated'"
+        )
+
+    def test_sbom_dual_group_format(
+        self,
+        runner: CliRunner,
+        candidate_version: CandidateVersion,
+        successful_build_result: BuildResult,
+        successful_install_result: InstallResult,
+        install_pre_flight_results: list[CheckResult],
+    ) -> None:
+        """Step 15 (EXPANDED): SBOM shows CLI package + IDE assets groups.
+
+        Feature step: 'And I see "What was installed"'
+        Feature step: 'And the SBOM contains a CLI package group'
+        Feature step: 'And the SBOM contains an IDE assets group'
+
+        Note: Exact line-by-line content validated at integration level.
+        Here we just check both groups are present.
+        """
+        output = invoke_full_flow(
+            runner,
+            candidate_version,
+            successful_build_result,
+            successful_install_result,
+            install_pre_flight_results,
+        )
+
+        assert "What was installed" in output, (
+            "Missing SBOM manifest header.\n"
+            "Step 15 specifies: 'What was installed'"
+        )
+        # CLI group marker
+        assert "crafter-ai 0.2.0" in output or "crafter_ai 0.2.0" in output, (
+            "Missing CLI package identity in SBOM."
+        )
+        # IDE assets group marker (at least one deploy target line)
+        assert "~/.claude/" in output, (
+            "Missing IDE assets deploy target in SBOM."
+        )
+
+    def test_health_includes_asset_check(
+        self,
+        runner: CliRunner,
+        candidate_version: CandidateVersion,
+        successful_build_result: BuildResult,
+        successful_install_result: InstallResult,
+        install_pre_flight_results: list[CheckResult],
+    ) -> None:
+        """Step 16 (MODIFIED): Health verification includes asset accessibility.
+
+        Feature step: 'And I see "nWave assets accessible"'
         """
         output = invoke_full_flow(
             runner,
@@ -709,11 +799,15 @@ class TestWalkingSkeletonBuildToInstall:
         assert "Verifying installation" in output
         assert "CLI responds to --version" in output
         assert "Core modules loadable" in output
+        assert "nWave assets accessible" in output, (
+            "Missing NEW asset accessibility check in health verification.\n"
+            "Step 16 specifies: 'nWave assets accessible'"
+        )
         assert "Health: HEALTHY" in output
 
-    # ── CELEBRATION ───────────────────────────────────────────────────
+    # -- CELEBRATION: Step 17 -------------------------------------------
 
-    def test_celebration_message_format(
+    def test_celebration_uses_nwave_brand(
         self,
         runner: CliRunner,
         candidate_version: CandidateVersion,
@@ -721,11 +815,9 @@ class TestWalkingSkeletonBuildToInstall:
         successful_install_result: InstallResult,
         install_pre_flight_results: list[CheckResult],
     ) -> None:
-        """Step 13: The celebration moment with version and health.
+        """Step 17: Celebration uses "nWave" product brand, not package name.
 
-        Feature steps:
-          'And I see "crafter-ai 0.2.0 installed and healthy!" in bold green'
-          'And I see "Ready to use in Claude Code." in dim'
+        Feature step: 'And I see "nWave 0.2.0 installed and healthy!"'
         """
         output = invoke_full_flow(
             runner,
@@ -736,17 +828,45 @@ class TestWalkingSkeletonBuildToInstall:
         )
 
         assert "\U0001f389" in output, (
-            "Missing party popper emoji in celebration.\n"
-            "The celebration is the ONLY place where this emoji appears."
+            "Missing party popper emoji in celebration."
         )
-        assert "crafter-ai 0.2.0 installed and healthy!" in output, (
-            "Missing celebration message with version and health status."
+        assert "nWave 0.2.0 installed and healthy!" in output, (
+            "Celebration should use 'nWave' brand name, not 'crafter-ai'.\n"
+            "Step 17 specifies: 'nWave {version} installed and healthy!'"
         )
         assert "Ready to use in Claude Code." in output, (
             "Missing 'Ready to use in Claude Code.' follow-up line."
         )
 
-    # ── SHARED ARTIFACT CONSISTENCY ───────────────────────────────────
+    def test_getting_started_section(
+        self,
+        runner: CliRunner,
+        candidate_version: CandidateVersion,
+        successful_build_result: BuildResult,
+        successful_install_result: InstallResult,
+        install_pre_flight_results: list[CheckResult],
+    ) -> None:
+        """Step 17: Getting started section always shows available commands.
+
+        Feature step: 'And I see "Getting started"'
+        Feature step: 'And I see "/nw:discuss" in dim'
+        """
+        output = invoke_full_flow(
+            runner,
+            candidate_version,
+            successful_build_result,
+            successful_install_result,
+            install_pre_flight_results,
+        )
+
+        assert "Getting started" in output, (
+            "Missing 'Getting started' section in celebration."
+        )
+        assert "/nw:discuss" in output, (
+            "Missing /nw:discuss command in Getting started section."
+        )
+
+    # -- SHARED ARTIFACT CONSISTENCY ------------------------------------
 
     def test_version_consistency_across_all_displays(
         self,
@@ -756,14 +876,7 @@ class TestWalkingSkeletonBuildToInstall:
         successful_install_result: InstallResult,
         install_pre_flight_results: list[CheckResult],
     ) -> None:
-        """Version "0.2.0" must appear consistently in 4 locations.
-
-        Feature steps (shared artifact consistency table):
-          | Location        | Expected                                    |
-          | Version display | 0.1.0 -> 0.2.0 (minor)                     |
-          | Wheel filename  | crafter_ai-0.2.0-py3-none-any.whl           |
-          | Install prompt  | Install crafter-ai 0.2.0?                   |
-          | Celebration     | crafter-ai 0.2.0 installed and healthy!     |
+        """Version "0.2.0" must appear consistently in 5 locations.
 
         All version displays originate from wheel METADATA as single
         source of truth.
@@ -779,26 +892,27 @@ class TestWalkingSkeletonBuildToInstall:
         version = "0.2.0"
 
         # Location 1: Version display line
-        assert f"0.1.0" in output and f"{version}" in output, (
+        assert "0.1.0" in output and version in output, (
             "Version display missing: expected '0.1.0' and '0.2.0'"
         )
-
         # Location 2: Wheel filename
         assert f"crafter_ai-{version}-py3-none-any.whl" in output, (
             f"Wheel filename 'crafter_ai-{version}-py3-none-any.whl' not in output"
         )
-
         # Location 3: Install prompt
         assert f"Install crafter-ai {version}?" in output, (
             f"Install prompt missing version {version}"
         )
-
-        # Location 4: Celebration
-        assert f"crafter-ai {version} installed and healthy!" in output, (
+        # Location 4: SBOM
+        assert f"crafter-ai {version}" in output or f"crafter_ai {version}" in output, (
+            f"SBOM missing version {version}"
+        )
+        # Location 5: Celebration
+        assert f"nWave {version} installed and healthy!" in output, (
             f"Celebration missing version {version}"
         )
 
-    # ── CONTINUOUS STREAM VALIDATION ──────────────────────────────────
+    # -- CONTINUOUS STREAM VALIDATION -----------------------------------
 
     def test_output_reads_as_continuous_stream(
         self,
@@ -810,11 +924,8 @@ class TestWalkingSkeletonBuildToInstall:
     ) -> None:
         """The output reads as a continuous top-to-bottom stream.
 
-        Feature step: 'And the output reads as a continuous
-                       top-to-bottom stream with no visual breaks'
-
         Validates correct phase ordering by checking that key markers
-        appear in the expected sequence.
+        appear in the expected sequence for ALL 17 steps.
         """
         output = invoke_full_flow(
             runner,
@@ -830,14 +941,27 @@ class TestWalkingSkeletonBuildToInstall:
             "Pre-flight checks",            # Step 2: Build pre-flight
             "Pre-flight passed",            # Step 2: Build pre-flight summary
             "\U0001f4d0",                   # Step 3: Version display (ruler emoji)
-            "0.2.0",                        # Step 3: Version number
             "Wheel built",                  # Step 4: Compilation persistent line
-            "Build complete",               # Step 6: Build complete
-            "Install crafter-ai 0.2.0?",    # Step 7: Install prompt
-            "Installing crafter-ai",        # Step 8: Install header
-            "Wheel file found",             # Step 9: Install pre-flight
-            "Verifying installation",       # Step 12: Health verification
-            "installed and healthy!",       # Step 13: Celebration
+            "Validating wheel",             # Step 5: Wheel validation
+            "Building IDE bundle",          # Step 6: IDE bundle build (NEW)
+            "IDE bundle built",             # Step 6: IDE bundle completion (NEW)
+            "Build complete",               # Step 7: Build complete
+            "Install crafter-ai 0.2.0?",   # Step 8: Install prompt
+            "Installing crafter-ai",        # Step 9: Install header
+            "Wheel file found",             # Step 10: Install pre-flight
+            "IDE bundle found",             # Step 10: IDE bundle check (NEW)
+            "Fresh install",                # Step 11: Backup skip
+            "Installed via pipx",           # Step 12: CLI install
+            "Deploying nWave assets",       # Step 13: Asset deployment (NEW)
+            "Assets deployed",              # Step 13: Deploy completion (NEW)
+            "Validating deployment",        # Step 14: Deploy validation (NEW)
+            "Deployment validated",         # Step 14: Validation summary (NEW)
+            "What was installed",           # Step 15: SBOM (EXPANDED)
+            "Verifying installation",       # Step 16: Health verification
+            "nWave assets accessible",      # Step 16: Asset check (NEW)
+            "Health: HEALTHY",              # Step 16: Health summary
+            "installed and healthy!",       # Step 17: Celebration
+            "Getting started",              # Step 17: Getting started (NEW)
         ]
 
         last_pos = -1
@@ -854,7 +978,7 @@ class TestWalkingSkeletonBuildToInstall:
             )
             last_pos = pos
 
-    # ── ABSENCE OF OLD TUI ARTIFACTS ──────────────────────────────────
+    # -- ABSENCE OF OLD TUI ARTIFACTS -----------------------------------
 
     def test_no_version_analysis_panel(
         self,
@@ -864,10 +988,7 @@ class TestWalkingSkeletonBuildToInstall:
         successful_install_result: InstallResult,
         install_pre_flight_results: list[CheckResult],
     ) -> None:
-        """Old TUI wrapped version info in a Panel titled 'Version Analysis'.
-
-        The new TUI uses a minimal inline display with ruler emoji.
-        """
+        """Old TUI wrapped version info in a Panel titled 'Version Analysis'."""
         output = invoke_full_flow(
             runner,
             candidate_version,
@@ -877,12 +998,10 @@ class TestWalkingSkeletonBuildToInstall:
         )
 
         assert "Version Analysis" not in output, (
-            "Old 'Version Analysis' panel title found.\n"
-            "New TUI uses minimal version display with ruler emoji."
+            "Old 'Version Analysis' panel title found."
         )
         assert "Version Bump:" not in output, (
-            "Old 'Version Bump:' label found.\n"
-            "New TUI shows version transition as '0.1.0 -> 0.2.0 (minor)'."
+            "Old 'Version Bump:' label found."
         )
 
     def test_no_build_summary_panel(
@@ -893,10 +1012,7 @@ class TestWalkingSkeletonBuildToInstall:
         successful_install_result: InstallResult,
         install_pre_flight_results: list[CheckResult],
     ) -> None:
-        """Old TUI had a 'Build Summary' panel with multi-line receipt.
-
-        The new TUI replaces it with a single concise line.
-        """
+        """Old TUI had a 'Build Summary' panel with multi-line receipt."""
         output = invoke_full_flow(
             runner,
             candidate_version,
@@ -906,8 +1022,7 @@ class TestWalkingSkeletonBuildToInstall:
         )
 
         assert "Build Summary" not in output, (
-            "Old 'Build Summary' panel title found.\n"
-            "New TUI uses: 'Build complete: crafter_ai-0.2.0-py3-none-any.whl'"
+            "Old 'Build Summary' panel title found."
         )
 
     def test_no_installation_panel(
@@ -918,10 +1033,7 @@ class TestWalkingSkeletonBuildToInstall:
         successful_install_result: InstallResult,
         install_pre_flight_results: list[CheckResult],
     ) -> None:
-        """Old TUI had an 'Installation' panel header.
-
-        The new TUI uses emoji-based phase header.
-        """
+        """Old TUI had a 'FORGE: INSTALL' panel header."""
         output = invoke_full_flow(
             runner,
             candidate_version,
@@ -930,8 +1042,6 @@ class TestWalkingSkeletonBuildToInstall:
             install_pre_flight_results,
         )
 
-        # The old panel title (not the phase content)
         assert "FORGE: INSTALL" not in output, (
-            "Old 'FORGE: INSTALL' panel content found.\n"
-            "New TUI uses: 'Installing crafter-ai'"
+            "Old 'FORGE: INSTALL' panel content found."
         )

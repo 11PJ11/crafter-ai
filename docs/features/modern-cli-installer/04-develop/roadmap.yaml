@@ -841,13 +841,160 @@ phases:
         estimated_hours: 3
 
 # ==============================================================================
+# PHASE 09: UNIFIED INSTALL PIPELINE INTEGRATION
+# ==============================================================================
+
+  - id: "09"
+    name: "Unified Install Pipeline Integration"
+    description: "Integrate IDE bundle build, asset deployment, and deployment validation into forge flow"
+    default_agent: "software-crafter"
+    default_deps_strategy: "sequential"
+    notes: |
+      Implements Morgan's integration architecture (APPROVED by Eclipse).
+      Walking skeleton approach: simplest service first, integration last.
+      All unit/integration tests written by Quinn in DISTILL wave.
+      Tests use NotImplementedError pattern - implementation makes them GREEN.
+      Architecture doc: docs/features/modern-cli-installer/02-design/unified-install-integration-architecture.md
+    steps:
+      - id: "09-01"
+        name: "Create shared IDE bundle constants module"
+        type: "infrastructure"
+        user_stories: []
+        scenario: "N/A - data-only constants module, no behavioral tests"
+        criteria: |
+          - ide_bundle_constants.py exists at src/crafter_ai/installer/domain/
+          - EXPECTED_AGENT_COUNT = 30
+          - EXPECTED_COMMAND_COUNT = 23
+          - EXPECTED_TEMPLATE_COUNT = 17
+          - EXPECTED_SCRIPT_COUNT = 4
+          - EXPECTED_TEAM_COUNT = 0
+          - EXPECTED_SCHEMA_VERSION = "v3.0"
+          - EXPECTED_SCHEMA_PHASES = 7
+          - Path constants: DEFAULT_SOURCE_DIR, DEFAULT_OUTPUT_DIR, DEFAULT_DEPLOY_TARGET
+          - Subdirectory constants: AGENTS_SUBDIR, COMMANDS_SUBDIR, TEMPLATES_SUBDIR, SCRIPTS_SUBDIR
+          - All tests that reference these counts import from this module
+        dependencies: []
+        estimated_hours: 1
+
+      - id: "09-02"
+        name: "Extend InMemoryFileSystemAdapter with copy_file method"
+        type: "infrastructure"
+        user_stories: []
+        scenario: "N/A - test infrastructure extension"
+        criteria: |
+          - InMemoryFileSystemAdapter in tests/installer/conftest.py gains copy_file(src, dst) method
+          - copy_file reads src content from in-memory store and writes to dst path
+          - Raises FileNotFoundError if src does not exist in memory
+          - Existing tests continue to pass unchanged
+          - FileSystemPort protocol in production already defines copy_file (verified)
+        dependencies: []
+        estimated_hours: 1
+
+      - id: "09-03"
+        name: "Implement IdeBundleExistsCheck pre-flight check"
+        user_stories: ["US-020"]
+        scenario: "tests/installer/checks/test_deployment_checks.py (4 tests)"
+        criteria: |
+          - IdeBundleExistsCheck class at src/crafter_ai/installer/checks/ide_bundle_exists_check.py
+          - Constructor accepts filesystem (FileSystemPort) and bundle_dir (Path)
+          - execute() returns CheckResult with BLOCKING severity if bundle_dir missing or empty
+          - execute() returns CheckResult with passed=True and agent/command counts in message if bundle exists
+          - Message format includes counts for TUI display alignment
+          - All 4 tests in test_deployment_checks.py pass GREEN
+        dependencies: ["09-01", "09-02"]
+        estimated_hours: 2
+
+      - id: "09-04"
+        name: "Implement IdeBundleBuildService"
+        user_stories: ["US-012"]
+        scenario: "tests/installer/services/test_ide_bundle_build_service.py (8 tests)"
+        criteria: |
+          - IdeBundleBuildService class at src/crafter_ai/installer/services/ide_bundle_build_service.py
+          - Constructor accepts filesystem (FileSystemPort)
+          - build(source_dir, output_dir) scans nWave/ source for agents, commands, templates, scripts
+          - Copies files to output_dir with correct subdirectory structure
+          - Returns immutable IdeBundleBuildResult with counts and success status
+          - Handles missing source directory with clear error
+          - Handles YAML parse warnings without failing build
+          - Uses filesystem port primitives for tree copying (no shutil)
+          - All 8 tests in test_ide_bundle_build_service.py pass GREEN
+        dependencies: ["09-01", "09-02"]
+        estimated_hours: 4
+
+      - id: "09-05"
+        name: "Implement AssetDeploymentService"
+        user_stories: ["US-022"]
+        scenario: "tests/installer/services/test_asset_deployment_service.py (8 tests)"
+        criteria: |
+          - AssetDeploymentService class at src/crafter_ai/installer/services/asset_deployment_service.py
+          - Constructor accepts filesystem (FileSystemPort)
+          - deploy(source_dir, target_dir) copies dist/ide/ contents to ~/.claude/ structure
+          - Creates target subdirectories (agents/nw/, commands/nw/, templates/, scripts/)
+          - Returns immutable AssetDeploymentResult with counts of deployed files per category
+          - Handles missing source directory with clear error
+          - Handles target directory creation if not exists
+          - Uses filesystem port primitives for tree copying (no shutil)
+          - All 8 tests in test_asset_deployment_service.py pass GREEN
+        dependencies: ["09-01", "09-02"]
+        estimated_hours: 3
+
+      - id: "09-06"
+        name: "Implement DeploymentValidationService"
+        user_stories: ["US-023"]
+        scenario: "tests/installer/services/test_deployment_validation_service.py (8 tests)"
+        criteria: |
+          - DeploymentValidationService class at src/crafter_ai/installer/services/deployment_validation_service.py
+          - Constructor accepts filesystem (FileSystemPort)
+          - validate(target_dir, expected_agents, expected_commands, expected_templates, expected_scripts) counts deployed files
+          - Compares actual counts against expected counts
+          - Writes manifest file to target_dir with validation results
+          - Returns immutable DeploymentValidationResult with match status and per-category breakdown
+          - Handles missing target directory gracefully
+          - Reports specific mismatches (expected N agents, found M)
+          - All 8 tests in test_deployment_validation_service.py pass GREEN
+        dependencies: ["09-01", "09-02"]
+        estimated_hours: 3
+
+      - id: "09-07"
+        name: "Integrate IdeBundleBuildService into BuildService"
+        user_stories: ["US-012", "US-013"]
+        scenario: "tests/installer/integration/test_unified_pipeline_integration.py (build-side tests)"
+        criteria: |
+          - BuildService constructor gains optional ide_bundle_build_service parameter (None default)
+          - BuildService.execute() calls ide_bundle_build_service.build() after wheel validation when provided
+          - BuildResult dataclass gains optional ide_bundle_result field (None default)
+          - Build failure in IDE bundle step fails overall build with clear error
+          - Skipping IDE bundle step when service not provided preserves backward compatibility
+          - Existing BuildService tests continue to pass unchanged
+          - Build-side integration tests in test_unified_pipeline_integration.py pass GREEN
+        dependencies: ["09-04"]
+        estimated_hours: 3
+
+      - id: "09-08"
+        name: "Integrate deployment services into InstallService"
+        user_stories: ["US-022", "US-023"]
+        scenario: "tests/installer/integration/test_unified_pipeline_integration.py (install-side tests)"
+        criteria: |
+          - InstallService constructor gains optional asset_deployment_service and deployment_validation_service parameters
+          - InstallPhase enum gains ASSET_DEPLOYMENT and DEPLOYMENT_VALIDATION values
+          - InstallService.install() calls asset_deployment_service.deploy() after pipx install when provided
+          - InstallService.install() calls deployment_validation_service.validate() after deployment when provided
+          - IdeBundleExistsCheck registered in install preflight when ide_bundle_dir provided
+          - InstallResult extended with deployment and validation phase results
+          - Skipping deployment steps when services not provided preserves backward compatibility
+          - Existing InstallService tests continue to pass unchanged
+          - Install-side integration tests in test_unified_pipeline_integration.py pass GREEN
+        dependencies: ["09-03", "09-05", "09-06", "09-07"]
+        estimated_hours: 4
+
+# ==============================================================================
 # SUMMARY
 # ==============================================================================
 
 summary:
-  total_phases: 7
-  total_steps: 41
-  estimated_total_hours: 116
+  total_phases: 8
+  total_steps: 57
+  estimated_total_hours: 155
 
   phase_breakdown:
     - phase: "00"
@@ -886,6 +1033,12 @@ summary:
       steps: 5
       hours: 13
       type: "validation"
+    - phase: "09"
+      name: "Unified Install Pipeline Integration"
+      steps: 8
+      hours: 21
+      type: "feature"
+      notes: "Walking skeleton: constants -> infrastructure -> 4 services -> 2 integrations"
 
   p0_coverage:
     total_p0_stories: 23
@@ -898,10 +1051,12 @@ summary:
     journey_3_pypi_feature: 44
     horizontal_coherence_feature: 26
     testpypi_coherence_feature: 32
-    total_scenarios: 179
+    unified_pipeline_integration: 40
+    total_scenarios: 219
 
   quality_gates:
-    step_to_file_ratio: 2.1  # 39 steps / ~18 production files
+    step_to_file_ratio: 1.84  # 57 steps / ~31 production files
+    phase_09_decomposition_ratio: 1.33  # 8 steps / 6 production files
     identical_pattern_batching: "Applied (e.g., core checks batched)"
     behavioral_criteria_only: true
     no_private_method_references: true
@@ -916,3 +1071,129 @@ summary:
       rationale: "Horizontal coherence requirement - identical format and checks"
     - decision: "Auto-repair as separate steps"
       rationale: "Fixable checks are enhancements to base pre-flight framework"
+    - decision: "Phase 09 uses optional constructor injection"
+      rationale: "Preserves backward compatibility for existing BuildService and InstallService consumers (ADR-001)"
+    - decision: "Shared constants module as Phase 09 first step"
+      rationale: "Single source of truth for counts (30/23/17/4) prevents magic number drift (ADR-003)"
+    - decision: "Walking skeleton order for Phase 09"
+      rationale: "Constants -> infrastructure -> simplest service -> complex services -> integration"
+
+# ==============================================================================
+# PHASE 09 REVIEW
+# ==============================================================================
+
+phase_09_review:
+  reviewer: "solution-architect-reviewer"
+  date: "2026-02-05"
+  verdict: "APPROVED"
+
+  summary: |
+    Phase 09 is well-structured with clear Outside-In TDD sequencing, correct
+    dependency graph, behavioral acceptance criteria, and strong alignment with
+    Morgan's approved integration architecture. The 8 steps map cleanly to 7
+    production files (ratio 1.14) with zero validation-only steps. The DAG is
+    acyclic, parallelization of steps 09-03 through 09-06 is correctly identified,
+    and the capstone integration sequence (09-07 before 09-08) follows the
+    architecture's data flow. One high finding: the summary section totals were
+    not updated to include Phase 09 counts.
+
+  findings:
+    critical: []
+
+    high:
+      - id: "H-01"
+        title: "Summary section totals not updated for Phase 09"
+        location: "summary section (lines 994-1063)"
+        description: |
+          total_steps shows 49 but should be 57 (phases 00-06 sum to 49,
+          plus Phase 09 adds 8). estimated_total_hours shows 137 but phases
+          00-06 sum to 134 hours plus Phase 09 adds 21 = 155 total.
+          step_to_file_ratio shows 1.96 (49/~25) but should account for
+          Phase 09 files (~57/~31 = ~1.84). These stale totals will mislead
+          planning and progress tracking.
+        recommendation: |
+          Update summary: total_steps to 57, estimated_total_hours to 155,
+          step_to_file_ratio to ~1.84. Run a summation pass over all
+          phase_breakdown entries to confirm.
+
+    medium:
+      - id: "M-01"
+        title: "Step 09-02 has unnecessary dependency on 09-01"
+        location: "step 09-02 dependencies (line 890)"
+        description: |
+          The copy_file extension to InMemoryFileSystemAdapter does not
+          require ide_bundle_constants.py to exist. These two infrastructure
+          tasks are independent and could run in parallel. The dependency
+          forces sequential execution of two 1-hour tasks.
+        recommendation: |
+          Change 09-02 dependencies from ["09-01"] to []. Both 09-01 and
+          09-02 become independent roots, and steps 09-03 through 09-06
+          depend on both. This saves no time in practice (1 hour) but
+          makes the DAG more accurate.
+
+    low:
+      - id: "L-01"
+        title: "Integration test mapping in 09-07 and 09-08 is imprecise"
+        location: "steps 09-07 and 09-08 scenario fields"
+        description: |
+          Step 09-07 references "(build-side tests)" and 09-08 references
+          "(install-side tests)" in test_unified_pipeline_integration.py,
+          but this file contains 12 test classes. Several tests (backup scope,
+          health check, version flow, command count) do not depend on any
+          Phase 09 service implementation and will pass without Phase 09 work.
+          The scenario field should clarify which specific test classes each
+          step targets.
+        recommendation: |
+          Optional improvement for developer clarity. Current mapping is
+          sufficient since the step criteria describe the expected behavior,
+          and the developer can identify which tests to target from the
+          criteria alone.
+
+  decomposition_check:
+    total_steps: 8
+    infrastructure_steps: 2
+    implementation_steps: 4
+    integration_steps: 2
+    production_files: 7
+    # ide_bundle_constants.py, ide_bundle_exists_check.py,
+    # ide_bundle_build_service.py, asset_deployment_service.py,
+    # deployment_validation_service.py, build_service.py, install_service.py
+    ratio: 1.14
+    validation_only_steps: 0
+    identical_pattern_batching: "N/A - each service has distinct behavior"
+    verdict: "PASS"
+
+  dependency_graph_check:
+    dag_valid: true
+    cycles_detected: false
+    parallel_opportunities: "09-03, 09-04, 09-05, 09-06 (after 09-01 and 09-02)"
+    capstone_sequence: "09-07 (build integration) before 09-08 (install integration)"
+    verdict: "PASS"
+
+  architecture_alignment_check:
+    adr_001_optional_injection: "Steps 09-07 and 09-08 criteria match ADR-001 pattern"
+    adr_002_filesystem_port: "All service criteria use FileSystemPort type, not InMemoryFileSystemAdapter"
+    adr_003_shared_constants: "Step 09-01 creates constants module as ADR-003 specifies"
+    adr_004_port_type_hint: "Criteria correctly specify FileSystemPort as constructor type"
+    walking_skeleton_alignment: "Implementation sequence matches architecture document section 'Implementation Sequence'"
+    verdict: "PASS"
+
+  acceptance_criteria_check:
+    behavioral_criteria: true
+    implementation_coupling_detected: false
+    private_method_references: false
+    test_file_references_correct: true
+    test_counts_match:
+      test_deployment_checks: "4 tests (matches step 09-03 reference)"
+      test_ide_bundle_build_service: "8 tests (matches step 09-04 reference)"
+      test_asset_deployment_service: "8 tests (matches step 09-05 reference)"
+      test_deployment_validation_service: "8 tests (matches step 09-06 reference)"
+      test_unified_pipeline_integration: "12 tests (matches steps 09-07 and 09-08)"
+    verdict: "PASS"
+
+  recommendation: |
+    APPROVED for implementation. Fix H-01 (summary totals) before the next
+    planning session to prevent stale metrics from misleading progress tracking.
+    M-01 and L-01 are optional improvements that do not block implementation.
+    The developer (Crafter) can proceed with Phase 09 steps in the defined
+    order using WIP contract protocol.

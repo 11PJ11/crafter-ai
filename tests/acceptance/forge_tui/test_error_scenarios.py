@@ -1205,3 +1205,354 @@ class TestDegradedHealth:
         assert not border_chars_found, (
             f"Output contains forbidden border characters: {border_chars_found}"
         )
+
+
+# ============================================================================
+# 08-06: IDE Bundle Build Failure (Step 6)
+# ============================================================================
+
+
+@pytest.mark.e2e
+class TestIdeBundleBuildFailure:
+    """IDE bundle build failure display (Step 6).
+
+    Design YAML error state: ide_bundle_build_failure
+    Pattern:
+      - Red X "IDE bundle build failed"
+      - Blank line
+      - Error: {error_message}
+      - Fix: {remediation if available}
+    Exit code: 1
+    """
+
+    @pytest.fixture
+    def ide_build_failed_result(
+        self,
+        build_preflight_all_pass: list[CheckResult],
+        mock_wheel_path: Path,
+    ) -> BuildResult:
+        """Build result that fails during IDE bundle build (after wheel success)."""
+        return BuildResult(
+            success=False,
+            wheel_path=mock_wheel_path,
+            version="0.2.0",
+            pre_flight_results=build_preflight_all_pass,
+            validation_result=None,
+            error_message="IDE bundle build failed: nWave/ directory not found",
+        )
+
+    def test_exit_code_is_1(
+        self,
+        runner: CliRunner,
+        candidate_version: CandidateVersion,
+        ide_build_failed_result: BuildResult,
+    ) -> None:
+        """IDE bundle build failure exits with code 1."""
+        _output, exit_code = invoke_build(
+            runner, candidate_version, ide_build_failed_result
+        )
+        assert exit_code == 1, f"Expected exit code 1, got {exit_code}"
+
+    def test_ide_bundle_build_failed_message(
+        self,
+        runner: CliRunner,
+        candidate_version: CandidateVersion,
+        ide_build_failed_result: BuildResult,
+    ) -> None:
+        """Failure shows 'IDE bundle build failed' with red X emoji."""
+        output, _code = invoke_build(
+            runner, candidate_version, ide_build_failed_result
+        )
+        assert "\u274c" in output, "Missing red X emoji for IDE bundle failure"
+        assert "IDE bundle build failed" in output or "IDE bundle" in output, (
+            f"Missing IDE bundle failure indicator.\nOutput:\n{output}"
+        )
+
+    def test_error_line_shows_failure_reason(
+        self,
+        runner: CliRunner,
+        candidate_version: CandidateVersion,
+        ide_build_failed_result: BuildResult,
+    ) -> None:
+        """An 'Error:' line shows the specific failure reason."""
+        output, _code = invoke_build(
+            runner, candidate_version, ide_build_failed_result
+        )
+        assert "Error:" in output, "Missing 'Error:' label in failure output"
+        # The specific error message from BuildResult
+        assert "nWave" in output or "directory not found" in output, (
+            "Missing specific error message for IDE bundle failure"
+        )
+
+    def test_fix_line_shows_remediation(
+        self,
+        runner: CliRunner,
+        candidate_version: CandidateVersion,
+        ide_build_failed_result: BuildResult,
+    ) -> None:
+        """A 'Fix:' line shows remediation guidance if available."""
+        output, _code = invoke_build(
+            runner, candidate_version, ide_build_failed_result
+        )
+        assert "Fix:" in output, (
+            f"Missing 'Fix:' remediation line for IDE bundle failure.\nOutput:\n{output}"
+        )
+
+    def test_no_border_characters(
+        self,
+        runner: CliRunner,
+        candidate_version: CandidateVersion,
+        ide_build_failed_result: BuildResult,
+    ) -> None:
+        """No Rich Table or Panel borders in error output."""
+        output, _code = invoke_build(
+            runner, candidate_version, ide_build_failed_result
+        )
+        border_chars_found = FORBIDDEN_BORDER_CHARS.intersection(set(output))
+        assert not border_chars_found, (
+            f"Output contains forbidden border characters: {border_chars_found}"
+        )
+
+
+# ============================================================================
+# 08-07: Asset Deployment Failure (Step 13)
+# ============================================================================
+
+
+@pytest.mark.e2e
+class TestAssetDeploymentFailure:
+    """Asset deployment failure display (Step 13).
+
+    Design YAML error state: asset_deployment_failure
+    Pattern:
+      - Red X "Asset deployment failed"
+      - Blank line
+      - Error: {error_message}
+      - Fix: {remediation if available}
+    Exit code: 1
+    """
+
+    @pytest.fixture
+    def asset_deploy_failed_result(self) -> InstallResult:
+        """Install result that fails during asset deployment (after pipx success)."""
+        return InstallResult(
+            success=False,
+            version="0.2.0",
+            install_path=Path("/usr/local/bin/crafter-ai"),
+            phases_completed=[
+                InstallPhase.PREFLIGHT,
+                InstallPhase.READINESS,
+                InstallPhase.BACKUP,
+                InstallPhase.INSTALL,
+            ],
+            error_message="Asset deployment failed: Permission denied writing to ~/.claude/agents/nw/",
+            health_status=None,
+            verification_warnings=[],
+        )
+
+    def test_exit_code_is_1(
+        self,
+        runner: CliRunner,
+        mock_wheel_path: Path,
+        install_preflight_all_pass: list[CheckResult],
+        asset_deploy_failed_result: InstallResult,
+    ) -> None:
+        """Asset deployment failure exits with code 1."""
+        _output, exit_code = invoke_install(
+            runner, mock_wheel_path, install_preflight_all_pass, asset_deploy_failed_result
+        )
+        assert exit_code == 1, f"Expected exit code 1, got {exit_code}"
+
+    def test_asset_deployment_failed_message(
+        self,
+        runner: CliRunner,
+        mock_wheel_path: Path,
+        install_preflight_all_pass: list[CheckResult],
+        asset_deploy_failed_result: InstallResult,
+    ) -> None:
+        """Failure shows 'Asset deployment failed' with red X emoji."""
+        output, _code = invoke_install(
+            runner, mock_wheel_path, install_preflight_all_pass, asset_deploy_failed_result
+        )
+        assert "\u274c" in output, "Missing red X emoji for asset deployment failure"
+        assert "Asset deployment failed" in output or "deployment failed" in output, (
+            f"Missing asset deployment failure indicator.\nOutput:\n{output}"
+        )
+
+    def test_error_line_shows_failure_reason(
+        self,
+        runner: CliRunner,
+        mock_wheel_path: Path,
+        install_preflight_all_pass: list[CheckResult],
+        asset_deploy_failed_result: InstallResult,
+    ) -> None:
+        """An 'Error:' line shows the specific failure reason."""
+        output, _code = invoke_install(
+            runner, mock_wheel_path, install_preflight_all_pass, asset_deploy_failed_result
+        )
+        assert "Error:" in output, "Missing 'Error:' label in failure output"
+        assert "Permission denied" in output or "~/.claude" in output, (
+            "Missing specific error message for asset deployment failure"
+        )
+
+    def test_fix_line_shows_remediation(
+        self,
+        runner: CliRunner,
+        mock_wheel_path: Path,
+        install_preflight_all_pass: list[CheckResult],
+        asset_deploy_failed_result: InstallResult,
+    ) -> None:
+        """A 'Fix:' line shows remediation guidance if available."""
+        output, _code = invoke_install(
+            runner, mock_wheel_path, install_preflight_all_pass, asset_deploy_failed_result
+        )
+        assert "Fix:" in output, (
+            f"Missing 'Fix:' remediation line for asset deployment failure.\nOutput:\n{output}"
+        )
+
+    def test_no_border_characters(
+        self,
+        runner: CliRunner,
+        mock_wheel_path: Path,
+        install_preflight_all_pass: list[CheckResult],
+        asset_deploy_failed_result: InstallResult,
+    ) -> None:
+        """No Rich Table or Panel borders in error output."""
+        output, _code = invoke_install(
+            runner, mock_wheel_path, install_preflight_all_pass, asset_deploy_failed_result
+        )
+        border_chars_found = FORBIDDEN_BORDER_CHARS.intersection(set(output))
+        assert not border_chars_found, (
+            f"Output contains forbidden border characters: {border_chars_found}"
+        )
+
+
+# ============================================================================
+# 08-08: Deployment Validation Failure (Step 14)
+# ============================================================================
+
+
+@pytest.mark.e2e
+class TestDeploymentValidationFailure:
+    """Deployment validation failure display (Step 14).
+
+    Design YAML error state: deployment_validation_failure
+    Pattern:
+      - Show all validation checks (pass and fail mixed)
+      - Blank line
+      - Summary: "Deployment validation failed: {count} check(s) failed"
+      - Blank line
+      - Repeat ONLY failures with remediation:
+          Red X {failure.message}
+          Fix: {failure.remediation}
+    Exit code: 1
+    """
+
+    @pytest.fixture
+    def deploy_validation_failed_result(self) -> InstallResult:
+        """Install result that fails during deployment validation (after deploy)."""
+        return InstallResult(
+            success=False,
+            version="0.2.0",
+            install_path=Path("/usr/local/bin/crafter-ai"),
+            phases_completed=[
+                InstallPhase.PREFLIGHT,
+                InstallPhase.READINESS,
+                InstallPhase.BACKUP,
+                InstallPhase.INSTALL,
+            ],
+            error_message="Deployment validation failed: 2 check(s) failed",
+            health_status=None,
+            verification_warnings=[
+                "Agents: expected 30, found 28",
+                "Templates: expected 17, found 15",
+            ],
+        )
+
+    def test_exit_code_is_1(
+        self,
+        runner: CliRunner,
+        mock_wheel_path: Path,
+        install_preflight_all_pass: list[CheckResult],
+        deploy_validation_failed_result: InstallResult,
+    ) -> None:
+        """Deployment validation failure exits with code 1."""
+        _output, exit_code = invoke_install(
+            runner, mock_wheel_path, install_preflight_all_pass, deploy_validation_failed_result
+        )
+        assert exit_code == 1, f"Expected exit code 1, got {exit_code}"
+
+    def test_validation_failed_summary(
+        self,
+        runner: CliRunner,
+        mock_wheel_path: Path,
+        install_preflight_all_pass: list[CheckResult],
+        deploy_validation_failed_result: InstallResult,
+    ) -> None:
+        """Summary line shows count of failed validation checks."""
+        output, _code = invoke_install(
+            runner, mock_wheel_path, install_preflight_all_pass, deploy_validation_failed_result
+        )
+        assert "validation failed" in output.lower() or "check" in output.lower(), (
+            f"Missing deployment validation failure summary.\nOutput:\n{output}"
+        )
+
+    def test_failed_checks_show_red_x_emoji(
+        self,
+        runner: CliRunner,
+        mock_wheel_path: Path,
+        install_preflight_all_pass: list[CheckResult],
+        deploy_validation_failed_result: InstallResult,
+    ) -> None:
+        """Failed validation checks display with red X emoji."""
+        output, _code = invoke_install(
+            runner, mock_wheel_path, install_preflight_all_pass, deploy_validation_failed_result
+        )
+        assert "\u274c" in output, "Missing red X emoji for validation failures"
+
+    def test_shows_mismatch_details(
+        self,
+        runner: CliRunner,
+        mock_wheel_path: Path,
+        install_preflight_all_pass: list[CheckResult],
+        deploy_validation_failed_result: InstallResult,
+    ) -> None:
+        """Failure details show which counts mismatched."""
+        output, _code = invoke_install(
+            runner, mock_wheel_path, install_preflight_all_pass, deploy_validation_failed_result
+        )
+        # Should show the mismatch information from verification_warnings
+        assert "expected" in output.lower() or "found" in output.lower() or "mismatch" in output.lower(), (
+            f"Missing mismatch details in validation failure.\nOutput:\n{output}"
+        )
+
+    def test_fix_lines_show_remediation(
+        self,
+        runner: CliRunner,
+        mock_wheel_path: Path,
+        install_preflight_all_pass: list[CheckResult],
+        deploy_validation_failed_result: InstallResult,
+    ) -> None:
+        """Each failure has a 'Fix:' line with remediation guidance."""
+        output, _code = invoke_install(
+            runner, mock_wheel_path, install_preflight_all_pass, deploy_validation_failed_result
+        )
+        assert "Fix:" in output, (
+            f"Missing 'Fix:' remediation line for validation failures.\nOutput:\n{output}"
+        )
+
+    def test_no_border_characters(
+        self,
+        runner: CliRunner,
+        mock_wheel_path: Path,
+        install_preflight_all_pass: list[CheckResult],
+        deploy_validation_failed_result: InstallResult,
+    ) -> None:
+        """No Rich Table or Panel borders in error output."""
+        output, _code = invoke_install(
+            runner, mock_wheel_path, install_preflight_all_pass, deploy_validation_failed_result
+        )
+        border_chars_found = FORBIDDEN_BORDER_CHARS.intersection(set(output))
+        assert not border_chars_found, (
+            f"Output contains forbidden border characters: {border_chars_found}"
+        )
