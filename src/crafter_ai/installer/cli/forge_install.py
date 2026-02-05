@@ -471,12 +471,12 @@ def install(
             )
 
         # Show validation summary (pass or fail)
-        if validation.is_valid:
+        if validation.valid:
             console.print("  ✅ Deployment validated")
         else:
             console.print("  ❌ Deployment validation failed")
-            if validation.validation_errors:
-                for error in validation.validation_errors:
+            if validation.mismatches:
+                for error in validation.mismatches:
                     console.print(f"     {error}", style="red")
 
     if install_result.health_status is not None:
