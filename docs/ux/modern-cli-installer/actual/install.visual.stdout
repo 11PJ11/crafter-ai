@@ -41,7 +41,7 @@
 [2026-02-04 19:20:01] INFO: Installed template: platform-review-checklist.yaml
 [2026-02-04 19:20:01] INFO: Total 17 template(s) installed
 [2026-02-04 19:20:01] INFO:   - TDD cycle schema: v3.0 with 7 phases (7-phase TDD (L4-L6 moved to orchestrator)) ✓
-      Validation Results      
+      Validation Results
 ┏━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━┓
 ┃ Component ┃ Status ┃ Count ┃
 ┡━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━┩
@@ -77,4 +77,3 @@
 [2026-02-04 19:20:01] INFO: 3. Access agents through the nw category in Claude Code
 
 [2026-02-04 19:20:01] INFO: Documentation: https://github.com/11PJ11/crafter-ai
-
