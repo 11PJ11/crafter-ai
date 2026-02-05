@@ -258,15 +258,23 @@ class AuditLogger:
         """Get total number of entries in audit log."""
         return len(self._entry_hashes)
 
-    def read_entries_for_step(self, step_path: str) -> list[dict[str, Any]]:
+    def read_entries_for_step(
+        self, feature_name: str | None, step_id: str | None
+    ) -> list[dict[str, Any]]:
         """Read audit entries for a specific step.
 
         Args:
-            step_path: Path to the step file
+            feature_name: Feature/project name (e.g., 'audit-log-refactor')
+            step_id: Step identifier (e.g., '01-01')
 
         Returns:
-            List of audit entries for the step
+            List of audit entries for the step. Returns empty list if either
+            feature_name or step_id is None.
         """
+        # AC3: Return empty list if either parameter is None
+        if feature_name is None or step_id is None:
+            return []
+
         entries = []
         if self.current_log_file.exists():
             try:
@@ -274,7 +282,12 @@ class AuditLogger:
                     for line in f:
                         if line.strip():
                             entry = json.loads(line)
-                            if entry.get("step_path") == step_path:
+                            # AC2: Filter by feature_name AND step_id (both must match)
+                            # AC5: Legacy step_path field ignored in filtering
+                            if (
+                                entry.get("feature_name") == feature_name
+                                and entry.get("step_id") == step_id
+                            ):
                                 entries.append(entry)
             except Exception:
                 pass

@@ -176,38 +176,71 @@ class TestAuditLoggerEntryContext:
     """Test entry context enrichment."""
 
     def test_read_entries_for_step(self):
-        """read_entries_for_step() should retrieve entries for specific step."""
+        """read_entries_for_step() should retrieve entries by feature_name and step_id."""
         with tempfile.TemporaryDirectory() as tmpdir:
             logger = AuditLogger(log_dir=tmpdir)
 
-            # Add entries for different steps
+            # Add entries for different steps using new schema (feature_name, step_id)
             logger.append(
                 {
                     "timestamp": "2026-01-27T14:30:00.000Z",
                     "event": "TASK_START",
-                    "step_path": "steps/01-01.json",
+                    "feature_name": "audit-log-refactor",
+                    "step_id": "01-01",
+                    "step_path": "steps/01-01.json",  # Legacy field
                 }
             )
             logger.append(
                 {
                     "timestamp": "2026-01-27T14:30:01.000Z",
                     "event": "TASK_START",
-                    "step_path": "steps/01-02.json",
+                    "feature_name": "audit-log-refactor",
+                    "step_id": "01-02",
+                    "step_path": "steps/01-02.json",  # Legacy field
                 }
             )
             logger.append(
                 {
                     "timestamp": "2026-01-27T14:30:02.000Z",
                     "event": "TASK_END",
-                    "step_path": "steps/01-01.json",
+                    "feature_name": "audit-log-refactor",
+                    "step_id": "01-01",
+                    "step_path": "steps/01-01.json",  # Legacy field
+                }
+            )
+            logger.append(
+                {
+                    "timestamp": "2026-01-27T14:30:03.000Z",
+                    "event": "TASK_START",
+                    "feature_name": "other-feature",
+                    "step_id": "01-01",
+                    "step_path": "steps/other-01-01.json",
                 }
             )
 
-            # Retrieve entries for step 01-01
-            entries = logger.read_entries_for_step("steps/01-01.json")
+            # AC1: Accept feature_name and step_id parameters
+            entries = logger.read_entries_for_step("audit-log-refactor", "01-01")
 
+            # AC2: Filter by feature_name AND step_id
             assert len(entries) == 2
-            assert all(e["step_path"] == "steps/01-01.json" for e in entries)
+            assert all(e["feature_name"] == "audit-log-refactor" for e in entries)
+            assert all(e["step_id"] == "01-01" for e in entries)
+
+            # AC3: Return empty list when feature_name is None
+            entries_none_feature = logger.read_entries_for_step(None, "01-01")
+            assert len(entries_none_feature) == 0
+
+            # AC3: Return empty list when step_id is None
+            entries_none_step = logger.read_entries_for_step("audit-log-refactor", None)
+            assert len(entries_none_step) == 0
+
+            # AC4: Return all matching entries for feature + step combination
+            entries_01_02 = logger.read_entries_for_step("audit-log-refactor", "01-02")
+            assert len(entries_01_02) == 1
+            assert entries_01_02[0]["step_id"] == "01-02"
+
+            # AC5: Legacy step_path field ignored in filtering
+            # (entries have step_path but filtering uses feature_name + step_id)
 
     def test_get_all_entries(self):
         """get_entries() should retrieve all entries from log file."""
