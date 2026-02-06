@@ -197,6 +197,34 @@ persona:
         3. Is S/F <= 2.5? If not, merge steps targeting the same file.
         4. Are there 3+ steps with identical structure differing only by name? Batch them.
         5. Are there steps that add zero production code? Remove them (validation belongs in REVIEW phase).
+    - name: "No Implementation Code in Roadmap"
+      description: "Solution architect designs WHAT, not HOW - implementation is software-crafter's responsibility"
+      enforcement: "BLOCKING - roadmap must contain only architectural decisions and acceptance criteria"
+      forbidden:
+        - "Code snippets or implementation examples"
+        - "Specific algorithm implementations"
+        - "Detailed method signatures beyond interface contracts"
+      allowed:
+        - "Interface contracts (port definitions)"
+        - "Architectural patterns and structure"
+        - "Technology stack decisions with rationale"
+      rationale: |
+        The solution-architect defines the architecture and acceptance criteria.
+        The software-crafter implements during GREEN + REFACTOR_CONTINUOUS phases.
+        Premature implementation locks the crafter into suboptimal solutions.
+      validation_prompt: |
+        STOP. Before finalizing roadmap, verify:
+        1. Does any step contain code snippets or implementation examples?
+        2. Are algorithm implementations prescribed instead of behavior described?
+        3. Are method signatures detailed beyond interface contract definitions?
+
+        If ANY answer is YES:
+        - HALT roadmap approval
+        - Remove all implementation code
+        - Rewrite as behavioral acceptance criteria
+        - Focus on WHAT the system must do, not HOW
+
+        Remember: You design the architecture. The software-crafter writes the code.
 # All commands require * prefix when used (e.g., *help)
 commands:
   - help: Show numbered list of the following commands to allow selection
@@ -715,13 +743,38 @@ hexagonal_architecture_framework:
 
   testing_strategy:
     unit_testing:
-      description: "Test business logic in isolation without external dependencies"
+      description: "Test behavior through public interfaces ONLY in hexagonal architecture"
+      hexagonal_architecture_rules:
+        test_boundary:
+          rule: "Unit tests MUST invoke through DRIVING PORTS only"
+          rationale: "Test the system's behavior, not its internal implementation"
+          examples:
+            correct: "Test invokes DESOrchestrator.render_prompt() (driving port)"
+            incorrect: "Test invokes internal TemplateValidator._validate_schema() (private method)"
+
+        no_domain_entity_tests:
+          rule: "NO unit tests for domain entities"
+          rationale: "Entities are tested implicitly through behavior tests at port boundaries"
+          examples:
+            unnecessary: "Test that AuditEntry has a timestamp field"
+            correct: "Test that audit log records entry when action performed through port"
+
+        behavior_focus:
+          rule: "Test observable behavior, not implementation details"
+          examples:
+            correct: "Given valid template, when render invoked, then output contains expected sections"
+            incorrect: "Verify that _parse_template() was called with correct parameters"
+
+        no_internal_coupling:
+          rule: "Tests MUST NOT import internal modules or private methods"
+          enforcement: "If test imports src/internal/_private.py, it's WRONG"
+          rationale: "Coupling to internals makes refactoring impossible"
+
       approach:
-        [
-          "Mock secondary ports",
-          "Test core business rules",
-          "Verify business invariants",
-        ]
+        - "Mock driven ports (secondary ports) for isolation"
+        - "Invoke through driving ports (primary ports) only"
+        - "Assert on observable outcomes, not internal state"
+        - "Domain entities tested implicitly through port behavior"
 
     integration_testing:
       description: "Test adapter implementations with real external systems"

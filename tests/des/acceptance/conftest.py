@@ -144,11 +144,6 @@ def fake_time_provider(fixed_utc_time):
 @pytest.fixture
 def clean_des_environment(temp_home, audit_log_reader):
     """Clean DES environment before each test."""
-    # Reset audit logger to pick up correct working directory
-    import src.des.adapters.driven.logging.audit_logger as audit_logger_module
-
-    audit_logger_module.reset_audit_logger()
-
     # Clear audit log
     audit_log_reader.clear()
 
@@ -165,33 +160,25 @@ def clean_des_environment(temp_home, audit_log_reader):
 
     # Cleanup after test
     audit_log_reader.clear()
-    # Reset audit logger after test to avoid state leakage
-    audit_logger_module.reset_audit_logger()
 
 
 @pytest.fixture
 def enable_audit_logging(des_config_path, audit_log_path):
-    """Configure audit logging to be enabled and initialize audit logger with correct path."""
+    """Configure audit logging to be enabled.
+
+    Sets up the DES config to enable audit logging. Individual tests
+    that need a JsonlAuditLogWriter should create one with the
+    audit_log_path fixture.
+    """
     des_config_path.parent.mkdir(parents=True, exist_ok=True)
     config_content = """# DES Configuration
 audit_logging_enabled: true  # Enable comprehensive audit trail
 """
     des_config_path.write_text(config_content)
 
-    # Reset and initialize global audit logger with test-specific path
-    # IMPORTANT: Must reset singleton and configure before any tests use it
-    import src.des.adapters.driven.logging.audit_logger as audit_logger_module
-
-    audit_logger_module.reset_audit_logger()  # Use the reset function
-    # Use parent directory of audit_log_path (which is now .nwave/logs/des/audit.log)
-    # So we pass .nwave/logs/des as the log directory
-    audit_logger_module._audit_logger = audit_logger_module.AuditLogger(
-        log_dir=str(audit_log_path.parent)
-    )
-    # Track the current working directory
-    from pathlib import Path
-
-    audit_logger_module._audit_logger_cwd = Path.cwd()
+    # Ensure audit log directory exists for tests that read from it
+    audit_log_dir = audit_log_path.parent
+    audit_log_dir.mkdir(parents=True, exist_ok=True)
 
     return des_config_path
 

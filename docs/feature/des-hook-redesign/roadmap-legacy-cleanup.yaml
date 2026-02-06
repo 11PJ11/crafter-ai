@@ -1,0 +1,239 @@
+# Legacy Test Cleanup & File Deletion Roadmap
+# Follow-up to: docs/feature/des-hook-redesign/roadmap.yaml (completed)
+# Architecture: docs/architecture/des-hook-architecture-redesign.md
+# Problem: 5 legacy production files cannot be deleted because ~20 test files
+#   (~160 test functions) still import from them
+# Approach: Classify tests as DELETE vs MIGRATE, clear consumers, then delete legacy files
+
+roadmap:
+  project_id: "des-hook-redesign-legacy-cleanup"
+  created_at: "2026-02-06T18:00:00Z"
+  total_steps: 4
+  phases: 3
+
+phases:
+  # ==========================================================================
+  # PHASE 01: Delete Dead Tests
+  # ==========================================================================
+  # Schema v1.x is DROPPED per ADR-6. Tests that exclusively exercise Schema
+  # v1.x SubagentStopHook (step-file based validation) or test internal class
+  # APIs are dead code. No behavior to preserve -- the new hexagonal
+  # architecture already covers these behaviors through new interfaces.
+  # ==========================================================================
+  - id: "01"
+    name: "Delete Dead Tests"
+    description: "Remove test files that test dropped Schema v1.x code or internal class APIs with no behavioral value to preserve"
+    default_agent: "software-crafter"
+    default_deps_strategy: "sequential"
+    steps:
+      - id: "01-01"
+        name: "Delete Schema v1.x and internal-class test files"
+        criteria: >-
+          The following test files are deleted (all test Schema v1.x step-file
+          validation or internal class APIs that no longer exist in the hexagonal
+          architecture):
+
+          tests/des/unit/application/test_hooks.py (39 tests, Schema v1.x
+          SubagentStopHook from application/hooks.py -- dropped per ADR-6);
+
+          tests/unit/test_hooks_silent_completion.py (5 tests, Schema v1.x
+          SubagentStopHook silent completion detection);
+
+          tests/unit/test_turn_count_persistence_unit.py (7 tests, Schema v1.x
+          step-file turn count via SubagentStopHook);
+
+          tests/unit/test_turn_count_persistence_acceptance.py (4 tests, same);
+
+          tests/acceptance/test_us004_turn_counting.py partial delete: delete
+          test_scenario_012 and test_scenario_017 (2 tests, import
+          SubagentStopHook from application.hooks); preserve
+          test_scenario_011 (uses des_orchestrator fixture, no legacy import);
+
+          tests/des/acceptance/test_us006a_turn_counting.py partial delete:
+          delete test_scenario_012_turn_limit_exceeded_detected_by_hook and
+          test_scenario_017_timeout_exceeded_detected_by_hook (import
+          SubagentStopHook for Schema v1.x step-file validation); preserve
+          test_scenario_011_turn_count_increments_during_execution;
+
+          tests/des/unit/adapters/driven/hooks/test_subagent_stop_hook_audit.py
+          (9 tests, tests internal SubagentStopHook audit methods directly);
+
+          tests/des/unit/adapters/drivers/hooks/test_subagent_stop_hook_audit.py
+          (6 tests, tests internal SubagentStopHook audit methods directly);
+
+          no production code changes in this step;
+
+          all remaining tests pass (pytest exits 0);
+
+          no remaining import of SubagentStopHook from application.hooks in any
+          test file except tests/des/unit/application/test_orchestrator_recovery_integration.py
+          (handled in step 02-02)
+
+  # ==========================================================================
+  # PHASE 02: Migrate Behavioral Tests to New Interfaces
+  # ==========================================================================
+  # These tests verify real behaviors (audit logging, scope checking,
+  # orchestrator recovery) that ARE preserved in the new architecture.
+  # Rewrite to test through new public interfaces.
+  # ==========================================================================
+  - id: "02"
+    name: "Migrate Behavioral Tests"
+    depends_on: ["01"]
+    description: "Rewrite tests that verify preserved behaviors to use new hexagonal interfaces instead of legacy classes"
+    default_agent: "software-crafter"
+    default_deps_strategy: "sequential"
+    steps:
+      - id: "02-01"
+        name: "Migrate audit logger tests to JsonlAuditLogWriter"
+        criteria: >-
+          tests/unit/des/test_audit_logger_01_01.py (28 tests) migrated: tests
+          import from jsonl_audit_log_writer instead of audit_logger; all
+          behavioral assertions preserved;
+
+          tests/unit/des/test_audit_logger_01_03.py (8 tests) migrated with
+          same pattern;
+
+          tests/unit/des/test_audit_logger_unit.py (11 tests) migrated with
+          same pattern;
+
+          tests/des/unit/adapters/driven/logging/test_audit_logger_scope_violation.py
+          (4 tests) migrated: scope violation event logging tested through
+          JsonlAuditLogWriter;
+
+          tests/acceptance/test_us004_audit_trail.py (12 tests) migrated:
+          AuditLogger import replaced with JsonlAuditLogWriter;
+
+          tests/des/acceptance/conftest.py updated: imports of audit_logger
+          module, calls to reset_audit_logger(), accesses to _audit_logger
+          singleton, and AuditLogger constructor usage replaced with
+          JsonlAuditLogWriter equivalents;
+
+          tests/des/acceptance/test_us007_boundary_rules.py updated: all imports
+          of AuditLogger and get_audit_logger replaced with JsonlAuditLogWriter;
+          NOTE: ScopeValidator imports in this file are NOT changed in this step,
+          handled in step 02-02;
+
+          tests/bugs/plugins/des/installation/acceptance/steps/audit_log_steps.py
+          updated: imports of AuditLogger, get_audit_logger, reset_audit_logger
+          replaced with new equivalents;
+
+          no import of audit_logger module remains in any test file;
+
+          all migrated tests pass;
+
+          no production code changes in this step
+
+      - id: "02-02"
+        name: "Migrate scope validator, integration, and orchestrator recovery tests"
+        criteria: >-
+          tests/des/unit/test_scope_validator.py (18 tests) migrated: imports
+          changed from ScopeValidator to GitScopeChecker; tests that pass
+          step_file_path rewritten to pass allowed_patterns directly (the new
+          interface does not read step files); all behavioral assertions
+          preserved (git diff comparison, glob pattern matching, violation
+          detection, skip-when-no-git);
+
+          tests/des/acceptance/test_us007_boundary_rules.py updated: all imports
+          of ScopeValidator replaced with GitScopeChecker; tests rewritten to
+          pass allowed_patterns instead of step_file_path;
+
+          tests/des/unit/adapters/drivers/hooks/test_audit_logging_integration.py
+          (4 tests) rewritten: test audit logging behavior through
+          SubagentStopPort.validate() or subprocess invocation instead of
+          instantiating SubagentStopHook directly; ScopeValidationResult imports
+          removed; behavioral assertions preserved (audit events generated on
+          pass and fail);
+
+          tests/des/unit/adapters/drivers/hooks/test_scope_validation_integration.py
+          (5 tests) rewritten: test scope validation behavior through
+          SubagentStopPort.validate() or subprocess invocation instead of
+          instantiating SubagentStopHook; ScopeValidationResult imports removed;
+
+          tests/des/unit/adapters/drivers/hooks/test_clean_execution_silence.py
+          (4 tests) rewritten: test clean execution silence behavior through
+          subprocess invocation instead of SubagentStopHook; ScopeValidationResult
+          imports removed;
+
+          tests/des/unit/application/test_orchestrator_recovery_integration.py
+          (17 tests) updated: SubagentStopHook import from application.hooks
+          replaced with new SubagentStopPort/SubagentStopService constructor;
+          orchestrator tests continue to verify recovery behavior through
+          orchestrator entry point;
+
+          tests/des/acceptance/test_us003_post_execution_validation.py
+          TestOrchestratorHookIntegration (2 tests) updated: SubagentStopHook
+          import from adapters.driven.hooks.subagent_stop_hook replaced with new
+          service injection;
+
+          no import of subagent_stop_hook, hook_port, scope_validator, or
+          application.hooks remains in any test file;
+
+          all migrated tests pass;
+
+          no production code changes in this step
+
+  # ==========================================================================
+  # PHASE 03: Delete Legacy Production Files
+  # ==========================================================================
+  # All test consumers cleared. Safe to delete legacy modules.
+  # ==========================================================================
+  - id: "03"
+    name: "Delete Legacy Production Files"
+    depends_on: ["02"]
+    description: "Remove the 5 legacy production files now that zero test files import from them"
+    default_agent: "software-crafter"
+    default_deps_strategy: "sequential"
+    steps:
+      - id: "03-01"
+        name: "Delete legacy production modules and verify clean codebase"
+        criteria: >-
+          The following 5 legacy production files are deleted:
+          src/des/application/hooks.py (Schema v1.x SubagentStopHook + HookResult,
+          544 lines, superseded by domain classes and application services per ADR-6);
+          src/des/adapters/driven/hooks/subagent_stop_hook.py (legacy driven
+          adapter, superseded by domain StepCompletionValidator + application
+          SubagentStopService);
+          src/des/ports/driver_ports/hook_port.py (HookPort + HookResult,
+          superseded by PreToolUsePort + SubagentStopPort);
+          src/des/adapters/driven/logging/audit_logger.py (AuditLogger singleton,
+          superseded by JsonlAuditLogWriter implementing AuditLogWriter port);
+          src/des/adapters/driven/validation/scope_validator.py (ScopeValidator,
+          superseded by GitScopeChecker implementing ScopeChecker port);
+
+          grep -r confirms zero remaining imports of these 5 module paths across
+          the entire codebase (src/ and tests/): application.hooks,
+          adapters.driven.hooks.subagent_stop_hook,
+          ports.driver_ports.hook_port,
+          adapters.driven.logging.audit_logger,
+          adapters.driven.validation.scope_validator;
+
+          any __init__.py re-exports of deleted classes are removed;
+
+          empty directories left by deletions are removed;
+
+          full test suite passes (pytest exits 0);
+
+          the hook adapter external protocol is unchanged (JSON stdin/stdout,
+          exit codes 0/1/2, module path
+          src.des.adapters.drivers.hooks.claude_code_hook_adapter unchanged)
+
+implementation_scope:
+  source_directories:
+    - "src/des/"
+  test_directories:
+    - "tests/"
+  legacy_files_to_delete:
+    - "src/des/application/hooks.py"
+    - "src/des/adapters/driven/hooks/subagent_stop_hook.py"
+    - "src/des/ports/driver_ports/hook_port.py"
+    - "src/des/adapters/driven/logging/audit_logger.py"
+    - "src/des/adapters/driven/validation/scope_validator.py"
+
+dependencies:
+  "01-01": []
+  "02-01": ["01-01"]
+  "02-02": ["02-01"]
+  "03-01": ["02-02"]
+
+validation:
+  status: "REVISED"

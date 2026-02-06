@@ -1,212 +1,219 @@
 """
-Unit tests for log_audit_event() helper function (Step 01-03).
+Unit tests for audit event logging with feature_name and step_id (Step 01-03).
 
-Tests that log_audit_event() accepts feature_name and step_id parameters
-and passes them to the event dictionary correctly.
+Tests that audit events accept feature_name and step_id as data fields
+and that these fields are correctly persisted to the JSONL audit log.
+
+Migrated from legacy AuditLogger/log_audit_event to JsonlAuditLogWriter.
 """
 
-import inspect
-import tempfile
+import json
+from datetime import datetime, timezone
 
-from src.des.adapters.driven.logging.audit_logger import (
-    AuditLogger,
-    log_audit_event,
-    reset_audit_logger,
-)
+from src.des.adapters.driven.logging.jsonl_audit_log_writer import JsonlAuditLogWriter
+from src.des.ports.driven_ports.audit_log_writer import AuditEvent
+
+
+def _make_timestamp() -> str:
+    """Generate ISO 8601 timestamp with millisecond precision."""
+    now = datetime.now(timezone.utc)
+    return f"{now.strftime('%Y-%m-%dT%H:%M:%S')}.{now.microsecond // 1000:03d}Z"
+
+
+def _read_all_entries(writer: JsonlAuditLogWriter) -> list[dict]:
+    """Read all entries from the writer's current log file."""
+    log_file = writer._get_log_file()
+    entries = []
+    if log_file.exists():
+        with open(log_file) as f:
+            for line in f:
+                if line.strip():
+                    entries.append(json.loads(line))
+    return entries
+
+
+def _log_audit_event(
+    writer: JsonlAuditLogWriter,
+    event_type: str,
+    feature_name: str | None = None,
+    step_id: str | None = None,
+    **kwargs,
+) -> None:
+    """Log an audit event with optional feature_name and step_id.
+
+    Equivalent to the legacy log_audit_event() function, but uses
+    JsonlAuditLogWriter instead of the singleton AuditLogger.
+    """
+    data = {}
+    if feature_name is not None:
+        data["feature_name"] = feature_name
+    if step_id is not None:
+        data["step_id"] = step_id
+    data.update(kwargs)
+
+    writer.log_event(
+        AuditEvent(
+            event_type=event_type,
+            timestamp=_make_timestamp(),
+            data=data,
+        )
+    )
 
 
 class TestLogAuditEventSignature:
-    """Test log_audit_event() signature with feature_name and step_id parameters."""
+    """Test audit event logging with feature_name and step_id parameters."""
 
-    def test_log_audit_event_has_explicit_feature_name_and_step_id_parameters(self):
-        """AC1: Function signature includes feature_name and step_id as explicit parameters."""
-        # Use inspect to verify the signature has explicit parameters
-        sig = inspect.signature(log_audit_event)
-        params = sig.parameters
+    def test_audit_event_dataclass_has_event_type_timestamp_and_data_fields(self):
+        """AC1: AuditEvent supports event_type, timestamp, and arbitrary data fields.
 
-        # AC1: feature_name and step_id should be explicit parameters (not just **kwargs)
-        assert "feature_name" in params, "feature_name not in signature"
-        assert "step_id" in params, "step_id not in signature"
+        In the new adapter architecture, feature_name and step_id are passed
+        as entries in the data dict. The AuditEvent dataclass provides the
+        structured container for all audit event data.
+        """
+        # Verify AuditEvent has the expected fields
+        fields = {f.name for f in AuditEvent.__dataclass_fields__.values()}
+        assert "event_type" in fields, "event_type not in AuditEvent fields"
+        assert "timestamp" in fields, "timestamp not in AuditEvent fields"
+        assert "data" in fields, "data not in AuditEvent fields"
 
-        # AC2: Parameters should be optional (have default values)
-        assert params["feature_name"].default is None, (
-            "feature_name should default to None"
+        # Verify data dict can carry feature_name and step_id
+        event = AuditEvent(
+            event_type="TEST",
+            timestamp=_make_timestamp(),
+            data={"feature_name": "test", "step_id": "01-01"},
         )
-        assert params["step_id"].default is None, "step_id should default to None"
+        assert event.data["feature_name"] == "test"
+        assert event.data["step_id"] == "01-01"
 
-        # AC4: step_path parameter should be removed
-        assert "step_path" not in params, "step_path should be removed from signature"
+        # Verify step_path is not a dedicated field on AuditEvent
+        assert "step_path" not in fields, "step_path should not be an AuditEvent field"
 
-    def test_log_audit_event_accepts_feature_name_and_step_id(self):
-        """AC1: Function signature includes feature_name and step_id parameters."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            from src.des.adapters.driven.logging import audit_logger
+    def test_log_audit_event_accepts_feature_name_and_step_id(self, tmp_path):
+        """AC1: Audit event logging includes feature_name and step_id in output."""
+        log_dir = tmp_path / ".des/audit"
+        writer = JsonlAuditLogWriter(log_dir=str(log_dir))
 
-            audit_logger._audit_logger = AuditLogger(tmpdir)
+        # AC1: Should accept feature_name and step_id
+        _log_audit_event(
+            writer,
+            "TEST_EVENT",
+            feature_name="audit-log-refactor",
+            step_id="01-03",
+            extra_data="test_value",
+        )
 
-            # AC1: Should accept feature_name and step_id as keyword arguments
-            log_audit_event(
-                "TEST_EVENT",
-                feature_name="audit-log-refactor",
-                step_id="01-03",
-                extra_data="test_value",
-            )
+        entries = _read_all_entries(writer)
+        assert len(entries) == 1
+        assert entries[0]["event"] == "TEST_EVENT"
+        # AC3: feature_name and step_id appear in event dictionary
+        assert entries[0]["feature_name"] == "audit-log-refactor"
+        assert entries[0]["step_id"] == "01-03"
+        assert entries[0]["extra_data"] == "test_value"
 
-            logger = audit_logger.get_audit_logger()
-            entries = logger.get_entries()
-            assert len(entries) == 1
-            assert entries[0]["event"] == "TEST_EVENT"
-            # AC3: Function passes feature_name and step_id to event dictionary
-            assert entries[0]["feature_name"] == "audit-log-refactor"
-            assert entries[0]["step_id"] == "01-03"
-            assert entries[0]["extra_data"] == "test_value"
+    def test_log_audit_event_parameters_are_optional(self, tmp_path):
+        """AC2: Parameters are optional (omitted when None)."""
+        log_dir = tmp_path / ".des/audit"
+        writer = JsonlAuditLogWriter(log_dir=str(log_dir))
 
-            # Cleanup
-            reset_audit_logger()
+        # AC2: Should work without feature_name and step_id
+        _log_audit_event(writer, "TEST_EVENT", extra_data="test_value")
 
-    def test_log_audit_event_parameters_are_optional(self):
-        """AC2: Parameters are optional (default to None)."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            from src.des.adapters.driven.logging import audit_logger
+        entries = _read_all_entries(writer)
+        assert len(entries) == 1
+        assert entries[0]["event"] == "TEST_EVENT"
+        # AC2: When not provided, feature_name and step_id are absent from entry
+        assert "feature_name" not in entries[0] or entries[0]["feature_name"] is None
+        assert "step_id" not in entries[0] or entries[0]["step_id"] is None
+        assert entries[0]["extra_data"] == "test_value"
 
-            audit_logger._audit_logger = AuditLogger(tmpdir)
+    def test_log_audit_event_step_path_not_a_dedicated_field(self, tmp_path):
+        """AC4: step_path is not a dedicated parameter in the new adapter."""
+        log_dir = tmp_path / ".des/audit"
+        writer = JsonlAuditLogWriter(log_dir=str(log_dir))
 
-            # AC2: Should work without feature_name and step_id
-            log_audit_event("TEST_EVENT", extra_data="test_value")
+        # AC4: step_path is not a recognized dedicated parameter
+        _log_audit_event(
+            writer,
+            "TEST_EVENT",
+            feature_name="test-feature",
+            step_id="01-01",
+        )
 
-            logger = audit_logger.get_audit_logger()
-            entries = logger.get_entries()
-            assert len(entries) == 1
-            assert entries[0]["event"] == "TEST_EVENT"
-            # AC2: When not provided, feature_name and step_id default to None
-            assert (
-                "feature_name" not in entries[0] or entries[0]["feature_name"] is None
-            )
-            assert "step_id" not in entries[0] or entries[0]["step_id"] is None
-            assert entries[0]["extra_data"] == "test_value"
+        entries = _read_all_entries(writer)
+        assert len(entries) == 1
+        # Verify the new parameters work
+        assert entries[0]["feature_name"] == "test-feature"
+        assert entries[0]["step_id"] == "01-01"
 
-            # Cleanup
-            reset_audit_logger()
+    def test_log_audit_event_timestamp_generation(self, tmp_path):
+        """AC5: Timestamp is included in ISO 8601 format."""
+        log_dir = tmp_path / ".des/audit"
+        writer = JsonlAuditLogWriter(log_dir=str(log_dir))
 
-    def test_log_audit_event_step_path_parameter_removed(self):
-        """AC4: step_path parameter removed from function signature."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            from src.des.adapters.driven.logging import audit_logger
+        _log_audit_event(
+            writer,
+            "TEST_EVENT",
+            feature_name="test-feature",
+            step_id="01-01",
+        )
 
-            audit_logger._audit_logger = AuditLogger(tmpdir)
+        entries = _read_all_entries(writer)
+        assert len(entries) == 1
+        # AC5: Timestamp should be present in ISO 8601 format
+        assert "timestamp" in entries[0]
+        assert entries[0]["timestamp"].endswith("Z")
+        assert "T" in entries[0]["timestamp"]
 
-            # AC4: step_path should not be a recognized parameter
-            # (If it were, it would be passed to the event dict)
-            # But since we removed it, passing it as a kwarg should just be treated as extra data
-            log_audit_event(
-                "TEST_EVENT",
-                feature_name="test-feature",
-                step_id="01-01",
-            )
-
-            logger = audit_logger.get_audit_logger()
-            entries = logger.get_entries()
-            assert len(entries) == 1
-            # Verify the new parameters work
-            assert entries[0]["feature_name"] == "test-feature"
-            assert entries[0]["step_id"] == "01-01"
-            # Verify step_path is not in the signature (not automatically added)
-            # (it could still be passed as **kwargs but not as a specific parameter)
-
-            # Cleanup
-            reset_audit_logger()
-
-    def test_log_audit_event_timestamp_generation_unchanged(self):
-        """AC5: Timestamp generation unchanged."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            from src.des.adapters.driven.logging import audit_logger
-
-            audit_logger._audit_logger = AuditLogger(tmpdir)
-
-            log_audit_event(
-                "TEST_EVENT",
-                feature_name="test-feature",
-                step_id="01-01",
-            )
-
-            logger = audit_logger.get_audit_logger()
-            entries = logger.get_entries()
-            assert len(entries) == 1
-            # AC5: Timestamp should still be automatically generated
-            assert "timestamp" in entries[0]
-            assert entries[0]["timestamp"].endswith("Z")
-            assert "T" in entries[0]["timestamp"]
-
-            # Cleanup
-            reset_audit_logger()
-
-    def test_log_audit_event_type_handling_unchanged(self):
+    def test_log_audit_event_type_handling_unchanged(self, tmp_path):
         """AC6: Event type handling unchanged."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            from src.des.adapters.driven.logging import audit_logger
+        log_dir = tmp_path / ".des/audit"
+        writer = JsonlAuditLogWriter(log_dir=str(log_dir))
 
-            audit_logger._audit_logger = AuditLogger(tmpdir)
+        # AC6: Event type should be stored as "event" key
+        _log_audit_event(
+            writer,
+            "CUSTOM_EVENT_TYPE",
+            feature_name="test-feature",
+            step_id="01-01",
+            custom_field="custom_value",
+        )
 
-            # AC6: Event type should still be passed as first positional argument
-            log_audit_event(
-                "CUSTOM_EVENT_TYPE",
-                feature_name="test-feature",
-                step_id="01-01",
-                custom_field="custom_value",
-            )
+        entries = _read_all_entries(writer)
+        assert len(entries) == 1
+        # AC6: Event type handling should be unchanged
+        assert entries[0]["event"] == "CUSTOM_EVENT_TYPE"
+        assert entries[0]["feature_name"] == "test-feature"
+        assert entries[0]["step_id"] == "01-01"
+        assert entries[0]["custom_field"] == "custom_value"
 
-            logger = audit_logger.get_audit_logger()
-            entries = logger.get_entries()
-            assert len(entries) == 1
-            # AC6: Event type handling should be unchanged
-            assert entries[0]["event"] == "CUSTOM_EVENT_TYPE"
-            assert entries[0]["feature_name"] == "test-feature"
-            assert entries[0]["step_id"] == "01-01"
-            assert entries[0]["custom_field"] == "custom_value"
+    def test_log_audit_event_with_only_feature_name(self, tmp_path):
+        """Test passing only feature_name (step_id omitted from entry)."""
+        log_dir = tmp_path / ".des/audit"
+        writer = JsonlAuditLogWriter(log_dir=str(log_dir))
 
-            # Cleanup
-            reset_audit_logger()
+        _log_audit_event(
+            writer,
+            "TEST_EVENT",
+            feature_name="test-feature",
+        )
 
-    def test_log_audit_event_with_only_feature_name(self):
-        """Test passing only feature_name (step_id defaults to None)."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            from src.des.adapters.driven.logging import audit_logger
+        entries = _read_all_entries(writer)
+        assert len(entries) == 1
+        assert entries[0]["feature_name"] == "test-feature"
+        assert "step_id" not in entries[0] or entries[0]["step_id"] is None
 
-            audit_logger._audit_logger = AuditLogger(tmpdir)
+    def test_log_audit_event_with_only_step_id(self, tmp_path):
+        """Test passing only step_id (feature_name omitted from entry)."""
+        log_dir = tmp_path / ".des/audit"
+        writer = JsonlAuditLogWriter(log_dir=str(log_dir))
 
-            log_audit_event(
-                "TEST_EVENT",
-                feature_name="test-feature",
-            )
+        _log_audit_event(
+            writer,
+            "TEST_EVENT",
+            step_id="01-01",
+        )
 
-            logger = audit_logger.get_audit_logger()
-            entries = logger.get_entries()
-            assert len(entries) == 1
-            assert entries[0]["feature_name"] == "test-feature"
-            assert "step_id" not in entries[0] or entries[0]["step_id"] is None
-
-            # Cleanup
-            reset_audit_logger()
-
-    def test_log_audit_event_with_only_step_id(self):
-        """Test passing only step_id (feature_name defaults to None)."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            from src.des.adapters.driven.logging import audit_logger
-
-            audit_logger._audit_logger = AuditLogger(tmpdir)
-
-            log_audit_event(
-                "TEST_EVENT",
-                step_id="01-01",
-            )
-
-            logger = audit_logger.get_audit_logger()
-            entries = logger.get_entries()
-            assert len(entries) == 1
-            assert (
-                "feature_name" not in entries[0] or entries[0]["feature_name"] is None
-            )
-            assert entries[0]["step_id"] == "01-01"
-
-            # Cleanup
-            reset_audit_logger()
+        entries = _read_all_entries(writer)
+        assert len(entries) == 1
+        assert "feature_name" not in entries[0] or entries[0]["feature_name"] is None
+        assert entries[0]["step_id"] == "01-01"

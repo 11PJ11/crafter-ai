@@ -391,23 +391,24 @@ class TestScopeValidationPostExecution:
         out_of_scope_file.write_text("# Modified by agent out of scope")
 
         # Act: Run post-execution scope validation
-        from src.des.adapters.driven.validation.scope_validator import ScopeValidator
+        from unittest.mock import Mock, patch
 
-        validator = ScopeValidator()
-        result = validator.validate_scope(
-            step_file_path=str(minimal_step_file),
-            project_root=tmp_project_root,
-            git_diff_files=[
-                "src/repositories/UserRepository.py",
-                "src/services/OrderService.py",
-            ],
-        )
+        from src.des.adapters.driven.validation.git_scope_checker import GitScopeChecker
+
+        checker = GitScopeChecker()
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = Mock(
+                stdout="src/repositories/UserRepository.py\nsrc/services/OrderService.py\n",
+                returncode=0,
+            )
+            result = checker.check_scope(
+                project_root=tmp_project_root,
+                allowed_patterns=["**/UserRepository*", "**/test_user_repository*"],
+            )
 
         # Assert: Scope violation detected
         assert result.has_violations is True
         assert "src/services/OrderService.py" in result.out_of_scope_files
-        assert "OrderService" in result.violation_message
-        assert result.violation_severity == "WARNING"
 
     @pytest.mark.skip(reason="Temporarily disabled to focus on scenario 008")
     def test_scenario_007_in_scope_modifications_pass_validation(
@@ -444,19 +445,25 @@ class TestScopeValidationPostExecution:
         ]
 
         # Act: Run post-execution scope validation
-        from src.des.adapters.driven.validation.scope_validator import ScopeValidator
+        from unittest.mock import Mock, patch
 
-        validator = ScopeValidator()
-        result = validator.validate_scope(
-            step_file_path=str(minimal_step_file),
-            project_root=tmp_project_root,
-            git_diff_files=in_scope_files,
-        )
+        from src.des.adapters.driven.validation.git_scope_checker import GitScopeChecker
+
+        checker = GitScopeChecker()
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = Mock(
+                stdout="src/repositories/UserRepository.py\ntests/unit/test_user_repository.py\n",
+                returncode=0,
+            )
+            result = checker.check_scope(
+                project_root=tmp_project_root,
+                allowed_patterns=["**/UserRepository*", "**/test_user_repository*"],
+            )
 
         # Assert: No violations
         assert result.has_violations is False
         assert result.out_of_scope_files == []
-        assert not result.validation_skipped
+        assert not result.skipped
 
     @pytest.mark.skip(reason="Temporarily disabled to focus on scenario 009")
     def test_scenario_008_step_file_modification_always_allowed(
@@ -493,16 +500,25 @@ class TestScopeValidationPostExecution:
         _modified_files = [str(minimal_step_file)]
 
         # Act: Run post-execution scope validation
-        from src.des.adapters.driven.validation.scope_validator import ScopeValidator
+        # NOTE: GitScopeChecker does not have step-file implicit allowlist.
+        # The step file itself should be included in allowed_patterns by the caller.
+        from unittest.mock import Mock, patch
 
-        validator = ScopeValidator()
-        result = validator.validate_scope(
-            step_file_path=str(minimal_step_file),
-            project_root=tmp_project_root,
-            git_diff_files=_modified_files,
-        )
+        from src.des.adapters.driven.validation.git_scope_checker import GitScopeChecker
 
-        # Assert: Step file modification is implicitly allowed
+        checker = GitScopeChecker()
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = Mock(
+                stdout=f"{minimal_step_file!s}\n",
+                returncode=0,
+            )
+            # Include step file pattern in allowed_patterns (caller responsibility)
+            result = checker.check_scope(
+                project_root=tmp_project_root,
+                allowed_patterns=["**/UserRepository*", str(minimal_step_file)],
+            )
+
+        # Assert: Step file modification is allowed (via explicit pattern)
         assert result.has_violations is False
         assert str(minimal_step_file) not in result.out_of_scope_files
 
@@ -553,25 +569,38 @@ class TestScopeViolationAuditLogging:
 
         out_of_scope_files = ["src/services/OrderService.py"]
 
-        # Act: Log scope violation using AuditLogger
-        from src.des.adapters.driven.logging.audit_logger import AuditLogger
+        # Act: Log scope violation using JsonlAuditLogWriter
+        from src.des.adapters.driven.logging.jsonl_audit_log_writer import (
+            JsonlAuditLogWriter,
+        )
+        from src.des.ports.driven_ports.audit_log_writer import AuditEvent
 
-        audit_log = AuditLogger(log_dir=str(tmp_project_root / ".des/audit"))
+        audit_log = JsonlAuditLogWriter(log_dir=str(tmp_project_root / ".des/audit"))
 
         # Simulate what SubagentStopHook will do in Phase 4:
         # Log SCOPE_VIOLATION event with required fields
-        audit_log.append(
-            {
-                "event": "SCOPE_VIOLATION",
-                "severity": "WARNING",
-                "step_file": str(minimal_step_file.name),
-                "out_of_scope_file": out_of_scope_files[0],
-                "allowed_patterns": step_data["scope"]["allowed_patterns"],
-            }
+        ts = (
+            __import__("datetime")
+            .datetime.now(__import__("datetime").timezone.utc)
+            .isoformat()
+        )
+        audit_log.log_event(
+            AuditEvent(
+                event_type="SCOPE_VIOLATION",
+                timestamp=ts,
+                data={
+                    "severity": "WARNING",
+                    "step_file": str(minimal_step_file.name),
+                    "out_of_scope_file": out_of_scope_files[0],
+                    "allowed_patterns": step_data["scope"]["allowed_patterns"],
+                },
+            )
         )
 
         # Assert: Violation logged to audit trail
-        log_entries = audit_log.get_entries_by_type("SCOPE_VIOLATION")
+        log_entries = _read_entries_by_type(
+            audit_log._get_log_file(), "SCOPE_VIOLATION"
+        )
         assert len(log_entries) >= 1, "Expected at least one SCOPE_VIOLATION entry"
 
         violation_entry = log_entries[-1]
@@ -616,36 +645,56 @@ class TestScopeViolationAuditLogging:
             "config/database.yml",
         ]
 
-        # Act: Simulate what SubagentStopHook will do
-        from src.des.adapters.driven.logging.audit_logger import get_audit_logger
-        from src.des.adapters.driven.validation.scope_validator import ScopeValidator
+        # Act: Simulate what SubagentStopService will do
+        from unittest.mock import Mock, patch
 
-        validator = ScopeValidator()
-        audit_log = get_audit_logger()
+        from src.des.adapters.driven.logging.jsonl_audit_log_writer import (
+            JsonlAuditLogWriter,
+        )
+        from src.des.adapters.driven.validation.git_scope_checker import GitScopeChecker
+        from src.des.ports.driven_ports.audit_log_writer import AuditEvent
+
+        checker = GitScopeChecker()
+        audit_writer = JsonlAuditLogWriter()
 
         # Validate scope with multiple out-of-scope files
-        scope_result = validator.validate_scope(
-            step_file_path=str(minimal_step_file),
-            project_root=tmp_project_root,
-            git_diff_files=_out_of_scope_files,
-        )
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = Mock(
+                stdout="\n".join(_out_of_scope_files) + "\n",
+                returncode=0,
+            )
+            scope_result = checker.check_scope(
+                project_root=tmp_project_root,
+                allowed_patterns=["**/UserRepository*"],
+            )
 
         # Simulate SubagentStopHook audit logging (lines 152-163)
         if scope_result.has_violations:
             allowed_patterns = step_data.get("scope", {}).get("allowed_patterns", [])
             for out_of_scope_file in scope_result.out_of_scope_files:
-                audit_log.append(
-                    {
-                        "event": "SCOPE_VIOLATION",
-                        "severity": "WARNING",
-                        "step_file": str(minimal_step_file),
-                        "out_of_scope_file": out_of_scope_file,
-                        "allowed_patterns": allowed_patterns,
-                    }
+                audit_writer.log_event(
+                    AuditEvent(
+                        event_type="SCOPE_VIOLATION",
+                        data={
+                            "severity": "WARNING",
+                            "step_file": str(minimal_step_file),
+                            "out_of_scope_file": out_of_scope_file,
+                            "allowed_patterns": allowed_patterns,
+                        },
+                    )
                 )
 
         # Assert: All violations logged separately
-        log_entries = audit_log.get_entries_by_type("SCOPE_VIOLATION")
+        import json
+
+        log_file = audit_writer._get_log_file()
+        log_entries = []
+        if log_file.exists():
+            for line in log_file.read_text().splitlines():
+                if line.strip():
+                    entry = json.loads(line)
+                    if entry.get("event") == "SCOPE_VIOLATION":
+                        log_entries.append(entry)
         assert len(log_entries) >= 3, (
             f"Expected at least 3 entries, got {len(log_entries)}"
         )
@@ -684,37 +733,63 @@ class TestScopeViolationAuditLogging:
         _in_scope_files = ["src/repositories/UserRepository.py"]
 
         # Act: Run scope validation
-        from src.des.adapters.driven.logging.audit_logger import get_audit_logger
-        from src.des.adapters.driven.validation.scope_validator import ScopeValidator
+        from unittest.mock import Mock, patch
 
-        validator = ScopeValidator()
-        audit_log = get_audit_logger()
+        from src.des.adapters.driven.logging.jsonl_audit_log_writer import (
+            JsonlAuditLogWriter,
+        )
+        from src.des.adapters.driven.validation.git_scope_checker import GitScopeChecker
+        from src.des.ports.driven_ports.audit_log_writer import AuditEvent
+
+        checker = GitScopeChecker()
+        audit_writer = JsonlAuditLogWriter()
 
         # Count entries BEFORE clean execution
-        entries_before = len(audit_log.get_entries_by_type("SCOPE_VIOLATION"))
+        import json
 
-        scope_result = validator.validate_scope(
-            step_file_path=str(minimal_step_file),
-            project_root=tmp_project_root,
-            git_diff_files=_in_scope_files,
-        )
+        log_file = audit_writer._get_log_file()
+        entries_before = 0
+        if log_file.exists():
+            for line in log_file.read_text().splitlines():
+                if line.strip():
+                    entry = json.loads(line)
+                    if entry.get("event") == "SCOPE_VIOLATION":
+                        entries_before += 1
+
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = Mock(
+                stdout="\n".join(_in_scope_files) + "\n",
+                returncode=0,
+            )
+            scope_result = checker.check_scope(
+                project_root=tmp_project_root,
+                allowed_patterns=["**/UserRepository*"],
+            )
 
         # Simulate SubagentStopHook behavior (lines 152-163)
         if scope_result.has_violations:
             allowed_patterns = step_data.get("scope", {}).get("allowed_patterns", [])
             for out_of_scope_file in scope_result.out_of_scope_files:
-                audit_log.append(
-                    {
-                        "event": "SCOPE_VIOLATION",
-                        "severity": "WARNING",
-                        "step_file": str(minimal_step_file),
-                        "out_of_scope_file": out_of_scope_file,
-                        "allowed_patterns": allowed_patterns,
-                    }
+                audit_writer.log_event(
+                    AuditEvent(
+                        event_type="SCOPE_VIOLATION",
+                        data={
+                            "severity": "WARNING",
+                            "step_file": str(minimal_step_file),
+                            "out_of_scope_file": out_of_scope_file,
+                            "allowed_patterns": allowed_patterns,
+                        },
+                    )
                 )
 
         # Assert: No NEW violation entries added (clean execution)
-        entries_after = len(audit_log.get_entries_by_type("SCOPE_VIOLATION"))
+        entries_after = 0
+        if log_file.exists():
+            for line in log_file.read_text().splitlines():
+                if line.strip():
+                    entry = json.loads(line)
+                    if entry.get("event") == "SCOPE_VIOLATION":
+                        entries_after += 1
         new_entries = entries_after - entries_before
         assert new_entries == 0, (
             f"Expected 0 NEW SCOPE_VIOLATION entries for clean execution, got {new_entries} (before: {entries_before}, after: {entries_after})"

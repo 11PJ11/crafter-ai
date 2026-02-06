@@ -20,6 +20,20 @@ import pytest
 from pytest_bdd import given, parsers, then, when
 
 
+def _read_jsonl_entries(log_file: Path) -> list[dict]:
+    """Read all entries from a JSONL audit log file."""
+    entries: list[dict] = []
+    if log_file.exists():
+        try:
+            with open(log_file) as f:
+                for line in f:
+                    if line.strip():
+                        entries.append(json.loads(line))
+        except Exception:
+            pass
+    return entries
+
+
 # -----------------------------------------------------------------------------
 # Given Steps: Audit Log Preconditions
 # -----------------------------------------------------------------------------
@@ -46,13 +60,8 @@ def in_project_directory(project_path: str, tmp_path: Path, test_context: dict):
     # Change to project directory
     os.chdir(project_dir)
 
-    # Reset audit logger to pick up new working directory (project isolation)
-    try:
-        from src.des.adapters.driven.logging.audit_logger import reset_audit_logger
-
-        reset_audit_logger()
-    except ImportError:
-        pass  # DES not installed, test will handle
+    # JsonlAuditLogWriter is not a singleton, so no global reset needed.
+    # Each test creates its own writer instance scoped to the current cwd.
 
 
 @given("no audit log configuration is set")
@@ -180,23 +189,26 @@ def write_event_project_beta(test_context: dict):
 def _write_test_audit_event(test_context: dict, project_name: str):
     """Helper to write a test audit event."""
     try:
-        from src.des.adapters.driven.logging.audit_logger import get_audit_logger
+        from src.des.adapters.driven.logging.jsonl_audit_log_writer import (
+            JsonlAuditLogWriter,
+        )
+        from src.des.ports.driven_ports.audit_log_writer import AuditEvent
 
         project_dir = test_context.get("project_dir")
         if project_dir:
-            # Use get_audit_logger() which handles project isolation
-            logger = get_audit_logger()
-            logger.append(
-                {
-                    "event": "TEST_EVENT",
-                    "project": project_name,
-                    "timestamp": datetime.now(timezone.utc).isoformat(),
-                }
+            writer = JsonlAuditLogWriter()
+            ts = datetime.now(timezone.utc).isoformat()
+            writer.log_event(
+                AuditEvent(
+                    event_type="TEST_EVENT",
+                    timestamp=ts,
+                    data={"project": project_name},
+                )
             )
             test_context[f"{project_name}_event_written"] = True
-            test_context[f"{project_name}_logger"] = logger
+            test_context[f"{project_name}_writer"] = writer
     except ImportError:
-        pytest.skip("AuditLogger not available")
+        pytest.skip("JsonlAuditLogWriter not available")
 
 
 # -----------------------------------------------------------------------------
@@ -212,15 +224,17 @@ def initialize_audit_logger(test_context: dict):
     This tests where the logger writes logs by default.
     """
     try:
-        from src.des.adapters.driven.logging.audit_logger import AuditLogger
+        from src.des.adapters.driven.logging.jsonl_audit_log_writer import (
+            JsonlAuditLogWriter,
+        )
 
         # Initialize with no arguments - should use defaults
-        logger = AuditLogger()
-        test_context["audit_logger"] = logger
-        test_context["audit_log_dir"] = logger.log_dir
-        test_context["audit_log_file"] = logger.current_log_file
+        writer = JsonlAuditLogWriter()
+        test_context["audit_logger"] = writer
+        test_context["audit_log_dir"] = writer._log_dir
+        test_context["audit_log_file"] = writer._get_log_file()
     except ImportError as e:
-        pytest.skip(f"AuditLogger not importable: {e}")
+        pytest.skip(f"JsonlAuditLogWriter not importable: {e}")
 
 
 @when("the DES audit logger writes an event")
@@ -228,13 +242,15 @@ def write_audit_event(test_context: dict):
     """
     Write a test event to the audit log.
     """
-    logger = test_context.get("audit_logger")
-    if logger:
-        logger.append(
-            {
-                "event": "TEST_EVENT",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-            }
+    writer = test_context.get("audit_logger")
+    if writer:
+        from src.des.ports.driven_ports.audit_log_writer import AuditEvent
+
+        writer.log_event(
+            AuditEvent(
+                event_type="TEST_EVENT",
+                timestamp=datetime.now(timezone.utc).isoformat(),
+            )
         )
         test_context["event_written"] = True
 
@@ -256,7 +272,7 @@ def verify_audit_log_location(expected_path: str, test_context: dict):
     if not logger:
         pytest.fail("Audit logger not initialized")
 
-    actual_log_dir = logger.log_dir
+    actual_log_dir = logger._log_dir
     project_dir = test_context.get("project_dir")
 
     if expected_path.startswith(".nwave"):
@@ -300,7 +316,7 @@ def verify_not_at_location(forbidden_path: str, test_context: dict):
     if not logger:
         pytest.fail("Audit logger not initialized")
 
-    actual_log_dir = str(logger.log_dir)
+    actual_log_dir = str(logger._log_dir)
 
     if forbidden_path.startswith("~"):
         forbidden_full = str(Path(forbidden_path).expanduser())
@@ -324,10 +340,10 @@ def verify_alpha_isolation(test_context: dict):
     """
     # With the current bug, this is impossible to verify correctly
     # because both projects write to the same global location
-    alpha_logger = test_context.get("project-alpha_logger")
-    if alpha_logger:
+    alpha_writer = test_context.get("project-alpha_writer")
+    if alpha_writer:
         # Check the log file contains our event
-        entries = alpha_logger.get_entries()
+        entries = _read_jsonl_entries(alpha_writer._get_log_file())
         alpha_entries = [e for e in entries if e.get("project") == "project-alpha"]
 
         if len(alpha_entries) == 0:
@@ -342,9 +358,9 @@ def verify_beta_isolation(test_context: dict):
     """
     Verify project-beta events are isolated.
     """
-    beta_logger = test_context.get("project-beta_logger")
-    if beta_logger:
-        entries = beta_logger.get_entries()
+    beta_writer = test_context.get("project-beta_writer")
+    if beta_writer:
+        entries = _read_jsonl_entries(beta_writer._get_log_file())
         beta_entries = [e for e in entries if e.get("project") == "project-beta"]
 
         # With the bug, both alpha and beta events appear in same file
@@ -420,7 +436,7 @@ def verify_log_file_name(expected_name: str, test_context: dict):
     """
     logger = test_context.get("audit_logger")
     if logger:
-        actual_name = logger.current_log_file.name
+        actual_name = logger._get_log_file().name
         assert actual_name == expected_name, (
             f"Expected log file name '{expected_name}', got '{actual_name}'"
         )
@@ -440,7 +456,7 @@ def verify_file_location(dir_path: str, test_context: dict):
         else:
             expected_dir = Path(dir_path)
 
-        actual_parent = logger.current_log_file.parent
+        actual_parent = logger._get_log_file().parent
 
         assert str(actual_parent) == str(expected_dir), (
             f"BUG DETECTED: Log file is in wrong directory.\n"
@@ -468,7 +484,7 @@ def verify_new_logs_project_local(test_context: dict):
     """
     logger = test_context.get("audit_logger")
     if logger:
-        log_path = str(logger.log_dir)
+        log_path = str(logger._log_dir)
         global_path = str(Path.home() / ".claude" / "des" / "logs")
 
         assert log_path != global_path, (
