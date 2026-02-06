@@ -108,7 +108,7 @@ class SubagentStopService(SubagentStopPort):
         if not completion.is_valid:
             error_parts = list(completion.error_messages)
             error_message = "; ".join(error_parts) if error_parts else "Validation failed"
-            self._log_failed(context.step_id, error_parts)
+            self._log_failed(context.project_id, context.step_id, error_parts)
             return HookDecision.block(
                 reason=error_message,
                 recovery_suggestions=completion.recovery_suggestions,
@@ -118,7 +118,7 @@ class SubagentStopService(SubagentStopPort):
         self._check_and_log_scope(context)
 
         # Step 5: All valid
-        self._log_passed(context.step_id)
+        self._log_passed(context.project_id, context.step_id)
         return HookDecision.allow()
 
     def _check_and_log_scope(self, context: SubagentStopContext) -> None:
@@ -139,31 +139,34 @@ class SubagentStopService(SubagentStopPort):
                     AuditEvent(
                         event_type="SCOPE_VIOLATION",
                         timestamp=self._time_provider.now_utc().isoformat(),
+                        feature_name=context.project_id,
+                        step_id=context.step_id,
                         data={
-                            "step_id": context.step_id,
                             "out_of_scope_file": file_path,
                         },
                     )
                 )
 
-    def _log_passed(self, step_id: str) -> None:
+    def _log_passed(self, feature_name: str, step_id: str) -> None:
         """Log successful validation to the audit trail."""
         self._audit_writer.log_event(
             AuditEvent(
                 event_type="HOOK_SUBAGENT_STOP_PASSED",
                 timestamp=self._time_provider.now_utc().isoformat(),
-                data={"step_id": step_id},
+                feature_name=feature_name,
+                step_id=step_id,
             )
         )
 
-    def _log_failed(self, step_id: str, error_messages: list[str]) -> None:
+    def _log_failed(self, feature_name: str, step_id: str, error_messages: list[str]) -> None:
         """Log failed validation to the audit trail."""
         self._audit_writer.log_event(
             AuditEvent(
                 event_type="HOOK_SUBAGENT_STOP_FAILED",
                 timestamp=self._time_provider.now_utc().isoformat(),
+                feature_name=feature_name,
+                step_id=step_id,
                 data={
-                    "step_id": step_id,
                     "validation_errors": error_messages,
                 },
             )

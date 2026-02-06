@@ -84,3 +84,15 @@ events:
 # Commit SHA for step 01-01 (RE-EXECUTION): bbd371bd578e65fa5523134485e6541b1d931558
 # Step 01-01 complete: AuditEvent dataclass now has feature_name and step_id fields
 # All 4 acceptance criteria met, all tests passing
+
+  # Step 02-01 (CURRENT): Update SubagentStopService audit logging with direct AuditEvent fields
+  # Executed: 2026-02-06 21:00 UTC
+  - "02-01|PREPARE|EXECUTED|PASS|2026-02-06T21:00:00Z"
+  - "02-01|RED_ACCEPTANCE|EXECUTED|FAIL|2026-02-06T21:02:00Z"
+  - "02-01|RED_UNIT|SKIPPED|NOT_APPLICABLE:Acceptance tests cover all 4 ACs through driving port|2026-02-06T21:03:00Z"
+  - "02-01|GREEN|EXECUTED|PASS|2026-02-06T21:10:00Z"
+  - "02-01|REVIEW|EXECUTED|PASS|2026-02-06T21:15:00Z"
+  - "02-01|REFACTOR_CONTINUOUS|SKIPPED|APPROVED_SKIP:Clean implementation - only moved step_id from data dict to direct field|2026-02-06T21:16:00Z"
+  - "02-01|COMMIT|EXECUTED|PASS|2026-02-06T21:30:00Z"
+  - "02-01|FILES_MODIFIED|implementation|src/des/application/subagent_stop_service.py|2026-02-06T21:30:00Z"
+  - "02-01|FILES_MODIFIED|tests|tests/des/unit/application/test_subagent_stop_service_audit.py|2026-02-06T21:30:00Z"

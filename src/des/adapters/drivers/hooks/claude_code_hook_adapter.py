@@ -146,15 +146,77 @@ def handle_pre_tool_use() -> int:
         return 1
 
 
+def extract_des_context_from_transcript(transcript_path: str) -> dict | None:
+    """Extract DES markers from an agent's transcript file.
+
+    Reads the JSONL transcript, finds the first user message (which contains
+    the Task prompt), and extracts DES-PROJECT-ID and DES-STEP-ID markers.
+
+    Args:
+        transcript_path: Absolute path to the agent's transcript JSONL file
+
+    Returns:
+        dict with "project_id" and "step_id" if DES markers found, None otherwise
+    """
+    try:
+        with open(transcript_path) as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    entry = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+
+                # Look for user messages containing DES markers
+                message = entry.get("message", {})
+                if not isinstance(message, dict):
+                    continue
+
+                content = message.get("content", "")
+
+                # Handle content as string or list of text blocks
+                if isinstance(content, list):
+                    text_parts = []
+                    for block in content:
+                        if isinstance(block, dict) and block.get("type") == "text":
+                            text_parts.append(block.get("text", ""))
+                    content = "\n".join(text_parts)
+
+                if not isinstance(content, str) or "DES-VALIDATION" not in content:
+                    continue
+
+                # Found DES markers - parse them
+                parser = DesMarkerParser()
+                markers = parser.parse(content)
+
+                if markers.is_des_task and markers.project_id and markers.step_id:
+                    return {
+                        "project_id": markers.project_id,
+                        "step_id": markers.step_id,
+                    }
+
+                # DES marker present but missing project_id or step_id
+                return None
+
+    except (OSError, PermissionError):
+        return None
+
+    return None
+
+
 def handle_subagent_stop() -> int:
     """Handle subagent-stop command: validate step completion.
 
     Protocol translation only -- all decisions delegated to SubagentStopService.
 
-    Schema v2.0 ONLY: {"executionLogPath": "/abs/path", "projectId": "...", "stepId": "..."}
+    Claude Code sends: {"agent_id", "agent_type", "agent_transcript_path", "cwd", ...}
+    DES context (project_id, step_id) is extracted from the agent's transcript.
+    Non-DES agents (no markers in transcript) are allowed through.
 
     Returns:
-        0 if gate passes
+        0 if gate passes or non-DES agent
         1 if error occurs (fail-closed)
         2 if gate fails (BLOCKS orchestrator)
     """
@@ -175,28 +237,57 @@ def handle_subagent_stop() -> int:
             print(json.dumps(response))
             return 1
 
-        # Schema v2.0 input (ONLY format supported)
+        # Support two protocols:
+        # 1. Direct DES format (CLI testing): {"executionLogPath", "projectId", "stepId"}
+        # 2. Claude Code protocol (live hooks): {"agent_transcript_path", "cwd", ...}
         execution_log_path = hook_input.get("executionLogPath")
         project_id = hook_input.get("projectId")
         step_id = hook_input.get("stepId")
 
-        # Validate required fields (protocol-level, not business logic)
-        if not (execution_log_path and project_id and step_id):
-            response = {
-                "status": "error",
-                "reason": "Missing required fields: executionLogPath, projectId, and stepId are all required",
-            }
-            print(json.dumps(response))
-            return 1
+        # Detect which protocol: if any direct DES field present, use direct format
+        has_direct_fields = execution_log_path or project_id or step_id
 
-        # Validate absolute path (protocol-level)
-        if not os.path.isabs(execution_log_path):
-            response = {
-                "status": "error",
-                "reason": f"executionLogPath must be absolute (got: {execution_log_path})",
-            }
-            print(json.dumps(response))
-            return 1
+        if has_direct_fields:
+            # Direct DES format - all three fields required
+            if not (execution_log_path and project_id and step_id):
+                response = {
+                    "status": "error",
+                    "reason": "Missing required fields: executionLogPath, projectId, and stepId are all required",
+                }
+                print(json.dumps(response))
+                return 1
+            # Validate absolute path
+            if not os.path.isabs(execution_log_path):
+                response = {
+                    "status": "error",
+                    "reason": f"executionLogPath must be absolute (got: {execution_log_path})",
+                }
+                print(json.dumps(response))
+                return 1
+        else:
+            # Claude Code protocol - extract DES context from transcript
+            agent_transcript_path = hook_input.get("agent_transcript_path")
+            cwd = hook_input.get("cwd", "")
+
+            des_context = None
+            if agent_transcript_path:
+                des_context = extract_des_context_from_transcript(
+                    agent_transcript_path
+                )
+
+            # Non-DES agent: allow passthrough
+            if des_context is None:
+                response = {"decision": "allow"}
+                print(json.dumps(response))
+                return 0
+
+            project_id = des_context["project_id"]
+            step_id = des_context["step_id"]
+
+            # Derive execution-log path from cwd + project convention
+            execution_log_path = os.path.join(
+                cwd, "docs", "feature", project_id, "execution-log.yaml"
+            )
 
         # Delegate to application service
         from src.des.ports.driver_ports.subagent_stop_port import SubagentStopContext
