@@ -59,9 +59,13 @@ except ImportError:
     from preflight_checker import PreflightChecker
 
 try:
-    from crafter_ai.installer.domain.ide_bundle_constants import EXPECTED_AGENT_COUNT
+    from crafter_ai.installer.domain.ide_bundle_constants import (
+        EXPECTED_AGENT_COUNT,
+        EXPECTED_COMMAND_COUNT,
+    )
 except ImportError:
     EXPECTED_AGENT_COUNT = 10
+    EXPECTED_COMMAND_COUNT = 10
 
 # ANSI color codes for terminal output (fallback when Rich unavailable)
 _ANSI_GREEN = "\033[0;32m"
@@ -190,9 +194,13 @@ class NWaveInstaller:
             f"  ✅ Found {agent_count} agents and {command_count} commands"
         )
 
-        if agent_count < EXPECTED_AGENT_COUNT:
+        if agent_count != EXPECTED_AGENT_COUNT:
             self.logger.warn(
-                f"  ⚠️  Expected {EXPECTED_AGENT_COUNT} agents, found {agent_count}"
+                f"  ⚠️ Expected {EXPECTED_AGENT_COUNT} agents, found {agent_count}"
+            )
+        if command_count != EXPECTED_COMMAND_COUNT:
+            self.logger.warn(
+                f"  ⚠️ Expected {EXPECTED_COMMAND_COUNT} commands, found {command_count}"
             )
 
         return True
@@ -345,7 +353,7 @@ class NWaveInstaller:
         )
 
         if not schema_file.exists():
-            self.logger.error("Schema template not found at expected location")
+            self.logger.error("  ❌ Schema template not found")
             return False
 
         try:
@@ -356,9 +364,7 @@ class NWaveInstaller:
 
             # Check for schema_version field
             if "schema_version" not in schema:
-                self.logger.error(
-                    "Schema template missing 'schema_version' field - installation may have used stale source"
-                )
+                self.logger.error("  ❌ Schema missing 'schema_version' field")
                 return False
 
             schema_version = schema.get("schema_version")
@@ -374,7 +380,7 @@ class NWaveInstaller:
 
             if schema_version not in valid_schemas:
                 self.logger.warn(
-                    f"Schema version is {schema_version}, expected 2.0 or 3.0"
+                    f"  ⚠️ Schema version {schema_version}, expected 2.0 or 3.0"
                 )
                 return False
 
@@ -384,19 +390,18 @@ class NWaveInstaller:
 
             if len(phase_exec_log) != expected_phases:
                 self.logger.error(
-                    f"Schema has {len(phase_exec_log)} phases, expected {expected_phases} for v{schema_version}. "
-                    f"Installation source may be stale."
+                    f"  ❌ Schema has {len(phase_exec_log)} phases, expected {expected_phases} for v{schema_version}"
                 )
                 return False
 
             schema_desc = valid_schemas[schema_version]["description"]
             self.logger.info(
-                f"  - TDD cycle schema: v{schema_version} with {expected_phases} phases ({schema_desc}) ✓"
+                f"    👍 TDD cycle schema: v{schema_version} with {expected_phases} phases ({schema_desc})"
             )
             return True
 
         except Exception as e:
-            self.logger.error(f"Failed to validate schema template: {e}")
+            self.logger.error(f"  ❌ Schema validation failed: {e}")
             return False
 
     def validate_installation(self) -> bool:
@@ -408,6 +413,7 @@ class NWaveInstaller:
         Returns:
             True if verification passed, False otherwise.
         """
+        self.logger.info("")
         self.logger.info("  🔎 Validate Installation...")
         with self.logger.progress_spinner("  🚧 Work in progress..."):
             # Use shared InstallationVerifier for consistent verification
@@ -417,69 +423,79 @@ class NWaveInstaller:
             # Validate schema template (additional check specific to installer)
             schema_valid = self._validate_schema_template()
 
-        # Count templates
-        templates_dir = self.claude_config_dir / "templates"
-        template_count = PathUtils.count_files(templates_dir, "*.json")
-        template_count += PathUtils.count_files(templates_dir, "*.yaml")
+        # Verify components: compare source files vs installed target
+        all_synced = True
 
-        # Display validation results as Rich table
-        status_ok = "[green]OK[/green]" if self.logger.has_rich else "OK"
-        status_fail = "[red]FAIL[/red]" if self.logger.has_rich else "FAIL"
+        # Agents & Commands from dist/ide/
+        for label, rel_path, pattern in [
+            ("Agents", "agents/nw", "*.md"),
+            ("Commands", "commands/nw", "*.md"),
+        ]:
+            source_dir = self.framework_source / rel_path
+            target_dir = self.claude_config_dir / rel_path
+            source_files = (
+                sorted(
+                    f.relative_to(source_dir)
+                    for f in source_dir.rglob(pattern)
+                    if f.is_file()
+                )
+                if source_dir.exists()
+                else []
+            )
+            matched = sum(1 for f in source_files if (target_dir / f).exists())
+            expected = len(source_files)
+            ok = matched == expected and expected > 0
+            if not ok:
+                all_synced = False
+            self.logger.info(
+                f"    {'✅' if ok else '❌'} {label} verified ({matched}/{expected})"
+            )
 
-        validation_rows = [
-            [
-                "Agents",
-                status_ok if result.agent_file_count > 0 else status_fail,
-                str(result.agent_file_count),
-            ],
-            [
-                "Commands",
-                status_ok if result.command_file_count > 0 else status_fail,
-                str(result.command_file_count),
-            ],
-            [
-                "Templates",
-                status_ok if template_count > 0 else status_fail,
-                str(template_count),
-            ],
-            [
-                "Manifest",
-                status_ok if result.manifest_exists else status_fail,
-                "Yes" if result.manifest_exists else "No",
-            ],
-            [
-                "Schema",
-                status_ok if schema_valid else status_fail,
-                "v2.0" if schema_valid else "Invalid",
-            ],
-        ]
+        # Templates from nWave/templates/
+        templates_source = self.project_root / "nWave" / "templates"
+        templates_target = self.claude_config_dir / "templates"
+        if templates_source.exists():
+            tmpl_files = [f for f in templates_source.iterdir() if f.is_file()]
+            tmpl_matched = sum(
+                1 for f in tmpl_files if (templates_target / f.name).exists()
+            )
+            tmpl_expected = len(tmpl_files)
+            tmpl_ok = tmpl_matched == tmpl_expected and tmpl_expected > 0
+            if not tmpl_ok:
+                all_synced = False
+            self.logger.info(
+                f"    {'✅' if tmpl_ok else '❌'} Templates verified ({tmpl_matched}/{tmpl_expected})"
+            )
 
-        self.logger.table(
-            headers=["Component", "Status", "Count"],
-            rows=validation_rows,
-            title="Validation Results",
-        )
-
-        # Log additional details
-        self.logger.info(f"Installation directory: {self.claude_config_dir}")
+        # Scripts from project_root/scripts/ (specific utility scripts)
+        scripts_source = self.project_root / "scripts"
+        scripts_target = self.claude_config_dir / "scripts"
+        utility_scripts = ["install_nwave_target_hooks.py", "validate_step_file.py"]
+        script_files = [s for s in utility_scripts if (scripts_source / s).exists()]
+        script_matched = sum(1 for s in script_files if (scripts_target / s).exists())
+        script_expected = len(script_files)
+        script_ok = script_matched == script_expected and script_expected > 0
+        if not script_ok:
+            all_synced = False
         self.logger.info(
-            f"Verified: {result.agent_file_count} agents, "
-            f"{result.command_file_count} commands"
+            f"    {'✅' if script_ok else '❌'} Scripts verified ({script_matched}/{script_expected})"
         )
 
-        if result.agent_file_count < 10:
-            self.logger.warn(f"Expected 10+ agents, found {result.agent_file_count}")
+        self.logger.info(
+            f"    {'✅' if result.manifest_exists else '❌'} Manifest created"
+        )
+        self.logger.info(f"    {'✅' if schema_valid else '❌'} Schema validated")
 
         # Report missing essential files
         if result.missing_essential_files:
             for missing_file in result.missing_essential_files:
-                self.logger.error(f"Missing essential command: {missing_file}")
+                self.logger.error(f"    ❌ Missing essential: {missing_file}")
 
         # Determine overall success
-        overall_success = result.success and schema_valid
+        overall_success = result.success and schema_valid and all_synced
 
         if overall_success:
-            self.logger.info(f"Installation validation: {_ANSI_GREEN}PASSED{_ANSI_NC}")
+            self.logger.info("  🍾 Deployment validated")
             return True
         else:
             error_count = len(result.missing_essential_files) + (
@@ -487,9 +503,7 @@ class NWaveInstaller:
             )
             if not result.manifest_exists:
                 error_count += 1
-            self.logger.error(
-                f"Installation validation: {_ANSI_RED}FAILED{_ANSI_NC} ({error_count} errors)"
-            )
+            self.logger.error(f"  ❌ Validation failed ({error_count} errors)")
             return False
 
     def create_manifest(self) -> None:
