@@ -53,12 +53,6 @@ except ImportError:
         VerificationResult,
     )
 
-# ANSI color codes for terminal output (replaces legacy Colors class)
-_ANSI_GREEN = "\033[0;32m"
-_ANSI_RED = "\033[0;31m"
-_ANSI_YELLOW = "\033[1;33m"
-_ANSI_NC = "\033[0m"  # No Color
-
 
 def parse_args(args: list[str] | None = None) -> argparse.Namespace:
     """Parse command line arguments.
@@ -119,33 +113,28 @@ def format_terminal_output(
     lines = []
 
     if result.success:
-        prefix = f"{_ANSI_GREEN}[SUCCESS]{_ANSI_NC}"
-        lines.append(f"{prefix} nWave installation verification passed.")
+        lines.append("  ✅ nWave installation verification passed")
     else:
-        prefix = f"{_ANSI_RED}[FAILED]{_ANSI_NC}"
-        lines.append(f"{prefix} nWave installation verification failed.")
+        lines.append("  ❌ nWave installation verification failed")
 
     if verbose or not result.success:
         lines.append("")
-        lines.append(f"  Agent files: {result.agent_file_count}")
-        lines.append(f"  Command files: {result.command_file_count}")
-        lines.append(f"  Manifest exists: {'Yes' if result.manifest_exists else 'No'}")
+        lines.append(f"    📦 Agent files: {result.agent_file_count}")
+        lines.append(f"    📦 Command files: {result.command_file_count}")
+        manifest_icon = "✅" if result.manifest_exists else "❌"
+        lines.append(f"    📄 Manifest: {manifest_icon}")
 
         if result.missing_essential_files:
             lines.append("")
-            lines.append(f"  {_ANSI_YELLOW}Missing essential files:{_ANSI_NC}")
+            lines.append("    ⚠️ Missing essential files:")
             for filename in result.missing_essential_files:
-                lines.append(f"    - {filename}")
+                lines.append(f"      ❌ {filename}")
             lines.append("")
-            lines.append(
-                f"  {_ANSI_YELLOW}[FIX]{_ANSI_NC} Re-run the nWave installer to restore missing files."
-            )
+            lines.append("    💡 Re-run the nWave installer to restore missing files")
 
         if not result.manifest_exists:
             lines.append("")
-            lines.append(
-                f"  {_ANSI_YELLOW}[FIX]{_ANSI_NC} Re-run the nWave installer to create the manifest."
-            )
+            lines.append("    💡 Re-run the nWave installer to create the manifest")
 
     return "\n".join(lines)
 
@@ -207,7 +196,7 @@ def main(
     log_file = config_dir / "nwave-install.log"
     logger = Logger(log_file=log_file, silent=use_json)
 
-    logger.info("nWave Verification Script started")
+    logger.info("  🔍 nWave verification started")
 
     # Run verification
     result = run_verification(claude_config_dir=claude_config_dir)
@@ -215,15 +204,13 @@ def main(
     # Log verification results
     if result.success:
         logger.info(
-            f"Verification passed: {result.agent_file_count} agents, "
+            f"  ✅ Verification passed: {result.agent_file_count} agents, "
             f"{result.command_file_count} commands"
         )
     else:
-        logger.error(f"Verification failed: {result.message}")
+        logger.error(f"  ❌ Verification failed: {result.message}")
         if result.missing_essential_files:
-            logger.error(
-                f"Missing essential files: {', '.join(result.missing_essential_files)}"
-            )
+            logger.error(f"    ⚠️ Missing: {', '.join(result.missing_essential_files)}")
 
     # Format and print output
     if use_json:
