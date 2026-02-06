@@ -19,8 +19,8 @@ When invoked, display the following information:
 ```
 nWave Framework
 ===============
-Version: 1.6.40
-Build: 2026-02-06T14:44:41Z
+Version: 1.6.41
+Build: 2026-02-06T14:51:53Z
 Agents: 24
 Commands: 21
 

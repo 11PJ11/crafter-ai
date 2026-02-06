@@ -215,6 +215,136 @@ implementation_code_in_roadmap:
     prevents better solutions from emerging through TDD.
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# ROADMAP CONCISION & PRECISION REVIEW (MANDATORY FOR ALL ROADMAP REVIEWS)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+roadmap_concision_review:
+  severity: "BLOCKER"
+  description: "Verify roadmap is concise, precise, and token-efficient"
+  blocking: true
+  rationale: |
+    Verbose roadmaps waste tokens at TWO levels:
+    1. Roadmap itself (harder to review, maintain)
+    2. Implementation (crafter reads roadmap 7 phases × N steps = 35-70× total)
+
+    5000-token roadmap × 35 reads = 175,000 tokens wasted
+    1000-token roadmap × 35 reads = 35,000 tokens (80% savings)
+
+    Verbosity slows velocity, obscures decisions, wastes budget.
+
+  quantitative_checks:
+    total_token_count:
+      measure: "wc -w roadmap.yaml"
+      thresholds:
+        small_feature_1_3_steps: 500
+        medium_feature_4_8_steps: 1500
+        large_feature_9_15_steps: 3000
+      action_if_exceeded: "BLOCKER - compress roadmap, remove verbosity"
+
+    step_description_length:
+      max_words: 50
+      detection: "Count words in each step description field"
+      violation_pattern: "Multi-sentence paragraphs, qualifiers (comprehensive, robust)"
+      action: "Compress to one active-voice sentence"
+
+    acceptance_criteria_count:
+      max_per_step: 5
+      violation_pattern: "More than 5 AC per step"
+      action: "Consolidate related AC, split step if too complex"
+
+    acceptance_criteria_length:
+      max_words_each: 30
+      violation_pattern: "AC with multiple clauses, technical details"
+      action: "Split into multiple AC or simplify to observable outcome"
+
+    step_notes_length:
+      max_words: 100
+      violation_pattern: "Paragraphs of explanation, implementation guidance"
+      action: "Reduce to critical architectural decisions only"
+
+  verbosity_detection_patterns:
+    prose_paragraphs:
+      indicator: "Multi-sentence blocks without bullet points"
+      fix: "Convert to bullets, one concept per line"
+
+    qualifiers_and_fluff:
+      indicator: "Words: comprehensive, robust, very, important, significant"
+      fix: "Delete - they add no information"
+
+    motivational_language:
+      indicator: "Phrases: This is important because, We need to ensure"
+      fix: "Delete - state facts, not motivations"
+
+    redundancy:
+      indicator: "Same information repeated across steps"
+      fix: "State once in architecture doc, reference from roadmap"
+
+    examples_when_unnecessary:
+      indicator: "Code examples for simple concepts"
+      fix: "Delete examples, trust crafter expertise"
+
+    technical_tutorials:
+      indicator: "Explanations of hexagonal architecture, TDD, patterns"
+      fix: "Delete - crafter knows these, reference docs if needed"
+
+  precision_checks:
+    unambiguous_language:
+      rule: "Every AC has ONE interpretation"
+      violation: "User can manage account" (vague - what can they manage?)
+      correct: "User can update email and password"
+      action: "Make concrete - specify exactly what is observable"
+
+    concrete_observables:
+      rule: "AC describes testable outcome"
+      violation: "System provides good performance" (not testable)
+      correct: "API responds within 200ms for 95th percentile"
+      action: "Replace abstract with measurable"
+
+    business_terminology:
+      rule: "Use domain language, not technical jargon"
+      violation: "Implement CRUD operations for User entity"
+      correct: "User can create, view, update, and delete account"
+      action: "Translate technical terms to business language"
+
+  compression_enforcement:
+    before_approval:
+      step_1: "Count total tokens: wc -w roadmap.yaml"
+      step_2: "Verify < target for feature size"
+      step_3: "Scan for verbosity patterns (prose, qualifiers, redundancy)"
+      step_4: "Verify each step description ≤50 words"
+      step_5: "Verify each AC ≤30 words, ≤5 per step"
+
+    if_verbose:
+      action: "REJECT with specific compression instructions"
+      feedback_format: |
+        ROADMAP CONCISION: BLOCKER
+
+        Token count: {actual} (target: {target} for {step_count} steps)
+        Excess: {actual - target} tokens ({percentage}% over budget)
+
+        Verbosity detected:
+        - Step 02-01 description: 85 words (limit: 50)
+        - Step 03-02 AC #4: 45 words (limit: 30)
+        - Redundancy: "hexagonal architecture" mentioned 8× (state once)
+        - Qualifiers: "comprehensive" (3×), "robust" (2×) - delete
+        - Prose paragraphs: Steps 04-01, 05-03 (convert to bullets)
+
+        Required actions:
+        1. Compress step descriptions to ≤50 words
+        2. Simplify AC to ≤30 words each
+        3. Remove qualifiers and motivational language
+        4. Convert prose to bullets
+        5. Eliminate redundancy
+        6. Target: {target} tokens ({reduction_needed} tokens to remove)
+
+  benefits_of_concision:
+    velocity: "Crafter reads roadmap 35× faster → 35× faster implementation"
+    clarity: "Precision eliminates ambiguity → zero clarification rounds"
+    token_budget: "80% token savings during implementation phase"
+    maintainability: "Concise roadmaps easier to update"
+    focus: "Noise eliminated, critical decisions highlighted"
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # UNIT TEST BOUNDARY VALIDATION (MANDATORY FOR ROADMAP REVIEWS)
 # ═══════════════════════════════════════════════════════════════════════════════
 

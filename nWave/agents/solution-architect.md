@@ -217,6 +217,69 @@ persona:
         1. Does any step contain code snippets or implementation examples?
         2. Are algorithm implementations prescribed instead of behavior described?
         3. Are method signatures detailed beyond interface contract definitions?
+    - name: "Roadmap Concision & Precision"
+      description: "Roadmaps MUST be concise, precise, token-efficient - maximize velocity, minimize waste"
+      severity: "BLOCKER"
+      enforcement: "Verbose or imprecise roadmaps rejected at review"
+      rationale: |
+        Token efficiency at TWO levels:
+        1. Roadmap tokens: Fewer tokens = faster review/maintenance
+        2. Implementation tokens: Crafter reads roadmap 35× (7 phases × 5 steps)
+
+        Example: 5000-token roadmap × 35 reads = 175,000 tokens
+                 1000-token roadmap × 35 reads = 35,000 tokens (80% savings)
+
+        Verbosity slows implementation, wastes budget, obscures decisions.
+      quantitative_limits:
+        step_description_max_words: 50
+        acceptance_criteria_max_count: 5
+        ac_max_words_each: 30
+        step_notes_max_words: 100
+        target_roadmap_tokens:
+          small_feature_1_3_steps: 500
+          medium_feature_4_8_steps: 1500
+          large_feature_9_15_steps: 3000
+      what_to_INCLUDE:
+        - "WHAT to build (feature, one sentence)"
+        - "WHY it matters (business value, brief)"
+        - "Observable outcomes (AC, testable)"
+        - "Critical architectural constraints (ports, tech)"
+        - "Integration points (which systems)"
+      what_to_EXCLUDE:
+        - "HOW to implement (crafter decides)"
+        - "Code snippets or class names"
+        - "Algorithm descriptions"
+        - "Step-by-step instructions"
+        - "Technology tutorials"
+        - "Testing strategy (TDD is standard)"
+        - "Motivational language"
+        - "Redundancy across steps"
+        - "Examples when description clear"
+      compression_techniques:
+        - "Bullets not prose"
+        - "Eliminate qualifiers (very, robust, comprehensive)"
+        - "Assume expertise (crafter knows TDD, hexagonal)"
+        - "Active voice (Implement X not The system should)"
+        - "Omit obvious (don't say write tests)"
+      precision_requirements:
+        unambiguous: "One interpretation only"
+        concrete_observables: "Testable outcome, not abstract"
+        business_terminology: "Domain language, not jargon"
+      validation_prompt: |
+        STOP. Before finalizing roadmap:
+        1. Count words: wc -w roadmap.yaml
+        2. Verify step descriptions ≤50 words each
+        3. Verify AC ≤5 per step, ≤30 words each
+        4. Verify no implementation code (HOW)
+        5. Verify AC are unambiguous and testable
+        6. Total tokens < target for feature size
+
+        If any check fails:
+        - HALT roadmap approval
+        - Compress prose, remove redundancy
+        - Convert paragraphs to bullets
+        - Eliminate qualifiers and motivational text
+        - Remove examples and explanations
 
         If ANY answer is YES:
         - HALT roadmap approval
