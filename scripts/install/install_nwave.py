@@ -104,7 +104,7 @@ class NWaveInstaller:
         if not embed_script.exists():
             return True  # Not critical
 
-        with self.rich_logger.progress_spinner("Running source embedding..."):
+        with self.rich_logger.progress_spinner("  🚧 Work in progress..."):
             try:
                 result = subprocess.run(
                     [sys.executable, str(embed_script)],
@@ -133,7 +133,7 @@ class NWaveInstaller:
             print(f"  \u274c Build script not found: {build_script}")
             return False
 
-        with self.rich_logger.progress_spinner("  \u23f3 Building IDE bundle..."):
+        with self.rich_logger.progress_spinner("  🚧 Work in progress..."):
             try:
                 result = subprocess.run(
                     [sys.executable, str(build_script)],
@@ -326,7 +326,7 @@ class NWaveInstaller:
             dry_run=self.dry_run,
         )
 
-        with self.rich_logger.progress_spinner("Installing framework files..."):
+        with self.rich_logger.progress_spinner("  🚧 Work in progress..."):
             # Execute all plugins through registry
             results = registry.install_all(context)
 
@@ -408,7 +408,7 @@ class NWaveInstaller:
         Returns:
             True if verification passed, False otherwise.
         """
-        with self.rich_logger.progress_spinner("Validating installation..."):
+        with self.rich_logger.progress_spinner("  🚧 Work in progress..."):
             # Use shared InstallationVerifier for consistent verification
             verifier = InstallationVerifier(claude_config_dir=self.claude_config_dir)
             result = verifier.run_verification()
