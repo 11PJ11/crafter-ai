@@ -163,7 +163,7 @@ class NWaveUpdater:
 
         if self.dry_run:
             self.logger.step(
-                "[DRY RUN] Would create comprehensive pre-update backup..."
+                "  🚨 [DRY RUN] Would create comprehensive pre-update backup..."
             )
             return
 
@@ -204,7 +204,7 @@ Restoration Command:
         """Build new nWave framework bundle."""
         if self.dry_run:
             self.logger.step("Building new nWave framework bundle...")
-            self.logger.info("[DRY RUN] Would execute build process")
+            self.logger.info("  🚨 [DRY RUN] Would execute build process")
             return True
 
         build_script = self.project_root / "tools" / "build_ide_bundle.py"
@@ -268,7 +268,7 @@ Restoration Command:
         """Uninstall current nWave installation."""
         if self.dry_run:
             self.logger.step("Uninstalling current nWave installation...")
-            self.logger.info("[DRY RUN] Would execute uninstallation process")
+            self.logger.info("  🚨 [DRY RUN] Would execute uninstallation process")
             return True
 
         uninstall_script = self.script_dir / "uninstall_nwave.py"
@@ -319,7 +319,7 @@ Restoration Command:
         """Install new nWave framework."""
         if self.dry_run:
             self.logger.step("Installing new nWave framework...")
-            self.logger.info("[DRY RUN] Would execute installation process")
+            self.logger.info("  🚨 [DRY RUN] Would execute installation process")
             return True
 
         install_script = self.script_dir / "install_nwave.py"
@@ -468,7 +468,7 @@ Restoration Command:
     def create_update_report(self) -> None:
         """Create update report."""
         if self.dry_run:
-            self.logger.info("[DRY RUN] Would create update report")
+            self.logger.info("  🚨 [DRY RUN] Would create update report")
             return
 
         backup_dir = (
@@ -491,7 +491,7 @@ def show_title_panel(rich_logger: RichLogger, dry_run: bool = False) -> None:
         rich_logger: RichLogger instance for styled output.
         dry_run: Whether running in dry-run mode.
     """
-    mode_indicator = " [DRY RUN]" if dry_run else ""
+    mode_indicator = " 🚨 [DRY RUN]" if dry_run else ""
     title_content = f"""nWave Framework Update Script v{__version__}{mode_indicator}
 
 Orchestrates complete nWave framework update process:

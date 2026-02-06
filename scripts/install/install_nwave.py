@@ -279,10 +279,10 @@ class NWaveInstaller:
         """
         if self.dry_run:
             self.logger.info(
-                f"[DRY RUN] Would install nWave framework to: {self.claude_config_dir}"
+                f"  🚨 [DRY RUN] Would install nWave framework to: {self.claude_config_dir}"
             )
             self.logger.info(
-                f"[DRY RUN] Would create target directory: {self.claude_config_dir}"
+                f"  🚨 [DRY RUN] Would create target directory: {self.claude_config_dir}"
             )
 
             # Show what would be installed
@@ -291,12 +291,14 @@ class NWaveInstaller:
 
             if agents_dir.exists():
                 agent_count = PathUtils.count_files(agents_dir, "*.md")
-                self.logger.info(f"[DRY RUN] Would install {agent_count} agent files")
+                self.logger.info(
+                    f"  🚨 [DRY RUN] Would install {agent_count} agent files"
+                )
 
             if commands_dir.exists():
                 command_count = PathUtils.count_files(commands_dir, "*.md")
                 self.logger.info(
-                    f"[DRY RUN] Would install {command_count} command files"
+                    f"  🚨 [DRY RUN] Would install {command_count} command files"
                 )
 
             return True
@@ -329,7 +331,9 @@ class NWaveInstaller:
         # Check if any plugin failed
         for plugin_name, result in results.items():
             if not result.success:
-                self.logger.error(f"Plugin '{plugin_name}' failed: {result.message}")
+                self.logger.error(
+                    f"  ❌ Plugin '{plugin_name}' failed: {result.message}"
+                )
                 return False
 
         return True
@@ -491,7 +495,7 @@ class NWaveInstaller:
     def create_manifest(self) -> None:
         """Create installation manifest."""
         if self.dry_run:
-            self.logger.info("[DRY RUN] Would create installation manifest")
+            self.logger.info("  🚨 [DRY RUN] Would create installation manifest")
             return
 
         ManifestWriter.write_install_manifest(
@@ -499,7 +503,7 @@ class NWaveInstaller:
         )
 
         self.logger.info(
-            f"Installation manifest created: {self.claude_config_dir / 'nwave-manifest.txt'}"
+            f"  📄 Installation manifest created: {self.claude_config_dir / 'nwave-manifest.txt'}"
         )
 
 
@@ -521,7 +525,7 @@ def show_title_panel(logger: Logger, dry_run: bool = False) -> None:
         logger.print_styled(line)
 
     if dry_run:
-        logger.print_styled(" \\[DRY RUN]")
+        logger.print_styled(" 🚨 \\[DRY RUN]")
 
     logger.print_styled("")
 

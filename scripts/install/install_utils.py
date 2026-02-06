@@ -347,7 +347,7 @@ class BackupManager:
             Path to backup directory or None if nothing to backup
         """
         if dry_run:
-            self.logger.info(f"  ⏳ [DRY RUN] Would backup to {self.backup_dir}")
+            self.logger.info(f"  🚨 [DRY RUN] Would backup to {self.backup_dir}")
             return None
 
         # Check if there's anything to backup
@@ -358,7 +358,8 @@ class BackupManager:
             self.logger.info("  ℹ️  No existing installation, skipping backup")
             return None
 
-        self.logger.info(f"\n  💾 Backup at {self.backup_dir}")
+        self.logger.info("")
+        self.logger.info(f"  💾 Backup at {self.backup_dir}")
         self.backup_dir.mkdir(parents=True, exist_ok=True)
 
         # Backup agents

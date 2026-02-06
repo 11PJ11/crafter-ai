@@ -181,10 +181,10 @@ class NWaveUninstaller:
     def remove_agents(self) -> None:
         """Remove nWave agents."""
         if self.dry_run:
-            self.logger.info("[DRY RUN] Would remove nWave agents...")
+            self.logger.info("  🚨 [DRY RUN] Would remove nWave agents...")
             agents_nw_dir = self.claude_config_dir / "agents" / "nw"
             if agents_nw_dir.exists():
-                self.logger.info("[DRY RUN] Would remove agents/nw directory")
+                self.logger.info("  🚨 [DRY RUN] Would remove agents/nw directory")
             return
 
         with self.rich_logger.progress_spinner("Removing nWave agents..."):
@@ -208,10 +208,10 @@ class NWaveUninstaller:
     def remove_commands(self) -> None:
         """Remove nWave commands."""
         if self.dry_run:
-            self.logger.info("[DRY RUN] Would remove nWave commands...")
+            self.logger.info("  🚨 [DRY RUN] Would remove nWave commands...")
             commands_nw_dir = self.claude_config_dir / "commands" / "nw"
             if commands_nw_dir.exists():
-                self.logger.info("[DRY RUN] Would remove commands/nw directory")
+                self.logger.info("  🚨 [DRY RUN] Would remove commands/nw directory")
             return
 
         with self.rich_logger.progress_spinner("Removing nWave commands..."):
@@ -237,7 +237,7 @@ class NWaveUninstaller:
     def remove_config_files(self) -> None:
         """Remove nWave configuration files."""
         if self.dry_run:
-            self.logger.info("[DRY RUN] Would remove nWave configuration files...")
+            self.logger.info("  🚨 [DRY RUN] Would remove nWave configuration files...")
             return
 
         with self.rich_logger.progress_spinner("Removing nWave configuration files..."):
@@ -252,7 +252,7 @@ class NWaveUninstaller:
     def remove_backups(self) -> None:
         """Remove nWave backup directories."""
         if self.dry_run:
-            self.logger.info("[DRY RUN] Would remove nWave backup directories...")
+            self.logger.info("  🚨 [DRY RUN] Would remove nWave backup directories...")
             return
 
         with self.rich_logger.progress_spinner("Removing nWave backup directories..."):
@@ -298,7 +298,7 @@ class NWaveUninstaller:
     def validate_removal(self) -> bool:
         """Validate complete removal."""
         if self.dry_run:
-            self.logger.info("[DRY RUN] Would validate complete removal")
+            self.logger.info("  🚨 [DRY RUN] Would validate complete removal")
             return True
 
         with self.rich_logger.progress_spinner("Validating complete removal..."):
@@ -379,7 +379,7 @@ class NWaveUninstaller:
     def create_uninstall_report(self) -> None:
         """Create uninstallation report."""
         if self.dry_run:
-            self.logger.info("[DRY RUN] Would create uninstall report")
+            self.logger.info("  🚨 [DRY RUN] Would create uninstall report")
             return
 
         backup_dir = (
@@ -400,7 +400,7 @@ def show_title_panel(rich_logger: RichLogger, dry_run: bool = False) -> None:
         rich_logger: RichLogger instance for styled output.
         dry_run: Whether running in dry-run mode.
     """
-    mode_indicator = " [DRY RUN]" if dry_run else ""
+    mode_indicator = " 🚨 [DRY RUN]" if dry_run else ""
     title_content = f"""nWave Framework Uninstallation Script v{__version__}{mode_indicator}
 
 Completely removes the nWave methodology framework from

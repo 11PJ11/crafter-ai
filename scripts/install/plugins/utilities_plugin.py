@@ -66,18 +66,18 @@ class UtilitiesPlugin(InstallationPlugin):
                 if VersionUtils.compare_versions(source_ver, target_ver) > 0:
                     shutil.copy2(source_script, target_script)
                     context.logger.info(
-                        f"  ✅ {script_name} upgraded ({target_ver} \u2192 {source_ver})"
+                        f"  📁 {script_name} upgraded ({target_ver} \u2192 {source_ver})"
                     )
                     installed_files.append(str(target_script))
                     installed_count += 1
                 elif not target_script.exists():
                     shutil.copy2(source_script, target_script)
-                    context.logger.info(f"  ✅ {script_name} installed (v{source_ver})")
+                    context.logger.info(f"  📁 {script_name} installed (v{source_ver})")
                     installed_files.append(str(target_script))
                     installed_count += 1
                 else:
                     context.logger.info(
-                        f"  ✅ {script_name} up-to-date (v{target_ver})"
+                        f"  📁 {script_name} up-to-date (v{target_ver})"
                     )
 
             total_scripts = PathUtils.count_files(scripts_target, "*.py")

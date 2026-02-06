@@ -131,7 +131,7 @@ class DESPlugin(InstallationPlugin):
             prereq_result = self.validate_prerequisites(context)
             if not prereq_result.success:
                 context.logger.error(
-                    f"DES prerequisite check failed: {prereq_result.message}"
+                    f"  ❌ DES prerequisite check failed: {prereq_result.message}"
                 )
                 return prereq_result
 
@@ -194,12 +194,14 @@ class DESPlugin(InstallationPlugin):
 
             # Backup existing if present
             if context.backup_manager and target_dir.exists():
-                context.logger.info(f"Backing up existing DES module: {target_dir}")
+                context.logger.info(f"  💾 Backing up DES module: {target_dir}")
                 context.backup_manager.backup_directory(target_dir)
 
             # Copy module
             if context.dry_run:
-                context.logger.info(f"[DRY-RUN] Would copy {source_dir} → {target_dir}")
+                context.logger.info(
+                    f"  🚨 [DRY RUN] Would copy {source_dir} → {target_dir}"
+                )
             else:
                 if target_dir.exists():
                     shutil.rmtree(target_dir)
@@ -249,7 +251,7 @@ class DESPlugin(InstallationPlugin):
             try:
                 # Security: Skip symbolic links to prevent path traversal attacks
                 if py_file.is_symlink():
-                    context.logger.warn(f"Skipping symlink (security): {py_file}")
+                    context.logger.warn(f"  ⚠️ Skipping symlink (security): {py_file}")
                     files_skipped += 1
                     continue
 
@@ -257,9 +259,7 @@ class DESPlugin(InstallationPlugin):
                 try:
                     py_file.resolve().relative_to(target_dir.resolve())
                 except ValueError:
-                    context.logger.warn(
-                        f"Skipping file outside target (security): {py_file}"
-                    )
+                    context.logger.warn(f"  ⚠️ Skipping file outside target: {py_file}")
                     files_skipped += 1
                     continue
 
@@ -267,7 +267,7 @@ class DESPlugin(InstallationPlugin):
                 file_size = py_file.stat().st_size
                 if file_size > 10_000_000:  # 10MB limit
                     context.logger.warn(
-                        f"Skipping large file (security): {py_file} ({file_size} bytes)"
+                        f"  ⚠️ Skipping large file: {py_file} ({file_size} bytes)"
                     )
                     files_skipped += 1
                     continue
@@ -292,12 +292,12 @@ class DESPlugin(InstallationPlugin):
                     files_modified += 1
 
             except Exception as e:
-                context.logger.warn(f"Failed to rewrite imports in {py_file}: {e}")
+                context.logger.warn(f"  ⚠️ Failed to rewrite imports in {py_file}: {e}")
 
         if files_modified > 0:
-            context.logger.info(f"Rewrote import paths in {files_modified} files")
+            context.logger.info(f"  🔄 Rewrote import paths in {files_modified} files")
         if files_skipped > 0:
-            context.logger.info(f"Skipped {files_skipped} files for security reasons")
+            context.logger.info(f"  ⚠️ Skipped {files_skipped} files for security")
 
     def _clear_bytecode_cache(self, target_dir: Path, context: InstallContext) -> None:
         """Clear __pycache__ directories from installed DES module.
@@ -443,9 +443,7 @@ class DESPlugin(InstallationPlugin):
             has_correct_post = _has_command(config["hooks"]["PostToolUse"], new_post_command)
 
             if has_correct_pretask and has_correct_stop and has_correct_post:
-                context.logger.info(
-                    "DES hooks already installed with correct format - skipping"
-                )
+                context.logger.info("  ✅ DES hooks up-to-date")
                 return PluginResult(
                     success=True,
                     plugin_name="des",
@@ -549,7 +547,7 @@ class DESPlugin(InstallationPlugin):
                 if has_fcntl:
                     fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 
-        context.logger.info(f"Updated settings at {settings_file}")
+        context.logger.info(f"  ✅ Settings updated at {settings_file}")
 
     def _hooks_already_installed(self, config: dict) -> bool:
         """Check if DES hooks are already installed.
@@ -606,7 +604,7 @@ class DESPlugin(InstallationPlugin):
             des_module = context.claude_dir / "lib" / "python" / "des"
             if des_module.exists():
                 shutil.rmtree(des_module)
-                context.logger.info(f"Removed DES module: {des_module}")
+                context.logger.info(f"  🗑️ Removed DES module: {des_module}")
 
             # 3. Remove DES scripts
             scripts_dir = context.claude_dir / "scripts"
@@ -614,7 +612,7 @@ class DESPlugin(InstallationPlugin):
                 script_path = scripts_dir / script_name
                 if script_path.exists():
                     script_path.unlink()
-                    context.logger.info(f"Removed DES script: {script_name}")
+                    context.logger.info(f"  🗑️ Removed DES script: {script_name}")
 
             # 4. Remove DES templates
             templates_dir = context.claude_dir / "templates"
@@ -622,7 +620,7 @@ class DESPlugin(InstallationPlugin):
                 template_path = templates_dir / template_name
                 if template_path.exists():
                     template_path.unlink()
-                    context.logger.info(f"Removed DES template: {template_name}")
+                    context.logger.info(f"  🗑️ Removed DES template: {template_name}")
 
             if errors:
                 return PluginResult(
