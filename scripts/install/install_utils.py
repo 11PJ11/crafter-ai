@@ -602,5 +602,5 @@ def confirm_action(prompt: str, force: bool = False) -> bool:
         response = input(f"{prompt} (y/N): ").strip().lower()
         return response in ("y", "yes")
     except (KeyboardInterrupt, EOFError):
-        print("\nCancelled by user.")
+        print("\n  ⚠️ Cancelled by user")
         return False
