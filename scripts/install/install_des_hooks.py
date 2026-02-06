@@ -17,12 +17,13 @@ class DESHookInstaller:
 
     # Hook configuration templates (Claude Code v2 nested format)
     # Format: {"matcher": "...", "hooks": [{"type": "command", "command": "..."}]}
+    # Note: Commands run from project root with PYTHONPATH set for module imports
     DES_PRETOOLUSE_HOOK = {
         "matcher": "Task",
         "hooks": [
             {
                 "type": "command",
-                "command": "python3 src/des/adapters/drivers/hooks/claude_code_hook_adapter.py pre-task",
+                "command": "cd {project_root} && PYTHONPATH={project_root} python3 -m src.des.adapters.drivers.hooks.claude_code_hook_adapter pre-task",
             }
         ],
     }
@@ -31,7 +32,7 @@ class DESHookInstaller:
         "hooks": [
             {
                 "type": "command",
-                "command": "python3 src/des/adapters/drivers/hooks/claude_code_hook_adapter.py subagent-stop",
+                "command": "cd {project_root} && PYTHONPATH={project_root} python3 -m src.des.adapters.drivers.hooks.claude_code_hook_adapter subagent-stop",
             }
         ],
     }
@@ -235,8 +236,48 @@ class DESHookInstaller:
         Args:
             config: Configuration dictionary to update
         """
-        config["hooks"]["PreToolUse"].append(self.DES_PRETOOLUSE_HOOK)
-        config["hooks"]["SubagentStop"].append(self.DES_SUBAGENT_STOP_HOOK)
+        # Get absolute path to project root (parent of scripts/install/)
+        project_root = str(Path(__file__).resolve().parent.parent.parent)
+
+        # Create hook configs with project_root substituted
+        pre_hook = self._substitute_project_root(self.DES_PRETOOLUSE_HOOK, project_root)
+        stop_hook = self._substitute_project_root(
+            self.DES_SUBAGENT_STOP_HOOK, project_root
+        )
+
+        config["hooks"]["PreToolUse"].append(pre_hook)
+        config["hooks"]["SubagentStop"].append(stop_hook)
+
+    def _substitute_project_root(self, hook_config: dict, project_root: str) -> dict:
+        """
+        Recursively substitute {project_root} placeholder in hook configuration.
+
+        Args:
+            hook_config: Hook configuration dictionary
+            project_root: Absolute path to project root
+
+        Returns:
+            dict: Hook configuration with placeholders substituted
+        """
+        import copy
+
+        result = copy.deepcopy(hook_config)
+
+        def substitute_in_dict(d):
+            for key, value in d.items():
+                if isinstance(value, str):
+                    d[key] = value.replace("{project_root}", project_root)
+                elif isinstance(value, dict):
+                    substitute_in_dict(value)
+                elif isinstance(value, list):
+                    for i, item in enumerate(value):
+                        if isinstance(item, dict):
+                            substitute_in_dict(item)
+                        elif isinstance(item, str):
+                            value[i] = item.replace("{project_root}", project_root)
+
+        substitute_in_dict(result)
+        return result
 
     def _remove_des_hooks(self, config: dict):
         """

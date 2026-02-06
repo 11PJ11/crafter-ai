@@ -114,7 +114,8 @@ def handle_pre_tool_use() -> int:
             return 1
 
         # Extract protocol fields
-        tool_input = hook_input.get("tool_input", {})
+        tool = hook_input.get("tool", {})
+        tool_input = tool.get("input", {})
         prompt = tool_input.get("prompt", "")
         max_turns = tool_input.get("max_turns")
 
