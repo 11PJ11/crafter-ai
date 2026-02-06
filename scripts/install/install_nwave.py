@@ -60,6 +60,11 @@ except ImportError:
     from preflight_checker import PreflightChecker
     from rich_console import ConsoleFactory, RichLogger
 
+try:
+    from crafter_ai.installer.domain.ide_bundle_constants import EXPECTED_AGENT_COUNT
+except ImportError:
+    EXPECTED_AGENT_COUNT = 10
+
 # ANSI color codes for terminal output (fallback when Rich unavailable)
 _ANSI_GREEN = "\033[0;32m"
 _ANSI_RED = "\033[0;31m"
@@ -175,19 +180,19 @@ class NWaveInstaller:
 
     def check_source(self) -> bool:
         """Check if source framework exists, build if necessary."""
-        self.logger.info("Checking source framework...")
+        print("  \U0001f50d Source framework")
 
         # Run embedding first
         self.run_embedding()
 
         # Force rebuild if requested
         if self.force_rebuild:
-            self.logger.info("Force rebuild requested, rebuilding framework...")
+            print("  \u23f3 Force rebuild requested...")
             return self.build_framework()
 
         # Check if dist/ide exists
         if not self.framework_source.exists():
-            self.logger.info("Distribution not found, building framework...")
+            print("  \u23f3 Distribution not found, building...")
             if not self.build_framework():
                 return False
 
@@ -196,7 +201,7 @@ class NWaveInstaller:
         commands_dir = self.framework_source / "commands" / "nw"
 
         if not agents_dir.exists() or not commands_dir.exists():
-            self.logger.info("Distribution incomplete, rebuilding framework...")
+            print("  \u23f3 Distribution incomplete, rebuilding...")
             if not self.build_framework():
                 return False
 
@@ -207,22 +212,18 @@ class NWaveInstaller:
 
         if newest_source and newest_dist:
             if newest_source.stat().st_mtime > newest_dist.stat().st_mtime:
-                self.logger.info(
-                    "Source files are newer than distribution, rebuilding..."
-                )
+                print("  \u23f3 Source files changed, rebuilding...")
                 if not self.build_framework():
                     return False
 
         agent_count = PathUtils.count_files(agents_dir, "*.md")
         command_count = PathUtils.count_files(commands_dir, "*.md")
 
-        self.logger.info(
-            f"Found framework with {agent_count} agent files and {command_count} commands"
-        )
+        print(f"  \u2705 Found {agent_count} agents and {command_count} commands")
 
-        if agent_count < 10:
-            self.logger.warn(
-                f"Expected 10+ agents, found only {agent_count}. Continuing anyway..."
+        if agent_count < EXPECTED_AGENT_COUNT:
+            print(
+                f"  \u26a0\ufe0f  Expected {EXPECTED_AGENT_COUNT} agents, found {agent_count}"
             )
 
         return True
