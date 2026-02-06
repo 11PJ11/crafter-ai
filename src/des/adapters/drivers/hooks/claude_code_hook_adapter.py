@@ -337,12 +337,12 @@ The step validation failed. You MUST fix these issues before proceeding."""
                 "systemMessage": f"Validation failed: {reason}",
             }
             print(json.dumps(response))
-            return 2
+            # Exit 0 so Claude Code processes the JSON (exit 2 ignores stdout)
+            return 0
 
     except Exception as e:
-        # Fail-closed: any error blocks execution
-        response = {"status": "error", "reason": f"Unexpected error: {e!s}"}
-        print(json.dumps(response))
+        # Fail-closed: any error blocks execution via stderr + exit 1
+        print(f"SubagentStop hook error: {e!s}", file=sys.stderr)
         return 1
 
 

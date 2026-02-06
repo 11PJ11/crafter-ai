@@ -185,7 +185,10 @@ class TestPostExecutionStateValidation:
         )
 
         # Assert: Abandoned phase detected with specific error
-        assert exit_code == 2, f"Expected block (exit 2), got {exit_code}: {response}"
+        # Exit 0 so Claude Code processes JSON (exit 2 ignores stdout)
+        assert exit_code == 0, (
+            f"Expected exit 0 with decision:block, got {exit_code}: {response}"
+        )
         assert response["decision"] == "block"
         assert "GREEN" in response["reason"]
         assert "Missing phases" in response["reason"]
@@ -230,7 +233,9 @@ class TestPostExecutionStateValidation:
         )
 
         # Assert: Silent completion detected - all phases missing
-        assert exit_code == 2, f"Expected block (exit 2), got {exit_code}: {response}"
+        assert exit_code == 0, (
+            f"Expected exit 0 with decision:block, got {exit_code}: {response}"
+        )
         assert response["decision"] == "block"
         assert "Missing phases" in response["reason"]
         # All TDD phases should appear in the missing phases list
@@ -287,7 +292,9 @@ class TestPostExecutionStateValidation:
         )
 
         # Assert: Missing outcome detected
-        assert exit_code == 2, f"Expected block (exit 2), got {exit_code}: {response}"
+        assert exit_code == 0, (
+            f"Expected exit 0 with decision:block, got {exit_code}: {response}"
+        )
         assert response["decision"] == "block"
         assert "REFACTOR_CONTINUOUS" in response["reason"]
         assert "Invalid outcome" in response["reason"]
@@ -336,7 +343,9 @@ class TestPostExecutionStateValidation:
         )
 
         # Assert: Invalid skip detected
-        assert exit_code == 2, f"Expected block (exit 2), got {exit_code}: {response}"
+        assert exit_code == 0, (
+            f"Expected exit 0 with decision:block, got {exit_code}: {response}"
+        )
         assert response["decision"] == "block"
         assert "REFACTOR_CONTINUOUS" in response["reason"]
         assert "skip reason" in response["reason"].lower()
@@ -387,7 +396,9 @@ class TestPostExecutionStateValidation:
         )
 
         # Assert: FAILED state set with comprehensive error reporting
-        assert exit_code == 2, f"Expected block (exit 2), got {exit_code}: {response}"
+        assert exit_code == 0, (
+            f"Expected exit 0 with decision:block, got {exit_code}: {response}"
+        )
         assert response["decision"] == "block"
 
         # Assert: Multiple issue types captured in reason

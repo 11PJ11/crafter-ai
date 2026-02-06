@@ -15,9 +15,6 @@ The adapter must:
 
 import json
 import os
-import tempfile
-
-import pytest
 
 from src.des.adapters.drivers.hooks.claude_code_hook_adapter import (
     extract_des_context_from_transcript,
@@ -140,17 +137,19 @@ class TestSubagentStopWithClaudeCodeProtocol:
 
     def _make_hook_input(self, agent_transcript_path: str, cwd: str) -> str:
         """Build Claude Code SubagentStop protocol JSON."""
-        return json.dumps({
-            "session_id": "test-session",
-            "hook_event_name": "SubagentStop",
-            "agent_id": "test-agent-123",
-            "agent_type": "software-crafter",
-            "agent_transcript_path": agent_transcript_path,
-            "stop_hook_active": False,
-            "cwd": cwd,
-            "transcript_path": "/tmp/session.jsonl",
-            "permission_mode": "default",
-        })
+        return json.dumps(
+            {
+                "session_id": "test-session",
+                "hook_event_name": "SubagentStop",
+                "agent_id": "test-agent-123",
+                "agent_type": "software-crafter",
+                "agent_transcript_path": agent_transcript_path,
+                "stop_hook_active": False,
+                "cwd": cwd,
+                "transcript_path": "/tmp/session.jsonl",
+                "permission_mode": "default",
+            }
+        )
 
     def test_non_des_subagent_allowed(self, tmp_path, monkeypatch):
         """Non-DES agent (no markers) should be allowed through."""
@@ -238,7 +237,8 @@ class TestSubagentStopWithClaudeCodeProtocol:
 
         exit_code = handle_subagent_stop()
 
-        assert exit_code == 2
+        # Exit 0 so Claude Code processes JSON (exit 2 ignores stdout)
+        assert exit_code == 0
         response = json.loads(captured[0])
         assert response["decision"] == "block"
         assert "Missing phases" in response["reason"]
@@ -261,7 +261,8 @@ class TestSubagentStopWithClaudeCodeProtocol:
 
         exit_code = handle_subagent_stop()
 
-        assert exit_code == 2
+        # Exit 0 so Claude Code processes JSON (exit 2 ignores stdout)
+        assert exit_code == 0
         response = json.loads(captured[0])
         assert response["decision"] == "block"
         assert "not found" in response["reason"].lower()
