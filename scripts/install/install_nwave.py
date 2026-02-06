@@ -541,13 +541,25 @@ def show_title_panel(rich_logger: RichLogger, dry_run: bool = False) -> None:
         rich_logger: RichLogger instance for styled output.
         dry_run: Whether running in dry-run mode.
     """
-    mode_indicator = " [DRY RUN]" if dry_run else ""
-    title_content = f"""nWave Framework Installation Script v{__version__}{mode_indicator}
+    art_lines = [
+        "",
+        "[cyan]        \u2584\u2584\u2584\u2584  \u2584\u2584\u2584  \u2584\u2584\u2584\u2584[/cyan]",
+        "[cyan]        \u2580\u2588\u2588\u2588  \u2588\u2588\u2588  \u2588\u2588\u2588\u2580[/cyan]",
+        "[cyan]  \u2588\u2588\u2588\u2588\u2584  \u2588\u2588\u2588  \u2588\u2588\u2588  \u2588\u2588\u2588  \u2580\u2580\u2588\u2584 \u2588\u2588 \u2588\u2588 \u2584\u2588\u2580\u2588\u2584[/cyan]",
+        "[cyan]  \u2588\u2588 \u2588\u2588  \u2588\u2588\u2588\u2584\u2584\u2588\u2588\u2588\u2584\u2584\u2588\u2588\u2588 \u2584\u2588\u2580\u2588\u2588 \u2588\u2588\u2584\u2588\u2588 \u2588\u2588\u2584\u2588\u2580[/cyan]",
+        "[cyan]  \u2588\u2588 \u2588\u2588   \u2580\u2588\u2588\u2588\u2588\u2580\u2588\u2588\u2588\u2588\u2580  \u2580\u2588\u2584\u2588\u2588  \u2580\u2588\u2580  \u2580\u2588\u2584\u2584\u2584\u2584\u2582\u2582\u2581\u2581[/cyan]  \U0001f30a \U0001f30a \U0001f30a",
+        "",
+        " Orchestrated Agentic-AI code assistant for crafters.",
+        " Modern Software Engineering at scale. Confidence at speed.",
+    ]
 
-Cross-platform installer for the nWave methodology framework.
-Installs specialized agents and commands to global Claude config directory."""
+    for line in art_lines:
+        rich_logger.print_styled(line)
 
-    rich_logger.panel(content=title_content, title="nWave Installer", style="blue")
+    if dry_run:
+        rich_logger.print_styled(" [DRY RUN]")
+
+    rich_logger.print_styled("")
 
 
 def show_installation_summary(rich_logger: RichLogger, claude_config_dir: Path) -> None:
@@ -663,6 +675,14 @@ def main():
     preflight = PreflightChecker()
     preflight_results = preflight.run_all_checks()
 
+    # Display preflight results in TUI format
+    print("  \U0001f50d Pre-flight checks")
+    for result in preflight_results:
+        if result.passed:
+            print(f"  \u2705 {result.message}")
+        else:
+            print(f"  \u274c {result.message}")
+
     if preflight.has_blocking_failures(preflight_results):
         # Display formatted error for each failed check
         for failed_check in preflight.get_failed_checks(preflight_results):
@@ -674,6 +694,9 @@ def main():
             )
             print(error_message)
         return 1
+
+    print("  \u2705 Pre-flight passed")
+    print()
 
     installer = NWaveInstaller(dry_run=args.dry_run, force_rebuild=args.force_rebuild)
 
