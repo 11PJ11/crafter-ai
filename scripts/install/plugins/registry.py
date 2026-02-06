@@ -7,14 +7,21 @@ execution order while respecting dependencies.
 Includes rollback mechanism for handling plugin installation failures.
 """
 
+from __future__ import annotations
+
 import shutil
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from scripts.install.plugins.base import (
     InstallationPlugin,
     InstallContext,
     PluginResult,
 )
+
+
+if TYPE_CHECKING:
+    from scripts.install.install_utils import Logger
 
 
 class PluginRegistry:
@@ -26,11 +33,12 @@ class PluginRegistry:
     Provides rollback mechanism to restore system state on installation failure.
     """
 
-    def __init__(self):
+    def __init__(self, logger: Logger | None = None):
         """Initialize empty plugin registry."""
         self.plugins: dict[str, InstallationPlugin] = {}
         self._installed_files: list[Path | str] = []
         self._installed_plugins: list[str] = []
+        self._logger = logger
 
     def register(self, plugin: InstallationPlugin) -> None:
         """Register a plugin.
@@ -44,6 +52,8 @@ class PluginRegistry:
         if plugin.name in self.plugins:
             raise ValueError(f"Plugin '{plugin.name}' already registered")
         self.plugins[plugin.name] = plugin
+        if self._logger:
+            self._logger.info(f"  🧰 {plugin.name} added to the toolbox")
 
     def _detect_cycle_dfs(
         self,

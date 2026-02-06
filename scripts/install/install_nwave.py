@@ -39,7 +39,6 @@ try:
     from scripts.install.plugins.templates_plugin import TemplatesPlugin
     from scripts.install.plugins.utilities_plugin import UtilitiesPlugin
     from scripts.install.preflight_checker import PreflightChecker
-    from scripts.install.rich_console import ConsoleFactory, RichLogger
 except ImportError:
     # Fallback for standalone execution from scripts/install directory
     from install_utils import (
@@ -58,7 +57,6 @@ except ImportError:
     from plugins.templates_plugin import TemplatesPlugin
     from plugins.utilities_plugin import UtilitiesPlugin
     from preflight_checker import PreflightChecker
-    from rich_console import ConsoleFactory, RichLogger
 
 try:
     from crafter_ai.installer.domain.ide_bundle_constants import EXPECTED_AGENT_COUNT
@@ -89,12 +87,6 @@ class NWaveInstaller:
 
         log_file = self.claude_config_dir / "nwave-install.log"
         self.logger = Logger(log_file if not dry_run else None)
-
-        # Create Rich logger for enhanced visual output
-        self.rich_logger = ConsoleFactory.create_logger(
-            log_file if not dry_run else None
-        )
-
         self.backup_manager = BackupManager(self.logger, "install")
 
     def run_embedding(self) -> bool:
@@ -104,7 +96,7 @@ class NWaveInstaller:
         if not embed_script.exists():
             return True  # Not critical
 
-        with self.rich_logger.progress_spinner("  🚧 Source Embedding..."):
+        with self.logger.progress_spinner("  🚧 Source Embedding..."):
             try:
                 result = subprocess.run(
                     [sys.executable, str(embed_script)],
@@ -133,7 +125,7 @@ class NWaveInstaller:
             self.logger.error(f"  ❌ Build script not found: {build_script}")
             return False
 
-        with self.rich_logger.progress_spinner("  🚧 Work in progress..."):
+        with self.logger.progress_spinner("  🚧 Work in progress..."):
             try:
                 result = subprocess.run(
                     [sys.executable, str(build_script)],
@@ -141,7 +133,7 @@ class NWaveInstaller:
                     capture_output=True,
                     text=True,
                 )
-
+                self.logger.info("")
                 if result.returncode == 0:
                     self.logger.info("  ✅ Build completed")
                     return True
@@ -150,7 +142,7 @@ class NWaveInstaller:
                     self.logger.error(f"     {result.stderr}")
                     return False
             except Exception as e:
-                self.logger.error(f"  ❌ Build failed: {e}")
+                self.logger.error(f"   ❌ Build failed: {e}")
                 return False
 
     def check_source(self) -> bool:
@@ -265,7 +257,7 @@ class NWaveInstaller:
         Returns:
             PluginRegistry configured with agents, commands, templates, utilities, and DES plugins.
         """
-        registry = PluginRegistry()
+        registry = PluginRegistry(logger=self.logger)
         registry.register(AgentsPlugin())
         registry.register(CommandsPlugin())
         registry.register(TemplatesPlugin())
@@ -309,7 +301,8 @@ class NWaveInstaller:
 
             return True
 
-        self.logger.info(f"Installing nWave framework to: {self.claude_config_dir}")
+        self.logger.info("")
+        self.logger.info(f"  💿 Installing nWave → {self.claude_config_dir}")
 
         # Create target directories
         self.claude_config_dir.mkdir(parents=True, exist_ok=True)
@@ -328,7 +321,8 @@ class NWaveInstaller:
             dry_run=self.dry_run,
         )
 
-        with self.rich_logger.progress_spinner("  🚧 Work in progress..."):
+        self.logger.info("  📑 Installing Context...")
+        with self.logger.progress_spinner("  🚧 Work in progress..."):
             # Execute all plugins through registry
             results = registry.install_all(context)
 
@@ -410,7 +404,8 @@ class NWaveInstaller:
         Returns:
             True if verification passed, False otherwise.
         """
-        with self.rich_logger.progress_spinner("  🚧 Work in progress..."):
+        self.logger.info("  🔎 Validate Installation...")
+        with self.logger.progress_spinner("  🚧 Work in progress..."):
             # Use shared InstallationVerifier for consistent verification
             verifier = InstallationVerifier(claude_config_dir=self.claude_config_dir)
             result = verifier.run_verification()
@@ -424,12 +419,8 @@ class NWaveInstaller:
         template_count += PathUtils.count_files(templates_dir, "*.yaml")
 
         # Display validation results as Rich table
-        status_ok = (
-            "[green]OK[/green]" if isinstance(self.rich_logger, RichLogger) else "OK"
-        )
-        status_fail = (
-            "[red]FAIL[/red]" if isinstance(self.rich_logger, RichLogger) else "FAIL"
-        )
+        status_ok = "[green]OK[/green]" if self.logger.has_rich else "OK"
+        status_fail = "[red]FAIL[/red]" if self.logger.has_rich else "FAIL"
 
         validation_rows = [
             [
@@ -459,7 +450,7 @@ class NWaveInstaller:
             ],
         ]
 
-        self.rich_logger.table(
+        self.logger.table(
             headers=["Component", "Status", "Count"],
             rows=validation_rows,
             title="Validation Results",
@@ -512,13 +503,8 @@ class NWaveInstaller:
         )
 
 
-def show_title_panel(rich_logger: RichLogger, dry_run: bool = False) -> None:
-    """Display styled title panel when installer starts.
-
-    Args:
-        rich_logger: RichLogger instance for styled output.
-        dry_run: Whether running in dry-run mode.
-    """
+def show_title_panel(logger: Logger, dry_run: bool = False) -> None:
+    """Display styled title panel when installer starts."""
     art_lines = [
         "",
         "[cyan]        \u2584\u2584\u2584\u2584  \u2584\u2584\u2584  \u2584\u2584\u2584\u2584[/cyan]",
@@ -532,22 +518,16 @@ def show_title_panel(rich_logger: RichLogger, dry_run: bool = False) -> None:
     ]
 
     for line in art_lines:
-        rich_logger.print_styled(line)
+        logger.print_styled(line)
 
     if dry_run:
-        rich_logger.print_styled(" [DRY RUN]")
+        logger.print_styled(" \\[DRY RUN]")
 
-    rich_logger.print_styled("")
+    logger.print_styled("")
 
 
-def show_installation_summary(rich_logger: RichLogger, claude_config_dir: Path) -> None:
-    """Display installation summary panel at end of successful install.
-
-    Args:
-        rich_logger: RichLogger instance for styled output.
-        claude_config_dir: Path to Claude config directory.
-    """
-    # Count installed components
+def show_installation_summary(logger: Logger, claude_config_dir: Path) -> None:
+    """Display installation summary panel at end of successful install."""
     agents_count = PathUtils.count_files(claude_config_dir / "agents" / "nw", "*.md")
     commands_count = PathUtils.count_files(
         claude_config_dir / "commands" / "nw", "*.md"
@@ -569,9 +549,7 @@ Available Commands:
   /nw:develop  - Outside-In TDD implementation with refactoring
   /nw:deliver  - Production readiness validation"""
 
-    rich_logger.panel(
-        content=summary_content, title="Installation Complete", style="green"
-    )
+    logger.panel(content=summary_content, title="Installation Complete", style="green")
 
 
 def show_help():
@@ -642,27 +620,24 @@ def main():
         show_help()
         return 0
 
-    # Create Rich logger for title panel (before installer is created)
-    title_logger = ConsoleFactory.create_logger()
+    installer = NWaveInstaller(dry_run=args.dry_run, force_rebuild=args.force_rebuild)
 
     # Show title panel at startup
-    show_title_panel(title_logger, dry_run=args.dry_run)
+    show_title_panel(installer.logger, dry_run=args.dry_run)
 
     # Run preflight checks BEFORE any build or installation actions
-    # This validates the environment is suitable for installation
     preflight = PreflightChecker()
     preflight_results = preflight.run_all_checks()
 
     # Display preflight results in TUI format
-    print("  \U0001f50d Pre-flight checks")
+    installer.logger.info("  \U0001f50d Pre-flight checks")
     for result in preflight_results:
         if result.passed:
-            print(f"  \u2705 {result.message}")
+            installer.logger.info(f"  \u2705 {result.message}")
         else:
-            print(f"  \u274c {result.message}")
+            installer.logger.error(f"  \u274c {result.message}")
 
     if preflight.has_blocking_failures(preflight_results):
-        # Display formatted error for each failed check
         for failed_check in preflight.get_failed_checks(preflight_results):
             error_message = format_error(
                 error_code=failed_check.error_code,
@@ -670,13 +645,11 @@ def main():
                 remediation=failed_check.remediation or "No remediation available.",
                 recoverable=False,
             )
-            print(error_message)
+            installer.logger.error(error_message)
         return 1
 
-    print("  \u2705 Pre-flight passed")
-    print()
-
-    installer = NWaveInstaller(dry_run=args.dry_run, force_rebuild=args.force_rebuild)
+    installer.logger.info("  \u2705 Pre-flight passed")
+    installer.logger.info("")
 
     if args.dry_run:
         installer.logger.info(
@@ -714,18 +687,17 @@ def main():
     installer.create_manifest()
 
     if installer.validate_installation():
-        print()
-        # Show installation summary panel
-        show_installation_summary(installer.rich_logger, installer.claude_config_dir)
+        installer.logger.info("")
+        show_installation_summary(installer.logger, installer.claude_config_dir)
 
-        print()
+        installer.logger.info("")
         installer.logger.info("Next steps:")
         installer.logger.info("1. Navigate to any project directory")
         installer.logger.info(
             "2. Use nWave commands to orchestrate development workflow"
         )
         installer.logger.info("3. Access agents through the nw category in Claude Code")
-        print()
+        installer.logger.info("")
         installer.logger.info("Documentation: https://github.com/11PJ11/crafter-ai")
         return 0
     else:

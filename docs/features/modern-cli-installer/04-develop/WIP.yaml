@@ -1,79 +1,77 @@
 meta:
-  generated_at: "2026-02-05T18:30:00Z"
+  generated_at: "2026-02-06T20:50:00Z"
   generated_by: "vera-orchestrator"
   project: "modern-cli-installer"
-  phase: "10"
-  phase_name: "Full Installation Journey (Walking Skeleton Integration)"
+  phase: "tui-revamp"
+  phase_name: "Revamp install_nwave.py stdout to Luna TUI format"
   schema_version: "0.2"
 
 step:
-  id: "10-07"
-  name: "Update celebration to use nWave brand and add Getting started section"
+  id: "tui-07"
+  name: "Replace plugin installation messages with TUI emoji format"
   agent: "software-crafter"
-  estimated_hours: 1.5
-  dependencies_satisfied: true  # 10-06 completed
+  dependencies_satisfied: true
 
 input:
-  source_file: "src/crafter_ai/installer/cli/forge_install.py"
-  test_files:
-    - "tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_celebration_uses_nwave_brand"
-    - "tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_getting_started_section"
+  source_files:
+    - "scripts/install/plugins/agents_plugin.py"
+    - "scripts/install/plugins/commands_plugin.py"
+    - "scripts/install/plugins/templates_plugin.py"
+    - "scripts/install/plugins/utilities_plugin.py"
 
   requirements:
-    celebration_section:
-      - "In install() function after health check (currently around line 519)"
-      - "Change from: 🎉 crafter-ai {version} installed and healthy!"
-      - "Change to: 🎉 nWave {version} installed and healthy!"
-      - "Keep: 'Ready to use in Claude Code.' on next line"
+    agents_plugin:
+      - "Line 33: context.logger.info('Installing agents plugin...') → context.logger.info('  📦 Installing agents...')"
+      - "Line 57-58: context.logger.info(f'Installing from built distribution ({dist_agent_count} agents)...') → context.logger.info(f'  ⏳ From distribution ({dist_agent_count} agents)...')"
+      - "Line 62-63: context.logger.info(f'Using source files ({source_agent_count} agents)...') → context.logger.info(f'  ⏳ From source ({source_agent_count} agents)...')"
+      - "Line 75: context.logger.info(f'Installed {copied_count} agent files') → context.logger.info(f'  ✅ Agents installed ({copied_count} files)')"
 
-    getting_started_section:
-      - "Add after the celebration lines"
-      - "Add blank line first"
-      - "Add header: console.print('  📖 Getting started')"
-      - "List main nWave commands with descriptions (dim style):"
-      - "  console.print('[dim]    /nw:discuss  - Requirements gathering and business analysis[/dim]')"
-      - "  console.print('[dim]    /nw:design   - Architecture design with visual representation[/dim]')"
-      - "  console.print('[dim]    /nw:distill  - Acceptance test creation and business validation[/dim]')"
-      - "  console.print('[dim]    /nw:develop  - Outside-In TDD implementation with refactoring[/dim]')"
-      - "  console.print('[dim]    /nw:deliver  - Production readiness validation[/dim]')"
+    commands_plugin:
+      - "Line 35: context.logger.info('Installing commands plugin...') → context.logger.info('  📦 Installing commands...')"
+      - "Line 66: context.logger.info(f'Installed {copied_count} command files') → context.logger.info(f'  ✅ Commands installed ({copied_count} files)')"
+
+    templates_plugin:
+      - "Line 35: context.logger.info('Installing templates plugin...') → context.logger.info('  📦 Installing templates...')"
+      - "Line 74: context.logger.info(f'Installed {copied_count} template files') → context.logger.info(f'  ✅ Templates installed ({copied_count} files)')"
+
+    utilities_plugin:
+      - "Line 39: context.logger.info('Installing utilities plugin...') → context.logger.info('  📦 Installing utilities...')"
+      - "Line 68-69: context.logger.info(f'Upgraded {script_name} ({target_ver} -> {source_ver})') → context.logger.info(f'  ✅ {script_name} upgraded ({target_ver} → {source_ver})')"
+      - "Line 75: context.logger.info(f'Installed {script_name} (v{source_ver})') → context.logger.info(f'  ✅ {script_name} installed (v{source_ver})')"
+      - "Line 79-80: context.logger.info(f'{script_name} already up-to-date (v{target_ver})') → context.logger.info(f'  ✅ {script_name} up-to-date (v{target_ver})')"
+      - "Line 84: context.logger.info(f'Installed {installed_count} utility script(s)') → context.logger.info(f'  ✅ Utilities installed ({installed_count} scripts)')"
+
+  pragmatic_rules:
+    - "Mechanical string replacements only. Keep all variable names exactly as they are."
+    - "All calls remain context.logger.info() - only the message string changes"
+    - "DO NOT change any logic, file operations, or return values"
+    - "DO NOT create new files, classes, or methods"
+    - "DO NOT touch install_nwave.py or install_utils.py"
 
   test_requirements:
-    - "Test test_celebration_uses_nwave_brand must pass"
-    - "Test expects: '🎉' (party popper emoji) in output"
-    - "Test expects: 'nWave 0.2.0 installed and healthy!' in output"
-    - "Test expects: 'Ready to use in Claude Code.' in output"
-    - "Test test_getting_started_section must pass"
-    - "Test expects: 'Getting started' in output"
-    - "Test expects: '/nw:discuss' in output"
-
-  architecture_notes:
-    - "Celebration section goes AFTER health check and BEFORE failure check"
-    - "Use 'nWave' as the product brand name (not 'crafter-ai' package name)"
-    - "Getting started shows the 5 main workflow commands (DISCUSS → DESIGN → DISTILL → DEVELOP → DELIVER)"
-    - "All command lines use [dim] style for visual hierarchy"
-    - "Command descriptions are short (one line each)"
-
-  luna_design_reference:
-    - "docs/ux/modern-cli-installer/journey-forge-tui-visual.md lines 192-200"
-    - "Celebration format: emoji + 'nWave {version} installed and healthy!'"
-    - "Getting started: 📖 header + 5 command lines in dim"
-    - "Note: 🆕 What's new section is optional (for upgrades with changelog)"
+    - "All existing tests must still pass"
+    - "Run: pytest tests/ -k 'plugin or install_nwave' -v --tb=short"
 
 constraints:
-  max_tool_calls: 15
+  max_tool_calls: 12
   must_run_tests: true
   fail_fast: true
   forbidden_actions:
-    - "DO NOT skip running E2E test first"
-    - "DO NOT modify scripts/testpypi_validation.py"
-    - "DO NOT read roadmap.yaml or execution-log.yaml"
+    - "DO NOT create new files or tests"
+    - "DO NOT read roadmap.yaml or execution-status.yaml"
+    - "DO NOT modify any logic in the plugin files"
+    - "DO NOT touch install_nwave.py or install_utils.py"
+    - "ONLY change message strings inside context.logger.info() calls"
 
 output:
   status: "success"
-  artifacts_created:
-    - "src/crafter_ai/installer/cli/forge_install.py"
-  test_command: "pytest tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_celebration_uses_nwave_brand tests/acceptance/forge_tui/test_walking_skeleton.py::TestWalkingSkeletonBuildToInstall::test_getting_started_section -v"
-  test_result: "2 passed in 0.35s"
-  commit_hash: "b0979c2"
-  commit_message: "feat(forge-install): update celebration to use nWave brand and add Getting started section"
-  notes: "Changed celebration from 'crafter-ai' to 'nWave' product brand. Added Getting started section with 5 main nWave commands (discuss, design, distill, develop, deliver). All command lines use [dim] style for visual hierarchy."
+  artifacts_modified:
+    - "scripts/install/plugins/agents_plugin.py"
+    - "scripts/install/plugins/commands_plugin.py"
+    - "scripts/install/plugins/templates_plugin.py"
+    - "scripts/install/plugins/utilities_plugin.py"
+  test_command: "pytest tests/ -k 'plugin or install_nwave' -v --tb=short"
+  test_result: "283 passed, 1 failed (pre-existing: test_all_des_submodules_should_be_importable), 2819 deselected"
+  commit_hash: "8178208"
+  commit_message: "style(installer): replace plugin messages with TUI emoji format"
+  notes: "13 mechanical string replacements across 4 plugin files. The 1 failure is pre-existing (verified by stash/unstash). No logic, control flow, or variable names changed."

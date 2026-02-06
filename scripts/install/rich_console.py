@@ -179,6 +179,7 @@ class RichLogger:
         try:
             from rich.status import Status
 
+            self._write_to_file("STEP", message)
             with Status(message, console=self.console, spinner=spinner_style):
                 yield
         except ImportError:
