@@ -128,55 +128,30 @@ class NWaveInstaller:
 
     def build_framework(self) -> bool:
         """Build the IDE bundle."""
-        build_script = self.project_root / "scripts" / "build-ide-bundle.sh"
-
+        build_script = self.project_root / "tools" / "build.py"
         if not build_script.exists():
-            # Try Python build script as fallback
-            build_script = self.project_root / "tools" / "build.py"
-            if not build_script.exists():
-                print(f"  \u274c Build script not found: {build_script}")
+            print(f"  \u274c Build script not found: {build_script}")
+            return False
+
+        with self.rich_logger.progress_spinner("  \u23f3 Building IDE bundle..."):
+            try:
+                result = subprocess.run(
+                    [sys.executable, str(build_script)],
+                    cwd=self.project_root,
+                    capture_output=True,
+                    text=True,
+                )
+
+                if result.returncode == 0:
+                    print("  \u2705 Build completed")
+                    return True
+                else:
+                    print("  \u274c Build failed")
+                    print(f"     {result.stderr}")
+                    return False
+            except Exception as e:
+                print(f"  \u274c Build failed: {e}")
                 return False
-
-            with self.rich_logger.progress_spinner("  \u23f3 Building IDE bundle..."):
-                try:
-                    result = subprocess.run(
-                        [sys.executable, str(build_script)],
-                        cwd=self.project_root,
-                        capture_output=True,
-                        text=True,
-                    )
-
-                    if result.returncode == 0:
-                        print("  \u2705 Build completed")
-                        return True
-                    else:
-                        print("  \u274c Build failed")
-                        print(f"     {result.stderr}")
-                        return False
-                except Exception as e:
-                    print(f"  \u274c Build failed: {e}")
-                    return False
-        else:
-            # Run shell script
-            with self.rich_logger.progress_spinner("  \u23f3 Building IDE bundle..."):
-                try:
-                    result = subprocess.run(
-                        ["bash", str(build_script)],
-                        cwd=self.project_root,
-                        capture_output=True,
-                        text=True,
-                    )
-
-                    # Look for success indicators
-                    if "Build completed" in result.stdout or "\u2705" in result.stdout:
-                        print("  \u2705 Build completed")
-                        return True
-                    else:
-                        print("  \u274c Build failed")
-                        return False
-                except Exception as e:
-                    print(f"  \u274c Build failed: {e}")
-                    return False
 
     def check_source(self) -> bool:
         """Check if source framework exists, build if necessary."""
