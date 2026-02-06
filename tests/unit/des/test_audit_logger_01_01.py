@@ -351,20 +351,40 @@ class TestAuditLoggerReadOperations:
             assert entries[2]["event"] == "EVENT_3"
 
     def test_audit_logger_read_entries_for_step(self):
-        """Test that read_entries_for_step filters by step_path."""
+        """Test that read_entries_for_step filters by feature_name and step_id."""
         with tempfile.TemporaryDirectory() as tmpdir:
             logger = AuditLogger(tmpdir)
-            logger.append({"event": "EVENT_1", "step_path": "steps/01-01.json"})
-            logger.append({"event": "EVENT_2", "step_path": "steps/02-01.json"})
-            logger.append({"event": "EVENT_3", "step_path": "steps/01-01.json"})
+            logger.append(
+                {
+                    "event": "EVENT_1",
+                    "feature_name": "test-feature",
+                    "step_id": "01-01",
+                }
+            )
+            logger.append(
+                {
+                    "event": "EVENT_2",
+                    "feature_name": "test-feature",
+                    "step_id": "02-01",
+                }
+            )
+            logger.append(
+                {
+                    "event": "EVENT_3",
+                    "feature_name": "test-feature",
+                    "step_id": "01-01",
+                }
+            )
 
-            entries_01_01 = logger.read_entries_for_step("steps/01-01.json")
+            entries_01_01 = logger.read_entries_for_step("test-feature", "01-01")
             assert len(entries_01_01) == 2
-            assert all(e["step_path"] == "steps/01-01.json" for e in entries_01_01)
+            assert all(e["feature_name"] == "test-feature" for e in entries_01_01)
+            assert all(e["step_id"] == "01-01" for e in entries_01_01)
 
-            entries_02_01 = logger.read_entries_for_step("steps/02-01.json")
+            entries_02_01 = logger.read_entries_for_step("test-feature", "02-01")
             assert len(entries_02_01) == 1
-            assert entries_02_01[0]["step_path"] == "steps/02-01.json"
+            assert entries_02_01[0]["feature_name"] == "test-feature"
+            assert entries_02_01[0]["step_id"] == "02-01"
 
     def test_audit_logger_read_empty_log_returns_empty_list(self):
         """Test that get_entries returns empty list for empty log."""

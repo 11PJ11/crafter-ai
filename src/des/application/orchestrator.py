@@ -20,12 +20,13 @@ Integration: US-003 Post-Execution Validation
 """
 
 import re
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
 from src.des.adapters.driven.logging.audit_events import AuditEvent, EventType
-from src.des.adapters.driven.logging.audit_logger import log_audit_event
+from src.des.adapters.driven.logging.jsonl_audit_log_writer import JsonlAuditLogWriter
 from src.des.application.stale_execution_detector import StaleExecutionDetector
 from src.des.domain.invocation_limits_validator import (
     InvocationLimitsResult,
@@ -33,9 +34,12 @@ from src.des.domain.invocation_limits_validator import (
 )
 from src.des.domain.timeout_monitor import TimeoutMonitor
 from src.des.domain.turn_counter import TurnCounter
+from src.des.ports.driven_ports.audit_log_writer import (
+    AuditEvent as PortAuditEvent,
+    AuditLogWriter,
+)
 from src.des.ports.driven_ports.filesystem_port import FileSystemPort
 from src.des.ports.driven_ports.time_provider_port import TimeProvider
-from src.des.ports.driver_ports.hook_port import HookPort, HookResult
 from src.des.ports.driver_ports.validator_port import ValidationResult, ValidatorPort
 
 
@@ -43,7 +47,84 @@ if TYPE_CHECKING:
     from src.des.domain.stale_execution import StaleExecution
 
 
-# _StubHook removed - using SubagentStopHook (driven adapter) instead
+# ---------------------------------------------------------------------------
+# Inlined from legacy hook_port.py (deleted as part of hex-arch redesign)
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class HookResult:
+    """Result from hook validation."""
+
+    validation_status: str
+    hook_fired: bool = True
+    abandoned_phases: list[str] = field(default_factory=list)
+    incomplete_phases: list[str] = field(default_factory=list)
+    invalid_skips: list[str] = field(default_factory=list)
+    error_count: int = 0
+    error_type: str | None = None
+    error_message: str | None = None
+    recovery_suggestions: list[str] = field(default_factory=list)
+    not_executed_phases: int = 0
+    turn_limit_exceeded: bool = False
+    timeout_exceeded: bool = False
+
+
+class HookPort(ABC):
+    """Port for post-execution validation hooks."""
+
+    @abstractmethod
+    def persist_turn_count(
+        self, step_file_path: str, phase_name: str, turn_count: int
+    ) -> None:
+        """Persist turn_count to phase_execution_log entry."""
+        pass
+
+    @abstractmethod
+    def on_agent_complete(self, step_file_path: str) -> HookResult:
+        """Validate step file after sub-agent completion."""
+        pass
+
+
+class _NoOpHook(HookPort):
+    """Minimal HookPort that always passes.
+
+    Used by create_with_defaults() after legacy SubagentStopHook was removed.
+    Production validation now runs through claude_code_hook_adapter ->
+    SubagentStopService, bypassing the orchestrator's hook entirely.
+    """
+
+    def persist_turn_count(
+        self, step_file_path: str, phase_name: str, turn_count: int
+    ) -> None:
+        pass
+
+    def on_agent_complete(self, step_file_path: str) -> HookResult:
+        return HookResult(validation_status="PASSED")
+
+
+# ---------------------------------------------------------------------------
+# Audit logging bridge
+# ---------------------------------------------------------------------------
+
+
+def _log_audit_event(event_type: str, **kwargs: object) -> None:
+    """Log an audit event using JsonlAuditLogWriter.
+
+    Drop-in replacement for the legacy ``log_audit_event()`` convenience
+    function that was removed together with ``audit_logger.py``.
+    """
+    from src.des.adapters.driven.time.system_time import SystemTimeProvider
+
+    writer = JsonlAuditLogWriter()
+    timestamp = SystemTimeProvider().now_utc().isoformat()
+    writer.log_event(
+        PortAuditEvent(
+            event_type=event_type,
+            timestamp=timestamp,
+            data={k: v for k, v in kwargs.items() if v is not None},
+        )
+    )
 
 
 @dataclass
@@ -186,15 +267,15 @@ class DESOrchestrator:
             DESOrchestrator instance with default dependencies configured
         """
         from src.des.adapters.driven.filesystem.real_filesystem import RealFileSystem
-        from src.des.adapters.driven.hooks.subagent_stop_hook import SubagentStopHook
         from src.des.adapters.driven.time.system_time import SystemTimeProvider
         from src.des.application.validator import TemplateValidator
 
-        # Schema v2.0: SubagentStopHook validates from execution-log.yaml
-        hook = SubagentStopHook()
+        time_provider = SystemTimeProvider()
+        # Production validation now runs through claude_code_hook_adapter ->
+        # SubagentStopService, so the orchestrator uses a no-op hook.
+        hook = _NoOpHook()
         validator = TemplateValidator()
         filesystem = RealFileSystem()
-        time_provider = SystemTimeProvider()
 
         return cls(
             hook=hook,
@@ -274,12 +355,21 @@ class DESOrchestrator:
 
         # Log the audit event if audit logging is enabled
         from src.des.adapters.driven.config.des_config import DESConfig
-        from src.des.adapters.driven.logging.audit_logger import get_audit_logger
 
         config = DESConfig()
         if config.audit_logging_enabled:
-            logger = get_audit_logger()
-            logger.append(event.to_dict())
+            writer = JsonlAuditLogWriter()
+            writer.log_event(
+                PortAuditEvent(
+                    event_type=event.event,
+                    timestamp=event.timestamp,
+                    data={
+                        k: v
+                        for k, v in event.to_dict().items()
+                        if k not in ("event", "timestamp") and v is not None
+                    },
+                )
+            )
 
         # Mark lifecycle as completed after validation
         self._subagent_lifecycle_completed = True
@@ -402,7 +492,7 @@ class DESOrchestrator:
             step_id_from_file = os.path.splitext(os.path.basename(step_file))[0]
 
         # Log TASK_INVOCATION_STARTED for audit trail
-        log_audit_event(
+        _log_audit_event(
             "TASK_INVOCATION_STARTED", command=command, step_id=step_id_from_file, agent=agent
         )
 
@@ -416,7 +506,7 @@ class DESOrchestrator:
             des_markers = self._generate_des_markers(command, step_file)
 
             # Log TASK_INVOCATION_VALIDATED for audit trail
-            log_audit_event(
+            _log_audit_event(
                 "TASK_INVOCATION_VALIDATED",
                 command=command,
                 step_id=step_id_from_file,

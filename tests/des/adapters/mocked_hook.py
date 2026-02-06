@@ -1,6 +1,6 @@
 """Test implementation of post-execution hook adapter."""
 
-from src.des.ports.driver_ports.hook_port import HookPort, HookResult
+from src.des.application.orchestrator import HookPort, HookResult
 
 
 class MockedSubagentStopHook(HookPort):

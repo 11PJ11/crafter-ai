@@ -11,7 +11,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 from des.application.orchestrator import DESOrchestrator
-from des.ports.driver_ports.hook_port import HookPort, HookResult
+from des.application.orchestrator import HookPort, HookResult
 from des.ports.driver_ports.validator_port import ValidatorPort, ValidationResult
 from des.ports.driven_ports.filesystem_port import FileSystemPort
 from des.ports.driven_ports.time_provider_port import TimeProvider

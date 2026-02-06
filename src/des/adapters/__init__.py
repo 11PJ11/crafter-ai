@@ -16,9 +16,6 @@ from src.des.adapters.driven import (
     StructuredLogger,
     SystemTime,
 )
-from src.des.adapters.drivers import (
-    RealSubagentStopHook,
-)
 
 
 __all__ = [
@@ -28,8 +25,7 @@ __all__ = [
     "InMemoryConfigAdapter",
     "MockedTaskAdapter",
     "RealFileSystem",
-    # Driver adapters (inbound)
-    "RealSubagentStopHook",
+    # Logging adapters
     "SilentLogger",
     "StructuredLogger",
     "SystemTime",

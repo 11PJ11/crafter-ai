@@ -34,3 +34,28 @@ events:
   - "01-02|COMMIT|EXECUTED|PASS|2026-02-05T22:44:00Z"
   - "01-02|FILES_MODIFIED|implementation|src/des/adapters/driven/logging/audit_logger.py|2026-02-05T22:44:00Z"
   - "01-02|FILES_MODIFIED|tests|tests/unit/des/test_audit_logger_unit.py|2026-02-05T22:44:00Z"
+  - "01-03|PREPARE|EXECUTED|PASS|2026-02-05T23:34:46Z"
+  - "01-03|RED_ACCEPTANCE|EXECUTED|UNEXPECTED_GREEN|2026-02-05T23:34:56Z"
+  - "01-03|RED_UNIT|SKIPPED|NOT_APPLICABLE:Acceptance tests provide complete coverage of all 6 AC|2026-02-05T23:35:01Z"
+  - "01-03|GREEN|EXECUTED|PASS|2026-02-05T23:35:18Z"
+  - "01-03|REVIEW|EXECUTED|PASS|2026-02-05T23:35:28Z"
+  - "01-03|REFACTOR_CONTINUOUS|SKIPPED|APPROVED_SKIP:Clean implementation <30 LOC|2026-02-05T23:35:38Z"
+  - "01-03|COMMIT|EXECUTED|PASS|2026-02-05T23:36:00Z"
+
+  # Step 02-01: Fix hexagonal architecture violations (AC5 constructor injection)
+  # Executed: 2026-02-06 across 3 context sessions
+  # Violations fixed: V7 (singleton fallbacks removed), V7 (handle_pre_tool_use injection)
+  # 14 test regressions from removing imports - all fixed via constructor injection rewrite
+  - "02-01|PREPARE|EXECUTED|PASS|2026-02-06T01:00:00Z"
+  - "02-01|RED_ACCEPTANCE|EXECUTED|FAIL|2026-02-06T01:05:00Z"
+  - "02-01|RED_UNIT|EXECUTED|FAIL|2026-02-06T01:10:00Z"
+  - "02-01|GREEN|EXECUTED|PASS|2026-02-06T03:30:00Z"
+  - "02-01|REVIEW|EXECUTED|PASS|2026-02-06T03:45:00Z"
+  - "02-01|REFACTOR_CONTINUOUS|SKIPPED|APPROVED_SKIP:Constructor injection pattern already clean|2026-02-06T03:50:00Z"
+  - "02-01|COMMIT|EXECUTED|PASS|2026-02-06T04:00:00Z"
+  - "02-01|FILES_MODIFIED|implementation|src/des/adapters/driven/hooks/subagent_stop_hook.py|2026-02-06T04:00:00Z"
+  - "02-01|FILES_MODIFIED|implementation|src/des/adapters/drivers/hooks/claude_code_hook_adapter.py|2026-02-06T04:00:00Z"
+  - "02-01|FILES_MODIFIED|tests|tests/des/unit/adapters/driven/hooks/test_subagent_stop_hook_audit.py|2026-02-06T04:00:00Z"
+  - "02-01|FILES_MODIFIED|tests|tests/des/unit/adapters/drivers/hooks/test_subagent_stop_hook_audit.py|2026-02-06T04:00:00Z"
+  - "02-01|FILES_MODIFIED|tests|tests/des/unit/adapters/drivers/hooks/test_audit_logging_integration.py|2026-02-06T04:00:00Z"
+  - "02-01|FILES_MODIFIED|tests|tests/des/unit/adapters/drivers/hooks/test_clean_execution_silence.py|2026-02-06T04:00:00Z"

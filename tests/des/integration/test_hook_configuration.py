@@ -43,7 +43,7 @@ class TestHookAdapterReference:
             from src.des.adapters.drivers.hooks import claude_code_hook_adapter
 
             # Verify expected functions exist
-            assert hasattr(claude_code_hook_adapter, "handle_pre_task")
+            assert hasattr(claude_code_hook_adapter, "handle_pre_tool_use")
             assert hasattr(claude_code_hook_adapter, "handle_subagent_stop")
             assert hasattr(claude_code_hook_adapter, "main")
         except ImportError as e:
@@ -64,7 +64,9 @@ class TestHookAdapterReference:
             sys.argv = ["claude_code_hook_adapter.py"]  # No command
             with pytest.raises(SystemExit) as exc_info:
                 claude_code_hook_adapter.main()
-            assert exc_info.value.code == 1, "Expected error exit code when command missing"
+            assert exc_info.value.code == 1, (
+                "Expected error exit code when command missing"
+            )
         finally:
             sys.argv = original_argv
 
@@ -84,7 +86,7 @@ class TestHookInstallerConfiguration:
 
         assert installer_path.exists(), "Installer script not found"
 
-        with open(installer_path, "r", encoding="utf-8") as f:
+        with open(installer_path, encoding="utf-8") as f:
             installer_code = f.read()
 
         # CRITICAL: Installer MUST reference claude_code_hook_adapter
@@ -112,7 +114,7 @@ class TestHookInstallerConfiguration:
 
         assert plugin_path.exists(), "Plugin installer not found"
 
-        with open(plugin_path, "r", encoding="utf-8") as f:
+        with open(plugin_path, encoding="utf-8") as f:
             plugin_code = f.read()
 
         # CRITICAL: Plugin MUST reference claude_code_hook_adapter
@@ -132,80 +134,90 @@ class TestHookInstallerConfiguration:
             / "scripts/install/plugins/des_plugin.py"
         )
 
-        with open(plugin_path, "r", encoding="utf-8") as f:
+        with open(plugin_path, encoding="utf-8") as f:
             plugin_code = f.read()
 
         # Expected format: "python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter"
         assert "python3 -m" in plugin_code, (
             "Hook command should use 'python3 -m' format (not direct .py path)"
         )
-        assert (
-            "des.adapters.drivers.hooks.claude_code_hook_adapter" in plugin_code
-        ), "Hook command missing module path"
+        assert "des.adapters.drivers.hooks.claude_code_hook_adapter" in plugin_code, (
+            "Hook command missing module path"
+        )
 
 
 class TestHookConfigurationIntegrity:
     """Test installed hook configuration integrity."""
 
-    def test_settings_local_json_has_des_hooks(self):
-        """Verify settings.local.json has DES hooks installed.
+    @staticmethod
+    def _is_des_hook_entry(hook_entry: dict) -> bool:
+        """Check if a hook entry is a DES hook (supports both old and new format)."""
+        # Old flat format: {"command": "...claude_code_hook_adapter..."}
+        if "claude_code_hook_adapter" in hook_entry.get("command", ""):
+            return True
+        # New nested format: {"hooks": [{"type": "command", "command": "...claude_code_hook_adapter..."}]}
+        for h in hook_entry.get("hooks", []):
+            if "claude_code_hook_adapter" in h.get("command", ""):
+                return True
+        return False
 
-        NOTE: This test checks the actual installed configuration.
-        May be skipped if settings.local.json doesn't exist (new install).
+    @staticmethod
+    def _has_nested_format(hook_entry: dict) -> bool:
+        """Check if hook entry uses Claude Code v2 nested format."""
+        return "hooks" in hook_entry and isinstance(hook_entry["hooks"], list)
+
+    def test_global_settings_json_has_des_hooks(self):
+        """Verify ~/.claude/settings.json has DES hooks with correct nested format.
+
+        DES hooks MUST be in the global config (~/.claude/settings.json) to ensure
+        they fire for all projects. Project-level settings are not used for hooks.
         """
-        settings_path = Path.home() / ".claude/settings.local.json"
+        settings_path = Path.home() / ".claude/settings.json"
 
         if not settings_path.exists():
-            pytest.skip("settings.local.json not found (not yet installed)")
+            pytest.skip("~/.claude/settings.json not found (not yet installed)")
 
-        with open(settings_path, "r", encoding="utf-8") as f:
+        with open(settings_path, encoding="utf-8") as f:
             config = json.load(f)
 
-        # Verify hooks structure exists
-        assert "hooks" in config, "No hooks configuration found in settings.local.json"
+        assert "hooks" in config, (
+            "No hooks in ~/.claude/settings.json!\n"
+            "Run: python3 scripts/install/install_des_hooks.py --install"
+        )
 
         hooks = config["hooks"]
 
-        # Verify PreToolUse hook exists
-        assert "PreToolUse" in hooks, "PreToolUse hook array missing"
-        assert isinstance(hooks["PreToolUse"], list), "PreToolUse must be an array"
+        # Find DES hooks
+        pre_hooks = hooks.get("PreToolUse", [])
+        stop_hooks = hooks.get("SubagentStop", [])
 
-        # Verify SubagentStop hook exists
-        assert "SubagentStop" in hooks, "SubagentStop hook array missing"
-        assert isinstance(hooks["SubagentStop"], list), "SubagentStop must be an array"
+        des_pre = [h for h in pre_hooks if self._is_des_hook_entry(h)]
+        des_stop = [h for h in stop_hooks if self._is_des_hook_entry(h)]
 
-        # Find DES hooks (may be mixed with other hooks)
-        pretooluse_des_hooks = [
-            h for h in hooks["PreToolUse"] if "claude_code_hook_adapter" in h.get("command", "")
-        ]
-        subagent_stop_des_hooks = [
-            h
-            for h in hooks["SubagentStop"]
-            if "claude_code_hook_adapter" in h.get("command", "")
-        ]
-
-        assert len(pretooluse_des_hooks) > 0, (
-            "No DES PreToolUse hook found in settings.local.json!\n"
-            "Hook adapter is not configured. Run: python3 scripts/install/plugins/des_plugin.py"
+        assert len(des_pre) > 0, (
+            "No DES PreToolUse hook in ~/.claude/settings.json!\n"
+            "Run: python3 scripts/install/install_des_hooks.py --install"
         )
 
-        assert len(subagent_stop_des_hooks) > 0, (
-            "No DES SubagentStop hook found in settings.local.json!\n"
-            "Hook adapter is not configured. Run: python3 scripts/install/plugins/des_plugin.py"
+        assert len(des_stop) > 0, (
+            "No DES SubagentStop hook in ~/.claude/settings.json!\n"
+            "Run: python3 scripts/install/install_des_hooks.py --install"
         )
 
-        # Verify command format
-        pretooluse_hook = pretooluse_des_hooks[0]
-        assert "command" in pretooluse_hook, "PreToolUse hook missing command field"
-        assert "claude_code_hook_adapter" in pretooluse_hook["command"], (
-            "PreToolUse command doesn't reference claude_code_hook_adapter"
-        )
+        # Verify Claude Code v2 nested format (required for hooks to fire)
+        for hook in des_pre:
+            assert self._has_nested_format(hook), (
+                f"PreToolUse DES hook uses old flat format: {hook}\n"
+                "Claude Code requires nested format: "
+                '{"hooks": [{"type": "command", "command": "..."}]}'
+            )
 
-        subagent_hook = subagent_stop_des_hooks[0]
-        assert "command" in subagent_hook, "SubagentStop hook missing command field"
-        assert "claude_code_hook_adapter" in subagent_hook["command"], (
-            "SubagentStop command doesn't reference claude_code_hook_adapter"
-        )
+        for hook in des_stop:
+            assert self._has_nested_format(hook), (
+                f"SubagentStop DES hook uses old flat format: {hook}\n"
+                "Claude Code requires nested format: "
+                '{"hooks": [{"type": "command", "command": "..."}]}'
+            )
 
     def test_installed_module_has_hook_adapter(self):
         """Verify installed DES module includes claude_code_hook_adapter.
@@ -240,28 +252,31 @@ class TestHookAdapterFunctionality:
                 "projectId": "foo",
                 "stepId": "01-01"
             }
+
+        NOTE: Only checks PUBLIC interface (handle_subagent_stop).
+        Internal validation functions are implementation details.
         """
         from src.des.adapters.drivers.hooks import claude_code_hook_adapter
 
-        # Test _verify_step_from_append_only_log function exists
-        assert hasattr(claude_code_hook_adapter, "_verify_step_from_append_only_log"), (
-            "Hook adapter missing Schema v2.0 validation function"
+        # Verify public interface for Schema v2.0 handling exists
+        assert hasattr(claude_code_hook_adapter, "handle_subagent_stop"), (
+            "Hook adapter missing handle_subagent_stop (Schema v2.0 entry point)"
         )
-
-        # Verify handle_subagent_stop exists
-        assert hasattr(claude_code_hook_adapter, "handle_subagent_stop")
 
     def test_hook_adapter_rejects_missing_required_fields(self):
         """Test that hook adapter validates Schema v2.0 required fields.
 
         This is a unit test verifying the adapter's input validation.
         """
-        from src.des.adapters.drivers.hooks import claude_code_hook_adapter
         import sys
         from io import StringIO
 
+        from src.des.adapters.drivers.hooks import claude_code_hook_adapter
+
         # Mock stdin with missing fields
-        test_input = json.dumps({"executionLogPath": "/tmp/log.yaml"})  # Missing projectId, stepId
+        test_input = json.dumps(
+            {"executionLogPath": "/tmp/log.yaml"}
+        )  # Missing projectId, stepId
 
         original_stdin = sys.stdin
         original_stdout = sys.stdout
@@ -272,7 +287,9 @@ class TestHookAdapterFunctionality:
             exit_code = claude_code_hook_adapter.handle_subagent_stop()
 
             # Should fail (exit 1) due to missing required fields
-            assert exit_code == 1, "Expected error exit code for missing required fields"
+            assert exit_code == 1, (
+                "Expected error exit code for missing required fields"
+            )
         finally:
             sys.stdin = original_stdin
             sys.stdout = original_stdout

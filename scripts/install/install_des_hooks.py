@@ -2,7 +2,7 @@
 """
 DES Hook Installer - Manages Claude Code hook lifecycle.
 
-Merges DES hooks into .claude/settings.local.json, preserving existing hooks.
+Merges DES hooks into .claude/settings.json, preserving existing hooks.
 Uninstalls cleanly without traces or configuration corruption.
 """
 
@@ -15,14 +15,25 @@ from pathlib import Path
 class DESHookInstaller:
     """Manages DES hook installation and uninstallation."""
 
-    # Hook configuration templates
+    # Hook configuration templates (Claude Code v2 nested format)
+    # Format: {"matcher": "...", "hooks": [{"type": "command", "command": "..."}]}
     DES_PRETOOLUSE_HOOK = {
         "matcher": "Task",
-        "command": "python3 src/des/adapters/drivers/hooks/claude_code_hook_adapter.py pre-task",
+        "hooks": [
+            {
+                "type": "command",
+                "command": "python3 src/des/adapters/drivers/hooks/claude_code_hook_adapter.py pre-task",
+            }
+        ],
     }
 
     DES_SUBAGENT_STOP_HOOK = {
-        "command": "python3 src/des/adapters/drivers/hooks/claude_code_hook_adapter.py subagent-stop"
+        "hooks": [
+            {
+                "type": "command",
+                "command": "python3 src/des/adapters/drivers/hooks/claude_code_hook_adapter.py subagent-stop",
+            }
+        ],
     }
 
     def __init__(self, config_dir: Path | None = None):
@@ -35,14 +46,14 @@ class DESHookInstaller:
         if config_dir is None:
             config_dir = Path.home() / ".claude"
         self.config_dir = Path(config_dir)
-        self.settings_file = self.config_dir / "settings.local.json"
+        self.settings_file = self.config_dir / "settings.json"
 
     def install(self) -> bool:
         """
         Install DES hooks into Claude Code configuration.
 
-        Merges DES hooks into existing settings.local.json, preserving other hooks.
-        Creates settings.local.json if it doesn't exist.
+        Merges DES hooks into existing settings.json, preserving other hooks.
+        Creates settings.json if it doesn't exist.
         Idempotent - always removes existing DES hooks before adding new ones
         to ensure latest format is used and prevent duplicates.
 
@@ -75,14 +86,14 @@ class DESHookInstaller:
         Uninstall DES hooks from Claude Code configuration.
 
         Removes only DES hook entries, preserving all other hooks.
-        Handles missing settings.local.json gracefully (no error).
+        Handles missing settings.json gracefully (no error).
 
         Returns:
             bool: True if uninstallation succeeded, False otherwise
         """
         try:
             if not self.settings_file.exists():
-                print("DES hooks not installed (settings.local.json not found)")
+                print("DES hooks not installed (settings.json not found)")
                 return True
 
             config = self._load_config()
@@ -124,7 +135,7 @@ class DESHookInstaller:
 
     def _load_config(self) -> dict:
         """
-        Load configuration from settings.local.json.
+        Load configuration from settings.json.
 
         Returns:
             dict: Configuration dictionary (empty if file doesn't exist)
@@ -140,7 +151,7 @@ class DESHookInstaller:
 
     def _save_config(self, config: dict):
         """
-        Save configuration to settings.local.json.
+        Save configuration to settings.json.
 
         Args:
             config: Configuration dictionary to save
@@ -172,29 +183,36 @@ class DESHookInstaller:
 
         # Check for PreToolUse hook
         pre_hooks = config["hooks"].get("PreToolUse", [])
-        has_pre = any(self._is_des_hook(h.get("command", "")) for h in pre_hooks)
+        has_pre = any(self._is_des_hook_entry(h) for h in pre_hooks)
 
         # Check for SubagentStop hook
         stop_hooks = config["hooks"].get("SubagentStop", [])
-        has_stop = any(self._is_des_hook(h.get("command", "")) for h in stop_hooks)
+        has_stop = any(self._is_des_hook_entry(h) for h in stop_hooks)
 
         return has_pre or has_stop
 
-    def _is_des_hook(self, command: str) -> bool:
+    def _is_des_hook_entry(self, hook_entry: dict) -> bool:
         """
-        Check if command is a DES hook.
+        Check if a hook entry is a DES hook.
 
-        Detects both old format (direct .py) and new format (python -m):
-        - Old: python3 src/des/.../claude_code_hook_adapter.py
-        - New: python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter
+        Supports both old flat format and new nested format:
+        - Old flat: {"matcher": "Task", "command": "...claude_code_hook_adapter..."}
+        - New nested: {"matcher": "Task", "hooks": [{"type": "command", "command": "...claude_code_hook_adapter..."}]}
 
         Args:
-            command: Hook command string
+            hook_entry: Hook entry dictionary from settings JSON
 
         Returns:
-            bool: True if command is a DES hook
+            bool: True if entry is a DES hook
         """
-        return "claude_code_hook_adapter" in command
+        # Check old flat format
+        if "claude_code_hook_adapter" in hook_entry.get("command", ""):
+            return True
+        # Check new nested format
+        for h in hook_entry.get("hooks", []):
+            if "claude_code_hook_adapter" in h.get("command", ""):
+                return True
+        return False
 
     def _ensure_hooks_structure(self, config: dict):
         """
@@ -234,14 +252,14 @@ class DESHookInstaller:
             config["hooks"]["PreToolUse"] = [
                 h
                 for h in config["hooks"]["PreToolUse"]
-                if not self._is_des_hook(h.get("command", ""))
+                if not self._is_des_hook_entry(h)
             ]
 
         if "SubagentStop" in config["hooks"]:
             config["hooks"]["SubagentStop"] = [
                 h
                 for h in config["hooks"]["SubagentStop"]
-                if not self._is_des_hook(h.get("command", ""))
+                if not self._is_des_hook_entry(h)
             ]
 
 

@@ -15,32 +15,58 @@ BUSINESS VALUE:
 SCOPE: Covers US-003 Acceptance Criteria (AC-003.1 through AC-003.6)
 WAVE: DISTILL (Acceptance Test Creation)
 STATUS: Migrated to Schema v2.0 (execution-log.yaml format)
+
+TEST BOUNDARY: External protocol (JSON stdin, exit code, JSON stdout).
+Tests invoke the hook adapter as a subprocess, matching Claude Code's actual
+integration protocol. Internal classes are implementation details.
 """
 
-from typing import Protocol
+import json
+import os
+import subprocess
+from pathlib import Path
 
 import yaml
 
 
 # =============================================================================
-# HOOK INTERFACE DEFINITION (Protocol for implementation guidance)
+# TEST HELPER: Invoke hook through external protocol boundary
 # =============================================================================
 
 
-class SubagentStopHookResult(Protocol):
-    """Expected interface for SubagentStop hook validation result.
+def invoke_hook(hook_type: str, payload: dict) -> tuple[int, dict]:
+    """Invoke hook adapter through its external protocol (subprocess + JSON).
 
-    Developer implementing the hook should return an object matching this protocol.
+    This is the public interface that Claude Code uses:
+    - JSON on stdin
+    - Exit code: 0=allow, 1=error, 2=block
+    - JSON on stdout
+
+    Args:
+        hook_type: Hook command name (e.g., "subagent-stop", "pre-task")
+        payload: JSON-serializable dict to send on stdin
+
+    Returns:
+        Tuple of (exit_code, response_dict)
     """
+    env = os.environ.copy()
+    project_root = str(Path(__file__).parent.parent.parent.parent)
+    env["PYTHONPATH"] = project_root + os.pathsep + env.get("PYTHONPATH", "")
 
-    validation_status: str  # "PASSED" or "FAILED"
-    abandoned_phases: list[str]  # Phases left with IN_PROGRESS status
-    incomplete_phases: list[str]  # Phases with EXECUTED but no outcome
-    invalid_skips: list[str]  # Phases with SKIPPED but no blocked_by
-    error_count: int
-    error_type: str | None  # e.g., "ABANDONED_PHASE", "SILENT_COMPLETION"
-    error_message: str | None
-    recovery_suggestions: list[str]  # Minimum 3 if FAILED
+    proc = subprocess.run(
+        [
+            "python3",
+            "-m",
+            "src.des.adapters.drivers.hooks.claude_code_hook_adapter",
+            hook_type,
+        ],
+        input=json.dumps(payload),
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    response = json.loads(proc.stdout) if proc.stdout.strip() else {}
+    return proc.returncode, response
 
 
 # =============================================================================
@@ -70,7 +96,12 @@ class SubagentStopHookResult(Protocol):
 
 
 class TestPostExecutionStateValidation:
-    """E2E acceptance tests for US-003: Post-execution state validation (Schema v2.0)."""
+    """E2E acceptance tests for US-003: Post-execution state validation (Schema v2.0).
+
+    All tests invoke the hook adapter through its external protocol boundary:
+    JSON on stdin -> subprocess -> exit code + JSON on stdout.
+    This matches Claude Code's actual integration and survives internal refactoring.
+    """
 
     # =========================================================================
     # AC-003.1: SubagentStop hook fires for every sub-agent completion
@@ -94,18 +125,22 @@ class TestPostExecutionStateValidation:
         """
         # Arrange: Create execution-log.yaml with completed execution (Schema v2.0)
         log_data = _create_execution_log_with_all_phases_executed(tdd_phases)
-        minimal_step_file.write_text(yaml.dump(log_data, default_flow_style=False))
+        log_file = tmp_project_root / "execution-log.yaml"
+        log_file.write_text(yaml.dump(log_data, default_flow_style=False))
 
-        # Act: Trigger SubagentStop hook with compound path (Schema v2.0)
-        from src.des.adapters.driven.hooks.subagent_stop_hook import SubagentStopHook
+        # Act: Invoke hook through external protocol (JSON stdin, exit code, JSON stdout)
+        exit_code, response = invoke_hook(
+            "subagent-stop",
+            {
+                "executionLogPath": str(log_file),
+                "projectId": "test-project",
+                "stepId": "01-01",
+            },
+        )
 
-        hook = SubagentStopHook()
-        compound_path = f"{minimal_step_file}?project_id=test-project&step_id=01-01"
-        hook_result = hook.on_agent_complete(step_file_path=compound_path)
-
-        # Assert: Hook fired and performed validation
-        assert hook_result.hook_fired is True
-        assert hook_result.validation_status == "PASSED"
+        # Assert: Hook fired and validation passed
+        assert exit_code == 0, f"Expected allow (exit 0), got {exit_code}: {response}"
+        assert response["decision"] == "allow"
 
     # =========================================================================
     # AC-003.2: Phases with status "IN_PROGRESS" after completion are flagged
@@ -132,23 +167,27 @@ class TestPostExecutionStateValidation:
         Error Format: "Missing phases: GREEN" (in v2.0, abandoned = missing from log)
         """
         # Arrange: Create execution-log.yaml with abandoned phase (Schema v2.0)
-        # GREEN is at index 3 in canonical schema, so last completed = RED_UNIT (index 2)
         log_data = _create_execution_log_with_abandoned_phase(
             tdd_phases, abandoned_phase="GREEN", last_completed_phase="RED_UNIT"
         )
-        minimal_step_file.write_text(yaml.dump(log_data, default_flow_style=False))
+        log_file = tmp_project_root / "execution-log.yaml"
+        log_file.write_text(yaml.dump(log_data, default_flow_style=False))
 
-        # Act: Trigger SubagentStop hook with compound path (Schema v2.0)
-        from src.des.adapters.driven.hooks.subagent_stop_hook import SubagentStopHook
+        # Act: Invoke hook through external protocol
+        exit_code, response = invoke_hook(
+            "subagent-stop",
+            {
+                "executionLogPath": str(log_file),
+                "projectId": "test-project",
+                "stepId": "01-01",
+            },
+        )
 
-        hook = SubagentStopHook()
-        compound_path = f"{minimal_step_file}?project_id=test-project&step_id=01-01"
-        hook_result = hook.on_agent_complete(step_file_path=compound_path)
-
-        # Assert: Abandoned phase detected with specific error message
-        assert hook_result.validation_status == "FAILED"
-        assert "GREEN" in hook_result.abandoned_phases
-        assert "Missing phases" in hook_result.error_message
+        # Assert: Abandoned phase detected with specific error
+        assert exit_code == 2, f"Expected block (exit 2), got {exit_code}: {response}"
+        assert response["decision"] == "block"
+        assert "GREEN" in response["reason"]
+        assert "Missing phases" in response["reason"]
 
     # =========================================================================
     # AC-003.3: Tasks marked "DONE" with "NOT_EXECUTED" phases are flagged
@@ -172,26 +211,37 @@ class TestPostExecutionStateValidation:
                        early and returned without logging any phases.
                        Events list is empty.
 
-        Error Format: "Agent completed without updating step file"
+        Error Format: All phases listed as missing in the error reason
         """
         # Arrange: Create execution-log.yaml with no events (Schema v2.0)
         log_data = _create_execution_log_with_silent_completion()
-        minimal_step_file.write_text(yaml.dump(log_data, default_flow_style=False))
+        log_file = tmp_project_root / "execution-log.yaml"
+        log_file.write_text(yaml.dump(log_data, default_flow_style=False))
 
-        # Act: Trigger SubagentStop hook with compound path (Schema v2.0)
-        from src.des.adapters.driven.hooks.subagent_stop_hook import SubagentStopHook
+        # Act: Invoke hook through external protocol
+        exit_code, response = invoke_hook(
+            "subagent-stop",
+            {
+                "executionLogPath": str(log_file),
+                "projectId": "test-project",
+                "stepId": "01-01",
+            },
+        )
 
-        hook = SubagentStopHook()
-        compound_path = f"{minimal_step_file}?project_id=test-project&step_id=01-01"
-        hook_result = hook.on_agent_complete(step_file_path=compound_path)
-
-        # Assert: Silent completion detected
-        assert hook_result.validation_status == "FAILED"
-        assert hook_result.error_type == "SILENT_COMPLETION"
-        assert "Agent completed without updating step file" in hook_result.error_message
-        assert hook_result.not_executed_phases == len(tdd_phases)  # All 7 phases
-        assert hook_result.recovery_suggestions is not None
-        assert len(hook_result.recovery_suggestions) >= 1
+        # Assert: Silent completion detected - all phases missing
+        assert exit_code == 2, f"Expected block (exit 2), got {exit_code}: {response}"
+        assert response["decision"] == "block"
+        assert "Missing phases" in response["reason"]
+        # All TDD phases should appear in the missing phases list
+        for phase in tdd_phases:
+            assert phase in response["reason"], (
+                f"Phase {phase} should be listed as missing in: {response['reason']}"
+            )
+        # Recovery guidance provided in hook output
+        additional_context = response.get("hookSpecificOutput", {}).get(
+            "additionalContext", ""
+        )
+        assert "RECOVERY REQUIRED" in additional_context
 
     # =========================================================================
     # AC-003.4: "EXECUTED" phases without outcome field are flagged
@@ -218,24 +268,28 @@ class TestPostExecutionStateValidation:
 
         Error Format: "Invalid outcome ''"  (in v2.0, outcome is in data field)
         """
-        # Arrange: Create execution-log.yaml with EXECUTED phase with invalid outcome (Schema v2.0)
+        # Arrange: Create execution-log.yaml with EXECUTED phase with invalid outcome
         log_data = _create_execution_log_with_missing_outcome(
             tdd_phases, "REFACTOR_CONTINUOUS"
         )
-        minimal_step_file.write_text(yaml.dump(log_data, default_flow_style=False))
+        log_file = tmp_project_root / "execution-log.yaml"
+        log_file.write_text(yaml.dump(log_data, default_flow_style=False))
 
-        # Act: Trigger SubagentStop hook with compound path (Schema v2.0)
-        from src.des.adapters.driven.hooks.subagent_stop_hook import SubagentStopHook
-
-        hook = SubagentStopHook()
-        compound_path = f"{minimal_step_file}?project_id=test-project&step_id=01-01"
-        hook_result = hook.on_agent_complete(step_file_path=compound_path)
+        # Act: Invoke hook through external protocol
+        exit_code, response = invoke_hook(
+            "subagent-stop",
+            {
+                "executionLogPath": str(log_file),
+                "projectId": "test-project",
+                "stepId": "01-01",
+            },
+        )
 
         # Assert: Missing outcome detected
-        assert hook_result.validation_status == "FAILED"
-        assert "REFACTOR_CONTINUOUS" in hook_result.incomplete_phases
-        assert "REFACTOR_CONTINUOUS" in hook_result.error_message
-        assert hook_result.error_type == "INCOMPLETE_PHASE"
+        assert exit_code == 2, f"Expected block (exit 2), got {exit_code}: {response}"
+        assert response["decision"] == "block"
+        assert "REFACTOR_CONTINUOUS" in response["reason"]
+        assert "Invalid outcome" in response["reason"]
 
     # =========================================================================
     # AC-003.5: "SKIPPED" phases must have valid `blocked_by` reason
@@ -263,25 +317,28 @@ class TestPostExecutionStateValidation:
 
         Error Format: "Invalid skip reason" (in v2.0, must start with valid prefix)
         """
-        # Arrange: Create execution-log.yaml with SKIPPED phase with invalid reason (Schema v2.0)
+        # Arrange: Create execution-log.yaml with SKIPPED phase with invalid reason
         log_data = _create_execution_log_with_invalid_skip(
             tdd_phases, "REFACTOR_CONTINUOUS"
         )
-        minimal_step_file.write_text(yaml.dump(log_data, default_flow_style=False))
+        log_file = tmp_project_root / "execution-log.yaml"
+        log_file.write_text(yaml.dump(log_data, default_flow_style=False))
 
-        # Act: Trigger SubagentStop hook with compound path (Schema v2.0)
-        from src.des.adapters.driven.hooks.subagent_stop_hook import SubagentStopHook
-
-        hook = SubagentStopHook()
-        compound_path = f"{minimal_step_file}?project_id=test-project&step_id=01-01"
-        hook_result = hook.on_agent_complete(step_file_path=compound_path)
+        # Act: Invoke hook through external protocol
+        exit_code, response = invoke_hook(
+            "subagent-stop",
+            {
+                "executionLogPath": str(log_file),
+                "projectId": "test-project",
+                "stepId": "01-01",
+            },
+        )
 
         # Assert: Invalid skip detected
-        assert hook_result.validation_status == "FAILED"
-        assert "REFACTOR_CONTINUOUS" in hook_result.invalid_skips
-        assert "REFACTOR_CONTINUOUS" in hook_result.error_message
-        assert "skip reason" in hook_result.error_message.lower()
-        assert hook_result.error_type == "INVALID_SKIP"
+        assert exit_code == 2, f"Expected block (exit 2), got {exit_code}: {response}"
+        assert response["decision"] == "block"
+        assert "REFACTOR_CONTINUOUS" in response["reason"]
+        assert "skip reason" in response["reason"].lower()
 
     # =========================================================================
     # AC-003.6: Validation errors trigger FAILED state with recovery suggestions
@@ -313,38 +370,44 @@ class TestPostExecutionStateValidation:
         - "Fix invalid phase entries in execution-log.yaml"
         - "Ensure EXECUTED phases have PASS/FAIL outcome"
         """
-        # Arrange: Create execution-log.yaml with multiple validation issues (Schema v2.0)
+        # Arrange: Create execution-log.yaml with multiple validation issues
         log_data = _create_execution_log_with_multiple_issues(tdd_phases)
-        minimal_step_file.write_text(yaml.dump(log_data, default_flow_style=False))
+        log_file = tmp_project_root / "execution-log.yaml"
+        log_file.write_text(yaml.dump(log_data, default_flow_style=False))
 
-        # Act: Trigger SubagentStop hook with compound path (Schema v2.0)
-        from src.des.adapters.driven.hooks.subagent_stop_hook import SubagentStopHook
-
-        hook = SubagentStopHook()
-        compound_path = f"{minimal_step_file}?project_id=test-project&step_id=01-01"
-        hook_result = hook.on_agent_complete(step_file_path=compound_path)
+        # Act: Invoke hook through external protocol
+        exit_code, response = invoke_hook(
+            "subagent-stop",
+            {
+                "executionLogPath": str(log_file),
+                "projectId": "test-project",
+                "stepId": "01-01",
+            },
+        )
 
         # Assert: FAILED state set with comprehensive error reporting
-        assert hook_result.validation_status == "FAILED"
-        assert hook_result.error_count >= 2  # Multiple issues detected
-        assert hook_result.error_type == "MULTIPLE_ERRORS"
+        assert exit_code == 2, f"Expected block (exit 2), got {exit_code}: {response}"
+        assert response["decision"] == "block"
 
-        # Assert: All issue types captured
-        assert len(hook_result.abandoned_phases) > 0  # Missing phases
-        assert len(hook_result.incomplete_phases) > 0  # Invalid outcomes
-        assert len(hook_result.invalid_skips) > 0  # Invalid skip reasons
+        # Assert: Multiple issue types captured in reason
+        reason = response["reason"]
+        assert "Missing phases" in reason, "Should report abandoned/missing phases"
+        assert "Invalid" in reason, "Should report invalid phases (outcome or skip)"
 
-        # Assert: Recovery suggestions provided
-        assert len(hook_result.recovery_suggestions) >= 3
+        # Assert: Recovery suggestions provided in hook output
+        additional_context = response.get("hookSpecificOutput", {}).get(
+            "additionalContext", ""
+        )
+        assert "RECOVERY REQUIRED" in additional_context
 
-        # FORMAT REQUIREMENT 1: Each suggestion >= 1 complete sentence
-        for suggestion in hook_result.recovery_suggestions:
-            assert len(suggestion) >= 20, "Suggestion too short to be actionable"
+        # CONTENT: Specific recovery guidance with numbered steps
+        assert "1." in additional_context, "Recovery steps should be numbered"
 
-        # CONTENT: Specific recovery actions expected
-        suggestions_text = " ".join(hook_result.recovery_suggestions).lower()
+        # Recovery suggestions should be actionable
+        context_lower = additional_context.lower()
         assert any(
-            keyword in suggestions_text for keyword in ["resume", "fix", "ensure"]
+            keyword in context_lower
+            for keyword in ["fix", "ensure", "append", "format"]
         ), "Should provide actionable recovery guidance"
 
     # =========================================================================
@@ -360,7 +423,6 @@ class TestPostExecutionStateValidation:
         AND each phase shows "EXECUTED" with valid outcome (PASS)
         WHEN SubagentStop hook validates the execution log
         THEN validation passes successfully
-        AND audit log records successful completion
 
         Business Value: Marcus confirms that properly completed steps are
                        validated silently without unnecessary alerts, allowing
@@ -370,23 +432,24 @@ class TestPostExecutionStateValidation:
                        each with PASS outcome. Validation confirms integrity
                        and logs success.
         """
-        # Arrange: Create execution-log.yaml with clean, complete execution (Schema v2.0)
+        # Arrange: Create execution-log.yaml with clean, complete execution
         log_data = _create_execution_log_with_clean_completion(tdd_phases)
-        minimal_step_file.write_text(yaml.dump(log_data, default_flow_style=False))
+        log_file = tmp_project_root / "execution-log.yaml"
+        log_file.write_text(yaml.dump(log_data, default_flow_style=False))
 
-        # Act: Trigger SubagentStop hook with compound path (Schema v2.0)
-        from src.des.adapters.driven.hooks.subagent_stop_hook import SubagentStopHook
-
-        hook = SubagentStopHook()
-        compound_path = f"{minimal_step_file}?project_id=test-project&step_id=01-01"
-        hook_result = hook.on_agent_complete(step_file_path=compound_path)
+        # Act: Invoke hook through external protocol
+        exit_code, response = invoke_hook(
+            "subagent-stop",
+            {
+                "executionLogPath": str(log_file),
+                "projectId": "test-project",
+                "stepId": "01-01",
+            },
+        )
 
         # Assert: Validation passes silently
-        assert hook_result.validation_status == "PASSED"
-        assert hook_result.abandoned_phases == []
-        assert hook_result.incomplete_phases == []
-        assert hook_result.invalid_skips == []
-        assert hook_result.error_message is None
+        assert exit_code == 0, f"Expected allow (exit 0), got {exit_code}: {response}"
+        assert response["decision"] == "allow"
 
     # =========================================================================
     # Edge Case: Valid skip with proper blocked_by reason passes
@@ -410,21 +473,24 @@ class TestPostExecutionStateValidation:
                        documented with APPROVED_SKIP prefix:
                        "APPROVED_SKIP:Code already meets quality standards"
         """
-        # Arrange: Create execution-log.yaml with legitimately skipped phase (Schema v2.0)
+        # Arrange: Create execution-log.yaml with legitimately skipped phase
         log_data = _create_execution_log_with_valid_skip(tdd_phases)
-        minimal_step_file.write_text(yaml.dump(log_data, default_flow_style=False))
+        log_file = tmp_project_root / "execution-log.yaml"
+        log_file.write_text(yaml.dump(log_data, default_flow_style=False))
 
-        # Act: Trigger SubagentStop hook with compound path (Schema v2.0)
-        from src.des.adapters.driven.hooks.subagent_stop_hook import SubagentStopHook
-
-        hook = SubagentStopHook()
-        compound_path = f"{minimal_step_file}?project_id=test-project&step_id=01-01"
-        hook_result = hook.on_agent_complete(step_file_path=compound_path)
+        # Act: Invoke hook through external protocol
+        exit_code, response = invoke_hook(
+            "subagent-stop",
+            {
+                "executionLogPath": str(log_file),
+                "projectId": "test-project",
+                "stepId": "01-01",
+            },
+        )
 
         # Assert: Valid skip accepted
-        assert hook_result.validation_status == "PASSED"
-        assert hook_result.invalid_skips == []
-        assert "REFACTOR_CONTINUOUS" not in str(hook_result.error_message or "")
+        assert exit_code == 0, f"Expected allow (exit 0), got {exit_code}: {response}"
+        assert response["decision"] == "allow"
 
 
 # =============================================================================
@@ -848,15 +914,27 @@ class TestOrchestratorHookIntegration:
         WIRING TEST: Proves SubagentStopHook is integrated into orchestrator.
         This test would FAIL if the import or delegation is missing.
         """
-        # Arrange: Import entry point (NOT internal component)
+        # Arrange: Import entry point and real hook adapter
+        from unittest.mock import Mock
+
+        from src.des.adapters.driven.filesystem.real_filesystem import RealFileSystem
+        from src.des.adapters.driven.hooks.subagent_stop_hook import SubagentStopHook
+        from src.des.adapters.driven.time.system_time import SystemTimeProvider
         from src.des.application.orchestrator import DESOrchestrator
+        from src.des.application.validator import TemplateValidator
 
         # Create execution-log.yaml with clean completion (Schema v2.0)
         log_data = _create_execution_log_with_clean_completion(tdd_phases)
         minimal_step_file.write_text(yaml.dump(log_data, default_flow_style=False))
 
-        # Act: Invoke validation through ENTRY POINT with compound path (Schema v2.0)
-        orchestrator = DESOrchestrator.create_with_defaults()
+        # Act: Invoke validation through ENTRY POINT with real SubagentStopHook
+        time_provider = SystemTimeProvider()
+        orchestrator = DESOrchestrator(
+            hook=SubagentStopHook(audit_logger=Mock(), time_provider=time_provider),
+            validator=TemplateValidator(),
+            filesystem=RealFileSystem(),
+            time_provider=time_provider,
+        )
         compound_path = f"{minimal_step_file}?project_id=test-project&step_id=01-01"
         result = orchestrator.on_subagent_complete(step_file_path=compound_path)
 
@@ -876,8 +954,14 @@ class TestOrchestratorHookIntegration:
         WIRING TEST: Proves validation logic is executed through orchestrator,
         not just returning success by default.
         """
-        # Arrange: Import entry point
+        # Arrange: Import entry point and real hook adapter
+        from unittest.mock import Mock
+
+        from src.des.adapters.driven.filesystem.real_filesystem import RealFileSystem
+        from src.des.adapters.driven.hooks.subagent_stop_hook import SubagentStopHook
+        from src.des.adapters.driven.time.system_time import SystemTimeProvider
         from src.des.application.orchestrator import DESOrchestrator
+        from src.des.application.validator import TemplateValidator
 
         # Create execution-log.yaml with abandoned phase (Schema v2.0)
         log_data = _create_execution_log_with_abandoned_phase(
@@ -885,8 +969,14 @@ class TestOrchestratorHookIntegration:
         )
         minimal_step_file.write_text(yaml.dump(log_data, default_flow_style=False))
 
-        # Act: Invoke validation through ENTRY POINT with compound path (Schema v2.0)
-        orchestrator = DESOrchestrator.create_with_defaults()
+        # Act: Invoke validation through ENTRY POINT with real SubagentStopHook
+        time_provider = SystemTimeProvider()
+        orchestrator = DESOrchestrator(
+            hook=SubagentStopHook(audit_logger=Mock(), time_provider=time_provider),
+            validator=TemplateValidator(),
+            filesystem=RealFileSystem(),
+            time_provider=time_provider,
+        )
         compound_path = f"{minimal_step_file}?project_id=test-project&step_id=01-01"
         result = orchestrator.on_subagent_complete(step_file_path=compound_path)
 

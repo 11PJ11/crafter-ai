@@ -7,8 +7,8 @@ produce any INFO, DEBUG, or WARNING logs that might clutter PR reviews.
 Business Context:
 Clean executions should be silent. Only violations get logged.
 
-NOTE: Scope validation not yet implemented in SubagentStopHook (Schema v2.0).
-All tests marked as skipped pending implementation.
+Step 02-01: Tests rewritten to use constructor injection (AC5)
+instead of patching get_audit_logger singleton.
 """
 
 from unittest.mock import Mock, patch
@@ -27,18 +27,15 @@ class TestCleanExecutionSilence:
     Step 04-04: Ensure that when agent only modifies in-scope files,
     NO SCOPE_VIOLATION entries appear in audit log AND no INFO/DEBUG
     logs confuse reviewers during PR review.
-
-    NOTE: All tests skipped - scope validation not yet implemented in SubagentStopHook.
     """
 
     def test_no_violations_produces_no_audit_entries(self, tmp_path, tdd_phases):
         """
         GIVEN scope validation passes (has_violations=False)
         WHEN SubagentStopHook processes result
-        THEN no audit logger calls occur
+        THEN no SCOPE_VIOLATION audit entries are logged
         """
         # Arrange: Create execution-log.yaml (Schema v2.0)
-        hook = RealSubagentStopHook()
         log_file = tmp_path / "execution-log.yaml"
 
         events = []
@@ -53,15 +50,17 @@ class TestCleanExecutionSilence:
         }
         log_file.write_text(yaml.dump(log_data, default_flow_style=False))
 
+        # Create mock dependencies for constructor injection (AC5)
+        mock_audit_logger = Mock()
+        mock_time_provider = Mock()
+        mock_datetime = Mock()
+        mock_datetime.isoformat.return_value = "2026-02-02T06:25:00.000000+00:00"
+        mock_time_provider.now_utc.return_value = mock_datetime
+
         # Mock ScopeValidator to return clean result
-        with (
-            patch(
-                "src.des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
-            ) as mock_validator_class,
-            patch(
-                "src.des.adapters.driven.hooks.subagent_stop_hook.get_audit_logger"
-            ) as mock_get_audit_logger,
-        ):
+        with patch(
+            "src.des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
+        ) as mock_validator_class:
             mock_validator = Mock()
             mock_validator_class.return_value = mock_validator
 
@@ -73,10 +72,11 @@ class TestCleanExecutionSilence:
                 reason=None,
             )
 
-            mock_audit_logger = Mock()
-            mock_get_audit_logger.return_value = mock_audit_logger
-
-            # Act
+            # Act: Call hook with injected dependencies (AC5)
+            hook = RealSubagentStopHook(
+                audit_logger=mock_audit_logger,
+                time_provider=mock_time_provider,
+            )
             compound_path = f"{log_file}?project_id=test-project&step_id=01-01"
             hook.on_agent_complete(compound_path)
 
@@ -96,7 +96,6 @@ class TestCleanExecutionSilence:
         THEN no logger.info() calls occur (silent success)
         """
         # Arrange: Create execution-log.yaml (Schema v2.0)
-        hook = RealSubagentStopHook()
         log_file = tmp_path / "execution-log.yaml"
 
         events = []
@@ -110,6 +109,13 @@ class TestCleanExecutionSilence:
             "events": events,
         }
         log_file.write_text(yaml.dump(log_data, default_flow_style=False))
+
+        # Create mock dependencies for constructor injection (AC5)
+        mock_audit_logger = Mock()
+        mock_time_provider = Mock()
+        mock_datetime = Mock()
+        mock_datetime.isoformat.return_value = "2026-02-02T06:25:00.000000+00:00"
+        mock_time_provider.now_utc.return_value = mock_datetime
 
         with (
             patch(
@@ -130,7 +136,11 @@ class TestCleanExecutionSilence:
                 reason=None,
             )
 
-            # Act
+            # Act: Call hook with injected dependencies (AC5)
+            hook = RealSubagentStopHook(
+                audit_logger=mock_audit_logger,
+                time_provider=mock_time_provider,
+            )
             compound_path = f"{log_file}?project_id=test-project&step_id=01-01"
             hook.on_agent_complete(compound_path)
 
@@ -145,7 +155,6 @@ class TestCleanExecutionSilence:
         THEN no logger.debug() calls occur
         """
         # Arrange: Create execution-log.yaml (Schema v2.0)
-        hook = RealSubagentStopHook()
         log_file = tmp_path / "execution-log.yaml"
 
         events = []
@@ -159,6 +168,13 @@ class TestCleanExecutionSilence:
             "events": events,
         }
         log_file.write_text(yaml.dump(log_data, default_flow_style=False))
+
+        # Create mock dependencies for constructor injection (AC5)
+        mock_audit_logger = Mock()
+        mock_time_provider = Mock()
+        mock_datetime = Mock()
+        mock_datetime.isoformat.return_value = "2026-02-02T06:25:00.000000+00:00"
+        mock_time_provider.now_utc.return_value = mock_datetime
 
         with (
             patch(
@@ -179,7 +195,11 @@ class TestCleanExecutionSilence:
                 reason=None,
             )
 
-            # Act
+            # Act: Call hook with injected dependencies (AC5)
+            hook = RealSubagentStopHook(
+                audit_logger=mock_audit_logger,
+                time_provider=mock_time_provider,
+            )
             compound_path = f"{log_file}?project_id=test-project&step_id=01-01"
             hook.on_agent_complete(compound_path)
 
@@ -191,10 +211,9 @@ class TestCleanExecutionSilence:
         GIVEN scope validation passes (has_violations=False)
         WHEN SubagentStopHook processes result
         THEN else-branch (if any) or implicit else is silent
-              (no audit entries, no logger calls of any level)
+              (no SCOPE_VIOLATION audit entries, no logger calls of any level)
         """
         # Arrange: Create execution-log.yaml (Schema v2.0)
-        hook = RealSubagentStopHook()
         log_file = tmp_path / "execution-log.yaml"
 
         events = []
@@ -209,13 +228,17 @@ class TestCleanExecutionSilence:
         }
         log_file.write_text(yaml.dump(log_data, default_flow_style=False))
 
+        # Create mock dependencies for constructor injection (AC5)
+        mock_audit_logger = Mock()
+        mock_time_provider = Mock()
+        mock_datetime = Mock()
+        mock_datetime.isoformat.return_value = "2026-02-02T06:25:00.000000+00:00"
+        mock_time_provider.now_utc.return_value = mock_datetime
+
         with (
             patch(
                 "src.des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
             ) as mock_validator_class,
-            patch(
-                "src.des.adapters.driven.hooks.subagent_stop_hook.get_audit_logger"
-            ) as mock_get_audit_logger,
             patch("src.des.adapters.driven.hooks.subagent_stop_hook.logger"),
         ):
             mock_validator = Mock()
@@ -229,10 +252,11 @@ class TestCleanExecutionSilence:
                 reason=None,
             )
 
-            mock_audit_logger = Mock()
-            mock_get_audit_logger.return_value = mock_audit_logger
-
-            # Act
+            # Act: Call hook with injected dependencies (AC5)
+            hook = RealSubagentStopHook(
+                audit_logger=mock_audit_logger,
+                time_provider=mock_time_provider,
+            )
             compound_path = f"{log_file}?project_id=test-project&step_id=01-01"
             hook.on_agent_complete(compound_path)
 

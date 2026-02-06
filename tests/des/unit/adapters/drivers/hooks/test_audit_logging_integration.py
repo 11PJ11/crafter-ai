@@ -9,8 +9,8 @@ when working on UserRepository), the hook must log each violation as a WARNING
 audit event. This creates a transparent audit trail for Priya to review during
 PR review, allowing her to decide whether to accept or reject the work.
 
-NOTE: Scope validation not yet implemented in SubagentStopHook (Schema v2.0).
-All tests marked as skipped pending implementation.
+Step 02-01: Tests rewritten to use constructor injection (AC5)
+instead of patching get_audit_logger singleton.
 """
 
 from unittest.mock import Mock, patch
@@ -23,10 +23,7 @@ from src.des.adapters.driven.validation.scope_validator import ScopeValidationRe
 
 
 class TestAuditLoggingIntegration:
-    """Test SubagentStopHook logs scope violations to audit trail (Schema v2.0).
-
-    NOTE: All tests skipped - scope validation not yet implemented in SubagentStopHook.
-    """
+    """Test SubagentStopHook logs scope violations to audit trail (Schema v2.0)."""
 
     def test_hook_logs_scope_violation_to_audit_logger(self, tmp_path, tdd_phases):
         """
@@ -65,8 +62,12 @@ class TestAuditLoggingIntegration:
             reason="",
         )
 
-        # Mock AuditLogger
+        # Create mock dependencies for constructor injection (AC5)
         mock_audit_logger = Mock()
+        mock_time_provider = Mock()
+        mock_datetime = Mock()
+        mock_datetime.isoformat.return_value = "2026-02-02T06:25:00.000000+00:00"
+        mock_time_provider.now_utc.return_value = mock_datetime
 
         with patch(
             "src.des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
@@ -75,33 +76,32 @@ class TestAuditLoggingIntegration:
             mock_validator_instance.validate_scope.return_value = mock_scope_result
             mock_validator_class.return_value = mock_validator_instance
 
-            with patch(
-                "src.des.adapters.driven.hooks.subagent_stop_hook.get_audit_logger",
-                return_value=mock_audit_logger,
-            ):
-                # Act: Call hook
-                hook = RealSubagentStopHook()
-                compound_path = f"{log_file}?project_id=test-project&step_id=01-01"
-                hook.on_agent_complete(compound_path)
+            # Act: Call hook with injected dependencies (AC5)
+            hook = RealSubagentStopHook(
+                audit_logger=mock_audit_logger,
+                time_provider=mock_time_provider,
+            )
+            compound_path = f"{log_file}?project_id=test-project&step_id=01-01"
+            hook.on_agent_complete(compound_path)
 
-                # Assert: SCOPE_VIOLATION event logged (filter out HOOK_SUBAGENT_STOP events)
-                scope_events = [
-                    call[0][0]
-                    for call in mock_audit_logger.append.call_args_list
-                    if call[0][0]["event"] == "SCOPE_VIOLATION"
-                ]
-                assert len(scope_events) == 1
-                logged_event = scope_events[0]
+            # Assert: SCOPE_VIOLATION event logged (filter out HOOK_SUBAGENT_STOP events)
+            scope_events = [
+                call[0][0]
+                for call in mock_audit_logger.append.call_args_list
+                if call[0][0]["event"] == "SCOPE_VIOLATION"
+            ]
+            assert len(scope_events) == 1
+            logged_event = scope_events[0]
 
-                assert logged_event["event"] == "SCOPE_VIOLATION"
-                assert logged_event["severity"] == "WARNING"
-                assert logged_event["step_file"] == compound_path
-                assert logged_event["out_of_scope_file"] == out_of_scope_file
-                # Placeholder patterns for Schema v2.0 (TODO: extract from roadmap.yaml)
-                assert logged_event["allowed_patterns"] == [
-                    "**/UserRepository*",
-                    "**/user_repository*",
-                ]
+            assert logged_event["event"] == "SCOPE_VIOLATION"
+            assert logged_event["severity"] == "WARNING"
+            assert logged_event["step_file"] == compound_path
+            assert logged_event["out_of_scope_file"] == out_of_scope_file
+            # Placeholder patterns for Schema v2.0 (TODO: extract from roadmap.yaml)
+            assert logged_event["allowed_patterns"] == [
+                "**/UserRepository*",
+                "**/user_repository*",
+            ]
 
     def test_hook_logs_each_violation_separately(self, tmp_path, tdd_phases):
         """
@@ -145,7 +145,12 @@ class TestAuditLoggingIntegration:
             reason="",
         )
 
+        # Create mock dependencies for constructor injection (AC5)
         mock_audit_logger = Mock()
+        mock_time_provider = Mock()
+        mock_datetime = Mock()
+        mock_datetime.isoformat.return_value = "2026-02-02T06:25:00.000000+00:00"
+        mock_time_provider.now_utc.return_value = mock_datetime
 
         with patch(
             "src.des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
@@ -154,27 +159,26 @@ class TestAuditLoggingIntegration:
             mock_validator_instance.validate_scope.return_value = mock_scope_result
             mock_validator_class.return_value = mock_validator_instance
 
-            with patch(
-                "src.des.adapters.driven.hooks.subagent_stop_hook.get_audit_logger",
-                return_value=mock_audit_logger,
-            ):
-                # Act: Call hook
-                hook = RealSubagentStopHook()
-                compound_path = f"{log_file}?project_id=test-project&step_id=01-01"
-                hook.on_agent_complete(compound_path)
+            # Act: Call hook with injected dependencies (AC5)
+            hook = RealSubagentStopHook(
+                audit_logger=mock_audit_logger,
+                time_provider=mock_time_provider,
+            )
+            compound_path = f"{log_file}?project_id=test-project&step_id=01-01"
+            hook.on_agent_complete(compound_path)
 
-                # Assert: 3 SCOPE_VIOLATION events logged (filter out HOOK_SUBAGENT_STOP)
-                scope_events = [
-                    call[0][0]
-                    for call in mock_audit_logger.append.call_args_list
-                    if call[0][0]["event"] == "SCOPE_VIOLATION"
-                ]
-                assert len(scope_events) == 3
+            # Assert: 3 SCOPE_VIOLATION events logged (filter out HOOK_SUBAGENT_STOP)
+            scope_events = [
+                call[0][0]
+                for call in mock_audit_logger.append.call_args_list
+                if call[0][0]["event"] == "SCOPE_VIOLATION"
+            ]
+            assert len(scope_events) == 3
 
-                # Verify each call logged correct file
-                for idx, out_of_scope_file in enumerate(out_of_scope_files):
-                    assert scope_events[idx]["event"] == "SCOPE_VIOLATION"
-                    assert scope_events[idx]["out_of_scope_file"] == out_of_scope_file
+            # Verify each call logged correct file
+            for idx, out_of_scope_file in enumerate(out_of_scope_files):
+                assert scope_events[idx]["event"] == "SCOPE_VIOLATION"
+                assert scope_events[idx]["out_of_scope_file"] == out_of_scope_file
 
     def test_hook_does_not_log_when_no_violations(self, tmp_path, tdd_phases):
         """
@@ -211,7 +215,12 @@ class TestAuditLoggingIntegration:
             reason="",
         )
 
+        # Create mock dependencies for constructor injection (AC5)
         mock_audit_logger = Mock()
+        mock_time_provider = Mock()
+        mock_datetime = Mock()
+        mock_datetime.isoformat.return_value = "2026-02-02T06:25:00.000000+00:00"
+        mock_time_provider.now_utc.return_value = mock_datetime
 
         with patch(
             "src.des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
@@ -220,22 +229,21 @@ class TestAuditLoggingIntegration:
             mock_validator_instance.validate_scope.return_value = mock_scope_result
             mock_validator_class.return_value = mock_validator_instance
 
-            with patch(
-                "src.des.adapters.driven.hooks.subagent_stop_hook.get_audit_logger",
-                return_value=mock_audit_logger,
-            ):
-                # Act: Call hook
-                hook = RealSubagentStopHook()
-                compound_path = f"{log_file}?project_id=test-project&step_id=01-01"
-                hook.on_agent_complete(compound_path)
+            # Act: Call hook with injected dependencies (AC5)
+            hook = RealSubagentStopHook(
+                audit_logger=mock_audit_logger,
+                time_provider=mock_time_provider,
+            )
+            compound_path = f"{log_file}?project_id=test-project&step_id=01-01"
+            hook.on_agent_complete(compound_path)
 
-                # Assert: No SCOPE_VIOLATION events logged (HOOK_SUBAGENT_STOP may exist)
-                scope_events = [
-                    call[0][0]
-                    for call in mock_audit_logger.append.call_args_list
-                    if call[0][0]["event"] == "SCOPE_VIOLATION"
-                ]
-                assert len(scope_events) == 0
+            # Assert: No SCOPE_VIOLATION events logged (HOOK_SUBAGENT_STOP may exist)
+            scope_events = [
+                call[0][0]
+                for call in mock_audit_logger.append.call_args_list
+                if call[0][0]["event"] == "SCOPE_VIOLATION"
+            ]
+            assert len(scope_events) == 0
 
     def test_hook_includes_allowed_patterns_in_audit_event(self, tmp_path, tdd_phases):
         """
@@ -276,7 +284,12 @@ class TestAuditLoggingIntegration:
             reason="",
         )
 
+        # Create mock dependencies for constructor injection (AC5)
         mock_audit_logger = Mock()
+        mock_time_provider = Mock()
+        mock_datetime = Mock()
+        mock_datetime.isoformat.return_value = "2026-02-02T06:25:00.000000+00:00"
+        mock_time_provider.now_utc.return_value = mock_datetime
 
         with patch(
             "src.des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
@@ -285,20 +298,19 @@ class TestAuditLoggingIntegration:
             mock_validator_instance.validate_scope.return_value = mock_scope_result
             mock_validator_class.return_value = mock_validator_instance
 
-            with patch(
-                "src.des.adapters.driven.hooks.subagent_stop_hook.get_audit_logger",
-                return_value=mock_audit_logger,
-            ):
-                # Act: Call hook
-                hook = RealSubagentStopHook()
-                compound_path = f"{log_file}?project_id=test-project&step_id=01-01"
-                hook.on_agent_complete(compound_path)
+            # Act: Call hook with injected dependencies (AC5)
+            hook = RealSubagentStopHook(
+                audit_logger=mock_audit_logger,
+                time_provider=mock_time_provider,
+            )
+            compound_path = f"{log_file}?project_id=test-project&step_id=01-01"
+            hook.on_agent_complete(compound_path)
 
-                # Assert: SCOPE_VIOLATION event includes allowed_patterns
-                scope_events = [
-                    call[0][0]
-                    for call in mock_audit_logger.append.call_args_list
-                    if call[0][0]["event"] == "SCOPE_VIOLATION"
-                ]
-                assert len(scope_events) >= 1
-                assert scope_events[0]["allowed_patterns"] == allowed_patterns
+            # Assert: SCOPE_VIOLATION event includes allowed_patterns
+            scope_events = [
+                call[0][0]
+                for call in mock_audit_logger.append.call_args_list
+                if call[0][0]["event"] == "SCOPE_VIOLATION"
+            ]
+            assert len(scope_events) >= 1
+            assert scope_events[0]["allowed_patterns"] == allowed_patterns

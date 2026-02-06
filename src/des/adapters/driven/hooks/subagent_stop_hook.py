@@ -20,8 +20,6 @@ from pathlib import Path
 
 import yaml
 
-from src.des.adapters.driven.logging.audit_logger import get_audit_logger
-from src.des.adapters.driven.time.system_time import SystemTimeProvider
 from src.des.adapters.driven.validation.scope_validator import ScopeValidator
 from src.des.domain.tdd_schema import get_tdd_schema
 from src.des.ports.driver_ports.hook_port import HookPort, HookResult
@@ -54,9 +52,23 @@ class SubagentStopHook(HookPort):
     - SKIPPED phases with blocking prefixes (DEFERRED) not allowed
     """
 
-    def __init__(self):
-        """Initialize hook with TDD schema."""
+    def __init__(self, audit_logger=None, time_provider=None):
+        """Initialize hook with TDD schema and injected dependencies.
+
+        Args:
+            audit_logger: AuditLogger instance for audit trail.
+                         Required for audit event paths (AC5: no self-creation).
+            time_provider: TimeProvider instance for timestamps.
+                          Required for audit event paths (AC5: no self-creation).
+
+        Note:
+            Parameters remain optional for backward compatibility with tests
+            that don't exercise audit logging paths. Production code MUST
+            inject both via create_orchestrator().
+        """
         self._schema = get_tdd_schema()
+        self._audit_logger = audit_logger
+        self._time_provider = time_provider
 
     def persist_turn_count(
         self, step_file_path: str, phase_name: str, turn_count: int
@@ -338,20 +350,23 @@ class SubagentStopHook(HookPort):
             phases_validated: Number of phases validated
             validation_errors: List of validation errors (for failures)
         """
-        audit_logger = get_audit_logger()
-        time_provider = SystemTimeProvider()
+        if self._audit_logger is None or self._time_provider is None:
+            raise RuntimeError(
+                "SubagentStopHook requires audit_logger and time_provider for audit events. "
+                "Use create_orchestrator() to ensure proper dependency injection (AC5)."
+            )
 
         audit_entry = {
             "event": event_type,
             "step_id": step_id,
             "phases_validated": phases_validated,
-            "timestamp": time_provider.now_utc().isoformat(),
+            "timestamp": self._time_provider.now_utc().isoformat(),
         }
 
         if validation_errors:
             audit_entry["validation_errors"] = validation_errors
 
-        audit_logger.append(audit_entry)
+        self._audit_logger.append(audit_entry)
 
     def _validate_and_log_scope_violations(
         self, log_path: str, project_id: str, step_id: str
@@ -387,8 +402,13 @@ class SubagentStopHook(HookPort):
 
         # Log each scope violation separately
         if scope_result.has_violations:
-            audit_logger = get_audit_logger()
-            time_provider = SystemTimeProvider()
+            if self._audit_logger is None or self._time_provider is None:
+                raise RuntimeError(
+                    "SubagentStopHook requires audit_logger and time_provider for scope violations. "
+                    "Use create_orchestrator() to ensure proper dependency injection (AC5)."
+                )
+            audit_logger = self._audit_logger
+            time_provider = self._time_provider
 
             # TODO: Extract allowed_patterns from roadmap.yaml
             # Placeholder for Schema v2.0 - hardcoded for test compatibility

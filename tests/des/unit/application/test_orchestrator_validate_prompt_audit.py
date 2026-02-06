@@ -3,11 +3,49 @@ Unit tests for DESOrchestrator.validate_prompt audit logging (Step 01-02).
 
 Tests that validate_prompt logs HOOK_PRE_TASK_PASSED and HOOK_PRE_TASK_BLOCKED
 audit events with proper structure, timestamps from TimeProvider, and relevant context.
+
+Updated for hex-arch redesign: orchestrator now uses JsonlAuditLogWriter + DESConfig
+directly instead of legacy get_audit_logger() singleton.
 """
 
 from unittest.mock import Mock, patch
 
 from src.des.adapters.driven.logging.audit_events import EventType
+
+
+def _patch_audit_writer_and_config():
+    """Create patches for JsonlAuditLogWriter and DESConfig in orchestrator module.
+
+    The orchestrator creates these locally in validate_prompt():
+        from src.des.adapters.driven.config.des_config import DESConfig
+        config = DESConfig()
+        if config.audit_logging_enabled:
+            writer = JsonlAuditLogWriter()
+            writer.log_event(PortAuditEvent(...))
+
+    We patch:
+    - JsonlAuditLogWriter where it's imported (module-level in orchestrator.py)
+    - DESConfig where it's imported (locally in validate_prompt)
+    """
+    mock_writer_cls = Mock()
+    mock_writer = Mock()
+    mock_writer_cls.return_value = mock_writer
+
+    mock_config_cls = Mock()
+    mock_config = Mock()
+    mock_config.audit_logging_enabled = True
+    mock_config_cls.return_value = mock_config
+
+    writer_patch = patch(
+        "src.des.application.orchestrator.JsonlAuditLogWriter",
+        mock_writer_cls,
+    )
+    config_patch = patch(
+        "src.des.adapters.driven.config.des_config.DESConfig",
+        mock_config_cls,
+    )
+
+    return writer_patch, config_patch, mock_writer
 
 
 class TestValidatePromptAuditLogging:
@@ -28,26 +66,23 @@ class TestValidatePromptAuditLogging:
         Task: Implement feature
         """
 
-        with patch(
-            "src.des.adapters.driven.logging.audit_logger.get_audit_logger"
-        ) as mock_get_logger:
-            mock_logger = Mock()
-            mock_get_logger.return_value = mock_logger
+        writer_patch, config_patch, mock_writer = _patch_audit_writer_and_config()
 
+        with writer_patch, config_patch:
             # Act
             result = des_orchestrator.validate_prompt(valid_prompt)
 
             # Assert
             assert result.task_invocation_allowed is True
-            mock_logger.append.assert_called_once()
+            mock_writer.log_event.assert_called_once()
 
-            # Verify event details
-            call_args = mock_logger.append.call_args
-            event_dict = call_args[0][0]  # First positional argument
+            # Verify event details via PortAuditEvent
+            call_args = mock_writer.log_event.call_args
+            port_event = call_args[0][0]  # First positional argument (PortAuditEvent)
 
-            assert event_dict["event"] == EventType.HOOK_PRE_TASK_PASSED.value
-            assert event_dict["timestamp"] is not None
-            assert event_dict["step_id"] == "01-01"
+            assert port_event.event_type == EventType.HOOK_PRE_TASK_PASSED.value
+            assert port_event.timestamp is not None
+            assert port_event.data["step_id"] == "01-01"
 
     def test_validate_prompt_logs_hook_pre_task_blocked_when_validation_fails(
         self, in_memory_filesystem, mocked_hook, mocked_time_provider
@@ -86,26 +121,23 @@ class TestValidatePromptAuditLogging:
         Task: Implement feature without DES markers
         """
 
-        with patch(
-            "src.des.adapters.driven.logging.audit_logger.get_audit_logger"
-        ) as mock_get_logger:
-            mock_logger = Mock()
-            mock_get_logger.return_value = mock_logger
+        writer_patch, config_patch, mock_writer = _patch_audit_writer_and_config()
 
+        with writer_patch, config_patch:
             # Act
             result = des_orchestrator.validate_prompt(invalid_prompt)
 
             # Assert
             assert result.task_invocation_allowed is False
-            mock_logger.append.assert_called_once()
+            mock_writer.log_event.assert_called_once()
 
-            # Verify event details
-            call_args = mock_logger.append.call_args
-            event_dict = call_args[0][0]  # First positional argument
+            # Verify event details via PortAuditEvent
+            call_args = mock_writer.log_event.call_args
+            port_event = call_args[0][0]
 
-            assert event_dict["event"] == EventType.HOOK_PRE_TASK_BLOCKED.value
-            assert event_dict["timestamp"] is not None
-            assert event_dict["rejection_reason"] is not None
+            assert port_event.event_type == EventType.HOOK_PRE_TASK_BLOCKED.value
+            assert port_event.timestamp is not None
+            assert port_event.data.get("rejection_reason") is not None
 
     def test_validate_prompt_uses_time_provider_for_timestamp(
         self, des_orchestrator, mocked_time_provider
@@ -124,24 +156,21 @@ class TestValidatePromptAuditLogging:
 
         expected_timestamp = mocked_time_provider.now_utc()
 
-        with patch(
-            "src.des.adapters.driven.logging.audit_logger.get_audit_logger"
-        ) as mock_get_logger:
-            mock_logger = Mock()
-            mock_get_logger.return_value = mock_logger
+        writer_patch, config_patch, mock_writer = _patch_audit_writer_and_config()
 
+        with writer_patch, config_patch:
             # Act
             des_orchestrator.validate_prompt(valid_prompt)
 
             # Assert
-            mock_logger.append.assert_called_once()
+            mock_writer.log_event.assert_called_once()
 
             # Verify timestamp matches TimeProvider
-            call_args = mock_logger.append.call_args
-            event_dict = call_args[0][0]
+            call_args = mock_writer.log_event.call_args
+            port_event = call_args[0][0]
 
             # Convert to comparable format
-            assert event_dict["timestamp"] == expected_timestamp.isoformat()
+            assert port_event.timestamp == expected_timestamp.isoformat()
 
     def test_validate_prompt_extracts_step_id_from_prompt(self, des_orchestrator):
         """
@@ -156,20 +185,17 @@ class TestValidatePromptAuditLogging:
         Task: Refactor module
         """
 
-        with patch(
-            "src.des.adapters.driven.logging.audit_logger.get_audit_logger"
-        ) as mock_get_logger:
-            mock_logger = Mock()
-            mock_get_logger.return_value = mock_logger
+        writer_patch, config_patch, mock_writer = _patch_audit_writer_and_config()
 
+        with writer_patch, config_patch:
             # Act
             des_orchestrator.validate_prompt(prompt_with_step)
 
             # Assert
-            call_args = mock_logger.append.call_args
-            event_dict = call_args[0][0]
+            call_args = mock_writer.log_event.call_args
+            port_event = call_args[0][0]
 
-            assert event_dict["step_id"] == "02-03"
+            assert port_event.data["step_id"] == "02-03"
 
     def test_validate_prompt_includes_agent_name_in_audit_event(self, des_orchestrator):
         """
@@ -185,25 +211,20 @@ class TestValidatePromptAuditLogging:
         Task: Implement feature
         """
 
-        with patch(
-            "src.des.adapters.driven.logging.audit_logger.get_audit_logger"
-        ) as mock_get_logger:
-            mock_logger = Mock()
-            mock_get_logger.return_value = mock_logger
+        writer_patch, config_patch, mock_writer = _patch_audit_writer_and_config()
 
+        with writer_patch, config_patch:
             # Act
             des_orchestrator.validate_prompt(prompt_with_agent)
 
             # Assert
-            call_args = mock_logger.append.call_args
-            event_dict = call_args[0][0]
+            call_args = mock_writer.log_event.call_args
+            port_event = call_args[0][0]
 
-            # Agent name should be in extra_context
-            assert event_dict.get("extra_context") is not None
-            assert (
-                "agent" in event_dict["extra_context"]
-                or "agent_name" in event_dict["extra_context"]
-            )
+            # Agent name should be in data.extra_context
+            extra_context = port_event.data.get("extra_context")
+            assert extra_context is not None
+            assert "agent" in extra_context or "agent_name" in extra_context
 
     def test_validate_prompt_blocked_includes_rejection_details(
         self, in_memory_filesystem, mocked_hook, mocked_time_provider
@@ -240,24 +261,21 @@ class TestValidatePromptAuditLogging:
 
         invalid_prompt = "Task without any DES markers"
 
-        with patch(
-            "src.des.adapters.driven.logging.audit_logger.get_audit_logger"
-        ) as mock_get_logger:
-            mock_logger = Mock()
-            mock_get_logger.return_value = mock_logger
+        writer_patch, config_patch, mock_writer = _patch_audit_writer_and_config()
 
+        with writer_patch, config_patch:
             # Act
             result = des_orchestrator.validate_prompt(invalid_prompt)
 
             # Assert
             assert result.task_invocation_allowed is False
 
-            call_args = mock_logger.append.call_args
-            event_dict = call_args[0][0]
+            call_args = mock_writer.log_event.call_args
+            port_event = call_args[0][0]
 
-            assert event_dict["event"] == EventType.HOOK_PRE_TASK_BLOCKED.value
-            assert event_dict.get("rejection_reason") is not None
-            assert len(event_dict["rejection_reason"]) > 0
+            assert port_event.event_type == EventType.HOOK_PRE_TASK_BLOCKED.value
+            assert port_event.data.get("rejection_reason") is not None
+            assert len(port_event.data["rejection_reason"]) > 0
 
     def test_validate_prompt_does_not_log_if_audit_disabled(
         self, in_memory_filesystem, mocked_hook, mocked_validator, mocked_time_provider
@@ -268,16 +286,52 @@ class TestValidatePromptAuditLogging:
         THEN no audit event is logged
         """
         # Arrange
-        # Note: This test would require DES config to be loaded and checked
-        # For now, this is a placeholder showing the expected behavior
-        # Implementation in Phase 3 (GREEN) will check config before logging
-        pass
+        from src.des.application.orchestrator import DESOrchestrator
+
+        des_orchestrator = DESOrchestrator(
+            hook=mocked_hook,
+            validator=mocked_validator,
+            filesystem=in_memory_filesystem,
+            time_provider=mocked_time_provider,
+        )
+
+        valid_prompt = """
+        <!-- DES-VALIDATION: required -->
+        <!-- DES-STEP-FILE: steps/01-01.json -->
+        Task: Implement feature
+        """
+
+        mock_writer_cls = Mock()
+        mock_writer = Mock()
+        mock_writer_cls.return_value = mock_writer
+
+        mock_config_cls = Mock()
+        mock_config = Mock()
+        mock_config.audit_logging_enabled = False  # Audit disabled
+        mock_config_cls.return_value = mock_config
+
+        with (
+            patch(
+                "src.des.application.orchestrator.JsonlAuditLogWriter",
+                mock_writer_cls,
+            ),
+            patch(
+                "src.des.adapters.driven.config.des_config.DESConfig",
+                mock_config_cls,
+            ),
+        ):
+            # Act
+            des_orchestrator.validate_prompt(valid_prompt)
+
+            # Assert - writer should never be instantiated when audit is disabled
+            mock_writer_cls.assert_not_called()
+            mock_writer.log_event.assert_not_called()
 
     def test_validate_prompt_audit_event_persisted_to_log_file(self, des_orchestrator):
         """
         GIVEN DESOrchestrator with audit logging enabled
         WHEN validate_prompt logs audit event
-        THEN event is persisted to audit log file at ~/.claude/des/logs/audit.log
+        THEN event is persisted via JsonlAuditLogWriter.log_event()
         """
         # Arrange
         valid_prompt = """
@@ -286,24 +340,20 @@ class TestValidatePromptAuditLogging:
         Task: Implement feature
         """
 
-        with patch(
-            "src.des.adapters.driven.logging.audit_logger.get_audit_logger"
-        ) as mock_get_logger:
-            mock_logger = Mock()
-            mock_get_logger.return_value = mock_logger
+        writer_patch, config_patch, mock_writer = _patch_audit_writer_and_config()
 
+        with writer_patch, config_patch:
             # Act
             des_orchestrator.validate_prompt(valid_prompt)
 
-            # Assert
-            # Verify logger.append was called, which handles file persistence
-            assert mock_logger.append.called
+            # Assert - verify log_event was called (which handles file persistence)
+            assert mock_writer.log_event.called
 
     def test_validate_prompt_audit_event_has_structured_format(self, des_orchestrator):
         """
         GIVEN validate_prompt creating audit event
         WHEN event is logged
-        THEN event follows AuditEvent dataclass structure
+        THEN event follows PortAuditEvent structure with event_type, timestamp, data
         """
         # Arrange
         valid_prompt = """
@@ -312,21 +362,18 @@ class TestValidatePromptAuditLogging:
         Task: Implement feature
         """
 
-        with patch(
-            "src.des.adapters.driven.logging.audit_logger.get_audit_logger"
-        ) as mock_get_logger:
-            mock_logger = Mock()
-            mock_get_logger.return_value = mock_logger
+        writer_patch, config_patch, mock_writer = _patch_audit_writer_and_config()
 
+        with writer_patch, config_patch:
             # Act
             des_orchestrator.validate_prompt(valid_prompt)
 
             # Assert
-            call_args = mock_logger.append.call_args
-            event_dict = call_args[0][0]
+            call_args = mock_writer.log_event.call_args
+            port_event = call_args[0][0]
 
-            # Verify required fields
-            assert "timestamp" in event_dict
-            assert "event" in event_dict
-            assert "step_id" in event_dict
+            # Verify PortAuditEvent required fields
+            assert port_event.timestamp is not None
+            assert port_event.event_type is not None
+            assert port_event.data.get("step_id") is not None
             # rejection_reason is optional (only for BLOCKED events)

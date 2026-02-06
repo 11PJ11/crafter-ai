@@ -1,0 +1,108 @@
+"""PreToolUseService - application service for Task tool invocation validation.
+
+Orchestrates domain logic (MaxTurnsPolicy, DesMarkerParser) and driven ports
+(ValidatorPort, AuditLogWriter, TimeProvider) to produce allow/block decisions.
+
+This service implements the PreToolUsePort driver port interface.
+"""
+
+from __future__ import annotations
+
+from src.des.domain.des_marker_parser import DesMarkerParser
+from src.des.domain.max_turns_policy import MaxTurnsPolicy
+from src.des.ports.driven_ports.audit_log_writer import AuditEvent, AuditLogWriter
+from src.des.ports.driven_ports.time_provider_port import TimeProvider
+from src.des.ports.driver_ports.pre_tool_use_port import (
+    HookDecision,
+    PreToolUseInput,
+    PreToolUsePort,
+)
+from src.des.ports.driver_ports.validator_port import ValidatorPort
+
+
+class PreToolUseService(PreToolUsePort):
+    """Validates Task tool invocations before execution.
+
+    Flow:
+      1. Validate max_turns via MaxTurnsPolicy
+         - If invalid: log HOOK_PRE_TOOL_USE_BLOCKED, return block
+      2. Parse DES markers via DesMarkerParser
+         - If not DES task: log HOOK_PRE_TOOL_USE_ALLOWED, return allow
+         - If orchestrator mode: log HOOK_PRE_TOOL_USE_ALLOWED, return allow
+      3. Validate prompt structure via ValidatorPort
+         - If invalid: log HOOK_PRE_TOOL_USE_BLOCKED, return block
+         - If valid: log HOOK_PRE_TOOL_USE_ALLOWED, return allow
+    """
+
+    def __init__(
+        self,
+        max_turns_policy: MaxTurnsPolicy,
+        marker_parser: DesMarkerParser,
+        prompt_validator: ValidatorPort,
+        audit_writer: AuditLogWriter,
+        time_provider: TimeProvider,
+    ) -> None:
+        self._max_turns_policy = max_turns_policy
+        self._marker_parser = marker_parser
+        self._prompt_validator = prompt_validator
+        self._audit_writer = audit_writer
+        self._time_provider = time_provider
+
+    def validate(self, input_data: PreToolUseInput) -> HookDecision:
+        """Validate a Task tool invocation.
+
+        Args:
+            input_data: Parsed input from the hook protocol
+
+        Returns:
+            HookDecision indicating allow or block
+        """
+        # Step 1: Validate max_turns
+        policy_result = self._max_turns_policy.validate(input_data.max_turns)
+        if not policy_result.is_valid:
+            self._log_blocked(policy_result.reason or "MISSING_MAX_TURNS")
+            return HookDecision.block(reason=policy_result.reason or "MISSING_MAX_TURNS")
+
+        # Step 2: Parse DES markers
+        markers = self._marker_parser.parse(input_data.prompt)
+
+        if not markers.is_des_task:
+            # Ad-hoc task: max_turns validated, no prompt validation needed
+            self._log_allowed(context="non_des_task")
+            return HookDecision.allow()
+
+        if markers.is_orchestrator_mode:
+            # Orchestrator mode: relaxed validation
+            self._log_allowed(context="orchestrator_mode")
+            return HookDecision.allow()
+
+        # Step 3: Validate DES prompt structure
+        validation_result = self._prompt_validator.validate_prompt(input_data.prompt)
+
+        if validation_result.task_invocation_allowed:
+            self._log_allowed(context="des_validated")
+            return HookDecision.allow()
+        else:
+            reason = "; ".join(validation_result.errors)
+            self._log_blocked(reason)
+            return HookDecision.block(reason=reason)
+
+    def _log_allowed(self, context: str) -> None:
+        """Log an allowed invocation to the audit trail."""
+        self._audit_writer.log_event(
+            AuditEvent(
+                event_type="HOOK_PRE_TOOL_USE_ALLOWED",
+                timestamp=self._time_provider.now_utc().isoformat(),
+                data={"context": context},
+            )
+        )
+
+    def _log_blocked(self, reason: str) -> None:
+        """Log a blocked invocation to the audit trail."""
+        self._audit_writer.log_event(
+            AuditEvent(
+                event_type="HOOK_PRE_TOOL_USE_BLOCKED",
+                timestamp=self._time_provider.now_utc().isoformat(),
+                data={"reason": reason},
+            )
+        )

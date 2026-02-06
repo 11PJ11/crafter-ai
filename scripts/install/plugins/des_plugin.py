@@ -15,7 +15,7 @@ class DESPlugin(InstallationPlugin):
     without modifying core installer logic.
 
     Includes hooks installation that properly preserves all existing settings
-    in settings.local.json (permissions, other hooks, etc.).
+    in settings.json (global config: permissions, other hooks, etc.).
     """
 
     # DES scripts installed to ~/.claude/scripts/
@@ -171,12 +171,11 @@ class DESPlugin(InstallationPlugin):
             # Use dist directory if available (build pipeline), fallback to src/
             if hasattr(context, "dist_dir") and context.dist_dir:
                 source_dir = context.dist_dir / "lib" / "python" / "des"
+            # Use project_root if available, fallback to current directory
+            elif context.project_root:
+                source_dir = context.project_root / "src" / "des"
             else:
-                # Use project_root if available, fallback to current directory
-                if context.project_root:
-                    source_dir = context.project_root / "src" / "des"
-                else:
-                    source_dir = Path("src/des")
+                source_dir = Path("src/des")
 
             if not source_dir.exists():
                 return PluginResult(
@@ -378,7 +377,7 @@ class DESPlugin(InstallationPlugin):
         return self.HOOK_COMMAND_TEMPLATE.format(lib_path=lib_path, action=action)
 
     def _install_des_hooks(self, context: InstallContext) -> PluginResult:
-        """Install DES hooks into settings.local.json.
+        """Install DES hooks into settings.json (global config).
 
         CRITICAL: Preserves ALL existing settings (permissions, other hooks, etc.).
         Only modifies the hooks.PreToolUse and hooks.SubagentStop arrays.
@@ -390,7 +389,7 @@ class DESPlugin(InstallationPlugin):
         Always removes and re-adds DES hooks to ensure latest format is used.
         """
         try:
-            settings_file = context.claude_dir / "settings.local.json"
+            settings_file = context.claude_dir / "settings.json"
 
             # Load existing config (preserve everything)
             config = self._load_settings(settings_file)
@@ -406,7 +405,7 @@ class DESPlugin(InstallationPlugin):
             if "SubagentStop" not in config["hooks"]:
                 config["hooks"]["SubagentStop"] = []
 
-            # Check if hooks already exist with same format
+            # Check if hooks already exist with correct nested format
             new_pretask_command = self._generate_hook_command(context, "pre-task")
             new_stop_command = self._generate_hook_command(context, "subagent-stop")
 
@@ -414,10 +413,15 @@ class DESPlugin(InstallationPlugin):
             stop_hooks = config["hooks"]["SubagentStop"]
 
             has_correct_pretask = any(
-                h.get("command") == new_pretask_command for h in pre_hooks
+                any(
+                    h2.get("command") == new_pretask_command
+                    for h2 in h.get("hooks", [])
+                )
+                for h in pre_hooks
             )
             has_correct_stop = any(
-                h.get("command") == new_stop_command for h in stop_hooks
+                any(h2.get("command") == new_stop_command for h2 in h.get("hooks", []))
+                for h in stop_hooks
             )
 
             if has_correct_pretask and has_correct_stop:
@@ -430,25 +434,36 @@ class DESPlugin(InstallationPlugin):
                     message="DES hooks already installed",
                 )
 
-            # Remove any existing DES hooks (both old and new format) to prevent duplicates
+            # Remove any existing DES hooks (both old flat and new nested format)
             config["hooks"]["PreToolUse"] = [
                 h
                 for h in config["hooks"]["PreToolUse"]
-                if not self._is_des_hook(h.get("command", ""))
+                if not self._is_des_hook_entry(h)
             ]
             config["hooks"]["SubagentStop"] = [
                 h
                 for h in config["hooks"]["SubagentStop"]
-                if not self._is_des_hook(h.get("command", ""))
+                if not self._is_des_hook_entry(h)
             ]
 
-            # Generate hooks with correct installed paths
+            # Generate hooks with Claude Code v2 nested format
+            # Format: {"matcher": "...", "hooks": [{"type": "command", "command": "..."}]}
             pretooluse_hook = {
                 "matcher": "Task",
-                "command": new_pretask_command,
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": new_pretask_command,
+                    }
+                ],
             }
             subagent_stop_hook = {
-                "command": new_stop_command,
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": new_stop_command,
+                    }
+                ],
             }
 
             # Add DES hooks
@@ -537,21 +552,34 @@ class DESPlugin(InstallationPlugin):
             return False
 
         pre_hooks = config["hooks"].get("PreToolUse", [])
-        has_pre = any(self._is_des_hook(h.get("command", "")) for h in pre_hooks)
+        has_pre = any(self._is_des_hook_entry(h) for h in pre_hooks)
 
         stop_hooks = config["hooks"].get("SubagentStop", [])
-        has_stop = any(self._is_des_hook(h.get("command", "")) for h in stop_hooks)
+        has_stop = any(self._is_des_hook_entry(h) for h in stop_hooks)
 
         return has_pre or has_stop
 
-    def _is_des_hook(self, command: str) -> bool:
-        """Check if command is a DES hook.
+    def _is_des_hook_entry(self, hook_entry: dict) -> bool:
+        """Check if a hook entry is a DES hook.
 
-        Detects both old format (direct .py) and new format (python -m):
-        - Old: python3 src/des/.../claude_code_hook_adapter.py
-        - New: python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter
+        Supports both old flat format and new nested format:
+        - Old flat: {"matcher": "Task", "command": "...claude_code_hook_adapter..."}
+        - New nested: {"matcher": "Task", "hooks": [{"type": "command", "command": "...claude_code_hook_adapter..."}]}
+
+        Args:
+            hook_entry: Hook entry dictionary from settings JSON
+
+        Returns:
+            bool: True if entry is a DES hook
         """
-        return "claude_code_hook_adapter" in command
+        # Check old flat format
+        if "claude_code_hook_adapter" in hook_entry.get("command", ""):
+            return True
+        # Check new nested format
+        for h in hook_entry.get("hooks", []):
+            if "claude_code_hook_adapter" in h.get("command", ""):
+                return True
+        return False
 
     def uninstall(self, context: InstallContext) -> PluginResult:
         """Uninstall DES plugin.
@@ -611,12 +639,12 @@ class DESPlugin(InstallationPlugin):
             )
 
     def _uninstall_des_hooks(self, context: InstallContext) -> PluginResult:
-        """Remove DES hooks from settings.local.json.
+        """Remove DES hooks from settings.json (global config).
 
         Preserves all other settings (permissions, other hooks, etc.).
         """
         try:
-            settings_file = context.claude_dir / "settings.local.json"
+            settings_file = context.claude_dir / "settings.json"
 
             if not settings_file.exists():
                 return PluginResult(
@@ -633,14 +661,14 @@ class DESPlugin(InstallationPlugin):
                     config["hooks"]["PreToolUse"] = [
                         h
                         for h in config["hooks"]["PreToolUse"]
-                        if not self._is_des_hook(h.get("command", ""))
+                        if not self._is_des_hook_entry(h)
                     ]
 
                 if "SubagentStop" in config["hooks"]:
                     config["hooks"]["SubagentStop"] = [
                         h
                         for h in config["hooks"]["SubagentStop"]
-                        if not self._is_des_hook(h.get("command", ""))
+                        if not self._is_des_hook_entry(h)
                     ]
 
             self._save_settings(settings_file, config, context)
@@ -692,17 +720,17 @@ class DESPlugin(InstallationPlugin):
             if not template_path.exists():
                 errors.append(f"Missing DES template: {template}")
 
-        # 4. Verify hooks installed in settings.local.json
-        settings_file = context.claude_dir / "settings.local.json"
+        # 4. Verify hooks installed in settings.json (global config)
+        settings_file = context.claude_dir / "settings.json"
         if settings_file.exists():
             try:
                 config = self._load_settings(settings_file)
                 if not self._hooks_already_installed(config):
-                    errors.append("DES hooks not found in settings.local.json")
+                    errors.append("DES hooks not found in settings.json")
             except Exception as e:
                 errors.append(f"Could not verify DES hooks: {e}")
         else:
-            errors.append("settings.local.json not found - DES hooks not installed")
+            errors.append("settings.json not found - DES hooks not installed")
 
         if errors:
             return PluginResult(

@@ -1,0 +1,342 @@
+# DES Hook Architecture Redesign - Roadmap (REVISED)
+# Architecture: docs/architecture/des-hook-architecture-redesign.md
+# Problem: 7 hexagonal violations, 134 lines duplicated, zero audit on driver path
+# Approach: Test-first migration, then phased refactoring (ADR-2 phased strategy)
+#
+# REVISION LOG:
+#   2026-02-06 v2: Address software-crafter-reviewer feedback (B1, B2, H1-H3, M1-M2)
+#     - B1 FIXED: Rename removed from 01-01, moved to 02-01 with test update
+#     - B2 FIXED: application/hooks.py removal added to 03-02
+#     - H1 FIXED: Delegation target clarified (orchestrator.on_subagent_complete
+#       EXISTS and handles v2.0 via compound path to SubagentStopHook); effort
+#       estimate removed
+#     - H2 ACCEPTED: Implementation ordering note added to 03-01
+#     - H3 FIXED: All criteria rewritten as behavioral outcomes; internal structure
+#       left to software crafter's TDD process
+#     - M1 FIXED: PreToolUse extraction criterion added to 03-02
+#     - M2 RESOLVED: Covered by B2 fix (application/hooks.py removal)
+
+roadmap:
+  project_id: "des-hook-redesign"
+  created_at: "2026-02-06T00:00:00Z"
+  revised_at: "2026-02-06T12:00:00Z"
+  total_steps: 4
+  phases: 3
+
+phases:
+  # ==========================================================================
+  # PHASE 01: Test Migration (MUST complete before any refactoring)
+  # ==========================================================================
+  # Principle: "Tests that break during refactoring were coupled to
+  # implementation, not behavior. Fix the test, not the implementation."
+  # Public interface = JSON stdin, exit code (0/1/2), JSON stdout.
+  # ==========================================================================
+  - id: "01"
+    name: "Test Migration to Public Interface"
+    description: "Rewrite implementation-coupled tests to use the external protocol boundary before any internal changes"
+    default_agent: "software-crafter"
+    default_deps_strategy: "sequential"
+    steps:
+      - id: "01-01"
+        name: "Rewrite acceptance tests to external protocol boundary"
+        criteria: >-
+          8 TestPostExecutionStateValidation tests invoke hook via subprocess
+          (JSON stdin, exit code, JSON stdout) instead of importing internal classes;
+          test helper invoke_hook(hook_type, payload) -> (exit_code, response_dict) created;
+          private function assertion removed from test_hook_configuration.py
+          (the hasattr check for _verify_step_from_append_only_log);
+          all rewritten tests pass against CURRENT unchanged production code;
+          TestOrchestratorHookIntegration (2 tests) left unchanged (already at correct boundary);
+          no production code changes in this step
+
+  # ==========================================================================
+  # PHASE 02: Minimal Fix - ADR-2 Phase 1 (Violations 1, 2, 3, 7)
+  # ==========================================================================
+  # Fixes: duplicated logic, bypassed application layer, missing audit trail,
+  # self-created dependencies, naming alignment with Claude Code event.
+  # ==========================================================================
+  - id: "02"
+    name: "Eliminate Duplication and Restore Delegation"
+    depends_on: ["01"]
+    description: "Delete duplicated validation from driver adapter, delegate to application layer, fix dependency creation, rename to match hook event"
+    default_agent: "software-crafter"
+    default_deps_strategy: "sequential"
+    steps:
+      - id: "02-01"
+        name: "Delete adapter duplicate, delegate to application layer, inject dependencies, rename"
+        criteria: >-
+          Sending valid v2.0 JSON to subagent-stop hook returns exit code 0 and
+          produces an audit event (HOOK_SUBAGENT_STOP_PASSED) in the audit log
+          (currently no audit events fire on the driver adapter path);
+          sending invalid v2.0 JSON (incomplete phases) to subagent-stop hook returns
+          exit code 2 and produces an audit event (HOOK_SUBAGENT_STOP_FAILED);
+          duplicated validation function _verify_step_from_append_only_log no longer
+          exists in the adapter module;
+          handle_subagent_stop delegates validation to the application layer instead
+          of implementing it inline;
+          subagent-stop dependencies (audit logger, time provider) are injected not
+          self-created;
+          handle_pre_tool_use is the exported public function name (renamed from
+          handle_pre_task); importability test updated for the new name;
+          all acceptance tests from Phase 01 still pass;
+          external protocol unchanged (JSON stdin/stdout, exit codes 0/1/2)
+
+  # ==========================================================================
+  # PHASE 03: Full Hexagonal Extraction - ADR-2 Phase 2 (Violations 4, 5, 6)
+  # ==========================================================================
+  # Extract business logic from driven adapter to domain layer, create proper
+  # ports, build application services, slim driver adapter to protocol-only.
+  # ==========================================================================
+  - id: "03"
+    name: "Domain Extraction and Hexagonal Layering"
+    depends_on: ["02"]
+    description: "Extract business logic to domain, define ports, create application services, slim adapter to protocol translation"
+    default_agent: "software-crafter"
+    default_deps_strategy: "sequential"
+    steps:
+      - id: "03-01"
+        name: "Extract domain layer, port interfaces, and application services"
+        # Implementation order: domain classes with unit tests first, then port
+        # interfaces, then application services. Each layer must compile and pass
+        # tests before proceeding to the next.
+        criteria: >-
+          Step completion validation (TDD phase checking) exists in exactly one
+          location and is testable with in-memory data (no file I/O);
+          max_turns validation (range 10-100, missing value rejection) is testable
+          in isolation without the adapter;
+          DES marker detection (prompt parsing) is testable in isolation without
+          the adapter;
+          pipe-delimited event string parsing is testable in isolation;
+          pre-tool-use validation is encapsulated behind a driver port interface
+          (orchestrates max_turns + marker detection + audit logging);
+          subagent-stop validation is encapsulated behind a driver port interface
+          (orchestrates log reading + completion validation + scope checking + audit);
+          execution log reading, audit log writing, and scope checking each have
+          driven port interfaces defined by application needs;
+          all domain logic is pure (no I/O, no framework dependencies);
+          domain logic has unit tests proving business rules in isolation;
+          all existing acceptance tests still pass
+
+      - id: "03-02"
+        name: "Wire driven adapters, slim driver adapter, remove legacy files"
+        criteria: >-
+          Execution log reading driven adapter reads YAML and delivers typed domain
+          objects through its port interface;
+          audit log writing driven adapter implements its port (injected, not singleton);
+          scope checking driven adapter implements its port (receives allowed_patterns
+          as parameter, does not read step files);
+          driver adapter is protocol-only: parse JSON, call service port, format
+          response, return exit code;
+          pre-tool-use business logic (max_turns, DES markers) delegated to service;
+          adapter retains only JSON parsing and response formatting;
+          orchestrator updated to use new service interfaces;
+          legacy files removed: adapters/driven/hooks/subagent_stop_hook.py,
+          ports/driver_ports/hook_port.py, application/hooks.py (Schema v1.x dead
+          code per ADR-6), old AuditLogger singleton, old ScopeValidator;
+          Schema v1.x validation code not carried forward (per ADR-6);
+          all acceptance tests pass;
+          external protocol unchanged (JSON stdin/stdout, exit codes 0/1/2);
+          module path src.des.adapters.drivers.hooks.claude_code_hook_adapter unchanged
+
+implementation_scope:
+  source_directories:
+    - "src/des/"
+  test_directories:
+    - "tests/des/"
+  excluded_patterns:
+    - "__init__.py"
+    - "__pycache__/**"
+
+dependencies:
+  "01-01": []
+  "02-01": ["01-01"]
+  "03-01": ["02-01"]
+  "03-02": ["03-01"]
+
+validation:
+  status: "REVISED_PENDING_APPROVAL"
+  reviewer: "software-crafter-reviewer"
+  reviewed_at: "2026-02-06"
+  revised_at: "2026-02-06"
+  revised_by: "solution-architect"
+  approved_at: null
+  overall_assessment: >-
+    Well-structured roadmap with correct phasing (test-first, minimal fix, full extraction).
+    Dependency chain is sound and external protocol preservation is explicit throughout.
+    Two blocking issues must be resolved before execution can begin.
+  revision_summary: >-
+    All blocking and high issues addressed. B1: rename moved from 01-01 to 02-01.
+    B2: application/hooks.py removal added to 03-02. H1: delegation target verified
+    (orchestrator.on_subagent_complete() EXISTS at line 528 and handles v2.0 via
+    compound path to SubagentStopHook._validate_from_execution_log()); criteria now
+    say "delegate to application layer" without prescribing mechanism; effort estimate
+    removed. H2: implementation ordering note added. H3: all criteria rewritten as
+    behavioral outcomes. M1: PreToolUse extraction criterion added. M2: resolved by B2.
+
+  # =========================================================================
+  # BLOCKING ISSUES (must fix before execution)
+  # =========================================================================
+  blocking_issues:
+    - id: "B1"
+      title: "Rename sequencing conflict between Steps 01-01 and 02-01"
+      severity: "blocking"
+      description: >-
+        Step 01-01 criteria say "handle_pre_task renamed to handle_pre_tool_use
+        in importability test (line 46)" AND "all rewritten tests pass against
+        CURRENT unchanged implementation." These contradict: current implementation
+        still exports handle_pre_task. Step 02-01 does the production rename but
+        says "zero test changes in this step." No step can do both without
+        violating its own constraints.
+      recommendation: >-
+        Remove the rename from Step 01-01 criteria entirely. Move it to Step 02-01.
+        Relax 02-01 to allow the ONE mechanical test assertion update
+        (handle_pre_task -> handle_pre_tool_use in importability test).
+      affected_steps: ["01-01", "02-01"]
+
+    - id: "B2"
+      title: "application/hooks.py not addressed in any step"
+      severity: "blocking"
+      description: >-
+        application/hooks.py contains a SECOND SubagentStopHook class (Schema v1.x,
+        544 lines) and a SECOND HookResult dataclass. Step 03-02 removes
+        adapters/driven/hooks/subagent_stop_hook.py and ports/driver_ports/hook_port.py
+        but never mentions application/hooks.py. Per ADR-6, Schema v1.x code is
+        dropped. This file will remain as dead code with duplicate type names.
+      recommendation: >-
+        Add explicit criterion to Step 03-02: "application/hooks.py removed
+        (Schema v1.x SubagentStopHook and HookResult, superseded by domain
+        classes and port interfaces per ADR-6)."
+      affected_steps: ["03-02"]
+
+  # =========================================================================
+  # HIGH ISSUES (strongly recommend fixing)
+  # =========================================================================
+  high_issues:
+    - id: "H1"
+      title: "Step 02-01 delegation target does not exist"
+      severity: "high"
+      description: >-
+        Criteria say "handle_subagent_stop() delegates to
+        orchestrator.on_subagent_complete()." The orchestrator has no such method
+        for the v2.0 append-only log path. The existing on_agent_complete() in
+        application/hooks.py works with Schema v1.x step files only. The step
+        claims ~50 lines changed but actual scope is 150+ lines (134 lines
+        deleted from _verify_step, 30+ lines rewritten in handle_subagent_stop,
+        plus new orchestrator method and audit wiring).
+      recommendation: >-
+        Clarify delegation target. Simplest minimal fix: handle_subagent_stop()
+        calls SubagentStopHook.on_agent_complete() directly (it already handles
+        v2.0 validation), with AuditLogger and TimeProvider injected via
+        constructor. Remove the "~50 lines" claim or correct it.
+      affected_steps: ["02-01"]
+
+    - id: "H2"
+      title: "Step 03-01 spans three architectural layers in one step"
+      severity: "high"
+      description: >-
+        Creates ~12 new production files: 5 domain classes, 2 driver port
+        interfaces, 3 driven port interfaces, 2 application services, plus unit
+        tests. This crosses domain, ports, and application layers simultaneously.
+      recommendation: >-
+        Accept if crafter builds incrementally via TDD within the step (domain
+        classes first, then ports, then services). Add a note: "Implement
+        bottom-up: domain classes with unit tests first, then port interfaces,
+        then application services. Each layer must compile and test before
+        proceeding to the next."
+      affected_steps: ["03-01"]
+
+    - id: "H3"
+      title: "Criteria are too structural, not behavioral"
+      severity: "high"
+      description: >-
+        Stakeholder requirement: "Testing should happen at the public interface -
+        everything else is an implementation detail." Many criteria prescribe
+        exact class names, internal delegation patterns, DI mechanisms, and line
+        numbers. These are implementation choices that TDD should discover.
+      recommendation: >-
+        Keep class names only where they enforce hexagonal boundaries (port
+        interface names). Replace internal implementation prescriptions with
+        behavioral outcomes. E.g., instead of "SubagentStopHook receives
+        AuditLogger and TimeProvider via constructor" use "SubagentStop path
+        produces audit events without creating its own dependencies."
+      affected_steps: ["01-01", "02-01", "03-01", "03-02"]
+
+  # =========================================================================
+  # MEDIUM ISSUES (address if practical)
+  # =========================================================================
+  medium_issues:
+    - id: "M1"
+      title: "handle_pre_task extraction not explicitly traced"
+      severity: "medium"
+      description: >-
+        handle_pre_task() in claude_code_hook_adapter.py (lines 66-178) contains
+        max_turns validation, DES marker detection, and orchestrator delegation.
+        Step 03-01 creates MaxTurnsPolicy and DesMarkerParser. Step 03-02 says
+        "slim driver adapter to protocol-only." But no criterion explicitly says
+        "extract handle_pre_task business logic to PreToolUseService."
+      recommendation: >-
+        Add to Step 03-02 criteria: "handle_pre_task business logic (max_turns
+        validation, DES marker detection) delegated to PreToolUseService;
+        adapter retains only JSON parsing and response formatting."
+      affected_steps: ["03-02"]
+
+    - id: "M2"
+      title: "Duplicate HookResult dataclass not mentioned"
+      severity: "medium"
+      description: >-
+        HookResult exists in both application/hooks.py and
+        ports/driver_ports/hook_port.py with slightly different fields.
+        Resolves automatically if B2 (application/hooks.py removal) and
+        Step 03-02 (hook_port.py removal) are both executed, but this
+        dependency is implicit.
+      recommendation: >-
+        No action needed if B2 is accepted. If not, add explicit criterion
+        to consolidate HookResult to a single definition.
+      affected_steps: ["03-02"]
+
+  # =========================================================================
+  # RISK ASSESSMENT
+  # =========================================================================
+  risks:
+    - risk: "Rename chicken-and-egg causes test failures between steps"
+      likelihood: "high"
+      impact: "high"
+      mitigation: "Fix B1 before execution"
+
+    - risk: "Step 02-01 delegation fails due to missing orchestrator method"
+      likelihood: "high"
+      impact: "medium"
+      mitigation: "Fix H1: clarify or simplify delegation target"
+
+    - risk: "Step 03-01 scope causes partial completion or tangled commits"
+      likelihood: "medium"
+      impact: "medium"
+      mitigation: "Accept H2 recommendation for bottom-up TDD within step"
+
+    - risk: "Dead application/hooks.py causes type conflicts after Phase 03"
+      likelihood: "high"
+      impact: "low"
+      mitigation: "Fix B2: explicitly remove in Step 03-02"
+
+  # =========================================================================
+  # WHAT WORKS WELL
+  # =========================================================================
+  strengths:
+    - "Test-first migration before any refactoring is the correct approach"
+    - "External protocol preservation (JSON stdin/stdout, exit codes) explicitly maintained in every step"
+    - "ADR-2 phased strategy (minimal fix then full extraction) minimizes risk"
+    - "Dependency chain is correctly sequenced (01-01 -> 02-01 -> 03-01 -> 03-02)"
+    - "TestOrchestratorHookIntegration correctly identified as already at right boundary"
+    - "Over-decomposition check passes: 4 steps for ~22 files (ratio 0.18, well under 2.5)"
+
+  # =========================================================================
+  # SUMMARY
+  # =========================================================================
+  summary:
+    blocking_count: 2
+    high_count: 3
+    medium_count: 2
+    verdict: >-
+      Fix B1 (rename sequencing) and B2 (application/hooks.py removal) then
+      re-submit. Address H1 (delegation target) and H3 (behavioral criteria)
+      for executability. H2 and medium issues are advisory.

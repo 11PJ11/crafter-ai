@@ -378,15 +378,28 @@ def reset_audit_logger() -> None:
     _audit_logger_cwd = None
 
 
-def log_audit_event(event_type: str, **kwargs) -> None:
+def log_audit_event(
+    event_type: str,
+    feature_name: str | None = None,
+    step_id: str | None = None,
+    **kwargs,
+) -> None:
     """Log an audit event.
 
     Args:
         event_type: Type of event (e.g., 'TASK_INVOCATION_STARTED')
+        feature_name: Feature/project name (e.g., 'audit-log-refactor')
+        step_id: Step identifier (e.g., '01-01')
         **kwargs: Additional event data
     """
     logger = get_audit_logger()
     logger.rotate_if_needed()
 
-    event = {"timestamp": logger._get_iso_timestamp(), "event": event_type, **kwargs}
+    event = {
+        "timestamp": logger._get_iso_timestamp(),
+        "event": event_type,
+        "feature_name": feature_name,
+        "step_id": step_id,
+        **kwargs,
+    }
     logger.append(event)
