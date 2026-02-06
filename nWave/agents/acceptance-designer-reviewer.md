@@ -123,6 +123,208 @@ hexagonal_boundary_validation:
     - Replace: from des.validator import TemplateValidator
     - With: from des.orchestrator import DESOrchestrator
     - Update tests to invoke through orchestrator.render_prompt()
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CM-B: BUSINESS LANGUAGE ABSTRACTION (MANDATORY FOR ACCEPTANCE TEST REVIEWS)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+business_language_abstraction:
+  description: "Verify step methods speak BUSINESS LANGUAGE, not technical implementation"
+  blocking: true
+  rationale: |
+    Acceptance tests are executable specifications for business stakeholders.
+    Step method implementations must abstract technical details behind business language.
+    Technical terms leak implementation knowledge into business scenarios.
+
+  validation_question: "Do step methods use business language or expose technical details?"
+
+  validation_criteria:
+    business_focused_step_names:
+      check: "Step method names use business domain terms, not technical jargon"
+      correct_examples:
+        - "when_user_submits_order()"
+        - "then_customer_receives_confirmation()"
+        - "given_inventory_has_sufficient_stock()"
+      violation_examples:
+        - "when_http_post_to_order_endpoint()"
+        - "then_database_record_created()"
+        - "given_sql_insert_into_inventory_table()"
+      failure: "Step methods expose technical implementation details"
+      severity: "HIGH"
+
+    abstraction_layer_exists:
+      check: "Step methods delegate to business services, not technical infrastructure"
+      correct_pattern: |
+        def when_user_submits_order(self):
+            # Business language - what the user does
+            self.result = self.order_service.place_order(self.order_data)
+      violation_pattern: |
+        def when_user_submits_order(self):
+            # Technical details exposed - HOW system does it
+            response = requests.post("/api/orders", json=self.order_data)
+            self.db.execute("INSERT INTO orders...")
+      failure: "Step methods contain technical infrastructure code"
+      severity: "HIGH"
+
+    no_technical_assertions:
+      check: "Assertions validate business outcomes, not technical state"
+      correct_examples:
+        - "assert order.is_confirmed()"
+        - "assert customer.received_confirmation_email()"
+        - "assert inventory.quantity == expected_quantity"
+      violation_examples:
+        - "assert response.status_code == 201"
+        - "assert db.table('orders').count() == 1"
+        - "assert redis.get('session_key') is not None"
+      failure: "Assertions verify technical state, not business outcomes"
+      severity: "HIGH"
+
+  review_actions:
+    on_failure:
+      - "Mark acceptance tests as REJECTED"
+      - "Document specific technical leakage with file and line"
+      - "Require step methods to be rewritten with business abstraction"
+      - "Suggest business-focused naming and service delegation patterns"
+      - "Do NOT approve until business language restored"
+
+  example_finding: |
+    BUSINESS LANGUAGE ABSTRACTION CHECK: FAILED
+
+    Violation Found:
+    - File: tests/acceptance/step_definitions/order_steps.py
+    - Line 45: def when_user_submits_order(self):
+    - Line 46:     response = requests.post("/api/orders", json=self.data)
+    - Line 47:     assert response.status_code == 201
+
+    Issues:
+    1. Step method exposes HTTP implementation detail (requests.post)
+    2. Assertion validates technical state (status_code), not business outcome
+    3. No business service abstraction layer
+
+    Consequence: Business stakeholders cannot understand test implementation.
+    Tests become brittle when API protocol changes (REST → GraphQL).
+
+    Required Fix:
+    ```python
+    def when_user_submits_order(self):
+        # Business language - delegate to service layer
+        self.result = self.order_service.place_order(self.order_data)
+        assert self.result.is_confirmed()  # Business outcome
+    ```
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CM-C: USER JOURNEY COMPLETENESS (MANDATORY FOR ACCEPTANCE TEST REVIEWS)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+user_journey_completeness:
+  description: "Verify tests validate COMPLETE user journeys, not isolated technical operations"
+  blocking: true
+  rationale: |
+    Acceptance tests must validate user value delivery through complete journeys.
+    Testing isolated operations (e.g., "database saves record") misses user perspective.
+    User journeys span multiple steps: trigger → business logic → outcome → verification.
+
+  validation_question: "Does each scenario represent a complete user journey with business value?"
+
+  validation_criteria:
+    complete_journey_arc:
+      check: "Scenario spans from user action to observable business outcome"
+      required_elements:
+        - "User trigger or business event (Given/When)"
+        - "Business logic execution (When)"
+        - "Observable user outcome (Then)"
+        - "Business value delivered (Then)"
+      correct_example: |
+        Scenario: Customer places order for available product
+          Given customer has items in shopping cart
+          And payment method is configured
+          When customer submits order
+          Then order is confirmed with order number
+          And customer receives confirmation email
+          And inventory quantity is reduced
+      violation_example: |
+        Scenario: Order record saved to database
+          Given valid order data exists
+          When order.save() is called
+          Then database contains order record
+      failure: "Scenario tests technical operation, not user journey"
+      severity: "HIGH"
+
+    business_value_explicit:
+      check: "Scenario name and Then clauses express user value, not technical state"
+      correct_examples:
+        - "Customer receives confirmation after successful payment"
+        - "User can view order history after placing orders"
+        - "Inventory prevents overselling when stock is low"
+      violation_examples:
+        - "Order table row created successfully"
+        - "API endpoint returns 200 status"
+        - "Cache invalidation triggered correctly"
+      failure: "Scenario focuses on technical implementation, not user value"
+      severity: "HIGH"
+
+    walking_skeleton_strategy:
+      check: "Test suite includes walking skeletons (few complete E2E) + focused scenarios"
+      guidance: |
+        Not all tests need full E2E integration. Strategy:
+        1. Walking Skeletons (2-5 scenarios): Complete E2E user journeys
+           - Touch all system layers (UI → API → Services → DB)
+           - Validate critical happy paths
+           - Prove system integration works
+        2. Focused Scenarios (majority): Test business rules at driving port boundary
+           - Invoke through entry point (DESOrchestrator, FeatureClient)
+           - Test specific business rules and edge cases
+           - Use test doubles for external dependencies (faster execution)
+
+        Both types MUST:
+        - Use business language
+        - Invoke through driving ports (never internal components)
+        - Validate business outcomes (not technical state)
+      recommendation: |
+        For feature with 20 scenarios:
+        - 2-3 walking skeletons (full E2E integration)
+        - 17-18 focused scenarios (driving port boundary, test doubles)
+
+  review_actions:
+    on_failure:
+      - "Mark acceptance tests as REJECTED"
+      - "Document scenarios that test technical operations vs user journeys"
+      - "Require scenarios to be rewritten from user perspective"
+      - "Suggest walking skeleton strategy (few E2E + focused scenarios)"
+      - "Do NOT approve until user journey perspective restored"
+
+  example_finding: |
+    USER JOURNEY COMPLETENESS CHECK: FAILED
+
+    Violation Found:
+    - File: tests/acceptance/features/order_processing.feature
+    - Scenario: "Order validator accepts valid order data"
+
+    Issues:
+    1. Scenario name focuses on technical component (validator), not user value
+    2. Missing user trigger and business outcome
+    3. Tests isolated validation logic, not complete journey
+    4. No clear business value delivered
+
+    Consequence: Tests pass but user cannot complete order flow.
+    Missing integration between validation → payment → confirmation.
+
+    Required Fix:
+    Reframe as user journey:
+    ```gherkin
+    Scenario: Customer successfully places order with valid payment
+      Given customer has selected products worth $100
+      And customer has valid credit card on file
+      When customer submits order
+      Then order is confirmed with order number
+      And customer receives email confirmation
+      And customer can view order in order history
+      # This tests validation implicitly through complete journey
+    ```
+
+    Walking Skeleton Recommendation:
+    - 2 walking skeletons: "Happy path order" + "Payment failure recovery"
+    - Remaining scenarios: Focused tests at OrderService boundary with test doubles
 # All commands require * prefix when used (e.g., *help)
 commands:
   - help: Show numbered list of the following commands to allow selection

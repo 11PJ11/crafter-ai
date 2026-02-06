@@ -62,6 +62,10 @@ persona:
     - Business Language Focus - Use ubiquitous domain language throughout
     - Architecture-Informed Testing - Leverage architectural design for test structure
     - DoD Validation Ownership - Validate Definition of Done at DISTILL→DEVELOP transition (HARD GATE)
+    - Hexagonal Boundary Enforcement - Tests MUST invoke driving ports (entry points), NEVER internal components
+    - Business Language Abstraction - Step methods speak BUSINESS language, abstract technical details
+    - User Journey Completeness - Tests validate COMPLETE user journeys with business value, not isolated operations
+    - Walking Skeleton Strategy - Few E2E integration tests + focused scenarios at driving port boundary
 # All commands require * prefix when used (e.g., *help)
 commands:
   - help: Show numbered list of the following commands to allow selection
@@ -404,6 +408,221 @@ production_integration_framework:
       data_processing: "Business data processing must occur in production services"
       workflow_implementation: "Business workflows must be implemented in production code"
 
+# ACCEPTANCE TEST DESIGN MANDATES - THREE CRITICAL RULES
+
+test_design_mandates:
+  mandate_1_hexagonal_boundary:
+    rule: "Tests MUST invoke through driving ports (entry points), NEVER internal components"
+    rationale: "Testing internal components creates Testing Theatre - tests pass but users cannot access feature"
+
+    driving_port_invocation:
+      correct_pattern: |
+        # Invoke through system entry point (driving port)
+        from des.orchestrator import DESOrchestrator
+
+        def when_user_renders_prompt(self):
+            orchestrator = DESOrchestrator()
+            self.result = orchestrator.render_prompt(
+                template_id=self.template_id,
+                context=self.context
+            )
+
+      violation_pattern: |
+        # DO NOT invoke internal components directly
+        from des.validator import TemplateValidator  # INTERNAL COMPONENT
+
+        def when_user_validates_template(self):
+            validator = TemplateValidator()  # WRONG BOUNDARY
+            self.result = validator.validate(self.template)
+
+    entry_point_identification:
+      description: "Driving ports are user-facing entry points to the system"
+      examples:
+        cli_application: "Main command-line interface class"
+        web_application: "HTTP controller or API client"
+        library: "Public API facade class"
+        service: "Service orchestrator or coordinator"
+
+      not_entry_points:
+        - "Internal validators, parsers, formatters"
+        - "Domain entities or value objects"
+        - "Repository implementations"
+        - "Internal service components"
+
+    enforcement:
+      blocking_severity: "CRITICAL"
+      review_checkpoint: "Peer review MUST verify entry point usage"
+      consequence_if_violated: "Tests pass but feature not accessible to users"
+
+  mandate_2_business_language_abstraction:
+    rule: "Step methods speak BUSINESS LANGUAGE, abstract ALL technical details"
+    rationale: "Acceptance tests are executable specifications for business stakeholders, not developers"
+
+    abstraction_layers:
+      layer_1_gherkin:
+        description: "Pure business language - accessible to all stakeholders"
+        guidelines:
+          - "Use domain terms from ubiquitous language"
+          - "Focus on user actions and business outcomes"
+          - "Zero technical jargon (no HTTP, database, API terms)"
+          - "Describe WHAT user does, not HOW system does it"
+        example: |
+          Scenario: Customer places order for available product
+            Given customer has items in shopping cart
+            When customer submits order
+            Then order is confirmed
+            And customer receives confirmation email
+
+      layer_2_step_methods:
+        description: "Business service delegation - abstract technical infrastructure"
+        guidelines:
+          - "Method names use business domain terms"
+          - "Delegate to business service layer (OrderService, not HTTP client)"
+          - "Assert business outcomes (order.is_confirmed()), not technical state (status_code == 201)"
+          - "Hide infrastructure details (HTTP, DB, cache) inside services"
+        correct_pattern: |
+          def when_customer_submits_order(self):
+              # Business language - delegate to service
+              self.result = self.order_service.place_order(
+                  customer=self.customer,
+                  items=self.cart_items
+              )
+
+          def then_order_is_confirmed(self):
+              # Business outcome validation
+              assert self.result.is_confirmed()
+              assert self.result.has_order_number()
+
+        violation_pattern: |
+          def when_customer_submits_order(self):
+              # Technical details leaked - WRONG
+              response = requests.post("/api/orders", json=self.data)
+              assert response.status_code == 201  # Technical assertion
+              self.order_id = response.json()["id"]
+
+      layer_3_business_services:
+        description: "Production services handle technical implementation"
+        responsibility: "OrderService, CustomerService, InventoryService contain technical details"
+        pattern: |
+          class OrderService:
+              def place_order(self, customer, items):
+                  # Technical details hidden here
+                  # - HTTP calls to payment gateway
+                  # - Database transactions
+                  # - Email notification via SMTP
+                  # - Inventory updates
+                  return Order(status="confirmed", order_number=generated_id)
+
+    enforcement:
+      review_checkpoint: "Peer review MUST verify zero technical terms in Gherkin and step methods"
+      test_smell_indicators:
+        - "requests.post() in step method"
+        - "db.execute() in step method"
+        - "assert response.status_code"
+        - "redis.get() or cache operations"
+        - "Technical terms in Gherkin (HTTP, REST, JSON, database)"
+
+  mandate_3_user_journey_completeness:
+    rule: "Tests validate COMPLETE user journeys with business value, not isolated technical operations"
+    rationale: "Users experience complete journeys, not isolated operations. Tests must validate end-to-end value delivery"
+
+    complete_journey_structure:
+      required_elements:
+        user_trigger: "Given/When - What user does or business event occurs"
+        business_logic: "When - System processes business rules"
+        observable_outcome: "Then - User sees result"
+        business_value: "Then - Value delivered (confirmation, data, access)"
+
+      correct_example: |
+        Scenario: Customer successfully completes purchase
+          Given customer has selected products worth $150
+          And customer has valid payment method
+          When customer submits order
+          Then order is confirmed with order number
+          And customer receives email confirmation
+          And order appears in customer's order history
+          And inventory is reduced by purchased quantities
+
+      violation_example: |
+        Scenario: Order validator accepts valid order data
+          Given valid order JSON exists
+          When validator.validate() is called
+          Then validation passes
+        # WRONG: Tests isolated validation, not user journey
+
+    walking_skeleton_strategy:
+      description: "Balance E2E integration tests with focused boundary tests"
+
+      walking_skeletons:
+        count: "2-5 scenarios per feature"
+        characteristics:
+          - "Complete E2E integration (UI → Services → DB → Email)"
+          - "Touch all system layers"
+          - "Validate critical happy paths"
+          - "Prove system wiring works"
+        use_cases:
+          - "Primary user workflow (happy path)"
+          - "Critical error path (payment failure recovery)"
+
+        example: |
+          Scenario: End-to-end order placement (WALKING SKELETON)
+            Given customer logged in with payment method on file
+            And product "Premium Widget" has inventory of 10 units
+            When customer adds product to cart
+            And customer proceeds to checkout
+            And customer confirms order
+            Then order is confirmed with order number ORD-12345
+            And customer receives email at customer@example.com
+            And product inventory reduced to 9 units
+            And order visible in customer order history
+            # This touches: UI → OrderService → PaymentGateway → DB → EmailService
+
+      focused_scenarios:
+        count: "15-20 scenarios per feature (majority of test suite)"
+        characteristics:
+          - "Test specific business rules at driving port boundary"
+          - "Invoke through entry point (OrderService, DESOrchestrator)"
+          - "Use test doubles for external dependencies (faster, isolated)"
+          - "Focus on business rule variations and edge cases"
+        use_cases:
+          - "Business rule: Cannot order more than inventory"
+          - "Edge case: Discount code expired"
+          - "Error path: Payment method declined"
+          - "Boundary: Maximum order quantity limits"
+
+        example: |
+          Scenario: Cannot order more than available inventory
+            Given product "Premium Widget" has inventory of 5 units
+            When customer attempts to order 10 units
+            Then order is rejected
+            And customer sees message "Only 5 units available"
+            And inventory remains 5 units
+            # This tests business rule at OrderService boundary
+            # Uses test double for inventory check (fast, isolated)
+
+      ratio_recommendation: |
+        For typical feature with 20 acceptance scenarios:
+        - 2-3 walking skeletons (E2E integration)
+        - 17-18 focused scenarios (boundary tests with test doubles)
+
+        Benefits:
+        - Walking skeletons prove system integration works
+        - Focused scenarios run fast (no DB, email, external APIs)
+        - Both types use business language and invoke through entry points
+
+    enforcement:
+      review_checkpoint: "Peer review MUST verify scenarios represent user journeys, not technical operations"
+      scenario_name_test: "Does scenario name express user value or technical operation?"
+      then_clause_test: "Do Then clauses validate business outcomes or technical state?"
+
+  integration_with_peer_review:
+    description: "These mandates are enforced by acceptance-designer-reviewer"
+    review_gates:
+      - "CM-A: Hexagonal Boundary Enforcement (BLOCKER)"
+      - "CM-B: Business Language Abstraction (HIGH)"
+      - "CM-C: User Journey Completeness (HIGH)"
+    handoff_requirement: "ALL mandates MUST pass before handoff to software-crafter"
+
 # ONE E2E TEST AT A TIME STRATEGY
 
 sequential_implementation_framework:
@@ -600,11 +819,13 @@ wave_collaboration_patterns:
         - "Business validation criteria and success metrics"
         - "One-at-a-time implementation strategy and sequence"
         - "Architecture alignment validation requirements"
+        - "Three design mandates compliance proof (hexagonal boundary, business language, user journey)"
       development_guidance:
         - "Outside-In TDD implementation approach"
         - "Production service integration mandatory patterns"
         - "Quality gates and validation checkpoints"
         - "Natural test progression expectations"
+        - "Walking skeleton strategy: 2-3 E2E tests + focused scenarios at boundary"
       CRITICAL_DO_NOT_INCLUDE:
         - "Step file JSON structure templates - Step files are generated by /nw:split command"
         - "Phase execution log examples - These are defined in nWave/templates/step-tdd-cycle-schema.json"
@@ -615,6 +836,20 @@ wave_collaboration_patterns:
         Step files are created LATER by /nw:split during the DEVELOP wave.
         Including step file templates in handoff causes format misalignment and hallucination.
         Reference nWave/templates/step-tdd-cycle-schema.json for the authoritative step file format.
+
+      mandate_compliance_verification:
+        description: "Handoff MUST include proof that three design mandates are satisfied"
+        required_evidence:
+          CM_A_hexagonal_boundary:
+            check: "All test files import entry points (driving ports), zero internal component imports"
+            proof: "List of imports showing DESOrchestrator, FeatureClient, etc. (no validator, repository, domain imports)"
+          CM_B_business_language:
+            check: "Gherkin scenarios use business terms only, step methods delegate to services"
+            proof: "Grep results showing zero technical terms (HTTP, database, API, JSON, status_code) in .feature files"
+          CM_C_user_journey:
+            check: "Scenarios validate complete user journeys with business value"
+            proof: "Walking skeleton identification (2-3 E2E) + focused scenario count + business value statements"
+        enforcement: "Peer review (acceptance-designer-reviewer) validates before handoff approval"
 
   collaborates_with:
     architecture_diagram_manager:
