@@ -173,6 +173,110 @@ step_decomposition_ratio:
 
     Required Action: Batch identical-pattern steps, remove validation-only steps.
     Expected reduction: 32 → 20 steps (37% improvement)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# IMPLEMENTATION CODE IN ROADMAP CHECK (MANDATORY FOR ROADMAP REVIEWS)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+implementation_code_in_roadmap:
+  severity: "BLOCKER"
+  description: "Verify roadmap contains NO implementation code"
+  blocking: true
+  rationale: |
+    Solution architect defines WHAT (architecture, interfaces, acceptance criteria).
+    Software crafter decides HOW (implementation, algorithms, data structures).
+    Roadmap with implementation code violates separation of concerns and locks
+    the crafter into suboptimal solutions before TDD cycle begins.
+
+  detection_patterns:
+    - "Code snippets or algorithms in step descriptions"
+    - "Detailed method implementations in acceptance criteria"
+    - "Specific data structures beyond interface contracts"
+    - "Algorithm pseudocode or implementation logic"
+    - "Variable names, loops, conditionals in roadmap text"
+
+  action: "Flag and require removal of all implementation code"
+
+  example_finding: |
+    IMPLEMENTATION CODE DETECTED: BLOCKER
+
+    Step 05-02 contains Python implementation:
+    ```python
+    def install_des():
+        shutil.copytree(src, dst)
+        os.chmod(dst, 0o755)
+    ```
+
+    Required Action: Remove implementation code. Rewrite as acceptance criterion:
+    "DES module files copied from source to installation target directory with executable permissions"
+
+    Rationale: The software-crafter will decide HOW to implement file copying
+    during GREEN + REFACTOR_CONTINUOUS phases. Premature implementation
+    prevents better solutions from emerging through TDD.
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# UNIT TEST BOUNDARY VALIDATION (MANDATORY FOR ROADMAP REVIEWS)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+unit_test_boundary_violation:
+  severity: "HIGH"
+  description: "Verify unit test strategy respects hexagonal architecture boundaries"
+  blocking: true
+  rationale: |
+    In hexagonal architecture, unit tests MUST:
+    - Invoke through DRIVING PORTS only (public interfaces)
+    - Test BEHAVIOR, not implementation details
+    - NOT test domain entities directly
+    - NOT couple with internal modules or private methods
+
+    Tests coupled to internals make refactoring impossible and violate
+    the core principle of testing through public interfaces.
+
+  checks:
+    test_through_driving_ports:
+      rule: "Unit tests must invoke through driving ports only"
+      violation: "Tests import or invoke internal modules, private methods"
+      examples:
+        correct: "Test invokes DESOrchestrator.render_prompt() (driving port)"
+        incorrect: "Test invokes TemplateValidator._validate_schema() (private method)"
+
+    no_domain_entity_tests:
+      rule: "No unit tests for domain entities"
+      violation: "Tests verify entity field existence or structure"
+      examples:
+        incorrect: "Test that AuditEntry has timestamp field"
+        correct: "Test that audit log records entry when action performed through driving port"
+
+    behavior_not_implementation:
+      rule: "Tests focus on behavior, not implementation"
+      violation: "Tests verify internal method calls or state changes"
+      examples:
+        incorrect: "Verify that _parse_template() was called with correct parameters"
+        correct: "Given valid template, when render invoked, then output contains expected sections"
+
+    no_internal_coupling:
+      rule: "Tests MUST NOT import internal modules or private methods"
+      violation: "Test imports from src/internal/ or uses underscore-prefixed identifiers"
+      enforcement: "If test imports src/internal/_private.py, it's WRONG"
+
+  action: "Flag incorrect test boundary and require correction to test through driving ports"
+
+  example_finding: |
+    TEST BOUNDARY VIOLATION: HIGH
+
+    Step 06-01 acceptance criteria:
+    "Unit tests verify TemplateValidator._validate_schema() handles edge cases"
+
+    Issue: Tests target private method (_validate_schema), not public driving port.
+    This couples tests to internal implementation details, making refactoring impossible.
+
+    Required Action: Rewrite as behavior through driving port:
+    "When invalid template provided to render_prompt(), then ValidationError raised with clear message describing issue"
+
+    Rationale: Tests must invoke through DESOrchestrator.render_prompt() (driving port),
+    not internal TemplateValidator methods. The validator is tested implicitly through
+    the observable behavior of the system's public interface.
+
 # All commands require * prefix when used (e.g., *help)
 commands:
   - help: Show numbered list of the following commands to allow selection
