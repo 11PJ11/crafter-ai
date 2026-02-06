@@ -33,8 +33,9 @@ def _get_template_path() -> Path:
     - Source paths: /path/to/project/src/des/...
     """
     module_file = Path(__file__)
-    module_str = str(module_file)
-    module_resolved_str = str(module_file.resolve())
+    # Normalize to forward slashes for cross-platform matching
+    module_str = str(module_file).replace("\\", "/")
+    module_resolved_str = str(module_file.resolve()).replace("\\", "/")
 
     is_installed = (
         (".claude" in module_str or ".claude" in module_resolved_str) and
