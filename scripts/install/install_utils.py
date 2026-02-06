@@ -60,11 +60,13 @@ class Logger:
         """Internal logging method."""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+        # Console: raw message (caller controls format with emojis)
         if color and self._use_colors:
-            console_msg = f"{color}[{timestamp}] {level}: {message}{self._NC}"
+            console_msg = f"{color}{message}{self._NC}"
         else:
-            console_msg = f"[{timestamp}] {level}: {message}"
+            console_msg = message
 
+        # File: structured format with timestamp and level
         log_msg = f"[{timestamp}] {level}: {message}"
 
         if not self.silent:
@@ -205,7 +207,7 @@ class BackupManager:
             Path to backup directory or None if nothing to backup
         """
         if dry_run:
-            self.logger.info(f"[DRY RUN] Would create backup at: {self.backup_dir}")
+            self.logger.info(f"  ⏳ [DRY RUN] Would backup to {self.backup_dir}")
             return None
 
         # Check if there's anything to backup
@@ -213,35 +215,35 @@ class BackupManager:
         commands_dir = self.claude_config_dir / "commands"
 
         if not agents_dir.exists() and not commands_dir.exists():
-            self.logger.info("No existing nWave installation found, skipping backup")
+            self.logger.info("  ℹ️  No existing installation, skipping backup")
             return None
 
-        self.logger.info(f"Creating backup at: {self.backup_dir}")
+        self.logger.info(f"  💾 Backup at {self.backup_dir}")
         self.backup_dir.mkdir(parents=True, exist_ok=True)
 
         # Backup agents
         if agents_dir.exists():
             backup_agents = self.backup_dir / "agents"
             shutil.copytree(agents_dir, backup_agents)
-            self.logger.info("Backed up agents directory")
+            self.logger.info("  ✅ Agents backed up")
 
         # Backup commands
         if commands_dir.exists():
             backup_commands = self.backup_dir / "commands"
             shutil.copytree(commands_dir, backup_commands)
-            self.logger.info("Backed up commands directory")
+            self.logger.info("  ✅ Commands backed up")
 
         # Backup config files
         for config_file in ["nwave-manifest.txt", "nwave-install.log"]:
             src = self.claude_config_dir / config_file
             if src.exists():
                 shutil.copy2(src, self.backup_dir / config_file)
-                self.logger.info(f"Backed up {config_file}")
+                self.logger.info(f"  ✅ {config_file} backed up")
 
         # Create manifest
         self._create_manifest()
 
-        self.logger.info(f"Backup created successfully at: {self.backup_dir}")
+        self.logger.info(f"  ✅ Backup complete → {self.backup_dir}")
         return self.backup_dir
 
     def _create_manifest(self):

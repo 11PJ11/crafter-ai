@@ -104,7 +104,7 @@ class NWaveInstaller:
         if not embed_script.exists():
             return True  # Not critical
 
-        with self.rich_logger.progress_spinner("  🚧 Work in progress..."):
+        with self.rich_logger.progress_spinner("  🚧 Source Embedding..."):
             try:
                 result = subprocess.run(
                     [sys.executable, str(embed_script)],
@@ -130,7 +130,7 @@ class NWaveInstaller:
         """Build the IDE bundle."""
         build_script = self.project_root / "tools" / "build.py"
         if not build_script.exists():
-            print(f"  \u274c Build script not found: {build_script}")
+            self.logger.error(f"  ❌ Build script not found: {build_script}")
             return False
 
         with self.rich_logger.progress_spinner("  🚧 Work in progress..."):
@@ -143,31 +143,31 @@ class NWaveInstaller:
                 )
 
                 if result.returncode == 0:
-                    print("  \u2705 Build completed")
+                    self.logger.info("  ✅ Build completed")
                     return True
                 else:
-                    print("  \u274c Build failed")
-                    print(f"     {result.stderr}")
+                    self.logger.error("  ❌ Build failed")
+                    self.logger.error(f"     {result.stderr}")
                     return False
             except Exception as e:
-                print(f"  \u274c Build failed: {e}")
+                self.logger.error(f"  ❌ Build failed: {e}")
                 return False
 
     def check_source(self) -> bool:
         """Check if source framework exists, build if necessary."""
-        print("  \U0001f50d Source framework")
+        self.logger.info("  🔍 Source framework")
 
         # Run embedding first
         self.run_embedding()
 
         # Force rebuild if requested
         if self.force_rebuild:
-            print("  \u23f3 Force rebuild requested...")
+            self.logger.info("  ⏳ Force rebuild requested...")
             return self.build_framework()
 
         # Check if dist/ide exists
         if not self.framework_source.exists():
-            print("  \u23f3 Distribution not found, building...")
+            self.logger.info("  ⏳ Distribution not found, building...")
             if not self.build_framework():
                 return False
 
@@ -176,7 +176,7 @@ class NWaveInstaller:
         commands_dir = self.framework_source / "commands" / "nw"
 
         if not agents_dir.exists() or not commands_dir.exists():
-            print("  \u23f3 Distribution incomplete, rebuilding...")
+            self.logger.info("  ⏳ Distribution incomplete, rebuilding...")
             if not self.build_framework():
                 return False
 
@@ -187,18 +187,20 @@ class NWaveInstaller:
 
         if newest_source and newest_dist:
             if newest_source.stat().st_mtime > newest_dist.stat().st_mtime:
-                print("  \u23f3 Source files changed, rebuilding...")
+                self.logger.info("  ⏳ Source files changed, rebuilding...")
                 if not self.build_framework():
                     return False
 
         agent_count = PathUtils.count_files(agents_dir, "*.md")
         command_count = PathUtils.count_files(commands_dir, "*.md")
 
-        print(f"  \u2705 Found {agent_count} agents and {command_count} commands")
+        self.logger.info(
+            f"  ✅ Found {agent_count} agents and {command_count} commands"
+        )
 
         if agent_count < EXPECTED_AGENT_COUNT:
-            print(
-                f"  \u26a0\ufe0f  Expected {EXPECTED_AGENT_COUNT} agents, found {agent_count}"
+            self.logger.warn(
+                f"  ⚠️  Expected {EXPECTED_AGENT_COUNT} agents, found {agent_count}"
             )
 
         return True
