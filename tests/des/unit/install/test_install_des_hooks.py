@@ -43,6 +43,7 @@ class TestInstallDESHooks:
         assert "hooks" in config
         assert "PreToolUse" in config["hooks"]
         assert "SubagentStop" in config["hooks"]
+        assert "PostToolUse" in config["hooks"]
 
         # And: DES PreToolUse hook exists (nested format)
         des_pre_hook = next(
@@ -112,6 +113,7 @@ class TestInstallDESHooks:
         assert "hooks" in config
         assert len(config["hooks"]["PreToolUse"]) == 1
         assert len(config["hooks"]["SubagentStop"]) == 1
+        assert len(config["hooks"]["PostToolUse"]) == 1
 
     def test_install_is_idempotent(self, tmp_path):
         """Install detects existing DES hooks and doesn't duplicate."""
@@ -138,6 +140,7 @@ class TestInstallDESHooks:
         config = json.loads((claude_dir / "settings.json").read_text())
         assert len(config["hooks"]["PreToolUse"]) == 1
         assert len(config["hooks"]["SubagentStop"]) == 1
+        assert len(config["hooks"]["PostToolUse"]) == 1
 
     def test_install_configures_pretooluse_hook_correctly(self, tmp_path):
         """Install configures PreToolUse hook with Task matcher and python3 -m command."""
@@ -204,6 +207,40 @@ class TestInstallDESHooks:
         assert "claude_code_hook_adapter" in inner["command"]
         assert "subagent-stop" in inner["command"]
 
+    def test_install_configures_posttooluse_hook_correctly(self, tmp_path):
+        """Install configures PostToolUse hook with Task matcher and python3 -m command."""
+        # Given: empty config
+        claude_dir = tmp_path / ".claude"
+        claude_dir.mkdir()
+
+        # When: run installer
+        subprocess.run(
+            [
+                "python3",
+                "scripts/install/install_des_hooks.py",
+                "--install",
+                "--config-dir",
+                str(claude_dir),
+            ],
+            capture_output=True,
+            text=True,
+        )
+
+        # Then: PostToolUse hook configured correctly (nested format)
+        config = json.loads((claude_dir / "settings.json").read_text())
+        assert "PostToolUse" in config["hooks"]
+        post_hook = config["hooks"]["PostToolUse"][0]
+
+        assert post_hook["matcher"] == "Task"
+        assert "hooks" in post_hook
+        assert len(post_hook["hooks"]) == 1
+
+        inner = post_hook["hooks"][0]
+        assert inner["type"] == "command"
+        assert "python3 -m" in inner["command"]
+        assert "claude_code_hook_adapter" in inner["command"]
+        assert "post-tool-use" in inner["command"]
+
     def test_uninstall_removes_only_des_hooks(self, tmp_path):
         """Uninstall removes only DES hooks, preserves others."""
         # Given: settings with DES and non-DES hooks (install first, then add non-DES)
@@ -266,8 +303,17 @@ class TestInstallDESHooks:
                 for sub in h.get("hooks", [])
             )
         ]
+        des_post = [
+            h
+            for h in config["hooks"].get("PostToolUse", [])
+            if any(
+                "claude_code_hook_adapter" in sub.get("command", "")
+                for sub in h.get("hooks", [])
+            )
+        ]
         assert len(des_pre) == 0
         assert len(des_stop) == 0
+        assert len(des_post) == 0
 
         # And: other hooks preserved
         assert len(config["hooks"]["PreToolUse"]) == 1

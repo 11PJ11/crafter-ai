@@ -23,11 +23,14 @@ class SubagentStopContext:
         execution_log_path: Absolute path to execution-log.yaml
         project_id: Project identifier
         step_id: Step identifier
+        stop_hook_active: True if SubagentStop already fired once (second attempt).
+            When True and validation fails, service allows to prevent infinite loops.
     """
 
     execution_log_path: str
     project_id: str
     step_id: str
+    stop_hook_active: bool = False
 
 
 class SubagentStopPort(ABC):

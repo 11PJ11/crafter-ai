@@ -2,13 +2,14 @@
 """Claude Code hook adapter with DES integration.
 
 This adapter bridges Claude Code's hook protocol (JSON stdin/stdout, exit codes)
-to DES application services (PreToolUseService, SubagentStopService).
+to DES application services (PreToolUseService, SubagentStopService, PostToolUseService).
 
 Protocol-only: no business logic here. All decisions delegated to application layer.
 
 Commands:
   python3 -m src.des.adapters.drivers.hooks.claude_code_hook_adapter pre-tool-use
   python3 -m src.des.adapters.drivers.hooks.claude_code_hook_adapter subagent-stop
+  python3 -m src.des.adapters.drivers.hooks.claude_code_hook_adapter post-tool-use
 
 Exit Codes:
   0 = allow/continue
@@ -289,6 +290,9 @@ def handle_subagent_stop() -> int:
                 cwd, "docs", "feature", project_id, "execution-log.yaml"
             )
 
+        # Extract stop_hook_active flag (true on second SubagentStop attempt)
+        stop_hook_active = bool(hook_input.get("stop_hook_active", False))
+
         # Delegate to application service
         from src.des.ports.driver_ports.subagent_stop_port import SubagentStopContext
 
@@ -298,6 +302,7 @@ def handle_subagent_stop() -> int:
                 execution_log_path=execution_log_path,
                 project_id=project_id,
                 step_id=step_id,
+                stop_hook_active=stop_hook_active,
             )
         )
 
@@ -327,14 +332,17 @@ RECOVERY REQUIRED:
 
 The step validation failed. You MUST fix these issues before proceeding."""
 
+            # EXPERIMENT: Test if systemMessage reaches parent conversation
+            # decision:block forces subagent to continue (may not help if out of turns)
+            # Try allow + systemMessage to notify the orchestrator instead
             response = {
                 "decision": "block",
-                "reason": reason,
+                "reason": notification,
                 "hookSpecificOutput": {
                     "hookEventName": "SubagentStop",
                     "additionalContext": notification,
                 },
-                "systemMessage": f"Validation failed: {reason}",
+                "systemMessage": f"DES STEP INCOMPLETE [{project_id}/{step_id}]: {reason}",
             }
             print(json.dumps(response))
             # Exit 0 so Claude Code processes the JSON (exit 2 ignores stdout)
@@ -344,6 +352,58 @@ The step validation failed. You MUST fix these issues before proceeding."""
         # Fail-closed: any error blocks execution via stderr + exit 1
         print(f"SubagentStop hook error: {e!s}", file=sys.stderr)
         return 1
+
+
+def handle_post_tool_use() -> int:
+    """Handle post-tool-use command: notify parent of sub-agent failures.
+
+    Reads the audit log for the most recent HOOK_SUBAGENT_STOP_FAILED entry.
+    If found, injects additionalContext into the parent's conversation so
+    the orchestrator knows a sub-agent failed.
+
+    Protocol translation only -- business logic in PostToolUseService.
+
+    Returns:
+        0 always (PostToolUse should never block)
+    """
+    try:
+        # Read JSON from stdin
+        input_data = sys.stdin.read()
+
+        if not input_data or not input_data.strip():
+            # Non-DES or missing input: passthrough
+            print(json.dumps({}))
+            return 0
+
+        # Parse JSON (ignore parse errors gracefully)
+        try:
+            json.loads(input_data)
+        except json.JSONDecodeError:
+            print(json.dumps({}))
+            return 0
+
+        # Delegate to PostToolUseService
+        from src.des.adapters.driven.logging.jsonl_audit_log_reader import (
+            JsonlAuditLogReader,
+        )
+        from src.des.application.post_tool_use_service import PostToolUseService
+
+        reader = JsonlAuditLogReader()
+        service = PostToolUseService(audit_reader=reader)
+        additional_context = service.check_completion_status()
+
+        if additional_context:
+            response = {"additionalContext": additional_context}
+        else:
+            response = {}
+
+        print(json.dumps(response))
+        return 0
+
+    except Exception:
+        # PostToolUse should never block - fail open
+        print(json.dumps({}))
+        return 0
 
 
 def main() -> None:
@@ -366,6 +426,8 @@ def main() -> None:
         exit_code = handle_pre_tool_use()
     elif command == "subagent-stop":
         exit_code = handle_subagent_stop()
+    elif command == "post-tool-use":
+        exit_code = handle_post_tool_use()
     else:
         print(json.dumps({"status": "error", "reason": f"Unknown command: {command}"}))
         exit_code = 1

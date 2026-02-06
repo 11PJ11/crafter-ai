@@ -108,6 +108,16 @@ class SubagentStopService(SubagentStopPort):
         if not completion.is_valid:
             error_parts = list(completion.error_messages)
             error_message = "; ".join(error_parts) if error_parts else "Validation failed"
+
+            if context.stop_hook_active:
+                # Second attempt: allow to prevent infinite loop, but still log FAILED
+                self._log_failed(
+                    context.project_id, context.step_id, error_parts,
+                    allowed_despite_failure=True,
+                )
+                return HookDecision.allow()
+
+            # First attempt: block so sub-agent can try to fix
             self._log_failed(context.project_id, context.step_id, error_parts)
             return HookDecision.block(
                 reason=error_message,
@@ -158,16 +168,25 @@ class SubagentStopService(SubagentStopPort):
             )
         )
 
-    def _log_failed(self, feature_name: str, step_id: str, error_messages: list[str]) -> None:
+    def _log_failed(
+        self,
+        feature_name: str,
+        step_id: str,
+        error_messages: list[str],
+        allowed_despite_failure: bool = False,
+    ) -> None:
         """Log failed validation to the audit trail."""
+        data: dict = {
+            "validation_errors": error_messages,
+        }
+        if allowed_despite_failure:
+            data["allowed_despite_failure"] = True
         self._audit_writer.log_event(
             AuditEvent(
                 event_type="HOOK_SUBAGENT_STOP_FAILED",
                 timestamp=self._time_provider.now_utc().isoformat(),
                 feature_name=feature_name,
                 step_id=step_id,
-                data={
-                    "validation_errors": error_messages,
-                },
+                data=data,
             )
         )

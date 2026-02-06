@@ -37,6 +37,16 @@ class DESHookInstaller:
         ],
     }
 
+    DES_POSTTOOLUSE_HOOK = {
+        "matcher": "Task",
+        "hooks": [
+            {
+                "type": "command",
+                "command": "cd {project_root} && PYTHONPATH={project_root} python3 -m src.des.adapters.drivers.hooks.claude_code_hook_adapter post-tool-use",
+            }
+        ],
+    }
+
     def __init__(self, config_dir: Path | None = None):
         """
         Initialize installer.
@@ -190,7 +200,11 @@ class DESHookInstaller:
         stop_hooks = config["hooks"].get("SubagentStop", [])
         has_stop = any(self._is_des_hook_entry(h) for h in stop_hooks)
 
-        return has_pre or has_stop
+        # Check for PostToolUse hook
+        post_hooks = config["hooks"].get("PostToolUse", [])
+        has_post = any(self._is_des_hook_entry(h) for h in post_hooks)
+
+        return has_pre or has_stop or has_post
 
     def _is_des_hook_entry(self, hook_entry: dict) -> bool:
         """
@@ -228,6 +242,8 @@ class DESHookInstaller:
             config["hooks"]["PreToolUse"] = []
         if "SubagentStop" not in config["hooks"]:
             config["hooks"]["SubagentStop"] = []
+        if "PostToolUse" not in config["hooks"]:
+            config["hooks"]["PostToolUse"] = []
 
     def _add_des_hooks(self, config: dict):
         """
@@ -244,9 +260,13 @@ class DESHookInstaller:
         stop_hook = self._substitute_project_root(
             self.DES_SUBAGENT_STOP_HOOK, project_root
         )
+        post_hook = self._substitute_project_root(
+            self.DES_POSTTOOLUSE_HOOK, project_root
+        )
 
         config["hooks"]["PreToolUse"].append(pre_hook)
         config["hooks"]["SubagentStop"].append(stop_hook)
+        config["hooks"]["PostToolUse"].append(post_hook)
 
     def _substitute_project_root(self, hook_config: dict, project_root: str) -> dict:
         """
@@ -300,6 +320,13 @@ class DESHookInstaller:
             config["hooks"]["SubagentStop"] = [
                 h
                 for h in config["hooks"]["SubagentStop"]
+                if not self._is_des_hook_entry(h)
+            ]
+
+        if "PostToolUse" in config["hooks"]:
+            config["hooks"]["PostToolUse"] = [
+                h
+                for h in config["hooks"]["PostToolUse"]
                 if not self._is_des_hook_entry(h)
             ]
 
