@@ -4,9 +4,8 @@ Tests verify that all audit events (PASSED, FAILED, SCOPE_VIOLATION) log both
 feature_name and step_id extracted from execution context.
 """
 
-import pytest
-from pathlib import Path
 from datetime import datetime, timezone
+from pathlib import Path
 
 from src.des.application.subagent_stop_service import SubagentStopService
 from src.des.domain.step_completion_validator import StepCompletionValidator
@@ -55,7 +54,9 @@ class MockScopeChecker(ScopeChecker):
     def __init__(self, violations: list[str] = None):
         self._violations = violations or []
 
-    def check_scope(self, project_root: Path, allowed_patterns: list[str]) -> ScopeCheckResult:
+    def check_scope(
+        self, project_root: Path, allowed_patterns: list[str]
+    ) -> ScopeCheckResult:
         return ScopeCheckResult(
             has_violations=len(self._violations) > 0,
             out_of_scope_files=self._violations,
@@ -101,7 +102,9 @@ def test_audit_log_passed_includes_feature_name_and_step_id():
 
     # Then: PASSED event includes both feature_name and step_id
     assert decision.action == "allow"
-    passed_events = [e for e in audit_writer.events if e.event_type == "HOOK_SUBAGENT_STOP_PASSED"]
+    passed_events = [
+        e for e in audit_writer.events if e.event_type == "HOOK_SUBAGENT_STOP_PASSED"
+    ]
     assert len(passed_events) == 1
 
     passed_event = passed_events[0]
@@ -144,7 +147,9 @@ def test_audit_log_failed_includes_feature_name_and_step_id():
 
     # Then: FAILED event includes both feature_name and step_id
     assert decision.action == "block"
-    failed_events = [e for e in audit_writer.events if e.event_type == "HOOK_SUBAGENT_STOP_FAILED"]
+    failed_events = [
+        e for e in audit_writer.events if e.event_type == "HOOK_SUBAGENT_STOP_FAILED"
+    ]
     assert len(failed_events) == 1
 
     failed_event = failed_events[0]
@@ -240,7 +245,9 @@ def test_audit_log_retains_all_existing_fields():
 
     # Then: FAILED event preserves all existing fields
     assert decision.action == "block"
-    failed_events = [e for e in audit_writer.events if e.event_type == "HOOK_SUBAGENT_STOP_FAILED"]
+    failed_events = [
+        e for e in audit_writer.events if e.event_type == "HOOK_SUBAGENT_STOP_FAILED"
+    ]
     assert len(failed_events) == 1
 
     failed_event = failed_events[0]

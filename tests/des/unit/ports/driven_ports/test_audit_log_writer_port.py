@@ -7,8 +7,8 @@ Tests verify:
 - AC4: None values are properly handled (not excluded here, that's serialization layer)
 """
 
-import pytest
 from dataclasses import asdict
+
 from des.ports.driven_ports.audit_log_writer import AuditEvent
 
 
@@ -18,7 +18,7 @@ def test_audit_event_has_feature_name_and_step_id_fields():
         event_type="TEST_EVENT",
         timestamp="2026-02-06T17:00:00Z",
         feature_name="test-feature",
-        step_id="01-01"
+        step_id="01-01",
     )
 
     assert event.feature_name == "test-feature"
@@ -27,10 +27,7 @@ def test_audit_event_has_feature_name_and_step_id_fields():
 
 def test_audit_event_feature_name_and_step_id_default_to_none():
     """AC1: feature_name and step_id should default to None when not provided."""
-    event = AuditEvent(
-        event_type="TEST_EVENT",
-        timestamp="2026-02-06T17:00:00Z"
-    )
+    event = AuditEvent(event_type="TEST_EVENT", timestamp="2026-02-06T17:00:00Z")
 
     assert event.feature_name is None
     assert event.step_id is None
@@ -43,7 +40,7 @@ def test_audit_event_data_dict_remains_for_additional_fields():
         timestamp="2026-02-06T17:00:00Z",
         feature_name="test-feature",
         step_id="01-01",
-        data={"error": "test error", "count": 5}
+        data={"error": "test error", "count": 5},
     )
 
     assert event.data == {"error": "test error", "count": 5}
@@ -56,7 +53,7 @@ def test_audit_event_can_be_converted_to_dict():
         timestamp="2026-02-06T17:00:00Z",
         feature_name="test-feature",
         step_id="01-01",
-        data={"extra": "value"}
+        data={"extra": "value"},
     )
 
     event_dict = asdict(event)
@@ -79,7 +76,7 @@ def test_audit_event_with_none_values_in_dict():
         event_type="TEST_EVENT",
         timestamp="2026-02-06T17:00:00Z",
         feature_name=None,
-        step_id=None
+        step_id=None,
     )
 
     event_dict = asdict(event)
