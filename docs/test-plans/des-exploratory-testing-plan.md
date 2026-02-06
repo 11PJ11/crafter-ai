@@ -1,7 +1,7 @@
 # DES (Deterministic Execution System) - Piano di Test Esplorativo
 
 **Data:** 2026-02-06
-**Versione:** 2.0
+**Versione:** 2.1
 **Tester:** Manual / AI-assisted
 **Obiettivo:** Verificare funzionamento completo del DES dopo installazione
 **Scenario e2e:** audit-log-refactor roadmap (docs/feature/audit-log-refactor/roadmap.yaml)
@@ -563,7 +563,282 @@ git log --oneline -1
 
 ---
 
-## 10. Execution Plan
+## 10. Test Suite: Hook Activation in Claude Code (Live)
+
+### TC-019: PreToolUse hook si attiva per Task ad-hoc
+**Obiettivo:** Verificare che il PreToolUse hook si attivi per ogni Task invocata in Claude Code
+
+**Passi:**
+1. Invocare un Task semplice in Claude Code (es. Explore agent)
+2. Controllare audit log per evento HOOK_PRE_TOOL_USE_ALLOWED
+
+**Comando di verifica:**
+```bash
+# Prima del test: contare eventi
+wc -l .nwave/logs/des/audit-$(date +%Y-%m-%d).log
+
+# Eseguire un Task in Claude Code (ad-hoc, senza marker DES)
+# ... Task(subagent_type="Explore", prompt="list files", max_turns=10)
+
+# Dopo il test: verificare nuovo evento
+tail -5 .nwave/logs/des/audit-$(date +%Y-%m-%d).log
+```
+
+**Criteri di successo:**
+- Audit log contiene nuovo evento `HOOK_PRE_TOOL_USE_ALLOWED`
+- Context = `non_des_task` (nessun marker DES nel prompt)
+- Nessun blocco (Task esegue normalmente)
+
+---
+
+### TC-020: PreToolUse hook distingue 3 context di allow
+**Obiettivo:** Verificare che il hook registri il context corretto per ogni tipo di Task
+
+**3 Context possibili:**
+
+| Context | Quando | Marker nel prompt |
+|---------|--------|-------------------|
+| `non_des_task` | Task senza marker DES | Nessuno |
+| `orchestrator_mode` | Task con marker DES + orchestrator | `<!-- DES-VALIDATION: required -->` + `<!-- DES-MODE: orchestrator -->` |
+| `des_validated` | Task con marker DES + prompt completo | `<!-- DES-VALIDATION: required -->` + tutte 8 sezioni + 7 fasi |
+
+**Scenario 1: non_des_task**
+```bash
+echo '{"tool_name":"Task","tool_input":{"prompt":"simple task","max_turns":15,"subagent_type":"Explore"}}' | \
+  PYTHONPATH=~/.claude/lib/python python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter pre-task
+```
+Atteso: `{"decision":"allow"}` + audit log context = `non_des_task`
+
+**Scenario 2: orchestrator_mode**
+```bash
+echo '{"tool_name":"Task","tool_input":{"prompt":"<!-- DES-VALIDATION: required -->\n<!-- DES-MODE: orchestrator -->\nOrchestrate","max_turns":30,"subagent_type":"software-crafter"}}' | \
+  PYTHONPATH=~/.claude/lib/python python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter pre-task
+```
+Atteso: `{"decision":"allow"}` + audit log context = `orchestrator_mode`
+
+**Scenario 3: des_validated** (richiede prompt completo con 8 sezioni + 7 fasi)
+
+Atteso: `{"decision":"allow"}` + audit log context = `des_validated`
+
+---
+
+## 11. Test Suite: Reminder Marker DES per /nw:develop e /nw:execute
+
+### TC-021: /nw:develop include marker DES nei prompt dei sub-agent
+**Obiettivo:** Verificare che `/nw:develop` generi prompt con marker DES per tutti i sub-agent
+
+**Contesto architetturale:**
+`/nw:develop` e' l'orchestrator che delega a sub-agent via Task tool. Ogni Task DEVE includere:
+```html
+<!-- DES-VALIDATION: required -->
+<!-- DES-MODE: orchestrator -->
+<!-- DES-STEP-FILE: docs/feature/{project-id}/... -->
+<!-- DES-ORIGIN: command:/nw:develop -->
+```
+
+**Passi:**
+1. Leggere `~/.claude/commands/nw/develop.md`
+2. Cercare tutti i pattern `Task(` nel file
+3. Verificare che OGNI Task includa i marker DES nel prompt
+
+**Comando verifica:**
+```bash
+# Contare Task invocations
+grep -c "Task(" ~/.claude/commands/nw/develop.md
+
+# Contare marker DES
+grep -c "DES-VALIDATION: required" ~/.claude/commands/nw/develop.md
+
+# I numeri devono corrispondere
+```
+
+**Criteri di successo:**
+- OGNI invocazione Task nel template di `/nw:develop` contiene `<!-- DES-VALIDATION: required -->`
+- OGNI invocazione Task contiene `<!-- DES-MODE: orchestrator -->`
+- OGNI invocazione Task contiene `<!-- DES-ORIGIN: command:/nw:develop -->`
+- Nessun Task senza marker DES
+
+---
+
+### TC-022: /nw:execute include marker DES nel prompt del sub-agent
+**Obiettivo:** Verificare che `/nw:execute` generi prompt con marker DES completi
+
+**Contesto architetturale:**
+`/nw:execute` genera un prompt per il software-crafter con tutte le 8 sezioni mandatorie + 7 fasi TDD. Deve includere:
+```html
+<!-- DES-VALIDATION: required -->
+<!-- DES-STEP-FILE: docs/feature/{project-id}/steps/{step-id}.json -->
+<!-- DES-ORIGIN: command:/nw:execute -->
+```
+
+**Passi:**
+1. Leggere `~/.claude/commands/nw/execute.md`
+2. Verificare il template prompt Task
+3. Verificare che contenga tutti i marker DES
+4. Verificare che contenga tutte le 8 sezioni mandatorie
+
+**8 Sezioni mandatorie da verificare nel template:**
+```bash
+grep -c "# DES_METADATA" ~/.claude/commands/nw/execute.md
+grep -c "# AGENT_IDENTITY" ~/.claude/commands/nw/execute.md
+grep -c "# TASK_CONTEXT" ~/.claude/commands/nw/execute.md
+grep -c "# TDD_7_PHASES" ~/.claude/commands/nw/execute.md
+grep -c "# QUALITY_GATES" ~/.claude/commands/nw/execute.md
+grep -c "# OUTCOME_RECORDING" ~/.claude/commands/nw/execute.md
+grep -c "# BOUNDARY_RULES" ~/.claude/commands/nw/execute.md
+grep -c "# TIMEOUT_INSTRUCTION" ~/.claude/commands/nw/execute.md
+```
+
+**Criteri di successo:**
+- Marker DES presenti nel template prompt
+- Tutte le 8 sezioni mandatorie presenti
+- 7 fasi TDD elencate nella sezione TDD_7_PHASES
+- Il prompt generato passerebbe la validazione PreToolUse (contesto `des_validated`)
+
+---
+
+### TC-023: Task senza marker DES viene permessa ma loggata come non_des_task
+**Obiettivo:** Verificare il comportamento "reminder" quando i marker DES mancano
+
+**Contesto:**
+Quando un utente invoca un Task manualmente (senza usare `/nw:develop` o `/nw:execute`), il prompt non contiene marker DES. Il PreToolUse hook DEVE:
+- Permettere l'esecuzione (non bloccare)
+- Loggare come `non_des_task` nell'audit trail
+- Non effettuare validazione prompt (sezioni/fasi)
+
+Questo e' un "reminder silenzioso": guardando l'audit trail si vedra' che il task non era DES-managed.
+
+**Passi:**
+1. Invocare un Task senza marker DES (come fatto nel test TC-019)
+2. Verificare audit log: context = `non_des_task`
+3. Confrontare con un task DES dove context = `des_validated` o `orchestrator_mode`
+
+**Verifica audit trail:**
+```bash
+# Contare task non-DES vs DES
+grep -c "non_des_task" .nwave/logs/des/audit-$(date +%Y-%m-%d).log
+grep -c "orchestrator_mode" .nwave/logs/des/audit-$(date +%Y-%m-%d).log
+grep -c "des_validated" .nwave/logs/des/audit-$(date +%Y-%m-%d).log
+```
+
+**Criteri di successo:**
+- Task senza marker viene permessa (non bloccata)
+- Audit log registra context = `non_des_task`
+- L'audit trail permette di distinguere task DES da task ad-hoc
+
+---
+
+## 12. Test Suite: Context Injection quando execution-log non aggiornato
+
+### TC-024: SubagentStop blocca quando execution-log non viene aggiornato
+**Obiettivo:** Verificare che SubagentStop rilevi quando un sub-agent completa senza aggiornare l'execution-log
+
+**Contesto architetturale:**
+Ogni sub-agent DEVE appendere eventi a `execution-log.yaml` dopo ogni fase TDD. Se il sub-agent termina senza scrivere nell'execution-log (o scrivendo solo alcune fasi), il SubagentStop hook DEVE:
+1. Rilevare le fasi mancanti (ABANDONED_PHASE o SILENT_COMPLETION)
+2. Bloccare con `{"decision": "block"}`
+3. Iniettare context di recovery nel messaggio di risposta
+
+**Scenario: Sub-agent termina senza aggiornare execution-log (0 eventi)**
+```bash
+TMP_LOG=$(mktemp -d)/execution-log.yaml
+cat > "$TMP_LOG" << 'EOF'
+project_id: "test-project"
+events: []
+EOF
+
+echo "{\"executionLogPath\":\"$TMP_LOG\",\"projectId\":\"test-project\",\"stepId\":\"01-01\"}" | \
+  PYTHONPATH=~/.claude/lib/python python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter subagent-stop
+
+echo "Exit code: $?"
+rm -rf "$(dirname $TMP_LOG)"
+```
+
+**Criteri di successo:**
+- `{"decision": "block"}`, exit 2
+- Errore tipo: SILENT_COMPLETION (nessun evento per lo step)
+- Recovery suggestions incluse nella risposta
+
+---
+
+### TC-025: SubagentStop inietta context di recovery nella risposta
+**Obiettivo:** Verificare che il messaggio di blocco contenga informazioni utili per il recovery
+
+**Contesto architetturale:**
+Quando SubagentStop blocca, la risposta JSON include `hookSpecificOutput` con:
+- `hookEventName`: "SubagentStop"
+- `additionalContext`: messaggio dettagliato con step, errore, e passi di recovery
+- `systemMessage`: sommario dell'errore
+
+Questo context viene iniettato nella conversazione Claude per guidare il recovery.
+
+**Scenario: Step con fasi mancanti**
+```bash
+TMP_LOG=$(mktemp -d)/execution-log.yaml
+cat > "$TMP_LOG" << 'EOF'
+project_id: "test-project"
+events:
+  - "01-01|PREPARE|EXECUTED|PASS|2026-02-06T10:00:00Z"
+  - "01-01|RED_ACCEPTANCE|EXECUTED|FAIL|2026-02-06T10:05:00Z"
+EOF
+
+echo "{\"executionLogPath\":\"$TMP_LOG\",\"projectId\":\"test-project\",\"stepId\":\"01-01\"}" | \
+  PYTHONPATH=~/.claude/lib/python python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter subagent-stop
+
+echo "Exit code: $?"
+rm -rf "$(dirname $TMP_LOG)"
+```
+
+**Campi da verificare nella risposta JSON:**
+```json
+{
+  "decision": "block",
+  "reason": "...",
+  "hookSpecificOutput": {
+    "hookEventName": "SubagentStop",
+    "additionalContext": "STOP HOOK VALIDATION FAILED\n\nStep: test-project/01-01\n..."
+  },
+  "systemMessage": "Validation failed: ..."
+}
+```
+
+**Criteri di successo:**
+- Risposta contiene `hookSpecificOutput.additionalContext` con dettagli step
+- Risposta contiene `hookSpecificOutput.hookEventName` = "SubagentStop"
+- Risposta contiene `systemMessage` con sommario errore
+- `additionalContext` include "RECOVERY REQUIRED" con passi concreti
+- Le fasi mancanti sono elencate (RED_UNIT, GREEN, REVIEW, REFACTOR_CONTINUOUS, COMMIT)
+
+---
+
+### TC-026: Context injection end-to-end con /nw:execute
+**Obiettivo:** Verificare il flusso completo di context injection in uno scenario reale
+
+**Scenario:**
+1. Eseguire uno step via `/nw:execute` con un sub-agent che NON aggiorna l'execution-log
+2. SubagentStop blocca e inietta context di recovery
+3. Claude riceve il context e puo' tentare il recovery
+
+**Nota:** Questo test richiede un'esecuzione reale in Claude Code. Non puo' essere simulato via CLI perche' il flusso di context injection dipende da Claude Code che legge `hookSpecificOutput` e lo inietta nella conversazione.
+
+**Verifica indiretta:**
+```bash
+# Dopo un tentativo fallito, controllare audit log
+grep "HOOK_SUBAGENT_STOP_FAILED" .nwave/logs/des/audit-$(date +%Y-%m-%d).log | tail -1
+
+# Verificare che il recovery context sia stato generato
+# (il context appare nel response JSON del hook, non nell'audit log)
+```
+
+**Criteri di successo:**
+- SubagentStop genera response con `hookSpecificOutput`
+- Claude riceve il context e mostra messaggio di recovery
+- L'utente vede chiaramente quale step e' fallito e perche'
+- Le recovery suggestions sono actionable (passi concreti)
+
+---
+
+## 13. Execution Plan
 
 ### Fase 1: Verifiche Statiche (15 min)
 1. TC-001: Hook configuration in settings.json
@@ -598,7 +873,21 @@ git log --oneline -1
 18. TC-017: Esecuzione step reale (audit-log-refactor 01-02)
 19. TC-018: Test blocco step incompleto
 
-**Tempo totale stimato:** ~2 ore
+### Fase 8: Hook Activation Live (15 min)
+20. TC-019: PreToolUse hook attivazione per task ad-hoc
+21. TC-020: PreToolUse distingue 3 context di allow
+
+### Fase 9: Marker DES per /nw:develop e /nw:execute (15 min)
+22. TC-021: /nw:develop include marker DES
+23. TC-022: /nw:execute include marker DES
+24. TC-023: Task senza marker permessa ma loggata come non_des_task
+
+### Fase 10: Context Injection execution-log (20 min)
+25. TC-024: SubagentStop blocca quando execution-log non aggiornato
+26. TC-025: SubagentStop inietta context di recovery nella risposta
+27. TC-026: Context injection e2e con /nw:execute
+
+**Tempo totale stimato:** ~3 ore
 
 ---
 
@@ -632,10 +921,13 @@ git log --oneline -1
 ## 12. Exit Criteria
 
 Il test e' considerato completato quando:
-- Tutti i test TC-001 a TC-018 sono stati eseguiti
+- Tutti i test TC-001 a TC-026 sono stati eseguiti
 - Almeno 90% dei test critici PASS
 - Tutti i FAIL sono documentati con root cause
 - Test E2E (TC-017) completato con successo
+- Hook activation verificata in Claude Code (TC-019, TC-020)
+- Marker DES presenti in /nw:develop e /nw:execute (TC-021, TC-022)
+- Context injection SubagentStop verificata (TC-024, TC-025)
 - Audit trail verificato per tutti gli eventi
 
 ---

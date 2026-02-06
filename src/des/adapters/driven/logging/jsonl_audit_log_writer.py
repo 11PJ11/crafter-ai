@@ -66,8 +66,16 @@ class JsonlAuditLogWriter(AuditLogWriter):
         entry = {
             "event": event.event_type,
             "timestamp": event.timestamp,
-            **event.data,
         }
+
+        # Add optional traceability fields (exclude None values)
+        if event.feature_name is not None:
+            entry["feature_name"] = event.feature_name
+        if event.step_id is not None:
+            entry["step_id"] = event.step_id
+
+        # Merge additional event-specific data
+        entry.update(event.data)
 
         # Serialize to compact JSONL
         json_line = json.dumps(entry, separators=(",", ":"), sort_keys=True)
