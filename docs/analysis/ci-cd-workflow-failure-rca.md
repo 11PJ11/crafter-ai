@@ -6,7 +6,7 @@
 
 **Investigator**: Sage (troubleshooter agent)
 
-**Repository**: https://github.com/11PJ11/crafter-ai
+**Repository**: https://github.com/nWave-ai/nWave
 
 **Status**: ROOT CAUSES IDENTIFIED
 
@@ -351,8 +351,8 @@ python3 scripts/framework/sync_agent_names.py --verify
 ### Installation Verification
 ```bash
 # Download and verify checksum
-wget https://github.com/11PJ11/crafter-ai/releases/download/v1.4.9/nwave-claude-code-1.4.9.tar.gz
-wget https://github.com/11PJ11/crafter-ai/releases/download/v1.4.9/SHA256SUMS.txt
+wget https://github.com/nWave-ai/nWave/releases/download/v1.4.9/nwave-claude-code-1.4.9.tar.gz
+wget https://github.com/nWave-ai/nWave/releases/download/v1.4.9/SHA256SUMS.txt
 sha256sum -c SHA256SUMS.txt
 
 # Test installation

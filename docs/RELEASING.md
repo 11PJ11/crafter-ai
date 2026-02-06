@@ -51,13 +51,13 @@ The GitHub Actions workflow will automatically:
 
 Watch the workflow progress at:
 ```
-https://github.com/11PJ11/crafter-ai/actions/workflows/release.yml
+https://github.com/nWave-ai/nWave/actions/workflows/release.yml
 ```
 
 ### 5. Verify Release
 
 Once the workflow completes, verify the release:
-- Visit: https://github.com/11PJ11/crafter-ai/releases
+- Visit: https://github.com/nWave-ai/nWave/releases
 - Check that artifacts are attached:
   - `nwave-claude-code-{version}.tar.gz`
   - `nwave-codex-{version}.tar.gz`
@@ -165,7 +165,7 @@ The workflow will create a pre-release on GitHub (marked as "Pre-release").
 If a release has critical issues:
 
 ### 1. Delete the Release (GitHub UI)
-- Go to: https://github.com/11PJ11/crafter-ai/releases
+- Go to: https://github.com/nWave-ai/nWave/releases
 - Edit the problematic release
 - Delete the release
 
@@ -209,7 +209,7 @@ Before creating a release:
 **Cause**: Build errors in framework code
 
 **Solution**:
-1. Check workflow logs: https://github.com/11PJ11/crafter-ai/actions
+1. Check workflow logs: https://github.com/nWave-ai/nWave/actions
 2. Fix build errors locally
 3. Delete failed tag: `git push origin :refs/tags/v1.2.71`
 4. Commit fixes and re-tag

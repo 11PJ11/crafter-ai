@@ -491,7 +491,7 @@ Usage:
 - Use '/nw:start "feature description"' to initialize nWave workflow
 - All agents available globally across projects
 
-For help: https://github.com/11PJ11/crafter-ai
+For help: https://github.com/nWave-ai/nWave
 """
 
         manifest_path.write_text(content, encoding="utf-8")

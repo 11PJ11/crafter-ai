@@ -58,14 +58,9 @@ except ImportError:
     from plugins.utilities_plugin import UtilitiesPlugin
     from preflight_checker import PreflightChecker
 
-try:
-    from crafter_ai.installer.domain.ide_bundle_constants import (
-        EXPECTED_AGENT_COUNT,
-        EXPECTED_COMMAND_COUNT,
-    )
-except ImportError:
-    EXPECTED_AGENT_COUNT = 10
-    EXPECTED_COMMAND_COUNT = 10
+# Expected file counts from the build (under integration test)
+EXPECTED_AGENT_COUNT = 31
+EXPECTED_COMMAND_COUNT = 23
 
 # ANSI color codes for terminal output (fallback when Rich unavailable)
 _ANSI_GREEN = "\033[0;32m"
@@ -529,7 +524,7 @@ def show_title_panel(logger: Logger, dry_run: bool = False) -> None:
         "[cyan]        \u2580\u2588\u2588\u2588  \u2588\u2588\u2588  \u2588\u2588\u2588\u2580[/cyan]",
         "[cyan]  \u2588\u2588\u2588\u2588\u2584  \u2588\u2588\u2588  \u2588\u2588\u2588  \u2588\u2588\u2588  \u2580\u2580\u2588\u2584 \u2588\u2588 \u2588\u2588 \u2584\u2588\u2580\u2588\u2584[/cyan]",
         "[cyan]  \u2588\u2588 \u2588\u2588  \u2588\u2588\u2588\u2584\u2584\u2588\u2588\u2588\u2584\u2584\u2588\u2588\u2588 \u2584\u2588\u2580\u2588\u2588 \u2588\u2588\u2584\u2588\u2588 \u2588\u2588\u2584\u2588\u2580[/cyan]",
-        "[cyan]  \u2588\u2588 \u2588\u2588   \u2580\u2588\u2588\u2588\u2588\u2580\u2588\u2588\u2588\u2588\u2580  \u2580\u2588\u2584\u2588\u2588  \u2580\u2588\u2580  \u2580\u2588\u2584\u2584\u2584\u2584\u2582\u2582\u2581\u2581[/cyan]  \U0001f30a \U0001f30a \U0001f30a",
+        f"[cyan]  \u2588\u2588 \u2588\u2588   \u2580\u2588\u2588\u2588\u2588\u2580\u2588\u2588\u2588\u2588\u2580  \u2580\u2588\u2584\u2588\u2588  \u2580\u2588\u2580  \u2580\u2588\u2584\u2584\u2584\u2584\u2582\u2582\u2581\u2581[/cyan]  \U0001f30a \U0001f30a \U0001f30a  v{__version__}",
         "",
         " Orchestrated Agentic-AI code assistant for crafters.",
         " Modern Software Engineering at scale. Confidence at speed.",
@@ -544,30 +539,27 @@ def show_title_panel(logger: Logger, dry_run: bool = False) -> None:
     logger.print_styled("")
 
 
-def show_installation_summary(logger: Logger, claude_config_dir: Path) -> None:
+def show_installation_summary(logger: Logger) -> None:
     """Display installation summary panel at end of successful install."""
-    agents_count = PathUtils.count_files(claude_config_dir / "agents" / "nw", "*.md")
-    commands_count = PathUtils.count_files(
-        claude_config_dir / "commands" / "nw", "*.md"
+    logger.info("")
+    logger.info(f"  🎉 nWave v{__version__} installed and healthy!")
+    logger.info("")
+    logger.info("  📖 Quick start")
+    commands = [
+        ("/nw:discover", "Evidence-based product discovery"),
+        ("/nw:discuss", "Requirements gathering and business analysis"),
+        ("/nw:design", "Architecture design with visual representation"),
+        ("/nw:distill", "Acceptance test creation and business validation"),
+        ("/nw:develop", "Outside-In TDD implementation with refactoring"),
+        ("/nw:deliver", "Production readiness validation"),
+    ]
+    for cmd, desc in commands:
+        logger.info(f"    {cmd:<16} {desc}")
+    logger.info("")
+    logger.info(
+        "  💡 Open Claude Code in any project directory and type a /nw: command."
     )
-    templates_count = PathUtils.count_files(claude_config_dir / "templates", "*.json")
-    templates_count += PathUtils.count_files(claude_config_dir / "templates", "*.yaml")
-
-    summary_content = f"""Framework Version: {__version__}
-Installation Location: {claude_config_dir}
-Agents Installed: {agents_count}
-Commands Installed: {commands_count}
-Templates Installed: {templates_count}
-
-Available Commands:
-  /nw:discover - Evidence-based product discovery and market validation
-  /nw:discuss  - Requirements gathering and business analysis
-  /nw:design   - Architecture design with visual representation
-  /nw:distill  - Acceptance test creation and business validation
-  /nw:develop  - Outside-In TDD implementation with refactoring
-  /nw:deliver  - Production readiness validation"""
-
-    logger.panel(content=summary_content, title="Installation Complete", style="green")
+    logger.info("  📚 Docs: https://github.com/nWave-ai/nWave")
 
 
 def show_help():
@@ -612,7 +604,7 @@ def show_help():
     ~/.claude/commands/nw/  # nWave command integrations
     ~/.claude/templates/    # TDD cycle schema templates
 
-For more information: https://github.com/11PJ11/crafter-ai
+For more information: https://github.com/nWave-ai/nWave
 """
     print(help_text)
 
@@ -706,23 +698,12 @@ def main():
 
     if installer.validate_installation():
         installer.logger.info("")
-        show_installation_summary(installer.logger, installer.claude_config_dir)
+        show_installation_summary(installer.logger)
 
-        installer.logger.info("")
-        installer.logger.info("Next steps:")
-        installer.logger.info("1. Navigate to any project directory")
-        installer.logger.info(
-            "2. Use nWave commands to orchestrate development workflow"
-        )
-        installer.logger.info("3. Access agents through the nw category in Claude Code")
-        installer.logger.info("")
-        installer.logger.info("Documentation: https://github.com/11PJ11/crafter-ai")
         return 0
     else:
-        installer.logger.error("Installation failed validation")
-        installer.logger.warn(
-            "You can restore the previous installation with: python install_nwave.py --restore"
-        )
+        installer.logger.error("  ❌ Installation failed validation")
+        installer.logger.warn("  ⚠️ Restore with: python install_nwave.py --restore")
         return 1
 
 

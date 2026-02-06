@@ -403,7 +403,7 @@ python3 scripts/install/install_nwave.py
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/11PJ11/crafter-ai.git
+git clone https://github.com/nWave-ai/nWave.git
 cd crafter-ai
 
 # 2. Install pipenv (if not already installed)
