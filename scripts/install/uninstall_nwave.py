@@ -9,11 +9,13 @@ Usage: python uninstall_nwave.py [--backup] [--force] [--dry-run] [--help]
 """
 
 import argparse
+import json
 import shutil
 import sys
 
 
 try:
+    from scripts.install.install_des_hooks import DESHookInstaller
     from scripts.install.install_utils import (
         BackupManager,
         Logger,
@@ -23,6 +25,7 @@ try:
     )
     from scripts.install.rich_console import ConsoleFactory, RichLogger
 except ImportError:
+    from install_des_hooks import DESHookInstaller
     from install_utils import (
         BackupManager,
         Logger,
@@ -108,6 +111,24 @@ class NWaveUninstaller:
                 installation_found = True
                 self.logger.info("Found nWave backup directories")
 
+        # Check for DES hooks
+        settings_file = self.claude_config_dir / "settings.json"
+        if settings_file.exists():
+            try:
+                with open(settings_file, encoding="utf-8") as f:
+                    config = json.load(f)
+                    # Check if DES hooks are present
+                    if "hooks" in config:
+                        hooks_str = json.dumps(config["hooks"])
+                        if (
+                            "des/adapters/drivers/hooks/claude_code_hook_adapter.py"
+                            in hooks_str
+                        ):
+                            installation_found = True
+                            self.logger.info("Found DES hooks in settings.json")
+            except (OSError, json.JSONDecodeError):
+                pass
+
         if not installation_found:
             self.logger.info("No nWave installation found")
             print()
@@ -130,6 +151,7 @@ class NWaveUninstaller:
         print(f"{_ANSI_YELLOW}The following will be removed:{_ANSI_NC}")
         print(f"{_ANSI_YELLOW}  - All nWave agents{_ANSI_NC}")
         print(f"{_ANSI_YELLOW}  - All nWave commands{_ANSI_NC}")
+        print(f"{_ANSI_YELLOW}  - DES hooks from Claude Code settings{_ANSI_NC}")
         print(f"{_ANSI_YELLOW}  - Configuration files and manifest{_ANSI_NC}")
         print(f"{_ANSI_YELLOW}  - Installation logs and backup directories{_ANSI_NC}")
         print()
@@ -258,6 +280,21 @@ class NWaveUninstaller:
             else:
                 self.logger.info("No old nWave backup directories found")
 
+    def remove_des_hooks(self) -> None:
+        """Remove DES hooks from Claude Code settings."""
+        if self.dry_run:
+            self.logger.info("[DRY RUN] Would remove DES hooks from settings.json...")
+            return
+
+        with self.rich_logger.progress_spinner("Removing DES hooks..."):
+            des_installer = DESHookInstaller(self.claude_config_dir)
+            success = des_installer.uninstall()
+
+            if success:
+                self.logger.info("Removed DES hooks from settings.json")
+            else:
+                self.logger.warning("Failed to remove DES hooks (may not be installed)")
+
     def validate_removal(self) -> bool:
         """Validate complete removal."""
         if self.dry_run:
@@ -275,6 +312,23 @@ class NWaveUninstaller:
             manifest_removed = not manifest_file.exists()
             log_removed = not install_log.exists()
 
+            # Check DES hooks removed
+            des_hooks_removed = True
+            settings_file = self.claude_config_dir / "settings.json"
+            if settings_file.exists():
+                try:
+                    with open(settings_file, encoding="utf-8") as f:
+                        config = json.load(f)
+                        if "hooks" in config:
+                            hooks_str = json.dumps(config["hooks"])
+                            if (
+                                "des/adapters/drivers/hooks/claude_code_hook_adapter.py"
+                                in hooks_str
+                            ):
+                                des_hooks_removed = False
+                except (OSError, json.JSONDecodeError):
+                    pass
+
         # Display validation results as Rich table
         status_ok = (
             "[green]Removed[/green]"
@@ -290,6 +344,7 @@ class NWaveUninstaller:
         validation_rows = [
             ["Agents", status_ok if agents_removed else status_fail],
             ["Commands", status_ok if commands_removed else status_fail],
+            ["DES Hooks", status_ok if des_hooks_removed else status_fail],
             ["Manifest", status_ok if manifest_removed else status_fail],
             ["Install Log", status_ok if log_removed else status_fail],
         ]
@@ -304,6 +359,7 @@ class NWaveUninstaller:
             [
                 not agents_removed,
                 not commands_removed,
+                not des_hooks_removed,
                 not manifest_removed,
                 not log_removed,
             ]
@@ -371,6 +427,7 @@ def show_uninstall_summary(rich_logger: RichLogger, backup_dir=None) -> None:
 Components Removed:
   - All nWave agents
   - All nWave commands
+  - DES hooks from Claude Code settings
   - Configuration files
   - Installation logs
   - Old backup directories
@@ -409,7 +466,8 @@ def show_help():
 
 {_ANSI_BLUE}WHAT GETS REMOVED:{_ANSI_NC}
     - All nWave agents in agents/nw/ directory
-    - All DW commands in commands/nw/ directory
+    - All nWave commands in commands/nw/ directory
+    - DES hooks from Claude Code settings.json
     - nWave configuration files (manifest)
     - nWave installation logs and backup directories
 
@@ -472,6 +530,7 @@ def main():
     # Remove components
     uninstaller.remove_agents()
     uninstaller.remove_commands()
+    uninstaller.remove_des_hooks()
     uninstaller.remove_config_files()
     uninstaller.remove_backups()
 
