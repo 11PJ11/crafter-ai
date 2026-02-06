@@ -59,3 +59,20 @@ events:
   - "02-01|FILES_MODIFIED|tests|tests/des/unit/adapters/drivers/hooks/test_subagent_stop_hook_audit.py|2026-02-06T04:00:00Z"
   - "02-01|FILES_MODIFIED|tests|tests/des/unit/adapters/drivers/hooks/test_audit_logging_integration.py|2026-02-06T04:00:00Z"
   - "02-01|FILES_MODIFIED|tests|tests/des/unit/adapters/drivers/hooks/test_clean_execution_silence.py|2026-02-06T04:00:00Z"
+  - "02-02|PREPARE|EXECUTED|PASS|2026-02-06T15:33:59Z"
+
+  # Step 02-01 (NEW EXECUTION): Update SubagentStopService audit logging with feature_name/step_id
+  # Executed: 2026-02-06 16:52 UTC
+  # Note: Previous "02-01" in log was different step (hexagonal architecture violations)
+  # Current roadmap step 02-01: SubagentStopService refactoring for feature_name/step_id fields
+  - "02-01|PREPARE|EXECUTED|PASS|2026-02-06T16:52:06Z"
+
+  # Step 01-01 (RE-EXECUTION): Add feature_name and step_id fields to AuditEvent
+  # Executed: 2026-02-06 16:59 UTC
+  # Note: Fresh TDD cycle with proper test-first approach
+  - "01-01|PREPARE|EXECUTED|PASS|2026-02-06T16:59:41Z"
+  - "01-01|RED_ACCEPTANCE|EXECUTED|FAIL|2026-02-06T17:00:24Z"
+  - "01-01|RED_UNIT|SKIPPED|NOT_APPLICABLE:Acceptance tests provide complete coverage of all 4 AC|2026-02-06T17:05:00Z"
+  - "01-01|GREEN|EXECUTED|PASS|2026-02-06T17:05:30Z"
+  - "01-01|REVIEW|EXECUTED|PASS|2026-02-06T17:06:00Z"
+  - "01-01|REFACTOR_CONTINUOUS|SKIPPED|APPROVED_SKIP:Clean implementation <30 LOC - only added 2 optional fields to dataclass|2026-02-06T17:06:15Z"

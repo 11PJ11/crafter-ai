@@ -21,11 +21,15 @@ class AuditEvent:
     Attributes:
         event_type: Event classification (e.g., HOOK_PRE_TOOL_USE_ALLOWED)
         timestamp: ISO 8601 timestamp string
+        feature_name: Feature identifier for traceability (optional)
+        step_id: Step identifier for traceability (optional)
         data: Additional event-specific data
     """
 
     event_type: str
     timestamp: str
+    feature_name: str | None = None
+    step_id: str | None = None
     data: dict[str, Any] = field(default_factory=dict)
 
 
