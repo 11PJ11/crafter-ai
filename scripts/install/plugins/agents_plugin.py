@@ -81,7 +81,7 @@ class AgentsPlugin(InstallationPlugin):
                 installed_files=installed_files,
             )
         except Exception as e:
-            context.logger.error(f"Failed to install agents: {e!s}")
+            context.logger.error(f"  ❌ Failed to install agents: {e}")
             return PluginResult(
                 success=False,
                 plugin_name=self.name,
@@ -99,7 +99,7 @@ class AgentsPlugin(InstallationPlugin):
             PluginResult indicating verification success or failure
         """
         try:
-            context.logger.info("Verifying agents installation...")
+            context.logger.info("  🔎 Verifying agents...")
 
             target_agent_dir = context.claude_dir / "agents" / "nw"
 
@@ -122,7 +122,7 @@ class AgentsPlugin(InstallationPlugin):
                     errors=["No .md files in target directory"],
                 )
 
-            context.logger.info(f"Verified {len(agent_files)} agent files")
+            context.logger.info(f"  ✅ Verified {len(agent_files)} agent files")
 
             return PluginResult(
                 success=True,
@@ -130,7 +130,7 @@ class AgentsPlugin(InstallationPlugin):
                 message=f"Agents verification passed ({len(agent_files)} files)",
             )
         except Exception as e:
-            context.logger.error(f"Failed to verify agents: {e!s}")
+            context.logger.error(f"  ❌ Failed to verify agents: {e}")
             return PluginResult(
                 success=False,
                 plugin_name=self.name,

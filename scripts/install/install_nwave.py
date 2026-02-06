@@ -62,14 +62,24 @@ except ImportError:
 EXPECTED_AGENT_COUNT = 31
 EXPECTED_COMMAND_COUNT = 23
 
-# ANSI color codes for terminal output (fallback when Rich unavailable)
-_ANSI_GREEN = "\033[0;32m"
-_ANSI_RED = "\033[0;31m"
-_ANSI_YELLOW = "\033[1;33m"
+# ANSI color codes for --help output (only consumer)
 _ANSI_BLUE = "\033[0;34m"
 _ANSI_NC = "\033[0m"  # No Color
 
 __version__ = "1.2.0"
+
+# ASCII art logo (raw text, no Rich markup)
+_LOGO_ART = [
+    "        \u2584\u2584\u2584\u2584  \u2584\u2584\u2584  \u2584\u2584\u2584\u2584",
+    "        \u2580\u2588\u2588\u2588  \u2588\u2588\u2588  \u2588\u2588\u2588\u2580",
+    "  \u2588\u2588\u2588\u2588\u2584  \u2588\u2588\u2588  \u2588\u2588\u2588  \u2588\u2588\u2588  \u2580\u2580\u2588\u2584 \u2588\u2588 \u2588\u2588 \u2584\u2588\u2580\u2588\u2584",
+    "  \u2588\u2588 \u2588\u2588  \u2588\u2588\u2588\u2584\u2584\u2588\u2588\u2588\u2584\u2584\u2588\u2588\u2588 \u2584\u2588\u2580\u2588\u2588 \u2588\u2588\u2584\u2588\u2588 \u2588\u2588\u2584\u2588\u2580",
+    "  \u2588\u2588 \u2588\u2588   \u2580\u2588\u2588\u2588\u2588\u2580\u2588\u2588\u2588\u2588\u2580  \u2580\u2588\u2584\u2588\u2588  \u2580\u2588\u2580  \u2580\u2588\u2584\u2584\u2584\u2584\u2582\u2582\u2581\u2581",
+]
+_TAGLINES = [
+    " Orchestrated Agentic-AI code assistant for crafters.",
+    " Modern Software Engineering at scale. Confidence at speed.",
+]
 
 
 class NWaveInstaller:
@@ -106,15 +116,13 @@ class NWaveInstaller:
                 )
 
                 if result.returncode == 0:
-                    self.logger.info("Source embedding completed")
+                    self.logger.info("  ✅ Source embedding completed")
                     return True
                 else:
-                    self.logger.warn(
-                        "Source embedding had issues, continuing anyway..."
-                    )
+                    self.logger.warn("  ⚠️ Source embedding issues, continuing...")
                     return True
             except Exception as e:
-                self.logger.warn(f"Source embedding failed: {e}, continuing anyway...")
+                self.logger.warn(f"  ⚠️ Source embedding failed: {e}, continuing...")
                 return True
 
     def build_framework(self) -> bool:
@@ -206,21 +214,21 @@ class NWaveInstaller:
 
     def restore_backup(self) -> bool:
         """Restore from most recent backup."""
-        self.logger.info("Looking for backups to restore...")
+        self.logger.info("  🔍 Looking for backups to restore...")
 
         backup_root = self.claude_config_dir / "backups"
         if not backup_root.exists():
-            self.logger.error(f"No backups found in {backup_root}")
+            self.logger.error(f"  ❌ No backups found in {backup_root}")
             return False
 
         # Find latest backup
         backups = sorted(backup_root.glob("nwave-*"))
         if not backups:
-            self.logger.error("No nWave backups found")
+            self.logger.error("  ❌ No nWave backups found")
             return False
 
         latest_backup = backups[-1]
-        self.logger.info(f"Restoring from backup: {latest_backup}")
+        self.logger.info(f"  ⏳ Restoring from {latest_backup}")
 
         # Remove current installation
         agents_dir = self.claude_config_dir / "agents"
@@ -243,15 +251,15 @@ class NWaveInstaller:
             import shutil
 
             shutil.copytree(backup_agents, agents_dir)
-            self.logger.info("Restored agents directory")
+            self.logger.info("  ✅ Agents restored")
 
         if backup_commands.exists():
             import shutil
 
             shutil.copytree(backup_commands, commands_dir)
-            self.logger.info("Restored commands directory")
+            self.logger.info("  ✅ Commands restored")
 
-        self.logger.info(f"Restoration complete from backup: {latest_backup}")
+        self.logger.info(f"  🍾 Restoration complete from {latest_backup}")
         return True
 
     def _create_plugin_registry(self) -> PluginRegistry:
@@ -516,22 +524,30 @@ class NWaveInstaller:
         )
 
 
+def print_logo(logger: Logger | None = None) -> None:
+    """Print the nWave ASCII art logo with version and taglines.
+
+    Uses Rich markup via logger when available, ANSI fallback otherwise.
+    """
+    if logger:
+        out = logger.print_styled
+        wrap = lambda line: f"[cyan]{line}[/cyan]"  # noqa: E731
+    else:
+        out = print
+        wrap = lambda line: f"{_ANSI_BLUE}{line}{_ANSI_NC}"  # noqa: E731
+
+    out("")
+    for line in _LOGO_ART[:-1]:
+        out(wrap(line))
+    out(f"{wrap(_LOGO_ART[-1])}  \U0001f30a \U0001f30a \U0001f30a  v{__version__}")
+    out("")
+    for tagline in _TAGLINES:
+        out(tagline)
+
+
 def show_title_panel(logger: Logger, dry_run: bool = False) -> None:
     """Display styled title panel when installer starts."""
-    art_lines = [
-        "",
-        "[cyan]        \u2584\u2584\u2584\u2584  \u2584\u2584\u2584  \u2584\u2584\u2584\u2584[/cyan]",
-        "[cyan]        \u2580\u2588\u2588\u2588  \u2588\u2588\u2588  \u2588\u2588\u2588\u2580[/cyan]",
-        "[cyan]  \u2588\u2588\u2588\u2588\u2584  \u2588\u2588\u2588  \u2588\u2588\u2588  \u2588\u2588\u2588  \u2580\u2580\u2588\u2584 \u2588\u2588 \u2588\u2588 \u2584\u2588\u2580\u2588\u2584[/cyan]",
-        "[cyan]  \u2588\u2588 \u2588\u2588  \u2588\u2588\u2588\u2584\u2584\u2588\u2588\u2588\u2584\u2584\u2588\u2588\u2588 \u2584\u2588\u2580\u2588\u2588 \u2588\u2588\u2584\u2588\u2588 \u2588\u2588\u2584\u2588\u2580[/cyan]",
-        f"[cyan]  \u2588\u2588 \u2588\u2588   \u2580\u2588\u2588\u2588\u2588\u2580\u2588\u2588\u2588\u2588\u2580  \u2580\u2588\u2584\u2588\u2588  \u2580\u2588\u2580  \u2580\u2588\u2584\u2584\u2584\u2584\u2582\u2582\u2581\u2581[/cyan]  \U0001f30a \U0001f30a \U0001f30a  v{__version__}",
-        "",
-        " Orchestrated Agentic-AI code assistant for crafters.",
-        " Modern Software Engineering at scale. Confidence at speed.",
-    ]
-
-    for line in art_lines:
-        logger.print_styled(line)
+    print_logo(logger)
 
     if dry_run:
         logger.print_styled(" 🚨 \\[DRY RUN]")
@@ -564,42 +580,51 @@ def show_installation_summary(logger: Logger) -> None:
 
 def show_help():
     """Show help message."""
-    help_text = f"""{_ANSI_BLUE}nWave Framework Installation Script for Cross-Platform{_ANSI_NC}
+    B, N = _ANSI_BLUE, _ANSI_NC
 
-{_ANSI_BLUE}DESCRIPTION:{_ANSI_NC}
+    print()
+    for line in _LOGO_ART[:-1]:
+        print(f"{B}{line}{N}")
+    print(f"{B}{_LOGO_ART[-1]}{N}  \U0001f30a \U0001f30a \U0001f30a  v{__version__}")
+    print()
+    for tagline in _TAGLINES:
+        print(tagline)
+
+    help_text = f"""
+{B}DESCRIPTION:{N}
     Installs the nWave methodology framework to your global Claude config directory.
     This makes all specialized agents and commands available across all projects.
 
-{_ANSI_BLUE}USAGE:{_ANSI_NC}
+{B}USAGE:{N}
     python install_nwave.py [OPTIONS]
 
-{_ANSI_BLUE}OPTIONS:{_ANSI_NC}
+{B}OPTIONS:{N}
     --backup-only     Create backup of existing nWave installation without installing
     --restore         Restore from the most recent backup
     --force-rebuild   Force rebuild of distribution before installation (ensures fresh source)
     --dry-run         Show what would be installed without making any changes
     --help            Show this help message
 
-{_ANSI_BLUE}EXAMPLES:{_ANSI_NC}
+{B}EXAMPLES:{N}
     python install_nwave.py                    # Install nWave framework
     python install_nwave.py --force-rebuild    # Rebuild and install with latest sources
     python install_nwave.py --dry-run          # Show what would be installed
     python install_nwave.py --backup-only      # Create backup only
     python install_nwave.py --restore          # Restore from latest backup
 
-{_ANSI_BLUE}TROUBLESHOOTING:{_ANSI_NC}
+{B}TROUBLESHOOTING:{N}
     If installation doesn't pick up recent changes, use --force-rebuild:
     python install_nwave.py --force-rebuild
 
-{_ANSI_BLUE}WHAT GETS INSTALLED:{_ANSI_NC}
-    - nWave specialized agents (DISCOVER→DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER methodology)
+{B}WHAT GETS INSTALLED:{N}
+    - nWave specialized agents (DISCOVER\u2192DISCUSS\u2192DESIGN\u2192DISTILL\u2192DEVELOP\u2192DELIVER methodology)
     - nWave command interface for workflow orchestration
     - ATDD (Acceptance Test Driven Development) integration
     - Outside-In TDD with double-loop architecture
     - Quality validation network with continuous refactoring
     - 7-phase TDD enforcement with schema versioning
 
-{_ANSI_BLUE}INSTALLATION LOCATION:{_ANSI_NC}
+{B}INSTALLATION LOCATION:{N}
     ~/.claude/agents/nw/    # nWave agent specifications
     ~/.claude/commands/nw/  # nWave command integrations
     ~/.claude/templates/    # TDD cycle schema templates
@@ -662,22 +687,20 @@ def main():
     installer.logger.info("")
 
     if args.dry_run:
-        installer.logger.info(
-            f"{_ANSI_YELLOW}DRY RUN MODE{_ANSI_NC} - No changes will be made"
-        )
+        installer.logger.warn("  🚨 DRY RUN MODE - No changes will be made")
 
     # Handle backup-only mode
     if args.backup_only:
         if not installer.check_source():
             return 1
         installer.create_backup()
-        installer.logger.info("Backup completed successfully")
+        installer.logger.info("  🍾 Backup completed successfully")
         return 0
 
     # Handle restore mode
     if args.restore:
         if installer.restore_backup():
-            installer.logger.info("Restoration completed successfully")
+            installer.logger.info("  🍾 Restoration completed successfully")
             return 0
         else:
             return 1
