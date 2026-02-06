@@ -32,7 +32,7 @@ class CommandsPlugin(InstallationPlugin):
             PluginResult indicating success or failure of installation
         """
         try:
-            context.logger.info("Installing commands plugin...")
+            context.logger.info("  📦 Installing commands...")
 
             # Determine source and target directories
             commands_source = context.framework_source / "commands"
@@ -63,7 +63,7 @@ class CommandsPlugin(InstallationPlugin):
                     installed_files.append(str(target))
 
             copied_count = PathUtils.count_files(commands_target, "*.md")
-            context.logger.info(f"Installed {copied_count} command files")
+            context.logger.info(f"  ✅ Commands installed ({copied_count} files)")
 
             return PluginResult(
                 success=True,

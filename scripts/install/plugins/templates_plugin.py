@@ -32,7 +32,7 @@ class TemplatesPlugin(InstallationPlugin):
             PluginResult indicating success or failure of installation
         """
         try:
-            context.logger.info("Installing templates plugin...")
+            context.logger.info("  📦 Installing templates...")
 
             # Determine source directory (prefer templates_dir from context)
             templates_source = context.templates_dir
@@ -71,7 +71,7 @@ class TemplatesPlugin(InstallationPlugin):
                     installed_files.append(str(target))
 
             copied_count = PathUtils.count_files(templates_target, "*.yaml")
-            context.logger.info(f"Installed {copied_count} template files")
+            context.logger.info(f"  ✅ Templates installed ({copied_count} files)")
 
             return PluginResult(
                 success=True,
