@@ -1,21 +1,22 @@
 # DES (Deterministic Execution System) - Piano di Test Esplorativo
 
-**Data:** 2026-02-04
-**Versione:** 1.0
-**Tester:** Lyra (AI Test Assistant)
+**Data:** 2026-02-06
+**Versione:** 2.0
+**Tester:** Manual / AI-assisted
 **Obiettivo:** Verificare funzionamento completo del DES dopo installazione
+**Scenario e2e:** audit-log-refactor roadmap (docs/feature/audit-log-refactor/roadmap.yaml)
 
 ---
 
 ## 1. Obiettivi del Test
 
 ### 1.1 Obiettivi Primari
-- ✅ Verificare che gli hook DES siano correttamente installati e funzionanti
-- ✅ Validare che PreToolUse hook filtri correttamente le invocazioni Task
-- ✅ Validare che SubagentStop hook esegua validazioni post-esecuzione
-- ✅ Verificare conformità a CLAUDE.md: tutte le Task devono avere max_turns esplicito
-- ✅ Testare casi di validazione positiva (dovrebbero passare)
-- ✅ Testare casi di validazione negativa (dovrebbero fallire)
+- Verificare che gli hook DES siano correttamente installati e funzionanti
+- Validare che PreToolUse hook filtri correttamente le invocazioni Task
+- Validare che SubagentStop hook esegua validazioni post-esecuzione
+- Verificare conformità: tutte le Task devono avere max_turns esplicito (10-100)
+- Testare casi di validazione positiva (dovrebbero passare)
+- Testare casi di validazione negativa (dovrebbero fallire)
 
 ### 1.2 Aree di Test
 1. **Hook Installation & Configuration**
@@ -24,38 +25,93 @@
 4. **max_turns Compliance**
 5. **Validation Gates**
 6. **Error Handling & Recovery**
+7. **Audit Trail**
+8. **E2E: Roadmap Execution**
+
+### 1.3 Architettura DES - Riferimento Rapido
+
+**Schema TDD:** v3.0 - 7 fasi (single source of truth: `nWave/templates/step-tdd-cycle-schema.json`)
+
+**7 Fasi TDD (ordine canonico):**
+1. PREPARE
+2. RED_ACCEPTANCE
+3. RED_UNIT
+4. GREEN (combina GREEN_UNIT + GREEN_ACCEPTANCE)
+5. REVIEW (include POST_REFACTOR_REVIEW)
+6. REFACTOR_CONTINUOUS (combina L1+L2+L3)
+7. COMMIT (assorbe FINAL_VALIDATE)
+
+**Protocollo Hook JSON (Claude Code stdin):**
+```json
+{
+  "session_id": "...",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Task",
+  "tool_input": {
+    "prompt": "...",
+    "max_turns": 30,
+    "subagent_type": "software-crafter"
+  },
+  "tool_use_id": "..."
+}
+```
+
+**Skip Prefixes (permettono commit):**
+- `BLOCKED_BY_DEPENDENCY:` - dipendenza esterna mancante
+- `NOT_APPLICABLE:` - fase non applicabile
+- `APPROVED_SKIP:` - skip approvato da tech lead
+- `CHECKPOINT_PENDING:` - commit intermedio
+
+**Skip Prefixes (bloccano commit):**
+- `DEFERRED:` - lavoro posticipato (blocca commit)
+
+**Fasi terminali:** COMMIT (deve avere outcome PASS)
 
 ---
 
 ## 2. Test Suite: Hook Installation & Configuration
 
 ### TC-001: Verificare installazione hook in settings
-**Obiettivo:** Confermare che gli hook siano configurati in ~/.claude/settings.local.json
+**Obiettivo:** Confermare che gli hook siano configurati in `~/.claude/settings.json`
 
 **Passi:**
-1. Leggere ~/.claude/settings.local.json
+1. Leggere `~/.claude/settings.json`
 2. Verificare presenza sezione "hooks"
-3. Verificare presenza hook "PreToolUse"
+3. Verificare presenza hook "PreToolUse" con matcher "Task"
 4. Verificare presenza hook "SubagentStop"
 
 **Criteri di successo:**
-- ✅ File settings.local.json esiste
-- ✅ Sezione hooks è presente
-- ✅ PreToolUse hook configurato con matcher "Task"
-- ✅ SubagentStop hook configurato
-- ✅ Comandi Python puntano a moduli DES corretti
+- File `settings.json` esiste
+- Sezione hooks presente
+- PreToolUse hook configurato con matcher "Task"
+- SubagentStop hook configurato
+- Comandi Python puntano a moduli DES corretti
 
 **Dati attesi:**
 ```json
 {
   "hooks": {
-    "PreToolUse": [{
-      "matcher": "Task",
-      "command": "PYTHONPATH=/home/alexd/.claude/lib/python python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter pre-task"
-    }],
-    "SubagentStop": [{
-      "command": "PYTHONPATH=/home/alexd/.claude/lib/python python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter subagent-stop"
-    }]
+    "PreToolUse": [
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PYTHONPATH=/home/alexd/.claude/lib/python python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter pre-task"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PYTHONPATH=/home/alexd/.claude/lib/python python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter subagent-stop"
+          }
+        ]
+      }
+    ]
   }
 }
 ```
@@ -66,427 +122,536 @@
 **Obiettivo:** Confermare che i moduli Python DES siano installati e importabili
 
 **Passi:**
-1. Verificare esistenza file ~/.claude/lib/python/des/adapters/drivers/hooks/claude_code_hook_adapter.py
+1. Verificare esistenza `~/.claude/lib/python/des/adapters/drivers/hooks/claude_code_hook_adapter.py`
 2. Tentare import del modulo
 3. Verificare presenza funzioni principali
+4. Verificare che template schema sia accessibile
 
 **Criteri di successo:**
-- ✅ File claude_code_hook_adapter.py esiste
-- ✅ Modulo è importabile senza errori
-- ✅ Funzione/classe per pre-task presente
-- ✅ Funzione/classe per subagent-stop presente
+- File `claude_code_hook_adapter.py` esiste nella posizione installata
+- Modulo importabile senza errori
+- Funzioni `handle_pre_tool_use()` e `handle_subagent_stop()` presenti
+- Template schema `~/.claude/templates/step-tdd-cycle-schema.json` esiste e leggibile
 
-**Comando test:**
+**Comandi test:**
 ```bash
-PYTHONPATH=~/.claude/lib/python python3 -c "from des.adapters.drivers.hooks.claude_code_hook_adapter import *; print('OK')"
+# Test import modulo
+PYTHONPATH=~/.claude/lib/python python3 -c "from des.adapters.drivers.hooks.claude_code_hook_adapter import handle_pre_tool_use, handle_subagent_stop; print('OK')"
+
+# Test schema accessibile
+PYTHONPATH=~/.claude/lib/python python3 -c "from des.domain.tdd_schema import get_tdd_schema; s = get_tdd_schema(); print(f'Schema v{s.schema_version}: {len(s.tdd_phases)} phases: {s.tdd_phases}')"
+```
+
+**Output atteso:**
+```
+OK
+Schema v3.0: 7 phases: ('PREPARE', 'RED_ACCEPTANCE', 'RED_UNIT', 'GREEN', 'REVIEW', 'REFACTOR_CONTINUOUS', 'COMMIT')
 ```
 
 ---
 
 ## 3. Test Suite: PreToolUse Hook Behavior
 
-### TC-003: Hook attivazione con marker DES
-**Obiettivo:** Verificare che PreToolUse hook si attivi SOLO per Task con marker DES
+### TC-003: Hook attivazione con/senza marker DES
+**Obiettivo:** Verificare che PreToolUse hook distingua task DES da task normali
 
-**Scenario 1: Task CON marker DES (dovrebbe validare)**
-```python
-Task(
-    subagent_type="Explore",
-    prompt="""
-    <!-- DES-VALIDATION: required -->
-    <!-- DES-ORIGIN: command:/nw:execute -->
-
-    Find all Python files
-    """,
-    max_turns=10
-)
+**Scenario 1: Task SENZA marker DES (ad-hoc task - dovrebbe passare con solo max_turns check)**
+```bash
+echo '{"tool_name":"Task","tool_input":{"prompt":"Find all Python files","max_turns":15,"subagent_type":"Explore"}}' | \
+  PYTHONPATH=~/.claude/lib/python python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter pre-task
 ```
 
-**Scenario 2: Task SENZA marker DES (dovrebbe ignorare)**
-```python
-Task(
-    subagent_type="Explore",
-    prompt="Find all Python files",
-    max_turns=10
-)
+**Scenario 2: Task CON marker DES (dovrebbe richiedere validazione completa)**
+```bash
+echo '{"tool_name":"Task","tool_input":{"prompt":"<!-- DES-VALIDATION: required -->\nFind files","max_turns":15,"subagent_type":"Explore"}}' | \
+  PYTHONPATH=~/.claude/lib/python python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter pre-task
+```
+
+**Scenario 3: Task CON marker orchestrator (dovrebbe passare con validazione rilassata)**
+```bash
+echo '{"tool_name":"Task","tool_input":{"prompt":"<!-- DES-VALIDATION: required -->\n<!-- DES-MODE: orchestrator -->\nOrchestrate step","max_turns":30,"subagent_type":"software-crafter"}}' | \
+  PYTHONPATH=~/.claude/lib/python python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter pre-task
 ```
 
 **Criteri di successo:**
-- ✅ Scenario 1: Hook esegue validazione
-- ✅ Scenario 2: Hook passa attraverso senza validazione
-- ✅ Log/output distingue i due casi
+- Scenario 1: `{"decision": "allow"}`, exit 0 (non-DES, max_turns OK)
+- Scenario 2: `{"decision": "block"}`, exit 2 (DES ma sezioni mancanti)
+- Scenario 3: `{"decision": "allow"}`, exit 0 (orchestrator mode, rilassato)
 
 ---
 
-### TC-004: Validazione prompt con sezioni mancanti
-**Obiettivo:** Verificare che hook blocchi Task con prompt incompleti
+### TC-004: Validazione prompt DES con sezioni mancanti
+**Obiettivo:** Verificare che hook blocchi Task con prompt DES incompleti
 
-**Prompt invalido (mancante TIMEOUT_INSTRUCTION):**
-```markdown
-<!-- DES-VALIDATION: required -->
-<!-- DES-STEP-FILE: test.json -->
+**8 Sezioni mandatorie:**
+1. `# DES_METADATA`
+2. `# AGENT_IDENTITY`
+3. `# TASK_CONTEXT`
+4. `# TDD_7_PHASES`
+5. `# QUALITY_GATES`
+6. `# OUTCOME_RECORDING`
+7. `# BOUNDARY_RULES`
+8. `# TIMEOUT_INSTRUCTION`
 
-## AGENT_IDENTITY
+**Test: prompt con sezione mancante (TIMEOUT_INSTRUCTION)**
+```bash
+PROMPT='<!-- DES-VALIDATION: required -->
+# DES_METADATA
+step: test
+# AGENT_IDENTITY
 You are a test agent
-
-## TASK_CONTEXT
+# TASK_CONTEXT
 Test task
+# TDD_7_PHASES
+PREPARE RED_ACCEPTANCE RED_UNIT GREEN REVIEW REFACTOR_CONTINUOUS COMMIT
+# QUALITY_GATES
+Tests pass
+# OUTCOME_RECORDING
+Log results
+# BOUNDARY_RULES
+Only touch test files'
 
-## TDD_14_PHASES
-All 14 phases listed...
-
-<!-- MANCANTE: TIMEOUT_INSTRUCTION -->
+echo "{\"tool_name\":\"Task\",\"tool_input\":{\"prompt\":\"$PROMPT\",\"max_turns\":30,\"subagent_type\":\"software-crafter\"}}" | \
+  PYTHONPATH=~/.claude/lib/python python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter pre-task
 ```
 
 **Criteri di successo:**
-- ✅ Hook rileva sezione mancante
-- ✅ Task invocation viene bloccata
-- ✅ Messaggio errore chiaro indica sezione mancante
-- ✅ Audit log registra tentativo bloccato
+- Hook rileva sezione mancante (TIMEOUT_INSTRUCTION)
+- Task bloccata con `{"decision": "block"}`
+- Messaggio errore indica sezione mancante: `MISSING: Mandatory section 'TIMEOUT_INSTRUCTION' not found`
 
 ---
 
-### TC-005: Validazione step file path
-**Obiettivo:** Verificare che hook validi esistenza step file
+### TC-005: Validazione fasi TDD mancanti nel prompt
+**Obiettivo:** Verificare che prompt DES contenga tutte e 7 le fasi
 
-**Scenario 1: Step file esiste**
-```markdown
-<!-- DES-VALIDATION: required -->
-<!-- DES-STEP-FILE: docs/feature/test/steps/01-01.json -->
-```
-
-**Scenario 2: Step file NON esiste**
-```markdown
-<!-- DES-VALIDATION: required -->
-<!-- DES-STEP-FILE: /path/inesistente/step.json -->
+**Test: prompt con 6 fasi (manca REFACTOR_CONTINUOUS)**
+```bash
+# Prompt con tutte le sezioni ma manca una fase TDD
+echo '{"tool_name":"Task","tool_input":{"prompt":"<!-- DES-VALIDATION: required -->\n# DES_METADATA\ntest\n# AGENT_IDENTITY\nagent\n# TASK_CONTEXT\ncontext\n# TDD_7_PHASES\nPREPARE RED_ACCEPTANCE RED_UNIT GREEN REVIEW COMMIT\n# QUALITY_GATES\ngates\n# OUTCOME_RECORDING\nrecord\n# BOUNDARY_RULES\nrules\n# TIMEOUT_INSTRUCTION\ntimeout","max_turns":30,"subagent_type":"software-crafter"}}' | \
+  PYTHONPATH=~/.claude/lib/python python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter pre-task
 ```
 
 **Criteri di successo:**
-- ✅ Scenario 1: Validazione passa
-- ✅ Scenario 2: Validazione fallisce con errore "step file not found"
+- Hook rileva fase mancante (REFACTOR_CONTINUOUS)
+- Task bloccata
+- Errore: `INCOMPLETE: TDD phase 'REFACTOR_CONTINUOUS' not mentioned`
 
 ---
 
 ## 4. Test Suite: SubagentStop Hook Behavior
 
-### TC-006: Hook attivazione dopo completamento sub-agent
-**Obiettivo:** Verificare che SubagentStop hook si attivi dopo ogni Task completato
+### TC-006: SubagentStop con dati validi
+**Obiettivo:** Verificare che SubagentStop accetti step completato correttamente
 
-**Passi:**
-1. Eseguire Task semplice che completa con successo
-2. Monitorare se hook viene chiamato
-3. Verificare che riceva context corretto
+**Prerequisito:** Creare execution-log.yaml temporaneo con tutte le 7 fasi completate
+
+```bash
+# Creare execution log temporaneo
+TMP_LOG=$(mktemp -d)/execution-log.yaml
+cat > "$TMP_LOG" << 'EOF'
+project_id: "test-project"
+events:
+  - "01-01|PREPARE|EXECUTED|PASS|2026-02-06T10:00:00Z"
+  - "01-01|RED_ACCEPTANCE|EXECUTED|PASS|2026-02-06T10:05:00Z"
+  - "01-01|RED_UNIT|EXECUTED|PASS|2026-02-06T10:10:00Z"
+  - "01-01|GREEN|EXECUTED|PASS|2026-02-06T10:20:00Z"
+  - "01-01|REVIEW|EXECUTED|PASS|2026-02-06T10:30:00Z"
+  - "01-01|REFACTOR_CONTINUOUS|SKIPPED|CHECKPOINT_PENDING: Minimal change|2026-02-06T10:35:00Z"
+  - "01-01|COMMIT|EXECUTED|PASS|2026-02-06T11:00:00Z"
+EOF
+
+echo "{\"executionLogPath\":\"$TMP_LOG\",\"projectId\":\"test-project\",\"stepId\":\"01-01\"}" | \
+  PYTHONPATH=~/.claude/lib/python python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter subagent-stop
+
+echo "Exit code: $?"
+rm -rf "$(dirname $TMP_LOG)"
+```
 
 **Criteri di successo:**
-- ✅ Hook viene chiamato dopo Task completa
-- ✅ Hook riceve agent_id corretto
-- ✅ Hook riceve agent_transcript_path valido
-- ✅ Log mostra esecuzione hook
+- `{"decision": "allow"}`, exit 0
+- Audit log registra `HOOK_SUBAGENT_STOP_PASSED`
 
 ---
 
-### TC-007: Validazione step file con fasi IN_PROGRESS abbandonate
-**Obiettivo:** Verificare rilevamento fasi abbandonate
+### TC-007: SubagentStop con fasi mancanti
+**Obiettivo:** Verificare rilevamento fasi mancanti nell'execution log
 
-**Step file con fase IN_PROGRESS:**
-```json
-{
-  "task_id": "test-001",
-  "tdd_cycle": {
-    "phase_execution_log": [
-      {
-        "phase_name": "PREPARE",
-        "status": "IN_PROGRESS",
-        "started_at": "2026-02-04T10:00:00Z"
-      }
-    ]
-  }
-}
+```bash
+TMP_LOG=$(mktemp -d)/execution-log.yaml
+cat > "$TMP_LOG" << 'EOF'
+project_id: "test-project"
+events:
+  - "01-01|PREPARE|EXECUTED|PASS|2026-02-06T10:00:00Z"
+  - "01-01|RED_ACCEPTANCE|EXECUTED|PASS|2026-02-06T10:05:00Z"
+  - "01-01|RED_UNIT|EXECUTED|PASS|2026-02-06T10:10:00Z"
+  - "01-01|GREEN|EXECUTED|PASS|2026-02-06T10:20:00Z"
+  - "01-01|COMMIT|EXECUTED|PASS|2026-02-06T11:00:00Z"
+EOF
+
+echo "{\"executionLogPath\":\"$TMP_LOG\",\"projectId\":\"test-project\",\"stepId\":\"01-01\"}" | \
+  PYTHONPATH=~/.claude/lib/python python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter subagent-stop
+
+echo "Exit code: $?"
+rm -rf "$(dirname $TMP_LOG)"
 ```
 
 **Criteri di successo:**
-- ✅ Hook rileva fase IN_PROGRESS
-- ✅ Errore registrato: "Phase PREPARE left IN_PROGRESS (abandoned)"
-- ✅ Workflow bloccato (exit code 1)
-- ✅ Audit log contiene evento SUBAGENT_STOP_VALIDATION con errore
+- `{"decision": "block"}`, exit 2
+- Errore indica fasi mancanti: REVIEW, REFACTOR_CONTINUOUS
+- Recovery suggestions incluse nella risposta
 
 ---
 
-### TC-008: Validazione fase EXECUTED senza outcome
-**Obiettivo:** Verificare che fasi EXECUTED abbiano outcome obbligatorio
+### TC-008: SubagentStop con COMMIT FAIL (fase terminale)
+**Obiettivo:** Verificare che fasi terminali richiedano outcome PASS
 
-**Step file con EXECUTED senza outcome:**
-```json
-{
-  "tdd_cycle": {
-    "phase_execution_log": [
-      {
-        "phase_name": "RED_UNIT",
-        "status": "EXECUTED",
-        "started_at": "...",
-        "ended_at": "..."
-        // MANCANTE: "outcome"
-      }
-    ]
-  }
-}
+```bash
+TMP_LOG=$(mktemp -d)/execution-log.yaml
+cat > "$TMP_LOG" << 'EOF'
+project_id: "test-project"
+events:
+  - "01-01|PREPARE|EXECUTED|PASS|2026-02-06T10:00:00Z"
+  - "01-01|RED_ACCEPTANCE|EXECUTED|PASS|2026-02-06T10:05:00Z"
+  - "01-01|RED_UNIT|EXECUTED|PASS|2026-02-06T10:10:00Z"
+  - "01-01|GREEN|EXECUTED|PASS|2026-02-06T10:20:00Z"
+  - "01-01|REVIEW|EXECUTED|PASS|2026-02-06T10:30:00Z"
+  - "01-01|REFACTOR_CONTINUOUS|EXECUTED|PASS|2026-02-06T10:35:00Z"
+  - "01-01|COMMIT|EXECUTED|FAIL|2026-02-06T11:00:00Z"
+EOF
+
+echo "{\"executionLogPath\":\"$TMP_LOG\",\"projectId\":\"test-project\",\"stepId\":\"01-01\"}" | \
+  PYTHONPATH=~/.claude/lib/python python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter subagent-stop
+
+echo "Exit code: $?"
+rm -rf "$(dirname $TMP_LOG)"
 ```
 
 **Criteri di successo:**
-- ✅ Hook rileva outcome mancante
-- ✅ Errore: "Phase RED_UNIT EXECUTED without outcome"
+- `{"decision": "block"}`, exit 2
+- Errore indica COMMIT non puo' avere outcome FAIL (fase terminale)
 
 ---
 
-### TC-009: Validazione fase SKIPPED con blocked_by
-**Obiettivo:** Verificare regole per fasi SKIPPED
+### TC-009: SubagentStop con SKIPPED + prefisso bloccante
+**Obiettivo:** Verificare che skip con `DEFERRED:` blocchi il commit
 
-**Scenario 1: SKIPPED con prefisso valido**
-```json
-{
-  "phase_name": "REFACTOR_L4",
-  "status": "SKIPPED",
-  "blocked_by": "NOT_APPLICABLE: No refactoring needed"
-}
+**Scenario 1: SKIPPED con prefisso valido (CHECKPOINT_PENDING)**
+```bash
+# ... execution log con:
+- "01-01|REFACTOR_CONTINUOUS|SKIPPED|CHECKPOINT_PENDING: Will complete later|..."
 ```
+**Atteso:** `{"decision": "allow"}` (CHECKPOINT_PENDING permette commit)
 
-**Scenario 2: SKIPPED con prefisso DEFERRED (blocca commit)**
-```json
-{
-  "phase_name": "REFACTOR_L4",
-  "status": "SKIPPED",
-  "blocked_by": "DEFERRED: Will do later"
-}
+**Scenario 2: SKIPPED con prefisso bloccante (DEFERRED)**
+```bash
+# ... execution log con:
+- "01-01|REFACTOR_CONTINUOUS|SKIPPED|DEFERRED: Will do later|..."
 ```
-
-**Scenario 3: SKIPPED senza blocked_by**
-```json
-{
-  "phase_name": "REFACTOR_L4",
-  "status": "SKIPPED"
-  // MANCANTE: blocked_by
-}
-```
-
-**Criteri di successo:**
-- ✅ Scenario 1: Accettato, warning log
-- ✅ Scenario 2: Warning "has DEFERRED - blocks commit"
-- ✅ Scenario 3: Errore "SKIPPED without blocked_by"
+**Atteso:** `{"decision": "block"}` (DEFERRED blocca commit)
 
 ---
 
 ## 5. Test Suite: max_turns Compliance
 
-### TC-010: Scansione codebase per Task senza max_turns
-**Obiettivo:** CRITICAL - Verificare conformità a CLAUDE.md
+### TC-010: PreToolUse blocca Task senza max_turns
+**Obiettivo:** Verificare che max_turns sia obbligatorio
 
-**Secondo CLAUDE.md:**
-> **CRITICAL**: Always include `max_turns` when invoking the Task tool.
-
-**Passi:**
-1. Grep tutto il codebase per chiamate `Task(`
-2. Identificare tutte le invocazioni
-3. Verificare che OGNI invocazione abbia parametro `max_turns`
+```bash
+# Task senza max_turns
+echo '{"tool_name":"Task","tool_input":{"prompt":"test","subagent_type":"Explore"}}' | \
+  PYTHONPATH=~/.claude/lib/python python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter pre-task
+```
 
 **Criteri di successo:**
-- ✅ TUTTE le chiamate Task hanno max_turns esplicito
-- ✅ Nessuna chiamata Task manca max_turns
-- ✅ Valori max_turns appropriati per tipo task:
-  - Quick edit: 15
-  - Background task: 25
-  - Standard task: 30
-  - Research: 35
-  - Complex refactoring: 50
+- `{"decision": "block", "reason": "MISSING_MAX_TURNS: ..."}`
+- Exit code 2
 
-**Comando test:**
+---
+
+### TC-011: Validazione range max_turns (10-100)
+**Obiettivo:** Verificare che valori fuori range siano bloccati
+
+**Test values:**
+
+| Valore | Atteso |
+|--------|--------|
+| `null` (assente) | BLOCK - MISSING_MAX_TURNS |
+| `5` | BLOCK - INVALID_MAX_TURNS (< 10) |
+| `10` | ALLOW (minimo) |
+| `30` | ALLOW (standard) |
+| `100` | ALLOW (massimo) |
+| `150` | BLOCK - INVALID_MAX_TURNS (> 100) |
+| `"thirty"` | BLOCK - INVALID_MAX_TURNS (non intero) |
+
+**Comando per testare valore specifico:**
 ```bash
-# Find all Task invocations
-grep -rn "Task(" --include="*.py" --include="*.md" src/ dist/ nWave/
-
-# Check if max_turns is always present
+echo '{"tool_name":"Task","tool_input":{"prompt":"test","max_turns":5,"subagent_type":"Explore"}}' | \
+  PYTHONPATH=~/.claude/lib/python python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter pre-task
 ```
 
 ---
 
-### TC-011: Validazione valori max_turns
-**Obiettivo:** Verificare che valori max_turns siano appropriati
+## 6. Test Suite: Validation Gates (Matrice Completa)
 
-**Regole da CLAUDE.md:**
-- Quick edit → 15
-- Background task → 25
-- Standard task → 30
-- Research → 35
-- Complex refactoring → 50
+### TC-012: Gate 1 - Pre-Invocation Validation (PreToolUse)
 
-**Criteri di successo:**
-- ✅ Nessun valore max_turns troppo basso (< 10)
-- ✅ Nessun valore max_turns eccessivo (> 100)
-- ✅ Valori allineati con complessità task
-
----
-
-## 6. Test Suite: Validation Gates
-
-### TC-012: Gate 1 - Pre-Invocation Validation
-**Obiettivo:** Test completo del gate pre-invocation
-
-**Test Matrix:**
-
-| Test ID | Marker DES | Sezioni complete | Step file esiste | Risultato atteso |
-|---------|------------|------------------|------------------|------------------|
-| G1-01   | ✅         | ✅               | ✅               | PASS             |
-| G1-02   | ✅         | ❌               | ✅               | FAIL - Sezioni mancanti |
-| G1-03   | ✅         | ✅               | ❌               | FAIL - Step file not found |
-| G1-04   | ❌         | N/A              | N/A              | PASS (no validation) |
+| Test ID | max_turns | Marker DES | Sezioni | Fasi TDD | Mode | Atteso |
+|---------|-----------|------------|---------|----------|------|--------|
+| G1-01 | 30 | No | N/A | N/A | N/A | ALLOW (ad-hoc task) |
+| G1-02 | None | No | N/A | N/A | N/A | BLOCK (MISSING_MAX_TURNS) |
+| G1-03 | 30 | Yes | 8/8 | 7/7 | exec | ALLOW (DES validato) |
+| G1-04 | 30 | Yes | 7/8 | 7/7 | exec | BLOCK (sezione mancante) |
+| G1-05 | 30 | Yes | 8/8 | 6/7 | exec | BLOCK (fase mancante) |
+| G1-06 | 30 | Yes | N/A | N/A | orch | ALLOW (orchestrator mode) |
 
 ---
 
 ### TC-013: Gate 2 - SubagentStop Validation
-**Obiettivo:** Test completo del gate post-execution
 
-**Test Matrix:**
-
-| Test ID | Fasi IN_PROGRESS | Fasi EXECUTED senza outcome | Fasi SKIPPED senza blocked_by | Risultato atteso |
-|---------|------------------|-----------------------------|-----------------------------|------------------|
-| G2-01   | 0                | 0                           | 0                           | PASS             |
-| G2-02   | 1+               | 0                           | 0                           | FAIL - Abandoned |
-| G2-03   | 0                | 1+                          | 0                           | FAIL - No outcome |
-| G2-04   | 0                | 0                           | 1+                          | FAIL - No blocked_by |
+| Test ID | Execution Log | Project ID | 7 Fasi | Outcome | Skip Prefix | Atteso |
+|---------|--------------|------------|--------|---------|-------------|--------|
+| G2-01 | Valido | Match | 7/7 | Tutti PASS | N/A | ALLOW |
+| G2-02 | Non trovato | N/A | N/A | N/A | N/A | BLOCK (file not found) |
+| G2-03 | Valido | Mismatch | N/A | N/A | N/A | BLOCK (project mismatch) |
+| G2-04 | Valido | Match | 5/7 | PASS | N/A | BLOCK (fasi mancanti) |
+| G2-05 | Valido | Match | 7/7 | COMMIT=FAIL | N/A | BLOCK (terminale FAIL) |
+| G2-06 | Valido | Match | 7/7 | PASS | DEFERRED: | BLOCK (prefix bloccante) |
+| G2-07 | Valido | Match | 7/7 | PASS | CHECKPOINT_PENDING: | ALLOW |
+| G2-08 | YAML invalido | N/A | N/A | N/A | N/A | BLOCK (corrupted) |
 
 ---
 
 ## 7. Test Suite: Error Handling & Recovery
 
-### TC-014: Gestione transcript path invalido
-**Obiettivo:** Verificare comportamento quando agent_transcript_path non esiste
+### TC-014: Gestione stdin vuoto
+**Obiettivo:** Verificare fail-closed con input mancante
 
-**Scenario:**
-```json
-{
-  "agent_transcript_path": "/path/inesistente/agent.jsonl"
-}
+```bash
+echo '' | PYTHONPATH=~/.claude/lib/python python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter pre-task
+echo "Exit code: $?"
 ```
 
 **Criteri di successo:**
-- ✅ Hook non crasha
-- ✅ Gestione errore graceful
-- ✅ Log indica problema con transcript
-- ✅ Ritorna status appropriato
+- `{"status": "error", "reason": "Missing stdin input"}`
+- Exit code 1 (fail-closed)
 
 ---
 
-### TC-015: Gestione step file JSON invalido
+### TC-015: Gestione JSON invalido
 **Obiettivo:** Verificare parsing robusto
 
-**Step file con JSON malformato:**
-```json
-{
-  "task_id": "test",
-  "tdd_cycle": {
-    "phase_execution_log": [
-      // Virgola trailing invalida
-    ],
-  }
-}
+```bash
+echo 'not valid json {{{' | PYTHONPATH=~/.claude/lib/python python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter pre-task
+echo "Exit code: $?"
 ```
 
 **Criteri di successo:**
-- ✅ Errore JSON parsing rilevato
-- ✅ Messaggio errore chiaro
-- ✅ Non crasha l'intero hook system
+- `{"status": "error", "reason": "Invalid JSON: ..."}`
+- Exit code 1 (fail-closed)
+- Hook non crasha
+
+---
+
+### TC-015b: SubagentStop con campi mancanti
+**Obiettivo:** Verificare validazione campi obbligatori
+
+```bash
+# Manca stepId
+echo '{"executionLogPath":"/tmp/log.yaml","projectId":"test"}' | \
+  PYTHONPATH=~/.claude/lib/python python3 -m des.adapters.drivers.hooks.claude_code_hook_adapter subagent-stop
+echo "Exit code: $?"
+```
+
+**Criteri di successo:**
+- `{"status": "error", "reason": "Missing required fields: ..."}`
+- Exit code 1
 
 ---
 
 ## 8. Test Suite: Audit Trail
 
 ### TC-016: Creazione audit logs
-**Obiettivo:** Verificare che eventi siano loggati
+**Obiettivo:** Verificare che eventi siano loggati in formato JSONL
 
 **Eventi da verificare:**
-- TASK_INVOCATION_VALIDATED
-- TASK_INVOCATION_REJECTED
-- SUBAGENT_STOP_VALIDATION
+
+| Evento | Quando |
+|--------|--------|
+| `HOOK_PRE_TOOL_USE_ALLOWED` | Task permessa (con context: non_des_task / orchestrator_mode / des_validated) |
+| `HOOK_PRE_TOOL_USE_BLOCKED` | Task bloccata (con reason: MISSING_MAX_TURNS / INVALID_MAX_TURNS / errori validazione) |
+| `HOOK_SUBAGENT_STOP_PASSED` | Step completato correttamente (con step_id) |
+| `HOOK_SUBAGENT_STOP_FAILED` | Step fallito validazione (con step_id, validation_errors) |
+| `SCOPE_VIOLATION` | File fuori scope modificato (warning, non blocca) |
+
+**Passi:**
+1. Eseguire una sequenza di test (TC-003, TC-006)
+2. Cercare file audit: `ls ~/.claude/des/logs/audit-*.log` o `.nwave/logs/des/audit-*.log`
+3. Verificare formato JSONL
+
+**Formato atteso (ogni riga):**
+```json
+{"event":"HOOK_PRE_TOOL_USE_ALLOWED","timestamp":"2026-02-06T...","context":"non_des_task"}
+```
 
 **Criteri di successo:**
-- ✅ File audit-YYYY-MM-DD.log creato
-- ✅ Eventi in formato JSONL
-- ✅ Ogni evento ha timestamp
-- ✅ Eventi contengono dati completi
+- File `audit-YYYY-MM-DD.log` creato
+- Ogni riga e' JSON valido
+- Ogni evento ha campo `event` e `timestamp`
+- Eventi corrispondono alle azioni eseguite
 
 ---
 
-## 9. Execution Plan
+## 9. Test Suite: E2E con Roadmap audit-log-refactor
 
-### Fase 1: Verifiche Statiche (30 min)
-1. TC-001: Hook configuration
-2. TC-002: Module importability
-3. TC-010: max_turns compliance scan
-4. TC-011: max_turns values validation
+### TC-017: Esecuzione step reale con DES enforcement
+**Obiettivo:** Verificare DES end-to-end usando un roadmap step reale
 
-### Fase 2: Test Hook PreToolUse (45 min)
-5. TC-003: Hook activation
-6. TC-004: Missing sections
-7. TC-005: Step file validation
+**Roadmap:** `docs/feature/audit-log-refactor/roadmap.yaml`
+**Step da eseguire:** Phase 01, Step 01-02 (Update JsonlAuditLogWriter)
 
-### Fase 3: Test Hook SubagentStop (45 min)
-8. TC-006: Hook activation
-9. TC-007: IN_PROGRESS detection
-10. TC-008: Missing outcome
-11. TC-009: SKIPPED validation
+**Flow atteso:**
+```
+1. Utente invoca /nw:execute @software-crafter "steps/01-02.json"
+2. nWave genera prompt con marker DES:
+   <!-- DES-VALIDATION: required -->
+   <!-- DES-PROJECT-ID: audit-log-refactor -->
+   <!-- DES-STEP-ID: 01-02 -->
+3. Claude Code intercetta con PreToolUse hook
+4. Hook valida: max_turns presente, prompt DES completo
+5. Hook permette: {"decision": "allow"}
+6. Subagent esegue 7 fasi TDD
+7. Al completamento, SubagentStop hook si attiva
+8. Hook legge execution-log.yaml
+9. Hook valida: tutte le 7 fasi presenti, COMMIT=PASS
+10. Hook permette: {"decision": "allow"}
+11. Step completato
+```
 
-### Fase 4: Integration Tests (30 min)
-12. TC-012: Gate 1 matrix
-13. TC-013: Gate 2 matrix
+**Criteri di successo:**
+- PreToolUse permette l'invocazione (exit 0)
+- Subagent esegue tutte le 7 fasi TDD
+- Execution log aggiornato con tutti gli eventi
+- SubagentStop valida e permette (exit 0)
+- Audit trail registra entrambi gli eventi (ALLOWED + PASSED)
+- Commit effettuato con messaggio descrittivo
 
-### Fase 5: Error Handling (20 min)
-14. TC-014: Invalid transcript
-15. TC-015: Invalid JSON
+**Verifiche post-esecuzione:**
+```bash
+# 1. Verificare execution log
+cat docs/feature/audit-log-refactor/execution-log.yaml | grep "01-02"
 
-### Fase 6: Audit Trail (15 min)
-16. TC-016: Log creation
+# 2. Verificare audit trail
+cat ~/.claude/des/logs/audit-$(date +%Y-%m-%d).log | grep -i "01-02"
 
-**Tempo totale stimato:** ~3 ore
+# 3. Verificare commit git
+git log --oneline -1
+```
 
 ---
 
-## 10. Report Template
+### TC-018: SubagentStop blocca step incompleto
+**Obiettivo:** Verificare che DES blocchi un subagent che completa senza tutte le fasi
+
+**Scenario:** Subagent termina dopo solo 4 fasi (manca REVIEW, REFACTOR_CONTINUOUS, COMMIT)
+
+**Criteri di successo:**
+- SubagentStop hook rileva fasi mancanti
+- Hook blocca con `{"decision": "block"}`
+- Messaggio di recovery spiega quali fasi mancano
+- Claude riceve feedback e puo' correggere
+
+---
+
+## 10. Execution Plan
+
+### Fase 1: Verifiche Statiche (15 min)
+1. TC-001: Hook configuration in settings.json
+2. TC-002: Module importability + schema loading
+
+### Fase 2: Test CLI PreToolUse (20 min)
+3. TC-003: Hook activation (3 scenari)
+4. TC-004: Missing sections
+5. TC-005: Missing TDD phases
+6. TC-010: max_turns obbligatorio
+7. TC-011: max_turns range validation
+
+### Fase 3: Test CLI SubagentStop (20 min)
+8. TC-006: Valid completion
+9. TC-007: Missing phases
+10. TC-008: Terminal phase FAIL
+11. TC-009: Skip prefixes
+
+### Fase 4: Error Handling (10 min)
+12. TC-014: Empty stdin
+13. TC-015: Invalid JSON
+14. TC-015b: Missing required fields
+
+### Fase 5: Validation Gates (15 min)
+15. TC-012: PreToolUse gate matrix
+16. TC-013: SubagentStop gate matrix
+
+### Fase 6: Audit Trail (10 min)
+17. TC-016: Log creation and format
+
+### Fase 7: E2E con Roadmap (30+ min)
+18. TC-017: Esecuzione step reale (audit-log-refactor 01-02)
+19. TC-018: Test blocco step incompleto
+
+**Tempo totale stimato:** ~2 ore
+
+---
+
+## 11. Report Template
 
 ### Per ogni test completato:
 
 ```markdown
 ## TC-XXX: [Nome Test]
-**Status:** ✅ PASS / ❌ FAIL / ⚠️ WARNING
+**Status:** PASS / FAIL / WARNING
 **Data esecuzione:** YYYY-MM-DD HH:MM
-**Durata:** X minuti
+**Comando:** [comando eseguito]
 
 ### Risultato
-[Descrizione outcome]
+[Output effettivo]
 
-### Output/Log
-```
-[Output rilevante]
-```
+### Atteso vs Effettivo
+- Atteso: [...]
+- Effettivo: [...]
+- Match: SI/NO
 
 ### Issues trovati
 - [Issue 1]
-- [Issue 2]
 
-### Note aggiuntive
+### Note
 [Osservazioni]
 ```
 
 ---
 
-## 11. Exit Criteria
+## 12. Exit Criteria
 
-Il test è considerato completato quando:
-- ✅ Tutti i test TC-001 a TC-016 sono stati eseguiti
-- ✅ Almeno 80% dei test critici PASS
-- ✅ Tutti i FAIL sono documentati con root cause
-- ✅ Report finale con raccomandazioni è prodotto
+Il test e' considerato completato quando:
+- Tutti i test TC-001 a TC-018 sono stati eseguiti
+- Almeno 90% dei test critici PASS
+- Tutti i FAIL sono documentati con root cause
+- Test E2E (TC-017) completato con successo
+- Audit trail verificato per tutti gli eventi
 
 ---
 
-**Prepared by:** Lyra (AI Test Assistant)
-**Reviewers:** TBD
-**Approval:** Pending
+## 13. Known Issues / Limitations
+
+1. **Pre-commit hook**: Runs ALL project tests (2600+) con molti fallimenti pre-esistenti nei test CLI installer. Usare `--no-verify` quando i fallimenti sono pre-esistenti.
+
+2. **Bytecode cache**: Dopo reinstallazione DES, i file `.pyc` possono impedire l'uso del codice aggiornato. Pulire con: `find ~/.claude/lib/python/des -name "__pycache__" -type d -exec rm -rf {} +`
+
+3. **Session reset**: Dopo reinstallazione hook, e' necessario `/exit` e restart della sessione Claude Code.
+
+4. **WSL path resolution**: Su WSL, `~/.claude` e' symlink a `/mnt/c/Users/user/.claude`. Il codice DES normalizza i path con `.replace("\\", "/")` per compatibilita' cross-platform.
+
+---
+
+**Prepared by:** Claude (AI Assistant)
+**Versione schema TDD:** 3.0 (7 fasi)
+**Versione hook protocol:** tool_name/tool_input (top-level)

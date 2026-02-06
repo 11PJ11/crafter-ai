@@ -263,6 +263,85 @@ class TestHookAdapterFunctionality:
             "Hook adapter missing handle_subagent_stop (Schema v2.0 entry point)"
         )
 
+    def test_pre_tool_use_reads_tool_input_from_top_level(self):
+        """Regression: PreToolUse must read tool_input at top level, not nested under tool.input.
+
+        Claude Code sends: {"tool_name": "Task", "tool_input": {"max_turns": 30, ...}}
+        NOT: {"tool": {"input": {"max_turns": 30, ...}}}
+
+        Bug (fixed 2026-02-06): handle_pre_tool_use() read hook_input["tool"]["input"]
+        which always returned {} because Claude Code puts tool_input at the top level.
+        This caused MISSING_MAX_TURNS for ALL Task invocations even with max_turns set.
+        """
+        import sys
+        from io import StringIO
+
+        from src.des.adapters.drivers.hooks import claude_code_hook_adapter
+
+        # Claude Code protocol: tool_input at top level
+        test_input = json.dumps({
+            "session_id": "test-session",
+            "hook_event_name": "PreToolUse",
+            "tool_name": "Task",
+            "tool_input": {
+                "prompt": "Find all Python files",
+                "max_turns": 30,
+                "subagent_type": "Explore",
+            },
+        })
+
+        original_stdin = sys.stdin
+        original_stdout = sys.stdout
+        try:
+            sys.stdin = StringIO(test_input)
+            sys.stdout = captured = StringIO()
+
+            exit_code = claude_code_hook_adapter.handle_pre_tool_use()
+
+            output = json.loads(captured.getvalue())
+            assert exit_code == 0, (
+                f"Expected allow (exit 0) for valid tool_input with max_turns=30, "
+                f"got exit {exit_code}: {output}"
+            )
+            assert output["decision"] == "allow"
+        finally:
+            sys.stdin = original_stdin
+            sys.stdout = original_stdout
+
+    def test_pre_tool_use_rejects_missing_max_turns(self):
+        """PreToolUse must block when max_turns is absent from tool_input."""
+        import sys
+        from io import StringIO
+
+        from src.des.adapters.drivers.hooks import claude_code_hook_adapter
+
+        test_input = json.dumps({
+            "tool_name": "Task",
+            "tool_input": {
+                "prompt": "Find all Python files",
+                "subagent_type": "Explore",
+            },
+        })
+
+        original_stdin = sys.stdin
+        original_stdout = sys.stdout
+        try:
+            sys.stdin = StringIO(test_input)
+            sys.stdout = captured = StringIO()
+
+            exit_code = claude_code_hook_adapter.handle_pre_tool_use()
+
+            output = json.loads(captured.getvalue())
+            assert exit_code == 2, (
+                f"Expected block (exit 2) for missing max_turns, "
+                f"got exit {exit_code}: {output}"
+            )
+            assert output["decision"] == "block"
+            assert "MISSING_MAX_TURNS" in output["reason"]
+        finally:
+            sys.stdin = original_stdin
+            sys.stdout = original_stdout
+
     def test_hook_adapter_rejects_missing_required_fields(self):
         """Test that hook adapter validates Schema v2.0 required fields.
 
