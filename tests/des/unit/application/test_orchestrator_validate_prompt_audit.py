@@ -1,11 +1,14 @@
 """
-Unit tests for DESOrchestrator.validate_prompt audit logging (Step 01-02).
+Unit tests for DESOrchestrator.validate_prompt audit logging (Steps 01-02 + 03-02).
 
 Tests that validate_prompt logs HOOK_PRE_TASK_PASSED and HOOK_PRE_TASK_BLOCKED
 audit events with proper structure, timestamps from TimeProvider, and relevant context.
 
 Updated for hex-arch redesign: orchestrator now uses JsonlAuditLogWriter + DESConfig
 directly instead of legacy get_audit_logger() singleton.
+
+Step 03-02: Updated to verify feature_name and step_id as direct PortAuditEvent
+fields rather than data dict entries.
 """
 
 from unittest.mock import Mock, patch
@@ -82,7 +85,8 @@ class TestValidatePromptAuditLogging:
 
             assert port_event.event_type == EventType.HOOK_PRE_TASK_PASSED.value
             assert port_event.timestamp is not None
-            assert port_event.data["step_id"] == "01-01"
+            # Step 03-02: step_id is a direct PortAuditEvent field, not in data dict
+            assert port_event.step_id == "01-01"
 
     def test_validate_prompt_logs_hook_pre_task_blocked_when_validation_fails(
         self, in_memory_filesystem, mocked_hook, mocked_time_provider
@@ -195,7 +199,8 @@ class TestValidatePromptAuditLogging:
             call_args = mock_writer.log_event.call_args
             port_event = call_args[0][0]
 
-            assert port_event.data["step_id"] == "02-03"
+            # Step 03-02: step_id is a direct PortAuditEvent field, not in data dict
+            assert port_event.step_id == "02-03"
 
     def test_validate_prompt_includes_agent_name_in_audit_event(self, des_orchestrator):
         """
@@ -375,5 +380,62 @@ class TestValidatePromptAuditLogging:
             # Verify PortAuditEvent required fields
             assert port_event.timestamp is not None
             assert port_event.event_type is not None
-            assert port_event.data.get("step_id") is not None
+            # Step 03-02: step_id is a direct PortAuditEvent field, not in data dict
+            assert port_event.step_id is not None
             # rejection_reason is optional (only for BLOCKED events)
+
+    def test_validate_prompt_uses_direct_feature_name_field(self, des_orchestrator):
+        """
+        AC3 (Step 03-02): validate_prompt PortAuditEvent uses direct feature_name
+        field, not data dict, when DES-PROJECT-ID marker is present.
+        """
+        # Arrange
+        prompt_with_project = """
+        <!-- DES-VALIDATION: required -->
+        <!-- DES-PROJECT-ID: audit-log-refactor -->
+        <!-- DES-STEP-FILE: steps/03-02.json -->
+        Task: Update render_prompt audit logging
+        """
+
+        writer_patch, config_patch, mock_writer = _patch_audit_writer_and_config()
+
+        with writer_patch, config_patch:
+            # Act
+            des_orchestrator.validate_prompt(prompt_with_project)
+
+            # Assert
+            call_args = mock_writer.log_event.call_args
+            port_event = call_args[0][0]
+
+            # feature_name and step_id as DIRECT fields
+            assert port_event.feature_name == "audit-log-refactor"
+            assert port_event.step_id == "03-02"
+
+            # NOT in data dict
+            assert "feature_name" not in port_event.data
+            assert "step_id" not in port_event.data
+
+    def test_validate_prompt_step_id_not_in_data_dict(self, des_orchestrator):
+        """
+        AC3 (Step 03-02): step_id must NOT appear in data dict when used as direct field.
+        """
+        # Arrange
+        prompt = """
+        <!-- DES-VALIDATION: required -->
+        <!-- DES-STEP-FILE: steps/01-01.json -->
+        Task: Implement feature
+        """
+
+        writer_patch, config_patch, mock_writer = _patch_audit_writer_and_config()
+
+        with writer_patch, config_patch:
+            # Act
+            des_orchestrator.validate_prompt(prompt)
+
+            # Assert
+            call_args = mock_writer.log_event.call_args
+            port_event = call_args[0][0]
+
+            # step_id as direct field, NOT in data dict
+            assert port_event.step_id == "01-01"
+            assert "step_id" not in port_event.data

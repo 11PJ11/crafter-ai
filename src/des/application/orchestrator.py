@@ -368,15 +368,20 @@ class DESOrchestrator:
         config = DESConfig()
         if config.audit_logging_enabled:
             writer = JsonlAuditLogWriter()
+            # Build data dict excluding fields promoted to direct PortAuditEvent fields
+            excluded_keys = ("event", "timestamp", "feature_name", "step_id")
+            data = {
+                k: v
+                for k, v in event.to_dict().items()
+                if k not in excluded_keys and v is not None
+            }
             writer.log_event(
                 PortAuditEvent(
                     event_type=event.event,
                     timestamp=event.timestamp,
-                    data={
-                        k: v
-                        for k, v in event.to_dict().items()
-                        if k not in ("event", "timestamp") and v is not None
-                    },
+                    feature_name=feature_name,
+                    step_id=step_id,
+                    data=data,
                 )
             )
 
@@ -470,6 +475,7 @@ class DESOrchestrator:
         topic: str | None = None,
         timeout_thresholds: list[int] | None = None,
         timeout_budget_minutes: int | None = None,
+        project_id: str | None = None,
     ) -> str:
         """
         Render Task prompt with appropriate DES validation markers and timeout warnings.
@@ -482,6 +488,7 @@ class DESOrchestrator:
             topic: Research topic for research commands
             timeout_thresholds: List of threshold values in minutes for timeout warnings
             timeout_budget_minutes: Total time budget in minutes for the phase
+            project_id: Project identifier, passed as feature_name in audit events
 
         Returns:
             Rendered prompt string with or without DES markers and timeout warnings
@@ -502,7 +509,11 @@ class DESOrchestrator:
 
         # Log TASK_INVOCATION_STARTED for audit trail
         _log_audit_event(
-            "TASK_INVOCATION_STARTED", command=command, step_id=step_id_from_file, agent=agent
+            "TASK_INVOCATION_STARTED",
+            command=command,
+            step_id=step_id_from_file,
+            feature_name=project_id,
+            agent=agent,
         )
 
         validation_level = self._get_validation_level(command)
@@ -519,6 +530,7 @@ class DESOrchestrator:
                 "TASK_INVOCATION_VALIDATED",
                 command=command,
                 step_id=step_id_from_file,
+                feature_name=project_id,
                 status="VALIDATED",
                 outcome="success",
             )
