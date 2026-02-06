@@ -83,12 +83,37 @@ class TDDSchemaLoader:
         print(schema.tdd_phases)  # ('PREPARE', 'RED_ACCEPTANCE', ...)
     """
 
-    DEFAULT_SCHEMA_PATH: ClassVar[Path] = (
-        Path(__file__).resolve().parent.parent.parent.parent
-        / "nWave"
-        / "templates"
-        / "step-tdd-cycle-schema.json"
-    )
+    @staticmethod
+    def _resolve_default_schema_path() -> Path:
+        """Resolve schema path for current environment.
+
+        Handles both:
+        - Source: src/des/domain/tdd_schema.py → project_root/nWave/templates/
+        - Installed: ~/.claude/lib/python/des/domain/tdd_schema.py → ~/.claude/templates/
+        """
+        module_file = Path(__file__)
+        module_str = str(module_file)
+        module_resolved_str = str(module_file.resolve())
+
+        is_installed = (
+            (".claude" in module_str or ".claude" in module_resolved_str) and
+            ("lib/python/des" in module_str or "lib/python/des" in module_resolved_str)
+        )
+
+        if is_installed:
+            for search_path in [module_file, module_file.resolve()]:
+                for parent in search_path.parents:
+                    if parent.name == ".claude":
+                        candidate = parent / "templates" / "step-tdd-cycle-schema.json"
+                        if candidate.exists():
+                            return candidate
+
+        return (
+            module_file.resolve().parent.parent.parent.parent
+            / "nWave"
+            / "templates"
+            / "step-tdd-cycle-schema.json"
+        )
 
     def __init__(self, schema_path: Path | None = None):
         """Initialize loader with optional custom schema path.
@@ -97,7 +122,7 @@ class TDDSchemaLoader:
             schema_path: Path to schema JSON file. Defaults to project's
                          nWave/templates/step-tdd-cycle-schema.json
         """
-        self._schema_path = schema_path or self.DEFAULT_SCHEMA_PATH
+        self._schema_path = schema_path or self._resolve_default_schema_path()
         self._cached_schema: TDDSchema | None = None
 
     @property
