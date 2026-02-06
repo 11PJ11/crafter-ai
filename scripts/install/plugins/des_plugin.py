@@ -37,6 +37,9 @@ class DESPlugin(InstallationPlugin):
         "des.adapters.drivers.hooks.claude_code_hook_adapter {action}"
     )
 
+    # Hook event types that DES registers
+    HOOK_EVENTS = ("PreToolUse", "SubagentStop", "PostToolUse")
+
     def __init__(self):
         """Initialize DES plugin with name, priority, and dependencies."""
         super().__init__(name="des", priority=50)
@@ -205,6 +208,9 @@ class DESPlugin(InstallationPlugin):
                 # Rewrite import paths from "src.des" to "des"
                 self._rewrite_import_paths(target_dir, context)
 
+                # Clear bytecode cache to prevent stale .pyc files
+                self._clear_bytecode_cache(target_dir, context)
+
             return PluginResult(
                 success=True,
                 plugin_name="des",
@@ -292,6 +298,23 @@ class DESPlugin(InstallationPlugin):
             context.logger.info(f"Rewrote import paths in {files_modified} files")
         if files_skipped > 0:
             context.logger.info(f"Skipped {files_skipped} files for security reasons")
+
+    def _clear_bytecode_cache(self, target_dir: Path, context: InstallContext) -> None:
+        """Clear __pycache__ directories from installed DES module.
+
+        After copying and rewriting imports, stale .pyc files from previous
+        installs can cause import errors or use outdated code. Removing all
+        __pycache__ directories forces Python to recompile from source.
+        """
+        cleared = 0
+        for cache_dir in target_dir.rglob("__pycache__"):
+            if cache_dir.is_dir():
+                shutil.rmtree(cache_dir)
+                cleared += 1
+        if cleared > 0:
+            context.logger.info(
+                f"Cleared {cleared} __pycache__ directories from {target_dir}"
+            )
 
     def _install_des_scripts(self, context: InstallContext) -> PluginResult:
         """Install DES utility scripts."""
@@ -400,31 +423,26 @@ class DESPlugin(InstallationPlugin):
             # Ensure hooks structure exists WITHOUT overwriting other keys
             if "hooks" not in config:
                 config["hooks"] = {}
-            if "PreToolUse" not in config["hooks"]:
-                config["hooks"]["PreToolUse"] = []
-            if "SubagentStop" not in config["hooks"]:
-                config["hooks"]["SubagentStop"] = []
+            for event in self.HOOK_EVENTS:
+                if event not in config["hooks"]:
+                    config["hooks"][event] = []
 
             # Check if hooks already exist with correct nested format
             new_pretask_command = self._generate_hook_command(context, "pre-task")
             new_stop_command = self._generate_hook_command(context, "subagent-stop")
+            new_post_command = self._generate_hook_command(context, "post-tool-use")
 
-            pre_hooks = config["hooks"]["PreToolUse"]
-            stop_hooks = config["hooks"]["SubagentStop"]
-
-            has_correct_pretask = any(
-                any(
-                    h2.get("command") == new_pretask_command
-                    for h2 in h.get("hooks", [])
+            def _has_command(hooks_list, command):
+                return any(
+                    any(h2.get("command") == command for h2 in h.get("hooks", []))
+                    for h in hooks_list
                 )
-                for h in pre_hooks
-            )
-            has_correct_stop = any(
-                any(h2.get("command") == new_stop_command for h2 in h.get("hooks", []))
-                for h in stop_hooks
-            )
 
-            if has_correct_pretask and has_correct_stop:
+            has_correct_pretask = _has_command(config["hooks"]["PreToolUse"], new_pretask_command)
+            has_correct_stop = _has_command(config["hooks"]["SubagentStop"], new_stop_command)
+            has_correct_post = _has_command(config["hooks"]["PostToolUse"], new_post_command)
+
+            if has_correct_pretask and has_correct_stop and has_correct_post:
                 context.logger.info(
                     "DES hooks already installed with correct format - skipping"
                 )
@@ -435,40 +453,32 @@ class DESPlugin(InstallationPlugin):
                 )
 
             # Remove any existing DES hooks (both old flat and new nested format)
-            config["hooks"]["PreToolUse"] = [
-                h
-                for h in config["hooks"]["PreToolUse"]
-                if not self._is_des_hook_entry(h)
-            ]
-            config["hooks"]["SubagentStop"] = [
-                h
-                for h in config["hooks"]["SubagentStop"]
-                if not self._is_des_hook_entry(h)
-            ]
+            for event in self.HOOK_EVENTS:
+                if event in config["hooks"]:
+                    config["hooks"][event] = [
+                        h
+                        for h in config["hooks"][event]
+                        if not self._is_des_hook_entry(h)
+                    ]
 
             # Generate hooks with Claude Code v2 nested format
             # Format: {"matcher": "...", "hooks": [{"type": "command", "command": "..."}]}
             pretooluse_hook = {
                 "matcher": "Task",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": new_pretask_command,
-                    }
-                ],
+                "hooks": [{"type": "command", "command": new_pretask_command}],
             }
             subagent_stop_hook = {
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": new_stop_command,
-                    }
-                ],
+                "hooks": [{"type": "command", "command": new_stop_command}],
+            }
+            posttooluse_hook = {
+                "matcher": "Task",
+                "hooks": [{"type": "command", "command": new_post_command}],
             }
 
             # Add DES hooks
             config["hooks"]["PreToolUse"].append(pretooluse_hook)
             config["hooks"]["SubagentStop"].append(subagent_stop_hook)
+            config["hooks"]["PostToolUse"].append(posttooluse_hook)
 
             if not context.dry_run:
                 self._save_settings(settings_file, config, context)
@@ -544,20 +554,17 @@ class DESPlugin(InstallationPlugin):
     def _hooks_already_installed(self, config: dict) -> bool:
         """Check if DES hooks are already installed.
 
-        Returns True if EITHER PreToolUse or SubagentStop has a DES hook.
+        Returns True if ANY hook event type has a DES hook.
         This handles cases where only partial hooks exist (e.g., old format).
-        The install process will clean up and reinstall both properly.
+        The install process will clean up and reinstall all properly.
         """
         if "hooks" not in config:
             return False
 
-        pre_hooks = config["hooks"].get("PreToolUse", [])
-        has_pre = any(self._is_des_hook_entry(h) for h in pre_hooks)
-
-        stop_hooks = config["hooks"].get("SubagentStop", [])
-        has_stop = any(self._is_des_hook_entry(h) for h in stop_hooks)
-
-        return has_pre or has_stop
+        return any(
+            any(self._is_des_hook_entry(h) for h in config["hooks"].get(event, []))
+            for event in self.HOOK_EVENTS
+        )
 
     def _is_des_hook_entry(self, hook_entry: dict) -> bool:
         """Check if a hook entry is a DES hook.
@@ -657,19 +664,13 @@ class DESPlugin(InstallationPlugin):
 
             # Remove only DES hooks, preserve everything else
             if "hooks" in config:
-                if "PreToolUse" in config["hooks"]:
-                    config["hooks"]["PreToolUse"] = [
-                        h
-                        for h in config["hooks"]["PreToolUse"]
-                        if not self._is_des_hook_entry(h)
-                    ]
-
-                if "SubagentStop" in config["hooks"]:
-                    config["hooks"]["SubagentStop"] = [
-                        h
-                        for h in config["hooks"]["SubagentStop"]
-                        if not self._is_des_hook_entry(h)
-                    ]
+                for event in self.HOOK_EVENTS:
+                    if event in config["hooks"]:
+                        config["hooks"][event] = [
+                            h
+                            for h in config["hooks"][event]
+                            if not self._is_des_hook_entry(h)
+                        ]
 
             self._save_settings(settings_file, config, context)
 
