@@ -134,10 +134,10 @@ class NWaveInstaller:
             # Try Python build script as fallback
             build_script = self.project_root / "tools" / "build.py"
             if not build_script.exists():
-                self.logger.error(f"Build script not found at: {build_script}")
+                print(f"  \u274c Build script not found: {build_script}")
                 return False
 
-            with self.rich_logger.progress_spinner("Building IDE bundle..."):
+            with self.rich_logger.progress_spinner("  \u23f3 Building IDE bundle..."):
                 try:
                     result = subprocess.run(
                         [sys.executable, str(build_script)],
@@ -147,18 +147,18 @@ class NWaveInstaller:
                     )
 
                     if result.returncode == 0:
-                        self.logger.info("Build completed successfully")
+                        print("  \u2705 Build completed")
                         return True
                     else:
-                        self.logger.error("Build failed")
-                        self.logger.error(result.stderr)
+                        print("  \u274c Build failed")
+                        print(f"     {result.stderr}")
                         return False
                 except Exception as e:
-                    self.logger.error(f"Build failed: {e}")
+                    print(f"  \u274c Build failed: {e}")
                     return False
         else:
             # Run shell script
-            with self.rich_logger.progress_spinner("Building IDE bundle..."):
+            with self.rich_logger.progress_spinner("  \u23f3 Building IDE bundle..."):
                 try:
                     result = subprocess.run(
                         ["bash", str(build_script)],
@@ -168,14 +168,14 @@ class NWaveInstaller:
                     )
 
                     # Look for success indicators
-                    if "Build completed" in result.stdout or "✅" in result.stdout:
-                        self.logger.info("Build completed successfully")
+                    if "Build completed" in result.stdout or "\u2705" in result.stdout:
+                        print("  \u2705 Build completed")
                         return True
                     else:
-                        self.logger.error("Build failed")
+                        print("  \u274c Build failed")
                         return False
                 except Exception as e:
-                    self.logger.error(f"Build failed: {e}")
+                    print(f"  \u274c Build failed: {e}")
                     return False
 
     def check_source(self) -> bool:
