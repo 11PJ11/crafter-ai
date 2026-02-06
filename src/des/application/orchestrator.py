@@ -113,8 +113,15 @@ def _log_audit_event(event_type: str, **kwargs: object) -> None:
 
     Drop-in replacement for the legacy ``log_audit_event()`` convenience
     function that was removed together with ``audit_logger.py``.
+
+    ``feature_name`` and ``step_id`` are extracted from *kwargs* and passed
+    as direct :class:`PortAuditEvent` fields for structured traceability.
+    All remaining kwargs are placed in the ``data`` dict.
     """
     from src.des.adapters.driven.time.system_time import SystemTimeProvider
+
+    feature_name = kwargs.pop("feature_name", None)
+    step_id = kwargs.pop("step_id", None)
 
     writer = JsonlAuditLogWriter()
     timestamp = SystemTimeProvider().now_utc().isoformat()
@@ -122,6 +129,8 @@ def _log_audit_event(event_type: str, **kwargs: object) -> None:
         PortAuditEvent(
             event_type=event_type,
             timestamp=timestamp,
+            feature_name=feature_name,
+            step_id=step_id,
             data={k: v for k, v in kwargs.items() if v is not None},
         )
     )
