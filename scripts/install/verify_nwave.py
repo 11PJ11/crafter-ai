@@ -40,6 +40,7 @@ from pathlib import Path
 
 try:
     from scripts.install.context_detector import is_claude_code_context
+    from scripts.install.install_nwave import print_logo
     from scripts.install.install_utils import Logger, PathUtils
     from scripts.install.installation_verifier import (
         InstallationVerifier,
@@ -47,6 +48,7 @@ try:
     )
 except ImportError:
     from context_detector import is_claude_code_context
+    from install_nwave import print_logo
     from install_utils import Logger, PathUtils
     from installation_verifier import (
         InstallationVerifier,
@@ -196,7 +198,10 @@ def main(
     log_file = config_dir / "nwave-install.log"
     logger = Logger(log_file=log_file, silent=use_json)
 
-    logger.info("  🔍 nWave verification started")
+    if not use_json:
+        print_logo(logger)
+        logger.info("")
+        logger.info("  🔍 nWave verification started")
 
     # Run verification
     result = run_verification(claude_config_dir=claude_config_dir)
