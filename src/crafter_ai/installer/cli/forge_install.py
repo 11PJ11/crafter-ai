@@ -509,7 +509,24 @@ def install(
         console.print(f"  \u274c Installation failed")
         console.print()
         console.print(f"  Error: {install_result.error_message or 'Unknown error'}")
-        console.print(f"  Fix: Try 'pipx install --force' or check dependency versions")
+
+        # Determine appropriate fix message based on error type
+        # Check most specific patterns first
+        error_msg = install_result.error_message or ""
+
+        if "Deployment validation failed" in error_msg or "validation failed" in error_msg.lower():
+            fix_message = "This is likely a corrupt install. Try 'nw forge install --force'"
+        elif "Asset deployment failed" in error_msg:
+            # Asset deployment failures always suggest rebuilding the bundle
+            fix_message = "Run 'nw forge build' to regenerate the IDE bundle"
+        elif "pipx install failed" in error_msg or "dependency" in error_msg.lower():
+            fix_message = "Try 'pipx install --force' or check dependency versions"
+        elif "Permission denied" in error_msg or "permission" in error_msg.lower():
+            fix_message = "Check write permissions on ~/.claude/ directory"
+        else:
+            fix_message = "Re-run 'nw forge install' or check installation logs"
+
+        console.print(f"  Fix: {fix_message}")
         console.print()
         raise typer.Exit(code=1)
 

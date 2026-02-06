@@ -13,9 +13,9 @@ from pathlib import Path
 
 # --- Expected artifact counts (source: journey-forge-tui.yaml) ---
 
-EXPECTED_AGENT_COUNT = 30
+EXPECTED_AGENT_COUNT = 31
 EXPECTED_COMMAND_COUNT = 23
-EXPECTED_TEMPLATE_COUNT = 16
+EXPECTED_TEMPLATE_COUNT = 18
 EXPECTED_SCRIPT_COUNT = 2
 EXPECTED_TEAM_COUNT = 0
 

@@ -1004,6 +1004,13 @@ class TestInstallFailure:
         assert "Fix:" in output, (
             f"Missing 'Fix:' remediation line for install failure.\nOutput:\n{output}"
         )
+        # Verify pipx-specific fix message
+        assert "pipx install --force" in output, (
+            "Missing pipx-specific fix message for pipx install failure"
+        )
+        assert "dependency versions" in output, (
+            "Missing dependency version guidance in pipx fix message"
+        )
 
     def test_no_border_characters(
         self,
@@ -1412,6 +1419,13 @@ class TestAssetDeploymentFailure:
         assert "Fix:" in output, (
             f"Missing 'Fix:' remediation line for asset deployment failure.\nOutput:\n{output}"
         )
+        # Verify asset deployment-specific fix message
+        assert "nw forge build" in output, (
+            "Missing build regeneration guidance in asset deployment fix message"
+        )
+        assert "regenerate the IDE bundle" in output, (
+            "Missing IDE bundle regeneration guidance in asset deployment fix message"
+        )
 
     def test_no_border_characters(
         self,
@@ -1562,6 +1576,13 @@ class TestDeploymentValidationFailure:
         )
         assert "Fix:" in output, (
             f"Missing 'Fix:' remediation line for validation failures.\nOutput:\n{output}"
+        )
+        # Verify deployment validation-specific fix message
+        assert "This is likely a corrupt install" in output, (
+            "Missing corrupt install diagnosis in validation failure fix message"
+        )
+        assert "nw forge install --force" in output, (
+            "Missing force reinstall guidance in validation failure fix message"
         )
 
     def test_no_border_characters(
