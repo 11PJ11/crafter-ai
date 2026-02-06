@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from src.des.application.subagent_stop_service import SubagentStopService
+from src.des.domain.phase_event import PhaseEventParser
 from src.des.domain.step_completion_validator import StepCompletionValidator
 from src.des.domain.tdd_schema import get_tdd_schema
 from src.des.ports.driven_ports.audit_log_writer import AuditEvent, AuditLogWriter
@@ -35,17 +36,18 @@ class MockTimeProvider(TimeProvider):
 
 
 class MockExecutionLogReader(ExecutionLogReader):
-    """Mock execution log reader."""
+    """Mock execution log reader that parses string events into PhaseEvent objects."""
 
     def __init__(self, project_id: str, events: list[str]):
         self._project_id = project_id
+        self._parser = PhaseEventParser()
         self._events = events
 
     def read_project_id(self, log_path: str) -> str:
         return self._project_id
 
-    def read_step_events(self, log_path: str, step_id: str) -> list[str]:
-        return self._events
+    def read_step_events(self, log_path: str, step_id: str):
+        return [e for e in (self._parser.parse(s) for s in self._events) if e is not None]
 
 
 class MockScopeChecker(ScopeChecker):
@@ -108,8 +110,8 @@ def test_audit_log_passed_includes_feature_name_and_step_id():
     assert len(passed_events) == 1
 
     passed_event = passed_events[0]
-    assert passed_event.data["feature_name"] == "audit-log-refactor"
-    assert passed_event.data["step_id"] == "02-02"
+    assert passed_event.feature_name == "audit-log-refactor"
+    assert passed_event.step_id == "02-02"
 
 
 # @pytest.mark.skip removed for RED phase
@@ -153,8 +155,8 @@ def test_audit_log_failed_includes_feature_name_and_step_id():
     assert len(failed_events) == 1
 
     failed_event = failed_events[0]
-    assert failed_event.data["feature_name"] == "audit-log-refactor"
-    assert failed_event.data["step_id"] == "02-02"
+    assert failed_event.feature_name == "audit-log-refactor"
+    assert failed_event.step_id == "02-02"
     assert "validation_errors" in failed_event.data  # Existing field preserved
 
 
@@ -206,8 +208,8 @@ def test_audit_log_scope_violation_includes_feature_name_and_step_id():
     assert len(scope_events) == 2  # One per violation
 
     for scope_event in scope_events:
-        assert scope_event.data["feature_name"] == "audit-log-refactor"
-        assert scope_event.data["step_id"] == "02-02"
+        assert scope_event.feature_name == "audit-log-refactor"
+        assert scope_event.step_id == "02-02"
         assert "out_of_scope_file" in scope_event.data  # Existing field preserved
 
 
@@ -252,9 +254,9 @@ def test_audit_log_retains_all_existing_fields():
 
     failed_event = failed_events[0]
     assert failed_event.event_type == "HOOK_SUBAGENT_STOP_FAILED"
-    assert "timestamp" in failed_event.timestamp  # ISO format timestamp
-    assert "feature_name" in failed_event.data
-    assert "step_id" in failed_event.data
+    assert failed_event.timestamp == "2026-02-06T15:00:00+00:00"
+    assert failed_event.feature_name == "test-feature"
+    assert failed_event.step_id == "01-01"
     assert "validation_errors" in failed_event.data
     assert isinstance(failed_event.data["validation_errors"], list)
     assert len(failed_event.data["validation_errors"]) > 0
