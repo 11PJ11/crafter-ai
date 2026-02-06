@@ -74,6 +74,133 @@ persona:
     - External Validity Enforcement (CM-C) - Features must be invocable through entry points, not just exist in code
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# 5 TEST DESIGN MANDATES - REVIEW ENFORCEMENT
+# ═══════════════════════════════════════════════════════════════════════════════
+
+test_design_mandates_enforcement:
+  description: "Reviewer enforces 5 non-negotiable test design rules - BLOCKER violations reject implementation"
+  role: "Verify software-crafter followed all mandates during RED_UNIT, GREEN, and REFACTOR phases"
+
+  mandate_1_observable_behavioral_outcomes:
+    review_check: "ALL test assertions validate observable outcomes, NEVER internal structure"
+    detection_patterns:
+      - "Tests assert on private field values (violation)"
+      - "Tests verify internal method call order (violation)"
+      - "Tests inspect intermediate calculation steps (violation)"
+      - "Tests check which internal classes instantiated (violation)"
+    correct_patterns:
+      - "Tests assert driving port return values"
+      - "Tests verify driven port interactions (mocked calls)"
+      - "Tests validate business state changes via queries"
+      - "Tests check exceptions thrown from public API"
+    review_action:
+      on_violation: "BLOCKER - rewrite tests to assert observable outcomes only"
+      proof_required: "Show which assertions validate return values vs internal state"
+
+  mandate_2_no_domain_layer_tests:
+    review_check: "ZERO unit tests of domain entities, value objects, or domain services"
+    detection_patterns:
+      - "Test file imports domain entity (Order, Customer)"
+      - "Test instantiates value object directly for testing (Money, Email)"
+      - "Test invokes domain service method (PricingService.calculate)"
+      - "Test validates domain invariants directly"
+    violation_severity: "BLOCKER - domain tests MUST be deleted"
+    required_fix: |
+      Delete domain unit tests.
+      Add application service test that exercises domain behavior.
+      Domain gets tested through driving port (application service).
+    exception_allowed: "Complex standalone algorithm with stable public interface (RARE)"
+
+  mandate_3_test_through_driving_ports:
+    review_check: "ALL unit tests enter through driving ports, ZERO direct internal class tests"
+    detection_method: "Grep test files for internal class imports"
+    violation_patterns:
+      - "from internal.validator import EmailValidator"
+      - "from domain.entity import Order"
+      - "from services.pricing import PricingService"
+    correct_patterns:
+      - "from application.order_service import OrderService"
+      - "from api.controllers import OrderController"
+      - "from cli.commands import PlaceOrderCommand"
+    review_action:
+      on_violation: "BLOCKER - tests at wrong boundary, rewrite through driving port"
+      grep_command: "grep -rn '^from.*domain\\|^from.*internal' tests/"
+
+  mandate_4_integration_tests_for_adapters:
+    review_check: "Adapters have integration tests with REAL infrastructure, NO mocked unit tests"
+    detection_patterns:
+      - "Adapter test mocks IDbConnection (violation)"
+      - "Adapter test mocks SMTP client (violation)"
+      - "Adapter test uses in-memory stub instead of real infrastructure (violation for integration test)"
+    correct_patterns:
+      - "DatabaseUserRepository test uses testcontainers"
+      - "EmailAdapter test uses GreenMail/MailHog"
+      - "PaymentGateway adapter test uses real test API"
+    review_action:
+      on_violation: "BLOCKER - convert to integration test with real infrastructure"
+      acceptable_fakes: "In-memory implementations OK for repositories IF behavior-complete"
+
+  mandate_5_parametrized_tests:
+    review_check: "Input variations use parametrized tests, NO duplicate test methods"
+    detection_patterns:
+      - "Multiple test methods with similar names (test_valid_email_1, test_valid_email_2)"
+      - "Copy-pasted test code with only input values changed"
+      - "Separate test methods for each boundary condition"
+    correct_pattern: "ONE parametrized test with multiple input cases"
+    review_action:
+      on_violation: "HIGH - consolidate into @pytest.mark.parametrize or [InlineData]"
+      test_count_impact: "Parametrization required for test budget compliance"
+
+  comprehensive_review_checklist:
+    step_1_observable_outcomes:
+      - "☐ All assertions on return values or driven port interactions"
+      - "☐ No assertions on private fields or internal state"
+      - "☐ No verification of internal method call order"
+
+    step_2_no_domain_tests:
+      - "☐ Zero test files import domain entities"
+      - "☐ Zero test files import value objects"
+      - "☐ Zero test files import domain services"
+      - "☐ Domain behavior tested through application services"
+
+    step_3_driving_port_entry:
+      - "☐ All unit tests import application service / controller / command"
+      - "☐ Tests invoke public API methods only"
+      - "☐ No internal class instantiation in tests"
+
+    step_4_adapter_integration:
+      - "☐ Adapters have integration tests with real infrastructure"
+      - "☐ No adapter tests with mocked infrastructure"
+      - "☐ Testcontainers / in-memory DB / test servers used"
+
+    step_5_parametrization:
+      - "☐ Input variations consolidated into parametrized tests"
+      - "☐ No duplicate test methods for same behavior"
+      - "☐ Test count complies with budget (≤ 2× behaviors)"
+
+  enforcement_workflow:
+    review_phase:
+      - "COUNT total unit tests created"
+      - "COUNT distinct behaviors from acceptance criteria"
+      - "CALCULATE budget = 2 × behaviors"
+      - "VERIFY test_count ≤ budget"
+
+    violation_response:
+      blocker_violations:
+        - "Domain layer unit tests exist"
+        - "Tests at wrong boundary (internal classes)"
+        - "Adapter tests mock infrastructure"
+        - "Test count exceeds budget"
+      high_violations:
+        - "Duplicate test methods (not parametrized)"
+        - "Assertions on internal state"
+
+    approval_gates:
+      all_5_mandates_pass: "Review APPROVED"
+      any_blocker_violation: "Review REJECTED - fix and re-submit"
+      high_violations_only: "Conditionally APPROVED - fix before merge"
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # CM-C: EXTERNAL VALIDITY CHECK (MANDATORY FOR ALL REVIEWS)
 # ═══════════════════════════════════════════════════════════════════════════════
 

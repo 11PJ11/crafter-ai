@@ -40,6 +40,324 @@ core_principles:
   - "Quality Gates - Zero compromises on pass rates"
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# 5 TEST DESIGN MANDATES - COMPREHENSIVE TEST STRATEGY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+test_design_mandates:
+  description: "Five non-negotiable rules that govern ALL test creation - acceptance, unit, and integration"
+  enforcement: "BLOCKER violations reject review - no exceptions"
+
+  mandate_1_observable_behavioral_outcomes:
+    rule: "Tests validate OBSERVABLE BEHAVIORAL OUTCOMES, never internal structure"
+    rationale: |
+      Tests are contracts with users about system behavior, not implementation details.
+      Testing internal structure creates brittle tests that break during refactoring.
+      Observable outcomes survive refactoring - internal structure does not.
+
+    what_is_observable:
+      - "Return values from driving port methods"
+      - "State changes visible through driving port queries"
+      - "Side effects at driven port boundaries (DB writes, emails sent, API calls)"
+      - "Exceptions thrown from driving ports"
+      - "Business invariants maintained across operations"
+
+    what_is_NOT_observable:
+      - "Internal class method calls"
+      - "Private field values"
+      - "Intermediate calculation steps"
+      - "Which internal classes are instantiated"
+      - "Order of internal method invocations"
+
+    correct_examples:
+      unit_test: |
+        # Test through driving port (OrderService)
+        def test_places_order_with_valid_data():
+            order_service = OrderService(payment_gateway, inventory_repo)
+            result = order_service.place_order(customer_id, items)
+
+            # Observable outcomes:
+            assert result.order_number is not None  # Return value
+            assert result.status == "CONFIRMED"     # Business state
+            payment_gateway.verify_charge_called()  # Driven port interaction
+
+      acceptance_test: |
+        Scenario: Customer places order successfully
+          When customer submits order with valid payment
+          Then order confirmation is displayed  # Observable outcome
+          And order appears in order history    # Observable state change
+
+    violation_examples:
+      internal_testing: |
+        # WRONG - testing internal class directly
+        def test_order_validator_validates_email():
+            validator = OrderValidator()  # Internal component
+            assert validator.is_valid_email("test@example.com")
+
+      structure_assertion: |
+        # WRONG - asserting internal structure
+        def test_order_contains_line_items():
+            order = Order(...)
+            assert len(order._line_items) == 3  # Internal field
+
+    enforcement:
+      review_checkpoint: "Reviewer MUST verify all assertions are on observable outcomes"
+      violation_action: "REJECT review - rewrite test through driving port"
+
+  mandate_2_no_domain_layer_unit_tests:
+    rule: "ABSOLUTE NO to unit tests of domain entities, value objects, or domain services"
+    rationale: |
+      Domain layer is implementation detail of application layer.
+      Testing domain directly couples tests to internal structure.
+      Domain behavior is validated through application service tests.
+
+    what_NOT_to_test_directly:
+      - "Domain entities (Order, Customer, Product)"
+      - "Value objects (Money, Email, Address)"
+      - "Domain services (PricingService, DiscountCalculator)"
+      - "Domain events (OrderPlaced, PaymentProcessed)"
+
+    how_domain_gets_tested:
+      method: "Indirectly through application service (driving port) tests"
+      explanation: |
+        When you test OrderService.place_order(), the test exercises:
+        - Order entity creation and validation (domain)
+        - Money calculations (value object)
+        - PricingService logic (domain service)
+
+        All domain behavior is validated WITHOUT direct domain class tests.
+
+    exception:
+      condition: "Complex standalone algorithm with stable public interface"
+      examples:
+        - "Tax calculation engine with 50+ rules"
+        - "Complex pricing algorithm with multiple tiers"
+        - "Credit scoring algorithm with regulatory requirements"
+      justification: "Algorithm complexity justifies direct testing"
+      frequency: "RARE - 95% of domain code tested through app services"
+
+    correct_approach: |
+      # Test domain behavior through application service (driving port)
+      def test_calculates_order_total_with_discount():
+          order_service = OrderService(repo, pricing)
+          result = order_service.create_order(customer_id, items)
+
+          # Domain logic (Money, PricingService) exercised indirectly
+          assert result.total == Money(90.00, "USD")  # 10% discount applied
+
+    violation_example: |
+      # WRONG - testing domain entity directly
+      def test_order_add_item():
+          order = Order(order_id, customer_id)
+          order.add_item(item)  # Testing internal domain class
+          assert order.total == expected_total
+
+    enforcement:
+      review_checkpoint: "Reviewer MUST verify zero direct domain class instantiation in tests"
+      violation_action: "BLOCKER - delete domain tests, add app service test instead"
+
+  mandate_3_test_through_driving_ports:
+    rule: "ALL unit tests invoke through driving ports (public API), NEVER internal classes"
+    rationale: |
+      Driving ports are user-facing entry points - the system's public interface.
+      Testing through driving ports ensures features are actually accessible to users.
+      Prevents "Testing Theatre" where tests pass but users cannot invoke feature.
+
+    driving_port_identification:
+      definition: "Entry points that external actors use to interact with system"
+      examples:
+        - "Application services / Use case handlers"
+        - "API controllers / HTTP endpoints"
+        - "CLI command handlers"
+        - "Message queue consumers"
+        - "Event handlers"
+
+    not_driving_ports:
+      - "Domain entities (Order, Customer)"
+      - "Value objects (Money, Email)"
+      - "Internal validators (EmailValidator)"
+      - "Internal parsers (JsonParser)"
+      - "Repository implementations"
+
+    port_to_port_testing:
+      description: "Tests enter through driving port, assert at driven port boundaries"
+      flow: "Driving Port → Application → Domain → Driven Port (mocked)"
+      example: |
+        def test_order_service_processes_payment():
+            # Setup - mock driven port (external dependency)
+            payment_gateway = MockPaymentGateway()
+            order_repo = InMemoryOrderRepository()
+
+            # Test through driving port (application service)
+            order_service = OrderService(payment_gateway, order_repo)
+            result = order_service.place_order(customer_id, items)
+
+            # Assert observable outcomes
+            assert result.is_confirmed()
+            payment_gateway.verify_charge_called(amount=100.00)
+
+    enforcement:
+      review_checkpoint: "Reviewer MUST verify all tests import driving port, not internal classes"
+      violation_detection: "Grep for internal class imports (entities, validators, parsers)"
+      violation_action: "BLOCKER - rewrite test to enter through driving port"
+
+  mandate_4_integration_tests_for_adapters:
+    rule: "Adapters tested with INTEGRATION TESTS only, NO unit tests with mocks"
+    rationale: |
+      Adapters implement port interfaces against real infrastructure.
+      Mocking infrastructure inside adapter test = testing the mock, not the adapter.
+      Integration tests with real infrastructure verify actual behavior.
+
+    adapter_examples:
+      - "DatabaseUserRepository (implements IUserRepository port)"
+      - "SmtpEmailAdapter (implements IEmailService port)"
+      - "StripePaymentGateway (implements IPaymentGateway port)"
+      - "S3FileStorage (implements IFileStorage port)"
+
+    integration_test_approach:
+      setup: "Use real infrastructure (testcontainers, in-memory DB, test SMTP server)"
+      test: "Verify adapter correctly implements port interface"
+      teardown: "Clean up test data / containers"
+
+    correct_examples:
+      database_adapter: |
+        def test_user_repository_saves_and_retrieves_user():
+            # Real database via testcontainers
+            db = create_test_database_container()
+            repo = DatabaseUserRepository(db.connection_string)
+
+            user = User(id=1, name="Alice")
+            repo.save(user)
+
+            retrieved = repo.get_by_id(1)
+            assert retrieved.name == "Alice"
+
+      email_adapter: |
+        def test_email_adapter_sends_email():
+            # Real SMTP server (GreenMail/MailHog)
+            smtp = create_test_smtp_server()
+            adapter = SmtpEmailAdapter(smtp.host, smtp.port)
+
+            adapter.send_email(to="test@example.com", subject="Test")
+
+            assert smtp.received_messages_count() == 1
+
+    violation_examples:
+      mocked_infrastructure: |
+        # WRONG - mocking infrastructure inside adapter test
+        def test_user_repository_saves_user():
+            mock_connection = Mock(IDbConnection)
+            repo = DatabaseUserRepository(mock_connection)
+
+            repo.save(user)
+
+            # Testing the mock, not the actual database adapter
+            mock_connection.execute.assert_called_once()
+
+    test_strategy:
+      local_dev: "In-memory or testcontainer infrastructure (fast feedback)"
+      ci_pipeline: "Production-like infrastructure (full integration validation)"
+      no_mocks: "Adapters never use mocked infrastructure in their tests"
+
+    enforcement:
+      review_checkpoint: "Reviewer MUST verify adapter tests use real infrastructure"
+      violation_action: "BLOCKER - rewrite as integration test with real infrastructure"
+
+  mandate_5_parametrized_tests_minimize_duplication:
+    rule: "Use parametrized tests for input variations - NEVER duplicate test methods"
+    rationale: |
+      Input variations of same behavior = 1 parametrized test, NOT separate methods.
+      Reduces test count, improves maintainability, eliminates duplication.
+      Makes test budget enforcement possible (≤ 2× behaviors).
+
+    what_to_parametrize:
+      - "Input variations testing same business rule"
+      - "Edge cases for boundary conditions"
+      - "Multiple valid/invalid formats"
+      - "Different error scenarios for same validation"
+
+    framework_syntax:
+      pytest: "@pytest.mark.parametrize('input,expected', [...])"
+      xunit: "[Theory] [InlineData(...)] [InlineData(...)]"
+      nunit: "[TestCase(...)] [TestCase(...)]"
+      junit: "@ParameterizedTest @ValueSource(...)"
+
+    correct_examples:
+      email_validation: |
+        @pytest.mark.parametrize("email", [
+            "user@example.com",
+            "user.name@example.co.uk",
+            "user+tag@example.com",
+        ])
+        def test_accepts_valid_email_formats(email):
+            result = auth_service.register(email, password)
+            assert result.is_successful()
+
+      boundary_conditions: |
+        @pytest.mark.parametrize("quantity,expected_discount", [
+            (1, 0.0),      # No discount
+            (10, 0.05),    # 5% discount
+            (50, 0.10),    # 10% discount
+            (100, 0.15),   # 15% discount
+        ])
+        def test_applies_volume_discount(quantity, expected_discount):
+            result = pricing_service.calculate_total(quantity, unit_price=10.0)
+            assert result.discount_rate == expected_discount
+
+    violation_examples:
+      separate_methods: |
+        # WRONG - 3 separate test methods for same behavior
+        def test_accepts_gmail_address():
+            result = auth_service.register("user@gmail.com", password)
+            assert result.is_successful()
+
+        def test_accepts_yahoo_address():
+            result = auth_service.register("user@yahoo.com", password)
+            assert result.is_successful()
+
+        def test_accepts_company_address():
+            result = auth_service.register("user@company.com", password)
+            assert result.is_successful()
+
+        # Should be ONE parametrized test with 3 inputs
+
+    test_count_impact:
+      without_parametrization: "10 behaviors × 5 input variations = 50 test methods"
+      with_parametrization: "10 behaviors = 10 parametrized tests (budget compliant)"
+      savings: "40 fewer test methods, same coverage"
+
+    enforcement:
+      review_checkpoint: "Reviewer MUST identify duplicate test patterns"
+      violation_action: "HIGH - consolidate into parametrized tests before approval"
+      test_budget_benefit: "Parametrization enables ≤ 2× behavior budget compliance"
+
+  mandate_integration_summary:
+    description: "How all 5 mandates work together"
+    workflow: |
+      1. Write acceptance test (observable outcomes, business language)
+      2. Write unit test through driving port (NOT internal classes)
+      3. Assert observable outcomes (return values, driven port interactions)
+      4. Use parametrization for input variations (minimize test count)
+      5. Write integration tests for adapters (real infrastructure)
+      6. Domain layer gets tested indirectly (no direct entity tests)
+
+    test_count_formula:
+      acceptance_tests: "1 per user scenario (walking skeletons + focused scenarios)"
+      unit_tests: "≤ 2 × distinct_behaviors (from acceptance criteria)"
+      integration_tests: "1 per adapter (repository, email, payment, etc.)"
+      domain_tests: "0 (domain tested through app services)"
+
+    confidence_achieved:
+      business_value: "Acceptance tests validate complete user journeys"
+      behavior_coverage: "Unit tests cover all business rules via driving ports"
+      infrastructure: "Integration tests prove adapters work with real systems"
+      refactoring_safety: "Observable outcome tests survive implementation changes"
+
+    total_test_minimization:
+      goal: "Minimum tests, maximum confidence in business value delivery"
+      anti_pattern: "Testing Theatre - high test count, low business confidence"
+      success_metric: "Can refactor implementation without changing tests"
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # BEHAVIOR-FIRST TEST BUDGET (MANDATORY ENFORCEMENT)
 # ═══════════════════════════════════════════════════════════════════════════════
 
