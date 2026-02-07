@@ -16,17 +16,14 @@
 #   - TestPyPI install must succeed (with linear backoff retry)
 #   - Clear failure diagnostics with suggested fixes
 #
-# Triggers: Pull requests to main/master branches
+# Triggers: Manual only (disabled pending nWave distribution strategy rethink)
 #
 # =============================================================================
 
 name: TestPyPI Validation
 
 on:
-  pull_request:
-    branches:
-      - main
-      - master
+  workflow_dispatch:  # Manual trigger only until distribution strategy is defined
 
 permissions:
   contents: read
