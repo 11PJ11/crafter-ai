@@ -143,7 +143,11 @@ class ValidationErrorDetector:
         acceptance_criteria = step.get("acceptance_criteria", "")
 
         # Check if acceptance_criteria field exists and is not empty
-        if not acceptance_criteria or not isinstance(acceptance_criteria, str) or len(acceptance_criteria.strip()) == 0:
+        if (
+            not acceptance_criteria
+            or not isinstance(acceptance_criteria, str)
+            or len(acceptance_criteria.strip()) == 0
+        ):
             errors.append(
                 "Missing or empty acceptance_criteria: must contain concrete, testable acceptance criteria"
             )
@@ -270,7 +274,8 @@ class ValidationErrorDetector:
                 # Valid if in correct sequence (don't require outcome for this test)
                 # Check if any previous phases are NOT_EXECUTED
                 earlier_phases_incomplete = any(
-                    phase_entry.get("status") != "EXECUTED" for phase_entry in phases[:i]
+                    phase_entry.get("status") != "EXECUTED"
+                    for phase_entry in phases[:i]
                 )
                 if not earlier_phases_incomplete:
                     result["valid_phases"].append(phase_name)

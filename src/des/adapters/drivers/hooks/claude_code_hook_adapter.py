@@ -210,7 +210,9 @@ def extract_des_context_from_transcript(transcript_path: str) -> dict | None:
     return None
 
 
-def _resolve_des_context(hook_input: dict) -> tuple[str, str, str] | tuple[None, dict, int]:
+def _resolve_des_context(
+    hook_input: dict,
+) -> tuple[str, str, str] | tuple[None, dict, int]:
     """Resolve DES context (execution_log_path, project_id, step_id) from hook input.
 
     Supports two protocols:
@@ -229,15 +231,23 @@ def _resolve_des_context(hook_input: dict) -> tuple[str, str, str] | tuple[None,
 
     if uses_direct_des_protocol:
         if not (execution_log_path and project_id and step_id):
-            return None, {
-                "status": "error",
-                "reason": "Missing required fields: executionLogPath, projectId, and stepId are all required",
-            }, 1
+            return (
+                None,
+                {
+                    "status": "error",
+                    "reason": "Missing required fields: executionLogPath, projectId, and stepId are all required",
+                },
+                1,
+            )
         if not Path(execution_log_path).is_absolute():
-            return None, {
-                "status": "error",
-                "reason": f"executionLogPath must be absolute (got: {execution_log_path})",
-            }, 1
+            return (
+                None,
+                {
+                    "status": "error",
+                    "reason": f"executionLogPath must be absolute (got: {execution_log_path})",
+                },
+                1,
+            )
         return execution_log_path, project_id, step_id
 
     # Claude Code protocol - extract DES context from transcript

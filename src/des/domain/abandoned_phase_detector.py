@@ -73,9 +73,7 @@ class AbandonedPhaseDetector:
         if not started_at:
             return False
 
-        elapsed_minutes = self._elapsed_minutes_between(
-            started_at, current_time
-        )
+        elapsed_minutes = self._elapsed_minutes_between(started_at, current_time)
         if elapsed_minutes is None or elapsed_minutes <= timeout_minutes:
             return False
 
@@ -114,9 +112,7 @@ class AbandonedPhaseDetector:
         if not started_at:
             return False
 
-        elapsed_minutes = self._elapsed_minutes_between(
-            started_at, current_time
-        )
+        elapsed_minutes = self._elapsed_minutes_between(started_at, current_time)
         return (
             elapsed_minutes is not None and elapsed_minutes > stalled_threshold_minutes
         )

@@ -351,9 +351,7 @@ class DESOrchestrator:
                 extra_context=extra_context,
             )
 
-        rejection_reason = (
-            str(result.errors) if result.errors else "Validation failed"
-        )
+        rejection_reason = str(result.errors) if result.errors else "Validation failed"
         return AuditEvent(
             timestamp=timestamp,
             event=EventType.HOOK_PRE_TASK_BLOCKED.value,
@@ -776,15 +774,23 @@ class DESOrchestrator:
         """
         if mocked_elapsed_times and timeout_thresholds:
             self._check_mocked_thresholds(
-                iteration_index, phase_name, step_data,
-                timeout_thresholds, mocked_elapsed_times,
-                warnings, features_validated,
+                iteration_index,
+                phase_name,
+                step_data,
+                timeout_thresholds,
+                mocked_elapsed_times,
+                warnings,
+                features_validated,
             )
         elif timeout_monitor and timeout_thresholds:
             self._check_real_thresholds(
-                iteration_index, phase_name, step_data,
-                timeout_thresholds, timeout_monitor,
-                warnings, features_validated,
+                iteration_index,
+                phase_name,
+                step_data,
+                timeout_thresholds,
+                timeout_monitor,
+                warnings,
+                features_validated,
             )
 
     def _check_mocked_thresholds(
