@@ -313,7 +313,7 @@ class DESPlugin(InstallationPlugin):
                 cleared += 1
         if cleared > 0:
             context.logger.info(
-                f"Cleared {cleared} __pycache__ directories from {target_dir}"
+                f"  🧹 Cleared {cleared} __pycache__ directories from {target_dir}"
             )
 
     def _install_des_scripts(self, context: InstallContext) -> PluginResult:
