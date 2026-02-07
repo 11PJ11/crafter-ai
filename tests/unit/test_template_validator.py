@@ -4,7 +4,7 @@ Unit Tests: TemplateValidator Components
 Tests for des.validator module:
 - TemplateValidator: Main entry point for validation
 - MandatorySectionChecker: Validates 8 mandatory sections
-- TDDPhaseValidator: Validates 14 TDD phases
+- TDDPhaseValidator: Validates 7 TDD phases
 - ValidationResult: Data class for validation results
 """
 
@@ -31,7 +31,7 @@ class TestValidationResultDataclass:
 
         errors = [
             "MISSING: Mandatory section 'TIMEOUT_INSTRUCTION' not found",
-            "INCOMPLETE: TDD phase 'REFACTOR_L3' not mentioned",
+            "INCOMPLETE: TDD phase 'REFACTOR_CONTINUOUS' not mentioned",
         ]
         result = ValidationResult(
             status="FAILED",
@@ -138,10 +138,10 @@ class TestMandatorySectionChecker:
 
 
 class TestTDDPhaseValidator:
-    """TDDPhaseValidator validates 14 TDD phases."""
+    """TDDPhaseValidator validates 7 TDD phases."""
 
-    def test_all_14_phases_present(self):
-        """Prompt mentioning all 14 phases passes validation."""
+    def test_all_7_phases_present(self):
+        """Prompt mentioning all 7 phases passes validation."""
         from src.des.application.validator import TDDPhaseValidator
 
         prompt = """
@@ -150,17 +150,10 @@ class TestTDDPhaseValidator:
         1. PREPARE
         2. RED_ACCEPTANCE
         3. RED_UNIT
-        4. GREEN_UNIT
-        5. CHECK_ACCEPTANCE
-        6. GREEN_ACCEPTANCE
-        7. REVIEW
-        8. REFACTOR_L1
-        9. REFACTOR_L2
-        10. REFACTOR_L3
-        11. REFACTOR_L4
-        12. POST_REFACTOR_REVIEW
-        13. FINAL_VALIDATE
-        14. COMMIT
+        4. GREEN
+        5. REVIEW
+        6. REFACTOR_CONTINUOUS
+        7. COMMIT
         """
 
         validator = TDDPhaseValidator()
@@ -168,8 +161,8 @@ class TestTDDPhaseValidator:
 
         assert errors == []
 
-    def test_missing_refactor_l3_phase(self):
-        """Prompt missing REFACTOR_L3 returns error."""
+    def test_missing_refactor_continuous_phase(self):
+        """Prompt missing REFACTOR_CONTINUOUS returns error."""
         from src.des.application.validator import TDDPhaseValidator
 
         prompt = """
@@ -177,23 +170,16 @@ class TestTDDPhaseValidator:
         1. PREPARE
         2. RED_ACCEPTANCE
         3. RED_UNIT
-        4. GREEN_UNIT
-        5. CHECK_ACCEPTANCE
-        6. GREEN_ACCEPTANCE
-        7. REVIEW
-        8. REFACTOR_L1
-        9. REFACTOR_L2
-        10. REFACTOR_L4
-        11. POST_REFACTOR_REVIEW
-        12. FINAL_VALIDATE
-        13. COMMIT
+        4. GREEN
+        5. REVIEW
+        6. COMMIT
         """
 
         validator = TDDPhaseValidator()
         errors = validator.validate(prompt)
 
         assert len(errors) > 0
-        assert any("REFACTOR_L3" in error for error in errors)
+        assert any("REFACTOR_CONTINUOUS" in error for error in errors)
 
     def test_missing_multiple_phases(self):
         """Prompt missing multiple phases returns multiple errors."""
@@ -204,15 +190,12 @@ class TestTDDPhaseValidator:
         1. PREPARE
         2. RED_ACCEPTANCE
         3. RED_UNIT
-        4. GREEN_UNIT
-        5. REVIEW
-        6. FINAL_VALIDATE
         """
 
         validator = TDDPhaseValidator()
         errors = validator.validate(prompt)
 
-        assert len(errors) >= 8  # Missing CHECK_ACCEPTANCE, GREEN_ACCEPTANCE, etc.
+        assert len(errors) >= 4  # Missing GREEN, REVIEW, REFACTOR_CONTINUOUS, COMMIT
 
 
 class TestTemplateValidator:
@@ -237,17 +220,10 @@ class TestTemplateValidator:
         1. PREPARE
         2. RED_ACCEPTANCE
         3. RED_UNIT
-        4. GREEN_UNIT
-        5. CHECK_ACCEPTANCE
-        6. GREEN_ACCEPTANCE
-        7. REVIEW
-        8. REFACTOR_L1
-        9. REFACTOR_L2
-        10. REFACTOR_L3
-        11. REFACTOR_L4
-        12. POST_REFACTOR_REVIEW
-        13. FINAL_VALIDATE
-        14. COMMIT
+        4. GREEN
+        5. REVIEW
+        6. REFACTOR_CONTINUOUS
+        7. COMMIT
 
         # QUALITY_GATES
         G1: One test active
@@ -306,17 +282,10 @@ class TestTemplateValidator:
         1. PREPARE
         2. RED_ACCEPTANCE
         3. RED_UNIT
-        4. GREEN_UNIT
-        5. CHECK_ACCEPTANCE
-        6. GREEN_ACCEPTANCE
-        7. REVIEW
-        8. REFACTOR_L1
-        9. REFACTOR_L2
-        10. REFACTOR_L3
-        11. REFACTOR_L4
-        12. POST_REFACTOR_REVIEW
-        13. FINAL_VALIDATE
-        14. COMMIT
+        4. GREEN
+        5. REVIEW
+        6. REFACTOR_CONTINUOUS
+        7. COMMIT
 
         # QUALITY_GATES
         G1: One test active
