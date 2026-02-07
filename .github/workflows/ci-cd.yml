@@ -874,9 +874,10 @@ jobs:
 
       - name: ✂️ Truncate commit message
         id: commit-msg
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
-          MSG="${{ github.event.head_commit.message }}"
-          FIRST_LINE=$(echo "$MSG" | head -1)
+          FIRST_LINE=$(echo "$COMMIT_MSG" | head -1)
 
           if [ ${#FIRST_LINE} -gt 100 ]; then
             TRUNCATED="${FIRST_LINE:0:97}..."
