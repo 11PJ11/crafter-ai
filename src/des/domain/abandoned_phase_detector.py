@@ -73,7 +73,7 @@ class AbandonedPhaseDetector:
         if not started_at:
             return False
 
-        elapsed_minutes = self._calculate_elapsed_minutes_for_timestamp(
+        elapsed_minutes = self._elapsed_minutes_between(
             started_at, current_time
         )
         if elapsed_minutes is None or elapsed_minutes <= timeout_minutes:
@@ -107,14 +107,14 @@ class AbandonedPhaseDetector:
         if current_time is None:
             current_time = datetime.now(timezone.utc)
 
-        if not self._has_stalled_progress_indicators(phase):
+        if not self._is_in_progress_with_no_turns(phase):
             return False
 
         started_at = self._parse_timestamp(phase.get("started_at"))
         if not started_at:
             return False
 
-        elapsed_minutes = self._calculate_elapsed_minutes_for_timestamp(
+        elapsed_minutes = self._elapsed_minutes_between(
             started_at, current_time
         )
         return (
@@ -144,7 +144,7 @@ class AbandonedPhaseDetector:
             if self.is_abandoned(phase, timeout_minutes, current_time):
                 phase_name = phase.get("phase_name", "UNKNOWN")
                 started_at_str = phase.get("started_at")
-                elapsed_minutes = self._calculate_elapsed_minutes(
+                elapsed_minutes = self._elapsed_minutes_from_timestamp_string(
                     started_at_str, current_time
                 )
 
@@ -154,7 +154,7 @@ class AbandonedPhaseDetector:
             ):
                 phase_name = phase.get("phase_name", "UNKNOWN")
                 started_at_str = phase.get("started_at")
-                elapsed_minutes = self._calculate_elapsed_minutes(
+                elapsed_minutes = self._elapsed_minutes_from_timestamp_string(
                     started_at_str, current_time
                 )
 
@@ -200,12 +200,11 @@ class AbandonedPhaseDetector:
 
         return f"WHY: {why}\n\nHOW: {how}\n\nACTION: {action}"
 
-    def _has_stalled_progress_indicators(self, phase: dict[str, Any]) -> bool:
-        """Check if phase has indicators of stalled progress."""
+    def _is_in_progress_with_no_turns(self, phase: dict[str, Any]) -> bool:
+        """Check if phase is IN_PROGRESS but has zero turn count (stalled)."""
         status = phase.get("status", "")
         turn_count = phase.get("turn_count", 0)
 
-        # Stalled if IN_PROGRESS with no progress
         return status == "IN_PROGRESS" and turn_count == 0
 
     def _parse_timestamp(self, timestamp_str: str | None) -> datetime | None:
@@ -228,13 +227,13 @@ class AbandonedPhaseDetector:
         except (ValueError, AttributeError):
             return None
 
-    def _calculate_elapsed_minutes_for_timestamp(
+    def _elapsed_minutes_between(
         self,
         started_at: datetime,
         current_time: datetime,
     ) -> float | None:
         """
-        Calculate minutes elapsed since started_at timestamp.
+        Calculate minutes elapsed between two datetime objects.
 
         Args:
             started_at: Start datetime
@@ -249,13 +248,13 @@ class AbandonedPhaseDetector:
         except (TypeError, AttributeError):
             return None
 
-    def _calculate_elapsed_minutes(
+    def _elapsed_minutes_from_timestamp_string(
         self,
         started_at_str: str | None,
         current_time: datetime | None = None,
     ) -> float | None:
         """
-        Calculate minutes elapsed since started_at timestamp (legacy method).
+        Calculate minutes elapsed since an ISO format timestamp string.
 
         Args:
             started_at_str: ISO format timestamp string
@@ -271,4 +270,4 @@ class AbandonedPhaseDetector:
         if not started_at:
             return None
 
-        return self._calculate_elapsed_minutes_for_timestamp(started_at, current_time)
+        return self._elapsed_minutes_between(started_at, current_time)

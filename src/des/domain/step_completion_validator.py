@@ -147,11 +147,11 @@ class StepCompletionValidator:
             )
 
         # Determine overall result
-        has_errors = bool(
+        validation_failed = bool(
             missing_phases or incomplete_phases or invalid_skips or error_messages
         )
 
-        if not has_errors:
+        if not validation_failed:
             return CompletionResult(is_valid=True)
 
         # Classify the primary error type
@@ -269,14 +269,14 @@ class StepCompletionValidator:
         invalid_skips: list[str],
     ) -> str:
         """Classify the primary error type for reporting."""
-        has_missing = bool(missing_phases)
-        has_incomplete = bool(incomplete_phases)
-        has_invalid_skips = bool(invalid_skips)
+        phases_are_missing = bool(missing_phases)
+        phases_are_incomplete = bool(incomplete_phases)
+        skips_are_invalid = bool(invalid_skips)
 
-        if has_missing and not has_incomplete and not has_invalid_skips:
+        if phases_are_missing and not phases_are_incomplete and not skips_are_invalid:
             return "ABANDONED_PHASE"
-        if has_incomplete and not has_missing and not has_invalid_skips:
+        if phases_are_incomplete and not phases_are_missing and not skips_are_invalid:
             return "INCOMPLETE_PHASE"
-        if has_invalid_skips and not has_missing and not has_incomplete:
+        if skips_are_invalid and not phases_are_missing and not phases_are_incomplete:
             return "INVALID_SKIP"
         return "MULTIPLE_ERRORS"

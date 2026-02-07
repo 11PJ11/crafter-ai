@@ -55,7 +55,7 @@ class TimeoutMonitor:
         """Check which duration thresholds have been crossed.
 
         Args:
-            duration_minutes: List of threshold values in minutes
+            duration_minutes: List of threshold values in minutes to check against
 
         Returns:
             Sorted list of thresholds that have been crossed (in ascending order)

@@ -502,17 +502,17 @@ class DESOrchestrator:
             raise ValueError("Command cannot be None or empty")
 
         # Extract step_id from step_file path for audit logging
-        step_id_from_file = None
+        step_id = None
         if step_file:
             import os
 
-            step_id_from_file = os.path.splitext(os.path.basename(step_file))[0]
+            step_id = os.path.splitext(os.path.basename(step_file))[0]
 
         # Log TASK_INVOCATION_STARTED for audit trail
         _log_audit_event(
             "TASK_INVOCATION_STARTED",
             command=command,
-            step_id=step_id_from_file,
+            step_id=step_id,
             feature_name=project_id,
             agent=agent,
         )
@@ -530,7 +530,7 @@ class DESOrchestrator:
             _log_audit_event(
                 "TASK_INVOCATION_VALIDATED",
                 command=command,
-                step_id=step_id_from_file,
+                step_id=step_id,
                 feature_name=project_id,
                 status="VALIDATED",
                 outcome="success",

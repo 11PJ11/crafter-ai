@@ -249,9 +249,9 @@ def handle_subagent_stop() -> int:
         step_id = hook_input.get("stepId")
 
         # Detect which protocol: if any direct DES field present, use direct format
-        has_direct_fields = execution_log_path or project_id or step_id
+        uses_direct_des_protocol = execution_log_path or project_id or step_id
 
-        if has_direct_fields:
+        if uses_direct_des_protocol:
             # Direct DES format - all three fields required
             if not (execution_log_path and project_id and step_id):
                 response = {

@@ -140,20 +140,19 @@ class ValidationErrorDetector:
         """
         errors = []
 
-        ac = step.get("acceptance_criteria", "")
+        acceptance_criteria = step.get("acceptance_criteria", "")
 
-        # Check if AC field exists and is not empty
-        if not ac or not isinstance(ac, str) or len(ac.strip()) == 0:
+        # Check if acceptance_criteria field exists and is not empty
+        if not acceptance_criteria or not isinstance(acceptance_criteria, str) or len(acceptance_criteria.strip()) == 0:
             errors.append(
                 "Missing or empty acceptance_criteria: must contain concrete, testable acceptance criteria"
             )
             return errors
 
-        # Check if AC has multiple criteria (comma-separated or bullet points)
-        # AC with < 20 chars is likely too brief
-        if len(ac) < 20:
+        # Check if acceptance_criteria has sufficient detail (< 20 chars is likely too brief)
+        if len(acceptance_criteria) < 20:
             errors.append(
-                f"Acceptance criteria too brief ({len(ac)} chars): should have multiple testable criteria"
+                f"Acceptance criteria too brief ({len(acceptance_criteria)} chars): should have multiple testable criteria"
             )
 
         return errors
@@ -266,15 +265,14 @@ class ValidationErrorDetector:
         for i, phase in enumerate(phases):
             phase_name = phase.get("phase_name", "UNKNOWN")
             status = phase.get("status", "NOT_EXECUTED")
-            _outcome = phase.get("outcome")
 
             if status == "EXECUTED":
                 # Valid if in correct sequence (don't require outcome for this test)
                 # Check if any previous phases are NOT_EXECUTED
-                has_earlier_incomplete = any(
-                    p.get("status") != "EXECUTED" for p in phases[:i]
+                earlier_phases_incomplete = any(
+                    phase_entry.get("status") != "EXECUTED" for phase_entry in phases[:i]
                 )
-                if not has_earlier_incomplete:
+                if not earlier_phases_incomplete:
                     result["valid_phases"].append(phase_name)
                 else:
                     result["invalid_phases"].append(

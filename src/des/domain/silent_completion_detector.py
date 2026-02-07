@@ -60,14 +60,12 @@ class SilentCompletionDetector:
         if completed_at is None:
             return False
 
-        # Check if all phases are NOT_EXECUTED
-        not_executed_count = sum(
-            1 for phase in phase_execution_log if phase.get("status") == "NOT_EXECUTED"
+        # Check if all phases are NOT_EXECUTED (no phase updates were recorded)
+        all_phases_untouched = all(
+            phase.get("status") == "NOT_EXECUTED" for phase in phase_execution_log
         )
 
-        all_not_executed = not_executed_count == len(phase_execution_log)
-
-        return all_not_executed
+        return all_phases_untouched
 
     def detect_missing_outcomes(
         self,
