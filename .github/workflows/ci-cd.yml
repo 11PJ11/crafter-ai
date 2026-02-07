@@ -62,7 +62,7 @@ jobs:
   # ===========================================================================
 
   commitlint:
-    name: "Commit Messages"
+    name: "📝 Commit Messages"
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -74,10 +74,10 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_DEFAULT }}
 
-      - name: Install gitlint
+      - name: 📦 Install gitlint
         run: pip install gitlint
 
-      - name: Validate commit messages
+      - name: ✅ Validate commit messages
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             gitlint --commits "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
@@ -94,7 +94,7 @@ jobs:
           fi
 
   code-quality:
-    name: "Code Quality (Ruff)"
+    name: "🔍 Code Quality (Ruff)"
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -104,17 +104,17 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_DEFAULT }}
 
-      - name: Install ruff
+      - name: 📦 Install ruff
         run: pip install ruff
 
-      - name: Ruff lint
+      - name: 🧹 Ruff lint
         run: ruff check src/ scripts/ tools/ tests/ --exit-non-zero-on-fix
 
-      - name: Ruff format check
+      - name: 🎨 Ruff format check
         run: ruff format --check --diff src/ scripts/ tools/ tests/
 
   file-quality:
-    name: "File Quality"
+    name: "📄 File Quality"
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -124,10 +124,10 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_DEFAULT }}
 
-      - name: Install PyYAML
+      - name: 📦 Install PyYAML
         run: pip install pyyaml
 
-      - name: Check trailing whitespace
+      - name: 🔎 Check trailing whitespace
         run: |
           if git ls-files | xargs grep -l '[[:blank:]]$' 2>/dev/null | grep -v -E '^(dist/|\.git/)'; then
             echo "::error::Files with trailing whitespace found"
@@ -135,7 +135,7 @@ jobs:
           fi
           echo "::notice::No trailing whitespace found"
 
-      - name: Check end of file newlines
+      - name: 🔎 Check end of file newlines
         run: |
           failed=0
           for file in $(git ls-files | grep -v -E '^(dist/|\.git/)' | head -200); do
@@ -149,7 +149,7 @@ jobs:
           [ $failed -eq 0 ] && echo "::notice::All files have proper end-of-file newlines"
           exit $failed
 
-      - name: Check YAML syntax
+      - name: 🔎 Check YAML syntax
         run: |
           python3 << 'EOF'
           import yaml
@@ -174,7 +174,7 @@ jobs:
           print('::notice::All YAML files have valid syntax')
           EOF
 
-      - name: Check JSON syntax
+      - name: 🔎 Check JSON syntax
         run: |
           python3 << 'EOF'
           import json
@@ -199,7 +199,7 @@ jobs:
           EOF
 
   security-checks:
-    name: "Security Checks"
+    name: "🔒 Security Checks"
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -209,7 +209,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_DEFAULT }}
 
-      - name: Check for merge conflict markers
+      - name: 🔎 Check for merge conflict markers
         run: |
           if git ls-files | xargs grep -l -E '^(<<<<<<<|=======|>>>>>>>)' 2>/dev/null; then
             echo "::error::Merge conflict markers found in repository"
@@ -217,7 +217,7 @@ jobs:
           fi
           echo "::notice::No merge conflict markers found"
 
-      - name: Detect private keys
+      - name: 🔑 Detect private keys
         run: |
           if git ls-files | xargs grep -l -E '-----BEGIN (RSA |DSA |EC |OPENSSH )?PRIVATE KEY-----' 2>/dev/null; then
             echo "::error::Private key detected in repository"
@@ -225,7 +225,7 @@ jobs:
           fi
           echo "::notice::No private keys detected"
 
-      - name: Prevent shell scripts
+      - name: 🛡️ Prevent shell scripts
         run: python3 scripts/hooks/prevent_shell_scripts.py
 
   # ===========================================================================
@@ -233,7 +233,7 @@ jobs:
   # ===========================================================================
 
   framework-validation:
-    name: "Framework Validation"
+    name: "🏗️ Framework Validation"
     runs-on: ubuntu-latest
     timeout-minutes: 5
     needs: [commitlint, code-quality, file-quality, security-checks]
@@ -244,10 +244,10 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_DEFAULT }}
 
-      - name: Install dependencies
+      - name: 📦 Install dependencies
         run: pip install pyyaml packaging
 
-      - name: Validate framework-catalog.yaml
+      - name: ✅ Validate framework-catalog.yaml
         run: |
           python3 << 'EOF'
           import yaml
@@ -272,13 +272,13 @@ jobs:
           print(f'::notice::framework-catalog.yaml validation passed (version: {version})')
           EOF
 
-      - name: Validate documentation version
+      - name: 📖 Validate documentation version
         run: python3 scripts/hooks/validate_docs.py
 
-      - name: Check documentation freshness
+      - name: 🕐 Check documentation freshness
         run: python3 scripts/hooks/check_documentation_freshness.py
 
-      - name: Detect file conflicts
+      - name: 💥 Detect file conflicts
         run: python3 scripts/hooks/detect_conflicts.py
 
   # ===========================================================================
@@ -286,7 +286,7 @@ jobs:
   # ===========================================================================
 
   test:
-    name: "Test - Py${{ matrix.python-version }} / ${{ matrix.os }}"
+    name: "🧪 Test - Py${{ matrix.python-version }} / ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     needs: [framework-validation]
@@ -305,14 +305,14 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Configure Windows console for UTF-8
+      - name: 🪟 Configure Windows console for UTF-8
         if: runner.os == 'Windows'
         run: |
           chcp 65001
           [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
         shell: pwsh
 
-      - name: Cache pip dependencies
+      - name: 💾 Cache pip dependencies
         uses: actions/cache@v4
         with:
           path: |
@@ -324,13 +324,13 @@ jobs:
             ${{ runner.os }}-pip-${{ env.CACHE_VERSION }}-${{ matrix.python-version }}-
             ${{ runner.os }}-pip-${{ env.CACHE_VERSION }}-
 
-      - name: Install pipenv and dependencies
+      - name: 📦 Install pipenv and dependencies
         run: |
           python3 -m pip install --upgrade pip setuptools wheel pipenv
           pipenv install --dev --deploy --ignore-pipfile || pipenv install --dev
         shell: bash
 
-      - name: Install commit-msg hook
+      - name: 🪝 Install commit-msg hook
         run: |
           python3 << 'EOF'
           import shutil
@@ -349,14 +349,14 @@ jobs:
           EOF
         shell: bash
 
-      - name: Build IDE bundle for integration tests
+      - name: 🔨 Build IDE bundle for integration tests
         run: |
           PYTHONPATH=tools pipenv run python3 tools/core/build_ide_bundle.py \
             --source-dir nWave \
             --output-dir dist/ide
         shell: bash
 
-      - name: Run pytest test suite
+      - name: 🧪 Run pytest test suite
         run: |
           pipenv run pytest tests/ \
             --verbose \
@@ -368,7 +368,7 @@ jobs:
             --junitxml=test-results-${{ matrix.os }}-py${{ matrix.python-version }}.xml
         shell: bash
 
-      - name: Upload test results
+      - name: 📤 Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -376,7 +376,7 @@ jobs:
           path: test-results-*.xml
           retention-days: 14
 
-      - name: Upload coverage reports
+      - name: 📤 Upload coverage reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -386,7 +386,7 @@ jobs:
             htmlcov/
           retention-days: 14
 
-      - name: Test Summary
+      - name: 📊 Test Summary
         if: success()
         run: |
           echo "## Test Summary - Python ${{ matrix.python-version }} on ${{ matrix.os }}" >> $GITHUB_STEP_SUMMARY
@@ -399,7 +399,7 @@ jobs:
   # ===========================================================================
 
   agent-sync:
-    name: "Agent Sync Validation"
+    name: "🤖 Agent Sync Validation"
     runs-on: ubuntu-latest
     timeout-minutes: 5
     needs: [test]
@@ -410,12 +410,12 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_DEFAULT }}
 
-      - name: Install pipenv and dependencies
+      - name: 📦 Install pipenv and dependencies
         run: |
           python3 -m pip install --upgrade pip pipenv
           pipenv install --dev --deploy --ignore-pipfile || pipenv install --dev
 
-      - name: Verify agent name synchronization
+      - name: ✅ Verify agent name synchronization
         run: pipenv run python3 scripts/framework/sync_agent_names.py --verify
 
   # ===========================================================================
@@ -423,7 +423,7 @@ jobs:
   # ===========================================================================
 
   build:
-    name: "Build Distribution"
+    name: "📦 Build Distribution"
     needs: [agent-sync]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
@@ -438,18 +438,18 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_DEFAULT }}
 
-      - name: Install build dependencies
+      - name: 📦 Install build dependencies
         run: |
           python3 -m pip install --upgrade pip setuptools wheel pipenv
           pipenv install --dev
 
-      - name: Extract version from tag
+      - name: 🏷️ Extract version from tag
         id: get_version
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
 
-      - name: Verify version consistency
+      - name: ✅ Verify version consistency
         run: |
           TAG_VERSION="${{ steps.get_version.outputs.VERSION }}"
           CATALOG_VERSION=$(pipenv run python3 -c "import yaml; print(yaml.safe_load(open('nWave/framework-catalog.yaml'))['version'])")
@@ -459,7 +459,7 @@ jobs:
             exit 1
           fi
 
-      - name: Build IDE bundle
+      - name: 🔨 Build IDE bundle
         run: |
           PYTHONPATH=tools pipenv run python3 tools/core/build_ide_bundle.py \
             --source-dir nWave \
@@ -467,19 +467,19 @@ jobs:
             --clean \
             --verbose
 
-      - name: Create release packages
+      - name: 📦 Create release packages
         run: |
           pipenv run python3 tools/create_release_packages.py \
             --version ${{ steps.get_version.outputs.VERSION }} \
             --output-dir dist/releases
 
-      - name: Generate checksums
+      - name: 🔐 Generate checksums
         run: |
           cd dist/releases
           sha256sum * > SHA256SUMS.txt
           cat SHA256SUMS.txt
 
-      - name: Upload build artifacts
+      - name: 📤 Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: release-packages
@@ -491,7 +491,7 @@ jobs:
   # ===========================================================================
 
   release:
-    name: "GitHub Release"
+    name: "🚀 GitHub Release"
     needs: [build]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
@@ -511,13 +511,13 @@ jobs:
           name: release-packages
           path: dist/releases
 
-      - name: Extract version
+      - name: 🏷️ Extract version
         id: get_version
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
 
-      - name: Generate changelog from conventional commits
+      - name: 📋 Generate changelog from conventional commits
         run: |
           python3 << 'PYEOF'
           import subprocess
@@ -647,7 +647,7 @@ jobs:
         env:
           VERSION: ${{ steps.get_version.outputs.VERSION }}
 
-      - name: Create GitHub Release
+      - name: 🚀 Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           name: nWave Framework v${{ steps.get_version.outputs.VERSION }}
@@ -667,7 +667,7 @@ jobs:
   # ===========================================================================
 
   notify-slack:
-    name: "Slack Notification"
+    name: "🔔 Slack Notification"
     runs-on: ubuntu-latest
     timeout-minutes: 3
     # Run on BOTH failure AND success (to detect RED→GREEN transitions)
@@ -678,10 +678,10 @@ jobs:
     needs: [commitlint, code-quality, file-quality, security-checks, framework-validation, test, agent-sync, build, release]
 
     steps:
-      - name: Checkout (for state tracking script)
+      - name: 📥 Checkout (for state tracking script)
         uses: actions/checkout@v4
 
-      - name: Determine current status
+      - name: 🔍 Determine current status
         id: current-status
         run: |
           # Check if any job failed
@@ -696,7 +696,7 @@ jobs:
             echo "Current run: SUCCESS"
           fi
 
-      - name: Load previous run state
+      - name: 💾 Load previous run state
         id: previous-state
         uses: actions/cache/restore@v4
         with:
@@ -705,7 +705,7 @@ jobs:
           restore-keys: |
             pipeline-state-${{ github.ref }}-
 
-      - name: Determine notification type
+      - name: 🚦 Determine notification type
         id: notification-type
         run: |
           CURRENT="${{ steps.current-status.outputs.status }}"
@@ -736,7 +736,7 @@ jobs:
             echo "No notification needed (already green)"
           fi
 
-      - name: Parse failed jobs
+      - name: ❌ Parse failed jobs
         id: failed-jobs
         if: steps.current-status.outputs.status == 'failure'
         run: |
@@ -762,7 +762,7 @@ jobs:
           echo "$FAILED_JOBS" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Load failure metadata for GREEN notification
+      - name: 📊 Load failure metadata for GREEN notification
         id: failure-metadata
         if: steps.notification-type.outputs.type == 'back_to_green'
         run: |
@@ -809,7 +809,7 @@ jobs:
             echo "previously_failed=• All jobs ✅ now passing" >> $GITHUB_OUTPUT
           fi
 
-      - name: Map git author to Slack user ID
+      - name: 👤 Map git author to Slack user ID
         id: slack-author
         run: |
           GIT_AUTHOR="${{ github.actor }}"
@@ -831,7 +831,7 @@ jobs:
           echo "author=$SLACK_USER" >> $GITHUB_OUTPUT
           echo "Slack author: $SLACK_USER"
 
-      - name: Truncate commit message
+      - name: ✂️ Truncate commit message
         id: commit-msg
         run: |
           MSG="${{ github.event.head_commit.message }}"
@@ -845,14 +845,14 @@ jobs:
 
           echo "message=$TRUNCATED" >> $GITHUB_OUTPUT
 
-      - name: Get current timestamp
+      - name: 🕐 Get current timestamp
         id: timestamp
         run: |
           CURRENT_TIMESTAMP=$(date +%s)
           echo "unix=$CURRENT_TIMESTAMP" >> $GITHUB_OUTPUT
           echo "Current Unix timestamp: $CURRENT_TIMESTAMP"
 
-      - name: Send RED notification (failure)
+      - name: 🔴 Send RED notification (failure)
         if: steps.notification-type.outputs.type == 'failure'
         uses: slackapi/slack-github-action@v2.0.0
         with:
@@ -930,7 +930,7 @@ jobs:
               ]
             }
 
-      - name: Send GREEN notification (recovery)
+      - name: 🟢 Send GREEN notification (recovery)
         if: steps.notification-type.outputs.type == 'back_to_green'
         uses: slackapi/slack-github-action@v2.0.0
         with:
@@ -1015,7 +1015,7 @@ jobs:
               ]
             }
 
-      - name: Save current state for next run
+      - name: 💾 Save current state for next run
         if: always()
         run: |
           mkdir -p .pipeline-state
@@ -1033,7 +1033,7 @@ jobs:
             rm -f .pipeline-state/failed-jobs.txt
           fi
 
-      - name: Cache current state
+      - name: 💾 Cache current state
         if: always()
         uses: actions/cache/save@v4
         with:
