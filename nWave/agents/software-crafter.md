@@ -559,7 +559,7 @@ seven_phase_tdd_methodology:
       description: "Commit this step's work with detailed message (absorbs FINAL_VALIDATE metadata checks)"
       validation: "Pre-commit hook validates all 7 phases documented"
       pre_commit_checks:
-        - "All 7 phases present in phase_execution_log"
+        - "All 7 phases appended to execution-log.yaml"
         - "All phases have EXECUTED or SKIPPED status with justification"
         - "Acceptance test passes"
         - "Unit tests pass"
@@ -570,22 +570,11 @@ seven_phase_tdd_methodology:
       note: "Absorbs FINAL_VALIDATE checks (metadata-only validation)"
 
   enforcement_mechanism:
-    template_integration:
-      - "Step file template includes tdd_phase_tracking section"
-      - "phase_execution_log array tracks each phase execution (7 phases in schema v3.0)"
-      - "Each log entry: phase_name, phase_index, timestamp, duration_minutes, outcome, notes, artifacts, validation_result"
-      - "schema_version field enables backward compatibility with 14-phase cycle"
-
-    validation_function:
-      location: "nWave/tasks/nw/develop.md"
-      purpose: "Python function validates all 7 phases complete before commit"
-      checks:
-        - "All 7 phases present in log"
-        - "All phases have EXECUTED or SKIPPED status with proper justification"
-        - "SKIPPED phases use valid prefixes (CHECKPOINT_PENDING, NOT_APPLICABLE, etc.)"
-        - "Commit policy field present"
-        - "REVIEW phase documented and approved"
-        - "REFACTOR_CONTINUOUS documents techniques used (L1+L2+L3)"
+    execution_log:
+      location: "docs/feature/{project-id}/execution-log.yaml"
+      format: "Append-only event log (pipe-delimited): step_id|phase|status|data|timestamp"
+      tracking: "Each phase appended as one line per event"
+      validation: "All 7 phases present for each step before commit"
 
     pre_commit_hook:
       location: ".git/hooks/pre-commit"
@@ -605,7 +594,7 @@ seven_phase_tdd_methodology:
                         ↓
     5. REFACTOR (L1-3)→ *refactor L1+L2+L3 (fast-path if <30 LOC)
                         ↓ (run tests after refactoring)
-    6. COMMIT         → git commit + update step file
+    6. COMMIT         → git commit + append to execution-log.yaml
 
     NOTE: L4-L6 architecture refactoring runs at orchestrator Phase 2.25
           (once after all steps complete, delegated to @software-crafter)
@@ -629,7 +618,7 @@ seven_phase_tdd_methodology:
     git_command:
       phases_covered: [6]
       description: "Commit with 7-phase validation"
-      validation: "Pre-commit hook + step file phase_execution_log check"
+      validation: "Pre-commit hook + execution-log.yaml phase check"
 
 # All commands require * prefix when used (e.g., *help)
 commands:
@@ -961,7 +950,7 @@ core_tdd_methodology:
         conflict_2_resolution: "Mock at boundaries (ports), real within layers (domain/application)"
 
     walking_skeleton_protocol:
-      description: "At most one walking skeleton per new feature. When is_walking_skeleton: true in the step file, apply thin-slice discipline."
+      description: "At most one walking skeleton per new feature. When is_walking_skeleton: true in the roadmap, apply thin-slice discipline."
       purpose: "Proves end-to-end wiring for the feature works. Eliminates Testing Theater by validating the plumbing before writing business logic. Acceptance tests and unit tests handle business logic separately."
       e2e_caution: "E2E tests are inherently slow and flaky. The walking skeleton is the ONE justified E2E test per feature. Keep it minimal to avoid maintenance burden."
       behavior:
@@ -970,7 +959,7 @@ core_tdd_methodology:
         - "Do NOT write unit tests for the walking skeleton step - the E2E test IS the deliverable"
         - "Do NOT add error handling, edge cases, or validation - those belong in subsequent feature steps"
         - "The walking skeleton proves plumbing works, NOT business logic"
-      detection: "Check tdd_cycle.acceptance_test.is_walking_skeleton field in step JSON"
+      detection: "Check is_walking_skeleton field in roadmap step definition"
       inner_loop_override: "When is_walking_skeleton is true, skip inner TDD loop (step_2). Go directly from RED_ACCEPTANCE to GREEN by implementing minimal wiring code."
 
   business_focused_testing:

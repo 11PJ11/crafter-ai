@@ -462,9 +462,9 @@ STEP: 02-01
 
 ## Overview
 
-Executes a self-contained atomic task by invoking the specified agent with complete context from the step file. Manages state transitions, tracks execution progress, and updates the step file with results.
+Executes a self-contained atomic task by invoking the specified agent with complete context extracted from the roadmap. Manages state transitions, tracks execution progress, and appends results to execution-log.yaml.
 
-Designed to work with clean context, ensuring consistent quality by giving each agent a fresh start with all necessary information contained in the step file.
+Designed to work with clean context, ensuring consistent quality by giving each agent a fresh start with all necessary information passed by the orchestrator in the prompt.
 
 ## Agent Instance Isolation Model (NEW ARCHITECTURE)
 
@@ -533,12 +533,12 @@ Verify the coordinator performed these tasks:
 ## Agent Execution Success Criteria
 
 The invoked agent must accomplish (Reference Only):
-- [ ] Step file loaded successfully
+- [ ] Step context received from orchestrator successfully
 - [ ] Dependencies verified as complete
 - [ ] Agent invoked with full context
 - [ ] State transitions properly recorded
 - [ ] Execution results captured
-- [ ] Step file updated with results
+- [ ] Execution-log.yaml updated with results (append-only)
 - [ ] State history maintained
 - [ ] Metrics tracked for analysis
 
@@ -550,7 +550,7 @@ The following section documents what the invoked agent will do. **You (the coord
 
 ### Primary Task Instructions
 
-**Task**: Read step file and execute the specified task with full context
+**Task**: Receive extracted context from orchestrator and execute the specified task, appending results to execution-log.yaml
 
 **Execution Process**:
 
@@ -558,7 +558,7 @@ The following section documents what the invoked agent will do. **You (the coord
 
 **Load and Validate**:
 ```python
-1. Read step file JSON
+1. Receive extracted step context from orchestrator prompt
 2. Check for existing reviews
    - If reviews exist with ready_for_execution = false, BLOCK
    - Log any unresolved HIGH severity critiques
@@ -627,7 +627,7 @@ You MUST append ONE event after EACH phase. **DO NOT BATCH UPDATES** - append im
 
 #### The 7 TDD Phases (Execute in Order) - Schema v3.0
 
-**Single Source of Truth**: See `nWave/templates/step-tdd-cycle-schema.json` (schema v3.0)
+**Single Source of Truth**: execution-log.yaml event format (schema v3.0 phases, v2.0 format)
 
 The phases are (0-6):
 0. **PREPARE** - Remove @skip decorators, verify only 1 scenario enabled
@@ -753,7 +753,7 @@ Each phase entry has a `history` array for tracking re-execution:
 
 These are CRITICAL violations that will cause the pre-commit hook to block commits:
 
-- **Batching updates** - Saving step file only at the end instead of after each phase
+- **Batching updates** - Appending to execution-log.yaml only at the end instead of after each phase
 - **Skipping phases** - Leaving phases as NOT_EXECUTED without valid blocked_by
 - **Leaving IN_PROGRESS** - Phases left in IN_PROGRESS status indicate abandoned execution
 - **Missing outcome** - EXECUTED phases must have outcome (PASS/FAIL)
@@ -884,7 +884,7 @@ for phase in execution_status["step_checkpoint"]["phases"]:
       "Database connection string",
       "API endpoint URL"
     ],
-    "resolution": "Update step file with missing context"
+    "resolution": "Update roadmap with missing context and re-extract"
   }
 }
 ```

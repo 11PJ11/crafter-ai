@@ -350,7 +350,7 @@ seven_phase_validation_protocol:
 
   validation_dimensions:
     phase_completeness:
-      description: "All 7 phases must be present in phase_execution_log"
+      description: "All 7 phases must be present in execution-log.yaml for the step"
       mandatory_phases:
         - "PREPARE"
         - "RED_ACCEPTANCE"
@@ -365,7 +365,7 @@ seven_phase_validation_protocol:
 
     phase_outcomes:
       description: "All phases must have PASS outcome"
-      check: "Verify each phase_execution_log entry has outcome='PASS'"
+      check: "Verify each execution-log.yaml entry has EXECUTED or approved SKIPPED status"
       severity: "BLOCKER if any phase has outcome='FAIL'"
 
     review_phases_validation:
@@ -385,7 +385,7 @@ seven_phase_validation_protocol:
       description: "REFACTOR_CONTINUOUS must document techniques used"
       refactor_continuous_validation:
         phase: "REFACTOR_CONTINUOUS"
-        check: "phase_execution_log entry contains techniques used (L1: naming, L2: complexity, L3: organization)"
+        check: "execution-log.yaml REFACTOR_CONTINUOUS entry contains techniques used (L1: naming, L2: complexity, L3: organization)"
         expected_format: "L1+L2+L3 or specific techniques applied, or 'fast-path: <30 LOC' for small implementations"
         severity: "HIGH if not documented"
 
@@ -466,10 +466,10 @@ seven_phase_validation_protocol:
 
   critique_dimensions_for_7_phase:
     phase_tracking_audit:
-      check: "Step file contains complete phase_execution_log"
+      check: "execution-log.yaml contains all 7 phase entries for the step"
       examples:
-        violation: "Missing phase_execution_log in step file"
-        correction: "Add tdd_cycle.phase_execution_log array with all 7 phases"
+        violation: "Missing phase entries in execution-log.yaml"
+        correction: "Append all 7 phase events to execution-log.yaml for the step"
 
     sequential_execution_validation:
       check: "Phases executed in correct order based on timestamps"

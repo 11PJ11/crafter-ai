@@ -374,7 +374,7 @@ from des.orchestrator import DESOrchestrator  # CORRECT - entry point
 
 def test_validation_blocks_invalid_prompt():
     orchestrator = DESOrchestrator()  # CORRECT - system entry point
-    result = orchestrator.render_prompt("/nw:execute", step_file="...")
+    result = orchestrator.render_prompt("/nw:execute", step_id="01-01")
     assert result["task_invocation_allowed"] == False
 ```
 

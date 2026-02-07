@@ -25,7 +25,7 @@ Task(
 Task(prompt="Finalize auth-upgrade. Create evolution doc with sections: Summary, Achievements...")
 
 # ❌ Listing archival steps (devop knows what to archive)
-Task(prompt="Finalize auth-upgrade. Archive baseline.yaml, roadmap.yaml, all step files...")
+Task(prompt="Finalize auth-upgrade. Archive baseline.yaml, roadmap.yaml, execution-log.yaml...")
 
 # ❌ Cleanup instructions (devop knows what to clean)
 Task(prompt="Finalize auth-upgrade. Delete temp files, move to evolution/, update tracking...")
@@ -161,7 +161,7 @@ Before any finalization work begins, verify the critical invariant:
 
 **Execute validation** (Schema v2.0):
 ```bash
-# Read execution status file (not individual step files)
+# Read execution-log.yaml (append-only event format)
 python3 -c "
 import yaml
 with open('docs/feature/{project-id}/execution-log.yaml') as f:
@@ -212,23 +212,18 @@ Finalize and archive the completed feature: {project-id}
 
 For reading execution status, understand the structure at `docs/feature/{project-id}/execution-log.yaml`.
 
-**Schema v2.0 Structure** (NOT step files):
+**Schema v2.0 Structure** (append-only pipe-delimited events):
 ```yaml
 project_id: "project-name"
-schema_version: "2.0"
-steps:
-  - step_id: "01-01"
-    status: "DONE"  # TODO, IN_PROGRESS, DONE
-    started_at: "2026-01-29T10:00:00Z"
-    completed_at: "2026-01-29T11:30:00Z"
-    phases:
-      - phase_name: "PREPARE"
-        outcome: "PASS"
-        duration_minutes: 3
-      - phase_name: "RED_ACCEPTANCE"
-        outcome: "PASS"
-        duration_minutes: 5
-      # ... all 7 phases
+events:
+  # Format: "step_id|phase|status|data|timestamp"
+  - "01-01|PREPARE|EXECUTED|PASS|2026-01-29T10:00:00Z"
+  - "01-01|RED_ACCEPTANCE|EXECUTED|FAIL|2026-01-29T10:05:00Z"
+  - "01-01|RED_UNIT|SKIPPED|NOT_APPLICABLE|2026-01-29T10:06:00Z"
+  - "01-01|GREEN|EXECUTED|PASS|2026-01-29T10:15:00Z"
+  - "01-01|REVIEW|EXECUTED|PASS|2026-01-29T10:20:00Z"
+  - "01-01|REFACTOR_CONTINUOUS|SKIPPED|APPROVED_SKIP|2026-01-29T10:21:00Z"
+  - "01-01|COMMIT|EXECUTED|PASS|2026-01-29T10:25:00Z"
 ```
 
 The TDD phases to look for in phases array (Schema v2.0):
@@ -286,7 +281,7 @@ PHASE 4 - ARCHIVE:
 - Show user the archive location
 
 PHASE 5 - CLEANUP (only after user approval):
-- Delete docs/feature/{project-id}/steps/*.json
+- Delete docs/feature/{project-id}/execution-log.yaml (already archived in evolution doc)
 - Delete docs/feature/{project-id}/roadmap.yaml
 - Delete docs/feature/{project-id}/ directory if empty
 - Preserve the evolution archive and all deliverables
@@ -425,7 +420,7 @@ Verify the coordinator performed these tasks:
 ## Agent Execution Success Criteria
 
 The invoked agent must accomplish (Reference Only):
-- [ ] All step files successfully read
+- [ ] Execution-log.yaml successfully read
 - [ ] Roadmap file successfully parsed
 - [ ] Comprehensive summary generated
 - [ ] Evolution document created in docs/evolution/
@@ -694,7 +689,7 @@ of the feature directory.
 - Any deliverable artifacts referenced in summary
 - Production code and documentation
 
-**Migration Note**: If legacy `steps/*.json` files exist, delete them as well (Schema v1.x artifacts).
+**Migration Note**: If legacy `steps/*.json` files exist, delete them (Schema v1.x artifacts, fully deprecated).
 
 #### 6. DOCUMENTATION PHASE (Post-Cleanup)
 

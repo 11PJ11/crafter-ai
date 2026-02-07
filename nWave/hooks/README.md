@@ -1,8 +1,12 @@
-<!-- version: 1.4.0 -->
+<!-- version: 1.5.0 -->
 
 # nWave Git Hooks
 
-This directory contains git hooks for the nWave 14-phase TDD methodology.
+> **DEPRECATED**: Step file validation hooks (`pre_commit_tdd_phases.py`, `post_commit_bypass_logger.py`) are deprecated.
+> Step JSON files no longer exist — phase tracking uses `execution-log.yaml` (append-only pipe-delimited events).
+> These scripts are retained for reference only and will be removed in a future cleanup.
+
+This directory contains git hooks for the nWave TDD methodology.
 
 **IMPORTANT**: These hooks are templates that get installed in target projects when running `/nw:develop`. They are NOT active in this nwave repository.
 

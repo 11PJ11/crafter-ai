@@ -9,14 +9,14 @@
 ```python
 Task(
     subagent_type="software-crafter-reviewer",
-    prompt="Review: task docs/feature/auth-upgrade/steps/01-01.json"
+    prompt="Review: step docs/feature/auth-upgrade/execution-log.yaml step_id=01-01"
 )
 ```
 
 ### Why This Works:
-- ✅ Step file contains ALL context (acceptance_criteria, quality_gates, TDD phases)
+- ✅ execution-log.yaml contains ALL phase tracking (pipe-delimited events per step)
 - ✅ Reviewer agent has internal knowledge of review criteria
-- ✅ Artifact type ("task") specifies what to review
+- ✅ Artifact type ("step") specifies what to review
 - ✅ No conversation context needed
 
 ### WRONG Patterns (avoid):
@@ -24,8 +24,8 @@ Task(
 # ❌ Embedding review criteria (reviewer already knows this)
 Task(prompt="Review task 01-01.json. Check SOLID, test coverage, security...")
 
-# ❌ Listing validation rules (step file has these)
-Task(prompt="Review 01-01. Ensure all 14 phases executed, no DEFERRED...")
+# ❌ Listing validation rules (execution-log.yaml has these)
+Task(prompt="Review 01-01. Ensure all 7 phases executed, no DEFERRED...")
 
 # ❌ Severity guidance (reviewer knows HIGH/MEDIUM/LOW)
 Task(prompt="Review 01-01. Use HIGH for blocking issues, MEDIUM for...")
@@ -49,17 +49,17 @@ Reinforce command-specific principles extracted from THIS file (review.md):
 ```python
 Task(
     subagent_type="software-crafter-reviewer",
-    prompt="""Review: task docs/feature/auth-upgrade/steps/01-01.json
+    prompt="""Review: step docs/feature/auth-upgrade/execution-log.yaml step_id=01-01
 
 CRITICAL (from review.md):
-- Format validation FIRST (step/task files must match canonical schema)
+- Format validation FIRST (execution-log.yaml must have all 7 phases per step)
 - External Validity (CM-C): Feature must be invocable, not just exist
 - Format errors = HIGH severity = REJECTED
 - Update original artifact file (not separate review file)
 
 AVOID:
 - ❌ Approving non-invocable features (missing integration step)
-- ❌ Ignoring format violations (wrong phase names, missing task_id)
+- ❌ Ignoring format violations (wrong phase names, missing phases)
 - ❌ Creating separate review file (must update original artifact)
 - ❌ Skipping external validity check (tests pass but users can't invoke)"""
 )
@@ -89,7 +89,7 @@ The implementation should address the tier 2 bottleneck we identified.""")
 ### STEP 1: Extract Agent Parameter
 
 Parse the first argument to extract the agent name:
-- User provides: `/nw:review @software-crafter task "steps/01-01.json"`
+- User provides: `/nw:review @software-crafter step "docs/feature/auth-upgrade/execution-log.yaml" step_id=01-01`
 - Extract agent name: `software-crafter` (remove @ prefix)
 - **AUTO-APPEND**: Append `-reviewer` suffix to use Haiku-powered reviewer agents
 - Result: `software-crafter-reviewer` (optimized for cost-efficient reviews)
@@ -117,7 +117,7 @@ Extract the second argument (artifact type):
 - Example: `task`
 
 Extract the third argument (artifact path):
-- Example: `"docs/feature/auth-upgrade/steps/01-01.json"`
+- Example: `"docs/feature/auth-upgrade/execution-log.yaml"`
 - Ensure path is absolute or resolve relative to working directory
 
 ### Parameter Parsing Rules
@@ -129,12 +129,12 @@ Apply these rules to ALL extracted parameters:
 4. Reject if extra parameters provided beyond expected count
 
 Example for review.md:
-- Input: `/nw:review  @software-crafter  task  "steps/01-01.json"`
+- Input: `/nw:review  @software-crafter  step  "docs/feature/auth-upgrade/execution-log.yaml"`
 - After parsing:
   - agent_name = "software-crafter" (whitespace trimmed)
-  - artifact_type = "task" (valid value)
-  - artifact_path = "steps/01-01.json" (quotes removed)
-- Input: `/nw:review @software-crafter task "steps/01-01.json" extra`
+  - artifact_type = "step" (valid value)
+  - artifact_path = "docs/feature/auth-upgrade/execution-log.yaml" (quotes removed)
+- Input: `/nw:review @software-crafter step "docs/feature/auth-upgrade/execution-log.yaml" extra`
 - Error: "Too many parameters. Expected 3, got 4"
 
 ### STEP 4: Pre-Invocation Validation Checklist
@@ -158,7 +158,7 @@ If any check fails, return specific error and stop.
 
 #### Review as a New Instance Invocation
 
-The /nw:review command invokes a NEW, INDEPENDENT reviewer agent instance. This instance loads the artifact file (task JSON, roadmap YAML, or implementation record), reads all context embedded in the file, performs expert review, and updates the file with review metadata. The reviewer instance does not retain memory from prior reviews. Each review is by a fresh instance that reads the artifact and adds its critique to the structured review field.
+The /nw:review command invokes a NEW, INDEPENDENT reviewer agent instance. This instance loads the artifact file (execution-log.yaml, roadmap YAML, or implementation record), reads all context embedded in the file, performs expert review, and updates the file with review metadata. The reviewer instance does not retain memory from prior reviews. Each review is by a fresh instance that reads the artifact and adds its critique to the structured review field.
 
 **MANDATORY**: Use the Task tool to invoke the specified expert agent. Do NOT attempt to perform the review yourself.
 
@@ -175,44 +175,52 @@ Task type: review
 
 Perform a comprehensive {artifact-type} review of: {artifact-path}
 
-## CRITICAL: READ THE CANONICAL SCHEMA FIRST (for step/task reviews)
+## CRITICAL: VALIDATE execution-log.yaml FORMAT (for step reviews)
 
-**BEFORE reviewing step or task files:**
-1. Read the canonical schema: `~/.claude/templates/step-tdd-cycle-schema.json` (or from repo: `nWave/templates/step-tdd-cycle-schema.json`)
-2. Use this as the reference for validating step file format compliance
+**BEFORE reviewing steps:**
+1. Read the project's `execution-log.yaml` (at `docs/feature/{project-id}/execution-log.yaml`)
+2. Validate that every step has all 7 required phases in the pipe-delimited event format
 3. Check for format violations as HIGH severity issues
 
-## STEP FILE FORMAT VALIDATION (for step/task reviews)
+## execution-log.yaml FORMAT VALIDATION (for step reviews)
 
-Correct step file structure includes:
-- task_id: Task identifier (e.g., '01-01') - NOT step_id!
-- project_id: Project identifier
-- tdd_cycle.phase_execution_log: Array of phases as defined in canonical schema (MANDATORY)
-- quality_gates: TDD quality requirements
-- phase_validation_rules: Commit acceptance rules
+Correct format is an append-only event log with pipe-delimited entries:
+```yaml
+events:
+  - "step_id|phase|status|data|timestamp"
+```
+
+Each step MUST have exactly 7 phase events:
+1. PREPARE
+2. RED_ACCEPTANCE
+3. RED_UNIT
+4. GREEN
+5. REVIEW
+6. REFACTOR_CONTINUOUS
+7. COMMIT
+
+Valid statuses: EXECUTED, SKIPPED (with approved reason)
 
 ## WRONG FORMATS TO FLAG AS HIGH SEVERITY
 
-❌ 'step_id' instead of 'task_id' → REJECT
-❌ 'phase_id' at top level → REJECT
-❌ 'tdd_phase' at top level without 'tdd_cycle.phase_execution_log' → REJECT
-❌ Fewer phases than defined in canonical schema → REJECT
-❌ Phase names with parentheses like 'RED (Acceptance)' → REJECT
-❌ Phase names with spaces like 'REFACTOR L1' → REJECT
-
-{{CORRECT_PHASE_NAMES}}
+❌ Step JSON files (DEPRECATED - all tracking uses execution-log.yaml) → REJECT
+❌ Fewer than 7 phases for a step → REJECT
+❌ Phase names with parentheses like 'RED (Acceptance)' → REJECT (correct: RED_ACCEPTANCE)
+❌ Phase names with spaces like 'REFACTOR L1' → REJECT (correct: REFACTOR_CONTINUOUS)
+❌ Nested YAML phase objects instead of pipe-delimited strings → REJECT
+❌ SKIPPED without approved reason → REJECT
 
 Review Types:
 - baseline: Review quantitative measurement baseline for metric accuracy, baseline validity, and measurement methodology
 - roadmap: Review comprehensive planning document for completeness, sequencing, and feasibility
-- step: Review individual step file generated by split for CORRECT FORMAT, self-contained context, clear acceptance criteria, and dependency completeness
+- step: Review roadmap step definition and its execution-log.yaml phases for CORRECT FORMAT (all 7 phases present), proper status tracking, and dependency completeness
 - task: Review atomic task file before execution for CORRECT FORMAT, clarity, context, and achievability
 - implementation: Review completed work against task specification and acceptance criteria
 
 Your responsibilities:
-1. READ the canonical schema first (for step/task reviews)
+1. VALIDATE execution-log.yaml format first (for step reviews) - all 7 phases required per step
 2. Read and understand the artifact thoroughly
-3. VALIDATE FORMAT COMPLIANCE (for step/task reviews) - format errors are HIGH severity
+3. VALIDATE FORMAT COMPLIANCE (for step reviews) - format errors are HIGH severity
 4. Apply domain expertise to identify issues and risks
 5. Provide structured feedback with severity levels (HIGH/MEDIUM/LOW)
 6. Make specific, actionable recommendations
@@ -273,7 +281,7 @@ Your specific role for this command: Provide expert critique and quality assuran
 
 Task type: review
 
-Perform a comprehensive task review of: /mnt/c/Repositories/Projects/nwave/docs/feature/auth-upgrade/steps/02-01.json
+Perform a comprehensive step review of: /mnt/c/Repositories/Projects/nwave/docs/feature/auth-upgrade/execution-log.yaml (step_id=02-01)
 
 [... rest of instructions ...]"
 ```
@@ -310,12 +318,12 @@ Perform a comprehensive roadmap review of: /mnt/c/Repositories/Projects/nwave/do
 
 ## Overview
 
-Invokes an expert agent to critique and review workflow artifacts at any stage. Provides comprehensive feedback on baselines, roadmaps, step files, atomic task files, or implementations to ensure quality and prevent issues before they propagate.
+Invokes an expert agent to critique and review workflow artifacts at any stage. Provides comprehensive feedback on baselines, roadmaps, step definitions (tracked in execution-log.yaml), atomic task files, or implementations to ensure quality and prevent issues before they propagate.
 
 Supports five review modes:
 - **baseline**: Review quantitative measurement baseline
 - **roadmap**: Review comprehensive planning document
-- **step**: Review individual step file generated by split
+- **step**: Review roadmap step definition and its execution-log.yaml phases
 - **task**: Review atomic task file before execution
 - **implementation**: Review completed work against task specification
 
@@ -328,14 +336,14 @@ Supports five review modes:
 # Review a roadmap before splitting into tasks
 /nw:review @solution-architect roadmap "docs/feature/auth-upgrade/roadmap.yaml"
 
-# Review individual step file after split generation
-/nw:review @software-crafter step "docs/feature/auth-upgrade/steps/01-02.json"
+# Review step definition and execution phases
+/nw:review @software-crafter step "docs/feature/auth-upgrade/execution-log.yaml" step_id=01-02
 
-# Review a task file before sub-agent execution
-/nw:review @software-crafter task "docs/feature/auth-upgrade/steps/02-01.json"
+# Review a step before sub-agent execution
+/nw:review @software-crafter step "docs/feature/auth-upgrade/execution-log.yaml" step_id=02-01
 
 # Review implementation against requirements
-/nw:review @devop implementation "docs/feature/auth-upgrade/steps/01-01.json"
+/nw:review @devop implementation "docs/feature/auth-upgrade/execution-log.yaml" step_id=01-01
 
 # Security review of authentication roadmap
 /nw:review @security-expert roadmap "docs/feature/auth-upgrade/roadmap.yaml"
@@ -353,13 +361,13 @@ These commands work together to form a complete workflow:
 /nw:split @solution-architect "auth-migration"
 
 # Step 3: Execute first research task
-/nw:execute @researcher "docs/feature/auth-migration/steps/01-01.json"
+/nw:execute @researcher "docs/feature/auth-migration/execution-log.yaml" step_id=01-01
 
 # Step 4: Review before implementation
-/nw:review @software-crafter task "docs/feature/auth-migration/steps/02-01.json"
+/nw:review @software-crafter step "docs/feature/auth-migration/execution-log.yaml" step_id=02-01
 
 # Step 5: Execute implementation
-/nw:execute @software-crafter "docs/feature/auth-migration/steps/02-01.json"
+/nw:execute @software-crafter "docs/feature/auth-migration/execution-log.yaml" step_id=02-01
 
 # Step 6: Finalize when all tasks complete
 /nw:finalize @devop "auth-migration"
@@ -370,7 +378,7 @@ For details on each command, see respective sections.
 ## Context Files Required
 
 - **For roadmap review**: The roadmap.yaml file
-- **For task review**: The specific task JSON file
+- **For task/step review**: The project's `execution-log.yaml` file
 - **For implementation review**: Task file + implementation outputs
 
 ---
@@ -638,7 +646,7 @@ Choose reviewer based on domain expertise:
 5. **UPDATE ORIGINAL FILE**: Append review section to the artifact
 6. **Create Report**: Generate summary for stakeholders
 
-**IMPORTANT**: The review command ALWAYS updates the original artifact file (roadmap.yaml or step JSON) by appending the review data. This ensures critiques travel with the artifact and are available to all subsequent agents.
+**IMPORTANT**: The review command ALWAYS updates the original artifact file (roadmap.yaml or execution-log.yaml) by appending the review data. This ensures critiques travel with the artifact and are available to all subsequent agents.
 
 Review instances update the original artifact by APPENDING review metadata to the file. Because the reviewer instance has no session memory, the review output must be written to the persistent artifact file. Subsequent instances (implementation, deployment, cleanup) read this file and see all accumulated reviews. This ensures review feedback travels with the artifact across all instances and stages.
 

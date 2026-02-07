@@ -257,7 +257,7 @@ seven_phase_tdd_methodology:
     3. GREEN          -> Implement minimum code + verify acceptance PASS
     4. REVIEW         -> /nw:review @software-crafter-reviewer (max 2 iterations)
     5. REFACTOR (L1-3)-> L1+L2+L3 continuous (fast-path if <30 LOC)
-    6. COMMIT         -> git commit + update step file
+    6. COMMIT         -> git commit + append to execution-log.yaml
 
     NOTE: L4-L6 runs at orchestrator Phase 2.25 (once after all steps)
 

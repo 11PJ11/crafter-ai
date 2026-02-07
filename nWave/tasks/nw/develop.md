@@ -119,7 +119,7 @@ Execute a **complete DEVELOP wave** that orchestrates:
 
 ### TDD Cycle Definition
 
-Phases from canonical schema `nWave/templates/step-tdd-cycle-schema.json` (single source of truth, embedded at build time):
+Phases from canonical TDD cycle schema `nWave/templates/step-tdd-cycle-schema.json` (single source of truth for phase definitions):
 
 {{SCHEMA_TDD_PHASES}}
 
@@ -203,7 +203,7 @@ TOTAL:                   ~310k tokens (277k static + 5k per execution)
 
 ## Instance Isolation in Develop Orchestration
 
-Orchestrates multiple Task invocations. Each instance loads step file, executes phases, updates results, terminates. Instances chain via shared step file to complete TDD cycle.
+Orchestrates multiple Task invocations. Each instance executes phases, appends results to execution-log.yaml, terminates. Instances chain via shared execution-log.yaml to complete TDD cycle.
 
 ## CRITICAL: Orchestration Protocol
 
@@ -256,7 +256,7 @@ Task(
   subagent_type="software-crafter",
   prompt=BOUNDARY_TEMPLATE.format(
       task_description="Execute step {step_id} with complete TDD cycle",
-      actual_command='/nw:execute @software-crafter "{step_file}"'
+      actual_command='/nw:execute @software-crafter "{step_id}"'
   ),
   description="Execute step 01-03"
 )
@@ -983,61 +983,59 @@ DELIVERABLES:
 
 #### Cross-Instance Phase Coordination
 
-Instances update phase_execution_log, next instance reads prior progress, continues from incomplete phases. JSON-based coordination, no shared session state.
+Instances append events to execution-log.yaml, next instance reads prior progress, continues from incomplete phases. YAML-based coordination via execution-log.yaml, no shared session state.
 
 **Objective**: Execute steps in dependency order using complete TDD cycle (canonical schema).
 
 **Actions**:
 
-1. **Validate all steps approved** (embedded script - see Enforcement Scripts section):
+1. **Extract steps from roadmap and validate** (embedded script - see Enforcement Scripts section):
    ```python
-   all_approved, unapproved_steps, error_message = validate_all_steps_approved(
-       f'docs/feature/{project_id}/steps/'
-   )
+   import yaml
 
-   if not all_approved:
-       print(error_message)
+   with open(f'docs/feature/{project_id}/roadmap.yaml', 'r') as f:
+       roadmap = yaml.safe_load(f)
+
+   steps = roadmap.get('steps', [])
+   if not steps:
+       print("ERROR: No steps found in roadmap.yaml")
        EXIT
-   else:
-       print(error_message)  # "✓ All N step files approved"
+
+   # Sort by dependency order (topological sort on depends_on)
+   sorted_steps = topological_sort_from_roadmap(steps)
+   print(f"✓ {len(sorted_steps)} steps extracted from roadmap, sorted by dependency order:")
+   for i, step in enumerate(sorted_steps, 1):
+       print(f"  {i}. {step['step_id']}")
    ```
 
-2. **Sort steps by dependency order** (embedded script - see Enforcement Scripts section):
-   ```python
-   sorted_step_files, error = topological_sort_steps(f'docs/feature/{project_id}/steps/')
-
-   if error:
-       print(error)
-       EXIT
-   else:
-       print(f"✓ Steps sorted by dependency order:")
-       for i, step_file in enumerate(sorted_step_files, 1):
-           print(f"  {i}. {os.path.basename(step_file)}")
-   ```
-
-3. **Execute each step in order**:
+2. **Execute each step in order**:
    ```python
    print(f"\n{'='*60}")
-   print(f"Executing {len(sorted_step_files)} steps with complete TDD cycle")
+   print(f"Executing {len(sorted_steps)} steps with complete TDD cycle")
    print(f"{'='*60}\n")
 
    completed_steps = []
    failed_step = None
+   exec_log_path = f'docs/feature/{project_id}/execution-log.yaml'
 
-   for i, step_file in enumerate(sorted_step_files, 1):
-       step_id = os.path.basename(step_file).replace('.json', '')
+   for i, step in enumerate(sorted_steps, 1):
+       step_id = step['step_id']
 
-       print(f"\n[{i}/{len(sorted_step_files)}] Executing step: {step_id}")
+       print(f"\n[{i}/{len(sorted_steps)}] Executing step: {step_id}")
        print("-" * 40)
 
-       # Check if step already completed (resume capability)
-       with open(step_file, 'r') as f:
-           step_data = json.load(f)
+       # Check if step already completed (resume capability via execution-log.yaml)
+       # NOTE: Orchestrator READ - reads for tracking/resume (legitimate)
+       # TODO: Optimize with tail + incremental parse if file > 100KB
+       if os.path.exists(exec_log_path):
+           with open(exec_log_path, 'r') as f:
+               exec_log = yaml.safe_load(f) or {}
+       else:
+           exec_log = {}
 
-       tdd_tracking = step_data.get('tdd_cycle', {}).get('tdd_phase_tracking', {})
-       phase_log = tdd_tracking.get('phase_execution_log', [])
-
-       commit_phase = next((p for p in phase_log if p['phase_name'] == 'COMMIT'), None)
+       checkpoint = exec_log.get('execution_status', {}).get('step_checkpoint', {})
+       phases = checkpoint.get('phases', [])
+       commit_phase = next((p for p in phases if p['phase_name'] == 'COMMIT'), None)
        if commit_phase and commit_phase.get('outcome') == 'PASS':
            print(f"✓ Step {step_id} already completed - skipping")
            completed_steps.append(step_id)
@@ -1057,34 +1055,23 @@ Instances update phase_execution_log, next instance reads prior progress, contin
        # Orchestrator loads roadmap ONCE, extracts ~5k context, passes to sub-agent
        # Sub-agent does NOT load roadmap (saves 97k tokens per step)
 
-       # Use Grep to find step definition in roadmap
-       import subprocess
-       grep_result = subprocess.run(
-           ['grep', '-A', '50', f'step_id: "{step_id}"', f'docs/feature/{project_id}/roadmap.yaml'],
-           capture_output=True, text=True
-       )
-       step_context_raw = grep_result.stdout
-
-       # Extract fields from YAML (simplified extraction - production would parse YAML properly)
-       # For now, delegate to /nw:execute which handles proper extraction
+       # Extract step definition from already-loaded roadmap
+       step_context = next((s for s in steps if s['step_id'] == step_id), {})
 
        # Invoke using /nw:execute skill which handles context extraction
        from skills import execute_skill
        execute_skill(agent="software-crafter", project_id=project_id, step_id=step_id)
 
        # Note: The above is pseudocode. In actual implementation, orchestrator would:
-       # 1. Parse roadmap YAML to extract step definition
+       # 1. Use already-parsed roadmap YAML step definition
        # 2. Format extracted context into prompt
        # 3. Pass to Task tool with explicit context (see execute.md for full template)
 
        # Verify completion by checking execution-log.yaml for COMMIT/PASS
-       # NOTE: Orchestrator READ - legge per tracking/resume (lecito)
-       # TODO: Ottimizzare con tail + parse incrementale se file > 100KB
-       with open(f'docs/feature/{project_id}/execution-log.yaml', 'r') as f:
-           import yaml
-           updated_exec_status = yaml.safe_load(f)  # Carica tutto (OK per ora, file < 200KB)
+       with open(exec_log_path, 'r') as f:
+           updated_exec_log = yaml.safe_load(f)  # Load all (OK for now, file < 200KB)
 
-       checkpoint = updated_exec_status.get('execution_status', {}).get('step_checkpoint', {})
+       checkpoint = updated_exec_log.get('execution_status', {}).get('step_checkpoint', {})
        phases = checkpoint.get('phases', [])
        commit_phase_after = next((p for p in phases if p['phase_name'] == 'COMMIT'), None)
 
@@ -1098,12 +1085,12 @@ Instances update phase_execution_log, next instance reads prior progress, contin
                completed_steps=completed_steps
            )
        else:
-           # Step did not complete successfully (no COMMIT/PASS in phase log)
+           # Step did not complete successfully (no COMMIT/PASS in execution-log.yaml)
            failure_reason = "Step execution did not complete with COMMIT/PASS"
            if commit_phase_after:
                failure_reason = f"COMMIT phase outcome: {commit_phase_after.get('outcome', 'unknown')}"
 
-           print(f"❌ Step {step_id} failed: {failure_reason}")
+           print(f"Step {step_id} failed: {failure_reason}")
            failed_step = step_id
 
            # Update progress with failure
@@ -1117,7 +1104,7 @@ Instances update phase_execution_log, next instance reads prior progress, contin
            print("\n" + "="*60)
            print(f"ERROR: Step execution failed at {step_id}")
            print("="*60)
-           print(f"\nCompleted steps: {len(completed_steps)}/{len(sorted_step_files)}")
+           print(f"\nCompleted steps: {len(completed_steps)}/{len(sorted_steps)}")
            print(f"Failed step: {step_id}")
            print(f"Failure reason: {failure_reason}")
            print("\nManual intervention required:")
@@ -1128,7 +1115,7 @@ Instances update phase_execution_log, next instance reads prior progress, contin
 
            EXIT
 
-   print(f"\n✅ All {len(sorted_step_files)} steps completed successfully")
+   print(f"\nAll {len(sorted_steps)} steps completed successfully")
    print("Proceeding to Phase 2.25 (architecture refactoring + mutation testing)...")
 
    mark_phase_complete(project_id, 'Phase 7: Execute All Steps')
@@ -1742,7 +1729,7 @@ PROJECT: {project_id}
 
 YOUR TASK: Archive the completed feature by:
 1. Create evolution document summarizing achievements
-2. Move/archive workflow files (baseline.yaml, roadmap.yaml, step files)
+2. Move/archive workflow files (baseline.yaml, roadmap.yaml, execution-log.yaml)
 3. Update any project tracking documents
 4. Clean up temporary files
 
@@ -2161,8 +2148,8 @@ rm -rf docs/feature/user-authentication/
 # Smart skip logic:
 # - Finds existing baseline.yaml (approved) → skips creation, uses it
 # - Finds existing roadmap.yaml (approved) → skips creation, uses it
-# - Creates new step files for password reset feature
-# - Executes only new steps
+# - Extracts steps from roadmap, begins TDD execution
+# - Tracks progress in execution-log.yaml, executes only new steps
 # - Commits incrementally
 ```
 
@@ -2233,7 +2220,7 @@ rm -rf docs/feature/user-authentication/
 - **Mandatory reviews**: 3 + 3N per feature (enforced)
   - 1 baseline review
   - 1 roadmap review (Software Crafter)
-  - N step file reviews
+  - N step execution reviews (via execution-log.yaml)
   - 2N TDD phase reviews (REVIEW + POST-REFACTOR per step)
 - **Automatic retry**: Max 2 attempts per review
 - **Zero-tolerance**: All reviews must approve before proceeding

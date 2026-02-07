@@ -644,7 +644,7 @@ The roadmap defines WHAT needs to be done. The `/nw:split` command determines HO
 
 **Field Descriptions:**
 
-- **step_type**: Required. Indicates how `/nw:split` should generate the step file
+- **step_type**: Required. Indicates the type of TDD execution for the step
 - **suggested_agent**: Optional. Recommended agent for execution (validated by split)
 - **suggested_scenario**: Optional. Mapped acceptance test for ATDD steps
   - `test_file`: Path to acceptance test file (any format: .feature, .cs, .py, .js, .java, etc.)
@@ -743,7 +743,7 @@ Task(
 ```
 
 **Token Budget**: ~5k tokens per step (extracted on-demand, not stored)
-**Result**: 94% token reduction vs step files (5.2M → 310k for 35-step project)
+**Result**: 94% token reduction vs deprecated step files (5.2M → 310k for 35-step project)
 
 ### Integration with Mikado Method
 

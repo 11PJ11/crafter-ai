@@ -18,7 +18,7 @@
 # ============================================================================
 
 name: "nWave"
-version: "1.6.43"
+version: "1.6.46"
 description: "Comprehensive DISCOVER→DISCUSS→DESIGN→DISTILL→DEVELOP→DELIVER methodology with visual architecture lifecycle management"
 author: "nWave Team"
 license: "MIT"
@@ -263,12 +263,12 @@ commands:
 
   review:
     description: "Expert critique and quality review - Types: baseline, roadmap, step, task, implementation"
-    argument_hint: "[agent] [artifact-type] [artifact-path] - Example: @software-crafter task \"steps/01-01.json\""
+    argument_hint: "[agent] [artifact-type] [artifact-path] - Example: @software-crafter task \"roadmap.yaml\""
     outputs: ["review_report"]
 
   execute:
     description: "Execute atomic task with state tracking"
-    argument_hint: "[agent] [step-file-path] - Example: @researcher \"steps/01-01.json\""
+    argument_hint: "[agent] [step-id] - Example: @software-crafter \"01-01\""
     outputs: ["task_results"]
 
   finalize:

@@ -112,7 +112,7 @@ The devop agent acts as the **orchestrator** for the DEVELOP wave when invoked w
 3. Invokes baseline creation (if needed) + review
 4. Invokes roadmap creation (if needed) + dual review (Product Owner + Software Crafter)
 5. Invokes split command to generate atomic steps
-6. Reviews each generated step file individually
+6. Reviews each roadmap step individually
 7. Executes all steps in dependency order with 11-phase TDD per step
 8. Invokes finalize to archive results
 9. Reports completion with comprehensive statistics
@@ -198,12 +198,12 @@ The orchestrator executes 9 phases in order:
    - Smart skip: Yes (if approved)
 
 3. **Phase 5-6**: Split + Review Each Step
-   - Creates: `docs/feature/{project-id}/steps/*.json`
-   - Reviewer: @software-crafter-reviewer (per step file)
+   - Defines steps in: `docs/feature/{project-id}/roadmap.yaml`
+   - Reviewer: @software-crafter-reviewer (per roadmap step)
    - Smart skip: Yes (if all approved)
 
 4. **Phase 7**: Execute All Steps
-   - For each step: Invoke `/nw:execute @software-crafter "{step-file}"`
+   - For each step: Invoke `/nw:execute @software-crafter "{step-id}"`
    - Automatic dependency ordering (topological sort via Kahn's algorithm)
    - 11-phase TDD per step (PREPARE → COMMIT)
    - Local commit after each step (no push)
@@ -231,7 +231,7 @@ The orchestrator executes 9 phases in order:
 # 3. Creates roadmap.yaml
 # 4. Reviews roadmap (2 reviews: Product Owner + Software Crafter)
 # 5. Splits into steps (e.g., 5 steps)
-# 6. Reviews each step file (5 reviews)
+# 6. Reviews each roadmap step (5 reviews)
 # 7. Executes all 5 steps with 11-phase TDD (10 reviews total: 2 per step)
 # 8. Finalizes and archives
 # 9. Reports: "18 quality gates passed (3 + 3×5), 5 commits created"
@@ -243,7 +243,7 @@ The orchestrator executes 9 phases in order:
 /nw:develop "Add shopping cart functionality"
 # ERROR: Step 01-03 rejected after 2 attempts
 
-# User fixes step file manually
+# User fixes issue manually
 # Re-run same command:
 /nw:develop "Add shopping cart functionality"
 
