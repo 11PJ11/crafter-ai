@@ -160,7 +160,7 @@ class TestSubagentStopWithClaudeCodeProtocol:
         monkeypatch.setattr("sys.stdin", __import__("io").StringIO(hook_input))
 
         captured = []
-        monkeypatch.setattr("builtins.print", lambda x: captured.append(x))
+        monkeypatch.setattr("builtins.print", captured.append)
 
         exit_code = handle_subagent_stop()
 
@@ -198,7 +198,7 @@ class TestSubagentStopWithClaudeCodeProtocol:
         monkeypatch.setattr("sys.stdin", __import__("io").StringIO(hook_input))
 
         captured = []
-        monkeypatch.setattr("builtins.print", lambda x: captured.append(x))
+        monkeypatch.setattr("builtins.print", captured.append)
 
         exit_code = handle_subagent_stop()
 
@@ -233,7 +233,7 @@ class TestSubagentStopWithClaudeCodeProtocol:
         monkeypatch.setattr("sys.stdin", __import__("io").StringIO(hook_input))
 
         captured = []
-        monkeypatch.setattr("builtins.print", lambda x: captured.append(x))
+        monkeypatch.setattr("builtins.print", captured.append)
 
         exit_code = handle_subagent_stop()
 
@@ -257,7 +257,7 @@ class TestSubagentStopWithClaudeCodeProtocol:
         monkeypatch.setattr("sys.stdin", __import__("io").StringIO(hook_input))
 
         captured = []
-        monkeypatch.setattr("builtins.print", lambda x: captured.append(x))
+        monkeypatch.setattr("builtins.print", captured.append)
 
         exit_code = handle_subagent_stop()
 

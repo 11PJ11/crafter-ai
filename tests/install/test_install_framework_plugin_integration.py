@@ -15,6 +15,7 @@ These tests validate:
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
+
 from scripts.install.plugins.base import InstallContext, PluginResult
 from scripts.install.plugins.registry import PluginRegistry
 

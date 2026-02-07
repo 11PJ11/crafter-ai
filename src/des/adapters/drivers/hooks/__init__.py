@@ -8,4 +8,5 @@ MockedSubagentStopHook retained for orchestrator tests that need a HookPort stub
 
 from des.adapters.drivers.hooks.mocked_hook import MockedSubagentStopHook
 
+
 __all__ = ["MockedSubagentStopHook"]

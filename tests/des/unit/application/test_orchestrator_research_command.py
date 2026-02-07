@@ -8,6 +8,7 @@ Validates that /nw:research commands:
 """
 
 import pytest
+
 from des.application.orchestrator import DESOrchestrator
 
 

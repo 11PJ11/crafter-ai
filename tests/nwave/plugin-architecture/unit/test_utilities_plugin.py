@@ -12,6 +12,7 @@ import logging
 from pathlib import Path
 
 import pytest
+
 from scripts.install.plugins.base import InstallContext, PluginResult
 from scripts.install.plugins.utilities_plugin import UtilitiesPlugin
 

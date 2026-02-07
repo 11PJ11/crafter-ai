@@ -47,13 +47,15 @@ class MockExecutionLogReader(ExecutionLogReader):
         return self._project_id
 
     def read_step_events(self, log_path: str, step_id: str):
-        return [e for e in (self._parser.parse(s) for s in self._events) if e is not None]
+        return [
+            e for e in (self._parser.parse(s) for s in self._events) if e is not None
+        ]
 
 
 class MockScopeChecker(ScopeChecker):
     """Mock scope checker."""
 
-    def __init__(self, violations: list[str] = None):
+    def __init__(self, violations: list[str] | None = None):
         self._violations = violations or []
 
     def check_scope(

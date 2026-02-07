@@ -13,6 +13,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+
 # Add project root to sys.path to enable imports from scripts package
 # This allows the script to work when run directly or as a module
 _script_dir = Path(__file__).parent

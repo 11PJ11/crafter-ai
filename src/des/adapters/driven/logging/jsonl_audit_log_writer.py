@@ -128,7 +128,14 @@ class JsonlAuditLogWriter(AuditLogWriter):
         # Priority 3: Project-local
         cwd = Path.cwd()
         home = Path.home()
-        if cwd != home and str(cwd) not in ("/", "/usr", "/bin", "/etc", "/var", "/tmp"):
+        if cwd != home and str(cwd) not in (
+            "/",
+            "/usr",
+            "/bin",
+            "/etc",
+            "/var",
+            "/tmp",
+        ):
             return cwd / ".nwave" / "logs" / "des"
 
         # Priority 4: Global fallback

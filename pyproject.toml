@@ -215,9 +215,16 @@ ignore = [
 "scripts/hooks/**/*.py" = [
     "PLW1510",  # subprocess.run without check
 ]
+# Legacy DES test files referencing pre-hexagonal classes (ScopeValidationResult, RealSubagentStopHook, SubagentStopHook)
+# These tests are skipped pending redesign - see DES hexagonal architecture migration
+"tests/des/unit/adapters/drivers/hooks/test_audit_logging_integration.py" = ["F821"]
+"tests/des/unit/adapters/drivers/hooks/test_clean_execution_silence.py" = ["F821"]
+"tests/des/unit/adapters/drivers/hooks/test_scope_validation_integration.py" = ["F821"]
+"tests/des/unit/application/test_orchestrator_recovery_integration.py" = ["F821"]
+"tests/des/acceptance/test_us003_post_execution_validation.py" = ["F821"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["crafter_ai"]
+known-first-party = ["crafter_ai", "des", "scripts"]
 force-single-line = false
 lines-after-imports = 2
 

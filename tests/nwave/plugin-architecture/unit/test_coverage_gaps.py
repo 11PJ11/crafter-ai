@@ -18,6 +18,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+
 from scripts.install.plugins.agents_plugin import AgentsPlugin
 from scripts.install.plugins.base import (
     InstallationPlugin,

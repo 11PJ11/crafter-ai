@@ -11,13 +11,12 @@ from __future__ import annotations
 
 import yaml
 
-from des.domain.phase_event import PhaseEventParser
+from des.domain.phase_event import PhaseEvent, PhaseEventParser
 from des.ports.driven_ports.execution_log_reader import (
     ExecutionLogReader,
     LogFileCorrupted,
     LogFileNotFound,
 )
-from des.domain.phase_event import PhaseEvent
 
 
 class YamlExecutionLogReader(ExecutionLogReader):
@@ -85,7 +84,7 @@ class YamlExecutionLogReader(ExecutionLogReader):
             LogFileCorrupted: If the YAML cannot be parsed
         """
         try:
-            with open(log_path, "r", encoding="utf-8") as f:
+            with open(log_path, encoding="utf-8") as f:
                 data = yaml.safe_load(f)
         except FileNotFoundError:
             raise LogFileNotFound(f"Execution log not found: {log_path}")

@@ -438,9 +438,15 @@ class DESPlugin(InstallationPlugin):
                     for h in hooks_list
                 )
 
-            has_correct_pretask = _has_command(config["hooks"]["PreToolUse"], new_pretask_command)
-            has_correct_stop = _has_command(config["hooks"]["SubagentStop"], new_stop_command)
-            has_correct_post = _has_command(config["hooks"]["PostToolUse"], new_post_command)
+            has_correct_pretask = _has_command(
+                config["hooks"]["PreToolUse"], new_pretask_command
+            )
+            has_correct_stop = _has_command(
+                config["hooks"]["SubagentStop"], new_stop_command
+            )
+            has_correct_post = _has_command(
+                config["hooks"]["PostToolUse"], new_post_command
+            )
 
             if has_correct_pretask and has_correct_stop and has_correct_post:
                 context.logger.info("  ✅ DES hooks up-to-date")

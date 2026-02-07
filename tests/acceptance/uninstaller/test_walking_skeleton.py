@@ -116,7 +116,9 @@ class TestWalkingSkeleton:
         assert "No backup created" not in output
         # The backup line must end cleanly with the path, no trailing garbage
         backup_lines = [
-            line for line in output.splitlines() if "Backup:" in line and "\U0001f4e6" in line
+            line
+            for line in output.splitlines()
+            if "Backup:" in line and "\U0001f4e6" in line
         ]
         assert backup_lines, "No backup location line found in summary"
         for line in backup_lines:

@@ -29,7 +29,13 @@ class ConfigLoader:
     """
 
     # Defaults aligned with src/des/config/des_defaults.yaml
-    DEFAULT_TURN_LIMITS = {"quick": 15, "background": 25, "standard": 30, "research": 35, "complex": 50}
+    DEFAULT_TURN_LIMITS = {
+        "quick": 15,
+        "background": 25,
+        "standard": 30,
+        "research": 35,
+        "complex": 50,
+    }
 
     def __init__(self, config_path: str):
         """

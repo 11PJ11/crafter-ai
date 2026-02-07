@@ -5,6 +5,7 @@ Tests topological sort, cycle detection, priority ordering, and missing dependen
 """
 
 import pytest
+
 from scripts.install.plugins.base import (
     InstallationPlugin,
     InstallContext,

@@ -21,7 +21,12 @@ from typing import Any
 import pytest
 
 # Helper functions are in helpers.py to avoid circular imports
-from .helpers import count_des_hooks, is_des_hook, is_des_hook_entry, scan_for_bad_imports  # noqa: F401
+from .helpers import (  # noqa: F401
+    count_des_hooks,
+    is_des_hook,
+    is_des_hook_entry,
+    scan_for_bad_imports,
+)
 
 
 # Step definitions are auto-discovered by pytest-bdd from this package
@@ -139,14 +144,22 @@ def settings_with_duplicates(temp_claude_dir: Path) -> Path:
         "permissions": {"allow": []},
         "hooks": {
             "PreToolUse": [
-                {"matcher": "Task", "hooks": [{"type": "command", "command": hook_command_pretask}]},
-                {"matcher": "Task", "hooks": [{"type": "command", "command": hook_command_pretask}]},  # DUPLICATE
+                {
+                    "matcher": "Task",
+                    "hooks": [{"type": "command", "command": hook_command_pretask}],
+                },
+                {
+                    "matcher": "Task",
+                    "hooks": [{"type": "command", "command": hook_command_pretask}],
+                },  # DUPLICATE
                 # Non-DES hook that should be preserved during uninstall
                 {"matcher": "Write", "command": "custom-write-validator.py"},
             ],
             "SubagentStop": [
                 {"hooks": [{"type": "command", "command": hook_command_stop}]},
-                {"hooks": [{"type": "command", "command": hook_command_stop}]},  # DUPLICATE
+                {
+                    "hooks": [{"type": "command", "command": hook_command_stop}]
+                },  # DUPLICATE
             ],
         },
     }
@@ -177,7 +190,10 @@ def settings_with_mixed_hooks(temp_claude_dir: Path) -> Path:
         "permissions": {"allow": []},
         "hooks": {
             "PreToolUse": [
-                {"matcher": "Task", "hooks": [{"type": "command", "command": hook_command_pretask}]},
+                {
+                    "matcher": "Task",
+                    "hooks": [{"type": "command", "command": hook_command_pretask}],
+                },
                 # Non-DES hook that should be preserved
                 {"matcher": "Write", "command": "custom-write-validator.py"},
             ],

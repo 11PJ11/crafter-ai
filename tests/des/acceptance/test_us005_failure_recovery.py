@@ -28,6 +28,7 @@ SOURCE:
 """
 
 import pytest
+
 from des.application.recovery_guidance_handler import RecoveryGuidanceHandler
 
 

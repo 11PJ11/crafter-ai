@@ -11,7 +11,7 @@ driven ports (AuditLogWriter, ExecutionLogReader, ScopeChecker, TimeProvider).
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -24,6 +24,10 @@ from des.ports.driven_ports.execution_log_reader import ExecutionLogReader
 from des.ports.driven_ports.scope_checker import ScopeChecker, ScopeCheckResult
 from des.ports.driven_ports.time_provider_port import TimeProvider
 from des.ports.driver_ports.subagent_stop_port import SubagentStopContext
+
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 # --- Test doubles (driven port implementations) ---
@@ -81,21 +85,75 @@ class StubScopeChecker(ScopeChecker):
 def _make_complete_phase_events(step_id: str) -> list[PhaseEvent]:
     """Create a complete set of 7 TDD phase events that passes validation."""
     return [
-        PhaseEvent(step_id=step_id, phase_name="PREPARE", status="EXECUTED", outcome="PASS", timestamp="2026-02-06T21:00:00Z"),
-        PhaseEvent(step_id=step_id, phase_name="RED_ACCEPTANCE", status="EXECUTED", outcome="FAIL", timestamp="2026-02-06T21:01:00Z"),
-        PhaseEvent(step_id=step_id, phase_name="RED_UNIT", status="EXECUTED", outcome="FAIL", timestamp="2026-02-06T21:02:00Z"),
-        PhaseEvent(step_id=step_id, phase_name="GREEN", status="EXECUTED", outcome="PASS", timestamp="2026-02-06T21:03:00Z"),
-        PhaseEvent(step_id=step_id, phase_name="REVIEW", status="EXECUTED", outcome="PASS", timestamp="2026-02-06T21:04:00Z"),
-        PhaseEvent(step_id=step_id, phase_name="REFACTOR_CONTINUOUS", status="SKIPPED", outcome="APPROVED_SKIP:Clean", timestamp="2026-02-06T21:05:00Z"),
-        PhaseEvent(step_id=step_id, phase_name="COMMIT", status="EXECUTED", outcome="PASS", timestamp="2026-02-06T21:06:00Z"),
+        PhaseEvent(
+            step_id=step_id,
+            phase_name="PREPARE",
+            status="EXECUTED",
+            outcome="PASS",
+            timestamp="2026-02-06T21:00:00Z",
+        ),
+        PhaseEvent(
+            step_id=step_id,
+            phase_name="RED_ACCEPTANCE",
+            status="EXECUTED",
+            outcome="FAIL",
+            timestamp="2026-02-06T21:01:00Z",
+        ),
+        PhaseEvent(
+            step_id=step_id,
+            phase_name="RED_UNIT",
+            status="EXECUTED",
+            outcome="FAIL",
+            timestamp="2026-02-06T21:02:00Z",
+        ),
+        PhaseEvent(
+            step_id=step_id,
+            phase_name="GREEN",
+            status="EXECUTED",
+            outcome="PASS",
+            timestamp="2026-02-06T21:03:00Z",
+        ),
+        PhaseEvent(
+            step_id=step_id,
+            phase_name="REVIEW",
+            status="EXECUTED",
+            outcome="PASS",
+            timestamp="2026-02-06T21:04:00Z",
+        ),
+        PhaseEvent(
+            step_id=step_id,
+            phase_name="REFACTOR_CONTINUOUS",
+            status="SKIPPED",
+            outcome="APPROVED_SKIP:Clean",
+            timestamp="2026-02-06T21:05:00Z",
+        ),
+        PhaseEvent(
+            step_id=step_id,
+            phase_name="COMMIT",
+            status="EXECUTED",
+            outcome="PASS",
+            timestamp="2026-02-06T21:06:00Z",
+        ),
     ]
 
 
 def _make_incomplete_phase_events(step_id: str) -> list[PhaseEvent]:
     """Create an incomplete set of events (missing COMMIT) that fails validation."""
     return [
-        PhaseEvent(step_id=step_id, phase_name="PREPARE", status="EXECUTED", outcome="PASS", timestamp="2026-02-06T21:00:00Z"),
-        PhaseEvent(step_id=step_id, phase_name="RED_ACCEPTANCE", status="EXECUTED", outcome="FAIL", timestamp="2026-02-06T21:01:00Z"),
+        PhaseEvent(
+            step_id=step_id,
+            phase_name="PREPARE",
+            status="EXECUTED",
+            outcome="PASS",
+            timestamp="2026-02-06T21:00:00Z",
+        ),
+        PhaseEvent(
+            step_id=step_id,
+            phase_name="RED_ACCEPTANCE",
+            status="EXECUTED",
+            outcome="FAIL",
+            timestamp="2026-02-06T21:01:00Z",
+        ),
     ]
 
 
@@ -137,7 +195,9 @@ class TestAuditEventsUseDirectFields:
 
         service.validate(context)
 
-        passed = [e for e in audit_spy.events if e.event_type == "HOOK_SUBAGENT_STOP_PASSED"]
+        passed = [
+            e for e in audit_spy.events if e.event_type == "HOOK_SUBAGENT_STOP_PASSED"
+        ]
         assert len(passed) == 1
         assert passed[0].feature_name == "my-feature"
 
@@ -155,7 +215,9 @@ class TestAuditEventsUseDirectFields:
 
         service.validate(context)
 
-        passed = [e for e in audit_spy.events if e.event_type == "HOOK_SUBAGENT_STOP_PASSED"]
+        passed = [
+            e for e in audit_spy.events if e.event_type == "HOOK_SUBAGENT_STOP_PASSED"
+        ]
         assert len(passed) == 1
         assert passed[0].step_id == "02-01"
 
@@ -173,12 +235,16 @@ class TestAuditEventsUseDirectFields:
 
         service.validate(context)
 
-        failed = [e for e in audit_spy.events if e.event_type == "HOOK_SUBAGENT_STOP_FAILED"]
+        failed = [
+            e for e in audit_spy.events if e.event_type == "HOOK_SUBAGENT_STOP_FAILED"
+        ]
         assert len(failed) == 1
         assert failed[0].feature_name == "audit-log-refactor"
         assert failed[0].step_id == "03-01"
 
-    def test_scope_violation_event_has_feature_name_and_step_id_as_direct_fields(self) -> None:
+    def test_scope_violation_event_has_feature_name_and_step_id_as_direct_fields(
+        self,
+    ) -> None:
         """SCOPE_VIOLATION events have feature_name and step_id as direct AuditEvent fields."""
         service, audit_spy = _build_service(
             project_id="my-feature",
@@ -193,7 +259,9 @@ class TestAuditEventsUseDirectFields:
 
         service.validate(context)
 
-        scope_events = [e for e in audit_spy.events if e.event_type == "SCOPE_VIOLATION"]
+        scope_events = [
+            e for e in audit_spy.events if e.event_type == "SCOPE_VIOLATION"
+        ]
         assert len(scope_events) == 1
         assert scope_events[0].feature_name == "my-feature"
         assert scope_events[0].step_id == "02-01"
@@ -205,11 +273,14 @@ class TestAuditEventsUseDirectFields:
 class TestFeatureNameFromProjectId:
     """AC2: feature_name is populated from context.project_id for all event types."""
 
-    @pytest.mark.parametrize("project_id", [
-        "audit-log-refactor",
-        "another-project",
-        "my-feature-123",
-    ])
+    @pytest.mark.parametrize(
+        "project_id",
+        [
+            "audit-log-refactor",
+            "another-project",
+            "my-feature-123",
+        ],
+    )
     def test_passed_event_feature_name_equals_project_id(self, project_id: str) -> None:
         """PASSED event feature_name matches the context project_id."""
         service, audit_spy = _build_service(
@@ -224,7 +295,9 @@ class TestFeatureNameFromProjectId:
 
         service.validate(context)
 
-        passed = [e for e in audit_spy.events if e.event_type == "HOOK_SUBAGENT_STOP_PASSED"]
+        passed = [
+            e for e in audit_spy.events if e.event_type == "HOOK_SUBAGENT_STOP_PASSED"
+        ]
         assert len(passed) == 1
         assert passed[0].feature_name == project_id
 
@@ -249,7 +322,9 @@ class TestExistingDataFieldsPreserved:
 
         service.validate(context)
 
-        failed = [e for e in audit_spy.events if e.event_type == "HOOK_SUBAGENT_STOP_FAILED"]
+        failed = [
+            e for e in audit_spy.events if e.event_type == "HOOK_SUBAGENT_STOP_FAILED"
+        ]
         assert len(failed) == 1
         assert "validation_errors" in failed[0].data
         assert isinstance(failed[0].data["validation_errors"], list)
@@ -269,7 +344,9 @@ class TestExistingDataFieldsPreserved:
 
         service.validate(context)
 
-        failed = [e for e in audit_spy.events if e.event_type == "HOOK_SUBAGENT_STOP_FAILED"]
+        failed = [
+            e for e in audit_spy.events if e.event_type == "HOOK_SUBAGENT_STOP_FAILED"
+        ]
         assert len(failed) == 1
         assert "step_id" not in failed[0].data
 
@@ -288,7 +365,9 @@ class TestExistingDataFieldsPreserved:
 
         service.validate(context)
 
-        scope_events = [e for e in audit_spy.events if e.event_type == "SCOPE_VIOLATION"]
+        scope_events = [
+            e for e in audit_spy.events if e.event_type == "SCOPE_VIOLATION"
+        ]
         assert len(scope_events) == 1
         assert scope_events[0].data["out_of_scope_file"] == "src/other/file.py"
 
@@ -307,7 +386,9 @@ class TestExistingDataFieldsPreserved:
 
         service.validate(context)
 
-        scope_events = [e for e in audit_spy.events if e.event_type == "SCOPE_VIOLATION"]
+        scope_events = [
+            e for e in audit_spy.events if e.event_type == "SCOPE_VIOLATION"
+        ]
         assert len(scope_events) == 1
         assert "step_id" not in scope_events[0].data
 
@@ -325,7 +406,9 @@ class TestExistingDataFieldsPreserved:
 
         service.validate(context)
 
-        passed = [e for e in audit_spy.events if e.event_type == "HOOK_SUBAGENT_STOP_PASSED"]
+        passed = [
+            e for e in audit_spy.events if e.event_type == "HOOK_SUBAGENT_STOP_PASSED"
+        ]
         assert len(passed) == 1
         assert passed[0].data == {}
 
@@ -351,7 +434,9 @@ class TestAuditLoggingConditionsPreserved:
         decision = service.validate(context)
 
         assert decision.action == "allow"
-        passed = [e for e in audit_spy.events if e.event_type == "HOOK_SUBAGENT_STOP_PASSED"]
+        passed = [
+            e for e in audit_spy.events if e.event_type == "HOOK_SUBAGENT_STOP_PASSED"
+        ]
         assert len(passed) == 1
 
     def test_failed_event_logged_on_incomplete_validation(self) -> None:
@@ -369,7 +454,9 @@ class TestAuditLoggingConditionsPreserved:
         decision = service.validate(context)
 
         assert decision.action == "block"
-        failed = [e for e in audit_spy.events if e.event_type == "HOOK_SUBAGENT_STOP_FAILED"]
+        failed = [
+            e for e in audit_spy.events if e.event_type == "HOOK_SUBAGENT_STOP_FAILED"
+        ]
         assert len(failed) == 1
 
     def test_scope_violations_logged_as_warnings_without_blocking(self) -> None:
@@ -388,5 +475,7 @@ class TestAuditLoggingConditionsPreserved:
         decision = service.validate(context)
 
         assert decision.action == "allow"
-        scope_events = [e for e in audit_spy.events if e.event_type == "SCOPE_VIOLATION"]
+        scope_events = [
+            e for e in audit_spy.events if e.event_type == "SCOPE_VIOLATION"
+        ]
         assert len(scope_events) == 2

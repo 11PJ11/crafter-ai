@@ -136,7 +136,10 @@ def handle_pre_tool_use() -> int:
             print(json.dumps(response))
             return 0
         else:
-            response = {"decision": "block", "reason": decision.reason or "Validation failed"}
+            response = {
+                "decision": "block",
+                "reason": decision.reason or "Validation failed",
+            }
             print(json.dumps(response))
             return decision.exit_code
 
@@ -258,7 +261,7 @@ def handle_subagent_stop() -> int:
                 print(json.dumps(response))
                 return 1
             # Validate absolute path
-            if not os.path.isabs(execution_log_path):
+            if not Path(execution_log_path).is_absolute():
                 response = {
                     "status": "error",
                     "reason": f"executionLogPath must be absolute (got: {execution_log_path})",
@@ -272,9 +275,7 @@ def handle_subagent_stop() -> int:
 
             des_context = None
             if agent_transcript_path:
-                des_context = extract_des_context_from_transcript(
-                    agent_transcript_path
-                )
+                des_context = extract_des_context_from_transcript(agent_transcript_path)
 
             # Non-DES agent: allow passthrough
             if des_context is None:

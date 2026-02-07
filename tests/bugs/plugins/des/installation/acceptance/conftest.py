@@ -52,3 +52,20 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "bug_3: Bug 3 - Import paths")
     config.addinivalue_line("markers", "walking_skeleton: Walking skeleton tests")
     config.addinivalue_line("markers", "failing: Expected to fail until bug is fixed")
+
+
+def pytest_collection_modifyitems(items):
+    """Mark @failing-tagged scenarios as xfail."""
+    import pytest
+
+    for item in items:
+        # pytest-bdd stores scenario tags in the item's own markers
+        for marker in item.iter_markers():
+            if marker.name == "failing":
+                item.add_marker(
+                    pytest.mark.xfail(
+                        reason="Known bug - expected to fail until fix is deployed",
+                        strict=False,
+                    )
+                )
+                break

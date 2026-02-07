@@ -10,6 +10,7 @@ All domain classes are pure (no I/O), so tests are fast and deterministic.
 """
 
 import pytest
+
 from des.domain.des_marker_parser import DesMarkerParser, DesMarkers
 from des.domain.max_turns_policy import MaxTurnsPolicy, PolicyResult
 from des.domain.phase_event import PhaseEvent, PhaseEventParser

@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
+
 from des.application.subagent_stop_service import SubagentStopService
 from des.domain.step_completion_validator import StepCompletionValidator
 from des.domain.tdd_schema import get_tdd_schema
@@ -51,7 +52,7 @@ class MockExecutionLogReader(ExecutionLogReader):
 class MockScopeChecker(ScopeChecker):
     """Mock scope checker."""
 
-    def __init__(self, violations: list[str] = None):
+    def __init__(self, violations: list[str] | None = None):
         self._violations = violations or []
 
     def check_scope(

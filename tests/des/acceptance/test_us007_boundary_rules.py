@@ -439,7 +439,7 @@ class TestScopeValidationPostExecution:
         minimal_step_file.write_text(json.dumps(step_data, indent=2))
 
         # Simulate agent modifying only in-scope files
-        in_scope_files = [
+        _in_scope_files = [
             "src/repositories/UserRepository.py",
             "tests/unit/test_user_repository.py",
         ]
@@ -685,8 +685,6 @@ class TestScopeViolationAuditLogging:
                 )
 
         # Assert: All violations logged separately
-        import json
-
         log_file = audit_writer._get_log_file()
         log_entries = []
         if log_file.exists():
@@ -745,8 +743,6 @@ class TestScopeViolationAuditLogging:
         audit_writer = JsonlAuditLogWriter()
 
         # Count entries BEFORE clean execution
-        import json
-
         log_file = audit_writer._get_log_file()
         entries_before = 0
         if log_file.exists():
@@ -1015,6 +1011,18 @@ def _create_step_file_for_user_repository():
             ]
         },
     }
+
+
+def _read_entries_by_type(log_file, event_type: str) -> list[dict]:
+    """Read JSONL audit log entries filtered by event type."""
+    entries = []
+    if log_file.exists():
+        for line in log_file.read_text().splitlines():
+            if line.strip():
+                entry = json.loads(line)
+                if entry.get("event") == event_type:
+                    entries.append(entry)
+    return entries
 
 
 def _create_step_file_with_scope(allowed_patterns: list[str]):

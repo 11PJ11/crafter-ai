@@ -123,9 +123,7 @@ class TestCleanExecutionSilence:
             patch(
                 "des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
             ) as mock_validator_class,
-            patch(
-                "des.adapters.driven.hooks.subagent_stop_hook.logger"
-            ) as mock_logger,
+            patch("des.adapters.driven.hooks.subagent_stop_hook.logger") as mock_logger,
         ):
             mock_validator = Mock()
             mock_validator_class.return_value = mock_validator
@@ -182,9 +180,7 @@ class TestCleanExecutionSilence:
             patch(
                 "des.adapters.driven.hooks.subagent_stop_hook.ScopeValidator"
             ) as mock_validator_class,
-            patch(
-                "des.adapters.driven.hooks.subagent_stop_hook.logger"
-            ) as mock_logger,
+            patch("des.adapters.driven.hooks.subagent_stop_hook.logger") as mock_logger,
         ):
             mock_validator = Mock()
             mock_validator_class.return_value = mock_validator

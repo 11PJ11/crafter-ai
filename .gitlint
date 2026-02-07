@@ -23,5 +23,9 @@ types = feat,fix,docs,style,refactor,perf,test,build,ci,chore,revert
 
 # Title regex - enforce lowercase after colon
 # Pattern: type(scope): lowercase subject
+[body-max-line-length]
+# Allow longer body lines - matches our commit style
+line-length = 120
+
 [title-match-regex]
 regex = ^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?: [a-z].*$

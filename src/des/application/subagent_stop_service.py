@@ -10,21 +10,25 @@ This service implements the SubagentStopPort driver port interface.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from des.domain.step_completion_validator import StepCompletionValidator
 from des.ports.driven_ports.audit_log_writer import AuditEvent, AuditLogWriter
 from des.ports.driven_ports.execution_log_reader import (
     ExecutionLogReader,
     LogFileCorrupted,
     LogFileNotFound,
 )
-from des.ports.driven_ports.scope_checker import ScopeChecker
-from des.ports.driven_ports.time_provider_port import TimeProvider
 from des.ports.driver_ports.pre_tool_use_port import HookDecision
 from des.ports.driver_ports.subagent_stop_port import (
     SubagentStopContext,
     SubagentStopPort,
 )
+
+
+if TYPE_CHECKING:
+    from des.domain.step_completion_validator import StepCompletionValidator
+    from des.ports.driven_ports.scope_checker import ScopeChecker
+    from des.ports.driven_ports.time_provider_port import TimeProvider
 
 
 class SubagentStopService(SubagentStopPort):
@@ -67,7 +71,9 @@ class SubagentStopService(SubagentStopPort):
         """
         # Step 1: Read and validate project_id
         try:
-            log_project_id = self._log_reader.read_project_id(context.execution_log_path)
+            log_project_id = self._log_reader.read_project_id(
+                context.execution_log_path
+            )
         except LogFileNotFound:
             return HookDecision.block(
                 reason=f"Execution log not found: {context.execution_log_path}",
@@ -94,7 +100,8 @@ class SubagentStopService(SubagentStopPort):
         # Step 2: Read step events
         try:
             events = self._log_reader.read_step_events(
-                context.execution_log_path, context.step_id,
+                context.execution_log_path,
+                context.step_id,
             )
         except (LogFileNotFound, LogFileCorrupted) as e:
             return HookDecision.block(
@@ -107,12 +114,16 @@ class SubagentStopService(SubagentStopPort):
 
         if not completion.is_valid:
             error_parts = list(completion.error_messages)
-            error_message = "; ".join(error_parts) if error_parts else "Validation failed"
+            error_message = (
+                "; ".join(error_parts) if error_parts else "Validation failed"
+            )
 
             if context.stop_hook_active:
                 # Second attempt: allow to prevent infinite loop, but still log FAILED
                 self._log_failed(
-                    context.project_id, context.step_id, error_parts,
+                    context.project_id,
+                    context.step_id,
+                    error_parts,
                     allowed_despite_failure=True,
                 )
                 return HookDecision.allow()

@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 
 import pytest
+
 from scripts.install.install_utils import Logger, PathUtils
 from scripts.install.preflight_checker import CheckResult, PreflightChecker
 

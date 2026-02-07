@@ -36,7 +36,6 @@ from des.domain.timeout_monitor import TimeoutMonitor
 from des.domain.turn_counter import TurnCounter
 from des.ports.driven_ports.audit_log_writer import (
     AuditEvent as PortAuditEvent,
-    AuditLogWriter,
 )
 from des.ports.driven_ports.filesystem_port import FileSystemPort
 from des.ports.driven_ports.time_provider_port import TimeProvider
@@ -326,6 +325,7 @@ class DESOrchestrator:
             if step_match:
                 # Extract step_id from path (e.g., "steps/01-01.json" -> "01-01")
                 import os
+
                 step_path = step_match.group(1)
                 step_id = os.path.splitext(os.path.basename(step_path))[0]
 
@@ -505,6 +505,7 @@ class DESOrchestrator:
         step_id_from_file = None
         if step_file:
             import os
+
             step_id_from_file = os.path.splitext(os.path.basename(step_file))[0]
 
         # Log TASK_INVOCATION_STARTED for audit trail

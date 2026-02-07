@@ -7,6 +7,7 @@ and detects when duration thresholds are crossed.
 from datetime import datetime, timedelta, timezone
 
 import pytest
+
 from des.domain.timeout_monitor import TimeoutMonitor
 
 

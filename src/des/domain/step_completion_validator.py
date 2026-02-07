@@ -19,9 +19,12 @@ Validation rules (from TDDSchema):
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
-from des.domain.phase_event import PhaseEvent
-from des.domain.tdd_schema import TDDSchema
+
+if TYPE_CHECKING:
+    from des.domain.phase_event import PhaseEvent
+    from des.domain.tdd_schema import TDDSchema
 
 
 @dataclass(frozen=True)
@@ -113,8 +116,12 @@ class StepCompletionValidator:
 
             event = phase_map[phase]
             self._validate_phase_event(
-                phase, event, missing_phases, incomplete_phases,
-                invalid_skips, error_messages,
+                phase,
+                event,
+                missing_phases,
+                incomplete_phases,
+                invalid_skips,
+                error_messages,
             )
 
         # Add missing phases to error_messages for clear reporting
@@ -123,27 +130,35 @@ class StepCompletionValidator:
 
         # Build recovery suggestions based on what failed
         if missing_phases:
-            recovery_suggestions.extend([
-                f"Resume execution to complete missing phases: {', '.join(missing_phases)}",
-                "Format: step_id|phase|status|data|timestamp",
-            ])
+            recovery_suggestions.extend(
+                [
+                    f"Resume execution to complete missing phases: {', '.join(missing_phases)}",
+                    "Format: step_id|phase|status|data|timestamp",
+                ]
+            )
 
         if incomplete_phases or invalid_skips or error_messages:
-            recovery_suggestions.extend([
-                "Fix invalid phase entries in execution-log.yaml",
-                "Ensure EXECUTED phases have PASS/FAIL outcome",
-                "Ensure SKIPPED phases have valid reason prefix",
-            ])
+            recovery_suggestions.extend(
+                [
+                    "Fix invalid phase entries in execution-log.yaml",
+                    "Ensure EXECUTED phases have PASS/FAIL outcome",
+                    "Ensure SKIPPED phases have valid reason prefix",
+                ]
+            )
 
         # Determine overall result
-        has_errors = bool(missing_phases or incomplete_phases or invalid_skips or error_messages)
+        has_errors = bool(
+            missing_phases or incomplete_phases or invalid_skips or error_messages
+        )
 
         if not has_errors:
             return CompletionResult(is_valid=True)
 
         # Classify the primary error type
         error_type = self._classify_error_type(
-            missing_phases, incomplete_phases, invalid_skips,
+            missing_phases,
+            incomplete_phases,
+            invalid_skips,
         )
 
         return CompletionResult(
@@ -175,13 +190,19 @@ class StepCompletionValidator:
         # Rule 2 & 3: Validate EXECUTED phases
         if status == "EXECUTED":
             self._validate_executed_phase(
-                phase, outcome, incomplete_phases, error_messages,
+                phase,
+                outcome,
+                incomplete_phases,
+                error_messages,
             )
 
         # Rule 4 & 5: Validate SKIPPED phases
         elif status == "SKIPPED":
             self._validate_skipped_phase(
-                phase, outcome, invalid_skips, error_messages,
+                phase,
+                outcome,
+                invalid_skips,
+                error_messages,
             )
 
         # Invalid status
@@ -222,8 +243,7 @@ class StepCompletionValidator:
         """Validate a SKIPPED phase's reason prefix."""
         # Rule 4: Must have valid skip prefix
         valid_prefix_found = any(
-            outcome.startswith(prefix)
-            for prefix in self._schema.valid_skip_prefixes
+            outcome.startswith(prefix) for prefix in self._schema.valid_skip_prefixes
         )
         if not valid_prefix_found:
             invalid_skips.append(phase)
@@ -234,8 +254,7 @@ class StepCompletionValidator:
 
         # Rule 5: Blocking prefixes not allowed
         blocking_prefix_found = any(
-            outcome.startswith(prefix)
-            for prefix in self._schema.blocking_skip_prefixes
+            outcome.startswith(prefix) for prefix in self._schema.blocking_skip_prefixes
         )
         if blocking_prefix_found:
             invalid_skips.append(phase)

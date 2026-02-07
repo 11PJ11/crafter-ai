@@ -52,7 +52,9 @@ class HookDecision:
         return HookDecision(action="allow", exit_code=0)
 
     @staticmethod
-    def block(reason: str, recovery_suggestions: list[str] | None = None) -> HookDecision:
+    def block(
+        reason: str, recovery_suggestions: list[str] | None = None
+    ) -> HookDecision:
         """Create a block decision with reason."""
         return HookDecision(
             action="block",

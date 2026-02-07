@@ -160,7 +160,9 @@ class TDDPhaseValidator:
             List of error messages (empty if all phases present)
         """
         # Check for shorthand pattern (7 phases from schema)
-        shorthand_pattern = r"(?i)all\s+7\s+phases?\s+(listed|mentioned|included|present)"
+        shorthand_pattern = (
+            r"(?i)all\s+7\s+phases?\s+(listed|mentioned|included|present)"
+        )
         if re.search(shorthand_pattern, prompt):
             return []  # Accept shorthand as valid
 

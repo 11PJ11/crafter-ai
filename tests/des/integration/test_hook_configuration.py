@@ -279,16 +279,18 @@ class TestHookAdapterFunctionality:
         from des.adapters.drivers.hooks import claude_code_hook_adapter
 
         # Claude Code protocol: tool_input at top level
-        test_input = json.dumps({
-            "session_id": "test-session",
-            "hook_event_name": "PreToolUse",
-            "tool_name": "Task",
-            "tool_input": {
-                "prompt": "Find all Python files",
-                "max_turns": 30,
-                "subagent_type": "Explore",
-            },
-        })
+        test_input = json.dumps(
+            {
+                "session_id": "test-session",
+                "hook_event_name": "PreToolUse",
+                "tool_name": "Task",
+                "tool_input": {
+                    "prompt": "Find all Python files",
+                    "max_turns": 30,
+                    "subagent_type": "Explore",
+                },
+            }
+        )
 
         original_stdin = sys.stdin
         original_stdout = sys.stdout
@@ -315,13 +317,15 @@ class TestHookAdapterFunctionality:
 
         from des.adapters.drivers.hooks import claude_code_hook_adapter
 
-        test_input = json.dumps({
-            "tool_name": "Task",
-            "tool_input": {
-                "prompt": "Find all Python files",
-                "subagent_type": "Explore",
-            },
-        })
+        test_input = json.dumps(
+            {
+                "tool_name": "Task",
+                "tool_input": {
+                    "prompt": "Find all Python files",
+                    "subagent_type": "Explore",
+                },
+            }
+        )
 
         original_stdin = sys.stdin
         original_stdout = sys.stdout

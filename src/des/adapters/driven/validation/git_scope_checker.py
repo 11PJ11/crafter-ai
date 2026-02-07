@@ -12,9 +12,14 @@ from __future__ import annotations
 import logging
 import subprocess
 from fnmatch import fnmatch
-from pathlib import Path
+from typing import TYPE_CHECKING
 
-from des.ports.driven_ports.scope_checker import ScopeCheckResult, ScopeChecker
+from des.ports.driven_ports.scope_checker import ScopeChecker, ScopeCheckResult
+
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
 
 logger = logging.getLogger(__name__)
 
@@ -62,9 +67,7 @@ class GitScopeChecker(ScopeChecker):
             out_of_scope_files=out_of_scope,
         )
 
-    def _get_modified_files(
-        self, project_root: Path
-    ) -> tuple[list[str] | None, str]:
+    def _get_modified_files(self, project_root: Path) -> tuple[list[str] | None, str]:
         """Run git diff to detect modified files.
 
         Args:
