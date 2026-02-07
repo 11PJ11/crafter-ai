@@ -8,7 +8,7 @@ Using pytest-bdd for BDD-style Given/When/Then tests.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 import pytest
@@ -51,9 +51,7 @@ class StubTimeProvider(TimeProvider):
     """Stub returning a configurable timestamp."""
 
     def __init__(self, timestamp_str: str) -> None:
-        self._timestamp = datetime.fromisoformat(
-            timestamp_str.replace("Z", "+00:00")
-        )
+        self._timestamp = datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))
 
     def now_utc(self) -> datetime:
         return self._timestamp
@@ -112,11 +110,7 @@ def set_system_time(test_context: dict[str, Any], timestamp: str) -> None:
     test_context["time_provider"] = StubTimeProvider(timestamp)
 
 
-@given(
-    parsers.parse(
-        'I am validating step "{step_id}" in feature "{feature_name}"'
-    )
-)
+@given(parsers.parse('I am validating step "{step_id}" in feature "{feature_name}"'))
 def setup_step_validation(
     test_context: dict[str, Any], step_id: str, feature_name: str
 ) -> None:
@@ -133,9 +127,7 @@ def setup_complete_phases(test_context: dict[str, Any]) -> None:
 
 
 @given(parsers.parse("only {count:d} TDD phases are complete"))
-def setup_incomplete_phases(
-    test_context: dict[str, Any], count: int
-) -> None:
+def setup_incomplete_phases(test_context: dict[str, Any], count: int) -> None:
     """Create an incomplete set of TDD phase events."""
     step_id = test_context["step_id"]
     all_events = _make_complete_phase_events(step_id)
@@ -149,9 +141,7 @@ def setup_no_violations(test_context: dict[str, Any]) -> None:
 
 
 @given(parsers.parse('there is a scope violation for file "{file_path}"'))
-def setup_scope_violation(
-    test_context: dict[str, Any], file_path: str
-) -> None:
+def setup_scope_violation(test_context: dict[str, Any], file_path: str) -> None:
     """Configure scope checker to return a violation."""
     test_context["scope_violations"] = [file_path]
 
@@ -185,18 +175,18 @@ def validate_step(test_context: dict[str, Any]) -> None:
     # Create the service with injected dependencies
     audit_writer = test_context["audit_writer"]
     time_provider = test_context["time_provider"]
-    
+
     log_reader = StubExecutionLogReader(
         project_id=test_context["feature_name"],
         events=test_context["phase_events"],
     )
-    
+
     scope_checker = StubScopeChecker(
         violations=test_context.get("scope_violations", [])
     )
-    
+
     validator = StepCompletionValidator(get_tdd_schema())
-    
+
     service = SubagentStopService(
         log_reader=log_reader,
         completion_validator=validator,
@@ -204,7 +194,7 @@ def validate_step(test_context: dict[str, Any]) -> None:
         audit_writer=audit_writer,
         time_provider=time_provider,
     )
-    
+
     # Create context
     context = SubagentStopContext(
         execution_log_path="/fake/path/execution-log.yaml",
@@ -223,7 +213,7 @@ def validate_task_invocation(test_context: dict[str, Any]) -> None:
     # For now, we'll simulate the audit event
     audit_writer = test_context["audit_writer"]
     time_provider = test_context["time_provider"]
-    
+
     event = AuditEvent(
         event_type="HOOK_PRE_TOOL_USE_ALLOWED",
         timestamp=time_provider.now_utc().isoformat(),
@@ -231,7 +221,7 @@ def validate_task_invocation(test_context: dict[str, Any]) -> None:
         step_id=test_context["step_id"],
         data={"max_turns": test_context["max_turns"]},
     )
-    
+
     audit_writer.log_event(event)
 
 
@@ -240,9 +230,7 @@ def validate_task_invocation(test_context: dict[str, Any]) -> None:
 
 @then(parsers.parse("the audit log contains a {event_type} event"))
 @then(parsers.parse("the audit log contains an {event_type} event"))
-def verify_event_exists(
-    test_context: dict[str, Any], event_type: str
-) -> None:
+def verify_event_exists(test_context: dict[str, Any], event_type: str) -> None:
     """Verify that an event of the specified type exists."""
     audit_writer = test_context["audit_writer"]
     event_type_map = {
@@ -253,9 +241,7 @@ def verify_event_exists(
     }
 
     expected_type = event_type_map[event_type]
-    matching_events = [
-        e for e in audit_writer.events if e.event_type == expected_type
-    ]
+    matching_events = [e for e in audit_writer.events if e.event_type == expected_type]
 
     assert len(matching_events) > 0, (
         f"Expected {expected_type} event not found. "
@@ -266,11 +252,7 @@ def verify_event_exists(
     test_context["last_event"] = matching_events[0]
 
 
-@then(
-    parsers.parse(
-        'the {event_type} event has feature_name "{expected_feature}"'
-    )
-)
+@then(parsers.parse('the {event_type} event has feature_name "{expected_feature}"'))
 def verify_feature_name(
     test_context: dict[str, Any], event_type: str, expected_feature: str
 ) -> None:
