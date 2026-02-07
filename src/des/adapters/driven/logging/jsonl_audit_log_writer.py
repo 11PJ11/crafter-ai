@@ -98,8 +98,9 @@ class JsonlAuditLogWriter(AuditLogWriter):
 
         Priority:
         1. DES_AUDIT_LOG_DIR environment variable
-        2. Project-local .nwave/logs/des/
-        3. Global ~/.claude/des/logs/ (fallback)
+        2. .nwave/des-config.json audit_log_dir field
+        3. Project-local .nwave/logs/des/
+        4. Global ~/.claude/des/logs/ (fallback)
 
         Returns:
             Path to audit log directory
@@ -114,11 +115,37 @@ class JsonlAuditLogWriter(AuditLogWriter):
             except (OSError, PermissionError):
                 pass  # Fall through to next priority
 
-        # Priority 2: Project-local
+        # Priority 2: Config file
+        config_dir = self._resolve_config_dir()
+        if config_dir:
+            log_path = config_dir
+            try:
+                log_path.mkdir(parents=True, exist_ok=True)
+                return log_path
+            except (OSError, PermissionError):
+                pass  # Fall through to next priority
+
+        # Priority 3: Project-local
         cwd = Path.cwd()
         home = Path.home()
         if cwd != home and str(cwd) not in ("/", "/usr", "/bin", "/etc", "/var", "/tmp"):
             return cwd / ".nwave" / "logs" / "des"
 
-        # Priority 3: Global fallback
+        # Priority 4: Global fallback
         return home / ".claude" / "des" / "logs"
+
+    @staticmethod
+    def _resolve_config_dir() -> Path | None:
+        """Read audit_log_dir from .nwave/des-config.json if it exists."""
+        config_file = Path.cwd() / ".nwave" / "des-config.json"
+        if config_file.exists():
+            try:
+                import json
+
+                config = json.loads(config_file.read_text(encoding="utf-8"))
+                audit_dir = config.get("audit_log_dir")
+                if audit_dir:
+                    return Path(audit_dir)
+            except (json.JSONDecodeError, OSError):
+                pass
+        return None
