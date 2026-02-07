@@ -3,6 +3,7 @@
 import json
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 from .base import InstallationPlugin, InstallContext, PluginResult
@@ -697,12 +698,13 @@ class DESPlugin(InstallationPlugin):
 
         # 1. Verify DES module importable
         try:
-            lib_python = context.claude_dir / "lib" / "python"
+            lib_python = str(context.claude_dir / "lib" / "python")
+            # Use repr() to properly escape backslashes on Windows paths
             result = subprocess.run(
                 [
-                    "python3",
+                    sys.executable,
                     "-c",
-                    f'import sys; sys.path.insert(0, "{lib_python}"); from des.application import DESOrchestrator',
+                    f"import sys; sys.path.insert(0, {lib_python!r}); from des.application import DESOrchestrator",
                 ],
                 capture_output=True,
                 text=True,
